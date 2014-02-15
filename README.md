@@ -41,8 +41,6 @@ mwp aims to be compatible with EOSBandi's WinGUI. It used the same XML mission f
 
 ## Caveats
 
-The MultiWii NAV protocol is under heavy development and is not  (AFAIK) documented. Additionally, the author has not yet built his GPS / NAV capable quad-copter. mspsim has been used for all NAV related protocol testing, and any errors are likely to have been propogated to both mwp and mspsim. You have been warned.
+The MultiWii NAV protocol is under heavy development and is not  (AFAIK) documented. Additionally, the author has not yet flown an GPS / NAV capable quad-copter. mspsim has been used for much of the NAV related protocol testing, and any errors are likely to have been propogated to both mwp and mspsim. mwp has also been bench tested with a Mega2560 FC with Ublox GPS. You have been warned.
 
-## Where, when
 
-Here, soon.
