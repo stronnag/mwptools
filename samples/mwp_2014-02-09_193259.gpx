@@ -1,0 +1,1096 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd" version="1.0" creator="mwp_log2gpx">
+  <trk>
+    <src>Created by mwp_log2gpx from a MWP mission log</src>
+    <trkseg>
+      <trkpt lat="50.9102377" lon="-1.5338991">
+        <ele>0</ele>
+        <time>2014-02-09T19:33:23Z</time>
+        <sat>1</sat>
+        <course>0</course>
+        <speed>0</speed>
+        <cmt>Course 0°, speed 0m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102377" lon="-1.5338991">
+        <ele>0</ele>
+        <time>2014-02-09T19:33:24Z</time>
+        <sat>1</sat>
+        <course>0</course>
+        <speed>0</speed>
+        <cmt>Course 0°, speed 0m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102377" lon="-1.5338991">
+        <ele>0</ele>
+        <time>2014-02-09T19:33:25Z</time>
+        <sat>1</sat>
+        <course>0</course>
+        <speed>0</speed>
+        <cmt>Course 0°, speed 0m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102377" lon="-1.5338991">
+        <ele>0</ele>
+        <time>2014-02-09T19:33:26Z</time>
+        <sat>1</sat>
+        <course>0</course>
+        <speed>0</speed>
+        <cmt>Course 0°, speed 0m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102377" lon="-1.5338991">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:27Z</time>
+        <sat>7</sat>
+        <course>30.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 30.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102571" lon="-1.533881">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:28Z</time>
+        <sat>7</sat>
+        <course>30.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 30.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102765" lon="-1.5338629">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:29Z</time>
+        <sat>7</sat>
+        <course>30.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 30.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102959" lon="-1.5338449">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:30Z</time>
+        <sat>7</sat>
+        <course>30.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 30.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9103153" lon="-1.5338268">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:31Z</time>
+        <sat>7</sat>
+        <course>30.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 30.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9103346" lon="-1.5338087">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:32Z</time>
+        <sat>7</sat>
+        <course>30.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 30.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.910354" lon="-1.5337906">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:33Z</time>
+        <sat>7</sat>
+        <course>30.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 30.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9103734" lon="-1.5337725">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:34Z</time>
+        <sat>7</sat>
+        <course>30.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 30.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9103928" lon="-1.5337545">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:35Z</time>
+        <sat>7</sat>
+        <course>30.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 30.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9104122" lon="-1.5337364">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:36Z</time>
+        <sat>7</sat>
+        <course>30.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 30.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9104316" lon="-1.5337183">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:37Z</time>
+        <sat>7</sat>
+        <course>30.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 30.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.910451" lon="-1.5337002">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:38Z</time>
+        <sat>7</sat>
+        <course>30.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 30.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9104704" lon="-1.5336821">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:39Z</time>
+        <sat>7</sat>
+        <course>30.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 30.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9104913" lon="-1.5336761">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:40Z</time>
+        <sat>7</sat>
+        <course>352.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 352.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9105136" lon="-1.533681">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:41Z</time>
+        <sat>7</sat>
+        <course>352.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 352.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9105359" lon="-1.5336859">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:42Z</time>
+        <sat>7</sat>
+        <course>352.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 352.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9105582" lon="-1.5336908">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:43Z</time>
+        <sat>7</sat>
+        <course>352.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 352.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9105805" lon="-1.5336957">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:44Z</time>
+        <sat>7</sat>
+        <course>352.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 352.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9106028" lon="-1.5337006">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:45Z</time>
+        <sat>7</sat>
+        <course>352.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 352.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.910625" lon="-1.5337054">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:46Z</time>
+        <sat>7</sat>
+        <course>352.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 352.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9106473" lon="-1.5337103">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:47Z</time>
+        <sat>7</sat>
+        <course>352.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 352.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9106696" lon="-1.5337152">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:48Z</time>
+        <sat>7</sat>
+        <course>352.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 352.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9106806" lon="-1.5337412">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:49Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9106872" lon="-1.5337753">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:50Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9106938" lon="-1.5338094">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:51Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107004" lon="-1.5338435">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:52Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.910707" lon="-1.5338776">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:53Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107136" lon="-1.5339118">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:54Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107202" lon="-1.5339459">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:55Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107268" lon="-1.53398">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:56Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107334" lon="-1.5340141">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:57Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.91074" lon="-1.5340482">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:58Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107466" lon="-1.5340823">
+        <ele>20</ele>
+        <time>2014-02-09T19:33:59Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107532" lon="-1.5341164">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:00Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107598" lon="-1.5341505">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:01Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107665" lon="-1.5341846">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:02Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107731" lon="-1.5342187">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:03Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107797" lon="-1.5342528">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:04Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107863" lon="-1.534287">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:05Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107929" lon="-1.5343211">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:06Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107995" lon="-1.5343552">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:07Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9108061" lon="-1.5343893">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:08Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9108127" lon="-1.5344234">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:09Z</time>
+        <sat>7</sat>
+        <course>287.1</course>
+        <speed>2.5</speed>
+        <cmt>Course 287.1°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107996" lon="-1.5344518">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:10Z</time>
+        <sat>7</sat>
+        <course>232.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 232.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107858" lon="-1.53448">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:11Z</time>
+        <sat>7</sat>
+        <course>232.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 232.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107721" lon="-1.5345082">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:12Z</time>
+        <sat>7</sat>
+        <course>232.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 232.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107583" lon="-1.5345364">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:13Z</time>
+        <sat>7</sat>
+        <course>232.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 232.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107445" lon="-1.5345646">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:14Z</time>
+        <sat>7</sat>
+        <course>232.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 232.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107307" lon="-1.5345927">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:15Z</time>
+        <sat>7</sat>
+        <course>232.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 232.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107169" lon="-1.5346209">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:16Z</time>
+        <sat>7</sat>
+        <course>232.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 232.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9107031" lon="-1.5346491">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:17Z</time>
+        <sat>7</sat>
+        <course>232.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 232.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.910689" lon="-1.534677">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:18Z</time>
+        <sat>7</sat>
+        <course>228.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 228.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9106741" lon="-1.5347036">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:19Z</time>
+        <sat>7</sat>
+        <course>228.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 228.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9106591" lon="-1.5347302">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:20Z</time>
+        <sat>7</sat>
+        <course>228.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 228.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9106441" lon="-1.5347568">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:21Z</time>
+        <sat>7</sat>
+        <course>228.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 228.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9106291" lon="-1.5347834">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:22Z</time>
+        <sat>7</sat>
+        <course>228.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 228.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9106141" lon="-1.53481">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:23Z</time>
+        <sat>7</sat>
+        <course>228.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 228.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9105991" lon="-1.5348366">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:24Z</time>
+        <sat>7</sat>
+        <course>228.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 228.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9105841" lon="-1.5348633">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:25Z</time>
+        <sat>7</sat>
+        <course>228.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 228.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9105691" lon="-1.5348899">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:26Z</time>
+        <sat>7</sat>
+        <course>228.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 228.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9105542" lon="-1.5349165">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:27Z</time>
+        <sat>7</sat>
+        <course>228.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 228.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9105392" lon="-1.5349431">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:28Z</time>
+        <sat>7</sat>
+        <course>228.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 228.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9105242" lon="-1.5349697">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:29Z</time>
+        <sat>7</sat>
+        <course>228.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 228.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9105092" lon="-1.5349963">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:30Z</time>
+        <sat>7</sat>
+        <course>228.2</course>
+        <speed>2.5</speed>
+        <cmt>Course 228.2°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.910489" lon="-1.5350081">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:31Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9104668" lon="-1.5350139">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:32Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9104447" lon="-1.5350198">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:33Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9104225" lon="-1.5350256">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:34Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9104003" lon="-1.5350315">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:35Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9103781" lon="-1.5350374">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:36Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9103559" lon="-1.5350432">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:37Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9103337" lon="-1.5350491">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:38Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9103115" lon="-1.535055">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:39Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102893" lon="-1.5350608">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:40Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102671" lon="-1.5350667">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:41Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102449" lon="-1.5350726">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:42Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102227" lon="-1.5350784">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:43Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102005" lon="-1.5350843">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:44Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9101783" lon="-1.5350901">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:45Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9101562" lon="-1.535096">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:46Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.910134" lon="-1.5351019">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:47Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9101118" lon="-1.5351077">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:48Z</time>
+        <sat>7</sat>
+        <course>189.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 189.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9100924" lon="-1.5351009">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:49Z</time>
+        <sat>7</sat>
+        <course>131.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 131.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9100775" lon="-1.5350742">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:50Z</time>
+        <sat>7</sat>
+        <course>131.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 131.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9100626" lon="-1.5350475">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:51Z</time>
+        <sat>7</sat>
+        <course>131.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 131.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9100476" lon="-1.5350208">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:52Z</time>
+        <sat>7</sat>
+        <course>131.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 131.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9100327" lon="-1.5349941">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:53Z</time>
+        <sat>7</sat>
+        <course>131.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 131.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9100178" lon="-1.5349674">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:54Z</time>
+        <sat>7</sat>
+        <course>131.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 131.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9100029" lon="-1.5349407">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:55Z</time>
+        <sat>7</sat>
+        <course>131.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 131.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.909988" lon="-1.534914">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:56Z</time>
+        <sat>7</sat>
+        <course>131.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 131.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.909973" lon="-1.5348873">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:57Z</time>
+        <sat>7</sat>
+        <course>131.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 131.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9099581" lon="-1.5348606">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:58Z</time>
+        <sat>7</sat>
+        <course>131.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 131.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9099432" lon="-1.5348339">
+        <ele>20</ele>
+        <time>2014-02-09T19:34:59Z</time>
+        <sat>7</sat>
+        <course>131.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 131.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9099283" lon="-1.5348072">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:00Z</time>
+        <sat>7</sat>
+        <course>131.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 131.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9099134" lon="-1.5347805">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:01Z</time>
+        <sat>7</sat>
+        <course>131.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 131.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9098984" lon="-1.5347538">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:02Z</time>
+        <sat>7</sat>
+        <course>131.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 131.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9098865" lon="-1.5347264">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:03Z</time>
+        <sat>7</sat>
+        <course>63.3</course>
+        <speed>2.5</speed>
+        <cmt>Course 63.3°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9098967" lon="-1.5346946">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:04Z</time>
+        <sat>7</sat>
+        <course>63.3</course>
+        <speed>2.5</speed>
+        <cmt>Course 63.3°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9099068" lon="-1.5346627">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:05Z</time>
+        <sat>7</sat>
+        <course>63.3</course>
+        <speed>2.5</speed>
+        <cmt>Course 63.3°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9099169" lon="-1.5346308">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:06Z</time>
+        <sat>7</sat>
+        <course>63.3</course>
+        <speed>2.5</speed>
+        <cmt>Course 63.3°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.909927" lon="-1.534599">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:07Z</time>
+        <sat>7</sat>
+        <course>63.3</course>
+        <speed>2.5</speed>
+        <cmt>Course 63.3°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9099371" lon="-1.5345671">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:08Z</time>
+        <sat>7</sat>
+        <course>63.3</course>
+        <speed>2.5</speed>
+        <cmt>Course 63.3°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9099473" lon="-1.5345352">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:09Z</time>
+        <sat>7</sat>
+        <course>63.3</course>
+        <speed>2.5</speed>
+        <cmt>Course 63.3°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9099574" lon="-1.5345034">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:10Z</time>
+        <sat>7</sat>
+        <course>63.3</course>
+        <speed>2.5</speed>
+        <cmt>Course 63.3°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9099675" lon="-1.5344715">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:11Z</time>
+        <sat>7</sat>
+        <course>63.3</course>
+        <speed>2.5</speed>
+        <cmt>Course 63.3°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9099776" lon="-1.5344396">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:12Z</time>
+        <sat>7</sat>
+        <course>63.3</course>
+        <speed>2.5</speed>
+        <cmt>Course 63.3°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9099951" lon="-1.5344179">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:13Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9100136" lon="-1.5343977">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:14Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9100321" lon="-1.5343775">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:15Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9100507" lon="-1.5343572">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:16Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9100692" lon="-1.534337">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:17Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9100877" lon="-1.5343168">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:18Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9101063" lon="-1.5342965">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:19Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9101248" lon="-1.5342763">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:20Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9101433" lon="-1.5342561">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:21Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9101619" lon="-1.5342358">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:22Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9101804" lon="-1.5342156">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:23Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9101989" lon="-1.5341954">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:24Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102175" lon="-1.5341751">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:25Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.910236" lon="-1.5341549">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:26Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102545" lon="-1.5341347">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:27Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.910273" lon="-1.5341144">
+        <ele>20</ele>
+        <time>2014-02-09T19:35:28Z</time>
+        <sat>7</sat>
+        <course>34.5</course>
+        <speed>2.5</speed>
+        <cmt>Course 34.5°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102866" lon="-1.5340926">
+        <ele>25</ele>
+        <time>2014-02-09T19:35:29Z</time>
+        <sat>7</sat>
+        <course>121.9</course>
+        <speed>2.5</speed>
+        <cmt>Course 121.9°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102747" lon="-1.5340623">
+        <ele>25</ele>
+        <time>2014-02-09T19:35:30Z</time>
+        <sat>7</sat>
+        <course>121.9</course>
+        <speed>2.5</speed>
+        <cmt>Course 121.9°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102628" lon="-1.534032">
+        <ele>25</ele>
+        <time>2014-02-09T19:35:31Z</time>
+        <sat>7</sat>
+        <course>121.9</course>
+        <speed>2.5</speed>
+        <cmt>Course 121.9°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102509" lon="-1.5340017">
+        <ele>25</ele>
+        <time>2014-02-09T19:35:32Z</time>
+        <sat>7</sat>
+        <course>121.9</course>
+        <speed>2.5</speed>
+        <cmt>Course 121.9°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102391" lon="-1.5339714">
+        <ele>25</ele>
+        <time>2014-02-09T19:35:33Z</time>
+        <sat>7</sat>
+        <course>121.9</course>
+        <speed>2.5</speed>
+        <cmt>Course 121.9°, speed 2.5m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102377" lon="-1.5338991">
+        <ele>0</ele>
+        <time>2014-02-09T19:35:34Z</time>
+        <sat>1</sat>
+        <course>0</course>
+        <speed>0</speed>
+        <cmt>Course 0°, speed 0m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102377" lon="-1.5338991">
+        <ele>0</ele>
+        <time>2014-02-09T19:35:35Z</time>
+        <sat>1</sat>
+        <course>0</course>
+        <speed>0</speed>
+        <cmt>Course 0°, speed 0m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102377" lon="-1.5338991">
+        <ele>0</ele>
+        <time>2014-02-09T19:35:36Z</time>
+        <sat>1</sat>
+        <course>0</course>
+        <speed>0</speed>
+        <cmt>Course 0°, speed 0m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102377" lon="-1.5338991">
+        <ele>0</ele>
+        <time>2014-02-09T19:35:37Z</time>
+        <sat>1</sat>
+        <course>0</course>
+        <speed>0</speed>
+        <cmt>Course 0°, speed 0m/s</cmt>
+      </trkpt>
+      <trkpt lat="50.9102377" lon="-1.5338991">
+        <ele>0</ele>
+        <time>2014-02-09T19:35:38Z</time>
+        <sat>1</sat>
+        <course>0</course>
+        <speed>0</speed>
+        <cmt>Course 0°, speed 0m/s</cmt>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

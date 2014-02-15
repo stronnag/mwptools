@@ -1,0 +1,575 @@
+
+/*
+ * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+public class DeltaDialog : GLib.Object
+{
+    private Gtk.Dialog dialog;
+    private Gtk.Entry dlt_entry1;
+    private Gtk.Entry dlt_entry2;
+    private Gtk.Entry dlt_entry3;
+
+    public DeltaDialog(Gtk.Builder builder)
+    {
+        dialog = builder.get_object ("delta-dialog") as Gtk.Dialog;
+        dlt_entry1 = builder.get_object ("dlt_entry1") as Gtk.Entry;
+        dlt_entry2 = builder.get_object ("dlt_entry2") as Gtk.Entry;
+        dlt_entry3 = builder.get_object ("dlt_entry3") as Gtk.Entry;
+    }
+
+    public bool get_deltas(out double dlat, out double dlon, out int dalt)
+    {
+        var res = false;
+        dialog.show_all();
+        dlat = dlon = 0.0;
+        dalt = 0;
+        var id = dialog.run();
+        switch(id)
+        {
+            case 1001:
+                dlat = double.parse(dlt_entry1.get_text());
+                dlon = double.parse(dlt_entry2.get_text());
+                dalt = int.parse(dlt_entry3.get_text());
+                res = true;
+                break;
+
+            case 1002:
+                break;
+        }
+        dialog.hide();
+        return res;
+    }
+
+}
+
+public class PrefsDialog : GLib.Object
+{
+    private Gtk.Dialog dialog;
+    private Gtk.Entry[]ents = {};
+    private Gtk.CheckButton dmscb;
+
+    public PrefsDialog(Gtk.Builder builder)
+    {
+        dialog = builder.get_object ("prefs-dialog") as Gtk.Dialog;
+        for (int i = 1; i < 9; i++)
+        {
+            var id = "prefentry%d".printf(i);
+            var e = builder.get_object (id) as Gtk.Entry;
+            ents += e;
+        }
+        dialog.set_default_size (640, 320);
+        dmscb = builder.get_object ("checkbutton3") as Gtk.CheckButton;
+    }
+
+    public void run_prefs(ref MWPSettings conf)
+    {
+        if(conf.devices != null)
+        {
+            var delimiter = ", ";
+            StringBuilder sb = new StringBuilder ();
+            foreach (string s in conf.devices)
+            {
+                sb.append(s);
+                sb.append(delimiter);
+            }
+            sb.truncate (sb.len - delimiter.length);
+            ents[0].set_text(sb.str);
+        }
+        ents[1].set_text("%.6f".printf(conf.latitude));
+        ents[2].set_text("%.6f".printf(conf.longitude));
+        ents[3].set_text("%d".printf(conf.loiter));
+        ents[4].set_text("%d".printf(conf.altitude));
+        ents[5].set_text("%.2f".printf(conf.nav_speed));
+        ents[6].set_text(conf.defmap);
+        ents[7].set_text("%d".printf(conf.zoom));
+        dmscb.set_active(conf.dms);
+
+        dialog.show_all ();
+        var id = dialog.run();
+        switch(id)
+        {
+            case 1001:
+                var str = ents[0].get_text();
+                var strs = str.split(",");
+                for(int i=0; i<strs.length;i++)
+                {
+                    strs[i] = strs[i].strip();
+                }
+                conf.devices = strs;
+                str = ents[1].get_text();
+                conf.latitude=double.parse(str);
+                str = ents[2].get_text();
+                conf.longitude=double.parse(str);
+                str = ents[3].get_text();
+                conf.loiter=int.parse(str);
+                str = ents[4].get_text();
+                conf.altitude=int.parse(str);
+                str = ents[5].get_text();
+                conf.nav_speed=double.parse(str);
+                str = ents[6].get_text();
+                conf.defmap=str;
+                str = ents[7].get_text();
+                conf.zoom=int.parse(str);
+                conf.dms = dmscb.active;
+                conf.save_settings();
+                break;
+            case 1002:
+                break;
+        }
+        dialog.hide();
+    }
+}
+
+
+public class ShapeDialog : GLib.Object
+{
+    public struct ShapePoint
+    {
+        public double lat;
+        public double lon;
+        public double bearing;
+        public int no;
+    }
+
+    private ShapePoint[] points;
+    private Gtk.Dialog dialog;
+    private Gtk.SpinButton spin1;
+    private Gtk.SpinButton spin2;
+    private Gtk.SpinButton spin3;
+    private Gtk.ComboBoxText combo;
+
+    public ShapeDialog(Gtk.Builder builder)
+    {
+        dialog = builder.get_object ("shape-dialog") as Gtk.Dialog;
+        spin1  = builder.get_object ("shp_spinbutton1") as Gtk.SpinButton;
+        spin2  = builder.get_object ("shp_spinbutton2") as Gtk.SpinButton;
+        spin3  = builder.get_object ("shp_spinbutton3") as Gtk.SpinButton;
+        combo  = builder.get_object ("shp-combo") as Gtk.ComboBoxText;
+    }
+
+    public ShapePoint[] get_points(double clat, double clon)
+    {
+        ShapePoint[] p = {};
+        dialog.show_all();
+        var id = dialog.run();
+        switch(id)
+        {
+            case 1001:
+
+                var npts = (int)spin1.adjustment.value;
+                var radius = spin2.adjustment.value;
+                var start = spin3.adjustment.value;
+                var dtext = combo.get_active_id();
+                int dirn = 1;
+
+                if(dtext != null)
+                    dirn = int.parse(dtext);
+
+                if(radius > 0)
+                {
+                    radius /= 1852.0;
+                    mkshape(clat, clon, radius, npts, start, dirn);
+                    p = points;
+                }
+
+                break;
+            case 1002:
+                break;
+        }
+        dialog.hide();
+        return p;
+    }
+
+    private void mkshape(double clat, double clon,double radius,
+                         int npts=6, double start = 0, int dirn=1)
+    {
+        double ang = start;
+        double dint  = dirn*(360.0/npts);
+        points= {};
+        for(int i =0; i <= npts; i++)
+        {
+            double lat,lon;
+            Geo.posit(clat,clon,ang,radius,out lat, out lon);
+            var p = ShapePoint() {no = i, lat=lat, lon=lon, bearing = ang};
+            points += p;
+            ang = (ang + dint) % 360.0;
+            if (ang < 0.0)
+                ang += 360;
+        }
+    }
+}
+
+public class NavStatus : GLib.Object
+{
+    private Gtk.Window window;
+    private Gtk.Label gps_mode_label;
+    private Gtk.Label nav_state_label;
+    private Gtk.Label nav_action_label;
+    private Gtk.Label nav_wp_label;
+    private Gtk.Label nav_err_label;
+    private Gtk.Label nav_tgt_label;
+    private Gtk.Label nav_comp_gps_label;
+    private Gtk.Label nav_altitude_label;
+    private Gtk.Label nav_attitude_label;
+    private bool visible = false;
+    private MSP_NAV_STATUS n;
+    private MSP_ATTITUDE atti;
+    private MSP_ALTITUDE alti;
+    private MSP_COMP_GPS cg;
+
+    public NavStatus(Gtk.Window parent, Gtk.Builder builder)
+    {
+        window = builder.get_object ("nav_window") as Gtk.Window;
+        var button = builder.get_object ("button8") as Gtk.Button;
+        button.clicked.connect(() => {
+                window.hide();
+            });
+        gps_mode_label = builder.get_object ("gps_mode_lab") as Gtk.Label;
+        nav_state_label = builder.get_object ("nav_status_label") as Gtk.Label;
+        nav_action_label = builder.get_object ("nav_action_label") as Gtk.Label;
+        nav_wp_label = builder.get_object ("nav_wp_label") as Gtk.Label;
+        nav_err_label = builder.get_object ("nav_error_label") as Gtk.Label;
+        nav_tgt_label = builder.get_object ("nav_bearing_label") as Gtk.Label;
+
+        nav_comp_gps_label = builder.get_object ("comp_gps_label") as Gtk.Label;
+        nav_altitude_label = builder.get_object ("altitude_label") as Gtk.Label;
+        nav_attitude_label = builder.get_object ("attitude_label") as Gtk.Label;
+
+        window.set_transient_for(parent);
+        window.destroy.connect (() => {
+                window.hide();
+                visible = false;
+            });
+    }
+
+    public void show()
+    {
+        visible = true;
+        window.show_all();
+    }
+
+    public void update(MSP_NAV_STATUS _n)
+    {
+        n = _n;
+        if(visible || Logger.is_logging)
+        {
+            var gstr = MSP.gps_mode(n.gps_mode);
+            var nstr = MSP.nav_state(n.nav_mode);
+            var n_action = n.action;
+            var n_wpno = n.wp_number;
+            var estr = MSP.nav_error(n.nav_error);
+            var tbrg = (uint16.from_little_endian(n.target_bearing));
+            if (visible)
+            {
+                gps_mode_label.set_label(gstr);
+                nav_state_label.set_label(nstr);
+                var act = MSP.get_wpname((MSP.Action)n_action);
+                nav_action_label.set_label(act);
+                nav_wp_label.set_label("%d".printf(n_wpno));
+                nav_err_label.set_label(estr);
+                nav_tgt_label.set_label("%d".printf(tbrg));
+            }
+            if (Logger.is_logging)
+            {
+                Logger.status(n);
+            }
+        }
+    }
+
+    public void set_attitude(MSP_ATTITUDE _atti)
+    {
+        atti = _atti;
+        if(visible || Logger.is_logging)
+        {
+            double dax;
+            double day;
+            dax = (double)(int16.from_little_endian(atti.angx))/10.0;
+            day = (double)(int16.from_little_endian(atti.angy))/10.0;
+            int hdr = (int16.from_little_endian(atti.heading));
+            if(hdr < 0)
+                hdr += 360;
+            if(visible)
+            {
+                var str = "%.1f° / %.1f° / %d°".printf(dax, day, hdr);
+                nav_attitude_label.set_label(str);
+            }
+            if(Logger.is_logging)
+            {
+                Logger.attitude(dax,day,hdr);
+            }
+        }
+    }
+
+    public void set_altitude(MSP_ALTITUDE _alti)
+    {
+        alti = _alti;
+        if(visible || Logger.is_logging)
+        {
+            double vario = (int16.from_little_endian(alti.vario))/10.0;
+            double estalt = (int32.from_little_endian(alti.estalt))/100.0;
+            if(visible)
+            {
+                var str = "%.2fm / %.1fm/s".printf(estalt, vario);
+                nav_altitude_label.set_label(str);
+            }
+            if(Logger.is_logging)
+            {
+                Logger.altitude(estalt,vario);
+            }
+        }
+    }
+
+    public void comp_gps(MSP_COMP_GPS _cg)
+    {
+        cg = _cg;
+        if(visible || Logger.is_logging)
+        {
+            int brg = (int)(int16.from_little_endian(cg.direction));
+            if(brg < 0)
+                brg += 360;
+
+            if(visible)
+            {
+                var str = "%dm / %d° / %s".printf(
+                    (uint16.from_little_endian(cg.range)),
+                    brg,
+                    (cg.update == 0) ? "false" : "true");
+                nav_comp_gps_label.set_label(str);
+            }
+            if(Logger.is_logging)
+            {
+                Logger.comp_gps(brg,cg.range,cg.update);
+            }
+        }
+    }
+
+    public void hide()
+    {
+        window.hide();
+        visible = false;
+    }
+}
+
+
+
+public class NavConfig : GLib.Object
+{
+    private Gtk.Window window;
+    private bool visible;
+    private Gtk.CheckButton nvcb1_01;
+    private Gtk.CheckButton nvcb1_02;
+    private Gtk.CheckButton nvcb1_03;
+    private Gtk.CheckButton nvcb1_04;
+    private Gtk.CheckButton nvcb1_05;
+    private Gtk.CheckButton nvcb1_06;
+    private Gtk.CheckButton nvcb1_07;
+    private Gtk.CheckButton nvcb1_08;
+    private Gtk.CheckButton nvcb2_01;
+    private Gtk.CheckButton nvcb2_02;
+    private Gtk.Entry wp_radius;
+    private Gtk.Entry safe_wp_dist;
+    private Gtk.Entry nav_max_alt;
+    private Gtk.Entry nav_speed_max;
+    private Gtk.Entry nav_speed_min;
+    private Gtk.Entry crosstrack_gain;
+    private Gtk.Entry nav_bank_max;
+    private Gtk.Entry rth_altitude;
+    private Gtk.Entry land_speed;
+    private Gtk.Entry fence;
+    private Gtk.Entry max_wp_no;
+
+    public NavConfig (Gtk.Window parent, Gtk.Builder builder)
+    {
+        window = builder.get_object ("nc_window") as Gtk.Window;
+        var button = builder.get_object ("button9") as Gtk.Button;
+        button.clicked.connect(() => {
+                window.hide();
+            });
+
+       nvcb1_01 = builder.get_object ("nvcb1_01") as Gtk.CheckButton;
+       nvcb1_02 = builder.get_object ("nvcb1_02") as Gtk.CheckButton;
+       nvcb1_03 = builder.get_object ("nvcb1_03") as Gtk.CheckButton;
+       nvcb1_04 = builder.get_object ("nvcb1_04") as Gtk.CheckButton;
+       nvcb1_05 = builder.get_object ("nvcb1_05") as Gtk.CheckButton;
+       nvcb1_06 = builder.get_object ("nvcb1_06") as Gtk.CheckButton;
+       nvcb1_07 = builder.get_object ("nvcb1_07") as Gtk.CheckButton;
+       nvcb1_08 = builder.get_object ("nvcb1_08") as Gtk.CheckButton;
+       nvcb2_01 = builder.get_object ("nvcb2_01") as Gtk.CheckButton;
+       nvcb2_02 = builder.get_object ("nvcb2_02") as Gtk.CheckButton;
+       wp_radius = builder.get_object ("wp_radius") as Gtk.Entry;
+       safe_wp_dist = builder.get_object ("safe_wp_dist") as Gtk.Entry;
+       nav_max_alt = builder.get_object ("nav_max_alt") as Gtk.Entry;
+       nav_speed_max = builder.get_object ("nav_speed_max") as Gtk.Entry;
+       nav_speed_min = builder.get_object ("nav_speed_min") as Gtk.Entry;
+       crosstrack_gain = builder.get_object ("crosstrack_gain") as Gtk.Entry;
+       nav_bank_max = builder.get_object ("nav_bank_max") as Gtk.Entry;
+       rth_altitude  = builder.get_object ("rth_altitude") as Gtk.Entry;
+       land_speed = builder.get_object ("land_speed") as Gtk.Entry;
+       fence = builder.get_object ("fence") as Gtk.Entry;
+       max_wp_no = builder.get_object ("max_wp_no") as Gtk.Entry;
+
+        window.set_transient_for(parent);
+        window.destroy.connect (() => {
+                window.hide();
+                visible = false;
+            });
+    }
+
+    public void update( MSP_NAV_CONFIG nc)
+    {
+        nvcb1_01.set_active ((nc.flag1 & 0x01) == 0x01);
+        nvcb1_02.set_active ((nc.flag1 & 0x02) == 0x02);
+        nvcb1_03.set_active ((nc.flag1 & 0x04) == 0x04);
+        nvcb1_04.set_active ((nc.flag1 & 0x08) == 0x08);
+        nvcb1_05.set_active ((nc.flag1 & 0x10) == 0x10);
+        nvcb1_06.set_active ((nc.flag1 & 0x20) == 0x20);
+        nvcb1_07.set_active ((nc.flag1 & 0x40) == 0x40);
+        nvcb1_08.set_active ((nc.flag1 & 0x80) == 0x80);
+        nvcb2_01.set_active ((nc.flag2 & 0x01) == 0x01);
+        nvcb2_02.set_active ((nc.flag2 & 0x02) == 0x02);
+
+        uint16 u16;
+        u16 = uint16.from_little_endian(nc.wp_radius);
+        wp_radius.set_text(u16.to_string());
+        u16 = uint16.from_little_endian(nc.safe_wp_distance);
+        safe_wp_dist.set_text(u16.to_string());
+        u16 = uint16.from_little_endian(nc.nav_max_altitude);
+        nav_max_alt.set_text(u16.to_string());
+        u16 = uint16.from_little_endian(nc.nav_speed_max);
+        nav_speed_max.set_text(u16.to_string());
+        u16 = uint16.from_little_endian(nc.nav_speed_min);
+        nav_speed_min.set_text(u16.to_string());
+        crosstrack_gain.set_text("%.2f".printf((double)nc.crosstrack_gain/100.0));
+        u16 = uint16.from_little_endian(nc.nav_bank_max);
+        nav_bank_max.set_text("%.2f".printf((double)u16/100.0));
+        u16 = uint16.from_little_endian(nc.rth_altitude);
+        rth_altitude.set_text(u16.to_string());
+        land_speed.set_text(nc.land_speed.to_string());
+        u16 = uint16.from_little_endian(nc.fence);
+        fence.set_text(u16.to_string());
+        max_wp_no.set_text(nc.max_wp_number.to_string());
+    }
+
+    public void hide()
+    {
+        window.hide();
+        visible = false;
+    }
+
+    public void show()
+    {
+        visible = true;
+        window.show_all();
+    }
+}
+
+public class GPSInfo : GLib.Object
+{
+    private Gtk.Label nsat_lab;
+    private Gtk.Label lat_lab;
+    private Gtk.Label lon_lab;
+    private Gtk.Label alt_lab;
+    private Gtk.Label dirn_lab;
+    private Gtk.Label speed_lab;
+
+    public double lat {get; private set;}
+    public double lon {get; private set;}
+    public double cse {get; private set;}
+    public double spd {get; private set;}
+
+    public GPSInfo(Gtk.Grid grid)
+    {
+
+        var lab = new Gtk.Label("No. Satellites");
+        lab.set_alignment(0,0);
+        grid.attach(lab, 0, 0, 1, 1);
+        nsat_lab = new Gtk.Label("-1");
+        grid.attach(nsat_lab, 1, 0, 1, 1);
+
+        lab = new Gtk.Label("Latitude");
+        lab.set_alignment(0,0);
+        grid.attach(lab, 0, 1, 1, 1);
+        lat_lab = new Gtk.Label("--.------");
+        lat_lab.set_alignment(0,0);
+        grid.attach(lat_lab, 1, 1, 1, 1);
+
+        lab = new Gtk.Label("Longitude");
+        lab.set_alignment(0,0);
+        grid.attach(lab, 0, 2, 1, 1);
+        lon_lab = new Gtk.Label("---.------");
+        lon_lab.set_alignment(0,0);
+        grid.attach(lon_lab, 1, 2, 1, 1);
+
+        lab = new Gtk.Label("Altitude");
+        lab.set_alignment(0,0);
+        grid.attach(lab, 0, 3, 1, 1);
+        alt_lab = new Gtk.Label("---");
+        alt_lab.set_alignment(0,0);
+        grid.attach(alt_lab, 1, 3, 1, 1);
+
+        lab = new Gtk.Label("Direction");
+        lab.set_alignment(0,0);
+        grid.attach(lab, 0, 4, 1, 1);
+        dirn_lab = new Gtk.Label("---");
+        dirn_lab.set_alignment(0,0);
+        grid.attach(dirn_lab, 1, 4, 1, 1);
+
+        lab = new Gtk.Label("Speed");
+        lab.set_alignment(0,0);
+        grid.attach(lab, 0, 5, 1, 1);
+        speed_lab = new Gtk.Label("--.-");
+        speed_lab.set_alignment(0,0);
+        grid.attach(speed_lab, 1, 5, 1, 1);
+    }
+
+    public int update(MSP_RAW_GPS g, bool dms)
+    {
+        lat = (int32.from_little_endian(g.gps_lat))/10000000.0;
+        lon = (int32.from_little_endian(g.gps_lon))/10000000.0;
+        spd = (uint16.from_little_endian(g.gps_speed))/100.0;
+        cse = (uint16.from_little_endian(g.gps_ground_course))/10.0;
+
+        var nsatstr = "%d (%sfix)".printf(g.gps_numsat,
+                                       (g.gps_fix==0) ? "no" : "");
+        nsat_lab.set_label(nsatstr);
+        alt_lab.set_label("%d m".printf(g.gps_altitude));
+
+        lat_lab.set_label(PosFormat.lat(lat,dms));
+        lon_lab.set_label(PosFormat.lon(lon,dms));
+
+        speed_lab.set_label("%.1f m/s".printf(spd));
+        dirn_lab.set_label("%.1f °".printf(cse));
+        if(Logger.is_logging)
+        {
+            Logger.raw_gps(lat,lon,cse,spd,
+                           g.gps_altitude,
+                           g.gps_fix,
+                           g.gps_numsat);
+        }
+        return g.gps_fix;
+    }
+
+    public void annul()
+    {
+        nsat_lab.set_label("-1");
+        lat_lab.set_label("--.------");
+        lon_lab.set_label("---.------");
+        alt_lab.set_label("---");
+        dirn_lab.set_label("---");
+        speed_lab.set_label("--.-");
+    }
+}

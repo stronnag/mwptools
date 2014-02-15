@@ -1,0 +1,87 @@
+<schemalist>
+  <schema id="org.mwptools.planner" path="/org/mwptools/planner/" >
+
+    <key name="device-names" type="as">
+        <default>['/dev/ttyACM0','/dev/ttyUSB42','/dev/rfcomm42']</default>
+        <summary>Device names</summary>
+        <description>A list of device names</description>
+    </key>
+
+    <key name="default-latitude" type="d">
+      <default>50.909528</default>
+      <summary>Default Latitude</summary>
+      <description>
+        Default Latitude when no GPS
+      </description>
+    </key>
+
+    <key name="default-longitude" type="d">
+      <default>-1.532936</default>
+      <summary>Default Longitude</summary>
+      <description>
+        Default Longitude when no GPS
+      </description>
+    </key>
+
+    <key name="default-loiter" type="i">
+      <default>30</default>
+      <summary>Default Loiter time</summary>
+      <description>
+        Default Loiter time
+      </description>
+    </key>
+
+    <key name="default-altitude" type="i">
+      <default>20</default>
+      <summary>Default altitude</summary>
+      <description>
+        Default Altitude
+      </description>
+    </key>
+
+    <key name="default-nav-speed" type="d">
+      <default>2.5</default>
+      <summary>Default Nav speed</summary>
+      <description>
+        Default Nav speed (km/hr). For calculating durations only.
+      </description>
+    </key>
+
+    <key name="default-map" type="s">
+      <default>""</default>
+      <summary>Default Map</summary>
+      <description>Default map *key*</description>
+    </key>
+
+    <key name="default-zoom" type="i">
+      <default>15</default>
+      <summary>Default Map zoom</summary>
+      <description>Default map zoom</description>
+    </key>
+
+    <key name="compat-version" type="s">
+      <default>"2.3 pre8"</default>
+      <summary>compat version</summary>
+      <description>Default compat version in XML</description>
+    </key>
+
+    <key type="b" name="show-scary-warning">
+      <default>true</default>
+      <summary>Scary warning</summary>
+      <description>Scary warning</description>
+    </key>
+
+    <key type="b" name="display-dms">
+      <default>false</default>
+      <summary>Position display</summary>
+      <description>Show positions as D:M:S rather than decimal degress</description>
+    </key>
+
+    <key name="map-sources" type="s">
+      <summary>Additional Map sources</summary>
+      <default>""</default>
+      <description>JSON file defining additional map sources</description>
+    </key>
+
+  </schema>
+</schemalist>

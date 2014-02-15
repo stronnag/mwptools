@@ -1,0 +1,21 @@
+VALAC=valac
+OPTS=-X -O2
+LOPTS=-X -lm -X -lbluetooth
+APP=mspsim
+SRC=$(APP).vala 
+COMMON=../common/mwp_xml.vala ../common/serial-device.vala ../common/cserial.c ../common/geocalc.vala  ../common/utils.vala ../common/mspcmd.vala  ../common/mspmsg.vapi 
+PKGS=--pkg posix --pkg linux --pkg gio-2.0 --pkg gtk+-3.0 --pkg libxml-2.0
+
+$(APP): $(SRC)  $(COMMON)
+	$(VALAC) $(OPTS) $(PKGS) -o $@  $^ $(LOPTS)
+
+clean:
+	rm -f $(APP)
+
+install: install-local
+
+install-local: $(APP)
+	../installer.sh $(APP) local
+
+install-system: $(APP)
+	../installer.sh $APP system

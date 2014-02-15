@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="mission">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="version"/>
+        <xs:element ref="mwp"/>
+        <xs:element maxOccurs="unbounded" ref="missionitem"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="version">
+    <xs:complexType>
+      <xs:attribute name="value" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="mwp">
+    <xs:complexType>
+      <xs:attribute name="cx" use="required" type="xs:decimal"/>
+      <xs:attribute name="cy" use="required" type="xs:decimal"/>
+      <xs:attribute name="zoom" use="required" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="missionitem">
+    <xs:complexType>
+      <xs:attribute name="action" use="required" type="xs:NCName"/>
+      <xs:attribute name="alt" use="required" type="xs:integer"/>
+      <xs:attribute name="lat" use="required" type="xs:decimal"/>
+      <xs:attribute name="lon" use="required" type="xs:decimal"/>
+      <xs:attribute name="no" use="required" type="xs:integer"/>
+      <xs:attribute name="parameter1" use="required" type="xs:integer"/>
+      <xs:attribute name="parameter2" use="required" type="xs:integer"/>
+      <xs:attribute name="parameter3" use="required" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

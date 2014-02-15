@@ -1,0 +1,31 @@
+This directory contains some example missions (*.mission from
+EOSBandi's WinGui Zip file, *.xml by jh).
+
+mwp_2014-02-09_193259.log is a log file (from a simulated mission)
+
+mwp_2014-02-09_193259.{gpx,kml) are translations by the utilities
+described below.
+
+sources.json is an example of addition map sources definition.
+
+Misison Files to other formats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+mission2gpx.rb mission_file [output_file]
+
+mission2kml.rb mission_file [output_file]
+
+Log Files to other formats
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+mwp-log2gpx.rb log_file [output_file]
+
+mwp-log2kml.rb log_file [output_file]
+
+If the output file is not specified, stdout is used.
+
+The following ruby gems are required:
+
+* nokogiri (all)
+* yajl (log file conversions)
+* ruby_kml (conversion to kml)

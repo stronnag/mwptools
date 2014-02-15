@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!--MultiWiiWinGUI, Version 2.3.5105.40820-->
+<!--MultiWii mission-->
+<!--MultiWii FC software revision 2.3dev-->
+<MISSION>
+    <VERSION value="2.3 pre7" />
+    <MISSIONITEM no="1" action="WAYPOINT" parameter1="0" parameter2="0" parameter3="0" lat="47.4027246" lon="19.0720940" alt="25" />
+    <MISSIONITEM no="2" action="WAYPOINT" parameter1="0" parameter2="0" parameter3="0" lat="47.4022925" lon="19.0719974" alt="25" />
+    <MISSIONITEM no="3" action="WAYPOINT" parameter1="0" parameter2="0" parameter3="0" lat="47.4022271" lon="19.0707368" alt="25" />
+    <MISSIONITEM no="4" action="WAYPOINT" parameter1="0" parameter2="0" parameter3="0" lat="47.4029787" lon="19.0705919" alt="25" />
+    <MISSIONITEM no="5" action="RTH" parameter1="0" parameter2="0" parameter3="0" lat="0" lon="0" alt="25" />
+</MISSION>
