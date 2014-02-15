@@ -215,7 +215,6 @@ public class ShapeDialog : GLib.Object
 
 public class NavStatus : GLib.Object
 {
-    private Gtk.Window window;
     private Gtk.Label gps_mode_label;
     private Gtk.Label nav_state_label;
     private Gtk.Label nav_action_label;
@@ -230,14 +229,12 @@ public class NavStatus : GLib.Object
     private MSP_ATTITUDE atti;
     private MSP_ALTITUDE alti;
     private MSP_COMP_GPS cg;
+    public Gtk.Grid grid {get; private set;}
+    private Gdl.DockItem di;
 
-    public NavStatus(Gtk.Window parent, Gtk.Builder builder)
+    public NavStatus(Gtk.Builder builder)
     {
-        window = builder.get_object ("nav_window") as Gtk.Window;
-        var button = builder.get_object ("button8") as Gtk.Button;
-        button.clicked.connect(() => {
-                window.hide();
-            });
+        grid = builder.get_object ("grid3") as Gtk.Grid;
         gps_mode_label = builder.get_object ("gps_mode_lab") as Gtk.Label;
         nav_state_label = builder.get_object ("nav_status_label") as Gtk.Label;
         nav_action_label = builder.get_object ("nav_action_label") as Gtk.Label;
@@ -248,24 +245,31 @@ public class NavStatus : GLib.Object
         nav_comp_gps_label = builder.get_object ("comp_gps_label") as Gtk.Label;
         nav_altitude_label = builder.get_object ("altitude_label") as Gtk.Label;
         nav_attitude_label = builder.get_object ("attitude_label") as Gtk.Label;
+            // FIXME
+        visible = true;
+    }
 
-        window.set_transient_for(parent);
-        window.destroy.connect (() => {
-                window.hide();
-                visible = false;
-            });
+    public void setdock(Gdl.DockItem _di)
+    {
+        di = _di;
     }
 
     public void show()
     {
-        visible = true;
-        window.show_all();
+        print("%s %s %s\n", di.name,
+              di.is_closed().to_string(), di.is_iconified().to_string());
+
+        if(di.is_closed() && ! di.is_iconified())
+        {
+            di.show();
+            di.iconify_item();
+        }
     }
 
     public void update(MSP_NAV_STATUS _n)
     {
         n = _n;
-        if(visible || Logger.is_logging)
+        if(!di.is_closed() || Logger.is_logging)
         {
             var gstr = MSP.gps_mode(n.gps_mode);
             var nstr = MSP.nav_state(n.nav_mode);
@@ -273,7 +277,7 @@ public class NavStatus : GLib.Object
             var n_wpno = n.wp_number;
             var estr = MSP.nav_error(n.nav_error);
             var tbrg = (uint16.from_little_endian(n.target_bearing));
-            if (visible)
+            if (!di.is_closed())
             {
                 gps_mode_label.set_label(gstr);
                 nav_state_label.set_label(nstr);
@@ -359,8 +363,8 @@ public class NavStatus : GLib.Object
 
     public void hide()
     {
-        window.hide();
-        visible = false;
+//        window.hide();
+//        visible = false;
     }
 }
 
@@ -493,7 +497,6 @@ public class GPSInfo : GLib.Object
 
     public GPSInfo(Gtk.Grid grid)
     {
-
         var lab = new Gtk.Label("No. Satellites");
         lab.set_alignment(0,0);
         grid.attach(lab, 0, 0, 1, 1);
@@ -571,5 +574,38 @@ public class GPSInfo : GLib.Object
         alt_lab.set_label("---");
         dirn_lab.set_label("---");
         speed_lab.set_label("--.-");
+    }
+}
+
+public class VoltageLabel : GLib.Object
+{
+    private  Gtk.Label label;
+    public Gtk.Box box{get; private set;}
+    private Gdk.RGBA[] colors;
+
+    public VoltageLabel()
+    {
+        label = new Gtk.Label("");
+        box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
+        label.set_use_markup (true);
+        box.pack_start (label, true, true, 1);
+        colors = new Gdk.RGBA[5];
+        colors[0].parse("green");
+        colors[1].parse("yellow");
+        colors[2].parse("orange");
+        colors[3].parse("red");
+        colors[4].parse("white");
+        update("n/a",4);
+   }
+
+    public void update(string s, int n)
+    {
+        Gtk.Allocation a;
+        label.get_allocation(out a);
+        var fh1 = a.width/4;
+        var fh2 = a.height / 2;
+        var fs = (fh1 < fh2) ? fh1 : fh2;
+        label.override_background_color(Gtk.StateFlags.NORMAL, colors[n]);
+        label.set_label("<span font='%d'>%s</span>".printf(fs,s));
     }
 }

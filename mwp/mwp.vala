@@ -18,6 +18,7 @@
  */
 
 using Gtk;
+using Gdl;
 using Clutter;
 using Champlain;
 using GtkChamplain;
@@ -75,6 +76,10 @@ public class MWPlanner : GLib.Object {
     private uint8 vwarn2;
     private uint8 vcrit;
     private uint8 livbat;
+    private DockMaster master;
+    private DockLayout layout;
+    public  DockItem[] dockitem;
+    private VoltageLabel voltlab;
 
     private enum MS_Column {
         ID,
@@ -205,18 +210,47 @@ public class MWPlanner : GLib.Object {
                 download_quad();
             });
 
+
+        navstatus = new NavStatus(builder);
         menunav = builder.get_object ("nav_status_menu") as Gtk.MenuItem;
-        menunav.sensitive =false;
-        navstatus = new NavStatus(window,builder);
         menunav.activate.connect (() => {
-                navstatus.show();
+                    navstatus.show();
             });
 
         menuncfg = builder.get_object ("nav_config_menu") as Gtk.MenuItem;
         menuncfg.sensitive =false;
-        navconf = new NavConfig(window,builder);
+        navconf = new NavConfig(window, builder);
         menuncfg.activate.connect (() => {
                 navconf.show();
+            });
+
+
+        var mi = builder.get_object ("gps_menu_view") as Gtk.MenuItem;
+        mi.activate.connect (() => {
+                if(dockitem[1].is_closed() && !dockitem[1].is_iconified())
+                {
+                   dockitem[1].show();
+                   dockitem[1].iconify_item();
+                }
+            });
+
+        mi = builder.get_object ("tote_menu_view") as Gtk.MenuItem;
+        mi.activate.connect (() => {
+                if(dockitem[0].is_closed() && !dockitem[0].is_iconified())
+                {
+                   dockitem[0].show();
+                   dockitem[0].iconify_item();
+                }
+            });
+
+        voltlab = new VoltageLabel();
+        mi = builder.get_object ("voltage_menu_view") as Gtk.MenuItem;
+        mi.activate.connect (() => {
+                if(dockitem[3].is_closed() && !dockitem[0].is_iconified())
+                {
+                   dockitem[3].show();
+                   dockitem[3].iconify_item();
+                   }
             });
 
         var cvers = Champlain.VERSION_HEX;
@@ -281,17 +315,50 @@ public class MWPlanner : GLib.Object {
         scroll.set_min_content_width(400);
         scroll.add (ls.view);
 
-        var pane2 = new Gtk.Paned(Gtk.Orientation.VERTICAL);
-        pane.pack2 (pane2,false,true);
-        pane2.pack1(scroll,true,false);
-
         var grid =  builder.get_object ("grid1") as Gtk.Grid;
-        grid.set_column_homogeneous(true);
-
         gpsinfo = new GPSInfo(grid);
 
-        pane2.pack2(grid,false,true);
-        pane2.set_position(ht_map-20);
+        var dock = new Dock ();
+        this.master = dock.master;
+        this.layout = new DockLayout (dock);
+        var dockbar = new DockBar (dock);
+        dockbar.set_style (DockBarStyle.ICONS);
+
+        var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL,0);
+        pane.add2(box);
+
+        box.pack_start (dockbar, false, false, 0);
+        box.pack_end (dock, true, true, 0);
+
+        dockitem = new DockItem[4];
+
+        dockitem[0]= new DockItem.with_stock ("Mission",
+                         "Mission Tote", "gtk-properties",
+                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+        dockitem[0].add (scroll);
+        dockitem[0].show ();
+
+        dock.add_item (dockitem[0], DockPlacement.TOP);
+
+        dockitem[1]= new DockItem.with_stock ("GPS",
+                         "GPS Info", "gtk-refresh",
+                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+        dockitem[1].add (grid);
+        dock.add_item (dockitem[1], DockPlacement.BOTTOM);
+        dockitem[1].show ();
+
+        dockitem[2]= new DockItem.with_stock ("Status",
+                         "NAV Status", "gtk-info",
+                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+        dockitem[2].add (navstatus.grid);
+        dock.add_item (dockitem[2], DockPlacement.BOTTOM);
+        dockitem[2].show ();
+
+        dockitem[3]= new DockItem.with_stock ("Volts",
+                         "Battery Monitor", "gtk-dialog-warning",
+                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+        dockitem[3].add (voltlab.box);
+        dock.add_item (dockitem[3], DockPlacement.BOTTOM);
 
         view.notify["zoom-level"].connect(() => {
                 var val = view.get_zoom_level();
@@ -399,6 +466,10 @@ public class MWPlanner : GLib.Object {
         }
 
         window.show_all();
+        dockitem[1].iconify_item ();
+        dockitem[2].iconify_item ();
+        dockitem[3].hide ();
+        navstatus.setdock(dockitem[2]);
     }
 
     private void handle_serial(MWSerial sd,  MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
@@ -660,27 +731,49 @@ public class MWPlanner : GLib.Object {
         }
     }
 
+    private int getbatcol(int ivbat)
+    {
+        int icol;
+        if(ivbat < vcrit /2 || ivbat == 0)
+            icol = 4;
+        else
+        {
+            if (ivbat <= vcrit)
+                icol = 3;
+            else if (ivbat <= vwarn2)
+                icol = 2;
+            else if (ivbat <= vwarn1)
+                icol = 1;
+            else
+                icol= 0;
+        }
+        return icol;
+    }
+
+
     private void set_bat_stat(uint8 ivbat)
     {
         string vbatlab;
-        if(ivbat != livbat)
+        string[] bcols =
+            {
+                "green","yellow","orange","red","white"
+            };
+
+//        if(ivbat != livbat)
         {
-            if(ivbat < vcrit /2 || ivbat == 0)
-                vbatlab="<span background=\"white\" weight=\"normal\">~0v</span>";
+            string str;
+            var icol = getbatcol(ivbat);
+            if (icol == 4)
+            {
+                str="n/a";
+            }
             else
             {
-                string vbatcol;
-                if (ivbat <= vcrit)
-                    vbatcol = "red";
-                else if (ivbat <= vwarn2)
-                    vbatcol = "orange";
-                else if (ivbat <= vwarn1)
-                    vbatcol = "yellow" ;
-                else
-                vbatcol = "green";
-                vbatlab="<span background=\"%s\" weight=\"bold\">%.1fv</span>".printf(vbatcol, (double)ivbat/10.0);
+                str = "%.1fv".printf((double)ivbat/10.0);
             }
+            vbatlab="<span background=\"%s\" weight=\"bold\">%s</span>".printf(bcols[icol], str);
             labelvbat.set_markup(vbatlab);
+            voltlab.update(str,icol);
             livbat = ivbat;
         }
     }
@@ -768,9 +861,7 @@ public class MWPlanner : GLib.Object {
         set_bat_stat(0);
         have_vers = have_misc = false;
         c.set_label("gtk-connect");
-        menunav.sensitive = menuncfg.sensitive =
-        menuup.sensitive = menudown.sensitive = false;
-        navstatus.hide();
+        menuncfg.sensitive = menuup.sensitive = menudown.sensitive = false;
         navconf.hide();
         if(craft != null)
         {
@@ -793,8 +884,7 @@ public class MWPlanner : GLib.Object {
             {
                 c.set_label("gtk-disconnect");
                 add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
-                menuup.sensitive = menudown.sensitive = menunav.sensitive =
-                menuncfg.sensitive = true;
+                menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
             }
             else
                 mwp_warning_box("Unable to open serial device %s".printf(serdev));
