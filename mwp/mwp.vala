@@ -71,7 +71,7 @@ public class MWPlanner : GLib.Object {
     private static string serial;
     private static bool mkcon;
     private static bool ignore_sz;
-    private static bool dorotate = false; // workaround for Ubuntu & old champlain
+    private static bool norotate = false; // workaround for Ubuntu & old champlain
     private uint8 vwarn1;
     private uint8 vwarn2;
     private uint8 vcrit;
@@ -123,7 +123,7 @@ public class MWPlanner : GLib.Object {
         { "serial-device", 's', 0, OptionArg.STRING, out serial, "Serial device", null},
         { "connect", 'c', 0, OptionArg.NONE, out mkcon, "connect to first device", null},
         { "ignore-sizing", 0, 0, OptionArg.NONE, out ignore_sz, "ignore minimum size constraint", null},
-        { "force-rotation", 0, 0, OptionArg.NONE, out dorotate, "Force rotation on old libchamplain", null},
+        { "ignore-rotation", 0, 0, OptionArg.NONE, out norotate, "ignore vehicle icon rotation on old libchamplain", null},
         {null}
     };
 
@@ -252,12 +252,6 @@ public class MWPlanner : GLib.Object {
                    dockitem[3].iconify_item();
                    }
             });
-
-        var cvers = Champlain.VERSION_HEX;
-        if(cvers > 0xc0300)
-        {
-            dorotate = true;
-        }
 
         embed = new GtkChamplain.Embed();
         view = embed.get_view();
@@ -513,7 +507,7 @@ public class MWPlanner : GLib.Object {
                 {
                     add_cmd(MSP.Cmds.NAV_CONFIG,null,0,&have_nc,1000);
                     if(craft == null)
-                        craft = new Craft(view, mrtype,dorotate);
+                        craft = new Craft(view, mrtype,norotate);
                     craft.park();
 
                     var timadj = builder.get_object ("spinbutton2") as Gtk.SpinButton;

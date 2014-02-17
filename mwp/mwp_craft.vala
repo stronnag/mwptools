@@ -26,7 +26,7 @@ public class Craft : GLib.Object
     private Champlain.View view;
     private Champlain.Label icon;
     private Champlain.MarkerLayer layer;
-    private bool dorotate;
+    private bool norotate;
 
     private static string[] icons =
     {
@@ -51,10 +51,10 @@ public class Craft : GLib.Object
         "Hex6P.png"
     };
 
-    public Craft(Champlain.View _view, uint id, bool _dorotate = true)
+    public Craft(Champlain.View _view, uint id, bool _norotate = false)
     {
         view = _view;
-        dorotate = _dorotate;
+        norotate = _norotate;
 
         if (id == icons.length)
         {
@@ -75,9 +75,14 @@ public class Craft : GLib.Object
         }
         layer = new Champlain.MarkerLayer();
         view.add_layer (layer);
+
+// Not properly implemented in current (13.10) Ubuntu
+#if NOBB
+#else
         Clutter.Point p = Clutter.Point.alloc();
         p.init(0.5f,0.5f);
         icon.set_property("pivot-point", p);
+#endif
         icon.set_draw_background (false);
         park();
         layer.add_marker (icon);
@@ -97,7 +102,7 @@ public class Craft : GLib.Object
     public void park()
     {
         set_pix_pos(40,40);
-        if (dorotate)
+        if (norotate == false)
             icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, 0);
     }
 
@@ -111,7 +116,7 @@ public class Craft : GLib.Object
     public void set_lat_lon (double lat, double lon, double cse)
     {
         icon.set_location (lat, lon);
-        if (dorotate)
+        if (norotate == false)
             icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, cse);
     }
 
