@@ -484,6 +484,10 @@ public class MWPlanner : GLib.Object {
                 var vers="v%03d".printf(raw[0]);
                 verlab.set_label(vers);
                 typlab.set_label(MSP.get_mrtype(mrtype));
+                if(navcap == true)
+                {
+                    menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
+                }
                 add_cmd(MSP.Cmds.MISC,null,0, &have_misc,1000);
                 break;
 
@@ -503,55 +507,44 @@ public class MWPlanner : GLib.Object {
                 uint16 sensor;
                 MSP_STATUS *s = (MSP_STATUS *)raw;
                 sensor=uint16.from_little_endian(s.sensor);
-                if((sensor & 8) == 8)
-                {
+                if(navcap == true)
                     add_cmd(MSP.Cmds.NAV_CONFIG,null,0,&have_nc,1000);
+
+                var timadj = builder.get_object ("spinbutton2") as Gtk.SpinButton;
+                var  val = timadj.adjustment.value;
+                MSP.Cmds[] requests = {};
+
+                requests += MSP.Cmds.ANALOG;
+
+                if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
+                    requests += MSP.Cmds.ATTITUDE;
+
+                if((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO)
+                    requests += MSP.Cmds.ALTITUDE;
+
+                if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
+                {
+                    requests += MSP.Cmds.NAV_STATUS;
+                    requests += MSP.Cmds.RAW_GPS;
+                    requests += MSP.Cmds.COMP_GPS;
                     if(craft == null)
                         craft = new Craft(view, mrtype,norotate);
                     craft.park();
+                }
 
-                    var timadj = builder.get_object ("spinbutton2") as Gtk.SpinButton;
-                    var  val = timadj.adjustment.value;
-                    int timeout = (int)(val*1000 / 6);
-                    int tcycle = 0;
-                    gpstid = Timeout.add(timeout, () =>
-                        {
-                            switch (tcycle)
-                            {
-                                case 0:
-                                    send_cmd(MSP.Cmds.RAW_GPS, null, 0);
-                                    break;
-                                case 1:
-                                    send_cmd(MSP.Cmds.NAV_STATUS, null, 0);
-                                    break;
-                                case 2:
-                                    send_cmd(MSP.Cmds.COMP_GPS, null, 0);
-                                    break;
-                                case 3:
-                                    send_cmd(MSP.Cmds.ALTITUDE, null, 0);
-                                    break;
-                                case 4:
-                                    send_cmd(MSP.Cmds.ATTITUDE, null, 0);
-                                    break;
-                                case 5:
-                                    send_cmd(MSP.Cmds.ANALOG, null, 0);
-                                    break;
-                            }
-                            tcycle += 1;
-                            tcycle %= 6;
-                            return true;
-                        }
-                    );
-                }
-                else
-                {
-                    gpstid = Timeout.add(1000, () =>
-                        {
-                            send_cmd(MSP.Cmds.ANALOG, null, 0);
-                            return true;
-                        }
-                    );
-                }
+                var nreqs = requests.length;
+                int timeout = (int)(val*1000 / nreqs);
+
+                print("Timer cycle for %d (%dms) items\n", nreqs,timeout);
+
+                int tcycle = 0;
+                gpstid = Timeout.add(timeout, () => {
+                        var req=requests[tcycle];
+                        send_cmd(req, null, 0);
+                        tcycle += 1;
+                        tcycle %= nreqs;
+                        return true;
+                    });
                 break;
 
             case MSP.Cmds.NAV_STATUS:
@@ -878,8 +871,7 @@ public class MWPlanner : GLib.Object {
             {
                 c.set_label("gtk-disconnect");
                 add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
-                menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
-            }
+}
             else
                 mwp_warning_box("Unable to open serial device %s".printf(serdev));
         }
