@@ -23,7 +23,7 @@
       </description>
     </key>
 
-    <key name="default-loiter" type="i">
+    <key name="default-loiter" type="u">
       <default>30</default>
       <summary>Default Loiter time</summary>
       <description>
@@ -31,7 +31,7 @@
       </description>
     </key>
 
-    <key name="default-altitude" type="i">
+    <key name="default-altitude" type="u">
       <default>20</default>
       <summary>Default altitude</summary>
       <description>
@@ -53,10 +53,16 @@
       <description>Default map *key*</description>
     </key>
 
-    <key name="default-zoom" type="i">
+    <key name="default-zoom" type="u">
       <default>15</default>
       <summary>Default Map zoom</summary>
       <description>Default map zoom</description>
+    </key>
+
+    <key name="speak-interval" type="u">
+      <default>0</default>
+      <summary>Interval between voice prompts</summary>
+      <description>Interval between voice prompts, 0 disables</description>
     </key>
 
     <key name="compat-version" type="s">

@@ -13,3 +13,4 @@ valac
 pkg-config
 build-essential
 libbluetooth-dev
+libespeak-dev

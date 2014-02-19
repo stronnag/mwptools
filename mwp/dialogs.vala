@@ -16,6 +16,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+
+
+extern void espeak_init(char *voice);
+extern void espeak_say(char *text);
+//extern void espeak_terminate();
+
 public class DeltaDialog : GLib.Object
 {
     private Gtk.Dialog dialog;
@@ -65,7 +71,7 @@ public class PrefsDialog : GLib.Object
     public PrefsDialog(Gtk.Builder builder)
     {
         dialog = builder.get_object ("prefs-dialog") as Gtk.Dialog;
-        for (int i = 1; i < 9; i++)
+        for (int i = 1; i < 10; i++)
         {
             var id = "prefentry%d".printf(i);
             var e = builder.get_object (id) as Gtk.Entry;
@@ -91,11 +97,12 @@ public class PrefsDialog : GLib.Object
         }
         ents[1].set_text("%.6f".printf(conf.latitude));
         ents[2].set_text("%.6f".printf(conf.longitude));
-        ents[3].set_text("%d".printf(conf.loiter));
-        ents[4].set_text("%d".printf(conf.altitude));
+        ents[3].set_text("%u".printf(conf.loiter));
+        ents[4].set_text("%u".printf(conf.altitude));
         ents[5].set_text("%.2f".printf(conf.nav_speed));
         ents[6].set_text(conf.defmap);
-        ents[7].set_text("%d".printf(conf.zoom));
+        ents[7].set_text("%u".printf(conf.zoom));
+        ents[8].set_text("%u".printf(conf.speakint));
         dmscb.set_active(conf.dms);
 
         dialog.show_all ();
@@ -125,6 +132,13 @@ public class PrefsDialog : GLib.Object
                 str = ents[7].get_text();
                 conf.zoom=int.parse(str);
                 conf.dms = dmscb.active;
+                str = ents[8].get_text();
+                conf.speakint=int.parse(str);
+                if(conf.speakint > 0 && conf.speakint < 15)
+                {
+                    conf.speakint = 15;
+                    ents[8].set_text("%u".printf(conf.speakint));
+                }
                 conf.save_settings();
                 break;
             case 1002:
@@ -225,12 +239,24 @@ public class NavStatus : GLib.Object
     private Gtk.Label nav_altitude_label;
     private Gtk.Label nav_attitude_label;
     private bool visible = false;
+    public Gtk.Grid grid {get; private set;}
+    private Gdl.DockItem di;
     private MSP_NAV_STATUS n;
     private MSP_ATTITUDE atti;
     private MSP_ALTITUDE alti;
     private MSP_COMP_GPS cg;
-    public Gtk.Grid grid {get; private set;}
-    private Gdl.DockItem di;
+    private float volts;
+    private  Gtk.Label voltlabel;
+    public Gtk.Box voltbox{get; private set;}
+    private Gdk.RGBA[] colors;
+    private bool vinit = false;
+    private  AsyncQueue<string> async_queue;
+
+    public enum SPK  {
+        Volts = 1,
+        GPS = 2,
+        BARO = 4
+    }
 
     public NavStatus(Gtk.Builder builder)
     {
@@ -245,8 +271,19 @@ public class NavStatus : GLib.Object
         nav_comp_gps_label = builder.get_object ("comp_gps_label") as Gtk.Label;
         nav_altitude_label = builder.get_object ("altitude_label") as Gtk.Label;
         nav_attitude_label = builder.get_object ("attitude_label") as Gtk.Label;
-            // FIXME
         visible = true;
+
+        voltlabel = new Gtk.Label("");
+        voltbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
+        voltlabel.set_use_markup (true);
+        voltbox.pack_start (voltlabel, true, true, 1);
+        colors = new Gdk.RGBA[5];
+        colors[0].parse("green");
+        colors[1].parse("yellow");
+        colors[2].parse("orange");
+        colors[3].parse("red");
+        colors[4].parse("white");
+        volt_update("n/a",4, 0f);
     }
 
     public void setdock(Gdl.DockItem _di)
@@ -360,15 +397,71 @@ public class NavStatus : GLib.Object
             }
         }
     }
-
-    public void hide()
+    public void volt_update(string s, int n, float v)
     {
-//        window.hide();
-//        visible = false;
+        volts = v;
+        Gtk.Allocation a;
+        voltlabel.get_allocation(out a);
+        var fh1 = a.width/4;
+        var fh2 = a.height / 2;
+        var fs = (fh1 < fh2) ? fh1 : fh2;
+        voltlabel.override_background_color(Gtk.StateFlags.NORMAL, colors[n]);
+        voltlabel.set_label("<span font='%d'>%s</span>".printf(fs,s));
+    }
+
+    public void announce(uint8 mask)
+    {
+        if((mask & SPK.Volts) == SPK.Volts && volts > 0.0)
+        {
+            say("Voltage %.1f.".printf( volts));
+        }
+        if((mask & SPK.GPS) == SPK.GPS)
+        {
+            int brg = (int)(int16.from_little_endian(cg.direction));
+            if(brg < 0)
+                brg += 360;
+            say("Range %d, bearing %d.".printf(
+                        (uint16.from_little_endian(cg.range)),
+                        brg));
+        }
+        if((mask & SPK.BARO) == SPK.BARO)
+        {
+            int estalt = (int32.from_little_endian(alti.estalt))/100;
+            say("Altitude %d.".printf(estalt));
+        }
+    }
+
+    public void logspeak_init (string? voice)
+    {
+        if(vinit == false)
+        {
+            vinit = true;
+            async_queue = new AsyncQueue<string> ();
+            if(voice == null)
+                voice = "en_uk";
+            new GLib.Thread<int> (null, () => {
+                    espeak_init(voice);
+                    while(true)
+                    {
+                        var s = async_queue.pop ();
+                        if(s.length > 0)
+                            espeak_say(s);
+                    }
+                });
+        }
+    }
+
+    public void logspeak_close()
+    {
+        while(async_queue.try_pop () != null)
+            ;
+    }
+
+    public void say(string s)
+    {
+        async_queue.push(s);
     }
 }
-
-
 
 public class NavConfig : GLib.Object
 {
@@ -574,38 +667,5 @@ public class GPSInfo : GLib.Object
         alt_lab.set_label("---");
         dirn_lab.set_label("---");
         speed_lab.set_label("--.-");
-    }
-}
-
-public class VoltageLabel : GLib.Object
-{
-    private  Gtk.Label label;
-    public Gtk.Box box{get; private set;}
-    private Gdk.RGBA[] colors;
-
-    public VoltageLabel()
-    {
-        label = new Gtk.Label("");
-        box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
-        label.set_use_markup (true);
-        box.pack_start (label, true, true, 1);
-        colors = new Gdk.RGBA[5];
-        colors[0].parse("green");
-        colors[1].parse("yellow");
-        colors[2].parse("orange");
-        colors[3].parse("red");
-        colors[4].parse("white");
-        update("n/a",4);
-   }
-
-    public void update(string s, int n)
-    {
-        Gtk.Allocation a;
-        label.get_allocation(out a);
-        var fh1 = a.width/4;
-        var fh2 = a.height / 2;
-        var fs = (fh1 < fh2) ? fh1 : fh2;
-        label.override_background_color(Gtk.StateFlags.NORMAL, colors[n]);
-        label.set_label("<span font='%d'>%s</span>".printf(fs,s));
     }
 }

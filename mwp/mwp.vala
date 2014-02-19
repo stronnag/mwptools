@@ -55,6 +55,7 @@ public class MWPlanner : GLib.Object {
     private uint8 mrtype;
     private uint gpstid;
     private uint cmdtid;
+    private uint spktid;
     private Craft craft;
     private bool follow = false;
     private bool centreon = false;
@@ -79,7 +80,9 @@ public class MWPlanner : GLib.Object {
     private DockMaster master;
     private DockLayout layout;
     public  DockItem[] dockitem;
-    private VoltageLabel voltlab;
+    private Gtk.CheckButton audio_cb;
+    private bool audio_on;
+    private uint8 sflags;
 
     private enum MS_Column {
         ID,
@@ -184,6 +187,15 @@ public class MWPlanner : GLib.Object {
         menuop.activate.connect(() =>
             {
                 prefs.run_prefs(ref conf);
+                if(conf.speakint > 0)
+                {
+                    audio_cb.sensitive = true;
+                }
+                else
+                {
+                    audio_cb.sensitive = false;
+                    audio_cb.active = false;
+                }
             });
 
         menuop = builder.get_object ("menu_quit") as Gtk.MenuItem;
@@ -243,7 +255,6 @@ public class MWPlanner : GLib.Object {
                 }
             });
 
-        voltlab = new VoltageLabel();
         mi = builder.get_object ("voltage_menu_view") as Gtk.MenuItem;
         mi.activate.connect (() => {
                 if(dockitem[3].is_closed() && !dockitem[0].is_iconified())
@@ -351,7 +362,7 @@ public class MWPlanner : GLib.Object {
         dockitem[3]= new DockItem.with_stock ("Volts",
                          "Battery Monitor", "gtk-dialog-warning",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
-        dockitem[3].add (voltlab.box);
+        dockitem[3].add (navstatus.voltbox);
         dock.add_item (dockitem[3], DockPlacement.BOTTOM);
 
         view.notify["zoom-level"].connect(() => {
@@ -388,6 +399,17 @@ public class MWPlanner : GLib.Object {
                     Logger.stop();
             });
 
+
+        var audio_cb = builder.get_object ("audio_cb") as Gtk.CheckButton;
+
+        audio_cb.sensitive = (conf.speakint > 0);
+        audio_cb.toggled.connect (() => {
+                audio_on = audio_cb.active;
+                if (audio_on)
+                    start_audio();
+                else
+                    stop_audio();
+            });
         var centreonb = builder.get_object ("checkbutton1") as Gtk.CheckButton;
         centreonb.toggled.connect (() => {
                 centreon = centreonb.active;
@@ -515,15 +537,20 @@ public class MWPlanner : GLib.Object {
                 MSP.Cmds[] requests = {};
 
                 requests += MSP.Cmds.ANALOG;
+                sflags = NavStatus.SPK.Volts;
 
                 if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
                     requests += MSP.Cmds.ATTITUDE;
 
                 if((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO)
+                {
+                    sflags |= NavStatus.SPK.BARO;
                     requests += MSP.Cmds.ALTITUDE;
+                }
 
                 if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
                 {
+                    sflags |= NavStatus.SPK.GPS;
                     requests += MSP.Cmds.NAV_STATUS;
                     requests += MSP.Cmds.RAW_GPS;
                     requests += MSP.Cmds.COMP_GPS;
@@ -545,6 +572,8 @@ public class MWPlanner : GLib.Object {
                         tcycle %= nreqs;
                         return true;
                     });
+
+                start_audio();
                 break;
 
             case MSP.Cmds.NAV_STATUS:
@@ -741,28 +770,24 @@ public class MWPlanner : GLib.Object {
     private void set_bat_stat(uint8 ivbat)
     {
         string vbatlab;
-        string[] bcols =
-            {
-                "green","yellow","orange","red","white"
-            };
+        string[] bcols = {"green","yellow","orange","red","white" };
+        float vf=0f;
 
-//        if(ivbat != livbat)
+        string str;
+        var icol = getbatcol(ivbat);
+        if (icol == 4)
         {
-            string str;
-            var icol = getbatcol(ivbat);
-            if (icol == 4)
-            {
-                str="n/a";
-            }
-            else
-            {
-                str = "%.1fv".printf((double)ivbat/10.0);
-            }
-            vbatlab="<span background=\"%s\" weight=\"bold\">%s</span>".printf(bcols[icol], str);
-            labelvbat.set_markup(vbatlab);
-            voltlab.update(str,icol);
-            livbat = ivbat;
+            str="n/a";
         }
+        else
+        {
+            vf = (float)ivbat/10.0f;
+            str = "%.1fv".printf(vf);
+        }
+        vbatlab="<span background=\"%s\" weight=\"bold\">%s</span>".printf(bcols[icol], str);
+        labelvbat.set_markup(vbatlab);
+        navstatus.volt_update(str,icol,vf);
+        livbat = ivbat;
     }
 
     private void upload_quad()
@@ -832,6 +857,26 @@ public class MWPlanner : GLib.Object {
         send_cmd(cmd,buf,len);
     }
 
+    private void start_audio()
+    {
+        if(audio_on && (sflags != 0))
+        {
+            navstatus.logspeak_init(null);
+            spktid = Timeout.add_seconds(conf.speakint, () => {
+                    navstatus.announce(sflags);
+                    return true;
+                });
+            navstatus.announce(sflags);
+        }
+    }
+
+    private void stop_audio()
+    {
+        if(spktid > 0)
+            navstatus.logspeak_close();
+        remove_tid(ref spktid);
+    }
+
     private void remove_tid(ref uint tid)
     {
         if(tid > 0)
@@ -843,6 +888,8 @@ public class MWPlanner : GLib.Object {
     {
         remove_tid(ref gpstid);
         remove_tid(ref cmdtid);
+        stop_audio();
+        sflags = 0;
         msp.close();
         gpsinfo.annul();
         set_bat_stat(0);
@@ -871,7 +918,7 @@ public class MWPlanner : GLib.Object {
             {
                 c.set_label("gtk-disconnect");
                 add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
-}
+            }
             else
                 mwp_warning_box("Unable to open serial device %s".printf(serdev));
         }

@@ -6,7 +6,7 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -25,16 +25,17 @@ public class MWPSettings : GLib.Object
     private SettingsSchema schema;
     public double latitude {get; set; default=0.0;}
     public double longitude {get; set; default=0.0;}
-    public int loiter {get; set; default=30;}
-    public int altitude {get; set; default=20;}           
-    public double nav_speed {get; set; default=2.5;}           
-    public int zoom {get; set; default=12;}                   
-    public string? defmap {get; set; default=null;}                   
-    public string[]? devices {get; set; default=null;}                   
+    public uint loiter {get; set; default=30;}
+    public uint altitude {get; set; default=20;}
+    public double nav_speed {get; set; default=2.5;}
+    public uint zoom {get; set; default=12;}
+    public string? defmap {get; set; default=null;}
+    public string[]? devices {get; set; default=null;}
     public string? compat_vers {get; set; default=null;}
     public bool scary_warn {get; set; default=true;}
     public bool dms {get; set; default=false;}
-    public string? map_sources {get; set; default=null;}    
+    public string? map_sources {get; set; default=null;}
+    public uint  speakint {get; set; default=0;}
 
     public MWPSettings()
     {
@@ -49,7 +50,7 @@ public class MWPSettings : GLib.Object
             if (schema != null)
                 settings = new Settings.full (schema, null, null);
             else
-                settings =  new Settings (sname);                
+                settings =  new Settings (sname);
 
         } catch {
             stderr.printf("No settings schema\n");
@@ -65,19 +66,22 @@ public class MWPSettings : GLib.Object
         defmap = settings.get_string ("default-map");
         latitude = settings.get_double("default-latitude");
         longitude = settings.get_double("default-longitude");
-        loiter = settings.get_int("default-loiter");
-        altitude = settings.get_int("default-altitude");
+        loiter = settings.get_uint("default-loiter");
+        altitude = settings.get_uint("default-altitude");
         nav_speed = settings.get_double("default-nav-speed");
-        zoom = settings.get_int("default-zoom");
+        zoom = settings.get_uint("default-zoom");
         compat_vers = settings.get_string ("compat-version");
         scary_warn = settings.get_boolean("show-scary-warning");
         map_sources = settings.get_string ("map-sources");
         dms = settings.get_boolean("display-dms");
-        
+        speakint = settings.get_uint("speak-interval");
+        if(speakint > 0 && speakint < 15)
+            speakint = 15;
+
         if(map_sources == "")
             map_sources = null;
     }
-    
+
     public void save_settings()
     {
         if (settings != null)
@@ -86,11 +90,12 @@ public class MWPSettings : GLib.Object
             settings.set_string ("default-map", defmap);
             settings.set_double("default-latitude", latitude);
             settings.set_double("default-longitude", longitude);
-            settings.set_int("default-loiter", loiter);
-            settings.set_int("default-altitude", altitude);
+            settings.set_uint("default-loiter", loiter);
+            settings.set_uint("default-altitude", altitude);
             settings.set_double("default-nav-speed", nav_speed);
-            settings.set_int("default-zoom", zoom);
-            settings.set_boolean("display-dms",dms);            
+            settings.set_uint("default-zoom", zoom);
+            settings.set_boolean("display-dms",dms);
+            settings.set_uint("speak-interval",speakint);
         }
         else
         {
