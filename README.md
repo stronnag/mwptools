@@ -3,7 +3,6 @@ mwptools
 
 "A mission planner for the rest of us"
 
-
 ## Overview
 
 mwptools is a small suite of tools to manage a MultiWii NAV flight
@@ -19,12 +18,14 @@ netbook.
 
 ## Platforms and OS
 
-The tools are designed to be portable and as far as possible platform and architecure agnostic. The suite is developed on Arch Linux and is tested on Ubuntu (current release); building and running on any platform that supports:
+The tools are designed to be portable and as far as possible platform and architecure agnostic. The suite is developed on Arch Linux and is tested on Ubuntu (current release); building and running on any platform that supports (recent versions of):
 
  * gtk+3.0 (3.8 or later);
  * vala and gcc;
  * Clutter (software GL is fine);
  * libchamplain;
+ * libespeak;
+ * libbluetooth (linux);
  * mspsim requires Posix pseudo-terminals. 
 
 mwptools is tested on x86_64, ia32 and ARM devices.
