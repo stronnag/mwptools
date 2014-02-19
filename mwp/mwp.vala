@@ -399,9 +399,7 @@ public class MWPlanner : GLib.Object {
                     Logger.stop();
             });
 
-
-        var audio_cb = builder.get_object ("audio_cb") as Gtk.CheckButton;
-
+        audio_cb = builder.get_object ("audio_cb") as Gtk.CheckButton;
         audio_cb.sensitive = (conf.speakint > 0);
         audio_cb.toggled.connect (() => {
                 audio_on = audio_cb.active;

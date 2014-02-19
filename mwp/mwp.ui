@@ -1761,6 +1761,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="tooltip_text" translatable="yes">Default longitude for the centre of the map  (decimal degrees)</property>
+                    <property name="halign">start</property>
                     <property name="label" translatable="yes">Default longitude</property>
                   </object>
                   <packing>
@@ -1805,6 +1806,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="tooltip_text" translatable="yes">Default navigation speed (m/s). Used only for flight time estimation</property>
+                    <property name="halign">start</property>
                     <property name="label" translatable="yes">Default nav speed</property>
                   </object>
                   <packing>
