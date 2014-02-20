@@ -250,7 +250,7 @@ public class NavStatus : GLib.Object
     public Gtk.Box voltbox{get; private set;}
     private Gdk.RGBA[] colors;
     private bool vinit = false;
-    private  AsyncQueue<string> async_queue;
+    private  AudioThread mt;
 
     public enum SPK  {
         Volts = 1,
@@ -409,25 +409,30 @@ public class NavStatus : GLib.Object
         voltlabel.set_label("<span font='%d'>%s</span>".printf(fs,s));
     }
 
-    public void announce(uint8 mask)
+    public void announce(uint8 mask, bool recip)
     {
-        if((mask & SPK.Volts) == SPK.Volts && volts > 0.0)
-        {
-            say("Voltage %.1f.".printf( volts));
-        }
         if((mask & SPK.GPS) == SPK.GPS)
         {
             int brg = (int)(int16.from_little_endian(cg.direction));
             if(brg < 0)
                 brg += 360;
-            say("Range %d, bearing %d.".printf(
+
+            if(recip)
+                brg = ((brg + 180) % 360);
+
+            mt.message("Range %d, bearing %d.".printf(
                         (uint16.from_little_endian(cg.range)),
                         brg));
         }
         if((mask & SPK.BARO) == SPK.BARO)
         {
             int estalt = (int32.from_little_endian(alti.estalt))/100;
-            say("Altitude %d.".printf(estalt));
+            mt.message("Altitude %d.".printf(estalt));
+        }
+
+        if((mask & SPK.Volts) == SPK.Volts && volts > 0.0)
+        {
+            mt.message("Voltage %.1f.".printf( volts));
         }
     }
 
@@ -436,32 +441,57 @@ public class NavStatus : GLib.Object
         if(vinit == false)
         {
             vinit = true;
-            async_queue = new AsyncQueue<string> ();
             if(voice == null)
-                voice = "en_uk";
-            new GLib.Thread<int> (null, () => {
-                    espeak_init(voice);
-                    while(true)
-                    {
-                        var s = async_queue.pop ();
-                        if(s.length > 0)
-                            espeak_say(s);
-                    }
-                });
+                voice = "default";
+            espeak_init(voice);
         }
+        mt = new AudioThread();
+        mt.start();
     }
 
     public void logspeak_close()
     {
-        while(async_queue.try_pop () != null)
+        mt.clear();
+        mt.message("");
+        mt.thread.join ();
+        mt = null;
+    }
+}
+
+public class AudioThread : Object {
+    private AsyncQueue<string> msgs;
+    public Thread<int> thread {private set; get;}
+
+    public AudioThread () {
+        msgs = new AsyncQueue<string> ();
+    }
+
+    public void message(string? s)
+    {
+        msgs.push(s);
+    }
+
+    public void clear()
+    {
+        while (msgs.try_pop() != null)
             ;
     }
 
-    public void say(string s)
+    public void start()
     {
-        async_queue.push(s);
+        thread = new Thread<int> ("mwp audio", () => {
+                while(true)
+                {
+                    var s = msgs.pop();
+                    if (s == "")
+                        break;
+                    espeak_say(s);
+                }
+                return 0;
+            });
     }
 }
+
 
 public class NavConfig : GLib.Object
 {

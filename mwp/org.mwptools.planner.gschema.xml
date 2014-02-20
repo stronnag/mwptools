@@ -89,5 +89,17 @@
       <description>JSON file defining additional map sources</description>
     </key>
 
+    <key name="espeak-voice" type="s">
+      <summary>Default espeak voice</summary>
+      <default>"default"</default>
+      <description>Default espeak voice (see espeak documentation)</description>
+    </key>
+
+    <key type="b" name="audio-bearing-is-reciprocal">
+      <default>false</default>
+      <summary>Annouce bearing as reciprocal</summary>
+      <description>Whether the audio bearing is the reciprocal (i.e. bearing from home to quad, rather than from quad to home)</description>
+    </key>
+
   </schema>
 </schemalist>

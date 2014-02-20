@@ -859,12 +859,12 @@ public class MWPlanner : GLib.Object {
     {
         if(audio_on && (sflags != 0))
         {
-            navstatus.logspeak_init(null);
+            navstatus.logspeak_init(conf.evoice);
             spktid = Timeout.add_seconds(conf.speakint, () => {
-                    navstatus.announce(sflags);
+                    navstatus.announce(sflags, conf.recip);
                     return true;
                 });
-            navstatus.announce(sflags);
+            navstatus.announce(sflags,conf.recip);
         }
     }
 

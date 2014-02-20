@@ -36,6 +36,8 @@ public class MWPSettings : GLib.Object
     public bool dms {get; set; default=false;}
     public string? map_sources {get; set; default=null;}
     public uint  speakint {get; set; default=0;}
+    public string evoice {get; private set; default=null;}
+    public bool recip {get; set; default=false;}
 
     public MWPSettings()
     {
@@ -61,8 +63,6 @@ public class MWPSettings : GLib.Object
     public void read_settings()
     {
         devices = settings.get_strv ("device-names");
-        if (devices == null)
-            devices = {};
         defmap = settings.get_string ("default-map");
         latitude = settings.get_double("default-latitude");
         longitude = settings.get_double("default-longitude");
@@ -74,12 +74,17 @@ public class MWPSettings : GLib.Object
         scary_warn = settings.get_boolean("show-scary-warning");
         map_sources = settings.get_string ("map-sources");
         dms = settings.get_boolean("display-dms");
+        recip = settings.get_boolean("audio-bearing-is-reciprocal");
         speakint = settings.get_uint("speak-interval");
         if(speakint > 0 && speakint < 15)
             speakint = 15;
+        evoice = settings.get_string ("espeak-voice");
 
         if(map_sources == "")
             map_sources = null;
+
+        if (devices == null)
+            devices = {};
     }
 
     public void save_settings()
