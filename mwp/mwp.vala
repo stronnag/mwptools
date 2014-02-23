@@ -492,21 +492,24 @@ public class MWPlanner : GLib.Object {
             connect_serial();
         }
 
-        Timeout.add_seconds(2,() => {
-                if(autocon)
-                {
-                    if(!msp.available)
-                        connect_serial();
-                }
-                return true;
-            });
-
-
+        Timeout.add_seconds(2, () => { return try_connect(); });
         window.show_all();
         dockitem[1].iconify_item ();
         dockitem[2].iconify_item ();
         dockitem[3].hide ();
         navstatus.setdock(dockitem[2]);
+    }
+
+    private bool try_connect()
+    {
+        if(autocon)
+        {
+            if(!msp.available)
+                connect_serial();
+            Timeout.add_seconds(2, () => { return try_connect(); });
+            return false;
+        }
+        return true;
     }
 
     private void handle_serial(MWSerial sd,  MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
