@@ -252,6 +252,7 @@
           <object class="GtkBox" id="box5">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="valign">start</property>
             <property name="spacing">11</property>
             <child>
               <object class="GtkLabel" id="label1">
@@ -384,6 +385,21 @@
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">9</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="autocon_cb">
+                <property name="label" translatable="yes">auto</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">10</property>
               </packing>
             </child>
           </object>

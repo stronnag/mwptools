@@ -45,6 +45,7 @@ public class MWPlanner : GLib.Object {
     public MWPSettings conf;
     private MWSerial msp;
     private Gtk.Button conbutton;
+    private Gtk.ComboBoxText dev_entry;
     private Gtk.Label verlab;
     private Gtk.Label typlab;
     private Gtk.Label labelvbat;
@@ -70,6 +71,7 @@ public class MWPlanner : GLib.Object {
     private MissionItem[] wp_resp;
     private static string mission;
     private static string serial;
+    private static bool autocon;
     private static bool mkcon;
     private static bool ignore_sz;
     private static bool norotate = false; // workaround for Ubuntu & old champlain
@@ -81,6 +83,7 @@ public class MWPlanner : GLib.Object {
     private DockLayout layout;
     public  DockItem[] dockitem;
     private Gtk.CheckButton audio_cb;
+    private Gtk.CheckButton autocon_cb;
     private bool audio_on;
     private uint8 sflags;
 
@@ -125,6 +128,7 @@ public class MWPlanner : GLib.Object {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
         { "serial-device", 's', 0, OptionArg.STRING, out serial, "Serial device", null},
         { "connect", 'c', 0, OptionArg.NONE, out mkcon, "connect to first device", null},
+        { "auto-connect", 'a', 0, OptionArg.NONE, out autocon, "auto-connect to first device", null},
         { "ignore-sizing", 0, 0, OptionArg.NONE, out ignore_sz, "ignore minimum size constraint", null},
         { "ignore-rotation", 0, 0, OptionArg.NONE, out norotate, "ignore vehicle icon rotation on old libchamplain", null},
         {null}
@@ -399,6 +403,9 @@ public class MWPlanner : GLib.Object {
                     Logger.stop();
             });
 
+
+        autocon_cb = builder.get_object ("autocon_cb") as Gtk.CheckButton;
+
         audio_cb = builder.get_object ("audio_cb") as Gtk.CheckButton;
         audio_cb.sensitive = (conf.speakint > 0);
         audio_cb.toggled.connect (() => {
@@ -442,27 +449,23 @@ public class MWPlanner : GLib.Object {
             load_file(mission);
         }
 
-        var dentry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
+        dev_entry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
         foreach(string a in conf.devices)
         {
-            dentry.append_text(a);
+            dev_entry.append_text(a);
         }
-        var te = dentry.get_child() as Gtk.Entry;
+        var te = dev_entry.get_child() as Gtk.Entry;
         te.can_focus = true;
-        dentry.active = 0;
+        dev_entry.active = 0;
         conbutton = builder.get_object ("button1") as Gtk.Button;
 
         verlab = builder.get_object ("verlab") as Gtk.Label;
         typlab = builder.get_object ("typlab") as Gtk.Label;
         labelvbat = builder.get_object ("labelvbat") as Gtk.Label;
-        conbutton.clicked.connect(() => {
-                connect_serial(conbutton, dentry);
-            });
+        conbutton.clicked.connect(() => { connect_serial(); });
 
         msp = new MWSerial();
-        msp.serial_lost.connect(() => {
-                serial_doom(conbutton);
-            });
+        msp.serial_lost.connect(() => { serial_doom(conbutton); });
 
         msp.serial_event.connect((s,cmd,raw,len,errs) => {
                 handle_serial(s,cmd,raw,len,errs);
@@ -470,14 +473,34 @@ public class MWPlanner : GLib.Object {
 
         if(serial != null)
         {
-            dentry.prepend_text(serial);
-            dentry.active = 0;
+            dev_entry.prepend_text(serial);
+            dev_entry.active = 0;
+        }
+
+        autocon_cb.toggled.connect(() => {
+                autocon =  autocon_cb.active;
+            });
+
+        if(autocon)
+        {
+            autocon_cb.active=true;
+            mkcon = true;
         }
 
         if(mkcon)
         {
-            connect_serial(conbutton, dentry);
+            connect_serial();
         }
+
+        Timeout.add_seconds(2,() => {
+                if(autocon)
+                {
+                    if(!msp.available)
+                        connect_serial();
+                }
+                return true;
+            });
+
 
         window.show_all();
         dockitem[1].iconify_item ();
@@ -901,24 +924,27 @@ public class MWPlanner : GLib.Object {
         }
     }
 
-    private void connect_serial(Gtk.Button c, Gtk.ComboBoxText d)
+    private void connect_serial()
     {
         if(msp.available)
         {
             verlab.set_label("");
             typlab.set_label("");
-            serial_doom(c);
+            serial_doom(conbutton);
         }
         else
         {
-            var serdev = d.get_active_text();
+            var serdev = dev_entry.get_active_text();
             if (msp.open(serdev,115200) == true)
             {
-                c.set_label("gtk-disconnect");
+                conbutton.set_label("gtk-disconnect");
                 add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
             }
             else
-                mwp_warning_box("Unable to open serial device %s".printf(serdev));
+            {
+                if(autocon == false)
+                    mwp_warning_box("Unable to open serial device %s".printf(serdev));
+            }
         }
     }
 
