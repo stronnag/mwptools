@@ -458,6 +458,10 @@ public class MWPlanner : GLib.Object {
         te.can_focus = true;
         dev_entry.active = 0;
         conbutton = builder.get_object ("button1") as Gtk.Button;
+        te.activate.connect(() => {
+                if(!msp.available)
+                    connect_serial();
+            });
 
         verlab = builder.get_object ("verlab") as Gtk.Label;
         typlab = builder.get_object ("typlab") as Gtk.Label;

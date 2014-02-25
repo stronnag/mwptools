@@ -26,15 +26,13 @@ cp ../common/mwp_icon.svg $DATA/icons/hicolor/48x48/apps/
 [ -e $APP.desktop ] && cp $APP.desktop  $DATA/applications/
 
 COMP=
-for F in org.mwptools.planner.gschema.xml org.mwptools.pidedit.gschema.xml
-do
-  if [ -e $F ]
-  then
-    [ -d $DATA/glib-2.0/schemas ] || mkdir -p $DATA/glib-2.0/schemas
-    cp $F  $DATA/glib-2.0/schemas/
-    COMP=Y
-  fi
-done
+F=$(find . -iname \*gschema.xml)
+if [ -n "$F" -a -e $F ]
+then
+  [ -d $DATA/glib-2.0/schemas ] || mkdir -p $DATA/glib-2.0/schemas
+  cp $F  $DATA/glib-2.0/schemas/
+  COMP=Y
+fi
 [ -n "$COMP" ] && glib-compile-schemas $DATA/glib-2.0/schemas/
 
 exit 0

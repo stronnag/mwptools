@@ -6,7 +6,7 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -45,7 +45,11 @@ public class MSP : Object
             SET_NAV_CONFIG = 215,
             SET_HEAD = 211,
             SET_WP = 209,
-            ANALOG = 110
+            ANALOG = 110,
+            BOX = 113,
+            SET_BOX = 203,
+            BOXNAMES = 116,
+            BOXIDS = 119
     }
 
     public enum Sensors

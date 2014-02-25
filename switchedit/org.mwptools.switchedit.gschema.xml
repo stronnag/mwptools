@@ -1,0 +1,9 @@
+<schemalist>
+  <schema id="org.mwptools.switchedit" path="/org/mwptools/switchedit/" >
+    <key name="device-names" type="as">
+        <default>['/dev/rfcomm1','/dev/ttyUSB0','/dev/ttyACM0']</default>
+        <summary>Device names</summary>
+        <description>A list of device names</description>
+    </key>
+  </schema>
+</schemalist>
