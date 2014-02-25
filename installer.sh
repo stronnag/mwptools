@@ -27,7 +27,7 @@ cp ../common/mwp_icon.svg $DATA/icons/hicolor/48x48/apps/
 
 COMP=
 F=$(find . -iname \*gschema.xml)
-if [ -n "$F" -a -e $F ]
+if [ -n "$F" -a -e "$F" ]
 then
   [ -d $DATA/glib-2.0/schemas ] || mkdir -p $DATA/glib-2.0/schemas
   cp $F  $DATA/glib-2.0/schemas/
