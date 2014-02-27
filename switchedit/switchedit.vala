@@ -29,8 +29,7 @@ public class SwitchEdit : Object
     private bool is_connected;
     private bool have_box;
     private bool have_vers;
-    private Gtk.LevelBar lvbar[8];
-    private Gtk.Label ilabel[8];
+    private Gtk.ProgressBar lvbar[8];
     private Gtk.Label[] boxlabel;
     private Gtk.CheckButton[] checks;
     private uint nboxen;
@@ -114,8 +113,7 @@ public class SwitchEdit : Object
         for(var i = 0; i < 8;)
         {
             var j = i+1;
-            lvbar[i] =  builder.get_object ("levelbar%d".printf(j)) as Gtk.LevelBar;
-            ilabel[i] =  builder.get_object ("vlabel%d".printf(j)) as Gtk.Label;
+            lvbar[i] =  builder.get_object ("progressbar%d".printf(j)) as Gtk.ProgressBar;
             i = j;
         }
 
@@ -206,8 +204,10 @@ public class SwitchEdit : Object
                     uint16[] rc = (uint16[])raw;
                     for(var i = 0; i < 8; i++)
                     {
-                        ilabel[i].set_label(rc[i].to_string());
-                        lvbar[i].value = (double)rc[i];
+                        double d = (double)rc[i];
+                        d = (d-1000)/1000.0;
+                        lvbar[i].set_text(rc[i].to_string());
+                        lvbar[i].set_fraction(d);
                     }
                     break;
                     case MSP.Cmds.STATUS:
