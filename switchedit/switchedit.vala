@@ -35,6 +35,7 @@ public class SwitchEdit : Object
     private uint nboxen;
     private uint32 xflag = 0;
     private Gdk.RGBA[] colors;
+    private uint tid;
 
     private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, bool *flag)
     {
@@ -193,7 +194,8 @@ public class SwitchEdit : Object
                         }
                     }
                     grid1.show_all();
-                    Timeout.add(100, () => {
+                    xflag = 0;
+                    tid = Timeout.add(100, () => {
                             s.send_command(MSP.Cmds.STATUS,null,0);
                             s.send_command(MSP.Cmds.RC,null,0);
                             return true;
@@ -210,6 +212,7 @@ public class SwitchEdit : Object
                         lvbar[i].set_fraction(d);
                     }
                     break;
+
                     case MSP.Cmds.STATUS:
                     MSP_STATUS *s = (MSP_STATUS*)raw;
                     if(xflag != s.flag)
@@ -304,6 +307,10 @@ public class SwitchEdit : Object
                 }
                 else
                 {
+                    if(tid > 0)
+                        Source.remove(tid);
+                    tid = 0;
+                    xflag = 0;
                     s.close();
                     conbutton.set_label("Connect");
                     refbutton.set_sensitive(false);
@@ -312,10 +319,28 @@ public class SwitchEdit : Object
                     have_vers = false;
                     is_connected = false;
                     have_box = false;
+                    foreach (var l in lvbar)
+                    {
+                        l.set_text("0");
+                        l.set_fraction(0.0);
+                    }
+                    foreach (var b in boxlabel)
+                    {
+                        b.destroy();
+                    }
+                    boxlabel=null;
+                    nboxen = 0;
+                    foreach(var c in checks)
+                    {
+                        c.destroy();
+                    }
+                    checks = null;
                 }
+                grid1.hide();
             });
 
         window.show_all();
+        grid1.hide();
     }
 
 
