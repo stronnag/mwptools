@@ -28,6 +28,7 @@ public class SwitchEdit : Object
     private string serdev;
     private bool is_connected;
     private bool have_box;
+    private bool have_names;
     private bool have_vers;
     private Gtk.ProgressBar lvbar[8];
     private Gtk.Label[] boxlabel;
@@ -83,6 +84,7 @@ public class SwitchEdit : Object
     SwitchEdit(string[] args)
     {
         is_connected = false;
+        have_names = false;
         have_box = false;
         boxlabel = {};
         checks= {};
@@ -133,11 +135,11 @@ public class SwitchEdit : Object
                     var _mrtype = MSP.get_mrtype(raw[1]);
                     var vers="v%03d %s".printf(raw[0], _mrtype);
                     verslab.set_label(vers);
-                    add_cmd(MSP.Cmds.BOXNAMES,null,0,&have_box);
+                    add_cmd(MSP.Cmds.BOXNAMES,null,0,&have_names);
                     break;
 
                     case MSP.Cmds.BOXNAMES:
-                    have_box = true;
+                    have_names = true;
                     string b = (string)raw;
                     string []bsx = b.split(";");
                     nboxen = bsx.length-1;
@@ -153,44 +155,48 @@ public class SwitchEdit : Object
                         l.override_background_color(Gtk.StateFlags.NORMAL, colors[0]);
                         grid1.attach(l,0,i+2,1,1);
                     }
-                    s.send_command(MSP.Cmds.BOX,null,0);
+                    add_cmd(MSP.Cmds.BOX,null,0,&have_box);
                     break;
 
                     case MSP.Cmds.BOX:
-                    uint16[] bv = (uint16[])raw;
-                    for(var i = 0; i < nboxen; i++)
+                    if(have_box == false)
                     {
-                        var k = 0;
-                        for(var j = 0; j < 12; j++)
+                        have_box = true;
+                        uint16[] bv = (uint16[])raw;
+                        for(var i = 0; i < nboxen; i++)
                         {
-                            uint16 mask = (1 << j);
-                            var c = new Gtk.CheckButton();
-                            checks += c;
-                            c.active = ((bv[i] & mask) == mask);
-                            c.toggled.connect(() => {
-                                    uint16[] sv = new uint16[nboxen];
-                                    for(var ib = 0; ib < nboxen; ib++)
-                                    {
-                                        sv[ib] = 0;
-                                        for(var jb = 0; jb < 12; jb++)
-                                        {
-                                            var kb = jb + ib * 12;
-                                            if(checks[kb].active)
-                                                sv[ib] |= (1 << jb);
-                                        }
-                                    }
-                                    s.send_command(MSP.Cmds.SET_BOX, sv, nboxen*2);
-                                });
-                            if((j % 3)  == 0 && j != 0)
+                            var k = 0;
+                            for(var j = 0; j < 12; j++)
                             {
-                                k += 1;
-                                var s = new Gtk.Separator(Gtk.Orientation.VERTICAL);
-                                grid1.attach(s,k,i+2,1,1);
-                                k += 1;
+                                uint16 mask = (1 << j);
+                                var c = new Gtk.CheckButton();
+                                checks += c;
+                                c.active = ((bv[i] & mask) == mask);
+                                c.toggled.connect(() => {
+                                        uint16[] sv = new uint16[nboxen];
+                                        for(var ib = 0; ib < nboxen; ib++)
+                                        {
+                                            sv[ib] = 0;
+                                            for(var jb = 0; jb < 12; jb++)
+                                            {
+                                                var kb = jb + ib * 12;
+                                                if(checks[kb].active)
+                                                    sv[ib] |= (1 << jb);
+                                            }
+                                        }
+                                    s.send_command(MSP.Cmds.SET_BOX, sv, nboxen*2);
+                                    });
+                                if((j % 3)  == 0 && j != 0)
+                                {
+                                    k += 1;
+                                    var s = new Gtk.Separator(Gtk.Orientation.VERTICAL);
+                                    grid1.attach(s,k,i+2,1,1);
+                                    k += 1;
+                                }
+                                else
+                                    k += 1;
+                                grid1.attach(c,k,i+2,1,1);
                             }
-                            else
-                                k += 1;
-                            grid1.attach(c,k,i+2,1,1);
                         }
                     }
                     grid1.show_all();
@@ -265,15 +271,15 @@ public class SwitchEdit : Object
         var refbutton = builder.get_object ("button3") as Gtk.Button;
         var savebutton = builder.get_object ("button1") as Gtk.Button;
         refbutton.clicked.connect(() => {
-                have_box = false;
+                have_names = false;
                 if(is_connected == true)
                 {
-//                    add_cmd(MSP.Cmds.PID,null,0, &have_box);
+//                    add_cmd(MSP.Cmds.PID,null,0, &have_names);
                 }
             });
 
         savebutton.clicked.connect(() => {
-                if(is_connected == true && have_box == true)
+                if(is_connected == true && have_names == true)
                 {
 
                 }
@@ -318,6 +324,7 @@ public class SwitchEdit : Object
                     verslab.set_label("");
                     have_vers = false;
                     is_connected = false;
+                    have_names = false;
                     have_box = false;
                     foreach (var l in lvbar)
                     {
