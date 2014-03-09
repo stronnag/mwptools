@@ -1,9 +1,9 @@
 VALAC=valac
-OPTS=-X -O2
+OPTS=-X -O2 --target-glib=2.36
 LOPTS=-X -lm -X -lbluetooth
 APP=mspsim
-SRC=$(APP).vala 
-COMMON=../common/mwp_xml.vala ../common/serial-device.vala ../common/cserial.c ../common/geocalc.vala  ../common/utils.vala ../common/mspcmd.vala  ../common/mspmsg.vapi 
+SRC=$(APP).vala
+COMMON=../common/mwp_xml.vala ../common/serial-device.vala ../common/cserial.c ../common/geocalc.vala  ../common/utils.vala ../common/mspcmd.vala  ../common/mspmsg.vapi
 PKGS=--pkg posix --pkg linux --pkg gio-2.0 --pkg gtk+-3.0 --pkg libxml-2.0
 
 $(APP): $(SRC)  $(COMMON)

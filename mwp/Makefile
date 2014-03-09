@@ -1,5 +1,5 @@
 VALAC=valac
-OPTS+=-X -O2 --thread --target-glib 2.32
+OPTS+=-X -O2 --thread --target-glib=2.36
 APP=mwp
 
 TGT=$(APP)

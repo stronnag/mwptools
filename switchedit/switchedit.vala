@@ -81,6 +81,22 @@ public class SwitchEdit : Object
         }
     }
 
+    private void save_state()
+    {
+        uint16[] sv = new uint16[nboxen];
+        for(var ib = 0; ib < nboxen; ib++)
+        {
+            sv[ib] = 0;
+            for(var jb = 0; jb < 12; jb++)
+            {
+                var kb = jb + ib * 12;
+                if(checks[kb].active)
+                    sv[ib] |= (1 << jb);
+            }
+        }
+        s.send_command(MSP.Cmds.SET_BOX, sv, nboxen*2);
+    }
+
     SwitchEdit(string[] args)
     {
         is_connected = false;
@@ -173,18 +189,7 @@ public class SwitchEdit : Object
                                 checks += c;
                                 c.active = ((bv[i] & mask) == mask);
                                 c.toggled.connect(() => {
-                                        uint16[] sv = new uint16[nboxen];
-                                        for(var ib = 0; ib < nboxen; ib++)
-                                        {
-                                            sv[ib] = 0;
-                                            for(var jb = 0; jb < 12; jb++)
-                                            {
-                                                var kb = jb + ib * 12;
-                                                if(checks[kb].active)
-                                                    sv[ib] |= (1 << jb);
-                                            }
-                                        }
-                                    s.send_command(MSP.Cmds.SET_BOX, sv, nboxen*2);
+                                        save_state();
                                     });
                                 if((j % 3)  == 0 && j != 0)
                                 {
@@ -281,7 +286,7 @@ public class SwitchEdit : Object
         savebutton.clicked.connect(() => {
                 if(is_connected == true && have_names == true)
                 {
-
+                    s.send_command(MSP.Cmds.EEPROM_WRITE,null, 0);
                 }
             });
 
