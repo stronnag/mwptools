@@ -142,10 +142,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label5">
+              <object class="GtkLabel" id="pidlabel_00">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">ROLL</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -155,10 +154,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label9">
+              <object class="GtkLabel" id="pidlabel_01">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">PITCH</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -168,10 +166,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label13">
+              <object class="GtkLabel" id="pidlabel_02">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">YAW</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -181,10 +178,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label17">
+              <object class="GtkLabel" id="pidlabel_03">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">ALT</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -194,10 +190,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label21">
+              <object class="GtkLabel" id="pidlabel_04">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">POS</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -207,10 +202,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label25">
+              <object class="GtkLabel" id="pidlabel_05">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">POSR</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -220,10 +214,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label29">
+              <object class="GtkLabel" id="pidlabel_06">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">NAVR</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -233,10 +226,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label33">
+              <object class="GtkLabel" id="pidlabel_07">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">LEVEL</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -246,10 +238,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label37">
+              <object class="GtkLabel" id="pidlabel_08">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">MAG</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -259,7 +250,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label41">
+              <object class="GtkLabel" id="pidlabel_09">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="use_markup">True</property>
@@ -377,10 +368,11 @@
             <property name="layout_style">spread</property>
             <child>
               <object class="GtkButton" id="button3">
-                <property name="label">gtk-refresh</property>
+                <property name="label">gtk-open</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="tooltip_text" translatable="yes">Read from file</property>
                 <property name="use_stock">True</property>
                 <property name="xalign">0.46000000834465027</property>
               </object>
@@ -391,11 +383,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="button1">
-                <property name="label">gtk-save</property>
+              <object class="GtkButton" id="button5">
+                <property name="label">gtk-save-as</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="tooltip_text" translatable="yes">Save to file</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -405,17 +398,33 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="button2">
-                <property name="label">gtk-close</property>
+              <object class="GtkButton" id="button1">
+                <property name="label">gtk-apply</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="tooltip_text" translatable="yes">Send to FC</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button2">
+                <property name="label">gtk-close</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="tooltip_text" translatable="yes">Exit program</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
               </packing>
             </child>
           </object>

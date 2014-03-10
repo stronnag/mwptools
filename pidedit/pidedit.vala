@@ -6,7 +6,7 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -16,6 +16,22 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+
+public struct PIDVals
+{
+    public double dmax;
+    public double dfact;
+    public bool hidden;
+}
+
+public struct PIDSet
+{
+    public int id;
+    public unowned string? name;
+    [CCode (array_length = false)]
+    public PIDVals pids[3];
+}
+
 
 public class PIDEdit : Object
 {
@@ -29,71 +45,143 @@ public class PIDEdit : Object
     private string serdev;
     private uint8[] rawbuf;
     private bool is_connected;
+    private string lastfile;
     private bool have_pids;
     private bool have_vers;
+    private static const PIDSet[] ps =  {
+        {0,"ROLL",{{20.00,0.100,false},{0.25,0.001,false},{100.00,1.000,false}}},
+        {1,"PITCH",{{20.00,0.100,false},{0.25,0.001,false},{100.00,1.000,false}}},
+        {2,"YAW",{{20.00,0.100,false},{0.25,0.001,false},{100.00,1.000,false}}},
+        {3,"ALT",{{20.00,0.100,false},{0.25,0.001,false},{100.00,1.000,false}}},
+        {4,"POS",{{5.00,0.010,false},{2.50,0.100,false},{100.00,1.000,true}}},
+        {5,"POSR",{{25.00,0.100,false},{2.50,0.010,false},{0.25,0.001,false}}},
+        {6,"NAVR",{{25.00,0.100,false},{2.50,0.010,false},{0.25,0.001,false}}},
+        {7,"LEVEL",{{20.00,0.100,false},{0.25,0.001,false},{100.00,1.000,false}}},
+        {8,"MAG",{{20.00,0.100,false},{0.25,0.001,true},{100.00,1.000,true}}}
+    };
+
+    private void save_file()
+    {
+	var chooser = new Gtk.FileChooserDialog (
+            "Save PIDs", window,
+            Gtk.FileChooserAction.SAVE,
+            "_Cancel", Gtk.ResponseType.CANCEL,
+            "_Save",  Gtk.ResponseType.ACCEPT);
+
+        if(lastfile == null)
+        {
+            chooser.set_current_name("untitled-pids.json");
+        }
+        else
+        {
+            chooser.set_filename(lastfile);
+        }
+
+        if (chooser.run () == Gtk.ResponseType.ACCEPT)
+        {
+            lastfile = chooser.get_filename();
+            save_data();
+        }
+        chooser.close ();
+    }
+
+    private void load_file()
+    {
+        var chooser = new Gtk.FileChooserDialog (
+            "Load PID file", window, Gtk.FileChooserAction.OPEN,
+            "_Cancel",
+            Gtk.ResponseType.CANCEL,
+            "_Open",
+            Gtk.ResponseType.ACCEPT);
+
+        Gtk.FileFilter filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("JSON PID files");
+        filter.add_pattern ("*.json");
+        chooser.add_filter (filter);
+        filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("All Files");
+        filter.add_pattern ("*");
+        chooser.add_filter (filter);
+
+        string fn = null;
+        if (chooser.run () == Gtk.ResponseType.ACCEPT) {
+            fn= chooser.get_filename();
+        }
+        chooser.close ();
+
+        if(fn != null)
+        {
+            lastfile = fn;
+            var idx = 0;
+            rawbuf = new uint8[30];
+            try
+            {
+                var parser = new Json.Parser ();
+                parser.load_from_file (lastfile );
+                var root_object = parser.get_root ().get_object ();
+                foreach (var node in root_object.get_array_member ("pids").get_elements ())
+                {
+                    var item = node.get_object ();
+                    rawbuf[idx++] = (uint8)item.get_int_member ("p");
+                    rawbuf[idx++] = (uint8)item.get_int_member ("i");
+                    rawbuf[idx++] = (uint8)item.get_int_member ("d");
+                }
+                set_pid_spins();
+            } catch (Error e) {
+                stderr.printf ("Failed to parse file\n");
+            }
+        }
+    }
+
+    private void save_data()
+    {
+         Json.Generator gen;
+         gen = new Json.Generator ();
+         Json.Builder builder = new Json.Builder ();
+         builder.begin_object ();
+         builder.set_member_name ("multiwii");
+         builder.begin_object ();
+         builder.set_member_name ("version");
+         builder.add_string_value ("2.3");
+         builder.end_object ();
+         builder.set_member_name ("pids");
+         builder.begin_array ();
+         int idx = 0;
+         for(var r = 0; r < 9; r++)
+         {
+             builder.begin_object ();
+             builder.set_member_name ("id");
+             builder.add_int_value (ps[r].id);
+             builder.set_member_name ("name");
+             builder.add_string_value (ps[r].name);
+             builder.set_member_name ("p");
+             builder.add_int_value (rawbuf[idx++]);
+             builder.set_member_name ("i");
+             builder.add_int_value (rawbuf[idx++]);
+             builder.set_member_name ("d");
+             builder.add_int_value (rawbuf[idx++]);
+             builder.end_object ();
+         }
+         builder.end_array();
+         builder.end_object ();
+         Json.Node root = builder.get_root ();
+         gen.set_pretty(true);
+         gen.set_root (root);
+         var json = gen.to_data(null);
+         try{
+             FileUtils.set_contents(lastfile,json);
+         }catch(Error e){
+             stderr.printf ("Error: %s\n", e.message);
+         }
+    }
 
     private void get_factors(int r, int c,
                             out double dmax, out double dmult,
                             out bool hideme)
     {
-        hideme=false;
-        dmult = dmax = 0.0;
-        switch(c)
-        {
-            case 0:
-                dmult = 0.1;
-                dmax = 20;
-                break;
-            case 1:
-                dmult = 0.001;
-                dmax = 0.25;
-                break;
-            case 2:
-                dmult = 1.0;
-                dmax = 100;
-                break;
-        }
-        switch (r)
-        {
-            case 4:
-                switch(c)
-                {
-                    case 0:
-                        dmax = 5.0;
-                        dmult = 0.01;
-                        break;
-                    case 1:
-                        dmax = 2.5;
-                        dmult = 0.1;
-                        break;
-                    case 2:
-                        hideme = true;
-                        break;
-                }
-                break;
-            case 5:
-            case 6:
-                switch(c)
-                {
-                    case 0:
-                        dmax = 25.0;
-                        dmult = 0.1;
-                        break;
-                    case 1:
-                        dmax = 2.5;
-                        dmult = 0.01;
-                        break;
-                    case 2:
-                        dmax = 0.25;
-                        dmult = 0.001;
-                        break;
-                }
-                break;
-            case 8:
-                if (c != 0)
-                    hideme = true;
-                break;
-        }
+        dmax = ps[r].pids[c].dmax;
+        dmult = ps[r].pids[c].dfact;
+        hideme = ps[r].pids[c].hidden;
     }
 
     private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, bool *flag)
@@ -139,8 +227,35 @@ public class PIDEdit : Object
         }
     }
 
+    private void set_pid_spins()
+    {
+        int idx;
+        uint8 *p = rawbuf;
+        for(var r = 0; r< 10; r++)
+        {
+            idx = r*3;
+            for (var c = 0; c < 3; c++)
+            {
+                double dmax,dmult;
+                bool hideme;
+                get_factors(r,c, out dmax, out dmult, out hideme);
+                if(hideme == false)
+                {
+                    double v = (*p) * dmult;
+                    if (r < 9)
+                    {
+                        spins[idx].set_value(v);
+                    }
+                }
+                p++;
+                idx++;
+            }
+        }
+    }
+
     PIDEdit(string[] args)
     {
+        lastfile = null;
         is_connected = false;
         have_pids = false;
         builder = new Gtk.Builder ();
@@ -163,6 +278,13 @@ public class PIDEdit : Object
 
         builder.connect_signals (null);
         window = builder.get_object ("window1") as Gtk.Window;
+        foreach (var p in ps)
+        {
+            var s = "pidlabel_%02d".printf(p.id);
+            var l =  builder.get_object (s) as Gtk.Label;
+            l.set_text(p.name);
+        }
+
         window.destroy.connect (Gtk.main_quit);
         s = new MWSerial();
         s.serial_event.connect((sd,cmd,raw,len,errs) => {
@@ -175,40 +297,17 @@ public class PIDEdit : Object
                 {
                     case MSP.Cmds.IDENT:
                     have_vers = true;
-                    if(have_pids == false)
-                    {
-                        add_cmd(MSP.Cmds.PID,null,0, &have_pids);
-                    }
+                    have_pids = false;
                     var _mrtype = MSP.get_mrtype(raw[1]);
                     var vers="v%03d %s".printf(raw[0], _mrtype);
                     verslab.set_label(vers);
+                    add_cmd(MSP.Cmds.PID,null,0, &have_pids);
                     break;
 
                     case MSP.Cmds.PID:
                     have_pids = true;
-                    uint8 *p = raw;
                     rawbuf = raw;
-                    int idx;
-                    for(var r = 0; r< 10; r++)
-                    {
-                        idx = r*3;
-                        for (var c = 0; c < 3; c++)
-                        {
-                            double dmax,dmult;
-                            bool hideme;
-                            get_factors(r,c, out dmax, out dmult, out hideme);
-                            if(hideme == false)
-                            {
-                                double v = (*p) * dmult;
-                                if (r < 9)
-                                {
-                                    spins[idx].set_value(v);
-                                }
-                            }
-                            p++;
-                            idx++;
-                        }
-                    }
+                    set_pid_spins();
                     break;
                 }
             });
@@ -240,18 +339,19 @@ public class PIDEdit : Object
         verslab = builder.get_object ("verslab") as Gtk.Label;
         verslab.set_label("");
         grid = builder.get_object ("grid1") as Gtk.Grid;
-        var refbutton = builder.get_object ("button3") as Gtk.Button;
+        var openbutton = builder.get_object ("button3") as Gtk.Button;
+        var applybutton = builder.get_object ("button1") as Gtk.Button;
+        var saveasbutton = builder.get_object ("button5") as Gtk.Button;
 
-        var savebutton = builder.get_object ("button1") as Gtk.Button;
-        refbutton.clicked.connect(() => {
-                have_pids = false;
-                if(is_connected == true)
-                {
-                    add_cmd(MSP.Cmds.PID,null,0, &have_pids);
-                }
+        openbutton.clicked.connect(() => {
+                load_file();
             });
 
-        savebutton.clicked.connect(() => {
+        saveasbutton.clicked.connect(() => {
+                save_file();
+            });
+
+        applybutton.clicked.connect(() => {
                 if(is_connected == true && have_pids == true)
                 {
                     var n = 0;
@@ -271,17 +371,19 @@ public class PIDEdit : Object
                                 }
                         n++;
                     }
-//                    FileUtils.set_data ("pids.dat", rawbuf);
                     Idle.add(() => {
                             s.send_command(MSP.Cmds.SET_PID,rawbuf,30);
                             s.send_command(MSP.Cmds.EEPROM_WRITE,null, 0);
+                            s.send_command(MSP.Cmds.PID,null,0);
+                            s.send_command(MSP.Cmds.PID,null,0);
                             return false;
                         });
                 }
             });
 
-        refbutton.set_sensitive(false);
-        savebutton.set_sensitive(false);
+//        openbutton.set_sensitive(false);
+        applybutton.set_sensitive(false);
+//        saveasbutton.set_sensitive(false);
 
         var closebutton = builder.get_object ("button2") as Gtk.Button;
         closebutton.clicked.connect(() => {
@@ -318,8 +420,9 @@ public class PIDEdit : Object
                     {
                         is_connected = true;
                         conbutton.set_label("Disconnect");
-                        refbutton.set_sensitive(true);
-                        savebutton.set_sensitive(true);
+//                        openbutton.set_sensitive(true);
+                        applybutton.set_sensitive(true);
+//                        saveasbutton.set_sensitive(true);
                         add_cmd(MSP.Cmds.IDENT,null,0,&have_vers);
                     }
                     else
@@ -332,8 +435,9 @@ public class PIDEdit : Object
                 {
                     s.close();
                     conbutton.set_label("Connect");
-                    refbutton.set_sensitive(false);
-                    savebutton.set_sensitive(false);
+//                    openbutton.set_sensitive(false);
+                    applybutton.set_sensitive(false);
+//                    saveasbutton.set_sensitive(false);
                     verslab.set_label("");
                     have_vers = false;
                     is_connected = false;
