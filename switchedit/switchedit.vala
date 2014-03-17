@@ -37,6 +37,7 @@ public class SwitchEdit : Object
     private uint32 xflag = 0;
     private Gdk.RGBA[] colors;
     private uint tid;
+    private string lastfile;
 
     private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, bool *flag)
     {
@@ -81,7 +82,7 @@ public class SwitchEdit : Object
         }
     }
 
-    private void save_state()
+    private void apply_state()
     {
         uint16[] sv = new uint16[nboxen];
         for(var ib = 0; ib < nboxen; ib++)
@@ -159,18 +160,7 @@ public class SwitchEdit : Object
                     string b = (string)raw;
                     string []bsx = b.split(";");
                     nboxen = bsx.length-1;
-
-                    for(var i = 0; i < nboxen; i++)
-                    {
-                        var l = new Gtk.Label("");
-                        l.set_width_chars(10);
-                        l.justify = Gtk.Justification.LEFT;
-                        l.halign = Gtk.Align.START;
-                        l.set_label(bsx[i]);
-                        boxlabel += l;
-                        l.override_background_color(Gtk.StateFlags.NORMAL, colors[0]);
-                        grid1.attach(l,0,i+2,1,1);
-                    }
+                    add_boxlabels(bsx);
                     add_cmd(MSP.Cmds.BOX,null,0,&have_box);
                     break;
 
@@ -178,31 +168,7 @@ public class SwitchEdit : Object
                     if(have_box == false)
                     {
                         have_box = true;
-                        uint16[] bv = (uint16[])raw;
-                        for(var i = 0; i < nboxen; i++)
-                        {
-                            var k = 0;
-                            for(var j = 0; j < 12; j++)
-                            {
-                                uint16 mask = (1 << j);
-                                var c = new Gtk.CheckButton();
-                                checks += c;
-                                c.active = ((bv[i] & mask) == mask);
-                                c.toggled.connect(() => {
-                                        save_state();
-                                    });
-                                if((j % 3)  == 0 && j != 0)
-                                {
-                                    k += 1;
-                                    var s = new Gtk.Separator(Gtk.Orientation.VERTICAL);
-                                    grid1.attach(s,k,i+2,1,1);
-                                    k += 1;
-                                }
-                                else
-                                    k += 1;
-                                grid1.attach(c,k,i+2,1,1);
-                            }
-                        }
+                        add_switch_states((uint16[])raw);
                     }
                     grid1.show_all();
                     xflag = 0;
@@ -273,25 +239,27 @@ public class SwitchEdit : Object
 
         verslab = builder.get_object ("verslab") as Gtk.Label;
         verslab.set_label("");
-        var refbutton = builder.get_object ("button3") as Gtk.Button;
-        var savebutton = builder.get_object ("button1") as Gtk.Button;
-        refbutton.clicked.connect(() => {
-                have_names = false;
-                if(is_connected == true)
-                {
-//                    add_cmd(MSP.Cmds.PID,null,0, &have_names);
-                }
+
+        var openbutton = builder.get_object ("button3") as Gtk.Button;
+        openbutton.clicked.connect(() => {
+                load_file();
             });
 
-        savebutton.clicked.connect(() => {
+
+        var saveasbutton = builder.get_object ("button5") as Gtk.Button;
+        saveasbutton.clicked.connect(() => {
+                save_file();
+            });
+        saveasbutton.set_sensitive(false);
+
+        var applybutton = builder.get_object ("button1") as Gtk.Button;
+        applybutton.clicked.connect(() => {
                 if(is_connected == true && have_names == true)
                 {
                     s.send_command(MSP.Cmds.EEPROM_WRITE,null, 0);
                 }
             });
-
-        refbutton.set_sensitive(false);
-        savebutton.set_sensitive(false);
+        applybutton.set_sensitive(false);
 
         var closebutton = builder.get_object ("button2") as Gtk.Button;
         closebutton.clicked.connect(() => {
@@ -306,15 +274,14 @@ public class SwitchEdit : Object
                     {
                         is_connected = true;
                         conbutton.set_label("Disconnect");
-                        refbutton.set_sensitive(true);
-                        savebutton.set_sensitive(true);
+                        applybutton.set_sensitive(true);
+                        saveasbutton.set_sensitive(true);
                         add_cmd(MSP.Cmds.IDENT,null,0,&have_vers);
                     }
                     else
                     {
                         print("open failed\n");
                     }
-
                 }
                 else
                 {
@@ -324,29 +291,10 @@ public class SwitchEdit : Object
                     xflag = 0;
                     s.close();
                     conbutton.set_label("Connect");
-                    refbutton.set_sensitive(false);
-                    savebutton.set_sensitive(false);
+                    applybutton.set_sensitive(false);
+                    saveasbutton.set_sensitive(false);
                     verslab.set_label("");
-                    have_vers = false;
-                    is_connected = false;
-                    have_names = false;
-                    have_box = false;
-                    foreach (var l in lvbar)
-                    {
-                        l.set_text("0");
-                        l.set_fraction(0.0);
-                    }
-                    foreach (var b in boxlabel)
-                    {
-                        b.destroy();
-                    }
-                    boxlabel=null;
-                    nboxen = 0;
-                    foreach(var c in checks)
-                    {
-                        c.destroy();
-                    }
-                    checks = null;
+                    cleanupui();
                 }
                 grid1.hide();
             });
@@ -355,12 +303,213 @@ public class SwitchEdit : Object
         grid1.hide();
     }
 
+    private void cleanupui()
+    {
+
+        have_vers = false;
+        is_connected = false;
+        have_names = false;
+        have_box = false;
+        foreach (var l in lvbar)
+        {
+            l.set_text("0");
+            l.set_fraction(0.0);
+        }
+        foreach (var b in boxlabel)
+        {
+            b.destroy();
+        }
+        boxlabel={};
+        nboxen = 0;
+        foreach(var c in checks)
+        {
+            c.destroy();
+        }
+        checks = {};
+        grid1.hide();
+    }
+
+    private void add_boxlabels(string[]bsx)
+    {
+        boxlabel={};
+        for(var i = 0; i < nboxen; i++)
+        {
+            var l = new Gtk.Label("");
+            l.set_width_chars(10);
+            l.justify = Gtk.Justification.LEFT;
+            l.halign = Gtk.Align.START;
+            l.set_label(bsx[i]);
+            boxlabel += l;
+            l.override_background_color(Gtk.StateFlags.NORMAL, colors[0]);
+            grid1.attach(l,0,i+2,1,1);
+        }
+    }
+
+    private void add_switch_states(uint16[] bv)
+    {
+        checks={};
+        for(var i = 0; i < nboxen; i++)
+        {
+            var k = 0;
+            for(var j = 0; j < 12; j++)
+            {
+                uint16 mask = (1 << j);
+                var c = new Gtk.CheckButton();
+                checks += c;
+                c.active = ((bv[i] & mask) == mask);
+                c.toggled.connect(() => {
+                        apply_state();
+                    });
+                if((j % 3)  == 0 && j != 0)
+                {
+                    k += 1;
+                    var s = new Gtk.Separator(Gtk.Orientation.VERTICAL);
+                    grid1.attach(s,k,i+2,1,1);
+                    k += 1;
+                }
+                else
+                    k += 1;
+                grid1.attach(c,k,i+2,1,1);
+            }
+        }
+    }
+
+    private void save_file()
+    {
+        var chooser = new Gtk.FileChooserDialog (
+            "Save switches", window,
+            Gtk.FileChooserAction.SAVE,
+            "_Cancel", Gtk.ResponseType.CANCEL,
+            "_Save",  Gtk.ResponseType.ACCEPT);
+
+        if(lastfile == null)
+        {
+            chooser.set_current_name("untitled-switches.json");
+        }
+        else
+        {
+            chooser.set_filename(lastfile);
+        }
+
+        if (chooser.run () == Gtk.ResponseType.ACCEPT)
+        {
+            lastfile = chooser.get_filename();
+            save_data();
+        }
+        chooser.close ();
+    }
+
+    private void load_file()
+    {
+        var chooser = new Gtk.FileChooserDialog (
+            "Load switch file", window, Gtk.FileChooserAction.OPEN,
+            "_Cancel",
+            Gtk.ResponseType.CANCEL,
+            "_Open",
+            Gtk.ResponseType.ACCEPT);
+
+        Gtk.FileFilter filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("JSON switch files");
+        filter.add_pattern ("*.json");
+        chooser.add_filter (filter);
+        filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("All Files");
+        filter.add_pattern ("*");
+        chooser.add_filter (filter);
+
+        string fn = null;
+        if (chooser.run () == Gtk.ResponseType.ACCEPT) {
+            fn= chooser.get_filename();
+        }
+        chooser.close ();
+
+        if(fn != null)
+        {
+            lastfile = fn;
+
+            print("nboxen %u\n", nboxen);
+            if(nboxen != 0)
+                cleanupui();
+
+            try
+            {
+                var parser = new Json.Parser ();
+                parser.load_from_file (lastfile );
+                var root_object = parser.get_root ().get_object ();
+                var arry = root_object.get_array_member ("switches");
+                nboxen = arry.get_length ();
+                string[] bsx = new string[nboxen];
+                uint16[] bv = new uint16[nboxen];
+                var r = 0;
+                foreach (var node in arry.get_elements ())
+                {
+                    var item = node.get_object ();
+                    bsx[r]= item.get_string_member("name");
+                    bv[r] = (uint16)item.get_int_member ("value");
+                    r++;
+                }
+                add_boxlabels(bsx);
+                add_switch_states(bv);
+                grid1.show_all();
+                xflag = 0;
+            } catch (Error e) {
+                stderr.printf ("Failed to parse file\n");
+            }
+        }
+    }
+
+    private void save_data()
+    {
+         Json.Generator gen;
+         gen = new Json.Generator ();
+         Json.Builder builder = new Json.Builder ();
+         builder.begin_object ();
+         builder.set_member_name ("multiwii");
+         builder.begin_object ();
+         builder.set_member_name ("version");
+         builder.add_string_value ("2.3");
+         builder.end_object ();
+
+         builder.set_member_name ("switches");
+         builder.begin_array ();
+         var idx=0;
+         for(var r = 0; r < nboxen; r++)
+         {
+             builder.begin_object ();
+             builder.set_member_name ("id");
+             builder.add_int_value (r);
+             builder.set_member_name ("name");
+             builder.add_string_value (boxlabel[r].get_label());
+             builder.set_member_name ("value");
+             uint16 lval=0;
+             for(var j =  0; j < 12; j++)
+             {
+                 if(checks[idx].active)
+                 {
+                     lval |= (1 << j);
+                 }
+                 idx++;
+             }
+             builder.add_int_value (lval);
+             builder.end_object ();
+         }
+         builder.end_array();
+         builder.end_object ();
+         Json.Node root = builder.get_root ();
+         gen.set_pretty(true);
+         gen.set_root (root);
+         var json = gen.to_data(null);
+         try{
+             FileUtils.set_contents(lastfile,json);
+         }catch(Error e){
+             stderr.printf ("Error: %s\n", e.message);
+         }
+    }
 
     public void run()
     {
         Gtk.main();
     }
-
 
     public static int main (string[] args)
     {
