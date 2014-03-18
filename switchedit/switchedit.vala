@@ -204,6 +204,7 @@ public class SwitchEdit : Object
                                     icol = 1;
                                 else
                                     icol = 0;
+
                                 boxlabel[j].override_background_color(Gtk.StateFlags.NORMAL, colors[icol]);
                             }
                         }
@@ -240,17 +241,17 @@ public class SwitchEdit : Object
         verslab = builder.get_object ("verslab") as Gtk.Label;
         verslab.set_label("");
 
-        var openbutton = builder.get_object ("button3") as Gtk.Button;
-        openbutton.clicked.connect(() => {
-                load_file();
-            });
-
-
         var saveasbutton = builder.get_object ("button5") as Gtk.Button;
         saveasbutton.clicked.connect(() => {
                 save_file();
             });
         saveasbutton.set_sensitive(false);
+
+        var openbutton = builder.get_object ("button3") as Gtk.Button;
+        openbutton.clicked.connect(() => {
+                load_file();
+                saveasbutton.set_sensitive(true);
+            });
 
         var applybutton = builder.get_object ("button1") as Gtk.Button;
         applybutton.clicked.connect(() => {
@@ -426,8 +427,6 @@ public class SwitchEdit : Object
         if(fn != null)
         {
             lastfile = fn;
-
-            print("nboxen %u\n", nboxen);
             if(nboxen != 0)
                 cleanupui();
 
@@ -443,9 +442,25 @@ public class SwitchEdit : Object
                 var r = 0;
                 foreach (var node in arry.get_elements ())
                 {
+                    uint16 sval = 0;
                     var item = node.get_object ();
                     bsx[r]= item.get_string_member("name");
-                    bv[r] = (uint16)item.get_int_member ("value");
+                    string str = item.get_string_member ("value");
+                    int j = 0;
+                    foreach (var b in str.data)
+                    {
+                        switch(b)
+                        {
+                            case 'X':
+                                sval |= (1 << j);
+                                j++;
+                                break;
+                            case '_':
+                                j++;
+                                break;
+                        }
+                    }
+                    bv[r] = sval;
                     r++;
                 }
                 add_boxlabels(bsx);
@@ -460,37 +475,49 @@ public class SwitchEdit : Object
 
     private void save_data()
     {
-         Json.Generator gen;
-         gen = new Json.Generator ();
-         Json.Builder builder = new Json.Builder ();
-         builder.begin_object ();
-         builder.set_member_name ("multiwii");
-         builder.begin_object ();
-         builder.set_member_name ("version");
-         builder.add_string_value ("2.3");
-         builder.end_object ();
+        Json.Generator gen;
+        gen = new Json.Generator ();
+        Json.Builder builder = new Json.Builder ();
+        builder.begin_object ();
 
-         builder.set_member_name ("switches");
-         builder.begin_array ();
-         var idx=0;
-         for(var r = 0; r < nboxen; r++)
-         {
+        builder.set_member_name ("multiwii");
+        builder.add_string_value ("2.3");
+
+        builder.set_member_name ("date");
+        var dt = new DateTime.now_utc();
+	builder.add_string_value (dt.to_string());
+
+        builder.set_member_name ("switches");
+        builder.begin_array ();
+        var idx=0;
+        for(var r = 0; r < nboxen; r++)
+        {
              builder.begin_object ();
              builder.set_member_name ("id");
              builder.add_int_value (r);
              builder.set_member_name ("name");
              builder.add_string_value (boxlabel[r].get_label());
              builder.set_member_name ("value");
-             uint16 lval=0;
+             uint8 bstr[16];
+             int i = 0;
              for(var j =  0; j < 12; j++)
              {
-                 if(checks[idx].active)
-                 {
-                     lval |= (1 << j);
-                 }
-                 idx++;
+                  if(j > 0 && (j%3)==0)
+                  {
+                      bstr[i++]=' ';
+                  }
+
+                  if(checks[idx].active)
+                  {
+                      bstr[i++]='X';
+                  }
+                  else
+                  {
+                      bstr[i++]='_';
+                  }
+                  idx++;
              }
-             builder.add_int_value (lval);
+             builder.add_string_value ((string)bstr);
              builder.end_object ();
          }
          builder.end_array();

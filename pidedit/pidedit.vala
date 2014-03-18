@@ -140,10 +140,12 @@ public class PIDEdit : Object
          Json.Builder builder = new Json.Builder ();
          builder.begin_object ();
          builder.set_member_name ("multiwii");
-         builder.begin_object ();
-         builder.set_member_name ("version");
          builder.add_string_value ("2.3");
-         builder.end_object ();
+
+         builder.set_member_name ("date");
+         var dt = new DateTime.now_utc();
+         builder.add_string_value (dt.to_string());
+
          builder.set_member_name ("pids");
          builder.begin_array ();
          int idx = 0;
