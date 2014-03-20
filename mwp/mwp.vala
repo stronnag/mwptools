@@ -579,7 +579,8 @@ public class MWPlanner : GLib.Object {
                 if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
                 {
                     sflags |= NavStatus.SPK.GPS;
-                    requests += MSP.Cmds.NAV_STATUS;
+                    if(navcap == true)
+                        requests += MSP.Cmds.NAV_STATUS;
                     requests += MSP.Cmds.RAW_GPS;
                     requests += MSP.Cmds.COMP_GPS;
                     if(craft == null)
