@@ -137,6 +137,14 @@ public class MWSerial : Object
 
     public bool open(string device, int rate)
     {
+
+        string[] parts = device.split ("@");
+        if(parts.length == 2)
+        {
+            device = parts[0];
+            rate = int.parse(parts[1]);
+//            print("Device %s @ %d baud\n", device,rate);
+        }
         fd = open_serial(device, rate);
         if(fd < 0) {
             fd = -1;
