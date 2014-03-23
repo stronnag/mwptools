@@ -1,6 +1,7 @@
 VALAC=valac
 OPTS +=-X -O2 --target-glib=2.36
-LOPTS=-X -lbluetooth
+#LOPTS=-X -lbluetooth
+LOPTS=
 APP=switchedit
 SRC=$(APP).vala
 COMMON=../common/serial-device.vala ../common/utils.vala ../common/mspcmd.vala ../common/cserial.c ../common/mspmsg.vapi

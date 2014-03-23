@@ -29,7 +29,7 @@
 #include <sys/stat.h>
 #include <termios.h>
 
-#ifdef __linux__
+#if defined(__linux__) && defined(USE_BTSOCK)
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
 #include <bluetooth/hci.h>
@@ -66,7 +66,7 @@ static int create_bt_dev(char *btaddr)
 int open_serial(char *device, int baudrate)
 {
     int fd;
-#ifdef __linux__
+#if defined(__linux__) && defined(USE_BTSOCK)
     if(strlen(device) == 17 && device[2] == ':' && device[5] == ':'
        && isxdigit(device[0]) && isxdigit(device[1]))
     {

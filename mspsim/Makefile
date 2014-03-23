@@ -1,6 +1,7 @@
 VALAC=valac
 OPTS=-X -O2 --target-glib=2.36
-LOPTS=-X -lm -X -lbluetooth
+#LOPTS=-X -lm -X -lbluetooth
+LOPTS=-X -lm
 APP=mspsim
 SRC=$(APP).vala
 COMMON=../common/mwp_xml.vala ../common/serial-device.vala ../common/cserial.c ../common/geocalc.vala  ../common/utils.vala ../common/mspcmd.vala  ../common/mspmsg.vapi
