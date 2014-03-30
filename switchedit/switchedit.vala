@@ -34,7 +34,7 @@ public class SwitchEdit : Object
     private Gtk.Label[] boxlabel;
     private Gtk.CheckButton[] checks;
     private uint nboxen;
-    private uint32 xflag = 0;
+    private uint32 xflag = -1;
     private Gdk.RGBA[] colors;
     private uint tid;
     private string lastfile;
@@ -257,6 +257,7 @@ public class SwitchEdit : Object
         applybutton.clicked.connect(() => {
                 if(is_connected == true && have_names == true)
                 {
+                    apply_state();
                     s.send_command(MSP.Cmds.EEPROM_WRITE,null, 0);
                 }
             });
@@ -428,7 +429,13 @@ public class SwitchEdit : Object
         {
             lastfile = fn;
             if(nboxen != 0)
+            {
+                var x_have_vers = have_vers;
+                var x_is_connected = is_connected;
                 cleanupui();
+                have_vers = x_have_vers;
+                is_connected = x_is_connected;
+            }
 
             try
             {
@@ -467,6 +474,8 @@ public class SwitchEdit : Object
                 add_switch_states(bv);
                 grid1.show_all();
                 xflag = 0;
+                have_names = true;
+                have_box = true;
             } catch (Error e) {
                 stderr.printf ("Failed to parse file\n");
             }
