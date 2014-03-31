@@ -563,26 +563,37 @@ public class MWPlanner : GLib.Object {
                 var timadj = builder.get_object ("spinbutton2") as Gtk.SpinButton;
                 var  val = timadj.adjustment.value;
                 MSP.Cmds[] requests = {};
+                ulong reqsize = 0;
 
                 requests += MSP.Cmds.ANALOG;
+                reqsize += sizeof(MSP_ANALOG);
+
                 sflags = NavStatus.SPK.Volts;
 
                 if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
+                {
                     requests += MSP.Cmds.ATTITUDE;
+                    reqsize += sizeof(MSP_ATTITUDE);
+                }
 
                 if((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO)
                 {
                     sflags |= NavStatus.SPK.BARO;
                     requests += MSP.Cmds.ALTITUDE;
+                    reqsize += sizeof(MSP_ALTITUDE);
                 }
 
                 if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
                 {
                     sflags |= NavStatus.SPK.GPS;
                     if(navcap == true)
+                    {
                         requests += MSP.Cmds.NAV_STATUS;
+                        reqsize += sizeof(MSP_NAV_STATUS);
+                    }
                     requests += MSP.Cmds.RAW_GPS;
                     requests += MSP.Cmds.COMP_GPS;
+                    reqsize += (sizeof(MSP_RAW_GPS) + sizeof(MSP_COMP_GPS));
                     if(craft == null)
                         craft = new Craft(view, mrtype,norotate);
                     craft.park();
@@ -591,7 +602,8 @@ public class MWPlanner : GLib.Object {
                 var nreqs = requests.length;
                 int timeout = (int)(val*1000 / nreqs);
 
-                print("Timer cycle for %d (%dms) items\n", nreqs,timeout);
+                print("Timer cycle for %d (%dms) items, %lu bytes\n",
+                      nreqs,timeout,reqsize);
 
                 int tcycle = 0;
                 gpstid = Timeout.add(timeout, () => {
