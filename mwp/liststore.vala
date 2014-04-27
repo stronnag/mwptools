@@ -6,7 +6,7 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-// valac --pkg gtk+-3.0 gcrc.vala -X -lm
+
 
 public class ListBox : GLib.Object
 {
@@ -44,19 +44,19 @@ public class ListBox : GLib.Object
     private ShapeDialog shapedialog;
     private DeltaDialog deltadialog;
     int lastid = 0;
-    
+
     public ListBox()
     {
         purge=false;
     }
-    
+
     public void import_mission(Mission ms)
     {
         Gtk.TreeIter iter;
 
         list_model.clear();
         lastid = 0;
-        
+
         foreach (MissionItem m in ms.get_ways())
         {
             list_model.append (out iter);
@@ -69,13 +69,13 @@ public class ListBox : GLib.Object
                 case MSP.Action.SET_HEAD:
                     no="";
                     break;
-                
+
                 default:
                     lastid++;
                     no = lastid.to_string();
                     break;
             }
-            
+
             list_model.set (iter,
                             WY_Columns.IDX, no,
                             WY_Columns.TYPE, MSP.get_wpname(m.action),
@@ -120,7 +120,7 @@ public class ListBox : GLib.Object
                 tint = (int)cell;
                 w.p2 = (uint16)tint;
                 list_model.get_value (iter, WY_Columns.INT3, out cell);
-                tint = (int)cell;                
+                tint = (int)cell;
                 w.p3 = (uint16)tint;
                 w.flag = 0;
                 wps += w;
@@ -135,7 +135,7 @@ public class ListBox : GLib.Object
     {
         int n_rows = list_model.iter_n_children(null);
         bool res = true;
-        
+
         if(n_rows == wp.length)
         {
             int n = 0;
@@ -163,7 +163,7 @@ public class ListBox : GLib.Object
         print("validate res = %s %d %d\n", res.to_string(), n_rows, wp.length);
         return res;
     }
-    
+
     public Mission to_mission()
     {
         Gtk.TreeIter iter;
@@ -209,20 +209,20 @@ public class ListBox : GLib.Object
         make_menu();
 
         mp = _mp;
-        
+
         shapedialog = new ShapeDialog(mp.builder);
         deltadialog = new DeltaDialog(mp.builder);
-        
+
             // Combo, Model:
         Gtk.ListStore combo_model = new Gtk.ListStore (1, typeof (string));
         Gtk.TreeIter iter;
-        
+
         for(var n = MSP.Action.WAYPOINT; n <= MSP.Action.LAND; n += 1)
         {
             combo_model.append (out iter);
             combo_model.set (iter, 0, MSP.get_wpname(n));
         }
-                
+
         list_model = new Gtk.ListStore (WY_Columns.N_COLS,
                                         typeof (string),
                                         typeof (string),
@@ -243,28 +243,28 @@ public class ListBox : GLib.Object
                 update_selected_cols();
             });
 
-        
+
         Gtk.CellRenderer cell = new Gtk.CellRendererText ();
         view.insert_column_with_attributes (-1, "ID", cell, "text", WY_Columns.IDX);
-        
+
         Gtk.TreeViewColumn column = new Gtk.TreeViewColumn ();
         column.set_title ("Type");
         view.append_column (column);
-                
+
         Gtk.CellRendererCombo combo = new Gtk.CellRendererCombo ();
         combo.set_property ("editable", true);
         combo.set_property ("model", combo_model);
         combo.set_property ("text-column", 0);
         column.pack_start (combo, false);
         column.add_attribute (combo, "text", 1);
-        
+
         combo.changed.connect((path, iter_new) => {
                 Gtk.TreeIter iter_val;
                 Value val;
                 combo_model.get_value (iter_new, 0, out val);
                 var typ = (string)val;
                 var action = MSP.lookup_name(typ);
-                
+
                 list_model.get_iter (out iter_val, new Gtk.TreePath.from_string (path));
 
                 list_model.get_value (iter_val, WY_Columns.ACTION, out val);
@@ -313,10 +313,10 @@ public class ListBox : GLib.Object
                     }
                     renumber_steps(list_model);
                 }
-                
+
             });
 
-        
+
         cell = new Gtk.CellRendererText ();
         view.insert_column_with_attributes (-1, "Lat.",
                                             cell,
@@ -337,10 +337,10 @@ public class ListBox : GLib.Object
                               WY_Columns.LAT,-90.0,90.0,false);
             });
 
-        
+
         cell = new Gtk.CellRendererText ();
         view.insert_column_with_attributes (-1, "Lon.",
-                                            cell, 
+                                            cell,
                                             "text", WY_Columns.LON);
         col = view.get_column(WY_Columns.LON);
         col.set_cell_data_func(cell, (col,_cell,model,iter) => {
@@ -357,12 +357,12 @@ public class ListBox : GLib.Object
                 list_validate(path,new_text,
                               WY_Columns.LON,-180.0,180.0,false);
             });
-        
-        
+
+
         cell = new Gtk.CellRendererText ();
         cell.set_property ("editable", true);
         view.insert_column_with_attributes (-1, "Alt.",
-                                            cell, 
+                                            cell,
                                             "text", WY_Columns.ALT);
 
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
@@ -370,7 +370,7 @@ public class ListBox : GLib.Object
                               WY_Columns.ALT,0.0,1000.0,true);
             });
 
-        
+
         cell = new Gtk.CellRendererText ();
         cell.set_property ("editable", true);
         view.insert_column_with_attributes (-1, "P1",
@@ -395,7 +395,7 @@ public class ListBox : GLib.Object
                               WY_Columns.INT1,0.0,65536.0,true);
             });
 
-        
+
         cell = new Gtk.CellRendererText ();
         cell.set_property ("editable", true);
         view.insert_column_with_attributes (-1, "P2",
@@ -405,8 +405,8 @@ public class ListBox : GLib.Object
                 list_validate(path,new_text,
                               WY_Columns.INT2,-1,65536.0,true);
             });
-        
-        
+
+
         cell = new Gtk.CellRendererText ();
         cell.set_property ("editable", true);
         view.insert_column_with_attributes (-1, "P3",
@@ -417,7 +417,7 @@ public class ListBox : GLib.Object
                 list_validate(path,new_text,
                               WY_Columns.INT3,-1,65536.0,true);
             });
-        
+
         view.set_headers_visible (true);
         view.set_reorderable(true);
         list_model.row_deleted.connect((path,iter) => {
@@ -429,7 +429,7 @@ public class ListBox : GLib.Object
         list_model.rows_reordered.connect((path,iter,rlist) => {
                 renumber_steps(list_model);
             });
-        
+
         view.button_press_event.connect( event => {
                 if(event.button == 3)
                 {
@@ -440,7 +440,7 @@ public class ListBox : GLib.Object
                     {
                         Gtk.TreeIter _iter;
                         Value val;
-                        list_model.get_iter_first(out _iter);                    
+                        list_model.get_iter_first(out _iter);
                         list_model.get_value (_iter, WY_Columns.ACTION, out val);
                         if  ((MSP.Action)val == MSP.Action.SET_POI)
                         {
@@ -454,13 +454,13 @@ public class ListBox : GLib.Object
             });
 
     }
-    
+
     private void list_validate(string path, string new_text, int colno,
                                double minval, double maxval, bool as_int)
     {
         Gtk.TreeIter iter_val;
         var list_model = view.get_model() as Gtk.ListStore;
-        
+
         list_model.get_iter (out iter_val, new Gtk.TreePath.from_string (path));
         double d;
         var res = double.try_parse(new_text, out d);
@@ -479,7 +479,7 @@ public class ListBox : GLib.Object
             calc_mission();
         }
     }
-    
+
     private void renumber_steps(Gtk.ListStore ls)
     {
         int n = 1;
@@ -496,8 +496,8 @@ public class ListBox : GLib.Object
                 case MSP.Action.SET_HEAD:
                     ls.set_value (iter, WY_Columns.IDX, "");
                     break;
-                
-                default: 
+
+                default:
                     ls.set_value (iter, WY_Columns.IDX, n);
                     n += 1;
                     break;
@@ -513,7 +513,7 @@ public class ListBox : GLib.Object
     {
         Gtk.TreeModel tm;
         Gtk.TreeIter iter;
-        var treesel = view.get_selection ();        
+        var treesel = view.get_selection ();
         if (treesel != null)
         {
             treesel.get_selected (out tm, out  iter);
@@ -521,12 +521,12 @@ public class ListBox : GLib.Object
             list_model.get_value (iter, WY_Columns.ACTION, out val);
             MSP.Action act = (MSP.Action)val;
             string [] ctitles = {};
-        
+
             switch (act)
             {
                 case MSP.Action.WAYPOINT:
                 case MSP.Action.POSHOLD_UNLIM:
-                case MSP.Action.LAND:                
+                case MSP.Action.LAND:
                     ctitles = {"Lat","Lon","Alt","","",""};
                     break;
                 case MSP.Action.POSHOLD_TIME:
@@ -548,20 +548,20 @@ public class ListBox : GLib.Object
             var n = 2;
             foreach (string s in ctitles)
             {
-                var col = view.get_column(n);        
+                var col = view.get_column(n);
                 col.set_title(s);
                 n++;
             }
         }
     }
-    
-    
+
+
     private void show_item(string s)
     {
         Gtk.TreeModel tm;
         Gtk.TreeIter iter;
-        
-        var treesel = view.get_selection ();        
+
+        var treesel = view.get_selection ();
         if (treesel != null)
         {
             Gtk.TreeIter step;
@@ -615,14 +615,14 @@ public class ListBox : GLib.Object
         else
             mp.markers.add_list_store(this);
     }
-    
+
     private void add_shapes()
     {
         ShapeDialog.ShapePoint[] pts;
         Gtk.TreeIter iter;
         Value val;
         double lat,lon;
-        list_model.get_iter_first(out iter);                    
+        list_model.get_iter_first(out iter);
         list_model.get_value (iter, WY_Columns.LAT, out val);
         lat = (double)val;
         list_model.get_value (iter, WY_Columns.LON, out val);
@@ -639,12 +639,12 @@ public class ListBox : GLib.Object
     {
         double dlat, dlon;
         int dalt;
-        
+
         if(deltadialog.get_deltas(out dlat, out dlon, out dalt) == true)
         {
             if(dlat != 0.0 || dlon != 0.0 || dalt != 0)
             {
-                Gtk.TreeIter iter;            
+                Gtk.TreeIter iter;
                 for(bool next=list_model.get_iter_first(out iter); next;
                     next=list_model.iter_next(ref iter))
                 {
@@ -661,7 +661,7 @@ public class ListBox : GLib.Object
                         val += dlat;
                         list_model.set_value (iter, WY_Columns.LAT, val);
                     }
-                    
+
                     if(dlon != 0.0)
                     {
                         list_model.get_value (iter, WY_Columns.LON, out cell);
@@ -697,7 +697,7 @@ public class ListBox : GLib.Object
                 show_item("Down");
             });
         menu.add (item);
-        
+
         item = new Gtk.MenuItem.with_label ("Delete");
         item.activate.connect (() => {
                 show_item("Delete");
@@ -734,7 +734,7 @@ public class ListBox : GLib.Object
                 do_deltas();
             });
         menu.add (item);
-        
+
         item = new Gtk.MenuItem.with_label ("Clear Mission");
         item.activate.connect (() => {
                 clear_mission();
@@ -766,17 +766,17 @@ public class ListBox : GLib.Object
             list_model.set_value (iter, WY_Columns.ALT, dalt);
         }
     }
-    
+
     public void set_selection(Gtk.TreeIter iter)
     {
-        var treesel = view.get_selection ();        
+        var treesel = view.get_selection ();
         treesel.unselect_all();
         treesel.select_iter(iter);
     }
-    
+
     public void clear_mission()
     {
-                            
+
         lastid=0;
         mp.markers.remove_all();
         purge = true;
@@ -788,7 +788,7 @@ public class ListBox : GLib.Object
     public void calc_mission()
     {
         string route;
-        
+
         int n_rows = list_model.iter_n_children(null) + 1;
         if (n_rows > 0)
         {
@@ -809,7 +809,7 @@ public class ListBox : GLib.Object
         }
         mp.stslabel.set_text(route);
     }
-    
+
     private bool calc_mission_dist(out double d, out int lt)
     {
         Gtk.TreeIter iter;
@@ -844,14 +844,14 @@ public class ListBox : GLib.Object
             }
             if (typ == MSP.Action.POSHOLD_UNLIM || typ == MSP.Action.LAND)
                 break;
-        }       
+        }
         var n = 0;
         var rpt = 0;
         double lx = 0.0,ly=0.0;
         bool ready = false;
         d = 0.0;
         lt = 0;
-        
+
         var nsize = arry.length;
 
         if (nsize > 0)
@@ -859,7 +859,7 @@ public class ListBox : GLib.Object
             do
             {
                 var typ = arry[n].action;
-                
+
                 if(typ == MSP.Action.JUMP && arry[n].param2 == -1)
                 {
                     d = 0.0;
@@ -886,7 +886,7 @@ public class ListBox : GLib.Object
                     {
                         lt += arry[n].param1;
                     }
-                    
+
                     d += dx;
                     if (typ == MSP.Action.POSHOLD_UNLIM)
                     {

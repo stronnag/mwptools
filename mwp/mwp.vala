@@ -738,22 +738,29 @@ public class MWPlanner : GLib.Object {
                     if(w.flag == 0xa5 || w.wp_no == 255)
                     {
                         var ms = new Mission();
-                        ms.set_ways(wp_resp);
-                        ls.import_mission(ms);
-                        foreach(MissionItem mi in wp_resp)
+                        if(w.wp_no == 1 && m.action == MSP.Action.RTH
+                           && w.lat == 0 && w.lon == 0)
                         {
-                            if(mi.action != MSP.Action.RTH &&
-                               mi.action != MSP.Action.JUMP)
+                            ls.clear_mission();
+                        }
+                        else
+                        {
+                            ms.set_ways(wp_resp);
+                            ls.import_mission(ms);
+                            foreach(MissionItem mi in wp_resp)
                             {
-                                if (mi.lat > ms.maxy)
-                                    ms.maxy = mi.lat;
-                                if (mi.lon > ms.maxx)
-                                    ms.maxx = mi.lon;
-                                if (mi.lat <  ms.miny)
-                                    ms.miny = mi.lat;
-                                if (mi.lon <  ms.minx)
-                                    ms.minx = mi.lon;
-                            }
+                                if(mi.action != MSP.Action.RTH &&
+                                   mi.action != MSP.Action.JUMP)
+                                {
+                                    if (mi.lat > ms.maxy)
+                                        ms.maxy = mi.lat;
+                                    if (mi.lon > ms.maxx)
+                                        ms.maxx = mi.lon;
+                                    if (mi.lat <  ms.miny)
+                                        ms.miny = mi.lat;
+                                    if (mi.lon <  ms.minx)
+                                        ms.minx = mi.lon;
+                                }
                             }
                             ms.zoom = 16;
                             ms.cy = (ms.maxy + ms.miny) / 2.0;
@@ -765,7 +772,8 @@ public class MWPlanner : GLib.Object {
                                 view.set_property("zoom-level", mmax-1);
                             }
                             markers.add_list_store(ls);
-                            wp_resp={};
+                        }
+                        wp_resp={};
                     }
                     else if(w.flag == 0xfe)
                     {
