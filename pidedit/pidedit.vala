@@ -32,7 +32,6 @@ public struct PIDSet
     public PIDVals pids[3];
 }
 
-
 public class PIDEdit : Object
 {
     private Gtk.Builder builder;
@@ -48,6 +47,16 @@ public class PIDEdit : Object
     private string lastfile;
     private bool have_pids;
     private bool have_vers;
+    private bool have_misc;
+    private MSP_MISC misc;
+
+    private Gtk.Entry eminthr;
+    private Gtk.Entry emagdec;
+    private Gtk.Entry evbatscale;
+    private Gtk.Entry evbatwarn1;
+    private Gtk.Entry evbatwarn2;
+    private Gtk.Entry evbatcrit;
+
     private static const PIDSet[] ps =  {
         {0,"ROLL",{{20.00,0.100,false},{0.25,0.001,false},{100.00,1.000,false}}},
         {1,"PITCH",{{20.00,0.100,false},{0.25,0.001,false},{100.00,1.000,false}}},
@@ -59,6 +68,30 @@ public class PIDEdit : Object
         {7,"LEVEL",{{20.00,0.100,false},{0.25,0.001,false},{100.00,1.000,false}}},
         {8,"MAG",{{20.00,0.100,false},{0.25,0.001,true},{100.00,1.000,true}}}
     };
+
+
+    private void set_misc_ui()
+    {
+        var v = "%d".printf(misc.conf_minthrottle);
+        eminthr.set_text(v);
+        v = "%.1f".printf(misc.conf_mag_declination/10.0);
+        emagdec.set_text(v);
+        v = "%d".printf(misc.conf_vbatscale);
+        evbatscale.set_text(v);
+        v = "%.1f".printf(misc.conf_vbatlevel_warn1/10.0);
+        evbatwarn1.set_text(v);
+        v = "%.1f".printf(misc.conf_vbatlevel_warn2/10.0);
+        evbatwarn2.set_text(v);
+        v = "%.1f".printf(misc.conf_vbatlevel_crit/10.0);
+        evbatcrit.set_text(v);
+
+        v = "%d".printf(misc.mincommand);
+        var l  = builder.get_object ("mincmdlab") as Gtk.Label;
+        l.set_label(v);
+        l  = builder.get_object ("maxthrlab") as Gtk.Label;
+        v = "%d".printf(misc.maxthrottle);
+        l.set_label(v);
+    }
 
     private void save_file()
     {
@@ -127,6 +160,24 @@ public class PIDEdit : Object
                     rawbuf[idx++] = (uint8)item.get_int_member ("d");
                 }
                 set_pid_spins();
+
+                misc.conf_minthrottle = (uint16)root_object.get_int_member("minthrottle");
+                eminthr.set_text("%d".printf(misc.conf_minthrottle));
+
+                misc.conf_mag_declination = (int16)root_object.get_int_member("magdeclination");
+                emagdec.set_text("%.1f".printf(misc.conf_mag_declination/10.0));
+
+                misc.conf_vbatscale = (uint8)root_object.get_int_member("vbatscale");
+                evbatscale.set_text("%d".printf(misc.conf_vbatscale));
+
+                misc.conf_vbatlevel_warn1 = (uint8)root_object.get_int_member("vbatwarn1");
+                evbatwarn1.set_text("%.1f".printf(misc.conf_vbatlevel_warn1/10.0));
+
+                misc.conf_vbatlevel_warn2 = (uint8)root_object.get_int_member("vbatwarn2");
+                evbatwarn2.set_text("%.1f".printf(misc.conf_vbatlevel_warn2/10.0));
+
+                misc.conf_vbatlevel_crit = (uint8)root_object.get_int_member("vbatcrit");
+                evbatcrit.set_text("%.1f".printf(misc.conf_vbatlevel_crit/10.0));
             } catch (Error e) {
                 stderr.printf ("Failed to parse file\n");
             }
@@ -165,6 +216,21 @@ public class PIDEdit : Object
              builder.end_object ();
          }
          builder.end_array();
+
+         builder.set_member_name ("minthrottle");
+         builder.add_int_value (int.parse(eminthr.get_text()));
+         builder.set_member_name ("magdeclination");
+         builder.add_int_value ((int)(10*double.parse(emagdec.get_text())));
+
+         builder.set_member_name ("vbatscale");
+         builder.add_int_value (int.parse(evbatscale.get_text()));
+         builder.set_member_name ("vbatwarn1");
+         builder.add_int_value((int)(10*double.parse(evbatwarn1.get_text())));
+         builder.set_member_name ("vbatwarn2");
+         builder.add_int_value((int)(10*double.parse(evbatwarn2.get_text())));
+         builder.set_member_name ("vbatcrit");
+         builder.add_int_value((int)(10*double.parse(evbatcrit.get_text())));
+
          builder.end_object ();
          Json.Node root = builder.get_root ();
          gen.set_pretty(true);
@@ -280,6 +346,14 @@ public class PIDEdit : Object
 
         builder.connect_signals (null);
         window = builder.get_object ("window1") as Gtk.Window;
+
+        eminthr = builder.get_object ("minthr_entry") as Gtk.Entry;
+        emagdec = builder.get_object ("magdecentry") as Gtk.Entry;
+        evbatscale = builder.get_object ("evbatscale") as Gtk.Entry;
+        evbatwarn1 = builder.get_object ("evbatwarn1") as Gtk.Entry;
+        evbatwarn2 = builder.get_object ("evbatwarn2") as Gtk.Entry;
+        evbatcrit = builder.get_object ("evbatcrit") as Gtk.Entry;
+
         foreach (var p in ps)
         {
             var s = "pidlabel_%02d".printf(p.id);
@@ -287,6 +361,7 @@ public class PIDEdit : Object
             l.set_text(p.name);
         }
 
+        have_misc =  have_pids = have_vers = false;
         window.destroy.connect (Gtk.main_quit);
         s = new MWSerial();
         s.serial_event.connect((sd,cmd,raw,len,errs) => {
@@ -299,10 +374,16 @@ public class PIDEdit : Object
                 {
                     case MSP.Cmds.IDENT:
                     have_vers = true;
-                    have_pids = false;
                     var _mrtype = MSP.get_mrtype(raw[1]);
                     var vers="v%03d %s".printf(raw[0], _mrtype);
                     verslab.set_label(vers);
+                    add_cmd(MSP.Cmds.MISC,null,0, &have_misc);
+                    break;
+
+                    case MSP.Cmds.MISC:
+                    have_misc = true;
+                    misc = *(MSP_MISC *)raw;
+                    set_misc_ui();
                     add_cmd(MSP.Cmds.PID,null,0, &have_pids);
                     break;
 
@@ -370,11 +451,21 @@ public class PIDEdit : Object
                         {
                             uint8 iv = (uint8)(d/dmult);
                             rawbuf[n] = iv;
-                                }
+                        }
                         n++;
                     }
+
+                    misc.conf_minthrottle = (uint16)int.parse(eminthr.get_text());
+                    misc.conf_mag_declination = (int16)(10*double.parse(emagdec.get_text()));
+
+                    misc.conf_vbatscale = (uint8)int.parse(evbatscale.get_text());
+                    misc.conf_vbatlevel_warn1 = (uint8)(10*double.parse(evbatwarn1.get_text()));
+                    misc.conf_vbatlevel_warn2 = (uint8)(10*double.parse(evbatwarn2.get_text()));
+                    misc.conf_vbatlevel_crit = (uint8)(10*double.parse(evbatcrit.get_text()));
                     Idle.add(() => {
                             s.send_command(MSP.Cmds.SET_PID,rawbuf,30);
+                            s.send_command(MSP.Cmds.SET_MISC,
+                                           &misc, sizeof(MSP_MISC));
                             s.send_command(MSP.Cmds.EEPROM_WRITE,null, 0);
                             s.send_command(MSP.Cmds.PID,null,0);
                             s.send_command(MSP.Cmds.PID,null,0);

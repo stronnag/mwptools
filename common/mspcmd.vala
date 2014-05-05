@@ -44,6 +44,7 @@ public class MSP : Object
             RADIO = 199,
             SET_NAV_CONFIG = 215,
             SET_HEAD = 211,
+            SET_MISC = 207,
             SET_WP = 209,
             ANALOG = 110,
             BOX = 113,
