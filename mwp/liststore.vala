@@ -64,7 +64,6 @@ public class ListBox : GLib.Object
             switch (m.action)
             {
                 case MSP.Action.RTH:
-                case MSP.Action.LAND:
                 case MSP.Action.SET_POI:
                 case MSP.Action.SET_HEAD:
                     no="";
@@ -491,7 +490,6 @@ public class ListBox : GLib.Object
             switch ((MSP.Action)cell)
             {
                 case MSP.Action.RTH:
-                case MSP.Action.LAND:
                 case MSP.Action.SET_POI:
                 case MSP.Action.SET_HEAD:
                     ls.set_value (iter, WY_Columns.IDX, "");
@@ -651,7 +649,8 @@ public class ListBox : GLib.Object
                     GLib.Value cell;
                     list_model.get_value (iter, WY_Columns.TYPE, out cell);
                     var act = (MSP.Action)cell;
-                    if (act == MSP.Action.RTH || act == MSP.Action.LAND || act == MSP.Action.SET_HEAD)
+                    if (act == MSP.Action.RTH
+                        || act == MSP.Action.SET_HEAD)
                         continue;
 
                     if(dlat != 0.0)
@@ -755,7 +754,8 @@ public class ListBox : GLib.Object
             GLib.Value cell;
             list_model.get_value (iter, WY_Columns.ACTION, out cell);
             var act = (MSP.Action)cell;
-            if (act == MSP.Action.RTH || act == MSP.Action.LAND || act == MSP.Action.SET_HEAD)
+            if (act == MSP.Action.RTH ||
+                act == MSP.Action.SET_HEAD)
                 continue;
             if(flag == false)
             {

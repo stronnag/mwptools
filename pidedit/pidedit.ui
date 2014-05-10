@@ -446,6 +446,7 @@
               <object class="GtkEntry" id="magdecentry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="events">GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK</property>
                 <property name="tooltip_text" translatable="yes">Decimal degrees, E +ve, W -ve </property>
                 <property name="input_purpose">number</property>
               </object>
