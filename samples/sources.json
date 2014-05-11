@@ -12,15 +12,15 @@
       "uri_format": "http://geo.nls.uk/mapdata2/os/seventh/#Z#/#X#/#TMSY#.png"
     },
     {
-      "id": "localcache",
-      "name": "Private cache",
-      "license": "(c) OSM",
-      "license_uri": "http://localhost/",
+      "id": "osv",
+      "name": "OS Street View",
+      "license": "© Crown copyright and database rights 2010",
+      "license_uri": "http://www.nationalarchives.gov.uk/doc/open-government-licence/open-government-licence.htm",
       "min_zoom": 0,
-      "max_zoom": 17,
+      "max_zoom": 19,
       "tile_size": 256,
       "projection": "MERCATOR",
-      "uri_format": "http://localhost/mapcache/tms/1.0.0/nsites@GoogleMapsCompatible/#Z#/#X#/#TMSY#.png"
+      "uri_format": "http://os.openstreetmap.org/sv/#Z#/#X#/#Y#.png"
     }
   ]
 }

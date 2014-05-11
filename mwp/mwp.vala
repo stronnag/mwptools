@@ -496,7 +496,7 @@ public class MWPlanner : GLib.Object {
             connect_serial();
         }
 
-        Timeout.add_seconds(2, () => { return try_connect(); });
+        Timeout.add_seconds(5, () => { return try_connect(); });
         window.show_all();
         dockitem[1].iconify_item ();
         dockitem[2].iconify_item ();
@@ -508,9 +508,11 @@ public class MWPlanner : GLib.Object {
     {
         if(autocon)
         {
+//            stderr.printf("retry con\n");
             if(!msp.available)
                 connect_serial();
-            Timeout.add_seconds(2, () => { return try_connect(); });
+//            stderr.printf("done retry con\n");
+            Timeout.add_seconds(5, () => { return try_connect(); });
             return false;
         }
         return true;
@@ -624,6 +626,10 @@ public class MWPlanner : GLib.Object {
             case MSP.Cmds.NAV_CONFIG:
                 have_nc = true;
                 navconf.update(*(MSP_NAV_CONFIG*)raw);
+                break;
+
+            case MSP.Cmds.SET_NAV_CONFIG:
+                send_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
                 break;
 
             case MSP.Cmds.COMP_GPS:
@@ -788,6 +794,9 @@ public class MWPlanner : GLib.Object {
                 {
                     stderr.printf("unsolicited WP #%d\n", w.wp_no);
                 }
+                break;
+
+            case MSP.Cmds.EEPROM_WRITE:
                 break;
 
             default:
