@@ -94,19 +94,19 @@ public class MSP : Object
         "Mission" };
 
     private static const string[] nav_states =  {
-        "None",
-        "RTH Start",
-        "RTH Enroute",
-        "PosHold infinit",
-        "PosHold timed",
-        "WP Enroute",
-        "Process next",
-        "Jump",
-        "Start Land",
-        "Land in Progress"
-        ,"Landed",
-        "Settling before land",
-        "Start descent"
+        "None",			// 0
+        "RTH Start",           	// 1
+        "RTH Enroute",		// 2
+        "PosHold infinit",	// 3
+        "PosHold timed",	// 4
+        "WP Enroute",		// 5
+        "Process next",		// 6
+        "Jump",			// 7
+        "Start Land",		// 8
+        "Land in Progress",	// 9
+        "Landed",		// 10
+        "Settling before land", // 11
+        "Start descent"		// 12
     };
 
     private static const string[] nav_errors =  {

@@ -148,7 +148,6 @@ public class PrefsDialog : GLib.Object
     }
 }
 
-
 public class ShapeDialog : GLib.Object
 {
     public struct ShapePoint
@@ -250,6 +249,7 @@ public class NavStatus : GLib.Object
     public Gtk.Box voltbox{get; private set;}
     private Gdk.RGBA[] colors;
     private bool vinit = false;
+    private bool mt_voice = false;
     private  AudioThread mt;
 
     public enum SPK  {
@@ -305,7 +305,51 @@ public class NavStatus : GLib.Object
 
     public void update(MSP_NAV_STATUS _n)
     {
+        if(mt_voice == true)
+        {
+            if(_n.nav_error != 0 &&  _n.nav_error != n.nav_error)
+            {
+                var estr = MSP.nav_error(_n.nav_error);
+                mt.message(estr);
+            }
+
+            if((_n.nav_mode != n.nav_mode) || (_n.wp_number != n.wp_number))
+            {
+                switch(_n.nav_mode)
+                {
+                    case 1:
+                        mt.message("Return to home initiated.");
+                        break;
+                    case 2:
+                        mt.message("Navigating to home position.");
+                        break;
+                    case 3:
+                        mt.message("Switch to infinite position hold.");
+                        break;
+                    case 4:
+                        mt.message("Start timed position hold.");
+                        break;
+                    case 5:
+                        mt.message("Navigating to waypoint %d.".printf(_n.wp_number));
+                        break;
+                    case 7:
+                        mt.message("Starting jump for %d".printf(_n.wp_number));
+                        break;
+                    case 8:
+                        mt.message("Starting to land.");
+                        break;
+                    case 9:
+                        mt.message("Landing in progress.");
+                        break;
+                    case 10:
+                        mt.message("Landed. Please disarm.");
+                        break;
+                }
+            }
+        }
+
         n = _n;
+
         if(!di.is_closed() || Logger.is_logging)
         {
             var gstr = MSP.gps_mode(n.gps_mode);
@@ -447,10 +491,12 @@ public class NavStatus : GLib.Object
         }
         mt = new AudioThread();
         mt.start();
+        mt_voice=true;
     }
 
     public void logspeak_close()
     {
+        mt_voice=false;
         mt.clear();
         mt.message("");
         mt.thread.join ();
@@ -492,7 +538,6 @@ public class AudioThread : Object {
     }
 }
 
-
 public class NavConfig : GLib.Object
 {
     private Gtk.Window window;
@@ -518,14 +563,67 @@ public class NavConfig : GLib.Object
     private Gtk.Entry land_speed;
     private Gtk.Entry fence;
     private Gtk.Entry max_wp_no;
+    private uint8 _xtrack;
+    private uint8 _maxwp;
+    private MWPlanner _mwp;
 
-    public NavConfig (Gtk.Window parent, Gtk.Builder builder)
+    public NavConfig (Gtk.Window parent, Gtk.Builder builder, MWPlanner m)
     {
+        _mwp = m;
         window = builder.get_object ("nc_window") as Gtk.Window;
-        var button = builder.get_object ("button9") as Gtk.Button;
+        var button = builder.get_object ("nc_close") as Gtk.Button;
         button.clicked.connect(() => {
                 window.hide();
             });
+
+        var apply = builder.get_object ("nc_apply") as Gtk.Button;
+        apply.clicked.connect(() => {
+                MSP_NAV_CONFIG ncu = {0};
+                if (nvcb1_01.active)
+                    ncu.flag1 |= 0x01;
+                if (nvcb1_02.active)
+                    ncu.flag1 |= 0x02;
+                if (nvcb1_03.active)
+                    ncu.flag1 |= 0x04;
+                if (nvcb1_04.active)
+                    ncu.flag1 |= 0x08;
+                if (nvcb1_05.active)
+                    ncu.flag1 |= 0x10;
+                if (nvcb1_06.active)
+                    ncu.flag1 |= 0x20;
+                if (nvcb1_07.active)
+                    ncu.flag1 |= 0x40;
+                if (nvcb1_08.active)
+                    ncu.flag1 |= 0x80;
+
+                if (nvcb2_01.active)
+                    ncu.flag2 |= 0x01;
+                if (nvcb2_02.active)
+                    ncu.flag2 |= 0x02;
+
+                uint16 u16;
+                u16 = (uint16)int.parse(wp_radius.get_text());
+                ncu.wp_radius = u16;
+                u16 = (uint16) int.parse(safe_wp_dist.get_text());
+                ncu.safe_wp_distance = u16;
+                u16 = (uint16)int.parse(nav_max_alt.get_text());
+                ncu.nav_max_altitude = u16;
+                u16 = (uint16)int.parse(nav_speed_max.get_text());
+                ncu.nav_speed_max = u16;
+                u16 = (uint16)int.parse(nav_speed_min.get_text());
+                ncu.nav_speed_min = u16;
+                u16 = (uint16)(double.parse(nav_bank_max.get_text())*100);
+                ncu.nav_bank_max = u16;
+                u16 = (uint16)int.parse(rth_altitude.get_text());
+                ncu.rth_altitude = u16;
+                ncu.land_speed = (uint8)int.parse(land_speed.get_text());
+                u16 = (uint16)int.parse(fence.get_text());
+                ncu.fence = u16;
+                ncu.crosstrack_gain = _xtrack;
+                ncu.max_wp_number = _maxwp;
+                _mwp.update_config(ncu);
+            });
+
 
        nvcb1_01 = builder.get_object ("nvcb1_01") as Gtk.CheckButton;
        nvcb1_02 = builder.get_object ("nvcb1_02") as Gtk.CheckButton;
@@ -556,7 +654,7 @@ public class NavConfig : GLib.Object
             });
     }
 
-    public void update( MSP_NAV_CONFIG nc)
+    public void update(MSP_NAV_CONFIG nc)
     {
         nvcb1_01.set_active ((nc.flag1 & 0x01) == 0x01);
         nvcb1_02.set_active ((nc.flag1 & 0x02) == 0x02);
@@ -580,7 +678,10 @@ public class NavConfig : GLib.Object
         nav_speed_max.set_text(u16.to_string());
         u16 = uint16.from_little_endian(nc.nav_speed_min);
         nav_speed_min.set_text(u16.to_string());
-        crosstrack_gain.set_text("%.2f".printf((double)nc.crosstrack_gain/100.0));
+
+        _xtrack = nc.crosstrack_gain;
+        crosstrack_gain.set_text("%.2f".printf((double)_xtrack/100.0));
+
         u16 = uint16.from_little_endian(nc.nav_bank_max);
         nav_bank_max.set_text("%.2f".printf((double)u16/100.0));
         u16 = uint16.from_little_endian(nc.rth_altitude);
@@ -588,7 +689,8 @@ public class NavConfig : GLib.Object
         land_speed.set_text(nc.land_speed.to_string());
         u16 = uint16.from_little_endian(nc.fence);
         fence.set_text(u16.to_string());
-        max_wp_no.set_text(nc.max_wp_number.to_string());
+        _maxwp = nc.max_wp_number;
+        max_wp_no.set_text(_maxwp.to_string());
     }
 
     public void hide()

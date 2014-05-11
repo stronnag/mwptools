@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.16.1 -->
+<!-- Generated with glade 3.18.2 -->
 <interface>
   <requires lib="gtk+" version="3.8"/>
   <object class="GtkAboutDialog" id="aboutdialog1">
@@ -721,8 +721,6 @@
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">0</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -734,8 +732,6 @@
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">1</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -747,8 +743,6 @@
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">2</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -760,8 +754,6 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="top_attach">0</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -773,8 +765,6 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="top_attach">1</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -786,8 +776,6 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="top_attach">2</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
           </object>
@@ -856,8 +844,6 @@
       <packing>
         <property name="left_attach">0</property>
         <property name="top_attach">0</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -870,8 +856,6 @@
       <packing>
         <property name="left_attach">0</property>
         <property name="top_attach">1</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -884,8 +868,6 @@
       <packing>
         <property name="left_attach">0</property>
         <property name="top_attach">2</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -898,8 +880,6 @@
       <packing>
         <property name="left_attach">0</property>
         <property name="top_attach">3</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -912,8 +892,6 @@
       <packing>
         <property name="left_attach">0</property>
         <property name="top_attach">4</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -926,8 +904,6 @@
       <packing>
         <property name="left_attach">0</property>
         <property name="top_attach">5</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -940,8 +916,6 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="top_attach">0</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -954,8 +928,6 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="top_attach">1</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -968,8 +940,6 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="top_attach">2</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -982,8 +952,6 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="top_attach">3</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -996,8 +964,6 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="top_attach">4</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -1010,8 +976,6 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="top_attach">5</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -1024,8 +988,6 @@
       <packing>
         <property name="left_attach">0</property>
         <property name="top_attach">6</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -1038,8 +1000,6 @@
       <packing>
         <property name="left_attach">0</property>
         <property name="top_attach">7</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -1051,8 +1011,6 @@
       <packing>
         <property name="left_attach">0</property>
         <property name="top_attach">8</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -1065,8 +1023,6 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="top_attach">6</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -1079,8 +1035,6 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="top_attach">7</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
     <child>
@@ -1093,8 +1047,6 @@
       <packing>
         <property name="left_attach">1</property>
         <property name="top_attach">8</property>
-        <property name="width">1</property>
-        <property name="height">1</property>
       </packing>
     </child>
   </object>
@@ -1110,6 +1062,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="label" translatable="yes">Nav Config</property>
+            <property name="justify">center</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -1124,11 +1077,11 @@
             <property name="column_spacing">7</property>
             <child>
               <object class="GtkCheckButton" id="nvcb1_01">
-                <property name="label" translatable="yes">GPS Filtering</property>
+                <property name="label" translatable="yes">GPS filtering</property>
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Add a 5 element moving average filter to GPS coordinates, helps eliminate gps noise but adds latency</property>
                 <property name="resize_mode">queue</property>
                 <property name="focus_on_click">False</property>
                 <property name="xalign">0</property>
@@ -1137,260 +1090,205 @@
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">0</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
               <object class="GtkCheckButton" id="nvcb1_02">
-                <property name="label" translatable="yes">GPS Lead</property>
+                <property name="label" translatable="yes">GPS prediction filter</property>
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Adds a forward predictive filterig to compensate gps lag.</property>
                 <property name="xalign">0</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">1</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
               <object class="GtkCheckButton" id="nvcb1_03">
-                <property name="label" translatable="yes">Reset Home</property>
+                <property name="label" translatable="yes">Reset Home on arm</property>
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes"> HOME position is reset at every arm, (you can also set home position with GyroCalibration)</property>
                 <property name="xalign">0</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">2</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
               <object class="GtkCheckButton" id="nvcb1_04">
-                <property name="label" translatable="yes">Heading Control</property>
+                <property name="label" translatable="yes">Nav controls heading</property>
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Copter faces toward the navigation point, maghold must be enabled for it.
+</property>
                 <property name="xalign">0</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">3</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
               <object class="GtkCheckButton" id="nvcb1_05">
-                <property name="label" translatable="yes">Tail First</property>
+                <property name="label" translatable="yes">Fly tail first</property>
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Copter comes in with tail first</property>
                 <property name="xalign">0</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">4</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
               <object class="GtkCheckButton" id="nvcb1_06">
-                <property name="label" translatable="yes">RTH Head</property>
+                <property name="label" translatable="yes">RTH heading</property>
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">When copter arrives to home position it rotates its  head to takeoff direction</property>
                 <property name="xalign">0</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">5</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
               <object class="GtkCheckButton" id="nvcb1_07">
                 <property name="label" translatable="yes">Slow Nav</property>
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Slow down to zero when reaching waypoint (same as NAV_SPEED_MIN = 0)</property>
                 <property name="xalign">0</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">6</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
               <object class="GtkCheckButton" id="nvcb1_08">
-                <property name="label" translatable="yes">RTH Alt</property>
+                <property name="label" translatable="yes">Wait for RTH Alt</property>
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Wait to reach RTH alt before start moving to home </property>
                 <property name="xalign">0</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">7</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkCheckButton" id="nvcb2_02">
-                <property name="label" translatable="yes">Baro Takeover</property>
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="can_focus">False</property>
-                <property name="receives_default">False</property>
-                <property name="xalign">0</property>
-                <property name="draw_indicator">True</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">1</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkCheckButton" id="nvcb2_01">
-                <property name="label" translatable="yes">Disable Sticks</property>
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="can_focus">False</property>
-                <property name="receives_default">False</property>
-                <property name="focus_on_click">False</property>
-                <property name="xalign">0</property>
-                <property name="draw_indicator">True</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">0</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="label21">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes"> If we are within this distance to a waypoint then we consider it reached (distance is in cm)</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">WP Radius</property>
+                <property name="label" translatable="yes">WP Radius (cm)</property>
+                <property name="angle">0.02</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">8</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">10</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="wp_radius">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
-                <property name="editable">False</property>
+                <property name="input_purpose">digits</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">8</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">10</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="label22">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">Safe WP distance, do not start mission if the first wp distance is larger than this number (in meters).
+Also aborts mission if the next waypoint distance is more than this number.</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">Safe WP Distance</property>
+                <property name="label" translatable="yes">Safe WP Distance (m)</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">9</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">11</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="label31">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">Maximu allowable navigation altitude (in meters) automatic altitude control will not go above this height
+</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">Nav Altitude Max</property>
+                <property name="label" translatable="yes">Nav Altitude Max (m)</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">10</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">12</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="label23">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">Maximum speed to reach between waypoints</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">Nav Speed Max</property>
+                <property name="label" translatable="yes">Nav Speed Max (cm/s)</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">11</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">13</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="label24">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">Minimum speed when approach waypoint</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">Nav Speed Min</property>
+                <property name="label" translatable="yes">Nav Speed Min (cm/s)</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">12</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">14</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="label25">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">Weight factor of the crosstrack error in navigation calculations (do not touch)
+</property>
                 <property name="halign">start</property>
                 <property name="label" translatable="yes">Crosstrack Gain</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">13</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">15</property>
               </packing>
             </child>
             <child>
@@ -1398,13 +1296,11 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">Nav Bank Max</property>
+                <property name="label" translatable="yes">Nav Bank Max (degrees)</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">14</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">16</property>
               </packing>
             </child>
             <child>
@@ -1412,13 +1308,11 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">RTH Altitude</property>
+                <property name="label" translatable="yes">RTH Altitude (m)</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">15</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">17</property>
               </packing>
             </child>
             <child>
@@ -1426,69 +1320,55 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">Land Speed</property>
+                <property name="label" translatable="yes">Land Speed (? 100 ~= 50cm/s)</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">16</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">18</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="safe_wp_dist">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
-                <property name="editable">False</property>
+                <property name="input_purpose">digits</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">9</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">11</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="nav_max_alt">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
-                <property name="editable">False</property>
+                <property name="input_purpose">digits</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">10</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">12</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="nav_speed_max">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
-                <property name="editable">False</property>
+                <property name="input_purpose">digits</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">11</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">13</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="nav_speed_min">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
-                <property name="editable">False</property>
+                <property name="input_purpose">digits</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">12</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">14</property>
               </packing>
             </child>
             <child>
@@ -1497,54 +1377,48 @@
                 <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
                 <property name="editable">False</property>
+                <property name="input_purpose">digits</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">13</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">15</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="nav_bank_max">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
-                <property name="editable">False</property>
+                <property name="tooltip_text" translatable="yes">Maximum allowable banking for navigation outputs</property>
+                <property name="input_purpose">number</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">14</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">16</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="rth_altitude">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
-                <property name="editable">False</property>
+                <property name="tooltip_text" translatable="yes">Defines the RTH altitude. 0 means keep current alt during RTH (in meters)</property>
+                <property name="input_purpose">digits</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">15</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">17</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="land_speed">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
-                <property name="editable">False</property>
+                <property name="tooltip_text" translatable="yes">Governs the descent speed during landing. 100 is equals approc 50cm/sec
+</property>
+                <property name="input_purpose">digits</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">16</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">18</property>
               </packing>
             </child>
             <child>
@@ -1556,9 +1430,7 @@
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">18</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">20</property>
               </packing>
             </child>
             <child>
@@ -1567,12 +1439,11 @@
                 <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
                 <property name="editable">False</property>
+                <property name="input_purpose">digits</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">18</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">20</property>
               </packing>
             </child>
             <child>
@@ -1580,28 +1451,68 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">Fence</property>
+                <property name="label" translatable="yes">Fence radius (m)</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">17</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">19</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="fence">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
-                <property name="editable">False</property>
+                <property name="tooltip_text" translatable="yes">If FENCE DISTANCE is larger than 0 then copter will switch to RTH when it farther from home</property>
+                <property name="input_purpose">digits</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">17</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="top_attach">19</property>
               </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="nvcb2_01">
+                <property name="label" translatable="yes">Disable Sticks</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Throttle stick input will be ignored  (only in BARO)</property>
+                <property name="focus_on_click">False</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">8</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="nvcb2_02">
+                <property name="label" translatable="yes">Takeover BARO</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Navigation engine will takeover BARO mode control</property>
+                <property name="xalign">0</property>
+                <property name="yalign">0.43999999761581421</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">9</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
             </child>
             <child>
               <placeholder/>
@@ -1632,10 +1543,24 @@
           <object class="GtkButtonBox" id="buttonbox2">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="orientation">vertical</property>
-            <property name="layout_style">start</property>
+            <property name="spacing">26</property>
+            <property name="layout_style">center</property>
             <child>
-              <object class="GtkButton" id="button9">
+              <object class="GtkButton" id="nc_apply">
+                <property name="label">gtk-apply</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="nc_close">
                 <property name="label">gtk-close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -1643,15 +1568,16 @@
                 <property name="use_stock">True</property>
               </object>
               <packing>
-                <property name="expand">False</property>
+                <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">0</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="expand">False</property>
+            <property name="expand">True</property>
             <property name="fill">True</property>
+            <property name="pack_type">end</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -1739,8 +1665,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">0</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1753,8 +1677,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">0</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1768,8 +1690,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">1</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1783,8 +1703,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">2</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1798,8 +1716,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">3</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1813,8 +1729,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">4</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1828,8 +1742,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">5</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1843,8 +1755,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">6</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1858,8 +1768,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">7</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1872,8 +1780,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">1</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1886,8 +1792,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">2</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1900,8 +1804,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">3</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1914,8 +1816,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">4</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1928,8 +1828,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">5</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1941,8 +1839,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">6</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1955,8 +1851,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">7</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1969,8 +1863,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">9</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -1985,8 +1877,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">9</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -2000,8 +1890,6 @@
                   <packing>
                     <property name="left_attach">0</property>
                     <property name="top_attach">8</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
                 <child>
@@ -2013,8 +1901,6 @@
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">8</property>
-                    <property name="width">1</property>
-                    <property name="height">1</property>
                   </packing>
                 </child>
               </object>
@@ -2118,8 +2004,6 @@
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">0</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -2131,8 +2015,6 @@
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">1</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -2144,8 +2026,6 @@
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">2</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -2163,8 +2043,6 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="top_attach">0</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -2181,8 +2059,6 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="top_attach">1</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -2199,8 +2075,6 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="top_attach">2</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -2212,8 +2086,6 @@
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">3</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
             <child>
@@ -2230,8 +2102,6 @@
               <packing>
                 <property name="left_attach">1</property>
                 <property name="top_attach">3</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
               </packing>
             </child>
           </object>

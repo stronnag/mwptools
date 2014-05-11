@@ -24,7 +24,6 @@ using Champlain;
 using GtkChamplain;
 
 public class MWPlanner : GLib.Object {
-
     public Builder builder;
     public Gtk.Window window;
     public  Champlain.View view;
@@ -235,7 +234,8 @@ public class MWPlanner : GLib.Object {
 
         menuncfg = builder.get_object ("nav_config_menu") as Gtk.MenuItem;
         menuncfg.sensitive =false;
-        navconf = new NavConfig(window, builder);
+        navconf = new NavConfig(window, builder, this);
+
         menuncfg.activate.connect (() => {
                 navconf.show();
             });
@@ -876,6 +876,13 @@ public class MWPlanner : GLib.Object {
         have_wp = false;
         buf[0] = wp;
         add_cmd(MSP.Cmds.WP,buf,1,&have_wp,1000);
+    }
+
+    public void update_config(MSP_NAV_CONFIG nc)
+    {
+        have_nc = false;
+        send_cmd(MSP.Cmds.SET_NAV_CONFIG, &nc, sizeof(MSP_NAV_CONFIG));
+        add_cmd(MSP.Cmds.NAV_CONFIG,null,0,&have_nc,1000);
     }
 
     private void send_cmd(MSP.Cmds cmd, void* buf, size_t len)

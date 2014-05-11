@@ -416,6 +416,23 @@ public class MWSim : GLib.Object
                 append_text("endpoint died\n");
                 open();
             });
+
+
+        MSP_NAV_CONFIG nc = MSP_NAV_CONFIG() {
+            flag1 = 0x55,
+            flag2 = 1,
+            wp_radius = 100,
+            safe_wp_distance = 500,
+            nav_max_altitude = 100,
+            nav_speed_max = 400,
+            nav_speed_min = 100,
+            crosstrack_gain= 40,
+            nav_bank_max = 3000,
+            rth_altitude = 15,
+            land_speed = 100,
+            fence = 600
+        };
+
         msp.serial_event.connect ((s, cmd, raw, len, errs) =>
         {
             if(errs == true)
@@ -476,6 +493,11 @@ public class MWSim : GLib.Object
                 append_text("got EE_WRITE\n");
                 break;
 
+                case MSP.Cmds.SET_NAV_CONFIG:
+                append_text("got SET_NC\n");
+                nc = *((MSP_NAV_CONFIG*)raw);
+                break;
+
                 case MSP.Cmds.SET_PID:
                 append_text("got SET_PID\n");
                 break;
@@ -526,20 +548,6 @@ public class MWSim : GLib.Object
                 break;
 
                 case MSP.Cmds.NAV_CONFIG:
-                MSP_NAV_CONFIG nc = MSP_NAV_CONFIG() {
-                    flag1 = 0x55,
-                    flag2 = 1,
-                    wp_radius = 100,
-                    safe_wp_distance = 500,
-                    nav_max_altitude = 100,
-                    nav_speed_max = 400,
-                    nav_speed_min = 100,
-                    crosstrack_gain= 40,
-                    nav_bank_max = 3000,
-                    rth_altitude = 15,
-                    land_speed = 100,
-                    fence = 600
-                };
                 nc.max_wp_number = (uint8) nwpts;
                 msp.send_command(MSP.Cmds.NAV_CONFIG, &nc, sizeof(MSP_NAV_CONFIG));
                 append_text("Send NAV CONFIG %lu\n".printf(sizeof(MSP_NAV_CONFIG)));
@@ -571,7 +579,7 @@ public class MWSim : GLib.Object
                         break;
 
                 default:
-                        print("unknown\n");
+                stdout.printf("unknown %d\n",cmd);
                 break;
             }
         });
