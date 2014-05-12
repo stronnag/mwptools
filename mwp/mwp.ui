@@ -1472,7 +1472,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
             </child>
             <child>
               <object class="GtkCheckButton" id="nvcb2_01">
-                <property name="label" translatable="yes">Disable Sticks</property>
+                <property name="label" translatable="yes">Ignore throttle with nav/BARO </property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>

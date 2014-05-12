@@ -419,7 +419,7 @@ public class MWSim : GLib.Object
 
 
         MSP_NAV_CONFIG nc = MSP_NAV_CONFIG() {
-            flag1 = 0x55,
+            flag1 = 0x51,
             flag2 = 1,
             wp_radius = 100,
             safe_wp_distance = 500,

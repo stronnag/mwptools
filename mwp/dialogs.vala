@@ -583,7 +583,8 @@ public class NavConfig : GLib.Object
                     ncu.flag1 |= 0x01;
                 if (nvcb1_02.active)
                     ncu.flag1 |= 0x02;
-                if (nvcb1_03.active)
+                    // Logic inverted
+                if (nvcb1_03.active == false)
                     ncu.flag1 |= 0x04;
                 if (nvcb1_04.active)
                     ncu.flag1 |= 0x08;
@@ -658,7 +659,8 @@ public class NavConfig : GLib.Object
     {
         nvcb1_01.set_active ((nc.flag1 & 0x01) == 0x01);
         nvcb1_02.set_active ((nc.flag1 & 0x02) == 0x02);
-        nvcb1_03.set_active ((nc.flag1 & 0x04) == 0x04);
+            // Logic deliberately inverted
+        nvcb1_03.set_active ((nc.flag1 & 0x04) != 0x04);
         nvcb1_04.set_active ((nc.flag1 & 0x08) == 0x08);
         nvcb1_05.set_active ((nc.flag1 & 0x10) == 0x10);
         nvcb1_06.set_active ((nc.flag1 & 0x20) == 0x20);
