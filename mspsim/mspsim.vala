@@ -50,6 +50,7 @@ public class MWSim : GLib.Object
     private int gblalt = 0;
     private int gblcse = 0;
     private double volts;
+    private Rand rand;
 
     private MSP_COMP_GPS cg;
     private Gtk.FileChooserButton chooser;
@@ -69,6 +70,7 @@ public class MWSim : GLib.Object
     public MWSim(ref unowned  string[] args)
     {
         cg.range = cg.direction = cg.update = 0;
+        rand  = new Rand();
         volts = 12.6;
         builder = new Builder ();
         var fn = MWPUtils.find_conf_file("mspsim.ui");
@@ -483,7 +485,7 @@ public class MWSim : GLib.Object
 
                 case MSP.Cmds.ALTITUDE:
                 MSP_ALTITUDE buf ={0};
-                buf.estalt = 100*((int32)gblalt).to_little_endian();
+                buf.estalt = (100*((int32)gblalt) + rand.int_range(-50,50)).to_little_endian();
                 buf.vario = ((int16)3).to_little_endian();
                 append_text("Send ALT %lu\n".printf(sizeof(MSP_ALTITUDE)));
                 msp.send_command(MSP.Cmds.ALTITUDE, &buf, sizeof(MSP_ALTITUDE));

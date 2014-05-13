@@ -315,36 +315,39 @@ public class NavStatus : GLib.Object
 
             if((_n.nav_mode != n.nav_mode) || (_n.wp_number != n.wp_number))
             {
+                string nvstr=null;
                 switch(_n.nav_mode)
                 {
                     case 1:
-                        mt.message("Return to home initiated.");
+                        nvstr = "Return to home initiated.";
                         break;
                     case 2:
-                        mt.message("Navigating to home position.");
+                        nvstr = "Navigating to home position.";
                         break;
                     case 3:
-                        mt.message("Switch to infinite position hold.");
+                        nvstr = "Switch to infinite position hold.";
                         break;
                     case 4:
-                        mt.message("Start timed position hold.");
+                        nvstr = "Start timed position hold.";
                         break;
                     case 5:
-                        mt.message("Navigating to waypoint %d.".printf(_n.wp_number));
+                        nvstr = "Navigating to waypoint %d.".printf(_n.wp_number);
                         break;
                     case 7:
-                        mt.message("Starting jump for %d".printf(_n.wp_number));
+                        nvstr = "Starting jump for %d".printf(_n.wp_number);
                         break;
                     case 8:
-                        mt.message("Starting to land.");
+                        nvstr = "Starting to land.";
                         break;
                     case 9:
-                        mt.message("Landing in progress.");
+                        nvstr = "Landing in progress.";
                         break;
                     case 10:
-                        mt.message("Landed. Please disarm.");
+                        nvstr = "Landed. Please disarm.";
                         break;
                 }
+                if(nvstr != null)
+                    mt.message(nvstr);
             }
         }
 
@@ -453,6 +456,18 @@ public class NavStatus : GLib.Object
         voltlabel.set_label("<span font='%d'>%s</span>".printf(fs,s));
     }
 
+    private string str_zero(string str)
+    {
+        if(str[-3:-1] == ".0")
+        {
+            return str[0:-2];
+        }
+        else
+        {
+            return str;
+        }
+    }
+
     public void announce(uint8 mask, bool recip)
     {
         if((mask & SPK.GPS) == SPK.GPS)
@@ -470,13 +485,17 @@ public class NavStatus : GLib.Object
         }
         if((mask & SPK.BARO) == SPK.BARO)
         {
-            int estalt = (int32.from_little_endian(alti.estalt))/100;
-            mt.message("Altitude %d.".printf(estalt));
+            double estalt = (double)(int32.from_little_endian(alti.estalt))/100.0;
+            var str = "Altitude %.1f.".printf(estalt);
+            str = str_zero(str);
+            mt.message(str);
         }
 
         if((mask & SPK.Volts) == SPK.Volts && volts > 0.0)
         {
-            mt.message("Voltage %.1f.".printf( volts));
+            var str = "Voltage %.1f.".printf( volts);
+            str = str_zero(str);
+            mt.message(str);
         }
     }
 
