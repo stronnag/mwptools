@@ -307,7 +307,8 @@ public class NavStatus : GLib.Object
     {
         if(mt_voice == true)
         {
-            if(_n.nav_error != 0 &&  _n.nav_error != n.nav_error)
+            if(_n.nav_mode != 0 && _n.nav_error != 0 &&
+               _n.nav_error != n.nav_error)
             {
                 var estr = MSP.nav_error(_n.nav_error);
                 mt.message(estr);
