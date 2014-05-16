@@ -509,6 +509,12 @@ public class NavStatus : GLib.Object
                 voice = "default";
             espeak_init(voice);
         }
+
+        if (mt != null)
+        {
+            logspeak_close();
+        }
+
         mt = new AudioThread();
         mt.start();
         mt_voice=true;
