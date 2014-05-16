@@ -534,6 +534,8 @@ public class AudioThread : Object {
 
     public void message(string? s)
     {
+        if (msgs.length() > 8)
+            clear();
         msgs.push(s);
     }
 
