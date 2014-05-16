@@ -25,12 +25,11 @@ public class Logger : GLib.Object
     private static Json.Generator gen;
     private static OutputStream os;
     private static IOStream ios;
-
+    private static time_t currtime;
     public static void start()
     {
-        time_t t;
-        time_t(out t);
-        var fn  = "mwp_%s.log".printf(Time.local(t).format("%F_%H%M%S"));
+        time_t(out currtime);
+        var fn  = "mwp_%s.log".printf(Time.local(currtime).format("%F_%H%M%S"));
         File file = File.new_for_path (fn);
         try
         {
@@ -51,16 +50,19 @@ public class Logger : GLib.Object
         try  { os.close(); } catch  {};
     }
 
+    public static void log_time()
+    {
+        time_t(out currtime);
+    }
+
     private static Json.Builder init(string typ)
     {
-        time_t t;
-        time_t(out t);
         Json.Builder builder = new Json.Builder ();
         builder.begin_object ();
 	builder.set_member_name ("type");
         builder.add_string_value (typ);
 	builder.set_member_name ("utime");
-        builder.add_int_value (t);
+        builder.add_int_value (currtime);
         return builder;
     }
 

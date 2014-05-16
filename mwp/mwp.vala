@@ -610,6 +610,8 @@ public class MWPlanner : GLib.Object {
                 int tcycle = 0;
                 gpstid = Timeout.add(timeout, () => {
                         var req=requests[tcycle];
+                        if(tcycle == 0)
+                            Logger.log_time();
                         send_cmd(req, null, 0);
                         tcycle += 1;
                         tcycle %= nreqs;
