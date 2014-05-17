@@ -63,7 +63,7 @@ static int create_bt_dev(char *btaddr)
 }
 #endif
 
-int open_serial(char *device, int baudrate)
+int open_serial(char *device, uint baudrate)
 {
     int fd;
 #if defined(__linux__) && defined(USE_BTSOCK)

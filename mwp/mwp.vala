@@ -981,7 +981,7 @@ public class MWPlanner : GLib.Object {
         else
         {
             var serdev = dev_entry.get_active_text();
-            if (msp.open(serdev,115200) == true)
+            if (msp.open(serdev, conf.baudrate) == true)
             {
                 conbutton.set_label("gtk-disconnect");
                 add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);

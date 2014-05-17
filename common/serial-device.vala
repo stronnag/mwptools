@@ -19,7 +19,7 @@
 
 // valac --pkg posix --pkg gio-2.0 --pkg posix sd-test.vala  serial-device.vala cserial.c
 
-extern int open_serial(string name, int rate);
+extern int open_serial(string name, uint rate);
 extern void close_serial(int fd);
 
 public class MWSerial : Object
@@ -67,7 +67,7 @@ public class MWSerial : Object
         available = false;
     }
 
-    private void setup_fd (int rate)
+    private void setup_fd (uint rate)
     {
         Posix.termios newtio = {0};
         Posix.speed_t baudrate;
@@ -135,7 +135,7 @@ public class MWSerial : Object
         }
     }
 
-    public bool open(string device, int rate)
+    public bool open(string device, uint rate)
     {
 
         string[] parts = device.split ("@");

@@ -101,5 +101,10 @@
       <description>Whether the audio bearing is the reciprocal (i.e. bearing from home to quad, rather than from quad to home)</description>
     </key>
 
+    <key name="baudrate" type="u">
+      <default>57600</default>
+      <summary>Baud rate</summary>
+      <description>Serial baud rate</description>
+    </key>
   </schema>
 </schemalist>
