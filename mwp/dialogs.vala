@@ -249,6 +249,8 @@ public class NavStatus : GLib.Object
     private Gdk.RGBA[] colors;
     private bool vinit = false;
     private bool mt_voice = false;
+    private uint8 numsat = 0;
+    private bool modsat=false;
     private  AudioThread mt;
 
     public enum SPK  {
@@ -470,8 +472,8 @@ public class NavStatus : GLib.Object
 
     public void sats(uint8 nsats)
     {
-        if(mt_voice == true)
-            mt.message("%d Satellites.".printf(nsats));
+        numsat = nsats;
+        modsat = true;
     }
 
     public void announce(uint8 mask, bool recip)
@@ -503,6 +505,11 @@ public class NavStatus : GLib.Object
             str = str_zero(str);
             mt.message(str);
         }
+        if(modsat)
+        {
+            modsat = false;
+            mt.message("%d satellites.".printf(numsat));
+        }
     }
 
     public void logspeak_init (string? voice)
@@ -520,7 +527,6 @@ public class NavStatus : GLib.Object
             logspeak_close();
         }
         stderr.printf("Start audio\n");
-
         mt = new AudioThread();
         mt.start();
         mt_voice=true;

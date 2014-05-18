@@ -87,6 +87,7 @@ public class MWPlanner : GLib.Object {
     private bool audio_on;
     private uint8 sflags;
     private uint8 nsats = 0;
+    private uint8 _nsats = 0;
 
     private enum MS_Column {
         ID,
@@ -510,10 +511,10 @@ public class MWPlanner : GLib.Object {
     {
         if(autocon)
         {
-//            stderr.printf("retry con\n");
+            stderr.printf("retry con\n");
             if(!msp.available)
                 connect_serial();
-//            stderr.printf("done retry con\n");
+            stderr.printf("done retry con\n");
             Timeout.add_seconds(5, () => { return try_connect(); });
             return false;
         }
@@ -526,7 +527,6 @@ public class MWPlanner : GLib.Object {
         {
             stderr.printf("Error on cmd %c (%d)\n", cmd,cmd);
             remove_tid(ref cmdtid);
-            cmdtid=0;
             return;
         }
         switch(cmd)
@@ -669,12 +669,7 @@ public class MWPlanner : GLib.Object {
 
             case MSP.Cmds.RAW_GPS:
                 var fix = gpsinfo.update(*(MSP_RAW_GPS*)raw, conf.dms);
-                var _nsats =(*(MSP_RAW_GPS*)raw).gps_numsat;
-                if(_nsats != nsats)
-                {
-                    navstatus.sats(_nsats);
-                    nsats = _nsats;
-                }
+                _nsats =(*(MSP_RAW_GPS*)raw).gps_numsat;
 
                 if (fix != 0)
                 {
@@ -954,6 +949,11 @@ public class MWPlanner : GLib.Object {
         {
             navstatus.logspeak_init(conf.evoice);
             spktid = Timeout.add_seconds(conf.speakint, () => {
+                    if(_nsats != nsats)
+                    {
+                        navstatus.sats(_nsats);
+                        nsats = _nsats;
+                    }
                     navstatus.announce(sflags, conf.recip);
                     return true;
                 });
