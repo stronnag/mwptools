@@ -26,6 +26,8 @@ public class Logger : GLib.Object
     private static OutputStream os;
     private static IOStream ios;
     private static time_t currtime;
+    private static time_t armtime;
+
     public static void start()
     {
         time_t(out currtime);
@@ -64,6 +66,59 @@ public class Logger : GLib.Object
 	builder.set_member_name ("utime");
         builder.add_int_value (currtime);
         return builder;
+    }
+
+    public static void radio(MSP_RADIO r)
+    {
+        var builder = init("radio");
+        builder.set_member_name("rxerrors");
+        builder.add_int_value(r.rxerrors);
+        builder.set_member_name("fixed_errors");
+        builder.add_int_value(r.fixed_errors);
+        builder.set_member_name("localrssi");
+        builder.add_int_value(r.localrssi);
+        builder.set_member_name("remrssi");
+        builder.add_int_value(r.remrssi);
+        builder.set_member_name("txbuf");
+        builder.add_int_value(r.txbuf);
+        builder.set_member_name("noise");
+        builder.add_int_value(r.noise);
+        builder.set_member_name("remnoise");
+        builder.add_int_value(r.remnoise);
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+	gen.set_root (root);
+        try  { gen.to_stream(os); } catch  {};
+    }
+
+    public static void armed(bool armed)
+    {
+        time_t duration;
+
+        if(armed == false)
+        {
+            armtime = 0;
+            duration = -1;
+        }
+        else
+        {
+            if(armtime == 0)
+                armtime = time_t(out armtime);
+            time_t(out duration);
+            duration -= armtime;
+        }
+        var builder = init("armed");
+        builder.set_member_name("armed");
+        builder.add_boolean_value(armed);
+        if(duration != -1)
+        {
+            builder.set_member_name("duration");
+            builder.add_int_value(duration);
+        }
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+	gen.set_root (root);
+        try  { gen.to_stream(os); } catch  {};
     }
 
     public static void analog(MSP_ANALOG a)

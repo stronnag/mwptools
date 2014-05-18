@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
@@ -469,6 +468,12 @@ public class NavStatus : GLib.Object
         }
     }
 
+    public void sats(uint8 nsats)
+    {
+        if(mt_voice == true)
+            mt.message("%d Satellites.".printf(nsats));
+    }
+
     public void announce(uint8 mask, bool recip)
     {
         if((mask & SPK.GPS) == SPK.GPS)
@@ -514,6 +519,7 @@ public class NavStatus : GLib.Object
         {
             logspeak_close();
         }
+        stderr.printf("Start audio\n");
 
         mt = new AudioThread();
         mt.start();
@@ -522,6 +528,8 @@ public class NavStatus : GLib.Object
 
     public void logspeak_close()
     {
+        stderr.printf("Stop audio\n");
+
         mt_voice=false;
         mt.clear();
         mt.message("");
@@ -804,8 +812,17 @@ public class GPSInfo : GLib.Object
         spd = (uint16.from_little_endian(g.gps_speed))/100.0;
         cse = (uint16.from_little_endian(g.gps_ground_course))/10.0;
 
+        if(Logger.is_logging)
+        {
+            Logger.raw_gps(lat,lon,cse,spd,
+                           g.gps_altitude,
+                           g.gps_fix,
+                           g.gps_numsat);
+        }
+
         var nsatstr = "%d (%sfix)".printf(g.gps_numsat,
-                                       (g.gps_fix==0) ? "no" : "");
+                                          (g.gps_fix==0) ? "no" : "");
+
         nsat_lab.set_label(nsatstr);
         alt_lab.set_label("%d m".printf(g.gps_altitude));
 
@@ -814,13 +831,6 @@ public class GPSInfo : GLib.Object
 
         speed_lab.set_label("%.1f m/s".printf(spd));
         dirn_lab.set_label("%.1f °".printf(cse));
-        if(Logger.is_logging)
-        {
-            Logger.raw_gps(lat,lon,cse,spd,
-                           g.gps_altitude,
-                           g.gps_fix,
-                           g.gps_numsat);
-        }
         return g.gps_fix;
     }
 

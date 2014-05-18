@@ -50,6 +50,7 @@ public class MWPlanner : GLib.Object {
     private Gtk.Label labelvbat;
     private bool have_vers;
     private bool have_misc;
+    private bool have_status;
     private bool have_wp;
     private bool have_nc;
     private uint8 mrtype;
@@ -85,6 +86,7 @@ public class MWPlanner : GLib.Object {
     private Gtk.CheckButton autocon_cb;
     private bool audio_on;
     private uint8 sflags;
+    private uint8 nsats = 0;
 
     private enum MS_Column {
         ID,
@@ -524,6 +526,7 @@ public class MWPlanner : GLib.Object {
         {
             stderr.printf("Error on cmd %c (%d)\n", cmd,cmd);
             remove_tid(ref cmdtid);
+            cmdtid=0;
             return;
         }
         switch(cmd)
@@ -550,75 +553,84 @@ public class MWPlanner : GLib.Object {
                 vwarn1 = m.conf_vbatlevel_warn1;
                 vwarn2 = m.conf_vbatlevel_warn2;
                 vcrit =  m.conf_vbatlevel_crit;
-                add_cmd(MSP.Cmds.STATUS,null,0,&have_misc,1000);
+                add_cmd(MSP.Cmds.STATUS,null,0,&have_status,1000);
                 break;
 
             case MSP.Cmds.STATUS:
-                remove_tid(ref cmdtid);
-                have_misc = true;
-                uint16 sensor;
                 MSP_STATUS *s = (MSP_STATUS *)raw;
-                sensor=uint16.from_little_endian(s.sensor);
-                if(navcap == true)
-                    add_cmd(MSP.Cmds.NAV_CONFIG,null,0,&have_nc,1000);
-
-                var timadj = builder.get_object ("spinbutton2") as Gtk.SpinButton;
-                var  val = timadj.adjustment.value;
-                MSP.Cmds[] requests = {};
-                ulong reqsize = 0;
-
-                requests += MSP.Cmds.ANALOG;
-                reqsize += sizeof(MSP_ANALOG);
-
-                sflags = NavStatus.SPK.Volts;
-
-                if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
+                if(have_status == false)
                 {
-                    requests += MSP.Cmds.ATTITUDE;
-                    reqsize += sizeof(MSP_ATTITUDE);
-                }
-
-                if((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO)
-                {
-                    sflags |= NavStatus.SPK.BARO;
-                    requests += MSP.Cmds.ALTITUDE;
-                    reqsize += sizeof(MSP_ALTITUDE);
-                }
-
-                if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
-                {
-                    sflags |= NavStatus.SPK.GPS;
+                    have_status = true;
+                    remove_tid(ref cmdtid);
+                    uint16 sensor;
+                    sensor=uint16.from_little_endian(s.sensor);
                     if(navcap == true)
+                        add_cmd(MSP.Cmds.NAV_CONFIG,null,0,&have_nc,1000);
+
+                    var timadj = builder.get_object ("spinbutton2") as Gtk.SpinButton;
+                    var  val = timadj.adjustment.value;
+                    MSP.Cmds[] requests = {};
+                    ulong reqsize = 0;
+
+                    requests += MSP.Cmds.STATUS;
+                    reqsize += sizeof(MSP_STATUS);
+
+                    requests += MSP.Cmds.ANALOG;
+                    reqsize += sizeof(MSP_ANALOG);
+
+                    sflags = NavStatus.SPK.Volts;
+
+                    if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
                     {
-                        requests += MSP.Cmds.NAV_STATUS;
-                        reqsize += sizeof(MSP_NAV_STATUS);
+                        requests += MSP.Cmds.ATTITUDE;
+                        reqsize += sizeof(MSP_ATTITUDE);
                     }
-                    requests += MSP.Cmds.RAW_GPS;
-                    requests += MSP.Cmds.COMP_GPS;
-                    reqsize += (sizeof(MSP_RAW_GPS) + sizeof(MSP_COMP_GPS));
-                    if(craft == null)
-                        craft = new Craft(view, mrtype,norotate);
-                    craft.park();
+
+                    if((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO)
+                    {
+                        sflags |= NavStatus.SPK.BARO;
+                        requests += MSP.Cmds.ALTITUDE;
+                        reqsize += sizeof(MSP_ALTITUDE);
+                    }
+
+                    if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
+                    {
+                        sflags |= NavStatus.SPK.GPS;
+                        if(navcap == true)
+                        {
+                            requests += MSP.Cmds.NAV_STATUS;
+                            reqsize += sizeof(MSP_NAV_STATUS);
+                        }
+                        requests += MSP.Cmds.RAW_GPS;
+                        requests += MSP.Cmds.COMP_GPS;
+                        reqsize += (sizeof(MSP_RAW_GPS) + sizeof(MSP_COMP_GPS));
+                        if(craft == null)
+                            craft = new Craft(view, mrtype,norotate);
+                        craft.park();
+                    }
+
+                    var nreqs = requests.length;
+                    int timeout = (int)(val*1000 / nreqs);
+
+                    print("Timer cycle for %d (%dms) items, %lu bytes\n",
+                          nreqs,timeout,reqsize);
+
+                    int tcycle = 0;
+                    gpstid = Timeout.add(timeout, () => {
+                            var req=requests[tcycle];
+                            send_cmd(req, null, 0);
+                            tcycle += 1;
+                            tcycle %= nreqs;
+                            return true;
+                        });
+                    start_audio();
                 }
-
-                var nreqs = requests.length;
-                int timeout = (int)(val*1000 / nreqs);
-
-                print("Timer cycle for %d (%dms) items, %lu bytes\n",
-                      nreqs,timeout,reqsize);
-
-                int tcycle = 0;
-                gpstid = Timeout.add(timeout, () => {
-                        var req=requests[tcycle];
-                        if(tcycle == 0)
-                            Logger.log_time();
-                        send_cmd(req, null, 0);
-                        tcycle += 1;
-                        tcycle %= nreqs;
-                        return true;
-                    });
-
-                start_audio();
+                Logger.log_time();
+                var swflg = uint32.from_little_endian(s.flag);
+                if(Logger.is_logging)
+                {
+                    Logger.armed(((swflg & 1) == 1));
+                }
                 break;
 
             case MSP.Cmds.NAV_STATUS:
@@ -657,6 +669,12 @@ public class MWPlanner : GLib.Object {
 
             case MSP.Cmds.RAW_GPS:
                 var fix = gpsinfo.update(*(MSP_RAW_GPS*)raw, conf.dms);
+                var _nsats =(*(MSP_RAW_GPS*)raw).gps_numsat;
+                if(_nsats != nsats)
+                {
+                    navstatus.sats(_nsats);
+                    nsats = _nsats;
+                }
 
                 if (fix != 0)
                 {
@@ -801,6 +819,12 @@ public class MWPlanner : GLib.Object {
             case MSP.Cmds.EEPROM_WRITE:
                 break;
 
+            case MSP.Cmds.RADIO:
+                if(Logger.is_logging)
+                {
+                    Logger.radio(*(MSP_RADIO*)raw);
+                }
+                break;
             default:
                 stderr.printf ("** Unknown response %d\n", cmd);
                 break;
