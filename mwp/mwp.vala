@@ -981,10 +981,13 @@ public class MWPlanner : GLib.Object {
         remove_tid(ref cmdtid);
         stop_audio();
         sflags = 0;
+
         msp.close();
         gpsinfo.annul();
         set_bat_stat(0);
-        have_vers = have_misc = false;
+        have_vers = have_misc = have_status = have_wp = have_nc = false;
+        nsats = 0;
+        _nsats = 0;
         c.set_label("gtk-connect");
         menuncfg.sensitive = menuup.sensitive = menudown.sensitive = false;
         navconf.hide();
