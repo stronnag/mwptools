@@ -6,7 +6,7 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -42,7 +42,7 @@ public class Mission : GLib.Object
     public double cx;
     public uint npoints;
     public uint zoom;
-        
+
     public Mission()
     {
         waypoints ={};
@@ -80,20 +80,20 @@ public class Mission : GLib.Object
         }
         stdout.printf("lat min,max %f %f\n", minx, maxx);
         stdout.printf("lon min,max %f %f\n", miny, maxy);
-        stdout.printf("cy cx %f %f %d\n", cy, cx, (int)zoom);        
+        stdout.printf("cy cx %f %f %d\n", cy, cx, (int)zoom);
     }
     public bool read_xml_file(string path)
     {
        Parser.init ();
 
-       
+
        Xml.Doc* doc = Parser.parse_file (path);
         if (doc == null)
         {
             stderr.printf ("File %s not found or permissions missing\n", path);
             return false;
         }
-        
+
         Xml.Node* root = doc->get_root_element ();
         if (root != null)
         {
@@ -196,14 +196,14 @@ public class Mission : GLib.Object
                             case "cy":
                                 this.cy = double.parse(prop->children->content);
                                 break;
-                                
+
                         }
                     }
                     break;
             }
         }
     }
-    
+
     public void to_xml_file(string path)
     {
         Parser.init ();
@@ -213,17 +213,17 @@ public class Mission : GLib.Object
             /*new Xml.Ns (null, "", "");
               ns->type = Xml.ElementType.ELEMENT_NODE;*/
 
-        Xml.Node* root = new Xml.Node (ns, "mission");
+        Xml.Node* root = new Xml.Node (ns, "MISSION");
         doc->set_root_element (root);
 
         Xml.Node* comment = new Xml.Node.comment ("mw planner 0.01");
         root->add_child (comment);
 
         Xml.Node* subnode;
-        
+
         if (version != null)
         {
-            subnode = root->new_text_child (ns, "version", "");
+            subnode = root->new_text_child (ns, "VERSION", "");
             subnode->new_prop ("value", this.version);
         }
 
@@ -231,10 +231,10 @@ public class Mission : GLib.Object
         subnode->new_prop ("zoom", zoom.to_string());
         subnode->new_prop ("cx", cx.to_string());
         subnode->new_prop ("cy", cy.to_string());
-        
+
         foreach (MissionItem m in this.waypoints)
         {
-            subnode = root->new_text_child (ns, "missionitem", "");
+            subnode = root->new_text_child (ns, "MISSIONITEM", "");
             subnode->new_prop ("no", m.no.to_string());
             subnode->new_prop ("action", MSP.get_wpname(m.action));
             subnode->new_prop ("lat", m.lat.to_string());
@@ -245,7 +245,7 @@ public class Mission : GLib.Object
             subnode->new_prop ("parameter3", m.param3.to_string());
         }
 
-        
+
         string xmlstr;
         doc->dump_memory_enc_format (out xmlstr);
         try {
@@ -269,12 +269,12 @@ public class Mission : GLib.Object
         bool ready = false;
         d = 0.0;
         lt = 0;
-        
+
         var nsize = waypoints.length;
         do
         {
             var typ = waypoints[n].action;
-            
+
             if(typ == MSP.Action.JUMP && waypoints[n].param2 == -1)
             {
                 d = 0.0;
@@ -292,7 +292,7 @@ public class Mission : GLib.Object
             {
                 break;
             }
-            
+
             var cy = waypoints[n].lat;
             var cx = waypoints[n].lon;
             if (ready == true)
@@ -303,7 +303,7 @@ public class Mission : GLib.Object
                 {
                     lt += waypoints[n].param1;
                 }
-                
+
                 d += dx;
                 if(typ == MSP.Action.JUMP)
                 {
@@ -358,7 +358,7 @@ int main (string[] args) {
         }
         else
             print("Indeterminate\n");
-        
+
         if (args.length == 3)
             ms.to_xml_file(args[2]);
     }
