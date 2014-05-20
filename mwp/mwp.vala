@@ -638,6 +638,7 @@ public class MWPlanner : GLib.Object {
                 break;
 
             case MSP.Cmds.NAV_CONFIG:
+                remove_tid(ref cmdtid);
                 have_nc = true;
                 navconf.update(*(MSP_NAV_CONFIG*)raw);
                 break;
@@ -977,8 +978,8 @@ public class MWPlanner : GLib.Object {
 
     private void serial_doom(Gtk.Button c)
     {
-        remove_tid(ref gpstid);
         remove_tid(ref cmdtid);
+        remove_tid(ref gpstid);
         stop_audio();
         sflags = 0;
 
@@ -1001,9 +1002,9 @@ public class MWPlanner : GLib.Object {
     {
         if(msp.available)
         {
+            serial_doom(conbutton);
             verlab.set_label("");
             typlab.set_label("");
-            serial_doom(conbutton);
         }
         else
         {
