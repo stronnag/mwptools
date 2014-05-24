@@ -250,8 +250,9 @@ public class NavStatus : GLib.Object
     private bool vinit = false;
     private bool mt_voice = false;
     private uint8 numsat = 0;
+    private int16 hdr;
     private bool modsat=false;
-    private  AudioThread mt;
+    private AudioThread mt;
 
     public enum SPK  {
         Volts = 1,
@@ -389,7 +390,7 @@ public class NavStatus : GLib.Object
             double day;
             dax = (double)(int16.from_little_endian(atti.angx))/10.0;
             day = (double)(int16.from_little_endian(atti.angy))/10.0;
-            int hdr = (int16.from_little_endian(atti.heading));
+            hdr = (int16.from_little_endian(atti.heading));
             if(hdr < 0)
                 hdr += 360;
             if(visible)
@@ -499,6 +500,11 @@ public class NavStatus : GLib.Object
             mt.message(str);
         }
 
+        {
+            var str = "Heading %d.".printf(hdr);
+            mt.message(str);
+        }
+        
         if((mask & SPK.Volts) == SPK.Volts && volts > 0.0)
         {
             var str = "Voltage %.1f.".printf( volts);
