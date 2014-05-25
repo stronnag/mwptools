@@ -225,6 +225,66 @@ public class ShapeDialog : GLib.Object
     }
 }
 
+public class RadioStatus : GLib.Object
+{
+    private Gtk.Label rxerr_label;
+    private Gtk.Label fixerr_label;
+    private Gtk.Label locrssi_label;
+    private Gtk.Label remrssi_label;
+    private Gtk.Label txbuf_label;
+    private Gtk.Label noise_label;
+    private Gtk.Label remnoise_label;
+    public Gtk.Grid grid {get; private set;}
+    private MSP_RADIO r;
+    private Gdl.DockItem di;
+
+    public RadioStatus(Gtk.Builder builder)
+    {
+        grid = builder.get_object ("grid4") as Gtk.Grid;
+        rxerr_label = builder.get_object ("rxerrlab") as Gtk.Label;
+        fixerr_label = builder.get_object ("fixerrlab") as Gtk.Label;
+        locrssi_label = builder.get_object ("locrssilab") as Gtk.Label;
+        remrssi_label = builder.get_object ("remrssilab") as Gtk.Label;
+        txbuf_label = builder.get_object ("txbuflab") as Gtk.Label;
+        noise_label = builder.get_object ("noiselab") as Gtk.Label;
+        remnoise_label = builder.get_object ("remnoiselab") as Gtk.Label;
+    }
+
+    public void setdock(Gdl.DockItem _di)
+    {
+        di = _di;
+    }
+
+    public void show()
+    {
+        if(di.is_closed() && ! di.is_iconified())
+        {
+            di.show();
+            di.iconify_item();
+        }
+    }
+
+    public void update(MSP_RADIO _r)
+    {
+        r = _r;
+        if(!di.is_closed())
+        {
+            rxerr_label.set_label(r.rxerrors.to_string());
+            fixerr_label.set_label(r.fixed_errors.to_string());
+            locrssi_label.set_label(r.localrssi.to_string());
+            remrssi_label.set_label(r.remrssi.to_string());
+            txbuf_label.set_label(r.txbuf.to_string());
+            noise_label.set_label(r.noise.to_string());
+            remnoise_label.set_label(r.remnoise.to_string());
+        }
+
+        if (Logger.is_logging)
+        {
+            Logger.radio(r);
+        }
+    }
+}
+
 public class NavStatus : GLib.Object
 {
     private Gtk.Label gps_mode_label;
@@ -295,9 +355,6 @@ public class NavStatus : GLib.Object
 
     public void show()
     {
-        print("%s %s %s\n", di.name,
-              di.is_closed().to_string(), di.is_iconified().to_string());
-
         if(di.is_closed() && ! di.is_iconified())
         {
             di.show();
@@ -321,6 +378,9 @@ public class NavStatus : GLib.Object
                 string nvstr=null;
                 switch(_n.nav_mode)
                 {
+                    case 0:
+                        nvstr = "Manual mode.";
+                        break;
                     case 1:
                         nvstr = "Return to home initiated.";
                         break;
@@ -358,14 +418,14 @@ public class NavStatus : GLib.Object
 
         if(!di.is_closed() || Logger.is_logging)
         {
-            var gstr = MSP.gps_mode(n.gps_mode);
-            var nstr = MSP.nav_state(n.nav_mode);
-            var n_action = n.action;
-            var n_wpno = n.wp_number;
-            var estr = MSP.nav_error(n.nav_error);
-            var tbrg = (uint16.from_little_endian(n.target_bearing));
             if (!di.is_closed())
             {
+                var gstr = MSP.gps_mode(n.gps_mode);
+                var nstr = MSP.nav_state(n.nav_mode);
+                var n_action = n.action;
+                var n_wpno = n.wp_number;
+                var estr = MSP.nav_error(n.nav_error);
+                var tbrg = (uint16.from_little_endian(n.target_bearing));
                 gps_mode_label.set_label(gstr);
                 nav_state_label.set_label(nstr);
                 var act = MSP.get_wpname((MSP.Action)n_action);
@@ -504,7 +564,7 @@ public class NavStatus : GLib.Object
             var str = "Heading %d.".printf(hdr);
             mt.message(str);
         }
-        
+
         if((mask & SPK.Volts) == SPK.Volts && volts > 0.0)
         {
             var str = "Voltage %.1f.".printf( volts);

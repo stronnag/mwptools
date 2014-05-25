@@ -65,6 +65,7 @@ public class MWPlanner : GLib.Object {
     private PrefsDialog prefs;
     private Gtk.AboutDialog about;
     private NavStatus navstatus;
+    private RadioStatus radstatus;
     private NavConfig navconf;
     private GPSInfo gpsinfo;
     private WPMGR wpmgr;
@@ -243,7 +244,6 @@ public class MWPlanner : GLib.Object {
                 navconf.show();
             });
 
-
         var mi = builder.get_object ("gps_menu_view") as Gtk.MenuItem;
         mi.activate.connect (() => {
                 if(dockitem[1].is_closed() && !dockitem[1].is_iconified())
@@ -264,10 +264,21 @@ public class MWPlanner : GLib.Object {
 
         mi = builder.get_object ("voltage_menu_view") as Gtk.MenuItem;
         mi.activate.connect (() => {
-                if(dockitem[3].is_closed() && !dockitem[0].is_iconified())
+                if(dockitem[3].is_closed() && !dockitem[3].is_iconified())
                 {
                    dockitem[3].show();
                    dockitem[3].iconify_item();
+                   }
+            });
+
+        radstatus = new RadioStatus(builder);
+
+        mi = builder.get_object ("radio_menu_view") as Gtk.MenuItem;
+        mi.activate.connect (() => {
+                if(dockitem[4].is_closed() && !dockitem[4].is_iconified())
+                {
+                   dockitem[4].show();
+                   dockitem[4].iconify_item();
                    }
             });
 
@@ -342,7 +353,7 @@ public class MWPlanner : GLib.Object {
         box.pack_start (dockbar, false, false, 0);
         box.pack_end (dock, true, true, 0);
 
-        dockitem = new DockItem[4];
+        dockitem = new DockItem[5];
 
         dockitem[0]= new DockItem.with_stock ("Mission",
                          "Mission Tote", "gtk-properties",
@@ -371,6 +382,12 @@ public class MWPlanner : GLib.Object {
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
         dockitem[3].add (navstatus.voltbox);
         dock.add_item (dockitem[3], DockPlacement.BOTTOM);
+
+        dockitem[4]= new DockItem.with_stock ("Radio",
+                         "Radio Status", "gtk-network",
+                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+        dockitem[4].add (radstatus.grid);
+        dock.add_item (dockitem[4], DockPlacement.BOTTOM);
 
         view.notify["zoom-level"].connect(() => {
                 var val = view.get_zoom_level();
@@ -504,17 +521,17 @@ public class MWPlanner : GLib.Object {
         dockitem[1].iconify_item ();
         dockitem[2].iconify_item ();
         dockitem[3].hide ();
+        dockitem[4].hide ();
         navstatus.setdock(dockitem[2]);
+        radstatus.setdock(dockitem[4]);
     }
 
     private bool try_connect()
     {
         if(autocon)
         {
-            stderr.printf("retry con\n");
             if(!msp.available)
                 connect_serial();
-            stderr.printf("done retry con\n");
             Timeout.add_seconds(5, () => { return try_connect(); });
             return false;
         }
@@ -816,10 +833,7 @@ public class MWPlanner : GLib.Object {
                 break;
 
             case MSP.Cmds.RADIO:
-                if(Logger.is_logging)
-                {
-                    Logger.radio(*(MSP_RADIO*)raw);
-                }
+                radstatus.update(*(MSP_RADIO*)raw);
                 break;
             default:
                 stderr.printf ("** Unknown response %d\n", cmd);
