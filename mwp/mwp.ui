@@ -210,7 +210,7 @@
                       <object class="GtkMenuItem" id="radio_menu_view">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Radio Status</property>
+                        <property name="label" translatable="yes">3DR Radio Status</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>
