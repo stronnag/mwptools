@@ -385,7 +385,7 @@ public class ListBox : GLib.Object
                 if (typ == MSP.Action.JUMP)
                 {
                      list_model.get_value (iiter, WY_Columns.IDX, out icell);
-                     var iwp = (int)icell;
+                     var iwp = int.parse((string)icell);
                      var nwp = int.parse(new_text);
                      if(nwp < 1 || nwp >= iwp)
                          return;
