@@ -549,18 +549,22 @@ public class MWSim : GLib.Object
                 case MSP.Cmds.NAV_STATUS:
                 msp.send_command(MSP.Cmds.NAV_STATUS, &nsts, sizeof(MSP_NAV_STATUS));
                 append_text("Send NAV STATUS %lu\n".printf(sizeof(MSP_NAV_STATUS)));
+                if(loop == 0)
+                {
+                    MSP_RADIO r = {0, 0,152, 152, 100, 57, 38};
+                    r.localrssi = (uint8)((int32)r.localrssi + rand.int_range(-10,10));
+                    r.remrssi = (uint8)((int32)r.remrssi + rand.int_range(-10,10));
+                    r.noise = (uint8)((int32)r.noise + rand.int_range(-5,5));
+                    r.remnoise = (uint8)((int32)r.remnoise + rand.int_range(-5,5));
+                    msp.send_command(MSP.Cmds.RADIO, &r, sizeof(MSP_RADIO));
+                    append_text("Send RADIO %lu\n".printf(sizeof(MSP_RADIO)));
+                }
                 break;
 
                 case MSP.Cmds.NAV_CONFIG:
                 nc.max_wp_number = (uint8) nwpts;
                 msp.send_command(MSP.Cmds.NAV_CONFIG, &nc, sizeof(MSP_NAV_CONFIG));
                 append_text("Send NAV CONFIG %lu\n".printf(sizeof(MSP_NAV_CONFIG)));
-                if(loop == 0)
-                {
-                    MSP_RADIO buf = {0, 0,152, 152, 100, 57, 38};
-                    msp.send_command(MSP.Cmds.RADIO, &buf, sizeof(MSP_RADIO));
-                    append_text("Send RADIO %lu\n".printf(sizeof(MSP_RADIO)));
-                }
                 break;
 
                 case MSP.Cmds.ANALOG:

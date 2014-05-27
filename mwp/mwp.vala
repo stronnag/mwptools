@@ -629,8 +629,12 @@ public class MWPlanner : GLib.Object {
                     var nreqs = requests.length;
                     int timeout = (int)(val*1000 / nreqs);
 
-                    print("Timer cycle for %d (%dms) items, %lu bytes\n",
-                          nreqs,timeout,reqsize);
+                        // data we send, response is structs + this
+                    var qsize = nreqs * 6;
+                    reqsize += qsize;
+
+                    print("Timer cycle for %d (%dms) items, %lu => %lu bytes\n",
+                          nreqs,timeout,qsize,reqsize);
 
                     int tcycle = 0;
                     gpstid = Timeout.add(timeout, () => {
