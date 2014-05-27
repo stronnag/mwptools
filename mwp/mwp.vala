@@ -754,7 +754,7 @@ public class MWPlanner : GLib.Object {
                     }
                     else
                     {
-                        mwp_warning_box("Mission validated", Gtk.MessageType.INFO);
+                        mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
                     }
 
                 }
@@ -1248,13 +1248,19 @@ public class MWPlanner : GLib.Object {
     }
 
     private void mwp_warning_box(string warnmsg,
-                                 Gtk.MessageType klass=Gtk.MessageType.WARNING )
+                                 Gtk.MessageType klass=Gtk.MessageType.WARNING,
+                                 int timeout = 0)
     {
         Gtk.MessageDialog msg = new Gtk.MessageDialog (window,
                                                        Gtk.DialogFlags.MODAL,
                                                        klass,
                                                        Gtk.ButtonsType.OK,
                                                        warnmsg);
+
+        if(timeout > 0)
+        {
+            Timeout.add_seconds(timeout, () => { msg.destroy(); return false; });
+        }
         msg.run();
         msg.destroy();
     }

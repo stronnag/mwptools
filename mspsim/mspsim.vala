@@ -297,7 +297,7 @@ public class MWSim : GLib.Object
             nsts.gps_mode=3;
             nsts.nav_mode=5;
             nsts.action=1;
-            nsts.wp_number=(uint8)cl+1;
+            nsts.wp_number=(uint8)cl+2;
             nsts.target_bearing=(uint16)lcse;
             double hdist,hcse;
             Geo.csedist(lat, lon, legs[maxl-1].elat,
@@ -435,8 +435,10 @@ public class MWSim : GLib.Object
             fence = 600
         };
 
+        var loop = 0;
         msp.serial_event.connect ((s, cmd, raw, len, errs) =>
         {
+            loop = (loop + 1) % 4;
             if(errs == true)
             {
                 stderr.printf("Error on cmd %c (%d)\n", cmd,cmd);
@@ -553,12 +555,12 @@ public class MWSim : GLib.Object
                 nc.max_wp_number = (uint8) nwpts;
                 msp.send_command(MSP.Cmds.NAV_CONFIG, &nc, sizeof(MSP_NAV_CONFIG));
                 append_text("Send NAV CONFIG %lu\n".printf(sizeof(MSP_NAV_CONFIG)));
-                break;
-
-                case MSP.Cmds.RADIO:
-                MSP_RADIO buf = {0};
-                msp.send_command(MSP.Cmds.RADIO, &buf, sizeof(MSP_RADIO));
-                append_text("Send RADIO %lu\n".printf(sizeof(MSP_RADIO)));
+                if(loop == 0)
+                {
+                    MSP_RADIO buf = {0, 0,152, 152, 100, 57, 38};
+                    msp.send_command(MSP.Cmds.RADIO, &buf, sizeof(MSP_RADIO));
+                    append_text("Send RADIO %lu\n".printf(sizeof(MSP_RADIO)));
+                }
                 break;
 
                 case MSP.Cmds.ANALOG:
