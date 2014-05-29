@@ -1189,6 +1189,7 @@ public class MWPlanner : GLib.Object {
             if (conf.compat_vers != null)
                 m.version = conf.compat_vers;
             m.to_xml_file(last_file);
+            update_title_from_file(last_file);
         }
     }
 
@@ -1220,8 +1221,15 @@ public class MWPlanner : GLib.Object {
             if (conf.compat_vers != null)
                 m.version = conf.compat_vers;
             m.to_xml_file(last_file);
+            update_title_from_file(last_file);
         }
         chooser.close ();
+    }
+
+    private void update_title_from_file(string fname)
+    {
+        var basename = GLib.Path.get_basename(fname);
+        window.title = @"MW Planner = $basename";
     }
 
     private void load_file(string fname)
@@ -1244,6 +1252,7 @@ public class MWPlanner : GLib.Object {
             view.set_property("zoom-level", ms.zoom);
             markers.add_list_store(ls);
             last_file = fname;
+            update_title_from_file(fname);
         }
         else
         {
