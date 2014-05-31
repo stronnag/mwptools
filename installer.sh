@@ -23,6 +23,7 @@ cp $APP $BIN/
 cp ../common/mwp_icon.svg $DATA/icons/hicolor/48x48/apps/
 [ -d pixmaps ] && cp -a pixmaps $DATA/mwp
 
+[ -d $DATA/applications ] || mkdir -p $DATA/applications
 [ -e $APP.desktop ] && cp $APP.desktop  $DATA/applications/
 
 COMP=
@@ -35,4 +36,12 @@ then
 fi
 [ -n "$COMP" ] && glib-compile-schemas $DATA/glib-2.0/schemas/
 
+[ -n "$LOC" ] && cat <<_EOM
+***************************************************************
+* For a local install, binaries are in $HOME/bin
+* Ensure you have set the following environment variable
+* (add to $HOME/.bashrc, or equivalent for your shell)
+* export XDG_DATA_DIRS=/usr/share:$HOME/.local/share:
+***************************************************************
+_EOM
 exit 0
