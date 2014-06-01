@@ -51,9 +51,19 @@ public class MWSim : GLib.Object
     private int gblcse = 0;
     private double volts;
     private Rand rand;
+    private double afact;
 
     private MSP_COMP_GPS cg;
     private Gtk.FileChooserButton chooser;
+
+    private static string mission=null;
+    private static bool exhaustbat=false;
+
+    const OptionEntry[] options = {
+        { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
+        { "exhaust-battery", 'x', 0, OptionArg.NONE, out exhaustbat, "exhaust the battery (else warn1)", null},
+        {null}
+    };
 
     public void append_text(string text)
     {
@@ -67,11 +77,13 @@ public class MWSim : GLib.Object
          tbuffer.insert(ref ei, msg, -1);
     }
 
-    public MWSim(ref unowned  string[] args)
+    public MWSim()
     {
         cg.range = cg.direction = cg.update = 0;
         rand  = new Rand();
         volts = 12.6;
+        afact = (exhaustbat == false) ? 0.1667 :  0.27;
+
         builder = new Builder ();
         var fn = MWPUtils.find_conf_file("mspsim.ui");
         if (fn == null)
@@ -125,7 +137,7 @@ public class MWSim : GLib.Object
                             gps_timer++;
                             double frac = (double)gps_timer/(double)ftime;
                             pbar.set_fraction(frac);
-                            volts = 12.6*(1.0 - 0.27*frac);
+                            volts = 12.6*(1.0 - afact*frac);
                             if (gps_timer == ftime)
                             {
                                 stop_sim();
@@ -156,10 +168,10 @@ public class MWSim : GLib.Object
             });
         chooser = builder.get_object ("filechooserbutton1") as Gtk.FileChooserButton;
 
-        if(args.length == 2)
+        if(mission != null)
         {
-            chooser.set_filename (args[1]);
-            parse_mission(args[1]);
+            chooser.set_filename (mission);
+            parse_mission(mission);
         }
 
         chooser.file_set.connect(() => {
@@ -597,13 +609,22 @@ public class MWSim : GLib.Object
         sim();
         Gtk.main();
     }
-}
-
-static int main(string?[] args)
-{
-
-    Gtk.init(ref args);
-    var d = new MWSim(ref args);
-    d.run ();
-    return 0;
+    static int main(string?[] args)
+    {
+        Gtk.init(ref args);
+        try {
+            var opt = new OptionContext("");
+            opt.set_help_enabled(true);
+            opt.add_main_entries(options, null);
+            opt.parse(ref args);
+        } catch (OptionError e) {
+            stderr.printf("Error: %s\n", e.message);
+            stderr.printf("Run '%s --help' to see a full list of available "+
+                          "options\n", args[0]);
+            return 1;
+    }
+        var d = new MWSim();
+        d.run ();
+        return 0;
+    }
 }
