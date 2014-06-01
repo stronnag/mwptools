@@ -64,8 +64,8 @@ public class ListBox : GLib.Object
             switch (m.action)
             {
                 case MSP.Action.RTH:
-                case MSP.Action.SET_POI:
-                case MSP.Action.SET_HEAD:
+//                case MSP.Action.SET_POI:
+//                case MSP.Action.SET_HEAD:
                     no="";
                     break;
 
@@ -490,8 +490,8 @@ public class ListBox : GLib.Object
             switch ((MSP.Action)cell)
             {
                 case MSP.Action.RTH:
-                case MSP.Action.SET_POI:
-                case MSP.Action.SET_HEAD:
+//                case MSP.Action.SET_POI:
+//                case MSP.Action.SET_HEAD:
                     ls.set_value (iter, WY_Columns.IDX, "");
                     break;
 

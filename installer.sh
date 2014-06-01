@@ -22,6 +22,7 @@ cp $APP $BIN/
 [ -d $DATA/icons/hicolor/48x48/apps ] || mkdir -p $DATA/icons/hicolor/48x48/apps
 cp ../common/mwp_icon.svg $DATA/icons/hicolor/48x48/apps/
 [ -d pixmaps ] && cp -a pixmaps $DATA/mwp
+[ -f bleet.ogg ] && cp bleet.ogg $DATA/mwp
 
 [ -d $DATA/applications ] || mkdir -p $DATA/applications
 [ -e $APP.desktop ] && cp $APP.desktop  $DATA/applications/

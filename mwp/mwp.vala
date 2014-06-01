@@ -79,7 +79,7 @@ public class MWPlanner : GLib.Object {
     private uint8 vwarn1;
     private uint8 vwarn2;
     private uint8 vcrit;
-    private uint8 livbat;
+    private int licol;
     private DockMaster master;
     private DockLayout layout;
     public  DockItem[] dockitem;
@@ -140,7 +140,6 @@ public class MWPlanner : GLib.Object {
     public MWPlanner ()
     {
         wpmgr = WPMGR();
-
         builder = new Builder ();
         conf = new MWPSettings();
         conf.read_settings();
@@ -849,19 +848,39 @@ public class MWPlanner : GLib.Object {
     {
         int icol;
         if(ivbat < vcrit /2 || ivbat == 0)
+        {
             icol = 4;
+        }
         else
         {
             if (ivbat <= vcrit)
+            {
                 icol = 3;
+            }
             else if (ivbat <= vwarn2)
                 icol = 2;
             else if (ivbat <= vwarn1)
+            {
                 icol = 1;
+            }
             else
+            {
                 icol= 0;
+            }
         }
         return icol;
+    }
+
+    private void bleet_sans_merci()
+    {
+        var fn = MWPUtils.find_conf_file("bleet.ogg");
+        try
+        {
+            string cmd = @"paplay $fn";
+            Process.spawn_command_line_async(cmd);
+	} catch (SpawnError e) {
+            stderr.printf ("Error: %s\n", e.message);
+	}
     }
 
 
@@ -885,7 +904,11 @@ public class MWPlanner : GLib.Object {
         vbatlab="<span background=\"%s\" weight=\"bold\">%s</span>".printf(bcols[icol], str);
         labelvbat.set_markup(vbatlab);
         navstatus.volt_update(str,icol,vf);
-        livbat = ivbat;
+        if(icol != 0 && icol != licol)
+        {
+            bleet_sans_merci();
+        }
+        licol= icol;
     }
 
     private void upload_quad()
