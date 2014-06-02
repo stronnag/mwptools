@@ -18,6 +18,8 @@
  */
 using Gtk;
 
+extern double get_locale_double(string str);
+
 public struct LegItem
 {
     double slat;

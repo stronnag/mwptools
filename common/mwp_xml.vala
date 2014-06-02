@@ -141,10 +141,10 @@ public class Mission : GLib.Object
                                 m.action = MSP.lookup_name(act);
                                 break;
                             case "lat":
-                                m.lat = double.parse(attr_content);
+                                m.lat = get_locale_double(attr_content);
                                 break;
                             case "lon":
-                                m.lon = double.parse(attr_content);
+                                m.lon = get_locale_double(attr_content);
                                 break;
                             case "parameter1":
                                 m.param1 = int.parse(attr_content);
@@ -191,10 +191,10 @@ public class Mission : GLib.Object
                                 this.zoom = (uint)int.parse(prop->children->content);
                                 break;
                             case "cx":
-                                this.cx = double.parse(prop->children->content);
+                                this.cx = get_locale_double(prop->children->content);
                                 break;
                             case "cy":
-                                this.cy = double.parse(prop->children->content);
+                                this.cy = get_locale_double(prop->children->content);
                                 break;
 
                         }

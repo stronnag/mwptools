@@ -17,6 +17,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+extern double get_locale_double(string str);
+
 public struct PIDVals
 {
     public double dmax;
@@ -220,16 +222,16 @@ public class PIDEdit : Object
          builder.set_member_name ("minthrottle");
          builder.add_int_value (int.parse(eminthr.get_text()));
          builder.set_member_name ("magdeclination");
-         builder.add_int_value ((int)(10*double.parse(emagdec.get_text())));
+         builder.add_int_value ((int)(10*get_locale_double(emagdec.get_text())));
 
          builder.set_member_name ("vbatscale");
          builder.add_int_value (int.parse(evbatscale.get_text()));
          builder.set_member_name ("vbatwarn1");
-         builder.add_int_value((int)(10*double.parse(evbatwarn1.get_text())));
+         builder.add_int_value((int)(10*get_locale_double(evbatwarn1.get_text())));
          builder.set_member_name ("vbatwarn2");
-         builder.add_int_value((int)(10*double.parse(evbatwarn2.get_text())));
+         builder.add_int_value((int)(10*get_locale_double(evbatwarn2.get_text())));
          builder.set_member_name ("vbatcrit");
-         builder.add_int_value((int)(10*double.parse(evbatcrit.get_text())));
+         builder.add_int_value((int)(10*get_locale_double(evbatcrit.get_text())));
 
          builder.end_object ();
          Json.Node root = builder.get_root ();
@@ -456,12 +458,12 @@ public class PIDEdit : Object
                     }
 
                     misc.conf_minthrottle = (uint16)int.parse(eminthr.get_text());
-                    misc.conf_mag_declination = (int16)(10*double.parse(emagdec.get_text()));
+                    misc.conf_mag_declination = (int16)(10*get_locale_double(emagdec.get_text()));
 
                     misc.conf_vbatscale = (uint8)int.parse(evbatscale.get_text());
-                    misc.conf_vbatlevel_warn1 = (uint8)(10*double.parse(evbatwarn1.get_text()));
-                    misc.conf_vbatlevel_warn2 = (uint8)(10*double.parse(evbatwarn2.get_text()));
-                    misc.conf_vbatlevel_crit = (uint8)(10*double.parse(evbatcrit.get_text()));
+                    misc.conf_vbatlevel_warn1 = (uint8)(10*get_locale_double(evbatwarn1.get_text()));
+                    misc.conf_vbatlevel_warn2 = (uint8)(10*get_locale_double(evbatwarn2.get_text()));
+                    misc.conf_vbatlevel_crit = (uint8)(10*get_locale_double(evbatcrit.get_text()));
                     Idle.add(() => {
                             s.send_command(MSP.Cmds.SET_PID,rawbuf,30);
                             s.send_command(MSP.Cmds.SET_MISC,

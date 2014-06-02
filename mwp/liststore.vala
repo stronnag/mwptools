@@ -462,8 +462,8 @@ public class ListBox : GLib.Object
 
         list_model.get_iter (out iter_val, new Gtk.TreePath.from_string (path));
         double d;
-        var res = double.try_parse(new_text, out d);
-        if (res == true && (d <= maxval && d >= minval))
+        d = get_locale_double(new_text);
+        if (d <= maxval && d >= minval)
         {
             if (as_int == true)
             {

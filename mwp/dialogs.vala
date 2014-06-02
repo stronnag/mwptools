@@ -17,8 +17,8 @@
  */
 
 
-extern void espeak_init(char *voice);
-extern void espeak_say(char *text);
+extern void espeak_init(string voice);
+extern void espeak_say(string text);
 //extern void espeak_terminate();
 
 public class DeltaDialog : GLib.Object
@@ -46,8 +46,8 @@ public class DeltaDialog : GLib.Object
         switch(id)
         {
             case 1001:
-                dlat = double.parse(dlt_entry1.get_text());
-                dlon = double.parse(dlt_entry2.get_text());
+                dlat = get_locale_double(dlt_entry1.get_text());
+                dlon = get_locale_double(dlt_entry2.get_text());
                 dalt = int.parse(dlt_entry3.get_text());
                 res = true;
                 break;
@@ -117,15 +117,15 @@ public class PrefsDialog : GLib.Object
                 }
                 conf.devices = strs;
                 str = ents[1].get_text();
-                conf.latitude=double.parse(str);
+                conf.latitude=get_locale_double(str);
                 str = ents[2].get_text();
-                conf.longitude=double.parse(str);
+                conf.longitude=get_locale_double(str);
                 str = ents[3].get_text();
                 conf.loiter=int.parse(str);
                 str = ents[4].get_text();
                 conf.altitude=int.parse(str);
                 str = ents[5].get_text();
-                conf.nav_speed=double.parse(str);
+                conf.nav_speed=get_locale_double(str);
                 str = ents[6].get_text();
                 conf.defmap=str;
                 str = ents[7].get_text();
@@ -724,7 +724,7 @@ public class NavConfig : GLib.Object
                 ncu.nav_speed_max = u16;
                 u16 = (uint16)int.parse(nav_speed_min.get_text());
                 ncu.nav_speed_min = u16;
-                u16 = (uint16)(double.parse(nav_bank_max.get_text())*100);
+                u16 = (uint16)(get_locale_double(nav_bank_max.get_text())*100);
                 ncu.nav_bank_max = u16;
                 u16 = (uint16)int.parse(rth_altitude.get_text());
                 ncu.rth_altitude = u16;

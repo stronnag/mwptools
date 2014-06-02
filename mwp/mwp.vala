@@ -23,6 +23,8 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
+extern double get_locale_double(string str);
+
 public class MWPlanner : GLib.Object {
     public Builder builder;
     public Gtk.Window window;
