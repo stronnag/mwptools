@@ -56,8 +56,9 @@ public class MWSerial : Object
             S_CMD,
             S_DATA,
             S_CHECKSUM,
-            S_ERROR
-    }
+            S_ERROR,
+            S_T_HEADER2=100,
+            }
 
     public signal void serial_event (MSP.Cmds event, uint8[]result, uint len, bool err);
     public signal void serial_lost ();
@@ -217,9 +218,53 @@ public class MWSerial : Object
                     {
                         state=States.S_HEADER2;
                     }
+                    else if(res == 1 && buf[0] == 'T')
+                    {
+                        state=States.S_T_HEADER2;
+                    }
                     else
                     {
                         debug("fail on header1 %d %x", (int)res, buf[0]);
+                        state=States.S_ERROR;
+                    }
+                    break;
+
+                case States.S_T_HEADER2:
+                    res = Posix.read(fd,buf,1);
+                    if(res == 1)
+                    {
+                        needed = 0;
+                        switch(buf[0])
+                        {
+                            case 'G':
+                                needed = (uint8) sizeof(LTM_GFRAME);
+                                cmd = MSP.Cmds.TG_FRAME;
+                                break;
+                            case 'A':
+                                needed = (uint8) sizeof(LTM_AFRAME);
+                                cmd = MSP.Cmds.TG_FRAME;
+                                break;
+                            case 'S':
+                                needed = (uint8) sizeof(LTM_SFRAME);
+                                cmd = MSP.Cmds.TS_FRAME;
+                                break;
+                            default:
+                                debug("fail on T_header2 %d %x", (int)res, buf[0]);
+                                state=States.S_ERROR;
+                                break;
+                        }
+                        if (needed > 0)
+                        {
+                            csize = needed;
+                            raw = new uint8[csize];
+                            rawp= 0;
+                            checksum = 0;
+                            state = States.S_DATA;
+                        }
+                    }
+                    else
+                    {
+                        debug("fail on T_header2 %d %x", (int)res, buf[0]);
                         state=States.S_ERROR;
                     }
                     break;

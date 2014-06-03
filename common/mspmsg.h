@@ -126,3 +126,31 @@ struct __attribute__ ((__packed__))  _msp_analog
      uint16_t amps;
 };
 typedef struct _msp_analog MSP_ANALOG;
+
+struct __attribute__ ((__packed__))  _ltm_gframe
+{
+    int32_t lat;
+    int32_t lon;
+    uint8_t speed;
+    int32_t alt;
+    uint8_t sats;
+};
+typedef struct _ltm_gframe LTM_GFRAME;
+
+struct __attribute__ ((__packed__))  _ltm_aframe
+{
+    int16_t pitch;
+    int16_t roll;
+    int16_t heading;
+};
+typedef struct _ltm_aframe LTM_AFRAME;
+
+struct __attribute__ ((__packed__))  _ltm_sframe
+{
+    int16_t vbat;
+    int16_t vcurr;
+    uint8_t rssi;
+    uint8_t airspeed;
+    uint8_t flags;
+};
+typedef struct _ltm_sframe LTM_SFRAME;

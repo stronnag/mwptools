@@ -124,3 +124,32 @@ public struct MSP_ANALOG
      uint16 rssi;
      uint16 amps;
 }
+
+[CCode (cheader_filename = "../common/mspmsg.h")]
+public struct LTM_GFRAME
+{
+    int32 lat;
+    int32 lon;
+    uint8 speed;
+    int32 alt;
+    uint8 sats;
+}
+
+[CCode (cheader_filename = "../common/mspmsg.h")]
+public struct LTM_AFRAME
+{
+    int16 pitch;
+    int16 roll;
+    int16 heading;
+}
+
+
+[CCode (cheader_filename = "../common/mspmsg.h")]
+public struct LTM_SFRAME
+{
+    int16 vbat;
+    int16 vcurr;
+    uint8 rssi;
+    uint8 airspeed;
+    uint8 flags;
+}

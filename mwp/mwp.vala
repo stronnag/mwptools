@@ -840,11 +840,41 @@ public class MWPlanner : GLib.Object {
             case MSP.Cmds.RADIO:
                 radstatus.update(*(MSP_RADIO*)raw);
                 break;
+
+            case MSP.Cmds.TG_FRAME:
+                LTM_GFRAME *gf = (LTM_GFRAME *)raw;
+                stdout.printf("LTE G %f %f %d %f %02x\n",
+                              gf.lat/10000000.0,
+                              gf.lon/10000000.0,
+                              gf.speed,
+                              gf.alt/100.0,
+                              gf.sats);
+                break;
+
+            case MSP.Cmds.TA_FRAME:
+                LTM_AFRAME *af = (LTM_AFRAME *)raw;
+                var h = af.heading;
+                if(h < 0)
+                    h += 360;
+
+                stdout.printf("LTE A %d %d %d\n",
+                              af.pitch, af.roll, h);
+                break;
+
+            case MSP.Cmds.TS_FRAME:
+                LTM_SFRAME *sf = (LTM_SFRAME *)raw;
+                stdout.printf("LTE S %.2f %.2f %d %d %02x\n",
+                              sf.vbat/1000.0,
+                              sf.vcurr/1000.0,
+                              sf.rssi, sf.airspeed,sf.flags);
+                break;
+
             default:
                 stderr.printf ("** Unknown response %d\n", cmd);
                 break;
         }
     }
+
 
     private int getbatcol(int ivbat)
     {
