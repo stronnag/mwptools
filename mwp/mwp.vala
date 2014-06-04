@@ -77,6 +77,7 @@ public class MWPlanner : GLib.Object {
     private static bool autocon;
     private static bool mkcon;
     private static bool ignore_sz;
+    private static bool nopoll = false;
     private static bool norotate = false; // workaround for Ubuntu & old champlain
     private uint8 vwarn1;
     private uint8 vwarn2;
@@ -112,7 +113,6 @@ public class MWPlanner : GLib.Object {
         uint8 wpidx;
     }
 
-
     private enum WPFAIL {
         OK=0,
         NO = (1<<0),
@@ -134,6 +134,7 @@ public class MWPlanner : GLib.Object {
         { "serial-device", 's', 0, OptionArg.STRING, out serial, "Serial device", null},
         { "connect", 'c', 0, OptionArg.NONE, out mkcon, "connect to first device", null},
         { "auto-connect", 'a', 0, OptionArg.NONE, out autocon, "auto-connect to first device", null},
+        { "no-poll", 0, 0, OptionArg.NONE, out nopoll, "don't poll for nav info", null},
         { "ignore-sizing", 0, 0, OptionArg.NONE, out ignore_sz, "ignore minimum size constraint", null},
         { "ignore-rotation", 0, 0, OptionArg.NONE, out norotate, "ignore vehicle icon rotation on old libchamplain", null},
         {null}
@@ -576,82 +577,97 @@ public class MWPlanner : GLib.Object {
 
             case MSP.Cmds.STATUS:
                 MSP_STATUS *s = (MSP_STATUS *)raw;
-                if(have_status == false)
+                uint16 sensor;
+                sensor=uint16.from_little_endian(s.sensor);
+                if(nopoll == true)
                 {
                     have_status = true;
                     remove_tid(ref cmdtid);
-                    uint16 sensor;
-                    sensor=uint16.from_little_endian(s.sensor);
-                    if(navcap == true)
-                        add_cmd(MSP.Cmds.NAV_CONFIG,null,0,&have_nc,1000);
-
-                    var timadj = builder.get_object ("spinbutton2") as Gtk.SpinButton;
-                    var  val = timadj.adjustment.value;
-                    MSP.Cmds[] requests = {};
-                    ulong reqsize = 0;
-
-                    requests += MSP.Cmds.STATUS;
-                    reqsize += sizeof(MSP_STATUS);
-
-                    requests += MSP.Cmds.ANALOG;
-                    reqsize += sizeof(MSP_ANALOG);
-
-                    sflags = NavStatus.SPK.Volts;
-
-                    if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
-                    {
-                        requests += MSP.Cmds.ATTITUDE;
-                        reqsize += sizeof(MSP_ATTITUDE);
-                    }
-
-                    if((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO)
-                    {
-                        sflags |= NavStatus.SPK.BARO;
-                        requests += MSP.Cmds.ALTITUDE;
-                        reqsize += sizeof(MSP_ALTITUDE);
-                    }
-
                     if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
                     {
                         sflags |= NavStatus.SPK.GPS;
-                        if(navcap == true)
-                        {
-                            requests += MSP.Cmds.NAV_STATUS;
-                            reqsize += sizeof(MSP_NAV_STATUS);
-                        }
-                        requests += MSP.Cmds.RAW_GPS;
-                        requests += MSP.Cmds.COMP_GPS;
-                        reqsize += (sizeof(MSP_RAW_GPS) + sizeof(MSP_COMP_GPS));
                         if(craft == null)
                             craft = new Craft(view, mrtype,norotate);
                         craft.park();
                     }
-
-                    var nreqs = requests.length;
-                    int timeout = (int)(val*1000 / nreqs);
-
-                        // data we send, response is structs + this
-                    var qsize = nreqs * 6;
-                    reqsize += qsize;
-
-                    print("Timer cycle for %d (%dms) items, %lu => %lu bytes\n",
-                          nreqs,timeout,qsize,reqsize);
-
-                    int tcycle = 0;
-                    gpstid = Timeout.add(timeout, () => {
-                            var req=requests[tcycle];
-                            send_cmd(req, null, 0);
-                            tcycle += 1;
-                            tcycle %= nreqs;
-                            return true;
-                        });
-                    start_audio();
                 }
-                Logger.log_time();
-                var swflg = uint32.from_little_endian(s.flag);
-                if(Logger.is_logging)
+                else
                 {
-                    Logger.armed(((swflg & 1) == 1));
+                    if(have_status == false)
+                    {
+                        have_status = true;
+                        remove_tid(ref cmdtid);
+                        if(navcap == true)
+                            add_cmd(MSP.Cmds.NAV_CONFIG,null,0,&have_nc,1000);
+
+                        var timadj = builder.get_object ("spinbutton2") as Gtk.SpinButton;
+                        var  val = timadj.adjustment.value;
+                        MSP.Cmds[] requests = {};
+                        ulong reqsize = 0;
+
+                        requests += MSP.Cmds.STATUS;
+                        reqsize += sizeof(MSP_STATUS);
+
+                        requests += MSP.Cmds.ANALOG;
+                        reqsize += sizeof(MSP_ANALOG);
+
+                        sflags = NavStatus.SPK.Volts;
+
+                        if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
+                        {
+                            requests += MSP.Cmds.ATTITUDE;
+                            reqsize += sizeof(MSP_ATTITUDE);
+                        }
+
+                        if((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO)
+                        {
+                            sflags |= NavStatus.SPK.BARO;
+                            requests += MSP.Cmds.ALTITUDE;
+                            reqsize += sizeof(MSP_ALTITUDE);
+                        }
+
+                        if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
+                        {
+                            sflags |= NavStatus.SPK.GPS;
+                            if(navcap == true)
+                            {
+                                requests += MSP.Cmds.NAV_STATUS;
+                                reqsize += sizeof(MSP_NAV_STATUS);
+                            }
+                            requests += MSP.Cmds.RAW_GPS;
+                            requests += MSP.Cmds.COMP_GPS;
+                            reqsize += (sizeof(MSP_RAW_GPS) + sizeof(MSP_COMP_GPS));
+                            if(craft == null)
+                                craft = new Craft(view, mrtype,norotate);
+                            craft.park();
+                        }
+
+                        var nreqs = requests.length;
+                        int timeout = (int)(val*1000 / nreqs);
+
+                            // data we send, response is structs + this
+                        var qsize = nreqs * 6;
+                        reqsize += qsize;
+
+                        print("Timer cycle for %d (%dms) items, %lu => %lu bytes\n",
+                              nreqs,timeout,qsize,reqsize);
+
+                        int tcycle = 0;
+                        gpstid = Timeout.add(timeout, () => {
+                                var req=requests[tcycle];
+                                send_cmd(req, null, 0);
+                                tcycle += 1;
+                                tcycle %= nreqs;
+                                return true;
+                            });
+                        start_audio();
+                    }
+                    Logger.log_time();
+                    var swflg = uint32.from_little_endian(s.flag);
+                    if(Logger.is_logging)
+                    {
+                        Logger.armed(((swflg & 1) == 1));
+                    }
                 }
                 break;
 
@@ -945,33 +961,23 @@ public class MWPlanner : GLib.Object {
 
     private void upload_quad()
     {
-        bool ok = true;
-
-        if(conf.scary_warn == true)
+        var wps = ls.to_wps();
+        if(wps.length == 0)
         {
-            ok = scary_warning();
-
+            MSP_WP w0 = MSP_WP();
+            w0.wp_no = 1;
+            w0.action =  MSP.Action.RTH;
+            w0.lat = w0.lon = 0;
+            w0.altitude = 25;
+            w0.p1 = w0.p2 = w0.p3 = 0;
+            w0.flag = 0xa5;
+            wps += w0;
         }
-        if (ok == true)
-        {
-            var wps = ls.to_wps();
-            if(wps.length == 0)
-            {
-                MSP_WP w0 = MSP_WP();
-                w0.wp_no = 1;
-                w0.action =  MSP.Action.RTH;
-                w0.lat = w0.lon = 0;
-                w0.altitude = 25;
-                w0.p1 = w0.p2 = w0.p3 = 0;
-                w0.flag = 0xa5;
-                wps += w0;
-            }
-            wpmgr.npts = (uint8)wps.length;
-            wpmgr.wpidx = 0;
-            wpmgr.wps = wps;
-            wpmgr.wp_flag = WPDL.VALIDATE;
-            send_cmd(MSP.Cmds.SET_WP, &wpmgr.wps[wpmgr.wpidx], sizeof(MSP_WP));
-        }
+        wpmgr.npts = (uint8)wps.length;
+        wpmgr.wpidx = 0;
+        wpmgr.wps = wps;
+        wpmgr.wp_flag = WPDL.VALIDATE;
+        send_cmd(MSP.Cmds.SET_WP, &wpmgr.wps[wpmgr.wpidx], sizeof(MSP_WP));
     }
 
     public void request_wp(uint8 wp)
@@ -1375,25 +1381,6 @@ public class MWPlanner : GLib.Object {
         wpmgr.wp_flag = WPDL.REPLACE;
         request_wp(1);
     }
-
-    private bool scary_warning()
-    {
-        bool ok = false;
-        const string text =
-            "You are about to upload using an undocumented, beta status protocol\n\nAre you sure you want to do this?";
-
-        Gtk.MessageDialog msg = new Gtk.MessageDialog (window,
-                                                       Gtk.DialogFlags.MODAL,
-                                                       Gtk.MessageType.QUESTION,
-                                                       Gtk.ButtonsType.YES_NO,
-                                                       text);
-        var id = msg.run();
-        msg.destroy();
-        if(id == Gtk.ResponseType.YES)
-            ok = true;
-        return ok;
-    }
-
 
     public static int main (string[] args)
     {

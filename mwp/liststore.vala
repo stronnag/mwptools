@@ -434,8 +434,12 @@ public class ListBox : GLib.Object
                 {
                     var time = event.time;
                     shp_item.sensitive=false;
+/************
+  remove requirement that mission is blank, allowing the
+  build up of multiple shapes
                     int n_rows = list_model.iter_n_children(null);
                     if(n_rows == 1)
+************/
                     {
                         Gtk.TreeIter _iter;
                         Value val;

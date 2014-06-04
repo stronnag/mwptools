@@ -1,9 +1,0 @@
-<schemalist>
-  <schema id="org.mwptools.pidedit" path="/org/mwptools/pidedit/" >
-    <key name="device-names" type="as">
-        <default>['/dev/ttyACM0','/dev/ttyUSB42','/dev/rfcomm42']</default>
-        <summary>Device names</summary>
-        <description>A list of device names</description>
-    </key>
-  </schema>
-</schemalist>

@@ -55,11 +55,12 @@ public class SwitchEdit : Object
         s.send_command(cmd,buf,len);
     }
 
-    private void get_settings(out string[] devs)
+    private void get_settings(out string[] devs, out uint baudrate)
     {
         devs={};
+        baudrate=0;
         Settings settings = null;
-        var sname = "org.mwptools.switchedit";
+        var sname = "org.mwptools.planner";
         var uc = Environment.get_user_data_dir();
         uc += "/glib-2.0/schemas/";
 
@@ -79,6 +80,7 @@ public class SwitchEdit : Object
         if (settings != null)
         {
             devs = settings.get_strv ("device-names");
+            baudrate = settings.get_uint("baudrate");
         }
     }
 
@@ -228,7 +230,8 @@ public class SwitchEdit : Object
             foreach(string a in args[1:args.length])
                 dentry.append_text(a);
         }
-        get_settings(out devs);
+        uint baudrate;
+        get_settings(out devs, out baudrate);
         foreach(string a in devs)
         {
             dentry.append_text(a);
@@ -272,7 +275,7 @@ public class SwitchEdit : Object
                 if (is_connected == false)
                 {
                     serdev = dentry.get_active_text();
-                    if(s.open(serdev,115200) == true)
+                    if(s.open(serdev,baudrate) == true)
                     {
                         is_connected = true;
                         conbutton.set_label("Disconnect");
