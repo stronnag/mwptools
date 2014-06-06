@@ -926,7 +926,7 @@ public class MWPlanner : GLib.Object {
         {
             try
             {
-                string cmd = @"paplay $fn";
+                string cmd = "%s %s".printf(conf.mediap,fn);
                 Process.spawn_command_line_async(cmd);
             } catch (SpawnError e) {
                 stderr.printf ("Error: %s\n", e.message);

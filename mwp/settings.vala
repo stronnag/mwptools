@@ -40,6 +40,7 @@ public class MWPSettings : GLib.Object
     public string evoice {get; private set; default=null;}
     public bool recip {get; set; default=false;}
     public uint  baudrate {get; set; default=57600;}
+    public string mediap {get; set;}
 
     public MWPSettings()
     {
@@ -82,7 +83,7 @@ public class MWPSettings : GLib.Object
             speakint = 15;
         evoice = settings.get_string ("espeak-voice");
         baudrate = settings.get_uint("baudrate");
-
+        mediap = settings.get_string ("media-player");
         if(map_sources == "")
             map_sources = null;
 

@@ -106,5 +106,12 @@
       <summary>Baud rate</summary>
       <description>Serial baud rate</description>
     </key>
+
+    <key name="media-player" type="s">
+      <summary>Media player for battery alerts</summary>
+      <default>"paplay"</default>
+      <description>Application spawned to play alerts for battery voltage</description>
+    </key>
+
   </schema>
 </schemalist>
