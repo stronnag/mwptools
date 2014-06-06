@@ -65,7 +65,7 @@ public class MWSim : GLib.Object
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
         { "exhaust-battery", 'x', 0, OptionArg.NONE, out exhaustbat, "exhaust the battery (else warn1)", null},
-        { "u", 'u', 0, OptionArg.INT, ref udport, "", ""},
+        { "udp-port", 'u', 0, OptionArg.INT, ref udport, "udp port for comms", null},
         {null}
     };
 

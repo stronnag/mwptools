@@ -43,6 +43,7 @@ public class MWSerial : Object
     private char readdirn {set; get; default= '>';}
     private char writedirn {set; get; default= '<';}
     private bool errstate;
+    private int commerr;
 
     public enum Mode
     {
@@ -257,6 +258,11 @@ public class MWSerial : Object
                 {
                     case States.S_HEADER:
                     case States.S_ERROR:
+                        if(state ==  States.S_ERROR)
+                        {
+                            commerr++;
+                            stderr.printf("Comm error count %d\n", commerr);
+                        }
                         if (buf[nc] == '$')
                         {
                             state=States.S_HEADER1;
