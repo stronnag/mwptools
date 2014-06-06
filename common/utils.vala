@@ -6,7 +6,7 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -30,11 +30,14 @@ public class MWPUtils
             return null;
         }
     }
-    
+
     public static string? find_conf_file(string fn, string? dir=null)
     {
         string cfile=null;
         string wanted = (dir != null) ? dir+"/"+fn  : fn;
+
+        debug("Looking for %s", wanted);
+
         var uc = Environment.get_user_data_dir();
         var app = Environment.get_application_name();
         if ((cfile = have_conf_file(GLib.Path.build_filename(uc,app,wanted))) == null)
@@ -52,7 +55,7 @@ public class MWPUtils
             uc =  Environment.get_user_config_dir();
             cfile = have_conf_file(GLib.Path.build_filename(uc,app,wanted));
         }
-        
+
         if (cfile == null)
         {
             cfile = have_conf_file(GLib.Path.build_filename ("./",wanted));
@@ -67,4 +70,3 @@ public class MWPUtils
     }
 
 }
-

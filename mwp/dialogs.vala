@@ -373,7 +373,7 @@ public class NavStatus : GLib.Object
                 mt.message(estr);
             }
 
-            if((_n.nav_mode != n.nav_mode) || (_n.wp_number != n.wp_number))
+            if((_n.nav_mode != n.nav_mode) || (_n.nav_mode !=0 && _n.wp_number != n.wp_number))
             {
                 string nvstr=null;
                 switch(_n.nav_mode)

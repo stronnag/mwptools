@@ -21,12 +21,16 @@
 
 extern int open_serial(string name, uint rate);
 extern void close_serial(int fd);
+extern int bind_sock(uint16 port);
+extern int connect_sock(string host,uint16 port);
 
 public class MWSerial : Object
 {
     private int fd=-1;
     private IOChannel io_read;
-
+    private Socket skt;
+    private SocketAddress sockaddr;
+    private bool is_serial;
     public  States state {private set; get;}
     private uint8 checksum;
     private uint8 csize;
@@ -70,58 +74,59 @@ public class MWSerial : Object
 
     private void setup_fd (uint rate)
     {
-        Posix.termios newtio = {0};
-        Posix.speed_t baudrate;
+        if(is_serial == true)
+        {
+            Posix.termios newtio = {0};
+            Posix.speed_t baudrate;
 
-        switch(rate) {
-            case 4800:
-                baudrate = Posix.B4800;
+            switch(rate) {
+                case 4800:
+                    baudrate = Posix.B4800;
+                    break;
+                case 9600:
+                    baudrate = Posix.B9600;
+                    break;
+                case 19200:
+                    baudrate = Posix.B19200;
+                    break;
+                case 38400:
+                    baudrate = Posix.B38400;
+                    break;
+                case 57600:
+                    baudrate = Posix.B57600;
                 break;
-            case 9600:
-                baudrate = Posix.B9600;
-                break;
-            case 19200:
-                baudrate = Posix.B19200;
-                break;
-            case 38400:
-                baudrate = Posix.B38400;
-                break;
-            case 57600:
-                baudrate = Posix.B57600;
-                break;
-            case 115200:
-            case 0:
-                baudrate = Posix.B115200;
-                break;
-            case 230400:
-                baudrate = Posix.B230400;
-                break;
-            default:
-                baudrate = Posix.B115200;
-                break;
+                case 115200:
+                case 0:
+                    baudrate = Posix.B115200;
+                    break;
+                case 230400:
+                    baudrate = Posix.B230400;
+                    break;
+                default:
+                    baudrate = Posix.B115200;
+                    break;
+            }
+
+            Posix.cfsetospeed(ref newtio, baudrate);
+            Posix.cfsetispeed(ref newtio, baudrate);
+
+            newtio.c_cflag = (newtio.c_cflag & ~Posix.CSIZE) | Posix.CS8;
+            newtio.c_cflag |= Posix.CLOCAL | Posix.CREAD;
+            newtio.c_cflag &= ~(Posix.PARENB | Posix.PARODD);
+            newtio.c_cflag &= ~Posix.CSTOPB;
+
+            newtio.c_iflag = Posix.IGNBRK;
+            newtio.c_lflag = 0;
+            newtio.c_oflag = 0;
+            newtio.c_cc[Posix.VTIME]=0;
+            newtio.c_cc[Posix.VMIN]=0;
+            newtio.c_lflag &= ~(Posix.ECHONL|Posix.NOFLSH);
+
+            Posix.tcsetattr(fd, Posix.TCSANOW, newtio);
         }
-
-        Posix.cfsetospeed(ref newtio, baudrate);
-        Posix.cfsetispeed(ref newtio, baudrate);
-
-        newtio.c_cflag = (newtio.c_cflag & ~Posix.CSIZE) | Posix.CS8;
-        newtio.c_cflag |= Posix.CLOCAL | Posix.CREAD;
-        newtio.c_cflag &= ~(Posix.PARENB | Posix.PARODD);
-        newtio.c_cflag &= ~Posix.CSTOPB;
-
-        newtio.c_iflag = Posix.IGNBRK;
-        newtio.c_lflag = 0;
-        newtio.c_oflag = 0;
-        newtio.c_cc[Posix.VTIME]=1;
-        newtio.c_cc[Posix.VMIN]=1;
-        newtio.c_lflag &= ~(Posix.ECHONL|Posix.NOFLSH);
-
-        Posix.tcsetattr(fd, Posix.TCSANOW, newtio);
-
         available = true;
         setup_reader(fd);
     }
-
 
     private void setup_reader(int fd)
     {
@@ -129,24 +134,56 @@ public class MWSerial : Object
         try {
             io_read = new IOChannel.unix_new(fd);
             if(io_read.set_encoding(null) != IOStatus.NORMAL)
-                error("Failed to set encoding");
+                    error("Failed to set encoding");
             tag = io_read.add_watch(IOCondition.IN | IOCondition.HUP, device_read);
         } catch(IOChannelError e) {
             error("IOChannel: %s", e.message);
         }
     }
 
+    private void setup_udp(string[] parts)
+    {
+        string host = parts[0];
+        var port = (uint16)int.parse(parts[1]);
+        try
+        {
+            if(host.length == 0)
+            {
+                fd = bind_sock(port);
+                skt = new Socket.from_fd(fd);
+            }
+            else
+            {
+                fd = connect_sock(host,port);
+                skt = new Socket.from_fd(fd);
+                sockaddr = skt.get_remote_address();
+            }
+        } catch(Error e) {
+            debug("socket: %s", e.message);
+            fd = -1;
+        }
+    }
+
     public bool open(string device, uint rate)
     {
-
-        string[] parts = device.split ("@");
+        string[] parts;
+        parts = device.split (":");
         if(parts.length == 2)
         {
-            device = parts[0];
-            rate = int.parse(parts[1]);
-//            print("Device %s @ %d baud\n", device,rate);
+            setup_udp(parts);
+            is_serial = false;
         }
-        fd = open_serial(device, rate);
+        else
+        {
+            is_serial = true;
+            parts = device.split ("@");
+            if(parts.length == 2)
+            {
+                device = parts[0];
+                rate = int.parse(parts[1]);
+            }
+            fd = open_serial(device, rate);
+        }
         if(fd < 0) {
             fd = -1;
             warning("Could not open device!\n");
@@ -177,7 +214,12 @@ public class MWSerial : Object
         available=false;
         if(fd != -1)
         {
-            close_serial(fd);
+            if(is_serial)
+                close_serial(fd);
+            else
+            {
+                Posix.close(fd);
+            }
             if(tag > 0)
                 Source.remove(tag);
             fd = -1;
@@ -196,45 +238,55 @@ public class MWSerial : Object
         }
         else
         {
-            switch(state)
+            if(is_serial)
+                res = Posix.read(fd,buf,128);
+            else
             {
-                case States.S_HEADER:
-                case States.S_ERROR:
-                    res = Posix.read(fd,buf,1);
-                    if (res == 1 && buf[0] == '$')
-                    {
-                        state=States.S_HEADER1;
-                        errstate = false;
-                    }
-                    else
-                    {
-                        debug("fail on header %d %d %c", (int)res, buf[0], buf[0]);
-                        state=States.S_ERROR;
-                    }
-                    break;
-                case States.S_HEADER1:
-                    res = Posix.read(fd,buf,1);
-                    if(res == 1 && buf[0] == 'M')
-                    {
-                        state=States.S_HEADER2;
-                    }
-                    else if(res == 1 && buf[0] == 'T')
-                    {
-                        state=States.S_T_HEADER2;
-                    }
-                    else
-                    {
-                        debug("fail on header1 %d %x", (int)res, buf[0]);
-                        state=States.S_ERROR;
-                    }
-                    break;
+                try
+                {
+                    res = skt.receive_from(out sockaddr, buf);
+                } catch(Error e) {
+                    debug("recv: %s", e.message);
+                    res = 0;
+                }
+            }
+            debug("recv: %db\n", (int)res);
+            for(var nc = 0; nc < res; nc++)
+            {
+                switch(state)
+                {
+                    case States.S_HEADER:
+                    case States.S_ERROR:
+                        if (buf[nc] == '$')
+                        {
+                            state=States.S_HEADER1;
+                            errstate = false;
+                        }
+                        else
+                        {
+                            debug("fail on header %d %c", buf[nc], buf[nc]);
+                            state=States.S_ERROR;
+                        }
+                        break;
+                    case States.S_HEADER1:
+                        if(buf[nc] == 'M')
+                        {
+                            state=States.S_HEADER2;
+                        }
+                        else if(buf[nc] == 'T')
+                        {
+                            state=States.S_T_HEADER2;
+                        }
+                        else
+                        {
+                            debug("fail on header1 %x", buf[nc]);
+                            state=States.S_ERROR;
+                        }
+                        break;
 
-                case States.S_T_HEADER2:
-                    res = Posix.read(fd,buf,1);
-                    if(res == 1)
-                    {
+                    case States.S_T_HEADER2:
                         needed = 0;
-                        switch(buf[0])
+                        switch(buf[nc])
                         {
                             case 'G':
                                 needed = (uint8) sizeof(LTM_GFRAME);
@@ -249,7 +301,7 @@ public class MWSerial : Object
                                 cmd = MSP.Cmds.TS_FRAME;
                                 break;
                             default:
-                                debug("fail on T_header2 %d %x", (int)res, buf[0]);
+                                debug("fail on T_header2 %x", buf[nc]);
                                 state=States.S_ERROR;
                                 break;
                         }
@@ -261,50 +313,33 @@ public class MWSerial : Object
                             checksum = 0;
                             state = States.S_DATA;
                         }
-                    }
-                    else
-                    {
-                        debug("fail on T_header2 %d %x", (int)res, buf[0]);
-                        state=States.S_ERROR;
-                    }
-                    break;
+                        break;
 
-                case States.S_HEADER2:
-                    res = Posix.read(fd,buf,1);
-                    if(res  == 1 && (buf[0] == readdirn || buf[0] == '!'))
-                    {
-                        errstate = (buf[0] == '!');
-                        state = States.S_SIZE;
-                    }
-                    else
-                    {
-                        debug("fail on header2 %d %x", (int)res, buf[0]);
-                        state=States.S_ERROR;
-                    }
-                    break;
+                    case States.S_HEADER2:
+                        if((buf[nc] == readdirn || buf[nc] == '!'))
+                        {
+                            errstate = (buf[nc] == '!');
+                            state = States.S_SIZE;
+                        }
+                        else
+                        {
+                            debug("fail on header2 %x", buf[nc]);
+                            state=States.S_ERROR;
+                        }
+                        break;
 
-                case States.S_SIZE:
-                    if (1 == Posix.read(fd,buf,1))
-                    {
-                        checksum = csize = needed = buf[0];
+                    case States.S_SIZE:
+                        checksum = csize = needed = buf[nc];
                         if(needed > 0)
                         {
                             raw = new uint8[csize];
                             rawp= 0;
                         }
                         state = States.S_CMD;
-                    }
-                    else
-                    {
-                        debug("fail on size");
-                        state=States.S_ERROR;
-                    }
-                    break;
-                case States.S_CMD:
-                    if (1 == Posix.read(fd,buf,1))
-                    {
-                        debug("got cmd %d %d", buf[0], csize);
-                        cmd = (MSP.Cmds)buf[0];
+                        break;
+                    case States.S_CMD:
+                        debug("got cmd %d %d", buf[nc], csize);
+                        cmd = (MSP.Cmds)buf[nc];
                         checksum ^= cmd;
                         if (csize == 0)
                         {
@@ -314,52 +349,35 @@ public class MWSerial : Object
                         {
                             state = States.S_DATA;
                         }
-                    }
-                    else
-                    {
-                        debug("fail on cmd");
-                        state=States.S_ERROR;
-                    }
-                    break;
-                case States.S_DATA:
-                    size_t len;
-                    debug("data csize = %d needed = %d", csize, needed);
-                    len = Posix.read(fd,buf,needed);
-                    debug("read  = %d", (int)len);
-                    for(int i =0 ; i < len; i++)
-                    {
-                        raw[rawp++] = buf[i];
+                        break;
+                    case States.S_DATA:
+                        debug("data csize = %d needed = %d", csize, needed);
+                        raw[rawp++] = buf[nc];
                         needed--;
-                    }
-
-                    if(needed == 0)
-                    {
-                        checksum = cksum(raw, csize, checksum);
-                        state = States.S_CHECKSUM;
-                    }
-                    break;
-                case States.S_CHECKSUM:
-                    if(1 == Posix.read(fd,buf,1))
-                    {
-                        if(checksum  == buf[0])
+                        if(needed == 0)
+                        {
+                            checksum = cksum(raw, csize, checksum);
+                            state = States.S_CHECKSUM;
+                        }
+                        break;
+                    case States.S_CHECKSUM:
+                        if(checksum  == buf[nc])
                         {
                             debug("OK on %d", cmd);
                             state = States.S_HEADER;
                                 // FIXME error state
                             serial_event(cmd, raw, csize,errstate);
-                        }
+                            }
                         else
                         {
-                            debug("Fail, got %d != %d", buf[0],checksum);
+                            debug("Fail, got %d != %d", buf[nc],checksum);
                             state = States.S_ERROR;
                         }
-                    }
-                    else
-                        state=States.S_ERROR;
-                    break;
-                case States.S_END:
-                    state = States.S_HEADER;
-                    break;
+                        break;
+                    case States.S_END:
+                        state = States.S_HEADER;
+                        break;
+                }
             }
         }
         return true;
@@ -367,7 +385,26 @@ public class MWSerial : Object
 
     public ssize_t write(void *buf, size_t count)
     {
-        ssize_t size = Posix.write(fd, buf, count);
+        ssize_t size;
+        if(is_serial)
+            size = Posix.write(fd, buf, count);
+        else
+        {
+            try
+            {
+                uint8 [] sbuf = new uint8[count];
+
+                for(var i =0; i< count; i++)
+                {
+                    sbuf[i] = *(((uint8*)buf)+i);
+                }
+                size = skt.send_to (sockaddr, sbuf);
+            } catch(Error e) {
+                debug("send: %s", e.message);
+                size = 0;
+            }
+        }
+        debug("sent %d bytes\n", (int)size);
         return size;
     }
 
@@ -422,8 +459,9 @@ public class MWSerial : Object
         stderr.printf("dump len = %d\n", buf.length);
         foreach(uint8 b in buf)
         {
-            stderr.printf("  %02x\n", b);
+            stderr.printf("%02x ", b);
         }
+        stderr.printf("\n");
     }
 
     public void set_mode(Mode mode)

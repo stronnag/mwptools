@@ -60,10 +60,12 @@ public class MWSim : GLib.Object
 
     private static string mission=null;
     private static bool exhaustbat=false;
+    private static int udport=0;
 
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
         { "exhaust-battery", 'x', 0, OptionArg.NONE, out exhaustbat, "exhaust the battery (else warn1)", null},
+        { "u", 'u', 0, OptionArg.INT, ref udport, "", ""},
         {null}
     };
 
@@ -339,12 +341,21 @@ public class MWSim : GLib.Object
     public void open()
     {
         char buf[128];
-        fd = Posix.posix_openpt(Posix.O_RDWR);
-        Posix.grantpt(fd);
-        Posix.unlockpt(fd);
-        Linux.Termios.ptsname_r (fd, buf);
-        slave.set_text((string)buf);
-        msp.open_fd(fd,115200);
+        if(udport == 0)
+        {
+            fd = Posix.posix_openpt(Posix.O_RDWR);
+            Posix.grantpt(fd);
+            Posix.unlockpt(fd);
+            Linux.Termios.ptsname_r (fd, buf);
+            slave.set_text((string)buf);
+            msp.open_fd(fd,115200);
+        }
+        else
+        {
+            var sbuf = ":%d".printf(udport);
+            msp.open(sbuf,0);
+            slave.set_text(sbuf);
+        }
     }
 
 

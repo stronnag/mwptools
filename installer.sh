@@ -18,9 +18,11 @@ esac
 [ -d $DATA ] || mkdir -p $DATA
 cp $APP $BIN/
 [ -d $DATA/$APP ] || mkdir -p $DATA/$APP
-[ -e $APP.ui ] && cp $APP.ui ../common/mwp_icon.svg $DATA/$APP/
+[ -e  ${APP}_icon.svg ] && ICON=${APP}_icon.svg || ICON=../common/mwp_icon.svg
+
+[ -e $APP.ui ] && cp $APP.ui $ICON $DATA/$APP/
 [ -d $DATA/icons/hicolor/48x48/apps ] || mkdir -p $DATA/icons/hicolor/48x48/apps
-cp ../common/mwp_icon.svg $DATA/icons/hicolor/48x48/apps/
+cp $ICON $DATA/icons/hicolor/48x48/apps/
 [ -d pixmaps ] && cp -a pixmaps $DATA/mwp
 [ -f bleet.ogg ] && cp bleet.ogg $DATA/mwp
 

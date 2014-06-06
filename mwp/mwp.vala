@@ -922,13 +922,16 @@ public class MWPlanner : GLib.Object {
     private void bleet_sans_merci()
     {
         var fn = MWPUtils.find_conf_file("bleet.ogg");
-        try
+        if(fn != null)
         {
-            string cmd = @"paplay $fn";
-            Process.spawn_command_line_async(cmd);
-	} catch (SpawnError e) {
-            stderr.printf ("Error: %s\n", e.message);
-	}
+            try
+            {
+                string cmd = @"paplay $fn";
+                Process.spawn_command_line_async(cmd);
+            } catch (SpawnError e) {
+                stderr.printf ("Error: %s\n", e.message);
+            }
+        }
     }
 
 
@@ -952,7 +955,7 @@ public class MWPlanner : GLib.Object {
         vbatlab="<span background=\"%s\" weight=\"bold\">%s</span>".printf(bcols[icol], str);
         labelvbat.set_markup(vbatlab);
         navstatus.volt_update(str,icol,vf);
-        if(icol != 0 && icol != licol)
+        if(icol != 0 && icol != 4 && icol != licol)
         {
             bleet_sans_merci();
         }

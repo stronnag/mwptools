@@ -28,13 +28,17 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <termios.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 
 #if defined(__linux__) && defined(USE_BTSOCK)
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
-#include <sys/socket.h>
+
 
 static int create_bt_dev(char *btaddr)
 {
@@ -62,6 +66,62 @@ static int create_bt_dev(char *btaddr)
     return s;
 }
 #endif
+
+int bind_sock(uint16_t port)
+{
+    int skt;
+    struct sockaddr_in name;
+    unsigned char data[256];
+
+    if(-1 != (skt = socket(AF_INET, SOCK_DGRAM, 0)))
+    {
+        name.sin_family = AF_INET;
+        name.sin_port = htons (port);
+        name.sin_addr.s_addr = htonl(INADDR_ANY);
+        socklen_t nl = sizeof(name);
+
+        if(-1 == bind(skt, (struct sockaddr *)&name, sizeof(name)))
+        {
+            perror("bind");
+            close(skt);
+            skt = -1;
+        }
+    }
+    return skt;
+}
+
+int connect_sock(char *host, uint16_t port)
+{
+    struct sockaddr_in name;
+    int skt;
+
+    fprintf(stderr, "connect for %s:%d ", host, port);
+    if(-1 != (skt = socket(AF_INET, SOCK_DGRAM, 0)))
+    {
+        name.sin_family = AF_INET;
+        if(host)
+        {
+            struct hostent *h;
+            if ((h = (struct hostent *) gethostbyname (host)) == NULL)
+            {
+                perror ("gethostbyname");
+                close(skt);
+                return -1;
+            }
+            name.sin_addr = *((struct in_addr *) h->h_addr);
+            name.sin_port = htons (port);
+        }
+
+        int status = connect(skt, (struct sockaddr *)&name, sizeof(name));
+        if(status != 0)
+        {
+            close(skt);
+            skt = -1;
+        }
+    }
+    fprintf(stderr, " => socket %d\n", skt);
+    return skt;
+}
 
 int open_serial(char *device, uint baudrate)
 {
