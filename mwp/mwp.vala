@@ -94,6 +94,9 @@ public class MWPlanner : GLib.Object {
     private uint8 nsats = 0;
     private uint8 _nsats = 0;
 
+        /**** FIXME ***/
+    private int gfcse = 0;
+
     private enum MS_Column {
         ID,
         NAME,
@@ -860,12 +863,24 @@ public class MWPlanner : GLib.Object {
 
             case MSP.Cmds.TG_FRAME:
                 LTM_GFRAME *gf = (LTM_GFRAME *)raw;
-                stdout.printf("LTE G %f %f %d %f %02x\n",
-                              gf.lat/10000000.0,
-                              gf.lon/10000000.0,
+                int fix = (gf.sats & 3);
+                int nsats = (gf.sats >> 2);
+                double gflat = gf.lat/10000000.0;
+                double gflon = gf.lon/10000000.0;
+
+                stdout.printf("LTM G lat=%.5f lon=%.5f spd=%d alt=%.2f fix=%d sats=%d\n",
+                              gflat, gflon,
                               gf.speed,
                               gf.alt/100.0,
-                              gf.sats);
+                              fix, nsats);
+
+                if(craft != null)
+                {
+                    if(follow == true)
+                        craft.set_lat_lon(gflat,gflon,gfcse);
+                    if (centreon == true)
+                        view.center_on(gflat,gflon);
+                }
                 break;
 
             case MSP.Cmds.TA_FRAME:
@@ -874,16 +889,22 @@ public class MWPlanner : GLib.Object {
                 if(h < 0)
                     h += 360;
 
-                stdout.printf("LTE A %d %d %d\n",
+                gfcse = h;
+                stdout.printf("LTM A pitch=%d roll=%d head=%d\n",
                               af.pitch, af.roll, h);
                 break;
 
             case MSP.Cmds.TS_FRAME:
                 LTM_SFRAME *sf = (LTM_SFRAME *)raw;
-                stdout.printf("LTE S %.2f %.2f %d %d %02x\n",
+                uint8 armed = (sf.flags & 1);
+                uint8 failsafe = ((sf.flags & 2) >> 1);
+                uint8 fmode = (sf.flags >> 2);
+
+                stdout.printf("LTE S volts=%.2f cur=%.2f rssi=%d airspeed=%d armed=%d failsafe=%d mode=%d\n",
                               sf.vbat/1000.0,
                               sf.vcurr/1000.0,
-                              sf.rssi, sf.airspeed,sf.flags);
+                              sf.rssi, sf.airspeed,
+                              armed, failsafe, fmode);
                 break;
 
             default:

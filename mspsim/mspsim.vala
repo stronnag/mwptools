@@ -60,11 +60,13 @@ public class MWSim : GLib.Object
 
     private static string mission=null;
     private static bool exhaustbat=false;
+    private static bool ltm=false;
     private static int udport=0;
 
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
         { "exhaust-battery", 'x', 0, OptionArg.NONE, out exhaustbat, "exhaust the battery (else warn1)", null},
+        { "ltm", 'l', 0, OptionArg.NONE, out ltm, "push tm", null},
         { "udp-port", 'u', 0, OptionArg.INT, ref udport, "udp port for comms", null},
         {null}
     };
@@ -149,6 +151,10 @@ public class MWSim : GLib.Object
                             }
                             else
                             {
+                                if(ltm)
+                                {
+                                    process_ltm();
+                                }
                                 return true;
                             }
                         });
@@ -158,6 +164,7 @@ public class MWSim : GLib.Object
                     Source.remove(tid);
                     gps_start = 0;
                     pbar.set_fraction(0.0);
+                    volts = 12.6;
                     startb.set_label("gtk-media-play");
                 }
             });
@@ -185,6 +192,35 @@ public class MWSim : GLib.Object
         msp = new MWSerial();
         msp.set_mode(MWSerial.Mode.SIM);
         window.show_all();
+    }
+
+    private void process_ltm()
+    {
+        MSP_RAW_GPS buf = {0};
+        get_gps_info(out buf);
+        LTM_GFRAME gf = {0};
+        gf.lat = buf.gps_lat;
+        gf.lon = buf.gps_lon;
+        gf.speed = buf.gps_speed/100;
+        gf.alt = gblalt*100 + rand.int_range(-50,50);
+        gf.sats = 1+(buf.gps_numsat << 2);
+        msp.send_ltm('G',&gf);
+        append_text("Send LTM G Frame %lu\n".printf(sizeof(LTM_GFRAME)));
+
+        LTM_AFRAME af = {0};
+        af.pitch = 4;
+        af.roll = -4;
+        af.heading = (int16)gblcse;
+        msp.send_ltm('A',&af);
+        append_text("Send LTM A Frame %lu\n".printf(sizeof(LTM_AFRAME)));
+        LTM_SFRAME sf ={0};
+        sf.vbat = (int16)(volts*1000);
+        sf.vcurr = 4200;
+        sf.rssi = 150 + rand.int_range(-10,10);
+        sf.airspeed = gf.speed;
+        sf.flags = 1;
+        msp.send_ltm('S',&sf);
+        append_text("Send LTM S Frame %lu\n".printf(sizeof(LTM_SFRAME)));
     }
 
     public void parse_mission(string fn)

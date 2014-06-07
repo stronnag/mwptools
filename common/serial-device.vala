@@ -308,7 +308,7 @@ public class MWSerial : Object
                                 break;
                             case 'A':
                                 needed = (uint8) sizeof(LTM_AFRAME);
-                                cmd = MSP.Cmds.TG_FRAME;
+                                cmd = MSP.Cmds.TA_FRAME;
                                 break;
                             case 'S':
                                 needed = (uint8) sizeof(LTM_SFRAME);
@@ -431,6 +431,38 @@ public class MWSerial : Object
         }
         return cs;
     }
+
+    public void send_ltm(uint8 cmd, void *data)
+    {
+        if(available == true)
+        {
+            ulong dsize = 0;
+            uint8 dstr[128];
+            switch(cmd)
+            {
+                case 'G':
+                    dsize = sizeof(LTM_GFRAME);
+                    break;
+                case 'A':
+                    dsize = sizeof(LTM_AFRAME);
+                    break;
+                case 'S':
+                    dsize = sizeof(LTM_SFRAME);
+                    break;
+            }
+            if(dsize != 0 && data != null)
+            {
+                dstr[0]='$';
+                dstr[1] = 'T';
+                dstr[2] = cmd;
+                Posix.memcpy(&dstr[3],data,dsize);
+                var ck = cksum(dstr[3:dsize+3],dsize,0);
+                dstr[3+dsize] = ck;
+                write(dstr, dsize+4);
+            }
+        }
+    }
+
 
     public void send_command(uint8 cmd, void *data, size_t len)
     {
