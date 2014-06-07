@@ -2,7 +2,7 @@
   <schema id="org.mwptools.planner" path="/org/mwptools/planner/" >
 
     <key name="device-names" type="as">
-        <default>['/dev/ttyACM0','/dev/ttyUSB42','/dev/rfcomm42']</default>
+        <default>['/dev/3dr', '/dev/rfcomm1', '/dev/mega2560', '/dev/ttyACM0@115200', '/dev/pts/0']</default>
         <summary>Device names</summary>
         <description>A list of device names</description>
     </key>
@@ -102,7 +102,7 @@
     </key>
 
     <key name="baudrate" type="u">
-      <default>57600</default>
+      <default>115200</default>
       <summary>Baud rate</summary>
       <description>Serial baud rate</description>
     </key>
