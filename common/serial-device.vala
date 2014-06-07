@@ -160,7 +160,7 @@ public class MWSerial : Object
                 sockaddr = skt.get_remote_address();
             }
         } catch(Error e) {
-            debug("socket: %s", e.message);
+            warning("socket: %s", e.message);
             fd = -1;
         }
     }
@@ -219,7 +219,15 @@ public class MWSerial : Object
                 close_serial(fd);
             else
             {
+                try
+                {
+                    skt.close();
+                } catch (Error e)
+                {
+                    warning ("sock close %s", e.message);
+                }
                 Posix.close(fd);
+                sockaddr=null;
             }
             if(tag > 0)
                 Source.remove(tag);

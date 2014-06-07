@@ -83,6 +83,7 @@ public class MWPlanner : GLib.Object {
     private uint8 vwarn2;
     private uint8 vcrit;
     private int licol;
+    private int bleetat;
     private DockMaster master;
     private DockLayout layout;
     public  DockItem[] dockitem;
@@ -955,9 +956,13 @@ public class MWPlanner : GLib.Object {
         vbatlab="<span background=\"%s\" weight=\"bold\">%s</span>".printf(bcols[icol], str);
         labelvbat.set_markup(vbatlab);
         navstatus.volt_update(str,icol,vf);
-        if(icol != 0 && icol != 4 && icol != licol)
+        if(icol != 0 && icol != 4 && icol > licol)
         {
-            bleet_sans_merci();
+            if(bleetat != icol)
+            {
+                bleet_sans_merci();
+                bleetat = icol;
+            }
         }
         licol= icol;
     }
