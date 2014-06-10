@@ -161,11 +161,7 @@ public class MWSim : GLib.Object
                 }
                 else
                 {
-                    Source.remove(tid);
-                    gps_start = 0;
-                    pbar.set_fraction(0.0);
-                    volts = 12.6;
-                    startb.set_label("gtk-media-play");
+                    stop_sim();
                 }
             });
 
@@ -469,6 +465,8 @@ public class MWSim : GLib.Object
     {
         Source.remove(tid);
         gps_start = 0;
+        pbar.set_fraction(0.0);
+        volts = 12.6;
         startb.set_label("gtk-media-play");
     }
 
@@ -477,6 +475,7 @@ public class MWSim : GLib.Object
         open();
         msp.serial_lost.connect (()=> {
                 append_text("endpoint died\n");
+                stop_sim();
                 open();
             });
 

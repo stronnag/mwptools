@@ -264,6 +264,11 @@ public class RadioStatus : GLib.Object
         }
     }
 
+    public void update_ltm(LTM_SFRAME s)
+    {
+        remrssi_label.set_label(s.rssi.to_string());
+    }
+
     public void update(MSP_RADIO _r)
     {
         r = _r;
@@ -361,6 +366,34 @@ public class NavStatus : GLib.Object
             di.iconify_item();
         }
     }
+
+    public void update_ltm_s(LTM_SFRAME s)
+    {
+        if(visible)
+        {
+            uint8 armed = (s.flags & 1);
+            uint8 failsafe = ((s.flags & 2) >> 1);
+            uint8 fmode = (s.flags >> 2);
+            var lmode = MSP.ltm_mode(fmode);
+            nav_state_label.set_label(lmode);
+            var str = "%s %s".printf(((armed == 1) ? "armed" : ""),
+                                 ((failsafe == 1) ? "failsafe" : ""));
+            nav_action_label.set_label(str);
+        }
+    }
+
+    public void update_ltm_a(LTM_AFRAME a)
+    {
+        if(visible)
+        {
+            hdr = a.heading;
+            if(hdr < 0)
+                hdr += 360;
+            var str = "%d° / %d° / %d°".printf(a.pitch, a.roll, hdr);
+            nav_attitude_label.set_label(str);
+        }
+    }
+
 
     public void update(MSP_NAV_STATUS _n)
     {
@@ -507,6 +540,7 @@ public class NavStatus : GLib.Object
             }
         }
     }
+
     public void volt_update(string s, int n, float v)
     {
         volts = v;
@@ -875,6 +909,22 @@ public class GPSInfo : GLib.Object
         speed_lab = new Gtk.Label("--.-");
         speed_lab.set_alignment(0,0);
         grid.attach(speed_lab, 1, 5, 1, 1);
+    }
+
+
+    public int update_ltm(LTM_GFRAME g, bool dms)
+    {
+        lat = (int32.from_little_endian(g.lat))/10000000.0;
+        lon = (int32.from_little_endian(g.lon))/10000000.0;
+        spd =  (uint16.from_little_endian(g.speed));
+        int fix = (g.sats & 3);
+        uint8 nsats = (g.sats >> 2);
+        var nsatstr = "%d (%sfix)".printf(nsats, (fix==0) ? "no" : "");
+        nsat_lab.set_label(nsatstr);
+        lat_lab.set_label(PosFormat.lat(lat,dms));
+        lon_lab.set_label(PosFormat.lon(lon,dms));
+        speed_lab.set_label("%.0f m/s".printf(spd));
+        return fix;
     }
 
     public int update(MSP_RAW_GPS g, bool dms)

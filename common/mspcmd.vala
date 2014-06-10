@@ -127,6 +127,30 @@ public class MSP : Object
         "Landing is in progress, check attitude if possible"
     };
 
+    private static const string [] ltm_modes =
+    {
+        "Manual", 		// 0
+        "Rate",			// 1
+        "Attitude/Angle",	// 2
+        "Horizon",		// 3
+        "Acro",			// 4
+        "Stabilized1",		// 5
+        "Stabilized2",		// 6
+        "Stabilized3", 		// 7
+        "Altitude Hold",	// 8
+        "Loiter/GPS Hold",	// 9
+        "Auto/Waypoints",	// 10
+        "Heading hold / head free", // 11
+        "Circle",		// 12
+        "RTH",			// 13
+        "Follow me",		// 14
+        "Land",			// 15
+        "Fly by wire A",	// 16
+        "Fly by wire B",	// 17
+        "Cruise",		// 18
+        "Unknown"		// 19
+    };
+
     private static HashTable<string, MSP.Action> wp_hash;
 
     public static string gps_mode(uint8 nmode)
@@ -149,6 +173,14 @@ public class MSP : Object
     {
         if (nerr < nav_errors.length)
             return nav_states[nerr];
+        else
+            return "Unknown";
+    }
+
+    public static string ltm_mode (uint8 nst)
+    {
+        if (nst < ltm_modes.length)
+            return ltm_modes[nst];
         else
             return "Unknown";
     }

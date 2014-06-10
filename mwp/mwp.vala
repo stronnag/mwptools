@@ -863,23 +863,18 @@ public class MWPlanner : GLib.Object {
 
             case MSP.Cmds.TG_FRAME:
                 LTM_GFRAME *gf = (LTM_GFRAME *)raw;
-                int fix = (gf.sats & 3);
-                int nsats = (gf.sats >> 2);
-                double gflat = gf.lat/10000000.0;
-                double gflon = gf.lon/10000000.0;
-
-                stdout.printf("LTM G lat=%.5f lon=%.5f spd=%d alt=%.2f fix=%d sats=%d\n",
-                              gflat, gflon,
-                              gf.speed,
-                              gf.alt/100.0,
-                              fix, nsats);
-
-                if(craft != null)
+                var fix = gpsinfo.update_ltm(*gf, conf.dms);
+                if(fix != 0)
                 {
-                    if(follow == true)
-                        craft.set_lat_lon(gflat,gflon,gfcse);
-                    if (centreon == true)
-                        view.center_on(gflat,gflon);
+                    double gflat = gf.lat/10000000.0;
+                    double gflon = gf.lon/10000000.0;
+                    if(craft != null)
+                    {
+                        if(follow == true)
+                            craft.set_lat_lon(gflat,gflon,gfcse);
+                        if (centreon == true)
+                            view.center_on(gflat,gflon);
+                    }
                 }
                 break;
 
@@ -888,23 +883,15 @@ public class MWPlanner : GLib.Object {
                 var h = af.heading;
                 if(h < 0)
                     h += 360;
-
                 gfcse = h;
-                stdout.printf("LTM A pitch=%d roll=%d head=%d\n",
-                              af.pitch, af.roll, h);
+                navstatus.update_ltm_a(*af);
                 break;
 
             case MSP.Cmds.TS_FRAME:
                 LTM_SFRAME *sf = (LTM_SFRAME *)raw;
-                uint8 armed = (sf.flags & 1);
-                uint8 failsafe = ((sf.flags & 2) >> 1);
-                uint8 fmode = (sf.flags >> 2);
-
-                stdout.printf("LTE S volts=%.2f cur=%.2f rssi=%d airspeed=%d armed=%d failsafe=%d mode=%d\n",
-                              sf.vbat/1000.0,
-                              sf.vcurr/1000.0,
-                              sf.rssi, sf.airspeed,
-                              armed, failsafe, fmode);
+                radstatus.update_ltm(*sf);
+                navstatus.update_ltm_s(*sf);
+                set_bat_stat((uint8)((sf.vbat + 50) / 100));
                 break;
 
             default:

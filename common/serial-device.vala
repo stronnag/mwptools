@@ -201,6 +201,8 @@ public class MWSerial : Object
     public bool open_fd(int _fd, int rate)
     {
         fd = _fd;
+        if(rate != -1)
+            is_serial = true;
         setup_fd(rate);
         return available;
     }
