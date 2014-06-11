@@ -59,12 +59,14 @@ public class MWSim : GLib.Object
     private Gtk.FileChooserButton chooser;
 
     private static string mission=null;
+    private static string replay = null;
     private static bool exhaustbat=false;
     private static bool ltm=false;
     private static int udport=0;
 
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
+        { "replay", 'r', 0, OptionArg.STRING, out replay, "Replay file", null},
         { "exhaust-battery", 'x', 0, OptionArg.NONE, out exhaustbat, "exhaust the battery (else warn1)", null},
         { "ltm", 'l', 0, OptionArg.NONE, out ltm, "push tm", null},
         { "udp-port", 'u', 0, OptionArg.INT, ref udport, "udp port for comms", null},
@@ -106,6 +108,12 @@ public class MWSim : GLib.Object
                 stderr.printf ("Builder: %s\n", e.message);
                 Posix.exit(0);
             }
+        }
+
+        if(replay != null)
+        {
+            mission=null;
+            ltm=false;
         }
 
         builder.connect_signals (null);
@@ -189,6 +197,47 @@ public class MWSim : GLib.Object
         msp.set_mode(MWSerial.Mode.SIM);
         window.show_all();
     }
+
+    private void run_replay()
+    {
+        var thr = new Thread<int> ("replay", () => {
+                var rfd = Posix.open (replay, Posix.O_RDONLY);
+                uint8 fbuf[10];
+                uint8 buf[128];
+                double st = 0;
+                size_t count;
+                bool ok = true;
+
+                while(ok==true)
+                {
+                    var n = Posix.read(rfd,fbuf,10);
+                    if(n > 0)
+                    {
+                        count = fbuf[8];
+                        n = Posix.read(rfd,buf,(int)fbuf[8]);
+                        if (n > 0)
+                        {
+                            if(fbuf[9] == 'i' && buf[1] == 'T')
+                            {
+                                double tt;
+                                tt = *(double*)fbuf;
+                                var delta = tt - st;
+                                ulong ms = (ulong)(delta * 1000 * 1000);
+                                Thread.usleep(ms);
+                                msp.write(buf,count);
+                                st = tt;
+                                }
+                        }
+                        else
+                            ok = false;
+                    }
+                    else
+                        ok = false;
+                }
+                return 0;
+            });
+    }
+
 
     private void process_ltm()
     {
@@ -498,7 +547,11 @@ public class MWSim : GLib.Object
         var loop = 0;
         msp.serial_event.connect ((s, cmd, raw, len, errs) =>
         {
-            loop = (loop + 1) % 4;
+            if(loop ==0  && replay != null)
+            {
+                run_replay();
+            }
+
             if(errs == true)
             {
                 stderr.printf("Error on cmd %c (%d)\n", cmd,cmd);
@@ -609,7 +662,7 @@ public class MWSim : GLib.Object
                 case MSP.Cmds.NAV_STATUS:
                 msp.send_command(MSP.Cmds.NAV_STATUS, &nsts, sizeof(MSP_NAV_STATUS));
                 append_text("Send NAV STATUS %lu\n".printf(sizeof(MSP_NAV_STATUS)));
-                if(loop == 0)
+                if((loop % 4) == 0)
                 {
                     MSP_RADIO r = {0, 0,152, 152, 100, 57, 38};
                     r.localrssi = (uint8)((int32)r.localrssi + rand.int_range(-10,10));
@@ -650,6 +703,7 @@ public class MWSim : GLib.Object
                 stdout.printf("unknown %d\n",cmd);
                 break;
             }
+            loop++;
         });
     }
     public void run()

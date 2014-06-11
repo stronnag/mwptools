@@ -917,6 +917,7 @@ public class GPSInfo : GLib.Object
         lat = (int32.from_little_endian(g.lat))/10000000.0;
         lon = (int32.from_little_endian(g.lon))/10000000.0;
         spd =  (uint16.from_little_endian(g.speed));
+        double dalt = (int32.from_little_endian(g.alt))/100.0;
         int fix = (g.sats & 3);
         uint8 nsats = (g.sats >> 2);
         var nsatstr = "%d (%sfix)".printf(nsats, (fix==0) ? "no" : "");
@@ -924,6 +925,7 @@ public class GPSInfo : GLib.Object
         lat_lab.set_label(PosFormat.lat(lat,dms));
         lon_lab.set_label(PosFormat.lon(lon,dms));
         speed_lab.set_label("%.0f m/s".printf(spd));
+        alt_lab.set_label("%.2f m".printf(dalt));
         return fix;
     }
 

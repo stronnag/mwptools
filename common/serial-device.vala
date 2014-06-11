@@ -44,6 +44,9 @@ public class MWSerial : Object
     private char writedirn {set; get; default= '<';}
     private bool errstate;
     private int commerr;
+    private bool rawlog;
+    private int raws;
+    private Timer timer;
 
     public enum Mode
     {
@@ -240,6 +243,7 @@ public class MWSerial : Object
     private bool device_read(IOChannel gio, IOCondition cond) {
         uint8 buf[128];
         size_t res;
+        int sp = 0;
 
         if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
         {
@@ -275,6 +279,7 @@ public class MWSerial : Object
                         }
                         if (buf[nc] == '$')
                         {
+                            sp = nc;
                             state=States.S_HEADER1;
                             errstate = false;
                         }
@@ -381,7 +386,10 @@ public class MWSerial : Object
                         {
                             debug("OK on %d", cmd);
                             state = States.S_HEADER;
-                                // FIXME error state
+                            if(rawlog == true)
+                            {
+                                log_raw('i',&buf[sp],nc+1-sp);
+                            }
                             serial_event(cmd, raw, csize,errstate);
                             }
                         else
@@ -409,7 +417,6 @@ public class MWSerial : Object
             try
             {
                 uint8 [] sbuf = new uint8[count];
-
                 for(var i =0; i< count; i++)
                 {
                     sbuf[i] = *(((uint8*)buf)+i);
@@ -421,6 +428,10 @@ public class MWSerial : Object
             }
         }
         debug("sent %d bytes\n", (int)size);
+        if(rawlog == true)
+        {
+            log_raw('o',buf,(int)count);
+        }
         return size;
     }
 
@@ -501,6 +512,36 @@ public class MWSerial : Object
             write(dstr, 6);
         }
     }
+
+    private void log_raw(uint8 dirn, void *buf, int len)
+    {
+        double dt = timer.elapsed ();
+        uint8 blen = (uint8)len;
+        Posix.write(raws, &dt, sizeof(double));
+        Posix.write(raws, &blen, 1);
+        Posix.write(raws, &dirn, 1);
+        Posix.write(raws, buf,len);
+    }
+
+    public void raw_logging(bool state)
+    {
+        if(state == true)
+        {
+            time_t currtime;
+            time_t(out currtime);
+            var fn  = "mwp_%s.raw".printf(Time.local(currtime).format("%F_%H%M%S"));
+            raws = Posix.open (fn, Posix.O_TRUNC|Posix.O_CREAT|Posix.O_WRONLY, 0640);
+            timer = new Timer ();
+            rawlog = true;
+        }
+        else
+        {
+            Posix.close(raws);
+            timer.stop();
+            rawlog = false;
+        }
+    }
+
 
     public void dump(uint8[]buf)
     {

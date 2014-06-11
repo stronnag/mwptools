@@ -78,6 +78,7 @@ public class MWPlanner : GLib.Object {
     private static bool mkcon;
     private static bool ignore_sz;
     private static bool nopoll = false;
+    private static bool rawlog = false;
     private static bool norotate = false; // workaround for Ubuntu & old champlain
     private uint8 vwarn1;
     private uint8 vwarn2;
@@ -138,7 +139,9 @@ public class MWPlanner : GLib.Object {
         { "serial-device", 's', 0, OptionArg.STRING, out serial, "Serial device", null},
         { "connect", 'c', 0, OptionArg.NONE, out mkcon, "connect to first device", null},
         { "auto-connect", 'a', 0, OptionArg.NONE, out autocon, "auto-connect to first device", null},
-        { "no-poll", 0, 0, OptionArg.NONE, out nopoll, "don't poll for nav info", null},
+        { "no-poll", 'n', 0, OptionArg.NONE, out nopoll, "don't poll for nav info", null},
+        { "raw-log", 'r', 0, OptionArg.NONE, out rawlog, "log raw serial data to file", null},
+
         { "ignore-sizing", 0, 0, OptionArg.NONE, out ignore_sz, "ignore minimum size constraint", null},
         { "ignore-rotation", 0, 0, OptionArg.NONE, out norotate, "ignore vehicle icon rotation on old libchamplain", null},
         {null}
@@ -1078,6 +1081,10 @@ public class MWPlanner : GLib.Object {
         stop_audio();
         sflags = 0;
 
+        if(rawlog == true)
+        {
+            msp.raw_logging(false);
+        }
         msp.close();
         gpsinfo.annul();
         set_bat_stat(0);
@@ -1106,6 +1113,10 @@ public class MWPlanner : GLib.Object {
             var serdev = dev_entry.get_active_text();
             if (msp.open(serdev, conf.baudrate) == true)
             {
+                if(rawlog == true)
+                {
+                    msp.raw_logging(true);
+                }
                 conbutton.set_label("gtk-disconnect");
                 add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
             }
