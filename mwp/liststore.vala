@@ -391,7 +391,7 @@ public class ListBox : GLib.Object
                          return;
                 }
                 list_validate(path,new_text,
-                              WY_Columns.INT1,0.0,65536.0,true);
+                              WY_Columns.INT1,-1,65536.0,true);
             });
 
 
