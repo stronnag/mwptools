@@ -79,7 +79,7 @@ public class MWPSettings : GLib.Object
         map_sources = settings.get_string ("map-sources");
         dms = settings.get_boolean("display-dms");
         recip = settings.get_boolean("audio-bearing-is-reciprocal");
-        recip_head = settings.get_boolean("set_head-is-b0rken");
+        recip_head = settings.get_boolean("set-head-is-b0rken");
         speakint = settings.get_uint("speak-interval");
         if(speakint > 0 && speakint < 15)
             speakint = 15;

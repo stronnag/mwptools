@@ -101,7 +101,7 @@
       <description>Whether the audio bearing is the reciprocal (i.e. bearing from home to quad, rather than from quad to home)</description>
     </key>
 
-    <key type="b" name="set_head-is-b0rken">
+    <key type="b" name="set-head-is-b0rken">
       <default>false</default>
       <summary>set head bearing as reciprocal</summary>
       <description>Whether the set head bearing is the reciprocal
