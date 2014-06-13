@@ -992,6 +992,16 @@ public class MWPlanner : GLib.Object {
             w0.flag = 0xa5;
             wps += w0;
         }
+        if(conf.recip_head)
+        {
+            foreach(var w in wps)
+            {
+                if(w.action == MSP.Action.SET_HEAD)
+                {
+                    w.p1 = (w.p1 + 180) % 360;
+                }
+            }
+        }
         wpmgr.npts = (uint8)wps.length;
         wpmgr.wpidx = 0;
         wpmgr.wps = wps;

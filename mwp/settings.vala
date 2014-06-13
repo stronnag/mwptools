@@ -39,6 +39,7 @@ public class MWPSettings : GLib.Object
     public uint  buadrate {get; set; default=57600;}
     public string evoice {get; private set; default=null;}
     public bool recip {get; set; default=false;}
+    public bool recip_head {get; set; default=false;}
     public uint  baudrate {get; set; default=57600;}
     public string mediap {get; set;}
 
@@ -78,6 +79,7 @@ public class MWPSettings : GLib.Object
         map_sources = settings.get_string ("map-sources");
         dms = settings.get_boolean("display-dms");
         recip = settings.get_boolean("audio-bearing-is-reciprocal");
+        recip_head = settings.get_boolean("set_head-is-b0rken");
         speakint = settings.get_uint("speak-interval");
         if(speakint > 0 && speakint < 15)
             speakint = 15;
