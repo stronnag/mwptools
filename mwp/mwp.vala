@@ -794,7 +794,7 @@ public class MWPlanner : GLib.Object {
                     m.lat = (int32.from_little_endian(w.lat))/10000000.0;
                     m.lon = (int32.from_little_endian(w.lon))/10000000.0;
                     m.alt = (uint32.from_little_endian(w.altitude))/100;
-                    m.param1 = (uint16.from_little_endian(w.p1));
+                    m.param1 = (int16.from_little_endian(w.p1));
                     m.param2 = (uint16.from_little_endian(w.p2));
                     m.param3 = (uint16.from_little_endian(w.p3));
 
@@ -817,7 +817,8 @@ public class MWPlanner : GLib.Object {
                             foreach(MissionItem mi in wp_resp)
                             {
                                 if(mi.action != MSP.Action.RTH &&
-                                   mi.action != MSP.Action.JUMP)
+                                   mi.action != MSP.Action.JUMP &&
+                                    mi.action != MSP.Action.SET_HEAD)
                                 {
                                     if (mi.lat > ms.maxy)
                                         ms.maxy = mi.lat;
@@ -988,7 +989,8 @@ public class MWPlanner : GLib.Object {
             w0.action =  MSP.Action.RTH;
             w0.lat = w0.lon = 0;
             w0.altitude = 25;
-            w0.p1 = w0.p2 = w0.p3 = 0;
+            w0.p1 = 0;
+            w0.p2 = w0.p3 = 0;
             w0.flag = 0xa5;
             wps += w0;
         }
@@ -996,7 +998,7 @@ public class MWPlanner : GLib.Object {
         {
             foreach(var w in wps)
             {
-                if(w.action == MSP.Action.SET_HEAD)
+                if(w.action == MSP.Action.SET_HEAD && w.p1 != -1)
                 {
                     w.p1 = (w.p1 + 180) % 360;
                 }

@@ -114,7 +114,7 @@ public class ListBox : GLib.Object
                 w.altitude = (int32)(((int)cell) * 100);
                 list_model.get_value (iter, WY_Columns.INT1, out cell);
                 var tint = (int)cell;
-                w.p1 = (uint16)tint;
+                w.p1 = (int16)tint;
                 list_model.get_value (iter, WY_Columns.INT2, out cell);
                 tint = (int)cell;
                 w.p2 = (uint16)tint;

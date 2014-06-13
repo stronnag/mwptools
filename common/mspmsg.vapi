@@ -61,7 +61,7 @@ public struct MSP_WP
     public int32 lat;
     public int32 lon;
     public uint32 altitude;
-    public uint16 p1;
+    public int16 p1;
     public uint16 p2;
     public uint16 p3;
     public uint8 flag;
