@@ -97,6 +97,18 @@ public struct MSP_NAV_CONFIG
 }
 
 [CCode (cheader_filename = "../common/mspmsg.h")]
+public struct MSP_RC_TUNING
+{
+    public uint8 rc_rate;
+    public uint8 rc_expo;
+    public uint8 rollpitchrate;
+    public uint8 yawrate;
+    public uint8 dynthrpid;
+    public uint8 throttle_mid;
+    public uint8 throttle_expo;
+}
+
+[CCode (cheader_filename = "../common/mspmsg.h")]
 public struct MSP_RADIO
 {
     public uint16 rxerrors;

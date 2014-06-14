@@ -30,6 +30,7 @@ public class MSP : Object
             ATTITUDE=108,
             ALTITUDE=109,
             RC_TUNING=111,
+            SET_RC_TUNING=204,
             PID=112,
             MISC=114,
             CONTROL=120,

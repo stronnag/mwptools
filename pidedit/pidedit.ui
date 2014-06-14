@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.2 -->
+<!-- Generated with glade 3.18.3 -->
 <interface>
   <requires lib="gtk+" version="3.8"/>
   <object class="GtkWindow" id="window1">
@@ -454,6 +454,302 @@
                 <property name="left_attach">1</property>
                 <property name="top_attach">13</property>
               </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="pidlabel_1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_markup">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">18</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="pidlabel_2">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_markup">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">18</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="pidlabel_3">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_markup">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">18</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="pidlabel_4">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="use_markup">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">18</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="rcrate_lab">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">RC Rate</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">19</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="rcexpolab">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">RC Expo</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">20</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="rpratelat">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Roll/Pitch Rate</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">21</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="yawratelab">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Yaw Rate</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">22</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="dynthrpid">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">DynThrPID</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">23</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="throttlemidlab">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Throttle MID</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">24</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="throttleexpolab">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Throttle Expo</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">25</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="rcrate_entry">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">number</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">19</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="rcexpo_entry">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">number</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">20</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="prrate_entry">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">number</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">21</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="yawrate_entry">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">digits</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">22</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="dynthr_entry">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">number</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">23</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="thrmid_entry">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">number</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">24</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="threxpro_entry">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">number</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">25</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label6">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">(0.90)</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">19</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label14">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">(0.65)</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">20</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label15">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">(0.00)</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">21</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label16">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">(0.00)</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">22</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label17">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">(0.00)</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">23</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label18">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">(0.50)</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">24</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label19">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">(0.00)</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">25</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
             </child>
             <child>
               <placeholder/>

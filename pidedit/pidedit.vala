@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
@@ -48,16 +47,25 @@ public class PIDEdit : Object
     private bool is_connected;
     private string lastfile;
     private bool have_pids;
+    private bool have_rc;
     private bool have_vers;
     private bool have_misc;
     private MSP_MISC misc;
-
+    private MSP_RC_TUNING rt;
     private Gtk.Entry eminthr;
     private Gtk.Entry emagdec;
     private Gtk.Entry evbatscale;
     private Gtk.Entry evbatwarn1;
     private Gtk.Entry evbatwarn2;
     private Gtk.Entry evbatcrit;
+
+    private Gtk.Entry rcrate_entry;
+    private Gtk.Entry rcexpo_entry;
+    private Gtk.Entry prrate_entry;
+    private Gtk.Entry yawrate_entry;
+    private Gtk.Entry dynthr_entry;
+    private Gtk.Entry thrmid_entry;
+    private Gtk.Entry threxpro_entry;
 
     private static const PIDSet[] ps =  {
         {0,"ROLL",{{20.00,0.100,false},{0.25,0.001,false},{100.00,1.000,false}}},
@@ -299,6 +307,29 @@ public class PIDEdit : Object
         }
     }
 
+    private void set_rc_tuning()
+    {
+
+        rcrate_entry.set_text("%.2f".printf(rt.rc_rate/100.0));
+        rcexpo_entry.set_text("%.2f".printf(rt.rc_expo/100.0));
+        prrate_entry.set_text("%.2f".printf(rt.rollpitchrate/100.0));
+        yawrate_entry.set_text("%.2f".printf(rt.yawrate /100.0));
+        dynthr_entry.set_text("%.2f".printf(rt.dynthrpid /100.0));
+        thrmid_entry.set_text("%.2f".printf(rt.throttle_mid /100.0));
+        threxpro_entry.set_text("%.2f".printf(rt.throttle_expo /100.0));
+
+        stdout.printf("%u %u %u %u %u %u %u\n",
+                      rt.rc_rate,
+                      rt.rc_expo,
+                      rt.rollpitchrate,
+                      rt.yawrate,
+                      rt.dynthrpid,
+                      rt.throttle_mid,
+
+
+                      rt.throttle_expo);
+    }
+
     private void set_pid_spins()
     {
         int idx;
@@ -358,6 +389,15 @@ public class PIDEdit : Object
         evbatwarn2 = builder.get_object ("evbatwarn2") as Gtk.Entry;
         evbatcrit = builder.get_object ("evbatcrit") as Gtk.Entry;
 
+
+        rcrate_entry = builder.get_object ("rcrate_entry") as Gtk.Entry;
+        rcexpo_entry = builder.get_object ("rcexpo_entry") as Gtk.Entry;
+        prrate_entry = builder.get_object ("prrate_entry") as Gtk.Entry;
+        yawrate_entry = builder.get_object ("yawrate_entry") as Gtk.Entry;
+        dynthr_entry = builder.get_object ("dynthr_entry") as Gtk.Entry;
+        thrmid_entry = builder.get_object ("thrmid_entry") as Gtk.Entry;
+        threxpro_entry = builder.get_object ("threxpro_entry") as Gtk.Entry;
+
         foreach (var p in ps)
         {
             var s = "pidlabel_%02d".printf(p.id);
@@ -388,13 +428,20 @@ public class PIDEdit : Object
                     have_misc = true;
                     misc = *(MSP_MISC *)raw;
                     set_misc_ui();
-                    add_cmd(MSP.Cmds.PID,null,0, &have_pids);
+                    add_cmd(MSP.Cmds.RC_TUNING,null,0,&have_rc);
                     break;
 
                     case MSP.Cmds.PID:
                     have_pids = true;
                     rawbuf = raw;
                     set_pid_spins();
+                    break;
+
+                    case MSP.Cmds.RC_TUNING:
+                    have_rc = true;
+                    rt = *((MSP_RC_TUNING *)raw);
+                    set_rc_tuning();
+                    add_cmd(MSP.Cmds.PID,null,0, &have_pids);
                     break;
                 }
             });
@@ -467,10 +514,21 @@ public class PIDEdit : Object
                     misc.conf_vbatlevel_warn1 = (uint8)(10*get_locale_double(evbatwarn1.get_text()));
                     misc.conf_vbatlevel_warn2 = (uint8)(10*get_locale_double(evbatwarn2.get_text()));
                     misc.conf_vbatlevel_crit = (uint8)(10*get_locale_double(evbatcrit.get_text()));
+
+                    rt.rc_rate = (uint8)(100*get_locale_double(rcrate_entry.get_text()));
+                    rt.rc_expo = (uint8)(100*get_locale_double(rcexpo_entry.get_text()));
+                    rt.rollpitchrate = (uint8)(100*get_locale_double(prrate_entry.get_text()));
+                    rt.yawrate = (uint8)(100*get_locale_double(yawrate_entry.get_text()));
+                    rt.dynthrpid = (uint8)(100*get_locale_double(dynthr_entry.get_text()));
+                    rt.throttle_mid = (uint8)(100*get_locale_double(thrmid_entry.get_text()));
+                    rt.throttle_expo = (uint8)(100*get_locale_double(threxpro_entry.get_text()));
+
                     Idle.add(() => {
                             s.send_command(MSP.Cmds.SET_PID,rawbuf,30);
                             s.send_command(MSP.Cmds.SET_MISC,
                                            &misc, sizeof(MSP_MISC));
+                            s.send_command(MSP.Cmds.SET_RC_TUNING,&rt,
+                                           sizeof(MSP_RC_TUNING));
                             s.send_command(MSP.Cmds.EEPROM_WRITE,null, 0);
                             s.send_command(MSP.Cmds.PID,null,0);
                             s.send_command(MSP.Cmds.PID,null,0);

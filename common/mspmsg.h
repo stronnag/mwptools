@@ -118,6 +118,19 @@ struct __attribute__ ((__packed__))  _msp_comp_gps
 };
 typedef struct _msp_comp_gps MSP_COMP_GPS;
 
+
+struct __attribute__ ((__packed__))  _msp_rc_tuning
+{
+    uint8_t rc_rate;
+    uint8_t rc_expo;
+    uint8_t rollpitchrate;
+    uint8_t yawrate;
+    uint8_t dynthrpid;
+    uint8_t throttle_mid;
+    uint8_t throttle_expo;
+};
+typedef struct _msp_rc_tuning MSP_RC_TUNING;
+
 struct __attribute__ ((__packed__))  _msp_analog
 {
      uint8_t vbat;
