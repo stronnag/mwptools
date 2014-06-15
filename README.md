@@ -14,7 +14,9 @@ netbook.
 
  * mwp : "A mission planner for the rest of us". Simple mission planning and monitoring;
  * pidedit : PID editor;
- * mspsim : An MSP (MultiWii Serial Protocol) simulator. Used to develop the other components of the suite.
+ * switchedit : Transmitter switch editor;
+ * mspsim : An MSP (MultiWii Serial Protocol) simulator. Used to develop the other components of the suite;
+ * Tools to transform mwp log files to SQL, GPX and KML.
 
 ## Platforms and OS
 
@@ -25,7 +27,7 @@ The tools are designed to be portable and as far as possible platform and archit
  * Clutter (software GL is fine);
  * libchamplain;
  * libespeak;
- * libbluetooth (linux);
+ * libgdl;
  * mspsim requires Posix pseudo-terminals. 
 
 mwptools is tested on x86_64, ia32 and ARM devices.
@@ -34,14 +36,9 @@ mwptools is tested on x86_64, ia32 and ARM devices.
 
 Individual (per-tool) Makefiles (or the top level makeall.sh script). The install phase performs a user install (~/bin/ and .local/share), creating directories. 
 
-On Ubuntu, the current (13.04) libchamplain does not support required bounding box functions. You need to make the 'mwpu' target on Ubuntu (auto-detected by makeall.sh).
-
 ## Compatibility
 
 mwp aims to be compatible with EOSBandi's WinGUI. It used the same XML mission file format (with mwp extensions) and aims to provide similar functionaliy where it is possible to reverse engineer the required protocol formats.
 
-## Caveats
-
-The MultiWii NAV protocol is under heavy development and is not  (AFAIK) documented. Additionally, the author has not yet flown an GPS / NAV capable quad-copter. mspsim has been used for much of the NAV related protocol testing, and any errors are likely to have been propogated to both mwp and mspsim. mwp has also been bench tested with a Mega2560 FC with Ublox GPS. You have been warned.
 
 
