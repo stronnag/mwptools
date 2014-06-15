@@ -80,7 +80,7 @@ public class PIDEdit : Object
     };
 
 
-    private void set_misc_ui()
+    private void set_misc_ui(bool fixed=true)
     {
         var v = "%d".printf(misc.conf_minthrottle);
         eminthr.set_text(v);
@@ -94,13 +94,36 @@ public class PIDEdit : Object
         evbatwarn2.set_text(v);
         v = "%.1f".printf(misc.conf_vbatlevel_crit/10.0);
         evbatcrit.set_text(v);
+        if(fixed == true)
+        {
+            v = "%d".printf(misc.mincommand);
+            var l  = builder.get_object ("mincmdlab") as Gtk.Label;
+            l.set_label(v);
+            l  = builder.get_object ("maxthrlab") as Gtk.Label;
+            v = "%d".printf(misc.maxthrottle);
+            l.set_label(v);
+        }
+    }
 
-        v = "%d".printf(misc.mincommand);
-        var l  = builder.get_object ("mincmdlab") as Gtk.Label;
-        l.set_label(v);
-        l  = builder.get_object ("maxthrlab") as Gtk.Label;
-        v = "%d".printf(misc.maxthrottle);
-        l.set_label(v);
+    private void get_misc()
+    {
+        misc.conf_minthrottle = (uint16)int.parse(eminthr.get_text());
+        misc.conf_mag_declination = (int16)(10*get_locale_double(emagdec.get_text()));
+        misc.conf_vbatscale = (uint8)int.parse(evbatscale.get_text());
+        misc.conf_vbatlevel_warn1 = (uint8)(10*get_locale_double(evbatwarn1.get_text()));
+        misc.conf_vbatlevel_warn2 = (uint8)(10*get_locale_double(evbatwarn2.get_text()));
+        misc.conf_vbatlevel_crit = (uint8)(10*get_locale_double(evbatcrit.get_text()));
+    }
+
+    private void get_rc_tuning()
+    {
+        rt.rc_rate = (uint8)(100*get_locale_double(rcrate_entry.get_text()));
+        rt.rc_expo = (uint8)(100*get_locale_double(rcexpo_entry.get_text()));
+        rt.rollpitchrate = (uint8)(100*get_locale_double(prrate_entry.get_text()));
+        rt.yawrate = (uint8)(100*get_locale_double(yawrate_entry.get_text()));
+        rt.dynthrpid = (uint8)(100*get_locale_double(dynthr_entry.get_text()));
+        rt.throttle_mid = (uint8)(100*get_locale_double(thrmid_entry.get_text()));
+        rt.throttle_expo = (uint8)(100*get_locale_double(threxpro_entry.get_text()));
     }
 
     private void save_file()
@@ -172,22 +195,20 @@ public class PIDEdit : Object
                 set_pid_spins();
 
                 misc.conf_minthrottle = (uint16)root_object.get_int_member("minthrottle");
-                eminthr.set_text("%d".printf(misc.conf_minthrottle));
-
                 misc.conf_mag_declination = (int16)root_object.get_int_member("magdeclination");
-                emagdec.set_text("%.1f".printf(misc.conf_mag_declination/10.0));
-
                 misc.conf_vbatscale = (uint8)root_object.get_int_member("vbatscale");
-                evbatscale.set_text("%d".printf(misc.conf_vbatscale));
-
                 misc.conf_vbatlevel_warn1 = (uint8)root_object.get_int_member("vbatwarn1");
-                evbatwarn1.set_text("%.1f".printf(misc.conf_vbatlevel_warn1/10.0));
-
                 misc.conf_vbatlevel_warn2 = (uint8)root_object.get_int_member("vbatwarn2");
-                evbatwarn2.set_text("%.1f".printf(misc.conf_vbatlevel_warn2/10.0));
-
                 misc.conf_vbatlevel_crit = (uint8)root_object.get_int_member("vbatcrit");
-                evbatcrit.set_text("%.1f".printf(misc.conf_vbatlevel_crit/10.0));
+                set_misc_ui(false);
+                rt.rc_rate = (uint8)root_object.get_int_member ("rc_rate");
+                rt.rc_expo = (uint8)root_object.get_int_member ("rc_expo");
+                rt.rollpitchrate = (uint8)root_object.get_int_member ("rollpitchrate");
+                rt.yawrate = (uint8)root_object.get_int_member ("yawrate");
+                rt.dynthrpid = (uint8)root_object.get_int_member ("dynthrpid");
+                rt.throttle_mid =(uint8)root_object.get_int_member ("throttle_mid");
+                rt.throttle_expo = (uint8)root_object.get_int_member ("throttle_expo");
+                set_rc_tuning();
             } catch (Error e) {
                 stderr.printf ("Failed to parse file\n");
             }
@@ -227,19 +248,35 @@ public class PIDEdit : Object
          }
          builder.end_array();
 
+         get_misc();
          builder.set_member_name ("minthrottle");
-         builder.add_int_value (int.parse(eminthr.get_text()));
+         builder.add_int_value (misc.conf_minthrottle);
          builder.set_member_name ("magdeclination");
-         builder.add_int_value ((int)(10*get_locale_double(emagdec.get_text())));
-
+         builder.add_int_value(misc.conf_mag_declination);
          builder.set_member_name ("vbatscale");
-         builder.add_int_value (int.parse(evbatscale.get_text()));
+         builder.add_int_value (misc.conf_vbatscale);
          builder.set_member_name ("vbatwarn1");
-         builder.add_int_value((int)(10*get_locale_double(evbatwarn1.get_text())));
+         builder.add_int_value(misc.conf_vbatlevel_warn1);
          builder.set_member_name ("vbatwarn2");
-         builder.add_int_value((int)(10*get_locale_double(evbatwarn2.get_text())));
+         builder.add_int_value(misc.conf_vbatlevel_warn2);
          builder.set_member_name ("vbatcrit");
-         builder.add_int_value((int)(10*get_locale_double(evbatcrit.get_text())));
+         builder.add_int_value(misc.conf_vbatlevel_crit);
+
+         get_rc_tuning();
+         builder.set_member_name ("rc_rate");
+         builder.add_int_value (rt.rc_rate);
+         builder.set_member_name ("rc_expo");
+         builder.add_int_value (rt.rc_expo);
+         builder.set_member_name ("rollpitchrate");
+         builder.add_int_value (rt.rollpitchrate);
+         builder.set_member_name ("yawrate");
+         builder.add_int_value (rt.yawrate);
+         builder.set_member_name ("dynthrpid");
+         builder.add_int_value (rt.dynthrpid);
+         builder.set_member_name ("throttle_mid");
+         builder.add_int_value (rt.throttle_mid);
+         builder.set_member_name ("throttle_expo");
+         builder.add_int_value (rt.throttle_expo);
 
          builder.end_object ();
          Json.Node root = builder.get_root ();
@@ -317,17 +354,6 @@ public class PIDEdit : Object
         dynthr_entry.set_text("%.2f".printf(rt.dynthrpid /100.0));
         thrmid_entry.set_text("%.2f".printf(rt.throttle_mid /100.0));
         threxpro_entry.set_text("%.2f".printf(rt.throttle_expo /100.0));
-
-        stdout.printf("%u %u %u %u %u %u %u\n",
-                      rt.rc_rate,
-                      rt.rc_expo,
-                      rt.rollpitchrate,
-                      rt.yawrate,
-                      rt.dynthrpid,
-                      rt.throttle_mid,
-
-
-                      rt.throttle_expo);
     }
 
     private void set_pid_spins()
@@ -507,21 +533,8 @@ public class PIDEdit : Object
                         n++;
                     }
 
-                    misc.conf_minthrottle = (uint16)int.parse(eminthr.get_text());
-                    misc.conf_mag_declination = (int16)(10*get_locale_double(emagdec.get_text()));
-
-                    misc.conf_vbatscale = (uint8)int.parse(evbatscale.get_text());
-                    misc.conf_vbatlevel_warn1 = (uint8)(10*get_locale_double(evbatwarn1.get_text()));
-                    misc.conf_vbatlevel_warn2 = (uint8)(10*get_locale_double(evbatwarn2.get_text()));
-                    misc.conf_vbatlevel_crit = (uint8)(10*get_locale_double(evbatcrit.get_text()));
-
-                    rt.rc_rate = (uint8)(100*get_locale_double(rcrate_entry.get_text()));
-                    rt.rc_expo = (uint8)(100*get_locale_double(rcexpo_entry.get_text()));
-                    rt.rollpitchrate = (uint8)(100*get_locale_double(prrate_entry.get_text()));
-                    rt.yawrate = (uint8)(100*get_locale_double(yawrate_entry.get_text()));
-                    rt.dynthrpid = (uint8)(100*get_locale_double(dynthr_entry.get_text()));
-                    rt.throttle_mid = (uint8)(100*get_locale_double(thrmid_entry.get_text()));
-                    rt.throttle_expo = (uint8)(100*get_locale_double(threxpro_entry.get_text()));
+                    get_misc();
+                    get_rc_tuning();
 
                     Idle.add(() => {
                             s.send_command(MSP.Cmds.SET_PID,rawbuf,30);
