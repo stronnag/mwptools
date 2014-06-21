@@ -214,6 +214,13 @@ public class MWPlanner : GLib.Object {
                 }
             });
 
+        menuop = builder.get_object ("gs_read") as Gtk.MenuItem;
+        menuop.activate.connect(() =>
+            {
+                stderr.printf("reread settings\n");
+                conf.read_settings();
+            });
+
         menuop = builder.get_object ("menu_quit") as Gtk.MenuItem;
         menuop.activate.connect (() => {
                 Gtk.main_quit();
@@ -784,7 +791,6 @@ public class MWPlanner : GLib.Object {
                     {
                         mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
                     }
-
                 }
                 else if (wpmgr.wp_flag == WPDL.REPLACE)
                 {
@@ -795,6 +801,12 @@ public class MWPlanner : GLib.Object {
                     m.lon = (int32.from_little_endian(w.lon))/10000000.0;
                     m.alt = (uint32.from_little_endian(w.altitude))/100;
                     m.param1 = (int16.from_little_endian(w.p1));
+                    if(m.action == MSP.Action.SET_HEAD &&
+                       conf.recip_head  == true && m.param1 != -1)
+                    {
+                        m.param1 = (m.param1 + 180) % 360;
+                        stderr.printf("fixup %d %d\n", m.no, m.param1);
+                    }
                     m.param2 = (uint16.from_little_endian(w.p2));
                     m.param3 = (uint16.from_little_endian(w.p3));
 
@@ -994,13 +1006,16 @@ public class MWPlanner : GLib.Object {
             w0.flag = 0xa5;
             wps += w0;
         }
+
+        stderr.printf("upload with %s\n", conf.recip_head.to_string());
         if(conf.recip_head)
         {
-            foreach(var w in wps)
+            for(var ix = 0 ; ix < wps.length; ix++)
             {
-                if(w.action == MSP.Action.SET_HEAD && w.p1 != -1)
+                if(wps[ix].action == MSP.Action.SET_HEAD && wps[ix].p1 != -1)
                 {
-                    w.p1 = (w.p1 + 180) % 360;
+                    wps[ix].p1 = (wps[ix].p1 + 180) % 360;
+                    stderr.printf("%d : recip %d\n", wps[ix].wp_no, wps[ix].p1);
                 }
             }
         }

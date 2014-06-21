@@ -30,7 +30,7 @@ ARGV.options do |opt|
   end
 end
 
-abort "Usage: m2x.rb FILE\n" unless file = ARGV[0]
+abort "Usage: m2x.rb FILE\n" unless (file = ARGV[0])
 
 #=begin
 db = Sequel.connect dburi
@@ -82,34 +82,36 @@ db.create_table? :reports do
   column :remnoise,:integer
 end
 
-doc=nil
-json = File.new(file, 'r')
-
-lt=0
-st = 0
-
-rec={}
-db.transaction do
-  mid = db[:missions].insert({:title => title})
-  Yajl::Parser.parse(json, {:symbolize_names => true}) do |o|
-    keys = o.keys
-    keys.each do |k|
-      if k.class == String
-        o[k.to_sym] = o[k]
-        o.delete(k)
+otitle=title
+ARGV.each do |fn|
+  title = fn if otitle.nil?
+  doc=nil
+  json = File.new(fn, 'r')
+  lt=0
+  st = 0
+  rec={}
+  db.transaction do
+    mid = db[:missions].insert({:title => title})
+    Yajl::Parser.parse(json, {:symbolize_names => true}) do |o|
+      keys = o.keys
+      keys.each do |k|
+	if k.class == String
+	  o[k.to_sym] = o[k]
+	  o.delete(k)
+	end
       end
-    end
 
-    if o[:utime] != lt
-      st = o[:utime] if lt.zero?
-      recins db,rec,mid
-      rec=o
-    else
-      rec.merge!(o)
+      if o[:utime] != lt
+	st = o[:utime] if lt.zero?
+	recins db,rec,mid
+	rec=o
+      else
+	rec.merge!(o)
+      end
+      lt = o[:utime]
     end
-    lt = o[:utime]
+    recins db,rec,mid
+    db[:missions].where(:id => mid).update({:start => Time.at(st),
+					     :end => Time.at(lt)})
   end
-  recins db,rec,mid
-  db[:missions].where(:id => mid).update({:start => Time.at(st),
-                                            :end => Time.at(lt)})
 end
