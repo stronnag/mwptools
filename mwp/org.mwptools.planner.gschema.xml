@@ -108,6 +108,11 @@
       (i.e. bug in mw nav)</description>
     </key>
 
+    <key type="b" name="audio-on-arm">
+      <default>false</default>
+      <summary>start audio on arm</summary>
+      <description>start audio on arm (and stop on disarm)</description>
+    </key>
 
     <key name="baudrate" type="u">
       <default>115200</default>

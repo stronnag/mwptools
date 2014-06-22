@@ -63,6 +63,7 @@ public class MWSim : GLib.Object
     private static bool exhaustbat=false;
     private static bool ltm=false;
     private static int udport=0;
+    private bool armed=false;
 
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
@@ -146,6 +147,7 @@ public class MWSim : GLib.Object
                     int ftime =(int)Math.round(td * 1852.0 / 2.5);
                     var gps_timer = 0;
                     volts = 12.6;
+                    armed = true;
                     tid = Timeout.add(1000, () =>
                         {
                             gps_timer++;
@@ -169,6 +171,7 @@ public class MWSim : GLib.Object
                 }
                 else
                 {
+                    armed = false;
                     stop_sim();
                 }
             });
@@ -319,7 +322,7 @@ public class MWSim : GLib.Object
         {
             var typ = w.action;
 
-            if (typ == MSP.Action.SET_POI)
+            if (typ == MSP.Action.SET_POI || typ == MSP.Action.SET_HEAD)
             {
                 continue;
             }
@@ -569,6 +572,8 @@ public class MWSim : GLib.Object
                 MSP_STATUS buf = {0};
                 buf.cycle_time=((uint16)2345).to_little_endian();
                 buf.sensor=((uint16)31).to_little_endian();
+                buf.flag = (armed) ? 1 : 0;
+
                 append_text("Send STATUS %lu\n".printf(sizeof(MSP_STATUS)));
                 msp.send_command(MSP.Cmds.STATUS, &buf, sizeof(MSP_STATUS));
                 break;

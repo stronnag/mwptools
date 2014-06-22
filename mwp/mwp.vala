@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
@@ -94,6 +93,7 @@ public class MWPlanner : GLib.Object {
     private uint8 sflags;
     private uint8 nsats = 0;
     private uint8 _nsats = 0;
+    private uint8 larmed = 0;
 
         /**** FIXME ***/
     private int gfcse = 0;
@@ -671,6 +671,24 @@ public class MWPlanner : GLib.Object {
                     }
                     Logger.log_time();
                     var swflg = uint32.from_little_endian(s.flag);
+                    uint8 armed = (uint8)(swflg & 1);
+
+                    if(conf.audioarmed == true && armed != larmed)
+                    {
+                        if (armed == 1 && audio_on == false)
+                        {
+                            audio_cb.active = true;
+                            audio_on = true;
+                            start_audio();
+                        }
+                        else
+                        {
+                            audio_cb.active = false;
+                            stop_audio();
+                        }
+                        larmed = armed;
+                    }
+
                     if(Logger.is_logging)
                     {
                         Logger.armed(((swflg & 1) == 1));
@@ -1064,19 +1082,23 @@ public class MWPlanner : GLib.Object {
 
     private void start_audio()
     {
-        if(audio_on && (sflags != 0))
+        if (spktid == 0)
         {
-            navstatus.logspeak_init(conf.evoice);
-            spktid = Timeout.add_seconds(conf.speakint, () => {
-                    if(_nsats != nsats)
-                    {
-                        navstatus.sats(_nsats);
-                        nsats = _nsats;
-                    }
-                    navstatus.announce(sflags, conf.recip);
-                    return true;
-                });
-            navstatus.announce(sflags,conf.recip);
+            if(audio_on && (sflags != 0))
+            {
+                navstatus.logspeak_init(conf.evoice);
+                spktid = Timeout.add_seconds(conf.speakint, () => {
+                        if(_nsats != nsats)
+                        {
+                            navstatus.sats(_nsats);
+                            nsats = _nsats;
+                        }
+                        navstatus.announce(sflags, conf.recip);
+                        return true;
+                    });
+                navstatus.announce(sflags,conf.recip);
+
+            }
         }
     }
 
