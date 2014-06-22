@@ -152,15 +152,6 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkMenuItem" id="gs_read">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Re-read gsettings (for everything the author is too lazy to expose in Prefs ... alas)	</property>
-                        <property name="label" translatable="yes">Reread gsettings</property>
-                        <property name="use_underline">True</property>
-                      </object>
-                    </child>
-                    <child>
                       <object class="GtkImageMenuItem" id="menu_prefs">
                         <property name="label">gtk-preferences</property>
                         <property name="visible">True</property>

@@ -214,13 +214,6 @@ public class MWPlanner : GLib.Object {
                 }
             });
 
-        menuop = builder.get_object ("gs_read") as Gtk.MenuItem;
-        menuop.activate.connect(() =>
-            {
-                stderr.printf("reread settings\n");
-                conf.read_settings();
-            });
-
         menuop = builder.get_object ("menu_quit") as Gtk.MenuItem;
         menuop.activate.connect (() => {
                 Gtk.main_quit();

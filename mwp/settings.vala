@@ -58,6 +58,10 @@ public class MWPSettings : GLib.Object
             else
                 settings =  new Settings (sname);
 
+            settings.changed.connect (() => {
+                    stderr.printf("Reread settings\n");
+                    read_settings();
+                });
         } catch {
             stderr.printf("No settings schema\n");
             Posix.exit(-1);
