@@ -47,6 +47,7 @@ public class MWPlanner : GLib.Object {
     private Gtk.Button conbutton;
     private Gtk.ComboBoxText dev_entry;
     private Gtk.Label verlab;
+    private Gtk.Label validatelab;
     private Gtk.Label typlab;
     private Gtk.Label labelvbat;
     private bool have_vers;
@@ -493,6 +494,7 @@ public class MWPlanner : GLib.Object {
             });
 
         verlab = builder.get_object ("verlab") as Gtk.Label;
+        validatelab = builder.get_object ("validated") as Gtk.Label;
         typlab = builder.get_object ("typlab") as Gtk.Label;
         labelvbat = builder.get_object ("labelvbat") as Gtk.Label;
         conbutton.clicked.connect(() => { connect_serial(); });
@@ -800,6 +802,7 @@ public class MWPlanner : GLib.Object {
                     }
                     else
                     {
+                        validatelab.set_text("\u2714");
                         mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
                     }
                 }
@@ -1004,6 +1007,7 @@ public class MWPlanner : GLib.Object {
 
     private void upload_quad()
     {
+        validatelab.set_text("");
         var wps = ls.to_wps();
         if(wps.length == 0)
         {
