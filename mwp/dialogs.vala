@@ -82,10 +82,10 @@ public class PrefsDialog : GLib.Object
 
     public void run_prefs(ref MWPSettings conf)
     {
+        StringBuilder sb = new StringBuilder ();
         if(conf.devices != null)
         {
             var delimiter = ", ";
-            StringBuilder sb = new StringBuilder ();
             foreach (string s in conf.devices)
             {
                 sb.append(s);
@@ -110,35 +110,75 @@ public class PrefsDialog : GLib.Object
         {
             case 1001:
                 var str = ents[0].get_text();
-                var strs = str.split(",");
-                for(int i=0; i<strs.length;i++)
+                double d;
+                uint u;
+                if(sb.str != str)
                 {
-                    strs[i] = strs[i].strip();
+                    var strs = str.split(",");
+                    for(int i=0; i<strs.length;i++)
+                    {
+                        strs[i] = strs[i].strip();
+                    }
+                    conf.settings.set_strv( "device-names", strs);
                 }
-                conf.devices = strs;
                 str = ents[1].get_text();
-                conf.latitude=get_locale_double(str);
-                str = ents[2].get_text();
-                conf.longitude=get_locale_double(str);
-                str = ents[3].get_text();
-                conf.loiter=int.parse(str);
-                str = ents[4].get_text();
-                conf.altitude=int.parse(str);
-                str = ents[5].get_text();
-                conf.nav_speed=get_locale_double(str);
-                str = ents[6].get_text();
-                conf.defmap=str;
-                str = ents[7].get_text();
-                conf.zoom=int.parse(str);
-                conf.dms = dmscb.active;
-                str = ents[8].get_text();
-                conf.speakint=int.parse(str);
-                if(conf.speakint > 0 && conf.speakint < 15)
+                d=get_locale_double(str);
+                if(conf.latitude != d)
                 {
-                    conf.speakint = 15;
-                    ents[8].set_text("%u".printf(conf.speakint));
+                    conf.settings.set_double("default-latitude", d);
                 }
-                conf.save_settings();
+                str = ents[2].get_text();
+                d=get_locale_double(str);
+                if(conf.longitude != d)
+                {
+                    conf.settings.set_double("default-longitude", d);
+                }
+                str = ents[3].get_text();
+                u=int.parse(str);
+                if(conf.loiter != u)
+                {
+                    conf.settings.set_uint("default-loiter", u);
+                }
+                str = ents[4].get_text();
+                u=int.parse(str);
+                if(conf.altitude != u)
+                {
+                    conf.settings.set_uint("default-altitude", u);
+                }
+                str = ents[5].get_text();
+                d=get_locale_double(str);
+                if(conf.nav_speed != d)
+                {
+                    conf.settings.set_double("default-nav-speed", d);
+                }
+                str = ents[6].get_text();
+                if(conf.defmap !=str)
+                {
+                    conf.settings.set_string ("default-map", str);
+                }
+                str = ents[7].get_text();
+                u=int.parse(str);
+                if(conf.zoom != u)
+                {
+                    conf.settings.set_uint("default-zoom", u);
+                }
+                bool pdms = dmscb.active;
+                if(conf.dms != pdms)
+                {
+                    conf.settings.set_boolean("display-dms",pdms);
+                }
+                str = ents[8].get_text();
+                u=int.parse(str);
+                if(u > 0 && conf.speakint < 15)
+                {
+                    u = 15;
+                    ents[8].set_text("%u".printf(u));
+                }
+                if(conf.speakint != u)
+                {
+                    conf.settings.set_uint("speak-interval",u);
+
+                }
                 break;
             case 1002:
                 break;

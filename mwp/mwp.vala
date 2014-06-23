@@ -802,7 +802,7 @@ public class MWPlanner : GLib.Object {
                     }
                     else
                     {
-                        validatelab.set_text("\u2714");
+                        validatelab.set_text("✔"); // u+2714
                         mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
                     }
                 }

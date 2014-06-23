@@ -20,7 +20,7 @@
 
 public class MWPSettings : GLib.Object
 {
-    private Settings settings;
+    public Settings settings {get; private set;}
     private const string sname = "org.mwptools.planner";
     private SettingsSchema schema;
     public double latitude {get; set; default=0.0;}
@@ -32,7 +32,7 @@ public class MWPSettings : GLib.Object
     public string? defmap {get; set; default=null;}
     public string[]? devices {get; set; default=null;}
     public string? compat_vers {get; set; default=null;}
-    public bool scary_warn {get; set; default=true;}
+    public bool scary_warn {get; set; default=false;}
     public bool dms {get; set; default=false;}
     public string? map_sources {get; set; default=null;}
     public uint  speakint {get; set; default=0;}
@@ -59,9 +59,9 @@ public class MWPSettings : GLib.Object
             else
                 settings =  new Settings (sname);
 
-            settings.changed.connect (() => {
-                    stderr.printf("Reread settings\n");
-                    read_settings();
+            settings.changed.connect ((s) => {
+                    stderr.printf("changed %s settings\n",s);
+                    read_settings(s);
                 });
         } catch {
             stderr.printf("No settings schema\n");
@@ -69,34 +69,56 @@ public class MWPSettings : GLib.Object
         }
     }
 
-    public void read_settings()
+    public void read_settings(string? s=null)
     {
-        devices = settings.get_strv ("device-names");
-        defmap = settings.get_string ("default-map");
-        latitude = settings.get_double("default-latitude");
-        longitude = settings.get_double("default-longitude");
-        loiter = settings.get_uint("default-loiter");
-        altitude = settings.get_uint("default-altitude");
-        nav_speed = settings.get_double("default-nav-speed");
-        zoom = settings.get_uint("default-zoom");
-        compat_vers = settings.get_string ("compat-version");
-        scary_warn = settings.get_boolean("show-scary-warning");
-        map_sources = settings.get_string ("map-sources");
-        dms = settings.get_boolean("display-dms");
-        recip = settings.get_boolean("audio-bearing-is-reciprocal");
-        recip_head = settings.get_boolean("set-head-is-b0rken");
-        audioarmed = settings.get_boolean("audio-on-arm");
-        speakint = settings.get_uint("speak-interval");
-        if(speakint > 0 && speakint < 15)
-            speakint = 15;
-        evoice = settings.get_string ("espeak-voice");
-        baudrate = settings.get_uint("baudrate");
-        mediap = settings.get_string ("media-player");
-        if(map_sources == "")
-            map_sources = null;
-
-        if (devices == null)
-            devices = {};
+        if(s == null || s == "device-names")
+        {
+            devices = settings.get_strv ("device-names");
+            if (devices == null)
+                devices = {};
+        }
+        if(s == null || s == "default-map")
+            defmap = settings.get_string ("default-map");
+        if(s == null || s == "default-latitude")
+            latitude = settings.get_double("default-latitude");
+        if(s == null || s == "default-longitude")
+            longitude = settings.get_double("default-longitude");
+        if(s == null || s == "default-loiter")
+            loiter = settings.get_uint("default-loiter");
+        if(s == null || s == "default-altitude")
+            altitude = settings.get_uint("default-altitude");
+        if(s == null || s == "default-nav-speed")
+            nav_speed = settings.get_double("default-nav-speed");
+        if(s == null || s == "default-zoom")
+            zoom = settings.get_uint("default-zoom");
+        if(s == null || s == "compat-version")
+            compat_vers = settings.get_string ("compat-version");
+        if(s == null || s == "map-sources")
+        {
+            map_sources = settings.get_string ("map-sources");
+            if(map_sources == "")
+                map_sources = null;
+        }
+        if(s == null || s == "display-dms")
+            dms = settings.get_boolean("display-dms");
+        if(s == null || s == "audio-bearing-is-reciprocal")
+            recip = settings.get_boolean("audio-bearing-is-reciprocal");
+        if(s == null || s == "set-head-is-b0rken")
+            recip_head = settings.get_boolean("set-head-is-b0rken");
+        if(s == null || s == "audio-on-arm")
+            audioarmed = settings.get_boolean("audio-on-arm");
+        if(s == null || s == "speak-interval")
+        {
+            speakint = settings.get_uint("speak-interval");
+            if(speakint > 0 && speakint < 15)
+                speakint = 15;
+        }
+        if(s == null || s == "espeak-voice")
+            evoice = settings.get_string ("espeak-voice");
+        if(s == null || s == "baudrate")
+            baudrate = settings.get_uint("baudrate");
+        if(s == null || s == "media-player")
+            mediap = settings.get_string ("media-player");
     }
 
     public void save_settings()
@@ -113,6 +135,8 @@ public class MWPSettings : GLib.Object
             settings.set_uint("default-zoom", zoom);
             settings.set_boolean("display-dms",dms);
             settings.set_uint("speak-interval",speakint);
+            stderr.printf("save pos = %f %f \n", latitude,
+                              longitude);
         }
         else
         {
