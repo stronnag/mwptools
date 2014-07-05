@@ -677,7 +677,7 @@ public class MWPlanner : GLib.Object {
 
                     if(conf.audioarmed == true && armed != larmed)
                     {
-                        if (armed == 1 && audio_on == false)
+                        if (armed == 1)
                         {
                             audio_cb.active = true;
                             audio_on = true;
@@ -793,6 +793,7 @@ public class MWPlanner : GLib.Object {
                         }
                         var fmsg = string.join("|",arry);
                         var mtxt = "Validation for wp %d fails for %s".printf(w.wp_no, fmsg);
+                        bleet_sans_merci("beep-sound.ogg");
                         mwp_warning_box(mtxt, Gtk.MessageType.ERROR);
                     }
                     else if(w.flag != 0xa5)
@@ -802,6 +803,7 @@ public class MWPlanner : GLib.Object {
                     }
                     else
                     {
+                        bleet_sans_merci("beep-sound.ogg");
                         validatelab.set_text("✔"); // u+2714
                         mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
                     }
@@ -958,9 +960,10 @@ public class MWPlanner : GLib.Object {
         return icol;
     }
 
-    private void bleet_sans_merci()
+    private void bleet_sans_merci(string sfn="bleet.ogg")
     {
-        var fn = MWPUtils.find_conf_file("bleet.ogg");
+        var fn = MWPUtils.find_conf_file(sfn);
+        stderr.printf("[play %s %s\n", sfn, fn);
         if(fn != null)
         {
             try
