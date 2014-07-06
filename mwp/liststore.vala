@@ -529,12 +529,13 @@ public class ListBox : GLib.Object
 
     private void update_selected_cols()
     {
-        Gtk.TreeModel tm;
         Gtk.TreeIter iter;
-        var treesel = view.get_selection ();
-        if (treesel != null)
+        var sel = view.get_selection ();
+
+        if (sel != null)
         {
-            treesel.get_selected (out tm, out  iter);
+            var rows = sel.get_selected_rows(null);
+            list_model.get_iter (out iter, rows.nth_data(0));
             Value val;
             list_model.get_value (iter, WY_Columns.ACTION, out val);
             MSP.Action act = (MSP.Action)val;
@@ -576,28 +577,24 @@ public class ListBox : GLib.Object
 
     private void show_item(string s)
     {
-        Gtk.TreeModel tm;
         Gtk.TreeIter iter;
-
-        var treesel = view.get_selection ();
-        if (treesel != null)
+        var sel = view.get_selection ();
+        if (sel != null)
         {
             Gtk.TreeIter step;
-            treesel.get_selected (out tm, out  iter);
+            var rows = sel.get_selected_rows(null);
+            list_model.get_iter (out iter, rows.nth_data(0));
             switch(s)
             {
                 case "Up":
                     step = iter;
-                    tm.iter_previous(ref step);
+                    list_model.iter_previous(ref step);
                     list_model.move_before(ref iter, step);
                     break;
                 case "Down":
                     step = iter;
-                    tm.iter_next(ref step);
+                    list_model.iter_next(ref step);
                     list_model.move_after(ref iter,step);
-                    break;
-                default:
-                    stdout.printf("Not reached\n");
                     break;
             }
             calc_mission();
