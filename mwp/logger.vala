@@ -38,9 +38,8 @@ public class Logger : GLib.Object
             ios = file.create_readwrite (FileCreateFlags.PRIVATE);
             os = ios.output_stream;
             is_logging = true;
-        }
-        catch
-        {
+        } catch (Error e) {
+            stderr.printf ("Logger: %s %s\n", fn, e.message);
             is_logging = false;
         }
         gen = new Json.Generator ();

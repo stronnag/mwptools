@@ -114,6 +114,18 @@
       <description>start audio on arm (and stop on disarm)</description>
     </key>
 
+    <key type="b" name="log-on-arm">
+      <default>false</default>
+      <summary>start logging on arm</summary>
+      <description>start logging on arm (and stop on disarm)</description>
+    </key>
+
+    <key type="b" name="auto-follow">
+      <default>false</default>
+      <summary>set auto-follow on start</summary>
+      <description>set auto-follow on start</description>
+    </key>
+
     <key name="baudrate" type="u">
       <default>115200</default>
       <summary>Baud rate</summary>

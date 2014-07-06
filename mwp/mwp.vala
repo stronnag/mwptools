@@ -90,6 +90,7 @@ public class MWPlanner : GLib.Object {
     public  DockItem[] dockitem;
     private Gtk.CheckButton audio_cb;
     private Gtk.CheckButton autocon_cb;
+    private Gtk.CheckButton logb;
     private bool audio_on;
     private uint8 sflags;
     private uint8 nsats = 0;
@@ -425,7 +426,7 @@ public class MWPlanner : GLib.Object {
         poslabel = builder.get_object ("poslabel") as Gtk.Label;
         stslabel = builder.get_object ("label5") as Gtk.Label;
 
-        var logb = builder.get_object ("logger_cb") as Gtk.CheckButton;
+        logb = builder.get_object ("logger_cb") as Gtk.CheckButton;
         logb.toggled.connect (() => {
                 if (logb.active)
                     Logger.start();
@@ -450,7 +451,14 @@ public class MWPlanner : GLib.Object {
                 centreon = centreonb.active;
             });
 
+
         var followb = builder.get_object ("checkbutton2") as Gtk.CheckButton;
+        if(conf.autofollow)
+        {
+            follow = true;
+            followb.active = true;
+        }
+
         followb.toggled.connect (() => {
                 follow = followb.active;
                 if (follow == false && craft != null)
@@ -674,26 +682,37 @@ public class MWPlanner : GLib.Object {
                     Logger.log_time();
                     var swflg = uint32.from_little_endian(s.flag);
                     uint8 armed = (uint8)(swflg & 1);
-
-                    if(conf.audioarmed == true && armed != larmed)
+                    if(Logger.is_logging)
+                    {
+                        Logger.armed((armed == 1));
+                    }
+                    if(armed != larmed)
                     {
                         if (armed == 1)
                         {
-                            audio_cb.active = true;
-                            audio_on = true;
-                            start_audio();
+                            if (conf.audioarmed == true)
+                            {
+                                audio_cb.active = true;
+                            }
+                            if(conf.logarmed == true)
+                            {
+                                logb.active = true;
+                                Logger.armed(true);
+                            }
                         }
                         else
                         {
-                            audio_cb.active = false;
-                            stop_audio();
+                            if (conf.audioarmed == true)
+                            {
+                                audio_cb.active = false;
+                            }
+                            if(conf.logarmed == true)
+                            {
+                                Logger.armed(false);
+                                logb.active=false;
+                            }
                         }
                         larmed = armed;
-                    }
-
-                    if(Logger.is_logging)
-                    {
-                        Logger.armed(((swflg & 1) == 1));
                     }
                 }
                 break;

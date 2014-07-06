@@ -41,6 +41,8 @@ public class MWPSettings : GLib.Object
     public bool recip {get; set; default=false;}
     public bool recip_head {get; set; default=false;}
     public bool audioarmed {get; set; default=false;}
+    public bool logarmed {get; set; default=false;}
+    public bool autofollow {get; set; default=false;}
     public uint  baudrate {get; set; default=57600;}
     public string mediap {get; set;}
 
@@ -107,6 +109,10 @@ public class MWPSettings : GLib.Object
             recip_head = settings.get_boolean("set-head-is-b0rken");
         if(s == null || s == "audio-on-arm")
             audioarmed = settings.get_boolean("audio-on-arm");
+        if(s == null || s == "log-on-arm")
+            logarmed = settings.get_boolean("log-on-arm");
+        if(s == null || s == "auto-follow")
+            autofollow = settings.get_boolean("auto-follow");
         if(s == null || s == "speak-interval")
         {
             speakint = settings.get_uint("speak-interval");
@@ -135,8 +141,6 @@ public class MWPSettings : GLib.Object
             settings.set_uint("default-zoom", zoom);
             settings.set_boolean("display-dms",dms);
             settings.set_uint("speak-interval",speakint);
-            stderr.printf("save pos = %f %f \n", latitude,
-                              longitude);
         }
         else
         {
