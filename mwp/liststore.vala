@@ -41,6 +41,12 @@ public class ListBox : GLib.Object
     private MWPlanner mp;
     private bool purge;
     private Gtk.MenuItem shp_item;
+    private Gtk.MenuItem up_item;
+    private Gtk.MenuItem down_item;
+    private Gtk.MenuItem del_item;
+    private Gtk.MenuItem alts_item;
+    private Gtk.MenuItem altz_item;
+    private Gtk.MenuItem delta_item;
     private ShapeDialog shapedialog;
     private DeltaDialog deltadialog;
     int lastid = 0;
@@ -64,8 +70,6 @@ public class ListBox : GLib.Object
             switch (m.action)
             {
                 case MSP.Action.RTH:
-//                case MSP.Action.SET_POI:
-//                case MSP.Action.SET_HEAD:
                     no="";
                     break;
 
@@ -238,8 +242,14 @@ public class ListBox : GLib.Object
         view = new Gtk.TreeView.with_model (list_model);
 
         var sel = view.get_selection();
+
+        sel.set_mode(Gtk.SelectionMode.MULTIPLE);
+
         sel.changed.connect(() => {
-                update_selected_cols();
+                if (sel.count_selected_rows () == 1)
+                {
+                    update_selected_cols();
+                }
             });
 
 
@@ -433,29 +443,37 @@ public class ListBox : GLib.Object
                 if(event.button == 3)
                 {
                     var time = event.time;
-                    shp_item.sensitive=false;
-/************
-  remove requirement that mission is blank, allowing the
-  build up of multiple shapes
-                    int n_rows = list_model.iter_n_children(null);
-                    if(n_rows == 1)
-************/
+                    Gtk.TreeIter _iter;
+                    Value val;
+                    list_model.get_iter_first(out _iter);
+                    list_model.get_value (_iter, WY_Columns.ACTION, out val);
+                    shp_item.sensitive=((MSP.Action)val == MSP.Action.SET_POI);
+                        // remove ins, del as well
+
+                    if(sel.count_selected_rows () == 0)
                     {
-                        Gtk.TreeIter _iter;
-                        Value val;
-                        list_model.get_iter_first(out _iter);
-                        list_model.get_value (_iter, WY_Columns.ACTION, out val);
-                        if  ((MSP.Action)val == MSP.Action.SET_POI)
-                        {
-                            shp_item.sensitive=true;
-                        }
+                        del_item.sensitive = alts_item.sensitive =
+                            altz_item.sensitive = delta_item.sensitive = false;
+                    }
+                    else
+                    {
+                        del_item.sensitive = alts_item.sensitive =
+                        altz_item.sensitive = delta_item.sensitive = true;
+                    }
+
+                    if(sel.count_selected_rows () == 1)
+                    {
+                        up_item.sensitive = down_item.sensitive = true;
+                    }
+                    else
+                    {
+                        up_item.sensitive = down_item.sensitive = false;
                     }
                     menu.popup(null, null, null, 0, time);
                     return true;
                 }
                 return false;
             });
-
     }
 
     private void list_validate(string path, string new_text, int colno,
@@ -494,8 +512,6 @@ public class ListBox : GLib.Object
             switch ((MSP.Action)cell)
             {
                 case MSP.Action.RTH:
-//                case MSP.Action.SET_POI:
-//                case MSP.Action.SET_HEAD:
                     ls.set_value (iter, WY_Columns.IDX, "");
                     break;
 
@@ -580,21 +596,47 @@ public class ListBox : GLib.Object
                     tm.iter_next(ref step);
                     list_model.move_after(ref iter,step);
                     break;
-                case "Delete":
-                    list_model.remove(iter);
-                    lastid--;
-                    break;
-                case "Insert":
-                    insert_item(MSP.Action.UNASSIGNED,
-                                mp.view.get_center_latitude(),
-                                mp.view.get_center_longitude());
-                    break;
                 default:
                     stdout.printf("Not reached\n");
                     break;
             }
             calc_mission();
         }
+    }
+
+    private  Gtk.TreeRowReference[] get_selected_refs()
+    {
+        var sel = view.get_selection();
+        var rows = sel.get_selected_rows(null);
+        var list_model = view.get_model() as Gtk.ListStore;
+
+        Gtk.TreeRowReference[] trefs = {};
+        foreach (var r in rows) {
+            trefs += new Gtk.TreeRowReference (list_model, r);
+        }
+        return trefs;
+    }
+
+    private void menu_delete()
+    {
+
+        foreach (var t in get_selected_refs())
+        {
+            Gtk.TreeIter iter;
+            var path = t.get_path ();
+            list_model.get_iter (out iter, path);
+            list_model.remove(iter);
+            lastid--;
+        }
+        calc_mission();
+    }
+
+    public void menu_insert()
+    {
+        insert_item(MSP.Action.UNASSIGNED,
+                    mp.view.get_center_latitude(),
+                    mp.view.get_center_longitude());
+        calc_mission();
     }
 
     public void insert_item(MSP.Action typ, double lat, double lon)
@@ -646,43 +688,45 @@ public class ListBox : GLib.Object
         {
             if(dlat != 0.0 || dlon != 0.0 || dalt != 0)
             {
-                Gtk.TreeIter iter;
-                for(bool next=list_model.get_iter_first(out iter); next;
-                    next=list_model.iter_next(ref iter))
-                {
-                    GLib.Value cell;
-                    list_model.get_value (iter, WY_Columns.TYPE, out cell);
-                    var act = (MSP.Action)cell;
-                    if (act == MSP.Action.RTH
-                        || act == MSP.Action.SET_HEAD)
-                        continue;
+                 foreach (var t in get_selected_refs())
+                 {
+                     Gtk.TreeIter iter;
+                     GLib.Value cell;
+                     var path = t.get_path ();
+                     list_model.get_iter (out iter, path);
 
-                    if(dlat != 0.0)
-                    {
-                        list_model.get_value (iter, WY_Columns.LAT, out cell);
-                        var val = (double)cell;
-                        val += dlat;
-                        list_model.set_value (iter, WY_Columns.LAT, val);
-                    }
+                     list_model.get_value (iter, WY_Columns.TYPE, out cell);
+                     var act = (MSP.Action)cell;
+                     if (act == MSP.Action.RTH ||
+                         act == MSP.Action.JUMP ||
+                         act == MSP.Action.SET_HEAD)
+                         continue;
 
-                    if(dlon != 0.0)
-                    {
-                        list_model.get_value (iter, WY_Columns.LON, out cell);
-                        var val = (double)cell;
-                        val += dlat;
-                        list_model.set_value (iter, WY_Columns.LON, val);
-                    }
+                     if(dlat != 0.0)
+                     {
+                         list_model.get_value (iter, WY_Columns.LAT, out cell);
+                         var val = (double)cell;
+                         val += dlat;
+                         list_model.set_value (iter, WY_Columns.LAT, val);
+                     }
 
-                    if(dalt != 0)
-                    {
-                        list_model.get_value (iter, WY_Columns.ALT, out cell);
-                        var val = (int)cell;
-                        val += dalt;
-                        list_model.set_value (iter, WY_Columns.ALT, val);
-                    }
+                     if(dlon != 0.0)
+                     {
+                         list_model.get_value (iter, WY_Columns.LON, out cell);
+                         var val = (double)cell;
+                         val += dlat;
+                             list_model.set_value (iter, WY_Columns.LON, val);
+                     }
 
-                }
-                renumber_steps(list_model);
+                     if(dalt != 0)
+                     {
+                         list_model.get_value (iter, WY_Columns.ALT, out cell);
+                         var val = (int)cell;
+                         val += dalt;
+                         list_model.set_value (iter, WY_Columns.ALT, val);
+                     }
+                 }
+                 renumber_steps(list_model);
             }
         }
     }
@@ -690,40 +734,43 @@ public class ListBox : GLib.Object
     private void make_menu()
     {
         menu =   new Gtk.Menu ();
-        Gtk.MenuItem item = new Gtk.MenuItem.with_label ("Move Up");
-        item.activate.connect (() => {
+        Gtk.MenuItem item;
+
+        up_item = new Gtk.MenuItem.with_label ("Move Up");
+        up_item.activate.connect (() => {
                 show_item("Up");
             });
-        menu.add (item);
-        item = new Gtk.MenuItem.with_label ("Move Down");
-        item.activate.connect (() => {
+        menu.add (up_item);
+
+        down_item = new Gtk.MenuItem.with_label ("Move Down");
+        down_item.activate.connect (() => {
                 show_item("Down");
             });
-        menu.add (item);
+        menu.add (down_item);
 
-        item = new Gtk.MenuItem.with_label ("Delete");
-        item.activate.connect (() => {
-                show_item("Delete");
+        del_item = new Gtk.MenuItem.with_label ("Delete");
+        del_item.activate.connect (() => {
+                menu_delete();
             });
-        menu.add (item);
+        menu.add (del_item);
 
         item = new Gtk.MenuItem.with_label ("Insert");
         item.activate.connect (() => {
-                show_item("Insert");
+                menu_insert();
             });
         menu.add (item);
 
-        item = new Gtk.MenuItem.with_label ("Set all altitudes");
-        item.activate.connect (() => {
+        alts_item = new Gtk.MenuItem.with_label ("Set all altitudes");
+        alts_item.activate.connect (() => {
                 set_alts(true);
             });
-        menu.add (item);
+        menu.add (alts_item);
 
-        item = new Gtk.MenuItem.with_label ("Set zero value altitudes");
-        item.activate.connect (() => {
+        altz_item = new Gtk.MenuItem.with_label ("Set zero value altitudes");
+        altz_item.activate.connect (() => {
                 set_alts(false);
             });
-        menu.add (item);
+        menu.add (altz_item);
 
         shp_item = new Gtk.MenuItem.with_label ("Add shape");
         shp_item.activate.connect (() => {
@@ -732,11 +779,11 @@ public class ListBox : GLib.Object
         menu.add (shp_item);
         shp_item.sensitive=false;
 
-        item = new Gtk.MenuItem.with_label ("Delta updates");
-        item.activate.connect (() => {
+        delta_item = new Gtk.MenuItem.with_label ("Delta updates");
+        delta_item.activate.connect (() => {
                 do_deltas();
             });
-        menu.add (item);
+        menu.add (delta_item);
 
         item = new Gtk.MenuItem.with_label ("Clear Mission");
         item.activate.connect (() => {
@@ -748,17 +795,20 @@ public class ListBox : GLib.Object
 
     public void set_alts(bool flag)
     {
-        Gtk.TreeIter iter;
         Gtk.Entry ent = mp.builder.get_object ("entry1") as Gtk.Entry;
         var dalt = int.parse(ent.get_text());
 
-        for(bool next=list_model.get_iter_first(out iter); next;
-            next=list_model.iter_next(ref iter))
+        foreach (var t in get_selected_refs())
         {
+            Gtk.TreeIter iter;
             GLib.Value cell;
+            var path = t.get_path ();
+            list_model.get_iter (out iter, path);
             list_model.get_value (iter, WY_Columns.ACTION, out cell);
             var act = (MSP.Action)cell;
             if (act == MSP.Action.RTH ||
+                act == MSP.Action.JUMP ||
+                act == MSP.Action.SET_POI ||
                 act == MSP.Action.SET_HEAD)
                 continue;
             if(flag == false)
