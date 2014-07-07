@@ -711,7 +711,7 @@ public class ListBox : GLib.Object
                      {
                          list_model.get_value (iter, WY_Columns.LON, out cell);
                          var val = (double)cell;
-                         val += dlat;
+                         val += dlon;
                              list_model.set_value (iter, WY_Columns.LON, val);
                      }
 
