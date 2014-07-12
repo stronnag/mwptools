@@ -45,10 +45,12 @@ public class Logger : GLib.Object
         gen = new Json.Generator ();
         if(title != null)
         {
+            var tfile = File.new_for_path (title);
+            var bfn = tfile.get_basename ();
             Json.Builder builder = new Json.Builder ();
             builder.begin_object ();
             builder.set_member_name ("mission");
-            builder.add_string_value (title);
+            builder.add_string_value (bfn);
             builder.end_object ();
             Json.Node root = builder.get_root ();
             gen.set_root (root);
