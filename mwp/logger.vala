@@ -28,7 +28,7 @@ public class Logger : GLib.Object
     private static time_t currtime;
     private static time_t armtime;
 
-    public static void start()
+    public static void start(string? title=null)
     {
         time_t(out currtime);
         var fn  = "mwp_%s.log".printf(Time.local(currtime).format("%F_%H%M%S"));
@@ -43,6 +43,17 @@ public class Logger : GLib.Object
             is_logging = false;
         }
         gen = new Json.Generator ();
+        if(title != null)
+        {
+            Json.Builder builder = new Json.Builder ();
+            builder.begin_object ();
+            builder.set_member_name ("mission");
+            builder.add_string_value (title);
+            builder.end_object ();
+            Json.Node root = builder.get_root ();
+            gen.set_root (root);
+            try  { gen.to_stream(os); } catch  {};
+        }
     }
 
     public static void stop()
