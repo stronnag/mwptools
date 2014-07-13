@@ -92,8 +92,13 @@ ARGV.each do |fn|
   rec={}
   db.transaction do
     mid = db[:missions].insert({:title => title})
+    title=nil
     Yajl::Parser.parse(json, {:symbolize_names => true}) do |o|
       keys = o.keys
+      if keys[0].to_s == 'mission'
+	title = o[keys[0]]
+	next
+      end
       keys.each do |k|
 	if k.class == String
 	  o[k.to_sym] = o[k]
@@ -113,5 +118,8 @@ ARGV.each do |fn|
     recins db,rec,mid
     db[:missions].where(:id => mid).update({:start => Time.at(st),
 					     :end => Time.at(lt)})
+    if title
+      db[:missions].where(:id => mid).update({:title  => title})
+    end
   end
 end
