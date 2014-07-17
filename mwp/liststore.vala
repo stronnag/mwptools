@@ -18,6 +18,15 @@
  */
 
 
+/*
+public struct DistItem
+{
+    int no;
+    double dist;
+    double cse;
+};
+*/
+
 public class ListBox : GLib.Object
 {
     public enum WY_Columns
@@ -32,6 +41,7 @@ public class ListBox : GLib.Object
             INT3,
             MARKER,
             ACTION,
+            TIP,
             N_COLS
     }
 
@@ -236,10 +246,13 @@ public class ListBox : GLib.Object
                                         typeof (int),
                                         typeof (int),
                                         typeof (Champlain.Label),
-                                        typeof (MSP.Action)
+                                        typeof (MSP.Action),
+                                        typeof (string)
                                         );
 
         view = new Gtk.TreeView.with_model (list_model);
+
+        view.set_tooltip_column(WY_Columns.TIP);
 
         var sel = view.get_selection();
 
@@ -868,6 +881,8 @@ public class ListBox : GLib.Object
         for(bool next=list_model.get_iter_first(out iter);next;next=list_model.iter_next(ref iter))
         {
             GLib.Value cell;
+
+            list_model.set_value (iter, WY_Columns.TIP, (string)null);
             list_model.get_value (iter, WY_Columns.ACTION, out cell);
             var typ = (MSP.Action)cell;
             if (typ == MSP.Action.RTH)
@@ -899,6 +914,7 @@ public class ListBox : GLib.Object
         var n = 0;
         var rpt = 0;
         double lx = 0.0,ly=0.0;
+        var lastn = 0;
         bool ready = false;
         d = 0.0;
         lt = 0;
@@ -933,12 +949,32 @@ public class ListBox : GLib.Object
                        continue;
                     }
                     Geo.csedist(ly,lx,cy,cx, out dx, out cse);
+//                    stdout.printf("WP %d %.1f %.0f %.1f\n", arry[lastn].no,dx*1852.0, cse, d*1852);
+                    Value cell;
+                    Gtk.TreeIter xiter;
+                    var path = new Gtk.TreePath.from_indices (arry[lastn].no - 1);
+                    list_model.get_iter(out xiter, path);
+
+                    list_model.get_value (xiter, WY_Columns.TIP, out cell);
+                    if((string)cell == null)
+                    {
+//                    list_model.get_value (xiter, WY_Columns.IDX, out cell);
+//                    stdout.printf ("%s: %s\n", path.to_string (), (string) cell);
+                        string hint;
+                        hint = "Dist %.1fm, to WP %d => %.1fm, %.0f°".printf(
+                            d*1852,
+                            arry[n].no,
+                            dx*1852.0, cse);
+                        list_model.set_value (xiter, WY_Columns.TIP, hint);
+                    }
+
+                    d += dx;
+                    lastn = n;
                     if (typ == MSP.Action.POSHOLD_TIME)
                     {
                         lt += arry[n].param1;
                     }
 
-                    d += dx;
                     if (typ == MSP.Action.POSHOLD_UNLIM)
                     {
                         break;
