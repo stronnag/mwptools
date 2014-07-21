@@ -21,8 +21,6 @@
 
 extern int open_serial(string name, uint rate);
 extern void close_serial(int fd);
-extern int bind_sock(uint16 port);
-extern int connect_sock(string host,uint16 port);
 
 public class MWSerial : Object
 {
@@ -145,24 +143,39 @@ public class MWSerial : Object
         }
     }
 
-    private void setup_udp(string[] parts)
+    private void setup_udp(string host, uint16 port)
     {
-        string host = parts[0];
-        var port = (uint16)int.parse(parts[1]);
         try
         {
             if(host.length == 0)
             {
-                fd = bind_sock(port);
-                skt = new Socket.from_fd(fd);
+                try {
+                    SocketFamily[] fams = {SocketFamily.IPV6, SocketFamily.IPV4};
+                    foreach(var fam in fams)
+                    {
+                        var sa = new InetSocketAddress (new InetAddress.any(fam),
+                                                        (uint16)port);
+                        skt = new Socket (fam, SocketType.DATAGRAM, SocketProtocol.UDP);
+                        skt.bind (sa, true);
+                        break;
+                    }
+                } catch (Error e) {
+                    stderr.printf ("%s\n",e.message);
+                }
             }
             else
             {
-                fd = connect_sock(host,port);
-                skt = new Socket.from_fd(fd);
+                var resolver = Resolver.get_default ();
+                var addresses = resolver.lookup_by_name (host, null);
+                var address = addresses.nth_data (0);
+                var sa = new InetSocketAddress (address, port);
+                var fam = sa.get_family();
+                skt = new Socket (fam, SocketType.DATAGRAM,SocketProtocol.UDP);
+                skt.connect(sa);
                 sockaddr = skt.get_remote_address();
             }
-        } catch(Error e) {
+        fd = skt.fd;
+    } catch(Error e) {
             warning("socket: %s", e.message);
             fd = -1;
         }
@@ -170,11 +183,33 @@ public class MWSerial : Object
 
     public bool open(string device, uint rate)
     {
-        string[] parts;
-        parts = device.split (":");
-        if(parts.length == 2)
+        string host = null;
+        uint16 port = 0;
+        string [] parts;
+
+        try
         {
-            setup_udp(parts);
+            Regex regex = new Regex ("^\\[(.*)\\]:(\\d+)");
+            MatchInfo mi;
+            if(regex.match(device, 0, out mi))
+            {
+                host = mi.fetch(1);
+                port =  (uint16)int.parse(mi.fetch(2));
+            }
+            else
+            {
+                parts = device.split (":");
+                if(parts.length == 2)
+                {
+                    host = parts[0];
+                    port =  (uint16)int.parse(parts[1]);
+                }
+            }
+        } catch { }
+
+        if(host != null)
+        {
+            setup_udp(host, port);
             is_serial = false;
         }
         else

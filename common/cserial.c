@@ -33,136 +33,36 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-#if defined(__linux__) && defined(USE_BTSOCK)
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/rfcomm.h>
-#include <bluetooth/hci.h>
-#include <bluetooth/hci_lib.h>
-
-
-static int create_bt_dev(char *btaddr)
-{
-    struct sockaddr_rc addr = { 0 };
-    int s=-1, status = -1;
-
-    s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-    if (s < 0)
-    {
-        fprintf(stderr, "Socket fails %d (%s)\n", s, strerror(errno));
-    }
-    else
-    {
-        addr.rc_family = AF_BLUETOOTH;
-        addr.rc_channel = (uint8_t) 1;
-        str2ba(btaddr, &addr.rc_bdaddr );
-        status = connect(s, (struct sockaddr *)&addr, sizeof(addr));
-        if(status != 0)
-        {
-            fprintf(stderr, "connect fails %d (%s)\n", status, strerror(errno));
-            close(s);
-            s = -1;
-        }
-    }
-    return s;
-}
-#endif
-
-int bind_sock(uint16_t port)
-{
-    int skt;
-    struct sockaddr_in name;
-    unsigned char data[256];
-
-    if(-1 != (skt = socket(AF_INET, SOCK_DGRAM, 0)))
-    {
-        name.sin_family = AF_INET;
-        name.sin_port = htons (port);
-        name.sin_addr.s_addr = htonl(INADDR_ANY);
-        socklen_t nl = sizeof(name);
-
-        if(-1 == bind(skt, (struct sockaddr *)&name, sizeof(name)))
-        {
-            perror("bind");
-            close(skt);
-            skt = -1;
-        }
-    }
-    return skt;
-}
-
-int connect_sock(char *host, uint16_t port)
-{
-    struct sockaddr_in name;
-    int skt;
-
-    fprintf(stderr, "connect for %s:%d ", host, port);
-    if(-1 != (skt = socket(AF_INET, SOCK_DGRAM, 0)))
-    {
-        name.sin_family = AF_INET;
-        if(host)
-        {
-            struct hostent *h;
-            if ((h = (struct hostent *) gethostbyname (host)) == NULL)
-            {
-                perror ("gethostbyname");
-                close(skt);
-                return -1;
-            }
-            name.sin_addr = *((struct in_addr *) h->h_addr);
-            name.sin_port = htons (port);
-        }
-
-        int status = connect(skt, (struct sockaddr *)&name, sizeof(name));
-        if(status != 0)
-        {
-            close(skt);
-            skt = -1;
-        }
-    }
-    fprintf(stderr, " => socket %d\n", skt);
-    return skt;
-}
-
 int open_serial(char *device, uint baudrate)
 {
     int fd;
-#if defined(__linux__) && defined(USE_BTSOCK)
-    if(strlen(device) == 17 && device[2] == ':' && device[5] == ':'
-       && isxdigit(device[0]) && isxdigit(device[1]))
+    fd = open(device, O_RDWR|O_NOCTTY);
+    if(fd != -1)
     {
-        fd = create_bt_dev(device);
-    }
-    else
-#endif
-    {
-        fd = open(device, O_RDWR|O_NOCTTY);
-        if(fd != -1)
-        {
-            struct termios tio;
-            memset (&tio, 0, sizeof(tio));
-            cfmakeraw(&tio);
-            tio.c_cflag |= (CS8 | CLOCAL | CREAD);
-            tio.c_iflag |= IGNPAR;
-            tio.c_oflag = 0;
-            tio.c_lflag = 0;
-            tio.c_cc[VTIME] = 1;
-            tio.c_cc[VMIN] = 1;
+        struct termios tio;
+        memset (&tio, 0, sizeof(tio));
+        cfmakeraw(&tio);
+        tio.c_cflag |= (CS8 | CLOCAL | CREAD);
+        tio.c_iflag |= IGNPAR;
+        tio.c_oflag = 0;
+        tio.c_lflag = 0;
+        tio.c_cc[VTIME] = 1;
+        tio.c_cc[VMIN] = 1;
 
-            switch (baudrate)
-            {
-                case 0:      baudrate=B57600; break;
-                case 4800:   baudrate=B4800; break;
-                case 9600:   baudrate=B9600; break;
-                case 19200:  baudrate=B19200; break;
-                case 38400:  baudrate=B38400; break;
-                case 57600:  baudrate=B57600; break;
-                case 115200: baudrate=B115200; break;
-                case 230400: baudrate=B230400; break;
-            }
-            cfsetispeed(&tio,baudrate);
-            cfsetospeed(&tio,baudrate);
-            tcsetattr(fd,TCSANOW,&tio);
+        switch (baudrate)
+        {
+            case 0:      baudrate=B57600; break;
+            case 4800:   baudrate=B4800; break;
+            case 9600:   baudrate=B9600; break;
+            case 19200:  baudrate=B19200; break;
+            case 38400:  baudrate=B38400; break;
+            case 57600:  baudrate=B57600; break;
+            case 115200: baudrate=B115200; break;
+            case 230400: baudrate=B230400; break;
         }
+        cfsetispeed(&tio,baudrate);
+        cfsetospeed(&tio,baudrate);
+        tcsetattr(fd,TCSANOW,&tio);
     }
     return fd;
 }
