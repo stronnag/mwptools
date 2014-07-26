@@ -160,6 +160,14 @@
                         <property name="use_stock">True</property>
                       </object>
                     </child>
+                    <child>
+                      <object class="GtkMenuItem" id="nav_config_menu">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Nav Config</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
@@ -174,14 +182,6 @@
                   <object class="GtkMenu" id="menu4">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <child>
-                      <object class="GtkMenuItem" id="nav_config_menu">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Nav Config</property>
-                        <property name="use_underline">True</property>
-                      </object>
-                    </child>
                     <child>
                       <object class="GtkMenuItem" id="tote_menu_view">
                         <property name="visible">True</property>
