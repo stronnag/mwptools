@@ -36,7 +36,7 @@ doc.add_child(m)
 m0 = m.add_child(doc.create_element('trk'))
 m0.add_child(doc.create_element('src',
 				"Created by mwp_log2gpx from a MWP mission log"))
-m0.add_child(doc.create_element('name', "mwplog_{sno}"))
+m0.add_child(doc.create_element('name', "mwplog_#{sno}"))
 sno += 1
 m1 = m0.add_child(doc.create_element('trkseg'))
 Yajl::Parser.parse(json, {:symbolize_names => true}) do |o|
