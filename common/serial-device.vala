@@ -168,11 +168,9 @@ public class MWSerial : Object
                 var resolver = Resolver.get_default ();
                 var addresses = resolver.lookup_by_name (host, null);
                 var address = addresses.nth_data (0);
-                var sa = new InetSocketAddress (address, port);
-                var fam = sa.get_family();
+                sockaddr = new InetSocketAddress (address, port);
+                var fam = sockaddr.get_family();
                 skt = new Socket (fam, SocketType.DATAGRAM,SocketProtocol.UDP);
-                skt.connect(sa);
-                sockaddr = skt.get_remote_address();
             }
         fd = skt.fd;
     } catch(Error e) {
