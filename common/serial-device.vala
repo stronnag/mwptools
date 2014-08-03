@@ -19,7 +19,7 @@
 
 // valac --pkg posix --pkg gio-2.0 --pkg posix sd-test.vala  serial-device.vala cserial.c
 
-extern int open_serial(string name, uint rate);
+extern int open_serial(string name, uint rate, uint8 [] eptr, size_t elen);
 extern void close_serial(int fd);
 
 public class MWSerial : Object
@@ -179,11 +179,12 @@ public class MWSerial : Object
         }
     }
 
-    public bool open(string device, uint rate)
+    public bool open(string device, uint rate, out string estr)
     {
         string host = null;
         uint16 port = 0;
         string [] parts;
+        estr=null;
 
         try
         {
@@ -219,11 +220,12 @@ public class MWSerial : Object
                 device = parts[0];
                 rate = int.parse(parts[1]);
             }
-            fd = open_serial(device, rate);
+            uint8 foo[256] = {0};
+            fd = open_serial(device, rate, foo, 256);
+            estr = (string)foo;
         }
         if(fd < 0) {
             fd = -1;
-            warning("Could not open device!\n");
             available = false;
         }
         else

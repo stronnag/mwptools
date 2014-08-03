@@ -32,8 +32,9 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <errno.h>
 
-int open_serial(char *device, uint baudrate)
+int open_serial(char *device, uint baudrate, char estr[], size_t elen)
 {
     int fd;
     fd = open(device, O_RDWR|O_NOCTTY);
@@ -63,6 +64,11 @@ int open_serial(char *device, uint baudrate)
         cfsetispeed(&tio,baudrate);
         cfsetospeed(&tio,baudrate);
         tcsetattr(fd,TCSANOW,&tio);
+    }
+    else
+    {
+        strerror_r(errno, estr, elen);
+//        fprintf(stderr,"Failed to open %s : %s\n", device, estr);
     }
     return fd;
 }

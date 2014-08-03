@@ -272,10 +272,11 @@ public class SwitchEdit : Object
             });
 
         conbutton.clicked.connect(() => {
+                string estr;
                 if (is_connected == false)
                 {
                     serdev = dentry.get_active_text();
-                    if(s.open(serdev,baudrate) == true)
+                    if(s.open(serdev,baudrate, out estr) == true)
                     {
                         is_connected = true;
                         conbutton.set_label("Disconnect");
@@ -285,7 +286,7 @@ public class SwitchEdit : Object
                     }
                     else
                     {
-                        print("open failed\n");
+                        stderr.printf("open failed %s %s\n", serdev, estr);
                     }
                 }
                 else

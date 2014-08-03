@@ -1179,7 +1179,8 @@ public class MWPlanner : GLib.Object {
         else
         {
             var serdev = dev_entry.get_active_text();
-            if (msp.open(serdev, conf.baudrate) == true)
+            string estr;
+            if (msp.open(serdev, conf.baudrate, out estr) == true)
             {
                 if(rawlog == true)
                 {
@@ -1191,7 +1192,8 @@ public class MWPlanner : GLib.Object {
             else
             {
                 if(autocon == false)
-                    mwp_warning_box("Unable to open serial device %s".printf(serdev));
+                    mwp_warning_box("Unable to open serial device: %s\nReason: %s".printf(
+                                        serdev, estr));
             }
         }
     }

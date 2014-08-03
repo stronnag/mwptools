@@ -425,6 +425,7 @@ public class MWSim : GLib.Object
     public void open()
     {
         char buf[128];
+        string estr;
         if(udport == 0)
         {
             fd = Posix.posix_openpt(Posix.O_RDWR);
@@ -437,8 +438,10 @@ public class MWSim : GLib.Object
         else
         {
             var sbuf = ":%d".printf(udport);
-            msp.open(sbuf,0);
-            slave.set_text(sbuf);
+            if(msp.open(sbuf,0,out estr) == true)
+                slave.set_text(sbuf);
+            else
+                stderr.printf("UDP fail %s : %s\n", sbuf,estr);
         }
     }
 
