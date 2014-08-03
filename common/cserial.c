@@ -67,8 +67,9 @@ int open_serial(char *device, uint baudrate, char estr[], size_t elen)
     }
     else
     {
+        int en = errno;
         strerror_r(errno, estr, elen);
-//        fprintf(stderr,"Failed to open %s : %s\n", device, estr);
+        sprintf(estr+strlen(estr), " (%d)", en);
     }
     return fd;
 }
