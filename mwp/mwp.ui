@@ -367,8 +367,11 @@
                 <child internal-child="entry">
                   <object class="GtkEntry" id="comboboxtext-entry">
                     <property name="can_focus">False</property>
+                    <property name="tooltip_text" translatable="yes">The device name. You may append @baudrate to override the default (in gsettings), e.g. /dev/ttyUSB0, /dev/ttyACM0@57600</property>
                     <property name="halign">start</property>
                     <property name="valign">center</property>
+                    <property name="primary_icon_tooltip_text" translatable="yes">The device name. You may append @baudrate to override the default (in gsettings), e.g. /dev/ttyUSB0, /dev/ttyACM0@57600</property>
+                    <property name="secondary_icon_tooltip_text" translatable="yes">The device name. You may append @baudrate to override the default (in gsettings), e.g. /dev/ttyUSB0, /dev/ttyACM0@57600</property>
                   </object>
                 </child>
               </object>
