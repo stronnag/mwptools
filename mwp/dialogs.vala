@@ -666,7 +666,7 @@ public class NavStatus : GLib.Object
         {
             logspeak_close();
         }
-        stderr.printf("Start audio\n");
+        stdout.printf("Start audio\n");
         mt = new AudioThread();
         mt.start();
         mt_voice=true;
@@ -674,7 +674,7 @@ public class NavStatus : GLib.Object
 
     public void logspeak_close()
     {
-        stderr.printf("Stop audio\n");
+        stdout.printf("Stop audio\n");
 
         mt_voice=false;
         mt.clear();
@@ -697,7 +697,7 @@ public class AudioThread : Object {
         if (msgs.length() > 8)
         {
             clear();
-            stderr.printf("cleared voice queue\n");
+            stdout.printf("cleared voice queue\n");
         }
         msgs.push(s);
     }

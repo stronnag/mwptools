@@ -563,7 +563,7 @@ public class MWPlanner : GLib.Object {
     {
         if(errs == true)
         {
-            stderr.printf("Error on cmd %c (%d)\n", cmd,cmd);
+            stdout.printf("Error on cmd %c (%d)\n", cmd,cmd);
             remove_tid(ref cmdtid);
             return;
         }
@@ -842,7 +842,7 @@ public class MWPlanner : GLib.Object {
                        conf.recip_head  == true && m.param1 != -1)
                     {
                         m.param1 = (m.param1 + 180) % 360;
-                        stderr.printf("fixup %d %d\n", m.no, m.param1);
+                        stdout.printf("fixup %d %d\n", m.no, m.param1);
                     }
                     m.param2 = (uint16.from_little_endian(w.p2));
                     m.param3 = (uint16.from_little_endian(w.p3));
@@ -984,7 +984,6 @@ public class MWPlanner : GLib.Object {
     private void bleet_sans_merci(string sfn="bleet.ogg")
     {
         var fn = MWPUtils.find_conf_file(sfn);
-        stderr.printf("[play %s %s\n", sfn, fn);
         if(fn != null)
         {
             try
@@ -1046,7 +1045,6 @@ public class MWPlanner : GLib.Object {
             wps += w0;
         }
 
-        stderr.printf("upload with %s\n", conf.recip_head.to_string());
         if(conf.recip_head)
         {
             for(var ix = 0 ; ix < wps.length; ix++)
@@ -1054,7 +1052,6 @@ public class MWPlanner : GLib.Object {
                 if(wps[ix].action == MSP.Action.SET_HEAD && wps[ix].p1 != -1)
                 {
                     wps[ix].p1 = (wps[ix].p1 + 180) % 360;
-                    stderr.printf("%d : recip %d\n", wps[ix].wp_no, wps[ix].p1);
                 }
             }
         }
@@ -1194,7 +1191,6 @@ public class MWPlanner : GLib.Object {
             }
             else
             {
-                stderr.printf("autocount %d %s\n", autocount,autocon.to_string());
                 if (autocon == false || autocount == 0)
                 {
 
