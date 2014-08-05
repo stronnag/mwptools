@@ -598,7 +598,7 @@ public class MWPlanner : GLib.Object {
                 MSP_STATUS *s = (MSP_STATUS *)raw;
                 uint16 sensor;
                 sensor=uint16.from_little_endian(s.sensor);
-                if(nopoll == true)
+                if (nopoll == true)
                 {
                     have_status = true;
                     remove_tid(ref cmdtid);
@@ -915,12 +915,19 @@ public class MWPlanner : GLib.Object {
                 break;
 
             case MSP.Cmds.TG_FRAME:
+                nopoll = true;
                 LTM_GFRAME *gf = (LTM_GFRAME *)raw;
+
+                if(craft == null)
+                    craft = new Craft(view, 3, norotate);
+                craft.park();
+
                 var fix = gpsinfo.update_ltm(*gf, conf.dms);
                 if(fix != 0)
                 {
                     double gflat = gf.lat/10000000.0;
                     double gflon = gf.lon/10000000.0;
+                    
                     if(craft != null)
                     {
                         if(follow == true)
@@ -932,6 +939,7 @@ public class MWPlanner : GLib.Object {
                 break;
 
             case MSP.Cmds.TA_FRAME:
+                nopoll = true;
                 LTM_AFRAME *af = (LTM_AFRAME *)raw;
                 var h = af.heading;
                 if(h < 0)
@@ -941,6 +949,7 @@ public class MWPlanner : GLib.Object {
                 break;
 
             case MSP.Cmds.TS_FRAME:
+                nopoll = true;
                 LTM_SFRAME *sf = (LTM_SFRAME *)raw;
                 radstatus.update_ltm(*sf);
                 navstatus.update_ltm_s(*sf);

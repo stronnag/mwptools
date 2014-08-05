@@ -309,7 +309,7 @@ public class MWSerial : Object
                 }
             }
             debug("recv: %db\n", (int)res);
-            if(print_raw == true)
+            if(print_raw == true && res > 0)
                 dump_raw_data(buf, (int)res);
 
             for(var nc = 0; nc < res; nc++)
