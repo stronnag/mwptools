@@ -59,9 +59,7 @@ public class MWSim : GLib.Object
     private Gtk.FileChooserButton chooser;
 
     private static string mission=null;
-    private static string replay = null;
     private static bool exhaustbat=false;
-    private static bool ltm=false;
     private static int udport=0;
     private bool armed=false;
     private static string model=null;
@@ -70,9 +68,7 @@ public class MWSim : GLib.Object
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
         { "model", 'M', 0, OptionArg.STRING, out model, "Model", null},
-        { "replay", 'r', 0, OptionArg.STRING, out replay, "Replay file", null},
         { "exhaust-battery", 'x', 0, OptionArg.NONE, out exhaustbat, "exhaust the battery (else warn1)", null},
-        { "ltm", 'l', 0, OptionArg.NONE, out ltm, "push tm", null},
         { "udp-port", 'u', 0, OptionArg.INT, ref udport, "udp port for comms", null},
         {null}
     };
@@ -112,12 +108,6 @@ public class MWSim : GLib.Object
                 stderr.printf ("Builder: %s\n", e.message);
                 Posix.exit(0);
             }
-        }
-
-        if(replay != null)
-        {
-            mission=null;
-            ltm=false;
         }
 
         if(model != null)
@@ -169,12 +159,9 @@ public class MWSim : GLib.Object
                             }
                             else
                             {
-                                if(ltm)
-                                {
-                                    process_ltm();
-                                }
                                 return true;
                             }
+
                         });
                 }
                 else
@@ -209,75 +196,6 @@ public class MWSim : GLib.Object
         window.show_all();
     }
 
-    private void run_replay()
-    {
-        var thr = new Thread<int> ("replay", () => {
-                var rfd = Posix.open (replay, Posix.O_RDONLY);
-                uint8 fbuf[10];
-                uint8 buf[128];
-                double st = 0;
-                size_t count;
-                bool ok = true;
-
-                while(ok==true)
-                {
-                    var n = Posix.read(rfd,fbuf,10);
-                    if(n > 0)
-                    {
-                        count = fbuf[8];
-                        n = Posix.read(rfd,buf,(int)fbuf[8]);
-                        if (n > 0)
-                        {
-                            if(fbuf[9] == 'i' && buf[1] == 'T')
-                            {
-                                double tt;
-                                tt = *(double*)fbuf;
-                                var delta = tt - st;
-                                ulong ms = (ulong)(delta * 1000 * 1000);
-                                Thread.usleep(ms);
-                                msp.write(buf,count);
-                                st = tt;
-                                }
-                        }
-                        else
-                            ok = false;
-                    }
-                    else
-                        ok = false;
-                }
-                return 0;
-            });
-    }
-
-
-    private void process_ltm()
-    {
-        MSP_RAW_GPS buf = {0};
-        get_gps_info(out buf);
-        LTM_GFRAME gf = {0};
-        gf.lat = buf.gps_lat;
-        gf.lon = buf.gps_lon;
-        gf.speed = buf.gps_speed/100;
-        gf.alt = gblalt*100 + rand.int_range(-50,50);
-        gf.sats = 1+(buf.gps_numsat << 2);
-        msp.send_ltm('G',&gf);
-        append_text("Send LTM G Frame %lu\n".printf(sizeof(LTM_GFRAME)));
-
-        LTM_AFRAME af = {0};
-        af.pitch = 4;
-        af.roll = -4;
-        af.heading = (int16)gblcse;
-        msp.send_ltm('A',&af);
-        append_text("Send LTM A Frame %lu\n".printf(sizeof(LTM_AFRAME)));
-        LTM_SFRAME sf ={0};
-        sf.vbat = (int16)(volts*1000);
-        sf.vcurr = 4200;
-        sf.rssi = 150 + rand.int_range(-10,10);
-        sf.airspeed = gf.speed;
-        sf.flags = 1;
-        msp.send_ltm('S',&sf);
-        append_text("Send LTM S Frame %lu\n".printf(sizeof(LTM_SFRAME)));
-    }
 
     public void parse_mission(string fn)
     {
@@ -561,11 +479,6 @@ public class MWSim : GLib.Object
         var loop = 0;
         msp.serial_event.connect ((s, cmd, raw, len, errs) =>
         {
-            if(loop ==0  && replay != null)
-            {
-                run_replay();
-            }
-
             if(errs == true)
             {
                 stderr.printf("Error on cmd %c (%d)\n", cmd,cmd);
