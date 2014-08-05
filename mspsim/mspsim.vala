@@ -64,9 +64,12 @@ public class MWSim : GLib.Object
     private static bool ltm=false;
     private static int udport=0;
     private bool armed=false;
+    private static string model=null;
+    private uint8 imodel=3;
 
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
+        { "model", 'M', 0, OptionArg.STRING, out model, "Model", null},
         { "replay", 'r', 0, OptionArg.STRING, out replay, "Replay file", null},
         { "exhaust-battery", 'x', 0, OptionArg.NONE, out exhaustbat, "exhaust the battery (else warn1)", null},
         { "ltm", 'l', 0, OptionArg.NONE, out ltm, "push tm", null},
@@ -115,6 +118,11 @@ public class MWSim : GLib.Object
         {
             mission=null;
             ltm=false;
+        }
+
+        if(model != null)
+        {
+            imodel = (uint8)MSP.find_model(model);
         }
 
         builder.connect_signals (null);
@@ -566,7 +574,7 @@ public class MWSim : GLib.Object
             switch(cmd)
             {
                 case MSP.Cmds.IDENT:
-                uint8[] buf = {230, 3,42,16,0,0,0};
+                uint8[] buf = {230, imodel,42,16,0,0,0};
                 append_text("Send IDENT\n");
                 msp.send_command(MSP.Cmds.IDENT, buf, buf.length);
                 break;

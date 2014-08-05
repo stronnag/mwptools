@@ -186,6 +186,21 @@ public class MSP : Object
             return "Unknown";
     }
 
+    public static int find_model(string mrname)
+    {
+        int n = 0;
+        foreach(var mr in mrtypes)
+        {
+            if(mr == mrname)
+            {
+                return n;
+            }
+            n++;
+        }
+        return 0;
+    }
+
+
     public static string get_mrtype(uint typ)
     {
         if (typ < mrtypes.length)
