@@ -75,6 +75,7 @@ public class MWPlanner : GLib.Object {
     private static string mission;
     private static string serial;
     private static bool autocon;
+    private int autocount = 0;
     private static bool mkcon;
     private static bool ignore_sz;
     private static bool nopoll = false;
@@ -522,6 +523,7 @@ public class MWPlanner : GLib.Object {
 
         autocon_cb.toggled.connect(() => {
                 autocon =  autocon_cb.active;
+                autocount = 0;
             });
 
         if(autocon)
@@ -1182,6 +1184,7 @@ public class MWPlanner : GLib.Object {
             string estr;
             if (msp.open(serdev, conf.baudrate, out estr) == true)
             {
+                autocount = 0;
                 if(rawlog == true)
                 {
                     msp.raw_logging(true);
@@ -1191,9 +1194,14 @@ public class MWPlanner : GLib.Object {
             }
             else
             {
-                if(autocon == false)
+                stderr.printf("autocount %d %s\n", autocount,autocon.to_string());
+                if (autocon == false || autocount == 0)
+                {
+
                     mwp_warning_box("Unable to open serial device: %s\nReason: %s".printf(
                                         serdev, estr));
+                }
+                autocount = ((autocount + 1) % 4);
             }
         }
     }

@@ -19,8 +19,8 @@
 
 // valac --pkg posix --pkg gio-2.0 --pkg posix sd-test.vala  serial-device.vala cserial.c
 
-extern int open_serial(string name, uint rate, uint8 [] eptr, size_t elen);
-extern void close_serial(int fd);
+//extern int open_serial(string name, uint rate, uint8 [] eptr, size_t elen);
+//extern void close_serial(int fd);
 
 public class MWSerial : Object
 {
@@ -45,6 +45,7 @@ public class MWSerial : Object
     private bool rawlog;
     private int raws;
     private Timer timer;
+    private bool print_raw=false;
 
     public enum Mode
     {
@@ -186,6 +187,8 @@ public class MWSerial : Object
         string [] parts;
         estr=null;
 
+        print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
+
         try
         {
             Regex regex = new Regex ("^\\[(.*)\\]:(\\d+)");
@@ -220,18 +223,20 @@ public class MWSerial : Object
                 device = parts[0];
                 rate = int.parse(parts[1]);
             }
-            uint8 foo[256] = {0};
-            fd = open_serial(device, rate, foo, 256);
-            estr = (string)foo;
+            fd = Posix.open(device, Posix.O_RDWR | Posix.O_NOCTTY);
         }
-        if(fd < 0) {
+        if(fd < 0)
+        {
+            var lasterr=Posix.errno;
+            var s = Posix.strerror(lasterr);
+            estr = "%s (%d)".printf(s,lasterr);
             fd = -1;
             available = false;
         }
         else
         {
-            setup_reader(fd);
             available = true;
+            setup_reader(fd);
         }
         return available;
     }
@@ -256,7 +261,10 @@ public class MWSerial : Object
         if(fd != -1)
         {
             if(is_serial)
-                close_serial(fd);
+            {
+                Posix.tcflush(fd, Posix.TCIOFLUSH);
+                Posix.close(fd);
+            }
             else
             {
                 try
@@ -301,6 +309,9 @@ public class MWSerial : Object
                 }
             }
             debug("recv: %db\n", (int)res);
+            if(print_raw == true)
+                dump_raw_data(buf, (int)res);
+
             for(var nc = 0; nc < res; nc++)
             {
                 switch(state)
@@ -578,14 +589,26 @@ public class MWSerial : Object
     }
 
 
-    public void dump(uint8[]buf)
+    public void dump_raw_data (uint8[]buf, int len)
     {
-        stderr.printf("dump len = %d\n", buf.length);
-        foreach(uint8 b in buf)
+        for(var nc = 0; nc < len; nc++)
         {
-            stderr.printf("%02x ", b);
+            if(buf[nc] == '$')
+                stderr.printf("\n");
+            stderr.printf("%02x ", buf[nc]);
         }
-        stderr.printf("\n");
+
+        for(var nc = 0; nc < len; nc++)
+        {
+            if(buf[nc] > 0x1f && buf[nc] < 0x80)
+            {
+                stderr.printf("%c", buf[nc]);
+            }
+            else
+            {
+                stderr.printf("\\x%02x", buf[nc]);
+            }
+        }
     }
 
     public void set_mode(Mode mode)
