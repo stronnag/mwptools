@@ -161,7 +161,6 @@ public class MWSim : GLib.Object
                             {
                                 return true;
                             }
-
                         });
                 }
                 else

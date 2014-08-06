@@ -51,7 +51,10 @@ public class MSP : Object
             BOX = 113,
             SET_BOX = 203,
             BOXNAMES = 116,
-            BOXIDS = 119
+            BOXIDS = 119,
+            TG_FRAME = (0x1000 + 'G'),
+            TA_FRAME = (0x1000 + 'A'),
+            TS_FRAME = (0x1000 + 'S')
     }
 
     public enum Sensors

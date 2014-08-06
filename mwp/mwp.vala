@@ -98,6 +98,9 @@ public class MWPlanner : GLib.Object {
     private uint8 _nsats = 0;
     private uint8 larmed = 0;
 
+        /**** FIXME ***/
+    private int gfcse = 0;
+
     private enum MS_Column {
         ID,
         NAME,
@@ -561,6 +564,8 @@ public class MWPlanner : GLib.Object {
         if(errs == true)
         {
             stdout.printf("Error on cmd %c (%d)\n", cmd,cmd);
+            if(cmd ==  MSP.Cmds.NAV_CONFIG)
+                navcap = false;
             remove_tid(ref cmdtid);
             return;
         }
@@ -571,6 +576,8 @@ public class MWPlanner : GLib.Object {
                 have_vers = true;
                 mrtype = raw[1];
                 navcap = ((raw[3] & 16) == 16);
+                stderr.printf("Caps = %x %x %x %x\n",
+                              raw[0],raw[1], raw[2], raw[3]);
                 var vers="v%03d".printf(raw[0]);
                 verlab.set_label(vers);
                 typlab.set_label(MSP.get_mrtype(mrtype));
@@ -909,6 +916,48 @@ public class MWPlanner : GLib.Object {
 
             case MSP.Cmds.RADIO:
                 radstatus.update(*(MSP_RADIO*)raw);
+                break;
+
+            case MSP.Cmds.TG_FRAME:
+                nopoll = true;
+                LTM_GFRAME *gf = (LTM_GFRAME *)raw;
+
+                if(craft == null)
+                    craft = new Craft(view, 3, norotate);
+                craft.park();
+
+                var fix = gpsinfo.update_ltm(*gf, conf.dms);
+                if(fix != 0)
+                {
+                    double gflat = gf.lat/10000000.0;
+                    double gflon = gf.lon/10000000.0;
+
+                    if(craft != null)
+                    {
+                        if(follow == true)
+                            craft.set_lat_lon(gflat,gflon,gfcse);
+                        if (centreon == true)
+                            view.center_on(gflat,gflon);
+                    }
+                }
+                break;
+
+            case MSP.Cmds.TA_FRAME:
+                nopoll = true;
+                LTM_AFRAME *af = (LTM_AFRAME *)raw;
+                var h = af.heading;
+                if(h < 0)
+                    h += 360;
+                gfcse = h;
+                navstatus.update_ltm_a(*af);
+                break;
+
+            case MSP.Cmds.TS_FRAME:
+                nopoll = true;
+                LTM_SFRAME *sf = (LTM_SFRAME *)raw;
+                radstatus.update_ltm(*sf);
+                navstatus.update_ltm_s(*sf);
+                set_bat_stat((uint8)((sf.vbat + 50) / 100));
                 break;
 
             default:

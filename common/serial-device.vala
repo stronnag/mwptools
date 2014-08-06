@@ -340,6 +340,10 @@ public class MWSerial : Object
                         {
                             state=States.S_HEADER2;
                         }
+                        else if(buf[nc] == 'T')
+                        {
+                            state=States.S_T_HEADER2;
+                        }
                         else
                         {
                             debug("fail on header1 %x", buf[nc]);
@@ -347,6 +351,36 @@ public class MWSerial : Object
                         }
                         break;
 
+                    case States.S_T_HEADER2:
+                        needed = 0;
+                        switch(buf[nc])
+                        {
+                            case 'G':
+                                needed = (uint8) sizeof(LTM_GFRAME);
+                                cmd = MSP.Cmds.TG_FRAME;
+                                break;
+                            case 'A':
+                                needed = (uint8) sizeof(LTM_AFRAME);
+                                cmd = MSP.Cmds.TA_FRAME;
+                                break;
+                            case 'S':
+                                needed = (uint8) sizeof(LTM_SFRAME);
+                                cmd = MSP.Cmds.TS_FRAME;
+                                break;
+                            default:
+                                debug("fail on T_header2 %x", buf[nc]);
+                                state=States.S_ERROR;
+                                break;
+                        }
+                        if (needed > 0)
+                        {
+                            csize = needed;
+                            raw = new uint8[csize];
+                            rawp= 0;
+                            checksum = 0;
+                            state = States.S_DATA;
+                        }
+                        break;
 
                     case States.S_HEADER2:
                         if((buf[nc] == readdirn || buf[nc] == '!'))
@@ -456,6 +490,38 @@ public class MWSerial : Object
         }
         return cs;
     }
+
+    public void send_ltm(uint8 cmd, void *data)
+    {
+        if(available == true)
+        {
+            ulong dsize = 0;
+            uint8 dstr[128];
+            switch(cmd)
+            {
+                case 'G':
+                    dsize = sizeof(LTM_GFRAME);
+                    break;
+                case 'A':
+                    dsize = sizeof(LTM_AFRAME);
+                    break;
+                case 'S':
+                    dsize = sizeof(LTM_SFRAME);
+                    break;
+            }
+            if(dsize != 0 && data != null)
+            {
+                dstr[0]='$';
+                dstr[1] = 'T';
+                dstr[2] = cmd;
+                Posix.memcpy(&dstr[3],data,dsize);
+                var ck = cksum(dstr[3:dsize+3],dsize,0);
+                dstr[3+dsize] = ck;
+                write(dstr, dsize+4);
+            }
+        }
+    }
+
 
     public void send_command(uint8 cmd, void *data, size_t len)
     {
