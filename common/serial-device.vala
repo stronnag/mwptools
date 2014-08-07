@@ -331,7 +331,8 @@ public class MWSerial : Object
                         }
                         else
                         {
-                            debug("fail on header %d %c", buf[nc], buf[nc]);
+                            stderr.printf(" fail on header %d %c\n",
+                                buf[nc], buf[nc]);
                             state=States.S_ERROR;
                         }
                         break;
@@ -346,7 +347,7 @@ public class MWSerial : Object
                         }
                         else
                         {
-                            debug("fail on header1 %x", buf[nc]);
+                            stderr.printf(" fail on header1 %x\n", buf[nc]);
                             state=States.S_ERROR;
                         }
                         break;
@@ -390,7 +391,7 @@ public class MWSerial : Object
                         }
                         else
                         {
-                            debug("fail on header2 %x", buf[nc]);
+                            stderr.printf(" fail on header2 %x\n", buf[nc]);
                             state=States.S_ERROR;
                         }
                         break;
@@ -405,7 +406,7 @@ public class MWSerial : Object
                         state = States.S_CMD;
                         break;
                     case States.S_CMD:
-                        debug("got cmd %d %d", buf[nc], csize);
+                        debug(" got cmd %d %d", buf[nc], csize);
                         cmd = (MSP.Cmds)buf[nc];
                         checksum ^= cmd;
                         if (csize == 0)
@@ -430,7 +431,7 @@ public class MWSerial : Object
                     case States.S_CHECKSUM:
                         if(checksum  == buf[nc])
                         {
-                            debug("OK on %d", cmd);
+                            debug(" OK on %d", cmd);
                             state = States.S_HEADER;
                             if(rawlog == true)
                             {
@@ -440,7 +441,8 @@ public class MWSerial : Object
                             }
                         else
                         {
-                            debug("CRC Fail, got %d != %d", buf[nc],checksum);
+                            stderr.printf(" CRC Fail, got %d != %d\n",
+                                          buf[nc],checksum);
                             state = States.S_ERROR;
                         }
                         break;
@@ -597,7 +599,7 @@ public class MWSerial : Object
                 stderr.printf("\n");
             stderr.printf("%02x ", buf[nc]);
         }
-
+/*
         for(var nc = 0; nc < len; nc++)
         {
             if(buf[nc] > 0x1f && buf[nc] < 0x80)
@@ -609,6 +611,7 @@ public class MWSerial : Object
                 stderr.printf("\\x%02x", buf[nc]);
             }
         }
+*/
     }
 
     public void set_mode(Mode mode)
