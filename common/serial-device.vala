@@ -45,6 +45,7 @@ public class MWSerial : Object
     private bool rawlog;
     private int raws;
     private Timer timer;
+    private Posix.termios oldtio;
     private bool print_raw=false;
 
     public enum Mode
@@ -110,21 +111,15 @@ public class MWSerial : Object
                     break;
             }
 
-            Posix.cfsetospeed(ref newtio, baudrate);
-            Posix.cfsetispeed(ref newtio, baudrate);
 
-            newtio.c_cflag = (newtio.c_cflag & ~Posix.CSIZE) | Posix.CS8;
-            newtio.c_cflag |= Posix.CLOCAL | Posix.CREAD;
-            newtio.c_cflag &= ~(Posix.PARENB | Posix.PARODD);
-            newtio.c_cflag &= ~Posix.CSTOPB;
+            Posix.tcgetattr (fd, out newtio);
+            oldtio = newtio;
 
-            newtio.c_iflag = Posix.IGNBRK;
-            newtio.c_lflag = 0;
-            newtio.c_oflag = 0;
+            Posix.cfmakeraw(ref newtio);
             newtio.c_cc[Posix.VTIME]=0;
             newtio.c_cc[Posix.VMIN]=0;
-            newtio.c_lflag &= ~(Posix.ECHONL|Posix.NOFLSH);
-
+            Posix.cfsetospeed(ref newtio, baudrate);
+            Posix.cfsetispeed(ref newtio, baudrate);
             Posix.tcsetattr(fd, Posix.TCSANOW, newtio);
         }
         available = true;
@@ -262,7 +257,7 @@ public class MWSerial : Object
         {
             if(is_serial)
             {
-                Posix.tcflush(fd, Posix.TCIOFLUSH);
+                Posix.tcsetattr (fd, Posix.TCSANOW|Posix.TCSADRAIN, oldtio);
                 Posix.close(fd);
             }
             else
@@ -322,6 +317,7 @@ public class MWSerial : Object
                         {
                             commerr++;
                             stderr.printf("Comm error count %d\n", commerr);
+                            Posix.tcflush(fd, Posix.TCIFLUSH);
                         }
                         if (buf[nc] == '$')
                         {
