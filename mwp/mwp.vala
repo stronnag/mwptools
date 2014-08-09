@@ -63,6 +63,8 @@ public class MWPlanner : GLib.Object {
     private bool follow = false;
     private bool centreon = false;
     private bool navcap = false;
+    private bool naze32 = false;
+    private bool vinit = false;
     private GtkChamplain.Embed embed;
     private PrefsDialog prefs;
     private Gtk.AboutDialog about;
@@ -575,9 +577,12 @@ public class MWPlanner : GLib.Object {
                 remove_tid(ref cmdtid);
                 have_vers = true;
                 mrtype = raw[1];
-                navcap = ((raw[3] & 16) == 16);
-                stderr.printf("Caps = %x %x %x %x\n",
-                              raw[0],raw[1], raw[2], raw[3]);
+                navcap = ((raw[3] & 0x10) == 0x10);
+                if ((raw[3] & 0x20) == 0x20)
+                {
+                    naze32 = true;
+                    navcap = false;
+                }
                 var vers="v%03d".printf(raw[0]);
                 verlab.set_label(vers);
                 typlab.set_label(MSP.get_mrtype(mrtype));
@@ -595,6 +600,7 @@ public class MWPlanner : GLib.Object {
                 vwarn1 = m.conf_vbatlevel_warn1;
                 vwarn2 = m.conf_vbatlevel_warn2;
                 vcrit =  m.conf_vbatlevel_crit;
+//                stdout.printf("%d %d %d\n", vwarn1, vwarn2, vcrit);
                 add_cmd(MSP.Cmds.STATUS,null,0,&have_status,1000);
                 break;
 
@@ -1015,6 +1021,21 @@ public class MWPlanner : GLib.Object {
         string vbatlab;
         string[] bcols = {"green","yellow","orange","red","white" };
         float vf=0f;
+
+        if(vinit == false)
+        {
+            vinit = true;
+            if(naze32)
+            {
+                var ncell = ivbat / vwarn1;
+                var vmin = vwarn1;
+                var vmax = vwarn2;
+                vcrit = vmin * ncell;
+                vwarn1 = vmax * ncell * 84 / 100;
+                vwarn2 = vmax * ncell * 80 / 100;
+//                stdout.printf("Set warns to %d %d %d\n", vcrit, vwarn1, vwarn2);
+            }
+        }
 
         string str;
         var icol = getbatcol(ivbat);
