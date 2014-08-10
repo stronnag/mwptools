@@ -687,8 +687,13 @@ public class MWPlanner : GLib.Object {
                                 tcycle += 1;
                                 tcycle %= nreqs;
                                 if(nopoll)
+                                {
                                     stdout.printf("Stop polling\n");
-                                return !nopoll;
+                                    gpstid = 0;
+                                    return false;
+                                }
+                                else
+                                    return true;
                             });
                         start_audio();
                     }
