@@ -600,7 +600,6 @@ public class MWPlanner : GLib.Object {
                 vwarn1 = m.conf_vbatlevel_warn1;
                 vwarn2 = m.conf_vbatlevel_warn2;
                 vcrit =  m.conf_vbatlevel_crit;
-//                stdout.printf("%d %d %d\n", vwarn1, vwarn2, vcrit);
                 add_cmd(MSP.Cmds.STATUS,null,0,&have_status,1000);
                 break;
 
@@ -687,7 +686,9 @@ public class MWPlanner : GLib.Object {
                                 send_cmd(req, null, 0);
                                 tcycle += 1;
                                 tcycle %= nreqs;
-                                return true;
+                                if(nopoll)
+                                    stdout.printf("Stop polling\n");
+                                return !nopoll;
                             });
                         start_audio();
                     }
@@ -789,7 +790,6 @@ public class MWPlanner : GLib.Object {
                 remove_tid(ref cmdtid);
                 have_wp = true;
 
-//                print("Got WP %d\n", w.wp_no);
                 if (wpmgr.wp_flag == WPDL.VALIDATE)
                 {
                     WPFAIL fail = WPFAIL.OK;
@@ -857,9 +857,6 @@ public class MWPlanner : GLib.Object {
                     m.param2 = (uint16.from_little_endian(w.p2));
                     m.param3 = (uint16.from_little_endian(w.p3));
 
-//                    print("wp %d act %d %.5f %.5f %d %02x\n",
-//                          m.no, m.action, m.lat, m.lon, (int)m.alt, w.flag);
-
                     wp_resp += m;
                     if(w.flag == 0xa5 || w.wp_no == 255)
                     {
@@ -925,7 +922,8 @@ public class MWPlanner : GLib.Object {
                 break;
 
             case MSP.Cmds.TG_FRAME:
-                nopoll = true;
+                if(nopoll == false)
+                    nopoll = true;
                 LTM_GFRAME *gf = (LTM_GFRAME *)raw;
 
                 if(craft == null)
@@ -949,7 +947,8 @@ public class MWPlanner : GLib.Object {
                 break;
 
             case MSP.Cmds.TA_FRAME:
-                nopoll = true;
+                if(nopoll == false)
+                    nopoll = true;
                 LTM_AFRAME *af = (LTM_AFRAME *)raw;
                 var h = af.heading;
                 if(h < 0)
@@ -959,7 +958,8 @@ public class MWPlanner : GLib.Object {
                 break;
 
             case MSP.Cmds.TS_FRAME:
-                nopoll = true;
+                if(nopoll == false)
+                    nopoll = true;
                 LTM_SFRAME *sf = (LTM_SFRAME *)raw;
                 radstatus.update_ltm(*sf);
                 navstatus.update_ltm_s(*sf);
@@ -971,7 +971,6 @@ public class MWPlanner : GLib.Object {
                 break;
         }
     }
-
 
     private int getbatcol(int ivbat)
     {
