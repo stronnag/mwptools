@@ -575,13 +575,17 @@ public class MWPlanner : GLib.Object {
         {
             case MSP.Cmds.IDENT:
                 remove_tid(ref cmdtid);
+                MSP_IDENT *m = (MSP_IDENT *)raw;
                 have_vers = true;
-                mrtype = raw[1];
-                navcap = ((raw[3] & 0x10) == 0x10);
-                if ((raw[3] & 0x20) == 0x20)
+                mrtype = m.multitype;
+                naze32 = ((m.capability & 0x80000000) == 0x80000000);
+                if(naze32 == true)
                 {
-                    naze32 = true;
                     navcap = false;
+                }
+                else
+                {
+                    navcap = ((raw[3] & 0x10) == 0x10);
                 }
                 var vers="v%03d".printf(raw[0]);
                 verlab.set_label(vers);

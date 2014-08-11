@@ -1,5 +1,14 @@
 #include <stdint.h>
 
+struct __attribute__ ((__packed__))  _msp_ident
+{
+    uint8_t version;
+    uint8_t multitype;
+    uint8_t msp_version;
+    uint32_t capability;
+};
+typedef struct _msp_ident MSP_IDENT;
+
 struct __attribute__ ((__packed__))  _msp_status
 {
     uint16_t cycle_time;

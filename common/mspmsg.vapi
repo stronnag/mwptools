@@ -3,6 +3,15 @@
  */
 
 [CCode (cheader_filename = "../common/mspmsg.h")]
+public struct MSP_IDENT {
+    uint8 version;
+    uint8 multitype;
+    uint8 msp_version;
+    uint32 capability;
+}
+
+
+[CCode (cheader_filename = "../common/mspmsg.h")]
 public struct MSP_STATUS {
     uint16 cycle_time;
     uint16 i2c_errors_count;
