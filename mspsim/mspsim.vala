@@ -89,6 +89,42 @@ public class MWSim : GLib.Object
          tbuffer.insert(ref ei, msg, -1);
     }
 
+    private size_t serialise_nc (MSP_NAV_CONFIG nc, uint8[] tmp)
+    {
+        uint8* rp = tmp;
+
+        *rp++ = nc.flag1;
+        *rp++ = nc.flag2;
+
+        rp = serialise_u16(rp, nc.wp_radius);
+        rp = serialise_u16(rp, nc.safe_wp_distance);
+        rp = serialise_u16(rp, nc.nav_max_altitude);
+        rp = serialise_u16(rp, nc.nav_speed_max);
+        rp = serialise_u16(rp, nc.nav_speed_min);
+        *rp++ = nc.crosstrack_gain;
+        rp = serialise_u16(rp, nc.nav_bank_max);
+        rp = serialise_u16(rp, nc.rth_altitude);
+        *rp++ = nc.land_speed;
+        rp = serialise_u16(rp, nc.fence);
+        *rp++ = nc.max_wp_number;
+        return (rp-&tmp[0]);
+    }
+
+    private size_t serialise_wp(MSP_WP w, uint8[] tmp)
+    {
+        uint8* rp = tmp;
+        *rp++ = w.wp_no;
+        *rp++ = w.action;
+        rp = serialise_i32(rp, w.lat);
+        rp = serialise_i32(rp, w.lon);
+        rp = serialise_u32(rp, w.altitude);
+        rp = serialise_u16(rp, w.p1);
+        rp = serialise_u16(rp, w.p2);
+        rp = serialise_u16(rp, w.p3);
+        *rp++ = w.flag;
+        return (rp-&tmp[0]);
+    }
+
     public MWSim()
     {
         cg.range = cg.direction = cg.update = 0;
@@ -249,9 +285,42 @@ public class MWSim : GLib.Object
             });
     }
 
+    private size_t serialise_gf(LTM_GFRAME b, uint8 []tx)
+    {
+        uint8 *p;
+        p = serialise_i32(tx, b.lat);
+        p = serialise_i32(p, b.lon);
+        *p++ = (uint8)b.speed;
+        p = serialise_i32(p, b.alt);
+        *p++ = b.sats;
+        return (p - &tx[0]);
+    }
+
+    private size_t serialise_af(LTM_AFRAME b, uint8 []tx)
+    {
+        uint8 *p;
+        p = serialise_i16(tx, b.pitch);
+        p = serialise_i16(p, b.roll);
+        p = serialise_i16(p, b.heading);
+        return (p - &tx[0]);
+    }
+
+    private size_t serialise_sf(LTM_SFRAME b, uint8 []tx)
+    {
+        uint8 *p;
+        p = serialise_i16(tx, b.vbat);
+        p = serialise_i16(p, b.vcurr);
+        *p++ = b.rssi;
+        *p++ = b.airspeed;
+        *p++ = b.flags;
+        return (p - &tx[0]);
+    }
 
     private void process_ltm()
     {
+        uint8 tx[32];
+        size_t nb;
+
         MSP_RAW_GPS buf = {0};
         get_gps_info(out buf);
         LTM_GFRAME gf = {0};
@@ -260,22 +329,26 @@ public class MWSim : GLib.Object
         gf.speed = buf.gps_speed/100;
         gf.alt = gblalt*100 + rand.int_range(-50,50);
         gf.sats = 1+(buf.gps_numsat << 2);
-        msp.send_ltm('G',&gf);
-        append_text("Send LTM G Frame %lu\n".printf(sizeof(LTM_GFRAME)));
+        nb = serialise_gf(gf, tx);
+        msp.send_ltm('G',tx, nb);
+        append_text("Send LTM G Frame %lu\n".printf(MSize.LTM_GFRAME));
 
         LTM_AFRAME af = {0};
         af.pitch = 4;
         af.roll = -4;
         af.heading = (int16)gblcse;
-        msp.send_ltm('A',&af);
+        nb = serialise_af(af, tx);
+        msp.send_ltm('A',tx, nb);
         append_text("Send LTM A Frame %lu\n".printf(sizeof(LTM_AFRAME)));
+
         LTM_SFRAME sf ={0};
         sf.vbat = (int16)(volts*1000);
         sf.vcurr = 4200;
         sf.rssi = 150 + rand.int_range(-10,10);
         sf.airspeed = gf.speed;
         sf.flags = 1;
-        msp.send_ltm('S',&sf);
+        nb = serialise_sf(sf, tx);
+        msp.send_ltm('S',tx, nb);
         append_text("Send LTM S Frame %lu\n".printf(sizeof(LTM_SFRAME)));
     }
 
@@ -302,12 +375,12 @@ public class MWSim : GLib.Object
             MissionItem m = MissionItem();
             m.no= w.wp_no;
             m.action = (MSP.Action)w.action;
-            m.lat = (int32.from_little_endian(w.lat))/10000000.0;
-            m.lon = (int32.from_little_endian(w.lon))/10000000.0;
-            m.alt = (uint32.from_little_endian(w.altitude))/100;
-            m.param1 = (uint16.from_little_endian(w.p1));
-            m.param2 = (uint16.from_little_endian(w.p2));
-            m.param3 = (uint16.from_little_endian(w.p3));
+            m.lat = w.lat/10000000.0;
+            m.lon = w.lon/10000000.0;
+            m.alt = w.altitude/100;
+            m.param1 = w.p1;
+            m.param2 = w.p2;
+            m.param3 = w.p3;
             print("wp %d action %d %f %f %u %02x\n",
                   m.no, m.action, m.lat, m.lon, m.alt, w.flag);
             ma += m;
@@ -516,12 +589,11 @@ public class MWSim : GLib.Object
         int16 ispeed = (int16)(spd*100);
         int16 icourse = (int16)Math.lround(cse*10);
 
-        g.gps_lat = ilat.to_little_endian();
-        g.gps_lon = ilon.to_little_endian();
-        g.gps_altitude =ialt.to_little_endian();
-        g.gps_speed = ispeed.to_little_endian();
-        g.gps_ground_course = icourse.to_little_endian();
-
+        g.gps_lat = ilat;
+        g.gps_lon = ilon;
+        g.gps_altitude =ialt;
+        g.gps_speed = ispeed;
+        g.gps_ground_course = icourse;
     }
 
     private void stop_sim()
@@ -533,6 +605,123 @@ public class MWSim : GLib.Object
         startb.set_label("gtk-media-play");
     }
 
+    private size_t serialise_misc(MSP_MISC misc, uint8 [] tbuf)
+    {
+        uint8 *rp;
+        rp = serialise_u16(tbuf, misc.intPowerTrigger1);
+        rp = serialise_u16(rp, misc.conf_minthrottle);
+        rp = serialise_u16(rp, misc.maxthrottle);
+        rp = serialise_u16(rp, misc.mincommand);
+        rp = serialise_u16(rp, misc.failsafe_throttle);
+        rp = serialise_u16(rp, misc.plog_arm_counter);
+        rp = serialise_u32(rp, misc.plog_lifetime);
+        rp = serialise_i16(rp, misc.conf_mag_declination);
+        *rp++ = misc.conf_vbatscale;
+        *rp++ = misc.conf_vbatlevel_warn1;
+        *rp++ = misc.conf_vbatlevel_warn2;
+        *rp++ = misc.conf_vbatlevel_crit;
+        return (rp - &tbuf[0]);
+    }
+
+        /*
+    private size_t serialise_rt(MSP_RC_TUNING rt, uint8 [] tbuf)
+    {
+        uint8 *rp = tbuf;
+        *rp++ = rt.rc_rate;
+        *rp++ = rt.rc_expo;
+        *rp++ = rt.rollpitchrate;
+        *rp++ = rt.yawrate;
+        *rp++ = rt.dynthrpid;
+        *rp++ = rt.throttle_mid;
+        *rp++ = rt.throttle_expo;
+        return (rp - &tbuf[0]);
+    }
+        */
+    private size_t serialise_nav_status(MSP_NAV_STATUS b, uint8 []tx)
+    {
+        uint8 *p = tx;
+        *p++ = b.gps_mode;
+        *p++ = b.nav_mode;
+        *p++ = b.action;
+        *p++ = b.wp_number;
+        *p++ = b.nav_error;
+        p = serialise_u16(p, b.target_bearing);
+        return (p - &tx[0]);
+    }
+
+    private size_t serialise_alt(MSP_ALTITUDE b, uint8 []tx)
+    {
+        uint8 *p;
+        p = serialise_i32(tx, b.estalt);
+        p = serialise_i16(p, b.vario);
+        return (p - &tx[0]);
+    }
+
+    private size_t serialise_raw_gps(MSP_RAW_GPS b, uint8 []tx)
+    {
+        uint8 *p = tx;
+        *p++ = b.gps_fix;
+        *p++ = b.gps_numsat;
+        p = serialise_i32(p, b.gps_lat);
+        p = serialise_i32(p, b.gps_lon);
+        p = serialise_i16(p, b.gps_altitude);
+        p = serialise_u16(p, b.gps_speed);
+        p = serialise_u16(p, b.gps_ground_course);
+        return (p - &tx[0]);
+    }
+
+    private size_t serialise_status(MSP_STATUS b, uint8 []tx)
+    {
+        uint8 *p;
+        p = serialise_u16(tx, b.cycle_time);
+        p = serialise_u16(p, b.i2c_errors_count);
+        p = serialise_u16(p, b.sensor);
+        p = serialise_u32(p, b.flag);
+        *p++ = b.global_conf;
+        return (p - &tx[0]);
+    }
+
+    private size_t serialise_radio(MSP_RADIO b, uint8 []tx)
+    {
+        uint8 *p;
+        p = serialise_u16(tx, b.rxerrors);
+        p = serialise_u16(p, b.fixed_errors);
+        *p++ = b.localrssi;
+        *p++ = b.remrssi;
+        *p++ = b.txbuf;
+        *p++ = b.noise;
+        *p++ = b.remnoise;
+        return (p - &tx[0]);
+    }
+
+    private size_t serialise_analogue(MSP_ANALOG b, uint8 []tx)
+    {
+        uint8 *p = tx;
+        *p++ = b.vbat;
+        p = serialise_u16(p, b.powermetersum);
+        p = serialise_u16(p, b.rssi);
+        p = serialise_u16(p, b.amps);
+        return (p - &tx[0]);
+    }
+
+    private size_t serialise_comp_gps(MSP_COMP_GPS b, uint8 []tx)
+    {
+        uint8 *p;
+        p = serialise_u16(tx, b.range);
+        p = serialise_i16(p, b.direction);
+        *p++ = b.update;
+        return (p - &tx[0]);
+    }
+
+    private size_t serialise_atti(MSP_ATTITUDE b, uint8 []tx)
+    {
+        uint8 *p;
+        p = serialise_u16(tx, b.angx);
+        p = serialise_u16(p, b.angy);
+        p = serialise_u16(p, b.heading);
+        return (p - &tx[0]);
+    }
+
     public void sim()
     {
         open();
@@ -541,7 +730,6 @@ public class MWSim : GLib.Object
                 stop_sim();
                 open();
             });
-
 
         MSP_NAV_CONFIG nc = MSP_NAV_CONFIG() {
             flag1 = 0x51,
@@ -555,12 +743,16 @@ public class MWSim : GLib.Object
             nav_bank_max = 3000,
             rth_altitude = 15,
             land_speed = 100,
-            fence = 600
+            fence = 600,
+            max_wp_number = 200
         };
 
         var loop = 0;
         msp.serial_event.connect ((s, cmd, raw, len, errs) =>
         {
+            uint8 tx[64];
+            size_t nb;
+
             if(loop ==0  && replay != null)
             {
                 run_replay();
@@ -580,17 +772,17 @@ public class MWSim : GLib.Object
                 break;
 
                 case MSP.Cmds.STATUS:
-                MSP_STATUS buf = {0};
+                MSP_STATUS buf = MSP_STATUS();
                 buf.cycle_time=((uint16)2345).to_little_endian();
                 buf.sensor=((uint16)31).to_little_endian();
                 buf.flag = (armed) ? 1 : 0;
-
-                append_text("Send STATUS %lu\n".printf(sizeof(MSP_STATUS)));
-                msp.send_command(MSP.Cmds.STATUS, &buf, sizeof(MSP_STATUS));
+                nb = serialise_status(buf, tx);
+                append_text("Send STATUS %lu\n".printf(MSize.MSP_STATUS));
+                msp.send_command(MSP.Cmds.STATUS, tx, nb);
                 break;
 
                 case MSP.Cmds.MISC:
-                MSP_MISC buf = {0};
+                MSP_MISC buf = MSP_MISC();
                 buf.conf_minthrottle=((uint16)1064).to_little_endian();
                 buf.maxthrottle=((uint16)1864).to_little_endian();
                 buf.mincommand=((uint16)900).to_little_endian();
@@ -599,8 +791,9 @@ public class MWSim : GLib.Object
                 buf.conf_vbatlevel_warn1 = 107;
                 buf.conf_vbatlevel_warn2 = 99;
                 buf.conf_vbatlevel_crit = 93;
-                append_text("Send MISC %lu\n".printf(sizeof(MSP_MISC)));
-                msp.send_command(MSP.Cmds.MISC, &buf, sizeof(MSP_MISC));
+                nb = serialise_misc(buf, tx);
+                append_text("Send MISC %lu\n".printf(MSize.MSP_MISC));
+                msp.send_command(MSP.Cmds.MISC, tx, nb);
                 break;
 
                 case MSP.Cmds.PID:
@@ -615,11 +808,12 @@ public class MWSim : GLib.Object
                 break;
 
                 case MSP.Cmds.ALTITUDE:
-                MSP_ALTITUDE buf ={0};
+                MSP_ALTITUDE buf = MSP_ALTITUDE();;
                 buf.estalt = (100*((int32)gblalt) + rand.int_range(-50,50)).to_little_endian();
                 buf.vario = ((int16)3).to_little_endian();
-                append_text("Send ALT %lu\n".printf(sizeof(MSP_ALTITUDE)));
-                msp.send_command(MSP.Cmds.ALTITUDE, &buf, sizeof(MSP_ALTITUDE));
+                nb = serialise_alt(buf, tx);
+                append_text("Send ALT %lu\n".printf(MSize.MSP_ALTITUDE));
+                msp.send_command(MSP.Cmds.ALTITUDE, tx,nb);
                 break;
 
                 case MSP.Cmds.EEPROM_WRITE:
@@ -627,8 +821,21 @@ public class MWSim : GLib.Object
                 break;
 
                 case MSP.Cmds.SET_NAV_CONFIG:
+                uint8* rp = raw;
+                nc.flag1 = *rp++;
+                nc.flag2 = *rp++;
+                rp = deserialise_u16(rp, out nc.wp_radius);
+                rp = deserialise_u16(rp, out nc.safe_wp_distance);
+                rp = deserialise_u16(rp, out nc.nav_max_altitude);
+                rp = deserialise_u16(rp, out nc.nav_speed_max);
+                rp = deserialise_u16(rp, out nc.nav_speed_min);
+                nc.crosstrack_gain = *rp++;
+                rp = deserialise_u16(rp, out nc.nav_bank_max);
+                rp = deserialise_u16(rp, out nc.rth_altitude);
+                nc.land_speed = *rp++;
+                rp = deserialise_u16(rp, out nc.fence);
+                nc.max_wp_number = *rp;
                 append_text("got SET_NC\n");
-                nc = *((MSP_NAV_CONFIG*)raw);
                 break;
 
                 case MSP.Cmds.SET_PID:
@@ -636,16 +843,27 @@ public class MWSim : GLib.Object
                 break;
 
                 case  MSP.Cmds.RAW_GPS:
-                MSP_RAW_GPS buf;
+                MSP_RAW_GPS buf = MSP_RAW_GPS();
                 get_gps_info(out buf);
-                append_text("Send GPS %lu\n".printf(sizeof(MSP_RAW_GPS)));
-                msp.send_command(MSP.Cmds.RAW_GPS, &buf, sizeof(MSP_RAW_GPS));
+                nb = serialise_raw_gps(buf, tx);
+                append_text("Send GPS %lu\n".printf(MSize.MSP_RAW_GPS));
+                msp.send_command(MSP.Cmds.RAW_GPS, tx, MSize.MSP_RAW_GPS);
                 break;
 
                 case MSP.Cmds.SET_WP:
-                MSP_WP *w = (MSP_WP *)raw;
+                MSP_WP w = MSP_WP();
+                uint8* rp = raw;
+                w.wp_no = *rp++;
+                w.action = *rp++;
+                rp = deserialise_i32(rp, out w.lat);
+                rp = deserialise_i32(rp, out w.lon);
+                rp = deserialise_u32(rp, out w.altitude);
+                rp = deserialise_i16(rp, out w.p1);
+                rp = deserialise_u16(rp, out w.p2);
+                rp = deserialise_u16(rp, out w.p3);
+                w.flag = *rp;
                 var n = w.wp_no;
-                wps[n] = *w;
+                wps[n] = w;
                 nwpts = n ;
                 append_text("SET_WP %d type %d\n".printf(n, w.action));
                 msp.send_command(MSP.Cmds.SET_WP, raw, raw.length);
@@ -666,7 +884,8 @@ public class MWSim : GLib.Object
                 var n = raw[0];
                 if(n <= nwpts)
                 {
-                    msp.send_command(MSP.Cmds.WP, &wps[n], sizeof(MSP_WP));
+                    nb = serialise_wp(wps[n], tx);
+                    msp.send_command(MSP.Cmds.WP, tx, MSize.MSP_WP);
                     append_text("Send WP %d\n".printf(n));
                 }
                 else
@@ -676,8 +895,9 @@ public class MWSim : GLib.Object
                 break;
 
                 case MSP.Cmds.NAV_STATUS:
-                msp.send_command(MSP.Cmds.NAV_STATUS, &nsts, sizeof(MSP_NAV_STATUS));
-                append_text("Send NAV STATUS %lu\n".printf(sizeof(MSP_NAV_STATUS)));
+                nb = serialise_nav_status(nsts, tx);
+                msp.send_command(MSP.Cmds.NAV_STATUS, tx, MSize.MSP_NAV_STATUS);
+                append_text("Send NAV STATUS %lu\n".printf(MSize.MSP_NAV_STATUS));
                 if((loop % 4) == 0)
                 {
                     MSP_RADIO r = {0, 0,152, 152, 100, 57, 38};
@@ -685,35 +905,39 @@ public class MWSim : GLib.Object
                     r.remrssi = (uint8)((int32)r.remrssi + rand.int_range(-10,10));
                     r.noise = (uint8)((int32)r.noise + rand.int_range(-5,5));
                     r.remnoise = (uint8)((int32)r.remnoise + rand.int_range(-5,5));
-                    msp.send_command(MSP.Cmds.RADIO, &r, sizeof(MSP_RADIO));
-                    append_text("Send RADIO %lu\n".printf(sizeof(MSP_RADIO)));
+                    nb = serialise_radio(r, tx);
+                    msp.send_command(MSP.Cmds.RADIO, tx, MSize.MSP_RADIO);
+                    append_text("Send RADIO %lu\n".printf(MSize.MSP_RADIO));
                 }
                 break;
 
                 case MSP.Cmds.NAV_CONFIG:
-                nc.max_wp_number = (uint8) nwpts;
-                msp.send_command(MSP.Cmds.NAV_CONFIG, &nc, sizeof(MSP_NAV_CONFIG));
-                append_text("Send NAV CONFIG %lu\n".printf(sizeof(MSP_NAV_CONFIG)));
+                nb = serialise_nc(nc, tx);
+                msp.send_command(MSP.Cmds.NAV_CONFIG, tx, MSize.MSP_NAV_CONFIG);
+                append_text("Send NAV CONFIG %lu\n".printf(MSize.MSP_NAV_CONFIG));
                 break;
 
                 case MSP.Cmds.ANALOG:
-                MSP_ANALOG buf = {0};
+                MSP_ANALOG buf = MSP_ANALOG();
                 buf.vbat = (uint8)(volts*10);
-                msp.send_command(MSP.Cmds.ANALOG, &buf, sizeof(MSP_ANALOG));
-                append_text("Send ANALOG %lu\n".printf(sizeof(MSP_ANALOG)));
+                nb = serialise_analogue(buf, tx);
+                msp.send_command(MSP.Cmds.ANALOG, tx, MSize.MSP_ANALOG);
+                append_text("Send ANALOG %lu\n".printf(MSize.MSP_ANALOG));
                 break;
 
                 case MSP.Cmds.COMP_GPS:
-                msp.send_command(MSP.Cmds.COMP_GPS, &cg, sizeof(MSP_COMP_GPS));
-                append_text("Send NAV COMP GPS %lu\n".printf(sizeof(MSP_COMP_GPS)));
+                nb = serialise_comp_gps(cg, tx);
+                msp.send_command(MSP.Cmds.COMP_GPS, tx, MSize.MSP_COMP_GPS);
+                append_text("Send NAV COMP GPS %lu\n".printf(MSize.MSP_COMP_GPS));
                 break;
 
                 case MSP.Cmds.ATTITUDE:
-                MSP_ATTITUDE buf ={0};
+                MSP_ATTITUDE buf = MSP_ATTITUDE();
                 buf.heading=(int16)gblcse;
-                msp.send_command(MSP.Cmds.ATTITUDE, &buf, sizeof(MSP_ATTITUDE));
-                append_text("Send NAV ATTITUDE %lu\n".printf(sizeof(MSP_ATTITUDE)));
-                        break;
+                nb = serialise_atti(buf, tx);
+                msp.send_command(MSP.Cmds.ATTITUDE, tx, MSize.MSP_ATTITUDE);
+                append_text("Send NAV ATTITUDE %lu\n".printf(MSize.MSP_ATTITUDE));
+                break;
 
                 default:
                 stdout.printf("unknown %d\n",cmd);

@@ -637,24 +637,24 @@ public class MWPlanner : GLib.Object {
                         ulong reqsize = 0;
 
                         requests += MSP.Cmds.STATUS;
-                        reqsize += sizeof(MSP_STATUS);
+                        reqsize += MSize.MSP_STATUS;
 
                         requests += MSP.Cmds.ANALOG;
-                        reqsize += sizeof(MSP_ANALOG);
+                        reqsize += MSize.MSP_ANALOG;
 
                         sflags = NavStatus.SPK.Volts;
 
                         if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
                         {
                             requests += MSP.Cmds.ATTITUDE;
-                            reqsize += sizeof(MSP_ATTITUDE);
+                            reqsize += MSize.MSP_ATTITUDE;
                         }
 
                         if((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO)
                         {
                             sflags |= NavStatus.SPK.BARO;
                             requests += MSP.Cmds.ALTITUDE;
-                            reqsize += sizeof(MSP_ALTITUDE);
+                            reqsize += MSize.MSP_ALTITUDE;
                         }
 
                         if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
@@ -663,11 +663,11 @@ public class MWPlanner : GLib.Object {
                             if(navcap == true)
                             {
                                 requests += MSP.Cmds.NAV_STATUS;
-                                reqsize += sizeof(MSP_NAV_STATUS);
+                                reqsize += MSize.MSP_NAV_STATUS;
                             }
                             requests += MSP.Cmds.RAW_GPS;
                             requests += MSP.Cmds.COMP_GPS;
-                            reqsize += (sizeof(MSP_RAW_GPS) + sizeof(MSP_COMP_GPS));
+                            reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS);
                             if(craft == null)
                                 craft = new Craft(view, mrtype,norotate);
                             craft.park();
@@ -1095,7 +1095,6 @@ public class MWPlanner : GLib.Object {
     private size_t serialise_wp(MSP_WP w, uint8[] tmp)
     {
         uint8* rp = tmp;
-        uint8* rp0 = rp;
         *rp++ = w.wp_no;
         *rp++ = w.action;
         rp = serialise_i32(rp, w.lat);
@@ -1105,7 +1104,7 @@ public class MWPlanner : GLib.Object {
         rp = serialise_u16(rp, w.p2);
         rp = serialise_u16(rp, w.p3);
         *rp++ = w.flag;
-        return (rp-rp0);
+        return (rp-&tmp[0]);
     }
 
     private int getbatcol(int ivbat)
@@ -1247,7 +1246,6 @@ public class MWPlanner : GLib.Object {
     private size_t serialise_nc (MSP_NAV_CONFIG nc, uint8[] tmp)
     {
         uint8* rp = tmp;
-        uint8* rp0 = rp;
 
         *rp++ = nc.flag1;
         *rp++ = nc.flag2;
@@ -1263,7 +1261,7 @@ public class MWPlanner : GLib.Object {
         *rp++ = nc.land_speed;
         rp = serialise_u16(rp, nc.fence);
         *rp++ = nc.max_wp_number;
-        return (rp-rp0);
+        return (rp-&tmp[0]);
     }
 
     public void update_config(MSP_NAV_CONFIG nc)
