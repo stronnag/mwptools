@@ -498,7 +498,7 @@ public class NavStatus : GLib.Object
                 var n_action = n.action;
                 var n_wpno = n.wp_number;
                 var estr = MSP.nav_error(n.nav_error);
-                var tbrg = (uint16.from_little_endian(n.target_bearing));
+                var tbrg = n.target_bearing;
                 gps_mode_label.set_label(gstr);
                 nav_state_label.set_label(nstr);
                 var act = MSP.get_wpname((MSP.Action)n_action);
@@ -521,9 +521,9 @@ public class NavStatus : GLib.Object
         {
             double dax;
             double day;
-            dax = (double)(int16.from_little_endian(atti.angx))/10.0;
-            day = (double)(int16.from_little_endian(atti.angy))/10.0;
-            hdr = (int16.from_little_endian(atti.heading));
+            dax = (double)(atti.angx)/10.0;
+            day = (double)(atti.angy)/10.0;
+            hdr = atti.heading;
             if(hdr < 0)
                 hdr += 360;
             if(visible)
@@ -543,8 +543,8 @@ public class NavStatus : GLib.Object
         alti = _alti;
         if(visible || Logger.is_logging)
         {
-            double vario = (int16.from_little_endian(alti.vario))/10.0;
-            double estalt = (int32.from_little_endian(alti.estalt))/100.0;
+            double vario = alti.vario/10.0;
+            double estalt = alti.estalt/100.0;
             if(visible)
             {
                 var str = "%.2fm / %.1fm/s".printf(estalt, vario);
@@ -562,15 +562,14 @@ public class NavStatus : GLib.Object
         cg = _cg;
         if(visible || Logger.is_logging)
         {
-            int brg = (int)(int16.from_little_endian(cg.direction));
+            var brg = cg.direction;
             if(brg < 0)
                 brg += 360;
 
             if(visible)
             {
                 var str = "%dm / %d° / %s".printf(
-                    (uint16.from_little_endian(cg.range)),
-                    brg,
+                    cg.range, brg,
                     (cg.update == 0) ? "false" : "true");
                 nav_comp_gps_label.set_label(str);
             }
@@ -615,20 +614,18 @@ public class NavStatus : GLib.Object
     {
         if((mask & SPK.GPS) == SPK.GPS)
         {
-            int brg = (int)(int16.from_little_endian(cg.direction));
+            var brg = cg.direction;
             if(brg < 0)
                 brg += 360;
 
             if(recip)
                 brg = ((brg + 180) % 360);
 
-            mt.message("Range %d, bearing %d.".printf(
-                        (uint16.from_little_endian(cg.range)),
-                        brg));
+            mt.message("Range %d, bearing %d.".printf(cg.range, brg));
         }
         if((mask & SPK.BARO) == SPK.BARO)
         {
-            double estalt = (double)(int32.from_little_endian(alti.estalt))/100.0;
+            double estalt = (double)alti.estalt/100.0;
             var str = "Altitude %.1f.".printf(estalt);
             str = str_zero(str);
             mt.message(str);
@@ -763,7 +760,7 @@ public class NavConfig : GLib.Object
 
         var apply = builder.get_object ("nc_apply") as Gtk.Button;
         apply.clicked.connect(() => {
-                MSP_NAV_CONFIG ncu = {0};
+                MSP_NAV_CONFIG ncu = MSP_NAV_CONFIG();
                 if (nvcb1_01.active)
                     ncu.flag1 |= 0x01;
                 if (nvcb1_02.active)
@@ -798,7 +795,9 @@ public class NavConfig : GLib.Object
                 ncu.nav_speed_max = u16;
                 u16 = (uint16)int.parse(nav_speed_min.get_text());
                 ncu.nav_speed_min = u16;
-                u16 = (uint16)(get_locale_double(nav_bank_max.get_text())*100);
+
+                string s = nav_bank_max.get_text();
+                u16 = (uint16)(get_locale_double(s)*100);
                 ncu.nav_bank_max = u16;
                 u16 = (uint16)int.parse(rth_altitude.get_text());
                 ncu.rth_altitude = u16;
@@ -854,30 +853,19 @@ public class NavConfig : GLib.Object
         nvcb2_01.set_active ((nc.flag2 & 0x01) == 0x01);
         nvcb2_02.set_active ((nc.flag2 & 0x02) == 0x02);
 
-        uint16 u16;
-        u16 = uint16.from_little_endian(nc.wp_radius);
-        wp_radius.set_text(u16.to_string());
-        u16 = uint16.from_little_endian(nc.safe_wp_distance);
-        safe_wp_dist.set_text(u16.to_string());
-        u16 = uint16.from_little_endian(nc.nav_max_altitude);
-        nav_max_alt.set_text(u16.to_string());
-        u16 = uint16.from_little_endian(nc.nav_speed_max);
-        nav_speed_max.set_text(u16.to_string());
-        u16 = uint16.from_little_endian(nc.nav_speed_min);
-        nav_speed_min.set_text(u16.to_string());
-
-        _xtrack = nc.crosstrack_gain;
-        crosstrack_gain.set_text("%.2f".printf((double)_xtrack/100.0));
-
-        u16 = uint16.from_little_endian(nc.nav_bank_max);
-        nav_bank_max.set_text("%.2f".printf((double)u16/100.0));
-        u16 = uint16.from_little_endian(nc.rth_altitude);
-        rth_altitude.set_text(u16.to_string());
+        wp_radius.set_text(nc.wp_radius.to_string());
+        safe_wp_dist.set_text(nc.safe_wp_distance.to_string());
+        nav_max_alt.set_text(nc.nav_max_altitude.to_string());
+        nav_speed_max.set_text(nc.nav_speed_max.to_string());
+        nav_speed_min.set_text(nc.nav_speed_min.to_string());
+        crosstrack_gain.set_text("%.2f".printf((double)nc.crosstrack_gain/100.0));
+        nav_bank_max.set_text("%.2f".printf((double)nc.nav_bank_max/100.0));
+        rth_altitude.set_text(nc.rth_altitude.to_string());
         land_speed.set_text(nc.land_speed.to_string());
-        u16 = uint16.from_little_endian(nc.fence);
-        fence.set_text(u16.to_string());
+        fence.set_text(nc.fence.to_string());
+        max_wp_no.set_text(nc.max_wp_number.to_string());
+        _xtrack = nc.crosstrack_gain;
         _maxwp = nc.max_wp_number;
-        max_wp_no.set_text(_maxwp.to_string());
     }
 
     public void hide()
@@ -954,10 +942,10 @@ public class GPSInfo : GLib.Object
 
     public int update_ltm(LTM_GFRAME g, bool dms)
     {
-        lat = (int32.from_little_endian(g.lat))/10000000.0;
-        lon = (int32.from_little_endian(g.lon))/10000000.0;
-        spd =  (uint16.from_little_endian(g.speed));
-        double dalt = (int32.from_little_endian(g.alt))/100.0;
+        lat = g.lat/10000000.0;
+        lon = g.lon/10000000.0;
+        spd =  g.speed;
+        double dalt = g.alt/100.0;
         int fix = (g.sats & 3);
         uint8 nsats = (g.sats >> 2);
         var nsatstr = "%d (%sfix)".printf(nsats, (fix==0) ? "no" : "");
@@ -971,10 +959,10 @@ public class GPSInfo : GLib.Object
 
     public int update(MSP_RAW_GPS g, bool dms)
     {
-        lat = (int32.from_little_endian(g.gps_lat))/10000000.0;
-        lon = (int32.from_little_endian(g.gps_lon))/10000000.0;
-        spd = (uint16.from_little_endian(g.gps_speed))/100.0;
-        cse = (uint16.from_little_endian(g.gps_ground_course))/10.0;
+        lat = g.gps_lat/10000000.0;
+        lon = g.gps_lon/10000000.0;
+        spd = g.gps_speed/100.0;
+        cse = g.gps_ground_course/10.0;
 
         if(Logger.is_logging)
         {

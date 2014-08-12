@@ -574,11 +574,12 @@ public class MWPlanner : GLib.Object {
         switch(cmd)
         {
             case MSP.Cmds.IDENT:
+                uint32 capability;
                 remove_tid(ref cmdtid);
-                MSP_IDENT *m = (MSP_IDENT *)raw;
                 have_vers = true;
-                mrtype = m.multitype;
-                naze32 = ((m.capability & 0x80000000) == 0x80000000);
+                mrtype = raw[1];
+                deserialise_u32(raw+3, out capability);
+                naze32 = ((capability & 0x80000000) == 0x80000000);
                 if(naze32 == true)
                 {
                     navcap = false;
@@ -600,17 +601,15 @@ public class MWPlanner : GLib.Object {
             case MSP.Cmds.MISC:
                 remove_tid(ref cmdtid);
                 have_misc = true;
-                MSP_MISC *m = (MSP_MISC *)raw;
-                vwarn1 = m.conf_vbatlevel_warn1;
-                vwarn2 = m.conf_vbatlevel_warn2;
-                vcrit =  m.conf_vbatlevel_crit;
+                vwarn1 = raw[19];
+                vwarn2 = raw[20];
+                vcrit =  raw[21];
                 add_cmd(MSP.Cmds.STATUS,null,0,&have_status,1000);
                 break;
 
             case MSP.Cmds.STATUS:
-                MSP_STATUS *s = (MSP_STATUS *)raw;
                 uint16 sensor;
-                sensor=uint16.from_little_endian(s.sensor);
+                deserialise_u16(raw+4, out sensor);
                 if (nopoll == true)
                 {
                     have_status = true;
@@ -702,8 +701,9 @@ public class MWPlanner : GLib.Object {
                         start_audio();
                     }
                     Logger.log_time();
-                    var swflg = uint32.from_little_endian(s.flag);
-                    uint8 armed = (uint8)(swflg & 1);
+                    uint32 flag;
+                    deserialise_u32(raw+6, out flag);
+                    uint8 armed = (uint8)(flag & 1);
                     if(Logger.is_logging)
                     {
                         Logger.armed((armed == 1));
@@ -740,44 +740,105 @@ public class MWPlanner : GLib.Object {
                 break;
 
             case MSP.Cmds.NAV_STATUS:
-                navstatus.update(*(MSP_NAV_STATUS*)raw);
-                break;
+            {
+                MSP_NAV_STATUS ns = MSP_NAV_STATUS();
+                uint8* rp = raw;
+                ns.gps_mode = *rp++;
+                ns.nav_mode = *rp++;
+                ns.action = *rp++;
+                ns.wp_number = *rp++;
+                ns.nav_error = *rp++;
+                deserialise_u16(rp, out ns.target_bearing);
+                navstatus.update(ns);
+            }
+            break;
 
             case MSP.Cmds.NAV_CONFIG:
+            {
                 remove_tid(ref cmdtid);
                 have_nc = true;
-                navconf.update(*(MSP_NAV_CONFIG*)raw);
-                break;
+                MSP_NAV_CONFIG nc = MSP_NAV_CONFIG();
+                uint8* rp = raw;
+                nc.flag1 = *rp++;
+                nc.flag2 = *rp++;
+                rp = deserialise_u16(rp, out nc.wp_radius);
+                rp = deserialise_u16(rp, out nc.safe_wp_distance);
+                rp = deserialise_u16(rp, out nc.nav_max_altitude);
+                rp = deserialise_u16(rp, out nc.nav_speed_max);
+                rp = deserialise_u16(rp, out nc.nav_speed_min);
+                nc.crosstrack_gain = *rp++;
+                rp = deserialise_u16(rp, out nc.nav_bank_max);
+                rp = deserialise_u16(rp, out nc.rth_altitude);
+                nc.land_speed = *rp++;
+                rp = deserialise_u16(rp, out nc.fence);
+                nc.max_wp_number = *rp;
+                navconf.update(nc);
+            }
+            break;
 
             case MSP.Cmds.SET_NAV_CONFIG:
                 send_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
                 break;
 
             case MSP.Cmds.COMP_GPS:
-                navstatus.comp_gps(*(MSP_COMP_GPS*)raw);
-                break;
+            {
+                MSP_COMP_GPS cg = MSP_COMP_GPS();
+                uint8* rp;
+                rp = deserialise_u16(raw, out cg.range);
+                rp = deserialise_i16(rp, out cg.direction);
+                cg.update = *rp;
+                navstatus.comp_gps(cg);
+            }
+            break;
 
             case MSP.Cmds.ATTITUDE:
-                navstatus.set_attitude(*(MSP_ATTITUDE*)raw);
-                break;
+            {
+                MSP_ATTITUDE at = MSP_ATTITUDE();
+                uint8* rp;
+                rp = deserialise_i16(raw, out at.angx);
+                rp = deserialise_i16(rp, out at.angy);
+                deserialise_i16(rp, out at.heading);
+                navstatus.set_attitude(at);
+            }
+            break;
 
             case MSP.Cmds.ALTITUDE:
-                navstatus.set_altitude(*(MSP_ALTITUDE*)raw);
-                break;
+            {
+                MSP_ALTITUDE al = MSP_ALTITUDE();
+                uint8* rp;
+                rp = deserialise_i32(raw, out al.estalt);
+                deserialise_i16(rp, out al.vario);
+                navstatus.set_altitude(al);
+            }
+            break;
 
             case MSP.Cmds.ANALOG:
+            {
+                MSP_ANALOG an = MSP_ANALOG();
+                an.vbat = raw[0];
                 if(Logger.is_logging)
                 {
-                    Logger.analog(*(MSP_ANALOG*)raw);
+                    Logger.analog(an);
                 }
-                var ivbat = ((MSP_ANALOG*)raw).vbat;
+                var ivbat = an.vbat;
                 set_bat_stat(ivbat);
-                break;
+            }
+            break;
 
             case MSP.Cmds.RAW_GPS:
-                var fix = gpsinfo.update(*(MSP_RAW_GPS*)raw, conf.dms);
-                _nsats =(*(MSP_RAW_GPS*)raw).gps_numsat;
+            {
+                MSP_RAW_GPS rg = MSP_RAW_GPS();
+                uint8* rp = raw;
+                rg.gps_fix = *rp++;
+                rg.gps_numsat = *rp++;
+                rp = deserialise_i32(rp, out rg.gps_lat);
+                rp = deserialise_i32(rp, out rg.gps_lon);
+                rp = deserialise_i16(rp, out rg.gps_altitude);
+                rp = deserialise_u16(rp, out rg.gps_speed);
+                deserialise_u16(rp, out rg.gps_ground_course);
 
+                var fix = gpsinfo.update(rg, conf.dms);
+                _nsats = rg.gps_numsat;
                 if (fix != 0)
                 {
                     if(craft != null)
@@ -788,16 +849,29 @@ public class MWPlanner : GLib.Object {
                             view.center_on(gpsinfo.lat,gpsinfo.lon);
                     }
                 }
-                break;
+            }
+            break;
+
             case MSP.Cmds.SET_WP:
                 var no = wpmgr.wps[wpmgr.wpidx].wp_no;
                 request_wp(no);
                 break;
 
             case MSP.Cmds.WP:
-                MSP_WP *w = (MSP_WP *)raw;
+            {
                 remove_tid(ref cmdtid);
                 have_wp = true;
+                MSP_WP w = MSP_WP();
+                uint8* rp = raw;
+                w.wp_no = *rp++;
+                w.action = *rp++;
+                rp = deserialise_i32(rp, out w.lat);
+                rp = deserialise_i32(rp, out w.lon);
+                rp = deserialise_u32(rp, out w.altitude);
+                rp = deserialise_i16(rp, out w.p1);
+                rp = deserialise_u16(rp, out w.p2);
+                rp = deserialise_u16(rp, out w.p3);
+                w.flag = *rp;
 
                 if (wpmgr.wp_flag == WPDL.VALIDATE)
                 {
@@ -810,7 +884,7 @@ public class MWPlanner : GLib.Object {
                         fail |= WPFAIL.LAT;
                     else if (w.lon != wpmgr.wps[wpmgr.wpidx].lon)
                         fail |= WPFAIL.LON;
-                    else if(w.altitude != wpmgr.wps[wpmgr.wpidx].altitude)
+                    else if (w.altitude != wpmgr.wps[wpmgr.wpidx].altitude)
                         fail |= WPFAIL.ALT;
                     else if (w.p1 != wpmgr.wps[wpmgr.wpidx].p1)
                         fail |= WPFAIL.P1;
@@ -839,7 +913,9 @@ public class MWPlanner : GLib.Object {
                     else if(w.flag != 0xa5)
                     {
                         wpmgr.wpidx++;
-                        send_cmd(MSP.Cmds.SET_WP, &wpmgr.wps[wpmgr.wpidx], sizeof(MSP_WP));
+                        uint8 wtmp[64];
+                        var nb = serialise_wp(wpmgr.wps[wpmgr.wpidx], wtmp);
+                        send_cmd(MSP.Cmds.SET_WP, wtmp, nb);
                     }
                     else
                     {
@@ -853,18 +929,18 @@ public class MWPlanner : GLib.Object {
                     MissionItem m = MissionItem();
                     m.no= w.wp_no;
                     m.action = (MSP.Action)w.action;
-                    m.lat = (int32.from_little_endian(w.lat))/10000000.0;
-                    m.lon = (int32.from_little_endian(w.lon))/10000000.0;
-                    m.alt = (uint32.from_little_endian(w.altitude))/100;
-                    m.param1 = (int16.from_little_endian(w.p1));
+                    m.lat = w.lat/10000000.0;
+                    m.lon = w.lon/10000000.0;
+                    m.alt = w.altitude/100;
+                    m.param1 = w.p1;
                     if(m.action == MSP.Action.SET_HEAD &&
                        conf.recip_head  == true && m.param1 != -1)
                     {
                         m.param1 = (m.param1 + 180) % 360;
                         stdout.printf("fixup %d %d\n", m.no, m.param1);
                     }
-                    m.param2 = (uint16.from_little_endian(w.p2));
-                    m.param3 = (uint16.from_little_endian(w.p3));
+                    m.param2 = w.p2;
+                    m.param3 = w.p3;
 
                     wp_resp += m;
                     if(w.flag == 0xa5 || w.wp_no == 255)
@@ -921,25 +997,46 @@ public class MWPlanner : GLib.Object {
                 {
                     stderr.printf("unsolicited WP #%d\n", w.wp_no);
                 }
-                break;
+            }
+
+            break;
 
             case MSP.Cmds.EEPROM_WRITE:
                 break;
 
             case MSP.Cmds.RADIO:
-                radstatus.update(*(MSP_RADIO*)raw);
-                break;
+            {
+                MSP_RADIO r = MSP_RADIO();
+                uint8 *rp;
+                rp = deserialise_u16(raw, out r.rxerrors);
+                rp = deserialise_u16(rp, out r.fixed_errors);
+                r.localrssi = *rp++;
+                r.remrssi = *rp++;
+                r.txbuf = *rp++;
+                r.noise = *rp++;
+                r.remnoise = *rp;
+                radstatus.update(r);
+            }
+            break;
 
             case MSP.Cmds.TG_FRAME:
+            {
                 if(nopoll == false)
                     nopoll = true;
-                LTM_GFRAME *gf = (LTM_GFRAME *)raw;
+
+                LTM_GFRAME gf = LTM_GFRAME();
+                uint8* rp;
+                rp = deserialise_i32(raw, out gf.lat);
+                rp = deserialise_i32(rp, out gf.lon);
+                gf.speed = *rp++;
+                rp = deserialise_i32(rp, out gf.alt);
+                gf.sats = *rp;
 
                 if(craft == null)
                     craft = new Craft(view, 3, norotate);
                 craft.park();
 
-                var fix = gpsinfo.update_ltm(*gf, conf.dms);
+                var fix = gpsinfo.update_ltm(gf, conf.dms);
                 if(fix != 0)
                 {
                     double gflat = gf.lat/10000000.0;
@@ -953,32 +1050,62 @@ public class MWPlanner : GLib.Object {
                             view.center_on(gflat,gflon);
                     }
                 }
-                break;
+            }
+            break;
 
             case MSP.Cmds.TA_FRAME:
+            {
                 if(nopoll == false)
                     nopoll = true;
-                LTM_AFRAME *af = (LTM_AFRAME *)raw;
+                LTM_AFRAME af = LTM_AFRAME();
+                uint8* rp;
+                rp = deserialise_i16(raw, out af.pitch);
+                rp = deserialise_i16(rp, out af.roll);
                 var h = af.heading;
                 if(h < 0)
                     h += 360;
                 gfcse = h;
-                navstatus.update_ltm_a(*af);
-                break;
+                navstatus.update_ltm_a(af);
+            }
+            break;
 
             case MSP.Cmds.TS_FRAME:
+            {
                 if(nopoll == false)
                     nopoll = true;
-                LTM_SFRAME *sf = (LTM_SFRAME *)raw;
-                radstatus.update_ltm(*sf);
-                navstatus.update_ltm_s(*sf);
+                LTM_SFRAME sf = LTM_SFRAME ();
+                uint8* rp;
+                rp = deserialise_i16(raw, out sf.vbat);
+                rp = deserialise_i16(rp, out sf.vcurr);
+                sf.rssi = *rp++;
+                sf.airspeed = *rp++;
+                sf.flags = *rp++;
+                radstatus.update_ltm(sf);
+                navstatus.update_ltm_s(sf);
                 set_bat_stat((uint8)((sf.vbat + 50) / 100));
-                break;
+            }
+            break;
 
             default:
                 stderr.printf ("** Unknown response %d\n", cmd);
                 break;
         }
+    }
+
+    private size_t serialise_wp(MSP_WP w, uint8[] tmp)
+    {
+        uint8* rp = tmp;
+        uint8* rp0 = rp;
+        *rp++ = w.wp_no;
+        *rp++ = w.action;
+        rp = serialise_i32(rp, w.lat);
+        rp = serialise_i32(rp, w.lon);
+        rp = serialise_u32(rp, w.altitude);
+        rp = serialise_u16(rp, w.p1);
+        rp = serialise_u16(rp, w.p2);
+        rp = serialise_u16(rp, w.p3);
+        *rp++ = w.flag;
+        return (rp-rp0);
     }
 
     private int getbatcol(int ivbat)
@@ -1097,11 +1224,15 @@ public class MWPlanner : GLib.Object {
                 }
             }
         }
+
         wpmgr.npts = (uint8)wps.length;
         wpmgr.wpidx = 0;
         wpmgr.wps = wps;
         wpmgr.wp_flag = WPDL.VALIDATE;
-        send_cmd(MSP.Cmds.SET_WP, &wpmgr.wps[wpmgr.wpidx], sizeof(MSP_WP));
+
+        uint8 wtmp[64];
+        var nb = serialise_wp(wpmgr.wps[wpmgr.wpidx], wtmp);
+        send_cmd(MSP.Cmds.SET_WP, wtmp, nb);
     }
 
     public void request_wp(uint8 wp)
@@ -1112,10 +1243,35 @@ public class MWPlanner : GLib.Object {
         add_cmd(MSP.Cmds.WP,buf,1,&have_wp,1000);
     }
 
+
+    private size_t serialise_nc (MSP_NAV_CONFIG nc, uint8[] tmp)
+    {
+        uint8* rp = tmp;
+        uint8* rp0 = rp;
+
+        *rp++ = nc.flag1;
+        *rp++ = nc.flag2;
+
+        rp = serialise_u16(rp, nc.wp_radius);
+        rp = serialise_u16(rp, nc.safe_wp_distance);
+        rp = serialise_u16(rp, nc.nav_max_altitude);
+        rp = serialise_u16(rp, nc.nav_speed_max);
+        rp = serialise_u16(rp, nc.nav_speed_min);
+        *rp++ = nc.crosstrack_gain;
+        rp = serialise_u16(rp, nc.nav_bank_max);
+        rp = serialise_u16(rp, nc.rth_altitude);
+        *rp++ = nc.land_speed;
+        rp = serialise_u16(rp, nc.fence);
+        *rp++ = nc.max_wp_number;
+        return (rp-rp0);
+    }
+
     public void update_config(MSP_NAV_CONFIG nc)
     {
         have_nc = false;
-        send_cmd(MSP.Cmds.SET_NAV_CONFIG, &nc, sizeof(MSP_NAV_CONFIG));
+        uint8 tmp[64];
+        var nb = serialise_nc(nc, tmp);
+        send_cmd(MSP.Cmds.SET_NAV_CONFIG, tmp, nb);
         add_cmd(MSP.Cmds.NAV_CONFIG,null,0,&have_nc,1000);
     }
 

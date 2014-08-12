@@ -193,16 +193,18 @@ public class SwitchEdit : Object
                     break;
 
                     case MSP.Cmds.STATUS:
-                    MSP_STATUS *s = (MSP_STATUS*)raw;
-                    if(xflag != s.flag)
+                    uint32 sflag;
+                    deserialise_u32(raw+6, out sflag);
+
+                    if(xflag != sflag)
                     {
                         for(var j = 0; j < nboxen; j++)
                         {
                             uint32 mask = (1 << j);
-                            if((s.flag & mask) != (xflag & mask))
+                            if((sflag & mask) != (xflag & mask))
                             {
                                 int icol;
-                                if ((s.flag & mask) == mask)
+                                if ((sflag & mask) == mask)
                                     icol = 1;
                                 else
                                     icol = 0;
@@ -210,7 +212,7 @@ public class SwitchEdit : Object
                                 boxlabel[j].override_background_color(Gtk.StateFlags.NORMAL, colors[icol]);
                             }
                         }
-                        xflag = s.flag;
+                        xflag = sflag;
                     }
                     break;
                 }

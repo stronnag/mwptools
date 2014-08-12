@@ -382,6 +382,37 @@ public class PIDEdit : Object
         }
     }
 
+    private size_t serialise_misc(MSP_MISC misc, uint8 [] tbuf)
+    {
+        uint8 *rp = tbuf;
+        rp = serialise_u16(tbuf, misc.intPowerTrigger1);
+        rp = serialise_u16(rp, misc.conf_minthrottle);
+        rp = serialise_u16(rp, misc.maxthrottle);
+        rp = serialise_u16(rp, misc.mincommand);
+        rp = serialise_u16(rp, misc.failsafe_throttle);
+        rp = serialise_u16(rp, misc.plog_arm_counter);
+        rp = serialise_u32(rp, misc.plog_lifetime);
+        rp = serialise_i16(rp, misc.conf_mag_declination);
+        *rp++ = misc.conf_vbatscale;
+        *rp++ = misc.conf_vbatlevel_warn1;
+        *rp++ = misc.conf_vbatlevel_warn2;
+        *rp++ = misc.conf_vbatlevel_crit;
+        return (rp - &tbuf[0]);
+    }
+
+    private size_t serialise_rt(MSP_RC_TUNING rt, uint8 [] tbuf)
+    {
+        uint8 *rp = tbuf;
+        *rp++ = rt.rc_rate;
+        *rp++ = rt.rc_expo;
+        *rp++ = rt.rollpitchrate;
+        *rp++ = rt.yawrate;
+        *rp++ = rt.dynthrpid;
+        *rp++ = rt.throttle_mid;
+        *rp++ = rt.throttle_expo;
+        return (rp - &tbuf[0]);
+    }
+
     PIDEdit(string[] args)
     {
         lastfile = null;
@@ -451,10 +482,24 @@ public class PIDEdit : Object
                     break;
 
                     case MSP.Cmds.MISC:
-                    have_misc = true;
-                    misc = *(MSP_MISC *)raw;
-                    set_misc_ui();
-                    add_cmd(MSP.Cmds.RC_TUNING,null,0,&have_rc);
+                    {
+                        have_misc = true;
+                        uint8 *rp;
+                        rp = deserialise_u16(raw, out misc.intPowerTrigger1);
+                        rp = deserialise_u16(rp, out misc.conf_minthrottle);
+                        rp = deserialise_u16(rp, out misc.maxthrottle);
+                        rp = deserialise_u16(rp, out misc.mincommand);
+                        rp = deserialise_u16(rp, out misc.failsafe_throttle);
+                        rp = deserialise_u16(rp, out misc.plog_arm_counter);
+                        rp = deserialise_u32(rp, out misc.plog_lifetime);
+                        rp = deserialise_i16(rp, out misc.conf_mag_declination);
+                        misc.conf_vbatscale = *rp++;
+                        misc.conf_vbatlevel_warn1 = *rp++;
+                        misc.conf_vbatlevel_warn2 = *rp++;
+                        misc.conf_vbatlevel_crit = *rp;
+                        set_misc_ui();
+                        add_cmd(MSP.Cmds.RC_TUNING,null,0,&have_rc);
+                    }
                     break;
 
                     case MSP.Cmds.PID:
@@ -465,7 +510,14 @@ public class PIDEdit : Object
 
                     case MSP.Cmds.RC_TUNING:
                     have_rc = true;
-                    rt = *((MSP_RC_TUNING *)raw);
+                    uint8 *rp = raw;
+                    rt.rc_rate = *rp++;
+                    rt.rc_expo = *rp++;
+                    rt.rollpitchrate = *rp++;
+                    rt.yawrate = *rp++;
+                    rt.dynthrpid = *rp++;
+                    rt.throttle_mid = *rp++;
+                    rt.throttle_expo = *rp;
                     set_rc_tuning();
                     add_cmd(MSP.Cmds.PID,null,0, &have_pids);
                     break;
@@ -537,11 +589,12 @@ public class PIDEdit : Object
                     get_rc_tuning();
 
                     Idle.add(() => {
+                            uint8 tbuf[32];
                             s.send_command(MSP.Cmds.SET_PID,rawbuf,30);
-                            s.send_command(MSP.Cmds.SET_MISC,
-                                           &misc, sizeof(MSP_MISC));
-                            s.send_command(MSP.Cmds.SET_RC_TUNING,&rt,
-                                           sizeof(MSP_RC_TUNING));
+                            var nb = serialise_misc(misc, tbuf);
+                            s.send_command(MSP.Cmds.SET_MISC,tbuf, nb);
+                            nb = serialise_rt(rt, tbuf);
+                            s.send_command(MSP.Cmds.SET_RC_TUNING,tbuf, nb);
                             s.send_command(MSP.Cmds.EEPROM_WRITE,null, 0);
                             s.send_command(MSP.Cmds.PID,null,0);
                             s.send_command(MSP.Cmds.PID,null,0);
@@ -550,9 +603,7 @@ public class PIDEdit : Object
                 }
             });
 
-//        openbutton.set_sensitive(false);
         applybutton.set_sensitive(false);
-//        saveasbutton.set_sensitive(false);
 
         var closebutton = builder.get_object ("button2") as Gtk.Button;
         closebutton.clicked.connect(() => {
