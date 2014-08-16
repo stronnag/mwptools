@@ -84,6 +84,12 @@ public class MWSerial : Object
             Posix.speed_t baudrate;
 
             switch(rate) {
+                case 1200:
+                    baudrate = Posix.B1200;
+                    break;
+                case 2400:
+                    baudrate = Posix.B2400;
+                    break;
                 case 4800:
                     baudrate = Posix.B4800;
                     break;
@@ -219,6 +225,7 @@ public class MWSerial : Object
                 rate = int.parse(parts[1]);
             }
             fd = Posix.open(device, Posix.O_RDWR | Posix.O_NOCTTY);
+            setup_fd((int)rate);
         }
         if(fd < 0)
         {
