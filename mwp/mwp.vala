@@ -79,7 +79,7 @@ public class MWPlanner : GLib.Object {
     private static bool autocon;
     private int autocount = 0;
     private static bool mkcon;
-    private static bool ignore_sz;
+    private static bool ignore_sz = false;
     private static bool nopoll = false;
     private static bool rawlog = false;
     private static bool norotate = false; // workaround for Ubuntu & old champlain
@@ -100,6 +100,7 @@ public class MWPlanner : GLib.Object {
     private uint8 _nsats = 0;
     private uint8 larmed = 0;
     private bool wdw_state = false;
+    private bool gps_trail = true;
 
         /**** FIXME ***/
     private int gfcse = 0;
@@ -185,18 +186,34 @@ public class MWPlanner : GLib.Object {
                 wdw_state = ((e.new_window_state & Gdk.WindowState.FULLSCREEN) != 0);
             return false;
         });
-        window.key_press_event.connect( (s,e) => {
-
-            if (e.keyval == Gdk.Key.F11)
+        window.key_press_event.connect( (s,e) =>
             {
-                if(wdw_state == true)
-                    window.unfullscreen();
-                else
-                    window.fullscreen();
-                return true;
-            }
-            return false;
-        });
+                bool ret = true;
+                switch(e.keyval)
+                {
+                    case Gdk.Key.F11:
+                        if(wdw_state == true)
+                            window.unfullscreen();
+                        else
+                            window.fullscreen();
+                        break;
+
+                    case Gdk.Key.f:
+                        if(wdw_state == true)
+                            window.unfullscreen();
+                        else
+                            window.fullscreen();
+                        break;
+                    case Gdk.Key.c:
+                        if(craft != null)
+                            craft.init_trail();
+                        break;
+                    default:
+                        ret = false;
+                        break;
+                }
+                return ret;
+            });
 
         string icon=null;
 
@@ -343,7 +360,7 @@ public class MWPlanner : GLib.Object {
         lm.child_set(view,scale,"y-align", Clutter.ActorAlign.END);
         view.set_keep_center_on_resize(true);
 
-        if(ignore_sz != true)
+        if(ignore_sz == false)
         {
             var s = window.get_screen();
             var m = s.get_monitor_at_window(s.get_active_window());
@@ -728,6 +745,15 @@ public class MWPlanner : GLib.Object {
                     }
                     if(armed != larmed)
                     {
+                        if(gps_trail)
+                        {
+                            stdout.printf("Changed arm %s\n", armed.to_string());
+                            if(armed == 1 && craft != null)
+                            {
+                                craft.init_trail();
+                            }
+                        }
+
                         if (armed == 1)
                         {
                             if (conf.audioarmed == true)

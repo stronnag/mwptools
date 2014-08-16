@@ -27,7 +27,9 @@ public class Craft : GLib.Object
     private Champlain.Label icon;
     private Champlain.MarkerLayer layer;
     private bool norotate;
-
+    private Champlain.PathLayer path;
+    private Champlain.MarkerLayer pmlayer;
+    private static Clutter.Color cyan = { 0,0xff,0xff, 0xa0 };
     private static string[] icons =
     {
         "QuadX.png",
@@ -73,7 +75,13 @@ public class Craft : GLib.Object
             icon.set_color (colour);
             icon.set_text_color(black);
         }
+
+        path = new Champlain.PathLayer();
+        path.set_stroke_color(cyan);
         layer = new Champlain.MarkerLayer();
+        pmlayer = new Champlain.MarkerLayer();
+        view.add_layer (path);
+        view.add_layer (pmlayer);
         view.add_layer (layer);
 
 // Not properly implemented in current (13.10) Ubuntu
@@ -94,6 +102,12 @@ public class Craft : GLib.Object
         layer.remove_marker(icon);
     }
 
+    public void init_trail()
+    {
+        pmlayer.remove_all();
+        path.remove_all();
+    }
+
     public void remove_marker()
     {
         park();
@@ -104,6 +118,7 @@ public class Craft : GLib.Object
         set_pix_pos(40,40);
         if (norotate == false)
             icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, 0);
+        init_trail();
     }
 
     public void get_pos(out double lat, out double lon)
@@ -115,7 +130,12 @@ public class Craft : GLib.Object
 
     public void set_lat_lon (double lat, double lon, double cse)
     {
+        Champlain.Point marker;
+        marker = new Champlain.Point.full(5.0, cyan);
+        marker.set_location (lat,lon);
         icon.set_location (lat, lon);
+        pmlayer.add_marker(marker);
+        path.add_node(marker);
         if (norotate == false)
             icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, cse);
     }
