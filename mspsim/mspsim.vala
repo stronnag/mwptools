@@ -66,10 +66,12 @@ public class MWSim : GLib.Object
     private bool armed=false;
     private static string model=null;
     private uint8 imodel=3;
+    private static string sdev=null;
 
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
         { "model", 'M', 0, OptionArg.STRING, out model, "Model", null},
+        { "device", 's', 0, OptionArg.STRING, out sdev, "device", null},
         { "replay", 'r', 0, OptionArg.STRING, out replay, "Replay file", null},
         { "exhaust-battery", 'x', 0, OptionArg.NONE, out exhaustbat, "exhaust the battery (else warn1)", null},
         { "ltm", 'l', 0, OptionArg.NONE, out ltm, "push tm", null},
@@ -507,22 +509,33 @@ public class MWSim : GLib.Object
     {
         char buf[128];
         string estr;
-        if(udport == 0)
+
+        if (sdev != null)
         {
-            fd = Posix.posix_openpt(Posix.O_RDWR);
-            Posix.grantpt(fd);
-            Posix.unlockpt(fd);
-            Linux.Termios.ptsname_r (fd, buf);
-            slave.set_text((string)buf);
-            msp.open_fd(fd,115200);
+            if (msp.open(sdev,115200,out estr) == false)
+            {
+                stderr.printf("open of %s failed %s\n", sdev, estr);
+            }
         }
         else
         {
-            var sbuf = ":%d".printf(udport);
-            if(msp.open(sbuf,0,out estr) == true)
-                slave.set_text(sbuf);
+            if(udport == 0)
+            {
+                fd = Posix.posix_openpt(Posix.O_RDWR);
+                Posix.grantpt(fd);
+                Posix.unlockpt(fd);
+                Linux.Termios.ptsname_r (fd, buf);
+                slave.set_text((string)buf);
+                msp.open_fd(fd,115200);
+            }
             else
-                stderr.printf("UDP fail %s : %s\n", sbuf,estr);
+            {
+                var sbuf = ":%d".printf(udport);
+                if(msp.open(sbuf,0,out estr) == true)
+                    slave.set_text(sbuf);
+                else
+                    stderr.printf("UDP fail %s : %s\n", sbuf,estr);
+            }
         }
     }
 
