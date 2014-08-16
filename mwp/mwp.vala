@@ -83,6 +83,7 @@ public class MWPlanner : GLib.Object {
     private static bool nopoll = false;
     private static bool rawlog = false;
     private static bool norotate = false; // workaround for Ubuntu & old champlain
+    private static bool gps_trail = false;
     private uint8 vwarn1;
     private uint8 vwarn2;
     private uint8 vcrit;
@@ -100,7 +101,7 @@ public class MWPlanner : GLib.Object {
     private uint8 _nsats = 0;
     private uint8 larmed = 0;
     private bool wdw_state = false;
-    private bool gps_trail = true;
+
 
         /**** FIXME ***/
     private int gfcse = 0;
@@ -147,6 +148,7 @@ public class MWPlanner : GLib.Object {
         { "connect", 'c', 0, OptionArg.NONE, out mkcon, "connect to first device", null},
         { "auto-connect", 'a', 0, OptionArg.NONE, out autocon, "auto-connect to first device", null},
         { "no-poll", 'n', 0, OptionArg.NONE, out nopoll, "don't poll for nav info", null},
+        { "no-trail", 't', 0, OptionArg.NONE, out gps_trail, "don't display GPS trail", null},
         { "raw-log", 'r', 0, OptionArg.NONE, out rawlog, "log raw serial data to file", null},
 
         { "ignore-sizing", 0, 0, OptionArg.NONE, out ignore_sz, "ignore minimum size constraint", null},
@@ -178,6 +180,8 @@ public class MWPlanner : GLib.Object {
             }
         }
 
+        gps_trail = !gps_trail; // yet more jh logic
+
         builder.connect_signals (null);
         window = builder.get_object ("window1") as Gtk.Window;
         window.destroy.connect (Gtk.main_quit);
@@ -191,19 +195,27 @@ public class MWPlanner : GLib.Object {
                 bool ret = true;
                 switch(e.keyval)
                 {
+                    case Gdk.Key.plus:
+                        var val = view.get_zoom_level();
+                        var mmax = view.get_max_zoom_level();
+                        if (val != mmax)
+                            view.set_property("zoom-level", val+1);
+                        break;
+                    case Gdk.Key.minus:
+                        var val = view.get_zoom_level();
+                        var mmin = view.get_min_zoom_level();
+                        if (val != mmin)
+                            view.set_property("zoom-level", val-1);
+                        break;
+
                     case Gdk.Key.F11:
-                        if(wdw_state == true)
-                            window.unfullscreen();
-                        else
-                            window.fullscreen();
+                        toggle_full_screen();
                         break;
 
                     case Gdk.Key.f:
-                        if(wdw_state == true)
-                            window.unfullscreen();
-                        else
-                            window.fullscreen();
+                        toggle_full_screen();
                         break;
+
                     case Gdk.Key.c:
                         if(craft != null)
                             craft.init_trail();
@@ -584,6 +596,14 @@ public class MWPlanner : GLib.Object {
         radstatus.setdock(dockitem[4]);
     }
 
+    private void toggle_full_screen()
+    {
+        if(wdw_state == true)
+            window.unfullscreen();
+        else
+            window.fullscreen();
+    }
+
     private bool try_connect()
     {
         if(autocon)
@@ -653,7 +673,7 @@ public class MWPlanner : GLib.Object {
                     {
                         sflags |= NavStatus.SPK.GPS;
                         if(craft == null)
-                            craft = new Craft(view, mrtype,norotate);
+                            craft = new Craft(view, mrtype, norotate, gps_trail);
                         craft.park();
                     }
                 }
@@ -704,7 +724,7 @@ public class MWPlanner : GLib.Object {
                             requests += MSP.Cmds.COMP_GPS;
                             reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS);
                             if(craft == null)
-                                craft = new Craft(view, mrtype,norotate);
+                                craft = new Craft(view, mrtype,norotate, gps_trail);
                             craft.park();
                         }
 

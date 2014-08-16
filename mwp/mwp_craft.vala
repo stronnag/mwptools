@@ -27,6 +27,7 @@ public class Craft : GLib.Object
     private Champlain.Label icon;
     private Champlain.MarkerLayer layer;
     private bool norotate;
+    private bool trail;
     private Champlain.PathLayer path;
     private Champlain.MarkerLayer pmlayer;
     private static Clutter.Color cyan = { 0,0xff,0xff, 0xa0 };
@@ -53,10 +54,11 @@ public class Craft : GLib.Object
         "Hex6P.png"
     };
 
-    public Craft(Champlain.View _view, uint id, bool _norotate = false)
+    public Craft(Champlain.View _view, uint id, bool _norotate = false, bool _trail = true)
     {
         view = _view;
         norotate = _norotate;
+        trail = _trail;
 
         if (id == icons.length)
         {
@@ -80,8 +82,11 @@ public class Craft : GLib.Object
         path.set_stroke_color(cyan);
         layer = new Champlain.MarkerLayer();
         pmlayer = new Champlain.MarkerLayer();
-        view.add_layer (path);
-        view.add_layer (pmlayer);
+        if(trail)
+        {
+            view.add_layer (path);
+            view.add_layer (pmlayer);
+        }
         view.add_layer (layer);
 
 // Not properly implemented in current (13.10) Ubuntu
@@ -104,8 +109,11 @@ public class Craft : GLib.Object
 
     public void init_trail()
     {
-        pmlayer.remove_all();
-        path.remove_all();
+        if(trail)
+        {
+            pmlayer.remove_all();
+            path.remove_all();
+        }
     }
 
     public void remove_marker()
@@ -118,7 +126,8 @@ public class Craft : GLib.Object
         set_pix_pos(40,40);
         if (norotate == false)
             icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, 0);
-        init_trail();
+        if(trail)
+            init_trail();
     }
 
     public void get_pos(out double lat, out double lon)
@@ -127,15 +136,17 @@ public class Craft : GLib.Object
         lon = icon.get_longitude();
     }
 
-
     public void set_lat_lon (double lat, double lon, double cse)
     {
-        Champlain.Point marker;
-        marker = new Champlain.Point.full(5.0, cyan);
-        marker.set_location (lat,lon);
+        if(trail)
+        {
+            Champlain.Point marker;
+            marker = new Champlain.Point.full(5.0, cyan);
+            marker.set_location (lat,lon);
+            pmlayer.add_marker(marker);
+            path.add_node(marker);
+        }
         icon.set_location (lat, lon);
-        pmlayer.add_marker(marker);
-        path.add_node(marker);
         if (norotate == false)
             icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, cse);
     }
