@@ -673,8 +673,10 @@ public class MWPlanner : GLib.Object {
                     {
                         sflags |= NavStatus.SPK.GPS;
                         if(craft == null)
+                        {
                             craft = new Craft(view, mrtype, norotate, gps_trail);
-                        craft.park();
+                            craft.park();
+                        }
                     }
                 }
                 else
@@ -724,8 +726,10 @@ public class MWPlanner : GLib.Object {
                             requests += MSP.Cmds.COMP_GPS;
                             reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS);
                             if(craft == null)
+                            {
                                 craft = new Craft(view, mrtype,norotate, gps_trail);
-                            craft.park();
+                                craft.park();
+                            }
                         }
 
                         var nreqs = requests.length;
@@ -767,7 +771,6 @@ public class MWPlanner : GLib.Object {
                     {
                         if(gps_trail)
                         {
-                            stdout.printf("Changed arm %s\n", armed.to_string());
                             if(armed == 1 && craft != null)
                             {
                                 craft.init_trail();
@@ -1097,8 +1100,10 @@ public class MWPlanner : GLib.Object {
                 gf.sats = *rp;
 
                 if(craft == null)
-                    craft = new Craft(view, 3, norotate);
-                craft.park();
+                {
+                    craft = new Craft(view, 3, norotate, gps_trail);
+                    craft.park();
+                }
 
                 var fix = gpsinfo.update_ltm(gf, conf.dms);
                 if(fix != 0)
@@ -1144,6 +1149,24 @@ public class MWPlanner : GLib.Object {
                 sf.rssi = *rp++;
                 sf.airspeed = *rp++;
                 sf.flags = *rp++;
+                uint8 armed = sf.flags & 1;
+                if(armed != larmed)
+                {
+                    if(armed == 1 && craft == null)
+                    {
+                        craft = new Craft(view, 3, norotate, gps_trail);
+                        craft.park();
+                    }
+
+                    if(gps_trail)
+                    {
+                        if(armed == 1 && craft != null)
+                        {
+                            craft.init_trail();
+                        }
+                    }
+                    larmed = armed;
+                }
                 radstatus.update_ltm(sf);
                 navstatus.update_ltm_s(sf);
                 set_bat_stat((uint8)((sf.vbat + 50) / 100));

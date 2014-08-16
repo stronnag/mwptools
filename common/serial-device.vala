@@ -327,8 +327,8 @@ public class MWSerial : Object
                         }
                         else
                         {
-                            stderr.printf(" fail on header %d %c\n",
-                                buf[nc], buf[nc]);
+                            stderr.printf(" fail on header %x %c\n",
+                                          buf[nc], buf[nc]);
                             state=States.S_ERROR;
                         }
                         break;
@@ -353,15 +353,15 @@ public class MWSerial : Object
                         switch(buf[nc])
                         {
                             case 'G':
-                                needed = (uint8) sizeof(LTM_GFRAME);
+                                needed = (uint8) MSize.LTM_GFRAME;
                                 cmd = MSP.Cmds.TG_FRAME;
                                 break;
                             case 'A':
-                                needed = (uint8) sizeof(LTM_AFRAME);
+                                needed = (uint8) MSize.LTM_AFRAME;
                                 cmd = MSP.Cmds.TA_FRAME;
                                 break;
                             case 'S':
-                                needed = (uint8) sizeof(LTM_SFRAME);
+                                needed = (uint8) MSize.LTM_SFRAME;
                                 cmd = MSP.Cmds.TS_FRAME;
                                 break;
                             default:

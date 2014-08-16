@@ -30,6 +30,7 @@ public class Craft : GLib.Object
     private bool trail;
     private Champlain.PathLayer path;
     private Champlain.MarkerLayer pmlayer;
+    private int npath = 0;
     private static Clutter.Color cyan = { 0,0xff,0xff, 0xa0 };
     private static string[] icons =
     {
@@ -89,7 +90,7 @@ public class Craft : GLib.Object
         }
         view.add_layer (layer);
 
-// Not properly implemented in current (13.10) Ubuntu
+// Not properly implemented in (13.10 and earlier) Ubuntu
 #if NOBB
 #else
         Clutter.Point p = Clutter.Point.alloc();
@@ -113,6 +114,7 @@ public class Craft : GLib.Object
         {
             pmlayer.remove_all();
             path.remove_all();
+            npath = 0;
         }
     }
 
@@ -127,8 +129,11 @@ public class Craft : GLib.Object
         if (norotate == false)
             icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, 0);
         if(trail)
+        {
             init_trail();
+        }
     }
+
 
     public void get_pos(out double lat, out double lon)
     {
@@ -145,6 +150,9 @@ public class Craft : GLib.Object
             marker.set_location (lat,lon);
             pmlayer.add_marker(marker);
             path.add_node(marker);
+            if(npath == 0)
+                path.add_node(marker);
+            npath++;
         }
         icon.set_location (lat, lon);
         if (norotate == false)
