@@ -99,6 +99,7 @@ public class MWPlanner : GLib.Object {
     private uint8 nsats = 0;
     private uint8 _nsats = 0;
     private uint8 larmed = 0;
+    private bool wdw_state = false;
 
         /**** FIXME ***/
     private int gfcse = 0;
@@ -179,6 +180,23 @@ public class MWPlanner : GLib.Object {
         builder.connect_signals (null);
         window = builder.get_object ("window1") as Gtk.Window;
         window.destroy.connect (Gtk.main_quit);
+
+        window.window_state_event.connect( (e) => {
+                wdw_state = ((e.new_window_state & Gdk.WindowState.FULLSCREEN) != 0);
+            return false;
+        });
+        window.key_press_event.connect( (s,e) => {
+
+            if (e.keyval == Gdk.Key.F11)
+            {
+                if(wdw_state == true)
+                    window.unfullscreen();
+                else
+                    window.fullscreen();
+                return true;
+            }
+            return false;
+        });
 
         string icon=null;
 
