@@ -328,22 +328,29 @@ public class MWPlanner : GLib.Object {
             {
                 bool ret = true;
 
-                if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
-                    return false;
-
                 switch(e.keyval)
                 {
                     case Gdk.Key.plus:
-                        var val = view.get_zoom_level();
-                        var mmax = view.get_max_zoom_level();
-                        if (val != mmax)
-                            view.set_property("zoom-level", val+1);
+                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
+                            ret = false;
+                        else
+                        {
+                            var val = view.get_zoom_level();
+                            var mmax = view.get_max_zoom_level();
+                            if (val != mmax)
+                                view.set_property("zoom-level", val+1);
+                        }
                         break;
                     case Gdk.Key.minus:
-                        var val = view.get_zoom_level();
-                        var mmin = view.get_min_zoom_level();
-                        if (val != mmin)
-                            view.set_property("zoom-level", val-1);
+                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
+                            ret = false;
+                        else
+                        {
+                            var val = view.get_zoom_level();
+                            var mmin = view.get_min_zoom_level();
+                            if (val != mmin)
+                                view.set_property("zoom-level", val-1);
+                        }
                         break;
 
                     case Gdk.Key.F11:
@@ -351,12 +358,20 @@ public class MWPlanner : GLib.Object {
                         break;
 
                     case Gdk.Key.f:
-                        toggle_full_screen();
+                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
+                            ret = false;
+                        else
+                            toggle_full_screen();
                         break;
 
                     case Gdk.Key.c:
-                        if(craft != null)
-                            craft.init_trail();
+                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
+                            ret = false;
+                        else
+                        {
+                            if(craft != null)
+                                craft.init_trail();
+                        }
                         break;
                     default:
                         ret = false;
