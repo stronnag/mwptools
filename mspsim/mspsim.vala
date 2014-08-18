@@ -60,6 +60,7 @@ public class MWSim : GLib.Object
 
     private static string mission=null;
     private static string replay = null;
+    private static string relog = null;
     private static bool exhaustbat=false;
     private static bool ltm=false;
     private static int udport=0;
@@ -72,7 +73,8 @@ public class MWSim : GLib.Object
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
         { "model", 'M', 0, OptionArg.STRING, out model, "Model", null},
         { "device", 's', 0, OptionArg.STRING, out sdev, "device", null},
-        { "replay", 'r', 0, OptionArg.STRING, out replay, "Replay file", null},
+        { "raw-replay", 'r', 0, OptionArg.STRING, out replay, "Replay raw file", null},
+        { "log-replay", 'l', 0, OptionArg.STRING, out relog, "Replay log file", null},
         { "exhaust-battery", 'x', 0, OptionArg.NONE, out exhaustbat, "exhaust the battery (else warn1)", null},
         { "ltm", 'l', 0, OptionArg.NONE, out ltm, "push tm", null},
         { "udp-port", 'u', 0, OptionArg.INT, ref udport, "udp port for comms", null},
@@ -152,10 +154,18 @@ public class MWSim : GLib.Object
             }
         }
 
+        if(relog != null)
+        {
+            mission=null;
+            ltm=false;
+            replay = null;
+        }
+
         if(replay != null)
         {
             mission=null;
             ltm=false;
+            relog = null;
         }
 
         if(model != null)
@@ -249,7 +259,7 @@ public class MWSim : GLib.Object
 
     private void run_replay()
     {
-        var thr = new Thread<int> ("replay", () => {
+        new Thread<int> ("replay", () => {
                 var rfd = Posix.open (replay, Posix.O_RDONLY);
                 uint8 fbuf[10];
                 uint8 buf[128];
@@ -286,6 +296,69 @@ public class MWSim : GLib.Object
                 return 0;
             });
     }
+
+
+    private void run_relog()
+    {
+        new Thread<int> ("relog", () => {
+                var file = File.new_for_path (relog);
+                if (!file.query_exists ()) {
+                    stderr.printf ("File '%s' doesn't exist.\n", file.get_path ());
+                    return 1;
+                }
+                try
+                {
+                    int64 lt = 0;
+                    var dis = new DataInputStream (file.read ());
+                    string line;
+                    var parser = new Json.Parser ();
+                    while ((line = dis.read_line (null)) != null) {
+                        parser.load_from_data (line);
+                        var obj = parser.get_root ().get_object ();
+                        var utime = obj.get_int_member ("utime");
+                        if(lt != 0)
+                        {
+                            ulong ms = (ulong)((utime - lt) * 1000 * 1000);
+                            Thread.usleep(ms);
+                        }
+                        var typ = obj.get_string_member("type");
+                        switch(typ)
+                        {
+                            case "init":
+                                var mrtype = obj.get_int_member ("mrtype");
+                                var cap = obj.get_int_member ("capability");
+                                uint8 buf[7];
+                                buf[0] = 230;
+                                buf[1] = (uint8)mrtype;
+                                buf[2] = 42;
+                                serialise_u32(buf+3, (uint32)cap);
+                                break;
+                            case "armed":
+                                break;
+                            case "analog":
+                                break;
+                            case "attitude":
+                                break;
+                            case "altitude":
+                                break;
+                            case "status":
+                                break;
+                            case "raw_gps":
+                                break;
+                            case "comp_gps":
+                                break;
+                            default:
+                                break;
+                        }
+                        lt = utime;
+                    }
+                } catch (Error e) {
+                    error ("%s", e.message);
+                }
+                return 0;
+            });
+    }
+
 
     private size_t serialise_gf(LTM_GFRAME b, uint8 []tx)
     {
@@ -766,195 +839,201 @@ public class MWSim : GLib.Object
             uint8 tx[64];
             size_t nb;
 
-            if(loop ==0  && replay != null)
+            if(loop == 0)
             {
-                run_replay();
+                if (relog != null)
+                    run_relog();
+                if(replay != null)
+                    run_replay();
             }
 
-            if(errs == true)
+            if(replay == null && relog == null)
             {
-                stderr.printf("Error on cmd %c (%d)\n", cmd,cmd);
-                return;
-            }
-            switch(cmd)
-            {
-                case MSP.Cmds.IDENT:
-                uint8[] buf = {230, imodel,42,16,0,0,0};
-                append_text("Send IDENT\n");
-                msp.send_command(MSP.Cmds.IDENT, buf, buf.length);
-                break;
-
-                case MSP.Cmds.STATUS:
-                MSP_STATUS buf = MSP_STATUS();
-                buf.cycle_time=((uint16)2345).to_little_endian();
-                buf.sensor=((uint16)31).to_little_endian();
-                buf.flag = (armed) ? 1 : 0;
-                nb = serialise_status(buf, tx);
-                append_text("Send STATUS %lu\n".printf(MSize.MSP_STATUS));
-                msp.send_command(MSP.Cmds.STATUS, tx, nb);
-                break;
-
-                case MSP.Cmds.MISC:
-                MSP_MISC buf = MSP_MISC();
-                buf.conf_minthrottle=((uint16)1064).to_little_endian();
-                buf.maxthrottle=((uint16)1864).to_little_endian();
-                buf.mincommand=((uint16)900).to_little_endian();
-                buf.conf_mag_declination = -15;
-                buf.conf_vbatscale = 131;
-                buf.conf_vbatlevel_warn1 = 107;
-                buf.conf_vbatlevel_warn2 = 99;
-                buf.conf_vbatlevel_crit = 93;
-                nb = serialise_misc(buf, tx);
-                append_text("Send MISC %lu\n".printf(MSize.MSP_MISC));
-                msp.send_command(MSP.Cmds.MISC, tx, nb);
-                break;
-
-                case MSP.Cmds.PID:
-                uint8[] buf = {
-                    0x16, 0x1c, 0x11, 0x16, 0x1c, 0x11, 0x44, 0x2d, 0x00,
-                    0x40, 0x19, 0x18, 0x0b, 0x00, 0x00, 0x14,
-                    0x08, 0x2d, 0x0e, 0x14, 0x50, 0x3c, 0x0a,
-                    0x50, 0x00, 0x50, 0x64, 0x00, 0x00, 0x00
-                };
-                append_text("Send PIDS %d\n".printf(buf.length));
-                msp.send_command(MSP.Cmds.PID, buf, buf.length);
-                break;
-
-                case MSP.Cmds.ALTITUDE:
-                MSP_ALTITUDE buf = MSP_ALTITUDE();;
-                buf.estalt = (100*((int32)gblalt) + rand.int_range(-50,50)).to_little_endian();
-                buf.vario = ((int16)3).to_little_endian();
-                nb = serialise_alt(buf, tx);
-                append_text("Send ALT %lu\n".printf(MSize.MSP_ALTITUDE));
-                msp.send_command(MSP.Cmds.ALTITUDE, tx,nb);
-                break;
-
-                case MSP.Cmds.EEPROM_WRITE:
-                append_text("got EE_WRITE\n");
-                break;
-
-                case MSP.Cmds.SET_NAV_CONFIG:
-                uint8* rp = raw;
-                nc.flag1 = *rp++;
-                nc.flag2 = *rp++;
-                rp = deserialise_u16(rp, out nc.wp_radius);
-                rp = deserialise_u16(rp, out nc.safe_wp_distance);
-                rp = deserialise_u16(rp, out nc.nav_max_altitude);
-                rp = deserialise_u16(rp, out nc.nav_speed_max);
-                rp = deserialise_u16(rp, out nc.nav_speed_min);
-                nc.crosstrack_gain = *rp++;
-                rp = deserialise_u16(rp, out nc.nav_bank_max);
-                rp = deserialise_u16(rp, out nc.rth_altitude);
-                nc.land_speed = *rp++;
-                rp = deserialise_u16(rp, out nc.fence);
-                nc.max_wp_number = *rp;
-                append_text("got SET_NC\n");
-                break;
-
-                case MSP.Cmds.SET_PID:
-                append_text("got SET_PID\n");
-                break;
-
-                case  MSP.Cmds.RAW_GPS:
-                MSP_RAW_GPS buf = MSP_RAW_GPS();
-                get_gps_info(out buf);
-                nb = serialise_raw_gps(buf, tx);
-                append_text("Send GPS %lu\n".printf(MSize.MSP_RAW_GPS));
-                msp.send_command(MSP.Cmds.RAW_GPS, tx, MSize.MSP_RAW_GPS);
-                break;
-
-                case MSP.Cmds.SET_WP:
-                MSP_WP w = MSP_WP();
-                uint8* rp = raw;
-                w.wp_no = *rp++;
-                w.action = *rp++;
-                rp = deserialise_i32(rp, out w.lat);
-                rp = deserialise_i32(rp, out w.lon);
-                rp = deserialise_u32(rp, out w.altitude);
-                rp = deserialise_i16(rp, out w.p1);
-                rp = deserialise_u16(rp, out w.p2);
-                rp = deserialise_u16(rp, out w.p3);
-                w.flag = *rp;
-                var n = w.wp_no;
-                wps[n] = w;
-                nwpts = n ;
-                append_text("SET_WP %d type %d\n".printf(n, w.action));
-                msp.send_command(MSP.Cmds.SET_WP, raw, raw.length);
-                if (w.flag == 0xa5)
+                if(errs == true)
                 {
-                    print("Setting file");
-                    chooser.set_current_name ("__downloaded.mission__");
-                    parse_wps();
+                    stderr.printf("Error on cmd %c (%d)\n", cmd,cmd);
+                    return;
                 }
-
-                break;
-
-                case MSP.Cmds.SET_HEAD:
-                break;
-
-                case MSP.Cmds.WP:
-                    /* Assume we only need number */
-                var n = raw[0];
-                if(n <= nwpts)
+                switch(cmd)
                 {
-                    nb = serialise_wp(wps[n], tx);
-                    msp.send_command(MSP.Cmds.WP, tx, MSize.MSP_WP);
-                    append_text("Send WP %d\n".printf(n));
+                    case MSP.Cmds.IDENT:
+                    uint8[] buf = {230, imodel,42,16,0,0,0};
+                    append_text("Send IDENT\n");
+                    msp.send_command(MSP.Cmds.IDENT, buf, buf.length);
+                    break;
+
+                    case MSP.Cmds.STATUS:
+                    MSP_STATUS buf = MSP_STATUS();
+                    buf.cycle_time=((uint16)2345).to_little_endian();
+                    buf.sensor=((uint16)31).to_little_endian();
+                    buf.flag = (armed) ? 1 : 0;
+                    nb = serialise_status(buf, tx);
+                    append_text("Send STATUS %lu\n".printf(MSize.MSP_STATUS));
+                    msp.send_command(MSP.Cmds.STATUS, tx, nb);
+                    break;
+
+                    case MSP.Cmds.MISC:
+                    MSP_MISC buf = MSP_MISC();
+                    buf.conf_minthrottle=((uint16)1064).to_little_endian();
+                    buf.maxthrottle=((uint16)1864).to_little_endian();
+                    buf.mincommand=((uint16)900).to_little_endian();
+                    buf.conf_mag_declination = -15;
+                    buf.conf_vbatscale = 131;
+                    buf.conf_vbatlevel_warn1 = 107;
+                    buf.conf_vbatlevel_warn2 = 99;
+                    buf.conf_vbatlevel_crit = 93;
+                    nb = serialise_misc(buf, tx);
+                    append_text("Send MISC %lu\n".printf(MSize.MSP_MISC));
+                    msp.send_command(MSP.Cmds.MISC, tx, nb);
+                    break;
+
+                    case MSP.Cmds.PID:
+                    uint8[] buf = {
+                        0x16, 0x1c, 0x11, 0x16, 0x1c, 0x11, 0x44, 0x2d, 0x00,
+                        0x40, 0x19, 0x18, 0x0b, 0x00, 0x00, 0x14,
+                        0x08, 0x2d, 0x0e, 0x14, 0x50, 0x3c, 0x0a,
+                        0x50, 0x00, 0x50, 0x64, 0x00, 0x00, 0x00
+                    };
+                    append_text("Send PIDS %d\n".printf(buf.length));
+                    msp.send_command(MSP.Cmds.PID, buf, buf.length);
+                    break;
+
+                    case MSP.Cmds.ALTITUDE:
+                    MSP_ALTITUDE buf = MSP_ALTITUDE();;
+                    buf.estalt = (100*((int32)gblalt) + rand.int_range(-50,50)).to_little_endian();
+                    buf.vario = ((int16)3).to_little_endian();
+                    nb = serialise_alt(buf, tx);
+                    append_text("Send ALT %lu\n".printf(MSize.MSP_ALTITUDE));
+                    msp.send_command(MSP.Cmds.ALTITUDE, tx,nb);
+                    break;
+
+                    case MSP.Cmds.EEPROM_WRITE:
+                    append_text("got EE_WRITE\n");
+                    break;
+
+                    case MSP.Cmds.SET_NAV_CONFIG:
+                    uint8* rp = raw;
+                    nc.flag1 = *rp++;
+                    nc.flag2 = *rp++;
+                    rp = deserialise_u16(rp, out nc.wp_radius);
+                    rp = deserialise_u16(rp, out nc.safe_wp_distance);
+                    rp = deserialise_u16(rp, out nc.nav_max_altitude);
+                    rp = deserialise_u16(rp, out nc.nav_speed_max);
+                    rp = deserialise_u16(rp, out nc.nav_speed_min);
+                    nc.crosstrack_gain = *rp++;
+                    rp = deserialise_u16(rp, out nc.nav_bank_max);
+                    rp = deserialise_u16(rp, out nc.rth_altitude);
+                    nc.land_speed = *rp++;
+                    rp = deserialise_u16(rp, out nc.fence);
+                    nc.max_wp_number = *rp;
+                    append_text("got SET_NC\n");
+                    break;
+
+                    case MSP.Cmds.SET_PID:
+                    append_text("got SET_PID\n");
+                    break;
+
+                    case  MSP.Cmds.RAW_GPS:
+                    MSP_RAW_GPS buf = MSP_RAW_GPS();
+                    get_gps_info(out buf);
+                    nb = serialise_raw_gps(buf, tx);
+                    append_text("Send GPS %lu\n".printf(MSize.MSP_RAW_GPS));
+                    msp.send_command(MSP.Cmds.RAW_GPS, tx, MSize.MSP_RAW_GPS);
+                    break;
+
+                    case MSP.Cmds.SET_WP:
+                    MSP_WP w = MSP_WP();
+                    uint8* rp = raw;
+                    w.wp_no = *rp++;
+                    w.action = *rp++;
+                    rp = deserialise_i32(rp, out w.lat);
+                    rp = deserialise_i32(rp, out w.lon);
+                    rp = deserialise_u32(rp, out w.altitude);
+                    rp = deserialise_i16(rp, out w.p1);
+                    rp = deserialise_u16(rp, out w.p2);
+                    rp = deserialise_u16(rp, out w.p3);
+                    w.flag = *rp;
+                    var n = w.wp_no;
+                    wps[n] = w;
+                    nwpts = n ;
+                    append_text("SET_WP %d type %d\n".printf(n, w.action));
+                    msp.send_command(MSP.Cmds.SET_WP, raw, raw.length);
+                    if (w.flag == 0xa5)
+                    {
+                        print("Setting file");
+                        chooser.set_current_name ("__downloaded.mission__");
+                        parse_wps();
+                    }
+
+                    break;
+
+                    case MSP.Cmds.SET_HEAD:
+                    break;
+
+                    case MSP.Cmds.WP:
+                        /* Assume we only need number */
+                    var n = raw[0];
+                    if(n <= nwpts)
+                    {
+                        nb = serialise_wp(wps[n], tx);
+                        msp.send_command(MSP.Cmds.WP, tx, MSize.MSP_WP);
+                        append_text("Send WP %d\n".printf(n));
+                    }
+                    else
+                    {
+                        msp.send_error(MSP.Cmds.WP);
+                    }
+                    break;
+
+                    case MSP.Cmds.NAV_STATUS:
+                    nb = serialise_nav_status(nsts, tx);
+                    msp.send_command(MSP.Cmds.NAV_STATUS, tx, MSize.MSP_NAV_STATUS);
+                    append_text("Send NAV STATUS %lu\n".printf(MSize.MSP_NAV_STATUS));
+                    if((loop % 4) == 0)
+                    {
+                        MSP_RADIO r = {0, 0,152, 152, 100, 57, 38};
+                        r.localrssi = (uint8)((int32)r.localrssi + rand.int_range(-10,10));
+                        r.remrssi = (uint8)((int32)r.remrssi + rand.int_range(-10,10));
+                        r.noise = (uint8)((int32)r.noise + rand.int_range(-5,5));
+                        r.remnoise = (uint8)((int32)r.remnoise + rand.int_range(-5,5));
+                        nb = serialise_radio(r, tx);
+                        msp.send_command(MSP.Cmds.RADIO, tx, MSize.MSP_RADIO);
+                        append_text("Send RADIO %lu\n".printf(MSize.MSP_RADIO));
+                    }
+                    break;
+
+                    case MSP.Cmds.NAV_CONFIG:
+                    nb = serialise_nc(nc, tx);
+                    msp.send_command(MSP.Cmds.NAV_CONFIG, tx, MSize.MSP_NAV_CONFIG);
+                    append_text("Send NAV CONFIG %lu\n".printf(MSize.MSP_NAV_CONFIG));
+                    break;
+
+                    case MSP.Cmds.ANALOG:
+                    MSP_ANALOG buf = MSP_ANALOG();
+                    buf.vbat = (uint8)(volts*10);
+                    nb = serialise_analogue(buf, tx);
+                    msp.send_command(MSP.Cmds.ANALOG, tx, MSize.MSP_ANALOG);
+                    append_text("Send ANALOG %lu\n".printf(MSize.MSP_ANALOG));
+                    break;
+
+                    case MSP.Cmds.COMP_GPS:
+                    nb = serialise_comp_gps(cg, tx);
+                    msp.send_command(MSP.Cmds.COMP_GPS, tx, MSize.MSP_COMP_GPS);
+                    append_text("Send NAV COMP GPS %lu\n".printf(MSize.MSP_COMP_GPS));
+                    break;
+
+                    case MSP.Cmds.ATTITUDE:
+                    MSP_ATTITUDE buf = MSP_ATTITUDE();
+                    buf.heading=(int16)gblcse;
+                    nb = serialise_atti(buf, tx);
+                    msp.send_command(MSP.Cmds.ATTITUDE, tx, MSize.MSP_ATTITUDE);
+                    append_text("Send NAV ATTITUDE %lu\n".printf(MSize.MSP_ATTITUDE));
+                    break;
+
+                    default:
+                    stdout.printf("unknown %d\n",cmd);
+                    break;
                 }
-                else
-                {
-                    msp.send_error(MSP.Cmds.WP);
-                }
-                break;
-
-                case MSP.Cmds.NAV_STATUS:
-                nb = serialise_nav_status(nsts, tx);
-                msp.send_command(MSP.Cmds.NAV_STATUS, tx, MSize.MSP_NAV_STATUS);
-                append_text("Send NAV STATUS %lu\n".printf(MSize.MSP_NAV_STATUS));
-                if((loop % 4) == 0)
-                {
-                    MSP_RADIO r = {0, 0,152, 152, 100, 57, 38};
-                    r.localrssi = (uint8)((int32)r.localrssi + rand.int_range(-10,10));
-                    r.remrssi = (uint8)((int32)r.remrssi + rand.int_range(-10,10));
-                    r.noise = (uint8)((int32)r.noise + rand.int_range(-5,5));
-                    r.remnoise = (uint8)((int32)r.remnoise + rand.int_range(-5,5));
-                    nb = serialise_radio(r, tx);
-                    msp.send_command(MSP.Cmds.RADIO, tx, MSize.MSP_RADIO);
-                    append_text("Send RADIO %lu\n".printf(MSize.MSP_RADIO));
-                }
-                break;
-
-                case MSP.Cmds.NAV_CONFIG:
-                nb = serialise_nc(nc, tx);
-                msp.send_command(MSP.Cmds.NAV_CONFIG, tx, MSize.MSP_NAV_CONFIG);
-                append_text("Send NAV CONFIG %lu\n".printf(MSize.MSP_NAV_CONFIG));
-                break;
-
-                case MSP.Cmds.ANALOG:
-                MSP_ANALOG buf = MSP_ANALOG();
-                buf.vbat = (uint8)(volts*10);
-                nb = serialise_analogue(buf, tx);
-                msp.send_command(MSP.Cmds.ANALOG, tx, MSize.MSP_ANALOG);
-                append_text("Send ANALOG %lu\n".printf(MSize.MSP_ANALOG));
-                break;
-
-                case MSP.Cmds.COMP_GPS:
-                nb = serialise_comp_gps(cg, tx);
-                msp.send_command(MSP.Cmds.COMP_GPS, tx, MSize.MSP_COMP_GPS);
-                append_text("Send NAV COMP GPS %lu\n".printf(MSize.MSP_COMP_GPS));
-                break;
-
-                case MSP.Cmds.ATTITUDE:
-                MSP_ATTITUDE buf = MSP_ATTITUDE();
-                buf.heading=(int16)gblcse;
-                nb = serialise_atti(buf, tx);
-                msp.send_command(MSP.Cmds.ATTITUDE, tx, MSize.MSP_ATTITUDE);
-                append_text("Send NAV ATTITUDE %lu\n".printf(MSize.MSP_ATTITUDE));
-                break;
-
-                default:
-                stdout.printf("unknown %d\n",cmd);
-                break;
             }
             loop++;
         });

@@ -55,7 +55,9 @@ public class MWPlanner : GLib.Object {
     private bool have_status;
     private bool have_wp;
     private bool have_nc;
-    private uint8 mrtype;
+    private uint8 mrtype=3; // default to quad
+    private uint8 mvers = 230;
+    private uint32 capability;
     private uint gpstid;
     private uint cmdtid;
     private uint spktid;
@@ -190,42 +192,6 @@ public class MWPlanner : GLib.Object {
                 wdw_state = ((e.new_window_state & Gdk.WindowState.FULLSCREEN) != 0);
             return false;
         });
-        window.key_press_event.connect( (s,e) =>
-            {
-                bool ret = true;
-                switch(e.keyval)
-                {
-                    case Gdk.Key.plus:
-                        var val = view.get_zoom_level();
-                        var mmax = view.get_max_zoom_level();
-                        if (val != mmax)
-                            view.set_property("zoom-level", val+1);
-                        break;
-                    case Gdk.Key.minus:
-                        var val = view.get_zoom_level();
-                        var mmin = view.get_min_zoom_level();
-                        if (val != mmin)
-                            view.set_property("zoom-level", val-1);
-                        break;
-
-                    case Gdk.Key.F11:
-                        toggle_full_screen();
-                        break;
-
-                    case Gdk.Key.f:
-                        toggle_full_screen();
-                        break;
-
-                    case Gdk.Key.c:
-                        if(craft != null)
-                            craft.init_trail();
-                        break;
-                    default:
-                        ret = false;
-                        break;
-                }
-                return ret;
-            });
 
         string icon=null;
 
@@ -358,6 +324,49 @@ public class MWPlanner : GLib.Object {
             });
 
 
+        window.key_press_event.connect( (s,e) =>
+            {
+                bool ret = true;
+
+                if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
+                    return false;
+
+                switch(e.keyval)
+                {
+                    case Gdk.Key.plus:
+                        var val = view.get_zoom_level();
+                        var mmax = view.get_max_zoom_level();
+                        if (val != mmax)
+                            view.set_property("zoom-level", val+1);
+                        break;
+                    case Gdk.Key.minus:
+                        var val = view.get_zoom_level();
+                        var mmin = view.get_min_zoom_level();
+                        if (val != mmin)
+                            view.set_property("zoom-level", val-1);
+                        break;
+
+                    case Gdk.Key.F11:
+                        toggle_full_screen();
+                        break;
+
+                    case Gdk.Key.f:
+                        toggle_full_screen();
+                        break;
+
+                    case Gdk.Key.c:
+                        if(craft != null)
+                            craft.init_trail();
+                        break;
+                    default:
+                        ret = false;
+                        break;
+                }
+                return ret;
+            });
+
+
+
         var ent = builder.get_object ("entry1") as Gtk.Entry;
         ent.set_text(conf.altitude.to_string());
 
@@ -479,7 +488,7 @@ public class MWPlanner : GLib.Object {
         logb = builder.get_object ("logger_cb") as Gtk.CheckButton;
         logb.toggled.connect (() => {
                 if (logb.active)
-                    Logger.start(last_file);
+                    Logger.start(last_file,mvers,mrtype,capability);
                 else
                     Logger.stop();
             });
@@ -561,7 +570,7 @@ public class MWPlanner : GLib.Object {
         msp.serial_lost.connect(() => { serial_doom(conbutton); });
 
         msp.serial_event.connect((s,cmd,raw,len,errs) => {
-                handle_serial(s,cmd,raw,len,errs);
+                handle_serial(cmd,raw,len,errs);
             });
 
         if(serial != null)
@@ -616,7 +625,7 @@ public class MWPlanner : GLib.Object {
         return true;
     }
 
-    private void handle_serial(MWSerial sd,  MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
+    private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
     {
         if(errs == true)
         {
@@ -629,9 +638,9 @@ public class MWPlanner : GLib.Object {
         switch(cmd)
         {
             case MSP.Cmds.IDENT:
-                uint32 capability;
                 remove_tid(ref cmdtid);
                 have_vers = true;
+                mvers = raw[0];
                 mrtype = raw[1];
                 deserialise_u32(raw+3, out capability);
                 naze32 = ((capability & 0x80000000) == 0x80000000);
@@ -643,7 +652,7 @@ public class MWPlanner : GLib.Object {
                 {
                     navcap = ((raw[3] & 0x10) == 0x10);
                 }
-                var vers="v%03d".printf(raw[0]);
+                var vers="v%03d".printf(mvers);
                 verlab.set_label(vers);
                 typlab.set_label(MSP.get_mrtype(mrtype));
                 if(navcap == true)

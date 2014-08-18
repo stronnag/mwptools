@@ -20,10 +20,11 @@ else
   reps = db[:reports].where(:armed => 1).select(:id,:lat,:lon,:cse,:heading).order(:id)
 end
 
+puts %w/id calc cse head/.join("\t")
 reps.each do |r|
   if lat0 and lon0
     c,d =  Poscalc.csedist lat0,lon0,r[:lat],r[:lon]
-    str = "%4d %3d %3d %3d" % [r[:id],  c, r[:cse], r[:heading]]
+    str = "%4d\t%3d\t%3d\t%3d" % [r[:id],  c, r[:cse], r[:heading]]
     puts str
   end
   lat0 = r[:lat]

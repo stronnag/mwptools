@@ -28,7 +28,7 @@ public class Logger : GLib.Object
     private static time_t currtime;
     private static time_t armtime;
 
-    public static void start(string? title=null)
+    public static void start(string? title, uint8 mvers, uint8 mrtype, uint32 capability)
     {
         time_t(out currtime);
         var fn  = "mwp_%s.log".printf(Time.local(currtime).format("%F_%H%M%S"));
@@ -43,19 +43,30 @@ public class Logger : GLib.Object
             is_logging = false;
         }
         gen = new Json.Generator ();
-        if(title != null)
         {
-            var tfile = File.new_for_path (title);
-            var bfn = tfile.get_basename ();
-            Json.Builder builder = new Json.Builder ();
-            builder.begin_object ();
+            var bfn =  (title == null) ? fn : title;
+            var builder = init("init");
             builder.set_member_name ("mission");
             builder.add_string_value (bfn);
+            builder.set_member_name ("mwvers");
+            builder.add_int_value (mvers);
+            builder.set_member_name ("mrtype");
+            builder.add_int_value (mrtype);
+            builder.set_member_name ("capability");
+            builder.add_int_value (capability);
             builder.end_object ();
             Json.Node root = builder.get_root ();
             gen.set_root (root);
-            try  { gen.to_stream(os); } catch  {};
+            write_stream();
         }
+    }
+
+    private static void write_stream()
+    {
+        try  {
+            gen.to_stream(os);
+            os.write("\n".data);
+        } catch  {};
     }
 
     public static void stop()
@@ -100,7 +111,7 @@ public class Logger : GLib.Object
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);
-        try  { gen.to_stream(os); } catch  {};
+        write_stream();
     }
 
     public static void armed(bool armed)
@@ -130,7 +141,7 @@ public class Logger : GLib.Object
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);
-        try  { gen.to_stream(os); } catch  {};
+        write_stream();
     }
 
     public static void analog(MSP_ANALOG a)
@@ -147,7 +158,7 @@ public class Logger : GLib.Object
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);
-        try  { gen.to_stream(os); } catch  {};
+        write_stream();
     }
 
     public static void comp_gps(int brg, uint16 range, uint8 update)
@@ -162,7 +173,7 @@ public class Logger : GLib.Object
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);
-        try  { gen.to_stream(os); } catch  {};
+        write_stream();
     }
 
     public static void raw_gps(double lat, double lon, double cse, double spd,
@@ -186,7 +197,7 @@ public class Logger : GLib.Object
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);
-        try  { gen.to_stream(os); } catch  {};
+        write_stream();
      }
 
     public static void attitude(double dax, double day, int hdr)
@@ -201,7 +212,7 @@ public class Logger : GLib.Object
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);
-        try  { gen.to_stream(os); } catch  {};
+        write_stream();
     }
 
     public static void altitude(double estalt, double vario)
@@ -214,7 +225,7 @@ public class Logger : GLib.Object
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);
-        try  { gen.to_stream(os); } catch  {};
+        write_stream();
     }
 
     public static void status(MSP_NAV_STATUS n)
@@ -235,6 +246,6 @@ public class Logger : GLib.Object
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);
-        try  { gen.to_stream(os); } catch  {};
+        write_stream();
     }
 }
