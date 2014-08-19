@@ -297,9 +297,38 @@ public class MWSim : GLib.Object
             });
     }
 
+    private bool log_writer(IOChannel gio, IOCondition condition)
+    {
+                IOStatus ret;
+                string msg;
+                size_t len;
+
+                if((condition & IOCondition.HUP) == IOCondition.HUP)
+                {
+                    return false;
+                }
+
+                try {
+                    ret = gio.read_line(out msg, out len, null);
+                    append_text(msg);
+                }
+                catch(IOChannelError e) {
+                    print("Error reading: %s\n", e.message);
+                }
+                catch(ConvertError e) {
+                        print("Error reading: %s\n", e.message);
+                }
+                return true;
+    }
 
     private void run_relog()
     {
+        IOChannel io_read;
+        int[] fd = new int[2];
+        Posix.pipe(fd);
+        io_read  = new IOChannel.unix_new(fd[0]);
+        io_read.add_watch(IOCondition.IN | IOCondition.HUP, log_writer);
+
         new Thread<int> ("relog", () => {
                 var file = File.new_for_path (relog);
                 if (!file.query_exists ()) {
@@ -324,7 +353,8 @@ public class MWSim : GLib.Object
                             Thread.usleep(ms);
                         }
                         var typ = obj.get_string_member("type");
-//                        append_text("Send %s\n".printf(typ));
+                        var str = "Send %s\n".printf(typ);
+                        Posix.write(fd[1],(char[])str, str.length);
 
                         switch(typ)
                         {
