@@ -103,8 +103,8 @@ public class MWPlanner : GLib.Object {
     private uint8 _nsats = 0;
     private uint8 larmed = 0;
     private bool wdw_state = false;
-
-
+    private time_t armtime;
+    private time_t duration;
         /**** FIXME ***/
     private int gfcse = 0;
 
@@ -324,6 +324,39 @@ public class MWPlanner : GLib.Object {
             });
 
 
+        var ent = builder.get_object ("entry1") as Gtk.Entry;
+        ent.set_text(conf.altitude.to_string());
+
+        ent = builder.get_object ("entry2") as Gtk.Entry;
+        ent.set_text(conf.loiter.to_string());
+
+        var scale = new Champlain.Scale();
+        scale.connect_view(view);
+        view.add_child(scale);
+        var lm = view.get_layout_manager();
+        lm.child_set(view,scale,"x-align", Clutter.ActorAlign.START);
+        lm.child_set(view,scale,"y-align", Clutter.ActorAlign.END);
+        view.set_keep_center_on_resize(true);
+
+        if(ignore_sz == false)
+        {
+            var s = window.get_screen();
+            var m = s.get_monitor_at_window(s.get_active_window());
+            Gdk.Rectangle monitor;
+            s.get_monitor_geometry(m, out monitor);
+            var tmp = monitor.width - 320;
+            if (wd_map > tmp)
+                wd_map = tmp;
+            tmp = monitor.height - 180;
+            if (ht_map > tmp)
+                ht_map = tmp;
+            embed.set_size_request(wd_map, ht_map);
+        }
+
+        var pane = builder.get_object ("paned1") as Gtk.Paned;
+        add_source_combo(conf.defmap);
+        pane.pack1 (embed,true,false);
+
         window.key_press_event.connect( (s,e) =>
             {
                 bool ret = true;
@@ -373,6 +406,17 @@ public class MWPlanner : GLib.Object {
                                 craft.init_trail();
                         }
                         break;
+
+                    case Gdk.Key.t:
+                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
+                            ret = false;
+                        else
+                        {
+                            armtime = 0;
+                            duration = 0;
+                        }
+                        break;
+
                     default:
                         ret = false;
                         break;
@@ -380,40 +424,6 @@ public class MWPlanner : GLib.Object {
                 return ret;
             });
 
-
-
-        var ent = builder.get_object ("entry1") as Gtk.Entry;
-        ent.set_text(conf.altitude.to_string());
-
-        ent = builder.get_object ("entry2") as Gtk.Entry;
-        ent.set_text(conf.loiter.to_string());
-
-        var scale = new Champlain.Scale();
-        scale.connect_view(view);
-        view.add_child(scale);
-        var lm = view.get_layout_manager();
-        lm.child_set(view,scale,"x-align", Clutter.ActorAlign.START);
-        lm.child_set(view,scale,"y-align", Clutter.ActorAlign.END);
-        view.set_keep_center_on_resize(true);
-
-        if(ignore_sz == false)
-        {
-            var s = window.get_screen();
-            var m = s.get_monitor_at_window(s.get_active_window());
-            Gdk.Rectangle monitor;
-            s.get_monitor_geometry(m, out monitor);
-            var tmp = monitor.width - 320;
-            if (wd_map > tmp)
-                wd_map = tmp;
-            tmp = monitor.height - 180;
-            if (ht_map > tmp)
-                ht_map = tmp;
-            embed.set_size_request(wd_map, ht_map);
-        }
-
-        var pane = builder.get_object ("paned1") as Gtk.Paned;
-        add_source_combo(conf.defmap);
-        pane.pack1 (embed,true,false);
 
         ls = new ListBox();
         ls.create_view(this);
@@ -670,6 +680,7 @@ public class MWPlanner : GLib.Object {
                 var vers="v%03d".printf(mvers);
                 verlab.set_label(vers);
                 typlab.set_label(MSP.get_mrtype(mrtype));
+//                stdout.printf("IDENT %s %d\n", vers, mrtype);
                 if(navcap == true)
                 {
                     menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
@@ -787,9 +798,23 @@ public class MWPlanner : GLib.Object {
                     uint32 flag;
                     deserialise_u32(raw+6, out flag);
                     uint8 armed = (uint8)(flag & 1);
+
+                    if(armed == 0)
+                    {
+                        armtime = 0;
+                        duration = -1;
+                    }
+                    else
+                    {
+                        if(armtime == 0)
+                            armtime = time_t(out armtime);
+                        time_t(out duration);
+                        duration -= armtime;
+                    }
+
                     if(Logger.is_logging)
                     {
-                        Logger.armed((armed == 1));
+                        Logger.armed((armed == 1), duration);
                     }
                     if(armed != larmed)
                     {
@@ -810,7 +835,7 @@ public class MWPlanner : GLib.Object {
                             if(conf.logarmed == true)
                             {
                                 logb.active = true;
-                                Logger.armed(true);
+                                Logger.armed(true,duration);
                             }
                         }
                         else
@@ -821,7 +846,7 @@ public class MWPlanner : GLib.Object {
                             }
                             if(conf.logarmed == true)
                             {
-                                Logger.armed(false);
+                                Logger.armed(false,duration);
                                 logb.active=false;
                             }
                         }
@@ -1293,7 +1318,8 @@ public class MWPlanner : GLib.Object {
             vf = (float)ivbat/10.0f;
             str = "%.1fv".printf(vf);
         }
-        vbatlab="<span background=\"%s\" weight=\"bold\">%s</span>".printf(bcols[icol], str);
+        vbatlab="%ds <span background=\"%s\" weight=\"bold\">%s</span>".printf(
+            (int)duration, bcols[icol], str);
         labelvbat.set_markup(vbatlab);
         navstatus.volt_update(str,icol,vf);
         if(icol != 0 && icol != 4 && icol > licol)

@@ -311,6 +311,8 @@ public class MWSim : GLib.Object
                     int64 lt = 0;
                     var dis = new DataInputStream (file.read ());
                     string line;
+                    bool armed = false;
+                    uint8 tx[64];
                     var parser = new Json.Parser ();
                     while ((line = dis.read_line (null)) != null) {
                         parser.load_from_data (line);
@@ -322,30 +324,131 @@ public class MWSim : GLib.Object
                             Thread.usleep(ms);
                         }
                         var typ = obj.get_string_member("type");
+//                        append_text("Send %s\n".printf(typ));
+
                         switch(typ)
                         {
                             case "init":
                                 var mrtype = obj.get_int_member ("mrtype");
+                                var mwvers = obj.get_int_member ("mwvers");
                                 var cap = obj.get_int_member ("capability");
+                                if(mwvers == 0)
+                                    mwvers = 42;
+
                                 uint8 buf[7];
-                                buf[0] = 230;
+                                buf[0] = (uint8)mwvers;
                                 buf[1] = (uint8)mrtype;
                                 buf[2] = 42;
                                 serialise_u32(buf+3, (uint32)cap);
+                                msp.send_command(MSP.Cmds.IDENT, buf, 7);
+
+                                MSP_MISC a = MSP_MISC();
+                                a.conf_minthrottle=1064;
+                                a.maxthrottle=1864;
+                                a.mincommand=900;
+                                a.conf_mag_declination = -15;
+                                if ((cap & 0x80000000) == 0x80000000)
+                                {
+                                    a.conf_vbatscale = 110;
+                                    a.conf_vbatlevel_warn1 = 33;
+                                    a.conf_vbatlevel_warn2 = 43;
+                                }
+                                else
+                                {
+                                    a.conf_vbatscale = 131;
+                                    a.conf_vbatlevel_warn1 = 107;
+                                    a.conf_vbatlevel_warn2 = 99;
+                                    a.conf_vbatlevel_crit = 93;
+                                }
+                                var nb = serialise_misc(a, tx);
+                                msp.send_command(MSP.Cmds.MISC, tx, nb);
                                 break;
                             case "armed":
+                                var a = MSP_STATUS();
+                                armed = obj.get_boolean_member("armed");
+                                a.flag = (armed)  ? 1 : 0;
+                                a.i2c_errors_count = 0;
+                                a.sensor=31;
+                                a.cycle_time=0;
+                                var nb = serialise_status(a, tx);
+                                msp.send_command(MSP.Cmds.STATUS, tx, nb);
                                 break;
                             case "analog":
+                                var volts = obj.get_double_member("voltage");
+                                var amps = obj.get_int_member("amps");
+                                var power = obj.get_int_member("power");
+                                var rssi = obj.get_int_member("rssi");
+                                MSP_ANALOG a = MSP_ANALOG();
+                                a.vbat = (uint8)(Math.lround(volts*10));
+                                a.amps = (uint16)amps;
+                                a.rssi = (uint16)rssi;
+                                a.powermetersum = (uint16)power;
+                                serialise_analogue(a, tx);
+                                msp.send_command(MSP.Cmds.ANALOG, tx, MSize.MSP_ANALOG);
                                 break;
                             case "attitude":
+                                    //{"type":"attitude","utime":1408382805,"angx":0,"angy":0,"heading"":0}
+                                var hdr =  obj.get_int_member("heading");
+                                if (hdr > 180)
+                                    hdr -= 360;
+                                var dangx = obj.get_double_member("angx");
+                                var dangy = obj.get_double_member("angy");
+                                var a = MSP_ATTITUDE();
+                                a.heading=(int16)hdr;
+                                a.angx = (int16)Math.lround(dangx*10);
+                                a.angy = (int16)Math.lround(dangy*10);
+                                serialise_atti(a, tx);
+                                msp.send_command(MSP.Cmds.ATTITUDE, tx, MSize.MSP_ATTITUDE);
                                 break;
                             case "altitude":
+                                    //{"type":"altitude","utime":1404717912,"estalt":4.4199999999999999,"vario":20.399999999999999}
+                                var a = MSP_ALTITUDE();
+                                a.estalt = (int32)(Math.lround(obj.get_double_member("estalt")*100));
+                                a.vario = (int16)(Math.lround(obj.get_double_member("vario")* 10));
+                                var nb = serialise_alt(a, tx);
+                                msp.send_command(MSP.Cmds.ALTITUDE, tx,nb);
                                 break;
                             case "status":
+                                    //{"type":"status","utime":1404717912,"gps_mode":0,"nav_mode":0,"action":0,"wp_number":0,"nav_error":10,"target_bearing":0}
+                                var a = MSP_NAV_STATUS();
+                                a.gps_mode = (uint8)obj.get_int_member("gps_mode");
+                                a.nav_mode = (uint8)obj.get_int_member("nav_mode");
+                                a.action = (uint8)obj.get_int_member("action");
+                                a.wp_number = (uint8)obj.get_int_member("wp_number");
+                                a.nav_error = (uint8)obj.get_int_member("nav_error");
+                                a.target_bearing = (uint16)obj.get_int_member("target_bearing");
+                                serialise_nav_status(a, tx);
+                                msp.send_command(MSP.Cmds.NAV_STATUS, tx, MSize.MSP_NAV_STATUS);
                                 break;
                             case "raw_gps":
+                                    // {"type":"raw_gps","utime":1404717910,"lat":50.805089199999998,"lon":-1.4939248999999999,"cse":50.899999999999999,"spd":0.22,"alt":41,"fix":1,"numsat":8}
+                                var a = MSP_RAW_GPS();
+                                a.gps_lat = (int32)(Math.lround(obj.get_double_member("lat")*10000000));
+                                a.gps_lon = (int32)(Math.lround(obj.get_double_member("lon")*10000000));
+                                a.gps_altitude = (int16)obj.get_int_member("alt");
+                                a.gps_speed = (int16)(Math.lround(obj.get_double_member("spd")*100));
+                                a.gps_ground_course = (int16)(Math.lround(obj.get_double_member("cse")*10));
+                                a.gps_fix = (uint8)obj.get_int_member("fix");
+                                a.gps_numsat = (uint8)obj.get_int_member("numsat");
+                                serialise_raw_gps(a, tx);
+                                msp.send_command(MSP.Cmds.RAW_GPS, tx, MSize.MSP_RAW_GPS);
                                 break;
                             case "comp_gps":
+                                    // {"type":"comp_gps","utime":1408391119,"bearing":180,"range":0,"update":0}
+
+                                var a = MSP_COMP_GPS();
+                                a.range = (uint16)obj.get_int_member("range");
+                                var hdr =  obj.get_int_member("bearing");
+                                if (hdr > 180)
+                                    hdr -= 360;
+                                a.direction = (int16)hdr;
+                                a.update = (uint8)obj.get_int_member("update");
+                                serialise_comp_gps(a, tx);
+                                msp.send_command(MSP.Cmds.COMP_GPS, tx, MSize.MSP_COMP_GPS);
+                                break;
+                            case "radio":
+                                    //"type":"radio","utime":1404717910,"rxerrors":0,"fixed_errors":0,"localrssi":139,"remrssi":138,"txbuf":100,"noise":93,"remnoise":15}
+
                                 break;
                             default:
                                 break;
@@ -864,8 +967,8 @@ public class MWSim : GLib.Object
 
                     case MSP.Cmds.STATUS:
                     MSP_STATUS buf = MSP_STATUS();
-                    buf.cycle_time=((uint16)2345).to_little_endian();
-                    buf.sensor=((uint16)31).to_little_endian();
+                    buf.cycle_time=((uint16)2345);
+                    buf.sensor=((uint16)31);
                     buf.flag = (armed) ? 1 : 0;
                     nb = serialise_status(buf, tx);
                     append_text("Send STATUS %lu\n".printf(MSize.MSP_STATUS));
@@ -874,9 +977,9 @@ public class MWSim : GLib.Object
 
                     case MSP.Cmds.MISC:
                     MSP_MISC buf = MSP_MISC();
-                    buf.conf_minthrottle=((uint16)1064).to_little_endian();
-                    buf.maxthrottle=((uint16)1864).to_little_endian();
-                    buf.mincommand=((uint16)900).to_little_endian();
+                    buf.conf_minthrottle=((uint16)1064);
+                    buf.maxthrottle=((uint16)1864);
+                    buf.mincommand=((uint16)900);
                     buf.conf_mag_declination = -15;
                     buf.conf_vbatscale = 131;
                     buf.conf_vbatlevel_warn1 = 107;
@@ -899,9 +1002,9 @@ public class MWSim : GLib.Object
                     break;
 
                     case MSP.Cmds.ALTITUDE:
-                    MSP_ALTITUDE buf = MSP_ALTITUDE();;
-                    buf.estalt = (100*((int32)gblalt) + rand.int_range(-50,50)).to_little_endian();
-                    buf.vario = ((int16)3).to_little_endian();
+                    MSP_ALTITUDE buf = MSP_ALTITUDE();
+                    buf.estalt = (100*((int32)gblalt) + rand.int_range(-50,50));
+                    buf.vario = ((int16)3);
                     nb = serialise_alt(buf, tx);
                     append_text("Send ALT %lu\n".printf(MSize.MSP_ALTITUDE));
                     msp.send_command(MSP.Cmds.ALTITUDE, tx,nb);

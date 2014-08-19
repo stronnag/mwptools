@@ -26,7 +26,7 @@ public class Logger : GLib.Object
     private static OutputStream os;
     private static IOStream ios;
     private static time_t currtime;
-    private static time_t armtime;
+
 
     public static void start(string? title, uint8 mvers, uint8 mrtype, uint32 capability)
     {
@@ -114,22 +114,8 @@ public class Logger : GLib.Object
         write_stream();
     }
 
-    public static void armed(bool armed)
+    public static void armed(bool armed, time_t duration)
     {
-        time_t duration;
-
-        if(armed == false)
-        {
-            armtime = 0;
-            duration = -1;
-        }
-        else
-        {
-            if(armtime == 0)
-                armtime = time_t(out armtime);
-            time_t(out duration);
-            duration -= armtime;
-        }
         var builder = init("armed");
         builder.set_member_name("armed");
         builder.add_boolean_value(armed);
