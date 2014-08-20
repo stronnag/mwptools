@@ -307,6 +307,12 @@ public class RadioStatus : GLib.Object
     public void update_ltm(LTM_SFRAME s)
     {
         remrssi_label.set_label(s.rssi.to_string());
+        if (Logger.is_logging)
+        {
+            var r = MSP_RADIO();
+            r.remrssi = s.rssi;
+            Logger.radio(r);
+        }
     }
 
     public void update(MSP_RADIO _r)
@@ -358,11 +364,13 @@ public class NavStatus : GLib.Object
     private int16 hdr;
     private bool modsat=false;
     private AudioThread mt;
+    private bool have_cg = false;
 
     public enum SPK  {
         Volts = 1,
         GPS = 2,
-        BARO = 4
+        BARO = 4,
+        ELEV = 8
     }
 
     public NavStatus(Gtk.Builder builder)
@@ -431,9 +439,12 @@ public class NavStatus : GLib.Object
                 hdr += 360;
             var str = "%d° / %d° / %d°".printf(a.pitch, a.roll, hdr);
             nav_attitude_label.set_label(str);
+            if(Logger.is_logging)
+            {
+                Logger.attitude(a.pitch,a.roll,hdr);
+            }
         }
     }
-
 
     public void update(MSP_NAV_STATUS _n)
     {
@@ -560,6 +571,7 @@ public class NavStatus : GLib.Object
     public void comp_gps(MSP_COMP_GPS _cg)
     {
         cg = _cg;
+        have_cg = true;
         if(visible || Logger.is_logging)
         {
             var brg = cg.direction;
@@ -612,7 +624,7 @@ public class NavStatus : GLib.Object
 
     public void announce(uint8 mask, bool recip)
     {
-        if((mask & SPK.GPS) == SPK.GPS)
+        if(((mask & SPK.GPS) == SPK.GPS) && have_cg)
         {
             var brg = cg.direction;
             if(brg < 0)
@@ -627,6 +639,13 @@ public class NavStatus : GLib.Object
         {
             double estalt = (double)alti.estalt/100.0;
             var str = "Altitude %.1f.".printf(estalt);
+            str = str_zero(str);
+            mt.message(str);
+        }
+
+        if((mask & SPK.ELEV) == SPK.ELEV)
+        {
+            var str = "Elevation %d.".printf(GPSInfo.elev);
             str = str_zero(str);
             mt.message(str);
         }
@@ -889,11 +908,16 @@ public class GPSInfo : GLib.Object
     private Gtk.Label alt_lab;
     private Gtk.Label dirn_lab;
     private Gtk.Label speed_lab;
+    private double _dlon = 0;
+    private double _dlat = 0;
 
     public double lat {get; private set;}
     public double lon {get; private set;}
     public double cse {get; private set;}
     public double spd {get; private set;}
+
+    public static int16 elev {get; private set;}
+
 
     public GPSInfo(Gtk.Grid grid)
     {
@@ -944,9 +968,18 @@ public class GPSInfo : GLib.Object
     {
         lat = g.lat/10000000.0;
         lon = g.lon/10000000.0;
+        double cse = 0;
+        if(_dlat != 0 && _dlon != 0)
+        {
+            double d;
+            Geo.csedist(lat, lon, _dlat, _dlon, out d, out cse);
+        }
+        _dlat = lat;
+        _dlon = lon;
+
         spd =  g.speed;
         double dalt = g.alt/100.0;
-        int fix = (g.sats & 3);
+        uint8 fix = (g.sats & 3);
         uint8 nsats = (g.sats >> 2);
         var nsatstr = "%d (%sfix)".printf(nsats, (fix==0) ? "no" : "");
         nsat_lab.set_label(nsatstr);
@@ -954,6 +987,12 @@ public class GPSInfo : GLib.Object
         lon_lab.set_label(PosFormat.lon(lon,dms));
         speed_lab.set_label("%.0f m/s".printf(spd));
         alt_lab.set_label("%.2f m".printf(dalt));
+        dirn_lab.set_label("%.1f °".printf(cse));
+        elev = (int16)Math.lround(dalt);
+        if(Logger.is_logging)
+        {
+            Logger.raw_gps(lat,lon,cse,spd, elev, fix, nsats);
+        }
         return fix;
     }
 

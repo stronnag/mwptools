@@ -105,15 +105,15 @@ ARGV.each do |fn|
 	  o.delete(k)
 	end
       end
-
-      if o[:utime] != lt
-	st = o[:utime] if lt.zero?
+      ot = o[:utime].to_i
+      if ot != lt
+	st = ot if lt.zero?
 	recins db,rec,mid
 	rec=o
       else
 	rec.merge!(o)
       end
-      lt = o[:utime]
+      lt = ot
     end
     recins db,rec,mid
     db[:missions].where(:id => mid).update({:start => Time.at(st),

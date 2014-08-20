@@ -107,6 +107,10 @@ public class MWPlanner : GLib.Object {
     private time_t duration;
         /**** FIXME ***/
     private int gfcse = 0;
+    private double _ilon = 0;
+    private double _ilat = 0;
+    private uint8 armed = 0;
+    private bool npos = false;
 
     private enum MS_Column {
         ID,
@@ -660,6 +664,7 @@ public class MWPlanner : GLib.Object {
             remove_tid(ref cmdtid);
             return;
         }
+        Logger.log_time();
         switch(cmd)
         {
             case MSP.Cmds.IDENT:
@@ -794,10 +799,9 @@ public class MWPlanner : GLib.Object {
                             });
                         start_audio();
                     }
-                    Logger.log_time();
                     uint32 flag;
                     deserialise_u32(raw+6, out flag);
-                    uint8 armed = (uint8)(flag & 1);
+                    armed = (uint8)(flag & 1);
 
                     if(armed == 0)
                     {
@@ -1140,13 +1144,16 @@ public class MWPlanner : GLib.Object {
                 if(nopoll == false)
                     nopoll = true;
 
+                sflags |=  NavStatus.SPK.ELEV;
                 LTM_GFRAME gf = LTM_GFRAME();
                 uint8* rp;
+
                 rp = deserialise_i32(raw, out gf.lat);
                 rp = deserialise_i32(rp, out gf.lon);
                 gf.speed = *rp++;
                 rp = deserialise_i32(rp, out gf.alt);
                 gf.sats = *rp;
+                _nsats = (gf.sats >> 2);
 
                 if(craft == null)
                 {
@@ -1159,7 +1166,22 @@ public class MWPlanner : GLib.Object {
                 {
                     double gflat = gf.lat/10000000.0;
                     double gflon = gf.lon/10000000.0;
-
+                    if(armed == 1 && npos == false)
+                    {
+                        sflags |=  NavStatus.SPK.GPS;
+                        _ilat = gflat;
+                        _ilon = gflon;
+                        npos = true;
+                    }
+                    if(armed == 1)
+                    {
+                        double dist,cse;
+                        Geo.csedist(gflat, gflon, _ilat, _ilon, out dist, out cse);
+                        var cg = MSP_COMP_GPS();
+                        cg.range = (uint16)Math.lround(dist*1852);
+                        cg.direction = (int16)Math.lround(cse);
+                        navstatus.comp_gps(cg);
+                    }
                     if(craft != null)
                     {
                         if(follow == true)
@@ -1198,7 +1220,7 @@ public class MWPlanner : GLib.Object {
                 sf.rssi = *rp++;
                 sf.airspeed = *rp++;
                 sf.flags = *rp++;
-                uint8 armed = sf.flags & 1;
+                armed = sf.flags & 1;
                 if(armed != larmed)
                 {
                     if(armed == 1 && craft == null)
@@ -1215,10 +1237,14 @@ public class MWPlanner : GLib.Object {
                         }
                     }
                     larmed = armed;
+                    if(armed == 0)
+                        npos = false;
                 }
+
                 radstatus.update_ltm(sf);
                 navstatus.update_ltm_s(sf);
                 set_bat_stat((uint8)((sf.vbat + 50) / 100));
+                sflags |= NavStatus.SPK.Volts;
             }
             break;
 
@@ -1303,7 +1329,6 @@ public class MWPlanner : GLib.Object {
                 vcrit = vmin * ncell;
                 vwarn1 = vmax * ncell * 84 / 100;
                 vwarn2 = vmax * ncell * 80 / 100;
-//                stdout.printf("Set warns to %d %d %d\n", vcrit, vwarn1, vwarn2);
             }
         }
 

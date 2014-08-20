@@ -337,7 +337,7 @@ public class MWSim : GLib.Object
                 }
                 try
                 {
-                    int64 lt = 0;
+                    double lt = 0;
                     var dis = new DataInputStream (file.read ());
                     string line;
                     bool armed = false;
@@ -346,7 +346,7 @@ public class MWSim : GLib.Object
                     while ((line = dis.read_line (null)) != null) {
                         parser.load_from_data (line);
                         var obj = parser.get_root ().get_object ();
-                        var utime = obj.get_int_member ("utime");
+                        var utime = obj.get_double_member ("utime");
                         if(lt != 0)
                         {
                             ulong ms = (ulong)((utime - lt) * 1000 * 1000);
