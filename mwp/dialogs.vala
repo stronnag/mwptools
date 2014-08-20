@@ -307,12 +307,6 @@ public class RadioStatus : GLib.Object
     public void update_ltm(LTM_SFRAME s)
     {
         remrssi_label.set_label(s.rssi.to_string());
-        if (Logger.is_logging)
-        {
-            var r = MSP_RADIO();
-            r.remrssi = s.rssi;
-            Logger.radio(r);
-        }
     }
 
     public void update(MSP_RADIO _r)
@@ -417,7 +411,7 @@ public class NavStatus : GLib.Object
 
     public void update_ltm_s(LTM_SFRAME s)
     {
-        if(visible)
+        if(visible || Logger.is_logging)
         {
             uint8 armed = (s.flags & 1);
             uint8 failsafe = ((s.flags & 2) >> 1);
@@ -427,12 +421,22 @@ public class NavStatus : GLib.Object
             var str = "%s %s".printf(((armed == 1) ? "armed" : ""),
                                  ((failsafe == 1) ? "failsafe" : ""));
             nav_action_label.set_label(str);
+            if (Logger.is_logging)
+            {
+                var an = MSP_ANALOG();
+                an.vbat = ((s.vbat + 50) / 100);
+                an.rssi = s.rssi;
+                if(Logger.is_logging)
+                {
+                    Logger.analog(an);
+                }
+            }
         }
     }
 
     public void update_ltm_a(LTM_AFRAME a)
     {
-        if(visible)
+        if(visible || Logger.is_logging)
         {
             hdr = a.heading;
             if(hdr < 0)
@@ -991,7 +995,7 @@ public class GPSInfo : GLib.Object
         elev = (int16)Math.lround(dalt);
         if(Logger.is_logging)
         {
-            Logger.raw_gps(lat,lon,cse,spd, elev, fix, nsats);
+            Logger.raw_gps(lat,lon,0,spd, elev, fix, nsats);
         }
         return fix;
     }

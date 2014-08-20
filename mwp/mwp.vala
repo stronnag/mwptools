@@ -1221,6 +1221,26 @@ public class MWPlanner : GLib.Object {
                 sf.airspeed = *rp++;
                 sf.flags = *rp++;
                 armed = sf.flags & 1;
+
+                if(armed == 0)
+                {
+                    armtime = 0;
+                    duration = -1;
+                    npos = false;
+                }
+                else
+                {
+                    if(armtime == 0)
+                        armtime = time_t(out armtime);
+                    time_t(out duration);
+                    duration -= armtime;
+                }
+
+                if(Logger.is_logging)
+                {
+                    Logger.armed((armed == 1), duration);
+                }
+
                 if(armed != larmed)
                 {
                     if(armed == 1 && craft == null)
@@ -1236,9 +1256,31 @@ public class MWPlanner : GLib.Object {
                             craft.init_trail();
                         }
                     }
+                    if (armed == 1)
+                    {
+                        if (conf.audioarmed == true)
+                        {
+                            audio_cb.active = true;
+                        }
+                        if(conf.logarmed == true)
+                        {
+                            logb.active = true;
+                            Logger.armed(true,duration);
+                            }
+                    }
+                    else
+                    {
+                        if (conf.audioarmed == true)
+                        {
+                            audio_cb.active = false;
+                        }
+                        if(conf.logarmed == true)
+                        {
+                            Logger.armed(false,duration);
+                            logb.active=false;
+                        }
+                    }
                     larmed = armed;
-                    if(armed == 0)
-                        npos = false;
                 }
 
                 radstatus.update_ltm(sf);
