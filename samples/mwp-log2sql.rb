@@ -3,7 +3,7 @@ require 'sequel'
 require 'yajl'
 require 'nokogiri'
 require 'optparse'
-
+# -*- coding: utf-8 -*-
 
 def recins db,rec,mid
   if rec.size > 0

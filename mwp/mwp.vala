@@ -40,6 +40,7 @@ public class MWPlanner : GLib.Object {
     private int wd_map = 800;
     private Gtk.MenuItem menuup;
     private Gtk.MenuItem menudown;
+    private Gtk.MenuItem menureplay;
     private Gtk.MenuItem menunav;
     private Gtk.MenuItem menuncfg;
     public MWPSettings conf;
@@ -112,6 +113,13 @@ public class MWPlanner : GLib.Object {
     private uint8 armed = 0;
     private bool npos = false;
 
+    private Thread<int> thr;
+    private uint plid = 0;
+    private bool xlog;
+    private int[] playfd;
+    private IOChannel io_read;
+    private ReplayThread robj;
+    
     private enum MS_Column {
         ID,
         NAME,
@@ -260,6 +268,10 @@ public class MWPlanner : GLib.Object {
                 download_quad();
             });
 
+        menureplay = builder.get_object ("replay_log") as Gtk.MenuItem;
+        menureplay.activate.connect (() => {
+                replay_log();
+            });
 
         navstatus = new NavStatus(builder);
         menunav = builder.get_object ("nav_status_menu") as Gtk.MenuItem;
@@ -665,6 +677,7 @@ public class MWPlanner : GLib.Object {
             return;
         }
         Logger.log_time();
+
         switch(cmd)
         {
             case MSP.Cmds.IDENT:
@@ -956,7 +969,6 @@ public class MWPlanner : GLib.Object {
                 rp = deserialise_i16(rp, out rg.gps_altitude);
                 rp = deserialise_u16(rp, out rg.gps_speed);
                 deserialise_u16(rp, out rg.gps_ground_course);
-
                 var fix = gpsinfo.update(rg, conf.dms);
                 _nsats = rg.gps_numsat;
                 if (fix != 0)
@@ -1876,6 +1888,113 @@ public class MWPlanner : GLib.Object {
         Gtk.main();
     }
 
+    private void replay_log()
+    {
+        if(thr != null)
+        {
+            robj.playon = false;
+        }
+        else
+        {
+            Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
+            "Select a log file", null, Gtk.FileChooserAction.OPEN,
+            "_Cancel",
+            Gtk.ResponseType.CANCEL,
+            "_Open",
+            Gtk.ResponseType.ACCEPT);
+            chooser.select_multiple = false;
+
+            Gtk.FileFilter filter = new Gtk.FileFilter ();
+            filter.set_filter_name ("Log");
+            filter.add_pattern ("*.log");
+            chooser.add_filter (filter);
+            
+            filter = new Gtk.FileFilter ();
+            filter.set_filter_name ("All Files");
+            filter.add_pattern ("*");
+            chooser.add_filter (filter);
+
+                // Process response:
+            if (chooser.run () == Gtk.ResponseType.ACCEPT) {
+                var fn = chooser.get_filename ();
+                run_replay(fn);
+            }
+            chooser.close ();
+        }
+        
+    }
+
+
+    private bool replay_handler (IOChannel gio, IOCondition condition)
+    {
+        var done = false;
+        if((condition & (IOCondition.HUP|IOCondition.NVAL)) != 0)
+        {
+            done = true;
+        }
+        else
+        {
+            var rec = REPLAY_rec();
+            var ret = Posix.read(gio.unix_get_fd(),
+                                 &rec,
+                                 sizeof(REPLAY_rec));
+            if(ret == 0)
+                done = true;
+            else
+            {
+                handle_serial(rec.cmd, rec.raw, rec.len,false);
+            }
+
+        }
+        if(done)
+        {
+            cleanup_replay();
+            return false;
+        }
+        return true;
+    }
+
+    private void cleanup_replay()
+    {
+        thr.join();
+        thr = null;
+        Source.remove(plid);
+        try  { io_read.shutdown(false); } catch {}
+        Posix.close(playfd[0]);
+        Posix.close(playfd[1]);
+        plid = 0;
+        conf.logarmed = xlog;
+        conbutton.sensitive = true;
+        menureplay.label = "Replay Log file";
+    }
+    
+    private void run_replay(string fn)
+    {
+        xlog = conf.logarmed;
+        playfd = new int[2];
+        var sr =  Posix.socketpair (SocketFamily.UNIX,
+                          SocketType.DATAGRAM, 0, playfd);
+
+        if(sr == 0)
+        {
+            conf.logarmed = false;
+            if(msp.available)
+                serial_doom(conbutton);
+        
+            conbutton.sensitive = false;
+
+            io_read  = new IOChannel.unix_new(playfd[0]);
+            plid = io_read.add_watch(IOCondition.IN|
+                                     IOCondition.HUP|
+                                     IOCondition.ERR|
+                                     IOCondition.NVAL, replay_handler);
+            robj = new ReplayThread();
+            thr = robj.run(playfd[1], fn);
+            if(thr != null)
+                menureplay.label = "Stop Replay";            
+        }
+    }
+    
     private void download_quad()
     {
         wp_resp= {};
