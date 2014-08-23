@@ -661,10 +661,10 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="validated">
+              <object class="GtkLabel" id="elapsedlab">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="angle">0.039999999105930328</property>
+                <property name="label" translatable="yes">00:00</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -673,7 +673,19 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label5">
+              <object class="GtkLabel" id="validated">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="angle">0.039999999105930328</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">7</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="missionlab">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">No mission</property>
@@ -683,7 +695,7 @@
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="pack_type">end</property>
-                <property name="position">7</property>
+                <property name="position">8</property>
               </packing>
             </child>
           </object>

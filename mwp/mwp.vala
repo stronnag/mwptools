@@ -34,6 +34,7 @@ public class MWPlanner : GLib.Object {
     private Gtk.SpinButton zoomer;
     private Gtk.Label poslabel;
     public Gtk.Label stslabel;
+    private Gtk.Label elapsedlab;
     private double lx;
     private double ly;
     private int ht_map = 600;
@@ -119,7 +120,7 @@ public class MWPlanner : GLib.Object {
     private int[] playfd;
     private IOChannel io_read;
     private ReplayThread robj;
-    
+
     private enum MS_Column {
         ID,
         NAME,
@@ -524,8 +525,8 @@ public class MWPlanner : GLib.Object {
             });
 
         poslabel = builder.get_object ("poslabel") as Gtk.Label;
-        stslabel = builder.get_object ("label5") as Gtk.Label;
-
+        stslabel = builder.get_object ("missionlab") as Gtk.Label;
+        elapsedlab =  builder.get_object ("elapsedlab") as Gtk.Label;
         logb = builder.get_object ("logger_cb") as Gtk.CheckButton;
         logb.toggled.connect (() => {
                 if (logb.active)
@@ -1397,8 +1398,13 @@ public class MWPlanner : GLib.Object {
             vf = (float)ivbat/10.0f;
             str = "%.1fv".printf(vf);
         }
-        vbatlab="%ds <span background=\"%s\" weight=\"bold\">%s</span>".printf(
-            (int)duration, bcols[icol], str);
+        int mins,secs;
+        mins = (int)duration / 60;
+        secs = (int)duration % 60;
+        elapsedlab.set_text("%02d:%02d".printf(mins,secs));
+
+        vbatlab="<span background=\"%s\" weight=\"bold\">%s</span>".printf(
+            bcols[icol], str);
         labelvbat.set_markup(vbatlab);
         navstatus.volt_update(str,icol,vf);
         if(icol != 0 && icol != 4 && icol > licol)
@@ -1908,7 +1914,7 @@ public class MWPlanner : GLib.Object {
             filter.set_filter_name ("Log");
             filter.add_pattern ("*.log");
             chooser.add_filter (filter);
-            
+
             filter = new Gtk.FileFilter ();
             filter.set_filter_name ("All Files");
             filter.add_pattern ("*");
@@ -1921,7 +1927,7 @@ public class MWPlanner : GLib.Object {
             }
             chooser.close ();
         }
-        
+
     }
 
 
@@ -1967,7 +1973,7 @@ public class MWPlanner : GLib.Object {
         conbutton.sensitive = true;
         menureplay.label = "Replay Log file";
     }
-    
+
     private void run_replay(string fn)
     {
         xlog = conf.logarmed;
@@ -1980,7 +1986,7 @@ public class MWPlanner : GLib.Object {
             conf.logarmed = false;
             if(msp.available)
                 serial_doom(conbutton);
-        
+
             conbutton.sensitive = false;
 
             io_read  = new IOChannel.unix_new(playfd[0]);
@@ -1991,10 +1997,10 @@ public class MWPlanner : GLib.Object {
             robj = new ReplayThread();
             thr = robj.run(playfd[1], fn);
             if(thr != null)
-                menureplay.label = "Stop Replay";            
+                menureplay.label = "Stop Replay";
         }
     }
-    
+
     private void download_quad()
     {
         wp_resp= {};
