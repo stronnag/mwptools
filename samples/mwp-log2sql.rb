@@ -40,6 +40,9 @@ db.create_table? :missions do
   column :title, :text
   column :start, :timestamp
   column :end, :timestamp
+  column :mwvers, :string
+  column :mrtype, :integer
+  column :capability, :integer
 end
 
 db.create_table? :reports do
@@ -95,31 +98,31 @@ ARGV.each do |fn|
     title=nil
     Yajl::Parser.parse(json, {:symbolize_names => true}) do |o|
       keys = o.keys
-      if keys[0].to_s == 'mission'
-	title = o[keys[0]]
-	next
-      end
       keys.each do |k|
 	if k.class == String
 	  o[k.to_sym] = o[k]
 	  o.delete(k)
 	end
       end
-      ot = o[:utime].to_i
-      if ot != lt
-	st = ot if lt.zero?
-	recins db,rec,mid
-	rec=o
+      if o[:type] == 'init'
+	db[:missions].where(:id => mid).update({:title => o[:mission],
+						:mwvers => o[:mwvers],
+						:mrtype => o[:mrtype],
+						:capability => o[:capability]})
       else
-	rec.merge!(o)
+	ot = o[:utime].to_i
+	if ot != lt
+	  st = ot if lt.zero?
+	  recins db,rec,mid
+	  rec=o
+	else
+	  rec.merge!(o)
+	end
+	lt = ot
       end
-      lt = ot
     end
     recins db,rec,mid
     db[:missions].where(:id => mid).update({:start => Time.at(st),
 					     :end => Time.at(lt)})
-    if title
-      db[:missions].where(:id => mid).update({:title  => title})
-    end
   end
 end
