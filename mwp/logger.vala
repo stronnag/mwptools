@@ -26,6 +26,7 @@ public class Logger : GLib.Object
     private static OutputStream os;
     private static IOStream ios;
     private static double dtime;
+    public static int duration { get; private set; }
 
     public static void start(string? title, uint8 mvers, uint8 mrtype, uint32 capability)
     {
@@ -117,20 +118,36 @@ public class Logger : GLib.Object
         write_stream();
     }
 
-    public static void armed(bool armed, time_t duration)
+    public static void armed(bool armed, time_t _duration)
     {
+        duration = (int)_duration;
         var builder = init("armed");
         builder.set_member_name("armed");
         builder.add_boolean_value(armed);
-        if(duration != -1)
+        if(duration > -1)
         {
             builder.set_member_name("duration");
-            builder.add_int_value(duration);
+            builder.add_int_value(_duration);
         }
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);
         write_stream();
+    }
+
+    public static void ltm_sframe(LTM_SFRAME s)
+    {
+        var builder = init("ltm_raw_sframe");
+        builder.set_member_name("vbat");
+        builder.add_int_value(s.vbat);
+        builder.set_member_name("vcurr");
+        builder.add_int_value(s.vcurr);
+        builder.set_member_name("rssi");
+        builder.add_int_value(s.rssi);
+        builder.set_member_name("airspeed");
+        builder.add_int_value(s.airspeed);
+        builder.set_member_name("flags");
+        builder.add_int_value(s.flags);
     }
 
     public static void analog(MSP_ANALOG a)

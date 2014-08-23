@@ -359,6 +359,7 @@ public class NavStatus : GLib.Object
     private bool modsat=false;
     private AudioThread mt;
     private bool have_cg = false;
+    private uint8 xfmode = -1;
 
     public enum SPK  {
         Volts = 1,
@@ -421,15 +422,18 @@ public class NavStatus : GLib.Object
             var str = "%s %s".printf(((armed == 1) ? "armed" : ""),
                                  ((failsafe == 1) ? "failsafe" : ""));
             nav_action_label.set_label(str);
+            if(xfmode != fmode)
+            {
+                if(mt_voice)
+                {
+                    mt.message(lmode);
+                }
+                xfmode = fmode;
+            }
+
             if (Logger.is_logging)
             {
-                var an = MSP_ANALOG();
-                an.vbat = ((s.vbat + 50) / 100);
-                an.rssi = s.rssi;
-                if(Logger.is_logging)
-                {
-                    Logger.analog(an);
-                }
+                Logger.ltm_sframe(s);
             }
         }
     }
@@ -608,6 +612,16 @@ public class NavStatus : GLib.Object
         voltlabel.set_label("<span font='%d'>%s</span>".printf(fs,s));
     }
 
+    public void update_duration(int mins)
+    {
+        if(mt_voice)
+        {
+            var ms = (mins > 60) ? "minutes" : "minute";
+            mt.message("%d %s".printf(mins, ms));
+        }
+    }
+
+
     private string str_zero(string str)
     {
         if(str[-3:-1] == ".0")
@@ -686,7 +700,7 @@ public class NavStatus : GLib.Object
         {
             logspeak_close();
         }
-        stdout.printf("Start audio\n");
+//        stdout.printf("Start audio\n");
         mt = new AudioThread();
         mt.start();
         mt_voice=true;
@@ -694,8 +708,7 @@ public class NavStatus : GLib.Object
 
     public void logspeak_close()
     {
-        stdout.printf("Stop audio\n");
-
+//        stdout.printf("Stop audio\n");
         mt_voice=false;
         mt.clear();
         mt.message("");

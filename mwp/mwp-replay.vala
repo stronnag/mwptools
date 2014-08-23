@@ -152,7 +152,7 @@ public class ReplayThread : GLib.Object
                                 ulong ms = (ulong)((utime - lt) * 1000 * 1000);
                                 Thread.usleep(ms);
                             }
-                            
+
                             var typ = obj.get_string_member("type");
                             switch(typ)
                             {
@@ -162,14 +162,14 @@ public class ReplayThread : GLib.Object
                                     var cap = obj.get_int_member ("capability");
                                     if(mwvers == 0)
                                         mwvers = 42;
-                                    
+
                                     buf[0] = (uint8)mwvers;
                                     buf[1] = (uint8)mrtype;
                                     buf[2] = 42;
                                     serialise_u32(buf+3, (uint32)cap);
-                                    
+
                                     send_rec(fd,MSP.Cmds.IDENT, 7, buf);
-                                    
+
                                     MSP_MISC a = MSP_MISC();
                                     a.conf_minthrottle=1064;
                                     a.maxthrottle=1864;
@@ -263,7 +263,7 @@ public class ReplayThread : GLib.Object
                                     break;
                                 case "comp_gps":
                                         // {"type":"comp_gps","utime":1408391119,"bearing":180,"range":0,"update":0}
-                                    
+
                                     var a = MSP_COMP_GPS();
                                     a.range = (uint16)obj.get_int_member("range");
                                     var hdr =  obj.get_int_member("bearing");
@@ -282,11 +282,19 @@ public class ReplayThread : GLib.Object
                                     a.noise = (uint8)(obj.get_int_member("noise"));
                                     a.remnoise = (uint8)(obj.get_int_member("remnoise"));
                                     a.txbuf = (uint8)(obj.get_int_member("txbuf"));
-                                    
+
                                     a.rxerrors = (uint16)(obj.get_int_member("rxerrors"));
                                     a.fixed_errors = (uint16)(obj.get_int_member("fixed_errors"));
                                     serialise_radio(a, buf);
-                                    send_rec(fd,MSP.Cmds.RADIO, MSize.MSP_RADIO,buf);                                
+                                    send_rec(fd,MSP.Cmds.RADIO, MSize.MSP_RADIO,buf);
+                                    break;
+                                case "ltm_raw_sframe":
+                                    var s = LTM_SFRAME();
+                                    s.vbat = (int16)(obj.get_int_member("vbat"));
+                                    s.vcurr = (int16)(obj.get_int_member("vcurr"));
+                                    s.rssi = (uint8)(obj.get_int_member("rssi"));
+                                    s.airspeed = (uint8)(obj.get_int_member("airspeed"));
+                                    s.flags = (uint8)(obj.get_int_member("flags"));
                                     break;
                                 default:
                                     break;

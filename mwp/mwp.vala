@@ -1399,8 +1399,19 @@ public class MWPlanner : GLib.Object {
             str = "%.1fv".printf(vf);
         }
         int mins,secs;
-        mins = (int)duration / 60;
-        secs = (int)duration % 60;
+        if (duration > 0)
+        {
+            mins = (int)duration / 60;
+            secs = (int)duration % 60;
+            if(mins > 0 && secs == 0)
+            {
+                navstatus.update_duration(mins);
+            }
+        }
+        else
+        {
+            mins = secs = 0;
+        }
         elapsedlab.set_text("%02d:%02d".printf(mins,secs));
 
         vbatlab="<span background=\"%s\" weight=\"bold\">%s</span>".printf(
