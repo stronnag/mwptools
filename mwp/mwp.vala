@@ -1574,14 +1574,14 @@ public class MWPlanner : GLib.Object {
     {
         remove_tid(ref cmdtid);
         remove_tid(ref gpstid);
-        stop_audio();
+        msp.close();
         sflags = 0;
+        stop_audio();
 
         if(rawlog == true)
         {
             msp.raw_logging(false);
         }
-        msp.close();
         gpsinfo.annul();
         set_bat_stat(0);
         have_vers = have_misc = have_status = have_wp = have_nc = false;
