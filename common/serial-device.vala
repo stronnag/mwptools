@@ -139,7 +139,8 @@ public class MWSerial : Object
             io_read = new IOChannel.unix_new(fd);
             if(io_read.set_encoding(null) != IOStatus.NORMAL)
                     error("Failed to set encoding");
-            tag = io_read.add_watch(IOCondition.IN | IOCondition.HUP, device_read);
+            tag = io_read.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL,
+                                    device_read);
         } catch(IOChannelError e) {
             error("IOChannel: %s", e.message);
         }
@@ -224,7 +225,7 @@ public class MWSerial : Object
                 device = parts[0];
                 rate = int.parse(parts[1]);
             }
-            fd = Posix.open(device, Posix.O_RDWR | Posix.O_NOCTTY);
+            fd = Posix.open(device, Posix.O_RDWR);
             setup_fd((int)rate);
         }
         if(fd < 0)
@@ -254,7 +255,8 @@ public class MWSerial : Object
 
     ~MWSerial()
     {
-        close();
+        if(fd != -1)
+            close();
     }
 
     public void close()
@@ -262,6 +264,13 @@ public class MWSerial : Object
         available=false;
         if(fd != -1)
         {
+            if(tag > 0)
+            {
+                if(print_raw)
+                    stderr.printf("remove tag\n");
+                Source.remove(tag);
+            }
+            try  { io_read.shutdown(false); } catch {}
             if(is_serial)
             {
                 Posix.tcsetattr (fd, Posix.TCSANOW|Posix.TCSADRAIN, oldtio);
@@ -279,8 +288,6 @@ public class MWSerial : Object
                 Posix.close(fd);
                 sockaddr=null;
             }
-            if(tag > 0)
-                Source.remove(tag);
             fd = -1;
         }
     }
@@ -293,8 +300,9 @@ public class MWSerial : Object
         if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
         {
             available = false;
-            close();
-            serial_lost();
+            if(fd != -1)
+                serial_lost();
+            return false;
         }
         else
         {
@@ -311,8 +319,23 @@ public class MWSerial : Object
                 }
             }
             debug("recv: %db\n", (int)res);
-            if(print_raw == true && res > 0)
-                dump_raw_data(buf, (int)res);
+            if(print_raw == true)
+            {
+                if (res > 0)
+                {
+                    var dt = new DateTime.now_local();
+                    var secs = dt.get_seconds();
+                    var ds0 = dt.format("\n%H:%M:");
+                    stderr.printf("%s%04.1f ", ds0,secs);
+                    dump_raw_data(buf, (int)res);
+                }
+                    /*
+                else
+                {
+                    stderr.printf(" res = %d", (int)res);
+                }
+                    */
+            }
 
             for(var nc = 0; nc < res; nc++)
             {
@@ -583,6 +606,7 @@ public class MWSerial : Object
 
     public void dump_raw_data (uint8[]buf, int len)
     {
+        stderr.printf("%3d: ", len);
         for(var nc = 0; nc < len; nc++)
         {
             if(buf[nc] == '$')

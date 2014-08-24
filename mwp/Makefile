@@ -1,5 +1,7 @@
 VALAC=valac
 OPTS+=-X -O2 --thread --target-glib=2.36
+## -g --save-temps
+
 APP=mwp
 
 TGT=$(APP)

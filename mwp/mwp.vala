@@ -1559,8 +1559,10 @@ public class MWPlanner : GLib.Object {
     private void stop_audio()
     {
         if(spktid > 0)
+        {
+            remove_tid(ref spktid);
             navstatus.logspeak_close();
-        remove_tid(ref spktid);
+        }
     }
 
     private void remove_tid(ref uint tid)
@@ -1938,9 +1940,7 @@ public class MWPlanner : GLib.Object {
             }
             chooser.close ();
         }
-
     }
-
 
     private bool replay_handler (IOChannel gio, IOCondition condition)
     {
