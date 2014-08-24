@@ -616,7 +616,7 @@ public class NavStatus : GLib.Object
     {
         if(mt_voice)
         {
-            var ms = (mins > 60) ? "minutes" : "minute";
+            var ms = (mins > 1) ? "minutes" : "minute";
             mt.message("%d %s".printf(mins, ms));
         }
     }
