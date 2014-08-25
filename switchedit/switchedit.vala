@@ -174,7 +174,16 @@ public class SwitchEdit : Object
                     }
                     grid1.show_all();
                     xflag = 0;
-                    tid = Timeout.add(100, () => {
+                    int intvl;
+                    var baud = msp.baudrate;
+                    if(baud > 50000)
+                        intvl = 100;
+                    else if (baud > 32000)
+                        intvl = 5000;
+                    else
+                        intvl = 1000;
+
+                    tid = Timeout.add(intvl, () => {
                             s.send_command(MSP.Cmds.STATUS,null,0);
                             s.send_command(MSP.Cmds.RC,null,0);
                             return true;

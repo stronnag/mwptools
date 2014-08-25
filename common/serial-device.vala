@@ -47,6 +47,7 @@ public class MWSerial : Object
     private Timer timer;
     private Posix.termios oldtio;
     private bool print_raw=false;
+    public uint baudrate  {private set; get;}
 
     public enum Mode
     {
@@ -80,40 +81,41 @@ public class MWSerial : Object
     {
         if(is_serial == true)
         {
+            baudrate = rate;
             Posix.termios newtio = {0};
-            Posix.speed_t baudrate;
+            Posix.speed_t posix_baudrate;
 
             switch(rate) {
                 case 1200:
-                    baudrate = Posix.B1200;
+                    posix_baudrate = Posix.B1200;
                     break;
                 case 2400:
-                    baudrate = Posix.B2400;
+                    posix_baudrate = Posix.B2400;
                     break;
                 case 4800:
-                    baudrate = Posix.B4800;
+                    posix_baudrate = Posix.B4800;
                     break;
                 case 9600:
-                    baudrate = Posix.B9600;
+                    posix_baudrate = Posix.B9600;
                     break;
                 case 19200:
-                    baudrate = Posix.B19200;
+                    posix_baudrate = Posix.B19200;
                     break;
                 case 38400:
-                    baudrate = Posix.B38400;
+                    posix_baudrate = Posix.B38400;
                     break;
                 case 57600:
-                    baudrate = Posix.B57600;
+                    posix_baudrate = Posix.B57600;
                 break;
                 case 115200:
                 case 0:
-                    baudrate = Posix.B115200;
+                    posix_baudrate = Posix.B115200;
                     break;
                 case 230400:
-                    baudrate = Posix.B230400;
+                    posix_baudrate = Posix.B230400;
                     break;
                 default:
-                    baudrate = Posix.B115200;
+                    posix_baudrate = Posix.B115200;
                     break;
             }
 
@@ -124,8 +126,8 @@ public class MWSerial : Object
             Posix.cfmakeraw(ref newtio);
             newtio.c_cc[Posix.VTIME]=0;
             newtio.c_cc[Posix.VMIN]=0;
-            Posix.cfsetospeed(ref newtio, baudrate);
-            Posix.cfsetispeed(ref newtio, baudrate);
+            Posix.cfsetospeed(ref newtio, posix_baudrate);
+            Posix.cfsetispeed(ref newtio, posix_baudrate);
             Posix.tcsetattr(fd, Posix.TCSANOW, newtio);
         }
         available = true;
@@ -150,6 +152,7 @@ public class MWSerial : Object
     {
         try
         {
+            baudrate = 0;
             if(host.length == 0)
             {
                 try {
