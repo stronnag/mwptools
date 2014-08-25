@@ -8,6 +8,18 @@ public struct REPLAY_rec
 public class ReplayThread : GLib.Object
 {
     public bool playon  {get; set;}
+
+    private size_t serialise_sf(LTM_SFRAME b, uint8 []tx)
+    {
+        uint8 *p;
+        p = serialise_i16(tx, b.vbat);
+        p = serialise_i16(p, b.vcurr);
+        *p++ = b.rssi;
+        *p++ = b.airspeed;
+        *p++ = b.flags;
+        return (p - &tx[0]);
+    }
+
     private size_t serialise_misc(MSP_MISC misc, uint8 [] tbuf)
     {
         uint8 *rp;
@@ -109,6 +121,21 @@ public class ReplayThread : GLib.Object
         p = serialise_u16(p, b.angy);
         p = serialise_u16(p, b.heading);
         return (p - &tx[0]);
+    }
+
+    private size_t serialise_wp(MSP_WP w, uint8[] tmp)
+    {
+        uint8* rp = tmp;
+        *rp++ = w.wp_no;
+        *rp++ = w.action;
+        rp = serialise_i32(rp, w.lat);
+        rp = serialise_i32(rp, w.lon);
+        rp = serialise_u32(rp, w.altitude);
+        rp = serialise_u16(rp, w.p1);
+        rp = serialise_u16(rp, w.p2);
+        rp = serialise_u16(rp, w.p3);
+        *rp++ = w.flag;
+        return (rp-&tmp[0]);
     }
 
     private void send_rec(int fd, MSP.Cmds cmd, uint len, uint8 []buf)
@@ -295,7 +322,21 @@ public class ReplayThread : GLib.Object
                                     s.rssi = (uint8)(obj.get_int_member("rssi"));
                                     s.airspeed = (uint8)(obj.get_int_member("airspeed"));
                                     s.flags = (uint8)(obj.get_int_member("flags"));
+
+                                    serialise_sf(s,buf);
+                                    send_rec(fd,MSP.Cmds.TS_FRAME, MSize.LTM_SFRAME,buf);
                                     break;
+
+                                case "wp_poll":
+                                    var w = MSP_WP();
+                                    w.wp_no = (uint8)(obj.get_int_member("wp_no"));
+                                    w.lat = (int32)(obj.get_int_member("lat"));
+                                    w.lon = (int32)(obj.get_int_member("lon"));
+                                    w.altitude = (uint32)(obj.get_int_member("alt"));
+                                    serialise_wp(w,buf);
+                                    send_rec(fd,MSP.Cmds.INFO_WP, MSize.MSP_WP,buf);
+                                    break;
+
                                 default:
                                     break;
                             }

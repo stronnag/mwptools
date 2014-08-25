@@ -54,7 +54,8 @@ public class MSP : Object
             BOXIDS = 119,
             TG_FRAME = (0x1000 + 'G'),
             TA_FRAME = (0x1000 + 'A'),
-            TS_FRAME = (0x1000 + 'S')
+            TS_FRAME = (0x1000 + 'S'),
+            INFO_WP = 0x2000
     }
 
     public enum Sensors

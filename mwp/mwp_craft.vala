@@ -32,6 +32,9 @@ public class Craft : GLib.Object
     private Champlain.MarkerLayer pmlayer;
     private int npath = 0;
     private static Clutter.Color cyan = { 0,0xff,0xff, 0xa0 };
+    private static Champlain.Label homep ;
+    private static Champlain.Label posp ;
+
     private static string[] icons =
     {
         "QuadX.png",
@@ -89,6 +92,7 @@ public class Craft : GLib.Object
             view.add_layer (pmlayer);
         }
         view.add_layer (layer);
+        homep = posp = null;
 
 // Not properly implemented in (13.10 and earlier) Ubuntu
 #if NOBB
@@ -115,6 +119,7 @@ public class Craft : GLib.Object
             pmlayer.remove_all();
             path.remove_all();
             npath = 0;
+            homep = posp = null;
         }
     }
 
@@ -164,5 +169,39 @@ public class Craft : GLib.Object
         var lat = view.y_to_latitude(y);
         var lon = view.x_to_longitude(x);
         icon.set_location (lat, lon);
+    }
+
+    public void special_wp(uint8 wpno, double lat, double lon)
+    {
+        Champlain.Label m;
+        Clutter.Color colour;
+        Clutter.Color black = { 0,0,0, 0xff };
+        if(wpno == 0)
+        {
+            if(homep == null)
+            {
+                homep = new Champlain.Label.with_text ("⏏", "Sans 10",null,null);
+                homep.set_alignment (Pango.Alignment.RIGHT);
+                colour = {0xff, 0x0, 0x0, 0xc8};
+                homep.set_color (colour);
+                homep.set_text_color(black);
+                pmlayer.add_marker(homep);
+            }
+            m = homep;
+        }
+        else
+        {
+            if(posp == null)
+            {
+                posp = new Champlain.Label.with_text ("∞", "Sans 10",null,null);
+                posp.set_alignment (Pango.Alignment.RIGHT);
+                colour = { 0x4c, 0xfe, 0, 0xc8};
+                posp.set_color (colour);
+                posp.set_text_color(black);
+                pmlayer.add_marker(posp);
+            }
+            m = posp;
+        }
+        m.set_location (lat, lon);
     }
 }

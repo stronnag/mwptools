@@ -633,12 +633,21 @@
               <placeholder/>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkLabel" id="errlab">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="verlab">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="halign">end</property>
                 <property name="justify">center</property>
                 <property name="ellipsize">end</property>
               </object>
@@ -652,6 +661,7 @@
               <object class="GtkLabel" id="typlab">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="halign">start</property>
                 <property name="justify">center</property>
               </object>
               <packing>

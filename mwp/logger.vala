@@ -257,7 +257,7 @@ public class Logger : GLib.Object
 
     public static void wp_poll(MSP_WP w)
     {
-        var builder = init ("altitude");
+        var builder = init ("wp_poll");
         builder.set_member_name ("wp_no");
         builder.add_int_value(w.wp_no);
         builder.set_member_name ("lat");

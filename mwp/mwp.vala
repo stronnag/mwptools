@@ -114,6 +114,7 @@ public class MWPlanner : GLib.Object {
     private uint8 armed = 0;
     private bool npos = false;
     private bool gpsfix;
+    private time_t lastrx;
 
     private Thread<int> thr;
     private uint plid = 0;
@@ -680,6 +681,7 @@ public class MWPlanner : GLib.Object {
             return;
         }
         Logger.log_time();
+        time_t(out lastrx);
 
         switch(cmd)
         {
@@ -809,12 +811,37 @@ public class MWPlanner : GLib.Object {
 
                         int tcycle = 0;
                         uint8 wpx = 0;
-
+                        bool rxerr = false;
+                        time_t startrx = lastrx;
+                        var errlab = builder.get_object ("errlab") as Gtk.Label;
                         gpstid = Timeout.add(timeout, () => {
+                                time_t now;
+                                time_t(out now);
+                                int tov = 5 * (int)val;
+                                if(((int)now - (int)lastrx) > tov)
+                                {
+                                    if(rxerr==false)
+                                    {
+                                        var el = "No data for %d seconds".printf(tov);
+                                        errlab.set_label(el);
+                                        rxerr=true;
+                                        stderr.printf("Comms t/o after %d\n",
+                                                      (int)(now - startrx));
+                                    }
+                                }
+                                else
+                                {
+                                    if(rxerr)
+                                    {
+                                        errlab.set_label("");
+                                        rxerr=false;
+                                    }
+                                }
                                 var req=requests[tcycle];
                                 if(req == MSP.Cmds.WP && gpsfix == true
                                    && armed == 1)
                                 {
+//                                    stderr.printf("req wp %u\n", wpx);
                                     send_cmd(req,&wpx,1);
                                     if(wpx == 0)
                                         wpx = 16;
@@ -895,6 +922,21 @@ public class MWPlanner : GLib.Object {
                         }
                         larmed = armed;
                     }
+                }
+                break;
+
+            case MSP.Cmds.INFO_WP:
+                uint8* rp = raw;
+                var w = MSP_WP();
+                w.wp_no = *rp++;
+                rp++; // skip action
+                rp = deserialise_i32(rp, out w.lat);
+                rp = deserialise_i32(rp, out w.lon);
+                double rlat = w.lat/10000000.0;
+                double rlon = w.lon/10000000.0;
+                if(craft != null && rlat != 0.0 && rlon != 0.0)
+                {
+                    craft.special_wp(w.wp_no, rlat, rlon);
                 }
                 break;
 
@@ -1021,15 +1063,19 @@ public class MWPlanner : GLib.Object {
                 have_wp = true;
                 MSP_WP w = MSP_WP();
                 uint8* rp = raw;
-                w.wp_no = *rp++;
-                w.action = *rp++;
-                rp = deserialise_i32(rp, out w.lat);
-                rp = deserialise_i32(rp, out w.lon);
-                rp = deserialise_u32(rp, out w.altitude);
-                rp = deserialise_i16(rp, out w.p1);
-                rp = deserialise_u16(rp, out w.p2);
-                rp = deserialise_u16(rp, out w.p3);
-                w.flag = *rp;
+
+                if(wpmgr.wp_flag != WPDL.POLL)
+                {
+                    w.wp_no = *rp++;
+                    w.action = *rp++;
+                    rp = deserialise_i32(rp, out w.lat);
+                    rp = deserialise_i32(rp, out w.lon);
+                    rp = deserialise_u32(rp, out w.altitude);
+                    rp = deserialise_i16(rp, out w.p1);
+                    rp = deserialise_u16(rp, out w.p2);
+                    rp = deserialise_u16(rp, out w.p3);
+                    w.flag = *rp;
+                }
 
                 if (wpmgr.wp_flag == WPDL.VALIDATE)
                 {
@@ -1156,9 +1202,8 @@ public class MWPlanner : GLib.Object {
                     w = MSP_WP();
                     w.wp_no = *rp++;
                     if(naze32 == false)
-                    {
                         rp++; // skip action
-                    }
+
                     rp = deserialise_i32(rp, out w.lat);
                     rp = deserialise_i32(rp, out w.lon);
                     rp = deserialise_u32(rp, out w.altitude);
@@ -1166,6 +1211,10 @@ public class MWPlanner : GLib.Object {
                     {
                         Logger.wp_poll(w);
                     }
+                    double rlat = w.lat/10000000.0;
+                    double rlon = w.lon/10000000.0;
+                    if(craft != null && rlat != 0.0 && rlon != 0.0)
+                        craft.special_wp(w.wp_no, rlat, rlon);
                 }
                 else
                 {
@@ -1992,9 +2041,7 @@ public class MWPlanner : GLib.Object {
         else
         {
             var rec = REPLAY_rec();
-            var ret = Posix.read(gio.unix_get_fd(),
-                                 &rec,
-                                 sizeof(REPLAY_rec));
+            var ret = Posix.read(gio.unix_get_fd(), &rec, sizeof(REPLAY_rec));
             if(ret == 0)
                 done = true;
             else
@@ -2015,11 +2062,10 @@ public class MWPlanner : GLib.Object {
     {
         thr.join();
         thr = null;
-        Source.remove(plid);
+        remove_tid(ref plid);
         try  { io_read.shutdown(false); } catch {}
         Posix.close(playfd[0]);
         Posix.close(playfd[1]);
-        plid = 0;
         conf.logarmed = xlog;
         conbutton.sensitive = true;
         menureplay.label = "Replay Log file";
