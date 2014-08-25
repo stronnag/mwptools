@@ -113,6 +113,7 @@ public class MWPlanner : GLib.Object {
     private double _ilat = 0;
     private uint8 armed = 0;
     private bool npos = false;
+    private bool gpsfix;
 
     private Thread<int> thr;
     private uint plid = 0;
@@ -130,7 +131,8 @@ public class MWPlanner : GLib.Object {
     private enum WPDL {
         IDLE=0,
         VALIDATE,
-        REPLACE
+        REPLACE,
+        POLL
     }
 
     private struct WPMGR
@@ -768,6 +770,7 @@ public class MWPlanner : GLib.Object {
                             reqsize += MSize.MSP_ALTITUDE;
                         }
 
+
                         if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
                         {
                             sflags |= NavStatus.SPK.GPS;
@@ -784,6 +787,12 @@ public class MWPlanner : GLib.Object {
                                 craft = new Craft(view, mrtype,norotate, gps_trail);
                                 craft.park();
                             }
+                            if(naze32)
+                            {
+                                wpmgr.wp_flag = WPDL.POLL;
+                                requests += MSP.Cmds.WP;
+                                reqsize += 18;
+                            }
                         }
 
                         var nreqs = requests.length;
@@ -792,14 +801,30 @@ public class MWPlanner : GLib.Object {
                             // data we send, response is structs + this
                         var qsize = nreqs * 6;
                         reqsize += qsize;
+                        if(naze32)
+                            qsize += 1; // for WP no
 
                         print("Timer cycle for %d (%dms) items, %lu => %lu bytes\n",
                               nreqs,timeout,qsize,reqsize);
 
                         int tcycle = 0;
+                        uint8 wpx = 0;
+
                         gpstid = Timeout.add(timeout, () => {
                                 var req=requests[tcycle];
-                                send_cmd(req, null, 0);
+                                if(req == MSP.Cmds.WP && gpsfix == true
+                                   && armed == 1)
+                                {
+                                    send_cmd(req,&wpx,1);
+                                    if(wpx == 0)
+                                        wpx = 16;
+                                    else
+                                        wpx = 0;
+                                }
+                                else
+                                {
+                                    send_cmd(req, null, 0);
+                                }
                                 tcycle += 1;
                                 tcycle %= nreqs;
                                 if(nopoll)
@@ -970,9 +995,9 @@ public class MWPlanner : GLib.Object {
                 rp = deserialise_i16(rp, out rg.gps_altitude);
                 rp = deserialise_u16(rp, out rg.gps_speed);
                 deserialise_u16(rp, out rg.gps_ground_course);
-                var fix = gpsinfo.update(rg, conf.dms);
+                gpsfix = (gpsinfo.update(rg, conf.dms) != 0);
                 _nsats = rg.gps_numsat;
-                if (fix != 0)
+                if (gpsfix)
                 {
                     if(craft != null)
                     {
@@ -1016,7 +1041,7 @@ public class MWPlanner : GLib.Object {
                     else if (w.lat != wpmgr.wps[wpmgr.wpidx].lat)
                         fail |= WPFAIL.LAT;
                     else if (w.lon != wpmgr.wps[wpmgr.wpidx].lon)
-                        fail |= WPFAIL.LON;
+                            fail |= WPFAIL.LON;
                     else if (w.altitude != wpmgr.wps[wpmgr.wpidx].altitude)
                         fail |= WPFAIL.ALT;
                     else if (w.p1 != wpmgr.wps[wpmgr.wpidx].p1)
@@ -1092,7 +1117,7 @@ public class MWPlanner : GLib.Object {
                             {
                                 if(mi.action != MSP.Action.RTH &&
                                    mi.action != MSP.Action.JUMP &&
-                                    mi.action != MSP.Action.SET_HEAD)
+                                   mi.action != MSP.Action.SET_HEAD)
                                 {
                                     if (mi.lat > ms.maxy)
                                         ms.maxy = mi.lat;
@@ -1126,12 +1151,27 @@ public class MWPlanner : GLib.Object {
                         request_wp(w.wp_no+1);
                     }
                 }
+                else if (wpmgr.wp_flag == WPDL.POLL)
+                {
+                    w = MSP_WP();
+                    w.wp_no = *rp++;
+                    if(naze32 == false)
+                    {
+                        rp++; // skip action
+                    }
+                    rp = deserialise_i32(rp, out w.lat);
+                    rp = deserialise_i32(rp, out w.lon);
+                    rp = deserialise_u32(rp, out w.altitude);
+                    if(Logger.is_logging)
+                    {
+                        Logger.wp_poll(w);
+                    }
+                }
                 else
                 {
                     stderr.printf("unsolicited WP #%d\n", w.wp_no);
                 }
             }
-
             break;
 
             case MSP.Cmds.EEPROM_WRITE:

@@ -254,4 +254,21 @@ public class Logger : GLib.Object
 	gen.set_root (root);
         write_stream();
     }
+
+    public static void wp_poll(MSP_WP w)
+    {
+        var builder = init ("altitude");
+        builder.set_member_name ("wp_no");
+        builder.add_int_value(w.wp_no);
+        builder.set_member_name ("lat");
+        builder.add_int_value(w.lat);
+        builder.set_member_name ("lon");
+        builder.add_int_value(w.lon);
+        builder.set_member_name ("alt");
+        builder.add_int_value(w.altitude);
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+	gen.set_root (root);
+        write_stream();
+    }
 }

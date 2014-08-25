@@ -64,6 +64,17 @@ public struct MSP_WP
     public uint8 flag;
 }
 
+public struct MSP_N32_WP
+{
+    public uint8 wp_no;
+    public int32 lat;
+    public int32 lon;
+    public uint32 alt;
+    public int16 p1;
+    public uint16 p2;
+    public uint8 p3;
+}
+
 public struct MSP_NAV_STATUS
 {
     public uint8 gps_mode;

@@ -307,7 +307,11 @@ public class MWSerial : Object
         else
         {
             if(is_serial)
+            {
                 res = Posix.read(fd,buf,128);
+                if(res == 0)
+                    return true;
+            }
             else
             {
                 try
@@ -321,20 +325,7 @@ public class MWSerial : Object
             debug("recv: %db\n", (int)res);
             if(print_raw == true)
             {
-                if (res > 0)
-                {
-                    var dt = new DateTime.now_local();
-                    var secs = dt.get_seconds();
-                    var ds0 = dt.format("\n%H:%M:");
-                    stderr.printf("%s%04.1f ", ds0,secs);
-                    dump_raw_data(buf, (int)res);
-                }
-                    /*
-                else
-                {
-                    stderr.printf(" res = %d", (int)res);
-                }
-                    */
+                dump_raw_data(buf, (int)res);
             }
 
             for(var nc = 0; nc < res; nc++)
@@ -606,13 +597,13 @@ public class MWSerial : Object
 
     public void dump_raw_data (uint8[]buf, int len)
     {
-        stderr.printf("%3d: ", len);
         for(var nc = 0; nc < len; nc++)
         {
             if(buf[nc] == '$')
                 stderr.printf("\n");
             stderr.printf("%02x ", buf[nc]);
         }
+        stderr.printf("(%d) ",len);
 /*
         for(var nc = 0; nc < len; nc++)
         {
