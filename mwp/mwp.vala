@@ -822,11 +822,13 @@ public class MWPlanner : GLib.Object {
                                 {
                                     if(rxerr==false)
                                     {
+                                        bleet_sans_merci("beep-sound.ogg");
                                         var el = "No data for %d seconds".printf(tov);
                                         errlab.set_label(el);
                                         rxerr=true;
                                         stderr.printf("Comms t/o after %d\n",
                                                       (int)(now - startrx));
+
                                     }
                                 }
                                 else
