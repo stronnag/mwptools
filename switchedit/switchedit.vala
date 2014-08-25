@@ -175,14 +175,15 @@ public class SwitchEdit : Object
                     grid1.show_all();
                     xflag = 0;
                     int intvl;
-                    var baud = msp.baudrate;
-                    if(baud > 50000)
+                    var baud = s.baudrate;
+                    if(baud == 0 || baud > 50000)
                         intvl = 100;
                     else if (baud > 32000)
-                        intvl = 5000;
+                        intvl = 500;
                     else
                         intvl = 1000;
 
+                    stderr.printf("Using %d for %u\n", intvl, baud);
                     tid = Timeout.add(intvl, () => {
                             s.send_command(MSP.Cmds.STATUS,null,0);
                             s.send_command(MSP.Cmds.RC,null,0);
