@@ -670,6 +670,21 @@ public class MWPlanner : GLib.Object {
         return true;
     }
 
+    private void set_error_status(string? e)
+    {
+        var errlab = builder.get_object ("errlab") as Gtk.Label;
+        if(e != null)
+        {
+            errlab.set_label(e);
+            stderr.printf("%s\n", e);
+            bleet_sans_merci("beep-sound.ogg");
+        }
+        else
+        {
+            errlab.set_label("");
+        }
+    }
+
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
     {
         if(errs == true)
@@ -796,6 +811,10 @@ public class MWPlanner : GLib.Object {
                                 reqsize += 18;
                             }
                         }
+                        else
+                        {
+                            set_error_status("No GPS detected");
+                        }
 
                         var nreqs = requests.length;
                         int timeout = (int)(val*1000 / nreqs);
@@ -813,7 +832,7 @@ public class MWPlanner : GLib.Object {
                         uint8 wpx = 0;
                         bool rxerr = false;
                         time_t startrx = lastrx;
-                        var errlab = builder.get_object ("errlab") as Gtk.Label;
+
                         gpstid = Timeout.add(timeout, () => {
                                 time_t now;
                                 time_t(out now);
@@ -822,9 +841,7 @@ public class MWPlanner : GLib.Object {
                                 {
                                     if(rxerr==false)
                                     {
-                                        bleet_sans_merci("beep-sound.ogg");
-                                        var el = "No data for %d seconds".printf(tov);
-                                        errlab.set_label(el);
+                                        set_error_status("No data for %d seconds".printf(tov));
                                         rxerr=true;
                                         stderr.printf("Comms t/o after %d\n",
                                                       (int)(now - startrx));
@@ -835,7 +852,7 @@ public class MWPlanner : GLib.Object {
                                 {
                                     if(rxerr)
                                     {
-                                        errlab.set_label("");
+                                        set_error_status(null);
                                         rxerr=false;
                                     }
                                 }
