@@ -115,6 +115,7 @@ public class MWPlanner : GLib.Object {
     private bool npos = false;
     private bool gpsfix;
     private time_t lastrx;
+    private int lmin = 0;
 
     private Thread<int> thr;
     private uint plid = 0;
@@ -873,6 +874,7 @@ public class MWPlanner : GLib.Object {
                                 }
                                 tcycle += 1;
                                 tcycle %= nreqs;
+
                                 if(nopoll)
                                 {
                                     stdout.printf("Stop polling\n");
@@ -905,6 +907,7 @@ public class MWPlanner : GLib.Object {
                     {
                         Logger.armed((armed == 1), duration);
                     }
+
                     if(armed != larmed)
                     {
                         if(gps_trail)
@@ -926,7 +929,8 @@ public class MWPlanner : GLib.Object {
                                 logb.active = true;
                                 Logger.armed(true,duration);
                             }
-                        }
+                            duration_timer();
+}
                         else
                         {
                             if (conf.audioarmed == true)
@@ -1379,6 +1383,7 @@ public class MWPlanner : GLib.Object {
                     }
                     if (armed == 1)
                     {
+                        duration_timer();
                         if (conf.audioarmed == true)
                         {
                             audio_cb.active = true;
@@ -1387,7 +1392,7 @@ public class MWPlanner : GLib.Object {
                         {
                             logb.active = true;
                             Logger.armed(true,duration);
-                            }
+                        }
                     }
                     else
                     {
@@ -1415,6 +1420,33 @@ public class MWPlanner : GLib.Object {
                 stderr.printf ("** Unknown response %d\n", cmd);
                 break;
         }
+    }
+
+    private void duration_timer()
+    {
+        lmin = 0;
+        Timeout.add_seconds(1, () => {
+                int mins,secs;
+                bool r = true;
+
+                if (duration <  0)
+                {
+                    mins = secs = 0;
+                    r = false;
+                }
+                else
+                {
+                    mins = (int)duration / 60;
+                    secs = (int)duration % 60;
+                    if(mins != lmin)
+                    {
+                        navstatus.update_duration(mins);
+                        lmin = mins;
+                    }
+                }
+                elapsedlab.set_text("%02d:%02d".printf(mins,secs));
+                return r;
+            });
     }
 
     private size_t serialise_wp(MSP_WP w, uint8[] tmp)
@@ -1506,21 +1538,6 @@ public class MWPlanner : GLib.Object {
             vf = (float)ivbat/10.0f;
             str = "%.1fv".printf(vf);
         }
-        int mins,secs;
-        if (duration > 0)
-        {
-            mins = (int)duration / 60;
-            secs = (int)duration % 60;
-            if(mins > 0 && secs == 0)
-            {
-                navstatus.update_duration(mins);
-            }
-        }
-        else
-        {
-            mins = secs = 0;
-        }
-        elapsedlab.set_text("%02d:%02d".printf(mins,secs));
 
         vbatlab="<span background=\"%s\" weight=\"bold\">%s</span>".printf(
             bcols[icol], str);
@@ -1700,6 +1717,7 @@ public class MWPlanner : GLib.Object {
         c.set_label("gtk-connect");
         menuncfg.sensitive = menuup.sensitive = menudown.sensitive = false;
         navconf.hide();
+        duration = -1;
         if(craft != null)
         {
             craft.remove_marker();
@@ -2020,6 +2038,7 @@ public class MWPlanner : GLib.Object {
         if(thr != null)
         {
             robj.playon = false;
+            duration = -1;
         }
         else
         {
