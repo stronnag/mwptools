@@ -47,6 +47,14 @@ public class MWSerial : Object
     private uint8 _class;
     private unowned ublox_buffer _buffer;
 
+    private static string devname = "/dev/ttyUSB0";
+    private static int brate = 38400;
+    const OptionEntry[] options = {
+        { "device", 'd', 0, OptionArg.STRING, out devname, "device name", "/dev/ttyUSB0"},
+        { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", "38400"},
+        {null}
+    };
+
     public enum UPXProto
     {
         PREAMBLE1 = 0xb5,
@@ -352,8 +360,19 @@ public class MWSerial : Object
 
     public static int main (string[] args)
     {
-        var dev = (args.length > 1) ? args[1] : "/dev/ttyUBS0";
-        var baud = int.parse((args.length > 2) ? args[2] : "115200");
+        try {
+            var opt = new OptionContext("");
+            opt.set_help_enabled(true);
+            opt.add_main_entries(options, null);
+            opt.parse(ref args);
+        }
+        catch (OptionError e) {
+            stderr.printf("Error: %s\n", e.message);
+            stderr.printf("Run '%s --help' to see a full list of available "+
+                          "options\n", args[0]);
+            return 1;
+        }
+
         uint32 [] init_speed = {9600,19200,38400,57600,115200};
         uint8 [] init =
             {
@@ -378,23 +397,23 @@ public class MWSerial : Object
         Timeout.add(100, () => {
                 var str="";
 
-                if(baud == 19200)
+                if(brate == 19200)
                     str = "$PUBX,41,1,0003,0001,19200,0*23\r\n";
-                else if (baud == 38400)
+                else if (brate == 38400)
                     str= "$PUBX,41,1,0003,0001,38400,0*26\r\n";
-                else if (baud == 57600)
+                else if (brate == 57600)
                     str = "$PUBX,41,1,0003,0001,57600,0*2D\r\n";
-                else if (baud == 115200)
+                else if (brate == 115200)
                     str = "$PUBX,41,1,0003,0001,115200,0*1E\r\n";
 
                 foreach (var rate in init_speed)
                 {
-                    s.open(dev,rate);
+                    s.open(devname,rate);
                     s.ublox_write(s.fd, str.data);
                     Thread.usleep(10000);
                     s.close();
                 }
-                s.open(dev,baud);
+                s.open(devname,brate);
                 s.ublox_write(s.fd, init);
                 return false;
             });
