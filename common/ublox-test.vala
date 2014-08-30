@@ -44,7 +44,6 @@ public class MWSerial : Object
     private uint8 _fixt;
     private uint16 _payload_length;
     private uint16 _payload_counter;
-//  static bool next_fix;
     private uint8 _class;
     private unowned ublox_buffer _buffer;
 
@@ -240,10 +239,13 @@ public class MWSerial : Object
     {
         if(_fix_ok)
         {
-            stdout.printf("lat: %f lon: %f elev: %f ",
+            stdout.printf("lat: %f lon: %f elev: %f acc(h/v): %.1f/%.1f ",
                           _buffer.posllh.latitude/10000000.0,
                           _buffer.posllh.longitude/10000000.0,
-                          _buffer.posllh.altitude_msl / 1000.0);
+                          _buffer.posllh.altitude_msl / 1000.0,
+                          _buffer.posllh.horizontal_accuracy/1000.0,
+                          _buffer.posllh.vertical_accuracy/1000.0
+                          );
         }
         stdout.printf("sats: %d, fix %d\n", _numsat, _fixt);
     }
