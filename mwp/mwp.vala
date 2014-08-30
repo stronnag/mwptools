@@ -57,7 +57,8 @@ public class MWPlanner : GLib.Object {
     private bool have_status;
     private bool have_wp;
     private bool have_nc;
-    private uint8 mrtype=3; // default to quad
+    private uint8 dmrtype=3; // default to quad
+    private uint8 mrtype;
     private uint8 mvers = 230;
     private uint32 capability;
     private uint gpstid;
@@ -706,6 +707,12 @@ public class MWPlanner : GLib.Object {
                 have_vers = true;
                 mvers = raw[0];
                 mrtype = raw[1];
+                if(dmrtype != mrtype)
+                {
+                    craft = null;
+                    dmrtype = mrtype;
+                }
+
                 deserialise_u32(raw+3, out capability);
                 naze32 = ((capability & 0x80000000) == 0x80000000);
                 if(naze32 == true)
