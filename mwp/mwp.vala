@@ -843,25 +843,23 @@ public class MWPlanner : GLib.Object {
                         uint8 wpx = 0;
                         bool rxerr = false;
                         time_t startrx = lastrx;
+                        int tov = 5 * (int)val;
 
                         gpstid = Timeout.add(timeout, () => {
                                 time_t now;
                                 time_t(out now);
-                                int tov = 5 * (int)val;
                                 if(((int)now - (int)lastrx) > tov)
                                 {
-                                    if(rxerr==false)
                                     {
                                         set_error_status("No data for %d seconds".printf(tov));
                                         rxerr=true;
                                         stderr.printf("Comms t/o after %d\n",
                                                       (int)(now - startrx));
-
+                                        lastrx = now + (30 - tov);
                                     }
                                 }
                                 else
                                 {
-                                    stderr.printf("rxtest %s\n", rxerr.to_string());
                                     if(rxerr)
                                     {
                                         set_error_status(null);
@@ -872,7 +870,6 @@ public class MWPlanner : GLib.Object {
                                 if(req == MSP.Cmds.WP && gpsfix == true
                                    && armed == 1)
                                 {
-//                                    stderr.printf("req wp %u\n", wpx);
                                     send_cmd(req,&wpx,1);
                                     if(wpx == 0)
                                         wpx = 16;

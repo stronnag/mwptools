@@ -49,9 +49,12 @@ public class MWSerial : Object
 
     private static string devname = "/dev/ttyUSB0";
     private static int brate = 38400;
+    private static bool ureset = false;
+
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", "/dev/ttyUSB0"},
         { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", "38400"},
+        { "reset", 'r', 0, OptionArg.NONE, out ureset, "Reset device", null},
         {null}
     };
 
@@ -374,6 +377,8 @@ public class MWSerial : Object
         }
 
         uint32 [] init_speed = {9600,19200,38400,57600,115200};
+        uint8 [] reset = {0xB5, 0x62, 0x06, 0x04, 0x04, 0x00, 0xFF, 0x87,
+                          0x00, 0x00, 0x94, 0xF5};
         uint8 [] init =
             {
                 0xB5,0x62,0x06,0x01,0x03,0x00,0xF0,0x05,0x00,0xFF,0x19,
@@ -414,7 +419,16 @@ public class MWSerial : Object
                     s.close();
                 }
                 s.open(devname,brate);
-                s.ublox_write(s.fd, init);
+                if(ureset)
+                {
+                    stderr.puts("send hard reset\n");
+                    s.ublox_write(s.fd, reset);
+                }
+                else
+                {
+                    stderr.puts("send init\n");
+                    s.ublox_write(s.fd, init);
+                }
                 return false;
             });
         ml.run();
