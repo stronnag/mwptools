@@ -34,6 +34,7 @@ public class MWPlanner : GLib.Object {
     private Gtk.SpinButton zoomer;
     private Gtk.Label poslabel;
     public Gtk.Label stslabel;
+    private Gtk.Label errlab;
     private Gtk.Label elapsedlab;
     private double lx;
     private double ly;
@@ -531,6 +532,7 @@ public class MWPlanner : GLib.Object {
 
         poslabel = builder.get_object ("poslabel") as Gtk.Label;
         stslabel = builder.get_object ("missionlab") as Gtk.Label;
+        errlab = builder.get_object ("errlab") as Gtk.Label;
         elapsedlab =  builder.get_object ("elapsedlab") as Gtk.Label;
         logb = builder.get_object ("logger_cb") as Gtk.CheckButton;
         logb.toggled.connect (() => {
@@ -674,7 +676,6 @@ public class MWPlanner : GLib.Object {
 
     private void set_error_status(string? e)
     {
-        var errlab = builder.get_object ("errlab") as Gtk.Label;
         if(e != null)
         {
             errlab.set_label(e);
@@ -698,7 +699,9 @@ public class MWPlanner : GLib.Object {
             return;
         }
         Logger.log_time();
-        time_t(out lastrx);
+
+        if(cmd != MSP.Cmds.RADIO)
+            time_t(out lastrx);
 
         switch(cmd)
         {
