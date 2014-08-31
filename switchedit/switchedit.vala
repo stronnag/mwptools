@@ -183,7 +183,6 @@ public class SwitchEdit : Object
                     else
                         intvl = 1000;
 
-                    stderr.printf("Using %d for %u\n", intvl, baud);
                     tid = Timeout.add(intvl, () => {
                             s.send_command(MSP.Cmds.STATUS,null,0);
                             s.send_command(MSP.Cmds.RC,null,0);
