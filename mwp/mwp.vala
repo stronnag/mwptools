@@ -861,6 +861,7 @@ public class MWPlanner : GLib.Object {
                                 }
                                 else
                                 {
+                                    stderr.printf("rxtest %s\n", rxerr.to_string());
                                     if(rxerr)
                                     {
                                         set_error_status(null);
@@ -1741,6 +1742,7 @@ public class MWPlanner : GLib.Object {
             serial_doom(conbutton);
             verlab.set_label("");
             typlab.set_label("");
+            errlab.set_label("");
         }
         else
         {
