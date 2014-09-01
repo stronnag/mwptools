@@ -183,6 +183,7 @@ public class MWPlanner : GLib.Object {
         builder = new Builder ();
         conf = new MWPSettings();
         conf.read_settings();
+        var layfile = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp",".layout.xml");
 
         var fn = MWPUtils.find_conf_file("mwp.ui");
         if (fn == null)
@@ -205,7 +206,18 @@ public class MWPlanner : GLib.Object {
 
         builder.connect_signals (null);
         window = builder.get_object ("window1") as Gtk.Window;
-        window.destroy.connect (Gtk.main_quit);
+        window.destroy.connect (() =>
+            {
+                    /*
+                     * We only save the layout on clean exit ...
+                if (layout.is_dirty())
+                {
+                    layout.save_layout("mwp");
+                    layout.save_to_file(layfile);
+                }
+                    */
+                Gtk.main_quit();
+            });
 
         window.window_state_event.connect( (e) => {
                 wdw_state = ((e.new_window_state & Gdk.WindowState.FULLSCREEN) != 0);
@@ -253,6 +265,11 @@ public class MWPlanner : GLib.Object {
 
         menuop = builder.get_object ("menu_quit") as Gtk.MenuItem;
         menuop.activate.connect (() => {
+                if(layout.is_dirty())
+                {
+                    layout.save_layout("mwp");
+                    layout.save_to_file(layfile);
+                }
                 Gtk.main_quit();
             });
 
@@ -460,8 +477,9 @@ public class MWPlanner : GLib.Object {
         gpsinfo = new GPSInfo(grid);
 
         var dock = new Dock ();
-        this.master = dock.master;
-        this.layout = new DockLayout (dock);
+        master = dock.master;
+        layout = new DockLayout (master);
+
         var dockbar = new DockBar (dock);
         dockbar.set_style (DockBarStyle.ICONS);
 
@@ -646,10 +664,16 @@ public class MWPlanner : GLib.Object {
 
         Timeout.add_seconds(5, () => { return try_connect(); });
         window.show_all();
-        dockitem[1].iconify_item ();
-        dockitem[2].iconify_item ();
-        dockitem[3].hide ();
-        dockitem[4].hide ();
+
+        if(layout.load_from_file(layfile) && layout.load_layout("mwp"))
+            ;
+        else
+        {
+            dockitem[1].iconify_item ();
+            dockitem[2].iconify_item ();
+            dockitem[3].hide ();
+            dockitem[4].hide ();
+        }
         navstatus.setdock(dockitem[2]);
         radstatus.setdock(dockitem[4]);
     }
