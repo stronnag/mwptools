@@ -24,9 +24,9 @@ using GtkChamplain;
 
 extern double get_locale_double(string str);
 
-public class MWPlanner : GLib.Object {
+public class MWPlanner : Gtk.Application {
     public Builder builder;
-    public Gtk.Window window;
+    public Gtk.ApplicationWindow window;
     public  Champlain.View view;
     public MWPMarkers markers;
     private string last_file;
@@ -179,6 +179,13 @@ public class MWPlanner : GLib.Object {
 
     public MWPlanner ()
     {
+        Object(application_id: "mwp.application", flags: ApplicationFlags.FLAGS_NONE);
+    }
+
+    public override void activate ()
+    {
+
+        base.startup();
         wpmgr = WPMGR();
         builder = new Builder ();
         conf = new MWPSettings();
@@ -205,7 +212,10 @@ public class MWPlanner : GLib.Object {
         gps_trail = !gps_trail; // yet more jh logic
 
         builder.connect_signals (null);
-        window = builder.get_object ("window1") as Gtk.Window;
+        window = builder.get_object ("window1") as Gtk.ApplicationWindow;
+        this.add_window (window);
+        window.set_application (this);
+
         window.destroy.connect (() =>
             {
                     /*
@@ -216,7 +226,7 @@ public class MWPlanner : GLib.Object {
                     layout.save_to_file(layfile);
                 }
                     */
-                Gtk.main_quit();
+                quit();
             });
 
         window.window_state_event.connect( (e) => {
@@ -270,7 +280,7 @@ public class MWPlanner : GLib.Object {
                     layout.save_layout("mwp");
                     layout.save_to_file(layfile);
                 }
-                Gtk.main_quit();
+                quit();
             });
 
         menuop= builder.get_object ("menu_about") as Gtk.MenuItem;
@@ -1894,6 +1904,7 @@ public class MWPlanner : GLib.Object {
 
         var cell = new Gtk.CellRendererText();
         combo.pack_start(cell, false);
+
         combo.add_attribute(cell, "text", 1);
         combo.set_active(defval);
         combo.changed.connect (() => {
@@ -2059,11 +2070,6 @@ public class MWPlanner : GLib.Object {
             load_file(fn);
         }
         chooser.close ();
-    }
-
-    public void run()
-    {
-        Gtk.main();
     }
 
     private void replay_log()
