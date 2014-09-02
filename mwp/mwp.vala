@@ -34,7 +34,8 @@ public class MWPlanner : Gtk.Application {
     private Gtk.SpinButton zoomer;
     private Gtk.Label poslabel;
     public Gtk.Label stslabel;
-    private Gtk.Label errlab;
+    private Gtk.Statusbar statusbar;
+    private uint context_id;
     private Gtk.Label elapsedlab;
     private double lx;
     private double ly;
@@ -560,7 +561,8 @@ public class MWPlanner : Gtk.Application {
 
         poslabel = builder.get_object ("poslabel") as Gtk.Label;
         stslabel = builder.get_object ("missionlab") as Gtk.Label;
-        errlab = builder.get_object ("errlab") as Gtk.Label;
+        statusbar = builder.get_object ("statusbar1") as Gtk.Statusbar;
+        context_id = statusbar.get_context_id ("Starting");
         elapsedlab =  builder.get_object ("elapsedlab") as Gtk.Label;
         logb = builder.get_object ("logger_cb") as Gtk.CheckButton;
         logb.toggled.connect (() => {
@@ -712,13 +714,13 @@ public class MWPlanner : Gtk.Application {
     {
         if(e != null)
         {
-            errlab.set_label(e);
+            statusbar.push(context_id, e);
             stderr.printf("%s\n", e);
             bleet_sans_merci("beep-sound.ogg");
         }
         else
         {
-            errlab.set_label("");
+            statusbar.push(context_id, "");
         }
     }
 
@@ -884,12 +886,13 @@ public class MWPlanner : Gtk.Application {
                                 time_t(out now);
                                 if(((int)now - (int)lastrx) > tov)
                                 {
+                                    if(rxerr == false)
                                     {
                                         set_error_status("No data for %d seconds".printf(tov));
                                         rxerr=true;
                                         stderr.printf("Comms t/o after %d\n",
                                                       (int)(now - startrx));
-                                        lastrx = now + (30 - tov);
+                                            //lastrx = now + (30 - tov);
                                     }
                                 }
                                 else
@@ -897,6 +900,8 @@ public class MWPlanner : Gtk.Application {
                                     if(rxerr)
                                     {
                                         set_error_status(null);
+                                        stderr.printf("Comms revert after %d\n",
+                                                      (int)(now - startrx));
                                         rxerr=false;
                                     }
                                 }
@@ -1773,7 +1778,7 @@ public class MWPlanner : Gtk.Application {
             serial_doom(conbutton);
             verlab.set_label("");
             typlab.set_label("");
-            errlab.set_label("");
+            statusbar.push(context_id, "");
         }
         else
         {
@@ -2140,6 +2145,7 @@ public class MWPlanner : Gtk.Application {
         thr.join();
         thr = null;
         remove_tid(ref plid);
+        remove_tid(ref gpstid);
         try  { io_read.shutdown(false); } catch {}
         Posix.close(playfd[0]);
         Posix.close(playfd[1]);
