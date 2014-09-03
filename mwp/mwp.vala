@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+
 using Gtk;
 using Gdl;
 using Clutter;
@@ -74,6 +75,7 @@ public class MWPlanner : Gtk.Application {
     private bool vinit = false;
     private GtkChamplain.Embed embed;
     private PrefsDialog prefs;
+    private SetPosDialog setpos;
     private Gtk.AboutDialog about;
     private NavStatus navstatus;
     private RadioStatus radstatus;
@@ -271,6 +273,17 @@ public class MWPlanner : Gtk.Application {
                 {
                     audio_cb.sensitive = false;
                     audio_cb.active = false;
+                }
+            });
+
+        setpos = new SetPosDialog(builder);
+        menuop = builder.get_object ("menugoto") as Gtk.MenuItem;
+        menuop.activate.connect(() =>
+            {
+                double glat, glon;
+                if(setpos.get_position(out glat, out glon) == true)
+                {
+                    view.center_on(glat, glon);
                 }
             });
 

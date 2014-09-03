@@ -61,6 +61,42 @@ public class DeltaDialog : GLib.Object
 
 }
 
+public class SetPosDialog : GLib.Object
+{
+    private Gtk.Dialog dialog;
+    private Gtk.Entry lat_entry;
+    private Gtk.Entry lon_entry;
+
+    public SetPosDialog(Gtk.Builder builder)
+    {
+        dialog = builder.get_object ("gotodialog") as Gtk.Dialog;
+        lat_entry = builder.get_object ("golat") as Gtk.Entry;
+        lon_entry = builder.get_object ("golon") as Gtk.Entry;
+    }
+
+    public bool get_position(out double glat, out double glon)
+    {
+        var res = false;
+        dialog.show_all();
+        glat = glon = 0.0;
+        var id = dialog.run();
+        switch(id)
+        {
+            case 1001:
+                glat = get_locale_double(lat_entry.get_text());
+                glon = get_locale_double(lon_entry.get_text());
+                res = true;
+                break;
+
+            case 1002:
+                break;
+        }
+        dialog.hide();
+        return res;
+    }
+
+}
+
 public class PrefsDialog : GLib.Object
 {
     private Gtk.Dialog dialog;
