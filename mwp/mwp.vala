@@ -193,8 +193,15 @@ public class MWPlanner : Gtk.Application {
         builder = new Builder ();
         conf = new MWPSettings();
         conf.read_settings();
-        var layfile = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp",".layout.xml");
 
+        var confdir = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp");
+        try
+        {
+            var dir = File.new_for_path(confdir);
+            dir.make_directory_with_parents ();
+        } catch {};
+
+        var layfile = GLib.Path.build_filename(confdir,".layout.xml");
         var fn = MWPUtils.find_conf_file("mwp.ui");
         if (fn == null)
         {
