@@ -138,5 +138,11 @@
       <description>Application spawned to play alerts for battery voltage</description>
     </key>
 
+    <key name="heartbeat" type="s">
+      <summary>Something that runs every minute (i.e. screensaver disable</summary>
+      <default></default>
+      <description>e.g. xscreensaver-command -deactivate</description>
+    </key>
+
   </schema>
 </schemalist>

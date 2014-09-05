@@ -708,6 +708,16 @@ public class MWPlanner : Gtk.Application {
         }
         navstatus.setdock(dockitem[2]);
         radstatus.setdock(dockitem[4]);
+
+        if(conf.heartbeat != null)
+        {
+            Timeout.add_seconds(60, () => {
+                    try {
+                        Process.spawn_command_line_async(conf.heartbeat);
+                    } catch {};
+                    return true;
+                });
+        }
     }
 
     private void toggle_full_screen()

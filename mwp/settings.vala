@@ -45,6 +45,7 @@ public class MWPSettings : GLib.Object
     public bool autofollow {get; set; default=false;}
     public uint  baudrate {get; set; default=57600;}
     public string mediap {get; set;}
+    public string heartbeat {get; set;}
 
     public MWPSettings()
     {
@@ -125,6 +126,9 @@ public class MWPSettings : GLib.Object
             baudrate = settings.get_uint("baudrate");
         if(s == null || s == "media-player")
             mediap = settings.get_string ("media-player");
+        if(s == null || s == "heartbeat")
+            mediap = settings.get_string ("heartbeat");
+
     }
 
     public void save_settings()
