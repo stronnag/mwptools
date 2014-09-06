@@ -83,6 +83,7 @@ db.create_table? :reports do
   column :txbuf,:integer
   column :noise,:integer
   column :remnoise,:integer
+  column :wp_no,:integer
 end
 
 otitle=title
