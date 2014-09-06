@@ -23,6 +23,7 @@ using GtkChamplain;
 
 public class Craft : GLib.Object
 {
+    private Champlain.Point ici;
     private Champlain.View view;
     private Champlain.Label icon;
     private Champlain.MarkerLayer layer;
@@ -81,6 +82,8 @@ public class Craft : GLib.Object
             icon.set_color (colour);
             icon.set_text_color(black);
         }
+        Clutter.Color red = { 0xff,0,0, 0xff};
+        ici = new Champlain.Point.full(15.0, red);
 
         path = new Champlain.PathLayer();
         path.set_stroke_color(cyan);
@@ -103,6 +106,8 @@ public class Craft : GLib.Object
 #endif
         icon.set_draw_background (false);
         park();
+
+        layer.add_marker(ici);
         layer.add_marker (icon);
         icon.animate_in();
     }
@@ -159,6 +164,7 @@ public class Craft : GLib.Object
                 path.add_node(marker);
             npath++;
         }
+        ici.set_location (lat, lon);
         icon.set_location (lat, lon);
         if (norotate == false)
             icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, cse);
