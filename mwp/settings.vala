@@ -127,7 +127,7 @@ public class MWPSettings : GLib.Object
         if(s == null || s == "media-player")
             mediap = settings.get_string ("media-player");
         if(s == null || s == "heartbeat")
-            mediap = settings.get_string ("heartbeat");
+            heartbeat = settings.get_string ("heartbeat");
 
     }
 

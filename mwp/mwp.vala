@@ -1777,7 +1777,6 @@ public class MWPlanner : Gtk.Application {
     {
         remove_tid(ref cmdtid);
         remove_tid(ref gpstid);
-        msp.close();
         sflags = 0;
         stop_audio();
 
@@ -1790,6 +1789,7 @@ public class MWPlanner : Gtk.Application {
         have_vers = have_misc = have_status = have_wp = have_nc = false;
         nsats = 0;
         _nsats = 0;
+        msp.close();
         c.set_label("gtk-connect");
         menuncfg.sensitive = menuup.sensitive = menudown.sensitive = false;
         navconf.hide();
