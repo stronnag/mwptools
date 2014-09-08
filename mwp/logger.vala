@@ -148,6 +148,10 @@ public class Logger : GLib.Object
         builder.add_int_value(s.airspeed);
         builder.set_member_name("flags");
         builder.add_int_value(s.flags);
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+	gen.set_root (root);
+        write_stream();
     }
 
     public static void analog(MSP_ANALOG a)
