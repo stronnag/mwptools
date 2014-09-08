@@ -1459,6 +1459,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     if (armed == 1)
                     {
+                        sflags |= NavStatus.SPK.Volts;
                         duration_timer();
                         if (conf.audioarmed == true)
                         {
@@ -1488,7 +1489,6 @@ public class MWPlanner : Gtk.Application {
                 radstatus.update_ltm(sf);
                 navstatus.update_ltm_s(sf);
                 set_bat_stat((uint8)((sf.vbat + 50) / 100));
-                sflags |= NavStatus.SPK.Volts;
             }
             break;
 
