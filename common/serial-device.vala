@@ -178,8 +178,8 @@ public class MWSerial : Object
                 var fam = sockaddr.get_family();
                 skt = new Socket (fam, SocketType.DATAGRAM,SocketProtocol.UDP);
             }
-        fd = skt.fd;
-    } catch(Error e) {
+            fd = skt.fd;
+        } catch(Error e) {
             warning("socket: %s", e.message);
             fd = -1;
         }
@@ -273,7 +273,6 @@ public class MWSerial : Object
                     stderr.printf("remove tag\n");
                 Source.remove(tag);
             }
-            try  { io_read.shutdown(false); } catch {}
             if(is_serial)
             {
                 Posix.tcsetattr (fd, Posix.TCSANOW|Posix.TCSADRAIN, oldtio);
@@ -281,14 +280,16 @@ public class MWSerial : Object
             }
             else
             {
-                try
+                if (!skt.is_closed())
                 {
-                    skt.close();
-                } catch (Error e)
-                {
-                    warning ("sock close %s", e.message);
+                    try
+                    {
+                        skt.close();
+                    } catch (Error e)
+                    {
+                        warning ("sock close %s", e.message);
+                    }
                 }
-                Posix.close(fd);
                 sockaddr=null;
             }
             fd = -1;

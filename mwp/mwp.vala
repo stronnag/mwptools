@@ -105,7 +105,7 @@ public class MWPlanner : Gtk.Application {
     private Gtk.CheckButton autocon_cb;
     private Gtk.CheckButton logb;
     private bool audio_on;
-    private uint8 sflags;
+    private uint8 sflags = 0;
     private uint8 nsats = 0;
     private uint8 _nsats = 0;
     private uint8 larmed = 0;
@@ -1402,6 +1402,7 @@ public class MWPlanner : Gtk.Application {
                 uint8* rp;
                 rp = deserialise_i16(raw, out af.pitch);
                 rp = deserialise_i16(rp, out af.roll);
+                rp = deserialise_i16(rp, out af.heading);
                 var h = af.heading;
                 if(h < 0)
                     h += 360;
@@ -1739,7 +1740,7 @@ public class MWPlanner : Gtk.Application {
     {
         if (spktid == 0)
         {
-            if(audio_on && (sflags != 0))
+            if(audio_on /*&& (sflags != 0)*/)
             {
                 navstatus.logspeak_init(conf.evoice);
                 spktid = Timeout.add_seconds(conf.speakint, () => {
@@ -1785,6 +1786,7 @@ public class MWPlanner : Gtk.Application {
             msp.raw_logging(false);
         }
         gpsinfo.annul();
+        navstatus.reset();
         set_bat_stat(0);
         have_vers = have_misc = have_status = have_wp = have_nc = false;
         nsats = 0;

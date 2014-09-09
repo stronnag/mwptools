@@ -204,8 +204,7 @@ public class MWSim : GLib.Object
                     var gps_timer = 0;
                     volts = 12.6;
                     armed = true;
-                    tid = Timeout.add(1000, () =>
-                        {
+                    tid = Timeout.add(1000, () => {
                             gps_timer++;
                             double frac = (double)gps_timer/(double)ftime;
                             pbar.set_fraction(frac);
@@ -544,7 +543,10 @@ public class MWSim : GLib.Object
         LTM_AFRAME af = {0};
         af.pitch = 4;
         af.roll = -4;
-        af.heading = (int16)gblcse;
+        int16 icse =  (int16)gblcse;
+        if (icse > 180)
+            icse = icse - 360;
+        af.heading = icse;
         nb = serialise_af(af, tx);
         msp.send_ltm('A',tx, nb);
         append_text("Send LTM A Frame %lu\n".printf(sizeof(LTM_AFRAME)));
@@ -728,6 +730,8 @@ public class MWSim : GLib.Object
             if(udport == 0)
             {
                 fd = Posix.posix_openpt(Posix.O_RDWR);
+                Posix.ttyname_r(fd, buf);
+                stderr.printf("%s => fd %d\n", (string)buf, fd);
                 Posix.grantpt(fd);
                 Posix.unlockpt(fd);
                 Linux.Termios.ptsname_r (fd, buf);
@@ -817,7 +821,11 @@ public class MWSim : GLib.Object
 
     private void stop_sim()
     {
-        Source.remove(tid);
+        if(tid > 0)
+        {
+            Source.remove(tid);
+            tid = 0;
+        }
         gps_start = 0;
         pbar.set_fraction(0.0);
         volts = 12.6;

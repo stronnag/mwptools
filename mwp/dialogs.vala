@@ -395,6 +395,7 @@ public class NavStatus : GLib.Object
     private bool modsat=false;
     private AudioThread mt;
     private bool have_cg = false;
+    private bool have_hdr = false;
     private uint8 xfmode = -1;
 
     public enum SPK  {
@@ -483,6 +484,7 @@ public class NavStatus : GLib.Object
                 hdr += 360;
             var str = "%d° / %d° / %d°".printf(a.pitch, a.roll, hdr);
             nav_attitude_label.set_label(str);
+            have_hdr = true;
             if(Logger.is_logging)
             {
                 Logger.attitude(a.pitch,a.roll,hdr);
@@ -581,6 +583,8 @@ public class NavStatus : GLib.Object
             hdr = atti.heading;
             if(hdr < 0)
                 hdr += 360;
+
+            have_hdr = true;
             if(visible)
             {
                 var str = "%.1f° / %.1f° / %d°".printf(dax, day, hdr);
@@ -689,13 +693,6 @@ public class NavStatus : GLib.Object
 
             mt.message("Range %d, bearing %d.".printf(cg.range, brg));
         }
-        if((mask & SPK.BARO) == SPK.BARO)
-        {
-            double estalt = (double)alti.estalt/100.0;
-            var str = "Altitude %.1f.".printf(estalt);
-            str = str_zero(str);
-            mt.message(str);
-        }
 
         if((mask & SPK.ELEV) == SPK.ELEV)
         {
@@ -703,7 +700,15 @@ public class NavStatus : GLib.Object
             str = str_zero(str);
             mt.message(str);
         }
+        else if((mask & SPK.BARO) == SPK.BARO)
+        {
+            double estalt = (double)alti.estalt/100.0;
+            var str = "Altitude %.1f.".printf(estalt);
+            str = str_zero(str);
+            mt.message(str);
+        }
 
+        if(have_hdr)
         {
             var str = "Heading %d.".printf(hdr);
             mt.message(str);
@@ -718,8 +723,19 @@ public class NavStatus : GLib.Object
         if(modsat)
         {
             modsat = false;
-            mt.message("%d satellites.".printf(numsat));
+            string s = "";
+            if(numsat != 1)
+                s = "s";
+
+            mt.message("%d satellite%s.".printf(numsat,s));
         }
+    }
+
+    public void reset()
+    {
+        have_cg = false;
+        have_hdr = false;
+        volts = 0;
     }
 
     public void logspeak_init (string? voice)
@@ -1025,7 +1041,7 @@ public class GPSInfo : GLib.Object
         if(_dlat != 0 && _dlon != 0)
         {
             double d;
-            Geo.csedist(lat, lon, _dlat, _dlon, out d, out cse);
+            Geo.csedist(_dlat, _dlon, lat, lon, out d, out cse);
         }
         _dlat = lat;
         _dlon = lon;
