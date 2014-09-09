@@ -29,7 +29,11 @@ public class MWSerial : Object
     private uint tag;
     private Posix.termios oldtio;
     public uint baudrate  {private set; get;}
-    private DataInputStream dis;
+    public DataInputStream dis;
+    public OutputStream os;
+    public uint8 rx_mode;
+    public uint8 nlcount = 0;
+
     private static string devname = "/dev/ttyUSB0";
     private static int brate = 115200;
     const OptionEntry[] options = {
@@ -182,13 +186,45 @@ public class MWSerial : Object
             if(res == 0)
                 return true;
         }
+
+        if (rx_mode == 1)
+        {
+            uint8[] rbuf;
+            if(nlcount == 0)
+            {
+                stderr.write(buf[0:4]);
+                if (buf[0] == 'd' && buf[1] == 'u' && buf[2] == 'm' &&
+                    buf[3] == 'p')
+                {
+                    rbuf = buf[4:res];
+                }
+                else
+                {
+                    rbuf = buf[0:res];
+                }
+            }
+            else
+                rbuf = buf[0:res];
+
+            try
+            {
+                os.write(rbuf);
+            } catch  {}
+
+            for(var nc = 0; nc < res; nc++)
+            {
+                if (buf[nc] == '\n' || buf[nc] == '\r')
+                    nlcount++;
+            }
+        }
+
         for(var nc = 0; nc < res; nc++)
         {
             stdout.putc((char)buf[nc]);
             stdout.flush();
             if(buf[nc] == '#')
             {
-                if(dis != null)
+                if(rx_mode ==2 && dis != null)
                 {
                     while(true)
                     {
@@ -225,10 +261,16 @@ public class MWSerial : Object
         return true;
     }
 
-    private void setfile (DataInputStream d)
+    private void setfile (DataInputStream _dis)
     {
-        dis = d;
+        dis = _dis;
     }
+
+    private void setdump (OutputStream _os)
+    {
+        os = _os;
+    }
+
 
     public static int main (string[] args)
     {
@@ -245,51 +287,77 @@ public class MWSerial : Object
             return 1;
         }
 
-        var file = File.new_for_path (args[1]);
+        DataInputStream mdis = null;
+        OutputStream mos = null;
 
-        DataInputStream mdis;
-
-        if (!file.query_exists ())
+        if(args.length > 1)
         {
-            stderr.printf ("File '%s' doesn't exist.\n", file.get_path ());
-            return 255;
-        }
-        else
-        {
-            try
+            var file = File.new_for_path (args[1]);
+            if (!file.query_exists ())
             {
-                mdis = new DataInputStream (file.read ());
-            } catch (Error e) {
-                stderr.printf ("Bizaree error %s\n", e.message);
+                stderr.printf ("File '%s' doesn't exist.\n", file.get_path ());
                 return 255;
+            }
+            else
+            {
+                try
+                {
+                    mdis = new DataInputStream (file.read ());
+                } catch (Error e) {
+                    stderr.printf ("Bizaree error %s\n", e.message);
+                    return 255;
+                }
             }
         }
 
         var s = new MWSerial();
         s.open(devname,brate);
         var ml = new MainLoop();
+        s.rx_mode = -1;
+        IOStream ios;
+
+        time_t currtime;
+        time_t(out currtime);
+        var fn  = "naze_%s.txt".printf(Time.local(currtime).format("%F_%H%M%S"));
+        try
+        {
+            var file = File.new_for_path (fn);
+            ios = file.create_readwrite (FileCreateFlags.PRIVATE);
+            mos = ios.output_stream;
+            s.setdump(mos);
+        } catch (Error e) {
+            stderr.printf ("Logger: %s %s\n", fn, e.message);
+        }
+
         Timeout.add(100, () => {
                 Posix.write(s.fd,"#", 1);
                 return false;
             });
 
-        Timeout.add(100, () => {
-                var str = "defaults\n";
+        Timeout.add(300, () => {
+                s.rx_mode = 1;
+                s.nlcount = 0;
+                var str = "dump\n";
                 Posix.write(s.fd,str, str.length);
                 return false;
             });
 
-        Timeout.add(100, () => {
-                var str = "defaults\n";
-                Posix.write(s.fd,str, str.length);
-                return false;
-            });
+        if(mdis != null)
+        {
+            Timeout.add(2000, () => {
+                    s.rx_mode = -1;
+                    var str = "defaults\n";
+                    Posix.write(s.fd,str, str.length);
+                    return false;
+                });
 
-        Timeout.add(12000, () => {
-                s.setfile(mdis);
-                Posix.write(s.fd,"#", 1);
-                return false;
-            });
+            Timeout.add(15000, () => {
+                    s.rx_mode = 2;
+                    s.setfile(mdis);
+                    Posix.write(s.fd,"#", 1);
+                    return false;
+                });
+        }
         ml.run();
         return 0;
     }
