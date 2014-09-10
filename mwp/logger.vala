@@ -135,7 +135,7 @@ public class Logger : GLib.Object
         write_stream();
     }
 
-    public static void ltm_sframe(LTM_SFRAME s)
+    public static void ltm_sframe(LTM_SFRAME s, string? status)
     {
         var builder = init("ltm_raw_sframe");
         builder.set_member_name("vbat");
@@ -148,6 +148,8 @@ public class Logger : GLib.Object
         builder.add_int_value(s.airspeed);
         builder.set_member_name("flags");
         builder.add_int_value(s.flags);
+        builder.set_member_name("status");
+        builder.add_string_value(status);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);

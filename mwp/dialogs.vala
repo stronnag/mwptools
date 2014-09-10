@@ -470,7 +470,11 @@ public class NavStatus : GLib.Object
 
             if (Logger.is_logging)
             {
-                Logger.ltm_sframe(s);
+                var b = new StringBuilder ();
+                b.append(str.strip());
+                b.append(" ");
+                b.append(lmode);
+                Logger.ltm_sframe(s, b.str);
             }
         }
     }

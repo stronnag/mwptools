@@ -265,7 +265,6 @@ public class MWSim : GLib.Object
                 double st = 0;
                 size_t count;
                 bool ok = true;
-
                 while(ok==true)
                 {
                     var n = Posix.read(rfd,fbuf,10);
@@ -279,9 +278,12 @@ public class MWSim : GLib.Object
                             {
                                 double tt;
                                 tt = *(double*)fbuf;
-                                var delta = tt - st;
-                                ulong ms = (ulong)(delta * 1000 * 1000);
-                                Thread.usleep(ms);
+                                if(st != 0)
+                                {
+                                    var delta = tt - st;
+                                    ulong ms = (ulong)(delta * 1000 * 1000);
+                                    Thread.usleep(ms);
+                                }
                                 msp.write(buf,count);
                                 st = tt;
                                 }
@@ -984,6 +986,7 @@ public class MWSim : GLib.Object
             {
                 if (relog != null)
                     run_relog();
+
                 if(replay != null)
                     run_replay();
             }
