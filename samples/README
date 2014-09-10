@@ -29,3 +29,29 @@ The following ruby gems are required:
 * nokogiri (all)
 * yajl (log file conversions)
 * ruby_kml (conversion to kml)
+
+As Ubuntu appears quite popular and some users may not know how to run
+ruby and install any dependencies:
+
+On Ubuntu:
+
+$ sudo apt-get install ruby
+
+$ sudo apt-get install ruby-nokogiri ruby-yajl
+$ sudo gem install ruby_kml
+
+Log to SQL
+~~~~~~~~~~
+
+Convenient way to analyse log files
+
+select max(range) from readings where ... etc
+
+Depends on the sequel library. The default database manager is sqlite3
+and the database file is f.sqlite in the current driectory. You can
+use any RDBMS supported by sequel (postgresql, mysql etc).
+
+On Ubuntu:
+
+# at a minimum
+$ sudo apt-get install ruby-sqlite3 sqlite3 ruby-sequel
