@@ -30,8 +30,8 @@ The following ruby gems are required:
 * yajl (log file conversions)
 * ruby_kml (conversion to kml)
 
-As Ubuntu appears quite popular and some users may not know how to run
-ruby and install any dependencies:
+As Ubuntu appears quite popular and some users may not know how to install
+ruby and any dependencies:
 
 On Ubuntu:
 
