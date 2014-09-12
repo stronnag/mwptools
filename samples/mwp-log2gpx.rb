@@ -6,12 +6,15 @@ require 'nokogiri'
 require 'optparse'
 
 armed=nil
-aval=nil
+fix=nil
+nsats=nil
 sno=0
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
   opt.on('-a','--armed'){armed=true}
+  opt.on('-f','--fix'){fix=true}
+  opt.on('-n','--numsats NSATS',Integer){|o|nsats=o}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
     opt.parse!
@@ -19,7 +22,6 @@ ARGV.options do |opt|
     puts opt ; exit
   end
 end
-
 
 abort "Usage: mwp_log2gpx.rb FILE\n" unless file = ARGV[0]
 
@@ -40,8 +42,27 @@ m0.add_child(doc.create_element('src',
 m0.add_child(doc.create_element('name', "mwplog_#{sno}"))
 sno += 1
 m1 = m0.add_child(doc.create_element('trkseg'))
+
+astat = nil
+
 Yajl::Parser.parse(json, {:symbolize_names => true}) do |o|
+  # for ancient Ubuntu and friends
+  keys = o.keys
+  keys.each do |k|
+    if k.class == String
+      o[k.to_sym] = o[k]
+      o.delete(k)
+    end
+  end
+
+  if o[:type] == 'armed'
+    astat = o[:armed]
+  end
   if o[:type] == 'raw_gps'
+    next if armed and astat == :false
+    next if fix and (o[:fix].nil? or o[:fix] < 1)
+    next if nsats and (o[:numsat].nil? or o[:numsat] < nsats)
+
     m2 = m1.add_child(doc.create_element('trkpt',
 					 :lat => o[:lat], :lon => o[:lon]))
     m2.add_child(doc.create_element('ele',o[:alt].to_s))

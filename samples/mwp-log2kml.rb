@@ -2,13 +2,18 @@
 # -*- coding: utf-8 -*-
 
 require 'yajl'
+require 'optparse'
 require 'ruby_kml'
 include KML
 
 class KMLBuilder
+  attr_accessor :armed, :fix, :nsats
 
   def initialize debug=nil
     @debug=debug
+    @armed=nil
+    @fix=nil
+    @nsats=nil
   end
 
   def pos_to_bits pos, fmt
@@ -20,9 +25,9 @@ class KMLBuilder
   end
 
   def posstrg lat,lng
-    slat = (lat >= 0) ? 'N' : 'S';
+    slat = (lat >= 0) ? 'N' : 'S'
     lat = lat.abs
-    slng = (lng >= 0) ? 'E' : 'W';
+    slng = (lng >= 0) ? 'E' : 'W'
     lng = lng.abs
     s0 = pos_to_bits(lat, "%02d:%02d:%04.1f")
     s1 = pos_to_bits(lng, "%03d:%02d:%04.1f")
@@ -31,9 +36,24 @@ class KMLBuilder
 
   def pts_from_file inf
     arry = []
+    astat = nil
     json = File.new(inf)
     Yajl::Parser.parse(json, {:symbolize_names => true}) do |o|
+      # for ancient Ubuntu and friends
+      keys = o.keys
+      keys.each do |k|
+	if k.class == String
+	  o[k.to_sym] = o[k]
+	  o.delete(k)
+	end
+      end
+      if o[:type] == 'armed'
+	astat = o[:armed]
+      end
       if o[:type] == 'raw_gps'
+	next if @armed and astat == :false
+	next if @fix and (o[:fix].nil? or o[:fix] < 1)
+	next if @nsats and (o[:numsat].nil? or o[:numsat] < @nsats)
 	arry << {:lat => o[:lat],  :lon => o[:lon], :alt => o[:alt],
 	  :utime => o[:utime], :spd => o[:spd], :cse => o[:cse]}
       end
@@ -48,6 +68,7 @@ class KMLBuilder
     title||='MWP Log'
     desc=title
 
+    STDERR.puts "selected #{arry.size} records"
     arry.each do |el|
       coords = "#{el[:lon]},#{el[:lat]},#{el[:alt]}"
       linestr << coords << "\n"
@@ -102,6 +123,18 @@ end
 
 if __FILE__ == $0
   k = KMLBuilder.new
+  ARGV.options do |opt|
+    opt.banner = "#{File.basename($0)} [options] [file]"
+    opt.on('-a','--armed'){k.armed=true}
+    opt.on('-f','--fix'){k.fix=true}
+    opt.on('-n','--numsats NSATS',Integer){|o|k.nsats=o}
+    opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
+    begin
+      opt.parse!
+    rescue
+      puts opt ; exit
+    end
+  end
   arry = k.pts_from_file ARGV[0]
   k.build arry, (ARGV[1]||STDOUT.fileno)
 end
