@@ -35,7 +35,7 @@ ruby and any dependencies:
 
 On Ubuntu:
 
-$ sudo apt-get install ruby
+$ sudo apt-get install ruby ruby-dev
 
 $ sudo apt-get install ruby-nokogiri ruby-yajl
 $ sudo gem install ruby_kml

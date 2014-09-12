@@ -111,6 +111,8 @@ ARGV.each do |fn|
 						:mrtype => o[:mrtype],
 						:capability => o[:capability]})
       else
+	next if o[:type] == 'ltm_raw_sframe'
+
 	ot = o[:utime].to_i
 	if ot != lt
 	  st = ot if lt.zero?
