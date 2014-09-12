@@ -48,6 +48,7 @@ public class MWSerial : Object
     private Posix.termios oldtio;
     private bool print_raw=false;
     public uint baudrate  {private set; get;}
+    private int sp = 0;
 
     public enum Mode
     {
@@ -299,7 +300,6 @@ public class MWSerial : Object
     private bool device_read(IOChannel gio, IOCondition cond) {
         uint8 buf[128];
         size_t res;
-        int sp = 0;
 
         if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
         {

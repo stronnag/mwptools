@@ -63,11 +63,13 @@ public class MWSim : GLib.Object
     private static string relog = null;
     private static bool exhaustbat=false;
     private static bool ltm=false;
+    private static bool nowait=false;
     private static int udport=0;
     private bool armed=false;
     private static string model=null;
     private uint8 imodel=3;
     private static string sdev=null;
+    private int[] pipe;
 
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
@@ -77,6 +79,7 @@ public class MWSim : GLib.Object
         { "log-replay", 'l', 0, OptionArg.STRING, out relog, "Replay log file", null},
         { "exhaust-battery", 'x', 0, OptionArg.NONE, out exhaustbat, "exhaust the battery (else warn1)", null},
         { "ltm", 'l', 0, OptionArg.NONE, out ltm, "push tm", null},
+        { "now", 'n', 0, OptionArg.NONE, out nowait, "don't wait for input before replay", null},
         { "udp-port", 'u', 0, OptionArg.INT, ref udport, "udp port for comms", null},
         {null}
     };
@@ -256,8 +259,21 @@ public class MWSim : GLib.Object
         window.show_all();
     }
 
+    private void ui_update(string msg)
+    {
+        Posix.write(pipe[1],(char[])msg, msg.length);
+    }
+
     private void run_replay()
     {
+
+        IOChannel io_read;
+        pipe = new int[2];
+        Posix.pipe(pipe);
+        io_read  = new IOChannel.unix_new(pipe[0]);
+        io_read.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL,
+                          log_writer);
+
         new Thread<int> ("replay", () => {
                 var rfd = Posix.open (replay, Posix.O_RDONLY);
                 uint8 fbuf[10];
@@ -265,6 +281,9 @@ public class MWSim : GLib.Object
                 double st = 0;
                 size_t count;
                 bool ok = true;
+
+                ui_update("replay raw %s\n".printf(replay));
+
                 while(ok==true)
                 {
                     var n = Posix.read(rfd,fbuf,10);
@@ -278,15 +297,21 @@ public class MWSim : GLib.Object
                             {
                                 double tt;
                                 tt = *(double*)fbuf;
-                                if(st != 0)
+                                ulong msecs = 0;
+                                if(count > 1)
                                 {
-                                    var delta = tt - st;
-                                    ulong ms = (ulong)(delta * 1000 * 1000);
-                                    Thread.usleep(ms);
+                                    if (st != 0)
+                                    {
+                                        var delta = tt - st;
+                                        msecs = (ulong)(delta * 1000 * 1000);
+                                        Thread.usleep(msecs);
+                                    }
+                                    ui_update("%cframe %lub\n".printf(buf[2],
+                                                                     count));
+                                    msp.write(buf,count);
                                 }
-                                msp.write(buf,count);
                                 st = tt;
-                                }
+                            }
                         }
                         else
                             ok = false;
@@ -294,6 +319,8 @@ public class MWSim : GLib.Object
                     else
                         ok = false;
                 }
+                ui_update("** end **\n");
+                Posix.close(pipe[1]);
                 return 0;
             });
     }
@@ -304,8 +331,10 @@ public class MWSim : GLib.Object
                 string msg;
                 size_t len;
 
-                if((condition & IOCondition.HUP) == IOCondition.HUP)
+                if((condition & IOCondition.IN) != IOCondition.IN)
                 {
+                    append_text("close replay thread\n");
+                    Posix.close(pipe[0]);
                     return false;
                 }
 
@@ -322,13 +351,16 @@ public class MWSim : GLib.Object
                 return true;
     }
 
+
+
     private void run_relog()
     {
         IOChannel io_read;
-        int[] fd = new int[2];
-        Posix.pipe(fd);
-        io_read  = new IOChannel.unix_new(fd[0]);
-        io_read.add_watch(IOCondition.IN | IOCondition.HUP, log_writer);
+        pipe = new int[2];
+        Posix.pipe(pipe);
+        io_read  = new IOChannel.unix_new(pipe[0]);
+        io_read.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL,
+                          log_writer);
 
         new Thread<int> ("relog", () => {
                 var file = File.new_for_path (relog);
@@ -336,6 +368,8 @@ public class MWSim : GLib.Object
                     stderr.printf ("File '%s' doesn't exist.\n", file.get_path ());
                     return 1;
                 }
+                ui_update("log %s replay\n".printf(relog));
+
                 try
                 {
                     double lt = 0;
@@ -355,7 +389,7 @@ public class MWSim : GLib.Object
                         }
                         var typ = obj.get_string_member("type");
                         var str = "Send %s\n".printf(typ);
-                        Posix.write(fd[1],(char[])str, str.length);
+                        ui_update(str);
 
                         switch(typ)
                         {
@@ -489,6 +523,8 @@ public class MWSim : GLib.Object
                 } catch (Error e) {
                     error ("%s", e.message);
                 }
+                ui_update("end log replay\n");
+                Posix.close(pipe[1]);
                 return 0;
             });
     }
@@ -977,10 +1013,27 @@ public class MWSim : GLib.Object
         };
 
         var loop = 0;
+
+        if (nowait)
+        {
+            Timeout.add_seconds(2,() => {
+            if (relog != null)
+                run_relog();
+
+            if(replay != null)
+                run_replay();
+
+            return false;
+                });
+        }
+
         msp.serial_event.connect ((s, cmd, raw, len, errs) =>
         {
             uint8 tx[64];
             size_t nb;
+
+            if(nowait)
+                return;
 
             if(loop == 0)
             {
