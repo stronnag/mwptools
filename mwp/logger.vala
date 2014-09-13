@@ -266,12 +266,12 @@ public class Logger : GLib.Object
         var builder = init ("wp_poll");
         builder.set_member_name ("wp_no");
         builder.add_int_value(w.wp_no);
-        builder.set_member_name ("lat");
-        builder.add_int_value(w.lat);
-        builder.set_member_name ("lon");
-        builder.add_int_value(w.lon);
-        builder.set_member_name ("alt");
-        builder.add_int_value(w.altitude);
+        builder.set_member_name ("wp_lat");
+        builder.add_double_value(w.lat/10000000.0);
+        builder.set_member_name ("wp_lon");
+        builder.add_double_value(w.lon/10000000.0);
+        builder.set_member_name ("wp_alt");
+        builder.add_double_value(w.altitude/100.0);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);

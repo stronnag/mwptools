@@ -84,6 +84,9 @@ db.create_table? :reports do
   column :noise,:integer
   column :remnoise,:integer
   column :wp_no,:integer
+  column :wp_lat,:float
+  column :wp_lon,:float
+  column :wp_alt,:float
 end
 
 otitle=title
@@ -93,7 +96,8 @@ ARGV.each do |fn|
   json = File.new(fn, 'r')
   lt=0
   st = 0
-  rec={}
+  rec=nil
+  valid = false
   db.transaction do
     mid = db[:missions].insert({:title => title})
     title=nil
@@ -112,19 +116,27 @@ ARGV.each do |fn|
 						:capability => o[:capability]})
       else
 	next if o[:type] == 'ltm_raw_sframe'
-
-	ot = o[:utime].to_i
-	if ot != lt
+	next if o[:type] == 'wp_poll' and !o.has_key? :wp_lat
+	if  o[:type] == 'armed'
+	  ot = o[:utime].to_i
 	  st = ot if lt.zero?
-	  recins db,rec,mid
-	  rec=o
+	  if rec and valid
+	    recins db,rec,mid
+	    valid = false
+	  end
+	  lt = ot
+	  rec = o
 	else
-	  rec.merge!(o)
+	  valid = true if o[:type] == 'raw_gps'
+	  if rec
+	    rec.merge!(o)
+	  end
 	end
-	lt = ot
       end
     end
-    recins db,rec,mid
+    if valid
+      recins db,rec,mid
+    end
     db[:missions].where(:id => mid).update({:start => Time.at(st),
 					     :end => Time.at(lt)})
   end

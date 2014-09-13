@@ -1302,18 +1302,21 @@ public class MWPlanner : Gtk.Application {
                     w.wp_no = *rp++;
                     if(naze32 == false)
                         rp++; // skip action
-
                     rp = deserialise_i32(rp, out w.lat);
                     rp = deserialise_i32(rp, out w.lon);
-                    rp = deserialise_u32(rp, out w.altitude);
-                    if(Logger.is_logging)
+                    if (w.lat != 0 && w.lon != 0)
                     {
-                        Logger.wp_poll(w);
+
+                        rp = deserialise_u32(rp, out w.altitude);
+                        if(Logger.is_logging)
+                        {
+                            Logger.wp_poll(w);
+                        }
+                        double rlat = w.lat/10000000.0;
+                        double rlon = w.lon/10000000.0;
+                        if(craft != null)
+                            craft.special_wp(w.wp_no, rlat, rlon);
                     }
-                    double rlat = w.lat/10000000.0;
-                    double rlon = w.lon/10000000.0;
-                    if(craft != null && rlat != 0.0 && rlon != 0.0)
-                        craft.special_wp(w.wp_no, rlat, rlon);
                 }
                 else
                 {
