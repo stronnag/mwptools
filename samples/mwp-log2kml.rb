@@ -76,22 +76,30 @@ class KMLBuilder
 
     doc = {
       :name => 'Tracker',
-      :styles => [
-	Style.new(
-		  :id => 'HeliIcon',
-		  :icon_style => IconStyle.new(
-					       :icon => Icon.new(
-								 :href => "http://maps.google.com/mapfiles/kml/shapes/heliport.png"
-								 )
-					       )
-		  ),
-	Style.new(:id => "transBluePoly",
-		  :line_style => LineStyle.new(:width => 1.5),
-		  :poly_style => PolyStyle.new(:color => '7dff0000')
-		  )
-      ],
+      :styles => [],
       :features => []
     }
+
+    0.upto(15).each do |j|
+      doc[:styles] << 	Style.new(
+				  :id => "mwpIcon_#{j}",
+				  :icon_style =>
+				  IconStyle.new(
+						:icon =>
+						Icon.new(
+							 :href => "http://earth.google.com/images/kml-icons/track-directional/track-#{j}.png"
+
+
+					 )
+				)
+		  )
+    end
+
+    doc[:styles] <<
+      Style.new(:id => "transBluePoly",
+		:line_style => LineStyle.new(:width => 1.5),
+		:poly_style => PolyStyle.new(:color => '7dff0000')
+		)
 
     pm = Placemark.new(:name => 'Track',
                        :description => desc,
@@ -105,12 +113,17 @@ class KMLBuilder
 		       )
 
     doc[:features] << pm
-    arry.each do |p|
+    arry.each_with_index do |p,k|
       ctim = Time.at(p[:utime]).gmtime.strftime("%FT%TZ")
       adesc = "#{title}<br/>Time: #{ctim}<br/>Position: #{posstrg(p[:lat],p[:lon])}<br/>Speed: #{"%.1f" % p[:spd]}m/s<br/>Course: #{"%d" % p[:cse]}deg<br/>Altitude: #{p[:alt]}m<br/>"
       coords = "#{p[:lon]},#{p[:lat]},#{p[:alt]}"
-      pt = Placemark.new(:name => 'Track',
+
+      cdx = p[:cse]/22.5
+      idx = ((cdx+0.5).to_i) % 16;
+
+      pt = Placemark.new(:name => ("mwp_%04d" % k),
 			 :description => adesc,
+			 :style_url => "#mwpIcon_#{idx}",
 			 :geometry => Point.new(:coordinates=> coords),
 			 )
       doc[:features] << pt
