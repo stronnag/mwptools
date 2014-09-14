@@ -1,0 +1,196 @@
+A few notes on using a SQL database created from one or more mwp logs.
+
+As from README, mwp-log2sql.rb uses the ruby sequel ORM
+(Object-Relational Mapper), and thus can use any RDBMS supported by
+sequel. By default, an sqlite3 database (f.sqlite) is used, but
+other supported RDBMS can be used (postgresql, mysql etc) as well.
+
+There are two tables, missions and reports. If you only import one log
+file, it doesn't matter, however if there are two or more, it possibly
+does.
+
+The missions table contains the metadata for the log file, in the
+following example I have two missions (by running the importer twice,
+or specifying multiple log files).
+
+In the following examples, two mission log files have been imported.
+
+You can see the missions by:
+
+$ sqlite3 f.sqlite
+sqlite> .mode line
+sqlite> select * from missions;
+        id = 1
+     title = mwp_2014-09-12_164846.log
+     start = 2014-09-12 16:48:46.000000
+       end = 2014-09-12 16:58:24.000000
+    mwvers = 230
+    mrtype = 1
+capability = 2147483700
+
+        id = 2
+     title = mwp_2014-09-12_160814.log
+     start = 2014-09-12 16:08:14.000000
+       end = 2014-09-12 16:18:15.000000
+    mwvers = 230
+    mrtype = 1
+capability = 2147483700
+
+the .mode line just formats the output (use .help to see sqlite3
+options).
+
+Each mission has an id (1,2), as well as the log file name, start and
+end times (arm / disarm), the multiwii version, the type (1 = tri) and
+the mw capabilities value (in this case it shows, inter alia, that it
+was a Naze32 FC).
+
+So now I can find the max GPS altitude for each mission (the site is c.
+19m above MSL).
+
+sqlite> select max(alt) from reports where mid = 1;
+max(alt) = 37.0
+sqlite> select max(alt) from reports where mid = 2;
+max(alt) = 61.0
+
+(mid is the mission id in the reports table). If I wanted the max alt
+(m) regardless of which mission:
+
+sqlite> select max(alt) from reports;
+max(alt) = 61.0
+
+or if I wanted to know which mission that was:
+
+sqlite> select max(alt),mid from reports;
+max(alt) = 61.0
+     mid = 2
+
+and for range (m):
+
+sqlite> select max(range),mid from reports;
+max(range) = 104
+       mid = 1
+
+and speed (m/s):
+
+sqlite> select max(spd),mid from reports;
+max(spd) = 13.88
+     mid = 1
+
+and the number of reports per mission:
+
+sqlite> select count(*),mid from reports group by mid;
+count(*) = 576
+     mid = 1
+
+count(*) = 601
+     mid = 2
+
+which ties in with the seconds per mission from the first query,
+or
+
+sqlite> select max(duration),mid from reports group by mid ;
+max(duration) = 577
+          mid = 1
+
+max(duration) = 600
+          mid = 2
+
+again, knowing that each entry in reports in composed of a number of
+different log items, which may split across second boundaries, is also
+acceptably consistent.
+
+and all data for a mission (which I won't include, as there is a lot),
+so just one item:
+
+sqlite>  select * from reports where mid =1
+            id = 73
+           mid = 1
+         stamp = 2014-09-12 16:49:58.798250
+        estalt = 28.95
+         vario = 4.5
+      gps_mode =
+      nav_mode =
+        action =
+     wp_number =
+     nav_error =
+target_bearing =
+           lat = 50.9102541
+           lon = -1.5346478
+           cse = 241.4
+           spd = 10.46
+           alt = 25.0
+           fix = 2
+        numsat = 10
+       bearing =
+         range =
+        update =
+       voltage = 11.6
+         power = 0.0
+          rssi = 0.0
+          amps = 0.0
+          angx = 0.7
+          angy = 12.5
+       heading = 244
+      duration = 72
+         armed = 1
+      rxerrors = 12
+  fixed_errors = 0
+     localrssi = 155
+       remrssi = 155
+         txbuf = 100
+         noise = 68
+      remnoise = 59
+         wp_no = 16
+
+(which just shows that the baro on the flip32+ was at the time,
+unreliable).
+
+And if you wanted a spreadsheet:
+
+$ sqlite3 f.sqlite
+sqlite> .mode tab
+sqlite> .headers on
+sqlite> .out '/tmp/mission1.txt'
+sqlite> select * from reports where lat not null and lon not null order by id;
+sqlite> .out stdout
+sqlite> ^D
+$
+
+(actually, you probably don't need the "where lat not null and lon not
+null" any more, as the importer is now smarter).
+
+Then in Libreoffice (openoffice), new spreadsheet, Insert/Sheet from
+file
+
+Select the file, set the delimiter to tab, press OK as
+necessary. Done.  Filter away.
+
+Having reapplied the foam over the baro and I think it's better, so lets check:
+
+$ sqlite3 f.sqlite
+sqlite> .mode tab
+sqlite> .header on
+sqlite> .out altdiffs.txt
+sqlite> select estalt,alt,alt-estalt from reports where estalt is not null and
+alt is not null and alt > 0;
+sqlite> ^D
+$
+
+And here's the first few lines from the output:
+
+estalt  alt     alt-estalt
+4.16    22.0    17.84
+4.43    22.0    17.57
+4.46    22.0    17.54
+5.41    23.0    17.59
+6.23    24.0    17.77
+6.63    22.0    15.37
+6.52    21.0    14.48
+6.97    21.0    14.03
+7.03    26.0    18.97
+6.09    25.0    18.91
+6.04    25.0    18.96
+4.85    22.0    17.15
+4.58    20.0    15.42
+
+So that looks a lot better.
