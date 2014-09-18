@@ -152,7 +152,7 @@ public class ReplayThread : GLib.Object
     {
     }
 
-    public Thread<int> run (int fd, string relog)
+    public Thread<int> run (int fd, string relog, bool delay=true)
     {
         playon = true;
         var thr = new Thread<int> ("relog", () => {
@@ -176,7 +176,11 @@ public class ReplayThread : GLib.Object
                             var utime = obj.get_double_member ("utime");
                             if(lt != 0)
                             {
-                                ulong ms = (ulong)((utime - lt) * 1000 * 1000);
+                                ulong ms;
+                                if (delay == true)
+                                    ms = (ulong)((utime - lt) * 1000 * 1000);
+                                else
+                                    ms = 2*1000;
                                 Thread.usleep(ms);
                             }
 

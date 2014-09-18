@@ -125,6 +125,7 @@ public class MWPlanner : Gtk.Application {
     private Thread<int> thr;
     private uint plid = 0;
     private bool xlog;
+    private bool xaudio;
     private int[] playfd;
     private IOChannel io_read;
     private ReplayThread robj;
@@ -325,7 +326,12 @@ public class MWPlanner : Gtk.Application {
 
         menureplay = builder.get_object ("replay_log") as Gtk.MenuItem;
         menureplay.activate.connect (() => {
-                replay_log();
+                replay_log(true);
+            });
+
+        menuop = builder.get_object ("load_log") as Gtk.MenuItem;
+        menuop.activate.connect (() => {
+                replay_log(false);
             });
 
         navstatus = new NavStatus(builder);
@@ -1586,7 +1592,6 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-
     private void set_bat_stat(uint8 ivbat)
     {
         string vbatlab;
@@ -1627,7 +1632,8 @@ public class MWPlanner : Gtk.Application {
         {
             if(bleetat != icol)
             {
-                bleet_sans_merci();
+                if(robj == null)
+                    bleet_sans_merci();
                 bleetat = icol;
             }
         }
@@ -2111,7 +2117,7 @@ public class MWPlanner : Gtk.Application {
         chooser.close ();
     }
 
-    private void replay_log()
+    private void replay_log(bool delay=true)
     {
         if(thr != null)
         {
@@ -2141,7 +2147,7 @@ public class MWPlanner : Gtk.Application {
                 // Process response:
             if (chooser.run () == Gtk.ResponseType.ACCEPT) {
                 var fn = chooser.get_filename ();
-                run_replay(fn);
+                run_replay(fn, delay);
             }
             chooser.close ();
         }
@@ -2184,13 +2190,18 @@ public class MWPlanner : Gtk.Application {
         Posix.close(playfd[0]);
         Posix.close(playfd[1]);
         conf.logarmed = xlog;
+        conf.audioarmed = xaudio;
+        duration = -1;
+        armtime = 0;
+
         conbutton.sensitive = true;
         menureplay.label = "Replay Log file";
     }
 
-    private void run_replay(string fn)
+    private void run_replay(string fn, bool delay)
     {
         xlog = conf.logarmed;
+        xaudio = conf.audioarmed;
         playfd = new int[2];
         var sr =  Posix.socketpair (SocketFamily.UNIX,
                           SocketType.DATAGRAM, 0, playfd);
@@ -2198,6 +2209,9 @@ public class MWPlanner : Gtk.Application {
         if(sr == 0)
         {
             conf.logarmed = false;
+            if(delay == false)
+                conf.audioarmed = false;
+
             if(msp.available)
                 serial_doom(conbutton);
 
@@ -2209,7 +2223,7 @@ public class MWPlanner : Gtk.Application {
                                      IOCondition.ERR|
                                      IOCondition.NVAL, replay_handler);
             robj = new ReplayThread();
-            thr = robj.run(playfd[1], fn);
+            thr = robj.run(playfd[1], fn, delay);
             if(thr != null)
                 menureplay.label = "Stop Replay";
         }

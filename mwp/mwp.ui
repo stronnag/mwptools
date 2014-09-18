@@ -138,6 +138,15 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkMenuItem" id="load_log">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Load a log file ignoring timing</property>
+                        <property name="label" translatable="yes">Load log file</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkSeparatorMenuItem" id="menuitem6">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
