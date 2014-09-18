@@ -82,6 +82,7 @@ public class Craft : GLib.Object
             icon.set_color (colour);
             icon.set_text_color(black);
         }
+
         Clutter.Color red = { 0xff,0,0, 0xff};
         ici = new Champlain.Point.full(15.0, red);
 
@@ -112,9 +113,38 @@ public class Craft : GLib.Object
         icon.animate_in();
     }
 
+
     ~Craft()
     {
         layer.remove_marker(icon);
+    }
+
+
+    public void set_icon(uint id)
+    {
+        layer.remove_marker (icon);
+        var iconfile = MWPUtils.find_conf_file(icons[id], "pixmaps");
+        try {
+            icon = new Champlain.Label.from_file (iconfile);
+        } catch (GLib.Error e) {
+            GLib.warning ("ICON: %s", e.message);
+            Clutter.Color colour = {0xff, 0xb7, 0x22, 0xff};
+            Clutter.Color black = { 0,0,0, 0xff };
+            icon = new Champlain.Label.with_text ("⌖","Sans 24",null,null);
+            icon.set_alignment (Pango.Alignment.RIGHT);
+            icon.set_color (colour);
+            icon.set_text_color(black);
+        }
+// Not properly implemented in (13.10 and earlier) Ubuntu
+#if NOBB
+#else
+        Clutter.Point p = Clutter.Point.alloc();
+        p.init(0.5f,0.5f);
+        icon.set_property("pivot-point", p);
+#endif
+        icon.set_draw_background (false);
+        layer.add_marker (icon);
+        icon.animate_in();
     }
 
     public void init_trail()
@@ -125,6 +155,7 @@ public class Craft : GLib.Object
             path.remove_all();
             npath = 0;
             homep = posp = null;
+            ici.hide();
         }
     }
 
@@ -161,7 +192,10 @@ public class Craft : GLib.Object
             pmlayer.add_marker(marker);
             path.add_node(marker);
             if(npath == 0)
+            {
                 path.add_node(marker);
+                ici.show();
+            }
             npath++;
         }
         ici.set_location (lat, lon);

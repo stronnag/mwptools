@@ -783,8 +783,9 @@ public class MWPlanner : Gtk.Application {
                 mrtype = raw[1];
                 if(dmrtype != mrtype)
                 {
-                    craft = null;
                     dmrtype = mrtype;
+                    if(craft != null)
+                        craft.set_icon(mrtype);
                 }
 
                 deserialise_u32(raw+3, out capability);
