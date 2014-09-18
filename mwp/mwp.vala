@@ -2208,6 +2208,9 @@ public class MWPlanner : Gtk.Application {
 
         if(sr == 0)
         {
+            if(craft != null)
+                craft.park();
+
             conf.logarmed = false;
             if(delay == false)
                 conf.audioarmed = false;
