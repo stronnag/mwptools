@@ -177,7 +177,7 @@ public class SwitchEdit : Object
                     int intvl;
                     var baud = s.baudrate;
                     if(baud == 0 || baud > 50000)
-                        intvl = 100;
+                        intvl = 250;
                     else if (baud > 32000)
                         intvl = 500;
                     else
