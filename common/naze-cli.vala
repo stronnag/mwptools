@@ -304,7 +304,7 @@ public class MWSerial : Object
                 {
                     mdis = new DataInputStream (file.read ());
                 } catch (Error e) {
-                    stderr.printf ("Bizaree error %s\n", e.message);
+                    stderr.printf ("Bizarre error %s\n", e.message);
                     return 255;
                 }
             }
@@ -342,7 +342,18 @@ public class MWSerial : Object
                 return false;
             });
 
-        if(mdis != null)
+        if(mdis == null)
+        {
+            Timeout.add(1000, () => {
+                s.rx_mode = -1;
+                s.nlcount = -1;
+                var str = "exit\n";
+                Posix.write(s.fd,str, str.length);
+                return false;
+            });
+
+        }
+        else
         {
             Timeout.add(2000, () => {
                     s.rx_mode = -1;
