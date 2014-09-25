@@ -42,6 +42,9 @@ public class MWSerial : Object
         {null}
     };
 
+
+    public signal void completed();
+
     public MWSerial()
     {
         available = false;
@@ -222,41 +225,10 @@ public class MWSerial : Object
         {
             stdout.putc((char)buf[nc]);
             stdout.flush();
-            if(buf[nc] == '#')
-            {
-                if(rx_mode ==2 && dis != null)
-                {
-                    while(true)
-                    {
-                        string line;
-                        try
-                        {
-                            line = dis.read_line (null);
-                        } catch (Error e) {
-                            line = null;
-                            stderr.printf("read error %s\n", e.message);
-                        }
-
-                        if(line == null)
-                        {
-                            Posix.write(fd,"exit\n", 5);
-                            try { dis.close(); } catch {}
-                            dis = null;
-                            break;
-                        }
-                        else if(line[0] == '#' || line.length == 0)
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            Posix.write(fd, line, line.length);
-                            Posix.write(fd,"\n", 1);
-                            break;
-                        }
-                    }
-                }
-            }
+             if(buf[nc] == '#' && rx_mode ==2 && dis != null)
+             {
+                 xmit_file();
+             }
         }
         return true;
     }
@@ -271,6 +243,44 @@ public class MWSerial : Object
         os = _os;
     }
 
+    private void xmit_file()
+    {
+        bool done = false;
+
+        while(!done)
+        {
+            string line;
+            try
+            {
+                line = dis.read_line (null);
+            } catch (Error e) {
+                line = null;
+                stderr.printf("read error %s\n", e.message);
+            }
+
+            if(line == null)
+            {
+                Posix.write(fd,"exit\n", 5);
+                try { dis.close(); } catch {}
+                dis = null;
+                done = true;
+                Timeout.add_seconds(1,() => { completed(); return false; });
+            }
+            else if(line[0] != '#' && line.length > 0)
+            {
+                if(line.substring(0,3) == "led")
+                {
+                    stderr.printf("skip %s\n", line);
+                }
+                else
+                {
+                    Posix.write(fd, line, line.length);
+                    Posix.write(fd,"\n", 1);
+                    done = true;
+                }
+            }
+        }
+    }
 
     public static int main (string[] args)
     {
@@ -315,6 +325,8 @@ public class MWSerial : Object
         var ml = new MainLoop();
         s.rx_mode = -1;
         IOStream ios;
+
+        s.completed.connect(() => {ml.quit();});
 
         time_t currtime;
         time_t(out currtime);
@@ -366,6 +378,7 @@ public class MWSerial : Object
                     s.rx_mode = 2;
                     s.setfile(mdis);
                     Posix.write(s.fd,"#", 1);
+//                    s.xmit_file();
                     return false;
                 });
         }
