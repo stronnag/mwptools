@@ -995,44 +995,55 @@ public class GPSInfo : GLib.Object
     public GPSInfo(Gtk.Grid grid)
     {
         var lab = new Gtk.Label("No. Satellites");
-        lab.set_alignment(0,0);
+        lab.halign = Gtk.Align.START;
+        lab.valign = Gtk.Align.START;
         grid.attach(lab, 0, 0, 1, 1);
         nsat_lab = new Gtk.Label("-1");
         grid.attach(nsat_lab, 1, 0, 1, 1);
 
         lab = new Gtk.Label("Latitude");
-        lab.set_alignment(0,0);
+        lab.halign = Gtk.Align.START;
+        lab.valign = Gtk.Align.START;
         grid.attach(lab, 0, 1, 1, 1);
         lat_lab = new Gtk.Label("--.------");
-        lat_lab.set_alignment(0,0);
+        lat_lab.halign = Gtk.Align.START;
+        lat_lab.valign = Gtk.Align.START;
         grid.attach(lat_lab, 1, 1, 1, 1);
 
         lab = new Gtk.Label("Longitude");
-        lab.set_alignment(0,0);
+        lab.halign = Gtk.Align.START;
+        lab.valign = Gtk.Align.START;
         grid.attach(lab, 0, 2, 1, 1);
         lon_lab = new Gtk.Label("---.------");
-        lon_lab.set_alignment(0,0);
+        lon_lab.halign = Gtk.Align.START;
+        lon_lab.valign = Gtk.Align.START;
         grid.attach(lon_lab, 1, 2, 1, 1);
 
         lab = new Gtk.Label("Altitude");
-        lab.set_alignment(0,0);
+        lab.halign = Gtk.Align.START;
+        lab.valign = Gtk.Align.START;
         grid.attach(lab, 0, 3, 1, 1);
         alt_lab = new Gtk.Label("---");
-        alt_lab.set_alignment(0,0);
+        alt_lab.halign = Gtk.Align.START;
+        alt_lab.valign = Gtk.Align.START;
         grid.attach(alt_lab, 1, 3, 1, 1);
 
         lab = new Gtk.Label("Direction");
-        lab.set_alignment(0,0);
+        lab.halign = Gtk.Align.START;
+        lab.valign = Gtk.Align.START;
         grid.attach(lab, 0, 4, 1, 1);
         dirn_lab = new Gtk.Label("---");
-        dirn_lab.set_alignment(0,0);
+        dirn_lab.halign = Gtk.Align.START;
+        dirn_lab.valign = Gtk.Align.START;
         grid.attach(dirn_lab, 1, 4, 1, 1);
 
         lab = new Gtk.Label("Speed");
-        lab.set_alignment(0,0);
+        lab.halign = Gtk.Align.START;
+        lab.valign = Gtk.Align.START;
         grid.attach(lab, 0, 5, 1, 1);
         speed_lab = new Gtk.Label("--.-");
-        speed_lab.set_alignment(0,0);
+        speed_lab.halign = Gtk.Align.START;
+        speed_lab.valign = Gtk.Align.START;
         grid.attach(speed_lab, 1, 5, 1, 1);
     }
 
