@@ -334,9 +334,11 @@ public class ReplayThread : GLib.Object
                                 case "wp_poll":
                                     var w = MSP_WP();
                                     w.wp_no = (uint8)(obj.get_int_member("wp_no"));
-                                    w.lat = (int32)(obj.get_int_member("lat"));
-                                    w.lon = (int32)(obj.get_int_member("lon"));
-                                    w.altitude = (uint32)(obj.get_int_member("alt"));
+                                    var lat = obj.get_double_member("wp_lat");
+                                    var lon = obj.get_double_member("wp_lon");
+                                    w.lat = (int32)(lat*10000000);
+                                    w.lon = (int32)(lon*10000000);
+                                    w.altitude = (uint32)(obj.get_int_member("wp_alt"));
                                     serialise_wp(w,buf);
                                     send_rec(fd,MSP.Cmds.INFO_WP, MSize.MSP_WP,buf);
                                     break;
