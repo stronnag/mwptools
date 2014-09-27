@@ -225,7 +225,7 @@ public class MWSerial : Object
         {
             stdout.putc((char)buf[nc]);
             stdout.flush();
-             if(buf[nc] == '#' && rx_mode ==2 && dis != null)
+             if(buf[nc] == '#' && rx_mode == 2 && dis != null)
              {
                  xmit_file();
              }
@@ -249,26 +249,29 @@ public class MWSerial : Object
 
         while(!done)
         {
-            string line;
+            string rline;
             try
             {
-                line = dis.read_line (null);
+                rline = dis.read_line (null);
             } catch (Error e) {
-                line = null;
+                rline = null;
                 stderr.printf("read error %s\n", e.message);
             }
 
-            if(line == null)
+            if(rline == null)
             {
                 Posix.write(fd,"exit\n", 5);
                 try { dis.close(); } catch {}
                 dis = null;
                 done = true;
                 Timeout.add_seconds(1,() => { completed(); return false; });
+                return;
             }
-            else if(line[0] != '#' && line.length > 0)
+
+            var line = rline.strip();
+            if(line.length > 0 && line[0] != '#')
             {
-                if(line.substring(0,3) == "led")
+                if (line.length > 5 && line.substring(0,5) == "Clean")
                 {
                     stderr.printf("skip %s\n", line);
                 }
@@ -361,9 +364,9 @@ public class MWSerial : Object
                 s.nlcount = -1;
                 var str = "exit\n";
                 Posix.write(s.fd,str, str.length);
+                Timeout.add_seconds(1,() => { ml.quit(); return false; });
                 return false;
             });
-
         }
         else
         {
