@@ -860,20 +860,6 @@ public class MWPlanner : Gtk.Application {
 
                         sflags = NavStatus.SPK.Volts;
 
-                        if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
-                        {
-                            requests += MSP.Cmds.ATTITUDE;
-                            reqsize += MSize.MSP_ATTITUDE;
-                        }
-
-                        if((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO)
-                        {
-                            sflags |= NavStatus.SPK.BARO;
-                            requests += MSP.Cmds.ALTITUDE;
-                            reqsize += MSize.MSP_ALTITUDE;
-                        }
-
-
                         if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
                         {
                             sflags |= NavStatus.SPK.GPS;
@@ -902,6 +888,26 @@ public class MWPlanner : Gtk.Application {
                             set_error_status("No GPS detected");
                         }
 
+
+                        if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
+                        {
+                            requests += MSP.Cmds.ATTITUDE;
+                            reqsize += MSize.MSP_ATTITUDE;
+                        }
+
+                        if((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO)
+                        {
+                            sflags |= NavStatus.SPK.BARO;
+                            requests += MSP.Cmds.ALTITUDE;
+                            reqsize += MSize.MSP_ALTITUDE;
+                        }
+
+                        if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
+                        {
+                            requests += MSP.Cmds.RAW_GPS;
+                            reqsize += MSize.MSP_RAW_GPS;
+                        }
+
                         var nreqs = requests.length;
                         int timeout = (int)(val*1000 / nreqs);
 
@@ -918,7 +924,7 @@ public class MWPlanner : Gtk.Application {
                         uint8 wpx = 0;
                         bool rxerr = false;
                         time_t startrx = lastrx;
-                        int tov = 5 * (int)val;
+                        int tov = 5;
 
                         gpstid = Timeout.add(timeout, () => {
                                 time_t now;
@@ -945,8 +951,13 @@ public class MWPlanner : Gtk.Application {
                                     }
                                 }
                                 var req=requests[tcycle];
-                                if(req == MSP.Cmds.WP && gpsfix == true
-                                   && armed == 1)
+
+                                if(req == MSP.Cmds.ANALOG && (now % 5) == 0)
+                                {
+                                    send_cmd(req, null, 0);
+                                }
+                                else if(req == MSP.Cmds.WP && gpsfix == true
+                                   && armed == 1 && (now % 2) == 0)
                                 {
                                     send_cmd(req,&wpx,1);
                                     if(wpx == 0)
