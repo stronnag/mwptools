@@ -144,5 +144,13 @@
       <description>e.g. xscreensaver-command -deactivate</description>
     </key>
 
+    <key name="update-interval" type="d">
+      <default>1.0</default>
+      <summary>Telemetry update</summary>
+      <description>
+	Telemetry update interval in seconds
+      </description>
+    </key>
+
   </schema>
 </schemalist>

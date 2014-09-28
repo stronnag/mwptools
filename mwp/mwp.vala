@@ -254,6 +254,9 @@ public class MWPlanner : Gtk.Application {
 
         zoomer = builder.get_object ("spinbutton1") as Gtk.SpinButton;
 
+        var timadj = builder.get_object ("spinbutton2") as Gtk.SpinButton;
+        timadj.adjustment.value = conf.updint;
+
         var menuop = builder.get_object ("file_open") as Gtk.MenuItem;
         menuop.activate.connect (() => {
                 on_file_open();

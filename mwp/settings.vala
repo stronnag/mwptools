@@ -46,6 +46,7 @@ public class MWPSettings : GLib.Object
     public uint  baudrate {get; set; default=57600;}
     public string mediap {get; set;}
     public string heartbeat {get; set;}
+    public double updint {get; set; default=1.0;}
 
     public MWPSettings()
     {
@@ -129,6 +130,12 @@ public class MWPSettings : GLib.Object
         if(s == null || s == "heartbeat")
             heartbeat = settings.get_string ("heartbeat");
 
+        if(s == null || s == "update-interval")
+        {
+            updint = settings.get_double("update-interval");
+            if(updint > 0 && updint < 0.1)
+                updint = 0.1;
+        }
     }
 
     public void save_settings()
