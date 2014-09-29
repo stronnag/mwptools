@@ -33,12 +33,12 @@ public class MWSerial : Object
     public OutputStream os;
     public uint8 rx_mode;
     public uint8 nlcount = 0;
+    private static string devname;
+    private static int brate;
 
-    private static string devname = "/dev/ttyUSB0";
-    private static int brate = 115200;
     const OptionEntry[] options = {
-        { "device", 'd', 0, OptionArg.STRING, out devname, "device name", "/dev/ttyUSB0"},
-        { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", "115200"},
+        { "device", 'd', 0, OptionArg.STRING, out devname, "device name", null},
+        { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", null},
         {null}
     };
 
@@ -49,6 +49,10 @@ public class MWSerial : Object
     {
         available = false;
         fd = -1;
+        if(devname == null)
+            devname = "/dev/ttyUSB0";
+        stderr.printf("open %s %d\n", devname, brate);
+        this.open(devname,brate);
     }
 
     private void setup_fd (uint rate)
@@ -324,7 +328,6 @@ public class MWSerial : Object
         }
 
         var s = new MWSerial();
-        s.open(devname,brate);
         var ml = new MainLoop();
         s.rx_mode = -1;
         IOStream ios;

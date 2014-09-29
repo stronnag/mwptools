@@ -87,9 +87,10 @@ public class MWPlanner : Gtk.Application {
     private static string serial;
     private static bool autocon;
     private int autocount = 0;
-    private static bool mkcon;
+    private static bool mkcon = false;
     private static bool ignore_sz = false;
     private static bool nopoll = false;
+    private static bool nnpaa = false;
     private static bool rawlog = false;
     private static bool norotate = false; // workaround for Ubuntu & old champlain
     private static bool gps_trail = false;
@@ -175,7 +176,7 @@ public class MWPlanner : Gtk.Application {
         { "no-poll", 'n', 0, OptionArg.NONE, out nopoll, "don't poll for nav info", null},
         { "no-trail", 't', 0, OptionArg.NONE, out gps_trail, "don't display GPS trail", null},
         { "raw-log", 'r', 0, OptionArg.NONE, out rawlog, "log raw serial data to file", null},
-
+        { "nnpaa", 'N', 0, OptionArg.NONE, out nnpaa, "naze no poll after arm", null},
         { "ignore-sizing", 0, 0, OptionArg.NONE, out ignore_sz, "ignore minimum size constraint", null},
         { "ignore-rotation", 0, 0, OptionArg.NONE, out norotate, "ignore vehicle icon rotation on old libchamplain", null},
         {null}
@@ -994,6 +995,10 @@ public class MWPlanner : Gtk.Application {
                     }
                     else
                     {
+                        if(nnpaa && naze32)
+                        {
+                            remove_tid(ref gpstid);
+                        }
                         if(armtime == 0)
                             armtime = time_t(out armtime);
                         time_t(out duration);
