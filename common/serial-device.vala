@@ -49,6 +49,9 @@ public class MWSerial : Object
     private bool print_raw=false;
     public uint baudrate  {private set; get;}
     private int sp = 0;
+    private ulong rxc = 0;
+    private ulong txc = 0;
+    private int64 st;
 
     public enum Mode
     {
@@ -133,6 +136,7 @@ public class MWSerial : Object
         }
         available = true;
         setup_reader(fd);
+        rxc = txc = 0;
     }
 
     private void setup_reader(int fd)
@@ -192,6 +196,7 @@ public class MWSerial : Object
         uint16 port = 0;
         string [] parts;
         estr=null;
+        st = 0;
 
         print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
 
@@ -294,7 +299,23 @@ public class MWSerial : Object
                 sockaddr=null;
             }
             fd = -1;
+            dump_stats();
         }
+    }
+
+    public void dump_stats()
+    {
+        int64 now =  GLib.get_monotonic_time();
+        double et = (now - st)/1000000.0;
+        double rrate = 0, trate = 0;
+
+        if (et > 0)
+        {
+            trate = (txc / et);
+            rrate = (rxc / et);
+        }
+        stderr.printf("%.0fs, rx %lub, tx %lub, (%.0f b/s, %0.f b/s)\n",
+                      et, rxc, txc, rrate, trate);
     }
 
     private bool device_read(IOChannel gio, IOCondition cond) {
@@ -326,7 +347,10 @@ public class MWSerial : Object
                     res = 0;
                 }
             }
-            debug("recv: %db\n", (int)res);
+
+            if(st == 0)
+                st =  GLib.get_monotonic_time();
+            rxc += res;
             if(print_raw == true)
             {
                 dump_raw_data(buf, (int)res);
@@ -479,6 +503,12 @@ public class MWSerial : Object
     public ssize_t write(void *buf, size_t count)
     {
         ssize_t size;
+
+        if(st == 0)
+            st =  GLib.get_monotonic_time();
+
+        txc += count;
+
         if(is_serial)
             size = Posix.write(fd, buf, count);
         else

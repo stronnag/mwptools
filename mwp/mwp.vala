@@ -33,6 +33,7 @@ public class MWPlanner : Gtk.Application {
     private string last_file;
     private ListBox ls;
     private Gtk.SpinButton zoomer;
+    private Gtk.SpinButton timadj;
     private Gtk.Label poslabel;
     public Gtk.Label stslabel;
     private Gtk.Statusbar statusbar;
@@ -90,7 +91,6 @@ public class MWPlanner : Gtk.Application {
     private static bool mkcon = false;
     private static bool ignore_sz = false;
     private static bool nopoll = false;
-    private static bool nnpaa = false;
     private static bool rawlog = false;
     private static bool norotate = false; // workaround for Ubuntu & old champlain
     private static bool gps_trail = false;
@@ -130,6 +130,14 @@ public class MWPlanner : Gtk.Application {
     private int[] playfd;
     private IOChannel io_read;
     private ReplayThread robj;
+
+
+    private MSP.Cmds[] requests = {};
+    private int tcycle = 0;
+    private bool dopoll;
+    private uint8 wpx = 0;
+    private bool rxerr = false;
+    private int64 lastp;
 
     private enum MS_Column {
         ID,
@@ -176,7 +184,6 @@ public class MWPlanner : Gtk.Application {
         { "no-poll", 'n', 0, OptionArg.NONE, out nopoll, "don't poll for nav info", null},
         { "no-trail", 't', 0, OptionArg.NONE, out gps_trail, "don't display GPS trail", null},
         { "raw-log", 'r', 0, OptionArg.NONE, out rawlog, "log raw serial data to file", null},
-        { "nnpaa", 'N', 0, OptionArg.NONE, out nnpaa, "naze no poll after arm", null},
         { "ignore-sizing", 0, 0, OptionArg.NONE, out ignore_sz, "ignore minimum size constraint", null},
         { "ignore-rotation", 0, 0, OptionArg.NONE, out norotate, "ignore vehicle icon rotation on old libchamplain", null},
         {null}
@@ -255,7 +262,7 @@ public class MWPlanner : Gtk.Application {
 
         zoomer = builder.get_object ("spinbutton1") as Gtk.SpinButton;
 
-        var timadj = builder.get_object ("spinbutton2") as Gtk.SpinButton;
+        timadj = builder.get_object ("spinbutton2") as Gtk.SpinButton;
         timadj.adjustment.value = conf.updint;
 
         var menuop = builder.get_object ("file_open") as Gtk.MenuItem;
@@ -487,6 +494,16 @@ public class MWPlanner : Gtk.Application {
                                 craft.init_trail();
                         }
                         break;
+
+                    case Gdk.Key.s:
+                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
+                            ret = false;
+                        else
+                        {
+                            msp.dump_stats();
+                        }
+                        break;
+
 
                     case Gdk.Key.t:
                         if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
@@ -763,6 +780,87 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
+    private void msg_poller()
+    {
+        if(dopoll)
+        {
+            send_poll();
+            start_poll_timer();
+        }
+    }
+
+    private void start_poll_timer()
+    {
+        gpstid = Timeout.add(500, () => {
+                if(dopoll)
+                {
+//                    stderr.printf("timeout %d\n", requests[tcycle]);
+                    send_poll();
+                    return true;
+                }
+                else
+                    return false;
+            });
+    }
+
+    private void send_poll()
+    {
+        var req=requests[tcycle];
+        if(tcycle == 0)
+            lastp = GLib.get_monotonic_time();
+        time_t now;
+        time_t(out now);
+        if(((int)now - (int)lastrx) > 5)
+        {
+            if(rxerr == false)
+            {
+                set_error_status("No data for 5 seconds");
+                rxerr=true;
+            }
+        }
+        else
+        {
+            if(rxerr)
+            {
+                set_error_status(null);
+                rxerr=false;
+            }
+        }
+
+        switch(req)
+        {
+            case MSP.Cmds.ANALOG:
+                if ((now % 5) == 0)
+                {
+                    send_cmd(req, null, 0);
+//                    stderr.printf("send %d\n", req);
+                }
+                else
+                {
+                    tcycle = (tcycle + 1) % requests.length;
+                    send_poll();
+                }
+                break;
+            case MSP.Cmds.WP:
+                if( gpsfix == true && armed == 1 && (now % 2) == 0)
+                {
+                    send_cmd(req,&wpx,1);
+//                    stderr.printf("send %d\n", req);
+                    wpx = (wpx + 16) & 16;
+                }
+                else
+                {
+                    tcycle = (tcycle + 1) % requests.length;
+                    send_poll();
+                }
+                break;
+            default:
+                send_cmd(req, null, 0);
+//                stderr.printf("send %d\n", req);
+                break;
+        }
+    }
+
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
     {
         if(errs == true)
@@ -774,6 +872,12 @@ public class MWPlanner : Gtk.Application {
             return;
         }
         Logger.log_time();
+
+        if(gpstid > 0 && cmd == requests[tcycle])
+        {
+//            stderr.printf("kill timer %d\n", cmd);
+            remove_tid(ref gpstid);
+        }
 
         if(cmd != MSP.Cmds.RADIO)
             time_t(out lastrx);
@@ -848,10 +952,9 @@ public class MWPlanner : Gtk.Application {
                         if(navcap == true)
                             add_cmd(MSP.Cmds.NAV_CONFIG,null,0,&have_nc,1000);
 
-                        var timadj = builder.get_object ("spinbutton2") as Gtk.SpinButton;
                         var  val = timadj.adjustment.value;
-                        MSP.Cmds[] requests = {};
                         ulong reqsize = 0;
+                        requests.resize(0);
 
                         requests += MSP.Cmds.STATUS;
                         reqsize += MSize.MSP_STATUS;
@@ -903,12 +1006,6 @@ public class MWPlanner : Gtk.Application {
                             reqsize += MSize.MSP_ALTITUDE;
                         }
 
-                        if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
-                        {
-                            requests += MSP.Cmds.RAW_GPS;
-                            reqsize += MSize.MSP_RAW_GPS;
-                        }
-
                         var nreqs = requests.length;
                         int timeout = (int)(val*1000 / nreqs);
 
@@ -921,67 +1018,13 @@ public class MWPlanner : Gtk.Application {
                         print("Timer cycle for %d (%dms) items, %lu => %lu bytes\n",
                               nreqs,timeout,qsize,reqsize);
 
-                        int tcycle = 0;
-                        uint8 wpx = 0;
-                        bool rxerr = false;
-                        time_t startrx = lastrx;
-                        int tov = 5;
-
-                        gpstid = Timeout.add(timeout, () => {
-                                time_t now;
-                                time_t(out now);
-                                if(((int)now - (int)lastrx) > tov)
-                                {
-                                    if(rxerr == false)
-                                    {
-                                        set_error_status("No data for %d seconds".printf(tov));
-                                        rxerr=true;
-                                        stderr.printf("Comms t/o after %d\n",
-                                                      (int)(now - startrx));
-                                            //lastrx = now + (30 - tov);
-                                    }
-                                }
-                                else
-                                {
-                                    if(rxerr)
-                                    {
-                                        set_error_status(null);
-                                        stderr.printf("Comms revert after %d\n",
-                                                      (int)(now - startrx));
-                                        rxerr=false;
-                                    }
-                                }
-                                var req=requests[tcycle];
-
-                                if(req == MSP.Cmds.ANALOG && (now % 5) == 0)
-                                {
-                                    send_cmd(req, null, 0);
-                                }
-                                else if(req == MSP.Cmds.WP && gpsfix == true
-                                   && armed == 1 && (now % 2) == 0)
-                                {
-                                    send_cmd(req,&wpx,1);
-                                    if(wpx == 0)
-                                        wpx = 16;
-                                    else
-                                        wpx = 0;
-                                }
-                                else
-                                {
-                                    send_cmd(req, null, 0);
-                                }
-                                tcycle += 1;
-                                tcycle %= nreqs;
-
-                                if(nopoll)
-                                {
-                                    stdout.printf("Stop polling\n");
-                                    gpstid = 0;
-                                    return false;
-                                }
-                                else
-                                    return true;
-                            });
+                        if(nopoll == false && nreqs > 0)
+                        {
+//                            stderr.printf("Start poller\n");
+                            dopoll = true;
+                            tcycle = 0;
+                            lastp = GLib.get_monotonic_time();
+                        }
                         start_audio();
                     }
                     uint32 flag;
@@ -995,10 +1038,6 @@ public class MWPlanner : Gtk.Application {
                     }
                     else
                     {
-                        if(nnpaa && naze32)
-                        {
-                            remove_tid(ref gpstid);
-                        }
                         if(armtime == 0)
                             armtime = time_t(out armtime);
                         time_t(out duration);
@@ -1526,6 +1565,31 @@ public class MWPlanner : Gtk.Application {
                 stderr.printf ("** Unknown response %d\n", cmd);
                 break;
         }
+        if(dopoll && (cmd == requests[tcycle]))
+        {
+            tcycle = (tcycle + 1) % requests.length;
+            if(tcycle == 0)
+            {
+                var  val = 1000*timadj.adjustment.value;
+                var now = GLib.get_monotonic_time();
+                var et = (now - lastp)/1000;
+                if (et > val)
+                {
+                    msg_poller();
+                }
+                else
+                {
+                    Timeout.add((uint)val-(uint)et, ()=> {
+                            msg_poller();
+                            return false;
+                        });
+                }
+            }
+            else
+            {
+                msg_poller();
+            }
+        }
     }
 
     private void duration_timer()
@@ -1805,8 +1869,10 @@ public class MWPlanner : Gtk.Application {
 
     private void serial_doom(Gtk.Button c)
     {
-        remove_tid(ref cmdtid);
+//        stderr.printf("Close serial\n");
+        dopoll = false;
         remove_tid(ref gpstid);
+        remove_tid(ref cmdtid);
         sflags = 0;
         stop_audio();
 
@@ -1842,6 +1908,8 @@ public class MWPlanner : Gtk.Application {
         }
         else
         {
+            remove_tid(ref gpstid);
+            dopoll = false;
             var serdev = dev_entry.get_active_text();
             string estr;
             if (msp.open(serdev, conf.baudrate, out estr) == true)
