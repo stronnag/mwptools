@@ -959,6 +959,7 @@ public class MWPlanner : Gtk.Application {
                         ulong reqsize = 0;
                         requests.resize(0);
                         anvals = 0;
+                        acycle = 0;
 
                         requests += MSP.Cmds.STATUS;
                         reqsize += MSize.MSP_STATUS;
