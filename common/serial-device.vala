@@ -303,7 +303,7 @@ public class MWSerial : Object
         }
     }
 
-    public void dump_stats()
+    public string dump_stats()
     {
         int64 now =  GLib.get_monotonic_time();
         double et = (now - st)/1000000.0;
@@ -314,8 +314,7 @@ public class MWSerial : Object
             trate = (txc / et);
             rrate = (rxc / et);
         }
-        stderr.printf("%.0fs, rx %lub, tx %lub, (%.0f b/s, %0.f b/s)\n",
-                      et, rxc, txc, rrate, trate);
+        return "%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s)".printf(et, rxc, txc, rrate, trate);
     }
 
     private bool device_read(IOChannel gio, IOCondition cond) {

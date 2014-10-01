@@ -138,6 +138,8 @@ public class MWPlanner : Gtk.Application {
     private uint8 wpx = 0;
     private bool rxerr = false;
     private int64 lastp;
+    private int64 acycle;
+    private int64 anvals;
 
     private enum MS_Column {
         ID,
@@ -500,7 +502,8 @@ public class MWPlanner : Gtk.Application {
                             ret = false;
                         else
                         {
-                            msp.dump_stats();
+                            stderr.puts(msp.dump_stats());
+                            stderr.printf(", avg poll loop %lu ms\n", (ulong)(acycle/anvals));
                         }
                         break;
 
@@ -955,6 +958,7 @@ public class MWPlanner : Gtk.Application {
                         var  val = timadj.adjustment.value;
                         ulong reqsize = 0;
                         requests.resize(0);
+                        anvals = 0;
 
                         requests += MSP.Cmds.STATUS;
                         reqsize += MSize.MSP_STATUS;
@@ -1573,6 +1577,9 @@ public class MWPlanner : Gtk.Application {
                 var  val = 1000*timadj.adjustment.value;
                 var now = GLib.get_monotonic_time();
                 var et = (now - lastp)/1000;
+                acycle += et;
+                anvals++;
+
                 if (et > val)
                 {
                     msg_poller();
@@ -1875,6 +1882,8 @@ public class MWPlanner : Gtk.Application {
         remove_tid(ref cmdtid);
         sflags = 0;
         stop_audio();
+        stderr.puts(msp.dump_stats());
+        stderr.printf(", avg poll loop %lu ms\n", (ulong)(acycle/anvals));
 
         if(rawlog == true)
         {

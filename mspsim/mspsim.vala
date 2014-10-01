@@ -42,7 +42,7 @@ public class MWSim : GLib.Object
     private Gtk.TextView textlog;
     private Mission ms;
     private LegItem[] legs;
-    private time_t gps_start = 0;
+    private int64 gps_start = 0;
     private Gtk.Button startb;
     private Gtk.ProgressBar pbar;
     private uint tid;
@@ -198,7 +198,7 @@ public class MWSim : GLib.Object
         startb.clicked.connect(() => {
                 if (gps_start == 0)
                 {
-                    time_t(out gps_start);
+                    gps_start = GLib.get_monotonic_time();
                     startb.set_label("gtk-media-stop");
                     var td = legs[legs.length-1].tdist;
                     pbar.set_fraction(0.0);
@@ -679,7 +679,7 @@ public class MWSim : GLib.Object
         }
     }
 
-    private int getpos_at_time(double spd, int t,
+    private int getpos_at_time(double spd, double t,
                                out double lat, out double lon,
                                out int alt, out double cse, int cl=0)
     {
@@ -829,9 +829,8 @@ public class MWSim : GLib.Object
         }
         else
         {
-            time_t now;
-            time_t(out now);
-            int tdif = (int)(now - gps_start);
+            int64 now = GLib.get_monotonic_time();
+            double tdif = (now - gps_start)/1000000;
 
             var cl = getpos_at_time(spd, tdif, out lat, out lon,
                                     out alt, out cse, 0);
