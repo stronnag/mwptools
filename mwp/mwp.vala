@@ -140,6 +140,7 @@ public class MWPlanner : Gtk.Application {
     private int64 lastp;
     private int64 acycle;
     private int64 anvals;
+    private int toc;
 
     private enum MS_Column {
         ID,
@@ -503,7 +504,8 @@ public class MWPlanner : Gtk.Application {
                         else
                         {
                             stderr.puts(msp.dump_stats());
-                            stderr.printf(", avg poll loop %lu ms\n", (ulong)(acycle/anvals));
+                            stderr.printf(", t/o %d, avg poll %lu ms\n", toc,
+                                          (ulong)(acycle/anvals));
                         }
                         break;
 
@@ -798,6 +800,7 @@ public class MWPlanner : Gtk.Application {
                 if(dopoll)
                 {
 //                    stderr.printf("timeout %d\n", requests[tcycle]);
+                    toc++;
                     send_poll();
                     return true;
                 }
@@ -960,6 +963,7 @@ public class MWPlanner : Gtk.Application {
                         requests.resize(0);
                         anvals = 0;
                         acycle = 0;
+                        toc = 0;
 
                         requests += MSP.Cmds.STATUS;
                         reqsize += MSize.MSP_STATUS;

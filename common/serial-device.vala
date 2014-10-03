@@ -51,7 +51,8 @@ public class MWSerial : Object
     private int sp = 0;
     private ulong rxc = 0;
     private ulong txc = 0;
-    private int64 st;
+    private int64 stime;
+    private int64 ltime;
 
     public enum Mode
     {
@@ -196,7 +197,7 @@ public class MWSerial : Object
         uint16 port = 0;
         string [] parts;
         estr=null;
-        st = 0;
+        stime = ltime = 0;
 
         print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
 
@@ -305,8 +306,9 @@ public class MWSerial : Object
 
     public string dump_stats()
     {
-        int64 now =  GLib.get_monotonic_time();
-        double et = (now - st)/1000000.0;
+        if(ltime == 0 || ltime == stime)
+            ltime =  GLib.get_monotonic_time();
+        double et = (ltime - stime)/1000000.0;
         double rrate = 0, trate = 0;
 
         if (et > 0)
@@ -347,8 +349,10 @@ public class MWSerial : Object
                 }
             }
 
-            if(st == 0)
-                st =  GLib.get_monotonic_time();
+            if(stime == 0)
+                stime =  GLib.get_monotonic_time();
+
+            ltime =  GLib.get_monotonic_time();
             rxc += res;
             if(print_raw == true)
             {
@@ -503,8 +507,8 @@ public class MWSerial : Object
     {
         ssize_t size;
 
-        if(st == 0)
-            st =  GLib.get_monotonic_time();
+        if(stime == 0)
+            stime =  GLib.get_monotonic_time();
 
         txc += count;
 
