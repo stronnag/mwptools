@@ -1888,7 +1888,10 @@ public class MWPlanner : Gtk.Application {
         sflags = 0;
         stop_audio();
         stderr.puts(msp.dump_stats());
-        stderr.printf(", avg poll loop %lu ms\n", (ulong)(acycle/anvals));
+        if(anvals > 0)
+            stderr.printf(", avg poll loop %lu ms\n", (ulong)(acycle/anvals));
+        else
+            stderr.puts("\n");
 
         if(rawlog == true)
         {
