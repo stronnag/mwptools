@@ -1420,8 +1420,9 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.TG_FRAME:
             {
                 if(nopoll == false)
-                    nopoll = true;
-
+                {
+                    dopoll = nopoll = true;
+                }
                 sflags |=  NavStatus.SPK.ELEV;
                 LTM_GFRAME gf = LTM_GFRAME();
                 uint8* rp;
@@ -1474,7 +1475,9 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.TA_FRAME:
             {
                 if(nopoll == false)
-                    nopoll = true;
+                                    {
+                    dopoll = nopoll = true;
+                }
                 LTM_AFRAME af = LTM_AFRAME();
                 uint8* rp;
                 rp = deserialise_i16(raw, out af.pitch);
@@ -1491,7 +1494,9 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.TS_FRAME:
             {
                 if(nopoll == false)
-                    nopoll = true;
+                {
+                    dopoll = nopoll = true;
+                }
                 LTM_SFRAME sf = LTM_SFRAME ();
                 uint8* rp;
                 rp = deserialise_i16(raw, out sf.vbat);
