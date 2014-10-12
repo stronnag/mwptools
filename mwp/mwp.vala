@@ -2299,6 +2299,7 @@ public class MWPlanner : Gtk.Application {
         try  { io_read.shutdown(false); } catch {}
         Posix.close(playfd[0]);
         Posix.close(playfd[1]);
+        stop_audio();
         conf.logarmed = xlog;
         conf.audioarmed = xaudio;
         duration = -1;

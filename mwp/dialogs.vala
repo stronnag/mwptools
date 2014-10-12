@@ -380,23 +380,27 @@ public class NavStatus : GLib.Object
     private bool visible = false;
     public Gtk.Grid grid {get; private set;}
     private Gdl.DockItem di;
-    private MSP_NAV_STATUS n;
-    private MSP_ATTITUDE atti;
-    private MSP_ALTITUDE alti;
-    private MSP_COMP_GPS cg;
-    private float volts;
     private  Gtk.Label voltlabel;
     public Gtk.Box voltbox{get; private set;}
     private Gdk.RGBA[] colors;
     private bool vinit = false;
     private bool mt_voice = false;
-    private uint8 numsat = 0;
-    private int16 hdr;
-    private bool modsat=false;
     private AudioThread mt;
     private bool have_cg = false;
     private bool have_hdr = false;
-    private uint8 xfmode = -1;
+
+    public static MSP_NAV_STATUS n {get; private set;}
+    public static MSP_ATTITUDE atti {get; private set;}
+    public static MSP_ALTITUDE alti {get; private set;}
+    public static MSP_COMP_GPS cg {get; private set;}
+    public static float volts {get; private set;}
+    public static uint8 numsat {get; private set;}
+    public static int16 hdr {get; private set;}
+    public static bool modsat;
+
+    public static uint8 xfmode {get; private set;}
+    public static int mins {get; private set;}
+    public static bool recip {get; private set;}
 
     public enum SPK  {
         Volts = 1,
@@ -407,6 +411,10 @@ public class NavStatus : GLib.Object
 
     public NavStatus(Gtk.Builder builder)
     {
+        xfmode = -1;
+        numsat = 0;
+        modsat = false;
+
         grid = builder.get_object ("grid3") as Gtk.Grid;
         gps_mode_label = builder.get_object ("gps_mode_lab") as Gtk.Label;
         nav_state_label = builder.get_object ("nav_status_label") as Gtk.Label;
@@ -461,11 +469,11 @@ public class NavStatus : GLib.Object
             nav_action_label.set_label(str);
             if(xfmode != fmode)
             {
+                xfmode = fmode;
                 if(mt_voice)
                 {
-                    mt.message(lmode);
+                    mt.message(AudioThread.Vox.LTM_MODE);
                 }
-                xfmode = fmode;
             }
 
             if (Logger.is_logging)
@@ -500,55 +508,23 @@ public class NavStatus : GLib.Object
     {
         if(mt_voice == true)
         {
+            var xnmode = n.nav_mode;
+            var xnerr = n.nav_error;
+            var xnwp = n.wp_number;
+
+            n = _n;
+
             if(_n.nav_mode != 0 && _n.nav_error != 0 &&
-               _n.nav_error != n.nav_error)
+               _n.nav_error != xnerr)
             {
-                var estr = MSP.nav_error(_n.nav_error);
-                mt.message(estr);
+                mt.message(AudioThread.Vox.NAV_ERR);
             }
 
-            if((_n.nav_mode != n.nav_mode) || (_n.nav_mode !=0 && _n.wp_number != n.wp_number))
+            if((_n.nav_mode != xnmode) || (_n.nav_mode !=0 && _n.wp_number != xnwp))
             {
-                string nvstr=null;
-                switch(_n.nav_mode)
-                {
-                    case 0:
-                        nvstr = "Manual mode.";
-                        break;
-                    case 1:
-                        nvstr = "Return to home initiated.";
-                        break;
-                    case 2:
-                        nvstr = "Navigating to home position.";
-                        break;
-                    case 3:
-                        nvstr = "Switch to infinite position hold.";
-                        break;
-                    case 4:
-                        nvstr = "Start timed position hold.";
-                        break;
-                    case 5:
-                        nvstr = "Navigating to waypoint %d.".printf(_n.wp_number);
-                        break;
-                    case 7:
-                        nvstr = "Starting jump for %d".printf(_n.wp_number);
-                        break;
-                    case 8:
-                        nvstr = "Starting to land.";
-                        break;
-                    case 9:
-                        nvstr = "Landing in progress.";
-                        break;
-                    case 10:
-                        nvstr = "Landed. Please disarm.";
-                        break;
-                }
-                if(nvstr != null)
-                    mt.message(nvstr);
+                mt.message(AudioThread.Vox.NAV_STATUS);
             }
         }
-
-        n = _n;
 
         if(!di.is_closed() || Logger.is_logging)
         {
@@ -656,25 +632,12 @@ public class NavStatus : GLib.Object
         voltlabel.set_label("<span font='%d'>%s</span>".printf(fs,s));
     }
 
-    public void update_duration(int mins)
+    public void update_duration(int _mins)
     {
+        mins = _mins;
         if(mt_voice)
         {
-            var ms = (mins > 1) ? "minutes" : "minute";
-            mt.message("%d %s".printf(mins, ms));
-        }
-    }
-
-
-    private string str_zero(string str)
-    {
-        if(str[-3:-1] == ".0")
-        {
-            return str[0:-2];
-        }
-        else
-        {
-            return str;
+            mt.message(AudioThread.Vox.DURATION);
         }
     }
 
@@ -684,54 +647,36 @@ public class NavStatus : GLib.Object
         modsat = true;
     }
 
-    public void announce(uint8 mask, bool recip)
+    public void announce(uint8 mask, bool _recip)
     {
+        recip = _recip;
         if(((mask & SPK.GPS) == SPK.GPS) && have_cg)
         {
-            var brg = cg.direction;
-            if(brg < 0)
-                brg += 360;
-
-            if(recip)
-                brg = ((brg + 180) % 360);
-
-            mt.message("Range %d, bearing %d.".printf(cg.range, brg));
+            mt.message(AudioThread.Vox.RANGE_BRG);
         }
 
         if((mask & SPK.ELEV) == SPK.ELEV)
         {
-            var str = "Elevation %d.".printf(GPSInfo.elev);
-            str = str_zero(str);
-            mt.message(str);
+            mt.message(AudioThread.Vox.ELEVATION);
         }
         else if((mask & SPK.BARO) == SPK.BARO)
         {
-            double estalt = (double)alti.estalt/100.0;
-            var str = "Altitude %.1f.".printf(estalt);
-            str = str_zero(str);
-            mt.message(str);
+            mt.message(AudioThread.Vox.BARO);
         }
 
         if(have_hdr)
         {
-            var str = "Heading %d.".printf(hdr);
-            mt.message(str);
+            mt.message(AudioThread.Vox.HEADING);
         }
 
         if((mask & SPK.Volts) == SPK.Volts && volts > 0.0)
         {
-            var str = "Voltage %.1f.".printf( volts);
-            str = str_zero(str);
-            mt.message(str);
+            mt.message(AudioThread.Vox.VOLTAGE);
         }
+
         if(modsat)
         {
-            modsat = false;
-            string s = "";
-            if(numsat != 1)
-                s = "s";
-
-            mt.message("%d satellite%s.".printf(numsat,s));
+            mt.message(AudioThread.Vox.MODSAT);
         }
     }
 
@@ -764,48 +709,159 @@ public class NavStatus : GLib.Object
 
     public void logspeak_close()
     {
-//        stdout.printf("Stop audio\n");
+//        stderr.printf("Stop audio\n");
         mt_voice=false;
         mt.clear();
-        mt.message("");
+        mt.message(AudioThread.Vox.DONE);
         mt.thread.join ();
         mt = null;
     }
 }
 
 public class AudioThread : Object {
-    private AsyncQueue<string> msgs;
+    public enum Vox
+    {
+        DONE=1,
+            NAV_ERR,
+            NAV_STATUS,
+            DURATION,
+            RANGE_BRG,
+            ELEVATION,
+            BARO,
+            HEADING,
+            VOLTAGE,
+            MODSAT,
+            LTM_MODE
+            }
+
+    private AsyncQueue<Vox> msgs;
     public Thread<int> thread {private set; get;}
 
     public AudioThread () {
-        msgs = new AsyncQueue<string> ();
+        msgs = new AsyncQueue<Vox> ();
     }
 
-    public void message(string? s)
+    private string str_zero(string str)
+    {
+        if(str[-3:-1] == ".0")
+        {
+            return str[0:-2];
+        }
+        else
+        {
+            return str;
+        }
+    }
+
+    public void message(Vox c)
     {
         if (msgs.length() > 8)
         {
             clear();
             stdout.printf("cleared voice queue\n");
         }
-        msgs.push(s);
+        msgs.push(c);
     }
 
     public void clear()
     {
-        while (msgs.try_pop() != null)
+        while (msgs.try_pop() != (Vox)null)
             ;
     }
 
     public void start()
     {
         thread = new Thread<int> ("mwp audio", () => {
-                while(true)
+                Vox c;
+                while((c = msgs.pop()) != Vox.DONE)
                 {
-                    var s = msgs.pop();
-                    if (s == "")
-                        break;
-                    espeak_say(s);
+                    string s=null;
+                    switch(c)
+                    {
+                        case Vox.NAV_ERR:
+                            s = MSP.nav_error(NavStatus.n.nav_error);
+                            break;
+                        case Vox.NAV_STATUS:
+                            switch(NavStatus.n.nav_mode)
+                            {
+                                case 0:
+                                    s = "Manual mode.";
+                                    break;
+                                case 1:
+                                    s = "Return to home initiated.";
+                                    break;
+                                case 2:
+                                    s = "Navigating to home position.";
+                                    break;
+                                case 3:
+                                    s = "Switch to infinite position hold.";
+                                    break;
+                                case 4:
+                                    s = "Start timed position hold.";
+                                    break;
+                                case 5:
+                                    s = "Navigating to waypoint %d.".printf(NavStatus.n.wp_number);
+                                    break;
+                                case 7:
+                                    s = "Starting jump for %d".printf(NavStatus.n.wp_number);
+                                    break;
+                                case 8:
+                                    s = "Starting to land.";
+                                    break;
+                                case 9:
+                                    s = "Landing in progress.";
+                                    break;
+                                case 10:
+                                    s = "Landed. Please disarm.";
+                                    break;
+                            }
+                            break;
+                        case Vox.DURATION:
+                            var ms = (NavStatus.mins > 1) ? "minutes" : "minute";
+                            s = "%d %s".printf(NavStatus.mins, ms);
+                            break;
+                        case Vox.RANGE_BRG:
+                            var brg = NavStatus.cg.direction;
+                            if(brg < 0)
+                                brg += 360;
+                            if(NavStatus.recip)
+                                brg = ((brg + 180) % 360);
+                            s = "Range %d, bearing %d.".printf(NavStatus.cg.range, brg);
+                            break;
+                        case Vox.ELEVATION:
+                            s = "Elevation %d.".printf(GPSInfo.elev);
+                            s = str_zero(s);
+                            break;
+                        case Vox.BARO:
+                            double estalt = (double)NavStatus.alti.estalt/100.0;
+                            s  = "Altitude %.1f.".printf(estalt);
+                            s = str_zero(s);
+                            break;
+                        case Vox.HEADING:
+                            s = "Heading %d.".printf(NavStatus.hdr);
+                            break;
+                        case Vox.VOLTAGE:
+                            s = "Voltage %.1f.".printf( NavStatus.volts);
+                            s = str_zero(s);
+                            break;
+                        case Vox.MODSAT:
+                            NavStatus.modsat = false;
+                            string ss = "";
+                            if(NavStatus.numsat != 1)
+                                ss = "s";
+                            s = "%d satellite%s.".printf(NavStatus.numsat,ss);
+                            break;
+                        case Vox.LTM_MODE:
+                            s = MSP.ltm_mode(NavStatus.xfmode);
+                            break;
+                        default:
+                            break;
+                    }
+                    if(s != null)
+                    {
+//                        stderr.printf("say %s\n", s);
+                        espeak_say(s);
+                    }
                 }
                 return 0;
             });
