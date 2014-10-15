@@ -19,6 +19,13 @@
 
 public class SwitchEdit : Object
 {
+    const int NBITS=12;
+    private struct PERM_BOX
+    {
+        string name;
+        uint8  permid;
+    }
+
     private Gtk.Builder builder;
     private Gtk.Window window;
     private Gtk.Grid grid1;
@@ -38,6 +45,38 @@ public class SwitchEdit : Object
     private Gdk.RGBA[] colors;
     private uint tid;
     private string lastfile;
+    private uint32 capability;
+    private uint8 []rowids;
+    private uint8 []permids;
+    private bool applied = false;
+    private uint nranges = 40;
+
+    private static const PERM_BOX [] pbox =
+        {
+            {"ARM", 0},
+            {"ANGLE", 1},
+            {"HORIZON", 2},
+            {"BARO", 3},
+            {"VARIO", 4 },
+            {"MAG", 5 },
+            {"HEADFREE", 6 },
+            {"HEADADJ", 7 },
+            {"CAMSTAB", 8 },
+            {"CAMTRIG", 9 },
+            {"GPS HOME", 10 },
+            {"GPS HOLD", 11 },
+            {"PASSTHRU", 12 },
+            {"BEEPER", 13 },
+            {"LEDMAX", 14 },
+            {"LEDLOW", 15 },
+            {"LLIGHTS", 16 },
+            {"CALIB", 17 },
+            {"GOVERNOR", 18 },
+            {"OSD SW", 19 },
+            {"TELEMETRY", 20 },
+            {"AUTOTUNE", 21 },
+            {"SONAR", 22 },
+        };
 
     private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, bool *flag)
     {
@@ -90,14 +129,105 @@ public class SwitchEdit : Object
         for(var ib = 0; ib < nboxen; ib++)
         {
             sv[ib] = 0;
-            for(var jb = 0; jb < 12; jb++)
+            for(var jb = 0; jb < NBITS; jb++)
             {
-                var kb = jb + ib * 12;
+                var kb = jb + ib * NBITS;
                 if(checks[kb].active)
                     sv[ib] |= (1 << jb);
             }
         }
-        s.send_command(MSP.Cmds.SET_BOX, sv, nboxen*2);
+
+        if((capability & MSPCaps.CAP_CLEANFLIGHT_CONFIG) == 0) // MW or BF
+        {
+            s.send_command(MSP.Cmds.SET_BOX, sv, nboxen*2);
+        }
+        else
+        {
+            uint8 aid=0;
+            CF_MODE_RANGES mr = {0};
+            for(var ib = 0; ib < nboxen; ib++)
+            {
+                {
+                    mr.perm_id = permids[ib];
+                    for(var j = 0; j < 4; j++)
+                    {
+                        var auxbits = ((sv[ib] >> j*3) & 7);
+//                        if(auxbits != 0)
+                        {
+                            mr.auxchanid = j;
+                            switch (auxbits)
+                            {
+                                case 0:
+                                    mr.startstep = 0;
+                                    mr.endstep = 0;
+                                    send_mr(mr,ref aid);
+                                    break;
+
+                                case 1:
+                                    mr.startstep = 0;
+                                    mr.endstep = 16;
+                                    send_mr(mr,ref aid);
+                                    break;
+                                case 2:
+                                    mr.startstep = 16;
+                                    mr.endstep = 32;
+                                    send_mr(mr,ref aid);
+                                    break;
+                                case 3:
+                                    mr.startstep = 0;
+                                    mr.endstep = 32;
+                                    send_mr(mr,ref aid);
+                                    break;
+                                case 4:
+                                    mr.startstep = 32;
+                                    mr.endstep = 48;
+                                    send_mr(mr,ref aid);
+                                    break;
+                                case 5:
+                                    mr.startstep = 0;
+                                    mr.endstep = 16;
+                                    send_mr(mr,ref aid);
+                                    mr.startstep = 32;
+                                    mr.endstep = 48;
+                                    send_mr(mr,ref aid);
+                                    break;
+                                case 6:
+                                    mr.startstep = 16;
+                                    mr.endstep = 48;
+                                    send_mr(mr,ref aid);
+                                    break;
+                                case 7:
+                                    mr.startstep = 0;
+                                    mr.endstep = 48;
+                                    send_mr(mr,ref aid);
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+            mr = {0,0,0,0};
+            for(;aid < nranges; send_mr(mr, ref aid))
+                ;
+            applied = true;
+        }
+    }
+
+    private void send_mr(CF_MODE_RANGES mr, ref uint8 idx)
+    {
+        uint8 buf[5];
+        buf[0] = idx;
+        buf[1] = mr.perm_id;
+        buf[2] = mr.auxchanid;
+        buf[3] = mr.startstep;
+        buf[4] = mr.endstep;
+            /*
+        if(mr.startstep != mr.endstep)
+            stderr.printf("Send idx %d permid = %d, auxid  = %d, range %d %d\n",
+                          buf[0], buf[1], buf[2], buf[3], buf[5]);
+            */
+        s.send_command(MSP.Cmds.SET_MODE_RANGE, buf, 5);
+        idx++;
     }
 
     SwitchEdit(string[] args)
@@ -107,6 +237,9 @@ public class SwitchEdit : Object
         have_box = false;
         boxlabel = {};
         checks= {};
+        rowids = {};
+        permids = {};
+
         colors = new Gdk.RGBA[2];
         colors[1].parse("orange");
         colors[0].parse("white");
@@ -154,6 +287,15 @@ public class SwitchEdit : Object
                     var _mrtype = MSP.get_mrtype(raw[1]);
                     var vers="v%03d %s".printf(raw[0], _mrtype);
                     verslab.set_label(vers);
+                    deserialise_u32(raw+3, out capability);
+                        /*
+                    if((capability & MSPCaps.CAP_PLATFORM_32BIT) != 0) // 32 bit
+                    {
+                        stderr.puts("32bit\n");
+                        if((capability & MSPCaps.CAP_CLEANFLIGHT_CONFIG) != 0) // CF
+                            stderr.puts("CF new\n");
+                    }
+                        */
                     add_cmd(MSP.Cmds.BOXNAMES,null,0,&have_names);
                     break;
 
@@ -163,8 +305,15 @@ public class SwitchEdit : Object
                     string []bsx = b.split(";");
                     nboxen = bsx.length-1;
                     add_boxlabels(bsx);
-                    add_cmd(MSP.Cmds.BOX,null,0,&have_box);
+                    MSP.Cmds bcmd = ((capability & MSPCaps.CAP_CLEANFLIGHT_CONFIG) == 0) ? MSP.Cmds.BOX : MSP.Cmds.MODE_RANGES;
+                    add_cmd(bcmd,null,0,&have_box);
                     break;
+
+                    case  MSP.Cmds.MODE_RANGES:
+                    have_box = true;
+                    add_cf_modes(raw, len);
+                    break;
+
 
                     case MSP.Cmds.BOX:
                     if(have_box == false)
@@ -271,7 +420,8 @@ public class SwitchEdit : Object
         applybutton.clicked.connect(() => {
                 if(is_connected == true && have_names == true)
                 {
-                    apply_state();
+                    if(applied == false)
+                        apply_state();
                     s.send_command(MSP.Cmds.EEPROM_WRITE,null, 0);
                 }
             });
@@ -349,34 +499,92 @@ public class SwitchEdit : Object
     private void add_boxlabels(string[]bsx)
     {
         boxlabel={};
+        rowids = new uint8[40];
+        permids = new uint8[nboxen];
+
         for(var i = 0; i < nboxen; i++)
         {
             var l = new Gtk.Label("");
             l.set_width_chars(10);
             l.justify = Gtk.Justification.LEFT;
             l.halign = Gtk.Align.START;
+//            stderr.printf("Box %d %s\n", i, bsx[i]);
             l.set_label(bsx[i]);
             boxlabel += l;
             l.override_background_color(Gtk.StateFlags.NORMAL, colors[0]);
             grid1.attach(l,0,i+2,1,1);
+            for(var j = 0; j < pbox.length; j++)
+            {
+                if (bsx[i] == pbox[j].name)
+                {
+                    rowids[pbox[j].permid] = i;
+                    permids[i] = pbox[j].permid;
+                }
+            }
         }
+        build_check_boxen();
     }
 
-    private void add_switch_states(uint16[] bv)
+    private void add_cf_modes(uint8[]raw, uint len)
+    {
+        nranges = len / 4;
+        uint16[] bv = new uint16[nboxen];
+
+        foreach(var bvi in bv)
+            bvi=0;
+
+        var idx = 0;
+        var ridx = 0;
+
+        for(var i = 0; i < nranges; i++)
+        {
+            CF_MODE_RANGES mr={};
+            mr.perm_id = raw[idx++];
+            mr.auxchanid = raw[idx++];
+            mr.startstep = raw[idx++];
+            mr.endstep = raw[idx++];
+            if(mr.startstep !=  mr.endstep)
+            {
+                ridx = rowids[mr.perm_id];
+                var bix = step_to_idx(mr.startstep, mr.endstep);
+                bv[ridx] |= bix*(1 << mr.auxchanid*3);
+
+/*
+                stderr.printf("auxid = %d, rowid = %d, name = %s ",
+                              mr.auxchanid, ridx, pbox[mr.perm_id].name);
+                stderr.printf("min=%d, max=%d idx=%u val %x\n",
+                              mr.startstep, mr.endstep, bix, bv[idx]);
+*/
+            }
+/*
+            stderr.printf("permid = %d, auxid  = %d, range %d %d, row %d = %s\n",
+                          mr.perm_id, mr.auxchanid, mr.startstep, mr.endstep,
+                          ridx, pbox[mr.perm_id].name);
+*/
+        }
+        add_switch_states(bv);
+    }
+
+    private uint8 step_to_idx(uint8 start, uint8 end)
+    {
+        uint8 mask;
+        var rng = (end - start)/16;
+        var st = start/16;
+        mask = ((1 << rng)-1)*(1 << st);
+        return mask;
+    }
+
+    private void build_check_boxen()
     {
         checks={};
         for(var i = 0; i < nboxen; i++)
         {
             var k = 0;
-            for(var j = 0; j < 12; j++)
+            for(var j = 0; j < NBITS; j++)
             {
-                uint16 mask = (1 << j);
                 var c = new Gtk.CheckButton();
                 checks += c;
-                c.active = ((bv[i] & mask) == mask);
-                c.toggled.connect(() => {
-                        apply_state();
-                    });
+
                 if((j % 3)  == 0 && j != 0)
                 {
                     k += 1;
@@ -389,7 +597,25 @@ public class SwitchEdit : Object
                 grid1.attach(c,k,i+2,1,1);
             }
         }
+        grid1.show_all();
     }
+
+    private void add_switch_states(uint16[] bv)
+    {
+        var l = 0;
+        for(var i = 0; i < nboxen; i++)
+        {
+            for(var j = 0; j < NBITS; j++)
+            {
+                uint16 mask = (1 << j);
+                var c = checks[l++];
+                c.active = ((bv[i] & mask) == mask);
+                c.toggled.connect(() => {
+                        apply_state();
+                    });
+            }
+        }
+      }
 
     private void save_file()
     {
@@ -524,7 +750,7 @@ public class SwitchEdit : Object
              builder.set_member_name ("value");
              uint8 bstr[16];
              int i = 0;
-             for(var j =  0; j < 12; j++)
+             for(var j =  0; j < NBITS; j++)
              {
                   if(j > 0 && (j%3)==0)
                   {

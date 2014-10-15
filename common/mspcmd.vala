@@ -52,6 +52,11 @@ public class MSP : Object
             SET_BOX = 203,
             BOXNAMES = 116,
             BOXIDS = 119,
+
+                // Cleanflight extensions
+            MODE_RANGES = 34, // FC out message Returns all mode ranges
+            SET_MODE_RANGE = 35,   // FC in message Sets a single mode range
+
             TG_FRAME = (0x1000 + 'G'),
             TA_FRAME = (0x1000 + 'A'),
             TS_FRAME = (0x1000 + 'S'),

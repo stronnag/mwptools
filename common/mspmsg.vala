@@ -165,6 +165,13 @@ public struct LTM_SFRAME
     uint8 flags;
 }
 
+public struct CF_MODE_RANGES
+{
+    uint8 perm_id;
+    uint8 auxchanid;
+    uint8 startstep;
+    uint8 endstep;
+}
 
 public enum MSize
 {
@@ -185,6 +192,15 @@ public enum MSize
     LTM_AFRAME=6,
     LTM_SFRAME=7
 }
+
+
+public enum MSPCaps
+{
+    CAP_PLATFORM_32BIT = (1 << 31),
+    CAP_BASEFLIGHT_CONFIG = (1 << 30),
+    CAP_CLEANFLIGHT_CONFIG = (1 << 29)
+}
+
 
 public uint8* deserialise_u32(uint8* rp, out uint32 v)
 {
