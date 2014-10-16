@@ -141,6 +141,7 @@ public class MWPlanner : Gtk.Application {
     private int64 acycle;
     private int64 anvals;
     private int toc;
+    public static string exstr;
 
     private enum MS_Column {
         ID,
@@ -232,6 +233,25 @@ public class MWPlanner : Gtk.Application {
         }
 
         gps_trail = !gps_trail; // yet more jh logic
+
+        if(conf.atstart != null)
+        {
+            try {
+                Process.spawn_command_line_async(conf.atstart);
+            } catch {};
+        }
+
+        if(conf.atexit != null)
+        {
+            exstr = conf.atexit;
+            Posix.atexit(() =>
+                {
+                    try
+                    {
+                        Process.spawn_command_line_async(exstr);
+                    } catch {};
+                });
+        }
 
         builder.connect_signals (null);
         window = builder.get_object ("window1") as Gtk.ApplicationWindow;

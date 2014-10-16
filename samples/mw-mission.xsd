@@ -16,9 +16,9 @@
   </xs:element>
   <xs:element name="mwp">
     <xs:complexType>
-      <xs:attribute name="cx" use="required" type="xs:decimal"/>
-      <xs:attribute name="cy" use="required" type="xs:decimal"/>
-      <xs:attribute name="zoom" use="required" type="xs:integer"/>
+      <xs:attribute name="cx" use="optional" type="xs:decimal"/>
+      <xs:attribute name="cy" use="optional" type="xs:decimal"/>
+      <xs:attribute name="zoom" use="optional" type="xs:integer"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="missionitem">

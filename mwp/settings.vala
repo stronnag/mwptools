@@ -47,6 +47,8 @@ public class MWPSettings : GLib.Object
     public string mediap {get; set;}
     public string heartbeat {get; set;}
     public double updint {get; set; default=1.0;}
+    public string atstart {get; set;}
+    public string atexit {get; set;}
 
     public MWPSettings()
     {
@@ -129,7 +131,10 @@ public class MWPSettings : GLib.Object
             mediap = settings.get_string ("media-player");
         if(s == null || s == "heartbeat")
             heartbeat = settings.get_string ("heartbeat");
-
+        if(s == null || s == "atstart")
+            atstart = settings.get_string ("atstart");
+        if(s == null || s == "atexit")
+            atexit = settings.get_string ("atexit");
         if(s == null || s == "update-interval")
         {
             updint = settings.get_double("update-interval");

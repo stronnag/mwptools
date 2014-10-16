@@ -144,6 +144,20 @@
       <description>e.g. xscreensaver-command -deactivate</description>
     </key>
 
+
+    <key name="atstart" type="s">
+      <summary>Something that is executed at startup</summary>
+      <default>""</default>
+      <description>e.g. gsettings set
+      org.gnome.settings-daemon.plugins.power idle-dim false</description>
+    </key>
+
+    <key name="atexit" type="s">
+      <summary>Something that is executed at exit</summary>
+      <default>""</default>
+      <description>e.g. gsettings set org.gnome.settings-daemon.plugins.power idle-dim true</description>
+    </key>
+
     <key name="update-interval" type="d">
       <default>1.0</default>
       <summary>Telemetry update</summary>
