@@ -48,6 +48,8 @@ public class MWPlanner : Gtk.Application {
     private Gtk.MenuItem menureplay;
     private Gtk.MenuItem menunav;
     private Gtk.MenuItem menuncfg;
+    private Gtk.MenuItem menumwvar;
+
     public MWPSettings conf;
     private MWSerial msp;
     private Gtk.Button conbutton;
@@ -94,6 +96,9 @@ public class MWPlanner : Gtk.Application {
     private static bool rawlog = false;
     private static bool norotate = false; // workaround for Ubuntu & old champlain
     private static bool gps_trail = false;
+    private static string mwoptstr;
+
+    private MWChooser.MWVAR mwvar=MWChooser.MWVAR.UNDEF;
     private uint8 vwarn1;
     private uint8 vwarn2;
     private uint8 vcrit;
@@ -130,7 +135,6 @@ public class MWPlanner : Gtk.Application {
     private int[] playfd;
     private IOChannel io_read;
     private ReplayThread robj;
-
 
     private MSP.Cmds[] requests = {};
     private int tcycle = 0;
@@ -177,12 +181,12 @@ public class MWPlanner : Gtk.Application {
         FLAG = (1<<8)
     }
 
-    private static const string[] failnames =
-        {"","WPNO","LAT","LON","ALT","P1","P2","P3","FLAG"};
+    private static const string[] failnames = {"","WPNO","LAT","LON","ALT","P1","P2","P3","FLAG"};
 
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
         { "serial-device", 's', 0, OptionArg.STRING, out serial, "Serial device", null},
+        { "flight-controller", 'f', 0, OptionArg.STRING, out mwoptstr, "mw|mwnav|bf|fc", null},
         { "connect", 'c', 0, OptionArg.NONE, out mkcon, "connect to first device", null},
         { "auto-connect", 'a', 0, OptionArg.NONE, out autocon, "auto-connect to first device", null},
         { "no-poll", 'n', 0, OptionArg.NONE, out nopoll, "don't poll for nav info", null},
@@ -203,6 +207,9 @@ public class MWPlanner : Gtk.Application {
 
         base.startup();
         wpmgr = WPMGR();
+
+        mwvar = MWChooser.fc_from_arg0();
+
         builder = new Builder ();
         conf = new MWPSettings();
         conf.read_settings();
@@ -232,7 +239,29 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
+        fn = MWPUtils.find_conf_file("mwchooser.ui");
+        if (fn == null)
+        {
+            stderr.printf ("No UI chooser definition file\n");
+            Posix.exit(255);
+        }
+        else
+        {
+            try
+            {
+                builder.add_from_file (fn);
+            } catch (Error e) {
+                stderr.printf ("Builder: %s\n", e.message);
+                Posix.exit(255);
+            }
+        }
+
         gps_trail = !gps_trail; // yet more jh logic
+
+        if(mwoptstr != null)
+        {
+            mwvar = MWChooser.fc_from_name(mwoptstr);
+        }
 
         if(conf.atstart != null)
         {
@@ -338,6 +367,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 quit();
             });
+
 
         menuop= builder.get_object ("menu_about") as Gtk.MenuItem;
         menuop.activate.connect (() => {
@@ -677,6 +707,13 @@ public class MWPlanner : Gtk.Application {
                 }
             });
 
+        var mwc = new MWChooser(builder);
+
+        menumwvar = builder.get_object ("menuitemmwvar") as Gtk.MenuItem;
+        menumwvar.activate.connect (() => {
+                mwvar = mwc.get_version(mwvar);
+            });
+
         prefs = new PrefsDialog(builder);
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
         Gdk.Pixbuf pix = null;
@@ -741,12 +778,24 @@ public class MWPlanner : Gtk.Application {
             mkcon = true;
         }
 
+        if(mwvar == MWChooser.MWVAR.UNDEF)
+        {
+            mwvar = mwc.get_version(MWChooser.MWVAR.INVALID2);
+        }
+
+        if(mwvar == MWChooser.MWVAR.UNDEF)
+        {
+            Posix.exit(255);
+        }
+
+
         if(mkcon)
         {
             connect_serial();
         }
 
         Timeout.add_seconds(5, () => { return try_connect(); });
+
         window.show_all();
 
         if(layout.load_from_file(layfile) && layout.load_layout("mwp"))
@@ -923,7 +972,9 @@ public class MWPlanner : Gtk.Application {
                 }
 
                 deserialise_u32(raw+3, out capability);
-                naze32 = ((capability & 0x80000000) == 0x80000000);
+//                naze32 = ((capability & 0x80000000) == 0x80000000);
+
+                naze32 = (mwvar == MWChooser.MWVAR.CF || mwvar == MWChooser.MWVAR.BF);
                 if(naze32 == true)
                 {
                     navcap = false;
@@ -932,7 +983,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     navcap = ((raw[3] & 0x10) == 0x10);
                 }
-                var vers="v%03d".printf(mvers);
+                var vers="%s v%03d".printf(MWChooser.mwnames[mwvar],mvers);
                 verlab.set_label(vers);
                 typlab.set_label(MSP.get_mrtype(mrtype));
 //                stdout.printf("IDENT %s %d\n", vers, mrtype);
@@ -1906,7 +1957,7 @@ public class MWPlanner : Gtk.Application {
 
     private void serial_doom(Gtk.Button c)
     {
-//        stderr.printf("Close serial\n");
+        menumwvar.sensitive =true;
         dopoll = false;
         remove_tid(ref gpstid);
         remove_tid(ref cmdtid);
@@ -1963,14 +2014,13 @@ public class MWPlanner : Gtk.Application {
                 }
                 conbutton.set_label("gtk-disconnect");
                 add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
+                menumwvar.sensitive = false;
             }
             else
             {
                 if (autocon == false || autocount == 0)
                 {
-
-                    mwp_warning_box("Unable to open serial device: %s\nReason: %s".printf(
-                                        serdev, estr));
+                    mwp_warning_box("Unable to open serial device: %s\nReason: %s".printf(serdev, estr));
                 }
                 autocount = ((autocount + 1) % 4);
             }

@@ -21,6 +21,7 @@ cp $APP $BIN/
 [ -e  ${APP}_icon.svg ] && ICON=${APP}_icon.svg || ICON=../common/mwp_icon.svg
 
 [ -e $APP.ui ] && cp $APP.ui $ICON $DATA/$APP/
+[ -e ../common/mwchooser.ui ] && cp ../common/mwchooser.ui  $DATA/$APP/
 [ -d $DATA/icons/hicolor/48x48/apps ] || mkdir -p $DATA/icons/hicolor/48x48/apps
 cp $ICON $DATA/icons/hicolor/48x48/apps/
 [ -d pixmaps ] && cp -a pixmaps $DATA/mwp

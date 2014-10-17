@@ -50,6 +50,7 @@ public class SwitchEdit : Object
     private uint8 []permids;
     private bool applied = false;
     private uint nranges = 40;
+    private MWChooser.MWVAR mwvar=MWChooser.MWVAR.UNDEF;
 
     private static const PERM_BOX [] pbox =
         {
@@ -137,7 +138,7 @@ public class SwitchEdit : Object
             }
         }
 
-        if((capability & MSPCaps.CAP_CLEANFLIGHT_CONFIG) == 0) // MW or BF
+        if(mwvar != MWChooser.MWVAR.CF) // MW or BF
         {
             s.send_command(MSP.Cmds.SET_BOX, sv, nboxen*2);
         }
@@ -232,6 +233,8 @@ public class SwitchEdit : Object
 
     SwitchEdit(string[] args)
     {
+        mwvar = MWChooser.fc_from_arg0();
+
         is_connected = false;
         have_names = false;
         have_box = false;
@@ -261,6 +264,22 @@ public class SwitchEdit : Object
                 Gtk.main_quit();
             }
         }
+        fn = MWPUtils.find_conf_file("mwchooser.ui");
+        if (fn == null)
+        {
+            stderr.printf ("No UI chooser definition file\n");
+            Posix.exit(255);
+        }
+        else
+        {
+            try
+            {
+                builder.add_from_file (fn);
+            } catch (Error e) {
+                stderr.printf ("Builder: %s\n", e.message);
+                Posix.exit(255);
+            }
+        }
 
         builder.connect_signals (null);
         window = builder.get_object ("window2") as Gtk.Window;
@@ -273,6 +292,18 @@ public class SwitchEdit : Object
         }
 
         window.destroy.connect (Gtk.main_quit);
+
+        var mwc = new MWChooser(builder);
+        if(mwvar == MWChooser.MWVAR.UNDEF)
+        {
+            mwvar = mwc.get_version(MWChooser.MWVAR.INVALID2);
+        }
+
+        if(mwvar == MWChooser.MWVAR.UNDEF)
+        {
+            Posix.exit(255);
+        }
+
         s = new MWSerial();
         s.serial_event.connect((sd,cmd,raw,len,errs) => {
                 if(errs == true)
@@ -285,17 +316,9 @@ public class SwitchEdit : Object
                     case MSP.Cmds.IDENT:
                     have_vers = true;
                     var _mrtype = MSP.get_mrtype(raw[1]);
-                    var vers="v%03d %s".printf(raw[0], _mrtype);
+                    var vers="%s v%03d %s".printf(MWChooser.mwnames[mwvar], raw[0], _mrtype);
                     verslab.set_label(vers);
                     deserialise_u32(raw+3, out capability);
-                        /*
-                    if((capability & MSPCaps.CAP_PLATFORM_32BIT) != 0) // 32 bit
-                    {
-                        stderr.puts("32bit\n");
-                        if((capability & MSPCaps.CAP_CLEANFLIGHT_CONFIG) != 0) // CF
-                            stderr.puts("CF new\n");
-                    }
-                        */
                     add_cmd(MSP.Cmds.BOXNAMES,null,0,&have_names);
                     break;
 
@@ -305,7 +328,7 @@ public class SwitchEdit : Object
                     string []bsx = b.split(";");
                     nboxen = bsx.length-1;
                     add_boxlabels(bsx);
-                    MSP.Cmds bcmd = ((capability & MSPCaps.CAP_CLEANFLIGHT_CONFIG) == 0) ? MSP.Cmds.BOX : MSP.Cmds.MODE_RANGES;
+                    MSP.Cmds bcmd = (mwvar != MWChooser.MWVAR.CF) ? MSP.Cmds.BOX : MSP.Cmds.MODE_RANGES;
                     add_cmd(bcmd,null,0,&have_box);
                     break;
 
