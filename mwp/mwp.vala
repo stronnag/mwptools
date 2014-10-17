@@ -24,6 +24,7 @@ using Champlain;
 using GtkChamplain;
 
 extern double get_locale_double(string str);
+extern void stupid_ubuntu_atexit(string str);
 
 public class MWPlanner : Gtk.Application {
     public Builder builder;
@@ -273,13 +274,7 @@ public class MWPlanner : Gtk.Application {
         if(conf.atexit != null)
         {
             exstr = conf.atexit;
-            Posix.atexit(() =>
-                {
-                    try
-                    {
-                        Process.spawn_command_line_async(exstr);
-                    } catch {};
-                });
+            stupid_ubuntu_atexit(exstr);
         }
 
         builder.connect_signals (null);
