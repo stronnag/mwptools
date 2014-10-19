@@ -389,6 +389,10 @@ public class MWSerial : Object
                 });
         }
         ml.run();
+
+        try { mos.close(); } catch {}
+
+        stdout.puts("\n");
         return 0;
     }
 }

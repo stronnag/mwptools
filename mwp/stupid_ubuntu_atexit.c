@@ -18,6 +18,8 @@
  */
 
 
+/* for Ubunut's otehriwse b0rken Posix.atexit in vala */
+
 #include <stdlib.h>
 #include <string.h>
 
