@@ -68,7 +68,6 @@
                 <property name="xalign">0</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
-                <property name="group">radiobutton6</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -85,7 +84,7 @@
                 <property name="xalign">0</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
-                <property name="group">radiobutton6</property>
+                <property name="group">radiobutton1</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -103,7 +102,7 @@
                 <property name="yalign">0.62999999523162842</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
-                <property name="group">radiobutton6</property>
+                <property name="group">radiobutton1</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -120,7 +119,7 @@
                 <property name="xalign">0</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
-                <property name="group">radiobutton6</property>
+                <property name="group">radiobutton1</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -137,7 +136,7 @@
                 <property name="xalign">0</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
-                <property name="group">radiobutton6</property>
+                <property name="group">radiobutton1</property>
               </object>
               <packing>
                 <property name="expand">False</property>
