@@ -758,7 +758,7 @@ public class AudioThread : Object {
         if (msgs.length() > 8)
         {
             clear();
-            stdout.printf("cleared voice queue\n");
+            stderr.printf("cleared voice queue\n");
         }
         msgs.push(c);
     }

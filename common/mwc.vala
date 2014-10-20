@@ -30,7 +30,7 @@ public class MWChooser : GLib.Object
     }
 
     private Gtk.Dialog dialog;
-    private Gtk.RadioButton btn[6];
+    private Gtk.RadioButton [] btn = {};
 
     public static const string[]mwnames = { "","MW","MWNAV","BF","CF"};
 
@@ -76,10 +76,14 @@ public class MWChooser : GLib.Object
     public MWChooser(Gtk.Builder builder)
     {
         dialog = builder.get_object ("mwchooser") as Gtk.Dialog;
-        for(var j = 0; j < 6; j++)
+        for(var j = 0; ; j++)
         {
             var s = "radiobutton%d".printf(j+1);
-            btn[j] = builder.get_object (s) as Gtk.RadioButton;
+            var b = builder.get_object (s) as Gtk.RadioButton;
+            if (b == null)
+                break;
+            else
+                btn += b;
         }
     }
 
@@ -94,10 +98,8 @@ public class MWChooser : GLib.Object
             idx = (uint8)btn.length-1;
         btn[idx].set_active(true);
         dialog.show_all();
-        var id = dialog.run();
-        stderr.printf("res = %d\n", id);
-
-        for(j = 0; j < 6; j++)
+        dialog.run();
+        for(j = 0; j < btn.length; j++)
         {
             if(btn[j].get_active())
                 break;
