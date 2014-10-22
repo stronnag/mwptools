@@ -967,9 +967,17 @@ public class MWPlanner : Gtk.Application {
                 }
 
                 deserialise_u32(raw+3, out capability);
-//                naze32 = ((capability & 0x80000000) == 0x80000000);
+                MWChooser.MWVAR _mwvar = mwvar;
 
-                naze32 = (mwvar == MWChooser.MWVAR.CF || mwvar == MWChooser.MWVAR.BF);
+                if(mwvar == MWChooser.MWVAR.AUTO)
+                {
+                    naze32 = ((capability & MSPCaps.CAP_PLATFORM_32BIT) != 0);
+                }
+                else
+                {
+                    naze32 = (mwvar == MWChooser.MWVAR.CF || mwvar == MWChooser.MWVAR.BF);
+                }
+
                 if(naze32 == true)
                 {
                     navcap = false;
@@ -978,7 +986,18 @@ public class MWPlanner : Gtk.Application {
                 {
                     navcap = ((raw[3] & 0x10) == 0x10);
                 }
-                var vers="%s v%03d".printf(MWChooser.mwnames[mwvar],mvers);
+                if(mwvar == MWChooser.MWVAR.AUTO)
+                {
+                    if(naze32)
+                    {
+                        _mwvar =  ((capability & MSPCaps.CAP_CLEANFLIGHT_CONFIG) != 0)  ? MWChooser.MWVAR.CF : MWChooser.MWVAR.BF;
+                    }
+                    else
+                    {
+                        _mwvar = (navcap) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
+                    }
+                }
+                var vers="%s v%03d".printf(MWChooser.mwnames[_mwvar],mvers);
                 verlab.set_label(vers);
                 typlab.set_label(MSP.get_mrtype(mrtype));
 //                stdout.printf("IDENT %s %d\n", vers, mrtype);

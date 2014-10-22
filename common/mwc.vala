@@ -26,7 +26,8 @@ public class MWChooser : GLib.Object
         BF=3,
         CF=4,
         INVALID1=5,
-        INVALID2=6
+        INVALID2=6,
+	AUTO=42
     }
 
     private Gtk.Dialog dialog;
@@ -66,8 +67,11 @@ public class MWChooser : GLib.Object
             case "cf":
                 mwvar = MWVAR.CF;
                 break;
+            case "auto":
+                mwvar = MWVAR.AUTO;
+                break;
             default:
-            mwvar = MWVAR.UNDEF;
+                mwvar = MWVAR.UNDEF;
             break;
         }
         return mwvar;

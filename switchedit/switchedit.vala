@@ -32,7 +32,6 @@ public class SwitchEdit : Object
     private Gtk.Button conbutton;
     private Gtk.Label verslab;
     private MWSerial s;
-    private string serdev;
     private bool is_connected;
     private bool have_box;
     private bool have_names;
@@ -51,6 +50,15 @@ public class SwitchEdit : Object
     private bool applied = false;
     private uint nranges = 40;
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.UNDEF;
+
+    private static string serdev;
+    private static string mwoptstr;
+
+    const OptionEntry[] options = {
+        { "serial-device", 's', 0, OptionArg.STRING, out serdev, "Serial device", null},
+        { "flight-controller", 'f', 0, OptionArg.STRING, out mwoptstr, "mw|mwnav|bf|fc", null},
+        {null}
+    };
 
     private static const PERM_BOX [] pbox =
         {
@@ -231,9 +239,13 @@ public class SwitchEdit : Object
         idx++;
     }
 
-    SwitchEdit(string[] args)
+    SwitchEdit()
     {
         mwvar = MWChooser.fc_from_arg0();
+        if(mwoptstr != null)
+        {
+            mwvar = MWChooser.fc_from_name(mwoptstr);
+        }
 
         is_connected = false;
         have_names = false;
@@ -315,10 +327,22 @@ public class SwitchEdit : Object
                 {
                     case MSP.Cmds.IDENT:
                     have_vers = true;
+                    deserialise_u32(raw+3, out capability);
                     var _mrtype = MSP.get_mrtype(raw[1]);
+
+                    if(mwvar == MWChooser.MWVAR.AUTO)
+                    {
+                        if((capability & MSPCaps.CAP_PLATFORM_32BIT) != 0)
+                        {
+                            mwvar =  ((capability & MSPCaps.CAP_CLEANFLIGHT_CONFIG) != 0)  ? MWChooser.MWVAR.CF : MWChooser.MWVAR.BF;
+                        }
+                        else
+                        {
+                            mwvar = ((capability & 0x10) == 0x10) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
+                        }
+                    }
                     var vers="%s v%03d %s".printf(MWChooser.mwnames[mwvar], raw[0], _mrtype);
                     verslab.set_label(vers);
-                    deserialise_u32(raw+3, out capability);
                     add_cmd(MSP.Cmds.BOXNAMES,null,0,&have_names);
                     break;
 
@@ -408,14 +432,16 @@ public class SwitchEdit : Object
         var dentry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
         conbutton = builder.get_object ("button4") as Gtk.Button;
         string[] devs;
-        if(args.length > 1)
-        {
-            foreach(string a in args[1:args.length])
-                dentry.append_text(a);
-        }
         uint baudrate;
         get_settings(out devs, out baudrate);
-        foreach(string a in devs)
+
+        if(serdev != null)
+        {
+            dentry.prepend_text(serdev);
+            dentry.active = 0;
+        }
+
+	foreach(string a in devs)
         {
             dentry.append_text(a);
         }
@@ -814,7 +840,18 @@ public class SwitchEdit : Object
     public static int main (string[] args)
     {
         Gtk.init(ref args);
-        SwitchEdit app = new SwitchEdit (args);
+        try {
+            var opt = new OptionContext("");
+            opt.set_help_enabled(true);
+            opt.add_main_entries(options, null);
+            opt.parse(ref args);
+        } catch (OptionError e) {
+            stderr.printf("Error: %s\n", e.message);
+            stderr.printf("Run '%s --help' to see a full list of available "+
+                          "options\n", args[0]);
+            return 1;
+        }
+        SwitchEdit app = new SwitchEdit();
         app.run ();
         return 0;
     }
