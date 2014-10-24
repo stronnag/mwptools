@@ -50,6 +50,7 @@ public class SwitchEdit : Object
     private bool applied = false;
     private uint nranges = 40;
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.UNDEF;
+    private uint cmdtid;
 
     private static string serdev;
     private static string mwoptstr;
@@ -87,9 +88,18 @@ public class SwitchEdit : Object
             {"SONAR", 22 },
         };
 
-    private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, bool *flag)
+
+
+    private void remove_tid(ref uint tid)
     {
-        Timeout.add(1000, () => {
+        if(tid > 0)
+            Source.remove(tid);
+        tid = 0;
+    }
+
+    private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, bool *flag, uint32 wait=1000)
+    {
+        cmdtid = Timeout.add(wait, () => {
                 if (*flag == false)
                 {
                     s.send_command(cmd,buf,len);
@@ -129,6 +139,9 @@ public class SwitchEdit : Object
         {
             devs = settings.get_strv ("device-names");
             baudrate = settings.get_uint("baudrate");
+            string smwvar = settings.get_string("fctype");
+            if(smwvar != null)
+                mwvar = MWChooser.fc_from_name(smwvar);
         }
     }
 
@@ -239,9 +252,33 @@ public class SwitchEdit : Object
         idx++;
     }
 
+    private void start_status_timer()
+    {
+        int intvl;
+        var baud = s.baudrate;
+        if(baud == 0 || baud > 50000)
+            intvl = 250;
+        else if (baud > 32000)
+            intvl = 500;
+        else
+            intvl = 1000;
+
+        tid = Timeout.add(intvl, () => {
+                s.send_command(MSP.Cmds.STATUS,null,0);
+                s.send_command(MSP.Cmds.RC,null,0);
+                return true;
+            });
+
+    }
+
     SwitchEdit()
     {
         mwvar = MWChooser.fc_from_arg0();
+
+        string[] devs;
+        uint baudrate;
+        get_settings(out devs, out baudrate);
+
         if(mwoptstr != null)
         {
             mwvar = MWChooser.fc_from_name(mwoptstr);
@@ -320,16 +357,28 @@ public class SwitchEdit : Object
         s.serial_event.connect((sd,cmd,raw,len,errs) => {
                 if(errs == true)
                 {
-                    stderr.printf("Error on cmd %c (%d)\n", cmd,cmd);
+                    remove_tid(ref cmdtid);
+                    if(cmd == MSP.Cmds.API_VERSION)
+                    {
+                        have_vers = false;
+                        add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
+                    }
+                    stderr.printf("Error on cmd %d\n", cmd);
                     return;
                 }
                 switch(cmd)
                 {
+                    case MSP.Cmds.API_VERSION:
+                    remove_tid(ref cmdtid);
+                    mwvar = MWChooser.MWVAR.CF;
+                    have_vers = false;
+                    add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
+                    break;
+
                     case MSP.Cmds.IDENT:
                     have_vers = true;
                     deserialise_u32(raw+3, out capability);
                     var _mrtype = MSP.get_mrtype(raw[1]);
-
                     if(mwvar == MWChooser.MWVAR.AUTO)
                     {
                         if((capability & MSPCaps.CAP_PLATFORM_32BIT) != 0)
@@ -358,7 +407,9 @@ public class SwitchEdit : Object
 
                     case  MSP.Cmds.MODE_RANGES:
                     have_box = true;
+                    xflag = 0;
                     add_cf_modes(raw, len);
+                    start_status_timer();
                     break;
 
 
@@ -370,20 +421,7 @@ public class SwitchEdit : Object
                     }
                     grid1.show_all();
                     xflag = 0;
-                    int intvl;
-                    var baud = s.baudrate;
-                    if(baud == 0 || baud > 50000)
-                        intvl = 250;
-                    else if (baud > 32000)
-                        intvl = 500;
-                    else
-                        intvl = 1000;
-
-                    tid = Timeout.add(intvl, () => {
-                            s.send_command(MSP.Cmds.STATUS,null,0);
-                            s.send_command(MSP.Cmds.RC,null,0);
-                            return true;
-                        });
+                    start_status_timer();
                     break;
 
                     case MSP.Cmds.RC:
@@ -431,9 +469,6 @@ public class SwitchEdit : Object
 
         var dentry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
         conbutton = builder.get_object ("button4") as Gtk.Button;
-        string[] devs;
-        uint baudrate;
-        get_settings(out devs, out baudrate);
 
         if(serdev != null)
         {
@@ -492,7 +527,7 @@ public class SwitchEdit : Object
                         conbutton.set_label("Disconnect");
                         applybutton.set_sensitive(true);
                         saveasbutton.set_sensitive(true);
-                        add_cmd(MSP.Cmds.IDENT,null,0,&have_vers);
+                        add_cmd(MSP.Cmds.API_VERSION,null,0,&have_vers);
                     }
                     else
                     {

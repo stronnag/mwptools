@@ -215,6 +215,9 @@ public class MWPlanner : Gtk.Application {
         conf = new MWPSettings();
         conf.read_settings();
 
+        if(conf.fctype != null)
+            mwvar = MWChooser.fc_from_name(conf.fctype);
+
         var confdir = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp");
         try
         {
@@ -935,10 +938,20 @@ public class MWPlanner : Gtk.Application {
     {
         if(errs == true)
         {
-            stdout.printf("Error on cmd %c (%d)\n", cmd,cmd);
-            if(cmd ==  MSP.Cmds.NAV_CONFIG)
-                navcap = false;
             remove_tid(ref cmdtid);
+            stdout.printf("Error on cmd %d\n", cmd);
+            switch(cmd)
+            {
+                case MSP.Cmds.NAV_CONFIG:
+                    navcap = false;
+                    break;
+                case MSP.Cmds.API_VERSION:
+                    have_vers = false;
+                    add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
+                    break;
+                default:
+                    break;
+            }
             return;
         }
         Logger.log_time();
@@ -954,6 +967,14 @@ public class MWPlanner : Gtk.Application {
 
         switch(cmd)
         {
+            case MSP.Cmds.API_VERSION:
+                remove_tid(ref cmdtid);
+                naze32 = true;
+                mwvar = MWChooser.MWVAR.CF;
+                have_vers = false;
+                add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
+                break;
+
             case MSP.Cmds.IDENT:
                 remove_tid(ref cmdtid);
                 have_vers = true;
@@ -967,6 +988,7 @@ public class MWPlanner : Gtk.Application {
                 }
 
                 deserialise_u32(raw+3, out capability);
+
                 MWChooser.MWVAR _mwvar = mwvar;
 
                 if(mwvar == MWChooser.MWVAR.AUTO)
@@ -2027,7 +2049,7 @@ public class MWPlanner : Gtk.Application {
                     msp.raw_logging(true);
                 }
                 conbutton.set_label("gtk-disconnect");
-                add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
+                add_cmd(MSP.Cmds.API_VERSION,null,0,&have_vers,500);
                 menumwvar.sensitive = false;
             }
             else

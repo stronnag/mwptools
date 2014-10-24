@@ -44,11 +44,12 @@ public class MWPSettings : GLib.Object
     public bool logarmed {get; set; default=false;}
     public bool autofollow {get; set; default=false;}
     public uint  baudrate {get; set; default=57600;}
-    public string mediap {get; set;}
-    public string heartbeat {get; set;}
-    public double updint {get; set; default=1.0;}
-    public string atstart {get; set;}
-    public string atexit {get; set;}
+    public string mediap {get; private set;}
+    public string heartbeat {get; private set;}
+    public double updint {get; private set; default=1.0;}
+    public string atstart {get; private set;}
+    public string atexit {get; private set;}
+    public string? fctype {get; private set;}
 
     public MWPSettings()
     {
@@ -135,6 +136,9 @@ public class MWPSettings : GLib.Object
             atstart = settings.get_string ("atstart");
         if(s == null || s == "atexit")
             atexit = settings.get_string ("atexit");
+        if(s == null || s == "fctype")
+            fctype = settings.get_string ("fctype");
+
         if(s == null || s == "update-interval")
         {
             updint = settings.get_double("update-interval");

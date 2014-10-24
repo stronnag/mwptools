@@ -158,6 +158,12 @@
       <description>e.g. gsettings set org.gnome.settings-daemon.plugins.power idle-dim true</description>
     </key>
 
+    <key name="fctype" type="s">
+      <summary>Force fc type</summary>
+      <default>""</default>
+      <description></description>
+    </key>
+
     <key name="update-interval" type="d">
       <default>1.0</default>
       <summary>Telemetry update</summary>
