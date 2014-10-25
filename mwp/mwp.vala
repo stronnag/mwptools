@@ -56,6 +56,7 @@ public class MWPlanner : Gtk.Application {
     private Gtk.Button conbutton;
     private Gtk.ComboBoxText dev_entry;
     private Gtk.Label verlab;
+    private Gtk.Label fmodelab;
     private Gtk.Label validatelab;
     private Gtk.Label typlab;
     private Gtk.Label labelvbat;
@@ -147,6 +148,7 @@ public class MWPlanner : Gtk.Application {
     private int64 acycle;
     private int64 anvals;
     private int toc;
+    private uint32 xbits = 0;
     public static string exstr;
 
     private enum MS_Column {
@@ -752,6 +754,7 @@ public class MWPlanner : Gtk.Application {
             });
 
         verlab = builder.get_object ("verlab") as Gtk.Label;
+        fmodelab = builder.get_object ("fmode") as Gtk.Label;
         validatelab = builder.get_object ("validated") as Gtk.Label;
         typlab = builder.get_object ("typlab") as Gtk.Label;
         labelvbat = builder.get_object ("labelvbat") as Gtk.Label;
@@ -1084,6 +1087,9 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.STATUS:
                 uint16 sensor;
                 deserialise_u16(raw+4, out sensor);
+                uint32 flag;
+                deserialise_u32(raw+6, out flag);
+
                 if (nopoll == true)
                 {
                     have_status = true;
@@ -1184,9 +1190,9 @@ public class MWPlanner : Gtk.Application {
                             lastp = GLib.get_monotonic_time();
                         }
                         start_audio();
+                        report_bits(flag);
                     }
-                    uint32 flag;
-                    deserialise_u32(raw+6, out flag);
+
                     armed = (uint8)(flag & 1);
 
                     if(armed == 0)
@@ -1229,7 +1235,7 @@ public class MWPlanner : Gtk.Application {
                                 Logger.armed(true,duration);
                             }
                             duration_timer();
-}
+                        }
                         else
                         {
                             if (conf.audioarmed == true)
@@ -1244,6 +1250,11 @@ public class MWPlanner : Gtk.Application {
                         }
                         larmed = armed;
                     }
+                    if(flag != xbits)
+                    {
+                        report_bits(flag);
+                    }
+                    xbits = flag;
                 }
                 break;
 
@@ -1756,6 +1767,28 @@ public class MWPlanner : Gtk.Application {
                 msg_poller();
             }
         }
+    }
+
+    private void report_bits(uint32 bits)
+    {
+            /**
+               Speak this, and show in GUI
+            **/
+        string mode;
+        if((bits & 2) == 2)
+        {
+            mode = "Angle";
+        }
+        else if((bits & 4) == 4)
+        {
+            mode = "Horizon";
+        }
+        else
+        {
+            mode = "Acro";
+        }
+        fmodelab.set_label(mode);
+        navstatus.update_fmode(mode);
     }
 
     private void duration_timer()

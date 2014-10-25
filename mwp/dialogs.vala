@@ -419,6 +419,7 @@ public class NavStatus : GLib.Object
     public static uint8 xfmode {get; private set;}
     public static int mins {get; private set;}
     public static bool recip {get; private set;}
+    public static string fmode;
 
     public enum SPK  {
         Volts = 1,
@@ -650,6 +651,15 @@ public class NavStatus : GLib.Object
         voltlabel.set_label("<span font='%d'>%s</span>".printf(fs,s));
     }
 
+    public void update_fmode(string _fmode)
+    {
+        fmode = _fmode;
+        if(mt_voice)
+        {
+            mt.message(AudioThread.Vox.FMODE);
+        }
+    }
+
     public void update_duration(int _mins)
     {
         mins = _mins;
@@ -740,17 +750,18 @@ public class AudioThread : Object {
     public enum Vox
     {
         DONE=1,
-            NAV_ERR,
-            NAV_STATUS,
-            DURATION,
-            RANGE_BRG,
-            ELEVATION,
-            BARO,
-            HEADING,
-            VOLTAGE,
-            MODSAT,
-            LTM_MODE
-            }
+        NAV_ERR,
+        NAV_STATUS,
+        DURATION,
+        FMODE,
+        RANGE_BRG,
+        ELEVATION,
+        BARO,
+        HEADING,
+        VOLTAGE,
+        MODSAT,
+        LTM_MODE
+    }
 
     private AsyncQueue<Vox> msgs;
     public Thread<int> thread {private set; get;}
@@ -837,6 +848,9 @@ public class AudioThread : Object {
                         case Vox.DURATION:
                             var ms = (NavStatus.mins > 1) ? "minutes" : "minute";
                             s = "%d %s".printf(NavStatus.mins, ms);
+                            break;
+                        case Vox.FMODE:
+                            s = "%s mode".printf(NavStatus.fmode);
                             break;
                         case Vox.RANGE_BRG:
                             var brg = NavStatus.cg.direction;
