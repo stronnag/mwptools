@@ -79,6 +79,7 @@ public class MWPlanner : Gtk.Application {
     private bool vinit = false;
     private GtkChamplain.Embed embed;
     private PrefsDialog prefs;
+    private SwitchDialog swd;
     private SetPosDialog setpos;
     private Gtk.AboutDialog about;
     private NavStatus navstatus;
@@ -99,7 +100,7 @@ public class MWPlanner : Gtk.Application {
     private static bool gps_trail = false;
     private static string mwoptstr;
 
-    private MWChooser.MWVAR mwvar=MWChooser.MWVAR.UNDEF;
+    private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
     private uint8 vwarn1;
     private uint8 vwarn2;
     private uint8 vcrit;
@@ -709,10 +710,14 @@ public class MWPlanner : Gtk.Application {
 
         menumwvar = builder.get_object ("menuitemmwvar") as Gtk.MenuItem;
         menumwvar.activate.connect (() => {
-                mwvar = mwc.get_version(mwvar);
+                var _m = mwc.get_version(mwvar);
+                if(_m !=  MWChooser.MWVAR.UNDEF)
+                    mwvar = _m;
             });
 
         prefs = new PrefsDialog(builder);
+        swd = new SwitchDialog(builder);
+
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
         Gdk.Pixbuf pix = null;
         try  {
@@ -778,14 +783,13 @@ public class MWPlanner : Gtk.Application {
 
         if(mwvar == MWChooser.MWVAR.UNDEF)
         {
-            mwvar = mwc.get_version(MWChooser.MWVAR.INVALID2);
+            mwvar = mwc.get_version(MWChooser.MWVAR.MWOLD);
         }
 
         if(mwvar == MWChooser.MWVAR.UNDEF)
         {
             Posix.exit(255);
         }
-
 
         if(mkcon)
         {
@@ -1026,6 +1030,44 @@ public class MWPlanner : Gtk.Application {
                 if(navcap == true)
                 {
                     menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
+                }
+                if(conf.checkswitches)
+                {
+                    MSP.Cmds bcmd = (mwvar != MWChooser.MWVAR.CF) ? MSP.Cmds.BOX : MSP.Cmds.MODE_RANGES;
+                    send_cmd(bcmd, null,0);
+                }
+                else
+                    add_cmd(MSP.Cmds.MISC,null,0, &have_misc,1000);
+                break;
+
+            case  MSP.Cmds.MODE_RANGES:
+                var nranges = len / 4;
+                var idx=0;
+                bool ok = false;
+                for(var i = 0; i < nranges; i++)
+                {
+                    idx = i*4;
+                    if (raw[idx] == 1 || raw[idx] == 2)
+                    {
+                        if(raw[idx+2] != 0 || raw[idx+3] != 0)
+                        {
+                            ok = true;
+                            break;
+                        }
+                    }
+                }
+                if(ok == false)
+                {
+                    swd.run();
+                }
+                add_cmd(MSP.Cmds.MISC,null,0, &have_misc,1000);
+                break;
+
+            case MSP.Cmds.BOX:
+                uint16[] boxen = (uint16[])raw;
+                if(boxen[1] == 0 && boxen[2] == 0)
+                {
+                    swd.run();
                 }
                 add_cmd(MSP.Cmds.MISC,null,0, &have_misc,1000);
                 break;

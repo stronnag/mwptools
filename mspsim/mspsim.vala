@@ -1226,8 +1226,14 @@ public class MWSim : GLib.Object
                     append_text("Send NAV ATTITUDE %lu\n".printf(MSize.MSP_ATTITUDE));
                     break;
 
+                    case MSP.Cmds.BOX:
+                    uint8 box[8] = {0};
+                    msp.send_command(MSP.Cmds.BOX, box, 8);
+                    break;
+
                     default:
                     stdout.printf("unknown %d\n",cmd);
+                    msp.send_error(cmd);
                     break;
                 }
             }

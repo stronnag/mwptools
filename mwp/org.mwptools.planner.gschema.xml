@@ -172,5 +172,12 @@
       </description>
     </key>
 
+    <key type="b" name="checkswitches">
+      <default>false</default>
+      <summary>check switches</summary>
+      <description>check switches (a JH sanity check)</description>
+    </key>
+
+
   </schema>
 </schemalist>

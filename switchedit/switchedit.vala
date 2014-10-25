@@ -49,7 +49,7 @@ public class SwitchEdit : Object
     private uint8 []permids;
     private bool applied = false;
     private uint nranges = 40;
-    private MWChooser.MWVAR mwvar=MWChooser.MWVAR.UNDEF;
+    private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
     private uint cmdtid;
 
     private static string serdev;
@@ -345,7 +345,7 @@ public class SwitchEdit : Object
         var mwc = new MWChooser(builder);
         if(mwvar == MWChooser.MWVAR.UNDEF)
         {
-            mwvar = mwc.get_version(MWChooser.MWVAR.INVALID2);
+            mwvar = mwc.get_version(MWChooser.MWVAR.MWOLD);
         }
 
         if(mwvar == MWChooser.MWVAR.UNDEF)

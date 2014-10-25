@@ -102,29 +102,36 @@ public class MWChooser : GLib.Object
             idx = (uint8)btn.length-1;
         btn[idx].set_active(true);
         dialog.show_all();
-        dialog.run();
-        for(j = 0; j < btn.length; j++)
+        var id = dialog.run();
+        if(id == 1002)
         {
-            if(btn[j].get_active())
-                break;
+            mw = MWVAR.UNDEF;
         }
-        switch(j)
+        else
         {
-            case 0:
-                mw = MWVAR.MWOLD;
-                break;
-            case 1:
-                mw = MWVAR.MWNEW;
-                break;
-            case 2:
-                mw = MWVAR.BF;
-                break;
-            case 3:
-                mw = MWVAR.CF;
-                break;
-            default:
-                mw = MWVAR.UNDEF;
-                break;
+            for(j = 0; j < btn.length; j++)
+            {
+                if(btn[j].get_active())
+                    break;
+            }
+            switch(j)
+            {
+                case 0:
+                    mw = MWVAR.MWOLD;
+                    break;
+                case 1:
+                    mw = MWVAR.MWNEW;
+                    break;
+                case 2:
+                    mw = MWVAR.BF;
+                    break;
+                case 3:
+                    mw = MWVAR.CF;
+                    break;
+                default:
+                    mw = MWVAR.UNDEF;
+                    break;
+            }
         }
         dialog.hide();
         return mw;

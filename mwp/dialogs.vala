@@ -97,6 +97,24 @@ public class SetPosDialog : GLib.Object
 
 }
 
+public class SwitchDialog : GLib.Object
+{
+    private Gtk.Dialog dialog;
+    public SwitchDialog(Gtk.Builder builder)
+    {
+        dialog = builder.get_object ("switch-dialogue") as Gtk.Dialog;
+    }
+    public void run()
+    {
+        dialog.show_all();
+        var id = dialog.run();
+        dialog.hide();
+        if(id == 1002)
+            Posix.exit(255);
+    }
+}
+
+
 public class PrefsDialog : GLib.Object
 {
     private Gtk.Dialog dialog;

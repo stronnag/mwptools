@@ -50,6 +50,7 @@ public class MWPSettings : GLib.Object
     public string atstart {get; private set;}
     public string atexit {get; private set;}
     public string? fctype {get; private set;}
+    public bool checkswitches {get; set; default=false;}
 
     public MWPSettings()
     {
@@ -145,6 +146,9 @@ public class MWPSettings : GLib.Object
             if(updint > 0 && updint < 0.1)
                 updint = 0.1;
         }
+
+        if(s == null || s == "checkswitches")
+            checkswitches = settings.get_boolean("checkswitches");
     }
 
     public void save_settings()
