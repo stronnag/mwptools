@@ -1254,7 +1254,8 @@ public class MWPlanner : Gtk.Application {
                         }
                         larmed = armed;
                     }
-                    if(flag != xbits)
+                        // acro/horizon/angle changed
+                    if((flag & 6) != (xbits & 6))
                     {
                         report_bits(flag);
                     }
@@ -1775,10 +1776,8 @@ public class MWPlanner : Gtk.Application {
 
     private void report_bits(uint32 bits)
     {
-            /**
-               Speak this, and show in GUI
-            **/
         string mode;
+
         if((bits & 2) == 2)
         {
             mode = "Angle";
@@ -2118,6 +2117,7 @@ public class MWPlanner : Gtk.Application {
         {
             remove_tid(ref gpstid);
             dopoll = false;
+            xbits = 0;
             var serdev = dev_entry.get_active_text();
             string estr;
             if (msp.open(serdev, conf.baudrate, out estr) == true)
