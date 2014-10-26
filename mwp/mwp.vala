@@ -62,6 +62,7 @@ public class MWPlanner : Gtk.Application {
     private Gtk.Label labelvbat;
     private bool have_vers;
     private bool have_misc;
+    private bool have_api;
     private bool have_status;
     private bool have_wp;
     private bool have_nc;
@@ -873,7 +874,6 @@ public class MWPlanner : Gtk.Application {
         gpstid = Timeout.add(500, () => {
                 if(dopoll)
                 {
-//                    stderr.printf("timeout %d\n", requests[tcycle]);
                     toc++;
                     send_poll();
                     return true;
@@ -953,6 +953,7 @@ public class MWPlanner : Gtk.Application {
                     navcap = false;
                     break;
                 case MSP.Cmds.API_VERSION:
+                    have_api = true;
                     have_vers = false;
                     add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
                     break;
@@ -975,6 +976,7 @@ public class MWPlanner : Gtk.Application {
         switch(cmd)
         {
             case MSP.Cmds.API_VERSION:
+                have_api = true;
                 remove_tid(ref cmdtid);
                 naze32 = true;
                 mwvar = MWChooser.MWVAR.CF;
@@ -1029,7 +1031,7 @@ public class MWPlanner : Gtk.Application {
                 var vers="%s v%03d".printf(MWChooser.mwnames[_mwvar],mvers);
                 verlab.set_label(vers);
                 typlab.set_label(MSP.get_mrtype(mrtype));
-//                stdout.printf("IDENT %s %d\n", vers, mrtype);
+                stdout.printf("IDENT %s %d\n", vers, mrtype);
                 if(navcap == true)
                 {
                     menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
@@ -1063,15 +1065,17 @@ public class MWPlanner : Gtk.Application {
                 {
                     swd.run();
                 }
+                have_misc = false;
                 add_cmd(MSP.Cmds.MISC,null,0, &have_misc,1000);
                 break;
 
             case MSP.Cmds.BOX:
-                uint16[] boxen = (uint16[])raw;
+                uint16 [] boxen = (uint16[])raw;
                 if(boxen[1] == 0 && boxen[2] == 0)
                 {
                     swd.run();
                 }
+                have_misc = false;
                 add_cmd(MSP.Cmds.MISC,null,0, &have_misc,1000);
                 break;
 
@@ -2124,7 +2128,7 @@ public class MWPlanner : Gtk.Application {
                     msp.raw_logging(true);
                 }
                 conbutton.set_label("gtk-disconnect");
-                add_cmd(MSP.Cmds.API_VERSION,null,0,&have_vers,500);
+                add_cmd(MSP.Cmds.API_VERSION,null,0,&have_api,1500);
                 menumwvar.sensitive = false;
             }
             else
