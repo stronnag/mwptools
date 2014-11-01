@@ -33,11 +33,13 @@ public class MWSerial : Object
     public OutputStream os;
     public uint8 rx_mode;
     public uint8 nlcount = 0;
+
+    private static string defname;
     private static string devname;
     private static int brate;
-
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", null},
+        { "output-file", 'o', 0, OptionArg.STRING, out defname, "output file name", null},
         { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", null},
         {null}
     };
@@ -336,7 +338,12 @@ public class MWSerial : Object
 
         time_t currtime;
         time_t(out currtime);
-        var fn  = "naze_%s.txt".printf(Time.local(currtime).format("%F_%H%M%S"));
+        string fn;
+        if(defname == null)
+            fn  = "naze_%s.txt".printf(Time.local(currtime).format("%F_%H%M%S"));
+        else
+            fn = defname;
+
         try
         {
             var file = File.new_for_path (fn);

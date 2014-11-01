@@ -257,11 +257,11 @@ public class SwitchEdit : Object
         int intvl;
         var baud = s.baudrate;
         if(baud == 0 || baud > 50000)
-            intvl = 250;
-        else if (baud > 32000)
             intvl = 500;
-        else
+        else if (baud > 32000)
             intvl = 1000;
+        else
+            intvl = 2000;
 
         tid = Timeout.add(intvl, () => {
                 s.send_command(MSP.Cmds.STATUS,null,0);
