@@ -226,6 +226,14 @@ public class ReplayThread : GLib.Object
                                     var a = MSP_STATUS();
                                     armed = obj.get_boolean_member("armed");
                                     a.flag = (armed)  ? 1 : 0;
+                                    if(obj.has_member("flags"))
+                                    {
+                                        var flag =  obj.get_int_member("flags");
+                                        a.flag = (uint32)flag;
+                                    }
+                                    else
+                                        a.flag = (((armed)  ? 1 : 0) | 4);
+
                                     a.i2c_errors_count = 0;
                                     a.sensor=31;
                                     a.cycle_time=0;

@@ -118,7 +118,7 @@ public class Logger : GLib.Object
         write_stream();
     }
 
-    public static void armed(bool armed, time_t _duration)
+    public static void armed(bool armed, time_t _duration, uint32 flags)
     {
         duration = (int)_duration;
         var builder = init("armed");
@@ -129,6 +129,8 @@ public class Logger : GLib.Object
             builder.set_member_name("duration");
             builder.add_int_value(_duration);
         }
+        builder.set_member_name("flags");
+        builder.add_int_value(flags);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);

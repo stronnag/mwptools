@@ -1214,7 +1214,7 @@ public class MWPlanner : Gtk.Application {
 
                     if(Logger.is_logging)
                     {
-                        Logger.armed((armed == 1), duration);
+                        Logger.armed((armed == 1), duration, flag);
                     }
 
                     if(armed != larmed)
@@ -1236,7 +1236,7 @@ public class MWPlanner : Gtk.Application {
                             if(conf.logarmed == true)
                             {
                                 logb.active = true;
-                                Logger.armed(true,duration);
+                                Logger.armed(true,duration,flags);
                             }
                             duration_timer();
                         }
@@ -1248,7 +1248,7 @@ public class MWPlanner : Gtk.Application {
                             }
                             if(conf.logarmed == true)
                             {
-                                Logger.armed(false,duration);
+                                Logger.armed(false,duration,flags);
                                 logb.active=false;
                             }
                         }
@@ -1670,6 +1670,11 @@ public class MWPlanner : Gtk.Application {
                 sf.airspeed = *rp++;
                 sf.flags = *rp++;
                 armed = sf.flags & 1;
+                uint32 mwflags = 0;
+                if((sf.flags & (2 << 2)) != 0)
+                    mwflags |= 2;
+                if((sf.flags & (2 << 3)) != 0)
+                    mwflags |= 4;
 
                 if(armed == 0)
                 {
@@ -1687,7 +1692,7 @@ public class MWPlanner : Gtk.Application {
 
                 if(Logger.is_logging)
                 {
-                    Logger.armed((armed == 1), duration);
+                    Logger.armed((armed == 1), duration,mwflags);
                 }
 
                 if(armed != larmed)
@@ -1716,7 +1721,7 @@ public class MWPlanner : Gtk.Application {
                         if(conf.logarmed == true)
                         {
                             logb.active = true;
-                            Logger.armed(true,duration);
+                            Logger.armed(true,duration,mwflags);
                         }
                     }
                     else
@@ -1727,7 +1732,7 @@ public class MWPlanner : Gtk.Application {
                         }
                         if(conf.logarmed == true)
                         {
-                            Logger.armed(false,duration);
+                            Logger.armed(false,duration,mwflags);
                             logb.active=false;
                         }
                     }
