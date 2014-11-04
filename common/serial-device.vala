@@ -300,7 +300,6 @@ public class MWSerial : Object
                 sockaddr=null;
             }
             fd = -1;
-            dump_stats();
         }
     }
 
