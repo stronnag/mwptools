@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 require 'optparse'
-require 'ap'
+#require 'ap'
 require 'open-uri'
 require 'fileutils'
 require 'nokogiri'
