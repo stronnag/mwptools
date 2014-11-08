@@ -233,7 +233,7 @@ public class MWSerial : Object
             stdout.flush();
              if(buf[nc] == '#' && rx_mode == 2 && dis != null)
              {
-                 xmit_file();
+                 Timeout.add(100, () =>  { xmit_file(); return false; });
              }
         }
         return true;
@@ -252,7 +252,6 @@ public class MWSerial : Object
     private void xmit_file()
     {
         bool done = false;
-
         while(!done)
         {
             string rline;
@@ -271,21 +270,22 @@ public class MWSerial : Object
                 dis = null;
                 done = true;
                 Timeout.add_seconds(1,() => { completed(); return false; });
-                return;
             }
-
-            var line = rline.strip();
-            if(line.length > 0 && line[0] != '#')
+            else
             {
-                if (line.length > 5 && line.substring(0,5) == "Clean")
+                var line = rline.strip();
+                if(line.length > 0 && line[0] != '#')
                 {
-                    stderr.printf("skip %s\n", line);
-                }
-                else
-                {
-                    Posix.write(fd, line, line.length);
-                    Posix.write(fd,"\n", 1);
-                    done = true;
+                    if (line.length > 5 && line.substring(0,5) == "Clean")
+                    {
+                        stderr.printf("skip %s\n", line);
+                    }
+                    else
+                    {
+                        Posix.write(fd, line, line.length);
+                        Posix.write(fd,"\n", 1);
+                        done = true;
+                    }
                 }
             }
         }

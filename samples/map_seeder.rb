@@ -47,16 +47,20 @@ def parse_mission_file mf
   begin
     doc = Nokogiri::XML(open(mf))
     doc.xpath('//MISSIONITEM').each do |t|
+      action=t['action']
+      break if action == 'RTH'
+      next if action == 'SET_POI'
       lat = t['lat'].to_f
       lon = t['lon'].to_f
       miny = lat if lat < miny
       maxy = lat if lat > maxy
       minx = lon if lon < minx
       maxx = lon if lon > maxx
+      break if action == 'POSHOLD_UNLIM'
     end
     ul[0] = maxy
-    ul[1] = minx
     lr[0] = miny
+    ul[1] = minx
     lr[1] = maxx
   rescue
   end
@@ -128,18 +132,18 @@ now = Time.now
 gets.each do |m|
   sz = m[:z].to_s
   fn0 = File.join(dir,sz)
-  File.mkdir(fn0) unless File.exist?(fn0)
+  Dir.mkdir(fn0) unless File.exist?(fn0)
   m[:sx].upto(m[:ex]).each do |tx|
     sx = tx.to_s
     fn = File.join(fn0,sx)
-    File.mkdir(fn) unless File.exist?(fn)
+    Dir.mkdir(fn) unless File.exist?(fn)
     m[:sy].upto(m[:ey]).each do |ty|
+      sy = ty.to_s
       case uri
       when /\#Q\#/
 	q =  quadkey m[:z],tx,ty
 	u = uri.gsub('#Q#',q)
       else
-	sy=nil
 	u = uri.gsub('#Z#',sz)
 	u.gsub!('#X#',sx)
 	if uri.match('#TMSY#')
@@ -147,7 +151,6 @@ gets.each do |m|
 	  sy = (ymax - m[:y] - 1).to_s
 	  u.gsub!('#TMSY#',sy)
 	else
-	  sy = ty.to_s
 	  u.gsub!('#Y#',sy)
 	end
       end
