@@ -1,0 +1,55 @@
+The ruby script map_seeder.rb will build a map cache from either a MW
+misison file, or a bounding box defined by upper left, lower right. It
+is also necessary to define the URI used by the map service (in terms
+of libchamplain variables), and the data set name.
+
+All the necesary information is provide by mwp View/Map Source menu
+option (see map_source.png).
+
+So, in map_source.png:
+id = Bing
+uri = http://ecn.t1.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=875&mkt=en-us&n=z
+
+Assuming you're used the data source at least once in mwp, then you
+can also find the data set name in ~/.cache/champlain, thusly:
+
+$ ls ~/.cache/champlain/
+$ ls
+Bing         osm-aerialmap  osm-transportmap   owm-pressure
+cache.db     osm-cyclemap   osv                owm-temperature
+historic-gb  osm-mapnik     owm-clouds         owm-wind
+localcache   osm-mapquest   owm-precipitation
+
+(ok, I need to test a range of map sources).
+
+And the mission shown in the example image is called "nm-range-test.mission".
+
+So I can pre-seed the map cache (thus ensuring when I'm at the site
+and maybe don't have an internet connection, that I have all the map
+tiles), using the map_seeder.rb tool.
+
+$ ./map_seeder.rb --help
+map_seeder.rb [options]
+    -l, --upper-left=LATLON
+    -r, --lower-right=LATLON
+    -m, --mission-file=FILE
+    -u, --uri=URI
+    -i, --id=ID
+    -z, --zoom=ZOOMS
+    -?, --help                       Show this message
+
+$ ./map_seeder.rb -m "nm-range-test.mission" -z 15-19 -i Bing \
+ -u 'http://ecn.t1.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=875&mkt=en-us&n=z'
+
+If you want to seed an area from a bounding box instead
+
+$ ./map_seeder.rb -l 50.911049380718907,-1.5359599786734179 -r 50.909587299053179,-1.5327429371973267 -z 19 -i Bing
+
+so the zoom can be a single number, or a range e.g. 15-19, and the
+upper left, lower right coordinates are decimal lat,lon  separated by
+a comma.
+
+Note that the region defined by either the mission or bounding box is
+seeded at the maximum zoom level, and increasingly larger areas are
+seeded at the lower zoom levels (as one tends to find a site at a low
+zoom, and then zoom into the more detailed higher zomm levels).
