@@ -233,7 +233,7 @@ public class MWSerial : Object
             stdout.flush();
              if(buf[nc] == '#' && rx_mode == 2 && dis != null)
              {
-                 Timeout.add(100, () =>  { xmit_file(); return false; });
+                 Timeout.add(50, () =>  { xmit_file(); return false; });
              }
         }
         return true;
@@ -265,7 +265,7 @@ public class MWSerial : Object
 
             if(rline == null)
             {
-                Posix.write(fd,"exit\n", 5);
+                Posix.write(fd,"save\n", 5);
                 try { dis.close(); } catch {}
                 dis = null;
                 done = true;
@@ -347,9 +347,11 @@ public class MWSerial : Object
         try
         {
             var file = File.new_for_path (fn);
-            ios = file.create_readwrite (FileCreateFlags.PRIVATE);
+            ios = file.replace_readwrite (null,true,FileCreateFlags.PRIVATE|
+                                         FileCreateFlags.REPLACE_DESTINATION);
             mos = ios.output_stream;
             s.setdump(mos);
+
         } catch (Error e) {
             stderr.printf ("Logger: %s %s\n", fn, e.message);
         }
@@ -369,7 +371,7 @@ public class MWSerial : Object
 
         if(mdis == null)
         {
-            Timeout.add(1000, () => {
+            Timeout.add(2000, () => {
                 s.rx_mode = -1;
                 s.nlcount = -1;
                 var str = "exit\n";
@@ -391,15 +393,13 @@ public class MWSerial : Object
                     s.rx_mode = 2;
                     s.setfile(mdis);
                     Posix.write(s.fd,"#", 1);
-//                    s.xmit_file();
                     return false;
                 });
         }
+
         ml.run();
-
         try { mos.close(); } catch {}
-
-        stdout.puts("\n");
+        stdout.puts("\nDone\n");
         return 0;
     }
 }
