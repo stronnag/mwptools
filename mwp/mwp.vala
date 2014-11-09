@@ -87,6 +87,7 @@ public class MWPlanner : Gtk.Application {
     private NavStatus navstatus;
     private RadioStatus radstatus;
     private NavConfig navconf;
+    private MapSourceDialog msview;
     private GPSInfo gpsinfo;
     private WPMGR wpmgr;
     private MissionItem[] wp_resp;
@@ -360,6 +361,27 @@ public class MWPlanner : Gtk.Application {
                 }
             });
 
+        msview = new MapSourceDialog(builder);
+        menuop =  builder.get_object ("menu_maps") as Gtk.MenuItem;
+        menuop.activate.connect(() => {
+                var map_source_factory = Champlain.MapSourceFactory.dup_default();
+                var sources =  map_source_factory.get_registered();
+                foreach (Champlain.MapSourceDesc sr in sources)
+                {
+                    if(view.map_source.get_id() == sr.get_id())
+                    {
+                        msview.show_source(
+                            sr.get_name(),
+                            sr.get_id(),
+                            sr.get_uri_format (),
+                            sr.get_min_zoom_level(),
+                            sr.get_max_zoom_level());
+                        break;
+                    }
+                }
+
+            });
+
         menuop = builder.get_object ("menu_quit") as Gtk.MenuItem;
         menuop.activate.connect (() => {
                 if(layout.is_dirty())
@@ -561,7 +583,31 @@ public class MWPlanner : Gtk.Application {
                         }
                         break;
 
-
+/*
+                    case Gdk.Key.question:
+                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
+                            ret = false;
+                        else
+                        {
+                            var map_source_factory = Champlain.MapSourceFactory.dup_default();
+                            var sources =  map_source_factory.get_registered();
+                            foreach (Champlain.MapSourceDesc sr in sources)
+                            {
+                                if(view.map_source.get_id() == sr.get_id())
+                                {
+                                    stdout.printf("%s %u %u %s %s\n",
+                                                  sr.get_id(),
+                                                  sr.get_min_zoom_level(),
+                                                  sr.get_max_zoom_level(),
+                                                  sr.get_name(),
+                                                  sr.get_uri_format ()
+                                                  );
+                                    break;
+                                }
+                            }
+                        }
+                        break;
+*/
                     case Gdk.Key.t:
                         if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
                             ret = false;

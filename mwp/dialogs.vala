@@ -21,6 +21,39 @@ extern void espeak_init(string voice);
 extern void espeak_say(string text);
 //extern void espeak_terminate();
 
+
+public class MapSourceDialog : GLib.Object
+{
+    private Gtk.Dialog dialog;
+    private Gtk.Label map_name;
+    private Gtk.Label map_id;
+    private Gtk.Label map_minzoom;
+    private Gtk.Label map_maxzoom;
+    private Gtk.Label map_uri;
+
+    public MapSourceDialog(Gtk.Builder builder)
+    {
+        dialog = builder.get_object ("map_source_dialog") as Gtk.Dialog;
+        map_name = builder.get_object ("map_name") as Gtk.Label;
+        map_id = builder.get_object ("map_id") as Gtk.Label;
+        map_uri = builder.get_object ("map_uri") as Gtk.Label;
+        map_minzoom = builder.get_object ("map_minzoom") as Gtk.Label;
+        map_maxzoom = builder.get_object ("map_maxzoom") as Gtk.Label;
+    }
+
+    public void show_source(string name, string id, string uri, uint minzoom, uint maxzoom)
+    {
+        map_name.set_label(name);
+        map_id.set_label(id);
+        map_uri.set_label(uri);
+        map_minzoom.set_label(minzoom.to_string());
+        map_maxzoom.set_label(maxzoom.to_string());
+        dialog.show_all();
+        dialog.run();
+        dialog.hide();
+    }
+}
+
 public class DeltaDialog : GLib.Object
 {
     private Gtk.Dialog dialog;
