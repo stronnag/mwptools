@@ -79,7 +79,7 @@ public class TileUtil : Object
         stats.dlok = 0;
         stats.dlerr = 0;
 
-        tl = {};
+        tl={};
 
         for(var z = maxzoom; z >= minzoom; z--)
         {

@@ -47,23 +47,29 @@ public class MapSeeder : GLib.Object
                 int maxv = (int)tile_maxzoom.adjustment.value;
                 if (minv > maxv)
                 {
-                    tile_minzoom.adjustment.lower = maxv;
+                    tile_minzoom.adjustment.value = maxv;
                 }
-                ts.set_zooms(minv,maxv);
-                var nt = ts.build_table();
-                set_label(nt);
+                else
+                {
+                    ts.set_zooms(minv,maxv);
+                    var nt = ts.build_table();
+                    set_label(nt);
+                }
             });
         tile_maxzoom.adjustment.value_changed.connect (() => {
                 int minv = (int)tile_minzoom.adjustment.value;
                 int maxv = (int)tile_maxzoom.adjustment.value;
                 if (maxv < minv )
                 {
-                    tile_maxzoom.adjustment.lower = minv;
+                    tile_maxzoom.adjustment.value = minv;
                 }
-                ts.set_zooms(minv,maxv);
-                var nt = ts.build_table( );
-                set_label(nt);
-           });
+                else
+                {
+                    ts.set_zooms(minv,maxv);
+                    var nt = ts.build_table( );
+                    set_label(nt);
+                }
+            });
 
 
         apply = builder.get_object ("tile_start") as Gtk.Button;
