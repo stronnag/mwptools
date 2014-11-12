@@ -88,6 +88,7 @@ public class MWPlanner : Gtk.Application {
     private RadioStatus radstatus;
     private NavConfig navconf;
     private MapSourceDialog msview;
+    private MapSeeder mseed;
     private GPSInfo gpsinfo;
     private WPMGR wpmgr;
     private MissionItem[] wp_resp;
@@ -248,23 +249,6 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
-        fn = MWPUtils.find_conf_file("mwchooser.ui");
-        if (fn == null)
-        {
-            stderr.printf ("No UI chooser definition file\n");
-            Posix.exit(255);
-        }
-        else
-        {
-            try
-            {
-                builder.add_from_file (fn);
-            } catch (Error e) {
-                stderr.printf ("Builder: %s\n", e.message);
-                Posix.exit(255);
-            }
-        }
-
         gps_trail = !gps_trail; // yet more jh logic
 
         if(mwoptstr != null)
@@ -379,6 +363,13 @@ public class MWPlanner : Gtk.Application {
                         break;
                     }
                 }
+            });
+
+        mseed = new MapSeeder(builder);
+        menuop =  builder.get_object ("menu_seed") as Gtk.MenuItem;
+        menuop.activate.connect(() => {
+                mseed.run_seeder(view.map_source.get_id(),(int)zoomer.adjustment.value,
+                                 view.get_bounding_box());
 
             });
 

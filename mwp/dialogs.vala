@@ -21,6 +21,123 @@ extern void espeak_init(string voice);
 extern void espeak_say(string text);
 //extern void espeak_terminate();
 
+public class MapSeeder : GLib.Object
+{
+    private Gtk.Dialog dialog;
+    private Gtk.SpinButton tile_minzoom;
+    private Gtk.SpinButton tile_maxzoom;
+    private Gtk.SpinButton tile_age;
+    private Gtk.Label tile_stats;
+    private Gtk.Button apply;
+    private int age  {get; set; default = 30;}
+    private TileUtil ts;
+
+    public MapSeeder(Gtk.Builder builder)
+    {
+        dialog = builder.get_object ("seeder_dialog") as Gtk.Dialog;
+        tile_minzoom = builder.get_object ("tile_minzoom") as Gtk.SpinButton;
+        tile_maxzoom = builder.get_object ("tile_maxzoom") as Gtk.SpinButton;
+        tile_age = builder.get_object ("tile_age") as Gtk.SpinButton;
+        tile_stats = builder.get_object ("tile_stats") as Gtk.Label;
+        dialog.destroy.connect (() => {
+                reset();
+            });
+        tile_minzoom.adjustment.value_changed.connect (() =>  {
+                int minv = (int)tile_minzoom.adjustment.value;
+                int maxv = (int)tile_maxzoom.adjustment.value;
+                if (minv > maxv)
+                {
+                    tile_minzoom.adjustment.lower = maxv;
+                }
+                ts.set_zooms(minv,maxv);
+                var nt = ts.build_table();
+                set_label(nt);
+            });
+        tile_maxzoom.adjustment.value_changed.connect (() => {
+                int minv = (int)tile_minzoom.adjustment.value;
+                int maxv = (int)tile_maxzoom.adjustment.value;
+                if (maxv < minv )
+                {
+                    tile_maxzoom.adjustment.lower = minv;
+                }
+                ts.set_zooms(minv,maxv);
+                var nt = ts.build_table( );
+                set_label(nt);
+           });
+
+
+        apply = builder.get_object ("tile_start") as Gtk.Button;
+        apply.clicked.connect(() => {
+                apply.sensitive = false;
+                int days = (int)tile_age.adjustment.value;
+                ts.set_delta(days);
+                ts.start_seeding();
+            });
+    }
+
+    private void reset()
+    {
+        dialog.hide();
+        ts.stop();
+        ts = null;
+    }
+
+
+    private void set_label(TileUtil.TileStats s)
+    {
+        var lbl = "Tiles: %u / Skip: %u / DL: %u / Err: %u".printf(s.nt, s.skip, s.dlok, s.dlerr);
+        tile_stats.set_label(lbl);
+    }
+
+    public void run_seeder(string mapid, int zval, Champlain.BoundingBox bbox)
+    {
+        var map_source_factory = Champlain.MapSourceFactory.dup_default();
+        var sources =  map_source_factory.get_registered();
+        string uri = null;
+        int minz = 0;
+        int maxz = 19;
+        foreach (Champlain.MapSourceDesc sr in sources)
+        {
+            if(mapid == sr.get_id())
+            {
+                uri = sr.get_uri_format ();
+                minz = (int)sr.get_min_zoom_level();
+                maxz = (int)sr.get_max_zoom_level();
+                break;
+            }
+        }
+        if(uri != null)
+        {
+            apply.sensitive = true;
+            tile_maxzoom.adjustment.lower = minz;
+            tile_maxzoom.adjustment.upper = maxz;
+            tile_maxzoom.adjustment.value = zval;
+
+            tile_minzoom.adjustment.lower = minz;
+            tile_minzoom.adjustment.upper = maxz;
+            tile_minzoom.adjustment.value = zval-4;
+            tile_age.adjustment.value = age;
+
+            ts = new TileUtil();
+            ts.show_stats.connect((stats) => {
+                    set_label(stats);
+                });
+            ts.tile_done.connect(() => { apply.sensitive = true;});
+            ts.set_range(bbox.bottom, bbox.left, bbox.top, bbox.right);
+            stdout.printf("%f %f %f %f\n", bbox.bottom, bbox.left, bbox.top, bbox.right);
+            ts.set_misc(mapid, uri);
+            ts.set_zooms(zval-4, zval);
+            var nt = ts.build_table();
+            set_label(nt);
+            dialog.show_all();
+            dialog.run();
+            reset();
+        }
+    }
+
+}
+
+
 
 public class MapSourceDialog : GLib.Object
 {
