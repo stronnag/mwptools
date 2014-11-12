@@ -263,6 +263,7 @@ public class TileUtil : Object
     public void start_seeding()
     {
         session = new Soup.Session();
+        session.ssl_strict = false; // for OSM alas
         done = false;
         fetch_tile();
     }
@@ -270,16 +271,16 @@ public class TileUtil : Object
     public void fetch_tile()
     {
         TILE_ITER_RES r = TILE_ITER_RES.SKIP;
-        string uri = null;
+        string tile_uri = null;
 
         do
         {
-            r = get_next_tile(out uri);
+            r = get_next_tile(out tile_uri);
         } while (r == TILE_ITER_RES.SKIP);
 
         if(r == TILE_ITER_RES.FETCH)
         {
-            var message = new Soup.Message ("GET", uri);
+            var message = new Soup.Message ("GET", tile_uri);
             session.queue_message (message, end_session);
         }
         show_stats(stats);
@@ -296,12 +297,14 @@ public class TileUtil : Object
             try {
                 file.replace_contents(msg.response_body.data,null,
                                       false,FileCreateFlags.REPLACE_DESTINATION,null);
-
             } catch {
             };
         }
         else
+        {
+            stderr.printf("Tile failure status %u\n", msg.status_code);
             stats.dlerr++;
+        }
 
         fetch_tile();
     }
