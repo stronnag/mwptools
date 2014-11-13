@@ -285,8 +285,9 @@ public class TileUtil : Object
         }
         show_stats(stats);
         if(r == TILE_ITER_RES.DONE)
+        {
             tile_done();
-
+        }
     }
 
     void end_session(Soup.Session sess, Soup.Message msg)

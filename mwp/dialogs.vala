@@ -80,8 +80,8 @@ public class MapSeeder : GLib.Object
                 apply.sensitive = false;
                 int days = (int)tile_age.adjustment.value;
                 ts.set_delta(days);
-                ts.start_seeding();
                 stop.set_label("gtk-stop");
+                ts.start_seeding();
             });
     }
 
@@ -134,11 +134,10 @@ public class MapSeeder : GLib.Object
                     set_label(stats);
                 });
             ts.tile_done.connect(() => {
-                    stop.set_label("gtk-close");
                     apply.sensitive = true;
+                    stop.set_label("gtk-close");
                 });
             ts.set_range(bbox.bottom, bbox.left, bbox.top, bbox.right);
-            stdout.printf("%f %f %f %f\n", bbox.bottom, bbox.left, bbox.top, bbox.right);
             ts.set_misc(mapid, uri);
             ts.set_zooms(zval-4, zval);
             var nt = ts.build_table();
