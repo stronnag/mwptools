@@ -29,6 +29,7 @@ public class MapSeeder : GLib.Object
     private Gtk.SpinButton tile_age;
     private Gtk.Label tile_stats;
     private Gtk.Button apply;
+    private Gtk.Button stop;
     private int age  {get; set; default = 30;}
     private TileUtil ts;
 
@@ -39,9 +40,13 @@ public class MapSeeder : GLib.Object
         tile_maxzoom = builder.get_object ("tile_maxzoom") as Gtk.SpinButton;
         tile_age = builder.get_object ("tile_age") as Gtk.SpinButton;
         tile_stats = builder.get_object ("tile_stats") as Gtk.Label;
+        apply = builder.get_object ("tile_start") as Gtk.Button;
+        stop = builder.get_object ("tile_stop") as Gtk.Button;
+
         dialog.destroy.connect (() => {
                 reset();
             });
+
         tile_minzoom.adjustment.value_changed.connect (() =>  {
                 int minv = (int)tile_minzoom.adjustment.value;
                 int maxv = (int)tile_maxzoom.adjustment.value;
@@ -71,13 +76,12 @@ public class MapSeeder : GLib.Object
                 }
             });
 
-
-        apply = builder.get_object ("tile_start") as Gtk.Button;
         apply.clicked.connect(() => {
                 apply.sensitive = false;
                 int days = (int)tile_age.adjustment.value;
                 ts.set_delta(days);
                 ts.start_seeding();
+                stop.set_label("gtk-stop");
             });
     }
 
@@ -114,6 +118,7 @@ public class MapSeeder : GLib.Object
         }
         if(uri != null)
         {
+            stop.set_label("gtk-close");
             apply.sensitive = true;
             tile_maxzoom.adjustment.lower = minz;
             tile_maxzoom.adjustment.upper = maxz;
@@ -128,7 +133,10 @@ public class MapSeeder : GLib.Object
             ts.show_stats.connect((stats) => {
                     set_label(stats);
                 });
-            ts.tile_done.connect(() => { apply.sensitive = true;});
+            ts.tile_done.connect(() => {
+                    stop.set_label("gtk-close");
+                    apply.sensitive = true;
+                });
             ts.set_range(bbox.bottom, bbox.left, bbox.top, bbox.right);
             stdout.printf("%f %f %f %f\n", bbox.bottom, bbox.left, bbox.top, bbox.right);
             ts.set_misc(mapid, uri);
