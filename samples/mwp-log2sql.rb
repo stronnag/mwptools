@@ -87,6 +87,7 @@ db.create_table? :reports do
   column :wp_lat,:float
   column :wp_lon,:float
   column :wp_alt,:float
+  column :flags,:integer
 end
 
 otitle=title
