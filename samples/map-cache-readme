@@ -1,3 +1,12 @@
+Note: There is also a UI menu option to refresh the tile cache, that
+is possibly easier to use.
+
+Rationale: libchamplain (mwp's mapping library) considers tiles to be
+expired if more than 7 days old. The consequence of this may be that
+it will attempt to refresh tiles when inconvenient (e.g. when
+disconnected from the network). So this script and the UI option
+provide a means of refreshing the cache at a time convenient to the user.
+
 The ruby script map_seeder.rb will build a map cache from either a MW
 mission file, or a bounding box defined by upper left, lower right. It
 is also necessary to know the URI used by the map service (in terms

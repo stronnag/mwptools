@@ -157,10 +157,9 @@ gets.each do |m|
       ofn = File.join(fn,"#{sy}.png")
       needed = true
       if File.exist?(ofn)
-	#fa = (now - File.stat(path).mtime).to_i / 86400
-	FileUtils.touch ofn
-	puts "touch #{ofn}"
-	needed = false
+	fa = (now - File.stat(ofn).mtime).to_i / 86400
+	needed = (fa > 30)
+	puts "skip #{ofn}" unless needed
       end
       if needed
 	puts "get #{u} => #{ofn}"
