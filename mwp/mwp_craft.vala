@@ -222,7 +222,7 @@ public class Craft : GLib.Object
             {
                 homep = new Champlain.Label.with_text ("⏏", "Sans 10",null,null);
                 homep.set_alignment (Pango.Alignment.RIGHT);
-                colour = {0xff, 0x0, 0x0, 0xc8};
+                colour = {0xff, 0xa0, 0x0, 0xc8};
                 homep.set_color (colour);
                 homep.set_text_color(black);
                 pmlayer.add_marker(homep);
