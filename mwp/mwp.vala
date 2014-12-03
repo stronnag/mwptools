@@ -152,6 +152,7 @@ public class MWPlanner : Gtk.Application {
     private int64 anvals;
     private int toc;
     private uint32 xbits = 0;
+    private uint8 api_cnt;
     public static string exstr;
 
     private enum MS_Column {
@@ -648,7 +649,6 @@ public class MWPlanner : Gtk.Application {
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
         dockitem[0].add (scroll);
         dockitem[0].show ();
-
         dock.add_item (dockitem[0], DockPlacement.TOP);
 
         dockitem[1]= new DockItem.with_stock ("GPS",
@@ -850,6 +850,7 @@ public class MWPlanner : Gtk.Application {
             dockitem[3].hide ();
             dockitem[4].hide ();
         }
+
         navstatus.setdock(dockitem[2]);
         radstatus.setdock(dockitem[4]);
         if(conf.heartbeat != null)
@@ -2061,6 +2062,12 @@ public class MWPlanner : Gtk.Application {
             cmdtid = Timeout.add(wait, () => {
                     if (*flag == false)
                     {
+                        if(cmd == MSP.Cmds.API_VERSION)
+                        {
+                            api_cnt++;
+                            if(api_cnt == 2)
+                                cmd = MSP.Cmds.IDENT;
+                        }
                         send_cmd(cmd,buf,len);
                         return true;
                     }
@@ -2160,6 +2167,7 @@ public class MWPlanner : Gtk.Application {
             remove_tid(ref gpstid);
             dopoll = false;
             xbits = 0;
+            api_cnt = 0;
             var serdev = dev_entry.get_active_text();
             string estr;
             if (msp.open(serdev, conf.baudrate, out estr) == true)

@@ -51,6 +51,7 @@ public class SwitchEdit : Object
     private uint nranges = 40;
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
     private uint cmdtid;
+    private uint8 api_cnt = 0;
 
     private static string serdev;
     private static string mwoptstr;
@@ -102,6 +103,12 @@ public class SwitchEdit : Object
         cmdtid = Timeout.add(wait, () => {
                 if (*flag == false)
                 {
+                    if(cmd == MSP.Cmds.API_VERSION)
+                    {
+                        api_cnt++;
+                        if(api_cnt == 2)
+                            cmd = MSP.Cmds.IDENT;
+                    }
                     s.send_command(cmd,buf,len);
                     return true;
                 }
@@ -527,6 +534,7 @@ public class SwitchEdit : Object
                         conbutton.set_label("Disconnect");
                         applybutton.set_sensitive(true);
                         saveasbutton.set_sensitive(true);
+                        api_cnt = 0;
                         add_cmd(MSP.Cmds.API_VERSION,null,0,&have_vers);
                     }
                     else

@@ -6,7 +6,7 @@ require 'optparse'
 # -*- coding: utf-8 -*-
 
 def recins db,rec,mid
-  if rec.size > 0
+  if rec and rec.size > 0
     rec[:stamp] = Time.at rec[:utime]
     rec.delete(:type)
     rec.delete(:utime)
