@@ -66,6 +66,7 @@ public class PIDEdit : Object
     private Gtk.Entry dynthr_entry;
     private Gtk.Entry thrmid_entry;
     private Gtk.Entry threxpro_entry;
+    private uint8 icount;
 
     private static const PIDSet[] ps =  {
         {0,"ROLL",{{20.00,0.100,false},{0.25,0.001,false},{100.00,1.000,false}}},
@@ -299,10 +300,12 @@ public class PIDEdit : Object
         hideme = ps[r].pids[c].hidden;
     }
 
-    private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, bool *flag)
+    private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, ref bool flag)
     {
+        var _flag = flag;
+
         Timeout.add(1000, () => {
-                if (*flag == false)
+                if (_flag == false)
                 {
                     s.send_command(cmd,buf,len);
                     return true;
@@ -475,10 +478,14 @@ public class PIDEdit : Object
                 {
                     case MSP.Cmds.IDENT:
                     have_vers = true;
-                    var _mrtype = MSP.get_mrtype(raw[1]);
-                    var vers="v%03d %s".printf(raw[0], _mrtype);
-                    verslab.set_label(vers);
-                    add_cmd(MSP.Cmds.MISC,null,0, &have_misc);
+                    if(icount == 0)
+                    {
+                        var _mrtype = MSP.get_mrtype(raw[1]);
+                        var vers="v%03d %s".printf(raw[0], _mrtype);
+                        verslab.set_label(vers);
+                        add_cmd(MSP.Cmds.MISC,null,0, ref have_misc);
+                    }
+                    icount++;
                     break;
 
                     case MSP.Cmds.MISC:
@@ -498,7 +505,7 @@ public class PIDEdit : Object
                         misc.conf_vbatlevel_warn2 = *rp++;
                         misc.conf_vbatlevel_crit = *rp;
                         set_misc_ui();
-                        add_cmd(MSP.Cmds.RC_TUNING,null,0,&have_rc);
+                        add_cmd(MSP.Cmds.RC_TUNING,null,0, ref have_rc);
                     }
                     break;
 
@@ -519,7 +526,7 @@ public class PIDEdit : Object
                     rt.throttle_mid = *rp++;
                     rt.throttle_expo = *rp;
                     set_rc_tuning();
-                    add_cmd(MSP.Cmds.PID,null,0, &have_pids);
+                    add_cmd(MSP.Cmds.PID,null,0, ref have_pids);
                     break;
                 }
             });
@@ -636,6 +643,7 @@ public class PIDEdit : Object
                 string estr;
                 if (is_connected == false)
                 {
+                    icount = 0;
                     serdev = dentry.get_active_text();
                     if(s.open(serdev,baudrate,out estr) == true)
                     {
@@ -644,7 +652,7 @@ public class PIDEdit : Object
 //                        openbutton.set_sensitive(true);
                         applybutton.set_sensitive(true);
 //                        saveasbutton.set_sensitive(true);
-                        add_cmd(MSP.Cmds.IDENT,null,0,&have_vers);
+                        add_cmd(MSP.Cmds.IDENT,null,0,ref have_vers);
                     }
                     else
                     {

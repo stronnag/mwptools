@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
@@ -42,7 +41,7 @@ public class SwitchEdit : Object
     private uint nboxen;
     private uint32 xflag = -1;
     private Gdk.RGBA[] colors;
-    private uint tid;
+    private uint stid;
     private string lastfile;
     private uint32 capability;
     private uint8 []rowids;
@@ -55,6 +54,8 @@ public class SwitchEdit : Object
 
     private static string serdev;
     private static string mwoptstr;
+    private Timer timer;
+    private uint8 icount = 0;
 
     const OptionEntry[] options = {
         { "serial-device", 's', 0, OptionArg.STRING, out serdev, "Serial device", null},
@@ -90,7 +91,6 @@ public class SwitchEdit : Object
         };
 
 
-
     private void remove_tid(ref uint tid)
     {
         if(tid > 0)
@@ -98,17 +98,23 @@ public class SwitchEdit : Object
         tid = 0;
     }
 
-    private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, bool *flag, uint32 wait=1000)
+    private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, ref bool flag, uint32 wait=1000)
     {
+        var _flag = flag;
         cmdtid = Timeout.add(wait, () => {
-                if (*flag == false)
+                if (_flag == false)
                 {
                     if(cmd == MSP.Cmds.API_VERSION)
                     {
                         api_cnt++;
-                        if(api_cnt == 2)
+                        if(api_cnt == 1)
+                        {
+                            api_cnt = 255;
                             cmd = MSP.Cmds.IDENT;
+                        }
                     }
+                    var t = timer.elapsed();
+                    stderr.printf("%6.1f repcmd %d\n", t, cmd);
                     s.send_command(cmd,buf,len);
                     return true;
                 }
@@ -117,6 +123,8 @@ public class SwitchEdit : Object
                     return false;
                 }
             });
+        var t = timer.elapsed();
+        stderr.printf("%6.1f addcmd %d\n", t, cmd);
         s.send_command(cmd,buf,len);
     }
 
@@ -270,7 +278,7 @@ public class SwitchEdit : Object
         else
             intvl = 2000;
 
-        tid = Timeout.add(intvl, () => {
+        stid = Timeout.add(intvl, () => {
                 s.send_command(MSP.Cmds.STATUS,null,0);
                 s.send_command(MSP.Cmds.RC,null,0);
                 return true;
@@ -361,14 +369,16 @@ public class SwitchEdit : Object
         }
 
         s = new MWSerial();
+
+        timer = new Timer();
         s.serial_event.connect((sd,cmd,raw,len,errs) => {
+                remove_tid(ref cmdtid);
                 if(errs == true)
                 {
-                    remove_tid(ref cmdtid);
                     if(cmd == MSP.Cmds.API_VERSION)
                     {
                         have_vers = false;
-                        add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
+                        add_cmd(MSP.Cmds.IDENT,null,0, ref have_vers,2000);
                     }
                     stderr.printf("Error on cmd %d\n", cmd);
                     return;
@@ -376,30 +386,34 @@ public class SwitchEdit : Object
                 switch(cmd)
                 {
                     case MSP.Cmds.API_VERSION:
-                    remove_tid(ref cmdtid);
                     mwvar = MWChooser.MWVAR.CF;
                     have_vers = false;
-                    add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
+                    add_cmd(MSP.Cmds.IDENT,null,0, ref have_vers,1000);
                     break;
 
                     case MSP.Cmds.IDENT:
                     have_vers = true;
-                    deserialise_u32(raw+3, out capability);
-                    var _mrtype = MSP.get_mrtype(raw[1]);
-                    if(mwvar == MWChooser.MWVAR.AUTO)
+                    if(icount == 0)
                     {
-                        if((capability & MSPCaps.CAP_PLATFORM_32BIT) != 0)
+                        deserialise_u32(raw+3, out capability);
+                        var _mrtype = MSP.get_mrtype(raw[1]);
+                        if(mwvar == MWChooser.MWVAR.AUTO)
                         {
-                            mwvar =  ((capability & MSPCaps.CAP_CLEANFLIGHT_CONFIG) != 0)  ? MWChooser.MWVAR.CF : MWChooser.MWVAR.BF;
+                            if((capability & MSPCaps.CAP_PLATFORM_32BIT) != 0)
+                            {
+                                mwvar =  ((capability & MSPCaps.CAP_CLEANFLIGHT_CONFIG) != 0)  ? MWChooser.MWVAR.CF : MWChooser.MWVAR.BF;
+                            }
+                            else
+                            {
+                                mwvar = ((capability & 0x10) == 0x10) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
+                            }
                         }
-                        else
-                        {
-                            mwvar = ((capability & 0x10) == 0x10) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
-                        }
+                        var vers="%s v%03d %s".printf(MWChooser.mwnames[mwvar], raw[0], _mrtype);
+                        verslab.set_label(vers);
+
+                        add_cmd(MSP.Cmds.BOXNAMES,null,0, ref have_names);
                     }
-                    var vers="%s v%03d %s".printf(MWChooser.mwnames[mwvar], raw[0], _mrtype);
-                    verslab.set_label(vers);
-                    add_cmd(MSP.Cmds.BOXNAMES,null,0,&have_names);
+                    icount++;
                     break;
 
                     case MSP.Cmds.BOXNAMES:
@@ -409,7 +423,8 @@ public class SwitchEdit : Object
                     nboxen = bsx.length-1;
                     add_boxlabels(bsx);
                     MSP.Cmds bcmd = (mwvar != MWChooser.MWVAR.CF) ? MSP.Cmds.BOX : MSP.Cmds.MODE_RANGES;
-                    add_cmd(bcmd,null,0,&have_box);
+                    if(have_box == false)
+                        add_cmd(bcmd,null,0, ref have_box);
                     break;
 
                     case  MSP.Cmds.MODE_RANGES:
@@ -535,7 +550,11 @@ public class SwitchEdit : Object
                         applybutton.set_sensitive(true);
                         saveasbutton.set_sensitive(true);
                         api_cnt = 0;
-                        add_cmd(MSP.Cmds.API_VERSION,null,0,&have_vers);
+                        icount  = 0;
+                        if(mwvar == MWChooser.MWVAR.CF) // CF
+                            add_cmd(MSP.Cmds.API_VERSION,null,0, ref have_vers);
+                        else
+                            add_cmd(MSP.Cmds.IDENT,null,0, ref have_vers);
                     }
                     else
                     {
@@ -544,9 +563,8 @@ public class SwitchEdit : Object
                 }
                 else
                 {
-                    if(tid > 0)
-                        Source.remove(tid);
-                    tid = 0;
+                    remove_tid(ref stid);
+                    remove_tid(ref cmdtid);
                     xflag = 0;
                     s.close();
                     conbutton.set_label("Connect");

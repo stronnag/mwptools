@@ -153,6 +153,7 @@ public class MWPlanner : Gtk.Application {
     private int toc;
     private uint32 xbits = 0;
     private uint8 api_cnt;
+    private uint8 icount = 0;
     public static string exstr;
 
     private enum MS_Column {
@@ -993,7 +994,7 @@ public class MWPlanner : Gtk.Application {
                 case MSP.Cmds.API_VERSION:
                     have_api = true;
                     have_vers = false;
-                    add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
+                    add_cmd(MSP.Cmds.IDENT,null,0,ref have_vers,1000);
                     break;
                 default:
                     break;
@@ -1019,68 +1020,72 @@ public class MWPlanner : Gtk.Application {
                 naze32 = true;
                 mwvar = MWChooser.MWVAR.CF;
                 have_vers = false;
-                add_cmd(MSP.Cmds.IDENT,null,0,&have_vers,1000);
+                add_cmd(MSP.Cmds.IDENT,null,0,ref have_vers,1000);
                 break;
 
             case MSP.Cmds.IDENT:
                 remove_tid(ref cmdtid);
                 have_vers = true;
-                mvers = raw[0];
-                mrtype = raw[1];
-                if(dmrtype != mrtype)
+                if (icount == 0)
                 {
-                    dmrtype = mrtype;
-                    if(craft != null)
-                        craft.set_icon(mrtype);
-                }
-
-                deserialise_u32(raw+3, out capability);
-
-                MWChooser.MWVAR _mwvar = mwvar;
-
-                if(mwvar == MWChooser.MWVAR.AUTO)
-                {
-                    naze32 = ((capability & MSPCaps.CAP_PLATFORM_32BIT) != 0);
-                }
-                else
-                {
-                    naze32 = (mwvar == MWChooser.MWVAR.CF || mwvar == MWChooser.MWVAR.BF);
-                }
-
-                if(naze32 == true)
-                {
-                    navcap = false;
-                }
-                else
-                {
-                    navcap = ((raw[3] & 0x10) == 0x10);
-                }
-                if(mwvar == MWChooser.MWVAR.AUTO)
-                {
-                    if(naze32)
+                    mvers = raw[0];
+                    mrtype = raw[1];
+                    if(dmrtype != mrtype)
                     {
-                        _mwvar =  ((capability & MSPCaps.CAP_CLEANFLIGHT_CONFIG) != 0)  ? MWChooser.MWVAR.CF : MWChooser.MWVAR.BF;
+                        dmrtype = mrtype;
+                        if(craft != null)
+                            craft.set_icon(mrtype);
+                    }
+
+                    deserialise_u32(raw+3, out capability);
+
+                    MWChooser.MWVAR _mwvar = mwvar;
+
+                    if(mwvar == MWChooser.MWVAR.AUTO)
+                    {
+                        naze32 = ((capability & MSPCaps.CAP_PLATFORM_32BIT) != 0);
                     }
                     else
                     {
-                        _mwvar = (navcap) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
+                        naze32 = (mwvar == MWChooser.MWVAR.CF || mwvar == MWChooser.MWVAR.BF);
                     }
+
+                    if(naze32 == true)
+                    {
+                        navcap = false;
+                    }
+                    else
+                    {
+                        navcap = ((raw[3] & 0x10) == 0x10);
+                    }
+                    if(mwvar == MWChooser.MWVAR.AUTO)
+                    {
+                        if(naze32)
+                        {
+                            _mwvar =  ((capability & MSPCaps.CAP_CLEANFLIGHT_CONFIG) != 0)  ? MWChooser.MWVAR.CF : MWChooser.MWVAR.BF;
+                        }
+                        else
+                        {
+                            _mwvar = (navcap) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
+                        }
+                    }
+                    var vers="%s v%03d".printf(MWChooser.mwnames[_mwvar],mvers);
+                    verlab.set_label(vers);
+                    typlab.set_label(MSP.get_mrtype(mrtype));
+                    stdout.printf("IDENT %s %d\n", vers, mrtype);
+                    if(navcap == true)
+                    {
+                        menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
+                    }
+                    if(conf.checkswitches)
+                    {
+                        MSP.Cmds bcmd = (mwvar != MWChooser.MWVAR.CF) ? MSP.Cmds.BOX : MSP.Cmds.MODE_RANGES;
+                        send_cmd(bcmd, null,0);
+                    }
+                    else
+                        add_cmd(MSP.Cmds.MISC,null,0, ref have_misc,1000);
                 }
-                var vers="%s v%03d".printf(MWChooser.mwnames[_mwvar],mvers);
-                verlab.set_label(vers);
-                typlab.set_label(MSP.get_mrtype(mrtype));
-                stdout.printf("IDENT %s %d\n", vers, mrtype);
-                if(navcap == true)
-                {
-                    menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
-                }
-                if(conf.checkswitches)
-                {
-                    MSP.Cmds bcmd = (mwvar != MWChooser.MWVAR.CF) ? MSP.Cmds.BOX : MSP.Cmds.MODE_RANGES;
-                    send_cmd(bcmd, null,0);
-                }
-                else
-                    add_cmd(MSP.Cmds.MISC,null,0, &have_misc,1000);
+                icount++;
                 break;
 
             case  MSP.Cmds.MODE_RANGES:
@@ -1104,7 +1109,7 @@ public class MWPlanner : Gtk.Application {
                     swd.run();
                 }
                 have_misc = false;
-                add_cmd(MSP.Cmds.MISC,null,0, &have_misc,1000);
+                add_cmd(MSP.Cmds.MISC,null,0, ref have_misc,1000);
                 break;
 
             case MSP.Cmds.BOX:
@@ -1114,7 +1119,7 @@ public class MWPlanner : Gtk.Application {
                     swd.run();
                 }
                 have_misc = false;
-                add_cmd(MSP.Cmds.MISC,null,0, &have_misc,1000);
+                add_cmd(MSP.Cmds.MISC,null,0, ref have_misc,1000);
                 break;
 
             case MSP.Cmds.MISC:
@@ -1123,7 +1128,7 @@ public class MWPlanner : Gtk.Application {
                 vwarn1 = raw[19];
                 vwarn2 = raw[20];
                 vcrit =  raw[21];
-                add_cmd(MSP.Cmds.STATUS,null,0,&have_status,1000);
+                add_cmd(MSP.Cmds.STATUS,null,0,ref have_status,1000);
                 break;
 
             case MSP.Cmds.STATUS:
@@ -1153,7 +1158,7 @@ public class MWPlanner : Gtk.Application {
                         have_status = true;
                         remove_tid(ref cmdtid);
                         if(navcap == true)
-                            add_cmd(MSP.Cmds.NAV_CONFIG,null,0,&have_nc,1000);
+                            add_cmd(MSP.Cmds.NAV_CONFIG,null,0,ref have_nc,1000);
 
                         var  val = timadj.adjustment.value;
                         ulong reqsize = 0;
@@ -2012,7 +2017,7 @@ public class MWPlanner : Gtk.Application {
         uint8 buf[2];
         have_wp = false;
         buf[0] = wp;
-        add_cmd(MSP.Cmds.WP,buf,1,&have_wp,1000);
+        add_cmd(MSP.Cmds.WP,buf,1, ref have_wp,1000);
     }
 
 
@@ -2043,7 +2048,7 @@ public class MWPlanner : Gtk.Application {
         uint8 tmp[64];
         var nb = serialise_nc(nc, tmp);
         send_cmd(MSP.Cmds.SET_NAV_CONFIG, tmp, nb);
-        add_cmd(MSP.Cmds.NAV_CONFIG,null,0,&have_nc,1000);
+        add_cmd(MSP.Cmds.NAV_CONFIG,null,0, ref have_nc,1000);
     }
 
     private void send_cmd(MSP.Cmds cmd, void* buf, size_t len)
@@ -2055,28 +2060,29 @@ public class MWPlanner : Gtk.Application {
     }
 
     private void add_cmd(MSP.Cmds cmd, void* buf, size_t len,
-                         bool *flag, int wait=1000)
+                         ref bool flag, int wait=1000)
     {
-        if(flag != null)
-        {
-            cmdtid = Timeout.add(wait, () => {
-                    if (*flag == false)
+        var _flag = flag;
+        cmdtid = Timeout.add(wait, () => {
+                if (_flag == false)
+                {
+                    if(cmd == MSP.Cmds.API_VERSION)
                     {
-                        if(cmd == MSP.Cmds.API_VERSION)
+                        api_cnt++;
+                        if(api_cnt == 1)
                         {
-                            api_cnt++;
-                            if(api_cnt == 2)
-                                cmd = MSP.Cmds.IDENT;
+                            cmd = MSP.Cmds.IDENT;
+                            api_cnt = 255;
                         }
-                        send_cmd(cmd,buf,len);
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                });
-        }
+                        }
+                    send_cmd(cmd,buf,len);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            });
         send_cmd(cmd,buf,len);
     }
 
@@ -2167,7 +2173,8 @@ public class MWPlanner : Gtk.Application {
             remove_tid(ref gpstid);
             dopoll = false;
             xbits = 0;
-            api_cnt = 0;
+            icount = api_cnt = 0;
+
             var serdev = dev_entry.get_active_text();
             string estr;
             if (msp.open(serdev, conf.baudrate, out estr) == true)
@@ -2178,7 +2185,7 @@ public class MWPlanner : Gtk.Application {
                     msp.raw_logging(true);
                 }
                 conbutton.set_label("gtk-disconnect");
-                add_cmd(MSP.Cmds.API_VERSION,null,0,&have_api,1500);
+                add_cmd(MSP.Cmds.API_VERSION,null,0, ref have_api,1500);
                 menumwvar.sensitive = false;
             }
             else
