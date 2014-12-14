@@ -78,7 +78,6 @@ public class MWPlanner : Gtk.Application {
     private bool centreon = false;
     private bool navcap = false;
     private bool naze32 = false;
-    private bool vinit = false;
     private GtkChamplain.Embed embed;
     private PrefsDialog prefs;
     private SwitchDialog swd;
@@ -103,6 +102,7 @@ public class MWPlanner : Gtk.Application {
     private static bool norotate = false; // workaround for Ubuntu & old champlain
     private static bool gps_trail = false;
     private static string mwoptstr;
+    private uint nrx = 0;
 
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
     private uint8 vwarn1;
@@ -936,6 +936,13 @@ public class MWPlanner : Gtk.Application {
                 set_error_status("No data for 5 seconds");
                 rxerr=true;
             }
+            nrx++;
+            if(nrx == 12)
+            {
+                have_vers = false;
+                add_cmd(MSP.Cmds.IDENT,null,0,ref have_vers,1000);
+                return;
+            }
         }
         else
         {
@@ -944,6 +951,7 @@ public class MWPlanner : Gtk.Application {
                 set_error_status(null);
                 rxerr=false;
             }
+            nrx = 0;
         }
 
         switch(req)
@@ -1932,18 +1940,14 @@ public class MWPlanner : Gtk.Application {
         string[] bcols = {"green","yellow","orange","red","white" };
         float vf=0f;
 
-        if(vinit == false)
+        if(vwarn1 < 36 && vwarn1 > 30 && vwarn2 < 45 && vwarn2 > 40)
         {
-            vinit = true;
-            if(naze32)
-            {
-                var ncell = ivbat / vwarn1;
-                var vmin = vwarn1;
-                var vmax = vwarn2;
-                vcrit = vmin * ncell;
-                vwarn1 = vmax * ncell * 84 / 100;
-                vwarn2 = vmax * ncell * 80 / 100;
-            }
+            var ncell = ivbat / vwarn1;
+            var vmin = vwarn1;
+            var vmax = vwarn2;
+            vcrit = vmin * ncell;
+            vwarn1 = vmax * ncell * 84 / 100;
+            vwarn2 = vmax * ncell * 80 / 100;
         }
 
         string str;
@@ -2083,6 +2087,7 @@ public class MWPlanner : Gtk.Application {
                     return false;
                 }
             });
+        flag = false;
         send_cmd(cmd,buf,len);
     }
 
