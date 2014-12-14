@@ -937,11 +937,11 @@ public class MWPlanner : Gtk.Application {
                 rxerr=true;
             }
             nrx++;
-            if(nrx == 12)
+                /* Probably takes a minute to change the LIPO */
+            if(nrx % 12 == 0)
             {
-                have_vers = false;
-                add_cmd(MSP.Cmds.IDENT,null,0,ref have_vers,1000);
-                return;
+                stderr.puts("Restart poll loop\n");
+                req = MSP.Cmds.IDENT;
             }
         }
         else
@@ -1027,12 +1027,12 @@ public class MWPlanner : Gtk.Application {
                 remove_tid(ref cmdtid);
                 naze32 = true;
                 mwvar = MWChooser.MWVAR.CF;
-                have_vers = false;
                 add_cmd(MSP.Cmds.IDENT,null,0,ref have_vers,1000);
                 break;
 
             case MSP.Cmds.IDENT:
                 remove_tid(ref cmdtid);
+                remove_tid(ref gpstid); // in case from timeout
                 have_vers = true;
                 if (icount == 0)
                 {
@@ -1116,7 +1116,6 @@ public class MWPlanner : Gtk.Application {
                 {
                     swd.run();
                 }
-                have_misc = false;
                 add_cmd(MSP.Cmds.MISC,null,0, ref have_misc,1000);
                 break;
 
@@ -1126,7 +1125,6 @@ public class MWPlanner : Gtk.Application {
                 {
                     swd.run();
                 }
-                have_misc = false;
                 add_cmd(MSP.Cmds.MISC,null,0, ref have_misc,1000);
                 break;
 
