@@ -28,7 +28,7 @@ public class Logger : GLib.Object
     private static double dtime;
     public static int duration { get; private set; }
 
-    public static void start(string? title, uint8 mvers, uint8 mrtype, uint32 capability)
+    public static void start(string? title, uint8 mvers, uint8 mrtype, uint32 capability,uint8 fctype=1)
     {
         time_t currtime;
         time_t(out currtime);
@@ -56,6 +56,8 @@ public class Logger : GLib.Object
             builder.add_int_value (mrtype);
             builder.set_member_name ("capability");
             builder.add_int_value (capability);
+            builder.set_member_name ("fctype");
+            builder.add_int_value (fctype);
             builder.end_object ();
             Json.Node root = builder.get_root ();
             gen.set_root (root);
@@ -118,7 +120,7 @@ public class Logger : GLib.Object
         write_stream();
     }
 
-    public static void armed(bool armed, time_t _duration, uint32 flags)
+    public static void armed(bool armed, time_t _duration, uint32 flags, uint32 sensor)
     {
         duration = (int)_duration;
         var builder = init("armed");
@@ -131,6 +133,8 @@ public class Logger : GLib.Object
         }
         builder.set_member_name("flags");
         builder.add_int_value(flags);
+        builder.set_member_name("sensors");
+        builder.add_int_value(sensor);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);

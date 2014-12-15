@@ -234,8 +234,15 @@ public class ReplayThread : GLib.Object
                                     else
                                         a.flag = (((armed)  ? 1 : 0) | 4);
 
+
+                                    if(obj.has_member("sensors"))
+                                    {
+                                        var s =  obj.get_int_member("sensors");
+                                        a.sensor = (uint16)s;
+                                    }
+                                    else
+                                        a.sensor=(MSP.Sensors.ACC+MSP.Sensors.GPS);
                                     a.i2c_errors_count = 0;
-                                    a.sensor=31;
                                     a.cycle_time=0;
                                     var nb = serialise_status(a, buf);
                                     send_rec(fd,MSP.Cmds.STATUS, (uint)nb, buf);

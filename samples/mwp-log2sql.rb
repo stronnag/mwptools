@@ -43,6 +43,7 @@ db.create_table? :missions do
   column :mwvers, :string
   column :mrtype, :integer
   column :capability, :integer
+  column :fctype, :integer
 end
 
 db.create_table? :reports do
@@ -75,6 +76,7 @@ db.create_table? :reports do
   column :angy, :float
   column :heading, :integer
   column :duration, :integer
+  column :sensors, :integer
   column :armed, :boolean
   column :rxerrors, :integer
   column :fixed_errors, :integer

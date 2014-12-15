@@ -154,6 +154,8 @@ public class MWPlanner : Gtk.Application {
     private uint32 xbits = 0;
     private uint8 api_cnt;
     private uint8 icount = 0;
+    private bool usemag = false;
+    private int16 mhead;
     public static string exstr;
 
     private enum MS_Column {
@@ -709,7 +711,7 @@ public class MWPlanner : Gtk.Application {
         logb = builder.get_object ("logger_cb") as Gtk.CheckButton;
         logb.toggled.connect (() => {
                 if (logb.active)
-                    Logger.start(last_file,mvers,mrtype,capability);
+                    Logger.start(last_file,mvers,mrtype,capability,mwvar);
                 else
                     Logger.stop();
             });
@@ -938,7 +940,7 @@ public class MWPlanner : Gtk.Application {
             }
             nrx++;
                 /* Probably takes a minute to change the LIPO */
-            if(nrx % 12 == 0)
+            if(nrx > 11)
             {
                 stderr.puts("Restart poll loop\n");
                 req = MSP.Cmds.IDENT;
@@ -1139,8 +1141,8 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.STATUS:
                 uint16 sensor;
-                deserialise_u16(raw+4, out sensor);
                 uint32 flag;
+                deserialise_u16(raw+4, out sensor);
                 deserialise_u32(raw+6, out flag);
 
                 if (nopoll == true)
@@ -1209,7 +1211,7 @@ public class MWPlanner : Gtk.Application {
                             set_error_status("No GPS detected");
                         }
 
-
+                        usemag = ((sensor & MSP.Sensors.MAG) == MSP.Sensors.MAG);
                         if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
                         {
                             requests += MSP.Cmds.ATTITUDE;
@@ -1263,7 +1265,7 @@ public class MWPlanner : Gtk.Application {
 
                     if(Logger.is_logging)
                     {
-                        Logger.armed((armed == 1), duration, flag);
+                        Logger.armed((armed == 1), duration, flag, sensor);
                     }
 
                     if(armed != larmed)
@@ -1285,7 +1287,7 @@ public class MWPlanner : Gtk.Application {
                             if(conf.logarmed == true)
                             {
                                 logb.active = true;
-                                Logger.armed(true,duration,flags);
+                                Logger.armed(true,duration,flag, sensor);
                             }
                             duration_timer();
                         }
@@ -1297,7 +1299,7 @@ public class MWPlanner : Gtk.Application {
                             }
                             if(conf.logarmed == true)
                             {
-                                Logger.armed(false,duration,flags);
+                                Logger.armed(false,duration,flag, sensor);
                                 logb.active=false;
                             }
                         }
@@ -1386,6 +1388,12 @@ public class MWPlanner : Gtk.Application {
                 rp = deserialise_i16(raw, out at.angx);
                 rp = deserialise_i16(rp, out at.angy);
                 deserialise_i16(rp, out at.heading);
+                if(usemag)
+                {
+                    mhead = at.heading;
+                    if(mhead < 0)
+                        mhead += 360;
+                }
                 navstatus.set_attitude(at);
             }
             break;
@@ -1431,7 +1439,10 @@ public class MWPlanner : Gtk.Application {
                     if(craft != null)
                     {
                         if(follow == true)
-                            craft.set_lat_lon(gpsinfo.lat,gpsinfo.lon,gpsinfo.cse);
+                        {
+                            double cse = (usemag) ? mhead : gpsinfo.cse;
+                            craft.set_lat_lon(gpsinfo.lat,gpsinfo.lon,cse);
+                        }
                         if (centreon == true)
                             view.center_on(gpsinfo.lat,gpsinfo.lon);
                     }
@@ -1741,7 +1752,7 @@ public class MWPlanner : Gtk.Application {
 
                 if(Logger.is_logging)
                 {
-                    Logger.armed((armed == 1), duration,mwflags);
+                    Logger.armed((armed == 1), duration,mwflags,0);
                 }
 
                 if(armed != larmed)
@@ -1770,7 +1781,7 @@ public class MWPlanner : Gtk.Application {
                         if(conf.logarmed == true)
                         {
                             logb.active = true;
-                            Logger.armed(true,duration,mwflags);
+                            Logger.armed(true,duration,mwflags,0);
                         }
                     }
                     else
@@ -1781,7 +1792,7 @@ public class MWPlanner : Gtk.Application {
                         }
                         if(conf.logarmed == true)
                         {
-                            Logger.armed(false,duration,mwflags);
+                            Logger.armed(false,duration,mwflags,0);
                             logb.active=false;
                         }
                     }
