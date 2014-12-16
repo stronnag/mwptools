@@ -1178,8 +1178,8 @@ public class MWSim : GLib.Object
                     if(n <= nwpts)
                     {
                         nb = serialise_wp(wps[n], tx);
-                        msp.send_command(MSP.Cmds.WP, tx, MSize.MSP_WP);
-                        append_text("Send WP %d\n".printf(n));
+                        msp.send_command(MSP.Cmds.WP, tx, nb);
+                        append_text("Send WP %d %d\n".printf(n,(int)nb));
                     }
                     else
                     {
