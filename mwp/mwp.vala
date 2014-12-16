@@ -197,7 +197,7 @@ public class MWPlanner : Gtk.Application {
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
         { "serial-device", 's', 0, OptionArg.STRING, out serial, "Serial device", null},
-        { "flight-controller", 'f', 0, OptionArg.STRING, out mwoptstr, "mw|mwnav|bf|fc", null},
+        { "flight-controller", 'f', 0, OptionArg.STRING, out mwoptstr, "mw|mwnav|bf|cf", null},
         { "connect", 'c', 0, OptionArg.NONE, out mkcon, "connect to first device", null},
         { "auto-connect", 'a', 0, OptionArg.NONE, out autocon, "auto-connect to first device", null},
         { "no-poll", 'n', 0, OptionArg.NONE, out nopoll, "don't poll for nav info", null},
@@ -572,9 +572,14 @@ public class MWPlanner : Gtk.Application {
                             ret = false;
                         else
                         {
+                            ulong pcs = 0;
                             stderr.puts(msp.dump_stats());
-                            stderr.printf(", t/o %d, avg poll %lu ms\n", toc,
-                                          (ulong)(acycle/anvals));
+                            if(anvals > 0)
+                            {
+                                pcs = (ulong)(acycle/anvals);
+                            }
+
+                            stderr.printf(", t/o %d, avg poll %lu ms\n", toc,pcs);
                         }
                         break;
 
@@ -912,7 +917,7 @@ public class MWPlanner : Gtk.Application {
 
     private void start_poll_timer()
     {
-        gpstid = Timeout.add(500, () => {
+        gpstid = Timeout.add(2000, () => {
                 if(dopoll)
                 {
                     toc++;
@@ -1087,47 +1092,9 @@ public class MWPlanner : Gtk.Application {
                     {
                         menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
                     }
-                    if(conf.checkswitches)
-                    {
-                        MSP.Cmds bcmd = (mwvar != MWChooser.MWVAR.CF) ? MSP.Cmds.BOX : MSP.Cmds.MODE_RANGES;
-                        send_cmd(bcmd, null,0);
-                    }
-                    else
-                        add_cmd(MSP.Cmds.MISC,null,0, ref have_misc,1000);
+                    add_cmd(MSP.Cmds.MISC,null,0, ref have_misc,1000);
                 }
                 icount++;
-                break;
-
-            case  MSP.Cmds.MODE_RANGES:
-                var nranges = len / 4;
-                var idx=0;
-                bool ok = false;
-                for(var i = 0; i < nranges; i++)
-                {
-                    idx = i*4;
-                    if (raw[idx] == 1 || raw[idx] == 2)
-                    {
-                        if(raw[idx+2] != 0 || raw[idx+3] != 0)
-                        {
-                            ok = true;
-                            break;
-                        }
-                    }
-                }
-                if(ok == false)
-                {
-                    swd.run();
-                }
-                add_cmd(MSP.Cmds.MISC,null,0, ref have_misc,1000);
-                break;
-
-            case MSP.Cmds.BOX:
-                uint16 [] boxen = (uint16[])raw;
-                if(boxen[1] == 0 && boxen[2] == 0)
-                {
-                    swd.run();
-                }
-                add_cmd(MSP.Cmds.MISC,null,0, ref have_misc,1000);
                 break;
 
             case MSP.Cmds.MISC:
@@ -1165,6 +1132,12 @@ public class MWPlanner : Gtk.Application {
                     {
                         have_status = true;
                         remove_tid(ref cmdtid);
+
+                        if(conf.checkswitches && ((flag & 6) == 0))
+                        {
+                            swd.run();
+                        }
+
                         if(navcap == true)
                             add_cmd(MSP.Cmds.NAV_CONFIG,null,0,ref have_nc,1000);
 
@@ -1822,14 +1795,16 @@ public class MWPlanner : Gtk.Application {
 
                 if (et > val)
                 {
-                    msg_poller();
+                   msg_poller();
                 }
                 else
                 {
-                    Timeout.add((uint)val-(uint)et, ()=> {
+                    var tot = (uint)val-(uint)et;
+                    stderr.printf("tot %u\n", tot);
+                    Timeout.add(tot, ()=> {
                             msg_poller();
-                            return false;
-                        });
+                           return false;
+                       });
                 }
             }
             else

@@ -70,6 +70,9 @@ public class MWSim : GLib.Object
     private uint8 imodel=3;
     private static string sdev=null;
     private int[] pipe;
+    private static bool naze32;
+    private static bool norssi;
+
 
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
@@ -79,6 +82,8 @@ public class MWSim : GLib.Object
         { "log-replay", 'l', 0, OptionArg.STRING, out relog, "Replay log file", null},
         { "exhaust-battery", 'x', 0, OptionArg.NONE, out exhaustbat, "exhaust the battery (else warn1)", null},
         { "ltm", 'l', 0, OptionArg.NONE, out ltm, "push tm", null},
+        { "norssi", 'R', 0, OptionArg.NONE, out norssi, "don't push rssi", null},
+        { "naze32", 'z', 0, OptionArg.NONE, out naze32, "emulate naze", null},
         { "now", 'n', 0, OptionArg.NONE, out nowait, "don't wait for input before replay", null},
         { "udp-port", 'u', 0, OptionArg.INT, ref udport, "udp port for comms", null},
         {null}
@@ -121,7 +126,8 @@ public class MWSim : GLib.Object
     {
         uint8* rp = tmp;
         *rp++ = w.wp_no;
-        *rp++ = w.action;
+        if(naze32 == false)
+            *rp++ = w.action;
         rp = serialise_i32(rp, w.lat);
         rp = serialise_i32(rp, w.lon);
         rp = serialise_u32(rp, w.altitude);
@@ -431,7 +437,7 @@ public class MWSim : GLib.Object
                             case "armed":
                                 var a = MSP_STATUS();
                                 armed = obj.get_boolean_member("armed");
-                                a.flag = (armed)  ? 1 : 0;
+                                a.flag = (armed)  ? 5 : 4;
                                 a.i2c_errors_count = 0;
                                 a.sensor=31;
                                 a.cycle_time=0;
@@ -1062,7 +1068,7 @@ public class MWSim : GLib.Object
                     MSP_STATUS buf = MSP_STATUS();
                     buf.cycle_time=((uint16)2345);
                     buf.sensor=((uint16)31);
-                    buf.flag = (armed) ? 1 : 0;
+                    buf.flag = (armed) ? 5 : 4;
                     nb = serialise_status(buf, tx);
                     append_text("Send STATUS %lu\n".printf(MSize.MSP_STATUS));
                     msp.send_command(MSP.Cmds.STATUS, tx, nb);
@@ -1185,7 +1191,7 @@ public class MWSim : GLib.Object
                     nb = serialise_nav_status(nsts, tx);
                     msp.send_command(MSP.Cmds.NAV_STATUS, tx, MSize.MSP_NAV_STATUS);
                     append_text("Send NAV STATUS %lu\n".printf(MSize.MSP_NAV_STATUS));
-                    if((loop % 4) == 0)
+                    if((norssi == false) && (loop % 4) == 0)
                     {
                         MSP_RADIO r = {0, 0,152, 152, 100, 57, 38};
                         r.localrssi = (uint8)((int32)r.localrssi + rand.int_range(-10,10));
