@@ -1175,16 +1175,11 @@ public class MWSim : GLib.Object
                     case MSP.Cmds.WP:
                         /* Assume we only need number */
                     var n = raw[0];
-                    if(n <= nwpts)
-                    {
-                        nb = serialise_wp(wps[n], tx);
-                        msp.send_command(MSP.Cmds.WP, tx, nb);
-                        append_text("Send WP %d %d\n".printf(n,(int)nb));
-                    }
-                    else
-                    {
-                        msp.send_error(MSP.Cmds.WP);
-                    }
+                    if(n > nwpts)
+                        n = 0;
+                    nb = serialise_wp(wps[n], tx);
+                    msp.send_command(MSP.Cmds.WP, tx, nb);
+                    append_text("Send WP %d %d\n".printf(n,(int)nb));
                     break;
 
                     case MSP.Cmds.NAV_STATUS:
