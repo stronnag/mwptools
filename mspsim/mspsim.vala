@@ -70,9 +70,8 @@ public class MWSim : GLib.Object
     private uint8 imodel=3;
     private static string sdev=null;
     private int[] pipe;
-    private static bool naze32;
-    private static bool norssi;
-
+    private static bool naze32 = false;
+    private static bool norssi = false;
 
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
@@ -1058,6 +1057,15 @@ public class MWSim : GLib.Object
                 }
                 switch(cmd)
                 {
+
+                    case MSP.Cmds.API_VERSION:
+                    if(naze32)
+                    {
+                        append_text("Send API\n");
+                        msp.send_command(MSP.Cmds.API_VERSION, null, 0);
+                    }
+                    break;
+
                     case MSP.Cmds.IDENT:
                     uint8[] buf = {230, imodel,42,16,0,0,0};
                     append_text("Send IDENT\n");
@@ -1176,7 +1184,7 @@ public class MWSim : GLib.Object
                         /* Assume we only need number */
                     var n = raw[0];
                     if(n > nwpts)
-                        n = 0;
+                        n = 1;
                     nb = serialise_wp(wps[n], tx);
                     msp.send_command(MSP.Cmds.WP, tx, nb);
                     append_text("Send WP %d %d\n".printf(n,(int)nb));
@@ -1186,17 +1194,7 @@ public class MWSim : GLib.Object
                     nb = serialise_nav_status(nsts, tx);
                     msp.send_command(MSP.Cmds.NAV_STATUS, tx, MSize.MSP_NAV_STATUS);
                     append_text("Send NAV STATUS %lu\n".printf(MSize.MSP_NAV_STATUS));
-                    if((norssi == false) && (loop % 4) == 0)
-                    {
-                        MSP_RADIO r = {0, 0,152, 152, 100, 57, 38};
-                        r.localrssi = (uint8)((int32)r.localrssi + rand.int_range(-10,10));
-                        r.remrssi = (uint8)((int32)r.remrssi + rand.int_range(-10,10));
-                        r.noise = (uint8)((int32)r.noise + rand.int_range(-5,5));
-                        r.remnoise = (uint8)((int32)r.remnoise + rand.int_range(-5,5));
-                        nb = serialise_radio(r, tx);
-                        msp.send_command(MSP.Cmds.RADIO, tx, MSize.MSP_RADIO);
-                        append_text("Send RADIO %lu\n".printf(MSize.MSP_RADIO));
-                    }
+
                     break;
 
                     case MSP.Cmds.NAV_CONFIG:
@@ -1211,6 +1209,18 @@ public class MWSim : GLib.Object
                     nb = serialise_analogue(buf, tx);
                     msp.send_command(MSP.Cmds.ANALOG, tx, MSize.MSP_ANALOG);
                     append_text("Send ANALOG %lu\n".printf(MSize.MSP_ANALOG));
+                    if(!norssi)
+                    {
+                        MSP_RADIO r = {0, 0,152, 152, 100, 57, 38};
+                        r.localrssi = (uint8)((int32)r.localrssi + rand.int_range(-10,10));
+                        r.remrssi = (uint8)((int32)r.remrssi + rand.int_range(-10,10));
+                        r.noise = (uint8)((int32)r.noise + rand.int_range(-5,5));
+                        r.remnoise = (uint8)((int32)r.remnoise + rand.int_range(-5,5));
+                        nb = serialise_radio(r, tx);
+                        msp.send_command(MSP.Cmds.RADIO, tx, MSize.MSP_RADIO);
+                        append_text("Send RADIO %lu\n".printf(MSize.MSP_RADIO));
+                    }
+
                     break;
 
                     case MSP.Cmds.COMP_GPS:

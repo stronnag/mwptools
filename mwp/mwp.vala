@@ -60,12 +60,6 @@ public class MWPlanner : Gtk.Application {
     private Gtk.Label validatelab;
     private Gtk.Label typlab;
     private Gtk.Label labelvbat;
-    private bool have_vers;
-    private bool have_misc;
-    private bool have_api;
-    private bool have_status;
-    private bool have_wp;
-    private bool have_nc;
     private uint8 dmrtype=3; // default to quad
     private uint8 mrtype;
     private uint8 mvers = 230;
@@ -157,6 +151,13 @@ public class MWPlanner : Gtk.Application {
     private bool usemag = false;
     private int16 mhead;
     public static string exstr;
+
+    private bool have_vers;
+    private bool have_misc;
+    private bool have_api;
+    private bool have_status;
+    private bool have_wp;
+    private bool have_nc;
 
     private enum MS_Column {
         ID,
@@ -948,6 +949,7 @@ public class MWPlanner : Gtk.Application {
             if(nrx > 11)
             {
                 stderr.puts("Restart poll loop\n");
+                init_state();
                 req = MSP.Cmds.IDENT;
             }
         }
@@ -2148,6 +2150,16 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
+
+    private void init_state()
+    {
+        have_vers = have_misc = have_api =
+            have_status = have_nc = false;
+        xbits = icount = api_cnt = 0;
+        autocount = 0;
+    }
+
+
     private void connect_serial()
     {
         if(msp.available)
@@ -2160,15 +2172,12 @@ public class MWPlanner : Gtk.Application {
         else
         {
             remove_tid(ref gpstid);
-            dopoll = false;
-            xbits = 0;
-            icount = api_cnt = 0;
-
             var serdev = dev_entry.get_active_text();
             string estr;
             if (msp.open(serdev, conf.baudrate, out estr) == true)
             {
-                autocount = 0;
+                init_state();
+                dopoll = false;
                 if(rawlog == true)
                 {
                     msp.raw_logging(true);
