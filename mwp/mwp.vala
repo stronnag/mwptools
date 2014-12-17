@@ -144,7 +144,8 @@ public class MWPlanner : Gtk.Application {
     private int64 lastp;
     private int64 acycle;
     private int64 anvals;
-    private int toc;
+    private ulong toc;
+    private uint tot;
     private uint32 xbits = 0;
     private uint8 api_cnt;
     private uint8 icount = 0;
@@ -158,6 +159,9 @@ public class MWPlanner : Gtk.Application {
     private bool have_status;
     private bool have_wp;
     private bool have_nc;
+
+    private time_t last_an = 0;
+    private time_t last_wp = 0;
 
     private enum MS_Column {
         ID,
@@ -573,14 +577,7 @@ public class MWPlanner : Gtk.Application {
                             ret = false;
                         else
                         {
-                            ulong pcs = 0;
-                            stderr.puts(msp.dump_stats());
-                            if(anvals > 0)
-                            {
-                                pcs = (ulong)(acycle/anvals);
-                            }
-
-                            stderr.printf(", t/o %d, avg poll %lu ms\n", toc,pcs);
+                            show_serial_stats();
                         }
                         break;
 
@@ -918,7 +915,7 @@ public class MWPlanner : Gtk.Application {
 
     private void start_poll_timer()
     {
-        gpstid = Timeout.add(2000, () => {
+        gpstid = Timeout.add(500, () => {
                 if(dopoll)
                 {
                     toc++;
@@ -966,10 +963,13 @@ public class MWPlanner : Gtk.Application {
         switch(req)
         {
             case MSP.Cmds.ANALOG:
-                if ((now % 5) == 0)
+
+
+                if (now - last_an > 4)
                 {
                     send_cmd(req, null, 0);
-//                    stderr.printf("send %d\n", req);
+                    last_an = now;
+                    stderr.puts("send analog\n");
                 }
                 else
                 {
@@ -978,11 +978,12 @@ public class MWPlanner : Gtk.Application {
                 }
                 break;
             case MSP.Cmds.WP:
-                if( gpsfix == true && armed == 1 && (now % 2) == 0)
+                if( gpsfix == true && armed == 1 && (now - last_wp) > 1)
                 {
                     send_cmd(req,&wpx,1);
-//                    stderr.printf("send %d\n", req);
+                    stderr.printf("send WP %d\n", wpx);
                     wpx = (wpx + 16) & 16;
+                    last_wp = now;
                 }
                 else
                 {
@@ -1801,8 +1802,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
-                    var tot = (uint)val-(uint)et;
-                    stderr.printf("tot %u\n", tot);
+                    tot = (uint)val-(uint)et;
                     Timeout.add(tot, ()=> {
                             msg_poller();
                            return false;
@@ -2059,7 +2059,7 @@ public class MWPlanner : Gtk.Application {
                     if(cmd == MSP.Cmds.API_VERSION)
                     {
                         api_cnt++;
-                        if(api_cnt == 1)
+                        if(api_cnt == 2)
                         {
                             cmd = MSP.Cmds.IDENT;
                             api_cnt = 255;
@@ -2115,6 +2115,15 @@ public class MWPlanner : Gtk.Application {
         tid = 0;
     }
 
+    private void show_serial_stats()
+    {
+        var s = msp.dump_stats();
+        stderr.printf("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %lu wait %u",
+                      s.elapsed, s.rxbytes, s.txbytes, s.rxrate, s.txrate, toc, tot);
+        ulong arate = (anvals > 0) ? (ulong)(acycle/anvals) : 0;
+        stderr.printf(", avg poll loop %lu ms\n", arate);
+    }
+
     private void serial_doom(Gtk.Button c)
     {
         menumwvar.sensitive =true;
@@ -2123,11 +2132,7 @@ public class MWPlanner : Gtk.Application {
         remove_tid(ref cmdtid);
         sflags = 0;
         stop_audio();
-        stderr.puts(msp.dump_stats());
-        if(anvals > 0)
-            stderr.printf(", avg poll loop %lu ms\n", (ulong)(acycle/anvals));
-        else
-            stderr.puts("\n");
+        show_serial_stats();
 
         if(rawlog == true)
         {
@@ -2157,6 +2162,7 @@ public class MWPlanner : Gtk.Application {
             have_status = have_nc = false;
         xbits = icount = api_cnt = 0;
         autocount = 0;
+        nrx = 0;
     }
 
 

@@ -22,6 +22,15 @@
 //extern int open_serial(string name, uint rate, uint8 [] eptr, size_t elen);
 //extern void close_serial(int fd);
 
+public struct SerialStats
+{
+    double elapsed;
+    ulong rxbytes;
+    ulong txbytes;
+    double rxrate;
+    double txrate;
+}
+
 public class MWSerial : Object
 {
     private int fd=-1;
@@ -49,10 +58,9 @@ public class MWSerial : Object
     private bool print_raw=false;
     public uint baudrate  {private set; get;}
     private int sp = 0;
-    private ulong rxc = 0;
-    private ulong txc = 0;
     private int64 stime;
     private int64 ltime;
+    private SerialStats stats;
 
     public enum Mode
     {
@@ -137,7 +145,7 @@ public class MWSerial : Object
         }
         available = true;
         setup_reader(fd);
-        rxc = txc = 0;
+        stats =  {0.0, 0, 0, 0.0, 0.0};
     }
 
     private void setup_reader(int fd)
@@ -303,19 +311,18 @@ public class MWSerial : Object
         }
     }
 
-    public string dump_stats()
+    public SerialStats dump_stats()
     {
         if(ltime == 0 || ltime == stime)
             ltime =  GLib.get_monotonic_time();
-        double et = (ltime - stime)/1000000.0;
-        double rrate = 0, trate = 0;
-
-        if (et > 0)
+        stats.elapsed = (ltime - stime)/1000000.0;
+        if (stats.elapsed > 0)
         {
-            trate = (txc / et);
-            rrate = (rxc / et);
+            stats.txrate = stats.txbytes / stats.elapsed;
+            stats.rxrate = stats.rxbytes / stats.elapsed;
         }
-        return "%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s)".printf(et, rxc, txc, rrate, trate);
+        return stats;
+//        "%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s)".printf(et, rxc, txc, rrate, trate);
     }
 
     private bool device_read(IOChannel gio, IOCondition cond) {
@@ -352,7 +359,7 @@ public class MWSerial : Object
                 stime =  GLib.get_monotonic_time();
 
             ltime =  GLib.get_monotonic_time();
-            rxc += res;
+            stats.rxbytes += res;
             if(print_raw == true)
             {
                 dump_raw_data(buf, (int)res);
@@ -509,7 +516,7 @@ public class MWSerial : Object
         if(stime == 0)
             stime =  GLib.get_monotonic_time();
 
-        txc += count;
+        stats.txbytes += count;
 
         if(is_serial)
             size = Posix.write(fd, buf, count);
