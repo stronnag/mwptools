@@ -891,14 +891,15 @@ public class MWPlanner : Gtk.Application {
             ;
         else
         {
-            dockitem[1].iconify_item ();
-            dockitem[2].iconify_item ();
-            dockitem[3].hide ();
-            dockitem[4].hide ();
+            dockitem[DOCKLETS.GPS].iconify_item ();
+            dockitem[DOCKLETS.NAVSTATUS].iconify_item ();
+            dockitem[DOCKLETS.VOLTAGE].hide ();
+            dockitem[DOCKLETS.RADIO].hide ();
         }
 
-        navstatus.setdock(dockitem[2]);
-        radstatus.setdock(dockitem[4]);
+        navstatus.setdock(dockitem[DOCKLETS.NAVSTATUS]);
+        radstatus.setdock(dockitem[DOCKLETS.RADIO]);
+        telstats.setdock(dockitem[DOCKLETS.TELEMETRY]);
         if(conf.heartbeat != null)
         {
             Timeout.add_seconds(60, () => {
