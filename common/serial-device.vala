@@ -442,7 +442,7 @@ public class MWSerial : Object
                             buf[nc] == writedirn ||
                             buf[nc] == '!'))
                         {
-                            errstate = (buf[nc] == '!');
+                            errstate = (buf[nc] != readdirn); // == '!'
                             state = States.S_SIZE;
                         }
                         else
@@ -493,9 +493,7 @@ public class MWSerial : Object
                             {
                                 log_raw('i',&buf[sp],nc+1-sp);
                             }
-                                /* silently skip wrong direction */
-                            if(raw[2] == readdirn)
-                                serial_event(cmd, raw, csize,errstate);
+                            serial_event(cmd, raw, csize,errstate);
                             }
                         else
                         {
