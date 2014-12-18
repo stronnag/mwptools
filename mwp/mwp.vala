@@ -34,6 +34,9 @@ public struct TelemStats
     ulong avg;
 }
 
+
+
+
 public class MWPlanner : Gtk.Application {
     public Builder builder;
     public Gtk.ApplicationWindow window;
@@ -171,6 +174,17 @@ public class MWPlanner : Gtk.Application {
 
     private time_t last_an = 0;
     private time_t last_wp = 0;
+
+    private enum DOCKLETS
+    {
+        MISSION=0,
+        GPS,
+        NAVSTATUS,
+        VOLTAGE,
+        RADIO,
+        TELEMETRY,
+        NUMBER
+    }
 
     private enum MS_Column {
         ID,
@@ -391,12 +405,6 @@ public class MWPlanner : Gtk.Application {
 
             });
 
-        telstats = new TelemetryStats(builder);
-        menuop =  builder.get_object ("ss_dialog") as Gtk.MenuItem;
-        menuop.activate.connect(() => {
-                telstats.run();
-            });
-
         menuop = builder.get_object ("menu_quit") as Gtk.MenuItem;
         menuop.activate.connect (() => {
                 if(layout.is_dirty())
@@ -453,28 +461,28 @@ public class MWPlanner : Gtk.Application {
 
         var mi = builder.get_object ("gps_menu_view") as Gtk.MenuItem;
         mi.activate.connect (() => {
-                if(dockitem[1].is_closed() && !dockitem[1].is_iconified())
+                if(dockitem[DOCKLETS.GPS].is_closed() && !dockitem[DOCKLETS.GPS].is_iconified())
                 {
-                   dockitem[1].show();
-                   dockitem[1].iconify_item();
+                   dockitem[DOCKLETS.GPS].show();
+                   dockitem[DOCKLETS.GPS].iconify_item();
                 }
             });
 
         mi = builder.get_object ("tote_menu_view") as Gtk.MenuItem;
         mi.activate.connect (() => {
-                if(dockitem[0].is_closed() && !dockitem[0].is_iconified())
+                if(dockitem[DOCKLETS.MISSION].is_closed() && !dockitem[DOCKLETS.MISSION].is_iconified())
                 {
-                   dockitem[0].show();
-                   dockitem[0].iconify_item();
+                   dockitem[DOCKLETS.MISSION].show();
+                   dockitem[DOCKLETS.MISSION].iconify_item();
                 }
             });
 
         mi = builder.get_object ("voltage_menu_view") as Gtk.MenuItem;
         mi.activate.connect (() => {
-                if(dockitem[3].is_closed() && !dockitem[3].is_iconified())
+                if(dockitem[DOCKLETS.VOLTAGE].is_closed() && !dockitem[DOCKLETS.VOLTAGE].is_iconified())
                 {
-                   dockitem[3].show();
-                   dockitem[3].iconify_item();
+                   dockitem[DOCKLETS.VOLTAGE].show();
+                   dockitem[DOCKLETS.VOLTAGE].iconify_item();
                    }
             });
 
@@ -482,10 +490,21 @@ public class MWPlanner : Gtk.Application {
 
         mi = builder.get_object ("radio_menu_view") as Gtk.MenuItem;
         mi.activate.connect (() => {
-                if(dockitem[4].is_closed() && !dockitem[4].is_iconified())
+                if(dockitem[DOCKLETS.RADIO].is_closed() && !dockitem[DOCKLETS.RADIO].is_iconified())
                 {
-                   dockitem[4].show();
-                   dockitem[4].iconify_item();
+                   dockitem[DOCKLETS.RADIO].show();
+                   dockitem[DOCKLETS.RADIO].iconify_item();
+                   }
+            });
+
+
+        telstats = new TelemetryStats(builder);
+        mi =  builder.get_object ("ss_dialog") as Gtk.MenuItem;
+        mi.activate.connect(() => {
+                if(dockitem[DOCKLETS.TELEMETRY].is_closed() && !dockitem[DOCKLETS.TELEMETRY].is_iconified())
+                {
+                   dockitem[DOCKLETS.TELEMETRY].show();
+                   dockitem[DOCKLETS.TELEMETRY].iconify_item();
                    }
             });
 
@@ -663,40 +682,46 @@ public class MWPlanner : Gtk.Application {
         box.pack_start (dockbar, false, false, 0);
         box.pack_end (dock, true, true, 0);
 
-        dockitem = new DockItem[5];
+        dockitem = new DockItem[DOCKLETS.NUMBER];
 
-        dockitem[0]= new DockItem.with_stock ("Mission",
+        dockitem[DOCKLETS.MISSION]= new DockItem.with_stock ("Mission",
                          "Mission Tote", "gtk-properties",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
-        dockitem[0].add (scroll);
-        dockitem[0].show ();
-        dock.add_item (dockitem[0], DockPlacement.TOP);
+        dockitem[DOCKLETS.MISSION].add (scroll);
+        dockitem[DOCKLETS.MISSION].show ();
+        dock.add_item (dockitem[DOCKLETS.MISSION], DockPlacement.TOP);
 
-        dockitem[1]= new DockItem.with_stock ("GPS",
+        dockitem[DOCKLETS.GPS]= new DockItem.with_stock ("GPS",
                          "GPS Info", "gtk-refresh",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
-        dockitem[1].add (grid);
-        dock.add_item (dockitem[1], DockPlacement.BOTTOM);
-        dockitem[1].show ();
+        dockitem[DOCKLETS.GPS].add (grid);
+        dock.add_item (dockitem[DOCKLETS.GPS], DockPlacement.BOTTOM);
+        dockitem[DOCKLETS.GPS].show ();
 
-        dockitem[2]= new DockItem.with_stock ("Status",
+        dockitem[DOCKLETS.NAVSTATUS]= new DockItem.with_stock ("Status",
                          "NAV Status", "gtk-info",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
-        dockitem[2].add (navstatus.grid);
-        dock.add_item (dockitem[2], DockPlacement.BOTTOM);
-        dockitem[2].show ();
+        dockitem[DOCKLETS.NAVSTATUS].add (navstatus.grid);
+        dock.add_item (dockitem[DOCKLETS.NAVSTATUS], DockPlacement.BOTTOM);
+        dockitem[DOCKLETS.NAVSTATUS].show ();
 
-        dockitem[3]= new DockItem.with_stock ("Volts",
+        dockitem[DOCKLETS.VOLTAGE]= new DockItem.with_stock ("Volts",
                          "Battery Monitor", "gtk-dialog-warning",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
-        dockitem[3].add (navstatus.voltbox);
-        dock.add_item (dockitem[3], DockPlacement.BOTTOM);
+        dockitem[DOCKLETS.VOLTAGE].add (navstatus.voltbox);
+        dock.add_item (dockitem[DOCKLETS.VOLTAGE], DockPlacement.BOTTOM);
 
-        dockitem[4]= new DockItem.with_stock ("Radio",
+        dockitem[DOCKLETS.RADIO]= new DockItem.with_stock ("Radio",
                          "Radio Status", "gtk-network",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
-        dockitem[4].add (radstatus.grid);
-        dock.add_item (dockitem[4], DockPlacement.BOTTOM);
+        dockitem[DOCKLETS.RADIO].add (radstatus.grid);
+        dock.add_item (dockitem[DOCKLETS.RADIO], DockPlacement.BOTTOM);
+
+        dockitem[DOCKLETS.TELEMETRY]= new DockItem.with_stock ("Telemetry",
+                         "Telemetry Stats", "gtk-disconnect",
+                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+        dockitem[DOCKLETS.TELEMETRY].add (telstats.grid);
+        dock.add_item (dockitem[DOCKLETS.TELEMETRY], DockPlacement.BOTTOM);
 
         view.notify["zoom-level"].connect(() => {
                 var val = view.get_zoom_level();
@@ -1822,7 +1847,7 @@ public class MWPlanner : Gtk.Application {
                            return false;
                        });
                 }
-                if(telstats.visible)
+//                if(telstats.visible)
                 {
                     var t = gen_serial_stats();
                     telstats.update(t);
