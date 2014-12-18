@@ -26,6 +26,14 @@ using GtkChamplain;
 extern double get_locale_double(string str);
 extern void stupid_ubuntu_atexit(string str);
 
+public struct TelemStats
+{
+    SerialStats s;
+    ulong toc;
+    uint tot;
+    ulong avg;
+}
+
 public class MWPlanner : Gtk.Application {
     public Builder builder;
     public Gtk.ApplicationWindow window;
@@ -82,6 +90,7 @@ public class MWPlanner : Gtk.Application {
     private NavConfig navconf;
     private MapSourceDialog msview;
     private MapSeeder mseed;
+    private TelemetryStats telstats;
     private GPSInfo gpsinfo;
     private WPMGR wpmgr;
     private MissionItem[] wp_resp;
@@ -380,6 +389,12 @@ public class MWPlanner : Gtk.Application {
                 mseed.run_seeder(view.map_source.get_id(),(int)zoomer.adjustment.value,
                                  view.get_bounding_box());
 
+            });
+
+        telstats = new TelemetryStats(builder);
+        menuop =  builder.get_object ("ss_dialog") as Gtk.MenuItem;
+        menuop.activate.connect(() => {
+                telstats.run();
             });
 
         menuop = builder.get_object ("menu_quit") as Gtk.MenuItem;
@@ -969,7 +984,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     send_cmd(req, null, 0);
                     last_an = now;
-                    stderr.puts("send analog\n");
+//                    stderr.puts("send analog\n");
                 }
                 else
                 {
@@ -981,7 +996,7 @@ public class MWPlanner : Gtk.Application {
                 if( gpsfix == true && armed == 1 && (now - last_wp) > 1)
                 {
                     send_cmd(req,&wpx,1);
-                    stderr.printf("send WP %d\n", wpx);
+//                    stderr.printf("send WP %d\n", wpx);
                     wpx = (wpx + 16) & 16;
                     last_wp = now;
                 }
@@ -1581,7 +1596,6 @@ public class MWPlanner : Gtk.Application {
                     rp = deserialise_i32(rp, out w.lon);
                     if (w.lat != 0 && w.lon != 0)
                     {
-
                         rp = deserialise_u32(rp, out w.altitude);
                         if(Logger.is_logging)
                         {
@@ -1807,6 +1821,11 @@ public class MWPlanner : Gtk.Application {
                             msg_poller();
                            return false;
                        });
+                }
+                if(telstats.visible)
+                {
+                    var t = gen_serial_stats();
+                    telstats.update(t);
                 }
             }
             else
@@ -2115,13 +2134,22 @@ public class MWPlanner : Gtk.Application {
         tid = 0;
     }
 
+    private TelemStats gen_serial_stats()
+    {
+        TelemStats t = TelemStats();
+        t.s = msp.dump_stats();
+        t.toc = toc;
+        t.tot = tot;
+        t.avg = (anvals > 0) ? (ulong)(acycle/anvals) : 0;
+        return t;
+    }
+
     private void show_serial_stats()
     {
-        var s = msp.dump_stats();
-        stderr.printf("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %lu wait %u",
-                      s.elapsed, s.rxbytes, s.txbytes, s.rxrate, s.txrate, toc, tot);
-        ulong arate = (anvals > 0) ? (ulong)(acycle/anvals) : 0;
-        stderr.printf(", avg poll loop %lu ms\n", arate);
+        var t = gen_serial_stats();
+        stderr.printf("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %lu wait %u, avg poll loop %lu ms\n",
+                      t.s.elapsed, t.s.rxbytes, t.s.txbytes, t.s.rxrate, t.s.txrate,
+                      t.toc, t.tot, t.avg);
     }
 
     private void serial_doom(Gtk.Button c)

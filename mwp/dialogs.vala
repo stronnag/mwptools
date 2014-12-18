@@ -21,6 +21,69 @@ extern void espeak_init(string voice);
 extern void espeak_say(string text);
 //extern void espeak_terminate();
 
+public class TelemetryStats : GLib.Object
+{
+    private Gtk.Dialog dialog;
+    private Gtk.Label elapsed;
+    private Gtk.Label rxbytes;
+    private Gtk.Label txbytes;
+    private Gtk.Label rxrate;
+    private Gtk.Label txrate;
+    private Gtk.Label timeouts;
+    private Gtk.Label waittime;
+    private Gtk.Label cycletime;
+    private Gtk.Button stop;
+    public bool visible {get; private set;}
+
+    public TelemetryStats(Gtk.Builder builder)
+    {
+        dialog = builder.get_object ("serial-stats-dialog") as Gtk.Dialog;
+        elapsed = builder.get_object ("ss-elapsed") as Gtk.Label;
+        rxbytes = builder.get_object ("ss-rxbytes") as Gtk.Label;
+        txbytes = builder.get_object ("ss-txbytes") as Gtk.Label;
+        rxrate = builder.get_object ("ss-rxrate") as Gtk.Label;
+        txrate = builder.get_object ("ss-txrate") as Gtk.Label;
+        timeouts = builder.get_object ("ss-timeout") as Gtk.Label;
+        waittime = builder.get_object ("ss-wait") as Gtk.Label;
+        cycletime = builder.get_object ("ss-cycle") as Gtk.Label;
+        stop = builder.get_object ("ss-close") as Gtk.Button;
+
+        dialog.destroy.connect (() => {
+                visible = false;
+                dialog.hide();
+            });
+
+
+        stop.clicked.connect(() => {
+                visible = false;
+                dialog.hide();
+            });
+        visible = false;
+    }
+    public void run()
+    {
+        visible = true;
+        dialog.show_all();
+/*
+        dialog.run();
+        visible = false;
+        dialog.hide();
+*/
+    }
+
+    public void update(TelemStats t)
+    {
+        elapsed.set_label("%.0f s".printf(t.s.elapsed));
+        rxbytes.set_label("%lu b".printf(t.s.rxbytes));
+        txbytes.set_label("%lu b".printf(t.s.txbytes));
+        rxrate.set_label("%.0f b/s".printf(t.s.rxrate));
+        txrate.set_label("%.0f b/s".printf(t.s.txrate));
+        timeouts.set_label("%lu".printf(t.toc));
+        waittime.set_label("%u ms".printf(t.tot));
+        cycletime.set_label("%lu ms".printf(t.avg));
+    }
+}
+
 public class MapSeeder : GLib.Object
 {
     private Gtk.Dialog dialog;

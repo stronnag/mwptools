@@ -61,6 +61,15 @@ public class Mission : GLib.Object
         return waypoints;
     }
 
+
+    public MissionItem get_waypoint(uint n)
+    {
+        if(n < waypoints.length)
+            return waypoints[n];
+        else
+            return {-1};
+    }
+
     public void set_ways(MissionItem[] m)
     {
         waypoints = m;

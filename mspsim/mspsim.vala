@@ -137,6 +137,21 @@ public class MWSim : GLib.Object
         return (rp-&tmp[0]);
     }
 
+
+    private size_t serialise_n32_wp(MSP_N32_WP w, uint8[] tmp)
+    {
+        uint8* rp = tmp;
+        *rp++ = w.wp_no;
+        rp = serialise_i32(rp, w.lat);
+        rp = serialise_i32(rp, w.lon);
+        rp = serialise_u32(rp, w.alt);
+        rp = serialise_i16(rp, w.p1);
+        rp = serialise_u16(rp, w.p2);
+        *rp++ =  w.p3;
+        return (rp-&tmp[0]);
+    }
+
+
     public MWSim()
     {
         cg.range = cg.direction = cg.update = 0;
@@ -1183,11 +1198,38 @@ public class MWSim : GLib.Object
                     case MSP.Cmds.WP:
                         /* Assume we only need number */
                     var n = raw[0];
-                    if(n > nwpts)
-                        n = 1;
-                    nb = serialise_wp(wps[n], tx);
-                    msp.send_command(MSP.Cmds.WP, tx, nb);
-                    append_text("Send WP %d %d\n".printf(n,(int)nb));
+
+                    if(naze32)
+                    {
+                        MSP_N32_WP w = MSP_N32_WP();
+                        w.wp_no = n;
+                        if(n == 0)
+                        {
+                            var m =  ms.get_waypoint(0);
+                            w.lat = (int32)(m.lat*10000000);
+                            w.lon = (int32)(m.lon*10000000);
+                            w.alt = (uint32)(m.alt*100);
+                            w.p1 = (int16)m.param1;
+                            w.p2 = (uint16)m.param2;
+                            w.p3 = (uint8)m.param3;
+                        }
+                        nb = serialise_n32_wp(w,tx);
+                        msp.send_command(MSP.Cmds.WP, tx, nb);
+                        append_text("Send N32 WP %d %d\n".printf(n,(int)nb));
+                    }
+                    else
+                    {
+                        if(n > 0 && n <= nwpts)
+                        {
+                            nb = serialise_wp(wps[n], tx);
+                            msp.send_command(MSP.Cmds.WP, tx, nb);
+                            append_text("Send WP %d %d\n".printf(n,(int)nb));
+                        }
+                        else
+                        {
+                            msp.send_error(cmd);
+                        }
+                    }
                     break;
 
                     case MSP.Cmds.NAV_STATUS:
