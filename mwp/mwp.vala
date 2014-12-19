@@ -2221,6 +2221,8 @@ public class MWPlanner : Gtk.Application {
         nrx = 0;
         msp.clear_counters();
         gpsinfo.annul();
+        navstatus.reset();
+        set_bat_stat(0);
         toc = tot = 0;
         anvals = 0;
         acycle = 0;
@@ -2636,6 +2638,7 @@ public class MWPlanner : Gtk.Application {
             if(msp.available)
                 serial_doom(conbutton);
 
+            init_state();
             conbutton.sensitive = false;
 
             io_read  = new IOChannel.unix_new(playfd[0]);

@@ -318,6 +318,8 @@ public class MWSerial : Object
 
     public SerialStats dump_stats()
     {
+        if(stime == 0)
+            stime =  GLib.get_monotonic_time();
         if(ltime == 0 || ltime == stime)
             ltime =  GLib.get_monotonic_time();
         stats.elapsed = (ltime - stime)/1000000.0;
