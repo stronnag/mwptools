@@ -2165,7 +2165,10 @@ public class MWPlanner : Gtk.Application {
     private TelemStats gen_serial_stats()
     {
         TelemStats t = TelemStats();
-        t.s = msp.dump_stats();
+        if(msp.available)
+            t.s = msp.dump_stats();
+        else
+            t.s = {0};
         t.toc = toc;
         t.tot = tot;
         t.avg = (anvals > 0) ? (ulong)(acycle/anvals) : 0;
@@ -2219,7 +2222,8 @@ public class MWPlanner : Gtk.Application {
         xbits = icount = api_cnt = 0;
         autocount = 0;
         nrx = 0;
-        msp.clear_counters();
+        if(msp.available)
+            msp.clear_counters();
         gpsinfo.annul();
         navstatus.reset();
         set_bat_stat(0);
