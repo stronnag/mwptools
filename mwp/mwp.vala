@@ -2220,6 +2220,7 @@ public class MWPlanner : Gtk.Application {
         autocount = 0;
         nrx = 0;
         msp.clear_counters();
+        gpsinfo.annul();
         toc = tot = 0;
         anvals = 0;
         acycle = 0;
