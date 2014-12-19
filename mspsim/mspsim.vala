@@ -1065,7 +1065,7 @@ public class MWSim : GLib.Object
 
             if(replay == null && relog == null)
             {
-                if(errs == true)
+                if(errs == true && cmd != 199)
                 {
                     stderr.printf("Error on cmd %c (%d)\n", cmd,cmd);
                     return;
@@ -1253,7 +1253,7 @@ public class MWSim : GLib.Object
                     append_text("Send ANALOG %lu\n".printf(MSize.MSP_ANALOG));
                     if(!norssi)
                     {
-                        MSP_RADIO r = {0, 0,152, 152, 100, 57, 38};
+                        MSP_RADIO r = {0, 0,152, 152, 42, 57, 38};
                         r.localrssi = (uint8)((int32)r.localrssi + rand.int_range(-10,10));
                         r.remrssi = (uint8)((int32)r.remrssi + rand.int_range(-10,10));
                         r.noise = (uint8)((int32)r.noise + rand.int_range(-5,5));

@@ -34,9 +34,6 @@ public struct TelemStats
     ulong avg;
 }
 
-
-
-
 public class MWPlanner : Gtk.Application {
     public Builder builder;
     public Gtk.ApplicationWindow window;
@@ -614,6 +611,14 @@ public class MWPlanner : Gtk.Application {
                             show_serial_stats();
                         }
                         break;
+                    case Gdk.Key.i:
+                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
+                            ret = false;
+                        else
+                        {
+                            init_state();
+                        }
+                        break;
 
 /*
                     case Gdk.Key.question:
@@ -1188,9 +1193,6 @@ public class MWPlanner : Gtk.Application {
                         var  val = timadj.adjustment.value;
                         ulong reqsize = 0;
                         requests.resize(0);
-                        anvals = 0;
-                        acycle = 0;
-                        toc = 0;
 
                         requests += MSP.Cmds.STATUS;
                         reqsize += MSize.MSP_STATUS;
@@ -2217,6 +2219,10 @@ public class MWPlanner : Gtk.Application {
         xbits = icount = api_cnt = 0;
         autocount = 0;
         nrx = 0;
+        msp.clear_counters();
+        toc = tot = 0;
+        anvals = 0;
+        acycle = 0;
     }
 
 

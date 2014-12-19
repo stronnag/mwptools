@@ -90,6 +90,12 @@ public class MWSerial : Object
         available = false;
     }
 
+    public void clear_counters()
+    {
+        ltime = stime = 0;
+        stats =  {0.0, 0, 0, 0.0, 0.0};
+    }
+
     private void setup_fd (uint rate)
     {
         if(is_serial == true)
@@ -145,11 +151,11 @@ public class MWSerial : Object
         }
         available = true;
         setup_reader(fd);
-        stats =  {0.0, 0, 0, 0.0, 0.0};
     }
 
     private void setup_reader(int fd)
     {
+        clear_counters();
         state = States.S_HEADER;
         try {
             io_read = new IOChannel.unix_new(fd);
@@ -205,7 +211,6 @@ public class MWSerial : Object
         uint16 port = 0;
         string [] parts;
         estr=null;
-        stime = ltime = 0;
 
         print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
 
@@ -325,6 +330,13 @@ public class MWSerial : Object
 //        "%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s)".printf(et, rxc, txc, rrate, trate);
     }
 
+    private void error_counter()
+    {
+        commerr++;
+        stderr.printf("Comm error count %d: ", commerr);
+        Posix.tcflush(fd, Posix.TCIFLUSH);
+    }
+
     private bool device_read(IOChannel gio, IOCondition cond) {
         uint8 buf[128];
         size_t res;
@@ -369,14 +381,16 @@ public class MWSerial : Object
             {
                 switch(state)
                 {
-                    case States.S_HEADER:
                     case States.S_ERROR:
-                        if(state ==  States.S_ERROR)
+                        if (buf[nc] == '$')
                         {
-                            commerr++;
-                            stderr.printf("Comm error count %d\n", commerr);
-                            Posix.tcflush(fd, Posix.TCIFLUSH);
+                            sp = nc;
+                            state=States.S_HEADER1;
+                            errstate = false;
                         }
+                        break;
+
+                    case States.S_HEADER:
                         if (buf[nc] == '$')
                         {
                             sp = nc;
@@ -385,6 +399,7 @@ public class MWSerial : Object
                         }
                         else
                         {
+                            error_counter();
                             stderr.printf(" fail on header %x %c\n",
                                           buf[nc], buf[nc]);
                             state=States.S_ERROR;
@@ -401,6 +416,7 @@ public class MWSerial : Object
                         }
                         else
                         {
+                            error_counter();
                             stderr.printf(" fail on header1 %x\n", buf[nc]);
                             state=States.S_ERROR;
                         }
@@ -423,7 +439,8 @@ public class MWSerial : Object
                                 cmd = MSP.Cmds.TS_FRAME;
                                 break;
                             default:
-                                debug("fail on T_header2 %x", buf[nc]);
+                                error_counter();
+                                stderr.printf("fail on T_header2 %x\n", buf[nc]);
                                 state=States.S_ERROR;
                                 break;
                         }
@@ -447,6 +464,7 @@ public class MWSerial : Object
                         }
                         else
                         {
+                            error_counter();
                             stderr.printf(" fail on header2 %x\n", buf[nc]);
                             state=States.S_ERROR;
                         }
@@ -497,6 +515,7 @@ public class MWSerial : Object
                             }
                         else
                         {
+                            error_counter();
                             stderr.printf(" CRC Fail, got %d != %d\n",
                                           buf[nc],checksum);
                             state = States.S_ERROR;
