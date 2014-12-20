@@ -61,7 +61,19 @@ public class TelemetryStats : GLib.Object
        }
    }
 
-    public void update(TelemStats t)
+   public void annul()
+   {
+       elapsed.set_label("---");
+       rxbytes.set_label("---");
+       txbytes.set_label("---");
+       rxrate.set_label("---");
+       txrate.set_label("---");
+       timeouts.set_label("---");
+       waittime.set_label("---");
+       cycletime.set_label("---");
+   }
+
+   public void update(TelemStats t)
     {
         if(!di.is_closed())
         {

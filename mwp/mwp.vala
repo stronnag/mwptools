@@ -2132,7 +2132,7 @@ public class MWPlanner : Gtk.Application {
             {
                 navstatus.logspeak_init(conf.evoice);
                 spktid = Timeout.add_seconds(conf.speakint, () => {
-                        if(_nsats != nsats)
+//                        if(_nsats != nsats)
                         {
                             navstatus.sats(_nsats);
                             nsats = _nsats;
@@ -2226,6 +2226,7 @@ public class MWPlanner : Gtk.Application {
             msp.clear_counters();
         gpsinfo.annul();
         navstatus.reset();
+        telstats.annul();
         set_bat_stat(0);
         toc = tot = 0;
         anvals = 0;
