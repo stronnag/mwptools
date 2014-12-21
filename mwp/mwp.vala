@@ -1228,6 +1228,7 @@ public class MWPlanner : Gtk.Application {
                         else
                         {
                             set_error_status("No GPS detected");
+                            gps_alert();
                         }
 
                         usemag = ((sensor & MSP.Sensors.MAG) == MSP.Sensors.MAG);
@@ -1952,6 +1953,11 @@ public class MWPlanner : Gtk.Application {
         return icol;
     }
 
+    private void gps_alert()
+    {
+        bleet_sans_merci("sat_alert.ogg");
+    }
+
     private void bleet_sans_merci(string sfn="bleet.ogg")
     {
         var fn = MWPUtils.find_conf_file(sfn);
@@ -2132,8 +2138,10 @@ public class MWPlanner : Gtk.Application {
             {
                 navstatus.logspeak_init(conf.evoice);
                 spktid = Timeout.add_seconds(conf.speakint, () => {
-//                        if(_nsats != nsats)
+                        if(_nsats != nsats)
                         {
+                            if(_nsats == 0)
+                                gps_alert();
                             navstatus.sats(_nsats);
                             nsats = _nsats;
                         }
@@ -2141,7 +2149,6 @@ public class MWPlanner : Gtk.Application {
                         return true;
                     });
                 navstatus.announce(sflags,conf.recip);
-
             }
         }
     }
@@ -2222,6 +2229,7 @@ public class MWPlanner : Gtk.Application {
         xbits = icount = api_cnt = 0;
         autocount = 0;
         nrx = 0;
+        nsats = -99;
         if(msp.available)
             msp.clear_counters();
         gpsinfo.annul();
