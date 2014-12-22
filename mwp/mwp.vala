@@ -1057,8 +1057,7 @@ public class MWPlanner : Gtk.Application {
                     break;
                 case MSP.Cmds.API_VERSION:
                     have_api = true;
-                    have_vers = false;
-                    add_cmd(MSP.Cmds.IDENT,null,0,ref have_vers,1000);
+                    add_cmd(MSP.Cmds.IDENT,null,0, 1000);
                     break;
                 default:
                     break;
@@ -1069,7 +1068,6 @@ public class MWPlanner : Gtk.Application {
 
         if(gpstid > 0 && cmd == requests[tcycle])
         {
-//            stderr.printf("kill timer %d\n", cmd);
             remove_tid(ref gpstid);
         }
 
@@ -1079,11 +1077,11 @@ public class MWPlanner : Gtk.Application {
         switch(cmd)
         {
             case MSP.Cmds.API_VERSION:
-                have_api = true;
                 remove_tid(ref cmdtid);
+                have_api = true;
                 naze32 = true;
                 mwvar = MWChooser.MWVAR.CF;
-                add_cmd(MSP.Cmds.IDENT,null,0,ref have_vers,1000);
+                add_cmd(MSP.Cmds.IDENT,null,0,1000);
                 break;
 
             case MSP.Cmds.IDENT:
@@ -1141,7 +1139,7 @@ public class MWPlanner : Gtk.Application {
                     {
                         menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
                     }
-                    add_cmd(MSP.Cmds.MISC,null,0, ref have_misc,1000);
+                    add_cmd(MSP.Cmds.MISC,null,0, 1000);
                 }
                 icount++;
                 break;
@@ -1152,7 +1150,7 @@ public class MWPlanner : Gtk.Application {
                 vwarn1 = raw[19];
                 vwarn2 = raw[20];
                 vcrit =  raw[21];
-                add_cmd(MSP.Cmds.STATUS,null,0,ref have_status,1000);
+                add_cmd(MSP.Cmds.STATUS,null,0, 1000);
                 break;
 
             case MSP.Cmds.STATUS:
@@ -1179,16 +1177,15 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(have_status == false)
                     {
-                        have_status = true;
                         remove_tid(ref cmdtid);
-
+                        have_status = true;
                         if(conf.checkswitches && ((flag & 6) == 0))
                         {
                             swd.run();
                         }
 
                         if(navcap == true)
-                            add_cmd(MSP.Cmds.NAV_CONFIG,null,0,ref have_nc,1000);
+                            add_cmd(MSP.Cmds.NAV_CONFIG,null,0,1000);
 
                         var  val = timadj.adjustment.value;
                         ulong reqsize = 0;
@@ -2060,7 +2057,7 @@ public class MWPlanner : Gtk.Application {
         uint8 buf[2];
         have_wp = false;
         buf[0] = wp;
-        add_cmd(MSP.Cmds.WP,buf,1, ref have_wp,1000);
+        add_cmd(MSP.Cmds.WP,buf,1, 1000);
     }
 
 
@@ -2091,7 +2088,7 @@ public class MWPlanner : Gtk.Application {
         uint8 tmp[64];
         var nb = serialise_nc(nc, tmp);
         send_cmd(MSP.Cmds.SET_NAV_CONFIG, tmp, nb);
-        add_cmd(MSP.Cmds.NAV_CONFIG,null,0, ref have_nc,1000);
+        add_cmd(MSP.Cmds.NAV_CONFIG,null,0, 1000);
     }
 
     private void send_cmd(MSP.Cmds cmd, void* buf, size_t len)
@@ -2102,31 +2099,21 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-    private void add_cmd(MSP.Cmds cmd, void* buf, size_t len,
-                         ref bool flag, int wait=1000)
+    private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, int wait=1000)
     {
-        var _flag = flag;
         cmdtid = Timeout.add(wait, () => {
-                if (_flag == false)
+                if(cmd == MSP.Cmds.API_VERSION)
                 {
-                    if(cmd == MSP.Cmds.API_VERSION)
+                    api_cnt++;
+                    if(api_cnt == 2)
                     {
-                        api_cnt++;
-                        if(api_cnt == 2)
-                        {
-                            cmd = MSP.Cmds.IDENT;
-                            api_cnt = 255;
-                        }
-                        }
-                    send_cmd(cmd,buf,len);
-                    return true;
+                        cmd = MSP.Cmds.IDENT;
+                        api_cnt = 255;
+                    }
                 }
-                else
-                {
-                    return false;
-                }
+                send_cmd(cmd,buf,len);
+                return true;
             });
-        flag = false;
         send_cmd(cmd,buf,len);
     }
 
@@ -2207,7 +2194,7 @@ public class MWPlanner : Gtk.Application {
         gpsinfo.annul();
         navstatus.reset();
         set_bat_stat(0);
-        have_vers = have_misc = have_status = have_wp = have_nc = false;
+        have_api = have_vers = have_misc = have_status = have_wp = have_nc = false;
         nsats = 0;
         _nsats = 0;
         msp.close();
@@ -2265,7 +2252,7 @@ public class MWPlanner : Gtk.Application {
                     msp.raw_logging(true);
                 }
                 conbutton.set_label("gtk-disconnect");
-                add_cmd(MSP.Cmds.API_VERSION,null,0, ref have_api,1500);
+                add_cmd(MSP.Cmds.API_VERSION,null,0, 1500);
                 menumwvar.sensitive = false;
             }
             else
