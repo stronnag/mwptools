@@ -46,10 +46,11 @@ public class PIDEdit : Object
     private uint8[] rawbuf;
     private bool is_connected;
     private string lastfile;
+    private uint t_pids;
+    private uint t_rc;
+    private uint t_vers;
+    private uint t_misc;
     private bool have_pids;
-    private bool have_rc;
-    private bool have_vers;
-    private bool have_misc;
     private MSP_MISC misc;
     private MSP_RC_TUNING rt;
     private Gtk.Entry eminthr;
@@ -300,22 +301,14 @@ public class PIDEdit : Object
         hideme = ps[r].pids[c].hidden;
     }
 
-    private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, ref bool flag)
+    private uint add_cmd(MSP.Cmds cmd, void* buf, size_t len)
     {
-        var _flag = flag;
-
-        Timeout.add(1000, () => {
-                if (_flag == false)
-                {
+        var tid = Timeout.add(1000, () => {
                     s.send_command(cmd,buf,len);
                     return true;
-                }
-                else
-                {
-                    return false;
-                }
             });
         s.send_command(cmd,buf,len);
+        return tid;
     }
 
     private void get_settings(out string[] devs, out uint baudrate)
@@ -416,11 +409,17 @@ public class PIDEdit : Object
         return (rp - &tbuf[0]);
     }
 
+    private void stop_timer(ref uint t)
+    {
+        if (t > 0)
+            Source.remove(t);
+        t = 0;
+    }
+
     PIDEdit(string[] args)
     {
         lastfile = null;
         is_connected = false;
-        have_pids = false;
         builder = new Gtk.Builder ();
         var fn = MWPUtils.find_conf_file("pidedit.ui");
         if (fn == null)
@@ -465,7 +464,6 @@ public class PIDEdit : Object
             l.set_text(p.name);
         }
 
-        have_misc =  have_pids = have_vers = false;
         window.destroy.connect (Gtk.main_quit);
         s = new MWSerial();
         s.serial_event.connect((sd,cmd,raw,len,errs) => {
@@ -474,23 +472,25 @@ public class PIDEdit : Object
                     stderr.printf("Error on cmd %c (%d)\n", cmd,cmd);
                     return;
                 }
+
+
+                stderr.printf("OK on cmd %d\n", cmd);
                 switch(cmd)
                 {
                     case MSP.Cmds.IDENT:
-                    have_vers = true;
-                    if(icount == 0)
-                    {
-                        var _mrtype = MSP.get_mrtype(raw[1]);
-                        var vers="v%03d %s".printf(raw[0], _mrtype);
-                        verslab.set_label(vers);
-                        add_cmd(MSP.Cmds.MISC,null,0, ref have_misc);
-                    }
-                    icount++;
-                    break;
+                        stop_timer(ref t_vers);
+                        if(icount == 0)
+                        {
+                            var _mrtype = MSP.get_mrtype(raw[1]);
+                            var vers="v%03d %s".printf(raw[0], _mrtype);
+                            verslab.set_label(vers);
+                            t_misc = add_cmd(MSP.Cmds.MISC,null,0);
+                        }
+                        icount++;
+                        break;
 
                     case MSP.Cmds.MISC:
-                    {
-                        have_misc = true;
+                        stop_timer(ref t_misc);
                         uint8 *rp;
                         rp = deserialise_u16(raw, out misc.intPowerTrigger1);
                         rp = deserialise_u16(rp, out misc.conf_minthrottle);
@@ -505,29 +505,29 @@ public class PIDEdit : Object
                         misc.conf_vbatlevel_warn2 = *rp++;
                         misc.conf_vbatlevel_crit = *rp;
                         set_misc_ui();
-                        add_cmd(MSP.Cmds.RC_TUNING,null,0, ref have_rc);
-                    }
-                    break;
+                        t_rc = add_cmd(MSP.Cmds.RC_TUNING,null,0);
+                        break;
 
                     case MSP.Cmds.PID:
-                    have_pids = true;
-                    rawbuf = raw;
-                    set_pid_spins();
-                    break;
+                        stop_timer(ref t_pids);
+                        have_pids = true;
+                        rawbuf = raw;
+                        set_pid_spins();
+                        break;
 
                     case MSP.Cmds.RC_TUNING:
-                    have_rc = true;
-                    uint8 *rp = raw;
-                    rt.rc_rate = *rp++;
-                    rt.rc_expo = *rp++;
-                    rt.rollpitchrate = *rp++;
-                    rt.yawrate = *rp++;
-                    rt.dynthrpid = *rp++;
-                    rt.throttle_mid = *rp++;
-                    rt.throttle_expo = *rp;
-                    set_rc_tuning();
-                    add_cmd(MSP.Cmds.PID,null,0, ref have_pids);
-                    break;
+                        stop_timer(ref t_rc);
+                        uint8 *rp = raw;
+                        rt.rc_rate = *rp++;
+                        rt.rc_expo = *rp++;
+                        rt.rollpitchrate = *rp++;
+                        rt.yawrate = *rp++;
+                        rt.dynthrpid = *rp++;
+                        rt.throttle_mid = *rp++;
+                        rt.throttle_expo = *rp;
+                        set_rc_tuning();
+                        t_pids = add_cmd(MSP.Cmds.PID,null,0);
+                        break;
                 }
             });
 
@@ -652,7 +652,7 @@ public class PIDEdit : Object
 //                        openbutton.set_sensitive(true);
                         applybutton.set_sensitive(true);
 //                        saveasbutton.set_sensitive(true);
-                        add_cmd(MSP.Cmds.IDENT,null,0,ref have_vers);
+                        t_vers = add_cmd(MSP.Cmds.IDENT,null,0);
                     }
                     else
                     {
@@ -668,7 +668,6 @@ public class PIDEdit : Object
                     applybutton.set_sensitive(false);
 //                    saveasbutton.set_sensitive(false);
                     verslab.set_label("");
-                    have_vers = false;
                     is_connected = false;
                     have_pids = false;
                 }
