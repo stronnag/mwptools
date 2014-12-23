@@ -34,6 +34,65 @@ public struct TelemStats
     ulong avg;
 }
 
+public class PosFormat : GLib.Object
+{
+    public static string lat(double _lat, bool dms)
+    {
+        if(dms == false)
+            return "%.6f".printf(_lat);
+        else
+            return position(_lat, "%02d:%02d:%04.1f%c", "NS");
+    }
+
+    public static string lon(double _lon, bool dms)
+    {
+        if(dms == false)
+            return "%.6f".printf(_lon);
+        else
+            return position(_lon, "%03d:%02d:%04.1f%c", "EW");
+    }
+
+    public static string pos(double _lat, double _lon, bool dms)
+    {
+        if(dms == false)
+            return "%.6f %.6f".printf(_lat,_lon);
+        else
+        {
+            var slat = lat(_lat,dms);
+            var slon = lon(_lon,dms);
+            StringBuilder sb = new StringBuilder ();
+            sb.append(slat);
+            sb.append(" ");
+            sb.append(slon);
+            return sb.str;
+        }
+    }
+
+    private static string position(double coord, string fmt, string ind)
+    {
+        var neg = (coord < 0.0);
+        var ds = Math.fabs(coord);
+        int d = (int)ds;
+        var rem = (ds-d)*3600.0;
+        int m = (int)rem/60;
+        double s = rem - m*60;
+        if ((int)s*10 == 600)
+        {
+            m+=1;
+            s = 0;
+        }
+        if (m == 60)
+        {
+            m = 0;
+            d+=1;
+        }
+        var q = (neg) ? ind.get_char(1) : ind.get_char(0);
+        return fmt.printf((int)d,(int)m,s,q);
+    }
+
+}
+
+
 public class MWPlanner : Gtk.Application {
     public Builder builder;
     public Gtk.ApplicationWindow window;
@@ -1080,6 +1139,9 @@ public class MWPlanner : Gtk.Application {
                 remove_tid(ref cmdtid);
                 have_api = true;
                 naze32 = true;
+//                string sv = (string)raw[3:6];
+//                stderr.printf("ID = %4.4s\n", sv);
+
                 mwvar = MWChooser.MWVAR.CF;
                 add_cmd(MSP.Cmds.IDENT,null,0,1000);
                 break;
@@ -2662,6 +2724,13 @@ public class MWPlanner : Gtk.Application {
 
     public static int main (string[] args)
     {
+        if(Posix.isatty(stderr.fileno()) == false)
+        {
+            stderr = FileStream.open("/tmp/mwp-stderr.txt","a");
+        }
+        time_t currtime;
+        time_t(out currtime);
+        stderr.puts(Time.local(currtime).format("mwp @%FT%T%z\n"));
         if (GtkClutter.init (ref args) != InitError.SUCCESS)
             return 1;
 
@@ -2681,63 +2750,4 @@ public class MWPlanner : Gtk.Application {
         app.run ();
         return 0;
     }
-
-}
-
-public class PosFormat : GLib.Object
-{
-    public static string lat(double _lat, bool dms)
-    {
-        if(dms == false)
-            return "%.6f".printf(_lat);
-        else
-            return position(_lat, "%02d:%02d:%04.1f%c", "NS");
-    }
-
-    public static string lon(double _lon, bool dms)
-    {
-        if(dms == false)
-            return "%.6f".printf(_lon);
-        else
-            return position(_lon, "%03d:%02d:%04.1f%c", "EW");
-    }
-
-    public static string pos(double _lat, double _lon, bool dms)
-    {
-        if(dms == false)
-            return "%.6f %.6f".printf(_lat,_lon);
-        else
-        {
-            var slat = lat(_lat,dms);
-            var slon = lon(_lon,dms);
-            StringBuilder sb = new StringBuilder ();
-            sb.append(slat);
-            sb.append(" ");
-            sb.append(slon);
-            return sb.str;
-        }
-    }
-
-    private static string position(double coord, string fmt, string ind)
-    {
-        var neg = (coord < 0.0);
-        var ds = Math.fabs(coord);
-        int d = (int)ds;
-        var rem = (ds-d)*3600.0;
-        int m = (int)rem/60;
-        double s = rem - m*60;
-        if ((int)s*10 == 600)
-        {
-            m+=1;
-            s = 0;
-        }
-        if (m == 60)
-        {
-            m = 0;
-            d+=1;
-        }
-        var q = (neg) ? ind.get_char(1) : ind.get_char(0);
-        return fmt.printf((int)d,(int)m,s,q);
-    }
-
 }

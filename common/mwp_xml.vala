@@ -95,7 +95,6 @@ public class Mission : GLib.Object
     {
        Parser.init ();
 
-
        Xml.Doc* doc = Parser.parse_file (path);
         if (doc == null)
         {
@@ -257,15 +256,14 @@ public class Mission : GLib.Object
 
         string xmlstr;
         doc->dump_memory_enc_format (out xmlstr);
-        try {
-            var file = File.new_for_path (path);
-            if (file.query_exists ())
-                file.delete ();
-            var dos = new DataOutputStream (file.create (FileCreateFlags.REPLACE_DESTINATION));
-            dos.put_string(xmlstr);
-        } catch (GLib.Error e) {
-            stderr.printf ("%s\n", e.message);
+        var dos = FileStream.open(path, "w");
+        if(dos != null)
+        {
+            dos.puts(xmlstr);
+            dos.putc('\n');
         }
+        else
+            stderr.printf ("Error opening %s\n", path);
         delete doc;
         Parser.cleanup ();
     }

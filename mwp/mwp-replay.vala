@@ -165,12 +165,12 @@ public class ReplayThread : GLib.Object
                     try
                     {
                         double lt = 0;
-                        var dis = new DataInputStream (file.read ());
+                        var dis = FileStream.open(relog,"r");
                         string line=null;
                         bool armed = false;
                         uint8 buf[64];
                         var parser = new Json.Parser ();
-                        while (playon && (line = dis.read_line (null)) != null) {
+                        while (playon && (line = dis.read_line ()) != null) {
                             parser.load_from_data (line);
                             var obj = parser.get_root ().get_object ();
                             var utime = obj.get_double_member ("utime");

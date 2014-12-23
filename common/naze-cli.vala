@@ -29,8 +29,8 @@ public class MWSerial : Object
     private uint tag;
     private Posix.termios oldtio;
     public uint baudrate  {private set; get;}
-    public DataInputStream dis;
-    public OutputStream os;
+    public unowned FileStream dis;
+    public unowned FileStream os;
     public uint8 rx_mode;
     public uint8 nlcount = 0;
 
@@ -215,10 +215,7 @@ public class MWSerial : Object
             else
                 rbuf = buf[0:res];
 
-            try
-            {
-                os.write(rbuf);
-            } catch  {}
+            os.write(rbuf);
 
             for(var nc = 0; nc < res; nc++)
             {
@@ -239,12 +236,12 @@ public class MWSerial : Object
         return true;
     }
 
-    private void setfile (DataInputStream _dis)
+    private void setfile (FileStream _dis)
     {
         dis = _dis;
     }
 
-    private void setdump (OutputStream _os)
+    private void setdump (FileStream _os)
     {
         os = _os;
     }
@@ -255,18 +252,10 @@ public class MWSerial : Object
         while(!done)
         {
             string rline;
-            try
-            {
-                rline = dis.read_line (null);
-            } catch (Error e) {
-                rline = null;
-                stderr.printf("read error %s\n", e.message);
-            }
-
+            rline = dis.read_line ();
             if(rline == null)
             {
                 Posix.write(fd,"save\n", 5);
-                try { dis.close(); } catch {}
                 dis = null;
                 done = true;
                 Timeout.add_seconds(1,() => { completed(); return false; });
@@ -306,8 +295,8 @@ public class MWSerial : Object
             return 1;
         }
 
-        DataInputStream mdis = null;
-        OutputStream mos = null;
+        FileStream mdis = null;
+        FileStream mos = null;
 
         if(args.length > 1)
         {
@@ -319,20 +308,13 @@ public class MWSerial : Object
             }
             else
             {
-                try
-                {
-                    mdis = new DataInputStream (file.read ());
-                } catch (Error e) {
-                    stderr.printf ("Bizarre error %s\n", e.message);
-                    return 255;
-                }
+                mdis = FileStream.open(args[1], "r");
             }
         }
 
         var s = new MWSerial();
         var ml = new MainLoop();
         s.rx_mode = -1;
-        IOStream ios;
 
         s.completed.connect(() => {ml.quit();});
 
@@ -344,17 +326,8 @@ public class MWSerial : Object
         else
             fn = defname;
 
-        try
-        {
-            var file = File.new_for_path (fn);
-            ios = file.replace_readwrite (null,true,FileCreateFlags.PRIVATE|
-                                         FileCreateFlags.REPLACE_DESTINATION);
-            mos = ios.output_stream;
-            s.setdump(mos);
-
-        } catch (Error e) {
-            stderr.printf ("Logger: %s %s\n", fn, e.message);
-        }
+        mos = FileStream.open(fn, "w");
+        s.setdump(mos);
 
         Timeout.add(100, () => {
                 Posix.write(s.fd,"#", 1);
@@ -398,7 +371,7 @@ public class MWSerial : Object
         }
 
         ml.run();
-        try { mos.close(); } catch {}
+        mos = null;
         stdout.puts("\nDone\n");
         return 0;
     }

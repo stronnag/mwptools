@@ -26,7 +26,8 @@ cp $APP $BIN/
 cp $ICON $DATA/icons/hicolor/48x48/apps/
 [ -d pixmaps ] && cp -a pixmaps $DATA/mwp
 [ -f bleet.ogg ] && cp bleet.ogg $DATA/mwp
-[ -f beep-sound.ogg ] && cp beep-sound.ogg $DATA/mwp
+[ -f bleet.ogg ] && cp bleet.ogg $DATA/mwp
+[ -f sat_alert.ogg ] && cp sat_alert.ogg $DATA/mwp
 
 [ -d $DATA/applications ] || mkdir -p $DATA/applications
 [ -e $APP.desktop ] && cp $APP.desktop  $DATA/applications/

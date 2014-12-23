@@ -23,8 +23,7 @@ public class Logger : GLib.Object
 {
     public static bool is_logging { get; private set; }
     private static Json.Generator gen;
-    private static OutputStream os;
-    private static IOStream ios;
+    private static FileStream os;
     private static double dtime;
     public static int duration { get; private set; }
 
@@ -34,16 +33,16 @@ public class Logger : GLib.Object
         time_t(out currtime);
 
         var fn  = "mwp_%s.log".printf(Time.local(currtime).format("%F_%H%M%S"));
-        File file = File.new_for_path (fn);
-        try
-        {
-            ios = file.create_readwrite (FileCreateFlags.PRIVATE);
-            os = ios.output_stream;
+
+        os = FileStream.open(fn, "w");
+        if(os != null)
             is_logging = true;
-        } catch (Error e) {
-            stderr.printf ("Logger: %s %s\n", fn, e.message);
+        else
+        {
+            stderr.printf ("Logger can't open %s\n", fn);
             is_logging = false;
         }
+
         gen = new Json.Generator ();
         {
             var bfn =  (title == null) ? fn : title;
@@ -67,16 +66,13 @@ public class Logger : GLib.Object
 
     private static void write_stream()
     {
-        try  {
-            gen.to_stream(os);
-            os.write("\n".data);
-        } catch  {};
+        os.puts(gen.to_data (null));
+        os.putc('\n');
     }
 
     public static void stop()
     {
         is_logging = false;
-        try  { os.close(); } catch  {};
     }
 
     public static void log_time()
