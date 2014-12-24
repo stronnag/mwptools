@@ -652,6 +652,11 @@ public class NavStatus : GLib.Object
     public static bool recip {get; private set;}
     public static string fmode;
 
+    private int _vn;
+    private int _aw;
+    private int _ah;
+    private int _fs;
+
     public enum SPK  {
         Volts = 1,
         GPS = 2,
@@ -874,12 +879,22 @@ public class NavStatus : GLib.Object
     {
         volts = v;
         Gtk.Allocation a;
+        if(n != _vn)
+        {
+            voltlabel.override_background_color(Gtk.StateFlags.NORMAL, colors[n]);
+            _vn = n;
+        }
         voltlabel.get_allocation(out a);
-        var fh1 = a.width/4;
-        var fh2 = a.height / 2;
-        var fs = (fh1 < fh2) ? fh1 : fh2;
-        voltlabel.override_background_color(Gtk.StateFlags.NORMAL, colors[n]);
-        voltlabel.set_label("<span font='%d'>%s</span>".printf(fs,s));
+        if (a.width != _aw || a.height != _ah)
+        {
+            _aw = a.width;
+            _ah = a.height;
+            var fh1 = a.width/4;
+            var fh2 = a.height / 2;
+            var fs = (fh1 < fh2) ? fh1 : fh2;
+            _fs = fs;
+        }
+        voltlabel.set_label("<span font='%d'>%s</span>".printf(_fs,s));
     }
 
     public void update_fmode(string _fmode)

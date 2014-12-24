@@ -160,9 +160,11 @@ public class MWPlanner : Gtk.Application {
     private static bool mkcon = false;
     private static bool ignore_sz = false;
     private static bool nopoll = false;
+    private static bool xnopoll;
     private static bool rawlog = false;
     private static bool norotate = false; // workaround for Ubuntu & old champlain
     private static bool gps_trail = false;
+    private static bool no_max = false;
     private static string mwoptstr;
     private uint nrx = 0;
 
@@ -289,6 +291,7 @@ public class MWPlanner : Gtk.Application {
         { "raw-log", 'r', 0, OptionArg.NONE, out rawlog, "log raw serial data to file", null},
         { "ignore-sizing", 0, 0, OptionArg.NONE, out ignore_sz, "ignore minimum size constraint", null},
         { "ignore-rotation", 0, 0, OptionArg.NONE, out norotate, "ignore vehicle icon rotation on old libchamplain", null},
+        { "dont-maximise", 0, 0, OptionArg.NONE, out no_max, "don't maximise the window", null},
         {null}
     };
 
@@ -949,6 +952,8 @@ public class MWPlanner : Gtk.Application {
 
         Timeout.add_seconds(5, () => { return try_connect(); });
 
+        if(no_max == false)
+            window.maximize();
         window.show_all();
 
         if(layout.load_from_file(layfile) && layout.load_layout("mwp"))
@@ -2665,6 +2670,7 @@ public class MWPlanner : Gtk.Application {
     {
         thr.join();
         thr = null;
+        nopoll = xnopoll;
         remove_tid(ref plid);
         remove_tid(ref gpstid);
         try  { io_read.shutdown(false); } catch {}
@@ -2684,6 +2690,8 @@ public class MWPlanner : Gtk.Application {
     {
         xlog = conf.logarmed;
         xaudio = conf.audioarmed;
+        xnopoll = nopoll;
+        nopoll = true;
         playfd = new int[2];
         var sr =  Posix.socketpair (SocketFamily.UNIX,
                           SocketType.DATAGRAM, 0, playfd);
