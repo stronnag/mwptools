@@ -945,6 +945,10 @@ public class MWPlanner : Gtk.Application {
             Posix.exit(255);
         }
 
+        if(no_max == false)
+            window.maximize();
+        window.show_all();
+
         if(mkcon)
         {
             connect_serial();
@@ -952,9 +956,9 @@ public class MWPlanner : Gtk.Application {
 
         Timeout.add_seconds(5, () => { return try_connect(); });
 
-        if(no_max == false)
-            window.maximize();
-        window.show_all();
+        navstatus.setdock(dockitem[DOCKLETS.NAVSTATUS]);
+        radstatus.setdock(dockitem[DOCKLETS.RADIO]);
+        telstats.setdock(dockitem[DOCKLETS.TELEMETRY]);
 
         if(layout.load_from_file(layfile) && layout.load_layout("mwp"))
             ;
@@ -966,9 +970,6 @@ public class MWPlanner : Gtk.Application {
             dockitem[DOCKLETS.RADIO].hide ();
         }
 
-        navstatus.setdock(dockitem[DOCKLETS.NAVSTATUS]);
-        radstatus.setdock(dockitem[DOCKLETS.RADIO]);
-        telstats.setdock(dockitem[DOCKLETS.TELEMETRY]);
         if(conf.heartbeat != null)
         {
             Timeout.add_seconds(60, () => {
@@ -1292,7 +1293,6 @@ public class MWPlanner : Gtk.Application {
                         else
                         {
                             set_error_status("No GPS detected");
-                            gps_alert();
                         }
 
                         usemag = ((sensor & MSP.Sensors.MAG) == MSP.Sensors.MAG);
@@ -2030,6 +2030,7 @@ public class MWPlanner : Gtk.Application {
             try
             {
                 string cmd = "%s %s".printf(conf.mediap,fn);
+                stderr.printf("%s\n", cmd);
                 Process.spawn_command_line_async(cmd);
             } catch (SpawnError e) {
                 stderr.printf ("Error: %s\n", e.message);

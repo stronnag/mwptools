@@ -1319,9 +1319,8 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="halign">start</property>
-    <property name="valign">start</property>
     <property name="row_spacing">2</property>
-    <property name="column_spacing">32</property>
+    <property name="column_spacing">8</property>
     <child>
       <object class="GtkLabel" id="label11">
         <property name="visible">True</property>
@@ -1541,12 +1540,14 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
   <object class="GtkGrid" id="grid4">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
+    <property name="halign">start</property>
     <property name="row_spacing">2</property>
-    <property name="column_spacing">32</property>
+    <property name="column_spacing">8</property>
     <child>
       <object class="GtkLabel" id="radlab1">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">start</property>
         <property name="label" translatable="yes">RX Errors</property>
       </object>
       <packing>
@@ -1558,6 +1559,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel" id="radlab2">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">start</property>
         <property name="label" translatable="yes">Fixed Errors</property>
       </object>
       <packing>
@@ -1569,6 +1571,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel" id="radlab3">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">start</property>
         <property name="label" translatable="yes">Local RSSI</property>
       </object>
       <packing>
@@ -1580,6 +1583,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel" id="radlab4">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">start</property>
         <property name="label" translatable="yes">Remote RSSI</property>
       </object>
       <packing>
@@ -1591,6 +1595,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel" id="radlab5">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">start</property>
         <property name="label" translatable="yes">TX Buffer</property>
       </object>
       <packing>
@@ -1602,6 +1607,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel" id="radlab6">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">start</property>
         <property name="label" translatable="yes">Noise</property>
       </object>
       <packing>
@@ -1613,6 +1619,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel" id="radlab7">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">start</property>
         <property name="label" translatable="yes">Remote noise</property>
       </object>
       <packing>
@@ -1635,6 +1642,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel" id="fixerrlab">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">start</property>
         <property name="label" translatable="yes">...</property>
       </object>
       <packing>
@@ -1646,6 +1654,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel" id="locrssilab">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">start</property>
         <property name="label" translatable="yes">...</property>
       </object>
       <packing>
@@ -1657,6 +1666,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel" id="remrssilab">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">start</property>
         <property name="label" translatable="yes">...</property>
       </object>
       <packing>
@@ -1668,6 +1678,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel" id="txbuflab">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">start</property>
         <property name="label" translatable="yes">...</property>
       </object>
       <packing>
@@ -1679,6 +1690,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel" id="noiselab">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">start</property>
         <property name="label" translatable="yes">...</property>
       </object>
       <packing>
@@ -1690,6 +1702,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel" id="remnoiselab">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">start</property>
         <property name="label" translatable="yes">...</property>
       </object>
       <packing>
@@ -3093,7 +3106,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
   <object class="GtkGrid" id="ss_grid">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="column_spacing">16</property>
+    <property name="column_spacing">8</property>
     <property name="column_homogeneous">True</property>
     <child>
       <object class="GtkLabel" id="label39">
