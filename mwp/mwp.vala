@@ -785,7 +785,7 @@ public class MWPlanner : Gtk.Application {
         dock.add_item (dockitem[DOCKLETS.RADIO], DockPlacement.BOTTOM);
 
         dockitem[DOCKLETS.TELEMETRY]= new DockItem.with_stock ("Telemetry",
-                         "Telemetry Stats", "gtk-disconnect",
+                         "Telemetry", "gtk-disconnect",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
         dockitem[DOCKLETS.TELEMETRY].add (telstats.grid);
         dock.add_item (dockitem[DOCKLETS.TELEMETRY], DockPlacement.BOTTOM);
