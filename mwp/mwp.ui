@@ -3107,7 +3107,6 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="column_spacing">8</property>
-    <property name="column_homogeneous">True</property>
     <child>
       <object class="GtkLabel" id="label39">
         <property name="visible">True</property>
