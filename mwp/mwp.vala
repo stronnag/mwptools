@@ -1026,10 +1026,13 @@ public class MWPlanner : Gtk.Application {
 
     private void start_poll_timer()
     {
-        gpstid = Timeout.add(500, () => {
+        gpstid = Timeout.add(750, () => {
                 if(dopoll)
                 {
                     toc++;
+                    var req=requests[tcycle];
+                    var s = MSP.to_string(req);
+                    stderr.printf("timeout on %s\n", s);
                     send_poll();
                     return true;
                 }
@@ -1114,7 +1117,7 @@ public class MWPlanner : Gtk.Application {
         if(errs == true)
         {
             remove_tid(ref cmdtid);
-            stdout.printf("Error on cmd %d\n", cmd);
+            stdout.printf("Error on cmd %s %d\n", MSP.to_string(cmd), cmd);
             switch(cmd)
             {
                 case MSP.Cmds.NAV_CONFIG:
