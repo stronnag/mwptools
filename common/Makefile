@@ -5,10 +5,10 @@ LOPTS=-X -lm
 all: ublox-test naze-cli
 
 ublox-test: ublox-test.vala ublox.vapi ublox.h
-	$(VALAC) --pkg posix --pkg gio-2.0 --pkg posix  ublox.vapi ublox-test.vala -o ublox-test
+	$(VALAC) --pkg posix --pkg gio-2.0 --pkg posix  ublox.vapi ublox-test.vala mwplog.vala -o ublox-test
 
 naze-cli: naze-cli.vala
-	$(VALAC) --pkg posix --pkg gio-2.0  naze-cli.vala
+	$(VALAC) --pkg posix --pkg gio-2.0  naze-cli.vala mwplog.vala
 
 clean:
 	rm -f naze-cli ublox-test

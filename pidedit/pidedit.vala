@@ -212,7 +212,7 @@ public class PIDEdit : Object
                 rt.throttle_expo = (uint8)root_object.get_int_member ("throttle_expo");
                 set_rc_tuning();
             } catch (Error e) {
-                stderr.printf ("Failed to parse file\n");
+                MSPLog.message ("Failed to parse file\n");
             }
         }
     }
@@ -288,7 +288,7 @@ public class PIDEdit : Object
          try{
              FileUtils.set_contents(lastfile,json);
          }catch(Error e){
-             stderr.printf ("Error: %s\n", e.message);
+             MSPLog.message ("Error: %s\n", e.message);
          }
     }
 
@@ -329,7 +329,7 @@ public class PIDEdit : Object
             else
                 settings =  new Settings (sname);
         } catch {
-            stderr.printf("No settings schema\n");
+            MSPLog.message("No settings schema\n");
             Posix.exit(-1);
         }
 
@@ -424,7 +424,7 @@ public class PIDEdit : Object
         var fn = MWPUtils.find_conf_file("pidedit.ui");
         if (fn == null)
         {
-            stderr.printf ("No UI definition file\n");
+            MSPLog.message ("No UI definition file\n");
             Gtk.main_quit();
         }
         else
@@ -433,7 +433,7 @@ public class PIDEdit : Object
             {
                 builder.add_from_file (fn);
             } catch (Error e) {
-                stderr.printf ("Builder: %s\n", e.message);
+                MSPLog.message ("Builder: %s\n", e.message);
                 Gtk.main_quit();
             }
         }
@@ -469,12 +469,9 @@ public class PIDEdit : Object
         s.serial_event.connect((sd,cmd,raw,len,errs) => {
                 if(errs == true)
                 {
-                    stderr.printf("Error on cmd %c (%d)\n", cmd,cmd);
+                    MSPLog.message("Error on cmd %s (%d)\n", MSP.to_string(cmd),cmd);
                     return;
                 }
-
-
-                stderr.printf("OK on cmd %d\n", cmd);
                 switch(cmd)
                 {
                     case MSP.Cmds.IDENT:
@@ -656,7 +653,7 @@ public class PIDEdit : Object
                     }
                     else
                     {
-                        stderr.printf("open failed %s %s\n", serdev, estr);
+                        MSPLog.message("open failed %s %s\n", serdev, estr);
                     }
 
                 }

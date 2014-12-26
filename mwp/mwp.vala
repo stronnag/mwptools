@@ -326,7 +326,7 @@ public class MWPlanner : Gtk.Application {
         var fn = MWPUtils.find_conf_file("mwp.ui");
         if (fn == null)
         {
-            stderr.printf ("No UI definition file\n");
+            MSPLog.message ("No UI definition file\n");
             Posix.exit(255);
         }
         else
@@ -335,7 +335,7 @@ public class MWPlanner : Gtk.Application {
             {
                 builder.add_from_file (fn);
             } catch (Error e) {
-                stderr.printf ("Builder: %s\n", e.message);
+                MSPLog.message ("Builder: %s\n", e.message);
                 Posix.exit(255);
             }
         }
@@ -1006,7 +1006,7 @@ public class MWPlanner : Gtk.Application {
         if(e != null)
         {
             statusbar.push(context_id, e);
-            stderr.printf("%s\n", e);
+            MSPLog.message("%s\n", e);
             bleet_sans_merci("beep-sound.ogg");
         }
         else
@@ -1032,7 +1032,7 @@ public class MWPlanner : Gtk.Application {
                     toc++;
                     var req=requests[tcycle];
                     var s = MSP.to_string(req);
-                    stderr.printf("timeout on %s\n", s);
+                    MSPLog.message("timeout on %s\n", s);
                     send_poll();
                     return true;
                 }
@@ -1095,7 +1095,7 @@ public class MWPlanner : Gtk.Application {
                 if( gpsfix == true && armed == 1 && (now - last_wp) > 1)
                 {
                     send_cmd(req,&wpx,1);
-//                    stderr.printf("send WP %d\n", wpx);
+//                    MSPLog.message("send WP %d\n", wpx);
                     wpx = (wpx + 16) & 16;
                     last_wp = now;
                 }
@@ -1107,7 +1107,7 @@ public class MWPlanner : Gtk.Application {
                 break;
             default:
                 send_cmd(req, null, 0);
-//                stderr.printf("send %d\n", req);
+//                MSPLog.message("send %d\n", req);
                 break;
         }
     }
@@ -1149,7 +1149,7 @@ public class MWPlanner : Gtk.Application {
                 have_api = true;
                 naze32 = true;
 //                string sv = (string)raw[3:6];
-//                stderr.printf("ID = %4.4s\n", sv);
+//                MSPLog.message("ID = %4.4s\n", sv);
 
                 mwvar = MWChooser.MWVAR.CF;
                 add_cmd(MSP.Cmds.IDENT,null,0,1000);
@@ -1326,7 +1326,7 @@ public class MWPlanner : Gtk.Application {
 
                         if(nopoll == false && nreqs > 0)
                         {
-//                            stderr.printf("Start poller\n");
+//                            MSPLog.message("Start poller\n");
                             dopoll = true;
                             tcycle = 0;
                             lastp = GLib.get_monotonic_time();
@@ -1675,7 +1675,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     else if(w.flag == 0xfe)
                     {
-                        stderr.printf("Error flag on wp #%d\n", w.wp_no);
+                        MSPLog.message("Error flag on wp #%d\n", w.wp_no);
                     }
                     else
                     {
@@ -1705,7 +1705,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
-                    stderr.printf("unsolicited WP #%d\n", w.wp_no);
+                    MSPLog.message("unsolicited WP #%d\n", w.wp_no);
                 }
             }
             break;
@@ -1892,7 +1892,7 @@ public class MWPlanner : Gtk.Application {
             break;
 
             default:
-                stderr.printf ("** Unknown response %d\n", cmd);
+                MSPLog.message ("** Unknown response %d\n", cmd);
                 break;
         }
         if(dopoll && (cmd == requests[tcycle]))
@@ -2033,10 +2033,10 @@ public class MWPlanner : Gtk.Application {
             try
             {
                 string cmd = "%s %s".printf(conf.mediap,fn);
-                stderr.printf("%s\n", cmd);
+                MSPLog.message("%s\n", cmd);
                 Process.spawn_command_line_async(cmd);
             } catch (SpawnError e) {
-                stderr.printf ("Error: %s\n", e.message);
+                MSPLog.message ("Error: %s\n", e.message);
             }
         }
     }
@@ -2243,7 +2243,7 @@ public class MWPlanner : Gtk.Application {
     private void show_serial_stats()
     {
         var t = gen_serial_stats();
-        stderr.printf("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %lu wait %u, avg poll loop %lu ms\n",
+        MSPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %lu wait %u, avg poll loop %lu ms\n",
                       t.s.elapsed, t.s.rxbytes, t.s.txbytes, t.s.rxrate, t.s.txrate,
                       t.toc, t.tot, t.avg);
     }

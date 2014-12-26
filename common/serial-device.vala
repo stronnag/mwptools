@@ -186,7 +186,7 @@ public class MWSerial : Object
                         break;
                     }
                 } catch (Error e) {
-                    stderr.printf ("%s\n",e.message);
+                    MSPLog.message ("%s\n",e.message);
                 }
             }
             else
@@ -290,7 +290,7 @@ public class MWSerial : Object
             if(tag > 0)
             {
                 if(print_raw)
-                    stderr.printf("remove tag\n");
+                    MSPLog.message("remove tag\n");
                 Source.remove(tag);
             }
             if(is_serial)
@@ -335,7 +335,7 @@ public class MWSerial : Object
     private void error_counter()
     {
         commerr++;
-        stderr.printf("Comm error count %d: ", commerr);
+        MSPLog.message("Comm error count %d: ", commerr);
         Posix.tcflush(fd, Posix.TCIFLUSH);
     }
 
@@ -402,7 +402,7 @@ public class MWSerial : Object
                         else
                         {
                             error_counter();
-                            stderr.printf(" fail on header %x %c\n",
+                            MSPLog.message(" fail on header %x %c\n",
                                           buf[nc], buf[nc]);
                             state=States.S_ERROR;
                         }
@@ -419,7 +419,7 @@ public class MWSerial : Object
                         else
                         {
                             error_counter();
-                            stderr.printf(" fail on header1 %x\n", buf[nc]);
+                            MSPLog.message(" fail on header1 %x\n", buf[nc]);
                             state=States.S_ERROR;
                         }
                         break;
@@ -442,7 +442,7 @@ public class MWSerial : Object
                                 break;
                             default:
                                 error_counter();
-                                stderr.printf("fail on T_header2 %x\n", buf[nc]);
+                                MSPLog.message("fail on T_header2 %x\n", buf[nc]);
                                 state=States.S_ERROR;
                                 break;
                         }
@@ -467,7 +467,7 @@ public class MWSerial : Object
                         else
                         {
                             error_counter();
-                            stderr.printf(" fail on header2 %x\n", buf[nc]);
+                            MSPLog.message(" fail on header2 %x\n", buf[nc]);
                             state=States.S_ERROR;
                         }
                         break;
@@ -518,7 +518,7 @@ public class MWSerial : Object
                         else
                         {
                             error_counter();
-                            stderr.printf(" CRC Fail, got %d != %d\n",
+                            MSPLog.message(" CRC Fail, got %d != %d\n",
                                           buf[nc],checksum);
                             state = States.S_ERROR;
                         }
@@ -666,7 +666,7 @@ public class MWSerial : Object
         for(var nc = 0; nc < len; nc++)
         {
             if(buf[nc] == '$')
-                stderr.printf("\n");
+                MSPLog.message("\n");
             stderr.printf("%02x ", buf[nc]);
         }
         stderr.printf("(%d) ",len);

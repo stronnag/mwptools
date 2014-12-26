@@ -6,7 +6,7 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -49,7 +49,7 @@ public class MwpMapSource : Champlain.MapSourceDesc
             string uri_format)
     {
             /* the 0.12 vapi appears not to support projection
-             * as a property 
+             * as a property
              */
         Object(id: id, name: name, license: license, license_uri: license_uri,
                min_zoom_level: minzoom, max_zoom_level: maxzoom,
@@ -68,7 +68,7 @@ public class MwpMapSource : Champlain.MapSourceDesc
             d.get_name(),
             d.get_license(),
             d.get_license_uri(),
-            d.get_min_zoom_level(), 
+            d.get_min_zoom_level(),
             d.get_max_zoom_level(),
             d.get_tile_size(),
             proj,
@@ -106,7 +106,7 @@ public class JsonMapDef : Object
             }
         }
         catch (Error e) {
-            stderr.printf ("I guess something is not working...\n");
+            MSPLog.message ("I guess something is not working...\n");
         }
         return sources;
     }

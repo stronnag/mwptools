@@ -4,7 +4,7 @@ OPTS +=-X -O2 --target-glib=2.36
 LOPTS=
 APP=switchedit
 SRC=$(APP).vala
-COMMON=../common/mwc.vala ../common/serial-device.vala ../common/utils.vala ../common/mspcmd.vala ../common/mspmsg.vala
+COMMON=../common/mwc.vala ../common/serial-device.vala ../common/utils.vala ../common/mspcmd.vala ../common/mspmsg.vala ../common/mwplog.vala
 PKGS= --pkg posix --pkg gio-2.0 --pkg gtk+-3.0 --pkg posix --pkg json-glib-1.0
 
 
