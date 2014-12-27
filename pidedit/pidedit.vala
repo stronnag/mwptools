@@ -51,6 +51,9 @@ public class PIDEdit : Object
     private uint t_vers;
     private uint t_misc;
     private bool have_pids;
+    private bool have_vers;
+    private bool have_rc;
+    private bool have_misc;
     private MSP_MISC misc;
     private MSP_RC_TUNING rt;
     private Gtk.Entry eminthr;
@@ -304,9 +307,11 @@ public class PIDEdit : Object
     private uint add_cmd(MSP.Cmds cmd, void* buf, size_t len)
     {
         var tid = Timeout.add(1000, () => {
-                    s.send_command(cmd,buf,len);
+//                stdout.printf("repeat %s\n", MSP.to_string(cmd));
+                s.send_command(cmd,buf,len);
                     return true;
             });
+//        stdout.printf("send %s %u\n", MSP.to_string(cmd), tid);
         s.send_command(cmd,buf,len);
         return tid;
     }
@@ -409,11 +414,12 @@ public class PIDEdit : Object
         return (rp - &tbuf[0]);
     }
 
-    private void stop_timer(ref uint t)
+    private uint stop_timer(uint t, string s)
     {
+//        stdout.printf("stop %u for %s\n", t,s);
         if (t > 0)
             Source.remove(t);
-        t = 0;
+        return 0;
     }
 
     PIDEdit(string[] args)
@@ -475,19 +481,23 @@ public class PIDEdit : Object
                 switch(cmd)
                 {
                     case MSP.Cmds.IDENT:
-                        stop_timer(ref t_vers);
-                        if(icount == 0)
-                        {
-                            var _mrtype = MSP.get_mrtype(raw[1]);
-                            var vers="v%03d %s".printf(raw[0], _mrtype);
-                            verslab.set_label(vers);
-                            t_misc = add_cmd(MSP.Cmds.MISC,null,0);
-                        }
-                        icount++;
-                        break;
+                    t_vers  = stop_timer(t_vers, "indent");
+                    if(have_vers == false)
+                    {
+                        have_vers = true;
+                        var _mrtype = MSP.get_mrtype(raw[1]);
+                        var vers="v%03d %s".printf(raw[0], _mrtype);
+                        verslab.set_label(vers);
+                        t_misc = add_cmd(MSP.Cmds.MISC,null,0);
+                    }
+                    icount++;
+                    break;
 
                     case MSP.Cmds.MISC:
-                        stop_timer(ref t_misc);
+                    t_misc = stop_timer(t_misc, "misc");
+                    if(have_misc == false)
+                    {
+                        have_misc = true;
                         uint8 *rp;
                         rp = deserialise_u16(raw, out misc.intPowerTrigger1);
                         rp = deserialise_u16(rp, out misc.conf_minthrottle);
@@ -503,17 +513,14 @@ public class PIDEdit : Object
                         misc.conf_vbatlevel_crit = *rp;
                         set_misc_ui();
                         t_rc = add_cmd(MSP.Cmds.RC_TUNING,null,0);
-                        break;
-
-                    case MSP.Cmds.PID:
-                        stop_timer(ref t_pids);
-                        have_pids = true;
-                        rawbuf = raw;
-                        set_pid_spins();
-                        break;
+                    }
+                    break;
 
                     case MSP.Cmds.RC_TUNING:
-                        stop_timer(ref t_rc);
+                    t_rc = stop_timer(t_rc, "rc");
+                    if(have_rc == false)
+                    {
+                        have_rc = true;
                         uint8 *rp = raw;
                         rt.rc_rate = *rp++;
                         rt.rc_expo = *rp++;
@@ -524,7 +531,18 @@ public class PIDEdit : Object
                         rt.throttle_expo = *rp;
                         set_rc_tuning();
                         t_pids = add_cmd(MSP.Cmds.PID,null,0);
-                        break;
+                    }
+                    break;
+
+                    case MSP.Cmds.PID:
+                    t_pids = stop_timer(t_pids, "pids");
+                    if(have_pids == false)
+                    {
+                        have_pids = true;
+                        rawbuf = raw;
+                        set_pid_spins();
+                    }
+                    break;
                 }
             });
 
@@ -593,6 +611,9 @@ public class PIDEdit : Object
                     get_rc_tuning();
 
                     Idle.add(() => {
+                            have_pids = false;
+                            have_misc = false;
+                            have_rc = false;
                             uint8 tbuf[32];
                             s.send_command(MSP.Cmds.SET_PID,rawbuf,30);
                             var nb = serialise_misc(misc, tbuf);
@@ -600,8 +621,7 @@ public class PIDEdit : Object
                             nb = serialise_rt(rt, tbuf);
                             s.send_command(MSP.Cmds.SET_RC_TUNING,tbuf, nb);
                             s.send_command(MSP.Cmds.EEPROM_WRITE,null, 0);
-                            s.send_command(MSP.Cmds.PID,null,0);
-                            s.send_command(MSP.Cmds.PID,null,0);
+                            t_misc = add_cmd(MSP.Cmds.MISC,null,0);
                             return false;
                         });
                 }

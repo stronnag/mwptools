@@ -1026,7 +1026,7 @@ public class MWPlanner : Gtk.Application {
 
     private void start_poll_timer()
     {
-        gpstid = Timeout.add(750, () => {
+        gpstid = Timeout.add(1000, () => {
                 if(dopoll)
                 {
                     toc++;
@@ -1057,11 +1057,12 @@ public class MWPlanner : Gtk.Application {
             }
             nrx++;
                 /* Probably takes a minute to change the LIPO */
-            if(nrx > 11)
+            if(nrx > 30)
             {
                 stderr.puts("Restart poll loop\n");
                 init_state();
-                req = MSP.Cmds.IDENT;
+                dopoll = false;
+                add_cmd(MSP.Cmds.IDENT,null,0, 2500);
             }
         }
         else
@@ -1150,7 +1151,6 @@ public class MWPlanner : Gtk.Application {
                 naze32 = true;
 //                string sv = (string)raw[3:6];
 //                MSPLog.message("ID = %4.4s\n", sv);
-
                 mwvar = MWChooser.MWVAR.CF;
                 add_cmd(MSP.Cmds.IDENT,null,0,1000);
                 break;
@@ -2265,7 +2265,6 @@ public class MWPlanner : Gtk.Application {
         gpsinfo.annul();
         navstatus.reset();
         set_bat_stat(0);
-        have_api = have_vers = have_misc = have_status = have_wp = have_nc = false;
         nsats = 0;
         _nsats = 0;
         msp.close();
@@ -2282,8 +2281,7 @@ public class MWPlanner : Gtk.Application {
 
     private void init_state()
     {
-        have_vers = have_misc = have_api =
-            have_status = have_nc = false;
+        have_api = have_vers = have_misc = have_status = have_wp = have_nc = false;
         xbits = icount = api_cnt = 0;
         autocount = 0;
         nrx = 0;

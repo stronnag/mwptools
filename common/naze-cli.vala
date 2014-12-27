@@ -37,10 +37,12 @@ public class MWSerial : Object
     private static string defname;
     private static string devname;
     private static int brate;
+    private static int profile = 0;
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", null},
         { "output-file", 'o', 0, OptionArg.STRING, out defname, "output file name", null},
         { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", null},
+        { "profile", 'p', 0, OptionArg.INT, out profile, "Profile (0-3)", null},
         {null}
     };
 
@@ -116,7 +118,8 @@ public class MWSerial : Object
             io_read = new IOChannel.unix_new(fd);
             if(io_read.set_encoding(null) != IOStatus.NORMAL)
                     error("Failed to set encoding");
-            tag = io_read.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL,
+            tag = io_read.add_watch(IOCondition.IN|IOCondition.HUP|
+                                    IOCondition.NVAL|IOCondition.ERR,
                                     device_read);
         } catch(IOChannelError e) {
             error("IOChannel: %s", e.message);
@@ -186,6 +189,7 @@ public class MWSerial : Object
         size_t res;
         if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
         {
+            stderr.puts("Error cond\n");
             available = false;
             return false;
         }
@@ -295,6 +299,9 @@ public class MWSerial : Object
             return 1;
         }
 
+        if(profile < 0 || profile > 3)
+            profile = 0;
+
         FileStream mdis = null;
         FileStream mos = null;
 
@@ -337,7 +344,7 @@ public class MWSerial : Object
         Timeout.add(300, () => {
                 s.rx_mode = 1;
                 s.nlcount = 0;
-                var str = "dump\n";
+                var str = "profile %d\ndump\n".printf(profile);
                 Posix.write(s.fd,str, str.length);
                 return false;
             });
@@ -349,7 +356,7 @@ public class MWSerial : Object
                 s.nlcount = -1;
                 var str = "exit\n";
                 Posix.write(s.fd,str, str.length);
-                Timeout.add_seconds(1,() => { ml.quit(); return false; });
+//                Timeout.add_seconds(1,() => { ml.quit(); return false; });
                 return false;
             });
         }
