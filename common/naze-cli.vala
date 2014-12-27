@@ -23,6 +23,20 @@
 
 public class MWSerial : Object
 {
+    public enum STATE
+    {
+        none=0,
+        hash=1,
+        done=2,
+        do_reboot = 3,
+        reboot = 4,
+        restart = 5,
+        setconfig = 6,
+        zero = 127, // well, almost
+        timeout = 128,
+        end=255
+    }
+
     public int fd {private set; get;}
     private IOChannel io_read;
     public  bool available {private set; get;}
@@ -46,11 +60,16 @@ public class MWSerial : Object
         {null}
     };
 
-
+    public STATE state;
     public signal void completed();
+    public signal void changed_state(STATE sx);
+    private uint8 lbuf[256];
+    public uint8 lidx = 0;
+    private uint iotid;
 
     public MWSerial()
     {
+        state = STATE.none;
         available = false;
         fd = -1;
         if(devname == null)
@@ -187,6 +206,13 @@ public class MWSerial : Object
     private bool device_read(IOChannel gio, IOCondition cond) {
         uint8 buf[128];
         size_t res;
+
+        if(iotid > 0)
+        {
+            Source.remove(iotid);
+            iotid = 0;
+        }
+
         if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
         {
             stderr.puts("Error cond\n");
@@ -197,47 +223,100 @@ public class MWSerial : Object
         {
             res = Posix.read(fd,buf,128);
             if(res == 0)
+            {
+                if(rx_mode == 1)
+                    start_serial_timer();
+
+                if(state == STATE.do_reboot && lbuf[0] == '#')
+                {
+                    changed_state(STATE.reboot);
+                }
+
                 return true;
-        }
-
-        if (rx_mode == 1)
-        {
-            uint8[] rbuf;
-            if(nlcount == 0)
-            {
-                stderr.write(buf[0:4]);
-                if (buf[0] == 'd' && buf[1] == 'u' && buf[2] == 'm' &&
-                    buf[3] == 'p')
-                {
-                    rbuf = buf[4:res];
-                }
-                else
-                {
-                    rbuf = buf[0:res];
-                }
-            }
-            else
-                rbuf = buf[0:res];
-
-            os.write(rbuf);
-
-            for(var nc = 0; nc < res; nc++)
-            {
-                if (buf[nc] == '\n' || buf[nc] == '\r')
-                    nlcount++;
             }
         }
 
-        for(var nc = 0; nc < res; nc++)
+        if(state == STATE.none)
         {
-            stdout.putc((char)buf[nc]);
-            stdout.flush();
-             if(buf[nc] == '#' && rx_mode == 2 && dis != null)
-             {
-                 Timeout.add(50, () =>  { xmit_file(); return false; });
-             }
+            changed_state(STATE.hash);
         }
+
+        if(state == STATE.restart)
+        {
+            changed_state(STATE.setconfig);
+            return true;
+        }
+
+        for (var nc = 0; nc < res; nc++)
+        {
+            switch(buf[nc])
+            {
+                case '\n':
+                case '\r':
+                    lbuf[lidx] = '\0';
+                    if(rx_mode == 1)
+                    {
+                        if(lidx > 1)
+                        {
+                            if(((string)lbuf).contains("Cleanflight"))
+                            {
+                                stdout.puts("# ");
+                                os.puts("# ");
+                            }
+                            if(((string)lbuf).contains("Entering CLI ") == false)
+                            {
+                                stdout.printf("%s\n", (string)lbuf);
+                                os.printf("%s\n", (string)lbuf);
+                                os.flush();
+                            }
+                        }
+                    }
+                    else if(rx_mode == 2 && dis != null)
+                    {
+                        if(lidx > 1)
+                            stdout.printf("%s\n", (string)lbuf);
+                        if(lbuf[0] == '#')
+                            Timeout.add(50, () =>  { xmit_file(); return false; });
+                    }
+                    lidx = 0;
+                    break;
+                default:
+                    lbuf[lidx++] = buf[nc];
+                    lbuf[lidx] = 0;
+                    if(((string)lbuf).contains("Rebooting"))
+                    {
+                        changed_state(STATE.reboot);
+                        lidx = 0;
+                    }
+                    break;
+            }
+        }
+
+        if(rx_mode == 1)
+            start_serial_timer();
+
         return true;
+    }
+
+    private void start_serial_timer()
+    {
+        if(state == STATE.hash)
+        {
+            iotid = Timeout.add(1000, () => {
+                    changed_state(STATE.timeout);
+                    iotid = 0;
+                    lidx = 0;
+                    return false;
+                });
+        }
+    }
+
+    public void start_state()
+    {
+        Timeout.add(100, () => {
+                Posix.write(fd,"#", 1);
+                return (state == STATE.none || state == STATE.restart) ? true : false;
+            });
     }
 
     private void setfile (FileStream _dis)
@@ -270,15 +349,13 @@ public class MWSerial : Object
                 if(line.length > 0 && line[0] != '#')
                 {
                     if (line.length > 5 && line.substring(0,5) == "Clean")
-                    {
-                        MSPLog.message("skip %s\n", line);
-                    }
+                        ; // skip, old version
                     else
                     {
                         Posix.write(fd, line, line.length);
                         Posix.write(fd,"\n", 1);
                         done = true;
-                    }
+                   }
                 }
             }
         }
@@ -322,8 +399,57 @@ public class MWSerial : Object
         var s = new MWSerial();
         var ml = new MainLoop();
         s.rx_mode = -1;
+        s.state = STATE.none;
 
         s.completed.connect(() => {ml.quit();});
+        s.changed_state.connect((x) => {
+
+                switch(x)
+                {
+                    case STATE.hash:
+                        s.state = x;
+                        s.rx_mode = 1;
+                        var str = "profile %d\ndump\n".printf(profile);
+                        Posix.write(s.fd,str, str.length);
+                        break;
+
+                    case STATE.timeout:
+                        s.rx_mode = -1;
+                        s.state = x;
+                        if(mdis == null)
+                        {
+                            var str = "exit\r\n";
+                            Posix.write(s.fd,str, str.length);
+                            Idle.add(() => { ml.quit(); return false;});
+                        }
+                        else
+                        {
+                            s.state = STATE.do_reboot;
+                            s.lidx = 0;
+                            var str = "defaults\n";
+                            var n = Posix.write(s.fd,str, str.length);
+                            stdout.printf("#### set defaults ####\n");
+                        }
+                        break;
+                    case STATE.reboot:
+                        stdout.printf("#### reboot ####\n");
+                        if(s.state != STATE.setconfig)
+                        {
+                            s.state = STATE.restart;
+                            s.start_state();
+                        }
+                        break;
+                    case STATE.setconfig:
+                        s.state = x;
+                        stdout.printf("#### set conf ####\n");
+                        s.setfile(mdis);
+                        s.rx_mode = 2;
+                        Posix.write(s.fd,"#\n", 2);
+                        break;
+                    default:
+                        break;
+                }
+            });
 
         time_t currtime;
         time_t(out currtime);
@@ -335,51 +461,11 @@ public class MWSerial : Object
 
         mos = FileStream.open(fn, "w");
         s.setdump(mos);
-
-        Timeout.add(100, () => {
-                Posix.write(s.fd,"#", 1);
-                return false;
-            });
-
-        Timeout.add(300, () => {
-                s.rx_mode = 1;
-                s.nlcount = 0;
-                var str = "profile %d\ndump\n".printf(profile);
-                Posix.write(s.fd,str, str.length);
-                return false;
-            });
-
-        if(mdis == null)
-        {
-            Timeout.add(2000, () => {
-                s.rx_mode = -1;
-                s.nlcount = -1;
-                var str = "exit\n";
-                Posix.write(s.fd,str, str.length);
-//                Timeout.add_seconds(1,() => { ml.quit(); return false; });
-                return false;
-            });
-        }
-        else
-        {
-            Timeout.add(2000, () => {
-                    s.rx_mode = -1;
-                    var str = "defaults\n";
-                    Posix.write(s.fd,str, str.length);
-                    return false;
-                });
-
-            Timeout.add(15000, () => {
-                    s.rx_mode = 2;
-                    s.setfile(mdis);
-                    Posix.write(s.fd,"#", 1);
-                    return false;
-                });
-        }
-
+        s.start_state();
         ml.run();
+        s.close();
         mos = null;
-        stdout.puts("\nDone\n");
+        stdout.puts("Done\n");
         return 0;
     }
 }
