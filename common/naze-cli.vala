@@ -52,11 +52,13 @@ public class MWSerial : Object
     private static string devname;
     private static int brate;
     private static int profile = 0;
+    private static int tprofile = 0;
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", null},
         { "output-file", 'o', 0, OptionArg.STRING, out defname, "output file name", null},
         { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", null},
-        { "profile", 'p', 0, OptionArg.INT, out profile, "Profile (0-3)", null},
+        { "profile", 'p', 0, OptionArg.INT, out profile, "Profile (0-2)", null},
+        { "to-profile", 'P', 0, OptionArg.INT, out tprofile, "Profile (0-2)", null},
         {null}
     };
 
@@ -376,8 +378,14 @@ public class MWSerial : Object
             return 1;
         }
 
-        if(profile < 0 || profile > 3)
+        if(profile < 0 || profile > 2)
             profile = 0;
+
+        if(tprofile < profile)
+            tprofile = profile;
+
+        if(tprofile > 2)
+            tprofile = 2;
 
         FileStream mdis = null;
         FileStream mos = null;
@@ -403,31 +411,43 @@ public class MWSerial : Object
 
         s.completed.connect(() => {ml.quit();});
         s.changed_state.connect((x) => {
-
                 switch(x)
                 {
                     case STATE.hash:
-                        s.state = x;
-                        s.rx_mode = 1;
-                        var str = "profile %d\ndump\n".printf(profile);
-                        Posix.write(s.fd,str, str.length);
-                        break;
+//                    stderr.printf("--- HASH %d\n", profile);
+                    s.state = x;
+                    s.rx_mode = 1;
+                    var str = "profile %d\n".printf(profile);
+                    Posix.write(s.fd,str, str.length);
+                    Posix.write(s.fd,str, str.length); // deliberate!
+                    str = "dump\n";
+                    Posix.write(s.fd,str, str.length);
+                    break;
 
                     case STATE.timeout:
                         s.rx_mode = -1;
                         s.state = x;
                         if(mdis == null)
                         {
-                            var str = "exit\r\n";
-                            Posix.write(s.fd,str, str.length);
-                            Idle.add(() => { ml.quit(); return false;});
+                            if(profile < tprofile)
+                            {
+                                profile++;
+                                s.rx_mode = 1;
+                                s.changed_state(STATE.hash);
+                            }
+                            else
+                            {
+                                var str = "exit\r\n";
+                                Posix.write(s.fd,str, str.length);
+                                Idle.add(() => { ml.quit(); return false;});
+                            }
                         }
                         else
                         {
                             s.state = STATE.do_reboot;
                             s.lidx = 0;
                             var str = "defaults\n";
-                            var n = Posix.write(s.fd,str, str.length);
+                            Posix.write(s.fd,str, str.length);
                             stdout.printf("#### set defaults ####\n");
                         }
                         break;
