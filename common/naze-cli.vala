@@ -326,9 +326,10 @@ public class MWSerial : Object
         dis = _dis;
     }
 
-    private void setdump (FileStream _os)
+    private void setdump (FileStream _os, string dt)
     {
         os = _os;
+        os.printf("# mwptools / naze-cli dump %s\n", dt);
     }
 
     private void xmit_file()
@@ -474,13 +475,15 @@ public class MWSerial : Object
         time_t currtime;
         time_t(out currtime);
         string fn;
+        string dt;
+        dt = Time.local(currtime).format("%FT%H%M%S");
         if(defname == null)
-            fn  = "naze_%s.txt".printf(Time.local(currtime).format("%F_%H%M%S"));
+            fn  = "cf_%s.txt".printf(dt);
         else
             fn = defname;
 
         mos = FileStream.open(fn, "w");
-        s.setdump(mos);
+        s.setdump(mos,dt);
         s.start_state();
         ml.run();
         s.close();
