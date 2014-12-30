@@ -170,6 +170,8 @@ public class ReplayThread : GLib.Object
                         bool armed = false;
                         uint8 buf[64];
                         var parser = new Json.Parser ();
+                        bool have_data = false;
+
                         while (playon && (line = dis.read_line ()) != null) {
                             parser.load_from_data (line);
                             var obj = parser.get_root ().get_object ();
@@ -177,14 +179,18 @@ public class ReplayThread : GLib.Object
                             if(lt != 0)
                             {
                                 ulong ms;
-                                if (delay == true)
-                                    ms = (ulong)((utime - lt) * 1000 * 1000);
+                                if (delay  && have_data)
+                                {
+                                    var dly = (utime - lt);
+                                    ms = (ulong)(dly * 1000 * 1000);
+                                }
                                 else
                                     ms = 2*1000;
                                 Thread.usleep(ms);
                             }
 
                             var typ = obj.get_string_member("type");
+                            have_data = (typ != "init");
                             switch(typ)
                             {
                                 case "init":

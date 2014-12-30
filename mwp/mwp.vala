@@ -165,6 +165,7 @@ public class MWPlanner : Gtk.Application {
     private static bool norotate = false; // workaround for Ubuntu & old champlain
     private static bool gps_trail = false;
     private static bool no_max = false;
+    private static bool force_mag = false;
     private static string mwoptstr;
     private uint nrx = 0;
 
@@ -292,6 +293,7 @@ public class MWPlanner : Gtk.Application {
         { "ignore-sizing", 0, 0, OptionArg.NONE, out ignore_sz, "ignore minimum size constraint", null},
         { "ignore-rotation", 0, 0, OptionArg.NONE, out norotate, "ignore vehicle icon rotation on old libchamplain", null},
         { "dont-maximise", 0, 0, OptionArg.NONE, out no_max, "don't maximise the window", null},
+        { "force-mag", 0, 0, OptionArg.NONE, out force_mag, "force mag for vehicle direction", null},
         {null}
     };
 
@@ -1298,7 +1300,10 @@ public class MWPlanner : Gtk.Application {
                             set_error_status("No GPS detected");
                         }
 
-                        usemag = ((sensor & MSP.Sensors.MAG) == MSP.Sensors.MAG);
+                        if(force_mag)
+                            usemag = true;
+                        else
+                            usemag = ((sensor & MSP.Sensors.MAG) == MSP.Sensors.MAG);
                         if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
                         {
                             requests += MSP.Cmds.ATTITUDE;
@@ -2635,6 +2640,7 @@ public class MWPlanner : Gtk.Application {
                 // Process response:
             if (chooser.run () == Gtk.ResponseType.ACCEPT) {
                 var fn = chooser.get_filename ();
+                usemag = force_mag;
                 run_replay(fn, delay);
             }
             chooser.close ();
