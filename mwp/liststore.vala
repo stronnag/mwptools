@@ -861,7 +861,7 @@ public class ListBox : GLib.Object
             var res = calc_mission_dist(out d, out lt);
             if (res == true)
             {
-                var et = (int)(d / 2.5);
+                var et = (int)(d / mp.conf.nav_speed);
                  route = "Distance: %.0fm, fly: %ds, loiter: %ds".printf(d,et,lt);
             }
             else
@@ -874,7 +874,7 @@ public class ListBox : GLib.Object
         mp.stslabel.set_text(route);
     }
 
-    private bool calc_mission_dist(out double d, out int lt)
+    public bool calc_mission_dist(out double d, out int lt)
     {
         Gtk.TreeIter iter;
         MissionItem[] arry = {};

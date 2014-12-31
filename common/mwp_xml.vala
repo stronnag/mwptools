@@ -42,6 +42,10 @@ public class Mission : GLib.Object
     public double cx;
     public uint npoints;
     public uint zoom;
+    public double nspeed;
+    public double dist;
+    public int et;
+    public int lt;
 
     public Mission()
     {
@@ -239,6 +243,29 @@ public class Mission : GLib.Object
         subnode->new_prop ("zoom", zoom.to_string());
         subnode->new_prop ("cx", cx.to_string());
         subnode->new_prop ("cy", cy.to_string());
+
+        if(et > 0)
+        {
+            Xml.Node* xsubnode;
+            Xml.Node* ysubnode;
+            xsubnode = subnode->new_text_child (ns, "details", "");
+
+            ysubnode = xsubnode->new_text_child (ns, "distance", "");
+            ysubnode->new_prop ("units", "m");
+            ysubnode->new_prop ("value", "%.0f".printf(dist));
+
+            ysubnode = xsubnode->new_text_child (ns, "nav-speed", "");
+            ysubnode->new_prop ("units", "m/s");
+            ysubnode->new_prop ("value", "%.1f".printf(nspeed));
+
+            ysubnode = xsubnode->new_text_child (ns, "fly-time", "");
+            ysubnode->new_prop ("units", "s");
+            ysubnode->new_prop ("value", et.to_string());
+
+            ysubnode = xsubnode->new_text_child (ns, "loiter-time", "");
+            ysubnode->new_prop ("units", "s");
+            ysubnode->new_prop ("value", lt.to_string());
+        }
 
         foreach (MissionItem m in this.waypoints)
         {
