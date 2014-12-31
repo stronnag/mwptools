@@ -280,7 +280,7 @@ public class Mission : GLib.Object
             subnode->new_prop ("parameter3", m.param3.to_string());
         }
 
-
+/*
         string xmlstr;
         doc->dump_memory_enc_format (out xmlstr);
         var dos = FileStream.open(path, "w");
@@ -291,6 +291,9 @@ public class Mission : GLib.Object
         }
         else
             stderr.printf ("Error opening %s\n", path);
+*/
+        doc->save_format_file_enc(path);
+
         delete doc;
         Parser.cleanup ();
     }
