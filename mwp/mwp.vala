@@ -230,7 +230,9 @@ public class MWPlanner : Gtk.Application {
     private bool have_status;
     private bool have_wp;
     private bool have_nc;
-
+    private bool have_fcv;
+    private string fcv;
+    private uint8 gpscnt = 0;
     private time_t last_an = 0;
     private time_t last_wp = 0;
 
@@ -1061,7 +1063,7 @@ public class MWPlanner : Gtk.Application {
                 /* Probably takes a minute to change the LIPO */
             if(nrx > 30)
             {
-                stderr.puts("Restart poll loop\n");
+                MSPLog.message("Restart poll loop\n");
                 init_state();
                 dopoll = false;
                 add_cmd(MSP.Cmds.IDENT,null,0, 2500);
@@ -1086,7 +1088,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     send_cmd(req, null, 0);
                     last_an = now;
-//                    stderr.puts("send analog\n");
+//                    MSPLog.message("send analog\n");
                 }
                 else
                 {
@@ -1130,6 +1132,10 @@ public class MWPlanner : Gtk.Application {
                     have_api = true;
                     add_cmd(MSP.Cmds.IDENT,null,0, 1000);
                     break;
+                case MSP.Cmds.FC_VARIANT:
+                    have_fcv=true;
+                    add_cmd(MSP.Cmds.IDENT,null,0, 1000);
+                    break;
                 default:
                     break;
             }
@@ -1150,10 +1156,42 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.API_VERSION:
                 remove_tid(ref cmdtid);
                 have_api = true;
+                if(len > 32)
+                {
+                    naze32 = true;
+                    mwvar = MWChooser.MWVAR.CF;
+                    add_cmd(MSP.Cmds.IDENT,null,0,1000);
+                }
+                else
+                {
+                    stderr.printf("%d %d %d\n", raw[0], raw[1], raw[2]);
+                    add_cmd(MSP.Cmds.FC_VARIANT,null,0,1000);
+                }
+
+                break;
+
+            case MSP.Cmds.FC_VARIANT:
+                remove_tid(ref cmdtid);
+                have_fcv = true;
                 naze32 = true;
-//                string sv = (string)raw[3:6];
-//                MSPLog.message("ID = %4.4s\n", sv);
-                mwvar = MWChooser.MWVAR.CF;
+                have_fcv = true;
+                raw[4] = 0;
+                fcv = (string)raw[0:4];
+                switch(fcv)
+                {
+                    case "CLFL":
+                        mwvar = MWChooser.MWVAR.CF;
+                        add_cmd(MSP.Cmds.FC_VERSION,null,0,1000);
+                        break;
+                    default:
+                        add_cmd(MSP.Cmds.IDENT,null,0,1000);
+                        break;
+                }
+                break;
+
+            case MSP.Cmds.FC_VERSION:
+                remove_tid(ref cmdtid);
+                fcv = "%s v%d.%d.%d".printf(fcv,raw[0],raw[1],raw[2]);
                 add_cmd(MSP.Cmds.IDENT,null,0,1000);
                 break;
 
@@ -1204,7 +1242,17 @@ public class MWPlanner : Gtk.Application {
                             _mwvar = (navcap) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
                         }
                     }
-                    var vers="%s v%03d".printf(MWChooser.mwnames[_mwvar],mvers);
+                    string vers;
+
+                    if(fcv != null)
+                    {
+                        vers="%s compat %03d".printf(fcv, mvers);
+                    }
+                    else
+                    {
+                        vers="%s v%03d".printf(MWChooser.mwnames[_mwvar], mvers);
+                    }
+
                     verlab.set_label(vers);
                     typlab.set_label(MSP.get_mrtype(mrtype));
                     stdout.printf("IDENT %s %d\n", vers, mrtype);
@@ -1274,6 +1322,11 @@ public class MWPlanner : Gtk.Application {
 
                         if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
                         {
+                            if(gpscnt > 0)
+                            {
+                                set_error_status("");
+                                gpscnt = 0;
+                            }
                             sflags |= NavStatus.SPK.GPS;
                             if(navcap == true)
                             {
@@ -1298,6 +1351,15 @@ public class MWPlanner : Gtk.Application {
                         else
                         {
                             set_error_status("No GPS detected");
+                            MSPLog.message("no gps, sensor = 0x%x\n", sensor);
+                            if(gpscnt < 2)
+                            {
+                                gpscnt++;
+                                have_status = false;
+                                add_cmd(MSP.Cmds.STATUS,null,0, 1000);
+                            }
+                            else
+                                gpscnt = 0;
                         }
 
                         if(force_mag)
@@ -2178,14 +2240,16 @@ public class MWPlanner : Gtk.Application {
     private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, int wait=1000)
     {
         cmdtid = Timeout.add(wait, () => {
-                if(cmd == MSP.Cmds.API_VERSION)
+                switch(cmd)
                 {
+                    case MSP.Cmds.API_VERSION:
                     api_cnt++;
                     if(api_cnt == 2)
                     {
                         cmd = MSP.Cmds.IDENT;
                         api_cnt = 255;
                     }
+                    break;
                 }
                 send_cmd(cmd,buf,len);
                 return true;
@@ -2286,7 +2350,9 @@ public class MWPlanner : Gtk.Application {
 
     private void init_state()
     {
-        have_api = have_vers = have_misc = have_status = have_wp = have_nc = false;
+        have_api = have_vers = have_misc = have_status = have_wp = have_nc =
+            have_fcv = false;
+        fcv = null;
         xbits = icount = api_cnt = 0;
         autocount = 0;
         nrx = 0;
@@ -2300,8 +2366,8 @@ public class MWPlanner : Gtk.Application {
         toc = tot = 0;
         anvals = 0;
         acycle = 0;
+        gpscnt = 0;
     }
-
 
     private void connect_serial()
     {
@@ -2750,10 +2816,6 @@ public class MWPlanner : Gtk.Application {
 
     public static int main (string[] args)
     {
-        if(Posix.isatty(stderr.fileno()) == false)
-        {
-            stderr = FileStream.open("/tmp/mwp-stderr.txt","a");
-        }
         time_t currtime;
         time_t(out currtime);
         stderr.puts(Time.local(currtime).format("mwp @%FT%T%z\n"));
@@ -2771,7 +2833,10 @@ public class MWPlanner : Gtk.Application {
                           "options\n", args[0]);
             return 1;
         }
-
+        if(Posix.isatty(stderr.fileno()) == false)
+        {
+            stderr = FileStream.open("/tmp/mwp-stderr.txt","a");
+        }
         MWPlanner app = new MWPlanner();
         app.run ();
         return 0;
