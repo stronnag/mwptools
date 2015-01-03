@@ -34,6 +34,26 @@ public struct TelemStats
     ulong avg;
 }
 
+
+public struct BatteryLevels
+{
+    float cell;
+    float limit;
+    string colour;
+    string audio;
+    string label;
+    bool reached;
+    public BatteryLevels(float _cell, string _colour, string? _audio, string? _label)
+    {
+        cell = _cell;
+        limit = 0f;
+        colour = _colour;
+        audio = _audio;
+        label = _label;
+        reached = false;
+    }
+}
+
 public class PosFormat : GLib.Object
 {
     public static string lat(double _lat, bool dms)
@@ -171,10 +191,7 @@ public class MWPlanner : Gtk.Application {
 
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
     private uint8 vwarn1;
-    private uint8 vwarn2;
-    private uint8 vcrit;
     private int licol;
-    private int bleetat;
     private DockMaster master;
     private DockLayout layout;
     public  DockItem[] dockitem;
@@ -231,6 +248,7 @@ public class MWPlanner : Gtk.Application {
     private bool have_wp;
     private bool have_nc;
     private bool have_fcv;
+    private bool vinit;
     private string fcv;
     private uint8 gpscnt = 0;
     private time_t last_an = 0;
@@ -280,6 +298,14 @@ public class MWPlanner : Gtk.Application {
         P3 = (1<<7),
         FLAG = (1<<8)
     }
+
+    private static BatteryLevels [] vlevels = {
+        BatteryLevels(3.7f, "green", null, null),
+        BatteryLevels(3.57f, "yellow", null, null),
+        BatteryLevels(3.47f, "orange", "sat_alert.ogg",null),
+        BatteryLevels(3.0f,  "red", "bleet.ogg",null),
+        BatteryLevels(0.0f, "white", null, "n/a")
+    };
 
     private static const string[] failnames = {"","WPNO","LAT","LON","ALT","P1","P2","P3","FLAG"};
 
@@ -933,6 +959,19 @@ public class MWPlanner : Gtk.Application {
                 autocount = 0;
             });
 
+        if(conf.vlevels != null)
+        {
+            string [] parts;
+            parts = conf.vlevels.split(";");
+            var i = 0;
+            foreach (unowned string str in parts)
+            {
+                var d = get_locale_double(str);
+                vlevels[i].cell = (float)d;
+                i++;
+            }
+        }
+
         if(autocon)
         {
             autocon_cb.active=true;
@@ -1269,8 +1308,6 @@ public class MWPlanner : Gtk.Application {
                 remove_tid(ref cmdtid);
                 have_misc = true;
                 vwarn1 = raw[19];
-                vwarn2 = raw[20];
-                vcrit =  raw[21];
                 add_cmd(MSP.Cmds.STATUS,null,0, 1000);
                 break;
 
@@ -2060,33 +2097,6 @@ public class MWPlanner : Gtk.Application {
         return (rp-&tmp[0]);
     }
 
-    private int getbatcol(int ivbat)
-    {
-        int icol;
-        if(ivbat < vcrit /2 || ivbat == 0)
-        {
-            icol = 4;
-        }
-        else
-        {
-            if (ivbat <= vcrit)
-            {
-                icol = 3;
-            }
-            else if (ivbat <= vwarn2)
-                icol = 2;
-            else if (ivbat <= vwarn1)
-            {
-                icol = 1;
-            }
-            else
-            {
-                icol= 0;
-            }
-        }
-        return icol;
-    }
-
     private void gps_alert()
     {
         bleet_sans_merci("sat_alert.ogg");
@@ -2108,45 +2118,60 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
+    private void init_battery(uint8 ivbat)
+    {
+        var ncells = ivbat / 37;
+        stderr.printf("init %d %d %d\n", ivbat, vwarn1, ncells);
+
+        for(var i = 0; i < vlevels.length; i++)
+        {
+            vlevels[i].limit = vlevels[i].cell*ncells;
+            vlevels[i].reached = false;
+        }
+        vinit = true;
+        vwarn1 = 0;
+    }
+
     private void set_bat_stat(uint8 ivbat)
     {
         string vbatlab;
-        string[] bcols = {"green","yellow","orange","red","white" };
-        float vf=0f;
-
-        if(vwarn1 < 36 && vwarn1 > 30 && vwarn2 < 45 && vwarn2 > 40)
+        float  vf = (float)ivbat/10.0f;
+        int icol = 0;
+        if (ivbat > 0)
         {
-            var ncell = ivbat / vwarn1;
-            var vmin = vwarn1;
-            var vmax = vwarn2;
-            vcrit = vmin * ncell;
-            vwarn1 = vmax * ncell * 84 / 100;
-            vwarn2 = vmax * ncell * 80 / 100;
-        }
+            if(vinit == false)
+                init_battery(ivbat);
 
-        string str;
-        var icol = getbatcol(ivbat);
-        if (icol == 4)
-        {
-            str="n/a";
+            foreach(var v in vlevels)
+            {
+                stderr.printf("%.1f %.2f %d\n", vf, v.limit, icol);
+                if(vf >= v.limit)
+                    break;
+                icol += 1;
+            }
         }
         else
+            icol = vlevels.length-1;
+
+        string str;
+        if(vlevels[icol].label == null)
         {
-            vf = (float)ivbat/10.0f;
             str = "%.1fv".printf(vf);
         }
+        else
+            str = vlevels[icol].label;
 
         vbatlab="<span background=\"%s\" weight=\"bold\">%s</span>".printf(
-            bcols[icol], str);
+             vlevels[icol].colour, str);
         labelvbat.set_markup(vbatlab);
         navstatus.volt_update(str,icol,vf);
-        if(icol != 0 && icol != 4 && icol > licol)
+
+        if(vlevels[icol].reached == false)
         {
-            if(bleetat != icol)
+            vlevels[icol].reached = true;
+            if(vlevels[icol].audio != null && robj == null)
             {
-                if(robj == null)
-                    bleet_sans_merci();
-                bleetat = icol;
+                bleet_sans_merci(vlevels[icol].audio);
             }
         }
         licol= icol;
@@ -2362,6 +2387,7 @@ public class MWPlanner : Gtk.Application {
         gpsinfo.annul();
         navstatus.reset();
         telstats.annul();
+        vinit = false;
         set_bat_stat(0);
         toc = tot = 0;
         anvals = 0;

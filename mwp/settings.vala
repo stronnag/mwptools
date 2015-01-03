@@ -50,6 +50,7 @@ public class MWPSettings : GLib.Object
     public string atstart {get; private set;}
     public string atexit {get; private set;}
     public string? fctype {get; private set;}
+    public string? vlevels {get; private set;}
     public bool checkswitches {get; set; default=false;}
 
     public MWPSettings()
@@ -139,7 +140,8 @@ public class MWPSettings : GLib.Object
             atexit = settings.get_string ("atexit");
         if(s == null || s == "fctype")
             fctype = settings.get_string ("fctype");
-
+        if(s == null || s == "vlevels")
+            fctype = settings.get_string ("vlevels");
         if(s == null || s == "update-interval")
         {
             updint = settings.get_double("update-interval");

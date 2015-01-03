@@ -164,6 +164,13 @@
       <description></description>
     </key>
 
+    <key name="vlevels" type="s">
+      <summary>Voltage levels</summary>
+      <default>""</default>
+      <description>Semi-colon(;) separated list of *cell* voltages values for
+      transition between voltage label colours</description>
+    </key>
+
     <key name="update-interval" type="d">
       <default>1.0</default>
       <summary>Telemetry update</summary>
