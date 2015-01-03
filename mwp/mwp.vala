@@ -180,7 +180,6 @@ public class MWPlanner : Gtk.Application {
     private static bool mkcon = false;
     private static bool ignore_sz = false;
     private static bool nopoll = false;
-    private static bool xnopoll;
     private static bool rawlog = false;
     private static bool norotate = false; // workaround for Ubuntu & old champlain
     private static bool gps_trail = false;
@@ -341,8 +340,6 @@ public class MWPlanner : Gtk.Application {
         builder = new Builder ();
         conf = new MWPSettings();
         conf.read_settings();
-
-        stderr.printf("FC type %s\n", conf.fctype);
 
         if(conf.fctype != null)
             mwvar = MWChooser.fc_from_name(conf.fctype);
@@ -1432,7 +1429,7 @@ public class MWPlanner : Gtk.Application {
                         if(nopoll == false && nreqs > 0)
                         {
 //                            MSPLog.message("Start poller\n");
-                            dopoll = true;
+                            dopoll = (thr == null);
                             tcycle = 0;
                             lastp = GLib.get_monotonic_time();
                         }
@@ -2169,7 +2166,7 @@ public class MWPlanner : Gtk.Application {
             vlevels[icol].reached = true;
             if(vlevels[icol].audio != null)
             {
-                if(robj == null)
+                if(thr == null)
                     bleet_sans_merci(vlevels[icol].audio);
                 else
                     stderr.printf("audio alarm %s\n", vlevels[icol].audio);
@@ -2781,7 +2778,6 @@ public class MWPlanner : Gtk.Application {
     {
         thr.join();
         thr = null;
-        nopoll = xnopoll;
         remove_tid(ref plid);
         remove_tid(ref gpstid);
         try  { io_read.shutdown(false); } catch {}
@@ -2792,17 +2788,15 @@ public class MWPlanner : Gtk.Application {
         conf.audioarmed = xaudio;
         duration = -1;
         armtime = 0;
-
         conbutton.sensitive = true;
         menureplay.label = "Replay Log file";
+        robj = null;
     }
 
     private void run_replay(string fn, bool delay)
     {
         xlog = conf.logarmed;
         xaudio = conf.audioarmed;
-        xnopoll = nopoll;
-        nopoll = true;
         playfd = new int[2];
         var sr =  Posix.socketpair (SocketFamily.UNIX,
                           SocketType.DATAGRAM, 0, playfd);
