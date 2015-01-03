@@ -342,6 +342,8 @@ public class MWPlanner : Gtk.Application {
         conf = new MWPSettings();
         conf.read_settings();
 
+        stderr.printf("FC type %s\n", conf.fctype);
+
         if(conf.fctype != null)
             mwvar = MWChooser.fc_from_name(conf.fctype);
 
@@ -1203,7 +1205,6 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
-                    stderr.printf("%d %d %d\n", raw[0], raw[1], raw[2]);
                     add_cmd(MSP.Cmds.FC_VARIANT,null,0,1000);
                 }
 
@@ -2121,8 +2122,6 @@ public class MWPlanner : Gtk.Application {
     private void init_battery(uint8 ivbat)
     {
         var ncells = ivbat / 37;
-        stderr.printf("init %d %d %d\n", ivbat, vwarn1, ncells);
-
         for(var i = 0; i < vlevels.length; i++)
         {
             vlevels[i].limit = vlevels[i].cell*ncells;
@@ -2144,7 +2143,6 @@ public class MWPlanner : Gtk.Application {
 
             foreach(var v in vlevels)
             {
-                stderr.printf("%.1f %.2f %d\n", vf, v.limit, icol);
                 if(vf >= v.limit)
                     break;
                 icol += 1;
@@ -2169,9 +2167,12 @@ public class MWPlanner : Gtk.Application {
         if(vlevels[icol].reached == false)
         {
             vlevels[icol].reached = true;
-            if(vlevels[icol].audio != null && robj == null)
+            if(vlevels[icol].audio != null)
             {
-                bleet_sans_merci(vlevels[icol].audio);
+                if(robj == null)
+                    bleet_sans_merci(vlevels[icol].audio);
+                else
+                    stderr.printf("audio alarm %s\n", vlevels[icol].audio);
             }
         }
         licol= icol;

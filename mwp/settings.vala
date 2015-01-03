@@ -141,7 +141,7 @@ public class MWPSettings : GLib.Object
         if(s == null || s == "fctype")
             fctype = settings.get_string ("fctype");
         if(s == null || s == "vlevels")
-            fctype = settings.get_string ("vlevels");
+            vlevels = settings.get_string ("vlevels");
         if(s == null || s == "update-interval")
         {
             updint = settings.get_double("update-interval");
