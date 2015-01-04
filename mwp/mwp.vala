@@ -226,7 +226,6 @@ public class MWPlanner : Gtk.Application {
     private MSP.Cmds[] requests = {};
     private int tcycle = 0;
     private bool dopoll;
-    private uint8 wpx = 0;
     private bool rxerr = false;
     private int64 lastp;
     private int64 acycle;
@@ -251,7 +250,21 @@ public class MWPlanner : Gtk.Application {
     private string fcv;
     private uint8 gpscnt = 0;
     private time_t last_an = 0;
-    private time_t last_wp = 0;
+
+    private bool want_home;
+    private bool want_ph;
+    private bool want_rth;
+
+    public struct Position
+    {
+        double lat;
+        double lon;
+        double alt;
+    }
+
+    private Position home_pos;
+    private Position rth_pos;
+    private Position ph_pos;
 
     private enum DOCKLETS
     {
@@ -1134,6 +1147,7 @@ public class MWPlanner : Gtk.Application {
                     send_poll();
                 }
                 break;
+/**
             case MSP.Cmds.WP:
                 if( gpsfix == true && armed == 1 && (now - last_wp) > 1)
                 {
@@ -1148,6 +1162,7 @@ public class MWPlanner : Gtk.Application {
                     send_poll();
                 }
                 break;
+***/
             default:
                 send_cmd(req, null, 0);
 //                MSPLog.message("send %d\n", req);
@@ -1333,6 +1348,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(have_status == false)
                     {
+                        want_home = want_ph = want_rth = false;
                         remove_tid(ref cmdtid);
                         have_status = true;
                         if(conf.checkswitches && ((flag & 6) == 0))
@@ -1376,12 +1392,14 @@ public class MWPlanner : Gtk.Application {
                                 craft = new Craft(view, mrtype,norotate, gps_trail);
                                 craft.park();
                             }
+/*
                             if(naze32)
                             {
                                 wpmgr.wp_flag = WPDL.POLL;
                                 requests += MSP.Cmds.WP;
                                 reqsize += 18;
                             }
+*/
                         }
                         else
                         {
@@ -1479,9 +1497,11 @@ public class MWPlanner : Gtk.Application {
                                 Logger.armed(true,duration,flag, sensor);
                             }
                             duration_timer();
+                            want_home = true;
                         }
                         else
                         {
+                            want_home = false;
                             if (conf.audioarmed == true)
                             {
                                 audio_cb.active = false;
@@ -1499,10 +1519,20 @@ public class MWPlanner : Gtk.Application {
                     {
                         report_bits(flag);
                     }
+
+                    if((flag & (1 << 7)) != (xbits & (1 << 7)))
+                    {
+                        want_rth = true;
+                    }
+
+                    if((flag & (1 << 8)) != (xbits & (1 << 8)))
+                    {
+                        want_ph = true;
+                    }
                     xbits = flag;
                 }
                 break;
-
+/*
             case MSP.Cmds.INFO_WP:
                 uint8* rp = raw;
                 var w = MSP_WP();
@@ -1517,7 +1547,7 @@ public class MWPlanner : Gtk.Application {
                     craft.special_wp(w.wp_no, rlat, rlon);
                 }
                 break;
-
+*/
             case MSP.Cmds.NAV_STATUS:
             {
                 MSP_NAV_STATUS ns = MSP_NAV_STATUS();
@@ -1634,6 +1664,39 @@ public class MWPlanner : Gtk.Application {
                         }
                         if (centreon == true)
                             view.center_on(gpsinfo.lat,gpsinfo.lon);
+                    }
+                    if(want_home)
+                    {
+                        want_home = false;
+                        home_pos.lat = gpsinfo.lat;
+                        home_pos.lon = gpsinfo.lon;
+                        home_pos.alt = rg.gps_altitude;
+                        if(craft != null)
+                        {
+                            craft.special_wp(0, gpsinfo.lat, gpsinfo.lon);
+                        }
+                    }
+                    if(want_ph)
+                    {
+                        want_ph = false;
+                        ph_pos.lat = gpsinfo.lat;
+                        ph_pos.lon = gpsinfo.lon;
+                        ph_pos.alt = rg.gps_altitude;
+                        if(craft != null)
+                        {
+                            craft.special_wp(1, gpsinfo.lat, gpsinfo.lon);
+                        }
+                    }
+                    if(want_rth)
+                    {
+                        want_rth = false;
+                        rth_pos.lat = gpsinfo.lat;
+                        rth_pos.lon = gpsinfo.lon;
+                        rth_pos.alt = rg.gps_altitude;
+                        if(craft != null)
+                        {
+                            craft.special_wp(2, gpsinfo.lat, gpsinfo.lon);
+                        }
                     }
                 }
             }
@@ -1784,6 +1847,7 @@ public class MWPlanner : Gtk.Application {
                         request_wp(w.wp_no+1);
                     }
                 }
+/***
                 else if (wpmgr.wp_flag == WPDL.POLL)
                 {
                     w = MSP_WP();
@@ -1805,6 +1869,7 @@ public class MWPlanner : Gtk.Application {
                             craft.special_wp(w.wp_no, rlat, rlon);
                     }
                 }
+***/
                 else
                 {
                     MSPLog.message("unsolicited WP #%d\n", w.wp_no);

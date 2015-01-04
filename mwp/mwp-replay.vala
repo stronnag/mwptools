@@ -123,6 +123,7 @@ public class ReplayThread : GLib.Object
         return (p - &tx[0]);
     }
 
+/********* not used ************
     private size_t serialise_wp(MSP_WP w, uint8[] tmp)
     {
         uint8* rp = tmp;
@@ -137,7 +138,7 @@ public class ReplayThread : GLib.Object
         *rp++ = w.flag;
         return (rp-&tmp[0]);
     }
-
+********* not used ************/
     private void send_rec(int fd, MSP.Cmds cmd, uint len, uint8 []buf)
     {
         var rl  = REPLAY_rec();
@@ -353,6 +354,7 @@ public class ReplayThread : GLib.Object
                                     break;
 
                                 case "wp_poll":
+                                        /*
                                     var w = MSP_WP();
                                     w.wp_no = (uint8)(obj.get_int_member("wp_no"));
                                     var lat = obj.get_double_member("wp_lat");
@@ -362,6 +364,7 @@ public class ReplayThread : GLib.Object
                                     w.altitude = (uint32)(obj.get_int_member("wp_alt"));
                                     serialise_wp(w,buf);
                                     send_rec(fd,MSP.Cmds.INFO_WP, MSize.MSP_WP,buf);
+                                        */
                                     break;
 
                                 default:
