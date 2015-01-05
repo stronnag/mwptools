@@ -1272,7 +1272,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     else
                     {
-                        naze32 = (mwvar == MWChooser.MWVAR.CF || mwvar == MWChooser.MWVAR.BF);
+                        naze32 = mwvar == MWChooser.MWVAR.CF;
                     }
 
                     if(naze32 == true)
@@ -1287,7 +1287,7 @@ public class MWPlanner : Gtk.Application {
                     {
                         if(naze32)
                         {
-                            _mwvar =  ((capability & MSPCaps.CAP_CLEANFLIGHT_CONFIG) != 0)  ? MWChooser.MWVAR.CF : MWChooser.MWVAR.BF;
+                            _mwvar = MWChooser.MWVAR.CF;
                         }
                         else
                         {
@@ -1520,13 +1520,20 @@ public class MWPlanner : Gtk.Application {
                         report_bits(flag);
                     }
 
-                    if((flag & (1 << 7)) != (xbits & (1 << 7)))
+                    if ((conf.rth_bit != 0) &&
+                        ((flag & (1 << conf.rth_bit)) != 0) &&
+                        ((xbits & (1 << conf.rth_bit)) == 0))
                     {
+                        stderr.printf("set RTH on %08x %u %d\n", flag,flag,
+                                      (int)duration);
                         want_rth = true;
                     }
-
-                    if((flag & (1 << 8)) != (xbits & (1 << 8)))
+                    else if ((conf.ph_bit != 0) &&
+                             ((flag & (1 << conf.ph_bit)) != 0) &&
+                             ((xbits & (1 << conf.ph_bit)) == 0))
                     {
+                        stderr.printf("set PH on %08x %u %d\n", flag, flag,
+                                      (int)duration);
                         want_ph = true;
                     }
                     xbits = flag;
@@ -1673,7 +1680,8 @@ public class MWPlanner : Gtk.Application {
                         home_pos.alt = rg.gps_altitude;
                         if(craft != null)
                         {
-                            craft.special_wp(0, gpsinfo.lat, gpsinfo.lon);
+                            craft.special_wp(Craft.Special.HOME,
+                                             gpsinfo.lat, gpsinfo.lon);
                         }
                     }
                     if(want_ph)
@@ -1684,7 +1692,8 @@ public class MWPlanner : Gtk.Application {
                         ph_pos.alt = rg.gps_altitude;
                         if(craft != null)
                         {
-                            craft.special_wp(1, gpsinfo.lat, gpsinfo.lon);
+                            craft.special_wp(Craft.Special.PH,
+                                             gpsinfo.lat, gpsinfo.lon);
                         }
                     }
                     if(want_rth)
@@ -1695,7 +1704,8 @@ public class MWPlanner : Gtk.Application {
                         rth_pos.alt = rg.gps_altitude;
                         if(craft != null)
                         {
-                            craft.special_wp(2, gpsinfo.lat, gpsinfo.lon);
+                            craft.special_wp(Craft.Special.RTH,
+                                             gpsinfo.lat, gpsinfo.lon);
                         }
                     }
                 }

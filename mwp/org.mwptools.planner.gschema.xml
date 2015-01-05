@@ -185,6 +185,18 @@
       <description>check switches (a JH sanity check)</description>
     </key>
 
+    <key name="ph-bit" type="u">
+      <default>0</default>
+      <summary>PosH bit</summary>
+      <description>The bit in MSP_STATUS/flag that indicates PosH switch
+      (probably 8, 0 disables)</description>
+    </key>
 
+    <key name="rth-bit" type="u">
+      <default>0</default>
+      <summary>RTH bit</summary>
+      <description>The bit in MSP_STATUS/flag that indicates RTH switch
+      (probably 7, 0 disables)</description>
+    </key>
   </schema>
 </schemalist>

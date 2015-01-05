@@ -174,7 +174,7 @@ public class SwitchEdit : Object
             }
         }
 
-        if(mwvar != MWChooser.MWVAR.CF) // MW or BF
+        if(mwvar != MWChooser.MWVAR.CF) // MW
         {
             s.send_command(MSP.Cmds.SET_BOX, sv, nboxen*2);
         }
@@ -401,7 +401,7 @@ public class SwitchEdit : Object
                         {
                             if((capability & MSPCaps.CAP_PLATFORM_32BIT) != 0)
                             {
-                                mwvar =  ((capability & MSPCaps.CAP_CLEANFLIGHT_CONFIG) != 0)  ? MWChooser.MWVAR.CF : MWChooser.MWVAR.BF;
+                                mwvar = MWChooser.MWVAR.CF;
                             }
                             else
                             {

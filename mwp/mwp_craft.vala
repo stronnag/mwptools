@@ -35,6 +35,7 @@ public class Craft : GLib.Object
     private static Clutter.Color cyan = { 0,0xff,0xff, 0xa0 };
     private static Champlain.Label homep ;
     private static Champlain.Label posp ;
+    private static Champlain.Label rthp ;
 
     private static string[] icons =
     {
@@ -58,6 +59,13 @@ public class Craft : GLib.Object
         "V-Tail4.png",
         "Hex6P.png"
     };
+
+    public enum Special
+    {
+        HOME = -1,
+        PH = -2,
+        RTH = -3
+    }
 
     public Craft(Champlain.View _view, uint id, bool _norotate = false, bool _trail = true)
     {
@@ -96,7 +104,7 @@ public class Craft : GLib.Object
             view.add_layer (pmlayer);
         }
         view.add_layer (layer);
-        homep = posp = null;
+        homep = posp = rthp = null;
 
 // Not properly implemented in (13.10 and earlier) Ubuntu
 #if NOBB
@@ -154,7 +162,7 @@ public class Craft : GLib.Object
             pmlayer.remove_all();
             path.remove_all();
             npath = 0;
-            homep = posp = null;
+            homep = posp = rthp = null;
             ici.hide();
         }
     }
@@ -211,37 +219,52 @@ public class Craft : GLib.Object
         icon.set_location (lat, lon);
     }
 
-    public void special_wp(uint8 wpno, double lat, double lon)
+    public void special_wp(Special wpno, double lat, double lon)
     {
-        Champlain.Label m;
+        Champlain.Label m = null;
         Clutter.Color colour;
         Clutter.Color black = { 0,0,0, 0xff };
-        if(wpno == 0)
+
+        switch(wpno)
         {
-            if(homep == null)
-            {
-                homep = new Champlain.Label.with_text ("⏏", "Sans 10",null,null);
-                homep.set_alignment (Pango.Alignment.RIGHT);
-                colour = {0xff, 0xa0, 0x0, 0xc8};
-                homep.set_color (colour);
-                homep.set_text_color(black);
-                pmlayer.add_marker(homep);
-            }
-            m = homep;
+            case Special.HOME:
+                if(homep == null)
+                {
+                    homep = new Champlain.Label.with_text ("⏏", "Sans 10",null,null);
+                    homep.set_alignment (Pango.Alignment.RIGHT);
+                    colour = {0xff, 0xa0, 0x0, 0xc8};
+                    homep.set_color (colour);
+                    homep.set_text_color(black);
+                    pmlayer.add_marker(homep);
+                }
+                m = homep;
+                break;
+            case Special.PH:
+                if(posp == null)
+                {
+                    posp = new Champlain.Label.with_text ("∞", "Sans 10",null,null);
+                    posp.set_alignment (Pango.Alignment.RIGHT);
+                    colour = { 0x4c, 0xfe, 0, 0xc8};
+                    posp.set_color (colour);
+                    posp.set_text_color(black);
+                    pmlayer.add_marker(posp);
+                }
+                m = posp;
+                break;
+            case Special.RTH:
+                if(rthp == null)
+                {
+                    rthp = new Champlain.Label.with_text ("⚑", "Sans 10",null,null);
+                    rthp.set_alignment (Pango.Alignment.RIGHT);
+                    colour = { 0xfa, 0xfa, 0, 0xc8};
+                    rthp.set_color (colour);
+                    rthp.set_text_color(black);
+                    pmlayer.add_marker(rthp);
+                }
+                m = rthp;
+                break;
         }
-        else
-        {
-            if(posp == null)
-            {
-                posp = new Champlain.Label.with_text ("∞", "Sans 10",null,null);
-                posp.set_alignment (Pango.Alignment.RIGHT);
-                colour = { 0x4c, 0xfe, 0, 0xc8};
-                posp.set_color (colour);
-                posp.set_text_color(black);
-                pmlayer.add_marker(posp);
-            }
-            m = posp;
-        }
-        m.set_location (lat, lon);
+        if(m != null)
+            m.set_location (lat, lon);
     }
 }

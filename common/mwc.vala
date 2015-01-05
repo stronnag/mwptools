@@ -23,17 +23,16 @@ public class MWChooser : GLib.Object
         UNDEF=0,
         MWOLD=1,
         MWNEW=2,
-        BF=3,
-        CF=4,
-        INVALID1=5,
-        INVALID2=6,
+        CF=3,
+        INVALID1=4,
+        INVALID2=5,
 	AUTO=42
     }
 
     private Gtk.Dialog dialog;
     private Gtk.RadioButton [] btn = {};
 
-    public static const string[]mwnames = { "","MW","MWNAV","BF","CF"};
+    public static const string[]mwnames = { "","MW","MWNAV","CF"};
 
     public static MWVAR fc_from_arg0()
     {
@@ -60,9 +59,6 @@ public class MWChooser : GLib.Object
                 break;
             case "mwnav":
                 mwvar = MWVAR.MWNEW;
-                break;
-            case "bf":
-                mwvar = MWVAR.BF;
                 break;
             case "cf":
                 mwvar = MWVAR.CF;
@@ -121,9 +117,6 @@ public class MWChooser : GLib.Object
                     break;
                 case 1:
                     mw = MWVAR.MWNEW;
-                    break;
-                case 2:
-                    mw = MWVAR.BF;
                     break;
                 case 3:
                     mw = MWVAR.CF;
