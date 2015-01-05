@@ -1351,7 +1351,7 @@ public class MWPlanner : Gtk.Application {
                         want_home = want_ph = want_rth = false;
                         remove_tid(ref cmdtid);
                         have_status = true;
-                        if(conf.checkswitches && ((flag & 6) == 0))
+                        if(conf.checkswitches && ((flag & 6) == 0) && robj == null)
                         {
                             swd.run();
                         }
