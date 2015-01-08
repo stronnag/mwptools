@@ -518,8 +518,8 @@ public class MWSerial : Object
                         else
                         {
                             error_counter();
-                            MSPLog.message(" CRC Fail, got %d != %d\n",
-                                          buf[nc],checksum);
+                            MSPLog.message(" CRC Fail, got %d != %d (%d)\n",
+                                           buf[nc],checksum,cmd);
                             state = States.S_ERROR;
                         }
                         break;

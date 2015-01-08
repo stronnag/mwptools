@@ -56,10 +56,12 @@ public class SwitchEdit : Object
     private static string mwoptstr;
     private Timer timer;
     private uint8 icount = 0;
+    CF_MODE_RANGES []mrs;
+    private uint8 mrs_idx;
 
     const OptionEntry[] options = {
         { "serial-device", 's', 0, OptionArg.STRING, out serdev, "Serial device", null},
-        { "flight-controller", 'f', 0, OptionArg.STRING, out mwoptstr, "mw|mwnav|bf|fc", null},
+        { "flight-controller", 'f', 0, OptionArg.STRING, out mwoptstr, "mw|mwnav|cf", null},
         {null}
     };
 
@@ -124,7 +126,7 @@ public class SwitchEdit : Object
                 }
             });
         var t = timer.elapsed();
-        stderr.printf("%6.1f addcmd %d\n", t, cmd);
+//        stderr.printf("%6.1f addcmd %d\n", t, cmd);
         s.send_command(cmd,buf,len);
     }
 
@@ -181,90 +183,87 @@ public class SwitchEdit : Object
         else
         {
             uint8 aid=0;
-            CF_MODE_RANGES mr = {0};
+            mrs = new CF_MODE_RANGES[40];
             for(var ib = 0; ib < nboxen; ib++)
             {
+                mrs[aid].perm_id = permids[ib];
+                for(var j = 0; j < 4; j++)
                 {
-                    mr.perm_id = permids[ib];
-                    for(var j = 0; j < 4; j++)
+                    var auxbits = ((sv[ib] >> j*3) & 7);
+                    mrs[aid].auxchanid = j;
+                    switch (auxbits)
                     {
-                        var auxbits = ((sv[ib] >> j*3) & 7);
-//                        if(auxbits != 0)
-                        {
-                            mr.auxchanid = j;
-                            switch (auxbits)
-                            {
-                                case 0:
-                                    mr.startstep = 0;
-                                    mr.endstep = 0;
-                                    send_mr(mr,ref aid);
-                                    break;
+                        case 0:
+                            mrs[aid].startstep = 0;
+                            mrs[aid].endstep = 0;
+                            aid++;
+                            break;
 
-                                case 1:
-                                    mr.startstep = 0;
-                                    mr.endstep = 16;
-                                    send_mr(mr,ref aid);
-                                    break;
-                                case 2:
-                                    mr.startstep = 16;
-                                    mr.endstep = 32;
-                                    send_mr(mr,ref aid);
-                                    break;
-                                case 3:
-                                    mr.startstep = 0;
-                                    mr.endstep = 32;
-                                    send_mr(mr,ref aid);
-                                    break;
-                                case 4:
-                                    mr.startstep = 32;
-                                    mr.endstep = 48;
-                                    send_mr(mr,ref aid);
-                                    break;
-                                case 5:
-                                    mr.startstep = 0;
-                                    mr.endstep = 16;
-                                    send_mr(mr,ref aid);
-                                    mr.startstep = 32;
-                                    mr.endstep = 48;
-                                    send_mr(mr,ref aid);
-                                    break;
-                                case 6:
-                                    mr.startstep = 16;
-                                    mr.endstep = 48;
-                                    send_mr(mr,ref aid);
-                                    break;
-                                case 7:
-                                    mr.startstep = 0;
-                                    mr.endstep = 48;
-                                    send_mr(mr,ref aid);
-                                    break;
-                            }
-                        }
+                        case 1:
+                            mrs[aid].startstep = 0;
+                            mrs[aid].endstep = 16;
+                            aid++;
+                            break;
+                        case 2:
+                            mrs[aid].startstep = 16;
+                            mrs[aid].endstep = 32;
+                            aid++;
+                            break;
+                        case 3:
+                            mrs[aid].startstep = 0;
+                            mrs[aid].endstep = 32;
+                            aid++;
+                            break;
+                        case 4:
+                            mrs[aid].startstep = 32;
+                            mrs[aid].endstep = 48;
+                            aid++;
+                            break;
+                        case 5:
+                            mrs[aid].startstep = 0;
+                            mrs[aid].endstep = 16;
+                            aid++;
+                            mrs[aid].auxchanid = j;
+                            mrs[aid].startstep = 32;
+                            mrs[aid].endstep = 48;
+                            aid++;
+                            break;
+                        case 6:
+                            mrs[aid].startstep = 16;
+                            mrs[aid].endstep = 48;
+                            aid++;
+                            break;
+                        case 7:
+                            mrs[aid].startstep = 0;
+                            mrs[aid].endstep = 48;
+                            aid++;
+                            break;
                     }
                 }
             }
-            mr = {0,0,0,0};
-            for(;aid < nranges; send_mr(mr, ref aid))
-                ;
+
+            for(;aid < nranges;aid++)
+                mrs[aid] = {0,0,0,0};
+
+            mrs_idx = 0;
+            send_mrs();
             applied = true;
         }
     }
 
-    private void send_mr(CF_MODE_RANGES mr, ref uint8 idx)
+
+    private void send_mrs()
     {
         uint8 buf[5];
-        buf[0] = idx;
-        buf[1] = mr.perm_id;
-        buf[2] = mr.auxchanid;
-        buf[3] = mr.startstep;
-        buf[4] = mr.endstep;
-            /*
-        if(mr.startstep != mr.endstep)
-            MSPLog.message("Send idx %d permid = %d, auxid  = %d, range %d %d\n",
-                          buf[0], buf[1], buf[2], buf[3], buf[5]);
-            */
-        s.send_command(MSP.Cmds.SET_MODE_RANGE, buf, 5);
-        idx++;
+        buf[0] = mrs_idx;
+        buf[1] = mrs[mrs_idx].perm_id;
+        buf[2] = mrs[mrs_idx].auxchanid;
+        buf[3] = mrs[mrs_idx].startstep;
+        buf[4] = mrs[mrs_idx].endstep;
+//        stderr.printf("send mr %d\n", mrs_idx);
+        mrs_idx++;
+        if(mrs_idx < nranges)
+            s.send_command(MSP.Cmds.SET_MODE_RANGE, buf, 5);
     }
 
     private void start_status_timer()
@@ -480,6 +479,11 @@ public class SwitchEdit : Object
                         xflag = sflag;
                     }
                     break;
+                    case MSP.Cmds.SET_MODE_RANGE:
+                    send_mrs();
+                    break;
+                    default:
+                    break;
                 }
             });
 
@@ -551,7 +555,8 @@ public class SwitchEdit : Object
                         saveasbutton.set_sensitive(true);
                         api_cnt = 0;
                         icount  = 0;
-                        if(mwvar == MWChooser.MWVAR.CF) // CF
+                        if(mwvar == MWChooser.MWVAR.CF ||
+                           mwvar == MWChooser.MWVAR.AUTO) // CF
                             add_cmd(MSP.Cmds.API_VERSION,null,0, ref have_vers);
                         else
                             add_cmd(MSP.Cmds.IDENT,null,0, ref have_vers);
