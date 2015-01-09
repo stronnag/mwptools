@@ -41,7 +41,6 @@ public class SwitchEdit : Object
     private uint nboxen;
     private uint32 xflag = -1;
     private Gdk.RGBA[] colors;
-    private uint stid;
     private string lastfile;
     private uint32 capability;
     private uint8 []rowids;
@@ -58,6 +57,7 @@ public class SwitchEdit : Object
     private uint8 icount = 0;
     CF_MODE_RANGES []mrs;
     private uint8 mrs_idx;
+    private int intvl;
 
     const OptionEntry[] options = {
         { "serial-device", 's', 0, OptionArg.STRING, out serdev, "Serial device", null},
@@ -125,8 +125,6 @@ public class SwitchEdit : Object
                     return false;
                 }
             });
-        var t = timer.elapsed();
-//        stderr.printf("%6.1f addcmd %d\n", t, cmd);
         s.send_command(cmd,buf,len);
     }
 
@@ -186,10 +184,10 @@ public class SwitchEdit : Object
             mrs = new CF_MODE_RANGES[40];
             for(var ib = 0; ib < nboxen; ib++)
             {
-                mrs[aid].perm_id = permids[ib];
                 for(var j = 0; j < 4; j++)
                 {
                     var auxbits = ((sv[ib] >> j*3) & 7);
+                    mrs[aid].perm_id = permids[ib];
                     mrs[aid].auxchanid = j;
                     switch (auxbits)
                     {
@@ -223,6 +221,7 @@ public class SwitchEdit : Object
                             mrs[aid].startstep = 0;
                             mrs[aid].endstep = 16;
                             aid++;
+                            mrs[aid].perm_id = permids[ib];
                             mrs[aid].auxchanid = j;
                             mrs[aid].startstep = 32;
                             mrs[aid].endstep = 48;
@@ -268,19 +267,18 @@ public class SwitchEdit : Object
 
     private void start_status_timer()
     {
-        int intvl;
         var baud = s.baudrate;
         if(baud == 0 || baud > 50000)
-            intvl = 500;
+            intvl = 100;
         else if (baud > 32000)
-            intvl = 1000;
+            intvl = 200;
         else
-            intvl = 2000;
+            intvl = 400;
 
-        stid = Timeout.add(intvl, () => {
+        Timeout.add(intvl, () => {
                 s.send_command(MSP.Cmds.STATUS,null,0);
-                s.send_command(MSP.Cmds.RC,null,0);
-                return true;
+//                s.send_command(MSP.Cmds.RC,null,0);
+                return false;
             });
 
     }
@@ -454,12 +452,15 @@ public class SwitchEdit : Object
                         lvbar[i].set_text(rc[i].to_string());
                         lvbar[i].set_fraction(d);
                     }
+                    Timeout.add(intvl, () => {
+                            s.send_command(MSP.Cmds.STATUS,null,0);
+                            return false;
+                        });
                     break;
 
                     case MSP.Cmds.STATUS:
                     uint32 sflag;
                     deserialise_u32(raw+6, out sflag);
-
                     if(xflag != sflag)
                     {
                         for(var j = 0; j < nboxen; j++)
@@ -478,6 +479,10 @@ public class SwitchEdit : Object
                         }
                         xflag = sflag;
                     }
+                    Timeout.add(intvl, () => {
+                            s.send_command(MSP.Cmds.RC,null,0);
+                            return false;
+                        });
                     break;
                     case MSP.Cmds.SET_MODE_RANGE:
                     send_mrs();
@@ -568,7 +573,6 @@ public class SwitchEdit : Object
                 }
                 else
                 {
-                    remove_tid(ref stid);
                     remove_tid(ref cmdtid);
                     xflag = 0;
                     s.close();
