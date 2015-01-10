@@ -198,5 +198,14 @@
       <description>The bit in MSP_STATUS/flag that indicates RTH switch
       (probably 7, 0 disables)</description>
     </key>
+
+    <key name="poll-timeout" type="u">
+      <default>500</default>
+      <summary>Poll messages timeout (ms)</summary>
+      <description>
+	Timeout in milliseconds for telemetry poll messages
+      </description>
+    </key>
+
   </schema>
 </schemalist>

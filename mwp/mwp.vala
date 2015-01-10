@@ -1081,7 +1081,7 @@ public class MWPlanner : Gtk.Application {
 
     private void start_poll_timer()
     {
-        gpstid = Timeout.add(1000, () => {
+        gpstid = Timeout.add(conf.polltimeout, () => {
                 if(dopoll)
                 {
                     toc++;

@@ -54,6 +54,7 @@ public class MWPSettings : GLib.Object
     public bool checkswitches {get; set; default=false;}
     public uint  ph_bit {get; set; default=0;}
     public uint  rth_bit {get; set; default=0;}
+    public uint polltimeout {get; set; default=500;}
 
     public MWPSettings()
     {
@@ -152,11 +153,12 @@ public class MWPSettings : GLib.Object
         }
         if(s == null || s == "checkswitches")
             checkswitches = settings.get_boolean("checkswitches");
-
         if(s == null || s == "ph-bit")
             ph_bit = settings.get_uint("ph-bit");
         if(s == null || s == "rth-bit")
             rth_bit = settings.get_uint("rth-bit");
+        if(s == null || s == "poll-timeout")
+            polltimeout = settings.get_uint("poll-timeout");
     }
 
     public void save_settings()
