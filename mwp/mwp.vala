@@ -265,6 +265,8 @@ public class MWPlanner : Gtk.Application {
     private Position home_pos;
     private Position rth_pos;
     private Position ph_pos;
+    private uint ph_mask=0;
+    private uint rth_mask=0;
 
     private enum DOCKLETS
     {
@@ -1312,9 +1314,31 @@ public class MWPlanner : Gtk.Application {
                     {
                         menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
                     }
-                    add_cmd(MSP.Cmds.MISC,null,0, 1000);
+                    add_cmd(MSP.Cmds.BOXNAMES, null,0, 1000);
                 }
                 icount++;
+                break;
+
+
+            case MSP.Cmds.BOXNAMES:
+                remove_tid(ref cmdtid);
+                string []bsx = ((string)raw).split(";");
+                int i = 0;
+                foreach(var bs in bsx)
+                {
+                    switch(bs)
+                    {
+                        case "GPS HOME":
+                            rth_mask = (1 << i);
+                            break;
+                        case "GPS HOLD":
+                            ph_mask = (1 << i);
+                            break;
+                    }
+                    i++;
+                }
+                stderr.printf("boxes %x %x\n", rth_mask, ph_mask);
+                add_cmd(MSP.Cmds.MISC,null,0, 1000);
                 break;
 
             case MSP.Cmds.MISC:
@@ -1520,17 +1544,17 @@ public class MWPlanner : Gtk.Application {
                         report_bits(flag);
                     }
 
-                    if ((conf.rth_bit != 0) &&
-                        ((flag & (1 << conf.rth_bit)) != 0) &&
-                        ((xbits & (1 << conf.rth_bit)) == 0))
+                    if ((rth_mask != 0) &&
+                        ((flag & rth_mask) != 0) &&
+                        ((xbits & rth_mask) == 0))
                     {
                         stderr.printf("set RTH on %08x %u %d\n", flag,flag,
                                       (int)duration);
                         want_rth = true;
                     }
-                    else if ((conf.ph_bit != 0) &&
-                             ((flag & (1 << conf.ph_bit)) != 0) &&
-                             ((xbits & (1 << conf.ph_bit)) == 0))
+                    else if ((ph_mask != 0) &&
+                             ((flag & ph_mask) != 0) &&
+                             ((xbits & ph_mask) == 0))
                     {
                         stderr.printf("set PH on %08x %u %d\n", flag, flag,
                                       (int)duration);

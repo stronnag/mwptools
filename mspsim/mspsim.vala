@@ -1081,6 +1081,14 @@ public class MWSim : GLib.Object
                     }
                     break;
 
+                    case MSP.Cmds.FC_VARIANT:
+                    if(naze32)
+                    {
+                        append_text("Send VARIANT\n");
+                        msp.send_command(MSP.Cmds.FC_VARIANT, "CLFL", 4);
+                    }
+                    break;
+
                     case MSP.Cmds.IDENT:
                     uint8[] buf = {230, imodel,42,16,0,0,0};
                     append_text("Send IDENT\n");
@@ -1277,6 +1285,16 @@ public class MWSim : GLib.Object
                     nb = serialise_atti(buf, tx);
                     msp.send_command(MSP.Cmds.ATTITUDE, tx, MSize.MSP_ATTITUDE);
                     append_text("Send NAV ATTITUDE %lu\n".printf(MSize.MSP_ATTITUDE));
+                    break;
+
+
+                    case MSP.Cmds.BOXNAMES:
+                    string bx;
+                    if(naze32)
+                        bx= "ARM;ANGLE;HORIZON;BARO;MAG;HEADFREE;HEADADJ;GPS HOME;GPS HOLD;BEEPER;OSD SW;AUTOTUNE;";
+                    else
+                        bx = "ARM;ANGLE;HORIZON;BARO;MAG;GPS HOME;GPS HOLD;BEEPER;MISSION;LAND;";
+                    msp.send_command(MSP.Cmds.BOXNAMES, bx, bx.length);
                     break;
 
                     case MSP.Cmds.BOX:

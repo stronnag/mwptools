@@ -198,8 +198,15 @@ public class ReplayThread : GLib.Object
                                     var mrtype = obj.get_int_member ("mrtype");
                                     var mwvers = obj.get_int_member ("mwvers");
                                     var cap = obj.get_int_member ("capability");
+                                    uint fctype = 42;
+
                                     if(mwvers == 0)
-                                        mwvers = 42;
+                                        mwvers = 255;
+
+                                    if(obj.has_member("fctype"))
+                                    {
+                                        fctype = (uint)obj.get_int_member ("fctype");
+                                    }
 
                                     buf[0] = (uint8)mwvers;
                                     buf[1] = (uint8)mrtype;
@@ -213,19 +220,24 @@ public class ReplayThread : GLib.Object
                                     a.maxthrottle=1864;
                                     a.mincommand=900;
                                     a.conf_mag_declination = -15;
-                                    if ((cap & 0x80000000) == 0x80000000)
+
+                                    string bx;
+                                    if (fctype == 3)
                                     {
+                                        bx= "ARM;ANGLE;HORIZON;BARO;MAG;HEADFREE;HEADADJ;GPS HOME;GPS HOLD;BEEPER;OSD SW;AUTOTUNE;";
                                         a.conf_vbatscale = 110;
                                         a.conf_vbatlevel_warn1 = 33;
                                         a.conf_vbatlevel_warn2 = 43;
                                     }
                                     else
                                     {
+                                        bx = "ARM;ANGLE;HORIZON;BARO;MAG;GPS HOME;GPS HOLD;BEEPER;MISSION;LAND;";
                                         a.conf_vbatscale = 131;
                                         a.conf_vbatlevel_warn1 = 107;
                                         a.conf_vbatlevel_warn2 = 99;
                                         a.conf_vbatlevel_crit = 93;
                                     }
+                                    send_rec(fd,MSP.Cmds.BOXNAMES, bx.length, bx.data);
                                     var nb = serialise_misc(a, buf);
                                     send_rec(fd,MSP.Cmds.MISC, (uint)nb, buf);
                                     break;
