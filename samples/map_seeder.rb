@@ -148,7 +148,7 @@ gets.each do |m|
 	u.gsub!('#X#',sx)
 	if uri.match('#TMSY#')
 	  ymax = (1 << m[:z])
-	  sy = (ymax - m[:y] - 1).to_s
+	  sy = (ymax - ty - 1).to_s
 	  u.gsub!('#TMSY#',sy)
 	else
 	  u.gsub!('#Y#',sy)

@@ -34,7 +34,6 @@ public struct TelemStats
     ulong avg;
 }
 
-
 public struct BatteryLevels
 {
     float cell;
@@ -344,6 +343,12 @@ public class MWPlanner : Gtk.Application {
         Object(application_id: "mwp.application", flags: ApplicationFlags.FLAGS_NONE);
     }
 
+    ~MWPlanner ()
+    {
+        if(conf.atexit != null)
+            Process.spawn_command_line_sync (conf.atexit);
+    }
+
     public override void activate ()
     {
 
@@ -396,12 +401,6 @@ public class MWPlanner : Gtk.Application {
             try {
                 Process.spawn_command_line_async(conf.atstart);
             } catch {};
-        }
-
-        if(conf.atexit != null)
-        {
-            exstr = conf.atexit;
-            stupid_ubuntu_atexit(exstr);
         }
 
         builder.connect_signals (null);
