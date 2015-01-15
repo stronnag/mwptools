@@ -24,7 +24,6 @@ using Champlain;
 using GtkChamplain;
 
 extern double get_locale_double(string str);
-extern void stupid_ubuntu_atexit(string str);
 
 public struct TelemStats
 {
