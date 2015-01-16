@@ -7,9 +7,8 @@ all: ublox-test
 ublox-test: ublox-test.vala ublox.vapi ublox.h
 	$(VALAC) --pkg posix --pkg gio-2.0 --pkg posix  ublox.vapi ublox-test.vala mwplog.vala -o ublox-test
 
-#naze-cli: naze-cli.vala
-#	$(VALAC) --pkg posix --pkg gio-2.0  naze-cli.vala mwplog.vala
-
+cf-cli_: cf-cli_.vala
+	$(VALAC) --pkg posix --pkg gio-2.0  cf-cli_.vala mwplog.vala
 
 clean:
 	rm -f naze-cli ublox-test
