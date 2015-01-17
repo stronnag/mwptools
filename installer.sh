@@ -17,6 +17,14 @@ esac
 [ -d $BIN ] || mkdir -p $BIN
 [ -d $DATA ] || mkdir -p $DATA
 cp $APP $BIN/
+if [ $APP = "cf-cli" ]
+then
+  rm -f $BIN/naze-cli
+  cd $BIN
+  ln -sf cf-cli naze-cli
+  cd -
+fi
+
 [ -d $DATA/$APP ] || mkdir -p $DATA/$APP
 [ -e  ${APP}_icon.svg ] && ICON=${APP}_icon.svg || ICON=../common/mwp_icon.svg
 

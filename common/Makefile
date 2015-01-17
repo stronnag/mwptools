@@ -2,13 +2,13 @@ VALAC=valac
 OPTS=-X -O2 --target-glib=2.36
 LOPTS=-X -lm
 
-all: ublox-test
+all: ublox-test cf-cli
 
 ublox-test: ublox-test.vala ublox.vapi ublox.h
 	$(VALAC) --pkg posix --pkg gio-2.0 --pkg posix  ublox.vapi ublox-test.vala mwplog.vala -o ublox-test
 
-cf-cli_: cf-cli_.vala
-	$(VALAC) --pkg posix --pkg gio-2.0  cf-cli_.vala mwplog.vala
+cf-cli: cf-cli.vala
+	$(VALAC) --pkg posix --pkg gio-2.0  cf-cli.vala mwplog.vala cserial.c
 
 clean:
 	rm -f naze-cli ublox-test
