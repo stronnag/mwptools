@@ -23,7 +23,7 @@ $ make
 $ sudo cp cf-cli /usr/local/bin/
 ```
 
-For users of Microsoft Windows, you can find a [binary (executable) distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-win.tar.gz).
+For users of Microsoft Windows, you can find a [binary (executable) distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-win32.zip).
 
 ## Usage
 ```

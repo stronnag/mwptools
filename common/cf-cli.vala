@@ -557,7 +557,7 @@ public class MWSerial : Object
                 while((res = s.read_line(out line, out len)) == ResCode.OK)
                     ;
 
-                Posix.sleep(1);
+                Thread.usleep(1000000);
                 MSPLog.message("Reboot on defaults\n");
                 do
                 {
@@ -574,7 +574,7 @@ public class MWSerial : Object
                     ;
 
                 MSPLog.message("Reboot on save\n");
-                Posix.sleep(1);
+                Thread.usleep(1000000);
 
                 do
                 {

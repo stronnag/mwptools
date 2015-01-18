@@ -222,6 +222,7 @@ public class MWPlanner : Gtk.Application {
     private ReplayThread robj;
 
     private MSP.Cmds[] requests = {};
+    private MSP.Cmds pollcmd;
     private int tcycle = 0;
     private bool dopoll;
     private bool rxerr = false;
@@ -265,6 +266,10 @@ public class MWPlanner : Gtk.Application {
     private Position ph_pos;
     private uint ph_mask=0;
     private uint rth_mask=0;
+
+    private uint mseq = 0;
+    private uint lastseq = 0;
+    private uint nseq = 0;
 
     private enum DOCKLETS
     {
@@ -1075,20 +1080,29 @@ public class MWPlanner : Gtk.Application {
         if(dopoll)
         {
             send_poll();
-            start_poll_timer();
         }
     }
 
     private void start_poll_timer()
     {
-        gpstid = Timeout.add(conf.polltimeout, () => {
+        gpstid = Timeout.add(100, () => {
                 if(dopoll)
                 {
-                    toc++;
-                    var req=requests[tcycle];
-                    var s = MSP.to_string(req);
-                    MSPLog.message("timeout on %s\n", s);
-                    send_poll();
+                    if(mseq == lastseq)
+                        nseq++;
+                    else
+                        nseq = 0;
+
+                    if(nseq == 5)
+                    {
+                        toc++;
+                        nseq = 0;
+                        var req = requests[tcycle];
+                        var s = MSP.to_string(req);
+                        var t = MSP.to_string(pollcmd);
+                        MSPLog.message("timeout on %s (%s)\n", t, s);
+                        send_poll();
+                    }
                     return true;
                 }
                 else
@@ -1130,44 +1144,22 @@ public class MWPlanner : Gtk.Application {
             nrx = 0;
         }
 
-        switch(req)
+        if (req == MSP.Cmds.ANALOG)
         {
-            case MSP.Cmds.ANALOG:
-
-
-                if (now - last_an > 4)
-                {
-                    send_cmd(req, null, 0);
-                    last_an = now;
-//                    MSPLog.message("send analog\n");
-                }
-                else
-                {
-                    tcycle = (tcycle + 1) % requests.length;
-                    send_poll();
-                }
-                break;
-/**
-            case MSP.Cmds.WP:
-                if( gpsfix == true && armed == 1 && (now - last_wp) > 1)
-                {
-                    send_cmd(req,&wpx,1);
-//                    MSPLog.message("send WP %d\n", wpx);
-                    wpx = (wpx + 16) & 16;
-                    last_wp = now;
-                }
-                else
-                {
-                    tcycle = (tcycle + 1) % requests.length;
-                    send_poll();
-                }
-                break;
-***/
-            default:
-                send_cmd(req, null, 0);
-//                MSPLog.message("send %d\n", req);
-                break;
+            if (now - last_an > 4)
+            {
+                last_an = now;
+            }
+            else
+            {
+                tcycle = (tcycle + 1) % requests.length;
+                req = requests[tcycle];
+            }
         }
+        pollcmd = req;
+        mseq++;
+        send_cmd(req, null, 0);
+        MSPLog.message("send %s\n", MSP.to_string(req));
     }
 
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
@@ -1196,9 +1188,10 @@ public class MWPlanner : Gtk.Application {
         }
         Logger.log_time();
 
-        if(gpstid > 0 && cmd == requests[tcycle])
+        if(gpstid > 0)
         {
-            remove_tid(ref gpstid);
+            lastseq = mseq;
+            nseq = 0;
         }
 
         if(cmd != MSP.Cmds.RADIO)
@@ -1468,8 +1461,12 @@ public class MWPlanner : Gtk.Application {
 
                         if(nopoll == false && nreqs > 0)
                         {
-//                            MSPLog.message("Start poller\n");
-                            dopoll = (thr == null);
+                            MSPLog.message("Start poller\n");
+                            if  (thr == null)
+                            {
+                                dopoll = true;
+                                start_poll_timer();
+                            }
                             tcycle = 0;
                             lastp = GLib.get_monotonic_time();
                         }
@@ -2094,7 +2091,8 @@ public class MWPlanner : Gtk.Application {
                 MSPLog.message ("** Unknown response %d\n", cmd);
                 break;
         }
-        if(dopoll && (cmd == requests[tcycle]))
+
+        if(dopoll && cmd != MSP.Cmds.RADIO)
         {
             tcycle = (tcycle + 1) % requests.length;
             if(tcycle == 0)
@@ -2466,7 +2464,6 @@ public class MWPlanner : Gtk.Application {
             craft.remove_marker();
         }
     }
-
 
     private void init_state()
     {
