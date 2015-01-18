@@ -1416,14 +1416,6 @@ public class MWPlanner : Gtk.Application {
                                 craft = new Craft(view, mrtype,norotate, gps_trail);
                                 craft.park();
                             }
-/*
-                            if(naze32)
-                            {
-                                wpmgr.wp_flag = WPDL.POLL;
-                                requests += MSP.Cmds.WP;
-                                reqsize += 18;
-                            }
-*/
                         }
                         else
                         {
@@ -2371,7 +2363,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     case MSP.Cmds.API_VERSION:
                     api_cnt++;
-                    if(api_cnt == 2)
+                    if(api_cnt == 5)
                     {
                         cmd = MSP.Cmds.IDENT;
                         api_cnt = 255;

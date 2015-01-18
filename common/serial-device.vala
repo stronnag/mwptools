@@ -161,7 +161,8 @@ public class MWSerial : Object
             io_read = new IOChannel.unix_new(fd);
             if(io_read.set_encoding(null) != IOStatus.NORMAL)
                     error("Failed to set encoding");
-            tag = io_read.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL,
+            tag = io_read.add_watch(IOCondition.IN|IOCondition.HUP|
+                                    IOCondition.NVAL|IOCondition.ERR,
                                     device_read);
         } catch(IOChannelError e) {
             error("IOChannel: %s", e.message);
@@ -335,7 +336,7 @@ public class MWSerial : Object
     private void error_counter()
     {
         commerr++;
-        MSPLog.message("Comm error count %d: ", commerr);
+        MSPLog.message("Comm error count %d\n", commerr);
         Posix.tcflush(fd, Posix.TCIFLUSH);
     }
 
@@ -348,6 +349,7 @@ public class MWSerial : Object
             available = false;
             if(fd != -1)
                 serial_lost();
+            MSPLog.message("Close on cond %x (%d)\n", cond, fd);
             return false;
         }
         else
