@@ -1085,6 +1085,8 @@ public class MWPlanner : Gtk.Application {
 
     private void start_poll_timer()
     {
+        var ncount = conf.polltimeout / 100;
+
         gpstid = Timeout.add(100, () => {
                 if(dopoll)
                 {
@@ -1093,7 +1095,7 @@ public class MWPlanner : Gtk.Application {
                     else
                         nseq = 0;
 
-                    if(nseq == 5)
+                    if(nseq >= ncount)
                     {
                         toc++;
                         nseq = 0;
@@ -1159,7 +1161,7 @@ public class MWPlanner : Gtk.Application {
         pollcmd = req;
         mseq++;
         send_cmd(req, null, 0);
-        MSPLog.message("send %s\n", MSP.to_string(req));
+//        MSPLog.message("send %s\n", MSP.to_string(req));
     }
 
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
