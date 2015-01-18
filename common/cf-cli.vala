@@ -25,6 +25,7 @@ extern void close_serial(int fd);
 
 public class MWSerial : Object
 {
+    const int MAX_INIT_ERR = 16;
     public enum States
     {
         S_END=0,
@@ -188,7 +189,7 @@ public class MWSerial : Object
                         }
                         else
                         {
-                            MSPLog.message(" fail on header %x\n", c);
+//                            MSPLog.message(" fail on header %x\n", c);
                             state=States.S_ERROR;
                         }
                         break;
@@ -199,7 +200,7 @@ public class MWSerial : Object
                         }
                         else
                         {
-                            MSPLog.message(" fail on header1 %x\n", c);
+//                            MSPLog.message(" fail on header1 %x\n", c);
                             state=States.S_ERROR;
                         }
                         break;
@@ -211,7 +212,7 @@ public class MWSerial : Object
                         }
                         else
                         {
-                            MSPLog.message(" fail on header2 %x\n", c);
+//                            MSPLog.message(" fail on header2 %x\n", c);
                             state=States.S_ERROR;
                         }
                         break;
@@ -499,23 +500,39 @@ public class MWSerial : Object
 
         if(s.open())
         {
-            s.send_msp(Cmds.IDENT, null, 0);
-            var res =  s.read_msp(out cmd, out raw);
-            if(res == ResCode.OK)
+            ResCode res = 0;
+            int errcnt = 0;
+            uint8 typ = 0;
+
+            do
             {
-                if(raw[1] == 1 && tyaw == false)
+                s.send_msp(Cmds.IDENT, null, 0);
+                res =  s.read_msp(out cmd, out raw);
+                if(res != ResCode.OK)
                 {
-                    s.send_msp(Cmds.SERVO_CONF,null,0);
-                    if(s.read_msp(out cmd, out raw) == ResCode.OK)
+                    stderr.printf("Failed %s\n", res.to_string());
+                    errcnt++;
+                    if(errcnt == MAX_INIT_ERR)
                     {
-                        tyaw = ((raw[41] & 1) == 1);
-                        if(tyaw)
-                            MSPLog.message("Discovered Tri Yaw\n");
+                        stderr.printf("Giving up after %d attempts\n", errcnt);
+                        return 0;
                     }
                 }
+                else
+                    typ = raw[1];
+
+            } while (res != ResCode.OK);
+
+            if(typ == 1 && tyaw == false)
+            {
+                s.send_msp(Cmds.SERVO_CONF,null,0);
+                if(s.read_msp(out cmd, out raw) == ResCode.OK)
+                {
+                    tyaw = ((raw[41] & 1) == 1);
+                    if(tyaw)
+                        MSPLog.message("Discovered Tri Yaw\n");
+                }
             }
-            else
-                stderr.printf("Failed %d\n", res);
 
             uint8 [] line;
             int len;
@@ -539,6 +556,8 @@ public class MWSerial : Object
                 s.write("defaults\n");
                 while((res = s.read_line(out line, out len)) == ResCode.OK)
                     ;
+
+                Posix.sleep(1);
                 MSPLog.message("Reboot on defaults\n");
                 do
                 {
@@ -555,14 +574,19 @@ public class MWSerial : Object
                     ;
 
                 MSPLog.message("Reboot on save\n");
+                Posix.sleep(1);
+
                 do
                 {
                     s.send_msp(Cmds.IDENT, null, 0);
                     res =  s.read_msp(out cmd, out raw);
+                    if(res == ResCode.OK)
+                        typ = raw[1];
+
                 } while (res != ResCode.OK);
                 if(tyaw)
                 {
-                    if(raw[1] == 1)
+                    if(typ == 1)
                     {
                         s.send_msp(Cmds.SERVO_CONF,null,0);
                         if(s.read_msp(out cmd, out raw) == ResCode.OK)
