@@ -349,10 +349,10 @@ public class MWSerial : Object
             available = false;
             if(fd != -1)
                 serial_lost();
-            MSPLog.message("Close on cond %x (%d)\n", cond, fd);
+            MSPLog.message("Close on cond %x (fd=%d)\n", cond, fd);
             return false;
         }
-        else
+        else if (fd != -1)
         {
             if(is_serial)
             {
