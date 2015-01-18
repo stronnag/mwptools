@@ -245,6 +245,7 @@ public class MWPlanner : Gtk.Application {
     private bool have_wp;
     private bool have_nc;
     private bool have_fcv;
+    private bool have_fcvv;
     private bool vinit;
     private string fcv;
     private uint8 gpscnt = 0;
@@ -1219,27 +1220,33 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.FC_VARIANT:
                 remove_tid(ref cmdtid);
-                have_fcv = true;
                 naze32 = true;
-                have_fcv = true;
                 raw[4] = 0;
                 fcv = (string)raw[0:4];
-                switch(fcv)
+                if (have_fcv == false)
                 {
-                    case "CLFL":
-                        mwvar = MWChooser.MWVAR.CF;
-                        add_cmd(MSP.Cmds.FC_VERSION,null,0,1000);
-                        break;
-                    default:
-                        add_cmd(MSP.Cmds.IDENT,null,0,1000);
-                        break;
+                    have_fcv = true;
+                    switch(fcv)
+                    {
+                        case "CLFL":
+                            mwvar = MWChooser.MWVAR.CF;
+                            add_cmd(MSP.Cmds.FC_VERSION,null,0,1000);
+                            break;
+                        default:
+                            add_cmd(MSP.Cmds.IDENT,null,0,1000);
+                            break;
+                    }
                 }
                 break;
 
             case MSP.Cmds.FC_VERSION:
                 remove_tid(ref cmdtid);
-                fcv = "%s v%d.%d.%d".printf(fcv,raw[0],raw[1],raw[2]);
-                add_cmd(MSP.Cmds.IDENT,null,0,1000);
+                if(have_fcvv == false)
+                {
+                    have_fcvv = true;
+                    fcv = "%s v%d.%d.%d".printf(fcv,raw[0],raw[1],raw[2]);
+                    add_cmd(MSP.Cmds.IDENT,null,0,1000);
+                }
                 break;
 
             case MSP.Cmds.IDENT:
@@ -2470,7 +2477,7 @@ public class MWPlanner : Gtk.Application {
     private void init_state()
     {
         have_api = have_vers = have_misc = have_status = have_wp = have_nc =
-            have_fcv = false;
+            have_fcv = have_fcvv = false;
         fcv = null;
         xbits = icount = api_cnt = 0;
         autocount = 0;
