@@ -447,8 +447,6 @@ public class PIDEdit : Object
         builder.connect_signals (null);
         window = builder.get_object ("window1") as Gtk.Window;
 
-        window.default_height = 900;
-
         eminthr = builder.get_object ("minthr_entry") as Gtk.Entry;
         emagdec = builder.get_object ("magdecentry") as Gtk.Entry;
         evbatscale = builder.get_object ("evbatscale") as Gtk.Entry;
