@@ -2,7 +2,7 @@ public struct REPLAY_rec
 {
     MSP.Cmds cmd;
     uint len;
-    uint8 raw[64];
+    uint8 raw[256];
 }
 
 public class ReplayThread : GLib.Object
@@ -169,7 +169,7 @@ public class ReplayThread : GLib.Object
                         var dis = FileStream.open(relog,"r");
                         string line=null;
                         bool armed = false;
-                        uint8 buf[64];
+                        uint8 buf[256];
                         var parser = new Json.Parser ();
                         bool have_data = false;
 
@@ -208,11 +208,22 @@ public class ReplayThread : GLib.Object
                                         fctype = (uint)obj.get_int_member ("fctype");
                                     }
 
+                                    buf[0] = 'C';
+                                    buf[1] = 'L';
+                                    buf[2] = 'F';
+                                    buf[3] = 'L';
+                                    buf[4] = '!';
+                                    send_rec(fd,MSP.Cmds.FC_VARIANT, 5, buf);
+
+                                    buf[0] = 2;
+                                    buf[1] = 4;
+                                    buf[2] = 7;
+                                    send_rec(fd,MSP.Cmds.FC_VERSION, 4, buf);
+
                                     buf[0] = (uint8)mwvers;
                                     buf[1] = (uint8)mrtype;
                                     buf[2] = 42;
                                     serialise_u32(buf+3, (uint32)cap);
-
                                     send_rec(fd,MSP.Cmds.IDENT, 7, buf);
 
                                     MSP_MISC a = MSP_MISC();
@@ -237,8 +248,15 @@ public class ReplayThread : GLib.Object
                                         a.conf_vbatlevel_warn2 = 99;
                                         a.conf_vbatlevel_crit = 93;
                                     }
+
+/*
+                                    uint j;
+                                    for( j = 0; j < bx.length; j++)
+                                        buf[j] = bx[j];
+*/
                                     send_rec(fd,MSP.Cmds.BOXNAMES, bx.length, bx.data);
                                     var nb = serialise_misc(a, buf);
+
                                     send_rec(fd,MSP.Cmds.MISC, (uint)nb, buf);
                                     break;
                                 case "armed":

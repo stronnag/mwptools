@@ -2819,7 +2819,7 @@ public class MWPlanner : Gtk.Application {
     private bool replay_handler (IOChannel gio, IOCondition condition)
     {
         var done = false;
-        if((condition & (IOCondition.HUP|IOCondition.NVAL)) != 0)
+        if((condition & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
         {
             done = true;
         }
@@ -2890,6 +2890,7 @@ public class MWPlanner : Gtk.Application {
                                      IOCondition.HUP|
                                      IOCondition.ERR|
                                      IOCondition.NVAL, replay_handler);
+
             robj = new ReplayThread();
             thr = robj.run(playfd[1], fn, delay);
             if(thr != null)
