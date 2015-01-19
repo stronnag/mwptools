@@ -71,6 +71,7 @@ public class MWSim : GLib.Object
     private static string sdev=null;
     private int[] pipe;
     private static bool naze32 = false;
+    private static bool jitter = false;
     private static bool norssi = false;
 
     const OptionEntry[] options = {
@@ -83,6 +84,7 @@ public class MWSim : GLib.Object
         { "ltm", 'l', 0, OptionArg.NONE, out ltm, "push tm", null},
         { "norssi", 'R', 0, OptionArg.NONE, out norssi, "don't push rssi", null},
         { "naze32", 'z', 0, OptionArg.NONE, out naze32, "emulate naze", null},
+        { "jitter", 'j', 0, OptionArg.NONE, out jitter, "drop random responses", null},
         { "now", 'n', 0, OptionArg.NONE, out nowait, "don't wait for input before replay", null},
         { "udp-port", 'u', 0, OptionArg.INT, ref udport, "udp port for comms", null},
         {null}
@@ -1070,6 +1072,17 @@ public class MWSim : GLib.Object
                     stderr.printf("Error on cmd %c (%d)\n", cmd,cmd);
                     return;
                 }
+
+                if(jitter)
+                {
+                    var jr = rand.int_range(-5,5);
+                    if(jr == 0)
+                    {
+                        append_text("Dropping %s\n".printf(cmd.to_string()));
+                        return;
+                    }
+                }
+
                 switch(cmd)
                 {
 
@@ -1084,8 +1097,9 @@ public class MWSim : GLib.Object
                     case MSP.Cmds.FC_VARIANT:
                     if(naze32)
                     {
+                        uint8[]buf = {'C','F','F','L'};
+                        msp.send_command(MSP.Cmds.FC_VARIANT, buf, 4);
                         append_text("Send VARIANT\n");
-                        msp.send_command(MSP.Cmds.FC_VARIANT, "CLFL", 4);
                     }
                     break;
 

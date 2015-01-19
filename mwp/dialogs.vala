@@ -31,6 +31,7 @@ public class TelemetryStats : GLib.Object
     private Gtk.Label timeouts;
     private Gtk.Label waittime;
     private Gtk.Label cycletime;
+    private Gtk.Label messages;
     public Gtk.Grid grid {get; private set;}
     private Gdl.DockItem di;
 
@@ -45,6 +46,7 @@ public class TelemetryStats : GLib.Object
         timeouts = builder.get_object ("ss-timeout") as Gtk.Label;
         waittime = builder.get_object ("ss-wait") as Gtk.Label;
         cycletime = builder.get_object ("ss-cycle") as Gtk.Label;
+        messages = builder.get_object ("ss-msgs") as Gtk.Label;
     }
 
    public void setdock(Gdl.DockItem _di)
@@ -71,6 +73,7 @@ public class TelemetryStats : GLib.Object
        timeouts.set_label("---");
        waittime.set_label("---");
        cycletime.set_label("---");
+       messages.set_label("---");
    }
 
    public void update(TelemStats t)
@@ -85,6 +88,8 @@ public class TelemetryStats : GLib.Object
             timeouts.set_label("%lu".printf(t.toc));
             waittime.set_label("%u ms".printf(t.tot));
             cycletime.set_label("%lu ms".printf(t.avg));
+            messages.set_label(
+                ("%" + uint64.FORMAT_MODIFIER + "d").printf(t.msgs));
         }
     }
 }

@@ -307,11 +307,11 @@ public class PIDEdit : Object
     private uint add_cmd(MSP.Cmds cmd, void* buf, size_t len)
     {
         var tid = Timeout.add(1000, () => {
-//                stdout.printf("repeat %s\n", MSP.to_string(cmd));
+//                stdout.printf("repeat %s\n", cmd.to_string());
                 s.send_command(cmd,buf,len);
                     return true;
             });
-//        stdout.printf("send %s %u\n", MSP.to_string(cmd), tid);
+//        stdout.printf("send %s %u\n", cmd.to_string(), tid);
         s.send_command(cmd,buf,len);
         return tid;
     }
@@ -475,7 +475,7 @@ public class PIDEdit : Object
         s.serial_event.connect((sd,cmd,raw,len,errs) => {
                 if(errs == true)
                 {
-                    MSPLog.message("Error on cmd %s (%d)\n", MSP.to_string(cmd),cmd);
+                    MSPLog.message("Error on cmd %s (%d)\n", cmd.to_string(),cmd);
                     return;
                 }
                 switch(cmd)

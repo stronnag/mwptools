@@ -31,6 +31,7 @@ public struct TelemStats
     ulong toc;
     uint tot;
     ulong avg;
+    uint64 msgs;
 }
 
 public struct BatteryLevels
@@ -210,7 +211,7 @@ public class MWPlanner : Gtk.Application {
     private uint8 armed = 0;
     private bool npos = false;
     private bool gpsfix;
-    private time_t lastrx;
+    private int64 lastrx;
     private int lmin = 0;
 
     private Thread<int> thr;
@@ -222,13 +223,14 @@ public class MWPlanner : Gtk.Application {
     private ReplayThread robj;
 
     private MSP.Cmds[] requests = {};
-    private MSP.Cmds pollcmd;
     private int tcycle = 0;
     private bool dopoll;
     private bool rxerr = false;
     private int64 lastp;
-    private int64 acycle;
-    private int64 anvals;
+    private int64 lastm;
+    private uint64 acycle;
+    private uint64 anvals;
+    private uint64 amsgs;
     private ulong toc;
     private uint tot;
     private uint32 xbits = 0;
@@ -249,7 +251,7 @@ public class MWPlanner : Gtk.Application {
     private bool vinit;
     private string fcv;
     private uint8 gpscnt = 0;
-    private time_t last_an = 0;
+    private uint64 last_an = 0;
 
     private bool want_home;
     private bool want_ph;
@@ -267,10 +269,6 @@ public class MWPlanner : Gtk.Application {
     private Position ph_pos;
     private uint ph_mask=0;
     private uint rth_mask=0;
-
-    private uint mseq = 0;
-    private uint lastseq = 0;
-    private uint nseq = 0;
 
     private enum DOCKLETS
     {
@@ -1086,24 +1084,18 @@ public class MWPlanner : Gtk.Application {
 
     private void start_poll_timer()
     {
-        var ncount = conf.polltimeout / 100;
+        var tlimit = 1000*conf.polltimeout;
 
         gpstid = Timeout.add(100, () => {
                 if(dopoll)
                 {
-                    if(mseq == lastseq)
-                        nseq++;
-                    else
-                        nseq = 0;
-
-                    if(nseq >= ncount)
+                    var now = GLib.get_monotonic_time();
+                    if(now - lastm > tlimit)
                     {
                         toc++;
-                        nseq = 0;
                         var req = requests[tcycle];
-                        var s = MSP.to_string(req);
-                        var t = MSP.to_string(pollcmd);
-                        MSPLog.message("timeout on %s (%s)\n", t, s);
+                        var s =req.to_string();
+                        MSPLog.message("timeout on %s \n", s);
                         send_poll();
                     }
                     return true;
@@ -1116,11 +1108,11 @@ public class MWPlanner : Gtk.Application {
     private void send_poll()
     {
         var req=requests[tcycle];
-        if(tcycle == 0)
-            lastp = GLib.get_monotonic_time();
-        time_t now;
-        time_t(out now);
-        if(((int)now - (int)lastrx) > 5)
+       lastm = GLib.get_monotonic_time();
+       if(tcycle == 0)
+            lastp = lastm;
+
+       if((lastm - lastrx) > 5000000)
         {
             if(rxerr == false)
             {
@@ -1147,11 +1139,11 @@ public class MWPlanner : Gtk.Application {
             nrx = 0;
         }
 
-        if (req == MSP.Cmds.ANALOG)
+       if (req == MSP.Cmds.ANALOG)
         {
-            if (now - last_an > 4)
+            if (lastm - last_an > 4*1000000)
             {
-                last_an = now;
+                last_an = lastm;
             }
             else
             {
@@ -1159,10 +1151,8 @@ public class MWPlanner : Gtk.Application {
                 req = requests[tcycle];
             }
         }
-        pollcmd = req;
-        mseq++;
         send_cmd(req, null, 0);
-//        MSPLog.message("send %s\n", MSP.to_string(req));
+//        MSPLog.message("send %s\n", req.to_string());
     }
 
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
@@ -1170,7 +1160,7 @@ public class MWPlanner : Gtk.Application {
         if(errs == true)
         {
             remove_tid(ref cmdtid);
-            stdout.printf("Error on cmd %s %d\n", MSP.to_string(cmd), cmd);
+            stdout.printf("Error on cmd %s %d\n", cmd.to_string(), cmd);
             switch(cmd)
             {
                 case MSP.Cmds.NAV_CONFIG:
@@ -1191,14 +1181,8 @@ public class MWPlanner : Gtk.Application {
         }
         Logger.log_time();
 
-        if(gpstid > 0)
-        {
-            lastseq = mseq;
-            nseq = 0;
-        }
-
         if(cmd != MSP.Cmds.RADIO)
-            time_t(out lastrx);
+            lastrx = GLib.get_monotonic_time();
 
         switch(cmd)
         {
@@ -1337,7 +1321,6 @@ public class MWPlanner : Gtk.Application {
                     }
                     i++;
                 }
-                stderr.printf("boxes %x %x\n", rth_mask, ph_mask);
                 add_cmd(MSP.Cmds.MISC,null,0, 1000);
                 break;
 
@@ -1540,41 +1523,29 @@ public class MWPlanner : Gtk.Application {
                         report_bits(flag);
                     }
 
-                    if ((rth_mask != 0) &&
-                        ((flag & rth_mask) != 0) &&
-                        ((xbits & rth_mask) == 0))
+                    if(armed != 0)
                     {
-                        stderr.printf("set RTH on %08x %u %d\n", flag,flag,
-                                      (int)duration);
-                        want_rth = true;
-                    }
-                    else if ((ph_mask != 0) &&
-                             ((flag & ph_mask) != 0) &&
-                             ((xbits & ph_mask) == 0))
-                    {
-                        stderr.printf("set PH on %08x %u %d\n", flag, flag,
-                                      (int)duration);
-                        want_ph = true;
+                        if ((rth_mask != 0) &&
+                            ((flag & rth_mask) != 0) &&
+                            ((xbits & rth_mask) == 0))
+                        {
+                            stderr.printf("set RTH on %08x %u %d\n", flag,flag,
+                                          (int)duration);
+                            want_rth = true;
+                        }
+                        else if ((ph_mask != 0) &&
+                                 ((flag & ph_mask) != 0) &&
+                                 ((xbits & ph_mask) == 0))
+                        {
+                            stderr.printf("set PH on %08x %u %d\n", flag, flag,
+                                          (int)duration);
+                            want_ph = true;
+                        }
                     }
                     xbits = flag;
                 }
                 break;
-/*
-            case MSP.Cmds.INFO_WP:
-                uint8* rp = raw;
-                var w = MSP_WP();
-                w.wp_no = *rp++;
-                rp++; // skip action
-                rp = deserialise_i32(rp, out w.lat);
-                rp = deserialise_i32(rp, out w.lon);
-                double rlat = w.lat/10000000.0;
-                double rlon = w.lon/10000000.0;
-                if(craft != null && rlat != 0.0 && rlon != 0.0)
-                {
-                    craft.special_wp(w.wp_no, rlat, rlon);
-                }
-                break;
-*/
+
             case MSP.Cmds.NAV_STATUS:
             {
                 MSP_NAV_STATUS ns = MSP_NAV_STATUS();
@@ -2096,6 +2067,7 @@ public class MWPlanner : Gtk.Application {
         if(dopoll && cmd != MSP.Cmds.RADIO)
         {
             tcycle = (tcycle + 1) % requests.length;
+            amsgs++;
             if(tcycle == 0)
             {
                 var  val = 1000*timadj.adjustment.value;
@@ -2425,15 +2397,16 @@ public class MWPlanner : Gtk.Application {
         t.toc = toc;
         t.tot = tot;
         t.avg = (anvals > 0) ? (ulong)(acycle/anvals) : 0;
+        t.msgs = amsgs;
         return t;
     }
 
     private void show_serial_stats()
     {
         var t = gen_serial_stats();
-        MSPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %lu wait %u, avg poll loop %lu ms\n",
+        MSPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %lu wait %u, avg poll loop %lu ms messages %u\n",
                       t.s.elapsed, t.s.rxbytes, t.s.txbytes, t.s.rxrate, t.s.txrate,
-                      t.toc, t.tot, t.avg);
+                       t.toc, t.tot, t.avg ,t.msgs);
     }
 
     private void serial_doom(Gtk.Button c)
@@ -2484,6 +2457,7 @@ public class MWPlanner : Gtk.Application {
         set_bat_stat(0);
         toc = tot = 0;
         anvals = 0;
+        amsgs = 0;
         acycle = 0;
         gpscnt = 0;
     }
