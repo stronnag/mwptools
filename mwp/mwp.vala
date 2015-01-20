@@ -1252,7 +1252,7 @@ public class MWPlanner : Gtk.Application {
                             add_cmd(MSP.Cmds.FC_VERSION,null,0,1000);
                             break;
                         default:
-                            add_cmd(MSP.Cmds.IDENT,null,0,1000);
+                            add_cmd(MSP.Cmds.BOXNAMES,null,0,1000);
                             break;
                     }
                 }
