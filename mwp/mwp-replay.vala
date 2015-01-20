@@ -203,28 +203,44 @@ public class ReplayThread : GLib.Object
                                     if(mwvers == 0)
                                         mwvers = 255;
 
-                                    if(obj.has_member("fctype"))
-                                    {
-                                        fctype = (uint)obj.get_int_member ("fctype");
-                                    }
-
-                                    buf[0] = 'C';
-                                    buf[1] = 'L';
-                                    buf[2] = 'F';
-                                    buf[3] = 'L';
-                                    buf[4] = '!';
-                                    send_rec(fd,MSP.Cmds.FC_VARIANT, 5, buf);
-
-                                    buf[0] = 2;
-                                    buf[1] = 4;
-                                    buf[2] = 7;
-                                    send_rec(fd,MSP.Cmds.FC_VERSION, 4, buf);
-
                                     buf[0] = (uint8)mwvers;
                                     buf[1] = (uint8)mrtype;
                                     buf[2] = 42;
                                     serialise_u32(buf+3, (uint32)cap);
                                     send_rec(fd,MSP.Cmds.IDENT, 7, buf);
+
+                                    if(obj.has_member("fctype"))
+                                    {
+                                        fctype = (uint)obj.get_int_member ("fctype");
+                                    }
+
+                                    string fcvar = null;
+                                    uint fcvers = 0;
+                                    if(obj.has_member("fc_var"))
+                                    {
+                                        fcvar =  obj.get_string_member("fc_var");
+                                        fcvers = (uint)obj.get_int_member ("fc_vers");
+                                    }
+                                    else if (fctype == 3)
+                                    {
+                                        fcvar = " CF ";
+                                        fcvers = 0x010501;
+                                    }
+
+                                    if(fcvar != null)
+                                    {
+                                        buf[0] = fcvar[0];
+                                        buf[1] = fcvar[1];
+                                        buf[2] = fcvar[2];
+                                        buf[3] = fcvar[3];
+                                        buf[4] = '!';
+                                        send_rec(fd,MSP.Cmds.FC_VARIANT, 4, buf);
+
+                                        buf[0] = (uint8)((fcvers & 0xff0000) >> 16);
+                                        buf[1] = (uint8)((fcvers & 0xff00) >> 8);
+                                        buf[2] = (uint8)(fcvers & 0xff);
+                                        send_rec(fd,MSP.Cmds.FC_VERSION, 3, buf);
+                                    }
 
                                     MSP_MISC a = MSP_MISC();
                                     a.conf_minthrottle=1064;

@@ -27,7 +27,7 @@ public class Logger : GLib.Object
     private static double dtime;
     public static int duration { get; private set; }
 
-    public static void start(string? title, uint8 mvers, uint8 mrtype, uint32 capability,uint8 fctype=1)
+    public static void start(string? title, VersInfo vi,uint32 capability)
     {
         time_t currtime;
         time_t(out currtime);
@@ -50,13 +50,21 @@ public class Logger : GLib.Object
             builder.set_member_name ("mission");
             builder.add_string_value (bfn);
             builder.set_member_name ("mwvers");
-            builder.add_int_value (mvers);
+            builder.add_int_value (vi.mvers);
             builder.set_member_name ("mrtype");
-            builder.add_int_value (mrtype);
+            builder.add_int_value (vi.mrtype);
             builder.set_member_name ("capability");
             builder.add_int_value (capability);
             builder.set_member_name ("fctype");
-            builder.add_int_value (fctype);
+            builder.add_int_value (vi.fctype);
+            if(vi.fc_var != null)
+            {
+                builder.set_member_name ("fc_var");
+                builder.add_string_value (vi.fc_var);
+                var nv = (vi.fc_vers[0] << 16)|(vi.fc_vers[1] << 8|vi.fc_vers[2]);
+                builder.set_member_name ("fc_vers");
+                builder.add_int_value (nv);
+            }
             builder.end_object ();
             Json.Node root = builder.get_root ();
             gen.set_root (root);

@@ -1630,6 +1630,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel" id="rxerrlab">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">start</property>
         <property name="label" translatable="yes">...</property>
       </object>
       <packing>
