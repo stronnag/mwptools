@@ -1085,7 +1085,6 @@ public class MWSim : GLib.Object
 
                 switch(cmd)
                 {
-
                     case MSP.Cmds.API_VERSION:
                     if(naze32)
                     {
@@ -1106,12 +1105,11 @@ public class MWSim : GLib.Object
                     case MSP.Cmds.FC_VERSION:
                     if(naze32)
                     {
-                        uint8[]buf = {'6','6','6'};
+                        uint8[]buf = {6,6,6};
                         msp.send_command(MSP.Cmds.FC_VERSION, buf, 3);
                         append_text("Send VERSION\n");
                     }
                     break;
-
 
                     case MSP.Cmds.IDENT:
                     uint8[] buf = {230, imodel,42,16,0,0,0};
