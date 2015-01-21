@@ -424,6 +424,7 @@ public class MWSerial : Object
                 write("\n");
                 uint8 []rdata;
                 read_line(out rdata, out len);
+                Thread.usleep(50*1000);
             }
             else
             {
