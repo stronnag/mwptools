@@ -1073,9 +1073,9 @@ public class MWSim : GLib.Object
                     return;
                 }
 
-                if(jitter)
+                if((jitter == true) && (cmd > 100))
                 {
-                    var jr = rand.int_range(-5,5);
+                    var jr = rand.int_range(-10,10);
                     if(jr == 0)
                     {
                         append_text("Dropping %s\n".printf(cmd.to_string()));

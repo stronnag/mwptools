@@ -329,6 +329,7 @@ public class MWPlanner : Gtk.Application {
     private static const int ANIMINTVL=5;
     private static const int BEATINTVL=600;
     private static const int DURAINTVL=9;
+    private static const int STATINTVL=8;
 
     private int64 lastp;
     private uint nticks = 0;
@@ -1093,7 +1094,6 @@ public class MWPlanner : Gtk.Application {
         Timeout.add(100, () =>
             {
                 nticks++;
-
                 if(dopoll)
                 {
                     if(inflight && nticks > lastm + tlimit)
@@ -1104,7 +1104,15 @@ public class MWPlanner : Gtk.Application {
                         MSPLog.message("timeout on %s \n", s);
                         send_poll();
                     }
+
+                    if((nticks % STATINTVL) == 0)
+                    {
+                        var t = gen_serial_stats();
+                        telstats.update(t);
+                    }
                 }
+
+
 
                 if((nticks % ANIMINTVL) == 0)
                 {
@@ -1185,8 +1193,8 @@ public class MWPlanner : Gtk.Application {
                 req = requests[tcycle];
             }
         }
-       inflight = true;
-       send_cmd(req, null, 0);
+        inflight = true;
+        send_cmd(req, null, 0);
     }
 
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
@@ -2112,11 +2120,6 @@ public class MWPlanner : Gtk.Application {
                             msg_poller();
                            return false;
                        });
-                }
-//                if(telstats.visible)
-                {
-                    var t = gen_serial_stats();
-                    telstats.update(t);
                 }
             }
             else
