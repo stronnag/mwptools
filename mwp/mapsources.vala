@@ -106,7 +106,7 @@ public class JsonMapDef : Object
             }
         }
         catch (Error e) {
-            MSPLog.message ("I guess something is not working...\n");
+            MWPLog.message ("I guess something is not working...\n");
         }
         return sources;
     }

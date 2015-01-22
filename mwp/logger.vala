@@ -39,7 +39,7 @@ public class Logger : GLib.Object
             is_logging = true;
         else
         {
-            MSPLog.message ("Logger can't open %s\n", fn);
+            MWPLog.message ("Logger can't open %s\n", fn);
             is_logging = false;
         }
 

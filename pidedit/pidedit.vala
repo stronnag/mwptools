@@ -215,7 +215,7 @@ public class PIDEdit : Object
                 rt.throttle_expo = (uint8)root_object.get_int_member ("throttle_expo");
                 set_rc_tuning();
             } catch (Error e) {
-                MSPLog.message ("Failed to parse file\n");
+                MWPLog.message ("Failed to parse file\n");
             }
         }
     }
@@ -291,7 +291,7 @@ public class PIDEdit : Object
          try{
              FileUtils.set_contents(lastfile,json);
          }catch(Error e){
-             MSPLog.message ("Error: %s\n", e.message);
+             MWPLog.message ("Error: %s\n", e.message);
          }
     }
 
@@ -334,7 +334,7 @@ public class PIDEdit : Object
             else
                 settings =  new Settings (sname);
         } catch {
-            MSPLog.message("No settings schema\n");
+            MWPLog.message("No settings schema\n");
             Posix.exit(-1);
         }
 
@@ -430,7 +430,7 @@ public class PIDEdit : Object
         var fn = MWPUtils.find_conf_file("pidedit.ui");
         if (fn == null)
         {
-            MSPLog.message ("No UI definition file\n");
+            MWPLog.message ("No UI definition file\n");
             Gtk.main_quit();
         }
         else
@@ -439,7 +439,7 @@ public class PIDEdit : Object
             {
                 builder.add_from_file (fn);
             } catch (Error e) {
-                MSPLog.message ("Builder: %s\n", e.message);
+                MWPLog.message ("Builder: %s\n", e.message);
                 Gtk.main_quit();
             }
         }
@@ -475,7 +475,7 @@ public class PIDEdit : Object
         s.serial_event.connect((sd,cmd,raw,len,errs) => {
                 if(errs == true)
                 {
-                    MSPLog.message("Error on cmd %s (%d)\n", cmd.to_string(),cmd);
+                    MWPLog.message("Error on cmd %s (%d)\n", cmd.to_string(),cmd);
                     return;
                 }
                 switch(cmd)
@@ -673,7 +673,7 @@ public class PIDEdit : Object
                     }
                     else
                     {
-                        MSPLog.message("open failed %s %s\n", serdev, estr);
+                        MWPLog.message("open failed %s %s\n", serdev, estr);
                     }
 
                 }

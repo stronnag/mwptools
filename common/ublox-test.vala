@@ -181,7 +181,7 @@ public class MWSerial : Object
         {
             var lasterr=Posix.errno;
             var s = Posix.strerror(lasterr);
-            MSPLog.message("%s (%d)\n", s, lasterr);
+            MWPLog.message("%s (%d)\n", s, lasterr);
             fd = -1;
             available = false;
         }

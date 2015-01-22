@@ -130,6 +130,7 @@ public class MWPlanner : Gtk.Application {
     private ListBox ls;
     private Gtk.SpinButton zoomer;
     private Gtk.SpinButton timadj;
+    private double looptimer;
     private Gtk.Label poslabel;
     public Gtk.Label stslabel;
     private Gtk.Statusbar statusbar;
@@ -331,7 +332,7 @@ public class MWPlanner : Gtk.Application {
     private static const int DURAINTVL=9;
     private static const int STATINTVL=8;
 
-    private int64 lastp;
+    private Timer lastp;
     private uint nticks = 0;
     private uint lastm;
     private uint lastrx;
@@ -393,7 +394,7 @@ public class MWPlanner : Gtk.Application {
         var fn = MWPUtils.find_conf_file("mwp.ui");
         if (fn == null)
         {
-            MSPLog.message ("No UI definition file\n");
+            MWPLog.message ("No UI definition file\n");
             Posix.exit(255);
         }
         else
@@ -402,7 +403,7 @@ public class MWPlanner : Gtk.Application {
             {
                 builder.add_from_file (fn);
             } catch (Error e) {
-                MSPLog.message ("Builder: %s\n", e.message);
+                MWPLog.message ("Builder: %s\n", e.message);
                 Posix.exit(255);
             }
         }
@@ -454,7 +455,11 @@ public class MWPlanner : Gtk.Application {
         zoomer = builder.get_object ("spinbutton1") as Gtk.SpinButton;
 
         timadj = builder.get_object ("spinbutton2") as Gtk.SpinButton;
-        timadj.adjustment.value = conf.updint;
+        timadj.adjustment.value = looptimer = conf.updint;
+
+        timadj.value_changed.connect (() => {
+                looptimer = timadj.adjustment.value;
+            });
 
         var menuop = builder.get_object ("file_open") as Gtk.MenuItem;
         menuop.activate.connect (() => {
@@ -1017,6 +1022,7 @@ public class MWPlanner : Gtk.Application {
         }
 
         start_poll_timer();
+        lastp = new Timer();
 
         if(no_max == false)
             window.maximize();
@@ -1071,7 +1077,7 @@ public class MWPlanner : Gtk.Application {
         if(e != null)
         {
             statusbar.push(context_id, e);
-            MSPLog.message("%s\n", e);
+            MWPLog.message("%s\n", e);
             bleet_sans_merci("beep-sound.ogg");
         }
         else
@@ -1083,7 +1089,10 @@ public class MWPlanner : Gtk.Application {
     private void msg_poller()
     {
         if(dopoll)
+        {
+            lastp.start();
             send_poll();
+        }
     }
 
     private void start_poll_timer()
@@ -1101,18 +1110,16 @@ public class MWPlanner : Gtk.Application {
                         toc++;
                         var req = requests[tcycle];
                         var s =req.to_string();
-                        MSPLog.message("timeout on %s \n", s);
+                        MWPLog.message("timeout on %s \n", s);
                         send_poll();
-                    }
-
-                    if((nticks % STATINTVL) == 0)
-                    {
-                        var t = gen_serial_stats();
-                        telstats.update(t);
                     }
                 }
 
-
+                if((nticks % STATINTVL) == 0)
+                {
+                    var t = gen_serial_stats();
+                    telstats.update(t);
+                }
 
                 if((nticks % ANIMINTVL) == 0)
                 {
@@ -1165,7 +1172,7 @@ public class MWPlanner : Gtk.Application {
                 /* Probably takes a minute to change the LIPO */
             if(lastm - lastrx > 300 )
             {
-                MSPLog.message("Restart poll loop\n");
+                MWPLog.message("Restart poll loop\n");
                 init_state();
                 dopoll = inflight = false;
                 add_cmd(MSP.Cmds.IDENT,null,0, 2500);
@@ -1401,7 +1408,6 @@ public class MWPlanner : Gtk.Application {
                         if(navcap == true)
                             add_cmd(MSP.Cmds.NAV_CONFIG,null,0,1000);
 
-                        var  val = timadj.adjustment.value;
                         ulong reqsize = 0;
                         requests.resize(0);
 
@@ -1438,7 +1444,7 @@ public class MWPlanner : Gtk.Application {
                         else
                         {
                             set_error_status("No GPS detected");
-                            MSPLog.message("no gps, sensor = 0x%x\n", sensor);
+                            MWPLog.message("no gps, sensor = 0x%x\n", sensor);
                             if(gpscnt < 2)
                             {
                                 gpscnt++;
@@ -1467,7 +1473,7 @@ public class MWPlanner : Gtk.Application {
                         }
 
                         var nreqs = requests.length;
-                        int timeout = (int)(val*1000 / nreqs);
+                        int timeout = (int)(looptimer*1000 / nreqs);
 
                             // data we send, response is structs + this
                         var qsize = nreqs * 6;
@@ -1480,13 +1486,12 @@ public class MWPlanner : Gtk.Application {
 
                         if(nopoll == false && nreqs > 0)
                         {
-                            MSPLog.message("Start poller\n");
+                            MWPLog.message("Start poller\n");
                             if  (thr == null)
                             {
                                 dopoll = true;
                             }
                             tcycle = 0;
-                            lastp = GLib.get_monotonic_time();
                         }
                         start_audio();
                         report_bits(flag);
@@ -1874,39 +1879,16 @@ public class MWPlanner : Gtk.Application {
                     }
                     else if(w.flag == 0xfe)
                     {
-                        MSPLog.message("Error flag on wp #%d\n", w.wp_no);
+                        MWPLog.message("Error flag on wp #%d\n", w.wp_no);
                     }
                     else
                     {
                         request_wp(w.wp_no+1);
                     }
                 }
-/***
-                else if (wpmgr.wp_flag == WPDL.POLL)
-                {
-                    w = MSP_WP();
-                    w.wp_no = *rp++;
-                    if(naze32 == false)
-                        rp++; // skip action
-                    rp = deserialise_i32(rp, out w.lat);
-                    rp = deserialise_i32(rp, out w.lon);
-                    if (w.lat != 0 && w.lon != 0)
-                    {
-                        rp = deserialise_u32(rp, out w.altitude);
-                        if(Logger.is_logging)
-                        {
-                            Logger.wp_poll(w);
-                        }
-                        double rlat = w.lat/10000000.0;
-                        double rlon = w.lon/10000000.0;
-                        if(craft != null)
-                            craft.special_wp(w.wp_no, rlat, rlon);
-                    }
-                }
-***/
                 else
                 {
-                    MSPLog.message("unsolicited WP #%d\n", w.wp_no);
+                    MWPLog.message("unsolicited WP #%d\n", w.wp_no);
                 }
             }
             break;
@@ -2092,34 +2074,31 @@ public class MWPlanner : Gtk.Application {
             break;
 
             default:
-                MSPLog.message ("** Unknown response %d\n", cmd);
+                MWPLog.message ("** Unknown response %d\n", cmd);
                 break;
         }
 
-        if(dopoll && cmd != MSP.Cmds.RADIO)
+        if(dopoll && (cmd == requests[tcycle]))
         {
             tcycle = (tcycle + 1) % requests.length;
             amsgs++;
             if(tcycle == 0)
             {
-                var  val = 1000*timadj.adjustment.value;
-                var now = GLib.get_monotonic_time();
-                var et = (now - lastp)/1000;
-                lastp = now;
-                acycle += et;
+                lastp.stop();
+                var et = lastp.elapsed();
+                acycle += (uint64)(et*1000);
                 anvals++;
-
-                if (et > val)
+                if (et < looptimer)
                 {
-                   msg_poller();
-                }
-                else
-                {
-                    tot = (uint)val-(uint)et;
+                    tot = (uint)((looptimer-et)*1000);
                     Timeout.add(tot, ()=> {
                             msg_poller();
                            return false;
                        });
+                }
+                else
+                {
+                    msg_poller();
                 }
             }
             else
@@ -2177,10 +2156,10 @@ public class MWPlanner : Gtk.Application {
             try
             {
                 string cmd = "%s %s".printf(conf.mediap,fn);
-                MSPLog.message("%s\n", cmd);
+                MWPLog.message("%s\n", cmd);
                 Process.spawn_command_line_async(cmd);
             } catch (SpawnError e) {
-                MSPLog.message ("Error: %s\n", e.message);
+                MWPLog.message ("Error: %s\n", e.message);
             }
         }
     }
@@ -2400,7 +2379,7 @@ public class MWPlanner : Gtk.Application {
     private void show_serial_stats()
     {
         var t = gen_serial_stats();
-        MSPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %lu wait %u, avg poll loop %lu ms messages %u\n",
+        MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %lu wait %u, avg poll loop %lu ms messages %u\n",
                       t.s.elapsed, t.s.rxbytes, t.s.txbytes, t.s.rxrate, t.s.txrate,
                        t.toc, t.tot, t.avg ,t.msgs);
     }

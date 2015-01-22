@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-public class MSPLog : GLib.Object
+public class MWPLog : GLib.Object
 {
     public static void message(string format, ...)
     {

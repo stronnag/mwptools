@@ -91,7 +91,7 @@ public class MWSerial : Object
         {
             var lasterr=Posix.errno;
             var s = Posix.strerror(lasterr);
-            MSPLog.message("open %s - %s (%d)\n", devname, s, lasterr);
+            MWPLog.message("open %s - %s (%d)\n", devname, s, lasterr);
             fd = -1;
             available = false;
         }
@@ -189,7 +189,7 @@ public class MWSerial : Object
                         }
                         else
                         {
-//                            MSPLog.message(" fail on header %x\n", c);
+//                            MWPLog.message(" fail on header %x\n", c);
                             state=States.S_ERROR;
                         }
                         break;
@@ -200,7 +200,7 @@ public class MWSerial : Object
                         }
                         else
                         {
-//                            MSPLog.message(" fail on header1 %x\n", c);
+//                            MWPLog.message(" fail on header1 %x\n", c);
                             state=States.S_ERROR;
                         }
                         break;
@@ -212,7 +212,7 @@ public class MWSerial : Object
                         }
                         else
                         {
-//                            MSPLog.message(" fail on header2 %x\n", c);
+//                            MWPLog.message(" fail on header2 %x\n", c);
                             state=States.S_ERROR;
                         }
                         break;
@@ -254,7 +254,7 @@ public class MWSerial : Object
                         }
                         else
                         {
-                            MSPLog.message(" CRC Fail, got %d != %d (%d)\n",
+                            MWPLog.message(" CRC Fail, got %d != %d (%d)\n",
                                            c,checksum,cmd);
                             state = States.S_ERROR;
                         }
@@ -373,7 +373,7 @@ public class MWSerial : Object
                 {
                     fn = "%s%s".printf(ifn,defname);
                 }
-                MSPLog.message("Saving to %s\n",fn);
+                MWPLog.message("Saving to %s\n",fn);
                 os = FileStream.open(fn, "w");
             }
             else
@@ -414,7 +414,7 @@ public class MWSerial : Object
         string rline;
         int len;
 
-        MSPLog.message("Replaying %s\n", fn);
+        MWPLog.message("Replaying %s\n", fn);
         while((rline = fp.read_line ()) != null)
         {
             var line = rline.strip();
@@ -531,7 +531,7 @@ public class MWSerial : Object
                 {
                     tyaw = ((raw[41] & 1) == 1);
                     if(tyaw)
-                        MSPLog.message("Discovered Tri Yaw\n");
+                        MWPLog.message("Discovered Tri Yaw\n");
                 }
             }
 
@@ -559,13 +559,13 @@ public class MWSerial : Object
                     ;
 
                 Thread.usleep(1000000);
-                MSPLog.message("Reboot on defaults\n");
+                MWPLog.message("Reboot on defaults\n");
                 do
                 {
                     s.send_msp(Cmds.IDENT, null, 0);
                     res =  s.read_msp(out cmd, out raw);
                 } while (res != ResCode.OK);
-                MSPLog.message("Rebooted ...\n");
+                MWPLog.message("Rebooted ...\n");
                 s.write("#");
                 while((res = s.read_line(out line, out len)) == ResCode.OK)
                     ;
@@ -574,7 +574,7 @@ public class MWSerial : Object
                 while((res = s.read_line(out line, out len)) == ResCode.OK)
                     ;
 
-                MSPLog.message("Reboot on save\n");
+                MWPLog.message("Reboot on save\n");
                 Thread.usleep(1000000);
 
                 do
@@ -597,7 +597,7 @@ public class MWSerial : Object
                         s.send_msp(Cmds.SET_SERVO_CONF,raw,raw.length);
                         if(s.read_msp(out cmd, out raw) == ResCode.OK)
                         {
-                            MSPLog.message("Set Tri Yaw\n");
+                            MWPLog.message("Set Tri Yaw\n");
                             s.send_msp(Cmds.EEPROM_WRITE,null,0);
                             s.read_msp(out cmd, out raw);
                         }
@@ -612,7 +612,7 @@ public class MWSerial : Object
                 }
             }
         }
-        MSPLog.message("Done\n");
+        MWPLog.message("Done\n");
         return 0;
     }
 }

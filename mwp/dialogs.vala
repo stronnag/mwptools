@@ -988,7 +988,7 @@ public class NavStatus : GLib.Object
 
     public void logspeak_close()
     {
-//        MSPLog.message("Stop audio\n");
+//        MWPLog.message("Stop audio\n");
         mt_voice=false;
         mt.clear();
         mt.message(AudioThread.Vox.DONE);
@@ -1038,7 +1038,7 @@ public class AudioThread : Object {
         if (msgs.length() > 8)
         {
             clear();
-            MSPLog.message("cleared voice queue\n");
+            MWPLog.message("cleared voice queue\n");
         }
         msgs.push(c);
     }
@@ -1142,7 +1142,7 @@ public class AudioThread : Object {
                     }
                     if(s != null)
                     {
-//                        MSPLog.message("say %s\n", s);
+//                        MWPLog.message("say %s\n", s);
                         espeak_say(s);
                     }
                 }

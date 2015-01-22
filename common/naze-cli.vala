@@ -76,7 +76,7 @@ public class MWSerial : Object
         fd = -1;
         if(devname == null)
             devname = "/dev/ttyUSB0";
-        MSPLog.message("open %s %d\n", devname, brate);
+        MWPLog.message("open %s %d\n", devname, brate);
         this.open(devname,brate);
     }
 
@@ -164,7 +164,7 @@ public class MWSerial : Object
         {
             var lasterr=Posix.errno;
             var s = Posix.strerror(lasterr);
-            MSPLog.message("%s (%d)\n", s, lasterr);
+            MWPLog.message("%s (%d)\n", s, lasterr);
             fd = -1;
             available = false;
         }
@@ -396,7 +396,7 @@ public class MWSerial : Object
             var file = File.new_for_path (args[1]);
             if (!file.query_exists ())
             {
-                MSPLog.message ("File '%s' doesn't exist.\n", file.get_path ());
+                MWPLog.message ("File '%s' doesn't exist.\n", file.get_path ());
                 return 255;
             }
             else

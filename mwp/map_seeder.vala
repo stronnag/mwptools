@@ -110,7 +110,7 @@ public class TileUtil : Object
     {
         foreach(var m in tl)
         {
-            MSPLog.message("%d %d %d %d %d\n", m.z, m.sx, m.sy, m.ex, m.ey);
+            MWPLog.message("%d %d %d %d %d\n", m.z, m.sx, m.sy, m.ex, m.ey);
         }
     }
 */
@@ -303,7 +303,7 @@ public class TileUtil : Object
         }
         else
         {
-            MSPLog.message("Tile failure status %u\n", msg.status_code);
+            MWPLog.message("Tile failure status %u\n", msg.status_code);
             stats.dlerr++;
         }
 
@@ -342,7 +342,7 @@ int main (string[] args)
     }
     t.set_delta(30);
     var nt = t.build_table();
-    MSPLog.message("%u tiles\n", nt);
+    MWPLog.message("%u tiles\n", nt);
     var app = new GLib.MainLoop();
 
     t.show_stats.connect((ts) => {

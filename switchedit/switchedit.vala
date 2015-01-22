@@ -146,7 +146,7 @@ public class SwitchEdit : Object
             else
                 settings =  new Settings (sname);
         } catch {
-            MSPLog.message("No settings schema\n");
+            MWPLog.message("No settings schema\n");
             Posix.exit(-1);
         }
 
@@ -312,7 +312,7 @@ public class SwitchEdit : Object
         var fn = MWPUtils.find_conf_file("switchedit.ui");
         if (fn == null)
         {
-            MSPLog.message ("No UI definition file\n");
+            MWPLog.message ("No UI definition file\n");
             Gtk.main_quit();
         }
         else
@@ -321,14 +321,14 @@ public class SwitchEdit : Object
             {
                 builder.add_from_file (fn);
             } catch (Error e) {
-                MSPLog.message ("Builder: %s\n", e.message);
+                MWPLog.message ("Builder: %s\n", e.message);
                 Gtk.main_quit();
             }
         }
         fn = MWPUtils.find_conf_file("mwchooser.ui");
         if (fn == null)
         {
-            MSPLog.message ("No UI chooser definition file\n");
+            MWPLog.message ("No UI chooser definition file\n");
             Posix.exit(255);
         }
         else
@@ -337,7 +337,7 @@ public class SwitchEdit : Object
             {
                 builder.add_from_file (fn);
             } catch (Error e) {
-                MSPLog.message ("Builder: %s\n", e.message);
+                MWPLog.message ("Builder: %s\n", e.message);
                 Posix.exit(255);
             }
         }
@@ -377,7 +377,7 @@ public class SwitchEdit : Object
                         have_vers = false;
                         add_cmd(MSP.Cmds.IDENT,null,0, ref have_vers,2000);
                     }
-                    MSPLog.message("Error on cmd %d\n", cmd);
+                    MWPLog.message("Error on cmd %d\n", cmd);
                     return;
                 }
                 switch(cmd)
@@ -568,7 +568,7 @@ public class SwitchEdit : Object
                     }
                     else
                     {
-                        MSPLog.message("open failed %s %s\n", serdev, estr);
+                        MWPLog.message("open failed %s %s\n", serdev, estr);
                     }
                 }
                 else
@@ -627,7 +627,7 @@ public class SwitchEdit : Object
             l.set_width_chars(10);
             l.justify = Gtk.Justification.LEFT;
             l.halign = Gtk.Align.START;
-//            MSPLog.message("Box %d %s\n", i, bsx[i]);
+//            MWPLog.message("Box %d %s\n", i, bsx[i]);
             l.set_label(bsx[i]);
             boxlabel += l;
             l.override_background_color(Gtk.StateFlags.NORMAL, colors[0]);
@@ -669,14 +669,14 @@ public class SwitchEdit : Object
                 bv[ridx] |= bix*(1 << mr.auxchanid*3);
 
 /*
-                MSPLog.message("auxid = %d, rowid = %d, name = %s ",
+                MWPLog.message("auxid = %d, rowid = %d, name = %s ",
                               mr.auxchanid, ridx, pbox[mr.perm_id].name);
-                MSPLog.message("min=%d, max=%d idx=%u val %x\n",
+                MWPLog.message("min=%d, max=%d idx=%u val %x\n",
                               mr.startstep, mr.endstep, bix, bv[idx]);
 */
             }
 /*
-            MSPLog.message("permid = %d, auxid  = %d, range %d %d, row %d = %s\n",
+            MWPLog.message("permid = %d, auxid  = %d, range %d %d, row %d = %s\n",
                           mr.perm_id, mr.auxchanid, mr.startstep, mr.endstep,
                           ridx, pbox[mr.perm_id].name);
 */
@@ -837,7 +837,7 @@ public class SwitchEdit : Object
                 have_names = true;
                 have_box = true;
             } catch (Error e) {
-                MSPLog.message ("Failed to parse file\n");
+                MWPLog.message ("Failed to parse file\n");
             }
         }
     }
@@ -898,7 +898,7 @@ public class SwitchEdit : Object
          try{
              FileUtils.set_contents(lastfile,json);
          }catch(Error e){
-             MSPLog.message ("Error: %s\n", e.message);
+             MWPLog.message ("Error: %s\n", e.message);
          }
     }
 

@@ -70,11 +70,11 @@ public class MWPSettings : GLib.Object
                 settings =  new Settings (sname);
 
             settings.changed.connect ((s) => {
-                    MSPLog.message("changed %s settings\n",s);
+                    MWPLog.message("changed %s settings\n",s);
                     read_settings(s);
                 });
         } catch {
-            MSPLog.message("No settings schema\n");
+            MWPLog.message("No settings schema\n");
             Posix.exit(-1);
         }
     }

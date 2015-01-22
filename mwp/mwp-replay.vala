@@ -159,7 +159,7 @@ public class ReplayThread : GLib.Object
         var thr = new Thread<int> ("relog", () => {
                 var file = File.new_for_path (relog);
                 if (!file.query_exists ()) {
-                    MSPLog.message ("File '%s' doesn't exist.\n", file.get_path ());
+                    MWPLog.message ("File '%s' doesn't exist.\n", file.get_path ());
                 }
                 else
                 {
