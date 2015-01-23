@@ -330,7 +330,6 @@ public class MWSerial : Object
             stats.rxrate = stats.rxbytes / stats.elapsed;
         }
         return stats;
-//        "%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s)".printf(et, rxc, txc, rrate, trate);
     }
 
     private void error_counter()

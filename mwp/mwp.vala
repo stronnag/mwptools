@@ -175,7 +175,7 @@ public class MWPlanner : Gtk.Application {
     private NavConfig navconf;
     private MapSourceDialog msview;
     private MapSeeder mseed;
-    private TelemetryStats telstats;
+    private TelemetryStats telemstatus;
     private GPSInfo gpsinfo;
     private WPMGR wpmgr;
     private MissionItem[] wp_resp;
@@ -270,6 +270,8 @@ public class MWPlanner : Gtk.Application {
     private Position ph_pos;
     private uint ph_mask=0;
     private uint rth_mask=0;
+
+    private TelemStats telstats;
 
     private enum DOCKLETS
     {
@@ -622,7 +624,7 @@ public class MWPlanner : Gtk.Application {
             });
 
 
-        telstats = new TelemetryStats(builder);
+        telemstatus = new TelemetryStats(builder);
         mi =  builder.get_object ("ss_dialog") as Gtk.MenuItem;
         mi.activate.connect(() => {
                 if(dockitem[DOCKLETS.TELEMETRY].is_closed() && !dockitem[DOCKLETS.TELEMETRY].is_iconified())
@@ -633,9 +635,12 @@ public class MWPlanner : Gtk.Application {
             });
 
         embed = new GtkChamplain.Embed();
+
         view = embed.get_view();
         view.set_reactive(true);
-        view.set_property("kinetic-mode", true);
+
+//        view.set_property("kinetic-mode", true);
+
         zoomer.adjustment.value_changed.connect (() =>
             {
                 int  zval = (int)zoomer.adjustment.value;
@@ -744,34 +749,10 @@ public class MWPlanner : Gtk.Application {
                         else
                         {
                             init_state();
+                            init_sstats();
                         }
                         break;
 
-/*
-                    case Gdk.Key.question:
-                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
-                            ret = false;
-                        else
-                        {
-                            var map_source_factory = Champlain.MapSourceFactory.dup_default();
-                            var sources =  map_source_factory.get_registered();
-                            foreach (Champlain.MapSourceDesc sr in sources)
-                            {
-                                if(view.map_source.get_id() == sr.get_id())
-                                {
-                                    stdout.printf("%s %u %u %s %s\n",
-                                                  sr.get_id(),
-                                                  sr.get_min_zoom_level(),
-                                                  sr.get_max_zoom_level(),
-                                                  sr.get_name(),
-                                                  sr.get_uri_format ()
-                                                  );
-                                    break;
-                                }
-                            }
-                        }
-                        break;
-*/
                     case Gdk.Key.t:
                         if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
                             ret = false;
@@ -852,7 +833,7 @@ public class MWPlanner : Gtk.Application {
         dockitem[DOCKLETS.TELEMETRY]= new DockItem.with_stock ("Telemetry",
                          "Telemetry", "gtk-disconnect",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
-        dockitem[DOCKLETS.TELEMETRY].add (telstats.grid);
+        dockitem[DOCKLETS.TELEMETRY].add (telemstatus.grid);
         dock.add_item (dockitem[DOCKLETS.TELEMETRY], DockPlacement.BOTTOM);
 
         view.notify["zoom-level"].connect(() => {
@@ -1037,7 +1018,7 @@ public class MWPlanner : Gtk.Application {
 
         navstatus.setdock(dockitem[DOCKLETS.NAVSTATUS]);
         radstatus.setdock(dockitem[DOCKLETS.RADIO]);
-        telstats.setdock(dockitem[DOCKLETS.TELEMETRY]);
+        telemstatus.setdock(dockitem[DOCKLETS.TELEMETRY]);
 
         if(layout.load_from_file(layfile) && layout.load_layout("mwp"))
             ;
@@ -1117,8 +1098,8 @@ public class MWPlanner : Gtk.Application {
 
                 if((nticks % STATINTVL) == 0)
                 {
-                    var t = gen_serial_stats();
-                    telstats.update(t);
+                    gen_serial_stats();
+                    telemstatus.update(telstats);
                 }
 
                 if((nticks % ANIMINTVL) == 0)
@@ -1174,6 +1155,7 @@ public class MWPlanner : Gtk.Application {
             {
                 MWPLog.message("Restart poll loop\n");
                 init_state();
+                init_sstats();
                 dopoll = inflight = false;
                 add_cmd(MSP.Cmds.IDENT,null,0, 2500);
                 return;
@@ -2362,26 +2344,25 @@ public class MWPlanner : Gtk.Application {
         tid = 0;
     }
 
-    private TelemStats gen_serial_stats()
+    private void  gen_serial_stats()
     {
-        TelemStats t = TelemStats();
         if(msp.available)
-            t.s = msp.dump_stats();
-        else
-            t.s = {0};
-        t.toc = toc;
-        t.tot = tot;
-        t.avg = (anvals > 0) ? (ulong)(acycle/anvals) : 0;
-        t.msgs = amsgs;
-        return t;
+            telstats.s = msp.dump_stats();
+//        else
+//            telstats.s = {0};
+        telstats.toc = toc;
+        telstats.tot = tot;
+        telstats.avg = (anvals > 0) ? (ulong)(acycle/anvals) : 0;
+        telstats.msgs = amsgs;
     }
 
     private void show_serial_stats()
     {
-        var t = gen_serial_stats();
+        gen_serial_stats();
         MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %lu wait %u, avg poll loop %lu ms messages %u\n",
-                      t.s.elapsed, t.s.rxbytes, t.s.txbytes, t.s.rxrate, t.s.txrate,
-                       t.toc, t.tot, t.avg ,t.msgs);
+                       telstats.s.elapsed, telstats.s.rxbytes, telstats.s.txbytes,
+                       telstats.s.rxrate, telstats.s.txrate,
+                       telstats.toc, telstats.tot, telstats.avg ,telstats.msgs);
     }
 
     private void serial_doom(Gtk.Button c)
@@ -2392,7 +2373,6 @@ public class MWPlanner : Gtk.Application {
         sflags = 0;
         stop_audio();
         show_serial_stats();
-
         if(rawlog == true)
         {
             msp.raw_logging(false);
@@ -2413,6 +2393,18 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
+    private void init_sstats()
+    {
+//        if(msp.available)
+//            msp.clear_counters();
+        toc = tot = 0;
+        anvals = amsgs = acycle = 0;
+        telstats.toc = telstats.tot = 0;
+        telstats.avg = 0;
+        telstats.msgs = 0;
+        telemstatus.annul();
+    }
+
     private void init_state()
     {
         dopoll = false;
@@ -2422,17 +2414,10 @@ public class MWPlanner : Gtk.Application {
         xbits = icount = api_cnt = 0;
         autocount = 0;
         nsats = -99;
-        if(msp.available)
-            msp.clear_counters();
         gpsinfo.annul();
         navstatus.reset();
-        telstats.annul();
         vinit = false;
         set_bat_stat(0);
-        toc = tot = 0;
-        anvals = 0;
-        amsgs = 0;
-        acycle = 0;
         gpscnt = 0;
     }
 
@@ -2452,6 +2437,7 @@ public class MWPlanner : Gtk.Application {
             if (msp.open(serdev, conf.baudrate, out estr) == true)
             {
                 init_state();
+                init_sstats();
                 dopoll = false;
                 if(rawlog == true)
                 {
