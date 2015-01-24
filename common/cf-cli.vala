@@ -63,6 +63,8 @@ public class MWSerial : Object
     private static string profiles;
     private static bool presave;
     private static bool tyaw = false;
+    private static bool merge = false;
+    private static bool amerge = false;
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", null},
@@ -71,6 +73,8 @@ public class MWSerial : Object
         { "profiles", 'p', 0, OptionArg.STRING, out profiles, "Profile (0-2)", null},
         { "presave", 'i', 0, OptionArg.NONE, out presave, "Save before setting", null},
         { "force-tri-rev-yaw", 'y', 0, OptionArg.NONE, out tyaw, "Force tri reversed yaw", null},
+        { "merge-profiles", 'm', 0, OptionArg.NONE, out merge, "Generate a merged file for multiple profiles", null},
+        { "merge-auxp", 'a', 0, OptionArg.NONE, out amerge, "Generate a merged file for multiple profiles with common aux settings", null},
         {null}
     };
 
@@ -343,13 +347,13 @@ public class MWSerial : Object
     }
 
 
-    private string build_part_name(string ifn, int p)
+    private string build_part_name(string ifn, string q, string p)
     {
         var dirname = Path.get_dirname(defname);
         var filename =  Path.get_basename(defname);
         var parts = filename.split(".");
         var idx = parts.length - 2;
-        parts[idx] = "%s%s_p%d".printf(ifn,parts[idx],p);
+        parts[idx] = "%s%s_%s%s".printf(ifn,parts[idx],q,p);
         filename = string.joinv(".",parts);
         return Path.build_filename(dirname, filename);
     }
@@ -367,7 +371,7 @@ public class MWSerial : Object
             {
                 if(prof0 != prof1)
                 {
-                    fn = build_part_name(ifn,p);
+                    fn = build_part_name(ifn,"p",p.to_string());
                 }
                 else
                 {
@@ -406,6 +410,63 @@ public class MWSerial : Object
             }
             os=null;
         }
+    }
+
+    public void merge_file (int prof0, int prof1)
+    {
+        if(defname != "-" && (prof0 != prof1))
+        {
+            string line;
+            FileStream fp;
+            string [] aux = null;
+            int auxno = 0;
+            var ofn = build_part_name("","merged","");
+            FileStream out =  FileStream.open(ofn, "w");
+
+            for(var p = prof0; p <= prof1; p++)
+            {
+                var fn = build_part_name("","p",p.to_string());
+                MWPLog.message("Merging %s\n",fn);
+                fp = FileStream.open(fn, "r");
+                bool skip = true;
+                int na = 0;
+
+                while((line = fp.read_line ()) != null)
+                {
+                    if(p == prof0)
+                    {
+                        if(amerge && line.has_prefix("aux "))
+                        {
+                            aux += line;
+                            auxno++;
+                        }
+                        out.printf("%s\n", line);
+                    }
+                    else
+                    {
+                        if(line.has_prefix("# dump profile"))
+                            skip = false;
+
+                        if(skip == false)
+                        {
+                            if(amerge && line.has_prefix("aux "))
+                            {
+                                if (na < auxno)
+                                {
+                                    line = aux[na];
+                                    na++;
+                                }
+                                else
+                                    MWPLog.message("Unbalanced aux lines\n");
+                            }
+                            out.printf("%s\n", line);
+                        }
+                    }
+                }
+            }
+        }
+        else
+            MWPLog.message("No merge performed\n");
     }
 
     public void replay_file(string fn)
@@ -611,6 +672,10 @@ public class MWSerial : Object
                     ;
                 }
             }
+        }
+        if(merge || amerge)
+        {
+            s.merge_file(prof0, prof1);
         }
         MWPLog.message("Done\n");
         return 0;

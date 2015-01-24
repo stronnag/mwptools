@@ -27,7 +27,7 @@ For users of Microsoft Windows, you can find a [binary (executable) distribution
 
 ## Usage
 ```
-$ cf-cli  --help
+$ cf-cli --help
 Usage:
   cf-cli [OPTION...] cleanflight_dump_file
 
@@ -41,6 +41,8 @@ Application Options:
   -p, --profiles              Profile (0-2)
   -i, --presave               Save before setting
   -y, --force-tri-rev-yaw     Force tri reversed yaw
+  -m, --merge-profiles        Generate a merged file for multiple profiles
+  -a, --merge-auxp            Generate a merged file for multiple profiles with common aux settings
 ```
 
 Simplest case, dump the current settings (e.g. using the Windows
@@ -101,6 +103,14 @@ it's most likely used after a re-flash), unless you specify
 
 Note also that the settings are saved *after* the restoration; so you
 get a record of any new setting from flashing new firmware.
+
+### Merging profiles into one file
+
+The `--merge-profiles` and `--merge-auxp` will merge profile specific
+save afiles into a single file than can be replayed. If `--merge-auxp`
+is specified, then the aux settings for the first profile are used
+everywhere (mainly to protect the author from forgetting to set them
+other than for profile 0).
 
 ## Support
 
