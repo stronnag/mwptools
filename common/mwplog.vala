@@ -26,5 +26,7 @@ public class MWPLog : GLib.Object
         stderr.puts(ds);
         stderr.putc(' ');
         stderr.puts(format.vprintf(v));
+        stderr.flush();
+
     }
 }

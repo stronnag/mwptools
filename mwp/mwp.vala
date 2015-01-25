@@ -1209,10 +1209,7 @@ public class MWPlanner : Gtk.Application {
         }
         Logger.log_time();
 
-        if(inflight)
-            inflight = false;
-
-        if(cmd != MSP.Cmds.RADIO)
+             if(cmd != MSP.Cmds.RADIO)
             lastrx = nticks;
 
         switch(cmd)
@@ -2060,34 +2057,54 @@ public class MWPlanner : Gtk.Application {
                 break;
         }
 
-        if(dopoll && (cmd == requests[tcycle]))
+        if(dopoll)
         {
-            tcycle = (tcycle + 1) % requests.length;
-            amsgs++;
-            if(tcycle == 0)
+            if (match_pollcmds(cmd))
             {
-                lastp.stop();
-                var et = lastp.elapsed();
-                acycle += (uint64)(et*1000);
-                anvals++;
-                if (et < looptimer)
+                if(inflight)
+                    inflight = false;
+
+                tcycle = (tcycle + 1) % requests.length;
+                amsgs++;
+                if(tcycle == 0)
                 {
-                    tot = (uint)((looptimer-et)*1000);
-                    Timeout.add(tot, ()=> {
-                            msg_poller();
-                           return false;
-                       });
+                    lastp.stop();
+                    var et = lastp.elapsed();
+                    acycle += (uint64)(et*1000);
+                    anvals++;
+                    if (et < looptimer)
+                    {
+                        tot = (uint)((looptimer-et)*1000);
+                        Timeout.add(tot, ()=> {
+                                msg_poller();
+                                return false;
+                            });
+                    }
+                    else
+                    {
+                        msg_poller();
+                    }
                 }
                 else
                 {
                     msg_poller();
                 }
             }
-            else
+        }
+    }
+
+    private bool match_pollcmds(MSP.Cmds cmd)
+    {
+        bool matched=false;
+        foreach(var c in requests)
+        {
+            if (c == cmd)
             {
-                msg_poller();
+                matched = true;
+                break;
             }
         }
+        return matched;
     }
 
     private void report_bits(uint32 bits)

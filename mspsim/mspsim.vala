@@ -72,7 +72,9 @@ public class MWSim : GLib.Object
     private int[] pipe;
     private static bool naze32 = false;
     private static bool jitter = false;
+    private static bool junk = false;
     private static bool norssi = false;
+    private static bool paused = false;
 
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
@@ -85,6 +87,9 @@ public class MWSim : GLib.Object
         { "norssi", 'R', 0, OptionArg.NONE, out norssi, "don't push rssi", null},
         { "naze32", 'z', 0, OptionArg.NONE, out naze32, "emulate naze", null},
         { "jitter", 'j', 0, OptionArg.NONE, out jitter, "drop random responses", null},
+        { "random-junk", 'J', 0, OptionArg.NONE, out junk, "set random junk fom time to time", null},
+
+
         { "now", 'n', 0, OptionArg.NONE, out nowait, "don't wait for input before replay", null},
         { "udp-port", 'u', 0, OptionArg.INT, ref udport, "udp port for comms", null},
         {null}
@@ -214,6 +219,12 @@ public class MWSim : GLib.Object
             });
 
         pbar = builder.get_object ("progressbar2") as Gtk.ProgressBar;
+        var switch1 = builder.get_object("switch1") as Gtk.Switch;
+
+        switch1.notify["active"].connect (() => {
+                paused = switch1.active;
+            });
+
         startb = builder.get_object ("button2") as Gtk.Button;
         startb.set_sensitive(false);
 
@@ -1008,6 +1019,28 @@ public class MWSim : GLib.Object
         return (p - &tx[0]);
     }
 
+
+    private void send_broken(uint8 cmd, void *data, size_t len)
+    {
+        if(msp.available == true)
+        {
+            var dsize = (uint8)len;
+            uint8 dstr[256];
+            dstr[0]='$';
+            dstr[1]='M';
+            dstr[2]= '>';
+            dstr[3] = dsize;
+            dstr[4] = cmd;
+            if (data != null && dsize > 0)
+                Posix.memcpy(&dstr[5], data, len);
+            len += 3;
+            var ck = (uint8)rand.int_range(0,255);
+            dstr[len+2] = ck;
+            len += 3;
+            msp.write(dstr, len);
+        }
+    }
+
     public void sim()
     {
         open();
@@ -1053,7 +1086,7 @@ public class MWSim : GLib.Object
             uint8 tx[64];
             size_t nb;
 
-            if(nowait)
+            if(nowait || paused)
                 return;
 
             if(loop == 0)
@@ -1071,6 +1104,37 @@ public class MWSim : GLib.Object
                 {
                     stderr.printf("Error on cmd %c (%d)\n", cmd,cmd);
                     return;
+                }
+
+                if(junk)
+                {
+                    var jr = rand.int_range(0,100);
+                    if(jr == 33 || jr == 66)
+                    {
+                        uint8 rcmd = (uint8)rand.int_range(0,255);
+                        uint8 rsize = (uint8)rand.int_range(0,127);
+                        uint8 rbuf[128];
+                        for(var j = 0; j < rsize; j++)
+                            rbuf[j] = (uint8)rand.int_range(0,255);
+
+                        string msg;
+
+
+                        if(jr == 33)
+                        {
+                            msg = "** Random Junk %d %db \n".printf(rcmd,rsize);
+                            MWPLog.message(msg);
+                            msp.send_command((MSP.Cmds)rcmd, rbuf, rsize);
+                        }
+                        else
+                        {
+                            msg = "## Broken Junk %d %db \n".printf(rcmd,rsize);
+                            MWPLog.message(msg);
+                            send_broken((MSP.Cmds)rcmd, rbuf, rsize);
+                        }
+                        append_text(msg);
+                        return;
+                    }
                 }
 
                 if((jitter == true) && (cmd > 100))
@@ -1091,15 +1155,21 @@ public class MWSim : GLib.Object
                         append_text("Send API\n");
                         msp.send_command(MSP.Cmds.API_VERSION, null, 0);
                     }
+                    else
+                        msp.send_error(cmd);
                     break;
 
                     case MSP.Cmds.FC_VARIANT:
                     if(naze32)
                     {
-                        uint8[]buf = {'C','L','F','L'};
-                        msp.send_command(MSP.Cmds.FC_VARIANT, buf, 4);
+                        string cfvars = "CLFL";
+                        msp.send_command(MSP.Cmds.FC_VARIANT, cfvars.data,
+                                         cfvars.length);
                         append_text("Send VARIANT\n");
                     }
+                    else
+                        msp.send_error(cmd);
+
                     break;
 
                     case MSP.Cmds.FC_VERSION:
@@ -1109,6 +1179,9 @@ public class MWSim : GLib.Object
                         msp.send_command(MSP.Cmds.FC_VERSION, buf, 3);
                         append_text("Send VERSION\n");
                     }
+                    else
+                        msp.send_error(cmd);
+
                     break;
 
                     case MSP.Cmds.IDENT:

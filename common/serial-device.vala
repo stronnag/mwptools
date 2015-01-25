@@ -601,7 +601,7 @@ public class MWSerial : Object
         if(available == true)
         {
             var dsize = (uint8)len;
-            uint8 dstr[128];
+            uint8 dstr[256];
             dstr[0]='$';
             dstr[1]='M';
             dstr[2]= writedirn;
