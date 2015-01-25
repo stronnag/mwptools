@@ -77,7 +77,7 @@ void close_serial(int fd)
 
 /** COMPLETELY untested **/
 
-#include <Windows.h>
+#include <windows.h>
 static HANDLE hfd;
 
 int open_serial(const char *device, int baudrate)

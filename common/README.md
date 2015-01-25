@@ -120,8 +120,9 @@ other than for profile 0).
 
 Well formed patches welcomed. As the author has limited access to
 Windows platforms, Windows bug reports without patches are unlikely to
-be resolved. Please raise
-[github](https://github.com/stronnag/mwptools) issues as appropriate.
+be quickly resolved (windows images are cross-compiled on
+Linux). Please raise [github](https://github.com/stronnag/mwptools)
+issues as appropriate.
 
 ## Licence
 
