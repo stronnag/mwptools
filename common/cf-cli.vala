@@ -464,6 +464,7 @@ public class MWSerial : Object
                     }
                 }
             }
+            out.printf("profile %d\n", prof0);
         }
         else
             MWPLog.message("No merge performed\n");

@@ -116,6 +116,28 @@ is specified, then the aux settings for the first profile are used
 everywhere (mainly to protect the author from forgetting to set them
 other than for profile 0).
 
+As of 2015-01-25 20:45 UTC, save / restore for a merged profile sets
+the default back to the first profile specified.
+
+````
+$ cf-cli -o nw-new.txt -a -p 0-2
+2015-01-25T20:46:40+0000 Saving to ./nw-new_p0.txt
+2015-01-25T20:46:40+0000 Saving to ./nw-new_p1.txt
+2015-01-25T20:46:41+0000 Saving to ./nw-new_p2.txt
+2015-01-25T20:46:42+0000 Merging ./nw-new_p0.txt
+2015-01-25T20:46:42+0000 Merging ./nw-new_p1.txt
+2015-01-25T20:46:42+0000 Merging ./nw-new_p2.txt
+2015-01-25T20:46:42+0000 Done
+
+$ cf-cli  nw-new_merged.txt
+2015-01-25T20:46:59+0000 Reboot on defaults
+2015-01-25T20:47:01+0000 Rebooted ...
+2015-01-25T20:47:01+0000 Replaying nw-new_merged.txt
+2015-01-25T20:47:29+0000 Reboot on save
+2015-01-25T20:47:32+0000 Done
+````
+Default profile is profile 0.
+
 ## Support
 
 Well formed patches welcomed. As the author has limited access to
