@@ -23,11 +23,14 @@ $ make
 $ sudo cp cf-cli /usr/local/bin/
 ```
 For users of Microsoft Windows, you can find a [binary (executable)
-distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-win32.zip). Or
+distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-dist.zip). Or
 you could download the Windows' vala compiler and build it
 [yourself](http://www.tarnyko.net/dl/).
 
-For OSX, use the [tarnyko vala port](http://www.tarnyko.net/dl/).
+For OSX, use the [tarnyko vala port](http://www.tarnyko.net/dl/), or
+perhaps the binary in the osx directory of the [binary (executable)
+distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-dist.zip)
+works (I cannot test it).
 
 ## Usage
 ```

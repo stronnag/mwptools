@@ -329,7 +329,7 @@ public class MWPlanner : Gtk.Application {
     private static const string[] failnames = {"","WPNO","LAT","LON","ALT","P1","P2","P3","FLAG"};
 
     private static const int TIMINTVL=100;
-    private static const int ANIMINTVL=5;
+    private static const int ANIMINTVL=3;
     private static const int BEATINTVL=600;
     private static const int DURAINTVL=9;
     private static const int STATINTVL=8;
@@ -639,8 +639,6 @@ public class MWPlanner : Gtk.Application {
         view = embed.get_view();
         view.set_reactive(true);
 
-//        view.set_property("kinetic-mode", true);
-
         zoomer.adjustment.value_changed.connect (() =>
             {
                 int  zval = (int)zoomer.adjustment.value;
@@ -650,7 +648,6 @@ public class MWPlanner : Gtk.Application {
                     view.set_property("zoom-level", zval);
                 }
             });
-
 
         var ent = builder.get_object ("entry1") as Gtk.Entry;
         ent.set_text(conf.altitude.to_string());
@@ -1004,6 +1001,7 @@ public class MWPlanner : Gtk.Application {
 
         start_poll_timer();
         lastp = new Timer();
+        anim_cb();
 
         if(no_max == false)
             window.maximize();
@@ -1096,15 +1094,13 @@ public class MWPlanner : Gtk.Application {
                     }
                 }
 
+                if((nticks % ANIMINTVL) == 0)
+                    anim_cb();
+
                 if((nticks % STATINTVL) == 0)
                 {
                     gen_serial_stats();
                     telemstatus.update(telstats);
-                }
-
-                if((nticks % ANIMINTVL) == 0)
-                {
-                    anim_cb();
                 }
 
                 if(duration != 0 && ((nticks % DURAINTVL) == 0))
