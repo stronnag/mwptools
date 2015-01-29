@@ -1,0 +1,16 @@
+{
+  "sources": [
+    {
+	"id": "BingProxy",
+	"name": "Bing Proxy",
+	"license": "(c) Microsoft Corporation, (c) NAVTEQ, (c) Image courtesy of NASA",
+	"license_uri": "http://www.bing.com/maps/",
+	"min_zoom": 0,
+	"max_zoom": 19,
+	"tile_size": 256,
+	"projection": "MERCATOR",
+	"uri_format": "http://localhost:21303/quadkey-proxy/#Z#/#X#/#Y#.png",
+	"warning" : "The only user changeable part of the uri is the port number (21303)"
+    }
+  ]
+}

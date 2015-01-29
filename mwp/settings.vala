@@ -53,6 +53,9 @@ public class MWPSettings : GLib.Object
     public string? vlevels {get; private set;}
     public bool checkswitches {get; set; default=false;}
     public uint polltimeout {get; set; default=500;}
+    public string quaduri {get; private set;
+        default="http://ecn.t1.tiles.virtualearth.net/tiles/a%s.jpeg?g=875";
+    }
 
     public MWPSettings()
     {
@@ -153,6 +156,8 @@ public class MWPSettings : GLib.Object
             checkswitches = settings.get_boolean("checkswitches");
         if(s == null || s == "poll-timeout")
             polltimeout = settings.get_uint("poll-timeout");
+        if(s == null || s == "quaduri")
+            quaduri = settings.get_string("quaduri");
     }
 
     public void save_settings()

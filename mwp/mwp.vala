@@ -424,6 +424,22 @@ public class MWPlanner : Gtk.Application {
             } catch {};
         }
 
+
+        MapSource [] msources = {};
+        if(conf.map_sources != null)
+        {
+            var msfn = MWPUtils.find_conf_file(conf.map_sources);
+            if (msfn != null)
+            {
+                msources =   JsonMapDef.read_json_sources(msfn);
+                if(JsonMapDef.port != 0)
+                {
+                    stderr.puts("Need a proxy\n");
+                    JsonMapDef.run_proxy(JsonMapDef.port, conf.quaduri);
+                }
+            }
+        }
+
         builder.connect_signals (null);
         window = builder.get_object ("window1") as Gtk.ApplicationWindow;
         this.add_window (window);
@@ -634,8 +650,8 @@ public class MWPlanner : Gtk.Application {
                    }
             });
 
-        embed = new GtkChamplain.Embed();
 
+        embed = new GtkChamplain.Embed();
         view = embed.get_view();
         view.set_reactive(true);
 
@@ -679,7 +695,9 @@ public class MWPlanner : Gtk.Application {
         }
 
         var pane = builder.get_object ("paned1") as Gtk.Paned;
-        add_source_combo(conf.defmap);
+
+        add_source_combo(conf.defmap,msources);
+
         pane.pack1 (embed,true,false);
 
         window.key_press_event.connect( (s,e) =>
@@ -2515,35 +2533,28 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-    private void add_source_combo(string? defmap)
+    private void add_source_combo(string? defmap, MapSource []msources)
     {
         var combo  = builder.get_object ("combobox1") as Gtk.ComboBox;
         var map_source_factory = Champlain.MapSourceFactory.dup_default();
 
         var liststore = new ListStore (MS_Column.N_COLUMNS, typeof (string), typeof (string));
 
-        if(conf.map_sources != null)
+        foreach (unowned MapSource s0 in msources)
         {
-            var fn = MWPUtils.find_conf_file(conf.map_sources);
-            if (fn != null)
-            {
-                var msources =   JsonMapDef.read_json_sources(fn);
-                foreach (unowned MapSource s0 in msources)
-                {
-                    s0.desc = new  MwpMapSource(
-                        s0.id,
-                        s0.name,
-                        s0.licence,
-                        s0.licence_uri,
-                        s0.min_zoom,
-                        s0.max_zoom,
-                        s0.tile_size,
-                        Champlain.MapProjection.MAP_PROJECTION_MERCATOR,
-                        s0.uri_format);
-                    map_source_factory.register((Champlain.MapSourceDesc)s0.desc);
-                }
-            }
+            s0.desc = new  MwpMapSource(
+                s0.id,
+                s0.name,
+                s0.licence,
+                s0.licence_uri,
+                s0.min_zoom,
+                s0.max_zoom,
+                s0.tile_size,
+                Champlain.MapProjection.MAP_PROJECTION_MERCATOR,
+                s0.uri_format);
+            map_source_factory.register((Champlain.MapSourceDesc)s0.desc);
         }
+
         var sources =  map_source_factory.get_registered();
         int i = 0;
         int defval = 0;
