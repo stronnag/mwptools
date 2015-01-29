@@ -149,7 +149,9 @@ public class JsonMapDef : Object
         MatchInfo mi = null;
         if(rx == null)
         {
-            rx = new Regex("localhost:(?<port>\\d+)\\/quadkey-proxy\\/");
+            try {
+                rx = new Regex("localhost:(?<port>\\d+)\\/quadkey-proxy\\/");
+            } catch {}
         }
         if((port == 0) && rx.match(s,0,out mi))
         {
@@ -198,9 +200,12 @@ public class JsonMapDef : Object
         stderr.puts("Starting proxy thread\n");
         new Thread<int>("proxy",() => {
                 var sp = new SoupProxy(pt,uri);
-                stderr.puts("Running proxy thread\n");
-                sp.listen_all(pt, 0);
-                return 43;
+                try {
+                    sp.listen_all(pt, 0);
+                } catch {
+                    return 42;
+                }
+                return 0;
             });
     }
 }

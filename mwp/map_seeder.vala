@@ -74,27 +74,21 @@ public class TileUtil : Object
 
     public TileStats build_table()
     {
-        var inc = 0;
         stats.nt = 0;
         stats.dlok = 0;
         stats.dlerr = 0;
 
         tl={};
-
         for(var z = maxzoom; z >= minzoom; z--)
         {
             var m = TileList();
             m.z = z;
             ll2tile(maxlat, minlon, z, out m.sx, out m.sy);
             ll2tile(minlat, maxlon, z, out m.ex, out m.ey);
-            if(inc != 0)
-            {
-                m.sx -= inc;
-                m.sy -= inc;
-                m.ex += inc;
-                m.ey += inc;
-            }
-            inc++;
+            m.sx -= 1;
+            m.sy -= 1;
+            m.ex += 1;
+            m.ey += 1;
             stats.nt += (1 + m.ex - m.sx) * (1  + m.ey - m.sy);
             tl += m;
         }
