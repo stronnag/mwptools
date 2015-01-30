@@ -257,7 +257,7 @@ public class JsonMapDef : Object
     {
         var pt = JsonMapDef.port;
 
-        stderr.puts("Starting proxy thread\n");
+        MWPLog.message("Starting proxy thread\n");
         new Thread<int>("proxy",() => {
                 var sp = new SoupProxy(uri);
                 try {

@@ -433,10 +433,7 @@ public class MWPlanner : Gtk.Application {
             {
                 msources =   JsonMapDef.read_json_sources(msfn);
                 if(JsonMapDef.port != 0)
-                {
-                    stderr.puts("Need a proxy\n");
                     JsonMapDef.run_proxy(conf.quaduri);
-                }
             }
         }
 
@@ -2891,10 +2888,10 @@ public class MWPlanner : Gtk.Application {
     {
         time_t currtime;
         time_t(out currtime);
-        stderr.puts(Time.local(currtime).format("mwp @%FT%T%z\n"));
         if (GtkClutter.init (ref args) != InitError.SUCCESS)
             return 1;
 
+        MWPLog.message("mwp startup\n");
         try {
             var opt = new OptionContext("");
             opt.set_help_enabled(true);
