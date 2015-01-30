@@ -80,11 +80,22 @@ public class MwpMapSource : Champlain.MapSourceDesc
 
 public class SoupProxy : Soup.Server
 {
-    private string basefmt;
-    public SoupProxy(int p, string uri)
+    private string basename;
+    private string extname;
+    public SoupProxy(string uri)
     {
-        basefmt = uri;
-        this.add_handler (null, default_handler);
+        var parts = uri.split("#");
+        if(parts.length == 3 && parts[1] == "Q")
+        {
+            basename = parts[0];
+            extname = parts[2];
+            this.add_handler (null, default_handler);
+        }
+        else
+        {
+            MWPLog.message("Invalid quadkeys URI (%s)\n", uri);
+            Posix.exit(255);
+        }
     }
 
      ~SoupProxy()
@@ -115,7 +126,11 @@ public class SoupProxy : Soup.Server
         var ix = int.parse(parts[np+1]);
         var iy = int.parse(fn[0]);
         var q = quadkey(iz, ix, iy);
-        return basefmt.printf(q);
+        StringBuilder sb = new StringBuilder();
+        sb.append(basename);
+        sb.append(q);
+        sb.append(extname);
+        return sb.str;
     }
 
     private void default_handler (Soup.Server server,
@@ -123,19 +138,56 @@ public class SoupProxy : Soup.Server
                                   GLib.HashTable? query,
                                   Soup.ClientContext client)
     {
-        var xpath = rewrite_path(path);
-        var session = new Soup.Session ();
-        var message = new Soup.Message ("GET", xpath);
-
-            /* send a sync request */
-        session.send_message (message);
-
-        if(message.status_code == 200)
+        if (msg.method == "HEAD")
         {
-            msg.set_response ("image/png", Soup.MemoryUse.COPY,
-                              message.response_body.data);
+            bool ok = false;
+            Posix.Stat st;
+            var parts = path.split("/");
+            var np = parts.length;
+            var fnstr = GLib.Path.build_filename(
+                Environment.get_home_dir(),
+                ".cache/champlain",
+                JsonMapDef.id,
+                parts[np-3],
+                parts[np-2],
+                parts[np-1]);
+
+            if(Posix.stat(fnstr, out st) == 0)
+            {
+                ok = true;
+                var dt = new DateTime.from_unix_utc(st.st_mtime);
+                var dstr = dt.format("%a, %d %b %Y %H:%M:%S %Z");
+                msg.response_headers.append("Content-Type","image/png");
+                msg.response_headers.append("Accept-Ranges", "bytes");
+                msg.response_headers.append("Last-Modified", dstr);
+                msg.response_headers.append("Content-Length",
+                                            st.st_size.to_string());
+                msg.set_status(200);
+            }
+            if(!ok)
+            {
+                msg.set_status(404);
+            }
         }
-        msg.set_status(message.status_code);
+        else if (msg.method == "GET")
+        {
+            var xpath = rewrite_path(path);
+            var session = new Soup.Session ();
+            var message = new Soup.Message ("GET", xpath);
+
+            session.send_message (message);
+            if(message.status_code == 200)
+            {
+                msg.set_response ("image/png", Soup.MemoryUse.COPY,
+                              message.response_body.data);
+            }
+            msg.set_status(message.status_code);
+        }
+        else
+        {
+            msg.set_status(404);
+        }
+        msg.response_headers.append("Server", "qk-proxy/1.0");
     }
 }
 
@@ -143,10 +195,13 @@ public class JsonMapDef : Object
 {
     private static Regex rx = null;
     public static int port = 0;
+    public static string id = null;
 
-    private static void check_proxy(string s)
+    private static bool check_proxy(string s)
     {
         MatchInfo mi = null;
+        bool found = false;
+
         if(rx == null)
         {
             try {
@@ -159,8 +214,10 @@ public class JsonMapDef : Object
             if(p != null)
             {
                 port = int.parse(p);
+                found = true;
             }
         }
+        return found;
     }
 
     public static MapSource[] read_json_sources(string fn)
@@ -185,7 +242,8 @@ public class JsonMapDef : Object
                 s.uri_format = item.get_string_member("uri_format");
                 s.licence = item.get_string_member("license");
                 s.licence_uri = item.get_string_member("license_uri");
-                check_proxy(s.uri_format);
+                if (check_proxy(s.uri_format))
+                    id = s.id;
                 sources += s;
             }
         }
@@ -195,11 +253,13 @@ public class JsonMapDef : Object
         return sources;
     }
 
-    public static void run_proxy(int pt, string uri)
+    public static void run_proxy(string uri)
     {
+        var pt = JsonMapDef.port;
+
         stderr.puts("Starting proxy thread\n");
         new Thread<int>("proxy",() => {
-                var sp = new SoupProxy(pt,uri);
+                var sp = new SoupProxy(uri);
                 try {
                     sp.listen_all(pt, 0);
                 } catch {

@@ -53,9 +53,7 @@ public class MWPSettings : GLib.Object
     public string? vlevels {get; private set;}
     public bool checkswitches {get; set; default=false;}
     public uint polltimeout {get; set; default=500;}
-    public string quaduri {get; private set;
-        default="http://ecn.t1.tiles.virtualearth.net/tiles/a%s.jpeg?g=875";
-    }
+    public string quaduri {get; private set; }
 
     public MWPSettings()
     {

@@ -195,7 +195,7 @@
 
     <key name="quaduri" type="s">
       <summary>URI for the quadkey proxy</summary>
-      <default>"http://ecn.t1.tiles.virtualearth.net/tiles/a%s.jpeg?g=875"</default>
+      <default>""</default>
       <description>A URI for the real source of quadkey tile. Use %s
       to indicate where the actual quadkey goes.</description>
     </key>

@@ -435,7 +435,7 @@ public class MWPlanner : Gtk.Application {
                 if(JsonMapDef.port != 0)
                 {
                     stderr.puts("Need a proxy\n");
-                    JsonMapDef.run_proxy(JsonMapDef.port, conf.quaduri);
+                    JsonMapDef.run_proxy(conf.quaduri);
                 }
             }
         }
