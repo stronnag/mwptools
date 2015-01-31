@@ -118,7 +118,7 @@ public class MWChooser : GLib.Object
                 case 1:
                     mw = MWVAR.MWNEW;
                     break;
-                case 3:
+                case 2:
                     mw = MWVAR.CF;
                     break;
                 default:
