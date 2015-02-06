@@ -129,3 +129,12 @@ void close_serial(int fd)
     close(fd);
 }
 #endif
+
+char * default_name(void)
+{
+#ifdef __linux__
+    return "/dev/ttyUSB0";
+#else
+    return NULL;
+#endif
+}

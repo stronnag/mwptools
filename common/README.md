@@ -3,6 +3,11 @@ cf-cli
 
 "A simple tool to save and restore Cleanflight CLI dumps"
 
+History: (see github, mwptools :)
+2015-02-06 : Much more robust error handling on non-Linux platforms
+(reported by Dave Pitman).
+
+
 ## Overview
 
 cf-cli is a command line (cli) tool to save and restore dump files for
@@ -27,10 +32,13 @@ distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-dist.zip). Or
 you could download the Windows' vala compiler and build it
 [yourself](http://www.tarnyko.net/dl/).
 
-For OSX, use the [tarnyko vala port](http://www.tarnyko.net/dl/), or
-perhaps the binary in the osx directory of the [binary (executable)
-distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-dist.zip)
-works (I cannot test it).
+_Note: This is a Windows build of a Linux command line
+application. It is recommended that you run the tool within a CMD
+window, or via a BATch file, with PAUSE to enable the user to view
+the status messages._
+
+For OSX, use the [tarnyko vala and GTK-3 port](http://www.tarnyko.net/dl/);
+there is no longer an OSX cross-compiled version (I cannot test it).
 
 ## Usage
 ```
@@ -131,7 +139,12 @@ $ cf-cli -o nw-new.txt -a -p 0-2
 2015-01-25T20:46:42+0000 Merging ./nw-new_p1.txt
 2015-01-25T20:46:42+0000 Merging ./nw-new_p2.txt
 2015-01-25T20:46:42+0000 Done
-
+````
+For a merged profile, in addtion to the individual profile files
+(nw-new_p0.txt .. nw-new_p2.txt above), there will be a combined file
+with the global settings and the per-profile settings, in this case
+"nw-new_merged.txt".
+````
 $ cf-cli  nw-new_merged.txt
 2015-01-25T20:46:59+0000 Reboot on defaults
 2015-01-25T20:47:01+0000 Rebooted ...

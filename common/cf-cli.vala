@@ -22,6 +22,7 @@
 
 extern int open_serial(string dev, int baudrate);
 extern void close_serial(int fd);
+extern string default_name();
 
 public class MWSerial : Object
 {
@@ -83,7 +84,14 @@ public class MWSerial : Object
         available = false;
         fd = -1;
         if(devname == null)
-            devname = "/dev/ttyUSB0";
+        {
+            devname = default_name();
+            if(devname == null)
+            {
+                MWPLog.message("On non-Linux OS you must define the serial device (-d DEVNAME)\n");
+                Posix.exit(0);
+            }
+        }
         if(brate == 0)
             brate = 115200;
     }
@@ -94,7 +102,11 @@ public class MWSerial : Object
         if(fd < 0)
         {
             var lasterr=Posix.errno;
-            var s = Posix.strerror(lasterr);
+            string s;
+            if(lasterr == 0)
+                s="failed, reason unknown";
+            else
+                s = Posix.strerror(lasterr);
             MWPLog.message("open %s - %s (%d)\n", devname, s, lasterr);
             fd = -1;
             available = false;
@@ -362,11 +374,11 @@ public class MWSerial : Object
     {
         uint8 [] line;
         int len;
-        FileStream os;
-
         for(var p = prof0; p <= prof1; p++)
         {
-            string fn;
+            FileStream os;
+            int nbytes = 0;
+            string fn=null;
             if(defname != "-")
             {
                 if(prof0 != prof1)
@@ -385,6 +397,13 @@ public class MWSerial : Object
                 os = FileStream.fdopen(1, "w");
             }
 
+            if (os == null)
+            {
+                var s = Posix.strerror(Posix.errno);
+                MWPLog.message("Unable to open %s (%s), no backup created\n", fn,s);
+                return;
+            }
+
             var dt = new DateTime.now_local();
             os.printf("# mwptools / cf-cli dump %s\n", dt.format("%FT%T%z"));
 
@@ -395,6 +414,7 @@ public class MWSerial : Object
             write("dump\n");
             while(read_line(out line, out len) == ResCode.OK)
             {
+                nbytes += line.length;
                 if ((string)line != "dump")
                 {
                     if(((string)line).contains("Cleanflight"))
@@ -408,7 +428,15 @@ public class MWSerial : Object
             {
                 os.puts("## rev-tri-yaw\n");
             }
+            os.flush();
             os=null;
+            if(nbytes < 4096)
+            {
+                MWPLog.message("Read too few bytes (%d)\nNo backup created\n",
+                              nbytes);
+                if(fn != null)
+                    Posix.unlink(fn);
+            }
         }
     }
 
@@ -417,54 +445,71 @@ public class MWSerial : Object
         if(defname != "-" && (prof0 != prof1))
         {
             string line;
-            FileStream fp;
             string [] aux = null;
             int auxno = 0;
             var ofn = build_part_name("","merged","");
             FileStream out =  FileStream.open(ofn, "w");
-
+            if(out == null)
+            {
+                var s = Posix.strerror(Posix.errno);
+                MWPLog.message("Unable to open %s (%s), no backup created\n", ofn,
+                               s);
+                return;
+            }
             for(var p = prof0; p <= prof1; p++)
             {
+                FileStream fp;
                 var fn = build_part_name("","p",p.to_string());
                 MWPLog.message("Merging %s\n",fn);
                 fp = FileStream.open(fn, "r");
-                bool skip = true;
-                int na = 0;
-
-                while((line = fp.read_line ()) != null)
+                if(fp != null)
                 {
-                    if(p == prof0)
-                    {
-                        if(amerge && line.has_prefix("aux "))
-                        {
-                            aux += line;
-                            auxno++;
-                        }
-                        out.printf("%s\n", line);
-                    }
-                    else
-                    {
-                        if(line.has_prefix("# dump profile"))
-                            skip = false;
+                    bool skip = true;
+                    int na = 0;
 
-                        if(skip == false)
+                    while((line = fp.read_line ()) != null)
+                    {
+                        if(p == prof0)
                         {
                             if(amerge && line.has_prefix("aux "))
                             {
-                                if (na < auxno)
-                                {
-                                    line = aux[na];
-                                    na++;
-                                }
-                                else
-                                    MWPLog.message("Unbalanced aux lines\n");
+                                aux += line;
+                                auxno++;
                             }
                             out.printf("%s\n", line);
                         }
+                        else
+                        {
+                            if(line.has_prefix("# dump profile"))
+                                skip = false;
+
+                            if(skip == false)
+                            {
+                                if(amerge && line.has_prefix("aux "))
+                                {
+                                    if (na < auxno)
+                                    {
+                                        line = aux[na];
+                                        na++;
+                                    }
+                                    else
+                                        MWPLog.message("Unbalanced aux lines\n");
+                                }
+                            out.printf("%s\n", line);
+                            }
+                        }
                     }
+                    out.printf("profile %d\n", prof0);
+                    out.flush();
+                }
+                else
+                {
+                    MWPLog.message("Failed to open %s, merge aborted\n", fn);
+                    out = null;
+                    Posix.unlink(ofn);
+                    break;
                 }
             }
-            out.printf("profile %d\n", prof0);
         }
         else
             MWPLog.message("No merge performed\n");
@@ -673,10 +718,14 @@ public class MWSerial : Object
                     ;
                 }
             }
+            if(merge || amerge)
+            {
+                s.merge_file(prof0, prof1);
+            }
         }
-        if(merge || amerge)
+        else
         {
-            s.merge_file(prof0, prof1);
+            MWPLog.message("Failed to open %s\n", devname);
         }
         MWPLog.message("Done\n");
         return 0;
