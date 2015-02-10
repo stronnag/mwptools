@@ -61,6 +61,7 @@ public class MWSerial : Object
     protected int prof1;
     private uint8 typ;
     private int pfd;
+    private string defprof;
 
     public static string devname;
     protected static string defname;
@@ -427,6 +428,10 @@ public class MWSerial : Object
             {
                 os.puts("## rev-tri-yaw\n");
             }
+            if(defprof != null)
+            {
+                os.printf("## defprof=%s\n", defprof);
+            }
             os.flush();
             os=null;
             if(nbytes < 4096)
@@ -516,6 +521,8 @@ public class MWSerial : Object
         var fp = FileStream.open(fn, "r");
         string rline;
         int len;
+        uint8 []rdata;
+        defprof = null;
 
         message("Replaying %s\n", fn);
         while((rline = fp.read_line ()) != null)
@@ -525,7 +532,6 @@ public class MWSerial : Object
             {
                 write(line);
                 write("\n");
-                uint8 []rdata;
                 read_line(out rdata, out len);
                 Thread.usleep(50*1000);
             }
@@ -533,7 +539,21 @@ public class MWSerial : Object
             {
                 if(line.contains("## rev-tri-yaw"))
                     tyaw = true;
+                if(line.contains("## defprof="))
+                {
+                    var parts = line.split("=");
+                    if(parts.length == 2)
+                    {
+                        defprof = parts[1];
+                    }
+                }
             }
+        }
+        if(defprof != null)
+        {
+            message("Setting %s\n", defprof);
+            write("%s\n".printf(defprof));
+            read_line(out rdata, out len);
         }
         fp = null;
     }
@@ -655,7 +675,6 @@ public class MWSerial : Object
     {
         ResCode res = 0;
         uint8 [] line;
-        string defprof=null;
         int len;
 
         write("profile\n");
@@ -664,8 +683,8 @@ public class MWSerial : Object
             if(len >= 9)
                 defprof = (string)line;
         }
-        dump_settings();
 
+        dump_settings();
         write("%s\n".printf(defprof));
         while(read_line(out line, out len) == ResCode.OK)
             ;
@@ -744,7 +763,7 @@ public class MWSerial : Object
             write("#");
             while((res = read_line(out line, out len)) == ResCode.OK)
                 ;
-            dump_settings();
+//            dump_settings();
             write("exit\n");
             while((res = read_line(out line, out len)) == ResCode.OK)
                 ;
