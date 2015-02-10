@@ -14,12 +14,14 @@ cf-cli-ui: cf-cli-ui.vala cf-cli-serial.vala cf-cli.resources.c cserial.c devman
 	$(VALAC) $(OPTS) --pkg gudev-1.0 --pkg gtk+-3.0 cf-cli-ui.vala cf-cli-serial.vala cf-cli.resources.c cserial.c devmanager_linux.vala
 
 clean:
-	rm -f cf-cli ublox-test cf-cli-ui
+	rm -f cf-cli cf-cli-ui
 
 install: install-local
 
 install-local:  cf-cli
 	../installer.sh cf-cli local
+	../installer.sh cf-cli-ui local
 
 install-system: cf-cli
+	../installer.sh cf-cli system
 	../installer.sh cf-cli system
