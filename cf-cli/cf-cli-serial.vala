@@ -22,14 +22,10 @@
 
 extern int open_serial(string dev, int baudrate);
 extern void close_serial(int fd);
-extern string default_name();
+extern unowned string get_error_text(int err, uint8[] buf, size_t len);
 
 public class MWSerial : Object
 {
-
-    public signal void completed ();
-    public signal void emit_message (string s);
-
     const int MAX_INIT_ERR = 16;
     public enum States
     {
@@ -61,18 +57,19 @@ public class MWSerial : Object
 
     public int fd {private set; get;}
     public  bool available {private set; get;}
-    private int prof0;
-    private int prof1;
+    protected int prof0;
+    protected int prof1;
     private uint8 typ;
+    private int pfd;
 
-    private static string devname;
-    private static string defname;
-    private static int brate;
+    public static string devname;
+    protected static string defname;
+    protected static int brate;
     private static string profiles;
-    private static bool presave;
-    private static bool tyaw = false;
-    private static bool merge = false;
-    private static bool amerge = false;
+    protected static bool presave;
+    protected static bool tyaw = false;
+    protected static bool merge = false;
+    protected static bool amerge = false;
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", null},
@@ -90,17 +87,13 @@ public class MWSerial : Object
     {
         available = false;
         fd = -1;
-        if(devname == null)
-        {
-            devname = default_name();
-            if(devname == null)
-            {
-                message("On non-Linux OS you must define the serial device (-d DEVNAME)\n");
-                Posix.exit(0);
-            }
-        }
         if(brate == 0)
             brate = 115200;
+    }
+
+    public void set_iofd(int _pfd = 2)
+    {
+        pfd = _pfd;
     }
 
     public bool open()
@@ -108,13 +101,16 @@ public class MWSerial : Object
         fd = open_serial(devname, brate);
         if(fd < 0)
         {
-            var lasterr=Posix.errno;
+            int lasterr = Posix.errno;
             string s;
-            if(lasterr == 0)
+            uint8 ebuf[256];
+
+            var es = get_error_text(lasterr, ebuf, 256);
+            if(es == null || ebuf[0] == 0)
                 s="failed, reason unknown";
             else
-                s = Posix.strerror(lasterr);
-            message("open %s - %s (%d)\n", devname, s, lasterr);
+                s = es;
+            message("open %s - %s\n", devname, es);
             fd = -1;
             available = false;
         }
@@ -500,7 +496,6 @@ public class MWSerial : Object
                             }
                         }
                     }
-                    out.printf("profile %d\n", prof0);
                     out.flush();
                 }
                 else
@@ -765,7 +760,7 @@ public class MWSerial : Object
         sb.append(ds);
         sb.append(" ");
         sb.append(format.vprintf(v));
-        emit_message(sb.str);
+        Posix.write(pfd, sb.str, sb.str.length);
     }
 
 

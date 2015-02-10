@@ -17,7 +17,7 @@ case $CVERS in
 *) TGT=mwp ;;
 esac
 
-for P in mspsim  pidedit switchedit common
+for P in mspsim  pidedit switchedit common cf-cli
 do
   cd $P
   make $PRECLEAN install-local $POSTCLEAN

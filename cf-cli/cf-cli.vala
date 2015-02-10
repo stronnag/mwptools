@@ -20,42 +20,38 @@
 
 /* Upload a cleanflight CLI dump back into a naze32 FC */
 
+extern string default_name();
 int main (string[] args)
 {
     int ini_res;
     string restore_file = null;
     var s = new MWSerial();
-    var ml = new MainLoop();
-
-    s.completed.connect(() => {
-            ml.quit();
-        });
-
-    s.emit_message.connect ((s) => {
-            stderr.puts(s);
-            stderr.flush();
-        });
 
     if ((ini_res =s.init_app(args, ref restore_file)) != 0)
         return ini_res;
 
-    new Thread<int> ("cf-cli-worker", () => {
-            if(s.open())
-            {
-                int err = s.fc_init();
-                if(err == 0)
-                {
-                    if(restore_file == null)
-                        s.perform_backup();
-                    else
-                        s.perform_restore(restore_file);
-                }
-            }
-            s.message("Done\n");
-            s.close();
-            s.completed();
-            return 0;
-        });
-    ml.run();
+    if(MWSerial.devname == null)
+    {
+        MWSerial.devname = default_name();
+        if(MWSerial.devname == null)
+        {
+            message("On non-Linux OS you must define the serial device (-d DEVNAME)\n");
+            Posix.exit(0);
+        }
+    }
+    s.set_iofd(2);
+    if(s.open())
+    {
+        int err = s.fc_init();
+        if(err == 0)
+        {
+            if(restore_file == null)
+                s.perform_backup();
+            else
+                s.perform_restore(restore_file);
+        }
+    }
+    s.message("Done\n");
+    s.close();
     return 0;
 }
