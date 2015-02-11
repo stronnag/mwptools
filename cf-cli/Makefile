@@ -24,4 +24,4 @@ install-local:  cf-cli
 
 install-system: cf-cli
 	../installer.sh cf-cli system
-	../installer.sh cf-cli system
+	../installer.sh cf-cli-ui system

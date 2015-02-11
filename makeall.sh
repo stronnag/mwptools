@@ -19,6 +19,7 @@ esac
 
 for P in mspsim  pidedit switchedit common cf-cli
 do
+  echo Building in $P
   cd $P
   make $PRECLEAN install-local $POSTCLEAN
   cd ..
