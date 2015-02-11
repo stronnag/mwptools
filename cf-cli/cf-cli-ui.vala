@@ -147,17 +147,6 @@ public class DumpGUI : MWSerial
                 }
             });
 
-        if(resfile != null)
-        {
-            modebox.active_id = "1";
-            fileentry.set_text(resfile);
-        }
-        else if (defname != null)
-        {
-            fileentry.set_text(defname);
-            modebox.active_id = "0";
-        }
-
         modebox.changed.connect (() => {
                 action =  int.parse(modebox.active_id);
                 bool acts;
@@ -168,6 +157,16 @@ public class DumpGUI : MWSerial
                 savedbeforebutton.sensitive = !acts;
             });
 
+        if(resfile != null)
+        {
+            modebox.active_id = "1";
+            fileentry.set_text(resfile);
+        }
+        else if (defname != null)
+        {
+            fileentry.set_text(defname);
+            modebox.active_id = "0";
+        }
 
         devcombo.changed.connect (() => {
                 devname =  devcombo.get_active_text();
