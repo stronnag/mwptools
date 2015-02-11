@@ -458,19 +458,25 @@ public class MWSerial : Object
                 message("Unable to open %s (%s), no backup created\n", ofn,s);
                 return;
             }
+            string dprof = null; // only want once
             for(var p = prof0; p <= prof1; p++)
             {
                 FileStream fp;
                 var fn = build_part_name("","p",p.to_string());
-                message("Merging %s\n",fn);
                 fp = FileStream.open(fn, "r");
                 if(fp != null)
                 {
+                    message("Merging %s\n",fn);
                     bool skip = true;
                     int na = 0;
 
                     while((line = fp.read_line ()) != null)
                     {
+                        if(line.contains("## defprof="))
+                        {
+                            dprof = line;
+                            continue;
+                        }
                         if(p == prof0)
                         {
                             if(amerge && line.has_prefix("aux "))
@@ -497,11 +503,10 @@ public class MWSerial : Object
                                     else
                                         message("Unbalanced aux lines\n");
                                 }
-                            out.printf("%s\n", line);
+                                out.printf("%s\n", line);
                             }
                         }
                     }
-                    out.flush();
                 }
                 else
                 {
@@ -511,6 +516,11 @@ public class MWSerial : Object
                     break;
                 }
             }
+            if(dprof != null)
+            {
+                out.printf("%s\n", dprof);
+            }
+            out.flush();
         }
         else
             message("No merge performed\n");
@@ -522,7 +532,6 @@ public class MWSerial : Object
         string rline;
         int len;
         uint8 []rdata;
-        defprof = null;
 
         message("Replaying %s\n", fn);
         while((rline = fp.read_line ()) != null)
