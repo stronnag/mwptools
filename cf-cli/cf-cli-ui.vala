@@ -164,6 +164,7 @@ public class DumpGUI : MWSerial
                 acts = (action == 0);
                 mergebutton.sensitive =
                 auxbutton.sensitive = acts;
+                sb1.sensitive = sb2.sensitive = acts;
                 savedbeforebutton.sensitive = !acts;
             });
 
