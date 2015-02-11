@@ -23,6 +23,19 @@ public class DevManager
 
     public void initialise_devices()
     {
+        var ud = Environment.get_user_config_dir();
+        var app = Environment.get_application_name();
+        var fn = GLib.Path.build_filename(ud,app,"cf-devices.txt");
+        var fp = FileStream.open(fn, "r");
+        if(fp != null)
+        {
+            string line;
+            while((line = fp.read_line ()) != null)
+            {
+                if(line.length > 3)
+                    du.add_to_list(line, USB_TTY_MAJOR);
+            }
+        }
         uc = new GUdev.Client({"tty"});
         int res;
         var devs = uc.query_by_subsystem("tty");

@@ -107,6 +107,7 @@ public class DumpGUI : MWSerial
         savedbeforebutton.toggled.connect (() => {
                 presave = savedbeforebutton.active;
             });
+        savedbeforebutton.sensitive = false;
 
         chooser.clicked.connect(() => {
               Gtk.FileChooserAction fa;
@@ -159,6 +160,11 @@ public class DumpGUI : MWSerial
 
         modebox.changed.connect (() => {
                 action =  int.parse(modebox.active_id);
+                bool acts;
+                acts = (action == 0);
+                mergebutton.sensitive =
+                auxbutton.sensitive = acts;
+                savedbeforebutton.sensitive = !acts;
             });
 
 
