@@ -5,13 +5,19 @@ cf-cli
 
 History: (see github, mwptools :)
 
-2015-02-06 : Much more robust error handling on non-Linux platforms
-(reported by Dave Pitman).
-
-2015-02-10 : GUI version.
+2015-02-13 : v1.0 !!
+*	     Single (Windows) download (again)
+*	     Reorganised file system layout
+*	     Windows shortcuts to batch files should run from any location.
 
 2015-02-11 : Add device names file, split out application and GTK3
 archives.
+
+2015-02-10 : GUI version.
+
+2015-02-06 : Much more robust error handling on non-Linux platforms
+(reported by Dave Pitman).
+
 
 ## Overview
 
@@ -36,10 +42,10 @@ Linux, defined by $XDG_CONFIG_HOME/cf-cli-ui, so typically:
 ~/.config/cf-cli-ui/cf-devices.txt
 ```
 Windows, defined by "CSIDL_LOCAL_APPDATA"\cf-cli-ui, (or in the
-cf-cli\win32 directory) so typically:
+cf-cli\ directory) so typically:
 ```
 C:\users\USERNAME\Local Settings\Application Data\cf-cli-ui\cf-devices.txt
-<install_path>\cf-cli\win32\cf-devices.txt
+<install_path>\cf-cli\cf-devices.txt
 ```
 This file (if present) just contains a list of candidate devices, one
 per line, e.g.:
@@ -48,6 +54,8 @@ COM3:
 COM6:
 COM42:
 ```
+Sample file cf-cli\__cf-devices.txt. Edit and rename as needed.
+
 ## Download / Snarf it
 
 cf-cli is part of
@@ -62,37 +70,35 @@ $ sudo cp cf-cli cf-cli-ui /usr/local/bin/
 ```
 
 For users of Microsoft Windows, you can find a [binary (executable)
-distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-dist.zip). In
-addtion, you need the GTK3 UI framework, that you can download from
-the
-[cf-cli-gtk3-bin.zip](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-gtk3-bin.zip). You
-only need to download the GTK3 archive once.
+distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-win32-1.0.zip).
 
-Once you have downloaded the files, the contents of each should be extracted
-in the same directory, giving:
+The Windows binary archive expands as:
 ```
 cf-cli\
-cf-cli\win32\
-cf-cli\win32\cf-cli-ui.exe
-cf-cli\win32\cf-cli.exe
-cf-cli\win32\*.dll
-cf-cli\win32\ ...
+cf-cli\cf-cli.bat
+cf-cli\cf-cli-ui.bat
+cf-cli\cleanflight-files
+cf-cli\cf-cli.ico
+cf-cli\README.pdf
+cf-cli\binaries\...
+cf-cli\source\...
+
 ```
-You should run the applications (cf-cli is the CMD based application,
-cf-cli-ui is the GUI variant) from the cf-cli\win32 directory. You can
-run the GUI version from a shortcut (and there is an icon file that
-can be associated with the shortcut).
+It may be placed anywhere on the file system, it is recommended that
+you create a shortcut to the batch files using the supplied icon file
+(cf-cli.ico).
 
-Or you could download the Windows' vala compiler and build it
-[yourself](http://www.tarnyko.net/dl/).
+Or you could download the [Windows' vala
+compiler](http://www.tarnyko.net/dl/) and build it yourself.
 
-_Note: This is a Windows build of a Linux command line application. It
+_Note: cf-cli is a Windows build of a Linux command line application. It
 is recommended that you run the CLI (cf-cli) tool within a CMD window,
 or via a BATch file, with PAUSE to enable the user to view the status
 messages._
 
 Dave Pitman has kindly created some more detailed instructions for the
-Windows command line version [cf-cli_quick_win.zip](https://www.dropbox.com/s/ahk1d24wbg3txc4/cf-cli_quick_win.zip).
+Windows command line version
+[cf-cli_quick_win.zip](https://www.dropbox.com/s/ahk1d24wbg3txc4/cf-cli_quick_win.zip).
 
 For OSX, use the [tarnyko vala and GTK-3
 port](http://www.tarnyko.net/dl/); there is no longer an OSX
@@ -146,7 +152,6 @@ $ cf-cli -o my_fine_tri-2015-01-17.dat
 2015-01-17T19:55:19+0000 Done
 
 ```
-
 ### Save multiple profiles
 
 ```

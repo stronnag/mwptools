@@ -16,9 +16,17 @@ public class DumpGUI : MWSerial
     private Gtk.Button execbutton;
     private Gtk.Entry fileentry;
     private int[] msgpipe;
+    private string cfd;
 
     public DumpGUI()
     {
+    }
+
+    public void set_dir()
+    {
+        cfd = Environment.get_variable ("CF_FILES");
+        if (cfd != null)
+            Posix.chdir(cfd);
     }
 
     public void init_ui(string? resfile)
@@ -110,15 +118,17 @@ public class DumpGUI : MWSerial
         savedbeforebutton.sensitive = false;
 
         chooser.clicked.connect(() => {
-              Gtk.FileChooserAction fa;
-              fa = (action == 0) ? Gtk.FileChooserAction.SAVE : Gtk.FileChooserAction.OPEN;
-              Gtk.FileChooserDialog fc = new Gtk.FileChooserDialog (
+                Gtk.FileChooserAction fa;
+                fa = (action == 0) ? Gtk.FileChooserAction.SAVE : Gtk.FileChooserAction.OPEN;
+                Gtk.FileChooserDialog fc = new Gtk.FileChooserDialog (
                   "CLI Dump file", null, fa,
                   "_Cancel",
                   Gtk.ResponseType.CANCEL,
                   (action == 0) ? "_Save" : "_Open",
                     Gtk.ResponseType.ACCEPT);
-              fc.select_multiple = false;
+                if(cfd != null)
+                    fc.set_current_folder(cfd);
+                fc.select_multiple = false;
               fc.set_do_overwrite_confirmation(true);
               if (fc.run () == Gtk.ResponseType.ACCEPT) {
                   filename  = fc.get_filename ();
@@ -331,6 +341,7 @@ public class DumpGUI : MWSerial
         dg.init_ui(restore_file);
         var gu = new DevManager(dg);
         gu.initialise_devices();
+        dg.set_dir();
         Gtk.main ();
         return 0;
     }
