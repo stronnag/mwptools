@@ -84,17 +84,19 @@ cf-cli\binaries\...
 cf-cli\source\...
 
 ```
-It may be placed anywhere on the file system, it is recommended that
-you create a shortcut to the batch files using the supplied icon file
-(cf-cli.ico).
+The cf-cli directory may be placed anywhere on the file system, it is
+recommended that you create a shortcut to the batch files using the
+supplied icon file (cf-cli-ui.ico). You _must_ have write access to
+the cleanflight-files directory. This can be relocated if desired, and
+the CF_FILES environmnet variable updated in cf-cli-ui.bat.
 
 Or you could download the [Windows' vala
 compiler](http://www.tarnyko.net/dl/) and build it yourself.
 
-_Note: cf-cli is a Windows build of a Linux command line application. It
-is recommended that you run the CLI (cf-cli) tool within a CMD window,
-or via a BATch file, with PAUSE to enable the user to view the status
-messages._
+_Note: cf-cli is a Windows build of a Linux command line
+application. It is recommended that you run the CLI (cf-cli.bat) tool
+within a CMD window, or via a modified BATch file, with PAUSE to
+enable the user to view the status messages._
 
 Dave Pitman has kindly created some more detailed instructions for the
 Windows command line version
@@ -220,10 +222,10 @@ Default profile is profile 0.
 ## Support
 
 Well formed patches welcomed. As the author has limited access to
-Windows platforms, Windows bug reports without patches are unlikely to
-be quickly resolved (windows images are cross-compiled on
-Linux). Please raise [github](https://github.com/stronnag/mwptools)
-issues as appropriate.
+Windows platforms, Windows bug reports or enhancement requests without
+patches are unlikely to be quickly resolved (windows images are
+cross-compiled on Linux). Please raise
+[github](https://github.com/stronnag/mwptools) issues as appropriate.
 
 ## Licence
 

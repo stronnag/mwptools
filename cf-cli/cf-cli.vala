@@ -21,6 +21,7 @@
 /* Upload a cleanflight CLI dump back into a naze32 FC */
 
 extern string default_name();
+
 int main (string[] args)
 {
     int ini_res;
@@ -39,7 +40,7 @@ int main (string[] args)
             Posix.exit(0);
         }
     }
-    s.set_iofd(2);
+    s.set_iofd(stderr.fileno());
     if(s.open())
     {
         int err = s.fc_init();
