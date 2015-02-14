@@ -5,6 +5,8 @@ cf-cli
 
 History: (see github, mwptools :)
 
+2015-02-14 : apply tri-yaw setting across all profiles
+
 2015-02-13 : v1.0 !!
 *	     Single (Windows) download (again)
 *	     Reorganised file system layout
@@ -54,7 +56,7 @@ COM3:
 COM6:
 COM42:
 ```
-Sample file cf-cli\__cf-devices.txt. Edit and rename as needed.
+Sample file cf-cli\\__cf-devices.txt. Edit and rename as needed.
 
 ## Download / Snarf it
 
