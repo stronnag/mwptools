@@ -52,6 +52,7 @@ public class MWSerial : Object
         IDENT=100,
         SERVO_CONF=120,
         SET_SERVO_CONF=212,
+        SELECT_SETTING=210,
         EEPROM_WRITE=250
     }
 
@@ -756,17 +757,25 @@ public class MWSerial : Object
         {
             if(typ == 1)
             {
-                send_msp(Cmds.SERVO_CONF,null,0);
-                if(read_msp(out cmd, out raw) == ResCode.OK)
+                uint8 set;
+                for(set = 0; set < 3; set++)
                 {
-                    raw[41] |= 1;
-                }
-                send_msp(Cmds.SET_SERVO_CONF,raw,raw.length);
-                if(read_msp(out cmd, out raw) == ResCode.OK)
-                {
-                    message("Set Tri Yaw\n");
-                    send_msp(Cmds.EEPROM_WRITE,null,0);
-                    read_msp(out cmd, out raw);
+                    send_msp(Cmds.SELECT_SETTING, &set, 1);
+                    if(read_msp(out cmd, out raw) == ResCode.OK)
+                    {
+                        send_msp(Cmds.SERVO_CONF,null,0);
+                        if(read_msp(out cmd, out raw) == ResCode.OK)
+                        {
+                            raw[41] |= 1;
+                        }
+                        send_msp(Cmds.SET_SERVO_CONF,raw,raw.length);
+                        if(read_msp(out cmd, out raw) == ResCode.OK)
+                        {
+                            message("Set Tri Yaw for profile %d\n",set);
+                            send_msp(Cmds.EEPROM_WRITE,null,0);
+                            read_msp(out cmd, out raw);
+                        }
+                    }
                 }
             }
             write("#");
