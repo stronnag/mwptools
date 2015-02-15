@@ -782,6 +782,7 @@ public class MWSerial : Object
                     set = (uint8)int.parse(defprof);
                     send_msp(Cmds.SELECT_SETTING, &set, 1);
                     read_msp(out cmd, out raw);
+                    message("Reset default profile %d\n",set);
                 }
             }
 //            write("#");
