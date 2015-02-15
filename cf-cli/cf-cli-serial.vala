@@ -407,6 +407,9 @@ public class MWSerial : Object
 
             var dt = new DateTime.now_local();
             os.printf("# mwptools / cf-cli dump %s\n", dt.format("%FT%T%z"));
+            os.puts("# <https://github.com/stronnag/mwptools>\n");
+            os.puts("# Windows binary <http://www.daria.co.uk/cf-cli/>\n#\n");
+
 
             string cmd = "profile %d\n".printf(p);
             write(cmd.data);

@@ -57,6 +57,7 @@ public class MSP : Object
         SET_BOX = 203,
         BOXNAMES = 116,
         BOXIDS = 119,
+        SELECT_SETTING=210,
 
                 // Cleanflight extensions
         MODE_RANGES = 34, // FC out message Returns all mode ranges

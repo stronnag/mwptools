@@ -38,6 +38,7 @@ public class PIDEdit : Object
     private Gtk.Builder builder;
     private Gtk.Window window;
     private Gtk.Grid grid;
+    private Gtk.SpinButton sb1;
     private Gtk.SpinButton[] spins;
     private Gtk.Button conbutton;
     private Gtk.Label verslab;
@@ -50,9 +51,12 @@ public class PIDEdit : Object
     private uint t_rc;
     private uint t_vers;
     private uint t_misc;
+    private uint t_status;
+    private uint t_select;
     private bool have_pids;
     private bool have_vers;
     private bool have_rc;
+    private bool have_status;
     private bool have_misc;
     private MSP_MISC misc;
     private MSP_RC_TUNING rt;
@@ -71,6 +75,7 @@ public class PIDEdit : Object
     private Gtk.Entry thrmid_entry;
     private Gtk.Entry threxpro_entry;
     private uint8 icount;
+    private uint8 profile;
 
     private static const PIDSet[] ps =  {
         {0,"ROLL",{{20.00,0.100,false},{0.25,0.001,false},{100.00,1.000,false}}},
@@ -493,6 +498,19 @@ public class PIDEdit : Object
                     icount++;
                     break;
 
+
+                    case MSP.Cmds.STATUS:
+                    t_status = stop_timer(t_status, "status");
+                    if(have_status == false)
+                    {
+                        profile = raw[10];
+                        sb1.adjustment.value = profile;
+                        stderr.printf("profile = %d\n", profile);
+                        t_rc = add_cmd(MSP.Cmds.RC_TUNING,null,0);
+                    }
+
+                    break;
+
                     case MSP.Cmds.MISC:
                     t_misc = stop_timer(t_misc, "misc");
                     if(have_misc == false)
@@ -512,7 +530,7 @@ public class PIDEdit : Object
                         misc.conf_vbatlevel_warn2 = *rp++;
                         misc.conf_vbatlevel_crit = *rp;
                         set_misc_ui();
-                        t_rc = add_cmd(MSP.Cmds.RC_TUNING,null,0);
+                        t_status = add_cmd(MSP.Cmds.STATUS,null,0);
                     }
                     break;
 
@@ -543,6 +561,15 @@ public class PIDEdit : Object
                         set_pid_spins();
                     }
                     break;
+
+                    case MSP.Cmds.SELECT_SETTING:
+                    t_rc = add_cmd(MSP.Cmds.RC_TUNING,null,0);
+                    break;
+
+                    default:
+                    stderr.printf("CMD = %d\n", cmd);
+                    break;
+
                 }
             });
 
@@ -577,6 +604,7 @@ public class PIDEdit : Object
         var openbutton = builder.get_object ("button3") as Gtk.Button;
         var applybutton = builder.get_object ("button1") as Gtk.Button;
         var saveasbutton = builder.get_object ("button5") as Gtk.Button;
+        sb1 = builder.get_object ("profile_sb") as Gtk.SpinButton;
 
         openbutton.clicked.connect(() => {
                 load_file();
@@ -628,6 +656,11 @@ public class PIDEdit : Object
             });
 
         applybutton.set_sensitive(false);
+        sb1.value_changed.connect (() => {
+                profile = (uint8)sb1.adjustment.value;
+                s.send_command(MSP.Cmds.SELECT_SETTING,&profile,1);
+                have_rc = have_pids = false;
+            });
 
         var closebutton = builder.get_object ("button2") as Gtk.Button;
         closebutton.clicked.connect(() => {
