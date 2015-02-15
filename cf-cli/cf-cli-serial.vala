@@ -777,14 +777,20 @@ public class MWSerial : Object
                         }
                     }
                 }
+                if(defprof != null)
+                {
+                    set = (uint8)int.parse(defprof);
+                    send_msp(Cmds.SELECT_SETTING, &set, 1);
+                    read_msp(out cmd, out raw);
+                }
             }
-            write("#");
-            while((res = read_line(out line, out len)) == ResCode.OK)
-                ;
+//            write("#");
+//            while((res = read_line(out line, out len)) == ResCode.OK)
+//                ;
 //            dump_settings();
-            write("exit\n");
-            while((res = read_line(out line, out len)) == ResCode.OK)
-                ;
+//            write("exit\n");
+//            while((res = read_line(out line, out len)) == ResCode.OK)
+//                ;
         }
     }
 
