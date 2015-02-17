@@ -12,7 +12,7 @@ $(APP): $(SRC)  $(COMMON)
 	$(VALAC) $(OPTS) $(PKGS) -o $@  $^ $(LOPTS)
 
 clean:
-	rm -f $(APP)
+	rm -f $(APP)  *.vala.c
 
 install: install-local
 

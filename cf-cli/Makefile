@@ -15,7 +15,7 @@ cf-cli-ui: $(S2)
 	$(VALAC) $(OPTS) --pkg gudev-1.0 --pkg gtk+-3.0 $(S2) -o cf-cli-ui
 
 clean:
-	rm -f cf-cli cf-cli-ui
+	rm -f cf-cli cf-cli-ui  *.vala.c
 
 install: install-local
 
