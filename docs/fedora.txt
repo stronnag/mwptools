@@ -1,0 +1,7 @@
+yum groupinstall development-libs development-tools gnome-software-development
+yum install gtk3-devel gstreamer-devel clutter-devel webkitgtk3-devel \
+    libgda-devel gobject-introspection-devel
+yum install vala vala-devel vala-tools vala-doc
+yum install libchamplain-gtk-devel libgdl-devel libgudev1-devel espeak-devel
+
+git clone https://github.com/stronnag/mwptools.git
