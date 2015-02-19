@@ -201,7 +201,9 @@ public class JsonMapDef : Object
     {
         MatchInfo mi = null;
         bool found = false;
-
+#if BADSOUP
+        port = 0;
+#else
         if(rx == null)
         {
             try {
@@ -217,6 +219,7 @@ public class JsonMapDef : Object
                 found = true;
             }
         }
+#endif
         return found;
     }
 
@@ -255,8 +258,10 @@ public class JsonMapDef : Object
 
     public static void run_proxy(string uri)
     {
+#if BADSOUP
+        MWPLog.message("Not starting proxy thread (library too old)\n");
+#else
         var pt = JsonMapDef.port;
-
         MWPLog.message("Starting proxy thread\n");
         new Thread<int>("proxy",() => {
                 var sp = new SoupProxy(uri);
@@ -267,5 +272,6 @@ public class JsonMapDef : Object
                 }
                 return 0;
             });
+#endif
     }
 }

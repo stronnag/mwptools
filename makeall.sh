@@ -11,11 +11,11 @@ do
   esac
 done
 
-CVERS=$(pkg-config --modversion champlain-0.12)
-case $CVERS in
-0.12.[0-3]) TGT=mwpu ;;
-*) TGT=mwp ;;
-esac
+BBOPTS=
+SUOPTS=
+
+pkg-config --atleast-version=2.46 libsoup-2.4 || export SPOPTS="-D BADSOUP"
+pkg-config --atleast-version=0.12.3 champlain-0.12 || export BBOPTS="-D NOBB"
 
 for P in mspsim  pidedit switchedit common cf-cli
 do
@@ -26,4 +26,4 @@ do
 done
 
 cd mwp
-make $PRECLEAN $TGT install-local $POSTCLEAN
+make $PRECLEAN mwp install-local $POSTCLEAN
