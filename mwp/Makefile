@@ -13,6 +13,9 @@ LOPTS=-X -lespeak -X -lm
 $(APP) : $(SRCS) $(COMMON)
 	$(VALAC) $(BBOPTS) $(SPOPTS) $(OPTS) $(PKGS) -o $@  $^ $(LOPTS)
 
+qproxy: qproxy.vala
+	valac --pkg libsoup-2.4 --pkg posix  qproxy.vala
+
 clean:
 	rm -f mwp  *~ *.vala.c
 
