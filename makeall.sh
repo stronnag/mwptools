@@ -27,3 +27,8 @@ done
 
 cd mwp
 make $PRECLEAN mwp install-local $POSTCLEAN
+if [ -n "$SPOPTS" ]
+then
+  make $PRECLEAN qproxy $POSTCLEAN
+  ../installer.sh qproxy local
+fi

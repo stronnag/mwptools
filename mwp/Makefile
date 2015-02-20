@@ -17,12 +17,12 @@ qproxy: qproxy.vala
 	valac --pkg libsoup-2.4 --pkg posix  qproxy.vala
 
 clean:
-	rm -f mwp  *~ *.vala.c
+	rm -f mwp  qproxy *~ *.vala.c
 
 install: install-local
 
-install-local: $(TGT)
-	../installer.sh $(APP) local
+install-local:
+	../installer.sh mwp local
 
-install-system: $(TGT)
-	../installer.sh $APP system
+install-system: mwp
+	../installer.sh mwp system

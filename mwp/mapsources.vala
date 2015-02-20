@@ -82,6 +82,8 @@ public class SoupProxy : Soup.Server
 {
     private string basename;
     private string extname;
+    public static Pid cpid = 0;
+
     public SoupProxy(string uri)
     {
         var parts = uri.split("#");
@@ -201,9 +203,6 @@ public class JsonMapDef : Object
     {
         MatchInfo mi = null;
         bool found = false;
-#if BADSOUP
-        port = 0;
-#else
         if(rx == null)
         {
             try {
@@ -219,7 +218,6 @@ public class JsonMapDef : Object
                 found = true;
             }
         }
-#endif
         return found;
     }
 
@@ -259,7 +257,18 @@ public class JsonMapDef : Object
     public static void run_proxy(string uri)
     {
 #if BADSOUP
-        MWPLog.message("Not starting proxy thread (library too old)\n");
+    string[] spawn_args = {"qproxy", port.to_string(), uri};
+        try {
+            Process.spawn_async ("/",
+                             spawn_args,
+                             null,
+                             SpawnFlags.SEARCH_PATH | SpawnFlags.STDERR_TO_DEV_NULL,
+                             null,
+                             out SoupProxy.cpid);
+            MWPLog.message("Starting external proxy process\n");
+        } catch {
+            MWPLog.message("Failed to start external proxy process\n");
+        }
 #else
         var pt = JsonMapDef.port;
         MWPLog.message("Starting proxy thread\n");

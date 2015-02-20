@@ -359,15 +359,17 @@ public class MWPlanner : Gtk.Application {
         {null}
     };
 
-    public MWPlanner ()
+    MWPlanner ()
     {
         Object(application_id: "mwp.application", flags: ApplicationFlags.FLAGS_NONE);
     }
 
-    ~MWPlanner ()
+    public void cleanup()
     {
         if(conf.atexit != null)
-            Process.spawn_command_line_sync (conf.atexit);
+            try {
+                Process.spawn_command_line_sync (conf.atexit);
+            } catch {}
     }
 
     public override void activate ()
@@ -397,7 +399,7 @@ public class MWPlanner : Gtk.Application {
         if (fn == null)
         {
             MWPLog.message ("No UI definition file\n");
-            Posix.exit(255);
+            quit();
         }
         else
         {
@@ -406,7 +408,7 @@ public class MWPlanner : Gtk.Application {
                 builder.add_from_file (fn);
             } catch (Error e) {
                 MWPLog.message ("Builder: %s\n", e.message);
-                Posix.exit(255);
+                quit();
             }
         }
 
@@ -437,24 +439,11 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
+
         builder.connect_signals (null);
         window = builder.get_object ("window1") as Gtk.ApplicationWindow;
         this.add_window (window);
         window.set_application (this);
-
-        window.destroy.connect (() =>
-            {
-                    /*
-                     * We only save the layout on clean exit ...
-                if (layout.is_dirty())
-                {
-                    layout.save_layout("mwp");
-                    layout.save_to_file(layfile);
-                }
-                    */
-                quit();
-            });
-
         window.window_state_event.connect( (e) => {
                 wdw_state = ((e.new_window_state & Gdk.WindowState.FULLSCREEN) != 0);
             return false;
@@ -552,7 +541,7 @@ public class MWPlanner : Gtk.Application {
                     layout.save_layout("mwp");
                     layout.save_to_file(layfile);
                 }
-                quit();
+                remove_window(window);
             });
 
         menuop= builder.get_object ("menu_about") as Gtk.MenuItem;
@@ -1011,7 +1000,7 @@ public class MWPlanner : Gtk.Application {
 
         if(mwvar == MWChooser.MWVAR.UNDEF)
         {
-            Posix.exit(255);
+            remove_window(window);
         }
 
         start_poll_timer();
@@ -2884,6 +2873,12 @@ public class MWPlanner : Gtk.Application {
         request_wp(1);
     }
 
+    public static void xchild()
+    {
+        if(SoupProxy.cpid != 0)
+            Posix.kill(SoupProxy.cpid, Posix.SIGTERM);
+    }
+
     public static int main (string[] args)
     {
         time_t currtime;
@@ -2893,10 +2888,10 @@ public class MWPlanner : Gtk.Application {
 
         MWPLog.message("mwp startup\n");
         try {
-            var opt = new OptionContext("");
-            opt.set_help_enabled(true);
-            opt.add_main_entries(options, null);
-            opt.parse(ref args);
+        var opt = new OptionContext("");
+        opt.set_help_enabled(true);
+        opt.add_main_entries(options, null);
+        opt.parse(ref args);
         } catch (OptionError e) {
             stderr.printf("Error: %s\n", e.message);
             stderr.printf("Run '%s --help' to see a full list of available "+
@@ -2907,8 +2902,14 @@ public class MWPlanner : Gtk.Application {
         {
             stderr = FileStream.open("/tmp/mwp-stderr.txt","a");
         }
-        MWPlanner app = new MWPlanner();
+
+#if BADSOUP // one day Ubuntu will fix their broken stuff
+    extern int atexit(VoidFunc func);
+    atexit(MWPlanner.xchild);
+#endif
+        var app = new MWPlanner();
         app.run ();
+        app.cleanup();
         return 0;
     }
 }
