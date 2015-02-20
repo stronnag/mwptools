@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 using Gtk;
 using Gdl;
 using Clutter;
@@ -24,6 +23,9 @@ using Champlain;
 using GtkChamplain;
 
 extern double get_locale_double(string str);
+#if BADSOUP // one day Ubuntu will fix their broken stuff
+extern int atexit(VoidFunc func);
+#endif
 
 public struct VersInfo
 {
@@ -2904,7 +2906,6 @@ public class MWPlanner : Gtk.Application {
         }
 
 #if BADSOUP // one day Ubuntu will fix their broken stuff
-    extern int atexit(VoidFunc func);
     atexit(MWPlanner.xchild);
 #endif
         var app = new MWPlanner();
