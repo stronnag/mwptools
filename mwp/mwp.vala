@@ -348,6 +348,7 @@ public class MWPlanner : Gtk.Application {
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
         { "serial-device", 's', 0, OptionArg.STRING, out serial, "Serial device", null},
+        { "device", 'd', 0, OptionArg.STRING, out serial, "Serial device", null},
         { "flight-controller", 'f', 0, OptionArg.STRING, out mwoptstr, "mw|mwnav|bf|cf", null},
         { "connect", 'c', 0, OptionArg.NONE, out mkcon, "connect to first device", null},
         { "auto-connect", 'a', 0, OptionArg.NONE, out autocon, "auto-connect to first device", null},

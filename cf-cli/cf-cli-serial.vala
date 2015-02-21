@@ -666,13 +666,15 @@ public class MWSerial : Object
 
         if(typ == 1 && tyaw == false)
         {
-            send_msp(Cmds.SERVO_CONF,null,0);
-            if(read_msp(out cmd, out raw) == ResCode.OK)
+            do
             {
-                tyaw = ((raw[41] & 1) == 1);
+                send_msp(Cmds.SERVO_CONF,null,0);
+                res = read_msp(out cmd, out raw);
+                int sid = (raw.length == 7) ? 0 : 41;
+                tyaw = ((raw[sid] & 1) == 1);
                 if(tyaw)
                     message("Discovered Tri Yaw\n");
-            }
+            } while (res != ResCode.OK);
         }
 
         uint8 [] line;
@@ -731,6 +733,8 @@ public class MWSerial : Object
         message("Reboot on defaults\n");
         do
         {
+            close();
+            open();
             send_msp(Cmds.IDENT, null, 0);
             res =  read_msp(out cmd, out raw);
         } while (res != ResCode.OK);
@@ -749,6 +753,8 @@ public class MWSerial : Object
 
         do
         {
+            close();
+            open();
             send_msp(Cmds.IDENT, null, 0);
             res =  read_msp(out cmd, out raw);
             if(res == ResCode.OK)
@@ -769,7 +775,8 @@ public class MWSerial : Object
                         send_msp(Cmds.SERVO_CONF,null,0);
                         if(read_msp(out cmd, out raw) == ResCode.OK)
                         {
-                            raw[41] |= 1;
+                            int sid = (raw.length == 7) ? 0 : 41;
+                            raw[sid] |= 1;
                         }
                         send_msp(Cmds.SET_SERVO_CONF,raw,raw.length);
                         if(read_msp(out cmd, out raw) == ResCode.OK)
@@ -782,19 +789,12 @@ public class MWSerial : Object
                 }
                 if(defprof != null)
                 {
-                    set = (uint8)int.parse(defprof);
+                    set = (uint8)int.parse(defprof[-1:defprof.length]);
                     send_msp(Cmds.SELECT_SETTING, &set, 1);
                     read_msp(out cmd, out raw);
                     message("Reset default profile %d\n",set);
                 }
             }
-//            write("#");
-//            while((res = read_line(out line, out len)) == ResCode.OK)
-//                ;
-//            dump_settings();
-//            write("exit\n");
-//            while((res = read_line(out line, out len)) == ResCode.OK)
-//                ;
         }
     }
 
