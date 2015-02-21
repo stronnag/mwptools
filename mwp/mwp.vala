@@ -1379,6 +1379,12 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(have_status == false)
                     {
+                        var lab = verlab.get_label();
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(lab);
+                        sb.append(" Pr %d".printf(raw[10]));
+                        verlab.set_label(sb.str);
+
                         want_home = want_ph = want_rth = false;
                         remove_tid(ref cmdtid);
                         have_status = true;
