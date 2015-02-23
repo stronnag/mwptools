@@ -7,7 +7,8 @@ History: (see github, mwptools :)
 
 
 2015-02-23 : Build from latest mwp sources
-	     Add note on device naming (reported by ethomas997)
+	     Add note on legacy device naming (reported by ethomas997)
+	     Make cf-cli more resiliant to slow comms startup e.g. BT
 
 2015-02-14 : apply tri-yaw setting across all profiles
 
