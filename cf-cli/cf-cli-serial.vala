@@ -105,9 +105,8 @@ public class MWSerial : Object
     {
         if(logmsp)
         {
-            time_t currtime;
-            time_t(out currtime);
-            var fn  = "msp_%s.log".printf(Time.local(currtime).format("%F_%H%M%S"));
+            var dt = new DateTime.now_local();
+            var fn  = "msp_%s.log".printf(dt.format("%F_%H%M%S"));
             raws = Posix.open (fn, Posix.O_TRUNC|Posix.O_CREAT|Posix.O_WRONLY, 0640);
         }
 
