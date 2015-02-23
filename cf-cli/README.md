@@ -5,6 +5,10 @@ cf-cli
 
 History: (see github, mwptools :)
 
+
+2015-02-23 : Build from latest mwp sources
+	     Add note on device naming (reported by ethomas997)
+
 2015-02-14 : apply tri-yaw setting across all profiles
 
 2015-02-13 : v1.0 !!
@@ -20,7 +24,6 @@ archives.
 2015-02-06 : Much more robust error handling on non-Linux platforms
 (reported by Dave Pitman).
 
-
 ## Overview
 
 **cf-cli** is a command line (cli) tool to save and restore dump files for
@@ -35,6 +38,10 @@ listed below, but may be run without any.
 On Linux, cf-cli-ui will automatically detect CF devices (USB) and any
 serial Bluetooth devices. On Windows, it is necessary to choose from a
 dumb list of COM1: - COM9:, or enter the CF device name manually.
+
+** Only Windows devices COM1: - COM9: are recognised **. This is a
+   restriction of either the mingw cross compiler, NT namespaces and
+   /or the author's ineptitude.
 
 Additionally, on both platforms you can create a file of preferred
 serial devices names:

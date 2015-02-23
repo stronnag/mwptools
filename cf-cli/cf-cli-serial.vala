@@ -63,6 +63,7 @@ public class MWSerial : Object
     private uint8 typ;
     private int pfd;
     private string defprof;
+    private int raws = -1;
 
     public static string devname;
     protected static string defname;
@@ -72,6 +73,7 @@ public class MWSerial : Object
     protected static bool tyaw = false;
     protected static bool merge = false;
     protected static bool amerge = false;
+    protected static bool logmsp;
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", null},
@@ -80,6 +82,7 @@ public class MWSerial : Object
         { "profiles", 'p', 0, OptionArg.STRING, out profiles, "Profile (0-2)", null},
         { "presave", 'i', 0, OptionArg.NONE, out presave, "Save before setting", null},
         { "force-tri-rev-yaw", 'y', 0, OptionArg.NONE, out tyaw, "Force tri reversed yaw", null},
+        { "logmsp", 'l', 0, OptionArg.NONE, out logmsp, "Log MSP", null},
         { "merge-profiles", 'm', 0, OptionArg.NONE, out merge, "Generate a merged file for multiple profiles", null},
         { "merge-auxp", 'a', 0, OptionArg.NONE, out amerge, "Generate a merged file for multiple profiles with common aux settings", null},
         {null}
@@ -100,6 +103,14 @@ public class MWSerial : Object
 
     public bool open()
     {
+        if(logmsp)
+        {
+            time_t currtime;
+            time_t(out currtime);
+            var fn  = "msp_%s.log".printf(Time.local(currtime).format("%F_%H%M%S"));
+            raws = Posix.open (fn, Posix.O_TRUNC|Posix.O_CREAT|Posix.O_WRONLY, 0640);
+        }
+
         fd = open_serial(devname, brate);
         if(fd < 0)
         {
@@ -123,14 +134,27 @@ public class MWSerial : Object
         return available;
     }
 
+
+    private void closelog()
+    {
+        if(raws != -1)
+        {
+            Posix.close(raws);
+            raws = -1;
+        }
+    }
+
     ~MWSerial()
     {
+        closelog();
         if(fd != -1)
             close();
     }
 
     public void close()
     {
+        closelog();
+
         available=false;
         if(fd != -1)
         {
@@ -179,8 +203,13 @@ public class MWSerial : Object
                     done = true;
                 }
             }
-            else
+            else if (res == 1)
             {
+                if(logmsp)
+                {
+                    Posix.write(raws, &c,1);
+                }
+
                 nto = 0;
                 switch(state)
                 {
@@ -349,6 +378,10 @@ public class MWSerial : Object
             dstr[len+2] = ck;
             len += 3;
             Posix.write(fd, dstr, len);
+            if(logmsp)
+            {
+                Posix.write(raws, dstr, len);
+            }
         }
     }
 
@@ -640,7 +673,7 @@ public class MWSerial : Object
     public int fc_init()
     {
         uint8 cmd;
-        uint8 [] raw;
+        uint8 [] raw =null;
         ResCode res = 0;
         int errcnt = 0;
         typ = 0;
@@ -666,15 +699,18 @@ public class MWSerial : Object
 
         if(typ == 1 && tyaw == false)
         {
+            cmd = 0;
+            send_msp(Cmds.SERVO_CONF,null,0);
             do
             {
-                send_msp(Cmds.SERVO_CONF,null,0);
                 res = read_msp(out cmd, out raw);
-                int sid = (raw.length == 7) ? 0 : 41;
-                tyaw = ((raw[sid] & 1) == 1);
-                if(tyaw)
-                    message("Discovered Tri Yaw\n");
-            } while (res != ResCode.OK);
+            } while  (cmd  != Cmds.SERVO_CONF);
+
+            int sid = (raw.length == 7) ? 0 : 41;
+            tyaw = ((raw[sid] & 1) == 1);
+            if(tyaw)
+                message("Discovered Tri Yaw (%d)\n", raw.length);
+
         }
 
         uint8 [] line;
@@ -728,13 +764,12 @@ public class MWSerial : Object
         write("defaults\n");
         while((res = read_line(out line, out len)) == ResCode.OK)
             ;
-
+        close();
         Thread.usleep(1000000);
         message("Reboot on defaults\n");
+        open();
         do
         {
-            close();
-            open();
             send_msp(Cmds.IDENT, null, 0);
             res =  read_msp(out cmd, out raw);
         } while (res != ResCode.OK);
@@ -749,18 +784,24 @@ public class MWSerial : Object
             ;
 
         message("Reboot on save\n");
+        close();
         Thread.usleep(1000000);
-
+        open();
         do
         {
-            close();
-            open();
             send_msp(Cmds.IDENT, null, 0);
             res =  read_msp(out cmd, out raw);
             if(res == ResCode.OK)
                 typ = raw[1];
 
         } while (res != ResCode.OK);
+
+
+            /* pull in residual junk from BT device (just in case) */
+        do
+        {
+            res =  read_msp(out cmd, out raw);
+        } while (res == ResCode.OK);
 
         if(tyaw)
         {
@@ -809,6 +850,4 @@ public class MWSerial : Object
         sb.append(format.vprintf(v));
         Posix.write(pfd, sb.str, sb.str.length);
     }
-
-
 }
