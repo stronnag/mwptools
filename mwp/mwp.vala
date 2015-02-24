@@ -844,7 +844,7 @@ public class MWPlanner : Gtk.Application {
         dockitem[DOCKLETS.NAVSTATUS].show ();
 
         dockitem[DOCKLETS.ARTHOR]= new DockItem.with_stock ("Horizons",
-                         "Artifical Horizon", "gtk-justify-fill",
+                         "Artificial Horizon", "gtk-justify-fill",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
         dockitem[DOCKLETS.ARTHOR].add (art_win.box);
         dock.add_item (dockitem[DOCKLETS.ARTHOR], DockPlacement.BOTTOM);
