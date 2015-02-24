@@ -23,9 +23,7 @@ using Champlain;
 using GtkChamplain;
 
 extern double get_locale_double(string str);
-#if BADSOUP // one day Ubuntu will fix their broken stuff
 extern int atexit(VoidFunc func);
-#endif
 
 public struct VersInfo
 {
@@ -164,6 +162,7 @@ public class MWPlanner : Gtk.Application {
     private uint spktid;
     private Craft craft;
     private bool follow = false;
+    private bool prlabel = false;
     private bool centreon = false;
     private bool navcap = false;
     private bool naze32 = false;
@@ -179,6 +178,7 @@ public class MWPlanner : Gtk.Application {
     private MapSeeder mseed;
     private TelemetryStats telemstatus;
     private GPSInfo gpsinfo;
+    private ArtWin art_win;
     private WPMGR wpmgr;
     private MissionItem[] wp_resp;
     private static string mission;
@@ -255,7 +255,6 @@ public class MWPlanner : Gtk.Application {
     private bool have_fcvv;
     private bool vinit;
     private uint8 gpscnt = 0;
-
     private bool want_home;
     private bool want_ph;
     private bool want_rth;
@@ -283,6 +282,7 @@ public class MWPlanner : Gtk.Application {
         VOLTAGE,
         RADIO,
         TELEMETRY,
+        ARTHOR,
         NUMBER
     }
 
@@ -442,6 +442,20 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
+        var path = Environment.get_variable("PATH");
+        var paths = path.split(":");
+        string ath = null;
+        foreach(var p in paths)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(p);
+            sb.append("/mwp_ath");
+            if(Posix.access(sb.str,Posix.R_OK|Posix.X_OK) == 0)
+            {
+                ath = sb.str;
+                break;
+            }
+        }
 
         builder.connect_signals (null);
         window = builder.get_object ("window1") as Gtk.ApplicationWindow;
@@ -588,6 +602,13 @@ public class MWPlanner : Gtk.Application {
 
         menuncfg.activate.connect (() => {
                 navconf.show();
+            });
+
+        art_win = new ArtWin();
+        menuop = builder.get_object ("menu_art_hor") as Gtk.MenuItem;
+        menuop.sensitive =(ath != null);
+        menuop.activate.connect (() => {
+                art_win.show();
             });
 
         var mi = builder.get_object ("gps_menu_view") as Gtk.MenuItem;
@@ -822,6 +843,12 @@ public class MWPlanner : Gtk.Application {
         dock.add_item (dockitem[DOCKLETS.NAVSTATUS], DockPlacement.BOTTOM);
         dockitem[DOCKLETS.NAVSTATUS].show ();
 
+        dockitem[DOCKLETS.ARTHOR]= new DockItem.with_stock ("Horizons",
+                         "Artifical Horizon", "gtk-justify-fill",
+                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+        dockitem[DOCKLETS.ARTHOR].add (art_win.box);
+        dock.add_item (dockitem[DOCKLETS.ARTHOR], DockPlacement.BOTTOM);
+
         dockitem[DOCKLETS.VOLTAGE]= new DockItem.with_stock ("Volts",
                          "Battery Monitor", "gtk-dialog-warning",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
@@ -1010,10 +1037,6 @@ public class MWPlanner : Gtk.Application {
         lastp = new Timer();
         anim_cb();
 
-        if(no_max == false)
-            window.maximize();
-        window.show_all();
-
         if(mkcon)
         {
             connect_serial();
@@ -1021,21 +1044,30 @@ public class MWPlanner : Gtk.Application {
 
         Timeout.add_seconds(5, () => { return try_connect(); });
 
+
+        if(no_max == false)
+            window.maximize();
+        window.show_all();
+
         navstatus.setdock(dockitem[DOCKLETS.NAVSTATUS]);
         radstatus.setdock(dockitem[DOCKLETS.RADIO]);
         telemstatus.setdock(dockitem[DOCKLETS.TELEMETRY]);
+//        dockitem[DOCKLETS.ARTHOR].show ();
+        art_win.setdock(dockitem[DOCKLETS.ARTHOR]);
+//        dockitem[DOCKLETS.ARTHOR].hide ();
+
 
         if(layout.load_from_file(layfile) && layout.load_layout("mwp"))
             ;
         else
         {
+            dockitem[DOCKLETS.ARTHOR].hide ();
             dockitem[DOCKLETS.GPS].iconify_item ();
             dockitem[DOCKLETS.NAVSTATUS].iconify_item ();
             dockitem[DOCKLETS.VOLTAGE].hide ();
             dockitem[DOCKLETS.RADIO].hide ();
         }
-
-
+        art_win.run();
     }
 
     private void toggle_full_screen()
@@ -1282,6 +1314,7 @@ public class MWPlanner : Gtk.Application {
                         if(craft != null)
                             craft.set_icon(vi.mrtype);
                     }
+                    prlabel = false;
 
                     deserialise_u32(raw+3, out capability);
 
@@ -1381,13 +1414,15 @@ public class MWPlanner : Gtk.Application {
                     {
                         remove_tid(ref cmdtid);
                         have_status = true;
-
-                        var lab = verlab.get_label();
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(lab);
-                        sb.append(" Pr %d".printf(raw[10]));
-                        verlab.set_label(sb.str);
-
+                        if(!prlabel)
+                        {
+                            prlabel = true;
+                            var lab = verlab.get_label();
+                            StringBuilder sb = new StringBuilder();
+                            sb.append(lab);
+                            sb.append(" Pr %d".printf(raw[10]));
+                            verlab.set_label(sb.str);
+                        }
 
                         want_home = want_ph = want_rth = false;
                         if(conf.checkswitches && ((flag & 6) == 0) && robj == null)
@@ -1640,6 +1675,7 @@ public class MWPlanner : Gtk.Application {
                         mhead += 360;
                 }
                 navstatus.set_attitude(at);
+                art_win.update(at.angx, at.angy);
             }
             break;
 
@@ -2914,9 +2950,8 @@ public class MWPlanner : Gtk.Application {
             stderr = FileStream.open("/tmp/mwp-stderr.txt","a");
         }
 
-#if BADSOUP // one day Ubuntu will fix their broken stuff
-    atexit(MWPlanner.xchild);
-#endif
+        atexit(MWPlanner.xchild);
+
         var app = new MWPlanner();
         app.run ();
         app.cleanup();

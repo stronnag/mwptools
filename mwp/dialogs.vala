@@ -19,7 +19,87 @@
 
 extern void espeak_init(string voice);
 extern void espeak_say(string text);
-//extern void espeak_terminate();
+
+public class ArtWin : GLib.Object
+{
+
+    public Gtk.Box  box {get; private set;}
+    private Gtk.Socket socket;
+    private ulong sid;
+    private int fdin;
+    private Gdl.DockItem di;
+    private static Pid apid = 0;
+
+    public static void xchild()
+    {
+        if(apid != 0)
+            Posix.kill(ArtWin.apid, Posix.SIGTERM);
+    }
+
+    public ArtWin()
+    {
+        atexit(ArtWin.xchild);
+        box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+    }
+
+    public void init()
+    {
+        string [] args = {"mwp_ath", sid.to_string()};
+        try {
+            Process.spawn_async_with_pipes ("/",
+                                        args,
+                                        null,
+                                        SpawnFlags.SEARCH_PATH,
+                                        null,
+                                        out apid,
+                                        out fdin,
+                                        null,
+                                        null);
+        } catch  {}
+    }
+
+    public void update(short sx, short sy)
+    {
+        if(apid !=0 && !di.is_iconified())
+        {
+            double dx,dy;
+
+            dx = sx/10.0;
+            if (dx < 0)
+                dx += 360;
+            dy = sy/10;
+
+            string s = "%.1f %.1f\n".printf(dx, dy);
+            Posix.write(fdin, s, s.length);
+        }
+    }
+
+    public void setdock(Gdl.DockItem _di)
+    {
+        di = _di;
+    }
+
+    public void run()
+    {
+        if(apid == 0)
+        {
+            socket = new Gtk.Socket();
+            box.pack_start(socket, true,true,0);
+            socket.realize();
+            sid = (ulong)socket.get_id();
+            box.show_all();
+            init();
+        }
+    }
+
+    public void show()
+    {
+        if(di.is_closed() && ! di.is_iconified())
+        {
+            di.show();
+        }
+    }
+}
 
 public class TelemetryStats : GLib.Object
 {

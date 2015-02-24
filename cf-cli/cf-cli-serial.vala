@@ -27,6 +27,9 @@ extern unowned string get_error_text(int err, uint8[] buf, size_t len);
 public class MWSerial : Object
 {
     const int MAX_INIT_ERR = 16;
+    const int YAW_OFFSET  = 41;
+    const int SERVO_SIZE = 56;
+
     public enum States
     {
         S_END=0,
@@ -705,11 +708,16 @@ public class MWSerial : Object
                 res = read_msp(out cmd, out raw);
             } while  (cmd  != Cmds.SERVO_CONF);
 
-            int sid = (raw.length == 7) ? 0 : 41;
-            tyaw = ((raw[sid] & 1) == 1);
-            if(tyaw)
-                message("Discovered Tri Yaw (%d)\n", raw.length);
-
+            if(raw.length == SERVO_SIZE)
+            {
+                tyaw = ((raw[YAW_OFFSET] & 1) == 1);
+                if(tyaw)
+                    message("Discovered Tri Yaw (%d)\n", raw.length);
+            }
+            else
+            {
+                message("Invalid servo conf, all bets are off\n");
+            }
         }
 
         uint8 [] line;
@@ -815,8 +823,12 @@ public class MWSerial : Object
                         send_msp(Cmds.SERVO_CONF,null,0);
                         if(read_msp(out cmd, out raw) == ResCode.OK)
                         {
-                            int sid = (raw.length == 7) ? 0 : 41;
-                            raw[sid] |= 1;
+                            if(raw.length == SERVO_SIZE)
+                                raw[YAW_OFFSET] |= 1;
+                            else
+                            {
+                                message("Invalid servo conf, all bets are off\n");
+                            }
                         }
                         send_msp(Cmds.SET_SERVO_CONF,raw,raw.length);
                         if(read_msp(out cmd, out raw) == ResCode.OK)

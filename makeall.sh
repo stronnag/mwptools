@@ -17,7 +17,7 @@ SUOPTS=
 pkg-config --atleast-version=2.48 libsoup-2.4 || export SPOPTS="-D BADSOUP"
 pkg-config --atleast-version=0.12.3 champlain-0.12 || export BBOPTS="-D NOBB"
 
-for P in mspsim  pidedit switchedit common cf-cli
+for P in mspsim  pidedit switchedit common cf-cli horizon
 do
   echo Building in $P
   cd $P
