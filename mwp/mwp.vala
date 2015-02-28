@@ -822,7 +822,7 @@ public class MWPlanner : Gtk.Application {
 
         var dock = new Dock ();
         master = dock.master;
-        lman = new LayMan(master,confdir,layfile);
+        lman = new LayMan(master,confdir,layfile,DOCKLETS.NUMBER);
 
         var dockbar = new DockBar (dock);
         dockbar.set_style (DockBarStyle.ICONS);
@@ -1074,6 +1074,7 @@ public class MWPlanner : Gtk.Application {
             dockitem[DOCKLETS.NAVSTATUS].iconify_item ();
             dockitem[DOCKLETS.VOLTAGE].hide ();
             dockitem[DOCKLETS.RADIO].hide ();
+            lman.save_config();
         }
         Idle.add(() => {art_win.run(); return false;});
 

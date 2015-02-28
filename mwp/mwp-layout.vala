@@ -8,19 +8,34 @@ class LayMan : Object
     private string confdir;
     private string layname {get; set; default = ".layout";}
 
-    public LayMan (DockMaster _master, string _confdir, string? name)
+    public LayMan (DockMaster _master, string _confdir, string? name, int count)
     {
         master = _master;
         layout = new DockLayout (master);
         confdir = _confdir;
+        var xtest = new LayoutTester();
+
+        foreach (var s in get_layout_names(confdir))
+        {
+            var fn = getfile(s);
+            int nc;
+            if((nc = xtest.read_xml_file(fn)) != count)
+            {
+                Posix.unlink(fn);
+                mwplog.message("Removing %s %d\n",fn,nc);
+            }
+        }
+
         if(name != null)
             layname = name;
     }
 
-    private string getfile()
+    private string getfile(string? name=null)
     {
         StringBuilder sb = new StringBuilder();
-        sb.append(layname);
+        if(name == null)
+            name = layname;
+        sb.append(name);
         sb.append(".xml");
         stderr.printf("getfile() %s\n", sb.str);
         return GLib.Path.build_filename(confdir,sb.str);
