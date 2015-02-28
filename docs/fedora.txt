@@ -4,4 +4,8 @@ yum install gtk3-devel gstreamer-devel clutter-devel webkitgtk3-devel \
 yum install vala vala-devel vala-tools vala-doc
 yum install libchamplain-gtk-devel libgdl-devel libgudev1-devel espeak-devel
 
+# and for the artificial horizon
+
+yum install  gtk2-devel
+
 git clone https://github.com/stronnag/mwptools.git
