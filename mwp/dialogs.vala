@@ -106,10 +106,11 @@ public class ArtWin : GLib.Object
         {
             double dx,dy;
 
-            dx = sx/10.0;
+            dx = -sx/10.0;
             if (dx < 0)
                 dx += 360;
-            dy = sy/10;
+
+            dy = -sy/10;
 
             string s = "%.1f %.1f\n".printf(dx, dy);
             Posix.write(fdin, s, s.length);
