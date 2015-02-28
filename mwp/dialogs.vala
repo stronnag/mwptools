@@ -88,7 +88,7 @@ public class ArtWin : GLib.Object
                 gio.read_line (out buf, out length, out terminator_pos);
                 sid = int.parse(buf);
 //                stderr.printf("%s => sockid = %0x\n", buf, sid);
-                socket.add_id((Gtk.Window*)sid);
+                socket.add_id((X.Window)sid);
             } catch { }
             ret = true;
         }
