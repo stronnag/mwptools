@@ -22,7 +22,7 @@ class LayMan : Object
             if((nc = xtest.read_xml_file(fn)) != count)
             {
                 Posix.unlink(fn);
-                mwplog.message("Removing %s %d\n",fn,nc);
+                MWPLog.message("Removing %s %d\n",fn,nc);
             }
         }
 
