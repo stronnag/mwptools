@@ -70,7 +70,7 @@ static void publish_plug(guint plg)
 {
     char buf[32];
     sprintf(buf, "%d\n", plg);
-    write(fileno(stdout), buf, strlen(buf));
+    (void)write(fileno(stdout), buf, strlen(buf));
 //    fprintf(stderr, "sent plugin %d\n", plg);
 }
 
