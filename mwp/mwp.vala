@@ -389,6 +389,9 @@ public class MWPlanner : Gtk.Application {
         conf = new MWPSettings();
         conf.read_settings();
 
+        if(layfile == null && conf.deflayout != null)
+            layfile = conf.deflayout;
+
         if(conf.fctype != null)
             mwvar = MWChooser.fc_from_name(conf.fctype);
 

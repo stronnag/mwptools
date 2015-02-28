@@ -37,7 +37,7 @@ class LayMan : Object
             name = layname;
         sb.append(name);
         sb.append(".xml");
-        stderr.printf("getfile() %s\n", sb.str);
+//        stderr.printf("getfile() %s\n", sb.str);
         return GLib.Path.build_filename(confdir,sb.str);
     }
 
@@ -151,7 +151,7 @@ class LayMan : Object
         box.show_all ();
         var response = dialog.run ();
         if (response == ResponseType.OK) {
-            stderr.printf("load %s\n", id);
+//            stderr.printf("load %s\n", id);
             layname = id;
             load_init();
         }

@@ -54,6 +54,7 @@ public class MWPSettings : GLib.Object
     public bool checkswitches {get; set; default=false;}
     public uint polltimeout {get; set; default=500;}
     public string quaduri {get; private set; }
+    public string deflayout {get; private set; }
 
     public MWPSettings()
     {
@@ -156,6 +157,13 @@ public class MWPSettings : GLib.Object
             polltimeout = settings.get_uint("poll-timeout");
         if(s == null || s == "quaduri")
             quaduri = settings.get_string("quaduri");
+
+        if(s == null || s == "default-layout")
+        {
+            deflayout = settings.get_string("default-layout");
+            if(deflayout == "")
+                deflayout = null;
+        }
     }
 
     public void save_settings()

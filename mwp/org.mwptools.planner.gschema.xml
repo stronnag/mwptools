@@ -200,5 +200,11 @@
       to indicate where the actual quadkey goes.</description>
     </key>
 
+    <key name="default-layout" type="s">
+      <summary>Default layout name </summary>
+      <default>""</default>
+      <description>Default layout name. If not set, .layout is used.</description>
+    </key>
+
   </schema>
 </schemalist>
