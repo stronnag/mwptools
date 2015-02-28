@@ -1,10 +1,11 @@
 
 public class Application : Object
 {
-    private ulong sid;
     private Pid cpid;
     private int fdin;
+    private int fdout;
     private Rand rand;
+    private Gtk.Socket sk;
 
     public Application ()
     {
@@ -16,10 +17,8 @@ public class Application : Object
                 Gtk.main_quit ();
             });
 
-        var sk = new Gtk.Socket ();
+        sk = new Gtk.Socket ();
         w.add (sk);
-        sk.realize();
-        sid = (ulong)sk.get_id();
         start_plugger();
         w.show_all ();
     }
@@ -27,7 +26,7 @@ public class Application : Object
     public void start_plugger()
     {
         rand  = new Rand();
-        string [] args = {"mwp_ath", sid.to_string()};
+        string [] args = {"mwp_ath", "-p"};
         Process.spawn_async_with_pipes ("/",
                                         args,
                                         null,
@@ -35,8 +34,17 @@ public class Application : Object
                                         null,
                                         out cpid,
                                         out fdin,
-                                        null,
+                                        out fdout,
                                         null);
+
+
+        stderr.printf("pipes %d %d\n", fdin, fdout);
+        var fs = FileStream.fdopen(fdout,"r");
+        var buf = fs.read_line();
+        int sockid = int.parse(buf);
+        stdout.printf("%s => sockid = %0x\n", buf, sockid);
+        sk.add_id((Gtk.Window *)sockid);
+
         Timeout.add_seconds(1,() => {
                 var d1 = rand.int_range(0, 360);
                 var d2 = rand.int_range(-70, 70);

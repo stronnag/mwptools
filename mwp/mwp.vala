@@ -194,12 +194,12 @@ public class MWPlanner : Gtk.Application {
     private static bool no_max = false;
     private static bool force_mag = false;
     private static string mwoptstr;
+    private static string layfile=null;
 
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
     private uint8 vwarn1;
     private int licol;
     private DockMaster master;
-    private DockLayout layout;
     public  DockItem[] dockitem;
     private Gtk.CheckButton audio_cb;
     private Gtk.CheckButton autocon_cb;
@@ -273,6 +273,7 @@ public class MWPlanner : Gtk.Application {
     private uint rth_mask=0;
 
     private TelemStats telstats;
+    private LayMan lman;
 
     private enum DOCKLETS
     {
@@ -359,6 +360,7 @@ public class MWPlanner : Gtk.Application {
         { "ignore-rotation", 0, 0, OptionArg.NONE, out norotate, "ignore vehicle icon rotation on old libchamplain", null},
         { "dont-maximise", 0, 0, OptionArg.NONE, out no_max, "don't maximise the window", null},
         { "force-mag", 0, 0, OptionArg.NONE, out force_mag, "force mag for vehicle direction", null},
+        { "layout", 'l', 0, OptionArg.STRING, out layfile, "Layout name", null},
         {null}
     };
 
@@ -397,7 +399,6 @@ public class MWPlanner : Gtk.Application {
             dir.make_directory_with_parents ();
         } catch {};
 
-        var layfile = GLib.Path.build_filename(confdir,".layout.xml");
         var fn = MWPUtils.find_conf_file("mwp.ui");
         if (fn == null)
         {
@@ -553,11 +554,7 @@ public class MWPlanner : Gtk.Application {
 
         menuop = builder.get_object ("menu_quit") as Gtk.MenuItem;
         menuop.activate.connect (() => {
-                if(layout.is_dirty())
-                {
-                    layout.save_layout("mwp");
-                    layout.save_to_file(layfile);
-                }
+                lman.save_config();
                 remove_window(window);
             });
 
@@ -660,6 +657,22 @@ public class MWPlanner : Gtk.Application {
                    }
             });
 
+        mi =  builder.get_object ("lm_save") as Gtk.MenuItem;
+        mi.activate.connect(() => {
+                lman.save();
+            });
+        mi =  builder.get_object ("lm_restore") as Gtk.MenuItem;
+        mi.activate.connect(() => {
+                lman.restore();
+            });
+        mi =  builder.get_object ("lm_remove") as Gtk.MenuItem;
+        mi.activate.connect(() => {
+                lman.remove();
+            });
+        mi =  builder.get_object ("lm_clear") as Gtk.MenuItem;
+        mi.activate.connect(() => {
+                lman.clear();
+            });
 
         embed = new GtkChamplain.Embed();
         view = embed.get_view();
@@ -809,7 +822,7 @@ public class MWPlanner : Gtk.Application {
 
         var dock = new Dock ();
         master = dock.master;
-        layout = new DockLayout (master);
+        lman = new LayMan(master,confdir,layfile);
 
         var dockbar = new DockBar (dock);
         dockbar.set_style (DockBarStyle.ICONS);
@@ -1045,6 +1058,7 @@ public class MWPlanner : Gtk.Application {
         Timeout.add_seconds(5, () => { return try_connect(); });
 
 
+        art_win.setdock(dockitem[DOCKLETS.ARTHOR]);
         if(no_max == false)
             window.maximize();
         window.show_all();
@@ -1052,14 +1066,8 @@ public class MWPlanner : Gtk.Application {
         navstatus.setdock(dockitem[DOCKLETS.NAVSTATUS]);
         radstatus.setdock(dockitem[DOCKLETS.RADIO]);
         telemstatus.setdock(dockitem[DOCKLETS.TELEMETRY]);
-//        dockitem[DOCKLETS.ARTHOR].show ();
-        art_win.setdock(dockitem[DOCKLETS.ARTHOR]);
-//        dockitem[DOCKLETS.ARTHOR].hide ();
 
-
-        if(layout.load_from_file(layfile) && layout.load_layout("mwp"))
-            ;
-        else
+        if(!lman.load_init())
         {
             dockitem[DOCKLETS.ARTHOR].hide ();
             dockitem[DOCKLETS.GPS].iconify_item ();
@@ -1067,7 +1075,8 @@ public class MWPlanner : Gtk.Application {
             dockitem[DOCKLETS.VOLTAGE].hide ();
             dockitem[DOCKLETS.RADIO].hide ();
         }
-        art_win.run();
+        Idle.add(() => {art_win.run(); return false;});
+
     }
 
     private void toggle_full_screen()

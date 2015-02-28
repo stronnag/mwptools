@@ -15,3 +15,10 @@ build-essential
 libbluetooth-dev
 libespeak-dev
 libgudev-1.0-0
+
+and for the artificial horizon
+
+libgtk2.0-dev
+libpango1.0-dev
+libcairo2-dev
+libxml2-dev

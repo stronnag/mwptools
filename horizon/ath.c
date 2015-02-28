@@ -7,16 +7,18 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
+#include <string.h>
 #include <gtk/gtk.h>
 #include "gtkartificialhorizon.h"
 
 static GIOChannel *gio;
 static guint tag;
+static  GtkWidget *art_hor;
+static GdkWindow *sockwin = 0;
+static GtkWidget *window;
 
-gboolean read_data(GIOChannel *source, GIOCondition condition, gpointer data)
+static gboolean read_data(GIOChannel *source, GIOCondition condition, gpointer data)
 {
-    GtkWidget *art_hor =  (GtkWidget *)data;
     if((condition &  G_IO_IN) ==  G_IO_IN)
     {
         double d1, d2;
@@ -52,38 +54,63 @@ gboolean read_data(GIOChannel *source, GIOCondition condition, gpointer data)
     }
 }
 
-int main(int argc, char ** argv)
+static guint create_plug();
+
+static void invoke_horizon()
 {
+    art_hor = gtk_artificial_horizon_new();
+    g_object_set(GTK_ARTIFICIAL_HORIZON (art_hor),
+                 "grayscale-color", FALSE,
+                 "radial-color", TRUE, NULL);
+    gtk_container_add(GTK_CONTAINER (window), art_hor);
+    gtk_widget_show_all(window);
+}
 
-  GtkWidget *art_hor;
-  GtkWidget *vbox;
-  int sockid = 0;
-  GtkWidget *window;
-  gtk_init (&argc, &argv);
+static void publish_plug(guint plg)
+{
+    char buf[32];
+    sprintf(buf, "%d\n", plg);
+    write(fileno(stdout), buf, strlen(buf));
+//    fprintf(stderr, "sent plugin %d\n", plg);
+}
 
-  if(argc == 2)
-  {
-      sockid = strtol(argv[1], NULL, 0);
-      window =( GtkWidget *)gtk_plug_new (sockid);
-  }
-  else
-  {
-      window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  }
+static void plug_fail(GtkPlug * w, gpointer d)
+{
+    guint plg = create_plug();
+    invoke_horizon();
+    publish_plug(plg);
+}
 
-  vbox = gtk_vbox_new(TRUE, 1);
-  gtk_container_add(GTK_CONTAINER (window), vbox);
-  art_hor = gtk_artificial_horizon_new();
-  g_object_set(GTK_ARTIFICIAL_HORIZON (art_hor),
-               "grayscale-color", FALSE,
-               "radial-color", TRUE, NULL);
+static guint create_plug()
+{
+    window =( GtkWidget *)gtk_plug_new (0);
+    g_signal_connect (window, "destroy", G_CALLBACK(plug_fail), NULL);
+    guint plg = gtk_plug_get_id (GTK_PLUG(window));
+    return plg;
+}
 
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(art_hor), TRUE, TRUE, 0);
-  gtk_widget_show_all(window);
-  gio = g_io_channel_unix_new(0);
-  tag = g_io_add_watch (gio,
-                        G_IO_IN|G_IO_HUP|G_IO_ERR|G_IO_NVAL,
-                        read_data, art_hor);
-  gtk_main();
-  return 0;
+
+int  main(int argc, char ** argv)
+{
+    guint plg = 0;
+    gtk_init (&argc, &argv);
+
+    gio = g_io_channel_unix_new(0);
+    tag = g_io_add_watch (gio, G_IO_IN|G_IO_HUP|G_IO_ERR|G_IO_NVAL, read_data, NULL);
+    if(argc == 2)
+    {
+        plg  = create_plug();
+    }
+    else
+    {
+        window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
+    }
+    invoke_horizon();
+    if(plg != 0)
+    {
+        publish_plug(plg);
+    }
+    gtk_main();
+    return 0;
 }

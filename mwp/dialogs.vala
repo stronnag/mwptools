@@ -22,13 +22,14 @@ extern void espeak_say(string text);
 
 public class ArtWin : GLib.Object
 {
-
     public Gtk.Box  box {get; private set;}
     private Gtk.Socket socket;
-    private ulong sid;
+    private uint sid;
     private int fdin;
+    private int fdout;
     private Gdl.DockItem di;
     private static Pid apid = 0;
+    private uint tag;
 
     public static void xchild()
     {
@@ -40,22 +41,63 @@ public class ArtWin : GLib.Object
     {
         atexit(ArtWin.xchild);
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+        socket = new Gtk.Socket();
+        box.pack_start(socket, true,true,0);
+        box.show_all();
+            /*
+        socket.plug_removed.connect(() => {
+                    stderr.printf("Plug removed\n");
+                    return false;
+            });
+        socket.plug_added.connect(() => {
+                stderr.printf("Plug added\n");
+            });
+            */
     }
 
     public void init()
     {
-        string [] args = {"mwp_ath", sid.to_string()};
+        string [] args = {"mwp_ath", "-p"};
         try {
             Process.spawn_async_with_pipes ("/",
-                                        args,
-                                        null,
-                                        SpawnFlags.SEARCH_PATH,
-                                        null,
-                                        out apid,
-                                        out fdin,
-                                        null,
-                                        null);
+                                            args,
+                                            null,
+                                            SpawnFlags.SEARCH_PATH,
+                                            null,
+                                            out apid,
+                                            out fdin,
+                                            out fdout,
+                                            null);
         } catch  {}
+        var io_read = new IOChannel.unix_new(fdout);
+        tag = io_read.add_watch(IOCondition.IN|IOCondition.HUP|
+                                    IOCondition.NVAL|IOCondition.ERR,
+                                    plug_read);
+//        stderr.puts("running app\n");
+    }
+
+    private bool plug_read(IOChannel gio, IOCondition cond)
+    {
+        bool ret;
+        if((cond & IOCondition.IN) == IOCondition.IN)
+        {
+            string buf;
+            size_t length;
+            size_t terminator_pos;
+            try {
+                gio.read_line (out buf, out length, out terminator_pos);
+                sid = int.parse(buf);
+//                stderr.printf("%s => sockid = %0x\n", buf, sid);
+                socket.add_id((Gtk.Window*)sid);
+            } catch { }
+            ret = true;
+        }
+        else
+        {
+            Source.remove(tag);
+            ret = false;
+        }
+        return ret;
     }
 
     public void update(short sx, short sy)
@@ -83,11 +125,6 @@ public class ArtWin : GLib.Object
     {
         if(apid == 0)
         {
-            socket = new Gtk.Socket();
-            box.pack_start(socket, true,true,0);
-            socket.realize();
-            sid = (ulong)socket.get_id();
-            box.show_all();
             init();
         }
     }
