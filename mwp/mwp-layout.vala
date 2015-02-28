@@ -158,7 +158,7 @@ class LayMan : Object
         dialog.destroy ();
         return id;
     }
-
+/****
     public void remove ()
     {
     }
@@ -166,4 +166,5 @@ class LayMan : Object
     public void clear ()
     {
     }
+***/
 }

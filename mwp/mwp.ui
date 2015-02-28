@@ -320,22 +320,6 @@
                                 <property name="use_underline">True</property>
                               </object>
                             </child>
-                            <child>
-                              <object class="GtkMenuItem" id="lm_remove">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">Remove</property>
-                                <property name="use_underline">True</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkMenuItem" id="lm_clear">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">Clear</property>
-                                <property name="use_underline">True</property>
-                              </object>
-                            </child>
                           </object>
                         </child>
                       </object>

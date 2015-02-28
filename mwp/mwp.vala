@@ -665,6 +665,7 @@ public class MWPlanner : Gtk.Application {
         mi.activate.connect(() => {
                 lman.restore();
             });
+/**
         mi =  builder.get_object ("lm_remove") as Gtk.MenuItem;
         mi.activate.connect(() => {
                 lman.remove();
@@ -673,7 +674,7 @@ public class MWPlanner : Gtk.Application {
         mi.activate.connect(() => {
                 lman.clear();
             });
-
+**/
         embed = new GtkChamplain.Embed();
         view = embed.get_view();
         view.set_reactive(true);
