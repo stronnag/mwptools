@@ -272,13 +272,16 @@ public class FlightBox : GLib.Object
             var brg = NavStatus.cg.direction;
             if(brg < 0)
                 brg += 360;
+            if(NavStatus.recip)
+                brg = ((brg + 180) % 360);
             big_rng.set_label("Range <span font='%d'>%d</span>m".printf(fh1,NavStatus.cg.range));
             big_bearing.set_label("Bearing <span font='%d'>%d°</span>".printf(fh1,brg));
             big_hdr.set_label("Heading <span font='%d'>%d°</span>".printf(fh1,NavStatus.hdr));
             big_alt.set_label("Alt <span font='%d'>%.1f</span>m".printf(fh1,NavStatus.alti.estalt/100.0));
 
             big_spd.set_label("Speed <span font='%d'>%.1f</span>m/s".printf(fh1,GPSInfo.spd));
-            big_sats.set_label("Sats <span font='%d'>%d</span>".printf(fh1,GPSInfo.nsat));
+            string sfix = (GPSInfo.fix == 0) ? "no" : "";
+            big_sats.set_label("Sats <span font='%d'>%d</span> %sfix".printf(fh1,GPSInfo.nsat,sfix));
         }
     }
 }
@@ -1518,7 +1521,7 @@ public class GPSInfo : GLib.Object
     public static double spd {get; private set;}
     public static int nsat {get; private set;}
     public static int16 elev {get; private set;}
-
+    public static uint8 fix;
 
     public GPSInfo(Gtk.Grid grid)
     {
@@ -1615,6 +1618,7 @@ public class GPSInfo : GLib.Object
         spd = g.gps_speed/100.0;
         cse = g.gps_ground_course/10.0;
         nsat = g.gps_numsat;
+        fix = g.gps_fix;
 
         if(Logger.is_logging)
         {
