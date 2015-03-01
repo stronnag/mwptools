@@ -212,6 +212,77 @@ public class TelemetryStats : GLib.Object
     }
 }
 
+public class FlightBox : GLib.Object
+{
+    private Gtk.Label big_lat;
+    private Gtk.Label big_lon;
+    private Gtk.Label big_rng;
+    private Gtk.Label big_bearing;
+    private Gtk.Label big_hdr;
+    private Gtk.Label big_alt;
+    private Gtk.Label big_spd;
+    private Gtk.Label big_sats;
+    public Gtk.Box vbox {get; private set;}
+    private Gdl.DockItem di;
+
+    public FlightBox(Gtk.Builder builder)
+    {
+        vbox = builder.get_object ("flight_box") as Gtk.Box;
+        big_lat = builder.get_object ("big_lat") as Gtk.Label;
+        big_lon = builder.get_object ("big_lon") as Gtk.Label;
+        big_rng = builder.get_object ("big_rng") as Gtk.Label;
+        big_bearing = builder.get_object ("big_bearing") as Gtk.Label;
+        big_hdr = builder.get_object ("big_hdr") as Gtk.Label;
+        big_alt = builder.get_object ("big_alt") as Gtk.Label;
+        big_spd = builder.get_object ("big_spd") as Gtk.Label;
+        big_sats = builder.get_object ("big_sats") as Gtk.Label;
+    }
+
+   public void setdock(Gdl.DockItem _di)
+    {
+        di = _di;
+    }
+
+   public void show()
+   {
+       if(di.is_closed() && ! di.is_iconified())
+       {
+           di.show();
+           di.iconify_item();
+       }
+   }
+
+   public void annul()
+   {
+   }
+
+   public void update()
+    {
+        if(!di.is_closed() && !di.is_iconified())
+        {
+            Gtk.Allocation a;
+            vbox.get_allocation(out a);
+            var fh1 = a.width/10;
+            var s=PosFormat.lat(GPSInfo.lat,true);
+            if(fh1 > 96)
+                fh1 = 96;
+            big_lat.set_label("<span font='%d'>%s</span>".printf(fh1/2,s));
+            s=PosFormat.lon(GPSInfo.lon,true);
+            big_lon.set_label("<span font='%d'>%s</span>".printf(fh1/2,s));
+            var brg = NavStatus.cg.direction;
+            if(brg < 0)
+                brg += 360;
+            big_rng.set_label("Range <span font='%d'>%d</span>m".printf(fh1,NavStatus.cg.range));
+            big_bearing.set_label("Bearing <span font='%d'>%d°</span>".printf(fh1,brg));
+            big_hdr.set_label("Heading <span font='%d'>%d°</span>".printf(fh1,NavStatus.hdr));
+            big_alt.set_label("Alt <span font='%d'>%.1f</span>m".printf(fh1,NavStatus.alti.estalt/100.0));
+
+            big_spd.set_label("Speed <span font='%d'>%.1f</span>m/s".printf(fh1,GPSInfo.spd));
+            big_sats.set_label("Sats <span font='%d'>%d</span>".printf(fh1,GPSInfo.nsat));
+        }
+    }
+}
+
 public class MapSeeder : GLib.Object
 {
     private Gtk.Dialog dialog;
@@ -1441,11 +1512,11 @@ public class GPSInfo : GLib.Object
     private double _dlon = 0;
     private double _dlat = 0;
 
-    public double lat {get; private set;}
-    public double lon {get; private set;}
-    public double cse {get; private set;}
-    public double spd {get; private set;}
-
+    public static double lat {get; private set;}
+    public static double lon {get; private set;}
+    public static double cse {get; private set;}
+    public static double spd {get; private set;}
+    public static int nsat {get; private set;}
     public static int16 elev {get; private set;}
 
 
@@ -1543,6 +1614,7 @@ public class GPSInfo : GLib.Object
         lon = g.gps_lon/10000000.0;
         spd = g.gps_speed/100.0;
         cse = g.gps_ground_course/10.0;
+        nsat = g.gps_numsat;
 
         if(Logger.is_logging)
         {

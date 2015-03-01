@@ -179,6 +179,7 @@ public class MWPlanner : Gtk.Application {
     private TelemetryStats telemstatus;
     private GPSInfo gpsinfo;
     private ArtWin art_win;
+    private FlightBox fbox;
     private WPMGR wpmgr;
     private MissionItem[] wp_resp;
     private static string mission;
@@ -284,6 +285,7 @@ public class MWPlanner : Gtk.Application {
         RADIO,
         TELEMETRY,
         ARTHOR,
+        FBOX,
         NUMBER
     }
 
@@ -650,6 +652,19 @@ public class MWPlanner : Gtk.Application {
             });
 
 
+        mi =  builder.get_object ("fbox_view") as Gtk.MenuItem;
+        if(mi != null)
+        {
+            fbox  = new FlightBox(builder);
+            mi.activate.connect(() => {
+                    if(dockitem[DOCKLETS.FBOX].is_closed() &&
+                       !dockitem[DOCKLETS.FBOX].is_iconified())
+                    {
+                        dockitem[DOCKLETS.FBOX].show();
+                        dockitem[DOCKLETS.FBOX].iconify_item();
+                    }
+                });
+        }
         telemstatus = new TelemetryStats(builder);
         mi =  builder.get_object ("ss_dialog") as Gtk.MenuItem;
         mi.activate.connect(() => {
@@ -884,6 +899,12 @@ public class MWPlanner : Gtk.Application {
         dockitem[DOCKLETS.TELEMETRY].add (telemstatus.grid);
         dock.add_item (dockitem[DOCKLETS.TELEMETRY], DockPlacement.BOTTOM);
 
+        dockitem[DOCKLETS.FBOX]= new DockItem.with_stock ("FlightView",
+                         "FlightView", "gtk-find",
+                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+        dockitem[DOCKLETS.FBOX].add (fbox.vbox);
+        dock.add_item (dockitem[DOCKLETS.FBOX], DockPlacement.BOTTOM);
+
         view.notify["zoom-level"].connect(() => {
                 var val = view.get_zoom_level();
                 var zval = (int)zoomer.adjustment.value;
@@ -1070,6 +1091,7 @@ public class MWPlanner : Gtk.Application {
         navstatus.setdock(dockitem[DOCKLETS.NAVSTATUS]);
         radstatus.setdock(dockitem[DOCKLETS.RADIO]);
         telemstatus.setdock(dockitem[DOCKLETS.TELEMETRY]);
+        fbox.setdock(dockitem[DOCKLETS.FBOX]);
 
         if(!lman.load_init())
         {
@@ -1078,10 +1100,10 @@ public class MWPlanner : Gtk.Application {
             dockitem[DOCKLETS.NAVSTATUS].iconify_item ();
             dockitem[DOCKLETS.VOLTAGE].hide ();
             dockitem[DOCKLETS.RADIO].hide ();
+            dockitem[DOCKLETS.FBOX].hide ();
             lman.save_config();
         }
         Idle.add(() => {art_win.run(); return false;});
-
     }
 
     private void toggle_full_screen()
@@ -1728,6 +1750,7 @@ public class MWPlanner : Gtk.Application {
                 rp = deserialise_u16(rp, out rg.gps_speed);
                 deserialise_u16(rp, out rg.gps_ground_course);
                 gpsfix = (gpsinfo.update(rg, conf.dms) != 0);
+                fbox.update();
                 _nsats = rg.gps_numsat;
                 if (gpsfix)
                 {
@@ -1735,46 +1758,46 @@ public class MWPlanner : Gtk.Application {
                     {
                         if(follow == true)
                         {
-                            double cse = (usemag) ? mhead : gpsinfo.cse;
-                            craft.set_lat_lon(gpsinfo.lat,gpsinfo.lon,cse);
+                            double cse = (usemag) ? mhead : GPSInfo.cse;
+                            craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
                         }
                         if (centreon == true)
-                            view.center_on(gpsinfo.lat,gpsinfo.lon);
+                            view.center_on(GPSInfo.lat,GPSInfo.lon);
                     }
                     if(want_home)
                     {
                         want_home = false;
-                        home_pos.lat = gpsinfo.lat;
-                        home_pos.lon = gpsinfo.lon;
+                        home_pos.lat = GPSInfo.lat;
+                        home_pos.lon = GPSInfo.lon;
                         home_pos.alt = rg.gps_altitude;
                         if(craft != null)
                         {
                             craft.special_wp(Craft.Special.HOME,
-                                             gpsinfo.lat, gpsinfo.lon);
+                                             GPSInfo.lat, GPSInfo.lon);
                         }
                     }
                     if(want_ph)
                     {
                         want_ph = false;
-                        ph_pos.lat = gpsinfo.lat;
-                        ph_pos.lon = gpsinfo.lon;
+                        ph_pos.lat = GPSInfo.lat;
+                        ph_pos.lon = GPSInfo.lon;
                         ph_pos.alt = rg.gps_altitude;
                         if(craft != null)
                         {
                             craft.special_wp(Craft.Special.PH,
-                                             gpsinfo.lat, gpsinfo.lon);
+                                             GPSInfo.lat, GPSInfo.lon);
                         }
                     }
                     if(want_rth)
                     {
                         want_rth = false;
-                        rth_pos.lat = gpsinfo.lat;
-                        rth_pos.lon = gpsinfo.lon;
+                        rth_pos.lat = GPSInfo.lat;
+                        rth_pos.lon = GPSInfo.lon;
                         rth_pos.alt = rg.gps_altitude;
                         if(craft != null)
                         {
                             craft.special_wp(Craft.Special.RTH,
-                                             gpsinfo.lat, gpsinfo.lon);
+                                             GPSInfo.lat, GPSInfo.lon);
                         }
                     }
                 }
