@@ -165,6 +165,7 @@ public class TelemetryStats : GLib.Object
         waittime = builder.get_object ("ss-wait") as Gtk.Label;
         cycletime = builder.get_object ("ss-cycle") as Gtk.Label;
         messages = builder.get_object ("ss-msgs") as Gtk.Label;
+        grid.show_all();
     }
 
    public void setdock(Gdl.DockItem _di)
@@ -236,6 +237,7 @@ public class FlightBox : GLib.Object
         big_alt = builder.get_object ("big_alt") as Gtk.Label;
         big_spd = builder.get_object ("big_spd") as Gtk.Label;
         big_sats = builder.get_object ("big_sats") as Gtk.Label;
+        vbox.show_all();
     }
 
    public void setdock(Gdl.DockItem _di)
@@ -770,6 +772,7 @@ public class RadioStatus : GLib.Object
         txbuf_label = builder.get_object ("txbuflab") as Gtk.Label;
         noise_label = builder.get_object ("noiselab") as Gtk.Label;
         remnoise_label = builder.get_object ("remnoiselab") as Gtk.Label;
+        grid.show_all();
     }
 
     public void setdock(Gdl.DockItem _di)
@@ -891,6 +894,7 @@ public class NavStatus : GLib.Object
         colors[3].parse("red");
         colors[4].parse("white");
         volt_update("n/a",4, 0f);
+        grid.show_all();
     }
 
     public void setdock(Gdl.DockItem _di)
@@ -1576,6 +1580,7 @@ public class GPSInfo : GLib.Object
         speed_lab.halign = Gtk.Align.START;
         speed_lab.valign = Gtk.Align.START;
         grid.attach(speed_lab, 1, 5, 1, 1);
+        grid.show_all();
     }
 
 
