@@ -1098,12 +1098,13 @@ public class MWPlanner : Gtk.Application {
             dockitem[DOCKLETS.ARTHOR].hide ();
             dockitem[DOCKLETS.GPS].iconify_item ();
             dockitem[DOCKLETS.NAVSTATUS].iconify_item ();
+            dockitem[DOCKLETS.TELEMETRY].hide ();
             dockitem[DOCKLETS.VOLTAGE].hide ();
             dockitem[DOCKLETS.RADIO].hide ();
             dockitem[DOCKLETS.FBOX].hide ();
             lman.save_config();
         }
-        Idle.add(() => {art_win.run(); return false;});
+        art_win.run();
     }
 
     private void toggle_full_screen()
