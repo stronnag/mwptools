@@ -200,7 +200,6 @@ public class MWPlanner : Gtk.Application {
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
     private uint8 vwarn1;
     private int licol;
-    private DockMaster master;
     public  DockItem[] dockitem;
     private Gtk.CheckButton audio_cb;
     private Gtk.CheckButton autocon_cb;
@@ -365,6 +364,23 @@ public class MWPlanner : Gtk.Application {
         { "layout", 'l', 0, OptionArg.STRING, out layfile, "Layout name", null},
         {null}
     };
+
+
+    void show_dock_id (DOCKLETS id, bool iconify=false)
+    {
+        if(dockitem[id].is_closed() && !dockitem[id].is_iconified())
+        {
+            dockitem[id].show();
+            if(iconify)
+                dockitem[id].iconify_item();
+        }
+    }
+
+    bool item_visible(DOCKLETS id)
+    {
+        return !dockitem[id].is_closed();
+    }
+
 
     MWPlanner ()
     {
@@ -595,7 +611,7 @@ public class MWPlanner : Gtk.Application {
         navstatus = new NavStatus(builder);
         menunav = builder.get_object ("nav_status_menu") as Gtk.MenuItem;
         menunav.activate.connect (() => {
-                    navstatus.show();
+                show_dock_id(DOCKLETS.NAVSTATUS,true);
             });
 
         menuncfg = builder.get_object ("nav_config_menu") as Gtk.MenuItem;
@@ -605,74 +621,47 @@ public class MWPlanner : Gtk.Application {
         menuncfg.activate.connect (() => {
                 navconf.show();
             });
-
         art_win = new ArtWin();
         menuop = builder.get_object ("menu_art_hor") as Gtk.MenuItem;
         menuop.sensitive =(ath != null);
         menuop.activate.connect (() => {
-                art_win.show();
+                show_dock_id(DOCKLETS.ARTHOR, true);
             });
 
         var mi = builder.get_object ("gps_menu_view") as Gtk.MenuItem;
         mi.activate.connect (() => {
-                if(dockitem[DOCKLETS.GPS].is_closed() && !dockitem[DOCKLETS.GPS].is_iconified())
-                {
-                   dockitem[DOCKLETS.GPS].show();
-                   dockitem[DOCKLETS.GPS].iconify_item();
-                }
+                show_dock_id(DOCKLETS.GPS, true);
             });
 
         mi = builder.get_object ("tote_menu_view") as Gtk.MenuItem;
         mi.activate.connect (() => {
-                if(dockitem[DOCKLETS.MISSION].is_closed() && !dockitem[DOCKLETS.MISSION].is_iconified())
-                {
-                   dockitem[DOCKLETS.MISSION].show();
-                   dockitem[DOCKLETS.MISSION].iconify_item();
-                }
+                show_dock_id(DOCKLETS.MISSION, false);
             });
 
         mi = builder.get_object ("voltage_menu_view") as Gtk.MenuItem;
         mi.activate.connect (() => {
-                if(dockitem[DOCKLETS.VOLTAGE].is_closed() && !dockitem[DOCKLETS.VOLTAGE].is_iconified())
-                {
-                   dockitem[DOCKLETS.VOLTAGE].show();
-                   dockitem[DOCKLETS.VOLTAGE].iconify_item();
-                   }
+                show_dock_id(DOCKLETS.VOLTAGE, true);
             });
 
         radstatus = new RadioStatus(builder);
 
         mi = builder.get_object ("radio_menu_view") as Gtk.MenuItem;
         mi.activate.connect (() => {
-                if(dockitem[DOCKLETS.RADIO].is_closed() && !dockitem[DOCKLETS.RADIO].is_iconified())
-                {
-                   dockitem[DOCKLETS.RADIO].show();
-                   dockitem[DOCKLETS.RADIO].iconify_item();
-                   }
+                show_dock_id(DOCKLETS.RADIO, true);
             });
-
 
         mi =  builder.get_object ("fbox_view") as Gtk.MenuItem;
         if(mi != null)
         {
             fbox  = new FlightBox(builder);
             mi.activate.connect(() => {
-                    if(dockitem[DOCKLETS.FBOX].is_closed() &&
-                       !dockitem[DOCKLETS.FBOX].is_iconified())
-                    {
-                        dockitem[DOCKLETS.FBOX].show();
-                        dockitem[DOCKLETS.FBOX].iconify_item();
-                    }
+                    show_dock_id(DOCKLETS.FBOX, true);
                 });
         }
         telemstatus = new TelemetryStats(builder);
         mi =  builder.get_object ("ss_dialog") as Gtk.MenuItem;
         mi.activate.connect(() => {
-                if(dockitem[DOCKLETS.TELEMETRY].is_closed() && !dockitem[DOCKLETS.TELEMETRY].is_iconified())
-                {
-                   dockitem[DOCKLETS.TELEMETRY].show();
-                   dockitem[DOCKLETS.TELEMETRY].iconify_item();
-                   }
+                show_dock_id(DOCKLETS.TELEMETRY, true);
             });
 
         mi =  builder.get_object ("lm_save") as Gtk.MenuItem;
@@ -840,11 +829,9 @@ public class MWPlanner : Gtk.Application {
         gpsinfo = new GPSInfo(grid);
 
         var dock = new Dock ();
-        master = dock.master;
-        lman = new LayMan(master,confdir,layfile,DOCKLETS.NUMBER);
-
         var dockbar = new DockBar (dock);
         dockbar.set_style (DockBarStyle.ICONS);
+        lman = new LayMan(dock, confdir,layfile,DOCKLETS.NUMBER);
 
         var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL,0);
         pane.add2(box);
@@ -854,56 +841,56 @@ public class MWPlanner : Gtk.Application {
 
         dockitem = new DockItem[DOCKLETS.NUMBER];
 
-        dockitem[DOCKLETS.MISSION]= new DockItem.with_stock ("Mission",
-                         "Mission Tote", "gtk-properties",
-                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
-        dockitem[DOCKLETS.MISSION].add (scroll);
-        dockitem[DOCKLETS.MISSION].show ();
-        dock.add_item (dockitem[DOCKLETS.MISSION], DockPlacement.TOP);
-
         dockitem[DOCKLETS.GPS]= new DockItem.with_stock ("GPS",
                          "GPS Info", "gtk-refresh",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
-        dockitem[DOCKLETS.GPS].add (grid);
-        dock.add_item (dockitem[DOCKLETS.GPS], DockPlacement.BOTTOM);
-        dockitem[DOCKLETS.GPS].show ();
 
         dockitem[DOCKLETS.NAVSTATUS]= new DockItem.with_stock ("Status",
                          "NAV Status", "gtk-info",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
-        dockitem[DOCKLETS.NAVSTATUS].add (navstatus.grid);
-        dock.add_item (dockitem[DOCKLETS.NAVSTATUS], DockPlacement.BOTTOM);
-        dockitem[DOCKLETS.NAVSTATUS].show ();
 
         dockitem[DOCKLETS.ARTHOR]= new DockItem.with_stock ("Horizons",
                          "Artificial Horizon", "gtk-justify-fill",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
-        dockitem[DOCKLETS.ARTHOR].add (art_win.box);
-        dock.add_item (dockitem[DOCKLETS.ARTHOR], DockPlacement.BOTTOM);
 
         dockitem[DOCKLETS.VOLTAGE]= new DockItem.with_stock ("Volts",
                          "Battery Monitor", "gtk-dialog-warning",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
-        dockitem[DOCKLETS.VOLTAGE].add (navstatus.voltbox);
-        dock.add_item (dockitem[DOCKLETS.VOLTAGE], DockPlacement.BOTTOM);
 
         dockitem[DOCKLETS.RADIO]= new DockItem.with_stock ("Radio",
                          "Radio Status", "gtk-network",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
-        dockitem[DOCKLETS.RADIO].add (radstatus.grid);
         dock.add_item (dockitem[DOCKLETS.RADIO], DockPlacement.BOTTOM);
 
         dockitem[DOCKLETS.TELEMETRY]= new DockItem.with_stock ("Telemetry",
                          "Telemetry", "gtk-disconnect",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
-        dockitem[DOCKLETS.TELEMETRY].add (telemstatus.grid);
-        dock.add_item (dockitem[DOCKLETS.TELEMETRY], DockPlacement.BOTTOM);
 
         dockitem[DOCKLETS.FBOX]= new DockItem.with_stock ("FlightView",
                          "FlightView", "gtk-find",
                          DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+
+        dockitem[DOCKLETS.MISSION]= new DockItem.with_stock ("Mission",
+                         "Mission Tote", "gtk-properties",
+                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+
+        dockitem[DOCKLETS.VOLTAGE].add (navstatus.voltbox);
+        dockitem[DOCKLETS.MISSION].add (scroll);
+        dockitem[DOCKLETS.GPS].add (grid);
+        dockitem[DOCKLETS.NAVSTATUS].add (navstatus.grid);
+        dockitem[DOCKLETS.RADIO].add (radstatus.grid);
+        dockitem[DOCKLETS.TELEMETRY].add (telemstatus.grid);
         dockitem[DOCKLETS.FBOX].add (fbox.vbox);
+        dockitem[DOCKLETS.ARTHOR].add (art_win.box);
+
+        dock.add_item (dockitem[DOCKLETS.ARTHOR], DockPlacement.BOTTOM);
+        dock.add_item (dockitem[DOCKLETS.GPS], DockPlacement.BOTTOM);
+        dock.add_item (dockitem[DOCKLETS.NAVSTATUS], DockPlacement.BOTTOM);
+        dock.add_item (dockitem[DOCKLETS.VOLTAGE], DockPlacement.BOTTOM);
+        dock.add_item (dockitem[DOCKLETS.TELEMETRY], DockPlacement.BOTTOM);
+        dock.add_item (dockitem[DOCKLETS.RADIO], DockPlacement.BOTTOM);
         dock.add_item (dockitem[DOCKLETS.FBOX], DockPlacement.BOTTOM);
+        dock.add_item (dockitem[DOCKLETS.MISSION], DockPlacement.TOP);
 
         view.notify["zoom-level"].connect(() => {
                 var val = view.get_zoom_level();
@@ -1082,26 +1069,25 @@ public class MWPlanner : Gtk.Application {
 
         Timeout.add_seconds(5, () => { return try_connect(); });
 
-
-        art_win.setdock(dockitem[DOCKLETS.ARTHOR]);
         if(no_max == false)
             window.maximize();
         window.show_all();
-
+/*
+        art_win.setdock(dockitem[DOCKLETS.ARTHOR]);
         navstatus.setdock(dockitem[DOCKLETS.NAVSTATUS]);
         radstatus.setdock(dockitem[DOCKLETS.RADIO]);
         telemstatus.setdock(dockitem[DOCKLETS.TELEMETRY]);
         fbox.setdock(dockitem[DOCKLETS.FBOX]);
-
+            */
         if(!lman.load_init())
         {
-            dockitem[DOCKLETS.ARTHOR].hide ();
+            dockitem[DOCKLETS.ARTHOR].iconify_item ();
             dockitem[DOCKLETS.GPS].iconify_item ();
             dockitem[DOCKLETS.NAVSTATUS].iconify_item ();
-            dockitem[DOCKLETS.TELEMETRY].hide ();
-            dockitem[DOCKLETS.VOLTAGE].hide ();
-            dockitem[DOCKLETS.RADIO].hide ();
-            dockitem[DOCKLETS.FBOX].hide ();
+            dockitem[DOCKLETS.VOLTAGE].iconify_item ();
+            dockitem[DOCKLETS.RADIO].iconify_item ();
+            dockitem[DOCKLETS.TELEMETRY].iconify_item ();
+            dockitem[DOCKLETS.FBOX].iconify_item ();
             lman.save_config();
         }
         art_win.run();
@@ -1176,7 +1162,7 @@ public class MWPlanner : Gtk.Application {
                 if((nticks % STATINTVL) == 0)
                 {
                     gen_serial_stats();
-                    telemstatus.update(telstats);
+                    telemstatus.update(telstats, item_visible(DOCKLETS.TELEMETRY));
                 }
 
                 if(duration != 0 && ((nticks % DURAINTVL) == 0))
@@ -1656,7 +1642,7 @@ public class MWPlanner : Gtk.Application {
                 ns.wp_number = *rp++;
                 ns.nav_error = *rp++;
                 deserialise_u16(rp, out ns.target_bearing);
-                navstatus.update(ns);
+                navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS));
             }
             break;
 
@@ -1694,7 +1680,7 @@ public class MWPlanner : Gtk.Application {
                 rp = deserialise_u16(raw, out cg.range);
                 rp = deserialise_i16(rp, out cg.direction);
                 cg.update = *rp;
-                navstatus.comp_gps(cg);
+                navstatus.comp_gps(cg,item_visible(DOCKLETS.NAVSTATUS));
             }
             break;
 
@@ -1711,8 +1697,8 @@ public class MWPlanner : Gtk.Application {
                     if(mhead < 0)
                         mhead += 360;
                 }
-                navstatus.set_attitude(at);
-                art_win.update(at.angx, at.angy);
+                navstatus.set_attitude(at,item_visible(DOCKLETS.NAVSTATUS));
+                art_win.update(at.angx, at.angy, item_visible(DOCKLETS.ARTHOR));
             }
             break;
 
@@ -1722,7 +1708,7 @@ public class MWPlanner : Gtk.Application {
                 uint8* rp;
                 rp = deserialise_i32(raw, out al.estalt);
                 deserialise_i16(rp, out al.vario);
-                navstatus.set_altitude(al);
+                navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
             }
             break;
 
@@ -1750,8 +1736,8 @@ public class MWPlanner : Gtk.Application {
                 rp = deserialise_i16(rp, out rg.gps_altitude);
                 rp = deserialise_u16(rp, out rg.gps_speed);
                 deserialise_u16(rp, out rg.gps_ground_course);
-                gpsfix = (gpsinfo.update(rg, conf.dms) != 0);
-                fbox.update();
+                gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS)) != 0);
+                fbox.update(item_visible(DOCKLETS.FBOX));
                 _nsats = rg.gps_numsat;
                 if (gpsfix)
                 {
@@ -1971,7 +1957,7 @@ public class MWPlanner : Gtk.Application {
                 r.txbuf = *rp++;
                 r.noise = *rp++;
                 r.remnoise = *rp;
-                radstatus.update(r);
+                radstatus.update(r,item_visible(DOCKLETS.RADIO));
             }
             break;
 
@@ -1998,7 +1984,7 @@ public class MWPlanner : Gtk.Application {
                     craft.park();
                 }
 
-                var fix = gpsinfo.update_ltm(gf, conf.dms);
+                var fix = gpsinfo.update_ltm(gf, conf.dms, item_visible(DOCKLETS.GPS));
                 if(fix != 0)
                 {
                     double gflat = gf.lat/10000000.0;
@@ -2017,7 +2003,7 @@ public class MWPlanner : Gtk.Application {
                         var cg = MSP_COMP_GPS();
                         cg.range = (uint16)Math.lround(dist*1852);
                         cg.direction = (int16)Math.lround(cse);
-                        navstatus.comp_gps(cg);
+                        navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
                     }
                     if(craft != null)
                     {
@@ -2045,7 +2031,7 @@ public class MWPlanner : Gtk.Application {
                 if(h < 0)
                     h += 360;
                 gfcse = h;
-                navstatus.update_ltm_a(af);
+                navstatus.update_ltm_a(af, item_visible(DOCKLETS.NAVSTATUS));
             }
             break;
 
@@ -2131,8 +2117,8 @@ public class MWPlanner : Gtk.Application {
                     larmed = armed;
                 }
 
-                radstatus.update_ltm(sf);
-                navstatus.update_ltm_s(sf);
+                radstatus.update_ltm(sf,item_visible(DOCKLETS.RADIO));
+                navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
                 set_bat_stat((uint8)((sf.vbat + 50) / 100));
             }
             break;
@@ -2291,7 +2277,7 @@ public class MWPlanner : Gtk.Application {
         vbatlab="<span background=\"%s\" weight=\"bold\">%s</span>".printf(
              vlevels[icol].colour, str);
         labelvbat.set_markup(vbatlab);
-        navstatus.volt_update(str,icol,vf);
+        navstatus.volt_update(str,icol,vf,item_visible(DOCKLETS.VOLTAGE));
 
         if(vlevels[icol].reached == false)
         {

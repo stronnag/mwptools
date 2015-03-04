@@ -27,7 +27,6 @@ public class ArtWin : GLib.Object
     private uint sid;
     private int fdin;
     private int fdout;
-    private Gdl.DockItem di;
     private static Pid apid = 0;
     private uint tag;
 
@@ -100,9 +99,9 @@ public class ArtWin : GLib.Object
         return ret;
     }
 
-    public void update(short sx, short sy)
+    public void update(short sx, short sy, bool visible)
     {
-        if(apid !=0 && !di.is_iconified())
+        if(apid !=0 && visible)
         {
             double dx,dy;
 
@@ -117,11 +116,6 @@ public class ArtWin : GLib.Object
         }
     }
 
-    public void setdock(Gdl.DockItem _di)
-    {
-        di = _di;
-    }
-
     public void run()
     {
         if(apid == 0)
@@ -130,13 +124,6 @@ public class ArtWin : GLib.Object
         }
     }
 
-    public void show()
-    {
-        if(di.is_closed() && ! di.is_iconified())
-        {
-            di.show();
-        }
-    }
 }
 
 public class TelemetryStats : GLib.Object
@@ -151,7 +138,6 @@ public class TelemetryStats : GLib.Object
     private Gtk.Label cycletime;
     private Gtk.Label messages;
     public Gtk.Grid grid {get; private set;}
-    private Gdl.DockItem di;
 
     public TelemetryStats(Gtk.Builder builder)
     {
@@ -168,19 +154,6 @@ public class TelemetryStats : GLib.Object
         grid.show_all();
     }
 
-   public void setdock(Gdl.DockItem _di)
-    {
-        di = _di;
-    }
-
-   public void show()
-   {
-       if(di.is_closed() && ! di.is_iconified())
-       {
-           di.show();
-           di.iconify_item();
-       }
-   }
 
    public void annul()
    {
@@ -195,9 +168,9 @@ public class TelemetryStats : GLib.Object
        messages.set_label("---");
    }
 
-   public void update(TelemStats t)
+   public void update(TelemStats t, bool visible)
     {
-        if(!di.is_closed())
+        if(visible)
         {
             elapsed.set_label("%.0f s".printf(t.s.elapsed));
             rxbytes.set_label("%lu b".printf(t.s.rxbytes));
@@ -224,7 +197,6 @@ public class FlightBox : GLib.Object
     private Gtk.Label big_spd;
     private Gtk.Label big_sats;
     public Gtk.Box vbox {get; private set;}
-    private Gdl.DockItem di;
 
     public FlightBox(Gtk.Builder builder)
     {
@@ -240,27 +212,14 @@ public class FlightBox : GLib.Object
         vbox.show_all();
     }
 
-   public void setdock(Gdl.DockItem _di)
-    {
-        di = _di;
-    }
-
-   public void show()
-   {
-       if(di.is_closed() && ! di.is_iconified())
-       {
-           di.show();
-           di.iconify_item();
-       }
-   }
 
    public void annul()
    {
    }
 
-   public void update()
+   public void update(bool visible)
     {
-        if(!di.is_closed() && !di.is_iconified())
+        if(visible)
         {
             Gtk.Allocation a;
             vbox.get_allocation(out a);
@@ -760,7 +719,6 @@ public class RadioStatus : GLib.Object
     private Gtk.Label remnoise_label;
     public Gtk.Grid grid {get; private set;}
     private MSP_RADIO r;
-    private Gdl.DockItem di;
 
     public RadioStatus(Gtk.Builder builder)
     {
@@ -775,29 +733,18 @@ public class RadioStatus : GLib.Object
         grid.show_all();
     }
 
-    public void setdock(Gdl.DockItem _di)
+
+    public void update_ltm(LTM_SFRAME s,bool visible)
     {
-        di = _di;
+        if(visible)
+            remrssi_label.set_label(s.rssi.to_string());
     }
 
-    public void show()
-    {
-        if(di.is_closed() && ! di.is_iconified())
-        {
-            di.show();
-            di.iconify_item();
-        }
-    }
-
-    public void update_ltm(LTM_SFRAME s)
-    {
-        remrssi_label.set_label(s.rssi.to_string());
-    }
-
-    public void update(MSP_RADIO _r)
+    public void update(MSP_RADIO _r, bool visible)
     {
         r = _r;
-        if(!di.is_closed())
+
+        if(visible)
         {
             rxerr_label.set_label(r.rxerrors.to_string());
             fixerr_label.set_label(r.fixed_errors.to_string());
@@ -826,9 +773,8 @@ public class NavStatus : GLib.Object
     private Gtk.Label nav_comp_gps_label;
     private Gtk.Label nav_altitude_label;
     private Gtk.Label nav_attitude_label;
-    private bool visible = false;
+    private bool enabled = false;
     public Gtk.Grid grid {get; private set;}
-    private Gdl.DockItem di;
     private  Gtk.Label voltlabel;
     public Gtk.Box voltbox{get; private set;}
     private Gdk.RGBA[] colors;
@@ -881,7 +827,7 @@ public class NavStatus : GLib.Object
         nav_comp_gps_label = builder.get_object ("comp_gps_label") as Gtk.Label;
         nav_altitude_label = builder.get_object ("altitude_label") as Gtk.Label;
         nav_attitude_label = builder.get_object ("attitude_label") as Gtk.Label;
-        visible = true;
+        enabled = true;
 
         voltlabel = new Gtk.Label("");
         voltbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
@@ -893,27 +839,14 @@ public class NavStatus : GLib.Object
         colors[2].parse("orange");
         colors[3].parse("red");
         colors[4].parse("white");
-        volt_update("n/a",4, 0f);
+        volt_update("n/a",4, 0f,true);
         grid.show_all();
     }
 
-    public void setdock(Gdl.DockItem _di)
-    {
-        di = _di;
-    }
 
-    public void show()
+    public void update_ltm_s(LTM_SFRAME s, bool visible)
     {
-        if(di.is_closed() && ! di.is_iconified())
-        {
-            di.show();
-            di.iconify_item();
-        }
-    }
-
-    public void update_ltm_s(LTM_SFRAME s)
-    {
-        if(visible || Logger.is_logging)
+        if(enabled || Logger.is_logging)
         {
             uint8 armed = (s.flags & 1);
             uint8 failsafe = ((s.flags & 2) >> 1);
@@ -921,8 +854,11 @@ public class NavStatus : GLib.Object
             var lmode = MSP.ltm_mode(fmode);
             nav_state_label.set_label(lmode);
             var str = "%s %s".printf(((armed == 1) ? "armed" : ""),
-                                 ((failsafe == 1) ? "failsafe" : ""));
-            nav_action_label.set_label(str);
+                                     ((failsafe == 1) ? "failsafe" : ""));
+            if(visible)
+            {
+                nav_action_label.set_label(str);
+            }
             if(xfmode != fmode)
             {
                 xfmode = fmode;
@@ -943,16 +879,19 @@ public class NavStatus : GLib.Object
         }
     }
 
-    public void update_ltm_a(LTM_AFRAME a)
+    public void update_ltm_a(LTM_AFRAME a, bool visible)
     {
-        if(visible || Logger.is_logging)
+        if(enabled || Logger.is_logging)
         {
             hdr = a.heading;
             if(hdr < 0)
                 hdr += 360;
-            var str = "%d° / %d° / %d°".printf(a.pitch, a.roll, hdr);
-            nav_attitude_label.set_label(str);
             have_hdr = true;
+            if(visible)
+            {
+                var str = "%d° / %d° / %d°".printf(a.pitch, a.roll, hdr);
+                nav_attitude_label.set_label(str);
+            }
             if(Logger.is_logging)
             {
                 Logger.attitude(a.pitch,a.roll,hdr);
@@ -960,7 +899,7 @@ public class NavStatus : GLib.Object
         }
     }
 
-    public void update(MSP_NAV_STATUS _n)
+    public void update(MSP_NAV_STATUS _n, bool visible)
     {
         if(mt_voice == true)
         {
@@ -982,35 +921,33 @@ public class NavStatus : GLib.Object
             }
         }
 
-        if(!di.is_closed() || Logger.is_logging)
+        if(visible)
         {
-            if (!di.is_closed())
-            {
-                var gstr = MSP.gps_mode(n.gps_mode);
-                var nstr = MSP.nav_state(n.nav_mode);
-                var n_action = n.action;
-                var n_wpno = n.wp_number;
-                var estr = MSP.nav_error(n.nav_error);
-                var tbrg = n.target_bearing;
-                gps_mode_label.set_label(gstr);
-                nav_state_label.set_label(nstr);
-                var act = MSP.get_wpname((MSP.Action)n_action);
-                nav_action_label.set_label(act);
-                nav_wp_label.set_label("%d".printf(n_wpno));
-                nav_err_label.set_label(estr);
-                nav_tgt_label.set_label("%d".printf(tbrg));
-            }
-            if (Logger.is_logging)
-            {
-                Logger.status(n);
-            }
+            var gstr = MSP.gps_mode(n.gps_mode);
+            var nstr = MSP.nav_state(n.nav_mode);
+            var n_action = n.action;
+            var n_wpno = n.wp_number;
+            var estr = MSP.nav_error(n.nav_error);
+            var tbrg = n.target_bearing;
+            gps_mode_label.set_label(gstr);
+            nav_state_label.set_label(nstr);
+            var act = MSP.get_wpname((MSP.Action)n_action);
+            nav_action_label.set_label(act);
+            nav_wp_label.set_label("%d".printf(n_wpno));
+            nav_err_label.set_label(estr);
+            nav_tgt_label.set_label("%d".printf(tbrg));
+        }
+
+        if (Logger.is_logging)
+        {
+            Logger.status(n);
         }
     }
 
-    public void set_attitude(MSP_ATTITUDE _atti)
+    public void set_attitude(MSP_ATTITUDE _atti,bool visible)
     {
         atti = _atti;
-        if(visible || Logger.is_logging)
+        if(enabled || Logger.is_logging)
         {
             double dax;
             double day;
@@ -1033,10 +970,10 @@ public class NavStatus : GLib.Object
         }
     }
 
-    public void set_altitude(MSP_ALTITUDE _alti)
+    public void set_altitude(MSP_ALTITUDE _alti, bool visible)
     {
         alti = _alti;
-        if(visible || Logger.is_logging)
+        if(enabled || Logger.is_logging)
         {
             double vario = alti.vario/10.0;
             double estalt = alti.estalt/100.0;
@@ -1052,11 +989,11 @@ public class NavStatus : GLib.Object
         }
     }
 
-    public void comp_gps(MSP_COMP_GPS _cg)
+    public void comp_gps(MSP_COMP_GPS _cg, bool visible)
     {
         cg = _cg;
         have_cg = true;
-        if(visible || Logger.is_logging)
+        if(enabled || Logger.is_logging)
         {
             var brg = cg.direction;
             if(brg < 0)
@@ -1076,26 +1013,29 @@ public class NavStatus : GLib.Object
         }
     }
 
-    public void volt_update(string s, int n, float v)
+    public void volt_update(string s, int n, float v, bool visible)
     {
         volts = v;
-        Gtk.Allocation a;
-        if(n != _vn)
+        if(visible)
         {
-            voltlabel.override_background_color(Gtk.StateFlags.NORMAL, colors[n]);
-            _vn = n;
+            Gtk.Allocation a;
+            if(n != _vn)
+            {
+                voltlabel.override_background_color(Gtk.StateFlags.NORMAL, colors[n]);
+                _vn = n;
+            }
+            voltlabel.get_allocation(out a);
+            if (a.width != _aw || a.height != _ah)
+            {
+                _aw = a.width;
+                _ah = a.height;
+                var fh1 = a.width/4;
+                var fh2 = a.height / 2;
+                var fs = (fh1 < fh2) ? fh1 : fh2;
+                _fs = fs;
+            }
+            voltlabel.set_label("<span font='%d'>%s</span>".printf(_fs,s));
         }
-        voltlabel.get_allocation(out a);
-        if (a.width != _aw || a.height != _ah)
-        {
-            _aw = a.width;
-            _ah = a.height;
-            var fh1 = a.width/4;
-            var fh2 = a.height / 2;
-            var fs = (fh1 < fh2) ? fh1 : fh2;
-            _fs = fs;
-        }
-        voltlabel.set_label("<span font='%d'>%s</span>".printf(_fs,s));
     }
 
     public void update_fmode(string _fmode)
@@ -1584,7 +1524,7 @@ public class GPSInfo : GLib.Object
     }
 
 
-    public int update_ltm(LTM_GFRAME g, bool dms)
+    public int update_ltm(LTM_GFRAME g, bool dms,bool visible)
     {
         lat = g.lat/10000000.0;
         lon = g.lon/10000000.0;
@@ -1602,13 +1542,18 @@ public class GPSInfo : GLib.Object
         uint8 fix = (g.sats & 3);
         uint8 nsats = (g.sats >> 2);
         var nsatstr = "%d (%sfix)".printf(nsats, (fix==0) ? "no" : "");
-        nsat_lab.set_label(nsatstr);
-        lat_lab.set_label(PosFormat.lat(lat,dms));
-        lon_lab.set_label(PosFormat.lon(lon,dms));
-        speed_lab.set_label("%.0f m/s".printf(spd));
-        alt_lab.set_label("%.2f m".printf(dalt));
-        dirn_lab.set_label("%.1f °".printf(cse));
         elev = (int16)Math.lround(dalt);
+
+        if(visible)
+        {
+            nsat_lab.set_label(nsatstr);
+            lat_lab.set_label(PosFormat.lat(lat,dms));
+            lon_lab.set_label(PosFormat.lon(lon,dms));
+            speed_lab.set_label("%.0f m/s".printf(spd));
+            alt_lab.set_label("%.2f m".printf(dalt));
+            dirn_lab.set_label("%.1f °".printf(cse));
+        }
+
         if(Logger.is_logging)
         {
             Logger.raw_gps(lat,lon,0,spd, elev, fix, nsats);
@@ -1616,7 +1561,7 @@ public class GPSInfo : GLib.Object
         return fix;
     }
 
-    public int update(MSP_RAW_GPS g, bool dms)
+    public int update(MSP_RAW_GPS g, bool dms, bool visible)
     {
         lat = g.gps_lat/10000000.0;
         lon = g.gps_lon/10000000.0;
@@ -1633,17 +1578,21 @@ public class GPSInfo : GLib.Object
                            g.gps_numsat);
         }
 
-        var nsatstr = "%d (%sfix)".printf(g.gps_numsat,
-                                          (g.gps_fix==0) ? "no" : "");
+        if(visible)
+        {
+            var nsatstr = "%d (%sfix)".printf(g.gps_numsat,
+                                              (g.gps_fix==0) ? "no" : "");
 
-        nsat_lab.set_label(nsatstr);
-        alt_lab.set_label("%d m".printf(g.gps_altitude));
+            nsat_lab.set_label(nsatstr);
+            alt_lab.set_label("%d m".printf(g.gps_altitude));
 
-        lat_lab.set_label(PosFormat.lat(lat,dms));
-        lon_lab.set_label(PosFormat.lon(lon,dms));
+            lat_lab.set_label(PosFormat.lat(lat,dms));
+            lon_lab.set_label(PosFormat.lon(lon,dms));
 
-        speed_lab.set_label("%.1f m/s".printf(spd));
-        dirn_lab.set_label("%.1f °".printf(cse));
+            speed_lab.set_label("%.1f m/s".printf(spd));
+            dirn_lab.set_label("%.1f °".printf(cse));
+        }
+
         return g.gps_fix;
     }
 

@@ -3,15 +3,13 @@ using Gdl;
 
 class LayMan : Object
 {
-    private DockMaster master;
     private DockLayout layout;
     private string confdir;
     private string layname {get; set; default = ".layout";}
 
-    public LayMan (DockMaster _master, string _confdir, string? name, int count)
+    public LayMan (Dock dock, string _confdir, string? name, int count)
     {
-        master = _master;
-        layout = new DockLayout (master);
+        layout = new DockLayout (dock.master);
         confdir = _confdir;
         var xtest = new LayoutTester();
 
