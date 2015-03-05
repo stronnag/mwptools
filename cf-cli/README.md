@@ -6,6 +6,9 @@ cf-cli
 History: (see github, mwptools :)
 
 
+2015-03-04 : Added simple tool to translate old dump serial setting to
+	     the new 1.8.0+ format [dump-180+.rb](http://www.zen35309.zen.co.uk/cf-cli/dump-180+.rb).
+
 2015-02-23 : Build from latest mwp sources
 	     Add note on legacy device naming (reported by ethomas997)
 	     Make cf-cli more resiliant to slow comms startup e.g. BT

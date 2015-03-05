@@ -1090,6 +1090,7 @@ public class MWPlanner : Gtk.Application {
             dockitem[DOCKLETS.FBOX].iconify_item ();
             lman.save_config();
         }
+        fbox.update(true);
         art_win.run();
     }
 
