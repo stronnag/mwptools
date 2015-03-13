@@ -80,6 +80,10 @@ ARGF.each do |l|
   when /set gps_provider/
     rewrite_serial ports,rates
     puts l
+  when /set roll_pitch_rate = (\d+)/
+    rate=$1.to_i
+    puts "set roll_rate = #{rate}"
+    puts "set pitch_rate = #{rate}"
   else
     puts l
   end
