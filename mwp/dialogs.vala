@@ -20,6 +20,59 @@
 extern void espeak_init(string voice);
 extern void espeak_say(string text);
 
+
+public class Units :  GLib.Object
+{
+    private const string [] dnames = {"m", "ft", "yd","fg"};
+    private const string [] dspeeds = {"m/s", "kph", "mph", "kts", "fg/ft"};
+
+    public static double distance (double d)
+    {
+        switch(MWPlanner.conf.p_distance)
+        {
+            case 1:
+                d *= 3.2808399;
+                break;
+            case 2:
+                d *= 1.0936133;
+                break;
+            case 3: //furlongs
+                d *= 0.0049709695;
+                break;
+        }
+        return d;
+    }
+    public static double speed (double d)
+    {
+        switch(MWPlanner.conf.p_speed)
+        {
+            case 1:
+                d *= 3.6;
+                break;
+            case 2:
+                d *= 2.2369363;
+                break;
+            case 3:
+                d *= 1.9438445;
+                break;
+            case 4: //furlongs / fortnight
+                d *= 6012.8848;
+                break;
+        }
+        return d;
+    }
+
+    public static string distance_units()
+    {
+        return dnames[MWPlanner.conf.p_distance];
+    }
+
+    public static string speed_units()
+    {
+        return dspeeds[MWPlanner.conf.p_speed];
+    }
+}
+
 public class ArtWin : GLib.Object
 {
     public Gtk.Box  box {get; private set;}
@@ -43,15 +96,6 @@ public class ArtWin : GLib.Object
         socket = new Gtk.Socket();
         box.pack_start(socket, true,true,0);
         box.show_all();
-            /*
-        socket.plug_removed.connect(() => {
-                    stderr.printf("Plug removed\n");
-                    return false;
-            });
-        socket.plug_added.connect(() => {
-                stderr.printf("Plug added\n");
-            });
-            */
     }
 
     public void init()
@@ -72,7 +116,6 @@ public class ArtWin : GLib.Object
         tag = io_read.add_watch(IOCondition.IN|IOCondition.HUP|
                                     IOCondition.NVAL|IOCondition.ERR,
                                     plug_read);
-//        stderr.puts("running app\n");
     }
 
     private bool plug_read(IOChannel gio, IOCondition cond)
@@ -86,7 +129,6 @@ public class ArtWin : GLib.Object
             try {
                 gio.read_line (out buf, out length, out terminator_pos);
                 sid = int.parse(buf);
-//                stderr.printf("%s => sockid = %0x\n", buf, sid);
                 socket.add_id((X.Window)sid);
             } catch { }
             ret = true;
@@ -224,23 +266,36 @@ public class FlightBox : GLib.Object
             Gtk.Allocation a;
             vbox.get_allocation(out a);
             var fh1 = a.width/10;
-            var s=PosFormat.lat(GPSInfo.lat,true);
+            var s=PosFormat.lat(GPSInfo.lat,MWPlanner.conf.dms);
             if(fh1 > 96)
                 fh1 = 96;
             big_lat.set_label("<span font='%d'>%s</span>".printf(fh1/2,s));
-            s=PosFormat.lon(GPSInfo.lon,true);
+            s=PosFormat.lon(GPSInfo.lon,MWPlanner.conf.dms);
             big_lon.set_label("<span font='%d'>%s</span>".printf(fh1/2,s));
             var brg = NavStatus.cg.direction;
             if(brg < 0)
                 brg += 360;
             if(NavStatus.recip)
                 brg = ((brg + 180) % 360);
-            big_rng.set_label("Range <span font='%d'>%d</span>m".printf(fh1,NavStatus.cg.range));
+            big_rng.set_label(
+                "Range <span font='%d'>%.0f</span>%s".printf(
+                    fh1,
+                    Units.distance(NavStatus.cg.range),
+                    Units.distance_units()
+                                                           ));
             big_bearing.set_label("Bearing <span font='%d'>%d°</span>".printf(fh1,brg));
             big_hdr.set_label("Heading <span font='%d'>%d°</span>".printf(fh1,NavStatus.hdr));
-            big_alt.set_label("Alt <span font='%d'>%.1f</span>m".printf(fh1,NavStatus.alti.estalt/100.0));
+            big_alt.set_label(
+                "Alt <span font='%d'>%.1f</span>%s".printf(
+                    fh1,
+                    Units.distance(NavStatus.alti.estalt/100.0),
+                    Units.distance_units() ));
 
-            big_spd.set_label("Speed <span font='%d'>%.1f</span>m/s".printf(fh1,GPSInfo.spd));
+            big_spd.set_label(
+                "Speed <span font='%d'>%.0f</span>%s".printf(
+                    fh1,
+                    Units.speed(GPSInfo.spd),
+                    Units.speed_units() ) );
             string sfix = (GPSInfo.fix == 0) ? "no" : "";
             big_sats.set_label("Sats <span font='%d'>%d</span> %sfix".printf(fh1,GPSInfo.nsat,sfix));
         }
@@ -508,7 +563,65 @@ public class PrefsDialog : GLib.Object
 {
     private Gtk.Dialog dialog;
     private Gtk.Entry[]ents = {};
-    private Gtk.CheckButton dmscb;
+    private Gtk.RadioButton[] buttons={};
+
+    private uint pspeed;
+    private uint pdist;
+    private bool pdms;
+
+    private enum Buttons
+    {
+        DDD=0,
+        DMS,
+
+        METRE,
+        FEET,
+        YARDS,
+
+        MSEC,
+        KPH,
+        MPH,
+        KNOTS
+    }
+
+    private void toggled (Gtk.ToggleButton button) {
+        if(button.get_active())
+        {
+            switch(button.label)
+            {
+                case "DDD.dddddd":
+                    pdms = false;
+                    break;
+                case "DDD:MM:SS.s":
+                    pdms = true;
+                    break;
+                case "Metres":
+                    pdist = 0;
+                    break;
+                case "Feet":
+                    pdist = 1;
+                    break;
+                case "Yards":
+                    pdist = 2;
+                    break;
+                case "m/s":
+                    pspeed = 0;
+                    break;
+                case "kph":
+                    pspeed = 1;
+                    break;
+                case "mph":
+                    pspeed = 2;
+                    break;
+                case "knots":
+                    pspeed = 3;
+                    break;
+                default:
+                    stderr.printf("Invalid label %s\n", button.label);
+                    break;
+            }
+        }
+    }
 
     public PrefsDialog(Gtk.Builder builder)
     {
@@ -519,8 +632,33 @@ public class PrefsDialog : GLib.Object
             var e = builder.get_object (id) as Gtk.Entry;
             ents += e;
         }
+
+        Gtk.RadioButton button;
+        string [] pnames = {
+            "uprefs-ddd", "uprefs-dms",
+            "uprefs-metre", "uprefs-feet", "uprefs-yards",
+            "uprefs-msec", "uprefs-kph", "uprefs-mph", "uprefs-knots"
+        };
+
+        foreach(var s in pnames)
+        {
+            button = builder.get_object (s) as Gtk.RadioButton;
+            button.toggled.connect (toggled);
+            buttons += button;
+        }
+
         dialog.set_default_size (640, 320);
-        dmscb = builder.get_object ("checkbutton3") as Gtk.CheckButton;
+
+        var content = dialog.get_content_area () as Gtk.Box;
+        Gtk.Notebook notebook = new Gtk.Notebook ();
+        content.pack_start (notebook, false, true, 0);
+        content.spacing = 4;
+
+        var gprefs = builder.get_object ("gprefs") as Gtk.Box;
+        var uprefs = builder.get_object ("uprefs") as Gtk.Box;
+
+        notebook.append_page(gprefs,new Gtk.Label("General"));
+        notebook.append_page(uprefs,new Gtk.Label("Units"));
     }
 
     public void run_prefs(ref MWPSettings conf)
@@ -545,7 +683,14 @@ public class PrefsDialog : GLib.Object
         ents[6].set_text(conf.defmap);
         ents[7].set_text("%u".printf(conf.zoom));
         ents[8].set_text("%u".printf(conf.speakint));
-        dmscb.set_active(conf.dms);
+
+        if(conf.dms)
+            buttons[Buttons.DMS].set_active(true);
+        else
+            buttons[Buttons.DDD].set_active(true);
+
+        buttons[conf.p_distance + Buttons.METRE].set_active(true);
+        buttons[conf.p_speed + Buttons.MSEC].set_active(true);
 
         dialog.show_all ();
         var id = dialog.run();
@@ -605,11 +750,22 @@ public class PrefsDialog : GLib.Object
                 {
                     conf.settings.set_uint("default-zoom", u);
                 }
-                bool pdms = dmscb.active;
+
                 if(conf.dms != pdms)
                 {
-                    conf.settings.set_boolean("display-dms",pdms);
+                    conf.settings.set_boolean("display-dms", pdms);
                 }
+
+                if(conf.p_distance != pdist)
+                {
+                    conf.settings.set_uint("display-distance", pdist);
+                }
+
+                if(conf.p_speed != pspeed)
+                {
+                    conf.settings.set_uint("display-speed", pspeed);
+                }
+
                 str = ents[8].get_text();
                 u=int.parse(str);
                 if(u > 0 && conf.speakint < 15)
@@ -979,7 +1135,11 @@ public class NavStatus : GLib.Object
             double estalt = alti.estalt/100.0;
             if(visible)
             {
-                var str = "%.2fm / %.1fm/s".printf(estalt, vario);
+                var str = "%.1f%s / %.1f%s".printf(
+                    Units.distance(estalt),
+                    Units.distance_units(),
+                    Units.speed(vario),
+                    Units.speed_units());
                 nav_altitude_label.set_label(str);
             }
             if(Logger.is_logging)
@@ -1001,8 +1161,10 @@ public class NavStatus : GLib.Object
 
             if(visible)
             {
-                var str = "%dm / %d° / %s".printf(
-                    cg.range, brg,
+                var str = "%.0f%s / %d° / %s".printf(
+                    Units.distance(cg.range),
+                    Units.distance_units(),
+                    brg,
                     (cg.update == 0) ? "false" : "true");
                 nav_comp_gps_label.set_label(str);
             }
@@ -1245,15 +1407,17 @@ public class AudioThread : Object {
                                 brg += 360;
                             if(NavStatus.recip)
                                 brg = ((brg + 180) % 360);
-                            s = "Range %d, bearing %d.".printf(NavStatus.cg.range, brg);
+                            s = "Range %.0f, bearing %d.".printf(
+                                Units.distance(NavStatus.cg.range),
+                                brg);
                             break;
                         case Vox.ELEVATION:
-                            s = "Elevation %d.".printf(GPSInfo.elev);
+                            s = "Elevation %.0f.".printf(Units.distance(GPSInfo.elev));
                             s = str_zero(s);
                             break;
                         case Vox.BARO:
                             double estalt = (double)NavStatus.alti.estalt/100.0;
-                            s  = "Altitude %.1f.".printf(estalt);
+                            s  = "Altitude %.1f.".printf(Units.distance(estalt));
                             s = str_zero(s);
                             break;
                         case Vox.HEADING:
@@ -1549,8 +1713,13 @@ public class GPSInfo : GLib.Object
             nsat_lab.set_label(nsatstr);
             lat_lab.set_label(PosFormat.lat(lat,dms));
             lon_lab.set_label(PosFormat.lon(lon,dms));
-            speed_lab.set_label("%.0f m/s".printf(spd));
-            alt_lab.set_label("%.2f m".printf(dalt));
+            speed_lab.set_label(
+                "%.0f %s".printf(
+                    Units.speed(spd), Units.speed_units()
+                                 ));
+            alt_lab.set_label("%.1f %s".printf(
+                                  Units.distance(dalt), Units.distance_units()));
+
             dirn_lab.set_label("%.1f °".printf(cse));
         }
 
@@ -1584,12 +1753,18 @@ public class GPSInfo : GLib.Object
                                               (g.gps_fix==0) ? "no" : "");
 
             nsat_lab.set_label(nsatstr);
-            alt_lab.set_label("%d m".printf(g.gps_altitude));
+            alt_lab.set_label("%0.f %s".printf(
+                                  Units.distance(g.gps_altitude),
+                                  Units.distance_units()
+                                               ));
 
             lat_lab.set_label(PosFormat.lat(lat,dms));
             lon_lab.set_label(PosFormat.lon(lon,dms));
 
-            speed_lab.set_label("%.1f m/s".printf(spd));
+            speed_lab.set_label("%.1f %s".printf(
+                                    Units.speed(spd),
+                                    Units.speed_units()
+                                    ));
             dirn_lab.set_label("%.1f °".printf(cse));
         }
 

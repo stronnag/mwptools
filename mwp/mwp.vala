@@ -147,7 +147,7 @@ public class MWPlanner : Gtk.Application {
     private Gtk.MenuItem menuncfg;
     private Gtk.MenuItem menumwvar;
 
-    public MWPSettings conf;
+    public static MWPSettings conf;
     private MWSerial msp;
     private Gtk.Button conbutton;
     private Gtk.ComboBoxText dev_entry;

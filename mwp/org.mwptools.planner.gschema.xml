@@ -206,5 +206,16 @@
       <description>Default layout name. If not set, .layout is used.</description>
     </key>
 
+    <key name="display-distance" type="u">
+      <default>0</default>
+      <summary>Distance units</summary>
+      <description>0=metres, 1=feet, 2=yards</description>
+    </key>
+
+    <key name="display-speed" type="u">
+      <default>0</default>
+      <summary>Speed units</summary>
+      <description>0=metres/sec, 1=kilometres/hour, 2=miles/hour, 3=knots</description>
+    </key>
   </schema>
 </schemalist>

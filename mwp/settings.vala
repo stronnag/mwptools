@@ -55,6 +55,8 @@ public class MWPSettings : GLib.Object
     public uint polltimeout {get; set; default=500;}
     public string quaduri {get; private set; }
     public string deflayout {get; private set; }
+    public uint p_distance {get; set; default=0;}
+    public uint p_speed {get; set; default=0;}
 
     public MWPSettings()
     {
@@ -164,6 +166,20 @@ public class MWPSettings : GLib.Object
             if(deflayout == "")
                 deflayout = null;
         }
+
+        if(s == null || s == "display-distance")
+        {
+            p_distance = settings.get_uint("display-distance");
+            if(p_distance > 2)
+                p_distance = 0;
+        }
+
+        if(s == null || s == "display-speed")
+        {
+            p_speed = settings.get_uint("display-speed");
+            if(p_speed > 3)
+                p_distance = 0;
+        }
     }
 
     public void save_settings()
@@ -180,6 +196,8 @@ public class MWPSettings : GLib.Object
             settings.set_uint("default-zoom", zoom);
             settings.set_boolean("display-dms",dms);
             settings.set_uint("speak-interval",speakint);
+            settings.set_uint("display-distance", p_distance);
+            settings.set_uint("display-speed", p_speed);
         }
         else
         {

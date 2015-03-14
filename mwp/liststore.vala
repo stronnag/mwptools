@@ -320,7 +320,8 @@ public class ListBox : GLib.Object
                             list_model.set_value (iter_val, WY_Columns.ALT, 0);
                             break;
                         case MSP.Action.LAND:
-                            list_model.set_value (iter_val, WY_Columns.ALT, mp.conf.altitude);
+                            list_model.set_value (iter_val, WY_Columns.ALT,
+                                                  MWPlanner.conf.altitude);
                             break;
                         case MSP.Action.SET_HEAD:
                             list_model.set_value (iter_val, WY_Columns.LAT, 0.0);
@@ -349,11 +350,11 @@ public class ListBox : GLib.Object
                 Value v;
                 model.get_value(iter, WY_Columns.LAT, out v);
                 double val = (double)v;
-                string s = PosFormat.lat(val,mp.conf.dms);
+                string s = PosFormat.lat(val,MWPlanner.conf.dms);
                 _cell.set_property("text",s);
             });
 
-        cell.set_property ("editable", (mp.conf.dms == false));
+        cell.set_property ("editable", (MWPlanner.conf.dms == false));
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
                 list_validate(path,new_text,
                               WY_Columns.LAT,-90.0,90.0,false);
@@ -369,11 +370,11 @@ public class ListBox : GLib.Object
                 Value v;
                 model.get_value(iter, WY_Columns.LON, out v);
                 double val = (double)v;
-                string s = PosFormat.lon(val,mp.conf.dms);
+                string s = PosFormat.lon(val,MWPlanner.conf.dms);
                 _cell.set_property("text",s);
             });
 
-        cell.set_property ("editable", (mp.conf.dms == false));
+        cell.set_property ("editable", (MWPlanner.conf.dms == false));
 
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
                 list_validate(path,new_text,
@@ -861,8 +862,11 @@ public class ListBox : GLib.Object
             var res = calc_mission_dist(out d, out lt);
             if (res == true)
             {
-                var et = (int)(d / mp.conf.nav_speed);
-                 route = "Distance: %.0fm, fly: %ds, loiter: %ds".printf(d,et,lt);
+                var et = (int)(d / MWPlanner.conf.nav_speed);
+                route = "Distance: %.0f%s, fly: %ds, loiter: %ds".printf(
+                    Units.distance(d),
+                    Units.distance_units(),
+                    et,lt);
             }
             else
                 route = "Indeterminate distance";
