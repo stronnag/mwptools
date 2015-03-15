@@ -58,6 +58,8 @@ public class MWPSettings : GLib.Object
     public uint p_distance {get; set; default=0;}
     public uint p_speed {get; set; default=0;}
 
+    public signal void settings_update (string s);
+
     public MWPSettings()
     {
         string?[] devs;
@@ -76,6 +78,7 @@ public class MWPSettings : GLib.Object
             settings.changed.connect ((s) => {
                     MWPLog.message("changed %s settings\n",s);
                     read_settings(s);
+                    settings_update(s);
                 });
         } catch {
             MWPLog.message("No settings schema\n");

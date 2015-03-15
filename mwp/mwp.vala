@@ -672,16 +672,6 @@ public class MWPlanner : Gtk.Application {
         mi.activate.connect(() => {
                 lman.restore();
             });
-/**
-        mi =  builder.get_object ("lm_remove") as Gtk.MenuItem;
-        mi.activate.connect(() => {
-                lman.remove();
-            });
-        mi =  builder.get_object ("lm_clear") as Gtk.MenuItem;
-        mi.activate.connect(() => {
-                lman.clear();
-            });
-**/
         embed = new GtkChamplain.Embed();
         view = embed.get_view();
         view.set_reactive(true);
@@ -697,10 +687,31 @@ public class MWPlanner : Gtk.Application {
             });
 
         var ent = builder.get_object ("entry1") as Gtk.Entry;
-        ent.set_text(conf.altitude.to_string());
+        var al = Units.distance((double)conf.altitude);
+        ent.set_text("%.0f".printf(al));
 
-        ent = builder.get_object ("entry2") as Gtk.Entry;
-        ent.set_text(conf.loiter.to_string());
+        conf.settings_update.connect ((s) => {
+                if( s == "display-distance" || s == "default-altitude")
+                {
+                    al = Units.distance((double)conf.altitude);
+                    ent.set_text("%.0f".printf(al));
+                }
+                if (s == "display-dms" ||
+                    s == "default-latitude" ||
+                    s == "default-longitide")
+                    anim_cb(true);
+
+
+                if(s == "display-dms" ||
+                    s == "display-distance" ||
+                    s == "display-speed")
+                {
+                    fbox.update(item_visible(DOCKLETS.FBOX));
+                }
+            });
+
+        var ent1 = builder.get_object ("entry2") as Gtk.Entry;
+        ent1.set_text(conf.loiter.to_string());
 
         var scale = new Champlain.Scale();
         scale.connect_view(view);
@@ -2547,12 +2558,12 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-    private void anim_cb()
+    private void anim_cb(bool forced=false)
     {
         var x = view.get_center_longitude();
         var y = view.get_center_latitude();
 
-        if (lx !=  x && ly != y)
+        if (forced || (lx !=  x && ly != y))
         {
             poslabel.set_text(PosFormat.pos(y,x,conf.dms));
             lx = x;

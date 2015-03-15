@@ -589,7 +589,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="halign">start</property>
-                    <property name="label" translatable="yes">Def. Alt (m):</property>
+                    <property name="label" translatable="yes">Def. Alt:</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -602,6 +602,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="halign">start</property>
+                    <property name="editable">False</property>
                     <property name="width_chars">6</property>
                     <property name="secondary_icon_tooltip_text" translatable="yes">Default altitude value (m)</property>
                     <property name="input_purpose">number</property>
@@ -630,6 +631,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="halign">start</property>
+                    <property name="editable">False</property>
                     <property name="width_chars">6</property>
                     <property name="secondary_icon_tooltip_text" translatable="yes">Default loiter time (secs)</property>
                     <property name="input_purpose">number</property>
@@ -1470,7 +1472,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="can_focus">False</property>
             <property name="tooltip_text" translatable="yes">Default latitude for the centre of the map (decimal degrees)</property>
             <property name="xalign">0</property>
-            <property name="label" translatable="yes">Default latitude (dd)</property>
+            <property name="label" translatable="yes">Default latitude</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -1483,7 +1485,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="can_focus">False</property>
             <property name="tooltip_text" translatable="yes">Default longitude for the centre of the map  (decimal degrees)</property>
             <property name="halign">start</property>
-            <property name="label" translatable="yes">Default longitude (dd)</property>
+            <property name="label" translatable="yes">Default longitude</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -1509,7 +1511,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="can_focus">False</property>
             <property name="tooltip_text" translatable="yes">Default altitude (metres)</property>
             <property name="xalign">0</property>
-            <property name="label" translatable="yes">Default altitude (m)</property>
+            <property name="label" translatable="yes">Default altitude</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -1522,7 +1524,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="can_focus">False</property>
             <property name="tooltip_text" translatable="yes">Default navigation speed (m/s). Used only for flight time estimation</property>
             <property name="halign">start</property>
-            <property name="label" translatable="yes">Default nav speed (m/s)</property>
+            <property name="label" translatable="yes">Default nav speed</property>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -3102,7 +3104,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               <object class="GtkLabel" id="shp_label2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Radial range (m)</property>
+                <property name="label" translatable="yes">Radial range</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -3146,7 +3148,6 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
                 <property name="text" translatable="yes">25</property>
                 <property name="input_purpose">digits</property>
                 <property name="adjustment">shp_adjustment2</property>
-                <property name="value">25</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>

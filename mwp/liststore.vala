@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
@@ -64,6 +63,11 @@ public class ListBox : GLib.Object
     public ListBox()
     {
         purge=false;
+        MWPlanner.conf.settings_update.connect((s) => {
+                if(s == "display-distance" ||
+                   s == "default-nav-speed")
+                    calc_mission();
+            });
     }
 
     public void import_mission(Mission ms)
@@ -321,6 +325,7 @@ public class ListBox : GLib.Object
                             break;
                         case MSP.Action.LAND:
                             list_model.set_value (iter_val, WY_Columns.ALT,
+                                                  /*FIXME*/
                                                   MWPlanner.conf.altitude);
                             break;
                         case MSP.Action.SET_HEAD:
@@ -354,7 +359,7 @@ public class ListBox : GLib.Object
                 _cell.set_property("text",s);
             });
 
-        cell.set_property ("editable", (MWPlanner.conf.dms == false));
+        cell.set_property ("editable", true);
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
                 list_validate(path,new_text,
                               WY_Columns.LAT,-90.0,90.0,false);
@@ -374,7 +379,7 @@ public class ListBox : GLib.Object
                 _cell.set_property("text",s);
             });
 
-        cell.set_property ("editable", (MWPlanner.conf.dms == false));
+        cell.set_property ("editable", true);
 
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
                 list_validate(path,new_text,
@@ -383,11 +388,21 @@ public class ListBox : GLib.Object
 
 
         cell = new Gtk.CellRendererText ();
-        cell.set_property ("editable", true);
         view.insert_column_with_attributes (-1, "Alt.",
                                             cell,
                                             "text", WY_Columns.ALT);
 
+        col = view.get_column(WY_Columns.ALT);
+        col.set_cell_data_func(cell, (col,_cell,model,iter) => {
+                Value v;
+                model.get_value(iter, WY_Columns.ALT, out v);
+                double val = (int)v;
+                long l = Math.lround(Units.distance(val));
+                string s = "%ld".printf(l);
+                _cell.set_property("text",s);
+            });
+
+        cell.set_property ("editable", true);
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
                 list_validate(path,new_text,
                               WY_Columns.ALT,0.0,1000.0,true);
@@ -498,7 +513,22 @@ public class ListBox : GLib.Object
 
         list_model.get_iter (out iter_val, new Gtk.TreePath.from_string (path));
         double d;
-        d = get_locale_double(new_text);
+        switch(colno)
+        {
+            case  WY_Columns.LAT:
+                d = InputParser.get_latitude(new_text);
+                break;
+            case  WY_Columns.LON:
+                d = InputParser.get_longitude(new_text);
+                break;
+            case  WY_Columns.ALT:
+                d = InputParser.get_scaled_real(new_text);
+                break;
+            default:
+                d = get_locale_double(new_text);
+                break;
+        }
+
         if (d <= maxval && d >= minval)
         {
             if (as_int == true)
@@ -653,8 +683,7 @@ public class ListBox : GLib.Object
     public void insert_item(MSP.Action typ, double lat, double lon)
     {
         Gtk.TreeIter iter;
-        Gtk.Entry ent = mp.builder.get_object ("entry1") as Gtk.Entry;
-        var dalt = int.parse(ent.get_text());
+        var dalt = MWPlanner.conf.altitude;
         lastid++;
         list_model.append(out iter);
         list_model.set (iter,
@@ -806,8 +835,7 @@ public class ListBox : GLib.Object
 
     public void set_alts(bool flag)
     {
-        Gtk.Entry ent = mp.builder.get_object ("entry1") as Gtk.Entry;
-        var dalt = int.parse(ent.get_text());
+        var dalt = MWPlanner.conf.altitude;
 
         foreach (var t in get_selected_refs())
         {
@@ -953,7 +981,6 @@ public class ListBox : GLib.Object
                        continue;
                     }
                     Geo.csedist(ly,lx,cy,cx, out dx, out cse);
-//                    stdout.printf("WP %d %.1f %.0f %.1f\n", arry[lastn].no,dx*1852.0, cse, d*1852);
                     Value cell;
                     Gtk.TreeIter xiter;
                     var path = new Gtk.TreePath.from_indices (arry[lastn].no - 1);
@@ -962,13 +989,14 @@ public class ListBox : GLib.Object
                     list_model.get_value (xiter, WY_Columns.TIP, out cell);
                     if((string)cell == null)
                     {
-//                    list_model.get_value (xiter, WY_Columns.IDX, out cell);
-//                    stdout.printf ("%s: %s\n", path.to_string (), (string) cell);
-                        string hint;
-                        hint = "Dist %.1fm, to WP %d => %.1fm, %.0f°".printf(
-                            d*1852,
+                        string hint; // CVT
+                        hint = "Dist %.1f%s, to WP %d => %.1f%s, %.0f°".printf(
+                            Units.distance(d*1852),
+                            Units.distance_units(),
                             arry[n].no,
-                            dx*1852.0, cse);
+                            Units.distance(dx*1852.0),
+                            Units.distance_units(),
+                            cse);
                         list_model.set_value (xiter, WY_Columns.TIP, hint);
                     }
 

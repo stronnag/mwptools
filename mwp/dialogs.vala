@@ -62,6 +62,13 @@ public class Units :  GLib.Object
         return d;
     }
 
+    public static double va_speed (double d)
+    {
+        if (MWPlanner.conf.p_speed > 1)
+                d *= 3.2808399; // ft/sec
+        return d;
+    }
+
     public static string distance_units()
     {
         return dnames[MWPlanner.conf.p_distance];
@@ -70,6 +77,11 @@ public class Units :  GLib.Object
     public static string speed_units()
     {
         return dspeeds[MWPlanner.conf.p_speed];
+    }
+
+    public static string va_speed_units()
+    {
+        return (MWPlanner.conf.p_speed > 1) ? "ft/s" : "m/s";
     }
 }
 
@@ -292,7 +304,7 @@ public class FlightBox : GLib.Object
                     Units.distance_units() ));
 
             big_spd.set_label(
-                "Speed <span font='%d'>%.0f</span>%s".printf(
+                "Speed <span font='%d'>%.1f</span>%s".printf(
                     fh1,
                     Units.speed(GPSInfo.spd),
                     Units.speed_units() ) );
@@ -492,7 +504,7 @@ public class DeltaDialog : GLib.Object
             case 1001:
                 dlat = get_locale_double(dlt_entry1.get_text());
                 dlon = get_locale_double(dlt_entry2.get_text());
-                dalt = int.parse(dlt_entry3.get_text());
+                dalt = (int)InputParser.get_scaled_int(dlt_entry3.get_text());
                 res = true;
                 break;
 
@@ -527,8 +539,8 @@ public class SetPosDialog : GLib.Object
         switch(id)
         {
             case 1001:
-                glat = get_locale_double(lat_entry.get_text());
-                glon = get_locale_double(lon_entry.get_text());
+                glat = InputParser.get_latitude(lat_entry.get_text());
+                glon = InputParser.get_longitude(lon_entry.get_text());
                 res = true;
                 break;
 
@@ -675,11 +687,18 @@ public class PrefsDialog : GLib.Object
             sb.truncate (sb.len - delimiter.length);
             ents[0].set_text(sb.str);
         }
-        ents[1].set_text("%.6f".printf(conf.latitude));
-        ents[2].set_text("%.6f".printf(conf.longitude));
+
+        string dp;
+        dp = PosFormat.lat(conf.latitude, conf.dms);
+        ents[1].set_text(dp);
+        dp = PosFormat.lon(conf.longitude, conf.dms);
+        ents[2].set_text(dp);
         ents[3].set_text("%u".printf(conf.loiter));
-        ents[4].set_text("%u".printf(conf.altitude));
-        ents[5].set_text("%.2f".printf(conf.nav_speed));
+
+        var al = Units.distance((double)conf.altitude);
+        ents[4].set_text("%.0f".printf(al));
+        al = Units.speed(conf.nav_speed);
+        ents[5].set_text("%.2f".printf(al));
         ents[6].set_text(conf.defmap);
         ents[7].set_text("%u".printf(conf.zoom));
         ents[8].set_text("%u".printf(conf.speakint));
@@ -710,13 +729,14 @@ public class PrefsDialog : GLib.Object
                     conf.settings.set_strv( "device-names", strs);
                 }
                 str = ents[1].get_text();
-                d=get_locale_double(str);
-                if(conf.latitude != d)
+                d=InputParser.get_latitude(str);
+                if(Math.fabs(conf.latitude - d) > 1e-5)
                 {
                     conf.settings.set_double("default-latitude", d);
                 }
                 str = ents[2].get_text();
-                d=get_locale_double(str);
+                d=InputParser.get_longitude(str);
+                if(Math.fabs(conf.longitude - d) > 1e-5)
                 if(conf.longitude != d)
                 {
                     conf.settings.set_double("default-longitude", d);
@@ -728,14 +748,14 @@ public class PrefsDialog : GLib.Object
                     conf.settings.set_uint("default-loiter", u);
                 }
                 str = ents[4].get_text();
-                u=int.parse(str);
+                u = (uint)InputParser.get_scaled_int(str);
                 if(conf.altitude != u)
                 {
                     conf.settings.set_uint("default-altitude", u);
                 }
                 str = ents[5].get_text();
-                d=get_locale_double(str);
-                if(conf.nav_speed != d)
+                d = InputParser.get_scaled_real(str, "s");
+                if(Math.fabs(conf.nav_speed -d) > 0.1)
                 {
                     conf.settings.set_double("default-nav-speed", d);
                 }
@@ -810,6 +830,7 @@ public class ShapeDialog : GLib.Object
         spin2  = builder.get_object ("shp_spinbutton2") as Gtk.SpinButton;
         spin3  = builder.get_object ("shp_spinbutton3") as Gtk.SpinButton;
         combo  = builder.get_object ("shp-combo") as Gtk.ComboBoxText;
+        spin2.adjustment.value = 0;
     }
 
     public ShapePoint[] get_points(double clat, double clon)
@@ -830,6 +851,7 @@ public class ShapeDialog : GLib.Object
                 if(dtext != null)
                     dirn = int.parse(dtext);
 
+                radius = InputParser.get_scaled_real(radius.to_string());
                 if(radius > 0)
                 {
                     radius /= 1852.0;
@@ -1138,8 +1160,8 @@ public class NavStatus : GLib.Object
                 var str = "%.1f%s / %.1f%s".printf(
                     Units.distance(estalt),
                     Units.distance_units(),
-                    Units.speed(vario),
-                    Units.speed_units());
+                    Units.va_speed(vario),
+                    Units.va_speed_units());
                 nav_altitude_label.set_label(str);
             }
             if(Logger.is_logging)
