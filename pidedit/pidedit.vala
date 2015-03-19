@@ -52,14 +52,14 @@ public class PIDEdit : Object
     private uint t_vers;
     private uint t_misc;
     private uint t_status;
-    private uint t_select;
     private bool have_pids;
     private bool have_vers;
     private bool have_rc;
+    private bool have_rccf;
     private bool have_status;
     private bool have_misc;
     private MSP_MISC misc;
-    private MSP_RC_TUNING rt;
+    private MSP_RC_TUNING_CF rt;
     private Gtk.Entry eminthr;
     private Gtk.Entry emagdec;
     private Gtk.Entry evbatscale;
@@ -69,11 +69,13 @@ public class PIDEdit : Object
 
     private Gtk.Entry rcrate_entry;
     private Gtk.Entry rcexpo_entry;
-    private Gtk.Entry prrate_entry;
+    private Gtk.Entry rollrate_entry;
+    private Gtk.Entry pitchrate_entry;
     private Gtk.Entry yawrate_entry;
     private Gtk.Entry dynthr_entry;
     private Gtk.Entry thrmid_entry;
     private Gtk.Entry threxpro_entry;
+    private Gtk.Entry tpabreak_entry;
     private uint8 icount;
     private uint8 profile;
 
@@ -129,11 +131,27 @@ public class PIDEdit : Object
     {
         rt.rc_rate = (uint8)(100*get_locale_double(rcrate_entry.get_text()));
         rt.rc_expo = (uint8)(100*get_locale_double(rcexpo_entry.get_text()));
-        rt.rollpitchrate = (uint8)(100*get_locale_double(prrate_entry.get_text()));
+        rt.rollrate = (uint8)(100*get_locale_double(rollrate_entry.get_text()));
+        if(have_rccf)
+        {
+            var s = pitchrate_entry.get_text();
+            if (s != null && s.length > 0)
+            {
+                rt.pitchrate = (uint8)(100*get_locale_double(s));
+            }
+            else
+                rt.pitchrate = rt.rollrate ;
+            rt.tpa_breakpoint = (uint16)(int.parse(tpabreak_entry.get_text()));
+        }
+        else
+        {
+            rt.pitchrate = rt.rollrate ;
+        }
         rt.yawrate = (uint8)(100*get_locale_double(yawrate_entry.get_text()));
         rt.dynthrpid = (uint8)(100*get_locale_double(dynthr_entry.get_text()));
         rt.throttle_mid = (uint8)(100*get_locale_double(thrmid_entry.get_text()));
         rt.throttle_expo = (uint8)(100*get_locale_double(threxpro_entry.get_text()));
+
     }
 
     private void save_file()
@@ -213,7 +231,20 @@ public class PIDEdit : Object
                 set_misc_ui(false);
                 rt.rc_rate = (uint8)root_object.get_int_member ("rc_rate");
                 rt.rc_expo = (uint8)root_object.get_int_member ("rc_expo");
-                rt.rollpitchrate = (uint8)root_object.get_int_member ("rollpitchrate");
+                if(root_object.has_member("rollpitchrate"))
+                {
+                    rt.rollrate = (uint8)root_object.get_int_member ("rollpitchrate");
+                    if(have_rccf)
+                    {
+                        rt.pitchrate = rt.rollrate;
+                    }
+                }
+                else if(root_object.has_member("rollrate"))
+                {
+                    rt.rollrate = (uint8)root_object.get_int_member ("rollrate");
+                    rt.pitchrate = (uint8)root_object.get_int_member ("pitchrate");
+                    rt.tpa_breakpoint = (uint16)root_object.get_int_member ("tpa_breakpoint");
+                }
                 rt.yawrate = (uint8)root_object.get_int_member ("yawrate");
                 rt.dynthrpid = (uint8)root_object.get_int_member ("dynthrpid");
                 rt.throttle_mid =(uint8)root_object.get_int_member ("throttle_mid");
@@ -277,8 +308,22 @@ public class PIDEdit : Object
          builder.add_int_value (rt.rc_rate);
          builder.set_member_name ("rc_expo");
          builder.add_int_value (rt.rc_expo);
-         builder.set_member_name ("rollpitchrate");
-         builder.add_int_value (rt.rollpitchrate);
+             /* check for CF names and save accordingly */
+
+         if(have_rccf)
+         {
+             builder.set_member_name ("rollrate");
+             builder.add_int_value (rt.rollrate);
+             builder.set_member_name ("pitchrate");
+             builder.add_int_value (rt.pitchrate);
+             builder.set_member_name ("tpa_breakpoint");
+             builder.add_int_value (rt.tpa_breakpoint);
+         }
+         else
+         {
+             builder.set_member_name ("rollpitchrate");
+             builder.add_int_value (rt.rollrate);
+         }
          builder.set_member_name ("yawrate");
          builder.add_int_value (rt.yawrate);
          builder.set_member_name ("dynthrpid");
@@ -355,7 +400,17 @@ public class PIDEdit : Object
 
         rcrate_entry.set_text("%.2f".printf(rt.rc_rate/100.0));
         rcexpo_entry.set_text("%.2f".printf(rt.rc_expo/100.0));
-        prrate_entry.set_text("%.2f".printf(rt.rollpitchrate/100.0));
+        rollrate_entry.set_text("%.2f".printf(rt.rollrate/100.0));
+        if(have_rccf)
+        {
+            pitchrate_entry.set_text("%.2f".printf(rt.pitchrate/100.0));
+            tpabreak_entry.set_text("%u".printf(rt.tpa_breakpoint));
+        }
+        else
+        {
+            pitchrate_entry.sensitive=false;
+            tpabreak_entry.sensitive=false;
+        }
         yawrate_entry.set_text("%.2f".printf(rt.yawrate /100.0));
         dynthr_entry.set_text("%.2f".printf(rt.dynthrpid /100.0));
         thrmid_entry.set_text("%.2f".printf(rt.throttle_mid /100.0));
@@ -406,16 +461,19 @@ public class PIDEdit : Object
         return (rp - &tbuf[0]);
     }
 
-    private size_t serialise_rt(MSP_RC_TUNING rt, uint8 [] tbuf)
+    private size_t serialise_rt(MSP_RC_TUNING_CF rt, uint8 [] tbuf)
     {
         uint8 *rp = tbuf;
         *rp++ = rt.rc_rate;
         *rp++ = rt.rc_expo;
-        *rp++ = rt.rollpitchrate;
+        *rp++ = rt.rollrate;
+        if(have_rccf)
+            *rp++ = rt.pitchrate;
         *rp++ = rt.yawrate;
         *rp++ = rt.dynthrpid;
         *rp++ = rt.throttle_mid;
         *rp++ = rt.throttle_expo;
+        rp = serialise_u16(rp,rt.tpa_breakpoint);
         return (rp - &tbuf[0]);
     }
 
@@ -462,11 +520,14 @@ public class PIDEdit : Object
 
         rcrate_entry = builder.get_object ("rcrate_entry") as Gtk.Entry;
         rcexpo_entry = builder.get_object ("rcexpo_entry") as Gtk.Entry;
-        prrate_entry = builder.get_object ("prrate_entry") as Gtk.Entry;
+        rollrate_entry = builder.get_object ("rollrate_entry") as Gtk.Entry;
+        pitchrate_entry = builder.get_object ("pitchrate_entry") as Gtk.Entry;
         yawrate_entry = builder.get_object ("yawrate_entry") as Gtk.Entry;
         dynthr_entry = builder.get_object ("dynthr_entry") as Gtk.Entry;
         thrmid_entry = builder.get_object ("thrmid_entry") as Gtk.Entry;
         threxpro_entry = builder.get_object ("threxpro_entry") as Gtk.Entry;
+        tpabreak_entry = builder.get_object ("tpabreak_entry") as Gtk.Entry;
+
 
         foreach (var p in ps)
         {
@@ -542,11 +603,17 @@ public class PIDEdit : Object
                         uint8 *rp = raw;
                         rt.rc_rate = *rp++;
                         rt.rc_expo = *rp++;
-                        rt.rollpitchrate = *rp++;
+                        rt.rollrate = *rp++;
+                        if(len == 10)
+                        {
+                            have_rccf = true;
+                            rt.pitchrate = *rp++;
+                        }
                         rt.yawrate = *rp++;
                         rt.dynthrpid = *rp++;
                         rt.throttle_mid = *rp++;
-                        rt.throttle_expo = *rp;
+                        rt.throttle_expo = *rp++;
+                        rp = deserialise_u16(rp, out rt.tpa_breakpoint);
                         set_rc_tuning();
                         t_pids = add_cmd(MSP.Cmds.PID,null,0);
                     }
@@ -563,7 +630,15 @@ public class PIDEdit : Object
                     break;
 
                     case MSP.Cmds.SELECT_SETTING:
+                    have_rc = false;
                     t_rc = add_cmd(MSP.Cmds.RC_TUNING,null,0);
+                    break;
+
+                    case MSP.Cmds.SET_PID:
+                    case MSP.Cmds.SET_MISC:
+                    case MSP.Cmds.SET_RC_TUNING:
+                    case MSP.Cmds.EEPROM_WRITE:
+                        /* acks */
                     break;
 
                     default:

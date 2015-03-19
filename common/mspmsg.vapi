@@ -118,6 +118,21 @@ public struct MSP_RC_TUNING
 }
 
 [CCode (cheader_filename = "../common/mspmsg.h")]
+public struct MSP_RC_TUNING_CF
+{
+    public uint8 rc_rate;
+    public uint8 rc_expo;
+    public uint8 rollrate;
+    public uint8 pitchrate;
+    public uint8 yawrate;
+    public uint8 dynthrpid;
+    public uint8 throttle_mid;
+    public uint8 throttle_expo;
+    public uint16 tpa_breakpoint;
+}
+
+
+[CCode (cheader_filename = "../common/mspmsg.h")]
 public struct MSP_RADIO
 {
     public uint16 rxerrors;

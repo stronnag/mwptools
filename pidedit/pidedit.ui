@@ -624,7 +624,7 @@
               <object class="GtkLabel" id="rpratelat">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Roll/Pitch Rate</property>
+                <property name="label" translatable="yes">Roll (+Pitch) Rate</property>
               </object>
               <packing>
                 <property name="left_attach">5</property>
@@ -632,7 +632,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="prrate_entry">
+              <object class="GtkEntry" id="rollrate_entry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="input_purpose">number</property>
@@ -675,28 +675,6 @@
               <packing>
                 <property name="left_attach">7</property>
                 <property name="top_attach">14</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="yawratelab">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Yaw Rate</property>
-              </object>
-              <packing>
-                <property name="left_attach">5</property>
-                <property name="top_attach">15</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkEntry" id="yawrate_entry">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="input_purpose">digits</property>
-              </object>
-              <packing>
-                <property name="left_attach">6</property>
-                <property name="top_attach">15</property>
               </packing>
             </child>
             <child>
@@ -887,16 +865,70 @@
               </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkEntry" id="yawrate_entry">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">digits</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">14</property>
+              </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkLabel" id="yawratelab">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Yaw Rate</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">14</property>
+              </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkLabel" id="label21">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Pitch Rate (CF)</property>
+              </object>
+              <packing>
+                <property name="left_attach">5</property>
+                <property name="top_attach">15</property>
+              </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkEntry" id="pitchrate_entry">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">number</property>
+              </object>
+              <packing>
+                <property name="left_attach">6</property>
+                <property name="top_attach">15</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label22">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">TPA Breakpoint</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">15</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="tpabreak_entry">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">number</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">15</property>
+              </packing>
             </child>
             <child>
               <placeholder/>

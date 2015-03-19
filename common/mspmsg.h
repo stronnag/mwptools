@@ -140,6 +140,20 @@ struct __attribute__ ((__packed__))  _msp_rc_tuning
 };
 typedef struct _msp_rc_tuning MSP_RC_TUNING;
 
+struct __attribute__ ((__packed__))  _msp_rc_tuning_fc
+{
+    uint8_t rc_rate;
+    uint8_t rc_expo;
+    uint8_t rollrate;
+    uint8_t pitchrate;
+    uint8_t yawrate;
+    uint8_t dynthrpid;
+    uint8_t throttle_mid;
+    uint8_t throttle_expo;
+    uint16_t tpa_breakpoint;
+};
+typedef struct _msp_rc_tuning_fc MSP_RC_TUNING_FC;
+
 struct __attribute__ ((__packed__))  _msp_analog
 {
      uint8_t vbat;
