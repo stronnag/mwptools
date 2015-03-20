@@ -473,7 +473,8 @@ public class PIDEdit : Object
         *rp++ = rt.dynthrpid;
         *rp++ = rt.throttle_mid;
         *rp++ = rt.throttle_expo;
-        rp = serialise_u16(rp,rt.tpa_breakpoint);
+        if(have_rccf)
+            rp = serialise_u16(rp,rt.tpa_breakpoint);
         return (rp - &tbuf[0]);
     }
 
@@ -609,11 +610,16 @@ public class PIDEdit : Object
                             have_rccf = true;
                             rt.pitchrate = *rp++;
                         }
+                        else
+                            rt.pitchrate = 0;
                         rt.yawrate = *rp++;
                         rt.dynthrpid = *rp++;
                         rt.throttle_mid = *rp++;
                         rt.throttle_expo = *rp++;
-                        rp = deserialise_u16(rp, out rt.tpa_breakpoint);
+                        if(have_rccf)
+                            rp = deserialise_u16(rp, out rt.tpa_breakpoint);
+                        else
+                            rt.tpa_breakpoint = 0;
                         set_rc_tuning();
                         t_pids = add_cmd(MSP.Cmds.PID,null,0);
                     }
