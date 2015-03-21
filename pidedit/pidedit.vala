@@ -354,14 +354,14 @@ public class PIDEdit : Object
         hideme = ps[r].pids[c].hidden;
     }
 
-    private uint add_cmd(MSP.Cmds cmd, void* buf, size_t len)
+    private uint add_cmd(MSP.Cmds cmd, void* buf, size_t len, int timo=2000)
     {
-        var tid = Timeout.add(1000, () => {
-//                stdout.printf("repeat %s\n", cmd.to_string());
+        var tid = Timeout.add(timo, () => {
+//                stderr.printf("repeat %s\n", cmd.to_string());
                 s.send_command(cmd,buf,len);
                     return true;
             });
-//        stdout.printf("send %s %u\n", cmd.to_string(), tid);
+//        stderr.printf("send %s %u\n", cmd.to_string(), tid);
         s.send_command(cmd,buf,len);
         return tid;
     }
@@ -480,7 +480,7 @@ public class PIDEdit : Object
 
     private uint stop_timer(uint t, string s)
     {
-//        stdout.printf("stop %u for %s\n", t,s);
+//        stderr.printf("stop %u for %s\n", t,s);
         if (t > 0)
             Source.remove(t);
         return 0;
@@ -555,22 +555,10 @@ public class PIDEdit : Object
                         var _mrtype = MSP.get_mrtype(raw[1]);
                         var vers="v%03d %s".printf(raw[0], _mrtype);
                         verslab.set_label(vers);
-                        t_misc = add_cmd(MSP.Cmds.MISC,null,0);
+                        if(icount == 0)
+                            t_misc = add_cmd(MSP.Cmds.MISC,null,0);
                     }
                     icount++;
-                    break;
-
-
-                    case MSP.Cmds.STATUS:
-                    t_status = stop_timer(t_status, "status");
-                    if(have_status == false)
-                    {
-                        profile = raw[10];
-                        sb1.adjustment.value = profile;
-                        stderr.printf("profile = %d\n", profile);
-                        t_rc = add_cmd(MSP.Cmds.RC_TUNING,null,0);
-                    }
-
                     break;
 
                     case MSP.Cmds.MISC:
@@ -596,8 +584,28 @@ public class PIDEdit : Object
                     }
                     break;
 
+                    case MSP.Cmds.STATUS:
+                    t_status = stop_timer(t_status, "status");
+                    if(have_status == false)
+                    {
+                        have_status = true;
+                        profile = raw[10];
+                        if(profile != sb1.adjustment.value)
+                        {
+                            sb1.adjustment.value = profile;
+//                            stderr.printf("profile = %d\n", profile);
+                        }
+                        else
+                        {
+//                            stderr.printf("status get tuning\n");
+                            t_rc = add_cmd(MSP.Cmds.RC_TUNING,null,0);
+                        }
+                    }
+                    break;
+
                     case MSP.Cmds.RC_TUNING:
                     t_rc = stop_timer(t_rc, "rc");
+//                    stderr.printf("Got tune %u\n", t_rc);
                     if(have_rc == false)
                     {
                         have_rc = true;
@@ -636,6 +644,7 @@ public class PIDEdit : Object
                     break;
 
                     case MSP.Cmds.SELECT_SETTING:
+//                    stderr.printf("setting get tuning\n");
                     have_rc = false;
                     t_rc = add_cmd(MSP.Cmds.RC_TUNING,null,0);
                     break;
@@ -783,7 +792,7 @@ public class PIDEdit : Object
 //                        openbutton.set_sensitive(true);
                         applybutton.set_sensitive(true);
 //                        saveasbutton.set_sensitive(true);
-                        t_vers = add_cmd(MSP.Cmds.IDENT,null,0);
+                        t_vers = add_cmd(MSP.Cmds.IDENT,null,0,4000);
                     }
                     else
                     {
