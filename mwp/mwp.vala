@@ -2025,6 +2025,7 @@ public class MWPlanner : Gtk.Application {
                             view.center_on(gflat,gflon);
                     }
                 }
+                fbox.update(item_visible(DOCKLETS.FBOX));
             }
             break;
 
@@ -2044,6 +2045,7 @@ public class MWPlanner : Gtk.Application {
                     h += 360;
                 gfcse = h;
                 navstatus.update_ltm_a(af, item_visible(DOCKLETS.NAVSTATUS));
+                art_win.update(af.pitch, af.roll, item_visible(DOCKLETS.ARTHOR));
             }
             break;
 
