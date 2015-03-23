@@ -1033,7 +1033,7 @@ public class NavStatus : GLib.Object
             uint8 fmode = (s.flags >> 2);
             var lmode = MSP.ltm_mode(fmode);
             nav_state_label.set_label(lmode);
-            var str = "%s %s".printf(((armed == 1) ? "armed" : ""),
+            var str = "%s %s".printf(((armed == 1) ? "armed" : "disarmed"),
                                      ((failsafe == 1) ? "failsafe" : ""));
             if(visible)
             {
