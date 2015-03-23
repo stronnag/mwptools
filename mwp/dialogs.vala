@@ -278,12 +278,14 @@ public class FlightBox : GLib.Object
             Gtk.Allocation a;
             vbox.get_allocation(out a);
             var fh1 = a.width/10;
+            int fh2;
+            fh2 = (MWPlanner.conf.dms) ? fh1*40/100 : fh1/2;
             var s=PosFormat.lat(GPSInfo.lat,MWPlanner.conf.dms);
             if(fh1 > 96)
                 fh1 = 96;
-            big_lat.set_label("<span font='%d'>%s</span>".printf(fh1/2,s));
+            big_lat.set_label("<span font='%d'>%s</span>".printf(fh2,s));
             s=PosFormat.lon(GPSInfo.lon,MWPlanner.conf.dms);
-            big_lon.set_label("<span font='%d'>%s</span>".printf(fh1/2,s));
+            big_lon.set_label("<span font='%d'>%s</span>".printf(fh2,s));
             var brg = NavStatus.cg.direction;
             if(brg < 0)
                 brg += 360;

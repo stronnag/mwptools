@@ -1591,8 +1591,7 @@ public class MWPlanner : Gtk.Application {
 
                         if (armed == 1)
                         {
-                            stderr.printf("set armed\n");
-                            armedlab.set_text("\u274a");
+                            armedlab.set_text("❊");
                             if (conf.audioarmed == true)
                             {
                                 audio_cb.active = true;
@@ -1606,7 +1605,6 @@ public class MWPlanner : Gtk.Application {
                         }
                         else
                         {
-                            stderr.printf("set not armed\n");
                             armedlab.set_text(" ");
                             want_home = false;
                             if (conf.audioarmed == true)
@@ -2111,8 +2109,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     if (armed == 1)
                     {
-                        stderr.printf("set armed\n");
-                        armedlab.set_text("\u274a");
+                        armedlab.set_text("❊");
                         sflags |= NavStatus.SPK.Volts;
                         if (conf.audioarmed == true)
                         {
@@ -2126,7 +2123,6 @@ public class MWPlanner : Gtk.Application {
                     }
                     else
                     {
-                        stderr.printf("set not armed\n");
                         armedlab.set_text(" ");
                         if (conf.audioarmed == true)
                         {
