@@ -154,6 +154,7 @@ public class MWPlanner : Gtk.Application {
     private Gtk.Label verlab;
     private Gtk.Label fmodelab;
     private Gtk.Label validatelab;
+    private Gtk.Label armedlab;
     private Gtk.Label typlab;
     private Gtk.Label labelvbat;
     private uint8 dmrtype=3; // default to quad
@@ -1018,6 +1019,7 @@ public class MWPlanner : Gtk.Application {
         verlab = builder.get_object ("verlab") as Gtk.Label;
         fmodelab = builder.get_object ("fmode") as Gtk.Label;
         validatelab = builder.get_object ("validated") as Gtk.Label;
+        armedlab = builder.get_object ("armlab") as Gtk.Label;
         typlab = builder.get_object ("typlab") as Gtk.Label;
         labelvbat = builder.get_object ("labelvbat") as Gtk.Label;
         conbutton.clicked.connect(() => { connect_serial(); });
@@ -1589,6 +1591,8 @@ public class MWPlanner : Gtk.Application {
 
                         if (armed == 1)
                         {
+                            stderr.printf("set armed\n");
+                            armedlab.set_text("\u274a");
                             if (conf.audioarmed == true)
                             {
                                 audio_cb.active = true;
@@ -1602,6 +1606,8 @@ public class MWPlanner : Gtk.Application {
                         }
                         else
                         {
+                            stderr.printf("set not armed\n");
+                            armedlab.set_text(" ");
                             want_home = false;
                             if (conf.audioarmed == true)
                             {
@@ -2105,6 +2111,8 @@ public class MWPlanner : Gtk.Application {
                     }
                     if (armed == 1)
                     {
+                        stderr.printf("set armed\n");
+                        armedlab.set_text("\u274a");
                         sflags |= NavStatus.SPK.Volts;
                         if (conf.audioarmed == true)
                         {
@@ -2118,6 +2126,8 @@ public class MWPlanner : Gtk.Application {
                     }
                     else
                     {
+                        stderr.printf("set not armed\n");
+                        armedlab.set_text(" ");
                         if (conf.audioarmed == true)
                         {
                             audio_cb.active = false;

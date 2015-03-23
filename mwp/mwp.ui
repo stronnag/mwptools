@@ -786,6 +786,19 @@
               </packing>
             </child>
             <child>
+              <object class="GtkLabel" id="fmode">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkLabel" id="typlab">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -799,14 +812,13 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="fmode">
+              <object class="GtkLabel" id="armlab">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="halign">start</property>
-                <property name="justify">center</property>
+                <property name="label" translatable="yes"> </property>
               </object>
               <packing>
-                <property name="expand">True</property>
+                <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">6</property>
               </packing>
