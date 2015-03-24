@@ -1026,6 +1026,8 @@ public class NavStatus : GLib.Object
 
     public void update_ltm_s(LTM_SFRAME s, bool visible)
     {
+//        stderr.printf("ltm %s %x\n", enabled.to_string(), (int)s.flags);
+
         if(enabled || Logger.is_logging)
         {
             uint8 armed = (s.flags & 1);
