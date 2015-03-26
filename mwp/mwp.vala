@@ -2619,7 +2619,7 @@ public class MWPlanner : Gtk.Application {
         var combo  = builder.get_object ("combobox1") as Gtk.ComboBox;
         var map_source_factory = Champlain.MapSourceFactory.dup_default();
 
-        var liststore = new ListStore (MS_Column.N_COLUMNS, typeof (string), typeof (string));
+        var liststore = new Gtk.ListStore (MS_Column.N_COLUMNS, typeof (string), typeof (string));
 
         foreach (unowned MapSource s0 in msources)
         {
