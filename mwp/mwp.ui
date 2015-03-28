@@ -80,7 +80,7 @@
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="tile_start">
-                <property name="label">gtk-apply</property>
+                <property name="label">Apply</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -93,7 +93,7 @@
             </child>
             <child>
               <object class="GtkButton" id="tile_stop">
-                <property name="label">gtk-close</property>
+                <property name="label">Close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -274,7 +274,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="button4">
-                <property name="label">gtk-apply</property>
+                <property name="label">Apply</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -287,7 +287,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             </child>
             <child>
               <object class="GtkButton" id="button5">
-                <property name="label">gtk-cancel</property>
+                <property name="label">Cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -513,7 +513,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="gotoapp">
-                <property name="label">gtk-apply</property>
+                <property name="label">Apply</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -526,7 +526,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             </child>
             <child>
               <object class="GtkButton" id="gotocan">
-                <property name="label">gtk-cancel</property>
+                <property name="label">Cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -1417,7 +1417,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_prefs">
-                        <property name="label">gtk-preferences</property>
+                        <property name="label">Preferences</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -1588,7 +1588,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_about">
-                        <property name="label">gtk-about</property>
+                        <property name="label">About</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -1730,7 +1730,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 </child>
                 <child>
                   <object class="GtkButton" id="button1">
-                    <property name="label">gtk-connect</property>
+                    <property name="label">Connect</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
@@ -2112,7 +2112,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             </child>
             <child>
               <object class="GtkButton" id="button10">
-                <property name="label">gtk-close</property>
+                <property name="label">Close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -2282,7 +2282,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="mwccan">
-                <property name="label">gtk-cancel</property>
+                <property name="label">Cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -2295,7 +2295,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             </child>
             <child>
               <object class="GtkButton" id="mwc_button2">
-                <property name="label">gtk-apply</property>
+                <property name="label">Apply</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -2877,7 +2877,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
             <property name="layout_style">center</property>
             <child>
               <object class="GtkButton" id="nc_apply">
-                <property name="label">gtk-apply</property>
+                <property name="label">Apply</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -2890,7 +2890,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
             </child>
             <child>
               <object class="GtkButton" id="nc_close">
-                <property name="label">gtk-close</property>
+                <property name="label">Close</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -2926,7 +2926,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="button6">
-                <property name="label">gtk-apply</property>
+                <property name="label">Apply</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -2939,7 +2939,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
             </child>
             <child>
               <object class="GtkButton" id="button7">
-                <property name="label">gtk-cancel</property>
+                <property name="label">Cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -3000,7 +3000,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="button2">
-                <property name="label">gtk-apply</property>
+                <property name="label">Apply</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -3013,7 +3013,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
             </child>
             <child>
               <object class="GtkButton" id="button3">
-                <property name="label">gtk-cancel</property>
+                <property name="label">Cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -3395,7 +3395,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
             <property name="layout_style">end</property>
             <child>
               <object class="GtkButton" id="button8">
-                <property name="label">gtk-quit</property>
+                <property name="label">Quit</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -3408,7 +3408,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
             </child>
             <child>
               <object class="GtkButton" id="button9">
-                <property name="label">gtk-ok</property>
+                <property name="label">OK</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>

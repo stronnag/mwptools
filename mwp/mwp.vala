@@ -2495,7 +2495,7 @@ public class MWPlanner : Gtk.Application {
         nsats = 0;
         _nsats = 0;
         msp.close();
-        c.set_label("gtk-connect");
+        c.set_label("Connect");
         menuncfg.sensitive = menuup.sensitive = menudown.sensitive = false;
         navconf.hide();
         duration = -1;
@@ -2555,7 +2555,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     msp.raw_logging(true);
                 }
-                conbutton.set_label("gtk-disconnect");
+                conbutton.set_label("Disconnect");
                 add_cmd(MSP.Cmds.IDENT,null,0, 1500);
                 menumwvar.sensitive = false;
             }

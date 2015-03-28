@@ -342,6 +342,7 @@ public class MapSeeder : GLib.Object
                 reset();
             });
 
+        ts = new TileUtil();
         tile_minzoom.adjustment.value_changed.connect (() =>  {
                 int minv = (int)tile_minzoom.adjustment.value;
                 int maxv = (int)tile_maxzoom.adjustment.value;
@@ -375,7 +376,7 @@ public class MapSeeder : GLib.Object
                 apply.sensitive = false;
                 int days = (int)tile_age.adjustment.value;
                 ts.set_delta(days);
-                stop.set_label("gtk-stop");
+                stop.set_label("Stop");
                 ts.start_seeding();
             });
     }
@@ -401,6 +402,10 @@ public class MapSeeder : GLib.Object
         string uri = null;
         int minz = 0;
         int maxz = 19;
+
+        if(ts == null)
+            ts = new TileUtil();
+
         foreach (Champlain.MapSourceDesc sr in sources)
         {
             if(mapid == sr.get_id())
@@ -413,7 +418,7 @@ public class MapSeeder : GLib.Object
         }
         if(uri != null)
         {
-            stop.set_label("gtk-close");
+            stop.set_label("Close");
             apply.sensitive = true;
             tile_maxzoom.adjustment.lower = minz;
             tile_maxzoom.adjustment.upper = maxz;
@@ -424,13 +429,12 @@ public class MapSeeder : GLib.Object
             tile_minzoom.adjustment.value = zval-4;
             tile_age.adjustment.value = age;
 
-            ts = new TileUtil();
             ts.show_stats.connect((stats) => {
                     set_label(stats);
                 });
             ts.tile_done.connect(() => {
                     apply.sensitive = true;
-                    stop.set_label("gtk-close");
+                    stop.set_label("Close");
                 });
             ts.set_range(bbox.bottom, bbox.left, bbox.top, bbox.right);
             ts.set_misc(mapid, uri);
