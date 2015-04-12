@@ -6,13 +6,14 @@ mwptools
 ## Overview
 
 mwptools is a small suite of tools to manage a MultiWii NAV flight
-controller. The suite consists of tools that the author finds useful
-to manage and monitor 'in the field' using a low powered Linux based
-netbook or chromebook running Arch Linux.
+controller and CleanFlight based FCs. The suite consists of tools that
+the author finds useful to manage and monitor 'in the field' using a
+low powered Linux based netbook or chromebook running Arch Linux.
 
 ## Tools
 
- * mwp : "A mission planner for the rest of us". Simple mission planning and monitoring;
+ * mwp : "A mission planner for the rest of us". Simple mission
+ * planning and monitoring. Mission Planner is provided for MW-NAV (MW 2.4). Monitoring, logging and recording for MW and CleanFlight;
  * pidedit : PID editor;
  * switchedit : Transmitter switch editor;
  * mspsim : An MSP (MultiWii Serial Protocol) simulator. Used to develop the other components of the suite;
