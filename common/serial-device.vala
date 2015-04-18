@@ -37,7 +37,6 @@ public class MWSerial : Object
     private IOChannel io_read;
     private Socket skt;
     private SocketAddress sockaddr;
-    private bool is_serial;
     public  States state {private set; get;}
     private uint8 checksum;
     private uint8 csize;
@@ -61,6 +60,13 @@ public class MWSerial : Object
     private int64 stime;
     private int64 ltime;
     private SerialStats stats;
+    private int commode;
+
+    public enum ComMode
+    {
+        TTY=1,
+        STREAM=2
+    }
 
     public enum Mode
     {
@@ -98,7 +104,7 @@ public class MWSerial : Object
 
     private void setup_fd (uint rate)
     {
-        if(is_serial == true)
+        if((commode & ComMode.TTY) == ComMode.TTY)
         {
             baudrate = rate;
             Posix.termios newtio = {0};
@@ -169,12 +175,12 @@ public class MWSerial : Object
         }
     }
 
-    private void setup_udp(string host, uint16 port)
+    private void setup_ip(string host, uint16 port)
     {
         try
         {
             baudrate = 0;
-            if(host.length == 0)
+            if(host.length == 0) // Only UDP for mspsim
             {
                 try {
                     SocketFamily[] fams = {SocketFamily.IPV6, SocketFamily.IPV4};
@@ -198,6 +204,20 @@ public class MWSerial : Object
                 sockaddr = new InetSocketAddress (address, port);
                 var fam = sockaddr.get_family();
                 skt = new Socket (fam, SocketType.DATAGRAM,SocketProtocol.UDP);
+                SocketType stype;
+                SocketProtocol sproto;
+                if((commode & ComMode.STREAM) == ComMode.STREAM)
+                {
+                    stype = SocketType.STREAM;
+                    sproto = SocketProtocol.TCP;
+                }
+                else
+                {
+                    stype = SocketType.DATAGRAM;
+                    sproto = SocketProtocol.UDP;
+                }
+                skt = new Socket (fam, stype, sproto);
+                skt.connect(sockaddr);
             }
             fd = skt.fd;
         } catch(Error e) {
@@ -210,40 +230,46 @@ public class MWSerial : Object
     {
         string host = null;
         uint16 port = 0;
-        string [] parts;
+        MatchInfo mi;
+        Regex regex;
         estr=null;
 
         print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
-
         try
         {
-            Regex regex = new Regex ("^\\[(.*)\\]:(\\d+)");
-            MatchInfo mi;
-            if(regex.match(device, 0, out mi))
-            {
-                host = mi.fetch(1);
-                port =  (uint16)int.parse(mi.fetch(2));
-            }
+            regex = new Regex ("^(tcp|udp):\\/\\/(\\S+):(\\d+)");
+        } catch(Error e) {
+            stderr.printf("err: %s", e.message);
+            return false;
+        }
+
+        commode = 0;
+        if(regex.match(device, 0, out mi))
+        {
+            if(mi.fetch(1) == "tcp")
+                commode = ComMode.STREAM;
+
+            var s =  mi.fetch(2);
+            if(s[0] == '[' && s[s.length-1] == ']')
+                host = s[1:-1];
             else
-            {
-                parts = device.split (":");
-                if(parts.length == 2)
-                {
-                    host = parts[0];
-                    port =  (uint16)int.parse(parts[1]);
-                }
-            }
-        } catch { }
+                host = s;
+            port = (uint16)int.parse(mi.fetch(3));
+        }
+        else if(device[0] == ':')
+        {
+            host = "";
+            port = (uint16)int.parse(device[1:device.length]);
+        }
 
         if(host != null)
         {
-            setup_udp(host, port);
-            is_serial = false;
+            setup_ip(host, port);
         }
         else
         {
-            is_serial = true;
-            parts = device.split ("@");
+            commode = ComMode.STREAM|ComMode.TTY;
+            var parts = device.split ("@");
             if(parts.length == 2)
             {
                 device = parts[0];
@@ -252,6 +278,7 @@ public class MWSerial : Object
             fd = Posix.open(device, Posix.O_RDWR);
             setup_fd((int)rate);
         }
+
         if(fd < 0)
         {
             var lasterr=Posix.errno;
@@ -272,7 +299,7 @@ public class MWSerial : Object
     {
         fd = _fd;
         if(rate != -1)
-            is_serial = true;
+            commode = ComMode.TTY|ComMode.STREAM;
         setup_fd(rate);
         return available;
     }
@@ -294,7 +321,7 @@ public class MWSerial : Object
                     MWPLog.message("remove tag\n");
                 Source.remove(tag);
             }
-            if(is_serial)
+            if((commode & ComMode.TTY) == ComMode.TTY)
             {
                 Posix.tcsetattr (fd, Posix.TCSANOW|Posix.TCSADRAIN, oldtio);
                 Posix.close(fd);
@@ -353,7 +380,7 @@ public class MWSerial : Object
         }
         else if (fd != -1)
         {
-            if(is_serial)
+            if((commode & ComMode.TTY) == ComMode.STREAM)
             {
                 res = Posix.read(fd,buf,128);
                 if(res == 0)
@@ -542,7 +569,7 @@ public class MWSerial : Object
 
         stats.txbytes += count;
 
-        if(is_serial)
+        if((commode & ComMode.STREAM) == ComMode.STREAM)
             size = Posix.write(fd, buf, count);
         else
         {
