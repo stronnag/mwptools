@@ -277,6 +277,7 @@ public class MWSerial : Object
             }
             fd = Posix.open(device, Posix.O_RDWR);
             setup_fd((int)rate);
+            stderr.puts("Setup Serial\n");
         }
 
         if(fd < 0)
@@ -380,7 +381,7 @@ public class MWSerial : Object
         }
         else if (fd != -1)
         {
-            if((commode & ComMode.TTY) == ComMode.STREAM)
+            if((commode & ComMode.STREAM) == ComMode.STREAM)
             {
                 res = Posix.read(fd,buf,128);
                 if(res == 0)

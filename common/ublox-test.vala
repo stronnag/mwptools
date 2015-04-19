@@ -236,6 +236,8 @@ public class MWSerial : Object
             if(res == 0)
                 return true;
         }
+
+        stderr.printf("read %d\n", (int)res);
         for(var nc = 0; nc < res; nc++)
         {
             if(ublox_parse(buf[nc]) == true)
