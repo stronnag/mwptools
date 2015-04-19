@@ -1152,20 +1152,22 @@ public class MWPlanner : Gtk.Application {
 
     private void start_poll_timer()
     {
-        var tlimit = conf.polltimeout / TIMINTVL;
         var lmin = 0;
 
-        Timeout.add(100, () =>
+        Timeout.add(TIMINTVL, () =>
             {
                 nticks++;
+                var tlimit = conf.polltimeout / TIMINTVL;
                 if(dopoll)
                 {
-                    if(inflight && nticks > lastm + tlimit)
+                    if(inflight && (nticks > (lastm + tlimit)))
                     {
                         toc++;
+                        inflight = false;
                         var req = requests[tcycle];
                         var s =req.to_string();
                         MWPLog.message("timeout on %s \n", s);
+                        tcycle = (tcycle + 1) % requests.length;
                         send_poll();
                     }
                 }
@@ -1281,8 +1283,17 @@ public class MWPlanner : Gtk.Application {
         }
         Logger.log_time();
 
-             if(cmd != MSP.Cmds.RADIO)
+        if(cmd != MSP.Cmds.RADIO)
             lastrx = nticks;
+
+        if(dopoll)
+        {
+//            if (match_pollcmds(cmd))
+            {
+                if(inflight)
+                    inflight = false;
+            }
+        }
 
         switch(cmd)
         {
@@ -2156,9 +2167,6 @@ public class MWPlanner : Gtk.Application {
         {
             if (match_pollcmds(cmd))
             {
-                if(inflight)
-                    inflight = false;
-
                 tcycle = (tcycle + 1) % requests.length;
                 amsgs++;
                 if(tcycle == 0)

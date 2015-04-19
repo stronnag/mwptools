@@ -369,7 +369,7 @@ public class MWSerial : Object
 
     private bool device_read(IOChannel gio, IOCondition cond) {
         uint8 buf[128];
-        size_t res;
+        size_t res = 0;
 
         if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
         {
@@ -383,8 +383,18 @@ public class MWSerial : Object
         {
             if((commode & ComMode.STREAM) == ComMode.STREAM)
             {
-                res = Posix.read(fd,buf,128);
-                if(res == 0)
+                int avb=0;
+                int ires;
+                ires = Posix.ioctl(fd,Linux.Termios.FIONREAD,&avb);
+                if(ires == 0 && avb > 0)
+                {
+                    if(avb > 128)
+                        avb = 128;
+                    res = Posix.read(fd,buf,avb);
+                    if(res == 0)
+                        return true;
+                }
+                else
                     return true;
             }
             else
@@ -574,13 +584,12 @@ public class MWSerial : Object
             size = Posix.write(fd, buf, count);
         else
         {
+            uint8 [] sbuf = new uint8[count];
+            for(var i =0; i< count; i++)
+                sbuf[i] = *(((uint8*)buf)+i);
+
             try
             {
-                uint8 [] sbuf = new uint8[count];
-                for(var i =0; i< count; i++)
-                {
-                    sbuf[i] = *(((uint8*)buf)+i);
-                }
                 size = skt.send_to (sockaddr, sbuf);
             } catch(Error e) {
                 debug("send: %s", e.message);
