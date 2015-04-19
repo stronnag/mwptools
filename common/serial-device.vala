@@ -220,7 +220,7 @@ public class MWSerial : Object
             }
             fd = skt.fd;
         } catch(Error e) {
-            warning("socket: %s", e.message);
+            MWPLog.message("socket: %s", e.message);
             fd = -1;
         }
     }
@@ -276,7 +276,6 @@ public class MWSerial : Object
             }
             fd = Posix.open(device, Posix.O_RDWR);
             setup_fd((int)rate);
-            stderr.puts("Setup Serial\n");
         }
 
         if(fd < 0)
@@ -284,11 +283,13 @@ public class MWSerial : Object
             var lasterr=Posix.errno;
             var s = Posix.strerror(lasterr);
             estr = "%s (%d)".printf(s,lasterr);
+            MWPLog.message(estr);
             fd = -1;
             available = false;
         }
         else
         {
+            MWPLog.message("Connected %s\n", device);
             available = true;
             setup_reader(fd);
         }
