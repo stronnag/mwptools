@@ -203,7 +203,6 @@ public class MWSerial : Object
                 var address = addresses.nth_data (0);
                 sockaddr = new InetSocketAddress (address, port);
                 var fam = sockaddr.get_family();
-                skt = new Socket (fam, SocketType.DATAGRAM,SocketProtocol.UDP);
                 SocketType stype;
                 SocketProtocol sproto;
                 if((commode & ComMode.STREAM) == ComMode.STREAM)
