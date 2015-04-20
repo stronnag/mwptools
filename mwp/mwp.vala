@@ -1159,6 +1159,8 @@ public class MWPlanner : Gtk.Application {
                 nticks++;
                 var tlimit = conf.polltimeout / TIMINTVL;
                 var loopc = ((int)(looptimer *1000)) / TIMINTVL;
+                if(loopc < 1)
+                    loopc = 1;
 
                 if(dopoll)
                 {
