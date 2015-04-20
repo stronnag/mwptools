@@ -344,7 +344,6 @@ public class MWPlanner : Gtk.Application {
     private uint lastm;
     private uint lastrx;
     private uint last_an = 0;
-    private bool inflight = false;
 
     private static VersInfo vi ={0};
 
@@ -1153,22 +1152,35 @@ public class MWPlanner : Gtk.Application {
     private void start_poll_timer()
     {
         var lmin = 0;
+        var failcount = 0;
 
         Timeout.add(TIMINTVL, () =>
             {
                 nticks++;
                 var tlimit = conf.polltimeout / TIMINTVL;
+                var loopc = ((int)(looptimer *1000)) / TIMINTVL;
+
                 if(dopoll)
                 {
-                    if(inflight && (nticks > (lastm + tlimit)))
+                    if ((nticks % loopc) == 0)
                     {
-                        toc++;
-                        inflight = false;
-                        var req = requests[tcycle];
-                        var s =req.to_string();
-                        MWPLog.message("timeout on %s \n", s);
-                        tcycle = (tcycle + 1) % requests.length;
-                        send_poll();
+                        if(tcycle == 0)
+                        {
+                            failcount = 0;
+                            msg_poller();
+                        }
+                        else
+                        {
+                            failcount++;
+                            toc++;
+                            if (failcount >= tlimit)
+                            {
+                                MWPLog.message("TOC on %d\n", tcycle);
+                                failcount = 0;
+                                tcycle = 0;
+                                msg_poller();
+                            }
+                        }
                     }
                 }
 
@@ -1230,7 +1242,7 @@ public class MWPlanner : Gtk.Application {
                 MWPLog.message("Restart poll loop\n");
                 init_state();
                 init_sstats();
-                dopoll = inflight = false;
+                dopoll = false;
                 add_cmd(MSP.Cmds.IDENT,null,0, 2500);
                 return;
             }
@@ -1256,7 +1268,6 @@ public class MWPlanner : Gtk.Application {
                 req = requests[tcycle];
             }
         }
-        inflight = true;
         send_cmd(req, null, 0);
     }
 
@@ -1285,15 +1296,6 @@ public class MWPlanner : Gtk.Application {
 
         if(cmd != MSP.Cmds.RADIO)
             lastrx = nticks;
-
-        if(dopoll)
-        {
-//            if (match_pollcmds(cmd))
-            {
-                if(inflight)
-                    inflight = false;
-            }
-        }
 
         switch(cmd)
         {
@@ -2173,24 +2175,13 @@ public class MWPlanner : Gtk.Application {
                 {
                     lastp.stop();
                     var et = lastp.elapsed();
+                    tot = (looptimer > et) ? (uint)((looptimer-et)*1000) : 0;
                     acycle += (uint64)(et*1000);
                     anvals++;
-                    if (et < looptimer)
-                    {
-                        tot = (uint)((looptimer-et)*1000);
-                        Timeout.add(tot, ()=> {
-                                msg_poller();
-                                return false;
-                            });
-                    }
-                    else
-                    {
-                        msg_poller();
-                    }
                 }
                 else
                 {
-                    msg_poller();
+                    send_poll();
                 }
             }
         }
@@ -2198,6 +2189,7 @@ public class MWPlanner : Gtk.Application {
 
     private bool match_pollcmds(MSP.Cmds cmd)
     {
+//        return (cmd == requests[tcycle]);
         bool matched=false;
         foreach(var c in requests)
         {
@@ -2207,6 +2199,7 @@ public class MWPlanner : Gtk.Application {
                 break;
             }
         }
+
         return matched;
     }
 
@@ -2528,7 +2521,6 @@ public class MWPlanner : Gtk.Application {
     private void init_state()
     {
         dopoll = false;
-        inflight = false;
         have_api = have_vers = have_misc = have_status = have_wp = have_nc =
             have_fcv = have_fcvv = false;
         xbits = icount = api_cnt = 0;
