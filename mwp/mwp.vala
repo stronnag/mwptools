@@ -2474,7 +2474,7 @@ public class MWPlanner : Gtk.Application {
     private void show_serial_stats()
     {
         gen_serial_stats();
-        MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %u, avg poll loop %lu ms messages %u\n",
+        MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %d, avg poll loop %lu ms messages %u\n",
                        telstats.s.elapsed, telstats.s.rxbytes, telstats.s.txbytes,
                        telstats.s.rxrate, telstats.s.txrate,
                        telstats.toc, telstats.tot, telstats.avg ,telstats.msgs);

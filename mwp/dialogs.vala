@@ -36,9 +36,9 @@ public class Units :  GLib.Object
             case 2:
                 d *= 1.0936133;
                 break;
-            case 3: //furlongs
-                d *= 0.0049709695;
-                break;
+//            case 3: //furlongs
+//                d *= 0.0049709695;
+//                break;
         }
         return d;
     }
@@ -55,9 +55,9 @@ public class Units :  GLib.Object
             case 3:
                 d *= 1.9438445;
                 break;
-            case 4: //furlongs / fortnight
-                d *= 6012.8848;
-                break;
+//            case 4: //furlongs / fortnight
+//                d *= 6012.8848;
+//                break;
         }
         return d;
     }
@@ -232,7 +232,7 @@ public class TelemetryStats : GLib.Object
             rxrate.set_label("%.0f b/s".printf(t.s.rxrate));
             txrate.set_label("%.0f b/s".printf(t.s.txrate));
             timeouts.set_label("%lu".printf(t.toc));
-            waittime.set_label("%u ms".printf(t.tot));
+            waittime.set_label("%d ms".printf(t.tot));
             cycletime.set_label("%lu ms".printf(t.avg));
             messages.set_label(
                 ("%" + uint64.FORMAT_MODIFIER + "d").printf(t.msgs));
