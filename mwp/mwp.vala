@@ -333,11 +333,11 @@ public class MWPlanner : Gtk.Application {
 
     private static const string[] failnames = {"","WPNO","LAT","LON","ALT","P1","P2","P3","FLAG"};
 
-    private static const int TIMINTVL=100;
-    private static const int ANIMINTVL=3;
-    private static const int BEATINTVL=600;
-    private static const int DURAINTVL=9;
-    private static const int STATINTVL=8;
+    private static const int TIMINTVL=50;
+    private static const int ANIMINTVL=(300/TIMINTVL);
+    private static const int BEATINTVL=(60000/TIMINTVL);
+    private static const int DURAINTVL=((1000/TIMINTVL) - 1);
+    private static const int STATINTVL=(800/TIMINTVL);
 
     private Timer lastp;
     private uint nticks = 0;
@@ -2177,7 +2177,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     lastp.stop();
                     var et = lastp.elapsed();
-                    tot = (looptimer > et) ? (int)((looptimer-et)*1000) : 0;
+                    tot = (int)((looptimer-et)*1000);
                     acycle += (uint64)(et*1000);
                     anvals++;
                 }
