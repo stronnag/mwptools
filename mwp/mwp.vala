@@ -38,7 +38,7 @@ public struct TelemStats
 {
     SerialStats s;
     ulong toc;
-    uint tot;
+    int tot;
     ulong avg;
     uint64 msgs;
 }
@@ -238,7 +238,7 @@ public class MWPlanner : Gtk.Application {
     private uint64 anvals;
     private uint64 amsgs;
     private ulong toc;
-    private uint tot;
+    private int tot;
     private uint32 xbits = 0;
     private uint8 api_cnt;
     private uint8 icount = 0;
@@ -2177,7 +2177,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     lastp.stop();
                     var et = lastp.elapsed();
-                    tot = (looptimer > et) ? (uint)((looptimer-et)*1000) : 0;
+                    tot = (looptimer > et) ? (int)((looptimer-et)*1000) : 0;
                     acycle += (uint64)(et*1000);
                     anvals++;
                 }
@@ -2474,7 +2474,7 @@ public class MWPlanner : Gtk.Application {
     private void show_serial_stats()
     {
         gen_serial_stats();
-        MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %lu wait %u, avg poll loop %lu ms messages %u\n",
+        MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %u, avg poll loop %lu ms messages %u\n",
                        telstats.s.elapsed, telstats.s.rxbytes, telstats.s.txbytes,
                        telstats.s.rxrate, telstats.s.txrate,
                        telstats.toc, telstats.tot, telstats.avg ,telstats.msgs);
