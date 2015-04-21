@@ -50,6 +50,7 @@ static gboolean read_data(GIOChannel *source, GIOCondition condition, gpointer d
     else
     {
         g_source_remove (tag);
+        gtk_main_quit();
         return FALSE;
     }
 }
