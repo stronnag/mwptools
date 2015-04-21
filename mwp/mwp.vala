@@ -338,6 +338,8 @@ public class MWPlanner : Gtk.Application {
     private static const int BEATINTVL=(60000/TIMINTVL);
     private static const int DURAINTVL=((1000/TIMINTVL) - 1);
     private static const int STATINTVL=(800/TIMINTVL);
+    private static const int NODATAINTVL=(5000/TIMINTVL);
+    private static const int RESTARTINTVL=(30000/TIMINTVL);
 
     private Timer lastp;
     private uint nticks = 0;
@@ -1231,7 +1233,7 @@ public class MWPlanner : Gtk.Application {
     {
         var req=requests[tcycle];
         lastm = nticks;
-        if((lastm - lastrx) > 50)
+        if((lastm - lastrx) > NODATAINTVL)
         {
             if(rxerr == false)
             {
@@ -1239,7 +1241,7 @@ public class MWPlanner : Gtk.Application {
                 rxerr=true;
             }
                 /* Probably takes a minute to change the LIPO */
-            if(lastm - lastrx > 300 )
+            if(lastm - lastrx > RESTARTINTVL)
             {
                 MWPLog.message("Restart poll loop\n");
                 init_state();
