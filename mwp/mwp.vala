@@ -1160,31 +1160,39 @@ public class MWPlanner : Gtk.Application {
             {
                 nticks++;
                 var tlimit = conf.polltimeout / TIMINTVL;
-                var loopc = ((int)(looptimer *1000)) / TIMINTVL;
-                if(loopc < 1)
-                    loopc = 1;
 
                 if(dopoll)
                 {
-                    if ((nticks % loopc) == 0)
+                    if(looptimer > 0)
                     {
-                        if(tcycle == 0)
+                        var loopc = ((int)(looptimer *1000)) / TIMINTVL;
+                        if ((nticks % loopc) == 0)
                         {
-                            failcount = 0;
-                            msg_poller();
-                        }
-                        else
-                        {
-                            failcount++;
-                            toc++;
-                            if (failcount >= tlimit)
+                            if(tcycle == 0)
                             {
-                                MWPLog.message("TOC on %d\n", tcycle);
                                 failcount = 0;
-                                tcycle = 0;
                                 msg_poller();
                             }
+                            else
+                            {
+                                failcount++;
+                                toc++;
+                                if (failcount >= tlimit)
+                                {
+                                    MWPLog.message("TOC on %d\n", tcycle);
+                                    failcount = 0;
+                                    tcycle = 0;
+                                    msg_poller();
+                                }
+                            }
                         }
+                    }
+                    else if ((lastm - lastrx > tlimit) &&  tcycle != 0)
+                    {
+                        toc++;
+                        MWPLog.message("TOC1 on %d\n", tcycle);
+                        tcycle = 0;
+                        msg_poller();
                     }
                 }
 
@@ -2179,9 +2187,11 @@ public class MWPlanner : Gtk.Application {
                 {
                     lastp.stop();
                     var et = lastp.elapsed();
-                    tot = (int)((looptimer-et)*1000);
+                    tot = (looptimer == 0) ? 0 : (int)((looptimer-et)*1000);
                     acycle += (uint64)(et*1000);
                     anvals++;
+                    if(looptimer == 0)
+                        msg_poller();
                 }
                 else
                 {
