@@ -345,6 +345,7 @@ public class MWPlanner : Gtk.Application {
     private uint nticks = 0;
     private uint lastm;
     private uint lastrx;
+    private uint lastok;
     private uint last_an = 0;
 
     private static VersInfo vi ={0};
@@ -1187,9 +1188,10 @@ public class MWPlanner : Gtk.Application {
                             }
                         }
                     }
-                    else if ((nticks - lastrx > tlimit) &&  tcycle != 0)
+                    else if ((nticks - lastok > tlimit) )
                     {
                         toc++;
+                        lastok = nticks;
                         MWPLog.message("TOC1 on %d\n", tcycle);
                         tcycle = 0;
                         msg_poller();
@@ -1307,7 +1309,7 @@ public class MWPlanner : Gtk.Application {
         Logger.log_time();
 
         if(cmd != MSP.Cmds.RADIO)
-            lastrx = nticks;
+            lastrx = lastok = nticks;
 
         switch(cmd)
         {
