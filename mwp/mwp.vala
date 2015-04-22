@@ -1187,7 +1187,7 @@ public class MWPlanner : Gtk.Application {
                             }
                         }
                     }
-                    else if ((lastm - lastrx > tlimit) &&  tcycle != 0)
+                    else if ((nticks - lastrx > tlimit) &&  tcycle != 0)
                     {
                         toc++;
                         MWPLog.message("TOC1 on %d\n", tcycle);
