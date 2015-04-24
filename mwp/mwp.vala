@@ -1167,7 +1167,7 @@ public class MWPlanner : Gtk.Application {
                     if(looptimer > 0)
                     {
                         var loopc = ((int)(looptimer *1000)) / TIMINTVL;
-                        if ((nticks % loopc) == 0)
+                        if (loopc > 0 && (nticks % loopc) == 0)
                         {
                             if(tcycle == 0)
                             {
