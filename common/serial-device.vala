@@ -231,6 +231,8 @@ public class MWSerial : Object
         uint16 port = 0;
         MatchInfo mi;
         Regex regex;
+        string []parts;
+
         estr=null;
 
         print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
@@ -268,10 +270,10 @@ public class MWSerial : Object
         else
         {
             commode = ComMode.STREAM|ComMode.TTY;
-            var parts = device.split ("@");
+            parts = device.split ("@");
             if(parts.length == 2)
             {
-                device = parts[0];
+                device  = parts[0];
                 rate = int.parse(parts[1]);
             }
             fd = Posix.open(device, Posix.O_RDWR);
