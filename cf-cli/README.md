@@ -5,6 +5,7 @@ cf-cli
 
 History: (see github, mwptools :)
 
+2015-05-10 : Build the Windows binary again to reflect minor updates
 
 2015-03-04 : Added simple tool to translate old dump serial setting to
 	     the new 1.8.0+ format [dump-180+.rb](http://www.zen35309.zen.co.uk/cf-cli/dump-180+.rb).
@@ -83,7 +84,7 @@ $ sudo cp cf-cli cf-cli-ui /usr/local/bin/
 ```
 
 For users of Microsoft Windows, you can find a [binary (executable)
-distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-win32-1.0.zip).
+distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-win32-1.01.zip).
 
 The Windows binary archive expands as:
 ```
