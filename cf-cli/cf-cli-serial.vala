@@ -53,10 +53,8 @@ public class MWSerial : Object
     public enum Cmds
     {
         IDENT=100,
-        SERVO_CONF=120,
-        SET_SERVO_CONF=212,
-        SELECT_SETTING=210,
-        EEPROM_WRITE=250
+        CALIBRATE_ACC=205,
+        CALIBRATE_MAG=206
     }
 
     public int fd {private set; get;}
@@ -77,6 +75,9 @@ public class MWSerial : Object
     protected static bool merge = false;
     protected static bool amerge = false;
     protected static bool logmsp;
+    protected static bool noreboot = false;
+    protected static bool calacc = false;
+    protected static bool calmag = false;
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", null},
@@ -86,6 +87,9 @@ public class MWSerial : Object
         { "presave", 'i', 0, OptionArg.NONE, out presave, "Save before setting", null},
         { "force-tri-rev-yaw", 'y', 0, OptionArg.NONE, out tyaw, "Force tri reversed yaw", null},
         { "logmsp", 'l', 0, OptionArg.NONE, out logmsp, "Log MSP", null},
+        { "acc", 0, 0, OptionArg.NONE, out calacc, "cal acc", null},
+        { "mag", 0, 0, OptionArg.NONE, out calmag, "cal mag", null},
+        { "noreboot", 'R', 0, OptionArg.NONE, out noreboot, "No Reboot", null},
         { "merge-profiles", 'm', 0, OptionArg.NONE, out merge, "Generate a merged file for multiple profiles", null},
         { "merge-auxp", 'a', 0, OptionArg.NONE, out amerge, "Generate a merged file for multiple profiles with common aux settings", null},
         {null}
@@ -112,7 +116,7 @@ public class MWSerial : Object
             var fn  = "msp_%s.log".printf(dt.format("%F_%H%M%S"));
             raws = Posix.open (fn, Posix.O_TRUNC|Posix.O_CREAT|Posix.O_WRONLY, 0640);
         }
-
+        available = false;
         fd = open_serial(devname, brate);
         if(fd < 0)
         {
@@ -127,7 +131,6 @@ public class MWSerial : Object
                 s = es;
             message("open %s - %s\n", devname, es);
             fd = -1;
-            available = false;
         }
         else
         {
@@ -345,9 +348,7 @@ public class MWSerial : Object
 
                 if (c == '\n')
                     done = true;
-                else if (c == '\r')
-                    ;
-                else
+                else if (c != '\r')
                 {
                     if (len < 256)
                         buf[len++] = c;
@@ -359,6 +360,7 @@ public class MWSerial : Object
                 }
             }
         }
+//        stderr.printf("%s\n", (string)buf);
         return rescode;
     }
 
@@ -442,9 +444,9 @@ public class MWSerial : Object
 
             var dt = new DateTime.now_local();
             os.printf("# mwptools / cf-cli dump %s\n", dt.format("%FT%T%z"));
+            os.puts("# cf-cli is a tool to manage Cleanflight CLI dump backup and restore\n");
             os.puts("# <https://github.com/stronnag/mwptools>\n");
             os.puts("# Windows binary <http://www.daria.co.uk/cf-cli/>\n#\n");
-
 
             string cmd = "profile %d\n".printf(p);
             write(cmd.data);
@@ -461,6 +463,16 @@ public class MWSerial : Object
                         os.puts("# ");
                     }
                     os.printf("%s\n", (string)line);
+                }
+                if(((string)line).contains("servo 5"))
+                {
+                    var sparts = ((string)line).split(" ");
+                    if(sparts.length == 7)
+                    {
+                        var yawf = int.parse(sparts[5]);
+                        if((yawf & 1) == 1)
+                            tyaw = true;
+                    }
                 }
             }
             if(tyaw)
@@ -498,6 +510,8 @@ public class MWSerial : Object
                 return;
             }
             string dprof = null; // only want once
+            string revyaw = null; // only want once
+
             for(var p = prof0; p <= prof1; p++)
             {
                 FileStream fp;
@@ -514,6 +528,11 @@ public class MWSerial : Object
                         if(line.contains("## defprof="))
                         {
                             dprof = line;
+                            continue;
+                        }
+                        if(line.contains("## rev-tri-yaw"))
+                        {
+                            revyaw = line;
                             continue;
                         }
                         if(p == prof0)
@@ -555,6 +574,10 @@ public class MWSerial : Object
                     break;
                 }
             }
+            if(revyaw != null)
+            {
+                out.printf("%s\n", revyaw);
+            }
             if(dprof != null)
             {
                 out.printf("%s\n", dprof);
@@ -571,6 +594,7 @@ public class MWSerial : Object
         string rline;
         int len;
         uint8 []rdata;
+        string []sparts = {};
 
         message("Replaying %s\n", fn);
         while((rline = fp.read_line ()) != null)
@@ -578,6 +602,16 @@ public class MWSerial : Object
             var line = rline.strip();
             if(line.length > 0 && line[0] != '#')
             {
+                if(line.contains("servo 5"))
+                {
+                    sparts = line.split(" ");
+                    if(sparts.length == 7)
+                    {
+                        var yawf = int.parse(sparts[5]);
+                        if((yawf & 1) == 1)
+                            tyaw = true;
+                    }
+                }
                 write(line);
                 write("\n");
                 read_line(out rdata, out len);
@@ -595,6 +629,23 @@ public class MWSerial : Object
                         defprof = parts[1];
                     }
                 }
+            }
+        }
+        if(tyaw && (sparts.length == 7))
+        {
+            int ty;
+            ty = int.parse(sparts[5]) | 1;
+            sparts[5] = ty.to_string();
+            var servo5 = string.joinv(" ",sparts);
+            message("Setting tri yaw %s\n", servo5);
+            for(var set = 0; set < 3; set++)
+            {
+                write("profile %d\n".printf(set));
+                read_line(out rdata, out len);
+                Thread.usleep(50*1000);
+                write("%s\n".printf(servo5));
+                read_line(out rdata, out len);
+                Thread.usleep(50*1000);
             }
         }
         if(defprof != null)
@@ -674,51 +725,8 @@ public class MWSerial : Object
 
     public int fc_init()
     {
-        uint8 cmd;
-        uint8 [] raw =null;
         ResCode res = 0;
-        int errcnt = 0;
         typ = 0;
-
-        do
-        {
-            send_msp(Cmds.IDENT, null, 0);
-            res =  read_msp(out cmd, out raw);
-            if(res != ResCode.OK)
-            {
-                stderr.printf("Failed %s\n", res.to_string());
-                errcnt++;
-                if(errcnt == MAX_INIT_ERR)
-                {
-                    stderr.printf("Giving up after %d attempts\n", errcnt);
-                    return errcnt;
-                }
-            }
-            else
-                typ = raw[1];
-
-        } while (res != ResCode.OK);
-
-        if(typ == 1 && tyaw == false)
-        {
-            cmd = 0;
-            send_msp(Cmds.SERVO_CONF,null,0);
-            do
-            {
-                res = read_msp(out cmd, out raw);
-            } while  (cmd  != Cmds.SERVO_CONF);
-
-            if(raw.length == SERVO_SIZE)
-            {
-                tyaw = ((raw[YAW_OFFSET] & 1) == 1);
-                if(tyaw)
-                    message("Discovered Tri Yaw (%d)\n", raw.length);
-            }
-            else
-            {
-                message("Invalid servo conf, all bets are off\n");
-            }
-        }
 
         uint8 [] line;
         int len;
@@ -757,97 +765,92 @@ public class MWSerial : Object
         }
     }
 
+    public bool try_open(bool docals=false)
+    {
+        int ocount = 30;
+        do
+        {
+            open();
+            if(!available)
+            {
+                Thread.usleep(1000000);
+                ocount--;
+            }
+        } while(!available && ocount != 0);
+        if(available)
+        {
+            ResCode res = 0;
+            uint8 cmd;
+            uint8 [] raw;
+            do
+            {
+                send_msp(Cmds.IDENT, null, 0);
+                res =  read_msp(out cmd, out raw);
+            } while (res != ResCode.OK);
+            message("Ready ...\n");
+            if(docals)
+            {
+                if(calmag)
+                {
+                    message("Magnetometer calibration started\n");
+                    do
+                    {
+                        send_msp(Cmds.CALIBRATE_MAG, null, 0);
+                        res =  read_msp(out cmd, out raw);
+                    } while (res != ResCode.OK);
+                    Thread.usleep(30*1000*1000);
+                    message("Magnetometer calibration finished\n");
+                    close();
+                    Posix.exit(0);
+                }
+                if(calacc)
+                {
+                    message("Accelerometer calibration started\n");
+                    do
+                    {
+                        send_msp(Cmds.CALIBRATE_ACC, null, 0);
+                        res =  read_msp(out cmd, out raw);
+                    } while (res != ResCode.OK);
+                    Thread.usleep(2*1000*1000);
+                    message("Accelerometer calibration finished\n");
+                }
+            }
+        }
+        return available;
+    }
+
     public void perform_restore(string restore_file)
     {
         ResCode res = 0;
-        uint8 cmd;
-        uint8 [] raw;
         uint8 [] line;
         int len;
 
         if(presave)
             dump_settings("__");
 
-        write("defaults\n");
-        while((res = read_line(out line, out len)) == ResCode.OK)
-            ;
-        close();
-        Thread.usleep(1000000);
-        message("Reboot on defaults\n");
-        open();
-        do
+        if(noreboot == false)
         {
-            send_msp(Cmds.IDENT, null, 0);
-            res =  read_msp(out cmd, out raw);
-        } while (res != ResCode.OK);
+            write("defaults\n");
+            while((res = read_line(out line, out len)) == ResCode.OK)
+                ;
+            close();
+            message("Reboot on defaults\n");
+            Thread.usleep(1000000);
 
-        message("Rebooted ...\n");
-        write("#");
-        while((res = read_line(out line, out len)) == ResCode.OK)
-            ;
+            try_open(true);
+
+            write("#");
+            while((res = read_line(out line, out len)) == ResCode.OK)
+                ;
+        }
         replay_file(restore_file);
+
         write("save\n");
         while((res = read_line(out line, out len)) == ResCode.OK)
             ;
 
         message("Reboot on save\n");
         close();
-        Thread.usleep(1000000);
-        open();
-        do
-        {
-            send_msp(Cmds.IDENT, null, 0);
-            res =  read_msp(out cmd, out raw);
-            if(res == ResCode.OK)
-                typ = raw[1];
-
-        } while (res != ResCode.OK);
-
-
-            /* pull in residual junk from BT device (just in case) */
-        do
-        {
-            res =  read_msp(out cmd, out raw);
-        } while (res == ResCode.OK);
-
-        if(tyaw)
-        {
-            if(typ == 1)
-            {
-                uint8 set;
-                for(set = 0; set < 3; set++)
-                {
-                    send_msp(Cmds.SELECT_SETTING, &set, 1);
-                    if(read_msp(out cmd, out raw) == ResCode.OK)
-                    {
-                        send_msp(Cmds.SERVO_CONF,null,0);
-                        if(read_msp(out cmd, out raw) == ResCode.OK)
-                        {
-                            if(raw.length == SERVO_SIZE)
-                                raw[YAW_OFFSET] |= 1;
-                            else
-                            {
-                                message("Invalid servo conf, all bets are off\n");
-                            }
-                        }
-                        send_msp(Cmds.SET_SERVO_CONF,raw,raw.length);
-                        if(read_msp(out cmd, out raw) == ResCode.OK)
-                        {
-                            message("Set Tri Yaw for profile %d\n",set);
-                            send_msp(Cmds.EEPROM_WRITE,null,0);
-                            read_msp(out cmd, out raw);
-                        }
-                    }
-                }
-                if(defprof != null)
-                {
-                    set = (uint8)int.parse(defprof[-1:defprof.length]);
-                    send_msp(Cmds.SELECT_SETTING, &set, 1);
-                    read_msp(out cmd, out raw);
-                    message("Reset default profile %d\n",set);
-                }
-            }
-        }
     }
 
     public void message(string format, ...)

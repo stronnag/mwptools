@@ -41,7 +41,7 @@ int main (string[] args)
         }
     }
     s.set_iofd(stderr.fileno());
-    if(s.open())
+    if(s.try_open())
     {
         int err = s.fc_init();
         if(err == 0)

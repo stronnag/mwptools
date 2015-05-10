@@ -310,7 +310,7 @@ public class DumpGUI : MWSerial
 
         new Thread<int> ("cf-cli-worker", () => {
                 set_iofd(msgpipe[1]);
-                if(open())
+                if(try_open())
                 {
                     int err = fc_init();
                     if(err == 0)
