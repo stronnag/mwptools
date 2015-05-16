@@ -78,6 +78,7 @@ public class MWSerial : Object
     protected static bool noreboot = false;
     protected static bool calacc = false;
     protected static bool calmag = false;
+    protected static bool setall = false;
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", null},
@@ -88,6 +89,7 @@ public class MWSerial : Object
         { "force-tri-rev-yaw", 'y', 0, OptionArg.NONE, out tyaw, "Force tri reversed yaw", null},
         { "logmsp", 'l', 0, OptionArg.NONE, out logmsp, "Log MSP", null},
         { "acc", 0, 0, OptionArg.NONE, out calacc, "cal acc", null},
+        { "all", 'A', 0, OptionArg.NONE, out setall, "All", null},
         { "mag", 0, 0, OptionArg.NONE, out calmag, "cal mag", null},
         { "noreboot", 'R', 0, OptionArg.NONE, out noreboot, "No Reboot", null},
         { "merge-profiles", 'm', 0, OptionArg.NONE, out merge, "Generate a merged file for multiple profiles", null},
@@ -696,6 +698,13 @@ public class MWSerial : Object
 
             if(prof1 > 2)
                 prof1 = 2;
+        }
+
+        if(setall)
+        {
+            prof0 = 0;
+            prof1 = 2;
+            amerge = true;
         }
 
         if(defname == null)
