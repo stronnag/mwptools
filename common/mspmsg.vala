@@ -125,6 +125,7 @@ public struct MSP_RC_TUNING_CF
     public uint8 throttle_mid;
     public uint8 throttle_expo;
     public uint16 tpa_breakpoint;
+    public uint8 yaw_expo;
 }
 
 public struct MSP_RADIO

@@ -74,7 +74,8 @@ public class PIDEdit : Object
     private Gtk.Entry yawrate_entry;
     private Gtk.Entry dynthr_entry;
     private Gtk.Entry thrmid_entry;
-    private Gtk.Entry threxpro_entry;
+    private Gtk.Entry threxpo_entry;
+    private Gtk.Entry yawexpo_entry;
     private Gtk.Entry tpabreak_entry;
     private uint8 icount;
     private uint8 profile;
@@ -142,6 +143,7 @@ public class PIDEdit : Object
             else
                 rt.pitchrate = rt.rollrate ;
             rt.tpa_breakpoint = (uint16)(int.parse(tpabreak_entry.get_text()));
+            rt.yaw_expo = (uint8)(100*get_locale_double(yawexpo_entry.get_text()));
         }
         else
         {
@@ -150,7 +152,7 @@ public class PIDEdit : Object
         rt.yawrate = (uint8)(100*get_locale_double(yawrate_entry.get_text()));
         rt.dynthrpid = (uint8)(100*get_locale_double(dynthr_entry.get_text()));
         rt.throttle_mid = (uint8)(100*get_locale_double(thrmid_entry.get_text()));
-        rt.throttle_expo = (uint8)(100*get_locale_double(threxpro_entry.get_text()));
+        rt.throttle_expo = (uint8)(100*get_locale_double(threxpo_entry.get_text()));
 
     }
 
@@ -318,6 +320,8 @@ public class PIDEdit : Object
              builder.add_int_value (rt.pitchrate);
              builder.set_member_name ("tpa_breakpoint");
              builder.add_int_value (rt.tpa_breakpoint);
+             builder.set_member_name ("yaw_expo");
+             builder.add_int_value (rt.yaw_expo);
          }
          else
          {
@@ -405,16 +409,18 @@ public class PIDEdit : Object
         {
             pitchrate_entry.set_text("%.2f".printf(rt.pitchrate/100.0));
             tpabreak_entry.set_text("%u".printf(rt.tpa_breakpoint));
+            yawexpo_entry.set_text("%.2f".printf(rt.yaw_expo /100.0));
         }
         else
         {
             pitchrate_entry.sensitive=false;
             tpabreak_entry.sensitive=false;
+            yawexpo_entry.sensitive=false;
         }
         yawrate_entry.set_text("%.2f".printf(rt.yawrate /100.0));
         dynthr_entry.set_text("%.2f".printf(rt.dynthrpid /100.0));
         thrmid_entry.set_text("%.2f".printf(rt.throttle_mid /100.0));
-        threxpro_entry.set_text("%.2f".printf(rt.throttle_expo /100.0));
+        threxpo_entry.set_text("%.2f".printf(rt.throttle_expo /100.0));
     }
 
     private void set_pid_spins()
@@ -474,7 +480,10 @@ public class PIDEdit : Object
         *rp++ = rt.throttle_mid;
         *rp++ = rt.throttle_expo;
         if(have_rccf)
+        {
             rp = serialise_u16(rp,rt.tpa_breakpoint);
+            *rp++ = rt.yaw_expo;
+        }
         return (rp - &tbuf[0]);
     }
 
@@ -526,9 +535,9 @@ public class PIDEdit : Object
         yawrate_entry = builder.get_object ("yawrate_entry") as Gtk.Entry;
         dynthr_entry = builder.get_object ("dynthr_entry") as Gtk.Entry;
         thrmid_entry = builder.get_object ("thrmid_entry") as Gtk.Entry;
-        threxpro_entry = builder.get_object ("threxpro_entry") as Gtk.Entry;
+        threxpo_entry = builder.get_object ("threxpo_entry") as Gtk.Entry;
         tpabreak_entry = builder.get_object ("tpabreak_entry") as Gtk.Entry;
-
+        yawexpo_entry = builder.get_object ("yawexpo_entry") as Gtk.Entry;
 
         foreach (var p in ps)
         {
@@ -605,7 +614,7 @@ public class PIDEdit : Object
 
                     case MSP.Cmds.RC_TUNING:
                     t_rc = stop_timer(t_rc, "rc");
-//                    stderr.printf("Got tune %u\n", t_rc);
+//                    stderr.printf("Got tune %u len = %u\n", t_rc, len);
                     if(have_rc == false)
                     {
                         have_rc = true;
@@ -613,7 +622,7 @@ public class PIDEdit : Object
                         rt.rc_rate = *rp++;
                         rt.rc_expo = *rp++;
                         rt.rollrate = *rp++;
-                        if(len == 10)
+                        if(len >= 10)
                         {
                             have_rccf = true;
                             rt.pitchrate = *rp++;
@@ -625,9 +634,15 @@ public class PIDEdit : Object
                         rt.throttle_mid = *rp++;
                         rt.throttle_expo = *rp++;
                         if(have_rccf)
+                        {
                             rp = deserialise_u16(rp, out rt.tpa_breakpoint);
+                            rt.yaw_expo = *rp++;
+                        }
                         else
+                        {
                             rt.tpa_breakpoint = 0;
+                            rt.yaw_expo = 0;
+                        }
                         set_rc_tuning();
                         t_pids = add_cmd(MSP.Cmds.PID,null,0);
                     }

@@ -766,7 +766,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="threxpro_entry">
+              <object class="GtkEntry" id="threxpo_entry">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="input_purpose">number</property>
@@ -931,10 +931,26 @@
               </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkLabel" id="label23">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Yaw Expo</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="top_attach">16</property>
+              </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkEntry" id="yawexpo_entry">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">number</property>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="top_attach">16</property>
+              </packing>
             </child>
             <child>
               <placeholder/>

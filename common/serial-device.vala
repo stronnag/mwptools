@@ -559,7 +559,7 @@ public class MWSerial : Object
                         else
                         {
                             error_counter();
-                            MWPLog.message(" CRC Fail, got %d != %d (%d)\n",
+                            MWPLog.message(" CRC Fail, got %d != %d (cmd=%d)\n",
                                            buf[nc],checksum,cmd);
                             state = States.S_ERROR;
                         }
