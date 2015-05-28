@@ -63,10 +63,22 @@ public class MSP : Object
         MODE_RANGES = 34, // FC out message Returns all mode ranges
         SET_MODE_RANGE = 35,   // FC in message Sets a single mode range
 
-        TG_FRAME = (0x1000 + 'G'),
-        TA_FRAME = (0x1000 + 'A'),
-        TS_FRAME = (0x1000 + 'S'),
-        INFO_WP = 0x2000
+        INFO_WP = 400,
+
+        TG_BASE  = 1000,
+        TG_FRAME = (TG_BASE + 'G'),
+        TA_FRAME = (TG_BASE + 'A'),
+        TS_FRAME = (TG_BASE + 'S'),
+
+        MAVLINK_MSG_ID_HEARTBEAT = 2000+0,
+        MAVLINK_MSG_ID_SYS_STATUS = 2000+1,
+        MAVLINK_MSG_GPS_RAW_INT_PACK = 2000+24,
+        MAVLINK_MSG_ATTITUDE_PACK = 2000+30,
+        MAVLINK_MSG_RC_CHANNELS_RAW_PACK = 2000+35,
+        MAVLINK_MSG_GPS_GLOBAL_ORIGIN_PACK = 2000+49,
+        MAVLINK_MSG_VFR_HUD_PACK = 2000+74,
+        MAVLINK_MSG_ID_RADIO = 2000+166,
+        MAVLINK_MSG_ID_RADIO_STATUS = 2000+109
     }
 
     public enum Sensors

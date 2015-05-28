@@ -259,6 +259,7 @@ public class MWPlanner : Gtk.Application {
     private bool want_home;
     private bool want_ph;
     private bool want_rth;
+    private uint8 mavc = 0;
 
     public struct Position
     {
@@ -340,11 +341,15 @@ public class MWPlanner : Gtk.Application {
     private static const int STATINTVL=(800/TIMINTVL);
     private static const int NODATAINTVL=(5000/TIMINTVL);
     private static const int RESTARTINTVL=(30000/TIMINTVL);
+    private static const int MAVINTVL=(2000/TIMINTVL);
+
+    private static const double RAD2DEG = 57.29578;
 
     private Timer lastp;
     private uint nticks = 0;
     private uint lastm;
     private uint lastrx;
+    private uint lastmav = 0;
     private uint lastok;
     private uint last_an = 0;
 
@@ -1197,6 +1202,20 @@ public class MWPlanner : Gtk.Application {
                         msg_poller();
                     }
                 }
+                else
+                {
+                    if(lastmav > 0 && ((nticks - lastmav) > MAVINTVL))
+                    {
+                        MWPLog.message("Restart poller on MAVINT\n");
+                        have_api = have_vers = have_misc =
+                        have_status = have_wp = have_nc =
+                        have_fcv = have_fcvv = false;
+                        xbits = icount = api_cnt = 0;
+                        init_sstats();
+                        lastmav = 0;
+                        add_cmd(MSP.Cmds.IDENT,null,0, 2500);
+                    }
+                }
 
                 if((nticks % ANIMINTVL) == 0)
                     anim_cb();
@@ -1285,8 +1304,110 @@ public class MWPlanner : Gtk.Application {
         send_cmd(req, null, 0);
     }
 
+    private void armed_processing(uint32 flag, uint16 sensor)
+    {
+        if(armed == 0)
+        {
+            armtime = 0;
+            duration = -1;
+            npos = false;
+        }
+        else
+        {
+            if(armtime == 0)
+                armtime = time_t(out armtime);
+            time_t(out duration);
+            duration -= armtime;
+        }
+
+        if(Logger.is_logging)
+        {
+            Logger.armed((armed == 1), duration, flag, sensor);
+        }
+
+        if(armed != larmed)
+        {
+
+
+            if(armed == 1 && craft == null)
+            {
+                craft = new Craft(view, 3, norotate, gps_trail);
+                craft.park();
+            }
+            if(gps_trail)
+            {
+                if(armed == 1 && craft != null)
+                {
+                    craft.init_trail();
+                }
+            }
+
+            if (armed == 1)
+            {
+                armed_spinner.show();
+                armed_spinner.start();
+                sflags |= NavStatus.SPK.Volts;
+                if (conf.audioarmed == true)
+                {
+                    audio_cb.active = true;
+                }
+                if(conf.logarmed == true)
+                {
+                    logb.active = true;
+                    Logger.armed(true,duration,flag, sensor);
+                }
+                want_home = true;
+            }
+            else
+            {
+                armed_spinner.stop();
+                armed_spinner.hide();
+                want_home = false;
+                if (conf.audioarmed == true)
+                {
+                    audio_cb.active = false;
+                }
+                if(conf.logarmed == true)
+                {
+                    Logger.armed(false,duration,flag, sensor);
+                    logb.active=false;
+                }
+            }
+            larmed = armed;
+        }
+    }
+
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
     {
+
+        if(cmd > MSP.Cmds.TG_BASE)
+        {
+            if(nopoll == false)
+            {
+                dopoll = false;
+            }
+
+            if (cmd >= MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT)
+            {
+                if(lastmav == 0)
+                {
+                    sflags = NavStatus.SPK.Volts;
+                    MWPLog.message("Mavlink mode\n");
+                    remove_tid(ref cmdtid);
+                    init_sstats();
+                    if(naze32 != true)
+                    {
+                        naze32 = true;
+                        mwvar = vi.fctype = MWChooser.MWVAR.CF;
+                        var vers="CF mavlink";
+                        verlab.set_label(vers);
+                    }
+                }
+                lastmav = nticks;
+                amsgs++;
+            }
+        }
+
         if(errs == true)
         {
             remove_tid(ref cmdtid);
@@ -1457,6 +1578,7 @@ public class MWPlanner : Gtk.Application {
                 uint32 flag;
                 deserialise_u16(raw+4, out sensor);
                 deserialise_u32(raw+6, out flag);
+                armed = ((flag & 1) == 1) ? 1 : 0;
 
                 if (nopoll == true)
                 {
@@ -1586,68 +1708,6 @@ public class MWPlanner : Gtk.Application {
                         report_bits(flag);
                     }
 
-                    armed = (uint8)(flag & 1);
-
-                    if(armed == 0)
-                    {
-                        armtime = 0;
-                        duration = -1;
-                    }
-                    else
-                    {
-                        if(armtime == 0)
-                            armtime = time_t(out armtime);
-                        time_t(out duration);
-                        duration -= armtime;
-                    }
-
-                    if(Logger.is_logging)
-                    {
-                        Logger.armed((armed == 1), duration, flag, sensor);
-                    }
-
-                    if(armed != larmed)
-                    {
-                        if(gps_trail)
-                        {
-                            if(armed == 1 && craft != null)
-                            {
-                                craft.init_trail();
-                            }
-                        }
-
-                        if (armed == 1)
-                        {
-                            armed_spinner.show();
-                            armed_spinner.start();
-                            if (conf.audioarmed == true)
-                            {
-                                audio_cb.active = true;
-                            }
-                            if(conf.logarmed == true)
-                            {
-                                logb.active = true;
-                                Logger.armed(true,duration,flag, sensor);
-                            }
-                            want_home = true;
-                        }
-                        else
-                        {
-                            armed_spinner.stop();
-                            armed_spinner.hide();
-                            want_home = false;
-                            if (conf.audioarmed == true)
-                            {
-                                audio_cb.active = false;
-                            }
-                            if(conf.logarmed == true)
-                            {
-                                Logger.armed(false,duration,flag, sensor);
-                                logb.active=false;
-                            }
-                        }
-                        larmed = armed;
-                    }
                         // acro/horizon/angle changed
                     if((flag & 6) != (xbits & 6))
                     {
@@ -1675,6 +1735,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     xbits = flag;
                 }
+                armed_processing(flag, sensor);
                 break;
 
             case MSP.Cmds.NAV_STATUS:
@@ -1992,6 +2053,7 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.RADIO:
+            case MSP.Cmds.MAVLINK_MSG_ID_RADIO:
             {
                 MSP_RADIO r = MSP_RADIO();
                 uint8 *rp;
@@ -2008,10 +2070,6 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.TG_FRAME:
             {
-                if(nopoll == false)
-                {
-                    dopoll = nopoll = true;
-                }
                 sflags |=  NavStatus.SPK.ELEV;
                 LTM_GFRAME gf = LTM_GFRAME();
                 uint8* rp;
@@ -2064,10 +2122,6 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.TA_FRAME:
             {
-                if(nopoll == false)
-                                    {
-                    dopoll = nopoll = true;
-                }
                 LTM_AFRAME af = LTM_AFRAME();
                 uint8* rp;
                 rp = deserialise_i16(raw, out af.pitch);
@@ -2084,10 +2138,6 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.TS_FRAME:
             {
-                if(nopoll == false)
-                {
-                    dopoll = nopoll = true;
-                }
                 LTM_SFRAME sf = LTM_SFRAME ();
                 uint8* rp;
                 rp = deserialise_i16(raw, out sf.vbat);
@@ -2102,77 +2152,174 @@ public class MWPlanner : Gtk.Application {
                 if((sf.flags & (2 << 3)) != 0)
                     mwflags |= 4;
 
-                if(armed == 0)
-                {
-                    armtime = 0;
-                    duration = -1;
-                    npos = false;
-                }
-                else
-                {
-                    if(armtime == 0)
-                        armtime = time_t(out armtime);
-                    time_t(out duration);
-                    duration -= armtime;
-                }
-
-                if(Logger.is_logging)
-                {
-                    Logger.armed((armed == 1), duration,mwflags,0);
-                }
-
-                if(armed != larmed)
-                {
-                    if(armed == 1 && craft == null)
-                    {
-                        craft = new Craft(view, 3, norotate, gps_trail);
-                        craft.park();
-                    }
-
-                    if(gps_trail)
-                    {
-                        if(armed == 1 && craft != null)
-                        {
-                            craft.init_trail();
-                        }
-                    }
-                    if (armed == 1)
-                    {
-                        armed_spinner.show();
-                        armed_spinner.start();
-                        sflags |= NavStatus.SPK.Volts;
-                        if (conf.audioarmed == true)
-                        {
-                            audio_cb.active = true;
-                        }
-                        if(conf.logarmed == true)
-                        {
-                            logb.active = true;
-                            Logger.armed(true,duration,mwflags,0);
-                        }
-                    }
-                    else
-                    {
-                        armed_spinner.stop();
-                        armed_spinner.hide();
-                        if (conf.audioarmed == true)
-                        {
-                            audio_cb.active = false;
-                        }
-                        if(conf.logarmed == true)
-                        {
-                            Logger.armed(false,duration,mwflags,0);
-                            logb.active=false;
-                        }
-                    }
-                    larmed = armed;
-                }
+                armed_processing(mwflags, 0);
 
                 radstatus.update_ltm(sf,item_visible(DOCKLETS.RADIO));
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
                 set_bat_stat((uint8)((sf.vbat + 50) / 100));
             }
             break;
+
+            case MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT:
+                Mav.MAVLINK_HEARTBEAT m = *(Mav.MAVLINK_HEARTBEAT*)raw;
+                if(mavc == 0)
+                {
+                    uint8 mbuf[32];
+                    mbuf[0] = 0xfe;
+                    mbuf[1] = 9; // size
+                    mbuf[2] = 0;
+                    mbuf[3] = 0;
+                    mbuf[4] = 0;
+                    mbuf[5] = 0;
+                    for(var j =0; j < 9; j++)
+                        mbuf[6+j] = 0;
+
+                    uint8 length = mbuf[1];
+                    uint16 sum = 0xFFFF;
+                    uint8 i, stoplen;
+                    stoplen = length + 6;
+                    mbuf[length+6] = 50;
+                    stoplen++;
+
+                    i = 1;
+                    while (i<stoplen)
+                    {
+                        sum = msp.mavlink_crc(sum, mbuf[i]);
+                        i++;
+                    }
+                    mbuf[length+6] = (uint8)sum&0xFF;
+                    mbuf[length+7] = sum>>8;
+                    msp.write(mbuf,length+8);
+                }
+                mavc++;
+                mavc %= 64;
+
+                if(craft == null)
+                {
+                    var typ = Mav.mav2mw(m.type);
+                    craft = new Craft(view, typ, norotate, gps_trail);
+                    craft.park();
+                }
+
+                if ((m.base_mode & 128) == 128)
+                    armed = 1;
+                else
+                    armed = 0;
+
+                armed_processing(0, 0);
+
+                if(Logger.is_logging)
+                    Logger.mav_heartbeat(m);
+                break;
+
+            case MSP.Cmds.MAVLINK_MSG_ID_SYS_STATUS:
+                Mav.MAVLINK_SYS_STATUS m = *(Mav.MAVLINK_SYS_STATUS*)raw;
+                if(sflags == 1)
+                {
+                    if((m.onboard_control_sensors_health & 0x8) == 0x8)
+                        sflags |= NavStatus.SPK.BARO;
+                    if((m.onboard_control_sensors_health & 0x20) == 0x20)
+                        sflags |= NavStatus.SPK.GPS;
+                }
+                set_bat_stat(m.voltage_battery/100);
+                if(Logger.is_logging)
+                    Logger.mav_sys_status(m);
+                break;
+
+            case MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT_PACK:
+                Mav.MAVLINK_GPS_RAW_INT m = *(Mav.MAVLINK_GPS_RAW_INT*)raw;
+
+                var fix  = gpsinfo.update_mav_gps(m, conf.dms,
+                                                item_visible(DOCKLETS.GPS));
+                gpsfix = (fix > 1);
+                _nsats = m.satellites_visible;
+                if(gpsfix)
+                {
+                    if(armed == 1)
+                    {
+                        if(npos == false)
+                        {
+                            sflags |=  NavStatus.SPK.GPS;
+                            npos = true;
+                        }
+                        if(_ilat != 0.0 && _ilon != 0.0)
+                        {
+                            double dist,cse;
+                            Geo.csedist(GPSInfo.lat, GPSInfo.lon, _ilat, _ilon,
+                                        out dist, out cse);
+                            var cg = MSP_COMP_GPS();
+                            cg.range = (uint16)Math.lround(dist*1852);
+                            cg.direction = (int16)Math.lround(cse);
+                            navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+                        }
+                    }
+                    if(craft != null)
+                    {
+                        if(follow == true)
+                        {
+                            double cse = (usemag) ? mhead : GPSInfo.cse;
+                            craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
+                        }
+                        if (centreon == true)
+                            view.center_on(GPSInfo.lat,GPSInfo.lon);
+                    }
+                }
+                fbox.update(item_visible(DOCKLETS.FBOX));
+                break;
+
+            case MSP.Cmds.MAVLINK_MSG_ATTITUDE_PACK:
+                Mav.MAVLINK_ATTITUDE m = *(Mav.MAVLINK_ATTITUDE*)raw;
+                if(usemag)
+                {
+                    mhead = (int16)(m.yaw*RAD2DEG);
+                    if(mhead < 0)
+                        mhead += 360;
+                }
+                navstatus.set_mav_attitude(m,item_visible(DOCKLETS.NAVSTATUS));
+                art_win.update((int16)(m.roll*57.29578*10), (int16)(m.pitch*57.29578*10),
+                               item_visible(DOCKLETS.ARTHOR));
+                break;
+
+            case MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW_PACK:
+                if(Logger.is_logging)
+                {
+                    Mav.MAVLINK_RC_CHANNELS m = *(Mav.MAVLINK_RC_CHANNELS*)raw;
+                    Logger.mav_rc_channels(m);
+                }
+                break;
+
+            case MSP.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN_PACK:
+                Mav. MAVLINK_GPS_GLOBAL_ORIGIN m = *(Mav.MAVLINK_GPS_GLOBAL_ORIGIN *)raw;
+                _ilat  = m.latitude / 10000000.0;
+                _ilon  = m.longitude / 10000000.0;
+
+                if(want_home)
+                {
+                    want_home = false;
+                    home_pos.lat = _ilat;
+                    home_pos.lon = _ilon;
+                    home_pos.alt = m.altitude / 1000.0;
+                    if(craft != null)
+                    {
+                        craft.special_wp(Craft.Special.HOME,
+                                         GPSInfo.lat, GPSInfo.lon);
+                    }
+                }
+
+                if(Logger.is_logging)
+                {
+                    Logger.mav_gps_global_origin(m);
+                }
+                break;
+
+            case MSP.Cmds.MAVLINK_MSG_VFR_HUD_PACK:
+                Mav.MAVLINK_VFR_HUD m = *(Mav.MAVLINK_VFR_HUD *)raw;
+                mhead = (int16)m.heading;
+                navstatus.set_mav_altitude(m, item_visible(DOCKLETS.NAVSTATUS));
+                break;
+
+            case MSP.Cmds.MAVLINK_MSG_ID_RADIO_STATUS:
+                break;
 
             default:
                 MWPLog.message ("** Unknown response %d\n", cmd);
@@ -2183,7 +2330,8 @@ public class MWPlanner : Gtk.Application {
         {
             if (match_pollcmds(cmd))
             {
-                tcycle = (tcycle + 1) % requests.length;
+                if (requests.length > 0)
+                    tcycle = (tcycle + 1) % requests.length;
                 amsgs++;
                 if(tcycle == 0)
                 {
@@ -2422,12 +2570,11 @@ public class MWPlanner : Gtk.Application {
     private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, int wait=1000)
     {
         cmdtid = Timeout.add(wait, () => {
-                    //
+                MWPLog.message(" ** repeat %s\n", cmd.to_string());
                 if ((cmd == MSP.Cmds.API_VERSION) ||
                     (cmd == MSP.Cmds.FC_VARIANT) ||
                     (cmd == MSP.Cmds.FC_VERSION))
                     cmd = MSP.Cmds.BOXNAMES;
-
                 send_cmd(cmd,buf,len);
                 return true;
             });
@@ -2511,6 +2658,7 @@ public class MWPlanner : Gtk.Application {
         set_bat_stat(0);
         nsats = 0;
         _nsats = 0;
+        lastmav = 0;
         msp.close();
         c.set_label("Connect");
         menuncfg.sensitive = menuup.sensitive = menudown.sensitive = false;

@@ -287,4 +287,179 @@ public class Logger : GLib.Object
 	gen.set_root (root);
         write_stream();
     }
+
+    public static void mav_heartbeat (Mav.MAVLINK_HEARTBEAT m)
+    {
+        var builder = init ("mavlink_heartbeat");
+        builder.set_member_name ("custom_mode");
+        builder.add_int_value(m.custom_mode);
+        builder.set_member_name ("type");
+        builder.add_int_value(m.type);
+        builder.set_member_name ("autopilot");
+        builder.add_int_value(m.autopilot);
+        builder.set_member_name ("base_mode");
+        builder.add_int_value(m.base_mode);
+        builder.set_member_name ("system_status");
+        builder.add_int_value(m.system_status);
+        builder.set_member_name ("mavlink_version");
+        builder.add_int_value(m.mavlink_version);
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+        gen.set_root (root);
+        write_stream();
+    }
+
+    public static void mav_sys_status (Mav.MAVLINK_SYS_STATUS m)
+    {
+        var builder = init ("mavlink_sys_status");
+        builder.set_member_name ("onboard_control_sensors_present");
+        builder.add_int_value(m.onboard_control_sensors_present);
+        builder.set_member_name ("onboard_control_sensors_enabled");
+        builder.add_int_value(m.onboard_control_sensors_enabled);
+        builder.set_member_name ("onboard_control_sensors_health");
+        builder.add_int_value(m.onboard_control_sensors_health);
+        builder.set_member_name ("load");
+        builder.add_int_value(m.load);
+        builder.set_member_name ("voltage_battery");
+        builder.add_int_value(m.voltage_battery);
+        builder.set_member_name ("current_battery");
+        builder.add_int_value(m.current_battery);
+        builder.set_member_name ("drop_rate_comm");
+        builder.add_int_value(m.drop_rate_comm);
+        builder.set_member_name ("errors_comm");
+        builder.add_int_value(m.errors_comm);
+        builder.set_member_name ("errors_count1");
+        builder.add_int_value(m.errors_count1);
+        builder.set_member_name ("errors_count2");
+        builder.add_int_value(m.errors_count2);
+        builder.set_member_name ("errors_count3");
+        builder.add_int_value(m.errors_count3);
+        builder.set_member_name ("errors_count4");
+        builder.add_int_value(m.errors_count4);
+        builder.set_member_name ("battery_remaining");
+        builder.add_int_value(m.battery_remaining);
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+        gen.set_root (root);
+        write_stream();
+    }
+
+    public static void mav_gps_raw_int (Mav.MAVLINK_GPS_RAW_INT m)
+    {
+        var builder = init ("mavlink_gps_raw_int");
+        builder.set_member_name ("time_usec");
+        builder.add_int_value((int64)m.time_usec);
+        builder.set_member_name ("lat");
+        builder.add_int_value(m.lat);
+        builder.set_member_name ("lon");
+        builder.add_int_value(m.lon);
+        builder.set_member_name ("alt");
+        builder.add_int_value(m.alt);
+        builder.set_member_name ("eph");
+        builder.add_int_value(m.eph);
+        builder.set_member_name ("epv");
+        builder.add_int_value(m.epv);
+        builder.set_member_name ("vel");
+        builder.add_int_value(m.vel);
+        builder.set_member_name ("cog");
+        builder.add_int_value(m.cog);
+        builder.set_member_name ("fix_type");
+        builder.add_int_value(m.fix_type);
+        builder.set_member_name ("satellites_visible");
+        builder.add_int_value(m.satellites_visible);
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+        gen.set_root (root);
+        write_stream();
+    }
+
+    public static void mav_attitude (Mav.MAVLINK_ATTITUDE m)
+    {
+        var builder = init ("mavlink_attitude");
+        builder.set_member_name ("time_boot_ms");
+        builder.add_int_value(m.time_boot_ms);
+        builder.set_member_name ("roll");
+        builder.add_double_value(m.roll);
+        builder.set_member_name ("pitch");
+        builder.add_double_value(m.pitch);
+        builder.set_member_name ("yaw");
+        builder.add_double_value(m.yaw);
+        builder.set_member_name ("rollspeed");
+        builder.add_double_value(m.rollspeed);
+        builder.set_member_name ("pitchspeed");
+        builder.add_double_value(m.pitchspeed);
+        builder.set_member_name ("yawspeed");
+        builder.add_double_value(m.yawspeed);
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+        gen.set_root (root);
+        write_stream();
+    }
+
+    public static void mav_rc_channels (Mav.MAVLINK_RC_CHANNELS m)
+    {
+        var builder = init ("mavlink_rc_channels");
+        builder.set_member_name ("time_boot_ms");
+        builder.add_int_value(m.time_boot_ms);
+        builder.set_member_name ("chan1_raw");
+        builder.add_int_value(m.chan1_raw);
+        builder.set_member_name ("chan2_raw");
+        builder.add_int_value(m.chan2_raw);
+        builder.set_member_name ("chan3_raw");
+        builder.add_int_value(m.chan3_raw);
+        builder.set_member_name ("chan4_raw");
+        builder.add_int_value(m.chan4_raw);
+        builder.set_member_name ("chan5_raw");
+        builder.add_int_value(m.chan5_raw);
+        builder.set_member_name ("chan6_raw");
+        builder.add_int_value(m.chan6_raw);
+        builder.set_member_name ("chan7_raw");
+        builder.add_int_value(m.chan7_raw);
+        builder.set_member_name ("chan8_raw");
+        builder.add_int_value(m.chan8_raw);
+        builder.set_member_name ("port");
+        builder.add_int_value(m.port);
+        builder.set_member_name ("rssi");
+        builder.add_int_value(m.rssi);
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+        gen.set_root (root);
+        write_stream();
+    }
+
+    public static void mav_gps_global_origin (Mav.MAVLINK_GPS_GLOBAL_ORIGIN m)
+    {
+        var builder = init ("mavlink_gps_global_origin");
+        builder.set_member_name ("latitude");
+        builder.add_int_value(m.latitude);
+        builder.set_member_name ("longitude");
+        builder.add_int_value(m.longitude);
+        builder.set_member_name ("altitude");
+        builder.add_int_value(m.altitude);
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+        gen.set_root (root);
+        write_stream();
+    }
+
+    public static void mav_vfr_hud (Mav.MAVLINK_VFR_HUD m)
+    {
+        var builder = init ("mavlink_vfr_hud");
+        builder.set_member_name ("airspeed");
+        builder.add_double_value(m.airspeed);
+        builder.set_member_name ("groundspeed");
+        builder.add_double_value(m.groundspeed);
+        builder.set_member_name ("alt");
+        builder.add_double_value(m.alt);
+        builder.set_member_name ("climb");
+        builder.add_double_value(m.climb);
+        builder.set_member_name ("heading");
+        builder.add_int_value(m.heading);
+        builder.set_member_name ("throttle");
+        builder.add_int_value(m.throttle);
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+        gen.set_root (root);
+        write_stream();
+    }
 }

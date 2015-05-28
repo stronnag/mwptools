@@ -1030,8 +1030,6 @@ public class NavStatus : GLib.Object
 
     public void update_ltm_s(LTM_SFRAME s, bool visible)
     {
-//        stderr.printf("ltm %s %x\n", enabled.to_string(), (int)s.flags);
-
         if(enabled || Logger.is_logging)
         {
             uint8 armed = (s.flags & 1);
@@ -1176,6 +1174,47 @@ public class NavStatus : GLib.Object
             {
                 Logger.altitude(estalt,vario);
             }
+        }
+    }
+
+    public void set_mav_attitude(Mav.MAVLINK_ATTITUDE m, bool visible)
+    {
+        double dax;
+        double day;
+        dax = m.roll * 57.29578;
+        day = m.pitch * 57.29578;
+        hdr = (int16) (m.yaw * 57.29578);
+
+        if(hdr < 0)
+            hdr += 360;
+
+        have_hdr = true;
+        if(visible)
+        {
+            var str = "%.1f° / %.1f° / %d°".printf(dax, day, hdr);
+            nav_attitude_label.set_label(str);
+        }
+        if(Logger.is_logging)
+        {
+            Logger.mav_attitude(m);
+        }
+    }
+
+    public void  set_mav_altitude(Mav.MAVLINK_VFR_HUD m, bool visible)
+    {
+        alti = {(int32)(m.alt * 100), (int16)(m.climb*10)};
+        if(visible)
+        {
+            var str = "%.1f%s / %.1f%s".printf(
+                Units.distance(m.alt),
+                Units.distance_units(),
+                Units.va_speed(m.climb),
+                Units.va_speed_units());
+            nav_altitude_label.set_label(str);
+        }
+        if(Logger.is_logging)
+        {
+            Logger.mav_vfr_hud(m);
         }
     }
 
@@ -1715,6 +1754,38 @@ public class GPSInfo : GLib.Object
         speed_lab.valign = Gtk.Align.START;
         grid.attach(speed_lab, 1, 5, 1, 1);
         grid.show_all();
+    }
+
+    public int update_mav_gps(Mav.MAVLINK_GPS_RAW_INT m, bool dms,bool visible)
+    {
+        lat = m.lat/10000000.0;
+        lon = m.lon/10000000.0;
+        double dalt = m.alt/1000.0;
+        double cse = (m.cog == 0xffff) ? 0 : m.cog/100.0;
+        spd  = (m.vel == 0xffff) ? 0 : m.vel/100.0;
+        elev = (int16)Math.lround(dalt);
+        var nsatstr = "%d (%sfix)".printf(m.satellites_visible, (m.fix_type < 2) ? "no" : "");
+         if(visible)
+        {
+            nsat_lab.set_label(nsatstr);
+            lat_lab.set_label(PosFormat.lat(lat,dms));
+            lon_lab.set_label(PosFormat.lon(lon,dms));
+            speed_lab.set_label(
+                "%.0f %s".printf(
+                    Units.speed(spd), Units.speed_units()
+                                 ));
+            alt_lab.set_label("%.1f %s".printf(
+                                  Units.distance(dalt), Units.distance_units()));
+
+            dirn_lab.set_label("%.1f °".printf(cse));
+        }
+
+        if(Logger.is_logging)
+        {
+            Logger.mav_gps_raw_int (m);
+        }
+
+        return m.fix_type;
     }
 
 

@@ -61,6 +61,12 @@ public class MWSerial : Object
     private int64 ltime;
     private SerialStats stats;
     private int commode;
+    private uint8 mavcrc;
+    private uint8 mavlen;
+    private uint8 mavid1;
+    private uint8 mavid2;
+    private uint16 mavsum;
+    private uint16 rxmavsum;
 
     public enum ComMode
     {
@@ -77,16 +83,25 @@ public class MWSerial : Object
     public enum States
     {
         S_END=0,
-            S_HEADER,
-            S_HEADER1,
-            S_HEADER2,
-            S_SIZE,
-            S_CMD,
-            S_DATA,
-            S_CHECKSUM,
-            S_ERROR,
-            S_T_HEADER2=100,
-            }
+        S_HEADER,
+        S_HEADER1,
+        S_HEADER2,
+        S_SIZE,
+        S_CMD,
+        S_DATA,
+        S_CHECKSUM,
+        S_ERROR,
+        S_T_HEADER2=100,
+        S_M_STX = 200,
+        S_M_SIZE,
+        S_M_SEQ,
+        S_M_ID1,
+        S_M_ID2,
+        S_M_MSGID,
+        S_M_DATA,
+        S_M_CRC1,
+        S_M_CRC2
+    }
 
     public signal void serial_event (MSP.Cmds event, uint8[]result, uint len, bool err);
     public signal void serial_lost ();
@@ -431,6 +446,13 @@ public class MWSerial : Object
                             state=States.S_HEADER1;
                             errstate = false;
                         }
+                        else if (buf[nc] == 0xfe)
+                        {
+                            sp = nc;
+                            state=States.S_M_SIZE;
+                            errstate = false;
+                        }
+
                         break;
 
                     case States.S_HEADER:
@@ -438,6 +460,12 @@ public class MWSerial : Object
                         {
                             sp = nc;
                             state=States.S_HEADER1;
+                            errstate = false;
+                        }
+                        else if (buf[nc] == 0xfe)
+                        {
+                            sp = nc;
+                            state=States.S_M_SIZE;
                             errstate = false;
                         }
                         else
@@ -567,10 +595,134 @@ public class MWSerial : Object
                     case States.S_END:
                         state = States.S_HEADER;
                         break;
+                    case States.S_M_SIZE:
+                        csize = needed = buf[nc];
+                        mavsum = mavlink_crc(0xffff, csize);
+                        if(needed > 0)
+                        {
+                            raw = new uint8[csize];
+                            rawp= 0;
+                        }
+                        state = States.S_M_SEQ;
+                        break;
+                    case States.S_M_SEQ:
+                        mavsum = mavlink_crc(mavsum, buf[nc]);
+                        state = States.S_M_ID1;
+                        break;
+                    case States.S_M_ID1:
+                        mavid1 = buf[nc];
+                        mavsum = mavlink_crc(mavsum, mavid1);
+                        state = States.S_M_ID2;
+                        break;
+                    case States.S_M_ID2:
+                        mavid2 = buf[nc];
+                        mavsum = mavlink_crc(mavsum, mavid2);
+                        state = States.S_M_MSGID;
+                        break;
+                    case States.S_M_MSGID:
+                        cmd = (MSP.Cmds)buf[nc];
+                        mavsum = mavlink_crc(mavsum, cmd);
+                        if (csize == 0)
+                            state = States.S_M_CRC1;
+                        else
+                            state = States.S_M_DATA;
+                        break;
+                    case States.S_M_DATA:
+                        mavsum = mavlink_crc(mavsum, buf[nc]);
+                        raw[rawp++] = buf[nc];
+                        needed--;
+                        if(needed == 0)
+                        {
+                            state = States.S_M_CRC1;
+                            mavlink_meta(cmd);
+                            mavsum = mavlink_crc(mavsum, mavcrc);
+                        }
+                        break;
+                    case States.S_M_CRC1:
+                        rxmavsum = buf[nc];
+                        state = States.S_M_CRC2;
+                        break;
+                    case States.S_M_CRC2:
+                        rxmavsum |= (buf[nc] << 8);
+                        if(rxmavsum == mavsum)
+                        {
+//                            MWPLog.message(" MAVMSG cmd=%u, len=%u res = %u\n",
+//                                           cmd,csize, cmd+MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT);
+                            serial_event(cmd+MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT,
+                                         raw, csize,errstate);
+                            state = States.S_HEADER;
+                        }
+                        else
+                        {
+                            error_counter();
+                            MWPLog.message(" MAVCRC Fail, got %x != %x [%x %x] (cmd=%u, len=%u)\n",
+                                           rxmavsum, mavsum,
+                                           mavid1, mavid2,
+                                           cmd, csize);
+                            state = States.S_ERROR;
+                        }
+                        break;
                 }
             }
         }
         return true;
+    }
+
+    private void mavlink_meta(uint8 id)
+    {
+        switch(id)
+        {
+            case 0:
+                mavcrc = 50;
+                mavlen = 9;
+                break;
+            case 1:
+                mavcrc = 124;
+                mavlen = 31;
+                break;
+            case 24:
+                mavcrc = 24;
+                mavlen = 30;
+                break;
+            case 30:
+                mavcrc = 39;
+                mavlen = 28;
+                break;
+            case 35:
+                mavcrc = 244;
+                mavlen = 22;
+                break;
+            case 49:
+                mavcrc = 39;
+                mavlen = 12;
+                break;
+            case 74:
+                mavcrc = 20;
+                mavlen = 20;
+                break;
+            case 166:
+                mavcrc = 21;
+                mavlen = 9;
+                break;
+            case 109:
+                mavcrc = 185;
+                mavlen = 9;
+                break;
+
+            default:
+                mavcrc = 255;
+                mavlen = 255;
+                break;
+        }
+    }
+
+    public uint16 mavlink_crc(uint16 acc, uint8 val)
+    {
+        uint8 tmp;
+        tmp = val ^ (uint8)(acc&0xff);
+        tmp ^= (tmp<<4);
+        acc = (acc>>8) ^ (tmp<<8) ^ (tmp<<3) ^ (tmp>>4);
+        return acc;
     }
 
     public ssize_t write(void *buf, size_t count)
