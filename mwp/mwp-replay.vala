@@ -149,6 +149,15 @@ public class ReplayThread : GLib.Object
         Posix.write(fd,&rl,rl.len + sizeof(uint) + sizeof(MSP.Cmds));
     }
 
+    private void send_mav_cmd(int fd, MSP.Cmds cmd, uint8 *buf, size_t st)
+    {
+        uint8 xbuf[128];
+        for(var i =0; i < st; i++)
+            xbuf[i] = *buf++;
+        send_rec(fd, cmd, (uint)st, xbuf);
+        stderr.printf("Replay %s\n", cmd.to_string());
+    }
+
     public ReplayThread()
     {
     }
@@ -413,6 +422,90 @@ public class ReplayThread : GLib.Object
                                         */
                                     break;
 
+                                case "mavlink_heartbeat":
+                                    var m = Mav.MAVLINK_HEARTBEAT();
+                                    m.custom_mode =  (uint32)obj.get_int_member("custom_mode");
+                                    m.type =  (uint8)obj.get_int_member("type");
+                                    m.autopilot =  (uint8)obj.get_int_member("autopilot");
+                                    m.base_mode =  (uint8)obj.get_int_member("base_mode");
+                                    m.system_status =  (uint8)obj.get_int_member("system_status");
+                                    m.mavlink_version =  (uint8)obj.get_int_member("mavlink_version");
+                                    send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT, (uint8*)(&m), sizeof(Mav.MAVLINK_HEARTBEAT));
+                                    break;
+                                case "mavlink_sys_status":
+                                    var m = Mav.MAVLINK_SYS_STATUS();
+                                    m.onboard_control_sensors_present =  (uint32)obj.get_int_member("onboard_control_sensors_present");
+                                    m.onboard_control_sensors_enabled =  (uint32)obj.get_int_member("onboard_control_sensors_enabled");
+                                    m.onboard_control_sensors_health =  (uint32)obj.get_int_member("onboard_control_sensors_health");
+                                    m.load =  (uint16)obj.get_int_member("load");
+                                    m.voltage_battery =  (uint16)obj.get_int_member("voltage_battery");
+                                    m.current_battery =  (int16)obj.get_int_member("current_battery");
+                                    m.drop_rate_comm =  (uint16)obj.get_int_member("drop_rate_comm");
+                                    m.errors_comm =  (uint16)obj.get_int_member("errors_comm");
+                                    m.errors_count1 =  (uint16)obj.get_int_member("errors_count1");
+                                    m.errors_count2 =  (uint16)obj.get_int_member("errors_count2");
+                                    m.errors_count3 =  (uint16)obj.get_int_member("errors_count3");
+                                    m.errors_count4 =  (uint16)obj.get_int_member("errors_count4");
+                                    m.battery_remaining =  (int8)obj.get_int_member("battery_remaining");
+                                    send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_ID_SYS_STATUS, (uint8*)(&m), sizeof(Mav.MAVLINK_SYS_STATUS));
+                                    break;
+                                case "mavlink_gps_raw_int":
+                                    var m = Mav.MAVLINK_GPS_RAW_INT();
+                                    m.time_usec =  (uint64)obj.get_int_member("time_usec");
+                                    m.lat =  (int32)obj.get_int_member("lat");
+                                    m.lon =  (int32)obj.get_int_member("lon");
+                                    m.alt =  (int32)obj.get_int_member("alt");
+                                    m.eph =  (uint16)obj.get_int_member("eph");
+                                    m.epv =  (uint16)obj.get_int_member("epv");
+                                    m.vel =  (uint16)obj.get_int_member("vel");
+                                    m.cog =  (uint16)obj.get_int_member("cog");
+                                    m.fix_type =  (uint8)obj.get_int_member("fix_type");
+                                    m.satellites_visible =  (uint8)obj.get_int_member("satellites_visible");
+                                    send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT, (uint8*)(&m), sizeof(Mav.MAVLINK_GPS_RAW_INT));
+                                    break;
+                                case "mavlink_attitude":
+                                    var m = Mav.MAVLINK_ATTITUDE();
+                                    m.time_boot_ms =  (uint32)obj.get_int_member("time_boot_ms");
+                                    m.roll =  (float)obj.get_double_member("roll");
+                                    m.pitch =  (float)obj.get_double_member("pitch");
+                                    m.yaw =  (float)obj.get_double_member("yaw");
+                                    m.rollspeed =  (float)obj.get_double_member("rollspeed");
+                                    m.pitchspeed =  (float)obj.get_double_member("pitchspeed");
+                                    m.yawspeed =  (float)obj.get_double_member("yawspeed");
+                                    send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_ATTITUDE, (uint8*)(&m), sizeof(Mav.MAVLINK_ATTITUDE));
+                                    break;
+                                case "mavlink_rc_channels":
+                                    var m = Mav.MAVLINK_RC_CHANNELS();
+                                    m.time_boot_ms =  (uint32)obj.get_int_member("time_boot_ms");
+                                    m.chan1_raw =  (uint16)obj.get_int_member("chan1_raw");
+                                    m.chan2_raw =  (uint16)obj.get_int_member("chan2_raw");
+                                    m.chan3_raw =  (uint16)obj.get_int_member("chan3_raw");
+                                    m.chan4_raw =  (uint16)obj.get_int_member("chan4_raw");
+                                    m.chan5_raw =  (uint16)obj.get_int_member("chan5_raw");
+                                    m.chan6_raw =  (uint16)obj.get_int_member("chan6_raw");
+                                    m.chan7_raw =  (uint16)obj.get_int_member("chan7_raw");
+                                    m.chan8_raw =  (uint16)obj.get_int_member("chan8_raw");
+                                    m.port =  (uint8)obj.get_int_member("port");
+                                    m.rssi =  (uint8)obj.get_int_member("rssi");
+                                    send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW, (uint8*)(&m), sizeof(Mav.MAVLINK_RC_CHANNELS));
+                                    break;
+                                case "mavlink_gps_global_origin":
+                                    var m = Mav.MAVLINK_GPS_GLOBAL_ORIGIN();
+                                    m.latitude =  (int32)obj.get_int_member("latitude");
+                                    m.longitude =  (int32)obj.get_int_member("longitude");
+                                    m.altitude =  (int32)obj.get_int_member("altitude");
+                                    send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN, (uint8*)(&m), sizeof(Mav.MAVLINK_GPS_GLOBAL_ORIGIN));
+                                    break;
+                                case "mavlink_vfr_hud":
+                                    var m = Mav.MAVLINK_VFR_HUD();
+                                    m.airspeed =  (float)obj.get_double_member("airspeed");
+                                    m.groundspeed =  (float)obj.get_double_member("groundspeed");
+                                    m.alt =  (float)obj.get_double_member("alt");
+                                    m.climb =  (float)obj.get_double_member("climb");
+                                    m.heading =  (int16)obj.get_int_member("heading");
+                                    m.throttle =  (uint16)obj.get_int_member("throttle");
+                                    send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_VFR_HUD, (uint8*)(&m), sizeof(Mav.MAVLINK_VFR_HUD));
+                                    break;
                                 default:
                                     break;
                             }

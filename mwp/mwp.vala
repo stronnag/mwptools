@@ -2226,7 +2226,7 @@ public class MWPlanner : Gtk.Application {
                     Logger.mav_sys_status(m);
                 break;
 
-            case MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT_PACK:
+            case MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT:
                 Mav.MAVLINK_GPS_RAW_INT m = *(Mav.MAVLINK_GPS_RAW_INT*)raw;
 
                 var fix  = gpsinfo.update_mav_gps(m, conf.dms,
@@ -2267,7 +2267,7 @@ public class MWPlanner : Gtk.Application {
                 fbox.update(item_visible(DOCKLETS.FBOX));
                 break;
 
-            case MSP.Cmds.MAVLINK_MSG_ATTITUDE_PACK:
+            case MSP.Cmds.MAVLINK_MSG_ATTITUDE:
                 Mav.MAVLINK_ATTITUDE m = *(Mav.MAVLINK_ATTITUDE*)raw;
                 if(usemag)
                 {
@@ -2280,7 +2280,7 @@ public class MWPlanner : Gtk.Application {
                                item_visible(DOCKLETS.ARTHOR));
                 break;
 
-            case MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW_PACK:
+            case MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW:
                 if(Logger.is_logging)
                 {
                     Mav.MAVLINK_RC_CHANNELS m = *(Mav.MAVLINK_RC_CHANNELS*)raw;
@@ -2288,7 +2288,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 break;
 
-            case MSP.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN_PACK:
+            case MSP.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN:
                 Mav. MAVLINK_GPS_GLOBAL_ORIGIN m = *(Mav.MAVLINK_GPS_GLOBAL_ORIGIN *)raw;
                 _ilat  = m.latitude / 10000000.0;
                 _ilon  = m.longitude / 10000000.0;
@@ -2312,7 +2312,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 break;
 
-            case MSP.Cmds.MAVLINK_MSG_VFR_HUD_PACK:
+            case MSP.Cmds.MAVLINK_MSG_VFR_HUD:
                 Mav.MAVLINK_VFR_HUD m = *(Mav.MAVLINK_VFR_HUD *)raw;
                 mhead = (int16)m.heading;
                 navstatus.set_mav_altitude(m, item_visible(DOCKLETS.NAVSTATUS));
