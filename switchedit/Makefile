@@ -1,5 +1,5 @@
 VALAC=valac
-OPTS +=-X -O2 --target-glib=2.3
+OPTS +=-X -O2 --target-glib=2.3 -g --save-temps
 #LOPTS=-X -lbluetooth
 LOPTS=
 APP=switchedit

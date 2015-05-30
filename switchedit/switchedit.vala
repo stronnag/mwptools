@@ -19,6 +19,7 @@
 public class SwitchEdit : Object
 {
     const int NBITS=12;
+    const int NMODES=20;
     private struct PERM_BOX
     {
         string name;
@@ -46,7 +47,7 @@ public class SwitchEdit : Object
     private uint8 []rowids;
     private uint8 []permids;
     private bool applied = false;
-    private uint nranges = 40;
+    private uint nranges = NMODES;
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
     private uint cmdtid;
     private uint8 api_cnt = 0;
@@ -181,7 +182,7 @@ public class SwitchEdit : Object
         else
         {
             uint8 aid=0;
-            mrs = new CF_MODE_RANGES[40];
+            mrs = new CF_MODE_RANGES[128];
             for(var ib = 0; ib < nboxen; ib++)
             {
                 for(var j = 0; j < 4; j++)
@@ -192,9 +193,6 @@ public class SwitchEdit : Object
                     switch (auxbits)
                     {
                         case 0:
-                            mrs[aid].startstep = 0;
-                            mrs[aid].endstep = 0;
-                            aid++;
                             break;
 
                         case 1:
@@ -240,7 +238,6 @@ public class SwitchEdit : Object
                     }
                 }
             }
-
             for(;aid < nranges;aid++)
                 mrs[aid] = {0,0,0,0};
 
@@ -618,7 +615,7 @@ public class SwitchEdit : Object
     private void add_boxlabels(string[]bsx)
     {
         boxlabel={};
-        rowids = new uint8[40];
+        rowids = new uint8[NMODES];
         permids = new uint8[nboxen];
 
         for(var i = 0; i < nboxen; i++)
@@ -701,7 +698,7 @@ public class SwitchEdit : Object
             var k = 0;
             for(var j = 0; j < NBITS; j++)
             {
-                var c = new Gtk.CheckButton();
+                Gtk.CheckButton c = new Gtk.CheckButton();
                 checks += c;
 
                 if((j % 3)  == 0 && j != 0)
@@ -713,7 +710,9 @@ public class SwitchEdit : Object
                 }
                 else
                     k += 1;
+
                 grid1.attach(c,k,i+2,1,1);
+                c.show();
             }
         }
         grid1.show_all();
