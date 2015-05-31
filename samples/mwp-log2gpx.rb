@@ -74,6 +74,24 @@ Yajl::Parser.parse(json, {:symbolize_names => true}) do |o|
     m2.add_child(doc.create_element('cmt',
 				    "Course #{o[:cse]}°, speed #{o[:spd]}m/s"))
   end
+
+  if o[:type] == "mavlink_gps_raw_int"
+    next if armed and astat == :false
+    next if fix and (o[:fix_type].nil? or o[:fix_type] < 2)
+    next if nsats and (o[:satellites_visible].nil? or o[:satellites_visible] < nsats)
+
+    m2 = m1.add_child(doc.create_element('trkpt',
+					 :lat => o[:lat]/10000000.0, :lon => o[:lon]/10000000.0))
+    m2.add_child(doc.create_element('ele',(o[:alt]/1000.0).to_s))
+    m2.add_child(doc.create_element('time',
+				    Time.at(o[:utime]).gmtime.strftime("%FT%TZ")))
+    m2.add_child(doc.create_element('sat', o[:satellites_visible].to_s))
+    cog = o[:cog]/100.0
+    m2.add_child(doc.create_element('course', cog.to_s))
+    m2.add_child(doc.create_element('speed', o[:vel].to_s))
+    m2.add_child(doc.create_element('cmt',
+				    "Course #{cog}°, speed #{o[:vel]}m/s"))
+  end
 end
 fn=(ARGV[1]||STDOUT.fileno)
 File.open(fn,'w') {|fh| fh.puts doc.to_xml}

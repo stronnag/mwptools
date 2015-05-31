@@ -55,7 +55,11 @@ class KMLBuilder
 	next if @fix and (o[:fix].nil? or o[:fix] < 1)
 	next if @nsats and (o[:numsat].nil? or o[:numsat] < @nsats)
 	arry << {:lat => o[:lat],  :lon => o[:lon], :alt => o[:alt],
-	  :utime => o[:utime], :spd => o[:spd], :cse => o[:cse]}
+	  :utime => o[:utime], :spd => o[:spd], :cse => o[:cse], :amode => 'absolute'}
+      end
+      if o[:type] == "mavlink_gps_raw_int"
+	arry << {:lat => o[:lat]/10000000.0,  :lon => o[:lon]/10000000.0, :alt => o[:alt]/1000.0,
+	  :utime => o[:utime], :spd => o[:vel], :cse => o[:cog]/100.0, :amode => "relativeToGround"}
       end
     end
     arry
@@ -95,6 +99,8 @@ class KMLBuilder
 		  )
     end
 
+    amode = arry[0][:amode]
+
     doc[:styles] <<
       Style.new(:id => "transBluePoly",
 		:line_style => LineStyle.new(:width => 1.5),
@@ -107,7 +113,7 @@ class KMLBuilder
                        :geometry => LineString.new(
                                                    :extrude => true,
                                                    :tessellate => false,
-                                                   :altitude_mode => 'absolute',
+                                                   :altitude_mode => amode,
                                                    :coordinates => linestr
                                                    )
 		       )

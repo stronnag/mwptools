@@ -14,6 +14,7 @@ ARGF.each do |l|
     ports[port] ||= {}
     ports[port][act] = val
   when /set reboot_character/
+    puts
     puts '# serial ports'
     ssn = 30
     ports.each do |k,v|
@@ -23,7 +24,8 @@ ARGF.each do |l|
 	portno = ssn
 	ssn += 1
       end
-      puts "serial #{portno} #{v[:functions]} #{RATES[v[:msp_baudrate]]} #{RATES[v[:gps_baudrate]]} #{RATES[v[:telemetry_baudrate]]} #{RATES[v[:blackbox_baudrate]]}"
+      puts "serial #{portno} #{v[:functions]} #{RATES[v[:msp_baudrate
+]]} #{RATES[v[:gps_baudrate]]} #{RATES[v[:telemetry_baudrate]]} #{RATES[v[:blackbox_baudrate]]}"
     end
     puts
     puts l
