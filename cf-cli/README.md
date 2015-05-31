@@ -5,6 +5,8 @@ cf-cli
 
 History: (see github, mwptools :)
 
+2015-05-31 : Add OSX binary, add 1.9RC5 conversion tool  [dump-190+.rb](http://www.zen35309.zen.co.uk/cf-cli/dump-190+.rb).
+
 2015-05-10 : Build the Windows binary again to reflect minor updates
 
 2015-03-04 : Added simple tool to translate old dump serial setting to
@@ -117,8 +119,10 @@ Windows command line version
 [cf-cli_quick_win.zip](https://www.dropbox.com/s/ahk1d24wbg3txc4/cf-cli_quick_win.zip).
 
 For OSX, use the [tarnyko vala and GTK-3
-port](http://www.tarnyko.net/dl/); there is no longer an OSX
-cross-compiled version (I cannot test it).
+port](http://www.tarnyko.net/dl/); There is an OSX command line
+version, courtesy of a generous contributer via the #cleanflight IRC
+channel. You will need to chmod +x the binary and satisfy any
+home-brew glib dependencies (otool is your friend). [OSX binary](http://www.zen35309.zen.co.uk/cf-cli/osx/cf-cli)
 
 ## Usage
 ```

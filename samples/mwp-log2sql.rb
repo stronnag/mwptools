@@ -3,6 +3,8 @@ require 'sequel'
 require 'yajl'
 require 'nokogiri'
 require 'optparse'
+#require 'ap'
+
 # -*- coding: utf-8 -*-
 
 def recins db,rec,mid
@@ -32,7 +34,6 @@ end
 
 abort "Usage: m2x.rb FILE\n" unless (file = ARGV[0])
 
-#=begin
 db = Sequel.connect dburi
 abort unless db
 db.create_table? :missions do
@@ -91,7 +92,7 @@ db.create_table? :reports do
   column :wp_alt,:float
   column :flags,:integer
 end
-
+ln=0
 otitle=title
 ARGV.each do |fn|
   title = fn if otitle.nil?
@@ -105,6 +106,8 @@ ARGV.each do |fn|
     mid = db[:missions].insert({:title => title})
     title=nil
     Yajl::Parser.parse(json, {:symbolize_names => true}) do |o|
+      ln += 1
+      $o = o
       keys = o.keys
       keys.each do |k|
 	if k.class == String
@@ -112,6 +115,7 @@ ARGV.each do |fn|
 	  o.delete(k)
 	end
       end
+
       if o[:type] == 'init'
 	db[:missions].where(:id => mid).update({:title => o[:mission],
 						:mwvers => o[:mwvers],
@@ -119,6 +123,43 @@ ARGV.each do |fn|
 						:capability => o[:capability]})
       else
 	next if o[:type] == 'ltm_raw_sframe'
+	if o[:type].match(/^mavlink/)
+	  o.delete(:time_usec)
+	  case o[:type]
+	  when "mavlink_gps_raw_int"
+	    o[:lat] /= 10000000.0
+	    o[:lon] /= 10000000.0
+	    o[:alt] /= 1000.0
+	    o[:type] = 'raw_gps'
+	    o[:spd] = o[:vel]/100.0
+	    o[:fix] = o[:fix_type]
+	    o[:numsat] = o[:satellites_visible]
+	    [:vel, :eph, :epv, :cog, :fix_type, :satellites_visible].each do |k|
+	      o.delete(k)
+	    end
+	  when "mavlink_attitude"
+	    ax = o[:roll]
+	    ay = o[:pitch]
+	    keys = o.keys
+	    keys.each { |k| o.delete(k) }
+	    o[:angx] = ax
+	    o[:angy] = ay
+	  when"mavlink_vfr_hud"
+	    estalt = o[:alt]
+	    vario = o[:climb]
+	    keys = o.keys
+	    keys.each { |k| o.delete(k) }
+	    o[:estalt] = estalt
+	    o[:vario] = vario
+	  when "mavlink_sys_status"
+	    v = o[:voltage_battery]/1000.0
+	    keys = o.keys
+	    keys.each { |k| o.delete(k) }
+	    o[:voltage] = v
+	  else
+	    next
+	  end
+	end
 	next if o[:type] == 'wp_poll' and !o.has_key? :wp_lat
 	if  o[:type] == 'armed'
 	  ot = o[:utime].to_i
@@ -135,10 +176,12 @@ ARGV.each do |fn|
 	    rec.merge!(o)
 	  end
 	end
+	if valid
+	  recins db,rec,mid
+	  valid  = false
+	  rec = {}
+	end
       end
-    end
-    if valid
-      recins db,rec,mid
     end
     db[:missions].where(:id => mid).update({:start => Time.at(st),
 					     :end => Time.at(lt)})
