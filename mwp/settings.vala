@@ -57,6 +57,8 @@ public class MWPSettings : GLib.Object
     public string deflayout {get; private set; }
     public uint p_distance {get; set; default=0;}
     public uint p_speed {get; set; default=0;}
+    public string mavph {get; set; default=null;}
+    public string mavrth {get; set; default=null;}
 
     public signal void settings_update (string s);
 
@@ -183,6 +185,11 @@ public class MWPSettings : GLib.Object
             if(p_speed > 3)
                 p_distance = 0;
         }
+
+        if(s == null || s == "mavph")
+            mavph = settings.get_string ("mavph");
+        if(s == null || s == "mavrth")
+            mavrth = settings.get_string ("mavrth");
     }
 
     public void save_settings()

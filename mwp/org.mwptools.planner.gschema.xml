@@ -217,5 +217,18 @@
       <summary>Speed units</summary>
       <description>0=metres/sec, 1=kilometres/hour, 2=miles/hour, 3=knots</description>
     </key>
+
+    <key name="mavph" type="s">
+      <summary>RC settings for Mav PH</summary>
+      <default>""</default>
+      <description>RC settings for Mav PH (chanid:minval:maxval)</description>
+    </key>
+
+    <key name="mavrth" type="s">
+      <summary>RC settings for Mav RTH</summary>
+      <default>""</default>
+      <description>RC settings for Mav RTH (chanid:minval:maxval)</description>
+    </key>
+
   </schema>
 </schemalist>

@@ -1764,6 +1764,9 @@ public class GPSInfo : GLib.Object
         double cse = (m.cog == 0xffff) ? 0 : m.cog/100.0;
         spd  = (m.vel == 0xffff) ? 0 : m.vel/100.0;
         elev = (int16)Math.lround(dalt);
+        nsat = m.satellites_visible;
+        fix = m.fix_type;
+
         var nsatstr = "%d (%sfix)".printf(m.satellites_visible, (m.fix_type < 2) ? "no" : "");
          if(visible)
         {

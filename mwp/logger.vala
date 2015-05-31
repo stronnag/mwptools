@@ -293,7 +293,7 @@ public class Logger : GLib.Object
         var builder = init ("mavlink_heartbeat");
         builder.set_member_name ("custom_mode");
         builder.add_int_value(m.custom_mode);
-        builder.set_member_name ("type");
+        builder.set_member_name ("mavtype");
         builder.add_int_value(m.type);
         builder.set_member_name ("autopilot");
         builder.add_int_value(m.autopilot);

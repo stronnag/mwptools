@@ -62,6 +62,17 @@ public struct BatteryLevels
     }
 }
 
+
+public struct MavPOSDef
+{
+    uint16 minval;
+    uint16 maxval;
+    Craft.Special ptype;
+    uint8 chan;
+    uint8 set;
+}
+
+
 public class PosFormat : GLib.Object
 {
     public static string lat(double _lat, bool dms)
@@ -260,6 +271,8 @@ public class MWPlanner : Gtk.Application {
     private bool want_ph;
     private bool want_rth;
     private uint8 mavc = 0;
+    private uint16 mavsensors = 0;
+    private MavPOSDef[] mavposdef;
 
     public struct Position
     {
@@ -1112,6 +1125,30 @@ public class MWPlanner : Gtk.Application {
         }
         fbox.update(true);
         art_win.run();
+
+        if(conf.mavph != null)
+            parse_rc_mav(conf.mavph, Craft.Special.PH);
+
+        if(conf.mavrth != null)
+            parse_rc_mav(conf.mavrth, Craft.Special.RTH);
+    }
+
+    private void parse_rc_mav(string s, Craft.Special ptype)
+    {
+        var parts = s.split(":");
+        if(parts.length == 3)
+        {
+            mavposdef += MavPOSDef() { minval=(uint16)int.parse(parts[1]),
+                    maxval=(uint16)int.parse(parts[2]),
+                    ptype = ptype,
+                    chan = (uint8)int.parse(parts[0]), set =0};
+        }
+/*** FIXME
+        mavposdef += MavPOSDef(){minval=1700,
+                maxval=2100,
+                ptype = Craft.Special.RTH,
+                chan = 8, set =0};
+***/
     }
 
     private void toggle_full_screen()
@@ -1327,13 +1364,12 @@ public class MWPlanner : Gtk.Application {
 
         if(armed != larmed)
         {
-
-
             if(armed == 1 && craft == null)
             {
                 craft = new Craft(view, 3, norotate, gps_trail);
                 craft.park();
             }
+
             if(gps_trail)
             {
                 if(armed == 1 && craft != null)
@@ -1373,8 +1409,8 @@ public class MWPlanner : Gtk.Application {
                     logb.active=false;
                 }
             }
-            larmed = armed;
         }
+        larmed = armed;
     }
 
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
@@ -1405,6 +1441,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 lastmav = nticks;
                 amsgs++;
+//                MWPLog.message("Mav %s\n", cmd.to_string());
             }
         }
 
@@ -1616,7 +1653,7 @@ public class MWPlanner : Gtk.Application {
                             swd.run();
                         }
 
-                        if(navcap == true)
+                        if(navcap == true && thr == null)
                             add_cmd(MSP.Cmds.NAV_CONFIG,null,0,1000);
 
                         ulong reqsize = 0;
@@ -1697,9 +1734,9 @@ public class MWPlanner : Gtk.Application {
 
                         if(nopoll == false && nreqs > 0)
                         {
-                            MWPLog.message("Start poller\n");
                             if  (thr == null)
                             {
+                                MWPLog.message("Start poller\n");
                                 dopoll = true;
                             }
                             tcycle = 0;
@@ -2162,7 +2199,8 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT:
                 Mav.MAVLINK_HEARTBEAT m = *(Mav.MAVLINK_HEARTBEAT*)raw;
-                if(mavc == 0)
+
+                if(mavc == 0 &&  msp.available)
                 {
                     uint8 mbuf[32];
                     mbuf[0] = 0xfe;
@@ -2201,12 +2239,13 @@ public class MWPlanner : Gtk.Application {
                     craft.park();
                 }
 
+
                 if ((m.base_mode & 128) == 128)
                     armed = 1;
                 else
                     armed = 0;
 
-                armed_processing(0, 0);
+                armed_processing(armed, mavsensors);
 
                 if(Logger.is_logging)
                     Logger.mav_heartbeat(m);
@@ -2216,10 +2255,21 @@ public class MWPlanner : Gtk.Application {
                 Mav.MAVLINK_SYS_STATUS m = *(Mav.MAVLINK_SYS_STATUS*)raw;
                 if(sflags == 1)
                 {
+                    mavsensors = 1;
                     if((m.onboard_control_sensors_health & 0x8) == 0x8)
+                    {
                         sflags |= NavStatus.SPK.BARO;
+                        mavsensors |= MSP.Sensors.BARO;
+                    }
                     if((m.onboard_control_sensors_health & 0x20) == 0x20)
+                    {
                         sflags |= NavStatus.SPK.GPS;
+                        mavsensors |= MSP.Sensors.GPS;
+                    }
+                    if((m.onboard_control_sensors_health & 0x4)== 0x4)
+                    {
+                        mavsensors |= MSP.Sensors.MAG;
+                    }
                 }
                 set_bat_stat(m.voltage_battery/100);
                 if(Logger.is_logging)
@@ -2228,11 +2278,11 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT:
                 Mav.MAVLINK_GPS_RAW_INT m = *(Mav.MAVLINK_GPS_RAW_INT*)raw;
-
                 var fix  = gpsinfo.update_mav_gps(m, conf.dms,
                                                 item_visible(DOCKLETS.GPS));
                 gpsfix = (fix > 1);
                 _nsats = m.satellites_visible;
+
                 if(gpsfix)
                 {
                     if(armed == 1)
@@ -2262,6 +2312,20 @@ public class MWPlanner : Gtk.Application {
                         }
                         if (centreon == true)
                             view.center_on(GPSInfo.lat,GPSInfo.lon);
+
+                        if(want_ph == true)
+                        {
+                            craft.special_wp(Craft.Special.PH,
+                                             GPSInfo.lat, GPSInfo.lon);
+                            want_ph = false;
+                        }
+
+                        if(want_rth == true)
+                        {
+                            craft.special_wp(Craft.Special.RTH,
+                                             GPSInfo.lat, GPSInfo.lon);
+                            want_rth = false;
+                        }
                     }
                 }
                 fbox.update(item_visible(DOCKLETS.FBOX));
@@ -2281,6 +2345,29 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW:
+                for (var j = 0; j < mavposdef.length; j++)
+                {
+                    if(mavposdef[j].chan != 0)
+                    {
+                        var offset = mavposdef[j].chan+1;
+                        uint16 val = *(((uint16*)raw)+offset);
+                        if(val > mavposdef[j].minval && val < mavposdef[j].maxval)
+                        {
+                            if(mavposdef[j].set == 0)
+                            {
+                                if (mavposdef[j].ptype == Craft.Special.PH)
+                                    want_ph = true;
+                                else if (mavposdef[j].ptype == Craft.Special.RTH)
+                                    want_rth = true;
+                            }
+                            mavposdef[j].set = 1;
+                        }
+                        else
+                        {
+                            mavposdef[j].set = 0;
+                        }
+                    }
+                }
                 if(Logger.is_logging)
                 {
                     Mav.MAVLINK_RC_CHANNELS m = *(Mav.MAVLINK_RC_CHANNELS*)raw;
@@ -3034,13 +3121,19 @@ public class MWPlanner : Gtk.Application {
             filter.add_pattern ("*");
             chooser.add_filter (filter);
 
+
+            var res = chooser.run ();
+
                 // Process response:
-            if (chooser.run () == Gtk.ResponseType.ACCEPT) {
+            if ( res == Gtk.ResponseType.ACCEPT) {
                 var fn = chooser.get_filename ();
+                chooser.close ();
+                MWPLog.message("close choooser\n");
                 usemag = force_mag;
                 run_replay(fn, delay);
             }
-            chooser.close ();
+            else
+                chooser.close ();
         }
     }
 

@@ -154,8 +154,18 @@ public class ReplayThread : GLib.Object
         uint8 xbuf[128];
         for(var i =0; i < st; i++)
             xbuf[i] = *buf++;
-        send_rec(fd, cmd, (uint)st, xbuf);
-        stderr.printf("Replay %s\n", cmd.to_string());
+/*
+        if(
+            cmd == MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT ||
+            cmd == MSP.Cmds.MAVLINK_MSG_ID_SYS_STATUS ||
+            cmd == MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT ||
+            cmd == MSP.Cmds.MAVLINK_MSG_ATTITUDE ||
+            cmd == MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW ||
+            cmd == MSP.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN ||
+            cmd == MSP.Cmds.MAVLINK_MSG_VFR_HUD
+           )
+*/
+            send_rec(fd, cmd, (uint)st, xbuf);
     }
 
     public ReplayThread()
@@ -174,6 +184,7 @@ public class ReplayThread : GLib.Object
                 {
                     try
                     {
+                        Thread.usleep(100000);
                         double lt = 0;
                         var dis = FileStream.open(relog,"r");
                         string line=null;
@@ -181,7 +192,6 @@ public class ReplayThread : GLib.Object
                         uint8 buf[256];
                         var parser = new Json.Parser ();
                         bool have_data = false;
-
                         while (playon && (line = dis.read_line ()) != null) {
                             parser.load_from_data (line);
                             var obj = parser.get_root ().get_object ();
@@ -291,11 +301,10 @@ public class ReplayThread : GLib.Object
                                     if(obj.has_member("flags"))
                                     {
                                         var flag =  obj.get_int_member("flags");
-                                        a.flag = (uint32)flag;
+                                        a.flag |= (uint32)flag;
                                     }
                                     else
-                                        a.flag = (((armed)  ? 1 : 0) | 4);
-
+                                        a.flag |= 4;
 
                                     if(obj.has_member("sensors"))
                                     {
@@ -425,7 +434,7 @@ public class ReplayThread : GLib.Object
                                 case "mavlink_heartbeat":
                                     var m = Mav.MAVLINK_HEARTBEAT();
                                     m.custom_mode =  (uint32)obj.get_int_member("custom_mode");
-                                    m.type =  (uint8)obj.get_int_member("type");
+                                    m.type =  (uint8)obj.get_int_member("mavtype");
                                     m.autopilot =  (uint8)obj.get_int_member("autopilot");
                                     m.base_mode =  (uint8)obj.get_int_member("base_mode");
                                     m.system_status =  (uint8)obj.get_int_member("system_status");
