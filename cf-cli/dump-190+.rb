@@ -8,7 +8,7 @@ ports = {}
 ARGF.each do |l|
   case l
   when /set serial_port_(\d+)_(\S+) = (\d+)/
-    port = $1.to_i
+    port = $1.to_i - 1
     act = $2.to_sym
     val = $3.to_i
     ports[port] ||= {}
@@ -19,8 +19,8 @@ ARGF.each do |l|
     ssn = 30
     ports.each do |k,v|
       portno = k
-      next if ports.size == 5 and portno == 3
-      if k > 2
+      next if ports.size == 5 and portno == 2
+      if k > 1
 	portno = ssn
 	ssn += 1
       end
