@@ -1,0 +1,13 @@
+mwp (and any other application that uses clutter) will die horribly
+using contemporary NVIDIA proprietary video drivers (c. May / June
+2015). This happens on at least Arch and Fedora 22.
+
+This is due to a bug in clutter / nvidia.
+
+The workaround is to set the CLUTTER_BACKEND environment variable to
+x11:
+
+$ export CLUTTER_BACKEND=x11
+
+Doing this in /etc/environment or other globally sourced file will fix
+all clutter dependent applications.
