@@ -273,6 +273,8 @@ public class MWPlanner : Gtk.Application {
     private uint8 mavc = 0;
     private uint16 mavsensors = 0;
     private MavPOSDef[] mavposdef;
+    private bool force_mav = false;
+    private bool have_mspradio = false;
 
     public struct Position
     {
@@ -1331,6 +1333,14 @@ public class MWPlanner : Gtk.Application {
             if (lastm - last_an > 40)
             {
                 last_an = lastm;
+                mavc = 0;
+                if(have_mspradio == false)
+                {
+                    force_mav = true;
+                    send_mav_heartbeat();
+                }
+                else
+                    force_mav = false;
             }
             else
             {
@@ -1416,14 +1426,14 @@ public class MWPlanner : Gtk.Application {
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
     {
 
-        if(cmd > MSP.Cmds.TG_BASE)
+        if(!force_mav && cmd > MSP.Cmds.TG_BASE)
         {
             if(nopoll == false)
             {
                 dopoll = false;
             }
 
-            if (cmd >= MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT)
+            if (cmd >= MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT && errs == false)
             {
                 if(lastmav == 0)
                 {
@@ -2090,20 +2100,13 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.RADIO:
+                have_mspradio = true;
+                handle_radio(raw);
+                break;
+
             case MSP.Cmds.MAVLINK_MSG_ID_RADIO:
-            {
-                MSP_RADIO r = MSP_RADIO();
-                uint8 *rp;
-                rp = deserialise_u16(raw, out r.rxerrors);
-                rp = deserialise_u16(rp, out r.fixed_errors);
-                r.localrssi = *rp++;
-                r.remrssi = *rp++;
-                r.txbuf = *rp++;
-                r.noise = *rp++;
-                r.remnoise = *rp;
-                radstatus.update(r,item_visible(DOCKLETS.RADIO));
-            }
-            break;
+                handle_radio(raw);
+                break;
 
             case MSP.Cmds.TG_FRAME:
             {
@@ -2199,36 +2202,10 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT:
                 Mav.MAVLINK_HEARTBEAT m = *(Mav.MAVLINK_HEARTBEAT*)raw;
-
+                force_mav = false;
                 if(mavc == 0 &&  msp.available)
-                {
-                    uint8 mbuf[32];
-                    mbuf[0] = 0xfe;
-                    mbuf[1] = 9; // size
-                    mbuf[2] = 0;
-                    mbuf[3] = 0;
-                    mbuf[4] = 0;
-                    mbuf[5] = 0;
-                    for(var j =0; j < 9; j++)
-                        mbuf[6+j] = 0;
+                    send_mav_heartbeat();
 
-                    uint8 length = mbuf[1];
-                    uint16 sum = 0xFFFF;
-                    uint8 i, stoplen;
-                    stoplen = length + 6;
-                    mbuf[length+6] = 50;
-                    stoplen++;
-
-                    i = 1;
-                    while (i<stoplen)
-                    {
-                        sum = msp.mavlink_crc(sum, mbuf[i]);
-                        i++;
-                    }
-                    mbuf[length+6] = (uint8)sum&0xFF;
-                    mbuf[length+7] = sum>>8;
-                    msp.write(mbuf,length+8);
-                }
                 mavc++;
                 mavc %= 64;
 
@@ -2452,6 +2429,50 @@ public class MWPlanner : Gtk.Application {
         }
 
         return matched;
+    }
+
+    private void handle_radio(uint8[] raw)
+    {
+        MSP_RADIO r = MSP_RADIO();
+        uint8 *rp;
+        rp = deserialise_u16(raw, out r.rxerrors);
+        rp = deserialise_u16(rp, out r.fixed_errors);
+        r.localrssi = *rp++;
+        r.remrssi = *rp++;
+        r.txbuf = *rp++;
+        r.noise = *rp++;
+        r.remnoise = *rp;
+        radstatus.update(r,item_visible(DOCKLETS.RADIO));
+    }
+
+    private void send_mav_heartbeat()
+    {
+        uint8 mbuf[32];
+        mbuf[0] = 0xfe;
+        mbuf[1] = 9; // size
+        mbuf[2] = 0;
+        mbuf[3] = 0;
+        mbuf[4] = 0;
+        mbuf[5] = 0;
+        for(var j =0; j < 9; j++)
+            mbuf[6+j] = 0;
+
+        uint8 length = mbuf[1];
+        uint16 sum = 0xFFFF;
+        uint8 i, stoplen;
+        stoplen = length + 6;
+        mbuf[length+6] = 50;
+        stoplen++;
+
+        i = 1;
+        while (i<stoplen)
+        {
+            sum = msp.mavlink_crc(sum, mbuf[i]);
+            i++;
+        }
+        mbuf[length+6] = (uint8)sum&0xFF;
+        mbuf[length+7] = sum>>8;
+        msp.write(mbuf,length+8);
     }
 
     private void report_bits(uint32 bits)
@@ -2782,6 +2803,8 @@ public class MWPlanner : Gtk.Application {
         vinit = false;
         set_bat_stat(0);
         gpscnt = 0;
+        have_mspradio = false;
+        force_mav = false;
     }
 
     private void connect_serial()
