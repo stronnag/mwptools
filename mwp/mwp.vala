@@ -364,7 +364,7 @@ public class MWPlanner : Gtk.Application {
     private uint nticks = 0;
     private uint lastm;
     private uint lastrx;
-    private uint lastmav = 0;
+    private uint last_tm = 0;
     private uint lastok;
     private uint last_an = 0;
 
@@ -1243,7 +1243,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
-                    if(lastmav > 0 && ((nticks - lastmav) > MAVINTVL))
+                    if(last_tm > 0 && ((nticks - last_tm) > MAVINTVL))
                     {
                         MWPLog.message("Restart poller on MAVINT\n");
                         have_api = have_vers = have_misc =
@@ -1251,7 +1251,7 @@ public class MWPlanner : Gtk.Application {
                         have_fcv = have_fcvv = false;
                         xbits = icount = api_cnt = 0;
                         init_sstats();
-                        lastmav = 0;
+                        last_tm = 0;
                         add_cmd(MSP.Cmds.IDENT,null,0, 2500);
                     }
                 }
@@ -1334,6 +1334,7 @@ public class MWPlanner : Gtk.Application {
             {
                 last_an = lastm;
                 mavc = 0;
+
                 if(have_mspradio == false)
                 {
                     force_mav = true;
@@ -1425,33 +1426,31 @@ public class MWPlanner : Gtk.Application {
 
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
     {
-
-        if(!force_mav && cmd > MSP.Cmds.TG_BASE)
+        if(cmd > MSP.Cmds.TG_BASE && cmd != MSP.Cmds.MAVLINK_MSG_ID_RADIO)
         {
             if(nopoll == false)
             {
                 dopoll = false;
             }
 
-            if (cmd >= MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT && errs == false)
+            if (errs == false)
             {
-                if(lastmav == 0)
+                if(last_tm == 0)
                 {
                     sflags = NavStatus.SPK.Volts;
-                    MWPLog.message("Mavlink mode\n");
+                    MWPLog.message("LTM/Mavlink mode\n");
                     remove_tid(ref cmdtid);
                     init_sstats();
                     if(naze32 != true)
                     {
                         naze32 = true;
                         mwvar = vi.fctype = MWChooser.MWVAR.CF;
-                        var vers="CF mavlink";
+                        var vers="CF Telemetry";
                         verlab.set_label(vers);
                     }
                 }
-                lastmav = nticks;
+                last_tm = nticks;
                 amsgs++;
-//                MWPLog.message("Mav %s\n", cmd.to_string());
             }
         }
 
@@ -2126,9 +2125,13 @@ public class MWPlanner : Gtk.Application {
                     craft = new Craft(view, 3, norotate, gps_trail);
                     craft.park();
                 }
+                MSP_ALTITUDE al = MSP_ALTITUDE();
+                al.estalt = gf.alt;
+                al.vario = 0;
+                navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
 
                 var fix = gpsinfo.update_ltm(gf, conf.dms, item_visible(DOCKLETS.GPS));
-                if(fix != 0)
+                if(fix > 1)
                 {
                     double gflat = gf.lat/10000000.0;
                     double gflon = gf.lon/10000000.0;
@@ -2172,7 +2175,7 @@ public class MWPlanner : Gtk.Application {
                     h += 360;
                 gfcse = h;
                 navstatus.update_ltm_a(af, item_visible(DOCKLETS.NAVSTATUS));
-                art_win.update(af.pitch, af.roll, item_visible(DOCKLETS.ARTHOR));
+                art_win.update(af.roll*10, af.pitch*10, item_visible(DOCKLETS.ARTHOR));
             }
             break;
 
@@ -2191,10 +2194,9 @@ public class MWPlanner : Gtk.Application {
                     mwflags |= 2;
                 if((sf.flags & (2 << 3)) != 0)
                     mwflags |= 4;
-
                 armed_processing(mwflags, 0);
 
-                radstatus.update_ltm(sf,item_visible(DOCKLETS.RADIO));
+//                radstatus.update_ltm(sf,item_visible(DOCKLETS.RADIO));
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
                 set_bat_stat((uint8)((sf.vbat + 50) / 100));
             }
@@ -2766,7 +2768,7 @@ public class MWPlanner : Gtk.Application {
         set_bat_stat(0);
         nsats = 0;
         _nsats = 0;
-        lastmav = 0;
+        last_tm = 0;
         msp.close();
         c.set_label("Connect");
         menuncfg.sensitive = menuup.sensitive = menudown.sensitive = false;

@@ -1035,6 +1035,7 @@ public class NavStatus : GLib.Object
             uint8 armed = (s.flags & 1);
             uint8 failsafe = ((s.flags & 2) >> 1);
             uint8 fmode = (s.flags >> 2);
+
             var lmode = MSP.ltm_mode(fmode);
             nav_state_label.set_label(lmode);
             var str = "%s %s".printf(((armed == 1) ? "armed" : "disarmed"),
@@ -1807,9 +1808,9 @@ public class GPSInfo : GLib.Object
 
         spd =  g.speed;
         double dalt = g.alt/100.0;
-        uint8 fix = (g.sats & 3);
-        uint8 nsats = (g.sats >> 2);
-        var nsatstr = "%d (%sfix)".printf(nsats, (fix==0) ? "no" : "");
+        fix = (g.sats & 3);
+        nsat = (g.sats >> 2);
+        var nsatstr = "%d (%sfix)".printf(nsat, (fix==0) ? "no" : "");
         elev = (int16)Math.lround(dalt);
 
         if(visible)
@@ -1829,7 +1830,7 @@ public class GPSInfo : GLib.Object
 
         if(Logger.is_logging)
         {
-            Logger.raw_gps(lat,lon,0,spd, elev, fix, nsats);
+            Logger.raw_gps(lat,lon,0,spd, elev, fix, (uint8)nsat);
         }
         return fix;
     }
