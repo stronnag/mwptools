@@ -267,9 +267,8 @@ public class MWPlanner : Gtk.Application {
     private bool have_fcvv;
     private bool vinit;
     private uint8 gpscnt = 0;
-    private bool want_home;
-    private bool want_ph;
-    private bool want_rth;
+    private uint8 want_special = 0;
+    private uint8 last_ltmf = 0;
     private uint8 mavc = 0;
     private uint16 mavsensors = 0;
     private MavPOSDef[] mavposdef;
@@ -337,6 +336,13 @@ public class MWPlanner : Gtk.Application {
         P2 = (1<<6),
         P3 = (1<<7),
         FLAG = (1<<8)
+    }
+
+    private enum POSMODE
+    {
+        HOME = 1,
+        PH = 2,
+        RTH = 4
     }
 
     private static BatteryLevels [] vlevels = {
@@ -1334,7 +1340,7 @@ public class MWPlanner : Gtk.Application {
             {
                 last_an = lastm;
                 mavc = 0;
-
+/* BAD IDEA !
                 if(have_mspradio == false)
                 {
                     force_mav = true;
@@ -1342,6 +1348,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                     force_mav = false;
+*/
             }
             else
             {
@@ -1403,13 +1410,13 @@ public class MWPlanner : Gtk.Application {
                     logb.active = true;
                     Logger.armed(true,duration,flag, sensor);
                 }
-                want_home = true;
+                    //want_special |= POSMODE.HOME;
             }
             else
             {
                 armed_spinner.stop();
                 armed_spinner.hide();
-                want_home = false;
+                want_special &= ~POSMODE.HOME;
                 if (conf.audioarmed == true)
                 {
                     audio_cb.active = false;
@@ -1656,7 +1663,7 @@ public class MWPlanner : Gtk.Application {
                             verlab.set_label(sb.str);
                         }
 
-                        want_home = want_ph = want_rth = false;
+                        want_special = 0;
                         if(conf.checkswitches && ((flag & 6) == 0) && robj == null)
                         {
                             swd.run();
@@ -1768,7 +1775,7 @@ public class MWPlanner : Gtk.Application {
                         {
                             stderr.printf("set RTH on %08x %u %d\n", flag,flag,
                                           (int)duration);
-                            want_rth = true;
+                            want_special |= POSMODE.RTH;
                         }
                         else if ((ph_mask != 0) &&
                                  ((flag & ph_mask) != 0) &&
@@ -1776,7 +1783,7 @@ public class MWPlanner : Gtk.Application {
                         {
                             stderr.printf("set PH on %08x %u %d\n", flag, flag,
                                           (int)duration);
-                            want_ph = true;
+                            want_special |= POSMODE.PH;
                         }
                     }
                     xbits = flag;
@@ -1903,42 +1910,8 @@ public class MWPlanner : Gtk.Application {
                         if (centreon == true)
                             view.center_on(GPSInfo.lat,GPSInfo.lon);
                     }
-                    if(want_home)
-                    {
-                        want_home = false;
-                        home_pos.lat = GPSInfo.lat;
-                        home_pos.lon = GPSInfo.lon;
-                        home_pos.alt = rg.gps_altitude;
-                        if(craft != null)
-                        {
-                            craft.special_wp(Craft.Special.HOME,
-                                             GPSInfo.lat, GPSInfo.lon);
-                        }
-                    }
-                    if(want_ph)
-                    {
-                        want_ph = false;
-                        ph_pos.lat = GPSInfo.lat;
-                        ph_pos.lon = GPSInfo.lon;
-                        ph_pos.alt = rg.gps_altitude;
-                        if(craft != null)
-                        {
-                            craft.special_wp(Craft.Special.PH,
-                                             GPSInfo.lat, GPSInfo.lon);
-                        }
-                    }
-                    if(want_rth)
-                    {
-                        want_rth = false;
-                        rth_pos.lat = GPSInfo.lat;
-                        rth_pos.lon = GPSInfo.lon;
-                        rth_pos.alt = rg.gps_altitude;
-                        if(craft != null)
-                        {
-                            craft.special_wp(Craft.Special.RTH,
-                                             GPSInfo.lat, GPSInfo.lon);
-                        }
-                    }
+                    if(want_special != 0)
+                        process_pos_states(GPSInfo.lat,GPSInfo.lon, rg.gps_altitude);
                 }
             }
             break;
@@ -2141,6 +2114,7 @@ public class MWPlanner : Gtk.Application {
                         _ilat = gflat;
                         _ilon = gflon;
                         npos = true;
+                        want_special |= POSMODE.HOME;
                     }
                     if(armed == 1)
                     {
@@ -2158,6 +2132,8 @@ public class MWPlanner : Gtk.Application {
                         if (centreon == true)
                             view.center_on(gflat,gflon);
                     }
+                    if(want_special != 0)
+                        process_pos_states(gflat, gflon, gf.alt/100.0);
                 }
                 fbox.update(item_visible(DOCKLETS.FBOX));
             }
@@ -2190,13 +2166,22 @@ public class MWPlanner : Gtk.Application {
                 sf.flags = *rp++;
                 armed = sf.flags & 1;
                 uint32 mwflags = 0;
-                if((sf.flags & (2 << 2)) != 0)
+                uint8 ltmflags = sf.flags >> 2;
+                if(ltmflags == 2)
                     mwflags |= 2;
-                if((sf.flags & (2 << 3)) != 0)
+                if(ltmflags == 3)
                     mwflags |= 4;
                 armed_processing(mwflags, 0);
 
-//                radstatus.update_ltm(sf,item_visible(DOCKLETS.RADIO));
+                if(ltmflags != last_ltmf)
+                {
+                    last_ltmf = ltmflags;
+                    if(ltmflags == 9)
+                        want_special |= POSMODE.PH;
+                    else if(ltmflags == 13)
+                        want_special |= POSMODE.RTH;
+                }
+
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
                 set_bat_stat((uint8)((sf.vbat + 50) / 100));
             }
@@ -2292,19 +2277,9 @@ public class MWPlanner : Gtk.Application {
                         if (centreon == true)
                             view.center_on(GPSInfo.lat,GPSInfo.lon);
 
-                        if(want_ph == true)
-                        {
-                            craft.special_wp(Craft.Special.PH,
-                                             GPSInfo.lat, GPSInfo.lon);
-                            want_ph = false;
-                        }
-
-                        if(want_rth == true)
-                        {
-                            craft.special_wp(Craft.Special.RTH,
-                                             GPSInfo.lat, GPSInfo.lon);
-                            want_rth = false;
-                        }
+                        if(want_special != 0)
+                            process_pos_states(GPSInfo.lat, GPSInfo.lon,
+                                               m.alt/1000.0);
                     }
                 }
                 fbox.update(item_visible(DOCKLETS.FBOX));
@@ -2335,9 +2310,9 @@ public class MWPlanner : Gtk.Application {
                             if(mavposdef[j].set == 0)
                             {
                                 if (mavposdef[j].ptype == Craft.Special.PH)
-                                    want_ph = true;
+                                    want_special |= POSMODE.PH;
                                 else if (mavposdef[j].ptype == Craft.Special.RTH)
-                                    want_rth = true;
+                                    want_special |= POSMODE.RTH;
                             }
                             mavposdef[j].set = 1;
                         }
@@ -2359,18 +2334,8 @@ public class MWPlanner : Gtk.Application {
                 _ilat  = m.latitude / 10000000.0;
                 _ilon  = m.longitude / 10000000.0;
 
-                if(want_home)
-                {
-                    want_home = false;
-                    home_pos.lat = _ilat;
-                    home_pos.lon = _ilon;
-                    home_pos.alt = m.altitude / 1000.0;
-                    if(craft != null)
-                    {
-                        craft.special_wp(Craft.Special.HOME,
-                                         GPSInfo.lat, GPSInfo.lon);
-                    }
-                }
+                if(want_special != 0)
+                    process_pos_states(_ilat, _ilon, m.altitude / 1000.0);
 
                 if(Logger.is_logging)
                 {
@@ -2431,6 +2396,37 @@ public class MWPlanner : Gtk.Application {
         }
 
         return matched;
+    }
+
+    private void process_pos_states(double lat, double lon, double alt)
+    {
+        if((want_special & POSMODE.HOME) != 0)
+        {
+            want_special &= ~POSMODE.HOME;
+            home_pos.lat = lat;
+            home_pos.lon = lon;
+            home_pos.alt = alt;
+            if(craft != null)
+                craft.special_wp(Craft.Special.HOME, lat, lon);
+        }
+        if((want_special & POSMODE.PH) != 0)
+        {
+            want_special &= ~POSMODE.PH;
+            ph_pos.lat = lat;
+            ph_pos.lon = lon;
+            ph_pos.alt = alt;
+            if(craft != null)
+                craft.special_wp(Craft.Special.PH, lat, lon);
+        }
+        if((want_special & POSMODE.RTH) != 0)
+        {
+            want_special &= ~POSMODE.RTH;
+            rth_pos.lat = lat;
+            rth_pos.lon = lon;
+            rth_pos.alt = alt;
+            if(craft != null)
+                craft.special_wp(Craft.Special.RTH, lat, lon);
+        }
     }
 
     private void handle_radio(uint8[] raw)
@@ -2807,6 +2803,7 @@ public class MWPlanner : Gtk.Application {
         gpscnt = 0;
         have_mspradio = false;
         force_mav = false;
+        want_special = 0;
     }
 
     private void connect_serial()
