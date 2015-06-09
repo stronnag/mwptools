@@ -156,16 +156,16 @@ public class MSP : Object
     {
         "Manual", 		// 0
         "Rate",			// 1
-        "Attitude/Angle",	// 2
+        "Angle",	// 2
         "Horizon",		// 3
         "Acro",			// 4
         "Stabilized1",		// 5
         "Stabilized2",		// 6
         "Stabilized3", 		// 7
         "Altitude Hold",	// 8
-        "Loiter/GPS Hold",	// 9
-        "Auto/Waypoints",	// 10
-        "Heading hold / head free", // 11
+        "GPS Hold",	// 9
+        "Waypoints",	// 10
+        "Head free", // 11
         "Circle",		// 12
         "RTH",			// 13
         "Follow me",		// 14

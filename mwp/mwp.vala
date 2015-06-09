@@ -2192,7 +2192,6 @@ public class MWPlanner : Gtk.Application {
                 force_mav = false;
                 if(mavc == 0 &&  msp.available)
                     send_mav_heartbeat();
-
                 mavc++;
                 mavc %= 64;
 
