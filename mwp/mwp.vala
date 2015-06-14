@@ -274,6 +274,7 @@ public class MWPlanner : Gtk.Application {
     private MavPOSDef[] mavposdef;
     private bool force_mav = false;
     private bool have_mspradio = false;
+    private uint16 sensor;
 
     public struct Position
     {
@@ -1359,7 +1360,7 @@ public class MWPlanner : Gtk.Application {
         send_cmd(req, null, 0);
     }
 
-    private void armed_processing(uint32 flag, uint16 sensor)
+    private void armed_processing(uint32 flag)
     {
         if(armed == 0)
         {
@@ -1377,14 +1378,14 @@ public class MWPlanner : Gtk.Application {
 
         if(Logger.is_logging)
         {
-            Logger.armed((armed == 1), duration, flag, sensor);
+            Logger.armed((armed == 1), duration, flag,sensor);
         }
 
         if(armed != larmed)
         {
             if(armed == 1 && craft == null)
             {
-                craft = new Craft(view, 3, norotate, gps_trail);
+                craft = new Craft(view, vi.mrtype, norotate, gps_trail);
                 craft.park();
             }
 
@@ -1410,7 +1411,11 @@ public class MWPlanner : Gtk.Application {
                     logb.active = true;
                     Logger.armed(true,duration,flag, sensor);
                 }
-                    //want_special |= POSMODE.HOME;
+                if(npos == false)
+                {
+                    want_special |= POSMODE.HOME;
+                    npos = true;
+                }
             }
             else
             {
@@ -1556,6 +1561,8 @@ public class MWPlanner : Gtk.Application {
 
                     deserialise_u32(raw+3, out capability);
 
+                    MWPLog.message("set mrtype=%u\n", vi.mrtype);
+
                     MWChooser.MWVAR _mwvar = mwvar;
 
                     if(mwvar == MWChooser.MWVAR.AUTO)
@@ -1627,7 +1634,6 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.STATUS:
-                uint16 sensor;
                 uint32 flag;
                 deserialise_u16(raw+4, out sensor);
                 deserialise_u32(raw+6, out flag);
@@ -1788,7 +1794,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     xbits = flag;
                 }
-                armed_processing(flag, sensor);
+                armed_processing(flag);
                 break;
 
             case MSP.Cmds.NAV_STATUS:
@@ -2171,7 +2177,7 @@ public class MWPlanner : Gtk.Application {
                     mwflags |= 2;
                 if(ltmflags == 3)
                     mwflags |= 4;
-                armed_processing(mwflags, 0);
+                armed_processing(mwflags);
 
                 if(ltmflags != last_ltmf)
                 {
@@ -2207,8 +2213,8 @@ public class MWPlanner : Gtk.Application {
                     armed = 1;
                 else
                     armed = 0;
-
-                armed_processing(armed, mavsensors);
+                sensor = mavsensors;
+                armed_processing(armed);
 
                 if(Logger.is_logging)
                     Logger.mav_heartbeat(m);
