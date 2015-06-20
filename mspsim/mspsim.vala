@@ -606,7 +606,7 @@ public class MWSim : GLib.Object
         gf.lon = buf.gps_lon;
         gf.speed = buf.gps_speed/100;
         gf.alt = gblalt*100 + rand.int_range(-50,50);
-        gf.sats = 1+(buf.gps_numsat << 2);
+        gf.sats = 2+(buf.gps_numsat << 2);
         nb = serialise_gf(gf, tx);
         msp.send_ltm('G',tx, nb);
         append_text("Send LTM G Frame %lu\n".printf(MSize.LTM_GFRAME));
