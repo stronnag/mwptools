@@ -1411,11 +1411,6 @@ public class MWPlanner : Gtk.Application {
                     logb.active = true;
                     Logger.armed(true,duration,flag, sensor);
                 }
-                if(npos == false)
-                {
-                    want_special |= POSMODE.HOME;
-                    npos = true;
-                }
             }
             else
             {
@@ -1906,6 +1901,17 @@ public class MWPlanner : Gtk.Application {
                 _nsats = rg.gps_numsat;
                 if (gpsfix)
                 {
+                    if(armed == 1)
+                    {
+                        if(npos == false)
+                        {
+                            sflags |=  NavStatus.SPK.GPS;
+                            _ilat = GPSInfo.lat;
+                            _ilon = GPSInfo.lon;
+                            npos = true;
+                            want_special |= POSMODE.HOME;
+                        }
+                    }
                     if(craft != null)
                     {
                         if(follow == true)
@@ -2114,22 +2120,25 @@ public class MWPlanner : Gtk.Application {
                 {
                     double gflat = gf.lat/10000000.0;
                     double gflon = gf.lon/10000000.0;
-                    if(armed == 1 && npos == false)
-                    {
-                        sflags |=  NavStatus.SPK.GPS;
-                        _ilat = gflat;
-                        _ilon = gflon;
-                        npos = true;
-                        want_special |= POSMODE.HOME;
-                    }
                     if(armed == 1)
                     {
-                        double dist,cse;
-                        Geo.csedist(gflat, gflon, _ilat, _ilon, out dist, out cse);
-                        var cg = MSP_COMP_GPS();
-                        cg.range = (uint16)Math.lround(dist*1852);
-                        cg.direction = (int16)Math.lround(cse);
-                        navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+                        if(npos == false)
+                        {
+                            sflags |=  NavStatus.SPK.GPS;
+                            _ilat = gflat;
+                            _ilon = gflon;
+                            npos = true;
+                            want_special |= POSMODE.HOME;
+                        }
+                        else
+                        {
+                            double dist,cse;
+                            Geo.csedist(gflat, gflon, _ilat, _ilon, out dist, out cse);
+                            var cg = MSP_COMP_GPS();
+                            cg.range = (uint16)Math.lround(dist*1852);
+                            cg.direction = (int16)Math.lround(cse);
+                            navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+                        }
                     }
                     if(craft != null)
                     {
