@@ -106,11 +106,7 @@ public class DumpGUI : MWSerial
                 amerge = auxbutton.active;
             });
 
-        tributton.active = tyaw;
-        tributton.toggled.connect (() => {
-                tyaw = tributton.active;
-            });
-
+        tributton.active = false;
         savedbeforebutton.active = presave;
         savedbeforebutton.toggled.connect (() => {
                 presave = savedbeforebutton.active;

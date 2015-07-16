@@ -1652,6 +1652,17 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(have_status == false)
                     {
+                        StringBuilder sb0 = new StringBuilder ();
+                        foreach (MSP.Sensors sn in MSP.Sensors.all())
+
+                        {
+                            if((sensor & sn) == sn)
+                            {
+                                sb0.append(sn.to_string());
+                                sb0.append(" ");
+                            }
+                        }
+                        MWPLog.message("Sensors: %s\n", sb0.str);
                         remove_tid(ref cmdtid);
                         have_status = true;
                         if(!prlabel)
@@ -1859,6 +1870,9 @@ public class MWPlanner : Gtk.Application {
                 }
                 navstatus.set_attitude(at,item_visible(DOCKLETS.NAVSTATUS));
                 art_win.update(at.angx, at.angy, item_visible(DOCKLETS.ARTHOR));
+
+                if((sensor & MSP.Sensors.GPS) == 0)
+                    fbox.update(item_visible(DOCKLETS.FBOX));
             }
             break;
 

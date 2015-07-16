@@ -69,9 +69,9 @@ public class MWSerial : Object
     public static string devname;
     protected static string defname;
     protected static int brate;
+    protected static int lwait = 5;
     private static string profiles;
     protected static bool presave;
-    protected static bool tyaw = false;
     protected static bool merge = false;
     protected static bool amerge = false;
     protected static bool logmsp;
@@ -79,15 +79,17 @@ public class MWSerial : Object
     protected static bool calacc = false;
     protected static bool calmag = false;
     protected static bool setall = false;
+    protected static bool verbose = false;
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", null},
         { "output-file", 'o', 0, OptionArg.STRING, out defname, "output file name", null},
         { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", null},
+        { "line-delay", 0, 0, OptionArg.INT, out lwait, "(ms)", null},
         { "profiles", 'p', 0, OptionArg.STRING, out profiles, "Profile (0-2)", null},
         { "presave", 'i', 0, OptionArg.NONE, out presave, "Save before setting", null},
-        { "force-tri-rev-yaw", 'y', 0, OptionArg.NONE, out tyaw, "Force tri reversed yaw", null},
         { "logmsp", 'l', 0, OptionArg.NONE, out logmsp, "Log MSP", null},
+        { "verbose", 'v', 0, OptionArg.NONE, out verbose, "Echo messages", null},
         { "acc", 0, 0, OptionArg.NONE, out calacc, "cal acc", null},
         { "all", 'A', 0, OptionArg.NONE, out setall, "All", null},
         { "mag", 0, 0, OptionArg.NONE, out calmag, "cal mag", null},
@@ -331,11 +333,14 @@ public class MWSerial : Object
 
         buf[0] = 0;
 
-        for(var done = false ; !done;)
+        for(var done = false ; ; )
         {
             var res = Posix.read(fd,&c,1);
             if (res == 0)
             {
+                if (done)
+                    break;
+
                 nto++;
                 if (nto >= xnto)
                 {
@@ -347,10 +352,9 @@ public class MWSerial : Object
             {
                 nto = 0;
                 xnto = 1;
+                if((c == '#' && done) || c == '\r')
+                    continue;
 
-                if (c == '\n')
-                    done = true;
-                else if (c != '\r')
                 {
                     if (len < 256)
                         buf[len++] = c;
@@ -359,6 +363,8 @@ public class MWSerial : Object
                         rescode = ResCode.ERR;
                         done = true;
                     }
+                    if (c == '\n')
+                        done = true;
                 }
             }
         }
@@ -466,20 +472,6 @@ public class MWSerial : Object
                     }
                     os.printf("%s\n", (string)line);
                 }
-                if(((string)line).contains("servo 5"))
-                {
-                    var sparts = ((string)line).split(" ");
-                    if(sparts.length == 7)
-                    {
-                        var yawf = int.parse(sparts[5]);
-                        if((yawf & 1) == 1)
-                            tyaw = true;
-                    }
-                }
-            }
-            if(tyaw)
-            {
-                os.puts("## rev-tri-yaw\n");
             }
             if(defprof != null)
             {
@@ -596,7 +588,6 @@ public class MWSerial : Object
         string rline;
         int len;
         uint8 []rdata;
-        string []sparts = {};
 
         message("Replaying %s\n", fn);
         while((rline = fp.read_line ()) != null)
@@ -604,25 +595,27 @@ public class MWSerial : Object
             var line = rline.strip();
             if(line.length > 0 && line[0] != '#')
             {
-                if(line.contains("servo 5"))
-                {
-                    sparts = line.split(" ");
-                    if(sparts.length == 7)
-                    {
-                        var yawf = int.parse(sparts[5]);
-                        if((yawf & 1) == 1)
-                            tyaw = true;
-                    }
-                }
                 write(line);
                 write("\n");
+                if(verbose)
+                    stdout.printf("> %s\n", line);
+
                 read_line(out rdata, out len);
-                Thread.usleep(50*1000);
+
+                if(verbose)
+                    stdout.printf("< %s", (string)rdata);
+
+                if(lwait != 0)
+                {
+                    var to = lwait*1000;
+//                    if(line.has_prefix("aux ") || line.has_prefix("profile "))
+//                        to *= 2;
+                    Thread.usleep(to);
+                }
+
             }
             else
             {
-                if(line.contains("## rev-tri-yaw"))
-                    tyaw = true;
                 if(line.contains("## defprof="))
                 {
                     var parts = line.split("=");
@@ -631,23 +624,6 @@ public class MWSerial : Object
                         defprof = parts[1];
                     }
                 }
-            }
-        }
-        if(tyaw && (sparts.length == 7))
-        {
-            int ty;
-            ty = int.parse(sparts[5]) | 1;
-            sparts[5] = ty.to_string();
-            var servo5 = string.joinv(" ",sparts);
-            message("Setting tri yaw %s\n", servo5);
-            for(var set = 0; set < 3; set++)
-            {
-                write("profile %d\n".printf(set));
-                read_line(out rdata, out len);
-                Thread.usleep(50*1000);
-                write("%s\n".printf(servo5));
-                read_line(out rdata, out len);
-                Thread.usleep(50*1000);
             }
         }
         if(defprof != null)

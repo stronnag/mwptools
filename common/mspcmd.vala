@@ -87,8 +87,35 @@ public class MSP : Object
         BARO = 2,
         MAG = 4,
         GPS=8,
-        SONAR=16
-    }
+        SONAR=16;
+
+
+        public string to_string() {
+        switch (this) {
+            case ACC:
+                return "Acc";
+
+            case BARO:
+                return "Baro";
+
+            case MAG:
+                return "Mag";
+
+            case GPS:
+                return "GPS";
+
+            case SONAR:
+                return "Sonar";
+
+            default:
+                assert_not_reached();
+        }
+        }
+
+        public static Sensors[] all() {return { ACC, BARO, MAG, GPS, SONAR
+                    };
+        }
+        }
 
     public enum Action
     {
@@ -177,6 +204,7 @@ public class MSP : Object
     };
 
     private static HashTable<string, MSP.Action> wp_hash;
+
 
     public static string gps_mode(uint8 nmode)
     {
