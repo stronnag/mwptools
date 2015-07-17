@@ -322,7 +322,7 @@ public class MWSerial : Object
         return rescode;
     }
 
-    private ResCode read_line(out uint8 [] buf, out int len)
+    private ResCode read_line(out uint8 [] buf, out int len, bool wait=false)
     {
         ResCode rescode = ResCode.OK;
         len = 0;
@@ -338,7 +338,7 @@ public class MWSerial : Object
             var res = Posix.read(fd,&c,1);
             if (res == 0)
             {
-                if (done)
+                if (done && wait)
                     break;
 
                 nto++;
@@ -346,6 +346,7 @@ public class MWSerial : Object
                 {
                     done = true;
                     rescode = ResCode.TIMEOUT;
+                    break;
                 }
             }
             else
@@ -362,13 +363,17 @@ public class MWSerial : Object
                     {
                         rescode = ResCode.ERR;
                         done = true;
+                        break;
                     }
                     if (c == '\n')
+                    {
                         done = true;
+                        if(wait == false)
+                            break;
+                    }
                 }
             }
         }
-//        stderr.printf("%s\n", (string)buf);
         return rescode;
     }
 
@@ -464,13 +469,13 @@ public class MWSerial : Object
             while(read_line(out line, out len) == ResCode.OK)
             {
                 nbytes += line.length;
-                if ((string)line != "dump")
+                if ((string)line != "dump\n")
                 {
                     if(((string)line).contains("Cleanflight"))
                     {
                         os.puts("# ");
                     }
-                    os.printf("%s\n", (string)line);
+                    os.printf("%s", (string)line);
                 }
             }
             if(defprof != null)
@@ -600,7 +605,7 @@ public class MWSerial : Object
                 if(verbose)
                     stdout.printf("> %s\n", line);
 
-                read_line(out rdata, out len);
+                read_line(out rdata, out len, true);
 
                 if(verbose)
                     stdout.printf("< %s", (string)rdata);
@@ -630,7 +635,7 @@ public class MWSerial : Object
         {
             message("Setting %s\n", defprof);
             write("%s\n".printf(defprof));
-            read_line(out rdata, out len);
+            read_line(out rdata, out len, true);
         }
         fp = null;
     }
