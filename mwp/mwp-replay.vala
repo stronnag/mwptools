@@ -20,6 +20,20 @@ public class ReplayThread : GLib.Object
         return (p - &tx[0]);
     }
 
+    private size_t serialise_of(LTM_OFRAME o, uint8 []tx)
+    {
+        uint8 *p;
+        p = serialise_i32(tx, o.lat);
+        p = serialise_i32(p, o.lon);
+        *p++ = 0;
+        *p++ = 0;
+        *p++ = 0;
+        *p++ = 0;
+        *p++ = 1;
+        *p++ = o.fix;
+        return (p - &tx[0]);
+    }
+
     private size_t serialise_misc(MSP_MISC misc, uint8 [] tbuf)
     {
         uint8 *rp;
@@ -415,6 +429,15 @@ public class ReplayThread : GLib.Object
 
                                     serialise_sf(s,buf);
                                     send_rec(fd,MSP.Cmds.TS_FRAME, MSize.LTM_SFRAME,buf);
+                                    break;
+
+                                case "ltm_raw_oframe":
+                                    var o = LTM_OFRAME();
+                                    o.lat = (int32)(obj.get_int_member("lat"));
+                                    o.lon = (int32)(obj.get_int_member("lon"));
+                                    o.fix = (uint8)(obj.get_int_member("fix"));
+                                    serialise_of(o,buf);
+                                    send_rec(fd,MSP.Cmds.TO_FRAME, MSize.LTM_OFRAME,buf);
                                     break;
 
                                 case "wp_poll":

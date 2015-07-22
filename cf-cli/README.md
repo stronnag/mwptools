@@ -5,6 +5,9 @@ cf-cli
 
 History: (see github, mwptools :)
 
+
+2015-07-17 : Improve I/O synchronisation for restore
+
 2015-05-31 : Add OSX binary, add 1.9RC5 conversion tool  [dump-190+.rb](http://www.zen35309.zen.co.uk/cf-cli/dump-190+.rb).
 
 2015-05-10 : Build the Windows binary again to reflect minor updates
@@ -86,7 +89,7 @@ $ sudo cp cf-cli cf-cli-ui /usr/local/bin/
 ```
 
 For users of Microsoft Windows, you can find a [binary (executable)
-distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-win32-1.01.zip).
+distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-win32-1.02.zip).
 
 The Windows binary archive expands as:
 ```

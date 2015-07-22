@@ -2106,6 +2106,26 @@ public class MWPlanner : Gtk.Application {
                 handle_radio(raw);
                 break;
 
+            case MSP.Cmds.TO_FRAME:
+                LTM_OFRAME of = LTM_OFRAME();
+                uint8* rp;
+                rp = deserialise_i32(raw, out of.lat);
+                rp = deserialise_i32(rp, out of.lon);
+                of.fix = *(rp+5);
+                if(npos == false && of.fix != 0)
+                {
+                    sflags |=  NavStatus.SPK.GPS;
+                    _ilat = of.lat/10000000.0;
+                    _ilon = of.lon/10000000.0;
+                    npos = true;
+                    want_special |= POSMODE.HOME;
+                }
+                if(Logger.is_logging)
+                {
+                    Logger.ltm_oframe(of);
+                }
+                break;
+
             case MSP.Cmds.TG_FRAME:
             {
                 sflags |=  NavStatus.SPK.ELEV;
@@ -2136,15 +2156,7 @@ public class MWPlanner : Gtk.Application {
                     double gflon = gf.lon/10000000.0;
                     if(armed == 1)
                     {
-                        if(npos == false)
-                        {
-                            sflags |=  NavStatus.SPK.GPS;
-                            _ilat = gflat;
-                            _ilon = gflon;
-                            npos = true;
-                            want_special |= POSMODE.HOME;
-                        }
-                        else
+                        if(npos)
                         {
                             double dist,cse;
                             Geo.csedist(gflat, gflon, _ilat, _ilon, out dist, out cse);

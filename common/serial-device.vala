@@ -509,6 +509,10 @@ public class MWSerial : Object
                                 needed = (uint8) MSize.LTM_SFRAME;
                                 cmd = MSP.Cmds.TS_FRAME;
                                 break;
+                            case 'O':
+                                needed = (uint8) MSize.LTM_OFRAME;
+                                cmd = MSP.Cmds.TO_FRAME;
+                                break;
                             default:
                                 error_counter();
                                 MWPLog.message("fail on T_header2 %x\n", buf[nc]);

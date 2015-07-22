@@ -166,6 +166,21 @@ public class Logger : GLib.Object
         write_stream();
     }
 
+    public static void ltm_oframe(LTM_OFRAME o)
+    {
+        var builder = init("ltm_raw_oframe");
+        builder.set_member_name ("lat");
+        builder.add_int_value(o.lat);
+        builder.set_member_name ("lon");
+        builder.add_int_value(o.lon);
+        builder.set_member_name ("fix");
+        builder.add_int_value(o.fix);
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+	gen.set_root (root);
+        write_stream();
+    }
+
     public static void analog(MSP_ANALOG a)
     {
         var builder = init("analog");

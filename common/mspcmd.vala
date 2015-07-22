@@ -66,9 +66,10 @@ public class MSP : Object
         INFO_WP = 400,
 
         TG_BASE  = 1000,
-        TG_FRAME = (TG_BASE + 'G'),
-        TA_FRAME = (TG_BASE + 'A'),
         TS_FRAME = (TG_BASE + 'S'),
+        TA_FRAME = (TG_BASE + 'A'),
+        TG_FRAME = (TG_BASE + 'G'),
+        TO_FRAME = (TG_BASE + 'O'),
 
         MAVLINK_MSG_ID_HEARTBEAT = 2000+0,
         MAVLINK_MSG_ID_SYS_STATUS = 2000+1,

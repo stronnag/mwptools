@@ -180,6 +180,15 @@ public struct LTM_SFRAME
     uint8 flags;
 }
 
+public struct LTM_OFRAME
+{
+    int32 lat;
+    int32 lon;
+    int32 alt;
+    uint8 osd;
+    uint8 fix;
+}
+
 public struct CF_MODE_RANGES
 {
     uint8 perm_id;
@@ -205,7 +214,8 @@ public enum MSize
     MSP_ANALOG=7,
     LTM_GFRAME=14,
     LTM_AFRAME=6,
-    LTM_SFRAME=7
+    LTM_SFRAME=7,
+    LTM_OFRAME=14
 }
 
 
