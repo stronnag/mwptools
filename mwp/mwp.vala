@@ -2119,7 +2119,10 @@ public class MWPlanner : Gtk.Application {
                     _ilon = of.lon/10000000.0;
                     npos = true;
                     want_special |= POSMODE.HOME;
+                    MWPLog.message("Got home %.6f %.6f\n", _ilat, _ilon);
                 }
+                if(want_special != 0)
+                    process_pos_states(_ilat, _ilon, 0.0);
                 if(Logger.is_logging)
                 {
                     Logger.ltm_oframe(of);
