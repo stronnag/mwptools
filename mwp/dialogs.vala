@@ -25,6 +25,8 @@ public class Units :  GLib.Object
 {
     private const string [] dnames = {"m", "ft", "yd","fg"};
     private const string [] dspeeds = {"m/s", "kph", "mph", "kts", "fg/ft"};
+    private const string [] dfix = {"no","","2d-","3d-"};
+
 
     public static double distance (double d)
     {
@@ -82,6 +84,11 @@ public class Units :  GLib.Object
     public static string va_speed_units()
     {
         return (MWPlanner.conf.p_speed > 1) ? "ft/s" : "m/s";
+    }
+
+    public static string fix(uint8 fix)
+    {
+        return dfix[fix];
     }
 }
 
@@ -310,8 +317,7 @@ public class FlightBox : GLib.Object
                     fh1,
                     Units.speed(GPSInfo.spd),
                     Units.speed_units() ) );
-            string sfix = (GPSInfo.fix == 0) ? "no" : "";
-            big_sats.set_label("Sats <span font='%d'>%d</span> %sfix".printf(fh1,GPSInfo.nsat,sfix));
+            big_sats.set_label("Sats <span font='%d'>%d</span> %sfix".printf(fh1,GPSInfo.nsat,Units.fix(GPSInfo.fix)));
         }
     }
 }
@@ -1810,7 +1816,7 @@ public class GPSInfo : GLib.Object
         double dalt = g.alt/100.0;
         fix = (g.sats & 3);
         nsat = (g.sats >> 2);
-        var nsatstr = "%d (%sfix)".printf(nsat, (fix==0) ? "no" : "");
+        var nsatstr = "%d (%sfix)".printf(nsat, Units.fix(fix));
         elev = (int16)Math.lround(dalt);
 
         if(visible)

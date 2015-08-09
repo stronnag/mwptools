@@ -175,6 +175,7 @@ public class SoupProxy : Soup.Server
         {
             var xpath = rewrite_path(path);
             var session = new Soup.Session ();
+            session.timeout = 5;
             var message = new Soup.Message ("GET", xpath);
 
             session.send_message (message);
