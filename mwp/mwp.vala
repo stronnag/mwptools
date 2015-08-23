@@ -2140,7 +2140,6 @@ public class MWPlanner : Gtk.Application {
                 gf.speed = *rp++;
                 rp = deserialise_i32(rp, out gf.alt);
                 gf.sats = *rp;
-                _nsats = (gf.sats >> 2);
 
                 if(craft == null)
                 {
@@ -2152,23 +2151,26 @@ public class MWPlanner : Gtk.Application {
                 al.vario = 0;
                 navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
 
-                var fix = gpsinfo.update_ltm(gf, conf.dms, item_visible(DOCKLETS.GPS));
+                int fix = gpsinfo.update_ltm(gf, conf.dms, item_visible(DOCKLETS.GPS));
+                _nsats = (gf.sats >> 2);
                 if(fix > 1)
                 {
                     double gflat = gf.lat/10000000.0;
                     double gflon = gf.lon/10000000.0;
-                    if(armed == 1)
+                    if((armed != 0) && npos)
                     {
-                        if(npos)
-                        {
-                            double dist,cse;
-                            Geo.csedist(gflat, gflon, _ilat, _ilon, out dist, out cse);
-                            var cg = MSP_COMP_GPS();
-                            cg.range = (uint16)Math.lround(dist*1852);
-                            cg.direction = (int16)Math.lround(cse);
-                            navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
-                        }
+                        double dist,cse;
+                        Geo.csedist(gflat, gflon, _ilat, _ilon, out dist, out cse);
+                        var cg = MSP_COMP_GPS();
+                        cg.range = (uint16)Math.lround(dist*1852);
+                        cg.direction = (int16)Math.lround(cse);
+                        navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
                     }
+                    else
+                    {
+                        MWPLog.message("gframe no comp_gps %d %s", armed, npos.to_string());
+                    }
+
                     if(craft != null)
                     {
                         if(follow == true)
@@ -2178,6 +2180,10 @@ public class MWPlanner : Gtk.Application {
                     }
                     if(want_special != 0)
                         process_pos_states(gflat, gflon, gf.alt/100.0);
+                }
+                else
+                {
+                    MWPLog.message("gframe fix < 2");
                 }
                 fbox.update(item_visible(DOCKLETS.FBOX));
             }

@@ -1862,7 +1862,6 @@ public class GPSInfo : GLib.Object
         {
             var nsatstr = "%d (%sfix)".printf(g.gps_numsat,
                                               (g.gps_fix==0) ? "no" : "");
-
             nsat_lab.set_label(nsatstr);
             alt_lab.set_label("%0.f %s".printf(
                                   Units.distance(g.gps_altitude),
