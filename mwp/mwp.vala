@@ -2153,7 +2153,7 @@ public class MWPlanner : Gtk.Application {
 
                 int fix = gpsinfo.update_ltm(gf, conf.dms, item_visible(DOCKLETS.GPS));
                 _nsats = (gf.sats >> 2);
-                if(fix > 1)
+                if(fix > 0)
                 {
                     double gflat = gf.lat/10000000.0;
                     double gflon = gf.lon/10000000.0;
