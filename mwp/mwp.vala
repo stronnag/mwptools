@@ -2166,10 +2166,6 @@ public class MWPlanner : Gtk.Application {
                         cg.direction = (int16)Math.lround(cse);
                         navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
                     }
-                    else
-                    {
-                        MWPLog.message("gframe no comp_gps %d %s", armed, npos.to_string());
-                    }
 
                     if(craft != null)
                     {
@@ -2183,7 +2179,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
-                    MWPLog.message("gframe fix < 2");
+                    MWPLog.message("gframe fix < 1");
                 }
                 fbox.update(item_visible(DOCKLETS.FBOX));
             }
