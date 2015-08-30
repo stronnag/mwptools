@@ -1333,6 +1333,11 @@ public class NavStatus : GLib.Object
         }
     }
 
+    public void cg_on()
+    {
+        have_cg = true;
+    }
+
     public void reset()
     {
         have_cg = false;

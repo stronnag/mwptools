@@ -1924,6 +1924,7 @@ public class MWPlanner : Gtk.Application {
                             _ilon = GPSInfo.lon;
                             npos = true;
                             want_special |= POSMODE.HOME;
+                            navstatus.cg_on();
                         }
                     }
                     if(craft != null)
@@ -2114,6 +2115,7 @@ public class MWPlanner : Gtk.Application {
                 of.fix = *(rp+5);
                 if(npos == false && of.fix != 0)
                 {
+                    navstatus.cg_on();
                     sflags |=  NavStatus.SPK.GPS;
                     _ilat = of.lat/10000000.0;
                     _ilon = of.lon/10000000.0;
@@ -2300,6 +2302,7 @@ public class MWPlanner : Gtk.Application {
                         {
                             sflags |=  NavStatus.SPK.GPS;
                             npos = true;
+                            navstatus.cg_on();
                         }
                         if(_ilat != 0.0 && _ilon != 0.0)
                         {
