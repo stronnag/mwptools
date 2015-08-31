@@ -2852,7 +2852,6 @@ public class MWPlanner : Gtk.Application {
         have_mspradio = false;
         force_mav = false;
         want_special = 0;
-        npos = false;
     }
 
     private void connect_serial()
