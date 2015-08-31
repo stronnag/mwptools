@@ -1444,7 +1444,6 @@ public class MWPlanner : Gtk.Application {
             {
                 if(last_tm == 0)
                 {
-                    sflags = NavStatus.SPK.Volts;
                     MWPLog.message("LTM/Mavlink mode\n");
                     remove_tid(ref cmdtid);
                     init_sstats();

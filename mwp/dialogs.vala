@@ -1307,6 +1307,10 @@ public class NavStatus : GLib.Object
         {
             mt.message(AudioThread.Vox.RANGE_BRG);
         }
+//        else
+//        {
+//            MWPLog.message("quite rng %d %s\n", mask, have_cg.to_string());
+//        }
 
         if((mask & SPK.ELEV) == SPK.ELEV)
         {
