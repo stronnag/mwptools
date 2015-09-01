@@ -1259,6 +1259,7 @@ public class MWPlanner : Gtk.Application {
                         xbits = icount = api_cnt = 0;
                         init_sstats();
                         last_tm = 0;
+                        lastp.start();
                         add_cmd(MSP.Cmds.IDENT,null,0, 2500);
                     }
                 }
