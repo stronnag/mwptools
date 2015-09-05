@@ -605,23 +605,14 @@ public class MWSerial : Object
         string rline;
         int len;
         uint8 []rdata;
-        string smix = null;
 
         message("Replaying %s\n", fn);
         while((rline = fp.read_line ()) != null)
         {
             var line = rline.strip();
-            if(smix == null && line.contains("smix reverse"))
-                smix = line;
-
             if(line.length > 0 && line[0] != '#')
             {
                 set_line(line);
-                if(smix != null && line.has_prefix("profile "))
-                {
-                    set_line(smix);
-                    message("Setting '%s' for %s\n", smix, line);
-                }
             }
             else
             {
