@@ -509,7 +509,6 @@ public class MWSerial : Object
                 return;
             }
             string dprof = null; // only want once
-            string revyaw = null; // only want once
 
             for(var p = prof0; p <= prof1; p++)
             {
@@ -527,11 +526,6 @@ public class MWSerial : Object
                         if(line.contains("## defprof="))
                         {
                             dprof = line;
-                            continue;
-                        }
-                        if(line.contains("## rev-tri-yaw"))
-                        {
-                            revyaw = line;
                             continue;
                         }
                         if(p == prof0)
@@ -573,10 +567,6 @@ public class MWSerial : Object
                     break;
                 }
             }
-            if(revyaw != null)
-            {
-                out.printf("%s\n", revyaw);
-            }
             if(dprof != null)
             {
                 out.printf("%s\n", dprof);
@@ -587,37 +577,51 @@ public class MWSerial : Object
             message("No merge performed\n");
     }
 
+    private void set_line(string line)
+    {
+        int len;
+        uint8 []rdata;
+
+        write(line);
+        write("\n");
+        if(verbose)
+            stdout.printf("> %s\n", line);
+
+        read_line(out rdata, out len, true);
+
+        if(verbose)
+            stdout.printf("< %s", (string)rdata);
+
+        if(lwait != 0)
+        {
+            var to = lwait*1000;
+            Thread.usleep(to);
+        }
+    }
+
     public void replay_file(string fn)
     {
         var fp = FileStream.open(fn, "r");
         string rline;
         int len;
         uint8 []rdata;
+        string smix = null;
 
         message("Replaying %s\n", fn);
         while((rline = fp.read_line ()) != null)
         {
             var line = rline.strip();
+            if(smix == null && line.contains("smix reverse"))
+                smix = line;
+
             if(line.length > 0 && line[0] != '#')
             {
-                write(line);
-                write("\n");
-                if(verbose)
-                    stdout.printf("> %s\n", line);
-
-                read_line(out rdata, out len, true);
-
-                if(verbose)
-                    stdout.printf("< %s", (string)rdata);
-
-                if(lwait != 0)
+                set_line(line);
+                if(smix != null && line.has_prefix("profile "))
                 {
-                    var to = lwait*1000;
-//                    if(line.has_prefix("aux ") || line.has_prefix("profile "))
-//                        to *= 2;
-                    Thread.usleep(to);
+                    set_line(smix);
+                    message("Setting '%s' for %s\n", smix, line);
                 }
-
             }
             else
             {
