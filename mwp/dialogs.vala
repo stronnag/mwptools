@@ -273,7 +273,6 @@ public class FlightBox : GLib.Object
         vbox.show_all();
     }
 
-
    public void annul()
    {
    }
@@ -1886,7 +1885,6 @@ public class GPSInfo : GLib.Object
                                     ));
             dirn_lab.set_label("%.1f °".printf(cse));
         }
-
         return g.gps_fix;
     }
 
