@@ -1774,6 +1774,7 @@ public class MWPlanner : Gtk.Application {
                     }
 
                         // acro/horizon/angle changed
+
                     if((flag & 6) != (xbits & 6))
                     {
                         report_bits(flag);
@@ -2219,6 +2220,9 @@ public class MWPlanner : Gtk.Application {
                     mwflags |= 2;
                 if(ltmflags == 3)
                     mwflags |= 4;
+                else
+                    mwflags = xbits; // don't know better
+
                 armed_processing(mwflags);
 
                 if(ltmflags != last_ltmf)
@@ -3265,6 +3269,7 @@ public class MWPlanner : Gtk.Application {
             if(craft != null)
                 craft.park();
 
+            npos = false;
             conf.logarmed = false;
             if(delay == false)
                 conf.audioarmed = false;

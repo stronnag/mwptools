@@ -1052,7 +1052,7 @@ public class NavStatus : GLib.Object
             if(xfmode != fmode)
             {
                 xfmode = fmode;
-                if(mt_voice)
+                if(mt_voice && xfmode != -1)
                 {
                     mt.message(AudioThread.Vox.LTM_MODE);
                 }
