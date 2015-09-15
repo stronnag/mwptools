@@ -189,6 +189,7 @@ public class ReplayThread : GLib.Object
     public Thread<int> run (int fd, string relog, bool delay=true)
     {
         playon = true;
+
         var thr = new Thread<int> ("relog", () => {
                 var file = File.new_for_path (relog);
                 if (!file.query_exists ()) {
@@ -206,6 +207,7 @@ public class ReplayThread : GLib.Object
                         uint8 buf[256];
                         var parser = new Json.Parser ();
                         bool have_data = false;
+                        var have_ltm = false; // workaround for old mwp logging bug
                         while (playon && (line = dis.read_line ()) != null) {
                             parser.load_from_data (line);
                             var obj = parser.get_root ().get_object ();
@@ -316,6 +318,8 @@ public class ReplayThread : GLib.Object
                                     {
                                         var flag =  obj.get_int_member("flags");
                                         a.flag |= (uint32)flag;
+                                        if(have_ltm && flag == 0)
+                                            a.flag |= 4;
                                     }
                                     else
                                         a.flag |= 4;
@@ -420,6 +424,7 @@ public class ReplayThread : GLib.Object
                                     send_rec(fd,MSP.Cmds.RADIO, MSize.MSP_RADIO,buf);
                                     break;
                                 case "ltm_raw_sframe":
+                                    have_ltm = true;
                                     var s = LTM_SFRAME();
                                     s.vbat = (int16)(obj.get_int_member("vbat"));
                                     s.vcurr = (int16)(obj.get_int_member("vcurr"));
@@ -432,7 +437,7 @@ public class ReplayThread : GLib.Object
                                     break;
 
                                 case "ltm_raw_oframe":
-                                    var o = LTM_OFRAME();
+                                    have_ltm = true;                                                                        var o = LTM_OFRAME();
                                     o.lat = (int32)(obj.get_int_member("lat"));
                                     o.lon = (int32)(obj.get_int_member("lon"));
                                     o.fix = (uint8)(obj.get_int_member("fix"));

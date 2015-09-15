@@ -1250,7 +1250,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
-                    if(last_tm > 0 && ((nticks - last_tm) > MAVINTVL))
+                    if(last_tm > 0 && ((nticks - last_tm) > MAVINTVL) && msp.available)
                     {
                         MWPLog.message("Restart poller on MAVINT\n");
                         have_api = have_vers = have_misc =
@@ -2634,7 +2634,7 @@ public class MWPlanner : Gtk.Application {
                 if(thr == null)
                     bleet_sans_merci(vlevels[icol].audio);
                 else
-                    stderr.printf("audio alarm %s\n", vlevels[icol].audio);
+                    MWPLog.message("battery alarm %.1f\n", vf);
             }
         }
         licol= icol;
@@ -3202,7 +3202,7 @@ public class MWPlanner : Gtk.Application {
             if ( res == Gtk.ResponseType.ACCEPT) {
                 var fn = chooser.get_filename ();
                 chooser.close ();
-                MWPLog.message("close choooser\n");
+                MWPLog.message("Replay log %s\n", fn);
                 usemag = force_mag;
                 run_replay(fn, delay);
             }
@@ -3222,7 +3222,7 @@ public class MWPlanner : Gtk.Application {
         {
             var rec = REPLAY_rec();
             var ret = Posix.read(gio.unix_get_fd(), &rec, sizeof(REPLAY_rec));
-            if(ret == 0)
+            if(ret <= 0)
                 done = true;
             else
             {
@@ -3233,6 +3233,7 @@ public class MWPlanner : Gtk.Application {
         if(done)
         {
             cleanup_replay();
+            MWPLog.message("============== Replay complete ====================\n");
             return false;
         }
         return true;
