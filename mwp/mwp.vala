@@ -168,7 +168,6 @@ public class MWPlanner : Gtk.Application {
     private Gtk.Spinner armed_spinner;
     private Gtk.Label typlab;
     private Gtk.Label labelvbat;
-    private uint8 dmrtype=3; // default to quad
     private uint32 capability;
     private uint cmdtid;
     private uint spktid;
@@ -375,6 +374,8 @@ public class MWPlanner : Gtk.Application {
     private uint lastok;
     private uint last_an = 0;
 
+    private static int dmrtype=3; // default to quad
+
     private static VersInfo vi ={0};
 
     const OptionEntry[] options = {
@@ -384,15 +385,15 @@ public class MWPlanner : Gtk.Application {
         { "flight-controller", 'f', 0, OptionArg.STRING, out mwoptstr, "mw|mwnav|bf|cf", null},
         { "connect", 'c', 0, OptionArg.NONE, out mkcon, "connect to first device", null},
         { "auto-connect", 'a', 0, OptionArg.NONE, out autocon, "auto-connect to first device", null},
-        { "no-poll", 'n', 0, OptionArg.NONE, out nopoll, "don't poll for nav info", null},
-        { "no-trail", 't', 0, OptionArg.NONE, out gps_trail, "don't display GPS trail", null},
+        { "no-poll", 'N', 0, OptionArg.NONE, out nopoll, "don't poll for nav info", null},
+        { "no-trail", 'T', 0, OptionArg.NONE, out gps_trail, "don't display GPS trail", null},
         { "raw-log", 'r', 0, OptionArg.NONE, out rawlog, "log raw serial data to file", null},
         { "ignore-sizing", 0, 0, OptionArg.NONE, out ignore_sz, "ignore minimum size constraint", null},
         { "ignore-rotation", 0, 0, OptionArg.NONE, out norotate, "ignore vehicle icon rotation on old libchamplain", null},
         { "dont-maximise", 0, 0, OptionArg.NONE, out no_max, "don't maximise the window", null},
         { "force-mag", 0, 0, OptionArg.NONE, out force_mag, "force mag for vehicle direction", null},
         { "layout", 'l', 0, OptionArg.STRING, out layfile, "Layout name", null},
-        {null}
+        { "force-type", 't', 0, OptionArg.INT, out dmrtype, "Model type", null},                {null}
     };
 
 
