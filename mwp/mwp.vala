@@ -838,6 +838,7 @@ public class MWPlanner : Gtk.Application {
                         {
                             init_state();
                             init_sstats();
+                            armed = 0;
                         }
                         break;
 
