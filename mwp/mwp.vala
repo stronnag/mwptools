@@ -839,6 +839,9 @@ public class MWPlanner : Gtk.Application {
                             init_state();
                             init_sstats();
                             armed = 0;
+                            npos = false;
+                            armed_spinner.stop();
+                            armed_spinner.hide();
                         }
                         break;
 
