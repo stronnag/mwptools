@@ -65,6 +65,7 @@ public class MWSerial : Object
     private int pfd;
     private string defprof;
     private int raws = -1;
+    private static int rxerr = 0;
 
     public static string devname;
     protected static string defname;
@@ -400,6 +401,16 @@ public class MWSerial : Object
             }
         }
         buf[len] = 0;
+        if(len == 0)
+        {
+            message(" **** no data received\n ****");
+            rxerr++;
+            if(rxerr == 5)
+            {
+                message("Likely yur restore is broken\n");
+                Posix.exit(255);
+            }
+        }
     }
 
     public void send_msp (Cmds cmd, void *data, size_t len)
@@ -611,12 +622,20 @@ public class MWSerial : Object
         var to = 1;
         if (line.has_prefix("aux "))
             to = 2;
+        if (line.has_prefix("serial "))
+            to = 2;
         if (line.has_prefix("profile "))
+        {
             to = 20;
+            Thread.usleep(1000*1000);
+        }
         if (line.has_prefix("smix reverse"))
             to = 10;
-        Thread.usleep(to*lwait*1000);
+        if (line.has_prefix("save"))
+            to = 50;
+        Thread.usleep(lwait*1000);
         drain(out rdata, to);
+        Thread.usleep(lwait*1000);
         if(verbose)
             stdout.printf("%s", (string)rdata);
     }
@@ -625,8 +644,6 @@ public class MWSerial : Object
     {
         var fp = FileStream.open(fn, "r");
         string rline;
-        int len;
-        uint8 []rdata;
         uint8 []spinchar = {'|','/', '-', '\\','*'};
         uint spindex=0;
 
@@ -637,7 +654,7 @@ public class MWSerial : Object
             if(line.length > 0 && line[0] != '#')
             {
                 set_line(line);
-                if(verbose == false)
+                if(verbose == false || !Posix.isatty(1))
                 {
                     message("[%c]  \r", spinchar[spindex]);
                     spindex++;
@@ -661,8 +678,7 @@ public class MWSerial : Object
         if(defprof != null)
         {
             message("Setting %s\n", defprof);
-            write("%s\n".printf(defprof));
-            read_line(out rdata, out len, true);
+            set_line("%s\n".printf(defprof));
         }
         fp = null;
     }
@@ -861,11 +877,7 @@ public class MWSerial : Object
                 ;
         }
         replay_file(restore_file);
-
-        write("save\n");
-        while((res = read_line(out line, out len)) == ResCode.OK)
-            ;
-
+        set_line("save");
         message("Reboot on save\n");
         close();
     }
