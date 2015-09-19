@@ -377,6 +377,31 @@ public class MWSerial : Object
         return rescode;
     }
 
+    private void drain(out uint8 [] buf, int limit)
+    {
+        uint8 c = 0;
+        int nc = 0;
+        int len = 0;
+        buf = new uint8[4096];
+
+        while (true)
+        {
+            var res =  Posix.read(fd,&c,1);
+            if (res == 1)
+            {
+                buf[len] =c;
+                len++;
+            }
+            else
+            {
+                nc++;
+                if (nc >= limit)
+                    break;
+            }
+        }
+        buf[len] = 0;
+    }
+
     public void send_msp (Cmds cmd, void *data, size_t len)
     {
         if(available == true)
@@ -579,24 +604,21 @@ public class MWSerial : Object
 
     private void set_line(string line)
     {
-        int len;
         uint8 []rdata;
 
         write(line);
         write("\n");
+        var to = 1;
+        if (line.has_prefix("aux "))
+            to = 2;
+        if (line.has_prefix("profile "))
+            to = 20;
+        if (line.has_prefix("smix reverse"))
+            to = 10;
+        Thread.usleep(to*lwait*1000);
+        drain(out rdata, to);
         if(verbose)
-            stdout.printf("> %s\n", line);
-
-        read_line(out rdata, out len, true);
-
-        if(verbose)
-            stdout.printf("< %s", (string)rdata);
-
-        if(lwait != 0)
-        {
-            var to = lwait*1000;
-            Thread.usleep(to);
-        }
+            stdout.printf("%s", (string)rdata);
     }
 
     public void replay_file(string fn)
@@ -605,6 +627,8 @@ public class MWSerial : Object
         string rline;
         int len;
         uint8 []rdata;
+        uint8 []spinchar = {'|','/', '-', '\\','*'};
+        uint spindex=0;
 
         message("Replaying %s\n", fn);
         while((rline = fp.read_line ()) != null)
@@ -613,6 +637,12 @@ public class MWSerial : Object
             if(line.length > 0 && line[0] != '#')
             {
                 set_line(line);
+                if(verbose == false)
+                {
+                    message("[%c]  \r", spinchar[spindex]);
+                    spindex++;
+                    spindex %= 5;
+                }
             }
             else
             {
@@ -626,6 +656,8 @@ public class MWSerial : Object
                 }
             }
         }
+        if(!verbose)
+            stderr.printf("\r");
         if(defprof != null)
         {
             message("Setting %s\n", defprof);
