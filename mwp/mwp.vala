@@ -205,6 +205,7 @@ public class MWPlanner : Gtk.Application {
     private static bool gps_trail = false;
     private static bool no_max = false;
     private static bool force_mag = false;
+    private static bool force_nc = false;
     private static string mwoptstr;
     private static string layfile=null;
 
@@ -392,6 +393,7 @@ public class MWPlanner : Gtk.Application {
         { "ignore-rotation", 0, 0, OptionArg.NONE, out norotate, "ignore vehicle icon rotation on old libchamplain", null},
         { "dont-maximise", 0, 0, OptionArg.NONE, out no_max, "don't maximise the window", null},
         { "force-mag", 0, 0, OptionArg.NONE, out force_mag, "force mag for vehicle direction", null},
+        { "force-nav", 0, 0, OptionArg.NONE, out force_nc, "force nav capaable", null},
         { "layout", 'l', 0, OptionArg.STRING, out layfile, "Layout name", null},
         { "force-type", 't', 0, OptionArg.INT, out dmrtype, "Model type", null},                {null}
     };
@@ -1562,7 +1564,7 @@ public class MWPlanner : Gtk.Application {
                     deserialise_u32(raw+3, out capability);
 
                     MWPLog.message("set mrtype=%u\n", vi.mrtype);
-
+                    MWPLog.message("cap =%x\n", raw[3]);
                     MWChooser.MWVAR _mwvar = mwvar;
 
                     if(mwvar == MWChooser.MWVAR.AUTO)
@@ -1574,7 +1576,7 @@ public class MWPlanner : Gtk.Application {
                         naze32 = mwvar == MWChooser.MWVAR.CF;
                     }
 
-                    if(naze32 == true)
+                    if(naze32 == true && force_nc == false)
                     {
                         navcap = false;
                     }
@@ -2852,7 +2854,7 @@ public class MWPlanner : Gtk.Application {
             have_fcv = have_fcvv = false;
         xbits = icount = api_cnt = 0;
         autocount = 0;
-        nsats = -99;
+        nsats = 0;
         gpsinfo.annul();
         navstatus.reset();
         vinit = false;

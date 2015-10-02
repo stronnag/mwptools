@@ -1001,7 +1001,7 @@ public class NavStatus : GLib.Object
 
     public NavStatus(Gtk.Builder builder)
     {
-        xfmode = -1;
+        xfmode = 255;
         numsat = 0;
         modsat = false;
 
