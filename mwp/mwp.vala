@@ -288,6 +288,7 @@ public class MWPlanner : Gtk.Application {
     private Position ph_pos;
     private uint ph_mask=0;
     private uint rth_mask=0;
+    private uint no_ofix = 0;
 
     private TelemStats telstats;
     private LayMan lman;
@@ -1375,6 +1376,7 @@ public class MWPlanner : Gtk.Application {
             armtime = 0;
             duration = -1;
             npos = false;
+            no_ofix = 0;
         }
         else
         {
@@ -2121,18 +2123,24 @@ public class MWPlanner : Gtk.Application {
                 rp = deserialise_i32(raw, out of.lat);
                 rp = deserialise_i32(rp, out of.lon);
                 of.fix = *(rp+5);
-                if(npos == false && of.fix != 0)
+                if(npos == false)
                 {
-                    navstatus.cg_on();
-                    sflags |=  NavStatus.SPK.GPS;
-                    _ilat = of.lat/10000000.0;
-                    _ilon = of.lon/10000000.0;
-                    npos = true;
-                    want_special |= POSMODE.HOME;
-                    MWPLog.message("Got home %.6f %.6f\n", _ilat, _ilon);
-                    process_pos_states(_ilat, _ilon, 0.0);
+                    if(of.fix == 0)
+                    {
+                        no_ofix++;
+                    }
+                    else
+                    {
+                        navstatus.cg_on();
+                        sflags |=  NavStatus.SPK.GPS;
+                        _ilat = of.lat/10000000.0;
+                        _ilon = of.lon/10000000.0;
+                        npos = true;
+                        want_special |= POSMODE.HOME;
+                        MWPLog.message("Got home %.6f %.6f\n", _ilat, _ilon);
+                        process_pos_states(_ilat, _ilon, 0.0);
+                    }
                 }
-
                 if(Logger.is_logging)
                 {
                     Logger.ltm_oframe(of);
@@ -2167,14 +2175,31 @@ public class MWPlanner : Gtk.Application {
                 {
                     double gflat = gf.lat/10000000.0;
                     double gflon = gf.lon/10000000.0;
-                    if((armed != 0) && npos)
+                    if(armed != 0)
                     {
-                        double dist,cse;
-                        Geo.csedist(gflat, gflon, _ilat, _ilon, out dist, out cse);
-                        var cg = MSP_COMP_GPS();
-                        cg.range = (uint16)Math.lround(dist*1852);
-                        cg.direction = (int16)Math.lround(cse);
-                        navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+                        if(npos)
+                        {
+                            double dist,cse;
+                            Geo.csedist(gflat, gflon, _ilat, _ilon, out dist, out cse);
+                            var cg = MSP_COMP_GPS();
+                            cg.range = (uint16)Math.lround(dist*1852);
+                            cg.direction = (int16)Math.lround(cse);
+                            navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+                        }
+                        else
+                        {
+                            if(no_ofix == 10)
+                            {
+                                navstatus.cg_on();
+                                sflags |=  NavStatus.SPK.GPS;
+                                _ilat = gflat;
+                                _ilon = gflon;
+                                npos = true;
+                                want_special |= POSMODE.HOME;
+                                MWPLog.message("Force home %.6f %.6f\n", _ilat, _ilon);
+                                process_pos_states(_ilat, _ilon, 0.0);
+                            }
+                        }
                     }
 
                     if(craft != null)
