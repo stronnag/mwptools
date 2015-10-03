@@ -197,12 +197,12 @@ public class ReplayThread : GLib.Object
                 }
                 else
                 {
+                    string line=null;
                     try
                     {
                         Thread.usleep(100000);
                         double lt = 0;
                         var dis = FileStream.open(relog,"r");
-                        string line=null;
                         bool armed = false;
                         uint8 buf[256];
                         var parser = new Json.Parser ();
@@ -549,6 +549,7 @@ public class ReplayThread : GLib.Object
                             lt = utime;
                         }
                     } catch (Error e) {
+                        stderr.printf("line: %s\n",line);
                         error ("%s", e.message);
                     }
                 }
