@@ -3120,7 +3120,7 @@ public class MWPlanner : Gtk.Application {
     private void update_title_from_file(string fname)
     {
         var basename = GLib.Path.get_basename(fname);
-        window.title = @"MW Planner = $basename";
+        window.title = @"MWP = $basename";
     }
 
     private void load_file(string fname)
@@ -3227,7 +3227,6 @@ public class MWPlanner : Gtk.Application {
             filter.add_pattern ("*");
             chooser.add_filter (filter);
 
-
             var res = chooser.run ();
 
                 // Process response:
@@ -3287,6 +3286,7 @@ public class MWPlanner : Gtk.Application {
         conbutton.sensitive = true;
         menureplay.label = "Replay Log file";
         robj = null;
+        window.title = "MWP";
     }
 
     private void run_replay(string fn, bool delay)
@@ -3312,7 +3312,7 @@ public class MWPlanner : Gtk.Application {
 
             init_state();
             conbutton.sensitive = false;
-
+            update_title_from_file(fn);
             io_read  = new IOChannel.unix_new(playfd[0]);
             plid = io_read.add_watch(IOCondition.IN|
                                      IOCondition.HUP|
