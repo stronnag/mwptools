@@ -3120,7 +3120,7 @@ public class MWPlanner : Gtk.Application {
     private void update_title_from_file(string fname)
     {
         var basename = GLib.Path.get_basename(fname);
-        window.title = @"MWP = $basename";
+        window.title = @"mwp = $basename";
     }
 
     private void load_file(string fname)
@@ -3286,7 +3286,7 @@ public class MWPlanner : Gtk.Application {
         conbutton.sensitive = true;
         menureplay.label = "Replay Log file";
         robj = null;
-        window.title = "MWP";
+        window.title = "mwp";
     }
 
     private void run_replay(string fn, bool delay)
