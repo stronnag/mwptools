@@ -407,7 +407,7 @@ public class MWSerial : Object
             rxerr++;
             if(rxerr == 5)
             {
-                message("Likely yur restore is broken\n");
+                message("Likely your restore is broken\n");
                 Posix.exit(255);
             }
         }

@@ -26,7 +26,7 @@ $ sudo cp cf-cli cf-cli-ui /usr/local/bin/
 ```
 
 For users of Microsoft Windows, you can find a [binary (executable)
-distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-win32-1.04.zip).
+distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-win32-1.05.zip).
 
 The Windows binary archive expands as:
 ```
@@ -237,6 +237,7 @@ IRC freenode #cleanflight, where I sometimes lurk as user 'stronnag'.
 
 ## History: (see github, mwptools :)
 
+2015-10-18 : Rebuild Windows version to pick up recent changes (1.05).
 
 2015-09-24 : Rebuild Windows version to pick up recent changes.
 
