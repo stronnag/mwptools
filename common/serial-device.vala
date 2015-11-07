@@ -42,7 +42,7 @@ public class MWSerial : Object
     private uint8 csize;
     private uint8 needed;
     private MSP.Cmds cmd;
-    private uint8 raw[128];
+    private uint8 raw[256];
     private int irawp;
     private int drawp;
     public  bool available {private set; get;}
@@ -438,9 +438,15 @@ public class MWSerial : Object
 
             for(var nc = 0; nc < res; nc++)
             {
+                if (irawp == 255)
+                {
+                    state = States.S_ERROR;
+                }
+
                 switch(state)
                 {
                     case States.S_ERROR:
+                        irawp = 0;
                         if (buf[nc] == '$')
                         {
                             sp = nc;
@@ -453,7 +459,6 @@ public class MWSerial : Object
                             state=States.S_M_SIZE;
                             errstate = false;
                         }
-
                         break;
 
                     case States.S_HEADER:
