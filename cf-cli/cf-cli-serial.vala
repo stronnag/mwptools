@@ -452,6 +452,7 @@ public class MWSerial : Object
         var filename =  Path.get_basename(defname);
         var parts = filename.split(".");
         var idx = parts.length - 2;
+        if (idx < 0) idx = 0;
         parts[idx] = "%s%s_%s%s".printf(ifn,parts[idx],q,p);
         filename = string.joinv(".",parts);
         return Path.build_filename(dirname, filename);
