@@ -355,7 +355,7 @@ public class MWPlanner : Gtk.Application {
         BatteryLevels(0.0f, "white", null, "n/a")
     };
 
-    private static const string[] failnames = {"","WPNO","LAT","LON","ALT","P1","P2","P3","FLAG"};
+    private static const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
 
     private static const int TIMINTVL=50;
     private static const int ANIMINTVL=(300/TIMINTVL);
@@ -1690,7 +1690,7 @@ public class MWPlanner : Gtk.Application {
                             swd.run();
                         }
 
-                        if(navcap == true && thr == null)
+                        if(navcap == true && thr == null && naze32 == false)
                             add_cmd(MSP.Cmds.NAV_CONFIG,null,0,1000);
 
                         ulong reqsize = 0;
@@ -1998,20 +1998,22 @@ public class MWPlanner : Gtk.Application {
                     else if (w.p3 != wpmgr.wps[wpmgr.wpidx].p3)
                         fail |= WPFAIL.P3;
                     else if (w.flag != wpmgr.wps[wpmgr.wpidx].flag)
+                    {
                         fail |= WPFAIL.FLAG;
+                    }
 
                     if (fail != WPFAIL.OK)
                     {
-                        string[] arry = {};
-                        for(var i = WPFAIL.OK; i <= WPFAIL.FLAG; i += 1)
+                        StringBuilder sb = new StringBuilder();
+                        for(var i = 0; i < failnames.length; i += 1)
                         {
-                            if ((fail & i) == i)
+                            if ((fail & (1 <<i)) == (1 << i))
                             {
-                                arry += failnames[i];
+                                sb.append(failnames[i]);
+                                sb.append(" ");
                             }
                         }
-                        var fmsg = string.join("|",arry);
-                        var mtxt = "Validation for wp %d fails for %s".printf(w.wp_no, fmsg);
+                        var mtxt = "Validation for wp %d fails for %s".printf(w.wp_no, sb.str);
                         bleet_sans_merci("beep-sound.ogg");
                         mwp_warning_box(mtxt, Gtk.MessageType.ERROR);
                     }
