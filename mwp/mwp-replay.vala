@@ -208,6 +208,8 @@ public class ReplayThread : GLib.Object
                         var parser = new Json.Parser ();
                         bool have_data = false;
                         var have_ltm = false; // workaround for old mwp logging bug
+                        uint profile = 0;
+
                         while (playon && (line = dis.read_line ()) != null) {
                             parser.load_from_data (line);
                             var obj = parser.get_root ().get_object ();
@@ -245,10 +247,9 @@ public class ReplayThread : GLib.Object
                                     send_rec(fd,MSP.Cmds.IDENT, 7, buf);
 
                                     if(obj.has_member("fctype"))
-                                    {
                                         fctype = (uint)obj.get_int_member ("fctype");
-                                    }
-
+                                    if(obj.has_member("profile"))
+                                        profile = (uint)obj.get_int_member ("profile");
                                     string fcvar = null;
                                     uint fcvers = 0;
                                     if(obj.has_member("fc_var"))
@@ -333,6 +334,7 @@ public class ReplayThread : GLib.Object
                                         a.sensor=(MSP.Sensors.ACC+MSP.Sensors.GPS);
                                     a.i2c_errors_count = 0;
                                     a.cycle_time=0;
+                                    a.global_conf=(uint8)profile;
                                     var nb = serialise_status(a, buf);
                                     send_rec(fd,MSP.Cmds.STATUS, (uint)nb, buf);
                                     break;
