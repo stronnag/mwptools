@@ -224,7 +224,7 @@ public class MWPlanner : Gtk.Application {
     private bool wdw_state = false;
     private time_t armtime;
     private time_t duration;
-        /**** FIXME ***/
+
     private int gfcse = 0;
     private double _ilon = 0;
     private double _ilat = 0;
@@ -275,6 +275,7 @@ public class MWPlanner : Gtk.Application {
     private bool force_mav = false;
     private bool have_mspradio = false;
     private uint16 sensor;
+    private uint8 profile = 0;
 
     public struct Position
     {
@@ -972,7 +973,7 @@ public class MWPlanner : Gtk.Application {
         logb = builder.get_object ("logger_cb") as Gtk.CheckButton;
         logb.toggled.connect (() => {
                 if (logb.active)
-                    Logger.start(last_file,vi,capability);
+                    Logger.start(last_file,vi,capability,profile);
                 else
                     Logger.stop();
             });
@@ -1676,6 +1677,7 @@ public class MWPlanner : Gtk.Application {
                         have_status = true;
                         if(!prlabel)
                         {
+                            profile = raw[10];
                             prlabel = true;
                             var lab = verlab.get_label();
                             StringBuilder sb = new StringBuilder();
