@@ -183,6 +183,31 @@ public class Logger : GLib.Object
         write_stream();
     }
 
+    public static void gpssvinfo(uint8 []raw)
+    {
+        var builder = init("gpssvinfo");
+        builder.set_member_name ("no_sats");
+        builder.add_int_value(raw[0]);
+        var n = 1;
+        for(var i = 0; i < raw[0]; i++)
+        {
+            builder.begin_object ();
+            builder.set_member_name ("channel");
+            builder.add_int_value(raw[n++]);
+            builder.set_member_name ("svid");
+            builder.add_int_value(raw[n++]);
+            builder.set_member_name ("quality");
+            builder.add_int_value(raw[n++]);
+            builder.set_member_name ("cno");
+            builder.add_int_value(raw[n++]);
+            builder.end_object();
+        }
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+	gen.set_root (root);
+        write_stream();
+    }
+
     public static void analog(MSP_ANALOG a)
     {
         var builder = init("analog");

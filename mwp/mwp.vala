@@ -1647,6 +1647,10 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.GPSSVINFO:
+                if(raw[0] > 0 && Logger.is_logging)
+                {
+                    Logger.gpssvinfo(raw);
+                }
                 break;
 
             case MSP.Cmds.MISC:
