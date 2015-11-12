@@ -58,6 +58,7 @@ public class MSP : Object
         BOXNAMES = 116,
         BOXIDS = 119,
         SELECT_SETTING=210,
+        GPSSVINFO = 164,
 
                 // Cleanflight extensions
         MODE_RANGES = 34, // FC out message Returns all mode ranges

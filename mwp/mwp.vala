@@ -376,6 +376,7 @@ public class MWPlanner : Gtk.Application {
     private uint last_tm = 0;
     private uint lastok;
     private uint last_an = 0;
+    private uint last_sv = 0;
 
     private static int dmrtype=3; // default to quad
 
@@ -1367,6 +1368,20 @@ public class MWPlanner : Gtk.Application {
                 req = requests[tcycle];
             }
         }
+
+        if (req == MSP.Cmds.GPSSVINFO)
+        {
+            if (lastm - last_sv > 40)
+            {
+                last_sv = lastm;
+                mavc = 0;
+            }
+            else
+            {
+                tcycle = (tcycle + 1) % requests.length;
+                req = requests[tcycle];
+            }
+        }
         send_cmd(req, null, 0);
     }
 
@@ -1631,6 +1646,9 @@ public class MWPlanner : Gtk.Application {
                 add_cmd(MSP.Cmds.MISC,null,0, 1000);
                 break;
 
+            case MSP.Cmds.GPSSVINFO:
+                break;
+
             case MSP.Cmds.MISC:
                 remove_tid(ref cmdtid);
                 have_misc = true;
@@ -1721,7 +1739,9 @@ public class MWPlanner : Gtk.Application {
                             }
                             requests += MSP.Cmds.RAW_GPS;
                             requests += MSP.Cmds.COMP_GPS;
+                            requests += MSP.Cmds.GPSSVINFO;
                             reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS);
+
                             if(craft == null)
                             {
                                 craft = new Craft(view, vi.mrtype,norotate, gps_trail);
