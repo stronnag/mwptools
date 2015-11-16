@@ -80,6 +80,7 @@ public class MWSerial : Object
     protected static bool calacc = false;
     protected static bool calmag = false;
     protected static bool setall = false;
+    protected static bool keep_parts = false;
     protected static bool verbose = false;
 
     const OptionEntry[] options = {
@@ -94,6 +95,7 @@ public class MWSerial : Object
         { "acc", 0, 0, OptionArg.NONE, out calacc, "cal acc", null},
         { "all", 'A', 0, OptionArg.NONE, out setall, "All", null},
         { "mag", 0, 0, OptionArg.NONE, out calmag, "cal mag", null},
+        { "keep-parts", 'k', 0, OptionArg.NONE, out keep_parts, "Keep parts after merge", null},
         { "noreboot", 'R', 0, OptionArg.NONE, out noreboot, "No Reboot", null},
         { "merge-profiles", 'm', 0, OptionArg.NONE, out merge, "Generate a merged file for multiple profiles", null},
         { "merge-auxp", 'a', 0, OptionArg.NONE, out amerge, "Generate a merged file for multiple profiles with common aux settings", null},
@@ -595,6 +597,8 @@ public class MWSerial : Object
                             }
                         }
                     }
+                    if(!keep_parts)
+                        Posix.unlink(fn);
                 }
                 else
                 {

@@ -188,6 +188,8 @@ public class Logger : GLib.Object
         var builder = init("gpssvinfo");
         builder.set_member_name ("no_sats");
         builder.add_int_value(raw[0]);
+        builder.set_member_name("satellites");
+        builder.begin_array ();
         var n = 1;
         for(var i = 0; i < raw[0]; i++)
         {
@@ -202,6 +204,7 @@ public class Logger : GLib.Object
             builder.add_int_value(raw[n++]);
             builder.end_object();
         }
+        builder.end_array();
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);
