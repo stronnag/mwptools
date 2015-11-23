@@ -2941,7 +2941,15 @@ public class MWPlanner : Gtk.Application {
                     msp.raw_logging(true);
                 }
                 conbutton.set_label("Disconnect");
-                add_cmd(MSP.Cmds.IDENT,null,0, 1500);
+                var timeo = 10;
+                if(serdev.contains("rfcomm"))
+                    timeo = 2000;
+
+                Timeout.add(timeo, () =>
+                    {
+                        add_cmd(MSP.Cmds.IDENT,null,0, 1500);
+                        return true;
+                    });
                 menumwvar.sensitive = false;
             }
             else
