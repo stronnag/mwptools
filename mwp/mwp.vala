@@ -473,6 +473,8 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
+        MWPLog.message("libchamplain %s\n", Champlain.VERSION_S);
+
         gps_trail = !gps_trail; // yet more jh logic
 
         if(mwoptstr != null)
@@ -486,7 +488,6 @@ public class MWPlanner : Gtk.Application {
                 Process.spawn_command_line_async(conf.atstart);
             } catch {};
         }
-
 
         MapSource [] msources = {};
         if(conf.map_sources != null)
@@ -748,8 +749,6 @@ public class MWPlanner : Gtk.Application {
 
         var ent1 = builder.get_object ("entry2") as Gtk.Entry;
         ent1.set_text(conf.loiter.to_string());
-
-        MWPLog.message("libchamplain %s\n", Champlain.VERSION_S);
 
         var scale = new Champlain.Scale();
         scale.connect_view(view);
