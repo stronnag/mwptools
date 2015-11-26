@@ -749,6 +749,8 @@ public class MWPlanner : Gtk.Application {
         var ent1 = builder.get_object ("entry2") as Gtk.Entry;
         ent1.set_text(conf.loiter.to_string());
 
+        MWPLog.message("libchamplain %s\n", Champlain.VERSION_S);
+
         var scale = new Champlain.Scale();
         scale.connect_view(view);
         view.add_child(scale);
