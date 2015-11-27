@@ -473,7 +473,12 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
-        MWPLog.message("libchamplain %s\n", Champlain.VERSION_S);
+
+        var cvers = Champlain.VERSION_S;
+        if (cvers == "0.12.11")
+            MWPLog.message("libchamplain 0.12.11 may not draw maps at scale > 16\nConsider downgrading, upgrading or building from source\n");
+        else
+            MWPLog.message("libchamplain %s\n", Champlain.VERSION_S);
 
         gps_trail = !gps_trail; // yet more jh logic
 
@@ -2007,6 +2012,27 @@ public class MWPlanner : Gtk.Application {
 
                 if (wpmgr.wp_flag == WPDL.VALIDATE)
                 {
+                        /***********
+                    stderr.printf("WP size %d [read,expect]\n", (int)len);
+                    stderr.printf("no %d %d\n",
+                                  w.wp_no, wpmgr.wps[wpmgr.wpidx].wp_no);
+                    stderr.printf("action %d %d\n",
+                                  w.action, wpmgr.wps[wpmgr.wpidx].action);
+                    stderr.printf("lat %d %d\n",
+                                  w.lat, wpmgr.wps[wpmgr.wpidx].lat);
+                    stderr.printf("lon %d %d\n",
+                                  w.lon, wpmgr.wps[wpmgr.wpidx].lon);
+                    stderr.printf("alt %u %u\n",
+                                  w.altitude, wpmgr.wps[wpmgr.wpidx].altitude);
+                    stderr.printf("p1 %d %d\n",
+                              w.p1, wpmgr.wps[wpmgr.wpidx].p1);
+                    stderr.printf("p2 %d %d\n",
+                                  w.p2, wpmgr.wps[wpmgr.wpidx].p2);
+                    stderr.printf("p3 %d %d\n",
+                                  w.p3, wpmgr.wps[wpmgr.wpidx].p3);
+                    stderr.printf("flag %x %x\n",
+                                  w.flag, wpmgr.wps[wpmgr.wpidx].flag);
+                        ****************/
                     WPFAIL fail = WPFAIL.OK;
                     if(w.wp_no != wpmgr.wps[wpmgr.wpidx].wp_no)
                         fail |= WPFAIL.NO;
