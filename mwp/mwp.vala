@@ -32,6 +32,7 @@ public struct VersInfo
     MWChooser.MWVAR fctype;
     string fc_var;
     uint8 fc_vers[3];
+    uint8 fc_api[2];
 }
 
 public struct TelemStats
@@ -175,7 +176,7 @@ public class MWPlanner : Gtk.Application {
     private bool follow = false;
     private bool prlabel = false;
     private bool centreon = false;
-    private bool navcap = false;
+    private uint8 navcap = 0;
     private bool naze32 = false;
     private GtkChamplain.Embed embed;
     private PrefsDialog prefs;
@@ -476,7 +477,10 @@ public class MWPlanner : Gtk.Application {
 
         var cvers = Champlain.VERSION_S;
         if (cvers == "0.12.11")
-            MWPLog.message("libchamplain 0.12.11 may not draw maps at scale > 16\nConsider downgrading, upgrading or building from source\n");
+        {
+            MWPLog.message("libchamplain 0.12.11 may not draw maps at scale > 16\n");
+            MWPLog.message("Consider downgrading, upgrading or building from source\n");
+        }
         else
             MWPLog.message("libchamplain %s\n", Champlain.VERSION_S);
 
@@ -1499,7 +1503,7 @@ public class MWPlanner : Gtk.Application {
             switch(cmd)
             {
                 case MSP.Cmds.NAV_CONFIG:
-                    navcap = false;
+                    navcap = 0;
                     break;
                 case MSP.Cmds.API_VERSION:
                 case MSP.Cmds.FC_VARIANT:
@@ -1531,6 +1535,11 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
+                    vi.fc_api[0] = raw[1];
+                    vi.fc_api[1] = raw[2];
+                        // not actually true, but close enough
+                    if (raw[1] > 0 && raw[2] > 13)
+                        navcap = raw[2];
                     add_cmd(MSP.Cmds.FC_VARIANT,null,0,1000);
                 }
                 break;
@@ -1546,6 +1555,7 @@ public class MWPlanner : Gtk.Application {
                     switch(vi.fc_var)
                     {
                         case "CLFL":
+                        case "BTFL":
                             vi.fctype = mwvar = MWChooser.MWVAR.CF;
                             add_cmd(MSP.Cmds.FC_VERSION,null,0,1000);
                             break;
@@ -1600,13 +1610,14 @@ public class MWPlanner : Gtk.Application {
                         naze32 = mwvar == MWChooser.MWVAR.CF;
                     }
 
-                    if(naze32 == true && force_nc == false)
+                    if(naze32 == true)
                     {
-                        navcap = false;
+                        if(force_nc == false)
+                            navcap = 0;
                     }
                     else
                     {
-                        navcap = ((raw[3] & 0x10) == 0x10);
+                        navcap = (raw[3] & 0x10);
                     }
                     if(mwvar == MWChooser.MWVAR.AUTO)
                     {
@@ -1616,23 +1627,23 @@ public class MWPlanner : Gtk.Application {
                         }
                         else
                         {
-                            _mwvar = (navcap) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
+                            _mwvar = (navcap != 0) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
                         }
                     }
                     vi.fctype = mwvar;
                     var vers="%s v%03d".printf(MWChooser.mwnames[_mwvar], vi.mvers);
                     verlab.set_label(vers);
                     typlab.set_label(MSP.get_mrtype(vi.mrtype));
-                    if(navcap == true)
-                    {
-                        menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
-                    }
                     add_cmd(MSP.Cmds.API_VERSION,null,0,1000);
                 }
                 icount++;
                 break;
 
             case MSP.Cmds.BOXNAMES:
+                if(navcap != 0)
+                {
+                    menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
+                }
                 remove_tid(ref cmdtid);
                 string []bsx = ((string)raw).split(";");
                 int i = 0;
@@ -1710,6 +1721,10 @@ public class MWPlanner : Gtk.Application {
                             var lab = verlab.get_label();
                             StringBuilder sb = new StringBuilder();
                             sb.append(lab);
+                            if(naze32 && vi.fc_api[0] != 0)
+                                sb.append(" API %d.%d".printf(vi.fc_api[0],vi.fc_api[1]));
+                            if(navcap != 0)
+                                sb.append(" Nav");
                             sb.append(" Pr %d".printf(raw[10]));
                             verlab.set_label(sb.str);
                         }
@@ -1720,7 +1735,7 @@ public class MWPlanner : Gtk.Application {
                             swd.run();
                         }
 
-                        if(navcap == true && thr == null && naze32 == false)
+                        if(navcap != 0 && thr == null && naze32 == false)
                             add_cmd(MSP.Cmds.NAV_CONFIG,null,0,1000);
 
                         ulong reqsize = 0;
@@ -1742,14 +1757,15 @@ public class MWPlanner : Gtk.Application {
                                 gpscnt = 0;
                             }
                             sflags |= NavStatus.SPK.GPS;
-                            if(navcap == true)
+                            if(navcap != 0 && naze32 == false)
                             {
                                 requests += MSP.Cmds.NAV_STATUS;
                                 reqsize += MSize.MSP_NAV_STATUS;
                             }
                             requests += MSP.Cmds.RAW_GPS;
                             requests += MSP.Cmds.COMP_GPS;
-                            requests += MSP.Cmds.GPSSVINFO;
+                            if(naze32)
+                                requests += MSP.Cmds.GPSSVINFO;
                             reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS);
 
                             if(craft == null)
