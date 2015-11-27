@@ -2945,11 +2945,10 @@ public class MWPlanner : Gtk.Application {
                 var timeo = 10;
                 if(serdev.contains("rfcomm"))
                     timeo = 2000;
-
                 Timeout.add(timeo, () =>
                     {
                         add_cmd(MSP.Cmds.IDENT,null,0, 1500);
-                        return true;
+                        return false;
                     });
                 menumwvar.sensitive = false;
             }
