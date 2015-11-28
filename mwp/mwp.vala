@@ -1537,9 +1537,6 @@ public class MWPlanner : Gtk.Application {
                 {
                     vi.fc_api[0] = raw[1];
                     vi.fc_api[1] = raw[2];
-                        // not actually true, but close enough
-                    if (raw[1] > 0 && raw[2] > 13)
-                        navcap = raw[2];
                     add_cmd(MSP.Cmds.FC_VARIANT,null,0,1000);
                 }
                 break;
@@ -1556,6 +1553,11 @@ public class MWPlanner : Gtk.Application {
                     {
                         case "CLFL":
                         case "BTFL":
+                            vi.fctype = mwvar = MWChooser.MWVAR.CF;
+                            add_cmd(MSP.Cmds.FC_VERSION,null,0,1000);
+                            break;
+                        case "INAV":
+                            navcap = 1;
                             vi.fctype = mwvar = MWChooser.MWVAR.CF;
                             add_cmd(MSP.Cmds.FC_VERSION,null,0,1000);
                             break;
