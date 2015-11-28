@@ -72,8 +72,6 @@ public struct MavPOSDef
     uint8 chan;
     uint8 set;
 }
-
-
 public class PosFormat : GLib.Object
 {
     public static string lat(double _lat, bool dms)
@@ -176,7 +174,6 @@ public class MWPlanner : Gtk.Application {
     private bool follow = false;
     private bool prlabel = false;
     private bool centreon = false;
-    private uint8 navcap = 0;
     private bool naze32 = false;
     private GtkChamplain.Embed embed;
     private PrefsDialog prefs;
@@ -294,6 +291,17 @@ public class MWPlanner : Gtk.Application {
 
     private TelemStats telstats;
     private LayMan lman;
+
+    private enum NAVCAPS
+    {
+        NONE=0,
+        WAYPOINTS=1,
+        NAVSTATUS=2,
+        NAVCONFIG=4
+    }
+
+
+    private NAVCAPS navcap;
 
     private enum DOCKLETS
     {
@@ -1503,7 +1511,7 @@ public class MWPlanner : Gtk.Application {
             switch(cmd)
             {
                 case MSP.Cmds.NAV_CONFIG:
-                    navcap = 0;
+                    navcap = NAVCAPS.NONE;
                     break;
                 case MSP.Cmds.API_VERSION:
                 case MSP.Cmds.FC_VARIANT:
@@ -1557,7 +1565,7 @@ public class MWPlanner : Gtk.Application {
                             add_cmd(MSP.Cmds.FC_VERSION,null,0,1000);
                             break;
                         case "INAV":
-                            navcap = 1;
+                            navcap = NAVCAPS.WAYPOINTS;
                             vi.fctype = mwvar = MWChooser.MWVAR.CF;
                             add_cmd(MSP.Cmds.FC_VERSION,null,0,1000);
                             break;
@@ -1615,11 +1623,13 @@ public class MWPlanner : Gtk.Application {
                     if(naze32 == true)
                     {
                         if(force_nc == false)
-                            navcap = 0;
+                            navcap = NAVCAPS.NONE;
                     }
                     else
                     {
-                        navcap = (raw[3] & 0x10);
+                        navcap = ((raw[3] & 0x10) == 0x10) ?
+                            NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS|NAVCAPS.NAVCONFIG
+                            : NAVCAPS.NONE;
                     }
                     if(mwvar == MWChooser.MWVAR.AUTO)
                     {
@@ -1629,7 +1639,7 @@ public class MWPlanner : Gtk.Application {
                         }
                         else
                         {
-                            _mwvar = (navcap != 0) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
+                            _mwvar = (navcap != NAVCAPS.NONE) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
                         }
                     }
                     vi.fctype = mwvar;
@@ -1642,7 +1652,7 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.BOXNAMES:
-                if(navcap != 0)
+                if(navcap != NAVCAPS.NONE)
                 {
                     menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
                 }
@@ -1725,7 +1735,7 @@ public class MWPlanner : Gtk.Application {
                             sb.append(lab);
                             if(naze32 && vi.fc_api[0] != 0)
                                 sb.append(" API %d.%d".printf(vi.fc_api[0],vi.fc_api[1]));
-                            if(navcap != 0)
+                            if(navcap != NAVCAPS.NONE)
                                 sb.append(" Nav");
                             sb.append(" Pr %d".printf(raw[10]));
                             verlab.set_label(sb.str);
@@ -1737,7 +1747,8 @@ public class MWPlanner : Gtk.Application {
                             swd.run();
                         }
 
-                        if(navcap != 0 && thr == null && naze32 == false)
+                        if(((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
+                           && thr == null)
                             add_cmd(MSP.Cmds.NAV_CONFIG,null,0,1000);
 
                         ulong reqsize = 0;
@@ -1759,7 +1770,7 @@ public class MWPlanner : Gtk.Application {
                                 gpscnt = 0;
                             }
                             sflags |= NavStatus.SPK.GPS;
-                            if(navcap != 0 && naze32 == false)
+                            if((navcap & NAVCAPS.NAVSTATUS) == NAVCAPS.NAVSTATUS)
                             {
                                 requests += MSP.Cmds.NAV_STATUS;
                                 reqsize += MSize.MSP_NAV_STATUS;
