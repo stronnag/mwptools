@@ -1054,7 +1054,7 @@ public class NavStatus : GLib.Object
                 xfmode = fmode;
                 if(mt_voice && xfmode != -1)
                 {
-                    mt.message(AudioThread.Vox.LTM_MODE);
+                    mt.message(AudioThread.Vox.LTM_MODE,true);
                 }
             }
 
@@ -1102,12 +1102,12 @@ public class NavStatus : GLib.Object
             if(_n.nav_mode != 0 && _n.nav_error != 0 &&
                _n.nav_error != xnerr)
             {
-                mt.message(AudioThread.Vox.NAV_ERR);
+                mt.message(AudioThread.Vox.NAV_ERR,true);
             }
 
             if((_n.nav_mode != xnmode) || (_n.nav_mode !=0 && _n.wp_number != xnwp))
             {
-                mt.message(AudioThread.Vox.NAV_STATUS);
+                mt.message(AudioThread.Vox.NAV_STATUS,true);
             }
         }
 
@@ -1280,7 +1280,7 @@ public class NavStatus : GLib.Object
         fmode = _fmode;
         if(mt_voice)
         {
-            mt.message(AudioThread.Vox.FMODE);
+            mt.message(AudioThread.Vox.FMODE,true);
         }
     }
 
@@ -1415,14 +1415,23 @@ public class AudioThread : Object {
         }
     }
 
-    public void message(Vox c)
+    public void message(Vox c, bool urgent=false)
     {
         if (msgs.length() > 8)
         {
             clear();
             MWPLog.message("cleared voice queue\n");
         }
-        msgs.push(c);
+        if(!urgent)
+            msgs.push(c);
+        else
+        {
+#if NOPUSHFRONT
+            msgs.push(c);
+#else
+            msgs.push_front(c);
+#endif
+        }
     }
 
     public void clear()

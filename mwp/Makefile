@@ -12,7 +12,7 @@ PKGS= --pkg gtk+-3.0 --pkg atk --pkg clutter-1.0 --pkg champlain-gtk-0.12 --pkg 
 LOPTS=-X -lespeak -X -lm
 
 $(APP) : $(SRCS) $(COMMON)
-	$(VALAC) $(BBOPTS) $(SPOPTS) $(OPTS) $(PKGS) -o $@  $^ $(LOPTS)
+	$(VALAC) $(BBOPTS) $(SPOPTS) $(PFOPTS) $(OPTS) $(PKGS) -o $@  $^ $(LOPTS)
 
 qproxy: qproxy.vala
 	valac --pkg libsoup-2.4 --pkg posix  qproxy.vala
