@@ -1306,11 +1306,6 @@ public class NavStatus : GLib.Object
         {
             mt.message(AudioThread.Vox.RANGE_BRG);
         }
-//        else
-//        {
-//            MWPLog.message("quite rng %d %s\n", mask, have_cg.to_string());
-//        }
-
         if((mask & SPK.ELEV) == SPK.ELEV)
         {
             mt.message(AudioThread.Vox.ELEVATION);
@@ -1332,7 +1327,7 @@ public class NavStatus : GLib.Object
 
         if(modsat)
         {
-            mt.message(AudioThread.Vox.MODSAT);
+            mt.message(AudioThread.Vox.MODSAT,true);
         }
     }
 
