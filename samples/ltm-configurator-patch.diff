@@ -1,0 +1,39 @@
+diff --git a/_locales/en/messages.json b/_locales/en/messages.json
+index ff0b4b1..2d39e35 100755
+--- a/_locales/en/messages.json
++++ b/_locales/en/messages.json
+@@ -600,6 +600,9 @@
+     "portsFunction_TELEMETRY_SMARTPORT": {
+         "message": "SmartPort"
+     },
++    "portsFunction_TELEMETRY_LTM": {
++        "message": "LTM"
++    },
+     "portsFunction_RX_SERIAL": {
+         "message": "Serial RX"
+     },
+diff --git a/js/msp.js b/js/msp.js
+index cfde7dc..cfee0bb 100644
+--- a/js/msp.js
++++ b/js/msp.js
+@@ -124,7 +124,7 @@ var MSP = {
+     ],
+     
+     serialPortFunctions: // in LSB bit order 
+-        ['MSP', 'GPS', 'TELEMETRY_FRSKY', 'TELEMETRY_HOTT', 'TELEMETRY_MSP', 'TELEMETRY_SMARTPORT', 'RX_SERIAL', 'BLACKBOX'],
++        ['MSP', 'GPS', 'TELEMETRY_FRSKY', 'TELEMETRY_HOTT', 'TELEMETRY_MSP', 'TELEMETRY_SMARTPORT', 'RX_SERIAL', 'BLACKBOX', 'TELEMETRY_LTM'],
+ 
+     read: function (readInfo) {
+         var data = new Uint8Array(readInfo.data);
+diff --git a/tabs/ports.js b/tabs/ports.js
+index 94345d6..97f7123 100644
+--- a/tabs/ports.js
++++ b/tabs/ports.js
+@@ -14,6 +14,7 @@ TABS.ports.initialize = function (callback, scrollPosition) {
+          {name: 'TELEMETRY_HOTT',       groups: ['telemetry'], sharableWith: ['msp'], notSharableWith: ['blackbox'], maxPorts: 1},
+          {name: 'TELEMETRY_MSP',        groups: ['telemetry'], sharableWith: ['msp'], notSharableWith: ['blackbox'], maxPorts: 1},
+          {name: 'TELEMETRY_SMARTPORT',  groups: ['telemetry'], maxPorts: 1},
++         {name: 'TELEMETRY_LTM',    groups: ['telemetry'], sharableWith: ['msp'], notSharableWith: ['blackbox'], maxPorts: 1},
+          {name: 'RX_SERIAL',            groups: ['rx'], maxPorts: 1},
+          {name: 'BLACKBOX',             groups: ['logging', 'blackbox'], sharableWith: ['msp'], notSharableWith: ['telemetry'], maxPorts: 1},
+     ];

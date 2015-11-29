@@ -1,0 +1,33 @@
+This note applies to versions of Cleanflight the have LTM built in (either
+by applying PR 1010 to a local source tree, or by default in the INAV
+(navigation-rewrite) branch
+<https://github.com/digitalentity/cleanflight/tree/inav-dev> and
+<http://www.rcgroups.com/forums/showthread.php?t=2495732>
+
+The file /samples/ltm-configurator-patch.diff patches the Cleanflight
+configurator (1.0 and above at least, tested with 1.10) to support LTM
+as a telemetry option.
+
+To apply:
+
+$ cd <path_to_configurator>
+$ patch -p1 <path_to>/mwptools/samples/ltm-configurator-patch.diff
+
+To remove:
+
+$ cd <path_to_configurator>
+$ patch -p1 -R <path_to>/mwptools/samples/ltm-configurator-patch.diff
+
+Prior to performing either of those action, one can add --dry-run to
+patch command line to see the affect without changing anything.
+
+Otherwise it is necessary to use the CLI to support LTM: The function
+mask value of 256 is used to indicate LTM, e.g. (on soft serial 1)
+
+serial 30 257 9600 57600 9600 57600
+
+where the function mask of 257 (1+256) indicates MSP / CLI when
+unarmed and LTM when armed. mwp will automatically switch between the
+two.
+
+jh 2015-11-29
