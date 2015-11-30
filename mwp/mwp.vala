@@ -275,6 +275,12 @@ public class MWPlanner : Gtk.Application {
     private uint16 sensor;
     private uint8 profile = 0;
 
+    private enum DEBUG_FLAGS
+    {
+        NONE=0,
+        WP = 1
+    }
+
     public struct Position
     {
         double lat;
@@ -388,7 +394,7 @@ public class MWPlanner : Gtk.Application {
     private uint last_sv = 0;
 
     private static int dmrtype=3; // default to quad
-
+    private static DEBUG_FLAGS debug_flags = 0;
     private static VersInfo vi ={0};
 
     const OptionEntry[] options = {
@@ -407,7 +413,9 @@ public class MWPlanner : Gtk.Application {
         { "force-mag", 0, 0, OptionArg.NONE, out force_mag, "force mag for vehicle direction", null},
         { "force-nav", 0, 0, OptionArg.NONE, out force_nc, "force nav capaable", null},
         { "layout", 'l', 0, OptionArg.STRING, out layfile, "Layout name", null},
-        { "force-type", 't', 0, OptionArg.INT, out dmrtype, "Model type", null},                {null}
+        { "force-type", 't', 0, OptionArg.INT, out dmrtype, "Model type", null},
+        { "debug-flags", 0, 0, OptionArg.INT, out debug_flags, "Debug flags (mask)", null},
+        {null}
     };
 
 
@@ -2041,27 +2049,6 @@ public class MWPlanner : Gtk.Application {
 
                 if (wpmgr.wp_flag == WPDL.VALIDATE)
                 {
-                        /***********
-                    stderr.printf("WP size %d [read,expect]\n", (int)len);
-                    stderr.printf("no %d %d\n",
-                                  w.wp_no, wpmgr.wps[wpmgr.wpidx].wp_no);
-                    stderr.printf("action %d %d\n",
-                                  w.action, wpmgr.wps[wpmgr.wpidx].action);
-                    stderr.printf("lat %d %d\n",
-                                  w.lat, wpmgr.wps[wpmgr.wpidx].lat);
-                    stderr.printf("lon %d %d\n",
-                                  w.lon, wpmgr.wps[wpmgr.wpidx].lon);
-                    stderr.printf("alt %u %u\n",
-                                  w.altitude, wpmgr.wps[wpmgr.wpidx].altitude);
-                    stderr.printf("p1 %d %d\n",
-                              w.p1, wpmgr.wps[wpmgr.wpidx].p1);
-                    stderr.printf("p2 %d %d\n",
-                                  w.p2, wpmgr.wps[wpmgr.wpidx].p2);
-                    stderr.printf("p3 %d %d\n",
-                                  w.p3, wpmgr.wps[wpmgr.wpidx].p3);
-                    stderr.printf("flag %x %x\n",
-                                  w.flag, wpmgr.wps[wpmgr.wpidx].flag);
-                        ****************/
                     WPFAIL fail = WPFAIL.OK;
                     if(w.wp_no != wpmgr.wps[wpmgr.wpidx].wp_no)
                         fail |= WPFAIL.NO;
@@ -2086,6 +2073,28 @@ public class MWPlanner : Gtk.Application {
 
                     if (fail != WPFAIL.OK)
                     {
+                        if((debug_flags & DEBUG_FLAGS.WP) != DEBUG_FLAGS.NONE)
+                        {
+                            stderr.printf("WP size %d [read,expect]\n", (int)len);
+                            stderr.printf("no %d %d\n",
+                                          w.wp_no, wpmgr.wps[wpmgr.wpidx].wp_no);
+                            stderr.printf("action %d %d\n",
+                                          w.action, wpmgr.wps[wpmgr.wpidx].action);
+                            stderr.printf("lat %d %d\n",
+                                          w.lat, wpmgr.wps[wpmgr.wpidx].lat);
+                            stderr.printf("lon %d %d\n",
+                                          w.lon, wpmgr.wps[wpmgr.wpidx].lon);
+                            stderr.printf("alt %u %u\n",
+                                          w.altitude, wpmgr.wps[wpmgr.wpidx].altitude);
+                            stderr.printf("p1 %d %d\n",
+                                          w.p1, wpmgr.wps[wpmgr.wpidx].p1);
+                            stderr.printf("p2 %d %d\n",
+                                          w.p2, wpmgr.wps[wpmgr.wpidx].p2);
+                            stderr.printf("p3 %d %d\n",
+                                          w.p3, wpmgr.wps[wpmgr.wpidx].p3);
+                            stderr.printf("flag %x %x\n",
+                                          w.flag, wpmgr.wps[wpmgr.wpidx].flag);
+                        }
                         StringBuilder sb = new StringBuilder();
                         for(var i = 0; i < failnames.length; i += 1)
                         {
