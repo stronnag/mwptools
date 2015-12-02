@@ -1573,7 +1573,7 @@ public class MWPlanner : Gtk.Application {
                             add_cmd(MSP.Cmds.FC_VERSION,null,0,1000);
                             break;
                         case "INAV":
-                            navcap = NAVCAPS.WAYPOINTS;
+                            navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS;
                             vi.fctype = mwvar = MWChooser.MWVAR.CF;
                             add_cmd(MSP.Cmds.FC_VERSION,null,0,1000);
                             break;
