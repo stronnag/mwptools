@@ -1883,16 +1883,24 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.NAV_STATUS:
+            case MSP.Cmds.TN_FRAME:
             {
                 MSP_NAV_STATUS ns = MSP_NAV_STATUS();
+                uint8 flg = 0;
                 uint8* rp = raw;
                 ns.gps_mode = *rp++;
                 ns.nav_mode = *rp++;
                 ns.action = *rp++;
                 ns.wp_number = *rp++;
                 ns.nav_error = *rp++;
-                deserialise_u16(rp, out ns.target_bearing);
-                navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS));
+                if(cmd == MSP.Cmds.NAV_STATUS)
+                    deserialise_u16(rp, out ns.target_bearing);
+                else
+                {
+                    flg = 1;
+                    ns.target_bearing = *rp++;
+                }
+                navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS),flg);
             }
             break;
 
@@ -2143,6 +2151,8 @@ public class MWPlanner : Gtk.Application {
                     wp_resp += m;
                     if(w.flag == 0xa5 || w.wp_no == 255)
                     {
+                        if((debug_flags & DEBUG_FLAGS.WP) != DEBUG_FLAGS.NONE)
+                            stderr.printf("Null mission returned\n");
                         var ms = new Mission();
                         if(w.wp_no == 1 && m.action == MSP.Action.RTH
                            && w.lat == 0 && w.lon == 0)

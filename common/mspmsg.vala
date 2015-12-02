@@ -215,7 +215,8 @@ public enum MSize
     LTM_GFRAME=14,
     LTM_AFRAME=6,
     LTM_SFRAME=7,
-    LTM_OFRAME=14
+    LTM_OFRAME=14,
+    LTM_NFRAME=6
 }
 
 

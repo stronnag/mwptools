@@ -1079,7 +1079,7 @@ public class NavStatus : GLib.Object
             have_hdr = true;
             if(visible)
             {
-                var str = "%d° / %d° / %d°".printf(a.pitch, a.roll, hdr);
+               var str = "%d° / %d° / %d°".printf(a.pitch, a.roll, hdr);
                 nav_attitude_label.set_label(str);
             }
             if(Logger.is_logging)
@@ -1089,7 +1089,7 @@ public class NavStatus : GLib.Object
         }
     }
 
-    public void update(MSP_NAV_STATUS _n, bool visible)
+    public void update(MSP_NAV_STATUS _n, bool visible, uint8 flag = 0)
     {
         if(mt_voice == true)
         {
@@ -1125,7 +1125,10 @@ public class NavStatus : GLib.Object
             nav_action_label.set_label(act);
             nav_wp_label.set_label("%d".printf(n_wpno));
             nav_err_label.set_label(estr);
-            nav_tgt_label.set_label("%d".printf(tbrg));
+            if(flag == 0)
+                nav_tgt_label.set_label("%d".printf(tbrg));
+            else
+                nav_tgt_label.set_label("[%x]".printf(tbrg));
         }
 
         if (Logger.is_logging)
