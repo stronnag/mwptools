@@ -986,6 +986,10 @@ public class NavStatus : GLib.Object
     public static int mins {get; private set;}
     public static bool recip {get; private set;}
     public static string fmode;
+    private static string ls_state = null;
+    private static string ls_action = null;
+    private static string ns_action = null;
+    private static string ns_state = null;
 
     private int _vn;
     private int _aw;
@@ -1033,42 +1037,6 @@ public class NavStatus : GLib.Object
     }
 
 
-    public void update_ltm_s(LTM_SFRAME s, bool visible)
-    {
-        if(enabled || Logger.is_logging)
-        {
-            uint8 armed = (s.flags & 1);
-            uint8 failsafe = ((s.flags & 2) >> 1);
-            uint8 fmode = (s.flags >> 2);
-
-            var lmode = MSP.ltm_mode(fmode);
-            nav_state_label.set_label(lmode);
-            var str = "%s %s".printf(((armed == 1) ? "armed" : "disarmed"),
-                                     ((failsafe == 1) ? "failsafe" : ""));
-            if(visible)
-            {
-                nav_action_label.set_label(str);
-            }
-            if(xfmode != fmode)
-            {
-                xfmode = fmode;
-                if(mt_voice && xfmode != -1)
-                {
-                    mt.message(AudioThread.Vox.LTM_MODE,true);
-                }
-            }
-
-            if (Logger.is_logging)
-            {
-                var b = new StringBuilder ();
-                b.append(str.strip());
-                b.append(" ");
-                b.append(lmode);
-                Logger.ltm_sframe(s, b.str);
-            }
-        }
-    }
-
     public void update_ltm_a(LTM_AFRAME a, bool visible)
     {
         if(enabled || Logger.is_logging)
@@ -1114,15 +1082,15 @@ public class NavStatus : GLib.Object
         if(visible)
         {
             var gstr = MSP.gps_mode(n.gps_mode);
-            var nstr = MSP.nav_state(n.nav_mode);
             var n_action = n.action;
             var n_wpno = n.wp_number;
             var estr = MSP.nav_error(n.nav_error);
             var tbrg = n.target_bearing;
+            ns_state = MSP.nav_state(n.nav_mode);
+            ns_action = MSP.get_wpname((MSP.Action)n_action);
+
             gps_mode_label.set_label(gstr);
-            nav_state_label.set_label(nstr);
-            var act = MSP.get_wpname((MSP.Action)n_action);
-            nav_action_label.set_label(act);
+            set_nav_state_act();
             nav_wp_label.set_label("%d".printf(n_wpno));
             nav_err_label.set_label(estr);
             if(flag == 0)
@@ -1136,6 +1104,68 @@ public class NavStatus : GLib.Object
             Logger.status(n);
         }
     }
+
+    private void set_nav_state_act()
+    {
+        StringBuilder sb = new StringBuilder ();
+        if (ns_state != null)
+        {
+            sb.append(ns_state);
+            sb.append(" ");
+        }
+        if (ls_state != null)
+            sb.append(ls_state);
+        nav_state_label.set_label(sb.str);
+
+        sb.assign("");
+        if (ns_action != null)
+        {
+            sb.append(ns_action);
+            sb.append(" ");
+        }
+        if (ls_action != null)
+            sb.append(ls_action);
+
+        nav_action_label.set_label(sb.str);
+    }
+
+    public void update_ltm_s(LTM_SFRAME s, bool visible)
+    {
+        if(enabled || Logger.is_logging)
+        {
+            uint8 armed = (s.flags & 1);
+            uint8 failsafe = ((s.flags & 2) >> 1);
+            uint8 fmode = (s.flags >> 2);
+
+            ls_state = MSP.ltm_mode(fmode);
+            ls_action = "%s %s".printf(((armed == 1) ? "armed" : "disarmed"),
+                                     ((failsafe == 1) ? "failsafe" : ""));
+            if(visible)
+            {
+                set_nav_state_act();
+            }
+            if(xfmode != fmode)
+            {
+                xfmode = fmode;
+                if(mt_voice && xfmode != -1)
+                {
+                    mt.message(AudioThread.Vox.LTM_MODE,true);
+                }
+            }
+
+            if (Logger.is_logging)
+            {
+                var b = new StringBuilder ();
+                b.append(ls_action.strip());
+                b.append(" ");
+                b.append(ls_state);
+                Logger.ltm_sframe(s, b.str);
+            }
+        }
+    }
+
+
+
 
     public void set_attitude(MSP_ATTITUDE _atti,bool visible)
     {
@@ -1339,11 +1369,20 @@ public class NavStatus : GLib.Object
         have_cg = true;
     }
 
+    public void reset_states()
+    {
+        ls_state = null;
+        ls_action = null;
+        ns_state = null;
+        ns_action = null;
+    }
+
     public void reset()
     {
         have_cg = false;
         have_hdr = false;
         volts = 0;
+        reset_states();
     }
 
     public void logspeak_init (string? voice)

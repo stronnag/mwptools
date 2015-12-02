@@ -1478,6 +1478,7 @@ public class MWPlanner : Gtk.Application {
                     Logger.armed(false,duration,flag, sensor);
                     logb.active=false;
                 }
+                navstatus.reset_states();
             }
         }
         larmed = armed;
@@ -2282,17 +2283,25 @@ public class MWPlanner : Gtk.Application {
                     {
                         if(npos)
                         {
-                            double dist,cse;
-                            Geo.csedist(gflat, gflon, _ilat, _ilon, out dist, out cse);
-                            var cg = MSP_COMP_GPS();
-                            cg.range = (uint16)Math.lround(dist*1852);
-                            cg.direction = (int16)Math.lround(cse);
-                            navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+                            if(fix > 0 && _nsats >= 4)
+                            {
+                                double dist,cse;
+                                Geo.csedist(gflat, gflon, _ilat, _ilon,
+                                            out dist, out cse);
+                                if(dist < 64)
+                                {
+                                    var cg = MSP_COMP_GPS();
+                                    cg.range = (uint16)Math.lround(dist*1852);
+                                    cg.direction = (int16)Math.lround(cse);
+                                    navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+                                }
+                            }
                         }
                         else
                         {
                             if(no_ofix == 10)
                             {
+/****
                                 navstatus.cg_on();
                                 sflags |=  NavStatus.SPK.GPS;
                                 _ilat = gflat;
@@ -2301,6 +2310,8 @@ public class MWPlanner : Gtk.Application {
                                 want_special |= POSMODE.HOME;
                                 MWPLog.message("Force home %.6f %.6f\n", _ilat, _ilon);
                                 process_pos_states(_ilat, _ilon, 0.0);
+*****/
+                                MWPLog.message("No home position yet\n");
                             }
                         }
                     }
