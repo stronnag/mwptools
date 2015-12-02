@@ -1083,7 +1083,7 @@ public class NavStatus : GLib.Object
         {
             var gstr = MSP.gps_mode(n.gps_mode);
             var n_action = n.action;
-            var n_wpno = n.wp_number;
+            var n_wpno = (n.nav_mode == 0) ? 0 : n.wp_number;
             var estr = MSP.nav_error(n.nav_error);
             var tbrg = n.target_bearing;
             ns_state = MSP.nav_state(n.nav_mode);
