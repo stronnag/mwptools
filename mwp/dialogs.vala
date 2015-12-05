@@ -1579,7 +1579,7 @@ public class AudioThread : Object {
                     }
                     if(s != null)
                     {
-                        MWPLog.message("say %s %s\n", c.to_string(), s);
+//                        MWPLog.message("say %s %s\n", c.to_string(), s);
                         espeak_say(s);
                     }
                 }
