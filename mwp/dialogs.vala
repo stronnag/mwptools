@@ -1067,7 +1067,13 @@ public class NavStatus : GLib.Object
 
             n = _n;
 
-            if(_n.nav_mode != 0 && _n.nav_error != 0 &&
+            if(_n.nav_mode != 0 &&
+               _n.nav_error != 0 &&
+               _n.nav_error != 4 &&
+               _n.nav_error != 5 &&
+               _n.nav_error != 6 &&
+               _n.nav_error != 7 &&
+               _n.nav_error != 8 &&
                _n.nav_error != xnerr)
             {
                 mt.message(AudioThread.Vox.NAV_ERR,true);
@@ -1147,7 +1153,8 @@ public class NavStatus : GLib.Object
             if(xfmode != fmode)
             {
                 xfmode = fmode;
-                if(mt_voice && xfmode != -1)
+                    // only speak modes that are in N-Frame
+                if(mt_voice && xfmode > 0 && xfmode < 5)
                 {
                     mt.message(AudioThread.Vox.LTM_MODE,true);
                 }
@@ -1572,7 +1579,7 @@ public class AudioThread : Object {
                     }
                     if(s != null)
                     {
-//                        MWPLog.message("say %s\n", s);
+                        MWPLog.message("say %s %s\n", c.to_string(), s);
                         espeak_say(s);
                     }
                 }

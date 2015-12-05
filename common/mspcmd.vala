@@ -155,7 +155,7 @@ public class MSP : Object
         "None",			// 0
         "RTH Start",           	// 1
         "RTH Enroute",		// 2
-        "PosHold infinit",	// 3
+        "PosHold infinite",	// 3
         "PosHold timed",	// 4
         "WP Enroute",		// 5
         "Process next",		// 6
@@ -168,18 +168,18 @@ public class MSP : Object
     };
 
     private static const string[] nav_errors =  {
-        "Navigation system is working",
-        "Next waypoint distance is more than the safety limit, aborting mission",
-        "GPS reception is compromised - pausing mission, COPTER IS ADRIFT!",
-        "Error while reading next waypoint from memory, aborting mission",
-        "Mission Finished" ,
-        "Waiting for timed position hold",
-        "Invalid Jump target detected, aborting mission",
-        "Invalid Mission Step Action code detected, aborting mission",
-        "Waiting to reach return to home altitude",
-        "GPS fix lost, mission aborted - COPTER IS ADRIFT!",
-        "Copter is disarmed, navigation engine disabled",
-        "Landing is in progress, check attitude if possible"
+        "Navigation system is working", // 0
+        "Next waypoint distance is more than the safety limit, aborting mission", //1
+        "GPS reception is compromised - pausing mission, COPTER IS ADRIFT!", //2
+        "Error while reading next waypoint from memory, aborting mission", //3
+        "Mission Finished" , //4
+        "Waiting for timed position hold", //5
+        "Invalid Jump target detected, aborting mission", //6
+        "Invalid Mission Step Action code detected, aborting mission", //7
+        "Waiting to reach return to home altitude", //8
+        "GPS fix lost, mission aborted - COPTER IS ADRIFT!", //9
+        "Copter is disarmed, navigation engine disabled", //10
+        "Landing is in progress, check attitude if possible" //11
     };
 
     private static const string [] ltm_modes =
