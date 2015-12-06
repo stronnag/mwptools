@@ -292,7 +292,11 @@ public class MWPlanner : Gtk.Application {
     private Position rth_pos;
     private Position ph_pos;
     private uint ph_mask=0;
+    private uint arm_mask=0;
     private uint rth_mask=0;
+    private uint angle_mask=0;
+    private uint horz_mask=0;
+
     private uint no_ofix = 0;
 
     private TelemStats telstats;
@@ -1672,10 +1676,21 @@ public class MWPlanner : Gtk.Application {
                 {
                     switch(bs)
                     {
+                        case "ARM":
+                            arm_mask = (1 << i);
+                            break;
+                        case "ANGLE":
+                            angle_mask = (1 << i);
+                            break;
+                        case "HORIZON":
+                            horz_mask = (1 << i);
+                            break;
                         case "GPS HOME":
+                        case "NAV RTH":
                             rth_mask = (1 << i);
                             break;
                         case "GPS HOLD":
+                        case "NAV POSHOLD":
                             ph_mask = (1 << i);
                             break;
                     }
@@ -1702,7 +1717,8 @@ public class MWPlanner : Gtk.Application {
                 uint32 flag;
                 deserialise_u16(raw+4, out sensor);
                 deserialise_u32(raw+6, out flag);
-                armed = ((flag & 1) == 1) ? 1 : 0;
+                var lmask = (angle_mask|horz_mask);
+                armed = ((flag & arm_mask) == arm_mask) ? 1 : 0;
 
                 if (nopoll == true)
                 {
@@ -1722,9 +1738,10 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(have_status == false)
                     {
+                        remove_tid(ref cmdtid);
+                        have_status = true;
                         StringBuilder sb0 = new StringBuilder ();
                         foreach (MSP.Sensors sn in MSP.Sensors.all())
-
                         {
                             if((sensor & sn) == sn)
                             {
@@ -1733,8 +1750,7 @@ public class MWPlanner : Gtk.Application {
                             }
                         }
                         MWPLog.message("Sensors: %s\n", sb0.str);
-                        remove_tid(ref cmdtid);
-                        have_status = true;
+
                         if(!prlabel)
                         {
                             profile = raw[10];
@@ -1751,8 +1767,9 @@ public class MWPlanner : Gtk.Application {
                         }
 
                         want_special = 0;
-                        if(conf.checkswitches && ((flag & 6) == 0) && robj == null)
+                        if(conf.checkswitches && ((flag & lmask) == 0) && robj == null)
                         {
+                            MWPLog.message("switch val == %0x\n", flag);
                             swd.run();
                         }
 
@@ -1854,7 +1871,7 @@ public class MWPlanner : Gtk.Application {
 
                         // acro/horizon/angle changed
 
-                    if((flag & 6) != (xbits & 6))
+                    if((flag & lmask) != (xbits & lmask))
                     {
                         report_bits(flag);
                     }
@@ -2674,12 +2691,11 @@ public class MWPlanner : Gtk.Application {
     private void report_bits(uint32 bits)
     {
         string mode;
-
-        if((bits & 2) == 2)
+        if((bits & angle_mask) == angle_mask)
         {
             mode = "Angle";
         }
-        else if((bits & 4) == 4)
+        else if((bits & horz_mask) == horz_mask)
         {
             mode = "Horizon";
         }
