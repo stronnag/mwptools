@@ -240,7 +240,7 @@ public class MWPlanner : Gtk.Application {
 
     private MSP.Cmds[] requests = {};
     private int tcycle = 0;
-    private bool dopoll;
+    private bool dopoll = false;
     private bool rxerr = false;
 
     private uint64 acycle;
@@ -1696,6 +1696,8 @@ public class MWPlanner : Gtk.Application {
                     }
                     i++;
                 }
+                MWPLog.message("Masks %x %x %x %x %x\n",
+                               arm_mask, angle_mask, horz_mask, rth_mask, ph_mask);
                 add_cmd(MSP.Cmds.MISC,null,0, 1000);
                 break;
 
@@ -1714,6 +1716,7 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.STATUS:
+                remove_tid(ref cmdtid);
                 uint32 flag;
                 deserialise_u16(raw+4, out sensor);
                 deserialise_u32(raw+6, out flag);
@@ -1723,7 +1726,6 @@ public class MWPlanner : Gtk.Application {
                 if (nopoll == true)
                 {
                     have_status = true;
-                    remove_tid(ref cmdtid);
                     if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
                     {
                         sflags |= NavStatus.SPK.GPS;
@@ -1738,7 +1740,6 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(have_status == false)
                     {
-                        remove_tid(ref cmdtid);
                         have_status = true;
                         StringBuilder sb0 = new StringBuilder ();
                         foreach (MSP.Sensors sn in MSP.Sensors.all())
@@ -1820,8 +1821,6 @@ public class MWPlanner : Gtk.Application {
                             if(gpscnt < 2)
                             {
                                 gpscnt++;
-                                have_status = false;
-                                add_cmd(MSP.Cmds.STATUS,null,0, 1000);
                             }
                             else
                                 gpscnt = 0;
@@ -1853,23 +1852,32 @@ public class MWPlanner : Gtk.Application {
                         if(naze32)
                             qsize += 1; // for WP no
 
-                        print("Timer cycle for %d (%dms) items, %lu => %lu bytes\n",
+                        MWPLog.message("Timer cycle for %d (%dms) items, %lu => %lu bytes\n",
                               nreqs,timeout,qsize,reqsize);
 
                         if(nopoll == false && nreqs > 0)
                         {
                             if  (thr == null)
                             {
-                                MWPLog.message("Start poller\n");
-                                dopoll = true;
+                                if(gpscnt == 0)
+                                {
+                                    MWPLog.message("Start poller\n");
+                                    tcycle = 0;
+                                    dopoll = true;
+                                }
+                                else
+                                {
+                                    MWPLog.message("Retry GPS\n");
+                                    have_status = false;
+                                    add_cmd(MSP.Cmds.STATUS,null,0, 1000);
+                                }
                             }
-                            tcycle = 0;
                         }
                         start_audio();
                         report_bits(flag);
                     }
 
-                        // acro/horizon/angle changed
+                    // acro/horizon/angle changed
 
                     if((flag & lmask) != (xbits & lmask))
                     {
@@ -2609,7 +2617,6 @@ public class MWPlanner : Gtk.Application {
                 break;
             }
         }
-
         return matched;
     }
 
