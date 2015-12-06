@@ -398,7 +398,7 @@ public class MWPlanner : Gtk.Application {
     private uint lastok;
     private uint last_an = 0;
     private uint last_sv = 0;
-
+    private static string rfile = null;
     private static int dmrtype=3; // default to quad
     private static DEBUG_FLAGS debug_flags = 0;
     private static VersInfo vi ={0};
@@ -421,6 +421,7 @@ public class MWPlanner : Gtk.Application {
         { "layout", 'l', 0, OptionArg.STRING, out layfile, "Layout name", null},
         { "force-type", 't', 0, OptionArg.INT, out dmrtype, "Model type", null},
         { "debug-flags", 0, 0, OptionArg.INT, out debug_flags, "Debug flags (mask)", null},
+        { "replay", 'p', 0, OptionArg.STRING, out rfile, "replay file", null},
         {null}
     };
 
@@ -1182,6 +1183,12 @@ public class MWPlanner : Gtk.Application {
 
         if(conf.mavrth != null)
             parse_rc_mav(conf.mavrth, Craft.Special.RTH);
+
+        if(rfile != null)
+        {
+            usemag = force_mag;
+            run_replay(rfile, true);
+        }
     }
 
     private void parse_rc_mav(string s, Craft.Special ptype)
@@ -1697,6 +1704,7 @@ public class MWPlanner : Gtk.Application {
                             ph_mask = (1 << i);
                             break;
                         case "NAV WP":
+                        case "MISSION":
                             wp_mask = (1 << i);
                             break;
                     }

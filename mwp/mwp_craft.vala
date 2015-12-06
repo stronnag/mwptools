@@ -268,9 +268,9 @@ public class Craft : GLib.Object
             case Special.WP:
                 if(wpp == null)
                 {
-                    wpp = new Champlain.Label.with_text ("⚓", "Sans 10",null,null);
+                    wpp = new Champlain.Label.with_text ("☛", "Sans 10",null,null);
                     wpp.set_alignment (Pango.Alignment.RIGHT);
-                    colour = { 0xff, 0xff, 0, 0xff};
+                    colour = { 0xff, 0xff, 0xff, 0xff};
                     wpp.set_color (colour);
                     wpp.set_text_color(black);
                     pmlayer.add_marker(wpp);
