@@ -209,6 +209,8 @@ public class ReplayThread : GLib.Object
                         bool have_data = false;
                         var have_ltm = false; // workaround for old mwp logging bug
                         uint profile = 0;
+                        string fcvar = null;
+                        uint fcvers = 0;
 
                         while (playon && (line = dis.read_line ()) != null) {
                             parser.load_from_data (line);
@@ -250,8 +252,6 @@ public class ReplayThread : GLib.Object
                                         fctype = (uint)obj.get_int_member ("fctype");
                                     if(obj.has_member("profile"))
                                         profile = (uint)obj.get_int_member ("profile");
-                                    string fcvar = null;
-                                    uint fcvers = 0;
                                     if(obj.has_member("fc_var"))
                                     {
                                         fcvar =  obj.get_string_member("fc_var");
@@ -287,7 +287,18 @@ public class ReplayThread : GLib.Object
                                     string bx;
                                     if (fctype == 3)
                                     {
-                                        bx= "ARM;ANGLE;HORIZON;BARO;MAG;HEADFREE;HEADADJ;GPS HOME;GPS HOLD;BEEPER;OSD SW;AUTOTUNE;";
+                                        if(fcvar == "INAV")
+                                        {
+                                                // hackety hack time
+                                            if (utime < 1449360000)
+                                                bx = "ARM;ANGLE;HORIZON;MAG;HEADFREE;HEADADJ;NAV ALTHOLD;NAV POSHOLD;NAV RTH;NAV WP;BEEPER;OSD SW;BLACKBOX;FAILSAFE;";
+                                            else
+                                                bx = "ARM;IDLE UP;ANGLE;HORIZON;MAG;HEADFREE;HEADADJ;NAV ALTHOLD;NAV POSHOLD;NAV RTH;NAV WP;BEEPER;OSD SW;BLACKBOX;FAILSAFE;";
+                                        }
+                                        else
+                                        {
+                                            bx= "ARM;ANGLE;HORIZON;BARO;MAG;HEADFREE;HEADADJ;GPS HOME;GPS HOLD;BEEPER;OSD SW;AUTOTUNE;";
+                                        }
                                         a.conf_vbatscale = 110;
                                         a.conf_vbatlevel_warn1 = 33;
                                         a.conf_vbatlevel_warn2 = 43;

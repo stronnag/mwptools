@@ -36,6 +36,7 @@ public class Craft : GLib.Object
     private static Champlain.Label homep ;
     private static Champlain.Label posp ;
     private static Champlain.Label rthp ;
+    private static Champlain.Label wpp ;
 
     private static string[] icons =
     {
@@ -64,7 +65,8 @@ public class Craft : GLib.Object
     {
         HOME = -1,
         PH = -2,
-        RTH = -3
+        RTH = -3,
+        WP = -4
     }
 
     public Craft(Champlain.View _view, uint id, bool _norotate = false, bool _trail = true)
@@ -104,7 +106,7 @@ public class Craft : GLib.Object
             view.add_layer (pmlayer);
         }
         view.add_layer (layer);
-        homep = posp = rthp = null;
+        homep = posp = rthp = wpp = null;
 
 // Not properly implemented in (13.10 and earlier) Ubuntu
 #if NOBB
@@ -162,7 +164,7 @@ public class Craft : GLib.Object
             pmlayer.remove_all();
             path.remove_all();
             npath = 0;
-            homep = posp = rthp = null;
+            homep = posp = rthp = wpp = null;
             ici.hide();
         }
     }
@@ -262,6 +264,18 @@ public class Craft : GLib.Object
                     pmlayer.add_marker(rthp);
                 }
                 m = rthp;
+                break;
+            case Special.WP:
+                if(wpp == null)
+                {
+                    wpp = new Champlain.Label.with_text ("⚓", "Sans 10",null,null);
+                    wpp.set_alignment (Pango.Alignment.RIGHT);
+                    colour = { 0xff, 0xff, 0, 0xff};
+                    wpp.set_color (colour);
+                    wpp.set_text_color(black);
+                    pmlayer.add_marker(wpp);
+                }
+                m = wpp;
                 break;
         }
         if(m != null)

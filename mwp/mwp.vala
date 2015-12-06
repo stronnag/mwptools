@@ -296,6 +296,7 @@ public class MWPlanner : Gtk.Application {
     private uint rth_mask=0;
     private uint angle_mask=0;
     private uint horz_mask=0;
+    private uint wp_mask=0;
 
     private uint no_ofix = 0;
 
@@ -364,7 +365,8 @@ public class MWPlanner : Gtk.Application {
     {
         HOME = 1,
         PH = 2,
-        RTH = 4
+        RTH = 4,
+        WP = 8
     }
 
     private static BatteryLevels [] vlevels = {
@@ -1670,6 +1672,7 @@ public class MWPlanner : Gtk.Application {
                     menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
                 }
                 remove_tid(ref cmdtid);
+                raw[len] = 0;
                 string []bsx = ((string)raw).split(";");
                 int i = 0;
                 foreach(var bs in bsx)
@@ -1693,11 +1696,15 @@ public class MWPlanner : Gtk.Application {
                         case "NAV POSHOLD":
                             ph_mask = (1 << i);
                             break;
+                        case "NAV WP":
+                            wp_mask = (1 << i);
+                            break;
                     }
                     i++;
                 }
-                MWPLog.message("Masks %x %x %x %x %x\n",
-                               arm_mask, angle_mask, horz_mask, rth_mask, ph_mask);
+                MWPLog.message("Masks arm %x angle %x horz %x ph %x rth %x wp %x\n",
+                               arm_mask, angle_mask, horz_mask, ph_mask,
+                               rth_mask, wp_mask);
                 add_cmd(MSP.Cmds.MISC,null,0, 1000);
                 break;
 
@@ -1717,11 +1724,13 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.STATUS:
                 remove_tid(ref cmdtid);
-                uint32 flag;
+                uint32 bxflag;
                 deserialise_u16(raw+4, out sensor);
-                deserialise_u32(raw+6, out flag);
+                deserialise_u32(raw+6, out bxflag);
+//                stderr.printf("bxflags %x\n", bxflag);
+
                 var lmask = (angle_mask|horz_mask);
-                armed = ((flag & arm_mask) == arm_mask) ? 1 : 0;
+                armed = ((bxflag & arm_mask) == arm_mask) ? 1 : 0;
 
                 if (nopoll == true)
                 {
@@ -1768,9 +1777,9 @@ public class MWPlanner : Gtk.Application {
                         }
 
                         want_special = 0;
-                        if(conf.checkswitches && ((flag & lmask) == 0) && robj == null)
+                        if(conf.checkswitches && ((bxflag & lmask) == 0) && robj == null)
                         {
-                            MWPLog.message("switch val == %0x\n", flag);
+                            MWPLog.message("switch val == %0x\n", bxflag);
                             swd.run();
                         }
 
@@ -1874,38 +1883,47 @@ public class MWPlanner : Gtk.Application {
                             }
                         }
                         start_audio();
-                        report_bits(flag);
+                        report_bits(bxflag);
                     }
 
                     // acro/horizon/angle changed
 
-                    if((flag & lmask) != (xbits & lmask))
+                    if((bxflag & lmask) != (xbits & lmask))
                     {
-                        report_bits(flag);
+                        report_bits(bxflag);
                     }
 
                     if(armed != 0)
                     {
                         if ((rth_mask != 0) &&
-                            ((flag & rth_mask) != 0) &&
+                            ((bxflag & rth_mask) != 0) &&
                             ((xbits & rth_mask) == 0))
                         {
-                            stderr.printf("set RTH on %08x %u %d\n", flag,flag,
+                            MWPLog.message("set RTH on %08x %u %d\n", bxflag,bxflag,
                                           (int)duration);
                             want_special |= POSMODE.RTH;
                         }
                         else if ((ph_mask != 0) &&
-                                 ((flag & ph_mask) != 0) &&
+                                 ((bxflag & ph_mask) != 0) &&
                                  ((xbits & ph_mask) == 0))
                         {
-                            stderr.printf("set PH on %08x %u %d\n", flag, flag,
+                            MWPLog.message("set PH on %08x %u %d\n", bxflag, bxflag,
                                           (int)duration);
                             want_special |= POSMODE.PH;
                         }
+                        else if ((wp_mask != 0) &&
+                                 ((bxflag & wp_mask) != 0) &&
+                                 ((xbits & wp_mask) == 0))
+                        {
+                            MWPLog.message("set WP on %08x %u %d\n", bxflag, bxflag,
+                                          (int)duration);
+                            want_special |= POSMODE.WP;
+                        }
+
                     }
-                    xbits = flag;
+                    xbits = bxflag;
                 }
-                armed_processing(flag);
+                armed_processing(bxflag);
                 break;
 
             case MSP.Cmds.NAV_STATUS:
@@ -2385,12 +2403,20 @@ public class MWPlanner : Gtk.Application {
                 sf.airspeed = *rp++;
                 sf.flags = *rp++;
                 armed = sf.flags & 1;
-                uint32 mwflags = 0;
                 uint8 ltmflags = sf.flags >> 2;
+                uint32 mwflags = arm_mask;
                 if(ltmflags == 2)
-                    mwflags |= 2;
+                    mwflags |= angle_mask;
                 if(ltmflags == 3)
-                    mwflags |= 4;
+                    mwflags |= horz_mask;
+                if(ltmflags == 3)
+                    mwflags |= arm_mask;
+                if(ltmflags == 9)
+                    mwflags |= ph_mask;
+                if(ltmflags == 10)
+                    mwflags |= wp_mask;
+                if(ltmflags == 13 || ltmflags == 15)
+                    mwflags |= rth_mask;
                 else
                     mwflags = xbits; // don't know better
 
@@ -2401,10 +2427,11 @@ public class MWPlanner : Gtk.Application {
                     last_ltmf = ltmflags;
                     if(ltmflags == 9)
                         want_special |= POSMODE.PH;
+                    else if(ltmflags == 10)
+                        want_special |= POSMODE.WP;
                     else if(ltmflags == 13)
                         want_special |= POSMODE.RTH;
                 }
-
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
                 set_bat_stat((uint8)((sf.vbat + 50) / 100));
             }
@@ -2648,6 +2675,12 @@ public class MWPlanner : Gtk.Application {
             rth_pos.alt = alt;
             if(craft != null)
                 craft.special_wp(Craft.Special.RTH, lat, lon);
+        }
+        if((want_special & POSMODE.WP) != 0)
+        {
+            want_special &= ~POSMODE.WP;
+            if(craft != null)
+                craft.special_wp(Craft.Special.WP, lat, lon);
         }
     }
 
