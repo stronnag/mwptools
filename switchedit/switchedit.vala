@@ -56,9 +56,10 @@ public class SwitchEdit : Object
     private static string mwoptstr;
     private Timer timer;
     private uint8 icount = 0;
-    CF_MODE_RANGES []mrs;
+    private CF_MODE_RANGES []mrs;
     private uint8 mrs_idx;
     private int intvl;
+    private PERM_BOX [] pbox;
 
     const OptionEntry[] options = {
         { "serial-device", 's', 0, OptionArg.STRING, out serdev, "Serial device", null},
@@ -66,33 +67,68 @@ public class SwitchEdit : Object
         {null}
     };
 
-    private static const PERM_BOX [] pbox =
-        {
-            {"ARM", 0},
-            {"ANGLE", 1},
-            {"HORIZON", 2},
-            {"BARO", 3},
-            {"VARIO", 4 },
-            {"MAG", 5 },
-            {"HEADFREE", 6 },
-            {"HEADADJ", 7 },
-            {"CAMSTAB", 8 },
-            {"CAMTRIG", 9 },
-            {"GPS HOME", 10 },
-            {"GPS HOLD", 11 },
-            {"PASSTHRU", 12 },
-            {"BEEPER", 13 },
-            {"LEDMAX", 14 },
-            {"LEDLOW", 15 },
-            {"LLIGHTS", 16 },
-            {"CALIB", 17 },
-            {"GOVERNOR", 18 },
-            {"OSD SW", 19 },
-            {"TELEMETRY", 20 },
-            {"AUTOTUNE", 21 },
-            {"SONAR", 22 },
-        };
+    private static const PERM_BOX [] def_pbox = {
+        {"ARM", 0},
+        {"ANGLE", 1},
+        {"HORIZON", 2},
+        {"BARO", 3},
+        {"VARIO", 4 },
+        {"MAG", 5 },
+        {"HEADFREE", 6 },
+        {"HEADADJ", 7 },
+        {"CAMSTAB", 8 },
+        {"CAMTRIG", 9 },
+        {"GPS HOME", 10 },
+        {"GPS HOLD", 11 },
+        {"PASSTHRU", 12 },
+        {"BEEPER", 13 },
+        {"LEDMAX", 14 },
+        {"LEDLOW", 15 },
+        {"LLIGHTS", 16 },
+        {"CALIB", 17 },
+        {"GOVERNOR", 18 },
+        {"OSD SW", 19 },
+        {"TELEMETRY", 20 },
+        {"AUTOTUNE", 21 },
+        {"SONAR", 22 },
+        {"SERVO1", 23 },
+        {"SERVO2", 24 },
+        { "SERVO3", 25 },
+        { "BLACKBOX", 26 },
+        { "FAILSAFE", 27 },
+        {"AIR MODE", 28 }
+    };
 
+    private static const PERM_BOX [] inav_pbox = {
+        { "ARM", 0 },
+        { "ANGLE", 1 },
+        { "HORIZON", 2 },
+        { "NAV ALTHOLD", 3 },   // old BARO
+        { "MAG", 5 },
+        { "HEADFREE", 6 },
+        { "HEADADJ", 7 },
+        { "CAMSTAB", 8 },
+        { "CAMTRIG", 9 },
+        { "NAV RTH", 10 },         // old GPS HOME
+        { "NAV POSHOLD", 11 },     // old GPS HOLD
+        { "PASSTHRU", 12 },
+        { "BEEPER", 13 },
+        { "LEDMAX", 14 },
+        { "LEDLOW", 15 },
+        { "LLIGHTS", 16 },
+        { "CALIB", 17 },
+        { "GOVERNOR", 18 },
+        { "OSD SW", 19 },
+        { "TELEMETRY", 20 },
+        { "GTUNE", 21 },
+        { "SERVO1", 23 },
+        { "SERVO2", 24 },
+        { "SERVO3", 25 },
+        { "BLACKBOX", 26 },
+        { "FAILSAFE", 27 },
+        { "NAV WP", 28 },
+        { "AIR MODE", 29 }
+    };
 
     private void remove_tid(ref uint tid)
     {
@@ -365,6 +401,7 @@ public class SwitchEdit : Object
         s = new MWSerial();
 
         timer = new Timer();
+        pbox = def_pbox;
         s.serial_event.connect((sd,cmd,raw,len,errs) => {
                 remove_tid(ref cmdtid);
                 if(errs == true)
@@ -380,9 +417,23 @@ public class SwitchEdit : Object
                 switch(cmd)
                 {
                     case MSP.Cmds.API_VERSION:
+//                    stderr.printf("Not supported -- use the configurator\n");
+//                    Posix.exit(255);
                     mwvar = MWChooser.MWVAR.CF;
                     have_vers = false;
-                    add_cmd(MSP.Cmds.IDENT,null,0, ref have_vers,1000);
+                    add_cmd(MSP.Cmds.FC_VARIANT,null,0, ref have_vers,2000);
+                    break;
+
+
+                    case MSP.Cmds.FC_VARIANT:
+                    raw[4] = 0;
+                    string cfvar = (string)raw[0:4];
+                    if (cfvar  == "INAV")
+                    {
+                        pbox = inav_pbox;
+                    }
+                    have_vers = false;
+                    add_cmd(MSP.Cmds.IDENT,null,0, ref have_vers,2000);
                     break;
 
                     case MSP.Cmds.IDENT:
