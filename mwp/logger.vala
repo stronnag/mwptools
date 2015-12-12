@@ -83,6 +83,7 @@ public class Logger : GLib.Object
     public static void stop()
     {
         is_logging = false;
+        os.flush();
     }
 
     public static void log_time()
