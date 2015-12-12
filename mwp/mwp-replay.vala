@@ -562,7 +562,7 @@ public class ReplayThread : GLib.Object
                             lt = utime;
                         }
                     } catch (Error e) {
-                        MWPLog.message("line: %s  - %s",line, e.message);
+                        MWPLog.message("line: %s  - %s\n",line, e.message);
                         playon = false;
                     }
                 }
