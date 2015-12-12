@@ -6,6 +6,7 @@ require 'socket'
 
 port = nil
 rawf = nil
+skip = false
 in_only = out_only = ltm_only = raw = false
 
 ARGV.options do |opt|
@@ -15,6 +16,7 @@ ARGV.options do |opt|
   opt.on('-o','--output') {out_only = true}
   opt.on('-l','--ltm') {ltm_only = true}
   opt.on('-r','--raw') {raw = true}
+  opt.on('-s','--skip-first','skip any initial delay for udp') {skip = true}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
     opt.parse!
@@ -24,10 +26,19 @@ ARGV.options do |opt|
 end
 
 skt=nil
+host=nil
 lt = 0
 
 if port
-  skt = UDPSocket.new
+  if(m = port.match(/(\S+):(\d+)/))
+    host = (m[1]||'localhost')
+    port = m[2].to_i
+  else
+    port = port.to_i
+    host = 'localhost'
+  end
+  addrs = Socket.getaddrinfo(host, port,nil,:DGRAM)
+  skt = ((addrs[0][0] == 'AF_INET6') ? UDPSocket.new(Socket::AF_INET6) : UDPSocket.new)
 end
 
 if raw
@@ -57,8 +68,9 @@ File.open(ARGV[0]) do |f|
       if data[1] == 'T'
 	delta = ts-lt
 	puts "Sleep #{delta}"
-	sleep delta
-	skt.send data,0,'localhost',port
+	sleep delta if skip == false or delta.zero?
+	skip = false if(skip)
+	skt.send data,0,host,port
       end
     end
     lt=ts

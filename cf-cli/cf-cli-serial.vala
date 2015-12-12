@@ -849,7 +849,7 @@ public class MWSerial : Object
                         send_msp(Cmds.CALIBRATE_ACC, null, 0);
                         res =  read_msp(out cmd, out raw);
                     } while (res != ResCode.OK);
-                    Thread.usleep(2*1000*1000);
+                    Thread.usleep(3*1000*1000);
                     message("Accelerometer calibration finished\n");
                 }
             }

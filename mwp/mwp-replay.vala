@@ -562,8 +562,8 @@ public class ReplayThread : GLib.Object
                             lt = utime;
                         }
                     } catch (Error e) {
-                        stderr.printf("line: %s\n",line);
-                        error ("%s", e.message);
+                        MWPLog.message("line: %s  - %s",line, e.message);
+                        playon = false;
                     }
                 }
                 Posix.write(fd,"",0);
