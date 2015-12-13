@@ -2292,7 +2292,7 @@ public class MWPlanner : Gtk.Application {
                         _ilon = of.lon/10000000.0;
                         npos = true;
                         want_special |= POSMODE.HOME;
-                        MWPLog.message("Got home %.6f %.6f\n", _ilat, _ilon);
+                        MWPLog.message("Got home (ltm)  %.6f %.6f\n", _ilat, _ilon);
                         process_pos_states(_ilat, _ilon, 0.0);
                     }
                 }
@@ -2423,7 +2423,10 @@ public class MWPlanner : Gtk.Application {
                     }
                 }
                 else
+                {
+                    armed = 1;
                     dac = 0;
+                }
 
                 if(ltmflags == 2)
                     mwflags |= angle_mask;
