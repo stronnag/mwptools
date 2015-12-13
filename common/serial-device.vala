@@ -196,7 +196,8 @@ public class MWSerial : Object
         try
         {
             baudrate = 0;
-            if(host.length == 0) // Only UDPfor mspsim
+            if((host == null || host.length == 0) &&
+               ((commode & ComMode.STREAM) != ComMode.STREAM))
             {
                 try {
                     SocketFamily[] fams = {SocketFamily.IPV6, SocketFamily.IPV4};
@@ -232,10 +233,7 @@ public class MWSerial : Object
                     sproto = SocketProtocol.UDP;
                 }
                 skt = new Socket (fam, stype, sproto);
-                if(stype == SocketType.STREAM)
-                    skt.connect(sockaddr);
-                else
-                    skt.bind (sockaddr, true);
+                skt.connect(sockaddr);
             }
             fd = skt.fd;
         } catch(Error e) {
@@ -257,7 +255,7 @@ public class MWSerial : Object
         print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
         try
         {
-            regex = new Regex ("^(tcp|udp):\\/\\/(\\S+):(\\d+)");
+            regex = new Regex ("^(tcp|udp):\\/\\/(\\S*):(\\d+)");
         } catch(Error e) {
             stderr.printf("err: %s", e.message);
             return false;
