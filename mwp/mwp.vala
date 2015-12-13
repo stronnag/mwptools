@@ -227,6 +227,7 @@ public class MWPlanner : Gtk.Application {
     private double _ilon = 0;
     private double _ilat = 0;
     private uint8 armed = 0;
+    private uint8 dac = 0;
     private bool npos = false;
     private bool gpsfix;
 
@@ -1733,10 +1734,9 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.STATUS:
                 remove_tid(ref cmdtid);
                 uint32 bxflag;
+
                 deserialise_u16(raw+4, out sensor);
                 deserialise_u32(raw+6, out bxflag);
-//                stderr.printf("bxflags %x\n", bxflag);
-
                 var lmask = (angle_mask|horz_mask);
                 armed = ((bxflag & arm_mask) == arm_mask) ? 1 : 0;
 
@@ -2410,9 +2410,21 @@ public class MWPlanner : Gtk.Application {
                 sf.rssi = *rp++;
                 sf.airspeed = *rp++;
                 sf.flags = *rp++;
-                armed = sf.flags & 1;
                 uint8 ltmflags = sf.flags >> 2;
                 uint32 mwflags = arm_mask;
+                uint8 saf = sf.flags & 1;
+                if(saf == 0)
+                {
+                    dac++;
+                    if(dac == 5)
+                    {
+                        armed = 0;
+                        MWPLog.message("sframe disarm %x\n", sf.flags);
+                    }
+                }
+                else
+                    dac = 0;
+
                 if(ltmflags == 2)
                     mwflags |= angle_mask;
                 if(ltmflags == 3)
@@ -3522,6 +3534,8 @@ public class MWPlanner : Gtk.Application {
     {
         if(SoupProxy.cpid != 0)
             Posix.kill(SoupProxy.cpid, Posix.SIGTERM);
+        if(Logger.is_logging)
+            Logger.stop();
     }
 
     public static int main (string[] args)
@@ -3545,11 +3559,10 @@ public class MWPlanner : Gtk.Application {
         }
         if(Posix.isatty(stderr.fileno()) == false)
         {
-            stderr = FileStream.open("/tmp/mwp-stderr.txt","a");
+            var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
+            stderr = FileStream.open(fn,"a");
         }
-
         atexit(MWPlanner.xchild);
-
         var app = new MWPlanner();
         app.run ();
         app.cleanup();

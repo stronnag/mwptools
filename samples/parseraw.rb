@@ -45,6 +45,7 @@ if raw
   rawf = File.open("raw_dump.txt", 'w')
 end
 
+puts ARGV[0]
 File.open(ARGV[0]) do |f|
   loop do
     s = f.read(10)
