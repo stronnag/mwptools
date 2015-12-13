@@ -1,0 +1,133 @@
+LTM Messages
+~~~~~~~~~~~~
+
+All start $Tx<payload><ck>  where x =
+G : GPS Frame
+A : Attitude Frame
+S : Status Frame
+O : Origin Frame
+N : Navigation Frame (inav extension)
+
+Payload is little endian data elements
+
+Checksum is the uchar8 xor of payload
+
+GPS Frame (G)
+~~~~~~~~~~~~~
+
+Payload: 14 bytes
+
+Latitude, int32 decimal degrees * 10,000,000 (1E7)
+Longitude, int32 decimal degrees * 10,000,000 (1E7)
+Ground Speed, uchar m/s
+Altitude, uint32, cm (m / 100)
+Sats, uchar,
+      bits 0-1 : fix
+      bits 2-7 : number of satellites
+
+Attitide Frame (A)
+~~~~~~~~~~~~~~~~~~
+
+Payload: 6 bytes
+
+Pitch, int16, degrees
+Roll, int16, degrees
+Heading, int16, degrees
+
+Status Frame (S)
+~~~~~~~~~~~~~~~~
+
+Payload: 7 bytes
+
+Vbat, uint16, mV
+Current, uint16, mA
+RSSI, uchar
+Airspeed, uchar8, m/s
+Status, uchar
+	bit 0: armed
+	bit 1: failsafe
+	bits 2-6 : flight mode
+	       "Manual",		// 0
+               "Rate",			// 1
+	       "Angle",			// 2
+	       "Horizon",		// 3
+	       "Acro",			// 4
+               "Stabilized1",		// 5
+               "Stabilized2",		// 6
+               "Stabilized3", 		// 7
+               "Altitude Hold",		// 8
+               "GPS Hold",		// 9
+               "Waypoints",		// 10
+               "Head free", 		// 11
+               "Circle",		// 12
+               "RTH",			// 13
+               "Follow me",		// 14
+               "Land",			// 15
+               "Fly by wire A",		// 16
+               "Fly by wire B",		// 17
+               "Cruise",		// 18
+               "Unknown"		// 19
+
+Origin Frame (O)
+~~~~~~~~~~~~~~~~
+
+Payload: 13 bytes
+
+Latitude, int32 decimal degrees * 10,000,000 (1E7)
+Longitude, int32 decimal degrees * 10,000,000 (1E7)
+Altitude, uint32, cm (m / 100) // always 0 in inav
+Fix, uchar, home fix status (0 == no fix)
+
+Navigation Frame (N)
+~~~~~~~~~~~~~~~~~~~~
+
+Payload: 5 bytes
+
+GPS mode, uchar
+       None
+       PosHold
+       RTH
+       Mission
+
+Nav mode, uchar
+    "Navigation system is working", // 0
+    "Next waypoint distance is more than the safety limit, aborting mission", //1
+    "GPS reception is compromised - pausing mission, COPTER IS ADRIFT!", //2
+    "Error while reading next waypoint from memory, aborting mission", //3
+    "Mission Finished" , //4
+    "Waiting for timed position hold", //5
+    "Invalid Jump target detected, aborting mission", //6
+    "Invalid Mission Step Action code detected, aborting mission", //7
+    "Waiting to reach return to home altitude", //8
+    "GPS fix lost, mission aborted - COPTER IS ADRIFT!", //9
+    "Copter is disarmed, navigation engine disabled", //10
+    "Landing is in progress, check attitude if possible" //11
+
+Nav Action, uchar (not all used in inav)
+    UNASSIGNED=0,
+    WAYPOINT,
+    POSHOLD_UNLIM,
+    POSHOLD_TIME,
+    RTH,
+    SET_POI,
+    JUMP,
+    SET_HEAD,
+    LAND
+
+Waypoint number, uchar, target waypoint
+
+Nav Error, uchar
+    "Navigation system is working", // 0
+    "Next waypoint distance is more than the safety limit, aborting mission", //1
+    "GPS reception is compromised - pausing mission, COPTER IS ADRIFT!", //2
+    "Error while reading next waypoint from memory, aborting mission", //3
+    "Mission Finished" , //4
+    "Waiting for timed position hold", //5
+    "Invalid Jump target detected, aborting mission", //6
+    "Invalid Mission Step Action code detected, aborting mission", //7
+    "Waiting to reach return to home altitude", //8
+    "GPS fix lost, mission aborted - COPTER IS ADRIFT!", //9
+    "Copter is disarmed, navigation engine disabled", //10
+    "Landing is in progress, check attitude if possible" //11
+
+Flags, uchar ???
