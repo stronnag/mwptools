@@ -71,7 +71,7 @@ Status, uchar
 Origin Frame (O)
 ~~~~~~~~~~~~~~~~
 
-Payload: 13 bytes
+Payload: 14 bytes
 
 Latitude, int32 decimal degrees * 10,000,000 (1E7)
 Longitude, int32 decimal degrees * 10,000,000 (1E7)
