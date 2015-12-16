@@ -2352,16 +2352,6 @@ public class MWPlanner : Gtk.Application {
                         {
                             if(no_ofix == 10)
                             {
-/****
-                                navstatus.cg_on();
-                                sflags |=  NavStatus.SPK.GPS;
-                                _ilat = gflat;
-                                _ilon = gflon;
-                                npos = true;
-                                want_special |= POSMODE.HOME;
-                                MWPLog.message("Force home %.6f %.6f\n", _ilat, _ilon);
-                                process_pos_states(_ilat, _ilon, 0.0);
-*****/
                                 MWPLog.message("No home position yet\n");
                             }
                         }

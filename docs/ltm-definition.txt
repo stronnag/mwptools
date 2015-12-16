@@ -76,6 +76,7 @@ Payload: 13 bytes
 Latitude, int32 decimal degrees * 10,000,000 (1E7)
 Longitude, int32 decimal degrees * 10,000,000 (1E7)
 Altitude, uint32, cm (m / 100) // always 0 in inav
+OSD on, uchar (always 1)
 Fix, uchar, home fix status (0 == no fix)
 
 Navigation Frame (N)
@@ -90,18 +91,21 @@ GPS mode, uchar
        Mission
 
 Nav mode, uchar
-    "Navigation system is working", // 0
-    "Next waypoint distance is more than the safety limit, aborting mission", //1
-    "GPS reception is compromised - pausing mission, COPTER IS ADRIFT!", //2
-    "Error while reading next waypoint from memory, aborting mission", //3
-    "Mission Finished" , //4
-    "Waiting for timed position hold", //5
-    "Invalid Jump target detected, aborting mission", //6
-    "Invalid Mission Step Action code detected, aborting mission", //7
-    "Waiting to reach return to home altitude", //8
-    "GPS fix lost, mission aborted - COPTER IS ADRIFT!", //9
-    "Copter is disarmed, navigation engine disabled", //10
-    "Landing is in progress, check attitude if possible" //11
+    "None",                 // 0
+    "RTH Start",            // 1
+   "RTH Enroute",          // 2
+   "PosHold infinite",     // 3
+   "PosHold timed",        // 4
+   "WP Enroute",           // 5
+   "Process next",         // 6
+   "Jump",                 // 7
+   "Start Land",           // 8
+   "Land in Progress",     // 9
+   "Landed",               // 10
+   "Settling before land", // 11
+   "Start descent",        // 12
+   "Critical GPS failure"  // 15(?)
+
 
 Nav Action, uchar (not all used in inav)
     UNASSIGNED=0,
