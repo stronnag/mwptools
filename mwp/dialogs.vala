@@ -1471,7 +1471,8 @@ public class AudioThread : Object {
         else
         {
 #if NOPUSHFRONT
-            msgs.push(c);
+        // less efficient work around for Ubuntu (again)
+            msgs.push_sorted(c, () => { return 1; });
 #else
             msgs.push_front(c);
 #endif
