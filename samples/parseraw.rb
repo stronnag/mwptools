@@ -56,6 +56,10 @@ File.open(ARGV[0]) do |f|
     next if out_only && dir == "i"
     next if ltm_only && data[1] != 'T'
     puts "offset #{ts} len #{len} #{dir}"
+    if data[1] == 'M'
+      STDOUT.printf "MSP %d :" ,data[4].ord
+    end
+
     puts data.inspect
     data.each_byte do |b|
       STDOUT.printf "%02x ",b

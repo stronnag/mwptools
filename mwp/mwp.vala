@@ -2369,7 +2369,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
-                    MWPLog.message("gframe fix < 1");
+                    MWPLog.message("gframe fix < 1\n");
                 }
                 fbox.update(item_visible(DOCKLETS.FBOX));
             }

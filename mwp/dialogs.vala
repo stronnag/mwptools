@@ -289,6 +289,15 @@ public class FlightBox : GLib.Object
             var s=PosFormat.lat(GPSInfo.lat,MWPlanner.conf.dms);
             if(fh1 > 96)
                 fh1 = 96;
+
+            var fh3 = fh1;
+            var falt = NavStatus.alti.estalt/100;
+
+            if(falt > 9999.0 || falt < -999.0)
+                fh3 = fh3 * 60/100;
+            else if(falt > 999.0 || falt < -99.0)
+                fh3 = fh3 * 75 /100;
+
             big_lat.set_label("<span font='%d'>%s</span>".printf(fh2,s));
             s=PosFormat.lon(GPSInfo.lon,MWPlanner.conf.dms);
             big_lon.set_label("<span font='%d'>%s</span>".printf(fh2,s));
@@ -304,11 +313,11 @@ public class FlightBox : GLib.Object
                     Units.distance_units()
                                                            ));
             big_bearing.set_label("Bearing <span font='%d'>%d°</span>".printf(fh1,brg));
-            big_hdr.set_label("Heading <span font='%d'>%d°</span>".printf(fh1,NavStatus.hdr));
+            big_hdr.set_label("Heading <span font='%d'>%d°</span>".printf(fh3,NavStatus.hdr));
             big_alt.set_label(
                 "Alt <span font='%d'>%.1f</span>%s".printf(
-                    fh1,
-                    Units.distance(NavStatus.alti.estalt/100.0),
+                    fh3,
+                    Units.distance(falt),
                     Units.distance_units() ));
 
             big_spd.set_label(

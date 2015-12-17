@@ -82,7 +82,7 @@ Fix, uchar, home fix status (0 == no fix)
 Navigation Frame (N)
 ~~~~~~~~~~~~~~~~~~~~
 
-Payload: 5 bytes
+Payload: 6 bytes
 
 GPS mode, uchar
        None
