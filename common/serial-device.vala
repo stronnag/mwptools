@@ -45,7 +45,8 @@ public class MWSerial : Object
     private uint8 raw[256];
     private int irawp;
     private int drawp;
-    public  bool available {private set; get;}
+    public bool available {private set; get;}
+    public bool force4 = false;
     private uint tag;
     private char readdirn {set; get; default= '>';}
     private char writedirn {set; get; default= '<';}
@@ -200,7 +201,10 @@ public class MWSerial : Object
                ((commode & ComMode.STREAM) != ComMode.STREAM))
             {
                 try {
-                    SocketFamily[] fams = {SocketFamily.IPV6, SocketFamily.IPV4};
+                    SocketFamily[] fams = {};
+                    if(!force4)
+                        fams += SocketFamily.IPV6;
+                    fams += SocketFamily.IPV4;
                     foreach(var fam in fams)
                     {
                         var sa = new InetSocketAddress (new InetAddress.any(fam),
@@ -221,11 +225,10 @@ public class MWSerial : Object
                 {
                     sockaddr = new InetSocketAddress (address, port);
                     var fam = sockaddr.get_family();
+                    if(force4 && fam != SocketFamily.IPV4)
+                        continue;
                     SocketType stype;
                     SocketProtocol sproto;
-                    MWPLog.message("addr,family = %s %s\n",
-                                   address.to_string(),
-                                   fam.to_string());
 
                     if((commode & ComMode.STREAM) == ComMode.STREAM)
                     {

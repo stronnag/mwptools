@@ -204,6 +204,7 @@ public class MWPlanner : Gtk.Application {
     private static bool no_max = false;
     private static bool force_mag = false;
     private static bool force_nc = false;
+    private static bool force4 = false;
     private static string mwoptstr;
     private static string layfile=null;
 
@@ -421,11 +422,10 @@ public class MWPlanner : Gtk.Application {
         { "force-nav", 0, 0, OptionArg.NONE, out force_nc, "force nav capaable", null},
         { "layout", 'l', 0, OptionArg.STRING, out layfile, "Layout name", null},
         { "force-type", 't', 0, OptionArg.INT, out dmrtype, "Model type", null},
-        { "debug-flags", 0, 0, OptionArg.INT, out debug_flags, "Debug flags (mask)", null},
+        { "force4", '4', 0, OptionArg.NONE, out force4, "Force ipv4", null},                { "debug-flags", 0, 0, OptionArg.INT, out debug_flags, "Debug flags (mask)", null},
         { "replay", 'p', 0, OptionArg.STRING, out rfile, "replay file", null},
         {null}
     };
-
 
     void show_dock_id (DOCKLETS id, bool iconify=false)
     {
@@ -1098,6 +1098,7 @@ public class MWPlanner : Gtk.Application {
         conbutton.clicked.connect(() => { connect_serial(); });
 
         msp = new MWSerial();
+        msp.force4 = force4;
         msp.serial_lost.connect(() => { serial_doom(conbutton); });
 
         msp.serial_event.connect((s,cmd,raw,len,errs) => {
@@ -3045,6 +3046,7 @@ public class MWPlanner : Gtk.Application {
         {
             craft.remove_marker();
         }
+        npos = false;
     }
 
     private void init_sstats()
@@ -3481,6 +3483,7 @@ public class MWPlanner : Gtk.Application {
         menureplay.label = "Replay Log file";
         robj = null;
         window.title = "mwp";
+        npos = false;
     }
 
     private void run_replay(string fn, bool delay)
