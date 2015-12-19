@@ -217,23 +217,30 @@ public class MWSerial : Object
             {
                 var resolver = Resolver.get_default ();
                 var addresses = resolver.lookup_by_name (host, null);
-                var address = addresses.nth_data (0);
-                sockaddr = new InetSocketAddress (address, port);
-                var fam = sockaddr.get_family();
-                SocketType stype;
-                SocketProtocol sproto;
-                if((commode & ComMode.STREAM) == ComMode.STREAM)
+                foreach (var address in addresses)
                 {
-                    stype = SocketType.STREAM;
-                    sproto = SocketProtocol.TCP;
+                    sockaddr = new InetSocketAddress (address, port);
+                    var fam = sockaddr.get_family();
+                    SocketType stype;
+                    SocketProtocol sproto;
+                    MWPLog.message("addr,family = %s %s\n",
+                                   address.to_string(),
+                                   fam.to_string());
+
+                    if((commode & ComMode.STREAM) == ComMode.STREAM)
+                    {
+                        stype = SocketType.STREAM;
+                        sproto = SocketProtocol.TCP;
+                    }
+                    else
+                    {
+                        stype = SocketType.DATAGRAM;
+                        sproto = SocketProtocol.UDP;
+                    }
+                    skt = new Socket (fam, stype, sproto);
+                    if (skt.connect(sockaddr))
+                        break;
                 }
-                else
-                {
-                    stype = SocketType.DATAGRAM;
-                    sproto = SocketProtocol.UDP;
-                }
-                skt = new Socket (fam, stype, sproto);
-                skt.connect(sockaddr);
             }
             fd = skt.fd;
         } catch(Error e) {

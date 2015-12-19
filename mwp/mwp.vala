@@ -1493,6 +1493,7 @@ public class MWPlanner : Gtk.Application {
                     logb.active=false;
                 }
                 navstatus.reset_states();
+                npos = false;
             }
         }
         larmed = armed;
@@ -2670,7 +2671,10 @@ public class MWPlanner : Gtk.Application {
             home_pos.alt = alt;
             if(craft != null)
                 craft.special_wp(Craft.Special.HOME, lat, lon);
+            else
+                npos = false;
         }
+
         if((want_special & POSMODE.PH) != 0)
         {
             want_special &= ~POSMODE.PH;
