@@ -1,5 +1,26 @@
 #!/usr/bin/ruby
 
+# Copyright (c) 2015 Jonathan Hudson <jh+mwptools@daria.co.uk>
+
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 require 'csv'
 require 'optparse'
 require 'socket'
@@ -79,14 +100,14 @@ end
 def send_init_seq skt,typ
 
   msps = [
-    [0x24, 0x4d, 0x3e, 0x07, 0x64, 0xe7, 0x01, 0x00, 0x3c, 0x00, 0x00, 0x80, 0x3b],
+    [0x24, 0x4d, 0x3e, 0x07, 0x64, 0xe7, 0x01, 0x00, 0x3c, 0x00, 0x00, 0x80, 0],
     [0x24, 0x4d, 0x3e, 0x03, 0x01, 0x00, 0x01, 0x0e, 0x0d],
     [0x24, 0x4d, 0x3e, 0x04, 0x02, 0x49, 0x4e, 0x41, 0x56, 0x16],
-    [0x24, 0x4d, 0x3e, 0x03, 0x03, 0x01, 0x0b, 0x00, 0x0a],
+    [0x24, 0x4d, 0x3e, 0x03, 0x03, 0, 42, 0x00, 42], # obviuously fake
   ]
   if typ
     msps[0][6] = typ
-    msps[0][12] = mksum(msps[0][3..11].pack('C*'))
+    msps[0][12] = mksum(msps[0][3..-1].pack('C*'))
   end
   msps.each do |msp|
     msg = msp.pack('C*')
@@ -95,9 +116,11 @@ def send_init_seq skt,typ
   end
 end
 
-def encode_atti r
+def encode_atti r, gpshd=false
   msg='$TA'
-  sl = [r[:roll].to_i, r[:pitch].to_i, r[:heading].to_i].pack("s<s<s<")
+  hdr = ((gpshd) ? r[:gps_ground_course] : r[:heading]).to_i
+
+  sl = [r[:roll].to_i, r[:pitch].to_i, hdr].pack("s<s<s<")
   msg << sl << mksum(sl)
   msg
 end
@@ -215,14 +238,16 @@ typ = 3
 udpspec = nil
 serdev = nil
 v4 = false
+gpshd = false
 
 ARGV.options do |opt|
-  opt.banner = "#{File.basename($0)} [options] [file]\nReplay bbox log as LTM"
+  opt.banner = "#{File.basename($0)} [options] file\nReplay bbox log as LTM"
   opt.on('-u','--udp=ADDR',String,"udp target (localhost:3000)"){|o|udpspec=o}
+  opt.on('-s','--serial-device=DEV'){|o|serdev=o}
   opt.on('-i','--index=IDX',Integer){|o|idx=o}
   opt.on('-t','--vehicle-type=TYPE',Integer){|o|typ=o}
   opt.on('-d','--declination=DEC',Float,'Mag Declination (default -1.3)'){|o|decl=o}
-  opt.on('-s','--serial-device=DEV'){|o|serdev=o}
+  opt.on('-g','--force-gps-heading','Use GPS course instead of compass'){gpshd=true}
   opt.on('-4','--force-ipv4'){v4=true}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
@@ -333,7 +358,7 @@ IO.popen(cmd,'rt') do |pipe|
     if us > nv
       nv = us + intvl
       icnt  = (icnt + 1) % 10
-      msg = encode_atti row
+      msg = encode_atti row, gpshd
       send_msg dev, msg
       case icnt
       when 0,2,4,6,8

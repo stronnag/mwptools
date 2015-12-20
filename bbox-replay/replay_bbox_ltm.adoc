@@ -1,6 +1,6 @@
 = Replay_bbox_ltm
 Jonathan Hudson <https://github.com/stronnag/mwptools>
-2015-12-24
+2015-12-20
 
 replay_bbox_ltm is a ruby scrip to transpose Blackbox / INAV flight
 data recordings into LTM (LightTelemetry) messages over UDP or serial
@@ -12,7 +12,7 @@ Blackbox is an invaluable tool for development and flight analysis for
 Cleanflight and its derivatives such as INAV. This program
 (replay_bbox_ltm) provides a means to replay a Blackbox recording in a
 geospatial context using one of the well know ground stations
-https://github.com/stronnag/mwptools[mwp] (Linux) and ezgui
+https://github.com/stronnag/mwptools[mwp] (Linux) and http://ez-gui.com/[ezgui]
 (Android). The LTM (LightTelemetry) protocol is used to replay the
 Blackbox log data into the ground station; thus any ground station or
 OSD that supports LTM can be used for flight visualisation.
@@ -133,13 +133,14 @@ You should see the 'Syntax OK' message.
 Next, verify that the application runs:
 ----
 $ ./replay_bbox_ltm.rb --help
-replay_bbox_ltm.rb [options] [file]
+replay_bbox_ltm.rb [options] file
 Replay bbox log as LTM
     -u, --udp=ADDR                   udp target (localhost:3000)
     -s, --serial-device=DEV
     -i, --index=IDX
     -t, --vehicle-type=TYPE
     -d, --declination=DEC            Mag Declination (default -1.3)
+    -g, --force-gps-heading          Use GPS course instead of compass
     -4, --force-ipv4
     -?, --help                       Show this message
 ----
@@ -223,6 +224,10 @@ file. If this is not given, the first recording (index 1) is used.
 . Heli
 . V-Tail4
 . Hex6+
+
+----force-gps-heading, -g:: Uses the GPS ground course for vehicle
+    orientation (instead of compass). For vehicles with a compass
+    (e.g. fixed wing).
 
 --force-ipv4, -4:: Forces IPv4 (for dual stack systems without full
   IPv6 resolvers).
