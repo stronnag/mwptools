@@ -436,11 +436,11 @@ data recordings into LTM (LightTelemetry) messages over UDP or serial
 <p>Blackbox is an invaluable tool for development and flight analysis for
 Cleanflight and its derivatives such as INAV. This program
 (replay_bbox_ltm) provides a means to replay a Blackbox recording in a
-geospatial context using one of the well know ground stations mwp
-(Linux) and ezgui (Android). The LTM (LightTelemetry) protocol is used
-to replay the Blackbox log data into the ground station; thus any
-ground station or OSD that supports LTM can be used for flight
-visualisation.</p>
+geospatial context using one of the well know ground stations
+<a href="https://github.com/stronnag/mwptools">mwp</a> (Linux) and ezgui
+(Android). The LTM (LightTelemetry) protocol is used to replay the
+Blackbox log data into the ground station; thus any ground station or
+OSD that supports LTM can be used for flight visualisation.</p>
 </div>
 </div>
 </div>
@@ -450,7 +450,7 @@ visualisation.</p>
 <div class="paragraph">
 <p>replay_bbox_ltm is intended to run on most popular platforms (Linux,
 OSX, Windows). It is developed on Arch Linux and tested on Arch,
-Ubuntu and occasionally, Windows 7.</p>
+Fedora, Ubuntu and occasionally, Windows 7.</p>
 </div>
 </div>
 </div>
@@ -477,11 +477,8 @@ replay_bbox_ltm script:</p>
 <div class="paragraph">
 <p>The installation of these dependencies is described below.</p>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_dependency_installation">Dependency Installation</h2>
-<div class="sectionbody">
+<div class="sect2">
+<h3 id="_dependency_installation">Dependency Installation</h3>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Ruby</dt>
@@ -501,7 +498,7 @@ replay_bbox_ltm script:</p>
 the <a href="https://www.cygwin.com/">cygwin</a> version may be used, however this
 requires cygwin gcc is also installed to build ffi (a rubyserial
 dependency otherwise satisfied by the MRI install). For MRI, set the
-options to assocaite .rb extensions with ruby.</p>
+options to associate .rb extensions with ruby.</p>
 </li>
 </ul>
 </div>
@@ -573,6 +570,7 @@ page</a>.</p>
 <div class="paragraph">
 <p>blackbox_decode must be on the user&#8217;s PATH when the replay_bbox_ltm
 script is invoked.</p>
+</div>
 </div>
 </div>
 </div>
@@ -660,7 +658,7 @@ use the <code>sdptool add channel=N SP</code> and  <code>rfcomm listen</code> co
 <div class="paragraph">
 <p>It is <strong><em>essential</em></strong> that blackbox_decode is on the PATH, so either
 install it on the extant PATH or extend the PATH to cover the
-blackbox_decode containing directory.</p>
+directory  containing blackbox_decode.</p>
 </div>
 <div class="sect2">
 <h3 id="_verify_the_installation">Verify the installation</h3>
@@ -749,12 +747,16 @@ the LTM transport. For example:</p>
 </div>
 </div>
 </dd>
-<dt class="hdlist1">--index, i</dt>
+<dt class="hdlist1">NOTE</dt>
+<dd>
+<p>Only one of UDP and serial definitions should be given.</p>
+</dd>
+<dt class="hdlist1">--index, -i</dt>
 <dd>
 <p>Defines the index of the recording in the the blackbox
 file. If this is not given, the first recording (index 1) is used.</p>
 </dd>
-<dt class="hdlist1">--declination, d</dt>
+<dt class="hdlist1">--declination, -d</dt>
 <dd>
 <p>The magnetic declination in decimal degrees. If not
 given, a value appropriate to the New Forest area of southern
@@ -835,21 +837,22 @@ IPv6 resolvers).</p>
 </div>
 <div class="paragraph">
 <p>replay-bbox-ltm expects the ground station to poll it (this is normal
-mwp and ezgui behaviour, both these applications will poll using
+mwp and ezgui behaviour; both these applications will poll using
 MultiWii / Cleanflight identification messages when first
 invoked).</p>
 </div>
 <div class="paragraph">
 <p>Typically, when using the ground station with a flight controller, one
-powers up the FC, thus enabling its communications port then connects
-from the ground station: replay-bbox-ltm emulates this
-behaviour. replay-bbox-ltm provides basic INAV identification
-messages before broadcasting the blackbox file as LTM messages.</p>
+first powers up the FC, thus enabling its communications port then
+connects from the ground station: replay-bbox-ltm emulates this
+behaviour. replay-bbox-ltm provides basic INAV identification messages
+to the ground station before broadcasting the blackbox file as LTM
+messages.</p>
 </div>
 <div class="paragraph">
-<p>It is also possible to bypass the polling expectation for serial devices
-and when replay-bbox-ltm is running as a UDP listener. This these
-circumstances, on startup, replay-bbox-ltm displays the message:</p>
+<p>It is also possible to bypass the polling expectation for serial
+devices and when invoked as a UDP listener. In these circumstances,
+on startup, replay-bbox-ltm displays the message:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -857,10 +860,11 @@ circumstances, on startup, replay-bbox-ltm displays the message:</p>
 </div>
 </div>
 <div class="paragraph">
-<p>If you press return at this stage, replay-bbox-ltm will continue; this
-may be acceptable for serial connections, however it will cause the
-application to exit for UDP, as it does not know the address of the
-client system.</p>
+<p>If you press return before any poll from the ground station,
+replay-bbox-ltm will continue; this may be acceptable for serial
+connections, however it will cause the application to exit for UDP, as
+it does not know the address of the client system. This is intended to
+support any client such as an OSD that does not initially poll.</p>
 </div>
 </div>
 <div class="sect2">
@@ -911,7 +915,7 @@ client system.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2015-12-19 22:35:37 GMT
+Last updated 2015-12-20 07:24:40 GMT
 </div>
 </div>
 </body>

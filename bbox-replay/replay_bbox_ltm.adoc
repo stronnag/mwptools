@@ -11,17 +11,17 @@ data recordings into LTM (LightTelemetry) messages over UDP or serial
 Blackbox is an invaluable tool for development and flight analysis for
 Cleanflight and its derivatives such as INAV. This program
 (replay_bbox_ltm) provides a means to replay a Blackbox recording in a
-geospatial context using one of the well know ground stations mwp
-(Linux) and ezgui (Android). The LTM (LightTelemetry) protocol is used
-to replay the Blackbox log data into the ground station; thus any
-ground station or OSD that supports LTM can be used for flight
-visualisation.
+geospatial context using one of the well know ground stations
+https://github.com/stronnag/mwptools[mwp] (Linux) and ezgui
+(Android). The LTM (LightTelemetry) protocol is used to replay the
+Blackbox log data into the ground station; thus any ground station or
+OSD that supports LTM can be used for flight visualisation.
 
 == Platforms
 
 replay_bbox_ltm is intended to run on most popular platforms (Linux,
 OSX, Windows). It is developed on Arch Linux and tested on Arch,
-Ubuntu and occasionally, Windows 7.
+Fedora, Ubuntu and occasionally, Windows 7.
 
 == Dependencies
 
@@ -34,7 +34,7 @@ replay_bbox_ltm script:
 
 The installation of these dependencies is described below.
 
-== Dependency Installation
+=== Dependency Installation
 
 Ruby:: Version 1.9 or greater is required.
 * Linux: Install via your distribution package manager.
@@ -44,7 +44,7 @@ http://rubyinstaller.org/downloads/[rubyinstaller.org] (aka MRI). Alternately,
 the https://www.cygwin.com/[cygwin] version may be used, however this
 requires cygwin gcc is also installed to build ffi (a rubyserial
 dependency otherwise satisfied by the MRI install). For MRI, set the
-options to assocaite .rb extensions with ruby.
+options to associate .rb extensions with ruby.
 
 NOTE: On Windows, run the environment specific interpreter; running
 the MRI (rubyinstaller) interpreter under cygwin may not work as
@@ -119,7 +119,7 @@ use the `sdptool add channel=N SP` and  `rfcomm listen` commands.
 
 It is *_essential_* that blackbox_decode is on the PATH, so either
 install it on the extant PATH or extend the PATH to cover the
-blackbox_decode containing directory.
+directory  containing blackbox_decode.
 
 === Verify the installation
 
@@ -189,10 +189,13 @@ The default baud rate is 115200, this may be changed by appending
   -s COM7@38400
 ----
 
---index, i:: Defines the index of the recording in the the blackbox
++
+NOTE:: Only one of UDP and serial definitions should be given.
+
+--index, -i:: Defines the index of the recording in the the blackbox
 file. If this is not given, the first recording (index 1) is used.
 
---declination, d:: The magnetic declination in decimal degrees. If not
+--declination, -d:: The magnetic declination in decimal degrees. If not
   given, a value appropriate to the New Forest area of southern
   England is used.
 
@@ -225,27 +228,29 @@ file. If this is not given, the first recording (index 1) is used.
   IPv6 resolvers).
 
 replay-bbox-ltm expects the ground station to poll it (this is normal
-mwp and ezgui behaviour, both these applications will poll using
+mwp and ezgui behaviour; both these applications will poll using
 MultiWii / Cleanflight identification messages when first
 invoked).
 
 Typically, when using the ground station with a flight controller, one
-powers up the FC, thus enabling its communications port then connects
-from the ground station: replay-bbox-ltm emulates this
-behaviour. replay-bbox-ltm provides basic INAV identification
-messages before broadcasting the blackbox file as LTM messages.
+first powers up the FC, thus enabling its communications port then
+connects from the ground station: replay-bbox-ltm emulates this
+behaviour. replay-bbox-ltm provides basic INAV identification messages
+to the ground station before broadcasting the blackbox file as LTM
+messages.
 
-It is also possible to bypass the polling expectation for serial devices
-and when replay-bbox-ltm is running as a UDP listener. This these
-circumstances, on startup, replay-bbox-ltm displays the message:
+It is also possible to bypass the polling expectation for serial
+devices and when invoked as a UDP listener. In these circumstances,
+on startup, replay-bbox-ltm displays the message:
 ----
 Waiting for GS to start (RETURN to continue) :
 ----
 
-If you press return at this stage, replay-bbox-ltm will continue; this
-may be acceptable for serial connections, however it will cause the
-application to exit for UDP, as it does not know the address of the
-client system.
+If you press return before any poll from the ground station,
+replay-bbox-ltm will continue; this may be acceptable for serial
+connections, however it will cause the application to exit for UDP, as
+it does not know the address of the client system. This is intended to
+support any client such as an OSD that does not initially poll.
 
 === Example Command lines
 

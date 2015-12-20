@@ -40,25 +40,25 @@ public class Craft : GLib.Object
 
     private static string[] icons =
     {
-        "QuadX.png",
-        "Tri.png",
-        "QuadP.png",
-        "QuadX.png",
-        "Bi.png",
-        "QuadX.png",
-        "Y6.png",
-        "Hex6P.png",
-        "Flying_Wing.png",
-        "Y4.png",
-        "Hex6X.png",
-        "OctoX8.png",
-        "OctoFlatP.png",
-        "OctoFlatX.png",
-        "Airplane.png",
-        "Heli.png",
-        "Heli.png",
-        "V-Tail4.png",
-        "Hex6P.png"
+        "QuadX.png", //0
+        "Tri.png",   //1
+        "QuadP.png", // 2
+        "QuadX.png", // 3
+        "Bi.png", // 4
+        "QuadX.png", // 5
+        "Y6.png", // 6
+        "Hex6P.png", // 7
+        "Flying_Wing.png", // 8
+        "Y4.png", // 9
+        "Hex6X.png", // 10
+        "OctoX8.png", //11
+        "OctoFlatP.png", // 12
+        "OctoFlatX.png", // 13
+        "Airplane.png", // 14
+        "Heli.png", // 15
+        "Heli.png", // 16
+        "V-Tail4.png", // 17
+        "Hex6P.png" // 18
     };
 
     public enum Special
