@@ -1180,9 +1180,6 @@ public class NavStatus : GLib.Object
         }
     }
 
-
-
-
     public void set_attitude(MSP_ATTITUDE _atti,bool visible)
     {
         atti = _atti;

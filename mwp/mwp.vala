@@ -2974,7 +2974,7 @@ public class MWPlanner : Gtk.Application {
                         if(_nsats != nsats)
                         {
                             nsats = _nsats;
-                            MWPLog.message("Timer %d %d\n", _nsats, nsats);
+//                            MWPLog.message("Timer %d %d\n", _nsats, nsats);
                             navstatus.sats(_nsats, false);
                             if(_nsats == 0)
                                 gps_alert();
