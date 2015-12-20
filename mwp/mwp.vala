@@ -2328,6 +2328,14 @@ public class MWPlanner : Gtk.Application {
 
                 int fix = gpsinfo.update_ltm(gf, conf.dms, item_visible(DOCKLETS.GPS));
                 _nsats = (gf.sats >> 2);
+
+                if((_nsats == 0 && nsats != 0) || (nsats == 0 && _nsats != 0))
+                {
+                    MWPLog.message("sats from gframe %d %d\n", nsats, _nsats);
+                    nsats = _nsats;
+                    navstatus.sats(_nsats, true);
+                }
+
                 if(fix > 0)
                 {
                     double gflat = gf.lat/10000000.0;
@@ -2359,7 +2367,7 @@ public class MWPlanner : Gtk.Application {
                         }
                     }
 
-                    if(craft != null)
+                    if(craft != null && fix > 0 && _nsats >= 4)
                     {
                         if(follow == true)
                             craft.set_lat_lon(gflat,gflon,gfcse);
@@ -2368,10 +2376,6 @@ public class MWPlanner : Gtk.Application {
                     }
                     if(want_special != 0)
                         process_pos_states(gflat, gflon, gf.alt/100.0);
-                }
-                else
-                {
-                    MWPLog.message("gframe fix < 1\n");
                 }
                 fbox.update(item_visible(DOCKLETS.FBOX));
             }
@@ -2969,10 +2973,11 @@ public class MWPlanner : Gtk.Application {
                 spktid = Timeout.add_seconds(conf.speakint, () => {
                         if(_nsats != nsats)
                         {
+                            nsats = _nsats;
+                            MWPLog.message("Timer %d %d\n", _nsats, nsats);
+                            navstatus.sats(_nsats, false);
                             if(_nsats == 0)
                                 gps_alert();
-                            navstatus.sats(_nsats);
-                            nsats = _nsats;
                         }
                         navstatus.announce(sflags, conf.recip);
                         return true;

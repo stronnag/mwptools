@@ -1342,10 +1342,15 @@ public class NavStatus : GLib.Object
         }
     }
 
-    public void sats(uint8 nsats)
+    public void sats(uint8 nsats, bool urgent=false)
     {
         numsat = nsats;
         modsat = true;
+        if(urgent)
+        {
+            mt.message(AudioThread.Vox.MODSAT,true);
+            modsat = false;
+        }
     }
 
     public void announce(uint8 mask, bool _recip)
@@ -1575,7 +1580,6 @@ public class AudioThread : Object {
                             s = str_zero(s);
                             break;
                         case Vox.MODSAT:
-                            NavStatus.modsat = false;
                             string ss = "";
                             if(NavStatus.numsat != 1)
                                 ss = "s";
