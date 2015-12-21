@@ -1391,6 +1391,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="hexpand">True</property>
+                <property name="primary_icon_tooltip_text" translatable="yes">You can enter both latitude and longitude here, separated by a single space and leave the longitude entry empty.</property>
                 <property name="input_purpose">number</property>
               </object>
               <packing>

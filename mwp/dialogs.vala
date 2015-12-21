@@ -591,8 +591,20 @@ public class SetPosDialog : GLib.Object
         switch(id)
         {
             case 1001:
-                glat = InputParser.get_latitude(lat_entry.get_text());
-                glon = InputParser.get_longitude(lon_entry.get_text());
+                var t1 = lat_entry.get_text();
+                var t2 = lon_entry.get_text();
+                if (t2 == "")
+                {
+                    string []parts;
+                    parts = t1.split (" ");
+                    if(parts.length == 2)
+                    {
+                        t1 = parts[0];
+                        t2 = parts[1];
+                    }
+                }
+                glat = InputParser.get_latitude(t1);
+                glon = InputParser.get_longitude(t2);
                 res = true;
                 break;
 
@@ -602,7 +614,6 @@ public class SetPosDialog : GLib.Object
         dialog.hide();
         return res;
     }
-
 }
 
 public class SwitchDialog : GLib.Object
