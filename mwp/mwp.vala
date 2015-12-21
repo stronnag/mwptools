@@ -3269,15 +3269,7 @@ public class MWPlanner : Gtk.Application {
         {
             Mission m = ls.to_mission();
 
-            if(true == ls.calc_mission_dist(out m.dist, out m.lt))
-            {
-                m.nspeed = conf.nav_speed;
-                m.et = (int)(m.dist / conf.nav_speed);
-            }
-            else
-            {
-                m.et = 0;
-            }
+            ls.calc_mission_dist(out m.dist, out m.lt, out m.et);
             if (conf.compat_vers != null)
                 m.version = conf.compat_vers;
             m.to_xml_file(last_file);

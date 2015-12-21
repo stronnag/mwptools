@@ -497,6 +497,38 @@ public class MapSourceDialog : GLib.Object
     }
 }
 
+public class SpeedDialog : GLib.Object
+{
+    private Gtk.Dialog dialog;
+    private Gtk.Entry spd_entry;
+
+    public SpeedDialog(Gtk.Builder builder)
+    {
+        dialog = builder.get_object ("speeddialog") as Gtk.Dialog;
+        spd_entry = builder.get_object ("defspeedset") as Gtk.Entry;
+    }
+
+    public bool get_speed(out double spd)
+    {
+        var res = false;
+        dialog.show_all();
+        spd = 0.0;
+        var id = dialog.run();
+        switch(id)
+        {
+            case 1001:
+                spd  = InputParser.get_scaled_real(spd_entry.get_text(),"s");
+                res = true;
+                break;
+
+            case 1002:
+                break;
+        }
+        dialog.hide();
+        return res;
+    }
+}
+
 public class DeltaDialog : GLib.Object
 {
     private Gtk.Dialog dialog;

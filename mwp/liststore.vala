@@ -56,8 +56,11 @@ public class ListBox : GLib.Object
     private Gtk.MenuItem alts_item;
     private Gtk.MenuItem altz_item;
     private Gtk.MenuItem delta_item;
+    private Gtk.MenuItem speedz_item;
+    private Gtk.MenuItem speedv_item;
     private ShapeDialog shapedialog;
     private DeltaDialog deltadialog;
+    private SpeedDialog speeddialog;
     int lastid = 0;
 
     public ListBox()
@@ -232,6 +235,7 @@ public class ListBox : GLib.Object
 
         shapedialog = new ShapeDialog(mp.builder);
         deltadialog = new DeltaDialog(mp.builder);
+        speeddialog = new SpeedDialog(mp.builder);
 
             // Combo, Model:
         Gtk.ListStore combo_model = new Gtk.ListStore (1, typeof (string));
@@ -503,13 +507,17 @@ public class ListBox : GLib.Object
 
                     if(sel.count_selected_rows () == 0)
                     {
-                        del_item.sensitive = alts_item.sensitive =
-                            altz_item.sensitive = delta_item.sensitive = false;
+                        del_item.sensitive = delta_item.sensitive =
+                            alts_item.sensitive = altz_item.sensitive =
+                            speedv_item.sensitive = speedz_item.sensitive =
+                            false;
                     }
                     else
                     {
-                        del_item.sensitive = alts_item.sensitive =
-                        altz_item.sensitive = delta_item.sensitive = true;
+                        del_item.sensitive = delta_item.sensitive =
+                            alts_item.sensitive = altz_item.sensitive =
+                            speedv_item.sensitive = speedz_item.sensitive =
+                            true;
                     }
 
                     if(sel.count_selected_rows () == 1)
@@ -534,7 +542,6 @@ public class ListBox : GLib.Object
         var list_model = view.get_model() as Gtk.ListStore;
 
         list_model.get_iter (out iter_val, new Gtk.TreePath.from_string (path));
-//fixme p1
 
         double d;
         switch(colno)
@@ -846,6 +853,18 @@ public class ListBox : GLib.Object
             });
         menu.add (altz_item);
 
+        speedv_item = new Gtk.MenuItem.with_label ("Set all leg speeds");
+        speedv_item.activate.connect (() => {
+                set_speeds(true);
+            });
+        menu.add (speedv_item);
+
+        speedz_item = new Gtk.MenuItem.with_label ("Set zero leg speeds");
+        speedz_item.activate.connect (() => {
+                set_speeds(false);
+            });
+        menu.add (speedz_item);
+
         shp_item = new Gtk.MenuItem.with_label ("Add shape");
         shp_item.activate.connect (() => {
                 add_shapes();
@@ -894,6 +913,42 @@ public class ListBox : GLib.Object
         }
     }
 
+
+    public void set_speeds(bool flag)
+    {
+        var dspd = MWPlanner.conf.nav_speed;
+        int cnt = 0;
+        if(speeddialog.get_speed(out dspd) == true)
+        {
+            foreach (var t in get_selected_refs())
+            {
+                Gtk.TreeIter iter;
+                GLib.Value cell;
+                var path = t.get_path ();
+                list_model.get_iter (out iter, path);
+                list_model.get_value (iter, WY_Columns.ACTION, out cell);
+                var act = (MSP.Action)cell;
+                if (act == MSP.Action.RTH ||
+                    act == MSP.Action.JUMP ||
+                    act == MSP.Action.SET_POI ||
+                    act == MSP.Action.SET_HEAD)
+                    continue;
+                if(flag == false)
+                {
+                    list_model.get_value (iter, WY_Columns.INT1, out cell);
+                    if ((double)cell != 0)
+                        continue;
+                }
+                list_model.set_value (iter, WY_Columns.INT1, dspd);
+                cnt++;
+            }
+        }
+        if(cnt != 0)
+        {
+            calc_mission();
+        }
+    }
+
     public void set_selection(Gtk.TreeIter iter)
     {
         var treesel = view.get_selection ();
@@ -921,10 +976,11 @@ public class ListBox : GLib.Object
         {
             double d;
             int lt;
-            var res = calc_mission_dist(out d, out lt);
+            int et;
+
+            var res = calc_mission_dist(out d, out lt, out et);
             if (res == true)
             {
-                var et = (int)(d / MWPlanner.conf.nav_speed);
                 route = "Distance: %.0f%s, fly: %ds, loiter: %ds".printf(
                     Units.distance(d),
                     Units.distance_units(),
@@ -940,10 +996,13 @@ public class ListBox : GLib.Object
         mp.stslabel.set_text(route);
     }
 
-    public bool calc_mission_dist(out double d, out int lt)
+    public bool calc_mission_dist(out double d, out int lt, out int et)
     {
         Gtk.TreeIter iter;
         MissionItem[] arry = {};
+        double ets = 0.0;
+        et = 0;
+
         for(bool next=list_model.get_iter_first(out iter);next;next=list_model.iter_next(ref iter))
         {
             GLib.Value cell;
@@ -964,11 +1023,11 @@ public class ListBox : GLib.Object
                 m.lat = (double)cell;
                 list_model.get_value (iter, WY_Columns.LON, out cell);
                 m.lon = (double)cell;
+                list_model.get_value (iter, WY_Columns.INT1, out cell);
+                m.param1 = (int) (10*(double)cell);
 /*
                 list_model.get_value (iter, WY_Columns.ALT, out cell);
                 m.alt = (int)cell;
-                list_model.get_value (iter, WY_Columns.INT1, out cell);
-                m.param1 = (int)((double)cell);
                 list_model.get_value (iter, WY_Columns.INT2, out cell);
                 m.param2 = (int)cell;
                 list_model.get_value (iter, WY_Columns.INT3, out cell);
@@ -982,6 +1041,7 @@ public class ListBox : GLib.Object
         var n = 0;
         var rpt = 0;
         double lx = 0.0,ly=0.0;
+        double lspd = MWPlanner.conf.nav_speed;
         var lastn = 0;
         bool ready = false;
         d = 0.0;
@@ -994,7 +1054,7 @@ public class ListBox : GLib.Object
             do
             {
                 var typ = arry[n].action;
-
+                var p1 = arry[n].param1;
                 if(typ == MSP.Action.JUMP && arry[n].param2 == -1)
                 {
                     d = 0.0;
@@ -1003,6 +1063,7 @@ public class ListBox : GLib.Object
                 }
                 var cy = arry[n].lat;
                 var cx = arry[n].lon;
+
                 if (ready == true)
                 {
                     double dx,cse;
@@ -1017,6 +1078,10 @@ public class ListBox : GLib.Object
                        continue;
                     }
                     Geo.csedist(ly,lx,cy,cx, out dx, out cse);
+
+                    double ltim = (1852.0*dx) / lspd;
+                    ets += ltim;
+
                     Value cell;
                     Gtk.TreeIter xiter;
                     var path = new Gtk.TreePath.from_indices (arry[lastn].no - 1);
@@ -1026,13 +1091,13 @@ public class ListBox : GLib.Object
                     if((string)cell == null)
                     {
                         string hint; // CVT
-                        hint = "Dist %.1f%s, to WP %d => %.1f%s, %.0f°".printf(
+                        hint = "Dist %.1f%s, to WP %d => %.1f%s, %.0f° %.0fs".printf(
                             Units.distance(d*1852),
                             Units.distance_units(),
                             arry[n].no,
                             Units.distance(dx*1852.0),
                             Units.distance_units(),
-                            cse);
+                            cse, ltim);
                         list_model.set_value (xiter, WY_Columns.TIP, hint);
                     }
 
@@ -1059,9 +1124,12 @@ public class ListBox : GLib.Object
                 }
                 lx = cx;
                 ly = cy;
+                lspd = (p1 == 0) ? MWPlanner.conf.nav_speed :
+                    ((double)p1)/10.0;
             } while (n < nsize);
         }
         d *= 1852.0;
+        et = (int)ets;
         return true;
     }
 }
