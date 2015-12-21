@@ -26,7 +26,7 @@ $ sudo cp cf-cli cf-cli-ui /usr/local/bin/
 ```
 
 For users of Microsoft Windows, you can find a [binary (executable)
-distribution](http://www.zen35309.zen.co.uk/cf-cli/cf-cli-win32-1.06.zip).
+distribution](https://github.com/stronnag/mwptools/releases/).
 
 The Windows binary archive expands as:
 ```

@@ -5,7 +5,7 @@
 
 OUT=${1:-mwp-example.mkv}
 
-if ! pgrep  mwp
+if ! pgrep -x  mwp
 then
  mwp --dont-maximise  >/dev/null 2>&1 &
  sleep 2
@@ -16,7 +16,7 @@ fi
 XRES=1280
 YRES=720
 YYRES=$((YRES + 36))
-wmctrl -F -r 'mwp' -e 0,32,32,$XRES,$YRES
+wmctrl -F -x -r 'mwp.Mwp' -e 0,32,32,$XRES,$YRES
 
 F=pulse
 S=$(pactl list | grep monitor | grep Name: | cut -d ' ' -f 2)
