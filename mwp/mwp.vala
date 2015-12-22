@@ -2112,6 +2112,7 @@ public class MWPlanner : Gtk.Application {
                 if (wpmgr.wp_flag == WPDL.VALIDATE)
                 {
                     WPFAIL fail = WPFAIL.OK;
+                    validatelab.set_text("%d".printf(w.wp_no));
                     if(w.wp_no != wpmgr.wps[wpmgr.wpidx].wp_no)
                         fail |= WPFAIL.NO;
                     else if(w.action != wpmgr.wps[wpmgr.wpidx].action)
