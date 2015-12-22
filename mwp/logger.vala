@@ -27,7 +27,7 @@ public class Logger : GLib.Object
     private static double dtime;
     public static int duration { get; private set; }
 
-    public static void start(string? title, VersInfo vi,uint32 capability,uint8 profile)
+    public static void start(string? title, VersInfo vi,uint32 capability,uint8 profile, string? boxnames = null)
     {
         time_t currtime;
         time_t(out currtime);
@@ -59,6 +59,12 @@ public class Logger : GLib.Object
             builder.add_int_value (vi.fctype);
             builder.set_member_name ("profile");
             builder.add_int_value (profile);
+            if(boxnames != null)
+            {
+                builder.set_member_name ("boxnames");
+                builder.add_string_value (boxnames);
+            }
+
             if(vi.fc_var != null)
             {
                 builder.set_member_name ("fc_var");

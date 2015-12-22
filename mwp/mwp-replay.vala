@@ -278,48 +278,56 @@ public class ReplayThread : GLib.Object
                                         send_rec(fd,MSP.Cmds.FC_VERSION, 3, buf);
                                     }
 
+                                    string bx;
+                                    if(obj.has_member("boxnames"))
+                                    {
+                                        bx = obj.get_string_member("boxnames");
+                                    }
+                                    else
+                                    {
+                                        if (fctype == 3)
+                                        {
+                                            if(fcvar == "INAV")
+                                            {
+                                                    // hackety hack time
+                                                if (utime < 1449360000)
+                                                    bx = "ARM;ANGLE;HORIZON;MAG;HEADFREE;HEADADJ;NAV ALTHOLD;NAV POSHOLD;NAV RTH;NAV WP;BEEPER;OSD SW;BLACKBOX;FAILSAFE;";
+                                                else
+                                                    bx = "ARM;ANGLE;HORIZON;AIR MODE;MAG;HEADFREE;HEADADJ;NAV ALTHOLD;NAV POSHOLD;NAV RTH;NAV WP;BEEPER;OSD SW;BLACKBOX;FAILSAFE;";
+                                            }
+                                            else
+                                            {
+                                                bx= "ARM;ANGLE;HORIZON;BARO;MAG;HEADFREE;HEADADJ;GPS HOME;GPS HOLD;BEEPER;OSD SW;AUTOTUNE;";
+                                            }
+                                        }
+                                        else
+                                        {
+                                            bx = "ARM;ANGLE;HORIZON;BARO;MAG;GPS HOME;GPS HOLD;BEEPER;MISSION;LAND;";
+                                        }
+                                    }
+
+                                    send_rec(fd,MSP.Cmds.BOXNAMES, bx.length, bx.data);
                                     MSP_MISC a = MSP_MISC();
                                     a.conf_minthrottle=1064;
                                     a.maxthrottle=1864;
                                     a.mincommand=900;
                                     a.conf_mag_declination = -15;
-
-                                    string bx;
                                     if (fctype == 3)
                                     {
-                                        if(fcvar == "INAV")
-                                        {
-                                                // hackety hack time
-                                            if (utime < 1449360000)
-                                                bx = "ARM;ANGLE;HORIZON;MAG;HEADFREE;HEADADJ;NAV ALTHOLD;NAV POSHOLD;NAV RTH;NAV WP;BEEPER;OSD SW;BLACKBOX;FAILSAFE;";
-                                            else
-                                                bx = "ARM;ANGLE;HORIZON;AIR MODE;MAG;HEADFREE;HEADADJ;NAV ALTHOLD;NAV POSHOLD;NAV RTH;NAV WP;BEEPER;OSD SW;BLACKBOX;FAILSAFE;";
-                                        }
-                                        else
-                                        {
-                                            bx= "ARM;ANGLE;HORIZON;BARO;MAG;HEADFREE;HEADADJ;GPS HOME;GPS HOLD;BEEPER;OSD SW;AUTOTUNE;";
-                                        }
                                         a.conf_vbatscale = 110;
                                         a.conf_vbatlevel_warn1 = 33;
                                         a.conf_vbatlevel_warn2 = 43;
+
                                     }
                                     else
                                     {
-                                        bx = "ARM;ANGLE;HORIZON;BARO;MAG;GPS HOME;GPS HOLD;BEEPER;MISSION;LAND;";
                                         a.conf_vbatscale = 131;
                                         a.conf_vbatlevel_warn1 = 107;
                                         a.conf_vbatlevel_warn2 = 99;
                                         a.conf_vbatlevel_crit = 93;
                                     }
 
-/*
-                                    uint j;
-                                    for( j = 0; j < bx.length; j++)
-                                        buf[j] = bx[j];
-*/
-                                    send_rec(fd,MSP.Cmds.BOXNAMES, bx.length, bx.data);
                                     var nb = serialise_misc(a, buf);
-
                                     send_rec(fd,MSP.Cmds.MISC, (uint)nb, buf);
                                     break;
                                 case "armed":

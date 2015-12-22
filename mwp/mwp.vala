@@ -191,6 +191,7 @@ public class MWPlanner : Gtk.Application {
     private FlightBox fbox;
     private WPMGR wpmgr;
     private MissionItem[] wp_resp;
+    private string boxnames = null;
     private static string mission;
     private static string serial;
     private static bool autocon;
@@ -1008,7 +1009,7 @@ public class MWPlanner : Gtk.Application {
         logb = builder.get_object ("logger_cb") as Gtk.CheckButton;
         logb.toggled.connect (() => {
                 if (logb.active)
-                    Logger.start(last_file,vi,capability,profile);
+                    Logger.start(last_file,vi,capability,profile,boxnames);
                 else
                     Logger.stop();
             });
@@ -1476,8 +1477,9 @@ public class MWPlanner : Gtk.Application {
                 if(conf.logarmed == true)
                 {
                     logb.active = true;
-                    Logger.armed(true,duration,flag, sensor);
                 }
+                if(Logger.is_logging)
+                    Logger.armed(true,duration,flag, sensor);
             }
             else
             {
@@ -1683,6 +1685,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 remove_tid(ref cmdtid);
                 raw[len] = 0;
+                boxnames = (string)raw;
                 string []bsx = ((string)raw).split(";");
                 int i = 0;
                 foreach(var bs in bsx)
@@ -3043,6 +3046,7 @@ public class MWPlanner : Gtk.Application {
         nsats = 0;
         _nsats = 0;
         last_tm = 0;
+        boxnames = null;
         msp.close();
         c.set_label("Connect");
         menuncfg.sensitive = menuup.sensitive = menudown.sensitive = false;
