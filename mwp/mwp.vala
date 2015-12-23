@@ -3046,6 +3046,7 @@ public class MWPlanner : Gtk.Application {
         }
         gpsinfo.annul();
         navstatus.reset();
+        fbox.annul();
         set_bat_stat(0);
         nsats = 0;
         _nsats = 0;

@@ -275,6 +275,27 @@ public class FlightBox : GLib.Object
 
    public void annul()
    {
+            Gtk.Allocation a;
+            vbox.get_allocation(out a);
+            var fh1 = a.width/10;
+            int fh2;
+            fh2 = (MWPlanner.conf.dms) ? fh1*40/100 : fh1/2;
+            if(fh1 > 96)
+                fh1 = 96;
+            var fh3 = fh1;
+            big_rng.set_label(
+                "Range <span font='%d'>0</span>%s".printf(
+                    fh1, Units.distance_units() ));
+            big_bearing.set_label("Bearing <span font='%d'>0°</span>".printf(fh1));
+            big_hdr.set_label("Heading <span font='%d'>0°</span>".printf(fh3));
+            big_alt.set_label(
+                "Alt <span font='%d'>0</span>%s".printf(
+                    fh3, Units.distance_units() ));
+            big_spd.set_label(
+                "Speed <span font='%d'>0</span>%s".printf(
+                    fh1, Units.speed_units() ) );
+            big_sats.set_label("Sats <span font='%d'>0</span> %sfix".printf(
+                                   fh1, "nil "));
    }
 
    public void update(bool visible)
