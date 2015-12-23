@@ -882,6 +882,10 @@ public class MWPlanner : Gtk.Application {
                             npos = false;
                             armed_spinner.stop();
                             armed_spinner.hide();
+                            if (conf.audioarmed == true)
+                                audio_cb.active = false;
+                            if(conf.logarmed == true)
+                                logb.active=false;
                         }
                         break;
 
@@ -2411,23 +2415,24 @@ public class MWPlanner : Gtk.Application {
                 sf.airspeed = *rp++;
                 sf.flags = *rp++;
                 uint8 ltmflags = sf.flags >> 2;
-                uint32 mwflags = arm_mask;
+                uint32 mwflags = 0;
                 uint8 saf = sf.flags & 1;
-                if(saf == 0)
+                if ((saf & 1) == 1)
+                {
+                    mwflags = arm_mask;
+                    armed = 1;
+                    dac = 0;
+                }
+                else
                 {
                     dac++;
                     if(dac == 5)
                     {
+                        MWPLog.message("Disarm from LTM!\n");
+                        mwflags = 0;
                         armed = 0;
-                        MWPLog.message("sframe disarm %x\n", sf.flags);
                     }
                 }
-                else
-                {
-                    armed = 1;
-                    dac = 0;
-                }
-
                 if(ltmflags == 2)
                     mwflags |= angle_mask;
                 if(ltmflags == 3)
@@ -2978,7 +2983,6 @@ public class MWPlanner : Gtk.Application {
                         if(_nsats != nsats)
                         {
                             nsats = _nsats;
-//                            MWPLog.message("Timer %d %d\n", _nsats, nsats);
                             navstatus.sats(_nsats, false);
                             if(_nsats == 0)
                                 gps_alert();

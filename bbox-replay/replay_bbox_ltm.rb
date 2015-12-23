@@ -158,7 +158,7 @@ def encode_origin r
   msg
 end
 
-def encode_stats r
+def encode_stats r,armed=1
   msg='$TS'
   sts = case r[:navstate].to_i
 	when 0,1
@@ -176,7 +176,7 @@ def encode_stats r
 	else
 	  19
 	end
-  sts = (sts << 2) | 1
+  sts = (sts << 2) | armed
   sl = [(r[:vbatlatest_v].to_f*1000).to_i, 0, 0, 0, sts].pack('S<S<ccc')
   msg << sl << mksum(sl)
   msg
@@ -344,6 +344,7 @@ cmd << " #{bbox}"
 
 send_init_seq dev,typ
 
+lastr =nil
 IO.popen(cmd,'rt') do |pipe|
   csv = CSV.new(pipe, csv_opts)
   hdrs = csv.shift
@@ -370,6 +371,7 @@ IO.popen(cmd,'rt') do |pipe|
 	  send_msg dev, msg
 	end
       when 1,3,7,9
+	lastr = row
 	msg = encode_stats row
 	send_msg dev, msg
 	msg = encode_nav row
@@ -377,5 +379,13 @@ IO.popen(cmd,'rt') do |pipe|
       end
       sleep 0.1
     end
+  end
+end
+# fake up a few disarm messages
+if lastr
+  msg = encode_stats lastr,0
+  0.upto(5) do
+    send_msg dev, msg
+    sleep 0.1
   end
 end
