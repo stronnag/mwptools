@@ -16,18 +16,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
-/*
-public struct DistItem
-{
-    int no;
-    double dist;
-    double cse;
-};
-*/
-
 public class ListBox : GLib.Object
 {
+    private const int SPEED_CONV = 100;
+    private const int ALT_CONV = 100;
+    private const int POS_CONV = 10000000;
+
     public enum WY_Columns
     {
         IDX,
@@ -102,7 +96,7 @@ public class ListBox : GLib.Object
                             WY_Columns.LAT, m.lat,
                             WY_Columns.LON, m.lon,
                             WY_Columns.ALT, m.alt,
-                            WY_Columns.INT1, ((double)m.param1 / 10),
+                            WY_Columns.INT1, ((double)m.param1 / SPEED_CONV),
                             WY_Columns.INT2, m.param2,
                             WY_Columns.INT3, m.param3,
                             WY_Columns.ACTION, m.action);
@@ -128,15 +122,15 @@ public class ListBox : GLib.Object
                 list_model.get_value (iter, WY_Columns.IDX, out cell);
                 w.wp_no = n;
                 list_model.get_value (iter, WY_Columns.LAT, out cell);
-                w.lat = (int32)Math.lround(((double)cell) * 10000000);
+                w.lat = (int32)Math.lround(((double)cell) * POS_CONV);
                 list_model.get_value (iter, WY_Columns.LON, out cell);
-                w.lon = (int32)Math.lround(((double)cell) * 10000000);
+                w.lon = (int32)Math.lround(((double)cell) * POS_CONV);
                 list_model.get_value (iter, WY_Columns.ALT, out cell);
-                w.altitude = (int32)(((int)cell) * 100);
+                w.altitude = (int32)(((int)cell) * ALT_CONV);
                 list_model.get_value (iter, WY_Columns.INT1, out cell);
                 var tint = (double)cell;
                 if(w.action == MSP.Action.WAYPOINT)
-                    w.p1 = (int16)(tint*10);
+                    w.p1 = (int16)(tint*SPEED_CONV);
                 else
                     w.p1 = (int16)tint;
                 list_model.get_value (iter, WY_Columns.INT2, out cell);
@@ -212,7 +206,7 @@ public class ListBox : GLib.Object
                 list_model.get_value (iter, WY_Columns.ALT, out cell);
                 m.alt = (int)cell;
                 list_model.get_value (iter, WY_Columns.INT1, out cell);
-                m.param1 = (int)(10*(double)cell);
+                m.param1 = (int)(SPEED_CONV*(double)cell);
                 list_model.get_value (iter, WY_Columns.INT2, out cell);
                 m.param2 = (int)cell;
                 list_model.get_value (iter, WY_Columns.INT3, out cell);
@@ -1024,15 +1018,7 @@ public class ListBox : GLib.Object
                 list_model.get_value (iter, WY_Columns.LON, out cell);
                 m.lon = (double)cell;
                 list_model.get_value (iter, WY_Columns.INT1, out cell);
-                m.param1 = (int) (10*(double)cell);
-/*
-                list_model.get_value (iter, WY_Columns.ALT, out cell);
-                m.alt = (int)cell;
-                list_model.get_value (iter, WY_Columns.INT2, out cell);
-                m.param2 = (int)cell;
-                list_model.get_value (iter, WY_Columns.INT3, out cell);
-                m.param3 = (int)cell;
-*/
+                m.param1 = (int) (SPEED_CONV*(double)cell);
                 arry += m;
             }
             if (typ == MSP.Action.POSHOLD_UNLIM || typ == MSP.Action.LAND)
@@ -1125,7 +1111,7 @@ public class ListBox : GLib.Object
                 lx = cx;
                 ly = cy;
                 lspd = (p1 == 0) ? MWPlanner.conf.nav_speed :
-                    ((double)p1)/10.0;
+                    ((double)p1)/SPEED_CONV;
             } while (n < nsize);
         }
         d *= 1852.0;
