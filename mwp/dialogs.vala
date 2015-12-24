@@ -2024,5 +2024,6 @@ public class GPSInfo : GLib.Object
         alt_lab.set_label("---");
         dirn_lab.set_label("---");
         speed_lab.set_label("--.-");
+        _dlat = _dlon = 0;
     }
 }

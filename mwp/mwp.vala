@@ -226,8 +226,6 @@ public class MWPlanner : Gtk.Application {
     private time_t duration;
 
     private int gfcse = 0;
-    private double _ilon = 0;
-    private double _ilat = 0;
     private uint8 armed = 0;
     private uint8 dac = 0;
     private bool npos = false;
@@ -277,6 +275,10 @@ public class MWPlanner : Gtk.Application {
     private bool have_mspradio = false;
     private uint16 sensor;
     private uint8 profile = 0;
+
+        /* for jump protection */
+    private double xlon = 0;
+    private double xlat = 0;
 
     private enum DEBUG_FLAGS
     {
@@ -498,7 +500,6 @@ public class MWPlanner : Gtk.Application {
                 quit();
             }
         }
-
 
         var cvers = Champlain.VERSION_S;
         if (cvers == "0.12.11")
@@ -1208,12 +1209,6 @@ public class MWPlanner : Gtk.Application {
                     ptype = ptype,
                     chan = (uint8)int.parse(parts[0]), set =0};
         }
-/*** FIXME
-        mavposdef += MavPOSDef(){minval=1700,
-                maxval=2100,
-                ptype = Craft.Special.RTH,
-                chan = 8, set =0};
-***/
     }
 
     private void toggle_full_screen()
@@ -1257,6 +1252,25 @@ public class MWPlanner : Gtk.Application {
             lastp.start();
             send_poll();
         }
+    }
+
+    private bool pos_valid(double lat, double lon)
+    {
+        bool vpos;
+
+        if(npos && (Math.fabs(lat - xlat) < 0.25) &&
+           (Math.fabs(lon - xlon) < 0.25))
+        {
+            vpos = true;
+            xlat = lat;
+            xlon = lon;
+        }
+        else
+        {
+            MWPLog.message("Ignore bogus %f %f\n", lat, lon);
+            vpos = false;
+        }
+        return vpos;
     }
 
     private void start_poll_timer()
@@ -2068,22 +2082,23 @@ public class MWPlanner : Gtk.Application {
                         if(npos == false)
                         {
                             sflags |=  NavStatus.SPK.GPS;
-                            _ilat = GPSInfo.lat;
-                            _ilon = GPSInfo.lon;
-                            npos = true;
                             want_special |= POSMODE.HOME;
                             navstatus.cg_on();
                         }
                     }
+
                     if(craft != null)
                     {
-                        if(follow == true)
+                        if(pos_valid(GPSInfo.lat, GPSInfo.lon))
                         {
-                            double cse = (usemag) ? mhead : GPSInfo.cse;
-                            craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
+                            if(follow == true)
+                            {
+                                double cse = (usemag) ? mhead : GPSInfo.cse;
+                                craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
+                            }
+                            if (centreon == true)
+                                view.center_on(GPSInfo.lat,GPSInfo.lon);
                         }
-                        if (centreon == true)
-                            view.center_on(GPSInfo.lat,GPSInfo.lon);
                     }
                     if(want_special != 0)
                         process_pos_states(GPSInfo.lat,GPSInfo.lon, rg.gps_altitude);
@@ -2296,14 +2311,12 @@ public class MWPlanner : Gtk.Application {
                     }
                     else
                     {
+                        double gflat = of.lat/10000000.0;
+                        double gflon = of.lon/10000000.0;
                         navstatus.cg_on();
                         sflags |=  NavStatus.SPK.GPS;
-                        _ilat = of.lat/10000000.0;
-                        _ilon = of.lon/10000000.0;
-                        npos = true;
                         want_special |= POSMODE.HOME;
-                        MWPLog.message("Got home (ltm)  %.6f %.6f\n", _ilat, _ilon);
-                        process_pos_states(_ilat, _ilon, 0.0);
+                        process_pos_states(gflat, gflon, 0.0);
                     }
                 }
                 if(Logger.is_logging)
@@ -2355,7 +2368,8 @@ public class MWPlanner : Gtk.Application {
                             if(fix > 0 && _nsats >= 4)
                             {
                                 double dist,cse;
-                                Geo.csedist(gflat, gflon, _ilat, _ilon,
+                                Geo.csedist(gflat, gflon,
+                                            home_pos.lat, home_pos.lon,
                                             out dist, out cse);
                                 if(dist < 64)
                                 {
@@ -2377,10 +2391,13 @@ public class MWPlanner : Gtk.Application {
 
                     if(craft != null && fix > 0 && _nsats >= 4)
                     {
-                        if(follow == true)
-                            craft.set_lat_lon(gflat,gflon,gfcse);
-                        if (centreon == true)
-                            view.center_on(gflat,gflon);
+                        if(pos_valid(gflat, gflon))
+                        {
+                            if(follow == true)
+                                craft.set_lat_lon(gflat,gflon,gfcse);
+                            if (centreon == true)
+                                view.center_on(gflat,gflon);
+                        }
                     }
                     if(want_special != 0)
                         process_pos_states(gflat, gflon, gf.alt/100.0);
@@ -2531,13 +2548,13 @@ public class MWPlanner : Gtk.Application {
                         if(npos == false)
                         {
                             sflags |=  NavStatus.SPK.GPS;
-                            npos = true;
                             navstatus.cg_on();
                         }
-                        if(_ilat != 0.0 && _ilon != 0.0)
+                        else
                         {
                             double dist,cse;
-                            Geo.csedist(GPSInfo.lat, GPSInfo.lon, _ilat, _ilon,
+                            Geo.csedist(GPSInfo.lat, GPSInfo.lon,
+                                        home_pos.lat, home_pos.lon,
                                         out dist, out cse);
                             var cg = MSP_COMP_GPS();
                             cg.range = (uint16)Math.lround(dist*1852);
@@ -2547,14 +2564,16 @@ public class MWPlanner : Gtk.Application {
                     }
                     if(craft != null)
                     {
-                        if(follow == true)
+                        if(pos_valid(GPSInfo.lat, GPSInfo.lon))
                         {
-                            double cse = (usemag) ? mhead : GPSInfo.cse;
-                            craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
+                            if(follow == true)
+                            {
+                                double cse = (usemag) ? mhead : GPSInfo.cse;
+                                craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
+                            }
+                            if (centreon == true)
+                                view.center_on(GPSInfo.lat,GPSInfo.lon);
                         }
-                        if (centreon == true)
-                            view.center_on(GPSInfo.lat,GPSInfo.lon);
-
                         if(want_special != 0)
                             process_pos_states(GPSInfo.lat, GPSInfo.lon,
                                                m.alt/1000.0);
@@ -2609,11 +2628,11 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN:
                 Mav. MAVLINK_GPS_GLOBAL_ORIGIN m = *(Mav.MAVLINK_GPS_GLOBAL_ORIGIN *)raw;
-                _ilat  = m.latitude / 10000000.0;
-                _ilon  = m.longitude / 10000000.0;
+                var ilat  = m.latitude / 10000000.0;
+                var ilon  = m.longitude / 10000000.0;
 
                 if(want_special != 0)
-                    process_pos_states(_ilat, _ilon, m.altitude / 1000.0);
+                    process_pos_states(ilat, ilon, m.altitude / 1000.0);
 
                 if(Logger.is_logging)
                 {
@@ -2679,9 +2698,10 @@ public class MWPlanner : Gtk.Application {
     {
         if((want_special & POSMODE.HOME) != 0)
         {
+            npos = true;
             want_special &= ~POSMODE.HOME;
-            home_pos.lat = lat;
-            home_pos.lon = lon;
+            home_pos.lat = xlat = lat;
+            home_pos.lon = xlon = lon;
             home_pos.alt = alt;
             if(craft != null)
                 craft.special_wp(Craft.Special.HOME, lat, lon);
