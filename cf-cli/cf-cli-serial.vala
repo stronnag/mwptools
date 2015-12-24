@@ -70,7 +70,7 @@ public class MWSerial : Object
     public static string devname;
     protected static string defname;
     protected static int brate;
-    protected static int lwait = 5;
+    protected static int lwait = -1;
     private static string profiles;
     protected static bool presave;
     protected static bool merge = false;
@@ -115,6 +115,13 @@ public class MWSerial : Object
         pfd = _pfd;
     }
 
+    private void calc_line_delay(int speed)
+    {
+        lwait =   218 - speed * 185 / 100000;
+        if(lwait < 0)
+            lwait = 2;
+    }
+
     public bool open()
     {
         if(logmsp)
@@ -124,6 +131,16 @@ public class MWSerial : Object
             raws = Posix.open (fn, Posix.O_TRUNC|Posix.O_CREAT|Posix.O_WRONLY, 0640);
         }
         available = false;
+        var parts = devname.split ("@");
+        if(parts.length == 2)
+        {
+            devname = parts[0];
+            brate = int.parse(parts[1]);
+        }
+
+        if (lwait == -1)
+            calc_line_delay(brate);
+
         fd = open_serial(devname, brate);
         if(fd < 0)
         {
@@ -141,6 +158,7 @@ public class MWSerial : Object
         }
         else
         {
+            message ("Device %s, speed %d, line delay %d\n", devname, brate, lwait);
             available = true;
         }
         return available;

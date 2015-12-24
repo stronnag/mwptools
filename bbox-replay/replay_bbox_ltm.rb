@@ -239,6 +239,7 @@ udpspec = nil
 serdev = nil
 v4 = false
 gpshd = false
+mindelay = false
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] file\nReplay bbox log as LTM"
@@ -249,6 +250,7 @@ ARGV.options do |opt|
   opt.on('-d','--declination=DEC',Float,'Mag Declination (default -1.3)'){|o|decl=o}
   opt.on('-g','--force-gps-heading','Use GPS course instead of compass'){gpshd=true}
   opt.on('-4','--force-ipv4'){v4=true}
+  opt.on('-f','--fast'){mindelay=true}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
     opt.parse!
@@ -377,7 +379,7 @@ IO.popen(cmd,'rt') do |pipe|
 	msg = encode_nav row
 	send_msg dev, msg
       end
-      sleep 0.1
+      sleep (mindelay) ? 0.01 : 0.1
     end
   end
 end
