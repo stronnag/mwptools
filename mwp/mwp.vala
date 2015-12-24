@@ -2134,7 +2134,7 @@ public class MWPlanner : Gtk.Application {
                 if (wpmgr.wp_flag == WPDL.VALIDATE)
                 {
                     WPFAIL fail = WPFAIL.OK;
-                    validatelab.set_text("%d".printf(w.wp_no));
+                    validatelab.set_text("WP:%3d".printf(w.wp_no));
                     if(w.wp_no != wpmgr.wps[wpmgr.wpidx].wp_no)
                         fail |= WPFAIL.NO;
                     else if(w.action != wpmgr.wps[wpmgr.wpidx].action)
@@ -2191,6 +2191,7 @@ public class MWPlanner : Gtk.Application {
                         }
                         var mtxt = "Validation for wp %d fails for %s".printf(w.wp_no, sb.str);
                         bleet_sans_merci("beep-sound.ogg");
+                        validatelab.set_text("⚠"); // u+26a0
                         mwp_warning_box(mtxt, Gtk.MessageType.ERROR);
                     }
                     else if(w.flag != 0xa5)
