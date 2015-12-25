@@ -1258,18 +1258,24 @@ public class MWPlanner : Gtk.Application {
     {
         bool vpos;
 
-        if(npos && (Math.fabs(lat - xlat) < 0.25) &&
-           (Math.fabs(lon - xlon) < 0.25))
+        if(npos)
         {
-            vpos = true;
-            xlat = lat;
-            xlon = lon;
+            if( (Math.fabs(lat - xlat) < 0.25) &&
+                (Math.fabs(lon - xlon) < 0.25))
+            {
+                vpos = true;
+                xlat = lat;
+                xlon = lon;
+            }
+            else
+            {
+                vpos = false;
+                MWPLog.message("Ignore bogus %f %f (%f %f)\n",
+                               lat, lon, xlat, xlon);
+            }
         }
         else
-        {
-            MWPLog.message("Ignore bogus %f %f\n", lat, lon);
-            vpos = false;
-        }
+            vpos = true;
         return vpos;
     }
 
@@ -2699,11 +2705,12 @@ public class MWPlanner : Gtk.Application {
     {
         if((want_special & POSMODE.HOME) != 0)
         {
-            npos = true;
+            MWPLog.message("Set home\n");
             want_special &= ~POSMODE.HOME;
             home_pos.lat = xlat = lat;
             home_pos.lon = xlon = lon;
             home_pos.alt = alt;
+            npos = true;
             if(craft != null)
                 craft.special_wp(Craft.Special.HOME, lat, lon);
             else
@@ -2824,14 +2831,13 @@ public class MWPlanner : Gtk.Application {
         var fn = MWPUtils.find_conf_file(sfn);
         if(fn != null)
         {
-            try
-            {
-                string cmd = "%s %s".printf(conf.mediap,fn);
-                MWPLog.message("%s\n", cmd);
-                Process.spawn_command_line_async(cmd);
-            } catch (SpawnError e) {
-                MWPLog.message ("Error: %s\n", e.message);
-            }
+            Gst.Element play = Gst.ElementFactory.make ("playbin", "player");
+            File file = File.new_for_path (fn);
+            var uri = file.get_uri ();
+            MWPLog.message("alert %s\n", uri);
+            play.set("uri", uri);
+            play.set("volume", 5.0);
+            play.set_state (Gst.State.PLAYING);
         }
     }
 
@@ -3572,6 +3578,7 @@ public class MWPlanner : Gtk.Application {
         time_t(out currtime);
         if (GtkClutter.init (ref args) != InitError.SUCCESS)
             return 1;
+        Gst.init (ref args);
 
         MWPLog.message("mwp startup\n");
         try {
