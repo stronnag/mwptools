@@ -398,8 +398,9 @@ public class MWSerial : Object
         return rescode;
     }
 
-    private void drain(out uint8 [] buf, int limit)
+    private bool drain(out uint8 [] buf, int limit, string line)
     {
+        bool drained = true;
         uint8 c = 0;
         int nc = 0;
         int len = 0;
@@ -423,7 +424,7 @@ public class MWSerial : Object
         buf[len] = 0;
         if(len == 0)
         {
-            message(" **** no data received\n ****");
+            message(" **** no data received for %s **** \n", line);
             rxerr++;
             if(rxerr == 5)
             {
@@ -431,6 +432,7 @@ public class MWSerial : Object
                 Posix.exit(255);
             }
         }
+        return (len != 0);
     }
 
     public void send_msp (Cmds cmd, void *data, size_t len)
@@ -657,7 +659,7 @@ public class MWSerial : Object
         if (line.has_prefix("save"))
             to = 50;
         Thread.usleep(lwait*1000);
-        drain(out rdata, to);
+        drain(out rdata, to, line);
         Thread.usleep(lwait*1000);
         if(verbose)
             stdout.printf("%s", (string)rdata);
