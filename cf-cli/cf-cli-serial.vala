@@ -400,7 +400,6 @@ public class MWSerial : Object
 
     private bool drain(out uint8 [] buf, int limit, string line)
     {
-        bool drained = true;
         uint8 c = 0;
         int nc = 0;
         int len = 0;
