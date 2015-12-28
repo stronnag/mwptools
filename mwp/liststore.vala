@@ -910,7 +910,7 @@ public class ListBox : GLib.Object
 
     public void set_speeds(bool flag)
     {
-        var dspd = MWPlanner.conf.nav_speed;
+        double dspd = MWPlanner.conf.nav_speed;
         int cnt = 0;
         if(speeddialog.get_speed(out dspd) == true)
         {
