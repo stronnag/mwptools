@@ -120,7 +120,7 @@ def encode_atti r, gpshd=false
   msg='$TA'
   hdr = ((gpshd) ? r[:gps_ground_course] : r[:heading]).to_i
 
-  sl = [r[:roll].to_i, r[:pitch].to_i, hdr].pack("s<s<s<")
+  sl = [r[:pitch].to_i, r[:roll].to_i, hdr].pack("s<s<s<")
   msg << sl << mksum(sl)
   msg
 end

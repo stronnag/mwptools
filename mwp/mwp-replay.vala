@@ -131,8 +131,8 @@ public class ReplayThread : GLib.Object
     private size_t serialise_atti(MSP_ATTITUDE b, uint8 []tx)
     {
         uint8 *p;
-        p = serialise_u16(tx, b.angx);
-        p = serialise_u16(p, b.angy);
+        p = serialise_i16(tx, b.angx);
+        p = serialise_i16(p, b.angy);
         p = serialise_u16(p, b.heading);
         return (p - &tx[0]);
     }

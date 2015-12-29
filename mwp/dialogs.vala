@@ -1120,12 +1120,12 @@ public class NavStatus : GLib.Object
             have_hdr = true;
             if(visible)
             {
-               var str = "%d° / %d° / %d°".printf(a.pitch, a.roll, hdr);
+               var str = "%d° / %d° / %d°".printf(a.roll, a.pitch, hdr);
                 nav_attitude_label.set_label(str);
             }
             if(Logger.is_logging)
             {
-                Logger.attitude(a.pitch,a.roll,hdr);
+                Logger.attitude(a.roll,a.pitch,hdr);
             }
         }
     }
