@@ -1,6 +1,7 @@
 VALAC=valac
-OPTS=-X -O2 --target-glib=2.36 --thread
 LOPTS=-X -lm
+
+include ../common.mk
 
 all: ublox-test
 

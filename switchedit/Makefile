@@ -1,7 +1,7 @@
 VALAC=valac
-OPTS +=-X -O2 --target-glib=2.36
-#LOPTS=-X -lbluetooth
 LOPTS=
+include ../common.mk
+
 APP=switchedit
 SRC=$(APP).vala
 COMMON=../common/mwc.vala ../common/serial-device.vala ../common/utils.vala ../common/mspcmd.vala ../common/mspmsg.vala ../common/mwplog.vala

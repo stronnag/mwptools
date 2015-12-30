@@ -1,6 +1,7 @@
 VALAC=valac
-OPTS +=-X -O2 --target-glib=2.36
-#LOPTS=-X -lbluetooth
+
+include ../common.mk
+
 LOPTS=
 APP=pidedit
 SRC=$(APP).vala

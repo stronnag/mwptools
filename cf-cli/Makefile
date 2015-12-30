@@ -1,5 +1,7 @@
 VALAC=valac
-OPTS+=-X -O2 --target-glib=2.36 --thread
+
+include ../common.mk
+
 LOPTS=-X -lm
 S1=cf-cli.vala cf-cli-serial.vala cserial.c
 S2=cf-cli-ui.vala cf-cli-serial.vala cf-cli.resources.c cserial.c devmanager_linux.vala
