@@ -1,6 +1,4 @@
 VALAC=valac
-OPTS=-X -O2 --target-glib=2.36
-
 
 include ../common.mk
 
