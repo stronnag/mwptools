@@ -52,13 +52,13 @@ clean:
 
 install: install-local
 
-install-local:
+install-local: $(APPS)
 	../installer.sh mwp local
 ifdef QPROXY
 	../installer.sh qproxy local
 endif
 
-install-system: mwp
+install-system: $(APPS)
 	../installer.sh mwp system
 ifdef QPROXY
 	../installer.sh qproxy system
