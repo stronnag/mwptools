@@ -12,6 +12,8 @@ atest: atest.vala
 clean:
 	rm -f mwp_ath atest
 
+install: install-local
+
 install-local: mwp_ath
 	../installer.sh mwp_ath local
 

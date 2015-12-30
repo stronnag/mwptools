@@ -72,7 +72,7 @@
     </key>
 
     <key type="b" name="show-scary-warning">
-      <default>true</default>
+      <default>false</default>
       <summary>Scary warning</summary>
       <description>Scary warning</description>
     </key>
@@ -121,7 +121,7 @@
     </key>
 
     <key type="b" name="auto-follow">
-      <default>false</default>
+      <default>true</default>
       <summary>set auto-follow on start</summary>
       <description>set auto-follow on start</description>
     </key>
@@ -144,7 +144,6 @@
       <description>e.g. xscreensaver-command -deactivate</description>
     </key>
 
-
     <key name="atstart" type="s">
       <summary>Something that is executed at startup</summary>
       <default>""</default>
@@ -160,7 +159,7 @@
 
     <key name="fctype" type="s">
       <summary>Force fc type</summary>
-      <default>""</default>
+      <default>"auto"</default>
       <description></description>
     </key>
 

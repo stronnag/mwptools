@@ -412,6 +412,7 @@ public class MWSerial : Object
         {
             if((commode & ComMode.STREAM) == ComMode.STREAM)
             {
+#if HAVE_FIONREAD
                 int avb=0;
                 int ires;
                 ires = Posix.ioctl(fd,Linux.Termios.FIONREAD,&avb);
@@ -425,6 +426,11 @@ public class MWSerial : Object
                 }
                 else
                     return true;
+#else
+                res = Posix.read(fd,buf,128);
+                if(res == 0)
+                    return true;
+#endif
             }
             else
             {

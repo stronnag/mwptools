@@ -1,6 +1,6 @@
 VALAC=valac
 OPTS=-X -O2 --target-glib=2.36
-#LOPTS=-X -lm -X -lbluetooth
+
 LOPTS=-X -lm
 APP=mspsim
 SRC=$(APP).vala
