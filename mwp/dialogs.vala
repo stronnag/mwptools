@@ -312,7 +312,9 @@ public class FlightBox : GLib.Object
                 fh1 = 96;
 
             var fh3 = fh1;
-            var falt = NavStatus.alti.estalt/100;
+            double falt = (double)NavStatus.alti.estalt/100.0;
+            if(falt < 0.0 || falt > 20.0)
+                falt = Math.round(falt);
 
             if(falt > 9999.0 || falt < -999.0)
                 fh3 = fh3 * 60/100;

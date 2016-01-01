@@ -4,7 +4,11 @@ include ../common.mk
 
 LOPTS=-X -lm
 S1=cf-cli.vala cf-cli-serial.vala cserial.c
-S2=cf-cli-ui.vala cf-cli-serial.vala cf-cli.resources.c cserial.c devmanager_linux.vala
+ifeq ($(XOS),Linux)
+ S2=cf-cli-ui.vala cf-cli-serial.vala cf-cli.resources.c cserial.c devmanager_linux.vala
+else
+ S2=cf-cli-ui.vala cf-cli-serial.vala cf-cli.resources.c cserial.c devmanager-win32.vala
+endif
 all: cf-cli cf-cli-ui
 
 cf-cli: $(S1)
