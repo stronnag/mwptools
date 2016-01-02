@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 APP=$1
 LOC=$2
@@ -49,6 +49,8 @@ fi
 * Ensure you have set the following environment variable
 * (add to $HOME/.bashrc, or equivalent for your shell)
 * export XDG_DATA_DIRS=/usr/share:$HOME/.local/share:
+* (or FreeBSD)
+* export XDG_DATA_DIRS=/usr/local/share:$HOME/.local/share:
 ***************************************************************
 _EOM
 exit 0
