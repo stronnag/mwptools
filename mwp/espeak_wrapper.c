@@ -1,6 +1,6 @@
 
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <espeak/speak_lib.h>
 
 void espeak_init(char *voice)

@@ -246,6 +246,8 @@ public class MWSerial : Object
                 }
             }
             fd = skt.fd;
+            Posix.fcntl(fd, Posix.F_SETFL, Posix.fcntl(fd, Posix.F_GETFL, 0) | Posix.O_NONBLOCK);
+
         } catch(Error e) {
             MWPLog.message("socket: %s", e.message);
             fd = -1;

@@ -19,6 +19,7 @@
 using Gtk;
 
 extern double get_locale_double(string str);
+extern unowned string ptsname(int fd);
 
 public struct LegItem
 {
@@ -800,13 +801,14 @@ public class MWSim : GLib.Object
         {
             if(udport == 0)
             {
+                string s;
                 fd = Posix.posix_openpt(Posix.O_RDWR);
                 Posix.ttyname_r(fd, buf);
-                stderr.printf("%s => fd %d\n", (string)buf, fd);
                 Posix.grantpt(fd);
                 Posix.unlockpt(fd);
-                Linux.Termios.ptsname_r (fd, buf);
-                slave.set_text((string)buf);
+                s = ptsname (fd);
+                stderr.printf("%s => fd %d slave %s\n", (string)buf, fd, s);
+                slave.set_text(s);
                 msp.open_fd(fd,115200);
             }
             else
