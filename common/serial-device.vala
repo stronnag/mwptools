@@ -194,6 +194,7 @@ public class MWSerial : Object
 
     private void setup_ip(string host, uint16 port)
     {
+        fd = -1;
         try
         {
             baudrate = 0;
@@ -211,6 +212,7 @@ public class MWSerial : Object
                                                         (uint16)port);
                         skt = new Socket (fam, SocketType.DATAGRAM, SocketProtocol.UDP);
                         skt.bind (sa, true);
+                        fd = skt.fd;
                         break;
                     }
                 } catch (Error e) {
@@ -219,6 +221,8 @@ public class MWSerial : Object
             }
             else
             {
+                SocketProtocol sproto;
+                SocketType stype;
                 var resolver = Resolver.get_default ();
                 var addresses = resolver.lookup_by_name (host, null);
                 foreach (var address in addresses)
@@ -227,8 +231,6 @@ public class MWSerial : Object
                     var fam = sockaddr.get_family();
                     if(force4 && fam != SocketFamily.IPV4)
                         continue;
-                    SocketType stype;
-                    SocketProtocol sproto;
 
                     if((commode & ComMode.STREAM) == ComMode.STREAM)
                     {
@@ -242,12 +244,16 @@ public class MWSerial : Object
                     }
                     skt = new Socket (fam, stype, sproto);
                     if (skt.connect(sockaddr))
+                    {
+                        fd = skt.fd;
+                        if(stype == SocketType.STREAM)
+                            Posix.fcntl(fd, Posix.F_SETFL,
+                                        Posix.fcntl(fd, Posix.F_GETFL, 0) |
+                                        Posix.O_NONBLOCK);
                         break;
+                    }
                 }
             }
-            fd = skt.fd;
-            Posix.fcntl(fd, Posix.F_SETFL, Posix.fcntl(fd, Posix.F_GETFL, 0) | Posix.O_NONBLOCK);
-
         } catch(Error e) {
             MWPLog.message("socket: %s", e.message);
             fd = -1;
