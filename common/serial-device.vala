@@ -229,7 +229,7 @@ public class MWSerial : Object
                 {
                     sockaddr = new InetSocketAddress (address, port);
                     var fam = sockaddr.get_family();
-                    stderr.printf("udp %s %s\n", address.to_string(), fam.to_string());
+
                     if(force4 && fam != SocketFamily.IPV4)
                         continue;
 
@@ -798,10 +798,8 @@ public class MWSerial : Object
             size = Posix.write(fd, buf, count);
         else
         {
-            uint8 [] sbuf = new uint8[count];
-            for(var i =0; i< count; i++)
-                sbuf[i] = *(((uint8*)buf)+i);
-
+            unowned uint8[] sbuf = (uint8[]) buf;
+            sbuf.length = (int)count;
             try
             {
                 size = skt.send_to (sockaddr, sbuf);
