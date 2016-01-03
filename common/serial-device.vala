@@ -229,6 +229,7 @@ public class MWSerial : Object
                 {
                     sockaddr = new InetSocketAddress (address, port);
                     var fam = sockaddr.get_family();
+                    stderr.printf("udp %s %s\n", address.to_string(), fam.to_string());
                     if(force4 && fam != SocketFamily.IPV4)
                         continue;
 
@@ -243,14 +244,29 @@ public class MWSerial : Object
                         sproto = SocketProtocol.UDP;
                     }
                     skt = new Socket (fam, stype, sproto);
-                    if (skt.connect(sockaddr))
+                    if(skt != null)
                     {
                         fd = skt.fd;
-                        if(stype == SocketType.STREAM)
-                            Posix.fcntl(fd, Posix.F_SETFL,
-                                        Posix.fcntl(fd, Posix.F_GETFL, 0) |
-                                        Posix.O_NONBLOCK);
-                        break;
+                        if(fd != -1)
+                        {
+                            if(stype == SocketType.STREAM)
+                            {
+                                if (skt.connect(sockaddr))
+                                {
+                                    Posix.fcntl(fd, Posix.F_SETFL,
+                                                Posix.fcntl(fd, Posix.F_GETFL, 0) |
+                                                Posix.O_NONBLOCK);
+                                    break;
+                                }
+                                else
+                                {
+                                    skt.close();
+                                    fd = -1;
+                                }
+                            }
+                            else
+                                break;
+                        }
                     }
                 }
             }
@@ -790,11 +806,11 @@ public class MWSerial : Object
             {
                 size = skt.send_to (sockaddr, sbuf);
             } catch(Error e) {
-                debug("send: %s", e.message);
+                stderr.printf("err::send: %s", e.message);
                 size = 0;
             }
         }
-        debug("sent %d bytes\n", (int)size);
+        debug("sent %d %d bytes\n", (int)size, (int)count);
         if(rawlog == true)
         {
             log_raw('o',buf,(int)count);
