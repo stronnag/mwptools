@@ -1,0 +1,4 @@
+mwptools as of 2016-01-01 also builds and runs on FreeBSD (tested on
+11.0).
+
+Just the small matter of installing all the dependencies.
