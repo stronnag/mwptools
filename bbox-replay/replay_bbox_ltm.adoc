@@ -226,7 +226,7 @@ file. If this is not given, the first recording (index 1) is used.
 . Hex6+
 
 ----force-gps-heading, -g:: Uses the GPS ground course for vehicle
-    orientation (instead of compass). For vehicles with a compass
+    orientation (instead of compass). For vehicles without a compass
     (e.g. fixed wing).
 
 --force-ipv4, -4:: Forces IPv4 (for dual stack systems without full
