@@ -617,6 +617,15 @@ public class MWPlanner : Gtk.Application {
                 }
             });
 
+        menuop = builder.get_object ("_reboot_") as Gtk.MenuItem;
+        menuop.activate.connect(() =>
+            {
+                if(msp.available)
+                {
+                    send_cmd(MSP.Cmds.REBOOT,null, 0);
+                }
+            });
+
         msview = new MapSourceDialog(builder);
         menuop =  builder.get_object ("menu_maps") as Gtk.MenuItem;
         menuop.activate.connect(() => {
@@ -1235,8 +1244,8 @@ public class MWPlanner : Gtk.Application {
     {
         if(e != null)
         {
+            MWPLog.message("message => %s\n", e);
             statusbar.push(context_id, e);
-            MWPLog.message("%s\n", e);
             bleet_sans_merci("beep-sound.ogg");
         }
         else
@@ -1839,7 +1848,7 @@ public class MWPlanner : Gtk.Application {
                         {
                             if(gpscnt > 0)
                             {
-                                set_error_status("");
+                                set_error_status(null);
                                 gpscnt = 0;
                             }
                             sflags |= NavStatus.SPK.GPS;
@@ -1910,16 +1919,19 @@ public class MWPlanner : Gtk.Application {
                                     MWPLog.message("Start poller\n");
                                     tcycle = 0;
                                     dopoll = true;
+                                    start_audio();
                                 }
                                 else
                                 {
-                                    MWPLog.message("Retry GPS\n");
+                                    MWPLog.message("Retry GPS %d\n", gpscnt);
                                     have_status = false;
-                                    add_cmd(MSP.Cmds.STATUS,null,0, 1000);
+                                    Timeout.add_seconds(1, () => {
+                                            send_cmd(MSP.Cmds.STATUS,null,0);
+                                            return false;
+                                        });
                                 }
                             }
                         }
-                        start_audio();
                         report_bits(bxflag);
                     }
 
@@ -2655,6 +2667,18 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.MAVLINK_MSG_ID_RADIO_STATUS:
                 break;
+            case MSP.Cmds.REBOOT:
+                MWPLog.message("Reboot scheduled\n");
+                serial_doom(conbutton);
+                Timeout.add(4000, () => {
+                        if(!msp.available && !autocon)
+                        {
+                            MWPLog.message("Reconnecting\n");
+                            connect_serial();
+                        }
+                        return false;
+                    });
+                break;
 
             default:
                 MWPLog.message ("** Unknown response %d\n", cmd);
@@ -3089,6 +3113,7 @@ public class MWPlanner : Gtk.Application {
             craft.remove_marker();
         }
         npos = false;
+        set_error_status(null);
     }
 
     private void init_sstats()

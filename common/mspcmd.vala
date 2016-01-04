@@ -63,6 +63,7 @@ public class MSP : Object
                 // Cleanflight extensions
         MODE_RANGES = 34, // FC out message Returns all mode ranges
         SET_MODE_RANGE = 35,   // FC in message Sets a single mode range
+        REBOOT = 68,
 
         INFO_WP = 400,
 
