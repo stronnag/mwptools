@@ -1460,6 +1460,66 @@ public class MWPlanner : Gtk.Application {
         send_cmd(req, null, 0);
     }
 
+    private ulong build_pollreqs()
+    {
+        ulong reqsize = 0;
+        requests.resize(0);
+
+        requests += MSP.Cmds.STATUS;
+        reqsize += MSize.MSP_STATUS;
+
+        requests += MSP.Cmds.ANALOG;
+        reqsize += MSize.MSP_ANALOG;
+
+        sflags = NavStatus.SPK.Volts;
+
+        if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
+        {
+            sflags |= NavStatus.SPK.GPS;
+            if((navcap & NAVCAPS.NAVSTATUS) == NAVCAPS.NAVSTATUS)
+            {
+                requests += MSP.Cmds.NAV_STATUS;
+                reqsize += MSize.MSP_NAV_STATUS;
+            }
+            requests += MSP.Cmds.RAW_GPS;
+            requests += MSP.Cmds.COMP_GPS;
+            if(naze32)
+                requests += MSP.Cmds.GPSSVINFO;
+            reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS);
+
+            if(craft == null)
+            {
+                craft = new Craft(view, vi.mrtype,norotate, gps_trail);
+                craft.park();
+            }
+            gpscnt = 0;
+        }
+        else
+        {
+            set_error_status("No GPS detected");
+            MWPLog.message("no gps, sensor = 0x%x\n", sensor);
+            gpscnt++;
+        }
+
+        if(force_mag)
+            usemag = true;
+        else
+            usemag = ((sensor & MSP.Sensors.MAG) == MSP.Sensors.MAG);
+        if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
+        {
+            requests += MSP.Cmds.ATTITUDE;
+            reqsize += MSize.MSP_ATTITUDE;
+        }
+
+        if((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO)
+        {
+            sflags |= NavStatus.SPK.BARO;
+            requests += MSP.Cmds.ALTITUDE;
+            reqsize += MSize.MSP_ALTITUDE;
+        }
+        return reqsize;
+    }
+
     private void armed_processing(uint32 flag)
     {
         if(armed == 0)
@@ -1833,71 +1893,7 @@ public class MWPlanner : Gtk.Application {
                            && thr == null)
                             add_cmd(MSP.Cmds.NAV_CONFIG,null,0,1000);
 
-                        ulong reqsize = 0;
-                        requests.resize(0);
-
-                        requests += MSP.Cmds.STATUS;
-                        reqsize += MSize.MSP_STATUS;
-
-                        requests += MSP.Cmds.ANALOG;
-                        reqsize += MSize.MSP_ANALOG;
-
-                        sflags = NavStatus.SPK.Volts;
-
-                        if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
-                        {
-                            if(gpscnt > 0)
-                            {
-                                set_error_status(null);
-                                gpscnt = 0;
-                            }
-                            sflags |= NavStatus.SPK.GPS;
-                            if((navcap & NAVCAPS.NAVSTATUS) == NAVCAPS.NAVSTATUS)
-                            {
-                                requests += MSP.Cmds.NAV_STATUS;
-                                reqsize += MSize.MSP_NAV_STATUS;
-                            }
-                            requests += MSP.Cmds.RAW_GPS;
-                            requests += MSP.Cmds.COMP_GPS;
-                            if(naze32)
-                                requests += MSP.Cmds.GPSSVINFO;
-                            reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS);
-
-                            if(craft == null)
-                            {
-                                craft = new Craft(view, vi.mrtype,norotate, gps_trail);
-                                craft.park();
-                            }
-                        }
-                        else
-                        {
-                            set_error_status("No GPS detected");
-                            MWPLog.message("no gps, sensor = 0x%x\n", sensor);
-                            if(gpscnt < 2)
-                            {
-                                gpscnt++;
-                            }
-                            else
-                                gpscnt = 0;
-                        }
-
-                        if(force_mag)
-                            usemag = true;
-                        else
-                            usemag = ((sensor & MSP.Sensors.MAG) == MSP.Sensors.MAG);
-                        if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
-                        {
-                            requests += MSP.Cmds.ATTITUDE;
-                            reqsize += MSize.MSP_ATTITUDE;
-                        }
-
-                        if((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO)
-                        {
-                            sflags |= NavStatus.SPK.BARO;
-                            requests += MSP.Cmds.ALTITUDE;
-                            reqsize += MSize.MSP_ALTITUDE;
-                        }
-
+                        var reqsize = build_pollreqs();
                         var nreqs = requests.length;
                         int timeout = (int)(looptimer*1000 / nreqs);
 
@@ -1914,25 +1910,22 @@ public class MWPlanner : Gtk.Application {
                         {
                             if  (thr == null)
                             {
-                                if(gpscnt == 0)
-                                {
-                                    MWPLog.message("Start poller\n");
-                                    tcycle = 0;
-                                    dopoll = true;
-                                    start_audio();
-                                }
-                                else
-                                {
-                                    MWPLog.message("Retry GPS %d\n", gpscnt);
-                                    have_status = false;
-                                    Timeout.add_seconds(1, () => {
-                                            send_cmd(MSP.Cmds.STATUS,null,0);
-                                            return false;
-                                        });
-                                }
+                                MWPLog.message("Start poller\n");
+                                tcycle = 0;
+                                dopoll = true;
+                                start_audio();
                             }
                         }
                         report_bits(bxflag);
+                    }
+                    else
+                    {
+                        if(gpscnt != 0 && ((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS))
+                        {
+                            MWPLog.message("GPS appears\n");
+                            set_error_status(null);
+                            build_pollreqs();
+                        }
                     }
 
                     // acro/horizon/angle changed
