@@ -32,7 +32,12 @@ public class Craft : GLib.Object
     private Champlain.PathLayer path;
     private Champlain.MarkerLayer pmlayer;
     private int npath = 0;
-    private static Clutter.Color cyan = { 0,0xff,0xff, 0xa0 };
+    private static Clutter.Color trk_cyan = { 0,0xff,0xff, 0xa0 };
+    private static Clutter.Color trk_green = { 0,0xff,0, 0xa0 };
+    private static Clutter.Color trk_yellow = { 0xff,0xff,0, 0xa0 };
+    private static Clutter.Color trk_white = { 0xff,0xff,0xff, 0xa0 };
+    private Clutter.Color path_colour;
+
     private static Champlain.Label homep ;
     private static Champlain.Label posp ;
     private static Champlain.Label rthp ;
@@ -97,7 +102,11 @@ public class Craft : GLib.Object
         ici = new Champlain.Point.full(15.0, red);
 
         path = new Champlain.PathLayer();
-        path.set_stroke_color(cyan);
+        path_colour = trk_cyan;
+
+        Clutter.Color ladyjane = { 0xa0,0xa0,0xa0, 0xa0 };
+        path.set_stroke_color(ladyjane);
+
         layer = new Champlain.MarkerLayer();
         pmlayer = new Champlain.MarkerLayer();
         if(trail)
@@ -197,7 +206,7 @@ public class Craft : GLib.Object
         if(trail)
         {
             Champlain.Point marker;
-            marker = new Champlain.Point.full(5.0, cyan);
+            marker = new Champlain.Point.full(5.0, path_colour);
             marker.set_location (lat,lon);
             pmlayer.add_marker(marker);
             path.add_node(marker);
@@ -219,6 +228,11 @@ public class Craft : GLib.Object
         var lat = view.y_to_latitude(y);
         var lon = view.x_to_longitude(x);
         icon.set_location (lat, lon);
+    }
+
+    public void set_normal()
+    {
+        path_colour = trk_cyan;
     }
 
     public void special_wp(Special wpno, double lat, double lon)
@@ -252,6 +266,7 @@ public class Craft : GLib.Object
                     pmlayer.add_marker(posp);
                 }
                 m = posp;
+                path_colour = trk_green;
                 break;
             case Special.RTH:
                 if(rthp == null)
@@ -264,6 +279,7 @@ public class Craft : GLib.Object
                     pmlayer.add_marker(rthp);
                 }
                 m = rthp;
+                path_colour = trk_yellow;
                 break;
             case Special.WP:
                 if(wpp == null)
@@ -276,6 +292,10 @@ public class Craft : GLib.Object
                     pmlayer.add_marker(wpp);
                 }
                 m = wpp;
+                path_colour = trk_white;
+                break;
+            default:
+                path_colour = trk_cyan;
                 break;
         }
         if(m != null)

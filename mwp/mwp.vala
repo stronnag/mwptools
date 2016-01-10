@@ -1961,7 +1961,8 @@ public class MWPlanner : Gtk.Application {
                                           (int)duration);
                             want_special |= POSMODE.WP;
                         }
-
+                        else if ((xbits != bxflag) && craft != null)
+                            craft.set_normal();
                     }
                     xbits = bxflag;
                 }
@@ -2488,6 +2489,8 @@ public class MWPlanner : Gtk.Application {
                         want_special |= POSMODE.WP;
                     else if(ltmflags == 13)
                         want_special |= POSMODE.RTH;
+                    else
+                        craft.set_normal();
                 }
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
                 set_bat_stat((uint8)((sf.vbat + 50) / 100));
@@ -3004,6 +3007,7 @@ public class MWPlanner : Gtk.Application {
 
     private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, int wait=1000)
     {
+        remove_tid(ref cmdtid);
         cmdtid = Timeout.add(wait, () => {
                 MWPLog.message(" ** repeat %s\n", cmd.to_string());
                 if ((cmd == MSP.Cmds.API_VERSION) ||

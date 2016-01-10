@@ -85,7 +85,7 @@ public class MWSerial : Object
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", null},
-        { "output-file", 'o', 0, OptionArg.STRING, out defname, "output file name", null},
+        { "out", 'o', 0, OptionArg.STRING, out defname, "output file name", null},
         { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", null},
         { "line-delay", 0, 0, OptionArg.INT, out lwait, "(ms)", null},
         { "profiles", 'p', 0, OptionArg.STRING, out profiles, "Profile (0-2)", null},
