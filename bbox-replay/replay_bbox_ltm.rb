@@ -353,13 +353,15 @@ IO.popen(cmd,'rt') do |pipe|
   abort 'Not an INAV log' if hdrs[:gps_coord0].nil?
 
   csv.each do |row|
+    next if row[:gps_numsat].to_i == 0
+    next if row[:gps_coord0].to_f == 0.0 && row[:gps_coord1].to_f == 0.0
     us = row[:time_us].to_i
     if origin.nil? and row[:gps_numsat].to_i > 4
       origin = {:lat => row[:gps_coord0], :lon => row[:gps_coord1],
-	  :alt => row[:gps_altitude]}
+	:alt => row[:gps_altitude]}
       msg = encode_origin origin
       send_msg dev, msg
-   end
+    end
     if us > nv
       nv = us + intvl
       icnt  = (icnt + 1) % 10

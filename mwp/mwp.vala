@@ -2730,7 +2730,7 @@ public class MWPlanner : Gtk.Application {
     {
         if((want_special & POSMODE.HOME) != 0)
         {
-            MWPLog.message("Set home\n");
+            MWPLog.message("Set home %f %f\n", lat, lon);
             want_special &= ~POSMODE.HOME;
             home_pos.lat = xlat = lat;
             home_pos.lon = xlon = lon;
