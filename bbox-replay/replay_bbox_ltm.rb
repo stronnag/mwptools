@@ -354,10 +354,12 @@ IO.popen(cmd,'rt') do |pipe|
 
   csv.each do |row|
     us = row[:time_us].to_i
-    if origin.nil? and row[:gps_numsat].to_i > 5
+    if origin.nil? and row[:gps_numsat].to_i > 4
       origin = {:lat => row[:gps_coord0], :lon => row[:gps_coord1],
 	  :alt => row[:gps_altitude]}
-    end
+      msg = encode_origin origin
+      send_msg dev, msg
+   end
     if us > nv
       nv = us + intvl
       icnt  = (icnt + 1) % 10

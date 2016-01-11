@@ -2095,6 +2095,7 @@ public class MWPlanner : Gtk.Application {
                         {
                             sflags |=  NavStatus.SPK.GPS;
                             want_special |= POSMODE.HOME;
+                            stderr.printf("** Home from RAW\n");
                             navstatus.cg_on();
                         }
                     }
@@ -2489,9 +2490,13 @@ public class MWPlanner : Gtk.Application {
                         want_special |= POSMODE.WP;
                     else if(ltmflags == 13)
                         want_special |= POSMODE.RTH;
-                    else
+                    else if (ltmflags < 5)
                         craft.set_normal();
+//                  MWPLog.message("New LTM Mode %d\n", ltmflags);
                 }
+                if(want_special != 0 && npos)
+                    process_pos_states(xlat,xlon, 0);
+
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
                 set_bat_stat((uint8)((sf.vbat + 50) / 100));
             }

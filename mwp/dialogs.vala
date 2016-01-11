@@ -1228,7 +1228,7 @@ public class NavStatus : GLib.Object
             if(xfmode != fmode)
             {
                 xfmode = fmode;
-                    // only speak modes that are in N-Frame
+                    // only speak modes that are not in N-Frame
                 if(mt_voice && xfmode > 0 && xfmode < 5)
                 {
                     mt.message(AudioThread.Vox.LTM_MODE,true);
