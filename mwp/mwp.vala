@@ -1554,6 +1554,7 @@ public class MWPlanner : Gtk.Application {
             {
                 if(armed == 1 && craft != null)
                 {
+                    npos = false;
                     craft.init_trail();
                 }
             }
@@ -2462,6 +2463,7 @@ public class MWPlanner : Gtk.Application {
                         MWPLog.message("Disarm from LTM!\n");
                         mwflags = 0;
                         armed = 0;
+                        npos = false;
                     }
                 }
                 if(ltmflags == 2)
