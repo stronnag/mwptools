@@ -499,9 +499,11 @@ public class MWSerial : Object
         stdout.printf("%s @ %d\n", devname, brate);
 
         Timeout.add(100, () => {
-                var str="";
 
-                if(brate == 19200)
+                var str="";
+                if(brate == 9600)
+                    str = "$PUBX,41,1,0003,0001,9600,0*16\r\n";
+                else if(brate == 19200)
                     str = "$PUBX,41,1,0003,0001,19200,0*23\r\n";
                 else if (brate == 38400)
                     str= "$PUBX,41,1,0003,0001,38400,0*26\r\n";
@@ -522,7 +524,7 @@ public class MWSerial : Object
                 s.ublox_write(s.fd, sbas);
                 s.timer = new Timer ();
                 s.ublox_write(s.fd, v7init);
-                Timeout.add(100, () => {
+                Timeout.add(500, () => {
                         if(ureset)
                         {
                             stderr.puts("send hard reset\n");
