@@ -53,9 +53,60 @@ public struct ubx_nav_velned {
 }
 
 [CCode (cheader_filename = "ublox.h")]
+public struct ubx_nav_timeutc {
+  uint32 itow;  // GPS msToW
+  uint32 tacc;
+  int32  nano;
+  uint16 year;
+  uint8 month;
+  uint8 day;
+  uint8 hour;
+  uint8 min;
+  uint8 sec;
+  uint8 valid;
+}
+
+
+[CCode (cheader_filename = "ublox.h")]
+public struct ubx_nav_pvt {
+    uint32 time; // GPS msToW
+    uint16 year;
+    uint8 month;
+    uint8 day;
+    uint8 hour;
+    uint8 min;
+    uint8 sec;
+    uint8 valid;
+    uint32 tAcc;
+    int32 nano;
+    uint8 fix_type;
+    uint8 fix_status;
+    uint8 reserved1;
+    uint8 satellites;
+    int32 longitude;
+    int32 latitude;
+    int32 altitude_ellipsoid;
+    int32 altitude_msl;
+    uint32 horizontal_accuracy;
+    uint32 vertical_accuracy;
+    int32 ned_north;
+    int32 ned_east;
+    int32 ned_down;
+    int32 speed_2d;
+    int32 heading_2d;
+    uint32 speed_accuracy;
+    uint32 heading_accuracy;
+    uint16 position_DOP;
+    uint16 reserved2;
+    uint16 reserved3;
+}
+
+[CCode (cheader_filename = "ublox.h")]
 public struct  ublox_buffer {
   ubx_nav_posllh posllh;
   ubx_nav_solution solution;
   ubx_nav_velned velned;
-  uint8 [] xbytes;
+  ubx_nav_timeutc timeutc;
+  ubx_nav_pvt pvt;
+  uint8 xbytes[400];
 }
