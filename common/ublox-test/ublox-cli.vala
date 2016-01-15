@@ -48,6 +48,7 @@ public class MWSerial : Object
     private uint8 _class;
     private unowned ublox_buffer _buffer;
     public int gpsvers = 0;
+    public Timer timer;
 
     private static string devname;
     private static int brate = 38400;
@@ -389,6 +390,8 @@ public class MWSerial : Object
         }
         else if(_class == 0x0a && _msg_id == 4)
         {
+            var dt = timer.elapsed ();
+            stderr.printf("Version info after %fs\n", dt);
             uint8 v1[30];
             uint8 v2[10];
             for(var j = 0; j < 30; j++)
@@ -517,6 +520,7 @@ public class MWSerial : Object
                 }
                 s.set_rate(brate);
                 s.ublox_write(s.fd, sbas);
+                s.timer = new Timer ();
                 s.ublox_write(s.fd, v7init);
                 Timeout.add(100, () => {
                         if(ureset)
