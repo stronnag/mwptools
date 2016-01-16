@@ -1,5 +1,7 @@
 VALAC=valac
-OPTS+=-X -O2 --thread --target-glib=2.36
+
+include ../../common.mk
+
 
 APP=ublox-geo
 CLI=ublox-cli
@@ -7,7 +9,7 @@ CLI=ublox-cli
 all: $(APP) $(CLI)
 
 ublox-cli: ublox-cli.vala ublox.vapi ublox.h
-	$(VALAC) --pkg posix --pkg gio-2.0 --pkg posix \
+	$(VALAC)  $(DOPTS) $(OPTS)  --pkg posix --pkg gio-2.0 --pkg posix \
 		ublox.vapi ublox-cli.vala mwplog.vala -o ublox-cli
 
 
@@ -21,7 +23,7 @@ PKGS= --pkg gtk+-3.0 --pkg atk --pkg clutter-1.0 --pkg champlain-gtk-0.12 --pkg 
 LOPTS=-X -lm
 
 $(APP) : $(SRCS)
-	$(VALAC) $(OPTS) $(PKGS) -o $@  $^ $(LOPTS)
+	$(VALAC) $(OPTS) $(DOPTS) $(PKGS) -o $@  $^ $(LOPTS)
 
 clean:
 	rm -f ublox-cli ublox-geo  *~ *.vala.c
