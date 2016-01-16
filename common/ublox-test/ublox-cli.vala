@@ -54,12 +54,14 @@ public class MWSerial : Object
     private static int brate = 38400;
     private static bool ureset = false;
     private static bool force6 = false;
+    private static bool force_cf = false;
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", "/dev/ttyUSB0"},
         { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", "38400"},
         { "reset", 'r', 0, OptionArg.NONE, out ureset, "Reset device", null},
-        { "force-v6", '6', 0, OptionArg.NONE, out force6, "Force V6", null},
+        { "force-v6", '6', 0, OptionArg.NONE, out force6, "Force V6 init (vice ianv autodetect)", null},
+        { "force-CF", 'c', 0, OptionArg.NONE, out force_cf, "Force CF init (vice inav)", null},
         {null}
     };
 
@@ -488,6 +490,30 @@ public class MWSerial : Object
             0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0x64, 0x00, 0x01, 0x00, 0x01, 0x00, 0x7A, 0x12, // set rate to 10Hz (measurement period: 100ms, navigation rate: 1 cycle)
         };
 
+        uint8 [] cfinit = {
+            0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x03, 0x03, 0x00,           // CFG-NAV5 - Set engine settings
+            0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,           // Collected by resetting a GPS unit to defaults. Changing mode to Pedistrian and
+            0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x3C, 0x00, 0x00, 0x00,           // capturing the data from the U-Center binary console.
+            0x00, 0xC8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x17, 0xC2,
+
+                // DISABLE NMEA messages
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x05, 0x00, 0xFF, 0x19,           // VGS: Course over ground and Ground speed
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x03, 0x00, 0xFD, 0x15,           // GSV: GNSS Satellites in View
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x01, 0x00, 0xFB, 0x11,           // GLL: Latitude and longitude, with time of position fix and status
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x00, 0x00, 0xFA, 0x0F,           // GGA: Global positioning system fix data
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x02, 0x00, 0xFC, 0x13,           // GSA: GNSS DOP and Active Satellites
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x04, 0x00, 0xFE, 0x17,           // RMC: Recommended Minimum data
+
+                // Enable UBLOX messages
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x02, 0x01, 0x0E, 0x47,           // set POSLLH MSG rate
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x03, 0x01, 0x0F, 0x49,           // set STATUS MSG rate
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x06, 0x01, 0x12, 0x4F,           // set SOL MSG rate
+                //0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x30, 0x01, 0x3C, 0xA3,           // set SVINFO MSG rate (every cycle - high bandwidth)
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x30, 0x05, 0x40, 0xA7,           // set SVINFO MSG rate (evey 5 cycles - low bandwidth)
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x12, 0x01, 0x1E, 0x67,           // set VELNED MSG rate
+            0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0xC8, 0x00, 0x01, 0x00, 0x01, 0x00, 0xDE, 0x6A,             // set rate to 5Hz (measurement period: 200ms, navigation rate: 1 cycle)
+        };
+
         uint8 [] v7init = {0xB5, 0x62, 0x0A, 0x04, 0x00, 0x00, 0x0E, 0x34
         };
 
@@ -523,7 +549,9 @@ public class MWSerial : Object
                 s.set_rate(brate);
                 s.ublox_write(s.fd, sbas);
                 s.timer = new Timer ();
-                s.ublox_write(s.fd, v7init);
+                if(force_cf == false)
+                    s.ublox_write(s.fd, v7init);
+
                 Timeout.add(500, () => {
                         if(ureset)
                         {
@@ -532,15 +560,20 @@ public class MWSerial : Object
                         }
                         else
                         {
-                            if(force6 || s.gpsvers < 70000)
+                            if(force_cf)
+                            {
+                                s.ublox_write(s.fd, cfinit);
+                                stderr.printf("send CF init\n");
+                            }
+                            else if(force6 || s.gpsvers < 70000)
                             {
                                 s.ublox_write(s.fd, init);
-                                stderr.printf("send v6 init [%d]\n", s.gpsvers);
+                                stderr.printf("send INAV v6 init [%d]\n", s.gpsvers);
                             }
                             else
                             {
                                 s.ublox_write(s.fd, init7);
-                                stderr.printf("send v7 init [%d]\n", s.gpsvers);
+                                stderr.printf("send INAV v7 init [%d]\n", s.gpsvers);
                             }
                         }
                         return false;
