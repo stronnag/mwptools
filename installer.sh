@@ -20,12 +20,11 @@ cp $APP $BIN/
 
 [ -d $DATA/$APP ] || mkdir -p $DATA/$APP
 [ -e  ${APP}_icon.svg ] && ICON=${APP}_icon.svg || ICON=../common/mwp_icon.svg
-
 [ -e $APP.ui ] && cp $APP.ui $DATA/$APP/
 [ -e $ICON ] && cp $ICON $DATA/$APP/
 [ -e ../common/mwchooser.ui ] && cp ../common/mwchooser.ui  $DATA/$APP/
 [ -d $DATA/icons/hicolor/48x48/apps ] || mkdir -p $DATA/icons/hicolor/48x48/apps
-cp $ICON $DATA/icons/hicolor/48x48/apps/
+[ -e $ICON ] && cp $ICON $DATA/icons/hicolor/48x48/apps/
 [ -d pixmaps ] && cp -a pixmaps $DATA/mwp
 [ -f bleet.ogg ] && cp bleet.ogg $DATA/mwp
 [ -f bleet.ogg ] && cp bleet.ogg $DATA/mwp
