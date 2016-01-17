@@ -304,7 +304,7 @@ public class MWPlanner : GLib.Object {
 
             bool init_pos = false;
 
-            int upd = 0;
+            uint upd = 0;
             msp.gps_update.connect((u) => {
                     nsatlab.set_label("%d".printf(u.numsat));
                     gfixlab.set_label("%d".printf(u.fixt));
@@ -315,7 +315,8 @@ public class MWPlanner : GLib.Object {
                         gelevlab.set_label("%.1f".printf(u.gpsalt));
                         hacclab.set_label("%.1f".printf(u.gpshacc));
                         vacclab.set_label("%.1f".printf(u.gpsvacc));
-                        gps_set_lat_lon (u.gpslat, u.gpslon);
+                        if(upd % 5 == 0)
+                            gps_set_lat_lon (u.gpslat, u.gpslon);
 
                         upd++;
                         if(refok)
