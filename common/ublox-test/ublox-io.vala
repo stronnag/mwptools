@@ -407,15 +407,14 @@ public class MWSerial : Object
                     _course = (_buffer.velned.heading_2d / 100000.0);  // Heading 2D deg * 100000 rescaled to deg
                     break;
                 case 0x21: //NAV-TIMEUTC
-                    u.date = "%04d-%02d-%02d %02d:%02d:%02d %x".printf(
+                    u.date = "%04d-%02d-%02d %02d:%02d:%02d".printf(
                         _buffer.timeutc.year,
                         _buffer.timeutc.month,
                         _buffer.timeutc.day,
                         _buffer.timeutc.hour,
                         _buffer.timeutc.min,
-                        _buffer.timeutc.sec,
-                        _buffer.timeutc.valid);
-                    stderr.printf("%s\n", u.date);
+                        _buffer.timeutc.sec);
+                    stderr.printf("%s valid=%x\n", u.date, _buffer.timeutc.valid);
                     break;
                 default:
                     break;
@@ -521,8 +520,8 @@ public class MWSerial : Object
             0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x12, 0x01, 0x1E, 0x67,           // set VELNED MSG rate
             0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0xC8, 0x00, 0x01, 0x00, 0x01, 0x00, 0xDE, 0x6A,             // set rate to 5Hz (measurement period: 200ms, navigation rate: 1 cycle)
         };
-
-        string [] parts;
+       uint8 [] timeutc = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x21, 0x05, 0x31, 0x89 };
+       string [] parts;
 
         parts = devname.split ("@");
         if(parts.length == 2)
@@ -583,6 +582,7 @@ public class MWSerial : Object
                             {
                                 ublox_write(fd, init);
                                 stderr.printf("send INAV v6 init [%d]\n", gpsvers);
+                                ublox_write(fd, timeutc);
                             }
                             else
                             {
