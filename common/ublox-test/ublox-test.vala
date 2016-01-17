@@ -21,6 +21,63 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
+public class PosFormat : GLib.Object
+{
+    public static string lat(double _lat, bool dms)
+    {
+        if(dms == false)
+            return "%.6f".printf(_lat);
+        else
+            return position(_lat, "%02d:%02d:%04.1f%c", "NS");
+    }
+
+    public static string lon(double _lon, bool dms)
+    {
+        if(dms == false)
+            return "%.6f".printf(_lon);
+        else
+            return position(_lon, "%03d:%02d:%04.1f%c", "EW");
+    }
+
+    public static string pos(double _lat, double _lon, bool dms)
+    {
+        if(dms == false)
+            return "%.6f %.6f".printf(_lat,_lon);
+        else
+        {
+            var slat = lat(_lat,dms);
+            var slon = lon(_lon,dms);
+            StringBuilder sb = new StringBuilder ();
+            sb.append(slat);
+            sb.append(" ");
+            sb.append(slon);
+            return sb.str;
+        }
+    }
+
+    private static string position(double coord, string fmt, string ind)
+    {
+        var neg = (coord < 0.0);
+        var ds = Math.fabs(coord);
+        int d = (int)ds;
+        var rem = (ds-d)*3600.0;
+        int m = (int)rem/60;
+        double s = rem - m*60;
+        if ((int)s*10 == 600)
+        {
+            m+=1;
+            s = 0;
+        }
+        if (m == 60)
+        {
+            m = 0;
+            d+=1;
+        }
+        var q = (neg) ? ind.get_char(1) : ind.get_char(0);
+        return fmt.printf((int)d,(int)m,s,q);
+    }
+}
+
 public class MWPlanner : GLib.Object {
     public Builder builder;
     public Gtk.Window window;
@@ -34,9 +91,6 @@ public class MWPlanner : GLib.Object {
     private Gtk.CheckButton autocon_cb;
     private Gtk.ComboBoxText dev_entry;
     private GtkChamplain.Embed embed;
-    private static string serial;
-    private static bool autocon;
-    private static bool slow;
     private int autocount = 0;
     private double lx;
     private double ly;
@@ -46,12 +100,8 @@ public class MWPlanner : GLib.Object {
     private int npath =0;
     private static Clutter.Color cyan = { 0,0xff,0xff, 0xa0 };
     private Champlain.Point icon;
-const OptionEntry[] options = {
-        { "serial-device", 's', 0, OptionArg.STRING, out serial, "Serial device", null},
-        { "auto-connect", 'a', 0, OptionArg.NONE, out autocon, "auto-connect to first device", null},
-        { "slow-update", 'u', 0, OptionArg.NONE, out slow, "for slow video devices", null},
-        {null}
-    };
+    private int baud;
+    private bool autocon = false;
 
     private enum MS_Column {
         ID,
@@ -59,264 +109,262 @@ const OptionEntry[] options = {
         N_COLUMNS
     }
 
-
-    public MWPlanner ()
+    public MWPlanner (MWSerial s)
     {
-        builder = new Builder.from_resource("/org/mwptools/ublox/ublox-test.ui");
-        if(builder == null)
+        msp = s;
         {
-            stderr.printf ("Builder failed\n");
-            Posix.exit(255);
-        }
-
-        conf = new MWPSettings();
-        conf.read_settings();
-        builder.connect_signals (null);
-        window = builder.get_object ("window1") as Gtk.Window;
-        window.destroy.connect (Gtk.main_quit);
-
-        try {
-            Gdk.Pixbuf icon = new Gdk.Pixbuf.from_resource("/org/mwptools/ublox/ublox.png");
-            window.set_icon(icon);
-        } catch (Error e) {
-            stderr.printf ("icon: %s\n", e.message);
-        };
-
-        zoomer = builder.get_object ("spinbutton1") as Gtk.SpinButton;
-
-
-        var menuop = builder.get_object ("menu_quit") as Gtk.MenuItem;
-        menuop.activate.connect (() => {
-                Gtk.main_quit();
-            });
-
-
-        embed = new GtkChamplain.Embed();
-        view = embed.get_view();
-        view.set_reactive(true);
-        view.set_property("kinetic-mode", true);
-        zoomer.adjustment.value_changed.connect (() =>
+            builder = new Builder.from_resource("/org/mwptools/ublox/ublox-test.ui");
+            if(builder == null)
             {
-                int  zval = (int)zoomer.adjustment.value;
-                var val = view.get_zoom_level();
-                if (val != zval)
-                {
-                    view.set_property("zoom-level", zval);
-                }
-            });
-
-        var ref_fn = MWPUtils.find_conf_file(".ublox_ref.txt");
-        double reflat = 0;
-        double reflon = 0;
-        bool refok = false;
-        if(ref_fn != null)
-        {
-            try
-            {
-                var file = File.new_for_path (ref_fn);
-                var dis = new DataInputStream (file.read ());
-                var line = dis.read_line (null);
-                if(line != null)
-                    reflat = double.parse(line);
-                line = dis.read_line (null);
-                if(line != null)
-                    reflon= double.parse(line);
-                refok = (reflat != 0.0 && reflon != 0.0);
-                dis.close();
-            } catch (Error e)
-            {
-                stderr.puts(e.message);
-                stderr.putc('\n');
+                stderr.printf ("Builder failed\n");
+                Posix.exit(255);
             }
-        }
 
-        var scale = new Champlain.Scale();
-        scale.connect_view(view);
-        view.add_child(scale);
-        var lm = view.get_layout_manager();
-        lm.child_set(view,scale,"x-align", Clutter.ActorAlign.START);
-        lm.child_set(view,scale,"y-align", Clutter.ActorAlign.END);
-        view.set_keep_center_on_resize(true);
+            conf = new MWPSettings();
+            conf.read_settings();
+            baud = (int)conf.baudrate;
+            builder.connect_signals (null);
+            window = builder.get_object ("window1") as Gtk.Window;
+            window.destroy.connect (Gtk.main_quit);
 
-        var pane = builder.get_object ("paned1") as Gtk.Paned;
-        add_source_combo(conf.defmap);
-        pane.pack1 (embed,true,false);
+            try {
+                Gdk.Pixbuf icon = new Gdk.Pixbuf.from_resource("/org/mwptools/ublox/ublox.png");
+                window.set_icon(icon);
+            } catch (Error e) {
+                stderr.printf ("icon: %s\n", e.message);
+            };
 
-        window.key_press_event.connect( (s,e) =>
+            zoomer = builder.get_object ("spinbutton1") as Gtk.SpinButton;
+
+            var menuop = builder.get_object ("menu_quit") as Gtk.MenuItem;
+            menuop.activate.connect (() => {
+                    Gtk.main_quit();
+                });
+
+
+            embed = new GtkChamplain.Embed();
+            view = embed.get_view();
+            view.set_reactive(true);
+            view.set_property("kinetic-mode", true);
+            zoomer.adjustment.value_changed.connect (() =>
+                {
+                    int  zval = (int)zoomer.adjustment.value;
+                    var val = view.get_zoom_level();
+                    if (val != zval)
+                    {
+                        view.set_property("zoom-level", zval);
+                    }
+                });
+
+            var ref_fn = MWPUtils.find_conf_file(".ublox_ref.txt");
+            double reflat = 0;
+            double reflon = 0;
+            bool refok = false;
+            if(ref_fn != null)
             {
-                bool ret = true;
-
-                switch(e.keyval)
+                try
                 {
-                    case Gdk.Key.plus:
-                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
-                            ret = false;
-                        else
-                        {
-                            var val = view.get_zoom_level();
-                            var mmax = view.get_max_zoom_level();
-                            if (val != mmax)
-                                view.set_property("zoom-level", val+1);
-                        }
-                        break;
-                    case Gdk.Key.minus:
-                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
-                            ret = false;
-                        else
-                        {
-                            var val = view.get_zoom_level();
-                            var mmin = view.get_min_zoom_level();
-                            if (val != mmin)
-                                view.set_property("zoom-level", val-1);
-                        }
-                        break;
-
-                    case Gdk.Key.c:
-                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
-                            ret = false;
-                        else
-                        {
-                            init_trail();
-                        }
-                        break;
-
-                    default:
-                        ret = false;
-                        break;
+                    var file = File.new_for_path (ref_fn);
+                    var dis = new DataInputStream (file.read ());
+                    var line = dis.read_line (null);
+                    if(line != null)
+                        reflat = double.parse(line);
+                    line = dis.read_line (null);
+                    if(line != null)
+                        reflon= double.parse(line);
+                    refok = (reflat != 0.0 && reflon != 0.0);
+                    dis.close();
+                } catch (Error e)
+                {
+                    stderr.puts(e.message);
+                    stderr.putc('\n');
                 }
-                return ret;
-            });
+            }
 
+            var scale = new Champlain.Scale();
+            scale.connect_view(view);
+            view.add_child(scale);
+            var lm = view.get_layout_manager();
+            lm.child_set(view,scale,"x-align", Clutter.ActorAlign.START);
+            lm.child_set(view,scale,"y-align", Clutter.ActorAlign.END);
+            view.set_keep_center_on_resize(true);
 
-        var grid =  builder.get_object ("grid1") as Gtk.Grid;
+            var pane = builder.get_object ("paned1") as Gtk.Paned;
+            add_source_combo(conf.defmap);
+            pane.pack1 (embed,true,false);
 
-        pane.add2(grid);
-
-        view.notify["zoom-level"].connect(() => {
-                var val = view.get_zoom_level();
-                var zval = (int)zoomer.adjustment.value;
-                if (val != zval)
-                    zoomer.adjustment.value = (int)val;
-            });
-
-        embed.set_size_request(wd_map, ht_map);
-
-        autocon_cb = builder.get_object ("autocon_cb") as Gtk.CheckButton;
-
-        var poslabel = builder.get_object ("poslabel") as Gtk.Label;
-        var elapsedlab =  builder.get_object ("elapsedlab") as Gtk.Label;
-        var nsatlab = builder.get_object ("nsatlab") as Gtk.Label;
-        var glatlab = builder.get_object ("glatlab") as Gtk.Label;
-        var glonlab = builder.get_object ("glonlab") as Gtk.Label;
-        var gelevlab = builder.get_object ("gelevlab") as Gtk.Label;
-        var hacclab = builder.get_object ("hacclab") as Gtk.Label;
-        var vacclab = builder.get_object ("vacclab") as Gtk.Label;
-        var gfixlab = builder.get_object ("gfixlab") as Gtk.Label;
-        var rangelab = builder.get_object ("rangelab") as Gtk.Label;
-        var bearlab = builder.get_object ("bearlab") as Gtk.Label;
-
-        uint32 xtime = 0;
-
-        Timeout.add(500, () => {
-                var x = view.get_center_longitude();
-                var y = view.get_center_latitude();
-                if (lx !=  x && ly != y)
+            window.key_press_event.connect( (s,e) =>
                 {
-                    poslabel.set_text(PosFormat.pos(y,x,conf.dms));
-                    lx = x;
-                    ly = y;
-                }
-                return true;});
+                    bool ret = true;
 
-        view.center_on(conf.latitude,conf.longitude);
-        view.set_property("zoom-level", conf.zoom);
-        zoomer.adjustment.value = conf.zoom;
+                    switch(e.keyval)
+                    {
+                        case Gdk.Key.plus:
+                            if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
+                                ret = false;
+                            else
+                            {
+                                var val = view.get_zoom_level();
+                                var mmax = view.get_max_zoom_level();
+                                if (val != mmax)
+                                    view.set_property("zoom-level", val+1);
+                            }
+                            break;
+                        case Gdk.Key.minus:
+                            if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
+                                ret = false;
+                            else
+                            {
+                                var val = view.get_zoom_level();
+                                var mmin = view.get_min_zoom_level();
+                                if (val != mmin)
+                                    view.set_property("zoom-level", val-1);
+                            }
+                            break;
 
-        dev_entry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
-        foreach(string a in conf.devices)
-        {
-            dev_entry.append_text(a);
-        }
-        var te = dev_entry.get_child() as Gtk.Entry;
-        te.can_focus = true;
-        dev_entry.active = 0;
-        conbutton = builder.get_object ("button1") as Gtk.Button;
-        te.activate.connect(() => {
-                if(!msp.available)
-                {
-                    xtime = 0;
-                    connect_serial();
-                }
-            });
+                        case Gdk.Key.c:
+                            if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
+                                ret = false;
+                            else
+                            {
+                                init_trail();
+                            }
+                            break;
 
-        conbutton.clicked.connect(() => { xtime = 0; connect_serial(); });
+                        default:
+                            ret = false;
+                            break;
+                    }
+                    return ret;
+                });
 
-        init_markers();
-        msp = new MWSerial();
+            var grid =  builder.get_object ("grid1") as Gtk.Grid;
 
-        bool init_pos = false;
+            pane.add2(grid);
+            view.notify["zoom-level"].connect(() => {
+                    var val = view.get_zoom_level();
+                    var zval = (int)zoomer.adjustment.value;
+                    if (val != zval)
+                        zoomer.adjustment.value = (int)val;
+                });
 
-        int upd = 0;
-        msp.gps_update.connect((u) => {
-                nsatlab.set_label("%d".printf(u.numsat));
-                gfixlab.set_label("%d".printf(u.fixt));
-                if(u.fix_ok)
-                {
-                    glatlab.set_label("%.6f".printf(u.gpslat));
-                    glonlab.set_label("%.6f".printf(u.gpslon));
-                    gelevlab.set_label("%.1f".printf(u.gpsalt));
-                    hacclab.set_label("%.1f".printf(u.gpshacc));
-                    vacclab.set_label("%.1f".printf(u.gpsvacc));
-                    if(slow == false || upd % 5 == 0)
+            embed.set_size_request(wd_map, ht_map);
+
+            autocon_cb = builder.get_object ("autocon_cb") as Gtk.CheckButton;
+
+            var poslabel = builder.get_object ("poslabel") as Gtk.Label;
+            var elapsedlab =  builder.get_object ("elapsedlab") as Gtk.Label;
+            var nsatlab = builder.get_object ("nsatlab") as Gtk.Label;
+            var glatlab = builder.get_object ("glatlab") as Gtk.Label;
+            var glonlab = builder.get_object ("glonlab") as Gtk.Label;
+            var gelevlab = builder.get_object ("gelevlab") as Gtk.Label;
+            var hacclab = builder.get_object ("hacclab") as Gtk.Label;
+            var vacclab = builder.get_object ("vacclab") as Gtk.Label;
+            var gfixlab = builder.get_object ("gfixlab") as Gtk.Label;
+            var rangelab = builder.get_object ("rangelab") as Gtk.Label;
+            var bearlab = builder.get_object ("bearlab") as Gtk.Label;
+
+            uint32 xtime = 0;
+
+            Timeout.add(500, () => {
+                    var x = view.get_center_longitude();
+                    var y = view.get_center_latitude();
+                    if (lx !=  x && ly != y)
+                    {
+                        poslabel.set_text(PosFormat.pos(y,x,conf.dms));
+                        lx = x;
+                        ly = y;
+                    }
+                    return true;});
+
+            view.center_on(conf.latitude,conf.longitude);
+            view.set_property("zoom-level", conf.zoom);
+            zoomer.adjustment.value = conf.zoom;
+
+            dev_entry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
+            foreach(string a in conf.devices)
+            {
+                dev_entry.append_text(a);
+            }
+            var te = dev_entry.get_child() as Gtk.Entry;
+            te.can_focus = true;
+            dev_entry.active = 0;
+            conbutton = builder.get_object ("button1") as Gtk.Button;
+            te.activate.connect(() => {
+                    if(!msp.available)
+                    {
+                        xtime = 0;
+                        connect_serial();
+                    }
+                });
+
+            conbutton.clicked.connect(() => { xtime = 0; connect_serial(); });
+
+            init_markers();
+
+            bool init_pos = false;
+
+            int upd = 0;
+            msp.gps_update.connect((u) => {
+                    nsatlab.set_label("%d".printf(u.numsat));
+                    gfixlab.set_label("%d".printf(u.fixt));
+                    if(u.fix_ok)
+                    {
+                        glatlab.set_label("%.6f".printf(u.gpslat));
+                        glonlab.set_label("%.6f".printf(u.gpslon));
+                        gelevlab.set_label("%.1f".printf(u.gpsalt));
+                        hacclab.set_label("%.1f".printf(u.gpshacc));
+                        vacclab.set_label("%.1f".printf(u.gpsvacc));
                         gps_set_lat_lon (u.gpslat, u.gpslon);
 
-                    upd++;
-                    if(refok)
-                    {
-                        double c,d;
-                        Geo.csedist(reflat,reflon,u.gpslat, u.gpslon, out d, out c);
-                        rangelab.set_label("%.1f".printf(1852.0*d));
-                        bearlab.set_label("%.0f".printf(c));
+                        upd++;
+                        if(refok)
+                        {
+                            double c,d;
+                            Geo.csedist(reflat,reflon,u.gpslat, u.gpslon, out d, out c);
+                            rangelab.set_label("%.1f".printf(1852.0*d));
+                            bearlab.set_label("%.0f".printf(c));
+                        }
+
+                        if(init_pos == false)
+                        {
+                            view.center_on(u.gpslat, u.gpslon);
+                            init_pos = true;
+                        }
                     }
-
-                    if(init_pos == false)
+                    else
                     {
-                        view.center_on(u.gpslat, u.gpslon);
-                        init_pos = true;
+                        glatlab.set_label("n/a");
+                        glonlab.set_label("n/a");
+                        gelevlab.set_label("n/a");
+                        hacclab.set_label("n/a");
+                        vacclab.set_label("n/a");
+                        rangelab.set_label("-");
+                        bearlab.set_label("-");
                     }
-                }
-                else
-                {
-                    glatlab.set_label("n/a");
-                    glonlab.set_label("n/a");
-                    gelevlab.set_label("n/a");
-                    hacclab.set_label("n/a");
-                    vacclab.set_label("n/a");
-                    rangelab.set_label("-");
-                    bearlab.set_label("-");
-                }
-                elapsedlab.set_label(u.date);
-            });
+                    elapsedlab.set_label(u.date);
+                });
 
-        if(serial != null)
-        {
-            dev_entry.prepend_text(serial);
-            dev_entry.active = 0;
+            if(MWSerial.devname != null)
+            {
+                dev_entry.prepend_text(MWSerial.devname);
+                dev_entry.active = 0;
+            }
+
+            autocon_cb.toggled.connect(() => {
+                    autocon =  autocon_cb.active;
+                    autocount = 0;
+                });
+
+            if(autocon)
+            {
+                autocon_cb.active=true;
+                connect_serial();
+            }
+
+            Timeout.add_seconds(5, () => { return try_connect(); });
+            window.show_all();
         }
-
-        autocon_cb.toggled.connect(() => {
-                autocon =  autocon_cb.active;
-                autocount = 0;
-            });
-
-        if(autocon)
-        {
-            autocon_cb.active=true;
-            connect_serial();
-        }
-
-        Timeout.add_seconds(5, () => { return try_connect(); });
-        window.show_all();
     }
 
     private bool try_connect()
@@ -326,11 +374,10 @@ const OptionEntry[] options = {
             if(!msp.available)
                 connect_serial();
             Timeout.add_seconds(5, () => { return try_connect(); });
-            return false;
+                return false;
         }
         return true;
     }
-
 
     private void serial_doom(Gtk.Button c)
     {
@@ -348,7 +395,7 @@ const OptionEntry[] options = {
         else
         {
             var serdev = dev_entry.get_active_text();
-            if (msp.ublox_open(serdev, (int)conf.baudrate) == true)
+            if (msp.ublox_open(serdev, baud) == true)
             {
                 autocount = 0;
                 conbutton.set_label("gtk-disconnect");
@@ -449,16 +496,14 @@ const OptionEntry[] options = {
                 if (zval < mmin)
                 {
                     chg = true;
-                    view.set_property("zoom-level", mmin);
+                        view.set_property("zoom-level", mmin);
                 }
                 if (chg == true)
                 {
                     view.center_on(cy, cx);
                 }
             });
-
     }
-
 
     private void mwp_warning_box(string warnmsg,
                                  Gtk.MessageType klass=Gtk.MessageType.WARNING,
@@ -520,85 +565,16 @@ const OptionEntry[] options = {
         Gtk.main();
     }
 
-
     public static int main (string[] args)
     {
         if (GtkClutter.init (ref args) != InitError.SUCCESS)
             return 1;
-
-        try {
-            var opt = new OptionContext("");
-            opt.set_help_enabled(true);
-            opt.add_main_entries(options, null);
-            opt.parse(ref args);
-        } catch (OptionError e) {
-            stderr.printf("Error: %s\n", e.message);
-            stderr.printf("Run '%s --help' to see a full list of available "+
-                          "options\n", args[0]);
-            return 1;
+        var msp = new MWSerial();
+        if (msp.parse_option(args) == 0)
+        {
+            MWPlanner app = new MWPlanner(msp);
+            app.run ();
         }
-
-        MWPlanner app = new MWPlanner();
-        app.run ();
         return 0;
     }
-
-}
-
-public class PosFormat : GLib.Object
-{
-    public static string lat(double _lat, bool dms)
-    {
-        if(dms == false)
-            return "%.6f".printf(_lat);
-        else
-            return position(_lat, "%02d:%02d:%04.1f%c", "NS");
-    }
-
-    public static string lon(double _lon, bool dms)
-    {
-        if(dms == false)
-            return "%.6f".printf(_lon);
-        else
-            return position(_lon, "%03d:%02d:%04.1f%c", "EW");
-    }
-
-    public static string pos(double _lat, double _lon, bool dms)
-    {
-        if(dms == false)
-            return "%.6f %.6f".printf(_lat,_lon);
-        else
-        {
-            var slat = lat(_lat,dms);
-            var slon = lon(_lon,dms);
-            StringBuilder sb = new StringBuilder ();
-            sb.append(slat);
-            sb.append(" ");
-            sb.append(slon);
-            return sb.str;
-        }
-    }
-
-    private static string position(double coord, string fmt, string ind)
-    {
-        var neg = (coord < 0.0);
-        var ds = Math.fabs(coord);
-        int d = (int)ds;
-        var rem = (ds-d)*3600.0;
-        int m = (int)rem/60;
-        double s = rem - m*60;
-        if ((int)s*10 == 600)
-        {
-            m+=1;
-            s = 0;
-        }
-        if (m == 60)
-        {
-            m = 0;
-            d+=1;
-        }
-        var q = (neg) ? ind.get_char(1) : ind.get_char(0);
-        return fmt.printf((int)d,(int)m,s,q);
-    }
-
 }

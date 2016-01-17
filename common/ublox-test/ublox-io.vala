@@ -46,6 +46,24 @@ public class MWSerial : Object
     private uint8 _class;
     private unowned ublox_buffer _buffer;
     public int gpsvers = 0;
+    public Timer timer;
+
+    public static string devname = "/dev/ttyUSB0";
+    public static int brate = 38400;
+    private static bool ureset = false;
+    private static bool force6 = false;
+    private static bool force_cf = false;
+    private static bool noinit = false;
+
+    const OptionEntry[] options = {
+        { "device", 'd', 0, OptionArg.STRING, out devname, "device name", "/dev/ttyUSB0"},
+        { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", "38400"},
+        { "reset", 'r', 0, OptionArg.NONE, out ureset, "Reset device", null},
+        { "no-init", 'n', 0, OptionArg.NONE, out noinit, "No init", null},
+        { "force-v6", '6', 0, OptionArg.NONE, out force6, "Force V6 init (vice ianv autodetect)", null},
+        { "force-CF", 'c', 0, OptionArg.NONE, out force_cf, "Force CF init (vice inav)", null},
+        {null}
+    };
 
     public struct UBLOX_UPD
     {
@@ -169,7 +187,6 @@ public class MWSerial : Object
     private bool open(string device, uint rate)
     {
         fd = Posix.open(device, Posix.O_RDWR);
-        setup_fd((int)rate);
         if(fd < 0)
         {
             var lasterr=Posix.errno;
@@ -180,6 +197,7 @@ public class MWSerial : Object
         }
         else
         {
+            setup_fd((int)rate);
             available = true;
             setup_reader(fd);
         }
@@ -405,6 +423,8 @@ public class MWSerial : Object
         }
         else if(_class == 0x0a && _msg_id == 4)
         {
+            var dt = timer.elapsed ();
+            stderr.printf("Version info after %fs\n", dt);
             uint8 v1[30];
             uint8 v2[10];
             for(var j = 0; j < 30; j++)
@@ -412,7 +432,7 @@ public class MWSerial : Object
             for(var j = 0; j < 10; j++)
                 v2[j] = _buffer.xbytes[j+30];
             stdout.printf("%s %s\n", (string)v1, (string)v2);
-                gpsvers = int.parse((string)v2);
+            gpsvers = int.parse((string)v2);
         }
         return ret;
     }
@@ -428,14 +448,12 @@ public class MWSerial : Object
 
     public bool ublox_open(string devname, int brate)
     {
-
         uint32 [] init_speed = {115200, 57600, 38400, 19200, 9600};
         uint8 [] init = {
                 0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x08, 0x02, 0x00,           // CFG-NAV5 - Set engine settings
                 0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,           // Airborne <4G 3D fix only
                 0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x17, 0xFF,
-
                 0xB5, 0x62, 0x06, 0x23, 0x28, 0x00, 0x00, 0x00, 0x4C, 0x66, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // CFG-NAVX5 min 5 SV
                 0x05, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                 0x00, 0x00, 0x00, 0x00, 0x64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7C, 0xCD,
@@ -446,14 +464,12 @@ public class MWSerial : Object
                 0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x00, 0x00, 0xFA, 0x0F,           // GGA: Global positioning system fix data
                 0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x02, 0x00, 0xFC, 0x13,           // GSA: GNSS DOP and Active Satellites
                 0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x04, 0x00, 0xFE, 0x17,           // RMC: Recommended Minimum data
-
                     // Enable UBLOX messages
                 0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x02, 0x01, 0x0E, 0x47,           // set POSLLH MSG rate
                 0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x03, 0x01, 0x0F, 0x49,           // set STATUS MSG rate
                 0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x06, 0x01, 0x12, 0x4F,           // set SOL MSG rate
                 0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x30, 0x05, 0x40, 0xA7,           // set SVINFO MSG rate (evey 5 cycles - low bandwidth)
                 0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x12, 0x01, 0x1E, 0x67,           // set VELNED MSG rate
-
                 0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0xC8, 0x00, 0x01, 0x00, 0x01, 0x00, 0xDE, 0x6A,             // set rate to 5Hz (measurement period: 200ms, navigation rate: 1 cycle)
             };
 
@@ -462,7 +478,6 @@ public class MWSerial : Object
             0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,           // Airborne <4G 3D fix only
             0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x17, 0xFF,
-
                 // DISABLE NMEA messages
             0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x00, 0x00, 0xFA, 0x0F,           // GGA: Global positioning system fix data
             0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x01, 0x00, 0xFB, 0x11,           // GLL: Latitude and longitude, with time of position fix and status
@@ -470,7 +485,6 @@ public class MWSerial : Object
             0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x03, 0x00, 0xFD, 0x15,           // GSV: GNSS Satellites in View
             0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x04, 0x00, 0xFE, 0x17,           // RMC: Recommended Minimum data
             0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x05, 0x00, 0xFF, 0x19,           // VGS: Course over ground and Ground speed
-
                 // Enable UBLOX messages
             0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x12, 0xB9, // disable POSLLH
             0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0x01, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x13, 0xC0, // disable STATUS
@@ -478,14 +492,35 @@ public class MWSerial : Object
             0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0x01, 0x30, 0x00, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x4A, 0x2D, // enable SVINFO 10 cycle
             0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0x01, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x22, 0x29, // disable VELNED
             0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0x01, 0x07, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x18, 0xE1, // enable PVT 1 cycle
-
             0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0x64, 0x00, 0x01, 0x00, 0x01, 0x00, 0x7A, 0x12, // set rate to 10Hz (measurement period: 100ms, navigation rate: 1 cycle)
         };
-
-        uint8 [] v7init = {0xB5, 0x62, 0x0A, 0x04, 0x00, 0x00, 0x0E, 0x34
-        };
-
+        uint8 [] v7init = {0xB5, 0x62, 0x0A, 0x04, 0x00, 0x00, 0x0E, 0x34 };
         uint8 [] sbas = { 0xB5, 0x62, 0x06, 0x16, 0x08, 0x00, 0x03, 0x07, 0x03, 0x00, 0x51, 0x08, 0x00, 0x00, 0x8A, 0x41};
+        uint8 [] reset = {0xB5, 0x62, 0x06, 0x04, 0x04, 0x00, 0xFF, 0x87,
+                          0x00, 0x00, 0x94, 0xF5};
+       uint8 [] cfinit = {
+            0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x03, 0x03, 0x00,           // CFG-NAV5 - Set engine settings
+            0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,           // Collected by resetting a GPS unit to defaults. Changing mode to Pedistrian and
+            0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x3C, 0x00, 0x00, 0x00,           // capturing the data from the U-Center binary console.
+            0x00, 0xC8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x17, 0xC2,
+
+                // DISABLE NMEA messages
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x05, 0x00, 0xFF, 0x19,           // VGS: Course over ground and Ground speed
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x03, 0x00, 0xFD, 0x15,           // GSV: GNSS Satellites in View
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x01, 0x00, 0xFB, 0x11,           // GLL: Latitude and longitude, with time of position fix and status
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x00, 0x00, 0xFA, 0x0F,           // GGA: Global positioning system fix data
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x02, 0x00, 0xFC, 0x13,           // GSA: GNSS DOP and Active Satellites
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0xF0, 0x04, 0x00, 0xFE, 0x17,           // RMC: Recommended Minimum data
+
+                // Enable UBLOX messages
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x02, 0x01, 0x0E, 0x47,           // set POSLLH MSG rate
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x03, 0x01, 0x0F, 0x49,           // set STATUS MSG rate
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x06, 0x01, 0x12, 0x4F,           // set SOL MSG rate
+                //0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x30, 0x01, 0x3C, 0xA3,           // set SVINFO MSG rate (every cycle - high bandwidth)
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x30, 0x05, 0x40, 0xA7,           // set SVINFO MSG rate (evey 5 cycles - low bandwidth)
+            0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x12, 0x01, 0x1E, 0x67,           // set VELNED MSG rate
+            0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0xC8, 0x00, 0x01, 0x00, 0x01, 0x00, 0xDE, 0x6A,             // set rate to 5Hz (measurement period: 200ms, navigation rate: 1 cycle)
+        };
 
         string [] parts;
 
@@ -495,6 +530,7 @@ public class MWSerial : Object
             devname = parts[0];
             brate = int.parse(parts[1]);
         }
+        stdout.printf("%s@%d\n", devname, brate);
 
         var str="";
         if(brate == 19200)
@@ -507,29 +543,75 @@ public class MWSerial : Object
             str = "$PUBX,41,1,0003,0001,115200,0*1E\r\n";
 
         open(devname, brate);
-        foreach (var rate in init_speed)
+        if(available)
         {
-            set_rate(rate);
-            ublox_write(fd, str.data);
-            stdout.printf("%d => %s", (int)rate, str);
-            Thread.usleep(50000);
+            foreach (var rate in init_speed)
+            {
+                set_rate(rate);
+                ublox_write(fd, str.data);
+                stdout.printf("%d => %s", (int)rate, str);
+                Thread.usleep(100000);
+            }
+            set_rate(brate);
+
+            if(noinit == false)
+            {
+                ublox_write(fd, sbas);
+                if(force_cf == false)
+                {
+                    ublox_write(fd, v7init);
+                    timer = new Timer ();
+                }
+            }
+
+            Timeout.add(500, () => {
+                    if(ureset)
+                    {
+                        stderr.puts("send hard reset\n");
+                        ublox_write(fd, reset);
+                    }
+                    else
+                    {
+                        if(noinit == false)
+                        {
+                            if(force_cf)
+                            {
+                                ublox_write(fd, cfinit);
+                                stderr.printf("send CF init\n");
+                            }
+                            else if(force6 || gpsvers < 70000)
+                            {
+                                ublox_write(fd, init);
+                                stderr.printf("send INAV v6 init [%d]\n", gpsvers);
+                            }
+                            else
+                            {
+                                ublox_write(fd, init7);
+                                stderr.printf("send INAV v7 init [%d]\n", gpsvers);
+                            }
+                        }
+                        else
+                            stderr.printf("No init requested\n");
+                    }
+                    return false;
+                });
         }
-        set_rate(brate);
-        ublox_write(fd, sbas);
-        ublox_write(fd, v7init);
-        Timeout.add(100, () => {
-                if(gpsvers < 70000)
-                {
-                    ublox_write(fd, init);
-                    stderr.printf("send v6 init [%d]\n", gpsvers);
-                }
-                else
-                {
-                    ublox_write(fd, init7);
-                    stderr.printf("send v7 init [%d]\n", gpsvers);
-                }
-                return false;
-            });
         return available;
+    }
+    public int parse_option(string [] args)
+    {
+        try {
+            var opt = new OptionContext("");
+            opt.set_help_enabled(true);
+            opt.add_main_entries(options, null);
+            opt.parse(ref args);
+        }
+        catch (OptionError e) {
+            stderr.printf("Error: %s\n", e.message);
+            stderr.printf("Run '%s --help' to see a full list of available "+
+                          "options\n", args[0]);
+            return 1;
+        }
+        return 0;
     }
 }

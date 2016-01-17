@@ -8,9 +8,9 @@ CLI=ublox-cli
 
 all: $(APP) $(CLI)
 
-ublox-cli: ublox-cli.vala ublox.vapi ublox.h
+ublox-cli: ublox-cli.vala ublox-io.vala ublox.vapi ublox.h
 	$(VALAC)  $(DOPTS) $(OPTS)  --pkg posix --pkg gio-2.0 --pkg posix \
-		ublox.vapi ublox-cli.vala mwplog.vala -o ublox-cli
+		ublox.vapi ublox-cli.vala ublox-io.vala mwplog.vala -o ublox-cli
 
 
 ublox-resources.c: ublox.gresources.xml
