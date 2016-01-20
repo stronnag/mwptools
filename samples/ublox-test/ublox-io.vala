@@ -59,12 +59,14 @@ public class MWSerial : Object
     private static bool force_air = false;
     private static bool force_10hz = false;
     private static bool noinit = false;
+    private static bool noautob = false;
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", "/dev/ttyUSB0"},
         { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", "38400"},
         { "reset", 'r', 0, OptionArg.NONE, out ureset, "Reset device", null},
         { "no-init", 'n', 0, OptionArg.NONE, out noinit, "No init", null},
+        { "no-autobaud", 'N', 0, OptionArg.NONE, out noautob, "No autobaud", null},
         { "force-v6", '6', 0, OptionArg.NONE, out force6, "Force V6 init (vice ianv autodetect)", null},
         { "force-air", 'a', 0, OptionArg.NONE, out force_air, "Force airborne 4G", null},
         { "force-10hz", 'z', 0, OptionArg.NONE, out force_10hz, "Force 10Hz", null},
@@ -573,14 +575,17 @@ public class MWSerial : Object
         open(devname, brate);
         if(available)
         {
-            foreach (var rate in init_speed)
+            if(noautob == true)
             {
-                set_rate(rate);
-                ublox_write(fd, str.data);
-                stdout.printf("%d => %s", (int)rate, str);
-                Thread.usleep(100000);
+                foreach (var rate in init_speed)
+                {
+                    set_rate(rate);
+                    ublox_write(fd, str.data);
+                    stdout.printf("%d => %s", (int)rate, str);
+                    Thread.usleep(100000);
+                }
+                set_rate(brate);
             }
-            set_rate(brate);
 
             if(noinit == false)
             {
