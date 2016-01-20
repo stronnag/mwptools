@@ -26,8 +26,10 @@ public static int main (string[] args)
 {
     var s = new MWSerial();
     var ml = new MainLoop();
-
-    if(s.ublox_open(MWSerial.devname, MWSerial.brate))
-        ml.run();
+    if (s.parse_option(args) == 0)
+    {
+        if(s.ublox_open(MWSerial.devname, MWSerial.brate))
+            ml.run();
+    }
     return 0;
 }

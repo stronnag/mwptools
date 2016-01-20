@@ -8,15 +8,18 @@ CLI=ublox-cli
 
 all: $(APP) $(CLI)
 
-ublox-cli: ublox-cli.vala ublox-io.vala ublox.vapi ublox.h
+CMN=../../common
+
+CLISRC=	ublox.vapi ublox-cli.vala ublox-io.vala $(CMN)/mwplog.vala
+ublox-cli: $(CLISRC)
 	$(VALAC)  $(DOPTS) $(OPTS)  --pkg posix --pkg gio-2.0 --pkg posix \
-		ublox.vapi ublox-cli.vala ublox-io.vala mwplog.vala -o ublox-cli
+		$(CLISRC) -o ublox-cli
 
 
 ublox-resources.c: ublox.gresources.xml
 	glib-compile-resources --target=$@ --generate-source $^
 
-SRCS= ublox-test.vala ublox-io.vala ublox.vapi settings.vala utils.vala mapsources.vala geocalc.vala mwplog.vala ublox-resources.c
+SRCS= ublox-test.vala ublox-io.vala ublox.vapi settings.vala $(CMN)/utils.vala mapsources.vala $(CMN)/geocalc.vala $(CMN)/mwplog.vala ublox-resources.c
 
 PKGS= --pkg gtk+-3.0 --pkg atk --pkg clutter-1.0 --pkg champlain-gtk-0.12 --pkg champlain-0.12 --pkg gio-2.0 --pkg posix --pkg clutter-gtk-1.0 --pkg libsoup-2.4
 
