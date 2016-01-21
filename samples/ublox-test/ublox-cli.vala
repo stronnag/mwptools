@@ -22,14 +22,29 @@
 
 // valac --pkg posix --pkg gio-2.0 --pkg posix  ublox.vapi ublox-test.vala -o ublox-test
 
+public static MainLoop ml;
 public static int main (string[] args)
 {
     var s = new MWSerial();
-    var ml = new MainLoop();
+    ml = new MainLoop();
     if (s.parse_option(args) == 0)
     {
         if(s.ublox_open(MWSerial.devname, MWSerial.brate))
+        {
+            Posix.signal (Posix.SIGQUIT, (s) => {
+                    ml.quit();
+            });
+
+            Posix.signal (Posix.SIGINT, (s) => {
+                    ml.quit();
+            });
+            s.init_timer();
             ml.run();
+            var st = s.getstats();
+            MWPLog.message("\n%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s)\n",
+                           st.elapsed, st.rxbytes, st.txbytes,
+                           st.rxrate, st.txrate);
+        }
     }
     return 0;
 }

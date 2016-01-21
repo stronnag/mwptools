@@ -23,6 +23,14 @@
 
 public class MWSerial : Object
 {
+    public struct SerialStats
+    {
+        double elapsed;
+        ulong rxbytes;
+        ulong txbytes;
+        double rxrate;
+        double txrate;
+    }
     public int fd {private set; get;}
     private IOChannel io_read;
     public  bool available {private set; get;}
@@ -47,10 +55,14 @@ public class MWSerial : Object
     private uint8 nmea_state = 0;
     private uint8 nmea_idx = 0;
     private uint8 nmea_buf[128];
+    private SerialStats stats;
 
     private unowned ublox_buffer _buffer;
     private int gpsvers = 0;
     private Timer timer;
+
+    private int64 stime;
+    private int64 ltime;
 
     public static string devname = "/dev/ttyUSB0";
     public static int brate = 38400;
@@ -257,6 +269,7 @@ public class MWSerial : Object
         }
         for(var nc = 0; nc < res; nc++)
         {
+            stats.rxbytes++;
             if(ublox_parse(buf[nc]) == true)
             {
                 gps_update (u);
@@ -493,7 +506,8 @@ public class MWSerial : Object
         foreach(uint8 b in data)
         {
             Posix.write(fd, &b, 1);
-            Thread.usleep(5);
+            stats.txbytes++;
+                //            Thread.usleep(5);
         }
     }
 
@@ -575,7 +589,7 @@ public class MWSerial : Object
         open(devname, brate);
         if(available)
         {
-            if(noautob == true)
+            if(noautob == false)
             {
                 foreach (var rate in init_speed)
                 {
@@ -650,5 +664,25 @@ public class MWSerial : Object
             return 1;
         }
         return 0;
+    }
+
+    public void init_timer()
+    {
+        stime = GLib.get_monotonic_time();
+    }
+
+    public SerialStats getstats()
+    {
+        if(stime == 0)
+            stime =  GLib.get_monotonic_time();
+        if(ltime == 0 || ltime == stime)
+            ltime =  GLib.get_monotonic_time();
+        stats.elapsed = (ltime - stime)/1000000.0;
+        if (stats.elapsed > 0)
+        {
+            stats.txrate = stats.txbytes / stats.elapsed;
+            stats.rxrate = stats.rxbytes / stats.elapsed;
+        }
+        return stats;
     }
 }
