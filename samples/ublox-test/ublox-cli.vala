@@ -22,28 +22,65 @@
 
 // valac --pkg posix --pkg gio-2.0 --pkg posix  ublox.vapi ublox-test.vala -o ublox-test
 
-public static MainLoop ml;
+static MainLoop ml;
+static int sfd[2];
+static MWSerial msp;
+
+void show_stats(MWSerial s)
+{
+    var st = s.getstats();
+    stderr.puts("\n");
+    MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s)\n",
+                   st.elapsed, st.rxbytes, st.txbytes,
+                   st.rxrate, st.txrate);
+    stderr.puts("\n");
+}
+
+void signal_handler(int s)
+{
+    Posix.write(sfd[1], &s, sizeof(int));
+}
+
+private bool sig_reader (IOChannel gio, IOCondition condition)
+{
+    int s=0;
+    var ret = Posix.read(gio.unix_get_fd(), &s, sizeof(int));
+    if(ret != sizeof(int))
+        return false;
+    show_stats(msp);
+    if(s == Posix.SIGINT)
+        ml.quit();
+    return true;
+}
+
 public static int main (string[] args)
 {
-    var s = new MWSerial();
     ml = new MainLoop();
-    if (s.parse_option(args) == 0)
-    {
-        if(s.ublox_open(MWSerial.devname, MWSerial.brate))
-        {
-            Posix.signal (Posix.SIGQUIT, (s) => {
-                    ml.quit();
-            });
+    msp = new MWSerial();
 
-            Posix.signal (Posix.SIGINT, (s) => {
-                    ml.quit();
-            });
-            s.init_timer();
+    if (msp.parse_option(args) == 0)
+    {
+        if(msp.ublox_open(MWSerial.devname, MWSerial.brate))
+        {
+            int [] sigs = {Posix.SIGINT, Posix.SIGUSR1,
+                           Posix.SIGUSR2, Posix.SIGQUIT};
+            var mask = Posix.sigset_t();
+            Posix.sigemptyset(mask);
+            var act = Posix.sigaction_t ();
+            act.sa_handler = signal_handler;
+            act.sa_mask = mask;
+            act.sa_flags = 0;
+            foreach(var s in sigs)
+                Posix.sigaction (s, act, null);
+
+            if(0 == Posix.socketpair (SocketFamily.UNIX,
+                                      SocketType.DATAGRAM, 0, sfd))
+            {
+                var io_read  = new IOChannel.unix_new(sfd[0]);
+                io_read.add_watch(IOCondition.IN, sig_reader);
+            }
+            msp.init_timer();
             ml.run();
-            var st = s.getstats();
-            MWPLog.message("\n%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s)\n",
-                           st.elapsed, st.rxbytes, st.txbytes,
-                           st.rxrate, st.txrate);
         }
     }
     return 0;

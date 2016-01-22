@@ -280,14 +280,14 @@ public class MWSerial : Object
 
     private void display_fix()
     {
-        stderr.printf("POSLLH: lat: %f lon: %f elev: %.2f acc(h/v): %.1f/%.1f\n",
+        stdout.printf("POSLLH: lat: %f lon: %f elev: %.2f acc(h/v): %.1f/%.1f\n",
                       _buffer.posllh.latitude/10000000.0,
                       _buffer.posllh.longitude/10000000.0,
                       _buffer.posllh.altitude_msl / 1000.0,
                       _buffer.posllh.horizontal_accuracy/1000.0,
                       _buffer.posllh.vertical_accuracy/1000.0
                       );
-        stderr.printf("sats: %d, fix %d\n", _numsat, _fixt);
+        stdout.printf("sats: %d, fix %d\n", _numsat, _fixt);
         if(_fix_ok)
         {
             u.gpslat = _buffer.posllh.latitude/10000000.0;
@@ -303,14 +303,14 @@ public class MWSerial : Object
 
     private void display_fix7()
     {
-        stderr.printf("PVT: lat: %f lon: %f elev: %.2f acc(h/v): %.1f/%.1f\n",
+        stdout.printf("PVT: lat: %f lon: %f elev: %.2f acc(h/v): %.1f/%.1f\n",
                           _buffer.pvt.latitude/10000000.0,
                           _buffer.pvt.longitude/10000000.0,
                           _buffer.pvt.altitude_msl / 1000.0,
                           _buffer.pvt.horizontal_accuracy/1000.0,
                           _buffer.pvt.vertical_accuracy/1000.0
                           );
-        stderr.printf("sats: %d, fix %d\n", _buffer.pvt.satellites, _buffer.pvt.fix_type);
+        stdout.printf("sats: %d, fix %d\n", _buffer.pvt.satellites, _buffer.pvt.fix_type);
         int32 nano =  ( _buffer.pvt.nano +999999) /1000000;
         u.date = "%04d-%02d-%02d %02d:%02d:%02d.%03d".printf( _buffer.pvt.year,
                                                               _buffer.pvt.month,
@@ -319,7 +319,7 @@ public class MWSerial : Object
                                                               _buffer.pvt.min,
                                                               _buffer.pvt.sec,
                                                               nano);
-        stderr.printf("%s\n", u.date);
+        stdout.printf("%s\n", u.date);
         if(_fix_ok)
         {
             u.fix_ok = true;
@@ -479,7 +479,7 @@ public class MWSerial : Object
                         _buffer.timeutc.hour,
                         _buffer.timeutc.min,
                         _buffer.timeutc.sec);
-                    stderr.printf("%s valid=%x\n", u.date, _buffer.timeutc.valid);
+                    stdout.printf("%s valid=%x\n", u.date, _buffer.timeutc.valid);
                     break;
                 default:
                     break;
@@ -495,7 +495,7 @@ public class MWSerial : Object
                 v1[j] = _buffer.xbytes[j];
             for(var j = 0; j < 10; j++)
                 v2[j] = _buffer.xbytes[j+30];
-            stdout.printf("%s %s\n", (string)v1, (string)v2);
+            stderr.printf("%s %s\n", (string)v1, (string)v2);
             gpsvers = int.parse((string)v2);
         }
         return ret;
@@ -675,8 +675,7 @@ public class MWSerial : Object
     {
         if(stime == 0)
             stime =  GLib.get_monotonic_time();
-        if(ltime == 0 || ltime == stime)
-            ltime =  GLib.get_monotonic_time();
+        ltime =  GLib.get_monotonic_time();
         stats.elapsed = (ltime - stime)/1000000.0;
         if (stats.elapsed > 0)
         {

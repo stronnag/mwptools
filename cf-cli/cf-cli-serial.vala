@@ -701,6 +701,7 @@ public class MWSerial : Object
             stderr.printf("\r");
         if(defprof != null)
         {
+            Thread.usleep(1000*500);
             message("Setting %s\n", defprof);
             set_line("%s\n".printf(defprof));
         }
