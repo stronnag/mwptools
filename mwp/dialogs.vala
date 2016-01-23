@@ -23,8 +23,8 @@ extern void espeak_say(string text);
 
 public class Units :  GLib.Object
 {
-    private const string [] dnames = {"m", "ft", "yd","fg"};
-    private const string [] dspeeds = {"m/s", "kph", "mph", "kts", "fg/ft"};
+    private const string [] dnames = {"m", "ft", "yd","mfg"};
+    private const string [] dspeeds = {"m/s", "kph", "mph", "kts", "mfg/µftn"};
     private const string [] dfix = {"no","","2d-","3d-"};
 
 
@@ -38,9 +38,9 @@ public class Units :  GLib.Object
             case 2:
                 d *= 1.0936133;
                 break;
-//            case 3: //furlongs
-//                d *= 0.0049709695;
-//                break;
+            case 3: // millifurlongs
+                d *= 0.0049709695;
+                break;
         }
         return d;
     }
@@ -57,9 +57,9 @@ public class Units :  GLib.Object
             case 3:
                 d *= 1.9438445;
                 break;
-//            case 4: //furlongs / fortnight
-//                d *= 6012.8848;
-//                break;
+            case 4: // milli-furlongs / micro-fortnight
+                d *= (6012.8848/1000.0);
+                break;
         }
         return d;
     }

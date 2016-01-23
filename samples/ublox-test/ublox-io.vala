@@ -634,7 +634,7 @@ public class MWSerial : Object
                                 ublox_write(fd, pvt);
                                 stderr.printf("send INAV v7 init [%d]\n", gpsvers);
                             }
-                            if(force_10hz)
+                            if(force_10hz || gpsvers >= 70000 )
                                 ublox_write(fd, rate_10hz);
                             else
                                 ublox_write(fd, rate_5hz);
