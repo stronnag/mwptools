@@ -2096,7 +2096,7 @@ public class MWPlanner : Gtk.Application {
                         {
                             sflags |=  NavStatus.SPK.GPS;
                             want_special |= POSMODE.HOME;
-                            stderr.printf("** Home from RAW\n");
+                            MWPLog.message("** Home from RAW GPS\n");
                             navstatus.cg_on();
                         }
                     }
@@ -2330,6 +2330,7 @@ public class MWPlanner : Gtk.Application {
                         double gflon = of.lon/10000000.0;
                         navstatus.cg_on();
                         sflags |=  NavStatus.SPK.GPS;
+                        MWPLog.message("**Home from Oframe\n");
                         want_special |= POSMODE.HOME;
                         process_pos_states(gflat, gflon, 0.0);
                     }
@@ -2732,12 +2733,16 @@ public class MWPlanner : Gtk.Application {
     {
         if((want_special & POSMODE.HOME) != 0)
         {
-            MWPLog.message("Set home %f %f\n", lat, lon);
             want_special &= ~POSMODE.HOME;
+            MWPLog.message("Set home %f %f\n", lat, lon);
             home_pos.lat = xlat = lat;
             home_pos.lon = xlon = lon;
             home_pos.alt = alt;
             npos = true;
+            if(ls.mission_points() > 0)
+            {
+                    markers.add_rth_point(lat,lon);
+            }
             if(craft != null)
                 craft.special_wp(Craft.Special.HOME, lat, lon);
             else

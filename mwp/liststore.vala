@@ -67,6 +67,11 @@ public class ListBox : GLib.Object
             });
     }
 
+    public int mission_points()
+    {
+        return lastid;
+    }
+
     public void import_mission(Mission ms)
     {
         Gtk.TreeIter iter;

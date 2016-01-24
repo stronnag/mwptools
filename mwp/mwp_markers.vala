@@ -6,7 +6,7 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -24,10 +24,10 @@ public class MWPMarkers : GLib.Object
 
     public  Champlain.PathLayer path;
     public Champlain.MarkerLayer markers;
-    
+
     public MWPMarkers()
     {
-        markers = new Champlain.MarkerLayer();        
+        markers = new Champlain.MarkerLayer();
         path = new Champlain.PathLayer();
     }
 
@@ -40,7 +40,7 @@ public class MWPMarkers : GLib.Object
                 text = @"WP $no";
                 colour = { 0, 0xff, 0xff, 0xc8};
                 break;
-                
+
             case MSP.Action.POSHOLD_TIME:
                 text = @"◷ $no"; // text = @"\u25f7 $no";
                 colour = { 152, 70, 234, 0xc8};
@@ -56,11 +56,11 @@ public class MWPMarkers : GLib.Object
                 colour = { 0xff, 0x0, 0x0, 0xc8};
                 break;
 
-            case MSP.Action.LAND:                
+            case MSP.Action.LAND:
                 text = @"♜ $no"; // text = @"\u265c $no";
                 colour = { 0xff, 0x9a, 0xf0, 0xc8};
                 break;
-                
+
             case MSP.Action.JUMP:
                 text = @"⇒ $no"; // text = @"\u21d2 $no";
                 colour = { 0xed, 0x51, 0xd7, 0xc8};
@@ -78,7 +78,14 @@ public class MWPMarkers : GLib.Object
                 break;
         }
     }
-        
+
+    public void add_rth_point(double lat, double lon)
+    {
+        var m = new  Champlain.Marker();
+        m.set_location (lat,lon);
+        path.add_node(m);
+    }
+
     public void add_single_element( ListBox l,  Gtk.TreeIter iter, bool rth)
     {
         Gtk.ListStore ls = l.list_model;
@@ -98,10 +105,10 @@ public class MWPMarkers : GLib.Object
         marker.set_color (colour);
         marker.set_text_color(black);
         ls.get_value (iter, 2, out cell);
-        var lat = (double)cell; 
+        var lat = (double)cell;
         ls.get_value (iter, 3, out cell);
         var lon = (double)cell;
-        
+
         marker.set_location (lat,lon);
         marker.set_draggable(true);
         markers.add_marker (marker);
@@ -110,12 +117,12 @@ public class MWPMarkers : GLib.Object
             path.add_node(marker);
         }
         ls.set_value(iter,ListBox.WY_Columns.MARKER,marker);
-        
-        
+
+
         ((Champlain.Marker)marker).button_release.connect((e,u) => {
                     l.set_selection(iter);
             });
-        
+
         ((Champlain.Marker)marker).drag_finish.connect(() => {
                 GLib.Value val;
                 ls.get_value (iter, ListBox.WY_Columns.ACTION, out val);
@@ -132,7 +139,7 @@ public class MWPMarkers : GLib.Object
                 }
                 ls.set_value(iter, ListBox.WY_Columns.LAT, marker.get_latitude());
                 ls.set_value(iter, ListBox.WY_Columns.LON, marker.get_longitude() );
-                l.calc_mission();                
+                l.calc_mission();
             } );
     }
 
@@ -141,7 +148,7 @@ public class MWPMarkers : GLib.Object
         Gtk.TreeIter iter;
         Gtk.ListStore ls = l.list_model;
         bool rth = false;
-        
+
         remove_all();
         for(bool next=ls.get_iter_first(out iter);next;next=ls.iter_next(ref iter))
         {
@@ -164,7 +171,7 @@ public class MWPMarkers : GLib.Object
                     add_single_element(l,iter,rth);
                     rth = true;
                     break;
-                    
+
                 default:
                     add_single_element(l,iter,rth);
                     break;
@@ -192,7 +199,7 @@ public class MWPMarkers : GLib.Object
             path.remove_node((Champlain.Marker)mk);
         }
     }
-    
+
     public void remove_all()
     {
         markers.remove_all();
