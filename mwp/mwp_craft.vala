@@ -31,6 +31,7 @@ public class Craft : GLib.Object
     private bool trail;
     private Champlain.PathLayer path;
     private Champlain.MarkerLayer pmlayer;
+    private Champlain.MarkerLayer hmlayer;
     private int npath = 0;
     private static Clutter.Color trk_cyan = { 0,0xff,0xff, 0xa0 };
 //    private static Clutter.Color trk_green = { 0,0xff,0, 0xa0 };
@@ -109,10 +110,12 @@ public class Craft : GLib.Object
         path.set_stroke_color(ladyjane);
 
         layer = new Champlain.MarkerLayer();
+        hmlayer = new Champlain.MarkerLayer();
         pmlayer = new Champlain.MarkerLayer();
         if(trail)
         {
             view.add_layer (path);
+            view.add_layer (hmlayer);
             view.add_layer (pmlayer);
         }
         view.add_layer (layer);
@@ -171,6 +174,7 @@ public class Craft : GLib.Object
     {
         if(trail)
         {
+            hmlayer.remove_all();
             pmlayer.remove_all();
             path.remove_all();
             npath = 0;
@@ -252,7 +256,7 @@ public class Craft : GLib.Object
                     colour = {0xff, 0xa0, 0x0, 0xc8};
                     homep.set_color (colour);
                     homep.set_text_color(black);
-                    pmlayer.add_marker(homep);
+                    hmlayer.add_marker(homep);
                 }
                 m = homep;
                 break;

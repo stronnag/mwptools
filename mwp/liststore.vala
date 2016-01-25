@@ -56,6 +56,7 @@ public class ListBox : GLib.Object
     private DeltaDialog deltadialog;
     private SpeedDialog speeddialog;
     int lastid = 0;
+    bool have_rth = false;
 
     public ListBox()
     {
@@ -67,9 +68,10 @@ public class ListBox : GLib.Object
             });
     }
 
-    public int mission_points()
+    public bool mission_points(out int last)
     {
-        return lastid;
+        last = lastid;
+        return have_rth;
     }
 
     public void import_mission(Mission ms)
@@ -78,6 +80,7 @@ public class ListBox : GLib.Object
 
         list_model.clear();
         lastid = 0;
+        have_rth = false;
 
         foreach (MissionItem m in ms.get_ways())
         {
@@ -87,6 +90,7 @@ public class ListBox : GLib.Object
             {
                 case MSP.Action.RTH:
                     no="";
+                    have_rth = true;
                     break;
 
                 default:

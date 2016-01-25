@@ -24,6 +24,7 @@ public class MWPMarkers : GLib.Object
 
     public  Champlain.PathLayer path;
     public Champlain.MarkerLayer markers;
+    public Champlain.Marker homep = null;
 
     public MWPMarkers()
     {
@@ -81,9 +82,25 @@ public class MWPMarkers : GLib.Object
 
     public void add_rth_point(double lat, double lon)
     {
-        var m = new  Champlain.Marker();
-        m.set_location (lat,lon);
-        path.add_node(m);
+        if(homep == null)
+        {
+            homep = new  Champlain.Marker();
+            homep.set_location (lat,lon);
+            path.add_node(homep);
+        }
+        else
+        {
+            homep.set_location (lat,lon);
+        }
+    }
+
+    public void negate_rth()
+    {
+        if(homep != null)
+        {
+            path.remove_node(homep);
+        }
+//        homep = null;
     }
 
     public void add_single_element( ListBox l,  Gtk.TreeIter iter, bool rth)

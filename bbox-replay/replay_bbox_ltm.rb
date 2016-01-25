@@ -347,6 +347,9 @@ cmd << " #{bbox}"
 send_init_seq dev,typ
 
 lastr =nil
+llat = 0.0
+llon = 0.0
+
 IO.popen(cmd,'rt') do |pipe|
   csv = CSV.new(pipe, csv_opts)
   hdrs = csv.shift
@@ -354,14 +357,7 @@ IO.popen(cmd,'rt') do |pipe|
 
   csv.each do |row|
     next if row[:gps_numsat].to_i == 0
-    next if row[:gps_coord0].to_f == 0.0 && row[:gps_coord1].to_f == 0.0
     us = row[:time_us].to_i
-    if origin.nil? and row[:gps_numsat].to_i > 4
-      origin = {:lat => row[:gps_coord0], :lon => row[:gps_coord1],
-	:alt => row[:gps_altitude]}
-      msg = encode_origin origin
-      send_msg dev, msg
-    end
     if us > nv
       nv = us + intvl
       icnt  = (icnt + 1) % 10
@@ -369,19 +365,31 @@ IO.popen(cmd,'rt') do |pipe|
       send_msg dev, msg
       case icnt
       when 0,2,4,6,8
-	msg = encode_gps row
-	send_msg dev, msg
+	llat = row[:gps_coord0].to_f
+	llon = row[:gps_coord1].to_f
+	if  llat != 0.0 and llon != 0.0
+	  msg = encode_gps row
+	  send_msg dev, msg
+	  if origin.nil? and row[:gps_numsat].to_i > 4
+	    origin = {:lat => row[:gps_coord0], :lon => row[:gps_coord1],#
+	      :alt => row[:gps_altitude]}
+	    msg = encode_origin origin
+	    send_msg dev, msg
+	  end
+	end
       when 5
-	if origin
+	if  llat != 0.0 and llon != 0.0
 	  msg = encode_origin origin
 	  send_msg dev, msg
 	end
       when 1,3,7,9
-	lastr = row
-	msg = encode_stats row
-	send_msg dev, msg
-	msg = encode_nav row
-	send_msg dev, msg
+	if  llat != 0.0 and llon != 0.0
+	  lastr = row
+	  msg = encode_stats row
+	  send_msg dev, msg
+	  msg = encode_nav row
+	  send_msg dev, msg
+	end
       end
       sleep (mindelay) ? 0.01 : 0.1
     end

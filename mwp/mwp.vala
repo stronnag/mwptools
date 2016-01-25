@@ -207,6 +207,7 @@ public class MWPlanner : Gtk.Application {
     private static bool force_nc = false;
     private static bool force4 = false;
     private static string mwoptstr;
+    private static string llstr=null;
     private static string layfile=null;
 
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
@@ -275,6 +276,8 @@ public class MWPlanner : Gtk.Application {
     private bool have_mspradio = false;
     private uint16 sensor;
     private uint8 profile = 0;
+    private double clat = 0.0;
+    private double clon = 0.0;
 
         /* for jump protection */
     private double xlon = 0;
@@ -427,6 +430,7 @@ public class MWPlanner : Gtk.Application {
         { "force-type", 't', 0, OptionArg.INT, out dmrtype, "Model type", null},
         { "force4", '4', 0, OptionArg.NONE, out force4, "Force ipv4", null},                { "debug-flags", 0, 0, OptionArg.INT, out debug_flags, "Debug flags (mask)", null},
         { "replay", 'p', 0, OptionArg.STRING, out rfile, "replay file", null},
+        { "centre", 0, 0, OptionArg.STRING, out llstr, "Centre position", null},
         {null}
     };
 
@@ -890,6 +894,7 @@ public class MWPlanner : Gtk.Application {
                             init_sstats();
                             armed = 0;
                             npos = false;
+                            markers.negate_rth();
                             armed_spinner.stop();
                             armed_spinner.hide();
                             if (conf.audioarmed == true)
@@ -1081,7 +1086,21 @@ public class MWPlanner : Gtk.Application {
 
         if (mission == null)
         {
-            view.center_on(conf.latitude,conf.longitude);
+            if(llstr != null)
+            {
+                var parts = llstr.split(",");
+                if(parts.length == 2)
+                {
+                    clat = double.parse(parts[0]);
+                    clon = double.parse(parts[1]);
+                }
+            }
+            if(clat == 0.0 && clon == 0.0)
+            {
+                clat= conf.latitude;
+                clon = conf.longitude;
+            }
+            view.center_on(clat,clon);
             view.set_property("zoom-level", conf.zoom);
             zoomer.adjustment.value = conf.zoom;
         }
@@ -1460,6 +1479,16 @@ public class MWPlanner : Gtk.Application {
         send_cmd(req, null, 0);
     }
 
+    private void init_craft_icon()
+    {
+        if(craft == null)
+        {
+            MWPLog.message("init icon\n");
+            craft = new Craft(view, vi.mrtype,norotate, gps_trail);
+            craft.park();
+        }
+    }
+
     private ulong build_pollreqs()
     {
         ulong reqsize = 0;
@@ -1486,12 +1515,7 @@ public class MWPlanner : Gtk.Application {
             if(naze32)
                 requests += MSP.Cmds.GPSSVINFO;
             reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS);
-
-            if(craft == null)
-            {
-                craft = new Craft(view, vi.mrtype,norotate, gps_trail);
-                craft.park();
-            }
+            init_craft_icon();
             gpscnt = 0;
         }
         else
@@ -1527,6 +1551,7 @@ public class MWPlanner : Gtk.Application {
             armtime = 0;
             duration = -1;
             npos = false;
+            markers.negate_rth();
             no_ofix = 0;
         }
         else
@@ -1544,17 +1569,14 @@ public class MWPlanner : Gtk.Application {
 
         if(armed != larmed)
         {
-            if(armed == 1 && craft == null)
-            {
-                craft = new Craft(view, vi.mrtype, norotate, gps_trail);
-                craft.park();
-            }
+            if(armed == 1)
+                init_craft_icon();
 
             if(gps_trail)
             {
                 if(armed == 1 && craft != null)
                 {
-                    npos = false;
+//                    npos = false;
                     craft.init_trail();
                 }
             }
@@ -1591,6 +1613,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 navstatus.reset_states();
                 npos = false;
+                markers.negate_rth();
             }
         }
         larmed = armed;
@@ -1845,11 +1868,7 @@ public class MWPlanner : Gtk.Application {
                     if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
                     {
                         sflags |= NavStatus.SPK.GPS;
-                        if(craft == null)
-                        {
-                            craft = new Craft(view, vi.mrtype, norotate, gps_trail);
-                            craft.park();
-                        }
+                        init_craft_icon();
                     }
                 }
                 else
@@ -2352,12 +2371,7 @@ public class MWPlanner : Gtk.Application {
                 gf.speed = *rp++;
                 rp = deserialise_i32(rp, out gf.alt);
                 gf.sats = *rp;
-
-                if(craft == null)
-                {
-                    craft = new Craft(view, 3, norotate, gps_trail);
-                    craft.park();
-                }
+                init_craft_icon();
                 MSP_ALTITUDE al = MSP_ALTITUDE();
                 al.estalt = gf.alt;
                 al.vario = 0;
@@ -2465,6 +2479,7 @@ public class MWPlanner : Gtk.Application {
                         mwflags = 0;
                         armed = 0;
                         npos = false;
+                        markers.negate_rth();
                     }
                 }
                 if(ltmflags == 2)
@@ -2495,9 +2510,10 @@ public class MWPlanner : Gtk.Application {
                         want_special |= POSMODE.RTH;
                     else if (ltmflags < 5)
                         craft.set_normal();
-//                  MWPLog.message("New LTM Mode %d\n", ltmflags);
+                    MWPLog.message("New LTM Mode %d %d %f %f\n",
+                                   ltmflags,armed,xlat, xlon);
                 }
-                if(want_special != 0 && npos)
+                if(want_special != 0 /*&& npos*/)
                     process_pos_states(xlat,xlon, 0);
 
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
@@ -2515,11 +2531,9 @@ public class MWPlanner : Gtk.Application {
 
                 if(craft == null)
                 {
-                    var typ = Mav.mav2mw(m.type);
-                    craft = new Craft(view, typ, norotate, gps_trail);
-                    craft.park();
+                    Mav.mav2mw(m.type);
+                    init_craft_icon();
                 }
-
 
                 if ((m.base_mode & 128) == 128)
                     armed = 1;
@@ -2731,30 +2745,40 @@ public class MWPlanner : Gtk.Application {
 
     private void process_pos_states(double lat, double lon, double alt)
     {
-        if((want_special & POSMODE.HOME) != 0)
+        if (lat == 0.0 && lon == 0.0)
+            return;
+
+        if((armed != 0) && ((want_special & POSMODE.HOME) != 0))
         {
+            npos = true;
             want_special &= ~POSMODE.HOME;
-            MWPLog.message("Set home %f %f\n", lat, lon);
             home_pos.lat = xlat = lat;
             home_pos.lon = xlon = lon;
             home_pos.alt = alt;
-            npos = true;
-            if(ls.mission_points() > 0)
+            int mptrs;
+            if(ls.mission_points(out mptrs))
             {
-                    markers.add_rth_point(lat,lon);
+                markers.add_rth_point(lat,lon);
             }
+            init_craft_icon();
             if(craft != null)
                 craft.special_wp(Craft.Special.HOME, lat, lon);
             else
+            {
                 npos = false;
+                markers.negate_rth();
+            }
+            MWPLog.message("Set home %f %f (%s)\n", lat, lon, npos.to_string());
         }
 
         if((want_special & POSMODE.PH) != 0)
         {
             want_special &= ~POSMODE.PH;
+            MWPLog.message("Set poshold %f %f\n", lat, lon);
             ph_pos.lat = lat;
             ph_pos.lon = lon;
             ph_pos.alt = alt;
+            init_craft_icon();
             if(craft != null)
                 craft.special_wp(Craft.Special.PH, lat, lon);
         }
@@ -2764,12 +2788,14 @@ public class MWPlanner : Gtk.Application {
             rth_pos.lat = lat;
             rth_pos.lon = lon;
             rth_pos.alt = alt;
+            init_craft_icon();
             if(craft != null)
                 craft.special_wp(Craft.Special.RTH, lat, lon);
         }
         if((want_special & POSMODE.WP) != 0)
         {
             want_special &= ~POSMODE.WP;
+            init_craft_icon();
             if(craft != null)
                 craft.special_wp(Craft.Special.WP, lat, lon);
         }
@@ -3122,6 +3148,7 @@ public class MWPlanner : Gtk.Application {
             craft.remove_marker();
         }
         npos = false;
+        markers.negate_rth();
         set_error_status(null);
     }
 
@@ -3552,6 +3579,7 @@ public class MWPlanner : Gtk.Application {
         robj = null;
         window.title = "mwp";
         npos = false;
+        markers.negate_rth();
     }
 
     private void run_replay(string fn, bool delay)
@@ -3568,6 +3596,7 @@ public class MWPlanner : Gtk.Application {
                 craft.park();
 
             npos = false;
+            markers.negate_rth();
             conf.logarmed = false;
             if(delay == false)
                 conf.audioarmed = false;
