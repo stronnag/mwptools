@@ -1006,6 +1006,7 @@ public class MWPlanner : Gtk.Application {
 
         markers = new MWPMarkers();
         view.add_layer (markers.path);
+        view.add_layer (markers.hpath);
         view.add_layer (markers.markers);
         view.button_release_event.connect((evt) => {
                 if(evt.button == 3)
@@ -2755,11 +2756,8 @@ public class MWPlanner : Gtk.Application {
             home_pos.lat = xlat = lat;
             home_pos.lon = xlon = lon;
             home_pos.alt = alt;
-            int mptrs;
-            if(ls.mission_points(out mptrs))
-            {
+            if(ls.have_rth)
                 markers.add_rth_point(lat,lon);
-            }
             init_craft_icon();
             if(craft != null)
                 craft.special_wp(Craft.Special.HOME, lat, lon);
@@ -3435,6 +3433,8 @@ public class MWPlanner : Gtk.Application {
             markers.add_list_store(ls);
             last_file = fname;
             update_title_from_file(fname);
+            if(npos && ls.have_rth)
+                markers.add_rth_point(home_pos.lat,home_pos.lon);
         }
         else
         {

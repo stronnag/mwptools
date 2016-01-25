@@ -25,13 +25,18 @@ public class MWPMarkers : GLib.Object
     public  Champlain.PathLayer path;
     public Champlain.MarkerLayer markers;
     public Champlain.Marker homep = null;
-
+    public Champlain.Marker rthp = null;
+    public  Champlain.PathLayer hpath;
     public MWPMarkers()
     {
         markers = new Champlain.MarkerLayer();
         path = new Champlain.PathLayer();
+        hpath = new Champlain.PathLayer();
+        List<uint> llist = new List<uint>();
+        llist.append(10);
+        llist.append(5);
+        hpath.set_dash(llist);
     }
-
 
     private void get_text_for(MSP.Action typ, string no, out string text, out  Clutter.Color colour)
     {
@@ -84,13 +89,40 @@ public class MWPMarkers : GLib.Object
     {
         if(homep == null)
         {
+            stderr.puts("++++++++++++++ rth\n");
             homep = new  Champlain.Marker();
             homep.set_location (lat,lon);
-            path.add_node(homep);
+            hpath.add_node(homep);
         }
         else
         {
+            stderr.puts("*************** rth\n");
             homep.set_location (lat,lon);
+        }
+    }
+
+    private void find_rth_pos(out double lat, out double lon, bool ind = false)
+    {
+        List<weak Champlain.Location> m= path.get_nodes();
+        Champlain.Location lp = m.last().data;
+        lat = lp.get_latitude();
+        lon = lp.get_longitude();
+    }
+
+    private void update_rth_base()
+    {
+        double lat,lon;
+        if(rthp == null)
+        {
+            rthp = new  Champlain.Marker();
+            find_rth_pos(out lat, out lon, true);
+            rthp.set_location (lat,lon);
+            hpath.add_node(rthp);
+        }
+        else
+        {
+            find_rth_pos(out lat, out lon);
+            rthp.set_location (lat,lon);
         }
     }
 
@@ -98,12 +130,12 @@ public class MWPMarkers : GLib.Object
     {
         if(homep != null)
         {
-            path.remove_node(homep);
+            hpath.remove_node(homep);
         }
-//        homep = null;
+        homep = null;
     }
 
-    public void add_single_element( ListBox l,  Gtk.TreeIter iter, bool rth)
+    public Champlain.Marker add_single_element( ListBox l,  Gtk.TreeIter iter, bool rth)
     {
         Gtk.ListStore ls = l.list_model;
         Champlain.Label marker;
@@ -129,10 +161,12 @@ public class MWPMarkers : GLib.Object
         marker.set_location (lat,lon);
         marker.set_draggable(true);
         markers.add_marker (marker);
-        if (rth == false && typ != MSP.Action.SET_POI)
+        if (rth == false)
         {
-            path.add_node(marker);
+            if(typ != MSP.Action.SET_POI)
+                path.add_node(marker);
         }
+
         ls.set_value(iter,ListBox.WY_Columns.MARKER,marker);
 
 
@@ -156,8 +190,11 @@ public class MWPMarkers : GLib.Object
                 }
                 ls.set_value(iter, ListBox.WY_Columns.LAT, marker.get_latitude());
                 ls.set_value(iter, ListBox.WY_Columns.LON, marker.get_longitude() );
+// FIXME ???                update_rth_base();
                 l.calc_mission();
             } );
+
+        return (Champlain.Marker)marker;
     }
 
     public void add_list_store(ListBox l)
@@ -165,6 +202,7 @@ public class MWPMarkers : GLib.Object
         Gtk.TreeIter iter;
         Gtk.ListStore ls = l.list_model;
         bool rth = false;
+        Champlain.Marker mk = null;
 
         remove_all();
         for(bool next=ls.get_iter_first(out iter);next;next=ls.iter_next(ref iter))
@@ -176,6 +214,12 @@ public class MWPMarkers : GLib.Object
             {
                 case MSP.Action.RTH:
                     rth = true;
+                    update_rth_base();
+                    if(mk != null)
+                    {
+                        stderr.puts("ADD MARKER UPD\n");
+                        add_rth_motion(mk);
+                    }
                     ls.set_value(iter,ListBox.WY_Columns.MARKER, (Champlain.Label)null);
                     break;
 
@@ -185,15 +229,24 @@ public class MWPMarkers : GLib.Object
                 break;
                 case MSP.Action.POSHOLD_UNLIM:
                 case MSP.Action.LAND:
-                    add_single_element(l,iter,rth);
+                    mk = add_single_element(l,iter,rth);
                     rth = true;
                     break;
 
                 default:
-                    add_single_element(l,iter,rth);
+                    mk = add_single_element(l,iter,rth);
                     break;
             }
         }
+    }
+    private void add_rth_motion(Champlain.Marker lp)
+    {
+        lp.drag_motion.connect(() => {
+                double nlat, nlon;
+                nlat = lp.get_latitude();
+                nlon = lp.get_longitude();
+                rthp.set_location (nlat,nlon);
+            });
     }
 
     public void change_label(Champlain.Label mk, MSP.Action old, MSP.Action typ, string no)
@@ -203,32 +256,22 @@ public class MWPMarkers : GLib.Object
         get_text_for(typ, no, out text, out colour);
         mk.set_color (colour);
         mk.set_text(text);
-            // FIXME if old type == SET_POI, then add node unless new RTH
-            // FIXME if new type == RTH or SET_POI remove node from location
-        if (old == MSP.Action.SET_POI && (typ != MSP.Action.RTH && typ != MSP.Action.SET_HEAD
-                                          && typ != MSP.Action.JUMP))
-        {
+        if (old == MSP.Action.SET_POI &&
+            (typ != MSP.Action.RTH && typ != MSP.Action.SET_HEAD
+             && typ != MSP.Action.JUMP))
             path.add_node((Champlain.Marker)mk);
-        }
-        if (typ == MSP.Action.SET_POI || typ == MSP.Action.RTH || typ == MSP.Action.SET_HEAD
+
+        if (typ == MSP.Action.SET_POI || typ == MSP.Action.RTH
+            || typ == MSP.Action.SET_HEAD
             || typ == MSP.Action.JUMP)
-        {
             path.remove_node((Champlain.Marker)mk);
-        }
     }
 
     public void remove_all()
     {
         markers.remove_all();
         path.remove_all();
+        hpath.remove_all();
+        homep = rthp = null;
     }
 }
-/*
-                    Gtk.TreeIter _iter = get_iter_for_no(no);
-                    var n = int.parse(no);
-                    n = n - 1;
-                    Gtk.TreeIter _iter;
-                    Gtk.TreePath path = new Gtk.TreePath.from_string (n.to_string());
-                    bool tmp = ls.get_iter (out _iter, path);
-                    assert (tmp == true);
-*/

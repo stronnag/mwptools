@@ -55,8 +55,8 @@ public class ListBox : GLib.Object
     private ShapeDialog shapedialog;
     private DeltaDialog deltadialog;
     private SpeedDialog speeddialog;
-    int lastid = 0;
-    bool have_rth = false;
+    public int lastid {get; private set; default= 0;}
+    public bool have_rth {get; private set; default= false;}
 
     public ListBox()
     {
@@ -66,12 +66,6 @@ public class ListBox : GLib.Object
                    s == "default-nav-speed")
                     calc_mission();
             });
-    }
-
-    public bool mission_points(out int last)
-    {
-        last = lastid;
-        return have_rth;
     }
 
     public void import_mission(Mission ms)
