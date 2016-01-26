@@ -35,6 +35,8 @@ public class MWPMarkers : GLib.Object
         List<uint> llist = new List<uint>();
         llist.append(10);
         llist.append(5);
+        Clutter.Color orange = {0xff, 0xa0, 0x0, 0xc8};
+        hpath.set_stroke_color(orange);
         hpath.set_dash(llist);
     }
 
@@ -89,14 +91,12 @@ public class MWPMarkers : GLib.Object
     {
         if(homep == null)
         {
-            stderr.puts("++++++++++++++ rth\n");
             homep = new  Champlain.Marker();
             homep.set_location (lat,lon);
             hpath.add_node(homep);
         }
         else
         {
-            stderr.puts("*************** rth\n");
             homep.set_location (lat,lon);
         }
     }
@@ -217,7 +217,6 @@ public class MWPMarkers : GLib.Object
                     update_rth_base();
                     if(mk != null)
                     {
-                        stderr.puts("ADD MARKER UPD\n");
                         add_rth_motion(mk);
                     }
                     ls.set_value(iter,ListBox.WY_Columns.MARKER, (Champlain.Label)null);
