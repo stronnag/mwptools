@@ -650,6 +650,12 @@ public class MWPlanner : Gtk.Application {
                 }
             });
 
+        window.destroy.connect(() => {
+                cleanup();
+                remove_window(window);
+                this.quit();
+            });
+
         mseed = new MapSeeder(builder);
         menuop =  builder.get_object ("menu_seed") as Gtk.MenuItem;
         menuop.activate.connect(() => {
