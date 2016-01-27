@@ -170,6 +170,7 @@ public class MWPlanner : Gtk.Application {
     private uint32 capability;
     private uint cmdtid;
     private uint spktid;
+    private uint upltid;
     private Craft craft;
     private bool follow = false;
     private bool prlabel = false;
@@ -243,6 +244,7 @@ public class MWPlanner : Gtk.Application {
     private MSP.Cmds[] requests = {};
     private int tcycle = 0;
     private bool dopoll = false;
+    private bool xdopoll = false;
     private bool rxerr = false;
 
     private uint64 acycle;
@@ -1342,7 +1344,7 @@ public class MWPlanner : Gtk.Application {
                                 toc++;
                                 if (failcount >= tlimit)
                                 {
-                                    MWPLog.message("TOC on %d\n", tcycle);
+                                    MWPLog.message("TOC0 (%d)\n", tcycle);
                                     failcount = 0;
                                     tcycle = 0;
                                     msg_poller();
@@ -1350,18 +1352,21 @@ public class MWPlanner : Gtk.Application {
                             }
                         }
                     }
-                    else if ((nticks - lastok > tlimit) )
+                    else if ((nticks - lastok) > tlimit)
                     {
                         toc++;
+                        MWPLog.message("TOC1 (%d)\n", tcycle);
                         lastok = nticks;
-                        MWPLog.message("TOC1 on %d\n", tcycle);
                         tcycle = 0;
                         msg_poller();
                     }
                 }
                 else
                 {
-                    if(last_tm > 0 && ((nticks - last_tm) > MAVINTVL) && msp.available)
+                    if( xdopoll == false &&
+                        last_tm > 0 &&
+                        ((nticks - last_tm) > MAVINTVL)
+                        && msp.available)
                     {
                         MWPLog.message("Restart poller on MAVINT\n");
                         have_api = have_vers = have_misc =
@@ -1624,6 +1629,17 @@ public class MWPlanner : Gtk.Application {
             }
         }
         larmed = armed;
+    }
+
+    private void reset_poller(bool remove = true)
+    {
+        if(remove)
+            remove_tid(ref upltid);
+        lastok = nticks;
+        dopoll = xdopoll;
+        xdopoll = false;
+        if(dopoll)
+            msg_poller();
     }
 
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
@@ -2229,6 +2245,7 @@ public class MWPlanner : Gtk.Application {
                                 sb.append(" ");
                             }
                         }
+                        reset_poller();
                         var mtxt = "Validation for wp %d fails for %s".printf(w.wp_no, sb.str);
                         bleet_sans_merci("beep-sound.ogg");
                         validatelab.set_text("⚠"); // u+26a0
@@ -2243,6 +2260,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     else
                     {
+                        reset_poller();
                         bleet_sans_merci("beep-sound.ogg");
                         validatelab.set_text("✔"); // u+2714
                         mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
@@ -2966,6 +2984,8 @@ public class MWPlanner : Gtk.Application {
     {
         validatelab.set_text("");
         var wps = ls.to_wps();
+        xdopoll = dopoll;
+        dopoll = false;
         if(wps.length == 0)
         {
             MSP_WP w0 = MSP_WP();
@@ -2994,6 +3014,15 @@ public class MWPlanner : Gtk.Application {
         wpmgr.wpidx = 0;
         wpmgr.wps = wps;
         wpmgr.wp_flag = WPDL.VALIDATE;
+
+        var timeo = wps.length*8000000/msp.baudrate;
+        upltid = Timeout.add(timeo, () => {
+                reset_poller(false);
+                MWPLog.message("WP upload probably failed\n");
+                mwp_warning_box("WP upload timeout.\nThe upload has probably failed",
+                                Gtk.MessageType.ERROR);
+                return false;
+            });
 
         uint8 wtmp[64];
         var nb = serialise_wp(wpmgr.wps[wpmgr.wpidx], wtmp);
