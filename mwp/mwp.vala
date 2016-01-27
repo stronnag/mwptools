@@ -3015,7 +3015,7 @@ public class MWPlanner : Gtk.Application {
         wpmgr.wps = wps;
         wpmgr.wp_flag = WPDL.VALIDATE;
 
-        var timeo = wps.length*8000000/msp.baudrate;
+        var timeo = 1+(wps.length*8000000/msp.baudrate);
         upltid = Timeout.add(timeo, () => {
                 reset_poller(false);
                 MWPLog.message("WP upload probably failed\n");
