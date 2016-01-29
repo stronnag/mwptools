@@ -47,7 +47,7 @@ public class Craft : GLib.Object
 
     private static string[] icons =
     {
-        "QuadX.png", //0
+        "arrow.png", //0
         "Tri.png",   //1
         "QuadP.png", // 2
         "QuadX.png", // 3
