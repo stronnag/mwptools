@@ -21,7 +21,6 @@ using Clutter;
 
 public class MWPMarkers : GLib.Object
 {
-
     public  Champlain.PathLayer path;
     public Champlain.MarkerLayer markers;
     public Champlain.Marker homep = null;
@@ -87,13 +86,33 @@ public class MWPMarkers : GLib.Object
         }
     }
 
-    public void add_rth_point(double lat, double lon)
+    public bool calc_rth_leg(out double extra)
+    {
+        bool res;
+        if(res = (homep != null && rthp != null))
+        {
+            double cse;
+            Geo.csedist(homep.latitude, homep.longitude,
+                        rthp.latitude, rthp.longitude,
+                        out extra, out cse);
+        }
+        else
+        {
+            extra = 0.0;
+        }
+        return res;
+    }
+
+    public void add_rth_point(double lat, double lon, ListBox l)
     {
         if(homep == null)
         {
+            double extra;
             homep = new  Champlain.Marker();
             homep.set_location (lat,lon);
             hpath.add_node(homep);
+            if(calc_rth_leg(out extra))
+                l.calc_mission(extra);
         }
         else
         {
@@ -109,15 +128,18 @@ public class MWPMarkers : GLib.Object
         lon = lp.get_longitude();
     }
 
-    private void update_rth_base()
+    private void update_rth_base(ListBox l)
     {
         double lat,lon;
         if(rthp == null)
         {
+            double extra;
             rthp = new  Champlain.Marker();
             find_rth_pos(out lat, out lon, true);
             rthp.set_location (lat,lon);
             hpath.add_node(rthp);
+            if(calc_rth_leg(out extra))
+                l.calc_mission(extra);
         }
         else
         {
@@ -190,8 +212,9 @@ public class MWPMarkers : GLib.Object
                 }
                 ls.set_value(iter, ListBox.WY_Columns.LAT, marker.get_latitude());
                 ls.set_value(iter, ListBox.WY_Columns.LON, marker.get_longitude() );
-// FIXME ???                update_rth_base();
-                l.calc_mission();
+                double extra;
+                calc_rth_leg(out extra);
+                l.calc_mission(extra);
             } );
 
         return (Champlain.Marker)marker;
@@ -214,7 +237,7 @@ public class MWPMarkers : GLib.Object
             {
                 case MSP.Action.RTH:
                     rth = true;
-                    update_rth_base();
+                    update_rth_base(l);
                     if(mk != null)
                     {
                         add_rth_motion(mk);

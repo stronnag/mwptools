@@ -2781,7 +2781,7 @@ public class MWPlanner : Gtk.Application {
             home_pos.lon = xlon = lon;
             home_pos.alt = alt;
             if(ls.have_rth)
-                markers.add_rth_point(lat,lon);
+                markers.add_rth_point(lat,lon,ls);
             init_craft_icon();
             if(craft != null)
                 craft.special_wp(Craft.Special.HOME, lat, lon);
@@ -3469,7 +3469,7 @@ public class MWPlanner : Gtk.Application {
             last_file = fname;
             update_title_from_file(fname);
             if(npos && ls.have_rth)
-                markers.add_rth_point(home_pos.lat,home_pos.lon);
+                markers.add_rth_point(home_pos.lat,home_pos.lon,ls);
         }
         else
         {

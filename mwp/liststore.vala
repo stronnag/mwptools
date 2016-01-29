@@ -964,7 +964,7 @@ public class ListBox : GLib.Object
         calc_mission();
     }
 
-    public void calc_mission()
+    public void calc_mission(double extra=0)
     {
         string route;
 
@@ -975,7 +975,7 @@ public class ListBox : GLib.Object
             int lt;
             int et;
 
-            var res = calc_mission_dist(out d, out lt, out et);
+            var res = calc_mission_dist(out d, out lt, out et, extra);
             if (res == true)
             {
                 route = "Distance: %.0f%s, fly: %ds, loiter: %ds".printf(
@@ -993,7 +993,7 @@ public class ListBox : GLib.Object
         mp.stslabel.set_text(route);
     }
 
-    public bool calc_mission_dist(out double d, out int lt, out int et)
+    public bool calc_mission_dist(out double d, out int lt, out int et,double extra=0.0)
     {
         Gtk.TreeIter iter;
         MissionItem[] arry = {};
@@ -1116,6 +1116,11 @@ public class ListBox : GLib.Object
                 lspd = (p1 == 0) ? MWPlanner.conf.nav_speed :
                     ((double)p1)/SPEED_CONV;
             } while (n < nsize);
+        }
+        if(extra != 0)
+        {
+            d+=extra;
+            ets += (extra*1852/ MWPlanner.conf.nav_speed);
         }
         d *= 1852.0;
         et = (int)ets;
