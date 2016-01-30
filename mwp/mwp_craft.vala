@@ -102,7 +102,6 @@ public class Craft : GLib.Object
 
         Clutter.Color red = { 0xff,0,0, 0xff};
         ici = new Champlain.Point.full(15.0, red);
-
         path = new Champlain.PathLayer();
         path_colour = trk_cyan;
 
@@ -124,9 +123,7 @@ public class Craft : GLib.Object
 // Not properly implemented in (13.10 and earlier) Ubuntu
 #if NOBB
 #else
-        Clutter.Point p = Clutter.Point.alloc();
-        p.init(0.5f,0.5f);
-        icon.set_property("pivot-point", p);
+        icon.set_pivot_point(0.5f, 0.5f);
 #endif
         icon.set_draw_background (false);
         park();
@@ -161,9 +158,7 @@ public class Craft : GLib.Object
 // Not properly implemented in (13.10 and earlier) Ubuntu
 #if NOBB
 #else
-        Clutter.Point p = Clutter.Point.alloc();
-        p.init(0.5f,0.5f);
-        icon.set_property("pivot-point", p);
+        icon.set_pivot_point(0.5f, 0.5f);
 #endif
         icon.set_draw_background (false);
         layer.add_marker (icon);

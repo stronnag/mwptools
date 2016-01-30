@@ -901,8 +901,7 @@ public class MWPlanner : Gtk.Application {
                             init_state();
                             init_sstats();
                             armed = 0;
-                            npos = false;
-                            markers.negate_rth();
+                            init_npos();
                             armed_spinner.stop();
                             armed_spinner.hide();
                             if (conf.audioarmed == true)
@@ -1421,6 +1420,12 @@ public class MWPlanner : Gtk.Application {
             });
     }
 
+    private void init_npos()
+    {
+        npos = false;
+        markers.negate_rth();
+    }
+
     private void send_poll()
     {
         var req=requests[tcycle];
@@ -1439,6 +1444,7 @@ public class MWPlanner : Gtk.Application {
                 init_state();
                 init_sstats();
                 dopoll = false;
+                init_npos();
                 add_cmd(MSP.Cmds.IDENT,null,0, 2500);
                 return;
             }
@@ -1562,8 +1568,7 @@ public class MWPlanner : Gtk.Application {
         {
             armtime = 0;
             duration = -1;
-            npos = false;
-            markers.negate_rth();
+            init_npos();
             no_ofix = 0;
         }
         else
@@ -1588,7 +1593,7 @@ public class MWPlanner : Gtk.Application {
             {
                 if(armed == 1 && craft != null)
                 {
-//                    npos = false;
+                    init_npos();
                     craft.init_trail();
                 }
             }
@@ -1624,8 +1629,7 @@ public class MWPlanner : Gtk.Application {
                     logb.active=false;
                 }
                 navstatus.reset_states();
-                npos = false;
-                markers.negate_rth();
+                init_npos();
             }
         }
         larmed = armed;
@@ -2503,8 +2507,7 @@ public class MWPlanner : Gtk.Application {
                         MWPLog.message("Disarm from LTM!\n");
                         mwflags = 0;
                         armed = 0;
-                        npos = false;
-                        markers.negate_rth();
+                        init_npos();
                     }
                 }
                 if(ltmflags == 2)
@@ -2787,8 +2790,7 @@ public class MWPlanner : Gtk.Application {
                 craft.special_wp(Craft.Special.HOME, lat, lon);
             else
             {
-                npos = false;
-                markers.negate_rth();
+                init_npos();
             }
             MWPLog.message("Set home %f %f (%s)\n", lat, lon, npos.to_string());
         }
@@ -3180,8 +3182,7 @@ public class MWPlanner : Gtk.Application {
         {
             craft.remove_marker();
         }
-        npos = false;
-        markers.negate_rth();
+        init_npos();
         set_error_status(null);
     }
 
@@ -3613,8 +3614,7 @@ public class MWPlanner : Gtk.Application {
         menureplay.label = "Replay Log file";
         robj = null;
         window.title = "mwp";
-        npos = false;
-        markers.negate_rth();
+        init_npos();
     }
 
     private void run_replay(string fn, bool delay)
@@ -3630,8 +3630,7 @@ public class MWPlanner : Gtk.Application {
             if(craft != null)
                 craft.park();
 
-            npos = false;
-            markers.negate_rth();
+            init_npos();
             conf.logarmed = false;
             if(delay == false)
                 conf.audioarmed = false;
