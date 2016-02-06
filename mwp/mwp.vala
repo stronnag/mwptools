@@ -408,6 +408,7 @@ public class MWPlanner : Gtk.Application {
     private uint lastok;
     private uint last_an = 0;
     private uint last_sv = 0;
+    private static bool offline = false;
     private static string rfile = null;
     private static int dmrtype=3; // default to quad
     private static DEBUG_FLAGS debug_flags = 0;
@@ -433,6 +434,7 @@ public class MWPlanner : Gtk.Application {
         { "force4", '4', 0, OptionArg.NONE, out force4, "Force ipv4", null},                { "debug-flags", 0, 0, OptionArg.INT, out debug_flags, "Debug flags (mask)", null},
         { "replay", 'p', 0, OptionArg.STRING, out rfile, "replay file", null},
         { "centre", 0, 0, OptionArg.STRING, out llstr, "Centre position", null},
+        { "offline", 0, 0, OptionArg.NONE, out offline, "force offline proxy mode", null},
         {null}
     };
 
@@ -538,7 +540,7 @@ public class MWPlanner : Gtk.Application {
             {
                 msources =   JsonMapDef.read_json_sources(msfn);
                 if(JsonMapDef.port != 0)
-                    JsonMapDef.run_proxy(conf.quaduri);
+                    JsonMapDef.run_proxy(conf.quaduri, offline);
             }
         }
 

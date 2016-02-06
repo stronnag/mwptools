@@ -82,6 +82,7 @@ public class SoupProxy : Soup.Server
 {
     private string basename;
     private string extname;
+    public bool offline = false;
     public static Pid cpid = 0;
 
     public SoupProxy(string uri)
@@ -140,6 +141,13 @@ public class SoupProxy : Soup.Server
                                   GLib.HashTable? query,
                                   Soup.ClientContext client)
     {
+
+        if(offline)
+        {
+            msg.set_status(404);
+            return;
+        }
+
         if (msg.method == "HEAD")
         {
             bool ok = false;
@@ -255,7 +263,7 @@ public class JsonMapDef : Object
         return sources;
     }
 
-    public static void run_proxy(string uri)
+    public static void run_proxy(string uri, bool offline=false)
     {
 #if BADSOUP
     string[] spawn_args = {"qproxy", port.to_string(), uri};
@@ -275,6 +283,7 @@ public class JsonMapDef : Object
         MWPLog.message("Starting proxy thread\n");
         new Thread<int>("proxy",() => {
                 var sp = new SoupProxy(uri);
+                sp.offline = offline;
                 try {
                     sp.listen_all(pt, 0);
                 } catch {
