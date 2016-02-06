@@ -35,6 +35,28 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
+void set_fd_speed(int fd, int baudrate)
+{
+    struct termios tio;
+    memset (&tio, 0, sizeof(tio));
+    tcgetattr(fd, &tio);
+    switch (baudrate)
+    {
+        case 0:      baudrate=B115200; break;
+        case 2400:   baudrate=B4800; break;
+        case 4800:   baudrate=B4800; break;
+        case 9600:   baudrate=B9600; break;
+        case 19200:  baudrate=B19200; break;
+        case 38400:  baudrate=B38400; break;
+        case 57600:  baudrate=B57600; break;
+        case 115200: baudrate=B115200; break;
+        case 230400: baudrate=B230400; break;
+    }
+    cfsetispeed(&tio,baudrate);
+    cfsetospeed(&tio,baudrate);
+    tcsetattr(fd,TCSANOW,&tio);
+}
+
 int open_serial(char *device, uint baudrate)
 {
     int fd;
@@ -43,6 +65,7 @@ int open_serial(char *device, uint baudrate)
     {
         struct termios tio;
         memset (&tio, 0, sizeof(tio));
+        tcgetattr(fd, &tio);
         cfmakeraw(&tio);
         tio.c_cflag |= (CS8 | CLOCAL | CREAD);
         tio.c_iflag |= IGNPAR;
@@ -50,25 +73,12 @@ int open_serial(char *device, uint baudrate)
         tio.c_lflag = 0;
         tio.c_cc[VTIME] = 1;
         tio.c_cc[VMIN] = 0;
-
-        switch (baudrate)
-        {
-            case 0:      baudrate=B115200; break;
-            case 2400:   baudrate=B4800; break;
-            case 4800:   baudrate=B4800; break;
-            case 9600:   baudrate=B9600; break;
-            case 19200:  baudrate=B19200; break;
-            case 38400:  baudrate=B38400; break;
-            case 57600:  baudrate=B57600; break;
-            case 115200: baudrate=B115200; break;
-            case 230400: baudrate=B230400; break;
-        }
-        cfsetispeed(&tio,baudrate);
-        cfsetospeed(&tio,baudrate);
         tcsetattr(fd,TCSANOW,&tio);
+        set_fd_speed(fd, baudrate);
     }
     return fd;
 }
+
 void close_serial(int fd)
 {
     tcflush(fd, TCIOFLUSH);
@@ -122,42 +132,76 @@ char *get_error_text (int dummy, char *pBuf, size_t bufSize)
 int open_serial(const char *device, int baudrate)
 {
     int fd=-1;
-
     hfd = CreateFile(device,
-                     GENERIC_READ | GENERIC_WRITE,
-                     0,
-                     NULL,
-                     OPEN_EXISTING,
-                     FILE_ATTRIBUTE_NORMAL,
-                     NULL);
+                            GENERIC_READ | GENERIC_WRITE,
+                            0,
+                            NULL,
+                            OPEN_EXISTING,
+                            FILE_ATTRIBUTE_NORMAL,
+                            NULL);
 
     if(hfd != INVALID_HANDLE_VALUE)
     {
-        DCB dcbserial = {0};
-        if (GetCommState(hfd, &dcbserial))
-        {
-            dcbserial.ByteSize=8;
-            dcbserial.StopBits=ONESTOPBIT;
-            dcbserial.Parity=NOPARITY;
-            dcbserial.BaudRate=baudrate;
-
-            if(!SetCommState(hfd, &dcbserial))
-            {
-                fd = -1;
-            }
-            else
-            {
-                fd = _open_osfhandle((long)hfd, O_RDWR);
-                COMMTIMEOUTS ctout;
-                GetCommTimeouts(hfd, &ctout);
-                ctout.ReadIntervalTimeout = 100;
-                ctout.ReadTotalTimeoutMultiplier = 0;
-                ctout.ReadTotalTimeoutConstant = 100;
-                SetCommTimeouts(hfd, &ctout);
-            }
-        }
+        fd = _open_osfhandle((long)hfd, O_RDWR);
+        COMMTIMEOUTS ctout;
+        GetCommTimeouts(hfd, &ctout);
+        ctout.ReadIntervalTimeout = 100;
+        ctout.ReadTotalTimeoutMultiplier = 0;
+        ctout.ReadTotalTimeoutConstant = 100;
+        SetCommTimeouts(hfd, &ctout);
+        set_fd_speed(fd, baudrate);
     }
     return fd;
+}
+
+set_fd_speed(int fd, int baudrate)
+{
+    fd=fd;
+    DCB dcb = {0};
+    BOOL res = FALSE;
+    char act = 'g';
+
+    dcb.DCBlength = sizeof(DCB);
+
+    if ((res = GetCommState(hfd, &dcb)))
+    {
+        act = 's';
+        dcb.ByteSize=8;
+        dcb.StopBits=ONESTOPBIT;
+        dcb.Parity=NOPARITY;
+        switch (baudrate)
+        {
+            case 0:
+            case 115200:
+                dcb.BaudRate=CBR_115200;
+                break;
+            case 2400:
+                dcb.BaudRate=CBR_2400;
+                break;
+            case 4800:
+                dcb.BaudRate=CBR_4800;
+                break;
+            case 9600:
+                dcb.BaudRate=CBR_9600;
+                break;
+            case 19200:
+                dcb.BaudRate=CBR_19200;
+                break;
+            case 38400:
+                dcb.BaudRate=CBR_38400;
+                break;
+            case 57600:
+                dcb.BaudRate=CBR_57600;
+                break;
+        }
+        res = SetCommState(hfd, &dcb);
+    }
+    if(!res)
+    {
+        char mbuf[1024];
+        fprintf(stderr,"Failed to %cet baud rate\n");
+        fprintf(stderr,"%s\n", get_error_text(0, mbuf, sizeof(mbuf)));
+    }
 }
 
 void close_serial(int fd)

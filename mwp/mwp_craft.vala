@@ -34,7 +34,6 @@ public class Craft : GLib.Object
     private Champlain.MarkerLayer hmlayer;
     private int npath = 0;
     private static Clutter.Color trk_cyan = { 0,0xff,0xff, 0xa0 };
-//    private static Clutter.Color trk_green = { 0,0xff,0, 0xa0 };
     private static Clutter.Color trk_green = { 0xce,0xff,0x9d, 0xa0 };
     private static Clutter.Color trk_yellow = { 0xff,0xff,0, 0xa0 };
     private static Clutter.Color trk_white = { 0xff,0xff,0xff, 0xa0 };

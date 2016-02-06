@@ -19,7 +19,11 @@
 
 /* Based on the Multiwii UBLOX parser, GPL by a cast of thousands */
 
-// valac --pkg posix --pkg gio-2.0 --pkg posix  ublox.vapi ublox-test.vala -o ublox-test
+extern int open_serial(string dev, int baudrate);
+extern void set_fd_speed(int fd, int baudrate);
+extern void close_serial(int fd);
+extern string default_name();
+extern unowned string get_error_text(int err, uint8[] buf, size_t len);
 
 public class MWSerial : Object
 {
@@ -35,7 +39,6 @@ public class MWSerial : Object
     private IOChannel io_read;
     public  bool available {private set; get;}
     private uint tag;
-    private Posix.termios oldtio;
     public uint baudrate  {private set; get;}
 
     private uint8 _ck_a;
@@ -64,7 +67,7 @@ public class MWSerial : Object
     private int64 stime;
     private int64 ltime;
 
-    public static string devname = "/dev/ttyUSB0";
+    public static string devname = null;
     public static int brate = 38400;
     private static bool ureset = false;
     private static bool force6 = false;
@@ -79,7 +82,7 @@ public class MWSerial : Object
         { "reset", 'r', 0, OptionArg.NONE, out ureset, "Reset device", null},
         { "no-init", 'n', 0, OptionArg.NONE, out noinit, "No init", null},
         { "no-autobaud", 'N', 0, OptionArg.NONE, out noautob, "No autobaud", null},
-        { "force-v6", '6', 0, OptionArg.NONE, out force6, "Force V6 init (vice ianv autodetect)", null},
+        { "force-v6", '6', 0, OptionArg.NONE, out force6, "Force V6 init (vice inav autodetect)", null},
         { "force-air", 'a', 0, OptionArg.NONE, out force_air, "Force airborne 4G", null},
         { "force-10hz", 'z', 0, OptionArg.NONE, out force_10hz, "Force 10Hz", null},
         {null}
@@ -144,52 +147,6 @@ public class MWSerial : Object
         fd = -1;
     }
 
-    private void set_rate(uint rate)
-    {
-        Posix.termios newtio = {0};
-        Posix.speed_t posix_baudrate;
-        switch(rate) {
-            case 9600:
-                posix_baudrate = Posix.B9600;
-                break;
-            case 19200:
-                posix_baudrate = Posix.B19200;
-                break;
-            case 38400:
-                posix_baudrate = Posix.B38400;
-                break;
-            case 57600:
-                posix_baudrate = Posix.B57600;
-                break;
-            case 115200:
-                posix_baudrate = Posix.B115200;
-                break;
-            case 230400:
-                posix_baudrate = Posix.B230400;
-                break;
-            default:
-                posix_baudrate = Posix.B115200;
-                break;
-        }
-        Posix.tcgetattr (fd, out newtio);
-        Posix.cfsetspeed(ref newtio, posix_baudrate);
-        Posix.tcsetattr(fd, Posix.TCSANOW, newtio);
-        baudrate = rate;
-    }
-
-    private void setup_fd (uint rate)
-    {
-        Posix.termios newtio = {0};
-        Posix.tcgetattr (fd, out newtio);
-        oldtio = newtio;
-        Posix.cfmakeraw(ref newtio);
-        newtio.c_cc[Posix.VTIME]=0;
-        newtio.c_cc[Posix.VMIN]=0;
-        Posix.tcsetattr(fd, Posix.TCSANOW, newtio);
-        set_rate(rate);
-        available = true;
-        setup_reader(fd);
-    }
 
     private void setup_reader(int fd)
     {
@@ -204,30 +161,23 @@ public class MWSerial : Object
         }
     }
 
-    private bool open(string device, uint rate)
+    private bool open(string device, int rate)
     {
-        fd = Posix.open(device, Posix.O_RDWR);
+        fd = open_serial(device, rate);
         if(fd < 0)
         {
+            uint8 [] sbuf = new uint8[1024];
             var lasterr=Posix.errno;
-            var s = Posix.strerror(lasterr);
+            var s = get_error_text(lasterr, sbuf, 1024);
             stderr.printf("%s (%d)\n", s, lasterr);
             fd = -1;
             available = false;
         }
         else
         {
-            setup_fd((int)rate);
             available = true;
             setup_reader(fd);
         }
-        return available;
-    }
-
-    public bool open_fd(int _fd, int rate)
-    {
-        fd = _fd;
-        setup_fd(rate);
         return available;
     }
 
@@ -247,8 +197,7 @@ public class MWSerial : Object
                 Source.remove(tag);
             }
             try  { io_read.shutdown(false); } catch {}
-            Posix.tcsetattr (fd, Posix.TCSANOW|Posix.TCSADRAIN, oldtio);
-            Posix.close(fd);
+            close_serial(fd);
             fd = -1;
         }
     }
@@ -513,7 +462,7 @@ public class MWSerial : Object
 
     public bool ublox_open(string devname, int brate)
     {
-        uint32 [] init_speed = {115200, 57600, 38400, 19200, 9600};
+        int [] init_speed = {115200, 57600, 38400, 19200, 9600};
 
 
         uint8 [] pedestrain = {
@@ -591,14 +540,18 @@ public class MWSerial : Object
         {
             if(noautob == false)
             {
-                foreach (var rate in init_speed)
+                if(str != "")
                 {
-                    set_rate(rate);
-                    ublox_write(fd, str.data);
-                    stdout.printf("%d => %s", (int)rate, str);
-                    Thread.usleep(100000);
+                    foreach (var rate in init_speed)
+                    {
+                        Thread.usleep(10000);
+                        set_fd_speed(fd, rate);
+                        ublox_write(fd, str.data);
+                        stdout.printf("%d => %s", (int)rate, str);
+                        Thread.usleep(10000);
+                    }
                 }
-                set_rate(brate);
+                set_fd_speed(fd, brate);
             }
 
             if(noinit == false)
@@ -663,6 +616,9 @@ public class MWSerial : Object
                           "options\n", args[0]);
             return 1;
         }
+
+        if(devname == null)
+            devname = default_name();
         return 0;
     }
 
