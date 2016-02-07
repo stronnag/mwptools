@@ -20,10 +20,9 @@
 
 /* Based on the Multiwii UBLOX parser, GPL by a cast of thousands */
 
-// valac --pkg posix --pkg gio-2.0 --pkg posix  ublox.vapi ublox-test.vala -o ublox-test
+extern int  init_signals();
 
 static MainLoop ml;
-static int sfd[2];
 static MWSerial msp;
 
 void show_stats(MWSerial s)
@@ -36,11 +35,6 @@ void show_stats(MWSerial s)
     stderr.puts("\n");
 }
 
-void signal_handler(int s)
-{
-    Posix.write(sfd[1], &s, sizeof(int));
-}
-
 private bool sig_reader (IOChannel gio, IOCondition condition)
 {
     int s=0;
@@ -48,7 +42,7 @@ private bool sig_reader (IOChannel gio, IOCondition condition)
     if(ret != sizeof(int))
         return false;
     show_stats(msp);
-    if(s == Posix.SIGINT)
+    if(s == 2 /*Posix.SIGINT*/)
         ml.quit();
     return true;
 }
@@ -62,24 +56,12 @@ public static int main (string[] args)
     {
         if(msp.ublox_open(MWSerial.devname, MWSerial.brate))
         {
-            int [] sigs = {Posix.SIGINT, Posix.SIGUSR1,
-                           Posix.SIGUSR2, Posix.SIGQUIT};
-            var mask = Posix.sigset_t();
-            Posix.sigemptyset(mask);
-            var act = Posix.sigaction_t ();
-            act.sa_handler = signal_handler;
-            act.sa_mask = mask;
-            act.sa_flags = 0;
-            foreach(var s in sigs)
-                Posix.sigaction (s, act, null);
-
-            if(0 == Posix.socketpair (SocketFamily.UNIX,
-                                      SocketType.DATAGRAM, 0, sfd))
+            int pfd = init_signals();
+            if(pfd != -1)
             {
-                var io_read  = new IOChannel.unix_new(sfd[0]);
+                var io_read  = new IOChannel.unix_new(pfd);
                 io_read.add_watch(IOCondition.IN, sig_reader);
             }
-            msp.init_timer();
             ml.run();
         }
     }

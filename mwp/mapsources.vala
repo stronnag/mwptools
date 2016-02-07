@@ -280,7 +280,7 @@ public class JsonMapDef : Object
         }
 #else
         var pt = JsonMapDef.port;
-        MWPLog.message("Starting proxy thread\n");
+        MWPLog.message("Starting proxy thread %s\n", (offline) ? "(offline)" : "");
         new Thread<int>("proxy",() => {
                 var sp = new SoupProxy(uri);
                 sp.offline = offline;

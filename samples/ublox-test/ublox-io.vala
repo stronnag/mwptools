@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
@@ -140,13 +139,23 @@ public class MWSerial : Object
 
     public signal void gps_update (UBLOX_UPD u);
 
+    public enum State
+    {
+        START = 0,
+        MOTION = 1,
+        POS = 2,
+        TIMEUTC = 3,
+        RATE = 4,
+        SBAS = 5
+    }
+
+    public int gps_state = State.START;
 
     public MWSerial()
     {
         available = false;
         fd = -1;
     }
-
 
     private void setup_reader(int fd)
     {
@@ -428,7 +437,7 @@ public class MWSerial : Object
                         _buffer.timeutc.hour,
                         _buffer.timeutc.min,
                         _buffer.timeutc.sec);
-                    stdout.printf("%s valid=%x\n", u.date, _buffer.timeutc.valid);
+                    stdout.printf("TIMEUTC: %s valid=%x\n", u.date, _buffer.timeutc.valid);
                     break;
                 default:
                     break;
@@ -437,15 +446,20 @@ public class MWSerial : Object
         else if(_class == 0x0a && _msg_id == 4)
         {
             var dt = timer.elapsed ();
-            stderr.printf("Version info after %fs\n", dt);
-            uint8 v1[30];
-            uint8 v2[10];
-            for(var j = 0; j < 30; j++)
-                v1[j] = _buffer.xbytes[j];
-            for(var j = 0; j < 10; j++)
-                v2[j] = _buffer.xbytes[j+30];
-            stderr.printf("%s %s\n", (string)v1, (string)v2);
-            gpsvers = int.parse((string)v2);
+            stdout.printf("Version info after %fs (%db)\n", dt, _payload_length);
+            unowned uint8* v2;
+            v2 = &_buffer.xbytes[30];
+            gpsvers = int.parse((string)(v2));
+            stdout.printf("SW: %s HW: %s\n", (string)_buffer.xbytes,(string)v2);
+                // V8 Extended versioning
+            if(_payload_length > 40)
+            {
+                for(int n = 40; n < _payload_length; n+= 30)
+                {
+                    v2 = &_buffer.xbytes[n];
+                    stdout.printf("ExtVer:  %s\n", (string)v2);
+                }
+            }
         }
         return ret;
     }
@@ -456,15 +470,73 @@ public class MWSerial : Object
         {
             Posix.write(fd, &b, 1);
             stats.txbytes++;
-                //            Thread.usleep(5);
+            Thread.usleep(10);
         }
     }
 
     public bool ublox_open(string devname, int brate)
     {
         int [] init_speed = {115200, 57600, 38400, 19200, 9600};
+        uint8 [] v7init = {0xB5, 0x62, 0x0A, 0x04, 0x00, 0x00, 0x0E, 0x34 };
+        string [] parts;
 
+        parts = devname.split ("@");
+        if(parts.length == 2)
+        {
+            devname = parts[0];
+            brate = int.parse(parts[1]);
+        }
+        stdout.printf("%s@%d\n", devname, brate);
 
+        var str="";
+        if(brate == 19200)
+            str = "$PUBX,41,1,0003,0001,19200,0*23\r\n";
+        else if (brate == 38400)
+            str= "$PUBX,41,1,0003,0001,38400,0*26\r\n";
+        else if (brate == 57600)
+            str = "$PUBX,41,1,0003,0001,57600,0*2D\r\n";
+        else if (brate == 115200)
+            str = "$PUBX,41,1,0003,0001,115200,0*1E\r\n";
+
+        open(devname, brate);
+        if(available)
+        {
+            if(noautob == false)
+            {
+                if(str != "")
+                {
+                    foreach (var rate in init_speed)
+                    {
+                        Thread.usleep(1000*10);
+                        set_fd_speed(fd, rate);
+                        ublox_write(fd, str.data);
+                        Thread.usleep(1000*10);
+                    }
+                }
+                set_fd_speed(fd, brate);
+                stdout.puts("Rate initialised\n");
+            }
+
+            if(noinit == false)
+            {
+                Thread.usleep(1000*10);
+                timer = new Timer ();
+                stdout.puts("Request version\n");
+                ublox_write(fd, v7init);
+            }
+            init_timer();
+            Timeout.add(250, () => {
+                    Timeout.add(100, () => {
+                            return setup_gps();
+                        });
+                    return false;
+                });
+        }
+        return available;
+    }
+
+    private bool setup_gps()
+    {
         uint8 [] pedestrain = {
             0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x03, 0x03, 0x00,           // CFG-NAV5 - Set engine settings (original MWII code)
             0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,           // Collected by resetting a GPS unit to defaults. Changing mode to Pedistrian and
@@ -510,98 +582,87 @@ public class MWSerial : Object
         uint8 [] rate_10hz = {
             0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0x64, 0x00, 0x01, 0x00, 0x01, 0x00, 0x7A, 0x12, // set rate to 10Hz (measurement period: 100ms, navigation rate: 1 cycle)
         };
-        uint8 [] v7init = {0xB5, 0x62, 0x0A, 0x04, 0x00, 0x00, 0x0E, 0x34 };
-        uint8 [] sbas = { 0xB5, 0x62, 0x06, 0x16, 0x08, 0x00, 0x03, 0x07, 0x03, 0x00, 0x51, 0x08, 0x00, 0x00, 0x8A, 0x41};
+       uint8 [] timeutc = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x21, 0x05, 0x31, 0x89 };
         uint8 [] reset = {0xB5, 0x62, 0x06, 0x04, 0x04, 0x00, 0xFF, 0x87,
                           0x00, 0x00, 0x94, 0xF5};
-       uint8 [] timeutc = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x21, 0x05, 0x31, 0x89 };
-       string [] parts;
+        uint8 [] sbas = {0xB5, 0x62, 0x06, 0x16, 0x08, 0x00, 0x03, 0x07, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x31, 0xE5};
 
-        parts = devname.split ("@");
-        if(parts.length == 2)
+        bool ret = true;
+        switch (gps_state)
         {
-            devname = parts[0];
-            brate = int.parse(parts[1]);
-        }
-        stdout.printf("%s@%d\n", devname, brate);
-
-        var str="";
-        if(brate == 19200)
-            str = "$PUBX,41,1,0003,0001,19200,0*23\r\n";
-        else if (brate == 38400)
-            str= "$PUBX,41,1,0003,0001,38400,0*26\r\n";
-        else if (brate == 57600)
-            str = "$PUBX,41,1,0003,0001,57600,0*2D\r\n";
-        else if (brate == 115200)
-            str = "$PUBX,41,1,0003,0001,115200,0*1E\r\n";
-
-        open(devname, brate);
-        if(available)
-        {
-            if(noautob == false)
-            {
-                if(str != "")
-                {
-                    foreach (var rate in init_speed)
-                    {
-                        Thread.usleep(10000);
-                        set_fd_speed(fd, rate);
-                        ublox_write(fd, str.data);
-                        stdout.printf("%d => %s", (int)rate, str);
-                        Thread.usleep(10000);
-                    }
-                }
-                set_fd_speed(fd, brate);
-            }
-
-            if(noinit == false)
-            {
-                ublox_write(fd, v7init);
-                timer = new Timer ();
-            }
-
-            Timeout.add(500, () => {
+            case State.START:
                     if(ureset)
                     {
-                        stderr.puts("send hard reset\n");
+                        stdout.puts("send hard reset\n");
                         ublox_write(fd, reset);
+                        ret = true;
+                    }
+                    else if(noinit == false)
+                    {
+                        stdout.printf("Disable NMEA\n");
+                        ublox_write(fd, nonmea); // 2
+                        gps_state++;
                     }
                     else
                     {
-                        if(noinit == false)
-                        {
-                            ublox_write(fd, nonmea); // 2
-                            if(force_air) // 0
-                                ublox_write(fd, air4g);
-                            else
-                                ublox_write(fd, pedestrain);
-
-                            if(force6 || gpsvers < 70000) //3
-                            {
-                                ublox_write(fd, posllh);
-                                stderr.printf("send INAV v6 init [%d]\n", gpsvers);
-                                ublox_write(fd, timeutc);
-                            }
-                            else
-                            {
-                                ublox_write(fd, pvt);
-                                stderr.printf("send INAV v7 init [%d]\n", gpsvers);
-                            }
-                            if(force_10hz || gpsvers >= 70000 )
-                                ublox_write(fd, rate_10hz);
-                            else
-                                ublox_write(fd, rate_5hz);
-
-                            ublox_write(fd, sbas);
-                        }
-                        else
-                            stderr.printf("No init requested\n");
+                        stdout.printf("No init requested\n");
+                        ret = true;
                     }
-                    return false;
-                });
+                    break;
+            case State.MOTION:
+                if(force_air) // 0
+                {
+                    stdout.printf("Set air 4G\n");
+                    ublox_write(fd, air4g);
+                }
+                else
+                {
+                    stdout.printf("Set pedestrian\n");
+                    ublox_write(fd, pedestrain);
+                }
+                gps_state++;
+                break;
+            case State.POS:
+                if(force6 || gpsvers < 70000) //3
+                {
+                    stdout.printf("send INAV ublox v6 init [%d] POSLLH\n", gpsvers);
+                    ublox_write(fd, posllh);
+                }
+                else
+                {
+                    ublox_write(fd, pvt);
+                    stdout.printf("send INAV ublox v7 init [%d] PVT\n", gpsvers);
+                    gps_state++;
+                }
+                gps_state++;
+                break;
+            case State.TIMEUTC:
+                stdout.printf("Set Neo 6 TimeUTC\n");
+                ublox_write(fd, timeutc);
+                gps_state++;
+                break;
+            case State.RATE:
+                if(force_10hz || gpsvers >= 70000 )
+                {
+                    stdout.printf("Set 10Hz\n");
+                    ublox_write(fd, rate_10hz);
+                }
+                else
+                {
+                    stdout.printf("Set 5Hz\n");
+                    ublox_write(fd, rate_5hz);
+                }
+                gps_state++;
+                break;
+            case State.SBAS:
+                stdout.printf("Set SBAS\n");
+                ublox_write(fd, sbas);
+                ret = false;
+                break;
         }
-        return available;
+        return ret;
     }
+
     public int parse_option(string [] args)
     {
         try {
