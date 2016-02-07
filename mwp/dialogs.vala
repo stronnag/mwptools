@@ -1044,7 +1044,7 @@ public class NavStatus : GLib.Object
     private Gdk.RGBA[] colors;
     private bool vinit = false;
     private bool mt_voice = false;
-    private AudioThread mt;
+    private AudioThread mt = null;
     private bool have_cg = false;
     private bool have_hdr = false;
 
@@ -1409,11 +1409,14 @@ public class NavStatus : GLib.Object
     {
         numsat = nsats;
         modsat = true;
-        if(urgent)
+        if(mt != null && urgent)
         {
             mt.message(AudioThread.Vox.MODSAT,true);
             modsat = false;
         }
+        else
+            MWPLog.message("sats with no audio\n");
+
     }
 
     public void announce(uint8 mask, bool _recip)
@@ -1483,7 +1486,7 @@ public class NavStatus : GLib.Object
         {
             logspeak_close();
         }
-//        stdout.printf("Start audio\n");
+//        MWPLog.message("Start audio\n");
         mt = new AudioThread();
         mt.start();
         mt_voice=true;
@@ -1564,6 +1567,7 @@ public class AudioThread : Object {
 
     public void start()
     {
+//        MWPLog.message("Start thread\n");
         thread = new Thread<int> ("mwp audio", () => {
                 Vox c;
                 while((c = msgs.pop()) != Vox.DONE)
