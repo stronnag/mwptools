@@ -532,6 +532,10 @@ public class MWPlanner : Gtk.Application {
             } catch {};
         }
 
+        var evol = Environment.get_variable("MWP_FORCE_OFFLINE");
+        if(evol != null)
+            offline = true;
+
         MapSource [] msources = {};
         if(conf.map_sources != null)
         {
