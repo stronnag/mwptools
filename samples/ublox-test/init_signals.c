@@ -1,0 +1,50 @@
+#define _GNU_SOURCE 1
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
+
+#if !defined( WIN32 )
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+static int sigs[]  = {SIGINT , SIGUSR1, SIGUSR2, SIGQUIT};
+#else
+#include <windows.h>
+#define pipe(__p1) _pipe(__p1,4096,_O_BINARY)
+static int sigs[]  = {SIGINT};
+#endif
+
+static int fds[2];
+
+void signal_handler(int s)
+{
+    write(fds[1], &s, sizeof(int));
+}
+
+int init_signals()
+{
+    fds[0] = -1;
+    if (-1 != pipe(fds))
+    {
+#if !defined( WIN32 )
+        struct sigaction sac;
+        sigemptyset(&(sac.sa_mask));
+        sac.sa_flags=0;
+        sac.sa_handler=signal_handler;
+#endif
+        int i;
+        for(i = 0; i < sizeof(sigs)/sizeof(int); i++)
+        {
+#if !defined( WIN32 )
+            sigaction(sigs[i], &sac, NULL);
+#else
+            signal(sigs[i], signal_handler);
+#endif
+        }
+    }
+    return fds[0];
+}
