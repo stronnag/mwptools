@@ -66,11 +66,7 @@ int open_serial(char *device, uint baudrate)
         memset (&tio, 0, sizeof(tio));
         tcgetattr(fd, &tio);
         cfmakeraw(&tio);
-        tio.c_cflag |= (CS8 | CLOCAL | CREAD);
-        tio.c_iflag |= IGNPAR;
-        tio.c_oflag = 0;
-        tio.c_lflag = 0;
-        tio.c_cc[VTIME] = 1;
+        tio.c_cc[VTIME] = 0;
         tio.c_cc[VMIN] = 0;
         tcsetattr(fd,TCSANOW,&tio);
         set_fd_speed(fd, baudrate);
