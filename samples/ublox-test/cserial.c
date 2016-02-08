@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#define _GNU_SOURCE 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -87,7 +86,9 @@ void close_serial(int fd)
 
 char *get_error_text (int errnum, char *buf, size_t buflen)
 {
-    return strerror_r(errnum, buf, buflen);
+    *buf = 0;
+    strerror_r(errnum, buf, buflen);
+    return buf;
 }
 
 #else
