@@ -481,6 +481,30 @@ public class MWSerial : Object
         }
     }
 
+    private string get_gps_speed_string()
+    {
+        var str = "";
+        switch (brate)
+        {
+            case 115200:
+                str = "$PUBX,41,1,0003,0001,115200,0*1E\r\n";
+                break;
+            case 57600:
+                str = "$PUBX,41,1,0003,0001,57600,0*2D\r\n";
+                break;
+            case 38400:
+                str = "$PUBX,41,1,0003,0001,38400,0*26\r\n";
+                break;
+            case 19200:
+                str = "$PUBX,41,1,0003,0001,19200,0*23\r\n";
+                break;
+            case 9600:
+                str = "$PUBX,41,1,0007,0003,9600,0*10\r\n";
+                break;
+        }
+        return str;
+    }
+
     public bool ublox_open(string devname, int brate)
     {
         string [] parts;
@@ -571,21 +595,9 @@ public class MWSerial : Object
             case State.SPEED4:
                 if(noautob == false)
                 {
+                    var str = get_gps_speed_string();
                     set_fd_speed(fd, init_speed[gps_state]);
-                    string str = null;
-                    if (brate == 115200)
-                        str = "$PUBX,41,1,0003,0001,115200,0*1E\r\n";
-                    else if (brate == 57600)
-                        str = "$PUBX,41,1,0003,0001,57600,0*2D\r\n";
-                    else if (brate == 38400)
-                        str = "$PUBX,41,1,0003,0001,38400,0*26\r\n";
-                    else if (brate == 19200)
-                        str = "$PUBX,41,1,0003,0001,19200,0*23\r\n";
-
-                    if(str != null)
-                    {
-                        ublox_write(fd, str.data);
-                    }
+                    ublox_write(fd, str.data);
                     gps_state++;
                 }
                 else
