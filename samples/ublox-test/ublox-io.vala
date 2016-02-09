@@ -141,12 +141,19 @@ public class MWSerial : Object
 
     public enum State
     {
-        START = 0,
-        MOTION = 1,
-        POS = 2,
-        TIMEUTC = 3,
-        RATE = 4,
-        SBAS = 5
+        SPEED0 = 0,
+        SPEED1,
+        SPEED2,
+        SPEED3,
+        SPEED4,
+        BAUDRATE,
+        V7INIT,
+        START,
+        MOTION,
+        POS,
+        TIMEUTC,
+        RATE,
+        SBAS
     }
 
     public int gps_state = State.START;
@@ -476,8 +483,6 @@ public class MWSerial : Object
 
     public bool ublox_open(string devname, int brate)
     {
-        int [] init_speed = {115200, 57600, 38400, 19200, 9600};
-        uint8 [] v7init = {0xB5, 0x62, 0x0A, 0x04, 0x00, 0x00, 0x0E, 0x34 };
         string [] parts;
 
         parts = devname.split ("@");
@@ -488,48 +493,13 @@ public class MWSerial : Object
         }
         stdout.printf("%s@%d\n", devname, brate);
 
-        var str="";
-        if(brate == 19200)
-            str = "$PUBX,41,1,0003,0001,19200,0*23\r\n";
-        else if (brate == 38400)
-            str= "$PUBX,41,1,0003,0001,38400,0*26\r\n";
-        else if (brate == 57600)
-            str = "$PUBX,41,1,0003,0001,57600,0*2D\r\n";
-        else if (brate == 115200)
-            str = "$PUBX,41,1,0003,0001,115200,0*1E\r\n";
-
         open(devname, brate);
         if(available)
         {
-            if(noautob == false)
-            {
-                if(str != "")
-                {
-                    foreach (var rate in init_speed)
-                    {
-                        Thread.usleep(1000*10);
-                        set_fd_speed(fd, rate);
-                        ublox_write(fd, str.data);
-                        Thread.usleep(1000*10);
-                    }
-                }
-                set_fd_speed(fd, brate);
-                stdout.puts("Rate initialised\n");
-            }
-
-            if(noinit == false)
-            {
-                Thread.usleep(1000*10);
-                timer = new Timer ();
-                stdout.puts("Request version\n");
-                ublox_write(fd, v7init);
-            }
+            gps_state = 0;
             init_timer();
-            Timeout.add(250, () => {
-                    Timeout.add(100, () => {
-                            return setup_gps();
-                        });
-                    return false;
+            Timeout.add(100, () => {
+                    return setup_gps();
                 });
         }
         return available;
@@ -586,10 +556,58 @@ public class MWSerial : Object
         uint8 [] reset = {0xB5, 0x62, 0x06, 0x04, 0x04, 0x00, 0xFF, 0x87,
                           0x00, 0x00, 0x94, 0xF5};
         uint8 [] sbas = {0xB5, 0x62, 0x06, 0x16, 0x08, 0x00, 0x03, 0x07, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x31, 0xE5};
+        int [] init_speed = {115200, 57600, 38400, 19200, 9600};
+        uint8 [] v7init = {0xB5, 0x62, 0x0A, 0x04, 0x00, 0x00, 0x0E, 0x34 };
+
 
         bool ret = true;
+
         switch (gps_state)
         {
+            case State.SPEED0:
+            case State.SPEED1:
+            case State.SPEED2:
+            case State.SPEED3:
+            case State.SPEED4:
+                if(noautob == false)
+                {
+                    set_fd_speed(fd, init_speed[gps_state]);
+                    string str = null;
+                    if (brate == 115200)
+                        str = "$PUBX,41,1,0003,0001,115200,0*1E\r\n";
+                    else if (brate == 57600)
+                        str = "$PUBX,41,1,0003,0001,57600,0*2D\r\n";
+                    else if (brate == 38400)
+                        str = "$PUBX,41,1,0003,0001,38400,0*26\r\n";
+                    else if (brate == 19200)
+                        str = "$PUBX,41,1,0003,0001,19200,0*23\r\n";
+
+                    if(str != null)
+                    {
+                        ublox_write(fd, str.data);
+                    }
+                    gps_state++;
+                }
+                else
+                    gps_state = State.BAUDRATE;
+                break;
+
+            case State.BAUDRATE:
+                stdout.printf("Rate initialised %d\n", brate);
+                set_fd_speed(fd, brate);
+                gps_state++;
+                break;
+
+            case State.V7INIT:
+                if(noinit == false)
+                {
+                    timer = new Timer ();
+                    stdout.puts("Request version\n");
+                    ublox_write(fd, v7init);
+                }
+                gps_state++;
+                break;
+
             case State.START:
                     if(ureset)
                     {
