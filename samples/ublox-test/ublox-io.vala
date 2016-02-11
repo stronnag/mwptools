@@ -74,6 +74,7 @@ public class MWSerial : Object
     private static bool force_10hz = false;
     private static bool noinit = false;
     private static bool noautob = false;
+    private static bool slow = false;
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", "/dev/ttyUSB0"},
@@ -84,6 +85,7 @@ public class MWSerial : Object
         { "force-v6", '6', 0, OptionArg.NONE, out force6, "Force V6 init (vice inav autodetect)", null},
         { "force-air", 'a', 0, OptionArg.NONE, out force_air, "Force airborne 4G", null},
         { "force-10hz", 'z', 0, OptionArg.NONE, out force_10hz, "Force 10Hz", null},
+        { "slow", 's', 0, OptionArg.NONE, out slow, "slower initialisation", null},
         {null}
     };
 
@@ -522,7 +524,10 @@ public class MWSerial : Object
         {
             gps_state = 0;
             init_timer();
-            Timeout.add(100, () => {
+            var delay = 100;
+            if(slow)
+                delay = 200;
+            Timeout.add(delay, () => {
                     return setup_gps();
                 });
         }
