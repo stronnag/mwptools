@@ -1414,9 +1414,6 @@ public class NavStatus : GLib.Object
             mt.message(AudioThread.Vox.MODSAT,true);
             modsat = false;
         }
-        else
-            MWPLog.message("sats with no audio\n");
-
     }
 
     public void announce(uint8 mask, bool _recip)
@@ -1591,10 +1588,10 @@ public class AudioThread : Object {
                                     s = "Navigating to home position.";
                                     break;
                                 case 3:
-                                    s = "Switch to infinite position hold.";
+                                    s = "Infinite position hold.";
                                     break;
                                 case 4:
-                                    s = "Start timed position hold.";
+                                    s = "Timed position hold.";
                                     break;
                                 case 5:
                                     s = "Navigating to waypoint %d.".printf(NavStatus.n.wp_number);

@@ -1030,20 +1030,26 @@ public class MWPlanner : Gtk.Application {
 
         view.button_release_event.connect((evt) => {
                 bool ret = false;
-                if(evt.button == 1)
+                switch(evt.button)
                 {
-                    if ((evt.time - button_time) < 250)
+                    case 1:
+                        if (((evt.time - button_time) < 250) &&
+                            ((evt.modifier_state & Clutter.ModifierType.CONTROL_MASK) != 0))
+                        {
+                            insert_new_wp(evt.x, evt.y);
+                            ret = true;
+                        }
+                        else
+                        {
+                            anim_cb(false);
+                        }
+                        break;
+                    case 3:
                     {
-                        var lon = view.x_to_longitude (evt.x);
-                        var lat = view.y_to_latitude (evt.y);
-                        ls.insert_item(MSP.Action.WAYPOINT, lat,lon);
-                        ls.calc_mission();
-                        return true;
+                        insert_new_wp(evt.x, evt.y);
+                        ret = true;
                     }
-                    else
-                    {
-                        anim_cb(false);
-                    }
+                    break;
                 }
                 return ret;
             });
@@ -1258,6 +1264,14 @@ public class MWPlanner : Gtk.Application {
             usemag = force_mag;
             run_replay(rfile, true);
         }
+    }
+
+    private void insert_new_wp(float x, float y)
+    {
+        var lon = view.x_to_longitude (x);
+        var lat = view.y_to_latitude (y);
+        ls.insert_item(MSP.Action.WAYPOINT, lat,lon);
+        ls.calc_mission();
     }
 
     private void parse_rc_mav(string s, Craft.Special ptype)
