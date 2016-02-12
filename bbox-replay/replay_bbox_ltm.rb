@@ -195,7 +195,9 @@ def encode_nav r
 	   0
 	end
   navmode = case r[:navstate].to_i
-	    when 2..7
+	    when 2..3
+	      99
+	    when 4..7
 	      3
 	    when 8,9,14,16
 	      1
