@@ -2555,8 +2555,9 @@ public class MWPlanner : Gtk.Application {
                         want_special |= POSMODE.RTH;
                     else if (ltmflags < 5)
                         craft.set_normal();
-                    MWPLog.message("New LTM Mode %d %d %f %f\n",
-                                   ltmflags,armed,xlat, xlon);
+                    MWPLog.message("New LTM Mode %s %d %d %f %f\n",
+                                   MSP.ltm_mode(ltmflags),
+                                   armed, duration, xlat, xlon);
                 }
                 if(want_special != 0 /*&& npos*/)
                     process_pos_states(xlat,xlon, 0);
