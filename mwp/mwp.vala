@@ -284,6 +284,7 @@ public class MWPlanner : Gtk.Application {
         /* for jump protection */
     private double xlon = 0;
     private double xlat = 0;
+    private uint32 button_time = 0;
 
     private enum DEBUG_FLAGS
     {
@@ -1021,8 +1022,15 @@ public class MWPlanner : Gtk.Application {
         view.add_layer (markers.path);
         view.add_layer (markers.hpath);
         view.add_layer (markers.markers);
+        view.button_press_event.connect((evt) => {
+                if(evt.button == 1)
+                    button_time = evt.time;
+                return false;
+            });
+
         view.button_release_event.connect((evt) => {
-                if(evt.button == 3)
+                if(/*evt.button == 3 ||*/
+                   ((evt.button == 1) && (evt.time - button_time) < 500))
                 {
                     var lon = view.x_to_longitude (evt.x);
                     var lat = view.y_to_latitude (evt.y);

@@ -182,6 +182,8 @@ public class MWPMarkers : GLib.Object
 
         marker.set_location (lat,lon);
         marker.set_draggable(true);
+        marker.set_selectable(true);
+        marker.set_flags(ActorFlags.REACTIVE);
         markers.add_marker (marker);
         if (rth == false)
         {
@@ -191,8 +193,14 @@ public class MWPMarkers : GLib.Object
 
         ls.set_value(iter,ListBox.WY_Columns.MARKER,marker);
 
-
-        ((Champlain.Marker)marker).button_release.connect((e,u) => {
+            /*
+              // if implemented, this would provide the context menu
+        marker.button_press_event.connect((e) => {
+                stderr.printf("Press button %u\n", e.button);
+                return false;
+            });
+            */
+        ((Champlain.Marker)marker).button_release.connect((m,e) => {
                     l.set_selection(iter);
             });
 
