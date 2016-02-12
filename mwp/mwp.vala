@@ -1029,17 +1029,23 @@ public class MWPlanner : Gtk.Application {
             });
 
         view.button_release_event.connect((evt) => {
-                if(/*evt.button == 3 ||*/
-                   ((evt.button == 1) && (evt.time - button_time) < 500))
+                bool ret = false;
+                if(evt.button == 1)
                 {
-                    var lon = view.x_to_longitude (evt.x);
-                    var lat = view.y_to_latitude (evt.y);
-                    ls.insert_item(MSP.Action.WAYPOINT, lat,lon);
-                    ls.calc_mission();
-                    return true;
+                    if ((evt.time - button_time) < 250)
+                    {
+                        var lon = view.x_to_longitude (evt.x);
+                        var lat = view.y_to_latitude (evt.y);
+                        ls.insert_item(MSP.Action.WAYPOINT, lat,lon);
+                        ls.calc_mission();
+                        return true;
+                    }
+                    else
+                    {
+                        anim_cb(false);
+                    }
                 }
-                else
-                    return false;
+                return ret;
             });
 
         poslabel = builder.get_object ("poslabel") as Gtk.Label;
@@ -1392,9 +1398,6 @@ public class MWPlanner : Gtk.Application {
                         add_cmd(MSP.Cmds.IDENT,null,0, 2500);
                     }
                 }
-
-                if((nticks % ANIMINTVL) == 0)
-                    anim_cb();
 
                 if((nticks % STATINTVL) == 0)
                 {
