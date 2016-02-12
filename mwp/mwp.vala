@@ -1116,11 +1116,16 @@ public class MWPlanner : Gtk.Application {
         {
             if(llstr != null)
             {
-                var parts = llstr.split(",");
-                if(parts.length == 2)
+                string[] delims =  {","," "};
+                foreach (var delim in delims)
                 {
-                    clat = double.parse(parts[0]);
-                    clon = double.parse(parts[1]);
+                    var parts = llstr.split(delim);
+                    if(parts.length == 2)
+                    {
+                        clat = double.parse(parts[0]);
+                        clon = double.parse(parts[1]);
+                        break;
+                    }
                 }
             }
             if(clat == 0.0 && clon == 0.0)
