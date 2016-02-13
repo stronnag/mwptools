@@ -235,5 +235,11 @@
       <description>0 =none, 1=CTRL (default), 2 = SHIFT</description>
     </key>
 
+    <key name="wpmodifier3" type="u">
+      <default>0</default>
+      <summary>Right mouse button modifier for WP creation</summary>
+      <description>0 =none (default), 1=CTRL, 2 = SHIFT</description>
+    </key>
+
   </schema>
 </schemalist>

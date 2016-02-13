@@ -1034,6 +1034,12 @@ public class MWPlanner : Gtk.Application {
         else if (conf.wpmod == 2)
             wpmod = Clutter.ModifierType.SHIFT_MASK;
 
+        Clutter.ModifierType wpmod3 = 0;
+        if(conf.wpmod3 == 1)
+            wpmod3 = Clutter.ModifierType.CONTROL_MASK;
+        else if (conf.wpmod == 2)
+            wpmod3 = Clutter.ModifierType.SHIFT_MASK;
+
         view.button_release_event.connect((evt) => {
                 bool ret = false;
                 if (evt.button == 1)
@@ -1049,7 +1055,8 @@ public class MWPlanner : Gtk.Application {
                         anim_cb(false);
                     }
                 }
-                else if (evt.button == 3)
+                else if (evt.button == 3 &&
+                        ((evt.modifier_state & wpmod3) == wpmod3))
                 {
                     insert_new_wp(evt.x, evt.y);
                     ret = true;
