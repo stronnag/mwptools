@@ -1594,7 +1594,11 @@ public class AudioThread : Object {
                                     s = "Timed position hold.";
                                     break;
                                 case 5:
-                                    s = "Navigating to waypoint %d.".printf(NavStatus.n.wp_number);
+                                    var wpno = NavStatus.n.wp_number;
+                                    if(wpno == 0)
+                                        s = "Starting Mission";
+                                    else
+                                        s = "Navigating to waypoint %d.".printf(wpno);
                                     break;
                                 case 7:
                                     s = "Starting jump for %d".printf(NavStatus.n.wp_number);
