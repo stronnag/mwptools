@@ -1023,7 +1023,6 @@ public class MWPlanner : Gtk.Application {
         view.add_layer (markers.hpath);
         view.add_layer (markers.markers);
         view.button_press_event.connect((evt) => {
-                stderr.printf("press button %u\n", evt.button);
                 if(evt.button == 1)
                     button_time = evt.time;
                 return false;
@@ -1037,11 +1036,6 @@ public class MWPlanner : Gtk.Application {
 
         view.button_release_event.connect((evt) => {
                 bool ret = false;
-                    /*
-                stderr.printf("button %u mod %u %u time %u\n",
-                              evt.button, evt.modifier_state,
-                              wpmod, (evt.time - button_time));
-                    */
                 if (evt.button == 1)
                 {
                     if (((evt.time - button_time) < 200) &&
@@ -1426,6 +1420,15 @@ public class MWPlanner : Gtk.Application {
                         add_cmd(MSP.Cmds.IDENT,null,0, 2500);
                     }
                 }
+
+#if NOPUSHFRONT
+/* The above test is not entirely true, but I'm not sure if the issue is
+   related to the gtk version or libchamplain version. Anyway, it's close
+   enough the otherwise failed OS (Ubuntu 14.02, Freebsd c. 2016-02)
+ */
+                if((nticks % ANIMINTVL) == 0)
+                    anim_cb();
+#endif
 
                 if((nticks % STATINTVL) == 0)
                 {
