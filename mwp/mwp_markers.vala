@@ -80,15 +80,10 @@ public class MWPMarkers : GLib.Object
         {
             case MSP.Action.WAYPOINT:
                 if(nrth)
-                {
-                    colour = { 0, 0xa0, 0xff, 0xc8};
-                    text = @"WP $no⏏";
-                }
+                    colour = { 0, 0xaa, 0xff, 0xc8};
                 else
-                {
                     colour = { 0, 0xff, 0xff, 0xc8};
-                    text = @"WP $no";
-                }
+                text = @"WP $no";
                 break;
 
             case MSP.Action.POSHOLD_TIME:
@@ -126,6 +121,10 @@ public class MWPMarkers : GLib.Object
                 text = @"?? $no";
                 colour = { 0xe0, 0xe0, 0xe0, 0xc8};
                 break;
+        }
+        if(nrth)
+        {
+            text+= "⏏";
         }
     }
 
