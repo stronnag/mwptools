@@ -47,6 +47,9 @@ public class MWPMarkers : GLib.Object
             });
         menu.add (item);
 
+        var sep = new Gtk.SeparatorMenuItem ();
+        menu.add (sep);
+
         item = new Gtk.MenuItem.with_label ("Waypoint");
         item.activate.connect (() => {
                 lb.change_marker("WAYPOINT");
@@ -70,13 +73,22 @@ public class MWPMarkers : GLib.Object
         menu.show_all();
     }
 
-    private void get_text_for(MSP.Action typ, string no, out string text, out  Clutter.Color colour)
+    private void get_text_for(MSP.Action typ, string no, out string text,
+                              out  Clutter.Color colour, bool nrth=false)
     {
         switch (typ)
         {
             case MSP.Action.WAYPOINT:
-                text = @"WP $no";
-                colour = { 0, 0xff, 0xff, 0xc8};
+                if(nrth)
+                {
+                    colour = { 0, 0xa0, 0xff, 0xc8};
+                    text = @"WP $no⏏";
+                }
+                else
+                {
+                    colour = { 0, 0xff, 0xff, 0xc8};
+                    text = @"WP $no";
+                }
                 break;
 
             case MSP.Action.POSHOLD_TIME:
@@ -200,8 +212,18 @@ public class MWPMarkers : GLib.Object
         string text;
         Clutter.Color colour;
         Clutter.Color black = { 0,0,0, 0xff };
+        Gtk.TreeIter ni = iter;
+        bool nrth = false;
 
-        get_text_for(typ, no, out text, out colour);
+        if(ls.iter_next(ref ni) == true)
+        {
+            ls.get_value (ni, ListBox.WY_Columns.ACTION, out cell);
+            var ntyp = (MSP.Action)cell;
+            if(ntyp == MSP.Action.RTH)
+                nrth = true;
+        }
+
+        get_text_for(typ, no, out text, out colour, nrth);
         marker = new Champlain.Label.with_text (text,"Sans 10",null,null);
         marker.set_alignment (Pango.Alignment.RIGHT);
         marker.set_color (colour);
