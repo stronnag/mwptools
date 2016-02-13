@@ -1023,6 +1023,7 @@ public class MWPlanner : Gtk.Application {
         view.add_layer (markers.hpath);
         view.add_layer (markers.markers);
         view.button_press_event.connect((evt) => {
+                stderr.printf("press button %u\n", evt.button);
                 if(evt.button == 1)
                     button_time = evt.time;
                 return false;
@@ -1036,6 +1037,11 @@ public class MWPlanner : Gtk.Application {
 
         view.button_release_event.connect((evt) => {
                 bool ret = false;
+                    /*
+                stderr.printf("button %u mod %u %u time %u\n",
+                              evt.button, evt.modifier_state,
+                              wpmod, (evt.time - button_time));
+                    */
                 if (evt.button == 1)
                 {
                     if (((evt.time - button_time) < 200) &&
@@ -1048,6 +1054,11 @@ public class MWPlanner : Gtk.Application {
                     {
                         anim_cb(false);
                     }
+                }
+                else if (evt.button == 3)
+                {
+                    insert_new_wp(evt.x, evt.y);
+                    ret = true;
                 }
                 return ret;
             });

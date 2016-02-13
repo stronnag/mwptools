@@ -246,12 +246,17 @@ public class MWPMarkers : GLib.Object
         ls.set_value(iter,ListBox.WY_Columns.MARKER,marker);
 
         marker.button_press_event.connect((e) => {
-                l.set_selection(iter);
-                Timeout.add(10, () => {
-                        menu.popup(null, null, null, e.button, e.time);
-                        return false;
-                    });
-                return true;
+                if(e.button == 3)
+                {
+                    l.set_selection(iter);
+                    Timeout.add(10, () => {
+                            menu.popup(null, null, null, e.button, e.time);
+                            return false;
+                        });
+                    return true;
+                }
+                else
+                    return false;
             });
 
         ((Champlain.Marker)marker).drag_finish.connect(() => {
