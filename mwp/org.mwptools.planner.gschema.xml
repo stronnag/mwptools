@@ -229,5 +229,11 @@
       <description>RC settings for Mav RTH (chanid:minval:maxval)</description>
     </key>
 
+    <key name="wpmodifier" type="u">
+      <default>1</default>
+      <summary>Left mouse button modifier for WP creation</summary>
+      <description>0 =none, 1=CTRL (default), 2 = SHIFT</description>
+    </key>
+
   </schema>
 </schemalist>

@@ -59,7 +59,7 @@ public class MWPSettings : GLib.Object
     public uint p_speed {get; set; default=0;}
     public string mavph {get; set; default=null;}
     public string mavrth {get; set; default=null;}
-
+    public uint wpmod {get; set; default=1;}
     public signal void settings_update (string s);
 
     public MWPSettings()
@@ -190,6 +190,9 @@ public class MWPSettings : GLib.Object
             mavph = settings.get_string ("mavph");
         if(s == null || s == "mavrth")
             mavrth = settings.get_string ("mavrth");
+
+        if(s == null || s == "wpmodifier")
+            wpmod = settings.get_uint("wpmodifier");
     }
 
     public void save_settings()

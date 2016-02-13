@@ -1018,7 +1018,7 @@ public class MWPlanner : Gtk.Application {
                     zoomer.adjustment.value = (int)val;
             });
 
-        markers = new MWPMarkers();
+        markers = new MWPMarkers(ls);
         view.add_layer (markers.path);
         view.add_layer (markers.hpath);
         view.add_layer (markers.markers);
@@ -1028,28 +1028,26 @@ public class MWPlanner : Gtk.Application {
                 return false;
             });
 
+        Clutter.ModifierType wpmod = 0;
+        if(conf.wpmod == 1)
+            wpmod = Clutter.ModifierType.CONTROL_MASK;
+        else if (conf.wpmod == 2)
+            wpmod = Clutter.ModifierType.SHIFT_MASK;
+
         view.button_release_event.connect((evt) => {
                 bool ret = false;
-                switch(evt.button)
+                if (evt.button == 1)
                 {
-                    case 1:
-                        if (((evt.time - button_time) < 250) &&
-                            ((evt.modifier_state & Clutter.ModifierType.CONTROL_MASK) != 0))
-                        {
-                            insert_new_wp(evt.x, evt.y);
-                            ret = true;
-                        }
-                        else
-                        {
-                            anim_cb(false);
-                        }
-                        break;
-                    case 3:
+                    if (((evt.time - button_time) < 200) &&
+                        ((evt.modifier_state & wpmod) == wpmod))
                     {
                         insert_new_wp(evt.x, evt.y);
                         ret = true;
                     }
-                    break;
+                    else
+                    {
+                        anim_cb(false);
+                    }
                 }
                 return ret;
             });

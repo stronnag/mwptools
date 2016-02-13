@@ -224,6 +224,72 @@ public class ListBox : GLib.Object
         return ms;
     }
 
+    public void change_marker(string typ)
+    {
+        foreach (var t in get_selected_refs())
+        {
+            Gtk.TreeIter iter;
+            var path = t.get_path ();
+            list_model.get_iter (out iter, path);
+            update_marker_type(iter, typ);
+        }
+    }
+
+    private void update_marker_type(Gtk.TreeIter iter, string typ)
+    {
+        Value val;
+        var action = MSP.lookup_name(typ);
+        list_model.get_value (iter, WY_Columns.ACTION, out val);
+        var old = (MSP.Action)val;
+        if (old != action)
+        {
+            list_model.set_value (iter, WY_Columns.ACTION, action);
+            list_model.set_value (iter, WY_Columns.TYPE, typ);
+            list_model.get_value (iter, WY_Columns.MARKER, out val);
+            var mk =  (Champlain.Label)val;
+            list_model.get_value (iter, WY_Columns.IDX, out val);
+            var no = (string)val;
+            mp.markers.change_label(mk, old, action, no);
+            switch (action)
+            {
+                case MSP.Action.JUMP:
+                    list_model.set_value (iter, WY_Columns.LAT, 0.0);
+                    list_model.set_value (iter, WY_Columns.LON, 0.0);
+                    list_model.set_value (iter, WY_Columns.ALT, 0);
+                    list_model.set_value (iter, WY_Columns.INT1, 0.0);
+                    list_model.set_value (iter, WY_Columns.INT2, 0);
+                    break;
+                case MSP.Action.POSHOLD_TIME:
+                    Gtk.Entry ent = mp.builder.get_object ("entry2") as Gtk.Entry;
+                    var ltime = int.parse(ent.get_text());
+                    list_model.set_value (iter, WY_Columns.INT1, (double)ltime);
+                    break;
+                case MSP.Action.RTH:
+                    list_model.set_value (iter, WY_Columns.LAT, 0.0);
+                    list_model.set_value (iter, WY_Columns.LON, 0.0);
+                    list_model.set_value (iter, WY_Columns.ALT, 0);
+                    break;
+                case MSP.Action.LAND:
+                    list_model.set_value (iter, WY_Columns.ALT,
+                                              /*FIXME*/
+                                          MWPlanner.conf.altitude);
+                    break;
+                case MSP.Action.SET_HEAD:
+                    list_model.set_value (iter, WY_Columns.LAT, 0.0);
+                    list_model.set_value (iter, WY_Columns.LON, 0.0);
+                    list_model.set_value (iter, WY_Columns.ALT, 0);
+                    break;
+                default:
+                    if(action != MSP.Action.WAYPOINT)
+                        list_model.set_value (iter, WY_Columns.INT1, 0.0);
+                    list_model.set_value (iter, WY_Columns.INT2, 0);
+                    list_model.set_value (iter, WY_Columns.INT3, 0);
+                    break;
+            }
+            renumber_steps(list_model);
+        }
+    }
+
     public void create_view(MWPlanner _mp)
     {
         make_menu();
@@ -285,70 +351,17 @@ public class ListBox : GLib.Object
         combo.set_property ("editable", true);
         combo.set_property ("model", combo_model);
         combo.set_property ("text-column", 0);
+        combo.width_chars = 12;
         column.pack_start (combo, false);
         column.add_attribute (combo, "text", 1);
-
         combo.changed.connect((path, iter_new) => {
                 Gtk.TreeIter iter_val;
                 Value val;
                 combo_model.get_value (iter_new, 0, out val);
                 var typ = (string)val;
-                var action = MSP.lookup_name(typ);
-
                 list_model.get_iter (out iter_val, new Gtk.TreePath.from_string (path));
-
-                list_model.get_value (iter_val, WY_Columns.ACTION, out val);
-                var old = (MSP.Action)val;
-                if (old != action)
-                {
-                    list_model.set_value (iter_val, WY_Columns.ACTION, action);
-                    list_model.set_value (iter_val, WY_Columns.TYPE, typ);
-                    list_model.get_value (iter_val, WY_Columns.MARKER, out val);
-                    var mk =  (Champlain.Label)val;
-                    list_model.get_value (iter_val, WY_Columns.IDX, out val);
-                    var no = (string)val;
-                    mp.markers.change_label(mk, old, action, no);
-                    switch (action)
-                    {
-                        case MSP.Action.JUMP:
-                            list_model.set_value (iter_val, WY_Columns.LAT, 0.0);
-                            list_model.set_value (iter_val, WY_Columns.LON, 0.0);
-                            list_model.set_value (iter_val, WY_Columns.ALT, 0);
-                            list_model.set_value (iter_val, WY_Columns.INT1, 0.0);
-                            list_model.set_value (iter_val, WY_Columns.INT2, 0);
-                            break;
-                        case MSP.Action.POSHOLD_TIME:
-                            Gtk.Entry ent = mp.builder.get_object ("entry2") as Gtk.Entry;
-                            var ltime = int.parse(ent.get_text());
-                            list_model.set_value (iter_val, WY_Columns.INT1, (double)ltime);
-                            break;
-                        case MSP.Action.RTH:
-                            list_model.set_value (iter_val, WY_Columns.LAT, 0.0);
-                            list_model.set_value (iter_val, WY_Columns.LON, 0.0);
-                            list_model.set_value (iter_val, WY_Columns.ALT, 0);
-                            break;
-                        case MSP.Action.LAND:
-                            list_model.set_value (iter_val, WY_Columns.ALT,
-                                                  /*FIXME*/
-                                                  MWPlanner.conf.altitude);
-                            break;
-                        case MSP.Action.SET_HEAD:
-                            list_model.set_value (iter_val, WY_Columns.LAT, 0.0);
-                            list_model.set_value (iter_val, WY_Columns.LON, 0.0);
-                            list_model.set_value (iter_val, WY_Columns.ALT, 0);
-                            break;
-                        default:
-                            if(action != MSP.Action.WAYPOINT)
-                                list_model.set_value (iter_val, WY_Columns.INT1, 0.0);
-                            list_model.set_value (iter_val, WY_Columns.INT2, 0);
-                            list_model.set_value (iter_val, WY_Columns.INT3, 0);
-                            break;
-                    }
-                    renumber_steps(list_model);
-                }
-
+                update_marker_type(iter_val, typ);
             });
-
 
         cell = new Gtk.CellRendererText ();
         view.insert_column_with_attributes (-1, "Lat.",
@@ -530,6 +543,9 @@ public class ListBox : GLib.Object
                 }
                 return false;
             });
+
+        foreach (var c in view.get_columns())
+            c.set_resizable(true);
     }
 
     private void list_validate(string path, string new_text, int colno,
@@ -585,20 +601,33 @@ public class ListBox : GLib.Object
     {
         int n = 1;
         Gtk.TreeIter iter;
+        bool need_del = false;
         for(bool next=ls.get_iter_first(out iter);next;next=ls.iter_next(ref iter))
         {
-            GLib.Value cell;
-            list_model.get_value (iter, WY_Columns.ACTION, out cell);
-            switch ((MSP.Action)cell)
+            if(need_del)
             {
-                case MSP.Action.RTH:
-                    ls.set_value (iter, WY_Columns.IDX, "");
-                    break;
+                list_model.remove(iter);
+                lastid--;
+            }
+            else
+            {
+                GLib.Value cell;
+                list_model.get_value (iter, WY_Columns.ACTION, out cell);
+                MSP.Action act = (MSP.Action)cell;
+                switch (act)
+                {
+                    case MSP.Action.RTH:
+                        ls.set_value (iter, WY_Columns.IDX, "");
+                        need_del = false;
+                        break;
 
-                default:
-                    ls.set_value (iter, WY_Columns.IDX, n);
-                    n += 1;
-                    break;
+                    default:
+                        ls.set_value (iter, WY_Columns.IDX, n);
+                        n += 1;
+                        if(act == MSP.Action.POSHOLD_UNLIM)
+                            need_del = true;
+                        break;
+                }
             }
         }
             /* rebuild the map */
@@ -696,9 +725,8 @@ public class ListBox : GLib.Object
         return trefs;
     }
 
-    private void menu_delete()
+    public void menu_delete()
     {
-
         foreach (var t in get_selected_refs())
         {
             Gtk.TreeIter iter;

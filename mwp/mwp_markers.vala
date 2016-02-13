@@ -26,7 +26,9 @@ public class MWPMarkers : GLib.Object
     public Champlain.Marker homep = null;
     public Champlain.Marker rthp = null;
     public  Champlain.PathLayer hpath;
-    public MWPMarkers()
+    private Gtk.Menu menu;
+
+    public MWPMarkers(ListBox lb)
     {
         markers = new Champlain.MarkerLayer();
         path = new Champlain.PathLayer();
@@ -37,6 +39,35 @@ public class MWPMarkers : GLib.Object
         Clutter.Color orange = {0xff, 0xa0, 0x0, 0xc8};
         hpath.set_stroke_color(orange);
         hpath.set_dash(llist);
+
+        menu =   new Gtk.Menu ();
+        var item = new Gtk.MenuItem.with_label ("Delete");
+        item.activate.connect (() => {
+                lb.menu_delete();
+            });
+        menu.add (item);
+
+        item = new Gtk.MenuItem.with_label ("Waypoint");
+        item.activate.connect (() => {
+                lb.change_marker("WAYPOINT");
+            });
+        menu.add (item);
+        item = new Gtk.MenuItem.with_label ("PH unlimited");
+        item.activate.connect (() => {
+                lb.change_marker("POSHOLD_UNLIM");
+            });
+        menu.add (item);
+        item = new Gtk.MenuItem.with_label ("PH Timed");
+        item.activate.connect (() => {
+                lb.change_marker("POSHOLD_TIME");
+            });
+        menu.add (item);
+        item = new Gtk.MenuItem.with_label ("RTH");
+        item.activate.connect (() => {
+                lb.change_marker("RTH");
+            });
+        menu.add (item);
+        menu.show_all();
     }
 
     private void get_text_for(MSP.Action typ, string no, out string text, out  Clutter.Color colour)
@@ -193,15 +224,13 @@ public class MWPMarkers : GLib.Object
 
         ls.set_value(iter,ListBox.WY_Columns.MARKER,marker);
 
-            /*
-              // if implemented, this would provide the context menu
         marker.button_press_event.connect((e) => {
-                stderr.printf("Press button %u\n", e.button);
-                return false;
-            });
-            */
-        ((Champlain.Marker)marker).button_release.connect((m,e) => {
-                    l.set_selection(iter);
+                l.set_selection(iter);
+                Timeout.add(10, () => {
+                        menu.popup(null, null, null, e.button, e.time);
+                        return false;
+                    });
+                return true;
             });
 
         ((Champlain.Marker)marker).drag_finish.connect(() => {
