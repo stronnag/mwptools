@@ -75,7 +75,6 @@ public class ListBox : GLib.Object
         list_model.clear();
         lastid = 0;
         have_rth = false;
-
         foreach (MissionItem m in ms.get_ways())
         {
             list_model.append (out iter);
@@ -610,7 +609,6 @@ public class ListBox : GLib.Object
         Gtk.TreeIter iter;
         bool need_del = false;
         have_rth = false;
-
         for(bool next=ls.get_iter_first(out iter);next;next=ls.iter_next(ref iter))
         {
             if(need_del)
@@ -635,13 +633,14 @@ public class ListBox : GLib.Object
                         ls.set_value (iter, WY_Columns.IDX, n);
                         n += 1;
                         if(act == MSP.Action.POSHOLD_UNLIM)
+                        {
                             need_del = true;
+                        }
                         break;
                 }
             }
         }
             /* rebuild the map */
-
         mp.markers.add_list_store(this);
         calc_mission();
     }
@@ -759,7 +758,9 @@ public class ListBox : GLib.Object
 
     public void insert_item(MSP.Action typ, double lat, double lon)
     {
-        if(!have_rth)
+        bool can_insert = true;
+
+        if(can_insert)
         {
             Gtk.TreeIter iter;
             var dalt = MWPlanner.conf.altitude;
