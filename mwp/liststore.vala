@@ -274,6 +274,7 @@ public class ListBox : GLib.Object
                     list_model.set_value (iter, WY_Columns.LAT, 0.0);
                     list_model.set_value (iter, WY_Columns.LON, 0.0);
                     list_model.set_value (iter, WY_Columns.ALT, 0);
+                    have_rth = true;
                     break;
                 case MSP.Action.LAND:
                     list_model.set_value (iter, WY_Columns.ALT,
@@ -608,6 +609,8 @@ public class ListBox : GLib.Object
         int n = 1;
         Gtk.TreeIter iter;
         bool need_del = false;
+        have_rth = false;
+
         for(bool next=ls.get_iter_first(out iter);next;next=ls.iter_next(ref iter))
         {
             if(need_del)
@@ -624,7 +627,8 @@ public class ListBox : GLib.Object
                 {
                     case MSP.Action.RTH:
                         ls.set_value (iter, WY_Columns.IDX, "");
-                        need_del = false;
+                        need_del = true;
+                        have_rth = true;
                         break;
 
                     default:
@@ -637,6 +641,7 @@ public class ListBox : GLib.Object
             }
         }
             /* rebuild the map */
+
         mp.markers.add_list_store(this);
         calc_mission();
     }
@@ -754,22 +759,25 @@ public class ListBox : GLib.Object
 
     public void insert_item(MSP.Action typ, double lat, double lon)
     {
-        Gtk.TreeIter iter;
-        var dalt = MWPlanner.conf.altitude;
-        lastid++;
-        list_model.append(out iter);
-        list_model.set (iter,
-                        WY_Columns.IDX, lastid.to_string(),
-                        WY_Columns.TYPE, MSP.get_wpname(typ),
-                        WY_Columns.LAT, lat,
-                        WY_Columns.LON, lon,
-                        WY_Columns.ALT, dalt,
-                        WY_Columns.ACTION, typ );
-        var is = list_model.iter_is_valid (iter);
-        if (is == true)
-            mp.markers.add_single_element(this,  iter, false);
-        else
-            mp.markers.add_list_store(this);
+        if(!have_rth)
+        {
+            Gtk.TreeIter iter;
+            var dalt = MWPlanner.conf.altitude;
+            lastid++;
+            list_model.append(out iter);
+            list_model.set (iter,
+                            WY_Columns.IDX, lastid.to_string(),
+                            WY_Columns.TYPE, MSP.get_wpname(typ),
+                            WY_Columns.LAT, lat,
+                            WY_Columns.LON, lon,
+                            WY_Columns.ALT, dalt,
+                            WY_Columns.ACTION, typ );
+            var is = list_model.iter_is_valid (iter);
+            if (is == true)
+                mp.markers.add_single_element(this,  iter, false);
+            else
+                mp.markers.add_list_store(this);
+        }
     }
 
     private void add_shapes()

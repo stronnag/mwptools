@@ -162,12 +162,19 @@ public class MWPMarkers : GLib.Object
         }
     }
 
-    private void find_rth_pos(out double lat, out double lon, bool ind = false)
+    private uint find_rth_pos(out double lat, out double lon, bool ind = false)
     {
         List<weak Champlain.Location> m= path.get_nodes();
-        Champlain.Location lp = m.last().data;
-        lat = lp.get_latitude();
-        lon = lp.get_longitude();
+        if(m.length() > 0)
+        {
+            Champlain.Location lp = m.last().data;
+            lat = lp.get_latitude();
+            lon = lp.get_longitude();
+        }
+        else
+            lat = lon = 0;
+
+        return m.length();
     }
 
     private void update_rth_base(ListBox l)
@@ -176,17 +183,19 @@ public class MWPMarkers : GLib.Object
         if(rthp == null)
         {
             double extra;
-            rthp = new  Champlain.Marker();
-            find_rth_pos(out lat, out lon, true);
-            rthp.set_location (lat,lon);
-            hpath.add_node(rthp);
-            if(calc_rth_leg(out extra))
-                l.calc_mission(extra);
+            if(0 != find_rth_pos(out lat, out lon, true))
+            {
+                rthp = new  Champlain.Marker();
+                rthp.set_location (lat,lon);
+                hpath.add_node(rthp);
+                if(calc_rth_leg(out extra))
+                    l.calc_mission(extra);
+            }
         }
         else
         {
-            find_rth_pos(out lat, out lon);
-            rthp.set_location (lat,lon);
+            if (0 != find_rth_pos(out lat, out lon))
+                rthp.set_location (lat,lon);
         }
     }
 
