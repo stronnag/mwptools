@@ -80,26 +80,29 @@ public class ListBox : GLib.Object
         {
             list_model.append (out iter);
             string no;
+            double m1 = 0;
             switch (m.action)
             {
                 case MSP.Action.RTH:
                     no="";
                     have_rth = true;
                     break;
-
                 default:
-                    lastid++;
                     no = lastid.to_string();
+                    if (m.action == MSP.Action.WAYPOINT)
+                        m1 = ((double)m.param1 / SPEED_CONV);
+                    else
+                        m1 = ((double)m.param1);
+                    lastid++;
                     break;
             }
-
             list_model.set (iter,
                             WY_Columns.IDX, no,
                             WY_Columns.TYPE, MSP.get_wpname(m.action),
                             WY_Columns.LAT, m.lat,
                             WY_Columns.LON, m.lon,
                             WY_Columns.ALT, m.alt,
-                            WY_Columns.INT1, ((double)m.param1 / SPEED_CONV),
+                            WY_Columns.INT1, m1,
                             WY_Columns.INT2, m.param2,
                             WY_Columns.INT3, m.param3,
                             WY_Columns.ACTION, m.action);
@@ -209,7 +212,10 @@ public class ListBox : GLib.Object
                 list_model.get_value (iter, WY_Columns.ALT, out cell);
                 m.alt = (int)cell;
                 list_model.get_value (iter, WY_Columns.INT1, out cell);
-                m.param1 = (int)(SPEED_CONV*(double)cell);
+                if(typ == MSP.Action.WAYPOINT)
+                    m.param1 = (int)(SPEED_CONV*(double)cell);
+                else
+                    m.param1 = (int)((double)cell);
                 list_model.get_value (iter, WY_Columns.INT2, out cell);
                 m.param2 = (int)cell;
                 list_model.get_value (iter, WY_Columns.INT3, out cell);
@@ -1049,7 +1055,10 @@ public class ListBox : GLib.Object
                 list_model.get_value (iter, WY_Columns.LON, out cell);
                 m.lon = (double)cell;
                 list_model.get_value (iter, WY_Columns.INT1, out cell);
-                m.param1 = (int) (SPEED_CONV*(double)cell);
+                if(typ == MSP.Action.WAYPOINT)
+                    m.param1 = (int) (SPEED_CONV*(double)cell);
+                else
+                    m.param1 = (int)((double)cell);
                 arry += m;
             }
             if (typ == MSP.Action.POSHOLD_UNLIM || typ == MSP.Action.LAND)
