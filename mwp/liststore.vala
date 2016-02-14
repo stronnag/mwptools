@@ -357,7 +357,7 @@ public class ListBox : GLib.Object
         combo.set_property ("editable", true);
         combo.set_property ("model", combo_model);
         combo.set_property ("text-column", 0);
-        combo.width_chars = 12;
+        combo.set_property ("has-entry", false);
         column.pack_start (combo, false);
         column.add_attribute (combo, "text", 1);
         combo.changed.connect((path, iter_new) => {
