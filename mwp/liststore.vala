@@ -150,7 +150,7 @@ public class ListBox : GLib.Object
                     switch(typ)
                     {
                         case MSP.Action.POSHOLD_TIME:
-                        case MSP.Action.JUMP:
+                        case MSP.Action.POSHOLD_UNLIM:
                         case MSP.Action.SET_HEAD:
                         case MSP.Action.LAND:
                             w.action =  MSP.Action.WAYPOINT;
@@ -158,6 +158,8 @@ public class ListBox : GLib.Object
                             w.p2 = w.p3 = 0;
                             break;
                         case MSP.Action.SET_POI:
+                        case MSP.Action.JUMP:
+                            n--;
                             continue;
                     }
                 }
