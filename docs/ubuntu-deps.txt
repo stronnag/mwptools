@@ -14,7 +14,7 @@ pkg-config
 build-essential
 libbluetooth-dev
 libespeak-dev
-libgudev-1.0-0
+libgudev-1.0-dev
 libgstreamer0.10-dev
 
 and for the artificial horizon
