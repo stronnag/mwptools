@@ -3041,7 +3041,7 @@ public class MWPlanner : Gtk.Application {
     private void upload_quad()
     {
         validatelab.set_text("");
-        var wps = ls.to_wps();
+        var wps = ls.to_wps((vi.fc_var == "INAV"));
         xdopoll = dopoll;
         dopoll = false;
         if(wps.length == 0)

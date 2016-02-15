@@ -109,7 +109,7 @@ public class ListBox : GLib.Object
         calc_mission();
     }
 
-    public  MSP_WP[] to_wps()
+    public  MSP_WP[] to_wps(bool cf = false)
     {
         Gtk.TreeIter iter;
         MSP_WP[] wps =  {};
@@ -145,6 +145,22 @@ public class ListBox : GLib.Object
                 tint = (int)cell;
                 w.p3 = (uint16)tint;
                 w.flag = 0;
+                if(cf)
+                {
+                    switch(typ)
+                    {
+                        case MSP.Action.POSHOLD_TIME:
+                        case MSP.Action.JUMP:
+                        case MSP.Action.SET_HEAD:
+                        case MSP.Action.LAND:
+                            w.action =  MSP.Action.WAYPOINT;
+                            w.p1 = 0;
+                            w.p2 = w.p3 = 0;
+                            break;
+                        case MSP.Action.SET_POI:
+                            continue;
+                    }
+                }
                 wps += w;
             }
         }
@@ -182,7 +198,6 @@ public class ListBox : GLib.Object
         {
             res = false;
         }
-//        print("validate res = %s %d %d\n", res.to_string(), n_rows, wp.length);
         return res;
     }
 
@@ -219,7 +234,6 @@ public class ListBox : GLib.Object
                 m.param2 = (int)cell;
                 list_model.get_value (iter, WY_Columns.INT3, out cell);
                 m.param3 = (int)cell;
-                arry += m;
             }
         }
         ms.zoom = mp.view.get_zoom_level();
