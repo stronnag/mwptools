@@ -87,12 +87,12 @@ public class ListBox : GLib.Object
                     have_rth = true;
                     break;
                 default:
+                    lastid++;
                     no = lastid.to_string();
                     if (m.action == MSP.Action.WAYPOINT)
                         m1 = ((double)m.param1 / SPEED_CONV);
                     else
                         m1 = ((double)m.param1);
-                    lastid++;
                     break;
             }
             list_model.set (iter,
