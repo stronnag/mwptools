@@ -24,7 +24,13 @@
 require 'csv'
 require 'optparse'
 require 'socket'
+require 'open3'
+begin
 require 'rubyserial'
+  noserial = false;
+rescue LoadError
+  noserial = true;
+end
 
 class Serial
   # Expose the rubyserial file descriptor for select(3) on POSIX systems.
@@ -267,6 +273,12 @@ nv = 0
 icnt = 0
 origin = nil
 
+begin
+  stdout,stderr,status = Open3.capture3('blackbox_decode --help')
+rescue
+  abort "Can't run 'blackbox_decode' is it installed and on the PATH?"
+end
+
 bbox = (ARGV[0]|| abort('no BBOX log'))
 
 if udpspec
@@ -302,6 +314,9 @@ if udpspec
   end
   dev[:io] = fd
 elsif serdev
+  if noserial == true
+    abort "No rubyserial gem found"
+  end
   sdev,baud = serdev.split('@')
   baud ||= 115200
   baud = baud.to_i
