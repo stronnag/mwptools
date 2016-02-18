@@ -132,7 +132,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Replay a JSON log file (mwp*.log)</property>
-                        <property name="label" translatable="yes">Replay Log File</property>
+                        <property name="label" translatable="yes">Replay mwp log</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>
@@ -140,8 +140,8 @@
                       <object class="GtkMenuItem" id="load_log">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Load a log file ignoring timing</property>
-                        <property name="label" translatable="yes">Load log file</property>
+                        <property name="tooltip_text" translatable="yes">Load a MWP log file ignoring timing</property>
+                        <property name="label" translatable="yes">Load mwp log</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>

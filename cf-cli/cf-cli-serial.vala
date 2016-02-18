@@ -533,6 +533,12 @@ public class MWSerial : Object
                     {
                         os.puts("# ");
                     }
+
+                    if(((string)line).contains("BetaFlight"))
+                    {
+                        if(prof1 > 1)
+                            prof1 = 1;
+                    }
                     os.printf("%s", (string)line);
                 }
             }
@@ -581,6 +587,12 @@ public class MWSerial : Object
 
                     while((line = fp.read_line ()) != null)
                     {
+                        if(line.contains("BetaFlight"))
+                        {
+                            if(prof1 > 1)
+                                prof1 = 1;
+                        }
+
                         if(line.contains("## defprof="))
                         {
                             dprof = line;
@@ -650,6 +662,10 @@ public class MWSerial : Object
             to = 2;
         if (line.has_prefix("profile "))
         {
+            int np;
+            int n = line.index_of(" ")+1;
+            np = int.parse(line.substring(n,line.length-n));
+            message("[%d]  \r", np);
             to = 20;
             Thread.usleep(1000*1000);
         }
@@ -670,13 +686,20 @@ public class MWSerial : Object
         string rline;
         uint8 []spinchar = {'|','/', '-', '\\','*'};
         uint spindex=0;
+        bool bf = false;
 
         message("Replaying %s\n", fn);
         while((rline = fp.read_line ()) != null)
         {
             var line = rline.strip();
+            if(line.contains("BetaFlight"))
+                bf = true;
+
             if(line.length > 0 && line[0] != '#')
             {
+                if(bf && (line.contains("profile 2")))
+                   break;
+
                 set_line(line);
                 if(verbose == false || !Posix.isatty(1))
                 {
