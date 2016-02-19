@@ -665,7 +665,7 @@ public class MWSerial : Object
             int np;
             int n = line.index_of(" ")+1;
             np = int.parse(line.substring(n,line.length-n));
-            message("[%d]  \r", np);
+            message("[!] Profile %d \r", np);
             to = 20;
             Thread.usleep(1000*1000);
         }
@@ -703,7 +703,7 @@ public class MWSerial : Object
                 set_line(line);
                 if(verbose == false || !Posix.isatty(1))
                 {
-                    message("[%c]  \r", spinchar[spindex]);
+                    message("[%c] \r", spinchar[spindex]);
                     spindex++;
                     spindex %= 5;
                 }
