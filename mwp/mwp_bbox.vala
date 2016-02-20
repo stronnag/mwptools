@@ -12,7 +12,6 @@ public class  BBoxDialog : Object
     private Gtk.ListStore bb_liststore;
     private Gtk.ComboBoxText bb_combo;
     private Gtk.FileChooserButton bb_filechooser;
-    private Regex regex;
     private Gtk.TreeSelection bb_sel;
 
     public BBoxDialog(Gtk.Builder builder, int mrtype = 3)
@@ -54,11 +53,6 @@ public class  BBoxDialog : Object
         foreach(var ts in mrtypes)
             bb_combo.append_text (ts);
         bb_combo.active = mrtype;
-        try {
-            regex = new Regex ("^Log\\s+(\\d+)\\s+of\\s+(\\d+),.* duration (\\S+)$");
-        } catch(Error e) {
-            stderr.printf("err: %s", e.message);
-        }
     }
 
     private void get_bbox_file_status()
@@ -93,18 +87,23 @@ public class  BBoxDialog : Object
 		// stderr:
 		IOChannel error = new IOChannel.unix_new (p_stderr);
 		error.add_watch (IOCondition.IN | IOCondition.HUP, (channel, condition) => {
-                        MatchInfo mi;
                         Gtk.TreeIter iter;
                         if (condition == IOCondition.HUP)
                             return false;
                         try {
                             string line;
                             channel.read_line (out line, null, null);
-                            if(regex.match(line, 0, out mi))
+                            int n;
+                            n = line.index_of("Log ");
+                            if(n == 0)
                             {
-                                nidx = int.parse(mi.fetch(1));
-                                maxidx = int.parse(mi.fetch(2));
-                                var dura =  mi.fetch(3);
+                                int slen = line.length;
+                                nidx = int.parse(line[n+4:slen]);
+                                n = line.index_of(" of ");
+                                maxidx = int.parse(line[n+4:slen]);
+                                n = line.index_of(" duration ");
+                                n += 10;
+                                string dura = line.substring(n, slen - n -1);
                                 bb_liststore.append (out iter);
                                 bb_liststore.set (iter, 0, nidx, 1, dura);
                             }
