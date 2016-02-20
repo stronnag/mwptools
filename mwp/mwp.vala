@@ -1687,7 +1687,8 @@ public class MWPlanner : Gtk.Application {
                 }
                 if(conf.logarmed == true)
                 {
-                    Logger.armed(false,duration,flag, sensor);
+                    if(Logger.is_logging)
+                        Logger.armed(false,duration,flag, sensor);
                     logb.active=false;
                 }
                 navstatus.reset_states();
@@ -1756,7 +1757,8 @@ public class MWPlanner : Gtk.Application {
             }
             return;
         }
-        Logger.log_time();
+        if(Logger.is_logging)
+            Logger.log_time();
 
         if(cmd != MSP.Cmds.RADIO)
             lastrx = lastok = nticks;
@@ -2345,7 +2347,6 @@ public class MWPlanner : Gtk.Application {
                        conf.recip_head  == true && m.param1 != -1)
                     {
                         m.param1 = (m.param1 + 180) % 360;
-                        stdout.printf("fixup %d %d\n", m.no, m.param1);
                     }
                     m.param2 = w.p2;
                     m.param3 = w.p3;
