@@ -1,9 +1,3 @@
-public struct REPLAY_rec
-{
-    MSP.Cmds cmd;
-    uint len;
-    uint8 raw[256];
-}
 
 public class ReplayThread : GLib.Object
 {
@@ -137,49 +131,63 @@ public class ReplayThread : GLib.Object
         return (p - &tx[0]);
     }
 
-/********* not used ************
-    private size_t serialise_wp(MSP_WP w, uint8[] tmp)
+    private uint8 cksum(uint8[] dstr, size_t len, uint8 init=0)
     {
-        uint8* rp = tmp;
-        *rp++ = w.wp_no;
-        *rp++ = w.action;
-        rp = serialise_i32(rp, w.lat);
-        rp = serialise_i32(rp, w.lon);
-        rp = serialise_u32(rp, w.altitude);
-        rp = serialise_u16(rp, w.p1);
-        rp = serialise_u16(rp, w.p2);
-        rp = serialise_u16(rp, w.p3);
-        *rp++ = w.flag;
-        return (rp-&tmp[0]);
+        var cs = init;
+        for(int n = 0; n < len; n++)
+        {
+            cs ^= dstr[n];
+        }
+        return cs;
     }
-********* not used ************/
+
+    private void send_ltm(int fd, uint8 cmd, void *data, size_t len)
+    {
+        uint8 dstr[128];
+        if(len != 0 && data != null)
+        {
+            dstr[0]='$';
+            dstr[1] = 'T';
+            dstr[2] = cmd;
+            Posix.memcpy(&dstr[3],data,len);
+            var ck = cksum(dstr[3:len+3],len,0);
+            dstr[3+len] = ck;
+            Posix.write(fd, dstr, len+4);
+        }
+    }
+
+    private void send_msp(int fd, uint8 cmd, void *data, size_t len)
+    {
+        var dsize = (uint8)len;
+        uint8 dstr[256];
+        dstr[0]='$';
+        dstr[1]='M';
+        dstr[2]= '>';
+        dstr[3] = dsize;
+        dstr[4] = cmd;
+        if (data != null && dsize > 0)
+            Posix.memcpy(&dstr[5], data, len);
+        len += 3;
+        var ck = cksum(dstr[3:len], len, 0);
+        dstr[len+2] = ck;
+        len += 3;
+        Posix.write(fd, dstr, len);
+    }
+
     private void send_rec(int fd, MSP.Cmds cmd, uint len, uint8 []buf)
     {
-        var rl  = REPLAY_rec();
-        rl.cmd = cmd;
-        for(var i = 0; i < len; i++)
-            rl.raw[i] = buf[i];
-        rl.len = len;
-        Posix.write(fd,&rl,rl.len + sizeof(uint) + sizeof(MSP.Cmds));
+        if(cmd < MSP.Cmds.LTM_BASE)
+        {
+            send_msp(fd, (uint8)cmd, buf, len);
+        }
+        else if (cmd < MSP.Cmds.MAV_BASE)
+        {
+            send_ltm(fd, (uint8)(cmd - MSP.Cmds.LTM_BASE), buf, len);
+        }
     }
 
     private void send_mav_cmd(int fd, MSP.Cmds cmd, uint8 *buf, size_t st)
     {
-        uint8 xbuf[128];
-        for(var i =0; i < st; i++)
-            xbuf[i] = *buf++;
-/*
-        if(
-            cmd == MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT ||
-            cmd == MSP.Cmds.MAVLINK_MSG_ID_SYS_STATUS ||
-            cmd == MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT ||
-            cmd == MSP.Cmds.MAVLINK_MSG_ATTITUDE ||
-            cmd == MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW ||
-            cmd == MSP.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN ||
-            cmd == MSP.Cmds.MAVLINK_MSG_VFR_HUD
-           )
-*/
-            send_rec(fd, cmd, (uint)st, xbuf);
     }
 
     public ReplayThread()
@@ -574,7 +582,9 @@ public class ReplayThread : GLib.Object
                         playon = false;
                     }
                 }
-                Posix.write(fd,"",0);
+                MWPLog.message("end of scenario\n");
+                uint8 q='Q';
+                send_ltm(fd, 'Q', &q, 1);
                 Posix.close(fd);
                 return 0;
             });

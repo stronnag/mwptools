@@ -99,6 +99,8 @@ def send_msg dev, msg
       dev[:io].send msg, 0, dev[:host], dev[:port]
     when :tty
       dev[:serp].write(msg)
+    when :fd
+      dev[:io].syswrite(msg)
     end
   end
 end
@@ -248,6 +250,7 @@ serdev = nil
 v4 = false
 gpshd = false
 mindelay = false
+childfd = nil
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] file\nReplay bbox log as LTM"
@@ -259,6 +262,7 @@ ARGV.options do |opt|
   opt.on('-g','--force-gps-heading','Use GPS course instead of compass'){gpshd=true}
   opt.on('-4','--force-ipv4'){v4=true}
   opt.on('-f','--fast'){mindelay=true}
+  opt.on('--fd=FD',Integer){|o| childfd=o}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
     opt.parse!
@@ -326,11 +330,13 @@ elsif serdev
     sfd = serialport.getfd
     dev[:io] = IO.new(sfd)
   end
+elsif childfd
+  dev = {:type => :fd, :io => IO.new(childfd)}
 else
   abort 'no device / UDP port'
 end
 
-if (dev[:type] == :tty || dev[:mode] == :bind)
+if (dev[:type] == :tty || dev[:type] == :fd || dev[:mode] == :bind)
   print "Waiting for GS to start (RETURN to continue) : "
   start_io dev
   if dev[:mode] == :bind and (dev[:host].nil? or dev[:host].empty?)

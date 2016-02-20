@@ -74,7 +74,16 @@ public class Craft : GLib.Object
         RTH = -3,
         WP = -4
     }
-
+/*
+  // sadly, clutter appears not to support this
+    private string get_icon_resource(uint id)
+    {
+        StringBuilder sb = new StringBuilder ();
+        sb.append("resource://org/mwptools/mwp/pixmaps/");
+        sb.append(icons[id]);
+        return sb.str;
+    }
+*/
     public Craft(Champlain.View _view, uint id, bool _norotate = false, bool _trail = true)
     {
         view = _view;
@@ -85,7 +94,6 @@ public class Craft : GLib.Object
         {
             id = 0;
         }
-
         var iconfile = MWPUtils.find_conf_file(icons[id], "pixmaps");
         try {
             icon = new Champlain.Label.from_file (iconfile);

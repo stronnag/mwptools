@@ -153,6 +153,8 @@ public class MWPlanner : Gtk.Application {
     private Gtk.MenuItem menuup;
     private Gtk.MenuItem menudown;
     private Gtk.MenuItem menureplay;
+    private Gtk.MenuItem menubblog;
+    private Gtk.MenuItem menuloadlog;
     private Gtk.MenuItem menunav;
     private Gtk.MenuItem menuncfg;
     private Gtk.MenuItem menumwvar;
@@ -181,6 +183,7 @@ public class MWPlanner : Gtk.Application {
     private SwitchDialog swd;
     private SetPosDialog setpos;
     private Gtk.AboutDialog about;
+    private BBoxDialog bb_runner;
     private NavStatus navstatus;
     private RadioStatus radstatus;
     private NavConfig navconf;
@@ -234,13 +237,12 @@ public class MWPlanner : Gtk.Application {
     private bool gpsfix;
 
     private Thread<int> thr;
-    private uint plid = 0;
     private bool xlog;
     private bool xaudio;
     private int[] playfd;
-    private IOChannel io_read;
     private ReplayThread robj;
-
+    private int replayer = 0;
+    private Pid child_pid;
     private MSP.Cmds[] requests = {};
     private int tcycle = 0;
     private bool dopoll = false;
@@ -574,7 +576,6 @@ public class MWPlanner : Gtk.Application {
         });
 
         string icon=null;
-
         try {
             icon = MWPUtils.find_conf_file("mwp_icon.svg");
             window.set_icon_from_file(icon);
@@ -703,9 +704,15 @@ public class MWPlanner : Gtk.Application {
                 replay_log(true);
             });
 
-        menuop = builder.get_object ("load_log") as Gtk.MenuItem;
-        menuop.activate.connect (() => {
+        menuloadlog = builder.get_object ("load_log") as Gtk.MenuItem;
+        menuloadlog.activate.connect (() => {
                 replay_log(false);
+            });
+
+        bb_runner = new BBoxDialog(builder, dmrtype);
+        menubblog = builder.get_object ("bb_menu_act") as Gtk.MenuItem;
+        menubblog.activate.connect (() => {
+                replay_bbox();
             });
 
         navstatus = new NavStatus(builder);
@@ -1272,7 +1279,7 @@ public class MWPlanner : Gtk.Application {
         if(rfile != null)
         {
             usemag = force_mag;
-            run_replay(rfile, true);
+            run_replay(rfile, true, 1);
         }
     }
 
@@ -1703,7 +1710,7 @@ public class MWPlanner : Gtk.Application {
 
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
     {
-        if(cmd > MSP.Cmds.TG_BASE && cmd != MSP.Cmds.MAVLINK_MSG_ID_RADIO)
+        if(cmd > MSP.Cmds.LTM_BASE && cmd != MSP.Cmds.MAVLINK_MSG_ID_RADIO)
         {
             if(nopoll == false)
             {
@@ -1992,7 +1999,7 @@ public class MWPlanner : Gtk.Application {
                         }
 
                         if(((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
-                           && thr == null)
+                           && replayer == 0)
                             add_cmd(MSP.Cmds.NAV_CONFIG,null,0,1000);
 
                         var reqsize = build_pollreqs();
@@ -2010,7 +2017,7 @@ public class MWPlanner : Gtk.Application {
 
                         if(nopoll == false && nreqs > 0)
                         {
-                            if  (thr == null)
+                            if  (replayer == 0)
                             {
                                 MWPLog.message("Start poller\n");
                                 tcycle = 0;
@@ -2782,6 +2789,9 @@ public class MWPlanner : Gtk.Application {
                     });
                 break;
 
+            case MSP.Cmds.TQ_FRAME:
+                cleanup_replay();
+                break;
             default:
                 MWPLog.message ("** Unknown response %d\n", cmd);
                 break;
@@ -3029,7 +3039,7 @@ public class MWPlanner : Gtk.Application {
             vlevels[icol].reached = true;
             if(vlevels[icol].audio != null)
             {
-                if(thr == null)
+                if(replayer == 0)
                     bleet_sans_merci(vlevels[icol].audio);
                 else
                     MWPLog.message("battery alarm %.1f\n", vf);
@@ -3211,41 +3221,49 @@ public class MWPlanner : Gtk.Application {
 
     private void serial_doom(Gtk.Button c)
     {
-        menumwvar.sensitive =true;
-        dopoll = false;
-        remove_tid(ref cmdtid);
-        sflags = 0;
-        stop_audio();
-        show_serial_stats();
-        if(rawlog == true)
+        MWPLog.message("Serial doom replay %d\n", replayer);
+        if(replayer == 0)
         {
-            msp.raw_logging(false);
+            menumwvar.sensitive =true;
+            dopoll = false;
+            remove_tid(ref cmdtid);
+            sflags = 0;
+            stop_audio();
+            show_serial_stats();
+            if(rawlog == true)
+            {
+                msp.raw_logging(false);
+            }
+            gpsinfo.annul();
+            navstatus.reset();
+            fbox.annul();
+            set_bat_stat(0);
+            nsats = 0;
+            _nsats = 0;
+            last_tm = 0;
+            boxnames = null;
+            msp.close();
+            c.set_label("Connect");
+            menuncfg.sensitive = menuup.sensitive = menudown.sensitive = false;
+            navconf.hide();
+            duration = -1;
+            if(craft != null)
+            {
+                craft.remove_marker();
+            }
+            init_npos();
+            set_error_status(null);
         }
-        gpsinfo.annul();
-        navstatus.reset();
-        fbox.annul();
-        set_bat_stat(0);
-        nsats = 0;
-        _nsats = 0;
-        last_tm = 0;
-        boxnames = null;
-        msp.close();
-        c.set_label("Connect");
-        menuncfg.sensitive = menuup.sensitive = menudown.sensitive = false;
-        navconf.hide();
-        duration = -1;
-        if(craft != null)
+        else
         {
-            craft.remove_marker();
+            replayer = 0;
         }
-        init_npos();
-        set_error_status(null);
+        menubblog.sensitive = menureplay.sensitive =
+            menuloadlog.sensitive = true;
     }
 
     private void init_sstats()
     {
-//        if(msp.available)
-//            msp.clear_counters();
         toc = tot = 0;
         anvals = amsgs = acycle = 0;
         telstats.toc = telstats.tot = 0;
@@ -3287,6 +3305,9 @@ public class MWPlanner : Gtk.Application {
             string estr;
             if (msp.open(serdev, conf.baudrate, out estr) == true)
             {
+                menubblog.sensitive = menureplay.sensitive =
+                    menuloadlog.sensitive = false;
+
                 init_state();
                 init_sstats();
                 dopoll = false;
@@ -3618,47 +3639,28 @@ public class MWPlanner : Gtk.Application {
                 chooser.close ();
                 MWPLog.message("Replay log %s\n", fn);
                 usemag = force_mag;
-                run_replay(fn, delay);
+                run_replay(fn, delay, 1);
             }
             else
                 chooser.close ();
         }
     }
 
-    private bool replay_handler (IOChannel gio, IOCondition condition)
-    {
-        var done = false;
-        if((condition & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
-        {
-            done = true;
-        }
-        else
-        {
-            var rec = REPLAY_rec();
-            var ret = Posix.read(gio.unix_get_fd(), &rec, sizeof(REPLAY_rec));
-            if(ret <= 0)
-                done = true;
-            else
-            {
-                handle_serial(rec.cmd, rec.raw, rec.len,false);
-            }
-
-        }
-        if(done)
-        {
-            cleanup_replay();
-            MWPLog.message("============== Replay complete ====================\n");
-            return false;
-        }
-        return true;
-    }
-
     private void cleanup_replay()
     {
-        thr.join();
-        thr = null;
-        remove_tid(ref plid);
-        try  { io_read.shutdown(false); } catch {}
+        MWPLog.message("============== Replay complete ====================\n");
+        switch(replayer)
+        {
+            case 1:
+                thr.join();
+                thr = null;
+                menureplay.label = "Replay Log file";
+                robj = null;
+                break;
+            case 2:
+                menubblog.label = "Replay Blackbox log";
+                break;
+        }
         Posix.close(playfd[0]);
         Posix.close(playfd[1]);
         stop_audio();
@@ -3667,20 +3669,17 @@ public class MWPlanner : Gtk.Application {
         duration = -1;
         armtime = 0;
         conbutton.sensitive = true;
-        menureplay.label = "Replay Log file";
-        robj = null;
         window.title = "mwp";
         init_npos();
     }
 
-    private void run_replay(string fn, bool delay)
+    private void run_replay(string fn, bool delay, int rtype,
+                            int idx=0, int btype=0)
     {
         xlog = conf.logarmed;
         xaudio = conf.audioarmed;
         playfd = new int[2];
-        var sr =  Posix.socketpair (SocketFamily.UNIX,
-                          SocketType.DATAGRAM, 0, playfd);
-
+        var sr =  Posix.socketpair (Posix.AF_UNIX, Posix.SOCK_DGRAM, 0, playfd);
         if(sr == 0)
         {
             if(craft != null)
@@ -3697,16 +3696,81 @@ public class MWPlanner : Gtk.Application {
             init_state();
             conbutton.sensitive = false;
             update_title_from_file(fn);
-            io_read  = new IOChannel.unix_new(playfd[0]);
-            plid = io_read.add_watch(IOCondition.IN|
-                                     IOCondition.HUP|
-                                     IOCondition.ERR|
-                                     IOCondition.NVAL, replay_handler);
+            replayer = rtype;
+            msp.open_fd(playfd[0],-1, true);
+            switch(replayer)
+            {
+                case 1:
+                    robj = new ReplayThread();
+                    thr = robj.run(playfd[1], fn, delay);
+                    if(thr != null)
+                    {
+                        menureplay.label = "Stop Replay";
+                        menubblog.sensitive = false;
+                    }
+                    break;
+                case 2:
+                    menubblog.label = "Stop Replay";
+                    spawn_bbox_task(fn, idx, btype);
+                    menureplay.sensitive = menuloadlog.sensitive = false;
+                    break;
+            }
+        }
+    }
 
-            robj = new ReplayThread();
-            thr = robj.run(playfd[1], fn, delay);
-            if(thr != null)
-                menureplay.label = "Stop Replay";
+    private void spawn_bbox_task(string fn, int index, int btype)
+    {
+        string [] args = {"replay_bbox_ltm.rb",
+                          "--fd", "%d".printf(playfd[1]),
+                          "-i", "%d".printf(index),
+                          "-t", "%d".printf(btype),
+                          fn};
+
+        MWPLog.message("%s\n", string.joinv(" ",args));
+        try {
+            Process.spawn_async_with_pipes ("/", args, null,
+                                            SpawnFlags.SEARCH_PATH |
+                                            SpawnFlags.LEAVE_DESCRIPTORS_OPEN |
+                                            SpawnFlags.STDOUT_TO_DEV_NULL |
+                                            SpawnFlags.STDERR_TO_DEV_NULL |
+                                            SpawnFlags.DO_NOT_REAP_CHILD,
+                                            (() => {
+                                                for(var i = 3; i < 512; i++)
+                                                {
+                                                    if(i != playfd[1])
+                                                        Posix.close(i);
+                                                }
+                                            }),
+                                            out child_pid,
+                                            null, null, null);
+            ChildWatch.add (child_pid, (pid, status) => {
+                    MWPLog.message("Close child pid %u, %u\n",
+                                   pid, Process.exit_status(status));
+                    Process.close_pid (pid);
+                    cleanup_replay();
+                });
+        } catch (SpawnError e) {
+            MWPLog.message("spawnerror: %s\n", e.message);
+        }
+    }
+
+    private void replay_bbox()
+    {
+        if(replayer != 0)
+        {
+            Posix.kill(child_pid, Posix.SIGTERM);
+        }
+        else
+        {
+            var id = bb_runner.run();
+            if(id == 1001)
+            {
+                string bblog;
+                int index;
+                int btype;
+                bb_runner.get_result(out bblog, out index, out btype);
+                run_replay(bblog, true, 2,index,btype);
+            }
         }
     }
 

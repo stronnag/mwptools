@@ -73,7 +73,8 @@ public class MWSerial : Object
     public enum ComMode
     {
         TTY=1,
-        STREAM=2
+        STREAM=2,
+        FD=4
     }
 
     public enum Mode
@@ -349,11 +350,13 @@ public class MWSerial : Object
         return available;
     }
 
-    public bool open_fd(int _fd, int rate)
+    public bool open_fd(int _fd, int rate, bool rawfd = false)
     {
         fd = _fd;
         if(rate != -1)
             commode = ComMode.TTY|ComMode.STREAM;
+        if(rawfd)
+            commode = ComMode.FD|ComMode.STREAM;
         setup_fd(rate);
         return available;
     }
@@ -380,6 +383,8 @@ public class MWSerial : Object
                 Posix.tcsetattr (fd, Posix.TCSANOW|Posix.TCSADRAIN, oldtio);
                 Posix.close(fd);
             }
+            else if ((commode & ComMode.FD) == ComMode.FD)
+                Posix.close(fd);
             else
             {
                 if (!skt.is_closed())
@@ -567,6 +572,10 @@ public class MWSerial : Object
                             case 'N':
                                 needed = (uint8) MSize.LTM_NFRAME;
                                 cmd = MSP.Cmds.TN_FRAME;
+                                break;
+                            case 'Q':
+                                needed = 1;
+                                cmd = MSP.Cmds.TQ_FRAME;
                                 break;
                             default:
                                 error_counter();

@@ -25,4 +25,4 @@ else
  TARGET=2.46
 endif
 
-OPTS += -X -O2 --thread --target-glib=$(TARGET)
+OPTS += -X -O2 -X -s --thread --target-glib=$(TARGET)

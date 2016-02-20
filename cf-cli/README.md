@@ -237,6 +237,8 @@ IRC freenode #cleanflight, where I sometimes lurk as user 'stronnag'.
 
 ## History: (see github, mwptools :)
 
+2016-02-19 : Rebuild Windows version to pick up recent changes (1.07).
+
 2015-11-16 : Rebuild Windows version to pick up recent changes (1.06).
 
 2015-10-18 : Rebuild Windows version to pick up recent changes (1.05).

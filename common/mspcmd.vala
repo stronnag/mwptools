@@ -67,22 +67,24 @@ public class MSP : Object
 
         INFO_WP = 400,
 
-        TG_BASE  = 1000,
-        TS_FRAME = (TG_BASE + 'S'),
-        TA_FRAME = (TG_BASE + 'A'),
-        TG_FRAME = (TG_BASE + 'G'),
-        TO_FRAME = (TG_BASE + 'O'),
-        TN_FRAME = (TG_BASE + 'N'),
+        LTM_BASE  = 1000,
+        TS_FRAME = (LTM_BASE + 'S'),
+        TA_FRAME = (LTM_BASE + 'A'),
+        TG_FRAME = (LTM_BASE + 'G'),
+        TO_FRAME = (LTM_BASE + 'O'),
+        TN_FRAME = (LTM_BASE + 'N'),
+        TQ_FRAME = (LTM_BASE + 'Q'), // private, quit message
 
-        MAVLINK_MSG_ID_HEARTBEAT = 2000+0,
-        MAVLINK_MSG_ID_SYS_STATUS = 2000+1,
-        MAVLINK_MSG_GPS_RAW_INT = 2000+24,
-        MAVLINK_MSG_ATTITUDE = 2000+30,
-        MAVLINK_MSG_RC_CHANNELS_RAW = 2000+35,
-        MAVLINK_MSG_GPS_GLOBAL_ORIGIN = 2000+49,
-        MAVLINK_MSG_VFR_HUD = 2000+74,
-        MAVLINK_MSG_ID_RADIO = 2000+166,
-        MAVLINK_MSG_ID_RADIO_STATUS = 2000+109
+        MAV_BASE  = 2000,
+        MAVLINK_MSG_ID_HEARTBEAT = (MAV_BASE+0),
+        MAVLINK_MSG_ID_SYS_STATUS = (MAV_BASE+1),
+        MAVLINK_MSG_GPS_RAW_INT = (MAV_BASE+24),
+        MAVLINK_MSG_ATTITUDE = (MAV_BASE+30),
+        MAVLINK_MSG_RC_CHANNELS_RAW = (MAV_BASE+35),
+        MAVLINK_MSG_GPS_GLOBAL_ORIGIN = (MAV_BASE+49),
+        MAVLINK_MSG_VFR_HUD = (MAV_BASE+74),
+        MAVLINK_MSG_ID_RADIO = (MAV_BASE+166),
+        MAVLINK_MSG_ID_RADIO_STATUS = (MAV_BASE+109)
     }
 
     public enum Sensors
