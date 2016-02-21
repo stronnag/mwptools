@@ -414,7 +414,7 @@ IO.popen(cmd,'rt') do |pipe|
 	  send_msg dev, msg
 	end
       end
-      sleep (mindelay) ? 0.01 : 0.1
+      sleep (mindelay) ? 0.001 : 0.1
     end
   end
 end

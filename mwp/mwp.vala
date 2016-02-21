@@ -712,7 +712,12 @@ public class MWPlanner : Gtk.Application {
         bb_runner = new BBoxDialog(builder, dmrtype);
         menubblog = builder.get_object ("bb_menu_act") as Gtk.MenuItem;
         menubblog.activate.connect (() => {
-                replay_bbox();
+                replay_bbox(true);
+            });
+
+        menuop = builder.get_object ("bb_load_log") as Gtk.MenuItem;
+        menuop.activate.connect (() => {
+                replay_bbox(false);
             });
 
         navstatus = new NavStatus(builder);
@@ -3712,20 +3717,24 @@ public class MWPlanner : Gtk.Application {
                     break;
                 case 2:
                     menubblog.label = "Stop Replay";
-                    spawn_bbox_task(fn, idx, btype);
+                    spawn_bbox_task(fn, idx, btype, delay);
                     menureplay.sensitive = menuloadlog.sensitive = false;
                     break;
             }
         }
     }
 
-    private void spawn_bbox_task(string fn, int index, int btype)
+    private void spawn_bbox_task(string fn, int index, int btype, bool delay)
     {
         string [] args = {"replay_bbox_ltm.rb",
                           "--fd", "%d".printf(playfd[1]),
                           "-i", "%d".printf(index),
-                          "-t", "%d".printf(btype),
-                          fn};
+                          "-t", "%d".printf(btype)};
+        if(delay == false)
+            args += "-f";
+
+        args += fn;
+        args += null;
 
         MWPLog.message("%s\n", string.joinv(" ",args));
         try {
@@ -3755,7 +3764,7 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-    private void replay_bbox()
+    private void replay_bbox (bool delay)
     {
         if(replayer != 0)
         {
@@ -3770,7 +3779,7 @@ public class MWPlanner : Gtk.Application {
                 int index;
                 int btype;
                 bb_runner.get_result(out bblog, out index, out btype);
-                run_replay(bblog, true, 2,index,btype);
+                run_replay(bblog, delay, 2,index,btype);
             }
         }
     }
