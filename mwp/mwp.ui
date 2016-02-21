@@ -1123,7 +1123,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <property name="always_show_image">True</property>
+                <property name="yalign">0.43000000715255737</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -1137,8 +1137,8 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="tooltip_text" translatable="yes">OK is enabled once a log index has been selected</property>
                 <property name="use_stock">True</property>
-                <property name="always_show_image">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -1171,6 +1171,19 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               </packing>
             </child>
             <child>
+              <object class="GtkLabel" id="bb_items">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <property name="ellipsize">start</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkSeparator" id="bb_separator1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -1178,7 +1191,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -1221,7 +1234,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child>
@@ -1232,7 +1245,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">3</property>
+                <property name="position">4</property>
               </packing>
             </child>
           </object>
@@ -1245,7 +1258,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       </object>
     </child>
     <action-widgets>
-      <action-widget response="1002">bb_cancel</action-widget>
+      <action-widget response="999">bb_cancel</action-widget>
       <action-widget response="1001">bb_ok</action-widget>
     </action-widgets>
   </object>

@@ -8,6 +8,7 @@ public class  BBoxDialog : Object
     private Gtk.Dialog dialog;
     private Gtk.Button bb_cancel;
     private Gtk.Button bb_ok;
+    private Gtk.Label bb_items;
     private Gtk.TreeView bb_treeview;
     private Gtk.ListStore bb_liststore;
     private Gtk.ComboBoxText bb_combo;
@@ -19,6 +20,7 @@ public class  BBoxDialog : Object
         dialog = builder.get_object ("bb_dialog") as Gtk.Dialog;
         bb_cancel = builder.get_object ("bb_cancel") as Button;
         bb_ok = builder.get_object ("bb_ok") as Button;
+        bb_items = builder.get_object ("bb_items") as Label;
         bb_treeview = builder.get_object ("bb_treeview") as TreeView;
         bb_liststore = builder.get_object ("bb_liststore") as Gtk.ListStore;
         bb_filechooser = builder.get_object("bb_filechooser") as FileChooserButton;
@@ -36,6 +38,8 @@ public class  BBoxDialog : Object
         bb_filechooser.file_set.connect(() => {
                 filename = bb_filechooser.get_filename();
                 bb_liststore.clear();
+                maxidx = -1;
+                bb_items.label = "";
                 get_bbox_file_status();
             });
 
@@ -58,7 +62,6 @@ public class  BBoxDialog : Object
     private void get_bbox_file_status()
     {
         nidx = 1;
-        maxidx = -1;
         spawn_decoder();
         bb_ok.sensitive = false;
     }
@@ -101,6 +104,7 @@ public class  BBoxDialog : Object
                                 nidx = int.parse(line[n+4:slen]);
                                 n = line.index_of(" of ");
                                 maxidx = int.parse(line[n+4:slen]);
+                                bb_items.label = "Log %d of %d".printf(nidx,maxidx);
                                 n = line.index_of(" duration ");
                                 n += 10;
                                 string dura = line.substring(n, slen - n -1);
@@ -126,6 +130,8 @@ public class  BBoxDialog : Object
                                 bb_liststore.get_iter (out iter, path);
                                 bb_sel.select_iter(iter);
                             }
+                            bb_items.label = "File contains %d %s".printf(
+                                maxidx, (maxidx == 1) ? "entry" : "entries");
                         }
                         else
                         {
