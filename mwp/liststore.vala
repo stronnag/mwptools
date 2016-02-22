@@ -236,6 +236,7 @@ public class ListBox : GLib.Object
                 m.param2 = (int)cell;
                 list_model.get_value (iter, WY_Columns.INT3, out cell);
                 m.param3 = (int)cell;
+                arry += m;
             }
         }
         ms.zoom = mp.view.get_zoom_level();

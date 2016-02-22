@@ -252,11 +252,11 @@ public class Mission : GLib.Object
 
             ysubnode = xsubnode->new_text_child (ns, "distance", "");
             ysubnode->new_prop ("units", "m");
-            ysubnode->new_prop ("value", "%.0f".printf(dist));
+            ysubnode->new_prop ("value", dist.to_string());
 
             ysubnode = xsubnode->new_text_child (ns, "nav-speed", "");
             ysubnode->new_prop ("units", "m/s");
-            ysubnode->new_prop ("value", "%.1f".printf(nspeed));
+            ysubnode->new_prop ("value", nspeed.to_string());
 
             ysubnode = xsubnode->new_text_child (ns, "fly-time", "");
             ysubnode->new_prop ("units", "s");
