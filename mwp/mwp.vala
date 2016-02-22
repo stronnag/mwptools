@@ -3477,6 +3477,18 @@ public class MWPlanner : Gtk.Application {
 
     }
 
+
+    public Mission get_mission_data()
+    {
+        Mission m = ls.to_mission();
+        ls.calc_mission_dist(out m.dist, out m.lt, out m.et);
+        m.nspeed = conf.nav_speed;
+        if (conf.compat_vers != null)
+            m.version = conf.compat_vers;
+        return m;
+    }
+
+
     public void on_file_save()
     {
         if (last_file == null)
@@ -3485,11 +3497,7 @@ public class MWPlanner : Gtk.Application {
         }
         else
         {
-            Mission m = ls.to_mission();
-
-            ls.calc_mission_dist(out m.dist, out m.lt, out m.et);
-            if (conf.compat_vers != null)
-                m.version = conf.compat_vers;
+            var m = get_mission_data();
             m.to_xml_file(last_file);
             update_title_from_file(last_file);
         }
@@ -3497,7 +3505,6 @@ public class MWPlanner : Gtk.Application {
 
     public void on_file_save_as ()
     {
-        Mission m = ls.to_mission();
         Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
             "Select a mission file", null, Gtk.FileChooserAction.SAVE,
             "_Cancel",
@@ -3520,8 +3527,7 @@ public class MWPlanner : Gtk.Application {
             // Process response:
         if (chooser.run () == Gtk.ResponseType.ACCEPT) {
             last_file = chooser.get_filename ();
-            if (conf.compat_vers != null)
-                m.version = conf.compat_vers;
+            var m = get_mission_data();
             m.to_xml_file(last_file);
             update_title_from_file(last_file);
         }
