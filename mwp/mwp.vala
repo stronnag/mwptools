@@ -153,11 +153,14 @@ public class MWPlanner : Gtk.Application {
     private Gtk.MenuItem menuup;
     private Gtk.MenuItem menudown;
     private Gtk.MenuItem menureplay;
-    private Gtk.MenuItem menubblog;
     private Gtk.MenuItem menuloadlog;
+    private Gtk.MenuItem menubblog;
+    private Gtk.MenuItem menubbload;
     private Gtk.MenuItem menunav;
     private Gtk.MenuItem menuncfg;
     private Gtk.MenuItem menumwvar;
+    private Gtk.MenuItem saved_menuitem;
+    private string saved_menutext;
 
     public static MWPSettings conf;
     private MWSerial msp;
@@ -715,8 +718,8 @@ public class MWPlanner : Gtk.Application {
                 replay_bbox(true);
             });
 
-        menuop = builder.get_object ("bb_load_log") as Gtk.MenuItem;
-        menuop.activate.connect (() => {
+        menubbload = builder.get_object ("bb_load_log") as Gtk.MenuItem;
+        menubbload.activate.connect (() => {
                 replay_bbox(false);
             });
 
@@ -3655,18 +3658,17 @@ public class MWPlanner : Gtk.Application {
     private void cleanup_replay()
     {
         MWPLog.message("============== Replay complete ====================\n");
-        switch(replayer)
+        if (replayer == 1)
         {
-            case 1:
-                thr.join();
-                thr = null;
-                menureplay.label = "Replay Log file";
-                robj = null;
-                break;
-            case 2:
-                menubblog.label = "Replay Blackbox log";
-                break;
+            thr.join();
+            thr = null;
+            robj = null;
         }
+        saved_menuitem.label = saved_menutext;
+
+        menureplay.sensitive = menuloadlog.sensitive =
+            menubblog.sensitive = menubbload.sensitive = true;
+
         Posix.close(playfd[0]);
         Posix.close(playfd[1]);
         stop_audio();
@@ -3674,6 +3676,8 @@ public class MWPlanner : Gtk.Application {
         conf.audioarmed = xaudio;
         duration = -1;
         armtime = 0;
+        armed_spinner.stop();
+        armed_spinner.hide();
         conbutton.sensitive = true;
         window.title = "mwp";
         init_npos();
@@ -3704,37 +3708,37 @@ public class MWPlanner : Gtk.Application {
             update_title_from_file(fn);
             replayer = rtype;
             msp.open_fd(playfd[0],-1, true);
+            menureplay.sensitive = menuloadlog.sensitive =
+                menubblog.sensitive = menubbload.sensitive = false;
             switch(replayer)
             {
                 case 1:
                     robj = new ReplayThread();
                     thr = robj.run(playfd[1], fn, delay);
-                    if(thr != null)
-                    {
-                        menureplay.label = "Stop Replay";
-                        menubblog.sensitive = false;
-                    }
+                    saved_menuitem = (delay) ? menureplay : menuloadlog;
                     break;
                 case 2:
-                    menubblog.label = "Stop Replay";
                     spawn_bbox_task(fn, idx, btype, delay);
-                    menureplay.sensitive = menuloadlog.sensitive = false;
+                    saved_menuitem = (delay) ? menubblog : menubbload;
                     break;
             }
+            saved_menutext = saved_menuitem.label;
+            saved_menuitem.label = "Stop Replay";
+            saved_menuitem.sensitive = true;
         }
     }
 
     private void spawn_bbox_task(string fn, int index, int btype, bool delay)
     {
-        string [] args = {"replay_bbox_ltm.rb",
+        int n=7;
+        string args[10] = {"replay_bbox_ltm.rb",
                           "--fd", "%d".printf(playfd[1]),
                           "-i", "%d".printf(index),
                           "-t", "%d".printf(btype)};
         if(delay == false)
-            args += "-f";
-
-        args += fn;
-        args += null;
+            args[n++] = "-f";
+        args[n++] = fn;
+        args[n]= null;
 
         MWPLog.message("%s\n", string.joinv(" ",args));
         try {
