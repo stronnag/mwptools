@@ -27,7 +27,6 @@ public class Units :  GLib.Object
     private const string [] dspeeds = {"m/s", "kph", "mph", "kts", "mfg/µftn"};
     private const string [] dfix = {"no","","2d-","3d-"};
 
-
     public static double distance (double d)
     {
         switch(MWPlanner.conf.p_distance)

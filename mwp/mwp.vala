@@ -2197,6 +2197,8 @@ public class MWPlanner : Gtk.Application {
                 MSP_RAW_GPS rg = MSP_RAW_GPS();
                 uint8* rp = raw;
                 rg.gps_fix = *rp++;
+                if(rg.gps_fix != 0)
+                    rg.gps_fix = 1;
                 rg.gps_numsat = *rp++;
                 rp = deserialise_i32(rp, out rg.gps_lat);
                 rp = deserialise_i32(rp, out rg.gps_lon);
