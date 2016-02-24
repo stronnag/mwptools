@@ -1,8 +1,10 @@
 
 public class ReplayThread : GLib.Object
 {
-    public bool playon  {get; set;}
+    private static const int MAXSLEEP = 500*1000;
 
+    private bool playon  {get; set;}
+    private Cancellable cancellable;
     private size_t serialise_sf(LTM_SFRAME b, uint8 []tx)
     {
         uint8 *p;
@@ -192,6 +194,13 @@ public class ReplayThread : GLib.Object
 
     public ReplayThread()
     {
+        cancellable = new Cancellable ();
+    }
+
+    public void stop()
+    {
+        playon = false;
+        cancellable.cancel();
     }
 
     public Thread<int> run (int fd, string relog, bool delay=true)
@@ -199,6 +208,7 @@ public class ReplayThread : GLib.Object
         playon = true;
 
         var thr = new Thread<int> ("relog", () => {
+
                 var file = File.new_for_path (relog);
                 if (!file.query_exists ()) {
                     MWPLog.message ("File '%s' doesn't exist.\n", file.get_path ());
@@ -226,15 +236,23 @@ public class ReplayThread : GLib.Object
                             var utime = obj.get_double_member ("utime");
                             if(lt != 0)
                             {
-                                ulong ms;
+                                ulong ms = 0;
                                 if (delay  && have_data)
                                 {
                                     var dly = (utime - lt);
-                                    ms = (ulong)(dly * 1000 * 1000);
+                                    ms = (ulong)(dly * 1000 *1000);
+                                    if(dly > 10)
+                                        MWPLog.message("replay sleeping for %.1f s\n", dly);
                                 }
                                 else
                                     ms = 2*1000;
-                                Thread.usleep(ms);
+                                while(ms != 0)
+                                {
+                                    cancellable.set_error_if_cancelled ();
+                                    ulong st = (ms > MAXSLEEP) ? MAXSLEEP : ms;
+                                    Thread.usleep(st);
+                                    ms -= st;
+                                }
                             }
 
                             var typ = obj.get_string_member("type");
@@ -578,7 +596,10 @@ public class ReplayThread : GLib.Object
                             lt = utime;
                         }
                     } catch (Error e) {
-                        MWPLog.message("line: %s  - %s\n",line, e.message);
+                        if(e.matches(Quark.from_string("g-io-error-quark"),19))
+                            MWPLog.message("sceanrio cancelled\n");
+                        else
+                            MWPLog.message("line: %s  %s \n",line, e.message);
                         playon = false;
                     }
                 }

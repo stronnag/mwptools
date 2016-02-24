@@ -2615,7 +2615,7 @@ public class MWPlanner : Gtk.Application {
                                    MSP.ltm_mode(ltmflags),
                                    armed, duration, xlat, xlon);
                 }
-                if(want_special != 0 /*&& npos*/)
+                if(want_special != 0 /* && npos*/)
                     process_pos_states(xlat,xlon, 0);
 
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
@@ -3625,7 +3625,7 @@ public class MWPlanner : Gtk.Application {
     {
         if(thr != null)
         {
-            robj.playon = false;
+            robj.stop();
             duration = -1;
         }
         else
@@ -3654,7 +3654,6 @@ public class MWPlanner : Gtk.Application {
             if ( res == Gtk.ResponseType.ACCEPT) {
                 var fn = chooser.get_filename ();
                 chooser.close ();
-                MWPLog.message("Replay log %s\n", fn);
                 usemag = force_mag;
                 run_replay(fn, delay, 1);
             }
@@ -3700,6 +3699,7 @@ public class MWPlanner : Gtk.Application {
         var sr =  Posix.socketpair (Posix.AF_UNIX, Posix.SOCK_DGRAM, 0, playfd);
         if(sr == 0)
         {
+            MWPLog.message("Replay log %s\n", fn);
             if(craft != null)
                 craft.park();
 
