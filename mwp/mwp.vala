@@ -414,6 +414,7 @@ public class MWPlanner : Gtk.Application {
     private uint last_sv = 0;
     private static bool offline = false;
     private static string rfile = null;
+    private static string bfile = null;
     private static int dmrtype=3; // default to quad
     private static DEBUG_FLAGS debug_flags = 0;
     private static VersInfo vi ={0};
@@ -436,7 +437,8 @@ public class MWPlanner : Gtk.Application {
         { "layout", 'l', 0, OptionArg.STRING, out layfile, "Layout name", null},
         { "force-type", 't', 0, OptionArg.INT, out dmrtype, "Model type", null},
         { "force4", '4', 0, OptionArg.NONE, out force4, "Force ipv4", null},                { "debug-flags", 0, 0, OptionArg.INT, out debug_flags, "Debug flags (mask)", null},
-        { "replay", 'p', 0, OptionArg.STRING, out rfile, "replay file", null},
+        { "replay-mwp", 'p', 0, OptionArg.STRING, out rfile, "replay mwp log file", null},
+        { "replay-bbox", 'b', 0, OptionArg.STRING, out bfile, "replay bbox log file", null},
         { "centre", 0, 0, OptionArg.STRING, out llstr, "Centre position", null},
         { "offline", 0, 0, OptionArg.NONE, out offline, "force offline proxy mode", null},
         {null}
@@ -1285,7 +1287,12 @@ public class MWPlanner : Gtk.Application {
         if(rfile != null)
         {
             usemag = force_mag;
-            run_replay(rfile, true, 1);
+            run_replay(Posix.realpath(rfile), true, 1);
+        }
+        else if(bfile != null)
+        {
+            usemag = force_mag;
+            replay_bbox(true, Posix.realpath(bfile));
         }
     }
 
@@ -3769,7 +3776,7 @@ public class MWPlanner : Gtk.Application {
 
         MWPLog.message("%s\n", string.joinv(" ",args));
         try {
-            Process.spawn_async_with_pipes ("/", args, null,
+            Process.spawn_async_with_pipes (null, args, null,
                                             SpawnFlags.SEARCH_PATH |
                                             SpawnFlags.LEAVE_DESCRIPTORS_OPEN |
                                             SpawnFlags.STDOUT_TO_DEV_NULL |
@@ -3795,7 +3802,7 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-    private void replay_bbox (bool delay)
+    private void replay_bbox (bool delay, string? fn = null)
     {
         if(replayer != 0)
         {
@@ -3803,7 +3810,7 @@ public class MWPlanner : Gtk.Application {
         }
         else
         {
-            var id = bb_runner.run();
+            var id = bb_runner.run(fn);
             if(id == 1001)
             {
                 string bblog;

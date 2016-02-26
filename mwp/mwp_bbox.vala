@@ -75,7 +75,7 @@ public class  BBoxDialog : Object
             Pid child_pid;
             int p_stderr;
 
-            Process.spawn_async_with_pipes ("/",
+            Process.spawn_async_with_pipes (null,
                                             spawn_args,
                                             null,
                                             SpawnFlags.SEARCH_PATH |
@@ -144,9 +144,18 @@ public class  BBoxDialog : Object
 	}
     }
 
-    public int run()
+    public int run(string? fn = null)
     {
         dialog.show_all ();
+        if(fn != null)
+        {
+            filename = fn;
+            bb_filechooser.set_filename(fn);
+            bb_liststore.clear();
+            maxidx = -1;
+            bb_items.label = "";
+            get_bbox_file_status();
+        }
         var id = dialog.run();
         dialog.hide();
         return id;
