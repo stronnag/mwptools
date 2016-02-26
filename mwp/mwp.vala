@@ -127,9 +127,7 @@ public class PosFormat : GLib.Object
         var q = (neg) ? ind.get_char(1) : ind.get_char(0);
         return fmt.printf((int)d,(int)m,s,q);
     }
-
 }
-
 
 public class MWPlanner : Gtk.Application {
     public Builder builder;
@@ -1590,6 +1588,17 @@ public class MWPlanner : Gtk.Application {
 
         sflags = NavStatus.SPK.Volts;
 
+        var missing = 0;
+
+        if(force_mag)
+            usemag = true;
+        else
+        {
+            usemag = ((sensor & MSP.Sensors.MAG) == MSP.Sensors.MAG);
+            if(!usemag)
+                missing = MSP.Sensors.MAG;
+        }
+
         if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
         {
             sflags |= NavStatus.SPK.GPS;
@@ -1607,16 +1616,8 @@ public class MWPlanner : Gtk.Application {
             gpscnt = 0;
         }
         else
-        {
-            set_error_status("No GPS detected");
-            MWPLog.message("no gps, sensor = 0x%x\n", sensor);
-            gpscnt++;
-        }
+            missing |= MSP.Sensors.GPS;
 
-        if(force_mag)
-            usemag = true;
-        else
-            usemag = ((sensor & MSP.Sensors.MAG) == MSP.Sensors.MAG);
         if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
         {
             requests += MSP.Cmds.ATTITUDE;
@@ -1628,6 +1629,24 @@ public class MWPlanner : Gtk.Application {
             sflags |= NavStatus.SPK.BARO;
             requests += MSP.Cmds.ALTITUDE;
             reqsize += MSize.MSP_ALTITUDE;
+        }
+        else
+            missing |= MSP.Sensors.BARO;
+
+        if(missing != 0)
+        {
+            string []nsensor={};
+            if((missing & MSP.Sensors.GPS) != 0)
+                nsensor += "GPS";
+            if((missing & MSP.Sensors.BARO) != 0)
+                nsensor += "BARO";
+            if((missing & MSP.Sensors.MAG) != 0)
+                nsensor += "MAG";
+
+            var nss = string.joinv("/",nsensor);
+            set_error_status("No %s detected".printf(nss));
+            MWPLog.message("no %s, sensor = 0x%x\n", nss, sensor);
+            gpscnt++;
         }
         return reqsize;
     }
