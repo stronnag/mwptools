@@ -496,9 +496,10 @@ public class MapSourceDialog : GLib.Object
     private Gtk.Label map_maxzoom;
     private Gtk.Label map_uri;
 
-    public MapSourceDialog(Gtk.Builder builder)
+    public MapSourceDialog(Gtk.Builder builder, Gtk.Window? w=null)
     {
         dialog = builder.get_object ("map_source_dialog") as Gtk.Dialog;
+        dialog.set_transient_for(w);
         map_name = builder.get_object ("map_name") as Gtk.Label;
         map_id = builder.get_object ("map_id") as Gtk.Label;
         map_uri = builder.get_object ("map_uri") as Gtk.Label;
@@ -597,9 +598,10 @@ public class SetPosDialog : GLib.Object
     private Gtk.Entry lat_entry;
     private Gtk.Entry lon_entry;
 
-    public SetPosDialog(Gtk.Builder builder)
+    public SetPosDialog(Gtk.Builder builder,Gtk.Window? w=null)
     {
         dialog = builder.get_object ("gotodialog") as Gtk.Dialog;
+        dialog.set_transient_for(w);
         lat_entry = builder.get_object ("golat") as Gtk.Entry;
         lon_entry = builder.get_object ("golon") as Gtk.Entry;
     }
@@ -641,9 +643,10 @@ public class SetPosDialog : GLib.Object
 public class SwitchDialog : GLib.Object
 {
     private Gtk.Dialog dialog;
-    public SwitchDialog(Gtk.Builder builder)
+    public SwitchDialog(Gtk.Builder builder, Gtk.Window? w=null)
     {
         dialog = builder.get_object ("switch-dialogue") as Gtk.Dialog;
+        dialog.set_transient_for(w);
     }
     public void run()
     {
@@ -720,7 +723,7 @@ public class PrefsDialog : GLib.Object
         }
     }
 
-    public PrefsDialog(Gtk.Builder builder)
+    public PrefsDialog(Gtk.Builder builder, Gtk.Window? w)
     {
         dialog = builder.get_object ("prefs-dialog") as Gtk.Dialog;
         for (int i = 1; i < 10; i++)
@@ -745,7 +748,7 @@ public class PrefsDialog : GLib.Object
         }
 
         dialog.set_default_size (640, 320);
-
+        dialog.set_transient_for(w);
         var content = dialog.get_content_area () as Gtk.Box;
         Gtk.Notebook notebook = new Gtk.Notebook ();
         content.pack_start (notebook, false, true, 0);
@@ -908,9 +911,10 @@ public class ShapeDialog : GLib.Object
     private Gtk.SpinButton spin3;
     private Gtk.ComboBoxText combo;
 
-    public ShapeDialog(Gtk.Builder builder)
+    public ShapeDialog(Gtk.Builder builder, Gtk.Window? w=null)
     {
         dialog = builder.get_object ("shape-dialog") as Gtk.Dialog;
+        dialog.set_transient_for(w);
         spin1  = builder.get_object ("shp_spinbutton1") as Gtk.SpinButton;
         spin2  = builder.get_object ("shp_spinbutton2") as Gtk.SpinButton;
         spin3  = builder.get_object ("shp_spinbutton3") as Gtk.SpinButton;

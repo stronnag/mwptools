@@ -63,7 +63,6 @@ public struct BatteryLevels
     }
 }
 
-
 public struct MavPOSDef
 {
     uint16 minval;
@@ -170,6 +169,9 @@ public class MWPlanner : Gtk.Application {
     private Gtk.Spinner armed_spinner;
     private Gtk.Label typlab;
     private Gtk.Label labelvbat;
+
+    private Gtk.Label sensor_sts[6];
+
     private uint32 capability;
     private uint cmdtid;
     private uint spktid;
@@ -280,6 +282,7 @@ public class MWPlanner : Gtk.Application {
     private bool force_mav = false;
     private bool have_mspradio = false;
     private uint16 sensor;
+    private uint16 xsensor = 0;
     private uint8 profile = 0;
     private double clat = 0.0;
     private double clon = 0.0;
@@ -584,6 +587,13 @@ public class MWPlanner : Gtk.Application {
             window.set_icon_from_file(icon);
         } catch {};
 
+        sensor_sts[0] = builder.get_object ("gyro_sts") as Gtk.Label;
+        sensor_sts[1] = builder.get_object ("acc_sts") as Gtk.Label;
+        sensor_sts[2] = builder.get_object ("mag_sts") as Gtk.Label;
+        sensor_sts[3] = builder.get_object ("baro_sts") as Gtk.Label;
+        sensor_sts[4] = builder.get_object ("gps_sts") as Gtk.Label;
+        sensor_sts[5] = builder.get_object ("sonar_sts") as Gtk.Label;
+
         zoomer = builder.get_object ("spinbutton1") as Gtk.SpinButton;
 
         timadj = builder.get_object ("spinbutton2") as Gtk.SpinButton;
@@ -643,7 +653,7 @@ public class MWPlanner : Gtk.Application {
                 }
             });
 
-        msview = new MapSourceDialog(builder);
+        msview = new MapSourceDialog(builder, window);
         menuop =  builder.get_object ("menu_maps") as Gtk.MenuItem;
         menuop.activate.connect(() => {
                 var map_source_factory = Champlain.MapSourceFactory.dup_default();
@@ -712,7 +722,7 @@ public class MWPlanner : Gtk.Application {
                 replay_log(false);
             });
 
-        bb_runner = new BBoxDialog(builder, dmrtype);
+        bb_runner = new BBoxDialog(builder, dmrtype, window);
         menubblog = builder.get_object ("bb_menu_act") as Gtk.MenuItem;
         menubblog.activate.connect (() => {
                 replay_bbox(true);
@@ -1133,8 +1143,8 @@ public class MWPlanner : Gtk.Application {
                     mwvar = _m;
             });
 
-        prefs = new PrefsDialog(builder);
-        swd = new SwitchDialog(builder);
+        prefs = new PrefsDialog(builder, window);
+        swd = new SwitchDialog(builder, window);
 
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
         Gdk.Pixbuf pix = null;
@@ -1655,7 +1665,29 @@ public class MWPlanner : Gtk.Application {
             MWPLog.message("no %s, sensor = 0x%x\n", nss, sensor);
             gpscnt++;
         }
+        if(sensor != xsensor)
+        {
+            update_sensor_array();
+            xsensor = sensor;
+        }
         return reqsize;
+    }
+
+    private void update_sensor_array()
+    {
+        for(int i = 0; i < 5; i++)
+        {
+            uint16 mask = (1 << i);
+            bool setx = ((sensor & mask) != 0);
+            sensor_sts[i+1].label = "<span foreground = \"%s\">▌</span>".printf((setx) ? "green" : "red");
+        }
+        sensor_sts[0].label = sensor_sts[1].label;
+    }
+
+    private void clear_sensor_array()
+    {
+        for(int i = 0; i < 6; i++)
+            sensor_sts[i].label = " ";
     }
 
     private void armed_processing(uint32 flag)
@@ -3290,6 +3322,8 @@ public class MWPlanner : Gtk.Application {
             }
             init_npos();
             set_error_status(null);
+            xsensor = 0;
+            clear_sensor_array();
         }
         else
         {
@@ -3325,6 +3359,8 @@ public class MWPlanner : Gtk.Application {
         have_mspradio = false;
         force_mav = false;
         want_special = 0;
+        xsensor = 0;
+        clear_sensor_array();
     }
 
     private void connect_serial()
@@ -3539,6 +3575,7 @@ public class MWPlanner : Gtk.Application {
             Gtk.ResponseType.CANCEL,
             "_Save",
             Gtk.ResponseType.ACCEPT);
+        chooser.set_transient_for(window);
         chooser.select_multiple = false;
         Gtk.FileFilter filter = new Gtk.FileFilter ();
         filter.set_filter_name ("Mission");
@@ -3625,7 +3662,7 @@ public class MWPlanner : Gtk.Application {
             "_Open",
             Gtk.ResponseType.ACCEPT);
         chooser.select_multiple = false;
-
+        chooser.set_transient_for(window);
         Gtk.FileFilter filter = new Gtk.FileFilter ();
 	filter.set_filter_name ("Mission");
 	filter.add_pattern ("*.mission");
@@ -3663,7 +3700,7 @@ public class MWPlanner : Gtk.Application {
             "_Open",
             Gtk.ResponseType.ACCEPT);
             chooser.select_multiple = false;
-
+            chooser.set_transient_for(window);
             Gtk.FileFilter filter = new Gtk.FileFilter ();
             filter.set_filter_name ("Log");
             filter.add_pattern ("*.log");

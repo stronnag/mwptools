@@ -15,7 +15,7 @@ public class  BBoxDialog : Object
     private Gtk.FileChooserButton bb_filechooser;
     private Gtk.TreeSelection bb_sel;
 
-    public BBoxDialog(Gtk.Builder builder, int mrtype = 3)
+    public BBoxDialog(Gtk.Builder builder, int mrtype = 3, Gtk.Window? w = null)
     {
         dialog = builder.get_object ("bb_dialog") as Gtk.Dialog;
         bb_cancel = builder.get_object ("bb_cancel") as Button;
@@ -57,6 +57,7 @@ public class  BBoxDialog : Object
         foreach(var ts in mrtypes)
             bb_combo.append_text (ts);
         bb_combo.active = mrtype;
+        dialog.set_transient_for(w);
     }
 
     private void get_bbox_file_status()
