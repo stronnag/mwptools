@@ -3881,9 +3881,13 @@ public class MWPlanner : Gtk.Application {
             {
                 m += s;
             }
-            unowned string? []om = m;
-            if(om.length > 1)
-                opt.parse(ref om);
+            if(m.length > 1)
+            {
+                unowned string? []om = m;
+                try {
+                    opt.parse(ref om);
+                } catch {}
+            }
         }
     }
 
