@@ -541,10 +541,6 @@ public class MWPlanner : Gtk.Application {
             } catch {};
         }
 
-        var evol = Environment.get_variable("MWP_FORCE_OFFLINE");
-        if(evol != null)
-            offline = true;
-
         MapSource [] msources = {};
         if(conf.map_sources != null)
         {
@@ -3874,6 +3870,23 @@ public class MWPlanner : Gtk.Application {
             Logger.stop();
     }
 
+    private static void check_env_args(OptionContext opt)
+    {
+        var evar = Environment.get_variable("MWP_ARGS");
+        if(evar != null)
+        {
+            string? [] m = {};
+            m += "args";
+            foreach (var s in evar.split(" "))
+            {
+                m += s;
+            }
+            unowned string? []om = m;
+            if(om.length > 1)
+                opt.parse(ref om);
+        }
+    }
+
     public static int main (string[] args)
     {
         time_t currtime;
@@ -3881,11 +3894,12 @@ public class MWPlanner : Gtk.Application {
         if (GtkClutter.init (ref args) != InitError.SUCCESS)
             return 1;
         MWPLog.message("mwp startup\n");
-        try {
         var opt = new OptionContext("");
-        opt.set_help_enabled(true);
-        opt.add_main_entries(options, null);
-        opt.parse(ref args);
+        try {
+            opt.set_help_enabled(true);
+            opt.add_main_entries(options, null);
+            check_env_args(opt);
+            opt.parse(ref args);
         } catch (OptionError e) {
             stderr.printf("Error: %s\n", e.message);
             stderr.printf("Run '%s --help' to see a full list of available "+
