@@ -1,6 +1,6 @@
 DIRS = mspsim pidedit switchedit samples/ublox-test cf-cli horizon mwp bbox-replay
 INSTALLDIRS = $(DIRS:%=install-%)
-SYSINSTALLDIRS = $(DIRS:%=sys-install-%)
+SYSINSTALLDIRS = $(DIRS:%=sysinstall-%)
 CLEANDIRS = $(DIRS:%=clean-%)
 
 all: $(DIRS)
@@ -14,7 +14,6 @@ $(INSTALLDIRS):
 sysinstall: $(SYSINSTALLDIRS)
 $(SYSINSTALLDIRS):
 	$(MAKE) -C $(@:sysinstall-%=%) install-system
-
 
 clean: $(CLEANDIRS)
 $(CLEANDIRS):
