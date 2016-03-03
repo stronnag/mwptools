@@ -14,9 +14,11 @@ public class  BBoxDialog : Object
     private Gtk.ComboBoxText bb_combo;
     private Gtk.FileChooserButton bb_filechooser;
     private Gtk.TreeSelection bb_sel;
-
+    private Gtk.Window _w;
+        
     public BBoxDialog(Gtk.Builder builder, int mrtype = 3, Gtk.Window? w = null)
     {
+        _w = w;
         dialog = builder.get_object ("bb_dialog") as Gtk.Dialog;
         bb_cancel = builder.get_object ("bb_cancel") as Button;
         bb_ok = builder.get_object ("bb_ok") as Button;
@@ -142,23 +144,61 @@ public class  BBoxDialog : Object
 
                     });
 	} catch (SpawnError e) {
-	}
+            show_child_err(e.message);
+        }
     }
 
+    private void show_child_err(string e)
+    {
+        var s = "Running blackbox_decode failed (is it on the PATH?)\n%s\n".printf(e);
+        MWPLog.message(s);
+        var msg = new Gtk.MessageDialog (_w,
+                                         Gtk.DialogFlags.MODAL,
+                                         Gtk.MessageType.WARNING,
+                                         Gtk.ButtonsType.OK,
+                                         s);
+            msg.run();
+            msg.destroy();
+    }
+    
+    
     public int run(string? fn = null)
     {
-        dialog.show_all ();
-        if(fn != null)
-        {
-            filename = fn;
-            bb_filechooser.set_filename(fn);
-            bb_liststore.clear();
-            maxidx = -1;
-            bb_items.label = "";
-            get_bbox_file_status();
+        int id = 0;
+        
+        try {
+            string[] spawn_args = {"blackbox_decode", "--help"};
+            Process.spawn_sync ("/",
+                                spawn_args,
+                                null,
+                                SpawnFlags.SEARCH_PATH|
+                                SpawnFlags.STDOUT_TO_DEV_NULL|
+                                SpawnFlags.STDERR_TO_DEV_NULL,
+                                null,
+                                null,
+                                null,
+                                null);
         }
-        var id = dialog.run();
-        dialog.hide();
+        catch (SpawnError e) {
+            show_child_err(e.message);
+            id = -1;
+        }
+        
+        if(id == 0)
+        {
+            dialog.show_all ();
+            if(fn != null)
+            {
+                filename = fn;
+                bb_filechooser.set_filename(fn);
+                bb_liststore.clear();
+                maxidx = -1;
+                bb_items.label = "";
+                get_bbox_file_status();
+            }
+            id = dialog.run();
+            dialog.hide();
+        }
         return id;
     }
 

@@ -462,7 +462,6 @@ public class MWPlanner : Gtk.Application {
         return !dockitem[id].is_closed();
     }
 
-
     MWPlanner ()
     {
         Object(application_id: "mwp.application", flags: ApplicationFlags.FLAGS_NONE);

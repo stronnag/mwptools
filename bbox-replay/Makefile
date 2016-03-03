@@ -10,4 +10,4 @@ install-local:
 install-system:
 	../installer.sh $(APP) system
 
-.PHONY: all
+.PHONY: all clean

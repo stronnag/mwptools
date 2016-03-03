@@ -21,4 +21,4 @@ install-local: $(APP)
 	../installer.sh $(APP) local
 
 install-system: $(APP)
-	../installer.sh $APP system
+	../installer.sh $(APP) system

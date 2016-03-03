@@ -35,6 +35,6 @@ install-local:  ublox-cli ublox-geo
 	../../installer.sh ublox-cli local
 	../../installer.sh ublox-geo local
 
-install-system: ublox-test
+install-system: ublox-cli ublox-geo
 	../../installer.sh ublox-cli system
 	../../installer.sh ublox-geo system

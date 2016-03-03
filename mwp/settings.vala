@@ -73,20 +73,18 @@ public class MWPSettings : GLib.Object
         {
             SettingsSchemaSource sss = new SettingsSchemaSource.from_directory (uc, null, false);
             schema = sss.lookup (sname, false);
-            if (schema != null)
-                settings = new Settings.full (schema, null, null);
-            else
-                settings =  new Settings (sname);
+        } catch {}
 
-            settings.changed.connect ((s) => {
-                    MWPLog.message("changed %s settings\n",s);
-                    read_settings(s);
-                    settings_update(s);
-                });
-        } catch {
-            MWPLog.message("No settings schema\n");
-            Posix.exit(-1);
-        }
+        if (schema != null)
+            settings = new Settings.full (schema, null, null);
+        else
+            settings =  new Settings (sname);
+            
+        settings.changed.connect ((s) => {
+                MWPLog.message("changed %s settings\n",s);
+                read_settings(s);
+                settings_update(s);
+            });
     }
 
     public void read_settings(string? s=null)

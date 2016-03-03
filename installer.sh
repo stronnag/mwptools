@@ -8,7 +8,7 @@ local)
     BIN=$HOME/bin
     DATA=$HOME/.local/share
     ;;
-system)
+*)
     BIN=/usr/bin
     DATA=/usr/share
     ;;
@@ -43,7 +43,7 @@ then
 fi
 [ -n "$COMP" ] && glib-compile-schemas $DATA/glib-2.0/schemas/
 
-[ -n "$LOC" ] && cat <<_EOM
+[ "$LOC" = "local" ] && cat <<_EOM
 ***************************************************************
 * For a local install, binaries are in $HOME/bin
 * Ensure you have set the following environment variable
