@@ -23,6 +23,7 @@ $(CLEANDIRS):
 .PHONY: subdirs $(DIRS)
 .PHONY: subdirs $(BUILDDIRS)
 .PHONY: subdirs $(INSTALLDIRS)
+.PHONY: subdirs $(SYSINSTALLDIRS)
 .PHONY: subdirs $(TESTDIRS)
 .PHONY: subdirs $(CLEANDIRS)
 .PHONY: all install clean sysinstall
