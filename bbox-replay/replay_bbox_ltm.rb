@@ -278,7 +278,8 @@ icnt = 0
 origin = nil
 
 begin
-  stdout,stderr,status = Open3.capture3('blackbox_decode --help')
+  fds=nil
+  fds = Open3.capture3('blackbox_decode --help')
 rescue
   abort "Can't run 'blackbox_decode' is it installed and on the PATH?"
 end

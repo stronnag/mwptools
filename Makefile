@@ -1,4 +1,4 @@
-DIRS = mspsim pidedit switchedit samples/ublox-test cf-cli horizon mwp
+DIRS = mspsim pidedit switchedit samples/ublox-test cf-cli horizon mwp bbox-replay
 INSTALLDIRS = $(DIRS:%=install-%)
 SYSINSTALLDIRS = $(DIRS:%=sys-install-%)
 CLEANDIRS = $(DIRS:%=clean-%)
