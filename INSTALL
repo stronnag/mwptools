@@ -80,6 +80,15 @@ sourced at login), the following lines:
 
 Did I mention that the system install is recommended?
 
+Short Cuts
+~~~~~~~~~~
+
+Build and installation can be simplified as:
+
+$ make && sudo make install ## System wide
+or
+$ make local                ## Local
+
 Caveat
 ~~~~~~
 
@@ -106,3 +115,5 @@ wished to remove a system install, see samples/clean-system.sh.
 
 You should also remove any definition of XDG_DATA_DIRS added to
 .profile **for mwp**
+
+jh 2016-03-04
