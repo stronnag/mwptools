@@ -41,6 +41,8 @@ install: $(APPS)
 	install -m 644 pixmaps/* $(datadir)/share/mwp/pixmaps/
 	install -m 644 *.ogg $(datadir)/share/mwp/
 	install -m 644 -D mwp.desktop $(datadir)/share/applications/mwp.desktop
+	install -m 644 -D org.mwptools.planner.gschema.xml $(datadir)/share/glib-2.0/schemas/org.mwptools.planner.gschema.xml
+	glib-compile-schemas $(datadir)/share/glib-2.0/schemas
 ifdef QPROXY
 	install -D qproxy $(prefix)/bin/qproxy
 endif
