@@ -540,7 +540,7 @@ public class SwitchEdit : Object
 
         try {
             string icon=null;
-            icon = MWPUtils.find_conf_file("mwp_icon.svg");
+            icon = MWPUtils.find_conf_file("switchedit.svg");
             window.set_icon_from_file(icon);
         } catch {};
 
