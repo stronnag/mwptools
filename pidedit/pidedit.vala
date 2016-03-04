@@ -374,23 +374,21 @@ public class PIDEdit : Object
     {
         devs={};
         baudrate=0;
+        SettingsSchema schema = null;
         Settings settings = null;
         var sname = "org.mwptools.planner";
         var uc = Environment.get_user_data_dir();
         uc += "/glib-2.0/schemas/";
-
         try
         {
             SettingsSchemaSource sss = new SettingsSchemaSource.from_directory (uc, null, false);
-            var schema = sss.lookup (sname, false);
-            if (schema != null)
-                settings = new Settings.full (schema, null, null);
-            else
-                settings =  new Settings (sname);
-        } catch {
-            MWPLog.message("No settings schema\n");
-            Posix.exit(-1);
-        }
+            schema = sss.lookup (sname, false);
+        } catch {}
+
+        if (schema != null)
+            settings = new Settings.full (schema, null, null);
+        else
+            settings =  new Settings (sname);
 
         if (settings != null)
         {

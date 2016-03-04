@@ -18,7 +18,7 @@ clean:
 local:
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
-install: $(APPS)
+install: $(APP)
 	install -s -D $(APP) $(prefix)/bin/$(APP)
 	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/$(APP)/mwp_icon.svg
 	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/$(APP)/$(APP).svg
