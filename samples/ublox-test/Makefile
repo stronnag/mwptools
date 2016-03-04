@@ -5,7 +5,9 @@ include ../../common.mk
 APP=ublox-geo
 CLI=ublox-cli
 
-all: $(APP) $(CLI)
+APPS=$(APP) $(CLI)
+
+all: $(APPS)
 
 CLISRC=	ublox.vapi ublox-cli.vala ublox-io.vala mwplog.vala cserial.c init_signals.c
 
@@ -29,12 +31,9 @@ $(APP) : $(SRCS)
 clean:
 	rm -f ublox-cli ublox-geo  *~ *.vala.c
 
-install: install-local
+local: $(APPS)
+	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
-install-local:  ublox-cli ublox-geo
-	../../installer.sh ublox-cli local
-	../../installer.sh ublox-geo local
-
-install-system: ublox-cli ublox-geo
-	../../installer.sh ublox-cli system
-	../../installer.sh ublox-geo system
+install: $(APPS)
+	install -s -D $(APP) $(prefix)/bin/$(APP)
+	install -s -D $(CLI) $(prefix)/bin/$(CLI)

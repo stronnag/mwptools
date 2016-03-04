@@ -11,6 +11,10 @@ else
 endif
 all: cf-cli cf-cli-ui
 
+APP=cf-cli-ui
+CLI=cf-cli
+APPS=$(APP) $(CLI)
+
 cf-cli: $(S1)
 	$(VALAC) $(OPTS) --pkg posix --pkg gio-2.0 $(S1) -o cf-cli
 
@@ -23,12 +27,9 @@ cf-cli-ui: $(S2)
 clean:
 	rm -f cf-cli cf-cli-ui  *.vala.c
 
-install: install-local
+local:
+	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
-install-local:  cf-cli cf-cli-ui
-	../installer.sh cf-cli local
-	../installer.sh cf-cli-ui local
-
-install-system: cf-cli cf-cli-ui
-	../installer.sh cf-cli system
-	../installer.sh cf-cli-ui system
+install: $(APPS)
+	install -s -D $(APP) $(prefix)/bin/$(APP)
+	install -s -D $(CLI) $(prefix)/bin/$(CLI)

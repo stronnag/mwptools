@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 
 # Copyright (c) 2015 Jonathan Hudson <jh+mwptools@daria.co.uk>
 

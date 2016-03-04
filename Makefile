@@ -1,19 +1,21 @@
 DIRS = mspsim pidedit switchedit samples/ublox-test cf-cli horizon mwp bbox-replay
 INSTALLDIRS = $(DIRS:%=install-%)
-SYSINSTALLDIRS = $(DIRS:%=sysinstall-%)
+LOCALDIRS = $(DIRS:%=local-%)
 CLEANDIRS = $(DIRS:%=clean-%)
 
 all: $(DIRS)
 $(DIRS):
 	$(MAKE) -C $@
 
+sysinstall: install
+
 install: $(INSTALLDIRS)
 $(INSTALLDIRS):
-	$(MAKE) -C $(@:install-%=%) install-local
+	$(MAKE) -C $(@:install-%=%) install
 
-sysinstall: $(SYSINSTALLDIRS)
-$(SYSINSTALLDIRS):
-	$(MAKE) -C $(@:sysinstall-%=%) install-system
+local: $(LOCALDIRS)
+$(LOCALDIRS):
+	$(MAKE) -C $(@:local-%=%) local
 
 clean: $(CLEANDIRS)
 $(CLEANDIRS):
@@ -25,4 +27,4 @@ $(CLEANDIRS):
 .PHONY: subdirs $(SYSINSTALLDIRS)
 .PHONY: subdirs $(TESTDIRS)
 .PHONY: subdirs $(CLEANDIRS)
-.PHONY: all install clean sysinstall
+.PHONY: all install clean local sysinstall

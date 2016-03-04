@@ -9,8 +9,9 @@ local)
     DATA=$HOME/.local/share
     ;;
 *)
-    BIN=/usr/bin
-    DATA=/usr/share
+    PREFIX=${PREFIX:-/usr}
+    BIN=${PREFIX}/bin
+    DATA=${PREFIX}/share
     ;;
 esac
 

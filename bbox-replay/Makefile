@@ -1,13 +1,11 @@
 APP=replay_bbox_ltm.rb
-
+include ../common.mk
 all:
 
-install: install-local
+local:
+	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
-install-local:
-	../installer.sh $(APP) local
+install: $(APP)
+	install -m 755 -D $(APP) $(prefix)/bin/$(APP)
 
-install-system:
-	../installer.sh $(APP) system
-
-.PHONY: all clean
+.PHONY: all clean local install

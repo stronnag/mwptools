@@ -28,16 +28,19 @@ qproxy: qproxy.vala
 clean:
 	rm -f mwp qproxy *~ *.vala.c
 
-install: install-local
+local:
+	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
-install-local: $(APPS)
-	../installer.sh mwp local
+install: $(APPS)
+	install -s -D mwp $(prefix)/bin/mwp
+	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/mwp/mwp_icon.svg
+	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/mwp/mwp.svg
+	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/mwp/pixmaps/mwp_icon.svg
+	install -m 644 -D mwp.ui $(datadir)/share/mwp/mwp.ui
+	install -d $(datadir)/share/mwp/pixmaps
+	install -m 644 pixmaps/* $(datadir)/share/mwp/pixmaps/
+	install -m 644 *.ogg $(datadir)/share/mwp/
+	install -m 644 -D mwp.desktop $(datadir)/share/applications/mwp.desktop
 ifdef QPROXY
-	../installer.sh qproxy local
-endif
-
-install-system: $(APPS)
-	../installer.sh mwp system
-ifdef QPROXY
-	../installer.sh qproxy system
+	install -D qproxy $(prefix)/bin/qproxy
 endif

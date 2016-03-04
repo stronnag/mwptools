@@ -15,10 +15,12 @@ $(APP): $(SRC)  $(COMMON)
 clean:
 	rm -f $(APP) *.vala.c
 
-install: install-local
+local:
+	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
-install-local: $(APP)
-	../installer.sh $(APP) local
-
-install-system: $(APP)
-	../installer.sh $(APP) system
+install: $(APPS)
+	install -s -D $(APP) $(prefix)/bin/$(APP)
+	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/$(APP)/mwp_icon.svg
+	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/$(APP)/$(APP).svg
+	install -m 644 -D $(APP).ui $(datadir)/share/$(APP)/$(APP).ui
+	install -m 644 -D $(APP).desktop $(datadir)/share/applications/$(APP).desktop

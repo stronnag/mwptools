@@ -26,3 +26,6 @@ else
 endif
 
 OPTS += -X -O2 -X -s --thread --target-glib=$(TARGET)
+
+prefix?=/usr
+datadir?=/usr

@@ -1,6 +1,8 @@
 CFLAGS=-O2 `pkg-config --cflags gtk+-2.0`
 LDFLAGS=`pkg-config --libs gtk+-2.0`
 
+APP=mwp_ath
+
 mwp_ath: ath.c gtkartificialhorizon.c  gtkartificialhorizon.h
 	$(CC) $(CFLAGS) ath.c gtkartificialhorizon.c -o mwp_ath $(LDFLAGS)
 	cp mwp_ath ~/bin/
@@ -11,10 +13,8 @@ atest: atest.vala
 clean:
 	rm -f mwp_ath atest
 
-install: install-local
+local:
+	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
-install-local: mwp_ath
-	../installer.sh mwp_ath local
-
-install-system: mwp_ath
-	../installer.sh mwp_ath system
+install: $(APPS)
+	install -s -D $(APP) $(prefix)/bin/$(APP)

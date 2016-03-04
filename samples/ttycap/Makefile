@@ -14,5 +14,8 @@ $(APP): $(CLISRC)
 clean:
 	rm -f ttycap *~ *.vala.c
 
-install: $(APP)
-	@echo 'please copy ttycap ... to where ever you like'
+local:
+	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
+
+install: $(APPS)
+	install -s -D $(APP) $(prefix)/bin/$(APP)

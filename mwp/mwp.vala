@@ -617,15 +617,11 @@ public class MWPlanner : Gtk.Application {
         menuop.activate.connect(() =>
             {
                 prefs.run_prefs(ref conf);
-                if(conf.speakint > 0)
+                if(conf.speakint == 0)
                 {
-                    audio_cb.sensitive = true;
+                    conf.speakint = 15;
                 }
-                else
-                {
-                    audio_cb.sensitive = false;
-                    audio_cb.active = false;
-                }
+                audio_cb.sensitive = true;
             });
 
         setpos = new SetPosDialog(builder);
