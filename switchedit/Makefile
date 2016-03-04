@@ -22,4 +22,5 @@ install: $(APP)
 	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/$(APP)/mwp_icon.svg
 	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/$(APP)/$(APP).svg
 	install -m 644 -D $(APP).ui $(datadir)/share/$(APP)/$(APP).ui
+	install -m 644 -D ../common/mwchooser.ui $(datadir)/share/$(APP)/mwchooser.ui
 	install -m 644 -D $(APP).desktop $(datadir)/share/applications/$(APP).desktop
