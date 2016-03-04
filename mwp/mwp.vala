@@ -3792,15 +3792,22 @@ public class MWPlanner : Gtk.Application {
 
     private void spawn_bbox_task(string fn, int index, int btype, bool delay)
     {
-        int n=7;
-        string args[10] = {"replay_bbox_ltm.rb",
+//        int n=7;
+        string [] args = {"replay_bbox_ltm.rb",
                           "--fd", "%d".printf(playfd[1]),
                           "-i", "%d".printf(index),
                           "-t", "%d".printf(btype)};
         if(delay == false)
-            args[n++] = "-f";
-        args[n++] = fn;
-        args[n]= null;
+            args += "-f";
+        var bbextra = Environment.get_variable("MWP_BB_ARGS");
+        if(bbextra != null && bbextra.length > 0)
+        {
+            var parts = bbextra.split(" ");
+            foreach(var pp in parts)
+                args += pp;
+        }
+        args += fn;
+        args += null;
 
         MWPLog.message("%s\n", string.joinv(" ",args));
         try {
