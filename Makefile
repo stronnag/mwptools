@@ -16,6 +16,7 @@ $(INSTALLDIRS):
 local: $(LOCALDIRS)
 $(LOCALDIRS):
 	$(MAKE) -C $(@:local-%=%) local
+	@cat docs/warn-local.txt
 
 clean: $(CLEANDIRS)
 $(CLEANDIRS):
