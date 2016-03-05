@@ -1154,8 +1154,8 @@ public class MWPlanner : Gtk.Application {
                     var parts = llstr.split(delim);
                     if(parts.length == 2)
                     {
-                        clat = double.parse(parts[0]);
-                        clon = double.parse(parts[1]);
+                        clat = InputParser.get_latitude(parts[0]);
+                        clon = InputParser.get_longitude(parts[1]);
                         break;
                     }
                 }
@@ -1168,6 +1168,7 @@ public class MWPlanner : Gtk.Application {
             view.center_on(clat,clon);
             view.set_property("zoom-level", conf.zoom);
             zoomer.adjustment.value = conf.zoom;
+            poslabel.set_text(PosFormat.pos(clon,clat,conf.dms));
         }
         else
         {
