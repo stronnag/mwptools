@@ -33,9 +33,9 @@ public class QProxy : GLib.Object
     private string [] p_uri;
     private const string UrlServerLetters = "bcde";
 
-    public QProxy(string _uri, int _port)
+    public QProxy(string _uri)
     {
-        p_uri = uri.split("#");
+        p_uri = _uri.split("#");
     }
 
     private int getservernum(int ix, int iy, int pmax)
@@ -130,7 +130,7 @@ public class QProxy : GLib.Object
         msg.set_status(message.status_code);
     }
 
-    private void proxy()
+    private void proxy(int port)
     {
         var server = new Soup.Server (Soup.SERVER_PORT, port);
         server.add_handler (null, default_handler);
@@ -143,8 +143,8 @@ public class QProxy : GLib.Object
         if (args.length > 2)
         {
             var port = int.parse(args[2]);
-            var q = new QProxy(args[1], port);
-            q.proxy();
+            var q = new QProxy(args[1]);
+            q.proxy(port);
         }
         else
         {

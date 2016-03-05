@@ -1,3 +1,5 @@
+include ../common.mk
+
 SRC=
 ifdef QPROXY
 SRC=qproxy
