@@ -139,7 +139,6 @@ public class QProxy : GLib.Object
 
     public static int main (string []args)
     {
-        int port = 8088;
         if (args.length > 2)
         {
             var port = int.parse(args[2]);
