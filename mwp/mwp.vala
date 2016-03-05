@@ -3745,7 +3745,7 @@ public class MWPlanner : Gtk.Application {
     }
 
     private void run_replay(string fn, bool delay, int rtype,
-                            int idx=0, int btype=0)
+                            int idx=0, int btype=0, bool force_gps=false)
     {
         xlog = conf.logarmed;
         xaudio = conf.audioarmed;
@@ -3780,7 +3780,7 @@ public class MWPlanner : Gtk.Application {
                     saved_menuitem = (delay) ? menureplay : menuloadlog;
                     break;
                 case 2:
-                    spawn_bbox_task(fn, idx, btype, delay);
+                    spawn_bbox_task(fn, idx, btype, delay, force_gps);
                     saved_menuitem = (delay) ? menubblog : menubbload;
                     break;
             }
@@ -3790,7 +3790,8 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-    private void spawn_bbox_task(string fn, int index, int btype, bool delay)
+    private void spawn_bbox_task(string fn, int index, int btype,
+                                 bool delay, bool force_gps)
     {
 //        int n=7;
         string [] args = {"replay_bbox_ltm.rb",
@@ -3799,6 +3800,7 @@ public class MWPlanner : Gtk.Application {
                           "-t", "%d".printf(btype)};
         if(delay == false)
             args += "-f";
+/****
         var bbextra = Environment.get_variable("MWP_BB_ARGS");
         if(bbextra != null && bbextra.length > 0)
         {
@@ -3806,6 +3808,10 @@ public class MWPlanner : Gtk.Application {
             foreach(var pp in parts)
                 args += pp;
         }
+****/
+        if(force_gps)
+            args += "-g";
+
         args += fn;
         args += null;
 
@@ -3851,8 +3857,10 @@ public class MWPlanner : Gtk.Application {
                 string bblog;
                 int index;
                 int btype;
-                bb_runner.get_result(out bblog, out index, out btype);
-                run_replay(bblog, delay, 2,index,btype);
+                bool force_gps;
+
+                bb_runner.get_result(out bblog, out index, out btype, out force_gps);
+                run_replay(bblog, delay, 2,index,btype, force_gps);
             }
         }
     }

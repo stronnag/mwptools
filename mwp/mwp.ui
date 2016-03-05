@@ -1239,6 +1239,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               <object class="GtkButton" id="bb_ok">
                 <property name="label">gtk-ok</property>
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">OK is enabled once a log index has been selected</property>
@@ -1342,9 +1343,36 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               </packing>
             </child>
             <child>
-              <object class="GtkComboBoxText" id="bb_comboboxtext">
+              <object class="GtkBox" id="box15">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkComboBoxText" id="bb_comboboxtext">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="bb_force_gps">
+                    <property name="label" translatable="yes">Use GPS heading</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="tooltip_text" translatable="yes">If set, the GPS heading is used rather than the compass for orientation</property>
+                    <property name="xalign">0</property>
+                    <property name="draw_indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
