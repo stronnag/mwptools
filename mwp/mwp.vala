@@ -3874,8 +3874,7 @@ public class MWPlanner : Gtk.Application {
 
     public static void xchild()
     {
-        if(SoupProxy.cpid != 0)
-            Posix.kill(SoupProxy.cpid, Posix.SIGTERM);
+        JsonMapDef.killall();
         if(Logger.is_logging)
             Logger.stop();
     }

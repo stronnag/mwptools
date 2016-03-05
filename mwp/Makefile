@@ -22,11 +22,8 @@ LOPTS=-X -lespeak -X -lm
 mwp: $(SRCS) $(COMMON)
 	$(VALAC) $(DOPTS) $(OPTS) $(PKGS) -o $@  $^ $(LOPTS)
 
-qproxy: qproxy.vala
-	valac --pkg libsoup-2.4 --pkg posix  qproxy.vala
-
 clean:
-	rm -f mwp qproxy *~ *.vala.c
+	rm -f mwp *~ *.vala.c
 
 local:
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
@@ -43,6 +40,3 @@ install: $(APPS)
 	install -m 644 -D mwp.desktop $(datadir)/share/applications/mwp.desktop
 	install -m 644 -D org.mwptools.planner.gschema.xml $(datadir)/share/glib-2.0/schemas/org.mwptools.planner.gschema.xml
 	glib-compile-schemas $(datadir)/share/glib-2.0/schemas
-ifdef QPROXY
-	install -D qproxy $(prefix)/bin/qproxy
-endif

@@ -1,0 +1,16 @@
+qproxy: qproxy.vala
+	valac --pkg libsoup-2.4 --pkg posix  qproxy.vala
+
+genproxy: genproxy.vala
+	valac --pkg libsoup-2.4 --pkg posix  genproxy.vala
+
+clean:
+	rm -f qproxy *~ *.vala.c
+
+install: install-local
+
+install-local:
+	../installer.sh qproxy local
+
+install-system: mwp
+	../installer.sh qproxy system

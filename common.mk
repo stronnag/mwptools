@@ -9,7 +9,6 @@ PKG_INFO := $(shell pkg-config --atleast-version=2.48 libsoup-2.4; echo $$?)
 ifneq ($(PKG_INFO),0)
  DOPTS += -D BADSOUP
  QPROXY = yes
- APPS += qproxy
 endif
 
 PKG_INFO := $(shell pkg-config --atleast-version=0.12.3 champlain-0.12; echo $$?)

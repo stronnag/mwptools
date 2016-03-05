@@ -83,7 +83,6 @@ public class SoupProxy : Soup.Server
     private string basename;
     private string extname;
     public bool offline = false;
-    public static Pid cpid = 0;
 
     public SoupProxy(string uri)
     {
@@ -207,6 +206,13 @@ public class JsonMapDef : Object
     private static Regex rx = null;
     public static int port = 0;
     public static string id = null;
+    private static int[] proxypids = {};
+
+    public static void killall()
+    {
+        foreach(var p in proxypids)
+            Posix.kill(p, Posix.SIGTERM);
+    }
 
     private static bool check_proxy(string s)
     {
@@ -252,6 +258,11 @@ public class JsonMapDef : Object
                 s.uri_format = item.get_string_member("uri_format");
                 s.licence = item.get_string_member("license");
                 s.licence_uri = item.get_string_member("license_uri");
+                if(item.has_member("spawn"))
+                {
+                    var spawncmd = item.get_string_member("spawn");
+                    spawn_proxy(spawncmd);
+                }
                 if (check_proxy(s.uri_format))
                     id = s.id;
                 sources += s;
@@ -263,21 +274,32 @@ public class JsonMapDef : Object
         return sources;
     }
 
-    public static void run_proxy(string uri, bool offline=false)
+    private static void spawn_proxy(string cmd)
     {
-#if BADSOUP
-    string[] spawn_args = {"qproxy", port.to_string(), uri};
+        string[]? argvp = null;
         try {
+            int pid;
+            Shell.parse_argv (cmd, out argvp);
             Process.spawn_async ("/",
-                             spawn_args,
-                             null,
-                             SpawnFlags.SEARCH_PATH | SpawnFlags.STDERR_TO_DEV_NULL,
-                             null,
-                             out SoupProxy.cpid);
-            MWPLog.message("Starting external proxy process\n");
+                                 argvp,
+                                 null,
+                                 SpawnFlags.SEARCH_PATH |
+                                 SpawnFlags.STDOUT_TO_DEV_NULL |
+                                 SpawnFlags.STDERR_TO_DEV_NULL,
+                                 null,
+                                 out pid);
+            MWPLog.message("Starting external %s process\n", argvp[0]);
+            proxypids += pid;
         } catch {
             MWPLog.message("Failed to start external proxy process\n");
         }
+    }
+
+    public static void run_proxy(string uri, bool offline=false)
+    {
+#if BADSOUP
+        string cmd = string.join(" ", "qproxy", uri, port.to_string(), );
+        spawn_proxy(cmd);
 #else
         var pt = JsonMapDef.port;
         MWPLog.message("Starting proxy thread %s\n", (offline) ? "(offline)" : "");

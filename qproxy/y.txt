@@ -1,0 +1,3 @@
+// https://sat01.maps.yandex.net/tiles?l=sat&v=3.260.0&x=152416&y=71092&z=18&lang=en_US
+
+in 01, 1 is GetServerNum + 1
