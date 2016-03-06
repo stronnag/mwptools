@@ -1109,7 +1109,7 @@ public class MWPlanner : Gtk.Application {
         autocon_cb = builder.get_object ("autocon_cb") as Gtk.CheckButton;
 
         audio_cb = builder.get_object ("audio_cb") as Gtk.CheckButton;
-        audio_cb.sensitive = (conf.speakint > 0);
+        audio_cb.sensitive = true; //(conf.speakint > 0);
         audio_cb.toggled.connect (() => {
                 audio_on = audio_cb.active;
                 if (audio_on)
