@@ -1,6 +1,8 @@
 CFLAGS=-O2 `pkg-config --cflags gtk+-2.0`
 LDFLAGS=`pkg-config --libs gtk+-2.0`
 
+include ../common.mk
+
 APP=mwp_ath
 
 mwp_ath: ath.c gtkartificialhorizon.c  gtkartificialhorizon.h
