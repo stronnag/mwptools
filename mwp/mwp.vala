@@ -931,6 +931,19 @@ public class MWPlanner : Gtk.Application {
                                 audio_cb.active = false;
                             if(conf.logarmed == true)
                                 logb.active=false;
+                            gpsinfo.annul();
+                            navstatus.reset();
+                            fbox.annul();
+                            set_bat_stat(0);
+                            duration = -1;
+                            if(craft != null)
+                            {
+                                craft.remove_marker();
+                            }
+                            init_npos();
+                            set_error_status(null);
+                            xsensor = 0;
+                            clear_sensor_array();
                         }
                         break;
 
@@ -3316,6 +3329,7 @@ public class MWPlanner : Gtk.Application {
             set_error_status(null);
             xsensor = 0;
             clear_sensor_array();
+
         }
         else
         {

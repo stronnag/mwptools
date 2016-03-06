@@ -124,9 +124,16 @@ def send_init_seq skt,typ
   end
 end
 
-def encode_atti r, gpshd=false
+def encode_atti r, gpshd=0
   msg='$TA'
-  hdr = ((gpshd) ? r[:gps_ground_course] : r[:heading]).to_i
+  hdr = case gpshd
+	when 1
+	  r[:gps_ground_course].to_i
+	when 2
+	  r[:heading].to_i
+	else
+	  r[:attitude2].to_i/10
+	end
 
   sl = [r[:pitch].to_i, r[:roll].to_i, hdr].pack("s<s<s<")
   msg << sl << mksum(sl)
@@ -248,7 +255,7 @@ typ = 3
 udpspec = nil
 serdev = nil
 v4 = false
-gpshd = false
+gpshd = 0
 mindelay = false
 childfd = nil
 
@@ -259,8 +266,9 @@ ARGV.options do |opt|
   opt.on('-i','--index=IDX',Integer){|o|idx=o}
   opt.on('-t','--vehicle-type=TYPE',Integer){|o|typ=o}
   opt.on('-d','--declination=DEC',Float,'Mag Declination (default -1.3)'){|o|decl=o}
-  opt.on('-g','--force-gps-heading','Use GPS course instead of compass'){gpshd=true}
+  opt.on('-g','--force-gps-heading','Use GPS course instead of compass'){gpshd=1}
   opt.on('-4','--force-ipv4'){v4=true}
+  opt.on('-m','--use-imu-heading'){gpshd=2}
   opt.on('-f','--fast'){mindelay=true}
   opt.on('--fd=FD',Integer){|o| childfd=o}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
@@ -395,7 +403,7 @@ IO.popen(cmd,'rt') do |pipe|
 	  msg = encode_gps row
 	  send_msg dev, msg
 	  if origin.nil? and row[:gps_numsat].to_i > 4
-	    origin = {:lat => row[:gps_coord0], :lon => row[:gps_coord1],#
+	    origin = {:lat => row[:gps_coord0], :lon => row[:gps_coord1],
 	      :alt => row[:gps_altitude]}
 	    msg = encode_origin origin
 	    send_msg dev, msg
