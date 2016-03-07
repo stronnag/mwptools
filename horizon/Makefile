@@ -7,7 +7,6 @@ APP=mwp_ath
 
 mwp_ath: ath.c gtkartificialhorizon.c  gtkartificialhorizon.h
 	$(CC) $(CFLAGS) ath.c gtkartificialhorizon.c -o mwp_ath $(LDFLAGS)
-	cp mwp_ath ~/bin/
 
 atest: atest.vala
 	valac --pkg gtk+-3.0 --pkg posix atest.vala -X -lm

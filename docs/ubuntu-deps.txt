@@ -6,9 +6,6 @@ libchamplain-0.12-dev
 libclutter-1.0-dev
 libclutter-gtk-1.0-dev
 libgtk-3-dev
-valac-0.20
-valac-0.20-vapi
-libvala-0.20-0
 valac
 pkg-config
 build-essential

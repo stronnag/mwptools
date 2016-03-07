@@ -1,10 +1,11 @@
 #!/bin/bash
 
-rm -f ~/bin/{cf-cli,cf-cli-ui,mspsim,mwp,mwp_ath}
+rm -f ~/bin/{cf-cli,cf-cli-ui,mspsim,mwp,mwp_ath,pidedit}
 rm -f ~/bin/{qproxy,switchedit,ublox-cli,ublox-geo,replay_bbox_ltm.rb}
-rm -rf ~/.local/share/{cf-cli,cf-cli-ui,mspsim,mwp,mwp_ath}
+rm -rf ~/.local/share/{cf-cli,cf-cli-ui,mspsim,mwp,mwp_ath,pidedit}
 rm -rf ~/.local/share/{qproxy,switchedit,ublox-cli,ublox-geo,replay_bbox_ltm.rb}
 rm -f ~/.local/share/glib-2.0/schemas/org.mwptools.planner.gschema.xml
+rm -rf ~/.local/share/applications/{mspsim,mwp,pidedit,switchedit}.desktop
 rm -f ~/.local/share/glib-2.0/schemas/gschemas.compiled
 glib-compile-schemas ~/.local/share/glib-2.0/schemas >/dev/null
 
