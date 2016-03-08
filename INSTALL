@@ -16,6 +16,11 @@ For other operating systems it will be necessary to work out what is
 required from one of these lists. There is also some information on
 installing on Cygwin in docs/, mainly for the clinically certifiable.
 
+On Arch Linux, you can install mwptools from the AUR, the package is
+mwptools-git, it will also install the AUR package blackbox-tools-git.
+
+For other systems, you must compile from source, as below.
+
 Optional Dependencies
 ~~~~~~~~~~~~~~~~~~~~~
 
