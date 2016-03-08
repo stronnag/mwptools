@@ -40,3 +40,4 @@ install: $(APPS)
 	install -m 644 -D mwp.desktop $(datadir)/share/applications/mwp.desktop
 	install -m 644 -D org.mwptools.planner.gschema.xml $(datadir)/share/glib-2.0/schemas/org.mwptools.planner.gschema.xml
 	glib-compile-schemas $(datadir)/share/glib-2.0/schemas
+	install -m 644 -D ../docs/mwptools.pdf $(datadir)/share/doc/mwp/mwptools.pdf
