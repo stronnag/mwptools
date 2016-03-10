@@ -1179,9 +1179,9 @@ public class MWPlanner : Gtk.Application {
                 clon = conf.longitude;
             }
             view.center_on(clat,clon);
+            anim_cb();
             view.set_property("zoom-level", conf.zoom);
             zoomer.adjustment.value = conf.zoom;
-            poslabel.set_text(PosFormat.pos(clon,clat,conf.dms));
         }
         else
         {
@@ -2294,7 +2294,10 @@ public class MWPlanner : Gtk.Application {
                                 craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
                             }
                             if (centreon == true)
+                            {
                                 view.center_on(GPSInfo.lat,GPSInfo.lon);
+                                anim_cb();
+                            }
                         }
                     }
                     if(want_special != 0)
@@ -2591,7 +2594,10 @@ public class MWPlanner : Gtk.Application {
                             if(follow == true)
                                 craft.set_lat_lon(gflat,gflon,gfcse);
                             if (centreon == true)
+                            {
                                 view.center_on(gflat,gflon);
+                                anim_cb();
+                            }
                         }
                     }
                     if(want_special != 0)
@@ -2774,7 +2780,10 @@ public class MWPlanner : Gtk.Application {
                                 craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
                             }
                             if (centreon == true)
+                            {
                                 view.center_on(GPSInfo.lat,GPSInfo.lon);
+                                anim_cb();
+                            }
                         }
                         if(want_special != 0)
                             process_pos_states(GPSInfo.lat, GPSInfo.lon,
