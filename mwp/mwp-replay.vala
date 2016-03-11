@@ -242,7 +242,10 @@ public class ReplayThread : GLib.Object
                                     var dly = (utime - lt);
                                     ms = (ulong)(dly * 1000 *1000);
                                     if(dly > 10)
+                                    {
                                         MWPLog.message("replay sleeping for %.1f s\n", dly);
+                                        ms = 2*1000;
+                                    }
                                 }
                                 else
                                     ms = 2*1000;

@@ -3746,9 +3746,8 @@ public class MWPlanner : Gtk.Application {
         if (replayer == 1)
         {
             thr.join();
-            thr = null;
-            robj = null;
         }
+        replayer = 0;
         saved_menuitem.label = saved_menutext;
 
         menureplay.sensitive = menuloadlog.sensitive =
@@ -3817,22 +3816,12 @@ public class MWPlanner : Gtk.Application {
     private void spawn_bbox_task(string fn, int index, int btype,
                                  bool delay, bool force_gps)
     {
-//        int n=7;
         string [] args = {"replay_bbox_ltm.rb",
                           "--fd", "%d".printf(playfd[1]),
                           "-i", "%d".printf(index),
                           "-t", "%d".printf(btype)};
         if(delay == false)
             args += "-f";
-/****
-        var bbextra = Environment.get_variable("MWP_BB_ARGS");
-        if(bbextra != null && bbextra.length > 0)
-        {
-            var parts = bbextra.split(" ");
-            foreach(var pp in parts)
-                args += pp;
-        }
-****/
         if(force_gps)
             args += "-g";
 
