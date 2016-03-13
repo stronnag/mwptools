@@ -1733,6 +1733,7 @@ public class MWPlanner : Gtk.Application {
 
             if (armed == 1)
             {
+                init_npos();
                 armed_spinner.show();
                 armed_spinner.start();
                 sflags |= NavStatus.SPK.Volts;
@@ -3746,6 +3747,7 @@ public class MWPlanner : Gtk.Application {
         if (replayer == 1)
         {
             thr.join();
+            thr = null;
         }
         replayer = 0;
         saved_menuitem.label = saved_menutext;
@@ -3755,7 +3757,10 @@ public class MWPlanner : Gtk.Application {
 
         Posix.close(playfd[0]);
         Posix.close(playfd[1]);
-        stop_audio();
+        if (conf.audioarmed == true)
+        {
+            audio_cb.active = false;
+        }
         conf.logarmed = xlog;
         conf.audioarmed = xaudio;
         duration = -1;
