@@ -387,7 +387,7 @@ public class MWPlanner : Gtk.Application {
     }
 
     private static BatteryLevels [] vlevels = {
-        BatteryLevels(3.7f, "green", null, null),
+        BatteryLevels(3.7f, "#c0ff0c", null, null),
         BatteryLevels(3.57f, "yellow", null, null),
         BatteryLevels(3.47f, "orange", "sat_alert.ogg",null),
         BatteryLevels(3.0f,  "red", "bleet.ogg",null),
@@ -1514,6 +1514,8 @@ public class MWPlanner : Gtk.Application {
     {
         npos = false;
         markers.negate_rth();
+        home_pos.lat = 0;
+        home_pos.lon = 0;
     }
 
     private void send_poll()
@@ -1701,7 +1703,8 @@ public class MWPlanner : Gtk.Application {
         {
             armtime = 0;
             duration = -1;
-            init_npos();
+            if(replayer == 0)
+                init_npos();
             no_ofix = 0;
         }
         else
@@ -1764,7 +1767,6 @@ public class MWPlanner : Gtk.Application {
                     logb.active=false;
                 }
                 navstatus.reset_states();
-                init_npos();
             }
         }
         larmed = armed;
@@ -2276,7 +2278,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(armed == 1)
                     {
-                        if(npos == false)
+                        if(npos == false && home_changed(GPSInfo.lat, GPSInfo.lon))
                         {
                             sflags |=  NavStatus.SPK.GPS;
                             want_special |= POSMODE.HOME;
@@ -2506,7 +2508,10 @@ public class MWPlanner : Gtk.Application {
                 rp = deserialise_i32(raw, out of.lat);
                 rp = deserialise_i32(rp, out of.lon);
                 of.fix = *(rp+5);
-                if(npos == false)
+                double gflat = of.lat/10000000.0;
+                double gflon = of.lon/10000000.0;
+
+                if(home_changed(gflat, gflon))
                 {
                     if(of.fix == 0)
                     {
@@ -2514,8 +2519,6 @@ public class MWPlanner : Gtk.Application {
                     }
                     else
                     {
-                        double gflat = of.lat/10000000.0;
-                        double gflon = of.lon/10000000.0;
                         navstatus.cg_on();
                         sflags |=  NavStatus.SPK.GPS;
                         MWPLog.message("**Home from Oframe\n");
@@ -2921,6 +2924,20 @@ public class MWPlanner : Gtk.Application {
         return matched;
     }
 
+    private bool home_changed(double lat, double lon)
+    {
+        bool ret=false;
+        if(((Math.fabs(home_pos.lat - lat) > 1e-6) ||
+           Math.fabs(home_pos.lon - lon) > 1e-6))
+        {
+            home_pos.lat = lat;
+            home_pos.lon = lon;
+            npos = true;
+            ret = true;
+        }
+        return ret;
+    }
+
     private void process_pos_states(double lat, double lon, double alt)
     {
         if (lat == 0.0 && lon == 0.0)
@@ -3312,7 +3329,10 @@ public class MWPlanner : Gtk.Application {
             dopoll = false;
             remove_tid(ref cmdtid);
             sflags = 0;
-            stop_audio();
+            if (conf.audioarmed == true)
+            {
+                audio_cb.active = false;
+            }
             show_serial_stats();
             if(rawlog == true)
             {
@@ -3749,7 +3769,6 @@ public class MWPlanner : Gtk.Application {
             thr.join();
             thr = null;
         }
-        replayer = 0;
         saved_menuitem.label = saved_menutext;
 
         menureplay.sensitive = menuloadlog.sensitive =
@@ -3768,8 +3787,8 @@ public class MWPlanner : Gtk.Application {
         armed_spinner.stop();
         armed_spinner.hide();
         conbutton.sensitive = true;
+        armed = 0;
         window.title = "mwp";
-        init_npos();
     }
 
     private void run_replay(string fn, bool delay, int rtype,
