@@ -921,7 +921,7 @@ public class MWPlanner : Gtk.Application {
                             ret = false;
                         else
                         {
-                            init_state();
+//                            init_state(); // dangerous, stops comms
                             init_sstats();
                             armed = 0;
                             init_npos();
@@ -940,7 +940,6 @@ public class MWPlanner : Gtk.Application {
                             {
                                 craft.remove_marker();
                             }
-                            init_npos();
                             set_error_status(null);
                             xsensor = 0;
                             clear_sensor_array();
@@ -2263,7 +2262,7 @@ public class MWPlanner : Gtk.Application {
                 MSP_RAW_GPS rg = MSP_RAW_GPS();
                 uint8* rp = raw;
                 rg.gps_fix = *rp++;
-                if(rg.gps_fix != 0)
+                if(rg.gps_fix != 0 && replayer == 0)
                     rg.gps_fix = 1;
                 rg.gps_numsat = *rp++;
                 rp = deserialise_i32(rp, out rg.gps_lat);
