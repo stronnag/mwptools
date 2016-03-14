@@ -387,7 +387,7 @@ public class MWPlanner : Gtk.Application {
     }
 
     private static BatteryLevels [] vlevels = {
-        BatteryLevels(3.7f, "#c0ff0c", null, null),
+        BatteryLevels(3.7f, "#60ff00", null, null),
         BatteryLevels(3.57f, "yellow", null, null),
         BatteryLevels(3.47f, "orange", "sat_alert.ogg",null),
         BatteryLevels(3.0f,  "red", "bleet.ogg",null),

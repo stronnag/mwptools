@@ -1105,7 +1105,7 @@ public class NavStatus : GLib.Object
         voltlabel.set_use_markup (true);
         voltbox.pack_start (voltlabel, true, true, 1);
         colors = new Gdk.RGBA[5];
-        colors[0].parse("#c0ff0c");
+        colors[0].parse("#60ff00");
         colors[1].parse("yellow");
         colors[2].parse("orange");
         colors[3].parse("red");
