@@ -96,8 +96,8 @@ IO.popen(cmd,'r') do |p|
 	cse = nil
       end
       ts = c[:time_us].to_f / 1000000
-      puts [ts, c[:rccommand3], c[:navstate], c[:gps_speed_ms].to_f,
-	c[:gps_ground_course], mag0,mag1,cse].join(",")
+      puts [ts, c[:rccommand3].to_i, c[:navstate].to_i, c[:gps_speed_ms].to_f,
+	c[:gps_ground_course].to_i, mag0,mag1,cse].join(",")
     end
     llat = lat
     llon = lon
