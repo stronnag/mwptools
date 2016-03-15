@@ -292,6 +292,8 @@ public class MWPlanner : Gtk.Application {
     private double xlat = 0;
     private uint32 button_time = 0;
 
+    private bool use_gst = false;
+
     private enum DEBUG_FLAGS
     {
         NONE=0,
@@ -499,6 +501,9 @@ public class MWPlanner : Gtk.Application {
             var dir = File.new_for_path(confdir);
             dir.make_directory_with_parents ();
         } catch {};
+
+        if(conf.mediap.length == 0)
+            use_gst = true;
 
         var fn = MWPUtils.find_conf_file("mwp.ui");
         if (fn == null)
@@ -3079,13 +3084,29 @@ public class MWPlanner : Gtk.Application {
         var fn = MWPUtils.find_conf_file(sfn);
         if(fn != null)
         {
-            Gst.Element play = Gst.ElementFactory.make ("playbin", "player");
-            File file = File.new_for_path (fn);
-            var uri = file.get_uri ();
-            MWPLog.message("alert %s\n", uri);
-            play.set("uri", uri);
-            play.set("volume", 5.0);
-            play.set_state (Gst.State.PLAYING);
+            if(use_gst)
+            {
+                Gst.Element play = Gst.ElementFactory.make ("playbin", "player");
+                File file = File.new_for_path (fn);
+                var uri = file.get_uri ();
+                MWPLog.message("alert %s\n", uri);
+                play.set("uri", uri);
+                play.set("volume", 5.0);
+                play.set_state (Gst.State.PLAYING);
+            }
+            else
+            {
+                MWPLog.message("alert %s\n", fn);
+                StringBuilder sb = new StringBuilder();
+                sb.append(conf.mediap);
+                sb.append(" ");
+                sb.append(fn);
+                try {
+                    use_gst = !Process.spawn_command_line_async (sb.str);
+                } catch (SpawnError e) {
+                    use_gst = true;
+                }
+            }
         }
     }
 
