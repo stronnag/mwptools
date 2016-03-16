@@ -293,6 +293,7 @@ public class MWPlanner : Gtk.Application {
     private uint32 button_time = 0;
 
     private bool use_gst = false;
+    private bool inav = false;
 
     private enum DEBUG_FLAGS
     {
@@ -1866,6 +1867,7 @@ public class MWPlanner : Gtk.Application {
                 remove_tid(ref cmdtid);
                 naze32 = true;
                 raw[4] = 0;
+                inav = false;
                 vi.fc_var = (string)raw[0:4];
                 if (have_fcv == false)
                 {
@@ -1880,6 +1882,7 @@ public class MWPlanner : Gtk.Application {
                         case "INAV":
                             navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS;
                             vi.fctype = mwvar = MWChooser.MWVAR.CF;
+                            inav = true;
                             add_cmd(MSP.Cmds.FC_VERSION,null,0,1000);
                             break;
                         default:
@@ -2268,7 +2271,9 @@ public class MWPlanner : Gtk.Application {
                 uint8* rp = raw;
                 rg.gps_fix = *rp++;
                 if(rg.gps_fix != 0 && replayer == 0)
-                    rg.gps_fix = 1;
+                    if(inav)
+                        rg.gps_fix++;
+
                 rg.gps_numsat = *rp++;
                 rp = deserialise_i32(rp, out rg.gps_lat);
                 rp = deserialise_i32(rp, out rg.gps_lon);
@@ -3172,7 +3177,7 @@ public class MWPlanner : Gtk.Application {
     private void upload_quad()
     {
         validatelab.set_text("");
-        var wps = ls.to_wps((vi.fc_var == "INAV"));
+        var wps = ls.to_wps(inav);
         xdopoll = dopoll;
         dopoll = false;
         if(wps.length == 0)
