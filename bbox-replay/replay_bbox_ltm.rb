@@ -142,17 +142,22 @@ end
 
 def encode_gps r
   msg='$TG'
+  nsf = 0
   ns = r[:gps_numsat].to_i
-  nsf = case ns
-	when 0
-	  0
-	when 1,2,3,4
-	  1
-	when 5,6
-	  2
-	else
-	  3
-	end
+  if r.has_key? :gps_fixtype
+    nsf = r[:gps_fixtyp].to_i + 1
+  else
+    nsf = case ns
+	  when 0
+	    0
+	  when 1,2,3,4
+	    1
+	  when 5,6
+	    2
+	  else
+	    3
+	  end
+  end
   nsf |= (ns << 2)
   sl = [(r[:gps_coord0].to_f*LLFACT).to_i,
     (r[:gps_coord1].to_f*LLFACT).to_i,
@@ -249,6 +254,13 @@ def encode_nav r
   msg
 end
 
+def encode_extra r
+  msg='$TX'
+  sl = [r[:gps_hdop].to_i].pack('v')
+  msg << sl << mksum(sl)
+  msg
+end
+
 idx = 1
 decl = -1.3
 typ = 3
@@ -258,6 +270,7 @@ v4 = false
 gpshd = 0
 mindelay = false
 childfd = nil
+lhdop = 100000
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] file\nReplay bbox log as LTM"
@@ -414,6 +427,12 @@ IO.popen(cmd,'rt') do |pipe|
 	  msg = encode_origin origin
 	  send_msg dev, msg
 	end
+	hdop = row[:gps_hdop].to_i
+	if hdop != lhdop
+	  msg = encode_extra row
+	  send_msg dev, msg
+	end
+	lhdop = hdop
       when 1,3,7,9
 	if  llat != 0.0 and llon != 0.0
 	  lastr = row

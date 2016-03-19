@@ -573,6 +573,10 @@ public class MWSerial : Object
                                 needed = (uint8) MSize.LTM_NFRAME;
                                 cmd = MSP.Cmds.TN_FRAME;
                                 break;
+                            case 'X':
+                                needed = (uint8) MSize.LTM_XFRAME;
+                                cmd = MSP.Cmds.TX_FRAME;
+                                break;
                             case 'Q':
                                 needed = 1;
                                 cmd = MSP.Cmds.TQ_FRAME;

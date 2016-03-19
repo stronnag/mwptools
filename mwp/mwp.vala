@@ -2620,6 +2620,14 @@ public class MWPlanner : Gtk.Application {
             }
             break;
 
+            case MSP.Cmds.TX_FRAME:
+                LTM_XFRAME xf = LTM_XFRAME();
+                uint8* rp;
+                rp = deserialise_u16(raw, out xf.hdop);
+                double dhdop = xf.hdop / 100.0;
+//                stdout.printf("HDOP = %.2f\n", dhdop);
+                break;
+
             case MSP.Cmds.TA_FRAME:
             {
                 LTM_AFRAME af = LTM_AFRAME();

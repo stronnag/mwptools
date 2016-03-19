@@ -190,3 +190,9 @@ struct __attribute__ ((__packed__))  _ltm_sframe
     uint8_t flags;
 };
 typedef struct _ltm_sframe LTM_SFRAME;
+
+struct __attribute__ ((__packed__))  _ltm_xframe
+{
+    uint16_t hdop;
+};
+typedef struct _ltm_xframe LTM_XFRAME;

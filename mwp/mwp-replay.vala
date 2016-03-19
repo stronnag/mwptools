@@ -379,7 +379,10 @@ public class ReplayThread : GLib.Object
                                         a.sensor = (uint16)s;
                                     }
                                     else
-                                        a.sensor=(MSP.Sensors.ACC+MSP.Sensors.GPS);
+                                        a.sensor=(MSP.Sensors.ACC|
+                                                  MSP.Sensors.MAG|
+                                                  MSP.Sensors.BARO|
+                                                  MSP.Sensors.GPS);
                                     a.i2c_errors_count = 0;
                                     a.cycle_time=0;
                                     a.global_conf=(uint8)profile;

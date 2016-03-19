@@ -25,6 +25,9 @@ read -p "Hit ENTER to start > "
 
 # note older versions of Ubuntu / Debian may need avconv rather than ffmpeg
 # FFMPEG=avconv
+#
 FFMPEG=ffmpeg
-$FFMPEG -y -f $F -i $S -f x11grab -acodec pcm_s16le -r 30 -s ${XRES}x${YYRES} \
- -i ${DISPLAY}+32,32 -vcodec libx264 -crf 0 -preset ultrafast -threads 0 $OUT
+$FFMPEG -y -f $F  -thread_queue_size 512 -i $S -thread_queue_size 512 \
+	-f x11grab -framerate 24 -s ${XRES}x${YYRES} -acodec pcm_s16le \
+	-i ${DISPLAY}+32,32 -vcodec libx264  -preset ultrafast \
+	-tune zerolatency  $OUT

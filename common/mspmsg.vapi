@@ -189,3 +189,8 @@ public struct LTM_SFRAME
     uint8 airspeed;
     uint8 flags;
 }
+[CCode (cheader_filename = "../common/mspmsg.h")]
+public struct LTM_XFRAME
+{
+    uint16 hdop;
+}

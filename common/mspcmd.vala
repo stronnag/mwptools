@@ -73,6 +73,7 @@ public class MSP : Object
         TG_FRAME = (LTM_BASE + 'G'),
         TO_FRAME = (LTM_BASE + 'O'),
         TN_FRAME = (LTM_BASE + 'N'),
+        TX_FRAME = (LTM_BASE + 'X'),
         TQ_FRAME = (LTM_BASE + 'Q'), // private, quit message
 
         MAV_BASE  = 2000,

@@ -189,6 +189,11 @@ public struct LTM_OFRAME
     uint8 fix;
 }
 
+public struct LTM_XFRAME
+{
+    uint16 hdop;
+}
+
 public struct CF_MODE_RANGES
 {
     uint8 perm_id;
@@ -216,7 +221,8 @@ public enum MSize
     LTM_AFRAME=6,
     LTM_SFRAME=7,
     LTM_OFRAME=14,
-    LTM_NFRAME=6
+    LTM_NFRAME=6,
+    LTM_XFRAME=2
 }
 
 

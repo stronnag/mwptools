@@ -222,8 +222,6 @@ public class Mission : GLib.Object
         Xml.Doc* doc = new Xml.Doc ("1.0");
 
         Xml.Ns* ns = null;
-            /*new Xml.Ns (null, "", "");
-              ns->type = Xml.ElementType.ELEMENT_NODE;*/
 
         Xml.Node* root = new Xml.Node (ns, "MISSION");
         doc->set_root_element (root);
@@ -240,6 +238,9 @@ public class Mission : GLib.Object
         }
 
         subnode = root->new_text_child (ns, "mwp", "");
+        time_t currtime;
+        time_t(out currtime);
+        subnode->new_prop ("save-date", Time.local(currtime).format("%FT%T%z"));
         subnode->new_prop ("zoom", zoom.to_string());
         subnode->new_prop ("cx", cx.to_string());
         subnode->new_prop ("cy", cy.to_string());
