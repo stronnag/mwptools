@@ -145,7 +145,7 @@ def encode_gps r
   nsf = 0
   ns = r[:gps_numsat].to_i
   if r.has_key? :gps_fixtype
-    nsf = r[:gps_fixtyp].to_i + 1
+    nsf = r[:gps_fixtype].to_i + 1
   else
     nsf = case ns
 	  when 0
