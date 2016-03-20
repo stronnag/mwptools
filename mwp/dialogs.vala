@@ -347,7 +347,12 @@ public class FlightBox : GLib.Object
                     fh1,
                     Units.speed(GPSInfo.spd),
                     Units.speed_units() ) );
-            big_sats.set_label("Sats <span font='%d'>%d</span> %sfix".printf(fh1,GPSInfo.nsat,Units.fix(GPSInfo.fix)));
+            string hdoptxt="";
+            if(GPSInfo.hdop != -1.0)
+                hdoptxt = " / <span font='%d'>%0.1f</span>".printf(fh2,GPSInfo.hdop);
+            var slabel = "Sats <span font='%d'>%d</span> %sfix%s".printf(
+                fh1, GPSInfo.nsat,Units.fix(GPSInfo.fix), hdoptxt);
+            big_sats.set_label(slabel);
         }
     }
 }
@@ -1852,6 +1857,7 @@ public class GPSInfo : GLib.Object
     public static int nsat {get; private set;}
     public static int16 elev {get; private set;}
     public static uint8 fix;
+    public static double hdop = -1.0;
 
     public GPSInfo(Gtk.Grid grid)
     {
@@ -1907,6 +1913,11 @@ public class GPSInfo : GLib.Object
         speed_lab.valign = Gtk.Align.START;
         grid.attach(speed_lab, 1, 5, 1, 1);
         grid.show_all();
+    }
+
+    public void set_hdop(double _hdop)
+    {
+        hdop = _hdop;
     }
 
     public int update_mav_gps(Mav.MAVLINK_GPS_RAW_INT m, bool dms,bool visible)
@@ -2035,5 +2046,6 @@ public class GPSInfo : GLib.Object
         dirn_lab.set_label("---");
         speed_lab.set_label("--.-");
         _dlat = _dlon = 0;
+        hdop = -1.0;
     }
 }

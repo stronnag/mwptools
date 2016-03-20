@@ -1538,6 +1538,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
           <object class="GtkLabel" id="big_rng">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="halign">start</property>
             <property name="use_markup">True</property>
           </object>
           <packing>
@@ -1549,6 +1550,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
           <object class="GtkLabel" id="big_bearing">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="halign">start</property>
             <property name="use_markup">True</property>
           </object>
           <packing>
@@ -1560,6 +1562,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
           <object class="GtkLabel" id="big_hdr">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="halign">start</property>
             <property name="use_markup">True</property>
           </object>
           <packing>
@@ -1571,6 +1574,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
           <object class="GtkLabel" id="big_alt">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="halign">start</property>
             <property name="use_markup">True</property>
           </object>
           <packing>
@@ -1582,6 +1586,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
           <object class="GtkLabel" id="big_spd">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="halign">start</property>
             <property name="use_markup">True</property>
           </object>
           <packing>
@@ -1593,6 +1598,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
           <object class="GtkLabel" id="big_sats">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="halign">start</property>
             <property name="use_markup">True</property>
           </object>
           <packing>
@@ -1604,6 +1610,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
           <object class="GtkLabel" id="big_lat">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="halign">start</property>
             <property name="use_markup">True</property>
           </object>
           <packing>
@@ -1615,6 +1622,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
           <object class="GtkLabel" id="big_lon">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="halign">start</property>
             <property name="use_markup">True</property>
           </object>
           <packing>

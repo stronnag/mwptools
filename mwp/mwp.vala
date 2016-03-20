@@ -2624,8 +2624,7 @@ public class MWPlanner : Gtk.Application {
                 LTM_XFRAME xf = LTM_XFRAME();
                 uint8* rp;
                 rp = deserialise_u16(raw, out xf.hdop);
-                double dhdop = xf.hdop / 100.0;
-//                stdout.printf("HDOP = %.2f\n", dhdop);
+                gpsinfo.set_hdop(xf.hdop / 100.0);
                 break;
 
             case MSP.Cmds.TA_FRAME:
@@ -3392,7 +3391,6 @@ public class MWPlanner : Gtk.Application {
             set_error_status(null);
             xsensor = 0;
             clear_sensor_array();
-
         }
         else
         {
