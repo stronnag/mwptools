@@ -2075,7 +2075,9 @@ public class MWPlanner : Gtk.Application {
                         }
 
                         want_special = 0;
-                        if(conf.checkswitches && ((bxflag & lmask) == 0) && robj == null)
+                        if(replayer == 0 &&
+                           conf.checkswitches &&
+                           ((bxflag & lmask) == 0) && robj == null)
                         {
                             MWPLog.message("switch val == %0x\n", bxflag);
                             swd.run();

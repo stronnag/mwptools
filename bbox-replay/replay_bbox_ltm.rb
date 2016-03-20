@@ -112,12 +112,13 @@ def send_init_seq skt,typ
     [0x24, 0x4d, 0x3e, 0x03, 0x01, 0x00, 0x01, 0x0e, 0x0d],
     [0x24, 0x4d, 0x3e, 0x04, 0x02, 0x49, 0x4e, 0x41, 0x56, 0x16],
     [0x24, 0x4d, 0x3e, 0x03, 0x03, 0, 42, 0x00, 42], # obviuously fake
+    [0x24, 0x4d, 0x3e, 11,   101,  0, 0, 0, 0, 15, 0, 4,0,0,0, 0, 0], # obviuously fake
   ]
   if typ
     msps[0][6] = typ
-    msps[0][12] = mksum(msps[0][3..-1].pack('C*'))
   end
   msps.each do |msp|
+    msp[-1] = mksum(msp[3..-2].pack('C*'))
     msg = msp.pack('C*')
     send_msg skt, msg
     sleep 0.01
