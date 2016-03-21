@@ -111,10 +111,13 @@ public class  BBoxDialog : Object
                                 maxidx = int.parse(line[n+4:slen]);
                                 bb_items.label = "Log %d of %d".printf(nidx,maxidx);
                                 n = line.index_of(" duration ");
-                                n += 10;
-                                string dura = line.substring(n, slen - n -1);
-                                bb_liststore.append (out iter);
-                                bb_liststore.set (iter, 0, nidx, 1, dura);
+                                if(n > 16)
+                                {
+                                    n += 10;
+                                    string dura = line.substring(n, slen - n -1);
+                                    bb_liststore.append (out iter);
+                                    bb_liststore.set (iter, 0, nidx, 1, dura);
+                                }
                             }
                         } catch (IOChannelError e) {
                             return false;

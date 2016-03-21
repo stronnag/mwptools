@@ -20,6 +20,7 @@ wmctrl -F -x -r 'mwp.Mwp' -e 0,32,32,$XRES,$YRES
 
 F=pulse
 S=$(pactl list | grep monitor | grep Name: | cut -d ' ' -f 2)
+#S=default
 
 read -p "Hit ENTER to start > "
 
@@ -28,6 +29,7 @@ read -p "Hit ENTER to start > "
 #
 FFMPEG=ffmpeg
 $FFMPEG -y -f $F  -thread_queue_size 512 -i $S -thread_queue_size 512 \
-	-f x11grab -framerate 24 -s ${XRES}x${YYRES} -acodec pcm_s16le \
+	-f x11grab -framerate 15 -ac 1 -s ${XRES}x${YYRES} \
+	-acodec pcm_s16le \
 	-i ${DISPLAY}+32,32 -vcodec libx264  -preset ultrafast \
 	-tune zerolatency  $OUT
