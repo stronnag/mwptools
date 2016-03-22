@@ -1114,7 +1114,8 @@ public class NavStatus : GLib.Object
         colors[1].parse("yellow");
         colors[2].parse("orange");
         colors[3].parse("red");
-        colors[4].parse("white");
+        var sty = new Gtk.StyleContext();
+        colors[4] = sty.get_background_color(Gtk.StateFlags.NORMAL);
         volt_update("n/a",4, 0f,true);
         grid.show_all();
     }
