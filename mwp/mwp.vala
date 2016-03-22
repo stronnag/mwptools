@@ -425,6 +425,10 @@ public class MWPlanner : Gtk.Application {
     private static DEBUG_FLAGS debug_flags = 0;
     private static VersInfo vi ={0};
 
+    private const Gtk.TargetEntry[] targets = {
+        {"text/uri-list",0,0}
+    };
+
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", null},
         { "serial-device", 's', 0, OptionArg.STRING, out serial, "Serial device", null},
@@ -1314,6 +1318,28 @@ public class MWPlanner : Gtk.Application {
             usemag = force_mag;
             replay_bbox(true, Posix.realpath(bfile));
         }
+
+        Gtk.drag_dest_set (embed, Gtk.DestDefaults.ALL,
+                           targets, Gdk.DragAction.COPY);
+
+        embed.drag_data_received.connect(
+            (ctx, x, y, data, info, time) => {
+                foreach(var uri in data.get_uris ())
+                {
+                    try {
+                        var f = Filename.from_uri(uri);
+                        if (f.has_suffix(".TXT"))
+                            replay_bbox(true, f);
+                        else if (f.has_suffix(".log"))
+                            run_replay(f, true, 1);
+                        else if (f.has_suffix(".mission"))
+                            load_file(f);
+                    } catch (Error e) {
+                        MWPLog.message("dnd: %s\n", e.message);
+                    }
+                }
+                Gtk.drag_finish (ctx, true, false, time);
+            });
     }
 
     private void insert_new_wp(float x, float y)
