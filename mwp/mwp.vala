@@ -1324,21 +1324,36 @@ public class MWPlanner : Gtk.Application {
 
         embed.drag_data_received.connect(
             (ctx, x, y, data, info, time) => {
+                string mf = null;
+                string sf = null;
+                bool bbox = false;
                 foreach(var uri in data.get_uris ())
                 {
                     try {
                         var f = Filename.from_uri(uri);
-                        if (f.has_suffix(".TXT"))
-                            replay_bbox(true, f);
-                        else if (f.has_suffix(".log"))
-                            run_replay(f, true, 1);
-                        else if (f.has_suffix(".mission"))
-                            load_file(f);
+                        if (sf == null && f.has_suffix(".TXT"))
+                        {
+                            sf = f;
+                            bbox = true;
+                        }
+                        else if (sf == null && f.has_suffix(".log"))
+                            sf = f;
+                        else if (mf == null && f.has_suffix(".mission"))
+                            mf = f;
                     } catch (Error e) {
                         MWPLog.message("dnd: %s\n", e.message);
                     }
                 }
                 Gtk.drag_finish (ctx, true, false, time);
+                if(mf != null)
+                    load_file(mf);
+                if(sf != null)
+                {
+                    if(bbox)
+                        replay_bbox(true, sf);
+                    else
+                        run_replay(sf, true, 1);
+                }
             });
     }
 
