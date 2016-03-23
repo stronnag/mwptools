@@ -36,9 +36,14 @@ public class MWPMarkers : GLib.Object
         List<uint> llist = new List<uint>();
         llist.append(10);
         llist.append(5);
-        Clutter.Color orange = {0xff, 0xa0, 0x0, 0xc8};
+        Clutter.Color orange = {0xff, 0xa0, 0x0, 0x80};
         hpath.set_stroke_color(orange);
         hpath.set_dash(llist);
+        hpath.set_stroke_width (8);
+
+        Clutter.Color rcol = {0xff, 0x0, 0x0, 0x80};
+        path.set_stroke_color(rcol);
+        path.set_stroke_width (8);
 
         menu =   new Gtk.Menu ();
         var item = new Gtk.MenuItem.with_label ("Delete");

@@ -500,9 +500,9 @@ static void gtk_artificial_horizon_draw_static (GtkWidget * arh, cairo_t * cr)
  */
 static void gtk_artificial_horizon_draw_dynamic (GtkWidget * arh, cairo_t * cr)
 {
-  GtkArtificialHorizonPrivate *priv;
+    GtkArtificialHorizonPrivate *priv;
 
-  if (gtk_artificial_horizon_debug)
+    if (gtk_artificial_horizon_debug)
   {
     g_debug ("===> gtk_artificial_horizon_draw_dynamic()");
   }

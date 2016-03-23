@@ -61,6 +61,12 @@ public class  BBoxDialog : Object
         foreach(var ts in mrtypes)
             bb_combo.append_text (ts);
         bb_combo.active = mrtype;
+
+
+        bb_treeview.row_activated.connect((p,c) => {
+                dialog.response(1001);
+            });
+
         dialog.set_transient_for(w);
     }
 

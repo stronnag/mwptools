@@ -17,5 +17,5 @@ clean:
 local:
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
-install: $(APPS)
+install: $(APP)
 	install -s -D $(APP) $(prefix)/bin/$(APP)

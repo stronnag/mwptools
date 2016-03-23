@@ -118,6 +118,9 @@ public class ArtWin : GLib.Object
 
     public void init()
     {
+//        var sty = new Gtk.StyleContext();
+//        var acol = sty.get_background_color(Gtk.StateFlags.NORMAL);
+
         string [] args = {"mwp_ath", "-p"};
         try {
             Process.spawn_async_with_pipes ("/",

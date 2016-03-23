@@ -107,6 +107,7 @@ int  main(int argc, char ** argv)
         window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
         g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
     }
+
     invoke_horizon();
     if(plg != 0)
     {
