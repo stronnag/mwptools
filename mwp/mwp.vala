@@ -734,7 +734,12 @@ public class MWPlanner : Gtk.Application {
                 replay_bbox(false);
             });
 
-        navstatus = new NavStatus(builder);
+        var sty = window.get_style_context();
+        var acol = sty.get_background_color(Gtk.StateFlags.NORMAL);
+        var colstr = "#%02x%02x%02x".printf((uint)(acol.red*255),
+                                            (uint)(acol.green*255),
+                                            (uint)(acol.blue*255));
+        navstatus = new NavStatus(builder, colstr);
         menunav = builder.get_object ("nav_status_menu") as Gtk.MenuItem;
         menunav.activate.connect (() => {
                 show_dock_id(DOCKLETS.NAVSTATUS,true);
@@ -1300,7 +1305,8 @@ public class MWPlanner : Gtk.Application {
             lman.save_config();
         }
         fbox.update(true);
-        art_win.run(window);
+
+        art_win.run(colstr);
 
         if(conf.mavph != null)
             parse_rc_mav(conf.mavph, Craft.Special.PH);
