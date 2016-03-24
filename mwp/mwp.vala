@@ -1300,7 +1300,7 @@ public class MWPlanner : Gtk.Application {
             lman.save_config();
         }
         fbox.update(true);
-        art_win.run();
+        art_win.run(window);
 
         if(conf.mavph != null)
             parse_rc_mav(conf.mavph, Craft.Special.PH);

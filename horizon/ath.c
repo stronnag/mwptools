@@ -16,6 +16,8 @@ static guint tag;
 static  GtkWidget *art_hor;
 static GdkWindow *sockwin = 0;
 static GtkWidget *window;
+static GdkColor color;
+static GdkColor *pcol;
 
 static gboolean read_data(GIOChannel *source, GIOCondition condition, gpointer data)
 {
@@ -64,6 +66,8 @@ static void invoke_horizon()
                  "grayscale-color", FALSE,
                  "radial-color", TRUE, NULL);
     gtk_container_add(GTK_CONTAINER (window), art_hor);
+    if(pcol)
+        gtk_widget_modify_bg(art_hor, GTK_STATE_NORMAL, pcol);
     gtk_widget_show_all(window);
 }
 
@@ -90,7 +94,6 @@ static guint create_plug()
     return plg;
 }
 
-
 int  main(int argc, char ** argv)
 {
     guint plg = 0;
@@ -98,7 +101,7 @@ int  main(int argc, char ** argv)
 
     gio = g_io_channel_unix_new(0);
     tag = g_io_add_watch (gio, G_IO_IN|G_IO_HUP|G_IO_ERR|G_IO_NVAL, read_data, NULL);
-    if(argc == 2)
+    if(argc > 2)
     {
         plg  = create_plug();
     }
@@ -108,7 +111,14 @@ int  main(int argc, char ** argv)
         g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
     }
 
+    if(argc > 1 && argv[argc-1][0] == '#')
+    {
+        gdk_color_parse (argv[argc-1], &color);
+        pcol = &color;
+    }
+
     invoke_horizon();
+
     if(plg != 0)
     {
         publish_plug(plg);

@@ -116,12 +116,14 @@ public class ArtWin : GLib.Object
         box.show_all();
     }
 
-    public void init()
+    public void init(Gtk.Widget w)
     {
-//        var sty = new Gtk.StyleContext();
-//        var acol = sty.get_background_color(Gtk.StateFlags.NORMAL);
-
-        string [] args = {"mwp_ath", "-p"};
+        var sty = w.get_style_context();
+        var acol = sty.get_background_color(Gtk.StateFlags.NORMAL);
+        var colstr = "#%02x%02x%02x".printf((uint)(acol.red*255),
+                                            (uint)(acol.green*255),
+                                            (uint)(acol.blue*255));
+        string [] args = {"mwp_ath", "-p", colstr};
         try {
             Process.spawn_async_with_pipes ("/",
                                             args,
@@ -179,11 +181,11 @@ public class ArtWin : GLib.Object
         }
     }
 
-    public void run()
+    public void run(Gtk.Widget w)
     {
         if(apid == 0)
         {
-            init();
+            init(w);
         }
     }
 
