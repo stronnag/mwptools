@@ -52,7 +52,7 @@ public struct BatteryLevels
     string audio;
     string label;
     bool reached;
-    public BatteryLevels(float _cell, string _colour, string? _audio, string? _label)
+    public BatteryLevels(float _cell, string? _colour, string? _audio, string? _label)
     {
         cell = _cell;
         limit = 0f;
@@ -394,7 +394,7 @@ public class MWPlanner : Gtk.Application {
         BatteryLevels(3.57f, "yellow", null, null),
         BatteryLevels(3.47f, "orange", "sat_alert.ogg",null),
         BatteryLevels(3.0f,  "red", "bleet.ogg",null),
-        BatteryLevels(0.0f, "white", null, "n/a")
+        BatteryLevels(0.0f, null, null, "n/a")
     };
 
     private static const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
@@ -740,6 +740,8 @@ public class MWPlanner : Gtk.Application {
                                             (uint)(acol.green*255),
                                             (uint)(acol.blue*255));
         navstatus = new NavStatus(builder, colstr);
+        vlevels[4].colour = colstr;
+
         menunav = builder.get_object ("nav_status_menu") as Gtk.MenuItem;
         menunav.activate.connect (() => {
                 show_dock_id(DOCKLETS.NAVSTATUS,true);
@@ -1685,7 +1687,7 @@ public class MWPlanner : Gtk.Application {
             }
             requests += MSP.Cmds.RAW_GPS;
             requests += MSP.Cmds.COMP_GPS;
-            if(naze32)
+            if(inav)
                 requests += MSP.Cmds.GPSSTATISTICS;
             reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS);
             init_craft_icon();
