@@ -190,6 +190,17 @@ public class Logger : GLib.Object
         write_stream();
     }
 
+    public static void ltm_xframe(LTM_XFRAME x)
+    {
+        var builder = init("ltm_xframe");
+        builder.set_member_name ("hdop");
+        builder.add_int_value(x.hdop);
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+	gen.set_root (root);
+        write_stream();
+    }
+
     public static void gpssvinfo(uint8 []raw)
     {
         var builder = init("gpssvinfo");

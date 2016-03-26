@@ -1686,7 +1686,7 @@ public class MWPlanner : Gtk.Application {
             requests += MSP.Cmds.RAW_GPS;
             requests += MSP.Cmds.COMP_GPS;
             if(naze32)
-                requests += MSP.Cmds.GPSSVINFO;
+                requests += MSP.Cmds.GPSSTATISTICS;
             reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS);
             init_craft_icon();
             gpscnt = 0;
@@ -2058,10 +2058,15 @@ public class MWPlanner : Gtk.Application {
                 add_cmd(MSP.Cmds.MISC,null,0, 1000);
                 break;
 
-            case MSP.Cmds.GPSSVINFO:
-                if(raw[0] > 0 && Logger.is_logging)
+            case MSP.Cmds.GPSSTATISTICS:
+                LTM_XFRAME xf = LTM_XFRAME();
+                deserialise_u16(raw+14, out xf.hdop);
+                MWPLog.message("gps stats %.1f\n",xf.hdop / 100.0);
+
+                gpsinfo.set_hdop(xf.hdop / 100.0);
+                if(Logger.is_logging)
                 {
-                    Logger.gpssvinfo(raw);
+                    Logger.ltm_xframe(xf);
                 }
                 break;
 
@@ -2674,6 +2679,10 @@ public class MWPlanner : Gtk.Application {
                 uint8* rp;
                 rp = deserialise_u16(raw, out xf.hdop);
                 gpsinfo.set_hdop(xf.hdop / 100.0);
+                if(Logger.is_logging)
+                {
+                    Logger.ltm_xframe(xf);
+                }
                 break;
 
             case MSP.Cmds.TA_FRAME:

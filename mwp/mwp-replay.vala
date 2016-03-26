@@ -30,6 +30,13 @@ public class ReplayThread : GLib.Object
         return (p - &tx[0]);
     }
 
+    private size_t serialise_xf(LTM_XFRAME x, uint8 []tx)
+    {
+        uint8 *p;
+        p = serialise_u16(tx, x.hdop);
+        return (p - &tx[0]);
+    }
+
     private size_t serialise_misc(MSP_MISC misc, uint8 [] tbuf)
     {
         uint8 *rp;
@@ -496,6 +503,13 @@ public class ReplayThread : GLib.Object
                                     o.fix = (uint8)(obj.get_int_member("fix"));
                                     serialise_of(o,buf);
                                     send_rec(fd,MSP.Cmds.TO_FRAME, MSize.LTM_OFRAME,buf);
+                                    break;
+
+                                case "ltm_xframe":
+                                    var x = LTM_XFRAME();
+                                    x.hdop = (uint16)(obj.get_int_member("hdop"));
+                                    serialise_xf(x,buf);
+                                    send_rec(fd,MSP.Cmds.TX_FRAME, MSize.LTM_XFRAME,buf);
                                     break;
 
                                 case "wp_poll":
