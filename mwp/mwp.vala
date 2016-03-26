@@ -1505,7 +1505,7 @@ public class MWPlanner : Gtk.Application {
                         ((nticks - last_tm) > MAVINTVL)
                         && msp.available)
                     {
-                        MWPLog.message("Restart poller on MAVINT\n");
+                        MWPLog.message("Restart poller on telemetry timeout\n");
                         have_api = have_vers = have_misc =
                         have_status = have_wp = have_nc =
                         have_fcv = have_fcvv = false;
@@ -1794,6 +1794,7 @@ public class MWPlanner : Gtk.Application {
                 armed_spinner.show();
                 armed_spinner.start();
                 sflags |= NavStatus.SPK.Volts;
+
                 if (conf.audioarmed == true)
                 {
                     audio_cb.active = true;
@@ -1839,7 +1840,9 @@ public class MWPlanner : Gtk.Application {
 
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
     {
-        if(cmd > MSP.Cmds.LTM_BASE && cmd != MSP.Cmds.MAVLINK_MSG_ID_RADIO)
+
+        if(replayer != 1 &&
+           cmd > MSP.Cmds.LTM_BASE && cmd != MSP.Cmds.MAVLINK_MSG_ID_RADIO)
         {
             if(nopoll == false)
             {
@@ -3868,9 +3871,7 @@ public class MWPlanner : Gtk.Application {
         Posix.close(playfd[0]);
         Posix.close(playfd[1]);
         if (conf.audioarmed == true)
-        {
             audio_cb.active = false;
-        }
         conf.logarmed = xlog;
         conf.audioarmed = xaudio;
         duration = -1;
@@ -3878,7 +3879,7 @@ public class MWPlanner : Gtk.Application {
         armed_spinner.stop();
         armed_spinner.hide();
         conbutton.sensitive = true;
-        armed = 0;
+        armed = larmed = 0;
         window.title = "mwp";
     }
 
@@ -3887,6 +3888,7 @@ public class MWPlanner : Gtk.Application {
     {
         xlog = conf.logarmed;
         xaudio = conf.audioarmed;
+
         playfd = new int[2];
         var sr =  Posix.socketpair (Posix.AF_UNIX, Posix.SOCK_DGRAM, 0, playfd);
         if(sr == 0)

@@ -215,6 +215,9 @@ public class ReplayThread : GLib.Object
         playon = true;
 
         var thr = new Thread<int> ("relog", () => {
+                bool armed = false;
+                uint8 buf[256];
+                MSP_STATUS xa = MSP_STATUS();
 
                 var file = File.new_for_path (relog);
                 if (!file.query_exists ()) {
@@ -228,8 +231,6 @@ public class ReplayThread : GLib.Object
                         Thread.usleep(100000);
                         double lt = 0;
                         var dis = FileStream.open(relog,"r");
-                        bool armed = false;
-                        uint8 buf[256];
                         var parser = new Json.Parser ();
                         bool have_data = false;
                         var have_ltm = false; // workaround for old mwp logging bug
@@ -393,6 +394,7 @@ public class ReplayThread : GLib.Object
                                     a.i2c_errors_count = 0;
                                     a.cycle_time=0;
                                     a.global_conf=(uint8)profile;
+                                    xa = a;
                                     var nb = serialise_status(a, buf);
                                     send_rec(fd,MSP.Cmds.STATUS, (uint)nb, buf);
                                     break;
@@ -624,9 +626,15 @@ public class ReplayThread : GLib.Object
                     }
                 }
                 MWPLog.message("end of scenario\n");
+                xa.flag = 0;
+                var nb = serialise_status(xa, buf);
+                for(var xn = 0; xn < 3; xn++)
+                {
+                    send_rec(fd,MSP.Cmds.STATUS, (uint)nb, buf);
+                    Thread.usleep(100);
+                }
                 uint8 q='Q';
                 send_ltm(fd, 'Q', &q, 1);
-                Posix.close(fd);
                 return 0;
             });
         return thr;
