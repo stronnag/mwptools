@@ -36,7 +36,7 @@ The installation of these dependencies is described below.
 
 === Dependency Installation
 
-Ruby:: Version 1.9 or greater is required.
+Ruby:: Version 2.0 or greater is required.
 * Linux: Install via your distribution package manager.
 * OSX: you can use third-party tools (rbenv and RVM).
 * Windows: Install the latest version from
@@ -51,15 +51,26 @@ the MRI (rubyinstaller) interpreter under cygwin may not work as
 expected. Using the cygwin ruby is unlikely to work for a serial
 device.
 
+NOTE: On Ubuntu 14.04 LTS, you must specfically install Ruby 2.0, the
+default is 1.9.
+----
+sudo apt install ruby2.0
+sudo update-alternatives --install /usr/bin/ruby ruby /usr/bin/ruby2.0 10
+sudo update-alternatives --install /usr/bin/gem gem /usr/bin/gem2.0 10
+----
 NOTE: rubyserial depends on ffi. If your package manager does not
 offer this (it is part of the Windows install, but not default
 elsewhere), then you may need to install that as well, either as an
-explicit OS package, or via the `gem` command.
+explicit OS package, or via the `gem` command. rubyserial is an
+optional dependency.
 
 For further details, please refer to
 https://www.ruby-lang.org/en/documentation/installation/.
 
-Ruby Serial Gem:: Once you have ruby installed, in a console (CLI)
+Ruby Serial Gem:: This is optional and is only necessary to replay
+blackbox files over bluetooth (e.g. it visualise in EzGui); it is not
+necessary to replay within mwp.
+Once you have ruby installed, in a console (CLI)
 window:
 ----
 $ gem install rubyserial
@@ -78,7 +89,7 @@ script is invoked.
 == Installation
 
 Installation is as simple as copying the replay_bbox_ltm.rb script
-somewhere convenient.
+somewhere convenient. The mwp installer will install it for you, by default.
 
 == Communication with the GS
 
@@ -199,13 +210,18 @@ file. If this is not given, the first recording (index 1) is used.
 --declination, -d:: The magnetic declination in decimal degrees. If not
   given, a value appropriate to the New Forest area of southern
   England is used.
-
++
+You can preset the declination as decimal degrees in a JSON file
+$HOME/.config/mwp/replay_ltm.json, as (for the New Forest):
+----
+{"declination":-1.5}
+----
 
 --vehicle-type, -t:: The vehicle type defines the vehicle icon shown
   in mwp or ezgui. Standard MultiWii values are used (mwp interpretation).
 +
 [start = 0]
-. Default (normally quadX)
+. Undefined (an arrow in mwp, useful for checking the compass)
 . Tricopter
 . Quad+
 . QuadX

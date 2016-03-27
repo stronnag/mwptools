@@ -25,6 +25,8 @@ require 'csv'
 require 'optparse'
 require 'socket'
 require 'open3'
+require 'json'
+
 begin
 require 'rubyserial'
   noserial = false;
@@ -262,8 +264,12 @@ def encode_extra r
   msg
 end
 
+unless RUBY_VERSION.match(/^2/)
+  abort "This script requires a miniumum of Ruby 2.0"
+end
+
 idx = 1
-decl = -1.3
+decl = -1.5
 typ = 3
 udpspec = nil
 serdev = nil
@@ -273,13 +279,20 @@ mindelay = false
 childfd = nil
 lhdop = 100000
 
+pref_fn = File.join(ENV["HOME"],".config", "mwp", "replay_ltm.json")
+if File.exist? pref_fn
+  json = IO.read(pref_fn)
+  prefs = JSON.parse(json)
+  decl = prefs[:declination].to_f
+end
+
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] file\nReplay bbox log as LTM"
   opt.on('-u','--udp=ADDR',String,"udp target (localhost:3000)"){|o|udpspec=o}
   opt.on('-s','--serial-device=DEV'){|o|serdev=o}
   opt.on('-i','--index=IDX',Integer){|o|idx=o}
   opt.on('-t','--vehicle-type=TYPE',Integer){|o|typ=o}
-  opt.on('-d','--declination=DEC',Float,'Mag Declination (default -1.3)'){|o|decl=o}
+  opt.on('-d','--declination=DEC',Float,'Mag Declination (default -1.5)'){|o|decl=o}
   opt.on('-g','--force-gps-heading','Use GPS course instead of compass'){gpshd=1}
   opt.on('-4','--force-ipv4'){v4=true}
   opt.on('-m','--use-imu-heading'){gpshd=2}

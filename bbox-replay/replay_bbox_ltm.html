@@ -483,7 +483,7 @@ replay_bbox_ltm script:</p>
 <dl>
 <dt class="hdlist1">Ruby</dt>
 <dd>
-<p>Version 1.9 or greater is required.</p>
+<p>Version 2.0 or greater is required.</p>
 <div class="ulist">
 <ul>
 <li>
@@ -527,10 +527,31 @@ device.
 <div class="title">Note</div>
 </td>
 <td class="content">
+On Ubuntu 14.04 LTS, you must specfically install Ruby 2.0, the
+default is 1.9.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>sudo apt install ruby2.0
+sudo update-alternatives --install /usr/bin/ruby ruby /usr/bin/ruby2.0 10
+sudo update-alternatives --install /usr/bin/gem gem /usr/bin/gem2.0 10</pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
 rubyserial depends on ffi. If your package manager does not
 offer this (it is part of the Windows install, but not default
 elsewhere), then you may need to install that as well, either as an
-explicit OS package, or via the <code>gem</code> command.
+explicit OS package, or via the <code>gem</code> command. rubyserial is an
+optional dependency.
 </td>
 </tr>
 </table>
@@ -543,7 +564,10 @@ explicit OS package, or via the <code>gem</code> command.
 <dl>
 <dt class="hdlist1">Ruby Serial Gem</dt>
 <dd>
-<p>Once you have ruby installed, in a console (CLI)
+<p>This is optional and is only necessary to replay
+blackbox files over bluetooth (e.g. it visualise in EzGui); it is not
+necessary to replay within mwp.
+Once you have ruby installed, in a console (CLI)
 window:</p>
 </dd>
 </dl>
@@ -579,7 +603,7 @@ script is invoked.</p>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Installation is as simple as copying the replay_bbox_ltm.rb script
-somewhere convenient.</p>
+somewhere convenient. The mwp installer will install it for you, by default.</p>
 </div>
 </div>
 </div>
@@ -762,7 +786,20 @@ file. If this is not given, the first recording (index 1) is used.</p>
 <p>The magnetic declination in decimal degrees. If not
 given, a value appropriate to the New Forest area of southern
 England is used.</p>
+<div class="paragraph">
+<p>You can preset the declination as decimal degrees in a JSON file
+$HOME/.config/mwp/replay_ltm.json, as (for the New Forest):</p>
+</div>
 </dd>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>{"declination":-1.5}</pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
 <dt class="hdlist1">--vehicle-type, -t</dt>
 <dd>
 <p>The vehicle type defines the vehicle icon shown
@@ -770,7 +807,7 @@ in mwp or ezgui. Standard MultiWii values are used (mwp interpretation).</p>
 <div class="olist arabic">
 <ol class="arabic" start="0">
 <li>
-<p>Default (normally quadX)</p>
+<p>Undefined (an arrow in mwp, useful for checking the compass)</p>
 </li>
 <li>
 <p>Tricopter</p>
@@ -922,7 +959,7 @@ support any client such as an OSD that does not initially poll.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-01-03 19:40:43 GMT
+Last updated 2016-03-27 18:19:55 BST
 </div>
 </div>
 </body>
