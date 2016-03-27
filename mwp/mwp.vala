@@ -2681,8 +2681,7 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.TX_FRAME:
                 LTM_XFRAME xf = LTM_XFRAME();
-                uint8* rp;
-                rp = deserialise_u16(raw, out xf.hdop);
+                deserialise_u16(raw, out xf.hdop);
                 gpsinfo.set_hdop(xf.hdop / 100.0);
                 if(Logger.is_logging)
                 {

@@ -428,12 +428,14 @@ IO.popen(cmd,'rt') do |pipe|
 	  msg = encode_origin origin
 	  send_msg dev, msg
 	end
-	hdop = row[:gps_hdop].to_i
-	if hdop != lhdop
-	  msg = encode_extra row
-	  send_msg dev, msg
+	if row.has_key? :gps_hdop
+	  hdop = row[:gps_hdop].to_i
+	  if hdop != lhdop
+	    msg = encode_extra row
+	    send_msg dev, msg
+	  end
+	  lhdop = hdop
 	end
-	lhdop = hdop
       when 1,3,7,9
 	if  llat != 0.0 and llon != 0.0
 	  lastr = row
