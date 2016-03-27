@@ -20,3 +20,10 @@ libgtk2.0-dev
 libpango1.0-dev
 libcairo2-dev
 libxml2-dev
+
+and for replay_bbox_ltm.rb
+
+ruby version 2 or later, e.g.
+
+ruby2.0 (14.04)
+ruby2.2 (15.10)
