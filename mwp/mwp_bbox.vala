@@ -73,6 +73,7 @@ public class  BBoxDialog : Object
     private void get_bbox_file_status()
     {
         nidx = 1;
+        set_cursor(dialog, Gdk.CursorType.WATCH);
         spawn_decoder();
         bb_ok.sensitive = false;
     }
@@ -137,6 +138,7 @@ public class  BBoxDialog : Object
                         Posix.close(p_stderr);
                         if(nidx == maxidx)
                         {
+                            set_cursor(dialog, null);
                             if((int)bb_liststore.iter_n_children(null) == 1)
                             {
                                 Gtk.TreeIter iter;
@@ -208,10 +210,23 @@ public class  BBoxDialog : Object
                 get_bbox_file_status();
             }
             id = dialog.run();
+            set_cursor(dialog, null);
             dialog.hide();
         }
         return id;
     }
+
+
+    private void set_cursor(Gtk.Widget widget, Gdk.CursorType? cursor_type)
+    {
+        Gdk.Window gdk_window = widget.get_window();
+        if (cursor_type != null)
+            gdk_window.set_cursor(new Gdk.Cursor.for_display(widget.get_display(),
+                                                             cursor_type));
+        else
+            gdk_window.set_cursor(null);
+    }
+
 
     public void get_result(out string _name, out int _index, out int _type, out bool _use_gps_cse)
     {
