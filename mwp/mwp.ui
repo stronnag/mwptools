@@ -107,7 +107,7 @@
                       <object class="GtkMenuItem" id="upload_quad">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Upload to MW</property>
+                        <property name="tooltip_text" translatable="yes">Upload to FC</property>
                         <property name="label" translatable="yes">Upload</property>
                         <property name="use_underline">True</property>
                       </object>
@@ -116,7 +116,7 @@
                       <object class="GtkMenuItem" id="download_quad">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Download from MW</property>
+                        <property name="tooltip_text" translatable="yes">Download from FC</property>
                         <property name="label" translatable="yes">Download</property>
                         <property name="use_underline">True</property>
                       </object>
@@ -2610,7 +2610,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
   </object>
   <object class="GtkDialog" id="mwchooser">
     <property name="can_focus">False</property>
-    <property name="title" translatable="yes">MW Version</property>
+    <property name="title" translatable="yes">FC Version</property>
     <property name="type_hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox">
@@ -2660,10 +2660,10 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkLabel" id="Choose today's non-interoperable MW/MSP flavour">
+              <object class="GtkLabel" id="Choose today's non-interoperable FC/MSP flavour">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Choose today's non-interoperable MW/MSP flavour</property>
+                <property name="label" translatable="yes">Choose today's non-interoperable FC/MSP flavour</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>

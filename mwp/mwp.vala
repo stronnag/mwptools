@@ -71,6 +71,7 @@ public struct MavPOSDef
     uint8 chan;
     uint8 set;
 }
+
 public class PosFormat : GLib.Object
 {
     public static string lat(double _lat, bool dms)
@@ -125,6 +126,29 @@ public class PosFormat : GLib.Object
         }
         var q = (neg) ? ind.get_char(1) : ind.get_char(0);
         return fmt.printf((int)d,(int)m,s,q);
+    }
+}
+
+public class MWPCursor : GLib.Object
+{
+    private static void set_cursor(Gtk.Widget widget, Gdk.CursorType? cursor_type)
+    {
+        Gdk.Window gdk_window = widget.get_window();
+        if (cursor_type != null)
+            gdk_window.set_cursor(new Gdk.Cursor.for_display(widget.get_display(),
+                                                             cursor_type));
+        else
+            gdk_window.set_cursor(null);
+    }
+
+    public static void set_busy_cursor(Gtk.Widget widget)
+    {
+        set_cursor(widget, Gdk.CursorType.WATCH);
+    }
+
+    public static void set_normal_cursor(Gtk.Widget widget)
+    {
+        set_cursor(widget, null);
     }
 }
 
@@ -2022,7 +2046,8 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.BOXNAMES:
                 if(navcap != NAVCAPS.NONE)
                 {
-                    menuup.sensitive = menudown.sensitive = menuncfg.sensitive = true;
+                    menuup.sensitive = menudown.sensitive =
+                        menuncfg.sensitive = true;
                 }
                 remove_tid(ref cmdtid);
                 raw[len] = 0;
@@ -2066,7 +2091,6 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.GPSSTATISTICS:
                 LTM_XFRAME xf = LTM_XFRAME();
                 deserialise_u16(raw+14, out xf.hdop);
-                MWPLog.message("gps stats %.1f\n",xf.hdop / 100.0);
 
                 gpsinfo.set_hdop(xf.hdop / 100.0);
                 if(Logger.is_logging)
@@ -2460,6 +2484,7 @@ public class MWPlanner : Gtk.Application {
                                 sb.append(" ");
                             }
                         }
+                        MWPCursor.set_normal_cursor(window);
                         reset_poller();
                         var mtxt = "Validation for wp %d fails for %s".printf(w.wp_no, sb.str);
                         bleet_sans_merci("beep-sound.ogg");
@@ -2475,6 +2500,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     else
                     {
+                        MWPCursor.set_normal_cursor(window);
                         reset_poller();
                         bleet_sans_merci("beep-sound.ogg");
                         validatelab.set_text("✔"); // u+2714
@@ -2501,6 +2527,7 @@ public class MWPlanner : Gtk.Application {
                     wp_resp += m;
                     if(w.flag == 0xa5 || w.wp_no == 255)
                     {
+                        MWPCursor.set_normal_cursor(window);
                         if((debug_flags & DEBUG_FLAGS.WP) != DEBUG_FLAGS.NONE)
                             stderr.printf("Null mission returned\n");
                         var ms = new Mission();
@@ -2544,6 +2571,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     else if(w.flag == 0xfe)
                     {
+                        MWPCursor.set_normal_cursor(window);
                         MWPLog.message("Error flag on wp #%d\n", w.wp_no);
                     }
                     else
@@ -2553,6 +2581,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
+                    MWPCursor.set_normal_cursor(window);
                     MWPLog.message("unsolicited WP #%d\n", w.wp_no);
                 }
             }
@@ -3249,6 +3278,7 @@ public class MWPlanner : Gtk.Application {
         var wps = ls.to_wps(inav);
         xdopoll = dopoll;
         dopoll = false;
+        MWPCursor.set_busy_cursor(window);
         if(wps.length == 0)
         {
             MSP_WP w0 = MSP_WP();
@@ -3280,6 +3310,7 @@ public class MWPlanner : Gtk.Application {
 
         var timeo = 1+(wps.length*1000);
         upltid = Timeout.add(timeo, () => {
+                MWPCursor.set_normal_cursor(window);
                 reset_poller(false);
                 MWPLog.message("WP upload probably failed\n");
                 mwp_warning_box("WP upload timeout.\nThe upload has probably failed",
@@ -3458,7 +3489,7 @@ public class MWPlanner : Gtk.Application {
         {
             replayer = 0;
         }
-        menubblog.sensitive = menureplay.sensitive =
+        menubblog.sensitive = menubbload.sensitive = menureplay.sensitive =
             menuloadlog.sensitive = true;
     }
 
@@ -3507,7 +3538,7 @@ public class MWPlanner : Gtk.Application {
             string estr;
             if (msp.open(serdev, conf.baudrate, out estr) == true)
             {
-                menubblog.sensitive = menureplay.sensitive =
+                menubblog.sensitive = menubbload.sensitive = menureplay.sensitive =
                     menuloadlog.sensitive = false;
 
                 init_state();
