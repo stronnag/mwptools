@@ -54,7 +54,7 @@ ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
   opt.on('-i','--index=IDX'){|o|idx=o}
   opt.on('-d','--declination=DEC',Float,'Mag Declination (default -1.3)'){|o|decl=o}
-  opt.on('-t','--min-throttle',Integer,'Min Throttle for comparison (1500)'){|o|minthrottle=o}
+  opt.on('-t','--min-throttle=THROTTLE',Integer,'Min Throttle for comparison (1500)'){|o|minthrottle=o}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
     opt.parse!
