@@ -318,6 +318,7 @@ public class MWPlanner : Gtk.Application {
 
     private bool use_gst = false;
     private bool inav = false;
+    private uint16  rhdop = 10000;
 
     private enum DEBUG_FLAGS
     {
@@ -962,9 +963,9 @@ public class MWPlanner : Gtk.Application {
                             ret = false;
                         else
                         {
-//                            init_state(); // dangerous, stops comms
                             init_sstats();
                             armed = 0;
+                            rhdop = 10000;
                             init_npos();
                             armed_spinner.stop();
                             armed_spinner.hide();
@@ -1828,7 +1829,15 @@ public class MWPlanner : Gtk.Application {
                     logb.active = true;
                 }
                 if(Logger.is_logging)
+                {
                     Logger.armed(true,duration,flag, sensor);
+                    if(rhdop != 10000)
+                    {
+                        LTM_XFRAME xf = LTM_XFRAME();
+                        xf.hdop = rhdop;
+                        Logger.ltm_xframe(xf);
+                    }
+                }
             }
             else
             {
@@ -2091,8 +2100,8 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.GPSSTATISTICS:
                 LTM_XFRAME xf = LTM_XFRAME();
                 deserialise_u16(raw+14, out xf.hdop);
-
-                gpsinfo.set_hdop(xf.hdop / 100.0);
+                rhdop = xf.hdop;
+                gpsinfo.set_hdop(xf.hdop/100.0);
                 if(Logger.is_logging)
                 {
                     Logger.ltm_xframe(xf);
@@ -2711,7 +2720,8 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.TX_FRAME:
                 LTM_XFRAME xf = LTM_XFRAME();
                 deserialise_u16(raw, out xf.hdop);
-                gpsinfo.set_hdop(xf.hdop / 100.0);
+                rhdop = xf.hdop;
+                gpsinfo.set_hdop(xf.hdop/100.0);
                 if(Logger.is_logging)
                 {
                     Logger.ltm_xframe(xf);
