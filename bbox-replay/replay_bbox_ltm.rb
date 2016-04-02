@@ -107,7 +107,7 @@ def send_msg dev, msg
   end
 end
 
-def send_init_seq skt,typ
+def send_init_seq skt,typ,snr=false
 
   msps = [
     [0x24, 0x4d, 0x3e, 0x07, 0x64, 0xe7, 0x01, 0x00, 0x3c, 0x00, 0x00, 0x80, 0],
@@ -116,6 +116,10 @@ def send_init_seq skt,typ
     [0x24, 0x4d, 0x3e, 0x03, 0x03, 0, 42, 0x00, 42], # obviuously fake
     [0x24, 0x4d, 0x3e, 11,   101,  0, 0, 0, 0, 15, 0, 4,0,0,0, 0, 0], # obviuously fake
   ]
+  if snr
+    msps[4][9] = 31
+  end
+
   if typ
     msps[0][6] = typ
   end
@@ -403,8 +407,6 @@ cmd << " --stdout"
 cmd << " 2>#{nul}"
 cmd << " #{bbox}"
 
-send_init_seq dev,typ
-
 lastr =nil
 llat = 0.0
 llon = 0.0
@@ -413,6 +415,8 @@ IO.popen(cmd,'rt') do |pipe|
   csv = CSV.new(pipe, csv_opts)
   hdrs = csv.shift
   abort 'Not an INAV log' if hdrs[:gps_coord0].nil?
+
+  send_init_seq dev,typ,(hdrs.has_key? :sonarraw)
 
   csv.each do |row|
     next if row[:gps_numsat].to_i == 0
