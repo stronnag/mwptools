@@ -2673,8 +2673,15 @@ public class MWPlanner : Gtk.Application {
                     {
                         if(npos)
                         {
-                            if(fix > 0 && _nsats >= 4)
+                            if(_nsats >  5)
                             {
+                                if(nsats < 6)
+                                {
+                                    MWPLog.message("good sats gframe %d %d\n", nsats, _nsats);
+                                    nsats = _nsats;
+                                    navstatus.sats(_nsats, true);
+                                }
+
                                 double dist,cse;
                                 Geo.csedist(gflat, gflon,
                                             home_pos.lat, home_pos.lon,
@@ -2687,6 +2694,14 @@ public class MWPlanner : Gtk.Application {
                                     navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
                                 }
                             }
+                            else if (nsats > 5)
+                            {
+                                gps_alert();
+                                MWPLog.message("low sats gframe %d %d\n", nsats, _nsats);
+                                nsats = _nsats;
+                                navstatus.sats(_nsats, true);
+                            }
+
                         }
                         else
                         {
@@ -2697,7 +2712,7 @@ public class MWPlanner : Gtk.Application {
                         }
                     }
 
-                    if(craft != null && fix > 0 && _nsats >= 4)
+                    if(craft != null && fix > 0 && _nsats >= 5)
                     {
                         if(pos_valid(gflat, gflon))
                         {
@@ -2799,6 +2814,11 @@ public class MWPlanner : Gtk.Application {
                         want_special |= POSMODE.WP;
                     else if(ltmflags == 13)
                         want_special |= POSMODE.RTH;
+                    else if(ltmflags == 19)
+                    {
+                        craft.set_normal();
+                            /** fix me **/
+                    }
                     else if (ltmflags < 5)
                         craft.set_normal();
                     MWPLog.message("New LTM Mode %s %d %d %f %f\n",
@@ -3407,7 +3427,7 @@ public class MWPlanner : Gtk.Application {
                         {
                             nsats = _nsats;
                             navstatus.sats(_nsats, false);
-                            if(_nsats == 0)
+                            if(_nsats < 6)
                                 gps_alert();
                         }
                         navstatus.announce(sflags, conf.recip);
@@ -3641,7 +3661,7 @@ public class MWPlanner : Gtk.Application {
                 s0.min_zoom,
                 s0.max_zoom,
                 s0.tile_size,
-                Champlain.MapProjection.MAP_PROJECTION_MERCATOR,
+                0, // Champlain.MapProjection.MERCATOR,
                 s0.uri_format);
             map_source_factory.register((Champlain.MapSourceDesc)s0.desc);
         }

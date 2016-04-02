@@ -437,7 +437,7 @@ public class MWPlanner : GLib.Object {
                         s0.min_zoom,
                         s0.max_zoom,
                         s0.tile_size,
-                        Champlain.MapProjection.MAP_PROJECTION_MERCATOR,
+                        0, // Champlain.MapProjection.MAP_PROJECTION_MERCATOR,
                         s0.uri_format);
                     map_source_factory.register((Champlain.MapSourceDesc)s0.desc);
                 }

@@ -208,7 +208,7 @@ public class MSP : Object
         "Fly by wire A",	// 16
         "Fly by wire B",	// 17
         "Cruise",		// 18
-        "Unknown"		// 19
+        "Nav mode undefined"   // 19
     };
 
     private static HashTable<string, MSP.Action> wp_hash;
