@@ -262,9 +262,11 @@ public class MWPMarkers : GLib.Object
         marker.button_press_event.connect((e) => {
                 if(e.button == 3)
                 {
+                    var button = e.button;
+                    var time_ = e.time;
                     l.set_selection(iter);
                     Timeout.add(10, () => {
-                            menu.popup(null, null, null, e.button, e.time);
+                            menu.popup(null, null, null, button, time_);
                             return false;
                         });
                     return true;
