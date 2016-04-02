@@ -612,6 +612,9 @@ public class MWSerial : Object
                             if(line.has_prefix("# dump profile"))
                                 skip = false;
 
+                            if(line.contains("# PROFILE VALUES #"))
+                                skip = false;
+
                             if(skip == false)
                             {
                                 if(amerge && line.has_prefix("aux "))
