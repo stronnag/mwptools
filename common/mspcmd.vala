@@ -159,7 +159,7 @@ public class MSP : Object
     private static const string[] nav_states =  {
         "None",			// 0
         "RTH Start",           	// 1
-        "RTH Enroute",		// 2
+        "RTH Interrupted. Machine drifting",		// 2
         "PosHold infinite",	// 3
         "PosHold timed",	// 4
         "WP Enroute",		// 5
