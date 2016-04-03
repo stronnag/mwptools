@@ -265,7 +265,7 @@ public class MWPMarkers : GLib.Object
                     var button = e.button;
                     var time_ = e.time;
                     l.set_selection(iter);
-                    Timeout.add(10, () => {
+                    Idle.add(() => {
                             menu.popup(null, null, null, button, time_);
                             return false;
                         });
