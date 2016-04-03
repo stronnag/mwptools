@@ -414,14 +414,6 @@ public class MWPlanner : Gtk.Application {
         WP = 8
     }
 
-    private static BatteryLevels [] vlevels = {
-        BatteryLevels(3.7f, "#60ff00", null, null),
-        BatteryLevels(3.57f, "yellow", null, null),
-        BatteryLevels(3.47f, "orange", "sat_alert.ogg",null),
-        BatteryLevels(3.0f,  "red", "bleet.ogg",null),
-        BatteryLevels(0.0f, null, null, "n/a")
-    };
-
     private static const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
 
     private static const int TIMINTVL=50;
@@ -434,6 +426,19 @@ public class MWPlanner : Gtk.Application {
     private static const int MAVINTVL=(2000/TIMINTVL);
 
     private static const double RAD2DEG = 57.29578;
+
+    private static const string RED_ALERT = "bleet.ogg";
+    private static const string ORANGE_ALERT = "orange.ogg";
+    private static const string GENERAL_ALERT = "beep-sound.ogg";
+    private static const string SAT_ALERT = "sat_alert.ogg";
+
+    private static BatteryLevels [] vlevels = {
+        BatteryLevels(3.7f, "#60ff00", null, null),
+        BatteryLevels(3.57f, "yellow", null, null),
+        BatteryLevels(3.47f, "orange", ORANGE_ALERT, null),
+        BatteryLevels(3.0f,  "red", RED_ALERT, null),
+        BatteryLevels(0.0f, null, null, "n/a")
+    };
 
     private Timer lastp;
     private uint nticks = 0;
@@ -1436,7 +1441,7 @@ public class MWPlanner : Gtk.Application {
         {
             MWPLog.message("message => %s\n", e);
             statusbar.push(context_id, e);
-            bleet_sans_merci("beep-sound.ogg");
+            bleet_sans_merci(GENERAL_ALERT);
         }
         else
         {
@@ -2496,7 +2501,7 @@ public class MWPlanner : Gtk.Application {
                         MWPCursor.set_normal_cursor(window);
                         reset_poller();
                         var mtxt = "Validation for wp %d fails for %s".printf(w.wp_no, sb.str);
-                        bleet_sans_merci("beep-sound.ogg");
+                        bleet_sans_merci(GENERAL_ALERT);
                         validatelab.set_text("⚠"); // u+26a0
                         mwp_warning_box(mtxt, Gtk.MessageType.ERROR);
                     }
@@ -2511,7 +2516,7 @@ public class MWPlanner : Gtk.Application {
                     {
                         MWPCursor.set_normal_cursor(window);
                         reset_poller();
-                        bleet_sans_merci("beep-sound.ogg");
+                        bleet_sans_merci(GENERAL_ALERT);
                         validatelab.set_text("✔"); // u+2714
                         mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
                     }
@@ -3209,10 +3214,10 @@ public class MWPlanner : Gtk.Application {
 
     private void gps_alert()
     {
-        bleet_sans_merci("sat_alert.ogg");
+        bleet_sans_merci(SAT_ALERT);
     }
 
-    private void bleet_sans_merci(string sfn="bleet.ogg")
+    private void bleet_sans_merci(string sfn=RED_ALERT)
     {
         var fn = MWPUtils.find_conf_file(sfn);
         if(fn != null)
