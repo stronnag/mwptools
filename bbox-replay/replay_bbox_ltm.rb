@@ -405,7 +405,7 @@ cmd << " --declination #{decl}"
 cmd << " --simulate-imu"
 cmd << " --stdout"
 cmd << " 2>#{nul}"
-cmd << " #{bbox}"
+cmd << " \"#{bbox}\""
 
 lastr =nil
 llat = 0.0
