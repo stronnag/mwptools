@@ -1994,7 +1994,7 @@ public class GPSInfo : GLib.Object
 
         if(Logger.is_logging)
         {
-            Logger.raw_gps(lat,lon,0,spd, elev, fix, (uint8)nsat);
+            Logger.raw_gps(lat,lon,cse,spd, elev, fix, (uint8)nsat);
         }
         return fix;
     }
