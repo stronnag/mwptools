@@ -444,6 +444,7 @@ public class MWPlanner : Gtk.Application {
     private uint nticks = 0;
     private uint lastm;
     private uint lastrx;
+    private uint last_ga = 0;
     private uint last_tm = 0;
     private uint lastok;
     private uint last_an = 0;
@@ -2230,7 +2231,7 @@ public class MWPlanner : Gtk.Application {
                             ((bxflag & rth_mask) != 0) &&
                             ((xbits & rth_mask) == 0))
                         {
-                            MWPLog.message("set RTH on %08x %u %d\n", bxflag,bxflag,
+                            MWPLog.message("set RTH on %08x %u %ds\n", bxflag,bxflag,
                                           (int)duration);
                             want_special |= POSMODE.RTH;
                         }
@@ -2238,7 +2239,7 @@ public class MWPlanner : Gtk.Application {
                                  ((bxflag & ph_mask) != 0) &&
                                  ((xbits & ph_mask) == 0))
                         {
-                            MWPLog.message("set PH on %08x %u %d\n", bxflag, bxflag,
+                            MWPLog.message("set PH on %08x %u %ds\n", bxflag, bxflag,
                                           (int)duration);
                             want_special |= POSMODE.PH;
                         }
@@ -2246,7 +2247,7 @@ public class MWPlanner : Gtk.Application {
                                  ((bxflag & wp_mask) != 0) &&
                                  ((xbits & wp_mask) == 0))
                         {
-                            MWPLog.message("set WP on %08x %u %d\n", bxflag, bxflag,
+                            MWPLog.message("set WP on %08x %u %ds\n", bxflag, bxflag,
                                           (int)duration);
                             want_special |= POSMODE.WP;
                         }
@@ -2680,11 +2681,11 @@ public class MWPlanner : Gtk.Application {
                         {
                             if(_nsats >  5)
                             {
-                                if(nsats < 6)
+                                if((_nsats != nsats) && nsats < 6)
                                 {
+                                    navstatus.sats(_nsats, true);
                                     MWPLog.message("good sats gframe %d %d\n", nsats, _nsats);
                                     nsats = _nsats;
-                                    navstatus.sats(_nsats, true);
                                 }
 
                                 double dist,cse;
@@ -2699,12 +2700,16 @@ public class MWPlanner : Gtk.Application {
                                     navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
                                 }
                             }
-                            else if (nsats > 5)
+                            else if (nsats > 5 && (nsats != _nsats))
                             {
-                                gps_alert();
-                                MWPLog.message("low sats gframe %d %d\n", nsats, _nsats);
-                                nsats = _nsats;
-                                navstatus.sats(_nsats, true);
+                                if((lastrx - last_ga) > NODATAINTVL)
+                                {
+                                    gps_alert();
+                                    navstatus.sats(_nsats, true);
+                                    last_ga = lastrx;
+                                    MWPLog.message("low sats gframe %d %d (%ds)\n", nsats, _nsats, duration);
+                                    nsats = _nsats;
+                                }
                             }
 
                         }
@@ -2826,7 +2831,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     else if (ltmflags < 5)
                         craft.set_normal();
-                    MWPLog.message("New LTM Mode %s %d %d %f %f\n",
+                    MWPLog.message("New LTM Mode %s %d %ds %f %f\n",
                                    MSP.ltm_mode(ltmflags),
                                    armed, duration, xlat, xlon);
                 }
@@ -3214,7 +3219,8 @@ public class MWPlanner : Gtk.Application {
 
     private void gps_alert()
     {
-        bleet_sans_merci(SAT_ALERT);
+        if(replayer == 0)
+            bleet_sans_merci(SAT_ALERT);
     }
 
     private void bleet_sans_merci(string sfn=RED_ALERT)
@@ -3428,6 +3434,7 @@ public class MWPlanner : Gtk.Application {
             {
                 navstatus.logspeak_init(conf.evoice);
                 spktid = Timeout.add_seconds(conf.speakint, () => {
+
                         if(_nsats != nsats)
                         {
                             nsats = _nsats;
