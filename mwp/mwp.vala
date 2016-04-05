@@ -326,6 +326,14 @@ public class MWPlanner : Gtk.Application {
         WP = 1
     }
 
+    private enum SAT_FLAGS
+    {
+        NONE=0,
+        NEEDED = 1,
+        URGENT = 2,
+        BEEP = 4
+    }
+
     public struct Position
     {
         double lat;
@@ -422,6 +430,9 @@ public class MWPlanner : Gtk.Application {
     private static const int DURAINTVL=((1000/TIMINTVL) - 1);
     private static const int STATINTVL=(800/TIMINTVL);
     private static const int NODATAINTVL=(5000/TIMINTVL);
+    private static const int SATINTVL=(10000/TIMINTVL);
+    private static const int USATINTVL=(2000/TIMINTVL);
+    private static const int UUSATINTVL=(4000/TIMINTVL);
     private static const int RESTARTINTVL=(30000/TIMINTVL);
     private static const int MAVINTVL=(2000/TIMINTVL);
 
@@ -1877,6 +1888,52 @@ public class MWPlanner : Gtk.Application {
             msg_poller();
     }
 
+    private void gps_alert(uint8 scflags)
+    {
+        bool urgent = ((scflags & SAT_FLAGS.URGENT) != 0);
+        bool beep = ((scflags & SAT_FLAGS.BEEP) != 0);
+        navstatus.sats(_nsats, urgent);
+        if(beep && replayer == 0)
+            bleet_sans_merci(SAT_ALERT);
+        nsats = _nsats;
+        last_ga = lastrx;
+    }
+
+    private void sat_coverage()
+    {
+        uint8 scflags = 0;
+        if(nsats != _nsats)
+        {
+            if(_nsats < 6)
+            {
+                if(_nsats < nsats)
+                {
+                    scflags = SAT_FLAGS.URGENT|SAT_FLAGS.BEEP;
+                }
+                else if((lastrx - last_ga) > USATINTVL)
+                {
+                    scflags = SAT_FLAGS.URGENT;
+                }
+            }
+            else
+            {
+                if(nsats < 6)
+                    scflags = SAT_FLAGS.URGENT;
+                else if((lastrx - last_ga) > UUSATINTVL)
+                {
+                    scflags = SAT_FLAGS.NEEDED;
+                }
+            }
+        }
+        else if((lastrx - last_ga) > SATINTVL)
+        {
+            scflags = SAT_FLAGS.NEEDED;
+        }
+
+        if(scflags != SAT_FLAGS.NONE)
+            gps_alert(scflags);
+    }
+
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
     {
 
@@ -2381,8 +2438,10 @@ public class MWPlanner : Gtk.Application {
                 gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS)) != 0);
                 fbox.update(item_visible(DOCKLETS.FBOX));
                 _nsats = rg.gps_numsat;
+
                 if (gpsfix)
                 {
+                    sat_coverage();
                     if(armed == 1)
                     {
                         if(npos == false && home_changed(GPSInfo.lat, GPSInfo.lon))
@@ -2666,7 +2725,6 @@ public class MWPlanner : Gtk.Application {
 
                 if((_nsats == 0 && nsats != 0) || (nsats == 0 && _nsats != 0))
                 {
-                    MWPLog.message("sats from gframe %d %d\n", nsats, _nsats);
                     nsats = _nsats;
                     navstatus.sats(_nsats, true);
                 }
@@ -2675,19 +2733,15 @@ public class MWPlanner : Gtk.Application {
                 {
                     double gflat = gf.lat/10000000.0;
                     double gflon = gf.lon/10000000.0;
+
+                    sat_coverage();
+
                     if(armed != 0)
                     {
                         if(npos)
                         {
                             if(_nsats >  5)
                             {
-                                if((_nsats != nsats) && nsats < 6)
-                                {
-                                    navstatus.sats(_nsats, true);
-                                    MWPLog.message("good sats gframe %d %d\n", nsats, _nsats);
-                                    nsats = _nsats;
-                                }
-
                                 double dist,cse;
                                 Geo.csedist(gflat, gflon,
                                             home_pos.lat, home_pos.lon,
@@ -2700,18 +2754,6 @@ public class MWPlanner : Gtk.Application {
                                     navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
                                 }
                             }
-                            else if (nsats > 5 && (nsats != _nsats))
-                            {
-                                if((lastrx - last_ga) > NODATAINTVL)
-                                {
-                                    gps_alert();
-                                    navstatus.sats(_nsats, true);
-                                    last_ga = lastrx;
-                                    MWPLog.message("low sats gframe %d %d (%ds)\n", nsats, _nsats, duration);
-                                    nsats = _nsats;
-                                }
-                            }
-
                         }
                         else
                         {
@@ -3217,12 +3259,6 @@ public class MWPlanner : Gtk.Application {
         return (rp-&tmp[0]);
     }
 
-    private void gps_alert()
-    {
-        if(replayer == 0)
-            bleet_sans_merci(SAT_ALERT);
-    }
-
     private void bleet_sans_merci(string sfn=RED_ALERT)
     {
         var fn = MWPUtils.find_conf_file(sfn);
@@ -3434,14 +3470,6 @@ public class MWPlanner : Gtk.Application {
             {
                 navstatus.logspeak_init(conf.evoice);
                 spktid = Timeout.add_seconds(conf.speakint, () => {
-
-                        if(_nsats != nsats)
-                        {
-                            nsats = _nsats;
-                            navstatus.sats(_nsats, false);
-                            if(_nsats < 6)
-                                gps_alert();
-                        }
                         navstatus.announce(sflags, conf.recip);
                         return true;
                     });
@@ -3512,6 +3540,7 @@ public class MWPlanner : Gtk.Application {
             nsats = 0;
             _nsats = 0;
             last_tm = 0;
+            last_ga = 0;
             boxnames = null;
             msp.close();
             c.set_label("Connect");

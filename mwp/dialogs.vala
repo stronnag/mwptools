@@ -20,7 +20,6 @@
 extern void espeak_init(string voice);
 extern void espeak_say(string text);
 
-
 public class Units :  GLib.Object
 {
     private const string [] dnames = {"m", "ft", "yd","mfg"};
@@ -1417,11 +1416,9 @@ public class NavStatus : GLib.Object
     public void sats(uint8 nsats, bool urgent=false)
     {
         numsat = nsats;
-        modsat = true;
-        if(mt != null && urgent)
+        if(mt != null)
         {
-            mt.message(AudioThread.Vox.MODSAT,true);
-            modsat = false;
+            mt.message(AudioThread.Vox.MODSAT,urgent);
         }
     }
 
@@ -1451,10 +1448,8 @@ public class NavStatus : GLib.Object
             mt.message(AudioThread.Vox.VOLTAGE);
         }
 
-        if(modsat)
-        {
-            mt.message(AudioThread.Vox.MODSAT,true);
-        }
+//        if(modsat)
+//            mt.message(AudioThread.Vox.MODSAT,true);
     }
 
     public void cg_on()
@@ -1526,6 +1521,8 @@ public class AudioThread : Object {
         LTM_MODE
     }
 
+    private uint lsats;
+
     private AsyncQueue<Vox> msgs;
     public Thread<int> thread {private set; get;}
 
@@ -1547,7 +1544,7 @@ public class AudioThread : Object {
 
     public void message(Vox c, bool urgent=false)
     {
-        if (msgs.length() > 8)
+        if (msgs.length() > 10)
         {
             clear();
             MWPLog.message("cleared voice queue\n");
@@ -1574,6 +1571,7 @@ public class AudioThread : Object {
     public void start()
     {
 //        MWPLog.message("Start thread\n");
+        lsats = 255;
         thread = new Thread<int> ("mwp audio", () => {
                 Vox c;
                 while((c = msgs.pop()) != Vox.DONE)
@@ -1657,10 +1655,14 @@ public class AudioThread : Object {
                             s = str_zero(s);
                             break;
                         case Vox.MODSAT:
-                            string ss = "";
-                            if(NavStatus.numsat != 1)
-                                ss = "s";
-                            s = "%d satellite%s.".printf(NavStatus.numsat,ss);
+                            if(lsats != NavStatus.numsat)
+                            {
+                                string ss = "";
+                                if(NavStatus.numsat != 1)
+                                    ss = "s";
+                                s = "%d satellite%s.".printf(NavStatus.numsat,ss);
+                                lsats = NavStatus.numsat;
+                            }
                             break;
                         case Vox.LTM_MODE:
                             s = MSP.ltm_mode(NavStatus.xfmode);
