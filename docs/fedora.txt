@@ -1,3 +1,5 @@
+# You should probably use dnf, not yum any more
+
 yum groupinstall development-libs development-tools gnome-software-development
 yum install gtk3-devel gstreamer-devel clutter-devel webkitgtk3-devel \
     libgda-devel gobject-introspection-devel
@@ -9,3 +11,13 @@ yum install libchamplain-gtk-devel libgdl-devel libgudev1-devel espeak-devel
 yum install  gtk2-devel
 
 git clone https://github.com/stronnag/mwptools.git
+
+# for bbox-replay stuff
+
+dnf install ruby
+
+# If you want to use serial devices for bbox replay (and you probably
+#  don't)
+# then see
+#  https://developer.fedoraproject.org/tech/languages/ruby/gems-installation.html
+#
