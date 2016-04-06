@@ -2,38 +2,6 @@
 
 # Extract heading & gps_course for analysis
 # MIT licence
-# States
-#  NAV_STATE_UNDEFINED = 0,                    // 0
-#  NAV_STATE_IDLE,                             // 1
-#  NAV_STATE_ALTHOLD_INITIALIZE,               // 2
-#  NAV_STATE_ALTHOLD_IN_PROGRESS,              // 3
-#  NAV_STATE_POSHOLD_2D_INITIALIZE,            // 4
-#  NAV_STATE_POSHOLD_2D_IN_PROGRESS,           // 5
-#  NAV_STATE_POSHOLD_3D_INITIALIZE,            // 6
-#  NAV_STATE_POSHOLD_3D_IN_PROGRESS,           // 7
-#  NAV_STATE_RTH_INITIALIZE,                   // 8
-#  NAV_STATE_RTH_2D_INITIALIZE,                // 9
-#  NAV_STATE_RTH_2D_HEAD_HOME,                 // 10
-#  NAV_STATE_RTH_2D_GPS_FAILING,               // 11
-#  NAV_STATE_RTH_2D_FINISHING,                 // 12
-#  NAV_STATE_RTH_2D_FINISHED,                  // 13
-#  NAV_STATE_RTH_3D_INITIALIZE,                // 14
-#  NAV_STATE_RTH_3D_CLIMB_TO_SAFE_ALT,         // 15
-#  NAV_STATE_RTH_3D_HEAD_HOME,                 // 16
-#  NAV_STATE_RTH_3D_GPS_FAILING,               // 17
-#  NAV_STATE_RTH_3D_HOVER_PRIOR_TO_LANDING,    // 18
-#  NAV_STATE_RTH_3D_LANDING,                   // 19
-#  NAV_STATE_RTH_3D_FINISHING,                 // 20
-#  NAV_STATE_RTH_3D_FINISHED,                  // 21
-#  NAV_STATE_WAYPOINT_INITIALIZE,              // 22
-#  NAV_STATE_WAYPOINT_PRE_ACTION,              // 23
-#  NAV_STATE_WAYPOINT_IN_PROGRESS,             // 24
-#  NAV_STATE_WAYPOINT_REACHED,                 // 25
-#  NAV_STATE_WAYPOINT_FINISHED,                // 26
-#  NAV_STATE_EMERGENCY_LANDING_INITIALIZE,     // 27
-#  NAV_STATE_EMERGENCY_LANDING_IN_PROGRESS,    // 28
-#  NAV_STATE_EMERGENCY_LANDING_FINISHED,       // 29
-
 include Math
 require 'csv'
 require 'optparse'
@@ -76,6 +44,42 @@ def Poscalc.r2d r
   end
 end
 
+
+def list_states
+  STDERR.puts %q[States:
+  NAV_STATE_UNDEFINED = 0,                    // 0
+  NAV_STATE_IDLE,                             // 1
+  NAV_STATE_ALTHOLD_INITIALIZE,               // 2
+  NAV_STATE_ALTHOLD_IN_PROGRESS,              // 3
+  NAV_STATE_POSHOLD_2D_INITIALIZE,            // 4
+  NAV_STATE_POSHOLD_2D_IN_PROGRESS,           // 5
+  NAV_STATE_POSHOLD_3D_INITIALIZE,            // 6
+  NAV_STATE_POSHOLD_3D_IN_PROGRESS,           // 7
+  NAV_STATE_RTH_INITIALIZE,                   // 8
+  NAV_STATE_RTH_2D_INITIALIZE,                // 9
+  NAV_STATE_RTH_2D_HEAD_HOME,                 // 10
+  NAV_STATE_RTH_2D_GPS_FAILING,               // 11
+  NAV_STATE_RTH_2D_FINISHING,                 // 12
+  NAV_STATE_RTH_2D_FINISHED,                  // 13
+  NAV_STATE_RTH_3D_INITIALIZE,                // 14
+  NAV_STATE_RTH_3D_CLIMB_TO_SAFE_ALT,         // 15
+  NAV_STATE_RTH_3D_HEAD_HOME,                 // 16
+  NAV_STATE_RTH_3D_GPS_FAILING,               // 17
+  NAV_STATE_RTH_3D_HOVER_PRIOR_TO_LANDING,    // 18
+  NAV_STATE_RTH_3D_LANDING,                   // 19
+  NAV_STATE_RTH_3D_FINISHING,                 // 20
+  NAV_STATE_RTH_3D_FINISHED,                  // 21
+  NAV_STATE_WAYPOINT_INITIALIZE,              // 22
+  NAV_STATE_WAYPOINT_PRE_ACTION,              // 23
+  NAV_STATE_WAYPOINT_IN_PROGRESS,             // 24
+  NAV_STATE_WAYPOINT_REACHED,                 // 25
+  NAV_STATE_WAYPOINT_FINISHED,                // 26
+  NAV_STATE_EMERGENCY_LANDING_INITIALIZE,     // 27
+  NAV_STATE_EMERGENCY_LANDING_IN_PROGRESS,    // 28
+  NAV_STATE_EMERGENCY_LANDING_FINISHED,       // 29 ]
+  exit
+end
+
 idx = 1
 decl = -1.3
 llat = 0
@@ -83,10 +87,13 @@ llon = 0
 minthrottle = 1500
 states = [1]
 allstates = false
+sane = false
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
   opt.on('--all-states') {|o| allstates = true}
+  opt.on('--sane') {|o| sane = true}
+  opt.on('--list-states') { list_states }
   opt.on('-i','--index=IDX'){|o|idx=o}
   opt.on('-d','--declination=DEC',Float,'Mag Declination (default -1.3)'){|o|decl=o}
   opt.on('-t','--min-throttle=THROTTLE',Integer,'Min Throttle for comparison (1500)'){|o|minthrottle=o}
@@ -99,11 +106,14 @@ ARGV.options do |opt|
   end
 end
 
-if allstates
+if sane
+  states=[1,16,24]
+elsif allstates
   states=*(1..29)
 else
   states.map! {|s| s.to_i}
 end
+
 bbox = (ARGV[0]|| abort('no BBOX log'))
 cmd = "blackbox_decode"
 cmd << " --index #{idx}"
