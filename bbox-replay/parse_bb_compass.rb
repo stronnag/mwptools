@@ -88,12 +88,14 @@ minthrottle = 1500
 states = [1]
 allstates = false
 sane = false
+missing = false
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
   opt.on('--all-states') {|o| allstates = true}
   opt.on('--sane') {|o| sane = true}
   opt.on('--list-states') { list_states }
+  opt.on('--missing') { missing=true }
   opt.on('-i','--index=IDX'){|o|idx=o}
   opt.on('-d','--declination=DEC',Float,'Mag Declination (default -1.3)'){|o|decl=o}
   opt.on('-t','--min-throttle=THROTTLE',Integer,'Min Throttle for comparison (1500)'){|o|minthrottle=o}
@@ -135,6 +137,7 @@ IO.popen(cmd,'r') do |p|
   csv.each do |c|
     ts = c[:time_us].to_f / 1000000
     st = ts if st.nil?
+    ts -= st
     lat = c[:gps_coord0].to_f
     lon = c[:gps_coord1].to_f
     if states.include? c[:navstate].to_i and
@@ -150,9 +153,10 @@ IO.popen(cmd,'r') do |p|
       else
 	cse = nil
       end
-      ts -= st
       puts [ts, c[:rccommand3].to_i, c[:navstate].to_i, c[:gps_speed_ms].to_f,
 	c[:gps_ground_course].to_i, mag0,mag1,cse].join(",")
+    elsif missing
+      puts [ts,-1,-1,-1,-1,-1,-1,-1].join(',')
     end
     llat = lat
     llon = lon
