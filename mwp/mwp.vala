@@ -1131,7 +1131,7 @@ public class MWPlanner : Gtk.Application {
                 bool ret = false;
                 if (evt.button == 1)
                 {
-                    if (((evt.time - button_time) < 200) &&
+                    if (((evt.time - button_time) < conf.dwell_time) &&
                         ((evt.modifier_state & wpmod) == wpmod))
                     {
                         insert_new_wp(evt.x, evt.y);

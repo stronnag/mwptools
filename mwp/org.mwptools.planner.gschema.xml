@@ -241,5 +241,11 @@
       <description>0 =none (default), 1=CTRL, 2 = SHIFT</description>
     </key>
 
+    <key name="dwell-time" type="u">
+      <default>200</default>
+      <summary>Time to recognise button 1 single click</summary>
+      <description></description>
+    </key>
+
   </schema>
 </schemalist>

@@ -61,6 +61,7 @@ public class MWPSettings : GLib.Object
     public string mavrth {get; set; default=null;}
     public uint wpmod {get; set; default=1;}
     public uint wpmod3 {get; set; default=1;}
+    public uint dwell_time {get; set; default=200;}
     public signal void settings_update (string s);
 
     public MWPSettings()
@@ -79,7 +80,7 @@ public class MWPSettings : GLib.Object
             settings = new Settings.full (schema, null, null);
         else
             settings =  new Settings (sname);
-            
+
         settings.changed.connect ((s) => {
                 MWPLog.message("changed %s settings\n",s);
                 read_settings(s);
@@ -192,8 +193,12 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "wpmodifier")
             wpmod = settings.get_uint("wpmodifier");
+
         if(s == null || s == "wpmodifier3")
             wpmod3 = settings.get_uint("wpmodifier3");
+
+        if(s == null || s == "dwell-time")
+            dwell_time = settings.get_uint("dwell-time");
     }
 
     public void save_settings()
