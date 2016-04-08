@@ -3304,6 +3304,9 @@ public class MWPlanner : Gtk.Application {
 
     private void set_bat_stat(uint8 ivbat)
     {
+        if(ivbat < 10)
+            return;
+
         string vbatlab;
         float  vf = (float)ivbat/10.0f;
         int icol = 0;

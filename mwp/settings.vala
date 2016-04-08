@@ -61,7 +61,7 @@ public class MWPSettings : GLib.Object
     public string mavrth {get; set; default=null;}
     public uint wpmod {get; set; default=1;}
     public uint wpmod3 {get; set; default=1;}
-    public uint dwell_time {get; set; default=200;}
+    public uint dwell_time {get; set; default=300;}
     public signal void settings_update (string s);
 
     public MWPSettings()

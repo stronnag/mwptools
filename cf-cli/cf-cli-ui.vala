@@ -272,10 +272,13 @@ public class DumpGUI : MWSerial
             ret = gio.read_line(out msg, out len, null);
             if(ret == IOStatus.NORMAL)
             {
-                Gtk.TextIter ei;
-                var tbuffer = textview.get_buffer();
-                tbuffer.get_end_iter(out ei);
-                tbuffer.insert(ref ei, msg, -1);
+                if(msg.contains("\n"))
+                {
+                    Gtk.TextIter ei;
+                    var tbuffer = textview.get_buffer();
+                    tbuffer.get_end_iter(out ei);
+                    tbuffer.insert(ref ei, msg, -1);
+                }
                 stderr.puts(msg);
                 stderr.flush();
             }

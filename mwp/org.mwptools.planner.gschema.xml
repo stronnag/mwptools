@@ -242,9 +242,9 @@
     </key>
 
     <key name="dwell-time" type="u">
-      <default>200</default>
+      <default>300</default>
       <summary>Time to recognise button 1 single click</summary>
-      <description></description>
+      <description>max time for map single click</description>
     </key>
 
   </schema>
