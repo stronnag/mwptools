@@ -1,3 +1,4 @@
+# For fedora 23
 # You should probably use dnf, not yum any more
 
 yum groupinstall development-libs development-tools gnome-software-development
@@ -21,3 +22,7 @@ dnf install ruby
 # then see
 #  https://developer.fedoraproject.org/tech/languages/ruby/gems-installation.html
 #
+
+for cf-cli-ui
+
+dnf install vte291-devel

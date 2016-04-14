@@ -21,6 +21,11 @@ libpango1.0-dev
 libcairo2-dev
 libxml2-dev
 
+and for cf-cli-ui
+
+libvte-2.91-dev (prferred) or
+libvte-2.90-dev (14.04 LTS)
+
 and for replay_bbox_ltm.rb
 
 ruby version 2 or later, e.g.
