@@ -17,8 +17,6 @@ public class DumpGUI : MWSerial
     private Gtk.Entry fileentry;
     private int[] msgpipe;
     private string cfd;
-    private Gtk.TextIter ei;
-    private int lno = 0;
 
     public DumpGUI()
     {
@@ -254,7 +252,6 @@ public class DumpGUI : MWSerial
 
     private bool io_reader (IOChannel gio, IOCondition condition)
     {
-        string msg;
         uchar buf[1024];
 
         if((condition & IOCondition.IN) != IOCondition.IN)

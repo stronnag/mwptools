@@ -9,11 +9,15 @@ ifeq ($(XOS),Linux)
 else
  S2=cf-cli-ui.vala cf-cli-serial.vala cf-cli.resources.c cserial.c devmanager-win32.vala
 endif
-all: cf-cli cf-cli-ui
 
-APP=cf-cli-ui
 CLI=cf-cli
+
+ifdef VTEVERS
+ APP=cf-cli-ui
+endif
 APPS=$(APP) $(CLI)
+
+all: $(APPS)
 
 cf-cli: $(S1)
 	$(VALAC) $(OPTS) --pkg posix --pkg gio-2.0 $(S1) -o cf-cli
@@ -21,8 +25,10 @@ cf-cli: $(S1)
 cf-cli.resources.c: cf-cli.resources.xml cf-cli.ui cf-cli.svg
 	glib-compile-resources --generate-source  cf-cli.resources.xml
 
+ifdef VTEVERS
 cf-cli-ui: $(S2)
-	$(VALAC) $(OPTS) --pkg gudev-1.0 --pkg gtk+-3.0 --pkg vte-2.91   $(S2) -o cf-cli-ui
+	$(VALAC) $(OPTS) --pkg gudev-1.0 --pkg gtk+-3.0 --pkg vte-$(VTEVERS) $(S2) -o cf-cli-ui
+endif
 
 clean:
 	rm -f cf-cli cf-cli-ui  *.vala.c
@@ -31,5 +37,7 @@ local:
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
 install: $(APPS)
+ifdef VTEVERS
 	install -s -D $(APP) $(prefix)/bin/$(APP)
+endif
 	install -s -D $(CLI) $(prefix)/bin/$(CLI)

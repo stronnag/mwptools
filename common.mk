@@ -16,12 +16,24 @@ ifneq ($(PKG_INFO),0)
  DOPTS += -D NOBB
 endif
 
-PKG_INFO := $(shell pkg-config --atleast-version=0.30 libvala-0.30 && pkg-config --atleast-version=2.46 glib-2.0; echo $$?)
+
+VAPI := $(shell valac --api-version)
+PKG_INFO := $(shell pkg-config --atleast-version=0.30 libvala-$(VAPI) && pkg-config --atleast-version=2.46 glib-2.0; echo $$?)
 ifneq ($(PKG_INFO),0)
  DOPTS += -D NOPUSHFRONT
  TARGET=2.36
 else
  TARGET=2.46
+endif
+
+PKG_INFO := $(shell pkg-config --exists vte-2.91; echo $$?)
+ifeq ($(PKG_INFO),0)
+ VTEVERS=2.91
+else
+ PKG_INFO := $(shell pkg-config --exists vte-2.90; echo $$?)
+ ifeq ($(PKG_INFO),0)
+  VTEVERS=2.90
+ endif
 endif
 
 OPTS += -X -O2 -X -s --thread --target-glib=$(TARGET)
