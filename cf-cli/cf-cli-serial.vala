@@ -724,7 +724,7 @@ public class MWSerial : Object
             }
         }
         if(!verbose)
-            stderr.printf("\r");
+            message("\r");
         if(defprof != null)
         {
             Thread.usleep(1000*500);

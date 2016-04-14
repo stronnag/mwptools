@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.20.0 -->
 <interface>
   <requires lib="gtk+" version="3.6"/>
+  <requires lib="vte-2.91" version="0.44"/>
   <object class="GtkAdjustment" id="adjustment1">
     <property name="upper">2</property>
     <property name="step_increment">1</property>
@@ -353,12 +354,15 @@
             <property name="hexpand">True</property>
             <property name="shadow_type">in</property>
             <child>
-              <object class="GtkTextView" id="textview">
-                <property name="height_request">120</property>
+              <object class="VteTerminal" id="terminal">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="editable">False</property>
-                <property name="cursor_visible">False</property>
+                <property name="hscroll_policy">natural</property>
+                <property name="vscroll_policy">natural</property>
+                <property name="encoding">UTF-8</property>
+                <property name="input_enabled">False</property>
+                <property name="scroll_on_keystroke">True</property>
+                <property name="scroll_on_output">False</property>
               </object>
             </child>
           </object>

@@ -436,6 +436,11 @@ public class MWPlanner : Gtk.Application {
     private static const int RESTARTINTVL=(30000/TIMINTVL);
     private static const int MAVINTVL=(2000/TIMINTVL);
 
+    private enum SATS
+    {
+        MINSATS = 6
+    }
+
     private static const double RAD2DEG = 57.29578;
 
     private static const string RED_ALERT = "bleet.ogg";
@@ -1904,7 +1909,7 @@ public class MWPlanner : Gtk.Application {
         uint8 scflags = 0;
         if(nsats != _nsats)
         {
-            if(_nsats < 6)
+            if(_nsats < SATS.MINSATS)
             {
                 if(_nsats < nsats)
                 {
@@ -1917,7 +1922,7 @@ public class MWPlanner : Gtk.Application {
             }
             else
             {
-                if(nsats < 6)
+                if(nsats < SATS.MINSATS)
                     scflags = SAT_FLAGS.URGENT;
                 else if((lastrx - last_ga) > UUSATINTVL)
                 {
@@ -2740,7 +2745,7 @@ public class MWPlanner : Gtk.Application {
                     {
                         if(npos)
                         {
-                            if(_nsats >  5)
+                            if(_nsats >= SATS.MINSATS)
                             {
                                 double dist,cse;
                                 Geo.csedist(gflat, gflon,

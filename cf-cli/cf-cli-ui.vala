@@ -11,12 +11,14 @@ public class DumpGUI : MWSerial
     private Gtk.Window window;
     private int action;
     private string filename;
-    private Gtk.TextView textview;
+    private Vte.Terminal term;
     private Gtk.ComboBoxText devcombo;
     private Gtk.Button execbutton;
     private Gtk.Entry fileentry;
     private int[] msgpipe;
     private string cfd;
+    private Gtk.TextIter ei;
+    private int lno = 0;
 
     public DumpGUI()
     {
@@ -88,13 +90,7 @@ public class DumpGUI : MWSerial
         var te = devcombo.get_child() as Gtk.Entry;
         te.can_focus = true;
 
-        textview = builder.get_object ("textview") as Gtk.TextView;
-        var sw = builder.get_object ("scrolledwindow1") as Gtk.ScrolledWindow;
-        textview.size_allocate.connect(() => {
-                var adj = sw.get_vadjustment();
-                adj.set_value(adj.get_upper() - adj.get_page_size());
-            });
-
+        term = builder.get_object ("terminal") as Vte.Terminal;
 
         mergebutton.active = merge;
         mergebutton.toggled.connect (() => {
@@ -258,9 +254,8 @@ public class DumpGUI : MWSerial
 
     private bool io_reader (IOChannel gio, IOCondition condition)
     {
-        IOStatus ret;
         string msg;
-        size_t len;
+        uchar buf[1024];
 
         if((condition & IOCondition.IN) != IOCondition.IN)
         {
@@ -268,32 +263,25 @@ public class DumpGUI : MWSerial
             Posix.close(msgpipe[0]);
             return false;
         }
-        try {
-            ret = gio.read_line(out msg, out len, null);
-            if(ret == IOStatus.NORMAL)
+        int fd = gio.unix_get_fd();
+        var res = Posix.read(fd, buf, 1024);
+        if(res > 0)
+        {
+            stderr.printf("%d %s", (int)res, (string)buf);
+            stderr.flush();
+            if(buf[res-1] == '\n')
             {
-                if(msg.contains("\n"))
-                {
-                    Gtk.TextIter ei;
-                    var tbuffer = textview.get_buffer();
-                    tbuffer.get_end_iter(out ei);
-                    tbuffer.insert(ref ei, msg, -1);
-                }
-                stderr.puts(msg);
-                stderr.flush();
+                buf[res-1] = '\r';
+                buf[res] = '\n';
+                buf[++res] = 0;
             }
-            else
-            {
-                execbutton.sensitive=true;
-                Posix.close(msgpipe[0]);
-                return false;
-            }
+            term.feed(buf);
         }
-        catch(IOChannelError e) {
-            print("Error reading: %s\n", e.message);
-        }
-        catch(ConvertError e) {
-            print("Error reading: %s\n", e.message);
+        else
+        {
+            execbutton.sensitive=true;
+            Posix.close(msgpipe[0]);
+            return false;
         }
         return true;
     }

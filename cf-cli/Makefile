@@ -22,7 +22,7 @@ cf-cli.resources.c: cf-cli.resources.xml cf-cli.ui cf-cli.svg
 	glib-compile-resources --generate-source  cf-cli.resources.xml
 
 cf-cli-ui: $(S2)
-	$(VALAC) $(OPTS) --pkg gudev-1.0 --pkg gtk+-3.0 $(S2) -o cf-cli-ui
+	$(VALAC) $(OPTS) --pkg gudev-1.0 --pkg gtk+-3.0 --pkg vte-2.91   $(S2) -o cf-cli-ui
 
 clean:
 	rm -f cf-cli cf-cli-ui  *.vala.c
