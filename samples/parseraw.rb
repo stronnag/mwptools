@@ -6,15 +6,18 @@ require 'socket'
 
 port = nil
 rawf = nil
+dev = nil
 skip = false
-in_only = out_only = ltm_only = raw = false
+in_only = out_only = ltm_only = raw = omitx = false
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
   opt.on('-u','--udp PORT'){|o| port=o}
+  opt.on('-d','--device DEV'){|o| dev=o}
   opt.on('-i','--input') {in_only = true}
   opt.on('-o','--output') {out_only = true}
   opt.on('-l','--ltm') {ltm_only = true}
+  opt.on('--omit-x-frame') {omitx = true}
   opt.on('-r','--raw') {raw = true}
   opt.on('-s','--skip-first','skip any initial delay for udp') {skip = true}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
@@ -45,6 +48,10 @@ if raw
   rawf = File.open("raw_dump.txt", 'w')
 end
 
+if dev
+  dev = File.open(dev, 'w')
+end
+
 puts ARGV[0]
 File.open(ARGV[0]) do |f|
   loop do
@@ -66,21 +73,37 @@ File.open(ARGV[0]) do |f|
     end
     puts
     if raw
-      rawf.print data
+      if !(omitx && data[1] == 'T' && data[2] == 'X')
+	rawf.print data
+      end
     end
 
-    if skt
-      if data[1] == 'T'
+    if dev
+      if !(omitx && data[1] == 'T' && data[2] == 'X')
+	dev.print data
 	delta = ts-lt
 	puts "Sleep #{delta}"
 	sleep delta if skip == false or delta.zero?
-	skip = false if(skip)
-	skt.send data,0,host,port
       end
+    end
+
+
+    if skt
+      if data[1] == 'T'
+	next if omitx && data[2] == 'X'
+      end
+      delta = ts-lt
+      puts "Sleep #{delta}"
+      sleep delta if skip == false or delta.zero?
+      skip = false if(skip)
+      skt.send data,0,host,port
     end
     lt=ts
   end
 end
 if raw
   rawf.close
+end
+if dev
+  dev.close
 end
