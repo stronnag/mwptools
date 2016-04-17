@@ -1734,8 +1734,6 @@ public class MWPlanner : Gtk.Application {
             }
             requests += MSP.Cmds.RAW_GPS;
             requests += MSP.Cmds.COMP_GPS;
-            if(inav)
-                requests += MSP.Cmds.GPSSTATISTICS;
             reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS);
             init_craft_icon();
             gpscnt = 0;
@@ -2439,7 +2437,16 @@ public class MWPlanner : Gtk.Application {
                 rp = deserialise_i32(rp, out rg.gps_lon);
                 rp = deserialise_i16(rp, out rg.gps_altitude);
                 rp = deserialise_u16(rp, out rg.gps_speed);
-                deserialise_u16(rp, out rg.gps_ground_course);
+                rp = deserialise_u16(rp, out rg.gps_ground_course);
+                if(len == 18)
+                {
+                    LTM_XFRAME xf = LTM_XFRAME();
+                    deserialise_u16(rp, out xf.hdop);
+                    rhdop = xf.hdop;
+                    gpsinfo.set_hdop(xf.hdop/100.0);
+                    if(Logger.is_logging)
+                        Logger.ltm_xframe(xf);
+                }
                 gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS)) != 0);
                 fbox.update(item_visible(DOCKLETS.FBOX));
                 _nsats = rg.gps_numsat;
