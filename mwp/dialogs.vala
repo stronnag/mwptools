@@ -347,8 +347,15 @@ public class FlightBox : GLib.Object
                     Units.speed(GPSInfo.spd),
                     Units.speed_units() ) );
             string hdoptxt="";
-            if(GPSInfo.hdop != -1.0)
-                hdoptxt = " / <span font='%d'>%0.1f</span>".printf(fh2,GPSInfo.hdop);
+            if(GPSInfo.hdop != -1.0 && GPSInfo.hdop < 100.0)
+            {
+                string htxt;
+                if(GPSInfo.hdop > 9.95)
+                    htxt = "%.0f".printf(GPSInfo.hdop);
+                else
+                    htxt = "%.1f".printf(GPSInfo.hdop);
+                hdoptxt = " / <span font='%d'>%s</span>".printf(fh2,htxt);
+            }
             var slabel = "Sats <span font='%d'>%d</span> %sfix%s".printf(
                 fh1, GPSInfo.nsat,Units.fix(GPSInfo.fix), hdoptxt);
             big_sats.set_label(slabel);
