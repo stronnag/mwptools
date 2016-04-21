@@ -107,19 +107,27 @@ def send_msg dev, msg
   end
 end
 
-def send_init_seq skt,typ,snr=false
+def send_init_seq skt,typ,snr=false,baro=true
 
   msps = [
     [0x24, 0x4d, 0x3e, 0x07, 0x64, 0xe7, 0x01, 0x00, 0x3c, 0x00, 0x00, 0x80, 0],
     [0x24, 0x4d, 0x3e, 0x03, 0x01, 0x00, 0x01, 0x0e, 0x0d],
     [0x24, 0x4d, 0x3e, 0x04, 0x02, 0x49, 0x4e, 0x41, 0x56, 0x16],
-    [0x24, 0x4d, 0x3e, 0x03, 0x03, 0, 42, 0x00, 42], # obviuously fake
-    [0x24, 0x4d, 0x3e, 11,   101,  0, 0, 0, 0, 15, 0, 4,0,0,0, 0, 0], # obviuously fake
+    [0x24, 0x4d, 0x3e, 0x03, 0x03, 0, 42, 0x00, 42], # obviously fake
+    [0x24, 0x4d, 0x3e, 11,   101,  0, 0, 0, 0, 0, 0, 4,0,0,0, 0, 0], # obviously fake
   ]
-  if snr
-    msps[4][9] = 31
+
+  sensors = (1|4|8)
+
+  if baro
+    sensors |= 2
   end
 
+  if snr
+    sensors |= 16
+  end
+
+  msps[4][9] = sensors
   if typ
     msps[0][6] = typ
   end
@@ -147,7 +155,7 @@ def encode_atti r, gpshd=0
   msg
 end
 
-def encode_gps r
+def encode_gps r,baro=true
   msg='$TG'
   nsf = 0
   ns = r[:gps_numsat].to_i
@@ -166,11 +174,13 @@ def encode_gps r
 	  end
   end
   nsf |= (ns << 2)
+
+  alt = (baro) ? r[:baroalt_cm].to_i : r[:gps_altitude]*100.to_i
+
   sl = [(r[:gps_coord0].to_f*LLFACT).to_i,
     (r[:gps_coord1].to_f*LLFACT).to_i,
     r[:gps_speed_ms].to_i,
-    r[:baroalt_cm].to_i,
-    nsf].pack('l<l<CL<c')
+    alt, nsf].pack('l<l<CL<c')
   msg << sl << mksum(sl)
   msg
 end
@@ -416,7 +426,11 @@ IO.popen(cmd,'rt') do |pipe|
   hdrs = csv.shift
   abort 'Not an INAV log' if hdrs[:gps_coord0].nil?
 
-  send_init_seq dev,typ,(hdrs.has_key? :sonarraw)
+  have_sonar = (hdrs.has_key? :sonarraw)
+  have_baro = true # until confirmed ...
+  #  have_baro = (hdrs.has_key? :baroalt_cm)
+
+  send_init_seq dev,typ,have_sonar,have_baro
 
   csv.each do |row|
     next if row[:gps_numsat].to_i == 0
@@ -431,7 +445,7 @@ IO.popen(cmd,'rt') do |pipe|
 	llat = row[:gps_coord0].to_f
 	llon = row[:gps_coord1].to_f
 	if  llat != 0.0 and llon != 0.0
-	  msg = encode_gps row
+	  msg = encode_gps row, have_baro
 	  send_msg dev, msg
 	  if origin.nil? and row[:gps_numsat].to_i > 4
 	    origin = {:lat => row[:gps_coord0], :lon => row[:gps_coord1],

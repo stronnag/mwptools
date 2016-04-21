@@ -1835,6 +1835,7 @@ public class MWPlanner : Gtk.Application {
 
             if (armed == 1)
             {
+                MWPLog.message("Armed\n");
                 init_npos();
                 armed_spinner.show();
                 armed_spinner.start();
@@ -1861,8 +1862,11 @@ public class MWPlanner : Gtk.Application {
             }
             else
             {
+                MWPLog.message("Disarmed\n");
                 armed_spinner.stop();
                 armed_spinner.hide();
+                duration = -1;
+                armtime = 0;
                 want_special &= ~POSMODE.HOME;
                 if (conf.audioarmed == true)
                 {
@@ -1928,7 +1932,8 @@ public class MWPlanner : Gtk.Application {
                 }
             }
         }
-        else if((lastrx - last_ga) > SATINTVL)
+
+        if((scflags == 0) && ((lastrx - last_ga) > SATINTVL))
         {
             scflags = SAT_FLAGS.NEEDED;
         }
@@ -3488,6 +3493,7 @@ public class MWPlanner : Gtk.Application {
                         navstatus.announce(sflags, conf.recip);
                         return true;
                     });
+                gps_alert(0);
                 navstatus.announce(sflags,conf.recip);
             }
         }
