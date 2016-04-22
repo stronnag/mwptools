@@ -134,6 +134,7 @@ public class  BBoxDialog : Object
                         return true;
                     });
 		ChildWatch.add (child_pid, (pid, status) => {
+
 			Process.close_pid (pid);
                         Posix.close(p_stderr);
                         if(nidx == maxidx)
@@ -148,6 +149,11 @@ public class  BBoxDialog : Object
                             }
                             bb_items.label = "File contains %d %s".printf(
                                 maxidx, (maxidx == 1) ? "entry" : "entries");
+                        }
+                        else if (maxidx == -1)
+                        {
+                            bb_items.label = "No valid log detected";
+                            MWPCursor.set_normal_cursor(dialog);
                         }
                         else
                         {
