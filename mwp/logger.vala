@@ -36,48 +36,50 @@ public class Logger : GLib.Object
 
         os = FileStream.open(fn, "w");
         if(os != null)
+        {
             is_logging = true;
+            log_time();
+        }
         else
         {
             MWPLog.message ("Logger can't open %s\n", fn);
             is_logging = false;
+            return;
         }
 
         gen = new Json.Generator ();
+        var bfn =  (title == null) ? fn : title;
+        var builder = init("init");
+        builder.set_member_name ("mission");
+        builder.add_string_value (bfn);
+        builder.set_member_name ("mwvers");
+        builder.add_int_value (vi.mvers);
+        builder.set_member_name ("mrtype");
+        builder.add_int_value (vi.mrtype);
+        builder.set_member_name ("capability");
+        builder.add_int_value (capability);
+        builder.set_member_name ("fctype");
+        builder.add_int_value (vi.fctype);
+        builder.set_member_name ("profile");
+        builder.add_int_value (profile);
+        if(boxnames != null)
         {
-            var bfn =  (title == null) ? fn : title;
-            var builder = init("init");
-            builder.set_member_name ("mission");
-            builder.add_string_value (bfn);
-            builder.set_member_name ("mwvers");
-            builder.add_int_value (vi.mvers);
-            builder.set_member_name ("mrtype");
-            builder.add_int_value (vi.mrtype);
-            builder.set_member_name ("capability");
-            builder.add_int_value (capability);
-            builder.set_member_name ("fctype");
-            builder.add_int_value (vi.fctype);
-            builder.set_member_name ("profile");
-            builder.add_int_value (profile);
-            if(boxnames != null)
-            {
-                builder.set_member_name ("boxnames");
-                builder.add_string_value (boxnames);
-            }
-
-            if(vi.fc_var != null)
-            {
-                builder.set_member_name ("fc_var");
-                builder.add_string_value (vi.fc_var);
-                var nv = (vi.fc_vers[0] << 16)|(vi.fc_vers[1] << 8|vi.fc_vers[2]);
-                builder.set_member_name ("fc_vers");
-                builder.add_int_value (nv);
-            }
-            builder.end_object ();
-            Json.Node root = builder.get_root ();
-            gen.set_root (root);
-            write_stream();
+            builder.set_member_name ("boxnames");
+            builder.add_string_value (boxnames);
         }
+
+        if(vi.fc_var != null)
+        {
+            builder.set_member_name ("fc_var");
+            builder.add_string_value (vi.fc_var);
+            var nv = (vi.fc_vers[0] << 16)|(vi.fc_vers[1] << 8|vi.fc_vers[2]);
+            builder.set_member_name ("fc_vers");
+            builder.add_int_value (nv);
+        }
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+        gen.set_root (root);
+        write_stream();
     }
 
     private static void write_stream()
