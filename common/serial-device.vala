@@ -426,7 +426,7 @@ public class MWSerial : Object
     }
 
     private bool device_read(IOChannel gio, IOCondition cond) {
-        uint8 buf[128];
+        uint8 buf[256];
         size_t res = 0;
 
         if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
@@ -447,8 +447,8 @@ public class MWSerial : Object
                 ires = Posix.ioctl(fd,Linux.Termios.FIONREAD,&avb);
                 if(ires == 0 && avb > 0)
                 {
-                    if(avb > 128)
-                        avb = 128;
+                    if(avb > 256)
+                        avb = 256;
                     res = Posix.read(fd,buf,avb);
                     if(res == 0)
                         return true;
@@ -456,7 +456,7 @@ public class MWSerial : Object
                 else
                     return true;
 #else
-                res = Posix.read(fd,buf,128);
+                res = Posix.read(fd,buf,256);
                 if(res == 0)
                     return true;
 #endif

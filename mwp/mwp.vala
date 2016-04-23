@@ -4015,7 +4015,9 @@ public class MWPlanner : Gtk.Application {
         var sr =  Posix.socketpair (Posix.AF_UNIX, Posix.SOCK_DGRAM, 0, playfd);
         if(sr == 0)
         {
-            MWPLog.message("Replay log %s\n", fn);
+            MWPLog.message("Replay \"%s\" log %s\n",
+                           (rtype == 2) ? "bbox" : "mwp",
+                           fn);
             if(craft != null)
                 craft.park();
 
