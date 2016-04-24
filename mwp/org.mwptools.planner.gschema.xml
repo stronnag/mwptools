@@ -60,7 +60,7 @@
     </key>
 
     <key name="speak-interval" type="u">
-      <default>0</default>
+      <default>15</default>
       <summary>Interval between voice prompts</summary>
       <description>Interval between voice prompts, 0 disables</description>
     </key>
@@ -68,7 +68,7 @@
     <key name="compat-version" type="s">
       <default>"2.3 pre8"</default>
       <summary>compat version</summary>
-      <description>Default compat version in XML</description>
+      <description>Default mw-nav compat version in XML</description>
     </key>
 
     <key type="b" name="show-scary-warning">
@@ -109,7 +109,7 @@
     </key>
 
     <key type="b" name="audio-on-arm">
-      <default>false</default>
+      <default>true</default>
       <summary>start audio on arm</summary>
       <description>start audio on arm (and stop on disarm)</description>
     </key>
