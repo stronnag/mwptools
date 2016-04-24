@@ -7,7 +7,7 @@ OUT=${1:-mwp-example.mkv}
 
 if ! pgrep -x  mwp
 then
- mwp --dont-maximise  >/dev/null 2>&1 &
+ setsid mwp --dont-maximise  >/dev/null 2>&1 &
  sleep 2
 fi
 
@@ -35,8 +35,8 @@ gst-launch-1.0 -q -e \
   ! vp8enc \
   ! progressreport update-freq=1 \
   ! mux. pulsesrc device=$S \
-  ! audio/x-raw,format=S16LE \
+  ! audio/x-raw,format=S16LE,channels=1 \
   ! queue \
-  ! audioconvert ! vorbisenc quality=0.2 ! mux. \
+  ! audioconvert ! vorbisenc quality=0.1 ! mux. \
   matroskamux name=mux \
   ! filesink location=$OUT

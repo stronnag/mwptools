@@ -278,6 +278,30 @@ def encode_extra r
   msg
 end
 
+def get_autotype file
+  dirname = File.dirname(file)
+  files = Dir["#{dirname}/mwp_*.log"]
+  mtyp = nil
+  fn = nil
+  if files.empty?
+    fn = file.gsub(".TXT",".log")
+  else
+    fn = files[0]
+  end
+
+  if File.exist? fn
+    File.open(fn) do |fh|
+      json = fh.readline
+      o = JSON.parse(json, {:symbolize_names => true})
+      if o[:type] == 'init'
+	mtyp = o[:mrtype]
+      end
+      break
+    end
+  end
+  mtyp
+end
+
 unless RUBY_VERSION.match(/^2/)
   abort "This script requires a miniumum of Ruby 2.0"
 end
@@ -292,12 +316,14 @@ gpshd = 0
 mindelay = false
 childfd = nil
 lhdop = 100000
+autotyp=nil
 
 pref_fn = File.join(ENV["HOME"],".config", "mwp", "replay_ltm.json")
 if File.exist? pref_fn
   json = IO.read(pref_fn)
-  prefs = JSON.parse(json)
+  prefs = JSON.parse(json, {:symbolize_names => true})
   decl = prefs[:declination].to_f
+  autotyp = prefs[:auto]
 end
 
 ARGV.options do |opt|
@@ -334,6 +360,9 @@ rescue
 end
 
 bbox = (ARGV[0]|| abort('no BBOX log'))
+if autotyp && typ == 3
+  typ = (get_autotype(bbox) || typ)
+end
 
 if udpspec
   fd = nil
@@ -455,7 +484,7 @@ IO.popen(cmd,'rt') do |pipe|
 	  end
 	end
       when 5
-	if  llat != 0.0 and llon != 0.0
+	if  llat != 0.0 and llon != 0.0 && origin
 	  msg = encode_origin origin
 	  send_msg dev, msg
 	end

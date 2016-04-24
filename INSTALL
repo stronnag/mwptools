@@ -121,4 +121,10 @@ wished to remove a system install, see samples/clean-system.sh.
 You should also remove any definition of XDG_DATA_DIRS added to
 .profile **for mwp**
 
+Cleaning up a corrupt installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+$ samples/clean-local.sh
+$ sudo samples/clean-system.sh
+$ ### remove any mwp specific instance of XDG_DATA_DIRS
+
 jh 2016-03-04
