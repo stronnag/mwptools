@@ -471,6 +471,7 @@ public class MWPlanner : Gtk.Application {
     private static int dmrtype=3; // default to quad
     private static DEBUG_FLAGS debug_flags = 0;
     private static VersInfo vi ={0};
+    private static bool set_fs;
 
     private const Gtk.TargetEntry[] targets = {
         {"text/uri-list",0,0}
@@ -487,6 +488,7 @@ public class MWPlanner : Gtk.Application {
         { "no-trail", 'T', 0, OptionArg.NONE, out gps_trail, "don't display GPS trail", null},
         { "raw-log", 'r', 0, OptionArg.NONE, out rawlog, "log raw serial data to file", null},
         { "ignore-sizing", 0, 0, OptionArg.NONE, out ignore_sz, "ignore minimum size constraint", null},
+        { "full-screen", 0, 0, OptionArg.NONE, out set_fs, "open full screen", null},
         { "ignore-rotation", 0, 0, OptionArg.NONE, out norotate, "ignore vehicle icon rotation on old libchamplain", null},
         { "dont-maximise", 0, 0, OptionArg.NONE, out no_max, "don't maximise the window", null},
         { "force-mag", 0, 0, OptionArg.NONE, out force_mag, "force mag for vehicle direction", null},
@@ -852,6 +854,11 @@ public class MWPlanner : Gtk.Application {
         mi.activate.connect(() => {
                 lman.restore();
             });
+
+
+        if(set_fs)
+            window.fullscreen();
+
         embed = new GtkChamplain.Embed();
         view = embed.get_view();
         view.set_reactive(true);
