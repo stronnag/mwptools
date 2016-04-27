@@ -247,5 +247,21 @@
       <description>max time for map single click</description>
     </key>
 
+    <key name="wdw-w" type="i">
+      <default>-1</default>
+      <summary>Window parameter</summary>
+      <description>(not user settable)</description>
+    </key>
+    <key name="wdw-h" type="i">
+      <default>-1</default>
+      <summary>Window parameter</summary>
+      <description>(not user settable)</description>
+    </key>
+    <key name="wdw-p" type="i">
+      <default>-1</default>
+      <summary>Window parameter</summary>
+      <description>(not user settable)</description>
+    </key>
+
   </schema>
 </schemalist>

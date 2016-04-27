@@ -62,6 +62,9 @@ public class MWPSettings : GLib.Object
     public uint wpmod {get; set; default=1;}
     public uint wpmod3 {get; set; default=1;}
     public uint dwell_time {get; set; default=300;}
+    public int window_w {get; set; default=-1;}
+    public int window_h {get; set; default=-1;}
+    public int window_p {get; set; default=-1;}
     public signal void settings_update (string s);
 
     public MWPSettings()
@@ -199,6 +202,28 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "dwell-time")
             dwell_time = settings.get_uint("dwell-time");
+
+        if(s == null || s == "wdw-w")
+            window_w = settings.get_int("wdw-w");
+        if(s == null || s == "wdw-h")
+            window_h = settings.get_int("wdw-h");
+        if(s == null || s == "wdw-p")
+            window_p = settings.get_int("wdw-p");
+    }
+
+    public void save_window()
+    {
+        if (settings != null)
+        {
+            settings.set_int("wdw-w", window_w);
+            settings.set_int("wdw-h", window_h);
+        }
+    }
+
+    public void save_pane()
+    {
+        if (settings != null)
+            settings.set_int("wdw-p", window_p);
     }
 
     public void save_settings()

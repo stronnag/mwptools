@@ -582,7 +582,7 @@
           <object class="GtkPaned" id="paned1">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="position">512</property>
+            <property name="position">0</property>
             <child>
               <placeholder/>
             </child>

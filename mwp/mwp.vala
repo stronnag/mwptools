@@ -169,8 +169,6 @@ public class MWPlanner : Gtk.Application {
     private Gtk.Label elapsedlab;
     private double lx;
     private double ly;
-    private int ht_map = 600;
-    private int wd_map = 800;
     private Gtk.MenuItem menuup;
     private Gtk.MenuItem menudown;
     private Gtk.MenuItem menureplay;
@@ -855,7 +853,6 @@ public class MWPlanner : Gtk.Application {
                 lman.restore();
             });
 
-
         if(set_fs)
             window.fullscreen();
 
@@ -907,27 +904,19 @@ public class MWPlanner : Gtk.Application {
         lm.child_set(view,scale,"x-align", Clutter.ActorAlign.START);
         lm.child_set(view,scale,"y-align", Clutter.ActorAlign.END);
         view.set_keep_center_on_resize(true);
-
-        if(ignore_sz == false)
-        {
-            var s = window.get_screen();
-            var m = s.get_monitor_at_window(s.get_active_window());
-            Gdk.Rectangle monitor;
-            s.get_monitor_geometry(m, out monitor);
-            var tmp = monitor.width - 320;
-            if (wd_map > tmp)
-                wd_map = tmp;
-            tmp = monitor.height - 180;
-            if (ht_map > tmp)
-                ht_map = tmp;
-            embed.set_size_request(wd_map, ht_map);
-        }
-
-        var pane = builder.get_object ("paned1") as Gtk.Paned;
-
         add_source_combo(conf.defmap,msources);
+/*
+        var s = window.get_screen();
+        var m = s.get_monitor_at_window(s.get_active_window());
+        Gdk.Rectangle monitor;
+        s.get_monitor_geometry(m, out monitor);
+        if(conf.window_p == -1)
+            conf.window_p = monitor.width*60/100;
 
-        pane.pack1 (embed,true,false);
+        wd_map = monitor.width;
+*/
+
+
 
         window.key_press_event.connect( (s,e) =>
             {
@@ -1052,10 +1041,11 @@ public class MWPlanner : Gtk.Application {
         lman = new LayMan(dock, confdir,layfile,DOCKLETS.NUMBER);
 
         var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL,0);
-        pane.add2(box);
 
         box.pack_start (dockbar, false, false, 0);
         box.pack_end (dock, true, true, 0);
+
+        var pane = builder.get_object ("paned1") as Gtk.Paned;
 
         dockitem = new DockItem[DOCKLETS.NUMBER];
 
@@ -1341,14 +1331,52 @@ public class MWPlanner : Gtk.Application {
 
         if(no_max == false)
             window.maximize();
+
+        pane.set_position(conf.window_p);
+        pane.pack1(embed, false, false);
+        pane.pack2(box, false, false);
+        window.set_default_size(conf.window_w, conf.window_h);
         window.show_all();
-/*
-        art_win.setdock(dockitem[DOCKLETS.ARTHOR]);
-        navstatus.setdock(dockitem[DOCKLETS.NAVSTATUS]);
-        radstatus.setdock(dockitem[DOCKLETS.RADIO]);
-        telemstatus.setdock(dockitem[DOCKLETS.TELEMETRY]);
-        fbox.setdock(dockitem[DOCKLETS.FBOX]);
-            */
+        if(no_max == false || conf.window_w == -1 || conf.window_h == -1)
+            window.maximize();
+        else
+        {
+            window.resize(conf.window_w, conf.window_h);
+        }
+
+        if(pane.position != conf.window_p)
+            pane.position = conf.window_p;
+
+        Timeout.add(100, () => {
+                if(pane.position != conf.window_p)
+                    pane.position = conf.window_p;
+                window.size_allocate.connect((a) => {
+                        if((!window.is_maximized) &&
+                           (a.width != conf.window_w) || (a.height != conf.window_h))
+                        {
+                            stdout.printf("get_size %d %d\n", a.width,a.height);
+                            conf.window_w  = a.width;
+                            conf.window_h = a.height;
+                            conf.save_window();
+                        }
+                    });
+
+                pane.button_release_event.connect((evt) => {
+                        if (evt.button == 1)
+                        {
+                            if(conf.window_p != pane.position)
+                            {
+                                stdout.printf("get_pane %d\n", pane.position);
+                                conf.window_p = pane.position;
+                                conf.save_pane();
+                            }
+                }
+                        return false;
+                    });
+
+                  return false;
+            });
+
         if(!lman.load_init())
         {
             dockitem[DOCKLETS.ARTHOR].iconify_item ();
@@ -3742,11 +3770,18 @@ public class MWPlanner : Gtk.Application {
 
         foreach (Champlain.MapSourceDesc s in sources)
         {
+            var name = s.get_name();
+            if(name.contains("OpenWeatherMap"))
+                continue;
+
             TreeIter iter;
             liststore.append(out iter);
             var id = s.get_id();
             liststore.set (iter, MS_Column.ID, id);
-            var name = s.get_name();
+
+            if(name.contains("OpenStreetMap"))
+                name = name.replace("OpenStreetMap","OSM");
+
             liststore.set (iter, MS_Column.NAME, name);
             if (defmap != null && name == defmap)
             {
