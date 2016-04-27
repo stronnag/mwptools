@@ -1328,33 +1328,37 @@ public class MWPlanner : Gtk.Application {
         }
 
         Timeout.add_seconds(5, () => { return try_connect(); });
+        pane.set_position(1200);
 
-        if(no_max == false)
-            window.maximize();
-
-        pane.set_position(conf.window_p);
         pane.pack1(embed, false, false);
         pane.pack2(box, false, false);
         window.set_default_size(conf.window_w, conf.window_h);
-        window.show_all();
         if(no_max == false || conf.window_w == -1 || conf.window_h == -1)
             window.maximize();
         else
         {
             window.resize(conf.window_w, conf.window_h);
         }
-
+        window.show_all();
         if(pane.position != conf.window_p)
             pane.position = conf.window_p;
 
-        Timeout.add(100, () => {
+        Timeout.add(400, () => {
                 if(pane.position != conf.window_p)
+                {
+                    if(conf.window_p == -1)
+                    {
+                        int w,h;
+                        window.get_size(out w, out h);
+                        conf.window_p = w*66/100;
+                    }
                     pane.position = conf.window_p;
+                }
                 window.size_allocate.connect((a) => {
                         if((!window.is_maximized) &&
                            (a.width != conf.window_w) || (a.height != conf.window_h))
                         {
-                            stdout.printf("get_size %d %d\n", a.width,a.height);
+                            fbox.update(true);
                             conf.window_w  = a.width;
                             conf.window_h = a.height;
                             conf.save_window();
@@ -1366,7 +1370,7 @@ public class MWPlanner : Gtk.Application {
                         {
                             if(conf.window_p != pane.position)
                             {
-                                stdout.printf("get_pane %d\n", pane.position);
+                                fbox.update(true);
                                 conf.window_p = pane.position;
                                 conf.save_pane();
                             }
