@@ -258,7 +258,7 @@
       <description>(not user settable)</description>
     </key>
     <key name="wdw-p" type="i">
-      <default>-1</default>
+      <default>512</default>
       <summary>Window parameter</summary>
       <description>(not user settable)</description>
     </key>

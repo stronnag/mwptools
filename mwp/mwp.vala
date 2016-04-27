@@ -1328,8 +1328,7 @@ public class MWPlanner : Gtk.Application {
         }
 
         Timeout.add_seconds(5, () => { return try_connect(); });
-        pane.set_position(1200);
-
+        pane.position = (conf.window_p == -1) ? 1200 : conf.window_p;
         pane.pack1(embed, false, false);
         pane.pack2(box, false, false);
         window.set_default_size(conf.window_w, conf.window_h);
@@ -1340,8 +1339,6 @@ public class MWPlanner : Gtk.Application {
             window.resize(conf.window_w, conf.window_h);
         }
         window.show_all();
-        if(pane.position != conf.window_p)
-            pane.position = conf.window_p;
 
         Timeout.add(400, () => {
                 if(pane.position != conf.window_p)
