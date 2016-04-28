@@ -269,10 +269,10 @@ public class FlightBox : GLib.Object
         big_alt = builder.get_object ("big_alt") as Gtk.Label;
         big_spd = builder.get_object ("big_spd") as Gtk.Label;
         big_sats = builder.get_object ("big_sats") as Gtk.Label;
-        vbox.show_all();
         vbox.size_allocate.connect((a) => {
                 fh1 = a.width*12/100;
             });
+        vbox.show_all();
     }
 
    public void annul()
