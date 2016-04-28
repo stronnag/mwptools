@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.19.0 -->
+<!-- Generated with glade 3.20.0 -->
 <interface>
   <requires lib="gtk+" version="3.8"/>
   <object class="GtkAboutDialog" id="aboutdialog1">
@@ -1528,7 +1528,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
   <object class="GtkBox" id="flight_box">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="orientation">vertical</property>
     <child>
       <object class="GtkGrid" id="grid7">
         <property name="visible">True</property>
@@ -2766,9 +2765,9 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="label" translatable="yes">GPS filtering</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="focus_on_click">False</property>
                 <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes">Add a 5 element moving average filter to GPS coordinates, helps eliminate gps noise but adds latency</property>
-                <property name="focus_on_click">False</property>
                 <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>
@@ -3160,9 +3159,9 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
                 <property name="label" translatable="yes">Ignore throttle with nav/BARO </property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="focus_on_click">False</property>
                 <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes">Throttle stick input will be ignored  (only in BARO)</property>
-                <property name="focus_on_click">False</property>
                 <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>

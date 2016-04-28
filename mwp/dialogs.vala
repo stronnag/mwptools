@@ -256,15 +256,11 @@ public class FlightBox : GLib.Object
     private Gtk.Label big_spd;
     private Gtk.Label big_sats;
     public Gtk.Box vbox {get; private set;}
-    private uint fh1;
+    private uint fh1=12;
 
     public FlightBox(Gtk.Builder builder)
     {
         vbox = builder.get_object ("flight_box") as Gtk.Box;
-        vbox.size_allocate.connect((a) => {
-                fh1 = a.width*12/100;
-            });
-
         big_lat = builder.get_object ("big_lat") as Gtk.Label;
         big_lon = builder.get_object ("big_lon") as Gtk.Label;
         big_rng = builder.get_object ("big_rng") as Gtk.Label;
@@ -274,9 +270,10 @@ public class FlightBox : GLib.Object
         big_spd = builder.get_object ("big_spd") as Gtk.Label;
         big_sats = builder.get_object ("big_sats") as Gtk.Label;
         vbox.show_all();
+        vbox.size_allocate.connect((a) => {
+                fh1 = a.width*12/100;
+            });
     }
-
-
 
    public void annul()
    {
