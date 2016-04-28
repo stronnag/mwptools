@@ -1338,7 +1338,7 @@ public class MWPlanner : Gtk.Application {
         if(pane.position != conf.window_p)
         {
             if(conf.window_p == -1)
-                conf.window_p = pane.max_position*5/4;
+                conf.window_p = pane.max_position;
             pane.position = conf.window_p;
         }
 
