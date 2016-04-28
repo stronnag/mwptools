@@ -1040,7 +1040,7 @@ public class MWPlanner : Gtk.Application {
         dockbar.set_style (DockBarStyle.ICONS);
         lman = new LayMan(dock, confdir,layfile,DOCKLETS.NUMBER);
 
-        var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL,0);
+        var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL,2);
 
         box.pack_start (dockbar, false, false, 0);
         box.pack_end (dock, true, true, 0);
@@ -1327,10 +1327,12 @@ public class MWPlanner : Gtk.Application {
             connect_serial();
         }
 
-        Timeout.add_seconds(5, () => { return try_connect(); });
+        var ebox = new Gtk.Box (Gtk.Orientation.HORIZONTAL,2);
         pane.position = (conf.window_p == -1) ? 1200 : conf.window_p;
-        pane.pack1(embed, false, false);
-        pane.pack2(box, false, false);
+        pane.pack1(ebox, true, false);
+        pane.pack2(box, true, false);
+
+        Timeout.add_seconds(5, () => { return try_connect(); });
         window.set_default_size(conf.window_w, conf.window_h);
         if(no_max == false || conf.window_w == -1 || conf.window_h == -1)
             window.maximize();
@@ -1340,43 +1342,42 @@ public class MWPlanner : Gtk.Application {
         }
         window.show_all();
 
-        Timeout.add(400, () => {
-                if(pane.position != conf.window_p)
+        if(pane.position != conf.window_p)
+        {
+            if(conf.window_p == -1)
+            {
+                int w,h;
+                window.get_size(out w, out h);
+                conf.window_p = w*66/100;
+            }
+            pane.position = conf.window_p;
+        }
+        window.size_allocate.connect((a) => {
+                if((!window.is_maximized) &&
+                   (a.width != conf.window_w) || (a.height != conf.window_h))
                 {
-                    if(conf.window_p == -1)
-                    {
-                        int w,h;
-                        window.get_size(out w, out h);
-                        conf.window_p = w*66/100;
-                    }
-                    pane.position = conf.window_p;
+                    fbox.update(true);
+                    conf.window_w  = a.width;
+                    conf.window_h = a.height;
+                    conf.save_window();
                 }
-                window.size_allocate.connect((a) => {
-                        if((!window.is_maximized) &&
-                           (a.width != conf.window_w) || (a.height != conf.window_h))
-                        {
-                            fbox.update(true);
-                            conf.window_w  = a.width;
-                            conf.window_h = a.height;
-                            conf.save_window();
-                        }
-                    });
+            });
 
-                pane.button_release_event.connect((evt) => {
-                        if (evt.button == 1)
-                        {
-                            if(conf.window_p != pane.position)
-                            {
+        pane.button_release_event.connect((evt) => {
+                if (evt.button == 1)
+                {
+                    if(conf.window_p != pane.position)
+                    {
                                 fbox.update(true);
                                 conf.window_p = pane.position;
                                 conf.save_pane();
-                            }
+                    }
                 }
-                        return false;
-                    });
-
-                  return false;
+                return false;
             });
+
+        ebox.pack_start (embed, true, true, 0);
+        ebox.show_all();
 
         if(!lman.load_init())
         {

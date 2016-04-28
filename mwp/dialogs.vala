@@ -256,10 +256,15 @@ public class FlightBox : GLib.Object
     private Gtk.Label big_spd;
     private Gtk.Label big_sats;
     public Gtk.Box vbox {get; private set;}
+    private uint fh1;
 
     public FlightBox(Gtk.Builder builder)
     {
         vbox = builder.get_object ("flight_box") as Gtk.Box;
+        vbox.size_allocate.connect((a) => {
+                fh1 = a.width*12/100;
+            });
+
         big_lat = builder.get_object ("big_lat") as Gtk.Label;
         big_lon = builder.get_object ("big_lon") as Gtk.Label;
         big_rng = builder.get_object ("big_rng") as Gtk.Label;
@@ -271,96 +276,94 @@ public class FlightBox : GLib.Object
         vbox.show_all();
     }
 
+
+
    public void annul()
    {
-            Gtk.Allocation a;
-            vbox.get_allocation(out a);
-            var fh1 = a.width/10;
-            int fh2;
-            fh2 = (MWPlanner.conf.dms) ? fh1*40/100 : fh1/2;
-            if(fh1 > 96)
-                fh1 = 96;
-            var fh3 = fh1;
-            big_rng.set_label(
-                "Range <span font='%d'>0</span>%s".printf(
-                    fh1, Units.distance_units() ));
-            big_bearing.set_label("Bearing <span font='%d'>0°</span>".printf(fh1));
-            big_hdr.set_label("Heading <span font='%d'>0°</span>".printf(fh3));
-            big_alt.set_label(
-                "Alt <span font='%d'>0</span>%s".printf(
-                    fh3, Units.distance_units() ));
-            big_spd.set_label(
-                "Speed <span font='%d'>0</span>%s".printf(
-                    fh1, Units.speed_units() ) );
-            big_sats.set_label("Sats <span font='%d'>0</span> %sfix".printf(
-                                   fh1, "nil "));
+       var fh2 = (MWPlanner.conf.dms) ? fh1*40/100 : fh1/2;
+       if(fh1 > 96)
+           fh1 = 96;
+       var fh3 = fh1;
+       var s=PosFormat.lat(0, MWPlanner.conf.dms);
+       big_lat.set_label("<span font='%u'>%s</span>".printf(fh2,s));
+       s=PosFormat.lon(0, MWPlanner.conf.dms);
+       big_lon.set_label("<span font='%u'>%s</span>".printf(fh2,s));
+       big_rng.set_label(
+           "Range <span font='%u'>0</span>%s".printf(
+               fh1, Units.distance_units() ));
+       big_bearing.set_label("Bearing <span font='%u'>0°</span>".printf(fh1));
+       big_hdr.set_label("Heading <span font='%u'>0°</span>".printf(fh3));
+       big_alt.set_label(
+           "Alt <span font='%u'>0</span>%s".printf(
+               fh3, Units.distance_units() ));
+       big_spd.set_label(
+           "Speed <span font='%u'>0</span>%s".printf(
+               fh1, Units.speed_units() ) );
+       big_sats.set_label("Sats <span font='%u'>0</span> %sfix".printf(
+                              fh1, "nil "));
    }
 
    public void update(bool visible)
-    {
-        if(visible)
-        {
-            Gtk.Allocation a;
-            vbox.get_allocation(out a);
-            var fh1 = a.width/10;
-            int fh2;
-            fh2 = (MWPlanner.conf.dms) ? fh1*40/100 : fh1/2;
-            var s=PosFormat.lat(GPSInfo.lat,MWPlanner.conf.dms);
-            if(fh1 > 96)
-                fh1 = 96;
+   {
+       if(visible)
+       {
+           var fh2 = (MWPlanner.conf.dms) ? fh1*45/100 : fh1/2;
+           var s=PosFormat.lat(GPSInfo.lat,MWPlanner.conf.dms);
+           if(fh1 > 96)
+               fh1 = 96;
 
-            var fh3 = fh1;
-            double falt = (double)NavStatus.alti.estalt/100.0;
-            if(falt < 0.0 || falt > 20.0)
-                falt = Math.round(falt);
+           var fh3 = fh1;
+           double falt = (double)NavStatus.alti.estalt/100.0;
+           if(falt < 0.0 || falt > 20.0)
+               falt = Math.round(falt);
 
-            if(falt > 9999.0 || falt < -999.0)
-                fh3 = fh3 * 60/100;
-            else if(falt > 999.0 || falt < -99.0)
-                fh3 = fh3 * 75 /100;
+           if(falt > 9999.0 || falt < -999.0)
+               fh3 = fh3 * 60/100;
+           else if(falt > 999.0 || falt < -99.0)
+               fh3 = fh3 * 75 /100;
 
-            big_lat.set_label("<span font='%d'>%s</span>".printf(fh2,s));
-            s=PosFormat.lon(GPSInfo.lon,MWPlanner.conf.dms);
-            big_lon.set_label("<span font='%d'>%s</span>".printf(fh2,s));
-            var brg = NavStatus.cg.direction;
-            if(brg < 0)
-                brg += 360;
-            if(NavStatus.recip)
-                brg = ((brg + 180) % 360);
-            big_rng.set_label(
-                "Range <span font='%d'>%.0f</span>%s".printf(
-                    fh1,
-                    Units.distance(NavStatus.cg.range),
-                    Units.distance_units()
-                                                           ));
-            big_bearing.set_label("Bearing <span font='%d'>%d°</span>".printf(fh1,brg));
-            big_hdr.set_label("Heading <span font='%d'>%d°</span>".printf(fh3,NavStatus.hdr));
-            big_alt.set_label(
-                "Alt <span font='%d'>%.1f</span>%s".printf(
-                    fh3,
-                    Units.distance(falt),
-                    Units.distance_units() ));
+           big_lat.set_label("<span font='%u'>%s</span>".printf(fh2,s));
+           s=PosFormat.lon(GPSInfo.lon,MWPlanner.conf.dms);
+           big_lon.set_label("<span font='%u'>%s</span>".printf(fh2,s));
+           var brg = NavStatus.cg.direction;
+           if(brg < 0)
+               brg += 360;
+           if(NavStatus.recip)
+               brg = ((brg + 180) % 360);
+           big_rng.set_label(
+               "Range <span font='%u'>%.0f</span>%s".printf(
+                   fh1,
+                   Units.distance(NavStatus.cg.range),
+                   Units.distance_units()
+                                                            ));
+           big_bearing.set_label("Bearing <span font='%u'>%d°</span>".printf(fh1,brg));
+           big_hdr.set_label("Heading <span font='%u'>%d°</span>".printf(fh3,NavStatus.hdr));
+           big_alt.set_label(
+               "Alt <span font='%u'>%.1f</span>%s".printf(
+                   fh3,
+                   Units.distance(falt),
+                   Units.distance_units() ));
 
-            big_spd.set_label(
-                "Speed <span font='%d'>%.1f</span>%s".printf(
-                    fh1,
-                    Units.speed(GPSInfo.spd),
-                    Units.speed_units() ) );
-            string hdoptxt="";
-            if(GPSInfo.hdop != -1.0 && GPSInfo.hdop < 100.0)
-            {
-                string htxt;
-                if(GPSInfo.hdop > 9.95)
-                    htxt = "%.0f".printf(GPSInfo.hdop);
-                else
-                    htxt = "%.1f".printf(GPSInfo.hdop);
-                hdoptxt = " / <span font='%d'>%s</span>".printf(fh2,htxt);
-            }
-            var slabel = "Sats <span font='%d'>%d</span> %sfix%s".printf(
-                fh1, GPSInfo.nsat,Units.fix(GPSInfo.fix), hdoptxt);
-            big_sats.set_label(slabel);
-        }
-    }
+           big_spd.set_label(
+               "Speed <span font='%u'>%.1f</span>%s".printf(
+                   fh1,
+                   Units.speed(GPSInfo.spd),
+                   Units.speed_units() ) );
+           string hdoptxt="";
+           if(GPSInfo.hdop != -1.0 && GPSInfo.hdop < 100.0)
+           {
+               string htxt;
+               if(GPSInfo.hdop > 9.95)
+                   htxt = "%.0f".printf(GPSInfo.hdop);
+               else
+                   htxt = "%.1f".printf(GPSInfo.hdop);
+                hdoptxt = " / <span font='%u'>%s</span>".printf(fh2,htxt);
+           }
+           var slabel = "Sats <span font='%u'>%d</span> %sfix%s".printf(
+               fh1, GPSInfo.nsat,Units.fix(GPSInfo.fix), hdoptxt);
+           big_sats.set_label(slabel);
+       }
+   }
 }
 
 public class MapSeeder : GLib.Object
@@ -1081,8 +1084,6 @@ public class NavStatus : GLib.Object
     private static string ns_state = null;
 
     private int _vn;
-    private int _aw;
-    private int _ah;
     private int _fs;
 
     public enum SPK  {
@@ -1113,6 +1114,11 @@ public class NavStatus : GLib.Object
 
         voltlabel = new Gtk.Label("");
         voltbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
+        voltbox.size_allocate.connect((a) => {
+                var fh1 = a.width/4;
+                var fh2 = a.height / 2;
+                _fs = (fh1 < fh2) ? fh1 : fh2;
+            });
         voltlabel.set_use_markup (true);
         voltbox.pack_start (voltlabel, true, true, 1);
         colors = new Gdk.RGBA[5];
@@ -1382,21 +1388,10 @@ public class NavStatus : GLib.Object
         volts = v;
         if(visible)
         {
-            Gtk.Allocation a;
             if(n != _vn)
             {
                 voltlabel.override_background_color(Gtk.StateFlags.NORMAL, colors[n]);
                 _vn = n;
-            }
-            voltlabel.get_allocation(out a);
-            if (a.width != _aw || a.height != _ah)
-            {
-                _aw = a.width;
-                _ah = a.height;
-                var fh1 = a.width/4;
-                var fh2 = a.height / 2;
-                var fs = (fh1 < fh2) ? fh1 : fh2;
-                _fs = fs;
             }
             voltlabel.set_label("<span font='%d'>%s</span>".printf(_fs,s));
         }
