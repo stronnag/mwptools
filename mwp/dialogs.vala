@@ -256,10 +256,12 @@ public class FlightBox : GLib.Object
     private Gtk.Label big_spd;
     private Gtk.Label big_sats;
     public Gtk.Box vbox {get; private set;}
-    private uint fh1=12;
+    private Gtk.Window _w;
+    private uint fh1=20;
 
-    public FlightBox(Gtk.Builder builder)
+    public FlightBox(Gtk.Builder builder, Gtk.Window pw)
     {
+        _w = pw;
         vbox = builder.get_object ("flight_box") as Gtk.Box;
         big_lat = builder.get_object ("big_lat") as Gtk.Label;
         big_lon = builder.get_object ("big_lon") as Gtk.Label;
@@ -271,12 +273,15 @@ public class FlightBox : GLib.Object
         big_sats = builder.get_object ("big_sats") as Gtk.Label;
         vbox.size_allocate.connect((a) => {
                 fh1 = a.width*12/100;
+                update(true);
             });
         vbox.show_all();
     }
 
    public void annul()
    {
+       update(true);
+           /*
        var fh2 = (MWPlanner.conf.dms) ? fh1*40/100 : fh1/2;
        if(fh1 > 96)
            fh1 = 96;
@@ -298,6 +303,8 @@ public class FlightBox : GLib.Object
                fh1, Units.speed_units() ) );
        big_sats.set_label("Sats <span font='%u'>0</span> %sfix".printf(
                               fh1, "nil "));
+*/
+
    }
 
    public void update(bool visible)
