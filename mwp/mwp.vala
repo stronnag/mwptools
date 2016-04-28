@@ -1326,8 +1326,8 @@ public class MWPlanner : Gtk.Application {
             conf.window_p = monitor.width*80/100;
         }
         pane.position = conf.window_p;
-        pane.add1(ebox);
-        pane.pack2(box, true, true);
+        pane.pack1(ebox,true, false);
+        pane.add2(box); //, true, true);
         ebox.pack_start (embed, true, true, 0);
         ebox.show_all();
 
