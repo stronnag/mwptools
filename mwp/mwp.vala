@@ -1353,8 +1353,11 @@ public class MWPlanner : Gtk.Application {
             pane.position = conf.window_p;
         }
         window.size_allocate.connect((a) => {
-                if((!window.is_maximized) &&
-                   (a.width != conf.window_w) || (a.height != conf.window_h))
+                if(((a.width != conf.window_w) || (a.height != conf.window_h))
+#if !BADSOUP
+                   && (!window.is_maximized)
+#endif
+                   )
                 {
                     fbox.update(true);
                     conf.window_w  = a.width;
