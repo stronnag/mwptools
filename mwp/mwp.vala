@@ -1330,7 +1330,7 @@ public class MWPlanner : Gtk.Application {
         var ebox = new Gtk.Box (Gtk.Orientation.HORIZONTAL,2);
         pane.position = (conf.window_p == -1) ? 1200 : conf.window_p;
         pane.pack1(ebox, true, false);
-        pane.pack2(box, true, false);
+        pane.pack2(box, true, true);
 
         Timeout.add_seconds(5, () => { return try_connect(); });
         window.set_default_size(conf.window_w, conf.window_h);
