@@ -1316,10 +1316,16 @@ public class MWPlanner : Gtk.Application {
         }
 
         var ebox = new Gtk.Box (Gtk.Orientation.HORIZONTAL,2);
-        if(conf.window_p == -1)
-            conf.window_p = pane.max_position;
-        pane.position = conf.window_p;
 
+        if(conf.window_p == -1)
+        {
+            var scr = window.get_screen();
+            var mon = scr.get_monitor_at_window(scr.get_active_window());
+            Gdk.Rectangle monitor;
+            scr.get_monitor_geometry(mon, out monitor);
+            conf.window_p = monitor.width*80/100;
+        }
+        pane.position = conf.window_p;
         pane.add1(ebox);
         pane.pack2(box, true, true);
         ebox.pack_start (embed, true, true, 0);
@@ -1337,8 +1343,6 @@ public class MWPlanner : Gtk.Application {
 
         if(pane.position != conf.window_p)
         {
-            if(conf.window_p == -1)
-                conf.window_p = pane.max_position;
             pane.position = conf.window_p;
         }
 
