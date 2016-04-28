@@ -273,7 +273,8 @@ public class FlightBox : GLib.Object
         big_sats = builder.get_object ("big_sats") as Gtk.Label;
         vbox.size_allocate.connect((a) => {
                 fh1 = a.width*12/100;
-                update(true);
+                Idle.add(() => {update(true);
+                                return false;});
             });
         vbox.show_all();
     }
