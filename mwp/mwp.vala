@@ -905,18 +905,6 @@ public class MWPlanner : Gtk.Application {
         lm.child_set(view,scale,"y-align", Clutter.ActorAlign.END);
         view.set_keep_center_on_resize(true);
         add_source_combo(conf.defmap,msources);
-/*
-        var s = window.get_screen();
-        var m = s.get_monitor_at_window(s.get_active_window());
-        Gdk.Rectangle monitor;
-        s.get_monitor_geometry(m, out monitor);
-        if(conf.window_p == -1)
-            conf.window_p = monitor.width*60/100;
-
-        wd_map = monitor.width;
-*/
-
-
 
         window.key_press_event.connect( (s,e) =>
             {
@@ -1328,9 +1316,14 @@ public class MWPlanner : Gtk.Application {
         }
 
         var ebox = new Gtk.Box (Gtk.Orientation.HORIZONTAL,2);
-        pane.position = (conf.window_p == -1) ? 1200 : conf.window_p;
-        pane.add1(ebox/*, true, false*/);
+        if(conf.window_p == -1)
+            conf.window_p = pane.max_position;
+        pane.position = conf.window_p;
+
+        pane.add1(ebox);
         pane.pack2(box, true, true);
+        ebox.pack_start (embed, true, true, 0);
+        ebox.show_all();
 
         Timeout.add_seconds(5, () => { return try_connect(); });
         window.set_default_size(conf.window_w, conf.window_h);
@@ -1345,13 +1338,10 @@ public class MWPlanner : Gtk.Application {
         if(pane.position != conf.window_p)
         {
             if(conf.window_p == -1)
-            {
-                int w,h;
-                window.get_size(out w, out h);
-                conf.window_p = w*66/100;
-            }
+                conf.window_p = pane.max_position*5/4;
             pane.position = conf.window_p;
         }
+
         window.size_allocate.connect((a) => {
                 if(((a.width != conf.window_w) || (a.height != conf.window_h))
 #if !BADSOUP
@@ -1370,15 +1360,14 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(conf.window_p != pane.position)
                     {
-                                conf.window_p = pane.position;
-                                conf.save_pane();
+                        conf.window_p = pane.position;
+                        conf.save_pane();
                     }
                 }
                 return false;
             });
 
-        ebox.pack_start (embed, true, true, 0);
-        ebox.show_all();
+
 
         if(!lman.load_init())
         {
