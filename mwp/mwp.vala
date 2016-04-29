@@ -853,9 +853,6 @@ public class MWPlanner : Gtk.Application {
                 lman.restore();
             });
 
-        if(set_fs)
-            window.fullscreen();
-
         embed = new GtkChamplain.Embed();
         view = embed.get_view();
         view.set_reactive(true);
@@ -1337,14 +1334,14 @@ public class MWPlanner : Gtk.Application {
 
         Timeout.add_seconds(5, () => { return try_connect(); });
 
-        if(no_max == false || conf.window_w == -1 || conf.window_h == -1)
+        if(set_fs)
+            window.fullscreen();
+        else if(no_max == false || conf.window_w == -1 || conf.window_h == -1)
             window.maximize();
         else
-        {
             window.resize(conf.window_w, conf.window_h);
-        }
-        window.show_all();
 
+        window.show_all();
         if(pane.position != conf.window_p)
         {
             pane.position = conf.window_p;
@@ -1375,8 +1372,6 @@ public class MWPlanner : Gtk.Application {
                 return false;
             });
 
-
-
         if(!lman.load_init())
         {
             dockitem[DOCKLETS.ARTHOR].iconify_item ();
@@ -1388,9 +1383,8 @@ public class MWPlanner : Gtk.Application {
             dockitem[DOCKLETS.FBOX].iconify_item ();
             lman.save_config();
         }
-        fbox.update(true);
-
         art_win.run(colstr);
+        fbox.update(true);
 
         if(conf.mavph != null)
             parse_rc_mav(conf.mavph, Craft.Special.PH);
