@@ -272,7 +272,7 @@ public class FlightBox : GLib.Object
         big_spd = builder.get_object ("big_spd") as Gtk.Label;
         big_sats = builder.get_object ("big_sats") as Gtk.Label;
         vbox.size_allocate.connect((a) => {
-                fh1 = a.width*12/100;
+                fh1 = a.width*MWPlanner.conf.fontfact/100;
                 Idle.add(() => {update(true);
                                 return false;});
             });

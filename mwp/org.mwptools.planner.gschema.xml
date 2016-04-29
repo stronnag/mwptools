@@ -262,6 +262,11 @@
       <summary>Window parameter</summary>
       <description>(not user settable)</description>
     </key>
+    <key name="font-fv" type="i">
+      <default>12</default>
+      <summary>flight view font scaler</summary>
+      <description>(not user settable)</description>
+    </key>
 
   </schema>
 </schemalist>
