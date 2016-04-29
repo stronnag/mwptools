@@ -982,6 +982,7 @@ public class MWPlanner : Gtk.Application {
                             gpsinfo.annul();
                             navstatus.reset();
                             fbox.annul();
+                            art_win.update(0, 0, item_visible(DOCKLETS.ARTHOR));
                             set_bat_stat(0);
                             duration = -1;
                             if(craft != null)
@@ -1315,6 +1316,9 @@ public class MWPlanner : Gtk.Application {
             connect_serial();
         }
 
+        window.set_default_size(conf.window_w, conf.window_h);
+        window.show_now();
+
         var ebox = new Gtk.Box (Gtk.Orientation.HORIZONTAL,2);
 
         if(conf.window_p == -1)
@@ -1332,7 +1336,7 @@ public class MWPlanner : Gtk.Application {
         ebox.show_all();
 
         Timeout.add_seconds(5, () => { return try_connect(); });
-        window.set_default_size(conf.window_w, conf.window_h);
+
         if(no_max == false || conf.window_w == -1 || conf.window_h == -1)
             window.maximize();
         else
@@ -3588,6 +3592,7 @@ public class MWPlanner : Gtk.Application {
             gpsinfo.annul();
             navstatus.reset();
             fbox.annul();
+            art_win.update(0, 0, item_visible(DOCKLETS.ARTHOR));
             set_bat_stat(0);
             nsats = 0;
             _nsats = 0;
@@ -3636,6 +3641,7 @@ public class MWPlanner : Gtk.Application {
         nsats = 0;
         gpsinfo.annul();
         navstatus.reset();
+        art_win.update(0, 0, item_visible(DOCKLETS.ARTHOR));
         vinit = false;
         set_bat_stat(0);
         gpscnt = 0;
