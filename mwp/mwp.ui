@@ -1528,19 +1528,19 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
   <object class="GtkBox" id="flight_box">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
+    <property name="homogeneous">True</property>
     <child>
       <object class="GtkGrid" id="grid7">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="halign">start</property>
-        <property name="hexpand">False</property>
+        <property name="valign">start</property>
         <property name="column_homogeneous">True</property>
         <child>
           <object class="GtkLabel" id="big_rng">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">start</property>
-            <property name="hexpand">False</property>
             <property name="use_markup">True</property>
           </object>
           <packing>
@@ -1553,7 +1553,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">start</property>
-            <property name="hexpand">False</property>
             <property name="use_markup">True</property>
           </object>
           <packing>
@@ -1566,7 +1565,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">start</property>
-            <property name="hexpand">False</property>
             <property name="use_markup">True</property>
           </object>
           <packing>
@@ -1579,7 +1577,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">start</property>
-            <property name="hexpand">False</property>
             <property name="use_markup">True</property>
           </object>
           <packing>
@@ -1592,7 +1589,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">start</property>
-            <property name="hexpand">False</property>
             <property name="use_markup">True</property>
           </object>
           <packing>
@@ -1617,7 +1613,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">start</property>
-            <property name="hexpand">False</property>
             <property name="use_markup">True</property>
           </object>
           <packing>
@@ -1630,7 +1625,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">start</property>
-            <property name="hexpand">False</property>
             <property name="use_markup">True</property>
           </object>
           <packing>
