@@ -284,19 +284,22 @@ def get_autotype file
   mtyp = nil
   fn = nil
   if files.empty?
-    fn = file.gsub(".TXT",".log")
+    fn = file.dup
+    fn = fn.gsub!(/\.TXT$/,".log")
   else
     fn = files[0]
   end
 
-  if File.exist? fn
-    File.open(fn) do |fh|
-      json = fh.readline
-      o = JSON.parse(json, {:symbolize_names => true})
-      if o[:type] == 'init'
-	mtyp = o[:mrtype]
+  if fn != nil
+    if File.exist? fn
+      File.open(fn) do |fh|
+	json = fh.readline
+	o = JSON.parse(json, {:symbolize_names => true})
+	if o[:type] == 'init'
+	  mtyp = o[:mrtype]
+	end
+	break
       end
-      break
     end
   end
   mtyp
