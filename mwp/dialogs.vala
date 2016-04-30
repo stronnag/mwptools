@@ -281,31 +281,8 @@ public class FlightBox : GLib.Object
 
    public void annul()
    {
-       update(true);
-           /*
-       var fh2 = (MWPlanner.conf.dms) ? fh1*40/100 : fh1/2;
-       if(fh1 > 96)
-           fh1 = 96;
-       var fh3 = fh1;
-       var s=PosFormat.lat(0, MWPlanner.conf.dms);
-       big_lat.set_label("<span font='%u'>%s</span>".printf(fh2,s));
-       s=PosFormat.lon(0, MWPlanner.conf.dms);
-       big_lon.set_label("<span font='%u'>%s</span>".printf(fh2,s));
-       big_rng.set_label(
-           "Range <span font='%u'>0</span>%s".printf(
-               fh1, Units.distance_units() ));
-       big_bearing.set_label("Bearing <span font='%u'>0°</span>".printf(fh1));
-       big_hdr.set_label("Heading <span font='%u'>0°</span>".printf(fh3));
-       big_alt.set_label(
-           "Alt <span font='%u'>0</span>%s".printf(
-               fh3, Units.distance_units() ));
-       big_spd.set_label(
-           "Speed <span font='%u'>0</span>%s".printf(
-               fh1, Units.speed_units() ) );
-       big_sats.set_label("Sats <span font='%u'>0</span> %sfix".printf(
-                              fh1, "nil "));
-*/
 
+       update(true);
    }
 
    public void update(bool visible)
@@ -2057,5 +2034,6 @@ public class GPSInfo : GLib.Object
         speed_lab.set_label("--.-");
         _dlat = _dlon = 0;
         hdop = -1.0;
+        lat = lon = cse = spd = nsat = elev = fix  = 0;
     }
 }

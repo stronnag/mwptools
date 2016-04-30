@@ -118,7 +118,7 @@ public class Mission : GLib.Object
         {
             if (zoom == -1)
             {
-                zoom = 12;
+                zoom = 18;
                 cy = (maxy + miny) / 2.0;
                 cx = (maxx + minx) / 2.0;
             }
