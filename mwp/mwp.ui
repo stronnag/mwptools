@@ -1535,6 +1535,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
         <property name="can_focus">False</property>
         <property name="halign">start</property>
         <property name="valign">start</property>
+        <property name="column_spacing">1</property>
         <property name="column_homogeneous">True</property>
         <child>
           <object class="GtkLabel" id="big_rng">
@@ -1634,9 +1635,9 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
         </child>
       </object>
       <packing>
-        <property name="expand">False</property>
-        <property name="fill">False</property>
-        <property name="position">1</property>
+        <property name="expand">True</property>
+        <property name="fill">True</property>
+        <property name="position">0</property>
       </packing>
     </child>
   </object>

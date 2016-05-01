@@ -112,6 +112,7 @@ public class ArtWin : GLib.Object
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
         socket = new Gtk.Socket();
         box.pack_start(socket, true,true,0);
+        box.set_size_request (32, 32);
         box.show_all();
     }
 
@@ -290,7 +291,6 @@ public class FlightBox : GLib.Object
        if(visible)
        {
            var fh2 = (MWPlanner.conf.dms) ? fh1*45/100 : fh1/2;
-           var s=PosFormat.lat(GPSInfo.lat,MWPlanner.conf.dms);
            if(fh1 > 96)
                fh1 = 96;
 
@@ -304,6 +304,7 @@ public class FlightBox : GLib.Object
            else if(falt > 999.0 || falt < -99.0)
                fh3 = fh3 * 75 /100;
 
+           var s=PosFormat.lat(GPSInfo.lat,MWPlanner.conf.dms);
            big_lat.set_label("<span font='%u'>%s</span>".printf(fh2,s));
            s=PosFormat.lon(GPSInfo.lon,MWPlanner.conf.dms);
            big_lon.set_label("<span font='%u'>%s</span>".printf(fh2,s));

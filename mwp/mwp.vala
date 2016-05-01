@@ -1342,10 +1342,13 @@ public class MWPlanner : Gtk.Application {
             window.resize(conf.window_w, conf.window_h);
 
         window.show_all();
-        if(pane.position != conf.window_p)
-        {
-            pane.position = conf.window_p;
-        }
+        Timeout.add(500, () => {
+                if(pane.position != conf.window_p)
+                {
+                    pane.position = conf.window_p;
+                }
+                return false;
+            });
 
         window.size_allocate.connect((a) => {
                 if(((a.width != conf.window_w) || (a.height != conf.window_h))
