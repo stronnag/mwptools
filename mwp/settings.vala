@@ -66,6 +66,7 @@ public class MWPSettings : GLib.Object
     public int window_h {get; set; default=-1;}
     public int window_p {get; set; default=-1;}
     public int fontfact {get; set; default = 12;}
+    public int ahsize {get; set; default = 32;}
 
     public signal void settings_update (string s);
 
@@ -87,7 +88,7 @@ public class MWPSettings : GLib.Object
             settings =  new Settings (sname);
 
         settings.changed.connect ((s) => {
-                MWPLog.message("changed %s settings\n",s);
+//                MWPLog.message("changed %s settings\n",s);
                 read_settings(s);
                 settings_update(s);
             });
@@ -213,6 +214,8 @@ public class MWPSettings : GLib.Object
             window_p = settings.get_int("wdw-p");
         if(s == null || s == "font-fv")
             fontfact = settings.get_int("font-fv");
+        if(s == null || s == "ah-size")
+            ahsize = settings.get_int("ah-size");
     }
 
     public void save_window()

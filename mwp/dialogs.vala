@@ -112,7 +112,8 @@ public class ArtWin : GLib.Object
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
         socket = new Gtk.Socket();
         box.pack_start(socket, true,true,0);
-        box.set_size_request (32, 32);
+        int sz = MWPlanner.conf.ahsize;
+        box.set_size_request (sz, sz);
         box.show_all();
     }
 
@@ -263,7 +264,9 @@ public class FlightBox : GLib.Object
     public FlightBox(Gtk.Builder builder, Gtk.Window pw)
     {
         _w = pw;
-        vbox = builder.get_object ("flight_box") as Gtk.Box;
+        vbox  = builder.get_object ("flight_box") as Gtk.Box;
+        var grid = builder.get_object ("fv_grid") as Gtk.Grid;
+        grid.set_column_homogeneous (true);
         big_lat = builder.get_object ("big_lat") as Gtk.Label;
         big_lon = builder.get_object ("big_lon") as Gtk.Label;
         big_rng = builder.get_object ("big_rng") as Gtk.Label;

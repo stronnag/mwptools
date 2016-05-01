@@ -250,22 +250,27 @@
     <key name="wdw-w" type="i">
       <default>-1</default>
       <summary>Window parameter</summary>
-      <description>(not user settable)</description>
+       <description>(private settinge)</description>
     </key>
     <key name="wdw-h" type="i">
       <default>-1</default>
       <summary>Window parameter</summary>
-      <description>(not user settable)</description>
+      <description>(private settinge)</description>
     </key>
     <key name="wdw-p" type="i">
       <default>512</default>
       <summary>Window parameter</summary>
-      <description>(not user settable)</description>
+      <description>(private settinge)</description>
     </key>
     <key name="font-fv" type="i">
       <default>12</default>
       <summary>flight view font scaler</summary>
-      <description>(not user settable)</description>
+      <description>(private settinge)</description>
+    </key>
+    <key name="ah-size" type="i">
+      <default>32</default>
+      <summary>minimum size of artificial horizon</summary>
+      <description>(private settinge)</description>
     </key>
 
   </schema>

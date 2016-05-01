@@ -1528,13 +1528,16 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
   <object class="GtkBox" id="flight_box">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
+    <property name="valign">start</property>
+    <property name="hexpand">True</property>
     <property name="homogeneous">True</property>
+    <property name="baseline_position">top</property>
     <child>
-      <object class="GtkGrid" id="grid7">
+      <object class="GtkGrid" id="fv_grid">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="halign">start</property>
         <property name="valign">start</property>
+        <property name="hexpand">True</property>
         <property name="column_spacing">1</property>
         <property name="column_homogeneous">True</property>
         <child>
