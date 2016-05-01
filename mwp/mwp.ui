@@ -544,7 +544,6 @@
                     <property name="receives_default">False</property>
                     <property name="halign">end</property>
                     <property name="hexpand">True</property>
-                    <property name="xalign">0.5</property>
                     <property name="draw_indicator">True</property>
                   </object>
                   <packing>
@@ -671,7 +670,6 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="halign">start</property>
-                    <property name="xalign">0.5</property>
                     <property name="draw_indicator">True</property>
                   </object>
                   <packing>
@@ -687,7 +685,6 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="halign">start</property>
-                    <property name="xalign">0.5</property>
                     <property name="draw_indicator">True</property>
                   </object>
                   <packing>
@@ -703,7 +700,6 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="halign">start</property>
-                    <property name="xalign">0.5</property>
                     <property name="draw_indicator">True</property>
                   </object>
                   <packing>
@@ -719,7 +715,6 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="halign">start</property>
-                    <property name="xalign">0.5</property>
                     <property name="draw_indicator">True</property>
                   </object>
                   <packing>
@@ -1227,7 +1222,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
-                <property name="yalign">0.43000000715255737</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -1364,7 +1358,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
                     <property name="tooltip_text" translatable="yes">If set, the GPS heading is used rather than the compass for orientation</property>
-                    <property name="xalign">0</property>
                     <property name="draw_indicator">True</property>
                   </object>
                   <packing>
@@ -1531,7 +1524,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
     <property name="valign">start</property>
     <property name="hexpand">True</property>
     <property name="homogeneous">True</property>
-    <property name="baseline_position">top</property>
     <child>
       <object class="GtkGrid" id="fv_grid">
         <property name="visible">True</property>
@@ -2686,7 +2678,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
-                <property name="xalign">0.5</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
               </object>
@@ -2702,7 +2693,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
                 <property name="group">radiobutton1</property>
               </object>
@@ -2718,7 +2708,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
                 <property name="group">radiobutton1</property>
               </object>
@@ -2775,7 +2764,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="focus_on_click">False</property>
                 <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes">Add a 5 element moving average filter to GPS coordinates, helps eliminate gps noise but adds latency</property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -2790,7 +2778,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes">Adds a forward predictive filterig to compensate gps lag.</property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -2805,7 +2792,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes"> HOME position is reset at every arm, (you can also set home position with GyroCalibration)</property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -2821,7 +2807,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes">Copter faces toward the navigation point, maghold must be enabled for it.
 </property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -2836,7 +2821,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes">Copter comes in with tail first</property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -2851,7 +2835,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes">When copter arrives to home position it rotates its  head to takeoff direction</property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -2866,7 +2849,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes">Slow down to zero when reaching waypoint (same as NAV_SPEED_MIN = 0)</property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -2881,7 +2863,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes">Wait to reach RTH alt before start moving to home </property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -3169,7 +3150,6 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
                 <property name="focus_on_click">False</property>
                 <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes">Throttle stick input will be ignored  (only in BARO)</property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -3184,7 +3164,6 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes">Navigation engine will takeover BARO mode control</property>
-                <property name="xalign">0.5</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -3949,7 +3928,6 @@ Clicking Quit will terminate the application.
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0.5</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                       </object>
@@ -3965,7 +3943,6 @@ Clicking Quit will terminate the application.
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0.5</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">uprefs-ddd</property>
@@ -4021,7 +3998,6 @@ Clicking Quit will terminate the application.
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0.5</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                       </object>
@@ -4037,7 +4013,6 @@ Clicking Quit will terminate the application.
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0.5</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">uprefs-metre</property>
@@ -4054,7 +4029,6 @@ Clicking Quit will terminate the application.
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0.5</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">uprefs-metre</property>
@@ -4107,7 +4081,6 @@ Clicking Quit will terminate the application.
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0.5</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                       </object>
@@ -4123,7 +4096,6 @@ Clicking Quit will terminate the application.
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0.5</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">uprefs-msec</property>
@@ -4140,7 +4112,6 @@ Clicking Quit will terminate the application.
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0.5</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">uprefs-msec</property>
@@ -4157,7 +4128,6 @@ Clicking Quit will terminate the application.
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
-                        <property name="xalign">0.5</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
                         <property name="group">uprefs-msec</property>
