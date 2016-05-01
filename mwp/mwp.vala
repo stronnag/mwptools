@@ -1343,8 +1343,14 @@ public class MWPlanner : Gtk.Application {
 
         window.show_all();
         Timeout.add(500, () => {
+                int wd,ht;
+                window.get_size(out wd, out ht);
+                if (wd > conf.window_p)
+                        conf.window_p = wd *70 /100;
+
                 if(pane.position != conf.window_p)
                 {
+
                     pane.position = conf.window_p;
                 }
                 return false;
