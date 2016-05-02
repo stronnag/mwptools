@@ -641,8 +641,8 @@ public class MWPlanner : Gtk.Application {
 
         sensor_sts[0] = builder.get_object ("gyro_sts") as Gtk.Label;
         sensor_sts[1] = builder.get_object ("acc_sts") as Gtk.Label;
-        sensor_sts[2] = builder.get_object ("mag_sts") as Gtk.Label;
-        sensor_sts[3] = builder.get_object ("baro_sts") as Gtk.Label;
+        sensor_sts[2] = builder.get_object ("baro_sts") as Gtk.Label;
+        sensor_sts[3] = builder.get_object ("mag_sts") as Gtk.Label;
         sensor_sts[4] = builder.get_object ("gps_sts") as Gtk.Label;
         sensor_sts[5] = builder.get_object ("sonar_sts") as Gtk.Label;
 

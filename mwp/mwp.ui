@@ -860,10 +860,10 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="mag_sts">
+                  <object class="GtkLabel" id="baro_sts">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="tooltip_text" translatable="yes">Mag Status</property>
+                    <property name="tooltip_text" translatable="yes">Baro Status</property>
                     <property name="label" translatable="yes"> </property>
                     <property name="use_markup">True</property>
                   </object>
@@ -874,10 +874,10 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="baro_sts">
+                  <object class="GtkLabel" id="mag_sts">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="tooltip_text" translatable="yes">Baro Status</property>
+                    <property name="tooltip_text" translatable="yes">Mag Status</property>
                     <property name="label" translatable="yes"> </property>
                     <property name="use_markup">True</property>
                   </object>
