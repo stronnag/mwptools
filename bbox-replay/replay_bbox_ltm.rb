@@ -43,6 +43,7 @@ end
 
 LLFACT=10000000
 ALTFACT=100
+base_alt = nil
 
 def start_io dev
   if RUBY_PLATFORM.include?('cygwin') || !Gem.win_platform?
@@ -174,8 +175,16 @@ def encode_gps r,baro=true
 	  end
   end
   nsf |= (ns << 2)
-
-  alt = (baro) ? r[:baroalt_cm].to_i : r[:gps_altitude]*100.to_i
+  alt = 0
+  if baro
+    alt = r[:baroalt_cm].to_i
+  else
+    gps_alt = r[:gps_altitude].to_i
+    if @base_alt == nil
+      @base_alt = gps_alt
+    end
+    alt = (gps_alt - @base_alt)*100
+  end
 
   sl = [(r[:gps_coord0].to_f*LLFACT).to_i,
     (r[:gps_coord1].to_f*LLFACT).to_i,
@@ -459,9 +468,8 @@ IO.popen(cmd,'rt') do |pipe|
   abort 'Not an INAV log' if hdrs[:gps_coord0].nil?
 
   have_sonar = (hdrs.has_key? :sonarraw)
-  have_baro = true # until confirmed ...
-  #  have_baro = (hdrs.has_key? :baroalt_cm)
-
+#  have_baro = true # until confirmed ...
+  have_baro = (hdrs.has_key? :baroalt_cm)
   send_init_seq dev,typ,have_sonar,have_baro
 
   csv.each do |row|
