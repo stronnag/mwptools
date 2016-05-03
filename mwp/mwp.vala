@@ -977,7 +977,7 @@ public class MWPlanner : Gtk.Application {
                             if(conf.logarmed == true)
                                 logb.active=false;
                             gpsinfo.annul();
-                            navstatus.reset();
+                            navstatus.annul();
                             fbox.annul();
                             art_win.update(0, 0, item_visible(DOCKLETS.ARTHOR));
                             set_bat_stat(0);

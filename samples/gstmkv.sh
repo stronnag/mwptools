@@ -15,7 +15,7 @@ fi
 # note also prorata values in ffmpeg command line.
 XRES=1280
 YRES=720
-YYRES=$((YRES + 36))
+YYRES=$((YRES + 32))
 SX=32
 SY=132
 wmctrl -F -x -r 'mwp.Mwp' -e 0,$SX,$SY,$XRES,$YRES
@@ -34,7 +34,7 @@ gst-launch-1.0 -q -e \
   ! videoconvert \
   ! vp8enc \
   ! progressreport update-freq=1 \
-  ! mux. pulsesrc device=$S \
+  ! mux. alsasrc \
   ! audio/x-raw,format=S16LE,channels=1 \
   ! queue \
   ! audioconvert ! vorbisenc quality=0.1 ! mux. \

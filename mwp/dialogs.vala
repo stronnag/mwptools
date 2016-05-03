@@ -285,7 +285,7 @@ public class FlightBox : GLib.Object
 
    public void annul()
    {
-
+       MWPLog.message("fbox annul\n");
        update(true);
    }
 
@@ -1461,6 +1461,14 @@ public class NavStatus : GLib.Object
         reset_states();
     }
 
+    public void annul()
+    {
+        reset();
+        alti = {0};
+        cg = {0};
+        hdr = 0;
+    }
+
     public void logspeak_init (string? voice)
     {
         if(vinit == false)
@@ -2037,6 +2045,7 @@ public class GPSInfo : GLib.Object
         dirn_lab.set_label("---");
         speed_lab.set_label("--.-");
         _dlat = _dlon = 0;
+        stderr.puts("gps annul\n");
         hdop = -1.0;
         lat = lon = cse = spd = nsat = elev = fix  = 0;
     }
