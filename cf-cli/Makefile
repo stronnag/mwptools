@@ -31,7 +31,7 @@ cf-cli-ui: $(S2)
 endif
 
 clean:
-	rm -f cf-cli cf-cli-ui  *.vala.c
+	rm -f cf-cli cf-cli-ui  *.vala.c cf-cli.resources.c
 
 local:
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install

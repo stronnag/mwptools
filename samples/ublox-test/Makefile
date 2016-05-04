@@ -29,7 +29,7 @@ $(APP) : $(SRCS)
 	$(VALAC) $(OPTS) $(DOPTS) $(PKGS) -o $@  $^ $(LOPTS)
 
 clean:
-	rm -f ublox-cli ublox-geo  *~ *.vala.c
+	rm -f ublox-cli ublox-geo  *~ *.vala.c ublox-resources.c
 
 local: $(APPS)
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
