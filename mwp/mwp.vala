@@ -3592,8 +3592,9 @@ public class MWPlanner : Gtk.Application {
             {
                 msp.raw_logging(false);
             }
+
             gpsinfo.annul();
-            navstatus.reset();
+            navstatus.annul();
             fbox.annul();
             art_win.update(0, 0, item_visible(DOCKLETS.ARTHOR));
             set_bat_stat(0);
@@ -3632,6 +3633,7 @@ public class MWPlanner : Gtk.Application {
         telstats.avg = 0;
         telstats.msgs = 0;
         telemstatus.annul();
+        radstatus.annul();
     }
 
     private void init_state()

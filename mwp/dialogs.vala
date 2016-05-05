@@ -1007,19 +1007,30 @@ public class RadioStatus : GLib.Object
             remrssi_label.set_label(s.rssi.to_string());
     }
 
+    private void display()
+    {
+        rxerr_label.set_label(r.rxerrors.to_string());
+        fixerr_label.set_label(r.fixed_errors.to_string());
+        locrssi_label.set_label(r.localrssi.to_string());
+        remrssi_label.set_label(r.remrssi.to_string());
+        txbuf_label.set_label(r.txbuf.to_string());
+        noise_label.set_label(r.noise.to_string());
+        remnoise_label.set_label(r.remnoise.to_string());
+    }
+
+    public void annul()
+    {
+        r = {0};
+        display();
+    }
+
     public void update(MSP_RADIO _r, bool visible)
     {
         r = _r;
 
         if(visible)
         {
-            rxerr_label.set_label(r.rxerrors.to_string());
-            fixerr_label.set_label(r.fixed_errors.to_string());
-            locrssi_label.set_label(r.localrssi.to_string());
-            remrssi_label.set_label(r.remrssi.to_string());
-            txbuf_label.set_label(r.txbuf.to_string());
-            noise_label.set_label(r.noise.to_string());
-            remnoise_label.set_label(r.remnoise.to_string());
+            display();
         }
 
         if (Logger.is_logging)
