@@ -42,6 +42,7 @@ public struct MSP_RAW_GPS
     int16   gps_altitude;
     uint16  gps_speed;
     uint16  gps_ground_course;
+    uint16  gps_hdop;
 }
 
 public struct MSP_ATTITUDE
@@ -208,7 +209,7 @@ public enum MSize
     MSP_STATUS=11,
     MSP_MISC=22,
     MSP_ALTITUDE=6,
-    MSP_RAW_GPS=16,
+    MSP_RAW_GPS=18,
     MSP_ATTITUDE=6,
     MSP_WP=21,
     MSP_NAV_STATUS=7,

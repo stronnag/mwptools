@@ -52,6 +52,7 @@ struct __attribute__ ((__packed__))  _msp_raw_gps
     int16_t   gps_altitude; // metre
     uint16_t  gps_speed;  // cm/s
     uint16_t  gps_ground_course;  // unit: degree*10
+    uint16_t  gps_hdop;
 };
 typedef struct _msp_raw_gps MSP_RAW_GPS;
 

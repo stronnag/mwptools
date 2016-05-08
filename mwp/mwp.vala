@@ -2483,12 +2483,9 @@ public class MWPlanner : Gtk.Application {
                 rp = deserialise_u16(rp, out rg.gps_ground_course);
                 if(len == 18)
                 {
-                    LTM_XFRAME xf = LTM_XFRAME();
-                    deserialise_u16(rp, out xf.hdop);
-                    rhdop = xf.hdop;
-                    gpsinfo.set_hdop(xf.hdop/100.0);
-                    if(Logger.is_logging)
-                        Logger.ltm_xframe(xf);
+                    deserialise_u16(rp, out rg.gps_hdop);
+                    rhdop = rg.gps_hdop;
+                    gpsinfo.set_hdop(rg.gps_hdop/100.0);
                 }
                 gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS)) != 0);
                 fbox.update(item_visible(DOCKLETS.FBOX));
@@ -2775,7 +2772,7 @@ public class MWPlanner : Gtk.Application {
                 al.vario = 0;
                 navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
 
-                int fix = gpsinfo.update_ltm(gf, conf.dms, item_visible(DOCKLETS.GPS));
+                int fix = gpsinfo.update_ltm(gf, conf.dms, item_visible(DOCKLETS.GPS), rhdop);
                 _nsats = (gf.sats >> 2);
 
                 if((_nsats == 0 && nsats != 0) || (nsats == 0 && _nsats != 0))
@@ -2840,14 +2837,8 @@ public class MWPlanner : Gtk.Application {
             break;
 
             case MSP.Cmds.TX_FRAME:
-                LTM_XFRAME xf = LTM_XFRAME();
-                deserialise_u16(raw, out xf.hdop);
-                rhdop = xf.hdop;
-                gpsinfo.set_hdop(xf.hdop/100.0);
-                if(Logger.is_logging)
-                {
-                    Logger.ltm_xframe(xf);
-                }
+                deserialise_u16(raw, out rhdop);
+                gpsinfo.set_hdop(rhdop/100.0);
                 break;
 
             case MSP.Cmds.TA_FRAME:

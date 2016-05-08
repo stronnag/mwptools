@@ -34,7 +34,7 @@ IO.popen(cmd,'r') do |p|
 		:return_headers => true)
   hdrs = csv.shift
   st = nil
-  nsats = 0
+  nsats = -1
 
   puts %w/Time Sats Hdop/.join("\t")
   csv.each do |c|
@@ -43,6 +43,9 @@ IO.popen(cmd,'r') do |p|
     ts -= st
     csats = c[:gps_numsat].to_i
     if csats != nsats
+      if nsats != -1
+	puts ["%.6f" % ts, nsats, c[:gps_hdop].to_f/100.0].join("\t")
+      end
       nsats = csats
       puts ["%.6f" % ts, nsats, c[:gps_hdop].to_f/100.0].join("\t")
     end

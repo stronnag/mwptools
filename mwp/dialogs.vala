@@ -1662,7 +1662,7 @@ public class AudioThread : Object {
                             s = str_zero(s);
                             break;
                         case Vox.MODSAT:
-                            if(lsats != NavStatus.numsat)
+//                            if(lsats != NavStatus.numsat)
                             {
                                 string ss = "";
                                 if(NavStatus.numsat != 1)
@@ -1965,8 +1965,7 @@ public class GPSInfo : GLib.Object
         return m.fix_type;
     }
 
-
-    public int update_ltm(LTM_GFRAME g, bool dms,bool visible)
+    public int update_ltm(LTM_GFRAME g, bool dms,bool visible, uint16 hdop)
     {
         lat = g.lat/10000000.0;
         lon = g.lon/10000000.0;
@@ -2003,7 +2002,7 @@ public class GPSInfo : GLib.Object
 
         if(Logger.is_logging)
         {
-            Logger.raw_gps(lat,lon,cse,spd, elev, fix, (uint8)nsat);
+            Logger.raw_gps(lat,lon,cse,spd, elev, fix, (uint8)nsat, hdop);
         }
         return fix;
     }
@@ -2022,7 +2021,8 @@ public class GPSInfo : GLib.Object
             Logger.raw_gps(lat,lon,cse,spd,
                            g.gps_altitude,
                            g.gps_fix,
-                           g.gps_numsat);
+                           g.gps_numsat,
+                           g.gps_hdop);
         }
 
         if(visible)
