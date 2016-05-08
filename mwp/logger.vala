@@ -264,7 +264,7 @@ public class Logger : GLib.Object
     }
 
     public static void raw_gps(double lat, double lon, double cse, double spd,
-                               int16 alt, uint8 fix, uint8 numsat)
+                               int16 alt, uint8 fix, uint8 numsat, uint16 hdop)
     {
         var builder = init ("raw_gps");
         builder.set_member_name ("lat");
@@ -281,6 +281,8 @@ public class Logger : GLib.Object
         builder.add_int_value(fix);
         builder.set_member_name ("numsat");
         builder.add_int_value(numsat);
+        builder.set_member_name ("hdop");
+        builder.add_int_value(hdop);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);

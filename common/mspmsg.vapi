@@ -52,6 +52,7 @@ public struct MSP_RAW_GPS
     int16   gps_altitude;
     uint16  gps_speed;
     uint16  gps_ground_course;
+    uint16  gps_hdop;
 }
 
 [CCode (cheader_filename = "../common/mspmsg.h")]
