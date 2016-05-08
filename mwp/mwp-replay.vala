@@ -85,6 +85,7 @@ public class ReplayThread : GLib.Object
         p = serialise_i16(p, b.gps_altitude);
         p = serialise_u16(p, b.gps_speed);
         p = serialise_u16(p, b.gps_ground_course);
+        p = serialise_u16(p, b.gps_hdop);
         return (p - &tx[0]);
     }
 
@@ -455,6 +456,9 @@ public class ReplayThread : GLib.Object
                                     a.gps_ground_course = (int16)(Math.lround(obj.get_double_member("cse")*10));
                                     a.gps_fix = (uint8)obj.get_int_member("fix");
                                     a.gps_numsat = (uint8)obj.get_int_member("numsat");
+                                    if(obj.has_member("hdop"))
+                                        a.gps_hdop = (uint16)obj.get_int_member("hdop");
+
                                     serialise_raw_gps(a, buf);
                                     send_rec(fd,MSP.Cmds.RAW_GPS, MSize.MSP_RAW_GPS,buf);
                                     break;
