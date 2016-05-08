@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 
-# Extract heading & gps_course for analysis
+# Extract sat coverage for analysis
 # MIT licence
 
 require 'csv'
@@ -26,6 +26,8 @@ cmd << " --merge-gps"
 cmd << " --unit-frame-time s"
 cmd << " --stdout"
 cmd << " " << bbox
+
+st = nil
 IO.popen(cmd,'r') do |p|
   csv = CSV.new(p, :col_sep => ",",
 		:headers => :true,
@@ -33,7 +35,6 @@ IO.popen(cmd,'r') do |p|
 		->(f) {f.strip.downcase.gsub(' ','_').gsub(/\W+/,'').to_sym},
 		:return_headers => true)
   hdrs = csv.shift
-  st = nil
   nsats = -1
 
   puts %w/Time Sats Hdop/.join("\t")
@@ -51,3 +52,4 @@ IO.popen(cmd,'r') do |p|
     end
   end
 end
+exit (st.nil?) ? 255 : 0
