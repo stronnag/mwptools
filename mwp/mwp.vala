@@ -33,6 +33,7 @@ public struct VersInfo
     string fc_var;
     uint8 fc_vers[3];
     uint8 fc_api[2];
+    string fc_git;
 }
 
 public struct TelemStats
@@ -2093,10 +2094,23 @@ public class MWPlanner : Gtk.Application {
                     have_fcvv = true;
                     vi.fc_vers = raw[0:3];
                     var fcv = "%s v%d.%d.%d".printf(vi.fc_var,raw[0],raw[1],raw[2]);
-                    var vers="%s compat %03d".printf(fcv, vi.mvers);
-                    verlab.set_label(vers);
-                    add_cmd(MSP.Cmds.BOXNAMES,null,0,1000);
+                    verlab.set_label(fcv);
+                    if(inav)
+                        add_cmd(MSP.Cmds.BUILD_INFO, null, 0, 1000);
+                    else
+                        add_cmd(MSP.Cmds.BOXNAMES,null,0,1000);
                 }
+                break;
+
+            case MSP.Cmds.BUILD_INFO:
+                remove_tid(ref cmdtid);
+                uint8 bi[8];
+                for (var l = 0; l < 7; l++)
+                   bi[l] = raw[19+l];
+		vi.fc_git = (string)bi;
+                var vers = "%s (%s)".printf(verlab.get_label(), vi.fc_git);
+                verlab.set_label(vers);
+                add_cmd(MSP.Cmds.BOXNAMES,null,0,1000);
                 break;
 
             case MSP.Cmds.IDENT:

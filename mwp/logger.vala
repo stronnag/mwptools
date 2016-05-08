@@ -75,6 +75,11 @@ public class Logger : GLib.Object
             var nv = (vi.fc_vers[0] << 16)|(vi.fc_vers[1] << 8|vi.fc_vers[2]);
             builder.set_member_name ("fc_vers");
             builder.add_int_value (nv);
+            if(vi.fc_git != null)
+            {
+                builder.set_member_name ("git_info");
+                builder.add_string_value (vi.fc_git);
+            }
         }
         builder.end_object ();
         Json.Node root = builder.get_root ();
