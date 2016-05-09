@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
@@ -16,11 +15,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-
-// valac --pkg posix --pkg gio-2.0 --pkg posix sd-test.vala  serial-device.vala cserial.c
-
-//extern int open_serial(string name, uint rate, uint8 [] eptr, size_t elen);
-//extern void close_serial(int fd);
 
 public struct SerialStats
 {
@@ -69,6 +63,7 @@ public class MWSerial : Object
     private uint8 mavid2;
     private uint16 mavsum;
     private uint16 rxmavsum;
+//    private MWPlanner _mwp;
 
     public enum ComMode
     {
@@ -435,7 +430,7 @@ public class MWSerial : Object
             if(fd != -1)
                 serial_lost();
             MWPLog.message("Close on cond %x (fd=%d)\n", cond, fd);
-            return false;
+            return Source.REMOVE;
         }
         else if (fd != -1)
         {
@@ -451,14 +446,14 @@ public class MWSerial : Object
                         avb = 256;
                     res = Posix.read(fd,buf,avb);
                     if(res == 0)
-                        return true;
+                        return Source.CONTINUE;
                 }
                 else
-                    return true;
+                    return Source.CONTINUE;
 #else
                 res = Posix.read(fd,buf,256);
                 if(res == 0)
-                    return true;
+                    return Source.CONTINUE;
 #endif
             }
             else
@@ -721,7 +716,7 @@ public class MWSerial : Object
                         {
 //                            MWPLog.message(" MAVMSG cmd=%u, len=%u res = %u\n",
 //                                           cmd,csize, cmd+MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT);
-                            serial_event(cmd+MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT,
+                            serial_event (cmd+MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT,
                                          raw, csize,errstate);
                             state = States.S_HEADER;
                         }
@@ -738,7 +733,7 @@ public class MWSerial : Object
                 }
             }
         }
-        return true;
+        return Source.CONTINUE;
     }
 
     private void mavlink_meta(uint8 id)
@@ -933,19 +928,6 @@ public class MWSerial : Object
             stderr.printf("%02x ", buf[nc]);
         }
         stderr.printf("(%d) ",len);
-/*
-        for(var nc = 0; nc < len; nc++)
-        {
-            if(buf[nc] > 0x1f && buf[nc] < 0x80)
-            {
-                stderr.printf("%c", buf[nc]);
-            }
-            else
-            {
-                stderr.printf("\\x%02x", buf[nc]);
-            }
-        }
-*/
     }
 
     public void set_mode(Mode mode)
