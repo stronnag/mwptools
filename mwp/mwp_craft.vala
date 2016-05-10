@@ -43,6 +43,8 @@ public class Craft : GLib.Object
     private static Champlain.Label posp ;
     private static Champlain.Label rthp ;
     private static Champlain.Label wpp ;
+    private Queue<Champlain.Point> stack;
+    private int stack_size = 0;
 
     private static string[] icons =
     {
@@ -84,8 +86,9 @@ public class Craft : GLib.Object
         return sb.str;
     }
 */
-    public Craft(Champlain.View _view, uint id, bool _norotate = false, bool _trail = true)
+    public Craft(Champlain.View _view, uint id, bool _norotate = false, bool _trail = true, int _ss = 0)
     {
+        stack_size = _ss;
         view = _view;
         norotate = _norotate;
         trail = _trail;
@@ -114,6 +117,7 @@ public class Craft : GLib.Object
 
         Clutter.Color ladyjane = { 0xa0,0xa0,0xa0, 0xa0 };
         path.set_stroke_color(ladyjane);
+        path.set_stroke_width (4);
 
         layer = new Champlain.MarkerLayer();
         hmlayer = new Champlain.MarkerLayer();
@@ -126,6 +130,8 @@ public class Craft : GLib.Object
         }
         view.add_layer (layer);
         homep = posp = rthp = wpp = null;
+        if(stack_size != 0)
+            stack = new Queue<Champlain.Point> ();
 
 // Not properly implemented in (13.10 and earlier) Ubuntu
 #if NOBB
@@ -183,6 +189,8 @@ public class Craft : GLib.Object
             homep = posp = rthp = wpp = null;
             ici.hide();
         }
+        if(stack_size != 0)
+            stack.clear();
     }
 
     public void remove_marker()
@@ -201,7 +209,6 @@ public class Craft : GLib.Object
         }
     }
 
-
     public void get_pos(out double lat, out double lon)
     {
         lat = icon.get_latitude();
@@ -210,24 +217,32 @@ public class Craft : GLib.Object
 
     public void set_lat_lon (double lat, double lon, double cse)
     {
+        if(npath == 0)
+        {
+            ici.show();
+        }
         if(trail)
         {
             Champlain.Point marker;
             marker = new Champlain.Point.full(5.0, path_colour);
             marker.set_location (lat,lon);
             pmlayer.add_marker(marker);
-            path.add_node(marker);
-            if(npath == 0)
+            if(stack_size != 0)
             {
-                path.add_node(marker);
-                ici.show();
+                stack.push_head(marker);
+                if(stack.get_length() > stack_size)
+                {
+                    Champlain.Point xmarker = stack.pop_tail();
+                    pmlayer.remove_marker(xmarker);
+                }
             }
-            npath++;
+            path.add_node(marker);
         }
         ici.set_location (lat, lon);
         icon.set_location (lat, lon);
         if (norotate == false)
             icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, cse);
+        npath++;
     }
 
     public void set_pix_pos (int x, int y)

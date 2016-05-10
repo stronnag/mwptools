@@ -471,6 +471,7 @@ public class MWPlanner : Gtk.Application {
     private static DEBUG_FLAGS debug_flags = 0;
     private static VersInfo vi ={0};
     private static bool set_fs;
+    private static int stack_size = 0;
 
     private const Gtk.TargetEntry[] targets = {
         {"text/uri-list",0,0}
@@ -499,6 +500,7 @@ public class MWPlanner : Gtk.Application {
         { "replay-bbox", 'b', 0, OptionArg.STRING, out bfile, "replay bbox log file", null},
         { "centre", 0, 0, OptionArg.STRING, out llstr, "Centre position", null},
         { "offline", 0, 0, OptionArg.NONE, out offline, "force offline proxy mode", null},
+        { "n-points", 'S', 0, OptionArg.INT, out stack_size, "Number of points shown in trial", "INT"},
         {null}
     };
 
@@ -1737,7 +1739,7 @@ public class MWPlanner : Gtk.Application {
                 vi.mrtype = (uint8)dmrtype;
 
             MWPLog.message("init icon\n");
-            craft = new Craft(view, vi.mrtype,norotate, gps_trail);
+            craft = new Craft(view, vi.mrtype,norotate, gps_trail, stack_size);
             craft.park();
         }
     }
@@ -2107,12 +2109,11 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.BUILD_INFO:
                 remove_tid(ref cmdtid);
-                uint8 bi[8];
-                for (var l = 0; l < 7; l++)
-                   bi[l] = raw[19+l];
+                uint8 [] bi = raw[19:26];
 		vi.fc_git = (string)bi;
                 var vers = "%s (%s)".printf(verlab.get_label(), vi.fc_git);
                 verlab.set_label(vers);
+                MWPLog.message("%s\n", vers);
                 add_cmd(MSP.Cmds.BOXNAMES,null,0,1000);
                 break;
 
