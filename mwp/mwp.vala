@@ -4223,6 +4223,12 @@ public class MWPlanner : Gtk.Application {
         time_t(out currtime);
         if (GtkClutter.init (ref args) != InitError.SUCCESS)
             return 1;
+
+        if(Posix.isatty(stderr.fileno()) == false)
+        {
+            var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
+            stderr = FileStream.open(fn,"a");
+        }
         MWPLog.message("mwp startup\n");
         var opt = new OptionContext("");
         try {
@@ -4237,11 +4243,6 @@ public class MWPlanner : Gtk.Application {
             return 1;
         }
         Gst.init (ref args);
-        if(Posix.isatty(stderr.fileno()) == false)
-        {
-            var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
-            stderr = FileStream.open(fn,"a");
-        }
         atexit(MWPlanner.xchild);
         var app = new MWPlanner();
         app.run ();
