@@ -2109,7 +2109,8 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.BUILD_INFO:
                 remove_tid(ref cmdtid);
-                uint8 [] bi = raw[19:26];
+                uint8 bi[8] = raw[19:26];
+		bi[7] = 0;
 		vi.fc_git = (string)bi;
                 var vers = "%s (%s)".printf(verlab.get_label(), vi.fc_git);
                 verlab.set_label(vers);
@@ -4204,6 +4205,7 @@ public class MWPlanner : Gtk.Application {
             foreach (var s in evar.split(" "))
             {
                 m += s;
+                MWPLog.message("using %s\n", s);
             }
             if(m.length > 1)
             {
