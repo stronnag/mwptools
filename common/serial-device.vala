@@ -429,7 +429,7 @@ public class MWSerial : Object
             available = false;
             if(fd != -1)
                 serial_lost();
-            MWPLog.message("Close on cond %x (fd=%d)\n", cond, fd);
+            MWPLog.message("Close on condition %x (fd=%d)\n", cond, fd);
             return Source.REMOVE;
         }
         else if (fd != -1)
