@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+extern int connect_bt_device (string dev);
+
 public struct SerialStats
 {
     double elapsed;
@@ -63,7 +65,6 @@ public class MWSerial : Object
     private uint8 mavid2;
     private uint16 mavsum;
     private uint16 rxmavsum;
-//    private MWPlanner _mwp;
 
     public enum ComMode
     {
@@ -292,39 +293,52 @@ public class MWSerial : Object
         }
 
         commode = 0;
-        if(regex.match(device, 0, out mi))
-        {
-            if(mi.fetch(1) == "tcp")
-                commode = ComMode.STREAM;
 
-            var s =  mi.fetch(2);
-            if(s[0] == '[' && s[s.length-1] == ']')
-                host = s[1:-1];
-            else
-                host = s;
-            port = (uint16)int.parse(mi.fetch(3));
-        }
-        else if(device[0] == ':')
+        if(device.length == 17 &&
+           device[2] == ':' && device[5] == ':')
         {
-            host = "";
-            port = (uint16)int.parse(device[1:device.length]);
-        }
-
-        if(host != null)
-        {
-            setup_ip(host, port);
+            fd = connect_bt_device(device);
+            if (fd != -1)
+            {
+                commode = ComMode.FD|ComMode.STREAM;
+            }
         }
         else
         {
-            commode = ComMode.STREAM|ComMode.TTY;
-            parts = device.split ("@");
-            if(parts.length == 2)
+            if(regex.match(device, 0, out mi))
             {
-                device  = parts[0];
-                rate = int.parse(parts[1]);
+                if(mi.fetch(1) == "tcp")
+                    commode = ComMode.STREAM;
+
+                var s =  mi.fetch(2);
+                if(s[0] == '[' && s[s.length-1] == ']')
+                    host = s[1:-1];
+                else
+                    host = s;
+                port = (uint16)int.parse(mi.fetch(3));
             }
-            fd = Posix.open(device, Posix.O_RDWR);
-            setup_fd((int)rate);
+            else if(device[0] == ':')
+            {
+                host = "";
+                port = (uint16)int.parse(device[1:device.length]);
+            }
+
+            if(host != null)
+            {
+                setup_ip(host, port);
+            }
+            else
+            {
+                commode = ComMode.STREAM|ComMode.TTY;
+                parts = device.split ("@");
+                if(parts.length == 2)
+                {
+                    device  = parts[0];
+                    rate = int.parse(parts[1]);
+                }
+                fd = Posix.open(device, Posix.O_RDWR);
+                setup_fd((int)rate);
+            }
         }
 
         if(fd < 0)
