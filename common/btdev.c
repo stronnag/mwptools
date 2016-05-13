@@ -18,17 +18,48 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
 
 #ifdef __linux__
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/rfcomm.h>
-#include <bluetooth/hci.h>
-#include <bluetooth/hci_lib.h>
 #include <sys/socket.h>
+
+/* I'd really prefer not to have to require bluez-lib-devel ... */
+
+#define _BA_SIZE 6
+#define BTPROTO_RFCOMM	3
+
+/* BD Address */
+typedef struct {
+        uint8_t b[6];
+} __attribute__((packed)) bdaddr_t;
+
+/* RFCOMM socket address */
+struct sockaddr_rc {
+        sa_family_t     rc_family;
+        bdaddr_t        rc_bdaddr;
+        uint8_t         rc_channel;
+};
+
+
+int _mwp_str2ba(const char *str, bdaddr_t * ba)
+{
+       uint8_t b[6];
+       const char *ptr = str;
+       int i;
+
+       for (i = 0; i < 6; i++) {
+              b[5-i] = (uint8_t) strtol(ptr, NULL, 16);
+              if (i != 5 && !(ptr = strchr(ptr, ':')))
+                     ptr = ":00:00:00:00:00";
+              ptr++;
+       }
+       memcpy(ba, b, _BA_SIZE);
+       return 0;
+}
 
 int connect_bt_device(char *btaddr)
 {
@@ -44,7 +75,7 @@ int connect_bt_device(char *btaddr)
     {
         addr.rc_family = AF_BLUETOOTH;
         addr.rc_channel = (uint8_t) 1;
-        str2ba(btaddr, &addr.rc_bdaddr );
+        _mwp_str2ba(btaddr, &addr.rc_bdaddr );
         status = connect(s, (struct sockaddr *)&addr, sizeof(addr));
         if(status != 0)
         {

@@ -2,7 +2,7 @@ VALAC=valac
 
 include ../common.mk
 
-LOPTS=-X -lm -X -lbluetooth
+LOPTS=-X -lm
 APP=mspsim
 SRC=$(APP).vala
 COMMON=../common/mwp_xml.vala ../common/serial-device.vala ../common/geocalc.vala  ../common/utils.vala ../common/mspcmd.vala  ../common/mspmsg.vala ../common/get_locale_double.c ../common/mwplog.vala  ../common/btdev.c

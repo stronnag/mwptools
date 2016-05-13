@@ -2,7 +2,7 @@ VALAC=valac
 
 include ../common.mk
 
-LOPTS=-X -lbluetooth
+LOPTS=
 APP=pidedit
 SRC=$(APP).vala
 COMMON=../common/serial-device.vala ../common/utils.vala ../common/mspcmd.vala ../common/mspmsg.vala ../common/get_locale_double.c ../common/mwplog.vala ../common/btdev.c

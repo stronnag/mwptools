@@ -1,5 +1,5 @@
 VALAC=valac
-LOPTS=-X -lbluetooth
+LOPTS=
 include ../common.mk
 
 APP=switchedit
