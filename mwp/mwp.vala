@@ -1353,9 +1353,9 @@ public class MWPlanner : Gtk.Application {
 
                 if(pane.position != conf.window_p)
                 {
-
                     pane.position = conf.window_p;
                 }
+                fbox.allow_resize(false);
                 return Source.REMOVE;
             });
 
@@ -1372,6 +1372,11 @@ public class MWPlanner : Gtk.Application {
                 }
             });
 
+        pane.button_press_event.connect((evt) => {
+                fbox.allow_resize(true);
+                return false;
+            });
+
         pane.button_release_event.connect((evt) => {
                 if (evt.button == 1)
                 {
@@ -1381,6 +1386,10 @@ public class MWPlanner : Gtk.Application {
                         conf.save_pane();
                     }
                 }
+                Timeout.add(500, () => {
+                        fbox.allow_resize(false);
+                        return Source.REMOVE;
+                    });
                 return false;
             });
 

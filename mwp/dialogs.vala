@@ -258,14 +258,21 @@ public class FlightBox : GLib.Object
     private Gtk.Label big_spd;
     private Gtk.Label big_sats;
     public Gtk.Box vbox {get; private set;}
+    private bool _allow_resize = true;
+    private Gtk.Grid grid;
     private Gtk.Window _w;
     private uint fh1=20;
+
+    public void allow_resize(bool exp)
+    {
+        grid.expand = _allow_resize = exp;
+    }
 
     public FlightBox(Gtk.Builder builder, Gtk.Window pw)
     {
         _w = pw;
         vbox  = builder.get_object ("flight_box") as Gtk.Box;
-        var grid = builder.get_object ("fv_grid") as Gtk.Grid;
+        grid = builder.get_object ("fv_grid") as Gtk.Grid;
         grid.set_column_homogeneous (true);
         big_lat = builder.get_object ("big_lat") as Gtk.Label;
         big_lon = builder.get_object ("big_lon") as Gtk.Label;
@@ -276,9 +283,12 @@ public class FlightBox : GLib.Object
         big_spd = builder.get_object ("big_spd") as Gtk.Label;
         big_sats = builder.get_object ("big_sats") as Gtk.Label;
         vbox.size_allocate.connect((a) => {
-                fh1 = a.width*MWPlanner.conf.fontfact/100;
-                Idle.add(() => {update(true);
-                                return false;});
+                if(_allow_resize)
+                {
+                    fh1 = a.width*MWPlanner.conf.fontfact/100;
+                    Idle.add(() => {update(true);
+                                    return false;});
+                }
             });
         vbox.show_all();
     }
@@ -329,9 +339,13 @@ public class FlightBox : GLib.Object
                    Units.distance(falt),
                    Units.distance_units() ));
 
+           var fhsp = fh1;
+           if(GPSInfo.spd >= 100)
+               fhsp = fh1*75/100;
+
            big_spd.set_label(
                "Speed <span font='%u'>%.1f</span>%s".printf(
-                   fh1,
+                   fhsp,
                    Units.speed(GPSInfo.spd),
                    Units.speed_units() ) );
            string hdoptxt="";
