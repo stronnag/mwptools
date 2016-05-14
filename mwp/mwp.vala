@@ -1355,7 +1355,10 @@ public class MWPlanner : Gtk.Application {
                 {
                     pane.position = conf.window_p;
                 }
-                fbox.allow_resize(false);
+                Timeout.add(250, () => {
+                        fbox.allow_resize(false);
+                        return Source.REMOVE;
+                    });
                 return Source.REMOVE;
             });
 
