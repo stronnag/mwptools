@@ -1710,15 +1710,6 @@ public class MWPlanner : Gtk.Application {
             {
                 last_an = lastm;
                 mavc = 0;
-/* BAD IDEA !
-                if(have_mspradio == false)
-                {
-                    force_mav = true;
-                    send_mav_heartbeat();
-                }
-                else
-                    force_mav = false;
-*/
             }
             else
             {
@@ -2341,6 +2332,15 @@ public class MWPlanner : Gtk.Application {
                             }
                         }
                         report_bits(bxflag);
+                        Craft.RMIcon ri = 0;
+                        if ((rth_mask != 0) && ((bxflag & rth_mask) == 0))
+                            ri |= Craft.RMIcon.RTH;
+                        if ((ph_mask != 0) && ((bxflag & ph_mask) == 0))
+                            ri |= Craft.RMIcon.PH;
+                        if ((wp_mask != 0) && ((bxflag & wp_mask) == 0))
+                            ri |= Craft.RMIcon.WP;
+                        if(ri != 0 && craft != null)
+                            craft.remove_special(ri);
                     }
                     else
                     {

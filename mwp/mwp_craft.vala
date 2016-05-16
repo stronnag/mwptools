@@ -77,7 +77,7 @@ public class Craft : GLib.Object
         WP = -4
     }
 
-    private enum RM
+    public enum RMIcon
     {
         PH = 1,
         RTH = 2,
@@ -263,27 +263,28 @@ public class Craft : GLib.Object
 
     public void set_normal()
     {
-        path_colour = trk_cyan;
-        remove_special(RM.ALL);
+        remove_special(RMIcon.ALL);
     }
 
-    private void remove_special(RM rmflags)
+    public void remove_special(RMIcon rmflags)
     {
-        if(((rmflags & RM.PH) != 0) && posp != null)
+        if(((rmflags & RMIcon.PH) != 0) && posp != null)
         {
             pmlayer.remove_marker(posp);
             posp = null;
         }
-        if(((rmflags & RM.RTH) != 0) && rthp != null)
+        if(((rmflags & RMIcon.RTH) != 0) && rthp != null)
         {
             pmlayer.remove_marker(rthp);
             rthp = null;
         }
-        if(((rmflags & RM.WP) != 0) && wpp != null)
+        if(((rmflags & RMIcon.WP) != 0) && wpp != null)
         {
             pmlayer.remove_marker(wpp);
             wpp = null;
         }
+        if(rmflags == RMIcon.ALL)
+            path_colour = trk_cyan;
     }
 
     public void special_wp(Special wpno, double lat, double lon)
@@ -291,7 +292,7 @@ public class Craft : GLib.Object
         Champlain.Label m = null;
         Clutter.Color colour;
         Clutter.Color black = { 0,0,0, 0xff };
-        RM rmflags = 0;
+        RMIcon rmflags = 0;
 
         switch(wpno)
         {
@@ -318,7 +319,7 @@ public class Craft : GLib.Object
                     pmlayer.add_marker(posp);
                 }
                 m = posp;
-                rmflags = RM.RTH|RM.WP;
+                rmflags = RMIcon.RTH|RMIcon.WP;
                 path_colour = trk_green;
                 break;
             case Special.RTH:
@@ -332,7 +333,7 @@ public class Craft : GLib.Object
                     pmlayer.add_marker(rthp);
                 }
                 m = rthp;
-                rmflags = RM.PH|RM.WP;
+                rmflags = RMIcon.PH|RMIcon.WP;
                 path_colour = trk_yellow;
                 break;
             case Special.WP:
@@ -346,12 +347,12 @@ public class Craft : GLib.Object
                     pmlayer.add_marker(wpp);
                 }
                 m = wpp;
-                rmflags = RM.PH|RM.RTH;
+                rmflags = RMIcon.PH|RMIcon.RTH;
                 path_colour = trk_white;
                 break;
             default:
                 path_colour = trk_cyan;
-                rmflags = RM.ALL;
+                rmflags = RMIcon.ALL;
                 break;
         }
         if(rmflags != 0)
