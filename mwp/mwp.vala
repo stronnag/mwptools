@@ -2901,6 +2901,11 @@ public class MWPlanner : Gtk.Application {
                 sf.rssi = *rp++;
                 sf.airspeed = *rp++;
                 sf.flags = *rp++;
+/****
+                MSP_RADIO r = MSP_RADIO();
+                r.remrssi = sf.rssi;
+                radstatus.update(r,item_visible(DOCKLETS.RADIO));
+***/
                 uint8 ltmflags = sf.flags >> 2;
                 uint32 mwflags = 0;
                 uint8 saf = sf.flags & 1;
@@ -3583,8 +3588,6 @@ public class MWPlanner : Gtk.Application {
     {
         if(msp.available)
             telstats.s = msp.dump_stats();
-//        else
-//            telstats.s = {0};
         telstats.toc = toc;
         telstats.tot = tot;
         telstats.avg = (anvals > 0) ? (ulong)(acycle/anvals) : 0;
@@ -3594,7 +3597,7 @@ public class MWPlanner : Gtk.Application {
     private void show_serial_stats()
     {
         gen_serial_stats();
-        MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %d, avg poll loop %lu ms messages %u\n",
+        MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %d, avg poll loop %lu ms messages %lu\n",
                        telstats.s.elapsed, telstats.s.rxbytes, telstats.s.txbytes,
                        telstats.s.rxrate, telstats.s.txrate,
                        telstats.toc, telstats.tot, telstats.avg ,telstats.msgs);
