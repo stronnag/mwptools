@@ -1493,7 +1493,7 @@ public class NavStatus : GLib.Object
         hdr = 0;
     }
 
-    public void logspeak_init (string? voice)
+    public void logspeak_init (string? voice, bool use_en = false)
     {
         if(vinit == false)
         {
@@ -1507,15 +1507,13 @@ public class NavStatus : GLib.Object
         {
             logspeak_close();
         }
-//        MWPLog.message("Start audio\n");
         mt = new AudioThread();
-        mt.start();
+        mt.start(use_en);
         mt_voice=true;
     }
 
     public void logspeak_close()
     {
-//        MWPLog.message("Stop audio\n");
         mt_voice=false;
         mt.clear();
         mt.message(AudioThread.Vox.DONE);
@@ -1542,6 +1540,7 @@ public class AudioThread : Object {
     }
 
     private uint lsats;
+    private bool use_en = false;
 
     private AsyncQueue<Vox> msgs;
     public Thread<int> thread {private set; get;}
@@ -1588,9 +1587,9 @@ public class AudioThread : Object {
             ;
     }
 
-    public void start()
+    public void start(bool _use_en = false)
     {
-//        MWPLog.message("Start thread\n");
+        use_en = _use_en;
         lsats = 255;
         thread = new Thread<int> ("mwp audio", () => {
                 Vox c;
@@ -1654,7 +1653,7 @@ public class AudioThread : Object {
                                 brg += 360;
                             if(NavStatus.recip)
                                 brg = ((brg + 180) % 360);
-                            s = "Range %.0f, bearing %d.".printf(
+                            s = "Range %.0f. Bearing %d.".printf(
                                 Units.distance(NavStatus.cg.range),
                                 brg);
                             break;
@@ -1693,6 +1692,8 @@ public class AudioThread : Object {
                     if(s != null)
                     {
 //                        MWPLog.message("say %s %s\n", c.to_string(), s);
+                        if(use_en)
+                            s.replace(",",".");
                         espeak_say(s);
                     }
                 }

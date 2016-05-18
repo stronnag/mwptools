@@ -174,17 +174,17 @@ public class MSP : Object
 
     private static const string[] nav_errors =  {
         "Navigation system is working", // 0
-        "Next waypoint distance is more than the safety limit, aborting mission", //1
-        "GPS reception is compromised - pausing mission, COPTER IS ADRIFT!", //2
-        "Error while reading next waypoint from memory, aborting mission", //3
+        "Next waypoint distance is more than the safety limit. Aborting mission", //1
+        "GPS reception is compromised - pausing mission. COPTER IS ADRIFT!", //2
+        "Error while reading next waypoint from memory. Aborting mission", //3
         "Mission Finished" , //4
         "Waiting for timed position hold", //5
-        "Invalid Jump target detected, aborting mission", //6
-        "Invalid Mission Step Action code detected, aborting mission", //7
+        "Invalid Jump target detected. Aborting mission", //6
+        "Invalid Mission Step Action code detected. Aborting mission", //7
         "Waiting to reach return to home altitude", //8
-        "GPS fix lost, mission aborted - COPTER IS ADRIFT!", //9
-        "Copter is disarmed, navigation engine disabled", //10
-        "Landing is in progress, check attitude if possible" //11
+        "GPS fix lost. Mission aborted - COPTER IS ADRIFT!", //9
+        "Copter is disarmed. Navigation engine disabled", //10
+        "Landing is in progress. Check attitude if possible" //11
     };
 
     private static const string [] ltm_modes =

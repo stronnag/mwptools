@@ -273,5 +273,12 @@
       <description>(private settinge)</description>
     </key>
 
+    <key name="uilang" type="s">
+      <default>""</default>
+      <summary>Language Handling</summary>
+      <description>"en" do everything as English (decimal points,
+      voice), "ev" do voice as english (so say 'point' for decimals)</description>
+    </key>
+
   </schema>
 </schemalist>

@@ -472,6 +472,7 @@ public class MWPlanner : Gtk.Application {
     private static VersInfo vi ={0};
     private static bool set_fs;
     private static int stack_size = 0;
+    public static unowned string ulang;
 
     private const Gtk.TargetEntry[] targets = {
         {"text/uri-list",0,0}
@@ -537,12 +538,15 @@ public class MWPlanner : Gtk.Application {
 
         base.startup();
         wpmgr = WPMGR();
-
         mwvar = MWChooser.fc_from_arg0();
-
-        builder = new Builder ();
         conf = new MWPSettings();
         conf.read_settings();
+        ulang = Intl.setlocale(LocaleCategory.NUMERIC, "");
+
+        if(conf.uilang == "en")
+            Intl.setlocale(LocaleCategory.NUMERIC, "C");
+
+        builder = new Builder ();
 
         if(layfile == null && conf.deflayout != null)
             layfile = conf.deflayout;
@@ -3548,7 +3552,7 @@ public class MWPlanner : Gtk.Application {
         {
             if(audio_on /*&& (sflags != 0)*/)
             {
-                navstatus.logspeak_init(conf.evoice);
+                navstatus.logspeak_init(conf.evoice, (conf.uilang == "ev"));
                 spktid = Timeout.add_seconds(conf.speakint, () => {
                         navstatus.announce(sflags, conf.recip);
                         return Source.CONTINUE;

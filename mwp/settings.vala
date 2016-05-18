@@ -67,6 +67,8 @@ public class MWPSettings : GLib.Object
     public int window_p {get; set; default=-1;}
     public int fontfact {get; set; default = 12;}
     public int ahsize {get; set; default = 32;}
+    public string uilang {get; private set; default=null;}
+
 
     public signal void settings_update (string s);
 
@@ -216,6 +218,8 @@ public class MWPSettings : GLib.Object
             fontfact = settings.get_int("font-fv");
         if(s == null || s == "ah-size")
             ahsize = settings.get_int("ah-size");
+        if(s == null || s == "uilang")
+            uilang = settings.get_string ("uilang");
     }
 
     public void save_window()
