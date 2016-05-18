@@ -1693,7 +1693,7 @@ public class AudioThread : Object {
                     {
 //                        MWPLog.message("say %s %s\n", c.to_string(), s);
                         if(use_en)
-                            s.replace(",",".");
+                            s = s.replace(",",".");
                         espeak_say(s);
                     }
                 }
