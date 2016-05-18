@@ -1538,7 +1538,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="can_focus">False</property>
             <property name="halign">start</property>
             <property name="use_markup">True</property>
-            <property name="ellipsize">end</property>
             <property name="single_line_mode">True</property>
           </object>
           <packing>
@@ -1552,7 +1551,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="can_focus">False</property>
             <property name="halign">start</property>
             <property name="use_markup">True</property>
-            <property name="ellipsize">end</property>
             <property name="single_line_mode">True</property>
           </object>
           <packing>
@@ -1566,7 +1564,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="can_focus">False</property>
             <property name="halign">start</property>
             <property name="use_markup">True</property>
-            <property name="ellipsize">end</property>
             <property name="single_line_mode">True</property>
           </object>
           <packing>
@@ -1580,7 +1577,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="can_focus">False</property>
             <property name="halign">start</property>
             <property name="use_markup">True</property>
-            <property name="ellipsize">end</property>
             <property name="single_line_mode">True</property>
           </object>
           <packing>
@@ -1594,7 +1590,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="can_focus">False</property>
             <property name="halign">start</property>
             <property name="use_markup">True</property>
-            <property name="ellipsize">end</property>
             <property name="single_line_mode">True</property>
           </object>
           <packing>
@@ -1608,7 +1603,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="can_focus">False</property>
             <property name="halign">start</property>
             <property name="use_markup">True</property>
-            <property name="ellipsize">end</property>
             <property name="single_line_mode">True</property>
           </object>
           <packing>
@@ -1622,7 +1616,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="can_focus">False</property>
             <property name="halign">start</property>
             <property name="use_markup">True</property>
-            <property name="ellipsize">end</property>
             <property name="single_line_mode">True</property>
           </object>
           <packing>
@@ -1636,7 +1629,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
             <property name="can_focus">False</property>
             <property name="halign">start</property>
             <property name="use_markup">True</property>
-            <property name="ellipsize">end</property>
             <property name="single_line_mode">True</property>
           </object>
           <packing>
