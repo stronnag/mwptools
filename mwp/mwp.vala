@@ -1361,9 +1361,9 @@ public class MWPlanner : Gtk.Application {
                 }
                 Timeout.add(250, () => {
                         fbox.allow_resize(false);
-                        return Source.REMOVE;
+                        return /* Source.REMOVE */ false;
                     });
-                return Source.REMOVE;
+                return /* Source.REMOVE */ false;
             });
 
         window.size_allocate.connect((a) => {
@@ -1395,7 +1395,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 Timeout.add(500, () => {
                         fbox.allow_resize(false);
-                        return Source.REMOVE;
+                        return /* Source.REMOVE */ false;
                     });
                 return false;
             });
@@ -1504,9 +1504,9 @@ public class MWPlanner : Gtk.Application {
             if(!msp.available)
                 connect_serial();
             Timeout.add_seconds(5, () => { return try_connect(); });
-            return Source.REMOVE;
+            return /* Source.REMOVE */ false;
         }
-        return Source.CONTINUE;
+        return /* Source.CONTINUE */ true;
     }
 
     private void set_error_status(string? e)
@@ -1664,7 +1664,7 @@ public class MWPlanner : Gtk.Application {
                         Process.spawn_command_line_async(conf.heartbeat);
                     } catch  {}
                 }
-                return Source.CONTINUE;
+                return /* Source.CONTINUE */ true;
             });
     }
 
@@ -3142,7 +3142,7 @@ public class MWPlanner : Gtk.Application {
                             MWPLog.message("Reconnecting\n");
                             connect_serial();
                         }
-                        return Source.REMOVE;
+                        return /* Source.REMOVE */ false;
                     });
                 break;
 
@@ -3476,7 +3476,7 @@ public class MWPlanner : Gtk.Application {
                 MWPLog.message("WP upload probably failed\n");
                 mwp_warning_box("WP upload timeout.\nThe upload has probably failed",
                                 Gtk.MessageType.ERROR);
-                return Source.REMOVE;
+                return /* Source.REMOVE */ false;
             });
 
         uint8 wtmp[64];
@@ -3541,7 +3541,7 @@ public class MWPlanner : Gtk.Application {
                     (cmd == MSP.Cmds.FC_VERSION))
                     cmd = MSP.Cmds.BOXNAMES;
                 send_cmd(cmd,buf,len);
-                return Source.CONTINUE;
+                return /* Source.CONTINUE */ true;
             });
         send_cmd(cmd,buf,len);
     }
@@ -3555,7 +3555,7 @@ public class MWPlanner : Gtk.Application {
                 navstatus.logspeak_init(conf.evoice, (conf.uilang == "ev"));
                 spktid = Timeout.add_seconds(conf.speakint, () => {
                         navstatus.announce(sflags, conf.recip);
-                        return Source.CONTINUE;
+                        return /* Source.CONTINUE */ true;
                     });
                 gps_alert(0);
                 navstatus.announce(sflags,conf.recip);
@@ -3715,7 +3715,7 @@ public class MWPlanner : Gtk.Application {
                 Timeout.add(timeo, () =>
                     {
                         add_cmd(MSP.Cmds.IDENT,null,0, 1500);
-                        return Source.REMOVE;
+                        return /* Source.REMOVE */ false;
                     });
                 menumwvar.sensitive = false;
             }
@@ -3976,7 +3976,7 @@ public class MWPlanner : Gtk.Application {
         {
             Timeout.add_seconds(timeout, () => {
                     msg.destroy();
-                    return Source.CONTINUE;
+                    return /* Source.CONTINUE */ true;
                 });
         }
         msg.run();

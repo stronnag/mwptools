@@ -444,7 +444,7 @@ public class MWSerial : Object
             if(fd != -1)
                 serial_lost();
             MWPLog.message("Close on condition %x (fd=%d)\n", cond, fd);
-            return Source.REMOVE;
+            return /* Source.REMOVE */ false;
         }
         else if (fd != -1)
         {
@@ -460,14 +460,14 @@ public class MWSerial : Object
                         avb = 256;
                     res = Posix.read(fd,buf,avb);
                     if(res == 0)
-                        return Source.CONTINUE;
+                        return /* Source.CONTINUE */ true;
                 }
                 else
-                    return Source.CONTINUE;
+                    return /* Source.CONTINUE */ true;
 #else
                 res = Posix.read(fd,buf,256);
                 if(res == 0)
-                    return Source.CONTINUE;
+                    return /* Source.CONTINUE */ true;
 #endif
             }
             else
@@ -747,7 +747,7 @@ public class MWSerial : Object
                 }
             }
         }
-        return Source.CONTINUE;
+        return /* Source.CONTINUE */ true;
     }
 
     private void mavlink_meta(uint8 id)
