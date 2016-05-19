@@ -65,6 +65,8 @@ public class MWSerial : Object
     private int pfd;
     private string defprof;
     private int raws = -1;
+    private bool inav = false;
+
     private static int rxerr = 0;
 
     public static string devname;
@@ -539,10 +541,18 @@ public class MWSerial : Object
                         if(prof1 > 1)
                             prof1 = 1;
                     }
+
+                    if(((string)line).contains("# INAV"))
+                    {
+                        if(prof1 > 1)
+                            prof1 = 0;
+                        calacc = false;
+                        inav = true;
+                    }
                     os.printf("%s", (string)line);
                 }
             }
-            if(defprof != null)
+            if(inav == false && defprof != null)
             {
                 os.printf("## defprof=%s\n", defprof);
             }
@@ -728,7 +738,7 @@ public class MWSerial : Object
         }
         if(!verbose)
             message("\r");
-        if(defprof != null)
+        if(inav == false && defprof != null)
         {
             Thread.usleep(1000*500);
             message("Setting %s\n", defprof);

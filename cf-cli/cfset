@@ -2,6 +2,7 @@
 
 # Wrapper for cf-cli. Special case for <name>_fp.txt which is assumed
 # to a iNav file, and thus doesn't need acc calibration after each flashing.
+# post 2016-05-19, cf-cli does not attempt acc calibration for inav
 
 F=$1
 [ -z "$F" ] && { echo 'No file given' ; exit 255 ; }
