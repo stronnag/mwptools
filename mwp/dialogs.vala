@@ -1017,7 +1017,11 @@ public class RadioStatus : GLib.Object
     public void update_ltm(LTM_SFRAME s,bool visible)
     {
         if(visible)
-            remrssi_label.set_label(s.rssi.to_string());
+        {
+            ushort rssi;
+            rssi = 1023*s.rssi/254;
+            remrssi_label.set_label(rssi.to_string());
+        }
     }
 
     private void display()

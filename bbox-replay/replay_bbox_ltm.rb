@@ -223,7 +223,7 @@ def encode_stats r,armed=1
 	  19
 	end
   sts = (sts << 2) | armed
-  sl = [(r[:vbatlatest_v].to_f*1000).to_i, 0, 0, 0, sts].pack('S<S<ccc')
+  sl = [(r[:vbatlatest_v].to_f*1000).to_i, 0, r[:rssi].to_i, 0, sts].pack('S<S<ccc')
   msg << sl << mksum(sl)
   msg
 end

@@ -277,7 +277,6 @@ public class MWPlanner : Gtk.Application {
 
     private uint64 acycle;
     private uint64 anvals;
-    private uint64 amsgs;
     private ulong toc;
     private int tot;
     private uint32 xbits = 0;
@@ -2020,7 +2019,7 @@ public class MWPlanner : Gtk.Application {
                     }
                 }
                 last_tm = nticks;
-                amsgs++;
+                telstats.msgs++;
             }
         }
 
@@ -2901,11 +2900,9 @@ public class MWPlanner : Gtk.Application {
                 sf.rssi = *rp++;
                 sf.airspeed = *rp++;
                 sf.flags = *rp++;
-/****
-                MSP_RADIO r = MSP_RADIO();
-                r.remrssi = sf.rssi;
-                radstatus.update(r,item_visible(DOCKLETS.RADIO));
-***/
+
+                radstatus.update_ltm(sf,item_visible(DOCKLETS.RADIO));
+
                 uint8 ltmflags = sf.flags >> 2;
                 uint32 mwflags = 0;
                 uint8 saf = sf.flags & 1;
@@ -3165,7 +3162,7 @@ public class MWPlanner : Gtk.Application {
             {
                 if (requests.length > 0)
                     tcycle = (tcycle + 1) % requests.length;
-                amsgs++;
+                telstats.msgs++;
                 if(tcycle == 0)
                 {
                     lastp.stop();
@@ -3591,16 +3588,16 @@ public class MWPlanner : Gtk.Application {
         telstats.toc = toc;
         telstats.tot = tot;
         telstats.avg = (anvals > 0) ? (ulong)(acycle/anvals) : 0;
-        telstats.msgs = amsgs;
     }
 
     private void show_serial_stats()
     {
         gen_serial_stats();
-        MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %d, avg poll loop %lu ms messages %lu\n",
+        MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %d, avg poll loop %lu ms messages %s\n",
                        telstats.s.elapsed, telstats.s.rxbytes, telstats.s.txbytes,
                        telstats.s.rxrate, telstats.s.txrate,
-                       telstats.toc, telstats.tot, telstats.avg ,telstats.msgs);
+                       telstats.toc, telstats.tot, telstats.avg ,
+                       telstats.msgs.to_string());
     }
 
     private void serial_doom(Gtk.Button c)
@@ -3657,7 +3654,7 @@ public class MWPlanner : Gtk.Application {
     private void init_sstats()
     {
         toc = tot = 0;
-        anvals = amsgs = acycle = 0;
+        anvals = acycle = 0;
         telstats.toc = telstats.tot = 0;
         telstats.avg = 0;
         telstats.msgs = 0;
