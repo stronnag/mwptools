@@ -531,13 +531,13 @@ public class ListBox : GLib.Object
                 if(event.button == 3)
                 {
                     var time = event.time;
-                    Gtk.TreeIter _iter;
+/*
                     Value val;
                     list_model.get_iter_first(out _iter);
                     list_model.get_value (_iter, WY_Columns.ACTION, out val);
                     shp_item.sensitive=((MSP.Action)val == MSP.Action.SET_POI);
                         // remove ins, del as well
-
+                        */
                     if(sel.count_selected_rows () == 0)
                     {
                         del_item.sensitive = delta_item.sensitive =
@@ -555,7 +555,13 @@ public class ListBox : GLib.Object
 
                     if(sel.count_selected_rows () == 1)
                     {
+                        Value val;
+                        Gtk.TreeIter iv;
                         up_item.sensitive = down_item.sensitive = true;
+                        var rows = sel.get_selected_rows(null);
+                        list_model.get_iter (out iv, rows.nth_data(0));
+                        list_model.get_value (iv, WY_Columns.ACTION, out val);
+                        shp_item.sensitive=((MSP.Action)val == MSP.Action.SET_POI);
                     }
                     else
                     {
@@ -815,7 +821,17 @@ public class ListBox : GLib.Object
         Gtk.TreeIter iter;
         Value val;
         double lat,lon;
-        list_model.get_iter_first(out iter);
+
+        for(bool next=list_model.get_iter_first(out iter);
+            next;
+            next=list_model.iter_next(ref iter))
+        {
+            list_model.get_value (iter, WY_Columns.ACTION, out val);
+            if ((MSP.Action)val == MSP.Action.SET_POI)
+                break;
+        }
+
+//        list_model.get_iter_first(out iter);
         list_model.get_value (iter, WY_Columns.LAT, out val);
         lat = (double)val;
         list_model.get_value (iter, WY_Columns.LON, out val);
