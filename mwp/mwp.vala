@@ -3919,6 +3919,9 @@ public class MWPlanner : Gtk.Application {
             // Process response:
         if (chooser.run () == Gtk.ResponseType.ACCEPT) {
             last_file = chooser.get_filename ();
+            if(!(last_file.has_suffix(".mission") ||
+                 last_file.has_suffix(".xml")))
+                last_file += ".mission";
             var m = get_mission_data();
             m.to_xml_file(last_file);
             update_title_from_file(last_file);
