@@ -202,7 +202,7 @@ public class MSP : Object
         "Waypoints",	// 10
         "Head free", // 11
         "Circle",		// 12
-        "RTH",			// 13
+        "Return Home",			// 13
         "Follow me",		// 14
         "Land",			// 15
         "Fly by wire A",	// 16

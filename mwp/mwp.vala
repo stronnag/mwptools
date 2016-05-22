@@ -3310,7 +3310,7 @@ public class MWPlanner : Gtk.Application {
 
     private void report_bits(uint32 bits)
     {
-        string mode;
+        string mode = null;
         if((bits & angle_mask) == angle_mask)
         {
             mode = "Angle";
@@ -3319,12 +3319,15 @@ public class MWPlanner : Gtk.Application {
         {
             mode = "Horizon";
         }
-        else
+        else if((bits & (ph_mask | rth_mask)) == 0)
         {
             mode = "Acro";
         }
-        fmodelab.set_label(mode);
-        navstatus.update_fmode(mode);
+        if(mode != null)
+        {
+            fmodelab.set_label(mode);
+            navstatus.update_fmode(mode);
+        }
     }
 
     private size_t serialise_wp(MSP_WP w, uint8[] tmp)

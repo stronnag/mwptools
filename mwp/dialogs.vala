@@ -1463,9 +1463,6 @@ public class NavStatus : GLib.Object
         {
             mt.message(AudioThread.Vox.VOLTAGE);
         }
-
-//        if(modsat)
-//            mt.message(AudioThread.Vox.MODSAT,true);
     }
 
     public void cg_on()
@@ -1543,6 +1540,8 @@ public class AudioThread : Object {
         LTM_MODE
     }
 
+    private Timer timer;
+    private double lsat_t;
     private uint lsats;
     private bool use_en = false;
 
@@ -1595,6 +1594,9 @@ public class AudioThread : Object {
     {
         use_en = _use_en;
         lsats = 255;
+        timer = new Timer();
+        timer.start();
+        lsat_t = timer.elapsed();
         thread = new Thread<int> ("mwp audio", () => {
                 Vox c;
                 while((c = msgs.pop()) != Vox.DONE)
@@ -1678,17 +1680,22 @@ public class AudioThread : Object {
                             s = str_zero(s);
                             break;
                         case Vox.MODSAT:
-//                            if(lsats != NavStatus.numsat)
+                            var now = timer.elapsed();
+                            if(lsats != NavStatus.numsat || (now - lsat_t) > 10)
                             {
                                 string ss = "";
                                 if(NavStatus.numsat != 1)
                                     ss = "s";
                                 s = "%d satellite%s.".printf(NavStatus.numsat,ss);
                                 lsats = NavStatus.numsat;
+                                lsat_t = now;
                             }
                             break;
                         case Vox.LTM_MODE:
-                            s = MSP.ltm_mode(NavStatus.xfmode);
+                            var xfmode = NavStatus.xfmode;
+                            if(((xfmode > 0 && xfmode < 5) || xfmode == 8 ||
+                                xfmode == 19))
+                                s = MSP.ltm_mode(xfmode);
                             break;
                         default:
                             break;
