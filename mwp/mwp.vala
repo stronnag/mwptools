@@ -3656,6 +3656,8 @@ public class MWPlanner : Gtk.Application {
 
     private void init_sstats()
     {
+        if(telstats.msgs != 0)
+            gen_serial_stats();
         toc = tot = 0;
         anvals = acycle = 0;
         telstats.toc = telstats.tot = 0;
