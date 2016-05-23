@@ -189,7 +189,7 @@ public class MWSerial : Object
         }
     }
 
-    private void setup_ip(string host, uint16 port, string? remhost=null, uint16 rport = 0)
+    private void setup_ip(string host, uint16 port, string? rhost=null, uint16 rport = 0)
     {
         fd = -1;
         try
@@ -212,9 +212,8 @@ public class MWSerial : Object
                         fd = skt.fd;
                         break;
                     }
-                    if(remhost != null && rport != 0)
-                        sockaddr = new InetSocketAddress.from_string (remhost,
-                                                                      rport);
+                    if(rhost != null && rport != 0)
+                        sockaddr = new InetSocketAddress.from_string (rhost,rport);
                 } catch (Error e) {
                     MWPLog.message ("%s\n",e.message);
                 }
@@ -335,7 +334,7 @@ public class MWSerial : Object
 
             if(host != null)
             {
-                setup_ip(host, port);
+                setup_ip(host, port, remhost, remport);
             }
             else
             {
