@@ -189,7 +189,7 @@ public class MWSerial : Object
         }
     }
 
-    private void setup_ip(string host, uint16 port)
+    private void setup_ip(string host, uint16 port, string? remhost=null, uint16 rport = 0)
     {
         fd = -1;
         try
@@ -212,6 +212,9 @@ public class MWSerial : Object
                         fd = skt.fd;
                         break;
                     }
+                    if(remhost != null && rport != 0)
+                        sockaddr = new InetSocketAddress.from_string (remhost,
+                                                                      rport);
                 } catch (Error e) {
                     MWPLog.message ("%s\n",e.message);
                 }
@@ -277,7 +280,6 @@ public class MWSerial : Object
     {
         string host = null;
         uint16 port = 0;
-        MatchInfo mi;
         Regex regex;
         string []parts;
 
@@ -286,7 +288,7 @@ public class MWSerial : Object
         print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
         try
         {
-            regex = new Regex ("^(tcp|udp):\\/\\/(\\S*):(\\d+)");
+            regex = new Regex("^(tcp|udp):\\/\\/([\\[\\]:A-Za-z\\-\\.0-9]*):(\\d+)\\/{0,1}([A\\-Za-z\\-\\.0-9]*):{0,1}(\\d*)");
         } catch(Error e) {
             stderr.printf("err: %s", e.message);
             return false;
@@ -305,17 +307,25 @@ public class MWSerial : Object
         }
         else
         {
-            if(regex.match(device, 0, out mi))
+            string remhost = null;
+            uint16 remport = 0;
+            parts = regex.split(device);
+            if (parts.length == 7)
             {
-                if(mi.fetch(1) == "tcp")
+                if(parts[1] == "tcp")
                     commode = ComMode.STREAM;
 
-                var s =  mi.fetch(2);
+                var s =  parts[2];
                 if(s[0] == '[' && s[s.length-1] == ']')
                     host = s[1:-1];
                 else
                     host = s;
-                port = (uint16)int.parse(mi.fetch(3));
+                port = (uint16)int.parse(parts[3]);
+                if(parts[4] != "")
+                {
+                    remhost = parts[4];
+                    remport = (uint16)int.parse(parts[5]);
+                }
             }
             else if(device[0] == ':')
             {
