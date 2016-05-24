@@ -42,7 +42,6 @@ public struct TelemStats
     ulong toc;
     int tot;
     ulong avg;
-    uint64 msgs;
 }
 
 public struct BatteryLevels
@@ -277,8 +276,6 @@ public class MWPlanner : Gtk.Application {
 
     private uint64 acycle;
     private uint64 anvals;
-    private ulong toc;
-    private int tot;
     private uint32 xbits = 0;
     private uint8 api_cnt;
     private uint8 icount = 0;
@@ -1581,7 +1578,7 @@ public class MWPlanner : Gtk.Application {
                             else
                             {
                                 failcount++;
-                                toc++;
+                                telstats.toc++;
                                 if (failcount >= tlimit)
                                 {
                                     MWPLog.message("TOC0 (%d)\n", tcycle);
@@ -1594,7 +1591,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     else if ((nticks - lastok) > tlimit)
                     {
-                        toc++;
+                        telstats.toc++;
                         MWPLog.message("TOC1 (%d)\n", tcycle);
                         lastok = nticks;
                         tcycle = 0;
@@ -2019,7 +2016,6 @@ public class MWPlanner : Gtk.Application {
                     }
                 }
                 last_tm = nticks;
-                telstats.msgs++;
             }
         }
 
@@ -3162,12 +3158,12 @@ public class MWPlanner : Gtk.Application {
             {
                 if (requests.length > 0)
                     tcycle = (tcycle + 1) % requests.length;
-                telstats.msgs++;
                 if(tcycle == 0)
                 {
                     lastp.stop();
                     var et = lastp.elapsed();
-                    tot = (looptimer == 0) ? 0 : (int)((looptimer-et)*1000);
+                    telstats.tot = (looptimer == 0) ? 0 :
+                        (int)((looptimer-et)*1000);
                     acycle += (uint64)(et*1000);
                     anvals++;
                     if(looptimer == 0)
@@ -3183,7 +3179,6 @@ public class MWPlanner : Gtk.Application {
 
     private bool match_pollcmds(MSP.Cmds cmd)
     {
-//        return (cmd == requests[tcycle]);
         bool matched=false;
         foreach(var c in requests)
         {
@@ -3588,8 +3583,6 @@ public class MWPlanner : Gtk.Application {
     {
         if(msp.available)
             telstats.s = msp.dump_stats();
-        telstats.toc = toc;
-        telstats.tot = tot;
         telstats.avg = (anvals > 0) ? (ulong)(acycle/anvals) : 0;
     }
 
@@ -3600,7 +3593,7 @@ public class MWPlanner : Gtk.Application {
                        telstats.s.elapsed, telstats.s.rxbytes, telstats.s.txbytes,
                        telstats.s.rxrate, telstats.s.txrate,
                        telstats.toc, telstats.tot, telstats.avg ,
-                       telstats.msgs.to_string());
+                       telstats.s.msgs.to_string());
     }
 
     private void serial_doom(Gtk.Button c)
@@ -3656,13 +3649,11 @@ public class MWPlanner : Gtk.Application {
 
     private void init_sstats()
     {
-        if(telstats.msgs != 0)
+        if(telstats.s.msgs != 0)
             gen_serial_stats();
-        toc = tot = 0;
         anvals = acycle = 0;
         telstats.toc = telstats.tot = 0;
         telstats.avg = 0;
-        telstats.msgs = 0;
         telemstatus.annul();
         radstatus.annul();
     }

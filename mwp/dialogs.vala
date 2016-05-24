@@ -238,11 +238,10 @@ public class TelemetryStats : GLib.Object
             txbytes.set_label("%lu b".printf(t.s.txbytes));
             rxrate.set_label("%.0f b/s".printf(t.s.rxrate));
             txrate.set_label("%.0f b/s".printf(t.s.txrate));
-            timeouts.set_label("%lu".printf(t.toc));
+            timeouts.set_label(t.toc.to_string());
             waittime.set_label("%d ms".printf(t.tot));
             cycletime.set_label("%lu ms".printf(t.avg));
-            messages.set_label(
-                ("%" + uint64.FORMAT_MODIFIER + "d").printf(t.msgs));
+            messages.set_label(t.s.msgs.to_string());
         }
     }
 }

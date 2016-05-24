@@ -25,6 +25,7 @@ public struct SerialStats
     ulong txbytes;
     double rxrate;
     double txrate;
+    ulong  msgs;
 }
 
 public class MWSerial : Object
@@ -672,6 +673,7 @@ public class MWSerial : Object
                             {
                                 log_raw('i', raw, irawp);
                             }
+                            stats.msgs++;
                             serial_event(cmd, raw[drawp:drawp+csize],
                                          csize,errstate);
                             irawp = drawp = 0;
@@ -737,8 +739,7 @@ public class MWSerial : Object
                         rxmavsum |= (buf[nc] << 8);
                         if(rxmavsum == mavsum)
                         {
-//                            MWPLog.message(" MAVMSG cmd=%u, len=%u res = %u\n",
-//                                           cmd,csize, cmd+MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT);
+                            stats.msgs++;
                             serial_event (cmd+MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT,
                                          raw, csize,errstate);
                             state = States.S_HEADER;
