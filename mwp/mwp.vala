@@ -190,6 +190,7 @@ public class MWPlanner : Gtk.Application {
     private Gtk.Label validatelab;
     private Gtk.Spinner armed_spinner;
     private Gtk.Label typlab;
+    private Gtk.Label gpslab;
     private Gtk.Label labelvbat;
 
     private Gtk.Label sensor_sts[6];
@@ -430,6 +431,7 @@ public class MWPlanner : Gtk.Application {
     private static const int UUSATINTVL=(4000/TIMINTVL);
     private static const int RESTARTINTVL=(30000/TIMINTVL);
     private static const int MAVINTVL=(2000/TIMINTVL);
+    private static const int GPSINTVL=(2000/TIMINTVL);
 
     private enum SATS
     {
@@ -456,6 +458,7 @@ public class MWPlanner : Gtk.Application {
     private uint lastm;
     private uint lastrx;
     private uint last_ga = 0;
+    private uint last_gps = 0;
     private uint last_tm = 0;
     private uint lastok;
     private uint last_an = 0;
@@ -1256,6 +1259,7 @@ public class MWPlanner : Gtk.Application {
         validatelab = builder.get_object ("validated") as Gtk.Label;
         armed_spinner = builder.get_object ("armed_spinner") as Gtk.Spinner;
         typlab = builder.get_object ("typlab") as Gtk.Label;
+        gpslab = builder.get_object ("gpslab") as Gtk.Label;
         labelvbat = builder.get_object ("labelvbat") as Gtk.Label;
         conbutton.clicked.connect(() => { connect_serial(); });
 
@@ -1691,6 +1695,7 @@ public class MWPlanner : Gtk.Application {
                 init_sstats();
                 dopoll = false;
                 init_npos();
+                validatelab.set_text("");
                 add_cmd(MSP.Cmds.IDENT,null,0, 2500);
                 return;
             }
@@ -1805,17 +1810,19 @@ public class MWPlanner : Gtk.Application {
 
         if(missing != 0)
         {
-            string []nsensor={};
-            if((missing & MSP.Sensors.GPS) != 0)
-                nsensor += "GPS";
-            if((missing & MSP.Sensors.BARO) != 0)
-                nsensor += "BARO";
-            if((missing & MSP.Sensors.MAG) != 0)
-                nsensor += "MAG";
-
-            var nss = string.joinv("/",nsensor);
-            set_error_status("No %s detected".printf(nss));
-            MWPLog.message("no %s, sensor = 0x%x\n", nss, sensor);
+            if(gpscnt < 5)
+            {
+                string []nsensor={};
+                if((missing & MSP.Sensors.GPS) != 0)
+                    nsensor += "GPS";
+                if((missing & MSP.Sensors.BARO) != 0)
+                    nsensor += "BARO";
+                if((missing & MSP.Sensors.MAG) != 0)
+                    nsensor += "MAG";
+                var nss = string.joinv("/",nsensor);
+                set_error_status("No %s detected".printf(nss));
+                MWPLog.message("no %s, sensor = 0x%x\n", nss, sensor);
+            }
             gpscnt++;
         }
         if(sensor != xsensor)
@@ -1989,6 +1996,16 @@ public class MWPlanner : Gtk.Application {
             gps_alert(scflags);
     }
 
+    private void flash_gps()
+    {
+        gpslab.label = "<span background = \"green\"> </span>";
+        Timeout.add(80, () =>
+            {
+                gpslab.set_label(" ");
+                return false;
+            });
+    }
+
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
     {
 
@@ -2016,6 +2033,7 @@ public class MWPlanner : Gtk.Application {
                     }
                 }
                 last_tm = nticks;
+                last_gps = nticks;
             }
         }
 
@@ -2121,6 +2139,7 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.IDENT:
+                last_gps = 0;
                 remove_tid(ref cmdtid);
                 have_vers = true;
                 if (icount == 0)
@@ -2505,6 +2524,8 @@ public class MWPlanner : Gtk.Application {
                     if(inav)
                         rg.gps_fix++;
 
+                flash_gps();
+
                 rg.gps_numsat = *rp++;
                 rp = deserialise_i32(rp, out rg.gps_lat);
                 rp = deserialise_i32(rp, out rg.gps_lon);
@@ -2791,8 +2812,11 @@ public class MWPlanner : Gtk.Application {
                 LTM_GFRAME gf = LTM_GFRAME();
                 uint8* rp;
 
+                flash_gps();
+
                 rp = deserialise_i32(raw, out gf.lat);
                 rp = deserialise_i32(rp, out gf.lon);
+
                 gf.speed = *rp++;
                 rp = deserialise_i32(rp, out gf.alt);
                 gf.sats = *rp;
@@ -3695,8 +3719,9 @@ public class MWPlanner : Gtk.Application {
             if (msp.open(serdev, conf.baudrate, out estr) == true)
             {
                 menubblog.sensitive = menubbload.sensitive = menureplay.sensitive =
-                    menuloadlog.sensitive = false;
+                menuloadlog.sensitive = false;
 
+                validatelab.set_text("");
                 init_state();
                 init_sstats();
                 dopoll = false;

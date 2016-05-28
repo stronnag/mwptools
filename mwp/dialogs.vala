@@ -1126,7 +1126,9 @@ public class NavStatus : GLib.Object
         enabled = true;
 
         voltlabel = new Gtk.Label("");
+        voltlabel.vexpand = true;
         voltbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
+        voltbox.vexpand = true;
         voltbox.size_allocate.connect((a) => {
                 var fh1 = a.width/4;
                 var fh2 = a.height / 2;
@@ -1141,6 +1143,7 @@ public class NavStatus : GLib.Object
         colors[3].parse("red");
         colors[4].parse(colstr);
         volt_update("n/a",4, 0f,true);
+
         grid.show_all();
     }
 
