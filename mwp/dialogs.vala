@@ -1467,6 +1467,11 @@ public class NavStatus : GLib.Object
         }
     }
 
+    public void gps_crit()
+    {
+        mt.message(AudioThread.Vox.GPS_CRIT, true);
+    }
+
     public void cg_on()
     {
         have_cg = true;
@@ -1539,7 +1544,8 @@ public class AudioThread : Object {
         HEADING,
         VOLTAGE,
         MODSAT,
-        LTM_MODE
+        LTM_MODE,
+        GPS_CRIT
     }
 
     private Timer timer;
@@ -1608,6 +1614,9 @@ public class AudioThread : Object {
                     {
                         case Vox.NAV_ERR:
                             s = MSP.nav_error(NavStatus.n.nav_error);
+                            break;
+                        case Vox.GPS_CRIT:
+                            s = "GPS Critical Failure";
                             break;
                         case Vox.NAV_STATUS:
                             switch(NavStatus.n.nav_mode)

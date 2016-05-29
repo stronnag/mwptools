@@ -315,6 +315,7 @@ public class MWPlanner : Gtk.Application {
     private bool use_gst = false;
     private bool inav = false;
     private uint16  rhdop = 10000;
+    private uint gpsintvl = 0;
 
     private enum DEBUG_FLAGS
     {
@@ -359,7 +360,6 @@ public class MWPlanner : Gtk.Application {
         NAVSTATUS=2,
         NAVCONFIG=4
     }
-
 
     private NAVCAPS navcap;
 
@@ -420,18 +420,18 @@ public class MWPlanner : Gtk.Application {
 
     private static const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
 
-    private static const int TIMINTVL=50;
-    private static const int ANIMINTVL=(300/TIMINTVL);
-    private static const int BEATINTVL=(60000/TIMINTVL);
-    private static const int DURAINTVL=((1000/TIMINTVL) - 1);
-    private static const int STATINTVL=(800/TIMINTVL);
-    private static const int NODATAINTVL=(5000/TIMINTVL);
-    private static const int SATINTVL=(10000/TIMINTVL);
-    private static const int USATINTVL=(2000/TIMINTVL);
-    private static const int UUSATINTVL=(4000/TIMINTVL);
-    private static const int RESTARTINTVL=(30000/TIMINTVL);
-    private static const int MAVINTVL=(2000/TIMINTVL);
-    private static const int GPSINTVL=(2000/TIMINTVL);
+    private static const uint TIMINTVL=50;
+    private static const uint ANIMINTVL=(300/TIMINTVL);
+    private static const uint BEATINTVL=(60000/TIMINTVL);
+    private static const uint DURAINTVL=((1000/TIMINTVL) - 1);
+    private static const uint STATINTVL=(800/TIMINTVL);
+    private static const uint NODATAINTVL=(5000/TIMINTVL);
+    private static const uint SATINTVL=(10000/TIMINTVL);
+    private static const uint USATINTVL=(2000/TIMINTVL);
+    private static const uint UUSATINTVL=(4000/TIMINTVL);
+    private static const uint RESTARTINTVL=(30000/TIMINTVL);
+    private static const uint MAVINTVL=(2000/TIMINTVL);
+    private static const uint CRITINTVL=(3000/TIMINTVL);
 
     private enum SATS
     {
@@ -459,6 +459,7 @@ public class MWPlanner : Gtk.Application {
     private uint lastrx;
     private uint last_ga = 0;
     private uint last_gps = 0;
+    private uint last_crit = 0;
     private uint last_tm = 0;
     private uint lastok;
     private uint last_an = 0;
@@ -559,6 +560,8 @@ public class MWPlanner : Gtk.Application {
             var dir = File.new_for_path(confdir);
             dir.make_directory_with_parents ();
         } catch {};
+
+        gpsintvl = conf.gpsintvl / TIMINTVL;
 
         if(conf.mediap.length == 0)
             use_gst = true;
@@ -1604,9 +1607,9 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
-                    if(armed != 0 && last_gps != 0)
+                    if(armed != 0 && gpsintvl != 0 && last_gps != 0)
                     {
-                        if (nticks - last_gps > GPSINTVL)
+                        if (nticks - last_gps > gpsintvl)
                         {
                             if(replayer == 0)
                                 bleet_sans_merci(SAT_ALERT);
@@ -2009,7 +2012,7 @@ public class MWPlanner : Gtk.Application {
 
     private void flash_gps()
     {
-        gpslab.label = "<span background = \"green\">   </span>";
+        gpslab.label = "<span background = \"cyan\">   </span>";
         Timeout.add(80, () =>
             {
                 gpslab.set_label("   ");
@@ -2429,6 +2432,19 @@ public class MWPlanner : Gtk.Application {
                 uint8 flg = 0;
                 uint8* rp = raw;
                 ns.gps_mode = *rp++;
+                if(ns.gps_mode == 15)
+                {
+                    if (nticks - last_crit > CRITINTVL)
+                    {
+                        bleet_sans_merci(GENERAL_ALERT);
+                        MWPLog.message("GPS Critial Failure!!!\n");
+                        navstatus.gps_crit();
+                        last_crit = nticks;
+                    }
+                }
+                else
+                    last_crit = 0;
+
                 ns.nav_mode = *rp++;
                 ns.action = *rp++;
                 ns.wp_number = *rp++;

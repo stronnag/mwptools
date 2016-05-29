@@ -273,6 +273,12 @@
       <description>(private settinge)</description>
     </key>
 
+    <key name="gpsintvl" type="u">
+      <default>2000</default>
+      <summary>gps santity time (m/s)</summary>
+      <description></description>
+    </key>
+
     <key name="uilang" type="s">
       <default>""</default>
       <summary>Language Handling</summary>
