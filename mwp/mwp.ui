@@ -814,19 +814,6 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="gpslab">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">❚❚</property>
-                <property name="use_markup">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">4</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkLabel" id="typlab">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -836,6 +823,24 @@
               </object>
               <packing>
                 <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="gpslab">
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">GPS Activity 'LED'</property>
+                <property name="halign">center</property>
+                <property name="margin_right">8</property>
+                <property name="label" translatable="yes">   </property>
+                <property name="use_markup">True</property>
+                <property name="justify">center</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">6</property>
               </packing>
@@ -952,7 +957,10 @@
               <object class="GtkLabel" id="elapsedlab">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="halign">center</property>
                 <property name="label" translatable="yes">00:00</property>
+                <property name="width_chars">6</property>
+                <property name="max_width_chars">6</property>
               </object>
               <packing>
                 <property name="expand">False</property>

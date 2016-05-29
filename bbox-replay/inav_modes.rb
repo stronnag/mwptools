@@ -68,10 +68,10 @@ IO.popen(cmd,'r') do |p|
   csv.each do |c|
     ts = c[:time_us].to_f / 1000000
     st = ts if st.nil?
-    ts -= st
+    xts  = ts - st
     if c[:navstate].to_i != nstate
       nstate = c[:navstate].to_i
-      puts ["%6.1f" % ts,STATES[nstate]].join("\t")
+      puts ["%6.1f" % ts, "(%6.1f)" % xts, STATES[nstate]].join("\t")
     end
   end
 end

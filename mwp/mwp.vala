@@ -1604,6 +1604,17 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
+                    if(armed != 0 && last_gps != 0)
+                    {
+                        if (nticks - last_gps > GPSINTVL)
+                        {
+                            if(replayer == 0)
+                                bleet_sans_merci(SAT_ALERT);
+                            MWPLog.message("GPS stalled\n");
+                            last_gps = nticks;
+                        }
+                    }
+
                     if( xdopoll == false &&
                         last_tm > 0 &&
                         ((nticks - last_tm) > MAVINTVL)
@@ -1998,10 +2009,10 @@ public class MWPlanner : Gtk.Application {
 
     private void flash_gps()
     {
-        gpslab.label = "<span background = \"green\"> </span>";
+        gpslab.label = "<span background = \"green\">   </span>";
         Timeout.add(80, () =>
             {
-                gpslab.set_label(" ");
+                gpslab.set_label("   ");
                 return false;
             });
     }
@@ -2520,10 +2531,16 @@ public class MWPlanner : Gtk.Application {
                 MSP_RAW_GPS rg = MSP_RAW_GPS();
                 uint8* rp = raw;
                 rg.gps_fix = *rp++;
-                if(rg.gps_fix != 0 && replayer == 0)
-                    if(inav)
-                        rg.gps_fix++;
-
+                if(rg.gps_fix != 0)
+                {
+                    if(replayer == 0)
+                    {
+                        if(inav)
+                            rg.gps_fix++;
+                    }
+                    else
+                        last_gps = nticks;
+                }
                 flash_gps();
 
                 rg.gps_numsat = *rp++;
@@ -2813,6 +2830,7 @@ public class MWPlanner : Gtk.Application {
                 uint8* rp;
 
                 flash_gps();
+                last_gps = nticks;
 
                 rp = deserialise_i32(raw, out gf.lat);
                 rp = deserialise_i32(rp, out gf.lon);
