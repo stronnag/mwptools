@@ -69,6 +69,7 @@ public class MWPSettings : GLib.Object
     public int ahsize {get; set; default = 32;}
     public uint gpsintvl {get; set; default = 2000;}
     public string uilang {get; private set; default=null;}
+    public string led {get; private set; default=null;}
 
     public signal void settings_update (string s);
 
@@ -222,6 +223,9 @@ public class MWPSettings : GLib.Object
             uilang = settings.get_string ("uilang");
         if(s == null || s == "gpsintvl")
             gpsintvl = settings.get_uint("gpsintvl");
+        if(s == null || s == "led")
+            led = settings.get_string ("led");
+
     }
 
     public void save_window()

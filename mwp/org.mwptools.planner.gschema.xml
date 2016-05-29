@@ -285,6 +285,11 @@
       <description>"en" do everything as English (decimal points,
       voice), "ev" do voice as english (so say 'point' for decimals)</description>
     </key>
+    <key name="led" type="s">
+      <default>"#60ff00"</default>
+      <summary>GPS LED colour</summary>
+      <description>well know string or #RRGGBB</description>
+    </key>
 
   </schema>
 </schemalist>
