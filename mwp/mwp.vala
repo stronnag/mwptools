@@ -2013,7 +2013,7 @@ public class MWPlanner : Gtk.Application {
     private void flash_gps()
     {
         gpslab.label = "<span background = \"%s\">   </span>".printf(conf.led);
-        Timeout.add(80, () =>
+        Timeout.add(20, () =>
             {
                 gpslab.set_label("   ");
                 return false;
