@@ -2012,10 +2012,11 @@ public class MWPlanner : Gtk.Application {
 
     private void flash_gps()
     {
-        gpslab.label = "<span background = \"%s\">   </span>".printf(conf.led);
+        gpslab.label = "<span foreground = \"%s\">⬤</span>".printf(conf.led);
         Timeout.add(50, () =>
             {
-                gpslab.set_label("   ");
+//                gpslab.label = "<span foreground = \"black\">⬤</span>";
+                gpslab.set_label("◯");
                 return false;
             });
     }

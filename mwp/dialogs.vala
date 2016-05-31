@@ -1126,16 +1126,14 @@ public class NavStatus : GLib.Object
         enabled = true;
 
         voltlabel = new Gtk.Label("");
-        voltlabel.vexpand = true;
         voltbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
-        voltbox.vexpand = true;
+        voltbox.pack_start (voltlabel, true, true, 1);
         voltbox.size_allocate.connect((a) => {
                 var fh1 = a.width/4;
                 var fh2 = a.height / 2;
                 _fs = (fh1 < fh2) ? fh1 : fh2;
             });
         voltlabel.set_use_markup (true);
-        voltbox.pack_start (voltlabel, true, true, 1);
         colors = new Gdk.RGBA[5];
         colors[0].parse("#60ff00");
         colors[1].parse("yellow");
@@ -1143,7 +1141,6 @@ public class NavStatus : GLib.Object
         colors[3].parse("red");
         colors[4].parse(colstr);
         volt_update("n/a",4, 0f,true);
-
         grid.show_all();
     }
 
