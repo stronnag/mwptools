@@ -214,7 +214,12 @@ public class MWSerial : Object
                         break;
                     }
                     if(rhost != null && rport != 0)
-                        sockaddr = new InetSocketAddress.from_string (rhost,rport);
+                    {
+                        var resolver = Resolver.get_default ();
+                        var addresses = resolver.lookup_by_name (rhost, null);
+                        var addr0 = addresses.nth_data (0);
+                        sockaddr = new InetSocketAddress(addr0,rport);
+                    }
                 } catch (Error e) {
                     MWPLog.message ("%s\n",e.message);
                 }
