@@ -70,7 +70,7 @@ public class MWSerial : Object
     public static int brate = 38400;
     private static bool ureset = false;
     private static bool force6 = false;
-    private static bool force_air = false;
+    private static int air_model = 1;
     private static bool force_10hz = false;
     private static bool noinit = false;
     private static bool noautob = false;
@@ -83,7 +83,7 @@ public class MWSerial : Object
         { "no-init", 'n', 0, OptionArg.NONE, out noinit, "No init", null},
         { "no-autobaud", 'N', 0, OptionArg.NONE, out noautob, "No autobaud", null},
         { "force-v6", '6', 0, OptionArg.NONE, out force6, "Force V6 init (vice inav autodetect)", null},
-        { "force-air", 'a', 0, OptionArg.NONE, out force_air, "Force airborne 4G", null},
+        { "air-model", 'a', 0, OptionArg.INT, out air_model, "0,1,4", null},
         { "force-10hz", 'z', 0, OptionArg.NONE, out force_10hz, "Force 10Hz", null},
         { "slow", 's', 0, OptionArg.NONE, out slow, "slower initialisation", null},
         {null}
@@ -542,11 +542,17 @@ public class MWSerial : Object
             0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x3C, 0x00, 0x00, 0x00,           // capturing the data from the U-Center binary console.
             0x00, 0xC8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x17, 0xC2
         };
+        uint8 [] air1g = {
+            0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x06, 0x03, 0x00,           // CFG-NAV5 - Set engine settings
+            0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,           // Airborne <1G
+            0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x3C, 0x00, 0x00, 0x00,
+            0x00, 0xC8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1A, 0x28
+        };
         uint8 [] air4g = {
-            0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x08, 0x02, 0x00,           // CFG-NAV5 - Set engine settings
-            0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,           // Airborne <4G 3D fix only
-            0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x17, 0xFF
+            0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x08, 0x03, 0x00,           // CFG-NAV5 - Set engine settings
+            0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,           // Airborne <4G
+            0xFA, 0x00, 0x64, 0x00, 0x2C, 0x01, 0x00, 0x3C, 0x00, 0x00, 0x00,
+            0x00, 0xC8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1C, 0x6C
         };
 
         uint8 [] nonmea = {
@@ -584,7 +590,9 @@ public class MWSerial : Object
        uint8 [] timeutc = {0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x21, 0x05, 0x31, 0x89 };
         uint8 [] reset = {0xB5, 0x62, 0x06, 0x04, 0x04, 0x00, 0xFF, 0x87,
                           0x00, 0x00, 0x94, 0xF5};
-        uint8 [] sbas = {0xB5, 0x62, 0x06, 0x16, 0x08, 0x00, 0x03, 0x07, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x31, 0xE5};
+        uint8 [] sbas = {
+            /* SBAS_AUTO */  0xB5, 0x62, 0x06, 0x16, 0x08, 0x00, 0x03, 0x03, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2D, 0xC9
+        };
         int [] init_speed = {115200, 57600, 38400, 19200, 9600};
         uint8 [] v7init = {0xB5, 0x62, 0x0A, 0x04, 0x00, 0x00, 0x0E, 0x34 };
 
@@ -645,15 +653,20 @@ public class MWSerial : Object
                     }
                     break;
             case State.MOTION:
-                if(force_air) // 0
+                switch(air_model)
                 {
-                    stdout.printf("Set air 4G\n");
-                    ublox_write(fd, air4g);
-                }
-                else
-                {
-                    stdout.printf("Set pedestrian\n");
-                    ublox_write(fd, pedestrain);
+                    case 0:
+                        stdout.printf("Set pedestrian\n");
+                        ublox_write(fd, pedestrain);
+                        break;
+                    case 4:
+                        stdout.printf("Set air 4G\n");
+                        ublox_write(fd, air4g);
+                        break;
+                    default:
+                        stdout.printf("Set air 1G\n");
+                        ublox_write(fd, air1g);
+                        break;
                 }
                 gps_state++;
                 break;
