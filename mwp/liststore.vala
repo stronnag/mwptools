@@ -1213,7 +1213,7 @@ public class ListBox : GLib.Object
             ets += (extra*1852/ MWPlanner.conf.nav_speed);
         }
         d *= 1852.0;
-        et = (int)ets;
+        et = (int)ets + 3 * nsize; // 3 * vertices to allow for slow down
         return true;
     }
 }
