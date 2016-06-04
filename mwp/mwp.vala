@@ -1614,6 +1614,7 @@ public class MWPlanner : Gtk.Application {
                             if(replayer == 0)
                                 bleet_sans_merci(SAT_ALERT);
                             MWPLog.message("GPS stalled\n");
+                            gpslab.label = "<span foreground = \"redk\">⬤</span>";
                             last_gps = nticks;
                         }
                     }
