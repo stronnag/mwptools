@@ -316,6 +316,15 @@ public class ReplayThread : GLib.Object
                                         send_rec(fd,MSP.Cmds.FC_VERSION, 3, buf);
                                     }
 
+                                    if(obj.has_member("git_info"))
+                                    {
+                                        var git = obj.get_string_member("git_info");
+                                        for(var i = 0; i < 7; i++)
+                                            buf[19+i] = git[i];
+                                        buf[26] = 0;
+                                        send_rec(fd,MSP.Cmds.BUILD_INFO, 32, buf);
+                                    }
+
                                     string bx;
                                     if(obj.has_member("boxnames"))
                                     {

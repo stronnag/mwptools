@@ -1607,14 +1607,15 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
-                    if(armed != 0 && gpsintvl != 0 && last_gps != 0)
+                    if(armed != 0 && msp.available &&
+                       gpsintvl != 0 && last_gps != 0)
                     {
                         if (nticks - last_gps > gpsintvl)
                         {
                             if(replayer == 0)
                                 bleet_sans_merci(SAT_ALERT);
                             MWPLog.message("GPS stalled\n");
-                            gpslab.label = "<span foreground = \"redk\">⬤</span>";
+                            gpslab.label = "<span foreground = \"red\">⬤</span>";
                             last_gps = nticks;
                         }
                     }
