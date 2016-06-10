@@ -236,6 +236,7 @@ public class MWPlanner : Gtk.Application {
     private static bool force_mag = false;
     private static bool force_nc = false;
     private static bool force4 = false;
+    private static bool chome = false;
     private static string mwoptstr;
     private static string llstr=null;
     private static string layfile=null;
@@ -496,12 +497,14 @@ public class MWPlanner : Gtk.Application {
         { "force-nav", 0, 0, OptionArg.NONE, out force_nc, "force nav capaable", null},
         { "layout", 'l', 0, OptionArg.STRING, out layfile, "Layout name", null},
         { "force-type", 't', 0, OptionArg.INT, out dmrtype, "Model type", null},
-        { "force4", '4', 0, OptionArg.NONE, out force4, "Force ipv4", null},                { "debug-flags", 0, 0, OptionArg.INT, out debug_flags, "Debug flags (mask)", null},
+        { "force4", '4', 0, OptionArg.NONE, out force4, "Force ipv4", null},
+        { "centre-on-home", 'H', 0, OptionArg.NONE, out chome, "Centre on home", null},
+        { "debug-flags", 0, 0, OptionArg.INT, out debug_flags, "Debug flags (mask)", null},
         { "replay-mwp", 'p', 0, OptionArg.STRING, out rfile, "replay mwp log file", null},
         { "replay-bbox", 'b', 0, OptionArg.STRING, out bfile, "replay bbox log file", null},
         { "centre", 0, 0, OptionArg.STRING, out llstr, "Centre position", null},
         { "offline", 0, 0, OptionArg.NONE, out offline, "force offline proxy mode", null},
-        { "n-points", 'S', 0, OptionArg.INT, out stack_size, "Number of points shown in trial", "INT"},
+        { "n-points", 'S', 0, OptionArg.INT, out stack_size, "Number of points shown in GPS trail", "INT"},
         {null}
     };
 
@@ -912,112 +915,85 @@ public class MWPlanner : Gtk.Application {
         view.set_keep_center_on_resize(true);
         add_source_combo(conf.defmap,msources);
 
-        window.key_press_event.connect( (s,e) =>
-            {
-                bool ret = true;
-
-                switch(e.keyval)
-                {
-                    case Gdk.Key.plus:
-                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
-                            ret = false;
-                        else
-                        {
-                            var val = view.get_zoom_level();
-                            var mmax = view.get_max_zoom_level();
-                            if (val != mmax)
-                                view.set_property("zoom-level", val+1);
-                        }
-                        break;
-                    case Gdk.Key.minus:
-                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
-                            ret = false;
-                        else
-                        {
-                            var val = view.get_zoom_level();
-                            var mmin = view.get_min_zoom_level();
-                            if (val != mmin)
-                                view.set_property("zoom-level", val-1);
-                        }
-                        break;
-
-                    case Gdk.Key.F11:
-                        toggle_full_screen();
-                        break;
-
-                    case Gdk.Key.f:
-                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
-                            ret = false;
-                        else
-                            toggle_full_screen();
-                        break;
-
-                    case Gdk.Key.c:
-                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
-                            ret = false;
-                        else
-                        {
-                            if(craft != null)
-                                craft.init_trail();
-                        }
-                        break;
-
-                    case Gdk.Key.s:
-                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
-                            ret = false;
-                        else
-                        {
-                            show_serial_stats();
-                        }
-                        break;
-                    case Gdk.Key.i:
-                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
-                            ret = false;
-                        else
-                        {
-                            init_sstats();
-                            armed = 0;
-                            rhdop = 10000;
-                            init_npos();
-                            armed_spinner.stop();
-                            armed_spinner.hide();
-                            if (conf.audioarmed == true)
-                                audio_cb.active = false;
-                            if(conf.logarmed == true)
-                                logb.active=false;
-                            gpsinfo.annul();
-                            navstatus.annul();
-                            fbox.annul();
-                            art_win.update(0, 0, item_visible(DOCKLETS.ARTHOR));
-                            set_bat_stat(0);
-                            duration = -1;
-                            if(craft != null)
-                            {
-                                craft.remove_marker();
-                            }
-                            set_error_status(null);
-                            xsensor = 0;
-                            clear_sensor_array();
-                        }
-                        break;
-
-                    case Gdk.Key.t:
-                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
-                            ret = false;
-                        else
-                        {
-                            armtime = 0;
-                            duration = 0;
-                        }
-                        break;
-
-                    default:
-                        ret = false;
-                        break;
-                }
-                return ret;
+        var ag = new Gtk.AccelGroup();
+        ag.connect('c', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                if(craft != null)
+                    craft.init_trail();
+                return true;
             });
 
+        ag.connect('+', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                var val = view.get_zoom_level();
+                var mmax = view.get_max_zoom_level();
+                if (val != mmax)
+                    view.set_property("zoom-level", val+1);
+                return true;
+            });
+
+        ag.connect('-', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                var val = view.get_zoom_level();
+                var mmin = view.get_min_zoom_level();
+                if (val != mmin)
+                    view.set_property("zoom-level", val-1);
+                return true;
+            });
+
+        ag.connect('f', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                toggle_full_screen();
+                return true;
+            });
+
+        ag.connect(Gdk.Key.F11, 0, 0, (a,o,k,m) => {
+                toggle_full_screen();
+                return true;
+            });
+
+        ag.connect('s', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                show_serial_stats();
+                return true;
+            });
+
+
+        ag.connect('i', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                init_sstats();
+                armed = 0;
+                rhdop = 10000;
+                init_npos();
+                armed_spinner.stop();
+                armed_spinner.hide();
+                if (conf.audioarmed == true)
+                    audio_cb.active = false;
+                if(conf.logarmed == true)
+                    logb.active=false;
+                gpsinfo.annul();
+                navstatus.annul();
+                fbox.annul();
+                art_win.update(0, 0, item_visible(DOCKLETS.ARTHOR));
+                set_bat_stat(0);
+                duration = -1;
+                if(craft != null)
+                {
+                    craft.remove_marker();
+                }
+                set_error_status(null);
+                xsensor = 0;
+                clear_sensor_array();
+                return true;
+            });
+
+        ag.connect('t', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                armtime = 0;
+                duration = 0;
+                return true;
+            });
+
+        ag.connect('c', Gdk.ModifierType.CONTROL_MASK|Gdk.ModifierType.SHIFT_MASK,
+                   0, (a,o,k,m) => {
+                       connect_serial();
+                       return true;
+                   });
+
+        window.add_accel_group(ag);
 
         ls = new ListBox();
         ls.create_view(this);
@@ -3287,6 +3263,9 @@ public class MWPlanner : Gtk.Application {
             {
                 init_npos();
             }
+            if(chome)
+                view.center_on(lat,lon);
+
             MWPLog.message("Set home %f %f (%s)\n", lat, lon, npos.to_string());
         }
 
