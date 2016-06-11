@@ -993,6 +993,11 @@ public class MWPlanner : Gtk.Application {
                        return true;
                    });
 
+        ag.connect('z', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                ls.clear_mission();
+                return true;
+            });
+
         window.add_accel_group(ag);
 
         ls = new ListBox();
