@@ -251,7 +251,7 @@ def encode_nav r
 	      99
 	    when 4..7
 	      3
-	    when 8,9,14,16
+	    when 8,9,14,15,16
 	      1
 	    when 18
 	      8
@@ -266,6 +266,9 @@ def encode_nav r
 	    else
 	      0
 	    end
+
+  # STDERR.puts "Map state #{r[:navstate].to_i} => zero"   if navmode == 0
+
   navact = case gpsmode
 	   when 3
 	     1

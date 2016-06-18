@@ -2987,15 +2987,12 @@ public class MWPlanner : Gtk.Application {
                         want_special |= POSMODE.WP;
                     else if(ltmflags == 13)
                         want_special |= POSMODE.RTH;
-                    else if(ltmflags == 19)
+                    else if(ltmflags != 15)
                     {
                         craft.set_normal();
-                            /** fix me **/
                     }
-                    else if (ltmflags < 5)
-                        craft.set_normal();
-                    MWPLog.message("New LTM Mode %s %d %ds %f %f\n",
-                                   MSP.ltm_mode(ltmflags),
+                    MWPLog.message("New LTM Mode %s (%d) %d %ds %f %f\n",
+                                   MSP.ltm_mode(ltmflags), ltmflags,
                                    armed, duration, xlat, xlon);
                 }
                 if(want_special != 0 /* && npos*/)
