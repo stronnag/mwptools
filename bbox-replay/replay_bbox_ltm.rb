@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+!/usr/bin/env ruby
 
 # Copyright (c) 2015 Jonathan Hudson <jh+mwptools@daria.co.uk>
 
@@ -487,10 +487,9 @@ llon = 0.0
 IO.popen(cmd,'rt') do |pipe|
   csv = CSV.new(pipe, csv_opts)
   hdrs = csv.shift
-  abort 'Not an INAV log' if hdrs[:gps_coord0].nil?
+  abort 'Not a useful INAV log' if hdrs[:gps_coord0].nil?
 
   have_sonar = (hdrs.has_key? :sonarraw)
-#  have_baro = true # until confirmed ...
   have_baro = (hdrs.has_key? :baroalt_cm)
   send_init_seq dev,typ,have_sonar,have_baro,gitinfo
 

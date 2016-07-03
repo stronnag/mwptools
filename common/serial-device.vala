@@ -549,8 +549,7 @@ public class MWSerial : Object
                         else
                         {
                             error_counter();
-                            MWPLog.message(" fail on header %x %c\n",
-                                          buf[nc], buf[nc]);
+                            MWPLog.message("fail on header0 %x\n", buf[nc]);
                             state=States.S_ERROR;
                         }
                         break;
@@ -567,7 +566,7 @@ public class MWSerial : Object
                         else
                         {
                             error_counter();
-                            MWPLog.message(" fail on header1 %x\n", buf[nc]);
+                            MWPLog.message("fail on header1 %x\n", buf[nc]);
                             state=States.S_ERROR;
                         }
                         break;
@@ -632,7 +631,7 @@ public class MWSerial : Object
                         else
                         {
                             error_counter();
-                            MWPLog.message(" fail on header2 %x\n", buf[nc]);
+                            MWPLog.message("fail on header2 %x\n", buf[nc]);
                             state=States.S_ERROR;
                         }
                         break;
@@ -686,7 +685,7 @@ public class MWSerial : Object
                         else
                         {
                             error_counter();
-                            MWPLog.message(" CRC Fail, got %d != %d (cmd=%d)\n",
+                            MWPLog.message("CRC Fail, got %d != %d (cmd=%d)\n",
                                            buf[nc],checksum,cmd);
                             state = States.S_ERROR;
                         }
@@ -752,7 +751,7 @@ public class MWSerial : Object
                         else
                         {
                             error_counter();
-                            MWPLog.message(" MAVCRC Fail, got %x != %x [%x %x] (cmd=%u, len=%u)\n",
+                            MWPLog.message("MAVCRC Fail, got %x != %x [%x %x] (cmd=%u, len=%u)\n",
                                            rxmavsum, mavsum,
                                            mavid1, mavid2,
                                            cmd, csize);
@@ -783,6 +782,10 @@ public class MWSerial : Object
                 break;
             case 30:
                 mavcrc = 39;
+                mavlen = 28;
+                break;
+            case 33:
+                mavcrc = 104;
                 mavlen = 28;
                 break;
             case 35:

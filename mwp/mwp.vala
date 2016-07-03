@@ -3053,6 +3053,9 @@ public class MWPlanner : Gtk.Application {
                     Logger.mav_sys_status(m);
                 break;
 
+            case MSP.Cmds.MAVLINK_MSG_GPS_GLOBAL_INT:
+                break;
+
             case MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT:
                 Mav.MAVLINK_GPS_RAW_INT m = *(Mav.MAVLINK_GPS_RAW_INT*)raw;
                 var fix  = gpsinfo.update_mav_gps(m, conf.dms,
@@ -3748,14 +3751,17 @@ public class MWPlanner : Gtk.Application {
                     msp.raw_logging(true);
                 }
                 conbutton.set_label("Disconnect");
-                var timeo = 10;
-                if(serdev.contains("rfcomm"))
-                    timeo = 2000;
-                Timeout.add(timeo, () =>
-                    {
-                        add_cmd(MSP.Cmds.IDENT,null,0, 1500);
-                        return /* Source.REMOVE */ false;
-                    });
+                if(nopoll == false)
+                {
+                    var timeo = 10;
+                    if(serdev.contains("rfcomm"))
+                        timeo = 2000;
+                    Timeout.add(timeo, () =>
+                        {
+                            add_cmd(MSP.Cmds.IDENT,null,0, 1500);
+                            return /* Source.REMOVE */ false;
+                        });
+                }
                 menumwvar.sensitive = false;
             }
             else
