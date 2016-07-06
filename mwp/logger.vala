@@ -91,6 +91,7 @@ public class Logger : GLib.Object
     {
         os.puts(gen.to_data (null));
         os.putc('\n');
+        os.flush();
     }
 
     public static void stop()

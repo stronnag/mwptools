@@ -6,6 +6,7 @@ public class Mav : Object
         MAVLINK_MSG_ID_SYS_STATUS = 1,
         MAVLINK_MSG_GPS_RAW_INT = 24,
         MAVLINK_MSG_ATTITUDE = 30,
+        MAVLINK_MSG_GPS_GLOBAL_INT = 33,
         MAVLINK_MSG_RC_CHANNELS_RAW = 35,
         MAVLINK_MSG_GPS_GLOBAL_ORIGIN = 49,
         MAVLINK_MSG_VFR_HUD = 74,
@@ -146,6 +147,19 @@ public class Mav : Object
         uint16 cog; ///< Course over ground (NOT heading, but direction of movement) in degrees * 100, 0.0..359.99 degrees. If unknown, set to: UINT16_MAX
         uint8 fix_type; ///< 0-1: no fix, 2: 2D fix, 3: 3D fix, 4: DGPS, 5: RTK. Some applications will not use the value of this field unless it is at least two, so always correctly fill in the fix.
         uint8 satellites_visible; ///< Number of satellites visible. If unknown, set to 255
+    }
+
+    public struct MAVLINK_GPS_GLOBAL_INT
+    {
+        uint32 time_usec; ///< Timestamp
+        int32 lat; ///< Latitude (WGS84), in degrees * 1E7
+        int32 lon; ///< Longitude (WGS84), in degrees * 1E7
+        int32 alt; ///< Altitude (GPS), in meters * 1000 (positive for up).
+        int32 relative_alt; ///< Altitude (GPS), in meters * 1000 (positive for up).
+        int16 vx;   ///< Ground X Speed (Latitude, positive north), expressed as m/s * 100
+        int16 vy; ///< Ground Y Speed (Longitude, positive east), expressed as m/s * 100
+        int16 vz; ///< Ground Z Speed (Altitude, positive down), expressed as m/s * 100
+        uint16 hdg; ///< Vehicle heading (yaw angle) in degrees * 100, 0.0..359.99 degrees. If unknown, set to: UINT16_MAX
     }
 
     public struct MAVLINK_ATTITUDE
