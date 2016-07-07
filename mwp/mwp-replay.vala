@@ -2,9 +2,9 @@
 public class ReplayThread : GLib.Object
 {
     private static const int MAXSLEEP = 500*1000;
-
     private bool playon  {get; set;}
     private Cancellable cancellable;
+
     private size_t serialise_sf(LTM_SFRAME b, uint8 []tx)
     {
         uint8 *p;
@@ -196,8 +196,71 @@ public class ReplayThread : GLib.Object
         }
     }
 
+
+    private uint8 mav_seed(uint8 mid)
+    {
+        uint8 mavseed = 0xff;
+        switch(mid)
+        {
+            case 0:
+                mavseed = 50;
+                break;
+            case 1:
+                mavseed = 124;
+                break;
+            case 24:
+                mavseed = 24;
+                break;
+            case 30:
+                mavseed = 39;
+                break;
+            case 33:
+                mavseed = 104;
+                break;
+            case 35:
+                mavseed = 244;
+                break;
+            case 49:
+                mavseed = 39;
+                break;
+            case 74:
+                mavseed = 20;
+                break;
+            case 166:
+                mavseed = 21;
+                break;
+            case 109:
+                mavseed = 185;
+                break;
+            default:
+                mavseed = 255;
+                break;
+        }
+        return mavseed;
+    }
+
     private void send_mav_cmd(int fd, MSP.Cmds cmd, uint8 *buf, size_t st)
     {
+        uint8 pbuf[256];
+        uint8 tmp;
+        uint16 sum = 0xffff;
+        pbuf[0] = 254; // MAV STX
+        pbuf[1] = (uint8)(st & 0xff);
+        pbuf[2] = 0;
+        pbuf[3] = 'J';
+        pbuf[4] = 'H';
+        pbuf[5] = cmd - MSP.Cmds.MAV_BASE;
+        Posix.memcpy(&pbuf[6], buf, st);
+        pbuf[st+6] = mav_seed(pbuf[5]);
+        for(int i = 1; i < st+7; i++)
+        {
+            tmp = pbuf[i] ^ (uint8)(sum & 0xff);
+            tmp ^= (tmp << 4);
+            sum = (sum >> 8) ^ (tmp << 8) ^ (tmp << 3) ^ (tmp >> 4);
+        }
+        pbuf[st+6] = (uint8)(sum & 0xff);
+        pbuf[st+7] = (uint8)(sum >> 8);
+        Posix.write(fd, pbuf, st+8);
     }
 
     public ReplayThread()
