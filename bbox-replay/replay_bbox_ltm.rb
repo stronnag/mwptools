@@ -220,7 +220,7 @@ def encode_stats r,armed=1
 	  9
 	when 8..16
 	  13
-	when 18..21
+	when 18..21,28..31
 	  15
 	when 22..26
 	  10
@@ -253,13 +253,13 @@ def encode_nav r
 	      3
 	    when 8,9,14,15,16
 	      1
-	    when 18
+	    when 18,29
 	      8
-	    when 19
+	    when 19,28,30
 	      9
 	    when 20
 	      11
-	    when 21
+	    when 21,31
 	      10
 	    when 22..26
 	      5
