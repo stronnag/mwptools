@@ -25,6 +25,24 @@ using GtkChamplain;
 extern double get_locale_double(string str);
 extern int atexit(VoidFunc func);
 
+[DBus (name = "org.freedesktop.NetworkManager")]
+interface NetworkManager : GLib.Object {
+    public signal void StateChanged (uint32 state);
+    public abstract uint32 State {owned get;}
+}
+
+
+public enum NMSTATE {
+        UNKNOWN=0, ASLEEP=1, CONNECTING=2, CONNECTED=3, DISCONNECTED=4,
+        NM_STATE_ASLEEP           = 10,
+        NM_STATE_DISCONNECTED     = 20,
+        NM_STATE_DISCONNECTING    = 30,
+        NM_STATE_CONNECTING       = 40,
+        NM_STATE_CONNECTED_LOCAL  = 50,
+        NM_STATE_CONNECTED_SITE   = 60,
+        NM_STATE_CONNECTED_GLOBAL = 70
+    }
+
 public struct VersInfo
 {
     uint8 mrtype;
@@ -596,6 +614,23 @@ public class MWPlanner : Gtk.Application {
             MWPLog.message("libchamplain %s\n", Champlain.VERSION_S);
 
         gps_trail = !gps_trail; // yet more jh logic
+
+
+        if(offline == false)
+        {
+            try {
+                NetworkManager nm = Bus.get_proxy_sync (BusType.SYSTEM,
+                                         "org.freedesktop.NetworkManager",
+                                         "/org/freedesktop/NetworkManager");
+                NMSTATE istate = (NMSTATE)nm.State;
+                if(istate != NMSTATE.NM_STATE_CONNECTED_GLOBAL)
+                {
+                    offline = true;
+                    MWPLog.message("Forcing proxy offline [%s]\n",
+                                   istate.to_string());
+                }
+            } catch {}
+        }
 
         if(mwoptstr != null)
         {
