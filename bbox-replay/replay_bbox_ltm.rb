@@ -291,7 +291,7 @@ end
 
 def encode_extra r
   msg='$TX'
-  sl = [r[:gps_hdop].to_i].pack('v')
+  sl = [r[:gps_hdop].to_i,0].pack('vL')
   msg << sl << mksum(sl)
   msg
 end
