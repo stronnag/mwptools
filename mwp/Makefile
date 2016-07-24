@@ -31,6 +31,7 @@ local:
 install: $(APPS)
 	install -s -D mwp $(prefix)/bin/mwp
 	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/mwp/mwp_icon.svg
+	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/icons/hicolor/scalable/mwp_icon.svg
 	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/mwp/mwp.svg
 	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/mwp/pixmaps/mwp_icon.svg
 	install -m 644 -D mwp.ui $(datadir)/share/mwp/mwp.ui

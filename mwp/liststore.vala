@@ -109,7 +109,7 @@ public class ListBox : GLib.Object
         calc_mission();
     }
 
-    public  MSP_WP[] to_wps(bool cf = false)
+    public  MSP_WP[] to_wps(bool cf = false, bool fixwing = false)
     {
         Gtk.TreeIter iter;
         MSP_WP[] wps =  {};
@@ -153,15 +153,24 @@ public class ListBox : GLib.Object
                         case MSP.Action.POSHOLD_UNLIM:
                         case MSP.Action.SET_HEAD:
                         case MSP.Action.LAND:
+                            MWPLog.message("Downgrade WP %s\n",
+                                           typ.to_string());
                             w.action =  MSP.Action.WAYPOINT;
                             w.p1 = 0;
                             w.p2 = w.p3 = 0;
                             break;
                         case MSP.Action.SET_POI:
                         case MSP.Action.JUMP:
+                            MWPLog.message("Remove WP %s\n", typ.to_string());
+
                             n--;
                             continue;
                     }
+                }
+                if(fixwing && (typ == MSP.Action.RTH))
+                {
+                    MWPLog.message("Remove Land from WP RTH\n");
+                    w.p1 = 0;
                 }
                 wps += w;
             }

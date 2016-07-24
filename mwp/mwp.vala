@@ -3516,7 +3516,9 @@ public class MWPlanner : Gtk.Application {
     private void upload_quad()
     {
         validatelab.set_text("");
-        var wps = ls.to_wps(inav);
+
+
+        var wps = ls.to_wps(inav, (vi.mrtype == 8 || vi.mrtype == 14));
         xdopoll = dopoll;
         dopoll = false;
         MWPCursor.set_busy_cursor(window);
