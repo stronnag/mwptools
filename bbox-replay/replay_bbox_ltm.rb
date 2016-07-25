@@ -43,7 +43,6 @@ end
 
 LLFACT=10000000
 ALTFACT=100
-base_alt = nil
 
 def start_io dev
   if RUBY_PLATFORM.include?('cygwin') || !Gem.win_platform?
@@ -112,7 +111,7 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
 
   msps = [
     [0x24, 0x4d, 0x3e, 0x07, 0x64, 0xe7, 0x01, 0x00, 0x3c, 0x00, 0x00, 0x80, 0],
-    [0x24, 0x4d, 0x3e, 0x03, 0x01, 0x00, 0x01, 0x0e, 0x0d],
+    [0x24, 0x4d, 0x3e, 0x03, 0x01, 0x00, 0x00, 0x0, 0x0d],
     [0x24, 0x4d, 0x3e, 0x04, 0x02, 0x49, 0x4e, 0x41, 0x56, 0x16],
     [0x24, 0x4d, 0x3e, 0x03, 0x03, 0, 42, 0x00, 42], # obviously fake
     [0x24, 0x4d, 0x3e, 0x1a, 0x05, 0x4d, 0x61, 0x79, 0x20, 0x32, 0x31, 0x20, 0x32, 0x30, 0x31, 0x36, 0x31, 0x32, 0x3a, 0x34, 0x37, 0x3a, 0x31, 0x37,0,0,0,0,0,0,0,0x2a],
@@ -132,10 +131,17 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
   msps[0][6] = typ if typ
 
   unless gitinfo.nil?
-    i = 0
-    gitinfo.each_byte do |b|
-      msps[4][24+i] = b
-      i += 1
+    if gitinfo.size == 7
+      i = 0
+      gitinfo.each_byte {|b| msps[4][24+i] = b ; i += 1}
+    else
+      if m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \(([0-9A-Fa-f]{7})\)/)
+	msps[3][5] = m[1][0].ord - '0'.ord
+	msps[3][6] = m[2][0].ord - '0'.ord
+	msps[3][7] = m[3][0].ord - '0'.ord
+	i = 0
+	m[4].each_byte {|b| msps[4][24+i] = b ; i += 1}
+      end
     end
   end
   msps.each do |msp|
@@ -389,7 +395,7 @@ gitinfo=nil
 gl=0
 File.open(bbox,'r') do |f|
   f.each do |l|
-    if m = l.match(/^H Firmware revision:(\S+)/)
+    if m = l.match(/^H Firmware revision:(.*)$/)
       gitinfo = m[1]
       break
     end
