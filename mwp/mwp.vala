@@ -528,7 +528,7 @@ public class MWPlanner : Gtk.Application {
         { "centre", 0, 0, OptionArg.STRING, out llstr, "Centre position", null},
         { "offline", 0, 0, OptionArg.NONE, out offline, "force offline proxy mode", null},
         { "n-points", 'S', 0, OptionArg.INT, out stack_size, "Number of points shown in GPS trail", "INT"},
-        { "rings", 0, 0, OptionArg.STRING, out rrstr, "Range rings (number, interval(m))", null},
+        { "rings", 0, 0, OptionArg.STRING, out rrstr, "Range rings (number, interval(m)), e.g. --rings 10,20", null},
         {null}
     };
 
