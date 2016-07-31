@@ -336,6 +336,7 @@ public class MWPlanner : Gtk.Application {
     private uint16  rhdop = 10000;
     private uint gpsintvl = 0;
 
+
     private enum DEBUG_FLAGS
     {
         NONE=0,
@@ -493,6 +494,10 @@ public class MWPlanner : Gtk.Application {
     private static int stack_size = 0;
     public static unowned string ulang;
 
+    private static string rrstr;
+    private int nrings = 0;
+    private double ringint = 0;
+
     private const Gtk.TargetEntry[] targets = {
         {"text/uri-list",0,0}
     };
@@ -523,6 +528,7 @@ public class MWPlanner : Gtk.Application {
         { "centre", 0, 0, OptionArg.STRING, out llstr, "Centre position", null},
         { "offline", 0, 0, OptionArg.NONE, out offline, "force offline proxy mode", null},
         { "n-points", 'S', 0, OptionArg.INT, out stack_size, "Number of points shown in GPS trail", "INT"},
+        { "rings", 0, 0, OptionArg.STRING, out rrstr, "Range rings (number, interval(m))", null},
         {null}
     };
 
@@ -586,6 +592,16 @@ public class MWPlanner : Gtk.Application {
 
         if(conf.mediap.length == 0)
             use_gst = true;
+
+        if(rrstr != null)
+        {
+            var parts = rrstr .split(",");
+            if(parts.length == 2)
+            {
+                nrings = int.parse(parts[0]);
+                ringint = double.parse(parts[1]);
+            }
+        }
 
         var fn = MWPUtils.find_conf_file("mwp.ui");
         if (fn == null)
@@ -953,7 +969,10 @@ public class MWPlanner : Gtk.Application {
         var ag = new Gtk.AccelGroup();
         ag.connect('c', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
                 if(craft != null)
+                {
+                    markers.remove_rings(view);
                     craft.init_trail();
+                }
                 return true;
             });
 
@@ -1013,6 +1032,7 @@ public class MWPlanner : Gtk.Application {
                 set_error_status(null);
                 xsensor = 0;
                 clear_sensor_array();
+                labelvbat.set_text("");
                 return true;
             });
 
@@ -1122,48 +1142,13 @@ public class MWPlanner : Gtk.Application {
         view.add_layer (markers.path);
         view.add_layer (markers.hpath);
         view.add_layer (markers.markers);
-        view.button_press_event.connect((evt) => {
-                if(evt.button == 1)
-                    button_time = evt.time;
-                return false;
-            });
-
-        Clutter.ModifierType wpmod = 0;
-        if(conf.wpmod == 1)
-            wpmod = Clutter.ModifierType.CONTROL_MASK;
-        else if (conf.wpmod == 2)
-            wpmod = Clutter.ModifierType.SHIFT_MASK;
-
-        Clutter.ModifierType wpmod3 = 0;
-        if(conf.wpmod3 == 1)
-            wpmod3 = Clutter.ModifierType.CONTROL_MASK;
-        else if (conf.wpmod == 2)
-            wpmod3 = Clutter.ModifierType.SHIFT_MASK;
-
-        view.button_release_event.connect((evt) => {
-                bool ret = false;
-                if (evt.button == 1)
-                {
-                    if (((evt.time - button_time) < conf.dwell_time) &&
-                        ((evt.modifier_state & wpmod) == wpmod))
-                    {
-                        insert_new_wp(evt.x, evt.y);
-                        ret = true;
-                    }
-                    else
-                    {
-                        anim_cb(false);
-                    }
-                }
-                else if (evt.button == 3 &&
-                        ((evt.modifier_state & wpmod3) == wpmod3))
-                {
-                    insert_new_wp(evt.x, evt.y);
-                    ret = true;
-                }
-                return ret;
-            });
-
+/*
+  Sample for range rings. Note that 1st is below second)
+  So the following sets the markers *below* the paths, which is NOT wanted
+  var pp  =  markers.path.get_parent();
+  pp.set_child_below_sibling(markers.markers, markers.hpath);
+  pp.set_child_below_sibling(markers.markers, markers.path);
+*/
         poslabel = builder.get_object ("poslabel") as Gtk.Label;
         stslabel = builder.get_object ("missionlab") as Gtk.Label;
         statusbar = builder.get_object ("statusbar1") as Gtk.Statusbar;
@@ -1485,6 +1470,52 @@ public class MWPlanner : Gtk.Application {
                     else
                         run_replay(sf, true, 1);
                 }
+            });
+        setup_buttons();
+    }
+
+    private void setup_buttons()
+    {
+        view.button_press_event.connect((evt) => {
+                if(evt.button == 1)
+                    button_time = evt.time;
+                return false;
+            });
+
+        Clutter.ModifierType wpmod = 0;
+        if(conf.wpmod == 1)
+            wpmod = Clutter.ModifierType.CONTROL_MASK;
+        else if (conf.wpmod == 2)
+            wpmod = Clutter.ModifierType.SHIFT_MASK;
+
+        Clutter.ModifierType wpmod3 = 0;
+        if(conf.wpmod3 == 1)
+            wpmod3 = Clutter.ModifierType.CONTROL_MASK;
+        else if (conf.wpmod == 2)
+            wpmod3 = Clutter.ModifierType.SHIFT_MASK;
+
+        view.button_release_event.connect((evt) => {
+                bool ret = false;
+                if (evt.button == 1)
+                {
+                    if (((evt.time - button_time) < conf.dwell_time) &&
+                        ((evt.modifier_state & wpmod) == wpmod))
+                    {
+                        insert_new_wp(evt.x, evt.y);
+                        ret = true;
+                    }
+                    else
+                    {
+                        anim_cb(false);
+                    }
+                }
+                else if (evt.button == 3 &&
+                        ((evt.modifier_state & wpmod3) == wpmod3))
+                {
+                    insert_new_wp(evt.x, evt.y);
+                    ret = true;
+                }
+                return ret;
             });
     }
 
@@ -1914,6 +1945,7 @@ public class MWPlanner : Gtk.Application {
             {
                 if(armed == 1 && craft != null)
                 {
+                    markers.remove_rings(view);
                     init_npos();
                     craft.init_trail();
                 }
@@ -1954,6 +1986,7 @@ public class MWPlanner : Gtk.Application {
                 duration = -1;
                 armtime = 0;
                 want_special &= ~POSMODE.HOME;
+                npos = false;
                 if (conf.audioarmed == true)
                 {
                     audio_cb.active = false;
@@ -3298,11 +3331,17 @@ public class MWPlanner : Gtk.Application {
                 markers.add_rth_point(lat,lon,ls);
             init_craft_icon();
             if(craft != null)
+            {
+                if(nrings != 0)
+                    markers.initiate_rings(view, lat,lon, nrings, ringint,
+                                           conf.rcolstr);
                 craft.special_wp(Craft.Special.HOME, lat, lon);
+            }
             else
             {
                 init_npos();
             }
+
             if(chome)
                 view.center_on(lat,lon);
 

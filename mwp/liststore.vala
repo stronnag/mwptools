@@ -255,20 +255,20 @@ public class ListBox : GLib.Object
         return ms;
     }
 
-    public void change_marker(string typ)
+    public void change_marker(string typ, int flag=0)
     {
         foreach (var t in get_selected_refs())
         {
             Gtk.TreeIter iter;
             var path = t.get_path ();
             list_model.get_iter (out iter, path);
-            update_marker_type(iter, typ);
+            update_marker_type(iter, typ, flag);
         }
     }
 
-    private void update_marker_type(Gtk.TreeIter iter, string typ)
+    private void update_marker_type(Gtk.TreeIter iter, string typ, int flag)
     {
-        Value val;
+        Value val,val1;
         var action = MSP.lookup_name(typ);
         list_model.get_value (iter, WY_Columns.ACTION, out val);
         var old = (MSP.Action)val;
@@ -278,8 +278,8 @@ public class ListBox : GLib.Object
             list_model.set_value (iter, WY_Columns.TYPE, typ);
             list_model.get_value (iter, WY_Columns.MARKER, out val);
             var mk =  (Champlain.Label)val;
-            list_model.get_value (iter, WY_Columns.IDX, out val);
-            var no = (string)val;
+            list_model.get_value (iter, WY_Columns.IDX, out val1);
+            var no = (string)val1;
             mp.markers.change_label(mk, old, action, no);
             switch (action)
             {
@@ -299,6 +299,7 @@ public class ListBox : GLib.Object
                     list_model.set_value (iter, WY_Columns.LAT, 0.0);
                     list_model.set_value (iter, WY_Columns.LON, 0.0);
                     list_model.set_value (iter, WY_Columns.ALT, 0);
+                    list_model.set_value (iter, WY_Columns.INT1, flag);
                     have_rth = true;
                     break;
                 case MSP.Action.LAND:
@@ -314,6 +315,20 @@ public class ListBox : GLib.Object
                 default:
                     if(action != MSP.Action.WAYPOINT)
                         list_model.set_value (iter, WY_Columns.INT1, 0.0);
+                    else
+                    {
+                        Value cell;
+                        list_model.get_value (iter, WY_Columns.LAT, out cell);
+                        double wlat = (double)cell;
+                        list_model.get_value (iter, WY_Columns.LON, out cell);
+                        double wlon = (double)cell;
+                        if (wlat == 0.0)
+                            list_model.set_value (iter, WY_Columns.LAT,
+                                                  mp.view.get_center_latitude());
+                        if (wlon == 0.0)
+                            list_model.set_value (iter, WY_Columns.LON,
+                                                  mp.view.get_center_longitude());
+                    }
                     list_model.set_value (iter, WY_Columns.INT2, 0);
                     list_model.set_value (iter, WY_Columns.INT3, 0);
                     break;
@@ -392,7 +407,7 @@ public class ListBox : GLib.Object
                 combo_model.get_value (iter_new, 0, out val);
                 var typ = (string)val;
                 list_model.get_iter (out iter_val, new Gtk.TreePath.from_string (path));
-                update_marker_type(iter_val, typ);
+                update_marker_type(iter_val, typ, 0);
             });
 
         cell = new Gtk.CellRendererText ();

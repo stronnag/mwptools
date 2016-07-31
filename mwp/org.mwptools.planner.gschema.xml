@@ -290,6 +290,11 @@
       <summary>GPS LED colour</summary>
       <description>well know string or #RRGGBB</description>
     </key>
+    <key name="rings-colour" type="s">
+      <default>"#ffffff20"</default>
+      <summary>range rings colour</summary>
+      <description>well know string or #RRGGBBAA</description>
+    </key>
 
   </schema>
 </schemalist>

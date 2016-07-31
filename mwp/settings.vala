@@ -70,6 +70,7 @@ public class MWPSettings : GLib.Object
     public uint gpsintvl {get; set; default = 2000;}
     public string uilang {get; private set; default=null;}
     public string led {get; private set; default=null;}
+    public string rcolstr {get; private set; default=null;}
 
     public signal void settings_update (string s);
 
@@ -225,7 +226,8 @@ public class MWPSettings : GLib.Object
             gpsintvl = settings.get_uint("gpsintvl");
         if(s == null || s == "led")
             led = settings.get_string ("led");
-
+        if(s == null || s == "rings-colour")
+            rcolstr = settings.get_string ("rings-colour");
     }
 
     public void save_window()

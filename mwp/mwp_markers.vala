@@ -25,7 +25,9 @@ public class MWPMarkers : GLib.Object
     public Champlain.MarkerLayer markers;
     public Champlain.Marker homep = null;
     public Champlain.Marker rthp = null;
-    public  Champlain.PathLayer hpath;
+    public Champlain.PathLayer hpath;
+    private Champlain.PathLayer []rings;
+
     private Gtk.Menu menu;
 
     public MWPMarkers(ListBox lb)
@@ -75,6 +77,13 @@ public class MWPMarkers : GLib.Object
                 lb.change_marker("RTH");
             });
         menu.add (item);
+            /*
+        item = new Gtk.MenuItem.with_label ("RTH & Land");
+        item.activate.connect (() => {
+                lb.change_marker("RTH", 1);
+            });
+        menu.add (item);
+            */
         menu.show_all();
     }
 
@@ -211,6 +220,41 @@ public class MWPMarkers : GLib.Object
             hpath.remove_node(homep);
         }
         homep = null;
+    }
+
+    public void remove_rings(Champlain.View view)
+    {
+        foreach (var r in rings)
+        {
+            r.remove_all();
+            view.remove_layer(r);
+        }
+        rings = {};
+    }
+
+    public void initiate_rings(Champlain.View view, double lat, double lon, int nrings, double ringint, string colstr)
+    {
+        var pp = path.get_parent();
+        Clutter.Color rcol = Color.from_string(colstr);
+
+        ShapeDialog.ShapePoint []pts;
+        for (var i = 1; i <= nrings; i++)
+        {
+            var rring = new Champlain.PathLayer();
+            rring.set_stroke_color(rcol);
+            rring.set_stroke_width (2);
+            view.add_layer(rring);
+            pp.set_child_below_sibling(rring, path);
+            double rng = i*ringint;
+            pts = ShapeDialog.mkshape(lat, lon, rng, 36);
+            foreach(var p in pts)
+            {
+                var pt = new  Champlain.Marker();
+                pt.set_location (p.lat,p.lon);
+                rring.add_node(pt);
+            }
+            rings += rring;
+        }
     }
 
     public Champlain.Marker add_single_element( ListBox l,  Gtk.TreeIter iter, bool rth)

@@ -916,14 +916,13 @@ public class ShapeDialog : GLib.Object
         public int no;
     }
 
-    private ShapePoint[] points;
     private Gtk.Dialog dialog;
     private Gtk.SpinButton spin1;
     private Gtk.SpinButton spin2;
     private Gtk.SpinButton spin3;
     private Gtk.ComboBoxText combo;
 
-    public ShapeDialog(Gtk.Builder builder, Gtk.Window? w=null)
+    public ShapeDialog (Gtk.Builder builder, Gtk.Window? w=null)
     {
         dialog = builder.get_object ("shape-dialog") as Gtk.Dialog;
         dialog.set_transient_for(w);
@@ -955,9 +954,7 @@ public class ShapeDialog : GLib.Object
                 radius = InputParser.get_scaled_real(radius.to_string());
                 if(radius > 0)
                 {
-                    radius /= 1852.0;
-                    mkshape(clat, clon, radius, npts, start, dirn);
-                    p = points;
+                    p = mkshape(clat, clon, radius, npts, start, dirn);
                 }
 
                 break;
@@ -968,22 +965,24 @@ public class ShapeDialog : GLib.Object
         return p;
     }
 
-    private void mkshape(double clat, double clon,double radius,
+    public static ShapePoint[] mkshape(double clat, double clon,double radius,
                          int npts=6, double start = 0, int dirn=1)
     {
         double ang = start;
         double dint  = dirn*(360.0/npts);
-        points= {};
+        ShapePoint[] points= new ShapePoint[npts+1];
+        radius /= 1852.0;
         for(int i =0; i <= npts; i++)
         {
             double lat,lon;
             Geo.posit(clat,clon,ang,radius,out lat, out lon);
             var p = ShapePoint() {no = i, lat=lat, lon=lon, bearing = ang};
-            points += p;
+            points[i] = p;
             ang = (ang + dint) % 360.0;
             if (ang < 0.0)
                 ang += 360;
         }
+        return points;
     }
 }
 
@@ -1496,6 +1495,7 @@ public class NavStatus : GLib.Object
         alti = {0};
         cg = {0};
         hdr = 0;
+        volt_update("n/a",4, 0f,true);
     }
 
     public void logspeak_init (string? voice, bool use_en = false)
