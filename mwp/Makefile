@@ -8,7 +8,7 @@ GST ?= 0.10
 
 all: $(APPS)
 
-SRCS=mwp.vala liststore.vala mwp_markers.vala mwp_craft.vala settings.vala dialogs.vala mapsources.vala logger.vala espeak_wrapper.c mwp-replay.vala map_seeder.vala mwp-layout.vala layout-test.vala iparser.vala mwp_bbox.vala
+SRCS=mwp.vala liststore.vala mwp_markers.vala mwp_craft.vala settings.vala dialogs.vala mapsources.vala logger.vala espeak_wrapper.c mwp-replay.vala map_seeder.vala mwp-layout.vala layout-test.vala iparser.vala mwp_bbox.vala mwpvers.c
 
 COMMON=../common/btdev.c ../common/mwp_xml.vala ../common/serial-device.vala ../common/geocalc.vala  ../common/utils.vala ../common/mspmsg.vala ../common/mspcmd.vala  ../common/get_locale_double.c ../common/mwc.vala ../common/mwplog.vala ../common/mavcmd.vala
 
@@ -18,6 +18,11 @@ LOPTS=-X -lespeak -X -lm
 
 #mwp-gresources.c: mwp-gresources.xml mwp.ui pixmaps/mwp_icon.svg
 #	glib-compile-resources --target=$@ --generate-source  mwp-gresources.xml
+
+.PHONY: mwpvers.c
+
+mwpvers.c:
+	./mkvers.sh
 
 mwp: $(SRCS) $(COMMON)
 	$(VALAC) $(DOPTS) $(OPTS) $(PKGS) -o $@  $^ $(LOPTS)

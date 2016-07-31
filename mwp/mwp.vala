@@ -24,6 +24,7 @@ using GtkChamplain;
 
 extern double get_locale_double(string str);
 extern int atexit(VoidFunc func);
+extern string mwpvers;
 
 [DBus (name = "org.freedesktop.NetworkManager")]
 interface NetworkManager : GLib.Object {
@@ -4397,7 +4398,7 @@ public class MWPlanner : Gtk.Application {
             var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
             stderr = FileStream.open(fn,"a");
         }
-        MWPLog.message("mwp startup\n");
+        MWPLog.message("mwp startup version: %s\n", mwpvers);
         var opt = new OptionContext("");
         try {
             opt.set_help_enabled(true);
