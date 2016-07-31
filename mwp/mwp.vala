@@ -4335,20 +4335,48 @@ public class MWPlanner : Gtk.Application {
             Logger.stop();
     }
 
+    private static string? read_cmd_opts()
+    {
+        string opts=null;
+        var fn = MWPUtils.find_conf_file("cmdopts");
+        if(fn != null)
+        {
+            var file = File.new_for_path(fn);
+            try {
+                var dis = new DataInputStream(file.read());
+                string line;
+                while ((line = dis.read_line (null)) != null)
+                {
+                    if(line.strip().length > 0 &&
+                       !line.has_prefix("#") &&
+                       !line.has_prefix(";"))
+                    {
+                        opts = line;
+                        break;
+                    }
+                }
+            } catch (Error e) {
+                error ("%s", e.message);
+            }
+        }
+        return opts;
+    }
+
     private static void check_env_args(OptionContext opt)
     {
-        var evar = Environment.get_variable("MWP_ARGS");
+        string  evar = Environment.get_variable("MWP_ARGS");
+        if(evar == null)
+            evar = read_cmd_opts();
         if(evar != null)
         {
             string? [] m = {};
             m += "args";
             foreach (var s in evar.split(" "))
-            {
                 m += s;
-                MWPLog.message("using %s\n", s);
-            }
+
             if(m.length > 1)
             {
+                MWPLog.message("prepending \"%s\"\n", evar);
                 unowned string? []om = m;
                 try {
                     opt.parse(ref om);
