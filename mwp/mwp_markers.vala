@@ -234,6 +234,7 @@ public class MWPMarkers : GLib.Object
 
     public void initiate_rings(Champlain.View view, double lat, double lon, int nrings, double ringint, string colstr)
     {
+        remove_rings(view);
         var pp = path.get_parent();
         Clutter.Color rcol = Color.from_string(colstr);
 
