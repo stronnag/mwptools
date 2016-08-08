@@ -3767,7 +3767,6 @@ public class MWPlanner : Gtk.Application {
         }
         menubblog.sensitive = menubbload.sensitive = menureplay.sensitive =
         menuloadlog.sensitive = true;
-        markers.remove_rings(view);
     }
 
     private void init_sstats()
@@ -3807,6 +3806,7 @@ public class MWPlanner : Gtk.Application {
         if(msp.available)
         {
             serial_doom(conbutton);
+            markers.remove_rings(view);
             verlab.set_label("");
             typlab.set_label("");
             statusbar.push(context_id, "");
