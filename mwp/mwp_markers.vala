@@ -224,12 +224,15 @@ public class MWPMarkers : GLib.Object
 
     public void remove_rings(Champlain.View view)
     {
-        foreach (var r in rings)
+        if (rings.length != 0)
         {
-            r.remove_all();
-            view.remove_layer(r);
+            foreach (var r in rings)
+            {
+                r.remove_all();
+                view.remove_layer(r);
+            }
+            rings = {};
         }
-        rings = {};
     }
 
     public void initiate_rings(Champlain.View view, double lat, double lon, int nrings, double ringint, string colstr)

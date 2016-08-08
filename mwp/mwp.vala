@@ -3766,7 +3766,8 @@ public class MWPlanner : Gtk.Application {
             replayer = 0;
         }
         menubblog.sensitive = menubbload.sensitive = menureplay.sensitive =
-            menuloadlog.sensitive = true;
+        menuloadlog.sensitive = true;
+        markers.remove_rings(view);
     }
 
     private void init_sstats()
