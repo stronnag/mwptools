@@ -84,6 +84,7 @@ public class ListBox : GLib.Object
             {
                 case MSP.Action.RTH:
                     no="";
+                    m1 = ((double)m.param1);
                     have_rth = true;
                     break;
                 default:
