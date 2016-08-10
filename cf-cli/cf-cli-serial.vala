@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
@@ -345,6 +344,43 @@ public class MWSerial : Object
         return rescode;
     }
 
+
+    private ResCode read_vers(out uint8 [] buf, out int len)
+    {
+        ResCode rescode = ResCode.OK;
+        buf = new uint8[256];
+        uint8 c = 0;
+        int nlf = 0;
+
+        len = 0;
+        buf[0] = 0;
+
+        for(var done = false ; ; )
+        {
+            var res = Posix.read(fd,&c,1);
+            if (res == 0)
+            {
+                done = true;
+                rescode = ResCode.TIMEOUT;
+                break;
+            }
+            else
+            {
+                if((char)c == '\r')
+                    continue;
+                if((char)c == '\n')
+                    nlf++;
+                else if(nlf == 1)
+                {
+                    buf[len++] = c;
+                }
+                if(nlf == 3 && (char)c == '#')
+                    done = true;
+            }
+        }
+        return rescode;
+    }
+
     private ResCode read_line(out uint8 [] buf, out int len, bool wait=false)
     {
         ResCode rescode = ResCode.OK;
@@ -485,6 +521,24 @@ public class MWSerial : Object
     {
         uint8 [] line;
         int len;
+        bool diff = false;
+
+        write("version\n");
+        while(read_vers(out line, out len) == ResCode.OK)
+            ;
+        if(((string)line).contains("BetaFlight"))
+        {
+            prof0 = prof1 = 0;
+            diff = true;
+        }
+
+        if(((string)line).contains("# INAV"))
+        {
+            prof0 = prof1 = 0;
+            calacc = false;
+            inav = true;
+        }
+
         for(var p = prof0; p <= prof1; p++)
         {
             FileStream os;
@@ -521,38 +575,27 @@ public class MWSerial : Object
             os.puts("# <https://github.com/stronnag/mwptools>\n");
             os.puts("# Windows binary <http://www.daria.co.uk/cf-cli/>\n#\n");
 
-            string cmd = "profile %d\n".printf(p);
-            write(cmd.data);
-            while(read_line(out line, out len) == ResCode.OK)
-                ;
-            write("dump\n");
+            if(diff == false)
+            {
+                string cmd = "profile %d\n".printf(p);
+                write(cmd.data);
+                while(read_line(out line, out len) == ResCode.OK)
+                    ;
+                write("dump\n");
+            }
+            else
+                write("diff all\n");
+
             while(read_line(out line, out len) == ResCode.OK)
             {
                 nbytes += line.length;
-                if ((string)line != "dump\n")
-                {
-                    if(((string)line).contains("Cleanflight"))
-                    {
-                        os.puts("# ");
-                    }
-
-                    if(((string)line).contains("BetaFlight"))
-                    {
-                        if(prof1 > 1)
-                            prof1 = 1;
-                    }
-
-                    if(((string)line).contains("# INAV"))
-                    {
-                        if(prof1 > 1)
-                            prof1 = 0;
-                        calacc = false;
-                        inav = true;
-                    }
+                if ((string)line != "dump\n" &&
+                    !((string)line).has_prefix("diff") &&
+                    (string)line != "defaults\n" &&
+                    (string)line != "save\n")
                     os.printf("%s", (string)line);
-                }
             }
-            if(inav == false && defprof != null)
+            if(inav == false && diff == false && defprof != null)
             {
                 os.printf("## defprof=%s\n", defprof);
             }
