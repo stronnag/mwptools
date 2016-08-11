@@ -16,10 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-/* Based on the Multiwii UBLOX parser, GPL by a cast of thousands */
-
 extern int open_serial(string dev, int baudrate);
-//extern void set_fd_speed(int fd, int baudrate);
 extern void close_serial(int fd);
 extern string default_name();
 extern unowned string get_error_text(int err, uint8[] buf, size_t len);
@@ -125,18 +122,18 @@ public class MWSerial : Object
         return true;
     }
 
-    public bool tty_open(string devname, int brate)
+    public bool tty_open(string device, int brate)
     {
         string [] parts;
 
-        parts = devname.split ("@");
+        parts = device.split ("@");
         if(parts.length == 2)
         {
-            devname = parts[0];
+            device = parts[0];
             brate = int.parse(parts[1]);
         }
-        stdout.printf("%s@%d\n", devname, brate);
-        open(devname, brate);
+        stderr.printf("%s@%d\n", device, brate);
+        open(device, brate);
         return available;
     }
 
@@ -155,7 +152,15 @@ public class MWSerial : Object
             return 1;
         }
         if(devname == null)
-            devname = default_name();
+        {
+            if(args.length == 2)
+            {
+                devname = args[1];
+            }
+            else
+                devname = default_name();
+        }
+
         var msp = new MWSerial();
         if(msp.tty_open(devname, brate))
         {
