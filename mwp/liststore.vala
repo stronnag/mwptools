@@ -267,6 +267,13 @@ public class ListBox : GLib.Object
         }
     }
 
+    private int get_user_alt()
+    {
+        Gtk.Entry ent = mp.builder.get_object ("entry1") as Gtk.Entry;
+        var ualt = int.parse(ent.get_text());
+        return ualt;
+    }
+
     private void update_marker_type(Gtk.TreeIter iter, string typ, int flag)
     {
         Value val,val1;
@@ -304,9 +311,7 @@ public class ListBox : GLib.Object
                     have_rth = true;
                     break;
                 case MSP.Action.LAND:
-                    list_model.set_value (iter, WY_Columns.ALT,
-                                              /*FIXME*/
-                                          MWPlanner.conf.altitude);
+                    list_model.set_value (iter, WY_Columns.ALT, 0);
                     break;
                 case MSP.Action.SET_HEAD:
                     list_model.set_value (iter, WY_Columns.LAT, 0.0);
@@ -823,7 +828,7 @@ public class ListBox : GLib.Object
     public void insert_item(MSP.Action typ, double lat, double lon)
     {
         Gtk.TreeIter iter;
-        var dalt = MWPlanner.conf.altitude;
+        var dalt = get_user_alt();
         lastid++;
         list_model.append(out iter);
         list_model.set (iter,
@@ -997,7 +1002,7 @@ public class ListBox : GLib.Object
 
     public void set_alts(bool flag)
     {
-        var dalt = MWPlanner.conf.altitude;
+        var dalt = get_user_alt();
 
         foreach (var t in get_selected_refs())
         {

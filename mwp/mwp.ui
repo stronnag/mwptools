@@ -627,7 +627,6 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="halign">start</property>
-                    <property name="editable">False</property>
                     <property name="width_chars">6</property>
                     <property name="secondary_icon_tooltip_text" translatable="yes">Default altitude value (m)</property>
                     <property name="input_purpose">number</property>
@@ -656,7 +655,6 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="halign">start</property>
-                    <property name="editable">False</property>
                     <property name="width_chars">6</property>
                     <property name="secondary_icon_tooltip_text" translatable="yes">Default loiter time (secs)</property>
                     <property name="input_purpose">number</property>
