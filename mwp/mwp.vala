@@ -4129,7 +4129,7 @@ public class MWPlanner : Gtk.Application {
             update_title_from_file(fname);
             if(npos && ls.have_rth)
                 markers.add_rth_point(home_pos.lat,home_pos.lon,ls);
-            Timeout.add(500, ()  => {
+            Timeout.add_seconds(2, ()  => {
                     get_mission_pix();
                     return false;
                 });
