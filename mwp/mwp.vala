@@ -4015,6 +4015,54 @@ public class MWPlanner : Gtk.Application {
             m.to_xml_file(last_file);
             update_title_from_file(last_file);
         }
+        get_mission_pix();
+    }
+
+    private string get_cached_mission_image(string mfn)
+    {
+        var cached = GLib.Path.build_filename(Environment.get_user_cache_dir(),
+                                              "mwp");
+        try
+        {
+            var dir = File.new_for_path(cached);
+            dir.make_directory_with_parents ();
+        } catch {}
+        var bn = GLib.Path.get_basename(mfn);
+        StringBuilder sb = new StringBuilder();
+        sb.append(bn);
+        sb.append(".png");
+        return GLib.Path.build_filename(cached,sb.str);
+    }
+
+
+    private void get_mission_pix()
+    {
+        if(last_file != null)
+        {
+            var wdw = embed.get_window();
+            var w = wdw.get_width();
+            var h = wdw.get_height();
+            try
+            {
+                var pixb = Gdk.pixbuf_get_from_window (wdw, 0, 0, w, h);
+                var path = get_cached_mission_image(last_file);
+                int dw,dh;
+                if(w > h)
+                {
+                    dw = 256;
+                    dh = 256* h / w;
+                }
+                else
+                {
+                    dh = 256;
+                    dw = 256* w / h;
+                }
+                var spixb = pixb.scale_simple(dw, dh, Gdk.InterpType.BILINEAR);
+                spixb.save(path, "png");
+            } catch (Error e) {
+                MWPLog.message ("pix: %s\n", e.message);
+            }
+        }
     }
 
     public void on_file_save_as ()
@@ -4081,6 +4129,10 @@ public class MWPlanner : Gtk.Application {
             update_title_from_file(fname);
             if(npos && ls.have_rth)
                 markers.add_rth_point(home_pos.lat,home_pos.lon,ls);
+            Timeout.add(500, ()  => {
+                    get_mission_pix();
+                    return false;
+                });
         }
         else
         {
@@ -4131,13 +4183,38 @@ public class MWPlanner : Gtk.Application {
 	filter.add_pattern ("*");
 	chooser.add_filter (filter);
 
+        var preview = new Gtk.Image();
+        chooser.set_preview_widget(preview);
+        chooser.update_preview.connect (() => {
+                string uri = chooser.get_preview_uri ();
+                if (uri != null && uri.has_prefix ("file://") == true)
+                {
+                    try {
+                        var fn = uri.substring (7);
+                        var img = get_cached_mission_image(fn);
+                        Gdk.Pixbuf pixbuf = new Gdk.Pixbuf.from_file_at_scale (img,
+                                                                               256,
+                                                                               256,
+                                                                               true);
+                        preview.set_from_pixbuf (pixbuf);
+                        preview.show ();
+                    } catch (Error e) {
+                        preview.hide ();
+                    }
+                }
+                else
+                    preview.hide ();
+            });
+
             // Process response:
         if (chooser.run () == Gtk.ResponseType.ACCEPT) {
             ls.clear_mission();
             var fn = chooser.get_filename ();
+            chooser.close ();
             load_file(fn);
         }
-        chooser.close ();
+        else
+            chooser.close ();
     }
 
     private void replay_log(bool delay=true)
