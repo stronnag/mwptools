@@ -4106,7 +4106,7 @@ public class MWPlanner : Gtk.Application {
         window.title = @"mwp = $basename";
     }
 
-    private void load_file(string fname)
+    private void load_file(string fname, have_preview=false)
     {
         var ms = new Mission ();
         if(ms.read_xml_file (fname) == true)
@@ -4129,10 +4129,11 @@ public class MWPlanner : Gtk.Application {
             update_title_from_file(fname);
             if(npos && ls.have_rth)
                 markers.add_rth_point(home_pos.lat,home_pos.lon,ls);
-            Timeout.add_seconds(2, ()  => {
-                    get_mission_pix();
-                    return false;
-                });
+            if(have_preview == false)
+                Timeout.add_seconds(2, ()  => {
+                        get_mission_pix();
+                        return false;
+                    });
         }
         else
         {
@@ -4163,6 +4164,7 @@ public class MWPlanner : Gtk.Application {
 
     public void on_file_open ()
     {
+        bool have_preview = false;
         Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
             "Select a mission file", null, Gtk.FileChooserAction.OPEN,
             "_Cancel",
@@ -4187,6 +4189,7 @@ public class MWPlanner : Gtk.Application {
         chooser.set_preview_widget(preview);
         chooser.update_preview.connect (() => {
                 string uri = chooser.get_preview_uri ();
+                have_preview = false;
                 if (uri != null && uri.has_prefix ("file://") == true)
                 {
                     try {
@@ -4198,6 +4201,7 @@ public class MWPlanner : Gtk.Application {
                                                                                true);
                         preview.set_from_pixbuf (pixbuf);
                         preview.show ();
+                        have_preview = true;
                     } catch (Error e) {
                         preview.hide ();
                     }
