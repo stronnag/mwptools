@@ -4106,7 +4106,7 @@ public class MWPlanner : Gtk.Application {
         window.title = @"mwp = $basename";
     }
 
-    private void load_file(string fname, have_preview=false)
+    private void load_file(string fname, bool have_preview=false)
     {
         var ms = new Mission ();
         if(ms.read_xml_file (fname) == true)
@@ -4215,7 +4215,7 @@ public class MWPlanner : Gtk.Application {
             ls.clear_mission();
             var fn = chooser.get_filename ();
             chooser.close ();
-            load_file(fn);
+            load_file(fn, have_preview);
         }
         else
             chooser.close ();
