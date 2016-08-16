@@ -313,6 +313,7 @@ public class MWPlanner : Gtk.Application {
     private bool have_fcv;
     private bool have_fcvv;
     private bool vinit;
+    private bool need_preview;
     private uint8 gpscnt = 0;
     private uint8 want_special = 0;
     private uint8 last_ltmf = 0;
@@ -921,6 +922,17 @@ public class MWPlanner : Gtk.Application {
         view = embed.get_view();
         view.set_reactive(true);
 
+        view.animation_completed.connect(() => {
+                if(need_preview)
+                {
+                    need_preview = false;
+                    Timeout.add_seconds(3, () => {
+                    get_mission_pix();
+                    return false;
+                        });
+                }
+            });
+
         zoomer.adjustment.value_changed.connect (() =>
             {
                 int  zval = (int)zoomer.adjustment.value;
@@ -1048,6 +1060,11 @@ public class MWPlanner : Gtk.Application {
                        connect_serial();
                        return true;
                    });
+
+        ag.connect('p', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                get_mission_pix();
+                return true;
+            });
 
         ag.connect('z', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
                 ls.clear_mission();
@@ -4128,14 +4145,7 @@ public class MWPlanner : Gtk.Application {
             update_title_from_file(fname);
             if(npos && ls.have_rth)
                 markers.add_rth_point(home_pos.lat,home_pos.lon,ls);
-/* need a better way of detecting all is rendered */
-/***
-            if(have_preview == false)
-                Timeout.add_seconds(2, ()  => {
-                        get_mission_pix();
-                        return false;
-                    });
-***/
+            need_preview = true;
         }
         else
         {
@@ -4205,7 +4215,9 @@ public class MWPlanner : Gtk.Application {
                             have_preview = true;
                     }
                     catch {
-                        pixbuf = FlatEarth.getpixbuf(fn, 256, 256);
+                        if (FileUtils.test (fn, FileTest.EXISTS)
+                            && !FileUtils.test (fn, FileTest.IS_DIR))
+                            pixbuf = FlatEarth.getpixbuf(fn, 256, 256);
                     }
 
                     if(pixbuf != null)
