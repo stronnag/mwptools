@@ -4027,13 +4027,12 @@ public class MWPlanner : Gtk.Application {
             var dir = File.new_for_path(cached);
             dir.make_directory_with_parents ();
         } catch {}
-        var bn = GLib.Path.get_basename(mfn);
+        var chk = Checksum.compute_for_string(ChecksumType.MD5, mfn);
         StringBuilder sb = new StringBuilder();
-        sb.append(bn);
+        sb.append(chk);
         sb.append(".png");
         return GLib.Path.build_filename(cached,sb.str);
     }
-
 
     private void get_mission_pix()
     {
@@ -4129,11 +4128,14 @@ public class MWPlanner : Gtk.Application {
             update_title_from_file(fname);
             if(npos && ls.have_rth)
                 markers.add_rth_point(home_pos.lat,home_pos.lon,ls);
+/* need a better way of detecting all is rendered */
+/***
             if(have_preview == false)
                 Timeout.add_seconds(2, ()  => {
                         get_mission_pix();
                         return false;
                     });
+***/
         }
         else
         {
@@ -4190,21 +4192,29 @@ public class MWPlanner : Gtk.Application {
         chooser.update_preview.connect (() => {
                 string uri = chooser.get_preview_uri ();
                 have_preview = false;
+                Gdk.Pixbuf pixbuf = null;
                 if (uri != null && uri.has_prefix ("file://") == true)
                 {
-                    try {
-                        var fn = uri.substring (7);
-                        var img = get_cached_mission_image(fn);
-                        Gdk.Pixbuf pixbuf = new Gdk.Pixbuf.from_file_at_scale (img,
-                                                                               256,
-                                                                               256,
-                                                                               true);
-                        preview.set_from_pixbuf (pixbuf);
-                        preview.show ();
-                        have_preview = true;
-                    } catch (Error e) {
-                        preview.hide ();
+                    var fn = uri.substring (7);
+                    var ifn = get_cached_mission_image(fn);
+                    try
+                    {
+                        pixbuf = new Gdk.Pixbuf.from_file_at_scale (ifn, 256,
+                                                                    256, true);
+                        if(pixbuf != null)
+                            have_preview = true;
                     }
+                    catch {
+                        pixbuf = FlatEarth.getpixbuf(fn, 256, 256);
+                    }
+
+                    if(pixbuf != null)
+                    {
+                        preview.set_from_pixbuf(pixbuf);
+                        preview.show ();
+                    }
+                    else
+                        preview.hide ();
                 }
                 else
                     preview.hide ();
