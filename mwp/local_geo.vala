@@ -47,34 +47,40 @@ public class FlatEarth : GLib.Object
         return p;
     }
 
+        /* Because it plots .... */
     private static Gdk.Pixbuf? conspire (GridSet g, int width, int height)
     {
-        var xrint = (int)(g.xrange + 0.5);
-        var yrint = (int)(g.yrange + 0.5);
-        var cst = new Cairo.ImageSurface (Cairo.Format.ARGB32, xrint, yrint);
-        var cr = new Cairo.Context (cst);
-        cr.translate(-g.xmin,g.ymin);
-        cr.set_line_cap(Cairo.LineCap.ROUND);
-        cr.set_line_width(8);
-        cr.set_source_rgb (1, 0, 0);
-        cr.move_to(g.points[0].x,  g.yrange - g.points[0].y);
-        foreach (var p in g.points)
-            cr.line_to(p.x,  g.yrange - p.y);
-        cr.stroke();
-        var pixb = Gdk.pixbuf_get_from_surface (cst, 0, 0, xrint, yrint);
-        int dw,dh;
-        if(xrint > yrint)
+        double scale;
+        int xaxis,yaxis;
+        if (g.xrange > g.yrange)
         {
-            dw = width;
-            dh = width * yrint / xrint;
+            scale = 256.0 / g.xrange;
+            xaxis = 256;
+            yaxis = (int)(g.yrange*scale + 0.5);
         }
         else
         {
-            dh = height;
-            dw = height * xrint / yrint;
+            scale = 256.0 / g.yrange;
+            yaxis = 256;
+            xaxis = (int)(g.xrange*scale + 0.5);
         }
-        var spixb = pixb.scale_simple(dw, dh, Gdk.InterpType.BILINEAR);
-        return spixb;
+        var cst = new Cairo.ImageSurface (Cairo.Format.ARGB32, xaxis, yaxis);
+        var cr = new Cairo.Context (cst);
+        cr.set_line_cap(Cairo.LineCap.ROUND);
+        cr.set_line_width(8);
+        cr.set_source_rgb (0.81, 0, 0);
+        var xp = scale*(g.points[0].x - g.xmin);
+        var yp = scale*(g.ymax - g.points[0].y);
+        cr.move_to(xp, yp);
+        foreach (var p in g.points)
+        {
+            xp = scale*(p.x - g.xmin);
+            yp = scale*(g.ymax - p.y);
+            cr.line_to(xp, yp);
+        }
+        cr.stroke();
+        var pixb = Gdk.pixbuf_get_from_surface (cst, 0, 0, xaxis, yaxis);
+        return pixb;
     }
 
     public static Gdk.Pixbuf getpixbuf(string fn, int width, int height)
