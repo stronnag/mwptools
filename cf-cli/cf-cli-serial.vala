@@ -184,14 +184,13 @@ public class MWSerial : Object
 
     public void close()
     {
-        closelog();
-
         available=false;
         if(fd != -1)
         {
             close_serial(fd);
             fd = -1;
         }
+        closelog();
     }
 
     private uint8 cksum(uint8[] dstr, size_t len, uint8 init=0)
@@ -908,6 +907,15 @@ public class MWSerial : Object
     public bool try_open(bool docals=false)
     {
         int ocount = 30;
+        var oc = 0;
+        while(!FileUtils.test (devname, FileTest.EXISTS))
+        {
+            message("Waiting for %s\n", devname);
+            Thread.usleep(1000*1000);
+            if(oc == 10)
+                break;
+        }
+
         do
         {
             open();
@@ -970,15 +978,13 @@ public class MWSerial : Object
 
         if(noreboot == false)
         {
+            message("Set defaults\n");
             write("defaults\n");
             while((res = read_line(out line, out len)) == ResCode.OK)
                 ;
             close();
-            message("Reboot on defaults\n");
-            Thread.usleep(1000000);
-
+            Thread.usleep(2500000);
             try_open(true);
-
             write("#");
             while((res = read_line(out line, out len)) == ResCode.OK)
                 ;
