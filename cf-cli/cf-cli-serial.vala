@@ -184,12 +184,12 @@ public class MWSerial : Object
 
     public void close()
     {
-        available=false;
         if(fd != -1)
         {
             close_serial(fd);
             fd = -1;
         }
+        available=false;
         closelog();
     }
 
@@ -908,6 +908,10 @@ public class MWSerial : Object
     {
         int ocount = 30;
         var oc = 0;
+
+        if(devname.has_prefix("/dev/ttyACM"))
+            Thread.usleep(2000000);
+
         while(!FileUtils.test (devname, FileTest.EXISTS))
         {
             message("Waiting for %s\n", devname);
@@ -980,10 +984,10 @@ public class MWSerial : Object
         {
             message("Set defaults\n");
             write("defaults\n");
-            while((res = read_line(out line, out len)) == ResCode.OK)
-                ;
+//            while((res = read_line(out line, out len)) == ResCode.OK)
+//                ;
             close();
-            Thread.usleep(2500000);
+            Thread.usleep(2000000);
             try_open(true);
             write("#");
             while((res = read_line(out line, out len)) == ResCode.OK)

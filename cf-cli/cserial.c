@@ -71,7 +71,7 @@ int open_serial(char *device, uint baudrate)
 }
 void close_serial(int fd)
 {
-    tcflush(fd, TCIOFLUSH);
+//    tcflush(fd, TCIOFLUSH);
     close(fd);
 }
 

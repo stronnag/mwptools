@@ -75,6 +75,7 @@ public class MWSerial : Object
     private static bool noinit = false;
     private static bool noautob = false;
     private static bool slow = false;
+    private static bool pass = false;
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", "/dev/ttyUSB0"},
@@ -86,6 +87,7 @@ public class MWSerial : Object
         { "air-model", 'a', 0, OptionArg.INT, out air_model, "0,1,4", null},
         { "force-10hz", 'z', 0, OptionArg.NONE, out force_10hz, "Force 10Hz", null},
         { "slow", 's', 0, OptionArg.NONE, out slow, "slower initialisation", null},
+        { "pass", 'p', 0, OptionArg.NONE, out pass, "cf gps passthrough", null},
         {null}
     };
 
@@ -409,6 +411,7 @@ public class MWSerial : Object
     private bool ublox_parse_gps()
     {
         bool ret = false;
+        stdout.printf("Data size %db\n", _payload_length);
         if(_class == 1)
         {
             switch (_msg_id)
@@ -455,8 +458,8 @@ public class MWSerial : Object
         else if(_class == 0x0a && _msg_id == 4)
         {
             var dt = timer.elapsed ();
-            stdout.printf("Version info after %fs (%db)\n", dt, _payload_length);
             unowned uint8* v2;
+            stdout.printf("Version info after %fs (%db)\n", dt, _payload_length);
             v2 = &_buffer.xbytes[30];
             gpsvers = int.parse((string)(v2));
             stdout.printf("SW: %s HW: %s\n", (string)_buffer.xbytes,(string)v2);
@@ -517,6 +520,7 @@ public class MWSerial : Object
             devname = parts[0];
             brate = int.parse(parts[1]);
         }
+
         stdout.printf("%s@%d\n", devname, brate);
 
         open(devname, brate);
@@ -524,12 +528,25 @@ public class MWSerial : Object
         {
             gps_state = 0;
             init_timer();
-            var delay = 100;
-            if(slow)
-                delay = 200;
-            Timeout.add(delay, () => {
-                    return setup_gps();
-                });
+            if(pass)
+            {
+                stdout.printf("Passthrough\n");
+                ublox_write(fd,"#\n".data);
+                Thread.usleep(1000*100);
+                ublox_write(fd,"gpspassthrough\n".data);
+                Thread.usleep(1000*100);
+                Posix.tcflush(fd, Posix.TCIOFLUSH);
+            }
+            else
+            {
+                var delay = 100;
+                if(slow)
+                    delay = 200;
+                Timeout.add(delay, () => {
+                        Posix.tcflush(fd, Posix.TCIOFLUSH);
+                        return setup_gps();
+                    });
+            }
         }
         return available;
     }
