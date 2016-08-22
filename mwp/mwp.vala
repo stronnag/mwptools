@@ -3574,7 +3574,6 @@ public class MWPlanner : Gtk.Application {
     {
         validatelab.set_text("");
 
-
         var wps = ls.to_wps(inav, (vi.mrtype == 8 || vi.mrtype == 14));
         xdopoll = dopoll;
         dopoll = false;

@@ -152,7 +152,6 @@ public class ListBox : GLib.Object
                     {
                         case MSP.Action.POSHOLD_TIME:
                         case MSP.Action.POSHOLD_UNLIM:
-                        case MSP.Action.SET_HEAD:
                         case MSP.Action.LAND:
                             MWPLog.message("Downgrade WP %s\n",
                                            typ.to_string());
@@ -161,6 +160,7 @@ public class ListBox : GLib.Object
                             w.p2 = w.p3 = 0;
                             break;
                         case MSP.Action.SET_POI:
+                        case MSP.Action.SET_HEAD:
                         case MSP.Action.JUMP:
                             MWPLog.message("Remove WP %s\n", typ.to_string());
 
