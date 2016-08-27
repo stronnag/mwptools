@@ -570,6 +570,7 @@ public class MWPlanner : Gtk.Application {
         mwvar = MWChooser.fc_from_arg0();
         conf = new MWPSettings();
         conf.read_settings();
+
         ulang = Intl.setlocale(LocaleCategory.NUMERIC, "");
 
         if(conf.uilang == "en")
@@ -738,12 +739,14 @@ public class MWPlanner : Gtk.Application {
         menuop = builder.get_object ("menu_prefs") as Gtk.MenuItem;
         menuop.activate.connect(() =>
             {
-                prefs.run_prefs(ref conf);
-                if(conf.speakint == 0)
+                var id = prefs.run_prefs(ref conf);
+                if(id == 1001)
                 {
-                    conf.speakint = 15;
+                    build_deventry();
+                    if(conf.speakint == 0)
+                        conf.speakint = 15;
+                    audio_cb.sensitive = true;
                 }
-                audio_cb.sensitive = true;
             });
 
         setpos = new SetPosDialog(builder);
@@ -1061,7 +1064,7 @@ public class MWPlanner : Gtk.Application {
                        return true;
                    });
 
-        ag.connect('p', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+        ag.connect('v', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
                 get_mission_pix();
                 return true;
             });
@@ -1262,11 +1265,7 @@ public class MWPlanner : Gtk.Application {
             load_file(mission);
         }
 
-        dev_entry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
-        foreach(string a in conf.devices)
-        {
-            dev_entry.append_text(a);
-        }
+        build_deventry();
         var te = dev_entry.get_child() as Gtk.Entry;
         te.can_focus = true;
         dev_entry.active = 0;
@@ -1490,6 +1489,16 @@ public class MWPlanner : Gtk.Application {
                 }
             });
         setup_buttons();
+    }
+
+    public void build_deventry()
+    {
+        dev_entry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
+        dev_entry.remove_all ();
+        foreach(string a in conf.devices)
+        {
+            dev_entry.append_text(a);
+        }
     }
 
     private void setup_buttons()
@@ -3862,7 +3871,7 @@ public class MWPlanner : Gtk.Application {
             {
                 if (autocon == false || autocount == 0)
                 {
-                    mwp_warning_box("Unable to open serial device: %s\nReason: %s".printf(serdev, estr));
+                    mwp_warning_box("Unable to open serial device: %s\nReason: %s\nPlease verify you are a member of the owning group\nTypically \"dialout\" or \"uucp\"".printf(serdev, estr));
                 }
                 autocount = ((autocount + 1) % 4);
             }

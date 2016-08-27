@@ -773,8 +773,9 @@ public class PrefsDialog : GLib.Object
         notebook.append_page(uprefs,new Gtk.Label("Units"));
     }
 
-    public void run_prefs(ref MWPSettings conf)
+    public int run_prefs(ref MWPSettings conf)
     {
+        int id = 0;
         StringBuilder sb = new StringBuilder ();
         if(conf.devices != null)
         {
@@ -812,7 +813,7 @@ public class PrefsDialog : GLib.Object
         buttons[conf.p_speed + Buttons.MSEC].set_active(true);
 
         dialog.show_all ();
-        var id = dialog.run();
+        id = dialog.run();
         switch(id)
         {
             case 1001:
@@ -827,6 +828,7 @@ public class PrefsDialog : GLib.Object
                         strs[i] = strs[i].strip();
                     }
                     conf.settings.set_strv( "device-names", strs);
+
                 }
                 str = ents[1].get_text();
                 d=InputParser.get_latitude(str);
@@ -903,6 +905,7 @@ public class PrefsDialog : GLib.Object
                 break;
         }
         dialog.hide();
+        return id;
     }
 }
 
