@@ -238,8 +238,11 @@
                       <object class="GtkMenuItem" id="_reboot_">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">soft reboot the FC
+See Issue #431</property>
                         <property name="label" translatable="yes">Reboot</property>
                         <property name="use_underline">True</property>
+                        <accelerator key="r" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                   </object>

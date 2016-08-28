@@ -189,7 +189,7 @@ public class MWPlanner : Gtk.Application {
     private double lx;
     private double ly;
     private Gtk.MenuItem menuup;
-    private Gtk.MenuItem menudown;
+private Gtk.MenuItem menudown;
     private Gtk.MenuItem menureplay;
     private Gtk.MenuItem menuloadlog;
     private Gtk.MenuItem menubblog;
@@ -198,6 +198,7 @@ public class MWPlanner : Gtk.Application {
     private Gtk.MenuItem menuncfg;
     private Gtk.MenuItem menumwvar;
     private Gtk.MenuItem saved_menuitem;
+    private Gtk.MenuItem reboot;
     private string saved_menutext;
 
     public static MWPSettings conf;
@@ -760,15 +761,16 @@ public class MWPlanner : Gtk.Application {
                 }
             });
 
-        menuop = builder.get_object ("_reboot_") as Gtk.MenuItem;
-        menuop.activate.connect(() =>
+        reboot = builder.get_object ("_reboot_") as Gtk.MenuItem;
+        reboot.activate.connect(() =>
             {
-                if(msp.available)
+                if(msp.available && armed != 0)
                 {
                     send_cmd(MSP.Cmds.REBOOT,null, 0);
                 }
             });
 
+        reboot_status();
         msview = new MapSourceDialog(builder, window);
         menuop =  builder.get_object ("menu_maps") as Gtk.MenuItem;
         menuop.activate.connect(() => {
@@ -1940,6 +1942,11 @@ public class MWPlanner : Gtk.Application {
             sensor_sts[i].label = " ";
     }
 
+    private void reboot_status()
+    {
+        reboot.sensitive =  (msp.available && armed == 0);
+    }
+
     private void armed_processing(uint32 flag)
     {
         if(armed == 0)
@@ -1965,21 +1972,19 @@ public class MWPlanner : Gtk.Application {
 
         if(armed != larmed)
         {
-            if(armed == 1)
-                init_craft_icon();
-
-            if(gps_trail)
-            {
-                if(armed == 1 && craft != null)
-                {
-                    markers.remove_rings(view);
-                    init_npos();
-                    craft.init_trail();
-                }
-            }
-
             if (armed == 1)
             {
+                reboot_status();
+                init_craft_icon();
+                if(gps_trail)
+                {
+                    if(craft != null)
+                    {
+                        markers.remove_rings(view);
+                        init_npos();
+                        craft.init_trail();
+                    }
+                }
                 MWPLog.message("Armed\n");
                 init_npos();
                 armed_spinner.show();
@@ -2025,6 +2030,7 @@ public class MWPlanner : Gtk.Application {
                     logb.active=false;
                 }
                 navstatus.reset_states();
+                reboot_status();
             }
         }
         larmed = armed;
@@ -3792,6 +3798,8 @@ public class MWPlanner : Gtk.Application {
         }
         menubblog.sensitive = menubbload.sensitive = menureplay.sensitive =
         menuloadlog.sensitive = true;
+        reboot_status();
+
     }
 
     private void init_sstats()
@@ -3875,6 +3883,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 autocount = ((autocount + 1) % 4);
             }
+            reboot_status();
         }
     }
 
