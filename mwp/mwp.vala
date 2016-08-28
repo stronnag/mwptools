@@ -764,7 +764,7 @@ private Gtk.MenuItem menudown;
         reboot = builder.get_object ("_reboot_") as Gtk.MenuItem;
         reboot.activate.connect(() =>
             {
-                if(msp.available && armed != 0)
+                if(msp.available && armed == 0)
                 {
                     send_cmd(MSP.Cmds.REBOOT,null, 0);
                 }
