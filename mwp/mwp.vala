@@ -1944,7 +1944,7 @@ private Gtk.MenuItem menudown;
 
     private void reboot_status()
     {
-        reboot.sensitive =  (msp.available && armed == 0);
+        reboot.sensitive =  (msp != null && msp.available && armed == 0);
     }
 
     private void armed_processing(uint32 flag)
