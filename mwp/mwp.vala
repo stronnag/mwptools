@@ -1835,9 +1835,10 @@ private Gtk.MenuItem menudown;
     {
         if(craft == null)
         {
-            if(vi.mrtype < 1 || vi.mrtype > 18) // Hex6P
-                vi.mrtype = (uint8)dmrtype;
-
+            if(vi.mrtype == 0 || vi.mrtype > 18)
+            {
+                dmrtype = vi.mrtype = 3;
+            }
             MWPLog.message("init icon %d\n",  vi.mrtype);
             craft = new Craft(view, vi.mrtype,norotate, gps_trail, stack_size);
             craft.park();
