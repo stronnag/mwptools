@@ -1835,7 +1835,7 @@ private Gtk.MenuItem menudown;
     {
         if(craft == null)
         {
-            if(vi.mrtype == 0)
+            if(vi.mrtype < 1 || vi.mrtype > 18) // Hex6P
                 vi.mrtype = (uint8)dmrtype;
 
             MWPLog.message("init icon\n");
