@@ -46,6 +46,30 @@ public class Craft : GLib.Object
     private Queue<Champlain.Point> stack;
     private int stack_size = 0;
 
+    public enum Vehicles
+    {
+        ARROW,
+        TRICOPTER,
+        QUADP,
+        QUADX,
+        BICOPTER,
+        QUADX1,
+        Y6,
+        HEX6P,
+        WING,
+        Y4,
+        HEX6X,
+        OCTOX8,
+        OCTOFLATP,
+        OCTOFLATX,
+        AEROPLANE,
+        HELI,
+        HELI1,
+        VTAIL4,
+        HEX6P1,
+        LAST
+    }
+
     private static string[] icons =
     {
         "arrow.png", //0
@@ -102,10 +126,8 @@ public class Craft : GLib.Object
         norotate = _norotate;
         trail = _trail;
 
-        if (id == icons.length)
-        {
-            id = 0;
-        }
+        if(id >= Craft.Vehicles.LAST)
+            id = Craft.Vehicles.QUADX;
         var iconfile = MWPUtils.find_conf_file(icons[id], "pixmaps");
         try {
             icon = new Champlain.Label.from_file (iconfile);
@@ -165,6 +187,8 @@ public class Craft : GLib.Object
     public void set_icon(uint id)
     {
         layer.remove_marker (icon);
+        if(id >= Craft.Vehicles.LAST)
+            id = Craft.Vehicles.QUADX;
         var iconfile = MWPUtils.find_conf_file(icons[id], "pixmaps");
         try {
             icon = new Champlain.Label.from_file (iconfile);

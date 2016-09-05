@@ -490,7 +490,7 @@ private Gtk.MenuItem menudown;
     private static bool offline = false;
     private static string rfile = null;
     private static string bfile = null;
-    private static int dmrtype=3; // default to quad
+    private static int dmrtype=Craft.Vehicles.QUADX; // default to quad
     private static DEBUG_FLAGS debug_flags = 0;
     private static VersInfo vi ={0};
     private static bool set_fs;
@@ -1835,10 +1835,6 @@ private Gtk.MenuItem menudown;
     {
         if(craft == null)
         {
-            if(vi.mrtype == 0 || vi.mrtype > 18)
-            {
-                dmrtype = vi.mrtype = 3;
-            }
             MWPLog.message("init icon %d\n",  vi.mrtype);
             craft = new Craft(view, vi.mrtype,norotate, gps_trail, stack_size);
             craft.park();
