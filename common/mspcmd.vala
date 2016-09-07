@@ -141,9 +141,13 @@ public class MSP : Object
 
     private static const string[] mrtypes = {
             "", "TRI", "QUADP","QUADX", "BI",
-            "GIMBAL","Y6","HEX6","FLYING_WING","Y4","HEX6X","OCTOX8",
-            "OCTOFLATP","OCTOFLATX","AIRPLANE/SINGLECOPTER,DUALCOPTER",
-            "HELI_120","HELI_90","VTAIL4","HEX6H" };
+            "GIMBAL","Y6","HEX6","FLYING_WING",
+            "Y4", "HEX6X", "OCTOX8", "OCTOFLATP", "OCTOFLATX",
+            "AIRPLANE", "HELI_120_CCPM", "HELI_90_DEG", "VTAIL4",
+            "HEX6H", "PPM_TO_SERVO", "DUALCOPTER", "SINGLECOPTER",
+            "ATAIL4", "CUSTOM", "CUSTOMAIRPLANE", "CUSTOMTRI"
+    };
+
     private static const string[] pidnames = {
             "ROLL", "PITCH", "YAW", "ALT", "POS", "POSR", "NAVR",
             "LEVEL", "MAG", "VEL"  };
