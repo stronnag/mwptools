@@ -572,7 +572,6 @@ public class MWSerial : Object
             os.printf("# mwptools / cf-cli dump %s\n", dt.format("%FT%T%z"));
             os.puts("# cf-cli is a tool to manage Cleanflight CLI dump backup and restore\n");
             os.puts("# <https://github.com/stronnag/mwptools>\n");
-            os.puts("# Windows binary <http://www.daria.co.uk/cf-cli/>\n#\n");
 
             if(diff == false)
             {
