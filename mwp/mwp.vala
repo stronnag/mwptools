@@ -1356,6 +1356,9 @@ private Gtk.MenuItem menudown;
             scr.get_monitor_geometry(mon, out monitor);
             conf.window_p = monitor.width*80/100;
         }
+
+            // Hack (thanks to Inkscape for the clue) to made pane resize better
+        pane.set_resize_mode(Gtk.ResizeMode.QUEUE);
         pane.position = conf.window_p;
         pane.pack1(ebox,true, false);
         pane.add2(box); //, true, true);
