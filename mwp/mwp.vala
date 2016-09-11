@@ -176,6 +176,11 @@ class MwpDockHelper : Object
     private Gtk.Window wdw = null;
     public bool floating {get; private set; default=false;}
 
+    public void transient(Gtk.Window w)
+    {
+        wdw.set_transient_for (w);
+    }
+
     public MwpDockHelper (Gdl.DockItem di, Gdl.Dock dock, string title, bool _floater = false)
     {
         floating = _floater;
@@ -1205,6 +1210,7 @@ private Gtk.MenuItem menudown;
 
         mwpdh = new MwpDockHelper(dockitem[DOCKLETS.MISSION], dock,
                           "Mission Editor", conf.tote_floating);
+        mwpdh.transient(window);
 
         view.notify["zoom-level"].connect(() => {
                 var val = view.get_zoom_level();
