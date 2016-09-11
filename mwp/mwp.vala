@@ -171,6 +171,52 @@ public class MWPCursor : GLib.Object
     }
 }
 
+class MwpDockHelper : Object
+{
+    private Gtk.Window wdw = null;
+    public bool floating {get; private set; default=false;}
+
+    public MwpDockHelper (Gdl.DockItem di, Gdl.Dock dock, string title, bool _floater = false)
+    {
+        floating = _floater;
+        wdw = new Gtk.Window();
+        wdw.title = title;
+        wdw.resize(480,320);
+        wdw.window_position = Gtk.WindowPosition.CENTER;
+        wdw.delete_event.connect(() => {
+                di.iconify_item();
+                return true;
+            });
+
+        di.dock_drag_end.connect(() => {
+                if(di.get_toplevel() == dock)
+                {
+                    floating = false;
+                    wdw.hide();
+                }
+                else
+                {
+                    floating = true;
+                    di.dock_to (null, Gdl.DockPlacement.FLOATING, 0);
+                    di.get_parent().reparent(wdw);
+                    wdw.show_all();
+                }
+            });
+        di.hide.connect(() => {
+                wdw.hide();
+            });
+
+        di.show.connect(() => {
+                if(!di.iconified && floating)
+                {
+                    di.dock_to (null, Gdl.DockPlacement.FLOATING, 0);
+                    di.get_parent().reparent(wdw);
+                    wdw.show_all();
+                }
+            });
+    }
+}
+
 public class MWPlanner : Gtk.Application {
     public Builder builder;
     public Gtk.ApplicationWindow window;
@@ -328,6 +374,8 @@ private Gtk.MenuItem menudown;
     private uint8 profile = 0;
     private double clat = 0.0;
     private double clon = 0.0;
+
+    private MwpDockHelper mwpdh;
 
         /* for jump protection */
     private double xlon = 0;
@@ -807,6 +855,7 @@ private Gtk.MenuItem menudown;
 
         menuop = builder.get_object ("menu_quit") as Gtk.MenuItem;
         menuop.activate.connect (() => {
+                conf.save_floating (mwpdh.floating);
                 lman.save_config();
                 remove_window(window);
             });
@@ -1153,6 +1202,9 @@ private Gtk.MenuItem menudown;
         dock.add_item (dockitem[DOCKLETS.RADIO], DockPlacement.BOTTOM);
         dock.add_item (dockitem[DOCKLETS.FBOX], DockPlacement.BOTTOM);
         dock.add_item (dockitem[DOCKLETS.MISSION], DockPlacement.TOP);
+
+        mwpdh = new MwpDockHelper(dockitem[DOCKLETS.MISSION], dock,
+                          "Mission Editor", conf.tote_floating);
 
         view.notify["zoom-level"].connect(() => {
                 var val = view.get_zoom_level();

@@ -71,6 +71,7 @@ public class MWPSettings : GLib.Object
     public string uilang {get; private set; default=null;}
     public string led {get; private set; default=null;}
     public string rcolstr {get; private set; default=null;}
+    public bool tote_floating {get; set; default=false;}
 
     public signal void settings_update (string s);
 
@@ -228,6 +229,8 @@ public class MWPSettings : GLib.Object
             led = settings.get_string ("led");
         if(s == null || s == "rings-colour")
             rcolstr = settings.get_string ("rings-colour");
+        if(s == null || s == "tote-float-p")
+            tote_floating = settings.get_boolean ("tote-float-p");
     }
 
     public void save_window()
@@ -243,6 +246,12 @@ public class MWPSettings : GLib.Object
     {
         if (settings != null)
             settings.set_int("wdw-p", window_p);
+    }
+
+    public void save_floating(bool val)
+    {
+        if (settings != null)
+            settings.set_boolean("tote-float-p", val);
     }
 
     public void save_settings()

@@ -296,5 +296,10 @@
       <description>well know string or #RRGGBBAA</description>
     </key>
 
+    <key name="tote-float-p" type="b">
+      <default>true</default>
+      <summary>Do Mission tote float</summary>
+      <description>(private settinge)</description>
+    </key>
   </schema>
 </schemalist>
