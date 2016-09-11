@@ -178,7 +178,8 @@ class MwpDockHelper : Object
 
     public void transient(Gtk.Window w)
     {
-        wdw.set_transient_for (w);
+//        wdw.set_transient_for (w);
+        wdw.set_keep_above(true);
     }
 
     public MwpDockHelper (Gdl.DockItem di, Gdl.Dock dock, string title, bool _floater = false)
