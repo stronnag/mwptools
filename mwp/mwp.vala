@@ -175,11 +175,10 @@ class MwpDockHelper : Object
 {
     private Gtk.Window wdw = null;
     public bool floating {get; private set; default=false;}
-
-    public void transient(Gtk.Window w)
+    public void transient(Gtk.Window w, bool above=false)
     {
-//        wdw.set_transient_for (w);
-        wdw.set_keep_above(true);
+        wdw.set_keep_above(above);
+        wdw.set_transient_for (w);
     }
 
     public MwpDockHelper (Gdl.DockItem di, Gdl.Dock dock, string title, bool _floater = false)
@@ -188,7 +187,17 @@ class MwpDockHelper : Object
         wdw = new Gtk.Window();
         wdw.title = title;
         wdw.resize(480,320);
-        wdw.window_position = Gtk.WindowPosition.CENTER;
+        wdw.window_position = Gtk.WindowPosition.MOUSE;
+        wdw.type_hint =  Gdk.WindowTypeHint.DIALOG;
+
+
+        if(!di.iconified && floating)
+        {
+            di.dock_to (null, Gdl.DockPlacement.FLOATING, 0);
+            di.get_parent().reparent(wdw);
+            wdw.show_all();
+        }
+
         wdw.delete_event.connect(() => {
                 di.iconify_item();
                 return true;
@@ -1209,10 +1218,6 @@ private Gtk.MenuItem menudown;
         dock.add_item (dockitem[DOCKLETS.FBOX], DockPlacement.BOTTOM);
         dock.add_item (dockitem[DOCKLETS.MISSION], DockPlacement.TOP);
 
-        mwpdh = new MwpDockHelper(dockitem[DOCKLETS.MISSION], dock,
-                          "Mission Editor", conf.tote_floating);
-        mwpdh.transient(window);
-
         view.notify["zoom-level"].connect(() => {
                 var val = view.get_zoom_level();
                 var zval = (int)zoomer.adjustment.value;
@@ -1496,6 +1501,11 @@ private Gtk.MenuItem menudown;
             dockitem[DOCKLETS.FBOX].iconify_item ();
             lman.save_config();
         }
+
+        mwpdh = new MwpDockHelper(dockitem[DOCKLETS.MISSION], dock,
+                          "Mission Editor", conf.tote_floating);
+        mwpdh.transient(window);
+
         art_win.run(colstr);
         fbox.update(true);
 
@@ -1636,6 +1646,7 @@ private Gtk.MenuItem menudown;
             window.unfullscreen();
         else
             window.fullscreen();
+        mwpdh.transient(window, !wdw_state);
     }
 
     private bool try_connect()
