@@ -1442,6 +1442,11 @@ public class NavStatus : GLib.Object
     public void announce(uint8 mask, bool _recip)
     {
         recip = _recip;
+
+        if(have_hdr)
+        {
+            mt.message(AudioThread.Vox.HEADING);
+        }
         if(((mask & SPK.GPS) == SPK.GPS) && have_cg)
         {
             mt.message(AudioThread.Vox.RANGE_BRG);
@@ -1454,12 +1459,6 @@ public class NavStatus : GLib.Object
         {
             mt.message(AudioThread.Vox.BARO);
         }
-
-        if(have_hdr)
-        {
-            mt.message(AudioThread.Vox.HEADING);
-        }
-
         if((mask & SPK.Volts) == SPK.Volts && volts > 0.0)
         {
             mt.message(AudioThread.Vox.VOLTAGE);
