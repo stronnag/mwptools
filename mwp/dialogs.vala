@@ -1679,6 +1679,8 @@ public class AudioThread : Object {
                             break;
                         case Vox.BARO:
                             double estalt = (double)NavStatus.alti.estalt/100.0;
+                            if(estalt < 0.0 || estalt > 20.0)
+                                estalt = Math.round(estalt);
                             s  = "Altitude %.1f.".printf(Units.distance(estalt));
                             s = str_zero(s);
                             break;
