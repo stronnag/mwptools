@@ -391,16 +391,12 @@ if autotyp && typ == 3
   typ = (get_autotype(bbox) || typ)
 end
 
-gitinfo=nil
-gl=0
-File.open(bbox,'r') do |f|
+gitinfos=[]
+File.open(bbox,'rb') do |f|
   f.each do |l|
     if m = l.match(/^H Firmware revision:(.*)$/)
-      gitinfo = m[1]
-      break
+      gitinfos << m[1]
     end
-    gl += 1
-    break if gl > 29
   end
 end
 
@@ -497,7 +493,9 @@ IO.popen(cmd,'rt') do |pipe|
 
   have_sonar = (hdrs.has_key? :sonarraw)
   have_baro = (hdrs.has_key? :baroalt_cm)
-  send_init_seq dev,typ,have_sonar,have_baro,gitinfo
+
+  STDERR.puts "idx: #{idx} gi: #{gitinfos[idx-1]}"
+  send_init_seq dev,typ,have_sonar,have_baro,gitinfos[idx-1]
 
   csv.each do |row|
     next if row[:gps_numsat].to_i == 0
