@@ -4434,6 +4434,9 @@ private Gtk.MenuItem menudown;
             {
                 case 1:
                     robj = new ReplayThread();
+                    robj.replay_mission_file.connect((mf) => {
+                            load_file(mf);
+                        });
                     thr = robj.run(playfd[1], fn, delay);
                     saved_menuitem = (delay) ? menureplay : menuloadlog;
                     break;

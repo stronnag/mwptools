@@ -274,6 +274,8 @@ public class ReplayThread : GLib.Object
         cancellable.cancel();
     }
 
+    public signal void replay_mission_file (string filename);
+
     public Thread<int> run (int fd, string relog, bool delay=true)
     {
         playon = true;
@@ -339,6 +341,13 @@ public class ReplayThread : GLib.Object
                                     var mwvers = obj.get_int_member ("mwvers");
                                     var cap = obj.get_int_member ("capability");
                                     uint fctype = 42;
+                                    if(obj.has_member("mission"))
+                                    {
+                                        var mfn =  obj.get_string_member("mission");
+                                        var mfile = File.new_for_path (mfn);
+                                        if (mfile.query_exists ())
+                                            replay_mission_file(mfn);
+                                    }
 
                                     if(mwvers == 0)
                                         mwvers = 255;
