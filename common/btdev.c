@@ -87,7 +87,7 @@ int connect_bt_device(char *btaddr)
     return s;
 }
 #else
-static int connect_bt_device (char *btaddr)
+int connect_bt_device (char *btaddr)
 {
     return -1;
 }
