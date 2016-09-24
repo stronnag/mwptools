@@ -6,6 +6,7 @@ local:
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
 install: $(APP)
-	install -m 755 -D $(APP) $(prefix)/bin/$(APP)
+	install -d $(prefix)/bin
+	install -m 755 $(APP) $(prefix)/bin/$(APP)
 
 .PHONY: all clean local install
