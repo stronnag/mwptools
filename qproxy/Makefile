@@ -19,4 +19,5 @@ local:
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
 install: $(APP)
-	install -sD $(APP) $(prefix)/bin/$(APP)
+	install -d $(prefix)/bin
+	install -s $(APP) $(prefix)/bin/$(APP)

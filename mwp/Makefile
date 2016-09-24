@@ -30,16 +30,22 @@ local:
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
 install: $(APPS)
-	install -s -D mwp $(prefix)/bin/mwp
-	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/mwp/mwp_icon.svg
-	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/icons/hicolor/scalable/mwp_icon.svg
-	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/mwp/mwp.svg
-	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/mwp/pixmaps/mwp_icon.svg
-	install -m 644 -D mwp.ui $(datadir)/share/mwp/mwp.ui
+	install -d $(prefix)/bin
+	install -s mwp $(prefix)/bin/mwp
+	install -d $(datadir)/share/mwp
+	install -m 644 ../common/mwp_icon.svg $(datadir)/share/mwp/mwp_icon.svg
+	install -d $(datadir)/share/icons/hicolor/scalable
+	install -m 644 ../common/mwp_icon.svg $(datadir)/share/icons/hicolor/scalable/mwp_icon.svg
+	install -m 644 ../common/mwp_icon.svg $(datadir)/share/mwp/mwp.svg
 	install -d $(datadir)/share/mwp/pixmaps
+	install -m 644 ../common/mwp_icon.svg $(datadir)/share/mwp/pixmaps/mwp_icon.svg
+	install -m 644 mwp.ui $(datadir)/share/mwp/mwp.ui
 	install -m 644 pixmaps/* $(datadir)/share/mwp/pixmaps/
 	install -m 644 *.ogg $(datadir)/share/mwp/
-	install -m 644 -D mwp.desktop $(datadir)/share/applications/mwp.desktop
-	install -m 644 -D org.mwptools.planner.gschema.xml $(datadir)/share/glib-2.0/schemas/org.mwptools.planner.gschema.xml
+	install -d $(datadir)/share/applications
+	install -m 644 mwp.desktop $(datadir)/share/applications/mwp.desktop
+	install -d $(datadir)/share/glib-2.0/schemas
+	install -m 644 org.mwptools.planner.gschema.xml $(datadir)/share/glib-2.0/schemas/org.mwptools.planner.gschema.xml
 	glib-compile-schemas $(datadir)/share/glib-2.0/schemas
-	install -m 644 -D ../docs/mwptools.pdf $(datadir)/share/doc/mwp/mwptools.pdf
+	install -d $(datadir)/share/doc/mwp
+	install -m 644 ../docs/mwptools.pdf $(datadir)/share/doc/mwp/mwptools.pdf

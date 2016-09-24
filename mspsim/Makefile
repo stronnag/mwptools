@@ -19,8 +19,11 @@ local:
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
 install: $(APP)
-	install -s -D $(APP) $(prefix)/bin/$(APP)
-	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/$(APP)/mwp_icon.svg
-	install -m 644 -D ../common/mwp_icon.svg $(datadir)/share/$(APP)/$(APP)_icon.svg
-	install -m 644 -D $(APP).ui $(datadir)/share/$(APP)/$(APP).ui
-	install -m 644 -D $(APP).desktop $(datadir)/share/applications/$(APP).desktop
+	install -d $(prefix)/bin
+	install -d $(datadir)/share/$(APP)
+	install -d $(datadir)/share/applications
+	install -s $(APP) $(prefix)/bin/$(APP)
+	install -m 644 ../common/mwp_icon.svg $(datadir)/share/$(APP)/mwp_icon.svg
+	install -m 644 ../common/mwp_icon.svg $(datadir)/share/$(APP)/$(APP)_icon.svg
+	install -m 644 $(APP).ui $(datadir)/share/$(APP)/$(APP).ui
+	install -m 644 $(APP).desktop $(datadir)/share/applications/$(APP).desktop

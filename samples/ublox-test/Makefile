@@ -35,5 +35,6 @@ local: $(APPS)
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
 install: $(APPS)
-	install -s -D $(APP) $(prefix)/bin/$(APP)
-	install -s -D $(CLI) $(prefix)/bin/$(CLI)
+	install -d $(prefix)/bin
+	install -s $(APP) $(prefix)/bin/$(APP)
+	install -s $(CLI) $(prefix)/bin/$(CLI)

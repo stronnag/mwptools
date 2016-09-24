@@ -37,7 +37,8 @@ local:
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
 install: $(APPS)
+	install -d $(prefix)/bin
 ifdef VTEVERS
-	install -s -D $(APP) $(prefix)/bin/$(APP)
+	install -s $(APP) $(prefix)/bin/$(APP)
 endif
-	install -s -D $(CLI) $(prefix)/bin/$(CLI)
+	install -s $(CLI) $(prefix)/bin/$(CLI)
