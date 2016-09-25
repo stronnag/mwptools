@@ -131,7 +131,7 @@ public class  BBoxDialog : Object
                                     }
                                 }
                             }
-                            else
+                            if((condition & IOCondition.HUP) == IOCondition.HUP)
                                 return false;
 
                         } catch (IOChannelError e) {
