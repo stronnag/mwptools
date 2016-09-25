@@ -1515,17 +1515,6 @@ private Gtk.MenuItem menudown;
         if(conf.mavrth != null)
             parse_rc_mav(conf.mavrth, Craft.Special.RTH);
 
-        if(rfile != null)
-        {
-            usemag = force_mag;
-            run_replay(Posix.realpath(rfile), true, 1);
-        }
-        else if(bfile != null)
-        {
-            usemag = force_mag;
-            replay_bbox(true, Posix.realpath(bfile));
-        }
-
         Gtk.drag_dest_set (embed, Gtk.DestDefaults.ALL,
                            targets, Gdk.DragAction.COPY);
 
@@ -1563,6 +1552,22 @@ private Gtk.MenuItem menudown;
                 }
             });
         setup_buttons();
+        if(rfile != null)
+        {
+            usemag = force_mag;
+            Idle.add(() => {
+                    run_replay(Posix.realpath(rfile), true, 1);
+                    return false;
+                });
+        }
+        else if(bfile != null)
+        {
+            usemag = force_mag;
+            Idle.add(() => {
+                    replay_bbox(true, Posix.realpath(bfile));
+                    return false;
+                });
+        }
     }
 
     public void build_deventry()
