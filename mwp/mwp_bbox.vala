@@ -101,31 +101,43 @@ public class  BBoxDialog : Object
 
 		// stderr:
 		IOChannel error = new IOChannel.unix_new (p_stderr);
-		error.add_watch (IOCondition.IN | IOCondition.HUP, (channel, condition) => {
+		error.add_watch (IOCondition.IN |
+                                 IOCondition.HUP |
+                                 IOCondition.ERR |
+                                 IOCondition.NVAL, (channel, condition) => {
                         Gtk.TreeIter iter;
-                        if (condition == IOCondition.HUP)
+                        if ((condition & (IOCondition.HUP |
+                                         IOCondition.ERR |
+                                          IOCondition.NVAL)) != 0)
                             return false;
+
                         try {
                             string line;
                             channel.read_line (out line, null, null);
-                            int n;
-                            n = line.index_of("Log ");
-                            if(n == 0)
+                            if(line != null)
                             {
-                                int slen = line.length;
-                                nidx = int.parse(line[n+4:slen]);
-                                n = line.index_of(" of ");
-                                maxidx = int.parse(line[n+4:slen]);
-                                bb_items.label = "Log %d of %d".printf(nidx,maxidx);
-                                n = line.index_of(" duration ");
-                                if(n > 16)
+                                int n;
+                                n = line.index_of("Log ");
+                                if(n == 0)
                                 {
-                                    n += 10;
-                                    string dura = line.substring(n, slen - n -1);
-                                    bb_liststore.append (out iter);
-                                    bb_liststore.set (iter, 0, nidx, 1, dura);
+                                    int slen = line.length;
+                                    nidx = int.parse(line[n+4:slen]);
+                                    n = line.index_of(" of ");
+                                    maxidx = int.parse(line[n+4:slen]);
+                                    bb_items.label = "Log %d of %d".printf(nidx,maxidx);
+                                    n = line.index_of(" duration ");
+                                    if(n > 16)
+                                    {
+                                        n += 10;
+                                        string dura = line.substring(n, slen - n -1);
+                                        bb_liststore.append (out iter);
+                                        bb_liststore.set (iter, 0, nidx, 1, dura);
+                                    }
                                 }
                             }
+                            else
+                                return false;
+
                         } catch (IOChannelError e) {
                             return false;
                         } catch (ConvertError e) {
