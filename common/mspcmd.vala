@@ -139,7 +139,7 @@ public class MSP : Object
         LAND
     }
 
-    private static const string[] mrtypes = {
+    private const string[] mrtypes = {
             "", "TRI", "QUADP","QUADX", "BI",
             "GIMBAL","Y6","HEX6","FLYING_WING",
             "Y4", "HEX6X", "OCTOX8", "OCTOFLATP", "OCTOFLATX",
@@ -148,20 +148,20 @@ public class MSP : Object
             "ATAIL4", "CUSTOM", "CUSTOMAIRPLANE", "CUSTOMTRI"
     };
 
-    private static const string[] pidnames = {
+    private const string[] pidnames = {
             "ROLL", "PITCH", "YAW", "ALT", "POS", "POSR", "NAVR",
             "LEVEL", "MAG", "VEL"  };
-    private static const string[] wp_name = {
+    private const string[] wp_name = {
             "UNASSIGNED", "WAYPOINT","POSHOLD_UNLIM",
             "POSHOLD_TIME", "RTH","SET_POI","JUMP", "SET_HEAD","LAND" };
 
-    private static const string[] gps_modes =  {
+    private const string[] gps_modes =  {
         "None",
         "PosHold",
         "RTH",
         "Mission" };
 
-    private static const string[] nav_states =  {
+    private const string[] nav_states =  {
         "None",			// 0
         "RTH Start",           	// 1
         "RTH Interrupted. Machine drifting",		// 2
@@ -177,7 +177,7 @@ public class MSP : Object
         "Start descent"		// 12
     };
 
-    private static const string[] nav_errors =  {
+    private const string[] nav_errors =  {
         "Navigation system is working", // 0
         "Next waypoint distance is more than the safety limit. Aborting mission", //1
         "GPS reception is compromised - pausing mission. COPTER IS ADRIFT!", //2
@@ -192,7 +192,7 @@ public class MSP : Object
         "Landing is in progress. Check attitude if possible" //11
     };
 
-    private static const string [] ltm_modes =
+    private const string [] ltm_modes =
     {
         "Manual", 		// 0
         "Rate",			// 1
