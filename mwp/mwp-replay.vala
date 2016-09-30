@@ -1,7 +1,7 @@
 
 public class ReplayThread : GLib.Object
 {
-    private static const int MAXSLEEP = 500*1000;
+    private const int MAXSLEEP = 500*1000;
     private bool playon  {get; set;}
     private Cancellable cancellable;
 

@@ -67,7 +67,7 @@ public class SwitchEdit : Object
         {null}
     };
 
-    private static const PERM_BOX [] def_pbox = {
+    private const PERM_BOX [] def_pbox = {
         {"ARM", 0},
         {"ANGLE", 1},
         {"HORIZON", 2},
@@ -99,7 +99,7 @@ public class SwitchEdit : Object
         {"AIR MODE", 28 }
     };
 
-    private static const PERM_BOX [] inav_pbox = {
+    private const PERM_BOX [] inav_pbox = {
         { "ARM", 0 },
         { "ANGLE", 1 },
         { "HORIZON", 2 },

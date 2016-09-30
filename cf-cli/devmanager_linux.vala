@@ -2,8 +2,8 @@ using GUdev;
 
 public class DevManager
 {
-    public static const int RFCOMM_TTY_MAJOR = 216;
-    public static const int USB_TTY_MAJOR = 188;
+    public const int RFCOMM_TTY_MAJOR = 216;
+    public const int USB_TTY_MAJOR = 188;
 
     private DumpGUI du;
     private GUdev.Client uc;

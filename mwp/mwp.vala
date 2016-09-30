@@ -504,32 +504,32 @@ private Gtk.MenuItem menudown;
         WP = 8
     }
 
-    private static const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
+    private const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
 
-    private static const uint TIMINTVL=50;
-    private static const uint ANIMINTVL=(300/TIMINTVL);
-    private static const uint BEATINTVL=(60000/TIMINTVL);
-    private static const uint DURAINTVL=((1000/TIMINTVL) - 1);
-    private static const uint STATINTVL=(800/TIMINTVL);
-    private static const uint NODATAINTVL=(5000/TIMINTVL);
-    private static const uint SATINTVL=(10000/TIMINTVL);
-    private static const uint USATINTVL=(2000/TIMINTVL);
-    private static const uint UUSATINTVL=(4000/TIMINTVL);
-    private static const uint RESTARTINTVL=(30000/TIMINTVL);
-    private static const uint MAVINTVL=(2000/TIMINTVL);
-    private static const uint CRITINTVL=(3000/TIMINTVL);
+    private const uint TIMINTVL=50;
+    private const uint ANIMINTVL=(300/TIMINTVL);
+    private const uint BEATINTVL=(60000/TIMINTVL);
+    private const uint DURAINTVL=((1000/TIMINTVL) - 1);
+    private const uint STATINTVL=(800/TIMINTVL);
+    private const uint NODATAINTVL=(5000/TIMINTVL);
+    private const uint SATINTVL=(10000/TIMINTVL);
+    private const uint USATINTVL=(2000/TIMINTVL);
+    private const uint UUSATINTVL=(4000/TIMINTVL);
+    private const uint RESTARTINTVL=(30000/TIMINTVL);
+    private const uint MAVINTVL=(2000/TIMINTVL);
+    private const uint CRITINTVL=(3000/TIMINTVL);
 
     private enum SATS
     {
         MINSATS = 6
     }
 
-    private static const double RAD2DEG = 57.29578;
+    private const double RAD2DEG = 57.29578;
 
-    private static const string RED_ALERT = "bleet.ogg";
-    private static const string ORANGE_ALERT = "orange.ogg";
-    private static const string GENERAL_ALERT = "beep-sound.ogg";
-    private static const string SAT_ALERT = "sat_alert.ogg";
+    private const string RED_ALERT = "bleet.ogg";
+    private const string ORANGE_ALERT = "orange.ogg";
+    private const string GENERAL_ALERT = "beep-sound.ogg";
+    private const string SAT_ALERT = "sat_alert.ogg";
 
     private static BatteryLevels [] vlevels = {
         BatteryLevels(3.7f, "#60ff00", null, null),

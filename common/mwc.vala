@@ -32,7 +32,7 @@ public class MWChooser : GLib.Object
     private Gtk.Dialog dialog;
     private Gtk.RadioButton [] btn = {};
 
-    public static const string[]mwnames = { "","MW","MWNAV","CF"};
+    public const string[]mwnames = { "","MW","MWNAV","CF"};
 
     public static MWVAR fc_from_arg0()
     {

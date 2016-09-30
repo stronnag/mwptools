@@ -3,8 +3,8 @@ class InputParser : GLib.Object
 {
     private static Regex latrx = null;
     private static Regex lonrx = null;
-    private static const string LATSTR = "^(\\d{1,2})[ :\\-]?(\\d{2})[ :\\-]?([0-9\\.]{2,5})([NS])";
-    private static const string LONSTR = "^(\\d{1,3})[ :\\-]?(\\d{2})[ :\\-]?([0-9\\.]{2,5})([EW])";
+    private const string LATSTR = "^(\\d{1,2})[ :\\-]?(\\d{2})[ :\\-]?([0-9\\.]{2,5})([NS])";
+    private const string LONSTR = "^(\\d{1,3})[ :\\-]?(\\d{2})[ :\\-]?([0-9\\.]{2,5})([EW])";
 
     public static double get_latitude(string latstr)
     {

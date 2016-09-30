@@ -4,7 +4,7 @@ APPS=mwp
 
 include ../common.mk
 
-GST ?= 0.10
+GST ?= 1.0
 
 all: $(APPS)
 
