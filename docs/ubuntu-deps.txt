@@ -12,7 +12,7 @@ build-essential
 libbluetooth-dev
 libespeak-dev
 libgudev-1.0-dev
-libgstreamer0.10-dev
+libgstreamer1.0-dev
 libvala-dev   # optional, recommended (optimisation)
 
 and for the artificial horizon
