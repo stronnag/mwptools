@@ -4589,6 +4589,10 @@ private Gtk.MenuItem menudown;
     {
         time_t currtime;
         time_t(out currtime);
+
+            // Don't run on wayland, alas (Gtk bug).
+        Gdk.set_allowed_backends("x11,win32");
+
         if (GtkClutter.init (ref args) != InitError.SUCCESS)
             return 1;
 

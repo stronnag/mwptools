@@ -111,6 +111,11 @@ public class ArtWin : GLib.Object
         atexit(ArtWin.xchild);
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
         socket = new Gtk.Socket();
+        if(socket == null)
+        {
+            MWPLog.message("Sorry, wayland is broken, please run under X11\n");
+            Posix.exit(255);
+        }
         box.pack_start(socket, true,true,0);
         int sz = MWPlanner.conf.ahsize;
         box.set_size_request (sz, sz);
