@@ -2180,9 +2180,155 @@ private Gtk.MenuItem menudown;
             });
     }
 
+    private void handle_msp_status(uint8[]raw)
+    {
+        uint32 bxflag;
+
+        deserialise_u16(raw+4, out sensor);
+        deserialise_u32(raw+6, out bxflag);
+        var lmask = (angle_mask|horz_mask);
+        armed = ((bxflag & arm_mask) == arm_mask) ? 1 : 0;
+
+        if (nopoll == true)
+        {
+            have_status = true;
+            if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
+            {
+                sflags |= NavStatus.SPK.GPS;
+                init_craft_icon();
+            }
+        }
+        else
+        {
+            if(have_status == false)
+            {
+                have_status = true;
+                StringBuilder sb0 = new StringBuilder ();
+                foreach (MSP.Sensors sn in MSP.Sensors.all())
+                {
+                    if((sensor & sn) == sn)
+                    {
+                        sb0.append(sn.to_string());
+                        sb0.append(" ");
+                    }
+                }
+                MWPLog.message("Sensors: %s\n", sb0.str);
+
+                if(!prlabel)
+                {
+                    profile = raw[10];
+                    prlabel = true;
+                    var lab = verlab.get_label();
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(lab);
+                    if(naze32 && vi.fc_api[0] != 0)
+                        sb.append(" API %d.%d".printf(vi.fc_api[0],vi.fc_api[1]));
+                    if(navcap != NAVCAPS.NONE)
+                        sb.append(" Nav");
+                    sb.append(" Pr %d".printf(raw[10]));
+                    verlab.set_label(sb.str);
+                }
+
+                want_special = 0;
+                if(replayer == 0 &&
+                   conf.checkswitches &&
+                   ((bxflag & lmask) == 0) && robj == null)
+                {
+                    MWPLog.message("switch val == %0x\n", bxflag);
+                    swd.run();
+                }
+
+                if(((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
+                   && replayer == 0)
+                    add_cmd(MSP.Cmds.NAV_CONFIG,null,0,1000);
+
+                var reqsize = build_pollreqs();
+                var nreqs = requests.length;
+                int timeout = (int)(looptimer*1000 / nreqs);
+
+                    // data we send, response is structs + this
+                var qsize = nreqs * 6;
+                reqsize += qsize;
+                if(naze32)
+                    qsize += 1; // for WP no
+
+                MWPLog.message("Timer cycle for %d (%dms) items, %lu => %lu bytes\n",
+                               nreqs,timeout,qsize,reqsize);
+
+                if(nopoll == false && nreqs > 0)
+                {
+                    if  (replayer == 0)
+                    {
+                        MWPLog.message("Start poller\n");
+                        tcycle = 0;
+                        dopoll = true;
+                        start_audio();
+                        }
+                }
+                report_bits(bxflag);
+                Craft.RMIcon ri = 0;
+                if ((rth_mask != 0) && ((bxflag & rth_mask) == 0))
+                    ri |= Craft.RMIcon.RTH;
+                if ((ph_mask != 0) && ((bxflag & ph_mask) == 0))
+                    ri |= Craft.RMIcon.PH;
+                if ((wp_mask != 0) && ((bxflag & wp_mask) == 0))
+                    ri |= Craft.RMIcon.WP;
+                if(ri != 0 && craft != null)
+                    craft.remove_special(ri);
+            }
+            else
+            {
+                if(gpscnt != 0 && ((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS))
+                {
+                    MWPLog.message("GPS appears\n");
+                    set_error_status(null);
+                    build_pollreqs();
+                }
+            }
+
+                // acro/horizon/angle changed
+
+            if((bxflag & lmask) != (xbits & lmask))
+            {
+                report_bits(bxflag);
+            }
+
+            if(armed != 0)
+            {
+                if ((rth_mask != 0) &&
+                    ((bxflag & rth_mask) != 0) &&
+                    ((xbits & rth_mask) == 0))
+                {
+                    MWPLog.message("set RTH on %08x %u %ds\n", bxflag,bxflag,
+                                   (int)duration);
+                    want_special |= POSMODE.RTH;
+                }
+                else if ((ph_mask != 0) &&
+                         ((bxflag & ph_mask) != 0) &&
+                         ((xbits & ph_mask) == 0))
+                {
+                    MWPLog.message("set PH on %08x %u %ds\n", bxflag, bxflag,
+                                   (int)duration);
+                    want_special |= POSMODE.PH;
+                }
+                else if ((wp_mask != 0) &&
+                         ((bxflag & wp_mask) != 0) &&
+                         ((xbits & wp_mask) == 0))
+                {
+                    MWPLog.message("set WP on %08x %u %ds\n", bxflag, bxflag,
+                                   (int)duration);
+                    want_special |= POSMODE.WP;
+                }
+                else if ((xbits != bxflag) && craft != null)
+                    craft.set_normal();
+            }
+            xbits = bxflag;
+        }
+        armed_processing(bxflag);
+    }
+
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
     {
-
         if(replayer != 1 &&
            cmd > MSP.Cmds.LTM_BASE && cmd != MSP.Cmds.MAVLINK_MSG_ID_RADIO)
         {
@@ -2440,149 +2586,7 @@ private Gtk.MenuItem menudown;
 
             case MSP.Cmds.STATUS:
                 remove_tid(ref cmdtid);
-                uint32 bxflag;
-
-                deserialise_u16(raw+4, out sensor);
-                deserialise_u32(raw+6, out bxflag);
-                var lmask = (angle_mask|horz_mask);
-                armed = ((bxflag & arm_mask) == arm_mask) ? 1 : 0;
-
-                if (nopoll == true)
-                {
-                    have_status = true;
-                    if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
-                    {
-                        sflags |= NavStatus.SPK.GPS;
-                        init_craft_icon();
-                    }
-                }
-                else
-                {
-                    if(have_status == false)
-                    {
-                        have_status = true;
-                        StringBuilder sb0 = new StringBuilder ();
-                        foreach (MSP.Sensors sn in MSP.Sensors.all())
-                        {
-                            if((sensor & sn) == sn)
-                            {
-                                sb0.append(sn.to_string());
-                                sb0.append(" ");
-                            }
-                        }
-                        MWPLog.message("Sensors: %s\n", sb0.str);
-
-                        if(!prlabel)
-                        {
-                            profile = raw[10];
-                            prlabel = true;
-                            var lab = verlab.get_label();
-                            StringBuilder sb = new StringBuilder();
-                            sb.append(lab);
-                            if(naze32 && vi.fc_api[0] != 0)
-                                sb.append(" API %d.%d".printf(vi.fc_api[0],vi.fc_api[1]));
-                            if(navcap != NAVCAPS.NONE)
-                                sb.append(" Nav");
-                            sb.append(" Pr %d".printf(raw[10]));
-                            verlab.set_label(sb.str);
-                        }
-
-                        want_special = 0;
-                        if(replayer == 0 &&
-                           conf.checkswitches &&
-                           ((bxflag & lmask) == 0) && robj == null)
-                        {
-                            MWPLog.message("switch val == %0x\n", bxflag);
-                            swd.run();
-                        }
-
-                        if(((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
-                           && replayer == 0)
-                            add_cmd(MSP.Cmds.NAV_CONFIG,null,0,1000);
-
-                        var reqsize = build_pollreqs();
-                        var nreqs = requests.length;
-                        int timeout = (int)(looptimer*1000 / nreqs);
-
-                            // data we send, response is structs + this
-                        var qsize = nreqs * 6;
-                        reqsize += qsize;
-                        if(naze32)
-                            qsize += 1; // for WP no
-
-                        MWPLog.message("Timer cycle for %d (%dms) items, %lu => %lu bytes\n",
-                              nreqs,timeout,qsize,reqsize);
-
-                        if(nopoll == false && nreqs > 0)
-                        {
-                            if  (replayer == 0)
-                            {
-                                MWPLog.message("Start poller\n");
-                                tcycle = 0;
-                                dopoll = true;
-                                start_audio();
-                            }
-                        }
-                        report_bits(bxflag);
-                        Craft.RMIcon ri = 0;
-                        if ((rth_mask != 0) && ((bxflag & rth_mask) == 0))
-                            ri |= Craft.RMIcon.RTH;
-                        if ((ph_mask != 0) && ((bxflag & ph_mask) == 0))
-                            ri |= Craft.RMIcon.PH;
-                        if ((wp_mask != 0) && ((bxflag & wp_mask) == 0))
-                            ri |= Craft.RMIcon.WP;
-                        if(ri != 0 && craft != null)
-                            craft.remove_special(ri);
-                    }
-                    else
-                    {
-                        if(gpscnt != 0 && ((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS))
-                        {
-                            MWPLog.message("GPS appears\n");
-                            set_error_status(null);
-                            build_pollreqs();
-                        }
-                    }
-
-                    // acro/horizon/angle changed
-
-                    if((bxflag & lmask) != (xbits & lmask))
-                    {
-                        report_bits(bxflag);
-                    }
-
-                    if(armed != 0)
-                    {
-                        if ((rth_mask != 0) &&
-                            ((bxflag & rth_mask) != 0) &&
-                            ((xbits & rth_mask) == 0))
-                        {
-                            MWPLog.message("set RTH on %08x %u %ds\n", bxflag,bxflag,
-                                          (int)duration);
-                            want_special |= POSMODE.RTH;
-                        }
-                        else if ((ph_mask != 0) &&
-                                 ((bxflag & ph_mask) != 0) &&
-                                 ((xbits & ph_mask) == 0))
-                        {
-                            MWPLog.message("set PH on %08x %u %ds\n", bxflag, bxflag,
-                                          (int)duration);
-                            want_special |= POSMODE.PH;
-                        }
-                        else if ((wp_mask != 0) &&
-                                 ((bxflag & wp_mask) != 0) &&
-                                 ((xbits & wp_mask) == 0))
-                        {
-                            MWPLog.message("set WP on %08x %u %ds\n", bxflag, bxflag,
-                                          (int)duration);
-                            want_special |= POSMODE.WP;
-                        }
-                        else if ((xbits != bxflag) && craft != null)
-                            craft.set_normal();
-                    }
-                    xbits = bxflag;
-                }
-                armed_processing(bxflag);
+                handle_msp_status(raw);
                 break;
 
             case MSP.Cmds.NAV_STATUS:
@@ -3114,8 +3118,8 @@ private Gtk.MenuItem menudown;
                 sf.rssi = *rp++;
                 sf.airspeed = *rp++;
                 sf.flags = *rp++;
-
-                radstatus.update_ltm(sf,item_visible(DOCKLETS.RADIO));
+                if(!have_mspradio)
+                    radstatus.update_ltm(sf,item_visible(DOCKLETS.RADIO));
 
                 uint8 ltmflags = sf.flags >> 2;
                 uint32 mwflags = 0;
