@@ -131,7 +131,7 @@ public class  BBoxDialog : Object
                                     }
                                 }
                             }
-                            if((condition & IOCondition.HUP) == IOCondition.HUP)
+                            if((condition) == IOCondition.HUP)
                                 return false;
 
                         } catch (IOChannelError e) {
@@ -142,7 +142,6 @@ public class  BBoxDialog : Object
                         return true;
                     });
 		ChildWatch.add (child_pid, (pid, status) => {
-
 			Process.close_pid (pid);
                         Posix.close(p_stderr);
                         if(nidx == maxidx)
