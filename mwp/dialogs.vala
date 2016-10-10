@@ -1267,6 +1267,9 @@ public class NavStatus : GLib.Object
             }
             if(xfmode != fmode)
             {
+                if(failsafe == 1)
+                    mt.message(AudioThread.Vox.FAILSAFE,true);
+
                 xfmode = fmode;
                     // only speak modes that are not in N-Frame
                 if(mt_voice && ((xfmode > 0 && xfmode < 5) ||
@@ -1549,7 +1552,8 @@ public class AudioThread : Object {
         VOLTAGE,
         MODSAT,
         LTM_MODE,
-        GPS_CRIT
+        GPS_CRIT,
+        FAILSAFE
     }
 
     private Timer timer;
@@ -1714,6 +1718,10 @@ public class AudioThread : Object {
                                 xfmode == 19))
                                 s = MSP.ltm_mode(xfmode);
                             break;
+                        case Vox.FAILSAFE:
+                            s="FAIL SAFE";
+                            break;
+
                         default:
                             break;
                     }
