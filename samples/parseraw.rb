@@ -4,6 +4,13 @@
 require 'optparse'
 require 'socket'
 
+begin
+require 'rubyserial'
+  noserial = false;
+rescue LoadError
+  noserial = true;
+end
+
 port = nil
 rawf = nil
 dev = nil
@@ -49,7 +56,11 @@ if raw
 end
 
 if dev
-  dev = File.open(dev, 'w')
+  if noserial
+    dev = File.open(dev, 'w')
+  else
+    dev = Serial.new dev,115200
+  end
 end
 
 puts ARGV[0]
@@ -80,7 +91,7 @@ File.open(ARGV[0]) do |f|
 
     if dev
       if !(omitx && data[1] == 'T' && data[2] == 'X')
-	dev.print data
+	dev.write data
 	delta = ts-lt
 	puts "Sleep #{delta}"
 	sleep delta if skip == false or delta.zero?

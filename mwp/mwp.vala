@@ -472,7 +472,8 @@ private Gtk.MenuItem menudown;
         IDLE=0,
         VALIDATE,
         REPLACE,
-        POLL
+        POLL,
+        REPLAY
     }
 
     private struct WPMGR
@@ -2263,7 +2264,7 @@ private Gtk.MenuItem menudown;
                         tcycle = 0;
                         dopoll = true;
                         start_audio();
-                        }
+                    }
                 }
                 report_bits(bxflag);
                 Craft.RMIcon ri = 0;
@@ -2776,8 +2777,13 @@ private Gtk.MenuItem menudown;
             break;
 
             case MSP.Cmds.SET_WP:
-                var no = wpmgr.wps[wpmgr.wpidx].wp_no;
-                request_wp(no);
+                if(wpmgr.wps.length > 0)
+                {
+                    var no = wpmgr.wps[wpmgr.wpidx].wp_no;
+                    request_wp(no);
+                }
+                else
+                    wpmgr.wp_flag = WPDL.REPLAY;
                 break;
 
             case MSP.Cmds.WP:
@@ -2881,7 +2887,8 @@ private Gtk.MenuItem menudown;
                         mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
                     }
                 }
-                else if (wpmgr.wp_flag == WPDL.REPLACE)
+                else if (wpmgr.wp_flag == WPDL.REPLACE ||
+                         wpmgr.wp_flag == WPDL.REPLAY)
                 {
                     MissionItem m = MissionItem();
                     m.no= w.wp_no;
@@ -2937,7 +2944,8 @@ private Gtk.MenuItem menudown;
                             {
                                 var mmax = view.get_max_zoom_level();
                                 view.center_on(ms.cy, ms.cx);
-                                view.set_property("zoom-level", mmax-1);
+                                if (wpmgr.wp_flag != WPDL.REPLAY)
+                                    view.set_property("zoom-level", mmax-1);
                             }
                             markers.add_list_store(ls);
                         }
