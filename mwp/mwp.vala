@@ -233,6 +233,8 @@ class MwpDockHelper : Object
 }
 
 public class MWPlanner : Gtk.Application {
+    private const uint MAXSAMPLE=20;
+
     public Builder builder;
     public Gtk.ApplicationWindow window;
     public  Champlain.View view;
@@ -273,6 +275,9 @@ private Gtk.MenuItem menudown;
     private Gtk.Label typlab;
     private Gtk.Label gpslab;
     private Gtk.Label labelvbat;
+
+    private int nsampl;
+    private float[] vbsamples;
 
     private Gtk.Label sensor_sts[6];
 
@@ -633,6 +638,8 @@ private Gtk.MenuItem menudown;
         base.startup();
         wpmgr = WPMGR();
         mwvar = MWChooser.fc_from_arg0();
+        vbsamples = new float[MAXSAMPLE];
+
         conf = new MWPSettings();
         conf.read_settings();
 
@@ -3612,6 +3619,7 @@ private Gtk.MenuItem menudown;
 
     private void init_battery(uint8 ivbat)
     {
+        nsampl = 0;
         var ncells = ivbat / 37;
         for(var i = 0; i < vlevels.length; i++)
         {
@@ -3629,6 +3637,20 @@ private Gtk.MenuItem menudown;
 
         string vbatlab;
         float  vf = (float)ivbat/10.0f;
+        if (nsampl == MAXSAMPLE)
+        {
+            for(var i = 1; i < MAXSAMPLE; i++)
+                vbsamples[i-1] = vbsamples[i];
+        }
+        else
+            nsampl += 1;
+
+        vbsamples[nsampl-1] = vf;
+        vf = 0;
+        for(var i = 0; i < nsampl; i++)
+            vf += vbsamples[i];
+        vf /= nsampl;
+
         int icol = 0;
         if (ivbat > 0)
         {
