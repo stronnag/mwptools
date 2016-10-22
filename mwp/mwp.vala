@@ -539,7 +539,7 @@ private Gtk.MenuItem menudown;
 
     private static BatteryLevels [] vlevels = {
         BatteryLevels(3.7f, "#60ff00", null, null),
-        BatteryLevels(3.57f, "yellow", null, null),
+        BatteryLevels(3.57f, "#C8C800", null, null),
         BatteryLevels(3.47f, "orange", ORANGE_ALERT, null),
         BatteryLevels(3.0f,  "red", RED_ALERT, null),
         BatteryLevels(0.0f, null, null, "n/a")
