@@ -233,7 +233,7 @@ class MwpDockHelper : Object
 }
 
 public class MWPlanner : Gtk.Application {
-    private const uint MAXSAMPLE=20;
+    private const uint MAXVSAMPLE=12;
 
     public Builder builder;
     public Gtk.ApplicationWindow window;
@@ -638,7 +638,7 @@ private Gtk.MenuItem menudown;
         base.startup();
         wpmgr = WPMGR();
         mwvar = MWChooser.fc_from_arg0();
-        vbsamples = new float[MAXSAMPLE];
+        vbsamples = new float[MAXVSAMPLE];
 
         conf = new MWPSettings();
         conf.read_settings();
@@ -3637,9 +3637,9 @@ private Gtk.MenuItem menudown;
 
         string vbatlab;
         float  vf = (float)ivbat/10.0f;
-        if (nsampl == MAXSAMPLE)
+        if (nsampl == MAXVSAMPLE)
         {
-            for(var i = 1; i < MAXSAMPLE; i++)
+            for(var i = 1; i < MAXVSAMPLE; i++)
                 vbsamples[i-1] = vbsamples[i];
         }
         else
@@ -3940,6 +3940,7 @@ private Gtk.MenuItem menudown;
         force_mav = false;
         want_special = 0;
         xsensor = 0;
+        nsampl = 0;
         clear_sensor_array();
     }
 
