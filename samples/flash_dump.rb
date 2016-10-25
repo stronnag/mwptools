@@ -12,6 +12,10 @@ class Serial
   def getfd
     @fd
   end
+  def set_vtime t
+    @config[:cc_c][RubySerial::Posix::VTIME] = t
+    RubySerial::Posix.tcsetattr(@fd, RubySerial::Posix::TCSANOW, @config)
+  end
 end
 
 serdev="/dev/ttyUSB0"
@@ -36,6 +40,7 @@ end
 delok = false
 sport = Serial.new serdev,baud
 sfd = sport.getfd
+
 sio = IO.new(sfd)
 
 sport.write "#"
@@ -48,6 +53,7 @@ if res && res.length == 2
   fsize = res[1].to_i
   if fsize > 0
     rbytes = 0
+    sport.set_vtime 2
     sport.write("flash_read 0 #{fsize}\n")
     res = sio.expect("flash_read 0 #{fsize}\r\nReading #{fsize} bytes at 0:\r\n",1)
     if res
@@ -55,8 +61,8 @@ if res && res.length == 2
 	n = 0
 	rtim = 9999
 	loop do
-	  data = sio.read(256)
-	  unless data.nil?
+	  data = sport.read(256)
+	  unless data.length.zero?
 	    rsize = data.length
 	    rbytes += rsize
 	    rbytes = fsize if rbytes > fsize
@@ -64,22 +70,22 @@ if res && res.length == 2
 	      rem = fsize - rbytes
 	      rtim = rem*10/baud
 	    end
-	    print "\rread #{rbytes} / #{fsize} %4ds\r" % rtim
+	    pct = 100*rbytes/fsize
+	    print "\rread #{rbytes} / #{fsize} %3d%% %4ds\r" % [pct,rtim]
 	    n += 1
 	    fh.write data
-	    if rbytes == fsize
-	      delok = true
-	      break
-	    end
+	  else
+	    delok = ((fsize - rbytes) < 256)
+	    break
 	  end
 	end
       end
     end
-    puts
   else
     delok = true
   end
 end
+puts
 
 if delok && erase
   puts "Erasing"
@@ -88,5 +94,6 @@ if delok && erase
   puts "Done"
 end
 
+puts "Exiting"
 sport.write "exit\n"
 sio.expect("Rebooting")
