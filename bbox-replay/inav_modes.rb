@@ -32,10 +32,13 @@ STATES = %w/NAV_STATE_UNDEFINED
   NAV_STATE_WAYPOINT_PRE_ACTION
   NAV_STATE_WAYPOINT_IN_PROGRESS
   NAV_STATE_WAYPOINT_REACHED
-  NAV_STATE_WAYPOINT_FINISHED
+  NAV_STATE_WAYPOINT_NEXT,
+  NAV_STATE_WAYPOINT_FINISHED,
+  NAV_STATE_WAYPOINT_RTH_LAND,
   NAV_STATE_EMERGENCY_LANDING_INITIALIZE
   NAV_STATE_EMERGENCY_LANDING_IN_PROGRESS
-  NAV_STATE_EMERGENCY_LANDING_FINISHED/
+  NAV_STATE_EMERGENCY_LANDING_FINISHED
+/
 
 idx = 1
 
@@ -49,6 +52,8 @@ ARGV.options do |opt|
     puts opt ; exit
   end
 end
+
+STATES.each_with_index { |s,n| puts "#{n} #{s}" }
 
 bbox = (ARGV[0]|| abort('no BBOX log'))
 cmd = "blackbox_decode"
@@ -71,7 +76,8 @@ IO.popen(cmd,'r') do |p|
     xts  = ts - st
     if c[:navstate].to_i != nstate
       nstate = c[:navstate].to_i
-      puts ["%6.1f" % ts, "(%6.1f)" % xts, STATES[nstate]].join("\t")
+      astate = (STATES[nstate]||("State=%d" % nstate))
+      puts ["%6.1f" % ts, "(%6.1f)" % xts, astate].join("\t")
     end
   end
 end
