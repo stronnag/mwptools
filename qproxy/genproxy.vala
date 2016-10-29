@@ -20,7 +20,7 @@
  *       "warning" : "The only user changeable part of the uri is the port number (21305) which must be consistent"
  *  }
  *
- * Note: This will not build on Ubuntu LTS, as the Soup version is too old
+ * Note: This will not build on Ubuntu 14.04 LTS, as the Soup version is too old
  *
  ************************************************************************/
 
