@@ -23,6 +23,10 @@ dnf install ruby
 #  https://developer.fedoraproject.org/tech/languages/ruby/gems-installation.html
 #
 
+You must install the blackbox utilities
+https://github.com/cleanflight/blackbox-tools/ in order to replay
+blackbox logs.
+
 for cf-cli-ui
 
 dnf install vte291-devel

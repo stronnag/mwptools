@@ -33,3 +33,7 @@ ruby version 2 or later, e.g.
 
 ruby2.0 (14.04)
 ruby2.2 (15.10)
+
+You must install the blackbox utilities
+https://github.com/cleanflight/blackbox-tools/ in order to replay
+blackbox logs.
