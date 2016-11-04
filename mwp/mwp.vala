@@ -444,12 +444,14 @@ private Gtk.MenuItem menudown;
     private TelemStats telstats;
     private LayMan lman;
 
-    private enum NAVCAPS
+    public enum NAVCAPS
     {
         NONE=0,
         WAYPOINTS=1,
         NAVSTATUS=2,
-        NAVCONFIG=4
+        NAVCONFIG=4,
+        INAV_MR=8,
+        INAV_FW=16
     }
 
     private NAVCAPS navcap;
@@ -938,10 +940,9 @@ private Gtk.MenuItem menudown;
 
         menuncfg = builder.get_object ("nav_config_menu") as Gtk.MenuItem;
         menuncfg.sensitive =false;
-        navconf = new NavConfig(window, builder, this);
-
         menuncfg.activate.connect (() => {
-                navconf.show();
+                if(navconf != null)
+                    navconf.show();
             });
         art_win = new ArtWin();
         menuop = builder.get_object ("menu_art_hor") as Gtk.MenuItem;
@@ -2238,17 +2239,19 @@ private Gtk.MenuItem menudown;
                 }
 
                 want_special = 0;
-                if(replayer == 0 &&
-                   conf.checkswitches &&
-                   ((bxflag & lmask) == 0) && robj == null)
+                if(replayer == 0)
                 {
-                    MWPLog.message("switch val == %0x\n", bxflag);
-                    swd.run();
+                    if(conf.checkswitches &&
+                       ((bxflag & lmask) == 0) && robj == null)
+                    {
+                        MWPLog.message("switch val == %0x\n", bxflag);
+                        swd.run();
+                    }
+                    if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
+                        add_cmd(MSP.Cmds.NAV_CONFIG,null,0,1000);
+                    else if ((navcap & (NAVCAPS.INAV_MR|NAVCAPS.INAV_FW)) != 0)
+                        MWPLog.message("need new inav caps message\n");
                 }
-
-                if(((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
-                   && replayer == 0)
-                    add_cmd(MSP.Cmds.NAV_CONFIG,null,0,1000);
 
                 var reqsize = build_pollreqs();
                 var nreqs = requests.length;
@@ -2429,6 +2432,12 @@ private Gtk.MenuItem menudown;
                             break;
                         case "INAV":
                             navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS;
+                            if (vi.mrtype == Craft.Vehicles.FLYING_WING
+                                || vi.mrtype == Craft.Vehicles.AIRPLANE
+                                || vi.mrtype == Craft.Vehicles.CUSTOM_AIRPLANE)
+                                navcap |= NAVCAPS.INAV_FW;
+                            else
+                                navcap |= NAVCAPS.INAV_MR;
                             vi.fctype = mwvar = MWChooser.MWVAR.CF;
                             inav = true;
                             add_cmd(MSP.Cmds.FC_VERSION,null,0,1000);
@@ -2531,10 +2540,19 @@ private Gtk.MenuItem menudown;
 
             case MSP.Cmds.BOXNAMES:
                 if(navcap != NAVCAPS.NONE)
+                    menuup.sensitive = menudown.sensitive = true;
+                var ncbits = (navcap & (NAVCAPS.NAVCONFIG|NAVCAPS.INAV_MR|NAVCAPS.INAV_FW));
+                if (ncbits != 0)
                 {
-                    menuup.sensitive = menudown.sensitive =
-                        menuncfg.sensitive = true;
+                    menuncfg.sensitive = true;
+                    MWPLog.message("Generate navconf %x\n", navcap);
+                    navconf = new NavConfig(window, builder, ncbits);
+                    if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
+                        navconf.mw_navconf_event.connect((mw,nc) => {
+                                mw_update_config(nc);
+                            });
                 }
+
                 remove_tid(ref cmdtid);
                 raw[len] = 0;
                 boxnames = (string)raw;
@@ -2651,7 +2669,7 @@ private Gtk.MenuItem menudown;
                 nc.land_speed = *rp++;
                 rp = deserialise_u16(rp, out nc.fence);
                 nc.max_wp_number = *rp;
-                navconf.update(nc);
+                navconf.mw_update(nc);
             }
             break;
 
@@ -3698,7 +3716,9 @@ private Gtk.MenuItem menudown;
     {
         validatelab.set_text("");
 
-        var wps = ls.to_wps(inav, (vi.mrtype == 8 || vi.mrtype == 14));
+        var wps = ls.to_wps(inav, (vi.mrtype == Craft.Vehicles.FLYING_WING
+                                   || vi.mrtype == Craft.Vehicles.AIRPLANE
+                                   || vi.mrtype == Craft.Vehicles.CUSTOM_AIRPLANE));
         xdopoll = dopoll;
         dopoll = false;
         MWPCursor.set_busy_cursor(window);
@@ -3754,7 +3774,6 @@ private Gtk.MenuItem menudown;
         add_cmd(MSP.Cmds.WP,buf,1, 1000);
     }
 
-
     private size_t serialise_nc (MSP_NAV_CONFIG nc, uint8[] tmp)
     {
         uint8* rp = tmp;
@@ -3776,7 +3795,7 @@ private Gtk.MenuItem menudown;
         return (rp-&tmp[0]);
     }
 
-    public void update_config(MSP_NAV_CONFIG nc)
+    private void mw_update_config(MSP_NAV_CONFIG nc)
     {
         have_nc = false;
         uint8 tmp[64];

@@ -1742,6 +1742,9 @@ public class NavConfig : GLib.Object
 {
     private Gtk.Window window;
     private bool visible;
+    private MWPlanner.NAVCAPS typ;
+
+        // MW variables
     private Gtk.CheckButton nvcb1_01;
     private Gtk.CheckButton nvcb1_02;
     private Gtk.CheckButton nvcb1_03;
@@ -1765,15 +1768,57 @@ public class NavConfig : GLib.Object
     private Gtk.Entry max_wp_no;
     private uint8 _xtrack;
     private uint8 _maxwp;
-    private MWPlanner _mwp;
+    public signal void mw_navconf_event (MSP_NAV_CONFIG ncu);
 
-    public NavConfig (Gtk.Window parent, Gtk.Builder builder, MWPlanner m)
+        // iNav MR variables
+
+    private Gtk.Entry inav_max_speed;
+    private Gtk.Entry inav_mr_max_climb;
+    private Gtk.Entry inav_mr_man_speed;
+    private Gtk.Entry inav_mr_climb_rate;
+    private Gtk.ComboBoxText inav_mr_control_mode;
+    private Gtk.ComboBoxText inav_mr_altcontrol;
+    private Gtk.Switch inav_mr_dismarm_land;
+    private Gtk.Entry inav_mr_rth_alt;
+
+        // fixme
+    private Gtk.Window inav_fw_open(Gtk.Builder builder)
     {
-        _mwp = m;
-        window = builder.get_object ("nc_window") as Gtk.Window;
+        Gtk.Window w = builder.get_object ("inav_mr_conf") as Gtk.Window;
+        return w;
+    }
+
+    private Gtk.Window inav_mr_open(Gtk.Builder builder)
+    {
+        Gtk.Window w = builder.get_object ("inav_mr_conf") as Gtk.Window;
+        var button = builder.get_object ("inav_mr_close") as Gtk.Button;
+        button.clicked.connect(() => {
+                w.hide();
+            });
+
+        var apply = builder.get_object ("inav_mr_apply") as Gtk.Button;
+        apply.clicked.connect(() => {
+            });
+
+        inav_max_speed = builder.get_object ("inav_max_speed") as Gtk.Entry;
+        inav_mr_max_climb = builder.get_object ("inav_mr_max_climb") as Gtk.Entry;
+        inav_mr_man_speed = builder.get_object ("inav_mr_man_speed") as Gtk.Entry;
+        inav_mr_climb_rate = builder.get_object ("inav_mr_climb_rate") as Gtk.Entry;
+        inav_mr_control_mode = builder.get_object ("inav_mr_control_mode") as Gtk.ComboBoxText;
+        inav_mr_altcontrol = builder.get_object ("inav_mr_altcontrol") as Gtk.ComboBoxText;
+        inav_mr_dismarm_land = builder.get_object ("inav_mr_dismarm_land") as Gtk.Switch;
+        inav_mr_rth_alt = builder.get_object ("inav_mr_rth_alt") as Gtk.Entry;
+
+        return w;
+    }
+
+
+    private Gtk.Window mw_open(Gtk.Builder builder)
+    {
+        Gtk.Window w = builder.get_object ("nc_window") as Gtk.Window;
         var button = builder.get_object ("nc_close") as Gtk.Button;
         button.clicked.connect(() => {
-                window.hide();
+                w.hide();
             });
 
         var apply = builder.get_object ("nc_apply") as Gtk.Button;
@@ -1824,31 +1869,43 @@ public class NavConfig : GLib.Object
                 ncu.fence = u16;
                 ncu.crosstrack_gain = _xtrack;
                 ncu.max_wp_number = _maxwp;
-                _mwp.update_config(ncu);
+                mw_navconf_event(ncu);
             });
 
+        nvcb1_01 = builder.get_object ("nvcb1_01") as Gtk.CheckButton;
+        nvcb1_02 = builder.get_object ("nvcb1_02") as Gtk.CheckButton;
+        nvcb1_03 = builder.get_object ("nvcb1_03") as Gtk.CheckButton;
+        nvcb1_04 = builder.get_object ("nvcb1_04") as Gtk.CheckButton;
+        nvcb1_05 = builder.get_object ("nvcb1_05") as Gtk.CheckButton;
+        nvcb1_06 = builder.get_object ("nvcb1_06") as Gtk.CheckButton;
+        nvcb1_07 = builder.get_object ("nvcb1_07") as Gtk.CheckButton;
+        nvcb1_08 = builder.get_object ("nvcb1_08") as Gtk.CheckButton;
+        nvcb2_01 = builder.get_object ("nvcb2_01") as Gtk.CheckButton;
+        nvcb2_02 = builder.get_object ("nvcb2_02") as Gtk.CheckButton;
+        wp_radius = builder.get_object ("wp_radius") as Gtk.Entry;
+        safe_wp_dist = builder.get_object ("safe_wp_dist") as Gtk.Entry;
+        nav_max_alt = builder.get_object ("nav_max_alt") as Gtk.Entry;
+        nav_speed_max = builder.get_object ("nav_speed_max") as Gtk.Entry;
+        nav_speed_min = builder.get_object ("nav_speed_min") as Gtk.Entry;
+        crosstrack_gain = builder.get_object ("crosstrack_gain") as Gtk.Entry;
+        nav_bank_max = builder.get_object ("nav_bank_max") as Gtk.Entry;
+        rth_altitude  = builder.get_object ("rth_altitude") as Gtk.Entry;
+        land_speed = builder.get_object ("land_speed") as Gtk.Entry;
+        fence = builder.get_object ("fence") as Gtk.Entry;
+        max_wp_no = builder.get_object ("max_wp_no") as Gtk.Entry;
+        return w;
+    }
 
-       nvcb1_01 = builder.get_object ("nvcb1_01") as Gtk.CheckButton;
-       nvcb1_02 = builder.get_object ("nvcb1_02") as Gtk.CheckButton;
-       nvcb1_03 = builder.get_object ("nvcb1_03") as Gtk.CheckButton;
-       nvcb1_04 = builder.get_object ("nvcb1_04") as Gtk.CheckButton;
-       nvcb1_05 = builder.get_object ("nvcb1_05") as Gtk.CheckButton;
-       nvcb1_06 = builder.get_object ("nvcb1_06") as Gtk.CheckButton;
-       nvcb1_07 = builder.get_object ("nvcb1_07") as Gtk.CheckButton;
-       nvcb1_08 = builder.get_object ("nvcb1_08") as Gtk.CheckButton;
-       nvcb2_01 = builder.get_object ("nvcb2_01") as Gtk.CheckButton;
-       nvcb2_02 = builder.get_object ("nvcb2_02") as Gtk.CheckButton;
-       wp_radius = builder.get_object ("wp_radius") as Gtk.Entry;
-       safe_wp_dist = builder.get_object ("safe_wp_dist") as Gtk.Entry;
-       nav_max_alt = builder.get_object ("nav_max_alt") as Gtk.Entry;
-       nav_speed_max = builder.get_object ("nav_speed_max") as Gtk.Entry;
-       nav_speed_min = builder.get_object ("nav_speed_min") as Gtk.Entry;
-       crosstrack_gain = builder.get_object ("crosstrack_gain") as Gtk.Entry;
-       nav_bank_max = builder.get_object ("nav_bank_max") as Gtk.Entry;
-       rth_altitude  = builder.get_object ("rth_altitude") as Gtk.Entry;
-       land_speed = builder.get_object ("land_speed") as Gtk.Entry;
-       fence = builder.get_object ("fence") as Gtk.Entry;
-       max_wp_no = builder.get_object ("max_wp_no") as Gtk.Entry;
+
+    public NavConfig (Gtk.Window parent, Gtk.Builder builder, MWPlanner.NAVCAPS _typ)
+    {
+        typ = _typ;
+        if(typ == MWPlanner.NAVCAPS.INAV_MR)
+            window = inav_mr_open(builder);
+        else if(typ == MWPlanner.NAVCAPS.INAV_FW)
+            window = inav_fw_open(builder);
+        else
+            window = mw_open(builder);
 
         window.set_transient_for(parent);
         window.destroy.connect (() => {
@@ -1857,7 +1914,7 @@ public class NavConfig : GLib.Object
             });
     }
 
-    public void update(MSP_NAV_CONFIG nc)
+    public void mw_update(MSP_NAV_CONFIG nc)
     {
         nvcb1_01.set_active ((nc.flag1 & 0x01) == 0x01);
         nvcb1_02.set_active ((nc.flag1 & 0x02) == 0x02);

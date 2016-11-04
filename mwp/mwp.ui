@@ -37,6 +37,9 @@
         </child>
       </object>
     </child>
+    <child>
+      <placeholder/>
+    </child>
   </object>
   <object class="GtkAdjustment" id="adjustment1">
     <property name="upper">19</property>
@@ -1009,6 +1012,9 @@ See Issue #431</property>
         </child>
       </object>
     </child>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
   </object>
   <object class="GtkAdjustment" id="adjustment3">
     <property name="upper">365</property>
@@ -1221,6 +1227,9 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
     <action-widgets>
       <action-widget response="1002">tile_stop</action-widget>
     </action-widgets>
+    <child>
+      <placeholder/>
+    </child>
   </object>
   <object class="GtkListStore" id="bb_liststore">
     <columns>
@@ -1413,6 +1422,9 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <action-widget response="999">bb_cancel</action-widget>
       <action-widget response="1001">bb_ok</action-widget>
     </action-widgets>
+    <child>
+      <placeholder/>
+    </child>
   </object>
   <object class="GtkDialog" id="delta-dialog">
     <property name="can_focus">False</property>
@@ -1544,6 +1556,9 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <action-widget response="1001">button4</action-widget>
       <action-widget response="1002">button5</action-widget>
     </action-widgets>
+    <child>
+      <placeholder/>
+    </child>
   </object>
   <object class="GtkBox" id="flight_box">
     <property name="visible">True</property>
@@ -1784,6 +1799,9 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <action-widget response="1001">gotoapp</action-widget>
       <action-widget response="1002">gotocan</action-widget>
     </action-widgets>
+    <child>
+      <placeholder/>
+    </child>
   </object>
   <object class="GtkBox" id="gprefs">
     <property name="visible">True</property>
@@ -2469,6 +2487,263 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
     <property name="visible">True</property>
     <property name="can_focus">False</property>
   </object>
+  <object class="GtkWindow" id="inav_mr_conf">
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">iNav MR Nav Config</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_left">4</property>
+                <property name="margin_right">4</property>
+                <property name="label" translatable="yes">Disarm on landing</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Conrtol Mode</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Altitude Control</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Max Speed (cm/s)</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Max Climb Rate (cm/s)</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Manual Speed (cm/s)</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Manual Climb Rate (cm/s)</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">7</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="inav_max_speed">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">digits</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="inav_mr_max_climb">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="inav_mr_man_speed">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">digits</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="inav_mr_climb_rate">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">digits</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">7</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBoxText" id="inav_mr_control_mode">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="active">0</property>
+                <property name="active_id">1</property>
+                <items>
+                  <item id="0" translatable="yes">ATTI</item>
+                  <item id="1" translatable="yes">CRUISE</item>
+                </items>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBoxText" id="inav_mr_altcontrol">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="active">0</property>
+                <items>
+                  <item id="0" translatable="yes">CURRENT</item>
+                  <item id="1" translatable="yes">EXTRA</item>
+                  <item id="2" translatable="yes">FIXED</item>
+                  <item id="3" translatable="yes">MAX</item>
+                  <item id="4" translatable="yes">AT LEAST</item>
+                </items>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSwitch" id="inav_mr_dismarm_land">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">RTH Altitude (cm)</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="inav_mr_rth_alt">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">digits</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">3</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">False</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButtonBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="homogeneous">True</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="inav_mr_apply">
+                <property name="label">gtk-apply</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="inav_mr_close">
+                <property name="label">gtk-close</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <child>
+      <placeholder/>
+    </child>
+  </object>
   <object class="GtkDialog" id="map_source_dialog">
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
@@ -2640,6 +2915,9 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
     <action-widgets>
       <action-widget response="0">button10</action-widget>
     </action-widgets>
+    <child>
+      <placeholder/>
+    </child>
   </object>
   <object class="GtkDialog" id="mwchooser">
     <property name="can_focus">False</property>
@@ -2765,6 +3043,9 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <action-widget response="1002">mwccan</action-widget>
       <action-widget response="0">mwc_button2</action-widget>
     </action-widgets>
+    <child>
+      <placeholder/>
+    </child>
   </object>
   <object class="GtkWindow" id="nc_window">
     <property name="can_focus">False</property>
@@ -3285,6 +3566,9 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
         </child>
       </object>
     </child>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
   </object>
   <object class="GtkDialog" id="prefs-dialog">
     <property name="can_focus">False</property>
@@ -3341,6 +3625,9 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
       <action-widget response="1001">button6</action-widget>
       <action-widget response="1002">button7</action-widget>
     </action-widgets>
+    <child>
+      <placeholder/>
+    </child>
   </object>
   <object class="GtkAdjustment" id="shp_adjustment1">
     <property name="lower">3</property>
@@ -3532,6 +3819,9 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
       <action-widget response="1001">button2</action-widget>
       <action-widget response="1002">button3</action-widget>
     </action-widgets>
+    <child>
+      <placeholder/>
+    </child>
   </object>
   <object class="GtkDialog" id="speeddialog">
     <property name="can_focus">False</property>
@@ -3622,6 +3912,9 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
       <action-widget response="1001">gotoapp1</action-widget>
       <action-widget response="1002">gotocan1</action-widget>
     </action-widgets>
+    <child>
+      <placeholder/>
+    </child>
   </object>
   <object class="GtkGrid" id="ss_grid">
     <property name="visible">True</property>
@@ -3915,6 +4208,9 @@ Clicking Quit will terminate the application.
       <action-widget response="1002">button8</action-widget>
       <action-widget response="0">button9</action-widget>
     </action-widgets>
+    <child>
+      <placeholder/>
+    </child>
   </object>
   <object class="GtkBox" id="uprefs">
     <property name="visible">True</property>
