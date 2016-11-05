@@ -940,9 +940,9 @@ private Gtk.MenuItem menudown;
 
         menuncfg = builder.get_object ("nav_config_menu") as Gtk.MenuItem;
         menuncfg.sensitive =false;
+        navconf = new NavConfig(window, builder);
         menuncfg.activate.connect (() => {
-                if(navconf != null)
-                    navconf.show();
+                navconf.show();
             });
         art_win = new ArtWin();
         menuop = builder.get_object ("menu_art_hor") as Gtk.MenuItem;
@@ -2546,7 +2546,7 @@ private Gtk.MenuItem menudown;
                 {
                     menuncfg.sensitive = true;
                     MWPLog.message("Generate navconf %x\n", navcap);
-                    navconf = new NavConfig(window, builder, ncbits);
+                    navconf.setup(ncbits);
                     if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
                         navconf.mw_navconf_event.connect((mw,nc) => {
                                 mw_update_config(nc);

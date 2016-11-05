@@ -1740,6 +1740,9 @@ public class AudioThread : Object {
 
 public class NavConfig : GLib.Object
 {
+    private Gtk.Window parent;
+    private Gtk.Builder builder;
+
     private Gtk.Window window;
     private bool visible;
     private MWPlanner.NAVCAPS typ;
@@ -1897,16 +1900,29 @@ public class NavConfig : GLib.Object
     }
 
 
-    public NavConfig (Gtk.Window parent, Gtk.Builder builder, MWPlanner.NAVCAPS _typ)
+    public NavConfig (Gtk.Window _parent, Gtk.Builder _builder)
     {
-        typ = _typ;
-        if(typ == MWPlanner.NAVCAPS.INAV_MR)
-            window = inav_mr_open(builder);
-        else if(typ == MWPlanner.NAVCAPS.INAV_FW)
-            window = inav_fw_open(builder);
-        else
-            window = mw_open(builder);
+        builder = _builder;
+        parent = _parent;
+    }
 
+    public void setup (MWPlanner.NAVCAPS _typ)
+    {
+        if(window != null && typ != _typ)
+        {
+            window.destroy();
+            window = null;
+        }
+        typ = _typ;
+        if(window == null)
+        {
+            if(typ == MWPlanner.NAVCAPS.INAV_MR)
+                window = inav_mr_open(builder);
+            else if(typ == MWPlanner.NAVCAPS.INAV_FW)
+                window = inav_fw_open(builder);
+            else
+                window = mw_open(builder);
+        }
         window.set_transient_for(parent);
         window.destroy.connect (() => {
                 window.hide();
