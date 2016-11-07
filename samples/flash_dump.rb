@@ -22,11 +22,13 @@ serdev="/dev/ttyUSB0"
 ofile=Time.now.strftime "bblog_%F%H%M%S.TXT"
 baud = 115200
 erase= false
+x_erase = false
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] file\nDownload bb from flash"
   opt.on('-s','--serial-device=DEV'){|o|serdev=o}
   opt.on('-e','--erase'){erase=true}
+  opt.on('-E','--erase-only'){x_erase=true}
   opt.on('-o','--output=FILE'){|o| ofile=o}
   opt.on('-b','--baud=RATE',Integer){|o|baud=o}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
@@ -49,45 +51,48 @@ abort "Failed to read FC" if res.nil?
 
 sport.write "flash_info\n"
 res = sio.expect(/usedSize=(\d+)\r/, 5)
-if res && res.length == 2
-  fsize = res[1].to_i
-  if fsize > 0
-    rbytes = 0
-    sport.set_vtime 2
-    sport.write("flash_read 0 #{fsize}\n")
-    res = sio.expect("flash_read 0 #{fsize}\r\nReading #{fsize} bytes at 0:\r\n",1)
-    if res
-      File.open(ofile, "wb") do |fh|
+unless x_erase
+  if res && res.length == 2
+    fsize = res[1].to_i
+    puts "Size = #{fsize}"
+    if fsize > 0
+      rbytes = 0
+      sport.set_vtime 5
+      sport.write("flash_read 0 #{fsize}\n")
+      res = sio.expect("flash_read 0 #{fsize}\r\nReading #{fsize} bytes at 0:\r\n",1)
+      if res
 	n = 0
 	rtim = 9999
+	dbuf = ''
 	loop do
-	  data = sport.read(256)
-	  unless data.length.zero?
+	  data = sio.read(256)
+	  unless data.nil? or data.length.zero?
 	    rsize = data.length
 	    rbytes += rsize
 	    rbytes = fsize if rbytes > fsize
 	    if n % 4 == 0
 	      rem = fsize - rbytes
 	      rtim = rem*10/baud
+	      pct = 100*rbytes/fsize
+	      print "\rread #{rbytes} / #{fsize} %3d%% %4ds\r" % [pct,rtim]
 	    end
-	    pct = 100*rbytes/fsize
-	    print "\rread #{rbytes} / #{fsize} %3d%% %4ds\r" % [pct,rtim]
 	    n += 1
-	    fh.write data
+	    dbuf << data
 	  else
 	    delok = ((fsize - rbytes) < 256)
 	    break
 	  end
 	end
+	File.open(ofile, "wb") {|fh| fh.write dbuf }
       end
+    else
+      delok = true
     end
-  else
-    delok = true
   end
 end
 puts
 
-if delok && erase
+if x_erase || (delok && erase)
   puts "Erasing"
   sport.write("flash_erase\n")
   sio.expect "Done", 300
