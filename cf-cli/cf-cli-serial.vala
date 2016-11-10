@@ -525,17 +525,19 @@ public class MWSerial : Object
         write("version\n");
         while(read_vers(out line, out len) == ResCode.OK)
             ;
-        if(((string)line).contains("BetaFlight"))
-        {
-            prof0 = prof1 = 0;
-            diff = true;
-        }
 
         if(((string)line).contains("# INAV"))
         {
             prof0 = prof1 = 0;
             calacc = false;
             inav = true;
+            message ("INAV mode\n");
+        }
+        else if(((string)line).down().contains("betaflight"))
+        {
+            prof0 = prof1 = 0;
+            diff = true;
+            message ("Betaflight mode\n");
         }
 
         for(var p = prof0; p <= prof1; p++)
