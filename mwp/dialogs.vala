@@ -1143,8 +1143,8 @@ public class NavStatus : GLib.Object
         voltlabel.set_use_markup (true);
         colors = new Gdk.RGBA[5];
         colors[0].parse("#60ff00");
-        colors[1].parse("#C8C800");
-        colors[2].parse("orange");
+        colors[1].parse("#FFCE00");   // #C8C800");
+        colors[2].parse("#FF5400");
         colors[3].parse("red");
         colors[4].parse(colstr);
         volt_update("n/a",4, 0f,true);

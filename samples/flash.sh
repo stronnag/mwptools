@@ -23,7 +23,7 @@ do
 done
 
 case $HEX in
-  *SPRACINGF3EVO.hex)
+  *SPRACINGF3EVO.hex|*AIRBOTF4.hex)
     hex2bin $HEX
     BIN=${HEX%%hex}bin
     unset HEX
