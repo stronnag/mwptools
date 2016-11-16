@@ -1078,12 +1078,12 @@ public class NavStatus : GLib.Object
     public Gtk.Grid grid {get; private set;}
     private  Gtk.Label voltlabel;
     public Gtk.Box voltbox{get; private set;}
-    private Gdk.RGBA[] colors;
     private bool vinit = false;
     private bool mt_voice = false;
     private AudioThread mt = null;
     private bool have_cg = false;
     private bool have_hdr = false;
+    private string []colours;
 
     public static MSP_NAV_STATUS n {get; private set;}
     public static MSP_ATTITUDE atti {get; private set;}
@@ -1113,11 +1113,12 @@ public class NavStatus : GLib.Object
         ELEV = 8
     }
 
-    public NavStatus(Gtk.Builder builder,string colstr)
+    public NavStatus(Gtk.Builder builder,string []cols)
     {
         xfmode = 255;
         numsat = 0;
         modsat = false;
+        colours = cols;
 
         grid = builder.get_object ("grid3") as Gtk.Grid;
         gps_mode_label = builder.get_object ("gps_mode_lab") as Gtk.Label;
@@ -1140,13 +1141,8 @@ public class NavStatus : GLib.Object
                 var fh2 = a.height / 2;
                 _fs = (fh1 < fh2) ? fh1 : fh2;
             });
+
         voltlabel.set_use_markup (true);
-        colors = new Gdk.RGBA[5];
-        colors[0].parse("#60ff00");
-        colors[1].parse("#FFCE00");   // #C8C800");
-        colors[2].parse("#FF5400");
-        colors[3].parse("red");
-        colors[4].parse(colstr);
         volt_update("n/a",4, 0f,true);
         grid.show_all();
     }
@@ -1413,7 +1409,9 @@ public class NavStatus : GLib.Object
         {
             if(n != _vn)
             {
-                voltlabel.override_background_color(Gtk.StateFlags.NORMAL, colors[n]);
+                var c = Gdk.RGBA();
+                c.parse(colours[n]);
+                voltlabel.override_background_color(Gtk.StateFlags.NORMAL, c);
                 _vn = n;
             }
             voltlabel.set_label("<span font='%d'>%s</span>".printf(_fs,s));

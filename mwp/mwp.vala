@@ -930,8 +930,12 @@ private Gtk.MenuItem menudown;
         var colstr = "#%02x%02x%02x".printf((uint)(acol.red*255),
                                             (uint)(acol.green*255),
                                             (uint)(acol.blue*255));
-        navstatus = new NavStatus(builder, colstr);
         vlevels[4].colour = colstr;
+        var cols = new string[5];
+        for(var j = 0; j < 5; j++)
+            cols[j] = vlevels[j].colour;
+
+        navstatus = new NavStatus(builder, cols);
 
         menunav = builder.get_object ("nav_status_menu") as Gtk.MenuItem;
         menunav.activate.connect (() => {
@@ -3693,8 +3697,9 @@ private Gtk.MenuItem menudown;
         else
             str = vlevels[icol].label;
 
+        var colr = vlevels[icol].colour;
         vbatlab="<span background=\"%s\" weight=\"bold\">%s</span>".printf(
-             vlevels[icol].colour, str);
+             colr, str);
         labelvbat.set_markup(vbatlab);
         navstatus.volt_update(str,icol,vf,item_visible(DOCKLETS.VOLTAGE));
 
