@@ -18,6 +18,8 @@ class Serial
   end
 end
 
+Encoding.default_external = Encoding::BINARY
+
 serdev="/dev/ttyUSB0"
 ofile=Time.now.strftime "bblog_%F%H%M%S.TXT"
 baud = 115200
