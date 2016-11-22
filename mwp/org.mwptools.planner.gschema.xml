@@ -301,5 +301,19 @@
       <summary>Do Mission tote float</summary>
       <description>(private settinge)</description>
     </key>
+
+    <key name="mission-path" type="s">
+      <default>""</default>
+      <summary>Directory for mission files</summary>
+      <description>Directory for mission files</description>
+    </key>
+
+    <key name="log-path" type="s">
+      <default>""</default>
+      <summary>Directory for log files</summary>
+      <description>Directory for log files (for replay)</description>
+    </key>
+
+
   </schema>
 </schemalist>

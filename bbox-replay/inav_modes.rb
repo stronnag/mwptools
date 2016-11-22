@@ -42,6 +42,9 @@ IO.popen(cmd,'r') do |p|
     st = ts if st.nil?
     xts  = ts - st
     if c[:navstate].to_i != nstate
+      if nstate == -1
+	puts %w/Time(s) Elapsed(s)  State/.join("\t")
+      end
       nstate = c[:navstate].to_i
       astate = (STATES[nstate]||("State=%d" % nstate))
       puts ["%6.1f" % ts, "(%6.1f)" % xts, astate].join("\t")

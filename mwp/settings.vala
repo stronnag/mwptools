@@ -72,6 +72,8 @@ public class MWPSettings : GLib.Object
     public string led {get; private set; default=null;}
     public string rcolstr {get; private set; default=null;}
     public bool tote_floating {get; set; default=false;}
+    public string missionpath {get; private set; default=null;}
+    public string logpath {get; private set; default=null;}
 
     public signal void settings_update (string s);
 
@@ -231,6 +233,18 @@ public class MWPSettings : GLib.Object
             rcolstr = settings.get_string ("rings-colour");
         if(s == null || s == "tote-float-p")
             tote_floating = settings.get_boolean ("tote-float-p");
+        if(s == null || s == "mission-path")
+        {
+            missionpath = settings.get_string ("mission-path");
+            if(missionpath == "")
+                missionpath = null;
+        }
+        if(s == null || s == "log-path")
+        {
+            logpath = settings.get_string ("log-path");
+            if(logpath == "")
+                logpath = null;
+        }
     }
 
     public void save_window()

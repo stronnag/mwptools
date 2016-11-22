@@ -914,7 +914,7 @@ private Gtk.MenuItem menudown;
                 replay_log(false);
             });
 
-        bb_runner = new BBoxDialog(builder, dmrtype, window);
+        bb_runner = new BBoxDialog(builder, dmrtype, window, conf.logpath);
         menubblog = builder.get_object ("bb_menu_act") as Gtk.MenuItem;
         menubblog.activate.connect (() => {
                 replay_bbox(true);
@@ -4243,6 +4243,9 @@ private Gtk.MenuItem menudown;
         chooser.set_transient_for(window);
         chooser.select_multiple = false;
         Gtk.FileFilter filter = new Gtk.FileFilter ();
+        if(conf.missionpath != null)
+            chooser.set_current_folder (conf.missionpath);
+
         filter.set_filter_name ("Mission");
         filter.add_pattern ("*.mission");
         filter.add_pattern ("*.xml");
@@ -4335,6 +4338,9 @@ private Gtk.MenuItem menudown;
             "_Open",
             Gtk.ResponseType.ACCEPT);
         chooser.select_multiple = false;
+        if(conf.missionpath != null)
+            chooser.set_current_folder (conf.missionpath);
+
         chooser.set_transient_for(window);
         Gtk.FileFilter filter = new Gtk.FileFilter ();
 	filter.set_filter_name ("Mission");
@@ -4415,6 +4421,8 @@ private Gtk.MenuItem menudown;
             filter.set_filter_name ("Log");
             filter.add_pattern ("*.log");
             chooser.add_filter (filter);
+            if(conf.logpath != null)
+                chooser.set_current_folder (conf.logpath);
 
             filter = new Gtk.FileFilter ();
             filter.set_filter_name ("All Files");

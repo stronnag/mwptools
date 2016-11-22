@@ -17,7 +17,8 @@ public class  BBoxDialog : Object
     private Gtk.TreeSelection bb_sel;
     private Gtk.Window _w;
 
-    public BBoxDialog(Gtk.Builder builder, int mrtype = 3, Gtk.Window? w = null)
+    public BBoxDialog(Gtk.Builder builder, int mrtype = 3, Gtk.Window? w = null,
+                      string? logpath = null)
     {
         _w = w;
         dialog = builder.get_object ("bb_dialog") as Gtk.Dialog;
@@ -33,6 +34,9 @@ public class  BBoxDialog : Object
         filter.set_filter_name ("BB Logs");
         filter.add_pattern ("*.TXT");
         bb_filechooser.add_filter (filter);
+
+        if(logpath != null)
+            bb_filechooser.set_current_folder (logpath);
 
         filter = new Gtk.FileFilter ();
         filter.set_filter_name ("All Files");
