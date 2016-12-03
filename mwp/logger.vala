@@ -18,7 +18,6 @@
  */
 //using Json;
 
-
 public class Logger : GLib.Object
 {
     public static bool is_logging { get; private set; }
@@ -50,6 +49,8 @@ public class Logger : GLib.Object
         gen = new Json.Generator ();
         var bfn =  (title == null) ? fn : title;
         var builder = init("init");
+        builder.set_member_name ("mwpinfo");
+        builder.add_string_value (mwpvers);
         builder.set_member_name ("mission");
         builder.add_string_value (bfn);
         builder.set_member_name ("mwvers");

@@ -42,7 +42,7 @@ stty -F $DEV raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon
 if [ -z "$RESCUE" ]
 then
   echo -n 'R' >$DEV
-  sleep 0.5
+  sleep 1
 fi
 
 if [ -n "$HEX" ]
