@@ -65,6 +65,7 @@ public class MWSerial : Object
     private string defprof;
     private int raws = -1;
     private bool inav = false;
+    private int ocount = 0;
 
     private static int rxerr = 0;
 
@@ -159,6 +160,7 @@ public class MWSerial : Object
         }
         else
         {
+            ocount++;
             message ("Device %s, speed %d, line delay %d\n", devname, brate, lwait);
             available = true;
         }
@@ -910,8 +912,8 @@ public class MWSerial : Object
         int ocount = 30;
         var oc = 0;
 
-        if(devname.has_prefix("/dev/ttyACM"))
-            Thread.usleep(2000000);
+        if(devname.has_prefix("/dev/ttyACM") && ocount == 0)
+            Thread.usleep(3000*1000);
 
         while(!FileUtils.test (devname, FileTest.EXISTS))
         {
@@ -988,7 +990,7 @@ public class MWSerial : Object
 //            while((res = read_line(out line, out len)) == ResCode.OK)
 //                ;
             close();
-            Thread.usleep(2000000);
+            Thread.usleep(2500000);
             try_open(true);
             write("#");
             while((res = read_line(out line, out len)) == ResCode.OK)
