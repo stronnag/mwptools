@@ -1307,6 +1307,8 @@ private Gtk.MenuItem menudown;
         swd = new SwitchDialog(builder, window);
 
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
+        about.version = mwpvers;
+
         Gdk.Pixbuf pix = null;
         try  {
             pix = new Gdk.Pixbuf.from_file_at_size (icon, 200,200);
