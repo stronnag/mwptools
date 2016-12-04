@@ -1308,6 +1308,8 @@ private Gtk.MenuItem menudown;
 
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
         about.version = mwpvers;
+        about.copyright = "© 2014-%d Jonathan Hudson".printf(
+            new DateTime.now_local().get_year());
 
         Gdk.Pixbuf pix = null;
         try  {
