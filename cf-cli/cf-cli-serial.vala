@@ -65,7 +65,7 @@ public class MWSerial : Object
     private string defprof;
     private int raws = -1;
     private bool inav = false;
-    private int ocount = 0;
+    private int devcount = 0;
 
     private static int rxerr = 0;
 
@@ -160,7 +160,7 @@ public class MWSerial : Object
         }
         else
         {
-            ocount++;
+            devcount++;
             message ("Device %s, speed %d, line delay %d\n", devname, brate, lwait);
             available = true;
         }
@@ -912,8 +912,10 @@ public class MWSerial : Object
         int ocount = 30;
         var oc = 0;
 
-        if(devname.has_prefix("/dev/ttyACM") && ocount == 0)
-            Thread.usleep(3000*1000);
+        message("Trying open (%d) for %s\n", devcount, devname);
+
+        if(devname.has_prefix("/dev/ttyACM") && devcount != 0)
+            Thread.usleep(5000*1000);
 
         while(!FileUtils.test (devname, FileTest.EXISTS))
         {
