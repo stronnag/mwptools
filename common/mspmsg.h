@@ -195,5 +195,7 @@ typedef struct _ltm_sframe LTM_SFRAME;
 struct __attribute__ ((__packed__))  _ltm_xframe
 {
     uint16_t hdop;
+    uint8_t sensorok;
+    uint8_t spare[3];
 };
 typedef struct _ltm_xframe LTM_XFRAME;

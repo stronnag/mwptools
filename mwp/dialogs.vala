@@ -1445,6 +1445,19 @@ public class NavStatus : GLib.Object
         }
     }
 
+    public void hw_failure(uint8 bad)
+    {
+        if(mt != null)
+        {
+            AudioThread.Vox c;
+            if(bad == 0)
+                c = AudioThread.Vox.HW_OK;
+            else
+                c = AudioThread.Vox.HW_BAD;
+            mt.message(c, (bad == 1));
+        }
+    }
+
     public void announce(uint8 mask, bool _recip)
     {
         recip = _recip;
@@ -1551,7 +1564,9 @@ public class AudioThread : Object {
         MODSAT,
         LTM_MODE,
         GPS_CRIT,
-        FAILSAFE
+        FAILSAFE,
+        HW_OK,
+        HW_BAD
     }
 
     private Timer timer;
@@ -1618,6 +1633,12 @@ public class AudioThread : Object {
                     string s=null;
                     switch(c)
                     {
+                        case Vox.HW_OK:
+                            s = "Sensors OK";
+                            break;
+                        case Vox.HW_BAD:
+                            s = "Sensor Failure";
+                            break;
                         case Vox.NAV_ERR:
                             s = MSP.nav_error(NavStatus.n.nav_error);
                             break;

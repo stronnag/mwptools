@@ -193,6 +193,7 @@ public struct LTM_OFRAME
 public struct LTM_XFRAME
 {
     uint16 hdop;
+    uint8 sensorok;
 }
 
 public struct CF_MODE_RANGES

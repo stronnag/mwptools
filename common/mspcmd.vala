@@ -92,12 +92,14 @@ public class MSP : Object
 
     public enum Sensors
     {
-        ACC = 1,
-        BARO = 2,
-        MAG = 4,
-        GPS=8,
-        SONAR=16;
-
+        ACC =    (1 << 0),
+        BARO =   (1 << 1),
+        MAG =    (1 << 2),
+        GPS =    (1 << 3),
+        SONAR =  (1 << 4),
+        OPFLOW = (1 << 5),
+        PITOT =  (1 << 6),
+        OK =     (1 << 15);
 
         public string to_string() {
         switch (this) {

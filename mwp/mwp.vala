@@ -404,9 +404,11 @@ private Gtk.MenuItem menudown;
 
     private bool use_gst = false;
     private bool inav = false;
+//    private bool ck_sensors = false;
+    private uint8 xs_state = 0;
+
     private uint16  rhdop = 10000;
     private uint gpsintvl = 0;
-
 
     private enum DEBUG_FLAGS
     {
@@ -1972,7 +1974,6 @@ private Gtk.MenuItem menudown;
             requests += MSP.Cmds.COMP_GPS;
             reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS);
             init_craft_icon();
-            gpscnt = 0;
         }
         else
             missing |= MSP.Sensors.GPS;
@@ -2006,19 +2007,51 @@ private Gtk.MenuItem menudown;
                 var nss = string.joinv("/",nsensor);
                 set_error_status("No %s detected".printf(nss));
                 MWPLog.message("no %s, sensor = 0x%x\n", nss, sensor);
+                gpscnt++;
             }
-            gpscnt++;
         }
-        if(sensor != xsensor)
+        else
         {
-            update_sensor_array();
-            xsensor = sensor;
+            set_error_status(null);
+            gpscnt = 0;
         }
         return reqsize;
     }
 
+    private void  alert_broken_sensors(uint8 val)
+    {
+        MWPLog.message("abs %x %d %d\n", sensor, val, xs_state);
+        if(val != xs_state)
+        {
+            string sound;
+            string msg;
+            int tout;
+            Gtk.MessageType gmt;
+
+            if(val == 1)
+            {
+                sound = RED_ALERT;
+                msg = "<span font='24' foreground = 'red'>SENSOR FAILURE</span>";
+                tout = 10;
+                gmt = Gtk.MessageType.ERROR;
+            }
+            else
+            {
+                sound = GENERAL_ALERT;
+                msg = "Sensors OK";
+                tout = 2;
+                gmt = Gtk.MessageType.INFO;
+            }
+            bleet_sans_merci(RED_ALERT);
+            mwp_warning_box(msg, gmt, tout);
+            navstatus.hw_failure(val);
+            xs_state = val;
+        }
+    }
+
     private void update_sensor_array()
     {
+        alert_broken_sensors((uint8)(sensor >> 15));
         for(int i = 0; i < 5; i++)
         {
             uint16 mask = (1 << i);
@@ -2098,6 +2131,7 @@ private Gtk.MenuItem menudown;
                     {
                         LTM_XFRAME xf = LTM_XFRAME();
                         xf.hdop = rhdop;
+                        xf.sensorok = (sensor >> 15);
                         Logger.ltm_xframe(xf);
                     }
                 }
@@ -2229,7 +2263,7 @@ private Gtk.MenuItem menudown;
                         sb0.append(" ");
                     }
                 }
-                MWPLog.message("Sensors: %s\n", sb0.str);
+                MWPLog.message("Sensors: %s (%04x)\n", sb0.str, sensor);
 
                 if(!prlabel)
                 {
@@ -2299,9 +2333,13 @@ private Gtk.MenuItem menudown;
             {
                 if(gpscnt != 0 && ((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS))
                 {
-                    MWPLog.message("GPS appears\n");
-                    set_error_status(null);
+//                    MWPLog.message("GPS appears %x\n", sensor);
                     build_pollreqs();
+                }
+                if(sensor != xsensor)
+                {
+                    update_sensor_array();
+                    xsensor = sensor;
                 }
             }
 
@@ -2466,7 +2504,14 @@ private Gtk.MenuItem menudown;
                     var fcv = "%s v%d.%d.%d".printf(vi.fc_var,raw[0],raw[1],raw[2]);
                     verlab.set_label(fcv);
                     if(inav)
+                    {
+//                        if(raw[0] > 1 || (raw[0] == 1 && raw[1] >= 5))
+//                        {
+//                            MWPLog.message("Check sensors\n");
+//                            ck_sensors = true;
+//                        }
                         add_cmd(MSP.Cmds.BUILD_INFO, null, 0, 1000);
+                    }
                     else
                         add_cmd(MSP.Cmds.BOXNAMES,null,0,1000);
                 }
@@ -3131,6 +3176,8 @@ private Gtk.MenuItem menudown;
 
             case MSP.Cmds.TX_FRAME:
                 deserialise_u16(raw, out rhdop);
+//                if(ck_sensors)
+                    alert_broken_sensors(raw[2]);
                 gpsinfo.set_hdop(rhdop/100.0);
                 break;
 
@@ -4315,12 +4362,11 @@ private Gtk.MenuItem menudown;
                                  Gtk.MessageType klass=Gtk.MessageType.WARNING,
                                  int timeout = 0)
     {
-        Gtk.MessageDialog msg = new Gtk.MessageDialog (window,
-                                                       Gtk.DialogFlags.MODAL,
-                                                       klass,
-                                                       Gtk.ButtonsType.OK,
-                                                       warnmsg);
-
+        var msg = new Gtk.MessageDialog.with_markup (window,
+                                                     0,
+                                                     klass,
+                                                     Gtk.ButtonsType.OK,
+                                                     warnmsg);
         if(timeout > 0)
         {
             Timeout.add_seconds(timeout, () => {
@@ -4328,8 +4374,10 @@ private Gtk.MenuItem menudown;
                     return /* Source.CONTINUE */ true;
                 });
         }
-        msg.run();
-        msg.destroy();
+        msg.response.connect ((response_id) => {
+                msg.destroy();
+            });
+        msg.show();
     }
 
     public void on_file_open ()
