@@ -1,15 +1,13 @@
-# For fedora 23
-# You should probably use dnf, not yum any more
 
-yum groupinstall development-libs development-tools gnome-software-development
-yum install gtk3-devel gstreamer-devel clutter-devel webkitgtk3-devel \
+dnf groupinstall development-libs development-tools gnome-software-development
+dnf install gtk3-devel gstreamer-devel clutter-devel webkitgtk3-devel \
     libgda-devel gobject-introspection-devel
-yum install vala vala-devel vala-tools vala-doc
-yum install libchamplain-gtk-devel libgdl-devel libgudev1-devel espeak-devel
+dnf install vala vala-devel vala-tools vala-doc
+dnf install libchamplain-gtk-devel libgdl-devel libgudev1-devel espeak-devel
 
 # and for the artificial horizon
 
-yum install  gtk2-devel
+dnf install  gtk2-devel
 
 git clone https://github.com/stronnag/mwptools.git
 
@@ -24,9 +22,11 @@ dnf install ruby
 #
 
 You must install the blackbox utilities
-https://github.com/cleanflight/blackbox-tools/ in order to replay
-blackbox logs.
+https://github.com/cleanflight/blackbox-tools/
+in order to replay blackbox logs.
 
 for cf-cli-ui
 
 dnf install vte291-devel
+
+Then build it.

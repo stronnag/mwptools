@@ -2505,11 +2505,6 @@ private Gtk.MenuItem menudown;
                     verlab.set_label(fcv);
                     if(inav)
                     {
-//                        if(raw[0] > 1 || (raw[0] == 1 && raw[1] >= 5))
-//                        {
-//                            MWPLog.message("Check sensors\n");
-//                            ck_sensors = true;
-//                        }
                         add_cmd(MSP.Cmds.BUILD_INFO, null, 0, 1000);
                     }
                     else

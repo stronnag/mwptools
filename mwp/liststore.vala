@@ -55,6 +55,7 @@ public class ListBox : GLib.Object
     private ShapeDialog shapedialog;
     private DeltaDialog deltadialog;
     private SpeedDialog speeddialog;
+    private AltDialog altdialog;
     public int lastid {get; private set; default= 0;}
     public bool have_rth {get; private set; default= false;}
 
@@ -352,6 +353,7 @@ public class ListBox : GLib.Object
         shapedialog = new ShapeDialog(mp.builder);
         deltadialog = new DeltaDialog(mp.builder);
         speeddialog = new SpeedDialog(mp.builder);
+        altdialog = new AltDialog(mp.builder);
 
             // Combo, Model:
         Gtk.ListStore combo_model = new Gtk.ListStore (1, typeof (string));
@@ -1002,28 +1004,31 @@ public class ListBox : GLib.Object
 
     public void set_alts(bool flag)
     {
-        var dalt = get_user_alt();
+        double dalt;
 
-        foreach (var t in get_selected_refs())
+        if(altdialog.get_alt(out dalt) == true)
         {
-            Gtk.TreeIter iter;
-            GLib.Value cell;
-            var path = t.get_path ();
-            list_model.get_iter (out iter, path);
-            list_model.get_value (iter, WY_Columns.ACTION, out cell);
-            var act = (MSP.Action)cell;
-            if (act == MSP.Action.RTH ||
-                act == MSP.Action.JUMP ||
-                act == MSP.Action.SET_POI ||
-                act == MSP.Action.SET_HEAD)
-                continue;
-            if(flag == false)
+            foreach (var t in get_selected_refs())
             {
-                list_model.get_value (iter, WY_Columns.ALT, out cell);
-                if ((int)cell != 0)
+                Gtk.TreeIter iter;
+                GLib.Value cell;
+                var path = t.get_path ();
+                list_model.get_iter (out iter, path);
+                list_model.get_value (iter, WY_Columns.ACTION, out cell);
+                var act = (MSP.Action)cell;
+                if (act == MSP.Action.RTH ||
+                    act == MSP.Action.JUMP ||
+                    act == MSP.Action.SET_POI ||
+                    act == MSP.Action.SET_HEAD)
                     continue;
+                if(flag == false)
+                {
+                    list_model.get_value (iter, WY_Columns.ALT, out cell);
+                    if ((int)cell != 0)
+                        continue;
+                }
+                list_model.set_value (iter, WY_Columns.ALT, dalt);
             }
-            list_model.set_value (iter, WY_Columns.ALT, dalt);
         }
     }
 

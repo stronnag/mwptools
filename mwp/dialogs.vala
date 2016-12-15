@@ -569,6 +569,38 @@ public class SpeedDialog : GLib.Object
     }
 }
 
+public class AltDialog : GLib.Object
+{
+    private Gtk.Dialog dialog;
+    private Gtk.Entry alt_entry;
+
+    public AltDialog(Gtk.Builder builder)
+    {
+        dialog = builder.get_object ("altdialog") as Gtk.Dialog;
+        alt_entry = builder.get_object ("defaltset") as Gtk.Entry;
+    }
+
+    public bool get_alt(out double alt)
+    {
+        var res = false;
+        dialog.show_all();
+        alt = 0.0;
+        var id = dialog.run();
+        switch(id)
+        {
+            case 1001:
+                alt = InputParser.get_scaled_real(alt_entry.get_text(),"d");
+                res = true;
+                break;
+
+            case 1002:
+                break;
+        }
+        dialog.hide();
+        return res;
+    }
+}
+
 public class DeltaDialog : GLib.Object
 {
     private Gtk.Dialog dialog;

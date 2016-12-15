@@ -3,6 +3,10 @@
 # if your distro doen't provide it
 # stm32flash => git://git.code.sf.net/p/stm32flash/code
 # hex2bin    => https://sourceforge.net/projects/hex2bin/?source=typ_redirect
+#
+# and (most distros do provide this)
+# dfu-util => http://sourceforge.net/p/dfu-util
+#
 
 DEV=
 SPEED=115200
