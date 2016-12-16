@@ -24,7 +24,7 @@ public class Units :  GLib.Object
 {
     private const string [] dnames = {"m", "ft", "yd","mfg"};
     private const string [] dspeeds = {"m/s", "kph", "mph", "kts", "mfg/µftn"};
-    private const string [] dfix = {"no","","2d-","3d-"};
+    private const string [] dfix = {"no fix","","2d","3d"};
 
     public static double distance (double d)
     {
@@ -362,7 +362,7 @@ public class FlightBox : GLib.Object
                    htxt = "%.1f".printf(GPSInfo.hdop);
                 hdoptxt = " / <span font='%u'>%s</span>".printf(fh2,htxt);
            }
-           var slabel = "Sats <span font='%u'>%d</span> %sfix%s".printf(
+           var slabel = "Sats <span font='%u'>%d</span> %s%s".printf(
                fh1, GPSInfo.nsat,Units.fix(GPSInfo.fix), hdoptxt);
            big_sats.set_label(slabel);
        }
