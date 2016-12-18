@@ -84,9 +84,11 @@ public class MWSerial : Object
     protected static bool setall = false;
     protected static bool keep_parts = false;
     protected static bool verbose = false;
+    protected static bool dodiff = false;
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", null},
+        { "diff", 'D', 0, OptionArg.STRING, out dodiff, "force diff", null},
         { "out", 'o', 0, OptionArg.STRING, out defname, "output file name", null},
         { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", null},
         { "line-delay", 0, 0, OptionArg.INT, out lwait, "(ms)", null},
@@ -110,6 +112,8 @@ public class MWSerial : Object
         fd = -1;
         if(brate == 0)
             brate = 115200;
+
+        dodiff = (null != Environment.get_variable ("CF_CLI_DIFF"));
     }
 
     public void set_iofd(int _pfd = 2)
@@ -522,11 +526,15 @@ public class MWSerial : Object
     {
         uint8 [] line;
         int len;
-        bool diff = false;
+        bool diff = dodiff;
 
         write("version\n");
         while(read_vers(out line, out len) == ResCode.OK)
             ;
+
+
+        if(diff)
+            message ("Using diff mode\n");
 
         if(((string)line).contains("# INAV"))
         {

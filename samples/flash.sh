@@ -40,11 +40,11 @@ then
  [ -n "$HEX" ] && DEV=/dev/ttyUSB0 || DEV=/dev/ttyACM0
 fi
 
-echo $DEV
+echo $DEV $RESCUE
 
-stty -F $DEV raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon
 if [ -z "$RESCUE" ]
 then
+  stty -F $DEV raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon
   echo -n 'R' >$DEV
   sleep 1
 fi
@@ -56,6 +56,6 @@ fi
 
 if [ -n "$BIN" ]
 then
- dfu-util -d 0483:df11  --alt 0 -s 0x08000000:mass-erase:force:leave -D $BIN
+ dfu-util -d 0483:df11 --alt 0 -s 0x08000000:mass-erase:force:leave -D $BIN
  [ -n $RM ] && rm -f $RM
 fi
