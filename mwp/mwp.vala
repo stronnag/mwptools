@@ -2020,7 +2020,7 @@ private Gtk.MenuItem menudown;
 
     private void  alert_broken_sensors(uint8 val)
     {
-        MWPLog.message("abs %x %d %d\n", sensor, val, xs_state);
+//        MWPLog.message("abs %x %d %d\n", sensor, val, xs_state);
         if(val != xs_state)
         {
             string sound;
@@ -2515,8 +2515,9 @@ private Gtk.MenuItem menudown;
             case MSP.Cmds.BUILD_INFO:
                 remove_tid(ref cmdtid);
                 uint8 bi[8] = raw[19:26];
-		bi[7] = 0;
-		vi.fc_git = (string)bi;
+                if (!((char)bi[7]).isxdigit())
+                    bi[7] = 0;
+                vi.fc_git = (string)bi;
                 var vers = "%s (%s)".printf(verlab.get_label(), vi.fc_git);
                 verlab.set_label(vers);
                 MWPLog.message("%s\n", vers);

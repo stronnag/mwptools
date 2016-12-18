@@ -131,11 +131,11 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
   msps[0][6] = typ if typ
 
   unless gitinfo.nil?
-    if gitinfo.size == 7
+    if gitinfo.size == 7 or  gitinfo.size == 8
       i = 0
       gitinfo.each_byte {|b| msps[4][24+i] = b ; i += 1}
     else
-      if m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \(([0-9A-Fa-f]{7})\)/)
+      if m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \(([0-9A-Fa-f]{7,})\)/)
 	msps[3][5] = m[1][0].ord - '0'.ord
 	msps[3][6] = m[2][0].ord - '0'.ord
 	msps[3][7] = m[3][0].ord - '0'.ord
