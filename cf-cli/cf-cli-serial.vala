@@ -84,11 +84,11 @@ public class MWSerial : Object
     protected static bool setall = false;
     protected static bool keep_parts = false;
     protected static bool verbose = false;
-    protected static bool dodiff = false;
+    protected static bool nodiff = false;
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", null},
-        { "diff", 'D', 0, OptionArg.STRING, out dodiff, "force diff", null},
+        { "no-diff", 'N', 0, OptionArg.NONE, out nodiff, "force no-diff", null},
         { "out", 'o', 0, OptionArg.STRING, out defname, "output file name", null},
         { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", null},
         { "line-delay", 0, 0, OptionArg.INT, out lwait, "(ms)", null},
@@ -112,8 +112,6 @@ public class MWSerial : Object
         fd = -1;
         if(brate == 0)
             brate = 115200;
-
-        dodiff = (null != Environment.get_variable ("CF_CLI_DIFF"));
     }
 
     public void set_iofd(int _pfd = 2)
@@ -416,7 +414,7 @@ public class MWSerial : Object
             else
             {
                 nto = 0;
-                xnto = 1;
+                xnto = 2;
                 if((c == '#' && done) || c == '\r')
                     continue;
 
@@ -526,15 +524,11 @@ public class MWSerial : Object
     {
         uint8 [] line;
         int len;
-        bool diff = dodiff;
+        bool diff = false;
 
         write("version\n");
         while(read_vers(out line, out len) == ResCode.OK)
             ;
-
-
-        if(diff)
-            message ("Using diff mode\n");
 
         if(((string)line).contains("# INAV"))
         {
@@ -542,6 +536,12 @@ public class MWSerial : Object
             calacc = false;
             inav = true;
             message ("INAV mode\n");
+            var parts  = ((string)line).split(" ");
+            var versp = parts[2].split(".");
+            var v1 = int.parse(versp[0]);
+            var v2 = int.parse(versp[1]);
+            if (v1 > 1 || (v1 == 1 && v2 > 4))
+                diff = true;
         }
         else if(((string)line).down().contains("betaflight"))
         {
@@ -549,6 +549,12 @@ public class MWSerial : Object
             diff = true;
             message ("Betaflight mode\n");
         }
+
+        if(nodiff)
+            diff = false;
+
+        if(diff)
+            message ("Using diff mode\n");
 
         for(var p = prof0; p <= prof1; p++)
         {
@@ -605,10 +611,12 @@ public class MWSerial : Object
                     (string)line != "save\n")
                     os.printf("%s", (string)line);
             }
+
             if(inav == false && diff == false && defprof != null)
             {
                 os.printf("## defprof=%s\n", defprof);
             }
+
             os.flush();
             os=null;
             if(nbytes < 4096)
