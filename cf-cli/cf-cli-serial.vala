@@ -588,6 +588,9 @@ public class MWSerial : Object
 
             var dt = new DateTime.now_local();
             os.printf("# mwptools / cf-cli dump %s\n", dt.format("%FT%T%z"));
+            if(diff)
+                os.puts("# dumping condensed 'diff all' settings\n");
+
             os.puts("# cf-cli is a tool to manage Cleanflight CLI dump backup and restore\n");
             os.puts("# <https://github.com/stronnag/mwptools>\n");
 
