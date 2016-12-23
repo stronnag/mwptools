@@ -233,7 +233,12 @@ def encode_stats r,armed=1
 	else
 	  19
 	end
+
   sts = (sts << 2) | armed
+  if r[:failsafephase_flags].strip != 'IDLE'
+#    STDERR.puts "[#{r[:failsafephase_flags]}]"
+    sts |= 2
+  end
   rssi = r[:rssi].to_i * 254 / 1023
   sl = [(r[:vbatlatest_v].to_f*1000).to_i, 0, rssi, 0, sts].pack('S<S<CCC')
   msg << sl << mksum(sl)
@@ -344,6 +349,7 @@ mindelay = false
 childfd = nil
 lhdop = 100000
 autotyp=nil
+dumph = false
 
 pref_fn = File.join(ENV["HOME"],".config", "mwp", "replay_ltm.json")
 if File.exist? pref_fn
@@ -364,6 +370,7 @@ ARGV.options do |opt|
   opt.on('-4','--force-ipv4'){v4=true}
   opt.on('-m','--use-imu-heading'){gpshd=2}
   opt.on('-f','--fast'){mindelay=true}
+  opt.on('-d','--dump-headers'){dumph=true}
   opt.on('--fd=FD',Integer){|o| childfd=o}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
@@ -400,6 +407,7 @@ File.open(bbox,'rb') do |f|
   end
 end
 
+unless dumph
 if udpspec
   fd = nil
   dev = {:type => :ip, :mode => nil}
@@ -461,6 +469,7 @@ if (dev[:type] == :tty || dev[:type] == :fd || dev[:mode] == :bind)
     puts ' ... OK'
   end
 end
+end
 
 nul="/dev/null"
 csv_opts = {
@@ -489,12 +498,18 @@ llon = 0.0
 IO.popen(cmd,'rt') do |pipe|
   csv = CSV.new(pipe, csv_opts)
   hdrs = csv.shift
+  if dumph
+    require 'ap'
+    ap hdrs
+    exit
+  end
+
   abort 'Not a useful INAV log' if hdrs[:gps_coord0].nil?
 
   have_sonar = (hdrs.has_key? :sonarraw)
   have_baro = (hdrs.has_key? :baroalt_cm)
 
-  STDERR.puts "idx: #{idx} gi: #{gitinfos[idx-1]}"
+#  STDERR.puts "idx: #{idx} gi: #{gitinfos[idx-1]}"
   send_init_seq dev,typ,have_sonar,have_baro,gitinfos[idx-1]
 
   csv.each do |row|
