@@ -541,7 +541,14 @@ public class MWSerial : Object
             var v1 = int.parse(versp[0]);
             var v2 = int.parse(versp[1]);
             if (v1 > 1 || (v1 == 1 && v2 > 4))
-                diff = true;
+            {
+                write("help\n");
+                while(read_line(out line, out len) == ResCode.OK)
+                {
+                    if (((string)line).has_prefix("diff"))
+                        diff = true;
+                }
+            }
         }
         else if(((string)line).down().contains("betaflight"))
         {

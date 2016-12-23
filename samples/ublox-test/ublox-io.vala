@@ -76,6 +76,7 @@ public class MWSerial : Object
     private static bool noautob = false;
     private static bool slow = false;
     private static bool pass = false;
+    private static bool galileo = false;
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", "/dev/ttyUSB0"},
@@ -88,6 +89,7 @@ public class MWSerial : Object
         { "force-10hz", 'z', 0, OptionArg.NONE, out force_10hz, "Force 10Hz", null},
         { "slow", 's', 0, OptionArg.NONE, out slow, "slower initialisation", null},
         { "pass", 'p', 0, OptionArg.NONE, out pass, "cf gps passthrough", null},
+        { "galileo", 'g', 0, OptionArg.NONE, out galileo, "enable Galileo", null},
         {null}
     };
 
@@ -151,11 +153,12 @@ public class MWSerial : Object
         SPEED3,
         SPEED4,
         BAUDRATE,
-        V7INIT,
         START,
+        V7INIT,
         MOTION,
         POS,
         TIMEUTC,
+        GALILEO,
         RATE,
         SBAS
     }
@@ -458,17 +461,19 @@ public class MWSerial : Object
         else if(_class == 0x0a && _msg_id == 4)
         {
             var dt = timer.elapsed ();
-            unowned uint8* v2;
-            stdout.printf("Version info after %fs (%db)\n", dt, _payload_length);
-            v2 = &_buffer.xbytes[30];
+            var len = _payload_length;
+            uint8 []xbuf = new uint8[len];
+            xbuf = _buffer.xbytes;
+            stdout.printf("Version info after %fs (%db)\n", dt, len);
+            unowned uint8*v2 = &xbuf[30];
             gpsvers = int.parse((string)(v2));
-            stdout.printf("SW: %s HW: %s\n", (string)_buffer.xbytes,(string)v2);
+            stdout.printf("SW: %s HW: %s %d\n", (string)xbuf,(string)v2,gpsvers);
                 // V8 Extended versioning
-            if(_payload_length > 40)
+            if(len > 40)
             {
-                for(int n = 40; n < _payload_length; n+= 30)
+                for(int n = 40; n < len; n+= 30)
                 {
-                    v2 = &_buffer.xbytes[n];
+                    v2 = &xbuf[n];
                     stdout.printf("ExtVer:  %s\n", (string)v2);
                 }
             }
@@ -536,6 +541,10 @@ public class MWSerial : Object
                 ublox_write(fd,"gpspassthrough\n".data);
                 Thread.usleep(1000*100);
                 Posix.tcflush(fd, Posix.TCIOFLUSH);
+                gps_state = State.START;
+                Timeout.add(100, () => {
+                        return setup_gps();
+                    });
             }
             else
             {
@@ -589,6 +598,17 @@ public class MWSerial : Object
             0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x30, 0x05, 0x40, 0xA7,           // set SVINFO MSG rate (evey 5 cycles - low bandwidth)
             0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x12, 0x01, 0x1E, 0x67            // set VELNED MSG rate
         };
+
+        uint8 [] gnss_galileo =
+            {
+                0xb5, 0x62, 0x06, 0x3e, 0x3c, 0x00, 0x00, 0x00, 0x20, 0x07,
+                0x00, 0x08, 0x10, 0x00, 0x01, 0x00, 0x01, 0x01, 0x01, 0x01,
+                0x03, 0x00, 0x01, 0x00, 0x01, 0x01, 0x02, 0x04, 0x08, 0x00,
+                0x01, 0x00, 0x01, 0x01, 0x03, 0x08, 0x10, 0x00, 0x00, 0x00,
+                0x01, 0x01, 0x04, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x01,
+                0x05, 0x00, 0x03, 0x00, 0x01, 0x00, 0x01, 0x01, 0x06, 0x08,
+                0x0e, 0x00, 0x01, 0x00, 0x01, 0x01, 0x30, 0xad
+            };
 
         uint8 [] pvt = {
                 0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x12, 0xB9, // disable POSLLH
@@ -706,8 +726,17 @@ public class MWSerial : Object
                 ublox_write(fd, timeutc);
                 gps_state++;
                 break;
+
+            case State.GALILEO:
+                if (galileo && (gpsvers >= 70000))
+                {
+                    stdout.printf("Set galileo\n");
+                    ublox_write(fd, gnss_galileo);
+                }
+                gps_state++;
+                break;
             case State.RATE:
-                if(force_10hz || gpsvers >= 70000 )
+                if(force_10hz && (gpsvers >= 70000 ))
                 {
                     stdout.printf("Set 10Hz\n");
                     ublox_write(fd, rate_10hz);
