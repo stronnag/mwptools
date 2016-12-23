@@ -576,9 +576,10 @@ public class MWSerial : Object
                 Thread.usleep(1000*100);
                 Posix.tcflush(fd, Posix.TCIOFLUSH);
                 gps_state = State.START;
-                Timeout.add(100, () => {
-                        return setup_gps();
-                    });
+                if(noinit == false)
+                    Timeout.add(100, () => {
+                            return setup_gps();
+                        });
             }
             else
             {
