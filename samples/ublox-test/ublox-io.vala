@@ -119,6 +119,7 @@ public class MWSerial : Object
         MSG_ACK_ACK = 0x01,
         MSG_POSLLH = 0x2,
         MSG_STATUS = 0x3,
+        MSG_SVINFO = 0x30,
         MSG_SOL = 0x6,
         MSG_VELNED = 0x12,
         MSG_CFG_PRT = 0x00,
@@ -414,11 +415,46 @@ public class MWSerial : Object
     private bool ublox_parse_gps()
     {
         bool ret = false;
-        stdout.printf("Data size %db\n", _payload_length);
+        if(_class != 5)
+            stdout.printf("Data size %db (%x %x)\n",
+                          _payload_length, _class, _msg_id);
         if(_class == 1)
         {
             switch (_msg_id)
             {
+                case UPXProto.MSG_SVINFO:
+                    stdout.printf("SVINFO: Channels %d\n", _buffer.svinfo.numch);
+                    for(var i = 0; i < _buffer.svinfo.numch; i++)
+                    {
+                        string gnssid;
+                        var sv = _buffer.svinfo.svitems[i];
+                        var svid = sv.svid;
+                        if (svid >= 1 && svid <= 32)
+                            gnssid = "G%d".printf(svid);
+                        else if (svid >= 120 && svid <= 158)
+                            gnssid = "SBAS%d".printf(svid-119);
+                        else if (svid >= 211 && svid <= 246)
+                            gnssid = "E%d".printf(svid-210);
+                        else if (svid >= 159 && svid <= 163)
+                            gnssid = "B%d".printf(svid-158);
+                        else if (svid >= 33 && svid <= 64)
+                            gnssid = "B%d".printf(svid-26);
+                        else if (svid >= 173 && svid <= 182)
+                            gnssid = "I%d".printf(svid-182);
+                        else if (svid >= 193 && svid <= 197)
+                            gnssid = "Q%d".printf(svid-192);
+                        else if (svid >= 65 && svid <= 96)
+                            gnssid = "R%d".printf(svid-64);
+                        else
+                            gnssid = "????";
+                        stdout.printf("%2d %6.6s %s %s %d\n",
+                                      sv.chn,
+                                      gnssid,
+                                      ((sv.flags & 1) == 1) ? "Y" : "-",
+                                      ((sv.flags & 2) == 2) ? "Y" : "-",
+                                      sv.quality);
+                    }
+                    break;
                 case UPXProto.MSG_POSLLH:
                     display_fix();
                     ret = true;
@@ -461,19 +497,17 @@ public class MWSerial : Object
         else if(_class == 0x0a && _msg_id == 4)
         {
             var dt = timer.elapsed ();
-            var len = _payload_length;
-            uint8 []xbuf = new uint8[len];
-            xbuf = _buffer.xbytes;
-            stdout.printf("Version info after %fs (%db)\n", dt, len);
-            unowned uint8*v2 = &xbuf[30];
+            stdout.printf("Version info after %fs (%db)\n", dt, _payload_length);
+            unowned uint8*v2 = &_buffer.xbytes[30];
             gpsvers = int.parse((string)(v2));
-            stdout.printf("SW: %s HW: %s %d\n", (string)xbuf,(string)v2,gpsvers);
+            stdout.printf("SW: %s HW: %s %d\n", (string)_buffer.xbytes,
+                          (string)v2,gpsvers);
                 // V8 Extended versioning
-            if(len > 40)
+            if(_payload_length > 40)
             {
-                for(int n = 40; n < len; n+= 30)
+                for(int n = 40; n < _payload_length; n+= 30)
                 {
-                    v2 = &xbuf[n];
+                    v2 = &_buffer.xbytes[n];
                     stdout.printf("ExtVer:  %s\n", (string)v2);
                 }
             }

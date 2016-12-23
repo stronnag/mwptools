@@ -102,11 +102,34 @@ public struct ubx_nav_pvt {
 }
 
 [CCode (cheader_filename = "ublox.h")]
+public struct  ubx_nav_svitem {
+    uint8 chn;
+    uint8 svid;
+    uint8 flags;
+    uint8 quality;
+    uint8 cno;
+    int8 elev;
+    int16 azim;
+    uint32 prRes;
+}
+
+[CCode (cheader_filename = "ublox.h")]
+public struct  ubx_nav_svinfo {
+  uint32 itow;  // GPS msToW
+  uint8 numch;
+  uint8 globalflags;
+  uint8 res1;
+  uint8 res2;
+  ubx_nav_svitem svitems[32];
+}
+
+[CCode (cheader_filename = "ublox.h")]
 public struct  ublox_buffer {
   ubx_nav_posllh posllh;
   ubx_nav_solution solution;
   ubx_nav_velned velned;
   ubx_nav_timeutc timeutc;
   ubx_nav_pvt pvt;
-  uint8 xbytes[400];
+  ubx_nav_svinfo svinfo;
+  uint8 xbytes[512];
 }

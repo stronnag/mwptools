@@ -106,12 +106,37 @@ struct  __attribute__ ((__packed__))  _ubx_nav_timeutc
 };
 typedef struct _ubx_nav_timeutc ubx_nav_timeutc;
 
+struct  __attribute__ ((__packed__))  _ubx_nav_svitem
+{
+    uint8_t chn;
+    uint8_t svid;
+    uint8_t flags;
+    uint8_t quality;
+    uint8_t cno;
+    int8_t elev;
+    int16_t azim;
+    uint32_t prRes;
+};
+typedef struct _ubx_nav_svitem ubx_nav_svitem;
+
+struct  __attribute__ ((__packed__))  _ubx_nav_svinfo
+{
+  uint32_t itow;  // GPS msToW
+  uint8_t numch;
+  uint8_t globalflags;
+  uint8_t res1;
+  uint8_t res2;
+  ubx_nav_svitem svitems[32];
+};
+typedef struct _ubx_nav_svinfo ubx_nav_svinfo;
+
 union _ublox_buffer  {
     ubx_nav_posllh posllh;
     ubx_nav_solution solution;
     ubx_nav_velned velned;
     ubx_nav_timeutc timeutc;
     ubx_nav_pvt pvt;
-    uint8_t xbytes[0];
+    ubx_nav_svinfo svinfo;
+    uint8_t xbytes[512];
 };
 typedef union _ublox_buffer ublox_buffer;
