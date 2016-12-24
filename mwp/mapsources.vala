@@ -21,6 +21,11 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
+
+#if MSYS
+extern int kill(pid_t p, int s);
+#endif
+
 public struct MapSource
 {
     string id;
