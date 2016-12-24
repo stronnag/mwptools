@@ -223,7 +223,7 @@ void set_timeout(int fd, int tenths, int number)
     GetCommTimeouts(hfd, &ctout);
     ctout.ReadIntervalTimeout = 100*tenths;
     ctout.ReadTotalTimeoutMultiplier = 0;
-    ctout.ReadTotalTimeoutConstant = *tenths;
+    ctout.ReadTotalTimeoutConstant = 100*tenths;
     SetCommTimeouts(hfd, &ctout);
 }
 
