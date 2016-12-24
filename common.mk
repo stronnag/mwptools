@@ -5,10 +5,6 @@ ifeq ($(XOS),Linux)
  DOPTS += -D HAVE_FIONREAD
 endif
 
-ifeq ($(XOS),MSYS_NT-6.1)
- DOPTS += -D MSYS
-endif
-
 PKG_INFO := $(shell pkg-config --atleast-version=2.48 libsoup-2.4; echo $$?)
 ifneq ($(PKG_INFO),0)
  DOPTS += -D BADSOUP
