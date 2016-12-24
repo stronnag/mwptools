@@ -20,6 +20,7 @@
 /* Upload a cleanflight CLI dump back into a naze32 FC */
 
 extern int open_serial(string dev, int baudrate);
+extern void  set_timeout(int fd, int tenths, int cc);
 extern void close_serial(int fd);
 extern unowned string get_error_text(int err, uint8[] buf, size_t len);
 
@@ -162,6 +163,7 @@ public class MWSerial : Object
         }
         else
         {
+            set_timeout(fd, 1, 0);
             devcount++;
             message ("Device %s, speed %d, line delay %d\n", devname, brate, lwait);
             available = true;

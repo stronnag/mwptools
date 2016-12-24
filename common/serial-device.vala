@@ -17,6 +17,11 @@
  */
 
 extern int connect_bt_device (string dev);
+extern int open_serial(string dev, int baudrate);
+extern void set_fd_speed(int fd, int baudrate);
+extern void close_serial(int fd);
+extern void flush_serial(int fd);
+extern unowned string get_error_text(int err, uint8[] buf, size_t len);
 
 public struct SerialStats
 {
@@ -52,7 +57,6 @@ public class MWSerial : Object
     private bool rawlog;
     private int raws;
     private Timer timer;
-    private Posix.termios oldtio;
     private bool print_raw=false;
     public uint baudrate  {private set; get;}
     private int sp = 0;
@@ -122,53 +126,7 @@ public class MWSerial : Object
         if((commode & ComMode.TTY) == ComMode.TTY)
         {
             baudrate = rate;
-            Posix.termios newtio = {0};
-            Posix.speed_t posix_baudrate;
-
-            switch(rate) {
-                case 1200:
-                    posix_baudrate = Posix.B1200;
-                    break;
-                case 2400:
-                    posix_baudrate = Posix.B2400;
-                    break;
-                case 4800:
-                    posix_baudrate = Posix.B4800;
-                    break;
-                case 9600:
-                    posix_baudrate = Posix.B9600;
-                    break;
-                case 19200:
-                    posix_baudrate = Posix.B19200;
-                    break;
-                case 38400:
-                    posix_baudrate = Posix.B38400;
-                    break;
-                case 57600:
-                    posix_baudrate = Posix.B57600;
-                break;
-                case 115200:
-                case 0:
-                    posix_baudrate = Posix.B115200;
-                    break;
-                case 230400:
-                    posix_baudrate = Posix.B230400;
-                    break;
-                default:
-                    posix_baudrate = Posix.B115200;
-                    break;
-            }
-
-
-            Posix.tcgetattr (fd, out newtio);
-            oldtio = newtio;
-
-            Posix.cfmakeraw(ref newtio);
-            newtio.c_cc[Posix.VTIME]=0;
-            newtio.c_cc[Posix.VMIN]=0;
-            Posix.cfsetospeed(ref newtio, posix_baudrate);
-            Posix.cfsetispeed(ref newtio, posix_baudrate);
-            Posix.tcsetattr(fd, Posix.TCSANOW, newtio);
+            set_fd_speed(fd, (int)rate);
         }
         available = true;
         setup_reader(fd);
@@ -351,15 +309,17 @@ public class MWSerial : Object
                     device  = parts[0];
                     rate = int.parse(parts[1]);
                 }
-                fd = Posix.open(device, Posix.O_RDWR);
+                fd = open_serial(device, (int)rate);
                 setup_fd((int)rate);
             }
         }
 
         if(fd < 0)
         {
+
+            uint8 [] sbuf = new uint8[1024];
             var lasterr=Posix.errno;
-            var s = Posix.strerror(lasterr);
+            var s = get_error_text(lasterr, sbuf, 1024);
             estr = "%s (%d)".printf(s,lasterr);
             MWPLog.message(estr);
             fd = -1;
@@ -404,8 +364,7 @@ public class MWSerial : Object
             }
             if((commode & ComMode.TTY) == ComMode.TTY)
             {
-                Posix.tcsetattr (fd, Posix.TCSANOW|Posix.TCSADRAIN, oldtio);
-                Posix.close(fd);
+                close_serial(fd);
             }
             else if ((commode & ComMode.FD) == ComMode.FD)
                 Posix.close(fd);
@@ -446,7 +405,7 @@ public class MWSerial : Object
     {
         commerr++;
         MWPLog.message("Comm error count %d\n", commerr);
-        Posix.tcflush(fd, Posix.TCIFLUSH);
+        flush_serial(fd);
     }
 
     private bool device_read(IOChannel gio, IOCondition cond) {
