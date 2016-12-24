@@ -196,6 +196,17 @@ void set_fd_speed(int fd, int baudrate)
     }
 }
 
+void set_timeout(int fd, int tenths, int number)
+{
+    number=number;
+    COMMTIMEOUTS ctout;
+    GetCommTimeouts(hfd, &ctout);
+    ctout.ReadIntervalTimeout = 100*tenths;
+    ctout.ReadTotalTimeoutMultiplier = 0;
+    ctout.ReadTotalTimeoutConstant = 100*tenths;
+    SetCommTimeouts(hfd, &ctout);
+}
+
 int open_serial(const char *device, int baudrate)
 {
     int fd=-1;
@@ -214,17 +225,6 @@ int open_serial(const char *device, int baudrate)
         set_fd_speed(fd, baudrate);
     }
     return fd;
-}
-
-void set_timeout(int fd, int tenths, int number)
-{
-    number=number;
-    COMMTIMEOUTS ctout;
-    GetCommTimeouts(hfd, &ctout);
-    ctout.ReadIntervalTimeout = 100*tenths;
-    ctout.ReadTotalTimeoutMultiplier = 0;
-    ctout.ReadTotalTimeoutConstant = 100*tenths;
-    SetCommTimeouts(hfd, &ctout);
 }
 
 void close_serial(int fd)
