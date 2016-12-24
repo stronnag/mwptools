@@ -115,7 +115,6 @@ void flush_serial(int fd)
     fd=fd;
 }
 
-
 char *get_error_text (int dummy, char *pBuf, size_t bufSize)
 {
     DWORD retSize;
@@ -145,42 +144,6 @@ char *get_error_text (int dummy, char *pBuf, size_t bufSize)
         LocalFree((HLOCAL)pTemp);
     }
     return(pBuf);
-}
-
-int open_serial(const char *device, int baudrate)
-{
-    int fd=-1;
-    hfd = CreateFile(device,
-                            GENERIC_READ | GENERIC_WRITE,
-                            0,
-                            NULL,
-                            OPEN_EXISTING,
-                            FILE_ATTRIBUTE_NORMAL,
-                            NULL);
-
-    if(hfd != INVALID_HANDLE_VALUE)
-    {
-        fd = _open_osfhandle((long)hfd, O_RDWR);
-        COMMTIMEOUTS ctout;
-        GetCommTimeouts(hfd, &ctout);
-        ctout.ReadIntervalTimeout = 100;
-        ctout.ReadTotalTimeoutMultiplier = 0;
-        ctout.ReadTotalTimeoutConstant = 100;
-        SetCommTimeouts(hfd, &ctout);
-        set_fd_speed(fd, baudrate);
-    }
-    return fd;
-}
-
-void set_timeout(int fd, int tenths, int number)
-{
-    number=number;
-    COMMTIMEOUTS ctout;
-    GetCommTimeouts(hfd, &ctout);
-    ctout.ReadIntervalTimeout = 100*tenths;
-    ctout.ReadTotalTimeoutMultiplier = 0;
-    ctout.ReadTotalTimeoutConstant = *tenths;
-    SetCommTimeouts(hfd, &ctout);
 }
 
 void set_fd_speed(int fd, int baudrate)
@@ -231,6 +194,37 @@ void set_fd_speed(int fd, int baudrate)
         fprintf(stderr,"Failed to %cet baud rate\n");
         fprintf(stderr,"%s\n", get_error_text(0, mbuf, sizeof(mbuf)));
     }
+}
+
+int open_serial(const char *device, int baudrate)
+{
+    int fd=-1;
+    hfd = CreateFile(device,
+                            GENERIC_READ | GENERIC_WRITE,
+                            0,
+                            NULL,
+                            OPEN_EXISTING,
+                            FILE_ATTRIBUTE_NORMAL,
+                            NULL);
+
+    if(hfd != INVALID_HANDLE_VALUE)
+    {
+        fd = _open_osfhandle((long)hfd, O_RDWR);
+        set_timeout(fd, 1, 0);
+        set_fd_speed(fd, baudrate);
+    }
+    return fd;
+}
+
+void set_timeout(int fd, int tenths, int number)
+{
+    number=number;
+    COMMTIMEOUTS ctout;
+    GetCommTimeouts(hfd, &ctout);
+    ctout.ReadIntervalTimeout = 100*tenths;
+    ctout.ReadTotalTimeoutMultiplier = 0;
+    ctout.ReadTotalTimeoutConstant = *tenths;
+    SetCommTimeouts(hfd, &ctout);
 }
 
 void close_serial(int fd)
