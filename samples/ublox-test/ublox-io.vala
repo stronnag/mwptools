@@ -21,6 +21,7 @@
 extern int open_serial(string dev, int baudrate);
 extern void set_fd_speed(int fd, int baudrate);
 extern void close_serial(int fd);
+extern void flush_serial(int fd);
 extern string default_name();
 extern unowned string get_error_text(int err, uint8[] buf, size_t len);
 
@@ -574,7 +575,7 @@ public class MWSerial : Object
                 Thread.usleep(1000*100);
                 ublox_write(fd,"gpspassthrough\n".data);
                 Thread.usleep(1000*100);
-                Posix.tcflush(fd, Posix.TCIOFLUSH);
+                flush_serial(fd);
                 gps_state = State.START;
                 if(noinit == false)
                     Timeout.add(100, () => {
@@ -587,7 +588,7 @@ public class MWSerial : Object
                 if(slow)
                     delay = 200;
                 Timeout.add(delay, () => {
-                        Posix.tcflush(fd, Posix.TCIOFLUSH);
+                        flush_serial(fd);
                         return setup_gps();
                     });
             }
