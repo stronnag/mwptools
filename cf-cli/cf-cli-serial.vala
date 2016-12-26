@@ -1004,6 +1004,25 @@ public class MWSerial : Object
         return available;
     }
 
+    private bool check_firmware(string fn)
+    {
+        var fp = FileStream.open(fn, "r");
+        string rline;
+        bool result = true;
+        while((rline = fp.read_line ()) != null)
+        {
+            if (rline.has_prefix("# INAV"))
+            {
+                result = false;
+                break;
+            }
+            if (rline.has_prefix("map ") || rline.has_prefix("feature "))
+                break;
+        }
+        fp=null;
+        return result;
+    }
+
     public void perform_restore(string restore_file)
     {
         ResCode res = 0;
@@ -1013,15 +1032,17 @@ public class MWSerial : Object
         if(presave)
             dump_settings("__");
 
+        bool docals = check_firmware(restore_file);
+
+        message("auto cal: %s\n", docals.to_string());
+
         if(noreboot == false)
         {
             message("Set defaults\n");
             write("defaults\n");
-//            while((res = read_line(out line, out len)) == ResCode.OK)
-//                ;
             close();
             Thread.usleep(2500000);
-            try_open(true);
+            try_open(docals);
             write("#");
             while((res = read_line(out line, out len)) == ResCode.OK)
                 ;
