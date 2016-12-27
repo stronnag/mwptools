@@ -15,13 +15,6 @@ libgudev-1.0-dev
 libgstreamer1.0-dev
 libvala-dev   # optional, recommended (optimisation)
 
-and for the artificial horizon
-
-libgtk2.0-dev
-libpango1.0-dev
-libcairo2-dev
-libxml2-dev
-
 and for cf-cli-ui
 
 libvte-2.91-dev (prferred) or
