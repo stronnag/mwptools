@@ -3,7 +3,7 @@
 # Translates the **author's** serial settings from pre-1.8.0 to the new
 # shiny settings. Patches for new translation welcome.
 #
-# (c) Jonathan Hudson 2015
+# (c) Jonathan Hudson 2015 MIT licence
 
 BAUDS = {9600 => 1, 19200 => 2, 38400 => 3, 57600 => 4, 115200 => 5}
 

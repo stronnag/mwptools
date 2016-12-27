@@ -228,7 +228,7 @@ See also [python alternative](http://www.rcgroups.com/forums/showpost.php?p=3095
 
 ## Licence
 
-GPL2 or later
+GPLv3 or later
 
 ## Author
 

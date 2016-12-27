@@ -6,7 +6,7 @@ APP=ttycap
 
 all: $(APP)
 
-CLISRC=	ttycap.vala cserial.c
+CLISRC=	ttycap.vala ../../common/cserial.c
 
 $(APP): $(CLISRC)
 	$(VALAC)  $(DOPTS) $(OPTS)  --pkg posix $(CLISRC) -o $(APP)

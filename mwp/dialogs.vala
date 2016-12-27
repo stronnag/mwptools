@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
+ * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -93,103 +93,31 @@ public class Units :  GLib.Object
 public class ArtWin : GLib.Object
 {
     public Gtk.Box  box {get; private set;}
-    private Gtk.Socket socket;
-    private uint sid;
-    private int fdin;
-    private int fdout;
-    private static Pid apid = 0;
-    private uint tag;
-
-    public static void xchild()
-    {
-        if(apid != 0)
-            Posix.kill(ArtWin.apid, Posix.SIGTERM);
-    }
+    private Ath.Horizon ath;
 
     public ArtWin()
     {
-        atexit(ArtWin.xchild);
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-        socket = new Gtk.Socket();
-        if(socket == null)
-        {
-            MWPLog.message("Sorry, wayland is broken, please run under X11\n");
-            Posix.exit(255);
-        }
-        box.pack_start(socket, true,true,0);
+        ath = new Ath.Horizon ();
+        box.pack_start(ath, true,true,0);
         int sz = MWPlanner.conf.ahsize;
         box.set_size_request (sz, sz);
         box.show_all();
     }
 
-    public void init(string colstr)
-    {
-        string [] args = {"mwp_ath", "-p", colstr};
-        try {
-            Process.spawn_async_with_pipes ("/",
-                                            args,
-                                            null,
-                                            SpawnFlags.SEARCH_PATH,
-                                            null,
-                                            out apid,
-                                            out fdin,
-                                            out fdout,
-                                            null);
-        } catch  {}
-        var io_read = new IOChannel.unix_new(fdout);
-        tag = io_read.add_watch(IOCondition.IN|IOCondition.HUP|
-                                    IOCondition.NVAL|IOCondition.ERR,
-                                    plug_read);
-    }
-
-    private bool plug_read(IOChannel gio, IOCondition cond)
-    {
-        bool ret;
-        if((cond & IOCondition.IN) == IOCondition.IN)
-        {
-            string buf;
-            size_t length;
-            size_t terminator_pos;
-            try {
-                gio.read_line (out buf, out length, out terminator_pos);
-                sid = int.parse(buf);
-                socket.add_id((X.Window)sid);
-            } catch { }
-            ret = true;
-        }
-        else
-        {
-            Source.remove(tag);
-            ret = false;
-        }
-        return ret;
-    }
-
     public void update(short sx, short sy, bool visible)
     {
-        if(apid !=0 && visible)
+        if(visible)
         {
             double dx,dy;
-
             dx = -sx/10.0;
             if (dx < 0)
                 dx += 360;
 
             dy = -sy/10;
-
-            string s = "%.1f %.1f\n".printf(dx, dy);
-            Posix.write(fdin, s, s.length);
+            ath.update(dx,dy);
         }
     }
-
-    public void run(string colstr)
-    {
-        if(apid == 0)
-        {
-            init(colstr);
-        }
-    }
-
 }
 
 public class TelemetryStats : GLib.Object

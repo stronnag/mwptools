@@ -1,5 +1,7 @@
 #!/usr/bin/ruby
 
+# MIT licence
+
 require 'nokogiri'
 
 ARGV.each do |fn|

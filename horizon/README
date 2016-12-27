@@ -1,8 +1,0 @@
-GTK Artifical Horizon Widget from
-https://github.com/pbouffard/ccny-ros-pkg-pbouffard
-
-Note: This runs as a separate application rather than being part of
-mwp
-
-* It is GPL 3 (not GPL 2)
-* It uses GTK2

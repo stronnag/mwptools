@@ -6,6 +6,7 @@ require 'optparse'
 
 # 'Fast' downloader for flash / blackbox files
 # Requires iNav compliation with "USE_FLASH_TOOLS=1"
+# MIT licence
 
 class Serial
   # Expose the rubyserial file descriptor for select(3) on POSIX systems.

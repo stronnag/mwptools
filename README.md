@@ -48,3 +48,7 @@ As well as supporitng iNav, mwp aims to be compatible with EOSBandi's
 WinGUI for MW. It used the same XML mission file format (with mwp
 extensions) and aims to provide similar functionaliy where it is
 possible to reverse engineer the required protocol formats.
+
+## Licence
+
+GPL v3 or later

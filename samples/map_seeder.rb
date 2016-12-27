@@ -7,6 +7,7 @@ require 'nokogiri'
 
 # Tile cache seeder. Requires (inter alia), either a mission file or
 # upper left, lower right latitude and longitude e.g. -u 50.9,-1.53
+# MIT licence
 
 class Fixnum
   def bin_str level

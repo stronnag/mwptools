@@ -4,9 +4,9 @@
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
+ * as published by the Free Software Foundation; either version 3
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -32,12 +32,12 @@ public class Geo
     {
         return (Math.PI/(180.0*60.0))*nm;
     }
-    
+
     private static double r2nm(double r)
     {
         return ((180*60)/Math.PI)*r;
     }
-    
+
     public static void csedist(double lat1, double lon1, double lat2, double lon2, out double d, out double cse)
     {
         lat1 = d2r(lat1);
@@ -74,7 +74,7 @@ public class Geo
             double tmp = Math.tan(lat/2.0+Math.PI/4.0)/Math.tan(rlat1/2.0+Math.PI/4.0);
             if(tmp <= 0)
                 tmp = 0.000000001;
-            
+
             dphi=Math.log(tmp);
             if (dphi == 0.0 || Math.fabs(lat-rlat1) < 1.0e-6)
                 q=Math.cos(rlat1);

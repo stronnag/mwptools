@@ -1,6 +1,8 @@
 #!/usr/bin/ruby
 # -*- coding: utf-8 -*-
 
+# MIT licence
+
 include Math
 
 module Poscalc

@@ -1,5 +1,6 @@
 #!/usr/bin/ruby
 
+# MIT licence
 
 require 'sequel'
 require 'ruby_kml'

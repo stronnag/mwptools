@@ -4,6 +4,7 @@ require 'yajl'
 require 'nokogiri'
 require 'optparse'
 #require 'ap'
+# MIT licence
 
 # -*- coding: utf-8 -*-
 

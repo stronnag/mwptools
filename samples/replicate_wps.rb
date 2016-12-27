@@ -13,6 +13,7 @@ require 'nokogiri'
 #
 # may be useful for repeating mission
 #
+# MIT licence
 
 fn=ARGV[0]
 se=ARGV[1].to_i

@@ -6,6 +6,9 @@ require 'ap'
 
 # Convert ezgui log to mwp log, for the stupid days when I leave the
 # chromebook at home
+# MIT licence
+# Only it's now useless as the ezgui logs are proprietary / binary
+# FU, ezgui
 
 File.open(ARGV[0]) do |f|
   gsats = 0

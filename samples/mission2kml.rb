@@ -1,6 +1,8 @@
 #!/usr/bin/ruby
 # -*- coding: utf-8 -*-
 
+# MIT licence
+
 require 'ruby_kml'
 include KML
 
