@@ -7,14 +7,14 @@
     <property name="type_hint">dialog</property>
     <property name="program_name">mwp</property>
     <property name="version">0.01</property>
-    <property name="copyright" translatable="yes">(c) 2014-5 Jonathan Hudson</property>
+    <property name="copyright" translatable="yes">(c) 2014-7 Jonathan Hudson</property>
     <property name="comments" translatable="yes">"A mission planner for the rest of us"</property>
-    <property name="website">www.daria.co.uk/quads</property>
-    <property name="website_label" translatable="yes">www.daria.co.uk/quads</property>
+    <property name="website">https://github.com/stronnag/mwptools</property>
+    <property name="website_label" translatable="yes">mwptools</property>
     <property name="authors">Jonathan Hudson &lt;jh+mwp@daria.co.uk&gt;</property>
     <property name="documenters">Jonathan Hudson &lt;jh+mwp@daria.co.uk&gt;</property>
     <property name="logo_icon_name"/>
-    <property name="license_type">gpl-2-0</property>
+    <property name="license_type">gpl-3-0</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="aboutdialog-vbox1">
         <property name="can_focus">False</property>
