@@ -322,7 +322,7 @@ private Gtk.MenuItem menudown;
     private static bool force_mag = false;
     private static bool force_nc = false;
     private static bool force4 = false;
-    private static bool chome = false;
+    private static bool chome= false;
     private static string mwoptstr;
     private static string llstr=null;
     private static string layfile=null;
@@ -1723,8 +1723,9 @@ private Gtk.MenuItem menudown;
             else
             {
                 vpos = false;
-                MWPLog.message("Ignore bogus %f %f (%f %f)\n",
-                               lat, lon, xlat, xlon);
+                if(xlat != 0.0 && xlon != 0.0)
+                    MWPLog.message("Ignore bogus %f %f (%f %f)\n",
+                                   lat, lon, xlat, xlon);
             }
         }
         else
@@ -3171,8 +3172,7 @@ private Gtk.MenuItem menudown;
 
             case MSP.Cmds.TX_FRAME:
                 deserialise_u16(raw, out rhdop);
-//                if(ck_sensors)
-                    alert_broken_sensors(raw[2]);
+                alert_broken_sensors(raw[2]);
                 gpsinfo.set_hdop(rhdop/100.0);
                 break;
 
@@ -3502,6 +3502,12 @@ private Gtk.MenuItem menudown;
         if(((Math.fabs(home_pos.lat - lat) > 1e-6) ||
            Math.fabs(home_pos.lon - lon) > 1e-6))
         {
+            if(npos)
+            {
+                bleet_sans_merci(GENERAL_ALERT);
+                navstatus.alert_home_moved();
+                MWPLog.message("Established home has moved!");
+            }
             home_pos.lat = lat;
             home_pos.lon = lon;
             npos = true;

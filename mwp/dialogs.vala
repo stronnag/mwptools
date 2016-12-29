@@ -1444,6 +1444,11 @@ public class NavStatus : GLib.Object
         }
     }
 
+    public void alert_home_moved()
+    {
+        mt.message(AudioThread.Vox.HOME_CHANGED, true);
+    }
+
     public void gps_crit()
     {
         mt.message(AudioThread.Vox.GPS_CRIT, true);
@@ -1526,7 +1531,8 @@ public class AudioThread : Object {
         GPS_CRIT,
         FAILSAFE,
         HW_OK,
-        HW_BAD
+        HW_BAD,
+        HOME_CHANGED
     }
 
     private Timer timer;
@@ -1604,6 +1610,9 @@ public class AudioThread : Object {
                             break;
                         case Vox.GPS_CRIT:
                             s = "GPS Critical Failure";
+                            break;
+                        case Vox.HOME_CHANGED:
+                            s = "Warning: Home position change";
                             break;
                         case Vox.NAV_STATUS:
                             switch(NavStatus.n.nav_mode)
