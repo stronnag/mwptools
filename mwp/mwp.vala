@@ -32,7 +32,6 @@ interface NetworkManager : GLib.Object {
     public abstract uint32 State {owned get;}
 }
 
-
 public enum NMSTATE {
         UNKNOWN=0, ASLEEP=1, CONNECTING=2, CONNECTED=3, DISCONNECTED=4,
         NM_STATE_ASLEEP           = 10,
@@ -346,7 +345,7 @@ private Gtk.MenuItem menudown;
     private int gfcse = 0;
     private uint8 armed = 0;
     private uint8 dac = 0;
-    private bool npos = false;
+    private bool have_home = false;
     private bool gpsfix;
 
     private Thread<int> thr;
@@ -535,6 +534,7 @@ private Gtk.MenuItem menudown;
     }
 
     private const double RAD2DEG = 57.29578;
+    private const double MAX_HOME_DELTA = 2.5; // metres
 
     private const string RED_ALERT = "bleet.ogg";
     private const string ORANGE_ALERT = "orange.ogg";
@@ -751,21 +751,6 @@ private Gtk.MenuItem menudown;
             }
         }
 
-        var path = Environment.get_variable("PATH");
-        var paths = path.split(":");
-        string ath = null;
-        foreach(var p in paths)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append(p);
-            sb.append("/mwp_ath");
-            if(Posix.access(sb.str,Posix.R_OK|Posix.X_OK) == 0)
-            {
-                ath = sb.str;
-                break;
-            }
-        }
-
         builder.connect_signals (null);
         window = builder.get_object ("window1") as Gtk.ApplicationWindow;
         this.add_window (window);
@@ -952,7 +937,6 @@ private Gtk.MenuItem menudown;
             });
         art_win = new ArtWin();
         menuop = builder.get_object ("menu_art_hor") as Gtk.MenuItem;
-        menuop.sensitive =(ath != null);
         menuop.activate.connect (() => {
                 show_dock_id(DOCKLETS.ARTHOR, true);
             });
@@ -1109,7 +1093,7 @@ private Gtk.MenuItem menudown;
                 init_sstats();
                 armed = 0;
                 rhdop = 10000;
-                init_npos();
+                init_have_home();
                 armed_spinner.stop();
                 armed_spinner.hide();
                 if (conf.audioarmed == true)
@@ -1711,7 +1695,7 @@ private Gtk.MenuItem menudown;
     {
         bool vpos;
 
-        if(npos)
+        if(have_home)
         {
             if( (Math.fabs(lat - xlat) < 0.25) &&
                 (Math.fabs(lon - xlon) < 0.25))
@@ -1857,9 +1841,9 @@ private Gtk.MenuItem menudown;
             });
     }
 
-    private void init_npos()
+    private void init_have_home()
     {
-        npos = false;
+        have_home = false;
         markers.negate_rth();
         home_pos.lat = 0;
         home_pos.lon = 0;
@@ -1883,7 +1867,7 @@ private Gtk.MenuItem menudown;
                 init_state();
                 init_sstats();
                 dopoll = false;
-                init_npos();
+                init_have_home();
                 validatelab.set_text("");
                 add_cmd(MSP.Cmds.IDENT,null,0, 2500);
                 return;
@@ -2080,7 +2064,7 @@ private Gtk.MenuItem menudown;
             armtime = 0;
             duration = -1;
             if(replayer == 0)
-                init_npos();
+                init_have_home();
             no_ofix = 0;
         }
         else
@@ -2107,12 +2091,12 @@ private Gtk.MenuItem menudown;
                     if(craft != null)
                     {
                         markers.remove_rings(view);
-                        init_npos();
+                        init_have_home();
                         craft.init_trail();
                     }
                 }
                 MWPLog.message("Armed\n");
-                init_npos();
+                init_have_home();
                 armed_spinner.show();
                 armed_spinner.start();
                 sflags |= NavStatus.SPK.Volts;
@@ -2145,7 +2129,7 @@ private Gtk.MenuItem menudown;
                 duration = -1;
                 armtime = 0;
                 want_special &= ~POSMODE.HOME;
-                npos = false;
+                init_have_home();
                 if (conf.audioarmed == true)
                 {
                     audio_cb.active = false;
@@ -2819,11 +2803,10 @@ private Gtk.MenuItem menudown;
                     sat_coverage();
                     if(armed == 1)
                     {
-                        if(npos == false && home_changed(GPSInfo.lat, GPSInfo.lon))
+                        if(have_home == false && home_changed(GPSInfo.lat, GPSInfo.lon))
                         {
                             sflags |=  NavStatus.SPK.GPS;
                             want_special |= POSMODE.HOME;
-                            MWPLog.message("** Home from RAW GPS\n");
                             navstatus.cg_on();
                         }
                     }
@@ -2845,7 +2828,8 @@ private Gtk.MenuItem menudown;
                         }
                     }
                     if(want_special != 0)
-                        process_pos_states(GPSInfo.lat,GPSInfo.lon, rg.gps_altitude);
+                        process_pos_states(GPSInfo.lat,GPSInfo.lon,
+                                           rg.gps_altitude, "RAW GPS");
                 }
             }
             break;
@@ -3074,9 +3058,8 @@ private Gtk.MenuItem menudown;
                     {
                         navstatus.cg_on();
                         sflags |=  NavStatus.SPK.GPS;
-                        MWPLog.message("**Home from Oframe\n");
                         want_special |= POSMODE.HOME;
-                        process_pos_states(gflat, gflon, 0.0);
+                        process_pos_states(gflat, gflon, 0.0, "LTM OFrame");
                     }
                 }
                 if(Logger.is_logging)
@@ -3124,7 +3107,7 @@ private Gtk.MenuItem menudown;
 
                     if(armed != 0)
                     {
-                        if(npos)
+                        if(have_home)
                         {
                             if(_nsats >= SATS.MINSATS)
                             {
@@ -3221,7 +3204,7 @@ private Gtk.MenuItem menudown;
                         MWPLog.message("Disarm from LTM!\n");
                         mwflags = 0;
                         armed = 0;
-                        init_npos();
+                        init_have_home();
                     }
                 }
                 if(ltmflags == 2)
@@ -3258,7 +3241,7 @@ private Gtk.MenuItem menudown;
                                    MSP.ltm_mode(ltmflags), ltmflags,
                                    armed, duration, xlat, xlon);
                 }
-                if(want_special != 0 /* && npos*/)
+                if(want_special != 0 /* && have_home*/)
                     process_pos_states(xlat,xlon, 0);
 
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
@@ -3330,7 +3313,7 @@ private Gtk.MenuItem menudown;
                 {
                     if(armed == 1)
                     {
-                        if(npos == false)
+                        if(have_home == false)
                         {
                             sflags |=  NavStatus.SPK.GPS;
                             navstatus.cg_on();
@@ -3502,28 +3485,40 @@ private Gtk.MenuItem menudown;
         if(((Math.fabs(home_pos.lat - lat) > 1e-6) ||
            Math.fabs(home_pos.lon - lon) > 1e-6))
         {
-            if(npos)
+            if(have_home && (home_pos.lat != 0.0) && (home_pos.lon != 0.0))
             {
-                bleet_sans_merci(GENERAL_ALERT);
-                navstatus.alert_home_moved();
-                MWPLog.message("Established home has moved!");
+                double d,cse;
+                Geo.csedist(lat, lon, home_pos.lat, home_pos.lon, out d, out cse);
+                d*=1852.0;
+                if(d > MAX_HOME_DELTA)
+                {
+                    bleet_sans_merci(GENERAL_ALERT);
+                    navstatus.alert_home_moved();
+                    MWPLog.message(
+                        "Established home has jumped %.1fm [%f %f (ex %f %f)]",
+                        d, lat, lon, home_pos.lat, home_pos.lon);
+                }
             }
             home_pos.lat = lat;
             home_pos.lon = lon;
-            npos = true;
+            have_home = true;
             ret = true;
         }
         return ret;
     }
 
-    private void process_pos_states(double lat, double lon, double alt)
+    private void process_pos_states(double lat, double lon, double alt,
+                                    string? reason=null)
     {
         if (lat == 0.0 && lon == 0.0)
+        {
+            want_special = 0;
             return;
+        }
 
         if((armed != 0) && ((want_special & POSMODE.HOME) != 0))
         {
-            npos = true;
+            have_home = true;
             want_special &= ~POSMODE.HOME;
             home_pos.lat = xlat = lat;
             home_pos.lon = xlon = lon;
@@ -3540,13 +3535,20 @@ private Gtk.MenuItem menudown;
             }
             else
             {
-                init_npos();
+                init_have_home();
             }
 
             if(chome)
                 view.center_on(lat,lon);
 
-            MWPLog.message("Set home %f %f (%s)\n", lat, lon, npos.to_string());
+            StringBuilder sb = new StringBuilder ();
+            if(reason != null)
+            {
+                sb.append(reason);
+                sb.append(" ");
+            }
+            sb.append(have_home.to_string());
+            MWPLog.message("Set home %f %f (%s)\n", lat, lon, sb.str);
         }
 
         if((want_special & POSMODE.PH) != 0)
@@ -3972,7 +3974,7 @@ private Gtk.MenuItem menudown;
             {
                 craft.remove_marker();
             }
-            init_npos();
+            init_have_home();
             set_error_status(null);
             xsensor = 0;
             clear_sensor_array();
@@ -4349,7 +4351,7 @@ private Gtk.MenuItem menudown;
             markers.add_list_store(ls);
             last_file = fname;
             update_title_from_file(fname);
-            if(npos && ls.have_rth)
+            if(have_home && ls.have_rth)
                 markers.add_rth_point(home_pos.lat,home_pos.lon,ls);
             need_preview = true;
         }
@@ -4540,7 +4542,7 @@ private Gtk.MenuItem menudown;
             if(craft != null)
                 craft.park();
 
-            init_npos();
+            init_have_home();
             conf.logarmed = false;
             if(delay == false)
                 conf.audioarmed = false;

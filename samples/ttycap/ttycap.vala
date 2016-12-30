@@ -23,20 +23,26 @@ extern unowned string get_error_text(int err, uint8[] buf, size_t len);
 
 public class MWSerial : Object
 {
+
     public int fd {private set; get;}
     private IOChannel io_read;
     public  bool available {private set; get;}
     private uint tag;
     public uint baudrate  {private set; get;}
+    private uint nchars;
+    private uint lchars;
+    public MainLoop loop;
 
     public static string devname = null;
     public static int brate = 38400;
     public static uint secs = 0;
+    public static uint tosecs = 0;
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", "/dev/ttyUSB0"},
         { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", "38400"},
-        { "duration", 't', 0, OptionArg.INT, out secs, "Duration", "0"},
+        { "duration", 'd', 0, OptionArg.INT, out secs, "Duration", "0"},
+        { "timeout", 't', 0, OptionArg.INT, out tosecs, "Timeout", "0"},
         {null}
     };
 
@@ -75,6 +81,24 @@ public class MWSerial : Object
         {
             available = true;
             setup_reader(fd);
+            nchars = lchars = 0;
+            if(tosecs != 0)
+            {
+                Timeout.add_seconds(tosecs, () => {
+                        if(nchars > 0 && (nchars == lchars))
+                        {
+                            stderr.printf("Exit after %u bytes\n", nchars);
+                            loop.quit();
+                            return false;
+                        }
+                        else
+                        {
+                            lchars = nchars;
+                            return true;
+                        }
+                    });
+
+            }
         }
         return available;
     }
@@ -115,9 +139,9 @@ public class MWSerial : Object
                 return false;
             else
             {
+                nchars += (uint)res;
                 Posix.write(1, buf, res);
             }
-
         }
         return true;
     }
@@ -164,15 +188,15 @@ public class MWSerial : Object
         var msp = new MWSerial();
         if(msp.tty_open(devname, brate))
         {
-            var loop = new MainLoop();
+            msp.loop = new MainLoop();
             if(secs > 0)
             {
                 Timeout.add_seconds(secs, () => {
-                        loop.quit();
+                        msp.loop.quit();
                         return false;
                     });
             }
-            loop.run();
+            msp.loop.run();
         }
         return 0;
     }
