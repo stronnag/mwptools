@@ -1845,6 +1845,9 @@ private Gtk.MenuItem menudown;
         markers.negate_rth();
         home_pos.lat = 0;
         home_pos.lon = 0;
+        xlon = 0;
+        xlat = 0;
+        want_special = 0;
     }
 
     private void send_poll()
@@ -2089,12 +2092,11 @@ private Gtk.MenuItem menudown;
                     if(craft != null)
                     {
                         markers.remove_rings(view);
-                        init_have_home();
                         craft.init_trail();
                     }
                 }
-                MWPLog.message("Armed\n");
                 init_have_home();
+                MWPLog.message("Armed %x\n", want_special);
                 armed_spinner.show();
                 armed_spinner.start();
                 sflags |= NavStatus.SPK.Volts;
@@ -2126,7 +2128,7 @@ private Gtk.MenuItem menudown;
                 armed_spinner.hide();
                 duration = -1;
                 armtime = 0;
-                want_special &= ~POSMODE.HOME;
+                want_special = 0;
                 init_have_home();
                 if (conf.audioarmed == true)
                 {
@@ -3145,7 +3147,7 @@ private Gtk.MenuItem menudown;
                         }
                     }
                     if(want_special != 0)
-                        process_pos_states(gflat, gflon, gf.alt/100.0);
+                        process_pos_states(gflat, gflon, gf.alt/100.0, "GFrame");
                 }
                 fbox.update(item_visible(DOCKLETS.FBOX));
             }
@@ -3221,7 +3223,7 @@ private Gtk.MenuItem menudown;
                     mwflags = xbits; // don't know better
 
                 armed_processing(mwflags);
-
+                var xws = want_special;
                 if(ltmflags != last_ltmf)
                 {
                     last_ltmf = ltmflags;
@@ -3235,12 +3237,13 @@ private Gtk.MenuItem menudown;
                     {
                         craft.set_normal();
                     }
-                    MWPLog.message("New LTM Mode %s (%d) %d %ds %f %f\n",
+                    MWPLog.message("New LTM Mode %s (%d) %d %ds %f %f %x %x\n",
                                    MSP.ltm_mode(ltmflags), ltmflags,
-                                   armed, duration, xlat, xlon);
+                                   armed, duration, xlat, xlon,
+                                   xws, want_special);
                 }
                 if(want_special != 0 /* && have_home*/)
-                    process_pos_states(xlat,xlon, 0);
+                    process_pos_states(xlat,xlon, 0, "SFrame");
 
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
                 set_bat_stat((uint8)((sf.vbat + 50) / 100));
@@ -3345,7 +3348,7 @@ private Gtk.MenuItem menudown;
                         }
                         if(want_special != 0)
                             process_pos_states(GPSInfo.lat, GPSInfo.lon,
-                                               m.alt/1000.0);
+                                               m.alt/1000.0, "MavGPS");
                     }
                 }
                 fbox.update(item_visible(DOCKLETS.FBOX));
@@ -3401,7 +3404,7 @@ private Gtk.MenuItem menudown;
                 var ilon  = m.longitude / 10000000.0;
 
                 if(want_special != 0)
-                    process_pos_states(ilat, ilon, m.altitude / 1000.0);
+                    process_pos_states(ilat, ilon, m.altitude / 1000.0, "MAvOrig");
 
                 if(Logger.is_logging)
                 {
