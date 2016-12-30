@@ -534,8 +534,6 @@ private Gtk.MenuItem menudown;
     }
 
     private const double RAD2DEG = 57.29578;
-    private const double MAX_HOME_DELTA = 2.5; // metres
-
     private const string RED_ALERT = "bleet.ogg";
     private const string ORANGE_ALERT = "orange.ogg";
     private const string GENERAL_ALERT = "beep-sound.ogg";
@@ -3490,7 +3488,7 @@ private Gtk.MenuItem menudown;
                 double d,cse;
                 Geo.csedist(lat, lon, home_pos.lat, home_pos.lon, out d, out cse);
                 d*=1852.0;
-                if(d > MAX_HOME_DELTA)
+                if(d > conf.max_home_delta)
                 {
                     bleet_sans_merci(GENERAL_ALERT);
                     navstatus.alert_home_moved();

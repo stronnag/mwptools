@@ -314,6 +314,13 @@
       <description>Directory for log files (for replay)</description>
     </key>
 
+    <key name="max-home-delta" type="d">
+      <default>2.5</default>
+      <summary>home position delta (m)</summary>
+      <description>
+	Maximum variation of home position without alert
+      </description>
+    </key>
 
   </schema>
 </schemalist>

@@ -74,6 +74,7 @@ public class MWPSettings : GLib.Object
     public bool tote_floating {get; set; default=false;}
     public string missionpath {get; private set; default=null;}
     public string logpath {get; private set; default=null;}
+    public double max_home_delta {get; set; default=2.5;}
 
     public signal void settings_update (string s);
 
@@ -244,6 +245,11 @@ public class MWPSettings : GLib.Object
             logpath = settings.get_string ("log-path");
             if(logpath == "")
                 logpath = null;
+        }
+
+        if(s == null || s == "max-home-delta")
+        {
+            max_home_delta = settings.get_double ("max-home-delta");
         }
     }
 
