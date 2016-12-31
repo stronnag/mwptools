@@ -122,7 +122,7 @@ public class  BBoxDialog : Object
 
 		// stderr:
 		IOChannel error = new IOChannel.unix_new (p_stderr);
-		error.add_watch ((IOCondition.IN|IOCondition.HUP) ,
+		error.add_watch ((IOCondition.IN|IOCondition.HUP),
                                   (channel, condition) => {
                         Gtk.TreeIter iter;
                         try {
@@ -151,8 +151,10 @@ public class  BBoxDialog : Object
                                         }
                                     }
                                 }
+                                else
+                                    return false;
                             }
-                            if((condition) == IOCondition.HUP)
+                            if((condition & IOCondition.HUP) != 0)
                                 return false;
 
                         } catch (IOChannelError e) {
