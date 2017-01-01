@@ -128,34 +128,39 @@ public class  BBoxDialog : Object
                         try {
                             if((condition & IOCondition.IN) == IOCondition.IN)
                             {
-                                string line;
-                                channel.read_line (out line, null, null);
-                                if(line != null)
+                                string loginfo;
+                                IOStatus eos;
+                                eos = channel.read_to_end (out loginfo, null);
+                                if(eos == IOStatus.NORMAL)
                                 {
-                                    int n;
-                                    n = line.index_of("Log ");
-                                    if(n == 0)
+                                    var lines = loginfo.split("\n");
+                                    foreach(var line in lines)
                                     {
-                                        int slen = line.length;
-                                        nidx = int.parse(line[n+4:slen]);
-                                        n = line.index_of(" of ");
-                                        maxidx = int.parse(line[n+4:slen]);
-                                        bb_items.label = "Log %d of %d".printf(nidx,maxidx);
-                                        n = line.index_of(" duration ");
-                                        if(n > 16)
+                                        int n;
+                                        n = line.index_of("Log ");
+                                        if(n == 0)
                                         {
-                                            n += 10;
-                                            string dura = line.substring(n, slen - n -1);
-                                            bb_liststore.append (out iter);
-                                            bb_liststore.set (iter, 0, nidx, 1, dura);
+                                            int slen = line.length;
+                                            nidx = int.parse(line[n+4:slen]);
+                                            n = line.index_of(" of ");
+                                            maxidx = int.parse(line[n+4:slen]);
+                                            bb_items.label = "Log %d of %d".printf(nidx,maxidx);
+                                            n = line.index_of(" duration ");
+                                            if(n > 16)
+                                            {
+                                                n += 10;
+                                                string dura = line.substring(n, slen - n -1);
+                                                bb_liststore.append (out iter);
+                                                bb_liststore.set (iter, 0, nidx, 1, dura);
+                                            }
                                         }
                                     }
                                 }
-                                else
-                                    return false;
                             }
-                            if((condition & IOCondition.HUP) != 0)
+                            if((condition & IOCondition.HUP) == IOCondition.HUP)
+                            {
                                 return false;
+                            }
 
                         } catch (IOChannelError e) {
                             return false;
@@ -166,7 +171,6 @@ public class  BBoxDialog : Object
                     });
 		ChildWatch.add (child_pid, (pid, status) => {
 			Process.close_pid (pid);
-                        Posix.close(p_stderr);
                         if(nidx == maxidx)
                         {
                             MWPCursor.set_normal_cursor(dialog);
@@ -190,7 +194,6 @@ public class  BBoxDialog : Object
                             nidx++;
                             spawn_decoder();
                         }
-
                     });
 	} catch (SpawnError e) {
             show_child_err(e.message);
