@@ -1165,37 +1165,37 @@ private Gtk.MenuItem menudown;
         dockitem = new DockItem[DOCKLETS.NUMBER];
 
         dockitem[DOCKLETS.GPS]= new DockItem.with_stock ("GPS",
-                         "GPS Info", "gtk-refresh",
-                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+                                                         "GPS Info", "gtk-refresh",
+                                                         DockItemBehavior.NORMAL);
 
         dockitem[DOCKLETS.NAVSTATUS]= new DockItem.with_stock ("Status",
                          "NAV Status", "gtk-info",
-                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+                         DockItemBehavior.NORMAL);
 
         dockitem[DOCKLETS.ARTHOR]= new DockItem.with_stock ("Horizons",
                          "Artificial Horizon", "gtk-justify-fill",
-                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+                         DockItemBehavior.NORMAL);
 
         dockitem[DOCKLETS.VOLTAGE]= new DockItem.with_stock ("Volts",
                          "Battery Monitor", "gtk-dialog-warning",
-                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+                         DockItemBehavior.NORMAL);
 
         dockitem[DOCKLETS.RADIO]= new DockItem.with_stock ("Radio",
                          "Radio Status", "gtk-network",
-                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+                         DockItemBehavior.NORMAL );
         dock.add_item (dockitem[DOCKLETS.RADIO], DockPlacement.BOTTOM);
 
         dockitem[DOCKLETS.TELEMETRY]= new DockItem.with_stock ("Telemetry",
                          "Telemetry", "gtk-disconnect",
-                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+                         DockItemBehavior.NORMAL);
 
         dockitem[DOCKLETS.FBOX]= new DockItem.with_stock ("FlightView",
                          "FlightView", "gtk-find",
-                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+                         DockItemBehavior.NORMAL);
 
         dockitem[DOCKLETS.MISSION]= new DockItem.with_stock ("Mission",
                          "Mission Tote", "gtk-properties",
-                         DockItemBehavior.NORMAL | DockItemBehavior.CANT_CLOSE);
+                         DockItemBehavior.NORMAL);
 
         dockitem[DOCKLETS.VOLTAGE].add (navstatus.voltbox);
         dockitem[DOCKLETS.MISSION].add (scroll);
