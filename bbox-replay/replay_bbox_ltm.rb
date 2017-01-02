@@ -43,6 +43,8 @@ end
 
 LLFACT=10000000
 ALTFACT=100
+MINDELAY=0.001
+NORMDELAY=0.1
 
 def start_io dev
   if RUBY_PLATFORM.include?('cygwin') || !Gem.win_platform?
@@ -556,7 +558,7 @@ IO.popen(cmd,'rt') do |pipe|
 	  send_msg dev, msg
 	end
       end
-      sleep (mindelay) ? 0.001 : 0.1
+      sleep (mindelay) ? MINDELAY : NORMDELAY
     end
   end
 end

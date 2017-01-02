@@ -170,7 +170,8 @@ public class  BBoxDialog : Object
                         return true;
                     });
 		ChildWatch.add (child_pid, (pid, status) => {
-			Process.close_pid (pid);
+                        Posix.close(p_stderr);
+                        Process.close_pid (pid);
                         if(nidx == maxidx)
                         {
                             MWPCursor.set_normal_cursor(dialog);

@@ -26,8 +26,6 @@ using Gtk;
 namespace Ath {
 
     public class Horizon : DrawingArea {
-
-        private bool init = true;
         private double _x;
         private double _y;
         private double _radius;
@@ -35,8 +33,8 @@ namespace Ath {
         private double _angle = 0;
 
         public Horizon () {
-            init = true;
         }
+
         private void draw_base(Cairo.Context cr)
         {
             double rec_x0, rec_y0, rec_width, rec_height, rec_degrees;
@@ -44,6 +42,7 @@ namespace Ath {
             double x = _x;
             double y = _y;
             double radius = _radius;
+
             rec_x0 = x - radius;
             rec_y0 = y - radius;
             rec_width = radius * 2;
@@ -82,9 +81,7 @@ namespace Ath {
             _y = get_allocated_height () / 2;
             _radius = double.min (get_allocated_width () / 2,
                                      get_allocated_height () / 2) - 5;
-
-            if(init)
-                draw_base(cr);
+            draw_base(cr);
             draw_dynamic(cr);
             return false;
         }
@@ -124,8 +121,6 @@ namespace Ath {
             cr.set_source_rgb (1, 1, 1);
             cr.stroke ();
 
-  // **** horizontal line (pitch)
-// **** horizontal line (pitch)
             cr.move_to (x - 0.4 * radius, y - 0.4 * radius);
             cr.line_to (x + 0.4 * radius, y - 0.4 * radius);
             cr.stroke ();
@@ -464,21 +459,7 @@ namespace Ath {
                 pitch = -70;
             _angle = roll;
             _trans_y = pitch;
-//            init = false;
-            redraw_canvas();
-//            init = true;
-        }
-
-        private void redraw_canvas () {
-            var window = get_window ();
-            if (null == window) {
-                return;
-            }
-
-            var region = window.get_clip_region ();
-            // redraw the cairo canvas completely by exposing it
-            window.invalidate_region (region, true);
-            window.process_updates (true);
+            queue_draw();
         }
     }
 }

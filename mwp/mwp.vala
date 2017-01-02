@@ -25,6 +25,7 @@ using GtkChamplain;
 extern double get_locale_double(string str);
 extern int atexit(VoidFunc func);
 extern string mwpvers;
+extern int cf_pipe(int *fds);
 
 [DBus (name = "org.freedesktop.NetworkManager")]
 interface NetworkManager : GLib.Object {
@@ -4534,7 +4535,9 @@ private Gtk.MenuItem menudown;
         xaudio = conf.audioarmed;
 
         playfd = new int[2];
-        var sr =  Posix.socketpair (Posix.AF_UNIX, Posix.SOCK_DGRAM, 0, playfd);
+//        var sr =  Posix.socketpair (Posix.AF_UNIX, Posix.SOCK_DGRAM, 0, playfd);
+        var sr = cf_pipe(playfd);
+
         if(sr == 0)
         {
             MWPLog.message("Replay \"%s\" log %s\n",
