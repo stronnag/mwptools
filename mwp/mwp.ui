@@ -1236,7 +1236,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
     <property name="modal">True</property>
     <property name="type_hint">dialog</property>
     <child internal-child="vbox">
-      <object class="GtkBox" id="altdlgbox">
+      <object class="GtkBox">
         <property name="can_focus">False</property>
         <property name="valign">start</property>
         <property name="orientation">vertical</property>
