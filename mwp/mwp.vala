@@ -934,7 +934,7 @@ private Gtk.MenuItem menudown;
         menuncfg.activate.connect (() => {
                 navconf.show();
             });
-        art_win = new ArtWin();
+        art_win = new ArtWin(acol);
         menuop = builder.get_object ("menu_art_hor") as Gtk.MenuItem;
         menuop.activate.connect (() => {
                 show_dock_id(DOCKLETS.ARTHOR, true);

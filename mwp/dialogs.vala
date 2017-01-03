@@ -95,10 +95,10 @@ public class ArtWin : GLib.Object
     public Gtk.Box  box {get; private set;}
     private Ath.Horizon ath;
 
-    public ArtWin()
+    public ArtWin(Gdk.RGBA bcol)
     {
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-        ath = new Ath.Horizon ();
+        ath = new Ath.Horizon (bcol);
         box.pack_start(ath, true,true,0);
         int sz = MWPlanner.conf.ahsize;
         box.set_size_request (sz, sz);
