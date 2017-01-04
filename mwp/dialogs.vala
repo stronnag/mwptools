@@ -427,10 +427,7 @@ public class MapSeeder : GLib.Object
             reset();
         }
     }
-
 }
-
-
 
 public class MapSourceDialog : GLib.Object
 {
@@ -1767,19 +1764,46 @@ public class NavConfig : GLib.Object
     private Gtk.Entry inav_mr_max_climb;
     private Gtk.Entry inav_mr_man_speed;
     private Gtk.Entry inav_mr_climb_rate;
+    private Gtk.Switch inav_mr_midthr_alt;
     private Gtk.ComboBoxText inav_mr_control_mode;
-    private Gtk.ComboBoxText inav_mr_altcontrol;
-    private Gtk.Switch inav_mr_dismarm_land;
-    private Gtk.Entry inav_mr_rth_alt;
+    private Gtk.Entry inav_mc_bank_angle;
+    private Gtk.Entry inav_mr_hover_throttle;
 
-        // fixme
+    public signal void mr_nav_poshold_event (MSP_NAV_POSHOLD nph);
+
     private Gtk.Window inav_fw_open(Gtk.Builder builder)
     {
         Gtk.Window w = builder.get_object ("inav_mr_conf") as Gtk.Window;
         return w;
     }
 
-    private Gtk.Window inav_mr_open(Gtk.Builder builder)
+    public void mr_update(MSP_NAV_POSHOLD pcfg)
+    {
+        inav_mr_midthr_alt.set_active(pcfg.nav_use_midthr_for_althold == 1);
+        inav_max_speed.set_text(pcfg.nav_max_speed.to_string());
+        inav_mr_max_climb.set_text(pcfg.nav_max_climb_rate.to_string());
+        inav_mr_man_speed.set_text(pcfg.nav_manual_speed.to_string());
+        inav_mr_climb_rate.set_text(pcfg.nav_manual_climb_rate.to_string());
+        inav_mr_control_mode.active = pcfg.nav_user_control_mode;
+        inav_mc_bank_angle.set_text(pcfg.nav_mc_bank_angle.to_string());
+        inav_mr_hover_throttle.set_text(pcfg.nav_mc_hover_thr.to_string());
+    }
+
+    private MSP_NAV_POSHOLD inav_mr_get_values()
+    {
+        MSP_NAV_POSHOLD pcfg = MSP_NAV_POSHOLD();
+        pcfg.nav_use_midthr_for_althold = (inav_mr_midthr_alt.active) ? 1 : 0;
+        pcfg.nav_max_speed = (uint16)int.parse(inav_max_speed.get_text());
+        pcfg.nav_max_climb_rate = (uint16)int.parse(inav_mr_max_climb.get_text());
+        pcfg.nav_manual_speed = (uint16)int.parse(inav_mr_man_speed.get_text());
+        pcfg.nav_manual_climb_rate = (uint16)int.parse(inav_mr_climb_rate.get_text());
+        pcfg.nav_user_control_mode = (uint8)inav_mr_control_mode.active;
+        pcfg.nav_mc_bank_angle = (uint8)int.parse(inav_mc_bank_angle.get_text());
+        pcfg.nav_mc_hover_thr = (uint16)int.parse(inav_mr_hover_throttle.get_text());
+        return pcfg;
+    }
+
+        private Gtk.Window inav_mr_open(Gtk.Builder builder)
     {
         Gtk.Window w = builder.get_object ("inav_mr_conf") as Gtk.Window;
         var button = builder.get_object ("inav_mr_close") as Gtk.Button;
@@ -1789,6 +1813,7 @@ public class NavConfig : GLib.Object
 
         var apply = builder.get_object ("inav_mr_apply") as Gtk.Button;
         apply.clicked.connect(() => {
+                mr_nav_poshold_event(inav_mr_get_values());
             });
 
         inav_max_speed = builder.get_object ("inav_max_speed") as Gtk.Entry;
@@ -1796,13 +1821,11 @@ public class NavConfig : GLib.Object
         inav_mr_man_speed = builder.get_object ("inav_mr_man_speed") as Gtk.Entry;
         inav_mr_climb_rate = builder.get_object ("inav_mr_climb_rate") as Gtk.Entry;
         inav_mr_control_mode = builder.get_object ("inav_mr_control_mode") as Gtk.ComboBoxText;
-        inav_mr_altcontrol = builder.get_object ("inav_mr_altcontrol") as Gtk.ComboBoxText;
-        inav_mr_dismarm_land = builder.get_object ("inav_mr_dismarm_land") as Gtk.Switch;
-        inav_mr_rth_alt = builder.get_object ("inav_mr_rth_alt") as Gtk.Entry;
-
+        inav_mc_bank_angle = builder.get_object ("inav_mc_bank_angle") as Gtk.Entry;
+        inav_mr_midthr_alt = builder.get_object ("inav_mr_midthr_alt") as Gtk.Switch;
+        inav_mr_hover_throttle = builder.get_object ("inav_mr_hover_throttle") as Gtk.Entry;
         return w;
     }
-
 
     private Gtk.Window mw_open(Gtk.Builder builder)
     {

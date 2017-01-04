@@ -132,7 +132,6 @@ public struct MSP_RC_TUNING_CF
     public uint16 tpa_breakpoint;
 }
 
-
 [CCode (cheader_filename = "../common/mspmsg.h")]
 public struct MSP_RADIO
 {
@@ -160,6 +159,21 @@ public struct MSP_ANALOG
      uint16 powermetersum;
      uint16 rssi;
      uint16 amps;
+}
+
+
+[CCode (cheader_filename = "../common/mspmsg.h")]
+public struct MSP_NAV_POSHOLD
+{
+    uint8 nav_user_control_mode;
+    uint16 nav_max_speed;
+    uint16 nav_max_climb_rate;
+    uint16 nav_manual_speed;
+    uint16 nav_manual_climb_rate;
+    uint8 nav_mc_bank_angle;
+    uint8 nav_use_midthr_for_althold;
+    uint16 nav_mc_hover_thr;
+    uint8 reserved[8];
 }
 
 [CCode (cheader_filename = "../common/mspmsg.h")]

@@ -172,6 +172,19 @@ public struct MSP_ANALOG
      uint16 amps;
 }
 
+public struct MSP_NAV_POSHOLD
+{
+    uint8 nav_user_control_mode;
+    uint16 nav_max_speed;
+    uint16 nav_max_climb_rate;
+    uint16 nav_manual_speed;
+    uint16 nav_manual_climb_rate;
+    uint8 nav_mc_bank_angle;
+    uint8 nav_use_midthr_for_althold;
+    uint16 nav_mc_hover_thr;
+    uint8 reserved[8];
+}
+
 public struct LTM_GFRAME
 {
     int32 lat;
@@ -244,14 +257,12 @@ public enum MSize
     LTM_XFRAME=6
 }
 
-
 public enum MSPCaps
 {
     CAP_PLATFORM_32BIT = (1 << 31),
     CAP_BASEFLIGHT_CONFIG = (1 << 30),
     CAP_CLEANFLIGHT_CONFIG = (1 << 29)
 }
-
 
 public uint8* deserialise_u32(uint8* rp, out uint32 v)
 {

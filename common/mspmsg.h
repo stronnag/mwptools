@@ -181,6 +181,20 @@ struct __attribute__ ((__packed__))  _msp_analog
 };
 typedef struct _msp_analog MSP_ANALOG;
 
+struct __attribute__ ((__packed__))  _msp_nav_poshold
+{
+    uint8_t nav_user_control_mode;
+    uint16_t nav_max_speed;
+    uint16_t nav_max_climb_rate;
+    uint16_t nav_manual_speed;
+    uint16_t nav_manual_climb_rate;
+    uint8_t nav_mc_bank_angle;
+    uint8_t nav_use_midthr_for_althold;
+    uint16_t nav_mc_hover_thr;
+    uint8_t reserved[8];
+};
+typedef struct _msp_nav_poshold MSP_NAV_POSHOLD;
+
 struct __attribute__ ((__packed__))  _ltm_gframe
 {
     int32_t lat;

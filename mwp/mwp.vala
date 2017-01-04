@@ -2278,7 +2278,7 @@ private Gtk.MenuItem menudown;
                     if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
                         add_cmd(MSP.Cmds.NAV_CONFIG,null,0,1000);
                     else if ((navcap & (NAVCAPS.INAV_MR|NAVCAPS.INAV_FW)) != 0)
-                        MWPLog.message("need new inav caps message\n");
+                        add_cmd(MSP.Cmds.NAV_POSHOLD,null,0,1000);
                 }
 
                 var reqsize = build_pollreqs();
@@ -2585,6 +2585,10 @@ private Gtk.MenuItem menudown;
                         navconf.mw_navconf_event.connect((mw,nc) => {
                                 mw_update_config(nc);
                             });
+                    if((navcap & NAVCAPS.INAV_MR) == NAVCAPS.INAV_MR)
+                        navconf.mr_nav_poshold_event.connect((mw,pcfg) => {
+                                mr_update_config(pcfg);
+                            });
                 }
 
                 remove_tid(ref cmdtid);
@@ -2683,6 +2687,22 @@ private Gtk.MenuItem menudown;
                 navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS),flg);
             }
             break;
+
+            case MSP.Cmds.NAV_POSHOLD:
+                remove_tid(ref cmdtid);
+                have_nc = true;
+                MSP_NAV_POSHOLD poscfg = MSP_NAV_POSHOLD();
+                uint8* rp = raw;
+                poscfg.nav_user_control_mode = *rp++;
+                rp = deserialise_u16(rp, out poscfg.nav_max_speed);
+                rp = deserialise_u16(rp, out poscfg.nav_max_climb_rate);
+                rp = deserialise_u16(rp, out poscfg.nav_manual_speed);
+                rp = deserialise_u16(rp, out poscfg.nav_manual_climb_rate);
+                poscfg.nav_mc_bank_angle = *rp++;
+                poscfg.nav_use_midthr_for_althold = *rp++;
+                rp = deserialise_u16(rp, out poscfg.nav_mc_hover_thr);
+                navconf.mr_update(poscfg);
+                break;
 
             case MSP.Cmds.NAV_CONFIG:
             {
@@ -3437,8 +3457,17 @@ private Gtk.MenuItem menudown;
             case MSP.Cmds.TQ_FRAME:
                 cleanup_replay();
                 break;
+
+            case MSP.Cmds.SET_NAV_POSHOLD:
+                send_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
+                Timeout.add(100, () => {
+                        add_cmd(MSP.Cmds.NAV_POSHOLD,null,0, 1000);
+                        return false;
+                    });
+                break;
+
             default:
-                MWPLog.message ("** Unknown response %d\n", cmd);
+                MWPLog.message ("** Unknown response %d (%dbytes)\n", cmd, len);
                 break;
         }
 
@@ -3856,6 +3885,21 @@ private Gtk.MenuItem menudown;
         return (rp-&tmp[0]);
     }
 
+    private size_t serialise_pcfg (MSP_NAV_POSHOLD pcfg, uint8[] tmp)
+    {
+        uint8* rp = tmp;
+
+        *rp++ = pcfg.nav_user_control_mode;
+        rp = serialise_u16(rp, pcfg.nav_max_speed);
+        rp = serialise_u16(rp, pcfg.nav_max_climb_rate);
+        rp = serialise_u16(rp, pcfg.nav_manual_speed);
+        rp = serialise_u16(rp, pcfg.nav_manual_climb_rate);
+        *rp++ = pcfg.nav_mc_bank_angle;
+        *rp++ = pcfg.nav_use_midthr_for_althold;
+        rp = serialise_u16(rp, pcfg.nav_mc_hover_thr);
+        return (rp-&tmp[0]);
+    }
+
     private void mw_update_config(MSP_NAV_CONFIG nc)
     {
         have_nc = false;
@@ -3863,6 +3907,14 @@ private Gtk.MenuItem menudown;
         var nb = serialise_nc(nc, tmp);
         send_cmd(MSP.Cmds.SET_NAV_CONFIG, tmp, nb);
         add_cmd(MSP.Cmds.NAV_CONFIG,null,0, 1000);
+    }
+
+    private void mr_update_config(MSP_NAV_POSHOLD pcfg)
+    {
+        have_nc = false;
+        uint8 tmp[64];
+        var nb = serialise_pcfg(pcfg, tmp);
+        send_cmd(MSP.Cmds.SET_NAV_POSHOLD, tmp, nb);
     }
 
     private void send_cmd(MSP.Cmds cmd, void* buf, size_t len)

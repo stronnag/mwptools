@@ -66,6 +66,9 @@ public class MSP : Object
         SET_MODE_RANGE = 35,   // FC in message Sets a single mode range
         REBOOT = 68,
 
+        NAV_POSHOLD = 12,
+        SET_NAV_POSHOLD = 13,
+
         INFO_WP = 400,
 
         LTM_BASE  = 1000,

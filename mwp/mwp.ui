@@ -2589,19 +2589,19 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <child>
-          <placeholder/>
-        </child>
-        <child>
           <object class="GtkGrid" id="__fix1404__00003__">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="margin_left">4</property>
+            <property name="row_spacing">1</property>
+            <property name="column_spacing">1</property>
             <child>
               <object class="GtkLabel" id="__fix1404__00004__">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="margin_left">4</property>
                 <property name="margin_right">4</property>
-                <property name="label" translatable="yes">Disarm on landing</property>
+                <property name="label" translatable="yes">Use Mid-throttle for Alt Hold</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -2623,7 +2623,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               <object class="GtkLabel" id="__fix1404__00006__">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Altitude Control</property>
+                <property name="label" translatable="yes">Nav Bank Angle</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -2734,25 +2734,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               </packing>
             </child>
             <child>
-              <object class="GtkComboBoxText" id="inav_mr_altcontrol">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="active">0</property>
-                <items>
-                  <item id="0" translatable="yes">CURRENT</item>
-                  <item id="1" translatable="yes">EXTRA</item>
-                  <item id="2" translatable="yes">FIXED</item>
-                  <item id="3" translatable="yes">MAX</item>
-                  <item id="4" translatable="yes">AT LEAST</item>
-                </items>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="top_attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkSwitch" id="inav_mr_dismarm_land">
+              <object class="GtkSwitch" id="inav_mr_midthr_alt">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
               </object>
@@ -2765,7 +2747,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               <object class="GtkLabel" id="__fix1404__00011__">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">RTH Altitude (cm)</property>
+                <property name="label" translatable="yes">Hover Throttle</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -2773,7 +2755,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="inav_mr_rth_alt">
+              <object class="GtkEntry" id="inav_mr_hover_throttle">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="input_purpose">digits</property>
@@ -2781,6 +2763,17 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               <packing>
                 <property name="left_attach">1</property>
                 <property name="top_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="inav_mc_bank_angle">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">number</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">2</property>
               </packing>
             </child>
           </object>
