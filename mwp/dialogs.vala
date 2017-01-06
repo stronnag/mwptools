@@ -2074,6 +2074,8 @@ public class GPSInfo : GLib.Object
         elev = (int16)Math.lround(dalt);
         nsat = m.satellites_visible;
         fix = m.fix_type;
+        if(m.eph != 65535)
+            hdop = m.eph / 100.0; // sort of
 
         var nsatstr = "%d (%sfix)".printf(m.satellites_visible, (m.fix_type < 2) ? "no" : "");
          if(visible)
