@@ -14,6 +14,7 @@ HEX=
 RESCUE=
 BIN=
 RM=
+FERASE=
 
 for P
 do
@@ -23,6 +24,7 @@ do
     *.hex) HEX=$P ;;
     *.bin) BIN=$P ;;
     rescue) RESCUE=1 ;;
+    force|erase) FERASE=1 ;;
   esac
 done
 
@@ -46,12 +48,16 @@ if [ -z "$RESCUE" ]
 then
   stty -F $DEV raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon
   echo -n 'R' >$DEV
-  sleep 1
+  sleep 0.2
 fi
 
 if [ -n "$HEX" ]
 then
- stm32flash -w $HEX -v -g 0x0 -b $SPEED $DEV
+  if [ -n "$FERASE" ]
+  then
+    stm32flash -o -b $SPEED $DEV
+  fi
+  stm32flash -w $HEX -v -g 0x0 -b $SPEED $DEV
 fi
 
 if [ -n "$BIN" ]
