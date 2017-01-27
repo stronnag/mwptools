@@ -37,6 +37,7 @@ install: $(APPS)
 	install -d $(datadir)/share/icons/hicolor/scalable
 	install -m 644 ../common/mwp_icon.svg $(datadir)/share/icons/hicolor/scalable/mwp_icon.svg
 	install -m 644 ../common/mwp_icon.svg $(datadir)/share/mwp/mwp.svg
+	install -d $(datadir)/share/pixmaps
 	install -m 644 ../common/mwp_icon.svg $(datadir)/share/pixmaps/
 	install -d $(datadir)/share/mwp/pixmaps
 	install -m 644 ../common/mwp_icon.svg $(datadir)/share/mwp/pixmaps/mwp_icon.svg
