@@ -2783,14 +2783,14 @@ private Gtk.MenuItem menudown;
             {
                 MSP_ANALOG an = MSP_ANALOG();
                 an.vbat = raw[0];
+                if(!have_mspradio)
+                {
+                    deserialise_i16(raw+3, out an.rssi);
+                    radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
+                }
                 if(Logger.is_logging)
                 {
                     Logger.analog(an);
-                    if(!have_mspradio)
-                    {
-                        deserialise_i16(raw+3, out an.rssi);
-                        radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
-                    }
                 }
                 var ivbat = an.vbat;
                 set_bat_stat(ivbat);
