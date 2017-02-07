@@ -2110,6 +2110,10 @@ private Gtk.MenuItem menudown;
                 {
                     logb.active = true;
                 }
+
+                if(have_mspradio)
+                    radstatus.annul();
+
                 if(Logger.is_logging)
                 {
                     Logger.armed(true,duration,flag, sensor);
@@ -3205,8 +3209,7 @@ private Gtk.MenuItem menudown;
                 sf.rssi = *rp++;
                 sf.airspeed = *rp++;
                 sf.flags = *rp++;
-                if(!have_mspradio)
-                    radstatus.update_ltm(sf,item_visible(DOCKLETS.RADIO));
+                radstatus.update_ltm(sf,item_visible(DOCKLETS.RADIO));
 
                 uint8 ltmflags = sf.flags >> 2;
                 uint32 mwflags = 0;

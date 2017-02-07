@@ -62,6 +62,7 @@ fi
 
 if [ -n "$BIN" ]
 then
+ sleep 2
  dfu-util -d 0483:df11 --alt 0 -s 0x08000000:mass-erase:force:leave -D $BIN
  [ -n $RM ] && rm -f $RM
 fi
