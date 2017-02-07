@@ -568,6 +568,7 @@ private Gtk.MenuItem menudown;
     private static bool set_fs;
     private static int stack_size = 0;
     public static unowned string ulang;
+    private static bool ignore_3dr = false;
 
     private static string rrstr;
     private int nrings = 0;
@@ -596,6 +597,7 @@ private Gtk.MenuItem menudown;
         { "layout", 'l', 0, OptionArg.STRING, out layfile, "Layout name", null},
         { "force-type", 't', 0, OptionArg.INT, out dmrtype, "Model type", null},
         { "force4", '4', 0, OptionArg.NONE, out force4, "Force ipv4", null},
+        { "ignore-3dr", '3', 0, OptionArg.NONE, out ignore_3dr, "Ignore 3DR RSSI info", null},
         { "centre-on-home", 'H', 0, OptionArg.NONE, out chome, "Centre on home", null},
         { "debug-flags", 0, 0, OptionArg.INT, out debug_flags, "Debug flags (mask)", null},
         { "replay-mwp", 'p', 0, OptionArg.STRING, out rfile, "replay mwp log file", null},
@@ -2784,6 +2786,11 @@ private Gtk.MenuItem menudown;
                 if(Logger.is_logging)
                 {
                     Logger.analog(an);
+                    if(!have_mspradio)
+                    {
+                        deserialise_i16(raw+3, out an.rssi);
+                        radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
+                    }
                 }
                 var ivbat = an.vbat;
                 set_bat_stat(ivbat);
@@ -3056,8 +3063,11 @@ private Gtk.MenuItem menudown;
                 break;
 
             case MSP.Cmds.RADIO:
-                have_mspradio = true;
-                handle_radio(raw);
+                if(!ignore_3dr)
+                {
+                    have_mspradio = true;
+                    handle_radio(raw);
+                }
                 break;
 
             case MSP.Cmds.MAVLINK_MSG_ID_RADIO:

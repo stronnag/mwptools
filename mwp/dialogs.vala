@@ -976,6 +976,11 @@ public class RadioStatus : GLib.Object
         grid.show_all();
     }
 
+    public void update_rssi(ushort rssi, bool visible)
+    {
+        if(visible)
+            remrssi_label.set_label(rssi.to_string());
+    }
 
     public void update_ltm(LTM_SFRAME s,bool visible)
     {
