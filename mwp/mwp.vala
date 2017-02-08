@@ -252,8 +252,10 @@ public class MWPlanner : Gtk.Application {
     private double lx;
     private double ly;
     private Gtk.MenuItem menuup;
-private Gtk.MenuItem menudown;
+    private Gtk.MenuItem menudown;
     private Gtk.MenuItem menureplay;
+    private Gtk.MenuItem menurestore;
+    private Gtk.MenuItem menustore;
     private Gtk.MenuItem menuloadlog;
     private Gtk.MenuItem menubblog;
     private Gtk.MenuItem menubbload;
@@ -891,6 +893,19 @@ private Gtk.MenuItem menudown;
         menudown.activate.connect (() => {
                 download_quad();
             });
+
+        menurestore = builder.get_object ("menu_restore_eeprom") as Gtk.MenuItem;
+        menurestore.sensitive =false;
+        menurestore.activate.connect (() => {
+                restore_mission();
+            });
+
+        menustore = builder.get_object ("menu_store_eeprom") as Gtk.MenuItem;
+        menustore.sensitive =false;
+        menustore.activate.connect (() => {
+                store_mission();
+            });
+
 
         menureplay = builder.get_object ("replay_log") as Gtk.MenuItem;
         menureplay.activate.connect (() => {
@@ -1716,6 +1731,16 @@ private Gtk.MenuItem menudown;
         else
             vpos = true;
         return vpos;
+    }
+
+    private void store_mission()
+    {
+        MWPLog.message("Store Mission TBD\n");
+    }
+
+    private void restore_mission()
+    {
+        MWPLog.message("Restore Mission TBD\n");
     }
 
     private void start_poll_timer()
