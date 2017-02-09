@@ -137,7 +137,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Restore saved mission from EEPROM
-Mission will also be downloaded to mwp</property>
+Mission will also be downloaded to mwp, replacing any currently displayed mission.</property>
                         <property name="label" translatable="yes">Restore Mission from EEPROM</property>
                         <property name="use_underline">True</property>
                         <accelerator key="r" signal="activate" modifiers="GDK_CONTROL_MASK"/>
@@ -147,7 +147,7 @@ Mission will also be downloaded to mwp</property>
                       <object class="GtkMenuItem" id="menu_store_eeprom">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Store mission to EEPROM</property>
+                        <property name="tooltip_text" translatable="yes">Store mission to EEPROM. The current mission will be uplaoded and verified first. If no mission is loaded, any mission stored in eeprom will be cleared.</property>
                         <property name="label" translatable="yes">Store Mission to EEPROM</property>
                         <property name="use_underline">True</property>
                         <accelerator key="s" signal="activate" modifiers="GDK_CONTROL_MASK"/>

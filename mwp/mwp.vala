@@ -3051,17 +3051,14 @@ public class MWPlanner : Gtk.Application {
                                         ms.minx = mi.lon;
                                 }
                             }
-                            ms.zoom = 16;
+                            ms.zoom = view.get_max_zoom_level();
                             ms.cy = (ms.maxy + ms.miny) / 2.0;
                             ms.cx = (ms.maxx + ms.minx) / 2.0;
                             if (centreon == false)
-                            {
-                                var mmax = view.get_max_zoom_level();
                                 view.center_on(ms.cy, ms.cx);
-                                if (wpmgr.wp_flag != WPDL.REPLAY)
-                                    view.set_property("zoom-level", mmax-1);
-                            }
                             markers.add_list_store(ls);
+                            validatelab.set_text("✔"); // u+2714
+
                         }
                         wp_resp={};
                     }
@@ -4060,7 +4057,8 @@ public class MWPlanner : Gtk.Application {
             boxnames = null;
             msp.close();
             c.set_label("Connect");
-            menuncfg.sensitive = menuup.sensitive = menudown.sensitive = false;
+            menustore.sensitive = menurestore.sensitive =
+                menuncfg.sensitive = menuup.sensitive = menudown.sensitive = false;
             navconf.hide();
             duration = -1;
             if(craft != null)
@@ -4071,6 +4069,7 @@ public class MWPlanner : Gtk.Application {
             set_error_status(null);
             xsensor = 0;
             clear_sensor_array();
+            validatelab.set_text("");
         }
         else
         {
