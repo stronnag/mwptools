@@ -484,7 +484,8 @@ public class MWPlanner : Gtk.Application {
         VALIDATE,
         REPLACE,
         POLL,
-        REPLAY
+        REPLAY,
+        SAVE_EEPROM
     }
 
     private struct WPMGR
@@ -882,28 +883,29 @@ public class MWPlanner : Gtk.Application {
                 about.hide();
             });
 
-        menuup = builder.get_object ("upload_quad") as Gtk.MenuItem;
+        menuup = builder.get_object ("upload_mission") as Gtk.MenuItem;
         menuup.sensitive = false;
         menuup.activate.connect (() => {
-                upload_quad();
+                upload_mission(WPDL.VALIDATE);
             });
 
-        menudown = builder.get_object ("download_quad") as Gtk.MenuItem;
+        menudown = builder.get_object ("download_mission") as Gtk.MenuItem;
         menudown.sensitive =false;
         menudown.activate.connect (() => {
-                download_quad();
+                download_mission();
             });
 
         menurestore = builder.get_object ("menu_restore_eeprom") as Gtk.MenuItem;
-        menurestore.sensitive =false;
+        menurestore.sensitive = false;
         menurestore.activate.connect (() => {
-                restore_mission();
+                uint8 zb=0;
+                send_cmd(MSP.Cmds.WP_MISSION_LOAD, &zb, 1);
             });
 
         menustore = builder.get_object ("menu_store_eeprom") as Gtk.MenuItem;
         menustore.sensitive =false;
         menustore.activate.connect (() => {
-                store_mission();
+                upload_mission(WPDL.SAVE_EEPROM);
             });
 
 
@@ -1731,16 +1733,6 @@ public class MWPlanner : Gtk.Application {
         else
             vpos = true;
         return vpos;
-    }
-
-    private void store_mission()
-    {
-        MWPLog.message("Store Mission TBD\n");
-    }
-
-    private void restore_mission()
-    {
-        MWPLog.message("Restore Mission TBD\n");
     }
 
     private void start_poll_timer()
@@ -2610,6 +2602,7 @@ public class MWPlanner : Gtk.Application {
                 if (ncbits != 0)
                 {
                     menuncfg.sensitive = true;
+                    menustore.sensitive = menurestore.sensitive = true;
                     MWPLog.message("Generate navconf %x\n", navcap);
                     navconf.setup(ncbits);
                     if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
@@ -2921,7 +2914,8 @@ public class MWPlanner : Gtk.Application {
                     w.flag = *rp;
                 }
 
-                if (wpmgr.wp_flag == WPDL.VALIDATE)
+                if (wpmgr.wp_flag == WPDL.VALIDATE ||
+                    wpmgr.wp_flag == WPDL.SAVE_EEPROM)
                 {
                     WPFAIL fail = WPFAIL.OK;
                     validatelab.set_text("WP:%3d".printf(w.wp_no));
@@ -3000,6 +2994,11 @@ public class MWPlanner : Gtk.Application {
                         bleet_sans_merci(GENERAL_ALERT);
                         validatelab.set_text("✔"); // u+2714
                         mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
+                        if(wpmgr.wp_flag == WPDL.SAVE_EEPROM)
+                        {
+                            uint8 zb=0;
+                            send_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
+                        }
                     }
                 }
                 else if (wpmgr.wp_flag == WPDL.REPLACE ||
@@ -3503,7 +3502,9 @@ public class MWPlanner : Gtk.Application {
                         return false;
                     });
                 break;
-
+            case MSP.Cmds.WP_MISSION_LOAD:
+                download_mission();
+                break;
             default:
                 MWPLog.message ("** Unknown response %d (%dbytes)\n", cmd, len);
                 break;
@@ -3840,7 +3841,7 @@ public class MWPlanner : Gtk.Application {
         licol= icol;
     }
 
-    private void upload_quad()
+    private void upload_mission(WPDL flag)
     {
         validatelab.set_text("");
 
@@ -3877,7 +3878,7 @@ public class MWPlanner : Gtk.Application {
         wpmgr.npts = (uint8)wps.length;
         wpmgr.wpidx = 0;
         wpmgr.wps = wps;
-        wpmgr.wp_flag = WPDL.VALIDATE;
+        wpmgr.wp_flag = flag;
 
         var timeo = 1+(wps.length*1000);
         upltid = Timeout.add(timeo, () => {
@@ -4078,7 +4079,6 @@ public class MWPlanner : Gtk.Application {
         menubblog.sensitive = menubbload.sensitive = menureplay.sensitive =
         menuloadlog.sensitive = true;
         reboot_status();
-
     }
 
     private void init_sstats()
@@ -4737,7 +4737,7 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-    private void download_quad()
+    private void download_mission()
     {
         wp_resp= {};
         wpmgr.wp_flag = WPDL.REPLACE;

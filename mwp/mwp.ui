@@ -108,7 +108,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="upload_quad">
+                      <object class="GtkMenuItem" id="upload_mission">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Upload to FC</property>
@@ -118,7 +118,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="download_quad">
+                      <object class="GtkMenuItem" id="download_mission">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Download from FC</property>

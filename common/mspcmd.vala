@@ -60,7 +60,8 @@ public class MSP : Object
         SELECT_SETTING=210,
         GPSSVINFO = 164,
         GPSSTATISTICS = 166,
-
+        WP_MISSION_LOAD = 18,      // Load mission from NVRAM
+        WP_MISSION_SAVE = 19,
                 // Cleanflight extensions
         MODE_RANGES = 34, // FC out message Returns all mode ranges
         SET_MODE_RANGE = 35,   // FC in message Sets a single mode range
