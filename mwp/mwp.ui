@@ -150,7 +150,7 @@ Mission will also be downloaded to mwp, replacing any currently displayed missio
                         <property name="tooltip_text" translatable="yes">Store mission to EEPROM. The current mission will be uplaoded and verified first. If no mission is loaded, any mission stored in eeprom will be cleared.</property>
                         <property name="label" translatable="yes">Store Mission to EEPROM</property>
                         <property name="use_underline">True</property>
-                        <accelerator key="s" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                        <accelerator key="e" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>

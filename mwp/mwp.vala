@@ -50,9 +50,10 @@ public struct VersInfo
     uint8 mvers;
     MWChooser.MWVAR fctype;
     string fc_var;
-    uint8 fc_vers[3];
-    uint8 fc_api[2];
+    string board;
     string fc_git;
+    uint8 fc_api[2];
+    uint8 fc_vers[3];
 }
 
 public struct TelemStats
@@ -292,6 +293,7 @@ public class MWPlanner : Gtk.Application {
     private bool prlabel = false;
     private bool centreon = false;
     private bool naze32 = false;
+    private bool mission_eeprom = false;
     private GtkChamplain.Embed embed;
     private PrefsDialog prefs;
     private SwitchDialog swd;
@@ -2465,8 +2467,16 @@ public class MWPlanner : Gtk.Application {
                 {
                     vi.fc_api[0] = raw[1];
                     vi.fc_api[1] = raw[2];
-                    add_cmd(MSP.Cmds.FC_VARIANT,null,0,1000);
+                    add_cmd(MSP.Cmds.BOARD_INFO,null,0,1000);
                 }
+                break;
+
+            case MSP.Cmds.BOARD_INFO:
+                raw[4]=0;
+                vi.board = (string)raw[0:3];
+                if(vi.board == "AFNA")
+                    vi.board = "NAZE";
+                add_cmd(MSP.Cmds.FC_VARIANT,null,0,1000);
                 break;
 
             case MSP.Cmds.FC_VARIANT:
@@ -2514,6 +2524,9 @@ public class MWPlanner : Gtk.Application {
                     verlab.set_label(fcv);
                     if(inav)
                     {
+                        mission_eeprom = (vi.board != "NAZE" &&
+                                          vi.board != "CC3D" &&
+                                          raw[0] >= 1 && raw[1] >= 6);
                         add_cmd(MSP.Cmds.BUILD_INFO, null, 0, 1000);
                     }
                     else
@@ -2526,7 +2539,8 @@ public class MWPlanner : Gtk.Application {
                 uint8 gi[16] = raw[19:len];
                 gi[len-19] = 0;
                 vi.fc_git = (string)gi;
-                var vers = "%s (%s)".printf(verlab.get_label(), vi.fc_git);
+                var vers = "%s %s (%s)".printf(verlab.get_label(), vi.board,
+                                               vi.fc_git);
                 verlab.set_label(vers);
                 MWPLog.message("%s\n", vers);
                 add_cmd(MSP.Cmds.BOXNAMES,null,0,1000);
@@ -2551,8 +2565,7 @@ public class MWPlanner : Gtk.Application {
 
                     deserialise_u32(raw+3, out capability);
 
-                    MWPLog.message("set mrtype=%u\n", vi.mrtype);
-                    MWPLog.message("cap =%x\n", raw[3]);
+                    MWPLog.message("set mrtype=%u cap =%x\n", vi.mrtype, raw[3]);
                     MWChooser.MWVAR _mwvar = mwvar;
 
                     if(mwvar == MWChooser.MWVAR.AUTO)
@@ -2602,7 +2615,8 @@ public class MWPlanner : Gtk.Application {
                 if (ncbits != 0)
                 {
                     menuncfg.sensitive = true;
-                    menustore.sensitive = menurestore.sensitive = true;
+                    if(mission_eeprom)
+                        menustore.sensitive = menurestore.sensitive = true;
                     MWPLog.message("Generate navconf %x\n", navcap);
                     navconf.setup(ncbits);
                     if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
