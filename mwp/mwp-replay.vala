@@ -357,6 +357,7 @@ public class ReplayThread : GLib.Object
                                     var mwvers = obj.get_int_member ("mwvers");
                                     var cap = obj.get_int_member ("capability");
                                     uint fctype = 42;
+                                    string fcboard="UNKN";
                                     if(obj.has_member("mission"))
                                     {
                                         var mfn =  obj.get_string_member("mission");
@@ -376,6 +377,8 @@ public class ReplayThread : GLib.Object
 
                                     if(obj.has_member("fctype"))
                                         fctype = (uint)obj.get_int_member ("fctype");
+                                    if(obj.has_member("fcboard"))
+                                        fcboard = obj.get_string_member ("fcboard");
                                     if(obj.has_member("profile"))
                                         profile = (uint)obj.get_int_member ("profile");
                                     if(obj.has_member("fc_var"))
@@ -387,6 +390,16 @@ public class ReplayThread : GLib.Object
                                     {
                                         fcvar = " CF ";
                                         fcvers = 0x010501;
+                                    }
+
+                                    if(obj.has_member("fcboard"))
+                                    {
+                                        buf[0] = fcboard[0];
+                                        buf[1] = fcboard[1];
+                                        buf[2] = fcboard[2];
+                                        buf[3] = fcboard[3];
+                                        buf[4] = buf[5] = 0;
+                                        send_rec(fd,MSP.Cmds.BOARD_INFO, 6, buf);
                                     }
 
                                     if(fcvar != null)

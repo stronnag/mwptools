@@ -63,6 +63,9 @@ public class Logger : GLib.Object
         builder.add_int_value (vi.fctype);
         builder.set_member_name ("profile");
         builder.add_int_value (profile);
+        builder.set_member_name ("fcboard");
+        builder.add_string_value (vi.board);
+
         if(boxnames != null)
         {
             builder.set_member_name ("boxnames");

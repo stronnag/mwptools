@@ -2242,6 +2242,126 @@ public class MWPlanner : Gtk.Application {
             });
     }
 
+    private string board_by_id()
+    {
+        string board="";
+        switch (vi.board)
+        {
+            case "FYF3":
+                board = "FURYF3";
+                break;
+            case "AIR3":
+                board = "AIRHEROF3";
+                break;
+            case "AFNA":
+                board = "NAZE";
+                break;
+            case "AWF3":
+                board = "ALIENWIIF3";
+                break;
+            case "OLI1":
+                board = "OLIMEXINO";
+                break;
+            case "OBSD":
+                board = "OMNIBUSF4";
+                break;
+            case "OBF4":
+                board = "OMNIBUSF4";
+                break;
+            case "BJF4":
+                board = "BLUEJAYF4";
+                break;
+            case "CLBR":
+                board = "COLIBRI_RACE";
+                break;
+            case "COLI":
+                board = "COLIBRI";
+                break;
+            case "PIKO":
+                board = "PIKOBLX";
+                break;
+            case "SRF3":
+                board = "SPRACINGF3";
+                break;
+            case "ABF4":
+                board = "AIRBOTF4";
+                break;
+            case "CJM1":
+                board = "CJMCU";
+                break;
+            case "SDF3":
+                board = "STM32F3DISCOVERY";
+                break;
+            case "RMDO":
+                board = "RMDO";
+                break;
+            case "SPKY":
+                board = "SPARKY";
+                break;
+            case "YPF4":
+                board = "YUPIF4";
+                break;
+            case "PXR4":
+                board = "PIXRACER";
+                break;
+            case "ANY7":
+                board = "ANYFCF7";
+                break;
+            case "F4BY":
+                board = "F4BY";
+                break;
+            case "CPM1":
+                board = "CRAZEPONYMINI";
+                break;
+            case "MOTO":
+                board = "MOTOLAB";
+                break;
+            case "SPEV":
+                board = "SPRACINGF3EVO";
+                break;
+            case "EUF1":
+                board = "EUSTM32F103RC";
+                break;
+            case "REF3":
+                board = "RCEXPLORERF3";
+                break;
+            case "SPK2":
+                board = "SPARKY2";
+                break;
+            case "REVO":
+                board = "REVO";
+                break;
+            case "ANYF":
+                board = "ANYFC";
+                break;
+            case "SRFM":
+                board = "SPRACINGF3MINI";
+                break;
+            case "LUX" :
+                board = "LUX_RACE";
+                break;
+            case "FDV1":
+                board = "FISHDRONEF4";
+                break;
+            case "AFF3":
+                board = "ALIENFLIGHTF3";
+                break;
+            case "103R":
+                board = "PORT103R";
+                break;
+            case "CHF3":
+                board = "CHEBUZZF3";
+                break;
+            case "OMNI":
+                board = "OMNIBUS";
+                break;
+            case "CC3D":
+                board = "CC3D";
+                break;
+        }
+        return board;
+    }
+
     private void handle_msp_status(uint8[]raw)
     {
         uint32 bxflag;
@@ -2474,8 +2594,6 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.BOARD_INFO:
                 raw[4]=0;
                 vi.board = (string)raw[0:3];
-                if(vi.board == "AFNA")
-                    vi.board = "NAZE";
                 add_cmd(MSP.Cmds.FC_VARIANT,null,0,1000);
                 break;
 
@@ -2524,7 +2642,7 @@ public class MWPlanner : Gtk.Application {
                     verlab.set_label(fcv);
                     if(inav)
                     {
-                        mission_eeprom = (vi.board != "NAZE" &&
+                        mission_eeprom = (vi.board != "AFNA" &&
                                           vi.board != "CC3D" &&
                                           raw[0] >= 1 && raw[1] >= 6);
                         add_cmd(MSP.Cmds.BUILD_INFO, null, 0, 1000);
@@ -2539,7 +2657,8 @@ public class MWPlanner : Gtk.Application {
                 uint8 gi[16] = raw[19:len];
                 gi[len-19] = 0;
                 vi.fc_git = (string)gi;
-                var vers = "%s %s (%s)".printf(verlab.get_label(), vi.board,
+                var board = board_by_id();
+                var vers = "%s %s (%s)".printf(verlab.get_label(), board,
                                                vi.fc_git);
                 verlab.set_label(vers);
                 MWPLog.message("%s\n", vers);
