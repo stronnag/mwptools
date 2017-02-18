@@ -207,6 +207,8 @@ public class Logger : GLib.Object
         var builder = init("ltm_xframe");
         builder.set_member_name ("hdop");
         builder.add_int_value(x.hdop);
+        builder.set_member_name ("sensorok");
+        builder.add_int_value(x.sensorok);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);
