@@ -408,7 +408,7 @@ public class MWPlanner : Gtk.Application {
 
     private bool use_gst = false;
     private bool inav = false;
-//    private bool ck_sensors = false;
+    private bool sensor_alm = false;
     private uint8 xs_state = 0;
 
     private uint16  rhdop = 10000;
@@ -1950,6 +1950,8 @@ public class MWPlanner : Gtk.Application {
         ulong reqsize = 0;
         requests.resize(0);
 
+        sensor_alm = false;
+
         requests += MSP.Cmds.STATUS;
         reqsize += MSize.MSP_STATUS;
 
@@ -2037,7 +2039,8 @@ public class MWPlanner : Gtk.Application {
             MWPLog.message("sensor health %04x %d %d\n", sensor, val, xs_state);
             if(val == 1)
             {
-                sound = RED_ALERT;
+                sound = (sensor_alm) ? GENERAL_ALERT : RED_ALERT;
+                sensor_alm = true;
                 msg = "<span font='24' foreground = 'red'>SENSOR FAILURE</span>";
                 tout = 10;
                 gmt = Gtk.MessageType.ERROR;
@@ -2049,7 +2052,7 @@ public class MWPlanner : Gtk.Application {
                 tout = 2;
                 gmt = Gtk.MessageType.INFO;
             }
-            bleet_sans_merci(RED_ALERT);
+            bleet_sans_merci(sound);
             mwp_warning_box(msg, gmt, tout);
             navstatus.hw_failure(val);
             xs_state = val;
