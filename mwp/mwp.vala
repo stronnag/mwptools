@@ -3352,7 +3352,8 @@ public class MWPlanner : Gtk.Application {
                 xf.sensorok = raw[2];
                 alert_broken_sensors(xf.sensorok);
                 gpsinfo.set_hdop(rhdop/100.0);
-                Logger.ltm_xframe(xf);
+                if(Logger.is_logging)
+                    Logger.ltm_xframe(xf);
                 break;
 
             case MSP.Cmds.TA_FRAME:

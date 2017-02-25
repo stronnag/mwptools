@@ -30,8 +30,8 @@ done
 
 case $HEX in
   *SPRACINGF3EVO.hex|*AIRBOTF4.hex)
-    hex2bin $HEX
     BIN=${HEX%%hex}bin
+    objcopy -I ihex $HEX -O binary $BIN
     unset HEX
     RM=$BIN
     ;;
