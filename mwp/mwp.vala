@@ -3140,6 +3140,7 @@ public class MWPlanner : Gtk.Application {
                 else if (wpmgr.wp_flag == WPDL.REPLACE ||
                          wpmgr.wp_flag == WPDL.REPLAY)
                 {
+                    validatelab.set_text("WP:%3d".printf(w.wp_no));
                     MissionItem m = MissionItem();
                     m.no= w.wp_no;
                     m.action = (MSP.Action)w.action;
