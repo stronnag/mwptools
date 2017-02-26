@@ -3346,10 +3346,11 @@ public class MWPlanner : Gtk.Application {
             break;
 
             case MSP.Cmds.TX_FRAME:
+                uint8* rp;
                 LTM_XFRAME xf = LTM_XFRAME();
-                deserialise_u16(raw, out rhdop);
+                rp = deserialise_u16(raw, out rhdop);
                 xf.hdop = rhdop;
-                xf.sensorok = raw[2];
+                xf.sensorok = *rp;
                 alert_broken_sensors(xf.sensorok);
                 gpsinfo.set_hdop(rhdop/100.0);
                 if(Logger.is_logging)
