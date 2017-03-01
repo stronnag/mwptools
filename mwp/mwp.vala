@@ -381,7 +381,6 @@ public class MWPlanner : Gtk.Application {
     private bool have_status;
     private bool have_wp;
     private bool have_nc;
-    private double nc_speed; // m/s
     private bool have_fcv;
     private bool have_fcvv;
     private bool vinit;
@@ -2863,7 +2862,9 @@ public class MWPlanner : Gtk.Application {
                 poscfg.nav_use_midthr_for_althold = *rp++;
                 rp = deserialise_u16(rp, out poscfg.nav_mc_hover_thr);
                 navconf.mr_update(poscfg);
-                nc_speed = poscfg.nav_max_speed / 100.0;
+                ls.set_mission_speed(poscfg.nav_max_speed / 100.0);
+                if (ls.lastid > 0)
+                    ls.calc_mission();
                 break;
 
             case MSP.Cmds.NAV_CONFIG:
@@ -2885,7 +2886,9 @@ public class MWPlanner : Gtk.Application {
                 rp = deserialise_u16(rp, out nc.fence);
                 nc.max_wp_number = *rp;
                 navconf.mw_update(nc);
-                nc_speed = nc.nav_speed_max / 100.0;
+                ls.set_mission_speed(nc.nav_speed_max / 100.0);
+                if (ls.lastid > 0)
+                    ls.calc_mission();
                 break;
 
             case MSP.Cmds.SET_NAV_CONFIG:
@@ -4243,6 +4246,7 @@ public class MWPlanner : Gtk.Application {
         xsensor = 0;
         nsampl = 0;
         clear_sensor_array();
+        ls.set_mission_speed(conf.nav_speed);
     }
 
     private void connect_serial()
@@ -4439,12 +4443,8 @@ public class MWPlanner : Gtk.Application {
     public Mission get_mission_data()
     {
         Mission m = ls.to_mission();
-        double speed;
-
-        speed = (have_nc) ? nc_speed : conf.nav_speed;
-
-        ls.calc_mission_dist(out m.dist, out m.lt, out m.et, 0.0, speed);
-        m.nspeed = speed;
+        ls.calc_mission_dist(out m.dist, out m.lt, out m.et);
+        m.nspeed = ls.get_mission_speed();
         if (conf.compat_vers != null)
             m.version = conf.compat_vers;
         return m;
