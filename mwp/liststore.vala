@@ -1097,7 +1097,7 @@ public class ListBox : GLib.Object
             int lt;
             int et;
 
-            var res = calc_mission_dist(out d, out lt, out et, extra);
+            var res = calc_mission_dist(out d, out lt, out et, extra, 0);
             if (res == true)
             {
                 route = "Distance: %.0f%s, fly: %ds, loiter: %ds".printf(
@@ -1115,12 +1115,15 @@ public class ListBox : GLib.Object
         mp.stslabel.set_text(route);
     }
 
-    public bool calc_mission_dist(out double d, out int lt, out int et,double extra=0.0)
+    public bool calc_mission_dist(out double d, out int lt, out int et,double extra=0.0, double speed = 0.0)
     {
         Gtk.TreeIter iter;
         MissionItem[] arry = {};
         double ets = 0.0;
         et = 0;
+
+        if(speed == 0.0)
+            speed = MWPlanner.conf.nav_speed;
 
         for(bool next=list_model.get_iter_first(out iter);next;next=list_model.iter_next(ref iter))
         {
@@ -1155,7 +1158,7 @@ public class ListBox : GLib.Object
         var n = 0;
         var rpt = 0;
         double lx = 0.0,ly=0.0;
-        double lspd = MWPlanner.conf.nav_speed;
+        double lspd = speed;
         var lastn = 0;
         bool ready = false;
         d = 0.0;
@@ -1238,14 +1241,13 @@ public class ListBox : GLib.Object
                 }
                 lx = cx;
                 ly = cy;
-                lspd = (p1 == 0) ? MWPlanner.conf.nav_speed :
-                    ((double)p1)/SPEED_CONV;
+                lspd = (p1 == 0) ? speed : ((double)p1)/SPEED_CONV;
             } while (n < nsize);
         }
         if(extra != 0)
         {
             d+=extra;
-            ets += (extra*1852/ MWPlanner.conf.nav_speed);
+            ets += (extra*1852/ speed);
         }
         d *= 1852.0;
         et = (int)ets + 3 * nsize; // 3 * vertices to allow for slow down

@@ -381,6 +381,7 @@ public class MWPlanner : Gtk.Application {
     private bool have_status;
     private bool have_wp;
     private bool have_nc;
+    private double nc_speed; // m/s
     private bool have_fcv;
     private bool have_fcvv;
     private bool vinit;
@@ -2862,10 +2863,10 @@ public class MWPlanner : Gtk.Application {
                 poscfg.nav_use_midthr_for_althold = *rp++;
                 rp = deserialise_u16(rp, out poscfg.nav_mc_hover_thr);
                 navconf.mr_update(poscfg);
+                nc_speed = poscfg.nav_max_speed / 100.0;
                 break;
 
             case MSP.Cmds.NAV_CONFIG:
-            {
                 remove_tid(ref cmdtid);
                 have_nc = true;
                 MSP_NAV_CONFIG nc = MSP_NAV_CONFIG();
@@ -2884,26 +2885,23 @@ public class MWPlanner : Gtk.Application {
                 rp = deserialise_u16(rp, out nc.fence);
                 nc.max_wp_number = *rp;
                 navconf.mw_update(nc);
-            }
-            break;
+                nc_speed = nc.nav_speed_max / 100.0;
+                break;
 
             case MSP.Cmds.SET_NAV_CONFIG:
                 send_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
                 break;
 
             case MSP.Cmds.COMP_GPS:
-            {
                 MSP_COMP_GPS cg = MSP_COMP_GPS();
                 uint8* rp;
                 rp = deserialise_u16(raw, out cg.range);
                 rp = deserialise_i16(rp, out cg.direction);
                 cg.update = *rp;
                 navstatus.comp_gps(cg,item_visible(DOCKLETS.NAVSTATUS));
-            }
-            break;
+                break;
 
             case MSP.Cmds.ATTITUDE:
-            {
                 MSP_ATTITUDE at = MSP_ATTITUDE();
                 uint8* rp;
                 rp = deserialise_i16(raw, out at.angx);
@@ -2920,21 +2918,17 @@ public class MWPlanner : Gtk.Application {
 
                 if((sensor & MSP.Sensors.GPS) == 0)
                     fbox.update(item_visible(DOCKLETS.FBOX));
-            }
-            break;
+                break;
 
             case MSP.Cmds.ALTITUDE:
-            {
                 MSP_ALTITUDE al = MSP_ALTITUDE();
                 uint8* rp;
                 rp = deserialise_i32(raw, out al.estalt);
                 deserialise_i16(rp, out al.vario);
                 navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
-            }
-            break;
+                break;
 
             case MSP.Cmds.ANALOG:
-            {
                 MSP_ANALOG an = MSP_ANALOG();
                 an.vbat = raw[0];
                 if(!have_mspradio)
@@ -2948,11 +2942,9 @@ public class MWPlanner : Gtk.Application {
                 }
                 var ivbat = an.vbat;
                 set_bat_stat(ivbat);
-            }
-            break;
+                break;
 
             case MSP.Cmds.RAW_GPS:
-            {
                 MSP_RAW_GPS rg = MSP_RAW_GPS();
                 uint8* rp = raw;
                 rg.gps_fix = *rp++;
@@ -3017,8 +3009,7 @@ public class MWPlanner : Gtk.Application {
                         process_pos_states(GPSInfo.lat,GPSInfo.lon,
                                            rg.gps_altitude, "RAW GPS");
                 }
-            }
-            break;
+                break;
 
             case MSP.Cmds.SET_WP:
                 if(wpmgr.wps.length > 0)
@@ -3031,7 +3022,6 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.WP:
-            {
                 remove_tid(ref cmdtid);
                 have_wp = true;
                 MSP_WP w = MSP_WP();
@@ -3214,8 +3204,7 @@ public class MWPlanner : Gtk.Application {
                     MWPCursor.set_normal_cursor(window);
                     MWPLog.message("unsolicited WP #%d\n", w.wp_no);
                 }
-            }
-            break;
+                break;
 
             case MSP.Cmds.EEPROM_WRITE:
                 break;
@@ -4447,17 +4436,19 @@ public class MWPlanner : Gtk.Application {
 
     }
 
-
     public Mission get_mission_data()
     {
         Mission m = ls.to_mission();
-        ls.calc_mission_dist(out m.dist, out m.lt, out m.et);
-        m.nspeed = conf.nav_speed;
+        double speed;
+
+        speed = (have_nc) ? nc_speed : conf.nav_speed;
+
+        ls.calc_mission_dist(out m.dist, out m.lt, out m.et, 0.0, speed);
+        m.nspeed = speed;
         if (conf.compat_vers != null)
             m.version = conf.compat_vers;
         return m;
     }
-
 
     public void on_file_save()
     {
