@@ -953,6 +953,13 @@ public class ShapeDialog : GLib.Object
 
 public class RadioStatus : GLib.Object
 {
+    private enum Radio_modes
+    {
+        UNDEF = -1,
+        RSSI = 1,
+        THREEDR = 0
+    }
+
     private Gtk.Label rxerr_label;
     private Gtk.Label fixerr_label;
     private Gtk.Label locrssi_label;
@@ -962,9 +969,14 @@ public class RadioStatus : GLib.Object
     private Gtk.Label remnoise_label;
     public Gtk.Grid grid {get; private set;}
     private MSP_RADIO r;
+    private Radio_modes mode;
+    private string label3[7];
+    private string labelr[7];
+    private Gtk.Label labels[7];
 
     public RadioStatus(Gtk.Builder builder)
     {
+        mode = Radio_modes.UNDEF;
         grid = builder.get_object ("grid4") as Gtk.Grid;
         rxerr_label = builder.get_object ("rxerrlab") as Gtk.Label;
         fixerr_label = builder.get_object ("fixerrlab") as Gtk.Label;
@@ -973,22 +985,45 @@ public class RadioStatus : GLib.Object
         txbuf_label = builder.get_object ("txbuflab") as Gtk.Label;
         noise_label = builder.get_object ("noiselab") as Gtk.Label;
         remnoise_label = builder.get_object ("remnoiselab") as Gtk.Label;
+
+        for(var i =0; i < 7; i++)
+        {
+            var labnam = "radlab%d".printf(i+1);
+            labels[i] = builder.get_object (labnam) as Gtk.Label;
+            label3[i] = labels[i].get_label();
+        }
+        labelr[0] = labelr[1] = labelr[4] =
+        labelr[5] =  labelr[6] = "";
+        labelr[2] = "RSSI";
+        labelr[3] = "%";
         grid.show_all();
+    }
+
+    private void unset_rssi_mode()
+    {
+        mode = Radio_modes.UNDEF;
     }
 
     public void update_rssi(ushort rssi, bool visible)
     {
         if(visible)
-            remrssi_label.set_label(rssi.to_string());
+        {
+            if(mode !=  Radio_modes.RSSI)
+                set_modes(Radio_modes.RSSI);
+            locrssi_label.set_label(rssi.to_string());
+            ushort pct = rssi*100/1023;
+            remrssi_label.set_label("%d%%".printf(pct));
+        }
     }
 
     public void update_ltm(LTM_SFRAME s,bool visible)
     {
+
         if(visible)
         {
             ushort rssi;
             rssi = 1023*s.rssi/254;
-            remrssi_label.set_label(rssi.to_string());
+            update_rssi(rssi, true);
         }
     }
 
@@ -1005,16 +1040,29 @@ public class RadioStatus : GLib.Object
 
     public void annul()
     {
+        unset_rssi_mode();
         r = {0};
-        display();
+        clear();
+    }
+
+    private void clear()
+    {
+        rxerr_label.set_label("");
+        fixerr_label.set_label("");
+        locrssi_label.set_label("");
+        remrssi_label.set_label("");
+        txbuf_label.set_label("");
+        noise_label.set_label("");
+        remnoise_label.set_label("");
     }
 
     public void update(MSP_RADIO _r, bool visible)
     {
         r = _r;
-
         if(visible)
         {
+            if(mode !=  Radio_modes.THREEDR)
+                set_modes(Radio_modes.THREEDR);
             display();
         }
 
@@ -1022,6 +1070,18 @@ public class RadioStatus : GLib.Object
         {
             Logger.radio(r);
         }
+    }
+    private void set_modes(Radio_modes r)
+    {
+        string [] labset;
+        clear();
+        if (r == Radio_modes.RSSI)
+            labset = labelr;
+        else
+            labset = label3;
+
+        for(var i =0; i < 7; i++)
+            labels[i].set_label(labset[i]);
     }
 }
 

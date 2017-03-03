@@ -2108,6 +2108,7 @@ public class MWPlanner : Gtk.Application {
 
         if(armed != larmed)
         {
+            radstatus.annul();
             if (armed == 1)
             {
                 reboot_status();
@@ -2134,9 +2135,6 @@ public class MWPlanner : Gtk.Application {
                 {
                     logb.active = true;
                 }
-
-                if(have_mspradio)
-                    radstatus.annul();
 
                 if(Logger.is_logging)
                 {
