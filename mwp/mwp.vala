@@ -4553,6 +4553,31 @@ public class MWPlanner : Gtk.Application {
         window.title = @"mwp = $basename";
     }
 
+    private uint guess_appropriate_zoom(Mission ms)
+    {
+        double cse,m_width,m_height;
+        const double erad = 6372.7982; // earth radius
+        const double ecirc = erad*Math.PI*2.0; // circumference
+        const double rad = 0.017453292; // deg to rad
+
+        Geo.csedist(ms.cy, ms.minx, ms.cy, ms.maxx, out m_width, out cse);
+        Geo.csedist(ms.miny, ms.cx, ms.maxy, ms.cx, out m_height, out cse);
+        m_width = m_width * 1852;
+        m_height = m_height * 1852;
+
+//        Gdk.Screen scn = Gdk.Screen.get_default();
+//        double dpi = scn.get_resolution(); // in case we need it ...
+        uint z;
+        for(z = view.get_max_zoom_level();
+            z >= view.get_min_zoom_level(); z--)
+        {
+            double s = 1000 * ecirc * Math.cos(ms.cy * rad) / (Math.pow(2,(z+8)));
+            if(s*conf.window_w > m_width && s*conf.window_h > m_height)
+                break;
+        }
+        return z;
+    }
+
     private void load_file(string fname, bool have_preview=false)
     {
         var ms = new Mission ();
@@ -4563,6 +4588,8 @@ public class MWPlanner : Gtk.Application {
             var mmax = view.get_max_zoom_level();
             var mmin = view.get_min_zoom_level();
             view.center_on(ms.cy, ms.cx);
+            if(ms.zoom == -1)
+                ms.zoom = guess_appropriate_zoom(ms);
 
             if (ms.zoom < mmin)
                 ms.zoom = mmin;

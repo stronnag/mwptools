@@ -116,9 +116,8 @@ public class Mission : GLib.Object
         }
         if(npoints != 0)
         {
-            if (zoom == -1)
+            if(zoom == -1)
             {
-                zoom = 18;
                 cy = (maxy + miny) / 2.0;
                 cx = (maxx + minx) / 2.0;
             }
