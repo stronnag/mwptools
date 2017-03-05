@@ -4555,6 +4555,9 @@ public class MWPlanner : Gtk.Application {
 
     private uint guess_appropriate_zoom(Mission ms)
     {
+            // Formula from:
+            // http://wiki.openstreetmap.org/wiki/Zoom_levels
+            //
         double cse,m_width,m_height;
         const double erad = 6372.7982; // earth radius
         const double ecirc = erad*Math.PI*2.0; // circumference
