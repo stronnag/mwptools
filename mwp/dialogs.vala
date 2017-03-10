@@ -193,7 +193,7 @@ public class FlightBox : GLib.Object
     private bool _allow_resize = true;
     private Gtk.Grid grid;
     private Gtk.Window _w;
-    private uint fh1=20;
+    public static uint fh1=20;
 
     public void allow_resize(bool exp)
     {
@@ -1010,9 +1010,11 @@ public class RadioStatus : GLib.Object
         {
             if(mode !=  Radio_modes.RSSI)
                 set_modes(Radio_modes.RSSI);
-            locrssi_label.set_label(rssi.to_string());
+            uint fs = FlightBox.fh1*40/100 ;
+
+            locrssi_label.set_label("<span font='%u'>%s</span>".printf(fs,rssi.to_string()));
             ushort pct = rssi*100/1023;
-            remrssi_label.set_label("%d%%".printf(pct));
+            remrssi_label.set_label("<span font='%u'>%d%%</span>".printf(fs,pct));
         }
     }
 

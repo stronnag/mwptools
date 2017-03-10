@@ -28,15 +28,6 @@ do
   esac
 done
 
-case $HEX in
-  *SPRACINGF3EVO.hex|*AIRBOTF4.hex)
-    BIN=${HEX%%hex}bin
-    objcopy -I ihex $HEX -O binary $BIN
-    unset HEX
-    RM=$BIN
-    ;;
-esac
-
 if [ -z "$DEV" ]
 then
  [ -n "$HEX" ] && DEV=/dev/ttyUSB0 || DEV=/dev/ttyACM0
@@ -51,6 +42,15 @@ then
   sleep 0.2
 fi
 
+case $HEX in
+  *SPRACINGF3EVO.hex|*AIRBOTF4.hex)
+    BIN=${HEX%%hex}bin
+    objcopy -I ihex $HEX -O binary $BIN
+    unset HEX
+    RM=$BIN
+    ;;
+esac
+
 if [ -n "$HEX" ]
 then
   if [ -n "$FERASE" ]
@@ -62,7 +62,6 @@ fi
 
 if [ -n "$BIN" ]
 then
- sleep 2
  dfu-util -d 0483:df11 --alt 0 -s 0x08000000:mass-erase:force:leave -D $BIN
  [ -n $RM ] && rm -f $RM
 fi

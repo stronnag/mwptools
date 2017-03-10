@@ -2548,6 +2548,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
         <property name="can_focus">False</property>
         <property name="halign">start</property>
         <property name="label" translatable="yes">...</property>
+        <property name="use_markup">True</property>
       </object>
       <packing>
         <property name="left_attach">1</property>
@@ -2560,6 +2561,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
         <property name="can_focus">False</property>
         <property name="halign">start</property>
         <property name="label" translatable="yes">...</property>
+        <property name="use_markup">True</property>
       </object>
       <packing>
         <property name="left_attach">1</property>
