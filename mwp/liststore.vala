@@ -100,6 +100,11 @@ public class ListBox : GLib.Object
                     no="";
                     m1 = ((double)m.param1);
                     have_rth = true;
+                    if (MWPlanner.conf.rth_autoland)
+                    {
+                        m1 = 1;
+                        MWPLog.message("Setting autoland for RTH\n");
+                    }
                     break;
                 default:
                     lastid++;
