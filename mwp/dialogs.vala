@@ -967,17 +967,20 @@ public class RadioStatus : GLib.Object
     private Gtk.Label txbuf_label;
     private Gtk.Label noise_label;
     private Gtk.Label remnoise_label;
-    public Gtk.Grid grid {get; private set;}
+    public Gtk.Box box {get; private set;}
+    private Gtk.Grid grid0;
+    private Gtk.Grid grid1;
     private MSP_RADIO r;
     private Radio_modes mode;
-    private string label3[7];
-    private string labelr[7];
-    private Gtk.Label labels[7];
+    private Gtk.Label rssi_pct;
+    private Gtk.Label rssi_value;
+    private Gtk.ProgressBar bar;
 
     public RadioStatus(Gtk.Builder builder)
     {
         mode = Radio_modes.UNDEF;
-        grid = builder.get_object ("grid4") as Gtk.Grid;
+
+        grid0 = builder.get_object ("grid4a") as Gtk.Grid;
         rxerr_label = builder.get_object ("rxerrlab") as Gtk.Label;
         fixerr_label = builder.get_object ("fixerrlab") as Gtk.Label;
         locrssi_label = builder.get_object ("locrssilab") as Gtk.Label;
@@ -985,23 +988,29 @@ public class RadioStatus : GLib.Object
         txbuf_label = builder.get_object ("txbuflab") as Gtk.Label;
         noise_label = builder.get_object ("noiselab") as Gtk.Label;
         remnoise_label = builder.get_object ("remnoiselab") as Gtk.Label;
-
-        for(var i =0; i < 7; i++)
-        {
-            var labnam = "radlab%d".printf(i+1);
-            labels[i] = builder.get_object (labnam) as Gtk.Label;
-            label3[i] = labels[i].get_label();
-        }
-        labelr[0] = labelr[1] = labelr[4] =
-        labelr[5] =  labelr[6] = "";
-        labelr[2] = "RSSI";
-        labelr[3] = "%";
-        grid.show_all();
+        grid1 = builder.get_object ("grid4b") as Gtk.Grid;
+        bar = builder.get_object ("rssi_bar") as Gtk.ProgressBar;
+        rssi_pct = builder.get_object ("rssi_pct") as Gtk.Label;
+        rssi_value = builder.get_object ("rssi_val") as Gtk.Label;
+        box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+        box.pack_start(grid1, true,true,0);
+        box.show_all();
     }
 
     private void unset_rssi_mode()
     {
         mode = Radio_modes.UNDEF;
+    }
+
+    private void set_modes(Radio_modes r)
+    {
+        var l = box.get_children();
+        Gtk.Grid g = (r == Radio_modes.THREEDR) ? grid0 : grid1;
+        if(l.first().data != g)
+        {
+            box.remove(l.first().data);
+            box.pack_start(g, true,true,0);
+        }
     }
 
     public void update_rssi(ushort rssi, bool visible)
@@ -1010,17 +1019,17 @@ public class RadioStatus : GLib.Object
         {
             if(mode !=  Radio_modes.RSSI)
                 set_modes(Radio_modes.RSSI);
-            uint fs = FlightBox.fh1*40/100 ;
-
-            locrssi_label.set_label("<span font='%u'>%s</span>".printf(fs,rssi.to_string()));
+            uint fs = FlightBox.fh1/2;
+            rssi_value.set_label("<span font='%u'>%s</span>".printf(fs,rssi.to_string()));
             ushort pct = rssi*100/1023;
-            remrssi_label.set_label("<span font='%u'>%d%%</span>".printf(fs,pct));
+            rssi_pct.set_label("<span font='%u'>%d%%</span>".printf(fs,pct));
+            double fract = rssi/1023.0;
+            bar.set_fraction(fract);
         }
     }
 
     public void update_ltm(LTM_SFRAME s,bool visible)
     {
-
         if(visible)
         {
             ushort rssi;
@@ -1056,6 +1065,9 @@ public class RadioStatus : GLib.Object
         txbuf_label.set_label("");
         noise_label.set_label("");
         remnoise_label.set_label("");
+        rssi_pct.set_label("");
+        rssi_value.set_label("");
+        bar.set_fraction(0.0);
     }
 
     public void update(MSP_RADIO _r, bool visible)
@@ -1072,18 +1084,6 @@ public class RadioStatus : GLib.Object
         {
             Logger.radio(r);
         }
-    }
-    private void set_modes(Radio_modes r)
-    {
-        string [] labset;
-        clear();
-        if (r == Radio_modes.RSSI)
-            labset = labelr;
-        else
-            labset = label3;
-
-        for(var i =0; i < 7; i++)
-            labels[i].set_label(labset[i]);
     }
 }
 

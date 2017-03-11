@@ -272,7 +272,7 @@ Mission will also be downloaded to mwp, replacing any currently displayed missio
 See Issue #431</property>
                         <property name="label" translatable="yes">Reboot</property>
                         <property name="use_underline">True</property>
-                        <accelerator key="r" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                        <accelerator key="exclam" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                   </object>
@@ -289,6 +289,23 @@ See Issue #431</property>
                   <object class="GtkMenu" id="menu4">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkMenuItem" id="menu_recentre_mission">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Recentre mission</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="menu_set_def_pos">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">The current map centre and scale will be set as the default position</property>
+                        <property name="label" translatable="yes">Set location as default</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
                     <child>
                       <object class="GtkMenuItem" id="menugoto">
                         <property name="visible">True</property>
@@ -2428,7 +2445,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       </packing>
     </child>
   </object>
-  <object class="GtkGrid" id="grid4">
+  <object class="GtkGrid" id="grid4a">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="halign">start</property>
@@ -2602,6 +2619,72 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <packing>
         <property name="left_attach">1</property>
         <property name="top_attach">6</property>
+      </packing>
+    </child>
+  </object>
+  <object class="GtkGrid" id="grid4b">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkProgressBar" id="rssi_bar">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">4</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="rssi_pct">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">0%</property>
+        <property name="use_markup">True</property>
+        <property name="justify">right</property>
+        <property name="xalign">1</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">3</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel" id="rssi_val">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">0</property>
+        <property name="use_markup">True</property>
+        <property name="justify">right</property>
+        <property name="xalign">1</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">&lt;span size='xx-small'&gt;RSSI&lt;/span&gt;</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">&lt;span size='xx-small'&gt;%&lt;/span&gt;</property>
+        <property name="use_markup">True</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">2</property>
       </packing>
     </child>
   </object>

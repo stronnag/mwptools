@@ -827,6 +827,21 @@ public class MWPlanner : Gtk.Application {
                 }
             });
 
+        menuop = builder.get_object ("menu_set_def_pos") as Gtk.MenuItem;
+        menuop.activate.connect(() =>
+            {
+                conf.latitude = view.get_center_latitude();
+                conf.longitude = view.get_center_longitude();
+                conf.zoom = view.get_zoom_level();
+                conf.save_settings();
+            });
+
+        menuop = builder.get_object ("menu_recentre_mission") as Gtk.MenuItem;
+        menuop.activate.connect(() =>
+            {
+                centre_mission(ls.to_mission(), true);
+            });
+
         reboot = builder.get_object ("_reboot_") as Gtk.MenuItem;
         reboot.activate.connect(() =>
             {
@@ -1223,7 +1238,7 @@ public class MWPlanner : Gtk.Application {
         dockitem[DOCKLETS.MISSION].add (scroll);
         dockitem[DOCKLETS.GPS].add (grid);
         dockitem[DOCKLETS.NAVSTATUS].add (navstatus.grid);
-        dockitem[DOCKLETS.RADIO].add (radstatus.grid);
+        dockitem[DOCKLETS.RADIO].add (radstatus.box);
         dockitem[DOCKLETS.TELEMETRY].add (telemstatus.grid);
         dockitem[DOCKLETS.FBOX].add (fbox.vbox);
         dockitem[DOCKLETS.ARTHOR].add (art_win.box);
@@ -2515,6 +2530,37 @@ public class MWPlanner : Gtk.Application {
         armed_processing(bxflag);
     }
 
+    private void centre_mission(Mission ms, bool ctr_on)
+    {
+        MissionItem [] mis = ms.get_ways();
+        if(mis.length > 0)
+        {
+            ms.maxx = ms.maxy = -999.0;
+            ms.minx = ms.miny = 999.0;
+            foreach(MissionItem mi in mis)
+            {
+                if(mi.action != MSP.Action.RTH &&
+                   mi.action != MSP.Action.JUMP &&
+                   mi.action != MSP.Action.SET_HEAD)
+                {
+                    if (mi.lat > ms.maxy)
+                        ms.maxy = mi.lat;
+                    if (mi.lon > ms.maxx)
+                        ms.maxx = mi.lon;
+                    if (mi.lat <  ms.miny)
+                        ms.miny = mi.lat;
+                    if (mi.lon <  ms.minx)
+                        ms.minx = mi.lon;
+                }
+            }
+            ms.zoom = view.get_max_zoom_level();
+            ms.cy = (ms.maxy + ms.miny) / 2.0;
+            ms.cx = (ms.maxx + ms.minx) / 2.0;
+            if (ctr_on)
+                view.center_on(ms.cy, ms.cx);
+        }
+    }
+
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
     {
         if(replayer != 1 &&
@@ -3162,27 +3208,7 @@ public class MWPlanner : Gtk.Application {
                         {
                             ms.set_ways(wp_resp);
                             ls.import_mission(ms);
-                            foreach(MissionItem mi in wp_resp)
-                            {
-                                if(mi.action != MSP.Action.RTH &&
-                                   mi.action != MSP.Action.JUMP &&
-                                   mi.action != MSP.Action.SET_HEAD)
-                                {
-                                    if (mi.lat > ms.maxy)
-                                        ms.maxy = mi.lat;
-                                    if (mi.lon > ms.maxx)
-                                        ms.maxx = mi.lon;
-                                    if (mi.lat <  ms.miny)
-                                        ms.miny = mi.lat;
-                                    if (mi.lon <  ms.minx)
-                                        ms.minx = mi.lon;
-                                }
-                            }
-                            ms.zoom = view.get_max_zoom_level();
-                            ms.cy = (ms.maxy + ms.miny) / 2.0;
-                            ms.cx = (ms.maxx + ms.minx) / 2.0;
-                            if (centreon == false)
-                                view.center_on(ms.cy, ms.cx);
+                            centre_mission(ms, !centreon);
                             markers.add_list_store(ls);
                             validatelab.set_text("✔"); // u+2714
 
