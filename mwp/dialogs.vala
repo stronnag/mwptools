@@ -642,6 +642,7 @@ public class PrefsDialog : GLib.Object
     private uint pspeed;
     private uint pdist;
     private bool pdms;
+    private Gtk.Switch rthland;
 
     private enum Buttons
     {
@@ -706,6 +707,7 @@ public class PrefsDialog : GLib.Object
             var e = builder.get_object (id) as Gtk.Entry;
             ents += e;
         }
+        rthland = builder.get_object("prefswitch10") as Gtk.Switch;
 
         Gtk.RadioButton button;
         string [] pnames = {
@@ -750,6 +752,8 @@ public class PrefsDialog : GLib.Object
             sb.truncate (sb.len - delimiter.length);
             ents[0].set_text(sb.str);
         }
+
+        rthland.active = conf.rth_autoland;
 
         string dp;
         dp = PosFormat.lat(conf.latitude, conf.dms);
@@ -862,6 +866,7 @@ public class PrefsDialog : GLib.Object
                     conf.settings.set_uint("speak-interval",u);
 
                 }
+                conf.rth_autoland = rthland.active;
                 break;
             case 1002:
                 break;
