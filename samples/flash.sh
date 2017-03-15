@@ -28,28 +28,27 @@ do
   esac
 done
 
+case $HEX in
+  *SPRACINGF3EVO.hex|*OMNIBUS*.hex)
+    BIN=${HEX%%hex}bin
+    IHEX=$HEX
+    unset HEX
+    RM=$BIN
+    ;;
+esac
+
 if [ -z "$DEV" ]
 then
  [ -n "$HEX" ] && DEV=/dev/ttyUSB0 || DEV=/dev/ttyACM0
 fi
 
 echo $DEV $RESCUE
-
 if [ -z "$RESCUE" ]
 then
   stty -F $DEV raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon
   echo -n 'R' >$DEV
   sleep 0.2
 fi
-
-case $HEX in
-  *SPRACINGF3EVO.hex|*AIRBOTF4.hex)
-    BIN=${HEX%%hex}bin
-    objcopy -I ihex $HEX -O binary $BIN
-    unset HEX
-    RM=$BIN
-    ;;
-esac
 
 if [ -n "$HEX" ]
 then
@@ -62,6 +61,8 @@ fi
 
 if [ -n "$BIN" ]
 then
- dfu-util -d 0483:df11 --alt 0 -s 0x08000000:mass-erase:force:leave -D $BIN
- [ -n $RM ] && rm -f $RM
+  objcopy -I ihex $IHEX -O binary $BIN
+  sleep 0.5
+  dfu-util -d 0483:df11 --alt 0 -s 0x08000000:mass-erase:force:leave -D $BIN
+  [ -n $RM ] && rm -f $RM
 fi

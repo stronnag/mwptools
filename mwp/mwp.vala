@@ -1452,10 +1452,18 @@ public class MWPlanner : Gtk.Application {
 
         if(conf.window_p == -1)
         {
+/*
+*** non-deprecated ****
             Gdk.Display dp = Gdk.Display.get_default();
             var mon = dp.get_monitor_at_window(window.get_window());
             var rect = mon.get_geometry();
             conf.window_p = rect.width*80/100;
+*/
+            var scr = window.get_screen();
+            var mon = scr.get_monitor_at_window(scr.get_active_window());
+            Gdk.Rectangle monitor;
+            scr.get_monitor_geometry(mon, out monitor);
+            conf.window_p = monitor.width*80/100;
         }
 
             // Hack (thanks to Inkscape for the clue) to made pane resize better
