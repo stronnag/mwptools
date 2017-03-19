@@ -2487,7 +2487,6 @@ public class MWPlanner : Gtk.Application {
             {
                 if(gpscnt != 0 && ((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS))
                 {
-//                    MWPLog.message("GPS appears %x\n", sensor);
                     build_pollreqs();
                 }
                 if(sensor != xsensor)
@@ -2531,7 +2530,9 @@ public class MWPlanner : Gtk.Application {
                     want_special |= POSMODE.WP;
                 }
                 else if ((xbits != bxflag) && craft != null)
+                {
                     craft.set_normal();
+                }
             }
             xbits = bxflag;
         }
@@ -3456,6 +3457,7 @@ public class MWPlanner : Gtk.Application {
                         want_special |= POSMODE.RTH;
                     else if(ltmflags != 15)
                     {
+                        MWPLog.message("LTM set normal\n");
                         craft.set_normal();
                     }
                     MWPLog.message("New LTM Mode %s (%d) %d %ds %f %f %x %x\n",

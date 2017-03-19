@@ -80,7 +80,9 @@ public class Logger : GLib.Object
             builder.set_member_name ("fc_vers");
             builder.add_int_value (nv);
             builder.set_member_name ("fc_vers_str");
-            builder.add_string_value ((string)vi.fc_vers);
+            builder.add_string_value ("%d.%d.%d".printf(vi.fc_vers[0],
+                                                        vi.fc_vers[1],
+                                                        vi.fc_vers[2]));
             if(vi.fc_git != null)
             {
                 builder.set_member_name ("git_info");

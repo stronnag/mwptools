@@ -301,11 +301,13 @@ public class Craft : GLib.Object
 
     public void set_normal()
     {
+//        MWPLog.message("craft: set normal\n");
         remove_special(RMIcon.ALL);
     }
 
     public void remove_special(RMIcon rmflags)
     {
+//        MWPLog.message("craft: remove special %x\n", rmflags);
         if(((rmflags & RMIcon.PH) != 0) && posp != null)
         {
             pmlayer.remove_marker(posp);
@@ -331,6 +333,7 @@ public class Craft : GLib.Object
         Clutter.Color colour;
         Clutter.Color black = { 0,0,0, 0xff };
         RMIcon rmflags = 0;
+//        MWPLog.message("craft: set special %d\n", wpno);
 
         switch(wpno)
         {
