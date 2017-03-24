@@ -4821,7 +4821,6 @@ public class MWPlanner : Gtk.Application {
         xaudio = conf.audioarmed;
 
         playfd = new int[2];
-//        var sr =  Posix.socketpair (Posix.AF_UNIX, Posix.SOCK_DGRAM, 0, playfd);
         var sr = cf_pipe(playfd);
 
         if(sr == 0)
