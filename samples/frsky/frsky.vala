@@ -2,29 +2,41 @@
 // valac --pkg gio-2.0 frsky.vala
 
 enum FrID {
-    AccX_DATA_ID =  0x0700,
-    AccY_DATA_ID = 0x0710,
-    AccZ_DATA_ID = 0x0720,
-    ASS_SPEED_DATA_ID = 0x0A00,
-    FAS_CURR_DATA_ID = 0x0200,
-    FAS_VOLT_DATA_ID = 0x0210,
-    FLVSS_CELL_DATA_ID = 0x0300,
-    FUEL_DATA_ID = 0x0600,
-    GPS_LAT_LON_DATA_ID = 0x0800,
-    GPS_ALT_DATA_ID =  0x0820,
-    GPS_SPEED_DATA_ID = 0x0830,
-    GPS_COG_DATA_ID = 0x0840,
-    GPS_HDOP_DATA_ID = 0xF103,
-    RPM_T1_DATA_ID = 0x0400,
-    RPM_T2_DATA_ID = 0x0410,
-    RPM_ROT_DATA_ID = 0x0500,
-    SP2UARTB_ADC3_DATA_ID = 0x0900,
-    SP2UARTB_ADC4_DATA_ID = 0x0910,
-    VARIO_ALT_DATA_ID = 0x0100,
-    VARIO_VSI_DATA_ID = 0x0110,
-    SP_RSSI = 0xf101,
-    SP_BAT = 0xf104,
-    SP_SWR = 0xf105,
+    ALT_ID = 0x0100,
+    VARIO_ID = 0x0110,
+    CURR_ID = 0x0200,
+    VFAS_ID = 0x0210,
+    CELLS_ID = 0x0300,
+    T1_ID = 0x0400,
+    T2_ID = 0x0410,
+    RPM_ID = 0x0500,
+    FUEL_ID = 0x0600,
+    ACCX_ID = 0x0700,
+    ACCY_ID = 0x0710,
+    ACCZ_ID = 0x0720,
+    GPS_LONG_LATI_ID = 0x0800,
+    GPS_ALT_ID = 0x0820,
+    GPS_SPEED_ID = 0x0830,
+    GPS_COURS_ID = 0x0840,
+    GPS_TIME_DATE_ID = 0x0850,
+    A3_ID = 0x0900,
+    A4_ID = 0x0910,
+    AIR_SPEED_ID = 0x0a00,
+    RBOX_BATT1_ID = 0x0b00,
+    RBOX_BATT2_ID = 0x0b10,
+    RBOX_STATE_ID = 0x0b20,
+    RBOX_CNSP_ID = 0x0b30,
+    DIY_ID = 0x5000,
+    DIY_STREAM_ID = 0x5000,
+    RSSI_ID = 0xf101,
+    ADC1_ID = 0xf102,
+    ADC2_ID = 0xf103,
+    SP2UART_A_ID = 0xfd00,
+    SP2UART_B_ID = 0xfd01,
+    BATT_ID = 0xf104,
+    SWR_ID = 0xf105,
+    XJT_VERSION_ID = 0xf106,
+    FUEL_QTY_ID = 0x0a10
 }
 
 enum FrProto {
@@ -53,7 +65,7 @@ string parse_lat_lon(uint val)
     uint16 bp ;
     uint16 ap ;
     uint32 parts ;
-    
+
     parts = val / 10000 ;
     bp = (uint16)(parts / 60 * 100) + (uint16)(parts % 60) ;
     ap = (uint16)(val % 10000);
@@ -64,58 +76,76 @@ string parse_lat_lon(uint val)
 void display_data(FrID id, uint val)
 {
     double r;
+
     switch(id)
     {
-        case FrID.AccX_DATA_ID:
-        case FrID.AccY_DATA_ID:
-        case FrID.AccZ_DATA_ID:
+        case FrID.ACCX_ID:
+        case FrID.ACCY_ID:
+        case FrID.ACCZ_ID:
             r = ((int)val) / 100.0;
-            stdout.printf("%s %.2f g\n",id.to_string(), r);            
+            stdout.printf("%s %.2f g\n",id.to_string(), r);
             break;
-        case FrID.FAS_VOLT_DATA_ID:
+        case FrID.VFAS_ID:
             r = val / 100.0;
             stdout.printf("%s %.1f V\n", id.to_string(), r);
             break;
-        case FrID.GPS_LAT_LON_DATA_ID:
+        case FrID.GPS_LONG_LATI_ID:
             var s = parse_lat_lon (val);
             stdout.printf("%s %s\n", id.to_string(), s);
             break;
-        case FrID.GPS_ALT_DATA_ID:
+        case FrID.GPS_ALT_ID:
             r =((int)val) / 100.0;
             stdout.printf("%s %.1f m", id.to_string(), r);
             break;
-        case FrID.GPS_SPEED_DATA_ID:
+        case FrID.GPS_SPEED_ID:
             r = ((val/1000.0)*0.51444444);
             stdout.printf("%s %.2f m/s\n", id.to_string(), r);
             break;
-        case FrID.GPS_COG_DATA_ID:
+        case FrID.GPS_COURS_ID:
             r = val / 100.0;
-            stdout.printf("%s %.1f°\n", id.to_string(), r); 
+            stdout.printf("%s %.1f°\n", id.to_string(), r);
             break;
-        case FrID.GPS_HDOP_DATA_ID:
-            r = val / 100.0; // /10.0 ????
-            stdout.printf("%s %.1f\n", id.to_string(), r); 
+        case FrID.ADC2_ID: // AKA HDOP
+            r = (val & 0xff) / 10.0;
+            stdout.printf("%s %.1f (hdop)\n", id.to_string(), r);
             break;
-
-        case FrID.VARIO_ALT_DATA_ID:
-            r = val / 100.0; // /10.0 ????
-            stdout.printf("%s %.2f m/s\n", id.to_string(), r); 
+        case FrID.ALT_ID:
+            r = val / 100.0;
+            stdout.printf("%s %.2f m/s\n", id.to_string(), r);
             break;
-                       
-        case FrID.ASS_SPEED_DATA_ID:
-        case FrID.FAS_CURR_DATA_ID:
-        case FrID.FLVSS_CELL_DATA_ID:
-        case FrID.FUEL_DATA_ID:
-        case FrID.RPM_T1_DATA_ID:
-        case FrID.RPM_T2_DATA_ID:
-        case FrID.RPM_ROT_DATA_ID:
-        case FrID.SP2UARTB_ADC3_DATA_ID:
-        case FrID.SP2UARTB_ADC4_DATA_ID:
-        case FrID.VARIO_VSI_DATA_ID:
-        case FrID.SP_RSSI:
-        case FrID.SP_BAT:
-        case FrID.SP_SWR:
-        stdout.printf("Unhandled %s, value %u\n", id.to_string(), val);
+        case FrID.VARIO_ID:
+        case FrID.CURR_ID:
+        case FrID.CELLS_ID:
+        case FrID.T1_ID:
+        case FrID.T2_ID:
+        case FrID.RPM_ID:
+        case FrID.FUEL_ID:
+        case FrID.GPS_TIME_DATE_ID:
+        case FrID.A3_ID:
+        case FrID.AIR_SPEED_ID:
+        case FrID.RBOX_BATT1_ID:
+        case FrID.RBOX_BATT2_ID:
+        case FrID.RBOX_STATE_ID:
+        case FrID.RBOX_CNSP_ID:
+        case FrID.DIY_ID:
+        case FrID.FUEL_QTY_ID:
+        case FrID.ADC1_ID:
+        case FrID.SP2UART_A_ID:
+        case FrID.SP2UART_B_ID:
+            stdout.printf("Unhandled %s, raw value %u\n", id.to_string(), val);
+            break;
+        case FrID.RSSI_ID:
+            stdout.printf("%s %u dB\n", id.to_string(), (val & 0xff));
+            break;
+        case FrID.XJT_VERSION_ID:
+            stdout.printf("%s %x.%x\n", id.to_string(),
+                          ((val & 0xffff) >> 8), (val & 0xff));
+            break;
+        case FrID.A4_ID:
+        case FrID.BATT_ID:
+                // not sure these are useful, due to internal scaling
+        case FrID.SWR_ID:
+//            stdout.printf("%s %u\n", id.to_string(), (val & 0xff));
             break;
         default:
             stdout.printf("Unknown %04x, value %u\n", id, val);
