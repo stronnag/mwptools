@@ -3375,7 +3375,8 @@ public class MWPlanner : Gtk.Application {
                 LTM_XFRAME xf = LTM_XFRAME();
                 rp = deserialise_u16(raw, out rhdop);
                 xf.hdop = rhdop;
-                xf.sensorok = *rp;
+                xf.sensorok = *rp++;
+                xf.spare[0] = *rp++;
                 alert_broken_sensors(xf.sensorok);
                 gpsinfo.set_hdop(rhdop/100.0);
                 if(Logger.is_logging)
