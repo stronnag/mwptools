@@ -213,6 +213,8 @@ public class Logger : GLib.Object
         builder.add_int_value(x.hdop);
         builder.set_member_name ("sensorok");
         builder.add_int_value(x.sensorok);
+        builder.set_member_name ("count");
+        builder.add_int_value(x.spare[0]);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);

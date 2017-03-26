@@ -138,7 +138,7 @@ void display_data(FrID id, uint val)
             stdout.printf("%s %u dB\n", id.to_string(), (val & 0xff));
             break;
         case FrID.XJT_VERSION_ID:
-            stdout.printf("%s %x.%x\n", id.to_string(),
+            stdout.printf("%s %u.%u\n", id.to_string(),
                           ((val & 0xffff) >> 8), (val & 0xff));
             break;
         case FrID.A4_ID:
