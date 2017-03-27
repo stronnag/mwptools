@@ -47,7 +47,8 @@ void set_fd_speed(int fd, int baudrate)
     switch (baudrate)
     {
         case 0:      baudrate=B115200; break;
-        case 2400:   baudrate=B4800; break;
+        case 1200:   baudrate=B1200; break;
+        case 2400:   baudrate=B2400; break;
         case 4800:   baudrate=B4800; break;
         case 9600:   baudrate=B9600; break;
         case 19200:  baudrate=B19200; break;
