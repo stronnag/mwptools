@@ -46,7 +46,6 @@ void set_fd_speed(int fd, int baudrate)
     tcgetattr(fd, &tio);
     switch (baudrate)
     {
-        case 0:      baudrate=B115200; break;
         case 1200:   baudrate=B1200; break;
         case 2400:   baudrate=B2400; break;
         case 4800:   baudrate=B4800; break;
@@ -56,6 +55,9 @@ void set_fd_speed(int fd, int baudrate)
         case 57600:  baudrate=B57600; break;
         case 115200: baudrate=B115200; break;
         case 230400: baudrate=B230400; break;
+        case 460800: baudrate=B460800; break;
+        case 921600: baudrate=B921600; break;
+        default: baudrate=B115200; break;
     }
     cfsetispeed(&tio,baudrate);
     cfsetospeed(&tio,baudrate);
