@@ -849,13 +849,11 @@ public class MWPlanner : Gtk.Application {
                 if(msp.available && armed == 0)
                 {
                     remove_tid(ref cmdtid);
-                    xdopoll = dopoll;
                     dopoll = false;
                     CLITerm t = new CLITerm(window);
                     t.configure_serial(msp);
                     t.show_all ();
                     t.on_exit.connect(() => {
-                            dopoll = xdopoll;
                             serial_doom(conbutton);
                             Timeout.add_seconds(2, () => {
                                     connect_serial();

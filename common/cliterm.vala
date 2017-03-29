@@ -65,9 +65,11 @@ public class CLITerm : Gtk.Window {
         oldmode  =  s.pmode;
         s.pmode = MWSerial.ProtoMode.CLI;
         s.cli_event.connect((buf,len) => {
+                string s;
+                s =  ((string)buf).replace("\r","");
                 Gtk.TextIter iter;
                 view.get_buffer().get_end_iter (out  iter);
-                view.get_buffer().insert(ref iter, (string)buf, -1);
+                view.get_buffer().insert(ref iter, s, -1);
             });
         s.write("#\n".data, 2);
     }
