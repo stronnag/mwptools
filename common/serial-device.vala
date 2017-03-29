@@ -70,6 +70,8 @@ public class MWSerial : Object
     private uint8 mavid2;
     private uint16 mavsum;
     private uint16 rxmavsum;
+    public ProtoMode pmode  {set; get; default=ProtoMode.NORMAL;}
+
 
     public enum ComMode
     {
@@ -82,6 +84,13 @@ public class MWSerial : Object
     {
         NORMAL=0,
         SIM = 1
+    }
+
+    public enum ProtoMode
+    {
+        NORMAL,
+        CLI,
+        FRSKY
     }
 
     public enum States
@@ -108,6 +117,8 @@ public class MWSerial : Object
     }
 
     public signal void serial_event (MSP.Cmds event, uint8[]result, uint len, bool err);
+    public signal void cli_event(uint8[]raw, uint len);
+
     public signal void serial_lost ();
 
     public MWSerial()
@@ -455,268 +466,275 @@ public class MWSerial : Object
                 }
             }
 
-            if(stime == 0)
-                stime =  GLib.get_monotonic_time();
-
-            ltime =  GLib.get_monotonic_time();
-            stats.rxbytes += res;
-            if(print_raw == true)
+            if(pmode == ProtoMode.CLI)
             {
-                dump_raw_data(buf, (int)res);
+                cli_event(buf, (uint)res);
             }
-
-            for(var nc = 0; nc < res; nc++)
+            else
             {
-                if (irawp == 255)
+                if(stime == 0)
+                    stime =  GLib.get_monotonic_time();
+
+                ltime =  GLib.get_monotonic_time();
+                stats.rxbytes += res;
+                if(print_raw == true)
                 {
-                    state = States.S_ERROR;
+                    dump_raw_data(buf, (int)res);
                 }
 
-                switch(state)
+                for(var nc = 0; nc < res; nc++)
                 {
-                    case States.S_ERROR:
-                        irawp = 0;
-                        if (buf[nc] == '$')
-                        {
-                            sp = nc;
-                            state=States.S_HEADER1;
-                            errstate = false;
-                        }
-                        else if (buf[nc] == 0xfe)
-                        {
-                            sp = nc;
-                            state=States.S_M_SIZE;
-                            errstate = false;
-                        }
-                        break;
+                    if (irawp == 255)
+                    {
+                        state = States.S_ERROR;
+                    }
 
-                    case States.S_HEADER:
-                        irawp = 0;
-                        raw[irawp++] = buf[nc];
-                        if (buf[nc] == '$')
-                        {
-                            sp = nc;
-                            state=States.S_HEADER1;
-                            errstate = false;
-                        }
-                        else if (buf[nc] == 0xfe)
-                        {
-                            sp = nc;
-                            state=States.S_M_SIZE;
-                            errstate = false;
-                        }
-                        else
-                        {
-                            error_counter();
-                            MWPLog.message("fail on header0 %x\n", buf[nc]);
-                            state=States.S_ERROR;
-                        }
-                        break;
-                    case States.S_HEADER1:
-                        raw[irawp++] = buf[nc];
-                        if(buf[nc] == 'M')
-                        {
-                            state=States.S_HEADER2;
-                        }
-                        else if(buf[nc] == 'T')
-                        {
-                            state=States.S_T_HEADER2;
-                        }
-                        else
-                        {
-                            error_counter();
-                            MWPLog.message("fail on header1 %x\n", buf[nc]);
-                            state=States.S_ERROR;
-                        }
-                        break;
-
-                    case States.S_T_HEADER2:
-                        needed = 0;
-                        raw[irawp++] = buf[nc];
-                        switch(buf[nc])
-                        {
-                            case 'G':
-                                needed = (uint8) MSize.LTM_GFRAME;
-                                cmd = MSP.Cmds.TG_FRAME;
-                                break;
-                            case 'A':
-                                needed = (uint8) MSize.LTM_AFRAME;
-                                cmd = MSP.Cmds.TA_FRAME;
-                                break;
-                            case 'S':
-                                needed = (uint8) MSize.LTM_SFRAME;
-                                cmd = MSP.Cmds.TS_FRAME;
-                                break;
-                            case 'O':
-                                needed = (uint8) MSize.LTM_OFRAME;
-                                cmd = MSP.Cmds.TO_FRAME;
-                                break;
-                            case 'N':
-                                needed = (uint8) MSize.LTM_NFRAME;
-                                cmd = MSP.Cmds.TN_FRAME;
-                                break;
-                            case 'X':
-                                needed = (uint8) MSize.LTM_XFRAME;
-                                cmd = MSP.Cmds.TX_FRAME;
-                                break;
-                            case 'Q':
-                                needed = 1;
-                                cmd = MSP.Cmds.TQ_FRAME;
-                                break;
-                            default:
-                                error_counter();
-                                MWPLog.message("fail on T_header2 %x\n", buf[nc]);
-                                state=States.S_ERROR;
-                                break;
-                        }
-                        if (needed > 0)
-                        {
-                            csize = needed;
-                            drawp= irawp;
-                            checksum = 0;
-                            state = States.S_DATA;
-                        }
-                        break;
-
-                    case States.S_HEADER2:
-                        raw[irawp++] = buf[nc];
-                        if((buf[nc] == readdirn ||
-                            buf[nc] == writedirn ||
-                            buf[nc] == '!'))
-                        {
-                            errstate = (buf[nc] != readdirn); // == '!'
-                            state = States.S_SIZE;
-                        }
-                        else
-                        {
-                            error_counter();
-                            MWPLog.message("fail on header2 %x\n", buf[nc]);
-                            state=States.S_ERROR;
-                        }
-                        break;
-
-                    case States.S_SIZE:
-                        raw[irawp++] = buf[nc];
-                        checksum = csize = needed = buf[nc];
-                        state = States.S_CMD;
-                        break;
-                    case States.S_CMD:
-                        raw[irawp++] = buf[nc];
-                        drawp= irawp;
-                        debug(" got cmd %d %d", buf[nc], csize);
-                        cmd = (MSP.Cmds)buf[nc];
-                        checksum ^= cmd;
-                        if (csize == 0)
-                        {
-                            state = States.S_CHECKSUM;
-                        }
-                        else
-                        {
-                            state = States.S_DATA;
-                        }
-                        break;
-                    case States.S_DATA:
-                            // debug("data csize = %d needed = %d", csize, needed);
-                        raw[irawp++] = buf[nc];
-                        needed--;
-                        if(needed == 0)
-                        {
-                            checksum = cksum(raw[drawp:drawp+csize],
-                                             csize, checksum);
-                            state = States.S_CHECKSUM;
-                        }
-                        break;
-                    case States.S_CHECKSUM:
-                        if(checksum  == buf[nc])
-                        {
-                            raw[irawp++] = buf[nc];
-                            debug(" OK on %d", cmd);
-                            state = States.S_HEADER;
-                            if(rawlog == true)
+                    switch(state)
+                    {
+                        case States.S_ERROR:
+                            irawp = 0;
+                            if (buf[nc] == '$')
                             {
-                                log_raw('i', raw, irawp);
+                                sp = nc;
+                                state=States.S_HEADER1;
+                                errstate = false;
                             }
-                            stats.msgs++;
-                            serial_event(cmd, raw[drawp:drawp+csize],
-                                         csize,errstate);
-                            irawp = drawp = 0;
-                        }
-                        else
-                        {
-                            error_counter();
-                            MWPLog.message("CRC Fail, got %d != %d (cmd=%d)\n",
-                                           buf[nc],checksum,cmd);
-                            state = States.S_ERROR;
-                        }
-                        break;
-                    case States.S_END:
-                        state = States.S_HEADER;
-                        break;
-                    case States.S_M_SIZE:
-                        csize = needed = buf[nc];
-                        mavsum = mavlink_crc(0xffff, csize);
-                        if(needed > 0)
-                        {
-                            irawp= 0;
-                        }
-                        state = States.S_M_SEQ;
-                        break;
-                    case States.S_M_SEQ:
-                        mavsum = mavlink_crc(mavsum, buf[nc]);
-                        state = States.S_M_ID1;
-                        break;
-                    case States.S_M_ID1:
-                        mavid1 = buf[nc];
-                        mavsum = mavlink_crc(mavsum, mavid1);
-                        state = States.S_M_ID2;
-                        break;
-                    case States.S_M_ID2:
-                        mavid2 = buf[nc];
-                        mavsum = mavlink_crc(mavsum, mavid2);
-                        state = States.S_M_MSGID;
-                        break;
-                    case States.S_M_MSGID:
-                        cmd = (MSP.Cmds)buf[nc];
-                        mavsum = mavlink_crc(mavsum, cmd);
-                        if (csize == 0)
-                            state = States.S_M_CRC1;
-                        else
-                            state = States.S_M_DATA;
-                        break;
-                    case States.S_M_DATA:
-                        mavsum = mavlink_crc(mavsum, buf[nc]);
-                        raw[irawp++] = buf[nc];
-                        needed--;
-                        if(needed == 0)
-                        {
-                            state = States.S_M_CRC1;
-                            mavlink_meta(cmd);
-                            mavsum = mavlink_crc(mavsum, mavcrc);
-                        }
-                        break;
-                    case States.S_M_CRC1:
-                        rxmavsum = buf[nc];
-                        state = States.S_M_CRC2;
-                        break;
-                    case States.S_M_CRC2:
-                        rxmavsum |= (buf[nc] << 8);
-                        if(rxmavsum == mavsum)
-                        {
-                            stats.msgs++;
-                            serial_event (cmd+MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT,
-                                         raw, csize,errstate);
+                            else if (buf[nc] == 0xfe)
+                            {
+                                sp = nc;
+                                state=States.S_M_SIZE;
+                                errstate = false;
+                            }
+                            break;
+
+                        case States.S_HEADER:
+                            irawp = 0;
+                            raw[irawp++] = buf[nc];
+                            if (buf[nc] == '$')
+                            {
+                                sp = nc;
+                                state=States.S_HEADER1;
+                                errstate = false;
+                            }
+                            else if (buf[nc] == 0xfe)
+                            {
+                                sp = nc;
+                                state=States.S_M_SIZE;
+                                errstate = false;
+                            }
+                            else
+                            {
+                                error_counter();
+                                MWPLog.message("fail on header0 %x\n", buf[nc]);
+                                state=States.S_ERROR;
+                            }
+                            break;
+                        case States.S_HEADER1:
+                            raw[irawp++] = buf[nc];
+                            if(buf[nc] == 'M')
+                            {
+                                state=States.S_HEADER2;
+                            }
+                            else if(buf[nc] == 'T')
+                            {
+                                state=States.S_T_HEADER2;
+                            }
+                            else
+                            {
+                                error_counter();
+                                MWPLog.message("fail on header1 %x\n", buf[nc]);
+                                state=States.S_ERROR;
+                            }
+                            break;
+
+                        case States.S_T_HEADER2:
+                            needed = 0;
+                            raw[irawp++] = buf[nc];
+                            switch(buf[nc])
+                            {
+                                case 'G':
+                                    needed = (uint8) MSize.LTM_GFRAME;
+                                    cmd = MSP.Cmds.TG_FRAME;
+                                    break;
+                                case 'A':
+                                    needed = (uint8) MSize.LTM_AFRAME;
+                                    cmd = MSP.Cmds.TA_FRAME;
+                                    break;
+                                case 'S':
+                                    needed = (uint8) MSize.LTM_SFRAME;
+                                    cmd = MSP.Cmds.TS_FRAME;
+                                    break;
+                                case 'O':
+                                    needed = (uint8) MSize.LTM_OFRAME;
+                                    cmd = MSP.Cmds.TO_FRAME;
+                                    break;
+                                case 'N':
+                                    needed = (uint8) MSize.LTM_NFRAME;
+                                    cmd = MSP.Cmds.TN_FRAME;
+                                    break;
+                                case 'X':
+                                    needed = (uint8) MSize.LTM_XFRAME;
+                                    cmd = MSP.Cmds.TX_FRAME;
+                                    break;
+                                case 'Q':
+                                    needed = 1;
+                                    cmd = MSP.Cmds.TQ_FRAME;
+                                    break;
+                                default:
+                                    error_counter();
+                                    MWPLog.message("fail on T_header2 %x\n", buf[nc]);
+                                    state=States.S_ERROR;
+                                    break;
+                            }
+                            if (needed > 0)
+                            {
+                                csize = needed;
+                                drawp= irawp;
+                                checksum = 0;
+                                state = States.S_DATA;
+                            }
+                            break;
+
+                        case States.S_HEADER2:
+                            raw[irawp++] = buf[nc];
+                            if((buf[nc] == readdirn ||
+                                buf[nc] == writedirn ||
+                                buf[nc] == '!'))
+                            {
+                                errstate = (buf[nc] != readdirn); // == '!'
+                                state = States.S_SIZE;
+                            }
+                            else
+                            {
+                                error_counter();
+                                MWPLog.message("fail on header2 %x\n", buf[nc]);
+                                state=States.S_ERROR;
+                            }
+                            break;
+
+                        case States.S_SIZE:
+                            raw[irawp++] = buf[nc];
+                            checksum = csize = needed = buf[nc];
+                            state = States.S_CMD;
+                            break;
+                        case States.S_CMD:
+                            raw[irawp++] = buf[nc];
+                            drawp= irawp;
+                            debug(" got cmd %d %d", buf[nc], csize);
+                            cmd = (MSP.Cmds)buf[nc];
+                            checksum ^= cmd;
+                            if (csize == 0)
+                            {
+                                state = States.S_CHECKSUM;
+                            }
+                            else
+                            {
+                                state = States.S_DATA;
+                            }
+                            break;
+                        case States.S_DATA:
+                                // debug("data csize = %d needed = %d", csize, needed);
+                            raw[irawp++] = buf[nc];
+                            needed--;
+                            if(needed == 0)
+                            {
+                                checksum = cksum(raw[drawp:drawp+csize],
+                                                 csize, checksum);
+                                state = States.S_CHECKSUM;
+                            }
+                            break;
+                        case States.S_CHECKSUM:
+                            if(checksum  == buf[nc])
+                            {
+                                raw[irawp++] = buf[nc];
+                                debug(" OK on %d", cmd);
+                                state = States.S_HEADER;
+                                if(rawlog == true)
+                                {
+                                    log_raw('i', raw, irawp);
+                                }
+                                stats.msgs++;
+                                serial_event(cmd, raw[drawp:drawp+csize],
+                                             csize,errstate);
+                                irawp = drawp = 0;
+                            }
+                            else
+                            {
+                                error_counter();
+                                MWPLog.message("CRC Fail, got %d != %d (cmd=%d)\n",
+                                               buf[nc],checksum,cmd);
+                                state = States.S_ERROR;
+                            }
+                            break;
+                        case States.S_END:
                             state = States.S_HEADER;
-                        }
-                        else
-                        {
-                            error_counter();
-                            MWPLog.message("MAVCRC Fail, got %x != %x [%x %x] (cmd=%u, len=%u)\n",
-                                           rxmavsum, mavsum,
-                                           mavid1, mavid2,
-                                           cmd, csize);
-                            state = States.S_ERROR;
-                        }
-                        break;
+                            break;
+                        case States.S_M_SIZE:
+                            csize = needed = buf[nc];
+                            mavsum = mavlink_crc(0xffff, csize);
+                            if(needed > 0)
+                            {
+                                irawp= 0;
+                            }
+                            state = States.S_M_SEQ;
+                            break;
+                        case States.S_M_SEQ:
+                            mavsum = mavlink_crc(mavsum, buf[nc]);
+                            state = States.S_M_ID1;
+                            break;
+                        case States.S_M_ID1:
+                            mavid1 = buf[nc];
+                            mavsum = mavlink_crc(mavsum, mavid1);
+                            state = States.S_M_ID2;
+                            break;
+                        case States.S_M_ID2:
+                            mavid2 = buf[nc];
+                            mavsum = mavlink_crc(mavsum, mavid2);
+                            state = States.S_M_MSGID;
+                            break;
+                        case States.S_M_MSGID:
+                            cmd = (MSP.Cmds)buf[nc];
+                            mavsum = mavlink_crc(mavsum, cmd);
+                            if (csize == 0)
+                                state = States.S_M_CRC1;
+                            else
+                                state = States.S_M_DATA;
+                            break;
+                        case States.S_M_DATA:
+                            mavsum = mavlink_crc(mavsum, buf[nc]);
+                            raw[irawp++] = buf[nc];
+                            needed--;
+                            if(needed == 0)
+                            {
+                                state = States.S_M_CRC1;
+                                mavlink_meta(cmd);
+                                mavsum = mavlink_crc(mavsum, mavcrc);
+                            }
+                            break;
+                        case States.S_M_CRC1:
+                            rxmavsum = buf[nc];
+                            state = States.S_M_CRC2;
+                            break;
+                        case States.S_M_CRC2:
+                            rxmavsum |= (buf[nc] << 8);
+                            if(rxmavsum == mavsum)
+                            {
+                                stats.msgs++;
+                                serial_event (cmd+MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT,
+                                              raw, csize,errstate);
+                                state = States.S_HEADER;
+                            }
+                            else
+                            {
+                                error_counter();
+                                MWPLog.message("MAVCRC Fail, got %x != %x [%x %x] (cmd=%u, len=%u)\n",
+                                               rxmavsum, mavsum,
+                                               mavid1, mavid2,
+                                               cmd, csize);
+                                state = States.S_ERROR;
+                            }
+                            break;
+                    }
                 }
             }
         }
@@ -788,7 +806,7 @@ public class MWSerial : Object
     {
         ssize_t size;
 
-        if(stime == 0)
+        if(stime == 0 && pmode == ProtoMode.NORMAL)
             stime =  GLib.get_monotonic_time();
 
         stats.txbytes += count;
@@ -838,7 +856,7 @@ public class MWSerial : Object
                 Posix.memcpy(&dstr[3],data,len);
                 var ck = cksum(dstr[3:len+3],len,0);
                 dstr[3+len] = ck;
-                write(dstr, len+4);
+                write(dstr, (len+4));
             }
         }
     }

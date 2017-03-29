@@ -240,6 +240,15 @@ Mission will also be downloaded to mwp, replacing any currently displayed missio
                       </object>
                     </child>
                     <child>
+                      <object class="GtkMenuItem" id="cliterm">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">CLI Serial Terminal</property>
+                        <property name="use_underline">True</property>
+                        <accelerator key="t" signal="activate" modifiers="GDK_SHIFT_MASK"/>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkMenuItem" id="nav_config_menu">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>

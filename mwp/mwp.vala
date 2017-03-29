@@ -265,6 +265,7 @@ public class MWPlanner : Gtk.Application {
     private Gtk.MenuItem menumwvar;
     private Gtk.MenuItem saved_menuitem;
     private Gtk.MenuItem reboot;
+    private Gtk.MenuItem menucli;
     private string saved_menutext;
 
     public static MWPSettings conf;
@@ -840,6 +841,28 @@ public class MWPlanner : Gtk.Application {
         menuop.activate.connect(() =>
             {
                 centre_mission(ls.to_mission(), true);
+            });
+
+
+        menucli = builder.get_object ("cliterm") as Gtk.MenuItem;
+        menucli.activate.connect(() => {
+                if(msp.available && armed == 0)
+                {
+                    remove_tid(ref cmdtid);
+                    xdopoll = dopoll;
+                    dopoll = false;
+                    CLITerm t = new CLITerm(window);
+                    t.configure_serial(msp);
+                    t.show_all ();
+                    t.on_exit.connect(() => {
+                            dopoll = xdopoll;
+                            serial_doom(conbutton);
+                            Timeout.add_seconds(2, () => {
+                                    connect_serial();
+                                    return !msp.available;
+                                });
+                        });
+                }
             });
 
         reboot = builder.get_object ("_reboot_") as Gtk.MenuItem;
@@ -2103,6 +2126,7 @@ public class MWPlanner : Gtk.Application {
     private void reboot_status()
     {
         reboot.sensitive =  (msp != null && msp.available && armed == 0);
+        menucli.sensitive =  (msp != null && msp.available && armed == 0);
     }
 
     private void armed_processing(uint32 flag)
