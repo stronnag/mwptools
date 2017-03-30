@@ -338,7 +338,6 @@ public class MWSerial : Object
         }
         else
         {
-            MWPLog.message("Connected %s\n", device);
             available = true;
             setup_reader(fd);
         }

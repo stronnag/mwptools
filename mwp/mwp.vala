@@ -4321,6 +4321,7 @@ public class MWPlanner : Gtk.Application {
             string estr;
             if (msp.open(serdev, conf.baudrate, out estr) == true)
             {
+                MWPLog.message("Connected %s\n", serdev);
                 menubblog.sensitive = menubbload.sensitive = menureplay.sensitive =
                 menuloadlog.sensitive = false;
 

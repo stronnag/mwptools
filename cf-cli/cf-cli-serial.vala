@@ -619,7 +619,7 @@ public class MWSerial : Object
                 nbytes += line.length;
                 if ((string)line != "dump\n" &&
                     !((string)line).has_prefix("diff") &&
-                    (string)line != "defaults\n" &&
+                    !((string)line).has_prefix("defaults") &&
                     (string)line != "save\n")
                     os.printf("%s", (string)line);
             }
