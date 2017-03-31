@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
+ * Copyright622 (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -522,11 +522,11 @@ public class MWSerial : Object
         return Path.build_filename(dirname, filename);
     }
 
-    public void dump_settings(string ifn="")
+    private bool check_fw()
     {
+        bool diff = false;
         uint8 [] line;
         int len;
-        bool diff = false;
 
         write("version\n");
         while(read_vers(out line, out len) == ResCode.OK)
@@ -542,15 +542,10 @@ public class MWSerial : Object
             var versp = parts[2].split(".");
             var v1 = int.parse(versp[0]);
             var v2 = int.parse(versp[1]);
-            if (v1 > 1 || (v1 == 1 && v2 > 4))
-            {
-                write("help\n");
-                while(read_line(out line, out len) == ResCode.OK)
-                {
-                    if (((string)line).has_prefix("diff"))
-                        diff = true;
-                }
-            }
+            var v3 = int.parse(versp[1]);
+            var vers = v3 + v2*100 + v1*100*100;
+            diff = (vers > 10500);
+            noreboot = (vers > 10602);
         }
         else if(((string)line).down().contains("betaflight"))
         {
@@ -558,6 +553,17 @@ public class MWSerial : Object
             diff = true;
             message ("Betaflight mode\n");
         }
+        return diff;
+    }
+
+
+
+    public void dump_settings(string ifn="")
+    {
+        uint8 [] line;
+        int len;
+
+        var diff = check_fw();
 
         if(nodiff)
             diff = false;
@@ -619,7 +625,7 @@ public class MWSerial : Object
                 nbytes += line.length;
                 if ((string)line != "dump\n" &&
                     !((string)line).has_prefix("diff") &&
-                    !((string)line).has_prefix("defaults") &&
+                    (string)line != "defaults\n" &&
                     (string)line != "save\n")
                     os.printf("%s", (string)line);
             }
@@ -1035,6 +1041,7 @@ public class MWSerial : Object
         bool docals = check_firmware(restore_file);
 
         message("auto cal: %s\n", docals.to_string());
+        check_fw();
 
         if(noreboot == false)
         {
@@ -1047,6 +1054,8 @@ public class MWSerial : Object
             while((res = read_line(out line, out len)) == ResCode.OK)
                 ;
         }
+        else
+            message("reboot not needed\n");
         replay_file(restore_file);
         set_line("save");
         message("Reboot on save\n");

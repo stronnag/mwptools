@@ -1,8 +1,8 @@
-public class CLITerm : Gtk.Window {
-
-    private Gtk.TextView view;
+public class CLITerm : Gtk.Window
+{
     private MWSerial s;
     private MWSerial.ProtoMode oldmode;
+    private Vte.Terminal term;
     public signal void on_exit();
 
     public CLITerm (Gtk.Window? w = null)
@@ -15,71 +15,42 @@ public class CLITerm : Gtk.Window {
         }
         this.title = "mwp CLI";
         this.window_position = Gtk.WindowPosition.CENTER;
-
-        this.destroy.connect (() =>
-            {
-                s.write("exit\n".data, 5);
+        this.destroy.connect (() => {
+                uint8 c = 4;
+                s.write(&c, 1);
                 s.pmode = oldmode;
                 on_exit();
             });
-        this.set_default_size (600, 400);
-        Gtk.Box box = new Gtk.Box (Gtk.Orientation.VERTICAL, 1);
-        this.add (box);
-        Gtk.ScrolledWindow scrolled = new Gtk.ScrolledWindow (null, null);
-        box.pack_start (scrolled, true, true, 0);
-        view = new Gtk.TextView ();
-        view.editable = false;
+        this.set_default_size (640, 400);
 
-            /* Scroll to the end on update */
-        view.size_allocate.connect(() => {
-                var adj = scrolled.get_vadjustment();
-                adj.set_value(adj.get_upper() - adj.get_page_size());
-            });
-
-        scrolled.add (view);
-
-        Gtk.Entry entry = new Gtk.Entry ();
-        this.add (entry);
-
-        entry.set_placeholder_text("Enter CLI command ...");
-        entry.set_icon_from_icon_name (Gtk.EntryIconPosition.SECONDARY, "edit-clear");		// Add a delete-button:
-        entry.icon_press.connect ((pos, event) => {
-                if (pos == Gtk.EntryIconPosition.SECONDARY) {
-                    entry.set_text ("");
+        term = new Vte.Terminal();
+        term.commit.connect((text,size) => {
+                switch(text[0])
+                {
+                    case 8:
+                    uint8 c = 127;
+                    s.write(&c,1);
+                    break;
+                    case 27:
+                    break;
+                    default:
+                    s.write(text, size);
+                    break;
                 }
             });
-
-        entry.activate.connect (() => {
-                unowned string str = entry.get_text ();
-                s.write(str.data,str.length);
-                s.write("\n", 1);
-                entry.set_text ("");
-            });
-        box.pack_start (entry, false, true, 0);
-        entry.grab_focus();
+        this.add (term);
     }
 
-    public void configure_serial(MWSerial _s)
+    public void configure_serial (MWSerial _s)
     {
         s = _s;
         oldmode  =  s.pmode;
         s.pmode = MWSerial.ProtoMode.CLI;
         s.cli_event.connect((buf,len) => {
-                uint8 []d = new uint8[len];
-                int i = 0;
-                for(var j = 0; j < len; j++)
-                {
-                    if(buf[j] != 0xd)
-                    {
-                        d[i] = buf[j];
-                        i++;
-                    }
-                }
-                d[i] = 0;
-                Gtk.TextIter iter;
-                view.get_buffer().get_end_iter (out  iter);
-                view.get_buffer().insert(ref iter, (string)d, i);
+                term.feed(buf);
             });
-        s.write("#\n".data, 2);
+        uint8 c = '#';
+        s.write(&c, 1);
     }
+
 }
