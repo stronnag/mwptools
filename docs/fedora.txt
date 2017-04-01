@@ -4,6 +4,9 @@ dnf install gtk3-devel gstreamer-devel clutter-devel webkitgtk3-devel \
     libgda-devel gobject-introspection-devel
 dnf install vala vala-devel vala-tools vala-doc
 dnf install libchamplain-gtk-devel libgdl-devel libgudev1-devel espeak-devel
+for cf-cli-ui
+
+dnf install vte291-devel
 
 git clone https://github.com/stronnag/mwptools.git
 
@@ -21,8 +24,5 @@ You must install the blackbox utilities
 https://github.com/cleanflight/blackbox-tools/
 in order to replay blackbox logs.
 
-for cf-cli-ui
-
-dnf install vte291-devel
 
 Then build it.

@@ -15,10 +15,13 @@ libgudev-1.0-dev
 libgstreamer1.0-dev
 libvala-dev   # optional, recommended (optimisation)
 
-and for cf-cli-ui
-
 libvte-2.91-dev (prferred) or
 libvte-2.90-dev (14.04 LTS)
+
+On some unsupported Ubuntu forks (e.g. Mint 17), you may also need to
+explicitly add
+
+libegl1-mesa-dev
 
 and for replay_bbox_ltm.rb
 
