@@ -751,6 +751,9 @@ public class MWSerial : Object
         write(line);
         write("\n");
         var to = 1;
+        if (line.has_prefix("defaults noreboot"))
+            Thread.usleep(1000*1000);
+
         if (line.has_prefix("aux "))
             to = 2;
         if (line.has_prefix("serial "))

@@ -2525,7 +2525,7 @@ public class MWPlanner : Gtk.Application {
                 report_bits(bxflag);
             }
 
-            if(armed != 0)
+            if(armed != 0 && replayer == 0 && last_tm == 0)
             {
                 if ((rth_mask != 0) &&
                     ((bxflag & rth_mask) != 0) &&

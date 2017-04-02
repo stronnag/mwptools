@@ -182,6 +182,7 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
 	msps[4][5] = m[1][0].ord - '0'.ord
 	msps[4][6] = m[2][0].ord - '0'.ord
 	msps[4][7] = m[3][0].ord - '0'.ord
+	inavers = (m[1].to_i*100 + m[2].to_i)*100 + m[3].to_i
 	i = 0
 	m[4].each_byte {|b| msps[5][24+i] = b ; i += 1}
 	bid = BOARD_MAP[m[5]]
@@ -197,6 +198,7 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
     send_msg skt, msp.pack('C*')
     sleep 0.01
   end
+  return inavers
 end
 
 def encode_atti r, gpshd=0
@@ -263,24 +265,44 @@ def encode_origin r
   msg
 end
 
-def encode_stats r,armed=1
+def encode_stats r,inavers,armed=1
   msg='$TS'
-  sts = case r[:navstate].to_i
-	when 0,1
-	  0 # get from flightmode
-	when 2,3
-	  8
-	when 4..7
-	  9
-	when 8..16
-	  13
-	when 18..21,28..31
-	  15
-	when 22..26
-	  10
-	else
-	  19
+  sts = nil
+  if inavers == nil or inavers < 10601
+    sts = case r[:navstate].to_i
+	  when 0,1                            # undef, idle
+	    0 # get from flightmode
+	  when 2,3 #althold
+	    8
+	  when 4..7 # poshold 2D
+	    9
+	  when 8..16,21  # RTH
+	    13
+	when 18..20,28..31 # landing
+	    15
+	  when 22..26 # WP
+	    10
+	  else
+	    19 #undef
 	end
+  else
+    sts = case r[:navstate].to_i
+	  when 0,1 # undef, idle
+	    0 # get from flightmode
+	  when 2,3 #althold
+	    8
+	  when 4..7 # poshold
+	    9
+	  when 8..11,13,14 # RTH
+	    13
+	  when 12,21,22,23,24    #landing
+	    15
+	  when 15..20 # WP
+	    10
+	  else
+	    19
+	  end
+  end
 
   sts = (sts << 2) | armed
   if r[:failsafephase_flags].strip != 'IDLE'
@@ -542,6 +564,7 @@ cmd << " \"#{bbox}\""
 lastr =nil
 llat = 0.0
 llon = 0.0
+vers=nil
 
 IO.popen(cmd,'rt') do |pipe|
   csv = CSV.new(pipe, csv_opts)
@@ -558,7 +581,7 @@ IO.popen(cmd,'rt') do |pipe|
   have_baro = (hdrs.has_key? :baroalt_cm)
 
 #  STDERR.puts "idx: #{idx} gi: #{gitinfos[idx-1]}"
-  send_init_seq dev,typ,have_sonar,have_baro,gitinfos[idx-1]
+  vers = send_init_seq dev,typ,have_sonar,have_baro,gitinfos[idx-1]
 
   csv.each do |row|
     next if row[:gps_numsat].to_i == 0
@@ -598,7 +621,7 @@ IO.popen(cmd,'rt') do |pipe|
       when 1,3,7,9
 	if  llat != 0.0 and llon != 0.0
 	  lastr = row
-	  msg = encode_stats row
+	  msg = encode_stats row,vers
 	  send_msg dev, msg
 	  msg = encode_nav row
 	  send_msg dev, msg
@@ -610,7 +633,7 @@ IO.popen(cmd,'rt') do |pipe|
 end
 # fake up a few disarm messages
 if lastr
-  msg = encode_stats lastr,0
+  msg = encode_stats lastr,vers,0
   0.upto(5) do
     send_msg dev, msg
     sleep 0.1
