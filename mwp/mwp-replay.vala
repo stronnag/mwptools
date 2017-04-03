@@ -480,35 +480,38 @@ public class ReplayThread : GLib.Object
                                     send_rec(fd,MSP.Cmds.MISC, (uint)nb, buf);
                                     break;
                                 case "armed":
-                                    var a = MSP_STATUS();
-                                    armed = obj.get_boolean_member("armed");
-                                    a.flag = (armed)  ? 1 : 0;
-                                    if(obj.has_member("flags"))
+                                    if(!have_ltm)
                                     {
-                                        var flag =  obj.get_int_member("flags");
-                                        a.flag |= (uint32)flag;
-                                        if(have_ltm && flag == 0)
+                                        var a = MSP_STATUS();
+                                        armed = obj.get_boolean_member("armed");
+                                        a.flag = (armed)  ? 1 : 0;
+                                        if(obj.has_member("flags"))
+                                        {
+                                            var flag =  obj.get_int_member("flags");
+                                            a.flag |= (uint32)flag;
+                                            if(have_ltm && flag == 0)
+                                                a.flag |= 4;
+                                        }
+                                        else
                                             a.flag |= 4;
-                                    }
-                                    else
-                                        a.flag |= 4;
 
-                                    if(obj.has_member("sensors"))
-                                    {
-                                        var s =  obj.get_int_member("sensors");
-                                        a.sensor = (uint16)s;
+                                        if(obj.has_member("sensors"))
+                                        {
+                                            var s =  obj.get_int_member("sensors");
+                                            a.sensor = (uint16)s;
+                                        }
+                                        else
+                                            a.sensor=(MSP.Sensors.ACC|
+                                                      MSP.Sensors.MAG|
+                                                      MSP.Sensors.BARO|
+                                                      MSP.Sensors.GPS);
+                                        a.i2c_errors_count = 0;
+                                        a.cycle_time=0;
+                                        a.global_conf=(uint8)profile;
+                                        xa = a;
+                                        var nb = serialise_status(a, buf);
+                                        send_rec(fd,MSP.Cmds.STATUS, (uint)nb, buf);
                                     }
-                                    else
-                                        a.sensor=(MSP.Sensors.ACC|
-                                                  MSP.Sensors.MAG|
-                                                  MSP.Sensors.BARO|
-                                                  MSP.Sensors.GPS);
-                                    a.i2c_errors_count = 0;
-                                    a.cycle_time=0;
-                                    a.global_conf=(uint8)profile;
-                                    xa = a;
-                                    var nb = serialise_status(a, buf);
-                                    send_rec(fd,MSP.Cmds.STATUS, (uint)nb, buf);
                                     break;
                                 case "analog":
                                     var volts = obj.get_double_member("voltage");
@@ -608,7 +611,7 @@ public class ReplayThread : GLib.Object
                                     s.rssi = (uint8)(obj.get_int_member("rssi"));
                                     s.airspeed = (uint8)(obj.get_int_member("airspeed"));
                                     s.flags = (uint8)(obj.get_int_member("flags"));
-
+                                    armed = (s.flags & 1) == 1;
                                     serialise_sf(s,buf);
                                     send_rec(fd,MSP.Cmds.TS_FRAME, MSize.LTM_SFRAME,buf);
                                     break;
