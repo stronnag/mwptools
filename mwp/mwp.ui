@@ -2695,7 +2695,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       </packing>
     </child>
     <child>
-      <object class="GtkLabel">
+      <object class="GtkLabel" id="__fix_obsolete__1491322421.169895__">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="label" translatable="yes">&lt;span size='xx-small'&gt;RSSI&lt;/span&gt;</property>
@@ -2707,7 +2707,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       </packing>
     </child>
     <child>
-      <object class="GtkLabel">
+      <object class="GtkLabel" id="__fix_obsolete__1491322421.1699097__">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="label" translatable="yes">&lt;span size='xx-small'&gt;%&lt;/span&gt;</property>
