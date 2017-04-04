@@ -149,7 +149,8 @@ public class Logger : GLib.Object
         write_stream();
     }
 
-    public static void armed(bool armed, time_t _duration, uint32 flags, uint32 sensor)
+    public static void armed(bool armed, time_t _duration, uint32 flags,
+                             uint32 sensor, bool telem=false)
     {
         duration = (int)_duration;
         var builder = init("armed");
@@ -164,6 +165,8 @@ public class Logger : GLib.Object
         builder.add_int_value(flags);
         builder.set_member_name("sensors");
         builder.add_int_value(sensor);
+        builder.set_member_name("telem");
+        builder.add_boolean_value(telem);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);

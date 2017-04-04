@@ -414,6 +414,7 @@ public class MWPlanner : Gtk.Application {
 
     private uint16  rhdop = 10000;
     private uint gpsintvl = 0;
+    private bool telem = false;
 
     private enum DEBUG_FLAGS
     {
@@ -2136,7 +2137,7 @@ public class MWPlanner : Gtk.Application {
 
         if(Logger.is_logging)
         {
-            Logger.armed((armed == 1), duration, flag,sensor);
+            Logger.armed((armed == 1), duration, flag,sensor, telem);
         }
 
         if(armed != larmed)
@@ -2171,7 +2172,7 @@ public class MWPlanner : Gtk.Application {
 
                 if(Logger.is_logging)
                 {
-                    Logger.armed(true,duration,flag, sensor);
+                    Logger.armed(true,duration,flag, sensor,telem);
                     if(rhdop != 10000)
                     {
                         LTM_XFRAME xf = LTM_XFRAME();
@@ -2197,7 +2198,7 @@ public class MWPlanner : Gtk.Application {
                 if(conf.logarmed == true)
                 {
                     if(Logger.is_logging)
-                        Logger.armed(false,duration,flag, sensor);
+                        Logger.armed(false,duration,flag, sensor,telem);
                     logb.active=false;
                 }
                 navstatus.reset_states();
@@ -2583,33 +2584,37 @@ public class MWPlanner : Gtk.Application {
 
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
     {
-        if(replayer != 1 &&
-           cmd > MSP.Cmds.LTM_BASE && cmd != MSP.Cmds.MAVLINK_MSG_ID_RADIO)
+        if(cmd > MSP.Cmds.LTM_BASE)
         {
-            if(nopoll == false)
+            telem = true;
+            if (replayer != 1 && cmd != MSP.Cmds.MAVLINK_MSG_ID_RADIO)
             {
-                dopoll = false;
-            }
-
-            if (errs == false)
-            {
-                if(last_tm == 0)
+                if(nopoll == false)
                 {
-                    MWPLog.message("LTM/Mavlink mode\n");
-                    remove_tid(ref cmdtid);
-                    init_sstats();
-                    if(naze32 != true)
-                    {
-                        naze32 = true;
-                        mwvar = vi.fctype = MWChooser.MWVAR.CF;
-                        var vers="CF Telemetry";
-                        verlab.set_label(vers);
-                    }
+                    dopoll = false;
                 }
-                last_tm = nticks;
-                last_gps = nticks;
+                if (errs == false)
+                {
+                    if(last_tm == 0)
+                    {
+                        MWPLog.message("LTM/Mavlink mode\n");
+                        remove_tid(ref cmdtid);
+                        init_sstats();
+                        if(naze32 != true)
+                        {
+                            naze32 = true;
+                            mwvar = vi.fctype = MWChooser.MWVAR.CF;
+                            var vers="CF Telemetry";
+                            verlab.set_label(vers);
+                        }
+                    }
+                    last_tm = nticks;
+                    last_gps = nticks;
+                }
             }
         }
+        else
+            telem = false;
 
         if(errs == true)
         {

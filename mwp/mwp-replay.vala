@@ -316,7 +316,7 @@ public class ReplayThread : GLib.Object
                         var dis = FileStream.open(relog,"r");
                         var parser = new Json.Parser ();
                         bool have_data = false;
-                        var have_ltm = false; // workaround for old mwp logging bug
+                        var telem = false;
                         uint profile = 0;
                         string fcvar = null;
                         uint fcvers = 0;
@@ -480,7 +480,7 @@ public class ReplayThread : GLib.Object
                                     send_rec(fd,MSP.Cmds.MISC, (uint)nb, buf);
                                     break;
                                 case "armed":
-                                    if(!have_ltm)
+                                    if(!telem)
                                     {
                                         var a = MSP_STATUS();
                                         armed = obj.get_boolean_member("armed");
@@ -489,8 +489,6 @@ public class ReplayThread : GLib.Object
                                         {
                                             var flag =  obj.get_int_member("flags");
                                             a.flag |= (uint32)flag;
-                                            if(have_ltm && flag == 0)
-                                                a.flag |= 4;
                                         }
                                         else
                                             a.flag |= 4;
@@ -512,6 +510,11 @@ public class ReplayThread : GLib.Object
                                         var nb = serialise_status(a, buf);
                                         send_rec(fd,MSP.Cmds.STATUS, (uint)nb, buf);
                                     }
+                                     if(obj.has_member("telem"))
+                                     {
+                                         telem = obj.get_boolean_member("telem");
+                                     }
+
                                     break;
                                 case "analog":
                                     var volts = obj.get_double_member("voltage");
@@ -604,7 +607,7 @@ public class ReplayThread : GLib.Object
                                     send_rec(fd,MSP.Cmds.RADIO, MSize.MSP_RADIO,buf);
                                     break;
                                 case "ltm_raw_sframe":
-                                    have_ltm = true;
+                                    telem = true;
                                     var s = LTM_SFRAME();
                                     s.vbat = (int16)(obj.get_int_member("vbat"));
                                     s.vcurr = (int16)(obj.get_int_member("vcurr"));
@@ -617,7 +620,8 @@ public class ReplayThread : GLib.Object
                                     break;
 
                                 case "ltm_raw_oframe":
-                                    have_ltm = true;                                                                        var o = LTM_OFRAME();
+                                    telem = true;
+                                    var o = LTM_OFRAME();
                                     o.lat = (int32)(obj.get_int_member("lat"));
                                     o.lon = (int32)(obj.get_int_member("lon"));
                                     o.fix = (uint8)(obj.get_int_member("fix"));
@@ -651,6 +655,7 @@ public class ReplayThread : GLib.Object
                                     break;
 
                                 case "mavlink_heartbeat":
+                                    telem = true;
                                     var m = Mav.MAVLINK_HEARTBEAT();
                                     m.custom_mode =  (uint32)obj.get_int_member("custom_mode");
                                     m.type =  (uint8)obj.get_int_member("mavtype");
@@ -661,6 +666,7 @@ public class ReplayThread : GLib.Object
                                     send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT, (uint8*)(&m), sizeof(Mav.MAVLINK_HEARTBEAT));
                                     break;
                                 case "mavlink_sys_status":
+                                    telem = true;
                                     var m = Mav.MAVLINK_SYS_STATUS();
                                     m.onboard_control_sensors_present =  (uint32)obj.get_int_member("onboard_control_sensors_present");
                                     m.onboard_control_sensors_enabled =  (uint32)obj.get_int_member("onboard_control_sensors_enabled");
@@ -678,6 +684,7 @@ public class ReplayThread : GLib.Object
                                     send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_ID_SYS_STATUS, (uint8*)(&m), sizeof(Mav.MAVLINK_SYS_STATUS));
                                     break;
                                 case "mavlink_gps_raw_int":
+                                    telem = true;
                                     var m = Mav.MAVLINK_GPS_RAW_INT();
                                     m.time_usec =  (uint64)obj.get_int_member("time_usec");
                                     m.lat =  (int32)obj.get_int_member("lat");
@@ -692,6 +699,7 @@ public class ReplayThread : GLib.Object
                                     send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT, (uint8*)(&m), sizeof(Mav.MAVLINK_GPS_RAW_INT));
                                     break;
                                 case "mavlink_attitude":
+                                    telem = true;
                                     var m = Mav.MAVLINK_ATTITUDE();
                                     m.time_boot_ms =  (uint32)obj.get_int_member("time_boot_ms");
                                     m.roll =  (float)obj.get_double_member("roll");
@@ -703,6 +711,7 @@ public class ReplayThread : GLib.Object
                                     send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_ATTITUDE, (uint8*)(&m), sizeof(Mav.MAVLINK_ATTITUDE));
                                     break;
                                 case "mavlink_rc_channels":
+                                    telem = true;
                                     var m = Mav.MAVLINK_RC_CHANNELS();
                                     m.time_boot_ms =  (uint32)obj.get_int_member("time_boot_ms");
                                     m.chan1_raw =  (uint16)obj.get_int_member("chan1_raw");
@@ -718,6 +727,7 @@ public class ReplayThread : GLib.Object
                                     send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW, (uint8*)(&m), sizeof(Mav.MAVLINK_RC_CHANNELS));
                                     break;
                                 case "mavlink_gps_global_origin":
+                                    telem = true;
                                     var m = Mav.MAVLINK_GPS_GLOBAL_ORIGIN();
                                     m.latitude =  (int32)obj.get_int_member("latitude");
                                     m.longitude =  (int32)obj.get_int_member("longitude");
@@ -725,6 +735,7 @@ public class ReplayThread : GLib.Object
                                     send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN, (uint8*)(&m), sizeof(Mav.MAVLINK_GPS_GLOBAL_ORIGIN));
                                     break;
                                 case "mavlink_vfr_hud":
+                                    telem = true;
                                     var m = Mav.MAVLINK_VFR_HUD();
                                     m.airspeed =  (float)obj.get_double_member("airspeed");
                                     m.groundspeed =  (float)obj.get_double_member("groundspeed");
