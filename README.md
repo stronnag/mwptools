@@ -26,10 +26,11 @@ chromebook running Arch Linux.
 
 The tools are designed to be portable and as far as possible platform
 and architecure agnostic. The suite is developed on Arch Linux and is
-tested on Ubuntu, Fedora and FreeBSD (current release); building and running on
-any platform that supports (recent versions of):
+tested on Ubuntu (latest and most recent LTS), Fedora (current) and
+FreeBSD (current release); building and running on any platform that
+supports (recent versions of):
 
- * gtk+3.0 (3.8 or later);
+ * gtk+3.0 (3.18 or later);
  * vala and gcc;
  * Clutter (software GL is fine);
  * libchamplain;

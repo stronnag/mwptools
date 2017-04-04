@@ -15,20 +15,13 @@ libgudev-1.0-dev
 libgstreamer1.0-dev
 libvala-dev   # optional, recommended (optimisation)
 
-libvte-2.91-dev (prferred) or
-libvte-2.90-dev (14.04 LTS)
-
-On some unsupported Ubuntu forks (e.g. Mint 17), you may also need to
-explicitly add
-
-libegl1-mesa-dev
+libvte-2.91-dev
 
 and for replay_bbox_ltm.rb
 
 ruby version 2 or later, e.g.
 
-ruby2.0 (14.04)
-ruby2.2 (15.10)
+ruby2.2
 
 You must install the blackbox utilities
 https://github.com/cleanflight/blackbox-tools/ in order to replay

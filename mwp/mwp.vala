@@ -1517,16 +1517,14 @@ public class MWPlanner : Gtk.Application {
                 }
                 Timeout.add(250, () => {
                         fbox.allow_resize(false);
-                        return /* Source.REMOVE */ false;
+                        return Source.REMOVE;
                     });
-                return /* Source.REMOVE */ false;
+                return Source.REMOVE;
             });
 
         window.size_allocate.connect((a) => {
                 if(((a.width != conf.window_w) || (a.height != conf.window_h))
-#if !BADSOUP
                    && (!window.is_maximized)
-#endif
                    )
                 {
                     conf.window_w  = a.width;
@@ -1551,7 +1549,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 Timeout.add(500, () => {
                         fbox.allow_resize(false);
-                        return /* Source.REMOVE */ false;
+                        return Source.REMOVE;
                     });
                 return false;
             });
@@ -1726,9 +1724,9 @@ public class MWPlanner : Gtk.Application {
             if(!msp.available)
                 connect_serial();
             Timeout.add_seconds(5, () => { return try_connect(); });
-            return /* Source.REMOVE */ false;
+            return Source.REMOVE;
         }
-        return /* Source.CONTINUE */ true;
+        return Source.CONTINUE;
     }
 
     private void set_error_status(string? e)
@@ -1857,15 +1855,6 @@ public class MWPlanner : Gtk.Application {
                     }
                 }
 
-#if NOPUSHFRONT
-/* The above test is not entirely true, but I'm not sure if the issue is
-   related to the gtk version or libchamplain version. Anyway, it's close
-   enough the otherwise failed OS (Ubuntu 14.02, Freebsd c. 2016-02)
- */
-                if((nticks % ANIMINTVL) == 0)
-                    anim_cb();
-#endif
-
                 if((nticks % STATINTVL) == 0)
                 {
                     gen_serial_stats();
@@ -1900,7 +1889,7 @@ public class MWPlanner : Gtk.Application {
                         Process.spawn_command_line_async(conf.heartbeat);
                     } catch  {}
                 }
-                return /* Source.CONTINUE */ true;
+                return Source.CONTINUE;
             });
     }
 
@@ -3675,7 +3664,7 @@ public class MWPlanner : Gtk.Application {
                             MWPLog.message("Reconnecting\n");
                             connect_serial();
                         }
-                        return /* Source.REMOVE */ false;
+                        return Source.REMOVE;
                     });
                 break;
 
@@ -4075,7 +4064,7 @@ public class MWPlanner : Gtk.Application {
                 MWPLog.message("WP upload probably failed\n");
                 mwp_warning_box("WP upload timeout.\nThe upload has probably failed",
                                 Gtk.MessageType.ERROR);
-                return /* Source.REMOVE */ false;
+                return Source.REMOVE;
             });
 
         uint8 wtmp[64];
@@ -4162,7 +4151,7 @@ public class MWPlanner : Gtk.Application {
                     (cmd == MSP.Cmds.FC_VERSION))
                     cmd = MSP.Cmds.BOXNAMES;
                 send_cmd(cmd,buf,len);
-                return /* Source.CONTINUE */ true;
+                return Source.CONTINUE;
             });
         send_cmd(cmd,buf,len);
     }
@@ -4176,7 +4165,7 @@ public class MWPlanner : Gtk.Application {
                 navstatus.logspeak_init(conf.evoice, (conf.uilang == "ev"));
                 spktid = Timeout.add_seconds(conf.speakint, () => {
                         navstatus.announce(sflags, conf.recip);
-                        return /* Source.CONTINUE */ true;
+                        return Source.CONTINUE;
                     });
                 gps_alert(0);
                 navstatus.announce(sflags,conf.recip);
@@ -4342,7 +4331,7 @@ public class MWPlanner : Gtk.Application {
                     Timeout.add(timeo, () =>
                         {
                             add_cmd(MSP.Cmds.IDENT,null,0, 1500);
-                            return /* Source.REMOVE */ false;
+                            return Source.REMOVE;
                         });
                 }
                 menumwvar.sensitive = false;
@@ -4373,32 +4362,11 @@ public class MWPlanner : Gtk.Application {
             {
                 double plat,plon;
                 craft.get_pos(out plat, out plon);
-                    /*
-                     * Older Champlain versions don't have full bbox
-                     * work around it
-                     */
-#if NOBB
-                double vypix = view.latitude_to_y(plat);
-                double vxpix = view.longitude_to_x(plon);
-                bool outofview = ((int)vypix < 0 || (int)vxpix < 0);
-                if(outofview == false)
-                {
-                    var ww = embed.get_window();
-                    var wd = ww.get_width();
-                    var ht = ww.get_height();
-                    outofview = ((int)vypix > ht || (int)vxpix > wd);
-                }
-                if (outofview == true)
-                {
-                    craft.park();
-                }
-#else
                 var bbox = view.get_bounding_box();
                 if (bbox.covers(plat, plon) == false)
                 {
                     craft.park();
                 }
-#endif
             }
         }
     }
@@ -4686,7 +4654,7 @@ public class MWPlanner : Gtk.Application {
         {
             Timeout.add_seconds(timeout, () => {
                     msg.destroy();
-                    return /* Source.CONTINUE */ true;
+                    return Source.CONTINUE;
                 });
         }
         msg.response.connect ((response_id) => {

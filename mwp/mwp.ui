@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.20.0 -->
 <interface>
-  <requires lib="gtk+" version="3.8"/>
+  <requires lib="gtk+" version="3.18"/>
   <object class="GtkAboutDialog" id="aboutdialog1">
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
@@ -2670,10 +2670,10 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel" id="rssi_pct">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">end</property>
         <property name="label" translatable="yes">0%</property>
         <property name="use_markup">True</property>
         <property name="justify">right</property>
-        <property name="xalign">1</property>
       </object>
       <packing>
         <property name="left_attach">0</property>
@@ -2684,10 +2684,10 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel" id="rssi_val">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="halign">end</property>
         <property name="label" translatable="yes">0</property>
         <property name="use_markup">True</property>
         <property name="justify">right</property>
-        <property name="xalign">1</property>
       </object>
       <packing>
         <property name="left_attach">0</property>
@@ -2695,7 +2695,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       </packing>
     </child>
     <child>
-      <object class="GtkLabel" id="__fix_obsolete__1491322421.169895__">
+      <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="label" translatable="yes">&lt;span size='xx-small'&gt;RSSI&lt;/span&gt;</property>
@@ -2707,7 +2707,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       </packing>
     </child>
     <child>
-      <object class="GtkLabel" id="__fix_obsolete__1491322421.1699097__">
+      <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="label" translatable="yes">&lt;span size='xx-small'&gt;%&lt;/span&gt;</property>

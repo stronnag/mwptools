@@ -297,10 +297,6 @@ public class JsonMapDef : Object
 
     public static void run_proxy(string uri, bool offline=false)
     {
-#if BADSOUP
-        string cmd = string.join(" ", "qproxy", uri, port.to_string());
-        spawn_proxy(cmd);
-#else
         var pt = JsonMapDef.port;
         MWPLog.message("Starting proxy thread %s\n", (offline) ? "(offline)" : "");
         new Thread<int>("proxy",() => {
@@ -313,6 +309,5 @@ public class JsonMapDef : Object
                 }
                 return 0;
             });
-#endif
     }
 }
