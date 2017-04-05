@@ -227,6 +227,8 @@ struct __attribute__ ((__packed__))  _ltm_xframe
 {
     uint16_t hdop;
     uint8_t sensorok;
-    uint8_t spare[3];
+    uint8_t ltm_x_count;
+    uint8_t disarm_reason;
+    uint8_t spare;
 };
 typedef struct _ltm_xframe LTM_XFRAME;

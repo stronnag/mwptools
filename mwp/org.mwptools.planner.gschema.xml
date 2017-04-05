@@ -308,6 +308,12 @@
       <description>Automatically assert land on RTH waypoints</description>
     </key>
 
+    <key name="ignore-nm" type="b">
+      <default>false</default>
+      <summary>Don't ever query Network Manager for network status</summary>
+      <description>Set to true to always ignore NM status (may slow down startup</description>
+    </key>
+
     <key name="mission-path" type="s">
       <default>""</default>
       <summary>Directory for mission files</summary>

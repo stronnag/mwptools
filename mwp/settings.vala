@@ -76,6 +76,7 @@ public class MWPSettings : GLib.Object
     public string missionpath {get; private set; default=null;}
     public string logpath {get; private set; default=null;}
     public double max_home_delta {get; set; default=2.5;}
+    public bool ignore_nm {get; set; default=false;}
 
     public signal void settings_update (string s);
 
@@ -237,6 +238,9 @@ public class MWPSettings : GLib.Object
             tote_floating = settings.get_boolean ("tote-float-p");
         if(s == null || s == "rth-autoland")
             rth_autoland  = settings.get_boolean ("rth-autoland");
+
+        if(s == null || s == "ignore-nm")
+            ignore_nm = settings.get_boolean ("ignore-nm");
 
         if(s == null || s == "mission-path")
         {

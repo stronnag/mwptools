@@ -521,6 +521,11 @@ public class MWPlanner : Gtk.Application {
         WP = 8
     }
 
+    private string [] disarm_reason =
+    {
+        "None", "Timeout", "Sticks", "Switch_3d", "Switch",
+            "Killswitch", "Failsafe", "Navigation" };
+
     private const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
 
     private const uint TIMINTVL=50;
@@ -719,21 +724,25 @@ public class MWPlanner : Gtk.Application {
         gps_trail = !gps_trail; // yet more jh logic
 
 
-        if(offline == false)
+        if(conf.ignore_nm == false)
         {
-            try {
-                NetworkManager nm = Bus.get_proxy_sync (BusType.SYSTEM,
-                                         "org.freedesktop.NetworkManager",
-                                         "/org/freedesktop/NetworkManager");
-                NMSTATE istate = (NMSTATE)nm.State;
-                if(istate != NMSTATE.NM_STATE_CONNECTED_GLOBAL)
-                {
-                    offline = true;
-                    MWPLog.message("Forcing proxy offline [%s]\n",
-                                   istate.to_string());
-                }
-            } catch {}
+            if(offline == false)
+            {
+                try {
+                    NetworkManager nm = Bus.get_proxy_sync (BusType.SYSTEM,
+                                                            "org.freedesktop.NetworkManager",
+                                                            "/org/freedesktop/NetworkManager");
+                    NMSTATE istate = (NMSTATE)nm.State;
+                    if(istate != NMSTATE.NM_STATE_CONNECTED_GLOBAL)
+                    {
+                        offline = true;
+                        MWPLog.message("Forcing proxy offline [%s]\n",
+                                       istate.to_string());
+                    }
+                } catch {}
+            }
         }
+
 
         if(mwoptstr != null)
         {
@@ -3392,11 +3401,16 @@ public class MWPlanner : Gtk.Application {
                 rp = deserialise_u16(raw, out rhdop);
                 xf.hdop = rhdop;
                 xf.sensorok = *rp++;
-                xf.spare[0] = *rp++;
+                xf.ltm_x_count = *rp++;
+                xf.disarm_reason = *rp++;
+
                 alert_broken_sensors(xf.sensorok);
                 gpsinfo.set_hdop(rhdop/100.0);
                 if(Logger.is_logging)
                     Logger.ltm_xframe(xf);
+                if(xf.disarm_reason != 0 && xf.disarm_reason != 0)
+                    MWPLog.message("LTM Disarm (armed = %d) reason %s\n",
+                                   armed, disarm_reason[xf.disarm_reason]);
                 break;
 
             case MSP.Cmds.TA_FRAME:
@@ -3437,14 +3451,11 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
-                    dac++;
-                    if(dac == 5)
-                    {
-                        MWPLog.message("Disarm from LTM!\n");
-                        mwflags = 0;
-                        armed = 0;
-                        init_have_home();
-                    }
+                    MWPLog.message("Disarm from LTM\n");
+                    mwflags = 0;
+                    armed = 0;
+                    init_have_home();
+                        /* schedule the bubble machine again .. */
                 }
                 if(ltmflags == 2)
                     mwflags |= angle_mask;

@@ -209,5 +209,7 @@ public struct LTM_XFRAME
 {
     uint16 hdop;
     uint8 sensorok;
-    uint8 spare[3];
+    uint8 ltm_x_count;
+    uint8 disarm_reason;
+    uint8 spare;
 }
