@@ -733,7 +733,8 @@ public class MWPlanner : Gtk.Application {
                                                             "org.freedesktop.NetworkManager",
                                                             "/org/freedesktop/NetworkManager");
                     NMSTATE istate = (NMSTATE)nm.State;
-                    if(istate != NMSTATE.NM_STATE_CONNECTED_GLOBAL)
+                    if(!(istate != NMSTATE.NM_STATE_CONNECTED_GLOBAL ||
+                         istate != NMSTATE.UNKNOWN))
                     {
                         offline = true;
                         MWPLog.message("Forcing proxy offline [%s]\n",
@@ -3408,9 +3409,11 @@ public class MWPlanner : Gtk.Application {
                 gpsinfo.set_hdop(rhdop/100.0);
                 if(Logger.is_logging)
                     Logger.ltm_xframe(xf);
-                if(xf.disarm_reason != 0 && xf.disarm_reason != 0)
+                    /****
+                if(xf.disarm_reason != 0 && xf.disarm_reason < disarm_reason.length)
                     MWPLog.message("LTM Disarm (armed = %d) reason %s\n",
                                    armed, disarm_reason[xf.disarm_reason]);
+                    ***/
                 break;
 
             case MSP.Cmds.TA_FRAME:
@@ -3451,11 +3454,19 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
-                    MWPLog.message("Disarm from LTM\n");
-                    mwflags = 0;
-                    armed = 0;
-                    init_have_home();
+                    dac++;
+                    if(dac == 1)
+                    {
+                        MWPLog.message("Disarm from LTM\n");
+                        mwflags = 0;
+                        armed = 0;
+                        init_have_home();
                         /* schedule the bubble machine again .. */
+                        if(replayer == 0)
+                        {
+                            reset_poller(false);
+                        }
+                    }
                 }
                 if(ltmflags == 2)
                     mwflags |= angle_mask;

@@ -998,7 +998,7 @@ public class RadioStatus : GLib.Object
         rssi_pct = builder.get_object ("rssi_pct") as Gtk.Label;
         rssi_value = builder.get_object ("rssi_val") as Gtk.Label;
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-        box.pack_start(grid1, true,true,0);
+        box.pack_start(grid1, true, true,0);
         box.show_all();
     }
 
