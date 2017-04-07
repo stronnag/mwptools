@@ -347,6 +347,7 @@ public class MWPlanner : Gtk.Application {
     private bool wdw_state = false;
     private time_t armtime;
     private time_t duration;
+    private time_t pausetm;
 
     private int gfcse = 0;
     private uint8 armed = 0;
@@ -568,7 +569,6 @@ public class MWPlanner : Gtk.Application {
     };
 
     private Timer lastp;
-    private Timer pausetm;
     private uint nticks = 0;
     private uint lastm;
     private uint lastrx;
@@ -593,7 +593,7 @@ public class MWPlanner : Gtk.Application {
     private static string rrstr;
     private int nrings = 0;
     private double ringint = 0;
-    private bool replay_paused = false;
+    private bool replay_paused;
 
     private const Gtk.TargetEntry[] targets = {
         {"text/uri-list",0,0}
@@ -665,17 +665,16 @@ public class MWPlanner : Gtk.Application {
         if(replay_paused)
         {
             signum = Posix.SIGCONT;
-            pausetm.stop ();
-            var seconds = pausetm.elapsed ();
-            armtime += Math.lrint(seconds);
+            time_t now;
+            time_t (out now);
+            armtime += (now - pausetm);
         }
         else
         {
-            pausetm = new Timer();
-            pausetm.start();
+            time_t (out pausetm);
             signum = Posix.SIGSTOP;
         }
-
+        replay_paused = !replay_paused;
         if(replayer == Player.BBOX)
         {
             Posix.kill(child_pid, signum);
@@ -685,7 +684,6 @@ public class MWPlanner : Gtk.Application {
             if(thr != null)
                 robj.pause(replay_paused);
         }
-        replay_paused = !replay_paused;
     }
 
     public override void activate ()
@@ -1891,7 +1889,7 @@ public class MWPlanner : Gtk.Application {
                         {
                             if(replayer == Player.NONE)
                                 bleet_sans_merci(SAT_ALERT);
-                            if(!replay_paused)
+                            if(replay_paused == false)
                                 MWPLog.message("GPS stalled\n");
                             gpslab.label = "<span foreground = \"red\">⬤</span>";
                             last_gps = nticks;
@@ -2189,7 +2187,7 @@ public class MWPlanner : Gtk.Application {
         else
         {
             if(armtime == 0)
-                armtime = time_t(out armtime);
+                time_t(out armtime);
             time_t(out duration);
             duration -= armtime;
         }
@@ -4240,7 +4238,8 @@ public class MWPlanner : Gtk.Application {
             {
                 navstatus.logspeak_init(conf.evoice, (conf.uilang == "ev"));
                 spktid = Timeout.add_seconds(conf.speakint, () => {
-                        navstatus.announce(sflags, conf.recip);
+                        if(replay_paused == false)
+                            navstatus.announce(sflags, conf.recip);
                         return Source.CONTINUE;
                     });
                 gps_alert(0);
