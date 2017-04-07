@@ -190,7 +190,7 @@ public class MWSerial : Object
                         sockaddr = new InetSocketAddress(addr0,rport);
                     }
                 } catch (Error e) {
-                    MWPLog.message ("%s\n",e.message);
+                    MWPLog.message ("%s\r\n",e.message);
                 }
             }
             else
@@ -371,10 +371,12 @@ public class MWSerial : Object
                 if(print_raw)
                     MWPLog.message("remove tag\n");
                 Source.remove(tag);
+                tag = 0;
             }
             if((commode & ComMode.TTY) == ComMode.TTY)
             {
                 close_serial(fd);
+                fd = -1;
             }
             else if ((commode & ComMode.FD) == ComMode.FD)
                 Posix.close(fd);
@@ -414,7 +416,7 @@ public class MWSerial : Object
     private void error_counter()
     {
         commerr++;
-        MWPLog.message("Comm error count %d\n", commerr);
+        MWPLog.message("Comm error count %d\r\n", commerr);
         flush_serial(fd);
     }
 
@@ -427,7 +429,8 @@ public class MWSerial : Object
             available = false;
             if(fd != -1)
                 serial_lost();
-            MWPLog.message("Close on condition %x (fd=%d)\n", cond, fd);
+            MWPLog.message("Close on condition %x (fd=%d)\r\n", cond, fd);
+
             return Source.REMOVE;
         }
         else if (fd != -1)

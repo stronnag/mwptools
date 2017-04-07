@@ -34,6 +34,9 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
+
+static struct termios _tio;
+
 void flush_serial(int fd)
 {
     tcflush(fd, TCIOFLUSH);
@@ -73,6 +76,7 @@ int open_serial(char *device, uint baudrate)
         struct termios tio;
         memset (&tio, 0, sizeof(tio));
         tcgetattr(fd, &tio);
+        _tio = tio;
         cfmakeraw(&tio);
         tio.c_cc[VTIME] = 0;
         tio.c_cc[VMIN] = 0;
@@ -95,6 +99,7 @@ void set_timeout(int fd, int tenths, int number)
 void close_serial(int fd)
 {
     tcflush(fd, TCIOFLUSH);
+    tcsetattr(fd,TCSANOW,&_tio);
     close(fd);
 }
 

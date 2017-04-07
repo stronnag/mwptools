@@ -25,6 +25,10 @@ int main (string[] args)
                 Posix.write(1,buf,len);
             });
         s.write("#\n".data, 2);
+        s.serial_lost.connect(() => {
+                s.close();
+                ml.quit();
+            });
     }
     else
     {
