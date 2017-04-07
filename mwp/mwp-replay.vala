@@ -20,6 +20,7 @@ public class ReplayThread : GLib.Object
     private const int MAXSLEEP = 500*1000;
     private bool playon  {get; set;}
     private Cancellable cancellable;
+    private bool paused = false;
 
     private size_t serialise_sf(LTM_SFRAME b, uint8 []tx)
     {
@@ -289,6 +290,11 @@ public class ReplayThread : GLib.Object
     {
         playon = false;
         cancellable.cancel();
+    }
+
+    public void pause(bool _paused)
+    {
+        paused = _paused;
     }
 
     public signal void replay_mission_file (string filename);
@@ -749,6 +755,8 @@ public class ReplayThread : GLib.Object
                                     break;
                             }
                             lt = utime;
+                            while (paused)
+                                Thread.usleep(5);
                         }
                     } catch (Error e) {
                         if(e.matches(Quark.from_string("g-io-error-quark"),19))

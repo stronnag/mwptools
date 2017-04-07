@@ -15,6 +15,7 @@ RESCUE=
 BIN=
 RM=
 FERASE=
+SWITCH=
 
 for P
 do
@@ -24,6 +25,7 @@ do
     *.hex) HEX=$P ;;
     *.bin) BIN=$P ;;
     rescue) RESCUE=1 ;;
+    switch) SWITCH=1 ;;
     force|erase) FERASE=1 ;;
   esac
 done
@@ -42,11 +44,17 @@ then
  [ -n "$HEX" ] && DEV=/dev/ttyUSB0 || DEV=/dev/ttyACM0
 fi
 
-echo $DEV $RESCUE
+DEV0=$DEV
+if [ -n "$SWITCH" ]
+then
+   [ -e /dev/ttyACM0 ] &&  DEV0=/dev/ttyACM0
+fi
+
+echo $DEV0 $RESCUE
 if [ -z "$RESCUE" ]
 then
-  stty -F $DEV raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon
-  echo -n 'R' >$DEV
+  stty -F $DEV0 raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon
+  echo -n 'R' >$DEV0
   sleep 0.2
 fi
 

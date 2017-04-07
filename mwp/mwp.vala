@@ -430,6 +430,13 @@ public class MWPlanner : Gtk.Application {
         BEEP = 4
     }
 
+    private enum Player
+    {
+        NONE = 0,
+        MWP,
+        BBOX
+    }
+
     public struct Position
     {
         double lat;
@@ -520,12 +527,12 @@ public class MWPlanner : Gtk.Application {
         RTH = 4,
         WP = 8
     }
-
+/** Until the FC supports this better
     private string [] disarm_reason =
     {
         "None", "Timeout", "Sticks", "Switch_3d", "Switch",
             "Killswitch", "Failsafe", "Navigation" };
-
+**/
     private const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
 
     private const uint TIMINTVL=50;
@@ -561,6 +568,7 @@ public class MWPlanner : Gtk.Application {
     };
 
     private Timer lastp;
+    private Timer pausetm;
     private uint nticks = 0;
     private uint lastm;
     private uint lastrx;
@@ -585,6 +593,7 @@ public class MWPlanner : Gtk.Application {
     private static string rrstr;
     private int nrings = 0;
     private double ringint = 0;
+    private bool replay_paused = false;
 
     private const Gtk.TargetEntry[] targets = {
         {"text/uri-list",0,0}
@@ -647,6 +656,36 @@ public class MWPlanner : Gtk.Application {
             try {
                 Process.spawn_command_line_sync (conf.atexit);
             } catch {}
+    }
+
+
+    private void handle_replay_pause()
+    {
+        int signum;
+        if(replay_paused)
+        {
+            signum = Posix.SIGCONT;
+            pausetm.stop ();
+            var seconds = pausetm.elapsed ();
+            armtime += Math.lrint(seconds);
+        }
+        else
+        {
+            pausetm = new Timer();
+            pausetm.start();
+            signum = Posix.SIGSTOP;
+        }
+
+        if(replayer == Player.BBOX)
+        {
+            Posix.kill(child_pid, signum);
+        }
+        else
+        {
+            if(thr != null)
+                robj.pause(replay_paused);
+        }
+        replay_paused = !replay_paused;
     }
 
     public override void activate ()
@@ -1206,6 +1245,15 @@ public class MWPlanner : Gtk.Application {
                 return true;
             });
 
+        ag.connect(' ', 0, 0, (a,o,k,m) => {
+                if(replayer != Player.NONE)
+                {
+                    handle_replay_pause();
+                    return true;
+                }
+                else return false;
+            });
+
         window.add_accel_group(ag);
 
         ls = new ListBox();
@@ -1622,7 +1670,7 @@ public class MWPlanner : Gtk.Application {
                     if(bbox)
                         replay_bbox(true, sf);
                     else
-                        run_replay(sf, true, 1);
+                        run_replay(sf, true, Player.MWP);
                 }
             });
         setup_buttons();
@@ -1630,7 +1678,7 @@ public class MWPlanner : Gtk.Application {
         {
             usemag = force_mag;
             Idle.add(() => {
-                    run_replay(Posix.realpath(rfile), true, 1);
+                    run_replay(Posix.realpath(rfile), true, Player.MWP);
                     return false;
                 });
         }
@@ -1841,9 +1889,10 @@ public class MWPlanner : Gtk.Application {
                     {
                         if (nticks - last_gps > gpsintvl)
                         {
-                            if(replayer == 0)
+                            if(replayer == Player.NONE)
                                 bleet_sans_merci(SAT_ALERT);
-                            MWPLog.message("GPS stalled\n");
+                            if(!replay_paused)
+                                MWPLog.message("GPS stalled\n");
                             gpslab.label = "<span foreground = \"red\">⬤</span>";
                             last_gps = nticks;
                         }
@@ -1852,7 +1901,7 @@ public class MWPlanner : Gtk.Application {
                     if( xdopoll == false &&
                         last_tm > 0 &&
                         ((nticks - last_tm) > MAVINTVL)
-                        && msp.available)
+                        && msp.available && replayer == Player.NONE)
                     {
                         MWPLog.message("Restart poller on telemetry timeout\n");
                         have_api = have_vers = have_misc =
@@ -2133,7 +2182,7 @@ public class MWPlanner : Gtk.Application {
         {
             armtime = 0;
             duration = -1;
-            if(replayer == 0)
+            if(replayer == Player.NONE)
                 init_have_home();
             no_ofix = 0;
         }
@@ -2234,7 +2283,7 @@ public class MWPlanner : Gtk.Application {
         bool urgent = ((scflags & SAT_FLAGS.URGENT) != 0);
         bool beep = ((scflags & SAT_FLAGS.BEEP) != 0);
         navstatus.sats(_nsats, urgent);
-        if(beep && replayer == 0)
+        if(beep && replayer == Player.NONE)
             bleet_sans_merci(SAT_ALERT);
         nsats = _nsats;
         last_ga = lastrx;
@@ -2457,7 +2506,7 @@ public class MWPlanner : Gtk.Application {
                 }
 
                 want_special = 0;
-                if(replayer == 0)
+                if(replayer == Player.NONE)
                 {
                     if(conf.checkswitches &&
                        ((bxflag & lmask) == 0) && robj == null)
@@ -2486,7 +2535,7 @@ public class MWPlanner : Gtk.Application {
 
                 if(nopoll == false && nreqs > 0)
                 {
-                    if  (replayer == 0)
+                    if  (replayer == Player.NONE)
                     {
                         MWPLog.message("Start poller\n");
                         tcycle = 0;
@@ -2597,7 +2646,7 @@ public class MWPlanner : Gtk.Application {
         if(cmd > MSP.Cmds.LTM_BASE)
         {
             telem = true;
-            if (replayer != 1 && cmd != MSP.Cmds.MAVLINK_MSG_ID_RADIO)
+            if (replayer != Player.MWP && cmd != MSP.Cmds.MAVLINK_MSG_ID_RADIO)
             {
                 if(nopoll == false)
                 {
@@ -3031,7 +3080,7 @@ public class MWPlanner : Gtk.Application {
                 rg.gps_fix = *rp++;
                 if(rg.gps_fix != 0)
                 {
-                    if(replayer == 0)
+                    if(replayer == Player.NONE)
                     {
                         if(inav)
                             rg.gps_fix++;
@@ -3462,7 +3511,7 @@ public class MWPlanner : Gtk.Application {
                         armed = 0;
                         init_have_home();
                         /* schedule the bubble machine again .. */
-                        if(replayer == 0)
+                        if(replayer == Player.NONE)
                         {
                             reset_poller(false);
                         }
@@ -4036,7 +4085,7 @@ public class MWPlanner : Gtk.Application {
             vlevels[icol].reached = true;
             if(vlevels[icol].audio != null)
             {
-                if(replayer == 0)
+                if(replayer == Player.NONE)
                     bleet_sans_merci(vlevels[icol].audio);
                 else
                     MWPLog.message("battery alarm %.1f\n", vf);
@@ -4236,7 +4285,7 @@ public class MWPlanner : Gtk.Application {
     private void serial_doom(Gtk.Button c)
     {
         MWPLog.message("Serial doom replay %d\n", replayer);
-        if(replayer == 0)
+        if(replayer == Player.NONE)
         {
             menumwvar.sensitive =true;
             dopoll = false;
@@ -4280,7 +4329,7 @@ public class MWPlanner : Gtk.Application {
         }
         else
         {
-            replayer = 0;
+            replayer = Player.NONE;
         }
         menubblog.sensitive = menubbload.sensitive = menureplay.sensitive =
         menuloadlog.sensitive = true;
@@ -4798,7 +4847,7 @@ public class MWPlanner : Gtk.Application {
                 var fn = chooser.get_filename ();
                 chooser.close ();
                 usemag = force_mag;
-                run_replay(fn, delay, 1);
+                run_replay(fn, delay, Player.MWP);
             }
             else
                 chooser.close ();
@@ -4808,7 +4857,7 @@ public class MWPlanner : Gtk.Application {
     private void cleanup_replay()
     {
         MWPLog.message("============== Replay complete ====================\n");
-        if (replayer == 1)
+        if (replayer == Player.MWP)
         {
             thr.join();
             thr = null;
@@ -4830,10 +4879,11 @@ public class MWPlanner : Gtk.Application {
         armed_spinner.hide();
         conbutton.sensitive = true;
         armed = larmed = 0;
+        replay_paused = false;
         window.title = "mwp";
     }
 
-    private void run_replay(string fn, bool delay, int rtype,
+    private void run_replay(string fn, bool delay, Player rtype,
                             int idx=0, int btype=0, bool force_gps=false)
     {
         xlog = conf.logarmed;
@@ -4844,6 +4894,7 @@ public class MWPlanner : Gtk.Application {
 
         if(sr == 0)
         {
+            replay_paused = false;
             MWPLog.message("Replay \"%s\" log %s\n",
                            (rtype == 2) ? "bbox" : "mwp",
                            fn);
@@ -4867,7 +4918,7 @@ public class MWPlanner : Gtk.Application {
                 menubblog.sensitive = menubbload.sensitive = false;
             switch(replayer)
             {
-                case 1:
+                case Player.MWP:
                     robj = new ReplayThread();
                     robj.replay_mission_file.connect((mf) => {
                             load_file(mf);
@@ -4875,7 +4926,7 @@ public class MWPlanner : Gtk.Application {
                     thr = robj.run(playfd[1], fn, delay);
                     saved_menuitem = (delay) ? menureplay : menuloadlog;
                     break;
-                case 2:
+                case Player.BBOX:
                     spawn_bbox_task(fn, idx, btype, delay, force_gps);
                     saved_menuitem = (delay) ? menubblog : menubbload;
                     break;
@@ -4931,7 +4982,7 @@ public class MWPlanner : Gtk.Application {
 
     private void replay_bbox (bool delay, string? fn = null)
     {
-        if(replayer != 0)
+        if(replayer == Player.BBOX)
         {
             Posix.kill(child_pid, Posix.SIGTERM);
         }
@@ -4946,7 +4997,7 @@ public class MWPlanner : Gtk.Application {
                 bool force_gps;
 
                 bb_runner.get_result(out bblog, out index, out btype, out force_gps);
-                run_replay(bblog, delay, 2,index,btype, force_gps);
+                run_replay(bblog, delay, Player.BBOX, index, btype, force_gps);
             }
         }
     }
