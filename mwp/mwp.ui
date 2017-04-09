@@ -2656,21 +2656,13 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
   <object class="GtkGrid" id="grid4b">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <child>
-      <object class="GtkProgressBar" id="rssi_bar">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-      </object>
-      <packing>
-        <property name="left_attach">0</property>
-        <property name="top_attach">4</property>
-      </packing>
-    </child>
+    <property name="hexpand">True</property>
     <child>
       <object class="GtkLabel" id="rssi_pct">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="halign">end</property>
+        <property name="hexpand">True</property>
         <property name="label" translatable="yes">0%</property>
         <property name="use_markup">True</property>
         <property name="justify">right</property>
@@ -2698,6 +2690,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="hexpand">True</property>
         <property name="label" translatable="yes">&lt;span size='xx-small'&gt;RSSI&lt;/span&gt;</property>
         <property name="use_markup">True</property>
       </object>
@@ -2710,12 +2703,25 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="hexpand">True</property>
         <property name="label" translatable="yes">&lt;span size='xx-small'&gt;%&lt;/span&gt;</property>
         <property name="use_markup">True</property>
       </object>
       <packing>
         <property name="left_attach">0</property>
         <property name="top_attach">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkLevelBar" id="rssi_bar">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="hexpand">True</property>
+        <property name="max_value">1023</property>
+      </object>
+      <packing>
+        <property name="left_attach">0</property>
+        <property name="top_attach">4</property>
       </packing>
     </child>
   </object>

@@ -528,12 +528,12 @@ public class MWPlanner : Gtk.Application {
         RTH = 4,
         WP = 8
     }
-/** Until the FC supports this better
+
     private string [] disarm_reason =
     {
         "None", "Timeout", "Sticks", "Switch_3d", "Switch",
             "Killswitch", "Failsafe", "Navigation" };
-**/
+
     private const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
 
     private const uint TIMINTVL=50;
@@ -2174,7 +2174,7 @@ public class MWPlanner : Gtk.Application {
         menucli.sensitive =  (msp != null && msp.available && armed == 0);
     }
 
-    private void armed_processing(uint32 flag)
+    private void armed_processing(uint32 flag, string reason="")
     {
         if(armed == 0)
         {
@@ -2241,7 +2241,7 @@ public class MWPlanner : Gtk.Application {
             }
             else
             {
-                MWPLog.message("Disarmed\n");
+                MWPLog.message("Disarmed %s\n", reason);
                 armed_spinner.stop();
                 armed_spinner.hide();
                 duration = -1;
@@ -2605,7 +2605,7 @@ public class MWPlanner : Gtk.Application {
             }
             xbits = bxflag;
         }
-        armed_processing(bxflag);
+        armed_processing(bxflag,"msp");
     }
 
     private void centre_mission(Mission ms, bool ctr_on)
@@ -3456,11 +3456,10 @@ public class MWPlanner : Gtk.Application {
                 gpsinfo.set_hdop(rhdop/100.0);
                 if(Logger.is_logging)
                     Logger.ltm_xframe(xf);
-                    /****
+
                 if(xf.disarm_reason != 0 && xf.disarm_reason < disarm_reason.length)
                     MWPLog.message("LTM Disarm (armed = %d) reason %s\n",
                                    armed, disarm_reason[xf.disarm_reason]);
-                    ***/
                 break;
 
             case MSP.Cmds.TA_FRAME:
@@ -3530,7 +3529,7 @@ public class MWPlanner : Gtk.Application {
                 else
                     mwflags = xbits; // don't know better
 
-                armed_processing(mwflags);
+                armed_processing(mwflags,"ltm");
                 var xws = want_special;
                 if(ltmflags != last_ltmf)
                 {
@@ -3578,7 +3577,7 @@ public class MWPlanner : Gtk.Application {
                 else
                     armed = 0;
                 sensor = mavsensors;
-                armed_processing(armed);
+                armed_processing(armed,"mav");
 
                 if(Logger.is_logging)
                     Logger.mav_heartbeat(m);

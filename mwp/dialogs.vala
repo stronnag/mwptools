@@ -979,7 +979,7 @@ public class RadioStatus : GLib.Object
     private Radio_modes mode;
     private Gtk.Label rssi_pct;
     private Gtk.Label rssi_value;
-    private Gtk.ProgressBar bar;
+    private Gtk.LevelBar bar;
 
     public RadioStatus(Gtk.Builder builder)
     {
@@ -994,7 +994,8 @@ public class RadioStatus : GLib.Object
         noise_label = builder.get_object ("noiselab") as Gtk.Label;
         remnoise_label = builder.get_object ("remnoiselab") as Gtk.Label;
         grid1 = builder.get_object ("grid4b") as Gtk.Grid;
-        bar = builder.get_object ("rssi_bar") as Gtk.ProgressBar;
+        bar = builder.get_object ("rssi_bar") as Gtk.LevelBar;
+        bar.set_size_request (-1, 20);
         rssi_pct = builder.get_object ("rssi_pct") as Gtk.Label;
         rssi_value = builder.get_object ("rssi_val") as Gtk.Label;
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
@@ -1028,8 +1029,7 @@ public class RadioStatus : GLib.Object
             rssi_value.set_label("<span font='%u'>%s</span>".printf(fs,rssi.to_string()));
             ushort pct = rssi*100/1023;
             rssi_pct.set_label("<span font='%u'>%d%%</span>".printf(fs,pct));
-            double fract = rssi/1023.0;
-            bar.set_fraction(fract);
+            bar.set_value(rssi);
         }
     }
 
@@ -1072,7 +1072,7 @@ public class RadioStatus : GLib.Object
         remnoise_label.set_label("");
         rssi_pct.set_label("");
         rssi_value.set_label("");
-        bar.set_fraction(0.0);
+        bar.set_value(0);
     }
 
     public void update(MSP_RADIO _r, bool visible)
