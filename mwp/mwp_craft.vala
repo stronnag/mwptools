@@ -37,8 +37,10 @@ public class Craft : GLib.Object
     private static Clutter.Color trk_green = { 0xce,0xff,0x9d, 0xa0 };
     private static Clutter.Color trk_yellow = { 0xff,0xff,0, 0xa0 };
     private static Clutter.Color trk_white = { 0xff,0xff,0xff, 0xa0 };
+
     private Clutter.Color path_colour;
 
+    private static Champlain.MarkerLayer wnlayer;
     private static Champlain.Label homep ;
     private static Champlain.Label posp ;
     private static Champlain.Label rthp ;
@@ -167,6 +169,7 @@ public class Craft : GLib.Object
         layer = new Champlain.MarkerLayer();
         hmlayer = new Champlain.MarkerLayer();
         pmlayer = new Champlain.MarkerLayer();
+
         if(trail)
         {
             view.add_layer (path);
@@ -178,11 +181,7 @@ public class Craft : GLib.Object
         if(stack_size != 0)
             stack = new Queue<Champlain.Point> ();
 
-// Not properly implemented in (13.10 and earlier) Ubuntu
-#if NOBB
-#else
         icon.set_pivot_point(0.5f, 0.5f);
-#endif
         icon.set_draw_background (false);
         park();
 
@@ -197,6 +196,29 @@ public class Craft : GLib.Object
         layer.remove_marker(icon);
     }
 
+    public static void show_warning(Champlain.View v, string text)
+    {
+        if (wnlayer == null)
+        {
+            wnlayer = new Champlain.MarkerLayer();
+            v.add_layer(wnlayer);
+        }
+
+        stderr.printf("Wlabel %s\n", text);
+        Clutter.Color red = { 0xff,0,0, 0xff};
+        var wnicon = new Champlain.Label.with_text (text,"Sans 36",red,null);
+        wnicon.set_draw_shadow (false);
+        wnicon.set_draw_background (false);
+        var lat = v.y_to_latitude(40);
+        var lon = v.x_to_longitude(100);
+        wnlayer.add_marker (wnicon);
+        wnicon.set_location (lat, lon);
+    }
+
+    public static void hide_warning()
+    {
+        wnlayer.remove_all();
+    }
 
     public void set_icon(uint id)
     {
@@ -215,11 +237,7 @@ public class Craft : GLib.Object
             icon.set_color (colour);
             icon.set_text_color(black);
         }
-// Not properly implemented in (13.10 and earlier) Ubuntu
-#if NOBB
-#else
         icon.set_pivot_point(0.5f, 0.5f);
-#endif
         icon.set_draw_background (false);
         layer.add_marker (icon);
         icon.animate_in();
@@ -247,7 +265,7 @@ public class Craft : GLib.Object
 
     public void park()
     {
-        set_pix_pos(40,40);
+        set_pix_pos(icon, 40,40);
         if (norotate == false)
             icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, 0);
         if(trail)
@@ -292,11 +310,11 @@ public class Craft : GLib.Object
         npath++;
     }
 
-    public void set_pix_pos (int x, int y)
+    private void set_pix_pos (Champlain.Label l, int x, int y)
     {
         var lat = view.y_to_latitude(y);
         var lon = view.x_to_longitude(x);
-        icon.set_location (lat, lon);
+        l.set_location (lat, lon);
     }
 
     public void set_normal()

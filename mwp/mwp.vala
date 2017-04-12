@@ -2122,28 +2122,19 @@ public class MWPlanner : Gtk.Application {
         if(val != xs_state)
         {
             string sound;
-            string msg;
-            int tout;
-            Gtk.MessageType gmt;
-
             MWPLog.message("sensor health %04x %d %d\n", sensor, val, xs_state);
             if(val == 1)
             {
                 sound = (sensor_alm) ? GENERAL_ALERT : RED_ALERT;
                 sensor_alm = true;
-                msg = "<span font='24' foreground = 'red'>SENSOR FAILURE</span>";
-                tout = 10;
-                gmt = Gtk.MessageType.ERROR;
+                Craft.show_warning(view,"SENSOR FAILURE");
             }
             else
             {
                 sound = GENERAL_ALERT;
-                msg = "Sensors OK";
-                tout = 2;
-                gmt = Gtk.MessageType.INFO;
+                Craft.hide_warning();
             }
             bleet_sans_merci(sound);
-            mwp_warning_box(msg, gmt, tout);
             navstatus.hw_failure(val);
             xs_state = val;
         }
