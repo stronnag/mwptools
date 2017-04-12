@@ -8,14 +8,32 @@ int main (string[] args)
     s = new MWSerial();
     string estr;
     bool res;
-    string dev = "/dev/ttyUSB0";
+    string []devs = {"/dev/ttyUSB0","/dev/ttyACM0"};
+    string dev = null;
+
     int baud = 115200;
+
+    foreach(var d in devs)
+    {
+        if(Posix.access(d,(Posix.R_OK|Posix.W_OK)) == 0)
+        {
+            dev = d;
+            break;
+        }
+    }
+
 
     if (args.length > 2)
         baud = int.parse(args[2]);
 
     if (args.length > 1)
         dev = args[1];
+
+    if(dev == null)
+    {
+        stdout.puts("No device found\n");
+        return 0;
+    }
 
     if((res = s.open(dev, baud, out estr)) == true)
     {
@@ -56,7 +74,6 @@ int main (string[] args)
                                         rc = Posix.read(0,buf,1);
                                     if(err || buf[0] == 3 || rc <0)
                                     {
-                                        Posix.tcsetattr(1, Posix.TCSANOW, oldtio);
                                         ml.quit();
                                         return false;
                                     }
@@ -67,5 +84,6 @@ int main (string[] args)
         error("IOChannel: %s", e.message);
     }
     ml.run ();
+    Posix.tcsetattr(1, Posix.TCSANOW, oldtio);
     return 0;
 }

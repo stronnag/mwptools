@@ -52,6 +52,8 @@ public class ReplayThread : GLib.Object
         uint8 *p;
         p = serialise_u16(tx, x.hdop);
         *p++ = x.sensorok;
+        *p++ = x.ltm_x_count;
+        *p++ = x.disarm_reason;
         return (p - &tx[0]);
     }
 
@@ -637,11 +639,14 @@ public class ReplayThread : GLib.Object
 
                                 case "ltm_xframe":
                                     var x = LTM_XFRAME();
+                                    x = {0};
                                     x.hdop = (uint16)(obj.get_int_member("hdop"));
                                     if(obj.has_member("sensorok"))
                                         x.sensorok = (uint8)(obj.get_int_member("sensorok"));
-                                    else
-                                        x.sensorok=0;
+                                    if(obj.has_member("count"))
+                                        x.ltm_x_count = (uint8)(obj.get_int_member("count"));
+                                    if(obj.has_member("reason"))
+                                        x.disarm_reason = (uint8)(obj.get_int_member("reason"));
                                     serialise_xf(x,buf);
                                     send_rec(fd,MSP.Cmds.TX_FRAME, MSize.LTM_XFRAME,buf);
                                     break;

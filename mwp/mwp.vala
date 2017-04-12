@@ -2224,6 +2224,7 @@ public class MWPlanner : Gtk.Application {
                     if(rhdop != 10000)
                     {
                         LTM_XFRAME xf = LTM_XFRAME();
+                        xf = {0};
                         xf.hdop = rhdop;
                         xf.sensorok = (sensor >> 15);
                         Logger.ltm_xframe(xf);
@@ -3441,7 +3442,7 @@ public class MWPlanner : Gtk.Application {
                 xf.hdop = rhdop;
                 xf.sensorok = *rp++;
                 xf.ltm_x_count = *rp++;
-                xf.disarm_reason = *rp++;
+                xf.disarm_reason = *rp;
 
                 alert_broken_sensors(xf.sensorok);
                 gpsinfo.set_hdop(rhdop/100.0);

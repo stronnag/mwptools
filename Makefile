@@ -1,4 +1,4 @@
-DIRS = samples/ublox-test cf-cli mwp bbox-replay qproxy
+DIRS = samples/ublox-test samples/cliterm cf-cli mwp bbox-replay qproxy
 INSTALLDIRS = $(DIRS:%=install-%)
 LOCALDIRS = $(DIRS:%=local-%)
 CLEANDIRS = $(DIRS:%=clean-%)
