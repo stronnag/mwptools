@@ -5,8 +5,6 @@ include ../../common.mk
 APP=xcliterm
 CLI=cliterm
 
-OPTS=-X -Os -X -s
-
 COMMON=../../common/serial-device.vala ../../common/btdev.c \
 	../../common/cserial.c ../../common/mspcmd.vala ../../common/mwplog.vala \
 	../../common/mspmsg.vala
