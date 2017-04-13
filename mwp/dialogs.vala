@@ -1135,6 +1135,8 @@ public class NavStatus : GLib.Object
     private int _vn;
     private int _fs;
 
+    private int efdin;
+
     public enum SPK  {
         Volts = 1,
         GPS = 2,
@@ -1555,12 +1557,35 @@ public class NavStatus : GLib.Object
 
     public void logspeak_init (string? voice, bool use_en = false)
     {
+        efdin=0;
+
         if(vinit == false)
         {
             vinit = true;
-            if(voice == null)
-                voice = "default";
-            espeak_init(voice);
+            var espawn = Environment.get_variable("MWP_VOX_SPAWN");
+            if(espawn == null)
+            {
+                if(voice == null)
+                    voice = "default";
+                espeak_init(voice);
+            }
+            else
+            {
+                var args = espawn.split(" ");
+                foreach(var a in args)
+                    MWPLog.message("spawn \"%s\"\n", a);
+                try
+                {
+                    Process.spawn_async_with_pipes ("/", args, null,
+                                                    SpawnFlags.SEARCH_PATH|
+                                                    SpawnFlags.STDOUT_TO_DEV_NULL,
+                                                    null, null, out efdin,
+                                                    null, null);
+                } catch (Error e)
+                {
+                    MWPLog.message("spawn \"%s\", %s\n", espawn, e.message);
+                }
+            }
         }
 
         if (mt != null)
@@ -1568,7 +1593,7 @@ public class NavStatus : GLib.Object
             logspeak_close();
         }
         mt = new AudioThread();
-        mt.start(use_en);
+        mt.start(use_en, efdin);
         mt_voice=true;
     }
 
@@ -1608,6 +1633,7 @@ public class AudioThread : Object {
     private double lsat_t;
     private uint lsats;
     private bool use_en = false;
+    private int efd;
 
     private AsyncQueue<Vox> msgs;
     public Thread<int> thread {private set; get;}
@@ -1649,8 +1675,9 @@ public class AudioThread : Object {
             ;
     }
 
-    public void start(bool _use_en = false)
+    public void start(bool _use_en = false, int _efd = 0)
     {
+        efd = _efd;
         use_en = _use_en;
         lsats = 255;
         timer = new Timer();
@@ -1779,10 +1806,16 @@ public class AudioThread : Object {
                     }
                     if(s != null)
                     {
-//                        MWPLog.message("say %s %s\n", c.to_string(), s);
                         if(use_en)
                             s = s.replace(",",".");
-                        espeak_say(s);
+                        if(efd != 0)
+                        {
+                            Posix.write(efd, s, s.length);
+                            Posix.write(efd, "\r\n", 2);
+                        }
+                        else
+                            espeak_say(s);
+//                        MWPLog.message("say %d \"%s\"\n", efd, s);
                     }
                 }
                 return 0;
