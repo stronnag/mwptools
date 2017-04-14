@@ -1555,14 +1555,14 @@ public class NavStatus : GLib.Object
         volt_update("n/a",4, 0f,true);
     }
 
-    public void logspeak_init (string? voice, bool use_en = false)
+    public void logspeak_init (string? voice, bool use_en = false,
+                               string? espawn = null)
     {
         efdin=0;
 
         if(vinit == false)
         {
             vinit = true;
-            var espawn = Environment.get_variable("MWP_VOX_SPAWN");
             if(espawn == null)
             {
                 if(voice == null)

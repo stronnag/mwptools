@@ -590,6 +590,7 @@ public class MWPlanner : Gtk.Application {
     public static unowned string ulang;
     private static bool ignore_3dr = false;
 
+    private static string sndstr;
     private static string rrstr;
     private int nrings = 0;
     private double ringint = 0;
@@ -627,6 +628,7 @@ public class MWPlanner : Gtk.Application {
         { "offline", 0, 0, OptionArg.NONE, out offline, "force offline proxy mode", null},
         { "n-points", 'S', 0, OptionArg.INT, out stack_size, "Number of points shown in GPS trail", "INT"},
         { "rings", 0, 0, OptionArg.STRING, out rrstr, "Range rings (number, interval(m)), e.g. --rings 10,20", null},
+        { "sound-daemon", 0, 0, OptionArg.STRING, out sndstr, "sound daemon", null},
         {null}
     };
 
@@ -721,6 +723,9 @@ public class MWPlanner : Gtk.Application {
 
         if(conf.mediap.length == 0)
             use_gst = true;
+
+        if(sndstr.length < 2)
+            sndstr = null;
 
         if(rrstr != null)
         {
@@ -4227,7 +4232,9 @@ public class MWPlanner : Gtk.Application {
         {
             if(audio_on /*&& (sflags != 0)*/)
             {
-                navstatus.logspeak_init(conf.evoice, (conf.uilang == "ev"));
+                MWPLog.message("sndstr %s\n", sndstr);
+                navstatus.logspeak_init(conf.evoice, (conf.uilang == "ev"),
+                                        sndstr);
                 spktid = Timeout.add_seconds(conf.speakint, () => {
                         if(replay_paused == false)
                             navstatus.announce(sflags, conf.recip);
@@ -5006,9 +5013,9 @@ public class MWPlanner : Gtk.Application {
             Logger.stop();
     }
 
-    private static string? read_cmd_opts()
+    private static string read_cmd_opts()
     {
-        string opts=null;
+        var sb = new StringBuilder ();
         var fn = MWPUtils.find_conf_file("cmdopts");
         if(fn != null)
         {
@@ -5022,37 +5029,37 @@ public class MWPlanner : Gtk.Application {
                        !line.has_prefix("#") &&
                        !line.has_prefix(";"))
                     {
-                        opts = line;
-                        break;
+                        sb.append(line);
+                        sb.append(" ");
                     }
                 }
             } catch (Error e) {
                 error ("%s", e.message);
             }
         }
-        return opts;
+        return sb.str;
     }
 
     private static void check_env_args(OptionContext opt)
     {
-        string  evar = Environment.get_variable("MWP_ARGS");
-        if(evar == null)
-            evar = read_cmd_opts();
-        if(evar != null)
+        var s1 = read_cmd_opts();
+        var s2 = Environment.get_variable("MWP_ARGS");
+        var sb = new StringBuilder();
+        if(s1.length > 0)
+           sb.append(s1);
+        if(s2 != null)
+            sb.append(s2);
+        if(sb.str.length > 0)
         {
-            string? [] m = {};
-            m += "args";
-            foreach (var s in evar.split(" "))
-                m += s;
-
-            if(m.length > 1)
+            MWPLog.message("prepending %s\n", sb.str);
+            sb.prepend("mwp ");
+            string []m;
+            try
             {
-                MWPLog.message("prepending \"%s\"\n", evar);
+                Shell.parse_argv(sb.str, out m);
                 unowned string? []om = m;
-                try {
-                    opt.parse(ref om);
-                } catch {}
-            }
+                opt.parse(ref om);
+            } catch {}
         }
     }
 
