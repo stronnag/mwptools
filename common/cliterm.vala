@@ -10,7 +10,6 @@ public class CLITerm : Gtk.Window
         this.modal = true;
         if(w != null)
         {
-            this.set_keep_above(true);
             this.set_transient_for (w);
         }
         this.title = "mwp CLI";
