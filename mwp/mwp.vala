@@ -3454,7 +3454,8 @@ public class MWPlanner : Gtk.Application {
                 if(Logger.is_logging)
                     Logger.ltm_xframe(xf);
 
-                if(xf.disarm_reason != 0 && xf.disarm_reason < disarm_reason.length)
+                if(armed == 0 && xf.disarm_reason != 0 &&
+                   xf.disarm_reason < disarm_reason.length)
                     MWPLog.message("LTM Disarm (armed = %d) reason %s\n",
                                    armed, disarm_reason[xf.disarm_reason]);
                 break;
