@@ -724,7 +724,7 @@ public class MWPlanner : Gtk.Application {
         if(conf.mediap.length == 0)
             use_gst = true;
 
-        if(sndstr.length < 2)
+        if(sndstr != null && sndstr.length < 2)
             sndstr = null;
 
         if(rrstr != null)

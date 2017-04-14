@@ -1558,10 +1558,9 @@ public class NavStatus : GLib.Object
     public void logspeak_init (string? voice, bool use_en = false,
                                string? espawn = null)
     {
-        efdin=0;
-
         if(vinit == false)
         {
+            efdin=0;
             vinit = true;
             if(espawn == null)
             {
