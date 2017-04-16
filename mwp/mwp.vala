@@ -387,6 +387,8 @@ public class MWPlanner : Gtk.Application {
     private bool have_fcvv;
     private bool vinit;
     private bool need_preview;
+    private bool xfailsafe = false;
+
     private uint8 gpscnt = 0;
     private uint8 want_special = 0;
     private uint8 last_ltmf = 0;
@@ -3490,6 +3492,17 @@ public class MWPlanner : Gtk.Application {
                 uint8 ltmflags = sf.flags >> 2;
                 uint32 mwflags = 0;
                 uint8 saf = sf.flags & 1;
+                bool failsafe = ((sf.flags & 2)  == 2);
+
+                if(xfailsafe != failsafe)
+                {
+                    if(failsafe)
+                        Craft.show_warning(view, "FAILSAFE");
+                    else
+                        Craft.hide_warning();
+                    xfailsafe = failsafe;
+                }
+
                 if ((saf & 1) == 1)
                 {
                     mwflags = arm_mask;
@@ -3701,6 +3714,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     Mav.MAVLINK_RC_CHANNELS m = *(Mav.MAVLINK_RC_CHANNELS*)raw;
                     Logger.mav_rc_channels(m);
+                    radstatus.update_rssi(m.rssi,item_visible(DOCKLETS.RADIO));
                 }
                 break;
 
@@ -4347,6 +4361,7 @@ public class MWPlanner : Gtk.Application {
 
     private void init_state()
     {
+        xfailsafe = false;
         dopoll = false;
         have_api = have_vers = have_misc = have_status = have_wp = have_nc =
             have_fcv = have_fcvv = false;
