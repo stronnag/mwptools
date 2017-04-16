@@ -4790,7 +4790,7 @@ public class MWPlanner : Gtk.Application {
                                 sb.append("Loiter time: %ds\n".printf(m.lt));
                             if(m.nspeed == 0 && m.dist > 0 && m.et > 0)
                                 m.nspeed = m.dist / (m.et - 3*m.npoints);
-                            sb.append("Speed: %.1f m/s".printf(m.nspeed));
+                            sb.append("Speed: %.1f m/s\n".printf(m.nspeed));
                             if(m.maxalt != 0x80000000)
                                 sb.append("Max altitude: %dm\n".printf(m.maxalt));
                             plabel.set_text(sb.str);
