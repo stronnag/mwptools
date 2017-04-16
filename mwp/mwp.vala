@@ -4361,6 +4361,7 @@ public class MWPlanner : Gtk.Application {
 
     private void init_state()
     {
+        Craft.hide_warning();
         xfailsafe = false;
         dopoll = false;
         have_api = have_vers = have_misc = have_status = have_wp = have_nc =

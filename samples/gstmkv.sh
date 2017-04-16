@@ -5,9 +5,10 @@
 
 OUT=${1:-mwp-example.mkv}
 
+
 if ! pgrep -x  mwp
 then
- setsid mwp --dont-maximise  >/dev/null 2>&1 &
+  PULSE_LATENCY_MSEC=30 setsid mwp --dont-maximise  >/dev/null 2>&1 &
  sleep 2
 fi
 
@@ -36,7 +37,7 @@ gst-launch-1.0 -q -e \
   ximagesrc startx=$SX starty=$SY endx=$ENDX endy=$ENDY use-damage=false \
   ! videoconvert \
   ! queue \
-  ! vp8enc \
+  ! x264enc \
   ! progressreport update-freq=1 \
   ! mux. pulsesrc device=$S \
   ! audio/x-raw \
