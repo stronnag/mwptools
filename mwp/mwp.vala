@@ -3158,7 +3158,7 @@ public class MWPlanner : Gtk.Application {
                     w.action = *rp++;
                     rp = deserialise_i32(rp, out w.lat);
                     rp = deserialise_i32(rp, out w.lon);
-                    rp = deserialise_u32(rp, out w.altitude);
+                    rp = deserialise_i32(rp, out w.altitude);
                     rp = deserialise_i16(rp, out w.p1);
                     rp = deserialise_u16(rp, out w.p2);
                     rp = deserialise_u16(rp, out w.p3);
@@ -4763,8 +4763,13 @@ public class MWPlanner : Gtk.Application {
 	filter.add_pattern ("*");
 	chooser.add_filter (filter);
 
+        var prebox = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
         var preview = new Gtk.Image();
-        chooser.set_preview_widget(preview);
+        var plabel = new Gtk.Label (null);
+        prebox.pack_start (preview, false, false, 1);
+        prebox.pack_start (plabel, false, false, 1);
+
+        chooser.set_preview_widget(prebox);
         chooser.update_preview.connect (() => {
                 string uri = chooser.get_preview_uri ();
                 have_preview = false;
@@ -4772,30 +4777,49 @@ public class MWPlanner : Gtk.Application {
                 if (uri != null && uri.has_prefix ("file://") == true)
                 {
                     var fn = uri.substring (7);
-                    var ifn = get_cached_mission_image(fn);
-                    try
+                    if(!FileUtils.test (fn, FileTest.IS_DIR))
                     {
-                        pixbuf = new Gdk.Pixbuf.from_file_at_scale (ifn, 256,
-                                                                    256, true);
-                        if(pixbuf != null)
-                            have_preview = true;
-                    }
-                    catch {
-                        if (FileUtils.test (fn, FileTest.EXISTS)
-                            && !FileUtils.test (fn, FileTest.IS_DIR))
-                            pixbuf = FlatEarth.getpixbuf(fn, 256, 256);
-                    }
+                        var m = new Mission ();
+                        if(m.read_xml_file (fn) == true)
+                        {
+                            var sb = new StringBuilder();
+                            sb.append("Points: %u\n".printf(m.npoints));
+                            sb.append("Distance: %.1fm\n".printf(m.dist));
+                            sb.append("Flight time %ds\n".printf(m.et));
+                            if(m.lt != -1)
+                                sb.append("Loiter time: %ds\n".printf(m.lt));
+                            if(m.nspeed == 0 && m.dist > 0 && m.et > 0)
+                                m.nspeed = m.dist / (m.et - 3*m.npoints);
+                            sb.append("Speed: %.1f m/s".printf(m.nspeed));
+                            if(m.maxalt != 0x80000000)
+                                sb.append("Max altitude: %dm\n".printf(m.maxalt));
+                            plabel.set_text(sb.str);
+                        }
+                        else
+                            plabel.set_text("");
 
-                    if(pixbuf != null)
-                    {
-                        preview.set_from_pixbuf(pixbuf);
-                        preview.show ();
+                        var ifn = get_cached_mission_image(fn);
+                        try
+                        {
+                            pixbuf = new Gdk.Pixbuf.from_file_at_scale (ifn, 256,
+                                                                        256, true);
+                            if(pixbuf != null)
+                                have_preview = true;
+                        }
+                        catch {
+                            if (FileUtils.test (fn, FileTest.EXISTS))
+                            pixbuf = FlatEarth.getpixbuf(fn, 256, 256);
+                        }
                     }
-                    else
-                        preview.hide ();
+                }
+
+                if(pixbuf != null)
+                {
+                    preview.set_from_pixbuf(pixbuf);
+                    prebox.show_all ();
                 }
                 else
-                    preview.hide ();
+                    prebox.hide ();
             });
 
             // Process response:

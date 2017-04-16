@@ -24,7 +24,7 @@ public struct MissionItem
     MSP.Action action;
     double lat;
     double lon;
-    uint alt;
+    int alt;
     int param1;
     int param2;
     int param3;
@@ -46,6 +46,7 @@ public class Mission : GLib.Object
     public double dist;
     public int et;
     public int lt;
+    public int maxalt;
 
     public Mission()
     {
@@ -58,6 +59,11 @@ public class Mission : GLib.Object
         minx=180;
         cx = cy = 0;
         zoom = -1;
+        maxalt = -2147483648;
+        dist = -1;
+        et = -1;
+        lt = -1;
+        nspeed = -1;
     }
 
     public MissionItem[] get_ways()
@@ -94,6 +100,19 @@ public class Mission : GLib.Object
         stdout.printf("lat min,max %f %f\n", minx, maxx);
         stdout.printf("lon min,max %f %f\n", miny, maxy);
         stdout.printf("cy cx %f %f %d\n", cy, cx, (int)zoom);
+        if(dist != 1)
+        {
+            stdout.printf("distance %.1f m\n", dist);
+            stdout.printf("flight time %d s\n", et);
+            if(lt != -1)
+                stdout.printf("loiter time %d s\n", lt);
+            if(nspeed == 0 && dist > 0 && et > 0)
+                nspeed = dist / (et - 3*waypoints.length);
+            stdout.printf("speed %.1f m/s\n", nspeed);
+
+        }
+        if(maxalt != 0x80000000)
+            stdout.printf("max altitude %d\n", maxalt);
     }
     public bool read_xml_file(string path)
     {
@@ -168,6 +187,8 @@ public class Mission : GLib.Object
                                 break;
                             case "alt":
                                 m.alt = int.parse(attr_content);
+                                if(m.alt > this.maxalt)
+                                    this.maxalt = m.alt;
                                 break;
                         }
                     }
@@ -207,7 +228,54 @@ public class Mission : GLib.Object
                             case "cy":
                                 this.cy = get_locale_double(prop->children->content);
                                 break;
-
+                        }
+                    }
+                    parse_node(iter);
+                    break;
+                case "details":
+                    parse_node(iter);
+                    break;
+                case "distance":
+                    for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next)
+                    {
+                        switch(prop->name)
+                        {
+                            case "value":
+                                this.dist = get_locale_double(prop->children->content);
+                                break;
+                        }
+                    }
+                    break;
+                case "nav-speed":
+                    for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next)
+                    {
+                        switch(prop->name)
+                        {
+                            case "value":
+                                this.nspeed = get_locale_double(prop->children->content);
+                                break;
+                        }
+                    }
+                    break;
+                case "fly-time":
+                    for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next)
+                    {
+                        switch(prop->name)
+                        {
+                            case "value":
+                                this.et = int.parse(prop->children->content);
+                                break;
+                        }
+                    }
+                    break;
+                case "loiter-time":
+                    for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next)
+                    {
+                        switch(prop->name)
+                        {
+                            case "value":
+                                this.nspeed = int.parse(prop->children->content);
+                                break;
                         }
                     }
                     break;

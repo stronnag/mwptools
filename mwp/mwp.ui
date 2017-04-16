@@ -2716,7 +2716,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <object class="GtkLevelBar" id="rssi_bar">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="hexpand">True</property>
         <property name="max_value">1023</property>
       </object>
       <packing>

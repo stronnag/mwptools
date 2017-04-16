@@ -70,7 +70,7 @@ public struct MSP_WP
     public uint8 action;
     public int32 lat;
     public int32 lon;
-    public uint32 altitude;
+    public int32 altitude;
     public int16 p1;
     public uint16 p2;
     public uint16 p3;
