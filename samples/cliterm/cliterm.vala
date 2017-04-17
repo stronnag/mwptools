@@ -1,6 +1,16 @@
+
+private static int baud = 115200;
+private static string dev;
+private static bool noinit=false;
+const OptionEntry[] options = {
+    { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", null},
+    { "device", 'd', 0, OptionArg.STRING, out dev, "device", null},
+    { "noinit", 'n', 0,  OptionArg.NONE, out noinit, "noinit",null},
+    {null}
+};
+
 int main (string[] args)
 {
-
     var ml = new MainLoop();
     MWSerial s;
     MWSerial.ProtoMode oldmode;
@@ -9,9 +19,6 @@ int main (string[] args)
     string estr;
     bool res;
     string []devs = {"/dev/ttyUSB0","/dev/ttyACM0"};
-    string dev = null;
-
-    int baud = 115200;
 
     foreach(var d in devs)
     {
@@ -22,6 +29,18 @@ int main (string[] args)
         }
     }
 
+    try {
+        var opt = new OptionContext(" - cli tool");
+        opt.set_help_enabled(true);
+        opt.add_main_entries(options, null);
+        opt.parse(ref args);
+    }
+    catch (OptionError e) {
+        stderr.printf("Error: %s\n", e.message);
+        stderr.printf("Run '%s --help' to see a full list of available "+
+                      "options\n", args[0]);
+        return 1;
+    }
 
     if (args.length > 2)
         baud = int.parse(args[2]);
@@ -42,7 +61,8 @@ int main (string[] args)
         s.cli_event.connect((buf,len) => {
                 Posix.write(1,buf,len);
             });
-        s.write("#\n".data, 2);
+        if(noinit == false)
+            s.write("#\n".data, 2);
         s.serial_lost.connect(() => {
                 s.close();
                 ml.quit();
