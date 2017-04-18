@@ -232,3 +232,13 @@ struct __attribute__ ((__packed__))  _ltm_xframe
     uint8_t spare;
 };
 typedef struct _ltm_xframe LTM_XFRAME;
+
+struct __attribute__ ((__packed__)) msp_wp_getinfo
+{
+    uint8_t wp_cap;
+    uint8_t max_wp;
+    uint8_t wps_valid;
+    uint8_t wp_count;
+};
+
+typedef struct _msp_wp_getinfo MSP_WP_GETINFO;

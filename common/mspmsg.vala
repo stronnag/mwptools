@@ -237,6 +237,14 @@ public struct CF_MODE_RANGES
     uint8 endstep;
 }
 
+public struct MSP_WP_GETINFO
+{
+    uint8 wp_cap;
+    uint8 max_wp;
+    uint8 wps_valid;
+    uint8 wp_count;
+}
+
 public enum MSize
 {
     MSP_IDENT=7,

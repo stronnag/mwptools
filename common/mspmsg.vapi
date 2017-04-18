@@ -213,3 +213,12 @@ public struct LTM_XFRAME
     uint8 disarm_reason;
     uint8 spare;
 }
+
+[CCode (cheader_filename = "../common/mspmsg.h")]
+public struct MSP_WP_GETINFO
+{
+    uint8 wp_cap;
+    uint8 max_wp;
+    uint8 wps_valid;
+    uint8 wp_count;
+}

@@ -418,6 +418,7 @@ public class MWPlanner : Gtk.Application {
     private uint16  rhdop = 10000;
     private uint gpsintvl = 0;
     private bool telem = false;
+    private uint8 wp_max = 0;
 
     private enum DEBUG_FLAGS
     {
@@ -495,11 +496,12 @@ public class MWPlanner : Gtk.Application {
 
     private enum WPDL {
         IDLE=0,
-        VALIDATE,
-        REPLACE,
-        POLL,
-        REPLAY,
-        SAVE_EEPROM
+        VALIDATE = 1,
+        REPLACE = 2,
+        POLL = 4,
+        REPLAY = 8,
+        SAVE_EEPROM = 16,
+        GETINFO = 32
     }
 
     private struct WPMGR
@@ -2134,6 +2136,7 @@ public class MWPlanner : Gtk.Application {
             {
                 sound = (sensor_alm) ? GENERAL_ALERT : RED_ALERT;
                 sensor_alm = true;
+                init_craft_icon();
                 Craft.show_warning(view,"SENSOR FAILURE");
             }
             else
@@ -2929,12 +2932,41 @@ public class MWPlanner : Gtk.Application {
                 remove_tid(ref cmdtid);
                 have_misc = true;
                 vwarn1 = raw[19];
+                send_cmd(MSP.Cmds.WP_GETINFO, null, 0);
                 add_cmd(MSP.Cmds.STATUS,null,0, 1000);
                 break;
 
             case MSP.Cmds.STATUS:
                 remove_tid(ref cmdtid);
                 handle_msp_status(raw);
+                break;
+
+            case MSP.Cmds.WP_GETINFO:
+                var wpi = MSP_WP_GETINFO();
+                uint8* rp = raw;
+                rp++;
+                wp_max = wpi.max_wp = *rp++;
+                wpi.wps_valid = *rp++;
+                wpi.wp_count = *rp;
+                MWPLog.message("Waypoint Info : %u %u %u\n",
+                               wpi.max_wp, wpi.wps_valid, wpi.wp_count);
+
+                if((wpmgr.wp_flag & WPDL.GETINFO) != 0)
+                {
+                    string s = "FC invalidates mission (%u WP)".printf(wpi.wp_count);
+                    mwp_warning_box(s, Gtk.MessageType.ERROR, 10);
+                    wpmgr.wp_flag |= ~WPDL.GETINFO;
+                }
+                else if (wpi.wp_count > 0 && wpi.wps_valid == 1 )
+                {
+                    string s = "Waypoints in FC\nMax: %u Valid: %u Points: %u".printf(wpi.max_wp, wpi.wps_valid, wpi.wp_count);
+                    mwp_warning_box(s, Gtk.MessageType.INFO, 5);
+                    validatelab.set_text("✔"); // u+2714
+                    if(stslabel.get_text() == "No mission")
+                    {
+                        stslabel.set_text("%u WP valid in FC".printf(wpi.wp_count));
+                    }
+                }
                 break;
 
             case MSP.Cmds.NAV_STATUS:
@@ -3154,7 +3186,7 @@ public class MWPlanner : Gtk.Application {
                 MSP_WP w = MSP_WP();
                 uint8* rp = raw;
 
-                if(wpmgr.wp_flag != WPDL.POLL)
+                if((wpmgr.wp_flag & WPDL.POLL) == 0)
                 {
                     w.wp_no = *rp++;
                     w.action = *rp++;
@@ -3167,8 +3199,8 @@ public class MWPlanner : Gtk.Application {
                     w.flag = *rp;
                 }
 
-                if (wpmgr.wp_flag == WPDL.VALIDATE ||
-                    wpmgr.wp_flag == WPDL.SAVE_EEPROM)
+                if ((wpmgr.wp_flag & WPDL.VALIDATE) != 0  ||
+                    (wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
                 {
                     WPFAIL fail = WPFAIL.OK;
                     validatelab.set_text("WP:%3d".printf(w.wp_no));
@@ -3247,15 +3279,21 @@ public class MWPlanner : Gtk.Application {
                         bleet_sans_merci(GENERAL_ALERT);
                         validatelab.set_text("✔"); // u+2714
                         mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
-                        if(wpmgr.wp_flag == WPDL.SAVE_EEPROM)
+                        if(true)
+                        {
+                            wpmgr.wp_flag |= WPDL.GETINFO;
+                            send_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+                        }
+
+                        if((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
                         {
                             uint8 zb=0;
                             send_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
                         }
                     }
                 }
-                else if (wpmgr.wp_flag == WPDL.REPLACE ||
-                         wpmgr.wp_flag == WPDL.REPLAY)
+                else if ((wpmgr.wp_flag & WPDL.REPLACE) != 0 ||
+                         (wpmgr.wp_flag & WPDL.REPLAY) != 0)
                 {
                     validatelab.set_text("WP:%3d".printf(w.wp_no));
                     MissionItem m = MissionItem();
@@ -4110,6 +4148,15 @@ public class MWPlanner : Gtk.Application {
         var wps = ls.to_wps(inav, (vi.mrtype == Craft.Vehicles.FLYING_WING
                                    || vi.mrtype == Craft.Vehicles.AIRPLANE
                                    || vi.mrtype == Craft.Vehicles.CUSTOM_AIRPLANE));
+
+        if(wps.length > wp_max)
+        {
+            string str = "Number of waypoints (%d) exceeds max (%d)".printf(
+                wps.length, wp_max);
+            mwp_warning_box(str, Gtk.MessageType.ERROR);
+            return;
+        }
+
         xdopoll = dopoll;
         dopoll = false;
         MWPCursor.set_busy_cursor(window);
@@ -4247,7 +4294,6 @@ public class MWPlanner : Gtk.Application {
         {
             if(audio_on /*&& (sflags != 0)*/)
             {
-                MWPLog.message("sndstr %s\n", sndstr);
                 navstatus.logspeak_init(conf.evoice, (conf.uilang == "ev"),
                                         sndstr);
                 spktid = Timeout.add_seconds(conf.speakint, () => {
