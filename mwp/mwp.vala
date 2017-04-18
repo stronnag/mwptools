@@ -1206,6 +1206,7 @@ public class MWPlanner : Gtk.Application {
 
 
         ag.connect('i', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                map_hide_warning();
                 init_sstats();
                 armed = 0;
                 rhdop = 10000;
