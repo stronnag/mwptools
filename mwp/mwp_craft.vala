@@ -40,7 +40,6 @@ public class Craft : GLib.Object
 
     private Clutter.Color path_colour;
 
-    private static Champlain.MarkerLayer wnlayer;
     private static Champlain.Label homep ;
     private static Champlain.Label posp ;
     private static Champlain.Label rthp ;
@@ -170,9 +169,6 @@ public class Craft : GLib.Object
         hmlayer = new Champlain.MarkerLayer();
         pmlayer = new Champlain.MarkerLayer();
 
-        wnlayer = new Champlain.MarkerLayer();
-        view.add_layer(wnlayer);
-
         if(trail)
         {
             view.add_layer (path);
@@ -199,23 +195,6 @@ public class Craft : GLib.Object
         layer.remove_marker(icon);
     }
 
-    public static void show_warning(Champlain.View v, string text)
-    {
-        stderr.printf("Emergency %s\n", text);
-        Clutter.Color red = { 0xff,0,0, 0xff};
-        var wnicon = new Champlain.Label.with_text (text,"Sans 36",red,null);
-        wnicon.set_draw_shadow (false);
-        wnicon.set_draw_background (false);
-        wnlayer.add_marker (wnicon);
-        var lat = v.y_to_latitude(40);
-        var lon = v.x_to_longitude(40);
-        wnicon.set_location (lat, lon);
-    }
-
-    public static void hide_warning()
-    {
-        wnlayer.remove_all();
-    }
 
     public void set_icon(uint id)
     {

@@ -420,6 +420,8 @@ public class MWPlanner : Gtk.Application {
     private bool telem = false;
     private uint8 wp_max = 0;
 
+    private Clutter.Text clutext;
+
     private enum DEBUG_FLAGS
     {
         NONE=0,
@@ -1159,6 +1161,7 @@ public class MWPlanner : Gtk.Application {
         lm.child_set(view,scale,"y-align", Clutter.ActorAlign.END);
         view.set_keep_center_on_resize(true);
         add_source_combo(conf.defmap,msources);
+        map_init_warning();
 
         var ag = new Gtk.AccelGroup();
         ag.connect('c', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
@@ -2126,6 +2129,26 @@ public class MWPlanner : Gtk.Application {
         return reqsize;
     }
 
+    private void map_init_warning()
+    {
+        Clutter.Color red = { 0xff,0,0, 0xff};
+        var textb = new Clutter.Actor ();
+        clutext = new Clutter.Text.full ("Sans 36", "", red);
+        textb.add_child(clutext);
+        textb.set_position(40,40);
+        view.add_child (textb);
+    }
+
+    private void map_show_warning(string text)
+    {
+        clutext.set_text(text);
+    }
+
+    private void map_hide_warning()
+    {
+        clutext.set_text("");
+    }
+
     private void  alert_broken_sensors(uint8 val)
     {
         if(val != xs_state)
@@ -2137,12 +2160,12 @@ public class MWPlanner : Gtk.Application {
                 sound = (sensor_alm) ? GENERAL_ALERT : RED_ALERT;
                 sensor_alm = true;
                 init_craft_icon();
-                Craft.show_warning(view,"SENSOR FAILURE");
+                map_show_warning("SENSOR FAILURE");
             }
             else
             {
                 sound = GENERAL_ALERT;
-                Craft.hide_warning();
+                map_hide_warning();
             }
             bleet_sans_merci(sound);
             navstatus.hw_failure(val);
@@ -3535,9 +3558,9 @@ public class MWPlanner : Gtk.Application {
                 if(xfailsafe != failsafe)
                 {
                     if(failsafe)
-                        Craft.show_warning(view, "FAILSAFE");
+                        map_show_warning("FAILSAFE");
                     else
-                        Craft.hide_warning();
+                        map_hide_warning();
                     xfailsafe = failsafe;
                 }
 
@@ -4407,7 +4430,7 @@ public class MWPlanner : Gtk.Application {
 
     private void init_state()
     {
-        Craft.hide_warning();
+        map_hide_warning();
         xfailsafe = false;
         dopoll = false;
         have_api = have_vers = have_misc = have_status = have_wp = have_nc =
