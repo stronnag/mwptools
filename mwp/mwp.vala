@@ -2951,7 +2951,7 @@ public class MWPlanner : Gtk.Application {
                 MWPLog.message("Waypoint Info : %u %u %u\n",
                                wpi.max_wp, wpi.wps_valid, wpi.wp_count);
 
-                if((wpmgr.wp_flag & WPDL.GETINFO) != 0)
+                if((wpmgr.wp_flag & WPDL.GETINFO) != 0 && wpi.wps_valid == 0)
                 {
                     string s = "FC invalidates mission (%u WP)".printf(wpi.wp_count);
                     mwp_warning_box(s, Gtk.MessageType.ERROR, 10);
@@ -2961,10 +2961,10 @@ public class MWPlanner : Gtk.Application {
                 {
                     string s = "Waypoints in FC\nMax: %u Valid: %u Points: %u".printf(wpi.max_wp, wpi.wps_valid, wpi.wp_count);
                     mwp_warning_box(s, Gtk.MessageType.INFO, 5);
-                    validatelab.set_text("✔"); // u+2714
                     if(stslabel.get_text() == "No mission")
                     {
                         stslabel.set_text("%u WP valid in FC".printf(wpi.wp_count));
+                        validatelab.set_text("✔"); // u+2714
                     }
                 }
                 break;
@@ -4749,6 +4749,7 @@ public class MWPlanner : Gtk.Application {
         var ms = new Mission ();
         if(ms.read_xml_file (fname) == true)
         {
+            validatelab.set_text("");
             ms.dump();
             ls.import_mission(ms);
             var mmax = view.get_max_zoom_level();
