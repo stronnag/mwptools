@@ -46,11 +46,20 @@ public class Logger : GLib.Object
             return;
         }
 
-        gen = new Json.Generator ();
+        var gen = new Json.Generator ();
         var bfn =  (title == null) ? fn : title;
         var builder = init("init");
+        var u = Posix.utsname();
+        var sb = new StringBuilder();
+        sb.append(u.nodename);
+        sb.append(" ");
+        sb.append(u.sysname);
+        sb.append(" ");
+        sb.append(u.release);
+        sb.append(" ");
+        sb.append(u.machine);
         builder.set_member_name ("host");
-        builder.add_string_value (Environment.get_host_name());
+        builder.add_string_value (sb.str);
         builder.set_member_name ("mwpinfo");
         builder.add_string_value (mwpvers);
         builder.set_member_name ("mission");
