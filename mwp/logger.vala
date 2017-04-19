@@ -49,6 +49,8 @@ public class Logger : GLib.Object
         gen = new Json.Generator ();
         var bfn =  (title == null) ? fn : title;
         var builder = init("init");
+        builder.set_member_name ("host");
+        builder.add_string_value (Environment.get_host_name());
         builder.set_member_name ("mwpinfo");
         builder.add_string_value (mwpvers);
         builder.set_member_name ("mission");
