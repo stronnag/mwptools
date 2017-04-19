@@ -687,7 +687,11 @@ public class ListBox : GLib.Object
         {
             if(need_del)
             {
+#if LSRREF
+                list_model.remove(ref iter);
+#else
                 list_model.remove(iter);
+#endif
                 lastid--;
             }
             else
@@ -727,7 +731,11 @@ public class ListBox : GLib.Object
             {
                 have_rth = false;
                 lastid--;
+#if LSRREF
+                list_model.remove(ref iter);
+#else
                 list_model.remove(iter);
+#endif
             }
         }
         mp.markers.add_list_store(this);
@@ -831,7 +839,11 @@ public class ListBox : GLib.Object
             Gtk.TreeIter iter;
             var path = t.get_path ();
             list_model.get_iter (out iter, path);
-            list_model.remove(iter);
+#if LSRREF
+                list_model.remove(ref iter);
+#else
+                list_model.remove(iter);
+#endif
             lastid--;
         }
         calc_mission();
