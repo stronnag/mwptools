@@ -46,9 +46,10 @@ public class Logger : GLib.Object
             return;
         }
 
-        var gen = new Json.Generator ();
+        gen = new Json.Generator ();
         var bfn =  (title == null) ? fn : title;
-        var builder = init("init");
+
+        var builder = init("environment");
         var u = Posix.utsname();
         var sb = new StringBuilder();
         sb.append(u.nodename);
@@ -62,6 +63,13 @@ public class Logger : GLib.Object
         builder.add_string_value (sb.str);
         builder.set_member_name ("mwpinfo");
         builder.add_string_value (mwpvers);
+        builder.end_object ();
+        Json.Node root = builder.get_root ();
+        gen.set_root (root);
+
+        write_stream();
+
+        builder = init("init");
         builder.set_member_name ("mission");
         builder.add_string_value (bfn);
         builder.set_member_name ("mwvers");
@@ -101,7 +109,7 @@ public class Logger : GLib.Object
             }
         }
         builder.end_object ();
-        Json.Node root = builder.get_root ();
+        root = builder.get_root ();
         gen.set_root (root);
         write_stream();
     }
