@@ -26,6 +26,7 @@ require 'optparse'
 require 'socket'
 require 'open3'
 require 'json'
+require_relative 'inav_states'
 
 begin
 require 'rubyserial'
@@ -182,7 +183,7 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
 	msps[4][5] = m[1][0].ord - '0'.ord
 	msps[4][6] = m[2][0].ord - '0'.ord
 	msps[4][7] = m[3][0].ord - '0'.ord
-	inavers = (m[1].to_i*100 + m[2].to_i)*100 + m[3].to_i
+	inavers = [m[1],m[2],m[3]].join('.')
 	i = 0
 	m[4].each_byte {|b| msps[5][24+i] = b ; i += 1}
 	bid = BOARD_MAP[m[5]]
@@ -268,42 +269,24 @@ end
 def encode_stats r,inavers,armed=1
   msg='$TS'
   sts = nil
-  if inavers == nil or inavers < 10601
-    sts = case r[:navstate].to_i
-	  when 0,1                            # undef, idle
-	    0 # get from flightmode
-	  when 2,3 #althold
-	    8
-	  when 4..7 # poshold 2D
-	    9
-	  when 8..16,21  # RTH
-	    13
-	when 18..20,28..31 # landing
-	    15
-	  when 22..26 # WP
-	    10
-	  else
-	    19 #undef
-	end
-  else
-    sts = case r[:navstate].to_i
-	  when 0,1 # undef, idle
-	    0 # get from flightmode
-	  when 2,3 #althold
-	    8
-	  when 4..7 # poshold
-	    9
-	  when 8..11,13,14 # RTH
-	    13
-	  when 12,21,22,23,24    #landing
-	    15
-	  when 15..20 # WP
-	    10
-	  else
-	    19
-	  end
-  end
+  inavers = '1.2.0' if inavers.nil?
 
+  sts = case INAV_STATES[inavers][r[:navstate].to_i]
+	when :nav_state_undefined,:nav_state_idle
+	  0 # get from flightmode
+	when :nav_state_althold_initialize,:nav_state_althold_in_progress
+	  8
+	when :nav_state_poshold_2d_initialize, :nav_state_poshold_2d_in_progress, :nav_state_poshold_3d_initialize, :nav_state_poshold_3d_in_progress
+	  9
+	when  :nav_state_rth_initialize, :nav_state_rth_climb_to_safe_alt, :nav_state_rth_head_home, :nav_state_rth_hover_prior_to_landing, :nav_state_rth_finishing, :nav_state_rth_finished
+	  13
+	when :nav_state_rth_landing, :nav_state_waypoint_rth_land,:nav_state_emergency_landing_initialize,:nav_state_emergency_landing_in_progress, :nav_state_emergency_landing_finished
+	  15
+	when :nav_state_waypoint_initialize, :nav_state_waypoint_pre_action, :nav_state_waypoint_in_progress, :nav_state_waypoint_reached, :nav_state_waypoint_next, :nav_state_waypoint_finished
+	  10
+	else
+	  19
+	end
   sts = (sts << 2) | armed
   if r[:failsafephase_flags].strip != 'IDLE'
 #    STDERR.puts "[#{r[:failsafephase_flags]}]"
@@ -392,12 +375,13 @@ def get_autotype file
   if fn != nil
     if File.exist? fn
       File.open(fn) do |fh|
-	json = fh.readline
-	o = JSON.parse(json, {:symbolize_names => true})
-	if o[:type] == 'init'
-	  mtyp = o[:mrtype]
+	fh.each do |json|
+	  o = JSON.parse(json, {:symbolize_names => true})
+	  if o[:type] == 'init'
+	    mtyp = o[:mrtype]
+	    break
+	  end
 	end
-	break
       end
     end
   end

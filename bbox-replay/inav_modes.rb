@@ -11,7 +11,7 @@ idx = 1
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
-  opt.on('-i','--index=IDX'){|o|idx=o}
+  opt.on('-i','--index=IDX',Integer){|o|idx=o}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
     opt.parse!
@@ -20,9 +20,26 @@ ARGV.options do |opt|
   end
 end
 
-STATES.each_with_index { |s,n| puts "#{n} #{s}" }
-
 bbox = (ARGV[0]|| abort('no BBOX log'))
+
+gitinfos=[]
+File.open(bbox,'rb') do |f|
+  f.each do |l|
+    if m = l.match(/^H Firmware revision:(.*)$/)
+      gitinfos << m[1]
+    end
+  end
+end
+
+gitinfo = gitinfos[idx - 1]
+
+inavers=nil
+if m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \(([0-9A-Fa-f]{7,})\) (\S+)/)
+  inavers = [m[1],m[2],m[3]].join('.')
+end
+inavers = '1.2.0' if inavers.nil?
+
+
 cmd = "blackbox_decode"
 cmd << " --index #{idx}"
 cmd << " --stdout"
@@ -46,7 +63,8 @@ IO.popen(cmd,'r') do |p|
 	puts %w/Time(s) Elapsed(s)  State/.join("\t")
       end
       nstate = c[:navstate].to_i
-      astate = (STATES[nstate]||("State=%d" % nstate))
+      as = INAV_STATES[inavers][c[:navstate].to_i].to_s
+      astate = (as||("State=%d" % nstate))
       puts ["%6.1f" % ts, "(%6.1f)" % xts, astate].join("\t")
     end
   end
