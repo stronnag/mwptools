@@ -2957,7 +2957,10 @@ public class MWPlanner : Gtk.Application {
                 have_misc = true;
                 vwarn1 = raw[19];
                 send_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-                add_cmd(MSP.Cmds.STATUS,null,0, 1000);
+                Timeout.add(250, () => {
+                        add_cmd(MSP.Cmds.STATUS,null,0, 1000);
+                        return Source.REMOVE;
+                    });
                 break;
 
             case MSP.Cmds.STATUS:
@@ -3303,17 +3306,21 @@ public class MWPlanner : Gtk.Application {
                         bleet_sans_merci(GENERAL_ALERT);
                         validatelab.set_text("✔"); // u+2714
                         mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
-                        if(true)
-                        {
-                            wpmgr.wp_flag |= WPDL.GETINFO;
-                            send_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-                        }
-
                         if((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
                         {
                             uint8 zb=0;
                             send_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
                         }
+
+                        if(true)
+                        {
+                            Timeout.add(250, () => {
+                                    wpmgr.wp_flag |= WPDL.GETINFO;
+                                    send_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+                                    return Source.REMOVE;
+                                });
+                        }
+
                     }
                 }
                 else if ((wpmgr.wp_flag & WPDL.REPLACE) != 0 ||
@@ -3821,9 +3828,9 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.SET_NAV_POSHOLD:
                 send_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
-                Timeout.add(100, () => {
+                Timeout.add(250, () => {
                         add_cmd(MSP.Cmds.NAV_POSHOLD,null,0, 1000);
-                        return false;
+                        return Source.REMOVE;
                     });
                 break;
             case MSP.Cmds.WP_MISSION_LOAD:

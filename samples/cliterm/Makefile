@@ -19,6 +19,9 @@ all: $(APPS)
 cliterm: cliterm.vala $(COMMON)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
+msptest: msptest.vala $(COMMON)
+	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
+
 xcliterm: xcliterm-main.vala ../../common/cliterm.vala $(COMMON)
 	$(VALAC) $(OPTS) $(PKGS) $(PKGSV) -o $@  $^ $(LOPTS)
 
