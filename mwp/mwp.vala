@@ -3075,6 +3075,7 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.SET_NAV_CONFIG:
+                MWPLog.message("RX set nav config\n");
                 send_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
                 break;
 
@@ -3302,7 +3303,6 @@ public class MWPlanner : Gtk.Application {
                     else
                     {
                         MWPCursor.set_normal_cursor(window);
-                        reset_poller();
                         bleet_sans_merci(GENERAL_ALERT);
                         validatelab.set_text("✔"); // u+2714
                         mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
@@ -3312,15 +3312,15 @@ public class MWPlanner : Gtk.Application {
                             send_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
                         }
 
-                        if(true)
-                        {
-                            Timeout.add(250, () => {
-                                    wpmgr.wp_flag |= WPDL.GETINFO;
-                                    send_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-                                    return Source.REMOVE;
-                                });
-                        }
-
+                        Timeout.add(250, () => {
+                                wpmgr.wp_flag |= WPDL.GETINFO;
+                                send_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+                                return Source.REMOVE;
+                            });
+                        Timeout.add(500, () => {
+                                reset_poller(true);
+                                return Source.REMOVE;
+                            });
                     }
                 }
                 else if ((wpmgr.wp_flag & WPDL.REPLACE) != 0 ||
@@ -3364,6 +3364,7 @@ public class MWPlanner : Gtk.Application {
 
                         }
                         wp_resp={};
+                        reset_poller();
                     }
                     else if(w.flag == 0xfe)
                     {
@@ -3828,8 +3829,12 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.SET_NAV_POSHOLD:
                 send_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
-                Timeout.add(250, () => {
+                Timeout.add(250,() => {
                         add_cmd(MSP.Cmds.NAV_POSHOLD,null,0, 1000);
+                        Timeout.add(250,() => {
+                                reset_poller();
+                                return Source.REMOVE;
+                            });
                         return Source.REMOVE;
                     });
                 break;
@@ -4188,9 +4193,10 @@ public class MWPlanner : Gtk.Application {
             return;
         }
 
-        xdopoll = dopoll;
-        dopoll = false;
         MWPCursor.set_busy_cursor(window);
+    xdopoll = dopoll;
+        dopoll = false;
+
         if(wps.length == 0)
         {
             MSP_WP w0 = MSP_WP();
@@ -4220,19 +4226,26 @@ public class MWPlanner : Gtk.Application {
         wpmgr.wps = wps;
         wpmgr.wp_flag = flag;
 
-        var timeo = 1+(wps.length*1000);
+        var timeo = 1500+(wps.length*1000);
+        uint8 wtmp[64];
+        var nb = serialise_wp(wpmgr.wps[wpmgr.wpidx], wtmp);
+        Timeout.add(250, () => {
+                send_cmd(MSP.Cmds.SET_WP, wtmp, nb);
+                start_wp_timer(timeo);
+                return false;
+            });
+    }
+
+    public void start_wp_timer(uint timeo, string reason="WP")
+    {
         upltid = Timeout.add(timeo, () => {
                 MWPCursor.set_normal_cursor(window);
                 reset_poller(false);
-                MWPLog.message("WP upload probably failed\n");
-                mwp_warning_box("WP upload timeout.\nThe upload has probably failed",
-                                Gtk.MessageType.ERROR);
+                MWPLog.message("%s operation probably failed\n", reason);
+                string wmsg = "%s operation timeout.\nThe upload has probably failed".printf(reason);
+                mwp_warning_box(wmsg, Gtk.MessageType.ERROR);
                 return Source.REMOVE;
             });
-
-        uint8 wtmp[64];
-        var nb = serialise_wp(wpmgr.wps[wpmgr.wpidx], wtmp);
-        send_cmd(MSP.Cmds.SET_WP, wtmp, nb);
     }
 
     public void request_wp(uint8 wp)
@@ -4293,7 +4306,13 @@ public class MWPlanner : Gtk.Application {
         have_nc = false;
         uint8 tmp[64];
         var nb = serialise_pcfg(pcfg, tmp);
-        send_cmd(MSP.Cmds.SET_NAV_POSHOLD, tmp, nb);
+        xdopoll = dopoll;
+        dopoll = false;
+        Timeout.add(250, () => {
+                start_wp_timer(2500,"NavCfg");
+                send_cmd(MSP.Cmds.SET_NAV_POSHOLD, tmp, nb);
+                return Source.REMOVE;
+            });
     }
 
     private void send_cmd(MSP.Cmds cmd, void* buf, size_t len)
@@ -5120,9 +5139,15 @@ public class MWPlanner : Gtk.Application {
 
     private void download_mission()
     {
+        xdopoll = dopoll;
+        dopoll = false;
         wp_resp= {};
         wpmgr.wp_flag = WPDL.REPLACE;
-        request_wp(1);
+        Timeout.add(250, () => {
+                start_wp_timer(30*1000);
+                request_wp(1);
+                return false;
+            });
     }
 
     public static void xchild()
