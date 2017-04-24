@@ -1739,7 +1739,7 @@ public class AudioThread : Object {
                                     s = "Landing in progress.";
                                     break;
                                 case 10:
-                                    s = "Landed. Please disarm.";
+                                    s = "Landed.";
                                     break;
                             }
                             break;

@@ -298,34 +298,66 @@ def encode_stats r,inavers,armed=1
   msg
 end
 
-def encode_nav r
+def encode_nav r,inavers
+  inavers = '1.2.0' if inavers.nil?
   msg='$TN'
-  gpsmode = case r[:navstate].to_i
-	 when 4..7
-	   1
-	 when 8..21
-	   2
-	when 22..26
-	   3
-	else
-	   0
-	end
-  navmode = case r[:navstate].to_i
-	    when 2..3
-	      99
-	    when 4..7
-	      3
-	    when 8,9,14,15,16
+  gpsmode = case INAV_STATES[inavers][r[:navstate].to_i]
+	    when :nav_state_poshold_2d_initialize, :nav_state_poshold_2d_in_progress,
+		:nav_state_poshold_3d_initialize, :nav_state_poshold_3d_in_progress
 	      1
-	    when 18,29
+	    when :nav_state_rth_initialize, :nav_state_rth_2d_initialize, :nav_state_rth_2d_head_home,
+		:nav_state_rth_2d_gps_failing, :nav_state_rth_2d_finishing, :nav_state_rth_2d_finished,
+		:nav_state_rth_3d_initialize, :nav_state_rth_3d_climb_to_safe_alt,
+		:nav_state_rth_3d_head_home,
+		:nav_state_rth_3d_gps_failing,
+		:nav_state_rth_3d_hover_prior_to_landing,
+		:nav_state_rth_3d_landing,
+		:nav_state_rth_3d_finishing,
+		:nav_state_rth_3d_finished
+	      2
+	    when :nav_state_waypoint_initialize, :nav_state_waypoint_pre_action,
+		:nav_state_waypoint_in_progress,
+		:nav_state_waypoint_reached,
+		:nav_state_waypoint_next,
+		:nav_state_waypoint_finished,
+		:nav_state_waypoint_rth_land
+	      3
+	    else
+	      0
+	    end
+
+  navmode = case INAV_STATES[inavers][r[:navstate].to_i]
+	    when :nav_state_althold_initialize, :nav_state_althold_in_progress
+	      99
+	    when :nav_state_poshold_2d_initialize,
+		:nav_state_poshold_2d_in_progress,
+		:nav_state_poshold_3d_initialize,
+		:nav_state_poshold_3d_in_progress
+	      3
+	    when :nav_state_rth_initialize,
+		:nav_state_rth_2d_initialize,
+		:nav_state_rth_2d_head_home,
+		:nav_state_rth_3d_initialize,
+		:nav_state_rth_3d_climb_to_safe_alt,
+		:nav_state_rth_3d_head_home
+	      1
+	    when :nav_state_rth_3d_hover_prior_to_landing
 	      8
-	    when 19,28,30
+	    when :nav_state_rth_3d_landing,
+		:nav_state_waypoint_rth_land,
+		:nav_state_emergency_landing_in_progress
 	      9
-	    when 20
+	    when :nav_state_rth_3d_finishing
 	      11
-	    when 21,31
+	    when :nav_state_waypoint_rth_land,
+		:nav_state_emergency_landing_finished
 	      10
-	    when 22..26
+	    when :nav_state_waypoint_initialize,
+		:nav_state_waypoint_pre_action,
+		:nav_state_waypoint_in_progress,
+		:nav_state_waypoint_reached,
+		:nav_state_waypoint_next,
+		:nav_state_waypoint_finished
 	      5
 	    else
 	      0
@@ -339,12 +371,7 @@ def encode_nav r
 	   when 1
 	     2
 	   when 2
-	     case r[:navstate].to_i
-	     when 27..29,18..21
-	       8
-	     else
-	       4
-	     end
+	     4
 	   else
 	     0
 	   end
@@ -607,7 +634,7 @@ IO.popen(cmd,'rt') do |pipe|
 	  lastr = row
 	  msg = encode_stats row,vers
 	  send_msg dev, msg
-	  msg = encode_nav row
+	  msg = encode_nav row,vers
 	  send_msg dev, msg
 	end
       end

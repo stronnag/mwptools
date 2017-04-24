@@ -16,7 +16,6 @@ const OptionEntry[] options = {
     {null}
 };
 
-
 static uint16 lmin = 64000;
 static uint16 lmax = 0;
 static uint nl = 0;
@@ -107,7 +106,8 @@ public static int main (string[] args)
                 {
                     s.send_command(MSP.Cmds.STATUS,null,0);
                     ns++;
-                    tid = Timeout.add_seconds(1, () => {
+                    tid = Timeout.add_seconds(250, () => {
+                            tid =0;
                             s.send_command(MSP.Cmds.STATUS,null,0);
                             ns++;
                             return false;
