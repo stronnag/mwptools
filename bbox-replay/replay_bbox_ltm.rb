@@ -339,13 +339,17 @@ def encode_nav r,inavers
 		:nav_state_rth_2d_head_home,
 		:nav_state_rth_3d_initialize,
 		:nav_state_rth_3d_climb_to_safe_alt,
-		:nav_state_rth_3d_head_home
+		:nav_state_rth_3d_head_home,
+		:nav_state_rth_climb_to_safe_alt,
+		:nav_state_rth_head_home
 	      1
 	    when :nav_state_rth_3d_hover_prior_to_landing
 	      8
 	    when :nav_state_rth_3d_landing,
 		:nav_state_waypoint_rth_land,
-		:nav_state_emergency_landing_in_progress
+		:nav_state_emergency_landing_in_progress,
+		:nav_state_rth_hover_prior_to_landing,
+		:nav_state_rth_landing
 	      9
 	    when :nav_state_rth_3d_finishing
 	      11
@@ -363,7 +367,7 @@ def encode_nav r,inavers
 	      0
 	    end
 
-  # STDERR.puts "Map state #{r[:navstate].to_i} => zero"   if navmode == 0
+#  STDERR.puts "Map state #{r[:navstate].to_i} #{INAV_STATES[inavers][r[:navstate].to_i]} => zero"   if navmode == 0 && INAV_STATES[inavers][r[:navstate].to_i] != :nav_state_idle
 
   navact = case gpsmode
 	   when 3
