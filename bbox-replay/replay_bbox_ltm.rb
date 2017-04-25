@@ -42,6 +42,7 @@ class Serial
   end
 end
 
+#STDERR_LOG="/tmp/replay_bblog_stderr.txt"
 LLFACT=10000000
 ALTFACT=100
 MINDELAY=0.001
@@ -302,12 +303,19 @@ def encode_nav r,inavers
   inavers = '1.2.0' if inavers.nil?
   msg='$TN'
   gpsmode = case INAV_STATES[inavers][r[:navstate].to_i]
-	    when :nav_state_poshold_2d_initialize, :nav_state_poshold_2d_in_progress,
-		:nav_state_poshold_3d_initialize, :nav_state_poshold_3d_in_progress
+	    when :nav_state_poshold_2d_initialize,
+		:nav_state_poshold_2d_in_progress,
+		:nav_state_poshold_3d_initialize,
+		:nav_state_poshold_3d_in_progress
 	      1
-	    when :nav_state_rth_initialize, :nav_state_rth_2d_initialize, :nav_state_rth_2d_head_home,
-		:nav_state_rth_2d_gps_failing, :nav_state_rth_2d_finishing, :nav_state_rth_2d_finished,
-		:nav_state_rth_3d_initialize, :nav_state_rth_3d_climb_to_safe_alt,
+	    when :nav_state_rth_initialize,
+		:nav_state_rth_2d_initialize,
+		:nav_state_rth_2d_head_home,
+		:nav_state_rth_2d_gps_failing,
+		:nav_state_rth_2d_finishing,
+		:nav_state_rth_2d_finished,
+		:nav_state_rth_3d_initialize,
+		:nav_state_rth_3d_climb_to_safe_alt,
 		:nav_state_rth_3d_head_home,
 		:nav_state_rth_3d_gps_failing,
 		:nav_state_rth_3d_hover_prior_to_landing,
@@ -315,7 +323,8 @@ def encode_nav r,inavers
 		:nav_state_rth_3d_finishing,
 		:nav_state_rth_3d_finished
 	      2
-	    when :nav_state_waypoint_initialize, :nav_state_waypoint_pre_action,
+	    when :nav_state_waypoint_initialize,
+		:nav_state_waypoint_pre_action,
 		:nav_state_waypoint_in_progress,
 		:nav_state_waypoint_reached,
 		:nav_state_waypoint_next,
@@ -327,7 +336,8 @@ def encode_nav r,inavers
 	    end
 
   navmode = case INAV_STATES[inavers][r[:navstate].to_i]
-	    when :nav_state_althold_initialize, :nav_state_althold_in_progress
+	    when :nav_state_althold_initialize,
+		:nav_state_althold_in_progress
 	      99
 	    when :nav_state_poshold_2d_initialize,
 		:nav_state_poshold_2d_in_progress,
@@ -336,23 +346,24 @@ def encode_nav r,inavers
 	      3
 	    when :nav_state_rth_initialize,
 		:nav_state_rth_2d_initialize,
-		:nav_state_rth_2d_head_home,
 		:nav_state_rth_3d_initialize,
-		:nav_state_rth_3d_climb_to_safe_alt,
+		:nav_state_rth_head_home,
+		:nav_state_rth_2d_head_home,
 		:nav_state_rth_3d_head_home,
-		:nav_state_rth_climb_to_safe_alt,
-		:nav_state_rth_head_home
+		:nav_state_rth_3d_climb_to_safe_alt,
+		:nav_state_rth_climb_to_safe_alt
 	      1
-	    when :nav_state_rth_3d_hover_prior_to_landing
+
+	    when :nav_state_rth_3d_hover_prior_to_landing,
+		:nav_state_rth_hover_prior_to_landing
 	      8
 	    when :nav_state_rth_3d_landing,
 		:nav_state_waypoint_rth_land,
 		:nav_state_emergency_landing_in_progress,
-		:nav_state_rth_hover_prior_to_landing,
-		:nav_state_rth_landing
+		:nav_state_rth_landing,
+		:nav_state_rth_3d_finishing
 	      9
-	    when :nav_state_rth_3d_finishing
-	      11
+
 	    when :nav_state_waypoint_rth_land,
 		:nav_state_emergency_landing_finished
 	      10
@@ -592,6 +603,11 @@ IO.popen(cmd,'rt') do |pipe|
 
   abort 'Not a useful INAV log' if hdrs[:gps_coord0].nil?
 
+#  if !$stderr.isatty
+#    $stderr.reopen(STDERR_LOG, 'w')
+#    $stderr.sync
+#  end
+
   have_sonar = (hdrs.has_key? :sonarraw)
   have_baro = (hdrs.has_key? :baroalt_cm)
 
@@ -654,3 +670,4 @@ if lastr
     sleep 0.1
   end
 end
+#File.unlink(STDERR_LOG) if File.zero?(STDERR_LOG)
