@@ -4326,16 +4326,19 @@ public class MWPlanner : Gtk.Application {
     private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, int wait=1000)
     {
         remove_tid(ref cmdtid);
-        cmdtid = Timeout.add(wait, () => {
-                MWPLog.message(" ** repeat %s\n", cmd.to_string());
-                if ((cmd == MSP.Cmds.API_VERSION) ||
-                    (cmd == MSP.Cmds.FC_VARIANT) ||
-                    (cmd == MSP.Cmds.FC_VERSION))
-                    cmd = MSP.Cmds.BOXNAMES;
-                send_cmd(cmd,buf,len);
-                return Source.CONTINUE;
-            });
-        send_cmd(cmd,buf,len);
+        if(msp.available == true)
+        {
+            cmdtid = Timeout.add(wait, () => {
+                    MWPLog.message(" ** repeat %s\n", cmd.to_string());
+                    if ((cmd == MSP.Cmds.API_VERSION) ||
+                        (cmd == MSP.Cmds.FC_VARIANT) ||
+                        (cmd == MSP.Cmds.FC_VERSION))
+                        cmd = MSP.Cmds.BOXNAMES;
+                    send_cmd(cmd,buf,len);
+                    return Source.CONTINUE;
+                });
+            send_cmd(cmd,buf,len);
+        }
     }
 
     private void start_audio()
