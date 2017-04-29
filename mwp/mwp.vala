@@ -1882,8 +1882,7 @@ public class MWPlanner : Gtk.Application {
     private void start_poll_timer()
     {
         var lmin = 0;
-        Timeout.add(TIMINTVL, () =>
-            {
+        Timeout.add(TIMINTVL, () => {
                 nticks++;
                 if(msp.available)
                 {
@@ -1895,7 +1894,7 @@ public class MWPlanner : Gtk.Application {
                         if ((nticks - lastok) > tlimit)
                         {
                             telstats.toc++;
-                            MWPLog.message("TOC1 (%d)\n", tcycle);
+                            MWPLog.message("MSP Timeout (%d)\n", tcycle);
                             lastok = nticks;
                             tcycle = 0;
                             resend_last();
@@ -1990,64 +1989,67 @@ public class MWPlanner : Gtk.Application {
     {
         var req=requests[tcycle];
         lastm = nticks;
-        if((lastm - lastrx) > NODATAINTVL)
+        if(serstate == SERSTATE.POLLER)
         {
-            if(rxerr == false)
+            if((lastm - lastrx) > NODATAINTVL)
             {
-                set_error_status("No data for 5 seconds");
-                rxerr=true;
-            }
-                /* Probably takes a minute to change the LIPO */
-            if(lastm - lastrx > RESTARTINTVL)
-            {
-                MWPLog.message("Restart poll loop\n");
-                init_state();
-                init_sstats();
-                init_have_home();
-                validatelab.set_text("");
-                serstate = SERSTATE.NORMAL;
-                queue_cmd(MSP.Cmds.IDENT,null,0);
-                run_queue();
-                return;
-            }
-        }
-        else
-        {
-            if(rxerr)
-            {
-                set_error_status(null);
-                rxerr=false;
-            }
-        }
-
-        if (req == MSP.Cmds.ANALOG)
-        {
-            if (lastm - last_an > 40)
-            {
-                last_an = lastm;
-                mavc = 0;
+                if(rxerr == false)
+                {
+                    set_error_status("No data for 5 seconds");
+                    rxerr=true;
+                }
+                    /* Probably takes a minute to change the LIPO */
+                if(lastm - lastrx > RESTARTINTVL)
+                {
+                    MWPLog.message("Restart poll loop\n");
+                    init_state();
+                    init_sstats();
+                    init_have_home();
+                    validatelab.set_text("");
+                    serstate = SERSTATE.NORMAL;
+                    queue_cmd(MSP.Cmds.IDENT,null,0);
+                    run_queue();
+                    return;
+                }
             }
             else
             {
-                tcycle = (tcycle + 1) % requests.length;
-                req = requests[tcycle];
+                if(rxerr)
+                {
+                    set_error_status(null);
+                    rxerr=false;
+                }
             }
-        }
 
-        if (req == MSP.Cmds.GPSSVINFO)
-        {
-            if (lastm - last_sv > 40)
+            if (req == MSP.Cmds.ANALOG)
             {
-                last_sv = lastm;
-                mavc = 0;
+                if (lastm - last_an > 40)
+                {
+                    last_an = lastm;
+                    mavc = 0;
+                }
+                else
+                {
+                    tcycle = (tcycle + 1) % requests.length;
+                    req = requests[tcycle];
+                }
             }
-            else
+
+            if (req == MSP.Cmds.GPSSVINFO)
             {
-                tcycle = (tcycle + 1) % requests.length;
-                req = requests[tcycle];
+                if (lastm - last_sv > 40)
+                {
+                    last_sv = lastm;
+                    mavc = 0;
+                }
+                else
+                {
+                    tcycle = (tcycle + 1) % requests.length;
+                    req = requests[tcycle];
+                }
             }
+            queue_cmd(req, null, 0);
         }
-        queue_cmd(req, null, 0);
     }
 
     private void init_craft_icon()
@@ -2307,7 +2309,11 @@ public class MWPlanner : Gtk.Application {
     {
         lastok = nticks;
         if(serstate != SERSTATE.NONE && serstate != SERSTATE.TELEM)
+        {
+            if(nopoll == false)
+                serstate = SERSTATE.POLLER;
             msg_poller();
+        }
     }
 
     private void gps_alert(uint8 scflags)
@@ -2698,8 +2704,6 @@ public class MWPlanner : Gtk.Application {
                 }
             }
         }
-        else
-            serstate = (nopoll) ? SERSTATE.NORMAL : SERSTATE.POLLER;
 
         if(errs == true)
         {
@@ -3189,6 +3193,7 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.SET_WP:
+//                MWPLog.message("WP %d %d\n", serstate, mq.get_length());
                 if(wpmgr.wps.length > 0)
                 {
                     var no = wpmgr.wps[wpmgr.wpidx].wp_no;
@@ -3304,6 +3309,7 @@ public class MWPlanner : Gtk.Application {
                         }
                         wpmgr.wp_flag |= WPDL.GETINFO;
                         queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+                        reset_poller();
                     }
                 }
                 else if ((wpmgr.wp_flag & WPDL.REPLACE) != 0 ||
@@ -3355,6 +3361,7 @@ public class MWPlanner : Gtk.Application {
                         remove_tid(ref upltid);
                         MWPCursor.set_normal_cursor(window);
                         MWPLog.message("Error flag on wp #%d\n", w.wp_no);
+                        reset_poller();
                     }
                     else
                     {
@@ -3366,6 +3373,7 @@ public class MWPlanner : Gtk.Application {
                     MWPCursor.set_normal_cursor(window);
                     remove_tid(ref upltid);
                     MWPLog.message("unsolicited WP #%d\n", w.wp_no);
+                    reset_poller();
                 }
                 break;
 
@@ -3825,6 +3833,7 @@ public class MWPlanner : Gtk.Application {
                 break;
         }
 
+
         if(mq.is_empty() && serstate == SERSTATE.POLLER)
         {
             if (requests.length > 0)
@@ -4153,7 +4162,8 @@ public class MWPlanner : Gtk.Application {
             mwp_warning_box(str, Gtk.MessageType.ERROR);
             return;
         }
-
+        serstate = SERSTATE.NORMAL;
+        mq.clear();
         MWPCursor.set_busy_cursor(window);
 
         if(wps.length == 0)
@@ -5071,11 +5081,10 @@ public class MWPlanner : Gtk.Application {
     {
         wp_resp= {};
         wpmgr.wp_flag = WPDL.REPLACE;
-        Timeout.add(250, () => {
-                start_wp_timer(30*1000);
-                request_wp(1);
-                return false;
-            });
+        serstate = SERSTATE.NORMAL;
+        mq.clear();
+        start_wp_timer(30*1000);
+        request_wp(1);
     }
 
     public static void xchild()
