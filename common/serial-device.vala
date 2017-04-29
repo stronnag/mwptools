@@ -827,7 +827,6 @@ public class MWSerial : Object
                 size = 0;
             }
         }
-        debug("sent %d %d bytes\n", (int)size, (int)count);
         if(rawlog == true)
         {
             log_raw('o',buf,(int)count);
@@ -863,25 +862,28 @@ public class MWSerial : Object
         }
     }
 
+    public uint8[] generate(uint8 cmd, void *data, size_t len)
+    {
+        uint8[] msg = new uint8[len+6];
+        msg[0]='$';
+        msg[1]='M';
+        msg[2]= writedirn;
+        msg[3] = (uint8)len;
+        msg[4] = cmd;
+        if (data != null && len > 0)
+            Posix.memcpy(&msg[5], data, len);
+        len += 3;
+        var ck = cksum(msg[3:len], len, 0);
+        msg[len+2] = ck;
+        return msg;
+    }
 
     public void send_command(uint8 cmd, void *data, size_t len)
     {
         if(available == true)
         {
-            var dsize = (uint8)len;
-            uint8 dstr[256];
-            dstr[0]='$';
-            dstr[1]='M';
-            dstr[2]= writedirn;
-            dstr[3] = dsize;
-            dstr[4] = cmd;
-            if (data != null && dsize > 0)
-                Posix.memcpy(&dstr[5], data, len);
-            len += 3;
-            var ck = cksum(dstr[3:len], len, 0);
-            dstr[len+2] = ck;
-            len += 3;
-            write(dstr, len);
+            var dstr = generate(cmd, data, len);
+            write(dstr, dstr.length);
         }
     }
 

@@ -243,8 +243,6 @@ public class MWPlanner : Gtk.Application {
     private string last_file;
     private ListBox ls;
     private Gtk.SpinButton zoomer;
-    private Gtk.SpinButton timadj;
-    private double looptimer;
     private Gtk.Label poslabel;
     public Gtk.Label stslabel;
     private Gtk.Statusbar statusbar;
@@ -286,7 +284,6 @@ public class MWPlanner : Gtk.Application {
     private Gtk.Label sensor_sts[6];
 
     private uint32 capability;
-    private uint cmdtid;
     private uint spktid;
     private uint upltid;
     private Craft craft;
@@ -364,8 +361,8 @@ public class MWPlanner : Gtk.Application {
     private Pid child_pid;
     private MSP.Cmds[] requests = {};
     private int tcycle = 0;
-    private bool dopoll = false;
-    private bool xdopoll = false;
+    private SERSTATE serstate = SERSTATE.NONE;
+
     private bool rxerr = false;
 
     private uint64 acycle;
@@ -421,6 +418,22 @@ public class MWPlanner : Gtk.Application {
     private uint8 wp_max = 0;
 
     private Clutter.Text clutext;
+
+    public struct MQI //: Object
+    {
+        public uint8[] msg;
+    }
+
+    private MQI lastmsg;
+    private Queue<MQI?> mq;
+
+    private enum SERSTATE
+    {
+        NONE=0,
+        NORMAL,
+        POLLER,
+        TELEM
+    }
 
     private enum DEBUG_FLAGS
     {
@@ -841,13 +854,6 @@ public class MWPlanner : Gtk.Application {
 
         zoomer = builder.get_object ("spinbutton1") as Gtk.SpinButton;
 
-        timadj = builder.get_object ("spinbutton2") as Gtk.SpinButton;
-        timadj.adjustment.value = looptimer = conf.updint;
-
-        timadj.value_changed.connect (() => {
-                looptimer = timadj.adjustment.value;
-            });
-
         var menuop = builder.get_object ("file_open") as Gtk.MenuItem;
         menuop.activate.connect (() => {
                 on_file_open();
@@ -907,8 +913,8 @@ public class MWPlanner : Gtk.Application {
         menucli.activate.connect(() => {
                 if(msp.available && armed == 0)
                 {
-                    remove_tid(ref cmdtid);
-                    dopoll = false;
+                    mq.clear();
+                    serstate = SERSTATE.NONE;
                     CLITerm t = new CLITerm(window);
                     t.configure_serial(msp);
                     t.show_all ();
@@ -927,7 +933,7 @@ public class MWPlanner : Gtk.Application {
             {
                 if(msp.available && armed == 0)
                 {
-                    send_cmd(MSP.Cmds.REBOOT,null, 0);
+                    queue_cmd(MSP.Cmds.REBOOT,null, 0);
                 }
             });
 
@@ -996,7 +1002,7 @@ public class MWPlanner : Gtk.Application {
         menurestore.sensitive = false;
         menurestore.activate.connect (() => {
                 uint8 zb=0;
-                send_cmd(MSP.Cmds.WP_MISSION_LOAD, &zb, 1);
+                queue_cmd(MSP.Cmds.WP_MISSION_LOAD, &zb, 1);
             });
 
         menustore = builder.get_object ("menu_store_eeprom") as Gtk.MenuItem;
@@ -1429,6 +1435,9 @@ public class MWPlanner : Gtk.Application {
         } catch  {};
         about.logo = pix;
 
+        msp = new MWSerial();
+        mq = new Queue<MQI?>();
+
         if (mission == null)
         {
             if(llstr != null)
@@ -1479,7 +1488,6 @@ public class MWPlanner : Gtk.Application {
         labelvbat = builder.get_object ("labelvbat") as Gtk.Label;
         conbutton.clicked.connect(() => { connect_serial(); });
 
-        msp = new MWSerial();
         msp.force4 = force4;
         msp.serial_lost.connect(() => { serial_doom(conbutton); });
 
@@ -1815,7 +1823,7 @@ public class MWPlanner : Gtk.Application {
 
     private void msg_poller()
     {
-        if(dopoll)
+        if(serstate == SERSTATE.POLLER)
         {
             lastp.start();
             send_poll();
@@ -1848,117 +1856,120 @@ public class MWPlanner : Gtk.Application {
         return vpos;
     }
 
+
+    private void resend_last()
+    {
+        if(msp.available)
+        {
+            if(lastmsg.msg.length > 0)
+            {
+                msp.write(lastmsg.msg,lastmsg.msg.length);
+            }
+            else
+                run_queue();
+        }
+    }
+
+    private void  run_queue()
+    {
+        if(msp.available && !mq.is_empty())
+        {
+            lastmsg = mq.pop_head();
+            msp.write(lastmsg.msg,lastmsg.msg.length);
+        }
+    }
+
     private void start_poll_timer()
     {
         var lmin = 0;
-        var failcount = 0;
-
         Timeout.add(TIMINTVL, () =>
             {
                 nticks++;
-                var tlimit = conf.polltimeout / TIMINTVL;
-
-                if(dopoll)
+                if(msp.available)
                 {
-                    if(looptimer > 0)
+                    var tlimit = conf.polltimeout / TIMINTVL;
+
+                    if(serstate == SERSTATE.NORMAL ||
+                       serstate == SERSTATE.POLLER)
                     {
-                        var loopc = ((int)(looptimer *1000)) / TIMINTVL;
-                        if (loopc > 0 && (nticks % loopc) == 0)
+                        if ((nticks - lastok) > tlimit)
                         {
-                            if(tcycle == 0)
-                            {
-                                failcount = 0;
-                                msg_poller();
-                            }
-                            else
-                            {
-                                failcount++;
-                                telstats.toc++;
-                                if (failcount >= tlimit)
-                                {
-                                    MWPLog.message("TOC0 (%d)\n", tcycle);
-                                    failcount = 0;
-                                    tcycle = 0;
-                                    msg_poller();
-                                }
-                            }
+                            telstats.toc++;
+                            MWPLog.message("TOC1 (%d)\n", tcycle);
+                            lastok = nticks;
+                            tcycle = 0;
+                            resend_last();
                         }
-                    }
-                    else if ((nticks - lastok) > tlimit)
-                    {
-                        telstats.toc++;
-                        MWPLog.message("TOC1 (%d)\n", tcycle);
-                        lastok = nticks;
-                        tcycle = 0;
-                        msg_poller();
-                    }
-                }
-                else
-                {
-                    if(armed != 0 && msp.available &&
-                       gpsintvl != 0 && last_gps != 0)
-                    {
-                        if (nticks - last_gps > gpsintvl)
-                        {
-                            if(replayer == Player.NONE)
-                                bleet_sans_merci(SAT_ALERT);
-                            if(replay_paused == false)
-                                MWPLog.message("GPS stalled\n");
-                            gpslab.label = "<span foreground = \"red\">⬤</span>";
-                            last_gps = nticks;
-                        }
-                    }
-
-                    if( xdopoll == false &&
-                        last_tm > 0 &&
-                        ((nticks - last_tm) > MAVINTVL)
-                        && msp.available && replayer == Player.NONE)
-                    {
-                        MWPLog.message("Restart poller on telemetry timeout\n");
-                        have_api = have_vers = have_misc =
-                        have_status = have_wp = have_nc =
-                        have_fcv = have_fcvv = false;
-                        xbits = icount = api_cnt = 0;
-                        init_sstats();
-                        last_tm = 0;
-                        lastp.start();
-                        add_cmd(MSP.Cmds.IDENT,null,0, 2500);
-                    }
-                }
-
-                if((nticks % STATINTVL) == 0)
-                {
-                    gen_serial_stats();
-                    telemstatus.update(telstats, item_visible(DOCKLETS.TELEMETRY));
-                }
-
-                if(duration != 0 && ((nticks % DURAINTVL) == 0))
-                {
-                    int mins;
-                    int secs;
-                    if(duration < 0)
-                    {
-                        mins = secs = 0;
-                        duration = 0;
                     }
                     else
                     {
-                        mins = (int)duration / 60;
-                        secs = (int)duration % 60;
-                        if(mins != lmin)
+                        if(armed != 0 && msp.available &&
+                           gpsintvl != 0 && last_gps != 0)
                         {
-                            navstatus.update_duration(mins);
-                            lmin = mins;
+                            if (nticks - last_gps > gpsintvl)
+                            {
+                                if(replayer == Player.NONE)
+                                    bleet_sans_merci(SAT_ALERT);
+                                if(replay_paused == false)
+                                    MWPLog.message("GPS stalled\n");
+                                gpslab.label = "<span foreground = \"red\">⬤</span>";
+                                last_gps = nticks;
+                            }
+                        }
+
+                        if(serstate == SERSTATE.TELEM && nopoll == false &&
+                            last_tm > 0 &&
+                            ((nticks - last_tm) > MAVINTVL)
+                            && msp.available && replayer == Player.NONE)
+                        {
+                            MWPLog.message("Restart poller on telemetry timeout\n");
+                            have_api = have_vers = have_misc =
+                            have_status = have_wp = have_nc =
+                            have_fcv = have_fcvv = false;
+                            xbits = icount = api_cnt = 0;
+                            init_sstats();
+                            last_tm = 0;
+                            lastp.start();
+                            serstate = SERSTATE.NORMAL;
+                            queue_cmd(MSP.Cmds.IDENT,null,0);
+                            run_queue();
                         }
                     }
-                    elapsedlab.set_text("%02d:%02d".printf(mins,secs));
-                }
 
-                if(conf.heartbeat != null && (nticks % BEATINTVL) == 0)
-                {
-                    try {
-                        Process.spawn_command_line_async(conf.heartbeat);
-                    } catch  {}
+                    if((nticks % STATINTVL) == 0)
+                    {
+                        gen_serial_stats();
+                        telemstatus.update(telstats, item_visible(DOCKLETS.TELEMETRY));
+                    }
+
+                    if(duration != 0 && ((nticks % DURAINTVL) == 0))
+                    {
+                        int mins;
+                        int secs;
+                        if(duration < 0)
+                        {
+                            mins = secs = 0;
+                            duration = 0;
+                        }
+                        else
+                        {
+                            mins = (int)duration / 60;
+                            secs = (int)duration % 60;
+                            if(mins != lmin)
+                            {
+                                navstatus.update_duration(mins);
+                                lmin = mins;
+                            }
+                        }
+                        elapsedlab.set_text("%02d:%02d".printf(mins,secs));
+                    }
+
+                    if(conf.heartbeat != null && (nticks % BEATINTVL) == 0)
+                    {
+                        try {
+                            Process.spawn_command_line_async(conf.heartbeat);
+                        } catch  {}
+                    }
                 }
                 return Source.CONTINUE;
             });
@@ -1992,10 +2003,11 @@ public class MWPlanner : Gtk.Application {
                 MWPLog.message("Restart poll loop\n");
                 init_state();
                 init_sstats();
-                dopoll = false;
                 init_have_home();
                 validatelab.set_text("");
-                add_cmd(MSP.Cmds.IDENT,null,0, 2500);
+                serstate = SERSTATE.NORMAL;
+                queue_cmd(MSP.Cmds.IDENT,null,0);
+                run_queue();
                 return;
             }
         }
@@ -2035,7 +2047,7 @@ public class MWPlanner : Gtk.Application {
                 req = requests[tcycle];
             }
         }
-        send_cmd(req, null, 0);
+        queue_cmd(req, null, 0);
     }
 
     private void init_craft_icon()
@@ -2293,12 +2305,8 @@ public class MWPlanner : Gtk.Application {
 
     private void reset_poller(bool remove = true)
     {
-        if(remove)
-            remove_tid(ref upltid);
         lastok = nticks;
-        dopoll = xdopoll;
-        xdopoll = false;
-        if(dopoll)
+        if(serstate != SERSTATE.NONE && serstate != SERSTATE.TELEM)
             msg_poller();
     }
 
@@ -2539,23 +2547,21 @@ public class MWPlanner : Gtk.Application {
                         swd.run();
                     }
                     if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
-                        add_cmd(MSP.Cmds.NAV_CONFIG,null,0,1000);
+                        queue_cmd(MSP.Cmds.NAV_CONFIG,null,0);
                     else if ((navcap & (NAVCAPS.INAV_MR|NAVCAPS.INAV_FW)) != 0)
-                        add_cmd(MSP.Cmds.NAV_POSHOLD,null,0,1000);
+                        queue_cmd(MSP.Cmds.NAV_POSHOLD,null,0);
                 }
 
                 var reqsize = build_pollreqs();
                 var nreqs = requests.length;
-                int timeout = (int)(looptimer*1000 / nreqs);
-
                     // data we send, response is structs + this
                 var qsize = nreqs * 6;
                 reqsize += qsize;
                 if(naze32)
                     qsize += 1; // for WP no
 
-                MWPLog.message("Timer cycle for %d (%dms) items, %lu => %lu bytes\n",
-                               nreqs,timeout,qsize,reqsize);
+                MWPLog.message("Timer cycle for %d items, %lu => %lu bytes\n",
+                               nreqs,qsize,reqsize);
 
                 if(nopoll == false && nreqs > 0)
                 {
@@ -2563,7 +2569,7 @@ public class MWPlanner : Gtk.Application {
                     {
                         MWPLog.message("Start poller\n");
                         tcycle = 0;
-                        dopoll = true;
+                        serstate = SERSTATE.POLLER;
                         start_audio();
                     }
                 }
@@ -2672,16 +2678,12 @@ public class MWPlanner : Gtk.Application {
             telem = true;
             if (replayer != Player.MWP && cmd != MSP.Cmds.MAVLINK_MSG_ID_RADIO)
             {
-                if(nopoll == false)
-                {
-                    dopoll = false;
-                }
                 if (errs == false)
                 {
                     if(last_tm == 0)
                     {
                         MWPLog.message("LTM/Mavlink mode\n");
-                        remove_tid(ref cmdtid);
+                        serstate = SERSTATE.TELEM;
                         init_sstats();
                         if(naze32 != true)
                         {
@@ -2697,11 +2699,10 @@ public class MWPlanner : Gtk.Application {
             }
         }
         else
-            telem = false;
+            serstate = (nopoll) ? SERSTATE.NORMAL : SERSTATE.POLLER;
 
         if(errs == true)
         {
-            remove_tid(ref cmdtid);
             stdout.printf("Error on cmd %s %d\n", cmd.to_string(), cmd);
             switch(cmd)
             {
@@ -2711,7 +2712,7 @@ public class MWPlanner : Gtk.Application {
                 case MSP.Cmds.API_VERSION:
                 case MSP.Cmds.FC_VARIANT:
                 case MSP.Cmds.FC_VERSION:
-                    add_cmd(MSP.Cmds.BOXNAMES, null,0, 1000);
+                    queue_cmd(MSP.Cmds.BOXNAMES, null,0);
                     break;
                 default:
                     break;
@@ -2724,10 +2725,11 @@ public class MWPlanner : Gtk.Application {
         if(cmd != MSP.Cmds.RADIO)
             lastrx = lastok = nticks;
 
+//        print("Get CMD %s\n", cmd.to_string());
+
         switch(cmd)
         {
             case MSP.Cmds.API_VERSION:
-                remove_tid(ref cmdtid);
                 have_api = true;
                 if(len > 32)
                 {
@@ -2735,24 +2737,23 @@ public class MWPlanner : Gtk.Application {
                     mwvar = vi.fctype = MWChooser.MWVAR.CF;
                     var vers="CF mwc %03d".printf(vi.mvers);
                     verlab.set_label(vers);
-                    add_cmd(MSP.Cmds.BOXNAMES,null,0,1000);
+                    queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                 }
                 else
                 {
                     vi.fc_api[0] = raw[1];
                     vi.fc_api[1] = raw[2];
-                    add_cmd(MSP.Cmds.BOARD_INFO,null,0,1000);
+                    queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
                 }
                 break;
 
             case MSP.Cmds.BOARD_INFO:
                 raw[4]=0;
                 vi.board = (string)raw[0:3];
-                add_cmd(MSP.Cmds.FC_VARIANT,null,0,1000);
+                queue_cmd(MSP.Cmds.FC_VARIANT,null,0);
                 break;
 
             case MSP.Cmds.FC_VARIANT:
-                remove_tid(ref cmdtid);
                 naze32 = true;
                 raw[4] = 0;
                 inav = false;
@@ -2765,7 +2766,7 @@ public class MWPlanner : Gtk.Application {
                         case "CLFL":
                         case "BTFL":
                             vi.fctype = mwvar = MWChooser.MWVAR.CF;
-                            add_cmd(MSP.Cmds.FC_VERSION,null,0,1000);
+                            queue_cmd(MSP.Cmds.FC_VERSION,null,0);
                             break;
                         case "INAV":
                             navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS;
@@ -2777,17 +2778,16 @@ public class MWPlanner : Gtk.Application {
                                 navcap |= NAVCAPS.INAV_MR;
                             vi.fctype = mwvar = MWChooser.MWVAR.CF;
                             inav = true;
-                            add_cmd(MSP.Cmds.FC_VERSION,null,0,1000);
+                            queue_cmd(MSP.Cmds.FC_VERSION,null,0);
                             break;
                         default:
-                            add_cmd(MSP.Cmds.BOXNAMES,null,0,1000);
+                            queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                             break;
                     }
                 }
                 break;
 
             case MSP.Cmds.FC_VERSION:
-                remove_tid(ref cmdtid);
                 if(have_fcvv == false)
                 {
                     have_fcvv = true;
@@ -2799,15 +2799,14 @@ public class MWPlanner : Gtk.Application {
                         mission_eeprom = (vi.board != "AFNA" &&
                                           vi.board != "CC3D" &&
                                           raw[0] >= 1 && raw[1] >= 6);
-                        add_cmd(MSP.Cmds.BUILD_INFO, null, 0, 1000);
+                        queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
                     }
                     else
-                        add_cmd(MSP.Cmds.BOXNAMES,null,0,1000);
+                        queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                 }
                 break;
 
             case MSP.Cmds.BUILD_INFO:
-                remove_tid(ref cmdtid);
                 uint8 gi[16] = raw[19:len];
                 gi[len-19] = 0;
                 vi.fc_git = (string)gi;
@@ -2816,12 +2815,11 @@ public class MWPlanner : Gtk.Application {
                                                vi.fc_git);
                 verlab.set_label(vers);
                 MWPLog.message("%s\n", vers);
-                add_cmd(MSP.Cmds.BOXNAMES,null,0,1000);
+                queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                 break;
 
             case MSP.Cmds.IDENT:
                 last_gps = 0;
-                remove_tid(ref cmdtid);
                 have_vers = true;
                 if (icount == 0)
                 {
@@ -2876,7 +2874,7 @@ public class MWPlanner : Gtk.Application {
                     var vers="%s v%03d".printf(MWChooser.mwnames[_mwvar], vi.mvers);
                     verlab.set_label(vers);
                     typlab.set_label(MSP.get_mrtype(vi.mrtype));
-                    add_cmd(MSP.Cmds.API_VERSION,null,0,1000);
+                    queue_cmd(MSP.Cmds.API_VERSION,null,0);
                 }
                 icount++;
                 break;
@@ -2902,7 +2900,6 @@ public class MWPlanner : Gtk.Application {
                             });
                 }
 
-                remove_tid(ref cmdtid);
                 raw[len] = 0;
                 boxnames = (string)raw;
                 string []bsx = ((string)raw).split(";");
@@ -2938,7 +2935,7 @@ public class MWPlanner : Gtk.Application {
                 MWPLog.message("Masks arm %x angle %x horz %x ph %x rth %x wp %x\n",
                                arm_mask, angle_mask, horz_mask, ph_mask,
                                rth_mask, wp_mask);
-                add_cmd(MSP.Cmds.MISC,null,0, 1000);
+                queue_cmd(MSP.Cmds.MISC,null,0);
                 break;
 
             case MSP.Cmds.GPSSTATISTICS:
@@ -2953,18 +2950,13 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.MISC:
-                remove_tid(ref cmdtid);
                 have_misc = true;
                 vwarn1 = raw[19];
-                send_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-                Timeout.add(250, () => {
-                        add_cmd(MSP.Cmds.STATUS,null,0, 1000);
-                        return Source.REMOVE;
-                    });
+                queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+                queue_cmd(MSP.Cmds.STATUS,null,0);
                 break;
 
             case MSP.Cmds.STATUS:
-                remove_tid(ref cmdtid);
                 handle_msp_status(raw);
                 break;
 
@@ -3032,7 +3024,6 @@ public class MWPlanner : Gtk.Application {
             break;
 
             case MSP.Cmds.NAV_POSHOLD:
-                remove_tid(ref cmdtid);
                 have_nc = true;
                 MSP_NAV_POSHOLD poscfg = MSP_NAV_POSHOLD();
                 uint8* rp = raw;
@@ -3051,7 +3042,6 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.NAV_CONFIG:
-                remove_tid(ref cmdtid);
                 have_nc = true;
                 MSP_NAV_CONFIG nc = MSP_NAV_CONFIG();
                 uint8* rp = raw;
@@ -3076,7 +3066,7 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.SET_NAV_CONFIG:
                 MWPLog.message("RX set nav config\n");
-                send_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
+                queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
                 break;
 
             case MSP.Cmds.COMP_GPS:
@@ -3209,7 +3199,6 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.WP:
-                remove_tid(ref cmdtid);
                 have_wp = true;
                 MSP_WP w = MSP_WP();
                 uint8* rp = raw;
@@ -3255,6 +3244,7 @@ public class MWPlanner : Gtk.Application {
 
                     if (fail != WPFAIL.OK)
                     {
+                        remove_tid(ref upltid);
                         if((debug_flags & DEBUG_FLAGS.WP) != DEBUG_FLAGS.NONE)
                         {
                             stderr.printf("WP size %d [read,expect]\n", (int)len);
@@ -3298,10 +3288,11 @@ public class MWPlanner : Gtk.Application {
                         wpmgr.wpidx++;
                         uint8 wtmp[64];
                         var nb = serialise_wp(wpmgr.wps[wpmgr.wpidx], wtmp);
-                        send_cmd(MSP.Cmds.SET_WP, wtmp, nb);
+                        queue_cmd(MSP.Cmds.SET_WP, wtmp, nb);
                     }
                     else
                     {
+                        remove_tid(ref upltid);
                         MWPCursor.set_normal_cursor(window);
                         bleet_sans_merci(GENERAL_ALERT);
                         validatelab.set_text("✔"); // u+2714
@@ -3309,18 +3300,10 @@ public class MWPlanner : Gtk.Application {
                         if((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
                         {
                             uint8 zb=0;
-                            send_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
+                            queue_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
                         }
-
-                        Timeout.add(250, () => {
-                                wpmgr.wp_flag |= WPDL.GETINFO;
-                                send_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-                                return Source.REMOVE;
-                            });
-                        Timeout.add(500, () => {
-                                reset_poller(true);
-                                return Source.REMOVE;
-                            });
+                        wpmgr.wp_flag |= WPDL.GETINFO;
+                        queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
                     }
                 }
                 else if ((wpmgr.wp_flag & WPDL.REPLACE) != 0 ||
@@ -3345,6 +3328,7 @@ public class MWPlanner : Gtk.Application {
                     wp_resp += m;
                     if(w.flag == 0xa5 || w.wp_no == 255)
                     {
+                        remove_tid(ref upltid);
                         MWPCursor.set_normal_cursor(window);
                         if((debug_flags & DEBUG_FLAGS.WP) != DEBUG_FLAGS.NONE)
                             stderr.printf("Null mission returned\n");
@@ -3368,6 +3352,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     else if(w.flag == 0xfe)
                     {
+                        remove_tid(ref upltid);
                         MWPCursor.set_normal_cursor(window);
                         MWPLog.message("Error flag on wp #%d\n", w.wp_no);
                     }
@@ -3379,6 +3364,7 @@ public class MWPlanner : Gtk.Application {
                 else
                 {
                     MWPCursor.set_normal_cursor(window);
+                    remove_tid(ref upltid);
                     MWPLog.message("unsolicited WP #%d\n", w.wp_no);
                 }
                 break;
@@ -3828,15 +3814,8 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.SET_NAV_POSHOLD:
-                send_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
-                Timeout.add(250,() => {
-                        add_cmd(MSP.Cmds.NAV_POSHOLD,null,0, 1000);
-                        Timeout.add(250,() => {
-                                reset_poller();
-                                return Source.REMOVE;
-                            });
-                        return Source.REMOVE;
-                    });
+                queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
+                queue_cmd(MSP.Cmds.NAV_POSHOLD, null,0);
                 break;
             case MSP.Cmds.WP_MISSION_LOAD:
                 download_mission();
@@ -3846,43 +3825,25 @@ public class MWPlanner : Gtk.Application {
                 break;
         }
 
-        if(dopoll)
+        if(mq.is_empty() && serstate == SERSTATE.POLLER)
         {
-            if (match_pollcmds(cmd))
+            if (requests.length > 0)
+                tcycle = (tcycle + 1) % requests.length;
+            if(tcycle == 0)
             {
-                if (requests.length > 0)
-                    tcycle = (tcycle + 1) % requests.length;
-                if(tcycle == 0)
-                {
-                    lastp.stop();
-                    var et = lastp.elapsed();
-                    telstats.tot = (looptimer == 0) ? 0 :
-                        (int)((looptimer-et)*1000);
-                    acycle += (uint64)(et*1000);
-                    anvals++;
-                    if(looptimer == 0)
-                        msg_poller();
-                }
-                else
-                {
-                    send_poll();
-                }
+                lastp.stop();
+                var et = lastp.elapsed();
+                telstats.tot = 0;
+                acycle += (uint64)(et*1000);
+                anvals++;
+                msg_poller();
+            }
+            else
+            {
+                send_poll();
             }
         }
-    }
-
-    private bool match_pollcmds(MSP.Cmds cmd)
-    {
-        bool matched=false;
-        foreach(var c in requests)
-        {
-            if (c == cmd)
-            {
-                matched = true;
-                break;
-            }
-        }
-        return matched;
+        run_queue();
     }
 
     private bool home_changed(double lat, double lon)
@@ -4194,8 +4155,6 @@ public class MWPlanner : Gtk.Application {
         }
 
         MWPCursor.set_busy_cursor(window);
-    xdopoll = dopoll;
-        dopoll = false;
 
         if(wps.length == 0)
         {
@@ -4229,18 +4188,14 @@ public class MWPlanner : Gtk.Application {
         var timeo = 1500+(wps.length*1000);
         uint8 wtmp[64];
         var nb = serialise_wp(wpmgr.wps[wpmgr.wpidx], wtmp);
-        Timeout.add(250, () => {
-                send_cmd(MSP.Cmds.SET_WP, wtmp, nb);
-                start_wp_timer(timeo);
-                return false;
-            });
+        queue_cmd(MSP.Cmds.SET_WP, wtmp, nb);
+        start_wp_timer(timeo);
     }
 
     public void start_wp_timer(uint timeo, string reason="WP")
     {
         upltid = Timeout.add(timeo, () => {
                 MWPCursor.set_normal_cursor(window);
-                reset_poller(false);
                 MWPLog.message("%s operation probably failed\n", reason);
                 string wmsg = "%s operation timeout.\nThe upload has probably failed".printf(reason);
                 mwp_warning_box(wmsg, Gtk.MessageType.ERROR);
@@ -4253,7 +4208,7 @@ public class MWPlanner : Gtk.Application {
         uint8 buf[2];
         have_wp = false;
         buf[0] = wp;
-        add_cmd(MSP.Cmds.WP,buf,1, 1000);
+        queue_cmd(MSP.Cmds.WP,buf,1);
     }
 
     private size_t serialise_nc (MSP_NAV_CONFIG nc, uint8[] tmp)
@@ -4297,8 +4252,8 @@ public class MWPlanner : Gtk.Application {
         have_nc = false;
         uint8 tmp[64];
         var nb = serialise_nc(nc, tmp);
-        send_cmd(MSP.Cmds.SET_NAV_CONFIG, tmp, nb);
-        add_cmd(MSP.Cmds.NAV_CONFIG,null,0, 1000);
+        queue_cmd(MSP.Cmds.SET_NAV_CONFIG, tmp, nb);
+        queue_cmd(MSP.Cmds.NAV_CONFIG,null,0);
     }
 
     private void mr_update_config(MSP_NAV_POSHOLD pcfg)
@@ -4306,38 +4261,15 @@ public class MWPlanner : Gtk.Application {
         have_nc = false;
         uint8 tmp[64];
         var nb = serialise_pcfg(pcfg, tmp);
-        xdopoll = dopoll;
-        dopoll = false;
-        Timeout.add(250, () => {
-                start_wp_timer(2500,"NavCfg");
-                send_cmd(MSP.Cmds.SET_NAV_POSHOLD, tmp, nb);
-                return Source.REMOVE;
-            });
+        queue_cmd(MSP.Cmds.SET_NAV_POSHOLD, tmp, nb);
     }
 
-    private void send_cmd(MSP.Cmds cmd, void* buf, size_t len)
+    private void queue_cmd(MSP.Cmds cmd, void* buf, size_t len)
     {
         if(msp.available == true)
         {
-            msp.send_command(cmd,buf,len);
-        }
-    }
-
-    private void add_cmd(MSP.Cmds cmd, void* buf, size_t len, int wait=1000)
-    {
-        remove_tid(ref cmdtid);
-        if(msp.available == true)
-        {
-            cmdtid = Timeout.add(wait, () => {
-                    MWPLog.message(" ** repeat %s\n", cmd.to_string());
-                    if ((cmd == MSP.Cmds.API_VERSION) ||
-                        (cmd == MSP.Cmds.FC_VARIANT) ||
-                        (cmd == MSP.Cmds.FC_VERSION))
-                        cmd = MSP.Cmds.BOXNAMES;
-                    send_cmd(cmd,buf,len);
-                    return Source.CONTINUE;
-                });
-            send_cmd(cmd,buf,len);
+            var mi = MQI() {msg = msp.generate(cmd,buf,len)};
+            mq.push_tail(mi);
         }
     }
 
@@ -4399,8 +4331,7 @@ public class MWPlanner : Gtk.Application {
         if(replayer == Player.NONE)
         {
             menumwvar.sensitive =true;
-            dopoll = false;
-            remove_tid(ref cmdtid);
+            serstate = SERSTATE.NONE;
             sflags = 0;
             if (conf.audioarmed == true)
             {
@@ -4462,7 +4393,7 @@ public class MWPlanner : Gtk.Application {
     {
         map_hide_warning();
         xfailsafe = false;
-        dopoll = false;
+        serstate = SERSTATE.NORMAL;
         have_api = have_vers = have_misc = have_status = have_wp = have_nc =
             have_fcv = have_fcvv = false;
         xbits = icount = api_cnt = 0;
@@ -4506,22 +4437,18 @@ public class MWPlanner : Gtk.Application {
                 validatelab.set_text("");
                 init_state();
                 init_sstats();
-                dopoll = false;
+                lastok = nticks;
+                serstate = SERSTATE.NORMAL;
                 if(rawlog == true)
                 {
                     msp.raw_logging(true);
                 }
                 conbutton.set_label("Disconnect");
+
                 if(nopoll == false)
                 {
-                    var timeo = 10;
-                    if(serdev.contains("rfcomm"))
-                        timeo = 2000;
-                    Timeout.add(timeo, () =>
-                        {
-                            add_cmd(MSP.Cmds.IDENT,null,0, 1500);
-                            return Source.REMOVE;
-                        });
+                    queue_cmd(MSP.Cmds.IDENT,null,0);
+                    run_queue();
                 }
                 menumwvar.sensitive = false;
             }
@@ -5142,8 +5069,6 @@ public class MWPlanner : Gtk.Application {
 
     private void download_mission()
     {
-        xdopoll = dopoll;
-        dopoll = false;
         wp_resp= {};
         wpmgr.wp_flag = WPDL.REPLACE;
         Timeout.add(250, () => {
