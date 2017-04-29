@@ -910,6 +910,16 @@ public class MWPlanner : Gtk.Application {
                 centre_mission(ls.to_mission(), true);
             });
 
+        menuop = builder.get_object ("get_fc_mssion_info") as Gtk.MenuItem;
+        menuop.activate.connect(() =>
+            {
+                if(msp.available && (serstate == SERSTATE.POLLER ||
+                                     serstate == SERSTATE.NORMAL))
+                {
+                    wpmgr.wp_flag |= WPDL.GETINFO;
+                    queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+                }
+            });
 
         menucli = builder.get_object ("cliterm") as Gtk.MenuItem;
         menucli.activate.connect(() => {
@@ -2979,14 +2989,13 @@ public class MWPlanner : Gtk.Application {
 
                 if((wpmgr.wp_flag & WPDL.GETINFO) != 0 && wpi.wps_valid == 0)
                 {
-                    string s = "FC invalidates mission (%u WP)".printf(wpi.wp_count);
-                    mwp_warning_box(s, Gtk.MessageType.ERROR, 10);
+                    mwp_warning_box("FC holds zero  WP", Gtk.MessageType.ERROR, 10);
                     wpmgr.wp_flag |= ~WPDL.GETINFO;
                 }
                 else if (wpi.wp_count > 0 && wpi.wps_valid == 1 )
                 {
                     string s = "Waypoints in FC\nMax: %u Valid: %u Points: %u".printf(wpi.max_wp, wpi.wps_valid, wpi.wp_count);
-                    mwp_warning_box(s, Gtk.MessageType.INFO, 5);
+                    mwp_warning_box(s, Gtk.MessageType.INFO, 2);
                     if(stslabel.get_text() == "No mission")
                     {
                         stslabel.set_text("%u WP valid in FC".printf(wpi.wp_count));
@@ -3307,7 +3316,8 @@ public class MWPlanner : Gtk.Application {
                         mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
                         if((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
                         {
-                            uint8 zb=0;
+                            uint8 zb=42;
+                            MWPLog.message("Saving mission\n");
                             queue_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
                         }
                         wpmgr.wp_flag |= WPDL.GETINFO;
@@ -3380,7 +3390,12 @@ public class MWPlanner : Gtk.Application {
                 }
                 break;
 
+            case MSP.Cmds.WP_MISSION_SAVE:
+                MWPLog.message("Confirmed mission save\n");
+                break;
+
             case MSP.Cmds.EEPROM_WRITE:
+                MWPLog.message("Wrote EEPROM\n");
                 break;
 
             case MSP.Cmds.RADIO:

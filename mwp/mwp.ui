@@ -251,6 +251,14 @@ Mission will also be downloaded to mwp, replacing any currently displayed missio
                       </object>
                     </child>
                     <child>
+                      <object class="GtkMenuItem" id="get_fc_mssion_info">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Get FC Mission Info</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkMenuItem" id="menuitemmwvar">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -474,6 +482,9 @@ See Issue #431</property>
               </packing>
             </child>
             <child>
+              <placeholder/>
+            </child>
+            <child>
               <object class="GtkLabel" id="label2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -501,9 +512,6 @@ See Issue #431</property>
                 <property name="fill">True</property>
                 <property name="position">3</property>
               </packing>
-            </child>
-            <child>
-              <placeholder/>
             </child>
             <child>
               <placeholder/>
