@@ -344,6 +344,7 @@ public class MWPlanner : Gtk.Application {
     private bool wdw_state = false;
     private time_t armtime;
     private time_t duration;
+    private time_t last_dura;
     private time_t pausetm;
 
     private int gfcse = 0;
@@ -558,7 +559,8 @@ public class MWPlanner : Gtk.Application {
     private const uint TIMINTVL=50;
     private const uint ANIMINTVL=(300/TIMINTVL);
     private const uint BEATINTVL=(60000/TIMINTVL);
-    private const uint DURAINTVL=((1000/TIMINTVL) - 1);
+//    private const uint DURAINTVL=((1000/TIMINTVL) - 1);
+    private const uint DURAINTVL=((400/TIMINTVL));
     private const uint STATINTVL=(800/TIMINTVL);
     private const uint NODATAINTVL=(5000/TIMINTVL);
     private const uint SATINTVL=(10000/TIMINTVL);
@@ -1941,7 +1943,7 @@ public class MWPlanner : Gtk.Application {
                         telemstatus.update(telstats, item_visible(DOCKLETS.TELEMETRY));
                     }
 
-                    if(duration != 0 && ((nticks % DURAINTVL) == 0))
+                    if(duration != 0 && duration != last_dura)
                     {
                         int mins;
                         int secs;
@@ -1961,6 +1963,7 @@ public class MWPlanner : Gtk.Application {
                             }
                         }
                         elapsedlab.set_text("%02d:%02d".printf(mins,secs));
+                        last_dura = duration;
                     }
 
                     if(conf.heartbeat != null && (nticks % BEATINTVL) == 0)
