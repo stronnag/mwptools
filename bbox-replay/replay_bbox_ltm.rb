@@ -397,7 +397,12 @@ end
 
 def encode_extra r
   msg='$TX'
-  sl = [r[:gps_hdop].to_i,0].pack('vL')
+  hf=0
+  if r.has_key? :hwhealthstatus
+    hf = 1 if (r[:hwhealthstatus].to_i & 0x2aaa) != 0
+    STDERR.puts "HW %x %d" % [r[:hwhealthstatus].to_i, hf]
+  end
+  sl = [r[:gps_hdop].to_i,hf,0,0,0].pack('vCCCC')
   msg << sl << mksum(sl)
   msg
 end
@@ -643,11 +648,8 @@ IO.popen(cmd,'rt') do |pipe|
 	end
 	if row.has_key? :gps_hdop
 	  hdop = row[:gps_hdop].to_i
-	  if hdop != lhdop
-	    msg = encode_extra row
-	    send_msg dev, msg
-	  end
-	  lhdop = hdop
+	  msg = encode_extra row
+	  send_msg dev, msg
 	end
       when 1,3,7,9
 	if  llat != 0.0 and llon != 0.0
