@@ -83,6 +83,26 @@ public struct BatteryLevels
     }
 }
 
+
+public class Alert
+{
+    public const string RED = "bleet.ogg";
+    public const string ORANGE = "orange.ogg";
+    public const string GENERAL = "beep-sound.ogg";
+    public const string SAT = "sat_alert.ogg";
+}
+
+public class VCol
+{
+    public BatteryLevels [] levels = {
+        BatteryLevels(3.7f, "volthigh", null, null),
+        BatteryLevels(3.57f, "voltmedium", null, null),
+        BatteryLevels(3.47f, "voltlow", Alert.ORANGE, null),
+        BatteryLevels(3.0f,  "voltcritical", Alert.RED, null),
+        BatteryLevels(0.0f, "voltundef", null, "n/a")
+    };
+}
+
 public struct MavPOSDef
 {
     uint16 minval;
@@ -419,6 +439,7 @@ public class MWPlanner : Gtk.Application {
     private uint8 wp_max = 0;
 
     private Clutter.Text clutext;
+    private VCol vcol;
 
     public struct MQI //: Object
     {
@@ -559,7 +580,6 @@ public class MWPlanner : Gtk.Application {
     private const uint TIMINTVL=50;
     private const uint ANIMINTVL=(300/TIMINTVL);
     private const uint BEATINTVL=(60000/TIMINTVL);
-//    private const uint DURAINTVL=((1000/TIMINTVL) - 1);
     private const uint DURAINTVL=((400/TIMINTVL));
     private const uint STATINTVL=(800/TIMINTVL);
     private const uint NODATAINTVL=(5000/TIMINTVL);
@@ -576,18 +596,6 @@ public class MWPlanner : Gtk.Application {
     }
 
     private const double RAD2DEG = 57.29578;
-    private const string RED_ALERT = "bleet.ogg";
-    private const string ORANGE_ALERT = "orange.ogg";
-    private const string GENERAL_ALERT = "beep-sound.ogg";
-    private const string SAT_ALERT = "sat_alert.ogg";
-
-    private static BatteryLevels [] vlevels = {
-        BatteryLevels(3.7f, "#60ff00", null, null),
-        BatteryLevels(3.57f, "#FFCE00", null, null),
-        BatteryLevels(3.47f, "#FF5400", ORANGE_ALERT, null),
-        BatteryLevels(3.0f,  "red", RED_ALERT, null),
-        BatteryLevels(0.0f, null, null, "n/a")
-    };
 
     private Timer lastp;
     private uint nticks = 0;
@@ -785,7 +793,6 @@ public class MWPlanner : Gtk.Application {
             MWPLog.message("libchamplain %s\n", Champlain.VERSION_S);
 
         gps_trail = !gps_trail; // yet more jh logic
-
 
         if(conf.ignore_nm == false)
         {
@@ -1045,17 +1052,19 @@ public class MWPlanner : Gtk.Application {
                 replay_bbox(false);
             });
 
-        var sty = window.get_style_context();
-        var acol = sty.get_background_color(Gtk.StateFlags.NORMAL);
-        var colstr = "#%02x%02x%02x".printf((uint)(acol.red*255),
-                                            (uint)(acol.green*255),
-                                            (uint)(acol.blue*255));
-        vlevels[4].colour = colstr;
-        var cols = new string[5];
-        for(var j = 0; j < 5; j++)
-            cols[j] = vlevels[j].colour;
+        var css = new Gtk.CssProvider ();
+        var screen = window.get_screen();
+        try
+        {
+            string cssfile = MWPUtils.find_conf_file("vcols.css");
+            css.load_from_file(File.new_for_path(cssfile));
+            Gtk.StyleContext.add_provider_for_screen(screen, css, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+        } catch (Error e) {
+            stderr.printf("context %s\n", e.message);
+        }
+        vcol = new VCol();
 
-        navstatus = new NavStatus(builder, cols);
+        navstatus = new NavStatus(builder, vcol);
 
         menunav = builder.get_object ("nav_status_menu") as Gtk.MenuItem;
         menunav.activate.connect (() => {
@@ -1068,7 +1077,7 @@ public class MWPlanner : Gtk.Application {
         menuncfg.activate.connect (() => {
                 navconf.show();
             });
-        art_win = new ArtWin(acol);
+        art_win = new ArtWin();
         menuop = builder.get_object ("menu_art_hor") as Gtk.MenuItem;
         menuop.activate.connect (() => {
                 show_dock_id(DOCKLETS.ARTHOR, true);
@@ -1526,7 +1535,7 @@ public class MWPlanner : Gtk.Application {
             foreach (unowned string str in parts)
             {
                 var d = get_locale_double(str);
-                vlevels[i].cell = (float)d;
+                vcol.levels[i].cell = (float)d;
                 i++;
             }
         }
@@ -1570,10 +1579,9 @@ public class MWPlanner : Gtk.Application {
             var rect = mon.get_geometry();
             conf.window_p = rect.width*80/100;
 */
-            var scr = window.get_screen();
-            var mon = scr.get_monitor_at_window(scr.get_active_window());
+            var mon = screen.get_monitor_at_window(screen.get_active_window());
             Gdk.Rectangle monitor;
-            scr.get_monitor_geometry(mon, out monitor);
+            screen.get_monitor_geometry(mon, out monitor);
             conf.window_p = monitor.width*80/100;
         }
 
@@ -1825,7 +1833,7 @@ public class MWPlanner : Gtk.Application {
         {
             MWPLog.message("message => %s\n", e);
             statusbar.push(context_id, e);
-            bleet_sans_merci(GENERAL_ALERT);
+            bleet_sans_merci(Alert.GENERAL);
         }
         else
         {
@@ -1920,7 +1928,7 @@ public class MWPlanner : Gtk.Application {
                             if (nticks - last_gps > gpsintvl)
                             {
                                 if(replayer == Player.NONE)
-                                    bleet_sans_merci(SAT_ALERT);
+                                    bleet_sans_merci(Alert.SAT);
                                 if(replay_paused == false)
                                     MWPLog.message("GPS stalled\n");
                                 gpslab.label = "<span foreground = \"red\">⬤</span>";
@@ -2185,14 +2193,14 @@ public class MWPlanner : Gtk.Application {
             MWPLog.message("sensor health %04x %d %d\n", sensor, val, xs_state);
             if(val == 1)
             {
-                sound = (sensor_alm) ? GENERAL_ALERT : RED_ALERT;
+                sound = (sensor_alm) ? Alert.GENERAL : Alert.RED;
                 sensor_alm = true;
                 init_craft_icon();
                 map_show_warning("SENSOR FAILURE");
             }
             else
             {
-                sound = GENERAL_ALERT;
+                sound = Alert.GENERAL;
                 map_hide_warning();
             }
             bleet_sans_merci(sound);
@@ -2335,7 +2343,7 @@ public class MWPlanner : Gtk.Application {
         bool beep = ((scflags & SAT_FLAGS.BEEP) != 0);
         navstatus.sats(_nsats, urgent);
         if(beep && replayer == Player.NONE)
-            bleet_sans_merci(SAT_ALERT);
+            bleet_sans_merci(Alert.SAT);
         nsats = _nsats;
         last_ga = lastrx;
     }
@@ -2742,8 +2750,6 @@ public class MWPlanner : Gtk.Application {
         if(cmd != MSP.Cmds.RADIO)
             lastrx = lastok = nticks;
 
-//        print("Get CMD %s\n", cmd.to_string());
-
         switch(cmd)
         {
             case MSP.Cmds.API_VERSION:
@@ -3015,7 +3021,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     if (nticks - last_crit > CRITINTVL)
                     {
-                        bleet_sans_merci(GENERAL_ALERT);
+                        bleet_sans_merci(Alert.GENERAL);
                         MWPLog.message("GPS Critial Failure!!!\n");
                         navstatus.gps_crit();
                         last_crit = nticks;
@@ -3296,7 +3302,7 @@ public class MWPlanner : Gtk.Application {
                         MWPCursor.set_normal_cursor(window);
                         reset_poller();
                         var mtxt = "Validation for wp %d fails for %s".printf(w.wp_no, sb.str);
-                        bleet_sans_merci(GENERAL_ALERT);
+                        bleet_sans_merci(Alert.GENERAL);
                         validatelab.set_text("⚠"); // u+26a0
                         mwp_warning_box(mtxt, Gtk.MessageType.ERROR);
                     }
@@ -3311,7 +3317,7 @@ public class MWPlanner : Gtk.Application {
                     {
                         remove_tid(ref upltid);
                         MWPCursor.set_normal_cursor(window);
-                        bleet_sans_merci(GENERAL_ALERT);
+                        bleet_sans_merci(Alert.GENERAL);
                         validatelab.set_text("✔"); // u+2714
                         mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
                         if((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
@@ -3886,7 +3892,7 @@ public class MWPlanner : Gtk.Application {
                 d*=1852.0;
                 if(d > conf.max_home_delta)
                 {
-                    bleet_sans_merci(GENERAL_ALERT);
+                    bleet_sans_merci(Alert.GENERAL);
                     navstatus.alert_home_moved();
                     MWPLog.message(
                         "Established home has jumped %.1fm [%f %f (ex %f %f)]",
@@ -4056,7 +4062,7 @@ public class MWPlanner : Gtk.Application {
         return (rp-&tmp[0]);
     }
 
-    private void bleet_sans_merci(string sfn=RED_ALERT)
+    private void bleet_sans_merci(string sfn=Alert.RED)
     {
         var fn = MWPUtils.find_conf_file(sfn);
         if(fn != null)
@@ -4091,13 +4097,14 @@ public class MWPlanner : Gtk.Application {
     {
         nsampl = 0;
         var ncells = ivbat / 37;
-        for(var i = 0; i < vlevels.length; i++)
+        for(var i = 0; i < vcol.levels.length; i++)
         {
-            vlevels[i].limit = vlevels[i].cell*ncells;
-            vlevels[i].reached = false;
+            vcol.levels[i].limit = vcol.levels[i].cell*ncells;
+            vcol.levels[i].reached = false;
         }
         vinit = true;
         vwarn1 = 0;
+        licol = vcol.levels.length-1;
     }
 
     private void set_bat_stat(uint8 ivbat)
@@ -4127,7 +4134,7 @@ public class MWPlanner : Gtk.Application {
             if(vinit == false)
                 init_battery(ivbat);
 
-            foreach(var v in vlevels)
+            foreach(var v in vcol.levels)
             {
                 if(vf >= v.limit)
                     break;
@@ -4135,29 +4142,30 @@ public class MWPlanner : Gtk.Application {
             }
         }
         else
-            icol = vlevels.length-1;
+            icol = vcol.levels.length-1;
 
         string str;
-        if(vlevels[icol].label == null)
+        if(vcol.levels[icol].label == null)
         {
             str = "%.1fv".printf(vf);
         }
         else
-            str = vlevels[icol].label;
+            str = vcol.levels[icol].label;
 
-        var colr = vlevels[icol].colour;
-        vbatlab="<span background=\"%s\" weight=\"bold\">%s</span>".printf(
-             colr, str);
+        var lsc = labelvbat.get_style_context();
+        lsc.remove_class(vcol.levels[licol].colour);
+        lsc.add_class(vcol.levels[icol].colour);
+        vbatlab="<span weight=\"bold\">%s</span>".printf(str);
         labelvbat.set_markup(vbatlab);
         navstatus.volt_update(str,icol,vf,item_visible(DOCKLETS.VOLTAGE));
 
-        if(vlevels[icol].reached == false)
+        if(vcol.levels[icol].reached == false)
         {
-            vlevels[icol].reached = true;
-            if(vlevels[icol].audio != null)
+            vcol.levels[icol].reached = true;
+            if(vcol.levels[icol].audio != null)
             {
                 if(replayer == Player.NONE)
-                    bleet_sans_merci(vlevels[icol].audio);
+                    bleet_sans_merci(vcol.levels[icol].audio);
                 else
                     MWPLog.message("battery alarm %.1f\n", vf);
             }

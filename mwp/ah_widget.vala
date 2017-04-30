@@ -32,9 +32,9 @@ namespace Ath {
         private double _trans_y = 0;
         private double _angle = 0;
 
-        public Horizon (Gdk.RGBA bcol)
+        public Horizon ()
         {
-            override_background_color(Gtk.StateFlags.NORMAL, bcol);
+
         }
 
         private void draw_base(Cairo.Context cr)

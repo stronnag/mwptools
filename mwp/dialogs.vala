@@ -95,10 +95,10 @@ public class ArtWin : GLib.Object
     public Gtk.Box  box {get; private set;}
     private Ath.Horizon ath;
 
-    public ArtWin(Gdk.RGBA bcol)
+    public ArtWin()
     {
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
-        ath = new Ath.Horizon (bcol);
+        ath = new Ath.Horizon();
         box.pack_start(ath, true,true,0);
         int sz = MWPlanner.conf.ahsize;
         box.set_size_request (sz, sz);
@@ -1112,7 +1112,7 @@ public class NavStatus : GLib.Object
     private AudioThread mt = null;
     private bool have_cg = false;
     private bool have_hdr = false;
-    private string []colours;
+    private VCol vc;
 
     public static MSP_NAV_STATUS n {get; private set;}
     public static MSP_ATTITUDE atti {get; private set;}
@@ -1144,12 +1144,12 @@ public class NavStatus : GLib.Object
         ELEV = 8
     }
 
-    public NavStatus(Gtk.Builder builder,string []cols)
+    public NavStatus(Gtk.Builder builder, VCol _vc)
     {
         xfmode = 255;
         numsat = 0;
         modsat = false;
-        colours = cols;
+        vc = _vc;
 
         grid = builder.get_object ("grid3") as Gtk.Grid;
         gps_mode_label = builder.get_object ("gps_mode_lab") as Gtk.Label;
@@ -1174,7 +1174,8 @@ public class NavStatus : GLib.Object
             });
 
         voltlabel.set_use_markup (true);
-        volt_update("n/a",4, 0f,true);
+        _vn = vc.levels.length-1;
+        volt_update("n/a",-1, 0f,true);
         grid.show_all();
     }
 
@@ -1436,13 +1437,16 @@ public class NavStatus : GLib.Object
     public void volt_update(string s, int n, float v, bool visible)
     {
         volts = v;
+        if (n == -1)
+            n = vc.levels.length-1;
+
         if(visible)
         {
             if(n != _vn)
             {
-                var c = Gdk.RGBA();
-                c.parse(colours[n]);
-                voltlabel.override_background_color(Gtk.StateFlags.NORMAL, c);
+                var lsc = voltlabel.get_style_context();
+                lsc.remove_class(vc.levels[_vn].colour);
+                lsc.add_class(vc.levels[n].colour);
                 _vn = n;
             }
             voltlabel.set_label("<span font='%d'>%s</span>".printf(_fs,s));
@@ -1552,7 +1556,7 @@ public class NavStatus : GLib.Object
         alti = {0};
         cg = {0};
         hdr = 0;
-        volt_update("n/a",4, 0f,true);
+        volt_update("n/a",-1, 0f,true);
     }
 
     public void logspeak_init (string? voice, bool use_en = false,

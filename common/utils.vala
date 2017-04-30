@@ -40,33 +40,32 @@ public class MWPUtils
 
         var uc = Environment.get_user_data_dir();
         var app = Environment.get_application_name();
-        if ((cfile = have_conf_file(GLib.Path.build_filename(uc,app,wanted))) == null)
-        {
-            var confdirs = Environment.get_system_data_dirs();
-            foreach (string c in confdirs)
-            {
-                if ((cfile = have_conf_file(GLib.Path.build_filename (c,app,wanted))) != null)
-                    break;
-            }
-        }
+        cfile = have_conf_file(GLib.Path.build_filename(uc,app,wanted));
 
-        if(cfile == null)
+        if (cfile == null)
         {
             uc =  Environment.get_user_config_dir();
             cfile = have_conf_file(GLib.Path.build_filename(uc,app,wanted));
-        }
+            if(cfile == null)
+            {
+                var confdirs = Environment.get_system_data_dirs();
+                foreach (string c in confdirs)
+                {
+                    if ((cfile = have_conf_file(GLib.Path.build_filename (c,app,wanted))) != null)
+                        break;
+                }
+            }
 
-        if (cfile == null)
-        {
-            cfile = have_conf_file(GLib.Path.build_filename ("./",wanted));
+            if (cfile == null)
+            {
+                cfile = have_conf_file(GLib.Path.build_filename ("./",wanted));
+            }
+            if (cfile == null)
+            {
+                cfile = have_conf_file(GLib.Path.build_filename ("./",fn));
+            }
         }
-        if (cfile == null)
-        {
-            cfile = have_conf_file(GLib.Path.build_filename ("./",fn));
-        }
-
-        debug("Using ui def %s", cfile);
+        debug("For %s, using %s", fn, cfile);
         return cfile;
     }
-
 }
