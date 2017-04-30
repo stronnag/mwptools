@@ -351,7 +351,7 @@ public class MWPlanner : Gtk.Application {
 
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
     private uint8 vwarn1;
-    private int licol;
+    private int licol = -1;
     public  DockItem[] dockitem;
     private Gtk.CheckButton audio_cb;
     private Gtk.CheckButton autocon_cb;
@@ -4104,7 +4104,8 @@ public class MWPlanner : Gtk.Application {
         }
         vinit = true;
         vwarn1 = 0;
-        licol = vcol.levels.length-1;
+        if(licol == -1)
+            licol = vcol.levels.length-1;
     }
 
     private void set_bat_stat(uint8 ivbat)
@@ -4152,9 +4153,14 @@ public class MWPlanner : Gtk.Application {
         else
             str = vcol.levels[icol].label;
 
-        var lsc = labelvbat.get_style_context();
-        lsc.remove_class(vcol.levels[licol].colour);
-        lsc.add_class(vcol.levels[icol].colour);
+        if(icol != licol)
+        {
+            var lsc = labelvbat.get_style_context();
+            lsc.remove_class(vcol.levels[licol].colour);
+            lsc.add_class(vcol.levels[icol].colour);
+            licol= icol;
+        }
+
         vbatlab="<span weight=\"bold\">%s</span>".printf(str);
         labelvbat.set_markup(vbatlab);
         navstatus.volt_update(str,icol,vf,item_visible(DOCKLETS.VOLTAGE));
@@ -4170,7 +4176,6 @@ public class MWPlanner : Gtk.Application {
                     MWPLog.message("battery alarm %.1f\n", vf);
             }
         }
-        licol= icol;
     }
 
     private void upload_mission(WPDL flag)
