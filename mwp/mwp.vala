@@ -99,7 +99,7 @@ public class VCol
         BatteryLevels(3.57f, "voltmedium", null, null),
         BatteryLevels(3.47f, "voltlow", Alert.ORANGE, null),
         BatteryLevels(3.0f,  "voltcritical", Alert.RED, null),
-        BatteryLevels(0.0f, "voltundef", null, "n/a")
+        BatteryLevels(2.0f, "voltundef", null, "n/a")
     };
 }
 
@@ -298,7 +298,7 @@ public class MWPlanner : Gtk.Application {
     private Gtk.Label gpslab;
     private Gtk.Label labelvbat;
 
-    private int nsampl;
+    private int nsampl = 0;
     private float[] vbsamples;
 
     private Gtk.Label sensor_sts[6];
@@ -599,13 +599,13 @@ public class MWPlanner : Gtk.Application {
 
     private Timer lastp;
     private uint nticks = 0;
-    private uint lastm;
-    private uint lastrx;
+    private uint lastm = 0;
+    private uint lastrx = 0;
     private uint last_ga = 0;
     private uint last_gps = 0;
     private uint last_crit = 0;
     private uint last_tm = 0;
-    private uint lastok;
+    private uint lastok = 0;
     private uint last_an = 0;
     private uint last_sv = 0;
     private static bool offline = false;
@@ -1556,6 +1556,8 @@ public class MWPlanner : Gtk.Application {
             remove_window(window);
         }
 
+        lastmsg.msg={};
+
         start_poll_timer();
         lastp = new Timer();
         anim_cb();
@@ -1907,14 +1909,45 @@ public class MWPlanner : Gtk.Application {
                 if(msp.available)
                 {
                     var tlimit = conf.polltimeout / TIMINTVL;
-
-                    if(serstate == SERSTATE.NORMAL ||
-                       serstate == SERSTATE.POLLER)
+                    if((serstate == SERSTATE.POLLER ||
+                        serstate == SERSTATE.TELEM) &&
+                       (nticks - lastrx) > NODATAINTVL)
                     {
-                        if ((nticks - lastok) > tlimit)
+                        if(rxerr == false)
+                        {
+                            set_error_status("No data for 5 seconds");
+                            rxerr=true;
+                        }
+                    }
+
+                    if(serstate != SERSTATE.TELEM)
+                    {
+// Probably takes a minute to change the LIPO
+                        if(serstate == SERSTATE.POLLER &&
+                           nticks - lastrx > RESTARTINTVL)
+                        {
+                            MWPLog.message("Restart poll loop\n");
+                            init_state();
+                            init_sstats();
+                            init_have_home();
+                            set_bat_stat(0);
+                            serstate = SERSTATE.NORMAL;
+                            queue_cmd(MSP.Cmds.IDENT,null,0);
+                            run_queue();
+                        }
+                        else if ((nticks - lastok) > tlimit)
                         {
                             telstats.toc++;
-                            MWPLog.message("MSP Timeout (%d)\n", tcycle);
+                            string res;
+                            if(lastmsg.msg != null && lastmsg.msg.length > 4)
+                            {
+                                MSP.Cmds c= (MSP.Cmds)(lastmsg.msg[4]);
+                                res = c.to_string();
+                            }
+                            else
+                                res = "%d".printf(tcycle);
+
+                            MWPLog.message("MSP Timeout (%s)\n", res);
                             lastok = nticks;
                             tcycle = 0;
                             resend_last();
@@ -2008,40 +2041,10 @@ public class MWPlanner : Gtk.Application {
 
     private void send_poll()
     {
-        var req=requests[tcycle];
-        lastm = nticks;
         if(serstate == SERSTATE.POLLER)
         {
-            if((lastm - lastrx) > NODATAINTVL)
-            {
-                if(rxerr == false)
-                {
-                    set_error_status("No data for 5 seconds");
-                    rxerr=true;
-                }
-                    /* Probably takes a minute to change the LIPO */
-                if(lastm - lastrx > RESTARTINTVL)
-                {
-                    MWPLog.message("Restart poll loop\n");
-                    init_state();
-                    init_sstats();
-                    init_have_home();
-                    validatelab.set_text("");
-                    serstate = SERSTATE.NORMAL;
-                    queue_cmd(MSP.Cmds.IDENT,null,0);
-                    run_queue();
-                    return;
-                }
-            }
-            else
-            {
-                if(rxerr)
-                {
-                    set_error_status(null);
-                    rxerr=false;
-                }
-            }
-
+            var req=requests[tcycle];
+            lastm = nticks;
             if (req == MSP.Cmds.ANALOG)
             {
                 if (lastm - last_an > 40)
@@ -2596,6 +2599,7 @@ public class MWPlanner : Gtk.Application {
                     {
                         MWPLog.message("Start poller\n");
                         tcycle = 0;
+                        lastm = nticks;
                         serstate = SERSTATE.POLLER;
                         start_audio();
                     }
@@ -2748,7 +2752,14 @@ public class MWPlanner : Gtk.Application {
             Logger.log_time();
 
         if(cmd != MSP.Cmds.RADIO)
+        {
             lastrx = lastok = nticks;
+            if(rxerr)
+            {
+                set_error_status(null);
+                rxerr=false;
+            }
+        }
 
         switch(cmd)
         {
@@ -2844,6 +2855,7 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.IDENT:
                 last_gps = 0;
                 have_vers = true;
+                bat_annul();
                 if (icount == 0)
                 {
                     vi = {0};
@@ -4095,7 +4107,7 @@ public class MWPlanner : Gtk.Application {
 
     private void init_battery(uint8 ivbat)
     {
-        nsampl = 0;
+        bat_annul();
         var ncells = ivbat / 37;
         for(var i = 0; i < vcol.levels.length; i++)
         {
@@ -4108,44 +4120,67 @@ public class MWPlanner : Gtk.Application {
             licol = vcol.levels.length-1;
     }
 
+    private void bat_annul()
+    {
+        for(var i = 0; i < MAXVSAMPLE; i++)
+                vbsamples[i] = 0;
+        nsampl = 0;
+    }
+
     private void set_bat_stat(uint8 ivbat)
     {
-        if(ivbat < 10)
-            return;
-
-        string vbatlab;
-        float  vf = (float)ivbat/10.0f;
-        if (nsampl == MAXVSAMPLE)
+        if(ivbat < 20)
         {
-            for(var i = 1; i < MAXVSAMPLE; i++)
-                vbsamples[i-1] = vbsamples[i];
+            update_bat_indicators(vcol.levels.length-1, 0.0f);
         }
         else
-            nsampl += 1;
-
-        vbsamples[nsampl-1] = vf;
-        vf = 0;
-        for(var i = 0; i < nsampl; i++)
-            vf += vbsamples[i];
-        vf /= nsampl;
-
-        int icol = 0;
-        if (ivbat > 0)
         {
+            float  vf = (float)ivbat/10.0f;
+            if (nsampl == MAXVSAMPLE)
+            {
+                for(var i = 1; i < MAXVSAMPLE; i++)
+                    vbsamples[i-1] = vbsamples[i];
+            }
+            else
+                nsampl += 1;
+
+            vbsamples[nsampl-1] = vf;
+            vf = 0;
+            for(var i = 0; i < nsampl; i++)
+                vf += vbsamples[i];
+            vf /= nsampl;
+
             if(vinit == false)
                 init_battery(ivbat);
 
+            int icol = 0;
             foreach(var v in vcol.levels)
             {
                 if(vf >= v.limit)
                     break;
                 icol += 1;
             }
-        }
-        else
-            icol = vcol.levels.length-1;
 
+            update_bat_indicators(icol, vf);
+
+            if(vcol.levels[icol].reached == false)
+            {
+                vcol.levels[icol].reached = true;
+                if(vcol.levels[icol].audio != null)
+                {
+                    if(replayer == Player.NONE)
+                        bleet_sans_merci(vcol.levels[icol].audio);
+                    else
+                        MWPLog.message("battery alarm %.1f\n", vf);
+                }
+            }
+        }
+    }
+
+    private void update_bat_indicators(int icol, float vf)
+    {
         string str;
+        string vbatlab;
         if(vcol.levels[icol].label == null)
         {
             str = "%.1fv".printf(vf);
@@ -4164,19 +4199,8 @@ public class MWPlanner : Gtk.Application {
         vbatlab="<span weight=\"bold\">%s</span>".printf(str);
         labelvbat.set_markup(vbatlab);
         navstatus.volt_update(str,icol,vf,item_visible(DOCKLETS.VOLTAGE));
-
-        if(vcol.levels[icol].reached == false)
-        {
-            vcol.levels[icol].reached = true;
-            if(vcol.levels[icol].audio != null)
-            {
-                if(replayer == Player.NONE)
-                    bleet_sans_merci(vcol.levels[icol].audio);
-                else
-                    MWPLog.message("battery alarm %.1f\n", vf);
-            }
-        }
     }
+
 
     private void upload_mission(WPDL flag)
     {
@@ -4424,8 +4448,9 @@ public class MWPlanner : Gtk.Application {
         if(telstats.s.msgs != 0)
             gen_serial_stats();
         anvals = acycle = 0;
-        telstats.toc = telstats.tot = 0;
-        telstats.avg = 0;
+        telstats = {};
+            //c = telstats.tot = 0;
+            //lstats.avg = 0;
         telemstatus.annul();
         radstatus.annul();
     }
@@ -4434,7 +4459,7 @@ public class MWPlanner : Gtk.Application {
     {
         map_hide_warning();
         xfailsafe = false;
-        serstate = SERSTATE.NORMAL;
+        serstate = SERSTATE.NONE;
         have_api = have_vers = have_misc = have_status = have_wp = have_nc =
             have_fcv = have_fcvv = false;
         xbits = icount = api_cnt = 0;
@@ -4450,8 +4475,9 @@ public class MWPlanner : Gtk.Application {
         force_mav = false;
         want_special = 0;
         xsensor = 0;
-        nsampl = 0;
+        bat_annul();
         clear_sensor_array();
+        nticks = lastrx = lastok = 0;
         ls.set_mission_speed(conf.nav_speed);
     }
 
@@ -4469,23 +4495,22 @@ public class MWPlanner : Gtk.Application {
         {
             var serdev = dev_entry.get_active_text();
             string estr;
+            serstate = SERSTATE.NONE;
             if (msp.open(serdev, conf.baudrate, out estr) == true)
             {
+                lastrx = lastok = nticks;
+                serstate = SERSTATE.NORMAL;
+                set_bat_stat(0);
+                init_state();
+                init_sstats();
                 MWPLog.message("Connected %s\n", serdev);
                 menubblog.sensitive = menubbload.sensitive = menureplay.sensitive =
                 menuloadlog.sensitive = false;
-
-                validatelab.set_text("");
-                init_state();
-                init_sstats();
-                lastok = nticks;
-                serstate = SERSTATE.NORMAL;
                 if(rawlog == true)
                 {
                     msp.raw_logging(true);
                 }
                 conbutton.set_label("Disconnect");
-
                 if(nopoll == false)
                 {
                     queue_cmd(MSP.Cmds.IDENT,null,0);
