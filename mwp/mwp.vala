@@ -1926,6 +1926,7 @@ public class MWPlanner : Gtk.Application {
                         if(serstate == SERSTATE.POLLER &&
                            nticks - lastrx > RESTARTINTVL)
                         {
+                            serstate = SERSTATE.NONE;
                             MWPLog.message("Restart poll loop\n");
                             init_state();
                             init_sstats();
@@ -1988,40 +1989,43 @@ public class MWPlanner : Gtk.Application {
                         }
                     }
 
-                    if((nticks % STATINTVL) == 0)
+                    if(serstate != SERSTATE.NONE)
                     {
-                        gen_serial_stats();
-                        telemstatus.update(telstats, item_visible(DOCKLETS.TELEMETRY));
-                    }
-
-                    if(duration != 0 && duration != last_dura)
-                    {
-                        int mins;
-                        int secs;
-                        if(duration < 0)
+                        if((nticks % STATINTVL) == 0)
                         {
-                            mins = secs = 0;
-                            duration = 0;
+                            gen_serial_stats();
+                            telemstatus.update(telstats, item_visible(DOCKLETS.TELEMETRY));
                         }
-                        else
+
+                        if(duration != 0 && duration != last_dura)
                         {
-                            mins = (int)duration / 60;
-                            secs = (int)duration % 60;
-                            if(mins != lmin)
+                            int mins;
+                            int secs;
+                            if(duration < 0)
+                            {
+                                mins = secs = 0;
+                                duration = 0;
+                            }
+                            else
+                            {
+                                mins = (int)duration / 60;
+                                secs = (int)duration % 60;
+                                if(mins != lmin)
                             {
                                 navstatus.update_duration(mins);
                                 lmin = mins;
                             }
+                            }
+                            elapsedlab.set_text("%02d:%02d".printf(mins,secs));
+                            last_dura = duration;
                         }
-                        elapsedlab.set_text("%02d:%02d".printf(mins,secs));
-                        last_dura = duration;
-                    }
 
-                    if(conf.heartbeat != null && (nticks % BEATINTVL) == 0)
-                    {
-                        try {
-                            Process.spawn_command_line_async(conf.heartbeat);
-                        } catch  {}
+                        if(conf.heartbeat != null && (nticks % BEATINTVL) == 0)
+                        {
+                            try {
+                                Process.spawn_command_line_async(conf.heartbeat);
+                            } catch  {}
+                        }
                     }
                 }
                 return Source.CONTINUE;
@@ -4395,8 +4399,8 @@ public class MWPlanner : Gtk.Application {
         MWPLog.message("Serial doom replay %d\n", replayer);
         if(replayer == Player.NONE)
         {
-            menumwvar.sensitive =true;
             serstate = SERSTATE.NONE;
+            menumwvar.sensitive =true;
             sflags = 0;
             if (conf.audioarmed == true)
             {
@@ -4432,7 +4436,6 @@ public class MWPlanner : Gtk.Application {
             set_error_status(null);
             xsensor = 0;
             clear_sensor_array();
-            validatelab.set_text("");
         }
         else
         {
