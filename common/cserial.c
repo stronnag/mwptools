@@ -35,8 +35,6 @@
 #include <errno.h>
 
 
-static struct termios _tio;
-
 void flush_serial(int fd)
 {
     tcflush(fd, TCIOFLUSH);
@@ -76,7 +74,6 @@ int open_serial(char *device, uint baudrate)
         struct termios tio;
         memset (&tio, 0, sizeof(tio));
         tcgetattr(fd, &tio);
-        _tio = tio;
         cfmakeraw(&tio);
         tio.c_cc[VTIME] = 0;
         tio.c_cc[VMIN] = 0;
@@ -99,7 +96,33 @@ void set_timeout(int fd, int tenths, int number)
 void close_serial(int fd)
 {
     tcflush(fd, TCIOFLUSH);
-    tcsetattr(fd,TCSANOW,&_tio);
+    struct termios tio ={0};
+    tio.c_iflag &= ~IGNBRK;
+    tio.c_iflag |=  BRKINT;
+
+    tio.c_iflag |=  IGNPAR;
+    tio.c_iflag &= ~PARMRK;
+
+    tio.c_iflag &= ~ISTRIP;
+
+    tio.c_iflag &= ~(INLCR | IGNCR | ICRNL);
+
+    tio.c_cflag &= ~CSIZE;
+    tio.c_cflag |=  CS8;
+
+    tio.c_cflag |=  CREAD;
+
+    tio.c_lflag |=  ISIG;
+
+    tio.c_lflag &= ~ICANON;
+
+    tio.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
+
+    tio.c_lflag &= ~IEXTEN;
+
+    tio.c_cc[VTIME] = 0;
+    tio.c_cc[VMIN] = 1;
+    tcsetattr(fd,TCSANOW,&tio);
     close(fd);
 }
 

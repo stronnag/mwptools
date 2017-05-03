@@ -64,7 +64,6 @@ int main (string[] args)
         if(noinit == false)
             s.write("#\n".data, 2);
         s.serial_lost.connect(() => {
-                s.close();
                 ml.quit();
             });
     }
@@ -104,6 +103,7 @@ int main (string[] args)
         error("IOChannel: %s", e.message);
     }
     ml.run ();
+    s.close();
     Posix.tcsetattr(1, Posix.TCSANOW, oldtio);
     return 0;
 }

@@ -683,6 +683,9 @@ public class MWPlanner : Gtk.Application {
 
     public void cleanup()
     {
+        if(msp.available)
+            msp.close();
+
         if(conf.atexit != null)
             try {
                 Process.spawn_command_line_sync (conf.atexit);
