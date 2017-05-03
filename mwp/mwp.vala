@@ -1909,7 +1909,7 @@ public class MWPlanner : Gtk.Application {
         var lmin = 0;
         Timeout.add(TIMINTVL, () => {
                 nticks++;
-                if(msp.available)
+                if(msp.available && serstate != SERSTATE.NONE)
                 {
                     var tlimit = conf.polltimeout / TIMINTVL;
                     if((serstate == SERSTATE.POLLER ||
@@ -1992,43 +1992,40 @@ public class MWPlanner : Gtk.Application {
                         }
                     }
 
-                    if(serstate != SERSTATE.NONE)
+                    if((nticks % STATINTVL) == 0)
                     {
-                        if((nticks % STATINTVL) == 0)
-                        {
-                            gen_serial_stats();
-                            telemstatus.update(telstats, item_visible(DOCKLETS.TELEMETRY));
-                        }
+                        gen_serial_stats();
+                        telemstatus.update(telstats, item_visible(DOCKLETS.TELEMETRY));
+                    }
 
-                        if(duration != 0 && duration != last_dura)
+                    if(duration != 0 && duration != last_dura)
+                    {
+                        int mins;
+                        int secs;
+                        if(duration < 0)
                         {
-                            int mins;
-                            int secs;
-                            if(duration < 0)
-                            {
-                                mins = secs = 0;
-                                duration = 0;
-                            }
-                            else
-                            {
-                                mins = (int)duration / 60;
-                                secs = (int)duration % 60;
-                                if(mins != lmin)
+                            mins = secs = 0;
+                            duration = 0;
+                        }
+                        else
+                        {
+                            mins = (int)duration / 60;
+                            secs = (int)duration % 60;
+                            if(mins != lmin)
                             {
                                 navstatus.update_duration(mins);
                                 lmin = mins;
                             }
-                            }
-                            elapsedlab.set_text("%02d:%02d".printf(mins,secs));
-                            last_dura = duration;
                         }
+                        elapsedlab.set_text("%02d:%02d".printf(mins,secs));
+                        last_dura = duration;
+                    }
 
-                        if(conf.heartbeat != null && (nticks % BEATINTVL) == 0)
-                        {
-                            try {
-                                Process.spawn_command_line_async(conf.heartbeat);
-                            } catch  {}
-                        }
+                    if(conf.heartbeat != null && (nticks % BEATINTVL) == 0)
+                    {
+                        try {
+                            Process.spawn_command_line_async(conf.heartbeat);
+                        } catch  {}
                     }
                 }
                 return Source.CONTINUE;
