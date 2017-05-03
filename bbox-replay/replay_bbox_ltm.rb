@@ -184,7 +184,7 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
 	msps[4][5] = m[1][0].ord - '0'.ord
 	msps[4][6] = m[2][0].ord - '0'.ord
 	msps[4][7] = m[3][0].ord - '0'.ord
-	inavers = [m[1],m[2],m[3]].join('.')
+	iv = [m[1],m[2],m[3]].join('.')
 	i = 0
 	m[4].each_byte {|b| msps[5][24+i] = b ; i += 1}
 	bid = BOARD_MAP[m[5]]
@@ -200,6 +200,9 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
     send_msg skt, msp.pack('C*')
     sleep 0.01
   end
+
+  inavers=(STATE_EQ[iv] || iv || "1.2.0")
+  STDERR.puts "iv = #{iv} state vers = #{inavers}"
   return inavers
 end
 
@@ -270,7 +273,6 @@ end
 def encode_stats r,inavers,armed=1
   msg='$TS'
   sts = nil
-  inavers = '1.2.0' if inavers.nil?
 
   sts = case INAV_STATES[inavers][r[:navstate].to_i]
 	when :nav_state_undefined,:nav_state_idle
@@ -300,7 +302,6 @@ def encode_stats r,inavers,armed=1
 end
 
 def encode_nav r,inavers
-  inavers = '1.2.0' if inavers.nil?
   msg='$TN'
   gpsmode = case INAV_STATES[inavers][r[:navstate].to_i]
 	    when :nav_state_poshold_2d_initialize,
@@ -400,7 +401,7 @@ def encode_extra r
   hf=0
   if r.has_key? :hwhealthstatus
     hf = 1 if (r[:hwhealthstatus].to_i & 0x2aaa) != 0
-    STDERR.puts "HW %x %d" % [r[:hwhealthstatus].to_i, hf]
+#    STDERR.puts "HW %x %d" % [r[:hwhealthstatus].to_i, hf]
   end
   sl = [r[:gps_hdop].to_i,hf,0,0,0].pack('vCCCC')
   msg << sl << mksum(sl)
