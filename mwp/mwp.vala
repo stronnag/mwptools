@@ -579,7 +579,6 @@ public class MWPlanner : Gtk.Application {
 
     private const uint TIMINTVL=500;
     private const uint BEATINTVL=(60000/TIMINTVL);
-    private const uint DURAINTVL=((500/TIMINTVL));
     private const uint STATINTVL=(1000/TIMINTVL);
     private const uint NODATAINTVL=(5000/TIMINTVL);
     private const uint SATINTVL=(10000/TIMINTVL);
@@ -1996,35 +1995,35 @@ public class MWPlanner : Gtk.Application {
                         telemstatus.update(telstats, item_visible(DOCKLETS.TELEMETRY));
                     }
 
-                    if(duration != 0 && duration != last_dura)
-                    {
-                        int mins;
-                        int secs;
-                        if(duration < 0)
-                        {
-                            mins = secs = 0;
-                            duration = 0;
-                        }
-                        else
-                        {
-                            mins = (int)duration / 60;
-                            secs = (int)duration % 60;
-                            if(mins != lmin)
-                            {
-                                navstatus.update_duration(mins);
-                                lmin = mins;
-                            }
-                        }
-                        elapsedlab.set_text("%02d:%02d".printf(mins,secs));
-                        last_dura = duration;
-                    }
-
                     if(conf.heartbeat != null && (nticks % BEATINTVL) == 0)
                     {
                         try {
                             Process.spawn_command_line_async(conf.heartbeat);
                         } catch  {}
                     }
+                }
+
+                if(duration != 0 && duration != last_dura)
+                {
+                    int mins;
+                    int secs;
+                    if(duration < 0)
+                    {
+                        mins = secs = 0;
+                        duration = 0;
+                    }
+                    else
+                    {
+                        mins = (int)duration / 60;
+                        secs = (int)duration % 60;
+                        if(mins != lmin)
+                        {
+                                navstatus.update_duration(mins);
+                                lmin = mins;
+                        }
+                    }
+                    elapsedlab.set_text("%02d:%02d".printf(mins,secs));
+                    last_dura = duration;
                 }
                 return Source.CONTINUE;
             });
