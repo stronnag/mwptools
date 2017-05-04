@@ -1150,6 +1150,7 @@ public class NavStatus : GLib.Object
         numsat = 0;
         modsat = false;
         vc = _vc;
+        _vn = -1;
 
         grid = builder.get_object ("grid3") as Gtk.Grid;
         gps_mode_label = builder.get_object ("gps_mode_lab") as Gtk.Label;
@@ -1174,7 +1175,6 @@ public class NavStatus : GLib.Object
             });
 
         voltlabel.set_use_markup (true);
-        _vn = vc.levels.length-1;
         volt_update("n/a",-1, 0f,true);
         grid.show_all();
     }
@@ -1445,7 +1445,8 @@ public class NavStatus : GLib.Object
             if(n != _vn)
             {
                 var lsc = voltlabel.get_style_context();
-                lsc.remove_class(vc.levels[_vn].colour);
+                if(_vn != -1)
+                    lsc.remove_class(vc.levels[_vn].colour);
                 lsc.add_class(vc.levels[n].colour);
                 _vn = n;
             }

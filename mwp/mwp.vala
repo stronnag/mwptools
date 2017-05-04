@@ -1933,7 +1933,6 @@ public class MWPlanner : Gtk.Application {
                             init_state();
                             init_sstats();
                             init_have_home();
-                            set_bat_stat(0);
                             serstate = SERSTATE.NORMAL;
                             queue_cmd(MSP.Cmds.IDENT,null,0);
                             run_queue();
@@ -2050,7 +2049,7 @@ public class MWPlanner : Gtk.Application {
             lastm = nticks;
             if (req == MSP.Cmds.ANALOG)
             {
-                if (lastm - last_an > 40)
+                if (lastm - last_an > MAVINTVL)
                 {
                     last_an = lastm;
                     mavc = 0;
@@ -2064,7 +2063,7 @@ public class MWPlanner : Gtk.Application {
 
             if (req == MSP.Cmds.GPSSVINFO)
             {
-                if (lastm - last_sv > 40)
+                if (lastm - last_sv > MAVINTVL)
                 {
                     last_sv = lastm;
                     mavc = 0;
@@ -4119,8 +4118,6 @@ public class MWPlanner : Gtk.Application {
         }
         vinit = true;
         vwarn1 = 0;
-        if(licol == -1)
-            licol = vcol.levels.length-1;
     }
 
     private void bat_annul()
@@ -4194,7 +4191,8 @@ public class MWPlanner : Gtk.Application {
         if(icol != licol)
         {
             var lsc = labelvbat.get_style_context();
-            lsc.remove_class(vcol.levels[licol].colour);
+            if (licol != -1)
+                lsc.remove_class(vcol.levels[licol].colour);
             lsc.add_class(vcol.levels[icol].colour);
             licol= icol;
         }
@@ -4501,8 +4499,6 @@ public class MWPlanner : Gtk.Application {
             if (msp.open(serdev, conf.baudrate, out estr) == true)
             {
                 lastrx = lastok = nticks;
-                serstate = SERSTATE.NORMAL;
-                set_bat_stat(0);
                 init_state();
                 init_sstats();
                 MWPLog.message("Connected %s\n", serdev);
@@ -4513,6 +4509,7 @@ public class MWPlanner : Gtk.Application {
                     msp.raw_logging(true);
                 }
                 conbutton.set_label("Disconnect");
+                serstate = SERSTATE.NORMAL;
                 if(nopoll == false)
                 {
                     queue_cmd(MSP.Cmds.IDENT,null,0);
