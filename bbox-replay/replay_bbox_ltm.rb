@@ -201,7 +201,7 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
     sleep 0.01
   end
 
-  inavers=(STATE_EQ[iv] || iv || "1.2.0")
+  inavers=(STATE_EQ[iv] || iv || "1.3.0")
   STDERR.puts "iv = #{iv} state vers = #{inavers}"
   return inavers
 end
@@ -290,6 +290,7 @@ def encode_stats r,inavers,armed=1
 	else
 	  19
 	end
+
   sts = (sts << 2) | armed
   if r[:failsafephase_flags].strip != 'IDLE'
 #    STDERR.puts "[#{r[:failsafephase_flags]}]"
