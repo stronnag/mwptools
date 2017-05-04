@@ -4471,11 +4471,10 @@ public class MWPlanner : Gtk.Application {
         vinit = false;
         set_bat_stat(0);
         gpscnt = 0;
-        have_mspradio = false;
         force_mav = false;
         want_special = 0;
         xsensor = 0;
-        bat_annul();
+        have_mspradio = false;
         clear_sensor_array();
         nticks = lastrx = lastok = 0;
         ls.set_mission_speed(conf.nav_speed);
