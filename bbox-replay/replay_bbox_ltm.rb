@@ -277,15 +277,39 @@ def encode_stats r,inavers,armed=1
   sts = case INAV_STATES[inavers][r[:navstate].to_i]
 	when :nav_state_undefined,:nav_state_idle
 	  0 # get from flightmode
-	when :nav_state_althold_initialize,:nav_state_althold_in_progress
+	when :nav_state_althold_initialize,
+	    :nav_state_althold_in_progress
 	  8
-	when :nav_state_poshold_2d_initialize, :nav_state_poshold_2d_in_progress, :nav_state_poshold_3d_initialize, :nav_state_poshold_3d_in_progress
+	when :nav_state_poshold_2d_initialize,
+	    :nav_state_poshold_2d_in_progress,
+	    :nav_state_poshold_3d_initialize,
+	    :nav_state_poshold_3d_in_progress
 	  9
-	when  :nav_state_rth_initialize, :nav_state_rth_climb_to_safe_alt, :nav_state_rth_head_home, :nav_state_rth_hover_prior_to_landing, :nav_state_rth_finishing, :nav_state_rth_finished
+	when  :nav_state_rth_initialize,
+	    :nav_state_rth_climb_to_safe_alt,
+	    :nav_state_rth_head_home,
+	    :nav_state_rth_hover_prior_to_landing,
+	    :nav_state_rth_finishing,
+	    :nav_state_rth_finished,
+	    :nav_state_rth_2d_initialize,
+	    :nav_state_rth_3d_initialize,
+	    :nav_state_rth_2d_head_home,
+	    :nav_state_rth_3d_head_home,
+	    :nav_state_rth_3d_climb_to_safe_alt
 	  13
-	when :nav_state_rth_landing, :nav_state_waypoint_rth_land,:nav_state_emergency_landing_initialize,:nav_state_emergency_landing_in_progress, :nav_state_emergency_landing_finished
+	when :nav_state_rth_landing,
+	    :nav_state_rth_3d_landing,
+	    :nav_state_waypoint_rth_land,
+	    :nav_state_emergency_landing_initialize,
+	    :nav_state_emergency_landing_in_progress,
+	    :nav_state_emergency_landing_finished
 	  15
-	when :nav_state_waypoint_initialize, :nav_state_waypoint_pre_action, :nav_state_waypoint_in_progress, :nav_state_waypoint_reached, :nav_state_waypoint_next, :nav_state_waypoint_finished
+	when :nav_state_waypoint_initialize,
+	    :nav_state_waypoint_pre_action,
+	    :nav_state_waypoint_in_progress,
+	    :nav_state_waypoint_reached,
+	    :nav_state_waypoint_next,
+	    :nav_state_waypoint_finished
 	  10
 	else
 	  19
@@ -355,7 +379,6 @@ def encode_nav r,inavers
 		:nav_state_rth_3d_climb_to_safe_alt,
 		:nav_state_rth_climb_to_safe_alt
 	      1
-
 	    when :nav_state_rth_3d_hover_prior_to_landing,
 		:nav_state_rth_hover_prior_to_landing
 	      8
@@ -365,7 +388,6 @@ def encode_nav r,inavers
 		:nav_state_rth_landing,
 		:nav_state_rth_3d_finishing
 	      9
-
 	    when :nav_state_waypoint_rth_land,
 		:nav_state_emergency_landing_finished
 	      10

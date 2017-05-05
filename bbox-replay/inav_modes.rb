@@ -33,11 +33,13 @@ end
 
 gitinfo = gitinfos[idx - 1]
 
-inavers=nil
+iv=nil
 if m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \(([0-9A-Fa-f]{7,})\) (\S+)/)
-  inavers = [m[1],m[2],m[3]].join('.')
+  iv = [m[1],m[2],m[3]].join('.')
 end
-inavers = '1.2.0' if inavers.nil?
+
+inavers=(STATE_EQ[iv] || iv || "1.3.0")
+STDERR.puts "iv = #{iv} state vers = #{inavers}"
 
 
 cmd = "blackbox_decode"
