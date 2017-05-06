@@ -2733,16 +2733,27 @@ public class MWPlanner : Gtk.Application {
 
         if(errs == true)
         {
-            stdout.printf("Error on cmd %s %d\n", cmd.to_string(), cmd);
+            lastrx = lastok = nticks;
+            MWPLog.message("Error on cmd %s %d\n", cmd.to_string(), cmd);
             switch(cmd)
             {
                 case MSP.Cmds.NAV_CONFIG:
                     navcap = NAVCAPS.NONE;
                     break;
                 case MSP.Cmds.API_VERSION:
-                case MSP.Cmds.FC_VARIANT:
-                case MSP.Cmds.FC_VERSION:
                     queue_cmd(MSP.Cmds.BOXNAMES, null,0);
+                    run_queue();
+                    break;
+                case MSP.Cmds.IDENT:
+                    queue_cmd(MSP.Cmds.API_VERSION, null,0);
+                    run_queue();
+                    break;
+                case MSP.Cmds.MISC:
+                    queue_cmd(MSP.Cmds.STATUS,null,0);
+                    run_queue();
+                    break;
+                case  MSP.Cmds.WP_GETINFO:
+                    run_queue();
                     break;
                 default:
                     break;
