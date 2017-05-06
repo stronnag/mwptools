@@ -52,7 +52,8 @@ public class MWSerial : Object
 
     public enum Cmds
     {
-        IDENT=100,
+        API_VERSION=1,
+        IDENT = 100,
         CALIBRATE_ACC=205,
         CALIBRATE_MAG=206
     }
@@ -971,15 +972,21 @@ public class MWSerial : Object
                 ocount--;
             }
         } while(!available && ocount != 0);
+
+        message("Got %s\n", devname);
         if(available)
         {
             ResCode res = 0;
-            uint8 cmd;
+            MWSerial.Cmds cmd  = Cmds.IDENT;
             uint8 [] raw;
+            oc = 0;
             do
             {
-                send_msp(Cmds.IDENT, null, 0);
+                send_msp(cmd, null, 0);
                 res =  read_msp(out cmd, out raw);
+                if(oc == 0)
+                    cmd = Cmds.API_VERSION;
+                oc++;
             } while (res != ResCode.OK);
             message("Ready ...\n");
             if(docals)
@@ -1050,6 +1057,7 @@ public class MWSerial : Object
         {
             message("Set defaults\n");
             write("defaults\n");
+            Thread.usleep(1000*1000);
             close();
             Thread.usleep(2500000);
             try_open(docals);
