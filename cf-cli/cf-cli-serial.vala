@@ -973,20 +973,17 @@ public class MWSerial : Object
             }
         } while(!available && ocount != 0);
 
-        message("Got %s\n", devname);
+        message("Connected %s\n", devname);
         if(available)
         {
             ResCode res = 0;
-            MWSerial.Cmds cmd  = Cmds.IDENT;
+            var cmd = Cmds.API_VERSION;
             uint8 [] raw;
             oc = 0;
             do
             {
                 send_msp(cmd, null, 0);
                 res =  read_msp(out cmd, out raw);
-                if(oc == 0)
-                    cmd = Cmds.API_VERSION;
-                oc++;
             } while (res != ResCode.OK);
             message("Ready ...\n");
             if(docals)
