@@ -277,7 +277,6 @@ def encode_stats r,inavers,armed=1
   sts = case INAV_STATES[inavers][r[:navstate].to_i]
 	when :nav_state_undefined,:nav_state_idle,
 	    :nav_state_waypoint_finished
-
 	  0 # get from flightmode
 	when :nav_state_althold_initialize,
 	    :nav_state_althold_in_progress
@@ -327,7 +326,7 @@ def encode_stats r,inavers,armed=1
   msg
 end
 
-@xs=-1
+#@xs=-1
 
 def encode_nav r,inavers
   msg='$TN'
@@ -404,8 +403,8 @@ def encode_nav r,inavers
 	      0
 	    end
 
-  STDERR.puts "state #{r[:navstate].to_i} #{INAV_STATES[inavers][r[:navstate].to_i]}" if INAV_STATES[inavers][r[:navstate].to_i] != @xs
-  @xs = INAV_STATES[inavers][r[:navstate].to_i]
+#  STDERR.puts "state #{r[:navstate].to_i} #{INAV_STATES[inavers][r[:navstate].to_i]}" if INAV_STATES[inavers][r[:navstate].to_i] != @xs
+#  @xs = INAV_STATES[inavers][r[:navstate].to_i]
 
   navact = case gpsmode
 	   when 3
