@@ -3937,6 +3937,7 @@ public class MWPlanner : Gtk.Application {
         if (lat == 0.0 && lon == 0.0)
         {
             want_special = 0;
+            last_ltmf = 0xff;
             return;
         }
 
@@ -4487,6 +4488,7 @@ public class MWPlanner : Gtk.Application {
         have_mspradio = false;
         clear_sensor_array();
         nticks = lastrx = lastok = 0;
+        last_ltmf = 0xff;
         ls.set_mission_speed(conf.nav_speed);
     }
 

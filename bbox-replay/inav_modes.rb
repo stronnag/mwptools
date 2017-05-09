@@ -66,7 +66,7 @@ IO.popen(cmd,'r') do |p|
       end
       nstate = c[:navstate].to_i
       as = INAV_STATES[inavers][c[:navstate].to_i].to_s
-      astate = (as||("State=%d" % nstate))
+      astate = (as) ? "#{as} (#{nstate})" : "State=%d" % nstate
       puts ["%6.1f" % ts, "(%6.1f)" % xts, astate].join("\t")
     end
   end

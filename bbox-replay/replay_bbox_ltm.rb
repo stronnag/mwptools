@@ -275,7 +275,9 @@ def encode_stats r,inavers,armed=1
   sts = nil
 
   sts = case INAV_STATES[inavers][r[:navstate].to_i]
-	when :nav_state_undefined,:nav_state_idle
+	when :nav_state_undefined,:nav_state_idle,
+	    :nav_state_waypoint_finished
+
 	  0 # get from flightmode
 	when :nav_state_althold_initialize,
 	    :nav_state_althold_in_progress
@@ -308,8 +310,7 @@ def encode_stats r,inavers,armed=1
 	    :nav_state_waypoint_pre_action,
 	    :nav_state_waypoint_in_progress,
 	    :nav_state_waypoint_reached,
-	    :nav_state_waypoint_next,
-	    :nav_state_waypoint_finished
+	    :nav_state_waypoint_next
 	  10
 	else
 	  19
@@ -325,6 +326,8 @@ def encode_stats r,inavers,armed=1
   msg << sl << mksum(sl)
   msg
 end
+
+@xs=-1
 
 def encode_nav r,inavers
   msg='$TN'
@@ -395,14 +398,14 @@ def encode_nav r,inavers
 		:nav_state_waypoint_pre_action,
 		:nav_state_waypoint_in_progress,
 		:nav_state_waypoint_reached,
-		:nav_state_waypoint_next,
-		:nav_state_waypoint_finished
+		:nav_state_waypoint_next
 	      5
 	    else
 	      0
 	    end
 
-#  STDERR.puts "Map state #{r[:navstate].to_i} #{INAV_STATES[inavers][r[:navstate].to_i]} => zero"   if navmode == 0 && INAV_STATES[inavers][r[:navstate].to_i] != :nav_state_idle
+  STDERR.puts "state #{r[:navstate].to_i} #{INAV_STATES[inavers][r[:navstate].to_i]}" if INAV_STATES[inavers][r[:navstate].to_i] != @xs
+  @xs = INAV_STATES[inavers][r[:navstate].to_i]
 
   navact = case gpsmode
 	   when 3
