@@ -617,7 +617,6 @@ public class MWPlanner : Gtk.Application {
     public static unowned string ulang;
     private static bool ignore_3dr = false;
 
-    private static string sndstr;
     private static string rrstr;
     private int nrings = 0;
     private double ringint = 0;
@@ -655,7 +654,6 @@ public class MWPlanner : Gtk.Application {
         { "offline", 0, 0, OptionArg.NONE, out offline, "force offline proxy mode", null},
         { "n-points", 'S', 0, OptionArg.INT, out stack_size, "Number of points shown in GPS trail", "INT"},
         { "rings", 0, 0, OptionArg.STRING, out rrstr, "Range rings (number, interval(m)), e.g. --rings 10,20", null},
-        { "sound-daemon", 0, 0, OptionArg.STRING, out sndstr, "sound daemon", null},
         {null}
     };
 
@@ -753,9 +751,6 @@ public class MWPlanner : Gtk.Application {
 
         if(conf.mediap.length == 0)
             use_gst = true;
-
-        if(sndstr != null && sndstr.length < 2)
-            sndstr = null;
 
         if(rrstr != null)
         {
@@ -4356,8 +4351,7 @@ public class MWPlanner : Gtk.Application {
         {
             if(audio_on /*&& (sflags != 0)*/)
             {
-                navstatus.logspeak_init(conf.evoice, (conf.uilang == "ev"),
-                                        sndstr);
+                navstatus.logspeak_init(conf.evoice, (conf.uilang == "ev"));
                 spktid = Timeout.add_seconds(conf.speakint, () => {
                         if(replay_paused == false)
                             navstatus.announce(sflags, conf.recip);

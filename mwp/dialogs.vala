@@ -17,8 +17,9 @@
  */
 
 
-extern void espeak_init(string voice);
-extern void espeak_say(string text);
+extern int speech_init(string voice);
+extern void speech_say(string text);
+//extern void speech_terminate();
 
 public class Units :  GLib.Object
 {
@@ -1560,38 +1561,18 @@ public class NavStatus : GLib.Object
         volt_update("n/a",-1, 0f,true);
     }
 
-    public void logspeak_init (string? voice, bool use_en = false,
-                               string? espawn = null)
+    public void logspeak_init (string? voice, bool use_en = false)
     {
         if(vinit == false)
         {
             efdin=0;
             vinit = true;
-            if(espawn == null)
-            {
-                if(voice == null)
-                    voice = "default";
-                espeak_init(voice);
-            }
-            else
-            {
-                var args = espawn.split(" ");
-                foreach(var a in args)
-                    MWPLog.message("spawn \"%s\"\n", a);
-                try
-                {
-                    Process.spawn_async_with_pipes ("/", args, null,
-                                                    SpawnFlags.SEARCH_PATH|
-                                                    SpawnFlags.STDOUT_TO_DEV_NULL,
-                                                    null, null, out efdin,
-                                                    null, null);
-                } catch (Error e)
-                {
-                    MWPLog.message("spawn \"%s\", %s\n", espawn, e.message);
-                }
-            }
+            if(voice == null)
+                voice = "default";
+            var si = speech_init(voice);
+            MWPLog.message("Using %s for speech\n",
+                           (si == 0) ? "espeak" : (si == 1) ? "speechd" : "none");
         }
-
         if (mt != null)
         {
             logspeak_close();
@@ -1818,7 +1799,7 @@ public class AudioThread : Object {
                             Posix.write(efd, "\r\n", 2);
                         }
                         else
-                            espeak_say(s);
+                            speech_say(s);
 //                        MWPLog.message("say %d \"%s\"\n", efd, s);
                     }
                 }
