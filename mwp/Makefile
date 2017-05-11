@@ -7,7 +7,7 @@ APPS=mwp
 include ../common.mk
 
 GST ?= 1.0
-ifdef USE_SPEECHD
+ifeq (1,$(USE_SPEECHD))
 SPEECHINC=-X -I/usr/include/speech-dispatcher -X -DUSE_SPEECHD
 SPEECHLIB=-X -lspeechd
 else
