@@ -45,7 +45,8 @@ end
 delok = false
 sport = Serial.new serdev,baud
 sfd = sport.getfd
-
+xfsize = 0
+stm = 0
 sio = IO.new(sfd)
 
 sport.write "#"
@@ -58,6 +59,8 @@ unless x_erase
   if res && res.length == 2
     fsize = res[1].to_i
     puts "Size = #{fsize}"
+    xfsize = fsize
+    stm = Time.now
     if fsize > 0
       rbytes = 0
       sport.set_vtime 5
@@ -93,6 +96,7 @@ unless x_erase
     end
   end
 end
+etm = Time.now
 puts
 
 if x_erase || (delok && erase)
@@ -102,6 +106,13 @@ if x_erase || (delok && erase)
   puts "Done"
 end
 
+if xfsize > 0
+  et = etm - stm
+  if et > 0
+    rate = xfsize / et
+    puts "Got %d bytes in %.1fs %.1f b/s" % [xfsize, et, rate]
+  end
+end
 puts "Exiting"
 sport.write "exit\n"
 sio.expect("Rebooting")
