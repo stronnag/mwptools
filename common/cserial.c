@@ -34,35 +34,58 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
+#ifdef __linux__
+#include <linux/serial.h>
+#endif
 
 void flush_serial(int fd)
 {
     tcflush(fd, TCIOFLUSH);
 }
 
-void set_fd_speed(int fd, int baudrate)
+
+static int rate_to_constant(int baudrate) {
+#define B(x) case x: return B##x
+    switch(baudrate) {
+        B(50);     B(75);     B(110);    B(134);    B(150);
+        B(200);    B(300);    B(600);    B(1200);   B(1800);
+        B(2400);   B(4800);   B(9600);   B(19200);  B(38400);
+        B(57600);  B(115200); B(230400); B(460800); B(500000);
+        B(576000); B(921600); B(1000000);B(1152000);B(1500000);
+	default: return 0;
+    }
+#undef B
+}
+
+void set_fd_speed(int fd, int rate)
 {
     struct termios tio;
-    memset (&tio, 0, sizeof(tio));
-    tcgetattr(fd, &tio);
-    switch (baudrate)
+    int speed = 0;
+    speed = rate_to_constant(rate);
+#ifdef __linux__
+    if(speed == 0)
     {
-        case 1200:   baudrate=B1200; break;
-        case 2400:   baudrate=B2400; break;
-        case 4800:   baudrate=B4800; break;
-        case 9600:   baudrate=B9600; break;
-        case 19200:  baudrate=B19200; break;
-        case 38400:  baudrate=B38400; break;
-        case 57600:  baudrate=B57600; break;
-        case 115200: baudrate=B115200; break;
-        case 230400: baudrate=B230400; break;
-        case 460800: baudrate=B460800; break;
-        case 921600: baudrate=B921600; break;
-        default: baudrate=B115200; break;
+#include <asm/termios.h>
+#include <asm/ioctls.h>
+        struct termios2 t;
+        int res;
+        res = ioctl(fd, TCGETS2, &t);
+        fprintf(stderr,"ioctl get %d %d\n", rate, res);
+        t.c_ospeed = t.c_ispeed = rate;
+	t.c_cflag &= ~CBAUD;
+	t.c_cflag |= BOTHER;
+	res = ioctl(fd, TCSETS2, &t);
+        fprintf(stderr,"ioctl set %d\n", res);
     }
-    cfsetispeed(&tio,baudrate);
-    cfsetospeed(&tio,baudrate);
-    tcsetattr(fd,TCSANOW,&tio);
+#endif
+    if (speed != 0)
+    {
+        fcntl(fd, F_SETFL, 0);
+        tcgetattr(fd, &tio);
+        cfsetispeed(&tio,speed);
+        cfsetospeed(&tio,speed);
+        tcsetattr(fd,TCSANOW,&tio);
+    }
 }
 
 int open_serial(char *device, uint baudrate)
