@@ -20,7 +20,7 @@ ifeq ($(.SHELLSTATUS),0)
 endif
 
 ifdef SPK
- OPTS += -X -ldl
+  OPTS += -X -ldl
 endif
 
 all: $(APPS)
@@ -38,7 +38,7 @@ LOPTS=-X -lm
 
 mwp: $(SRCS) $(COMMON)
 	./mkvers.sh
-	$(VALAC) $(DOPTS) $(OPTS) $(PKGS) -o $@  $^ $(LOPTS)
+	$(VALAC) $(DOPTS) $(SPK) $(OPTS) $(PKGS) -o $@  $^ $(LOPTS)
 
 clean:
 	rm -f mwp *~ *.vala.c
