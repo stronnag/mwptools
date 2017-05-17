@@ -326,6 +326,13 @@
       <description>Directory for log files (for replay)</description>
     </key>
 
+    <key name="speech-api" type="s">
+      <default>"espeak"</default>
+      <summary>API for speech synthesis</summary>
+      <description>espeak or speechd. Only change this is you know you
+      have the required development files at build time</description>
+    </key>
+
     <key name="max-home-delta" type="d">
       <default>2.5</default>
       <summary>home position delta (m)</summary>

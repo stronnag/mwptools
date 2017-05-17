@@ -56,6 +56,11 @@ then
   stty -F $DEV0 raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon
   echo -n 'R' >$DEV0
   sleep 0.2
+  if [ $SPEED -ne 115200 ]
+  then
+    SPEED=115200
+    stty -F $DEV0 raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon
+  fi
 fi
 
 if [ -n "$HEX" ]

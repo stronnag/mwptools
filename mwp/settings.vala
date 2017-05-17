@@ -77,7 +77,7 @@ public class MWPSettings : GLib.Object
     public string logpath {get; private set; default=null;}
     public double max_home_delta {get; set; default=2.5;}
     public bool ignore_nm {get; set; default=false;}
-
+    public string speech_api {get; private set; default=null;}
     public signal void settings_update (string s);
 
     public MWPSettings()
@@ -258,6 +258,13 @@ public class MWPSettings : GLib.Object
         if(s == null || s == "max-home-delta")
         {
             max_home_delta = settings.get_double ("max-home-delta");
+        }
+
+        if(s == null || s == "speech-api")
+        {
+            speech_api = settings.get_string ("speech-api");
+            if(speech_api == "")
+                speech_api = null;
         }
     }
 

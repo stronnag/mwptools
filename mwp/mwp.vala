@@ -26,6 +26,7 @@ extern double get_locale_double(string str);
 extern int atexit(VoidFunc func);
 extern string mwpvers;
 extern int cf_pipe(int *fds);
+extern void speech_set_api(int a);
 
 [DBus (name = "org.freedesktop.NetworkManager")]
 interface NetworkManager : GLib.Object {
@@ -718,7 +719,6 @@ public class MWPlanner : Gtk.Application {
 
     public override void activate ()
     {
-
         base.startup();
         wpmgr = WPMGR();
         mwvar = MWChooser.fc_from_arg0();
@@ -726,6 +726,11 @@ public class MWPlanner : Gtk.Application {
 
         conf = new MWPSettings();
         conf.read_settings();
+
+        if(conf.speech_api == "espeak")
+            speech_set_api(0);
+        else if (conf.speech_api == "speechd")
+            speech_set_api(1);
 
         ulang = Intl.setlocale(LocaleCategory.NUMERIC, "");
 

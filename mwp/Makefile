@@ -7,12 +7,20 @@ APPS=mwp
 include ../common.mk
 
 GST ?= 1.0
-ifeq (1,$(USE_SPEECHD))
-SPEECHINC=-X -I/usr/include/speech-dispatcher -X -DUSE_SPEECHD
-SPEECHLIB=-X -lspeechd
-else
-SPEECHINC=-X -DUSE_ESPEAK
-SPEECHLIB=-X -lespeak
+
+SPK=
+ES1 := $(shell espeak --version)
+ifeq ($(.SHELLSTATUS),0)
+ SPK += -X -DUSE_ESPEAK
+endif
+
+ES2 := $(shell pkg-config --exists speech-dispatcher)
+ifeq ($(.SHELLSTATUS),0)
+ SPK += -X -DUSE_SPEECHD
+endif
+
+ifdef SPK
+ OPTS += -X -ldl
 endif
 
 all: $(APPS)
@@ -23,8 +31,7 @@ COMMON=../common/btdev.c ../common/cserial.c ../common/mwp_xml.vala ../common/se
 
 PKGS= --pkg gtk+-3.0 --pkg atk --pkg clutter-1.0 --pkg champlain-gtk-0.12 --pkg champlain-0.12 --pkg libxml-2.0 --pkg gio-2.0 --pkg posix --pkg clutter-gtk-1.0 --pkg gdl-3.0 --pkg pango --pkg cairo --pkg libsoup-2.4 --pkg linux --pkg gstreamer-$(GST) --pkg vte-$(VTEVERS)
 
-OPTS+=$(SPEECHINC)
-LOPTS=$(SPEECHLIB) -X -lm
+LOPTS=-X -lm
 
 #mwp-gresources.c: mwp-gresources.xml mwp.ui pixmaps/mwp_icon.svg
 #	glib-compile-resources --target=$@ --generate-source  mwp-gresources.xml

@@ -18,7 +18,7 @@
 
 extern int connect_bt_device (string dev);
 extern int open_serial(string dev, int baudrate);
-extern void set_fd_speed(int fd, int baudrate);
+extern int set_fd_speed(int fd, int baudrate);
 extern void close_serial(int fd);
 extern void flush_serial(int fd);
 extern unowned string get_error_text(int err, uint8[] buf, size_t len);
@@ -321,7 +321,6 @@ public class MWSerial : Object
                     rate = int.parse(parts[1]);
                 }
                 fd = open_serial(device, (int)rate);
-                setup_fd((int)rate);
             }
         }
 

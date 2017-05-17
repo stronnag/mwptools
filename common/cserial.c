@@ -57,35 +57,36 @@ static int rate_to_constant(int baudrate) {
 #undef B
 }
 
-void set_fd_speed(int fd, int rate)
+int set_fd_speed(int fd, int rate)
 {
     struct termios tio;
+    int res;
     int speed = 0;
     speed = rate_to_constant(rate);
+
 #ifdef __linux__
     if(speed == 0)
     {
 #include <asm/termios.h>
 #include <asm/ioctls.h>
         struct termios2 t;
-        int res;
-        res = ioctl(fd, TCGETS2, &t);
-        fprintf(stderr,"ioctl get %d %d\n", rate, res);
-        t.c_ospeed = t.c_ispeed = rate;
-	t.c_cflag &= ~CBAUD;
-	t.c_cflag |= BOTHER;
-	res = ioctl(fd, TCSETS2, &t);
-        fprintf(stderr,"ioctl set %d\n", res);
+        if((res = ioctl(fd, TCGETS2, &t)) != -1)
+        {
+            t.c_ospeed = t.c_ispeed = rate;
+            t.c_cflag &= ~CBAUD;
+            t.c_cflag |= BOTHER;
+            res = ioctl(fd, TCSETS2, &t);
+        }
     }
 #endif
     if (speed != 0)
     {
-        fcntl(fd, F_SETFL, 0);
         tcgetattr(fd, &tio);
-        cfsetispeed(&tio,speed);
-        cfsetospeed(&tio,speed);
+        if((res = cfsetispeed(&tio,speed)) != -1)
+            res = cfsetospeed(&tio,speed);
         tcsetattr(fd,TCSANOW,&tio);
     }
+    return res;
 }
 
 int open_serial(char *device, uint baudrate)
@@ -101,7 +102,11 @@ int open_serial(char *device, uint baudrate)
         tio.c_cc[VTIME] = 0;
         tio.c_cc[VMIN] = 0;
         tcsetattr(fd,TCSANOW,&tio);
-        set_fd_speed(fd, baudrate);
+        if(set_fd_speed(fd, baudrate) == -1)
+        {
+            close(fd);
+            fd = -1;
+        }
     }
     return fd;
 }

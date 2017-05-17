@@ -24,6 +24,7 @@ Encoding.default_external = Encoding::BINARY
 serdev="/dev/ttyUSB0"
 ofile=Time.now.strftime "bblog_%F%H%M%S.TXT"
 baud = 115200
+sbaud=nil
 erase= false
 x_erase = false
 
@@ -34,6 +35,7 @@ ARGV.options do |opt|
   opt.on('-E','--erase-only'){x_erase=true}
   opt.on('-o','--output=FILE'){|o| ofile=o}
   opt.on('-b','--baud=RATE',Integer){|o|baud=o}
+  opt.on('-B','--super-baud=RATE',Integer){|o|sbaud=o}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
     opt.parse!
@@ -43,15 +45,44 @@ ARGV.options do |opt|
 end
 
 delok = false
-sport = Serial.new serdev,baud
-sfd = sport.getfd
+defser = nil
 xfsize = 0
 stm = 0
+
+sport = Serial.new serdev,baud
+sfd = sport.getfd
 sio = IO.new(sfd)
 
 sport.write "#"
 res = sio.expect("#",10)
 abort "Failed to read FC" if res.nil?
+
+if sbaud
+  puts "Changing baud rate to #{sbaud}\n"
+  sport.write "serial\n"
+  res = sio.expect("# ",5)
+  if m=res[0].match(/.*(serial 0 \d+ \d+ \d+ \d+ \d+)/)
+    defser = m[0]
+    params = m[0].split
+    params[3] = sbaud
+    ns = params.join(' ')
+    puts "setting #{ns}"
+    sport.write("#{ns}\n")
+    res = sio.expect("# ",1)
+    puts "Got #{res.inspect}"
+    sport.write "save\n"
+    sio.expect("Rebooting")
+    sport.close
+    sleep 4
+    sport = Serial.new serdev,sbaud
+    sfd = sport.getfd
+    sio = IO.new(sfd)
+    sport.write "#"
+    res = sio.expect("#",10)
+    abort "Failed to read FC" if res.nil?
+    puts "Reopened at #{sbaud} #{res.inspect}\n"
+  end
+end
 
 sport.write "flash_info\n"
 res = sio.expect(/usedSize=(\d+)\r/, 5)
@@ -114,5 +145,12 @@ if xfsize > 0
   end
 end
 puts "Exiting"
-sport.write "exit\n"
+
+if defser
+  sport.write("#{defser}\n")
+  res = sio.expect("# ",5)
+  sport.write "save\n"
+else
+  sport.write "exit\n"
+end
 sio.expect("Rebooting")
