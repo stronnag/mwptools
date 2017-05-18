@@ -327,6 +327,11 @@
     </key>
 
     <key name="speech-api" type="s">
+      <choices>
+        <choice value='none'/>
+        <choice value='espeak'/>
+        <choice value='speechd'/>
+      </choices>
       <default>"espeak"</default>
       <summary>API for speech synthesis</summary>
       <description>espeak or speechd. Only change this is you know you
