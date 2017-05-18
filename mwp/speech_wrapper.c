@@ -94,8 +94,7 @@ static int sd_init(char *voice)
     if (handle)
     {
         spd_open2_t spdo2 = dlsym(handle,"spd_open2");
-        spd = (*spdo2)("mwp", NULL, NULL, SPD_MODE_THREADED,
-                       SPD_METHOD_UNIX_SOCKET, 1, NULL);
+        spd = (*spdo2)("mwp", NULL, NULL, SPD_MODE_THREADED, NULL, 1, NULL);
         if(spd)
         {
             spd_set_synthesis_voice_t sssv;

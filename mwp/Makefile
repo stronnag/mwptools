@@ -20,7 +20,9 @@ ifeq ($(ES2),0)
 endif
 
 ifdef SPK
-  OPTS += -X -ldl
+  ifeq ($(XOS),Linux)
+    OPTS += -X -ldl
+  endif
 endif
 
 all: $(APPS)

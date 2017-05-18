@@ -26,3 +26,8 @@ ruby2.2
 You must install the blackbox utilities
 https://github.com/cleanflight/blackbox-tools/ in order to replay
 blackbox logs.
+
+if you want to use speech-dispatcher instead of espeak for voice
+synthesis (or have a choice of either)
+
+libspeechd-dev
