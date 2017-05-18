@@ -9,13 +9,13 @@ include ../common.mk
 GST ?= 1.0
 
 SPK=
-ES1 := $(shell espeak --version)
-ifeq ($(.SHELLSTATUS),0)
+ES1 := $(shell espeak --version > /dev/null; echo $$?)
+ifeq ($(ES1),0)
  SPK += -X -DUSE_ESPEAK
 endif
 
-ES2 := $(shell pkg-config --exists speech-dispatcher)
-ifeq ($(.SHELLSTATUS),0)
+ES2 := $(shell pkg-config --exists speech-dispatcher; echo $$?)
+ifeq ($(ES2),0)
  SPK += -X -DUSE_SPEECHD
 endif
 
