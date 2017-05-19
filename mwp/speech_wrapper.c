@@ -18,12 +18,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <dlfcn.h>
+#include <glib.h>
+#include <gmodule.h>
+static GModule *handle;
 
 #ifdef USE_ESPEAK
 #include <espeak/speak_lib.h>
-
-static void *handle;
 
 typedef int (*espeak_synth_t)(const void *, size_t, unsigned int, espeak_POSITION_TYPE, unsigned int, unsigned int, unsigned int*, void*);
 typedef void (*espeak_synchronize_t)(void);
@@ -36,21 +36,27 @@ static espeak_synchronize_t esh;
 static int ep_init(char *voice)
 {
     int res = -1;
-    handle = dlopen("libespeak.so", RTLD_LAZY);
-    if (handle)
+    gchar * modname;
+    modname = g_module_build_path(NULL, "espeak");
+    if(modname)
     {
-        espeak_initialize_t esi;
-        esi = dlsym(handle, "espeak_Initialize");
-        res = (*esi)(AUDIO_OUTPUT_PLAYBACK,0, NULL, 0);
-        if(res != -1)
+        handle = g_module_open(modname, G_MODULE_BIND_LAZY);
+        if (handle)
         {
-            espeak_setvoicebyname_t esv;
-            esv= dlsym(handle, "espeak_SetVoiceByName");
-            ess = dlsym(handle, "espeak_Synth");
-            esh = dlsym(handle, "espeak_Synchronize");
-            (*esv)(voice);
-            res = 0;
+            espeak_initialize_t esi;
+            if(g_module_symbol(handle, "espeak_Initialize", (gpointer *)&esi))
+                res = (*esi)(AUDIO_OUTPUT_PLAYBACK,0, NULL, 0);
+            if(res != -1)
+            {
+                espeak_setvoicebyname_t esv;
+                if(g_module_symbol(handle, "espeak_SetVoiceByName",(gpointer *)&esv))
+                    (*esv)(voice);
+                if(g_module_symbol(handle, "espeak_Synth",(gpointer *)&ess) &&
+                   g_module_symbol(handle, "espeak_Synchronize",(gpointer *)&esh))
+                    res = 0;
+            }
         }
+        g_free(modname);
     }
     return res;
 }
@@ -63,9 +69,7 @@ static void ep_say(char *text)
 #endif
 
 #ifdef USE_SPEECHD
-
 #include <speech-dispatcher/libspeechd.h>
-#include <glib.h>
 
 static SPDConnection *spd;
 static GMutex s_mutex;
@@ -90,31 +94,40 @@ static  spd_say_t ssay;
 static int sd_init(char *voice)
 {
     int ret=-1;
-    handle = dlopen("libspeechd.so", RTLD_LAZY);
-    if (handle)
+    gchar * modname;
+    modname = g_module_build_path(NULL, "speechd");
+    if(modname)
     {
-        spd_open2_t spdo2 = dlsym(handle,"spd_open2");
-        spd = (*spdo2)("mwp", NULL, NULL, SPD_MODE_THREADED, NULL, 1, NULL);
-        if(spd)
+        handle = g_module_open(modname, G_MODULE_BIND_LAZY);
+        if (handle)
         {
-            spd_set_synthesis_voice_t sssv;
-            spd_set_language_t ssl;
-            spd_set_volume_t ssv;
-            spd_set_notification_on_t ssno;
+            spd_open2_t spdo2;
+            if(g_module_symbol(handle,"spd_open2", (gpointer*)&spdo2))
+                spd = (*spdo2)("mwp", NULL, NULL, SPD_MODE_THREADED, NULL, 1, NULL);
+            if(spd)
+            {
+                spd_set_synthesis_voice_t sssv;
+                spd_set_language_t ssl;
+                spd_set_volume_t ssv;
+                spd_set_notification_on_t ssno;
 
-            ssl = dlsym(handle, "spd_set_language");
-            (*ssl)(spd,"en");
-            sssv = dlsym(handle, "spd_set_synthesis_voice");
-            (*sssv)(spd,voice);
-            ssv = dlsym(handle, "spd_set_volume");
-            (*ssv)(spd, -50);
-            ssno = dlsym(handle, "spd_set_notification_on");
-            spd->callback_end = spd->callback_cancel = end_of_speech;
-            (*ssno)(spd, SPD_END);
-            (*ssno)(spd, SPD_CANCEL);
-            ssay = dlsym(handle, "spd_say");
-            ret = 1;
+                if(g_module_symbol(handle, "spd_set_language",(gpointer*)&ssl))
+                    (*ssl)(spd,"en");
+                if (g_module_symbol(handle, "spd_set_synthesis_voice",(gpointer*)&sssv))
+                    (*sssv)(spd,voice);
+                if(g_module_symbol(handle, "spd_set_volume",(gpointer*)&ssv))
+                    (*ssv)(spd, -50);
+                if(g_module_symbol(handle, "spd_set_notification_on",(gpointer*)&ssno))
+                {
+                    spd->callback_end = spd->callback_cancel = end_of_speech;
+                    (*ssno)(spd, SPD_END);
+                    (*ssno)(spd, SPD_CANCEL);
+                }
+                if(g_module_symbol(handle, "spd_say",(gpointer*)&ssay))
+                    ret = 1;
+            }
         }
+        g_free(modname);
     }
     return ret;
 }

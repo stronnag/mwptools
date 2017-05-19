@@ -4354,9 +4354,13 @@ public class MWPlanner : Gtk.Application {
     {
         if (spktid == 0)
         {
-            if(audio_on /*&& (sflags != 0)*/)
+            if(audio_on)
             {
-                navstatus.logspeak_init(conf.evoice, (conf.uilang == "ev"));
+                string voice = conf.evoice;
+                if (voice == "default")
+                    voice = "en"; // thanks, espeak-ng
+
+                navstatus.logspeak_init(voice, (conf.uilang == "ev"));
                 spktid = Timeout.add_seconds(conf.speakint, () => {
                         if(replay_paused == false)
                             navstatus.announce(sflags, conf.recip);

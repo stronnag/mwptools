@@ -91,7 +91,7 @@
 
     <key name="espeak-voice" type="s">
       <summary>Default espeak voice</summary>
-      <default>"default"</default>
+      <default>"en"</default>
       <description>Default espeak voice (see espeak documentation)</description>
     </key>
 
