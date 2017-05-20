@@ -157,10 +157,22 @@ static void ss_say(char *t)
 static int (*_speech_init)(char *) = ss_init;
 static void (*_speech_say)(char *) = ss_say;
 
-void speech_set_api(int api)
+guchar get_speech_api_mask()
+{
+    guchar  api_mask = 0;
+#ifdef USE_ESPEAK
+    api_mask |= 1;
+#endif
+#ifdef USE_SPEECHD
+    api_mask |= 2;
+#endif
+    return api_mask;
+}
+
+void speech_set_api(guchar api)
 {
 #ifdef USE_ESPEAK
-    if(api == 0)
+    if(api == 1)
     {
         _speech_init = ep_init;
         _speech_say = ep_say;
@@ -168,7 +180,7 @@ void speech_set_api(int api)
     }
 #endif
 #ifdef USE_SPEECHD
-    if(api == 1)
+    if(api == 2)
     {
         _speech_init = sd_init;
         _speech_say = sd_say;

@@ -22,11 +22,12 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
+extern string mwpvers;
 extern double get_locale_double(string str);
 extern int atexit(VoidFunc func);
-extern string mwpvers;
 extern int cf_pipe(int *fds);
-extern void speech_set_api(int a);
+extern void speech_set_api(uint8 a);
+extern uint8 get_speech_api_mask();
 
 [DBus (name = "org.freedesktop.NetworkManager")]
 interface NetworkManager : GLib.Object {
@@ -727,10 +728,12 @@ public class MWPlanner : Gtk.Application {
         conf = new MWPSettings();
         conf.read_settings();
 
-        if(conf.speech_api == "espeak")
-            speech_set_api(0);
-        else if (conf.speech_api == "speechd")
-            speech_set_api(1);
+        var spapi = get_speech_api_mask();
+        if (spapi != 3)
+            spapi = (conf.speech_api == "espeak") ? 1 :
+                (conf.speech_api == "speechd") ? 2 : 0;
+
+        speech_set_api(spapi);
 
         ulang = Intl.setlocale(LocaleCategory.NUMERIC, "");
 
