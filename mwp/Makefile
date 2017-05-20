@@ -20,7 +20,7 @@ ifeq ($(ES2),0)
 endif
 
 ifdef SPK
-  OPTS += -X -lgmodule-2.0
+  OPTS += --pkg gmodule-2.0
 endif
 
 all: $(APPS)
