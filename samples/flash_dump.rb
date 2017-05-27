@@ -69,7 +69,6 @@ if sbaud
     puts "setting #{ns}"
     sport.write("#{ns}\n")
     res = sio.expect("# ",1)
-    puts "Got #{res.inspect}"
     sport.write "save\n"
     sio.expect("Rebooting")
     sport.close
@@ -80,51 +79,59 @@ if sbaud
     sport.write "#"
     res = sio.expect("#",10)
     abort "Failed to read FC" if res.nil?
-    puts "Reopened at #{sbaud} #{res.inspect}\n"
+    puts "Reopened at #{sbaud}\n"
   end
 end
 
 sport.write "flash_info\n"
 res = sio.expect(/usedSize=(\d+)\r/, 5)
+
+rbaud = (sbaud) ? sbaud : baud
+
 unless x_erase
-  if res && res.length == 2
-    fsize = res[1].to_i
-    puts "Size = #{fsize}"
-    xfsize = fsize
-    stm = Time.now
-    if fsize > 0
-      rbytes = 0
-      sport.set_vtime 5
-      sport.write("flash_read 0 #{fsize}\n")
-      res = sio.expect("flash_read 0 #{fsize}\r\nReading #{fsize} bytes at 0:\r\n",1)
-      if res
-	n = 0
-	rtim = 9999
-	dbuf = ''
-	loop do
-	  data = sio.read(256)
-	  unless data.nil? or data.length.zero?
-	    rsize = data.length
-	    rbytes += rsize
-	    rbytes = fsize if rbytes > fsize
-	    if n % 4 == 0
-	      rem = fsize - rbytes
-	      rtim = rem*10/baud
-	      pct = 100*rbytes/fsize
-	      print "\rread #{rbytes} / #{fsize} %3d%% %4ds\r" % [pct,rtim]
+  begin
+    if res && res.length == 2
+      fsize = res[1].to_i
+      puts "Size = #{fsize}"
+      xfsize = fsize
+      stm = Time.now
+      if fsize > 0
+	rbytes = 0
+	sport.set_vtime 5
+	sport.write("flash_read 0 #{fsize}\n")
+	res = sio.expect("flash_read 0 #{fsize}\r\nReading #{fsize} bytes at 0:\r\n",1)
+	if res
+	  n = 0
+	  rtim = 9999
+	  dbuf = ''
+	  loop do
+	    data = sio.read(4096)
+	    unless data.nil? or data.length.zero?
+	      rsize = data.length
+	      rbytes += rsize
+	      rbytes = fsize if rbytes > fsize
+	      if n % 4 == 0
+		rem = fsize - rbytes
+		rtim = rem*10/rbaud
+		pct = 100*rbytes/fsize
+		print "\rread #{rbytes} / #{fsize} %3d%% %4ds\r" % [pct,rtim]
+	      end
+	      n += 1
+	      dbuf << data
+	    else
+	      delok = ((fsize - rbytes) < 256)
+	      break
 	    end
-	    n += 1
-	    dbuf << data
-	  else
-	    delok = ((fsize - rbytes) < 256)
-	    break
 	  end
+	  File.open(ofile, "wb") {|fh| fh.write dbuf }
 	end
-	File.open(ofile, "wb") {|fh| fh.write dbuf }
+      else
+	delok = true
       end
-    else
-      delok = true
     end
+  rescue Exception => e
+    puts e.message
+    puts e.backtrace.inspect
   end
 end
 etm = Time.now

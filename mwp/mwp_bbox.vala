@@ -121,14 +121,14 @@ public class  BBoxDialog : Object
                                             out p_stderr);
 
 		// stderr:
-		IOChannel error = new IOChannel.unix_new (p_stderr);
-		error.add_watch ((IOCondition.IN|IOCondition.HUP),
-                                  (channel, condition) => {
-                        Gtk.TreeIter iter;
-                        try {
-                            if((condition & IOCondition.IN) == IOCondition.IN)
+            string loginfo = null;
+            IOChannel error = new IOChannel.unix_new (p_stderr);
+            error.add_watch ((IOCondition.IN|IOCondition.HUP),
+                             (channel, condition) => {
+                                 Gtk.TreeIter iter;
+                                 try {
+                                     if((condition & IOCondition.IN) == IOCondition.IN)
                             {
-                                string loginfo;
                                 IOStatus eos;
                                 eos = channel.read_to_end (out loginfo, null);
                                 if(eos == IOStatus.NORMAL)
@@ -187,7 +187,13 @@ public class  BBoxDialog : Object
                         }
                         else if (maxidx == -1)
                         {
+                            string tt;
+                            if(loginfo != null)
+                                tt = "blackbox_decode reports: %s".printf(loginfo);
+                            else
+                                tt = "Please use blackbox_decode to identify the problem with the log file";
                             bb_items.label = "No valid log detected";
+                            bb_items.set_tooltip_text(tt);
                             MWPCursor.set_normal_cursor(dialog);
                         }
                         else
