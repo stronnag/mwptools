@@ -1439,7 +1439,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">start</property>
-                <property name="ellipsize">start</property>
+                <property name="wrap">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>

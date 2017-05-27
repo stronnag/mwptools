@@ -187,13 +187,16 @@ public class  BBoxDialog : Object
                         }
                         else if (maxidx == -1)
                         {
-                            string tt;
+                            StringBuilder sb = new StringBuilder ();
+                            sb.append("No valid log detected.\n");
                             if(loginfo != null)
-                                tt = "blackbox_decode reports: %s".printf(loginfo);
+                            {
+                                sb.append("blackbox_decode says: ");
+                                sb.append(loginfo.strip());
+                            }
                             else
-                                tt = "Please use blackbox_decode to identify the problem with the log file";
-                            bb_items.label = "No valid log detected";
-                            bb_items.set_tooltip_text(tt);
+                                sb.append("Please use blackbox_decode to identify the problem with the log file");
+                            bb_items.label = sb.str;
                             MWPCursor.set_normal_cursor(dialog);
                         }
                         else
