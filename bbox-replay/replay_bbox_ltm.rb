@@ -47,6 +47,7 @@ LLFACT=10000000
 ALTFACT=100
 MINDELAY=0.001
 NORMDELAY=0.1
+$verbose = false
 
 BOARD_MAP ={
   "FURYF3" => "FYF3",
@@ -202,7 +203,9 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
   end
 
   inavers=(STATE_EQ[iv] || iv || "1.3.0")
-  STDERR.puts "iv = #{iv} state vers = #{inavers}"
+  if $verbose
+    STDERR.puts "iv = #{iv} state vers = #{inavers}"
+  end
   return inavers
 end
 
@@ -276,7 +279,9 @@ def encode_stats r,inavers,armed=1
 
   sts = case INAV_STATES[inavers][r[:navstate].to_i]
 	when :nav_state_undefined,:nav_state_idle,
-	    :nav_state_waypoint_finished
+	    :nav_state_waypoint_finished,
+	    :nav_state_launch_wait,
+	    :nav_state_launch_in_progress
 	  0 # get from flightmode
 	when :nav_state_althold_initialize,
 	    :nav_state_althold_in_progress
@@ -315,11 +320,16 @@ def encode_stats r,inavers,armed=1
 	  19
 	end
 
+  if $verbose && sts == 19
+    STDERR.puts "** STS 19 for #{INAV_STATES[inavers][r[:navstate].to_i]}\n"
+  end
+
+
   sts = (sts << 2) | armed
   if r[:failsafephase_flags].strip != 'IDLE'
-#    STDERR.puts "[#{r[:failsafephase_flags]}]"
     sts |= 2
   end
+
   rssi = r[:rssi].to_i * 254 / 1023
   sl = [(r[:vbatlatest_v].to_f*1000).to_i, 0, rssi, 0, sts].pack('S<S<CCC')
   msg << sl << mksum(sl)
@@ -403,8 +413,10 @@ def encode_nav r,inavers
 	      0
 	    end
 
-#  STDERR.puts "state #{r[:navstate].to_i} #{INAV_STATES[inavers][r[:navstate].to_i]}" if INAV_STATES[inavers][r[:navstate].to_i] != @xs
-#  @xs = INAV_STATES[inavers][r[:navstate].to_i]
+  if $verbose
+    STDERR.puts "state #{r[:navstate].to_i} #{INAV_STATES[inavers][r[:navstate].to_i]}" if INAV_STATES[inavers][r[:navstate].to_i] != @xs
+    @xs = INAV_STATES[inavers][r[:navstate].to_i]
+  end
 
   navact = case gpsmode
 	   when 3
@@ -498,6 +510,7 @@ ARGV.options do |opt|
   opt.on('-m','--use-imu-heading'){gpshd=2}
   opt.on('-f','--fast'){mindelay=true}
   opt.on('-d','--dump-headers'){dumph=true}
+  opt.on('-v','--verbose'){$verbose=true}
   opt.on('--fd=FD',Integer){|o| childfd=o}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin

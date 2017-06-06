@@ -27,11 +27,13 @@ public class MWPMarkers : GLib.Object
     public Champlain.Marker rthp = null;
     public Champlain.PathLayer hpath;
     private Champlain.PathLayer []rings;
+    private bool rth_land;
 
     private Gtk.Menu menu;
 
     public MWPMarkers(ListBox lb)
     {
+        rth_land = false;
         markers = new Champlain.MarkerLayer();
         path = new Champlain.PathLayer();
         hpath = new Champlain.PathLayer();
@@ -77,69 +79,72 @@ public class MWPMarkers : GLib.Object
                 lb.change_marker("RTH");
             });
         menu.add (item);
-            /*
-        item = new Gtk.MenuItem.with_label ("RTH & Land");
-        item.activate.connect (() => {
-                lb.change_marker("RTH", 1);
-            });
-        menu.add (item);
-            */
         menu.show_all();
+    }
+
+    public void set_rth_icon(bool iland)
+    {
+        rth_land = iland;
     }
 
     private void get_text_for(MSP.Action typ, string no, out string text,
                               out  Clutter.Color colour, bool nrth=false)
     {
+        string symb;
         switch (typ)
         {
+
             case MSP.Action.WAYPOINT:
                 if(nrth)
+                {
                     colour = { 0, 0xaa, 0xff, 0xc8};
+                        // nice to set different icon for land ⛳ or ⏬
+                    symb = (rth_land) ? "⏬WP" : "⏏WP";
+                }
                 else
+                {
+                    symb = "WP";
                     colour = { 0, 0xff, 0xff, 0xc8};
-                text = @"WP $no";
+                }
                 break;
 
             case MSP.Action.POSHOLD_TIME:
-                text = @"◷ $no"; // text = @"\u25f7 $no";
+                symb = "◷";
                 colour = { 152, 70, 234, 0xc8};
                 break;
 
             case MSP.Action.POSHOLD_UNLIM:
-                text = @"∞ $no"; // text = @"\u221e $no";
+                symb = "∞";
                 colour = { 0x4c, 0xfe, 0, 0xc8};
                 break;
 
             case MSP.Action.RTH:
-                text = @"⏏ $no"; // text = @"\u23cf $no";
+                symb = (rth_land) ? "⏬" : "⏏";
                 colour = { 0xff, 0x0, 0x0, 0xc8};
                 break;
 
             case MSP.Action.LAND:
-                text = @"♜ $no"; // text = @"\u265c $no";
+                symb = "♜";
                 colour = { 0xff, 0x9a, 0xf0, 0xc8};
                 break;
 
             case MSP.Action.JUMP:
-                text = @"⇒ $no"; // text = @"\u21d2 $no";
+                symb = "⇒";
                 colour = { 0xed, 0x51, 0xd7, 0xc8};
                 break;
 
             case MSP.Action.SET_POI:
             case MSP.Action.SET_HEAD:
-                 text = @"⌘ $no"; //text = @"\u2318 $no";
+                symb = "⌘";
                 colour = { 0xff, 0xfb, 0x2b, 0xc8};
                 break;
 
             default:
-                text = @"?? $no";
+                symb = "??";
                 colour = { 0xe0, 0xe0, 0xe0, 0xc8};
                 break;
         }
-        if(nrth)
-        {
-            text+= "⏏";
-        }
+        text = "%s %s".printf(symb, no);
     }
 
     public bool calc_rth_leg(out double extra)

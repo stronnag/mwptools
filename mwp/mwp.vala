@@ -607,7 +607,6 @@ public class MWPlanner : Gtk.Application {
     private uint last_tm = 0;
     private uint lastok = 0;
     private uint last_an = 0;
-    private uint last_sv = 0;
     private static bool offline = false;
     private static string rfile = null;
     private static string bfile = null;
@@ -729,13 +728,13 @@ public class MWPlanner : Gtk.Application {
         conf.read_settings();
 
         var spapi = get_speech_api_mask();
-        
+
         if (spapi == 3)
             spapi = (conf.speech_api == "espeak") ? 1 :
                 (conf.speech_api == "speechd") ? 2 : 0;
 
         MWPLog.message("Using speech api %d\n", spapi);
-        
+
         speech_set_api(spapi);
 
         ulang = Intl.setlocale(LocaleCategory.NUMERIC, "");
@@ -2057,20 +2056,6 @@ public class MWPlanner : Gtk.Application {
                 if (lastm - last_an > MAVINTVL)
                 {
                     last_an = lastm;
-                    mavc = 0;
-                }
-                else
-                {
-                    tcycle = (tcycle + 1) % requests.length;
-                    req = requests[tcycle];
-                }
-            }
-
-            if (req == MSP.Cmds.GPSSVINFO)
-            {
-                if (lastm - last_sv > MAVINTVL)
-                {
-                    last_sv = lastm;
                     mavc = 0;
                 }
                 else

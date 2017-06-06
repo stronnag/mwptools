@@ -105,6 +105,9 @@ public class ListBox : GLib.Object
                         m1 = 1;
                         MWPLog.message("Setting autoland for RTH\n");
                     }
+                    if(m1 == 1)
+                        mp.markers.set_rth_icon(true);
+
                     break;
                 default:
                     lastid++;
@@ -191,6 +194,7 @@ public class ListBox : GLib.Object
                 {
                     MWPLog.message("Remove Land from WP RTH\n");
                     w.p1 = 0;
+                    mp.markers.set_rth_icon(false);
                 }
                 wps += w;
             }
@@ -538,6 +542,12 @@ public class ListBox : GLib.Object
                      if(nwp < 1 || nwp >= iwp)
                          return;
                 }
+                if (typ == MSP.Action.RTH)
+                {
+                    var iland = int.parse(new_text);
+                    mp.markers.set_rth_icon(iland != 0);
+                }
+
                 list_validate(path,new_text,
                               WY_Columns.INT1,-1,65536.0,true);
             });
@@ -651,6 +661,9 @@ public class ListBox : GLib.Object
                 Value icell;
                 list_model.get_value (iter_val, WY_Columns.ACTION, out icell);
                 var typ = (MSP.Action)icell;
+                if (typ == MSP.Action.RTH)
+                    as_int = false; // force redraw
+
                 if (typ == MSP.Action.WAYPOINT)
                     d = InputParser.get_scaled_real(new_text,"s");
                 else
@@ -672,6 +685,7 @@ public class ListBox : GLib.Object
                 list_model.set_value (iter_val, colno, d);
                 mp.markers.add_list_store(this);
             }
+
             calc_mission();
         }
     }
