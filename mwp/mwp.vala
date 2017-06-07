@@ -1465,6 +1465,26 @@ public class MWPlanner : Gtk.Application {
         msp = new MWSerial();
         mq = new Queue<MQI?>();
 
+
+        build_deventry();
+        var te = dev_entry.get_child() as Gtk.Entry;
+        te.can_focus = true;
+        dev_entry.active = 0;
+        conbutton = builder.get_object ("button1") as Gtk.Button;
+        te.activate.connect(() => {
+                if(!msp.available)
+                    connect_serial();
+            });
+
+        verlab = builder.get_object ("verlab") as Gtk.Label;
+        fmodelab = builder.get_object ("fmode") as Gtk.Label;
+        validatelab = builder.get_object ("validated") as Gtk.Label;
+        armed_spinner = builder.get_object ("armed_spinner") as Gtk.Spinner;
+        typlab = builder.get_object ("typlab") as Gtk.Label;
+        gpslab = builder.get_object ("gpslab") as Gtk.Label;
+        labelvbat = builder.get_object ("labelvbat") as Gtk.Label;
+        conbutton.clicked.connect(() => { connect_serial(); });
+
         if (mission == null)
         {
             if(llstr != null)
@@ -1495,25 +1515,6 @@ public class MWPlanner : Gtk.Application {
         {
             load_file(mission);
         }
-
-        build_deventry();
-        var te = dev_entry.get_child() as Gtk.Entry;
-        te.can_focus = true;
-        dev_entry.active = 0;
-        conbutton = builder.get_object ("button1") as Gtk.Button;
-        te.activate.connect(() => {
-                if(!msp.available)
-                    connect_serial();
-            });
-
-        verlab = builder.get_object ("verlab") as Gtk.Label;
-        fmodelab = builder.get_object ("fmode") as Gtk.Label;
-        validatelab = builder.get_object ("validated") as Gtk.Label;
-        armed_spinner = builder.get_object ("armed_spinner") as Gtk.Spinner;
-        typlab = builder.get_object ("typlab") as Gtk.Label;
-        gpslab = builder.get_object ("gpslab") as Gtk.Label;
-        labelvbat = builder.get_object ("labelvbat") as Gtk.Label;
-        conbutton.clicked.connect(() => { connect_serial(); });
 
         msp.force4 = force4;
         msp.serial_lost.connect(() => { serial_doom(conbutton); });
