@@ -46,6 +46,7 @@ cmd = "blackbox_decode"
 cmd << " --index #{idx}"
 cmd << " --stdout"
 cmd << " " << bbox
+
 IO.popen(cmd,'r') do |p|
   csv = CSV.new(p, :col_sep => ",",
 		:headers => :true,

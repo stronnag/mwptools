@@ -48,6 +48,7 @@ ALTFACT=100
 MINDELAY=0.001
 NORMDELAY=0.1
 $verbose = false
+$vbatscale=1.0
 
 BOARD_MAP ={
   "FURYF3" => "FYF3",
@@ -331,7 +332,7 @@ def encode_stats r,inavers,armed=1
   end
 
   rssi = r[:rssi].to_i * 254 / 1023
-  sl = [(r[:vbatlatest_v].to_f*1000).to_i, 0, rssi, 0, sts].pack('S<S<CCC')
+  sl = [(r[:vbatlatest_v].to_f*$vbatscale*1000).to_i, 0, rssi, 0, sts].pack('S<S<CCC')
   msg << sl << mksum(sl)
   msg
 end
@@ -539,10 +540,13 @@ if autotyp && typ == 3
 end
 
 gitinfos=[]
+
 File.open(bbox,'rb') do |f|
   f.each do |l|
     if m = l.match(/^H Firmware revision:(.*)$/)
       gitinfos << m[1]
+    elsif m = l.match(/^H vbat_scale:(\d+)$/)
+      $vbatscale = m[1].to_f / 110.0
     end
   end
 end
