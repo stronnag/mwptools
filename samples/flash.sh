@@ -31,7 +31,7 @@ do
 done
 
 case $HEX in
-  *SPRACINGF3EVO.hex|*OMNIBUS*.hex)
+  *SPRACINGF*EVO.hex|*OMNIBUS*.hex)
     BIN=${HEX%%hex}bin
     IHEX=$HEX
     unset HEX

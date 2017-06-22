@@ -22,7 +22,7 @@ end
 Encoding.default_external = Encoding::BINARY
 
 serdev="/dev/ttyUSB0"
-ofile=Time.now.strftime "bblog_%F%H%M%S.TXT"
+ofile=Time.now.strftime "bblog_%F-%H%M%S.TXT"
 baud = 115200
 sbaud=nil
 erase= false
@@ -43,6 +43,8 @@ ARGV.options do |opt|
     puts opt ; exit
   end
 end
+
+abort "Unsupported super-baudrate" unless [nil, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 250000, 460800, 921600, 1000000, 1500000, 2000000].include?(sbaud)
 
 delok = false
 defser = nil
