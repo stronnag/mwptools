@@ -4800,7 +4800,7 @@ public class MWPlanner : Gtk.Application {
         var ms = new Mission ();
         if(ms.read_xml_file (fname) == true)
         {
-            if(craft != null)
+            if(armed == 0 && craft != null)
             {
                 markers.remove_rings(view);
                 craft.init_trail();
