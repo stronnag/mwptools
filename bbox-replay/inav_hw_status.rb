@@ -21,15 +21,15 @@ def mkmask
 end
 
 def hwstatus val
+  ret = 0
   vals={}
   0.upto(6) do |n|
     sv = val & 3
+    ret = -1 if sv > 1 or (n < 2 and sv != 1)
     vals[SENSORS[n]] = sv
     val = (val >> 2)
   end
-  vals.each do |k,v|
-    puts [k.to_s,STATES[v]].join("\t")
-  end
+  [ret,vals]
 end
 
 ARGV.options do |opt|
@@ -85,8 +85,13 @@ IO.popen(cmd,'r') do |p|
     if c[:hwhealthstatus].to_i != hw
       hw = c[:hwhealthstatus].to_i
       xts  = ts - st
-      puts "%.3fs HW Status change (%x %d)" % [xts,hw,hw]
-      hwstatus hw
+      ret,vals = hwstatus hw
+
+      print "%.3fs HW Status change (%x %d)" % [xts,hw,hw]
+      puts " status: #{(ret==0) ? 'OK' : 'Failure'}"
+      vals.each do |k,v|
+	puts [k.to_s,STATES[v]].join("\t")
+      end
       puts
     end
   end
