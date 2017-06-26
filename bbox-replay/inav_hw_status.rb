@@ -9,6 +9,7 @@ require_relative 'inav_states'
 
 idx = 1
 hw=-1
+
 SENSORS=[:gyro, :acc, :mag, :baro, :gps, :rangef, :pitot]
 STATES=['none','OK','unavailable','unhealthy']
 
@@ -25,7 +26,7 @@ def hwstatus val
   vals={}
   0.upto(6) do |n|
     sv = val & 3
-    ret = -1 if sv > 1 or (n < 2 and sv != 1)
+    ret = -1 if sv > 1 or ((n < 2 or n == 4) and sv != 1)
     vals[SENSORS[n]] = sv
     val = (val >> 2)
   end
@@ -62,7 +63,7 @@ if m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \(([0-9A-Fa-f]{7,})\) (\S+)/
 end
 
 inavers=(STATE_EQ[iv] || iv || "1.3.0")
-STDERR.puts "iNav version = #{iv} (states eq #{inavers})"
+puts "iNav version = #{iv} (states eq #{inavers}) #{gitinfo}"
 
 cmd = "blackbox_decode"
 cmd << " --index #{idx}"
@@ -88,7 +89,7 @@ IO.popen(cmd,'r') do |p|
       ret,vals = hwstatus hw
 
       print "%.3fs HW Status change (%x %d)" % [xts,hw,hw]
-      puts " status: #{(ret==0) ? 'OK' : 'Failure'}"
+      puts " status: #{(ret == 0) ? 'OK' : 'Failure'}"
       vals.each do |k,v|
 	puts [k.to_s,STATES[v]].join("\t")
       end

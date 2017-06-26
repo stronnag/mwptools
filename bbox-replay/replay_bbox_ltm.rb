@@ -438,8 +438,12 @@ def encode_extra r
   msg='$TX'
   hf=0
   if r.has_key? :hwhealthstatus
-    hf = 1 if (r[:hwhealthstatus].to_i & 0x2aaa) != 0
-#    STDERR.puts "HW %x %d" % [r[:hwhealthstatus].to_i, hf]
+    val=r[:hwhealthstatus].to_i
+    0.upto(6) do |n|
+      sv = val & 3
+      hf = 1 if sv > 1 or ((n < 2 or n == 4) and sv != 1)
+      val = (val >> 2)
+    end
   end
   sl = [r[:gps_hdop].to_i,hf,0,0,0].pack('vCCCC')
   msg << sl << mksum(sl)
