@@ -46,6 +46,14 @@ public enum NMSTATE {
         NM_STATE_CONNECTED_GLOBAL = 70
     }
 
+
+public struct Odostats
+{
+    double speed;
+    double distance;
+    uint time;
+}
+
 public struct VersInfo
 {
     uint8 mrtype;
@@ -442,6 +450,7 @@ public class MWPlanner : Gtk.Application {
 
     private Clutter.Text clutext;
     private VCol vcol;
+    private Odostats odo;
 
     public struct MQI //: Object
     {
@@ -2235,7 +2244,7 @@ public class MWPlanner : Gtk.Application {
         if(armed == 0)
         {
             armtime = 0;
-            duration = -1;
+//            duration = -1;
             if(replayer == Player.NONE)
                 init_have_home();
             no_ofix = 0;
@@ -2258,6 +2267,7 @@ public class MWPlanner : Gtk.Application {
             radstatus.annul();
             if (armed == 1)
             {
+                odo.speed = odo.distance = odo.time = 0;
                 reboot_status();
                 init_craft_icon();
                 if(gps_trail)
@@ -2298,6 +2308,12 @@ public class MWPlanner : Gtk.Application {
             }
             else
             {
+                odo.time = (uint)duration;
+                if(odo.time > 5)
+                {
+                    MWPLog.message("Distance = %.1f, max speed = %.1f time = %u\n",
+                                   odo.distance, odo.speed, odo.time);
+                }
                 MWPLog.message("Disarmed %s\n", reason);
                 armed_spinner.stop();
                 armed_spinner.hide();
@@ -3187,7 +3203,9 @@ public class MWPlanner : Gtk.Application {
                     rhdop = rg.gps_hdop;
                     gpsinfo.set_hdop(rg.gps_hdop/100.0);
                 }
-                gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS)) != 0);
+                double ddm;
+                gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS),
+                                         out ddm) != 0);
                 fbox.update(item_visible(DOCKLETS.FBOX));
                 _nsats = rg.gps_numsat;
 
@@ -3196,6 +3214,10 @@ public class MWPlanner : Gtk.Application {
                     sat_coverage();
                     if(armed == 1)
                     {
+                        odo.distance += ddm;
+                        var spd = (double)(rg.gps_speed/100.0);
+                        if (spd > odo.speed)
+                            odo.speed = spd;
                         if(have_home == false && home_changed(GPSInfo.lat, GPSInfo.lon))
                         {
                             sflags |=  NavStatus.SPK.GPS;
@@ -3482,7 +3504,8 @@ public class MWPlanner : Gtk.Application {
                 al.vario = 0;
                 navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
 
-                int fix = gpsinfo.update_ltm(gf, conf.dms, item_visible(DOCKLETS.GPS), rhdop);
+                double ddm;                  ;
+                int fix = gpsinfo.update_ltm(gf, conf.dms, item_visible(DOCKLETS.GPS), rhdop, out ddm);
                 _nsats = (gf.sats >> 2);
 
                 if((_nsats == 0 && nsats != 0) || (nsats == 0 && _nsats != 0))
@@ -3500,6 +3523,10 @@ public class MWPlanner : Gtk.Application {
 
                     if(armed != 0)
                     {
+                        odo.distance += ddm;
+                        if ((double)gf.speed > odo.speed)
+                            odo.speed = (double)gf.speed;
+
                         if(have_home)
                         {
                             if(_nsats >= SATS.MINSATS)
@@ -3728,8 +3755,9 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT:
                 Mav.MAVLINK_GPS_RAW_INT m = *(Mav.MAVLINK_GPS_RAW_INT*)raw;
+                double ddm;
                 var fix  = gpsinfo.update_mav_gps(m, conf.dms,
-                                                item_visible(DOCKLETS.GPS));
+                                                  item_visible(DOCKLETS.GPS), out ddm);
                 gpsfix = (fix > 1);
                 _nsats = m.satellites_visible;
 
@@ -3737,6 +3765,14 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(armed == 1)
                     {
+                        odo.distance += ddm;
+                        if(m.vel != 0xffff)
+                        {
+                            double spd = m.vel/100.0;
+                            if (spd >  odo.speed)
+                                odo.speed = spd;
+                        }
+
                         if(have_home == false)
                         {
                             sflags |=  NavStatus.SPK.GPS;
@@ -4957,7 +4993,7 @@ public class MWPlanner : Gtk.Application {
         if(thr != null)
         {
             robj.stop();
-            duration = -1;
+//            duration = -1;
         }
         else
         {

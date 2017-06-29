@@ -2078,6 +2078,7 @@ public class GPSInfo : GLib.Object
     private Gtk.Label speed_lab;
     private double _dlon = 0;
     private double _dlat = 0;
+    private double ddm;
 
     public static double lat {get; private set;}
     public static double lon {get; private set;}
@@ -2087,6 +2088,7 @@ public class GPSInfo : GLib.Object
     public static int16 elev {get; private set;}
     public static uint8 fix;
     public static double hdop = -1.0;
+
 
     public GPSInfo(Gtk.Grid grid)
     {
@@ -2149,10 +2151,12 @@ public class GPSInfo : GLib.Object
         hdop = _hdop;
     }
 
-    public int update_mav_gps(Mav.MAVLINK_GPS_RAW_INT m, bool dms,bool visible)
+    public int update_mav_gps(Mav.MAVLINK_GPS_RAW_INT m, bool dms,bool visible, out double _ddm)
     {
         lat = m.lat/10000000.0;
         lon = m.lon/10000000.0;
+        calc_cse_dist_delta(lat,lon);
+        _ddm = ddm;
         double dalt = m.alt/1000.0;
         double cse = (m.cog == 0xffff) ? 0 : m.cog/100.0;
         spd  = (m.vel == 0xffff) ? 0 : m.vel/100.0;
@@ -2186,19 +2190,28 @@ public class GPSInfo : GLib.Object
         return m.fix_type;
     }
 
-    public int update_ltm(LTM_GFRAME g, bool dms,bool visible, uint16 hdop)
+    private double calc_cse_dist_delta(double lat, double lon)
     {
-        lat = g.lat/10000000.0;
-        lon = g.lon/10000000.0;
         double cse = 0;
         if(_dlat != 0 && _dlon != 0)
         {
             double d;
             Geo.csedist(_dlat, _dlon, lat, lon, out d, out cse);
+            ddm = d * 1852.0;
         }
+        else
+            ddm = 0.0;
         _dlat = lat;
         _dlon = lon;
+        return cse;
+    }
 
+    public int update_ltm(LTM_GFRAME g, bool dms,bool visible, uint16 hdop, out double _ddm)
+    {
+        lat = g.lat/10000000.0;
+        lon = g.lon/10000000.0;
+        var cse =  calc_cse_dist_delta(lat,lon);
+        _ddm = ddm;
         spd =  g.speed;
         double dalt = g.alt/100.0;
         fix = (g.sats & 3);
@@ -2228,10 +2241,13 @@ public class GPSInfo : GLib.Object
         return fix;
     }
 
-    public int update(MSP_RAW_GPS g, bool dms, bool visible)
+    public int update(MSP_RAW_GPS g, bool dms, bool visible, out double _ddm)
     {
         lat = g.gps_lat/10000000.0;
         lon = g.gps_lon/10000000.0;
+
+        calc_cse_dist_delta(lat,lon);
+        _ddm = ddm;
         spd = g.gps_speed/100.0;
         cse = g.gps_ground_course/10.0;
         nsat = g.gps_numsat;
