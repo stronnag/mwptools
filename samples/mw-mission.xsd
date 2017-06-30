@@ -56,7 +56,7 @@
   <xs:element name="nav-speed">
     <xs:complexType>
       <xs:attribute name="units" use="required"/>
-      <xs:attribute name="value" use="required" type="xs:integer"/>
+      <xs:attribute name="value" use="required" type="xs:decimal"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="fly-time">

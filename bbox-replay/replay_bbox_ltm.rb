@@ -56,7 +56,6 @@ BOARD_MAP ={
   "NAZE" => "AFNA",
   "ALIENWIIF3" => "AWF3",
   "OLIMEXINO" => "OLI1",
-#  "OMNIBUSF4" => "OBSD",
   "OMNIBUSF4" => "OBF4",
   "BLUEJAYF4" => "BJF4",
   "COLIBRI_RACE" => "CLBR",
@@ -75,6 +74,7 @@ BOARD_MAP ={
   "CRAZEPONYMINI" => "CPM1",
   "MOTOLAB" => "MOTO",
   "SPRACINGF3EVO" => "SPEV",
+  "SPRACINGF4EVO" => "SP4E",
   "EUSTM32F103RC" => "EUF1",
   "RCEXPLORERF3" => "REF3",
   "SPARKY2" => "SPK2",
@@ -88,6 +88,7 @@ BOARD_MAP ={
   "CHEBUZZF3" => "CHF3",
   "OMNIBUS" => "OMNI",
   "CC3D" => "CC3D",
+  "MATEKF405" => "MKF4",
 }
 
 def start_io dev
