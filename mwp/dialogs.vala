@@ -91,6 +91,53 @@ public class Units :  GLib.Object
     }
 }
 
+
+public class OdoView : GLib.Object
+{
+    private Gtk.Dialog dialog;
+    private Gtk.Label odospeed;
+    private Gtk.Label ododist;
+    private Gtk.Label odotime;
+//    private Gtk.Button close;
+
+    public OdoView(Gtk.Builder builder, Gtk.Window? w)
+    {
+        dialog = builder.get_object ("odoview") as Gtk.Dialog;
+        dialog.set_transient_for(w);
+        ododist = builder.get_object ("ododist") as Gtk.Label;
+        odospeed = builder.get_object ("odospeed") as Gtk.Label;
+        odotime = builder.get_object ("odotime") as Gtk.Label;
+        dialog.destroy.connect (() => {
+                dialog.hide();
+            });
+    }
+
+    public void update(Odostats o)
+    {
+        ododist.set_label("  %.0f ".printf(o.distance));
+        odospeed.set_label("  %.1f ".printf(o.speed));
+        odotime.set_label("  %u ".printf(o.time));
+        dialog.show_all();
+        uint tid =0;
+        tid = Timeout.add_seconds(30, () => {
+                tid=0;
+                dialog.hide();
+                return Source.REMOVE;
+            });
+        dialog.run();
+        if(tid > 0)
+            Source.remove(tid);
+        dialog.hide();
+    }
+
+    public void reset()
+    {
+        ododist.set_label("0");
+        odospeed.set_label("0");
+        odotime.set_label("0");
+    }
+}
+
 public class ArtWin : GLib.Object
 {
     public Gtk.Box  box {get; private set;}

@@ -451,6 +451,7 @@ public class MWPlanner : Gtk.Application {
     private Clutter.Text clutext;
     private VCol vcol;
     private Odostats odo;
+    private OdoView odoview;
 
     public struct MQI //: Object
     {
@@ -1078,6 +1079,8 @@ public class MWPlanner : Gtk.Application {
             stderr.printf("context %s\n", e.message);
         }
         vcol = new VCol();
+
+        odoview = new OdoView(builder,window);
 
         navstatus = new NavStatus(builder, vcol);
 
@@ -2268,6 +2271,7 @@ public class MWPlanner : Gtk.Application {
             if (armed == 1)
             {
                 odo.speed = odo.distance = odo.time = 0;
+                odoview.reset();
                 reboot_status();
                 init_craft_icon();
                 if(gps_trail)
@@ -2308,11 +2312,11 @@ public class MWPlanner : Gtk.Application {
             }
             else
             {
-                odo.time = (uint)duration;
                 if(odo.time > 5)
                 {
                     MWPLog.message("Distance = %.1f, max speed = %.1f time = %u\n",
                                    odo.distance, odo.speed, odo.time);
+                    odoview.update(odo);
                 }
                 MWPLog.message("Disarmed %s\n", reason);
                 armed_spinner.stop();
@@ -2336,6 +2340,14 @@ public class MWPlanner : Gtk.Application {
             }
         }
         larmed = armed;
+    }
+
+    private void update_odo(double spd, double ddm)
+    {
+        odo.time = (uint)duration;
+        odo.distance += ddm;
+        if (spd > odo.speed)
+            odo.speed = spd;
     }
 
     private void reset_poller(bool remove = true)
@@ -3214,10 +3226,8 @@ public class MWPlanner : Gtk.Application {
                     sat_coverage();
                     if(armed == 1)
                     {
-                        odo.distance += ddm;
                         var spd = (double)(rg.gps_speed/100.0);
-                        if (spd > odo.speed)
-                            odo.speed = spd;
+                        update_odo(spd, ddm);
                         if(have_home == false && home_changed(GPSInfo.lat, GPSInfo.lon))
                         {
                             sflags |=  NavStatus.SPK.GPS;
@@ -3523,10 +3533,7 @@ public class MWPlanner : Gtk.Application {
 
                     if(armed != 0)
                     {
-                        odo.distance += ddm;
-                        if ((double)gf.speed > odo.speed)
-                            odo.speed = (double)gf.speed;
-
+                        update_odo((double)gf.speed, ddm);
                         if(have_home)
                         {
                             if(_nsats >= SATS.MINSATS)
@@ -3765,12 +3772,9 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(armed == 1)
                     {
-                        odo.distance += ddm;
                         if(m.vel != 0xffff)
                         {
-                            double spd = m.vel/100.0;
-                            if (spd >  odo.speed)
-                                odo.speed = spd;
+                            update_odo(m.vel/100.0, ddm);
                         }
 
                         if(have_home == false)
@@ -3893,7 +3897,13 @@ public class MWPlanner : Gtk.Application {
                     });
                 break;
 
-            case MSP.Cmds.TQ_FRAME:
+            case MSP.Cmds.Tq_FRAME:
+                uint16 val = *(((uint16*)raw));
+                MWPLog.message("Q frame %u\n", val);
+                odo.time = val;
+                break;
+
+            case MSP.Cmds.Tx_FRAME:
                 cleanup_replay();
                 break;
 

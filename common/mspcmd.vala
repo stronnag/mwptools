@@ -80,7 +80,8 @@ public class MSP : Object
         TO_FRAME = (LTM_BASE + 'O'),
         TN_FRAME = (LTM_BASE + 'N'),
         TX_FRAME = (LTM_BASE + 'X'),
-        TQ_FRAME = (LTM_BASE + 'Q'), // private, quit message
+        Tq_FRAME = (LTM_BASE + 'q'), // private, quit message
+        Tx_FRAME = (LTM_BASE + 'x'), // private, quit message
 
         MAV_BASE  = 2000,
         MAVLINK_MSG_ID_HEARTBEAT = (MAV_BASE+0),

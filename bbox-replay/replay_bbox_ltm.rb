@@ -274,6 +274,20 @@ def encode_origin r
   msg
 end
 
+def encode_et et
+  msg='$Tq'
+  sl = [et].pack('S')
+  msg << sl << mksum(sl)
+  msg
+end
+
+def encode_x
+  msg='$Tx'
+  sl = ['x'].pack('c')
+  msg << sl << mksum(sl)
+  msg
+end
+
 def encode_stats r,inavers,armed=1
   msg='$TS'
   sts = nil
@@ -643,6 +657,8 @@ lastr =nil
 llat = 0.0
 llon = 0.0
 vers=nil
+us=nil
+st=nil
 
 IO.popen(cmd,'rt') do |pipe|
   csv = CSV.new(pipe, csv_opts)
@@ -669,6 +685,7 @@ IO.popen(cmd,'rt') do |pipe|
   csv.each do |row|
     next if row[:gps_numsat].to_i == 0
     us = row[:time_us].to_i
+    st = us if st.nil?
     if us > nv
       nv = us + intvl
       icnt  = (icnt + 1) % 10
@@ -711,6 +728,13 @@ IO.popen(cmd,'rt') do |pipe|
     end
   end
 end
+
+if mindelay
+  et = ((us - st)/1000000).to_i
+  msg = encode_et et
+  send_msg dev, msg
+end
+
 # fake up a few disarm messages
 if lastr
   msg = encode_stats lastr,vers,0
@@ -719,4 +743,7 @@ if lastr
     sleep 0.1
   end
 end
+
+send_msg dev, encode_x
+
 #File.unlink(STDERR_LOG) if File.zero?(STDERR_LOG)

@@ -307,6 +307,8 @@ public class ReplayThread : GLib.Object
 
         var thr = new Thread<int> ("relog", () => {
                 bool armed = false;
+                double start_tm = 0;
+                double utime = 0;
                 uint8 buf[256];
                 MSP_STATUS xa = MSP_STATUS();
 
@@ -332,7 +334,10 @@ public class ReplayThread : GLib.Object
                         while (playon && (line = dis.read_line ()) != null) {
                             parser.load_from_data (line);
                             var obj = parser.get_root ().get_object ();
-                            var utime = obj.get_double_member ("utime");
+                            utime = obj.get_double_member ("utime");
+                            if(start_tm == 0)
+                                start_tm = utime;
+
                             if(lt != 0)
                             {
                                 ulong ms = 0;
@@ -474,7 +479,6 @@ public class ReplayThread : GLib.Object
                                         a.conf_vbatscale = 110;
                                         a.conf_vbatlevel_warn1 = 33;
                                         a.conf_vbatlevel_warn2 = 43;
-
                                     }
                                     else
                                     {
@@ -772,6 +776,13 @@ public class ReplayThread : GLib.Object
                     }
                 }
                 MWPLog.message("end of scenario\n");
+
+                if(!delay)
+                {
+                    uint16 q=(uint16)(utime-start_tm);
+                    send_ltm(fd, 'q', &q, 2);
+                }
+
                 xa.flag = 0;
                 var nb = serialise_status(xa, buf);
                 for(var xn = 0; xn < 3; xn++)
@@ -779,9 +790,9 @@ public class ReplayThread : GLib.Object
                     send_rec(fd,MSP.Cmds.STATUS, (uint)nb, buf);
                     Thread.usleep(100);
                 }
-                uint8 q='Q';
-                send_ltm(fd, 'Q', &q, 1);
-                return 0;
+                uint8 x='x';
+                send_ltm(fd, 'x', &x, 1);
+               return 0;
             });
         return thr;
     }

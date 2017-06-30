@@ -577,9 +577,13 @@ public class MWSerial : Object
                                     needed = (uint8) MSize.LTM_XFRAME;
                                     cmd = MSP.Cmds.TX_FRAME;
                                     break;
-                                case 'Q':
+                                case 'q':
+                                    needed = 2;
+                                    cmd = MSP.Cmds.Tq_FRAME;
+                                    break;
+                                case 'x':
                                     needed = 1;
-                                    cmd = MSP.Cmds.TQ_FRAME;
+                                    cmd = MSP.Cmds.Tx_FRAME;
                                     break;
                                 default:
                                     error_counter();
