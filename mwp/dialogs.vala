@@ -98,7 +98,9 @@ public class OdoView : GLib.Object
     private Gtk.Label odospeed;
     private Gtk.Label ododist;
     private Gtk.Label odotime;
-//    private Gtk.Button close;
+    private Gtk.Label odospeed_u;
+    private Gtk.Label ododist_u;
+    private Gtk.Button odoclose;
 
     public OdoView(Gtk.Builder builder, Gtk.Window? w)
     {
@@ -106,17 +108,26 @@ public class OdoView : GLib.Object
         dialog.set_transient_for(w);
         ododist = builder.get_object ("ododist") as Gtk.Label;
         odospeed = builder.get_object ("odospeed") as Gtk.Label;
+        ododist_u = builder.get_object ("ododist_u") as Gtk.Label;
+        odospeed_u = builder.get_object ("odospeed_u") as Gtk.Label;
         odotime = builder.get_object ("odotime") as Gtk.Label;
+        odoclose = builder.get_object ("odoclose") as Gtk.Button;
+
         dialog.destroy.connect (() => {
+                dialog.hide();
+            });
+        odoclose.clicked.connect (() => {
                 dialog.hide();
             });
     }
 
     public void update(Odostats o)
     {
-        ododist.set_label("  %.0f ".printf(o.distance));
-        odospeed.set_label("  %.1f ".printf(o.speed));
-        odotime.set_label("  %u ".printf(o.time));
+        ododist.label = "  %.0f ".printf(Units.distance(o.distance));
+        odospeed.label = "  %.1f ".printf(Units.speed(o.speed));
+        odotime.label = "  %u ".printf(o.time);
+        ododist_u.label = Units.distance_units();
+        odospeed_u.label =  Units.speed_units();
         dialog.show_all();
         uint tid =0;
         tid = Timeout.add_seconds(30, () => {
@@ -124,10 +135,6 @@ public class OdoView : GLib.Object
                 dialog.hide();
                 return Source.REMOVE;
             });
-        dialog.run();
-        if(tid > 0)
-            Source.remove(tid);
-        dialog.hide();
     }
 
     public void reset()

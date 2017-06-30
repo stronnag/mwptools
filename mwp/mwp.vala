@@ -2247,7 +2247,7 @@ public class MWPlanner : Gtk.Application {
         if(armed == 0)
         {
             armtime = 0;
-//            duration = -1;
+            duration = -1;
             if(replayer == Player.NONE)
                 init_have_home();
             no_ofix = 0;
@@ -2747,6 +2747,8 @@ public class MWPlanner : Gtk.Application {
                     }
                     last_tm = nticks;
                     last_gps = nticks;
+                    if(last_tm == 0)
+                        last_tm =1;
                 }
             }
         }
@@ -5068,6 +5070,7 @@ public class MWPlanner : Gtk.Application {
         armed = larmed = 0;
         replay_paused = false;
         window.title = "mwp";
+//        replayer = Player.NONE;
     }
 
     private void run_replay(string fn, bool delay, Player rtype,

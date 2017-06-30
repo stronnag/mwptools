@@ -745,5 +745,4 @@ if lastr
 end
 
 send_msg dev, encode_x
-
 #File.unlink(STDERR_LOG) if File.zero?(STDERR_LOG)
