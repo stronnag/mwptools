@@ -1080,7 +1080,7 @@ public class MWPlanner : Gtk.Application {
         }
         vcol = new VCol();
 
-        odoview = new OdoView(builder,window);
+        odoview = new OdoView(builder,window,conf.stats_timeout);
 
         navstatus = new NavStatus(builder, vcol);
 

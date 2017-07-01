@@ -101,8 +101,10 @@ public class OdoView : GLib.Object
     private Gtk.Label odospeed_u;
     private Gtk.Label ododist_u;
     private Gtk.Button odoclose;
+    private uint to;
+    private uint tid = 0;
 
-    public OdoView(Gtk.Builder builder, Gtk.Window? w)
+    public OdoView(Gtk.Builder builder, Gtk.Window? w, uint _to)
     {
         dialog = builder.get_object ("odoview") as Gtk.Dialog;
         dialog.set_transient_for(w);
@@ -112,12 +114,13 @@ public class OdoView : GLib.Object
         odospeed_u = builder.get_object ("odospeed_u") as Gtk.Label;
         odotime = builder.get_object ("odotime") as Gtk.Label;
         odoclose = builder.get_object ("odoclose") as Gtk.Button;
+        to = _to;
 
         dialog.destroy.connect (() => {
-                dialog.hide();
+                dismiss();
             });
         odoclose.clicked.connect (() => {
-                dialog.hide();
+                dismiss();
             });
     }
 
@@ -129,13 +132,25 @@ public class OdoView : GLib.Object
         ododist_u.label = Units.distance_units();
         odospeed_u.label =  Units.speed_units();
         dialog.show_all();
-        uint tid =0;
-        tid = Timeout.add_seconds(30, () => {
-                tid=0;
-                dialog.hide();
-                return Source.REMOVE;
-            });
+        if(to > 0)
+        {
+            tid = Timeout.add_seconds(to, () => {
+                    tid=0;
+                    dialog.hide();
+                    return Source.REMOVE;
+                });
+        }
     }
+
+    private void dismiss()
+    {
+        if(tid != 0)
+            Source.remove(tid);
+        tid = 0;
+        dialog.hide();
+    }
+
+
 
     public void reset()
     {

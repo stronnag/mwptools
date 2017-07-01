@@ -347,5 +347,14 @@
       </description>
     </key>
 
+    <key name="stats-timeout" type="u">
+      <default>30</default>
+      <summary>timeout for flight statistics display (s)</summary>
+      <description>Timeout before the flight statistics popup
+      automagically closes. A value of 0 means no timeout.</description>
+    </key>
+
+
+
   </schema>
 </schemalist>

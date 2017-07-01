@@ -78,6 +78,7 @@ public class MWPSettings : GLib.Object
     public double max_home_delta {get; set; default=2.5;}
     public bool ignore_nm {get; set; default=false;}
     public string speech_api {get; private set; default=null;}
+    public uint stats_timeout {get; set; default=30;}
     public signal void settings_update (string s);
 
     public MWPSettings()
@@ -254,18 +255,18 @@ public class MWPSettings : GLib.Object
             if(logpath == "")
                 logpath = null;
         }
-
         if(s == null || s == "max-home-delta")
         {
             max_home_delta = settings.get_double ("max-home-delta");
         }
-
         if(s == null || s == "speech-api")
         {
             speech_api = settings.get_string ("speech-api");
             if(speech_api == "")
                 speech_api = null;
         }
+        if(s == null || s == "stats-timeout")
+            stats_timeout = settings.get_uint("stats-timeout");
     }
 
     public void save_window()
