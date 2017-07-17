@@ -770,7 +770,7 @@ public class MWSerial : Object
         }
         if (line.has_prefix("smix reverse"))
             to = 10;
-        if (line.has_prefix("save"))
+        if (line.has_prefix("save") || line.has_prefix("defaults noreboot"))
             to = 50;
         Thread.usleep(lwait*1000);
         drain(out rdata, to, line);
