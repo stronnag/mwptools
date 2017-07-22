@@ -51,6 +51,7 @@ $verbose = false
 $vbatscale=1.0
 
 BOARD_MAP ={
+  "MatekF4" => "MKF4",
   "FURYF3" => "FYF3",
   "AIRHEROF3" => "AIR3",
   "NAZE" => "AFNA",

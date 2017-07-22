@@ -2424,14 +2424,32 @@ public class MWPlanner : Gtk.Application {
         string board="";
         switch (vi.board)
         {
+            case "SPEV":
+                board = "SPRACINGF3EVO";
+                break;
+            case "MKF4":
+                board = "MatekF4";
+                break;
+            case "OMNI":
+                board = "OMNIBUS";
+                break;
+            case "RMDO":
+                board = "RMDO";
+                break;
+            case "SRF3":
+                board = "SPRACINGF3";
+                break;
+            case "AFNA":
+                board = "NAZE";
+                break;
+            case "CC3D":
+                board = "CC3D";
+                break;
             case "FYF3":
                 board = "FURYF3";
                 break;
             case "AIR3":
                 board = "AIRHEROF3";
-                break;
-            case "AFNA":
-                board = "NAZE";
                 break;
             case "AWF3":
                 board = "ALIENWIIF3";
@@ -2457,9 +2475,6 @@ public class MWPlanner : Gtk.Application {
             case "PIKO":
                 board = "PIKOBLX";
                 break;
-            case "SRF3":
-                board = "SPRACINGF3";
-                break;
             case "ABF4":
                 board = "AIRBOTF4";
                 break;
@@ -2468,9 +2483,6 @@ public class MWPlanner : Gtk.Application {
                 break;
             case "SDF3":
                 board = "STM32F3DISCOVERY";
-                break;
-            case "RMDO":
-                board = "RMDO";
                 break;
             case "SPKY":
                 board = "SPARKY";
@@ -2492,9 +2504,6 @@ public class MWPlanner : Gtk.Application {
                 break;
             case "MOTO":
                 board = "MOTOLAB";
-                break;
-            case "SPEV":
-                board = "SPRACINGF3EVO";
                 break;
             case "EUF1":
                 board = "EUSTM32F103RC";
@@ -2528,12 +2537,6 @@ public class MWPlanner : Gtk.Application {
                 break;
             case "CHF3":
                 board = "CHEBUZZF3";
-                break;
-            case "OMNI":
-                board = "OMNIBUS";
-                break;
-            case "CC3D":
-                board = "CC3D";
                 break;
         }
         return board;
