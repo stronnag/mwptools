@@ -2309,6 +2309,7 @@ public class MWPlanner : Gtk.Application {
                         Logger.ltm_xframe(xf);
                     }
                 }
+                odoview.dismiss();
             }
             else
             {

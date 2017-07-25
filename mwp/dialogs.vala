@@ -142,7 +142,7 @@ public class OdoView : GLib.Object
         }
     }
 
-    private void dismiss()
+    public void dismiss()
     {
         if(tid != 0)
             Source.remove(tid);
