@@ -430,6 +430,10 @@ public class MapSeeder : GLib.Object
                 stop.set_label("Stop");
                 ts.start_seeding();
             });
+
+        stop.clicked.connect(() => {
+                reset();
+            });
     }
 
     private void reset()
@@ -444,6 +448,8 @@ public class MapSeeder : GLib.Object
     {
         var lbl = "Tiles: %u / Skip: %u / DL: %u / Err: %u".printf(s.nt, s.skip, s.dlok, s.dlerr);
         tile_stats.set_label(lbl);
+        dialog.show_all();
+        MWPLog.message("%s\n", lbl);
     }
 
     public void run_seeder(string mapid, int zval, Champlain.BoundingBox bbox)
@@ -493,8 +499,6 @@ public class MapSeeder : GLib.Object
             var nt = ts.build_table();
             set_label(nt);
             dialog.show_all();
-            dialog.run();
-            reset();
         }
     }
 }

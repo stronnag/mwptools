@@ -1002,9 +1002,9 @@ public class MWPlanner : Gtk.Application {
         mseed = new MapSeeder(builder);
         menuop =  builder.get_object ("menu_seed") as Gtk.MenuItem;
         menuop.activate.connect(() => {
-                mseed.run_seeder(view.map_source.get_id(),(int)zoomer.adjustment.value,
+                mseed.run_seeder(view.map_source.get_id(),
+                                 (int)zoomer.adjustment.value,
                                  view.get_bounding_box());
-
             });
 
         menuop = builder.get_object ("menu_quit") as Gtk.MenuItem;

@@ -282,6 +282,7 @@ public class TileUtil : Object
         session = new Soup.Session();
         session.ssl_strict = false; // for OSM alas
         done = false;
+        show_stats(stats);
         fetch_tile();
     }
 
@@ -300,7 +301,6 @@ public class TileUtil : Object
             var message = new Soup.Message ("GET", tile_uri);
             session.queue_message (message, end_session);
         }
-        show_stats(stats);
         if(r == TILE_ITER_RES.DONE)
         {
             tile_done();
@@ -323,7 +323,7 @@ public class TileUtil : Object
             MWPLog.message("Tile failure status %u\n", msg.status_code);
             stats.dlerr++;
         }
-
+        show_stats(stats);
         fetch_tile();
     }
 
@@ -337,6 +337,7 @@ public class TileUtil : Object
     public void stop()
     {
         done = true;
+        show_stats(stats);
     }
 }
 /*
