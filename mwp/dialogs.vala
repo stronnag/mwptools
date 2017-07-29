@@ -379,9 +379,10 @@ public class MapSeeder : GLib.Object
     private int age  {get; set; default = 30;}
     private TileUtil ts;
 
-    public MapSeeder(Gtk.Builder builder)
+    public MapSeeder(Gtk.Builder builder, Gtk.Window? w)
     {
         dialog = builder.get_object ("seeder_dialog") as Gtk.Dialog;
+        dialog.set_transient_for(w);
         tile_minzoom = builder.get_object ("tile_minzoom") as Gtk.SpinButton;
         tile_maxzoom = builder.get_object ("tile_maxzoom") as Gtk.SpinButton;
         tile_age = builder.get_object ("tile_age") as Gtk.SpinButton;
@@ -448,7 +449,11 @@ public class MapSeeder : GLib.Object
     {
         var lbl = "Tiles: %u / Skip: %u / DL: %u / Err: %u".printf(s.nt, s.skip, s.dlok, s.dlerr);
         tile_stats.set_label(lbl);
-        dialog.show_all();
+
+            // need to force dialog update
+        while(Gtk.events_pending())
+            Gtk.main_iteration();
+
         MWPLog.message("%s\n", lbl);
     }
 

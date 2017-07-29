@@ -999,7 +999,7 @@ public class MWPlanner : Gtk.Application {
                 this.quit();
             });
 
-        mseed = new MapSeeder(builder);
+        mseed = new MapSeeder(builder,window);
         menuop =  builder.get_object ("menu_seed") as Gtk.MenuItem;
         menuop.activate.connect(() => {
                 mseed.run_seeder(view.map_source.get_id(),
