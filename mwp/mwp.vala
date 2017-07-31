@@ -349,7 +349,7 @@ public class MWPlanner : Gtk.Application {
     private static bool nopoll = false;
     private static bool rawlog = false;
     private static bool norotate = false; // workaround for Ubuntu & old champlain
-    private static bool gps_trail = false;
+    private static bool no_trail = false;
     private static bool no_max = false;
     private static bool force_mag = false;
     private static bool force_nc = false;
@@ -645,7 +645,7 @@ public class MWPlanner : Gtk.Application {
         { "connect", 'c', 0, OptionArg.NONE, out mkcon, "connect to first device", null},
         { "auto-connect", 'a', 0, OptionArg.NONE, out autocon, "auto-connect to first device", null},
         { "no-poll", 'N', 0, OptionArg.NONE, out nopoll, "don't poll for nav info", null},
-        { "no-trail", 'T', 0, OptionArg.NONE, out gps_trail, "don't display GPS trail", null},
+        { "no-trail", 'T', 0, OptionArg.NONE, out no_trail, "don't display GPS trail", null},
         { "raw-log", 'r', 0, OptionArg.NONE, out rawlog, "log raw serial data to file", null},
         { "ignore-sizing", 0, 0, OptionArg.NONE, out ignore_sz, "ignore minimum size constraint", null},
         { "full-screen", 0, 0, OptionArg.NONE, out set_fs, "open full screen", null},
@@ -807,8 +807,6 @@ public class MWPlanner : Gtk.Application {
         }
         else
             MWPLog.message("libchamplain %s\n", Champlain.VERSION_S);
-
-        gps_trail = !gps_trail; // yet more jh logic
 
         if(conf.ignore_nm == false)
         {
@@ -2086,7 +2084,7 @@ public class MWPlanner : Gtk.Application {
         if(craft == null)
         {
             MWPLog.message("init icon %d\n",  vi.mrtype);
-            craft = new Craft(view, vi.mrtype,norotate, gps_trail, stack_size);
+            craft = new Craft(view, vi.mrtype,norotate, !no_trail, stack_size);
             craft.park();
         }
     }
@@ -2274,7 +2272,7 @@ public class MWPlanner : Gtk.Application {
                 odoview.reset();
                 reboot_status();
                 init_craft_icon();
-                if(gps_trail)
+                if(!no_trail)
                 {
                     if(craft != null)
                     {
