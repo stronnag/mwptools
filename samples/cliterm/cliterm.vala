@@ -62,7 +62,10 @@ int main (string[] args)
                 Posix.write(1,buf,len);
             });
         if(noinit == false)
-            s.write("#\n".data, 2);
+        {
+            s.write("#".data, 1);
+            Thread.usleep(200*1000);
+        }
         s.serial_lost.connect(() => {
                 ml.quit();
             });

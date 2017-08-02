@@ -914,6 +914,7 @@ public class MWSerial : Object
         write("#");
         while((res = read_line(out line, out len)) == ResCode.OK)
             ;
+        Thread.usleep(200*1000);
         return 0;
     }
 
