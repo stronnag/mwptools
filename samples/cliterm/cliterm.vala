@@ -64,7 +64,6 @@ int main (string[] args)
         if(noinit == false)
         {
             s.write("#".data, 1);
-            Thread.usleep(200*1000);
         }
         s.serial_lost.connect(() => {
                 ml.quit();
