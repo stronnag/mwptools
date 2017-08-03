@@ -2923,7 +2923,7 @@ public class MWPlanner : Gtk.Application {
                     {
                         if(force_nc == false)
                             navcap = NAVCAPS.NONE;
-                    }
+}
                     else
                     {
                         navcap = ((raw[3] & 0x10) == 0x10) ?
@@ -2939,6 +2939,7 @@ public class MWPlanner : Gtk.Application {
                         else
                         {
                             _mwvar = (navcap != NAVCAPS.NONE) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
+                            wp_max = 40; // safety net
                         }
                     }
                     vi.fctype = mwvar;
@@ -3127,7 +3128,7 @@ public class MWPlanner : Gtk.Application {
                 rp = deserialise_u16(rp, out nc.rth_altitude);
                 nc.land_speed = *rp++;
                 rp = deserialise_u16(rp, out nc.fence);
-                nc.max_wp_number = *rp;
+                wp_max = nc.max_wp_number = *rp;
                 navconf.mw_update(nc);
                 ls.set_mission_speed(nc.nav_speed_max / 100.0);
                 if (ls.lastid > 0)
