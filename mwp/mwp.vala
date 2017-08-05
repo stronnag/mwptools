@@ -624,6 +624,7 @@ public class MWPlanner : Gtk.Application {
     private static DEBUG_FLAGS debug_flags = 0;
     private static VersInfo vi ={0};
     private static bool set_fs;
+    private static bool show_vers = false;
     private static int stack_size = 0;
     public static unowned string ulang;
     private static bool ignore_3dr = false;
@@ -665,6 +666,7 @@ public class MWPlanner : Gtk.Application {
         { "offline", 0, 0, OptionArg.NONE, out offline, "force offline proxy mode", null},
         { "n-points", 'S', 0, OptionArg.INT, out stack_size, "Number of points shown in GPS trail", "INT"},
         { "rings", 0, 0, OptionArg.STRING, out rrstr, "Range rings (number, interval(m)), e.g. --rings 10,20", null},
+        { "version", 'v', 0, OptionArg.NONE, out show_vers, "show version", null},
         {null}
     };
 
@@ -5287,6 +5289,12 @@ public class MWPlanner : Gtk.Application {
             stderr.printf("Run '%s --help' to see a full list of available "+
                           "options\n", args[0]);
             return 1;
+        }
+        if(show_vers)
+        {
+            if(Posix.isatty(stderr.fileno()) == false)
+                stderr.printf("version: %s\n", mwpvers);
+            return 0;
         }
         Gst.init (ref args);
         atexit(MWPlanner.xchild);
