@@ -323,7 +323,7 @@ See Issue #431</property>
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menuitem3">
+              <object class="GtkMenuItem" id="menu_view_head">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_View</property>
@@ -358,6 +358,20 @@ See Issue #431</property>
                       </object>
                     </child>
                     <child>
+                      <object class="GtkMenuItem" id="menu_maps">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Map Source</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="dock_sep">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkMenuItem" id="tote_menu_view">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -385,7 +399,7 @@ See Issue #431</property>
                       <object class="GtkMenuItem" id="radio_menu_view">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">3DR Radio Status</property>
+                        <property name="label" translatable="yes">Radio Status</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>
@@ -406,14 +420,6 @@ See Issue #431</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="menu_maps">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Map Source</property>
-                        <property name="use_underline">True</property>
-                      </object>
-                    </child>
-                    <child>
                       <object class="GtkMenuItem" id="menu_art_hor">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -427,6 +433,12 @@ See Issue #431</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">FlightView</property>
                         <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="dock_sep_1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
                       </object>
                     </child>
                     <child>
@@ -484,6 +496,12 @@ See Issue #431</property>
                     </child>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkSeparatorMenuItem">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
               </object>
             </child>
           </object>

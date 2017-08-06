@@ -288,13 +288,13 @@ public class MWPlanner : Gtk.Application {
     private Gtk.MenuItem menuloadlog;
     private Gtk.MenuItem menubblog;
     private Gtk.MenuItem menubbload;
-    private Gtk.MenuItem menunav;
     private Gtk.MenuItem menuncfg;
     private Gtk.MenuItem menumwvar;
     private Gtk.MenuItem saved_menuitem;
     private Gtk.MenuItem reboot;
     private Gtk.MenuItem menucli;
     private string saved_menutext;
+    private Gtk.MenuItem[] dockmenus;
 
     public static MWPSettings conf;
     private MWSerial msp;
@@ -678,6 +678,7 @@ public class MWPlanner : Gtk.Application {
             if(iconify)
                 dockitem[id].iconify_item();
         }
+        update_dockmenu(id);
     }
 
     bool item_visible(DOCKLETS id)
@@ -1084,8 +1085,14 @@ public class MWPlanner : Gtk.Application {
 
         navstatus = new NavStatus(builder, vcol);
 
-        menunav = builder.get_object ("nav_status_menu") as Gtk.MenuItem;
-        menunav.activate.connect (() => {
+        dockmenus = new Gtk.MenuItem[DOCKLETS.NUMBER];
+        var mvi = builder.get_object ("menu_view_head") as Gtk.MenuItem;
+        mvi.activate.connect (() => {
+                set_dock_menu_status();
+            });
+
+        dockmenus[DOCKLETS.NAVSTATUS] = builder.get_object ("nav_status_menu") as Gtk.MenuItem;
+        dockmenus[DOCKLETS.NAVSTATUS].activate.connect (() => {
                 show_dock_id(DOCKLETS.NAVSTATUS,true);
             });
 
@@ -1096,48 +1103,47 @@ public class MWPlanner : Gtk.Application {
                 navconf.show();
             });
         art_win = new ArtWin();
-        menuop = builder.get_object ("menu_art_hor") as Gtk.MenuItem;
-        menuop.activate.connect (() => {
+
+        dockmenus[DOCKLETS.ARTHOR] = builder.get_object ("menu_art_hor") as Gtk.MenuItem;
+        dockmenus[DOCKLETS.ARTHOR].activate.connect (() => {
                 show_dock_id(DOCKLETS.ARTHOR, true);
             });
 
-        var mi = builder.get_object ("gps_menu_view") as Gtk.MenuItem;
-        mi.activate.connect (() => {
+        dockmenus[DOCKLETS.GPS] = builder.get_object ("gps_menu_view") as Gtk.MenuItem;
+        dockmenus[DOCKLETS.GPS].activate.connect (() => {
                 show_dock_id(DOCKLETS.GPS, true);
             });
 
-        mi = builder.get_object ("tote_menu_view") as Gtk.MenuItem;
-        mi.activate.connect (() => {
+        dockmenus[DOCKLETS.MISSION] = builder.get_object ("tote_menu_view") as Gtk.MenuItem;
+        dockmenus[DOCKLETS.MISSION].activate.connect (() => {
                 show_dock_id(DOCKLETS.MISSION, false);
             });
 
-        mi = builder.get_object ("voltage_menu_view") as Gtk.MenuItem;
-        mi.activate.connect (() => {
+        dockmenus[DOCKLETS.VOLTAGE] = builder.get_object ("voltage_menu_view") as Gtk.MenuItem;
+        dockmenus[DOCKLETS.VOLTAGE].activate.connect (() => {
                 show_dock_id(DOCKLETS.VOLTAGE, true);
             });
 
         radstatus = new RadioStatus(builder);
 
-        mi = builder.get_object ("radio_menu_view") as Gtk.MenuItem;
-        mi.activate.connect (() => {
+        dockmenus[DOCKLETS.RADIO] = builder.get_object ("radio_menu_view") as Gtk.MenuItem;
+        dockmenus[DOCKLETS.RADIO].activate.connect (() => {
                 show_dock_id(DOCKLETS.RADIO, true);
             });
 
-        mi =  builder.get_object ("fbox_view") as Gtk.MenuItem;
-        if(mi != null)
-        {
-            fbox  = new FlightBox(builder,window);
-            mi.activate.connect(() => {
-                    show_dock_id(DOCKLETS.FBOX, true);
-                });
-        }
+        dockmenus[DOCKLETS.FBOX] =  builder.get_object ("fbox_view") as Gtk.MenuItem;
+        fbox  = new FlightBox(builder,window);
+        dockmenus[DOCKLETS.FBOX].activate.connect(() => {
+                show_dock_id(DOCKLETS.FBOX, true);
+            });
+
         telemstatus = new TelemetryStats(builder);
-        mi =  builder.get_object ("ss_dialog") as Gtk.MenuItem;
-        mi.activate.connect(() => {
+        dockmenus[DOCKLETS.TELEMETRY] =  builder.get_object ("ss_dialog") as Gtk.MenuItem;
+        dockmenus[DOCKLETS.TELEMETRY].activate.connect(() => {
                 show_dock_id(DOCKLETS.TELEMETRY, true);
             });
 
-        mi =  builder.get_object ("lm_save") as Gtk.MenuItem;
+        var mi =  builder.get_object ("lm_save") as Gtk.MenuItem;
         mi.activate.connect(() => {
                 lman.save();
             });
@@ -1249,6 +1255,10 @@ public class MWPlanner : Gtk.Application {
                 return true;
             });
 
+        ag.connect('d', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                set_dock_menu_status();
+                return true;
+            });
 
         ag.connect('i', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
                 map_hide_warning();
@@ -1734,6 +1744,8 @@ public class MWPlanner : Gtk.Application {
                 }
             });
         setup_buttons();
+        set_dock_menu_status();
+
         if(rfile != null)
         {
             usemag = force_mag;
@@ -1750,6 +1762,18 @@ public class MWPlanner : Gtk.Application {
                     return false;
                 });
         }
+    }
+
+    private void set_dock_menu_status()
+    {
+        for(var id = DOCKLETS.MISSION; id < DOCKLETS.NUMBER; id += 1)
+            update_dockmenu(id);
+    }
+
+    private void update_dockmenu(DOCKLETS id)
+    {
+        var res = (dockitem[id].is_closed () == dockitem[id].is_iconified());
+        dockmenus[id].sensitive = !res;
     }
 
     public void build_deventry()
