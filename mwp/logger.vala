@@ -26,12 +26,17 @@ public class Logger : GLib.Object
     private static double dtime;
     public static int duration { get; private set; }
 
-    public static void start(string? title, VersInfo vi,uint32 capability,uint8 profile, string? boxnames = null)
+
+    public static void start(string? title, VersInfo vi,uint32 capability,uint8 profile, string? boxnames = null, string? save_path = null)
     {
         time_t currtime;
         time_t(out currtime);
 
         var fn  = "mwp_%s.log".printf(Time.local(currtime).format("%F_%H%M%S"));
+        if(save_path != null)
+        {
+            fn = GLib.Path.build_filename(save_path, fn);
+        }
 
         os = FileStream.open(fn, "w");
         if(os != null)
@@ -50,17 +55,8 @@ public class Logger : GLib.Object
         var bfn =  (title == null) ? fn : title;
 
         var builder = init("environment");
-        var u = Posix.utsname();
-        var sb = new StringBuilder();
-        sb.append(u.nodename);
-        sb.append(" ");
-        sb.append(u.sysname);
-        sb.append(" ");
-        sb.append(u.release);
-        sb.append(" ");
-        sb.append(u.machine);
         builder.set_member_name ("host");
-        builder.add_string_value (sb.str);
+        builder.add_string_value (get_host_info());
         builder.set_member_name ("mwpinfo");
         builder.add_string_value (mwpvers);
         builder.end_object ();
@@ -112,6 +108,38 @@ public class Logger : GLib.Object
         root = builder.get_root ();
         gen.set_root (root);
         write_stream();
+    }
+
+    private static string get_host_info()
+    {
+        string r=null;
+        var dis = FileStream.open("/etc/os-release","r");
+        if(dis != null)
+        {
+            string line;
+            while ((line = dis.read_line ()) != null)
+            {
+                var parts = line.split("=");
+                if (parts.length == 2)
+                    if (parts[0] == "PRETTY_NAME")
+                        r = parts[1].replace("\"","");
+            }
+        }
+        var u = Posix.utsname();
+        var sb = new StringBuilder();
+        if (r != null)
+        {
+            sb.append(r);
+            sb.append(" ");
+        }
+        sb.append(u.nodename);
+        sb.append(" ");
+        sb.append(u.sysname);
+        sb.append(" ");
+        sb.append(u.release);
+        sb.append(" ");
+        sb.append(u.machine);
+        return sb.str;
     }
 
     private static void write_stream()

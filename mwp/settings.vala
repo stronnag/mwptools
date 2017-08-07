@@ -75,6 +75,7 @@ public class MWPSettings : GLib.Object
     public bool rth_autoland {get; set; default=false;}
     public string missionpath {get; private set; default=null;}
     public string logpath {get; private set; default=null;}
+    public string logsavepath {get; private set; default=null;}
     public double max_home_delta {get; set; default=2.5;}
     public bool ignore_nm {get; set; default=false;}
     public string speech_api {get; private set; default=null;}
@@ -254,6 +255,12 @@ public class MWPSettings : GLib.Object
             logpath = settings.get_string ("log-path");
             if(logpath == "")
                 logpath = null;
+        }
+        if(s == null || s == "log-save_path")
+        {
+            logsavepath = settings.get_string ("log-save-path");
+            if(logsavepath == "")
+                logsavepath = null;
         }
         if(s == null || s == "max-home-delta")
         {

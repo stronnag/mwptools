@@ -323,8 +323,13 @@
 
     <key name="log-path" type="s">
       <default>""</default>
-      <summary>Directory for log files</summary>
+      <summary>Directory for replay log files</summary>
       <description>Directory for log files (for replay)</description>
+    </key>
+    <key name="log-save-path" type="s">
+      <default>""</default>
+      <summary>Directory for storing log files</summary>
+      <description>Directory for log files (for save), default = current directory</description>
     </key>
 
     <key name="speech-api" type="s">
