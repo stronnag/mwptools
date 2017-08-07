@@ -1424,7 +1424,8 @@ public class MWPlanner : Gtk.Application {
         logb = builder.get_object ("logger_cb") as Gtk.CheckButton;
         logb.toggled.connect (() => {
                 if (logb.active)
-                    Logger.start(last_file,vi,capability,profile,boxnames);
+                    Logger.start(last_file,vi,capability,profile,
+                                 boxnames,conf.logsavepath);
                 else
                     Logger.stop();
             });
