@@ -26,6 +26,18 @@ public class Logger : GLib.Object
     private static double dtime;
     public static int duration { get; private set; }
 
+    private static bool verify_save_path(string path)
+    {
+        bool res;
+        var f = File.new_for_path(path);
+        if((res = f.query_exists()) == false)
+        {
+            try {
+                res = f.make_directory_with_parents();
+            } catch {};
+        }
+        return res;
+    }
 
     public static void start(string? title, VersInfo vi,uint32 capability,uint8 profile, string? boxnames = null, string? save_path = null)
     {
@@ -33,7 +45,7 @@ public class Logger : GLib.Object
         time_t(out currtime);
 
         var fn  = "mwp_%s.log".printf(Time.local(currtime).format("%F_%H%M%S"));
-        if(save_path != null)
+        if(save_path != null && verify_save_path(save_path))
         {
             fn = GLib.Path.build_filename(save_path, fn);
         }
@@ -41,6 +53,7 @@ public class Logger : GLib.Object
         os = FileStream.open(fn, "w");
         if(os != null)
         {
+            MWPLog.message ("Logging to %s\n", fn);
             is_logging = true;
             log_time();
         }
@@ -52,7 +65,6 @@ public class Logger : GLib.Object
         }
 
         gen = new Json.Generator ();
-        var bfn =  (title == null) ? fn : title;
 
         var builder = init("environment");
         builder.set_member_name ("host");
@@ -66,8 +78,12 @@ public class Logger : GLib.Object
         write_stream();
 
         builder = init("init");
-        builder.set_member_name ("mission");
-        builder.add_string_value (bfn);
+        if(title != null)
+        {
+            builder.set_member_name ("mission");
+            builder.add_string_value (title);
+        }
+
         builder.set_member_name ("mwvers");
         builder.add_int_value (vi.mvers);
         builder.set_member_name ("mrtype");
