@@ -546,7 +546,7 @@ public class PIDEdit : Object
 
         window.destroy.connect (Gtk.main_quit);
         s = new MWSerial();
-        s.serial_event.connect((sd,cmd,raw,len,errs) => {
+        s.serial_event.connect((sd,cmd,raw,len,xflags, errs) => {
                 if(errs == true)
                 {
                     MWPLog.message("Error on cmd %s (%d)\n", cmd.to_string(),cmd);

@@ -1083,7 +1083,7 @@ public class MWSim : GLib.Object
                 });
         }
 
-        msp.serial_event.connect ((s, cmd, raw, len, errs) =>
+        msp.serial_event.connect ((s, cmd, raw, len, xflags, errs) =>
         {
             uint8 tx[64];
             size_t nb;

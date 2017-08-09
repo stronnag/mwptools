@@ -73,7 +73,8 @@ public class MSP : Object
 
         MSPV2 = 255,
 
-        LTM_BASE  = 0x10000,
+        X_BASE  = 0x10000,
+        LTM_BASE  = 0x20000,
         TS_FRAME = (LTM_BASE + 'S'),
         TA_FRAME = (LTM_BASE + 'A'),
         TG_FRAME = (LTM_BASE + 'G'),
@@ -83,7 +84,7 @@ public class MSP : Object
         Tq_FRAME = (LTM_BASE + 'q'), // private, quit message
         Tx_FRAME = (LTM_BASE + 'x'), // private, quit message
 
-        MAV_BASE  = 0x11000,
+        MAV_BASE  = 0x30000,
         MAVLINK_MSG_ID_HEARTBEAT = (MAV_BASE+0),
         MAVLINK_MSG_ID_SYS_STATUS = (MAV_BASE+1),
         MAVLINK_MSG_GPS_RAW_INT = (MAV_BASE+24),
@@ -95,7 +96,7 @@ public class MSP : Object
         MAVLINK_MSG_ID_RADIO = (MAV_BASE+166),
         MAVLINK_MSG_ID_RADIO_STATUS = (MAV_BASE+109),
 
-        INFO_WP = 0x20000
+        INFO_WP = 0x40000
 
     }
 

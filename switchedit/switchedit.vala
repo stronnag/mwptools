@@ -400,7 +400,7 @@ public class SwitchEdit : Object
 
         timer = new Timer();
         pbox = def_pbox;
-        s.serial_event.connect((sd,cmd,raw,len,errs) => {
+        s.serial_event.connect((sd,cmd,raw,len,xflags,errs) => {
                 remove_tid(ref cmdtid);
                 if(errs == true)
                 {
@@ -415,8 +415,8 @@ public class SwitchEdit : Object
                 switch(cmd)
                 {
                     case MSP.Cmds.API_VERSION:
-//                    stderr.printf("Not supported -- use the configurator\n");
-//                    Posix.exit(255);
+                    stderr.printf("Not supported -- use the configurator\n");
+                    Posix.exit(255);
                     mwvar = MWChooser.MWVAR.CF;
                     have_vers = false;
                     add_cmd(MSP.Cmds.FC_VARIANT,null,0, ref have_vers,2000);

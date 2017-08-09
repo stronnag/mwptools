@@ -40,13 +40,15 @@ public class MWSerial : Object
     private Socket skt;
     private SocketAddress sockaddr;
     public  States state {private set; get;}
+    private uint8 xflags;
     private uint8 checksum;
-    private uint8 csize;
-    private uint8 needed;
+    private uint8 checksum2;
+    private uint16 csize;
+    private uint16 needed;
+    private uint16 xcmd;
     private MSP.Cmds cmd;
-    private uint8 raw[256];
+    private uint8 []raw;
     private int irawp;
-    private int drawp;
     public bool available {private set; get;}
     public bool force4 = false;
     private uint tag;
@@ -105,7 +107,15 @@ public class MWSerial : Object
         S_CHECKSUM,
         S_ERROR,
         S_T_HEADER2=100,
-        S_M_STX = 200,
+        S_X_HEADER2=200,
+        S_X_FLAGS,
+        S_X_ID1,
+        S_X_ID2,
+        S_X_LEN1,
+        S_X_LEN2,
+        S_X_DATA,
+        S_X_CHECKSUM,
+        S_M_STX = 300,
         S_M_SIZE,
         S_M_SEQ,
         S_M_ID1,
@@ -116,9 +126,8 @@ public class MWSerial : Object
         S_M_CRC2
     }
 
-    public signal void serial_event (MSP.Cmds event, uint8[]result, uint len, bool err);
+    public signal void serial_event (MSP.Cmds event, uint8[]result, uint len, uint8 flags, bool err);
     public signal void cli_event(uint8[]raw, uint len);
-
     public signal void serial_lost ();
 
     public MWSerial()
@@ -469,7 +478,8 @@ public class MWSerial : Object
 
             if(pmode == ProtoMode.CLI)
             {
-                cli_event(buf, (uint)res);
+                csize = (uint16)res;
+                cli_event(buf, csize);
             }
             else
             {
@@ -482,10 +492,14 @@ public class MWSerial : Object
                 {
                     dump_raw_data(buf, (int)res);
                 }
+                if(rawlog == true)
+                {
+                    log_raw('i', buf, (int)res);
+                }
 
                 for(var nc = 0; nc < res; nc++)
                 {
-                    if (irawp == 255)
+                    if (irawp > csize)
                     {
                         state = States.S_ERROR;
                     }
@@ -493,7 +507,6 @@ public class MWSerial : Object
                     switch(state)
                     {
                         case States.S_ERROR:
-                            irawp = 0;
                             if (buf[nc] == '$')
                             {
                                 sp = nc;
@@ -509,8 +522,6 @@ public class MWSerial : Object
                             break;
 
                         case States.S_HEADER:
-                            irawp = 0;
-                            raw[irawp++] = buf[nc];
                             if (buf[nc] == '$')
                             {
                                 sp = nc;
@@ -531,7 +542,6 @@ public class MWSerial : Object
                             }
                             break;
                         case States.S_HEADER1:
-                            raw[irawp++] = buf[nc];
                             if(buf[nc] == 'M')
                             {
                                 state=States.S_HEADER2;
@@ -539,6 +549,10 @@ public class MWSerial : Object
                             else if(buf[nc] == 'T')
                             {
                                 state=States.S_T_HEADER2;
+                            }
+                            else if(buf[nc] == 'X')
+                            {
+                                state=States.S_X_HEADER2;
                             }
                             else
                             {
@@ -550,7 +564,6 @@ public class MWSerial : Object
 
                         case States.S_T_HEADER2:
                             needed = 0;
-                            raw[irawp++] = buf[nc];
                             switch(buf[nc])
                             {
                                 case 'G':
@@ -594,14 +607,14 @@ public class MWSerial : Object
                             if (needed > 0)
                             {
                                 csize = needed;
-                                drawp= irawp;
+                                irawp = 0;
                                 checksum = 0;
+                                raw = new uint8[needed];
                                 state = States.S_DATA;
                             }
                             break;
 
                         case States.S_HEADER2:
-                            raw[irawp++] = buf[nc];
                             if((buf[nc] == readdirn ||
                                 buf[nc] == writedirn ||
                                 buf[nc] == '!'))
@@ -618,50 +631,48 @@ public class MWSerial : Object
                             break;
 
                         case States.S_SIZE:
-                            raw[irawp++] = buf[nc];
-                            checksum = csize = needed = buf[nc];
+                            csize = needed = buf[nc];
+                            checksum = buf[nc];
                             state = States.S_CMD;
                             break;
                         case States.S_CMD:
-                            raw[irawp++] = buf[nc];
-                            drawp= irawp;
                             debug(" got cmd %d %d", buf[nc], csize);
-                            cmd = (MSP.Cmds)buf[nc];
-                            checksum ^= cmd;
-                            if (csize == 0)
+                            if(buf[nc] == MSP.Cmds.MSPV2)
                             {
-                                state = States.S_CHECKSUM;
+                                state = States.S_X_FLAGS;
                             }
                             else
                             {
-                                state = States.S_DATA;
+                                cmd = (MSP.Cmds)buf[nc];
+                                checksum ^= cmd;
+                                if (csize == 0)
+                                {
+                                    state = States.S_CHECKSUM;
+                                }
+                                else
+                                {
+                                    state = States.S_DATA;
+                                    irawp = 0;
+                                    raw = new uint8[csize];
+                                }
                             }
                             break;
                         case States.S_DATA:
-                                // debug("data csize = %d needed = %d", csize, needed);
                             raw[irawp++] = buf[nc];
+                            checksum ^= buf[nc];
                             needed--;
                             if(needed == 0)
-                            {
-                                checksum = cksum(raw[drawp:drawp+csize],
-                                                 csize, checksum);
                                 state = States.S_CHECKSUM;
-                            }
                             break;
                         case States.S_CHECKSUM:
                             if(checksum  == buf[nc])
                             {
-                                raw[irawp++] = buf[nc];
                                 debug(" OK on %d", cmd);
                                 state = States.S_HEADER;
-                                if(rawlog == true)
-                                {
-                                    log_raw('i', raw, irawp);
-                                }
                                 stats.msgs++;
-                                serial_event(cmd, raw[drawp:drawp+csize],
-                                             csize,errstate);
-                                irawp = drawp = 0;
+                                if(cmd < MSP.Cmds.MSPV2)
+                                    serial_event(cmd, raw, csize, 0, errstate);
+                                irawp = 0;
                             }
                             else
                             {
@@ -674,13 +685,91 @@ public class MWSerial : Object
                         case States.S_END:
                             state = States.S_HEADER;
                             break;
+
+                        case States.S_X_HEADER2:
+                            if((buf[nc] == readdirn ||
+                                buf[nc] == writedirn ||
+                                buf[nc] == '!'))
+                            {
+                                errstate = (buf[nc] != readdirn); // == '!'
+                                state = States.S_X_FLAGS;
+                            }
+                            else
+                            {
+                                error_counter();
+                                MWPLog.message("fail on header2 %x\n", buf[nc]);
+                                state=States.S_ERROR;
+                            }
+                            break;
+
+                        case States.S_X_FLAGS:
+                            checksum ^= buf[nc];
+                            checksum2 = crc8_dvb_s2(0, buf[nc]);
+                            xflags = buf[nc];
+                            state = States.S_X_ID1;
+                            break;
+                        case States.S_X_ID1:
+                            checksum ^= buf[nc];
+                            checksum2 = crc8_dvb_s2(checksum2, buf[nc]);
+                            xcmd = buf[nc];
+                            state = States.S_X_ID2;
+                            break;
+                        case States.S_X_ID2:
+                            checksum ^= buf[nc];
+                            checksum2 = crc8_dvb_s2(checksum2, buf[nc]);
+                            xcmd |= (uint16)buf[nc] << 8;
+                            state = States.S_X_LEN1;
+                            break;
+                        case States.S_X_LEN1:
+                            checksum ^= buf[nc];
+                            checksum2 = crc8_dvb_s2(checksum2, buf[nc]);
+                            csize = buf[nc];
+                            state = States.S_X_LEN2;
+                            break;
+                        case States.S_X_LEN2:
+                            checksum ^= buf[nc];
+                            checksum2 = crc8_dvb_s2(checksum2, buf[nc]);
+                            csize |= (uint16)buf[nc] << 8;
+                            needed = csize;
+                            raw = new uint8[csize];
+                            state = States.S_X_DATA;
+                            break;
+                        case States.S_X_DATA:
+                            checksum ^= buf[nc];
+                            checksum2 = crc8_dvb_s2(checksum2, buf[nc]);
+                            raw[irawp++] = buf[nc];
+                            needed--;
+                            if(needed == 0)
+                                state = States.S_X_CHECKSUM;
+                            break;
+                        case States.S_X_CHECKSUM:
+                            checksum ^= buf[nc];
+                            if(checksum2  == buf[nc])
+                            {
+                                debug(" OK on %d", cmd);
+                                state = States.S_CHECKSUM;
+                                stats.msgs++;
+                                serial_event(xcmd + MSP.Cmds.X_BASE, raw, csize,
+                                             xflags, errstate);
+                                irawp = 0;
+                            }
+                            else
+                            {
+                                error_counter();
+                                MWPLog.message("X-CRC Fail, got %d != %d (cmd=%d)\n",
+                                               buf[nc],checksum,cmd);
+                                state = States.S_ERROR;
+                            }
+                            break;
+
                         case States.S_M_SIZE:
                             csize = needed = buf[nc];
-                            mavsum = mavlink_crc(0xffff, csize);
+                            mavsum = mavlink_crc(0xffff, (uint8)csize);
                             if(needed > 0)
                             {
                                 irawp= 0;
                             }
+                            raw = new uint8[needed];
                             state = States.S_M_SEQ;
                             break;
                         case States.S_M_SEQ:
@@ -717,6 +806,7 @@ public class MWSerial : Object
                             }
                             break;
                         case States.S_M_CRC1:
+                            irawp = 0;
                             rxmavsum = buf[nc];
                             state = States.S_M_CRC2;
                             break;
@@ -725,8 +815,8 @@ public class MWSerial : Object
                             if(rxmavsum == mavsum)
                             {
                                 stats.msgs++;
-                                serial_event (cmd+MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT,
-                                              raw, csize,errstate);
+                                serial_event (cmd+MSP.Cmds.MAV_BASE,
+                                              raw, csize, 0, errstate);
                                 state = States.S_HEADER;
                             }
                             else
@@ -796,6 +886,19 @@ public class MWSerial : Object
                 mavlen = 255;
                 break;
         }
+    }
+
+    public uint8 crc8_dvb_s2(uint8 crc, uint8 a)
+    {
+        crc ^= a;
+        for (int i = 0; i < 8; i++)
+        {
+            if ((crc & 0x80) != 0)
+                crc = (crc << 1) ^ 0xd5;
+            else
+                crc = crc << 1;
+        }
+        return crc;
     }
 
     public uint16 mavlink_crc(uint16 acc, uint8 val)

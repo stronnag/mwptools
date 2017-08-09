@@ -1542,8 +1542,8 @@ public class MWPlanner : Gtk.Application {
         msp.force4 = force4;
         msp.serial_lost.connect(() => { serial_doom(conbutton); });
 
-        msp.serial_event.connect((s,cmd,raw,len,errs) => {
-                handle_serial(cmd,raw,len,errs);
+        msp.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
+                handle_serial(cmd,raw,len,xflags,errs);
             });
 
         if(serial != null)
@@ -2752,7 +2752,8 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-    public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, bool errs)
+    public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
+                              uint8 xflags, bool errs)
     {
         if(cmd > MSP.Cmds.LTM_BASE)
         {

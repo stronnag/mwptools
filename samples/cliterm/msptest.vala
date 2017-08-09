@@ -77,7 +77,7 @@ public static int main (string[] args)
     if((res = s.open(dev, baud, out estr)) == true)
     {
         uint tid = 0;
-        s.serial_event.connect((s,cmd,raw,len,errs) =>
+        s.serial_event.connect((s,cmd,raw,len,xflags,errs) =>
             {
                 if(errs == false && cmd == MSP.Cmds.STATUS)
                 {
