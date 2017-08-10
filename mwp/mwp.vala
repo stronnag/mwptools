@@ -1424,8 +1424,11 @@ public class MWPlanner : Gtk.Application {
         logb = builder.get_object ("logger_cb") as Gtk.CheckButton;
         logb.toggled.connect (() => {
                 if (logb.active)
-                    Logger.start(last_file,vi,capability,profile,
-                                 boxnames,conf.logsavepath);
+                {
+                    Logger.start(conf.logsavepath);
+                    if(armed != 0)
+                        Logger.fcinfo(last_file,vi,capability,profile, boxnames);
+                }
                 else
                     Logger.stop();
             });
@@ -3035,6 +3038,8 @@ public class MWPlanner : Gtk.Application {
                 MWPLog.message("Masks arm %x angle %x horz %x ph %x rth %x wp %x\n",
                                arm_mask, angle_mask, horz_mask, ph_mask,
                                rth_mask, wp_mask);
+                if(Logger.is_logging)
+                    Logger.fcinfo(last_file,vi,capability,profile, boxnames);
                 queue_cmd(MSP.Cmds.MISC,null,0);
                 break;
 

@@ -39,11 +39,10 @@ public class Logger : GLib.Object
         return res;
     }
 
-    public static void start(string? title, VersInfo vi,uint32 capability,uint8 profile, string? boxnames = null, string? save_path = null)
+    public static void start(string? save_path = null)
     {
         time_t currtime;
         time_t(out currtime);
-
         var fn  = "mwp_%s.log".printf(Time.local(currtime).format("%F_%H%M%S"));
         if(save_path != null && verify_save_path(save_path))
         {
@@ -65,7 +64,6 @@ public class Logger : GLib.Object
         }
 
         gen = new Json.Generator ();
-
         var builder = init("environment");
         builder.set_member_name ("host");
         builder.add_string_value (get_host_info());
@@ -74,10 +72,14 @@ public class Logger : GLib.Object
         builder.end_object ();
         Json.Node root = builder.get_root ();
         gen.set_root (root);
-
         write_stream();
+    }
 
-        builder = init("init");
+    public static void fcinfo(string? title, VersInfo vi,uint32 capability,
+                              uint8 profile, string? boxnames = null)
+    {
+        gen = new Json.Generator ();
+        var builder = init("init");
         if(title != null)
         {
             builder.set_member_name ("mission");
@@ -121,7 +123,7 @@ public class Logger : GLib.Object
             }
         }
         builder.end_object ();
-        root = builder.get_root ();
+        Json.Node root = builder.get_root ();
         gen.set_root (root);
         write_stream();
     }
