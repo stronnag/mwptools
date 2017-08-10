@@ -554,6 +554,7 @@ public class MWSerial : Object
                             }
                             else if(buf[nc] == 'X')
                             {
+                                MWPLog.message("MSPV2 Native\n");
                                 state=States.S_X_HEADER2;
                             }
                             else
@@ -569,27 +570,27 @@ public class MWSerial : Object
                             switch(buf[nc])
                             {
                                 case 'G':
-                                    needed = (uint8) MSize.LTM_GFRAME;
+                                    needed = (uint16) MSize.LTM_GFRAME;
                                     cmd = MSP.Cmds.TG_FRAME;
                                     break;
                                 case 'A':
-                                    needed = (uint8) MSize.LTM_AFRAME;
+                                    needed = (uint16) MSize.LTM_AFRAME;
                                     cmd = MSP.Cmds.TA_FRAME;
                                     break;
                                 case 'S':
-                                    needed = (uint8) MSize.LTM_SFRAME;
+                                    needed = (uint16) MSize.LTM_SFRAME;
                                     cmd = MSP.Cmds.TS_FRAME;
                                     break;
                                 case 'O':
-                                    needed = (uint8) MSize.LTM_OFRAME;
+                                    needed = (uint16) MSize.LTM_OFRAME;
                                     cmd = MSP.Cmds.TO_FRAME;
                                     break;
                                 case 'N':
-                                    needed = (uint8) MSize.LTM_NFRAME;
+                                    needed = (uint16) MSize.LTM_NFRAME;
                                     cmd = MSP.Cmds.TN_FRAME;
                                     break;
                                 case 'X':
-                                    needed = (uint8) MSize.LTM_XFRAME;
+                                    needed = (uint16) MSize.LTM_XFRAME;
                                     cmd = MSP.Cmds.TX_FRAME;
                                     break;
                                 case 'q':
@@ -643,10 +644,14 @@ public class MWSerial : Object
                             checksum ^= cmd;
                             if(cmd == MSP.Cmds.MSPV2)
                             {
+                                MWPLog.message("MSPV2 encap\n");
                                 state = States.S_X_FLAGS;
                             }
                             else if (csize == 255)
+                            {
+                                MWPLog.message("MSPV1 Jumbo\n");
                                 state = States.S_JUMBO1;
+                            }
                             else
                             {
                                 if (csize == 0)
@@ -674,6 +679,7 @@ public class MWSerial : Object
                             csize |= (uint16)buf[nc] << 8;
                             needed = csize;
                             raw = new uint8[csize];
+                            irawp = 0;
                             state = States.S_DATA;
                             break;
 
@@ -690,7 +696,7 @@ public class MWSerial : Object
                                 debug(" OK on %d", cmd);
                                 state = States.S_HEADER;
                                 stats.msgs++;
-                                if(cmd < MSP.Cmds.MSPV2)
+                                if(cmd < MSP.Cmds.MSPV2 || cmd > MSP.Cmds.LTM_BASE)
                                     serial_event(cmd, raw, csize, 0, errstate);
                                 irawp = 0;
                             }

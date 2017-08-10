@@ -1990,7 +1990,6 @@ public class MWPlanner : Gtk.Application {
                             }
                             else
                                 res = "%d".printf(tcycle);
-
                             if(nopoll == false)
                                 MWPLog.message("MSP Timeout (%s)\n", res);
                             lastok = nticks;
