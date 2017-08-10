@@ -72,8 +72,8 @@ public class MWSerial : Object
     private uint8 mavid2;
     private uint16 mavsum;
     private uint16 rxmavsum;
+    private bool encap = false;
     public ProtoMode pmode  {set; get; default=ProtoMode.NORMAL;}
-
 
     public enum ComMode
     {
@@ -501,11 +501,6 @@ public class MWSerial : Object
 
                 for(var nc = 0; nc < res; nc++)
                 {
-                    if (irawp > csize)
-                    {
-                        state = States.S_ERROR;
-                    }
-
                     switch(state)
                     {
                         case States.S_ERROR:
@@ -544,6 +539,9 @@ public class MWSerial : Object
                             }
                             break;
                         case States.S_HEADER1:
+                            encap = false;
+                            raw = null;
+                            irawp=0;
                             if(buf[nc] == 'M')
                             {
                                 state=States.S_HEADER2;
@@ -645,6 +643,7 @@ public class MWSerial : Object
                             if(cmd == MSP.Cmds.MSPV2)
                             {
                                 MWPLog.message("MSPV2 encap\n");
+                                encap = true;
                                 state = States.S_X_FLAGS;
                             }
                             else if (csize == 255)
@@ -681,6 +680,7 @@ public class MWSerial : Object
                             raw = new uint8[csize];
                             irawp = 0;
                             state = States.S_DATA;
+                            MWPLog.message("MSPV1 Jumbo size %u\n", csize);
                             break;
 
                         case States.S_DATA:
@@ -773,7 +773,8 @@ public class MWSerial : Object
                             if(checksum2  == buf[nc])
                             {
                                 debug(" OK on %d", cmd);
-                                state = States.S_CHECKSUM;
+
+                                state = (encap) ? States.S_CHECKSUM : States.S_HEADER;
                                 stats.msgs++;
                                 serial_event((MSP.Cmds)xcmd, raw, csize,
                                              xflags, errstate);

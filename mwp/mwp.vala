@@ -3952,9 +3952,9 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.WP_MISSION_LOAD:
                 download_mission();
                 break;
-            case 0x4242:
-                MWPLog.message("MSPv2 HW frame: flag=0x%x \"%s\"\n",
-                               xflags, (string)raw);
+            case MSP.Cmds.HELLO_WORLD:
+                MWPLog.message("%s frame (%u): flag=0x%x \"%s\"\n",
+                               cmd.to_string(), len, xflags, (string)raw);
                 break;
 
             default:

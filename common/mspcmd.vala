@@ -73,6 +73,8 @@ public class MSP : Object
 
         MSPV2 = 255,
 
+        HELLO_WORLD = 0x4242,
+
         LTM_BASE  = 0x10000,
         TS_FRAME = (LTM_BASE + 'S'),
         TA_FRAME = (LTM_BASE + 'A'),
