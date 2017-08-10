@@ -1991,7 +1991,8 @@ public class MWPlanner : Gtk.Application {
                             else
                                 res = "%d".printf(tcycle);
 
-                            MWPLog.message("MSP Timeout (%s)\n", res);
+                            if(nopoll == false)
+                                MWPLog.message("MSP Timeout (%s)\n", res);
                             lastok = nticks;
                             tcycle = 0;
                             resend_last();
@@ -3947,6 +3948,11 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.WP_MISSION_LOAD:
                 download_mission();
                 break;
+            case 0x4242:
+                MWPLog.message("MSPv2 HW frame: flag=0x%x \"%s\"\n",
+                               xflags, (string)raw);
+                break;
+
             default:
                 MWPLog.message ("** Unknown response %d (%dbytes)\n", cmd, len);
                 break;

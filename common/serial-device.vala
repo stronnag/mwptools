@@ -106,6 +106,8 @@ public class MWSerial : Object
         S_DATA,
         S_CHECKSUM,
         S_ERROR,
+        S_JUMBO1,
+        S_JUMBO2,
         S_T_HEADER2=100,
         S_X_HEADER2=200,
         S_X_FLAGS,
@@ -631,20 +633,22 @@ public class MWSerial : Object
                             break;
 
                         case States.S_SIZE:
-                            csize = needed = buf[nc];
+                            csize = buf[nc];
                             checksum = buf[nc];
                             state = States.S_CMD;
                             break;
                         case States.S_CMD:
                             debug(" got cmd %d %d", buf[nc], csize);
-                            if(buf[nc] == MSP.Cmds.MSPV2)
+                            cmd = (MSP.Cmds)buf[nc];
+                            checksum ^= cmd;
+                            if(cmd == MSP.Cmds.MSPV2)
                             {
                                 state = States.S_X_FLAGS;
                             }
+                            else if (csize == 255)
+                                state = States.S_JUMBO1;
                             else
                             {
-                                cmd = (MSP.Cmds)buf[nc];
-                                checksum ^= cmd;
                                 if (csize == 0)
                                 {
                                     state = States.S_CHECKSUM;
@@ -653,10 +657,26 @@ public class MWSerial : Object
                                 {
                                     state = States.S_DATA;
                                     irawp = 0;
+                                    needed = csize;
                                     raw = new uint8[csize];
                                 }
                             }
                             break;
+
+                        case States.S_JUMBO1:
+                            checksum ^= buf[nc];
+                            csize = buf[nc];
+                            state = States.S_JUMBO2;
+                            break;
+
+                        case States.S_JUMBO2:
+                            checksum ^= buf[nc];
+                            csize |= (uint16)buf[nc] << 8;
+                            needed = csize;
+                            raw = new uint8[csize];
+                            state = States.S_DATA;
+                            break;
+
                         case States.S_DATA:
                             raw[irawp++] = buf[nc];
                             checksum ^= buf[nc];
@@ -749,7 +769,7 @@ public class MWSerial : Object
                                 debug(" OK on %d", cmd);
                                 state = States.S_CHECKSUM;
                                 stats.msgs++;
-                                serial_event(xcmd + MSP.Cmds.X_BASE, raw, csize,
+                                serial_event((MSP.Cmds)xcmd, raw, csize,
                                              xflags, errstate);
                                 irawp = 0;
                             }

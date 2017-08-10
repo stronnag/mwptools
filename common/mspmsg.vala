@@ -327,7 +327,7 @@ public uint8 * serialise_i32(uint8* rp, int32 v)
 }
 
 
-/*
+#if UTEST
 public static int main (string[] args)
 {
     uint8[] raw = {1,2,3,4};
@@ -355,6 +355,23 @@ public static int main (string[] args)
     stdout.printf("y = %d\n", y);
     serialise_i16(xraw+2,y);
     stdout.printf("xraw = %x %x\n", xraw[2], xraw[3]);
+
+    uint16 ux = 0x123;
+    serialise_u16(xraw,ux);
+    stdout.printf("u16 xraw = %x %x\n", xraw[0], xraw[1]);
+    rp = xraw;
+    uint16 uy;
+    rp = deserialise_i16(rp, out uy);
+    stdout.printf("uy = %d\n", uy);
+
+    ux = 0x42;
+    serialise_u16(xraw,ux);
+    stdout.printf("u16 xraw = %x %x\n", xraw[0], xraw[1]);
+    rp = xraw;
+    rp = deserialise_i16(rp, out uy);
+    stdout.printf("uy = %d\n", uy);
+
+
     k = -3;
     serialise_i32(xraw,k);
     stdout.printf("xraw = %x %x %x %x\n", xraw[0], xraw[1], xraw[2], xraw[3]);
@@ -366,4 +383,4 @@ public static int main (string[] args)
 
     return 0;
 }
-*/
+#endif
