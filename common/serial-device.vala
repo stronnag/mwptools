@@ -135,6 +135,7 @@ public class MWSerial : Object
     public MWSerial()
     {
         available = false;
+        raw = new uint8[2048];
     }
 
     public void clear_counters()
@@ -540,7 +541,6 @@ public class MWSerial : Object
                             break;
                         case States.S_HEADER1:
                             encap = false;
-                            raw = null;
                             irawp=0;
                             if(buf[nc] == 'M')
                             {
@@ -610,7 +610,6 @@ public class MWSerial : Object
                                 csize = needed;
                                 irawp = 0;
                                 checksum = 0;
-                                raw = new uint8[needed];
                                 state = States.S_DATA;
                             }
                             break;
@@ -662,7 +661,6 @@ public class MWSerial : Object
                                     state = States.S_DATA;
                                     irawp = 0;
                                     needed = csize;
-                                    raw = new uint8[csize];
                                 }
                             }
                             break;
@@ -677,7 +675,6 @@ public class MWSerial : Object
                             checksum ^= buf[nc];
                             csize |= (uint16)buf[nc] << 8;
                             needed = csize;
-                            raw = new uint8[csize];
                             irawp = 0;
                             state = States.S_DATA;
                             MWPLog.message("MSPV1 Jumbo size %u\n", csize);
@@ -757,7 +754,6 @@ public class MWSerial : Object
                             checksum2 = crc8_dvb_s2(checksum2, buf[nc]);
                             csize |= (uint16)buf[nc] << 8;
                             needed = csize;
-                            raw = new uint8[csize];
                             state = States.S_X_DATA;
                             break;
                         case States.S_X_DATA:
@@ -796,7 +792,6 @@ public class MWSerial : Object
                             {
                                 irawp= 0;
                             }
-                            raw = new uint8[needed];
                             state = States.S_M_SEQ;
                             break;
                         case States.S_M_SEQ:
