@@ -44,6 +44,7 @@ public class MWSerial : Object
     private uint8 checksum;
     private uint8 checksum2;
     private uint16 csize;
+    private uint   raw_alloc;
     private uint16 needed;
     private uint16 xcmd;
     private MSP.Cmds cmd;
@@ -73,6 +74,7 @@ public class MWSerial : Object
     private uint16 mavsum;
     private uint16 rxmavsum;
     private bool encap = false;
+    public bool use_v2 = false;
     public ProtoMode pmode  {set; get; default=ProtoMode.NORMAL;}
 
     public enum ComMode
@@ -135,7 +137,8 @@ public class MWSerial : Object
     public MWSerial()
     {
         available = false;
-        raw = new uint8[2048];
+        raw_alloc = 2048;
+        raw = new uint8[raw_alloc];
     }
 
     public void clear_counters()
@@ -431,6 +434,16 @@ public class MWSerial : Object
         flush_serial(fd);
     }
 
+    private void check_raw_size()
+    {
+        if (csize > raw_alloc)
+        {
+            while (csize > raw_alloc)
+                raw_alloc += 1024;
+            raw = new uint8[raw_alloc];
+        }
+    }
+
     private bool device_read(IOChannel gio, IOCondition cond) {
         uint8 buf[256];
         size_t res = 0;
@@ -552,7 +565,6 @@ public class MWSerial : Object
                             }
                             else if(buf[nc] == 'X')
                             {
-                                MWPLog.message("MSPV2 Native\n");
                                 state=States.S_X_HEADER2;
                             }
                             else
@@ -641,7 +653,6 @@ public class MWSerial : Object
                             checksum ^= cmd;
                             if(cmd == MSP.Cmds.MSPV2)
                             {
-                                MWPLog.message("MSPV2 encap\n");
                                 encap = true;
                                 state = States.S_X_FLAGS;
                             }
@@ -661,6 +672,7 @@ public class MWSerial : Object
                                     state = States.S_DATA;
                                     irawp = 0;
                                     needed = csize;
+                                    check_raw_size();
                                 }
                             }
                             break;
@@ -676,7 +688,14 @@ public class MWSerial : Object
                             csize |= (uint16)buf[nc] << 8;
                             needed = csize;
                             irawp = 0;
-                            state = States.S_DATA;
+                            if (csize == 0)
+                                state = States.S_CHECKSUM;
+                            else
+                            {
+                                state = States.S_DATA;
+                                check_raw_size();
+                            }
+
                             MWPLog.message("MSPV1 Jumbo size %u\n", csize);
                             break;
 
@@ -754,7 +773,13 @@ public class MWSerial : Object
                             checksum2 = crc8_dvb_s2(checksum2, buf[nc]);
                             csize |= (uint16)buf[nc] << 8;
                             needed = csize;
-                            state = States.S_X_DATA;
+                            if(needed > 0)
+                            {
+                                check_raw_size();
+                                state = States.S_X_DATA;
+                            }
+                            else
+                                state = States.S_X_CHECKSUM;
                             break;
                         case States.S_X_DATA:
                             checksum ^= buf[nc];
@@ -791,6 +816,7 @@ public class MWSerial : Object
                             if(needed > 0)
                             {
                                 irawp= 0;
+                                check_raw_size();
                             }
                             state = States.S_M_SEQ;
                             break;
@@ -990,7 +1016,7 @@ public class MWSerial : Object
         }
     }
 
-    public uint8[] generate(uint8 cmd, void *data, size_t len)
+    public uint8[] generate_v1(uint8 cmd, void *data, size_t len)
     {
         uint8[] msg = new uint8[len+6];
         msg[0]='$';
@@ -1006,13 +1032,50 @@ public class MWSerial : Object
         return msg;
     }
 
-    public void send_command(uint8 cmd, void *data, size_t len)
+    public uint8[] generate_v2(uint16 cmd, void *data, size_t len)
+    {
+        uint8[] msg = new uint8[len+9];
+        uint8 ck2=0;
+
+        msg[0]='$';
+        msg[1]='X';
+        msg[2]= writedirn;
+        msg[3]=0; // flags
+        serialise_u16(msg+4, cmd);
+        serialise_u16(msg+6, (uint16)len);
+
+        if (data != null && len > 0)
+            Posix.memcpy(msg+8,data,len);
+
+        for (var i = 3; i < len+8; i++)
+        {
+            ck2 = crc8_dvb_s2(ck2, msg[i]);
+        }
+        msg[len+8]= ck2;
+        return msg;
+    }
+
+    public void send_command(uint16 cmd, void *data, size_t len)
     {
         if(available == true)
         {
             var dstr = generate(cmd, data, len);
             write(dstr, dstr.length);
         }
+    }
+
+    public uint8[] generate(uint16 cmd, void *data, size_t len)
+    {
+        uint8[] dstr;
+        if(use_v2 || cmd > 255)
+        {
+            dstr = generate_v2(cmd,data,len);
+        }
+        else
+        {
+            dstr = generate_v1((uint8)cmd, data, len);
+        }
+        return dstr;
     }
 
     public void send_error(uint8 cmd)

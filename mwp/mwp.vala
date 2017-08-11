@@ -1489,6 +1489,9 @@ public class MWPlanner : Gtk.Application {
         about.logo = pix;
 
         msp = new MWSerial();
+        msp.use_v2 = conf.force_mspv2;
+        MWPLog.message("Using MSP V2: %s\n",  msp.use_v2.to_string());
+
         mq = new Queue<MQI?>();
 
 
