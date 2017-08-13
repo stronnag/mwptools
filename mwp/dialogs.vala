@@ -101,45 +101,60 @@ public class OdoView : GLib.Object
     private Gtk.Label odospeed_u;
     private Gtk.Label ododist_u;
     private Gtk.Button odoclose;
-    private uint to;
+    private uint to = 15;
     private uint tid = 0;
+    private bool visible = false;
+    private Gtk.Window parent = null;
 
     public OdoView(Gtk.Builder builder, Gtk.Window? w, uint _to)
     {
+        parent = w;
         dialog = builder.get_object ("odoview") as Gtk.Dialog;
-        dialog.set_transient_for(w);
         ododist = builder.get_object ("ododist") as Gtk.Label;
         odospeed = builder.get_object ("odospeed") as Gtk.Label;
         ododist_u = builder.get_object ("ododist_u") as Gtk.Label;
         odospeed_u = builder.get_object ("odospeed_u") as Gtk.Label;
         odotime = builder.get_object ("odotime") as Gtk.Label;
         odoclose = builder.get_object ("odoclose") as Gtk.Button;
+
         to = _to;
 
-        dialog.destroy.connect (() => {
+        dialog.delete_event.connect (() => {
                 dismiss();
+                return true;
             });
+
         odoclose.clicked.connect (() => {
                 dismiss();
             });
     }
 
-    public void update(Odostats o)
+    public void display(Odostats o, bool autohide=false)
     {
         ododist.label = "  %.0f ".printf(Units.distance(o.distance));
         odospeed.label = "  %.1f ".printf(Units.speed(o.speed));
         odotime.label = "  %u ".printf(o.time);
         ododist_u.label = Units.distance_units();
         odospeed_u.label =  Units.speed_units();
-        dialog.show_all();
-        if(to > 0)
+        unhide();
+        if(autohide)
         {
-            tid = Timeout.add_seconds(to, () => {
-                    tid=0;
-                    dialog.hide();
-                    return Source.REMOVE;
-                });
+            if(to > 0)
+            {
+                tid = Timeout.add_seconds(to, () => {
+                        tid=0;
+                        dismiss();
+                        return Source.REMOVE;
+                    });
+            }
         }
+    }
+
+    public void unhide()
+    {
+        visible = true;
+        dialog.set_transient_for(parent);
+        dialog.show_all();
     }
 
     public void dismiss()
@@ -147,16 +162,8 @@ public class OdoView : GLib.Object
         if(tid != 0)
             Source.remove(tid);
         tid = 0;
+        visible=false;
         dialog.hide();
-    }
-
-
-
-    public void reset()
-    {
-        ododist.set_label("0");
-        odospeed.set_label("0");
-        odotime.set_label("0");
     }
 }
 
@@ -390,8 +397,9 @@ public class MapSeeder : GLib.Object
         apply = builder.get_object ("tile_start") as Gtk.Button;
         stop = builder.get_object ("tile_stop") as Gtk.Button;
 
-        dialog.destroy.connect (() => {
+        dialog.delete_event.connect (() => {
                 reset();
+                return true;
             });
 
         ts = new TileUtil();
@@ -2098,9 +2106,10 @@ public class NavConfig : GLib.Object
                 window = mw_open(builder);
         }
         window.set_transient_for(parent);
-        window.destroy.connect (() => {
+        window.delete_event.connect (() => {
                 window.hide();
                 visible = false;
+                return true;
             });
     }
 

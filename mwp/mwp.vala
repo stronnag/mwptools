@@ -1152,6 +1152,11 @@ public class MWPlanner : Gtk.Application {
                 lman.restore();
             });
 
+        mi =  builder.get_object ("menu_mission_stats") as Gtk.MenuItem;
+        mi.activate.connect(() => {
+                odoview.display(odo, false);
+            });
+
         embed = new GtkChamplain.Embed();
         view = embed.get_view();
         view.set_reactive(true);
@@ -2302,7 +2307,6 @@ public class MWPlanner : Gtk.Application {
             if (armed == 1)
             {
                 odo.speed = odo.distance = odo.time = 0;
-                odoview.reset();
                 reboot_status();
                 init_craft_icon();
                 if(!no_trail)
@@ -2348,7 +2352,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     MWPLog.message("Distance = %.1f, max speed = %.1f time = %u\n",
                                    odo.distance, odo.speed, odo.time);
-                    odoview.update(odo);
+                    odoview.display(odo, true);
                 }
                 MWPLog.message("Disarmed %s\n", reason);
                 armed_spinner.stop();
