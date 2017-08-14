@@ -50,7 +50,6 @@ public class MWSerial : Object
     private int irxbufp;
     private uint rxbuf_alloc;
     private uint8 []rxbuf;
-    private uint8 []txbuf;
     public bool available {private set; get;}
     public bool force4 = false;
     private uint tag;
@@ -145,7 +144,6 @@ public class MWSerial : Object
         available = false;
         rxbuf_alloc = MemAlloc.RX;
         rxbuf = new uint8[rxbuf_alloc];
-        txbuf = new uint8[256]; // fixed for now
     }
 
     public void clear_counters()
@@ -995,73 +993,94 @@ public class MWSerial : Object
         return size;
     }
 
+    public uint8 cksum(uint8[] dstr, size_t len, uint8 init=0)
+    {
+        var cs = init;
+        for(int n = 0; n < len; n++)
+        {
+            cs ^= dstr[n];
+        }
+        return cs;
+    }
+
     public void send_ltm(uint8 cmd, void *data, size_t len)
     {
         if(available == true)
         {
+            uint8 dstr[128];
             if(len != 0 && data != null)
             {
-                uint8 ck = 0;
-                txbuf[0]='$';
-                txbuf[1] = 'T';
-                txbuf[2] = cmd;
-                Posix.memcpy(&txbuf[3],data,len);
-                for(var i =3; i < len+3; i++)
-                    ck ^= txbuf[i];
-                txbuf[3+len] = ck;
-                write(txbuf, (len+4));
+                dstr[0]='$';
+                dstr[1] = 'T';
+                dstr[2] = cmd;
+                Posix.memcpy(&dstr[3],data,len);
+                var ck = cksum(dstr[3:len+3],len,0);
+                dstr[3+len] = ck;
+                write(dstr, (len+4));
             }
         }
     }
 
-    private size_t generate_v1(uint8 cmd, void *data, size_t len)
+    public uint8[] generate_v1(uint8 cmd, void *data, size_t len)
     {
-        uint8 ck = 0;
-        txbuf[0]='$';
-        txbuf[1]='M';
-        txbuf[2]= writedirn;
-        txbuf[3] = (uint8)len;
-        txbuf[4] = cmd;
+        uint8[] msg = new uint8[len+6];
+        msg[0]='$';
+        msg[1]='M';
+        msg[2]= writedirn;
+        msg[3] = (uint8)len;
+        msg[4] = cmd;
         if (data != null && len > 0)
-            Posix.memcpy(&txbuf[5], data, len);
-        for(var i = 3; i < len+ 5; i++)
-            ck ^= txbuf[i];
-        txbuf[len+5] = ck;
-        return len+6;
+            Posix.memcpy(&msg[5], data, len);
+        len += 3;
+        var ck = cksum(msg[3:len], len, 0);
+        msg[len+2] = ck;
+        return msg;
     }
 
-    public size_t generate_v2(uint16 cmd, void *data, size_t len)
+    public uint8[] generate_v2(uint16 cmd, void *data, size_t len)
     {
+        uint8[] msg = new uint8[len+9];
         uint8 ck2=0;
-        txbuf[0]='$';
-        txbuf[1]='X';
-        txbuf[2]= writedirn;
-        txbuf[3]=0; // flags
-        serialise_u16(txbuf+4, cmd);
-        serialise_u16(txbuf+6, (uint16)len);
+
+        msg[0]='$';
+        msg[1]='X';
+        msg[2]= writedirn;
+        msg[3]=0; // flags
+        serialise_u16(msg+4, cmd);
+        serialise_u16(msg+6, (uint16)len);
 
         if (data != null && len > 0)
-            Posix.memcpy(txbuf+8,data,len);
+            Posix.memcpy(msg+8,data,len);
 
         for (var i = 3; i < len+8; i++)
         {
-            ck2 = crc8_dvb_s2(ck2, txbuf[i]);
+            ck2 = crc8_dvb_s2(ck2, msg[i]);
         }
-        txbuf[len+8]= ck2;
-        return len+9;
+        msg[len+8]= ck2;
+        return msg;
     }
 
     public void send_command(uint16 cmd, void *data, size_t len)
     {
         if(available == true)
         {
-            size_t mlen;
-            if(use_v2 || cmd > 255)
-                mlen = generate_v2(cmd,data,len);
-            else
-                mlen  = generate_v1((uint8)cmd, data, len);
-            write(txbuf, mlen);
+            var dstr = generate(cmd, data, len);
+            write(dstr, dstr.length);
         }
+    }
+
+    public uint8[] generate(uint16 cmd, void *data, size_t len)
+    {
+        uint8[] dstr;
+        if(use_v2 || cmd > 255)
+        {
+            dstr = generate_v2(cmd,data,len);
+        }
+        else
+        {
+            dstr = generate_v1((uint8)cmd, data, len);
+        }
+        return dstr;
     }
 
     public void send_error(uint8 cmd)

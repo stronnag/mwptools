@@ -455,9 +455,7 @@ public class MWPlanner : Gtk.Application {
 
     public struct MQI //: Object
     {
-        MSP.Cmds cmd;
-        size_t len;
-        void *data;
+        public uint8[] msg;
     }
 
     private MQI lastmsg;
@@ -1599,7 +1597,7 @@ public class MWPlanner : Gtk.Application {
             remove_window(window);
         }
 
-        lastmsg = MQI() {cmd = MSP.Cmds.INVALID};
+        lastmsg.msg={};
 
         start_poll_timer();
         lastp = new Timer();
@@ -1940,9 +1938,9 @@ public class MWPlanner : Gtk.Application {
     {
         if(msp.available)
         {
-            if(lastmsg.cmd != MSP.Cmds.INVALID)
+            if(lastmsg.msg.length > 0)
             {
-                msp.send_command((uint16)lastmsg.cmd, lastmsg.data, lastmsg.len);
+                msp.write(lastmsg.msg,lastmsg.msg.length);
             }
             else
                 run_queue();
@@ -1954,7 +1952,7 @@ public class MWPlanner : Gtk.Application {
         if(msp.available && !mq.is_empty())
         {
             lastmsg = mq.pop_head();
-            msp.send_command((uint16)lastmsg.cmd, lastmsg.data, lastmsg.len);
+            msp.write(lastmsg.msg,lastmsg.msg.length);
         }
     }
 
@@ -1996,9 +1994,10 @@ public class MWPlanner : Gtk.Application {
                         {
                             telstats.toc++;
                             string res;
-                            if(lastmsg.cmd != MSP.Cmds.INVALID)
+                            if(lastmsg.msg != null && lastmsg.msg.length > 4)
                             {
-                                res = lastmsg.cmd.to_string();
+                                MSP.Cmds c= (MSP.Cmds)(lastmsg.msg[4]);
+                                res = c.to_string();
                             }
                             else
                                 res = "%d".printf(tcycle);
@@ -2006,11 +2005,6 @@ public class MWPlanner : Gtk.Application {
                                 MWPLog.message("MSP Timeout (%s)\n", res);
                             lastok = nticks;
                             tcycle = 0;
-                            if(lastmsg.cmd == MSP.Cmds.IDENT && conf.force_mspv2)
-                            {
-                                MWPLog.message("Switch to MSP v1\n");
-                                msp.use_v2 = ! msp.use_v2;
-                            }
                             resend_last();
                         }
                     }
@@ -4439,7 +4433,7 @@ public class MWPlanner : Gtk.Application {
     {
         if(msp.available == true)
         {
-            var mi = MQI() {cmd = cmd, len = len, data = buf};
+            var mi = MQI() {msg = msp.generate(cmd,buf,len)};
             mq.push_tail(mi);
         }
     }
