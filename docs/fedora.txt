@@ -4,9 +4,12 @@ dnf install gtk3-devel gstreamer-devel clutter-devel webkitgtk3-devel \
     libgda-devel gobject-introspection-devel
 dnf install vala vala-devel vala-tools vala-doc
 dnf install libchamplain-gtk-devel libgdl-devel libgudev1-devel espeak-devel
+
 for cf-cli-ui
 
 dnf install vte291-devel
+
+for Fedora 26 and later, replace gstreamer-devel with gstreamer1-devel.
 
 git clone https://github.com/stronnag/mwptools.git
 
@@ -15,14 +18,12 @@ git clone https://github.com/stronnag/mwptools.git
 dnf install ruby
 
 # If you want to use serial devices for bbox replay (and you probably
-#  don't)
-# then see
+# don't) then see
 #  https://developer.fedoraproject.org/tech/languages/ruby/gems-installation.html
-#
+
 
 You must install the blackbox utilities
 https://github.com/cleanflight/blackbox-tools/
 in order to replay blackbox logs.
-
 
 Then build it.
