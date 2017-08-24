@@ -99,7 +99,8 @@ public class MWPMarkers : GLib.Object
                 {
                     colour = { 0, 0xaa, 0xff, 0xc8};
                         // nice to set different icon for land ⛳ or ⏬
-                    symb = (rth_land) ? "⏬WP" : "⏏WP";
+//                    symb = (rth_land) ? "⏬WP" : "⏏WP";
+                    symb = (rth_land) ? "▼WP" : "⏏WP";
                 }
                 else
                 {
@@ -119,7 +120,7 @@ public class MWPMarkers : GLib.Object
                 break;
 
             case MSP.Action.RTH:
-                symb = (rth_land) ? "⏬" : "⏏";
+                symb = (rth_land) ? "▼" : "⏏";
                 colour = { 0xff, 0x0, 0x0, 0xc8};
                 break;
 
