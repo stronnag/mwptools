@@ -133,7 +133,7 @@ public class OdoView : GLib.Object
     {
         ododist.label = "  %.0f ".printf(Units.distance(o.distance));
         odospeed.label = "  %.1f ".printf(Units.speed(o.speed));
-        odotime.label = "  %u ".printf(o.time);
+        odotime.label = " %u:%02u ".printf(o.time / 60, o.time % 60);
         ododist_u.label = Units.distance_units();
         odospeed_u.label =  Units.speed_units();
         unhide();

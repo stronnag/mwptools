@@ -3959,7 +3959,6 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">end</property>
-                <property name="label" translatable="yes">seconds</property>
               </object>
               <packing>
                 <property name="left_attach">2</property>
@@ -4000,7 +3999,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
                 <property name="can_focus">False</property>
                 <property name="halign">end</property>
                 <property name="hexpand">False</property>
-                <property name="label" translatable="yes">0</property>
+                <property name="label" translatable="yes">0:00</property>
                 <property name="justify">right</property>
               </object>
               <packing>
