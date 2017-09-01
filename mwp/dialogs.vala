@@ -1253,6 +1253,7 @@ public class NavStatus : GLib.Object
         enabled = true;
 
         voltlabel = new Gtk.Label("");
+//        voltlabel.xalign = 0.75f;
         voltbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
         voltbox.pack_start (voltlabel, true, true, 1);
         voltbox.size_allocate.connect((a) => {
@@ -1537,7 +1538,7 @@ public class NavStatus : GLib.Object
                 lsc.add_class(vc.levels[n].colour);
                 _vn = n;
             }
-            voltlabel.set_label("<span font='%d'>%s</span>".printf(_fs,s));
+            voltlabel.set_label("<span font_family='monospace' font='%d'>%s</span>".printf(_fs,s));
         }
     }
 
