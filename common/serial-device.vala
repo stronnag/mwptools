@@ -48,7 +48,8 @@ public class MWSerial : Object
     private uint16 xcmd;
     private MSP.Cmds cmd;
     private int irxbufp;
-    private uint rxbuf_alloc;
+    private uint16 rxbuf_alloc;
+    private uint16 txbuf_alloc = 256;
     private uint8 []rxbuf;
     private uint8 []txbuf;
     public bool available {private set; get;}
@@ -145,7 +146,23 @@ public class MWSerial : Object
         available = false;
         rxbuf_alloc = MemAlloc.RX;
         rxbuf = new uint8[rxbuf_alloc];
-        txbuf = new uint8[256]; // fixed for now
+        txbuf = new uint8[txbuf_alloc];
+    }
+
+    public void set_txbuf(uint16 sz)
+    {
+        txbuf = new uint8[sz];
+        txbuf_alloc = sz;
+    }
+
+    public uint16 get_txbuf()
+    {
+        return txbuf_alloc;
+    }
+
+    public uint16 get_rxbuf()
+    {
+        return rxbuf_alloc;
     }
 
     public void clear_counters()
@@ -1056,7 +1073,7 @@ public class MWSerial : Object
         if(available == true)
         {
             size_t mlen;
-            if(use_v2 || cmd > 255)
+            if(use_v2 || cmd > 254 || len > 254)
                 mlen = generate_v2(cmd,data,len);
             else
                 mlen  = generate_v1((uint8)cmd, data, len);

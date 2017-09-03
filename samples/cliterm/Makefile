@@ -22,11 +22,17 @@ cliterm: cliterm.vala $(COMMON)
 msptest: msptest.vala $(COMMON)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
+mspfuzz: mspfuzz.vala $(COMMON)
+	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
+
+vxtest: vxtest.vala $(COMMON)
+	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
+
 xcliterm: xcliterm-main.vala ../../common/cliterm.vala $(COMMON)
 	$(VALAC) $(OPTS) $(PKGS) $(PKGSV) -o $@  $^ $(LOPTS)
 
 clean:
-	rm -f cliterm xcliterm *.vala.c *~
+	rm -f cliterm xcliterm *.vala.c *~ vxtest mspfuzz msptest
 
 local: $(APPS)
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
