@@ -80,7 +80,6 @@ public class MWPSettings : GLib.Object
     public bool ignore_nm {get; set; default=false;}
     public string speech_api {get; private set; default=null;}
     public uint stats_timeout {get; set; default=30;}
-    public bool force_mspv2 {get; set; default=false;}
 
     public signal void settings_update (string s);
 
@@ -244,9 +243,6 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "ignore-nm")
             ignore_nm = settings.get_boolean ("ignore-nm");
-
-        if(s == null || s == "force-mspv2")
-            force_mspv2 = settings.get_boolean ("force-mspv2");
 
         if(s == null || s == "mission-path")
         {

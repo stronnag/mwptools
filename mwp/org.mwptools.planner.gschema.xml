@@ -359,11 +359,5 @@
       automagically closes. A value of 0 means no timeout.</description>
     </key>
 
-    <key name="force-mspv2" type="b">
-      <default>false</default>
-      <summary>MSPV2 flag</summary>
-      <description>Force use of MSPV2</description>
-    </key>
-
   </schema>
 </schemalist>

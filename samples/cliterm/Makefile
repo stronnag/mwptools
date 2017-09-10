@@ -12,7 +12,7 @@ PKGS = --pkg posix --pkg gio-2.0 --pkg gtk+-3.0 --pkg linux
 PKGSV = --pkg vte-$(VTEVERS)
 PKGSR = --pkg gio-2.0
 
-APPS=$(APP) $(CLI)
+APPS=$(APP) $(CLI) mspfuzz
 
 all: $(APPS)
 

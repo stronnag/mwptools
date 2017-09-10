@@ -1496,11 +1496,9 @@ public class MWPlanner : Gtk.Application {
         about.logo = pix;
 
         msp = new MWSerial();
-        msp.use_v2 = conf.force_mspv2;
-        MWPLog.message("Using MSP V2: %s\n",  msp.use_v2.to_string());
+        msp.use_v2 = false;
 
         mq = new Queue<MQI?>();
-
 
         build_deventry();
         var te = dev_entry.get_child() as Gtk.Entry;
@@ -2006,11 +2004,6 @@ public class MWPlanner : Gtk.Application {
                                 MWPLog.message("MSP Timeout (%s)\n", res);
                             lastok = nticks;
                             tcycle = 0;
-                            if(lastmsg.cmd == MSP.Cmds.IDENT && conf.force_mspv2)
-                            {
-                                MWPLog.message("Switch to MSP v1\n");
-                                msp.use_v2 = false;
-                            }
                             resend_last();
                         }
                     }
@@ -2857,6 +2850,11 @@ public class MWPlanner : Gtk.Application {
                 {
                     vi.fc_api[0] = raw[1];
                     vi.fc_api[1] = raw[2];
+                    if (raw[1] > 1)
+                    {
+                        msp.use_v2 = true;
+                        MWPLog.message("set MSP v2\n");
+                    }
                     queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
                 }
                 break;
