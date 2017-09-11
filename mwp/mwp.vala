@@ -2876,6 +2876,7 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.INAV_SET_TZ:
+                rtcsecs = 0;
                 queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
                 break;
 
@@ -2888,7 +2889,7 @@ public class MWPlanner : Gtk.Application {
                 string loc = "%s.%03u".printf(now.format("%FT%T"),
                                               (uint)(now.get_microsecond ()/1000));
                 var rem = new DateTime.from_unix_local((int64)rtcsecs);
-                MWPLog.message("get RTC loc %s, fc %s.%03u\n",
+                MWPLog.message("RTC local %s, fc %s.%03u\n",
                                loc,  rem.format("%FT%T"), millis);
                 break;
 
