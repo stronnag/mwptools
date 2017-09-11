@@ -2632,9 +2632,7 @@ public class MWPlanner : Gtk.Application {
                     sb.append(lab);
                     if(naze32 && vi.fc_api != 0)
                     {
-                        uchar a[2];
-                        serialise_u16(a, vi.fc_api);
-                        sb.append(" API %d.%d".printf(a[0],a[1]));
+                        sb.append(" API %d.%d".printf(vi.fc_api >> 8,vi.fc_api & 0xff ));
                     }
 
                     if(navcap != NAVCAPS.NONE)
@@ -2870,7 +2868,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
-                    deserialise_u16(raw, out vi.fc_api);
+                    vi.fc_api = raw[1] << 8 | raw[2];
                     queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
                 }
                 break;
@@ -2961,6 +2959,8 @@ public class MWPlanner : Gtk.Application {
                             else
                                 queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
                         }
+                        else
+                            queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                     }
                     else
                         queue_cmd(MSP.Cmds.BOXNAMES,null,0);
