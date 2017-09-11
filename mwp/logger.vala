@@ -109,13 +109,12 @@ public class Logger : GLib.Object
         {
             builder.set_member_name ("fc_var");
             builder.add_string_value (vi.fc_var);
-            var nv = (vi.fc_vers[0] << 16)|(vi.fc_vers[1] << 8|vi.fc_vers[2]);
             builder.set_member_name ("fc_vers");
-            builder.add_int_value (nv);
+            builder.add_int_value (vi.fc_vers);
             builder.set_member_name ("fc_vers_str");
-            builder.add_string_value ("%d.%d.%d".printf(vi.fc_vers[0],
-                                                        vi.fc_vers[1],
-                                                        vi.fc_vers[2]));
+            uchar *vs;
+            vs = (uchar*)&vi.fc_vers;
+            builder.add_string_value ("%d.%d.%d".printf(vs[0],vs[1],vs[2]));
             if(vi.fc_git != null)
             {
                 builder.set_member_name ("git_info");

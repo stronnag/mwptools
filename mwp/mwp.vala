@@ -62,8 +62,8 @@ public struct VersInfo
     string fc_var;
     string board;
     string fc_git;
-    uint8 fc_api[2];
-    uint8 fc_vers[3];
+    uint16 fc_api;
+    uint32 fc_vers;
 }
 
 public struct TelemStats
@@ -376,6 +376,7 @@ public class MWPlanner : Gtk.Application {
     private time_t duration;
     private time_t last_dura;
     private time_t pausetm;
+    private time_t rtcsecs = 0;
 
     private int gfcse = 0;
     private uint8 armed = 0;
@@ -462,6 +463,17 @@ public class MWPlanner : Gtk.Application {
 
     private MQI lastmsg;
     private Queue<MQI?> mq;
+
+    private enum APIVERS
+    {
+        mspV2 = 0x0200
+    }
+
+    private enum FCVERS
+    {
+        hasEEPROM = 0x010600,
+        hasTZ = 0x010704
+    }
 
     private enum SERSTATE
     {
@@ -2618,8 +2630,13 @@ public class MWPlanner : Gtk.Application {
                     var lab = verlab.get_label();
                     StringBuilder sb = new StringBuilder();
                     sb.append(lab);
-                    if(naze32 && vi.fc_api[0] != 0)
-                        sb.append(" API %d.%d".printf(vi.fc_api[0],vi.fc_api[1]));
+                    if(naze32 && vi.fc_api != 0)
+                    {
+                        uchar a[2];
+                        serialise_u16(a, vi.fc_api);
+                        sb.append(" API %d.%d".printf(a[0],a[1]));
+                    }
+
                     if(navcap != NAVCAPS.NONE)
                         sb.append(" Nav");
                     sb.append(" Pr %d".printf(raw[10]));
@@ -2816,6 +2833,11 @@ public class MWPlanner : Gtk.Application {
                 case  MSP.Cmds.WP_GETINFO:
                     run_queue();
                     break;
+                case MSP.Cmds.INAV_SET_TZ:
+                    rtcsecs = 0;
+                    queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
+                    run_queue();
+                    break;
                 default:
                     break;
             }
@@ -2848,15 +2870,26 @@ public class MWPlanner : Gtk.Application {
                 }
                 else
                 {
-                    vi.fc_api[0] = raw[1];
-                    vi.fc_api[1] = raw[2];
-                    if (raw[1] > 1)
-                    {
-                        msp.use_v2 = true;
-                        MWPLog.message("set MSP v2\n");
-                    }
+                    deserialise_u16(raw, out vi.fc_api);
                     queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
                 }
+                break;
+
+            case MSP.Cmds.INAV_SET_TZ:
+                queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
+                break;
+
+            case MSP.Cmds.RTC:
+                var now = new DateTime.now_local();
+                uint16 millis;
+                uint8* rp = raw;
+                rp = deserialise_i32(rp, out rtcsecs);
+                deserialise_u16(rp, out millis);
+                string loc = "%s.%03u".printf(now.format("%FT%T"),
+                                              (uint)(now.get_microsecond ()/1000));
+                var rem = new DateTime.from_unix_local((int64)rtcsecs);
+                MWPLog.message("get RTC loc %s, fc %s.%03u\n",
+                               loc,  rem.format("%FT%T"), millis);
                 break;
 
             case MSP.Cmds.BOARD_INFO:
@@ -2903,15 +2936,30 @@ public class MWPlanner : Gtk.Application {
                 if(have_fcvv == false)
                 {
                     have_fcvv = true;
-                    vi.fc_vers = raw[0:3];
+                    raw[3] = 0;
+                    deserialise_u32(raw, out vi.fc_vers);
                     var fcv = "%s v%d.%d.%d".printf(vi.fc_var,raw[0],raw[1],raw[2]);
                     verlab.set_label(fcv);
                     if(inav)
                     {
                         mission_eeprom = (vi.board != "AFNA" &&
                                           vi.board != "CC3D" &&
-                                          raw[0] >= 1 && raw[1] >= 6);
-                        queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
+                                          vi.fc_vers >= FCVERS.hasEEPROM);
+
+                        if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ)
+                        {
+                            msp.use_v2 = true;
+                            MWPLog.message("set MSP v2\n");
+                            var dt = new DateTime.now_local();
+                            int16 tzoffm = (short)((int64)dt.get_utc_offset()/(1000*1000*60));
+                            if(tzoffm != 0)
+                            {
+                                MWPLog.message("set TZ offset %d\n", tzoffm);
+                                queue_cmd(MSP.Cmds.INAV_SET_TZ, &tzoffm, sizeof(int16));
+                            }
+                            else
+                                queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
+                        }
                     }
                     else
                         queue_cmd(MSP.Cmds.BOXNAMES,null,0);
@@ -3272,6 +3320,10 @@ public class MWPlanner : Gtk.Application {
 
                 if (gpsfix)
                 {
+                    if(rtcsecs ==0 && _nsats > 5)
+                    {
+                        queue_cmd(MSP.Cmds.RTC,null, 0);
+                    }
                     sat_coverage();
                     if(armed == 1)
                     {
@@ -3963,11 +4015,6 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.WP_MISSION_LOAD:
                 download_mission();
                 break;
-            case MSP.Cmds.HELLO_WORLD:
-                MWPLog.message("%s frame (%u): flag=0x%x \"%s\"\n",
-                               cmd.to_string(), len, xflags, (string)raw);
-                break;
-
             default:
                 MWPLog.message ("** Unknown response %d (%dbytes)\n", cmd, len);
                 break;

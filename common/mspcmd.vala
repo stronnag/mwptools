@@ -71,9 +71,11 @@ public class MSP : Object
         NAV_POSHOLD = 12,
         SET_NAV_POSHOLD = 13,
 
+        RTC =  246,
         MSPV2 = 255,
 
-        HELLO_WORLD = 0x4242,
+        INAV_TZ = 0x1001,
+        INAV_SET_TZ = 0x1002,
 
         LTM_BASE  = 0x10000,
         TS_FRAME = (LTM_BASE + 'S'),
