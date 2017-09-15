@@ -47,7 +47,7 @@ class MReader
     doc = Nokogiri::XML(open(fn))
     doc.xpath('//MISSIONITEM|//missionitem').each do |t|
       action=t['action']
-      break if action == 'RTH'
+      next if action == 'RTH'
       next if action == 'SET_POI'
       no = t['no'].to_i
       lat = t['lat'].to_f

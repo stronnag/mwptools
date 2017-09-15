@@ -110,7 +110,8 @@ public class Logger : GLib.Object
             builder.set_member_name ("fc_var");
             builder.add_string_value (vi.fc_var);
             builder.set_member_name ("fc_vers");
-            builder.add_int_value (vi.fc_vers);
+            uint b = (vi.fc_vers & 0xff) << 16 | ((vi.fc_vers >> 8) & 0xff) << 8 | (vi.fc_vers >> 16);
+            builder.add_int_value (b);
             builder.set_member_name ("fc_vers_str");
             uchar *vs;
             vs = (uchar*)&vi.fc_vers;
