@@ -2935,8 +2935,7 @@ public class MWPlanner : Gtk.Application {
                 if(have_fcvv == false)
                 {
                     have_fcvv = true;
-                    raw[3] = 0;
-                    deserialise_u32(raw, out vi.fc_vers);
+                    vi.fc_vers = raw[0] << 16 | raw[1] << 8 | raw[2];
                     var fcv = "%s v%d.%d.%d".printf(vi.fc_var,raw[0],raw[1],raw[2]);
                     verlab.set_label(fcv);
                     if(inav)
