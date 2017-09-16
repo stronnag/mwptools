@@ -2644,11 +2644,25 @@ public class MWPlanner : Gtk.Application {
                 want_special = 0;
                 if(replayer == Player.NONE)
                 {
-                    if(conf.checkswitches &&
-                       ((bxflag & lmask) == 0) && robj == null)
+                    bool isrev = (Environment.get_variable("MSP_STATUS_REV") != null);
+                    if(isrev)
                     {
-                        MWPLog.message("switch val == %0x\n", bxflag);
-                        swd.run();
+                        uint t = bxflag;
+                        uint i;
+                        MWPLog.message("Reversing broken status %08x\n", t);
+                        for (i = (uint)sizeof(uint) * 8 - 1; i !=0 ; i--)
+                        {
+                            t <<= 1;
+                            bxflag >>= 1;
+                            t |= bxflag & 1;
+                        }
+                        bxflag = t;
+                    }
+                    MWPLog.message("switch val == %08x (%08x)\n", bxflag, lmask);
+                    if(((bxflag & lmask) == 0) && robj == null)
+                    {
+                        if(conf.checkswitches)
+                            swd.run();
                     }
                     if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
                         queue_cmd(MSP.Cmds.NAV_CONFIG,null,0);
