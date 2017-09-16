@@ -2598,7 +2598,7 @@ public class MWPlanner : Gtk.Application {
         var lmask = (angle_mask|horz_mask);
 
             // workaround for 1.7.4-dev bug
-        if((bxflag & 0xf0000000) != 0)
+        if((bxflag & 0x70000000) != 0)
         {
             uint t = bxflag;
             uint i;
