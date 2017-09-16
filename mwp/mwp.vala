@@ -2596,6 +2596,23 @@ public class MWPlanner : Gtk.Application {
         deserialise_u16(raw+4, out sensor);
         deserialise_u32(raw+6, out bxflag);
         var lmask = (angle_mask|horz_mask);
+
+            // workaround for 1.7.4-dev bug
+        if((bxflag & 0xf0000000) != 0)
+        {
+            uint t = bxflag;
+            uint i;
+            if(have_status == false)
+                MWPLog.message("Reversing broken status %08x\n", t);
+            for (i = (uint)sizeof(uint) * 8 - 1; i !=0 ; i--)
+            {
+                t <<= 1;
+                bxflag >>= 1;
+                t |= bxflag & 1;
+            }
+            bxflag = t;
+        }
+
         armed = ((bxflag & arm_mask) == arm_mask) ? 1 : 0;
 
         if (nopoll == true)
@@ -2642,22 +2659,9 @@ public class MWPlanner : Gtk.Application {
                 }
 
                 want_special = 0;
+
                 if(replayer == Player.NONE)
                 {
-                    bool isrev = (Environment.get_variable("MSP_STATUS_REV") != null);
-                    if(isrev)
-                    {
-                        uint t = bxflag;
-                        uint i;
-                        MWPLog.message("Reversing broken status %08x\n", t);
-                        for (i = (uint)sizeof(uint) * 8 - 1; i !=0 ; i--)
-                        {
-                            t <<= 1;
-                            bxflag >>= 1;
-                            t |= bxflag & 1;
-                        }
-                        bxflag = t;
-                    }
                     MWPLog.message("switch val == %08x (%08x)\n", bxflag, lmask);
                     if(((bxflag & lmask) == 0) && robj == null)
                     {
