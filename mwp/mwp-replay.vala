@@ -300,6 +300,7 @@ public class ReplayThread : GLib.Object
     }
 
     public signal void replay_mission_file (string filename);
+    public signal void replay_done();
 
     public Thread<int> run (int fd, string relog, bool delay=true)
     {
@@ -792,7 +793,8 @@ public class ReplayThread : GLib.Object
                 }
                 uint8 x='x';
                 send_ltm(fd, 'x', &x, 1);
-               return 0;
+                replay_done();
+                return 0;
             });
         return thr;
     }

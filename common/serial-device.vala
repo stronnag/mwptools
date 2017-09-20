@@ -149,6 +149,11 @@ public class MWSerial : Object
         txbuf = new uint8[txbuf_alloc];
     }
 
+    public int get_fd()
+    {
+        return fd;
+    }
+
     public void set_txbuf(uint16 sz)
     {
         txbuf = new uint8[sz];
