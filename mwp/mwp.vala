@@ -1116,7 +1116,7 @@ public class MWPlanner : Gtk.Application {
         menuncfg.activate.connect (() => {
                 navconf.show();
             });
-        art_win = new ArtWin();
+        art_win = new ArtWin(conf.ah_inv_roll);
 
         dockmenus[DOCKLETS.ARTHOR] = builder.get_object ("menu_art_hor") as Gtk.MenuItem;
         dockmenus[DOCKLETS.ARTHOR].activate.connect (() => {

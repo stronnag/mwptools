@@ -171,13 +171,15 @@ public class ArtWin : GLib.Object
 {
     public Gtk.Box  box {get; private set;}
     private Ath.Horizon ath;
+    private bool inv = false;
 
-    public ArtWin()
+    public ArtWin(bool _inv = false)
     {
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
         ath = new Ath.Horizon();
         box.pack_start(ath, true,true,0);
         int sz = MWPlanner.conf.ahsize;
+        inv = _inv;
         box.set_size_request (sz, sz);
         box.show_all();
     }
@@ -187,11 +189,15 @@ public class ArtWin : GLib.Object
         if(visible)
         {
             double dx,dy;
-            dx = -sx/10.0;
+            dx = sx/10.0;
+            if(inv == false)
+                dx = -dx;
+
             if (dx < 0)
                 dx += 360;
 
-            dy = -sy/10;
+            dy = -sy/10.0;
+                // roll, pitch
             ath.update(dx,dy);
         }
     }

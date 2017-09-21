@@ -78,6 +78,7 @@ public class MWPSettings : GLib.Object
     public string logsavepath {get; private set; default=null;}
     public double max_home_delta {get; set; default=2.5;}
     public bool ignore_nm {get; set; default=false;}
+    public bool ah_inv_roll {get; set; default=false;}
     public string speech_api {get; private set; default=null;}
     public uint stats_timeout {get; set; default=30;}
 
@@ -243,6 +244,9 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "ignore-nm")
             ignore_nm = settings.get_boolean ("ignore-nm");
+
+        if(s == null || s == "ah-invert-roll")
+            ah_inv_roll = settings.get_boolean ("ah-invert-roll");
 
         if(s == null || s == "mission-path")
         {
