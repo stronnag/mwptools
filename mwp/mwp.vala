@@ -564,7 +564,8 @@ public class MWPlanner : Gtk.Application {
         POLL = 4,
         REPLAY = 8,
         SAVE_EEPROM = 16,
-        GETINFO = 32
+        GETINFO = 32,
+        CANCEL = 128
     }
 
     private struct WPMGR
@@ -1330,7 +1331,20 @@ public class MWPlanner : Gtk.Application {
                 return true;
             });
 
-        ag.connect(' ', 0, 0, (a,o,k,m) => {
+        ag.connect('k', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                if(wpmgr.wp_flag != 0)
+                {
+                    wpmgr.wp_flag = WPDL.CANCEL;
+                    remove_tid(ref upltid);
+                    MWPCursor.set_normal_cursor(window);
+                    reset_poller();
+                    validatelab.set_text("⚠"); // u+26a0
+                    mwp_warning_box("Upload cancelled", Gtk.MessageType.ERROR,10);
+                }
+                return true;
+            });
+
+          ag.connect(' ', 0, 0, (a,o,k,m) => {
                 if(replayer != Player.NONE)
                 {
                     handle_replay_pause();
@@ -3376,6 +3390,10 @@ public class MWPlanner : Gtk.Application {
                 have_wp = true;
                 MSP_WP w = MSP_WP();
                 uint8* rp = raw;
+                if((wpmgr.wp_flag & WPDL.CANCEL) != 0)
+                {
+                    break;
+                }
 
                 if((wpmgr.wp_flag & WPDL.POLL) == 0)
                 {
