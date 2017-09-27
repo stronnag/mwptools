@@ -5073,7 +5073,7 @@ public class MWPlanner : Gtk.Application {
                             var sb = new StringBuilder();
                             sb.append("Points: %u\n".printf(m.npoints));
                             sb.append("Distance: %.1fm\n".printf(m.dist));
-                            sb.append("Flight time %ds\n".printf(m.et));
+                            sb.append("Flight time %02d:%02d\n".printf(m.et/60, m.et%60 ));
                             if(m.lt != -1)
                                 sb.append("Loiter time: %ds\n".printf(m.lt));
                             if(m.nspeed == 0 && m.dist > 0 && m.et > 0)
