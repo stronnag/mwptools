@@ -6,8 +6,14 @@ ifeq ($(XOS),Linux)
 endif
 
 VAPI := $(shell valac --api-version)
-ifeq ($(VAPI),0.36)
- DOPTS += -D LSRREF
+ifeq ($(VAPI),0.30)
+ DOPTS += -D LSRVAL
+endif
+ifeq ($(VAPI),0.32)
+ DOPTS += -D LSRVAL
+endif
+ifeq ($(VAPI),0.34)
+ DOPTS += -D LSRVAL
 endif
 
 TARGET=2.46

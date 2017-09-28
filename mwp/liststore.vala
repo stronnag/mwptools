@@ -701,10 +701,10 @@ public class ListBox : GLib.Object
         {
             if(need_del)
             {
-#if LSRREF
-                list_model.remove(ref iter);
-#else
+#if LSRVAL
                 list_model.remove(iter);
+#else
+                list_model.remove(ref iter);
 #endif
                 lastid--;
             }
@@ -745,10 +745,10 @@ public class ListBox : GLib.Object
             {
                 have_rth = false;
                 lastid--;
-#if LSRREF
-                list_model.remove(ref iter);
-#else
+#if LSRVAL
                 list_model.remove(iter);
+#else
+                list_model.remove(ref iter);
 #endif
             }
         }
@@ -853,10 +853,10 @@ public class ListBox : GLib.Object
             Gtk.TreeIter iter;
             var path = t.get_path ();
             list_model.get_iter (out iter, path);
-#if LSRREF
-                list_model.remove(ref iter);
-#else
+#if LSRVAL
                 list_model.remove(iter);
+#else
+                list_model.remove(ref iter);
 #endif
             lastid--;
         }
