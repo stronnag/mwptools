@@ -644,8 +644,8 @@ public class DeltaDialog : GLib.Object
         switch(id)
         {
             case 1001:
-                dlat = get_locale_double(dlt_entry1.get_text());
-                dlon = get_locale_double(dlt_entry2.get_text());
+                dlat = g_strtod(dlt_entry1.get_text(),null);
+                dlon = g_strtod(dlt_entry2.get_text(),null);
                 dalt = (int)InputParser.get_scaled_int(dlt_entry3.get_text());
                 res = true;
                 break;
@@ -2052,7 +2052,7 @@ public class NavConfig : GLib.Object
                 ncu.nav_speed_min = u16;
 
                 string s = nav_bank_max.get_text();
-                u16 = (uint16)(get_locale_double(s)*100);
+                u16 = (uint16)(g_strtod(s,null)*100);
                 ncu.nav_bank_max = u16;
                 u16 = (uint16)int.parse(rth_altitude.get_text());
                 ncu.rth_altitude = u16;

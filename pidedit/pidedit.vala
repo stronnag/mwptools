@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-extern double get_locale_double(string str);
+extern double g_strtod(string str, out char* n);
 
 public struct PIDVals
 {
@@ -121,39 +121,38 @@ public class PIDEdit : Object
     private void get_misc()
     {
         misc.conf_minthrottle = (uint16)int.parse(eminthr.get_text());
-        misc.conf_mag_declination = (int16)(10*get_locale_double(emagdec.get_text()));
+        misc.conf_mag_declination = (int16)(10*g_strtod(emagdec.get_text(),null));
         misc.conf_vbatscale = (uint8)int.parse(evbatscale.get_text());
-        misc.conf_vbatlevel_warn1 = (uint8)(10*get_locale_double(evbatwarn1.get_text()));
-        misc.conf_vbatlevel_warn2 = (uint8)(10*get_locale_double(evbatwarn2.get_text()));
-        misc.conf_vbatlevel_crit = (uint8)(10*get_locale_double(evbatcrit.get_text()));
+        misc.conf_vbatlevel_warn1 = (uint8)(10*g_strtod(evbatwarn1.get_text(),null));
+        misc.conf_vbatlevel_warn2 = (uint8)(10*g_strtod(evbatwarn2.get_text(),null));
+        misc.conf_vbatlevel_crit = (uint8)(10*g_strtod(evbatcrit.get_text(),null));
     }
 
     private void get_rc_tuning()
     {
-        rt.rc_rate = (uint8)(100*get_locale_double(rcrate_entry.get_text()));
-        rt.rc_expo = (uint8)(100*get_locale_double(rcexpo_entry.get_text()));
-        rt.rollrate = (uint8)(100*get_locale_double(rollrate_entry.get_text()));
+        rt.rc_rate = (uint8)(100*g_strtod(rcrate_entry.get_text(),null));
+        rt.rc_expo = (uint8)(100*g_strtod(rcexpo_entry.get_text(),null));
+        rt.rollrate = (uint8)(100*g_strtod(rollrate_entry.get_text(),null));
         if(have_rccf)
         {
             var s = pitchrate_entry.get_text();
             if (s != null && s.length > 0)
             {
-                rt.pitchrate = (uint8)(100*get_locale_double(s));
+                rt.pitchrate = (uint8)(100*g_strtod(s,null));
             }
             else
                 rt.pitchrate = rt.rollrate ;
             rt.tpa_breakpoint = (uint16)(int.parse(tpabreak_entry.get_text()));
-            rt.yaw_expo = (uint8)(100*get_locale_double(yawexpo_entry.get_text()));
+            rt.yaw_expo = (uint8)(100*g_strtod(yawexpo_entry.get_text(),null));
         }
         else
         {
             rt.pitchrate = rt.rollrate ;
         }
-        rt.yawrate = (uint8)(100*get_locale_double(yawrate_entry.get_text()));
-        rt.dynthrpid = (uint8)(100*get_locale_double(dynthr_entry.get_text()));
-        rt.throttle_mid = (uint8)(100*get_locale_double(thrmid_entry.get_text()));
-        rt.throttle_expo = (uint8)(100*get_locale_double(threxpo_entry.get_text()));
-
+        rt.yawrate = (uint8)(100*g_strtod(yawrate_entry.get_text(),null));
+        rt.dynthrpid = (uint8)(100*g_strtod(dynthr_entry.get_text(),null));
+        rt.throttle_mid = (uint8)(100*g_strtod(thrmid_entry.get_text(),null));
+        rt.throttle_expo = (uint8)(100*g_strtod(threxpo_entry.get_text(),null));
     }
 
     private void save_file()

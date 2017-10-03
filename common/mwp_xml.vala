@@ -171,10 +171,10 @@ public class Mission : GLib.Object
                                 m.action = MSP.lookup_name(act);
                                 break;
                             case "lat":
-                                m.lat = get_locale_double(attr_content);
+                                m.lat = g_strtod(attr_content,null);
                                 break;
                             case "lon":
-                                m.lon = get_locale_double(attr_content);
+                                m.lon = g_strtod(attr_content,null);
                                 break;
                             case "parameter1":
                                 m.param1 = int.parse(attr_content);
@@ -223,10 +223,10 @@ public class Mission : GLib.Object
                                 this.zoom = (uint)int.parse(prop->children->content);
                                 break;
                             case "cx":
-                                this.cx = get_locale_double(prop->children->content);
+                                this.cx = g_strtod(prop->children->content,null);
                                 break;
                             case "cy":
-                                this.cy = get_locale_double(prop->children->content);
+                                this.cy = g_strtod(prop->children->content,null);
                                 break;
                         }
                     }
@@ -241,7 +241,7 @@ public class Mission : GLib.Object
                         switch(prop->name)
                         {
                             case "value":
-                                this.dist = get_locale_double(prop->children->content);
+                                this.dist = g_strtod(prop->children->content,null);
                                 break;
                         }
                     }
@@ -252,7 +252,7 @@ public class Mission : GLib.Object
                         switch(prop->name)
                         {
                             case "value":
-                                this.nspeed = get_locale_double(prop->children->content);
+                                this.nspeed = g_strtod(prop->children->content,null);
                                 break;
                         }
                     }
@@ -443,6 +443,9 @@ public class Mission : GLib.Object
 
 
 #if XMLTEST_MAIN
+
+extern double g_strtod(string str, out char* n);
+
 int main (string[] args) {
 
     if (args.length < 2) {

@@ -23,7 +23,7 @@ using Champlain;
 using GtkChamplain;
 
 extern string mwpvers;
-extern double get_locale_double(string str);
+extern double g_strtod(string str, out char* n);
 extern int atexit(VoidFunc func);
 extern int cf_pipe(int *fds);
 extern void speech_set_api(uint8 a);
@@ -1601,7 +1601,7 @@ public class MWPlanner : Gtk.Application {
             var i = 0;
             foreach (unowned string str in parts)
             {
-                var d = get_locale_double(str);
+                var d = g_strtod(str,null);
                 vcol.levels[i].cell = (float)d;
                 i++;
             }
@@ -3292,6 +3292,13 @@ public class MWPlanner : Gtk.Application {
                     deserialise_i16(raw+3, out an.rssi);
                     radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
                 }
+/****************************
+                {
+                    deserialise_u16(raw+1, out an.powermetersum);
+                    deserialise_u16(raw+5, out an.amps);
+                    print("ANALOGUE: %u %u\n", an.powermetersum, an.amps);
+                }
+******************/
                 if(Logger.is_logging)
                 {
                     Logger.analog(an);

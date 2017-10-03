@@ -35,14 +35,15 @@ class InputParser : GLib.Object
 
         if (latrx.match(latstr, 0, out mi))
         {
-            lat = get_locale_double(mi.fetch(1))+(get_locale_double(mi.fetch(2)) +
-                                                  get_locale_double(mi.fetch(3))/60.0)/60.0;
+            lat = g_strtod(mi.fetch(1),null) +
+            (g_strtod(mi.fetch(2),null) +
+             g_strtod(mi.fetch(3),null)/60.0)/60.0;
             if(mi.fetch(4) == "S")
                 lat = -lat;
         }
         else
         {
-            lat = get_locale_double(latstr);
+            lat = g_strtod(latstr,null);
         }
         return lat;
     }
@@ -60,14 +61,15 @@ class InputParser : GLib.Object
 
         if (lonrx.match(lonstr, 0, out mi))
         {
-            lon = get_locale_double(mi.fetch(1))+(get_locale_double(mi.fetch(2)) +
-                                             get_locale_double(mi.fetch(3))/60.0)/60.0;
+            lon = g_strtod(mi.fetch(1),null) + (
+                g_strtod(mi.fetch(2),null) +
+                g_strtod(mi.fetch(3),null)/60.0)/60.0;
             if(mi.fetch(4) == "W")
                 lon = -lon;
         }
         else
         {
-            lon = get_locale_double(lonstr);
+            lon = g_strtod(lonstr,null);
         }
         return lon;
     }
@@ -75,7 +77,7 @@ class InputParser : GLib.Object
     public static double get_scaled_real(string v, string s = "d")
     {
         double d=0;
-        d = get_locale_double(v);
+        d = g_strtod(v,null);
         uint cvt;
 
         if(s == "d")

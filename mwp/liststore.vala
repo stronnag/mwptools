@@ -667,10 +667,10 @@ public class ListBox : GLib.Object
                 if (typ == MSP.Action.WAYPOINT)
                     d = InputParser.get_scaled_real(new_text,"s");
                 else
-                    d = get_locale_double(new_text);
+                    d = g_strtod(new_text,null);
                 break;
             default:
-                d = get_locale_double(new_text);
+                d = g_strtod(new_text,null);
                 break;
         }
 

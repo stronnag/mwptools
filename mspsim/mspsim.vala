@@ -18,7 +18,7 @@
  */
 using Gtk;
 
-extern double get_locale_double(string str);
+extern double g_strtod(string str, out char* n);
 extern unowned char * ptsname(int fd);
 
 public struct LegItem
@@ -137,7 +137,7 @@ public class MWSim : GLib.Object
             *rp++ = w.action;
         rp = serialise_i32(rp, w.lat);
         rp = serialise_i32(rp, w.lon);
-        rp = serialise_u32(rp, w.altitude);
+        rp = serialise_i32(rp, w.altitude);
         rp = serialise_u16(rp, w.p1);
         rp = serialise_u16(rp, w.p2);
         rp = serialise_u16(rp, w.p3);
@@ -1278,7 +1278,7 @@ public class MWSim : GLib.Object
                     w.action = *rp++;
                     rp = deserialise_i32(rp, out w.lat);
                     rp = deserialise_i32(rp, out w.lon);
-                    rp = deserialise_u32(rp, out w.altitude);
+                    rp = deserialise_i32(rp, out w.altitude);
                     rp = deserialise_i16(rp, out w.p1);
                     rp = deserialise_u16(rp, out w.p2);
                     rp = deserialise_u16(rp, out w.p3);
@@ -1313,7 +1313,7 @@ public class MWSim : GLib.Object
                             var m =  ms.get_waypoint(0);
                             w.lat = (int32)(m.lat*10000000);
                             w.lon = (int32)(m.lon*10000000);
-                            w.alt = (uint32)(m.alt*100);
+                            w.alt = m.alt*100;
                             w.p1 = (int16)m.param1;
                             w.p2 = (uint16)m.param2;
                             w.p3 = (uint8)m.param3;
