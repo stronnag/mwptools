@@ -70,6 +70,7 @@ public class MSP : Object
 
         NAV_POSHOLD = 12,
         SET_NAV_POSHOLD = 13,
+        STATUS_EX = 150,
 
         RTC =  246,
         MSPV2 = 255,

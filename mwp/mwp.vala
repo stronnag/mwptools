@@ -392,6 +392,8 @@ public class MWPlanner : Gtk.Application {
     private int replayer = 0;
     private Pid child_pid;
     private MSP.Cmds[] requests = {};
+    private MSP.Cmds msp_get_status = MSP.Cmds.STATUS;
+    private uint16 xarm_flags;
     private int tcycle = 0;
     private SERSTATE serstate = SERSTATE.NONE;
 
@@ -596,6 +598,37 @@ public class MWPlanner : Gtk.Application {
         RTH = 4,
         WP = 8
     }
+
+    /***
+    private enum ARMFLAGS
+    {
+        ARMED                                           = (1 << 2),
+        WAS_EVER_ARMED                                  = (1 << 3),
+        ARMING_DISABLED_FAILSAFE_SYSTEM                 = (1 << 7),
+        ARMING_DISABLED_NOT_LEVEL                       = (1 << 8),
+        ARMING_DISABLED_SENSORS_CALIBRATING             = (1 << 9),
+        ARMING_DISABLED_SYSTEM_OVERLOADED               = (1 << 10),
+        ARMING_DISABLED_NAVIGATION_UNSAFE               = (1 << 11),
+        ARMING_DISABLED_COMPASS_NOT_CALIBRATED          = (1 << 12),
+        ARMING_DISABLED_ACCELEROMETER_NOT_CALIBRATED    = (1 << 13),
+        ARMING_DISABLED_ARM_SWITCH                      = (1 << 14),
+        ARMING_DISABLED_HARDWARE_FAILURE                = (1 << 15),
+        ARMING_DISABLED_BOXFAILSAFE                     = (1 << 16),
+        ARMING_DISABLED_BOXKILLSWITCH                   = (1 << 17),
+        ARMING_DISABLED_RC_LINK                         = (1 << 18),
+        ARMING_DISABLED_THROTTLE                        = (1 << 19),
+        ARMING_DISABLED_CLI                             = (1 << 20),
+        ARMING_DISABLED_CMS_MENU                        = (1 << 21),
+        ARMING_DISABLED_OSD_MENU                        = (1 << 22),
+    }
+    ***/
+
+    private string? [] arm_fails =
+    {
+        null,null, "Armed","Ever Armed", null,null,null,
+        "Failsafe", "Not level","Calibrating","Overload",
+        "Nav unsafe", "Compass cal", "Acc cal", "Arm switch", "H/W fail"
+    };
 
     private string [] disarm_reason =
     {
@@ -2159,8 +2192,12 @@ public class MWPlanner : Gtk.Application {
 
         sensor_alm = false;
 
-        requests += MSP.Cmds.STATUS;
-        reqsize += MSize.MSP_STATUS;
+        if (msp_get_status ==  MSP.Cmds.STATUS)
+            reqsize += MSize.MSP_STATUS;
+        else
+            reqsize += MSize.MSP_STATUS_EX;
+
+        requests += msp_get_status;
 
         requests += MSP.Cmds.ANALOG;
         reqsize += MSize.MSP_ANALOG;
@@ -2603,6 +2640,22 @@ public class MWPlanner : Gtk.Application {
         return board;
     }
 
+    private string get_arm_fail(uint16 af)
+    {
+        StringBuilder sb = new StringBuilder ();
+        for(var i = 0; i < 16; i++)
+        {
+            if(((af & (1<<i)) != 0) && arm_fails[i] != null)
+            {
+                sb.append(arm_fails[i]);
+                sb.append(",");
+            }
+        }
+        if(sb.len > 0)
+            sb.truncate(sb.len-1);
+        return sb.str;
+    }
+
     private void handle_msp_status(uint8[]raw)
     {
         uint32 bxflag;
@@ -2624,6 +2677,22 @@ public class MWPlanner : Gtk.Application {
         }
         else
         {
+            if(msp_get_status == MSP.Cmds.STATUS_EX)
+            {
+                uint16 arm_flags;
+                deserialise_u16(raw+13, out arm_flags);
+                if(arm_flags != xarm_flags)
+                {
+                    uint16 loadpct;
+                    deserialise_u16(raw+11, out loadpct);
+                    xarm_flags = arm_flags;
+
+                    string arm_msg = get_arm_fail(xarm_flags);
+                    MWPLog.message("Arming flags: %s (%04x), load %d%%\n",
+                                   arm_msg, xarm_flags, loadpct);
+                }
+            }
+
             if(have_status == false)
             {
                 have_status = true;
@@ -2841,7 +2910,7 @@ public class MWPlanner : Gtk.Application {
                     run_queue();
                     break;
                 case MSP.Cmds.MISC:
-                    queue_cmd(MSP.Cmds.STATUS,null,0);
+                    queue_cmd(msp_get_status,null,0);
                     run_queue();
                     break;
                 case  MSP.Cmds.WP_GETINFO:
@@ -2886,6 +2955,9 @@ public class MWPlanner : Gtk.Application {
                 {
                     vi.fc_api = raw[1] << 8 | raw[2];
                     queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+                    msp_get_status = (vi.fc_api >= 0x200) ? MSP.Cmds.STATUS_EX :
+                        MSP.Cmds.STATUS;
+                    xarm_flags = 0;
                 }
                 break;
 
@@ -3133,10 +3205,11 @@ public class MWPlanner : Gtk.Application {
                 have_misc = true;
                 vwarn1 = raw[19];
                 queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-                queue_cmd(MSP.Cmds.STATUS,null,0);
+                queue_cmd(msp_get_status,null,0);
                 break;
 
             case MSP.Cmds.STATUS:
+            case MSP.Cmds.STATUS_EX:
                 handle_msp_status(raw);
                 break;
 

@@ -249,6 +249,7 @@ public enum MSize
 {
     MSP_IDENT=7,
     MSP_STATUS=11,
+    MSP_STATUS_EX=16,
     MSP_MISC=22,
     MSP_ALTITUDE=6,
     MSP_RAW_GPS=18,
