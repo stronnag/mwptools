@@ -1666,70 +1666,66 @@ public class MWPlanner : Gtk.Application {
         {
             connect_serial();
         }
+#if LSRVAL
+            var mon = screen.get_monitor_at_window(screen.get_active_window());
+            Gdk.Rectangle rect;
+            screen.get_monitor_geometry(mon, out rect);
+            if(conf.window_p < rect.width*60/100
+               || conf.window_p > rect.width*85/100)
+                conf.window_p = rect.width*70/100;
+            if(conf.window_w > rect.width)
+                conf.window_w = rect.width;
+            if(conf.window_h > rect.height)
+                conf.window_h = rect.height;
+#else
+            Gdk.Display dp = Gdk.Display.get_default();
+            var mon = dp.get_monitor_at_window(window.get_window());
+            var rect = mon.get_geometry();
+            if(conf.window_p < rect.width*60/100
+               || conf.window_p > rect.width*85/100)
+                conf.window_p = rect.width*70/100;
+            if(conf.window_w > rect.width)
+                conf.window_w = rect.width;
+            if(conf.window_h > rect.height)
+                conf.window_h = rect.height;
+#endif
+//        MWPLog.message("sizes, pane %d %d %d\n", conf.window_w, conf.window_h, conf.window_p);
+        if( conf.window_p >  conf.window_w)
+            conf.window_p = conf.window_w *70/100;
 
         window.set_default_size(conf.window_w, conf.window_h);
         window.show_now();
 
-        var ebox = new Gtk.Box (Gtk.Orientation.HORIZONTAL,2);
-
-        if(conf.window_p == -1)
-        {
-/*
-*** non-deprecated ****
-            Gdk.Display dp = Gdk.Display.get_default();
-            var mon = dp.get_monitor_at_window(window.get_window());
-            var rect = mon.get_geometry();
-            conf.window_p = rect.width*80/100;
-*/
-            var mon = screen.get_monitor_at_window(screen.get_active_window());
-            Gdk.Rectangle monitor;
-            screen.get_monitor_geometry(mon, out monitor);
-            conf.window_p = monitor.width*80/100;
-        }
-
             // Hack (thanks to Inkscape for the clue) to made pane resize better
         pane.set_resize_mode(Gtk.ResizeMode.QUEUE);
+        pane.pack1(embed,true, true);
+        pane.pack2(box, true, true);
         pane.position = conf.window_p;
-        pane.pack1(ebox,true, false);
-        pane.add2(box); //, true, true);
-        ebox.pack_start (embed, true, true, 0);
-        ebox.show_all();
 
         Timeout.add_seconds(5, () => { return try_connect(); });
-
         if(set_fs)
             window.fullscreen();
         else if(no_max == false || conf.window_w == -1 || conf.window_h == -1)
             window.maximize();
         else
-            window.resize(conf.window_w, conf.window_h);
+        {
+            window.resize(rect.width*70/100, rect.height*70/100);
+        }
 
         window.show_all();
-        Timeout.add(500, () => {
-                int wd,ht;
-                window.get_size(out wd, out ht);
-                if (wd > conf.window_p)
-                        conf.window_p = wd *70 /100;
-
-                if(pane.position != conf.window_p)
-                {
-                    pane.position = conf.window_p;
-                }
-                Timeout.add(250, () => {
-                        fbox.allow_resize(false);
-                        return Source.REMOVE;
-                    });
-                return Source.REMOVE;
-            });
-
+        pane.position = conf.window_p;
         window.size_allocate.connect((a) => {
-                if(((a.width != conf.window_w) || (a.height != conf.window_h))
-                   && (!window.is_maximized)
-                   )
+                if(((a.width != conf.window_w) || (a.height != conf.window_h)))
                 {
                     conf.window_w  = a.width;
                     conf.window_h = a.height;
                     conf.save_window();
+                    if(conf.window_p < conf.window_w*60/100
+                       || conf.window_p > conf.window_w*80/100)
+                    {
+                        conf.window_p = conf.window_w*70/100;
+                        pane.position = conf.window_p;
+                    }
                 }
             });
 
@@ -1753,7 +1749,6 @@ public class MWPlanner : Gtk.Application {
                     });
                 return false;
             });
-
         if(!lman.load_init())
         {
             dockitem[DOCKLETS.ARTHOR].iconify_item ();
@@ -1765,13 +1760,11 @@ public class MWPlanner : Gtk.Application {
             dockitem[DOCKLETS.FBOX].iconify_item ();
             lman.save_config();
         }
-
         mwpdh = new MwpDockHelper(dockitem[DOCKLETS.MISSION], dock,
                           "Mission Editor", conf.tote_floating);
         mwpdh.transient(window);
 
         fbox.update(true);
-
         if(conf.mavph != null)
             parse_rc_mav(conf.mavph, Craft.Special.PH);
 
@@ -5464,9 +5457,12 @@ public class MWPlanner : Gtk.Application {
     {
         time_t currtime;
         time_t(out currtime);
+        var fx = Environment.get_variable("MWP_FORCEX");
+        if(fx != null)
+            Gdk.set_allowed_backends("x11");
 
         if (GtkClutter.init (ref args) != InitError.SUCCESS)
-            return 1;
+                return 1;
 
         if(Posix.isatty(stderr.fileno()) == false)
         {
