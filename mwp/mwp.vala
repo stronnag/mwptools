@@ -5470,6 +5470,10 @@ public class MWPlanner : Gtk.Application {
             stderr = FileStream.open(fn,"a");
         }
         MWPLog.message("mwp startup version: %s\n", mwpvers);
+        var way = Environment.get_variable("XDG_SESSION_TYPE");
+        if(way == "wayland")
+            MWPLog.message("** Wayland ** detected. If bad things happen, set the environment variable \"MWP_FORCEX\" (to anything)\n");
+
         var opt = new OptionContext("");
         try {
             opt.set_help_enabled(true);
