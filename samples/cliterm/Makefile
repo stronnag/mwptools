@@ -25,6 +25,9 @@ msptest: msptest.vala $(COMMON)
 mspfuzz: mspfuzz.vala $(COMMON)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
+mspcommon: mspcommon.vala $(COMMON)
+	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
+
 vxtest: vxtest.vala $(COMMON)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 

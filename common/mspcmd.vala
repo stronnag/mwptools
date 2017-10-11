@@ -78,6 +78,7 @@ public class MSP : Object
         INAV_TZ = 0x1001,
         INAV_SET_TZ = 0x1002,
         COMMON_SETTING = 0x1003,
+        COMMON_SET_SETTING = 0x1004,
 
         LTM_BASE  = 0x10000,
         TS_FRAME = (LTM_BASE + 'S'),

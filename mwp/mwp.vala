@@ -3236,8 +3236,13 @@ public class MWPlanner : Gtk.Application {
                 have_misc = true;
                 vwarn1 = raw[19];
                 need_mission = false;
-                queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-                queue_cmd(MSP.Cmds.ACTIVEBOXES,null,0);
+                if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
+                    queue_cmd(MSP.Cmds.STATUS,null,0);
+                else
+                {
+                    queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+                    queue_cmd(MSP.Cmds.ACTIVEBOXES,null,0);
+                }
                 break;
 
             case MSP.Cmds.ACTIVEBOXES:
@@ -3310,7 +3315,6 @@ public class MWPlanner : Gtk.Application {
                                 case MSP.Action.SET_POI:
                                 case MSP.Action.SET_HEAD:
                                 case MSP.Action.JUMP:
-                                case MSP.Action.RTH:
                                     break;
                                 default:
                                     nwp++;
@@ -3642,7 +3646,9 @@ public class MWPlanner : Gtk.Application {
                         MWPCursor.set_normal_cursor(window);
                         bleet_sans_merci(Alert.GENERAL);
                         validatelab.set_text("✔"); // u+2714
-                        mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
+
+                        if(vi.fc_api < APIVERS.mspV2)
+                            mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
                         if((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
                         {
                             uint8 zb=42;
