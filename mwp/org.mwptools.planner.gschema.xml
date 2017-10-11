@@ -365,5 +365,15 @@
       automagically closes. A value of 0 means no timeout.</description>
     </key>
 
+    <key name="auto-restore-mission" type="b">
+      <default>false</default>
+      <summary>Whether to automatically import a mission in FC memory
+      to MWP</summary>
+      <description>
+	If the FC holds a valid mission in memory, and there is no
+	mission loaded into MWP, this setting controls whether MWP
+	automatically downloades the mission.
+      </description>
+    </key>
   </schema>
 </schemalist>

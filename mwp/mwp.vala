@@ -450,7 +450,8 @@ public class MWPlanner : Gtk.Application {
     private uint gpsintvl = 0;
     private bool telem = false;
     private uint8 wp_max = 0;
-
+    private uint16 nav_wp_safe_distance = 0;
+    private bool need_mission = false;
     private Clutter.Text clutext;
     private VCol vcol;
     private Odostats odo;
@@ -1273,7 +1274,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     markers.remove_rings(view);
                     craft.init_trail();
-                }
+               }
                 return true;
             });
 
@@ -1361,6 +1362,7 @@ public class MWPlanner : Gtk.Application {
 
         ag.connect('z', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
                 ls.clear_mission();
+                wpmgr.wps = {};
                 return true;
             });
 
@@ -2022,7 +2024,7 @@ public class MWPlanner : Gtk.Application {
                     {
                         if(rxerr == false)
                         {
-                            set_error_status("No data for 5 seconds");
+                            set_error_status("No data for 5s");
                             rxerr=true;
                         }
                     }
@@ -2854,6 +2856,33 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
+    private void check_mission_safe(double mlat, double mlon)
+    {
+        if(GPSInfo.nsat > 5)
+        {
+            var sb = new StringBuilder();
+            double dist,cse;
+            Geo.csedist(
+                GPSInfo.lat, GPSInfo.lon,
+                mlat, mlon,
+                out dist, out cse);
+            dist *= 1852.0;
+            sb.assign("To WP1: %.1fm".printf(dist));
+            if (nav_wp_safe_distance > 0)
+            {
+                double nsd = nav_wp_safe_distance/100.0;
+                sb.append(", nav_wp_safe_distance %.0f".printf(nsd));
+                if(dist > nsd)
+                {
+                    mwp_warning_box(
+                        "Nav WP Safe Distance exceeded : %.0fm <= %.0fm".printf(nsd, dist), Gtk.MessageType.ERROR,60);
+                    }
+            }
+            sb.append("\n");
+            MWPLog.message(sb.str);
+        }
+    }
+
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
@@ -2907,6 +2936,9 @@ public class MWPlanner : Gtk.Application {
                     run_queue();
                     break;
                 case  MSP.Cmds.WP_GETINFO:
+                    run_queue();
+                    break;
+                case  MSP.Cmds.COMMON_SETTING:
                     run_queue();
                     break;
                 case MSP.Cmds.INAV_SET_TZ:
@@ -2970,6 +3002,12 @@ public class MWPlanner : Gtk.Application {
                 var rem = new DateTime.from_unix_local((int64)rtcsecs);
                 MWPLog.message("RTC local %s, fc %s.%03u\n",
                                loc,  rem.format("%FT%T"), millis);
+                if(need_mission)
+                {
+                    need_mission = false;
+                    if(conf.auto_restore_mission)
+                        download_mission();
+                }
                 break;
 
             case MSP.Cmds.BOARD_INFO:
@@ -3197,8 +3235,36 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.MISC:
                 have_misc = true;
                 vwarn1 = raw[19];
+                need_mission = false;
                 queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+                queue_cmd(MSP.Cmds.ACTIVEBOXES,null,0);
+                break;
+
+            case MSP.Cmds.ACTIVEBOXES:
+                uint32 ab;
+                deserialise_u32(raw, out ab);
+                StringBuilder sb = new StringBuilder();
+                sb.append("ACTIVEBOXES %u %08x".printf(len, ab));
+                if(len > 4)
+                {
+                    deserialise_u32(raw+4, out ab);
+                    sb.append(" %08x".printf(ab));
+                }
+                sb.append("\n");
+                MWPLog.message(sb.str);
+                var s="nav_wp_safe_distance";
+                queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
                 queue_cmd(msp_get_status,null,0);
+                break;
+
+
+            case MSP.Cmds.COMMON_SETTING:
+                switch ((string)lastmsg.data)
+                {
+                    case "nav_wp_safe_distance":
+                        deserialise_u16(raw, out nav_wp_safe_distance);
+                        break;
+                }
                 break;
 
             case MSP.Cmds.STATUS:
@@ -3213,12 +3279,11 @@ public class MWPlanner : Gtk.Application {
                 wp_max = wpi.max_wp = *rp++;
                 wpi.wps_valid = *rp++;
                 wpi.wp_count = *rp;
-                MWPLog.message("Waypoint Info : %u %u %u\n",
-                               wpi.max_wp, wpi.wps_valid, wpi.wp_count);
 
                 if((wpmgr.wp_flag & WPDL.GETINFO) != 0 && wpi.wps_valid == 0)
                 {
-                    mwp_warning_box("FC holds zero  WP", Gtk.MessageType.ERROR, 10);
+                    mwp_warning_box("FC holds zero  WP (max %u)".printf(wpi.max_wp),
+                                    Gtk.MessageType.ERROR, 10);
                     wpmgr.wp_flag |= ~WPDL.GETINFO;
                 }
                 else if (wpi.wp_count > 0 && wpi.wps_valid == 1 )
@@ -3229,6 +3294,31 @@ public class MWPlanner : Gtk.Application {
                     {
                         stslabel.set_text("%u WP valid in FC".printf(wpi.wp_count));
                         validatelab.set_text("✔"); // u+2714
+                    }
+                    if(ls.lastid == 0)
+                    {
+                        need_mission = true;
+                    }
+                    else
+                    {
+                        uint nwp = 0;
+                        var wps = ls.to_wps();
+                        foreach(var w in wps)
+                        {
+                            switch(w.action)
+                            {
+                                case MSP.Action.SET_POI:
+                                case MSP.Action.SET_HEAD:
+                                case MSP.Action.JUMP:
+                                case MSP.Action.RTH:
+                                    break;
+                                default:
+                                    nwp++;
+                                    break;
+                            }
+                        }
+                        if(nwp != wpi.wp_count)
+                            mwp_warning_box("WPs in FC (%u) != MWP mission (%d)".printf(nwp, wpi.wp_count), Gtk.MessageType.ERROR, 0);
                     }
                 }
                 break;
@@ -3358,13 +3448,6 @@ public class MWPlanner : Gtk.Application {
                     deserialise_i16(raw+3, out an.rssi);
                     radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
                 }
-/****************************
-                {
-                    deserialise_u16(raw+1, out an.powermetersum);
-                    deserialise_u16(raw+5, out an.amps);
-                    print("ANALOGUE: %u %u\n", an.powermetersum, an.amps);
-                }
-******************/
                 if(Logger.is_logging)
                 {
                     Logger.analog(an);
@@ -3425,7 +3508,6 @@ public class MWPlanner : Gtk.Application {
                             navstatus.cg_on();
                         }
                     }
-
                     if(craft != null)
                     {
                         if(pos_valid(GPSInfo.lat, GPSInfo.lon))
@@ -3449,7 +3531,6 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.SET_WP:
-//                MWPLog.message("WP %d %d\n", serstate, mq.get_length());
                 if(wpmgr.wps.length > 0)
                 {
                     var no = wpmgr.wps[wpmgr.wpidx].wp_no;
@@ -3571,6 +3652,8 @@ public class MWPlanner : Gtk.Application {
                         wpmgr.wp_flag |= WPDL.GETINFO;
                         queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
                         reset_poller();
+                        if(wpmgr.wps.length > 0)
+                            check_mission_safe(wpmgr.wps[0].lat/10000000.0,  wpmgr.wps[0].lon/10000000.0);
                     }
                 }
                 else if ((wpmgr.wp_flag & WPDL.REPLACE) != 0 ||
@@ -3612,7 +3695,7 @@ public class MWPlanner : Gtk.Application {
                             centre_mission(ms, !centreon);
                             markers.add_list_store(ls);
                             validatelab.set_text("✔"); // u+2714
-
+                            check_mission_safe(wp_resp[0].lat,wp_resp[0].lon);
                         }
                         wp_resp={};
                         reset_poller();
@@ -5095,6 +5178,8 @@ public class MWPlanner : Gtk.Application {
         msg.response.connect ((response_id) => {
                 msg.destroy();
             });
+
+        msg.set_title("MWP Notice");
         msg.show();
     }
 

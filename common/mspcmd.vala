@@ -67,7 +67,7 @@ public class MSP : Object
         MODE_RANGES = 34, // FC out message Returns all mode ranges
         SET_MODE_RANGE = 35,   // FC in message Sets a single mode range
         REBOOT = 68,
-
+        ACTIVEBOXES = 113,
         NAV_POSHOLD = 12,
         SET_NAV_POSHOLD = 13,
         STATUS_EX = 150,
@@ -77,6 +77,7 @@ public class MSP : Object
 
         INAV_TZ = 0x1001,
         INAV_SET_TZ = 0x1002,
+        COMMON_SETTING = 0x1003,
 
         LTM_BASE  = 0x10000,
         TS_FRAME = (LTM_BASE + 'S'),

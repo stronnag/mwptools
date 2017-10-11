@@ -81,7 +81,7 @@ public class MWPSettings : GLib.Object
     public bool ah_inv_roll {get; set; default=false;}
     public string speech_api {get; private set; default=null;}
     public uint stats_timeout {get; set; default=30;}
-
+    public bool auto_restore_mission {get; set; default=false;}
     public signal void settings_update (string s);
 
     public MWPSettings()
@@ -278,6 +278,9 @@ public class MWPSettings : GLib.Object
         }
         if(s == null || s == "stats-timeout")
             stats_timeout = settings.get_uint("stats-timeout");
+
+        if(s == null || s == "auto-restore-mission")
+            auto_restore_mission = settings.get_boolean("auto-restore-mission");
     }
 
     public void save_window()

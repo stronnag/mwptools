@@ -145,10 +145,8 @@ public class ListBox : GLib.Object
             if(typ != MSP.Action.UNASSIGNED)
             {
                 var w = MSP_WP();
-                n++;
                 w.action = typ;
                 list_model.get_value (iter, WY_Columns.IDX, out cell);
-                w.wp_no = n;
                 list_model.get_value (iter, WY_Columns.LAT, out cell);
                 w.lat = (int32)Math.lround(((double)cell) * POS_CONV);
                 list_model.get_value (iter, WY_Columns.LON, out cell);
@@ -175,8 +173,7 @@ public class ListBox : GLib.Object
                         case MSP.Action.POSHOLD_TIME:
                         case MSP.Action.POSHOLD_UNLIM:
                         case MSP.Action.LAND:
-                            MWPLog.message("Downgrade WP %s\n",
-                                           typ.to_string());
+                            MWPLog.message("Downgrade %s to WP\n", typ.to_string());
                             w.action =  MSP.Action.WAYPOINT;
                             w.p1 = 0;
                             w.p2 = w.p3 = 0;
@@ -185,11 +182,11 @@ public class ListBox : GLib.Object
                         case MSP.Action.SET_HEAD:
                         case MSP.Action.JUMP:
                             MWPLog.message("Remove WP %s\n", typ.to_string());
-
-                            n--;
                             continue;
                     }
                 }
+                n++;
+                w.wp_no = n;
                 if(fixwing && (typ == MSP.Action.RTH))
                 {
                     MWPLog.message("Remove Land from WP RTH\n");
