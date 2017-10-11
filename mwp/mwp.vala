@@ -2875,7 +2875,7 @@ public class MWPlanner : Gtk.Application {
                 if(dist > nsd)
                 {
                     mwp_warning_box(
-                        "Nav WP Safe Distance exceeded : %.0fm <= %.0fm".printf(nsd, dist), Gtk.MessageType.ERROR,60);
+                        "Nav WP Safe Distance exceeded : %.0fm >= %.0fm".printf(dist, nsd), Gtk.MessageType.ERROR,60);
                     }
             }
             sb.append("\n");
