@@ -376,7 +376,7 @@ public class MWPlanner : Gtk.Application {
     private time_t duration;
     private time_t last_dura;
     private time_t pausetm;
-    private time_t rtcsecs = 0;
+    private uint32 rtcsecs = 0;
 
     private int gfcse = 0;
     private uint8 armed = 0;
@@ -2936,12 +2936,11 @@ public class MWPlanner : Gtk.Application {
                     run_queue();
                     break;
                 case  MSP.Cmds.WP_GETINFO:
-                    run_queue();
-                    break;
                 case  MSP.Cmds.COMMON_SETTING:
+                case  MSP.Cmds.SET_RTC:
                     run_queue();
                     break;
-                case MSP.Cmds.INAV_SET_TZ:
+                case MSP.Cmds.COMMON_SET_TZ:
                     rtcsecs = 0;
                     queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
                     run_queue();
@@ -2986,22 +2985,34 @@ public class MWPlanner : Gtk.Application {
                 }
                 break;
 
-            case MSP.Cmds.INAV_SET_TZ:
+            case MSP.Cmds.COMMON_SET_TZ:
                 rtcsecs = 0;
                 queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
                 break;
 
             case MSP.Cmds.RTC:
-                var now = new DateTime.now_local();
                 uint16 millis;
                 uint8* rp = raw;
                 rp = deserialise_i32(rp, out rtcsecs);
                 deserialise_u16(rp, out millis);
-                string loc = "%s.%03u".printf(now.format("%FT%T"),
-                                              (uint)(now.get_microsecond()/1000));
+                var now = new DateTime.now_local();
+                uint16 locmillis = (uint16)(now.get_microsecond()/1000);
                 var rem = new DateTime.from_unix_local((int64)rtcsecs);
-                MWPLog.message("RTC local %s, fc %s.%03u\n",
-                               loc, rem.format("%FT%T"), millis);
+                string loc = "RTC local %s.%03u, fc %s.%03u\n".printf(
+                    now.format("%FT%T"),
+                    locmillis,
+                    rem.format("%FT%T"), millis);
+
+                if(rtcsecs == 0)
+                {
+                    uint8 tbuf[6];
+                    rtcsecs = (uint32)now.to_unix();
+                    serialise_u32(tbuf, rtcsecs);
+                    serialise_u16(tbuf+4, locmillis);
+                    queue_cmd(MSP.Cmds.SET_RTC,tbuf, 6);
+                    run_queue();
+                }
+
                 if(need_mission)
                 {
                     need_mission = false;
@@ -3075,7 +3086,7 @@ public class MWPlanner : Gtk.Application {
                             if(tzoffm != 0)
                             {
                                 MWPLog.message("set TZ offset %d\n", tzoffm);
-                                queue_cmd(MSP.Cmds.INAV_SET_TZ, &tzoffm, sizeof(int16));
+                                queue_cmd(MSP.Cmds.COMMON_SET_TZ, &tzoffm, sizeof(int16));
                             }
                             else
                                 queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
@@ -3504,6 +3515,9 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(rtcsecs == 0 && _nsats > 5)
                     {
+                        MWPLog.message("Request RTC pos: %f %f sats %d hdop %.1f\n",
+                                       GPSInfo.lat, GPSInfo.lon,
+                                       _nsats, rhdop/100.0);
                         queue_cmd(MSP.Cmds.RTC,null, 0);
                     }
                     sat_coverage();
@@ -4203,6 +4217,11 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.WP_MISSION_LOAD:
                 download_mission();
                 break;
+
+            case MSP.Cmds.SET_RTC:
+                MWPLog.message("Set RTC ack\n");
+                break;
+
             default:
                 MWPLog.message ("** Unknown response %d (%dbytes)\n", cmd, len);
                 break;

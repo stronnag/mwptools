@@ -73,10 +73,11 @@ public class MSP : Object
         STATUS_EX = 150,
 
         RTC =  246,
-        MSPV2 = 255,
+        SET_RTC = 247,
 
-        INAV_TZ = 0x1001,
-        INAV_SET_TZ = 0x1002,
+        MSPV2 = 255,
+        COMMON_TZ = 0x1001,
+        COMMON_SET_TZ = 0x1002,
         COMMON_SETTING = 0x1003,
         COMMON_SET_SETTING = 0x1004,
 
