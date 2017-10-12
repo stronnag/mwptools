@@ -3013,6 +3013,8 @@ public class MWPlanner : Gtk.Application {
                     run_queue();
                 }
 
+                MWPLog.message(loc);
+
                 if(need_mission)
                 {
                     need_mission = false;
