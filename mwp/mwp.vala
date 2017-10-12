@@ -2998,15 +2998,18 @@ public class MWPlanner : Gtk.Application {
                 rp = deserialise_i32(rp, out rtcsecs);
                 deserialise_u16(rp, out millis);
                 string loc = "%s.%03u".printf(now.format("%FT%T"),
-                                              (uint)(now.get_microsecond ()/1000));
+                                              (uint)(now.get_microsecond()/1000));
                 var rem = new DateTime.from_unix_local((int64)rtcsecs);
                 MWPLog.message("RTC local %s, fc %s.%03u\n",
-                               loc,  rem.format("%FT%T"), millis);
+                               loc, rem.format("%FT%T"), millis);
                 if(need_mission)
                 {
                     need_mission = false;
                     if(conf.auto_restore_mission)
+                    {
+                        MWPLog.message("Auto-download FC mission\n");
                         download_mission();
+                    }
                 }
                 break;
 
@@ -3249,7 +3252,7 @@ public class MWPlanner : Gtk.Application {
                 uint32 ab;
                 deserialise_u32(raw, out ab);
                 StringBuilder sb = new StringBuilder();
-                sb.append("ACTIVEBOXES %u %08x".printf(len, ab));
+                sb.append("Activeboxes %u %08x".printf(len, ab));
                 if(len > 4)
                 {
                     deserialise_u32(raw+4, out ab);
@@ -3262,12 +3265,15 @@ public class MWPlanner : Gtk.Application {
                 queue_cmd(msp_get_status,null,0);
                 break;
 
-
             case MSP.Cmds.COMMON_SETTING:
                 switch ((string)lastmsg.data)
                 {
                     case "nav_wp_safe_distance":
                         deserialise_u16(raw, out nav_wp_safe_distance);
+                        break;
+                    default:
+                        MWPLog.message("Unknown common setting %s\n",
+                                       (string)lastmsg.data);
                         break;
                 }
                 break;
@@ -3496,7 +3502,7 @@ public class MWPlanner : Gtk.Application {
 
                 if (gpsfix)
                 {
-                    if(rtcsecs ==0 && _nsats > 5)
+                    if(rtcsecs == 0 && _nsats > 5)
                     {
                         queue_cmd(MSP.Cmds.RTC,null, 0);
                     }
@@ -4539,10 +4545,7 @@ public class MWPlanner : Gtk.Application {
     {
         validatelab.set_text("");
 
-        var wps = ls.to_wps(inav, (vi.mrtype == Craft.Vehicles.FLYING_WING
-                                   || vi.mrtype == Craft.Vehicles.AIRPLANE
-                                   || vi.mrtype == Craft.Vehicles.CUSTOM_AIRPLANE));
-
+        var wps = ls.to_wps(inav, ((navcap & NAVCAPS.INAV_FW) != 0));
         if(wps.length > wp_max)
         {
             string str = "Number of waypoints (%d) exceeds max (%d)".printf(
