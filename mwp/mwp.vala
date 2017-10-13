@@ -5572,9 +5572,7 @@ public class MWPlanner : Gtk.Application {
     {
         time_t currtime;
         time_t(out currtime);
-        var fx = Environment.get_variable("MWP_FORCEX");
-        if(fx != null)
-            Gdk.set_allowed_backends("x11");
+        Gdk.set_allowed_backends("x11"); // wayland breaks too much
 
         if (GtkClutter.init (ref args) != InitError.SUCCESS)
                 return 1;
@@ -5585,9 +5583,6 @@ public class MWPlanner : Gtk.Application {
             stderr = FileStream.open(fn,"a");
         }
         MWPLog.message("mwp startup version: %s\n", mwpvers);
-        if(fx == null)
-            if(Environment.get_variable("XDG_SESSION_TYPE") == "wayland")
-                MWPLog.message("wayland detected. If bad things happen,\n\tset the environment variable \"MWP_FORCEX\" (to anything)\n");
 
         var opt = new OptionContext("");
         try {
