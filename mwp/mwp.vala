@@ -1668,7 +1668,7 @@ public class MWPlanner : Gtk.Application {
         {
             connect_serial();
         }
-#if LSRVAL
+#if OLDGTK
             var mon = screen.get_monitor_at_window(screen.get_active_window());
             Gdk.Rectangle rect;
             screen.get_monitor_geometry(mon, out rect);

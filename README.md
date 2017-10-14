@@ -30,7 +30,7 @@ tested on Ubuntu (latest and most recent LTS), Fedora (current) and
 FreeBSD (current release); building and running on any platform that
 supports (recent versions of):
 
- * gtk+3.0 (3.22 or later);
+ * gtk+3.0 (3.18 or later);
  * vala and gcc;
  * Clutter (software GL is fine);
  * libchamplain;

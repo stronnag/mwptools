@@ -16,6 +16,12 @@ ifeq ($(VAPI),0.34)
  DOPTS += -D LSRVAL
 endif
 
+GTKOK := $(shell pkg-config --atleast-version=3.22 gtk+-3.0; echo $$?)
+
+ifneq ($(GTKOK), 0)
+ DOPTS += -D OLDGTK
+endif
+
 TARGET=2.46
 VTEVERS=2.91
 
