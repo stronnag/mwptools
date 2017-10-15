@@ -393,7 +393,7 @@ public class MWPlanner : Gtk.Application {
     private Pid child_pid;
     private MSP.Cmds[] requests = {};
     private MSP.Cmds msp_get_status = MSP.Cmds.STATUS;
-    private uint16 xarm_flags;
+    private uint16 xarm_flags=0xffff;
     private int tcycle = 0;
     private SERSTATE serstate = SERSTATE.NONE;
 
@@ -626,7 +626,7 @@ public class MWPlanner : Gtk.Application {
 
     private string? [] arm_fails =
     {
-        null,null, "Armed","Ever Armed", null,null,null,
+        null, null, "Armed","Ever Armed", null,null,null,
         "Failsafe", "Not level","Calibrating","Overload",
         "Nav unsafe", "Compass cal", "Acc cal", "Arm switch", "H/W fail"
     };
@@ -2638,16 +2638,21 @@ public class MWPlanner : Gtk.Application {
     private string get_arm_fail(uint16 af)
     {
         StringBuilder sb = new StringBuilder ();
-        for(var i = 0; i < 16; i++)
+        if(af == 0)
+            sb.append("OK");
+        else
         {
-            if(((af & (1<<i)) != 0) && arm_fails[i] != null)
+            for(var i = 0; i < 16; i++)
             {
-                sb.append(arm_fails[i]);
-                sb.append(",");
+                if(((af & (1<<i)) != 0) && arm_fails[i] != null)
+                {
+                    sb.append(arm_fails[i]);
+                    sb.append(",");
+                }
             }
+            if(sb.len > 0)
+                sb.truncate(sb.len-1);
         }
-        if(sb.len > 0)
-            sb.truncate(sb.len-1);
         return sb.str;
     }
 
@@ -2680,11 +2685,10 @@ public class MWPlanner : Gtk.Application {
                 {
                     uint16 loadpct;
                     deserialise_u16(raw+11, out loadpct);
-                    xarm_flags = arm_flags;
-
-                    string arm_msg = get_arm_fail(xarm_flags);
+                    string arm_msg = get_arm_fail(arm_flags);
                     MWPLog.message("Arming flags: %s (%04x), load %d%%\n",
-                                   arm_msg, xarm_flags, loadpct);
+                                   arm_msg, arm_flags, loadpct);
+                    xarm_flags = arm_flags;
                 }
             }
 
@@ -2871,7 +2875,7 @@ public class MWPlanner : Gtk.Application {
             if (nav_wp_safe_distance > 0)
             {
                 double nsd = nav_wp_safe_distance/100.0;
-                sb.append(", nav_wp_safe_distance %.0f".printf(nsd));
+                sb.append(", nav_wp_safe_distance %.0fm".printf(nsd));
                 if(dist > nsd)
                 {
                     mwp_warning_box(
@@ -2981,7 +2985,7 @@ public class MWPlanner : Gtk.Application {
                     queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
                     msp_get_status = (vi.fc_api >= 0x200) ? MSP.Cmds.STATUS_EX :
                         MSP.Cmds.STATUS;
-                    xarm_flags = 0;
+                    xarm_flags = 0xffff;
                 }
                 break;
 
