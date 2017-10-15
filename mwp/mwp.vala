@@ -35,6 +35,14 @@ interface NetworkManager : GLib.Object {
     public abstract uint32 State {owned get;}
 }
 
+[DBus (name = "org.gnome.Shell.Screenshot")]
+interface ScreenShot : GLib.Object {
+    public abstract void ScreenshotArea (int x, int y, int width, int height,
+                                          bool flash, string filename,
+                                          out bool success,
+                                          out string filename_used) throws Error;
+}
+
 public enum NMSTATE {
         UNKNOWN=0, ASLEEP=1, CONNECTING=2, CONNECTED=3, DISCONNECTED=4,
         NM_STATE_ASLEEP           = 10,
@@ -456,6 +464,7 @@ public class MWPlanner : Gtk.Application {
     private VCol vcol;
     private Odostats odo;
     private OdoView odoview;
+    private static bool is_wayland = false;
 
     public struct MQI //: Object
     {
@@ -5056,13 +5065,34 @@ public class MWPlanner : Gtk.Application {
     {
         if(last_file != null)
         {
+            var path = get_cached_mission_image(last_file);
             var wdw = embed.get_window();
             var w = wdw.get_width();
             var h = wdw.get_height();
+            Gdk.Pixbuf pixb = null;
             try
             {
-                var pixb = Gdk.pixbuf_get_from_window (wdw, 0, 0, w, h);
-                var path = get_cached_mission_image(last_file);
+                if(is_wayland)
+                {
+                    int x,y;
+                    bool ok;
+                    string ofn;
+                    wdw.get_origin (out x, out y);
+                    ScreenShot ss = Bus.get_proxy_sync (BusType.SESSION,
+                                                 "org.gnome.Shell.Screenshot",
+                                                 "/org/gnome/Shell/Screenshot");
+                    ss.ScreenshotArea(x, y, w, h,
+                                      false, path,
+                                      out ok, out ofn);
+                    var img = new Gtk.Image.from_file(ofn);
+                    pixb = img.get_pixbuf();
+                }
+                else
+                {
+                    {
+                        pixb = Gdk.pixbuf_get_from_window (wdw, 0, 0, w, h);
+                    }
+                }
                 int dw,dh;
                 if(w > h)
                 {
@@ -5076,8 +5106,9 @@ public class MWPlanner : Gtk.Application {
                 }
                 var spixb = pixb.scale_simple(dw, dh, Gdk.InterpType.BILINEAR);
                 spixb.save(path, "png");
-            } catch (Error e) {
-                MWPLog.message ("pix: %s\n", e.message);
+            }
+            catch (Error e) {
+                MWPLog.message ("save preview: %s\n", e.message);
             }
         }
     }
@@ -5576,7 +5607,16 @@ public class MWPlanner : Gtk.Application {
     {
         time_t currtime;
         time_t(out currtime);
-        Gdk.set_allowed_backends("x11"); // wayland breaks too much
+        is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
+        if (is_wayland)
+        {
+            MWPLog.message("Wayland detected, if you experience problems, set the environment variable `MWP_FORCEX` (to anything) to force Xorg protocols\n");
+            if(Environment.get_variable("MWP_FORCEX") != null);
+            {
+                Gdk.set_allowed_backends("x11");
+                is_wayland = false;
+            }
+        }
 
         if (GtkClutter.init (ref args) != InitError.SUCCESS)
                 return 1;
