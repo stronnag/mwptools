@@ -5610,8 +5610,9 @@ public class MWPlanner : Gtk.Application {
         is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
         if (is_wayland)
         {
-            MWPLog.message("Wayland detected, if you experience problems, set the environment variable `MWP_FORCEX` (to anything) to force Xorg protocols\n");
-            if(Environment.get_variable("MWP_FORCEX") != null);
+            if(Environment.get_variable("MWP_FORCEX") == null)
+                MWPLog.message("Wayland detected, if you experience problems, set the environment variable `MWP_FORCEX` (to anything) to force Xorg protocols\n");
+            else
             {
                 Gdk.set_allowed_backends("x11");
                 is_wayland = false;
