@@ -3528,7 +3528,7 @@ public class MWPlanner : Gtk.Application {
 
                 if (gpsfix)
                 {
-                    if(rtcsecs == 0 && _nsats > 5)
+                    if(rtcsecs == 0 && _nsats > 5 && replayer == Player.NONE)
                     {
                         MWPLog.message("Request RTC pos: %f %f sats %d hdop %.1f\n",
                                        GPSInfo.lat, GPSInfo.lon,
