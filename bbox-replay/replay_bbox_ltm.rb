@@ -205,12 +205,7 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
     sleep 0.01
   end
 
-  inavers=STATE_EQ[iv]
-  if inavers.nil?
-    inavers = STATE_EQ.values.last
-    STDERR.puts "Using last known states set -- FIXME"
-  end
-  STDERR.puts "iNav version = #{iv} (states eq #{inavers})"
+  inavers =  get_state_version iv
   if $verbose
     STDERR.puts "iv = #{iv} state vers = #{inavers}"
   end
