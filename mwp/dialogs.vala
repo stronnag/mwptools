@@ -1949,10 +1949,10 @@ public class NavConfig : GLib.Object
 
     public signal void mr_nav_poshold_event (MSP_NAV_POSHOLD nph);
 
-    private Gtk.Window inav_fw_open(Gtk.Builder builder)
+    private Gtk.Window? inav_fw_open(Gtk.Builder builder)
     {
-        Gtk.Window w = builder.get_object ("inav_mr_conf") as Gtk.Window;
-        return w;
+//        Gtk.Window w = builder.get_object ("inav_mr_conf") as Gtk.Window;
+        return null;
     }
 
     public void mr_update(MSP_NAV_POSHOLD pcfg)
@@ -2112,12 +2112,15 @@ public class NavConfig : GLib.Object
             else
                 window = mw_open(builder);
         }
-        window.set_transient_for(parent);
-        window.delete_event.connect (() => {
-                window.hide();
-                visible = false;
-                return true;
-            });
+        if(window != null)
+        {
+            window.set_transient_for(parent);
+            window.delete_event.connect (() => {
+                    window.hide();
+                    visible = false;
+                    return true;
+                });
+        }
     }
 
     public void mw_update(MSP_NAV_CONFIG nc)

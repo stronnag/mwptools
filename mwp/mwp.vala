@@ -3211,7 +3211,14 @@ public class MWPlanner : Gtk.Application {
                     if(mission_eeprom)
                         menustore.sensitive = menurestore.sensitive = true;
                     MWPLog.message("Generate navconf %x\n", navcap);
-                    navconf.setup(ncbits);
+                    if((navcap & (NAVCAPS.NAVCONFIG|NAVCAPS.INAV_MR)) != 0)
+                        navconf.setup(ncbits);
+                    else
+                    {
+                        var me = builder.get_object ("nav_config_menu") as Gtk.MenuItem;
+                        me.sensitive =false;
+                    }
+
                     if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
                         navconf.mw_navconf_event.connect((mw,nc) => {
                                 mw_update_config(nc);
@@ -3408,20 +3415,23 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.NAV_POSHOLD:
                 have_nc = true;
-                MSP_NAV_POSHOLD poscfg = MSP_NAV_POSHOLD();
-                uint8* rp = raw;
-                poscfg.nav_user_control_mode = *rp++;
-                rp = deserialise_u16(rp, out poscfg.nav_max_speed);
-                rp = deserialise_u16(rp, out poscfg.nav_max_climb_rate);
-                rp = deserialise_u16(rp, out poscfg.nav_manual_speed);
-                rp = deserialise_u16(rp, out poscfg.nav_manual_climb_rate);
-                poscfg.nav_mc_bank_angle = *rp++;
-                poscfg.nav_use_midthr_for_althold = *rp++;
-                rp = deserialise_u16(rp, out poscfg.nav_mc_hover_thr);
-                navconf.mr_update(poscfg);
-                ls.set_mission_speed(poscfg.nav_max_speed / 100.0);
-                if (ls.lastid > 0)
-                    ls.calc_mission();
+                if((navcap & NAVCAPS.INAV_MR) == NAVCAPS.INAV_MR)
+                {
+                    MSP_NAV_POSHOLD poscfg = MSP_NAV_POSHOLD();
+                    uint8* rp = raw;
+                    poscfg.nav_user_control_mode = *rp++;
+                    rp = deserialise_u16(rp, out poscfg.nav_max_speed);
+                    rp = deserialise_u16(rp, out poscfg.nav_max_climb_rate);
+                    rp = deserialise_u16(rp, out poscfg.nav_manual_speed);
+                    rp = deserialise_u16(rp, out poscfg.nav_manual_climb_rate);
+                    poscfg.nav_mc_bank_angle = *rp++;
+                    poscfg.nav_use_midthr_for_althold = *rp++;
+                    rp = deserialise_u16(rp, out poscfg.nav_mc_hover_thr);
+                    ls.set_mission_speed(poscfg.nav_max_speed / 100.0);
+                    navconf.mr_update(poscfg);
+                    if (ls.lastid > 0)
+                        ls.calc_mission();
+                }
                 break;
 
             case MSP.Cmds.NAV_CONFIG:
