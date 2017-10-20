@@ -2704,7 +2704,9 @@ public class MWPlanner : Gtk.Application {
                     if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0)
                     {
                         arm_warn.show();
-                        arm_warn.set_tooltip_text(arm_msg);
+                        StringBuilder sb = new StringBuilder("<b>Arm Status</b>\n");
+                        sb.append(arm_msg);
+                        arm_warn.set_tooltip_markup(sb.str);
                     }
                     else
                     {
