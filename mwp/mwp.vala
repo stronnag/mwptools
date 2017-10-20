@@ -303,6 +303,7 @@ public class MWPlanner : Gtk.Application {
     private Gtk.MenuItem menucli;
     private string saved_menutext;
     private Gtk.MenuItem[] dockmenus;
+    private Gtk.Image arm_warn;
 
     public static MWPSettings conf;
     private MWSerial msp;
@@ -931,6 +932,7 @@ public class MWPlanner : Gtk.Application {
             window.set_icon_from_file(icon);
         } catch {};
 
+        arm_warn = builder.get_object ("arm_warn") as Gtk.Image;
         sensor_sts[0] = builder.get_object ("gyro_sts") as Gtk.Label;
         sensor_sts[1] = builder.get_object ("acc_sts") as Gtk.Label;
         sensor_sts[2] = builder.get_object ("baro_sts") as Gtk.Label;
@@ -1726,6 +1728,7 @@ public class MWPlanner : Gtk.Application {
         }
 
         window.show_all();
+        arm_warn.hide();
         pane.position = conf.window_p;
         window.size_allocate.connect((a) => {
                 if(((a.width != conf.window_w) || (a.height != conf.window_h)))
@@ -2700,6 +2703,15 @@ public class MWPlanner : Gtk.Application {
                     MWPLog.message("Arming flags: %s (%04x), load %d%%\n",
                                    arm_msg, arm_flags, loadpct);
                     xarm_flags = arm_flags;
+                    if(arm_flags != 0)
+                    {
+                        arm_warn.show();
+                        arm_warn.set_tooltip_text(arm_msg);
+                    }
+                    else
+                    {
+                        arm_warn.hide();
+                    }
                 }
             }
 
