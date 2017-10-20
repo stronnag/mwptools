@@ -16,6 +16,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+
+extern string __progname;
 public class MWPUtils
 {
     private static string? have_conf_file(string fn)
@@ -36,12 +38,12 @@ public class MWPUtils
         string cfile=null;
         string wanted = (dir != null) ? dir+"/"+fn  : fn;
 
-        debug("Looking for %s", wanted);
-
         var uc = Environment.get_user_data_dir();
         var app = Environment.get_application_name();
-        cfile = have_conf_file(GLib.Path.build_filename(uc,app,wanted));
+        if(app == null)
+            app = __progname;
 
+        cfile = have_conf_file(GLib.Path.build_filename(uc,app,wanted));
         if (cfile == null)
         {
             uc =  Environment.get_user_config_dir();
@@ -65,7 +67,6 @@ public class MWPUtils
                 cfile = have_conf_file(GLib.Path.build_filename ("./",fn));
             }
         }
-        debug("For %s, using %s", fn, cfile);
         return cfile;
     }
 }

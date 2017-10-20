@@ -465,6 +465,7 @@ public class MWPlanner : Gtk.Application {
     private Odostats odo;
     private OdoView odoview;
     private static bool is_wayland = false;
+    private static bool use_wayland = false;
 
     public struct MQI //: Object
     {
@@ -725,6 +726,7 @@ public class MWPlanner : Gtk.Application {
         { "n-points", 'S', 0, OptionArg.INT, out stack_size, "Number of points shown in GPS trail", "INT"},
         { "rings", 0, 0, OptionArg.STRING, out rrstr, "Range rings (number, interval(m)), e.g. --rings 10,20", null},
         { "version", 'v', 0, OptionArg.NONE, out show_vers, "show version", null},
+        { "wayland", 0, 0, OptionArg.NONE, out use_wayland, "force wayland (if available)", null},
         {null}
     };
 
@@ -5607,27 +5609,6 @@ public class MWPlanner : Gtk.Application {
     {
         time_t currtime;
         time_t(out currtime);
-        is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
-        if (is_wayland)
-        {
-            if(Environment.get_variable("MWP_FORCEX") == null)
-                MWPLog.message("Wayland detected, if you experience problems, set the environment variable `MWP_FORCEX` (to anything) to force Xorg protocols\n");
-            else
-            {
-                Gdk.set_allowed_backends("x11");
-                is_wayland = false;
-            }
-        }
-
-        if (GtkClutter.init (ref args) != InitError.SUCCESS)
-                return 1;
-
-        if(Posix.isatty(stderr.fileno()) == false)
-        {
-            var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
-            stderr = FileStream.open(fn,"a");
-        }
-        MWPLog.message("mwp startup version: %s\n", mwpvers);
 
         var opt = new OptionContext("");
         try {
@@ -5641,6 +5622,29 @@ public class MWPlanner : Gtk.Application {
                           "options\n", args[0]);
             return 1;
         }
+
+        is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
+        if (is_wayland)
+        {
+            if(use_wayland)
+                MWPLog.message("Wayland enabled, if you experience problems, remove the --wayland option\n");
+            else
+            {
+                MWPLog.message("Using Xwayland for safety:)\n");
+                Gdk.set_allowed_backends("x11");
+            }
+        }
+
+        if (GtkClutter.init (ref args) != InitError.SUCCESS)
+                return 1;
+
+        if(Posix.isatty(stderr.fileno()) == false)
+        {
+            var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
+            stderr = FileStream.open(fn,"a");
+        }
+        MWPLog.message("mwp startup version: %s\n", mwpvers);
+
         if(show_vers)
         {
             if(Posix.isatty(stderr.fileno()) == false)
