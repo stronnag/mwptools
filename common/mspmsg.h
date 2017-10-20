@@ -242,3 +242,17 @@ struct __attribute__ ((__packed__)) msp_wp_getinfo
 };
 
 typedef struct _msp_wp_getinfo MSP_WP_GETINFO;
+
+
+struct __attribute__ ((__packed__))  _msp_fw_config
+{
+    uint16_t cruise_throttle;
+    uint16_t min_throttle;
+    uint16_t max_throttle;
+    uint8_t max_bank_angle;
+    uint8_t max_climb_angle;
+    uint8_t max_dive_angle;
+    uint8_t pitch_to_throttle;
+    uint16_t loiter_radius;
+};
+typedef struct _msp_fw_config MSP_FW_CONFIG;

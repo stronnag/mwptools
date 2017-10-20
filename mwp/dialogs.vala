@@ -211,7 +211,6 @@ public class TelemetryStats : GLib.Object
     private Gtk.Label rxrate;
     private Gtk.Label txrate;
     private Gtk.Label timeouts;
-    private Gtk.Label waittime;
     private Gtk.Label cycletime;
     private Gtk.Label messages;
     public Gtk.Grid grid {get; private set;}
@@ -225,7 +224,6 @@ public class TelemetryStats : GLib.Object
         rxrate = builder.get_object ("ss-rxrate") as Gtk.Label;
         txrate = builder.get_object ("ss-txrate") as Gtk.Label;
         timeouts = builder.get_object ("ss-timeout") as Gtk.Label;
-        waittime = builder.get_object ("ss-wait") as Gtk.Label;
         cycletime = builder.get_object ("ss-cycle") as Gtk.Label;
         messages = builder.get_object ("ss-msgs") as Gtk.Label;
         grid.show_all();
@@ -240,7 +238,6 @@ public class TelemetryStats : GLib.Object
        rxrate.set_label("---");
        txrate.set_label("---");
        timeouts.set_label("---");
-       waittime.set_label("---");
        cycletime.set_label("---");
        messages.set_label("---");
    }
@@ -255,7 +252,6 @@ public class TelemetryStats : GLib.Object
             rxrate.set_label("%.0f b/s".printf(t.s.rxrate));
             txrate.set_label("%.0f b/s".printf(t.s.txrate));
             timeouts.set_label(t.toc.to_string());
-            waittime.set_label("%d ms".printf(t.tot));
             cycletime.set_label("%lu ms".printf(t.avg));
             messages.set_label(t.s.msgs.to_string());
         }
@@ -1947,12 +1943,68 @@ public class NavConfig : GLib.Object
     private Gtk.Entry inav_mc_bank_angle;
     private Gtk.Entry inav_mr_hover_throttle;
 
-    public signal void mr_nav_poshold_event (MSP_NAV_POSHOLD nph);
+        // iNav FW variables
 
-    private Gtk.Window? inav_fw_open(Gtk.Builder builder)
+    private Gtk.Entry fw_cruise_throttle;
+    private Gtk.Entry fw_min_throttle;
+    private Gtk.Entry fw_max_throttle;
+    private Gtk.Entry fw_max_bank;
+    private Gtk.Entry fw_max_climb;
+    private Gtk.Entry fw_max_dive;
+    private Gtk.Entry fw_pitch_throttle;
+    private Gtk.Entry fw_loiter_radius;
+
+    public signal void mr_nav_poshold_event (MSP_NAV_POSHOLD nph);
+    public signal void fw_config_event (MSP_FW_CONFIG fw);
+
+    private Gtk.Window inav_fw_open(Gtk.Builder builder)
     {
-//        Gtk.Window w = builder.get_object ("inav_mr_conf") as Gtk.Window;
-        return null;
+        Gtk.Window w = builder.get_object ("inav_fw_config") as Gtk.Window;
+        var button = builder.get_object ("inav_fw_close") as Gtk.Button;
+        button.clicked.connect(() => {
+                w.hide();
+            });
+
+        var apply = builder.get_object ("inav_fw_apply") as Gtk.Button;
+        apply.clicked.connect(() => {
+                fw_config_event(inav_fw_get_values());
+            });
+
+        fw_cruise_throttle = builder.get_object ("fw_cruise") as Gtk.Entry;
+        fw_min_throttle = builder.get_object ("fw_min_throttle") as Gtk.Entry;
+        fw_max_throttle = builder.get_object ("fw_max_throttle") as Gtk.Entry;
+        fw_max_bank = builder.get_object ("fw_max_bank") as Gtk.Entry;
+        fw_max_climb = builder.get_object ("fw_max_climb") as Gtk.Entry;
+        fw_max_dive = builder.get_object ("fw_max_dive") as Gtk.Entry;
+        fw_pitch_throttle = builder.get_object ("fw_pitch_throttle") as Gtk.Entry;
+        fw_loiter_radius = builder.get_object ("fw_loiter_radius") as Gtk.Entry;
+        return w;
+    }
+
+    private MSP_FW_CONFIG inav_fw_get_values()
+    {
+        MSP_FW_CONFIG fw = MSP_FW_CONFIG();
+        fw.cruise_throttle = (uint16)int.parse(fw_cruise_throttle.text);
+        fw.min_throttle = (uint16)int.parse(fw_min_throttle.text);
+        fw.max_throttle = (uint16)int.parse(fw_max_throttle.text);
+        fw.max_bank_angle = (uint8)int.parse(fw_max_bank.text);
+        fw.max_climb_angle = (uint8)int.parse(fw_max_climb.text);
+        fw.max_dive_angle = (uint8)int.parse(fw_max_dive.text);
+        fw.pitch_to_throttle = (uint8)int.parse(fw_pitch_throttle.text);
+        fw.loiter_radius = (uint16)int.parse(fw_loiter_radius.text);
+        return fw;
+    }
+
+    public void fw_update(MSP_FW_CONFIG fw)
+    {
+        fw_cruise_throttle.text = fw.cruise_throttle.to_string();
+        fw_min_throttle.text = fw.min_throttle.to_string();
+        fw_max_throttle.text = fw.max_throttle.to_string();
+        fw_max_bank.text = fw.max_bank_angle.to_string();
+        fw_max_climb.text = fw.max_climb_angle.to_string();
+        fw_max_dive.text = fw.max_dive_angle.to_string();
+        fw_pitch_throttle.text = fw.pitch_to_throttle.to_string();
+        fw_loiter_radius.text = fw.loiter_radius.to_string();
     }
 
     public void mr_update(MSP_NAV_POSHOLD pcfg)
@@ -2105,9 +2157,9 @@ public class NavConfig : GLib.Object
         typ = _typ;
         if(window == null)
         {
-            if(typ == MWPlanner.NAVCAPS.INAV_MR)
+            if((typ & MWPlanner.NAVCAPS.INAV_MR) != 0)
                 window = inav_mr_open(builder);
-            else if(typ == MWPlanner.NAVCAPS.INAV_FW)
+            else if((typ & MWPlanner.NAVCAPS.INAV_FW) != 0)
                 window = inav_fw_open(builder);
             else
                 window = mw_open(builder);

@@ -222,3 +222,16 @@ public struct MSP_WP_GETINFO
     uint8 wps_valid;
     uint8 wp_count;
 }
+
+[CCode (cheader_filename = "../common/mspmsg.h")]
+struct MSP_FW_CONFIG
+{
+    uint16 cruise_throttle;
+    uint16 min_throttle;
+    uint16 max_throttle;
+    uint8 max_bank_angle;
+    uint8 max_climb_angle;
+    uint8 max_dive_angle;
+    uint8 pitch_to_throttle;
+    uint16 loiter_radius;
+}

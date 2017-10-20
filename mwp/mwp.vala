@@ -2757,8 +2757,10 @@ public class MWPlanner : Gtk.Application {
                     }
                     if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
                         queue_cmd(MSP.Cmds.NAV_CONFIG,null,0);
-                    else if ((navcap & (NAVCAPS.INAV_MR|NAVCAPS.INAV_FW)) != 0)
+                    else if((navcap & NAVCAPS.INAV_MR)!= 0)
                         queue_cmd(MSP.Cmds.NAV_POSHOLD,null,0);
+                    else if((navcap & NAVCAPS.INAV_FW) != 0)
+                        queue_cmd(MSP.Cmds.FW_CONFIG,null,0);
                 }
 
                 var reqsize = build_pollreqs();
@@ -3211,14 +3213,7 @@ public class MWPlanner : Gtk.Application {
                     if(mission_eeprom)
                         menustore.sensitive = menurestore.sensitive = true;
                     MWPLog.message("Generate navconf %x\n", navcap);
-                    if((navcap & (NAVCAPS.NAVCONFIG|NAVCAPS.INAV_MR)) != 0)
-                        navconf.setup(ncbits);
-                    else
-                    {
-                        var me = builder.get_object ("nav_config_menu") as Gtk.MenuItem;
-                        me.sensitive =false;
-                    }
-
+                    navconf.setup(ncbits);
                     if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
                         navconf.mw_navconf_event.connect((mw,nc) => {
                                 mw_update_config(nc);
@@ -3226,6 +3221,10 @@ public class MWPlanner : Gtk.Application {
                     if((navcap & NAVCAPS.INAV_MR) == NAVCAPS.INAV_MR)
                         navconf.mr_nav_poshold_event.connect((mw,pcfg) => {
                                 mr_update_config(pcfg);
+                            });
+                    if((navcap & NAVCAPS.INAV_FW) == NAVCAPS.INAV_FW)
+                        navconf.fw_config_event.connect((mw,fw) => {
+                                fw_update_config(fw);
                             });
                 }
 
@@ -3415,23 +3414,35 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.NAV_POSHOLD:
                 have_nc = true;
-                if((navcap & NAVCAPS.INAV_MR) == NAVCAPS.INAV_MR)
-                {
-                    MSP_NAV_POSHOLD poscfg = MSP_NAV_POSHOLD();
-                    uint8* rp = raw;
-                    poscfg.nav_user_control_mode = *rp++;
-                    rp = deserialise_u16(rp, out poscfg.nav_max_speed);
-                    rp = deserialise_u16(rp, out poscfg.nav_max_climb_rate);
-                    rp = deserialise_u16(rp, out poscfg.nav_manual_speed);
-                    rp = deserialise_u16(rp, out poscfg.nav_manual_climb_rate);
-                    poscfg.nav_mc_bank_angle = *rp++;
-                    poscfg.nav_use_midthr_for_althold = *rp++;
-                    rp = deserialise_u16(rp, out poscfg.nav_mc_hover_thr);
-                    ls.set_mission_speed(poscfg.nav_max_speed / 100.0);
-                    navconf.mr_update(poscfg);
-                    if (ls.lastid > 0)
-                        ls.calc_mission();
-                }
+                MSP_NAV_POSHOLD poscfg = MSP_NAV_POSHOLD();
+                uint8* rp = raw;
+                poscfg.nav_user_control_mode = *rp++;
+                rp = deserialise_u16(rp, out poscfg.nav_max_speed);
+                rp = deserialise_u16(rp, out poscfg.nav_max_climb_rate);
+                rp = deserialise_u16(rp, out poscfg.nav_manual_speed);
+                rp = deserialise_u16(rp, out poscfg.nav_manual_climb_rate);
+                poscfg.nav_mc_bank_angle = *rp++;
+                poscfg.nav_use_midthr_for_althold = *rp++;
+                rp = deserialise_u16(rp, out poscfg.nav_mc_hover_thr);
+                ls.set_mission_speed(poscfg.nav_max_speed / 100.0);
+                navconf.mr_update(poscfg);
+                if (ls.lastid > 0)
+                    ls.calc_mission();
+                break;
+
+            case MSP.Cmds.FW_CONFIG:
+                have_nc = true;
+                MSP_FW_CONFIG fw = MSP_FW_CONFIG();
+                uint8* rp = raw;
+                rp = deserialise_u16(rp, out fw.cruise_throttle);
+                rp = deserialise_u16(rp, out fw.min_throttle);
+                rp = deserialise_u16(rp, out fw.max_throttle);
+                fw.max_bank_angle = *rp++;
+                fw.max_climb_angle = *rp++;
+                fw.max_dive_angle = *rp++;
+                fw.pitch_to_throttle = *rp++;
+                rp = deserialise_u16(rp, out fw.loiter_radius);
+                navconf.fw_update(fw);
                 break;
 
             case MSP.Cmds.NAV_CONFIG:
@@ -4251,6 +4262,12 @@ public class MWPlanner : Gtk.Application {
                 queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
                 queue_cmd(MSP.Cmds.NAV_POSHOLD, null,0);
                 break;
+
+            case MSP.Cmds.SET_FW_CONFIG:
+                queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
+                queue_cmd(MSP.Cmds.FW_CONFIG, null,0);
+                break;
+
             case MSP.Cmds.WP_MISSION_LOAD:
                 download_mission();
                 break;
@@ -4704,6 +4721,20 @@ public class MWPlanner : Gtk.Application {
         return (rp-&tmp[0]);
     }
 
+    private size_t serialise_fw (MSP_FW_CONFIG fw, uint8[] tmp)
+    {
+        uint8* rp = tmp;
+        rp = serialise_u16(rp, fw.cruise_throttle);
+        rp = serialise_u16(rp, fw.min_throttle);
+        rp = serialise_u16(rp, fw.max_throttle);
+        *rp++ = fw.max_bank_angle;
+        *rp++ = fw.max_climb_angle;
+        *rp++ = fw.max_dive_angle;
+        *rp++ = fw.pitch_to_throttle;
+        rp = serialise_u16(rp, fw.loiter_radius);
+        return (rp-&tmp[0]);
+    }
+
     private void mw_update_config(MSP_NAV_CONFIG nc)
     {
         have_nc = false;
@@ -4719,6 +4750,14 @@ public class MWPlanner : Gtk.Application {
         uint8 tmp[64];
         var nb = serialise_pcfg(pcfg, tmp);
         queue_cmd(MSP.Cmds.SET_NAV_POSHOLD, tmp, nb);
+    }
+
+    private void fw_update_config(MSP_FW_CONFIG fw)
+    {
+        have_nc = false;
+        uint8 tmp[64];
+        var nb = serialise_fw(fw, tmp);
+        queue_cmd(MSP.Cmds.SET_FW_CONFIG, tmp, nb);
     }
 
     private void queue_cmd(MSP.Cmds cmd, void* buf, size_t len)

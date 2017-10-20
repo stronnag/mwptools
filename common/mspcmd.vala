@@ -70,6 +70,9 @@ public class MSP : Object
         ACTIVEBOXES = 113,
         NAV_POSHOLD = 12,
         SET_NAV_POSHOLD = 13,
+        FW_CONFIG = 23,
+        SET_FW_CONFIG = 24,
+
         STATUS_EX = 150,
 
         RTC =  246,

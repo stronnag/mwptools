@@ -185,6 +185,18 @@ public struct MSP_NAV_POSHOLD
     uint8 reserved[8];
 }
 
+public struct MSP_FW_CONFIG
+{
+    uint16 cruise_throttle;
+    uint16 min_throttle;
+    uint16 max_throttle;
+    uint8 max_bank_angle;
+    uint8 max_climb_angle;
+    uint8 max_dive_angle;
+    uint8 pitch_to_throttle;
+    uint16 loiter_radius;
+}
+
 public struct LTM_GFRAME
 {
     int32 lat;
