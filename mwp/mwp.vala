@@ -611,7 +611,6 @@ public class MWPlanner : Gtk.Application {
         WP = 8
     }
 
-    /***
     private enum ARMFLAGS
     {
         ARMED                                           = (1 << 2),
@@ -633,7 +632,6 @@ public class MWPlanner : Gtk.Application {
         ARMING_DISABLED_CMS_MENU                        = (1 << 21),
         ARMING_DISABLED_OSD_MENU                        = (1 << 22),
     }
-    ***/
 
     private string? [] arm_fails =
     {
@@ -2703,7 +2701,7 @@ public class MWPlanner : Gtk.Application {
                     MWPLog.message("Arming flags: %s (%04x), load %d%%\n",
                                    arm_msg, arm_flags, loadpct);
                     xarm_flags = arm_flags;
-                    if(arm_flags != 0)
+                    if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0)
                     {
                         arm_warn.show();
                         arm_warn.set_tooltip_text(arm_msg);
