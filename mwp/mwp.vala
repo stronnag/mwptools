@@ -3563,13 +3563,17 @@ public class MWPlanner : Gtk.Application {
 
                 if (gpsfix)
                 {
-                    if(rtcsecs == 0 && _nsats > 5 && replayer == Player.NONE)
+                    if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ)
                     {
-                        MWPLog.message("Request RTC pos: %f %f sats %d hdop %.1f\n",
-                                       GPSInfo.lat, GPSInfo.lon,
-                                       _nsats, rhdop/100.0);
-                        queue_cmd(MSP.Cmds.RTC,null, 0);
+                        if(rtcsecs == 0 && _nsats > 5 && replayer == Player.NONE)
+                        {
+                            MWPLog.message("Request RTC pos: %f %f sats %d hdop %.1f\n",
+                                           GPSInfo.lat, GPSInfo.lon,
+                                           _nsats, rhdop/100.0);
+                            queue_cmd(MSP.Cmds.RTC,null, 0);
+                        }
                     }
+
                     sat_coverage();
                     if(armed == 1)
                     {
