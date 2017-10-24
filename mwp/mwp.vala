@@ -23,6 +23,8 @@ using Champlain;
 using GtkChamplain;
 
 extern string mwpvers;
+extern string mwpid;
+
 extern double g_strtod(string str, out char* n);
 extern int atexit(VoidFunc func);
 extern int cf_pipe(int *fds);
@@ -1557,7 +1559,12 @@ public class MWPlanner : Gtk.Application {
         swd = new SwitchDialog(builder, window);
 
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
-        about.version = mwpvers;
+        StringBuilder sb = new StringBuilder();
+        sb.append(mwpvers);
+        sb.append("\n");
+        sb.append(mwpid);
+        about.version = sb.str;
+
         about.copyright = "© 2014-%d Jonathan Hudson".printf(
             new DateTime.now_local().get_year());
 
@@ -5707,12 +5714,12 @@ public class MWPlanner : Gtk.Application {
             var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
             stderr = FileStream.open(fn,"a");
         }
-        MWPLog.message("mwp startup version: %s\n", mwpvers);
+        MWPLog.message("mwp startup version: %s \n", mwpvers, mwpid);
 
         if(show_vers)
         {
             if(Posix.isatty(stderr.fileno()) == false)
-                stderr.printf("version: %s\n", mwpvers);
+                stderr.printf("version: %s %s\n", mwpvers, mwpid);
             return 0;
         }
         Gst.init (ref args);
