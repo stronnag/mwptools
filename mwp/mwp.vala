@@ -2960,6 +2960,7 @@ public class MWPlanner : Gtk.Application {
                     queue_cmd(MSP.Cmds.API_VERSION, null,0);
                     run_queue();
                     break;
+                case MSP.Cmds.WP_MISSION_LOAD:
                 case MSP.Cmds.MISC:
                     queue_cmd(msp_get_status,null,0);
                     run_queue();
@@ -3760,8 +3761,6 @@ public class MWPlanner : Gtk.Application {
                     {
                         remove_tid(ref upltid);
                         MWPCursor.set_normal_cursor(window);
-                        if((debug_flags & DEBUG_FLAGS.WP) != DEBUG_FLAGS.NONE)
-                            stderr.printf("Null mission returned\n");
                         var ms = new Mission();
                         if(w.wp_no == 1 && m.action == MSP.Action.RTH
                            && w.lat == 0 && w.lon == 0)
@@ -3871,7 +3870,7 @@ public class MWPlanner : Gtk.Application {
                 al.vario = 0;
                 navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
 
-                double ddm;                  ;
+                double ddm;
                 int fix = gpsinfo.update_ltm(gf, conf.dms, item_visible(DOCKLETS.GPS), rhdop, out ddm);
                 _nsats = (gf.sats >> 2);
 
