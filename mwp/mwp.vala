@@ -793,6 +793,8 @@ public class MWPlanner : Gtk.Application {
 
     public override void activate ()
     {
+        const string[] speakers =  {"none", "espeak","speechd"};
+
         base.startup();
         wpmgr = WPMGR();
         mwvar = MWChooser.fc_from_arg0();
@@ -807,7 +809,7 @@ public class MWPlanner : Gtk.Application {
             spapi = (conf.speech_api == "espeak") ? 1 :
                 (conf.speech_api == "speechd") ? 2 : 0;
 
-        MWPLog.message("Using speech api %d\n", spapi);
+        MWPLog.message("Using speech api %d [%s]\n", spapi, speakers[spapi]);
 
         speech_set_api(spapi);
 
@@ -5653,7 +5655,7 @@ public class MWPlanner : Gtk.Application {
         return sb.str;
     }
 
-    private static void check_env_args(OptionContext opt)
+    private static string? check_env_args(OptionContext opt)
     {
         var s1 = read_cmd_opts();
         var s2 = Environment.get_variable("MWP_ARGS");
@@ -5664,7 +5666,6 @@ public class MWPlanner : Gtk.Application {
             sb.append(s2);
         if(sb.str.length > 0)
         {
-            MWPLog.message("prepending %s\n", sb.str);
             sb.prepend("mwp ");
             string []m;
             try
@@ -5673,25 +5674,40 @@ public class MWPlanner : Gtk.Application {
                 unowned string? []om = m;
                 opt.parse(ref om);
             } catch {}
+            return sb.str[4:sb.str.length];
         }
+        return null;
     }
 
     public static int main (string[] args)
     {
         time_t currtime;
         time_t(out currtime);
+        var sb = new StringBuilder("mwp ");
+        sb.append(mwpvers);
+        sb.append(" ");
+        sb.append(mwpid);
+        var verstr = sb.str;
+        string fixedopts=null;
 
         var opt = new OptionContext("");
         try {
+            opt.set_summary("  %s".printf(verstr));
             opt.set_help_enabled(true);
             opt.add_main_entries(options, null);
-            check_env_args(opt);
+            fixedopts = check_env_args(opt);
             opt.parse(ref args);
         } catch (OptionError e) {
             stderr.printf("Error: %s\n", e.message);
             stderr.printf("Run '%s --help' to see a full list of available "+
                           "options\n", args[0]);
             return 1;
+        }
+
+        if(show_vers)
+        {
+            stderr.printf("%s\n", verstr);
+            return 0;
         }
 
         is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
@@ -5714,14 +5730,9 @@ public class MWPlanner : Gtk.Application {
             var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
             stderr = FileStream.open(fn,"a");
         }
-        MWPLog.message("mwp startup version: %s \n", mwpvers, mwpid);
-
-        if(show_vers)
-        {
-            if(Posix.isatty(stderr.fileno()) == false)
-                stderr.printf("version: %s %s\n", mwpvers, mwpid);
-            return 0;
-        }
+        MWPLog.message("mwp startup version: %s\n", verstr);
+        if(fixedopts != null)
+            MWPLog.message("default options: %s\n", fixedopts);
         Gst.init (ref args);
         atexit(MWPlanner.xchild);
         var app = new MWPlanner();
