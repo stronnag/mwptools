@@ -128,8 +128,7 @@ public class SoupProxy : Soup.Server
         var ix = int.parse(parts[np+1]);
         var iy = int.parse(fn[0]);
         var q = quadkey(iz, ix, iy);
-        StringBuilder sb = new StringBuilder();
-        sb.append(basename);
+        StringBuilder sb = new StringBuilder(basename);
         sb.append(q);
         sb.append(extname);
         return sb.str;

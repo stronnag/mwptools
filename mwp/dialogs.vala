@@ -1350,17 +1350,17 @@ public class NavStatus : GLib.Object
         if (ns_state != null)
         {
             sb.append(ns_state);
-            sb.append(" ");
+            sb.append_c(' ');
         }
         if (ls_state != null)
             sb.append(ls_state);
         nav_state_label.set_label(sb.str);
 
-        sb.assign("");
+        sb.truncate();
         if (ns_action != null)
         {
             sb.append(ns_action);
-            sb.append(" ");
+            sb.append_c(' ');
         }
         if (ls_action != null)
             sb.append(ls_action);
@@ -1399,9 +1399,8 @@ public class NavStatus : GLib.Object
 
             if (Logger.is_logging)
             {
-                var b = new StringBuilder ();
-                b.append(ls_action.strip());
-                b.append(" ");
+                var b = new StringBuilder (ls_action.strip());
+                b.append_c(' ');
                 b.append(ls_state);
                 Logger.ltm_sframe(s, b.str);
             }

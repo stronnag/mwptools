@@ -151,14 +151,14 @@ public class Logger : GLib.Object
         if (r != null)
         {
             sb.append(r);
-            sb.append(" ");
+            sb.append_c(' ');
         }
         sb.append(u.nodename);
-        sb.append(" ");
+        sb.append_c(' ');
         sb.append(u.sysname);
-        sb.append(" ");
+        sb.append_c(' ');
         sb.append(u.release);
-        sb.append(" ");
+        sb.append_c(' ');
         sb.append(u.machine);
         return sb.str;
     }

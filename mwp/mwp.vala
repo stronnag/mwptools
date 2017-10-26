@@ -158,9 +158,8 @@ public class PosFormat : GLib.Object
         {
             var slat = lat(_lat,dms);
             var slon = lon(_lon,dms);
-            StringBuilder sb = new StringBuilder ();
-            sb.append(slat);
-            sb.append(" ");
+            StringBuilder sb = new StringBuilder(slat);
+            sb.append_c(' ');
             sb.append(slon);
             return sb.str;
         }
@@ -1561,9 +1560,8 @@ public class MWPlanner : Gtk.Application {
         swd = new SwitchDialog(builder, window);
 
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
-        StringBuilder sb = new StringBuilder();
-        sb.append(mwpvers);
-        sb.append("\n");
+        StringBuilder sb = new StringBuilder(mwpvers);
+        sb.append_c('\n');
         sb.append(mwpid);
         about.version = sb.str;
 
@@ -2668,7 +2666,7 @@ public class MWPlanner : Gtk.Application {
                 if(((af & (1<<i)) != 0) && arm_fails[i] != null)
                 {
                     sb.append(arm_fails[i]);
-                    sb.append(",");
+                    sb.append_c(',');
                 }
             }
             if(sb.len > 0)
@@ -2733,7 +2731,7 @@ public class MWPlanner : Gtk.Application {
                     if((sensor & sn) == sn)
                     {
                         sb0.append(sn.to_string());
-                        sb0.append(" ");
+                        sb0.append_c(' ');
                     }
                 }
                 MWPLog.message("Sensors: %s (%04x)\n", sb0.str, sensor);
@@ -2746,13 +2744,11 @@ public class MWPlanner : Gtk.Application {
                     StringBuilder sb = new StringBuilder();
                     sb.append(lab);
                     if(naze32 && vi.fc_api != 0)
-                    {
-                        sb.append(" API %d.%d".printf(vi.fc_api >> 8,vi.fc_api & 0xff ));
-                    }
+                        sb.append_printf(" API %d.%d", vi.fc_api >> 8,vi.fc_api & 0xff);
 
                     if(navcap != NAVCAPS.NONE)
                         sb.append(" Nav");
-                    sb.append(" Pr %d".printf(raw[10]));
+                    sb.append_printf(" Pr %d", raw[10]);
                     verlab.set_label(sb.str);
                 }
 
@@ -2905,18 +2901,18 @@ public class MWPlanner : Gtk.Application {
                 mlat, mlon,
                 out dist, out cse);
             dist *= 1852.0;
-            sb.assign("To WP1: %.1fm".printf(dist));
+            sb.append_printf("To WP1: %.1fm", dist);
             if (nav_wp_safe_distance > 0)
             {
                 double nsd = nav_wp_safe_distance/100.0;
-                sb.append(", nav_wp_safe_distance %.0fm".printf(nsd));
+                sb.append_printf(", nav_wp_safe_distance %.0fm", nsd);
                 if(dist > nsd)
                 {
                     mwp_warning_box(
                         "Nav WP Safe Distance exceeded : %.0fm >= %.0fm".printf(dist, nsd), Gtk.MessageType.ERROR,60);
                     }
             }
-            sb.append("\n");
+            sb.append_c('\n');
             MWPLog.message(sb.str);
         }
     }
@@ -3308,13 +3304,13 @@ public class MWPlanner : Gtk.Application {
                 uint32 ab;
                 deserialise_u32(raw, out ab);
                 StringBuilder sb = new StringBuilder();
-                sb.append("Activeboxes %u %08x".printf(len, ab));
+                sb.append_printf("Activeboxes %u %08x", len, ab);
                 if(len > 4)
                 {
                     deserialise_u32(raw+4, out ab);
-                    sb.append(" %08x".printf(ab));
+                    sb.append_printf(" %08x", ab);
                 }
-                sb.append("\n");
+                sb.append_c('\n');
                 MWPLog.message(sb.str);
                 var s="nav_wp_safe_distance";
                 queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
@@ -3707,7 +3703,7 @@ public class MWPlanner : Gtk.Application {
                             if ((fail & (1 <<i)) == (1 << i))
                             {
                                 sb.append(failnames[i]);
-                                sb.append(" ");
+                                sb.append_c(' ');
                             }
                         }
                         MWPCursor.set_normal_cursor(window);
@@ -4384,7 +4380,7 @@ public class MWPlanner : Gtk.Application {
             if(reason != null)
             {
                 sb.append(reason);
-                sb.append(" ");
+                sb.append_c(' ');
             }
             sb.append(have_home.to_string());
             MWPLog.message("Set home %f %f (%s)\n", lat, lon, sb.str);
@@ -4519,9 +4515,8 @@ public class MWPlanner : Gtk.Application {
             else
             {
                 MWPLog.message("alert %s\n", fn);
-                StringBuilder sb = new StringBuilder();
-                sb.append(conf.mediap);
-                sb.append(" ");
+                StringBuilder sb = new StringBuilder(conf.mediap);
+                sb.append_c(' ');
                 sb.append(fn);
                 try {
                     use_gst = !Process.spawn_command_line_async (sb.str);
@@ -5130,8 +5125,7 @@ public class MWPlanner : Gtk.Application {
             dir.make_directory_with_parents ();
         } catch {}
         var chk = Checksum.compute_for_string(ChecksumType.MD5, mfn);
-        StringBuilder sb = new StringBuilder();
-        sb.append(chk);
+        StringBuilder sb = new StringBuilder(chk);
         sb.append(".png");
         return GLib.Path.build_filename(cached,sb.str);
     }
@@ -5369,16 +5363,16 @@ public class MWPlanner : Gtk.Application {
                         if(m.read_xml_file (fn) == true)
                         {
                             var sb = new StringBuilder();
-                            sb.append("Points: %u\n".printf(m.npoints));
-                            sb.append("Distance: %.1fm\n".printf(m.dist));
-                            sb.append("Flight time %02d:%02d\n".printf(m.et/60, m.et%60 ));
+                            sb.append_printf("Points: %u\n", m.npoints);
+                            sb.append_printf("Distance: %.1fm\n", m.dist);
+                            sb.append_printf("Flight time %02d:%02d\n", m.et/60, m.et%60 );
                             if(m.lt != -1)
-                                sb.append("Loiter time: %ds\n".printf(m.lt));
+                                sb.append_printf("Loiter time: %ds\n", m.lt);
                             if(m.nspeed == 0 && m.dist > 0 && m.et > 0)
                                 m.nspeed = m.dist / (m.et - 3*m.npoints);
-                            sb.append("Speed: %.1f m/s\n".printf(m.nspeed));
+                            sb.append_printf("Speed: %.1f m/s\n", m.nspeed);
                             if(m.maxalt != 0x80000000)
-                                sb.append("Max altitude: %dm\n".printf(m.maxalt));
+                                sb.append_printf("Max altitude: %dm\n", m.maxalt);
                             plabel.set_text(sb.str);
                         }
                         else
@@ -5645,7 +5639,7 @@ public class MWPlanner : Gtk.Application {
                        !line.has_prefix(";"))
                     {
                         sb.append(line);
-                        sb.append(" ");
+                        sb.append_c(' ');
                     }
                 }
             } catch (Error e) {
@@ -5664,7 +5658,7 @@ public class MWPlanner : Gtk.Application {
            sb.append(s1);
         if(s2 != null)
             sb.append(s2);
-        if(sb.str.length > 0)
+        if(sb.len > 0)
         {
             sb.prepend("mwp ");
             string []m;
@@ -5674,7 +5668,7 @@ public class MWPlanner : Gtk.Application {
                 unowned string? []om = m;
                 opt.parse(ref om);
             } catch {}
-            return sb.str[4:sb.str.length];
+            return sb.str[4:sb.len];
         }
         return null;
     }
@@ -5685,7 +5679,7 @@ public class MWPlanner : Gtk.Application {
         time_t(out currtime);
         var sb = new StringBuilder("mwp ");
         sb.append(mwpvers);
-        sb.append(" ");
+        sb.append_c(' ');
         sb.append(mwpid);
         var verstr = sb.str;
         string fixedopts=null;

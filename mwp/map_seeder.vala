@@ -249,25 +249,20 @@ public class TileUtil : Object
             switch(t)
             {
                 case "Q":
-                    var s = quadkey();
-                    sb.append(s);
+                    sb.append(quadkey());
                     break;
                 case "X":
-                    var s = "%d".printf(ix);
-                    sb.append(s);
+                    sb.append_printf("%d", ix);
                     break;
                 case "Y":
-                    var s = "%d".printf(iy);
-                    sb.append(s);
+                    sb.append_printf("%d", iy);
                     break;
                 case "Z":
-                    var s = "%d".printf(tl[in].z);
-                    sb.append(s);
+                    sb.append_printf("%d", tl[in].z);
                     break;
                 case "TMSY":
                     int yval = (1 << tl[in].z) - iy - 1;
-                    var s = "%d".printf(yval);
-                    sb.append(s);
+                    sb.append_printf("%d", yval);
                     break;
                 default:
                     sb.append(t);

@@ -187,8 +187,7 @@ public class  BBoxDialog : Object
                         }
                         else if (maxidx == -1)
                         {
-                            StringBuilder sb = new StringBuilder ();
-                            sb.append("No valid log detected.\n");
+                            StringBuilder sb = new StringBuilder("No valid log detected.\n");
                             if(loginfo != null)
                             {
                                 sb.append("blackbox_decode says: ");

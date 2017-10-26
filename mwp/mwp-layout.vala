@@ -47,10 +47,9 @@ class LayMan : Object
 
     private string getfile(string? name=null)
     {
-        StringBuilder sb = new StringBuilder();
         if(name == null)
             name = layname;
-        sb.append(name);
+        StringBuilder sb = new StringBuilder(name);
         sb.append(".xml");
 //        stderr.printf("getfile() %s\n", sb.str);
         return GLib.Path.build_filename(confdir,sb.str);
