@@ -5704,6 +5704,10 @@ public class MWPlanner : Gtk.Application {
             return 0;
         }
 
+        MWPLog.message("mwp startup version: %s\n", verstr);
+        if(fixedopts != null)
+            MWPLog.message("default options: %s\n", fixedopts);
+
         is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
         if (is_wayland)
         {
@@ -5724,9 +5728,6 @@ public class MWPlanner : Gtk.Application {
             var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
             stderr = FileStream.open(fn,"a");
         }
-        MWPLog.message("mwp startup version: %s\n", verstr);
-        if(fixedopts != null)
-            MWPLog.message("default options: %s\n", fixedopts);
         Gst.init (ref args);
         atexit(MWPlanner.xchild);
         var app = new MWPlanner();
