@@ -304,7 +304,7 @@ public class MWPlanner : Gtk.Application {
     private Gtk.MenuItem menucli;
     private string saved_menutext;
     private Gtk.MenuItem[] dockmenus;
-    private Gtk.Image arm_warn;
+    private Gtk.Button arm_warn;
 
     public static MWPSettings conf;
     private MWSerial msp;
@@ -638,7 +638,7 @@ public class MWPlanner : Gtk.Application {
     {
         null, null, "Armed","Ever Armed", null,null,null,
         "Failsafe", "Not level","Calibrating","Overload",
-        "Nav unsafe", "Compass cal", "Acc cal", "Arm switch", "H/W fail"
+        "Navigation unsafe", "Compass cal", "Acc cal", "Arm switch", "H/W fail"
     };
 
     private string [] disarm_reason =
@@ -933,13 +933,28 @@ public class MWPlanner : Gtk.Application {
             window.set_icon_from_file(icon);
         } catch {};
 
-        arm_warn = builder.get_object ("arm_warn") as Gtk.Image;
+        arm_warn = builder.get_object ("arm_warn") as Gtk.Button;
         sensor_sts[0] = builder.get_object ("gyro_sts") as Gtk.Label;
         sensor_sts[1] = builder.get_object ("acc_sts") as Gtk.Label;
         sensor_sts[2] = builder.get_object ("baro_sts") as Gtk.Label;
         sensor_sts[3] = builder.get_object ("mag_sts") as Gtk.Label;
         sensor_sts[4] = builder.get_object ("gps_sts") as Gtk.Label;
         sensor_sts[5] = builder.get_object ("sonar_sts") as Gtk.Label;
+
+        arm_warn.clicked.connect(() =>
+            {
+                StringBuilder sb = new StringBuilder("<b>Arm Status</b>\n");
+                string arm_msg = get_arm_fail(xarm_flags,'\n');
+                sb.append(arm_msg);
+                arm_warn.set_tooltip_markup(sb.str);
+                var pop = new Gtk.Popover(arm_warn);
+                pop.position = Gtk.PositionType.BOTTOM;
+                Gtk.Label label = new Gtk.Label(sb.str);
+                label.set_use_markup (true);
+		label.set_line_wrap (true);
+                pop.add(label);
+                pop.show_all();
+            });
 
         zoomer = builder.get_object ("spinbutton1") as Gtk.SpinButton;
 
@@ -2654,7 +2669,7 @@ public class MWPlanner : Gtk.Application {
         return board;
     }
 
-    private string get_arm_fail(uint16 af)
+    private string get_arm_fail(uint16 af, char sep=',')
     {
         StringBuilder sb = new StringBuilder ();
         if(af == 0)
@@ -2666,7 +2681,7 @@ public class MWPlanner : Gtk.Application {
                 if(((af & (1<<i)) != 0) && arm_fails[i] != null)
                 {
                     sb.append(arm_fails[i]);
-                    sb.append_c(',');
+                    sb.append_c(sep);
                 }
             }
             if(sb.len > 0)
@@ -2702,18 +2717,15 @@ public class MWPlanner : Gtk.Application {
                 deserialise_u16(raw+13, out arm_flags);
                 if(arm_flags != xarm_flags)
                 {
+                    xarm_flags = arm_flags;
                     uint16 loadpct;
                     deserialise_u16(raw+11, out loadpct);
-                    string arm_msg = get_arm_fail(arm_flags);
+                    string arm_msg = get_arm_fail(xarm_flags);
                     MWPLog.message("Arming flags: %s (%04x), load %d%%\n",
-                                   arm_msg, arm_flags, loadpct);
-                    xarm_flags = arm_flags;
+                                   arm_msg, xarm_flags, loadpct);
                     if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0)
                     {
                         arm_warn.show();
-                        StringBuilder sb = new StringBuilder("<b>Arm Status</b>\n");
-                        sb.append(arm_msg);
-                        arm_warn.set_tooltip_markup(sb.str);
                     }
                     else
                     {
