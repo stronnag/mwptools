@@ -946,12 +946,13 @@ public class MWPlanner : Gtk.Application {
                 StringBuilder sb = new StringBuilder("<b>Arm Status</b>\n");
                 string arm_msg = get_arm_fail(xarm_flags,'\n');
                 sb.append(arm_msg);
-                arm_warn.set_tooltip_markup(sb.str);
+//                arm_warn.set_tooltip_markup(sb.str);
                 var pop = new Gtk.Popover(arm_warn);
                 pop.position = Gtk.PositionType.BOTTOM;
                 Gtk.Label label = new Gtk.Label(sb.str);
                 label.set_use_markup (true);
 		label.set_line_wrap (true);
+                label.margin = 16;
                 pop.add(label);
                 pop.show_all();
             });
@@ -4852,6 +4853,7 @@ public class MWPlanner : Gtk.Application {
         MWPLog.message("Serial doom replay %d\n", replayer);
         if(replayer == Player.NONE)
         {
+            arm_warn.hide();
             serstate = SERSTATE.NONE;
             menumwvar.sensitive =true;
             sflags = 0;
@@ -4954,6 +4956,7 @@ public class MWPlanner : Gtk.Application {
             serstate = SERSTATE.NONE;
             if (msp.open(serdev, conf.baudrate, out estr) == true)
             {
+                xarm_flags=0xffff;
                 lastrx = lastok = nticks;
                 init_state();
                 init_sstats();
