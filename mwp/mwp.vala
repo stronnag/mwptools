@@ -4304,11 +4304,11 @@ public class MWPlanner : Gtk.Application {
                 sb.printf("%d (%ubytes)", cmd, len);
                 if(len > 0)
                 {
-                    sb.append(" :");
+                    sb.append(" [");
                     foreach(var r in raw)
                         sb.printf(" %02x", r);
                 }
-                sb.append_c('\n');
+                sb.append(" ]\n");
                 MWPLog.message (sb.str);
                 break;
         }
