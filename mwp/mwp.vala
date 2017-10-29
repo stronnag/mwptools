@@ -4300,7 +4300,16 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             default:
-                MWPLog.message ("** Unknown response %d (%dbytes)\n", cmd, len);
+                StringBuilder sb = new StringBuilder("** Unknown response ");
+                sb.printf("%d (%ubytes)", cmd, len);
+                if(len > 0)
+                {
+                    sb.append(" :");
+                    foreach(var r in raw)
+                        sb.printf(" %02x", r);
+                }
+                sb.append_c('\n');
+                MWPLog.message (sb.str);
                 break;
         }
 
