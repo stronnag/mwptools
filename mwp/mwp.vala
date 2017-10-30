@@ -5728,6 +5728,12 @@ public class MWPlanner : Gtk.Application {
             return 0;
         }
 
+        if(Posix.isatty(stderr.fileno()) == false)
+        {
+            var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
+            stderr = FileStream.open(fn,"a");
+        }
+
         MWPLog.message("mwp startup version: %s\n", verstr);
         if(fixedopts != null)
             MWPLog.message("default options: %s\n", fixedopts);
@@ -5747,11 +5753,6 @@ public class MWPlanner : Gtk.Application {
         if (GtkClutter.init (ref args) != InitError.SUCCESS)
                 return 1;
 
-        if(Posix.isatty(stderr.fileno()) == false)
-        {
-            var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
-            stderr = FileStream.open(fn,"a");
-        }
         Gst.init (ref args);
         atexit(MWPlanner.xchild);
         var app = new MWPlanner();
