@@ -403,7 +403,7 @@ public class MWPlanner : Gtk.Application {
     private Pid child_pid;
     private MSP.Cmds[] requests = {};
     private MSP.Cmds msp_get_status = MSP.Cmds.STATUS;
-    private uint16 xarm_flags=0xffff;
+    private uint32 xarm_flags=0xffff;
     private int tcycle = 0;
     private SERSTATE serstate = SERSTATE.NONE;
 
@@ -625,6 +625,7 @@ public class MWPlanner : Gtk.Application {
         ARMING_DISABLED_ACCELEROMETER_NOT_CALIBRATED    = (1 << 13),
         ARMING_DISABLED_ARM_SWITCH                      = (1 << 14),
         ARMING_DISABLED_HARDWARE_FAILURE                = (1 << 15),
+            // Alas, not reported by STATUS_EX
         ARMING_DISABLED_BOXFAILSAFE                     = (1 << 16),
         ARMING_DISABLED_BOXKILLSWITCH                   = (1 << 17),
         ARMING_DISABLED_RC_LINK                         = (1 << 18),
@@ -638,7 +639,9 @@ public class MWPlanner : Gtk.Application {
     {
         null, null, "Armed","Ever Armed", null,null,null,
         "Failsafe", "Not level","Calibrating","Overload",
-        "Navigation unsafe", "Compass cal", "Acc cal", "Arm switch", "H/W fail"
+        "Navigation unsafe", "Compass cal", "Acc cal", "Arm switch", "H/W fail",
+        "Box failsafe", "Box killswitch", "RC Link", "Throttle", "CLI",
+        "CMS Menu", "OSD Menu"
     };
 
     private string [] disarm_reason =
@@ -2670,14 +2673,14 @@ public class MWPlanner : Gtk.Application {
         return board;
     }
 
-    private string get_arm_fail(uint16 af, char sep=',')
+    private string get_arm_fail(uint32 af, char sep=',')
     {
         StringBuilder sb = new StringBuilder ();
         if(af == 0)
             sb.append("OK");
         else
         {
-            for(var i = 0; i < 16; i++)
+            for(var i = 0; i < 32; i++)
             {
                 if(((af & (1<<i)) != 0) && arm_fails[i] != null)
                 {
@@ -2691,7 +2694,7 @@ public class MWPlanner : Gtk.Application {
         return sb.str;
     }
 
-    private void handle_msp_status(uint8[]raw)
+    private void handle_msp_status(uint8[]raw, uint len)
     {
         uint32 bxflag;
 
@@ -2714,13 +2717,23 @@ public class MWPlanner : Gtk.Application {
         {
             if(msp_get_status == MSP.Cmds.STATUS_EX)
             {
-                uint16 arm_flags;
-                deserialise_u16(raw+13, out arm_flags);
+                uint32 arm_flags;
+                uint16 xaf;
+                deserialise_u16(raw+13, out xaf);
+                arm_flags = xaf;
+
+                if(len == 18)
+                {
+                    deserialise_u16(raw+16, out xaf);
+                    arm_flags |= (xaf << 16);
+                }
+
                 if(arm_flags != xarm_flags)
                 {
                     xarm_flags = arm_flags;
                     uint16 loadpct;
                     deserialise_u16(raw+11, out loadpct);
+
                     string arm_msg = get_arm_fail(xarm_flags);
                     MWPLog.message("Arming flags: %s (%04x), load %d%%\n",
                                    arm_msg, xarm_flags, loadpct);
@@ -3345,7 +3358,7 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.STATUS:
             case MSP.Cmds.STATUS_EX:
-                handle_msp_status(raw);
+                handle_msp_status(raw, len);
                 break;
 
             case MSP.Cmds.WP_GETINFO:
