@@ -487,7 +487,8 @@ public class MWPlanner : Gtk.Application {
     private enum FCVERS
     {
         hasEEPROM = 0x010600,
-        hasTZ = 0x010704
+        hasTZ = 0x010704,
+        hasV2STATUS = 0x010801
     }
 
     private enum SERSTATE
@@ -2225,12 +2226,10 @@ public class MWPlanner : Gtk.Application {
 
         sensor_alm = false;
 
-        if (msp_get_status ==  MSP.Cmds.STATUS)
-            reqsize += MSize.MSP_STATUS;
-        else
-            reqsize += MSize.MSP_STATUS_EX;
-
         requests += msp_get_status;
+        reqsize += (msp_get_status ==  MSP.Cmds.STATUS_EX) ? MSize.MSP_STATUS_EX :
+            (msp_get_status ==  MSP.Cmds.INAV_STATUS) ? MSize.MSP2_INAV_STATUS :
+            MSize.MSP_STATUS;
 
         requests += MSP.Cmds.ANALOG;
         reqsize += MSize.MSP_ANALOG;
@@ -2715,17 +2714,18 @@ public class MWPlanner : Gtk.Application {
         }
         else
         {
-            if(msp_get_status == MSP.Cmds.STATUS_EX)
+            if(msp_get_status != MSP.Cmds.STATUS)
             {
                 uint32 arm_flags;
-                uint16 xaf;
-                deserialise_u16(raw+13, out xaf);
-                arm_flags = xaf;
-
-                if(len == 18)
+                if(msp_get_status == MSP.Cmds.STATUS_EX)
                 {
-                    deserialise_u16(raw+16, out xaf);
-                    arm_flags |= (xaf << 16);
+                    uint16 xaf;
+                    deserialise_u16(raw+13, out xaf);
+                    arm_flags = xaf;
+                }
+                else
+                {
+                    deserialise_u32(raw+13, out arm_flags);
                 }
 
                 if(arm_flags != xarm_flags)
@@ -2996,6 +2996,16 @@ public class MWPlanner : Gtk.Application {
                     queue_cmd(msp_get_status,null,0);
                     run_queue();
                     break;
+                case MSP.Cmds.INAV_STATUS:
+                    msp_get_status = MSP.Cmds.STATUS_EX;
+                    queue_cmd(msp_get_status,null,0);
+                    run_queue();
+                    break;
+                case MSP.Cmds.STATUS_EX:
+                    msp_get_status = MSP.Cmds.STATUS;
+                    queue_cmd(msp_get_status,null,0);
+                    run_queue();
+                    break;
                 case  MSP.Cmds.WP_GETINFO:
                 case  MSP.Cmds.COMMON_SETTING:
                 case  MSP.Cmds.SET_RTC:
@@ -3040,8 +3050,6 @@ public class MWPlanner : Gtk.Application {
                 {
                     vi.fc_api = raw[1] << 8 | raw[2];
                     queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
-                    msp_get_status = (vi.fc_api >= 0x200) ? MSP.Cmds.STATUS_EX :
-                        MSP.Cmds.STATUS;
                     xarm_flags = 0xffff;
                 }
                 break;
@@ -3139,7 +3147,8 @@ public class MWPlanner : Gtk.Application {
                         mission_eeprom = (vi.board != "AFNA" &&
                                           vi.board != "CC3D" &&
                                           vi.fc_vers >= FCVERS.hasEEPROM);
-
+                        msp_get_status = (vi.fc_api < 0x200) ? MSP.Cmds.STATUS :
+                            (vi.fc_vers >= FCVERS.hasV2STATUS) ? MSP.Cmds.INAV_STATUS : MSP.Cmds.STATUS_EX;
                         if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ)
                         {
                             msp.use_v2 = true;
@@ -3358,6 +3367,7 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.STATUS:
             case MSP.Cmds.STATUS_EX:
+            case MSP.Cmds.INAV_STATUS:
                 handle_msp_status(raw, len);
                 break;
 
@@ -4319,7 +4329,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     sb.append(" [");
                     foreach(var r in raw)
-                        sb.printf(" %02x", r);
+                        sb.append_printf(" %02x", r);
                 }
                 sb.append(" ]\n");
                 MWPLog.message (sb.str);
