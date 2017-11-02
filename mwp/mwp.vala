@@ -383,7 +383,7 @@ public class MWPlanner : Gtk.Application {
     private uint8 larmed = 0;
     private bool wdw_state = false;
     private time_t armtime;
-    private time_t duration;
+    private time_t duration = 0;
     private time_t last_dura;
     private time_t pausetm;
     private uint32 rtcsecs = 0;
@@ -1243,6 +1243,7 @@ public class MWPlanner : Gtk.Application {
         embed = new GtkChamplain.Embed();
         view = embed.get_view();
         view.set_reactive(true);
+        embed.set_can_default(false);
 
         view.animation_completed.connect(() => {
                 if(need_preview)
@@ -1435,70 +1436,9 @@ public class MWPlanner : Gtk.Application {
         var grid =  builder.get_object ("grid1") as Gtk.Grid;
         gpsinfo = new GPSInfo(grid);
 
-        var dock = new Dock ();
-        var dockbar = new DockBar (dock);
-        dockbar.set_style (DockBarStyle.ICONS);
-        lman = new LayMan(dock, confdir,layfile,DOCKLETS.NUMBER);
-
         var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL,2);
 
-        box.pack_start (dockbar, false, false, 0);
-        box.pack_end (dock, true, true, 0);
-
         var pane = builder.get_object ("paned1") as Gtk.Paned;
-
-        dockitem = new DockItem[DOCKLETS.NUMBER];
-
-        dockitem[DOCKLETS.GPS]= new DockItem.with_stock ("GPS",
-                                                         "GPS Info", "gtk-refresh",
-                                                         DockItemBehavior.NORMAL);
-
-        dockitem[DOCKLETS.NAVSTATUS]= new DockItem.with_stock ("Status",
-                         "NAV Status", "gtk-info",
-                         DockItemBehavior.NORMAL);
-
-        dockitem[DOCKLETS.ARTHOR]= new DockItem.with_stock ("Horizons",
-                         "Artificial Horizon", "gtk-justify-fill",
-                         DockItemBehavior.NORMAL);
-
-        dockitem[DOCKLETS.VOLTAGE]= new DockItem.with_stock ("Volts",
-                         "Battery Monitor", "gtk-dialog-warning",
-                         DockItemBehavior.NORMAL);
-
-        dockitem[DOCKLETS.RADIO]= new DockItem.with_stock ("Radio",
-                         "Radio Status", "gtk-network",
-                         DockItemBehavior.NORMAL );
-        dock.add_item (dockitem[DOCKLETS.RADIO], DockPlacement.BOTTOM);
-
-        dockitem[DOCKLETS.TELEMETRY]= new DockItem.with_stock ("Telemetry",
-                         "Telemetry", "gtk-disconnect",
-                         DockItemBehavior.NORMAL);
-
-        dockitem[DOCKLETS.FBOX]= new DockItem.with_stock ("FlightView",
-                         "FlightView", "gtk-find",
-                         DockItemBehavior.NORMAL);
-
-        dockitem[DOCKLETS.MISSION]= new DockItem.with_stock ("Mission",
-                         "Mission Tote", "gtk-properties",
-                         DockItemBehavior.NORMAL);
-
-        dockitem[DOCKLETS.VOLTAGE].add (navstatus.voltbox);
-        dockitem[DOCKLETS.MISSION].add (scroll);
-        dockitem[DOCKLETS.GPS].add (grid);
-        dockitem[DOCKLETS.NAVSTATUS].add (navstatus.grid);
-        dockitem[DOCKLETS.RADIO].add (radstatus.box);
-        dockitem[DOCKLETS.TELEMETRY].add (telemstatus.grid);
-        dockitem[DOCKLETS.FBOX].add (fbox.vbox);
-        dockitem[DOCKLETS.ARTHOR].add (art_win.box);
-
-        dock.add_item (dockitem[DOCKLETS.ARTHOR], DockPlacement.BOTTOM);
-        dock.add_item (dockitem[DOCKLETS.GPS], DockPlacement.BOTTOM);
-        dock.add_item (dockitem[DOCKLETS.NAVSTATUS], DockPlacement.BOTTOM);
-        dock.add_item (dockitem[DOCKLETS.VOLTAGE], DockPlacement.BOTTOM);
-        dock.add_item (dockitem[DOCKLETS.TELEMETRY], DockPlacement.BOTTOM);
-        dock.add_item (dockitem[DOCKLETS.RADIO], DockPlacement.BOTTOM);
-        dock.add_item (dockitem[DOCKLETS.FBOX], DockPlacement.BOTTOM);
-        dock.add_item (dockitem[DOCKLETS.MISSION], DockPlacement.TOP);
 
         view.notify["zoom-level"].connect(() => {
                 var val = view.get_zoom_level();
@@ -1754,6 +1694,7 @@ public class MWPlanner : Gtk.Application {
 
         window.show_all();
         arm_warn.hide();
+
         pane.position = conf.window_p;
         window.size_allocate.connect((a) => {
                 if(((a.width != conf.window_w) || (a.height != conf.window_h)))
@@ -1790,6 +1731,69 @@ public class MWPlanner : Gtk.Application {
                     });
                 return false;
             });
+
+        var dock = new Dock ();
+        var dockbar = new DockBar (dock);
+        dockbar.set_style (DockBarStyle.ICONS);
+        lman = new LayMan(dock, confdir,layfile,DOCKLETS.NUMBER);
+
+        box.pack_start (dockbar, false, false, 0);
+        box.pack_end (dock, true, true, 0);
+
+        dockitem = new DockItem[DOCKLETS.NUMBER];
+
+        dockitem[DOCKLETS.GPS]= new DockItem.with_stock ("GPS",
+                                                         "GPS Info", "gtk-refresh",
+                                                         DockItemBehavior.NORMAL);
+
+        dockitem[DOCKLETS.NAVSTATUS]= new DockItem.with_stock ("Status",
+                         "NAV Status", "gtk-info",
+                         DockItemBehavior.NORMAL);
+
+        dockitem[DOCKLETS.ARTHOR]= new DockItem.with_stock ("Horizons",
+                         "Artificial Horizon", "gtk-justify-fill",
+                         DockItemBehavior.NORMAL);
+
+        dockitem[DOCKLETS.VOLTAGE]= new DockItem.with_stock ("Volts",
+                         "Battery Monitor", "gtk-dialog-warning",
+                         DockItemBehavior.NORMAL);
+
+        dockitem[DOCKLETS.RADIO]= new DockItem.with_stock ("Radio",
+                         "Radio Status", "gtk-network",
+                         DockItemBehavior.NORMAL );
+        dock.add_item (dockitem[DOCKLETS.RADIO], DockPlacement.BOTTOM);
+
+        dockitem[DOCKLETS.TELEMETRY]= new DockItem.with_stock ("Telemetry",
+                         "Telemetry", "gtk-disconnect",
+                         DockItemBehavior.NORMAL);
+
+        dockitem[DOCKLETS.FBOX]= new DockItem.with_stock ("FlightView",
+                         "FlightView", "gtk-find",
+                         DockItemBehavior.NORMAL);
+
+        dockitem[DOCKLETS.MISSION]= new DockItem.with_stock ("Mission",
+                         "Mission Tote", "gtk-properties",
+                         DockItemBehavior.NORMAL);
+
+        dockitem[DOCKLETS.VOLTAGE].add (navstatus.voltbox);
+        dockitem[DOCKLETS.MISSION].add (scroll);
+        dockitem[DOCKLETS.GPS].add (grid);
+        dockitem[DOCKLETS.NAVSTATUS].add (navstatus.grid);
+        dockitem[DOCKLETS.RADIO].add (radstatus.box);
+        dockitem[DOCKLETS.TELEMETRY].add (telemstatus.grid);
+        dockitem[DOCKLETS.FBOX].add (fbox.vbox);
+        dockitem[DOCKLETS.ARTHOR].add (art_win.box);
+
+        dock.add_item (dockitem[DOCKLETS.ARTHOR], DockPlacement.BOTTOM);
+        dock.add_item (dockitem[DOCKLETS.GPS], DockPlacement.BOTTOM);
+        dock.add_item (dockitem[DOCKLETS.NAVSTATUS], DockPlacement.BOTTOM);
+        dock.add_item (dockitem[DOCKLETS.VOLTAGE], DockPlacement.BOTTOM);
+        dock.add_item (dockitem[DOCKLETS.TELEMETRY], DockPlacement.BOTTOM);
+        dock.add_item (dockitem[DOCKLETS.RADIO], DockPlacement.BOTTOM);
+        dock.add_item (dockitem[DOCKLETS.FBOX], DockPlacement.BOTTOM);
+        dock.add_item (dockitem[DOCKLETS.MISSION], DockPlacement.TOP);
+        box.show_all();
+
         if(!lman.load_init())
         {
             dockitem[DOCKLETS.ARTHOR].iconify_item ();
@@ -1806,16 +1810,17 @@ public class MWPlanner : Gtk.Application {
         mwpdh.transient(window);
 
         fbox.update(true);
+
         if(conf.mavph != null)
             parse_rc_mav(conf.mavph, Craft.Special.PH);
 
         if(conf.mavrth != null)
             parse_rc_mav(conf.mavrth, Craft.Special.RTH);
 
-        Gtk.drag_dest_set (embed, Gtk.DestDefaults.ALL,
+        Gtk.drag_dest_set (window, Gtk.DestDefaults.ALL,
                            targets, Gdk.DragAction.COPY);
 
-        embed.drag_data_received.connect(
+       window.drag_data_received.connect(
             (ctx, x, y, data, info, time) => {
                 string mf = null;
                 string sf = null;
@@ -1848,8 +1853,9 @@ public class MWPlanner : Gtk.Application {
                         run_replay(sf, true, Player.MWP);
                 }
             });
-        setup_buttons();
-        set_dock_menu_status();
+
+       setup_buttons();
+       set_dock_menu_status();
 
         if(rfile != null)
         {
@@ -1872,7 +1878,9 @@ public class MWPlanner : Gtk.Application {
     private void set_dock_menu_status()
     {
         for(var id = DOCKLETS.MISSION; id < DOCKLETS.NUMBER; id += 1)
+        {
             update_dockmenu(id);
+        }
     }
 
     private void update_dockmenu(DOCKLETS id)
@@ -2140,13 +2148,14 @@ public class MWPlanner : Gtk.Application {
                         gen_serial_stats();
                         telemstatus.update(telstats, item_visible(DOCKLETS.TELEMETRY));
                     }
-
+/**
                     if(conf.heartbeat != null && (nticks % BEATINTVL) == 0)
                     {
                         try {
                             Process.spawn_command_line_async(conf.heartbeat);
                         } catch  {}
                     }
+**/
                 }
 
                 if(duration != 0 && duration != last_dura)
@@ -2722,6 +2731,11 @@ public class MWPlanner : Gtk.Application {
                     uint16 xaf;
                     deserialise_u16(raw+13, out xaf);
                     arm_flags = xaf;
+                    if(len == 18)
+                    {
+                        deserialise_u16(raw+16, out xaf);
+                        arm_flags |= (xaf << 16);
+                    }
                 }
                 else
                 {
@@ -3148,7 +3162,10 @@ public class MWPlanner : Gtk.Application {
                                           vi.board != "CC3D" &&
                                           vi.fc_vers >= FCVERS.hasEEPROM);
                         msp_get_status = (vi.fc_api < 0x200) ? MSP.Cmds.STATUS :
+                            MSP.Cmds.STATUS_EX;
+/**
                             (vi.fc_vers >= FCVERS.hasV2STATUS) ? MSP.Cmds.INAV_STATUS : MSP.Cmds.STATUS_EX;
+**/
                         if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ)
                         {
                             msp.use_v2 = true;
@@ -5724,6 +5741,7 @@ public class MWPlanner : Gtk.Application {
     {
         time_t currtime;
         time_t(out currtime);
+
         var sb = new StringBuilder("mwp ");
         sb.append(mwpvers);
         sb.append_c(' ');
@@ -5774,8 +5792,7 @@ public class MWPlanner : Gtk.Application {
         }
 
         if (GtkClutter.init (ref args) != InitError.SUCCESS)
-                return 1;
-
+            return 1;
         Gst.init (ref args);
         atexit(MWPlanner.xchild);
         var app = new MWPlanner();
