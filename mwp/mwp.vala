@@ -1636,7 +1636,7 @@ public class MWPlanner : Gtk.Application {
             remove_window(window);
         }
 
-        lastmsg = MQI() {cmd = MSP.Cmds.INVALID};
+        lastmsg = MQI(); //{cmd = MSP.Cmds.INVALID};
 
         start_poll_timer();
         lastp = new Timer();
@@ -4833,12 +4833,14 @@ public class MWPlanner : Gtk.Application {
 
     private void queue_cmd(MSP.Cmds cmd, void* buf, size_t len)
     {
-        uint8 *dt = (buf == null) ? null : Memory.dup(buf, (uint)len);
-
-        if(msp.available == true)
+        if(replayer == Player.NONE)
         {
-            var mi = MQI() {cmd = cmd, len = len, data = dt};
-            mq.push_tail(mi);
+            uint8 *dt = (buf == null) ? null : Memory.dup(buf, (uint)len);
+            if(msp.available == true)
+            {
+                var mi = MQI() {cmd = cmd, len = len, data = dt};
+                mq.push_tail(mi);
+            }
         }
     }
 
