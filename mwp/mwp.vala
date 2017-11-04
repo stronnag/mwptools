@@ -1805,6 +1805,8 @@ public class MWPlanner : Gtk.Application {
             dockitem[DOCKLETS.FBOX].iconify_item ();
             lman.save_config();
         }
+
+
         mwpdh = new MwpDockHelper(dockitem[DOCKLETS.MISSION], dock,
                           "Mission Editor", conf.tote_floating);
         mwpdh.transient(window);
@@ -1873,6 +1875,11 @@ public class MWPlanner : Gtk.Application {
                     return false;
                 });
         }
+
+        Timeout.add(500, () => {
+                fbox.allow_resize(false);
+                return Source.REMOVE;
+            });
     }
 
     private void set_dock_menu_status()
