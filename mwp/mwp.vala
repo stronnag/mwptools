@@ -638,7 +638,7 @@ public class MWPlanner : Gtk.Application {
 
     private string? [] arm_fails =
     {
-        null, null, "Armed","Ever Armed", null,null,null,
+        null, null, "Armed",null, /*"Ever Armed"*/ null,null,null,
         "Failsafe", "Not level","Calibrating","Overload",
         "Navigation unsafe", "Compass cal", "Acc cal", "Arm switch", "H/W fail",
         "Box failsafe", "Box killswitch", "RC Link", "Throttle", "CLI",
