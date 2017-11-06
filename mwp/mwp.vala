@@ -1689,7 +1689,9 @@ public class MWPlanner : Gtk.Application {
             window.maximize();
         else
         {
-            window.resize(rect.width*70/100, rect.height*70/100);
+            var rw = rect.width*70/100;
+            var rh = rect.height*70/100;
+            window.resize(rw, rh);
         }
 
         window.show_all();
