@@ -74,6 +74,7 @@ public class MSP : Object
         SET_FW_CONFIG = 24,
 
         STATUS_EX = 150,
+        SENSOR_STATUS = 151,
 
         RTC =  246,
         SET_RTC = 247,

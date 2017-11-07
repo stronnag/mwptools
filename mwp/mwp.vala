@@ -468,6 +468,7 @@ public class MWPlanner : Gtk.Application {
     private OdoView odoview;
     private static bool is_wayland = false;
     private static bool use_wayland = false;
+    private uchar hwstatus[9];
 
     public struct MQI //: Object
     {
@@ -645,6 +646,25 @@ public class MWPlanner : Gtk.Application {
         "CMS Menu", "OSD Menu"
     };
 
+    private enum SENSOR_STATES
+    {
+        None = 0,
+        OK = 1,
+        UNAVAILABLE = 2,
+        UNHEALTHY = 3
+    }
+
+    private string [] health_states =
+    {
+        "None", "OK", "Unavailable", "Unhealthy"
+    };
+
+    private string[] sensor_names =
+    {
+        "Gyro", "Accelerometer", "Compass", "Barometer",
+        "GPS", "RangeFinder", "Pitot", "OpticalFlow"
+    };
+
     private string [] disarm_reason =
     {
         "None", "Timeout", "Sticks", "Switch_3d", "Switch",
@@ -803,6 +823,7 @@ public class MWPlanner : Gtk.Application {
         mwvar = MWChooser.fc_from_arg0();
         vbsamples = new float[MAXVSAMPLE];
 
+        hwstatus[0] = 1; // Assume OK
         conf = new MWPSettings();
         conf.read_settings();
 
@@ -947,16 +968,31 @@ public class MWPlanner : Gtk.Application {
 
         arm_warn.clicked.connect(() =>
             {
-                StringBuilder sb = new StringBuilder("<b>Arm Status</b>\n");
-                string arm_msg = get_arm_fail(xarm_flags,'\n');
-                sb.append(arm_msg);
-//                arm_warn.set_tooltip_markup(sb.str);
+                StringBuilder sb = new StringBuilder();
+                if((xarm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0)
+                {
+                    sb.append("<b>Arm Status</b>\n");
+                    string arm_msg = get_arm_fail(xarm_flags,'\n');
+                    sb.append(arm_msg);
+                }
+
+                if(hwstatus[0] == 0)
+                {
+                    sb.append("<b>Hardware Status</b>\n");
+                    for(var i = 0; i < 8; i++)
+                    {
+                        sb.append_printf("%s : %s\n",
+                                         sensor_names[i],
+                                         health_states[hwstatus[i+1]]);
+                    }
+                }
+
                 var pop = new Gtk.Popover(arm_warn);
                 pop.position = Gtk.PositionType.BOTTOM;
                 Gtk.Label label = new Gtk.Label(sb.str);
                 label.set_use_markup (true);
-		label.set_line_wrap (true);
-                label.margin = 16;
+                label.set_line_wrap (true);
+                label.margin = 8;
                 pop.add(label);
                 pop.show_all();
             });
@@ -1687,13 +1723,14 @@ public class MWPlanner : Gtk.Application {
             window.fullscreen();
         else if(no_max == false || conf.window_w == -1 || conf.window_h == -1)
             window.maximize();
+/***
         else
         {
-            var rw = rect.width*70/100;
-            var rh = rect.height*70/100;
-            window.resize(rw, rh);
+        var rw = rect.width*70/100;
+        var rh = rect.height*70/100;
+        window.resize(rw, rh);
         }
-
+***/
         window.show_all();
         arm_warn.hide();
 
@@ -2358,10 +2395,13 @@ public class MWPlanner : Gtk.Application {
             {
                 sound = Alert.GENERAL;
                 map_hide_warning();
+                hwstatus[0] = 1;
             }
             bleet_sans_merci(sound);
             navstatus.hw_failure(val);
             xs_state = val;
+            if(serstate != SERSTATE.TELEM)
+                queue_cmd(MSP.Cmds.SENSOR_STATUS,null,0);
         }
     }
 
@@ -2569,7 +2609,7 @@ public class MWPlanner : Gtk.Application {
 
     private string board_by_id()
     {
-        string board="";
+        string board = "mysteryFC";
         switch (vi.board)
         {
             case "SPEV":
@@ -2705,7 +2745,7 @@ public class MWPlanner : Gtk.Application {
                     sb.append_c(sep);
                 }
             }
-            if(sb.len > 0)
+            if(sb.len > 0 && sep != '\n')
                 sb.truncate(sb.len-1);
         }
         return sb.str;
@@ -3213,6 +3253,9 @@ public class MWPlanner : Gtk.Application {
                 last_gps = 0;
                 have_vers = true;
                 bat_annul();
+                hwstatus[0]=1;
+                for(var j = 1; j < 9; j++)
+                    hwstatus[j] = 0;
                 if (icount == 0)
                 {
                     vi = {0};
@@ -3395,6 +3438,14 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.STATUS_EX:
             case MSP.Cmds.INAV_STATUS:
                 handle_msp_status(raw, len);
+                break;
+
+
+            case MSP.Cmds.SENSOR_STATUS:
+                for(var i = 0; i < 9; i++)
+                    hwstatus[i] = raw[i];
+                if(hwstatus[0] == 0)
+                    arm_warn.show();
                 break;
 
             case MSP.Cmds.WP_GETINFO:
