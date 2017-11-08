@@ -59,7 +59,7 @@ public class Mission : GLib.Object
         minx=180;
         cx = cy = 0;
         zoom = -1;
-        maxalt = -2147483648;
+        maxalt = -2147483647;
         dist = -1;
         et = -1;
         lt = -1;
