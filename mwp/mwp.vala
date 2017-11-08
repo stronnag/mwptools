@@ -1559,6 +1559,8 @@ public class MWPlanner : Gtk.Application {
         StringBuilder sb = new StringBuilder(mwpvers);
         sb.append_c('\n');
         sb.append(mwpid);
+        if(is_wayland && use_wayland)
+            sb.append("on wayland\n");
         about.version = sb.str;
 
         about.copyright = "© 2014-%d Jonathan Hudson".printf(
@@ -3014,7 +3016,6 @@ public class MWPlanner : Gtk.Application {
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
-
 //        MWPLog.message("Process %s\n", cmd.to_string());
         if(cmd > MSP.Cmds.LTM_BASE)
         {
