@@ -2087,6 +2087,7 @@ public class MWPlanner : Gtk.Application {
         {
             if(lastmsg.cmd != MSP.Cmds.INVALID)
             {
+//                MWPLog.message("resend %s\n", lastmsg.cmd.to_string());
                 msp.send_command((uint16)lastmsg.cmd, lastmsg.data, lastmsg.len);
             }
             else
@@ -2099,6 +2100,7 @@ public class MWPlanner : Gtk.Application {
         if(msp.available && !mq.is_empty())
         {
             lastmsg = mq.pop_head();
+//            MWPLog.message("send %s\n", lastmsg.cmd.to_string());
             msp.send_command((uint16)lastmsg.cmd, lastmsg.data, lastmsg.len);
         }
     }
@@ -2401,7 +2403,10 @@ public class MWPlanner : Gtk.Application {
             navstatus.hw_failure(val);
             xs_state = val;
             if(serstate != SERSTATE.TELEM)
+            {
+                MWPLog.message("request sensor info\n");
                 queue_cmd(MSP.Cmds.SENSOR_STATUS,null,0);
+            }
         }
     }
 
@@ -3009,6 +3014,8 @@ public class MWPlanner : Gtk.Application {
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
+
+//        MWPLog.message("Process %s\n", cmd.to_string());
         if(cmd > MSP.Cmds.LTM_BASE)
         {
             telem = true;
@@ -3060,6 +3067,7 @@ public class MWPlanner : Gtk.Application {
                     run_queue();
                     break;
                 case MSP.Cmds.INAV_STATUS:
+                case MSP.Cmds.BOX: // e.g. ACTIVEBOXES
                     msp_get_status = MSP.Cmds.STATUS_EX;
                     queue_cmd(msp_get_status,null,0);
                     run_queue();
@@ -3080,6 +3088,8 @@ public class MWPlanner : Gtk.Application {
                     run_queue();
                     break;
                 default:
+                    queue_cmd(msp_get_status,null,0);
+                    run_queue();
                     break;
             }
             return;
@@ -3440,10 +3450,10 @@ public class MWPlanner : Gtk.Application {
                 handle_msp_status(raw, len);
                 break;
 
-
             case MSP.Cmds.SENSOR_STATUS:
                 for(var i = 0; i < 9; i++)
                     hwstatus[i] = raw[i];
+                MWPLog.message("Sensor status %d\n", hwstatus[0]);
                 if(hwstatus[0] == 0)
                     arm_warn.show();
                 break;
