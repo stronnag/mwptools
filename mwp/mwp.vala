@@ -1560,7 +1560,7 @@ public class MWPlanner : Gtk.Application {
         sb.append_c('\n');
         sb.append(mwpid);
         if(is_wayland && use_wayland)
-            sb.append("on wayland\n");
+            sb.append("\non wayland\n");
         about.version = sb.str;
 
         about.copyright = "© 2014-%d Jonathan Hudson".printf(
