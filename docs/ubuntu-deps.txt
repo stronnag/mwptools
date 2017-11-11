@@ -1,33 +1,41 @@
-Starting point for Ubuntu / Debian packages ...
+#!/bin/sh
+# Starting point for Ubuntu / Debian packages ...
 
-libgdl-3-dev
-libchamplain-gtk-0.12-dev
-libchamplain-0.12-dev
-libclutter-1.0-dev
-libclutter-gtk-1.0-dev
-libgtk-3-dev
-valac
-pkg-config
-build-essential
-libbluetooth-dev
-libespeak-dev
-libgudev-1.0-dev
-libgstreamer1.0-dev
-libvala-dev   # optional, recommended (optimisation)
+apt install libgdl-3-dev \
+    libchamplain-gtk-0.12-dev \
+    libchamplain-0.12-dev \
+    libclutter-1.0-dev \
+    libclutter-gtk-1.0-dev \
+    libgtk-3-dev \
+    valac \
+    pkg-config \
+    build-essential \
+    libbluetooth-dev \
+    libespeak-dev \
+    libgudev-1.0-dev \
+    libgstreamer1.0-dev \
+    libvala-dev \
+    libvte-2.91-dev
 
-libvte-2.91-dev
+# and for replay_bbox_ltm.rb
+# ruby version 2 or later
 
-and for replay_bbox_ltm.rb
+apt install ruby
 
-ruby version 2 or later, e.g.
+# if you want to use speech-dispatcher instead of espeak for voice
+# synthesis (or have a choice of either)
+# gsettings set org.mwptools.planner speech-api 'speechd'
+# or (default)
+# gsettings set org.mwptools.planner speech-api 'espeak'
 
-ruby2.2
+# apt install libspeechd-dev
 
-You must install the blackbox utilities
-https://github.com/cleanflight/blackbox-tools/ in order to replay
-blackbox logs.
+# You must install the blackbox utilities
+# https://github.com/cleanflight/blackbox-tools/ in order to replay
+# blackbox logs.
 
-if you want to use speech-dispatcher instead of espeak for voice
-synthesis (or have a choice of either)
+# and you can use this file to install everything:)
 
-libspeechd-dev
+# cp ubuntu-deps.txt /tmp/ubuntu-deps.sh
+# chmod +x /tmp/ubuntu-deps.sh
+# sudo /tmp/ubuntu-deps.sh

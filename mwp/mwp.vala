@@ -411,7 +411,7 @@ public class MWPlanner : Gtk.Application {
 
     private uint64 acycle;
     private uint64 anvals;
-    private uint32 xbits = 0;
+    private uint64 xbits = 0;
     private uint8 api_cnt;
     private uint8 icount = 0;
     private bool usemag = false;
@@ -531,12 +531,12 @@ public class MWPlanner : Gtk.Application {
     private Position home_pos;
     private Position rth_pos;
     private Position ph_pos;
-    private uint ph_mask=0;
-    private uint arm_mask=0;
-    private uint rth_mask=0;
-    private uint angle_mask=0;
-    private uint horz_mask=0;
-    private uint wp_mask=0;
+    private uint64 ph_mask=0;
+    private uint64 arm_mask=0;
+    private uint64 rth_mask=0;
+    private uint64 angle_mask=0;
+    private uint64 horz_mask=0;
+    private uint64 wp_mask=0;
 
     private uint no_ofix = 0;
 
@@ -2437,7 +2437,7 @@ public class MWPlanner : Gtk.Application {
         menucli.sensitive =  (msp != null && msp.available && armed == 0);
     }
 
-    private void armed_processing(uint32 flag, string reason="")
+    private void armed_processing(uint64 flag, string reason="")
     {
         if(armed == 0)
         {
@@ -2760,11 +2760,20 @@ public class MWPlanner : Gtk.Application {
 
     private void handle_msp_status(uint8[]raw, uint len)
     {
-        uint32 bxflag;
+        uint64 bxflag;
+        uint64 lmask;
 
         deserialise_u16(raw+4, out sensor);
-        deserialise_u32(raw+6, out bxflag);
-        var lmask = (angle_mask|horz_mask);
+        if(msp_get_status != MSP.Cmds.INAV_STATUS)
+        {
+            uint32 bx32;
+            deserialise_u32(raw+6, out bx32);
+            bxflag = bx32;
+        }
+        else
+            deserialise_u64(raw+13, out bxflag);
+
+        lmask = (angle_mask|horz_mask);
 
         armed = ((bxflag & arm_mask) == arm_mask) ? 1 : 0;
 
@@ -2779,9 +2788,10 @@ public class MWPlanner : Gtk.Application {
         }
         else
         {
+            uint32 arm_flags;
+            uint16 loadpct;
             if(msp_get_status != MSP.Cmds.STATUS)
             {
-                uint32 arm_flags;
                 if(msp_get_status == MSP.Cmds.STATUS_EX)
                 {
                     uint16 xaf;
@@ -2792,21 +2802,22 @@ public class MWPlanner : Gtk.Application {
                         deserialise_u16(raw+16, out xaf);
                         arm_flags |= (xaf << 16);
                     }
+                    deserialise_u16(raw+11, out loadpct);
                 }
                 else
                 {
-                    deserialise_u32(raw+13, out arm_flags);
+                    deserialise_u32(raw+9, out arm_flags);
+                    deserialise_u16(raw+6, out loadpct);
                 }
 
                 if(arm_flags != xarm_flags)
                 {
                     xarm_flags = arm_flags;
-                    uint16 loadpct;
-                    deserialise_u16(raw+11, out loadpct);
 
                     string arm_msg = get_arm_fail(xarm_flags);
-                    MWPLog.message("Arming flags: %s (%04x), load %d%%\n",
-                                   arm_msg, xarm_flags, loadpct);
+                    MWPLog.message("Arming flags: %s (%04x), load %d%% %s\n",
+                                   arm_msg, xarm_flags, loadpct,
+                                   msp_get_status.to_string());
                     if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0)
                     {
                         arm_warn.show();
@@ -3222,10 +3233,8 @@ public class MWPlanner : Gtk.Application {
                                           vi.board != "CC3D" &&
                                           vi.fc_vers >= FCVERS.hasEEPROM);
                         msp_get_status = (vi.fc_api < 0x200) ? MSP.Cmds.STATUS :
-                            MSP.Cmds.STATUS_EX;
-/**
+//                            MSP.Cmds.STATUS_EX;
                             (vi.fc_vers >= FCVERS.hasV2STATUS) ? MSP.Cmds.INAV_STATUS : MSP.Cmds.STATUS_EX;
-**/
                         if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ)
                         {
                             msp.use_v2 = true;
@@ -4113,7 +4122,7 @@ public class MWPlanner : Gtk.Application {
                 radstatus.update_ltm(sf,item_visible(DOCKLETS.RADIO));
 
                 uint8 ltmflags = sf.flags >> 2;
-                uint32 mwflags = 0;
+                uint64 mwflags = 0;
                 uint8 saf = sf.flags & 1;
                 bool failsafe = ((sf.flags & 2)  == 2);
 
@@ -4593,7 +4602,7 @@ public class MWPlanner : Gtk.Application {
         msp.write(mbuf,length+8);
     }
 
-    private void report_bits(uint32 bits)
+    private void report_bits(uint64 bits)
     {
         string mode = null;
         if((bits & angle_mask) == angle_mask)

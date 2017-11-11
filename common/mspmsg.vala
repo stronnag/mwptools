@@ -262,7 +262,7 @@ public enum MSize
     MSP_IDENT=7,
     MSP_STATUS=11,
     MSP_STATUS_EX=16,
-    MSP2_INAV_STATUS=18,
+    MSP2_INAV_STATUS=21,
     MSP_MISC=22,
     MSP_ALTITUDE=6,
     MSP_RAW_GPS=18,
@@ -287,6 +287,16 @@ public enum MSPCaps
     CAP_PLATFORM_32BIT = (1 << 31),
     CAP_BASEFLIGHT_CONFIG = (1 << 30),
     CAP_CLEANFLIGHT_CONFIG = (1 << 29)
+}
+
+public uint8* deserialise_u64(uint8* rp, out uint64 v)
+{
+    uint32 u;
+    rp = deserialise_u32(rp, out u);
+    v = u;
+    rp = deserialise_u32(rp, out u);
+    v = v | (u << 32);
+    return rp;
 }
 
 public uint8* deserialise_u32(uint8* rp, out uint32 v)

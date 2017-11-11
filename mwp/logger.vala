@@ -216,7 +216,7 @@ public class Logger : GLib.Object
         write_stream();
     }
 
-    public static void armed(bool armed, time_t _duration, uint32 flags,
+    public static void armed(bool armed, time_t _duration, uint64 flags,
                              uint32 sensor, bool telem=false)
     {
         duration = (int)_duration;
@@ -229,7 +229,7 @@ public class Logger : GLib.Object
             builder.add_int_value(_duration);
         }
         builder.set_member_name("flags");
-        builder.add_int_value(flags);
+        builder.add_int_value((int64)flags);
         builder.set_member_name("sensors");
         builder.add_int_value(sensor);
         builder.set_member_name("telem");

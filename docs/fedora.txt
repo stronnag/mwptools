@@ -1,29 +1,39 @@
+#!/bin/sh
 
 dnf groupinstall development-libs development-tools gnome-software-development
-dnf install gtk3-devel gstreamer-devel clutter-devel webkitgtk3-devel \
+dnf install gtk3-devel gstreamer1-devel clutter-devel webkitgtk3-devel \
     libgda-devel gobject-introspection-devel
 dnf install vala vala-devel vala-tools vala-doc
-dnf install libchamplain-gtk-devel libgdl-devel libgudev1-devel espeak-devel
+dnf install libchamplain-gtk-devel libgdl-devel libgudev1-devel \
+    espeak-devel vte291-devel
 
-for cf-cli-ui
-
-dnf install vte291-devel
-
-for Fedora 26 and later, replace gstreamer-devel with gstreamer1-devel.
-
-git clone https://github.com/stronnag/mwptools.git
+# git clone https://github.com/stronnag/mwptools.git
 
 # for bbox-replay stuff
-
 dnf install ruby
+
+# if you want to use speech-dispatcher instead of espeak for voice
+# synthesis (or have a choice of either)
+# gsettings set org.mwptools.planner speech-api 'speechd'
+# or (default)
+# gsettings set org.mwptools.planner speech-api 'espeak'
+
+# dnf install speech-dispatcher-devel
 
 # If you want to use serial devices for bbox replay (and you probably
 # don't) then see
 #  https://developer.fedoraproject.org/tech/languages/ruby/gems-installation.html
 
 
-You must install the blackbox utilities
-https://github.com/cleanflight/blackbox-tools/
-in order to replay blackbox logs.
+#You must install the blackbox utilities
+#https://github.com/cleanflight/blackbox-tools/
+#in order to replay blackbox logs.
 
-Then build it.
+# and you can use this file to install everything:)
+
+# cp fedora.txt /tmp/fedora-deps.sh
+# chmod +x /tmp/fedora-deps.sh
+# sudo /tmp/fedora-deps.sh
+
+
+#Then build it.
