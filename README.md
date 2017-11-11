@@ -8,6 +8,8 @@ mwptools
 mwptools provides a mission planner, real time flight logger and log
 replay / blackbox replay functions for the iNav FC firmware.
 
+![mwp](https://raw.githubusercontent.com/wiki/stronnag/mwptools/images/ltm-normal.png)
+
 In addition, mwptools provides a small suite of tools to manage a
 MultiWii NAV flight controller and other CleanFlight based FCs. The
 suite consists of tools that the author finds useful to manage and
