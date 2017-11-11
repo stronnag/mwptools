@@ -295,7 +295,7 @@ public uint8* deserialise_u64(uint8* rp, out uint64 v)
     rp = deserialise_u32(rp, out u);
     v = u;
     rp = deserialise_u32(rp, out u);
-    v = v | (u << 32);
+    v = v | ((uint64)u << 32);
     return rp;
 }
 
