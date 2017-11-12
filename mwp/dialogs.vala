@@ -1650,7 +1650,7 @@ public class NavStatus : GLib.Object
         volt_update("n/a",-1, 0f,true);
     }
 
-    public void logspeak_init (string? voice, bool use_en = false)
+    public void logspeak_init (string? voice, bool use_en = false, string? espawn=null)
     {
         if(vinit == false)
         {
@@ -1659,7 +1659,6 @@ public class NavStatus : GLib.Object
             if(voice == null)
                 voice = "default";
 
-            var espawn =  Environment.get_variable("MWP_SPEAKER");
             if(espawn != null)
             {
                 var args = espawn.split(" ");
@@ -1910,7 +1909,7 @@ public class AudioThread : Object {
                         if(efd != 0)
                         {
                             Posix.write(efd, s, s.length);
-                            Posix.write(efd, "\r\n", 2);
+                            Posix.write(efd, "\n\n", 2);
                         }
                         else
                             speech_say(s);

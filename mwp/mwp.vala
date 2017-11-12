@@ -711,7 +711,7 @@ public class MWPlanner : Gtk.Application {
     private static int stack_size = 0;
     public static unowned string ulang;
     private static bool ignore_3dr = false;
-
+    private static string? exvox = null;
     private static string rrstr;
     private int nrings = 0;
     private double ringint = 0;
@@ -749,6 +749,7 @@ public class MWPlanner : Gtk.Application {
         { "offline", 0, 0, OptionArg.NONE, out offline, "force offline proxy mode", null},
         { "n-points", 'S', 0, OptionArg.INT, out stack_size, "Number of points shown in GPS trail", "INT"},
         { "rings", 0, 0, OptionArg.STRING, out rrstr, "Range rings (number, interval(m)), e.g. --rings 10,20", null},
+        { "voice-command", 0, 0, OptionArg.STRING, out exvox, "External speech command", null},
         { "version", 'v', 0, OptionArg.NONE, out show_vers, "show version", null},
         { "wayland", 0, 0, OptionArg.NONE, out use_wayland, "force wayland (if available)", null},
         {null}
@@ -827,22 +828,21 @@ public class MWPlanner : Gtk.Application {
         conf = new MWPSettings();
         conf.read_settings();
 
-        var spapi = get_speech_api_mask();
-
-        if (spapi == 3)
-            spapi = (conf.speech_api == "espeak") ? 1 :
-                (conf.speech_api == "speechd") ? 2 : 0;
-
+        var spapi =  0;
+        if(exvox == null)
         {
-            var exvox = Environment.get_variable("MWP_SPEAKER");
-            if(exvox != null)
-            {
-                MWPLog.message("Using external speech api [%s]\n", exvox);
-                spapi = 0;
-            }
-            else
-                MWPLog.message("Using speech api %d [%s]\n", spapi, speakers[spapi]);
+            spapi = get_speech_api_mask();
+
+            if (spapi == 3)
+                spapi = (conf.speech_api == "espeak") ? 1 :
+                    (conf.speech_api == "speechd") ? 2 : 0;
+            MWPLog.message("Using speech api %d [%s]\n", spapi, speakers[spapi]);
         }
+        else
+        {
+            MWPLog.message("Using external speech api [%s]\n", exvox);
+        }
+
         speech_set_api(spapi);
 
         ulang = Intl.setlocale(LocaleCategory.NUMERIC, "");
@@ -4942,7 +4942,7 @@ public class MWPlanner : Gtk.Application {
                 if (voice == "default")
                     voice = "en"; // thanks, espeak-ng
 
-                navstatus.logspeak_init(voice, (conf.uilang == "ev"));
+                navstatus.logspeak_init(voice, (conf.uilang == "ev"), exvox);
                 spktid = Timeout.add_seconds(conf.speakint, () => {
                         if(replay_paused == false)
                             navstatus.announce(sflags, conf.recip);
