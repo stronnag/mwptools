@@ -833,8 +833,16 @@ public class MWPlanner : Gtk.Application {
             spapi = (conf.speech_api == "espeak") ? 1 :
                 (conf.speech_api == "speechd") ? 2 : 0;
 
-        MWPLog.message("Using speech api %d [%s]\n", spapi, speakers[spapi]);
-
+        {
+            var exvox = Environment.get_variable("MWP_SPEAKER");
+            if(exvox != null)
+            {
+                MWPLog.message("Using external speech api [%s]\n", exvox);
+                spapi = 0;
+            }
+            else
+                MWPLog.message("Using speech api %d [%s]\n", spapi, speakers[spapi]);
+        }
         speech_set_api(spapi);
 
         ulang = Intl.setlocale(LocaleCategory.NUMERIC, "");

@@ -1225,6 +1225,7 @@ public class NavStatus : GLib.Object
     private int _fs;
 
     private int efdin;
+    private Pid epid;
 
     public enum SPK  {
         Volts = 1,
@@ -1657,9 +1658,29 @@ public class NavStatus : GLib.Object
             vinit = true;
             if(voice == null)
                 voice = "default";
-            var si = speech_init(voice);
-            MWPLog.message("Using %s for speech\n",
-                           (si == 0) ? "espeak" : (si == 1) ? "speechd" : "none");
+
+            var espawn =  Environment.get_variable("MWP_SPEAKER");
+            if(espawn != null)
+            {
+                var args = espawn.split(" ");
+                try
+                {
+                    Process.spawn_async_with_pipes ("/", args, null,
+                                                    SpawnFlags.SEARCH_PATH|
+                                                    SpawnFlags.STDOUT_TO_DEV_NULL,
+                                                    null, out epid, out efdin,
+                                                    null, null);
+                } catch (Error e)
+                {
+                    MWPLog.message("spawn \"%s\", %s\n", espawn, e.message);
+                }
+            }
+            else
+            {
+                var si = speech_init(voice);
+                MWPLog.message("Using %s for speech\n",
+                               (si == 0) ? "espeak" : (si == 1) ? "speechd" : "none");
+            }
         }
         if (mt != null)
         {
@@ -1677,6 +1698,11 @@ public class NavStatus : GLib.Object
         mt.message(AudioThread.Vox.DONE);
         mt.thread.join ();
         mt = null;
+        if(efdin > 0)
+        {
+            Posix.close(efdin);
+            efdin = 0;
+        }
     }
 }
 
