@@ -2805,11 +2805,6 @@ public class MWPlanner : Gtk.Application {
                     uint16 xaf;
                     deserialise_u16(raw+13, out xaf);
                     arm_flags = xaf;
-                    if(len == 18)
-                    {
-                        deserialise_u16(raw+16, out xaf);
-                        arm_flags |= (xaf << 16);
-                    }
                     deserialise_u16(raw+11, out loadpct);
                 }
                 else
