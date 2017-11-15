@@ -5824,65 +5824,71 @@ public class MWPlanner : Gtk.Application {
 
     public static int main (string[] args)
     {
-        time_t currtime;
-        time_t(out currtime);
+        var lk = new Locker();
+        int lkres;
 
-        var sb = new StringBuilder("mwp ");
-        sb.append(mwpvers);
-        sb.append_c(' ');
-        sb.append(mwpid);
-        var verstr = sb.str;
-        string fixedopts=null;
-
-        var opt = new OptionContext("");
-        try {
-            opt.set_summary("  %s".printf(verstr));
-            opt.set_help_enabled(true);
-            opt.add_main_entries(options, null);
-            fixedopts = check_env_args(opt);
-            opt.parse(ref args);
-        } catch (OptionError e) {
-            stderr.printf("Error: %s\n", e.message);
-            stderr.printf("Run '%s --help' to see a full list of available "+
-                          "options\n", args[0]);
-            return 1;
-        }
-
-        if(show_vers)
+        if((lkres = lk.lock()) == 0)
         {
-            stderr.printf("%s\n", verstr);
-            return 0;
-        }
+            time_t currtime;
+            time_t(out currtime);
+            var sb = new StringBuilder("mwp ");
+            sb.append(mwpvers);
+            sb.append_c(' ');
+            sb.append(mwpid);
+            var verstr = sb.str;
+            string fixedopts=null;
 
-        if(Posix.isatty(stderr.fileno()) == false)
-        {
-            var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
-            stderr = FileStream.open(fn,"a");
-        }
-
-        MWPLog.message("mwp startup version: %s\n", verstr);
-        if(fixedopts != null)
-            MWPLog.message("default options: %s\n", fixedopts);
-
-        is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
-        if (is_wayland)
-        {
-            if(use_wayland)
-                MWPLog.message("Wayland enabled, if you experience problems, remove the --wayland option\n");
-            else
-            {
-                MWPLog.message("Using Xwayland for safety:)\n");
-                Gdk.set_allowed_backends("x11");
+            var opt = new OptionContext("");
+            try {
+                opt.set_summary("  %s".printf(verstr));
+                opt.set_help_enabled(true);
+                opt.add_main_entries(options, null);
+                fixedopts = check_env_args(opt);
+                opt.parse(ref args);
+            } catch (OptionError e) {
+                stderr.printf("Error: %s\n", e.message);
+                stderr.printf("Run '%s --help' to see a full list of available "+
+                              "options\n", args[0]);
+                return 1;
             }
-        }
 
-        if (GtkClutter.init (ref args) != InitError.SUCCESS)
-            return 1;
-        Gst.init (ref args);
-        atexit(MWPlanner.xchild);
-        var app = new MWPlanner();
-        app.run ();
-        app.cleanup();
-        return 0;
+            if(show_vers)
+            {
+                stderr.printf("%s\n", verstr);
+                return 0;
+            }
+
+            if(Posix.isatty(stderr.fileno()) == false)
+            {
+                var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
+                stderr = FileStream.open(fn,"a");
+            }
+
+            MWPLog.message("mwp startup version: %s\n", verstr);
+            if(fixedopts != null)
+                MWPLog.message("default options: %s\n", fixedopts);
+
+            is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
+            if (is_wayland)
+            {
+                if(use_wayland)
+                    MWPLog.message("Wayland enabled, if you experience problems, remove the --wayland option\n");
+                else
+                {
+                    MWPLog.message("Using Xwayland for safety:)\n");
+                    Gdk.set_allowed_backends("x11");
+                }
+            }
+
+            if (GtkClutter.init (ref args) != InitError.SUCCESS)
+                return 1;
+            Gst.init (ref args);
+            atexit(MWPlanner.xchild);
+            var app = new MWPlanner();
+            app.run ();
+            app.cleanup();
+            lk.unlock();
+        }
+        return lkres;
     }
 }
