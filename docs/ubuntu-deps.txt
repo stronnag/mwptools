@@ -1,6 +1,18 @@
 #!/bin/sh
 # Starting point for Ubuntu / Debian packages ...
 
+##############################################################
+#                      Ubuntu bug warning                    #
+#                      ~~~~~~~~~~~~~~~~~~                    #
+# If you run Ubuntu's ugly 'Unity' desktop, you are advised  #
+# NOT to use its 'globalmenu' mode, as this will prevent the #
+# status of dock items in the File/View from being updated   #
+#                                                            #
+# You can disable global menus by setting the following in   #
+# /etc/environment:                                          #
+# UBUNTU_MENUPROXY=0                                         #
+##############################################################
+
 apt install libgdl-3-dev \
     libchamplain-gtk-0.12-dev \
     libchamplain-0.12-dev \

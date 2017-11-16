@@ -368,6 +368,7 @@ public class MWPlanner : Gtk.Application {
     private static string mwoptstr;
     private static string llstr=null;
     private static string layfile=null;
+    private static bool asroot = false;
 
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
     private uint8 vwarn1;
@@ -752,6 +753,7 @@ public class MWPlanner : Gtk.Application {
         { "voice-command", 0, 0, OptionArg.STRING, out exvox, "External speech command", null},
         { "version", 'v', 0, OptionArg.NONE, out show_vers, "show version", null},
         { "wayland", 0, 0, OptionArg.NONE, out use_wayland, "force wayland (if available)", null},
+        { "really-really-run-as-root", 0, 0, OptionArg.NONE, out asroot, "no reason to ever use this", null},
         {null}
     };
 
@@ -5855,38 +5857,43 @@ public class MWPlanner : Gtk.Application {
             if(show_vers)
             {
                 stderr.printf("%s\n", verstr);
-                return 0;
             }
-
-            if(Posix.isatty(stderr.fileno()) == false)
+            else if(Posix.geteuid() == 0 && asroot == false)
             {
-                var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
-                stderr = FileStream.open(fn,"a");
+                print("You should not run this application as root\n");
             }
-
-            MWPLog.message("mwp startup version: %s\n", verstr);
-            if(fixedopts != null)
-                MWPLog.message("default options: %s\n", fixedopts);
-
-            is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
-            if (is_wayland)
+            else
             {
-                if(use_wayland)
-                    MWPLog.message("Wayland enabled, if you experience problems, remove the --wayland option\n");
-                else
+                if(Posix.isatty(stderr.fileno()) == false)
                 {
-                    MWPLog.message("Using Xwayland for safety:)\n");
-                    Gdk.set_allowed_backends("x11");
+                    var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
+                    stderr = FileStream.open(fn,"a");
                 }
-            }
 
-            if (GtkClutter.init (ref args) != InitError.SUCCESS)
-                return 1;
-            Gst.init (ref args);
-            atexit(MWPlanner.xchild);
-            var app = new MWPlanner();
-            app.run ();
-            app.cleanup();
+                MWPLog.message("mwp startup version: %s\n", verstr);
+                if(fixedopts != null)
+                    MWPLog.message("default options: %s\n", fixedopts);
+
+                is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
+                if (is_wayland)
+                {
+                    if(use_wayland)
+                        MWPLog.message("Wayland enabled, if you experience problems, remove the --wayland option\n");
+                    else
+                    {
+                        MWPLog.message("Using Xwayland for safety:)\n");
+                        Gdk.set_allowed_backends("x11");
+                    }
+                }
+
+                if (GtkClutter.init (ref args) != InitError.SUCCESS)
+                    return 1;
+                Gst.init (ref args);
+                atexit(MWPlanner.xchild);
+                var app = new MWPlanner();
+                app.run ();
+                app.cleanup();
+            }
             lk.unlock();
         }
         return lkres;
