@@ -1,6 +1,5 @@
 XOS := $(shell uname)
 
-DOTPS=
 ifeq ($(XOS),Linux)
  DOPTS += -D HAVE_FIONREAD
 endif

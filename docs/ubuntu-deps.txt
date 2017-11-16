@@ -11,6 +11,10 @@
 # You can disable global menus by setting the following in   #
 # /etc/environment:                                          #
 # UBUNTU_MENUPROXY=0                                         #
+#                                                            #
+# or you can build mwp as follows                            #
+# DOPTS="-D BROKEN_MENUS" make && sudo make install          #
+#                                                            #
 ##############################################################
 
 apt install libgdl-3-dev \

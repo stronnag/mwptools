@@ -1215,10 +1215,6 @@ public class MWPlanner : Gtk.Application {
         navstatus = new NavStatus(builder, vcol);
 
         dockmenus = new Gtk.MenuItem[DOCKLETS.NUMBER];
-        var mvi = builder.get_object ("menu_view_head") as Gtk.MenuItem;
-        mvi.activate.connect (() => {
-                set_dock_menu_status();
-            });
 
         dockmenus[DOCKLETS.NAVSTATUS] = builder.get_object ("nav_status_menu") as Gtk.MenuItem;
         dockmenus[DOCKLETS.NAVSTATUS].activate.connect (() => {
@@ -1910,27 +1906,39 @@ public class MWPlanner : Gtk.Application {
        setup_buttons();
        set_dock_menu_status();
 
-        if(rfile != null)
-        {
-            usemag = force_mag;
-            Idle.add(() => {
-                    run_replay(Posix.realpath(rfile), true, Player.MWP);
-                    return false;
-                });
-        }
-        else if(bfile != null)
-        {
-            usemag = force_mag;
-            Idle.add(() => {
-                    replay_bbox(true, Posix.realpath(bfile));
-                    return false;
-                });
-        }
-
-        Timeout.add(500, () => {
-                fbox.allow_resize(false);
-                return Source.REMOVE;
+#if BROKEN_MENUS
+        dock.layout_changed.connect(() => {
+                set_dock_menu_status();
             });
+#endif
+
+       var mvi = builder.get_object ("menu_view_head") as Gtk.MenuItem;
+       mvi.activate.connect (() => {
+               set_dock_menu_status();
+           });
+
+
+       if(rfile != null)
+       {
+           usemag = force_mag;
+           Idle.add(() => {
+                   run_replay(Posix.realpath(rfile), true, Player.MWP);
+                   return false;
+               });
+       }
+       else if(bfile != null)
+       {
+           usemag = force_mag;
+           Idle.add(() => {
+                   replay_bbox(true, Posix.realpath(bfile));
+                   return false;
+               });
+       }
+
+       Timeout.add(500, () => {
+               fbox.allow_resize(false);
+               return Source.REMOVE;
+           });
     }
 
     private void set_dock_menu_status()
