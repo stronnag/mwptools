@@ -1906,17 +1906,23 @@ public class MWPlanner : Gtk.Application {
        setup_buttons();
        set_dock_menu_status();
 
-#if BROKEN_MENUS
-        dock.layout_changed.connect(() => {
-                set_dock_menu_status();
-            });
-#endif
-
-       var mvi = builder.get_object ("menu_view_head") as Gtk.MenuItem;
-       mvi.activate.connect (() => {
-               set_dock_menu_status();
-           });
-
+       {
+           var mx = Environment.get_variable("UBUNTU_MENUPROXY");
+           if(mx == null || mx == "0")
+           {
+               var mvi = builder.get_object ("menu_view_head") as Gtk.MenuItem;
+               mvi.activate.connect (() => {
+                       set_dock_menu_status();
+                   });
+           }
+           else
+           {
+               MWPLog.message("workaround for Ubuntu menu aberration\n");
+               dock.layout_changed.connect(() => {
+                       set_dock_menu_status();
+                   });
+           }
+       }
 
        if(rfile != null)
        {
