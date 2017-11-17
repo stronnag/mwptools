@@ -726,7 +726,7 @@ See Issue #431</property>
                       <object class="GtkMenuItem" id="voltage_menu_view">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Voltage in dock</property>
+                        <property name="label" translatable="yes">Battery Monitor</property>
                         <property name="use_underline">True</property>
                       </object>
                     </child>
