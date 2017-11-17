@@ -1907,18 +1907,19 @@ public class MWPlanner : Gtk.Application {
        set_dock_menu_status();
 
        {
+           var sx = Environment.get_variable("DESKTOP_SESSION");
            var mx = Environment.get_variable("UBUNTU_MENUPROXY");
-           if(mx == null || mx == "0")
+           if(sx == "ubuntu" && (mx == null || mx != "0"))
            {
-               var mvi = builder.get_object ("menu_view_head") as Gtk.MenuItem;
-               mvi.activate.connect (() => {
+               MWPLog.message("workaround for Ubuntu menu aberration\n");
+               dock.layout_changed.connect(() => {
                        set_dock_menu_status();
                    });
            }
            else
            {
-               MWPLog.message("workaround for Ubuntu menu aberration %s\n", mx);
-               dock.layout_changed.connect(() => {
+               var mvi = builder.get_object ("menu_view_head") as Gtk.MenuItem;
+               mvi.activate.connect (() => {
                        set_dock_menu_status();
                    });
            }
