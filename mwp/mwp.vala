@@ -1780,6 +1780,7 @@ public class MWPlanner : Gtk.Application {
             });
 
         var dock = new Dock ();
+        dock.margin_start = 8;
         var dockbar = new DockBar (dock);
         dockbar.set_style (DockBarStyle.ICONS);
         lman = new LayMan(dock, confdir,layfile,DOCKLETS.NUMBER);
