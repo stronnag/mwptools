@@ -1127,6 +1127,14 @@ public class ListBox : GLib.Object
         calc_mission();
     }
 
+    private string show_time(int s)
+    {
+        var mins = s / 60;
+        var secs = s % 60;
+        return "%02d:%02d".printf(mins,secs);
+    }
+
+
     public void calc_mission(double extra=0)
     {
         string route;
@@ -1141,10 +1149,10 @@ public class ListBox : GLib.Object
             var res = calc_mission_dist(out d, out lt, out et, extra);
             if (res == true)
             {
-                route = "Distance: %.0f%s, fly: %ds, loiter: %ds".printf(
+                route = "Distance: %.0f%s, fly: %s, loiter: %s".printf(
                     Units.distance(d),
                     Units.distance_units(),
-                    et,lt);
+                    show_time(et),show_time(lt));
             }
             else
                 route = "Indeterminate distance";

@@ -1908,7 +1908,7 @@ public class MWPlanner : Gtk.Application {
 
        {
            var mx = Environment.get_variable("GTK_MODULES");
-           if(mx.contains("unity-gtk-module"))
+           if(mx != null && mx.contains("unity-gtk-module"))
            {
                MWPLog.message("workaround for Ubuntu menu aberration\n");
                dock.layout_changed.connect(() => {
