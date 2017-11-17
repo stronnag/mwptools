@@ -1917,7 +1917,7 @@ public class MWPlanner : Gtk.Application {
            }
            else
            {
-               MWPLog.message("workaround for Ubuntu menu aberration\n");
+               MWPLog.message("workaround for Ubuntu menu aberration %s\n", mx);
                dock.layout_changed.connect(() => {
                        set_dock_menu_status();
                    });
