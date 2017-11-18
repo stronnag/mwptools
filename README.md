@@ -10,15 +10,18 @@ replay / blackbox replay functions for the iNav FC firmware.
 
 ![mwp](https://raw.githubusercontent.com/wiki/stronnag/mwptools/images/ltm-normal.png)
 
-In addition, mwptools provides a small suite of tools to manage a
-MultiWii NAV flight controller and other CleanFlight based FCs. The
-suite consists of tools that the author finds useful to manage and
-monitor 'in the field' using a low powered Linux based netbook or
-chromebook running Arch Linux.
+In addition, mwptools provides a small suite of tools to manage a MultiWii NAV flight controller and other CleanFlight based FCs. The suite consists of tools that the author finds useful to manage and monitor 'in the field' using a low powered Linux based netbook or chromebook running Arch Linux.
 
 ## Tools
 
- * mwp : "A mission planner for the rest of us". Simple mission planning and monitoring. Mission Planning is provided for iNav and MW-NAV (MW 2.4). Monitoring, logging and recording for iNav, MW and CleanFlight;
+ * mwp : "A mission planner for the rest of us". Simple mission
+   planning and monitoring. Mission Planning is provided for iNav and
+   MW-NAV (MW 2.4). Monitoring, logging and recording for iNav, MW and
+   CleanFlight;
+ * cf-cli : Manage backup and restoration of CLI dump and diff
+
+### Legacy (MW)
+
  * pidedit : PID editor (MW);
  * switchedit : Transmitter switch editor (MW);
  * mspsim : An MSP (MultiWii Serial Protocol) simulator. Used to develop the other components of the suite;
@@ -28,7 +31,8 @@ chromebook running Arch Linux.
 
 The tools are designed to be portable and as far as possible platform
 and architecure agnostic. The suite is developed on Arch Linux and is
-tested on Ubuntu (latest and most recent LTS), Fedora (current) and
+tested on Ubuntu (latest and most recent LTS), Fedora (current),
+Debian (Stretch), Elementary (current) and
 FreeBSD (current release); building and running on any platform that
 supports (recent versions of):
 
@@ -38,10 +42,11 @@ supports (recent versions of):
  * libchamplain;
  * libespeak;
  * libgdl;
+ * POSIX API
  * mspsim requires Posix pseudo-terminals.
 
-Please see the docs directory for specific development
-requirements.
+Please see the docs directory for specific development requirements
+for individual OS.
 
 mwptools is tested on x86_64, ia32 and ARM devices.
 
