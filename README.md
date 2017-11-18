@@ -24,8 +24,11 @@ In addition, mwptools provides a small suite of tools to manage a MultiWii NAV f
 
  * pidedit : PID editor (MW);
  * switchedit : Transmitter switch editor (MW);
- * mspsim : An MSP (MultiWii Serial Protocol) simulator. Used to develop the other components of the suite;
- * Tools to transform mwp log files to SQL, GPX and KML.
+ * mspsim : An MSP (MultiWii Serial Protocol) simulator. Used to develop the other components of the suite.
+ 
+ ### Miscellaneous
+ 
+ * Tools to transform mwp log files to SQL, GPX and KML, analyse black box logs, Ublox GPS and more.
 
 ## Platforms and OS
 
