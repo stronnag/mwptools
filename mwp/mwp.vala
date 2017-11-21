@@ -308,6 +308,7 @@ public class MWPlanner : Gtk.Application {
 
     public static MWPSettings conf;
     private MWSerial msp;
+    private MWSerial fwddev;
     private Gtk.Button conbutton;
     private Gtk.ComboBoxText dev_entry;
     private Gtk.Label verlab;
@@ -704,6 +705,7 @@ public class MWPlanner : Gtk.Application {
     private static bool offline = false;
     private static string rfile = null;
     private static string bfile = null;
+    private static string forward_device = null;
     private static int dmrtype=Craft.Vehicles.QUADX; // default to quad
     private static DEBUG_FLAGS debug_flags = 0;
     private static VersInfo vi ={0};
@@ -754,6 +756,8 @@ public class MWPlanner : Gtk.Application {
         { "version", 'v', 0, OptionArg.NONE, out show_vers, "show version", null},
         { "wayland", 0, 0, OptionArg.NONE, out use_wayland, "force wayland (if available)", null},
         { "really-really-run-as-root", 0, 0, OptionArg.NONE, out asroot, "no reason to ever use this", null},
+        { "forward-to", 0, 0, OptionArg.STRING, out forward_device, "forward telemetry to", null},
+
         {null}
     };
 
@@ -1580,6 +1584,8 @@ public class MWPlanner : Gtk.Application {
 
         msp = new MWSerial();
         msp.use_v2 = false;
+        if(forward_device != null)
+            fwddev = new MWSerial.forwarder();
 
         mq = new Queue<MQI?>();
 
@@ -1941,7 +1947,7 @@ public class MWPlanner : Gtk.Application {
                return Source.REMOVE;
            });
 
-       if(autocon)
+        if(autocon)
         {
             autocon_cb.active=true;
             mkcon = true;
@@ -3048,7 +3054,6 @@ public class MWPlanner : Gtk.Application {
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
-//        MWPLog.message("Process %s\n", cmd.to_string());
         if(cmd > MSP.Cmds.LTM_BASE)
         {
             telem = true;
@@ -3074,6 +3079,8 @@ public class MWPlanner : Gtk.Application {
                     if(last_tm == 0)
                         last_tm =1;
                 }
+                if(fwddev != null && fwddev.available)
+                    fwddev.send_ltm((cmd - MSP.Cmds.LTM_BASE), raw, len);
             }
         }
 
@@ -5048,6 +5055,9 @@ public class MWPlanner : Gtk.Application {
         {
             replayer = Player.NONE;
         }
+        if(fwddev != null && fwddev.available)
+            fwddev.close();
+
         menubblog.sensitive = menubbload.sensitive = menureplay.sensitive =
         menuloadlog.sensitive = true;
         reboot_status();
@@ -5127,6 +5137,14 @@ public class MWPlanner : Gtk.Application {
                     run_queue();
                 }
                 menumwvar.sensitive = false;
+                if(forward_device != null)
+                {
+                    string fstr;
+                    if(fwddev.open(forward_device, 0, out fstr) == true)
+                        MWPLog.message("set forwarder %s\n", forward_device);
+                    else
+                        MWPLog.message("Forwarder %s %s\n", forward_device, fstr);
+                }
             }
             else
             {

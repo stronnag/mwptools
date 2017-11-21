@@ -78,6 +78,7 @@ public class MWSerial : Object
     private bool encap = false;
     public bool use_v2 = false;
     public ProtoMode pmode  {set; get; default=ProtoMode.NORMAL;}
+    private bool fwd = false;
 
     public enum MemAlloc
     {
@@ -141,9 +142,17 @@ public class MWSerial : Object
     public signal void cli_event(uint8[]raw, uint len);
     public signal void serial_lost ();
 
+
+    public MWSerial.forwarder()
+    {
+        fwd = true;
+        available = false;
+        txbuf = new uint8[64];
+    }
+
     public MWSerial()
     {
-        available = false;
+        fwd =  available = false;
         rxbuf_alloc = MemAlloc.RX;
         rxbuf = new uint8[rxbuf_alloc];
         txbuf = new uint8[txbuf_alloc];
@@ -382,7 +391,8 @@ public class MWSerial : Object
         else
         {
             available = true;
-            setup_reader(fd);
+            if(fwd == false)
+                setup_reader(fd);
         }
         return available;
     }
