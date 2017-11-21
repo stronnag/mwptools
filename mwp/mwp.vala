@@ -1664,12 +1664,6 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
-        if(autocon)
-        {
-            autocon_cb.active=true;
-            mkcon = true;
-        }
-
         if(mwvar == MWChooser.MWVAR.UNDEF)
         {
             mwvar = mwc.get_version(MWChooser.MWVAR.MWOLD);
@@ -1946,6 +1940,13 @@ public class MWPlanner : Gtk.Application {
                fbox.allow_resize(false);
                return Source.REMOVE;
            });
+
+       if(autocon)
+        {
+            autocon_cb.active=true;
+            mkcon = true;
+        }
+
     }
 
     private void set_dock_menu_status()
