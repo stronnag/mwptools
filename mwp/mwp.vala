@@ -729,8 +729,8 @@ public class MWPlanner : Gtk.Application {
         { "serial-device", 's', 0, OptionArg.STRING, out serial, "Serial device", null},
         { "device", 'd', 0, OptionArg.STRING, out serial, "Serial device", null},
         { "flight-controller", 'f', 0, OptionArg.STRING, out mwoptstr, "mw|mwnav|bf|cf", null},
-        { "connect", 'c', 0, OptionArg.NONE, out mkcon, "connect to first device", null},
-        { "auto-connect", 'a', 0, OptionArg.NONE, out autocon, "auto-connect to first device", null},
+        { "connect", 'c', 0, OptionArg.NONE, out mkcon, "connect to first device (does not set auto flag)", null},
+        { "auto-connect", 'a', 0, OptionArg.NONE, out autocon, "auto-connect to first device (sets auto flag)", null},
         { "no-poll", 'N', 0, OptionArg.NONE, out nopoll, "don't poll for nav info", null},
         { "no-trail", 'T', 0, OptionArg.NONE, out no_trail, "don't display GPS trail", null},
         { "raw-log", 'r', 0, OptionArg.NONE, out rawlog, "log raw serial data to file", null},
@@ -1686,10 +1686,6 @@ public class MWPlanner : Gtk.Application {
         lastp = new Timer();
         anim_cb();
 
-        if(mkcon)
-        {
-            connect_serial();
-        }
 #if OLDGTK||LSRVAL
             var mon = screen.get_monitor_at_window(screen.get_active_window());
             Gdk.Rectangle rect;
@@ -1946,6 +1942,12 @@ public class MWPlanner : Gtk.Application {
                fbox.allow_resize(false);
                return Source.REMOVE;
            });
+
+
+       if(mkcon)
+        {
+            connect_serial();
+        }
 
         if(autocon)
         {
