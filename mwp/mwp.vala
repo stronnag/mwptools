@@ -2830,11 +2830,13 @@ public class MWPlanner : Gtk.Application {
                     deserialise_u16(raw+13, out xaf);
                     arm_flags = xaf;
                     deserialise_u16(raw+11, out loadpct);
+                    profile = raw[10];
                 }
                 else
                 {
                     deserialise_u32(raw+9, out arm_flags);
                     deserialise_u16(raw+6, out loadpct);
+                    profile = raw[8];
                 }
 
                 if(arm_flags != xarm_flags)
@@ -2855,6 +2857,8 @@ public class MWPlanner : Gtk.Application {
                     }
                 }
             }
+            else
+                profile = raw[10];
 
             if(have_status == false)
             {
@@ -2872,7 +2876,6 @@ public class MWPlanner : Gtk.Application {
 
                 if(!prlabel)
                 {
-                    profile = raw[10];
                     prlabel = true;
                     var lab = verlab.get_label();
                     StringBuilder sb = new StringBuilder();
@@ -2882,7 +2885,7 @@ public class MWPlanner : Gtk.Application {
 
                     if(navcap != NAVCAPS.NONE)
                         sb.append(" Nav");
-                    sb.append_printf(" Pr %d", raw[10]);
+                    sb.append_printf(" Pr %d", profile);
                     verlab.set_label(sb.str);
                 }
 
