@@ -68,7 +68,7 @@ static int connect_nb(int s, struct sockaddr_rc *addr, size_t slen)
     flags = fcntl(s, F_GETFL, NULL) | O_NONBLOCK;
     fcntl(s, F_SETFL, flags);
 
-    res = connect(s, addr, slen);
+    res = connect(s, (const struct sockaddr *)addr, slen);
     if (res < 0)
     {
         fd_set set;
