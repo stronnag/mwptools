@@ -64,6 +64,7 @@ static int connect_nb(int s, struct sockaddr_rc *addr, size_t slen)
 {
     int flags;
     int res;
+    int status = 0;
 
     flags = fcntl(s, F_GETFL, NULL) | O_NONBLOCK;
     fcntl(s, F_SETFL, flags);
@@ -74,60 +75,53 @@ static int connect_nb(int s, struct sockaddr_rc *addr, size_t slen)
         fd_set set;
         struct timeval tv;
         socklen_t lon;
-        int valopt;
 
+        status = errno;
         if (errno == EINPROGRESS)
         {
             tv.tv_sec = 15;
             tv.tv_usec = 0;
             FD_ZERO(&set);
             FD_SET(s, &set);
-            if (select(s+1, NULL, &set, NULL, &tv) > 0)
+
+            res = select(s+1, NULL, &set, NULL, &tv);
+            if (res > 0)
             {
                 lon = sizeof(int);
-                getsockopt(s, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon);
-                if (valopt)
-                {
-                    fprintf(stderr, "Error in connection() %d - %s\n", valopt, strerror(valopt));
-                    res = -1;
-                }
-                else
-                    res = 0;
+                getsockopt(s, SOL_SOCKET, SO_ERROR, (void*)(&status), &lon);
+            }
+            else if(res == 0)
+            {
+                status = ECONNABORTED;
             }
             else
-            {
-                fprintf(stderr, "Timeout or error() %d - %s\n", valopt, strerror(valopt));
-                res = -1;
-            }
+                status = errno;
         }
         else
         {
-            fprintf(stderr, "Error connecting %d - %s\n", errno, strerror(errno));
-            res = -1;
+            status = errno;
         }
     }
     flags = fcntl(s, F_GETFL, NULL) & (~O_NONBLOCK);
     fcntl(s, F_SETFL, flags);
-    return res;
+    return status;
 }
 
-int connect_bt_device(char *btaddr)
+int connect_bt_device(char *btaddr, int *lasterr)
 {
     struct sockaddr_rc addr = { 0 };
-    int s=-1, status = -1;
+    int s=-1;
 
     s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-    if (s < 0)
-    {
-        fprintf(stderr, "Socket fails %d (%s)\n", s, strerror(errno));
-    }
+    if (s <  0)
+        *lasterr = errno;
     else
     {
         addr.rc_family = AF_BLUETOOTH;
         addr.rc_channel = (uint8_t) 1;
         _mwp_str2ba(btaddr, &addr.rc_bdaddr );
-        status = connect_nb (s, &addr, sizeof(addr));
-        if(status != 0)
+        *lasterr = connect_nb (s, &addr, sizeof(addr));
+        if(*lasterr != 0)
         {
             close(s);
             s = -1;
@@ -136,8 +130,9 @@ int connect_bt_device(char *btaddr)
     return s;
 }
 #else
-int connect_bt_device (char *btaddr)
+int connect_bt_device (char *btaddr, int *lasterr)
 {
+    lasterr = EINVAL;
     return -1;
 }
 #endif

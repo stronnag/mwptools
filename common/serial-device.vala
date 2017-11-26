@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-extern int connect_bt_device (string dev);
+extern int connect_bt_device (string dev, int* lasterr);
 extern int open_serial(string dev, int baudrate);
 extern int set_fd_speed(int fd, int baudrate);
 extern void close_serial(int fd);
@@ -309,6 +309,7 @@ public class MWSerial : Object
         uint16 port = 0;
         Regex regex;
         string []parts;
+        int lasterr = 0;
 
         estr=null;
 
@@ -326,7 +327,7 @@ public class MWSerial : Object
         if(device.length == 17 &&
            device[2] == ':' && device[5] == ':')
         {
-            fd = connect_bt_device(device);
+            fd = connect_bt_device(device, &lasterr);
             if (fd != -1)
             {
                 commode = ComMode.FD|ComMode.STREAM;
@@ -375,13 +376,12 @@ public class MWSerial : Object
                 }
                 fd = open_serial(device, (int)rate);
             }
+            lasterr=Posix.errno;
         }
 
         if(fd < 0)
         {
-
             uint8 [] sbuf = new uint8[1024];
-            var lasterr=Posix.errno;
             var s = get_error_text(lasterr, sbuf, 1024);
             estr = "%s (%d)".printf(s,lasterr);
             MWPLog.message(estr);
