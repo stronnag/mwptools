@@ -3082,8 +3082,6 @@ public class MWPlanner : Gtk.Application {
                     if(last_tm == 0)
                         last_tm =1;
                 }
-                if(fwddev != null && fwddev.available)
-                    fwddev.send_ltm((cmd - MSP.Cmds.LTM_BASE), raw, len);
             }
         }
 
@@ -3137,6 +3135,25 @@ public class MWPlanner : Gtk.Application {
             }
             return;
         }
+
+        if(fwddev != null && fwddev.available)
+        {
+            if(cmd < MSP.Cmds.LTM_BASE && conf.forward == 3)
+            {
+                fwddev.send_command(cmd, raw, len);
+            }
+            if(cmd >= MSP.Cmds.LTM_BASE && cmd < MSP.Cmds.MAV_BASE)
+            {
+                if (conf.forward == 1 || conf.forward == 3 ||
+                    (conf.forward == 2 &&
+                     (cmd == MSP.Cmds.TG_FRAME ||
+                      cmd == MSP.Cmds.TA_FRAME ||
+                      cmd == MSP.Cmds.TS_FRAME )
+                     ))
+                fwddev.send_ltm((cmd - MSP.Cmds.LTM_BASE), raw, len);
+            }
+        }
+
         if(Logger.is_logging)
             Logger.log_time();
 
@@ -5144,7 +5161,10 @@ public class MWPlanner : Gtk.Application {
                 {
                     string fstr;
                     if(fwddev.open(forward_device, 0, out fstr) == true)
+                    {
+                        fwddev.set_mode(MWSerial.Mode.SIM);
                         MWPLog.message("set forwarder %s\n", forward_device);
+                    }
                     else
                         MWPLog.message("Forwarder %s %s\n", forward_device, fstr);
                 }

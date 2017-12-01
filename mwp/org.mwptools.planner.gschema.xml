@@ -1,4 +1,13 @@
+
 <schemalist>
+
+  <enum id="org.mwptools.planner.fwds">
+    <value nick="none" value="0"/>
+    <value nick="LTM" value="1"/>
+    <value nick="minLTM" value="2"/>
+    <value nick="all" value="3"/>
+  </enum>
+
   <schema id="org.mwptools.planner" path="/org/mwptools/planner/" >
 
     <key name="device-names" type="as">
@@ -373,6 +382,14 @@
 	If the FC holds a valid mission in memory, and there is no
 	mission loaded into MWP, this setting controls whether MWP
 	automatically downloades the mission.
+      </description>
+    </key>
+
+    <key name="forward" enum="org.mwptools.planner.fwds">
+      <default>"minLTM"</default>
+      <summary>Types of message to forward</summary>
+      <description>
+        Types of message to forward
       </description>
     </key>
   </schema>
