@@ -387,6 +387,7 @@ public class MWSerial : Object
                 _ck_b += (_ck_a += data);  // checksum byte
                 _payload_length += (uint16)(data<<8);
                 if (_payload_length > 512) {
+                    stderr.printf("Error: Data size over-run %d\n", _payload_length);
                     _payload_length = 0;
                     _step = 0;
                 }
@@ -402,11 +403,20 @@ public class MWSerial : Object
                 break;
             case 7:
                 _step++;
-                if (_ck_a != data) _step = 0;  // bad checksum
+                if (_ck_a != data)
+                {
+                    stderr.printf("Error: Checksum A error\n");
+                    _step = 0;  // bad checksum
+                }
+
                 break;
             case 8:
                 _step = 0;
-                if (_ck_b != data)  break;  // bad checksum
+                if (_ck_b != data)
+                {
+                    stderr.printf("Error: Checksum B error\n");
+                    break;  // bad checksum
+                }
                 parsed = ublox_parse_gps();
                 break;
         }
