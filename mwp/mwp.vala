@@ -4446,7 +4446,8 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.Tx_FRAME:
-                cleanup_replay();
+                if (replayer != Player.NONE)
+                    cleanup_replay();
                 break;
 
             case MSP.Cmds.SET_NAV_POSHOLD:
@@ -5673,10 +5674,8 @@ public class MWPlanner : Gtk.Application {
             thr = null;
         }
         saved_menuitem.label = saved_menutext;
-
         menureplay.sensitive = menuloadlog.sensitive =
             menubblog.sensitive = menubbload.sensitive = true;
-
         Posix.close(playfd[0]);
         Posix.close(playfd[1]);
         if (conf.audioarmed == true)

@@ -285,7 +285,7 @@ end
 
 def encode_x
   msg='$Tx'
-  sl = ['x'].pack('c')
+  sl = [120].pack('c')
   msg << sl << mksum(sl)
   msg
 end
