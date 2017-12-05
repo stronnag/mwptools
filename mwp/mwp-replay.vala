@@ -201,7 +201,9 @@ public class ReplayThread : GLib.Object
         var ck = cksum(dstr[3:len], len, 0);
         dstr[len+2] = ck;
         len += 3;
-        Posix.write(fd, dstr, len);
+        var n = Posix.write(fd, dstr, len);
+        if(n != 0)
+            print("write %s\n", Posix.strerror(Posix.errno));
     }
 
     private void send_rec(int fd, MSP.Cmds cmd, uint len, uint8 []buf)

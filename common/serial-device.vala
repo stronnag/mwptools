@@ -233,6 +233,7 @@ public class MWSerial : Object
                         skt = new Socket (fam, SocketType.DATAGRAM, SocketProtocol.UDP);
                         skt.bind (sa, true);
                         fd = skt.fd;
+                        print("bind %s %d %d\n", fam.to_string(), fd, port);
                         break;
                     }
                     if(rhost != null && rport != 0)
@@ -276,7 +277,8 @@ public class MWSerial : Object
                         fd = skt.fd;
                         if(fd != -1)
                         {
-                            if(stype == SocketType.STREAM)
+// doesn't seem necessary
+//                            if(stype == SocketType.STREAM)
                             {
                                 if (skt.connect(sockaddr))
                                 {
@@ -291,8 +293,7 @@ public class MWSerial : Object
                                     fd = -1;
                                 }
                             }
-                            else
-                                break;
+                            break;
                         }
                     }
                 }
