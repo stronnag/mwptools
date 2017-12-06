@@ -470,6 +470,8 @@ public class MWPlanner : Gtk.Application {
     private OdoView odoview;
     private static bool is_wayland = false;
     private static bool use_wayland = false;
+    private static bool permawarn = false;
+
     private uchar hwstatus[9];
 
     public struct MQI //: Object
@@ -757,7 +759,7 @@ public class MWPlanner : Gtk.Application {
         { "wayland", 0, 0, OptionArg.NONE, out use_wayland, "force wayland (if available)", null},
         { "really-really-run-as-root", 0, 0, OptionArg.NONE, out asroot, "no reason to ever use this", null},
         { "forward-to", 0, 0, OptionArg.STRING, out forward_device, "forward telemetry to", null},
-
+        {"perma-warn", 0, 0, OptionArg.NONE, out permawarn, "info dialogues never time out", null},
         {null}
     };
 
@@ -5511,7 +5513,7 @@ public class MWPlanner : Gtk.Application {
                                                      klass,
                                                      Gtk.ButtonsType.OK,
                                                      warnmsg);
-        if(timeout > 0)
+        if(timeout > 0 && permawarn == false)
         {
             Timeout.add_seconds(timeout, () => {
                     msg.destroy();
