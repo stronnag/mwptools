@@ -3315,10 +3315,12 @@ public class MWPlanner : Gtk.Application {
                 uint8 gi[16] = raw[19:len];
                 gi[len-19] = 0;
                 vi.fc_git = (string)gi;
-
+                uchar vs[4];
+                serialise_u32(vs, vi.fc_vers);
                 var board = board_by_id();
-                var vers = "%s %s (%s)".printf(verlab.get_label()[0:11], board,
-                                               vi.fc_git);
+                var vers = "%s v%d.%d.%d  %s (%s)".printf(vi.fc_var,
+                                                          vs[2],vs[1],vs[0],
+                                                          board, vi.fc_git);
                 verlab.set_label(vers);
                 MWPLog.message("%s\n", vers);
                 queue_cmd(MSP.Cmds.BOXNAMES,null,0);
