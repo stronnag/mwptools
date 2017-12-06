@@ -46,6 +46,7 @@ public class Craft : GLib.Object
     private static Champlain.Label wpp ;
     private Queue<Champlain.Point> stack;
     private int stack_size = 0;
+    private int mod_points = 0;
 
     public enum Vehicles
     {
@@ -134,9 +135,10 @@ public class Craft : GLib.Object
         return sb.str;
     }
 */
-    public Craft(Champlain.View _view, uint id, bool _norotate = false, bool _trail = true, int _ss = 0)
+    public Craft(Champlain.View _view, uint id, bool _norotate = false, bool _trail = true, int _ss = 0, int _mp = 0)
     {
         stack_size = _ss;
+        mod_points = _mp;
         view = _view;
         norotate = _norotate;
         trail = _trail;
@@ -267,7 +269,7 @@ public class Craft : GLib.Object
             Champlain.Point marker;
             marker = new Champlain.Point.full(5.0, path_colour);
             marker.set_location (lat,lon);
-            if(stack_size >= 0 || (npath % -stack_size) == 0)
+            if(stack_size >= 0 || (npath % mod_points) == 0)
                 pmlayer.add_marker(marker);
 
             if(stack_size > 0)

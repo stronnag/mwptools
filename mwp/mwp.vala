@@ -714,6 +714,7 @@ public class MWPlanner : Gtk.Application {
     private static bool set_fs;
     private static bool show_vers = false;
     private static int stack_size = 0;
+    private static int mod_points = 0;
     public static unowned string ulang;
     private static bool ignore_3dr = false;
     private static string? exvox = null;
@@ -753,6 +754,8 @@ public class MWPlanner : Gtk.Application {
         { "centre", 0, 0, OptionArg.STRING, out llstr, "Centre position", "position"},
         { "offline", 0, 0, OptionArg.NONE, out offline, "force offline proxy mode", null},
         { "n-points", 'S', 0, OptionArg.INT, out stack_size, "Number of points shown in GPS trail", "N"},
+        { "mod-points", 'M', 0, OptionArg.INT, out mod_points, "Modulo points to show in GPS trail", "N"},
+
         { "rings", 0, 0, OptionArg.STRING, out rrstr, "Range rings (number, interval(m)), e.g. --rings 10,20", "number,interval"},
         { "voice-command", 0, 0, OptionArg.STRING, out exvox, "External speech command", "comamnd string"},
         { "version", 'v', 0, OptionArg.NONE, out show_vers, "show version", null},
@@ -2307,7 +2310,8 @@ public class MWPlanner : Gtk.Application {
         if(craft == null)
         {
             MWPLog.message("init icon %d\n",  vi.mrtype);
-            craft = new Craft(view, vi.mrtype,norotate, !no_trail, stack_size);
+            craft = new Craft(view, vi.mrtype,norotate, !no_trail,
+                              stack_size, mod_points);
             craft.park();
         }
     }
