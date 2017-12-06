@@ -202,7 +202,7 @@ public class ReplayThread : GLib.Object
         dstr[len+2] = ck;
         len += 3;
         var n = Posix.write(fd, dstr, len);
-        if(n != 0)
+        if(n < 0)
             print("write %s\n", Posix.strerror(Posix.errno));
     }
 
