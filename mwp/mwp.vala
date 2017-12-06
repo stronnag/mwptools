@@ -3315,8 +3315,9 @@ public class MWPlanner : Gtk.Application {
                 uint8 gi[16] = raw[19:len];
                 gi[len-19] = 0;
                 vi.fc_git = (string)gi;
+
                 var board = board_by_id();
-                var vers = "%s %s (%s)".printf(verlab.get_label(), board,
+                var vers = "%s %s (%s)".printf(verlab.get_label()[0:11], board,
                                                vi.fc_git);
                 verlab.set_label(vers);
                 MWPLog.message("%s\n", vers);

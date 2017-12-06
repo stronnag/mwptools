@@ -269,7 +269,7 @@ public class Craft : GLib.Object
             Champlain.Point marker;
             marker = new Champlain.Point.full(5.0, path_colour);
             marker.set_location (lat,lon);
-            if(stack_size >= 0 || (npath % mod_points) == 0)
+            if(mod_points == 0 || (npath % mod_points) == 0)
                 pmlayer.add_marker(marker);
 
             if(stack_size > 0)
