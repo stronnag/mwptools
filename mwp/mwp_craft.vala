@@ -177,7 +177,7 @@ public class Craft : GLib.Object
         }
         view.add_layer (layer);
         homep = posp = rthp = wpp = null;
-        if(stack_size != 0)
+        if(stack_size > 0)
             stack = new Queue<Champlain.Point> ();
 
         icon.set_pivot_point(0.5f, 0.5f);
@@ -230,7 +230,7 @@ public class Craft : GLib.Object
             homep = posp = rthp = wpp = null;
             ici.hide();
         }
-        if(stack_size != 0)
+        if(stack_size > 0)
             stack.clear();
     }
 
@@ -267,8 +267,10 @@ public class Craft : GLib.Object
             Champlain.Point marker;
             marker = new Champlain.Point.full(5.0, path_colour);
             marker.set_location (lat,lon);
-            pmlayer.add_marker(marker);
-            if(stack_size != 0)
+            if(stack_size >= 0 || (npath % -stack_size) == 0)
+                pmlayer.add_marker(marker);
+
+            if(stack_size > 0)
             {
                 stack.push_head(marker);
                 if(stack.get_length() > stack_size)
