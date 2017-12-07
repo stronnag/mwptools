@@ -3449,7 +3449,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     i++;
                 }
-                MWPLog.message("Masks arm %x angle %x horz %x ph %x rth %x wp %x\n",
+                MWPLog.message("Masks arm %jx angle %jx horz %jx ph %jx rth %jx wp %jx\n",
                                arm_mask, angle_mask, horz_mask, ph_mask,
                                rth_mask, wp_mask);
                 if(Logger.is_logging)

@@ -87,6 +87,10 @@ public class Units :  GLib.Object
 
     public static string fix(uint8 fix)
     {
+            // Just for an external replayer and the fact that inav does
+            // this differently from mw
+        if (fix >= dfix.length)
+            fix--;
         return dfix[fix];
     }
 }
