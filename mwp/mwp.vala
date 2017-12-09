@@ -3533,6 +3533,8 @@ public class MWPlanner : Gtk.Application {
                 wpi.wps_valid = *rp++;
                 wpi.wp_count = *rp;
 
+                MWPLog.message("WP_GETINFO: %u/%u/%u\n",
+                               wpi.max_wp, wpi.wp_count, wpi.wps_valid);
                 if((wpmgr.wp_flag & WPDL.GETINFO) != 0 && wpi.wps_valid == 0)
                 {
                     mwp_warning_box("FC holds zero  WP (max %u)".printf(wpi.max_wp),
