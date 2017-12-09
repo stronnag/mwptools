@@ -21,7 +21,20 @@ end
 
 Encoding.default_external = Encoding::BINARY
 
-serdev="/dev/ttyUSB0"
+serdev=nil
+serdevs={"/dev/ttyUSB0" => '0', "/dev/ttyACM0" => '20'}
+sid = '0'
+
+serdevs.each do |k,v|
+  if File.exists? k
+    serdev = k
+    sid = v
+    break
+  end
+end
+
+puts serdev
+
 ofile=Time.now.strftime "bblog_%F-%H%M%S.TXT"
 baud = 115200
 sbaud=nil
@@ -63,7 +76,7 @@ if sbaud
   puts "Changing baud rate to #{sbaud}\n"
   sport.write "serial\n"
   res = sio.expect("# ",5)
-  if m=res[0].match(/.*(serial 0 \d+ \d+ \d+ \d+ \d+)/)
+  if m=res[0].match(/.*(serial #{sid} \d+ \d+ \d+ \d+ \d+)/)
     defser = m[0]
     params = m[0].split
     params[3] = sbaud
@@ -75,6 +88,13 @@ if sbaud
     sio.expect("Rebooting")
     sport.close
     sleep 4
+    loop do
+      if File.exists? serdev
+	break
+      else
+	sleep 1
+      end
+    end
     sport = Serial.new serdev,sbaud
     sfd = sport.getfd
     sio = IO.new(sfd)

@@ -22,6 +22,11 @@ apt install libgdl-3-dev \
 
 apt install ruby
 
+# For some ARM boards, without full OpenGL, you may need
+
+# apt install libegl1-mesa-dev
+# (or something like that)
+
 # if you want to use speech-dispatcher instead of espeak for voice
 # synthesis (or have a choice of either)
 # gsettings set org.mwptools.planner speech-api 'speechd'
