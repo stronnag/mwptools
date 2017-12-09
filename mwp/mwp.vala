@@ -3541,7 +3541,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 else if (wpi.wp_count > 0 && wpi.wps_valid == 1 )
                 {
-                    string s = "Waypoints in FC\nMax: %u Valid: %u Points: %u".printf(wpi.max_wp, wpi.wps_valid, wpi.wp_count);
+                    string s = "Waypoints in FC\nMax: %u / Mission points: %u Valid: %s".printf(wpi.max_wp, wpi.wp_count, (wpi.wps_valid==1) ? "Yes" : "No");
                     mwp_warning_box(s, Gtk.MessageType.INFO, 2);
                     if(stslabel.get_text() == "No mission")
                     {
