@@ -3304,7 +3304,7 @@ public class MWPlanner : Gtk.Application {
                                 queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
                         }
                         else
-                            queue_cmd(MSP.Cmds.BOXNAMES,null,0);
+                            queue_cmd(MSP.Cmds.BUILD_INFO, null, 0); //?BOXNAMES?
                     }
                     else
                         queue_cmd(MSP.Cmds.BOXNAMES,null,0);
