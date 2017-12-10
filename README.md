@@ -80,7 +80,7 @@ git pull && make && sudo make install
 
 ## Arch Linux
 
-Arch users can install mwptools from the AUR pakage `mwptools-git'
+Arch users can install mwptools from the AUR pakage `mwptools-git`
 
 ## Compatibility
 
