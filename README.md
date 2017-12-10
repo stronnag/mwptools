@@ -73,20 +73,20 @@ As mwptools makes no formal releases, you can update your installation
 from the master branch:
 
 ````
-cd mwptools # the initial insatallation directory
+cd mwptools # the initial installation directory
 git pull && make && sudo make install
 
 ````
 
 ## Arch Linux
 
-Arch users can install mwptools from the AUR pakage `mwptools-git'
+Arch users can install mwptools from the AUR package `mwptools-git`
 
 ## Compatibility
 
-As well as supporitng iNav, mwp aims to be compatible with EOSBandi's
+As well as supporting iNav, mwp aims to be compatible with EOSBandi's
 WinGUI for MW. It used the same XML mission file format (with mwp
-extensions) and aims to provide similar functionaliy where it is
+extensions) and aims to provide similar functionally where it is
 possible to reverse engineer the required protocol formats.
 
 ## Licence
