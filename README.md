@@ -25,15 +25,15 @@ In addition, mwptools provides a small suite of tools to manage a MultiWii NAV f
  * pidedit : PID editor (MW);
  * switchedit : Transmitter switch editor (MW);
  * mspsim : An MSP (MultiWii Serial Protocol) simulator. Used to develop the other components of the suite.
- 
+
  ### Miscellaneous
- 
+
  * Tools to transform mwp log files to SQL, GPX and KML, analyse black box logs, Ublox GPS and more.
 
 ## Platforms and OS
 
 The tools are designed to be portable and as far as possible platform
-and architecure agnostic. The suite is developed on Arch Linux and is
+and architecture agnostic. The suite is developed on Arch Linux and is
 tested on Ubuntu (latest and most recent LTS), Fedora (current),
 Debian (Stretch), Elementary (current) and
 FreeBSD (current release); building and running on any platform that
@@ -52,6 +52,35 @@ Please see the docs directory for specific development requirements
 for individual OS.
 
 mwptools is tested on x86_64, ia32 and ARM devices.
+
+## Installation
+
+* Review / install the dependencies for your platform. The
+  [documentation](docs/) directory lists dependencies for Fedora and
+  Debian/Ubuntu like systems.
+
+* Clone the repository `git clone https://github.com/stronnag/mwptools.git`
+
+* Compile and install
+  ````
+  cd mwptools
+  make && sudo make install
+  ````
+
+### Updating
+
+As mwptools makes no formal releases, you can update your installation
+from the master branch:
+
+````
+cd mwptools # the initial insatallation directory
+git pull && make && sudo make install
+
+````
+
+## Arch Linux
+
+Arch users can install mwptools from the AUR pakage `mwptools-git'
 
 ## Compatibility
 
