@@ -11,7 +11,7 @@
   <schema id="org.mwptools.planner" path="/org/mwptools/planner/" >
 
     <key name="device-names" type="as">
-        <default>['/dev/3dr', '/dev/rfcomm1', '/dev/mega2560', '/dev/ttyACM0@115200', '/dev/pts/0']</default>
+        <default>['/dev/ttyUSB0', '/dev/ttyACM0', '/dev/rfcomm1']</default>
         <summary>Device names</summary>
         <description>A list of device names</description>
     </key>

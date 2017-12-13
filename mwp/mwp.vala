@@ -3493,8 +3493,12 @@ public class MWPlanner : Gtk.Application {
                 }
                 sb.append_c('\n');
                 MWPLog.message(sb.str);
-                var s="nav_wp_safe_distance";
-                queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
+                if(vi.fc_vers >= FCVERS.hasTZ)
+                {
+                    MWPLog.message("Requesting nav_wp_safe_distance\n");
+                    var s="nav_wp_safe_distance";
+                    queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
+                }
                 queue_cmd(msp_get_status,null,0);
                 break;
 
@@ -3503,6 +3507,8 @@ public class MWPlanner : Gtk.Application {
                 {
                     case "nav_wp_safe_distance":
                         deserialise_u16(raw, out nav_wp_safe_distance);
+                        MWPLog.message("Received (raw) nav_wp_safe_distance %u\n",
+                                       nav_wp_safe_distance);
                         break;
                     default:
                         MWPLog.message("Unknown common setting %s\n",
