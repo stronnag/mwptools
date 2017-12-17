@@ -511,9 +511,9 @@ public class MWSerial : Object
             stdout.printf("Version info after %fs (%db)\n", dt, _payload_length);
             unowned uint8*v2 = &_buffer.xbytes[30];
             gpsvers = int.parse((string)(v2));
-            stdout.printf("SW: %s HW: %s %d\n", (string)_buffer.xbytes,
+            stdout.printf("SW: [%s] HW: %s %d\n", (string)_buffer.xbytes,
                           (string)v2,gpsvers);
-                // V8 Extended versioning
+             // V8 Extended versioning
             if(_payload_length > 40)
             {
                 for(int n = 40; n < _payload_length; n+= 30)

@@ -468,6 +468,8 @@ public class MWPlanner : Gtk.Application {
     private VCol vcol;
     private Odostats odo;
     private OdoView odoview;
+    private uint8 downgrade = 0;
+
     private static bool is_wayland = false;
     private static bool use_wayland = false;
     private static bool permawarn = false;
@@ -3563,7 +3565,7 @@ public class MWPlanner : Gtk.Application {
                     else
                     {
                         uint nwp = 0;
-                        var wps = ls.to_wps();
+                        var wps = ls.to_wps(out downgrade);
                         foreach(var w in wps)
                         {
                             switch(w.action)
@@ -3842,6 +3844,7 @@ public class MWPlanner : Gtk.Application {
                     rp = deserialise_u16(rp, out w.p2);
                     rp = deserialise_u16(rp, out w.p3);
                     w.flag = *rp;
+//                    show_wp(w);
                 }
 
                 if ((wpmgr.wp_flag & WPDL.VALIDATE) != 0  ||
@@ -3936,7 +3939,12 @@ public class MWPlanner : Gtk.Application {
                         wpmgr.wp_flag |= WPDL.GETINFO;
                         queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
                         reset_poller();
-                        if(wpmgr.wps.length > 0)
+                        if (downgrade != 0)
+                        {
+                            MWPLog.message("Redrawing mission\n");
+                            download_mission();
+                        }
+                        else if(wpmgr.wps.length > 0)
                             check_mission_safe(wpmgr.wps[0].lat/10000000.0,  wpmgr.wps[0].lon/10000000.0);
                     }
                 }
@@ -4520,7 +4528,18 @@ public class MWPlanner : Gtk.Application {
         }
         run_queue();
     }
-
+/*
+    private void show_wp(MSP_WP w)
+    {
+        stderr.printf("no %d\n", w.wp_no);
+        stderr.printf("action %d\n", w.action);
+        stderr.printf("lat %d\n", w.lat);
+        stderr.printf("lon %d\n", w.lon);
+        stderr.printf("alt %u\n", w.altitude);
+        stderr.printf("p1,2,3 %d %d %d\n", w.p1, w.p2, w.p3);
+        stderr.printf("flag %x\n", w.flag);
+    }
+*/
     private bool home_changed(double lat, double lon)
     {
         bool ret=false;
@@ -4834,8 +4853,9 @@ public class MWPlanner : Gtk.Application {
     private void upload_mission(WPDL flag)
     {
         validatelab.set_text("");
+        downgrade = 0;
 
-        var wps = ls.to_wps(inav, ((navcap & NAVCAPS.INAV_FW) != 0));
+        var wps = ls.to_wps(out downgrade, inav, ((navcap & NAVCAPS.INAV_FW) != 0));
         if(wps.length > wp_max)
         {
             string str = "Number of waypoints (%d) exceeds max (%d)".printf(
@@ -4843,6 +4863,13 @@ public class MWPlanner : Gtk.Application {
             mwp_warning_box(str, Gtk.MessageType.ERROR);
             return;
         }
+
+        if(downgrade != 0)
+        {
+            string str = "WARNING\nmwp downgraded %u multiwii specific waypoint(s) to compatible iNav equivalent(s). Once the upload has completed, please check you're happy with the result.\n\nNote that iNav will treat a final bare WAYPOINT as POSHOLD UNLIMITED".printf(downgrade);
+            mwp_warning_box(str, Gtk.MessageType.WARNING);
+        }
+
         serstate = SERSTATE.NORMAL;
         mq.clear();
         MWPCursor.set_busy_cursor(window);

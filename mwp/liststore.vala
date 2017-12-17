@@ -132,11 +132,13 @@ public class ListBox : GLib.Object
         calc_mission();
     }
 
-    public  MSP_WP[] to_wps(bool cf = false, bool fixwing = false)
+    public  MSP_WP[] to_wps(out uint8 dg, bool cf = false, bool fixwing = false)
     {
         Gtk.TreeIter iter;
         MSP_WP[] wps =  {};
         var n = 0;
+
+        dg = 0;
         for(bool next=list_model.get_iter_first(out iter);next;next=list_model.iter_next(ref iter))
         {
             GLib.Value cell;
@@ -166,6 +168,8 @@ public class ListBox : GLib.Object
                 tint = (int)cell;
                 w.p3 = (uint16)tint;
                 w.flag = 0;
+
+
                 if(cf)
                 {
                     switch(typ)
@@ -177,6 +181,7 @@ public class ListBox : GLib.Object
                             w.action =  MSP.Action.WAYPOINT;
                             w.p1 = 0;
                             w.p2 = w.p3 = 0;
+                            dg++;
                             break;
                         case MSP.Action.SET_POI:
                         case MSP.Action.SET_HEAD:
@@ -198,6 +203,7 @@ public class ListBox : GLib.Object
         }
         if(wps.length > 0)
             wps[wps.length-1].flag = 0xa5;
+
         return wps;
     }
 
