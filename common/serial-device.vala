@@ -384,7 +384,7 @@ public class MWSerial : Object
         {
             uint8 [] sbuf = new uint8[1024];
             var s = get_error_text(lasterr, sbuf, 1024);
-            estr = "%s (%d)".printf(s,lasterr);
+            estr = "%s (%d)\n".printf(s,lasterr);
             MWPLog.message(estr);
             fd = -1;
             available = false;
