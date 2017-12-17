@@ -3930,6 +3930,7 @@ public class MWPlanner : Gtk.Application {
 
                         if(vi.fc_api < APIVERS.mspV2)
                             mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
+                        MWPLog.message("Mission validated\n");
                         if((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
                         {
                             uint8 zb=42;
@@ -3941,7 +3942,7 @@ public class MWPlanner : Gtk.Application {
                         reset_poller();
                         if (downgrade != 0)
                         {
-                            MWPLog.message("Redrawing mission\n");
+                            MWPLog.message("Requesting downgraded mission\n");
                             download_mission();
                         }
                         else if(wpmgr.wps.length > 0)
