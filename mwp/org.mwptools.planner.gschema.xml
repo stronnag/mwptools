@@ -385,6 +385,15 @@
       </description>
     </key>
 
+    <key name="require-telemetry" type="b">
+      <default>false</default>
+      <summary>Whether to warn the operator if telemetry is disabled in iNav
+      </summary>
+      <description>
+	if set, and telemetry is disabled, a non-timeout dialogue is displayed
+      </description>
+    </key>
+
     <key name="forward" enum="org.mwptools.planner.fwds">
       <default>"minLTM"</default>
       <summary>Types of message to forward</summary>

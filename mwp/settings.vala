@@ -83,7 +83,7 @@ public class MWPSettings : GLib.Object
     public uint stats_timeout {get; set; default=30;}
     public bool auto_restore_mission {get; set; default=false;}
     public int forward {get; set; default=0;}
-
+    public bool need_telemetry {get; set; default=false;}
     public signal void settings_update (string s);
 
     public MWPSettings()
@@ -283,6 +283,9 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "auto-restore-mission")
             auto_restore_mission = settings.get_boolean("auto-restore-mission");
+
+        if(s == null || s == "require-telemetry")
+            need_telemetry = settings.get_boolean("require-telemetry");
 
         if(s == null || s == "forward")
             forward = settings.get_enum("forward");

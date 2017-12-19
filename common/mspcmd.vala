@@ -18,6 +18,12 @@
  */
 public class MSP : Object
 {
+    public enum Feature
+    {
+        GPS = (1 << 7),
+        TELEMETRY = (1 << 10)
+    }
+
     public enum Cmds
     {
         API_VERSION=1,
@@ -66,13 +72,13 @@ public class MSP : Object
             // Cleanflight extensions
         MODE_RANGES = 34, // FC out message Returns all mode ranges
         SET_MODE_RANGE = 35,   // FC in message Sets a single mode range
+        FEATURE = 36,
         REBOOT = 68,
         ACTIVEBOXES = 113,
         NAV_POSHOLD = 12,
         SET_NAV_POSHOLD = 13,
         FW_CONFIG = 23,
         SET_FW_CONFIG = 24,
-
         STATUS_EX = 150,
         SENSOR_STATUS = 151,
 

@@ -3267,13 +3267,26 @@ public class MWPlanner : Gtk.Application {
                                 navcap |= NAVCAPS.INAV_MR;
                             vi.fctype = mwvar = MWChooser.MWVAR.CF;
                             inav = true;
-                            queue_cmd(MSP.Cmds.FC_VERSION,null,0);
+                            queue_cmd(MSP.Cmds.FEATURE,null,0);
                             break;
                         default:
                             queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                             break;
                     }
                 }
+                break;
+
+            case MSP.Cmds.FEATURE:
+                uint32 fmask;
+                deserialise_u32(raw, out fmask);
+                MWPLog.message("Feature Mask [%08x] : telemetry %s, gps %s\n",
+                               fmask,
+                               (0 != (fmask & MSP.Feature.TELEMETRY)).to_string(),
+                               (0 != (fmask & MSP.Feature.GPS)).to_string());
+
+                if(conf.need_telemetry && (0 == (fmask & MSP.Feature.TELEMETRY)))
+                    mwp_warning_box("TELEMETRY requested but not enabled in iNav", Gtk.MessageType.ERROR);
+                queue_cmd(MSP.Cmds.FC_VERSION,null,0);
                 break;
 
             case MSP.Cmds.FC_VERSION:
@@ -3289,7 +3302,6 @@ public class MWPlanner : Gtk.Application {
                                           vi.board != "CC3D" &&
                                           vi.fc_vers >= FCVERS.hasEEPROM);
                         msp_get_status = (vi.fc_api < 0x200) ? MSP.Cmds.STATUS :
-//                            MSP.Cmds.STATUS_EX;
                             (vi.fc_vers >= FCVERS.hasV2STATUS) ? MSP.Cmds.INAV_STATUS : MSP.Cmds.STATUS_EX;
                         if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ)
                         {
@@ -3945,7 +3957,8 @@ public class MWPlanner : Gtk.Application {
                             MWPLog.message("Requesting downgraded mission\n");
                             download_mission();
                         }
-                        else if(wpmgr.wps.length > 0)
+                        else if(wpmgr.wps.length > 0 &&
+                                (MSP.Action)w.action == MSP.Action.WAYPOINT)
                             check_mission_safe(wpmgr.wps[0].lat/10000000.0,  wpmgr.wps[0].lon/10000000.0);
                     }
                 }
@@ -3986,7 +3999,8 @@ public class MWPlanner : Gtk.Application {
                             centre_mission(ms, !centreon);
                             markers.add_list_store(ls);
                             validatelab.set_text("✔"); // u+2714
-                            check_mission_safe(wp_resp[0].lat,wp_resp[0].lon);
+                            if (wp_resp[0].action == MSP.Action.WAYPOINT)
+                                check_mission_safe(wp_resp[0].lat,wp_resp[0].lon);
                         }
                         wp_resp={};
                         reset_poller();
