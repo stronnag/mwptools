@@ -698,7 +698,6 @@ public class MWSerial : Object
                             }
                             else if (csize == 255)
                             {
-                                MWPLog.message("MSPV1 Jumbo\n");
                                 state = States.S_JUMBO1;
                             }
                             else
@@ -735,8 +734,6 @@ public class MWSerial : Object
                                 state = States.S_DATA;
                                 check_rxbuf_size();
                             }
-
-                            MWPLog.message("MSPV1 Jumbo size %u\n", csize);
                             break;
 
                         case States.S_DATA:

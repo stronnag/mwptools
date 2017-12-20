@@ -3286,6 +3286,29 @@ public class MWPlanner : Gtk.Application {
 
                 if(conf.need_telemetry && (0 == (fmask & MSP.Feature.TELEMETRY)))
                     mwp_warning_box("TELEMETRY requested but not enabled in iNav", Gtk.MessageType.ERROR);
+                queue_cmd(MSP.Cmds.BLACKBOX_CONFIG,null,0);
+                break;
+
+            case MSP.Cmds.BLACKBOX_CONFIG:
+                MSP.Cmds next = MSP.Cmds.FC_VERSION;
+
+                if (raw[0] == 1 && raw[1] == 1)  // enabled and sd flash
+                    next = MSP.Cmds.DATAFLASH_SUMMARY;
+
+                queue_cmd(next,null,0);
+                break;
+
+            case MSP.Cmds.DATAFLASH_SUMMARY:
+                uint32 fsize;
+                uint32 used;
+                deserialise_u32(raw+5, out fsize);
+                deserialise_u32(raw+9, out used);
+                var pct = 100 * used  / fsize;
+                MWPLog.message ("Data Flash %u /  %u (%u%%)\n", used, fsize, pct);
+
+                if (pct > 75)
+                    mwp_warning_box("Data flash > %u%% full".printf(pct),
+                                    Gtk.MessageType.WARNING);
                 queue_cmd(MSP.Cmds.FC_VERSION,null,0);
                 break;
 
