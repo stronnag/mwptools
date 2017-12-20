@@ -244,7 +244,7 @@ public class MWSerial : Object
                         sockaddr = new InetSocketAddress(addr0,rport);
                     }
                 } catch (Error e) {
-                    MWPLog.message ("%s\r\n",e.message);
+                    MWPLog.message ("%s\n",e.message);
                 }
             }
             else
@@ -299,7 +299,7 @@ public class MWSerial : Object
                 }
             }
         } catch(Error e) {
-            MWPLog.message("socket: %s", e.message);
+            MWPLog.message("socket: %s\n", e.message);
             fd = -1;
         }
     }
@@ -384,7 +384,7 @@ public class MWSerial : Object
         {
             uint8 [] sbuf = new uint8[1024];
             var s = get_error_text(lasterr, sbuf, 1024);
-            estr = "%s (%d)\n".printf(s,lasterr);
+            estr = "%s %s (%d)\n".printf(device, s,lasterr);
             MWPLog.message(estr);
             fd = -1;
             available = false;
