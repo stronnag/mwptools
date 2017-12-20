@@ -4514,7 +4514,7 @@ public class MWPlanner : Gtk.Application {
                 if(len > 0)
                 {
                     sb.append(" [");
-                    foreach(var r in raw)
+                    foreach(var r in raw[0:len])
                         sb.append_printf(" %02x", r);
                 }
                 sb.append(" ]\n");
