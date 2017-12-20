@@ -129,7 +129,7 @@ public class Flashdl : Object
                  bread += dlen;
                  var rate = get_rate();
                  var remtime = (used - bread) / rate;
-                 var pct = 100 * bread / fsize;
+                 var pct = 100 * bread / used;
                  var sb = new StringBuilder();
                  int i;
                  for(i = 0; i < 50; i++)
@@ -138,7 +138,7 @@ public class Flashdl : Object
                      else
                          sb.append_unichar(' ');
 
-                 var str = "[%s] %s/%s %3u%% %us    \r".printf(sb.str, esize(bread), efsize,
+                 var str = "\r[%s] %s/%s %3u%% %us    ".printf(sb.str, esize(bread), efsize,
                                                                    pct, remtime);
                  Posix.write(2, str, str.length);
 
