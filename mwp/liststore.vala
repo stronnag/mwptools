@@ -282,6 +282,22 @@ public class ListBox : GLib.Object
         return ms;
     }
 
+    public void raise_wp(int n)
+    {
+            // This is to raise one ahead (and still do 1st)
+        if(n == 1)
+            raise_wp(0);
+
+        Gtk.TreeIter iter;
+        if(list_model.iter_nth_child(out iter, null, n))
+        {
+            Value val;
+            list_model.get_value (iter, WY_Columns.MARKER, out val);
+            var mk =  (Champlain.Label)val;
+            mk.get_parent().set_child_above_sibling(mk,null);
+        }
+    }
+
     public void change_marker(string typ, int flag=0)
     {
         foreach (var t in get_selected_refs())

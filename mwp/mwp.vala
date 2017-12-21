@@ -3688,7 +3688,10 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(ns.gps_mode == 3 && (last_nmode != 3 ||
                                             ns.wp_number != last_nwp))
+                    {
+                        ls.raise_wp(ns.wp_number);
                         map_show_wp(ns.wp_number.to_string());
+                    }
                     else if (ns.gps_mode != 3 && last_nmode == 3)
                         map_hide_wp();
                 }
