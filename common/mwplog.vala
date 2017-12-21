@@ -18,15 +18,30 @@
 
 public class MWPLog : GLib.Object
 {
+    private static FileStream fs;
+    private static bool init = false;
+
     public static void message(string format, ...)
     {
+        if(init == false)
+        {
+            time_t currtime;
+            time_t(out currtime);
+            if(Posix.isatty(stderr.fileno()) == false)
+            {
+                var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
+                fs = FileStream.open(fn,"a");
+            }
+            else fs  = FileStream.fdopen(stderr.fileno(), "a");
+            init = true;
+        }
+
         var v = va_list();
         var now = new DateTime.now_local ();
         string ds = now.to_string ();
-        stderr.puts(ds);
-        stderr.putc(' ');
-        stderr.puts(format.vprintf(v));
-        stderr.flush();
-
+        fs.puts(ds);
+        fs.putc(' ');
+        fs.puts(format.vprintf(v));
+        fs.flush();
     }
 }

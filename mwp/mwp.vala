@@ -6013,8 +6013,6 @@ public class MWPlanner : Gtk.Application {
 
         if((lkres = lk.lock()) == 0)
         {
-            time_t currtime;
-            time_t(out currtime);
             var sb = new StringBuilder("mwp ");
             sb.append(mwpvers);
             sb.append_c(' ');
@@ -6046,12 +6044,6 @@ public class MWPlanner : Gtk.Application {
             }
             else
             {
-                if(Posix.isatty(stderr.fileno()) == false)
-                {
-                    var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
-                    stderr = FileStream.open(fn,"a");
-                }
-
                 MWPLog.message("mwp startup version: %s\n", verstr);
                 if(fixedopts != null)
                     MWPLog.message("default options: %s\n", fixedopts);
