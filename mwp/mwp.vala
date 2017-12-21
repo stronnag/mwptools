@@ -464,11 +464,14 @@ public class MWPlanner : Gtk.Application {
     private uint8 wp_max = 0;
     private uint16 nav_wp_safe_distance = 0;
     private bool need_mission = false;
-    private Clutter.Text clutext;
+    private Clutter.Text clutextr;
+    private Clutter.Text clutextg;
     private VCol vcol;
     private Odostats odo;
     private OdoView odoview;
     private uint8 downgrade = 0;
+    private uint8 last_nmode = 0;
+    private uint8 last_nwp = 0;
 
     private static bool is_wayland = false;
     private static bool use_wayland = false;
@@ -1404,6 +1407,7 @@ public class MWPlanner : Gtk.Application {
 
         ag.connect('i', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
                 map_hide_warning();
+                map_hide_wp();
                 init_sstats();
                 armed = 0;
                 rhdop = 10000;
@@ -1960,6 +1964,7 @@ public class MWPlanner : Gtk.Application {
             autocon_cb.active=true;
             mkcon = true;
         }
+
     }
 
     private void set_dock_menu_status()
@@ -2405,21 +2410,45 @@ public class MWPlanner : Gtk.Application {
     private void map_init_warning()
     {
         Clutter.Color red = { 0xff,0,0, 0xff};
+        var vs = Environment.get_variable("MWP_WPCOL");
+        if(vs == null)
+            vs = "Sans 144/#ff000080";
+        var parts= vs.split("/");
+        var grey = Clutter.Color.from_string(parts[1]);
+
         var textb = new Clutter.Actor ();
-        clutext = new Clutter.Text.full ("Sans 36", "", red);
-        textb.add_child(clutext);
-        textb.set_position(40,40);
+        var textm = new Clutter.Actor ();
+        clutextr = new Clutter.Text.full ("Sans 36", "", red);
+        clutextg = new Clutter.Text.full (parts[0], "", grey);
+        var lm = view.get_layout_manager();
+        lm.child_set(view,textb,"x-align", Clutter.ActorAlign.START);
+        lm.child_set(view,textb,"y-align", Clutter.ActorAlign.START);
+        lm.child_set(view,textm,"x-align", Clutter.ActorAlign.END);
+        lm.child_set(view,textm,"y-align", Clutter.ActorAlign.START);
+        textb.add_child(clutextr);
+        textm.add_child(clutextg);
         view.add_child (textb);
+        view.add_child (textm);
     }
 
     private void map_show_warning(string text)
     {
-        clutext.set_text(text);
+        clutextr.set_text(text);
     }
 
     private void map_hide_warning()
     {
-        clutext.set_text("");
+        clutextr.set_text("");
+    }
+
+    private void map_show_wp(string text)
+    {
+        clutextg.set_text(text);
+    }
+
+    private void map_hide_wp()
+    {
+        clutextg.set_text("");
     }
 
     private void  alert_broken_sensors(uint8 val)
@@ -2502,6 +2531,7 @@ public class MWPlanner : Gtk.Application {
 
         if(armed != larmed)
         {
+            map_hide_wp();
             radstatus.annul();
             if (armed == 1)
             {
@@ -3627,6 +3657,7 @@ public class MWPlanner : Gtk.Application {
                 uint8 flg = 0;
                 uint8* rp = raw;
                 ns.gps_mode = *rp++;
+
                 if(ns.gps_mode == 15)
                 {
                     if (nticks - last_crit > CRITINTVL)
@@ -3644,6 +3675,7 @@ public class MWPlanner : Gtk.Application {
                 ns.action = *rp++;
                 ns.wp_number = *rp++;
                 ns.nav_error = *rp++;
+
                 if(cmd == MSP.Cmds.NAV_STATUS)
                     deserialise_u16(rp, out ns.target_bearing);
                 else
@@ -3652,6 +3684,18 @@ public class MWPlanner : Gtk.Application {
                     ns.target_bearing = *rp++;
                 }
                 navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS),flg);
+
+                if(ns.gps_mode == 3 && (last_nmode != 3 ||
+                                        ns.wp_number != last_nwp))
+                {
+                    map_show_wp(ns.wp_number.to_string());
+                }
+                else if (ns.gps_mode != 3 && last_nmode == 3)
+                {
+                    map_hide_wp();
+                }
+                last_nmode = ns.gps_mode;
+                last_nwp= ns.wp_number;
             }
             break;
 
@@ -5113,6 +5157,7 @@ public class MWPlanner : Gtk.Application {
     private void serial_doom(Gtk.Button c)
     {
         MWPLog.message("Serial doom replay %d\n", replayer);
+        map_hide_wp();
         if(replayer == Player.NONE)
         {
             arm_warn.hide();
@@ -5206,6 +5251,7 @@ public class MWPlanner : Gtk.Application {
 
     private void connect_serial()
     {
+        map_hide_wp();
         if(msp.available)
         {
             serial_doom(conbutton);
