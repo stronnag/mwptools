@@ -772,6 +772,11 @@ public class ListBox : GLib.Object
             Value val;
             list_model.get_value (iter, WY_Columns.ACTION, out val);
             MSP.Action act = (MSP.Action)val;
+
+            list_model.get_value (iter, WY_Columns.MARKER, out val);
+            var mk =  (Champlain.Label)val;
+            mk.get_parent().set_child_above_sibling(mk,null);
+
             string [] ctitles = {};
 
             switch (act)
