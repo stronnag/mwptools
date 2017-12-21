@@ -401,5 +401,14 @@
         Types of message to forward
       </description>
     </key>
+
+    <key name="wp-text-style" type="s">
+      <default>"Sans 144/#ff000080"</default>
+      <summary>Style of text used for next WP display</summary>
+      <description>
+        Defines the way the WP numbers are displayed. Font, size and
+	RBGA description (or well known name, with alpha)
+      </description>
+    </key>
   </schema>
 </schemalist>

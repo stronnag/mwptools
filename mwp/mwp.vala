@@ -2411,12 +2411,9 @@ public class MWPlanner : Gtk.Application {
 
     private void map_init_warning()
     {
-        Clutter.Color red = { 0xff,0,0, 0xff};
-        var vs = Environment.get_variable("MWP_WPCOL");
-        if(vs == null)
-            vs = "Sans 144/#ff000080";
-        var parts= vs.split("/");
+        var parts= conf.wp_text.split("/");
         var grey = Clutter.Color.from_string(parts[1]);
+        Clutter.Color red = { 0xff,0,0, 0xff};
 
         var textb = new Clutter.Actor ();
         var textm = new Clutter.Actor ();
@@ -3687,14 +3684,13 @@ public class MWPlanner : Gtk.Application {
                 }
                 navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS),flg);
 
-                if(ns.gps_mode == 3 && (last_nmode != 3 ||
-                                        ns.wp_number != last_nwp))
+                if(replayer != Player.BBOX)
                 {
-                    map_show_wp(ns.wp_number.to_string());
-                }
-                else if (ns.gps_mode != 3 && last_nmode == 3)
-                {
-                    map_hide_wp();
+                    if(ns.gps_mode == 3 && (last_nmode != 3 ||
+                                            ns.wp_number != last_nwp))
+                        map_show_wp(ns.wp_number.to_string());
+                    else if (ns.gps_mode != 3 && last_nmode == 3)
+                        map_hide_wp();
                 }
                 last_nmode = ns.gps_mode;
                 last_nwp= ns.wp_number;
