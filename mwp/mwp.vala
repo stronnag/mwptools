@@ -1349,15 +1349,8 @@ public class MWPlanner : Gtk.Application {
         var ent1 = builder.get_object ("entry2") as Gtk.Entry;
         ent1.set_text(conf.loiter.to_string());
 
-        var scale = new Champlain.Scale();
-        scale.connect_view(view);
-        view.add_child(scale);
-        var lm = view.get_layout_manager();
-        lm.child_set(view,scale,"x-align", Clutter.ActorAlign.START);
-        lm.child_set(view,scale,"y-align", Clutter.ActorAlign.END);
         view.set_keep_center_on_resize(true);
         add_source_combo(conf.defmap,msources);
-        map_init_warning();
 
         var ag = new Gtk.AccelGroup();
         ag.connect('c', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
@@ -1785,6 +1778,15 @@ public class MWPlanner : Gtk.Application {
                     });
                 return false;
             });
+
+
+        var scale = new Champlain.Scale();
+        scale.connect_view(view);
+        view.add_child(scale);
+        var lm = view.get_layout_manager();
+        lm.child_set(view,scale,"x-align", Clutter.ActorAlign.START);
+        lm.child_set(view,scale,"y-align", Clutter.ActorAlign.END);
+        map_init_warning();
 
         var dock = new Dock ();
         dock.margin_start = 4;
