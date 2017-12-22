@@ -284,13 +284,12 @@ public class ListBox : GLib.Object
 
     public void raise_wp(int n)
     {
-            // This is to raise one ahead (and still do 1st)
-        if(n == 1)
-            raise_wp(0);
-
         Gtk.TreeIter iter;
+        if(list_model.iter_nth_child(out iter, null, n-1))
+            raise_iter_wp(iter, true);
         if(list_model.iter_nth_child(out iter, null, n))
-            raise_iter_wp(iter);
+            raise_iter_wp(iter, false);
+
     }
 
     public void change_marker(string typ, int flag=0)
@@ -776,12 +775,22 @@ public class ListBox : GLib.Object
         calc_mission();
     }
 
-    private void raise_iter_wp(Gtk.TreeIter iter)
+    private void raise_iter_wp(Gtk.TreeIter iter, bool ring=false)
     {
             Value val;
             list_model.get_value (iter, WY_Columns.MARKER, out val);
             var mk =  (Champlain.Label)val;
-            mk.get_parent().set_child_above_sibling(mk,null);
+            if(mk != null)
+                mk.get_parent().set_child_above_sibling(mk,null);
+            list_model.get_value (iter, WY_Columns.ACTION, out val);
+            MSP.Action act = (MSP.Action)val;
+            if(ring)
+            {
+                if(act != MSP.Action.RTH) //                    if (mk != null)
+                    mp.markers.set_ring(mk);
+                else
+                    mp.markers.set_home_ring();
+            }
     }
 
     private void update_selected_cols()
@@ -796,8 +805,6 @@ public class ListBox : GLib.Object
             Value val;
             list_model.get_value (iter, WY_Columns.ACTION, out val);
             MSP.Action act = (MSP.Action)val;
-
-//            raise_iter_wp(iter);
 
             string [] ctitles = {};
 

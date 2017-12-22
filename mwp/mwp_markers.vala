@@ -23,20 +23,29 @@ public class MWPMarkers : GLib.Object
 {
     public  Champlain.PathLayer path;
     public Champlain.MarkerLayer markers;
+    public Champlain.MarkerLayer rlayer;
     public Champlain.Marker homep = null;
     public Champlain.Marker rthp = null;
+    public Champlain.Point posring = null;
     public Champlain.PathLayer hpath;
     private Champlain.PathLayer []rings;
     private bool rth_land;
 
     private Gtk.Menu menu;
 
-    public MWPMarkers(ListBox lb)
+    public MWPMarkers(ListBox lb, Champlain.View view, string mkcol ="#ffffff60")
     {
         rth_land = false;
         markers = new Champlain.MarkerLayer();
+        rlayer = new Champlain.MarkerLayer();
         path = new Champlain.PathLayer();
         hpath = new Champlain.PathLayer();
+
+        view.add_layer(rlayer);
+        view.add_layer(path);
+        view.add_layer(hpath);
+        view.add_layer(markers);
+
         List<uint> llist = new List<uint>();
         llist.append(10);
         llist.append(5);
@@ -80,6 +89,10 @@ public class MWPMarkers : GLib.Object
             });
         menu.add (item);
         menu.show_all();
+
+        var colour = Color.from_string(mkcol);
+        posring = new Champlain.Point.full(80.0, colour);
+        rlayer.add_marker(posring);
     }
 
     public void set_rth_icon(bool iland)
@@ -420,6 +433,27 @@ public class MWPMarkers : GLib.Object
             || typ == MSP.Action.SET_HEAD
             || typ == MSP.Action.JUMP)
             path.remove_node((Champlain.Marker)mk);
+    }
+
+    public void set_ring(Champlain.Marker lp)
+    {
+        var nlat = lp.get_latitude();
+        var nlon = lp.get_longitude();
+        posring.set_location (nlat,nlon);
+        posring.show();
+    }
+
+    public void set_home_ring()
+    {
+        if (homep != null)
+            set_ring(homep);
+        else
+            clear_ring();
+    }
+
+    public void clear_ring()
+    {
+        posring.hide();
     }
 
     public void remove_all()

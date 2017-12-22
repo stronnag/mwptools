@@ -407,7 +407,14 @@
       <summary>Style of text used for next WP display</summary>
       <description>
         Defines the way the WP numbers are displayed. Font, size and
-	RBGA description (or well known name, with alpha)
+	RGBA description (or well known name, with alpha)
+      </description>
+    </key>
+    <key name="wp-spotlight" type="s">
+      <default>"#ffffff60"</default>
+      <summary>Style for the 'next waypoint' highlight</summary>
+      <description>
+        Defines RGBA colour for 'next way point' highlight
       </description>
     </key>
   </schema>

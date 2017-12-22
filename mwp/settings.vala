@@ -85,7 +85,7 @@ public class MWPSettings : GLib.Object
     public int forward {get; set; default=0;}
     public bool need_telemetry {get; set; default=false;}
     public string wp_text {get; set; default="Sans 144/#ff000080";}
-
+    public string wp_spotlight {get; set; default="#ffffff60";}
     public signal void settings_update (string s);
 
     public MWPSettings()
@@ -295,6 +295,11 @@ public class MWPSettings : GLib.Object
         if(s == null || s == "wp-text-style")
         {
             wp_text = settings.get_string ("wp-text-style");
+        }
+
+        if(s == null || s == "wp-spotlight")
+        {
+            wp_spotlight = settings.get_string ("wp-spotlight");
         }
     }
 

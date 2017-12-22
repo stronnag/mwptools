@@ -1497,10 +1497,7 @@ public class MWPlanner : Gtk.Application {
                     zoomer.adjustment.value = (int)val;
             });
 
-        markers = new MWPMarkers(ls);
-        view.add_layer (markers.path);
-        view.add_layer (markers.hpath);
-        view.add_layer (markers.markers);
+        markers = new MWPMarkers(ls,view, conf.wp_spotlight);
 /*
   Sample for range rings. Note that 1st is below second)
   So the following sets the markers *below* the paths, which is NOT wanted
@@ -2448,6 +2445,7 @@ public class MWPlanner : Gtk.Application {
     private void map_hide_wp()
     {
         clutextg.set_text("");
+        markers.clear_ring();
     }
 
     private void  alert_broken_sensors(uint8 val)
