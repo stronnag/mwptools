@@ -290,12 +290,7 @@ public class ListBox : GLib.Object
 
         Gtk.TreeIter iter;
         if(list_model.iter_nth_child(out iter, null, n))
-        {
-            Value val;
-            list_model.get_value (iter, WY_Columns.MARKER, out val);
-            var mk =  (Champlain.Label)val;
-            mk.get_parent().set_child_above_sibling(mk,null);
-        }
+            raise_iter_wp(iter);
     }
 
     public void change_marker(string typ, int flag=0)
@@ -432,6 +427,12 @@ public class ListBox : GLib.Object
                 if (sel.count_selected_rows () == 1)
                 {
                     update_selected_cols();
+                }
+                foreach (var t in get_selected_refs())
+                {
+                    Gtk.TreeIter seliter;
+                    list_model.get_iter (out seliter, t.get_path ());
+                    raise_iter_wp(seliter);
                 }
             });
 
@@ -775,6 +776,13 @@ public class ListBox : GLib.Object
         calc_mission();
     }
 
+    private void raise_iter_wp(Gtk.TreeIter iter)
+    {
+            Value val;
+            list_model.get_value (iter, WY_Columns.MARKER, out val);
+            var mk =  (Champlain.Label)val;
+            mk.get_parent().set_child_above_sibling(mk,null);
+    }
 
     private void update_selected_cols()
     {
@@ -789,9 +797,7 @@ public class ListBox : GLib.Object
             list_model.get_value (iter, WY_Columns.ACTION, out val);
             MSP.Action act = (MSP.Action)val;
 
-            list_model.get_value (iter, WY_Columns.MARKER, out val);
-            var mk =  (Champlain.Label)val;
-            mk.get_parent().set_child_above_sibling(mk,null);
+//            raise_iter_wp(iter);
 
             string [] ctitles = {};
 
@@ -829,7 +835,6 @@ public class ListBox : GLib.Object
             }
         }
     }
-
 
     private void show_item(string s)
     {
