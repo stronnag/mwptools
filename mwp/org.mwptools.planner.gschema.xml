@@ -417,5 +417,15 @@
         Defines RGBA colour for 'next way point' highlight
       </description>
     </key>
+
+    <key name="flash-warn" type="u">
+      <default>0</default>
+      <summary>Flash storage warning</summary>
+      <description>
+	If a dataflash is configured for black box, and this key is
+	non-zero, a warning in generated if the data flash is greater
+	than "flash-warn" percent full.
+      </description>
+    </key>
   </schema>
 </schemalist>

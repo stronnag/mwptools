@@ -86,6 +86,8 @@ public class MWPSettings : GLib.Object
     public bool need_telemetry {get; set; default=false;}
     public string wp_text {get; set; default="Sans 144/#ff000080";}
     public string wp_spotlight {get; set; default="#ffffff60";}
+    public uint flash_warn { get; set; default=0; }
+
     public signal void settings_update (string s);
 
     public MWPSettings()
@@ -301,6 +303,9 @@ public class MWPSettings : GLib.Object
         {
             wp_spotlight = settings.get_string ("wp-spotlight");
         }
+
+        if(s == null || s == "flash-warn")
+            flash_warn = settings.get_uint("flash-warn");
     }
 
     public void save_window()

@@ -3333,8 +3333,8 @@ public class MWPlanner : Gtk.Application {
                 var pct = 100 * used  / fsize;
                 MWPLog.message ("Data Flash %u /  %u (%u%%)\n", used, fsize, pct);
 
-                if (pct > 75)
-                    mwp_warning_box("Data flash > %u%% full".printf(pct),
+                if(conf.flash_warn > 0 && pct > conf.flash_warn)
+                    mwp_warning_box("Data flash is %u%% full".printf(pct),
                                     Gtk.MessageType.WARNING);
                 queue_cmd(MSP.Cmds.FC_VERSION,null,0);
                 break;
