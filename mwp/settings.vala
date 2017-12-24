@@ -59,9 +59,6 @@ public class MWPSettings : GLib.Object
     public uint p_speed {get; set; default=0;}
     public string mavph {get; set; default=null;}
     public string mavrth {get; set; default=null;}
-    public uint wpmod {get; set; default=1;}
-    public uint wpmod3 {get; set; default=1;}
-    public uint dwell_time {get; set; default=300;}
     public int window_w {get; set; default=-1;}
     public int window_h {get; set; default=-1;}
     public int window_p {get; set; default=-1;}
@@ -87,6 +84,7 @@ public class MWPSettings : GLib.Object
     public string wp_text {get; set; default="Sans 144/#ff000080";}
     public string wp_spotlight {get; set; default="#ffffff60";}
     public uint flash_warn { get; set; default=0; }
+    public bool auto_wp_edit {get; set; default=true;}
 
     public signal void settings_update (string s);
 
@@ -143,6 +141,7 @@ public class MWPSettings : GLib.Object
             if(map_sources == "")
                 map_sources = null;
         }
+
         if(s == null || s == "display-dms")
             dms = settings.get_boolean("display-dms");
         if(s == null || s == "audio-bearing-is-reciprocal")
@@ -215,15 +214,6 @@ public class MWPSettings : GLib.Object
             mavph = settings.get_string ("mavph");
         if(s == null || s == "mavrth")
             mavrth = settings.get_string ("mavrth");
-
-        if(s == null || s == "wpmodifier")
-            wpmod = settings.get_uint("wpmodifier");
-
-        if(s == null || s == "wpmodifier3")
-            wpmod3 = settings.get_uint("wpmodifier3");
-
-        if(s == null || s == "dwell-time")
-            dwell_time = settings.get_uint("dwell-time");
 
         if(s == null || s == "wdw-w")
             window_w = settings.get_int("wdw-w");
@@ -306,6 +296,9 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "flash-warn")
             flash_warn = settings.get_uint("flash-warn");
+
+        if(s == null || s == "auto-wp-edit")
+            auto_wp_edit = settings.get_boolean("auto-wp-edit");
     }
 
     public void save_window()

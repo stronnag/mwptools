@@ -239,24 +239,6 @@
       <description>RC settings for Mav RTH (chanid:minval:maxval)</description>
     </key>
 
-    <key name="wpmodifier" type="u">
-      <default>1</default>
-      <summary>Left mouse button modifier for WP creation</summary>
-      <description>0 =none, 1=CTRL (default), 2 = SHIFT</description>
-    </key>
-
-    <key name="wpmodifier3" type="u">
-      <default>0</default>
-      <summary>Right mouse button modifier for WP creation</summary>
-      <description>0 =none (default), 1=CTRL, 2 = SHIFT</description>
-    </key>
-
-    <key name="dwell-time" type="u">
-      <default>300</default>
-      <summary>Time to recognise button 1 single click</summary>
-      <description>max time for map single click</description>
-    </key>
-
     <key name="wdw-w" type="i">
       <default>-1</default>
       <summary>Window parameter</summary>
@@ -425,6 +407,17 @@
 	If a dataflash is configured for black box, and this key is
 	non-zero, a warning in generated if the data flash is greater
 	than "flash-warn" percent full.
+      </description>
+    </key>
+
+    <key name="auto-wp-edit" type="b">
+      <default>true</default>
+      <summary>Whether you can direct WP editing is available
+      </summary>
+      <description>
+	If true, the user can edit / create waypoints directly by
+	clicking on the map, if false, it is necessary to toggle the
+	WP Edit button to enable editing
       </description>
     </key>
   </schema>

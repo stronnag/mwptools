@@ -305,6 +305,8 @@ public class MWPlanner : Gtk.Application {
     private string saved_menutext;
     private Gtk.MenuItem[] dockmenus;
     private Gtk.Button arm_warn;
+    private Gtk.ToggleButton wp_edit_button;
+    private bool wp_edit = false;
 
     public static MWPSettings conf;
     private MWSerial msp;
@@ -451,7 +453,6 @@ public class MWPlanner : Gtk.Application {
         /* for jump protection */
     private double xlon = 0;
     private double xlat = 0;
-    private uint32 button_time = 0;
 
     private bool use_gst = false;
     private bool inav = false;
@@ -983,12 +984,19 @@ public class MWPlanner : Gtk.Application {
         } catch {};
 
         arm_warn = builder.get_object ("arm_warn") as Gtk.Button;
+        wp_edit_button = builder.get_object ("wp_edit_button") as Gtk.ToggleButton;
         sensor_sts[0] = builder.get_object ("gyro_sts") as Gtk.Label;
         sensor_sts[1] = builder.get_object ("acc_sts") as Gtk.Label;
         sensor_sts[2] = builder.get_object ("baro_sts") as Gtk.Label;
         sensor_sts[3] = builder.get_object ("mag_sts") as Gtk.Label;
         sensor_sts[4] = builder.get_object ("gps_sts") as Gtk.Label;
         sensor_sts[5] = builder.get_object ("sonar_sts") as Gtk.Label;
+
+        wp_edit_button.clicked.connect(() =>
+        {
+            wp_edit = !wp_edit;
+            wp_edit_button.tooltip_text = ("Enable / disable the addition of WPs by clicking on the map (%sabled)".printf((wp_edit) ? "en" : "dis"));
+        });
 
         arm_warn.clicked.connect(() =>
             {
@@ -1057,9 +1065,7 @@ public class MWPlanner : Gtk.Application {
             {
                 double glat, glon;
                 if(setpos.get_position(out glat, out glon) == true)
-                {
-                    view.center_on(glat, glon);
-                }
+                    map_centre_on(glat, glon);
             });
 
         menuop = builder.get_object ("menu_set_def_pos") as Gtk.MenuItem;
@@ -1630,8 +1636,7 @@ public class MWPlanner : Gtk.Application {
                 clat= conf.latitude;
                 clon = conf.longitude;
             }
-            view.center_on(clat,clon);
-            anim_cb();
+            map_centre_on(clat, clon);
             view.set_property("zoom-level", conf.zoom);
             zoomer.adjustment.value = conf.zoom;
         }
@@ -1738,6 +1743,10 @@ public class MWPlanner : Gtk.Application {
 ***/
         window.show_all();
         arm_warn.hide();
+        if((wp_edit = conf.auto_wp_edit) == true)
+            wp_edit_button.hide();
+        else
+            wp_edit_button.show();
 
         pane.position = conf.window_p;
         window.size_allocate.connect((a) => {
@@ -1990,46 +1999,35 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
+    private bool map_moved()
+    {
+        bool ret = false;
+        var x = view.get_center_longitude();
+        var y = view.get_center_latitude();
+
+        if (lx !=  x || ly != y)
+        {
+            ly=y;
+            lx=x;
+            ret = true;
+        }
+        return ret;
+    }
+
+
     private void setup_buttons()
     {
-        view.button_press_event.connect((evt) => {
-                if(evt.button == 1)
-                    button_time = evt.time;
-                return false;
-            });
-
-        Clutter.ModifierType wpmod = 0;
-        if(conf.wpmod == 1)
-            wpmod = Clutter.ModifierType.CONTROL_MASK;
-        else if (conf.wpmod == 2)
-            wpmod = Clutter.ModifierType.SHIFT_MASK;
-
-        Clutter.ModifierType wpmod3 = 0;
-        if(conf.wpmod3 == 1)
-            wpmod3 = Clutter.ModifierType.CONTROL_MASK;
-        else if (conf.wpmod == 2)
-            wpmod3 = Clutter.ModifierType.SHIFT_MASK;
-
         view.button_release_event.connect((evt) => {
+
                 bool ret = false;
-                if (evt.button == 1)
-                {
-                    if (((evt.time - button_time) < conf.dwell_time) &&
-                        ((evt.modifier_state & wpmod) == wpmod))
-                    {
-                        insert_new_wp(evt.x, evt.y);
-                        ret = true;
-                    }
-                    else
-                    {
-                        anim_cb(false);
-                    }
-                }
-                else if (evt.button == 3 &&
-                        ((evt.modifier_state & wpmod3) == wpmod3))
+                if (evt.button == 1 && wp_edit && !map_moved())
                 {
                     insert_new_wp(evt.x, evt.y);
                     ret = true;
+                }
+                else
+                {
+                    anim_cb(false);
                 }
                 return ret;
             });
@@ -3058,8 +3056,14 @@ public class MWPlanner : Gtk.Application {
             ms.cy = (ms.maxy + ms.miny) / 2.0;
             ms.cx = (ms.maxx + ms.minx) / 2.0;
             if (ctr_on)
-                view.center_on(ms.cy, ms.cx);
+                map_centre_on(ms.cy, ms.cx);
         }
+    }
+
+    private void map_centre_on(double y, double x)
+    {
+        view.center_on(ly=y, lx=x);
+        anim_cb();
     }
 
     private void check_mission_safe(double mlat, double mlon)
@@ -3880,10 +3884,7 @@ public class MWPlanner : Gtk.Application {
                                 craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
                             }
                             if (centreon == true)
-                            {
-                                view.center_on(GPSInfo.lat,GPSInfo.lon);
-                                anim_cb();
-                            }
+                                map_centre_on(GPSInfo.lat,GPSInfo.lon);
                         }
                     }
                     if(want_special != 0)
@@ -4215,10 +4216,7 @@ public class MWPlanner : Gtk.Application {
                             if(follow == true)
                                 craft.set_lat_lon(gflat,gflon,gfcse);
                             if (centreon == true)
-                            {
-                                view.center_on(gflat,gflon);
-                                anim_cb();
-                            }
+                                map_centre_on(gflat,gflon);
                         }
                     }
                     if(want_special != 0)
@@ -4452,10 +4450,7 @@ public class MWPlanner : Gtk.Application {
                                 craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
                             }
                             if (centreon == true)
-                            {
-                                view.center_on(GPSInfo.lat,GPSInfo.lon);
-                                anim_cb();
-                            }
+                                map_centre_on(GPSInfo.lat,GPSInfo.lon);
                         }
                         if(want_special != 0)
                             process_pos_states(GPSInfo.lat, GPSInfo.lon,
@@ -4682,7 +4677,7 @@ public class MWPlanner : Gtk.Application {
             }
 
             if(chome)
-                view.center_on(lat,lon);
+                map_centre_on(lat,lon);
 
             StringBuilder sb = new StringBuilder ();
             if(reason != null)
@@ -5311,14 +5306,9 @@ public class MWPlanner : Gtk.Application {
 
     private void anim_cb(bool forced=false)
     {
-        var x = view.get_center_longitude();
-        var y = view.get_center_latitude();
-
-        if (forced || (lx !=  x && ly != y))
+        if (forced || map_moved())
         {
-            poslabel.set_text(PosFormat.pos(y,x,conf.dms));
-            lx = x;
-            ly = y;
+            poslabel.set_text(PosFormat.pos(ly,lx,conf.dms));
             if (follow == false && craft != null)
             {
                 double plat,plon;
@@ -5419,9 +5409,7 @@ public class MWPlanner : Gtk.Application {
                     view.set_property("zoom-level", mmin);
                 }
                 if (chg == true)
-                {
-                    view.center_on(cy, cx);
-                }
+                    map_centre_on(cy, cx);
             });
 
     }
@@ -5605,7 +5593,7 @@ public class MWPlanner : Gtk.Application {
             ls.import_mission(ms);
             var mmax = view.get_max_zoom_level();
             var mmin = view.get_min_zoom_level();
-            view.center_on(ms.cy, ms.cx);
+            map_centre_on(ms.cy, ms.cx);
             if(ms.zoom == -1)
                 ms.zoom = guess_appropriate_zoom(ms);
 
