@@ -1960,7 +1960,7 @@ public class MWPlanner : Gtk.Application {
         screen.get_monitor_geometry(mon, out rect);
 #else
         Gdk.Display dp = Gdk.Display.get_default();
-        var mon = dp.get_monitor_at_window(window.get_window());
+        var mon = dp.get_primary_monitor();
         rect = mon.get_geometry();
 #endif
     }
