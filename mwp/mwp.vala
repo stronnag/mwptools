@@ -1219,7 +1219,7 @@ public class MWPlanner : Gtk.Application {
             });
 
         var css = new Gtk.CssProvider ();
-        var screen = window.get_screen();
+        var screen = Gdk.Screen.get_default();
         try
         {
             string cssfile = MWPUtils.find_conf_file("vcols.css");
