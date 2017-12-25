@@ -1706,6 +1706,10 @@ public class MWPlanner : Gtk.Application {
             get_primary_size(out rect);
             var rw = rect.width*70/100;
             var rh = rect.height*70/100;
+            if (rw < 960)
+                rw = 960;
+            if (rh < 540)
+                rh = 540;
             window.resize(rw,rh);
         }
 
