@@ -1088,7 +1088,8 @@ public class RadioStatus : GLib.Object
         remnoise_label = builder.get_object ("remnoiselab") as Gtk.Label;
         grid1 = builder.get_object ("grid4b") as Gtk.Grid;
         bar = builder.get_object ("rssi_bar") as Gtk.LevelBar;
-        bar.set_size_request (-1, 20);
+        bar.set_size_request (64, 20);
+        bar.set_value(0);
         rssi_pct = builder.get_object ("rssi_pct") as Gtk.Label;
         rssi_value = builder.get_object ("rssi_val") as Gtk.Label;
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
