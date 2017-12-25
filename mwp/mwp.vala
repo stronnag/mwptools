@@ -1343,7 +1343,6 @@ public class MWPlanner : Gtk.Application {
                     s == "default-longitide")
                     anim_cb(true);
 
-
                 if(s == "display-dms" ||
                     s == "display-distance" ||
                     s == "display-speed")
@@ -1690,7 +1689,6 @@ public class MWPlanner : Gtk.Application {
 
         start_poll_timer();
         lastp = new Timer();
-        anim_cb();
 
             // Hack (thanks to Inkscape for the clue) to made pane resize better
         pane.set_resize_mode(Gtk.ResizeMode.QUEUE);
@@ -1763,6 +1761,8 @@ public class MWPlanner : Gtk.Application {
             });
 
         window.show_all();
+        anim_cb(true);
+
         arm_warn.hide();
 
         var scale = new Champlain.Scale();
@@ -5284,7 +5284,7 @@ public class MWPlanner : Gtk.Application {
 
     private void anim_cb(bool forced=false)
     {
-        if (forced || map_moved())
+        if (map_moved() || forced)
         {
             poslabel.set_text(PosFormat.pos(ly,lx,conf.dms));
             if (follow == false && craft != null)
