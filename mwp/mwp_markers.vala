@@ -30,6 +30,7 @@ public class MWPMarkers : GLib.Object
     public Champlain.PathLayer hpath;
     private Champlain.PathLayer []rings;
     private bool rth_land;
+    public Gtk.TreeIter miter;
 
     private Gtk.Menu menu;
 
@@ -61,7 +62,7 @@ public class MWPMarkers : GLib.Object
         menu =   new Gtk.Menu ();
         var item = new Gtk.MenuItem.with_label ("Delete");
         item.activate.connect (() => {
-                lb.menu_delete();
+                lb.pop_menu_delete();
             });
         menu.add (item);
 
@@ -70,22 +71,22 @@ public class MWPMarkers : GLib.Object
 
         item = new Gtk.MenuItem.with_label ("Waypoint");
         item.activate.connect (() => {
-                lb.change_marker("WAYPOINT");
+                lb.pop_change_marker("WAYPOINT");
             });
         menu.add (item);
         item = new Gtk.MenuItem.with_label ("PH unlimited");
         item.activate.connect (() => {
-                lb.change_marker("POSHOLD_UNLIM");
+                lb.pop_change_marker("POSHOLD_UNLIM");
             });
         menu.add (item);
         item = new Gtk.MenuItem.with_label ("PH Timed");
         item.activate.connect (() => {
-                lb.change_marker("POSHOLD_TIME");
+                lb.pop_change_marker("POSHOLD_TIME");
             });
         menu.add (item);
         item = new Gtk.MenuItem.with_label ("RTH");
         item.activate.connect (() => {
-                lb.change_marker("RTH");
+                lb.pop_change_marker("RTH");
             });
         menu.add (item);
         menu.show_all();
@@ -292,16 +293,9 @@ public class MWPMarkers : GLib.Object
         string text;
         Clutter.Color colour;
         Clutter.Color black = { 0,0,0, 0xff };
-        Gtk.TreeIter ni = iter;
-        bool nrth = false;
+        Gtk.TreeIter ni;
 
-        if(ls.iter_next(ref ni) == true)
-        {
-            ls.get_value (ni, ListBox.WY_Columns.ACTION, out cell);
-            var ntyp = (MSP.Action)cell;
-            if(ntyp == MSP.Action.RTH)
-                nrth = true;
-        }
+        bool nrth = l.wp_has_rth(iter, out ni);
 
         get_text_for(typ, no, out text, out colour, nrth);
         marker = new Champlain.Label.with_text (text,"Sans 10",null,null);
@@ -331,7 +325,7 @@ public class MWPMarkers : GLib.Object
                 {
                     var button = e.button;
                     var time_ = e.time;
-                    l.set_selection(iter);
+                    miter = iter;
                     Idle.add(() => {
                             menu.popup(null, null, null, button, time_);
                             return false;

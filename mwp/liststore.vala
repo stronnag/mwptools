@@ -139,7 +139,8 @@ public class ListBox : GLib.Object
         var n = 0;
 
         dg = 0;
-        for(bool next=list_model.get_iter_first(out iter);next;next=list_model.iter_next(ref iter))
+        for(bool next=list_model.get_iter_first(out iter); next;
+            next=list_model.iter_next(ref iter))
         {
             GLib.Value cell;
             list_model.get_value (iter, WY_Columns.ACTION, out cell);
@@ -246,7 +247,8 @@ public class ListBox : GLib.Object
         MissionItem[] arry = {};
         var ms = new Mission();
 
-        for(bool next=list_model.get_iter_first(out iter);next;next=list_model.iter_next(ref iter))
+        for(bool next=list_model.get_iter_first(out iter); next;
+            next=list_model.iter_next(ref iter))
         {
             GLib.Value cell;
             list_model.get_value (iter, WY_Columns.ACTION, out cell);
@@ -292,7 +294,7 @@ public class ListBox : GLib.Object
 
     }
 
-    public void change_marker(string typ, int flag=0)
+    private void change_marker(string typ, int flag=0)
     {
         foreach (var t in get_selected_refs())
         {
@@ -312,19 +314,18 @@ public class ListBox : GLib.Object
 
     private void update_marker_type(Gtk.TreeIter iter, string typ, int flag)
     {
-        Value val,val1;
+        Value val;
+
         var action = MSP.lookup_name(typ);
         list_model.get_value (iter, WY_Columns.ACTION, out val);
         var old = (MSP.Action)val;
         if (old != action)
         {
-            list_model.set_value (iter, WY_Columns.ACTION, action);
-            list_model.set_value (iter, WY_Columns.TYPE, typ);
-            list_model.get_value (iter, WY_Columns.MARKER, out val);
-            var mk =  (Champlain.Label)val;
-            list_model.get_value (iter, WY_Columns.IDX, out val1);
-            var no = (string)val1;
-            mp.markers.change_label(mk, old, action, no);
+            if(action != MSP.Action.RTH)
+            {
+                list_model.set_value (iter, WY_Columns.ACTION, action);
+                list_model.set_value (iter, WY_Columns.TYPE, typ);
+            }
             switch (action)
             {
                 case MSP.Action.JUMP:
@@ -340,10 +341,17 @@ public class ListBox : GLib.Object
                     list_model.set_value (iter, WY_Columns.INT1, (double)ltime);
                     break;
                 case MSP.Action.RTH:
-                    list_model.set_value (iter, WY_Columns.LAT, 0.0);
-                    list_model.set_value (iter, WY_Columns.LON, 0.0);
-                    list_model.set_value (iter, WY_Columns.ALT, 0);
-                    list_model.set_value (iter, WY_Columns.INT1, flag);
+                    Gtk.TreeIter ni;
+                    list_model.insert_after (out ni, iter);
+                    list_model.set_value (ni, WY_Columns.ACTION, MSP.Action.RTH);
+                    list_model.set_value (ni, WY_Columns.LAT, 0.0);
+                    list_model.set_value (ni, WY_Columns.LON, 0.0);
+                    list_model.set_value (ni, WY_Columns.ALT, 0);
+                    list_model.set_value (ni, WY_Columns.INT1, flag);
+                    list_model.set_value (ni, WY_Columns.INT2, 0);
+                    list_model.set_value (ni, WY_Columns.INT3, 0);
+                    list_model.set_value (ni, WY_Columns.TYPE,
+                                          MSP.get_wpname(MSP.Action.RTH));
                     have_rth = true;
                     break;
                 case MSP.Action.LAND:
@@ -377,6 +385,21 @@ public class ListBox : GLib.Object
             }
             renumber_steps(list_model);
         }
+    }
+
+    public bool wp_has_rth(Gtk.TreeIter iter, out  Gtk.TreeIter ni)
+    {
+        bool nrth = false;
+        ni = iter;
+        if(list_model.iter_next(ref ni))
+        {
+            Value cell;
+            list_model.get_value (ni, WY_Columns.ACTION, out cell);
+            var ntyp = (MSP.Action)cell;
+            if(ntyp == MSP.Action.RTH)
+                nrth = true;
+        }
+        return nrth;
     }
 
     public void create_view(MWPlanner _mp)
@@ -716,7 +739,8 @@ public class ListBox : GLib.Object
         bool need_del = false;
         have_rth = false;
         purge = true;
-        for(bool next=ls.get_iter_first(out iter);next;next=ls.iter_next(ref iter))
+        for(bool next=ls.get_iter_first(out iter); next;
+            next=ls.iter_next(ref iter))
         {
             if(need_del)
             {
@@ -725,7 +749,6 @@ public class ListBox : GLib.Object
 #else
                 list_model.remove(ref iter);
 #endif
-                lastid--;
             }
             else
             {
@@ -763,7 +786,6 @@ public class ListBox : GLib.Object
             if(act ==  MSP.Action.RTH)
             {
                 have_rth = false;
-                lastid--;
 #if LSRVAL
                 list_model.remove(iter);
 #else
@@ -773,6 +795,21 @@ public class ListBox : GLib.Object
         }
         mp.markers.add_list_store(this);
         calc_mission();
+    }
+
+    private int check_last()
+    {
+        Gtk.TreeIter iter;
+        lastid = 0;
+        for(bool next=list_model.get_iter_first(out iter); next;
+            next=list_model.iter_next(ref iter))
+        {
+            GLib.Value cell;
+            list_model.get_value (iter, WY_Columns.ACTION, out cell);
+            if ( (MSP.Action)cell != MSP.Action.RTH)
+                lastid++;
+        }
+        return lastid;
     }
 
     private void raise_iter_wp(Gtk.TreeIter iter, bool ring=false)
@@ -862,7 +899,7 @@ public class ListBox : GLib.Object
                 case "Down":
                     step = iter;
                     list_model.iter_next(ref step);
-                    list_model.move_after(ref iter,step);
+                    list_model.move_after(ref iter, step);
                     break;
             }
             calc_mission();
@@ -882,7 +919,7 @@ public class ListBox : GLib.Object
         return trefs;
     }
 
-    public void menu_delete()
+    private void menu_delete()
     {
         foreach (var t in get_selected_refs())
         {
@@ -890,11 +927,10 @@ public class ListBox : GLib.Object
             var path = t.get_path ();
             list_model.get_iter (out iter, path);
 #if LSRVAL
-                list_model.remove(iter);
+            list_model.remove(iter);
 #else
-                list_model.remove(ref iter);
+            list_model.remove(ref iter);
 #endif
-            lastid--;
         }
         calc_mission();
     }
@@ -911,10 +947,15 @@ public class ListBox : GLib.Object
     {
         Gtk.TreeIter iter;
         var dalt = get_user_alt();
-        lastid++;
         list_model.append(out iter);
+        string no = "";
+        if(typ != MSP.Action.RTH)
+        {
+            lastid++;
+            no = lastid.to_string();
+        }
         list_model.set (iter,
-                        WY_Columns.IDX, lastid.to_string(),
+                        WY_Columns.IDX, no,
                         WY_Columns.TYPE, MSP.get_wpname(typ),
                         WY_Columns.LAT, lat,
                         WY_Columns.LON, lon,
@@ -934,8 +975,7 @@ public class ListBox : GLib.Object
         Value val;
         double lat,lon;
 
-        for(bool next=list_model.get_iter_first(out iter);
-            next;
+        for(bool next=list_model.get_iter_first(out iter); next;
             next=list_model.iter_next(ref iter))
         {
             list_model.get_value (iter, WY_Columns.ACTION, out val);
@@ -1082,6 +1122,27 @@ public class ListBox : GLib.Object
         menu.show_all();
     }
 
+    public void pop_menu_delete()
+    {
+        set_selection(mp.markers.miter);
+        menu_delete();
+    }
+
+    public void pop_change_marker(string s)
+    {
+        Gtk.TreeIter ni;
+        if(wp_has_rth(mp.markers.miter, out ni))
+        {
+            set_selection(ni);
+            menu_delete();
+        }
+        else
+        {
+            set_selection(mp.markers.miter);
+            change_marker(s);
+        }
+    }
+
     public void set_alts(bool flag)
     {
         double dalt;
@@ -1157,8 +1218,6 @@ public class ListBox : GLib.Object
 
     public void clear_mission()
     {
-
-        lastid=0;
         mp.markers.remove_all();
         purge = true;
         list_model.clear();
@@ -1213,7 +1272,8 @@ public class ListBox : GLib.Object
         if(ms_speed == 0.0)
             ms_speed = MWPlanner.conf.nav_speed;
 
-        for(bool next=list_model.get_iter_first(out iter);next;next=list_model.iter_next(ref iter))
+        for(bool next=list_model.get_iter_first(out iter); next;
+            next=list_model.iter_next(ref iter))
         {
             GLib.Value cell;
 
@@ -1339,6 +1399,7 @@ public class ListBox : GLib.Object
         }
         d *= 1852.0;
         et = (int)ets + 3 * nsize; // 3 * vertices to allow for slow down
+        lastid = check_last();
         return true;
     }
 }
