@@ -1692,63 +1692,36 @@ public class MWPlanner : Gtk.Application {
         lastp = new Timer();
         anim_cb();
 
-#if OLDGTK||LSRVAL
-            var mon = screen.get_monitor_at_window(screen.get_active_window());
-            Gdk.Rectangle rect;
-            screen.get_monitor_geometry(mon, out rect);
-            if(conf.window_p < rect.width*60/100
-               || conf.window_p > rect.width*85/100)
-                conf.window_p = rect.width*70/100;
-            if(conf.window_w > rect.width)
-                conf.window_w = rect.width;
-            if(conf.window_h > rect.height)
-                conf.window_h = rect.height;
-#else
-            Gdk.Display dp = Gdk.Display.get_default();
-            var mon = dp.get_monitor_at_window(window.get_window());
-            var rect = mon.get_geometry();
-            if(conf.window_p < rect.width*60/100
-               || conf.window_p > rect.width*85/100)
-                conf.window_p = rect.width*70/100;
-            if(conf.window_w > rect.width)
-                conf.window_w = rect.width;
-            if(conf.window_h > rect.height)
-                conf.window_h = rect.height;
-#endif
-//        MWPLog.message("sizes, pane %d %d %d\n", conf.window_w, conf.window_h, conf.window_p);
-        if( conf.window_p >  conf.window_w)
-            conf.window_p = conf.window_w *70/100;
-
-        window.set_default_size(conf.window_w, conf.window_h);
-        window.show_now();
-
             // Hack (thanks to Inkscape for the clue) to made pane resize better
         pane.set_resize_mode(Gtk.ResizeMode.QUEUE);
         pane.pack1(embed,true, true);
         pane.pack2(box, true, true);
-        pane.position = conf.window_p;
 
         Timeout.add_seconds(5, () => { return try_connect(); });
         if(set_fs)
             window.fullscreen();
-        else if(no_max == false || conf.window_w == -1 || conf.window_h == -1)
+        else if (no_max == false)
             window.maximize();
-/***
         else
         {
-        var rw = rect.width*70/100;
-        var rh = rect.height*70/100;
-        window.resize(rw, rh);
+            Gdk.Rectangle rect;
+            get_primary_size(out rect);
+            var rw = rect.width*70/100;
+            var rh = rect.height*70/100;
+            window.resize(rw,rh);
         }
-***/
-        window.show_all();
-        arm_warn.hide();
+
         if((wp_edit = conf.auto_wp_edit) == true)
             wp_edit_button.hide();
         else
             wp_edit_button.show();
 
-        pane.position = conf.window_p;
+        conf.window_p = pane.position;
+
+        window.check_resize.connect(() => {
+                fbox.allow_resize(true);
+            });
+
         window.size_allocate.connect((a) => {
                 if(((a.width != conf.window_w) || (a.height != conf.window_h)))
                 {
@@ -1762,6 +1735,10 @@ public class MWPlanner : Gtk.Application {
                         pane.position = conf.window_p;
                     }
                 }
+                Timeout.add(500, () => {
+                        fbox.allow_resize(false);
+                        return Source.REMOVE;
+                    });
             });
 
         pane.button_press_event.connect((evt) => {
@@ -1785,6 +1762,8 @@ public class MWPlanner : Gtk.Application {
                 return false;
             });
 
+        window.show_all();
+        arm_warn.hide();
 
         var scale = new Champlain.Scale();
         scale.connect_view(view);
@@ -1868,7 +1847,6 @@ public class MWPlanner : Gtk.Application {
             dockitem[DOCKLETS.FBOX].iconify_item ();
             lman.save_config();
         }
-
 
         mwpdh = new MwpDockHelper(dockitem[DOCKLETS.MISSION], dock,
                           "Mission Editor", conf.tote_floating);
@@ -1957,11 +1935,6 @@ public class MWPlanner : Gtk.Application {
                });
        }
 
-       Timeout.add(500, () => {
-               fbox.allow_resize(false);
-               return Source.REMOVE;
-           });
-
        if(mkcon)
         {
             connect_serial();
@@ -1973,6 +1946,19 @@ public class MWPlanner : Gtk.Application {
             mkcon = true;
         }
 
+    }
+
+    private void get_primary_size(out Gdk.Rectangle rect)
+    {
+#if OLDGTK||LSRVAL
+        var screen = Gdk.Screen.get_default();
+        var mon = screen.get_monitor_at_point(1,1);
+        screen.get_monitor_geometry(mon, out rect);
+#else
+        Gdk.Display dp = Gdk.Display.get_default();
+        var mon = dp.get_monitor_at_window(window.get_window());
+        rect = mon.get_geometry();
+#endif
     }
 
     private void set_dock_menu_status()
@@ -2239,14 +2225,6 @@ public class MWPlanner : Gtk.Application {
                         gen_serial_stats();
                         telemstatus.update(telstats, item_visible(DOCKLETS.TELEMETRY));
                     }
-/**
-                    if(conf.heartbeat != null && (nticks % BEATINTVL) == 0)
-                    {
-                        try {
-                            Process.spawn_command_line_async(conf.heartbeat);
-                        } catch  {}
-                    }
-**/
                 }
 
                 if(duration != 0 && duration != last_dura)
