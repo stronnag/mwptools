@@ -411,24 +411,6 @@ public class MWPMarkers : GLib.Object
             });
     }
 
-    public void change_label(Champlain.Label mk, MSP.Action old, MSP.Action typ, string no)
-    {
-        string text;
-        Clutter.Color colour;
-        get_text_for(typ, no, out text, out colour);
-        mk.set_color (colour);
-        mk.set_text(text);
-        if (old == MSP.Action.SET_POI &&
-            (typ != MSP.Action.RTH && typ != MSP.Action.SET_HEAD
-             && typ != MSP.Action.JUMP))
-            path.add_node((Champlain.Marker)mk);
-
-        if (typ == MSP.Action.SET_POI || typ == MSP.Action.RTH
-            || typ == MSP.Action.SET_HEAD
-            || typ == MSP.Action.JUMP)
-            path.remove_node((Champlain.Marker)mk);
-    }
-
     public void set_ring(Champlain.Marker lp)
     {
         var nlat = lp.get_latitude();

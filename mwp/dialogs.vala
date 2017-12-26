@@ -277,6 +277,7 @@ public class FlightBox : GLib.Object
     private Gtk.Grid grid;
     private Gtk.Window _w;
     public static uint fh1=20;
+    public int last_w = 0;
 
     public void allow_resize(bool exp)
     {
@@ -298,20 +299,27 @@ public class FlightBox : GLib.Object
         big_spd = builder.get_object ("big_spd") as Gtk.Label;
         big_sats = builder.get_object ("big_sats") as Gtk.Label;
         vbox.size_allocate.connect((a) => {
-                if(_allow_resize)
+                if(_allow_resize && a.width != last_w)
                 {
                     fh1 = a.width*MWPlanner.conf.fontfact/100;
                     Idle.add(() => {update(true);
                                     return false;});
                 }
+                last_w = a.width;
             });
         vbox.show_all();
     }
 
-   public void annul()
-   {
-       update(true);
-   }
+    public void check_size()
+    {
+        fh1 = last_w*MWPlanner.conf.fontfact/100;
+        update(true);
+    }
+
+    public void annul()
+    {
+        update(true);
+    }
 
    public void update(bool visible)
    {
@@ -321,7 +329,7 @@ public class FlightBox : GLib.Object
            if(fh1 > 96)
                fh1 = 96;
 
-           var fh3 = fh1;
+           var fh3 = fh1*90/100;
            double falt = (double)NavStatus.alti.estalt/100.0;
            if(falt < 0.0 || falt > 20.0)
                falt = Math.round(falt);

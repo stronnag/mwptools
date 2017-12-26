@@ -314,6 +314,7 @@ public class ReplayThread : GLib.Object
                 double utime = 0;
                 uint8 buf[256];
                 MSP_STATUS xa = MSP_STATUS();
+                bool mloaded = false;
 
                 var file = File.new_for_path (relog);
                 if (!file.query_exists ()) {
@@ -375,12 +376,13 @@ public class ReplayThread : GLib.Object
                                     var cap = obj.get_int_member ("capability");
                                     uint fctype = 42;
                                     string fcboard="UNKN";
-                                    if(obj.has_member("mission"))
+                                    if(obj.has_member("mission") && !mloaded)
                                     {
                                         var mfn =  obj.get_string_member("mission");
                                         var mfile = File.new_for_path (mfn);
                                         if (mfile.query_exists ())
                                             replay_mission_file(mfn);
+                                        mloaded = true;
                                     }
 
                                     if(mwvers == 0)

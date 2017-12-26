@@ -467,6 +467,7 @@ public class MWPlanner : Gtk.Application {
     private bool need_mission = false;
     private Clutter.Text clutextr;
     private Clutter.Text clutextg;
+    private bool map_clean;
     private VCol vcol;
     private Odostats odo;
     private OdoView odoview;
@@ -1720,10 +1721,6 @@ public class MWPlanner : Gtk.Application {
 
         conf.window_p = pane.position;
 
-        window.check_resize.connect(() => {
-                fbox.allow_resize(true);
-            });
-
         window.size_allocate.connect((a) => {
                 if(((a.width != conf.window_w) || (a.height != conf.window_h)))
                 {
@@ -1736,11 +1733,8 @@ public class MWPlanner : Gtk.Application {
                         conf.window_p = conf.window_w*70/100;
                         pane.position = conf.window_p;
                     }
+                    fbox.check_size();
                 }
-                Timeout.add(500, () => {
-                        fbox.allow_resize(false);
-                        return Source.REMOVE;
-                    });
             });
 
         pane.button_press_event.connect((evt) => {
@@ -2405,6 +2399,7 @@ public class MWPlanner : Gtk.Application {
         textm.add_child(clutextg);
         view.add_child (textb);
         view.add_child (textm);
+        map_clean = true;
     }
 
     private void map_show_warning(string text)
@@ -2420,12 +2415,17 @@ public class MWPlanner : Gtk.Application {
     private void map_show_wp(string text)
     {
         clutextg.set_text(text);
+        map_clean = false;
     }
 
     private void map_hide_wp()
     {
-        clutextg.set_text("");
-        markers.clear_ring();
+        if(!map_clean)
+        {
+            clutextg.set_text("");
+            markers.clear_ring();
+            map_clean = true;
+        }
     }
 
     private void  alert_broken_sensors(uint8 val)
@@ -2508,7 +2508,6 @@ public class MWPlanner : Gtk.Application {
 
         if(armed != larmed)
         {
-            map_hide_wp();
             radstatus.annul();
             if (armed == 1)
             {
@@ -2559,6 +2558,7 @@ public class MWPlanner : Gtk.Application {
                     MWPLog.message("Distance = %.1f, max speed = %.1f time = %u\n",
                                    odo.distance, odo.speed, odo.time);
                     odoview.display(odo, true);
+                    map_hide_wp();
                 }
                 MWPLog.message("Disarmed %s\n", reason);
                 armed_spinner.stop();
@@ -2779,6 +2779,9 @@ public class MWPlanner : Gtk.Application {
                 break;
             case "CHF3":
                 board = "CHEBUZZF3";
+                break;
+            case "QRKV":
+                board = "QuarkVision";
                 break;
         }
         return board;

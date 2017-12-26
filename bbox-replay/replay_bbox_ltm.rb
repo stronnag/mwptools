@@ -51,7 +51,7 @@ $verbose = false
 $vbatscale=1.0
 
 BOARD_MAP ={
-  "MatekF4" => "MKF4",
+  "MATEKF4" => "MKF4",
   "FURYF3" => "FYF3",
   "AIRHEROF3" => "AIR3",
   "NAZE" => "AFNA",
@@ -90,6 +90,7 @@ BOARD_MAP ={
   "OMNIBUS" => "OMNI",
   "CC3D" => "CC3D",
   "MATEKF405" => "MKF4",
+  "QUARKVISION" =>  "QRKV",
 }
 
 def start_io dev
@@ -191,7 +192,7 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
 	iv = [m[1],m[2],m[3]].join('.')
 	i = 0
 	m[4].each_byte {|b| msps[5][24+i] = b ; i += 1}
-	bid = BOARD_MAP[m[5]]
+	bid = BOARD_MAP[m[5].upcase]
 	if bid
 	  i = 0
 	  bid.each_byte {|b| msps[2][5+i] = b; i+= 1}
