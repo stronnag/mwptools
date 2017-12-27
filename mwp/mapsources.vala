@@ -362,25 +362,32 @@ public class JsonMapDef : Object
             {
                 s = MapSource();
                 var item = node.get_object ();
-                s.name = item.get_string_member ("name");
                 s.id = item.get_string_member ("id");
-                s.min_zoom = (int)item.get_int_member ("min_zoom");
-                s.max_zoom = (int) item.get_int_member ("max_zoom");
-                s.tile_size = (int)item.get_int_member("tile_size");
-                s.proj = item.get_string_member("projection");
                 s.uri_format = item.get_string_member("uri_format");
-                s.licence = item.get_string_member("license");
                 s.licence_uri = item.get_string_member("license_uri");
-                if(item.has_member("spawn"))
+                bool skip = (s.id == "BingProxy" ||
+                             s.uri_format ==
+                             "http://localhost:21303/quadkey-proxy/#Z#/#X#/#Y#.png" ||
+                             s.licence_uri == "http://www.bing.com/maps/");
+                if(!skip)
                 {
-                    var spawncmd = item.get_string_member("spawn");
-                    spawn_proxy(spawncmd);
+                    s.name = item.get_string_member ("name");
+                    s.licence = item.get_string_member("license");
+                    s.min_zoom = (int)item.get_int_member ("min_zoom");
+                    s.max_zoom = (int) item.get_int_member ("max_zoom");
+                    s.tile_size = (int)item.get_int_member("tile_size");
+                    s.proj = item.get_string_member("projection");
+                    if(item.has_member("spawn"))
+                    {
+                        var spawncmd = item.get_string_member("spawn");
+                        spawn_proxy(spawncmd);
+                    }
+                    sources += s;
                 }
-                sources += s;
             }
         }
         catch (Error e) {
-            MWPLog.message ("I guess something is not working...\n");
+            MWPLog.message ("mapsources : %s\n", e.message);
         }
         return sources;
     }
