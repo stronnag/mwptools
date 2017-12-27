@@ -53,7 +53,6 @@ public class MWPSettings : GLib.Object
     public string? vlevels {get; private set;}
     public bool checkswitches {get; set; default=false;}
     public uint polltimeout {get; set; default=500;}
-    public string quaduri {get; private set; }
     public string deflayout {get; private set; }
     public uint p_distance {get; set; default=0;}
     public uint p_speed {get; set; default=0;}
@@ -186,8 +185,6 @@ public class MWPSettings : GLib.Object
             checkswitches = settings.get_boolean("checkswitches");
         if(s == null || s == "poll-timeout")
             polltimeout = settings.get_uint("poll-timeout");
-        if(s == null || s == "quaduri")
-            quaduri = settings.get_string("quaduri");
 
         if(s == null || s == "default-layout")
         {

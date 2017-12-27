@@ -107,7 +107,7 @@
     <key type="b" name="audio-bearing-is-reciprocal">
       <default>false</default>
       <summary>Annouce bearing as reciprocal</summary>
-      <description>Whether the audio bearing is the reciprocal (i.e. bearing from home to quad, rather than from quad to home)</description>
+      <description>Whether the audio bearing is the reciprocal (i.e. bearing from home to machine, rather than from machine to home)</description>
     </key>
 
     <key type="b" name="set-head-is-b0rken">
@@ -200,13 +200,6 @@
       <description>
 	Timeout in milliseconds for telemetry poll messages
       </description>
-    </key>
-
-    <key name="quaduri" type="s">
-      <summary>URI for the quadkey proxy</summary>
-      <default>""</default>
-      <description>A URI for the real source of quadkey tile. Use %s
-      to indicate where the actual quadkey goes.</description>
     </key>
 
     <key name="default-layout" type="s">

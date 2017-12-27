@@ -958,16 +958,10 @@ public class MWPlanner : Gtk.Application {
         }
 
         MapSource [] msources = {};
+        string msfn = null;
         if(conf.map_sources != null)
-        {
-            var msfn = MWPUtils.find_conf_file(conf.map_sources);
-            if (msfn != null)
-            {
-                msources =   JsonMapDef.read_json_sources(msfn);
-                if(JsonMapDef.port != 0)
-                    JsonMapDef.run_proxy(conf.quaduri, offline);
-            }
-        }
+            msfn = MWPUtils.find_conf_file(conf.map_sources);
+        msources =   JsonMapDef.read_json_sources(msfn,offline);
 
         builder.connect_signals (null);
         window = builder.get_object ("window1") as Gtk.ApplicationWindow;

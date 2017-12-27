@@ -200,9 +200,136 @@ public class SoupProxy : Soup.Server
     }
 }
 
+public class BingMap : Object
+{
+    private const string BURI="https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial/0,0?zl=1&include=ImageryProviders&key=";
+    private const string APIKEY="Al1bqGaNodeNA71bleJWfjFvW7fApjJOohMSZ2_J0Hpgt4MGdLIYDbgpgCZbZ1xA";
+
+    public static bool get_source(out MapSource ms, out string buri)
+    {
+        StringBuilder sb = new StringBuilder(BURI);
+        sb.append(APIKEY);
+        var session = new Soup.Session ();
+        var message = new Soup.Message ("GET", sb.str);
+        session.send_message (message);
+        string s="";;
+
+        if ( message.status_code == 200)
+            s = (string) message.response_body.flatten ().data;
+        return parse_bing_json(s, out buri, out ms);
+    }
+
+    private static bool parse_bing_json(string s, out string buri, out MapSource ms)
+    {
+         bool res = false;
+         ms = MapSource() {
+             id= "BingProxy",
+             name = "Bing Proxy",
+             min_zoom =  0,
+             max_zoom = 20,
+             tile_size = 256,
+             proj = "MERCATOR",
+             uri_format = "http://localhost:21303/quadkey-proxy/#Z#/#X#/#Y#.png",
+             licence = "(c) Microsoft Corporation and friends",
+             licence_uri = "http://www.bing.com/maps/"
+         };
+         buri="http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=6187";
+         if(s.length > 0)
+         {
+             try
+             {
+                 var parser = new Json.Parser ();
+                 parser.load_from_data (s);
+
+                 int gmin = 999;
+                 int gmax = -1;
+                 double xmin,ymin;
+                 double xmax,ymax;
+                 StringBuilder sb = new StringBuilder();
+                 int zmin = 999;
+                 int zmax = -1;
+                 int imgh =0, imgw = 0;
+
+                 var root_object = parser.get_root ().get_object ();
+                 foreach (var rsnode in
+                          root_object.get_array_member ("resourceSets").get_elements ())
+                 {
+                     var rsitem = rsnode.get_object ();
+                     foreach (var rxnode in
+                              rsitem.get_array_member ("resources").get_elements ())
+                     {
+                         var rxitem = rxnode.get_object ();
+                         buri = rxitem.get_string_member ("imageUrl");
+                         imgh = (int)rxitem.get_int_member("imageHeight");
+                         imgw = (int)rxitem.get_int_member("imageWidth");
+
+                         foreach (var pvnode in
+                                  rxitem.get_array_member ("imageryProviders").get_elements ())
+                         {
+                             xmin = ymin = 999.0;
+                             xmax = ymax = -999;
+                             var pvitem = pvnode.get_object();
+                             foreach (var cvnode in
+                                      pvitem.get_array_member ("coverageAreas").get_elements ())
+                             {
+                                 var cvitem = cvnode.get_object();
+                                 var _zmin = (int)cvitem.get_int_member("zoomMin");
+                                 var _zmax = (int)cvitem.get_int_member("zoomMax");
+                                 if(_zmin < zmin)
+                                     zmin = _zmin;
+                                 if(_zmax > zmax)
+                                     zmax = _zmax;
+                                 var bbarry = cvitem.get_array_member("bbox");
+                                 var d = bbarry.get_double_element(0);
+                                 if(d < ymin)
+                                     ymin = d;
+                                 d = bbarry.get_double_element(1);
+                                 if(d < xmin)
+                                     xmin = d;
+                                 d = bbarry.get_double_element(2);
+                                 if(d > ymax)
+                                     ymax = d;
+                                 d = bbarry.get_double_element(3);
+                                 if(d > xmax)
+                                     xmax = d;
+                             }
+                             if (zmin < gmin)
+                                 gmin = zmin;
+                             if (zmax >  gmax)
+                                 gmax = zmax;
+
+                             if(xmax-xmin > 359 && ymax-ymin > 179)
+                             {
+                                 var pattr = pvitem.get_string_member("attribution");
+                                 sb.append(pattr);
+                                 sb.append(", ");
+                             }
+                         }
+                     }
+                 }
+                 sb.truncate(sb.len-2);
+                 ms.licence =  sb.str;
+                 ms.min_zoom = gmin-1;
+                 ms.max_zoom = gmax-1;
+                 ms.tile_size = imgw;
+                 var parts = buri.split("/");
+                 sb.truncate();
+                 sb.append(parts[4].substring(0,1));
+                 sb.append("#Q#");
+                 sb.append(parts[4].substring(2,-1));
+                 parts[4] = sb.str;
+                 buri = string.joinv("/",parts);
+                 res = true;
+             } catch (Error e) {
+                 MWPLog.message("bing parser %s\n", e.message);
+             }
+         }
+         return res;
+    }
+}
+
 public class JsonMapDef : Object
 {
-    private static Regex rx = null;
     public static int port = 0;
     public static string id = null;
     private static int[] proxypids = {};
@@ -213,32 +340,19 @@ public class JsonMapDef : Object
             Posix.kill(p, Posix.SIGTERM);
     }
 
-    private static bool check_proxy(string s)
-    {
-        MatchInfo mi = null;
-        bool found = false;
-        if(rx == null)
-        {
-            try {
-                rx = new Regex("localhost:(?<port>\\d+)\\/quadkey-proxy\\/");
-            } catch {}
-        }
-        if((port == 0) && rx.match(s,0,out mi))
-        {
-            var p = mi.fetch_named("port");
-            if(p != null)
-            {
-                port = int.parse(p);
-                found = true;
-            }
-        }
-        return found;
-    }
-
-    public static MapSource[] read_json_sources(string fn)
+    public static MapSource[] read_json_sources(string? fn, bool offline=false)
     {
         MapSource[] sources = {};
+        MapSource s;
+        string buri;
 
+        BingMap.get_source(out s, out buri);
+        sources += s;
+        id = s.id;
+
+        run_proxy(buri, offline);
+
+        if(fn != null)
         try {
             var parser = new Json.Parser ();
             parser.load_from_file (fn);
@@ -246,7 +360,7 @@ public class JsonMapDef : Object
             foreach (var node in
                      root_object.get_array_member ("sources").get_elements ())
             {
-                var s = MapSource();
+                s = MapSource();
                 var item = node.get_object ();
                 s.name = item.get_string_member ("name");
                 s.id = item.get_string_member ("id");
@@ -262,8 +376,6 @@ public class JsonMapDef : Object
                     var spawncmd = item.get_string_member("spawn");
                     spawn_proxy(spawncmd);
                 }
-                if (check_proxy(s.uri_format))
-                    id = s.id;
                 sources += s;
             }
         }
@@ -294,10 +406,10 @@ public class JsonMapDef : Object
         }
     }
 
-    public static void run_proxy(string uri, bool offline=false)
+    private static void run_proxy(string uri, bool offline)
     {
         var pt = JsonMapDef.port;
-        MWPLog.message("Starting proxy thread %s\n", (offline) ? "(offline)" : "");
+        MWPLog.message("Starting Bing proxy thread %s\n", (offline) ? "(offline)" : "");
         new Thread<int>("proxy",() => {
                 var sp = new SoupProxy(uri);
                 sp.offline = offline;
