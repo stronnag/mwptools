@@ -1,5 +1,5 @@
 #!/bin/sh
-# Starting point for Ubuntu / Debian packages ...
+## Starting point for Ubuntu / Debian packages ...
 
 apt install libgdl-3-dev \
     libchamplain-gtk-0.12-dev \
@@ -17,30 +17,42 @@ apt install libgdl-3-dev \
     libvala-dev \
     libvte-2.91-dev
 
-# and for replay_bbox_ltm.rb
-# ruby version 2 or later
+## If libvala-dev fails, then there may be valac version specific deb
+## check the vala version with:
+# valac --version
 
-apt install ruby
+## and for replay_bbox_ltm.rb
+## ruby version 2 or later
 
-# For some ARM boards, without full OpenGL, you may need
+apt install ruby ruby-json
+
+## For some ARM boards, without full OpenGL, you may need
 
 # apt install libegl1-mesa-dev
-# (or something like that)
+## (or something like that)
 
-# if you want to use speech-dispatcher instead of espeak for voice
-# synthesis (or have a choice of either)
-# gsettings set org.mwptools.planner speech-api 'speechd'
-# or (default)
-# gsettings set org.mwptools.planner speech-api 'espeak'
+## if you want to use speech-dispatcher instead of espeak for voice
+## synthesis (or have a choice of either)
+## gsettings set org.mwptools.planner speech-api 'speechd'
+## or (default)
+## gsettings set org.mwptools.planner speech-api 'espeak'
 
 # apt install libspeechd-dev
 
-# You must install the blackbox utilities
-# https://github.com/cleanflight/blackbox-tools/ in order to replay
-# blackbox logs.
+## Shallow clone mwp ....
+# git clone --depth 1 https://github.com/stronnag/mwptools
+# cd mwptools
+# make && sudo make install
 
-# and you can use this file to install everything:)
+## You must install the blackbox utilities
+## https://github.com/cleanflight/blackbox-tools/ in order to replay
+## blackbox logs.
+# git clone --depth 1  https://github.com/cleanflight/blackbox-tools/
+# cd blackbox-tools
+# make && sudo cp obj/blackbox_decode obj/blackbox_render /usr/local/bin/
 
-# cp ubuntu-deps.txt /tmp/ubuntu-deps.sh
-# chmod +x /tmp/ubuntu-deps.sh
-# sudo /tmp/ubuntu-deps.sh
+## and you can use this file to install everything:)
+#
+## cp ubuntu-deps.txt /tmp/ubuntu-deps.sh
+## chmod +x /tmp/ubuntu-deps.sh
+## sudo /tmp/ubuntu-deps.sh

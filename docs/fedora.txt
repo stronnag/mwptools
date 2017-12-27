@@ -7,13 +7,16 @@ dnf install vala vala-devel vala-tools vala-doc
 dnf install libchamplain-gtk-devel libgdl-devel libgudev1-devel \
     espeak-devel vte291-devel
 
-# git clone https://github.com/stronnag/mwptools.git
+## Shallow clone mwp ....
+# git clone --depth 1 https://github.com/stronnag/mwptools
+# cd mwptools
+# make && sudo make install
 
 ## for bbox-replay stuff
 dnf install ruby
 
 ## On some versions *F27*, the you may also need
-# dnf install rubygem-json
+dnf install rubygem-json
 
 ## if you want to use speech-dispatcher instead of espeak for voice
 ## synthesis (or have a choice of either)
@@ -31,11 +34,10 @@ dnf install ruby
 ## https://github.com/cleanflight/blackbox-tools/
 ## in order to replay blackbox logs.
 
-# git clone https://github.com/cleanflight/blackbox-tools.git
+# git clone --depth 1  https://github.com/cleanflight/blackbox-tools/
 # cd blackbox-tools/
-#  make
-# sudo cp  obj/blackbox_decode /usr/local/bin/
-
+# make
+# sudo cp  obj/blackbox_decode obj/blackbox_render /usr/local/bin/
 
 ## and you can use this file to install everything:)
 ## In some cases, removing the comments (like above for blackbox)
@@ -44,5 +46,5 @@ dnf install ruby
 # chmod +x /tmp/fedora-deps.sh
 # sudo /tmp/fedora-deps.sh
 
-## Then build it.
+## Then build it / update
 # cd mwptools; git pull && make && sudo make install
