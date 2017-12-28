@@ -28,7 +28,7 @@ public struct MapSource
     int min_zoom;
     int max_zoom;
     int tile_size;
-    string proj;
+    Champlain.MapProjection projection;
     string licence;
     string licence_uri;
     string uri_format;
@@ -37,7 +37,6 @@ public struct MapSource
 
 public class MwpMapSource : Champlain.MapSourceDesc
 {
-
     public MwpMapSource (string id,
             string name,
             string license,
@@ -48,21 +47,16 @@ public class MwpMapSource : Champlain.MapSourceDesc
             Champlain.MapProjection projection,
             string uri_format)
     {
-            /* the 0.12 vapi appears not to support projection
-             * as a property
-             */
         Object(id: id, name: name, license: license, license_uri: license_uri,
                min_zoom_level: minzoom, max_zoom_level: maxzoom,
                tile_size: tile_size,
                uri_format: uri_format,
-               data: (void *)projection,
-               constructor: (void*)my_construct);
+               projection: projection,
+               constructor: (void *)my_construct);
     }
 
     static Champlain.MapSource my_construct (Champlain.MapSourceDesc d)
     {
-        var renderer = new Champlain.ImageRenderer();
-        Champlain.MapProjection proj =  (Champlain.MapProjection)d.get_data();
         var source =  new Champlain.NetworkTileSource.full(
             d.get_id(),
             d.get_name(),
@@ -71,9 +65,9 @@ public class MwpMapSource : Champlain.MapSourceDesc
             d.get_min_zoom_level(),
             d.get_max_zoom_level(),
             d.get_tile_size(),
-            proj,
+            d.get_projection(),
             d.get_uri_format(),
-            renderer);
+            new Champlain.ImageRenderer());
         return source;
     }
 }
@@ -184,7 +178,6 @@ public class SoupProxy : Soup.Server
             var message = new Soup.Message ("GET", xpath);
 
             session.send_message (message);
-
             if(message.status_code == 200)
             {
                 msg.set_response ("image/png", Soup.MemoryUse.COPY,
@@ -226,10 +219,10 @@ public class BingMap : Object
              id= "BingProxy",
              name = "Bing Proxy",
              min_zoom =  0,
-             max_zoom = 20,
+             max_zoom = 19,
              tile_size = 256,
-             proj = "MERCATOR",
-             uri_format = "http://localhost:21303/quadkey-proxy/#Z#/#X#/#Y#.png",
+             projection = MapProjection.MERCATOR,
+             uri_format = "",
              licence = "(c) Microsoft Corporation and friends",
              licence_uri = "http://www.bing.com/maps/"
          };
@@ -311,6 +304,8 @@ public class BingMap : Object
                  ms.licence =  sb.str;
                  ms.min_zoom = gmin-1;
                  ms.max_zoom = gmax-1;
+                 if(ms.max_zoom > 19)
+                     ms.max_zoom = 19;
                  ms.tile_size = imgw;
                  var parts = buri.split("/");
                  sb.truncate();
@@ -330,7 +325,6 @@ public class BingMap : Object
 
 public class JsonMapDef : Object
 {
-    public static int port = 21303;
     public static string id = null;
     private static int[] proxypids = {};
 
@@ -345,12 +339,16 @@ public class JsonMapDef : Object
         MapSource[] sources = {};
         MapSource s;
         string buri;
+        uint port = 0;
 
         BingMap.get_source(out s, out buri);
-        sources += s;
-        id = s.id;
-
-        run_proxy(buri, offline);
+        port  = run_proxy(buri, offline);
+        if (port != 0)
+        {
+            s.uri_format="http://localhost:%u/quadkey-proxy/#Z#/#X#/#Y#.png".printf(port);
+            sources += s;
+            id = s.id;
+        }
 
         if(fn != null)
         try {
@@ -376,7 +374,7 @@ public class JsonMapDef : Object
                     s.min_zoom = (int)item.get_int_member ("min_zoom");
                     s.max_zoom = (int) item.get_int_member ("max_zoom");
                     s.tile_size = (int)item.get_int_member("tile_size");
-                    s.proj = item.get_string_member("projection");
+                    s.projection = Champlain.MapProjection.MERCATOR;
                     if(item.has_member("spawn"))
                     {
                         var spawncmd = item.get_string_member("spawn");
@@ -413,19 +411,17 @@ public class JsonMapDef : Object
         }
     }
 
-    private static void run_proxy(string uri, bool offline)
+    private static uint run_proxy(string uri, bool offline)
     {
-        var pt = JsonMapDef.port;
-        MWPLog.message("Starting Bing proxy thread %s\n", (offline) ? "(offline)" : "");
-        new Thread<int>("proxy",() => {
-                var sp = new SoupProxy(uri);
-                sp.offline = offline;
-                try {
-                    sp.listen_all(pt, 0);
-                } catch {
-                    return 42;
-                }
-                return 0;
-            });
+        uint port = 0;
+        MWPLog.message("Starting Bing proxy %s\n", (offline) ? "(offline)" : "");
+        var sp = new SoupProxy(uri);
+        sp.offline = offline;
+        try {
+            sp.listen_all(0, 0);
+            var u  = sp.get_uris();
+            port = u.nth_data(0).get_port ();
+        } catch { port = 0; }
+        return port;
     }
 }
