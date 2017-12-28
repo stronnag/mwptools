@@ -190,6 +190,9 @@ public class MWPlanner : GLib.Object {
             view.set_keep_center_on_resize(true);
 
             var pane = builder.get_object ("paned1") as Gtk.Paned;
+
+
+
             add_source_combo(conf.defmap);
             pane.pack1 (embed,true,false);
 
@@ -437,7 +440,7 @@ public class MWPlanner : GLib.Object {
                         s0.min_zoom,
                         s0.max_zoom,
                         s0.tile_size,
-                        0, // Champlain.MapProjection.MAP_PROJECTION_MERCATOR,
+                        Champlain.MapProjection.MERCATOR,
                         s0.uri_format);
                     map_source_factory.register((Champlain.MapSourceDesc)s0.desc);
                 }

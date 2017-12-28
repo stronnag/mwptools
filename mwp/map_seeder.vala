@@ -275,6 +275,7 @@ public class TileUtil : Object
     public void start_seeding()
     {
         session = new Soup.Session();
+        session.max_conns_per_host = 8;
         session.ssl_strict = false; // for OSM alas
         done = false;
         show_stats(stats);

@@ -77,6 +77,7 @@ public class SoupProxy : Soup.Server
     private string basename;
     private string extname;
     public bool offline = false;
+    private Soup.Session session;
 
     public SoupProxy(string uri)
     {
@@ -86,6 +87,9 @@ public class SoupProxy : Soup.Server
             basename = parts[0];
             extname = parts[2];
             this.add_handler (null, default_handler);
+            session = new Soup.Session ();
+            session.timeout = 5;
+            session.max_conns_per_host = 8;
         }
         else
         {
@@ -173,8 +177,6 @@ public class SoupProxy : Soup.Server
         else if (msg.method == "GET")
         {
             var xpath = rewrite_path(path);
-            var session = new Soup.Session ();
-            session.timeout = 5;
             var message = new Soup.Message ("GET", xpath);
 
             session.send_message (message);

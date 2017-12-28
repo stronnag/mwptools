@@ -1300,18 +1300,6 @@ public class MWPlanner : Gtk.Application {
         embed = new GtkChamplain.Embed();
         view = embed.get_view();
         view.set_reactive(true);
-        embed.set_can_default(false);
-
-        view.animation_completed.connect(() => {
-                if(need_preview)
-                {
-                    need_preview = false;
-                    Timeout.add_seconds(3, () => {
-                    get_mission_pix();
-                    return false;
-                        });
-                }
-            });
 
         zoomer.adjustment.value_changed.connect (() =>
             {
@@ -1760,10 +1748,10 @@ public class MWPlanner : Gtk.Application {
         var scale = new Champlain.Scale();
         scale.connect_view(view);
         view.add_child(scale);
-        var lm = view.get_layout_manager();
+        Clutter.LayoutManager lm = view.get_layout_manager();
         lm.child_set(view,scale,"x-align", Clutter.ActorAlign.START);
         lm.child_set(view,scale,"y-align", Clutter.ActorAlign.END);
-        map_init_warning();
+        map_init_warning(lm);
 
         var dock = new Dock ();
         dock.margin_start = 4;
@@ -2374,7 +2362,7 @@ public class MWPlanner : Gtk.Application {
         return reqsize;
     }
 
-    private void map_init_warning()
+    private void map_init_warning(Clutter.LayoutManager lm)
     {
         var parts= conf.wp_text.split("/");
         var grey = Clutter.Color.from_string(parts[1]);
@@ -2384,7 +2372,6 @@ public class MWPlanner : Gtk.Application {
         var textm = new Clutter.Actor ();
         clutextr = new Clutter.Text.full ("Sans 36", "", red);
         clutextg = new Clutter.Text.full (parts[0], "", grey);
-        var lm = view.get_layout_manager();
         lm.child_set(view,textb,"x-align", Clutter.ActorAlign.START);
         lm.child_set(view,textb,"y-align", Clutter.ActorAlign.START);
         lm.child_set(view,textm,"x-align", Clutter.ActorAlign.END);
@@ -5318,7 +5305,7 @@ public class MWPlanner : Gtk.Application {
                 s0.min_zoom,
                 s0.max_zoom,
                 s0.tile_size,
-                0, // Champlain.MapProjection.MERCATOR,
+                Champlain.MapProjection.MERCATOR,
                 s0.uri_format);
             map_source_factory.register((Champlain.MapSourceDesc)s0.desc);
         }
@@ -5415,7 +5402,10 @@ public class MWPlanner : Gtk.Application {
             m.to_xml_file(last_file);
             update_title_from_file(last_file);
         }
-        get_mission_pix();
+        Timeout.add_seconds(2, () => {
+                get_mission_pix();
+                return Source.REMOVE;
+            });
     }
 
     private string get_cached_mission_image(string mfn)
