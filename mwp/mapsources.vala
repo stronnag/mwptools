@@ -139,7 +139,6 @@ public class SoupProxy : Soup.Server
                                   GLib.HashTable? query,
                                   Soup.ClientContext client)
     {
-
         if(offline)
         {
             msg.set_status(404);
@@ -185,6 +184,7 @@ public class SoupProxy : Soup.Server
             var message = new Soup.Message ("GET", xpath);
 
             session.send_message (message);
+
             if(message.status_code == 200)
             {
                 msg.set_response ("image/png", Soup.MemoryUse.COPY,
@@ -330,7 +330,7 @@ public class BingMap : Object
 
 public class JsonMapDef : Object
 {
-    public static int port = 0;
+    public static int port = 21303;
     public static string id = null;
     private static int[] proxypids = {};
 
