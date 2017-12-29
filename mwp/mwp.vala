@@ -990,6 +990,7 @@ public class MWPlanner : Gtk.Application {
         wp_edit_button.clicked.connect(() =>
         {
             wp_edit = !wp_edit;
+            wp_edit_button.label= (wp_edit) ? "✔" : "";
             wp_edit_button.tooltip_text = ("Enable / disable the addition of WPs by clicking on the map (%sabled)".printf((wp_edit) ? "en" : "dis"));
         });
 
@@ -1448,6 +1449,13 @@ public class MWPlanner : Gtk.Application {
                 get_mission_pix();
                 return true;
             });
+
+        ag.connect('w', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                if(conf.auto_wp_edit == false)
+                    wp_edit_button.active = !wp_edit;
+                return true;
+            });
+
 
         ag.connect('z', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
                 ls.clear_mission();

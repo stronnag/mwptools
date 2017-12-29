@@ -2270,6 +2270,7 @@ See Issue #431</property>
                 <property name="halign">start</property>
                 <property name="image">image2</property>
                 <property name="always_show_image">True</property>
+                <property name="draw_indicator">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -4452,6 +4453,7 @@ Ctrl+K		Cancel Mission Upload
 Ctrl+S		Dump serial statistics
 Ctrl+T		Clear flight timer
 Ctrl+V		Generate preview thumbnail for loaded mission
+Ctrl+W		Toggle map based waypoint creation
 Ctrl+Z		Clear Mission
 Cttl+Shift+C	Connect serial port
 
