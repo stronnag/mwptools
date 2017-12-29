@@ -1159,6 +1159,26 @@ public class MWPlanner : Gtk.Application {
                 remove_window(window);
             });
 
+
+        var shortcuts = builder.get_object ("shortcut-dialog") as Gtk.Dialog;
+        shortcuts.set_transient_for(window);
+
+        var shortclose = builder.get_object ("shorts-close") as Gtk.Button;
+
+        menuop= builder.get_object ("shortcut-list") as Gtk.MenuItem;
+        menuop.activate.connect (() => {
+                shortcuts.show_all();
+            });
+
+        shortclose.delete_event.connect (() => {
+                shortcuts.hide();
+                return true;
+            });
+
+        shortclose.clicked.connect (() => {
+                shortcuts.hide();
+            });
+
         menuop= builder.get_object ("menu_about") as Gtk.MenuItem;
         menuop.activate.connect (() => {
                 about.show_all();
@@ -1350,7 +1370,7 @@ public class MWPlanner : Gtk.Application {
                 return true;
             });
 
-        ag.connect('+', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+        ag.connect('+', 0, 0, (a,o,k,m) => {
                 var val = view.get_zoom_level();
                 var mmax = view.get_max_zoom_level();
                 if (val != mmax)
@@ -1358,7 +1378,7 @@ public class MWPlanner : Gtk.Application {
                 return true;
             });
 
-        ag.connect('-', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+        ag.connect('-', 0, 0, (a,o,k,m) => {
                 var val = view.get_zoom_level();
                 var mmin = view.get_min_zoom_level();
                 if (val != mmin)
@@ -1378,11 +1398,6 @@ public class MWPlanner : Gtk.Application {
 
         ag.connect('s', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
                 show_serial_stats();
-                return true;
-            });
-
-        ag.connect('d', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
-                set_dock_menu_status();
                 return true;
             });
 
@@ -1408,6 +1423,7 @@ public class MWPlanner : Gtk.Application {
                 if(craft != null)
                 {
                     craft.remove_marker();
+                    markers.remove_rings(view);
                 }
                 set_error_status(null);
                 xsensor = 0;
@@ -1555,6 +1571,7 @@ public class MWPlanner : Gtk.Application {
         swd = new SwitchDialog(builder, window);
 
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
+        about.set_transient_for(window);
         StringBuilder sb = new StringBuilder(mwpvers);
         sb.append_c('\n');
         sb.append(mwpid);

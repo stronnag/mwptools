@@ -2183,6 +2183,14 @@ See Issue #431</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
+                      <object class="GtkMenuItem" id="shortcut-list">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Short-cut keys list</property>
+                        <property name="use_underline">True</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkImageMenuItem" id="menu_about">
                         <property name="label">About</property>
                         <property name="visible">True</property>
@@ -4387,6 +4395,80 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
       <action-widget response="1001">button6</action-widget>
       <action-widget response="1002">button7</action-widget>
     </action-widgets>
+    <child>
+      <placeholder/>
+    </child>
+  </object>
+  <object class="GtkDialog" id="shortcut-dialog">
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">MWP Short Cut Keys</property>
+    <property name="type_hint">dialog</property>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <object class="GtkButton" id="shorts-close">
+                <property name="label">gtk-close</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">&lt;span weight="bold"&gt;In all modes&lt;/span&gt;
+
++   			Zoom in
+-			Zoom out
+F11	 		Toggle full screen
+Ctrl+C		Clear track (and range rings)
+Ctrl+F  		Toggle full screen
+Ctrl+I		Initialise flight displays, clears tracks and range rings
+Ctrl+K		Cancel Mission Upload
+Ctrl+S		Dump serial statistics
+Ctrl+T		Clear flight timer
+Ctrl+V		Generate preview thumbnail for loaded mission
+Ctrl+Z		Clear Mission
+Cttl+Shift+C	Connect serial port
+
+&lt;span weight="bold"&gt;In replay mode&lt;/span&gt;
+
+Space		Toggle replay pause
+</property>
+            <property name="use_markup">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
     <child>
       <placeholder/>
     </child>
