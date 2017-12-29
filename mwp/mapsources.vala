@@ -207,8 +207,7 @@ public class BingMap : Object
         var session = new Soup.Session ();
         var message = new Soup.Message ("GET", sb.str);
         session.send_message (message);
-        string s="";;
-
+        string s="";
         if ( message.status_code == 200)
             s = (string) message.response_body.flatten ().data;
         return parse_bing_json(s, out buri, out ms);
@@ -217,6 +216,7 @@ public class BingMap : Object
     private static bool parse_bing_json(string s, out string buri, out MapSource ms)
     {
          bool res = false;
+         var savefile = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp",".blast");
          ms = MapSource() {
              id= "BingProxy",
              name = "Bing Proxy",
@@ -228,7 +228,7 @@ public class BingMap : Object
              licence = "(c) Microsoft Corporation and friends",
              licence_uri = "http://www.bing.com/maps/"
          };
-         buri="http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=6187";
+
          if(s.length > 0)
          {
              try
@@ -310,16 +310,28 @@ public class BingMap : Object
                      ms.max_zoom = 19;
                  ms.tile_size = imgw;
                  var parts = buri.split("/");
-                 sb.truncate();
-                 sb.append(parts[4].substring(0,1));
+                 sb.assign(parts[4].substring(0,1));
                  sb.append("#Q#");
                  sb.append(parts[4].substring(2,-1));
                  parts[4] = sb.str;
                  buri = string.joinv("/",parts);
+                 var fp = FileStream.open (savefile, "w");
+                 if(fp != null)
+                     fp.write(buri.data);
                  res = true;
              } catch (Error e) {
                  MWPLog.message("bing parser %s\n", e.message);
              }
+         }
+         else
+         {
+             var fp = FileStream.open (savefile, "r");
+             if(fp != null)
+             {
+                 buri = fp.read_line();
+             }
+             else
+                 buri="http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=6187";
          }
          return res;
     }
