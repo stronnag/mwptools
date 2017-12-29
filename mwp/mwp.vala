@@ -1696,11 +1696,6 @@ public class MWPlanner : Gtk.Application {
             window.resize(rw,rh);
         }
 
-        if((wp_edit = conf.auto_wp_edit) == true)
-            wp_edit_button.hide();
-        else
-            wp_edit_button.show();
-
         conf.window_p = pane.position;
 
         window.size_allocate.connect((a) => {
@@ -1741,6 +1736,11 @@ public class MWPlanner : Gtk.Application {
             });
 
         window.show_all();
+        if((wp_edit = conf.auto_wp_edit) == true)
+            wp_edit_button.hide();
+        else
+            wp_edit_button.show();
+
         anim_cb(true);
 
         arm_warn.hide();
@@ -5971,6 +5971,24 @@ public class MWPlanner : Gtk.Application {
 
         if((lkres = lk.lock()) == 0)
         {
+            is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
+            if (is_wayland)
+            {
+                foreach (var a in args)
+                    if (a == "--use-wayland")
+                        use_wayland = true;
+                if(use_wayland)
+                    MWPLog.message("Wayland enabled, if you experience problems, remove the --wayland option\n");
+                else
+                {
+                    MWPLog.message("Using Xwayland for safety:)\n");
+                    Gdk.set_allowed_backends("x11");
+                }
+            }
+
+            if (GtkClutter.init (ref args) != InitError.SUCCESS)
+                return 1;
+
             var sb = new StringBuilder("mwp ");
             sb.append(mwpvers);
             sb.append_c(' ');
@@ -6005,21 +6023,6 @@ public class MWPlanner : Gtk.Application {
                 MWPLog.message("mwp startup version: %s\n", verstr);
                 if(fixedopts != null)
                     MWPLog.message("default options: %s\n", fixedopts);
-
-                is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
-                if (is_wayland)
-                {
-                    if(use_wayland)
-                        MWPLog.message("Wayland enabled, if you experience problems, remove the --wayland option\n");
-                    else
-                    {
-                        MWPLog.message("Using Xwayland for safety:)\n");
-                        Gdk.set_allowed_backends("x11");
-                    }
-                }
-
-                if (GtkClutter.init (ref args) != InitError.SUCCESS)
-                    return 1;
                 Gst.init (ref args);
                 atexit(MWPlanner.xchild);
                 var app = new MWPlanner();

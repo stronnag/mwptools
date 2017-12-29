@@ -216,6 +216,7 @@ public class BingMap : Object
     private static bool parse_bing_json(string s, out string buri, out MapSource ms)
     {
          bool res = false;
+         buri="";
          var savefile = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp",".blast");
          ms = MapSource() {
              id= "BingProxy",
@@ -229,6 +230,7 @@ public class BingMap : Object
              licence_uri = "http://www.bing.com/maps/"
          };
 
+         StringBuilder sb = new StringBuilder();
          if(s.length > 0)
          {
              try
@@ -240,7 +242,6 @@ public class BingMap : Object
                  int gmax = -1;
                  double xmin,ymin;
                  double xmax,ymax;
-                 StringBuilder sb = new StringBuilder();
                  int zmin = 999;
                  int zmax = -1;
                  int imgh =0, imgw = 0;
@@ -309,19 +310,23 @@ public class BingMap : Object
                  if(ms.max_zoom > 19)
                      ms.max_zoom = 19;
                  ms.tile_size = imgw;
-                 var parts = buri.split("/");
-                 sb.assign(parts[4].substring(0,1));
-                 sb.append("#Q#");
-                 sb.append(parts[4].substring(2,-1));
-                 parts[4] = sb.str;
-                 buri = string.joinv("/",parts);
-                 var fp = FileStream.open (savefile, "w");
-                 if(fp != null)
-                     fp.write(buri.data);
                  res = true;
              } catch (Error e) {
                  MWPLog.message("bing parser %s\n", e.message);
              }
+         }
+
+         if(buri.length > 0)
+         {
+             var parts = buri.split("/");
+             sb.assign(parts[4].substring(0,1));
+             sb.append("#Q#");
+             sb.append(parts[4].substring(2,-1));
+             parts[4] = sb.str;
+             buri = string.joinv("/",parts);
+             var fp = FileStream.open (savefile, "w");
+             if(fp != null)
+                 fp.write(buri.data);
          }
          else
          {
