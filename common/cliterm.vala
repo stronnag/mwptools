@@ -23,17 +23,21 @@ public class CLITerm : Gtk.Window
         this.set_default_size (640, 400);
 
         term = new Vte.Terminal();
-        term.commit.connect((text,size) => {
+        term.commit.connect((text,size) =>
+            {
                 switch(text[0])
                 {
+                    case 3:
+                        this.destroy();
+                        break;
                     case 8:
-                    uint8 c = 127;
-                    s.write(&c,1);
-                    break;
+                        uint8 c = 127;
+                        s.write(&c,1);
+                        break;
                     case 27:
-                    break;
+                        break;
                     default:
-                    s.write(text, size);
+                        s.write(text, size);
                     break;
                 }
             });
@@ -48,7 +52,7 @@ public class CLITerm : Gtk.Window
         s.cli_event.connect((buf,len) => {
                 term.feed(buf);
                 if(((string)buf).contains("Rebooting"))
-                    term.feed("\r\n\nEither close this window or type # to re-enter the CLI\r\n".data);
+                    term.feed("\r\n\n\x1b[1mEither close this window or type # to re-enter the CLI\x1b[0m\r\n".data);
             });
         uint8 c = '#';
         s.write(&c, 1);
