@@ -1994,7 +1994,7 @@ Mission will also be downloaded to mwp, replacing any currently displayed missio
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">soft reboot the FC
 See Issue #431</property>
-                        <property name="label" translatable="yes">Reboot</property>
+                        <property name="label" translatable="yes">Reboot FC</property>
                         <property name="use_underline">True</property>
                         <accelerator key="exclam" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
@@ -4441,7 +4441,25 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">&lt;span weight="bold"&gt;In all modes&lt;/span&gt;
+            <property name="margin_left">8</property>
+            <property name="margin_right">8</property>
+            <property name="margin_top">4</property>
+            <property name="margin_bottom">4</property>
+            <property name="label" translatable="yes">&lt;span weight="bold"&gt;Menu shortcuts&lt;/span&gt;
+
+Ctrl+M		Open Mission
+Ctrl+U		Upload Mission
+Ctrl+E		Upload and Save to EEPROM
+Ctrl+R		Restore from EEPROM (and download)
+Ctrl+Q		Quit (saves dock layout)
+
+Ctrl+P		Preferences
+Shift+T		CLI terminal
+Ctrl+!		Reboot the FC
+
+Ctrl+A		Flight Statistics
+
+&lt;span weight="bold"&gt;In all modes&lt;/span&gt;
 
 +   			Zoom in
 -			Zoom out

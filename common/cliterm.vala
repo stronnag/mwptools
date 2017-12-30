@@ -47,6 +47,8 @@ public class CLITerm : Gtk.Window
         s.pmode = MWSerial.ProtoMode.CLI;
         s.cli_event.connect((buf,len) => {
                 term.feed(buf);
+                if(((string)buf).contains("Rebooting"))
+                    term.feed("\r\n\nEither close this window or type # to re-enter the CLI\r\n".data);
             });
         uint8 c = '#';
         s.write(&c, 1);
