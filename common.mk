@@ -1,7 +1,11 @@
 XOS := $(shell uname)
 
 ifeq ($(XOS),Linux)
- DOPTS += -D HAVE_FIONREAD
+ DOPTS += -D HAVE_FIONREAD -D LINUX
+ GUDEV = --pkg gudev-1.0
+ DEVMAN = devman-linux.vala
+else
+ DEVMAN = devman-rotw.vala
 endif
 
 VAPI := $(shell valac --api-version)

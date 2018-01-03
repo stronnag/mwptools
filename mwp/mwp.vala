@@ -481,6 +481,8 @@ public class MWPlanner : Gtk.Application {
 
     private uchar hwstatus[9];
 
+    public DevManager devman;
+
     public struct MQI //: Object
     {
         MSP.Cmds cmd;
@@ -842,6 +844,8 @@ public class MWPlanner : Gtk.Application {
         mwvar = MWChooser.fc_from_arg0();
         vbsamples = new float[MAXVSAMPLE];
 
+        devman = new DevManager();
+
         hwstatus[0] = 1; // Assume OK
         conf = new MWPSettings();
         conf.read_settings();
@@ -971,6 +975,8 @@ public class MWPlanner : Gtk.Application {
                 wdw_state = ((e.new_window_state & Gdk.WindowState.FULLSCREEN) != 0);
             return false;
         });
+
+        dev_entry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
 
         string icon=null;
         try {
@@ -1604,10 +1610,19 @@ public class MWPlanner : Gtk.Application {
         mq = new Queue<MQI?>();
 
         build_deventry();
-        var te = dev_entry.get_child() as Gtk.Entry;
-        te.can_focus = true;
         dev_entry.active = 0;
+
+        devman.device_added.connect((s) => {
+                prepend_deventry(s);
+            });
+        devman.device_removed.connect((s) => {
+                remove_deventry(s);
+            });
+
         conbutton = builder.get_object ("button1") as Gtk.Button;
+
+        var te = dev_entry.get_child() as Gtk.Entry;
+
         te.activate.connect(() => {
                 if(!msp.available)
                     connect_serial();
@@ -1982,11 +1997,70 @@ public class MWPlanner : Gtk.Application {
 
     public void build_deventry()
     {
-        dev_entry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
         dev_entry.remove_all ();
+        foreach (var s in devman.get_serial_devices())
+            prepend_deventry(s);
+
         foreach(string a in conf.devices)
         {
             dev_entry.append_text(a);
+        }
+
+        foreach (var s in devman.get_bt_serial_devices())
+            append_deventry(s);
+    }
+
+    private int find_deventry(string s)
+    {
+        var m = dev_entry.get_model();
+        Gtk.TreeIter iter;
+        int i,n = -1;
+        bool next;
+
+        for(i = 0, next = m.get_iter_first(out iter);
+            next; next = m.iter_next(ref iter), i++)
+        {
+            GLib.Value cell;
+            m.get_value (iter, 0, out cell);
+            if((string)cell == s)
+            {
+                n = i;
+                break;
+            }
+        }
+        return n;
+    }
+
+    private void append_deventry(string s)
+    {
+        var n = find_deventry(s);
+        if (n == -1)
+            dev_entry.append_text(s);
+    }
+
+    private void prepend_deventry(string s)
+    {
+        var n = find_deventry(s);
+        if (n == -1)
+        {
+            dev_entry.prepend_text(s);
+            dev_entry.active = 0;
+        }
+        else
+            dev_entry.active = n;
+    }
+
+    private void remove_deventry(string s)
+    {
+        foreach(string a in conf.devices)
+            if (a == s)
+                return;
+
+        var n = find_deventry(s);
+        if (n != -1)
+        {
+            dev_entry.remove(n);
+            dev_entry.active = 0;
         }
     }
 

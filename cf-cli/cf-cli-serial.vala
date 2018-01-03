@@ -1011,6 +1011,13 @@ public class MWSerial : Object
                     } while (res != ResCode.OK);
                     Thread.usleep(4*1000*1000);
                     message("Accelerometer calibration finished\n");
+                    var s2 = Environment.get_variable("FC_ACC_SLEEP");
+                    if(s2 != null)
+                    {
+                        var ssec = int.parse(s2);
+                        if(ssec > 0)
+                            Thread.usleep(ssec*1000*1000);
+                    }
                 }
             }
         }
