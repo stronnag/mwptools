@@ -304,13 +304,20 @@ public class MWSerial : Object
         }
     }
 
-    public bool open(string device, uint rate, out string estr)
+    public bool open(string _device, uint rate, out string estr)
     {
         string host = null;
         uint16 port = 0;
         Regex regex;
         string []parts;
         int lasterr = 0;
+        string device;
+        int n;
+
+        if((n = _device.index_of_char(' ')) == -1)
+            device = _device;
+        else
+            device = _device.substring(0,n);
 
         estr=null;
 
