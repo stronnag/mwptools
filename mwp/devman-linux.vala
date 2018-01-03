@@ -37,7 +37,7 @@ public class DevManager
             objects = manager.get_managed_objects();
             find_adapter();
             find_devices();
-        } catch (IOError e) {
+        } catch (Error e) {
             stderr.printf ("%s\n", e.message);
         }
         uc.uevent.connect((action,dev) => {
@@ -142,9 +142,9 @@ interface DBusProperties : GLib.Object {
     [DBus (name = "Set")]
     public abstract void set(string iface, string name, Variant val)
                             throws DBusError, IOError;
-    [DBus (name = "Get")]
-    public abstract Variant get(string iface, string name)
-                               throws DBusError, IOError;
+///    [DBus (name = "Get")]
+///    public abstract Variant get(string iface, string name)
+///                               throws DBusError, IOError;
     [DBus (name = "GetAll")]
     public abstract HashTable<string, Variant> get_all(string iface)
                                                 throws DBusError, IOError;
@@ -154,13 +154,13 @@ interface DBusProperties : GLib.Object {
                                           string[] invalidated);
 }
 
-[DBus (name = "org.bluez.AgentManager1")]
-interface BluezAgentManagerBus : GLib.Object {
-    [DBus (name = "RegisterAgent")]
-    public abstract void register_agent(ObjectPath agent, string capability) throws DBusError, IOError;
-    [DBus (name = "RequestDefaultAgent")]
-    public abstract void request_default_agent(ObjectPath agent) throws DBusError, IOError;
-}
+///[DBus (name = "org.bluez.AgentManager1")]
+///interface BluezAgentManagerBus : GLib.Object {
+///    [DBus (name = "RegisterAgent")]
+///    public abstract void register_agent(ObjectPath agent, string capability) throws DBusError, IOError;
+///    [DBus (name = "RequestDefaultAgent")]
+///    public abstract void request_default_agent(ObjectPath agent) throws DBusError, IOError;
+///}
 
 [DBus (name = "org.bluez.Adapter1")]
 public interface BluezAdapterBus : GLib.Object {
@@ -174,18 +174,18 @@ public interface BluezAdapterBus : GLib.Object {
 
 [DBus (name = "org.bluez.Device1")]
 interface BluezDeviceBus : GLib.Object {
-    [DBus (name = "CancelPairing")]
-    public abstract void cancel_pairing() throws DBusError, IOError;
-    [DBus (name = "Connect")]
-    public abstract void connect() throws DBusError, IOError;
-    [DBus (name = "ConnectProfile")]
-    public abstract void connect_profile(string UUID) throws DBusError, IOError;
-    [DBus (name = "Disconnect")]
-    public abstract void disconnect() throws DBusError, IOError;
-    [DBus (name = "DisonnectProfile")]
-    public abstract void disconnect_profile(string UUID) throws DBusError, IOError;
-    [DBus (name = "Pair")]
-    public abstract void pair() throws DBusError, IOError;
+///    [DBus (name = "CancelPairing")]
+///    public abstract void cancel_pairing() throws DBusError, IOError;
+///    [DBus (name = "Connect")]
+///    public abstract void connect() throws DBusError, IOError;
+///    [DBus (name = "ConnectProfile")]
+///    public abstract void connect_profile(string UUID) throws DBusError, IOError;
+///    [DBus (name = "Disconnect")]
+///    public abstract void disconnect() throws DBusError, IOError;
+///    [DBus (name = "DisonnectProfile")]
+///    public abstract void disconnect_profile(string UUID) throws DBusError, IOError;
+///    [DBus (name = "Pair")]
+///    public abstract void pair() throws DBusError, IOError;
 }
 
 public abstract class BluezInterface : GLib.Object {
@@ -199,12 +199,15 @@ public abstract class BluezInterface : GLib.Object {
                           HashTable<string, Variant>? props = null) {
         iface_name = name;
         object_path = path;
-        bus = Bus.get_proxy_sync (BusType.SYSTEM, "org.bluez", path);
-        if (props == null) {
-            property_cache = bus.get_all(iface_name);
-        } else
-            property_cache = props;
-        bus.properties_changed.connect(on_properties_changed);
+        try
+        {
+            bus = Bus.get_proxy_sync (BusType.SYSTEM, "org.bluez", path);
+            if (props == null) {
+                property_cache = bus.get_all(iface_name);
+            } else
+                property_cache = props;
+            bus.properties_changed.connect(on_properties_changed);
+        } catch  {}
     }
 
     public Variant get_cache(string key) {
@@ -221,7 +224,7 @@ public abstract class BluezInterface : GLib.Object {
         try {
             bus.set(iface_name, key, val);
             set_cache(key, val);
-        } catch (IOError e) {
+        } catch (Error e) {
             stderr.printf("Failed to set %s=%s: %s", key, val.print(false), e.message);
         }
     }
@@ -255,7 +258,7 @@ public class BluezAdapterProperties : BluezInterface {
 
     public string alias {
         get { return this.get_cache("Alias").get_string(); }
-        set { this.set_bus("Alias", value); }
+        set { try { this.set_bus("Alias", value); } catch {} }
     }
 
     public uint32 class {
@@ -264,27 +267,27 @@ public class BluezAdapterProperties : BluezInterface {
 
     public bool powered {
         get { return this.get_cache("Powered").get_boolean(); }
-        set { this.set_bus("Powered", value); }
+        set { try { this.set_bus("Powered", value); } catch {} }
     }
 
     public bool discoverable {
         get { return this.get_cache("Discoverable").get_boolean(); }
-        set { this.set_bus("Discoverable", value); }
+        set { try { this.set_bus("Discoverable", value); } catch {} }
     }
 
     public bool pairable {
         get { return this.get_cache("Pairable").get_boolean(); }
-        set { this.set_bus("Pairable", value); }
+        set { try { this.set_bus("Pairable", value); } catch {} }
     }
 
     public uint32 pairable_timeout {
         get { return this.get_cache("PairableTimeout").get_uint32(); }
-        set { this.set_bus("PairableTimeout", value); }
+        set { try { this.set_bus("PairableTimeout", value); } catch {} }
     }
 
     public uint32 discoverable_timeout {
         get { return this.get_cache("DiscoverableTimeout").get_uint32(); }
-        set { this.set_bus("DiscoverableTimeout", value); }
+        set { try { this.set_bus("DiscoverableTimeout", value); } catch {} }
     }
 
     public bool discovering {
@@ -302,19 +305,23 @@ public class BluezAdapterProperties : BluezInterface {
     public BluezAdapterProperties(ObjectPath path,
                         HashTable<string, Variant>? props = null) {
         base("org.bluez.Adapter1", path, props);
-        adapter_bus = Bus.get_proxy_sync (BusType.SYSTEM, "org.bluez", path);
+        try
+        {
+            adapter_bus = Bus.get_proxy_sync (BusType.SYSTEM, "org.bluez", path);
+        } catch {}
+
     }
 
     public void remove_device(ObjectPath path) {
-        adapter_bus.remove_device(path);
+        try { adapter_bus.remove_device(path); } catch { }
     }
 
     public void start_discovery() {
-        adapter_bus.start_discovery();
+        try { adapter_bus.start_discovery(); } catch  {}
     }
 
     public void stop_discovery() {
-        adapter_bus.stop_discovery();
+        try {  adapter_bus.stop_discovery(); } catch {}
     }
 
     public signal void alias_changed();
@@ -396,17 +403,17 @@ public class BluezDevice : BluezInterface {
 
     public bool trusted {
         get { return this.get_cache("Trusted").get_boolean(); }
-        set { this.set_bus("Trusted", value); }
+        set { try { this.set_bus("Trusted", value); } catch {} }
     }
 
     public bool blocked {
         get { return this.get_cache("Blocked").get_boolean(); }
-        set { this.set_bus("Blocked", value); }
+        set { try { this.set_bus("Blocked", value); } catch {} }
     }
 
     public string alias {
         get { return this.get_cache("Alias").get_string(); }
-        set { this.set_bus("Alias", value); }
+        set { try { this.set_bus("Alias", value); } catch {}}
     }
 
     public string adapter {
@@ -420,12 +427,14 @@ public class BluezDevice : BluezInterface {
     public BluezDevice(ObjectPath path,
                         HashTable<string, Variant>? props = null) {
         base("org.bluez.Device1", path, props);
-        device_bus = Bus.get_proxy_sync (BusType.SYSTEM, "org.bluez", path);
+        try {
+            device_bus = Bus.get_proxy_sync (BusType.SYSTEM, "org.bluez", path);
+        } catch {}
     }
 
-    public void connect() {
-        device_bus.connect();
-    }
+///    public void connect() {
+///        try { device_bus.connecd(); } catch {}
+///    }
 
     public signal void alias_changed();
     public signal void paired_changed();
