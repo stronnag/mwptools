@@ -11,9 +11,10 @@
   <schema id="org.mwptools.planner" path="/org/mwptools/planner/" >
 
     <key name="device-names" type="as">
-        <default>['/dev/ttyUSB0', '/dev/ttyACM0', '/dev/rfcomm1']</default>
+        <default>[]</default>
         <summary>Device names</summary>
-        <description>A list of device names</description>
+        <description>A list of device names to be added to those that
+	can be auto-discovered</description>
     </key>
 
     <key name="default-latitude" type="d">

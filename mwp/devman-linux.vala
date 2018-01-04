@@ -433,7 +433,7 @@ public class BluezDevice : BluezInterface {
     }
 
 ///    public void connect() {
-///        try { device_bus.connecd(); } catch {}
+///        try { device_bus.connect(); } catch {}
 ///    }
 
     public signal void alias_changed();
