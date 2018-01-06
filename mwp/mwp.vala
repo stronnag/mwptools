@@ -6074,7 +6074,7 @@ public class MWPlanner : Gtk.Application {
             if (is_wayland)
             {
                 foreach (var a in args)
-                    if (a == "--use-wayland")
+                    if (a == "--wayland")
                         use_wayland = true;
                 if(use_wayland)
                     MWPLog.message("Wayland enabled, if you experience problems, remove the --wayland option\n");
