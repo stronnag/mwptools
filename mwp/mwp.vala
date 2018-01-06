@@ -6039,7 +6039,7 @@ public class MWPlanner : Gtk.Application {
         return sb.str;
     }
 
-    private static string? check_env_args(OptionContext opt)
+    private static string? read_env_args()
     {
         var s1 = read_cmd_opts();
         var s2 = Environment.get_variable("MWP_ARGS");
@@ -6051,14 +6051,25 @@ public class MWPlanner : Gtk.Application {
         if(sb.len > 0)
         {
             sb.prepend("mwp ");
+            return sb.str;
+
+        }
+        else
+            return null;
+    }
+
+    private static string? check_env_args(OptionContext opt, string?s)
+    {
+        if(s != null)
+        {
             string []m;
             try
             {
-                Shell.parse_argv(sb.str, out m);
+                Shell.parse_argv(s, out m);
                 unowned string? []om = m;
                 opt.parse(ref om);
             } catch {}
-            return sb.str[4:sb.len];
+            return s[4:s.length];
         }
         return null;
     }
@@ -6070,12 +6081,19 @@ public class MWPlanner : Gtk.Application {
 
         if((lkres = lk.lock()) == 0)
         {
+            string defargs = read_env_args();
             is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
             if (is_wayland)
             {
-                foreach (var a in args)
-                    if (a == "--wayland")
-                        use_wayland = true;
+                if(defargs != null && defargs.contains("--wayland"))
+                    use_wayland = true;
+                else
+                {
+                    foreach (var a in args)
+                        if (a == "--wayland")
+                            use_wayland = true;
+                }
+
                 if(use_wayland)
                     MWPLog.message("Wayland enabled, if you experience problems, remove the --wayland option\n");
                 else
@@ -6100,7 +6118,7 @@ public class MWPlanner : Gtk.Application {
                 opt.set_summary("  %s".printf(verstr));
                 opt.set_help_enabled(true);
                 opt.add_main_entries(options, null);
-                fixedopts = check_env_args(opt);
+                fixedopts = check_env_args(opt, defargs);
                 opt.parse(ref args);
             } catch (OptionError e) {
                 stderr.printf("Error: %s\n", e.message);
