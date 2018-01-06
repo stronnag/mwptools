@@ -7,6 +7,12 @@
 # and (most distros do provide this)
 # dfu-util => http://sourceforge.net/p/dfu-util
 #
+# This file is part of https://github.com/stronnag/mwptools
+#   mission planning, logging replay and utilities for iNav / multiwii 2.4+
+
+#####################################################################
+# Note this script only handles DFU targets that the author uses
+#####################################################################
 
 DEV=
 SPEED=115200
@@ -31,7 +37,7 @@ do
 done
 
 case $HEX in
-  *SPRACINGF*EVO.hex|*OMNIBUS*.hex|*MATEKF405*.hex|PIXRACER*.hex)
+  *QUARKVISION.hex|*SPRACINGF*EVO.hex|*OMNIBUS*.hex|*MATEKF405*.hex|PIXRACER*.hex)
     BIN=${HEX%%hex}bin
     IHEX=$HEX
     unset HEX
@@ -53,7 +59,7 @@ fi
 echo $DEV0 $RESCUE
 if [ -z "$RESCUE" ]
 then
-  stty -F $DEV0 raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon
+  stty -F $DEV0 raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon || { echo "stty failed to set speed, doomed" ; exit 1 ; }
   echo -n 'R' >$DEV0
   sleep 0.2
   if [ $SPEED -ne 115200 ]
