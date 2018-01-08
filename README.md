@@ -1,7 +1,7 @@
 mwptools
 ========
 
-"A mission planner for the rest of us" aka "mywittlepony"
+"A mission planner for the rest of us"
 
 ## Overview
 
