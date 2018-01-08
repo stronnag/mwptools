@@ -62,8 +62,9 @@ if m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \(([0-9A-Fa-f]{7,})\) (\S+)/
   iv = [m[1],m[2],m[3]].join('.')
 end
 
-inavers=(STATE_EQ[iv] || iv || "1.3.0")
-puts "iNav version = #{iv} (states eq #{inavers}) #{gitinfo}"
+inavers =  get_state_version iv
+
+STDERR.puts "iNav version = #{iv} (states eq #{inavers})"
 
 cmd = "blackbox_decode"
 cmd << " --index #{idx}"
