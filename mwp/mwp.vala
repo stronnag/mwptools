@@ -221,6 +221,13 @@ class MwpDockHelper : Object
         wdw.set_transient_for (w);
     }
 
+    private void myreparent(Gdl.DockItem di, Gtk.Window w)
+    {
+        var p = di.get_parent();
+        p.get_parent().remove(p);
+        w.add(p);
+    }
+
     public MwpDockHelper (Gdl.DockItem di, Gdl.Dock dock, string title, bool _floater = false)
     {
         floating = _floater;
@@ -234,7 +241,7 @@ class MwpDockHelper : Object
         if(!di.iconified && floating)
         {
             di.dock_to (null, Gdl.DockPlacement.FLOATING, 0);
-            di.get_parent().reparent(wdw);
+            myreparent(di,wdw);
             wdw.show_all();
         }
 
@@ -253,7 +260,7 @@ class MwpDockHelper : Object
                 {
                     floating = true;
                     di.dock_to (null, Gdl.DockPlacement.FLOATING, 0);
-                    di.get_parent().reparent(wdw);
+                    myreparent(di,wdw);
                     wdw.show_all();
                 }
             });
@@ -265,7 +272,7 @@ class MwpDockHelper : Object
                 if(!di.iconified && floating)
                 {
                     di.dock_to (null, Gdl.DockPlacement.FLOATING, 0);
-                    di.get_parent().reparent(wdw);
+                    myreparent(di,wdw);
                     wdw.show_all();
                 }
             });
