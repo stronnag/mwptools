@@ -1725,8 +1725,8 @@ public class MWPlanner : Gtk.Application {
             window.maximize();
         else
         {
-            Gdk.Rectangle rect;
-            get_primary_size(out rect);
+            Gdk.Rectangle rect = {0,0};
+            get_primary_size(ref rect);
             var rw = rect.width*70/100;
             var rh = rect.height*70/100;
             if (rw < 960)
@@ -1735,7 +1735,6 @@ public class MWPlanner : Gtk.Application {
                 rh = 540;
             window.resize(rw,rh);
         }
-
         conf.window_p = pane.position;
 
         window.size_allocate.connect((a) => {
@@ -1776,6 +1775,7 @@ public class MWPlanner : Gtk.Application {
             });
 
         window.show_all();
+
         if((wp_edit = conf.auto_wp_edit) == true)
             wp_edit_button.hide();
         else
@@ -1968,7 +1968,7 @@ public class MWPlanner : Gtk.Application {
 
     }
 
-    private void get_primary_size(out Gdk.Rectangle rect)
+    private void get_primary_size(ref Gdk.Rectangle rect)
     {
 #if OLDGTK||LSRVAL
         var screen = Gdk.Screen.get_default();
@@ -1977,7 +1977,13 @@ public class MWPlanner : Gtk.Application {
 #else
         Gdk.Display dp = Gdk.Display.get_default();
         var mon = dp.get_primary_monitor();
-        rect = mon.get_geometry();
+        if(mon == null)
+        {
+            rect.width = 1600;
+            rect.height = 900;
+        }
+        else
+            rect = mon.get_geometry();
 #endif
     }
 
