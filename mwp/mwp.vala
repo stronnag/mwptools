@@ -284,6 +284,8 @@ public class MWPlanner : Gtk.Application {
 
     public Builder builder;
     public Gtk.ApplicationWindow window;
+    private int window_h = -1;
+    private int window_w = -1;
     public  Champlain.View view;
     public MWPMarkers markers;
     private string last_file;
@@ -1721,7 +1723,7 @@ public class MWPlanner : Gtk.Application {
         lastp = new Timer();
 
             // Hack (thanks to Inkscape for the clue) to made pane resize better
-        pane.set_resize_mode(Gtk.ResizeMode.QUEUE);
+//        pane.set_resize_mode(Gtk.ResizeMode.QUEUE);
         pane.pack1(embed,true, true);
         pane.pack2(box, true, true);
 
@@ -1742,21 +1744,23 @@ public class MWPlanner : Gtk.Application {
                 rh = 540;
             window.resize(rw,rh);
         }
-        conf.window_p = pane.position;
 
         window.size_allocate.connect((a) => {
-                if(((a.width != conf.window_w) || (a.height != conf.window_h)))
+                if(((a.width != window_w) || (a.height != window_h)))
                 {
-                    conf.window_w  = a.width;
-                    conf.window_h = a.height;
-                    conf.save_window();
-                    if(conf.window_p < conf.window_w*60/100
-                       || conf.window_p > conf.window_w*80/100)
-                    {
-                        conf.window_p = conf.window_w*70/100;
-                        pane.position = conf.window_p;
-                    }
-                    fbox.check_size();
+                    window_w  = a.width;
+                    window_h = a.height;
+
+                    var nppos = conf.window_p *
+                    (pane.max_position - pane.min_position) /100;
+/***
+                    print("win alloc %d %d %d (%d) %d\n",
+                          pane.min_position, pane.position, pane.max_position,
+                          conf.window_p, nppos);
+***/
+                    pane.position = nppos;
+                    Idle.add(() => { fbox.check_size();
+                                     return false;});
                 }
             });
 
@@ -1768,14 +1772,11 @@ public class MWPlanner : Gtk.Application {
         pane.button_release_event.connect((evt) => {
                 if (evt.button == 1)
                 {
-                    if(conf.window_p != pane.position)
-                    {
-                        conf.window_p = pane.position;
-                        conf.save_pane();
-                    }
+                    conf.window_p = 100* pane.position / (pane.max_position - pane.min_position);
+                    conf.save_pane();
                 }
                 Timeout.add(500, () => {
-                        fbox.allow_resize(false);
+                            fbox.allow_resize(false);
                         return Source.REMOVE;
                     });
                 return false;
@@ -5636,25 +5637,29 @@ public class MWPlanner : Gtk.Application {
             // Formula from:
             // http://wiki.openstreetmap.org/wiki/Zoom_levels
             //
-        double cse,m_width,m_height;
-        const double erad = 6372.7982; // earth radius
-        const double ecirc = erad*Math.PI*2.0; // circumference
-        const double rad = 0.017453292; // deg to rad
 
-        Geo.csedist(ms.cy, ms.minx, ms.cy, ms.maxx, out m_width, out cse);
-        Geo.csedist(ms.miny, ms.cx, ms.maxy, ms.cx, out m_height, out cse);
-        m_width = m_width * 1852;
-        m_height = m_height * 1852;
+        uint z = 18;
+        if(window_h != -1 && window_w != -1)
+        {
+            double cse,m_width,m_height;
+            const double erad = 6372.7982; // earth radius
+            const double ecirc = erad*Math.PI*2.0; // circumference
+            const double rad = 0.017453292; // deg to rad
+
+            Geo.csedist(ms.cy, ms.minx, ms.cy, ms.maxx, out m_width, out cse);
+            Geo.csedist(ms.miny, ms.cx, ms.maxy, ms.cx, out m_height, out cse);
+            m_width = m_width * 1852;
+            m_height = m_height * 1852;
 
 //        Gdk.Screen scn = Gdk.Screen.get_default();
 //        double dpi = scn.get_resolution(); // in case we need it ...
-        uint z;
-        for(z = view.get_max_zoom_level();
-            z >= view.get_min_zoom_level(); z--)
-        {
-            double s = 1000 * ecirc * Math.cos(ms.cy * rad) / (Math.pow(2,(z+8)));
-            if(s*conf.window_w > m_width && s*conf.window_h > m_height)
-                break;
+            for(z = view.get_max_zoom_level();
+                z >= view.get_min_zoom_level(); z--)
+            {
+                double s = 1000 * ecirc * Math.cos(ms.cy * rad) / (Math.pow(2,(z+8)));
+                if(s*window_w > m_width && s*window_h > m_height)
+                    break;
+            }
         }
         return z;
     }

@@ -58,9 +58,7 @@ public class MWPSettings : GLib.Object
     public uint p_speed {get; set; default=0;}
     public string mavph {get; set; default=null;}
     public string mavrth {get; set; default=null;}
-    public int window_w {get; set; default=-1;}
-    public int window_h {get; set; default=-1;}
-    public int window_p {get; set; default=-1;}
+    public int window_p {get; set; default=72;}
     public int fontfact {get; set; default = 12;}
     public int ahsize {get; set; default = 32;}
     public uint gpsintvl {get; set; default = 2000;}
@@ -212,12 +210,8 @@ public class MWPSettings : GLib.Object
         if(s == null || s == "mavrth")
             mavrth = settings.get_string ("mavrth");
 
-        if(s == null || s == "wdw-w")
-            window_w = settings.get_int("wdw-w");
-        if(s == null || s == "wdw-h")
-            window_h = settings.get_int("wdw-h");
-        if(s == null || s == "wdw-p")
-            window_p = settings.get_int("wdw-p");
+        if(s == null || s == "pwdw-p")
+            window_p = settings.get_int("pwdw-p");
         if(s == null || s == "font-fv")
             fontfact = settings.get_int("font-fv");
         if(s == null || s == "ah-size")
@@ -298,19 +292,10 @@ public class MWPSettings : GLib.Object
             auto_wp_edit = settings.get_boolean("auto-wp-edit");
     }
 
-    public void save_window()
-    {
-        if (settings != null)
-        {
-            settings.set_int("wdw-w", window_w);
-            settings.set_int("wdw-h", window_h);
-        }
-    }
-
     public void save_pane()
     {
         if (settings != null)
-            settings.set_int("wdw-p", window_p);
+            settings.set_int("pwdw-p", window_p);
     }
 
     public void save_floating(bool val)

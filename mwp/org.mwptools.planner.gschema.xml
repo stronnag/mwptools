@@ -233,19 +233,9 @@
       <description>RC settings for Mav RTH (chanid:minval:maxval)</description>
     </key>
 
-    <key name="wdw-w" type="i">
-      <default>-1</default>
-      <summary>Window parameter</summary>
-       <description>(private settinge)</description>
-    </key>
-    <key name="wdw-h" type="i">
-      <default>-1</default>
-      <summary>Window parameter</summary>
-      <description>(private settinge)</description>
-    </key>
-    <key name="wdw-p" type="i">
-      <default>512</default>
-      <summary>Window parameter</summary>
+    <key name="pwdw-p" type="i">
+      <default>72</default>
+      <summary>internal parameter</summary>
       <description>(private settinge)</description>
     </key>
     <key name="font-fv" type="i">
