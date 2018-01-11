@@ -4466,6 +4466,7 @@ Ctrl+A		Flight Statistics
 F11	 		Toggle full screen
 Ctrl+C		Clear track (and range rings)
 Ctrl+F  		Toggle full screen
+Ctrl+H		Centre on configured default position
 Ctrl+I		Initialise flight displays, clears tracks and range rings
 Ctrl+K		Cancel Mission Upload
 Ctrl+S		Dump serial statistics

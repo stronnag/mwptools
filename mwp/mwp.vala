@@ -1491,6 +1491,11 @@ public class MWPlanner : Gtk.Application {
                 return true;
             });
 
+        ag.connect('h', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                map_centre_on(conf.latitude,conf.longitude);
+                return true;
+            });
+
           ag.connect(' ', 0, 0, (a,o,k,m) => {
                 if(replayer != Player.NONE)
                 {
@@ -1752,15 +1757,12 @@ public class MWPlanner : Gtk.Application {
                     window_h = a.height;
 
                     var nppos = conf.window_p *
-                    (pane.max_position - pane.min_position) /100;
-/***
-                    print("win alloc %d %d %d (%d) %d\n",
-                          pane.min_position, pane.position, pane.max_position,
-                          conf.window_p, nppos);
-***/
+                        (pane.max_position - pane.min_position) /100;
                     pane.position = nppos;
-                    Idle.add(() => { fbox.check_size();
-                                     return false;});
+                    Idle.add(() => {
+                            fbox.check_size();
+                            return Source.REMOVE;
+                        });
                 }
             });
 
