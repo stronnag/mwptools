@@ -509,9 +509,10 @@ public class MWPlanner : Gtk.Application {
 
     private enum FCVERS
     {
+        hasMoreWP = 0x010400,
         hasEEPROM = 0x010600,
         hasTZ = 0x010704,
-        hasV2STATUS = 0x010801
+        hasV2STATUS = 0x010801,
     }
 
     private enum SERSTATE
@@ -3429,6 +3430,13 @@ public class MWPlanner : Gtk.Application {
                     verlab.set_label(fcv);
                     if(inav)
                     {
+                        if(vi.fc_vers < FCVERS.hasMoreWP)
+                            wp_max = 15;
+                        else if (vi.board != "AFNA" && vi.board != "CC3D")
+                            wp_max = 60;
+                        else
+                            wp_max = 30;
+
                         mission_eeprom = (vi.board != "AFNA" &&
                                           vi.board != "CC3D" &&
                                           vi.fc_vers >= FCVERS.hasEEPROM);
