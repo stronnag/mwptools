@@ -2017,6 +2017,9 @@ public class MWPlanner : Gtk.Application {
         {
             dev_entry.append_text(a);
         }
+
+        foreach (var s in devman.get_bt_serial_devices())
+            append_deventry(s);
     }
 
     private int find_deventry(string s)
@@ -2038,6 +2041,13 @@ public class MWPlanner : Gtk.Application {
             }
         }
         return n;
+    }
+
+    private void append_deventry(string s)
+    {
+        var n = find_deventry(s);
+        if (n == -1)
+            dev_entry.append_text(s);
     }
 
     private void prepend_deventry(string s)
