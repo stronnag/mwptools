@@ -221,6 +221,13 @@ class MwpDockHelper : Object
         wdw.set_transient_for (w);
     }
 
+    private void myreparent(Gdl.DockItem di, Gtk.Window w)
+    {
+        var p = di.get_parent();
+        p.get_parent().remove(p);
+        w.add(p);
+    }
+
     public MwpDockHelper (Gdl.DockItem di, Gdl.Dock dock, string title, bool _floater = false)
     {
         floating = _floater;
@@ -234,7 +241,7 @@ class MwpDockHelper : Object
         if(!di.iconified && floating)
         {
             di.dock_to (null, Gdl.DockPlacement.FLOATING, 0);
-            di.get_parent().reparent(wdw);
+            myreparent(di,wdw);
             wdw.show_all();
         }
 
@@ -253,7 +260,7 @@ class MwpDockHelper : Object
                 {
                     floating = true;
                     di.dock_to (null, Gdl.DockPlacement.FLOATING, 0);
-                    di.get_parent().reparent(wdw);
+                    myreparent(di,wdw);
                     wdw.show_all();
                 }
             });
@@ -265,7 +272,7 @@ class MwpDockHelper : Object
                 if(!di.iconified && floating)
                 {
                     di.dock_to (null, Gdl.DockPlacement.FLOATING, 0);
-                    di.get_parent().reparent(wdw);
+                    myreparent(di,wdw);
                     wdw.show_all();
                 }
             });
@@ -277,6 +284,8 @@ public class MWPlanner : Gtk.Application {
 
     public Builder builder;
     public Gtk.ApplicationWindow window;
+    private int window_h = -1;
+    private int window_w = -1;
     public  Champlain.View view;
     public MWPMarkers markers;
     private string last_file;
@@ -1482,6 +1491,11 @@ public class MWPlanner : Gtk.Application {
                 return true;
             });
 
+        ag.connect('h', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                map_centre_on(conf.latitude,conf.longitude);
+                return true;
+            });
+
           ag.connect(' ', 0, 0, (a,o,k,m) => {
                 if(replayer != Player.NONE)
                 {
@@ -1713,8 +1727,6 @@ public class MWPlanner : Gtk.Application {
         start_poll_timer();
         lastp = new Timer();
 
-            // Hack (thanks to Inkscape for the clue) to made pane resize better
-        pane.set_resize_mode(Gtk.ResizeMode.QUEUE);
         pane.pack1(embed,true, true);
         pane.pack2(box, true, true);
 
@@ -1725,32 +1737,28 @@ public class MWPlanner : Gtk.Application {
             window.maximize();
         else
         {
-            Gdk.Rectangle rect;
-            get_primary_size(out rect);
-            var rw = rect.width*70/100;
-            var rh = rect.height*70/100;
-            if (rw < 960)
-                rw = 960;
-            if (rh < 540)
-                rh = 540;
-            window.resize(rw,rh);
+            Gdk.Rectangle rect = {0,0};
+            if(get_primary_size(ref rect))
+            {
+                var rw = rect.width*80/100;
+                var rh = rect.height*80/100;
+                window.resize(rw,rh);
+            }
         }
 
-        conf.window_p = pane.position;
-
         window.size_allocate.connect((a) => {
-                if(((a.width != conf.window_w) || (a.height != conf.window_h)))
+                if(((a.width != window_w) || (a.height != window_h)))
                 {
-                    conf.window_w  = a.width;
-                    conf.window_h = a.height;
-                    conf.save_window();
-                    if(conf.window_p < conf.window_w*60/100
-                       || conf.window_p > conf.window_w*80/100)
-                    {
-                        conf.window_p = conf.window_w*70/100;
-                        pane.position = conf.window_p;
-                    }
-                    fbox.check_size();
+                    window_w  = a.width;
+                    window_h = a.height;
+
+                    var nppos = conf.window_p *
+                        (pane.max_position - pane.min_position) /100;
+                    pane.position = nppos;
+                    Idle.add(() => {
+                            fbox.check_size();
+                            return Source.REMOVE;
+                        });
                 }
             });
 
@@ -1762,20 +1770,18 @@ public class MWPlanner : Gtk.Application {
         pane.button_release_event.connect((evt) => {
                 if (evt.button == 1)
                 {
-                    if(conf.window_p != pane.position)
-                    {
-                        conf.window_p = pane.position;
-                        conf.save_pane();
-                    }
+                    conf.window_p = 100* pane.position / (pane.max_position - pane.min_position);
+                    conf.save_pane();
                 }
                 Timeout.add(500, () => {
-                        fbox.allow_resize(false);
+                            fbox.allow_resize(false);
                         return Source.REMOVE;
                     });
                 return false;
             });
 
         window.show_all();
+
         if((wp_edit = conf.auto_wp_edit) == true)
             wp_edit_button.hide();
         else
@@ -1968,17 +1974,23 @@ public class MWPlanner : Gtk.Application {
 
     }
 
-    private void get_primary_size(out Gdk.Rectangle rect)
+    private bool get_primary_size(ref Gdk.Rectangle rect)
     {
+        bool ret = true;
+
 #if OLDGTK||LSRVAL
         var screen = Gdk.Screen.get_default();
         var mon = screen.get_monitor_at_point(1,1);
         screen.get_monitor_geometry(mon, out rect);
 #else
         Gdk.Display dp = Gdk.Display.get_default();
-        var mon = dp.get_primary_monitor();
-        rect = mon.get_geometry();
+        var mon = dp.get_monitor(0);
+        if(mon != null)
+            rect = mon.get_geometry();
+        else
+            ret = false;
 #endif
+        return ret;
     }
 
     private void set_dock_menu_status()
@@ -2005,9 +2017,6 @@ public class MWPlanner : Gtk.Application {
         {
             dev_entry.append_text(a);
         }
-
-        foreach (var s in devman.get_bt_serial_devices())
-            append_deventry(s);
     }
 
     private int find_deventry(string s)
@@ -2029,13 +2038,6 @@ public class MWPlanner : Gtk.Application {
             }
         }
         return n;
-    }
-
-    private void append_deventry(string s)
-    {
-        var n = find_deventry(s);
-        if (n == -1)
-            dev_entry.append_text(s);
     }
 
     private void prepend_deventry(string s)
@@ -5623,25 +5625,29 @@ public class MWPlanner : Gtk.Application {
             // Formula from:
             // http://wiki.openstreetmap.org/wiki/Zoom_levels
             //
-        double cse,m_width,m_height;
-        const double erad = 6372.7982; // earth radius
-        const double ecirc = erad*Math.PI*2.0; // circumference
-        const double rad = 0.017453292; // deg to rad
 
-        Geo.csedist(ms.cy, ms.minx, ms.cy, ms.maxx, out m_width, out cse);
-        Geo.csedist(ms.miny, ms.cx, ms.maxy, ms.cx, out m_height, out cse);
-        m_width = m_width * 1852;
-        m_height = m_height * 1852;
+        uint z = 18;
+        if(window_h != -1 && window_w != -1)
+        {
+            double cse,m_width,m_height;
+            const double erad = 6372.7982; // earth radius
+            const double ecirc = erad*Math.PI*2.0; // circumference
+            const double rad = 0.017453292; // deg to rad
+
+            Geo.csedist(ms.cy, ms.minx, ms.cy, ms.maxx, out m_width, out cse);
+            Geo.csedist(ms.miny, ms.cx, ms.maxy, ms.cx, out m_height, out cse);
+            m_width = m_width * 1852;
+            m_height = m_height * 1852;
 
 //        Gdk.Screen scn = Gdk.Screen.get_default();
 //        double dpi = scn.get_resolution(); // in case we need it ...
-        uint z;
-        for(z = view.get_max_zoom_level();
-            z >= view.get_min_zoom_level(); z--)
-        {
-            double s = 1000 * ecirc * Math.cos(ms.cy * rad) / (Math.pow(2,(z+8)));
-            if(s*conf.window_w > m_width && s*conf.window_h > m_height)
-                break;
+            for(z = view.get_max_zoom_level();
+                z >= view.get_min_zoom_level(); z--)
+            {
+                double s = 1000 * ecirc * Math.cos(ms.cy * rad) / (Math.pow(2,(z+8)));
+                if(s*window_w > m_width && s*window_h > m_height)
+                    break;
+            }
         }
         return z;
     }
