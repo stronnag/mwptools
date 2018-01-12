@@ -30,9 +30,11 @@ public class DevManager
     private HashTable<ObjectPath, HashTable<string, HashTable<string, Variant>>> objects;
     public signal void device_added (string s);
     public signal void device_removed (string s);
+    private string[] bt_serials;
 
     public DevManager()
     {
+        bt_serials={};
         uc = new GUdev.Client({"tty"});
         uc.uevent.connect((action,dev) => {
                 if(dev.get_property("ID_BUS") == "usb")
@@ -64,6 +66,11 @@ public class DevManager
         }
     }
 
+    public string[] get_bt_serial_devices()
+    {
+        return bt_serials;
+    }
+
     private void find_adapter() {
         objects.foreach((path, ifaces) => {
             HashTable<string, Variant>? props;
@@ -82,6 +89,7 @@ public class DevManager
             StringBuilder sb = new StringBuilder(props.get("Address").get_string());
             sb.append_c(' ');
             sb.append(props.get("Alias").get_string());
+            bt_serials += sb.str;
             device_added(sb.str);
         }
     }
