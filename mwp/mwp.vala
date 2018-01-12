@@ -1628,7 +1628,10 @@ public class MWPlanner : Gtk.Application {
         dev_entry.active = 0;
 
         devman.device_added.connect((s) => {
-                prepend_deventry(s);
+                if(s.contains(" "))
+                    append_deventry(s);
+                else
+                    prepend_deventry(s);
             });
         devman.device_removed.connect((s) => {
                 remove_deventry(s);
