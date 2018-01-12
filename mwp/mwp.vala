@@ -1727,8 +1727,6 @@ public class MWPlanner : Gtk.Application {
         start_poll_timer();
         lastp = new Timer();
 
-            // Hack (thanks to Inkscape for the clue) to made pane resize better
-//        pane.set_resize_mode(Gtk.ResizeMode.QUEUE);
         pane.pack1(embed,true, true);
         pane.pack2(box, true, true);
 
@@ -1740,14 +1738,12 @@ public class MWPlanner : Gtk.Application {
         else
         {
             Gdk.Rectangle rect = {0,0};
-            get_primary_size(ref rect);
-            var rw = rect.width*70/100;
-            var rh = rect.height*70/100;
-            if (rw < 960)
-                rw = 960;
-            if (rh < 540)
-                rh = 540;
-            window.resize(rw,rh);
+            if(get_primary_size(ref rect))
+            {
+                var rw = rect.width*80/100;
+                var rh = rect.height*80/100;
+                window.resize(rw,rh);
+            }
         }
 
         window.size_allocate.connect((a) => {
@@ -1978,23 +1974,23 @@ public class MWPlanner : Gtk.Application {
 
     }
 
-    private void get_primary_size(ref Gdk.Rectangle rect)
+    private bool get_primary_size(ref Gdk.Rectangle rect)
     {
+        bool ret = true;
+
 #if OLDGTK||LSRVAL
         var screen = Gdk.Screen.get_default();
         var mon = screen.get_monitor_at_point(1,1);
         screen.get_monitor_geometry(mon, out rect);
 #else
         Gdk.Display dp = Gdk.Display.get_default();
-        var mon = dp.get_primary_monitor();
-        if(mon == null)
-        {
-            rect.width = 1600;
-            rect.height = 900;
-        }
-        else
+        var mon = dp.get_monitor(0);
+        if(mon != null)
             rect = mon.get_geometry();
+        else
+            ret = false;
 #endif
+        return ret;
     }
 
     private void set_dock_menu_status()
@@ -2021,9 +2017,6 @@ public class MWPlanner : Gtk.Application {
         {
             dev_entry.append_text(a);
         }
-
-        foreach (var s in devman.get_bt_serial_devices())
-            append_deventry(s);
     }
 
     private int find_deventry(string s)
@@ -2045,13 +2038,6 @@ public class MWPlanner : Gtk.Application {
             }
         }
         return n;
-    }
-
-    private void append_deventry(string s)
-    {
-        var n = find_deventry(s);
-        if (n == -1)
-            dev_entry.append_text(s);
     }
 
     private void prepend_deventry(string s)

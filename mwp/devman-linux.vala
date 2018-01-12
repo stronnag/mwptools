@@ -15,6 +15,11 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
+/*
+ * Standalone test with:
+ * valac -D TEST --pkg gio-2.0 --pkg gudev-1.0 devman-linux.vala
+ */
+
 using GUdev;
 
 public class DevManager
@@ -23,23 +28,12 @@ public class DevManager
     private DBusObjectManager manager;
     private BluezAdapterProperties adapter;
     private HashTable<ObjectPath, HashTable<string, HashTable<string, Variant>>> objects;
-    private string[] bt_serials;
-
     public signal void device_added (string s);
     public signal void device_removed (string s);
 
     public DevManager()
     {
         uc = new GUdev.Client({"tty"});
-        bt_serials={};
-        try {
-            manager = Bus.get_proxy_sync (BusType.SYSTEM, "org.bluez", "/");
-            objects = manager.get_managed_objects();
-            find_adapter();
-            find_devices();
-        } catch (Error e) {
-            stderr.printf ("%s\n", e.message);
-        }
         uc.uevent.connect((action,dev) => {
                 if(dev.get_property("ID_BUS") == "usb")
                 {
@@ -55,6 +49,19 @@ public class DevManager
                     }
                 }
             });
+        evince_bt_devices.begin();
+    }
+
+    private async void evince_bt_devices()
+    {
+        try {
+            manager = yield Bus.get_proxy (BusType.SYSTEM, "org.bluez", "/");
+            objects = manager.get_managed_objects();
+            find_adapter();
+            find_devices();
+        } catch (Error e) {
+            stderr.printf ("%s\n", e.message);
+        }
     }
 
     private void find_adapter() {
@@ -75,7 +82,7 @@ public class DevManager
             StringBuilder sb = new StringBuilder(props.get("Address").get_string());
             sb.append_c(' ');
             sb.append(props.get("Alias").get_string());
-            bt_serials += sb.str;
+            device_added(sb.str);
         }
     }
 
@@ -89,7 +96,6 @@ public class DevManager
             });
     }
 
-
     [CCode (instance_pos = -1)]
     public void on_interfaces_added(ObjectPath path,
                                     HashTable<string, HashTable<string, Variant>> interfaces) {
@@ -101,21 +107,14 @@ public class DevManager
             add_device(path, props);
     }
 
-
-    public string[] get_bt_serial_devices()
-    {
-        return bt_serials;
-    }
-
-
     public string[] get_serial_devices()
     {
         string [] dlist={};
         var devs = uc.query_by_subsystem("tty");
         foreach (var d in devs)
         {
-                if(d.get_property("ID_BUS") == "usb")
-                    dlist += d.get_device_file().dup();
+            if(d.get_property("ID_BUS") == "usb")
+                dlist += d.get_device_file().dup();
         }
         return dlist;
     }
@@ -126,7 +125,6 @@ public class DevManager
   https://github.com/ncopa/xfce-bluetooth
   GPL 2 (or later)
  */
-
 
 [DBus (name = "org.freedesktop.DBus.ObjectManager")]
 interface DBusObjectManager : GLib.Object {
@@ -463,3 +461,20 @@ public class BluezDevice : BluezInterface {
     }
 
 }
+
+#if TEST
+public int main(string?[] args)
+{
+    var d =  new DevManager();
+    d.device_added.connect((s) => {
+            print("Add %s\n", s);
+        });
+    d.device_removed.connect((s) => {
+            print("Remove %s\n", s);
+        });
+
+    var m = new MainLoop();
+    m.run();
+    return 0;
+}
+#endif
