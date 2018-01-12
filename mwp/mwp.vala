@@ -1186,7 +1186,7 @@ public class MWPlanner : Gtk.Application {
                 shortcuts.show_all();
             });
 
-        shortclose.delete_event.connect (() => {
+        shortcuts.delete_event.connect (() => {
                 shortcuts.hide();
                 return true;
             });
