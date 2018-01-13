@@ -2417,7 +2417,7 @@ public class MWPlanner : Gtk.Application {
         else
         {
             usemag = ((sensor & MSP.Sensors.MAG) == MSP.Sensors.MAG);
-            if(!usemag)
+            if(!usemag && Craft.is_mr(vi.mrtype))
                 missing = MSP.Sensors.MAG;
         }
 
@@ -2443,7 +2443,8 @@ public class MWPlanner : Gtk.Application {
             reqsize += MSize.MSP_ATTITUDE;
         }
 
-        if((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO)
+        if(((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO) ||
+           (Craft.is_mr(vi.mrtype) == false))
         {
             sflags |= NavStatus.SPK.BARO;
             requests += MSP.Cmds.ALTITUDE;
@@ -3371,12 +3372,11 @@ public class MWPlanner : Gtk.Application {
                             break;
                         case "INAV":
                             navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS;
-                            if (vi.mrtype == Craft.Vehicles.FLYING_WING
-                                || vi.mrtype == Craft.Vehicles.AIRPLANE
-                                || vi.mrtype == Craft.Vehicles.CUSTOM_AIRPLANE)
-                                navcap |= NAVCAPS.INAV_FW;
-                            else
+                            if (Craft.is_mr(vi.mrtype))
                                 navcap |= NAVCAPS.INAV_MR;
+                            else
+                                navcap |= NAVCAPS.INAV_FW;
+
                             vi.fctype = mwvar = MWChooser.MWVAR.CF;
                             inav = true;
                             queue_cmd(MSP.Cmds.FEATURE,null,0);
@@ -5019,7 +5019,7 @@ public class MWPlanner : Gtk.Application {
         validatelab.set_text("");
         downgrade = 0;
 
-        var wps = ls.to_wps(out downgrade, inav, ((navcap & NAVCAPS.INAV_FW) != 0));
+        var wps = ls.to_wps(out downgrade, inav, !Craft.is_mr(vi.mrtype));
         if(wps.length > wp_max)
         {
             string str = "Number of waypoints (%d) exceeds max (%d)".printf(
