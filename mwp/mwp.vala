@@ -2443,8 +2443,7 @@ public class MWPlanner : Gtk.Application {
             reqsize += MSize.MSP_ATTITUDE;
         }
 
-        if(((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO) ||
-           (Craft.is_mr(vi.mrtype) == false))
+        if(((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO) || Craft.is_fw(vi.mrtype))
         {
             sflags |= NavStatus.SPK.BARO;
             requests += MSP.Cmds.ALTITUDE;
@@ -5019,7 +5018,7 @@ public class MWPlanner : Gtk.Application {
         validatelab.set_text("");
         downgrade = 0;
 
-        var wps = ls.to_wps(out downgrade, inav, !Craft.is_mr(vi.mrtype));
+        var wps = ls.to_wps(out downgrade, inav, Craft.is_fw(vi.mrtype));
         if(wps.length > wp_max)
         {
             string str = "Number of waypoints (%d) exceeds max (%d)".printf(

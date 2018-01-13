@@ -197,6 +197,10 @@ public class Craft : GLib.Object
         layer.remove_marker(icon);
     }
 
+    public static bool is_fw(uint id)
+    {
+        return !Craft.is_mr(id);
+    }
 
     public static  bool is_mr(uint id)
     {
