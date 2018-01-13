@@ -198,6 +198,13 @@ public class Craft : GLib.Object
     }
 
 
+    public static  bool is_mr(uint id)
+    {
+        return !(id == Vehicles.FLYING_WING ||
+                 id ==Vehicles. AIRPLANE ||
+                 id == Vehicles.CUSTOM_AIRPLANE);
+    }
+
     public void set_icon(uint id)
     {
         layer.remove_marker (icon);
