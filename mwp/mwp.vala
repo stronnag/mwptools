@@ -2052,6 +2052,9 @@ public class MWPlanner : Gtk.Application {
         var n = find_deventry(s);
         if (n == -1)
             dev_entry.append_text(s);
+        if(dev_entry.active == -1)
+            dev_entry.active = 0;
+
     }
 
     private void prepend_deventry(string s)
