@@ -2052,6 +2052,9 @@ public class MWPlanner : Gtk.Application {
         var n = find_deventry(s);
         if (n == -1)
             dev_entry.append_text(s);
+        if(dev_entry.active == -1)
+            dev_entry.active = 0;
+
     }
 
     private void prepend_deventry(string s)
@@ -2443,8 +2446,7 @@ public class MWPlanner : Gtk.Application {
             reqsize += MSize.MSP_ATTITUDE;
         }
 
-        if(((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO) ||
-           (Craft.is_mr(vi.mrtype) == false))
+        if(((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO) || Craft.is_fw(vi.mrtype))
         {
             sflags |= NavStatus.SPK.BARO;
             requests += MSP.Cmds.ALTITUDE;
@@ -5019,7 +5021,7 @@ public class MWPlanner : Gtk.Application {
         validatelab.set_text("");
         downgrade = 0;
 
-        var wps = ls.to_wps(out downgrade, inav, !Craft.is_mr(vi.mrtype));
+        var wps = ls.to_wps(out downgrade, inav, Craft.is_fw(vi.mrtype));
         if(wps.length > wp_max)
         {
             string str = "Number of waypoints (%d) exceeds max (%d)".printf(
