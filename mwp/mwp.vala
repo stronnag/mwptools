@@ -298,6 +298,7 @@ public class MWPlanner : Gtk.Application {
     private Gtk.Label elapsedlab;
     private double lx;
     private double ly;
+    private Gtk.MenuButton fsmenu_button;
     private Gtk.MenuItem menuup;
     private Gtk.MenuItem menudown;
     private Gtk.MenuItem menureplay;
@@ -1042,6 +1043,38 @@ public class MWPlanner : Gtk.Application {
             });
 
         zoomer = builder.get_object ("spinbutton1") as Gtk.SpinButton;
+
+        fsmenu_button = builder.get_object("fsmenu_button") as Gtk.MenuButton;
+
+        var fsmenu = builder.get_object ("pop_file_menu") as Gtk.MenuItem;
+        fsmenu.activate.connect (() => {
+                var itm = builder.get_object ("menu1") as Gtk.Menu;
+                itm.popup_at_widget (fsmenu_button, Gdk.Gravity.SOUTH_EAST, Gdk.Gravity.NORTH_WEST, null);
+            });
+
+        fsmenu = builder.get_object ("pop_edit_menu") as Gtk.MenuItem;
+        fsmenu.activate.connect (() => {
+                var itm = builder.get_object ("menu2") as Gtk.Menu;
+                itm.popup_at_widget (fsmenu_button, Gdk.Gravity.SOUTH_EAST, Gdk.Gravity.NORTH_WEST, null);                            });
+
+        fsmenu = builder.get_object ("pop_view_menu") as Gtk.MenuItem;
+        fsmenu.activate.connect (() => {
+                var itm = builder.get_object ("menu4") as Gtk.Menu;
+                itm.popup_at_widget (fsmenu_button, Gdk.Gravity.SOUTH_EAST, Gdk.Gravity.NORTH_WEST, null);
+            });
+
+        fsmenu = builder.get_object ("pop_help_menu") as Gtk.MenuItem;
+        fsmenu.activate.connect (() => {
+                var itm = builder.get_object ("menu3") as Gtk.Menu;
+                itm.popup_at_widget (fsmenu_button, Gdk.Gravity.SOUTH_EAST, Gdk.Gravity.NORTH_WEST, null);
+            });
+
+        fsmenu = builder.get_object ("pop_quit_item") as Gtk.MenuItem;
+        fsmenu.activate.connect (() => {
+                conf.save_floating (mwpdh.floating);
+                lman.save_config();
+                remove_window(window);
+            });
 
         var menuop = builder.get_object ("file_open") as Gtk.MenuItem;
         menuop.activate.connect (() => {
@@ -1791,6 +1824,9 @@ public class MWPlanner : Gtk.Application {
         else
             wp_edit_button.show();
 
+        if(wdw_state == false)
+            fsmenu_button.hide();
+
         anim_cb(true);
 
         arm_warn.hide();
@@ -1941,7 +1977,7 @@ public class MWPlanner : Gtk.Application {
            }
            else
            {
-               var mvi = builder.get_object ("menu_view_head") as Gtk.MenuItem;
+               var mvi = builder.get_object ("menuitem3") as Gtk.MenuItem;
                mvi.activate.connect (() => {
                        set_dock_menu_status();
                    });
@@ -2140,9 +2176,15 @@ public class MWPlanner : Gtk.Application {
     private void toggle_full_screen()
     {
         if(wdw_state == true)
+        {
+            fsmenu_button.hide();
             window.unfullscreen();
+        }
         else
+        {
             window.fullscreen();
+            fsmenu_button.show();
+        }
         mwpdh.transient(window, !wdw_state);
     }
 
