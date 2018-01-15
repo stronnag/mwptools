@@ -2479,7 +2479,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
   <object class="GtkMenu" id="menu0">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="tooltip_text" translatable="yes">Access the menu when full screen</property>
     <child>
       <object class="GtkMenuItem" id="pop_file_menu">
         <property name="visible">True</property>
@@ -2546,6 +2545,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="tooltip_text" translatable="yes">Access the menu when full screen</property>
                 <property name="popup">menu0</property>
                 <child>
                   <placeholder/>
