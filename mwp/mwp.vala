@@ -3601,6 +3601,7 @@ public class MWPlanner : Gtk.Application {
                         {
                             set_menu_state("restore-mission", true);
                             set_menu_state("store-mission", true);
+                            set_menu_state("mission-info", true);
                         }
 
                         MWPLog.message("Generate navconf %x\n", navcap);
@@ -5419,7 +5420,6 @@ public class MWPlanner : Gtk.Application {
                     msp.raw_logging(true);
                 }
                 conbutton.set_label("Disconnect");
-                set_menu_state("mission-info", true);
                 serstate = SERSTATE.NORMAL;
                 if(nopoll == false)
                 {
