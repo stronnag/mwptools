@@ -298,21 +298,9 @@ public class MWPlanner : Gtk.Application {
     private Gtk.Label elapsedlab;
     private double lx;
     private double ly;
-    private Gtk.MenuItem menuup;
-    private Gtk.MenuItem menudown;
-    private Gtk.MenuItem menureplay;
-    private Gtk.MenuItem menurestore;
-    private Gtk.MenuItem menustore;
-    private Gtk.MenuItem menuloadlog;
-    private Gtk.MenuItem menubblog;
-    private Gtk.MenuItem menubbload;
-    private Gtk.MenuItem menuncfg;
-    private Gtk.MenuItem menumwvar;
-    private Gtk.MenuItem saved_menuitem;
-    private Gtk.MenuItem reboot;
-    private Gtk.MenuItem menucli;
-    private string saved_menutext;
-    private Gtk.MenuItem[] dockmenus;
+    private Gtk.MenuButton fsmenu_button;
+    private string[] dockmenus;
+
     private Gtk.Button arm_warn;
     private Gtk.ToggleButton wp_edit_button;
     private bool wp_edit = false;
@@ -334,7 +322,6 @@ public class MWPlanner : Gtk.Application {
     private float[] vbsamples;
 
     private Gtk.Label sensor_sts[6];
-
     private uint32 capability;
     private uint spktid;
     private uint upltid;
@@ -738,6 +725,7 @@ public class MWPlanner : Gtk.Application {
     private static bool ignore_3dr = false;
     private static string? exvox = null;
     private static string rrstr;
+    private static bool nofsmenu = false;
     private int nrings = 0;
     private double ringint = 0;
     private bool replay_paused;
@@ -782,6 +770,7 @@ public class MWPlanner : Gtk.Application {
         { "really-really-run-as-root", 0, 0, OptionArg.NONE, out asroot, "no reason to ever use this", null},
         { "forward-to", 0, 0, OptionArg.STRING, out forward_device, "forward telemetry to", "device-name"},
         {"perma-warn", 0, 0, OptionArg.NONE, out permawarn, "info dialogues never time out", null},
+        {"fsmenu", 0, 0, OptionArg.NONE, out nofsmenu, "use a menu bar in full screen (vice a menu button)", null},
         {null}
     };
 
@@ -799,6 +788,20 @@ public class MWPlanner : Gtk.Application {
     bool item_visible(DOCKLETS id)
     {
         return !dockitem[id].is_closed();
+    }
+
+    private void set_dock_menu_status()
+    {
+        for(var id = DOCKLETS.MISSION; id < DOCKLETS.NUMBER; id += 1)
+        {
+            update_dockmenu(id);
+        }
+    }
+
+    private void update_dockmenu(DOCKLETS id)
+    {
+        var res = (dockitem[id].is_closed () == dockitem[id].is_iconified());
+        set_menu_state(dockmenus[id], !res);
     }
 
     MWPlanner ()
@@ -845,13 +848,20 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
+    private void set_menu_state(string action, bool state)
+    {
+        var ac = window.lookup_action(action) as SimpleAction;
+        ac.set_enabled(state);
+    }
+
     public override void activate ()
     {
         const string[] speakers =  {"none", "espeak","speechd"};
 
         base.startup();
+
         wpmgr = WPMGR();
-        mwvar = MWChooser.fc_from_arg0();
+
         vbsamples = new float[MAXVSAMPLE];
 
         devman = new DevManager();
@@ -887,9 +897,6 @@ public class MWPlanner : Gtk.Application {
         if(layfile == null && conf.deflayout != null)
             layfile = conf.deflayout;
 
-        if(conf.fctype != null)
-            mwvar = MWChooser.fc_from_name(conf.fctype);
-
         var confdir = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp");
         try
         {
@@ -912,20 +919,24 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
-        var fn = MWPUtils.find_conf_file("mwp.ui");
-        if (fn == null)
+        string[]ts={"mwp.ui","menubar.ui"};
+        foreach(var fnm in ts)
         {
-            MWPLog.message ("No UI definition file\n");
-            quit();
-        }
-        else
-        {
-            try
+            var fn = MWPUtils.find_conf_file(fnm);
+            if (fn == null)
             {
-                builder.add_from_file (fn);
-            } catch (Error e) {
-                MWPLog.message ("Builder: %s\n", e.message);
+                MWPLog.message ("No UI definition file\n");
                 quit();
+            }
+            else
+            {
+                try
+                {
+                    builder.add_from_file (fn);
+                } catch (Error e) {
+                    MWPLog.message ("Builder: %s\n", e.message);
+                    quit();
+                }
             }
         }
 
@@ -958,12 +969,6 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
-
-        if(mwoptstr != null)
-        {
-            mwvar = MWChooser.fc_from_name(mwoptstr);
-        }
-
         if(conf.atstart != null)
         {
             try {
@@ -983,6 +988,16 @@ public class MWPlanner : Gtk.Application {
         window.set_application (this);
         window.window_state_event.connect( (e) => {
                 wdw_state = ((e.new_window_state & Gdk.WindowState.FULLSCREEN) != 0);
+                if(wdw_state)
+                    if(nofsmenu)
+                        window.set_show_menubar(true);
+                    else
+                        fsmenu_button.show();
+                else
+                    if(nofsmenu)
+                        window.set_show_menubar(false);
+                    else
+                        fsmenu_button.hide();
             return false;
         });
 
@@ -1043,24 +1058,84 @@ public class MWPlanner : Gtk.Application {
 
         zoomer = builder.get_object ("spinbutton1") as Gtk.SpinButton;
 
-        var menuop = builder.get_object ("file_open") as Gtk.MenuItem;
-        menuop.activate.connect (() => {
+        var mm = builder.get_object ("menubar") as MenuModel;
+        Gtk.MenuBar  menubar = new MenuBar.from_model(mm);
+        this.set_menubar(mm);
+        window.set_show_menubar(false);
+
+        var hb = builder.get_object ("hb") as HeaderBar;
+        hb.pack_start(menubar);
+
+        fsmenu_button = builder.get_object("fsmenu_button") as Gtk.MenuButton;
+
+        Gtk.Image img = new Gtk.Image.from_icon_name("open-menu-symbolic",
+                                                     Gtk.IconSize.BUTTON);
+        fsmenu_button.add(img);
+        fsmenu_button.set_menu_model(mm);
+
+        var aq = new GLib.SimpleAction("quit",null);
+        aq.activate.connect(() => {
+                conf.save_floating (mwpdh.floating);
+                lman.save_config();
+                remove_window(window);
+            });
+        this.add_action(aq);
+
+        window.destroy.connect(() => {
+                cleanup();
+                remove_window(window);
+                this.quit();
+            });
+
+        mseed = new MapSeeder(builder,window);
+        var shortcuts = builder.get_object ("shortcut-dialog") as Gtk.Dialog;
+        shortcuts.set_transient_for(window);
+        var shortclose = builder.get_object ("shorts-close") as Gtk.Button;
+        shortcuts.delete_event.connect (() => {
+                shortcuts.hide();
+                return true;
+            });
+
+        shortclose.clicked.connect (() => {
+                shortcuts.hide();
+            });
+
+        msview = new MapSourceDialog(builder, window);
+        setpos = new SetPosDialog(builder);
+        navconf = new NavConfig(window, builder);
+        bb_runner = new BBoxDialog(builder, dmrtype, window, conf.logpath);
+
+        dockmenus = new string[DOCKLETS.NUMBER];
+
+        dockmenus[DOCKLETS.MISSION] = "mission-list";
+        dockmenus[DOCKLETS.GPS] = "gps-status";
+        dockmenus[DOCKLETS.NAVSTATUS] = "nav-status";
+        dockmenus[DOCKLETS.VOLTAGE] = "bat-mon";
+        dockmenus[DOCKLETS.RADIO] = "radio-status";
+        dockmenus[DOCKLETS.TELEMETRY] =  "tel-stats";
+        dockmenus[DOCKLETS.ARTHOR] = "art-hor";
+        dockmenus[DOCKLETS.FBOX] =  "flight-view";
+
+        var saq = new GLib.SimpleAction("file-open",null);
+        saq.activate.connect(() => {
                 on_file_open();
             });
+        window.add_action(saq);
 
-        menuop = builder.get_object ("menu_save") as Gtk.MenuItem;
-        menuop.activate.connect (() => {
+        saq = new GLib.SimpleAction("menu-save",null);
+        saq.activate.connect(() => {
                 on_file_save();
             });
+        window.add_action(saq);
 
-        menuop = builder.get_object ("menu_save_as") as Gtk.MenuItem;
-        menuop.activate.connect (() => {
+        saq = new GLib.SimpleAction("menu-save-as",null);
+        saq.activate.connect(() => {
                 on_file_save_as();
             });
+        window.add_action(saq);
 
-        menuop = builder.get_object ("menu_prefs") as Gtk.MenuItem;
-        menuop.activate.connect(() =>
-            {
+        saq = new GLib.SimpleAction("prefs",null);
+        saq.activate.connect(() => {
                 var id = prefs.run_prefs(ref conf);
                 if(id == 1001)
                 {
@@ -1070,34 +1145,33 @@ public class MWPlanner : Gtk.Application {
                     audio_cb.sensitive = true;
                 }
             });
+        window.add_action(saq);
 
-        setpos = new SetPosDialog(builder);
-        menuop = builder.get_object ("menugoto") as Gtk.MenuItem;
-        menuop.activate.connect(() =>
-            {
+        saq = new GLib.SimpleAction("centre-on",null);
+        saq.activate.connect(() => {
                 double glat, glon;
                 if(setpos.get_position(out glat, out glon) == true)
                     map_centre_on(glat, glon);
             });
+        window.add_action(saq);
 
-        menuop = builder.get_object ("menu_set_def_pos") as Gtk.MenuItem;
-        menuop.activate.connect(() =>
-            {
+        saq = new GLib.SimpleAction("defloc",null);
+        saq.activate.connect(() => {
                 conf.latitude = view.get_center_latitude();
                 conf.longitude = view.get_center_longitude();
                 conf.zoom = view.get_zoom_level();
                 conf.save_settings();
             });
+        window.add_action(saq);
 
-        menuop = builder.get_object ("menu_recentre_mission") as Gtk.MenuItem;
-        menuop.activate.connect(() =>
-            {
+        saq = new GLib.SimpleAction("recentre",null);
+        saq.activate.connect(() => {
                 centre_mission(ls.to_mission(), true);
             });
+        window.add_action(saq);
 
-        menuop = builder.get_object ("get_fc_mssion_info") as Gtk.MenuItem;
-        menuop.activate.connect(() =>
-            {
+        saq = new GLib.SimpleAction("mission-info",null);
+        saq.activate.connect(() => {
                 if(msp.available && (serstate == SERSTATE.POLLER ||
                                      serstate == SERSTATE.NORMAL))
                 {
@@ -1105,9 +1179,10 @@ public class MWPlanner : Gtk.Application {
                     queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
                 }
             });
+        window.add_action(saq);
 
-        menucli = builder.get_object ("cliterm") as Gtk.MenuItem;
-        menucli.activate.connect(() => {
+        saq = new GLib.SimpleAction("terminal",null);
+        saq.activate.connect(() => {
                 if(msp.available && armed == 0)
                 {
                     mq.clear();
@@ -1124,20 +1199,19 @@ public class MWPlanner : Gtk.Application {
                         });
                 }
             });
+        window.add_action(saq);
 
-        reboot = builder.get_object ("_reboot_") as Gtk.MenuItem;
-        reboot.activate.connect(() =>
-            {
+        saq = new GLib.SimpleAction("reboot",null);
+        saq.activate.connect(() => {
                 if(msp.available && armed == 0)
                 {
                     queue_cmd(MSP.Cmds.REBOOT,null, 0);
                 }
             });
+        window.add_action(saq);
 
-        reboot_status();
-        msview = new MapSourceDialog(builder, window);
-        menuop =  builder.get_object ("menu_maps") as Gtk.MenuItem;
-        menuop.activate.connect(() => {
+        saq = new GLib.SimpleAction("map-source",null);
+        saq.activate.connect(() => {
                 var map_source_factory = Champlain.MapSourceFactory.dup_default();
                 var sources =  map_source_factory.get_registered();
                 foreach (Champlain.MapSourceDesc sr in sources)
@@ -1154,101 +1228,167 @@ public class MWPlanner : Gtk.Application {
                     }
                 }
             });
+        window.add_action(saq);
 
-        window.destroy.connect(() => {
-                cleanup();
-                remove_window(window);
-                this.quit();
-            });
-
-        mseed = new MapSeeder(builder,window);
-        menuop =  builder.get_object ("menu_seed") as Gtk.MenuItem;
-        menuop.activate.connect(() => {
+        saq = new GLib.SimpleAction("seed-map",null);
+        saq.activate.connect(() => {
                 mseed.run_seeder(view.map_source.get_id(),
                                  (int)zoomer.adjustment.value,
                                  view.get_bounding_box());
+
             });
+        window.add_action(saq);
 
-        menuop = builder.get_object ("menu_quit") as Gtk.MenuItem;
-        menuop.activate.connect (() => {
-                conf.save_floating (mwpdh.floating);
-                lman.save_config();
-                remove_window(window);
-            });
-
-
-        var shortcuts = builder.get_object ("shortcut-dialog") as Gtk.Dialog;
-        shortcuts.set_transient_for(window);
-
-        var shortclose = builder.get_object ("shorts-close") as Gtk.Button;
-
-        menuop= builder.get_object ("shortcut-list") as Gtk.MenuItem;
-        menuop.activate.connect (() => {
-                shortcuts.show_all();
-            });
-
-        shortcuts.delete_event.connect (() => {
-                shortcuts.hide();
-                return true;
-            });
-
-        shortclose.clicked.connect (() => {
-                shortcuts.hide();
-            });
-
-        menuop= builder.get_object ("menu_about") as Gtk.MenuItem;
-        menuop.activate.connect (() => {
+        saq = new GLib.SimpleAction("about",null);
+        saq.activate.connect(() => {
                 about.show_all();
                 about.run();
                 about.hide();
             });
+        window.add_action(saq);
 
-        menuup = builder.get_object ("upload_mission") as Gtk.MenuItem;
-        menuup.sensitive = false;
-        menuup.activate.connect (() => {
+        saq = new GLib.SimpleAction("upload-mission",null);
+        saq.activate.connect(() => {
                 upload_mission(WPDL.VALIDATE);
             });
+        window.add_action(saq);
 
-        menudown = builder.get_object ("download_mission") as Gtk.MenuItem;
-        menudown.sensitive =false;
-        menudown.activate.connect (() => {
+        saq = new GLib.SimpleAction("download-mission",null);
+        saq.activate.connect(() => {
                 download_mission();
             });
+        window.add_action(saq);
 
-        menurestore = builder.get_object ("menu_restore_eeprom") as Gtk.MenuItem;
-        menurestore.sensitive = false;
-        menurestore.activate.connect (() => {
+        saq = new GLib.SimpleAction("restore-mission",null);
+        saq.activate.connect(() => {
                 uint8 zb=0;
                 queue_cmd(MSP.Cmds.WP_MISSION_LOAD, &zb, 1);
             });
+        window.add_action(saq);
 
-        menustore = builder.get_object ("menu_store_eeprom") as Gtk.MenuItem;
-        menustore.sensitive =false;
-        menustore.activate.connect (() => {
+        saq = new GLib.SimpleAction("store-mission",null);
+        saq.activate.connect(() => {
                 upload_mission(WPDL.SAVE_EEPROM);
             });
+        window.add_action(saq);
 
-
-        menureplay = builder.get_object ("replay_log") as Gtk.MenuItem;
-        menureplay.activate.connect (() => {
+        saq = new GLib.SimpleAction("replay-log",null);
+        saq.activate.connect(() => {
                 replay_log(true);
             });
+        window.add_action(saq);
 
-        menuloadlog = builder.get_object ("load_log") as Gtk.MenuItem;
-        menuloadlog.activate.connect (() => {
+        saq = new GLib.SimpleAction("load-log",null);
+        saq.activate.connect(() => {
                 replay_log(false);
             });
+        window.add_action(saq);
 
-        bb_runner = new BBoxDialog(builder, dmrtype, window, conf.logpath);
-        menubblog = builder.get_object ("bb_menu_act") as Gtk.MenuItem;
-        menubblog.activate.connect (() => {
+        saq = new GLib.SimpleAction("replay-bb",null);
+        saq.activate.connect(() => {
                 replay_bbox(true);
             });
+        window.add_action(saq);
 
-        menubbload = builder.get_object ("bb_load_log") as Gtk.MenuItem;
-        menubbload.activate.connect (() => {
+        saq = new GLib.SimpleAction("load-bb",null);
+        saq.activate.connect(() => {
                 replay_bbox(false);
             });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("stop-replay",null);
+        saq.activate.connect(() => {
+                stop_replayer();
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("navconfig",null);
+        saq.activate.connect(() => {
+                navconf.show();
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("flight-stats",null);
+        saq.activate.connect(() => {
+                odoview.display(odo, false);
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("layout-save",null);
+        saq.activate.connect(() => {
+                lman.save();
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("layout-restore",null);
+        saq.activate.connect(() => {
+                lman.restore();
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("mission-list",null);
+        saq.activate.connect(() => {
+                show_dock_id(DOCKLETS.MISSION, false);
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("gps-status",null);
+        saq.activate.connect(() => {
+                show_dock_id(DOCKLETS.GPS, true);
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("nav-status",null);
+        saq.activate.connect(() => {
+                show_dock_id(DOCKLETS.NAVSTATUS,true);
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("bat-mon",null);
+        saq.activate.connect(() => {
+                show_dock_id(DOCKLETS.VOLTAGE, true);
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("radio-status",null);
+        saq.activate.connect(() => {
+                show_dock_id(DOCKLETS.RADIO, true);
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("tel-stats",null);
+        saq.activate.connect(() => {
+                show_dock_id(DOCKLETS.TELEMETRY, true);
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("art-hor",null);
+        saq.activate.connect(() => {
+                show_dock_id(DOCKLETS.ARTHOR, true);
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("flight-view",null);
+        saq.activate.connect(() => {
+                show_dock_id(DOCKLETS.FBOX, true);
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("keys",null);
+        saq.activate.connect(() => {
+                shortcuts.show_all();
+            });
+        window.add_action(saq);
+
+        reboot_status();
+        set_menu_state("upload-mission", false);
+        set_menu_state("download-mission", false);
+        set_menu_state("restore-mission", false);
+        set_menu_state("store-mission", false);
+        set_menu_state("navconfig", false);
+        set_menu_state("stop-replay", false);
+
+        art_win = new ArtWin(conf.ah_inv_roll);
 
         var css = new Gtk.CssProvider ();
         var screen = Gdk.Screen.get_default();
@@ -1263,76 +1403,10 @@ public class MWPlanner : Gtk.Application {
         vcol = new VCol();
 
         odoview = new OdoView(builder,window,conf.stats_timeout);
-
         navstatus = new NavStatus(builder, vcol);
-
-        dockmenus = new Gtk.MenuItem[DOCKLETS.NUMBER];
-
-        dockmenus[DOCKLETS.NAVSTATUS] = builder.get_object ("nav_status_menu") as Gtk.MenuItem;
-        dockmenus[DOCKLETS.NAVSTATUS].activate.connect (() => {
-                show_dock_id(DOCKLETS.NAVSTATUS,true);
-            });
-
-        menuncfg = builder.get_object ("nav_config_menu") as Gtk.MenuItem;
-        menuncfg.sensitive =false;
-        navconf = new NavConfig(window, builder);
-        menuncfg.activate.connect (() => {
-                navconf.show();
-            });
-        art_win = new ArtWin(conf.ah_inv_roll);
-
-        dockmenus[DOCKLETS.ARTHOR] = builder.get_object ("menu_art_hor") as Gtk.MenuItem;
-        dockmenus[DOCKLETS.ARTHOR].activate.connect (() => {
-                show_dock_id(DOCKLETS.ARTHOR, true);
-            });
-
-        dockmenus[DOCKLETS.GPS] = builder.get_object ("gps_menu_view") as Gtk.MenuItem;
-        dockmenus[DOCKLETS.GPS].activate.connect (() => {
-                show_dock_id(DOCKLETS.GPS, true);
-            });
-
-        dockmenus[DOCKLETS.MISSION] = builder.get_object ("tote_menu_view") as Gtk.MenuItem;
-        dockmenus[DOCKLETS.MISSION].activate.connect (() => {
-                show_dock_id(DOCKLETS.MISSION, false);
-            });
-
-        dockmenus[DOCKLETS.VOLTAGE] = builder.get_object ("voltage_menu_view") as Gtk.MenuItem;
-        dockmenus[DOCKLETS.VOLTAGE].activate.connect (() => {
-                show_dock_id(DOCKLETS.VOLTAGE, true);
-            });
-
         radstatus = new RadioStatus(builder);
-
-        dockmenus[DOCKLETS.RADIO] = builder.get_object ("radio_menu_view") as Gtk.MenuItem;
-        dockmenus[DOCKLETS.RADIO].activate.connect (() => {
-                show_dock_id(DOCKLETS.RADIO, true);
-            });
-
-        dockmenus[DOCKLETS.FBOX] =  builder.get_object ("fbox_view") as Gtk.MenuItem;
-        fbox  = new FlightBox(builder,window);
-        dockmenus[DOCKLETS.FBOX].activate.connect(() => {
-                show_dock_id(DOCKLETS.FBOX, true);
-            });
-
         telemstatus = new TelemetryStats(builder);
-        dockmenus[DOCKLETS.TELEMETRY] =  builder.get_object ("ss_dialog") as Gtk.MenuItem;
-        dockmenus[DOCKLETS.TELEMETRY].activate.connect(() => {
-                show_dock_id(DOCKLETS.TELEMETRY, true);
-            });
-
-        var mi =  builder.get_object ("lm_save") as Gtk.MenuItem;
-        mi.activate.connect(() => {
-                lman.save();
-            });
-        mi =  builder.get_object ("lm_restore") as Gtk.MenuItem;
-        mi.activate.connect(() => {
-                lman.restore();
-            });
-
-        mi =  builder.get_object ("menu_mission_stats") as Gtk.MenuItem;
-        mi.activate.connect(() => {
-                odoview.display(odo, false);
-            });
+        fbox  = new FlightBox(builder,window);
 
         embed = new GtkChamplain.Embed();
         view = embed.get_view();
@@ -1587,15 +1661,6 @@ public class MWPlanner : Gtk.Application {
                 }
             });
 
-        var mwc = new MWChooser(builder);
-
-        menumwvar = builder.get_object ("menuitemmwvar") as Gtk.MenuItem;
-        menumwvar.activate.connect (() => {
-                var _m = mwc.get_version(mwvar);
-                if(_m !=  MWChooser.MWVAR.UNDEF)
-                    mwvar = _m;
-            });
-
         prefs = new PrefsDialog(builder, window);
         swd = new SwitchDialog(builder, window);
 
@@ -1716,16 +1781,6 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
-        if(mwvar == MWChooser.MWVAR.UNDEF)
-        {
-            mwvar = mwc.get_version(MWChooser.MWVAR.MWOLD);
-        }
-
-        if(mwvar == MWChooser.MWVAR.UNDEF)
-        {
-            remove_window(window);
-        }
-
         lastmsg = MQI(); //{cmd = MSP.Cmds.INVALID};
 
         start_poll_timer();
@@ -1790,6 +1845,9 @@ public class MWPlanner : Gtk.Application {
             wp_edit_button.hide();
         else
             wp_edit_button.show();
+
+        if(wdw_state == false)
+            fsmenu_button.hide();
 
         anim_cb(true);
 
@@ -1929,24 +1987,9 @@ public class MWPlanner : Gtk.Application {
 
        setup_buttons();
        set_dock_menu_status();
-
-       {
-           var mx = Environment.get_variable("GTK_MODULES");
-           if(mx != null && mx.contains("unity-gtk-module"))
-           {
-               MWPLog.message("workaround for Ubuntu menu aberration\n");
-               dock.layout_changed.connect(() => {
-                       set_dock_menu_status();
-                   });
-           }
-           else
-           {
-               var mvi = builder.get_object ("menu_view_head") as Gtk.MenuItem;
-               mvi.activate.connect (() => {
-                       set_dock_menu_status();
-                   });
-           }
-       }
+       dock.layout_changed.connect(() => {
+               set_dock_menu_status();
+           });
 
        if(rfile != null)
        {
@@ -1995,20 +2038,6 @@ public class MWPlanner : Gtk.Application {
             ret = false;
 #endif
         return ret;
-    }
-
-    private void set_dock_menu_status()
-    {
-        for(var id = DOCKLETS.MISSION; id < DOCKLETS.NUMBER; id += 1)
-        {
-            update_dockmenu(id);
-        }
-    }
-
-    private void update_dockmenu(DOCKLETS id)
-    {
-        var res = (dockitem[id].is_closed () == dockitem[id].is_iconified());
-        dockmenus[id].sensitive = !res;
     }
 
     public void build_deventry()
@@ -2140,9 +2169,13 @@ public class MWPlanner : Gtk.Application {
     private void toggle_full_screen()
     {
         if(wdw_state == true)
+        {
             window.unfullscreen();
+        }
         else
+        {
             window.fullscreen();
+        }
         mwpdh.transient(window, !wdw_state);
     }
 
@@ -2578,8 +2611,8 @@ public class MWPlanner : Gtk.Application {
 
     private void reboot_status()
     {
-        reboot.sensitive =  (msp != null && msp.available && armed == 0);
-        menucli.sensitive =  (msp != null && msp.available && armed == 0);
+        set_menu_state("reboot", ((msp != null && msp.available && armed == 0)));
+        set_menu_state("terminal", ((msp != null && msp.available && armed == 0)));
     }
 
     private void armed_processing(uint64 flag, string reason="")
@@ -3551,30 +3584,40 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.BOXNAMES:
-                if(navcap != NAVCAPS.NONE)
-                    menuup.sensitive = menudown.sensitive = true;
-                var ncbits = (navcap & (NAVCAPS.NAVCONFIG|NAVCAPS.INAV_MR|NAVCAPS.INAV_FW));
-                if (ncbits != 0)
+                if(replayer == Player.NONE)
                 {
-                    menuncfg.sensitive = true;
-                    if(mission_eeprom)
-                        menustore.sensitive = menurestore.sensitive = true;
-                    MWPLog.message("Generate navconf %x\n", navcap);
-                    navconf.setup(ncbits);
-                    if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
-                        navconf.mw_navconf_event.connect((mw,nc) => {
-                                mw_update_config(nc);
-                            });
-                    if((navcap & NAVCAPS.INAV_MR) == NAVCAPS.INAV_MR)
-                        navconf.mr_nav_poshold_event.connect((mw,pcfg) => {
-                                mr_update_config(pcfg);
-                            });
-                    if((navcap & NAVCAPS.INAV_FW) == NAVCAPS.INAV_FW)
-                        navconf.fw_config_event.connect((mw,fw) => {
-                                fw_update_config(fw);
-                            });
-                }
+                    var ncbits = (navcap & (NAVCAPS.NAVCONFIG|NAVCAPS.INAV_MR|NAVCAPS.INAV_FW));
+                    if(navcap != NAVCAPS.NONE)
+                    {
+                        set_menu_state("upload-mission", true);
+                        set_menu_state("download-mission", true);
+                    }
 
+                    if (ncbits != 0)
+                    {
+                        set_menu_state("navconfig", true);
+                        if(mission_eeprom)
+                        {
+                            set_menu_state("restore-mission", true);
+                            set_menu_state("store-mission", true);
+                        }
+
+                        MWPLog.message("Generate navconf %x\n", navcap);
+                        navconf.setup(ncbits);
+                        if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
+                            navconf.mw_navconf_event.connect((mw,nc) => {
+                                    mw_update_config(nc);
+                                });
+                        if((navcap & NAVCAPS.INAV_MR) == NAVCAPS.INAV_MR)
+                            navconf.mr_nav_poshold_event.connect((mw,pcfg) => {
+                                    mr_update_config(pcfg);
+                                });
+                        if((navcap & NAVCAPS.INAV_FW) == NAVCAPS.INAV_FW)
+                            navconf.fw_config_event.connect((mw,fw) => {
+                                    fw_update_config(fw);
+                                });
+                    }
+                }
                 raw[len] = 0;
                 boxnames = (string)raw;
                 string []bsx = ((string)raw).split(";");
@@ -5246,7 +5289,6 @@ public class MWPlanner : Gtk.Application {
         {
             arm_warn.hide();
             serstate = SERSTATE.NONE;
-            menumwvar.sensitive =true;
             sflags = 0;
             if (conf.audioarmed == true)
             {
@@ -5270,8 +5312,8 @@ public class MWPlanner : Gtk.Application {
             boxnames = null;
             msp.close();
             c.set_label("Connect");
-            menustore.sensitive = menurestore.sensitive =
-                menuncfg.sensitive = menuup.sensitive = menudown.sensitive = false;
+            set_mission_menus(false);
+
             navconf.hide();
             duration = -1;
             if(craft != null)
@@ -5290,9 +5332,24 @@ public class MWPlanner : Gtk.Application {
         if(fwddev != null && fwddev.available)
             fwddev.close();
 
-        menubblog.sensitive = menubbload.sensitive = menureplay.sensitive =
-        menuloadlog.sensitive = true;
+        set_replay_menus(true);
         reboot_status();
+    }
+
+    private void set_replay_menus(bool state)
+    {
+        const string [] ms = {"replay-log","load-log","replay-bb","load-bb"};
+        foreach(var s in ms)
+            set_menu_state(s, state);
+
+        set_menu_state("stop-replay", !state);
+    }
+
+    private void set_mission_menus(bool state)
+    {
+        const string[] ms0 = {"store-mission","restore-mission","upload-mission","download-mission","navconfig"};
+        foreach(var s in ms0)
+            set_menu_state(s, state);
     }
 
     private void init_sstats()
@@ -5356,8 +5413,7 @@ public class MWPlanner : Gtk.Application {
                 init_state();
                 init_sstats();
                 MWPLog.message("Connected %s\n", serdev);
-                menubblog.sensitive = menubbload.sensitive = menureplay.sensitive =
-                menuloadlog.sensitive = false;
+                set_replay_menus(false);
                 if(rawlog == true)
                 {
                     msp.raw_logging(true);
@@ -5369,7 +5425,6 @@ public class MWPlanner : Gtk.Application {
                     queue_cmd(MSP.Cmds.IDENT,null,0);
                     run_queue();
                 }
-                menumwvar.sensitive = false;
                 if(forward_device != null)
                 {
                     string fstr;
@@ -5839,7 +5894,6 @@ public class MWPlanner : Gtk.Application {
         if(thr != null)
         {
             robj.stop();
-//            duration = -1;
         }
         else
         {
@@ -5885,9 +5939,7 @@ public class MWPlanner : Gtk.Application {
             thr.join();
             thr = null;
         }
-        saved_menuitem.label = saved_menutext;
-        menureplay.sensitive = menuloadlog.sensitive =
-            menubblog.sensitive = menubbload.sensitive = true;
+        set_replay_menus(true);
         Posix.close(playfd[0]);
         Posix.close(playfd[1]);
         if (conf.audioarmed == true)
@@ -5902,7 +5954,6 @@ public class MWPlanner : Gtk.Application {
         armed = larmed = 0;
         replay_paused = false;
         window.title = "mwp";
-//        replayer = Player.NONE;
     }
 
     private void run_replay(string fn, bool delay, Player rtype,
@@ -5936,8 +5987,7 @@ public class MWPlanner : Gtk.Application {
             update_title_from_file(fn);
             replayer = rtype;
             msp.open_fd(playfd[0],-1, true);
-            menureplay.sensitive = menuloadlog.sensitive =
-                menubblog.sensitive = menubbload.sensitive = false;
+            set_replay_menus(false);
             switch(replayer)
             {
                 case Player.MWP:
@@ -5946,16 +5996,11 @@ public class MWPlanner : Gtk.Application {
                             load_file(mf);
                         });
                     thr = robj.run(playfd[1], fn, delay);
-                    saved_menuitem = (delay) ? menureplay : menuloadlog;
                     break;
                 case Player.BBOX:
                     spawn_bbox_task(fn, idx, btype, delay, force_gps);
-                    saved_menuitem = (delay) ? menubblog : menubbload;
                     break;
             }
-            saved_menutext = saved_menuitem.label;
-            saved_menuitem.label = "Stop Replay";
-            saved_menuitem.sensitive = true;
         }
     }
 
@@ -6022,6 +6067,15 @@ public class MWPlanner : Gtk.Application {
                 run_replay(bblog, delay, Player.BBOX, index, btype, force_gps);
             }
         }
+    }
+
+    private void stop_replayer()
+    {
+        if(replayer == Player.BBOX)
+            Posix.kill(child_pid, Posix.SIGTERM);
+
+        if(replayer == Player.MWP && thr != null)
+            robj.stop();
     }
 
     private void download_mission()
