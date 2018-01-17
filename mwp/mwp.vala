@@ -1387,6 +1387,7 @@ public class MWPlanner : Gtk.Application {
         set_menu_state("store-mission", false);
         set_menu_state("navconfig", false);
         set_menu_state("stop-replay", false);
+        set_menu_state("mission-info", false);
 
         art_win = new ArtWin(conf.ah_inv_roll);
 
@@ -5313,7 +5314,6 @@ public class MWPlanner : Gtk.Application {
             msp.close();
             c.set_label("Connect");
             set_mission_menus(false);
-
             navconf.hide();
             duration = -1;
             if(craft != null)
@@ -5347,7 +5347,7 @@ public class MWPlanner : Gtk.Application {
 
     private void set_mission_menus(bool state)
     {
-        const string[] ms0 = {"store-mission","restore-mission","upload-mission","download-mission","navconfig"};
+        const string[] ms0 = {"store-mission","restore-mission","upload-mission","download-mission","navconfig", "mission-info"};
         foreach(var s in ms0)
             set_menu_state(s, state);
     }
@@ -5419,6 +5419,7 @@ public class MWPlanner : Gtk.Application {
                     msp.raw_logging(true);
                 }
                 conbutton.set_label("Disconnect");
+                set_menu_state("mission-info", true);
                 serstate = SERSTATE.NORMAL;
                 if(nopoll == false)
                 {
@@ -6231,6 +6232,9 @@ public class MWPlanner : Gtk.Application {
             }
             lk.unlock();
         }
+        else
+            print("Application is already running\n");
+
         return lkres;
     }
 }
