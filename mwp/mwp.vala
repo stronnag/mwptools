@@ -4197,7 +4197,8 @@ public class MWPlanner : Gtk.Application {
                         else
                         {
                             ms.set_ways(wp_resp);
-                            ls.import_mission(ms);
+                            ls.import_mission(ms, (conf.rth_autoland &&
+                                                   Craft.is_mr(vi.mrtype)));
                             centre_mission(ms, !centreon);
                             markers.add_list_store(ls);
                             validatelab.set_text("✔"); // u+2714
@@ -5741,7 +5742,8 @@ public class MWPlanner : Gtk.Application {
             }
             validatelab.set_text("");
             ms.dump();
-            ls.import_mission(ms);
+            ls.import_mission(ms, (conf.rth_autoland &&
+                                   Craft.is_mr(vi.mrtype)));
             var mmax = view.get_max_zoom_level();
             var mmin = view.get_min_zoom_level();
             map_centre_on(ms.cy, ms.cx);

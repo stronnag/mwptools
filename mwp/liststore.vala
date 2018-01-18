@@ -82,7 +82,7 @@ public class ListBox : GLib.Object
         return ms_speed;
     }
 
-    public void import_mission(Mission ms, double speed = 0.0)
+    public void import_mission(Mission ms, bool  autoland = false)
     {
         Gtk.TreeIter iter;
 
@@ -100,7 +100,7 @@ public class ListBox : GLib.Object
                     no="";
                     m1 = ((double)m.param1);
                     have_rth = true;
-                    if (MWPlanner.conf.rth_autoland)
+                    if (autoland)
                     {
                         m1 = 1;
                         MWPLog.message("Setting autoland for RTH\n");
