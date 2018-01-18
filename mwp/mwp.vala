@@ -5342,8 +5342,6 @@ public class MWPlanner : Gtk.Application {
         const string [] ms = {"replay-log","load-log","replay-bb","load-bb"};
         foreach(var s in ms)
             set_menu_state(s, state);
-
-        set_menu_state("stop-replay", !state);
     }
 
     private void set_mission_menus(bool state)
@@ -5941,6 +5939,7 @@ public class MWPlanner : Gtk.Application {
             thr = null;
         }
         set_replay_menus(true);
+        set_menu_state("stop-replay", false);
         Posix.close(playfd[0]);
         Posix.close(playfd[1]);
         if (conf.audioarmed == true)
@@ -5989,6 +5988,7 @@ public class MWPlanner : Gtk.Application {
             replayer = rtype;
             msp.open_fd(playfd[0],-1, true);
             set_replay_menus(false);
+            set_menu_state("stop-replay", true);
             switch(replayer)
             {
                 case Player.MWP:
