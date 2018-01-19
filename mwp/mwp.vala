@@ -3025,6 +3025,7 @@ public class MWPlanner : Gtk.Application {
                         sb0.append_c(' ');
                     }
                 }
+                update_sensor_array();
                 MWPLog.message("Sensors: %s (%04x)\n", sb0.str, sensor);
 
                 if(!prlabel)
