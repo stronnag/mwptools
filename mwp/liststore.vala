@@ -1247,13 +1247,17 @@ public class ListBox : GLib.Object
             var res = calc_mission_dist(out d, out lt, out et, extra);
             if (res == true)
             {
-                route = "Distance: %.0f%s, fly: %s, loiter: %s".printf(
-                    Units.distance(d),
-                    Units.distance_units(),
-                    show_time(et),show_time(lt));
+                StringBuilder sb = new StringBuilder();
+                sb.append_printf("Path: %.0f%s, fly: %s",
+                                 Units.distance(d),
+                                 Units.distance_units(),
+                                 show_time(et));
+                if(lt > 0.0)
+                    sb.append_printf(", loiter: %s", show_time(lt));
+                route = sb.str;
             }
             else
-                route = "Indeterminate distance";
+                route = "Indeterminate path";
         }
         else
         {

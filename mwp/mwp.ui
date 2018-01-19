@@ -4814,7 +4814,7 @@ Clicking Quit will terminate the application.
             </child>
             <child>
               <object class="GtkCheckButton" id="checkbutton1">
-                <property name="label" translatable="yes">Centre on GPS</property>
+                <property name="label" translatable="yes">Centre-on</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
@@ -4829,7 +4829,7 @@ Clicking Quit will terminate the application.
             </child>
             <child>
               <object class="GtkCheckButton" id="checkbutton2">
-                <property name="label" translatable="yes">Follow GPS</property>
+                <property name="label" translatable="yes">Follow</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
