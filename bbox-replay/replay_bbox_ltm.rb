@@ -90,6 +90,7 @@ BOARD_MAP ={
   "OMNIBUS" => "OMNI",
   "CC3D" => "CC3D",
   "MATEKF405" => "MKF4",
+  "MATEKF405OSD" => "MKF4",
   "QUARKVISION" =>  "QRKV",
 }
 
@@ -467,31 +468,22 @@ def encode_extra r
   msg
 end
 
-def get_autotype file
-  dirname = File.dirname(file)
-  files = Dir["#{dirname}/mwp_*.log"]
-  mtyp = nil
-  fn = nil
-  if files.empty?
-    fn = file.dup
-    fn = fn.gsub!(/\.TXT$/,".log")
-  else
-    fn = files[0]
-  end
-
-  if fn != nil
-    if File.exist? fn
-      File.open(fn) do |fh|
-	fh.each do |json|
-	  o = JSON.parse(json, {:symbolize_names => true})
-	  if o[:type] == 'init'
-	    mtyp = o[:mrtype]
-	    break
-	  end
-	end
-      end
-    end
-  end
+def get_autotype nmotor, nservo
+  mtyp = 0
+  mtype =   case nmotor
+	    when 1
+	      mtyp = (nservo == 4) ? 14 : 8
+	    when 2
+	      mtyp = 4
+	    when 3
+	      mtyp = 1
+	    when 4
+	      mtyp = 3
+	    when 6
+	      mtyp = 7
+	    when 8
+	      mtyp = 11
+	    end
   mtyp
 end
 
@@ -556,9 +548,6 @@ rescue
 end
 
 bbox = (ARGV[0]|| abort('no BBOX log'))
-if autotyp && typ == 3
-  typ = (get_autotype(bbox) || typ)
-end
 
 gitinfos=[]
 
@@ -678,6 +667,25 @@ IO.popen(cmd,'rt') do |pipe|
 #    $stderr.reopen(STDERR_LOG, 'w')
 #    $stderr.sync
 #  end
+
+  nmotor = 0
+  nservo = 0
+  0.upto(7).each do |n|
+    s = "motor#{n}"
+    if hdrs.has_key?(s.to_sym)
+      nmotor +=1
+    end
+  end
+  0.upto(7).each do |n|
+    s = "servo#{n}"
+    nservo +=1 if hdrs.has_key?(s.to_sym)
+  end
+
+  if autotyp || typ == -1
+    typ = get_autotype nmotor, nservo
+  end
+
+#  STDERR.puts "typ #{typ} motors #{nmotor} servos #{nservo}\n"
 
   have_sonar = (hdrs.has_key? :sonarraw)
   have_baro = (hdrs.has_key? :baroalt_cm)

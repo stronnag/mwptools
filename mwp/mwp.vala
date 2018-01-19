@@ -1002,9 +1002,6 @@ public class MWPlanner : Gtk.Application {
         });
 
 
-        print(">> Window decor %s\n", window.decorated.to_string());
-
-
         dev_entry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
 
         string icon=null;
