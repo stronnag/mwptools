@@ -1001,6 +1001,10 @@ public class MWPlanner : Gtk.Application {
             return false;
         });
 
+
+        print(">> Window decor %s\n", window.decorated.to_string());
+
+
         dev_entry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
 
         string icon=null;
@@ -1061,9 +1065,8 @@ public class MWPlanner : Gtk.Application {
         var mm = builder.get_object ("menubar") as MenuModel;
         Gtk.MenuBar  menubar = new MenuBar.from_model(mm);
         this.set_menubar(mm);
-        window.set_show_menubar(false);
-
         var hb = builder.get_object ("hb") as HeaderBar;
+        window.set_show_menubar(false);
         hb.pack_start(menubar);
 
         fsmenu_button = builder.get_object("fsmenu_button") as Gtk.MenuButton;
@@ -1851,7 +1854,6 @@ public class MWPlanner : Gtk.Application {
             fsmenu_button.hide();
 
         anim_cb(true);
-
         arm_warn.hide();
 
         var scale = new Champlain.Scale();
