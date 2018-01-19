@@ -142,10 +142,6 @@
           <attribute name="action">win.gps-status</attribute>
         </item>
         <item>
-          <attribute name="label">Recentre Mission</attribute>
-          <attribute name="action">win.recentre</attribute>
-        </item>
-        <item>
           <attribute name="label">Radio Status</attribute>
           <attribute name="action">win.radio-status</attribute>
         </item>

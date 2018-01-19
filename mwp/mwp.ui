@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.20.2
+<!-- Generated with glade 3.20.2 
 
 Copyright (C)
 
@@ -555,33 +555,33 @@ Otherwise, select a valid FC vehicle type</property>
                     <property name="can_focus">False</property>
                     <property name="active">0</property>
                     <items>
-		      <item translatable="yes">Auto</item>
-		      <item translatable="yes">Marker</item>
-		      <item translatable="yes">TRI</item>
-		      <item translatable="yes">QUADP</item>
-		      <item translatable="yes">QUADX</item>
-		      <item translatable="yes">BI</item>
-		      <item translatable="yes">GIMBAL</item>
-		      <item translatable="yes">Y6</item>
-		      <item translatable="yes">HEX6</item>
-		      <item translatable="yes">FLYING_WING</item>
-		      <item translatable="yes">Y4</item>
-		      <item translatable="yes">HEX6X</item>
-		      <item translatable="yes">OCTOX8</item>
-		      <item translatable="yes">OCTOFLATP</item>
-		      <item translatable="yes">OCTOFLATX</item>
-		      <item translatable="yes">AEROPLANE</item>
-		      <item translatable="yes">HELI_120</item>
-		      <item translatable="yes">HELI_90</item>
-		      <item translatable="yes">VTAIL4</item>
-		      <item translatable="yes">HEX6H</item>
-		      <item translatable="yes">PPM_SERVO?</item>
-		      <item translatable="yes">DUALCOPTER</item>
-		      <item translatable="yes">SINGLECOPTER</item>
-		      <item translatable="yes">ATAIL4</item>
-		      <item translatable="yes">CUSTOM</item>
-		      <item translatable="yes">CUSTOM_AEROPLANE</item>
-		      <item translatable="yes">CUSTOM_TRI</item>
+                      <item translatable="yes">Auto</item>
+                      <item translatable="yes">Marker</item>
+                      <item translatable="yes">TRI</item>
+                      <item translatable="yes">QUADP</item>
+                      <item translatable="yes">QUADX</item>
+                      <item translatable="yes">BI</item>
+                      <item translatable="yes">GIMBAL</item>
+                      <item translatable="yes">Y6</item>
+                      <item translatable="yes">HEX6</item>
+                      <item translatable="yes">FLYING_WING</item>
+                      <item translatable="yes">Y4</item>
+                      <item translatable="yes">HEX6X</item>
+                      <item translatable="yes">OCTOX8</item>
+                      <item translatable="yes">OCTOFLATP</item>
+                      <item translatable="yes">OCTOFLATX</item>
+                      <item translatable="yes">AEROPLANE</item>
+                      <item translatable="yes">HELI_120</item>
+                      <item translatable="yes">HELI_90</item>
+                      <item translatable="yes">VTAIL4</item>
+                      <item translatable="yes">HEX6H</item>
+                      <item translatable="yes">PPM_SERVO?</item>
+                      <item translatable="yes">DUALCOPTER</item>
+                      <item translatable="yes">SINGLECOPTER</item>
+                      <item translatable="yes">ATAIL4</item>
+                      <item translatable="yes">CUSTOM</item>
+                      <item translatable="yes">CUSTOM_AEROPLANE</item>
+                      <item translatable="yes">CUSTOM_TRI</item>
                     </items>
                   </object>
                   <packing>
@@ -4727,6 +4727,7 @@ Clicking Quit will terminate the application.
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">When enabled, centres the map on the GPS location</property>
                 <property name="halign">start</property>
                 <property name="draw_indicator">True</property>
               </object>
@@ -4742,6 +4743,7 @@ Clicking Quit will terminate the application.
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">When enabled, plots the GPS location on the map</property>
                 <property name="halign">start</property>
                 <property name="draw_indicator">True</property>
               </object>
@@ -4757,6 +4759,7 @@ Clicking Quit will terminate the application.
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Enabled mwp logging (see also gsettings 'log-on-arm' to automatically enable / disable on arm / disarm)</property>
                 <property name="halign">start</property>
                 <property name="draw_indicator">True</property>
               </object>
@@ -4772,6 +4775,7 @@ Clicking Quit will terminate the application.
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Enabled audio reporting (see also gsettings 'audio-on-arm' to automatically enable / disable on arm / disarm)</property>
                 <property name="halign">start</property>
                 <property name="draw_indicator">True</property>
               </object>

@@ -3464,6 +3464,8 @@ public class MWPlanner : Gtk.Application {
                 if(have_fcvv == false)
                 {
                     have_fcvv = true;
+                    set_menu_state("reboot", true);
+                    set_menu_state("terminal", true);
                     vi.fc_vers = raw[0] << 16 | raw[1] << 8 | raw[2];
                     var fcv = "%s v%d.%d.%d".printf(vi.fc_var,raw[0],raw[1],raw[2]);
                     verlab.set_label(fcv);
@@ -3562,6 +3564,8 @@ public class MWPlanner : Gtk.Application {
                         navcap = ((raw[3] & 0x10) == 0x10) ?
                             NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS|NAVCAPS.NAVCONFIG
                             : NAVCAPS.NONE;
+                        set_menu_state("reboot", false);
+                        set_menu_state("terminal", false);
                     }
                     if(mwvar == MWChooser.MWVAR.AUTO)
                     {
