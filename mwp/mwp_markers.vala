@@ -286,6 +286,8 @@ public class MWPMarkers : GLib.Object
         ls.set_value(iter,ListBox.WY_Columns.MARKER,marker);
 
         marker.button_press_event.connect((e) => {
+                while(Gtk.events_pending())
+                    Gtk.main_iteration();
                 if(e.button == 3)
                     l.set_popup_needed(iter);
                 return false;
