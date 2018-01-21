@@ -104,7 +104,7 @@ public class ListBox : GLib.Object
         if(miter_ok)
         {
 #if OLDGTK
-            menu.popup(null, null, null, 3, e.time);
+            marker_menu.popup(null, null, null, 3, e.time);
 #else
             marker_menu.popup_at_pointer(e);
 #endif
