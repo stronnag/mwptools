@@ -144,7 +144,7 @@ public class ListBox : GLib.Object
     {
         Gtk.TreeIter iter;
 
-        list_model.clear();
+        clear_mission();
         lastid = 0;
         have_rth = false;
         foreach (MissionItem m in ms.get_ways())
