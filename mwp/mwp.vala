@@ -1850,8 +1850,10 @@ public class MWPlanner : Gtk.Application {
         if(wdw_state == false)
             fsmenu_button.hide();
 
-        anim_cb(true);
         arm_warn.hide();
+
+        anim_cb(true);
+
 
         var scale = new Champlain.Scale();
         scale.connect_view(view);
@@ -2127,9 +2129,14 @@ public class MWPlanner : Gtk.Application {
         return ret;
     }
 
-
     private void setup_buttons()
     {
+        embed.button_release_event.connect((evt) => {
+                if(evt.button == 3)
+                    ls.pop_marker_menu(evt);
+                return false;
+            });
+
         view.button_release_event.connect((evt) => {
 
                 bool ret = false;

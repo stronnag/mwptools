@@ -21,7 +21,7 @@ using Clutter;
 
 public class MWPMarkers : GLib.Object
 {
-    public  Champlain.PathLayer path;
+    public Champlain.PathLayer path;
     public Champlain.MarkerLayer markers;
     public Champlain.MarkerLayer rlayer;
     public Champlain.Marker homep = null;
@@ -30,9 +30,6 @@ public class MWPMarkers : GLib.Object
     public Champlain.PathLayer hpath;
     private Champlain.PathLayer []rings;
     private bool rth_land;
-    public Gtk.TreeIter miter;
-
-    private Gtk.Menu menu;
 
     public MWPMarkers(ListBox lb, Champlain.View view, string mkcol ="#ffffff60")
     {
@@ -58,38 +55,6 @@ public class MWPMarkers : GLib.Object
         Clutter.Color rcol = {0xff, 0x0, 0x0, 0x80};
         path.set_stroke_color(rcol);
         path.set_stroke_width (8);
-
-        menu =   new Gtk.Menu ();
-        var item = new Gtk.MenuItem.with_label ("Delete");
-        item.activate.connect (() => {
-                lb.pop_menu_delete();
-            });
-        menu.add (item);
-
-        var sep = new Gtk.SeparatorMenuItem ();
-        menu.add (sep);
-
-        item = new Gtk.MenuItem.with_label ("Waypoint");
-        item.activate.connect (() => {
-                lb.pop_change_marker("WAYPOINT");
-            });
-        menu.add (item);
-        item = new Gtk.MenuItem.with_label ("PH unlimited");
-        item.activate.connect (() => {
-                lb.pop_change_marker("POSHOLD_UNLIM");
-            });
-        menu.add (item);
-        item = new Gtk.MenuItem.with_label ("PH Timed");
-        item.activate.connect (() => {
-                lb.pop_change_marker("POSHOLD_TIME");
-            });
-        menu.add (item);
-        item = new Gtk.MenuItem.with_label ("RTH");
-        item.activate.connect (() => {
-                lb.pop_change_marker("RTH");
-            });
-        menu.add (item);
-        menu.show_all();
 
         var colour = Color.from_string(mkcol);
         posring = new Champlain.Point.full(80.0, colour);
@@ -322,18 +287,8 @@ public class MWPMarkers : GLib.Object
 
         marker.button_press_event.connect((e) => {
                 if(e.button == 3)
-                {
-                    var button = e.button;
-                    var time_ = e.time;
-                    miter = iter;
-                    Idle.add(() => {
-                            menu.popup(null, null, null, button, time_);
-                            return false;
-                        });
-                    return true;
-                }
-                else
-                    return false;
+                    l.set_popup_needed(iter);
+                return false;
             });
 
         ((Champlain.Marker)marker).drag_finish.connect(() => {

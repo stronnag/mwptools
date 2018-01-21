@@ -57,9 +57,62 @@ public class ListBox : GLib.Object
     private SpeedDialog speeddialog;
     private AltDialog altdialog;
     private double ms_speed;
+    private Gtk.Menu marker_menu;
+    private Gtk.TreeIter miter;
+    private bool miter_ok = false;
 
     public int lastid {get; private set; default= 0;}
     public bool have_rth {get; private set; default= false;}
+
+    private void init_marker_menu()
+    {
+        marker_menu =   new Gtk.Menu ();
+        var item = new Gtk.MenuItem.with_label ("Delete");
+        item.activate.connect (() => {
+                pop_menu_delete();
+            });
+        marker_menu.add (item);
+
+        var sep = new Gtk.SeparatorMenuItem ();
+        marker_menu.add (sep);
+
+        item = new Gtk.MenuItem.with_label ("Waypoint");
+        item.activate.connect (() => {
+                pop_change_marker("WAYPOINT");
+            });
+        marker_menu.add (item);
+        item = new Gtk.MenuItem.with_label ("PH unlimited");
+        item.activate.connect (() => {
+                pop_change_marker("POSHOLD_UNLIM");
+            });
+        marker_menu.add (item);
+        item = new Gtk.MenuItem.with_label ("PH Timed");
+        item.activate.connect (() => {
+                pop_change_marker("POSHOLD_TIME");
+            });
+        marker_menu.add (item);
+        item = new Gtk.MenuItem.with_label ("RTH");
+        item.activate.connect (() => {
+                pop_change_marker("RTH");
+            });
+        marker_menu.add (item);
+        marker_menu.show_all();
+    }
+
+    public void pop_marker_menu(Gdk.EventButton e)
+    {
+        if(miter_ok)
+        {
+            marker_menu.popup_at_pointer(e);
+            miter_ok = false;
+        }
+    }
+
+    public void set_popup_needed(Gtk.TreeIter _miter)
+    {
+        miter = _miter;
+        miter_ok = true;
+    }
 
     public ListBox()
     {
@@ -70,6 +123,7 @@ public class ListBox : GLib.Object
                    s == "default-nav-speed")
                     calc_mission();
             });
+        init_marker_menu();
     }
 
     public void set_mission_speed(double _speed)
@@ -632,7 +686,6 @@ public class ListBox : GLib.Object
         view.button_press_event.connect( event => {
                 if(event.button == 3)
                 {
-                    var time = event.time;
 /*
                     Value val;
                     list_model.get_iter_first(out _iter);
@@ -669,7 +722,7 @@ public class ListBox : GLib.Object
                     {
                         up_item.sensitive = down_item.sensitive = false;
                     }
-                    menu.popup(null, null, null, 0, time);
+                    menu.popup_at_pointer(null);
                     return true;
                 }
                 return false;
@@ -1124,21 +1177,21 @@ public class ListBox : GLib.Object
 
     public void pop_menu_delete()
     {
-        set_selection(mp.markers.miter);
+        set_selection(miter);
         menu_delete();
     }
 
     public void pop_change_marker(string s)
     {
         Gtk.TreeIter ni;
-        if(wp_has_rth(mp.markers.miter, out ni))
+        if(wp_has_rth(miter, out ni))
         {
             set_selection(ni);
             menu_delete();
         }
         else
         {
-            set_selection(mp.markers.miter);
+            set_selection(miter);
             change_marker(s);
         }
     }
