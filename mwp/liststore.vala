@@ -103,7 +103,11 @@ public class ListBox : GLib.Object
     {
         if(miter_ok)
         {
+#if OLDGTK
+            menu.popup(null, null, null, 3, e.time);
+#else
             marker_menu.popup_at_pointer(e);
+#endif
             miter_ok = false;
         }
     }
@@ -683,7 +687,7 @@ public class ListBox : GLib.Object
                 renumber_steps(list_model);
             });
 
-        view.button_press_event.connect( event => {
+        view.button_press_event.connect( (event) => {
                 if(event.button == 3)
                 {
 /*
@@ -722,7 +726,12 @@ public class ListBox : GLib.Object
                     {
                         up_item.sensitive = down_item.sensitive = false;
                     }
-                    menu.popup_at_pointer(null);
+#if OLDGTK
+                    menu.popup(null, null, null, 3, event.time);
+
+#else
+                    menu.popup_at_pointer(event);
+#endif
                     return true;
                 }
                 return false;
