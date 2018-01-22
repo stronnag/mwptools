@@ -3757,7 +3757,7 @@ public class MWPlanner : Gtk.Application {
                 wp_max = wpi.max_wp = *rp++;
                 wpi.wps_valid = *rp++;
                 wpi.wp_count = *rp;
-
+                NavStatus.nm_pts = wpi.wp_count;
                 MWPLog.message("WP_GETINFO: %u/%u/%u\n",
                                wpi.max_wp, wpi.wp_count, wpi.wps_valid);
                 if((wpmgr.wp_flag & WPDL.GETINFO) != 0 && wpi.wps_valid == 0)
@@ -4036,7 +4036,13 @@ public class MWPlanner : Gtk.Application {
                             }
                             if (centreon == true &&
                                 !view.get_bounding_box().covers(GPSInfo.lat,GPSInfo.lon))
-                                map_centre_on(GPSInfo.lat,GPSInfo.lon);
+                            {
+                                var alat = (view.get_center_latitude() + GPSInfo.lat)/2.0;
+                                var alon = (view.get_center_longitude() + GPSInfo.lon)/2.0;
+
+                                map_centre_on(alat,alon);
+                            }
+
                         }
                     }
                     if(want_special != 0)
@@ -5749,6 +5755,9 @@ public class MWPlanner : Gtk.Application {
             markers.add_list_store(ls);
             last_file = fname;
             update_title_from_file(fname);
+            if(replayer == Player.MWP)
+                NavStatus.nm_pts = (uint8)ms.npoints;
+
             if(have_home && ls.have_rth)
                 markers.add_rth_point(home_pos.lat,home_pos.lon,ls);
             need_preview = true;

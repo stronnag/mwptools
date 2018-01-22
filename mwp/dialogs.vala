@@ -1215,6 +1215,7 @@ public class NavStatus : GLib.Object
     private bool have_hdr = false;
     private VCol vc;
 
+    public static uint8 nm_pts;
     public static MSP_NAV_STATUS n {get; private set;}
     public static MSP_ATTITUDE atti {get; private set;}
     public static MSP_ALTITUDE alti {get; private set;}
@@ -1253,6 +1254,7 @@ public class NavStatus : GLib.Object
         modsat = false;
         vc = _vc;
         _vn = -1;
+        nm_pts = 255;
 
         grid = builder.get_object ("grid3") as Gtk.Grid;
         gps_mode_label = builder.get_object ("gps_mode_lab") as Gtk.Label;
@@ -1643,6 +1645,7 @@ public class NavStatus : GLib.Object
         ls_action = null;
         ns_state = null;
         ns_action = null;
+        nm_pts = 255;
     }
 
     public void reset()
@@ -1837,6 +1840,8 @@ public class AudioThread : Object {
                                     var wpno = NavStatus.n.wp_number;
                                     if(wpno == 0)
                                         s = "Starting Mission";
+                                    else if (wpno == NavStatus.nm_pts)
+                                        s = "Navigating to home position.";
                                     else
                                         s = "Navigating to waypoint %d.".printf(wpno);
                                     break;
