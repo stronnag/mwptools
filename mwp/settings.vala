@@ -43,7 +43,7 @@ public class MWPSettings : GLib.Object
     public bool audioarmed {get; set; default=false;}
     public bool centreon {get; set; default=false;}
     public bool logarmed {get; set; default=false;}
-    public bool autofollow {get; set; default=false;}
+    public bool autofollow {get; set; default=true;}
     public uint  baudrate {get; set; default=57600;}
     public string mediap {get; private set;}
     public string heartbeat {get; private set;}
