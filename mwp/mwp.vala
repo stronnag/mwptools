@@ -4033,7 +4033,8 @@ public class MWPlanner : Gtk.Application {
                                 double cse = (usemag) ? mhead : GPSInfo.cse;
                                 craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
                             }
-                            if (centreon == true)
+                            if (centreon == true &&
+                                !view.get_bounding_box().covers(GPSInfo.lat,GPSInfo.lon))
                                 map_centre_on(GPSInfo.lat,GPSInfo.lon);
                         }
                     }
