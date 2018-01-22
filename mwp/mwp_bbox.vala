@@ -74,15 +74,7 @@ public class  BBoxDialog : Object
                 bb_ok.sensitive = true;
             });
 
-        string [] mrtypes = {"marker", "TRI", "QUADP","QUADX", "BI",
-            "GIMBAL","Y6","HEX6","FLYING_WING","Y4","HEX6X","OCTOX8",
-            "OCTOFLATP","OCTOFLATX","AIRPLANE/SINGLECOPTER,DUALCOPTER",
-            "HELI_120","HELI_90","VTAIL4","HEX6H" };
-
-        foreach(var ts in mrtypes)
-            bb_combo.append_text (ts);
-        bb_combo.active = mrtype;
-
+//        bb_combo.active = 0 /*mrtype+1*/;
 
         bb_treeview.row_activated.connect((p,c) => {
                 dialog.response(1001);
@@ -273,7 +265,7 @@ public class  BBoxDialog : Object
         Value cell;
         model.get_value (iter, 0, out cell);
         _index = (int)cell;
-        _type = bb_combo.active;
+        _type = bb_combo.active -1;
         _use_gps_cse = bb_force_gps.active;
     }
 }

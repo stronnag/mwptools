@@ -57,9 +57,66 @@ public class ListBox : GLib.Object
     private SpeedDialog speeddialog;
     private AltDialog altdialog;
     private double ms_speed;
+    private Gtk.Menu marker_menu;
+    private Gtk.TreeIter miter;
+    private bool miter_ok = false;
 
     public int lastid {get; private set; default= 0;}
     public bool have_rth {get; private set; default= false;}
+
+    private void init_marker_menu()
+    {
+        marker_menu =   new Gtk.Menu ();
+        var item = new Gtk.MenuItem.with_label ("Delete");
+        item.activate.connect (() => {
+                pop_menu_delete();
+            });
+        marker_menu.add (item);
+
+        var sep = new Gtk.SeparatorMenuItem ();
+        marker_menu.add (sep);
+
+        item = new Gtk.MenuItem.with_label ("Waypoint");
+        item.activate.connect (() => {
+                pop_change_marker("WAYPOINT");
+            });
+        marker_menu.add (item);
+        item = new Gtk.MenuItem.with_label ("PH unlimited");
+        item.activate.connect (() => {
+                pop_change_marker("POSHOLD_UNLIM");
+            });
+        marker_menu.add (item);
+        item = new Gtk.MenuItem.with_label ("PH Timed");
+        item.activate.connect (() => {
+                pop_change_marker("POSHOLD_TIME");
+            });
+        marker_menu.add (item);
+        item = new Gtk.MenuItem.with_label ("RTH");
+        item.activate.connect (() => {
+                pop_change_marker("RTH");
+            });
+        marker_menu.add (item);
+        marker_menu.show_all();
+    }
+
+    public void pop_marker_menu(Gdk.EventButton e)
+    {
+        if(miter_ok)
+        {
+#if OLDGTK
+            marker_menu.popup(null, null, null, 3, e.time);
+#else
+            marker_menu.popup_at_pointer(e);
+#endif
+            miter_ok = false;
+        }
+    }
+
+    public void set_popup_needed(Gtk.TreeIter _miter)
+    {
+        miter = _miter;
+        miter_ok = true;
+    }
 
     public ListBox()
     {
@@ -70,6 +127,7 @@ public class ListBox : GLib.Object
                    s == "default-nav-speed")
                     calc_mission();
             });
+        init_marker_menu();
     }
 
     public void set_mission_speed(double _speed)
@@ -82,11 +140,11 @@ public class ListBox : GLib.Object
         return ms_speed;
     }
 
-    public void import_mission(Mission ms, double speed = 0.0)
+    public void import_mission(Mission ms, bool  autoland = false)
     {
         Gtk.TreeIter iter;
 
-        list_model.clear();
+        clear_mission();
         lastid = 0;
         have_rth = false;
         foreach (MissionItem m in ms.get_ways())
@@ -100,7 +158,7 @@ public class ListBox : GLib.Object
                     no="";
                     m1 = ((double)m.param1);
                     have_rth = true;
-                    if (MWPlanner.conf.rth_autoland)
+                    if (autoland)
                     {
                         m1 = 1;
                         MWPLog.message("Setting autoland for RTH\n");
@@ -629,10 +687,9 @@ public class ListBox : GLib.Object
                 renumber_steps(list_model);
             });
 
-        view.button_press_event.connect( event => {
+        view.button_press_event.connect( (event) => {
                 if(event.button == 3)
                 {
-                    var time = event.time;
 /*
                     Value val;
                     list_model.get_iter_first(out _iter);
@@ -669,7 +726,12 @@ public class ListBox : GLib.Object
                     {
                         up_item.sensitive = down_item.sensitive = false;
                     }
-                    menu.popup(null, null, null, 0, time);
+#if OLDGTK
+                    menu.popup(null, null, null, 3, event.time);
+
+#else
+                    menu.popup_at_pointer(event);
+#endif
                     return true;
                 }
                 return false;
@@ -1124,21 +1186,21 @@ public class ListBox : GLib.Object
 
     public void pop_menu_delete()
     {
-        set_selection(mp.markers.miter);
+        set_selection(miter);
         menu_delete();
     }
 
     public void pop_change_marker(string s)
     {
         Gtk.TreeIter ni;
-        if(wp_has_rth(mp.markers.miter, out ni))
+        if(wp_has_rth(miter, out ni))
         {
             set_selection(ni);
             menu_delete();
         }
         else
         {
-            set_selection(mp.markers.miter);
+            set_selection(miter);
             change_marker(s);
         }
     }
@@ -1247,13 +1309,17 @@ public class ListBox : GLib.Object
             var res = calc_mission_dist(out d, out lt, out et, extra);
             if (res == true)
             {
-                route = "Distance: %.0f%s, fly: %s, loiter: %s".printf(
-                    Units.distance(d),
-                    Units.distance_units(),
-                    show_time(et),show_time(lt));
+                StringBuilder sb = new StringBuilder();
+                sb.append_printf("Path: %.0f%s, fly: %s",
+                                 Units.distance(d),
+                                 Units.distance_units(),
+                                 show_time(et));
+                if(lt > 0.0)
+                    sb.append_printf(", loiter: %s", show_time(lt));
+                route = sb.str;
             }
             else
-                route = "Indeterminate distance";
+                route = "Indeterminate path";
         }
         else
         {

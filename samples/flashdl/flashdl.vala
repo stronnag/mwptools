@@ -97,7 +97,7 @@ public class Flashdl : Object
                 {
                     deserialise_u32(raw+5, out fsize);
                     deserialise_u32(raw+9, out used);
-                    efsize = esize(fsize);
+                    efsize = esize(used);
                     var pct = 100 * used  / fsize;
                     MWPLog.message ("Data Flash %u /  %u (%u%%)\n", used, fsize, pct);
                     if(used == 0 || info)
