@@ -124,6 +124,12 @@
       <description>start audio on arm (and stop on disarm)</description>
     </key>
 
+    <key type="b" name="centre-on">
+      <default>true</default>
+      <summary>centre map on GPS as needed</summary>
+      <description>centre map on GPS as needed</description>
+    </key>
+
     <key type="b" name="log-on-arm">
       <default>false</default>
       <summary>start logging on arm</summary>

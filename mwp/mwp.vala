@@ -1647,6 +1647,7 @@ public class MWPlanner : Gtk.Application {
                     stop_audio();
             });
         var centreonb = builder.get_object ("checkbutton1") as Gtk.CheckButton;
+        centreonb.active = conf.centreon;
         centreonb.toggled.connect (() => {
                 centreon = centreonb.active;
             });
