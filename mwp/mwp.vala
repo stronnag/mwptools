@@ -4036,7 +4036,13 @@ public class MWPlanner : Gtk.Application {
                             }
                             if (centreon == true &&
                                 !view.get_bounding_box().covers(GPSInfo.lat,GPSInfo.lon))
-                                map_centre_on(GPSInfo.lat,GPSInfo.lon);
+                            {
+                                var alat = (view.get_center_latitude() + GPSInfo.lat)/2.0;
+                                var alon = (view.get_center_longitude() + GPSInfo.lon)/2.0;
+
+                                map_centre_on(alat,alon);
+                            }
+
                         }
                     }
                     if(want_special != 0)
