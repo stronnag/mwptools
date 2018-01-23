@@ -4782,11 +4782,11 @@ Clicking Quit will terminate the application.
             </child>
             <child>
               <object class="GtkCheckButton" id="checkbutton1">
-                <property name="label" translatable="yes">Centre-on</property>
+                <property name="label" translatable="yes">In View</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
-                <property name="tooltip_text" translatable="yes">When enabled, centres the map on the GPS location</property>
+                <property name="tooltip_text" translatable="yes">When enabled,  ensures the GPS position is within the map view</property>
                 <property name="halign">start</property>
                 <property name="draw_indicator">True</property>
               </object>
