@@ -471,9 +471,6 @@ public class MWPlanner : Gtk.Application {
     private uint8 last_nmode = 0;
     private uint8 last_nwp = 0;
 
-    private Gtk.FileChooserDialog mf_chooser;
-    private Gtk.Button mf_open;
-
     private static bool is_wayland = false;
     private static bool use_wayland = false;
     private static bool permawarn = false;
@@ -1119,8 +1116,6 @@ public class MWPlanner : Gtk.Application {
         dockmenus[DOCKLETS.ARTHOR] = "art-hor";
         dockmenus[DOCKLETS.FBOX] =  "flight-view";
 
-        setup_mf_chooser();
-
         var saq = new GLib.SimpleAction("file-open",null);
         saq.activate.connect(() => {
                 on_file_open();
@@ -1647,6 +1642,7 @@ public class MWPlanner : Gtk.Application {
                     stop_audio();
             });
         var centreonb = builder.get_object ("checkbutton1") as Gtk.CheckButton;
+        centreonb.active = centreon = conf.centreon;
         centreonb.toggled.connect (() => {
                 centreon = centreonb.active;
             });
@@ -3756,7 +3752,7 @@ public class MWPlanner : Gtk.Application {
                 wp_max = wpi.max_wp = *rp++;
                 wpi.wps_valid = *rp++;
                 wpi.wp_count = *rp;
-
+                NavStatus.nm_pts = wpi.wp_count;
                 MWPLog.message("WP_GETINFO: %u/%u/%u\n",
                                wpi.max_wp, wpi.wp_count, wpi.wps_valid);
                 if((wpmgr.wp_flag & WPDL.GETINFO) != 0 && wpi.wps_valid == 0)
@@ -4035,7 +4031,13 @@ public class MWPlanner : Gtk.Application {
                             }
                             if (centreon == true &&
                                 !view.get_bounding_box().covers(GPSInfo.lat,GPSInfo.lon))
-                                map_centre_on(GPSInfo.lat,GPSInfo.lon);
+                            {
+                                var alat = (view.get_center_latitude() + GPSInfo.lat)/2.0;
+                                var alon = (view.get_center_longitude() + GPSInfo.lon)/2.0;
+
+                                map_centre_on(alat,alon);
+                            }
+
                         }
                     }
                     if(want_special != 0)
@@ -5672,12 +5674,42 @@ public class MWPlanner : Gtk.Application {
 
     public void on_file_save_as ()
     {
+        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
+            "Select a mission file", null, Gtk.FileChooserAction.SAVE,
+            "_Cancel",
+            Gtk.ResponseType.CANCEL,
+            "_Save",
+            Gtk.ResponseType.ACCEPT);
+        chooser.set_transient_for(window);
+        chooser.select_multiple = false;
+        Gtk.FileFilter filter = new Gtk.FileFilter ();
         if(conf.missionpath != null)
-            mf_chooser.set_current_folder (conf.missionpath);
-        mf_open.set_label("Save");
-        mf_chooser.title="";
-        mf_chooser.set_action (Gtk.FileChooserAction.SAVE);
-        mf_chooser.show_all();
+            chooser.set_current_folder (conf.missionpath);
+
+        filter.set_filter_name ("Mission");
+        filter.add_pattern ("*.mission");
+        filter.add_pattern ("*.xml");
+//            filter.add_pattern ("*.json");
+        chooser.add_filter (filter);
+
+        filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("All Files");
+        filter.add_pattern ("*");
+        chooser.add_filter (filter);
+
+        chooser.response.connect((id) => {
+                if (id == Gtk.ResponseType.ACCEPT) {
+                    last_file = chooser.get_filename ();
+                    if(!(last_file.has_suffix(".mission") ||
+                         last_file.has_suffix(".xml")))
+                        last_file += ".mission";
+                    var m = get_mission_data();
+                    m.to_xml_file(last_file);
+                    update_title_from_file(last_file);
+                }
+                chooser.close ();
+            });
+        chooser.show_all();
     }
 
     private void update_title_from_file(string fname)
@@ -5748,6 +5780,9 @@ public class MWPlanner : Gtk.Application {
             markers.add_list_store(ls);
             last_file = fname;
             update_title_from_file(fname);
+            if(replayer == Player.MWP)
+                NavStatus.nm_pts = (uint8)ms.npoints;
+
             if(have_home && ls.have_rth)
                 markers.add_rth_point(home_pos.lat,home_pos.lon,ls);
             need_preview = true;
@@ -5782,25 +5817,30 @@ public class MWPlanner : Gtk.Application {
         msg.show();
     }
 
-    private void setup_mf_chooser()
+    private void on_file_open()
     {
-        mf_chooser = builder.get_object ("file_open_chooser") as Gtk.FileChooserDialog;
-         mf_open = builder.get_object ("mf_open") as Gtk.Button;
-        Gtk.Button mf_cancel = builder.get_object ("mf_cancel") as Gtk.Button;
+        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
+            "Select a mission file", null, Gtk.FileChooserAction.OPEN,
+            "_Cancel",
+            Gtk.ResponseType.CANCEL,
+            "_Open",
+            Gtk.ResponseType.ACCEPT);
+        chooser.select_multiple = false;
+        if(conf.missionpath != null)
+            chooser.set_current_folder (conf.missionpath);
 
-        mf_chooser.select_multiple = false;
-
-        mf_chooser.set_transient_for(window);
+        chooser.set_transient_for(window);
         Gtk.FileFilter filter = new Gtk.FileFilter ();
-	filter.set_filter_name ("Mission");
-	filter.add_pattern ("*.mission");
-	filter.add_pattern ("*.xml");
-	mf_chooser.add_filter (filter);
+        filter.set_filter_name ("Mission");
+        filter.add_pattern ("*.mission");
+        filter.add_pattern ("*.xml");
+//      filter.add_pattern ("*.json");
+        chooser.add_filter (filter);
 
-	filter = new Gtk.FileFilter ();
-	filter.set_filter_name ("All Files");
-	filter.add_pattern ("*");
-	mf_chooser.add_filter (filter);
+        filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("All Files");
+        filter.add_pattern ("*");
+        chooser.add_filter (filter);
 
         var prebox = new Gtk.Box(Gtk.Orientation.VERTICAL, 2);
         var preview = new Gtk.Image();
@@ -5808,9 +5848,9 @@ public class MWPlanner : Gtk.Application {
         prebox.pack_start (preview, false, false, 1);
         prebox.pack_start (plabel, false, false, 1);
 
-        mf_chooser.set_preview_widget(prebox);
-        mf_chooser.update_preview.connect (() => {
-                string uri = mf_chooser.get_preview_uri ();
+        chooser.set_preview_widget(prebox);
+        chooser.update_preview.connect (() => {
+                string uri = chooser.get_preview_uri ();
                 Gdk.Pixbuf pixbuf = null;
                 if (uri != null && uri.has_prefix ("file://") == true)
                 {
@@ -5858,51 +5898,17 @@ public class MWPlanner : Gtk.Application {
                     prebox.hide ();
             });
 
-        mf_open.clicked.connect(() => {
-                handle_file_action();
+        chooser.response.connect((id) => {
+                if (id == Gtk.ResponseType.ACCEPT)
+                {
+                    var fn = chooser.get_filename ();
+                    chooser.close ();
+                    load_file(fn);
+                }
+                else
+                    chooser.close ();
             });
-
-
-        mf_chooser.file_activated.connect(() => {
-                handle_file_action();
-            });
-
-        mf_cancel.clicked.connect(() => {
-                mf_chooser.hide();
-            });
-
-        mf_chooser.destroy.connect(() => {
-                mf_chooser.hide();
-            });
-    }
-
-
-    private void handle_file_action()
-    {
-        var fn = mf_chooser.get_filename ();
-        mf_chooser.hide ();
-        if(mf_chooser.action == Gtk.FileChooserAction.OPEN)
-            load_file(fn);
-        else if(mf_chooser.action == Gtk.FileChooserAction.SAVE)
-        {
-            last_file = fn;
-            if(!(last_file.has_suffix(".mission") ||
-                 last_file.has_suffix(".xml")))
-                last_file += ".mission";
-            var m = get_mission_data();
-            m.to_xml_file(last_file);
-            update_title_from_file(last_file);
-        }
-    }
-
-    private void on_file_open()
-    {
-        if(conf.missionpath != null)
-            mf_chooser.set_current_folder (conf.missionpath);
-        mf_chooser.set_action (Gtk.FileChooserAction.OPEN);
-        mf_open.set_label("Open");
-        mf_chooser.title="Select mission file";
-        mf_chooser.show_all();
+        chooser.show_all();
     }
 
     private void replay_log(bool delay=true)
@@ -5933,17 +5939,17 @@ public class MWPlanner : Gtk.Application {
             filter.add_pattern ("*");
             chooser.add_filter (filter);
 
-            var res = chooser.run ();
-
-                // Process response:
-            if ( res == Gtk.ResponseType.ACCEPT) {
-                var fn = chooser.get_filename ();
-                chooser.close ();
-                usemag = force_mag;
-                run_replay(fn, delay, Player.MWP);
-            }
-            else
-                chooser.close ();
+            chooser.response.connect((res) => {
+                    if ( res == Gtk.ResponseType.ACCEPT) {
+                        var fn = chooser.get_filename ();
+                        chooser.close ();
+                        usemag = force_mag;
+                        run_replay(fn, delay, Player.MWP);
+                    }
+                    else
+                        chooser.close ();
+                });
+            chooser.show_all();
         }
     }
 
