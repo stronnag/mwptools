@@ -62,6 +62,8 @@
           <attribute name="action">win.load-bb</attribute>
 	  <link name="loadbb" id="loadbb"></link>
 	</item>
+      </section>
+      <section>
         <item>
           <attribute name="label">Stop Replay</attribute>
           <attribute name="action">win.stop-replay</attribute>

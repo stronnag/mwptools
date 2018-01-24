@@ -58,7 +58,7 @@ public class Mission : GLib.Object
         miny=90;
         minx=180;
         cx = cy = 0;
-        zoom = -1;
+        zoom = 0;
         maxalt = -2147483647;
         dist = -1;
         et = -1;
@@ -135,7 +135,7 @@ public class Mission : GLib.Object
         }
         if(npoints != 0)
         {
-            if(zoom == -1)
+            if(zoom == 0)
             {
                 cy = (maxy + miny) / 2.0;
                 cx = (maxx + minx) / 2.0;
