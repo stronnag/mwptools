@@ -103,6 +103,11 @@ public struct BatteryLevels
     }
 }
 
+public struct MapSize
+{
+    double width;
+    double height;
+}
 
 public class Alert
 {
@@ -470,6 +475,8 @@ public class MWPlanner : Gtk.Application {
     private uint8 downgrade = 0;
     private uint8 last_nmode = 0;
     private uint8 last_nwp = 0;
+
+    private MapSize mapsize;
 
     private static bool is_wayland = false;
     private static bool use_wayland = false;
@@ -1413,14 +1420,21 @@ public class MWPlanner : Gtk.Application {
         view = embed.get_view();
         view.set_reactive(true);
 
+        view.notify["zoom-level"].connect(() => {
+                var val = view.get_zoom_level();
+                var zval = (int)zoomer.adjustment.value;
+                if (val != zval)
+                    zoomer.adjustment.value = (int)val;
+
+                get_map_size();
+            });
+
         zoomer.adjustment.value_changed.connect (() =>
             {
                 int  zval = (int)zoomer.adjustment.value;
                 var val = view.get_zoom_level();
                 if (val != zval)
-                {
-                    view.set_property("zoom-level", zval);
-                }
+                    view.zoom_level = zval;
             });
 
         var ent = builder.get_object ("entry1") as Gtk.Entry;
@@ -1466,7 +1480,7 @@ public class MWPlanner : Gtk.Application {
                 var val = view.get_zoom_level();
                 var mmax = view.get_max_zoom_level();
                 if (val != mmax)
-                    view.set_property("zoom-level", val+1);
+                    view.zoom_level = val+1;
                 return true;
             });
 
@@ -1474,7 +1488,7 @@ public class MWPlanner : Gtk.Application {
                 var val = view.get_zoom_level();
                 var mmin = view.get_min_zoom_level();
                 if (val != mmin)
-                    view.set_property("zoom-level", val-1);
+                    view.zoom_level = val-1;
                 return true;
             });
 
@@ -1597,13 +1611,6 @@ public class MWPlanner : Gtk.Application {
         var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL,2);
 
         var pane = builder.get_object ("paned1") as Gtk.Paned;
-
-        view.notify["zoom-level"].connect(() => {
-                var val = view.get_zoom_level();
-                var zval = (int)zoomer.adjustment.value;
-                if (val != zval)
-                    zoomer.adjustment.value = (int)val;
-            });
 
         markers = new MWPMarkers(ls,view, conf.wp_spotlight);
 /*
@@ -1744,7 +1751,7 @@ public class MWPlanner : Gtk.Application {
                 clon = conf.longitude;
             }
             map_centre_on(clat, clon);
-            view.set_property("zoom-level", conf.zoom);
+            view.zoom_level = conf.zoom;
             zoomer.adjustment.value = conf.zoom;
         }
         else
@@ -1820,6 +1827,7 @@ public class MWPlanner : Gtk.Application {
                             fbox.check_size();
                             return Source.REMOVE;
                         });
+                    get_map_size();
                 }
             });
 
@@ -1854,7 +1862,6 @@ public class MWPlanner : Gtk.Application {
         arm_warn.hide();
 
         anim_cb(true);
-
 
         var scale = new Champlain.Scale();
         scale.connect_view(view);
@@ -1994,6 +2001,10 @@ public class MWPlanner : Gtk.Application {
                set_dock_menu_status();
            });
 
+
+       get_map_size();
+
+
        if(rfile != null)
        {
            usemag = force_mag;
@@ -2022,6 +2033,21 @@ public class MWPlanner : Gtk.Application {
             mkcon = true;
         }
 
+    }
+
+    private void get_map_size()
+    {
+        var bb = view.get_bounding_box();
+        double dist,cse;
+        double apos;
+
+        apos = (bb.top+bb.bottom)/2;
+        Geo.csedist(apos, bb.left, apos, bb.right, out dist, out cse);
+        mapsize.width = dist *= 1852.0;
+
+        apos = (bb.left+bb.right)/2;
+        Geo.csedist(bb.top, apos, bb.bottom, apos, out dist, out cse);
+        mapsize.height = dist *= 1852.0;
     }
 
     private bool get_primary_size(ref Gdk.Rectangle rect)
@@ -4032,12 +4058,26 @@ public class MWPlanner : Gtk.Application {
                             if (centreon == true &&
                                 !view.get_bounding_box().covers(GPSInfo.lat,GPSInfo.lon))
                             {
-                                var alat = (view.get_center_latitude() + GPSInfo.lat)/2.0;
-                                var alon = (view.get_center_longitude() + GPSInfo.lon)/2.0;
+                                var mlat = view.get_center_latitude();
+                                var mlon = view.get_center_longitude();
+                                double alat, alon;
+                                double msize = Math.fmin(mapsize.width, mapsize.height);
+                                double dist,cse;
+                                Geo.csedist(GPSInfo.lat, GPSInfo.lon,
+                                            mlat, mlon, out dist, out cse);
 
+                                if(dist * 1852.0 > msize)
+                                {
+                                    alat = GPSInfo.lat;
+                                    alon = GPSInfo.lon;
+                                }
+                                else
+                                {
+                                    alat = (mlat + GPSInfo.lat)/2.0;
+                                    alon = (mlon + GPSInfo.lon)/2.0;
+                                }
                                 map_centre_on(alat,alon);
                             }
-
                         }
                     }
                     if(want_special != 0)
@@ -5564,12 +5604,12 @@ public class MWPlanner : Gtk.Application {
                 if (zval > mmax)
                 {
                     chg = true;
-                    view.set_property("zoom-level", mmax);
+                    view.zoom_level = mmax;
                 }
                 if (zval < mmin)
                 {
                     chg = true;
-                    view.set_property("zoom-level", mmin);
+                    view.zoom_level = mmin;
                 }
                 if (chg == true)
                     map_centre_on(cy, cx);
@@ -5715,11 +5755,14 @@ public class MWPlanner : Gtk.Application {
     private void update_title_from_file(string fname)
     {
         var basename = GLib.Path.get_basename(fname);
-        window.title = @"mwp = $basename";
+        StringBuilder sb = new StringBuilder("mwp = ");
+        sb.append(basename);
+        window.title = sb.str;
     }
 
     private uint guess_appropriate_zoom(Mission ms)
     {
+            /**************************************
             // Formula from:
             // http://wiki.openstreetmap.org/wiki/Zoom_levels
             //
@@ -5747,6 +5790,18 @@ public class MWPlanner : Gtk.Application {
                     break;
             }
         }
+            ******************************/
+        uint z = 18;
+        if(window_h != -1 && window_w != -1)
+        {
+            for(z = view.get_max_zoom_level(); z >= view.get_min_zoom_level(); z--)
+            {
+                var bb = view.get_bounding_box_for_zoom_level(z);
+                if(bb.top > ms.maxy && bb.bottom < ms.miny &&
+                   bb.right > ms.maxx && bb.left < ms.minx)
+                    break;
+            }
+        }
         return z;
     }
 
@@ -5767,7 +5822,7 @@ public class MWPlanner : Gtk.Application {
             var mmax = view.get_max_zoom_level();
             var mmin = view.get_min_zoom_level();
             map_centre_on(ms.cy, ms.cx);
-            if(ms.zoom == -1)
+            if(ms.zoom == 0)
                 ms.zoom = guess_appropriate_zoom(ms);
 
             if (ms.zoom < mmin)
@@ -5776,7 +5831,7 @@ public class MWPlanner : Gtk.Application {
             if (ms.zoom > mmax)
                 ms.zoom = mmax;
 
-            view.set_property("zoom-level", ms.zoom);
+            view.zoom_level =  ms.zoom;
             markers.add_list_store(ls);
             last_file = fname;
             update_title_from_file(fname);
