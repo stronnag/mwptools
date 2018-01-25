@@ -69,3 +69,5 @@ install: $(APPS)
 	glib-compile-schemas $(datadir)/share/glib-2.0/schemas
 	install -d $(datadir)/share/doc/mwp
 	install -m 644 ../docs/mwptools.pdf $(datadir)/share/doc/mwp/mwptools.pdf
+	install -d /etc/bash_completion.d/
+	install -m 644 mwp_complete.sh /etc/bash_completion.d/mwp

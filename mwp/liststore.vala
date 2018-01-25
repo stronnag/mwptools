@@ -399,6 +399,16 @@ public class ListBox : GLib.Object
                     list_model.set_value (iter, WY_Columns.INT1, (double)ltime);
                     break;
                 case MSP.Action.RTH:
+                    if(old == MSP.Action.POSHOLD_UNLIM ||
+                       old == MSP.Action.POSHOLD_TIME)
+                    {
+                        list_model.set_value (iter,
+                                              WY_Columns.ACTION,
+                                              MSP.Action.WAYPOINT);
+                        list_model.set_value (iter, WY_Columns.TYPE,
+                                              MSP.get_wpname(MSP.Action.WAYPOINT));
+                        list_model.set_value (iter, WY_Columns.INT1, 0.0);
+                    }
                     Gtk.TreeIter ni;
                     list_model.insert_after (out ni, iter);
                     list_model.set_value (ni, WY_Columns.ACTION, MSP.Action.RTH);
