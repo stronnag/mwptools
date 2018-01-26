@@ -402,7 +402,7 @@
 
     <key name="auto-wp-edit" type="b">
       <default>true</default>
-      <summary>Whether you can direct WP editing is available
+      <summary>Whether you direct WP editing is available
       </summary>
       <description>
 	If true, the user can edit / create waypoints directly by
@@ -410,5 +410,15 @@
 	WP Edit button to enable editing
       </description>
     </key>
+
+    <key name="use-legacy-centre-on" type="b">
+      <default>false</default>
+      <summary>If true, uses legacy centre-on</summary>
+      <description>
+	If true, uses legacy centre-on mode rather than the new "In
+	View" mode.
+      </description>
+    </key>
+
   </schema>
 </schemalist>

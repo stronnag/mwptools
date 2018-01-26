@@ -83,6 +83,7 @@ public class MWPSettings : GLib.Object
     public string wp_spotlight {get; set; default="#ffffff60";}
     public uint flash_warn { get; set; default=0; }
     public bool auto_wp_edit {get; set; default=true;}
+    public bool use_legacy_centre_on {get; set; default=false;}
 
     public signal void settings_update (string s);
 
@@ -293,6 +294,9 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "auto-wp-edit")
             auto_wp_edit = settings.get_boolean("auto-wp-edit");
+
+        if(s == null || s == "use-legacy-centre-on")
+            use_legacy_centre_on = settings.get_boolean("use-legacy-centre-on");
     }
 
     public void save_pane()

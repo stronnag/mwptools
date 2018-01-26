@@ -1649,6 +1649,9 @@ public class MWPlanner : Gtk.Application {
                     stop_audio();
             });
         var centreonb = builder.get_object ("checkbutton1") as Gtk.CheckButton;
+        if(conf.use_legacy_centre_on)
+            centreonb.set_label("Centre On");
+
         centreonb.active = centreon = conf.centreon;
         centreonb.toggled.connect (() => {
                 centreon = centreonb.active;
@@ -4055,28 +4058,33 @@ public class MWPlanner : Gtk.Application {
                                 double cse = (usemag) ? mhead : GPSInfo.cse;
                                 craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
                             }
-                            if (centreon == true &&
-                                !view.get_bounding_box().covers(GPSInfo.lat,GPSInfo.lon))
+                            if (centreon == true)
                             {
-                                var mlat = view.get_center_latitude();
-                                var mlon = view.get_center_longitude();
-                                double alat, alon;
-                                double msize = Math.fmin(mapsize.width, mapsize.height);
-                                double dist,cse;
-                                Geo.csedist(GPSInfo.lat, GPSInfo.lon,
-                                            mlat, mlon, out dist, out cse);
+                                if(conf.use_legacy_centre_on)
+                                    map_centre_on(GPSInfo.lat,GPSInfo.lon);
+                                else if(!view.get_bounding_box().covers(
+                                            GPSInfo.lat,GPSInfo.lon))
+                                {
+                                    var mlat = view.get_center_latitude();
+                                    var mlon = view.get_center_longitude();
+                                    double alat, alon;
+                                    double msize = Math.fmin(mapsize.width, mapsize.height);
+                                    double dist,cse;
+                                    Geo.csedist(GPSInfo.lat, GPSInfo.lon,
+                                                mlat, mlon, out dist, out cse);
 
-                                if(dist * 1852.0 > msize)
-                                {
-                                    alat = GPSInfo.lat;
-                                    alon = GPSInfo.lon;
+                                    if(dist * 1852.0 > msize)
+                                    {
+                                        alat = GPSInfo.lat;
+                                        alon = GPSInfo.lon;
+                                    }
+                                    else
+                                    {
+                                        alat = (mlat + GPSInfo.lat)/2.0;
+                                        alon = (mlon + GPSInfo.lon)/2.0;
+                                    }
+                                    map_centre_on(alat,alon);
                                 }
-                                else
-                                {
-                                    alat = (mlat + GPSInfo.lat)/2.0;
-                                    alon = (mlon + GPSInfo.lon)/2.0;
-                                }
-                                map_centre_on(alat,alon);
                             }
                         }
                     }
