@@ -30,7 +30,7 @@ _mwp_complete()
       return 0
       ;;
     '-b'|'--replay-bbox')
-      _mwp_file TXT
+      _mwp_files TXT
       return 0
       ;;
     '--centre')
