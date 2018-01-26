@@ -393,7 +393,6 @@ public class MWPlanner : Gtk.Application {
     private time_t pausetm;
     private uint32 rtcsecs = 0;
 
-    private int gfcse = 0;
     private uint8 armed = 0;
     private uint8 dac = 0;
     private bool have_home = false;
@@ -3247,38 +3246,45 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-    private void check_centre_on()
+    private void update_pos_info()
     {
-        if (centreon == true)
+        if(pos_valid(GPSInfo.lat, GPSInfo.lon))
         {
-            if(conf.use_legacy_centre_on)
-                map_centre_on(GPSInfo.lat,GPSInfo.lon);
-            else if(!view.get_bounding_box().covers(
-                        GPSInfo.lat,GPSInfo.lon))
+            if(follow == true)
             {
-                var mlat = view.get_center_latitude();
-                var mlon = view.get_center_longitude();
-                double alat, alon;
-                double msize = Math.fmin(mapsize.width, mapsize.height);
-                double dist,cse;
-                Geo.csedist(GPSInfo.lat, GPSInfo.lon,
-                            mlat, mlon, out dist, out cse);
+                if (centreon == true)
+                {
+                    if(conf.use_legacy_centre_on)
+                        map_centre_on(GPSInfo.lat,GPSInfo.lon);
+                    else if(!view.get_bounding_box().covers(
+                                GPSInfo.lat,GPSInfo.lon))
+                    {
+                        var mlat = view.get_center_latitude();
+                        var mlon = view.get_center_longitude();
+                        double alat, alon;
+                        double msize = Math.fmin(mapsize.width, mapsize.height);
+                        double dist,_cse;
+                        Geo.csedist(GPSInfo.lat, GPSInfo.lon,
+                                    mlat, mlon, out dist, out _cse);
 
-                if(dist * 1852.0 > msize)
-                {
-                    alat = GPSInfo.lat;
-                    alon = GPSInfo.lon;
+                        if(dist * 1852.0 > msize)
+                        {
+                            alat = GPSInfo.lat;
+                            alon = GPSInfo.lon;
+                        }
+                        else
+                        {
+                            alat = (mlat + GPSInfo.lat)/2.0;
+                            alon = (mlon + GPSInfo.lon)/2.0;
+                        }
+                        map_centre_on(alat,alon);
+                    }
                 }
-                else
-                {
-                    alat = (mlat + GPSInfo.lat)/2.0;
-                    alon = (mlon + GPSInfo.lon)/2.0;
-                }
-                map_centre_on(alat,alon);
+                double cse = (usemag) ? mhead : GPSInfo.cse;
+                craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
             }
         }
     }
-
 
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
@@ -4084,16 +4090,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     if(craft != null)
                     {
-                        if(pos_valid(GPSInfo.lat, GPSInfo.lon))
-                        {
-                            if(follow == true)
-                            {
-                                double cse = (usemag) ? mhead : GPSInfo.cse;
-                                craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
-                            }
-                            check_centre_on();
-
-                        }
+                        update_pos_info();
                     }
                     if(want_special != 0)
                         process_pos_states(GPSInfo.lat,GPSInfo.lon,
@@ -4384,11 +4381,7 @@ public class MWPlanner : Gtk.Application {
 
                 if(fix > 0)
                 {
-                    double gflat = gf.lat/10000000.0;
-                    double gflon = gf.lon/10000000.0;
-
                     sat_coverage();
-
                     if(armed != 0)
                     {
                         update_odo((double)gf.speed, ddm);
@@ -4397,7 +4390,7 @@ public class MWPlanner : Gtk.Application {
                             if(_nsats >= SATS.MINSATS)
                             {
                                 double dist,cse;
-                                Geo.csedist(gflat, gflon,
+                                Geo.csedist(GPSInfo.lat, GPSInfo.lon,
                                             home_pos.lat, home_pos.lon,
                                             out dist, out cse);
                                 if(dist < 64)
@@ -4420,15 +4413,10 @@ public class MWPlanner : Gtk.Application {
 
                     if(craft != null && fix > 0 && _nsats >= 5)
                     {
-                        if(pos_valid(gflat, gflon))
-                        {
-                            if(follow == true)
-                                craft.set_lat_lon(gflat,gflon,gfcse);
-                            check_centre_on();
-                        }
+                        update_pos_info();
                     }
                     if(want_special != 0)
-                        process_pos_states(gflat, gflon, gf.alt/100.0, "GFrame");
+                        process_pos_states(GPSInfo.lat, GPSInfo.lon, gf.alt/100.0, "GFrame");
                 }
                 fbox.update(item_visible(DOCKLETS.FBOX));
             }
@@ -4464,7 +4452,7 @@ public class MWPlanner : Gtk.Application {
                 var h = af.heading;
                 if(h < 0)
                     h += 360;
-                gfcse = h;
+                mhead = h;
                 navstatus.update_ltm_a(af, item_visible(DOCKLETS.NAVSTATUS));
                 art_win.update(af.roll*10, af.pitch*10, item_visible(DOCKLETS.ARTHOR));
             }
