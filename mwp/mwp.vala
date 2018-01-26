@@ -3247,6 +3247,39 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
+    private void check_centre_on()
+    {
+        if (centreon == true)
+        {
+            if(conf.use_legacy_centre_on)
+                map_centre_on(GPSInfo.lat,GPSInfo.lon);
+            else if(!view.get_bounding_box().covers(
+                        GPSInfo.lat,GPSInfo.lon))
+            {
+                var mlat = view.get_center_latitude();
+                var mlon = view.get_center_longitude();
+                double alat, alon;
+                double msize = Math.fmin(mapsize.width, mapsize.height);
+                double dist,cse;
+                Geo.csedist(GPSInfo.lat, GPSInfo.lon,
+                            mlat, mlon, out dist, out cse);
+
+                if(dist * 1852.0 > msize)
+                {
+                    alat = GPSInfo.lat;
+                    alon = GPSInfo.lon;
+                }
+                else
+                {
+                    alat = (mlat + GPSInfo.lat)/2.0;
+                    alon = (mlon + GPSInfo.lon)/2.0;
+                }
+                map_centre_on(alat,alon);
+            }
+        }
+    }
+
+
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
@@ -4058,34 +4091,8 @@ public class MWPlanner : Gtk.Application {
                                 double cse = (usemag) ? mhead : GPSInfo.cse;
                                 craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
                             }
-                            if (centreon == true)
-                            {
-                                if(conf.use_legacy_centre_on)
-                                    map_centre_on(GPSInfo.lat,GPSInfo.lon);
-                                else if(!view.get_bounding_box().covers(
-                                            GPSInfo.lat,GPSInfo.lon))
-                                {
-                                    var mlat = view.get_center_latitude();
-                                    var mlon = view.get_center_longitude();
-                                    double alat, alon;
-                                    double msize = Math.fmin(mapsize.width, mapsize.height);
-                                    double dist,cse;
-                                    Geo.csedist(GPSInfo.lat, GPSInfo.lon,
-                                                mlat, mlon, out dist, out cse);
+                            check_centre_on();
 
-                                    if(dist * 1852.0 > msize)
-                                    {
-                                        alat = GPSInfo.lat;
-                                        alon = GPSInfo.lon;
-                                    }
-                                    else
-                                    {
-                                        alat = (mlat + GPSInfo.lat)/2.0;
-                                        alon = (mlon + GPSInfo.lon)/2.0;
-                                    }
-                                    map_centre_on(alat,alon);
-                                }
-                            }
                         }
                     }
                     if(want_special != 0)
@@ -4417,8 +4424,7 @@ public class MWPlanner : Gtk.Application {
                         {
                             if(follow == true)
                                 craft.set_lat_lon(gflat,gflon,gfcse);
-                            if (centreon == true)
-                                map_centre_on(gflat,gflon);
+                            check_centre_on();
                         }
                     }
                     if(want_special != 0)
