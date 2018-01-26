@@ -6,6 +6,7 @@ public class Flashdl : Object
     private static bool erase = false;
     private static bool xerase = false;
     private static bool info = false;
+    private static bool test = false;
 
     const OptionEntry[] options = {
         { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", null},
@@ -14,6 +15,7 @@ public class Flashdl : Object
         { "erase", 'e', 0,  OptionArg.NONE, out erase, "erase on completion", null},
         { "only-erase", 'E', 0,  OptionArg.NONE, out xerase, "erase only", null},
         { "info", 'i', 0,  OptionArg.NONE, out info, "just show info", null},
+        { "test", 't', 0,  OptionArg.NONE, out test, "download whole flash", null},
         {null}
     };
 
@@ -97,13 +99,19 @@ public class Flashdl : Object
                 {
                     deserialise_u32(raw+5, out fsize);
                     deserialise_u32(raw+9, out used);
-                    efsize = esize(used);
                     var pct = 100 * used  / fsize;
                     MWPLog.message ("Data Flash %u /  %u (%u%%)\n", used, fsize, pct);
+                    if(test)
+                    {
+                        used =fsize;
+                        MWPLog.message("Entering test mode\n");
+                    }
+
                     if(used == 0 || info)
                         ml.quit();
                     else
                     {
+                        efsize = esize(used);
                         time_t(out st);
                         if(fname == null)
                             fname  = "BBL_%s.TXT".printf(Time.local(st).format("%F_%H%M%S"));
@@ -150,7 +158,7 @@ public class Flashdl : Object
                  else
                  {
                      print("\n");
-                     MWPLog.message("%u bytes in %u s, %u b/s\n", bread, (et-st), rate);
+                     MWPLog.message("%u bytes in %us, %u bytes/s\n", bread, (et-st), rate);
                      if (erase)
                      {
                          MWPLog.message("Start erase\n");
