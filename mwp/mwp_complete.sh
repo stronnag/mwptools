@@ -30,7 +30,7 @@ _mwp_complete()
       return 0
       ;;
     '-b'|'--replay-bbox')
-      _mwp_file TXT
+      _mwp_files TXT
       return 0
       ;;
     '--centre')
@@ -118,9 +118,9 @@ _mwp_files()
 	;;
     esac
     if [ -n "$path" ] ; then
-      cur=$(pwd)
+      cur="$path"
     else
-      cur='./'
+      cur="$(pwd)"
     fi
   fi
   _filedir $wanted
