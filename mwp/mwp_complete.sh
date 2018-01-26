@@ -118,9 +118,9 @@ _mwp_files()
 	;;
     esac
     if [ -n "$path" ] ; then
-      cur=$(pwd)
+      cur="$path"
     else
-      cur='./'
+      cur="$(pwd)"
     fi
   fi
   _filedir $wanted
