@@ -1107,7 +1107,11 @@ public class MWPlanner : Gtk.Application {
             });
 
         msview = new MapSourceDialog(builder, window);
-        setpos = new SetPosDialog(builder);
+        setpos = new SetPosDialog(builder, window);
+        setpos.new_pos.connect((la, lo) => {
+                map_centre_on(la, lo);
+            });
+
         navconf = new NavConfig(window, builder);
         bb_runner = new BBoxDialog(builder, dmrtype, window, conf.logpath);
 
@@ -1121,6 +1125,8 @@ public class MWPlanner : Gtk.Application {
         dockmenus[DOCKLETS.TELEMETRY] =  "tel-stats";
         dockmenus[DOCKLETS.ARTHOR] = "art-hor";
         dockmenus[DOCKLETS.FBOX] =  "flight-view";
+
+        embed = new GtkChamplain.Embed();
 
         var saq = new GLib.SimpleAction("file-open",null);
         saq.activate.connect(() => {
@@ -1142,8 +1148,7 @@ public class MWPlanner : Gtk.Application {
 
         saq = new GLib.SimpleAction("prefs",null);
         saq.activate.connect(() => {
-                var id = prefs.run_prefs(ref conf);
-                if(id == 1001)
+                if(prefs.run_prefs(ref conf) == 1001)
                 {
                     build_deventry();
                     if(conf.speakint == 0)
@@ -1155,9 +1160,7 @@ public class MWPlanner : Gtk.Application {
 
         saq = new GLib.SimpleAction("centre-on",null);
         saq.activate.connect(() => {
-                double glat, glon;
-                if(setpos.get_position(out glat, out glon) == true)
-                    map_centre_on(glat, glon);
+                setpos.get_position();
             });
         window.add_action(saq);
 
@@ -1248,8 +1251,9 @@ public class MWPlanner : Gtk.Application {
         saq = new GLib.SimpleAction("about",null);
         saq.activate.connect(() => {
                 about.show_all();
-                about.run();
-                about.hide();
+                about.response.connect(() => {
+                        about.hide();
+                    });
             });
         window.add_action(saq);
 
@@ -1415,7 +1419,7 @@ public class MWPlanner : Gtk.Application {
         telemstatus = new TelemetryStats(builder);
         fbox  = new FlightBox(builder,window);
 
-        embed = new GtkChamplain.Embed();
+
         view = embed.get_view();
         view.set_reactive(true);
 
@@ -1463,6 +1467,9 @@ public class MWPlanner : Gtk.Application {
         ent1.set_text(conf.loiter.to_string());
 
         view.set_keep_center_on_resize(true);
+
+        prefs = new PrefsDialog(builder, window);
+
         add_source_combo(conf.defmap,msources);
 
         var ag = new Gtk.AccelGroup();
@@ -1672,7 +1679,6 @@ public class MWPlanner : Gtk.Application {
                 }
             });
 
-        prefs = new PrefsDialog(builder, window);
         swd = new SwitchDialog(builder, window);
 
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
@@ -2003,7 +2009,6 @@ public class MWPlanner : Gtk.Application {
 
 
        get_map_size();
-
 
        if(rfile != null)
        {
@@ -5141,21 +5146,16 @@ public class MWPlanner : Gtk.Application {
         }
 
         serstate = SERSTATE.NORMAL;
-        mq.clear();
-        MWPCursor.set_busy_cursor(window);
 
         if(wps.length == 0)
         {
-            MSP_WP w0 = MSP_WP();
-            w0.wp_no = 1;
-            w0.action =  MSP.Action.RTH;
-            w0.lat = w0.lon = 0;
-            w0.altitude = 25;
-            w0.p1 = 0;
-            w0.p2 = w0.p3 = 0;
-            w0.flag = 0xa5;
-            wps += w0;
+            mwp_warning_box("Cowardly refusal to upload an empty mission",
+                            Gtk.MessageType.WARNING);
+            return;
         }
+
+        mq.clear();
+        MWPCursor.set_busy_cursor(window);
 
         if(conf.recip_head)
         {
@@ -5527,6 +5527,7 @@ public class MWPlanner : Gtk.Application {
 
     private void add_source_combo(string? defmap, MapSource []msources)
     {
+        string[] map_names={};
         var combo  = builder.get_object ("combobox1") as Gtk.ComboBox;
         var map_source_factory = Champlain.MapSourceFactory.dup_default();
 
@@ -5573,12 +5574,16 @@ public class MWPlanner : Gtk.Application {
                 defsource = id;
             }
             i++;
+            map_names += name;
         }
+
+        prefs.set_maps(map_names, conf.defmap);
+
         combo.set_model(liststore);
         if(defsource != null)
         {
             var src = map_source_factory.create_cached_source(defsource);
-            view.set_property("map-source", src);
+            view.map_source = src;
         }
 
         var cell = new Gtk.CellRendererText();
@@ -5614,7 +5619,6 @@ public class MWPlanner : Gtk.Application {
                 if (chg == true)
                     map_centre_on(cy, cx);
             });
-
     }
 
     public Mission get_mission_data()

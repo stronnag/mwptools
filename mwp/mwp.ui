@@ -1191,17 +1191,6 @@ Otherwise, select a valid FC vehicle type</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="invisible_char">●</property>
-          </object>
-          <packing>
-            <property name="left_attach">1</property>
-            <property name="top_attach">6</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEntry" id="prefentry8">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="invisible_char">●</property>
             <property name="input_purpose">digits</property>
           </object>
           <packing>
@@ -1224,7 +1213,7 @@ Otherwise, select a valid FC vehicle type</property>
           </packing>
         </child>
         <child>
-          <object class="GtkEntry" id="prefentry9">
+          <object class="GtkEntry" id="prefentry8">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="input_purpose">digits</property>
@@ -1266,6 +1255,16 @@ Otherwise, select a valid FC vehicle type</property>
           <packing>
             <property name="left_attach">1</property>
             <property name="top_attach">9</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkComboBoxText" id="prefs_map_combo">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="top_attach">6</property>
           </packing>
         </child>
       </object>
@@ -3190,6 +3189,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
   </object>
   <object class="GtkDialog" id="prefs-dialog">
     <property name="can_focus">False</property>
+    <property name="modal">True</property>
     <property name="type_hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox3">
