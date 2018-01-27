@@ -1821,10 +1821,8 @@ public class MWPlanner : Gtk.Application {
                 {
                     window_w  = a.width;
                     window_h = a.height;
-
-                    var nppos = conf.window_p *
-                        (pane.max_position - pane.min_position) /100;
-                    pane.position = nppos;
+                    var nppos = conf.window_p * (double)(pane.max_position - pane.min_position) /100.0;
+                    pane.position = (int)Math.lround(nppos);
                     Idle.add(() => {
                             fbox.check_size();
                             return Source.REMOVE;
@@ -1841,7 +1839,7 @@ public class MWPlanner : Gtk.Application {
         pane.button_release_event.connect((evt) => {
                 if (evt.button == 1)
                 {
-                    conf.window_p = 100* pane.position / (pane.max_position - pane.min_position);
+                    conf.window_p = 100.0* (double)pane.position /(double) (pane.max_position - pane.min_position);
                     conf.save_pane();
                 }
                 Timeout.add(500, () => {

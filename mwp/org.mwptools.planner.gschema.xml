@@ -239,7 +239,7 @@
       <description>RC settings for Mav RTH (chanid:minval:maxval)</description>
     </key>
 
-    <key name="pwdw-p" type="i">
+    <key name="pwdw-p" type="d">
       <default>72</default>
       <summary>internal parameter</summary>
       <description>(private settinge)</description>
