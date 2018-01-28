@@ -519,7 +519,8 @@ public class MWPlanner : Gtk.Application {
     private enum DEBUG_FLAGS
     {
         NONE=0,
-        WP = 1
+        WP = 1,
+        INIT=2
     }
 
     private enum SAT_FLAGS
@@ -870,15 +871,18 @@ public class MWPlanner : Gtk.Application {
 
         vbsamples = new float[MAXVSAMPLE];
 
-
-        print(">> init 0\n");
+        if((debug_flags & DEBUG_FLAGS.INIT) != DEBUG_FLAGS.NONE)
+            stderr.puts(">> init 0\n");
 
         devman = new DevManager();
-        print(">> init 1\n");
+
+        if((debug_flags & DEBUG_FLAGS.INIT) != DEBUG_FLAGS.NONE)
+            stderr.puts(">> init 1\n");
 
         hwstatus[0] = 1; // Assume OK
 
-        print(">> init 2\n");
+        if((debug_flags & DEBUG_FLAGS.INIT) != DEBUG_FLAGS.NONE)
+            stderr.puts(">> init 2\n");
 
         conf = new MWPSettings();
         conf.read_settings();
@@ -886,10 +890,12 @@ public class MWPlanner : Gtk.Application {
         var spapi =  0;
         if(exvox == null)
         {
-            print(">> init 3\n");
+            if((debug_flags & DEBUG_FLAGS.INIT) != DEBUG_FLAGS.NONE)
+                stderr.puts(">> init 3\n");
 
             spapi = get_speech_api_mask();
-            print(">> init 4\n");
+            if((debug_flags & DEBUG_FLAGS.INIT) != DEBUG_FLAGS.NONE)
+                stderr.puts(">> init 4\n");
 
             if (spapi == 3)
                 spapi = (conf.speech_api == "espeak") ? 1 :
