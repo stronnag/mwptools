@@ -691,7 +691,14 @@ public class SetPosDialog : GLib.Object
         pls = _pls;
         foreach(var l in pls)
             pcombo.append_text(l.name);
-        pcombo.active = 0;
+
+        if(pls.length != 0)
+        {
+            pcombo.active = 0;
+            lat_entry.set_text(PosFormat.lat(pls[0].lat, dms));
+            lon_entry.set_text(PosFormat.lon(pls[1].lon, dms));
+        }
+
         pcombo.changed.connect (() => {
                 var s = pcombo.get_active_text ();
                 foreach(var l in pls)
