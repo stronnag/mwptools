@@ -25,7 +25,7 @@ endif
 
 all: $(APPS)
 
-SRCS=mwp.vala liststore.vala mwp_markers.vala mwp_craft.vala settings.vala dialogs.vala mapsources.vala logger.vala speech_wrapper.c mwp-replay.vala map_seeder.vala mwp-layout.vala layout-test.vala iparser.vala mwp_bbox.vala ah_widget.vala _mwpvers.c $(DEVMAN)
+SRCS=mwp.vala liststore.vala mwp_markers.vala mwp_craft.vala settings.vala dialogs.vala mapsources.vala logger.vala speech_wrapper.c mwp-replay.vala map_seeder.vala mwp-layout.vala layout-test.vala iparser.vala mwp_bbox.vala ah_widget.vala _mwpvers.c $(DEVMAN) get_places.vala
 
 COMMON=../common/btdev.c ../common/cserial.c ../common/mwp_xml.vala ../common/serial-device.vala ../common/geocalc.vala  ../common/utils.vala ../common/mspmsg.vala ../common/mspcmd.vala  ../common/mwc.vala ../common/mwplog.vala ../common/mavcmd.vala local_geo.vala ../common/cliterm.vala ../common/mlock.vala
 

@@ -1,0 +1,24 @@
+{
+"places" : [
+    {
+	"name": "Beaulieu",
+	"lat": 50.8047104,
+	"lon": -1.4942621
+    },
+    {
+	"name": "Lordshill",
+	"lat": 50.9414699,
+	"lon": -1.4612946
+    },
+    {
+	"name": "Gansey",
+	"lat": 54.083160,
+	"lon": -4.728112
+    },
+    {
+	"name": "Ballakillowey",
+	"lat": 54.094777,
+	"lon": -4.7323538
+    }
+]
+}

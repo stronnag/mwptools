@@ -870,16 +870,26 @@ public class MWPlanner : Gtk.Application {
 
         vbsamples = new float[MAXVSAMPLE];
 
+
+        print(">> init 0\n");
+
         devman = new DevManager();
+        print(">> init 1\n");
 
         hwstatus[0] = 1; // Assume OK
+
+        print(">> init 2\n");
+
         conf = new MWPSettings();
         conf.read_settings();
 
         var spapi =  0;
         if(exvox == null)
         {
+            print(">> init 3\n");
+
             spapi = get_speech_api_mask();
+            print(">> init 4\n");
 
             if (spapi == 3)
                 spapi = (conf.speech_api == "espeak") ? 1 :
@@ -1108,6 +1118,9 @@ public class MWPlanner : Gtk.Application {
 
         msview = new MapSourceDialog(builder, window);
         setpos = new SetPosDialog(builder, window);
+        var places = new Places();
+        var pls = places.get_places(conf.latitude, conf.longitude);
+        setpos.load_places(pls,conf.dms);
         setpos.new_pos.connect((la, lo) => {
                 map_centre_on(la, lo);
             });

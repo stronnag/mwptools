@@ -670,6 +670,9 @@ public class SetPosDialog : GLib.Object
     private Gtk.Dialog dialog;
     private Gtk.Entry lat_entry;
     private Gtk.Entry lon_entry;
+    private Gtk.ComboBoxText pcombo;
+    private Places.PosItem[] pls;
+    private bool dms;
 
     public signal void new_pos(double la, double lo);
 
@@ -679,6 +682,28 @@ public class SetPosDialog : GLib.Object
         dialog.set_transient_for(w);
         lat_entry = builder.get_object ("golat") as Gtk.Entry;
         lon_entry = builder.get_object ("golon") as Gtk.Entry;
+        pcombo = builder.get_object("place_combo") as Gtk.ComboBoxText;
+    }
+
+    public void load_places(Places.PosItem[] _pls, bool _dms)
+    {
+        dms = _dms;
+        pls = _pls;
+        foreach(var l in pls)
+            pcombo.append_text(l.name);
+        pcombo.active = 0;
+        pcombo.changed.connect (() => {
+                var s = pcombo.get_active_text ();
+                foreach(var l in pls)
+                {
+                    if(l.name == s)
+                    {
+                        lat_entry.set_text(PosFormat.lat(l.lat, dms));
+                        lon_entry.set_text(PosFormat.lon(l.lon, dms));
+                        break;
+                    }
+                }
+            });
     }
 
     public void get_position()

@@ -989,6 +989,29 @@ Otherwise, select a valid FC vehicle type</property>
                 <property name="top_attach">0</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">Named places are read from ~/.config/mwp/places.json or ~/.config/mwp/places, whichever is found first.
+See the "samples" directory for an example of each.</property>
+                <property name="label" translatable="yes">Place</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkComboBoxText" id="place_combo">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
