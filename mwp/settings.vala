@@ -59,7 +59,7 @@ public class MWPSettings : GLib.Object
     public uint p_speed {get; set; default=0;}
     public string mavph {get; set; default=null;}
     public string mavrth {get; set; default=null;}
-    public int window_p {get; set; default=72;}
+    public double window_p {get; set; default=72;}
     public int fontfact {get; set; default = 12;}
     public int ahsize {get; set; default = 32;}
     public uint gpsintvl {get; set; default = 2000;}
@@ -213,9 +213,8 @@ public class MWPSettings : GLib.Object
             mavph = settings.get_string ("mavph");
         if(s == null || s == "mavrth")
             mavrth = settings.get_string ("mavrth");
-
         if(s == null || s == "pwdw-p")
-            window_p = settings.get_int("pwdw-p");
+            window_p = settings.get_double("pwdw-p");
         if(s == null || s == "font-fv")
             fontfact = settings.get_int("font-fv");
         if(s == null || s == "ah-size")
@@ -302,7 +301,7 @@ public class MWPSettings : GLib.Object
     public void save_pane()
     {
         if (settings != null)
-            settings.set_int("pwdw-p", window_p);
+            settings.set_double("pwdw-p", window_p);
     }
 
     public void save_floating(bool val)

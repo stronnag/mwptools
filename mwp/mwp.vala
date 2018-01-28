@@ -393,7 +393,6 @@ public class MWPlanner : Gtk.Application {
     private time_t pausetm;
     private uint32 rtcsecs = 0;
 
-    private int gfcse = 0;
     private uint8 armed = 0;
     private uint8 dac = 0;
     private bool have_home = false;
@@ -1108,7 +1107,11 @@ public class MWPlanner : Gtk.Application {
             });
 
         msview = new MapSourceDialog(builder, window);
-        setpos = new SetPosDialog(builder);
+        setpos = new SetPosDialog(builder, window);
+        setpos.new_pos.connect((la, lo) => {
+                map_centre_on(la, lo);
+            });
+
         navconf = new NavConfig(window, builder);
         bb_runner = new BBoxDialog(builder, dmrtype, window, conf.logpath);
 
@@ -1122,6 +1125,8 @@ public class MWPlanner : Gtk.Application {
         dockmenus[DOCKLETS.TELEMETRY] =  "tel-stats";
         dockmenus[DOCKLETS.ARTHOR] = "art-hor";
         dockmenus[DOCKLETS.FBOX] =  "flight-view";
+
+        embed = new GtkChamplain.Embed();
 
         var saq = new GLib.SimpleAction("file-open",null);
         saq.activate.connect(() => {
@@ -1143,8 +1148,7 @@ public class MWPlanner : Gtk.Application {
 
         saq = new GLib.SimpleAction("prefs",null);
         saq.activate.connect(() => {
-                var id = prefs.run_prefs(ref conf);
-                if(id == 1001)
+                if(prefs.run_prefs(ref conf) == 1001)
                 {
                     build_deventry();
                     if(conf.speakint == 0)
@@ -1156,9 +1160,7 @@ public class MWPlanner : Gtk.Application {
 
         saq = new GLib.SimpleAction("centre-on",null);
         saq.activate.connect(() => {
-                double glat, glon;
-                if(setpos.get_position(out glat, out glon) == true)
-                    map_centre_on(glat, glon);
+                setpos.get_position();
             });
         window.add_action(saq);
 
@@ -1249,8 +1251,9 @@ public class MWPlanner : Gtk.Application {
         saq = new GLib.SimpleAction("about",null);
         saq.activate.connect(() => {
                 about.show_all();
-                about.run();
-                about.hide();
+                about.response.connect(() => {
+                        about.hide();
+                    });
             });
         window.add_action(saq);
 
@@ -1416,7 +1419,7 @@ public class MWPlanner : Gtk.Application {
         telemstatus = new TelemetryStats(builder);
         fbox  = new FlightBox(builder,window);
 
-        embed = new GtkChamplain.Embed();
+
         view = embed.get_view();
         view.set_reactive(true);
 
@@ -1464,6 +1467,9 @@ public class MWPlanner : Gtk.Application {
         ent1.set_text(conf.loiter.to_string());
 
         view.set_keep_center_on_resize(true);
+
+        prefs = new PrefsDialog(builder, window);
+
         add_source_combo(conf.defmap,msources);
 
         var ag = new Gtk.AccelGroup();
@@ -1673,7 +1679,6 @@ public class MWPlanner : Gtk.Application {
                 }
             });
 
-        prefs = new PrefsDialog(builder, window);
         swd = new SwitchDialog(builder, window);
 
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
@@ -1822,10 +1827,8 @@ public class MWPlanner : Gtk.Application {
                 {
                     window_w  = a.width;
                     window_h = a.height;
-
-                    var nppos = conf.window_p *
-                        (pane.max_position - pane.min_position) /100;
-                    pane.position = nppos;
+                    var nppos = conf.window_p * (double)(pane.max_position - pane.min_position) /100.0;
+                    pane.position = (int)Math.lround(nppos);
                     Idle.add(() => {
                             fbox.check_size();
                             return Source.REMOVE;
@@ -1842,7 +1845,7 @@ public class MWPlanner : Gtk.Application {
         pane.button_release_event.connect((evt) => {
                 if (evt.button == 1)
                 {
-                    conf.window_p = 100* pane.position / (pane.max_position - pane.min_position);
+                    conf.window_p = 100.0* (double)pane.position /(double) (pane.max_position - pane.min_position);
                     conf.save_pane();
                 }
                 Timeout.add(500, () => {
@@ -2006,7 +2009,6 @@ public class MWPlanner : Gtk.Application {
 
 
        get_map_size();
-
 
        if(rfile != null)
        {
@@ -3247,38 +3249,45 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-    private void check_centre_on()
+    private void update_pos_info()
     {
-        if (centreon == true)
+        if(pos_valid(GPSInfo.lat, GPSInfo.lon))
         {
-            if(conf.use_legacy_centre_on)
-                map_centre_on(GPSInfo.lat,GPSInfo.lon);
-            else if(!view.get_bounding_box().covers(
-                        GPSInfo.lat,GPSInfo.lon))
+            if(follow == true)
             {
-                var mlat = view.get_center_latitude();
-                var mlon = view.get_center_longitude();
-                double alat, alon;
-                double msize = Math.fmin(mapsize.width, mapsize.height);
-                double dist,cse;
-                Geo.csedist(GPSInfo.lat, GPSInfo.lon,
-                            mlat, mlon, out dist, out cse);
+                if (centreon == true)
+                {
+                    if(conf.use_legacy_centre_on)
+                        map_centre_on(GPSInfo.lat,GPSInfo.lon);
+                    else if(!view.get_bounding_box().covers(
+                                GPSInfo.lat,GPSInfo.lon))
+                    {
+                        var mlat = view.get_center_latitude();
+                        var mlon = view.get_center_longitude();
+                        double alat, alon;
+                        double msize = Math.fmin(mapsize.width, mapsize.height);
+                        double dist,_cse;
+                        Geo.csedist(GPSInfo.lat, GPSInfo.lon,
+                                    mlat, mlon, out dist, out _cse);
 
-                if(dist * 1852.0 > msize)
-                {
-                    alat = GPSInfo.lat;
-                    alon = GPSInfo.lon;
+                        if(dist * 1852.0 > msize)
+                        {
+                            alat = GPSInfo.lat;
+                            alon = GPSInfo.lon;
+                        }
+                        else
+                        {
+                            alat = (mlat + GPSInfo.lat)/2.0;
+                            alon = (mlon + GPSInfo.lon)/2.0;
+                        }
+                        map_centre_on(alat,alon);
+                    }
                 }
-                else
-                {
-                    alat = (mlat + GPSInfo.lat)/2.0;
-                    alon = (mlon + GPSInfo.lon)/2.0;
-                }
-                map_centre_on(alat,alon);
+                double cse = (usemag) ? mhead : GPSInfo.cse;
+                craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
             }
         }
     }
-
 
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
@@ -4084,16 +4093,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     if(craft != null)
                     {
-                        if(pos_valid(GPSInfo.lat, GPSInfo.lon))
-                        {
-                            if(follow == true)
-                            {
-                                double cse = (usemag) ? mhead : GPSInfo.cse;
-                                craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
-                            }
-                            check_centre_on();
-
-                        }
+                        update_pos_info();
                     }
                     if(want_special != 0)
                         process_pos_states(GPSInfo.lat,GPSInfo.lon,
@@ -4225,7 +4225,8 @@ public class MWPlanner : Gtk.Application {
                             queue_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
                         }
                         wpmgr.wp_flag |= WPDL.GETINFO;
-                        queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+                        if(inav)
+                            queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
                         reset_poller();
                         if (downgrade != 0)
                         {
@@ -4384,11 +4385,7 @@ public class MWPlanner : Gtk.Application {
 
                 if(fix > 0)
                 {
-                    double gflat = gf.lat/10000000.0;
-                    double gflon = gf.lon/10000000.0;
-
                     sat_coverage();
-
                     if(armed != 0)
                     {
                         update_odo((double)gf.speed, ddm);
@@ -4397,7 +4394,7 @@ public class MWPlanner : Gtk.Application {
                             if(_nsats >= SATS.MINSATS)
                             {
                                 double dist,cse;
-                                Geo.csedist(gflat, gflon,
+                                Geo.csedist(GPSInfo.lat, GPSInfo.lon,
                                             home_pos.lat, home_pos.lon,
                                             out dist, out cse);
                                 if(dist < 64)
@@ -4420,15 +4417,10 @@ public class MWPlanner : Gtk.Application {
 
                     if(craft != null && fix > 0 && _nsats >= 5)
                     {
-                        if(pos_valid(gflat, gflon))
-                        {
-                            if(follow == true)
-                                craft.set_lat_lon(gflat,gflon,gfcse);
-                            check_centre_on();
-                        }
+                        update_pos_info();
                     }
                     if(want_special != 0)
-                        process_pos_states(gflat, gflon, gf.alt/100.0, "GFrame");
+                        process_pos_states(GPSInfo.lat, GPSInfo.lon, gf.alt/100.0, "GFrame");
                 }
                 fbox.update(item_visible(DOCKLETS.FBOX));
             }
@@ -4464,7 +4456,7 @@ public class MWPlanner : Gtk.Application {
                 var h = af.heading;
                 if(h < 0)
                     h += 360;
-                gfcse = h;
+                mhead = h;
                 navstatus.update_ltm_a(af, item_visible(DOCKLETS.NAVSTATUS));
                 art_win.update(af.roll*10, af.pitch*10, item_visible(DOCKLETS.ARTHOR));
             }
@@ -5155,21 +5147,31 @@ public class MWPlanner : Gtk.Application {
         }
 
         serstate = SERSTATE.NORMAL;
-        mq.clear();
-        MWPCursor.set_busy_cursor(window);
 
         if(wps.length == 0)
         {
-            MSP_WP w0 = MSP_WP();
-            w0.wp_no = 1;
-            w0.action =  MSP.Action.RTH;
-            w0.lat = w0.lon = 0;
-            w0.altitude = 25;
-            w0.p1 = 0;
-            w0.p2 = w0.p3 = 0;
-            w0.flag = 0xa5;
-            wps += w0;
+            if(inav)
+            {
+                mwp_warning_box("Cowardly refusal to upload an empty mission",
+                                Gtk.MessageType.WARNING);
+                return;
+            }
+            else
+            {
+                MSP_WP w0 = MSP_WP();
+                w0.wp_no = 1;
+                w0.action =  MSP.Action.RTH;
+                w0.lat = w0.lon = 0;
+                w0.altitude = 25;
+                w0.p1 = 0;
+                w0.p2 = w0.p3 = 0;
+                w0.flag = 0xa5;
+                wps += w0;
+            }
         }
+
+        mq.clear();
+        MWPCursor.set_busy_cursor(window);
 
         if(conf.recip_head)
         {
@@ -5541,6 +5543,7 @@ public class MWPlanner : Gtk.Application {
 
     private void add_source_combo(string? defmap, MapSource []msources)
     {
+        string[] map_names={};
         var combo  = builder.get_object ("combobox1") as Gtk.ComboBox;
         var map_source_factory = Champlain.MapSourceFactory.dup_default();
 
@@ -5587,12 +5590,16 @@ public class MWPlanner : Gtk.Application {
                 defsource = id;
             }
             i++;
+            map_names += name;
         }
+
+        prefs.set_maps(map_names, conf.defmap);
+
         combo.set_model(liststore);
         if(defsource != null)
         {
             var src = map_source_factory.create_cached_source(defsource);
-            view.set_property("map-source", src);
+            view.map_source = src;
         }
 
         var cell = new Gtk.CellRendererText();
@@ -5628,7 +5635,6 @@ public class MWPlanner : Gtk.Application {
                 if (chg == true)
                     map_centre_on(cy, cx);
             });
-
     }
 
     public Mission get_mission_data()

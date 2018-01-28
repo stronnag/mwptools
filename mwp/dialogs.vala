@@ -108,11 +108,9 @@ public class OdoView : GLib.Object
     private uint to = 15;
     private uint tid = 0;
     private bool visible = false;
-    private Gtk.Window parent = null;
 
     public OdoView(Gtk.Builder builder, Gtk.Window? w, uint _to)
     {
-        parent = w;
         dialog = builder.get_object ("odoview") as Gtk.Dialog;
         ododist = builder.get_object ("ododist") as Gtk.Label;
         odospeed = builder.get_object ("odospeed") as Gtk.Label;
@@ -120,7 +118,7 @@ public class OdoView : GLib.Object
         odospeed_u = builder.get_object ("odospeed_u") as Gtk.Label;
         odotime = builder.get_object ("odotime") as Gtk.Label;
         odoclose = builder.get_object ("odoclose") as Gtk.Button;
-
+        dialog.set_transient_for(w);
         to = _to;
 
         dialog.delete_event.connect (() => {
@@ -157,7 +155,6 @@ public class OdoView : GLib.Object
     public void unhide()
     {
         visible = true;
-        dialog.set_transient_for(parent);
         dialog.show_all();
     }
 
@@ -557,9 +554,10 @@ public class MapSourceDialog : GLib.Object
         map_uri.set_label(uri);
         map_minzoom.set_label(minzoom.to_string());
         map_maxzoom.set_label(maxzoom.to_string());
+        dialog.response.connect((id) => {
+                dialog.hide();
+            });
         dialog.show_all();
-        dialog.run();
-        dialog.hide();
     }
 }
 
@@ -577,8 +575,8 @@ public class SpeedDialog : GLib.Object
     public bool get_speed(out double spd)
     {
         var res = false;
-        dialog.show_all();
         spd = 0.0;
+        dialog.show_all();
         var id = dialog.run();
         switch(id)
         {
@@ -673,6 +671,8 @@ public class SetPosDialog : GLib.Object
     private Gtk.Entry lat_entry;
     private Gtk.Entry lon_entry;
 
+    public signal void new_pos(double la, double lo);
+
     public SetPosDialog(Gtk.Builder builder,Gtk.Window? w=null)
     {
         dialog = builder.get_object ("gotodialog") as Gtk.Dialog;
@@ -681,37 +681,31 @@ public class SetPosDialog : GLib.Object
         lon_entry = builder.get_object ("golon") as Gtk.Entry;
     }
 
-    public bool get_position(out double glat, out double glon)
+    public void get_position()
     {
-        var res = false;
-        dialog.show_all();
-        glat = glon = 0.0;
-        var id = dialog.run();
-        switch(id)
-        {
-            case 1001:
-                var t1 = lat_entry.get_text();
-                var t2 = lon_entry.get_text();
-                if (t2 == "")
+        double glat = 0,  glon = 0;
+        dialog.response.connect((id) => {
+                if (id == 1001)
                 {
-                    string []parts;
-                    parts = t1.split (" ");
-                    if(parts.length == 2)
+                    var t1 = lat_entry.get_text();
+                    var t2 = lon_entry.get_text();
+                    if (t2 == "")
                     {
-                        t1 = parts[0];
-                        t2 = parts[1];
+                        string []parts;
+                        parts = t1.split (" ");
+                        if(parts.length == 2)
+                        {
+                            t1 = parts[0];
+                            t2 = parts[1];
+                        }
                     }
+                    glat = InputParser.get_latitude(t1);
+                    glon = InputParser.get_longitude(t2);
+                    new_pos(glat, glon);
                 }
-                glat = InputParser.get_latitude(t1);
-                glon = InputParser.get_longitude(t2);
-                res = true;
-                break;
-
-            case 1002:
-                break;
-        }
-        dialog.hide();
-        return res;
+                dialog.hide();
+            });
+        dialog.show_all();
     }
 }
 
@@ -722,14 +716,16 @@ public class SwitchDialog : GLib.Object
     {
         dialog = builder.get_object ("switch-dialogue") as Gtk.Dialog;
         dialog.set_transient_for(w);
+        dialog.response.connect((id) => {
+                dialog.hide();
+                if(id == 1002)
+                    Posix.exit(255);
+            });
     }
+
     public void run()
     {
         dialog.show_all();
-        var id = dialog.run();
-        dialog.hide();
-        if(id == 1002)
-            Posix.exit(255);
     }
 }
 
@@ -739,11 +735,14 @@ public class PrefsDialog : GLib.Object
     private Gtk.Dialog dialog;
     private Gtk.Entry[]ents = {};
     private Gtk.RadioButton[] buttons={};
+    private Gtk.ComboBoxText pcombo;
 
     private uint pspeed;
     private uint pdist;
     private bool pdms;
     private Gtk.Switch rthland;
+
+    public signal void done (int id);
 
     private enum Buttons
     {
@@ -802,14 +801,14 @@ public class PrefsDialog : GLib.Object
     public PrefsDialog(Gtk.Builder builder, Gtk.Window? w)
     {
         dialog = builder.get_object ("prefs-dialog") as Gtk.Dialog;
-        for (int i = 1; i < 10; i++)
+        for (int i = 1; i < 9; i++)
         {
             var id = "prefentry%d".printf(i);
             var e = builder.get_object (id) as Gtk.Entry;
             ents += e;
         }
         rthland = builder.get_object("prefswitch10") as Gtk.Switch;
-
+        pcombo =  builder.get_object("prefs_map_combo") as Gtk.ComboBoxText;
         Gtk.RadioButton button;
         string [] pnames = {
             "uprefs-ddd", "uprefs-dms",
@@ -836,6 +835,20 @@ public class PrefsDialog : GLib.Object
 
         notebook.append_page(gprefs,new Gtk.Label("General"));
         notebook.append_page(uprefs,new Gtk.Label("Units"));
+    }
+
+    public void set_maps(string []map_names, string defmap)
+    {
+        int active = 0;
+        int i = 0;
+        foreach(var m in map_names)
+        {
+            if(m == defmap)
+                active = i;
+            i++;
+            pcombo.append_text(m);
+        }
+        pcombo.active = active;
     }
 
     public int run_prefs(ref MWPSettings conf)
@@ -867,9 +880,8 @@ public class PrefsDialog : GLib.Object
         ents[4].set_text("%.0f".printf(al));
         al = Units.speed(conf.nav_speed);
         ents[5].set_text("%.2f".printf(al));
-        ents[6].set_text(conf.defmap);
-        ents[7].set_text("%u".printf(conf.zoom));
-        ents[8].set_text("%u".printf(conf.speakint));
+        ents[6].set_text("%u".printf(conf.zoom));
+        ents[7].set_text("%u".printf(conf.speakint));
 
         if(conf.dms)
             buttons[Buttons.DMS].set_active(true);
@@ -881,96 +893,90 @@ public class PrefsDialog : GLib.Object
 
         dialog.show_all ();
         id = dialog.run();
-        switch(id)
+        if (id == 1000)
         {
-            case 1001:
-                var str = ents[0].get_text();
-                double d;
-                uint u;
-                if(sb.str != str)
+            var str = ents[0].get_text();
+            double d;
+            uint u;
+            if(sb.str != str)
+            {
+                var strs = str.split(",");
+                for(int i=0; i<strs.length;i++)
                 {
-                    var strs = str.split(",");
-                    for(int i=0; i<strs.length;i++)
-                    {
-                        strs[i] = strs[i].strip();
-                    }
-                    conf.settings.set_strv( "device-names", strs);
-
+                    strs[i] = strs[i].strip();
                 }
-                str = ents[1].get_text();
-                d=InputParser.get_latitude(str);
-                if(Math.fabs(conf.latitude - d) > 1e-5)
-                {
-                    conf.settings.set_double("default-latitude", d);
-                }
-                str = ents[2].get_text();
-                d=InputParser.get_longitude(str);
-                if(Math.fabs(conf.longitude - d) > 1e-5)
+                conf.settings.set_strv( "device-names", strs);
+            }
+            str = ents[1].get_text();
+            d=InputParser.get_latitude(str);
+            if(Math.fabs(conf.latitude - d) > 1e-5)
+            {
+                conf.settings.set_double("default-latitude", d);
+            }
+            str = ents[2].get_text();
+            d=InputParser.get_longitude(str);
+            if(Math.fabs(conf.longitude - d) > 1e-5)
                 if(conf.longitude != d)
                 {
                     conf.settings.set_double("default-longitude", d);
                 }
-                str = ents[3].get_text();
-                u=int.parse(str);
-                if(conf.loiter != u)
-                {
-                    conf.settings.set_uint("default-loiter", u);
-                }
-                str = ents[4].get_text();
-                u = (uint)InputParser.get_scaled_int(str);
-                if(conf.altitude != u)
-                {
-                    conf.settings.set_uint("default-altitude", u);
-                }
-                str = ents[5].get_text();
-                d = InputParser.get_scaled_real(str, "s");
-                if(Math.fabs(conf.nav_speed -d) > 0.1)
-                {
-                    conf.settings.set_double("default-nav-speed", d);
-                }
-                str = ents[6].get_text();
-                if(conf.defmap !=str)
-                {
-                    conf.settings.set_string ("default-map", str);
-                }
-                str = ents[7].get_text();
-                u=int.parse(str);
-                if(conf.zoom != u)
-                {
-                    conf.settings.set_uint("default-zoom", u);
-                }
+            str = ents[3].get_text();
+            u=int.parse(str);
+            if(conf.loiter != u)
+            {
+                conf.settings.set_uint("default-loiter", u);
+            }
+            str = ents[4].get_text();
+            u = (uint)InputParser.get_scaled_int(str);
+            if(conf.altitude != u)
+            {
+                conf.settings.set_uint("default-altitude", u);
+            }
+            str = ents[5].get_text();
+            d = InputParser.get_scaled_real(str, "s");
+            if(Math.fabs(conf.nav_speed -d) > 0.1)
+            {
+                conf.settings.set_double("default-nav-speed", d);
+            }
+            str = pcombo.get_active_text();
+            if(conf.defmap !=str)
+            {
+                conf.settings.set_string ("default-map", str);
+            }
+            str = ents[6].get_text();
+            u=int.parse(str);
+            if(conf.zoom != u)
+            {
+                conf.settings.set_uint("default-zoom", u);
+            }
 
-                if(conf.dms != pdms)
-                {
-                    conf.settings.set_boolean("display-dms", pdms);
-                }
+            if(conf.dms != pdms)
+            {
+                conf.settings.set_boolean("display-dms", pdms);
+            }
 
-                if(conf.p_distance != pdist)
-                {
-                    conf.settings.set_uint("display-distance", pdist);
-                }
+            if(conf.p_distance != pdist)
+            {
+                conf.settings.set_uint("display-distance", pdist);
+            }
 
-                if(conf.p_speed != pspeed)
-                {
-                    conf.settings.set_uint("display-speed", pspeed);
-                }
+            if(conf.p_speed != pspeed)
+            {
+                conf.settings.set_uint("display-speed", pspeed);
+            }
 
-                str = ents[8].get_text();
-                u=int.parse(str);
-                if(u > 0 && conf.speakint < 15)
-                {
-                    u = 15;
-                    ents[8].set_text("%u".printf(u));
-                }
-                if(conf.speakint != u)
-                {
-                    conf.settings.set_uint("speak-interval",u);
-
-                }
-                conf.rth_autoland = rthland.active;
-                break;
-            case 1002:
-                break;
+            str = ents[7].get_text();
+            u=int.parse(str);
+            if(u > 0 && conf.speakint < 15)
+            {
+                u = 15;
+                ents[7].set_text("%u".printf(u));
+            }
+            if(conf.speakint != u)
+            {
+                conf.settings.set_uint("speak-interval",u);
+            }
+            conf.rth_autoland = rthland.active;
         }
         dialog.hide();
         return id;
@@ -1009,10 +1015,8 @@ public class ShapeDialog : GLib.Object
         ShapePoint[] p = {};
         dialog.show_all();
         var id = dialog.run();
-        switch(id)
+        if (id == 1001)
         {
-            case 1001:
-
                 var npts = (int)spin1.adjustment.value;
                 var radius = spin2.adjustment.value;
                 var start = spin3.adjustment.value;
@@ -1027,10 +1031,6 @@ public class ShapeDialog : GLib.Object
                 {
                     p = mkshape(clat, clon, radius, npts, start, dirn);
                 }
-
-                break;
-            case 1002:
-                break;
         }
         dialog.hide();
         return p;
