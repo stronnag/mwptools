@@ -4225,7 +4225,8 @@ public class MWPlanner : Gtk.Application {
                             queue_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
                         }
                         wpmgr.wp_flag |= WPDL.GETINFO;
-                        queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+                        if(inav)
+                            queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
                         reset_poller();
                         if (downgrade != 0)
                         {
@@ -5149,9 +5150,24 @@ public class MWPlanner : Gtk.Application {
 
         if(wps.length == 0)
         {
-            mwp_warning_box("Cowardly refusal to upload an empty mission",
-                            Gtk.MessageType.WARNING);
-            return;
+            if(inav)
+            {
+                mwp_warning_box("Cowardly refusal to upload an empty mission",
+                                Gtk.MessageType.WARNING);
+                return;
+            }
+            else
+            {
+                MSP_WP w0 = MSP_WP();
+                w0.wp_no = 1;
+                w0.action =  MSP.Action.RTH;
+                w0.lat = w0.lon = 0;
+                w0.altitude = 25;
+                w0.p1 = 0;
+                w0.p2 = w0.p3 = 0;
+                w0.flag = 0xa5;
+                wps += w0;
+            }
         }
 
         mq.clear();
