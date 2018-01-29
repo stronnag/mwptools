@@ -103,7 +103,7 @@ public class ListBox : GLib.Object
     {
         if(miter_ok)
         {
-#if OLDGTK
+#if OLDGTK||LSRVAL
             marker_menu.popup(null, null, null, 3, e.time);
 #else
             marker_menu.popup_at_pointer(e);
@@ -736,7 +736,7 @@ public class ListBox : GLib.Object
                     {
                         up_item.sensitive = down_item.sensitive = false;
                     }
-#if OLDGTK
+#if OLDGTK||LSRVAL
                     menu.popup(null, null, null, 3, event.time);
 
 #else

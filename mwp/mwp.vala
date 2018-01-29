@@ -519,7 +519,8 @@ public class MWPlanner : Gtk.Application {
     private enum DEBUG_FLAGS
     {
         NONE=0,
-        WP = 1
+        WP = 1,
+        INIT=2
     }
 
     private enum SAT_FLAGS
@@ -873,6 +874,7 @@ public class MWPlanner : Gtk.Application {
         devman = new DevManager();
 
         hwstatus[0] = 1; // Assume OK
+
         conf = new MWPSettings();
         conf.read_settings();
 
@@ -880,7 +882,6 @@ public class MWPlanner : Gtk.Application {
         if(exvox == null)
         {
             spapi = get_speech_api_mask();
-
             if (spapi == 3)
                 spapi = (conf.speech_api == "espeak") ? 1 :
                     (conf.speech_api == "speechd") ? 2 : 0;
@@ -1108,6 +1109,9 @@ public class MWPlanner : Gtk.Application {
 
         msview = new MapSourceDialog(builder, window);
         setpos = new SetPosDialog(builder, window);
+        var places = new Places();
+        var pls = places.get_places(conf.latitude, conf.longitude);
+        setpos.load_places(pls,conf.dms);
         setpos.new_pos.connect((la, lo) => {
                 map_centre_on(la, lo);
             });
