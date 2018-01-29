@@ -9,16 +9,15 @@
 	"name": "Lordshill",
 	"lat": 50.9414699,
 	"lon": -1.4612946
-    },
-    {
-	"name": "Gansey",
-	"lat": 54.083160,
-	"lon": -4.728112
-    },
-    {
-	"name": "Ballakillowey",
-	"lat": 54.094777,
-	"lon": -4.7323538
     }
 ]
+    ,
+    "comment": "
+# mwp places name,lat,lon
+#
+# add your own favourite locations and copy the file to ~/.config/mwp/
+#
+# You can either edit this file (JSON) or the CSV (places) file
+# If both exist under ~/.config/mwp/, then the JSON file has priority"
+
 }
