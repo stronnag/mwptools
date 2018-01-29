@@ -871,18 +871,9 @@ public class MWPlanner : Gtk.Application {
 
         vbsamples = new float[MAXVSAMPLE];
 
-        if((debug_flags & DEBUG_FLAGS.INIT) != DEBUG_FLAGS.NONE)
-            stderr.puts(">> init 0\n");
-
         devman = new DevManager();
 
-        if((debug_flags & DEBUG_FLAGS.INIT) != DEBUG_FLAGS.NONE)
-            stderr.puts(">> init 1\n");
-
         hwstatus[0] = 1; // Assume OK
-
-        if((debug_flags & DEBUG_FLAGS.INIT) != DEBUG_FLAGS.NONE)
-            stderr.puts(">> init 2\n");
 
         conf = new MWPSettings();
         conf.read_settings();
@@ -890,13 +881,7 @@ public class MWPlanner : Gtk.Application {
         var spapi =  0;
         if(exvox == null)
         {
-            if((debug_flags & DEBUG_FLAGS.INIT) != DEBUG_FLAGS.NONE)
-                stderr.puts(">> init 3\n");
-
             spapi = get_speech_api_mask();
-            if((debug_flags & DEBUG_FLAGS.INIT) != DEBUG_FLAGS.NONE)
-                stderr.puts(">> init 4\n");
-
             if (spapi == 3)
                 spapi = (conf.speech_api == "espeak") ? 1 :
                     (conf.speech_api == "speechd") ? 2 : 0;
