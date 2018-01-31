@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/mwptools/survey">
+    <file>mwp_icon.svg</file>
+    <file compressed="true">survey.ui</file>
+  </gresource>
+</gresources>
