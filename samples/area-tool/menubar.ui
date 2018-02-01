@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <menu id="menubar">
+    <submenu>
+      <attribute name="label">_File</attribute>
+      <section>
+        <item>
+          <attribute name="label">Open Area</attribute>
+          <attribute name="action">win.file-open</attribute>
+	  <attribute name="accel">&lt;Primary&gt;o</attribute>
+        </item>
+        <item>
+          <attribute name="label">Save Area</attribute>
+          <attribute name="action">win.menu-save</attribute>
+        </item>
+        <item>
+          <attribute name="label">Save Mission</attribute>
+          <attribute name="action">win.menu-save-msn</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
+          <attribute name="label">Quit</attribute>
+	  <attribute name="accel">&lt;Primary&gt;q</attribute>
+          <attribute name="action">win.quit</attribute>
+        </item>
+      </section>
+    </submenu>
+  </menu>
+</interface>

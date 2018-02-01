@@ -86,7 +86,7 @@ public class PosFormat : GLib.Object
 
 public class AreaPlanner : GLib.Object {
     public Builder builder;
-    public Gtk.Window window;
+    public Gtk.ApplicationWindow window;
     public  Champlain.View view;
     private Gtk.SpinButton zoomer;
     private int ht_map = 600;
@@ -120,18 +120,28 @@ public class AreaPlanner : GLib.Object {
 
     public AreaPlanner (string? afn)
     {
-        builder = new Builder.from_resource("/org/mwptools/survey/survey.ui");
-        if(builder == null)
+        try
         {
-            stderr.printf ("Builder failed\n");
+            builder = new Builder();
+            builder.add_from_resource("/org/mwptools/survey/survey.ui");
+            builder.add_from_resource ("/org/mwptools/survey/menubar.ui");
+        } catch (Error e)
+        {
+            stderr.printf ("UI builder failed %s\n", e.message);
             Posix.exit(255);
         }
 
         conf = new MWPSettings();
         conf.read_settings();
         builder.connect_signals (null);
-        window = builder.get_object ("window1") as Gtk.Window;
+
+        window = builder.get_object ("window1") as Gtk.ApplicationWindow;
         window.destroy.connect (Gtk.main_quit);
+        var mm = builder.get_object ("menubar") as MenuModel;
+        Gtk.MenuBar  menubar = new MenuBar.from_model(mm);
+        var hb = builder.get_object ("hb") as HeaderBar;
+        window.set_show_menubar(false);
+        hb.pack_start(menubar);
 
         try {
             Gdk.Pixbuf icon = new Gdk.Pixbuf.from_resource("/org/mwptools/survey/mwp_icon.svg");
@@ -142,10 +152,29 @@ public class AreaPlanner : GLib.Object {
 
         zoomer = builder.get_object ("spinbutton1") as Gtk.SpinButton;
 
-        var menuop = builder.get_object ("menu_quit") as Gtk.MenuItem;
-        menuop.activate.connect (() => {
+        var saq = new GLib.SimpleAction("quit",null);
+        saq.activate.connect(() => {
                 Gtk.main_quit();
             });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("file-open",null);
+        saq.activate.connect(() => {
+                on_file_open();
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("menu-save",null);
+        saq.activate.connect(() => {
+                do_file_save("Area");
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("menu-save-msn",null);
+        saq.activate.connect(() => {
+                do_file_save("Mission");
+            });
+        window.add_action(saq);
 
         embed = new GtkChamplain.Embed();
         view = embed.get_view();
@@ -236,10 +265,20 @@ public class AreaPlanner : GLib.Object {
         s_rth =  builder.get_object ("s_rth") as Gtk.Switch;
 
         s_rth.state_set.connect((s) => {
-                build_mission();
+                var msn_mks = msn_points.get_markers();
+                uint msnl;
+                if((msnl = msn_mks.length()) > 0)
+                {
+                    // the first shall be last ...
+                    var last = msn_mks.nth_data(0);
+                    var tlat = last.latitude;
+                    var tlon = last.longitude;
+                    msn_path.remove_node(last);
+                    msn_points.remove(last);
+                    add_wp_item(tlat, tlon, msnl, s);
+                }
                 return false;
             });
-
 
         pane.add2(databox);
         view.notify["zoom-level"].connect(() => {
@@ -301,6 +340,40 @@ public class AreaPlanner : GLib.Object {
             os.printf("MISSIONITEM no=\"%u\" action=\"RTH\" lat=\"0\" lon=\"0\" alt=\"0\" parameter1=\"1\" parameter2=\"0\" parameter3=\"0\"></MISSIONITEM>\n",i);
         }
         os.puts("</MISSION>\n");
+    }
+
+    private void on_file_open()
+    {
+        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
+            "Select an area file", null, Gtk.FileChooserAction.OPEN,
+            "_Cancel",
+            Gtk.ResponseType.CANCEL,
+            "_Open",
+            Gtk.ResponseType.ACCEPT);
+        chooser.select_multiple = false;
+        if(conf.missionpath != null)
+            chooser.set_current_folder (conf.missionpath);
+
+        chooser.set_transient_for(window);
+        Gtk.FileFilter filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("Area");
+        filter.add_pattern ("*.txt");
+        chooser.add_filter (filter);
+        filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("All Files");
+        filter.add_pattern ("*");
+        chooser.add_filter (filter);
+        chooser.response.connect((id) => {
+                if (id == Gtk.ResponseType.ACCEPT)
+                {
+                    var fn = chooser.get_filename ();
+                    chooser.close ();
+                    init_area(fn);
+                }
+                else
+                    chooser.close ();
+            });
+        chooser.show_all();
     }
 
     private void build_mission()
@@ -377,7 +450,7 @@ public class AreaPlanner : GLib.Object {
                 (Math.fabs(a.longitude - b.longitude) < 1e-6));
     }
 
-    void pop_menu_after()
+    private void pop_menu_after()
     {
         if(menu_marker!=null)
         {
@@ -402,7 +475,7 @@ public class AreaPlanner : GLib.Object {
         }
     }
 
-    void pop_menu_delete()
+    private void pop_menu_delete()
     {
         if(menu_marker!=null)
         {
@@ -424,7 +497,7 @@ public class AreaPlanner : GLib.Object {
         }
     }
 
-    public void init_markers()
+    private void init_markers()
     {
         path = new Champlain.PathLayer();
         Clutter.Color pcol = { 0xc5,0xc5, 0xc5, 0xa0};
@@ -440,18 +513,30 @@ public class AreaPlanner : GLib.Object {
         msn_path.set_stroke_width (8);
         view.add_layer (msn_path);
         view.add_layer (msn_points);
+        path.closed=true;
     }
 
-    public void clear_markers()
+    private void clear_mission()
+    {
+        msn_path.remove_all();
+        msn_points.remove_all();
+    }
+
+    private void clear_markers()
     {
         pmlayer.remove_all();
         path.remove_all();
-        path.closed=false;
+        list.foreach((m) => {
+                list.remove(m);
+            });
     }
 
     private void init_area(string? fn)
     {
         Vec[]pls={};
+
+        clear_markers();
+        clear_mission();
 
         if(fn != null)
         {
@@ -476,7 +561,6 @@ public class AreaPlanner : GLib.Object {
             add_node(sp,wp);
             add_node(sp,ep);
         }
-        path.closed=true;
     }
 
     private void add_node(double lat, double lon, int pos = -1)
@@ -532,7 +616,7 @@ public class AreaPlanner : GLib.Object {
                     {
                         menu_marker = mls.first().data;
 #if OLDGTK||LSRVAL
-                        marker_menu.popup(null, null, null, 3, e.time);
+                        marker_menu.popup(null, null, null, 3, evt.time);
 #else
                         marker_menu.popup_at_pointer(evt);
 #endif
@@ -674,7 +758,7 @@ public class AreaPlanner : GLib.Object {
                    !line.has_prefix("#") &&
                    !line.has_prefix(";"))
                 {
-                    var parts = line.split("\t");
+                    var parts = line.split_set("\t|;:");
                     if(parts.length == 2)
                     {
                         Vec p = Vec();
@@ -700,6 +784,10 @@ public class AreaPlanner : GLib.Object {
             Gtk.ResponseType.ACCEPT);
         chooser.set_transient_for(window);
         chooser.select_multiple = false;
+
+        if(conf.missionpath != null)
+            chooser.set_current_folder (conf.missionpath);
+
         Gtk.FileFilter filter = new Gtk.FileFilter ();
 
         filter.set_filter_name (name);
