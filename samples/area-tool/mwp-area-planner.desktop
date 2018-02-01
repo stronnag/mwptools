@@ -4,4 +4,4 @@ Terminal=false
 Name=Mwp area planner
 Exec=mwp-area-planner
 Type=Application
-Icon=mwp_area_icon.svg
+Icon=mwp_area_icon
