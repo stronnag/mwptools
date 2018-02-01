@@ -37,5 +37,5 @@ install: $(APPS)
 	install -s $(APP) $(prefix)/bin/$(APP)
 	install -d $(datadir)/share/mwp
 	install -m 644 mwp-area-planner.desktop $(datadir)/share/applications/mwp-area-planner.desktop
-	install -d $(datadir)/share/icons/hicolor/scalable
-	install -m 644 mwp_area_icon.svg $(datadir)/share/icons/hicolor/scalable/mwp_area_icon.svg
+	install -d $(datadir)/share/icons/hicolor/scalable/apps
+	install -m 644 mwp_area_icon.svg $(datadir)/share/icons/hicolor/scalable/apps/mwp_area_icon.svg
