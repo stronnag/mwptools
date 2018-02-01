@@ -151,7 +151,7 @@ public class AreaPlanner : GLib.Object {
         hb.pack_start(menubar);
 
         try {
-            Gdk.Pixbuf icon = new Gdk.Pixbuf.from_resource("/org/mwptools/survey/mwp_icon.svg");
+            Gdk.Pixbuf icon = new Gdk.Pixbuf.from_resource("/org/mwptools/survey/mwp_area_icon.svg");
             window.set_icon(icon);
         } catch (Error e) {
             stderr.printf ("icon: %s\n", e.message);

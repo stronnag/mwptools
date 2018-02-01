@@ -8,7 +8,7 @@ APPS=$(APP)
 
 all: $(APPS)
 
-survey-resources.c: survey.gresources.xml survey.ui menubar.ui mwp_icon.svg
+survey-resources.c: survey.gresources.xml survey.ui menubar.ui mwp_area_icon.svg
 	glib-compile-resources --target=$@ --generate-source $<
 
 SRCS= survey.vala survey-resources.c genpat.vala
@@ -35,3 +35,7 @@ local: $(APPS)
 install: $(APPS)
 	install -d $(prefix)/bin
 	install -s $(APP) $(prefix)/bin/$(APP)
+	install -d $(datadir)/share/mwp
+	install -m 644 mwp-area-planner.desktop $(datadir)/share/applications/mwp-area-planner.desktop
+	install -d $(datadir)/share/icons/hicolor/scalable
+	install -m 644 mwp_area_icon.svg $(datadir)/share/icons/hicolor/scalable/mwp_area_icon.svg
