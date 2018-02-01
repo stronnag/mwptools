@@ -347,7 +347,7 @@ public class AreaPlanner : GLib.Object {
         {
             var land = (int)conf.rth_autoland;
             i++;
-            os.printf("MISSIONITEM no=\"%u\" action=\"RTH\" lat=\"0\" lon=\"0\" alt=\"0\" parameter1=\"%d\" parameter2=\"0\" parameter3=\"0\"></MISSIONITEM>\n",i,land);
+            os.printf("<MISSIONITEM no=\"%u\" action=\"RTH\" lat=\"0\" lon=\"0\" alt=\"0\" parameter1=\"%d\" parameter2=\"0\" parameter3=\"0\"></MISSIONITEM>\n",i,land);
         }
         os.puts("</MISSION>\n");
     }
