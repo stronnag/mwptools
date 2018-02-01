@@ -9,7 +9,7 @@ public class Places :  GLib.Object
 
     private PosItem[]pls = {};
 
-    private void parse_csv(string fn)
+    private void parse_delim(string fn)
     {
         var file = File.new_for_path(fn);
         try {
@@ -21,7 +21,7 @@ public class Places :  GLib.Object
                    !line.has_prefix("#") &&
                    !line.has_prefix(";"))
                 {
-                    var parts = line.split(",");
+                    var parts = line.split_set("\t|;:");
                     if(parts.length == 3)
                     {
                         var p = PosItem();
@@ -68,7 +68,7 @@ public class Places :  GLib.Object
             parse_json(fn);
         else if((fn = MWPUtils.find_conf_file("places")) != null)
         {
-            parse_csv(fn);
+            parse_delim(fn);
         }
         return pls;
     }

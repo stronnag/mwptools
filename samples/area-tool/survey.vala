@@ -105,6 +105,7 @@ public class AreaPlanner : GLib.Object {
     private List<Champlain.Marker> list = new List<Champlain.Marker> ();
     private Champlain.Marker menu_marker;
 
+    private Gtk.Button s_export;
     private Gtk.Entry s_angle;
     private Gtk.Entry s_altitude;
     private Gtk.Entry s_rowsep;
@@ -116,6 +117,12 @@ public class AreaPlanner : GLib.Object {
         ID,
         NAME,
         N_COLUMNS
+    }
+
+    private void set_menu_state(string action, bool state)
+    {
+        var ac = window.lookup_action(action) as SimpleAction;
+        ac.set_enabled(state);
     }
 
     public AreaPlanner (string? afn)
@@ -244,7 +251,7 @@ public class AreaPlanner : GLib.Object {
 
         var s_apply =  builder.get_object ("s_apply") as Gtk.Button;
         var s_save =  builder.get_object ("s_save") as Gtk.Button;
-        var s_export =  builder.get_object ("s_export") as Gtk.Button;
+        s_export =  builder.get_object ("s_export") as Gtk.Button;
 
         s_export.clicked.connect(() => {
                 do_file_save("Mission");
@@ -274,7 +281,7 @@ public class AreaPlanner : GLib.Object {
                     var tlat = last.latitude;
                     var tlon = last.longitude;
                     msn_path.remove_node(last);
-                    msn_points.remove(last);
+                    msn_points.remove_child(last);
                     add_wp_item(tlat, tlon, msnl, s);
                 }
                 return false;
@@ -320,12 +327,15 @@ public class AreaPlanner : GLib.Object {
     private void save_mission_file(string fn)
     {
         uint i =0;
-        int alt;
-        var os = FileStream.open(fn, "w");
+        var rth = s_rth.active;
+        var alt = int.parse(s_altitude.text);
+        time_t currtime;
+        time_t(out currtime);
 
-        bool rth = s_rth.active;
-        alt = int.parse(s_altitude.text);
-        os.printf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<MISSION>\n <VERSION value=\"2.3 pre8\"></VERSION>\n");
+        var os = FileStream.open(fn, "w");
+        os.printf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<MISSION>\n<!--mwp-area-planner 0.01-->\n<VERSION value=\"2.3 pre8\"></VERSION>\n");
+        os.printf("<mwp save-date=\"%s\"/>\n",Time.local(currtime).format("%FT%T%z"));
+
         foreach(var p in msn_points.get_markers())
         {
             i++;
@@ -333,11 +343,11 @@ public class AreaPlanner : GLib.Object {
                   i,p.latitude, p.longitude, alt);
         }
 
-            // check gsetting for land para
         if(rth)
         {
+            var land = (int)conf.rth_autoland;
             i++;
-            os.printf("MISSIONITEM no=\"%u\" action=\"RTH\" lat=\"0\" lon=\"0\" alt=\"0\" parameter1=\"1\" parameter2=\"0\" parameter3=\"0\"></MISSIONITEM>\n",i);
+            os.printf("MISSIONITEM no=\"%u\" action=\"RTH\" lat=\"0\" lon=\"0\" alt=\"0\" parameter1=\"%d\" parameter2=\"0\" parameter3=\"0\"></MISSIONITEM>\n",i,land);
         }
         os.puts("</MISSION>\n");
     }
@@ -406,6 +416,8 @@ public class AreaPlanner : GLib.Object {
                 use_rth = true;
             add_wp_item(m.end.y, m.end.x, i, use_rth);
         }
+        s_export.sensitive = true;
+        set_menu_state("menu-save-msn", true);
     }
 
     private void add_wp_item(double lat, double lon, uint i, bool use_rth)
@@ -500,7 +512,7 @@ public class AreaPlanner : GLib.Object {
     private void init_markers()
     {
         Clutter.Color pcol = { 0xc5,0xc5, 0xc5, 0xa0};
-        Clutter.Color rcol = {0xff, 0x0, 0x0, 0x80};
+        Clutter.Color rcol = {0xff, 0x0, 0x0, 0x60};
 
         msn_path = new Champlain.PathLayer();
         msn_points = new Champlain.MarkerLayer();
@@ -524,6 +536,8 @@ public class AreaPlanner : GLib.Object {
     {
         msn_path.remove_all();
         msn_points.remove_all();
+        s_export.sensitive = false;
+        set_menu_state("menu-save-msn",false);
     }
 
     private void clear_markers()
@@ -544,11 +558,21 @@ public class AreaPlanner : GLib.Object {
 
         if(fn != null)
         {
+            double cxa = 180, cya = 90, cxz=-180, cyz=-90;
             pls = parse_file(fn);
             foreach(var p in pls)
             {
+                cxa = Math.fmin(cxa,p.x);
+                cxz = Math.fmax(cxz,p.x);
+                cya = Math.fmin(cya,p.y);
+                cyz = Math.fmax(cyz,p.y);
                 add_node(p.y, p.x);
             }
+            if(pls.length != 0)
+            {
+                view.center_on((cya+cyz)/2, (cxa+cxz)/2);
+            }
+
         }
 
         if(pls.length == 0)
@@ -556,10 +580,10 @@ public class AreaPlanner : GLib.Object {
             var bb = view.get_bounding_box();
             double np,sp,ep,wp;
 
-            np = (bb.top*0.8 + bb.bottom*0.2);
-            sp = (bb.top*0.2 + bb.bottom*0.8);
-            ep = (bb.left*0.8 + bb.right*0.2);
-            wp = (bb.left*0.2 + bb.right*0.8);
+            np = (bb.top*0.9 + bb.bottom*0.1);
+            sp = (bb.top*0.1 + bb.bottom*0.9);
+            ep = (bb.left*0.9 + bb.right*0.1);
+            wp = (bb.left*0.1 + bb.right*0.9);
             add_node(np,ep);
             add_node(np,wp);
             add_node(sp,wp);
@@ -692,7 +716,7 @@ public class AreaPlanner : GLib.Object {
                 var zval = zoomer.adjustment.value;
                 var cx = lx;
                 var cy = ly;
-                view.set_property("map-source", source);
+                view.map_source = source;
 
                     /* Stop oob zooms messing up the map */
                 var mmax = view.get_max_zoom_level();
@@ -701,12 +725,12 @@ public class AreaPlanner : GLib.Object {
                 if (zval > mmax)
                 {
                     chg = true;
-                    view.set_property("zoom-level", mmax);
+                    view.zoom_level = mmax;
                 }
                 if (zval < mmin)
                 {
                     chg = true;
-                        view.set_property("zoom-level", mmin);
+                        view.zoom_level = mmin;
                 }
                 if (chg == true)
                 {
@@ -738,13 +762,13 @@ public class AreaPlanner : GLib.Object {
         string symb;
         if(nrth)
         {
-            col = { 0, 0xaa, 0xff, 0xc8};
+            col = { 0, 0xaa, 0xff, 0xa0};
             symb = "▼WP";
         }
         else
         {
             symb = "WP";
-            col = { 0, 0xff, 0xff, 0xc8};
+            col = { 0, 0xff, 0xff, 0xa0};
         }
         text = "%s %s".printf(symb, no);
     }
@@ -831,6 +855,10 @@ public class AreaPlanner : GLib.Object {
      private void save_area_file(string fn)
     {
         var os = FileStream.open(fn, "w");
+        os.puts("# mwp area file\n");
+        os.puts("# Valid delimiters are |;: and <TAB>. Note \",\" is not a delimiter
+# for reasons of localisation.\n");
+        os.puts("#\n");
         list.foreach((m) => {
                 os.printf("%f\t%f\n", m.latitude, m.longitude);
             });
