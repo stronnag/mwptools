@@ -171,6 +171,11 @@ public class AreaPlanner : GLib.Object {
             });
         window.add_action(saq);
 
+        saq = new GLib.SimpleAction("reset-area",null);
+        saq.activate.connect(() => {
+                init_area(null);
+            });
+        window.add_action(saq);
         saq = new GLib.SimpleAction("menu-save",null);
         saq.activate.connect(() => {
                 do_file_save("Area");

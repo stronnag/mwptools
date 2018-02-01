@@ -10,6 +10,10 @@
 	  <attribute name="accel">&lt;Primary&gt;o</attribute>
         </item>
         <item>
+          <attribute name="label">Reset Area</attribute>
+          <attribute name="action">win.reset-area</attribute>
+        </item>
+        <item>
           <attribute name="label">Save Area</attribute>
           <attribute name="action">win.menu-save</attribute>
         </item>
