@@ -5659,7 +5659,7 @@ public class MWPlanner : Gtk.Application {
         else
         {
             var m = get_mission_data();
-            m.to_xml_file(last_file);
+            XmlIO.to_xml_file(last_file, m);
             update_title_from_file(last_file);
         }
         Timeout.add_seconds(2, () => {
@@ -5767,7 +5767,7 @@ public class MWPlanner : Gtk.Application {
                          last_file.has_suffix(".xml")))
                         last_file += ".mission";
                     var m = get_mission_data();
-                    m.to_xml_file(last_file);
+                    XmlIO.to_xml_file(last_file, m);
                     update_title_from_file(last_file);
                 }
                 chooser.close ();
@@ -5830,8 +5830,8 @@ public class MWPlanner : Gtk.Application {
 
     private void load_file(string fname)
     {
-        var ms = new Mission ();
-        if(ms.read_xml_file (fname) == true)
+        var ms = XmlIO.read_xml_file (fname);
+        if(ms != null)
         {
             if(armed == 0 && craft != null)
             {
@@ -5935,8 +5935,8 @@ public class MWPlanner : Gtk.Application {
                     var fn = uri.substring (7);
                     if(!FileUtils.test (fn, FileTest.IS_DIR))
                     {
-                        var m = new Mission ();
-                        if(m.read_xml_file (fn) == true)
+                        var m = XmlIO.read_xml_file (fn);
+                        if(m != null)
                         {
                             var sb = new StringBuilder();
                             sb.append_printf("Points: %u\n", m.npoints);

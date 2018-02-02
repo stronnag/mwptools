@@ -102,8 +102,9 @@ public class FlatEarth : GLib.Object
     public static Gdk.Pixbuf getpixbuf(string fn, int width, int height)
     {
         Gdk.Pixbuf spixb = null;
-        var ms = new Mission ();
-        if (ms.read_xml_file (fn) == true)
+        var ms = XmlIO.read_xml_file (fn);
+
+        if((ms) != null)
         {
             LLPos wpos = {0};
             GridPos gp = {0};
