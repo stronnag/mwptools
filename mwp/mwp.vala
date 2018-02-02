@@ -5062,7 +5062,7 @@ public class MWPlanner : Gtk.Application {
         }
         else
         {
-            float  vf = (float)ivbat/10.0f;
+            float  vf = ((float)ivbat)/10.0f;
             if (nsampl == MAXVSAMPLE)
             {
                 for(var i = 1; i < MAXVSAMPLE; i++)
@@ -5150,8 +5150,6 @@ public class MWPlanner : Gtk.Application {
             mwp_warning_box(str, Gtk.MessageType.WARNING);
         }
 
-        serstate = SERSTATE.NORMAL;
-
         if(wps.length == 0)
         {
             if(inav)
@@ -5174,6 +5172,7 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
+        serstate = SERSTATE.NORMAL;
         mq.clear();
         MWPCursor.set_busy_cursor(window);
 
