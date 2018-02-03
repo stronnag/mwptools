@@ -75,3 +75,4 @@ install: $(APPS)
 	install -m 644 ../docs/mwptools.pdf $(datadir)/share/doc/mwp/mwptools.pdf
 	install -d /etc/bash_completion.d/
 	install -m 644 mwp_complete.sh /etc/bash_completion.d/mwp
+	gtk-update-icon-cache $(datadir)/share/icons/hicolor
