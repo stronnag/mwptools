@@ -4,12 +4,26 @@ public class XmlIO : Object
 {
     public static Mission? read_xml_file(string path)
     {
-       Parser.init ();
 
-       Xml.Doc* doc = Parser.parse_file (path);
+        string s;
+
+        try  {
+            FileUtils.get_contents(path, out s);
+        } catch (FileError e) {
+            stderr.puts(e.message);
+            stderr.putc('\n');
+            return null;
+        }
+
+        return read_xml_string(s);
+    }
+
+    public static Mission? read_xml_string(string s)
+    {
+       Parser.init ();
+       Xml.Doc* doc = Parser.parse_memory(s, s.length);
         if (doc == null)
         {
-            stderr.printf ("File %s not found or permissions missing\n", path);
             return null;
         }
 
@@ -83,7 +97,7 @@ public class XmlIO : Object
                         switch(prop->name)
                         {
                             case "value":
-                                ms.nspeed = int.parse(prop->children->content);
+                                ms.lt = int.parse(prop->children->content);
                                 break;
                         }
                     }
@@ -189,6 +203,15 @@ public class XmlIO : Object
 
     public static void to_xml_file(string path, Mission ms)
     {
+        string s = to_xml_string(ms);
+        try {
+            FileUtils.set_contents(path, s);
+        } catch {}
+
+    }
+
+    public static string to_xml_string(Mission ms, bool pretty=true)
+    {
         Parser.init ();
         Xml.Doc* doc = new Xml.Doc ("1.0");
 
@@ -252,10 +275,11 @@ public class XmlIO : Object
             subnode->new_prop ("parameter3", m.param3.to_string());
         }
 
-        doc->save_format_file_enc(path);
-
+        string s;
+        doc->dump_memory_enc_format (out s, null, "utf-8", pretty);
         delete doc;
         Parser.cleanup ();
+        return s;
     }
 }
 
@@ -285,6 +309,11 @@ int main (string[] args) {
         }
         else
             print("Indeterminate\n");
+
+        stdout.puts(XmlIO.to_xml_string(ms, false));
+        stdout.putc('\n');
+        stdout.puts(XmlIO.to_xml_string(ms, true));
+        stdout.putc('\n');
 
         if (args.length == 3)
             XmlIO.to_xml_file(args[2], ms);

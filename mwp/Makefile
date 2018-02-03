@@ -27,7 +27,7 @@ all: $(APPS)
 
 SRCS=mwp.vala liststore.vala mwp_markers.vala mwp_craft.vala settings.vala dialogs.vala mapsources.vala logger.vala speech_wrapper.c mwp-replay.vala map_seeder.vala mwp-layout.vala layout-test.vala iparser.vala mwp_bbox.vala ah_widget.vala _mwpvers.c $(DEVMAN) get_places.vala mission.vala
 
-COMMON=../common/btdev.c ../common/cserial.c ../common/xmlio.vala ../common/serial-device.vala ../common/geocalc.vala  ../common/utils.vala ../common/mspmsg.vala ../common/mspcmd.vala  ../common/mwc.vala ../common/mwplog.vala ../common/mavcmd.vala local_geo.vala ../common/cliterm.vala ../common/mlock.vala
+COMMON=../common/btdev.c ../common/cserial.c ../common/xmlio.vala ../common/serial-device.vala ../common/geocalc.vala  ../common/utils.vala ../common/mspmsg.vala ../common/mspcmd.vala  ../common/mwc.vala ../common/mwplog.vala ../common/mavcmd.vala local_geo.vala ../common/cliterm.vala ../common/mlock.vala ../common/json_io.vala
 
 PKGS= --pkg gtk+-3.0 --pkg atk --pkg clutter-1.0 --pkg champlain-gtk-0.12 --pkg champlain-0.12 --pkg libxml-2.0 --pkg gio-2.0 --pkg posix --pkg clutter-gtk-1.0 --pkg gdl-3.0 --pkg pango --pkg cairo --pkg libsoup-2.4 --pkg linux --pkg gstreamer-$(GST) --pkg vte-$(VTEVERS) $(GUDEV)
 

@@ -84,7 +84,7 @@ public class MWPSettings : GLib.Object
     public uint flash_warn { get; set; default=0; }
     public bool auto_wp_edit {get; set; default=true;}
     public bool use_legacy_centre_on {get; set; default=false;}
-
+    public string mission_file_type {get; set; default="m";}
     public signal void settings_update (string s);
 
     public MWPSettings()
@@ -296,6 +296,11 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "use-legacy-centre-on")
             use_legacy_centre_on = settings.get_boolean("use-legacy-centre-on");
+
+        if(s == null || s == "mission-file-type")
+        {
+            mission_file_type = settings.get_string ("mission-file-type");
+        }
     }
 
     public void save_pane()

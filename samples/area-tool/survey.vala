@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+
 using Gtk;
 using Clutter;
 using Champlain;
@@ -276,6 +277,8 @@ public class AreaPlanner : GLib.Object {
         s_turn =  builder.get_object ("s_turn") as Gtk.ComboBoxText;
         s_rth =  builder.get_object ("s_rth") as Gtk.Switch;
 
+        s_altitude.text = conf.altitude.to_string();
+
         s_rth.state_set.connect((s) => {
                 var msn_mks = msn_points.get_markers();
                 uint msnl;
@@ -331,30 +334,62 @@ public class AreaPlanner : GLib.Object {
 
     private void save_mission_file(string fn)
     {
-        uint i =0;
+        XmlIO.to_xml_file(fn, create_mission());
+    }
+
+    private Mission? create_mission()
+    {
+        int i =0;
         var rth = s_rth.active;
         var alt = int.parse(s_altitude.text);
-        time_t currtime;
-        time_t(out currtime);
-
-        var os = FileStream.open(fn, "w");
-        os.printf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<MISSION>\n<!--mwp-area-planner 0.01-->\n<VERSION value=\"2.3 pre8\"></VERSION>\n");
-        os.printf("<mwp save-date=\"%s\"/>\n",Time.local(currtime).format("%FT%T%z"));
+        var ms = new Mission();
+        MissionItem [] mi={};
 
         foreach(var p in msn_points.get_markers())
         {
-            i++;
-            os.printf("<MISSIONITEM no=\"%u\" action=\"WAYPOINT\" lat=\"%f\" lon=\"%f\" alt=\"%d\" parameter1=\"0\" parameter2=\"0\" parameter3=\"0\"></MISSIONITEM>\n",
-                  i,p.latitude, p.longitude, alt);
+            var m = MissionItem() {
+                no = ++i, action = MSP.Action.WAYPOINT,
+                lat = p.latitude, lon = p.longitude, alt = alt,
+                param1 = 0, param2 = 0, param3 = 0
+            };
+
+            if (m.lat > ms.maxy)
+                ms.maxy = m.lat;
+            if (m.lon > ms.maxx)
+                ms.maxx = m.lon;
+            if (m.lat <  ms.miny)
+                ms.miny = m.lat;
+            if (m.lon <  ms.minx)
+                ms.minx = m.lon;
+            mi += m;
         }
 
         if(rth)
         {
             var land = (int)conf.rth_autoland;
-            i++;
-            os.printf("<MISSIONITEM no=\"%u\" action=\"RTH\" lat=\"0\" lon=\"0\" alt=\"0\" parameter1=\"%d\" parameter2=\"0\" parameter3=\"0\"></MISSIONITEM>\n",i,land);
+            var m = MissionItem() {
+                no = ++i, action = MSP.Action.RTH,
+                lat = 0, lon = 0, alt = 0,
+                param1 = land, param2 = 0, param3 = 0
+            };
+            mi += m;
         }
-        os.puts("</MISSION>\n");
+
+        ms.npoints = mi.length;
+        ms.set_ways(mi);
+        ms.nspeed = conf.nav_speed;
+        ms.cy = (ms.maxy + ms.miny) /2.0;
+        ms.cx = (ms.maxx + ms.minx) /2.0;
+
+        if(ms.calculate_distance(out ms.dist, out ms.lt))
+        {
+            if(conf.nav_speed != 0)
+                ms.et = (int)(ms.dist / conf.nav_speed) + (int)ms.npoints * 3;
+        }
+
+        ms.version="mwp-area-planner 0.0";
+
+        return ms;
     }
 
     private void on_file_open()
@@ -828,6 +863,7 @@ public class AreaPlanner : GLib.Object {
         {
             filter.add_pattern ("*.mission");
             filter.add_pattern ("*.xml");
+            filter.add_pattern ("*.json");
             chooser.add_filter (filter);
         }
         else
@@ -883,3 +919,4 @@ public class AreaPlanner : GLib.Object {
         return 0;
     }
 }
+    extern double g_strtod(string str, out char* n);

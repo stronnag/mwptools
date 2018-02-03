@@ -5735,7 +5735,49 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-    public void on_file_save_as ()
+    private void save_mission_file(string fn)
+    {
+        StringBuilder sb;
+        uint8 ftype=0;
+
+        if(fn.has_suffix(".mission") || fn.has_suffix(".xml"))
+            ftype = 'm';
+
+        if(fn.has_suffix(".json"))
+        {
+            ftype = 'j';
+        }
+
+        if(ftype == 0)
+        {
+            sb = new StringBuilder(fn);
+            if(conf.mission_file_type == "j")
+            {
+                ftype = 'j';
+                sb.append(".json");
+            }
+            else
+            {
+                ftype = 'm';
+                sb.append(".mission");
+            }
+            fn = sb.str;
+        }
+
+        var m = get_mission_data();
+        if (ftype == 'm')
+            XmlIO.to_xml_file(fn, m);
+        else
+            JsonIO.to_json_file(fn, m);
+    }
+
+    public Mission? open_mission_file(string fn)
+    {
+        bool is_j = fn.has_suffix(".json");
+        return (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+    }
+
+    private void on_file_save_as ()
     {
         Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
             "Select a mission file", null, Gtk.FileChooserAction.SAVE,
@@ -5752,7 +5794,7 @@ public class MWPlanner : Gtk.Application {
         filter.set_filter_name ("Mission");
         filter.add_pattern ("*.mission");
         filter.add_pattern ("*.xml");
-//            filter.add_pattern ("*.json");
+        filter.add_pattern ("*.json");
         chooser.add_filter (filter);
 
         filter = new Gtk.FileFilter ();
@@ -5763,11 +5805,7 @@ public class MWPlanner : Gtk.Application {
         chooser.response.connect((id) => {
                 if (id == Gtk.ResponseType.ACCEPT) {
                     last_file = chooser.get_filename ();
-                    if(!(last_file.has_suffix(".mission") ||
-                         last_file.has_suffix(".xml")))
-                        last_file += ".mission";
-                    var m = get_mission_data();
-                    XmlIO.to_xml_file(last_file, m);
+                    save_mission_file(last_file);
                     update_title_from_file(last_file);
                 }
                 chooser.close ();
@@ -5830,7 +5868,7 @@ public class MWPlanner : Gtk.Application {
 
     private void load_file(string fname)
     {
-        var ms = XmlIO.read_xml_file (fname);
+        var ms = open_mission_file(fname);
         if(ms != null)
         {
             if(armed == 0 && craft != null)
@@ -5912,7 +5950,7 @@ public class MWPlanner : Gtk.Application {
         filter.set_filter_name ("Mission");
         filter.add_pattern ("*.mission");
         filter.add_pattern ("*.xml");
-//      filter.add_pattern ("*.json");
+        filter.add_pattern ("*.json");
         chooser.add_filter (filter);
 
         filter = new Gtk.FileFilter ();
@@ -5935,7 +5973,7 @@ public class MWPlanner : Gtk.Application {
                     var fn = uri.substring (7);
                     if(!FileUtils.test (fn, FileTest.IS_DIR))
                     {
-                        var m = XmlIO.read_xml_file (fn);
+                        var m = open_mission_file(fn);
                         if(m != null)
                         {
                             var sb = new StringBuilder();

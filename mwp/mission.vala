@@ -123,6 +123,9 @@ public class Mission : GLib.Object
         lt = 0;
 
         var nsize = waypoints.length;
+        if(nsize == 0)
+            return false;
+
         do
         {
             var typ = waypoints[n].action;

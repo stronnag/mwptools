@@ -389,7 +389,6 @@
         Defines RGBA colour for 'next way point' highlight
       </description>
     </key>
-
     <key name="flash-warn" type="u">
       <default>0</default>
       <summary>Flash storage warning</summary>
@@ -419,6 +418,12 @@
 	View" mode.
       </description>
     </key>
-
+    <key name="mission-file-type" type="s">
+      <default>"m"</default>
+      <summary>Prefered mission file type</summary>
+      <description>
+        m for XML (.mission), j for json
+      </description>
+    </key>
   </schema>
 </schemalist>
