@@ -16,12 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-extern int connect_bt_device (string dev, int* lasterr);
-extern int open_serial(string dev, int baudrate);
-extern int set_fd_speed(int fd, int baudrate);
-extern void close_serial(int fd);
-extern void flush_serial(int fd);
-extern unowned string get_error_text(int err, uint8[] buf, size_t len);
 
 public struct SerialStats
 {
@@ -190,7 +184,7 @@ public class MWSerial : Object
         if((commode & ComMode.TTY) == ComMode.TTY)
         {
             baudrate = rate;
-            set_fd_speed(fd, (int)rate);
+            MwpSerial.set_speed(fd, (int)rate);
         }
         available = true;
         setup_reader(fd);
@@ -335,7 +329,7 @@ public class MWSerial : Object
         if(device.length == 17 &&
            device[2] == ':' && device[5] == ':')
         {
-            fd = connect_bt_device(device, &lasterr);
+            fd = BTSocket.connect(device, &lasterr);
             if (fd != -1)
             {
                 commode = ComMode.FD|ComMode.STREAM;
@@ -382,7 +376,7 @@ public class MWSerial : Object
                     device  = parts[0];
                     rate = int.parse(parts[1]);
                 }
-                fd = open_serial(device, (int)rate);
+                fd = MwpSerial.open(device, (int)rate);
             }
             lasterr=Posix.errno;
         }
@@ -390,7 +384,7 @@ public class MWSerial : Object
         if(fd < 0)
         {
             uint8 [] sbuf = new uint8[1024];
-            var s = get_error_text(lasterr, sbuf, 1024);
+            var s = MwpSerial.error_text(lasterr, sbuf, 1024);
             estr = "%s %s (%d)\n".printf(device, s,lasterr);
             MWPLog.message(estr);
             fd = -1;
@@ -436,7 +430,7 @@ public class MWSerial : Object
             }
             if((commode & ComMode.TTY) == ComMode.TTY)
             {
-                close_serial(fd);
+                MwpSerial.close(fd);
                 fd = -1;
             }
             else if ((commode & ComMode.FD) == ComMode.FD)
@@ -478,7 +472,7 @@ public class MWSerial : Object
     {
         commerr++;
         MWPLog.message("Comm error count %d\r\n", commerr);
-        flush_serial(fd);
+        MwpSerial.flush(fd);
     }
 
     private void check_rxbuf_size()

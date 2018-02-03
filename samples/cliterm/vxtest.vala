@@ -1,8 +1,6 @@
 
 /* MSP 'sink' */
 
-extern unowned char * ptsname(int fd);
-
 public class MWSim : GLib.Object
 {
     private int fd;
@@ -26,7 +24,7 @@ public class MWSim : GLib.Object
         Posix.ttyname_r(fd, buf);
         Posix.grantpt(fd);
         Posix.unlockpt(fd);
-        s = (string)ptsname (fd);
+        s = (string)MwpLibC.ptsname (fd);
         stderr.printf("%s => fd %d slave %s\n", (string)buf, fd, s);
         msp.open_fd(fd,115200);
     }

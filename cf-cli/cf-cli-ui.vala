@@ -17,10 +17,6 @@ using Gtk;
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
-/* workaround for Windows / mingw */
-extern int cf_pipe(int *fds);
-//extern int cf_pipe_close(int fd);
-
 public class DumpGUI : MWSerial
 {
     private Builder builder;
@@ -303,7 +299,7 @@ public class DumpGUI : MWSerial
     {
         IOChannel io_read;
         msgpipe = new int[2];
-        cf_pipe(msgpipe);
+        MwpPipe.pipe(msgpipe);
         io_read  = new IOChannel.unix_new(msgpipe[0]);
         io_read.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL|
                           IOCondition.ERR, io_reader);

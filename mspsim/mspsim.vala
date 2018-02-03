@@ -18,9 +18,6 @@
  */
 using Gtk;
 
-extern double g_strtod(string str, out char* n);
-extern unowned char * ptsname(int fd);
-
 public struct LegItem
 {
     double slat;

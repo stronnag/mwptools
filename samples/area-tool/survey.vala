@@ -919,4 +919,3 @@ public class AreaPlanner : GLib.Object {
         return 0;
     }
 }
-    extern double g_strtod(string str, out char* n);

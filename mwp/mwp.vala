@@ -22,15 +22,6 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
-extern string mwpvers;
-extern string mwpid;
-
-extern double g_strtod(string str, out char* n);
-extern int atexit(VoidFunc func);
-extern int cf_pipe(int *fds);
-extern void speech_set_api(uint8 a);
-extern uint8 get_speech_api_mask();
-
 [DBus (name = "org.freedesktop.NetworkManager")]
 interface NetworkManager : GLib.Object {
     public signal void StateChanged (uint32 state);
@@ -881,7 +872,7 @@ public class MWPlanner : Gtk.Application {
         var spapi =  0;
         if(exvox == null)
         {
-            spapi = get_speech_api_mask();
+            spapi = MwpSpeech.get_api_mask();
             if (spapi == 3)
                 spapi = (conf.speech_api == "espeak") ? 1 :
                     (conf.speech_api == "speechd") ? 2 : 0;
@@ -892,7 +883,7 @@ public class MWPlanner : Gtk.Application {
             MWPLog.message("Using external speech api [%s]\n", exvox);
         }
 
-        speech_set_api(spapi);
+        MwpSpeech.set_api(spapi);
 
         ulang = Intl.setlocale(LocaleCategory.NUMERIC, "");
 
@@ -1687,9 +1678,9 @@ public class MWPlanner : Gtk.Application {
 
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
         about.set_transient_for(window);
-        StringBuilder sb = new StringBuilder(mwpvers);
+        StringBuilder sb = new StringBuilder(MwpVers.build);
         sb.append_c('\n');
-        sb.append(mwpid);
+        sb.append(MwpVers.id);
         if(is_wayland && use_wayland)
             sb.append("\non wayland\n");
         about.version = sb.str;
@@ -1796,7 +1787,7 @@ public class MWPlanner : Gtk.Application {
             var i = 0;
             foreach (unowned string str in parts)
             {
-                var d = g_strtod(str,null);
+                var d = DStr.strtod(str,null);
                 vcol.levels[i].cell = (float)d;
                 i++;
             }
@@ -6102,7 +6093,7 @@ public class MWPlanner : Gtk.Application {
         xaudio = conf.audioarmed;
 
         playfd = new int[2];
-        var sr = cf_pipe(playfd);
+        var sr = MwpPipe.pipe(playfd);
 
         if(sr == 0)
         {
@@ -6330,9 +6321,9 @@ public class MWPlanner : Gtk.Application {
                 return 1;
 
             var sb = new StringBuilder("mwp ");
-            sb.append(mwpvers);
+            sb.append(MwpVers.build);
             sb.append_c(' ');
-            sb.append(mwpid);
+            sb.append(MwpVers.id);
             var verstr = sb.str;
             string fixedopts=null;
 
@@ -6364,7 +6355,7 @@ public class MWPlanner : Gtk.Application {
                 if(fixedopts != null)
                     MWPLog.message("default options: %s\n", fixedopts);
                 Gst.init (ref args);
-                atexit(MWPlanner.xchild);
+                MwpLibC.atexit(MWPlanner.xchild);
                 var app = new MWPlanner();
                 app.run ();
                 app.cleanup();

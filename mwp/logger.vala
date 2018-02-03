@@ -68,9 +68,9 @@ public class Logger : GLib.Object
         builder.set_member_name ("host");
         builder.add_string_value (get_host_info());
         builder.set_member_name ("mwpinfo");
-        builder.add_string_value (mwpvers);
+        builder.add_string_value (MwpVers.build);
         builder.set_member_name ("mwpid");
-        builder.add_string_value (mwpid);
+        builder.add_string_value (MwpVers.id);
         builder.end_object ();
         Json.Node root = builder.get_root ();
         gen.set_root (root);

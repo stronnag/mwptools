@@ -5,33 +5,37 @@ include ../../common.mk
 APP=xcliterm
 CLI=cliterm
 
-COMMON=../../common/serial-device.vala ../../common/btdev.c \
-	../../common/cserial.c ../../common/mspcmd.vala ../../common/mwplog.vala \
-	../../common/mspmsg.vala
-PKGS = --pkg posix --pkg gio-2.0 --pkg gtk+-3.0 --pkg linux
+COMMOND=../../common
+
+COMMONC=$(COMMOND)/serial-device.vala $(COMMOND)/btdev.c \
+	$(COMMOND)/cserial.c $(COMMOND)/mspcmd.vala $(COMMOND)/mwplog.vala \
+	$(COMMOND)/mspmsg.vala
+PKGS = --pkg posix --pkg gio-2.0 --pkg gtk+-3.0 --pkg linux --pkg mwpfuncs
 PKGSV = --pkg vte-$(VTEVERS)
 PKGSR = --pkg gio-2.0
+OPTS+=--vapidir=$(COMMOND) -X -I$(COMMOND)
+
 
 APPS=$(APP) $(CLI) mspfuzz
 
 all: $(APPS)
 
-cliterm: cliterm.vala $(COMMON)
+cliterm: cliterm.vala $(COMMONC)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
-msptest: msptest.vala $(COMMON)
+msptest: msptest.vala $(COMMONC)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
-mspfuzz: mspfuzz.vala $(COMMON)
+mspfuzz: mspfuzz.vala $(COMMONC)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
-mspcommon: mspcommon.vala $(COMMON)
+mspcommon: mspcommon.vala $(COMMONC)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
-vxtest: vxtest.vala $(COMMON)
+vxtest: vxtest.vala $(COMMONC)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
-xcliterm: xcliterm-main.vala ../../common/cliterm.vala $(COMMON)
+xcliterm: xcliterm-main.vala $(COMMOND)/cliterm.vala $(COMMONC)
 	$(VALAC) $(OPTS) $(PKGS) $(PKGSV) -o $@  $^ $(LOPTS)
 
 clean:

@@ -20,8 +20,6 @@
 
 /* Upload a cleanflight CLI dump back into a naze32 FC */
 
-extern string default_name();
-
 int main (string[] args)
 {
     int ini_res;
@@ -33,7 +31,7 @@ int main (string[] args)
 
     if(MWSerial.devname == null)
     {
-        MWSerial.devname = default_name();
+        MWSerial.devname = MwpSerial.default_name();
         if(MWSerial.devname == null)
         {
             message("On non-Linux OS you must define the serial device (-d DEVNAME)\n");

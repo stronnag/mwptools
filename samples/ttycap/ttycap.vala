@@ -16,11 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-extern int open_serial(string dev, int baudrate);
-extern void close_serial(int fd);
-extern string default_name();
-extern unowned string get_error_text(int err, uint8[] buf, size_t len);
-
 public class MWSerial : Object
 {
 
@@ -67,12 +62,12 @@ public class MWSerial : Object
 
     private bool open(string device, int rate)
     {
-        fd = open_serial(device, rate);
+        fd = MwpSerial.open(device, rate);
         if(fd < 0)
         {
             uint8 [] sbuf = new uint8[1024];
             var lasterr=Posix.errno;
-            var s = get_error_text(lasterr, sbuf, 1024);
+            var s = MwpSerial.error_text(lasterr, sbuf, 1024);
             stderr.printf("%s (%d)\n", s, lasterr);
             fd = -1;
             available = false;
@@ -119,7 +114,7 @@ public class MWSerial : Object
                 Source.remove(tag);
             }
             try  { io_read.shutdown(false); } catch {}
-            close_serial(fd);
+            MwpSerial.close(fd);
             fd = -1;
         }
     }
@@ -182,7 +177,7 @@ public class MWSerial : Object
                 devname = args[1];
             }
             else
-                devname = default_name();
+                devname = MwpSerial.default_name();
         }
 
         var msp = new MWSerial();

@@ -20,7 +20,6 @@
 
 /* Based on the Multiwii UBLOX parser, GPL by a cast of thousands */
 
-extern int  init_signals();
 
 static MainLoop ml;
 static MWSerial msp;
@@ -56,7 +55,7 @@ public static int main (string[] args)
     {
         if(msp.ublox_open(MWSerial.devname, MWSerial.brate))
         {
-            int pfd = init_signals();
+            int pfd = MwpSignals.fd();
             if(pfd != -1)
             {
                 var io_read  = new IOChannel.unix_new(pfd);

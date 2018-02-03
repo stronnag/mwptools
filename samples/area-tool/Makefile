@@ -13,9 +13,14 @@ survey-resources.c: survey.gresources.xml survey.ui menubar.ui mwp_area_icon.svg
 
 SRCS= survey.vala survey-resources.c genpat.vala
 
-COMMONM = ../../mwp/settings.vala ../../mwp/mapsources.vala ../../mwp/mission.vala \
-	../../common/utils.vala  ../../common/mwplog.vala ../../common/xmlio.vala \
-	../../common/geocalc.vala ../../common/mspcmd.vala
+COMMOND=../../common
+MWPD=../../mwp
+
+OPTS+= --vapidir $(COMMOND) -X -I$(COMMOND) --pkg mwpfuncs
+
+COMMONM = $(MWPD)/settings.vala $(MWPD)/mapsources.vala $(MWPD)/mission.vala \
+	$(COMMOND)/utils.vala  $(COMMOND)/mwplog.vala $(COMMOND)/xmlio.vala \
+	$(COMMOND)/geocalc.vala $(COMMOND)/mspcmd.vala
 
 PKGS= --pkg gtk+-3.0 --pkg atk --pkg clutter-1.0 --pkg champlain-gtk-0.12 \
 	--pkg champlain-0.12 --pkg gio-2.0 --pkg posix --pkg clutter-gtk-1.0 \

@@ -3,11 +3,13 @@ VALAC=valac
 include ../common.mk
 
 LOPTS=-X -lm
-S1=cf-cli.vala cf-cli-serial.vala ../common/cserial.c
+COMMOND=../common
+
+S1=cf-cli.vala cf-cli-serial.vala $(COMMOND)/cserial.c
 ifeq ($(XOS),Linux)
- S2=cf-cli-ui.vala cf-cli-serial.vala cf-cli.resources.c ../common/cserial.c devmanager_linux.vala
+ S2=cf-cli-ui.vala cf-cli-serial.vala cf-cli.resources.c $(COMMOND)/cserial.c devmanager_linux.vala
 else
- S2=cf-cli-ui.vala cf-cli-serial.vala cf-cli.resources.c ../common/cserial.c devmanager-win32.vala
+ S2=cf-cli-ui.vala cf-cli-serial.vala cf-cli.resources.c $(COMMOND)/cserial.c devmanager-win32.vala
 endif
 
 CLI=cf-cli
@@ -16,6 +18,8 @@ ifdef VTEVERS
  APP=cf-cli-ui
 endif
 APPS=$(APP) $(CLI)
+
+OPTS+= --vapidir $(COMMOND) -X -I$(COMMOND) --pkg mwpfuncs
 
 all: $(APPS)
 

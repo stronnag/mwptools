@@ -17,7 +17,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-extern string __progname;
 public class MWPUtils
 {
     private static string? have_conf_file(string fn)
@@ -41,7 +40,7 @@ public class MWPUtils
         var uc = Environment.get_user_data_dir();
         var app = Environment.get_application_name();
         if(app == null)
-            app = __progname;
+            app = MwpVers.progname;
 
         cfile = have_conf_file(GLib.Path.build_filename(uc,app,wanted));
         if (cfile == null)

@@ -64,7 +64,7 @@ public class XmlIO : Object
                         switch(prop->name)
                         {
                             case "value":
-                                ms.dist = g_strtod(prop->children->content,null);
+                                ms.dist = DStr.strtod(prop->children->content,null);
                                 break;
                         }
                     }
@@ -75,7 +75,7 @@ public class XmlIO : Object
                         switch(prop->name)
                         {
                             case "value":
-                                ms.nspeed = g_strtod(prop->children->content,null);
+                                ms.nspeed = DStr.strtod(prop->children->content,null);
                                 break;
                         }
                     }
@@ -135,10 +135,10 @@ public class XmlIO : Object
                                 m.action = MSP.lookup_name(act);
                                 break;
                             case "lat":
-                                m.lat = g_strtod(attr_content,null);
+                                m.lat = DStr.strtod(attr_content,null);
                                 break;
                             case "lon":
-                                m.lon = g_strtod(attr_content,null);
+                                m.lon = DStr.strtod(attr_content,null);
                                 break;
                             case "parameter1":
                                 m.param1 = int.parse(attr_content);
@@ -186,10 +186,10 @@ public class XmlIO : Object
                                 ms.zoom = (uint)int.parse(prop->children->content);
                                 break;
                             case "cx":
-                                ms.cx = g_strtod(prop->children->content,null);
+                                ms.cx = DStr.strtod(prop->children->content,null);
                                 break;
                             case "cy":
-                                ms.cy = g_strtod(prop->children->content,null);
+                                ms.cy = DStr.strtod(prop->children->content,null);
                                 break;
                         }
                     }
@@ -285,8 +285,6 @@ public class XmlIO : Object
 
 
 #if XMLTEST_MAIN
-
-extern double g_strtod(string str, out char* n);
 
 int main (string[] args) {
 
