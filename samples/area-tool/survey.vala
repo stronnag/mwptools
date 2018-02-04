@@ -85,6 +85,11 @@ public class PosFormat : GLib.Object
     }
 }
 
+[DBus (name = "org.mwptools.mwp")]
+interface MwpIF : Object {
+    public abstract int set_mission (string msg) throws IOError;
+}
+
 public class AreaPlanner : GLib.Object {
     public Builder builder;
     public Gtk.ApplicationWindow window;
@@ -118,6 +123,7 @@ public class AreaPlanner : GLib.Object {
     private uint nmpts = 0;
     private Mission ms;
     private uint32 move_time;
+    private MwpIF? proxy = null;
 
     private enum MS_Column {
         ID,
@@ -130,6 +136,45 @@ public class AreaPlanner : GLib.Object {
         var ac = window.lookup_action(action) as SimpleAction;
         ac.set_enabled(state);
     }
+
+    private void acquire()
+    {
+        Bus.watch_name(BusType.SESSION, "org.mwptools.mwp",
+                       BusNameWatcherFlags.NONE,
+                       has_bus, lost_bus);
+    }
+
+    private void has_bus()
+    {
+        if (proxy == null)
+            Bus.get_proxy.begin<MwpIF>(BusType.SESSION,
+                                       "org.mwptools.mwp",
+                                       "/org/mwptools/mwp",
+                                       0, null, on_bus_get);
+    }
+
+    private void on_bus_get(Object? o, AsyncResult? res)
+    {
+        try {
+            proxy = Bus.get_proxy.end(res);
+        } catch (Error e) {
+            stderr.printf ("%s\n", e.message);
+            proxy = null;
+        }
+        update_publish_state();
+    }
+
+    private void lost_bus()
+    {
+        proxy = null;
+        update_publish_state();
+    }
+
+    private void update_publish_state()
+    {
+        s_publish.sensitive = (nmpts > 0 && proxy != null);
+    }
+
 
     public AreaPlanner (string? afn)
     {
@@ -273,7 +318,12 @@ public class AreaPlanner : GLib.Object {
             });
 
         s_publish.clicked.connect(() => {
-                print("Publish\n");
+                var s = XmlIO.to_xml_string(ms, false);
+                try {
+                    proxy.set_mission(s);
+                } catch (IOError e) {
+                        stderr.printf("set_mission : %s\n", e.message);
+                    }
             });
 
         s_apply.clicked.connect(() => {
@@ -338,6 +388,7 @@ public class AreaPlanner : GLib.Object {
         init_markers();
         setup_buttons();
         init_marker_menu();
+        acquire();
 
         Timeout.add(500, () => {
                 init_area(afn);
@@ -349,20 +400,32 @@ public class AreaPlanner : GLib.Object {
 
     private void save_mission_file(string fn)
     {
+        StringBuilder sb;
+        if(!(fn.has_suffix(".mission") || fn.has_suffix(".xml")))
+        {
+            sb = new StringBuilder(fn);
+            sb.append(".json");
+            fn = sb.str;
+        }
         XmlIO.to_xml_file(fn, ms);
     }
 
     private Mission? create_mission()
     {
         int i =0;
+
         var rth = s_rth.active;
         var alt = int.parse(s_altitude.text);
         ms = new Mission();
 
         MissionItem [] mi={};
 
-        foreach(var p in msn_points.get_markers())
+        var pts = msn_points.get_markers();
+        int pl = (int)pts.length();
+        for(var k = 0; k < pl; k++)
         {
+            var j =  pl-1-k;
+            var p = pts.nth_data(j);
             var m = MissionItem() {
                 no = ++i, action = MSP.Action.WAYPOINT,
                 lat = p.latitude, lon = p.longitude, alt = alt,
@@ -485,6 +548,7 @@ public class AreaPlanner : GLib.Object {
         s_export.sensitive = true;
         set_menu_state("menu-save-msn", true);
         create_mission();
+        update_publish_state();
     }
 
     private void add_wp_item(double lat, double lon, uint i, bool use_rth)

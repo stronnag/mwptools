@@ -22,6 +22,17 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
+[DBus (name = "org.mwptools.mwp")]
+public class MwpServer : Object {
+
+    public signal void recv(string s);
+
+    public int set_mission (string msg) {
+        recv(msg);
+        return msg.length;
+    }
+}
+
 [DBus (name = "org.freedesktop.NetworkManager")]
 interface NetworkManager : GLib.Object {
     public signal void StateChanged (uint32 state);
@@ -2007,6 +2018,8 @@ public class MWPlanner : Gtk.Application {
 
        get_map_size();
 
+       acquire_bus();
+
        if(rfile != null)
        {
            usemag = force_mag;
@@ -2035,6 +2048,40 @@ public class MWPlanner : Gtk.Application {
             mkcon = true;
         }
 
+    }
+
+    private void acquire_bus()
+    {
+        Bus.own_name (BusType.SESSION, "org.mwptools.mwp", BusNameOwnerFlags.NONE,
+                      on_bus_aquired,
+                      () => {},
+                      () => {
+                          stderr.printf ("Could not aquire name\n");
+                      });
+    }
+
+    private void on_bus_aquired (DBusConnection conn)
+    {
+        MwpServer mss=null;
+
+        try {
+            conn.register_object ("/org/mwptools/mwp",
+                                  (mss = new MwpServer ()));
+        } catch (IOError e) {
+            stderr.printf ("Could not register service\n");
+        }
+        mss.recv.connect((s) => {
+                Mission ms;
+                unichar c = s.get_char(0);
+
+                if(c == '<')
+                    ms = XmlIO.read_xml_string(s);
+                else
+                    ms = JsonIO.from_json(s);
+
+                if(ms != null)
+                    instantiate_mission(ms);
+            });
     }
 
     private void get_map_size()
@@ -5864,42 +5911,47 @@ public class MWPlanner : Gtk.Application {
         var ms = open_mission_file(fname);
         if(ms != null)
         {
-            if(armed == 0 && craft != null)
-            {
-                markers.remove_rings(view);
-                craft.init_trail();
-            }
-            validatelab.set_text("");
-            ms.dump();
-            ls.import_mission(ms, (conf.rth_autoland &&
-                                   Craft.is_mr(vi.mrtype)));
-            var mmax = view.get_max_zoom_level();
-            var mmin = view.get_min_zoom_level();
-            map_centre_on(ms.cy, ms.cx);
-            if(ms.zoom == 0)
-                ms.zoom = guess_appropriate_zoom(ms);
-
-            if (ms.zoom < mmin)
-                ms.zoom = mmin;
-
-            if (ms.zoom > mmax)
-                ms.zoom = mmax;
-
-            view.zoom_level =  ms.zoom;
-            markers.add_list_store(ls);
+            instantiate_mission(ms);
             last_file = fname;
             update_title_from_file(fname);
-            if(replayer == Player.MWP)
-                NavStatus.nm_pts = (uint8)ms.npoints;
-
-            if(have_home && ls.have_rth)
-                markers.add_rth_point(home_pos.lat,home_pos.lon,ls);
-            need_preview = true;
         }
         else
         {
             mwp_warning_box("Failed to open file");
         }
+    }
+
+    private void instantiate_mission(Mission ms)
+    {
+        if(armed == 0 && craft != null)
+        {
+            markers.remove_rings(view);
+            craft.init_trail();
+        }
+        validatelab.set_text("");
+        ms.dump();
+        ls.import_mission(ms, (conf.rth_autoland &&
+                               Craft.is_mr(vi.mrtype)));
+        var mmax = view.get_max_zoom_level();
+        var mmin = view.get_min_zoom_level();
+        map_centre_on(ms.cy, ms.cx);
+        if(ms.zoom == 0)
+            ms.zoom = guess_appropriate_zoom(ms);
+
+        if (ms.zoom < mmin)
+            ms.zoom = mmin;
+
+        if (ms.zoom > mmax)
+            ms.zoom = mmax;
+
+        view.zoom_level =  ms.zoom;
+        markers.add_list_store(ls);
+        if(replayer == Player.MWP)
+            NavStatus.nm_pts = (uint8)ms.npoints;
+
+        if(have_home && ls.have_rth)
+            markers.add_rth_point(home_pos.lat,home_pos.lon,ls);
+        need_preview = true;
     }
 
     private void mwp_warning_box(string warnmsg,
