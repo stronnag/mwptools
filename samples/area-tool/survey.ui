@@ -204,8 +204,8 @@
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="row_spacing">4</property>
-            <property name="column_spacing">4</property>
+            <property name="row_spacing">2</property>
+            <property name="column_spacing">2</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
@@ -270,6 +270,7 @@
               <object class="GtkEntry" id="s_angle">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="width_chars">0</property>
                 <property name="text" translatable="yes">0</property>
                 <property name="input_purpose">number</property>
               </object>
@@ -297,6 +298,7 @@
               <object class="GtkEntry" id="s_rowsep">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="width_chars">0</property>
                 <property name="text" translatable="yes">20</property>
                 <property name="input_purpose">number</property>
               </object>
@@ -309,6 +311,7 @@
               <object class="GtkEntry" id="s_altitude">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="width_chars">0</property>
                 <property name="text" translatable="yes">15</property>
                 <property name="input_purpose">number</property>
               </object>
@@ -364,7 +367,6 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="hexpand">True</property>
-            <property name="spacing">4</property>
             <property name="homogeneous">True</property>
             <property name="layout_style">center</property>
             <child>

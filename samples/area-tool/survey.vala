@@ -368,10 +368,14 @@ public class AreaPlanner : GLib.Object {
                 return false;
             });
 
-        pane.pack1 (embed,true,false);
-        embed.set_size_request(MAP_WD, MAP_HT);
+
+        var box = new Gtk.Box(Gtk.Orientation.HORIZONTAL,0);
+        box.pack_start(embed);
+        pane.pack1 (box,true,false);
         pane.pack2(databox,false, false);
-        databox.set_size_request (50, -1);
+
+        window.set_default_size(1024,600);
+        pane.position = 800;
 
         view.notify["zoom-level"].connect(() => {
                 var val = view.zoom_level;
