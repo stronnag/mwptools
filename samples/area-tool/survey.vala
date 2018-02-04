@@ -306,7 +306,7 @@ public class AreaPlanner : GLib.Object {
         var poslabel = builder.get_object ("poslabel") as Gtk.Label;
 
         var s_apply =  builder.get_object ("s_apply") as Gtk.Button;
-        var s_save =  builder.get_object ("s_save") as Gtk.Button;
+//        var s_save =  builder.get_object ("s_save") as Gtk.Button;
         s_export =  builder.get_object ("s_export") as Gtk.Button;
         s_publish =  builder.get_object ("s_publish") as Gtk.Button;
         mission_data = builder.get_object ("mission_data") as Gtk.TextView;
@@ -332,9 +332,9 @@ public class AreaPlanner : GLib.Object {
                 build_mission();
             });
 
-        s_save.clicked.connect(() => {
-                do_file_save("Area");
-            });
+//        s_save.clicked.connect(() => {
+//                do_file_save("Area");
+//            });
 
         s_angle =  builder.get_object ("s_angle") as Gtk.Entry;
         s_altitude =  builder.get_object ("s_altitude") as Gtk.Entry;
