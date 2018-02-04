@@ -130,8 +130,8 @@ public class AreaPlanner : GLib.Object {
     }
 
     private const string DELIMS="\t|;:,";
-    private const int WD_MAP = 800;
-    private const int HT_MAP = 600;
+    private const int MAP_WD = 800;
+    private const int MAP_HT = 600;
 
     private void set_menu_state(string action, bool state)
     {
@@ -369,7 +369,7 @@ public class AreaPlanner : GLib.Object {
             });
 
         pane.pack1 (embed,true,false);
-        embed.set_size_request(WD_MAP, -1);
+        embed.set_size_request(MAP_WD, MAP_HT);
         pane.pack2(databox,false, false);
         databox.set_size_request (50, -1);
 
