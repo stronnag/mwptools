@@ -692,7 +692,7 @@ public class SetPosDialog : GLib.Object
         {
             pcombo.active = 0;
             lat_entry.set_text(PosFormat.lat(pls[0].lat, dms));
-            lon_entry.set_text(PosFormat.lon(pls[1].lon, dms));
+            lon_entry.set_text(PosFormat.lon(pls[0].lon, dms));
         }
 
         pcombo.changed.connect (() => {

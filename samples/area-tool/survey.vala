@@ -404,21 +404,20 @@ public class AreaPlanner : GLib.Object {
         init_marker_menu();
         acquire();
 
-
         window.show.connect(() => {
                 if(afn != null)
                     init_area(afn);
                 else
                 {
                     int ntry=0;
-                    Timeout.add(250, () => {
+                    Timeout.add(500, () => {
+                            ntry++;
                             if(view.state == Champlain.State.DONE)
                             {
-                                MWPLog.message("Initial render after %d\n", ntry);
+                                MWPLog.message("Initial map  %.1fs\n", ntry*0.5);
                                 init_area(null);
                                 return false;
                             }
-                            ntry++;
                             return true;
                         });
                 }
