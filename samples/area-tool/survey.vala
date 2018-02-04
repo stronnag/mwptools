@@ -107,12 +107,17 @@ public class AreaPlanner : GLib.Object {
     private Champlain.Marker menu_marker;
 
     private Gtk.Button s_export;
+    private Gtk.Button s_publish;
+    private Gtk.TextView mission_data;
+
     private Gtk.Entry s_angle;
     private Gtk.Entry s_altitude;
     private Gtk.Entry s_rowsep;
     private Gtk.ComboBoxText s_turn;
     private Gtk.Switch s_rth;
     private uint nmpts = 0;
+    private Mission ms;
+    private uint32 move_time;
 
     private enum MS_Column {
         ID,
@@ -258,9 +263,15 @@ public class AreaPlanner : GLib.Object {
         var s_apply =  builder.get_object ("s_apply") as Gtk.Button;
         var s_save =  builder.get_object ("s_save") as Gtk.Button;
         s_export =  builder.get_object ("s_export") as Gtk.Button;
+        s_publish =  builder.get_object ("s_publish") as Gtk.Button;
+        mission_data = builder.get_object ("mission_data") as Gtk.TextView;
 
         s_export.clicked.connect(() => {
                 do_file_save("Mission");
+            });
+
+        s_publish.clicked.connect(() => {
+                print("Publish\n");
             });
 
         s_apply.clicked.connect(() => {
@@ -276,6 +287,8 @@ public class AreaPlanner : GLib.Object {
         s_rowsep =  builder.get_object ("s_rowsep") as Gtk.Entry;
         s_turn =  builder.get_object ("s_turn") as Gtk.ComboBoxText;
         s_rth =  builder.get_object ("s_rth") as Gtk.Switch;
+
+
 
         s_altitude.text = conf.altitude.to_string();
 
@@ -334,7 +347,7 @@ public class AreaPlanner : GLib.Object {
 
     private void save_mission_file(string fn)
     {
-        XmlIO.to_xml_file(fn, create_mission());
+        XmlIO.to_xml_file(fn, ms);
     }
 
     private Mission? create_mission()
@@ -342,7 +355,8 @@ public class AreaPlanner : GLib.Object {
         int i =0;
         var rth = s_rth.active;
         var alt = int.parse(s_altitude.text);
-        var ms = new Mission();
+        ms = new Mission();
+
         MissionItem [] mi={};
 
         foreach(var p in msn_points.get_markers())
@@ -380,15 +394,25 @@ public class AreaPlanner : GLib.Object {
         ms.nspeed = conf.nav_speed;
         ms.cy = (ms.maxy + ms.miny) /2.0;
         ms.cx = (ms.maxx + ms.minx) /2.0;
+        ms.maxalt = alt;
 
         if(ms.calculate_distance(out ms.dist, out ms.lt))
         {
             if(conf.nav_speed != 0)
                 ms.et = (int)(ms.dist / conf.nav_speed) + (int)ms.npoints * 3;
+
+            StringBuilder sb = new StringBuilder("Mission Data\n");
+            sb.append_printf("Points: %u\n", ms.npoints);
+            sb.append_printf("Distance: %.1fm\n", ms.dist);
+            sb.append_printf("Flight time %02d:%02d\n", ms.et/60, ms.et%60 );
+            if(ms.lt != -1)
+                sb.append_printf("Loiter time: %ds\n", ms.lt);
+            sb.append_printf("Speed: %.1f m/s\n", ms.nspeed);
+            if(ms.maxalt != 0x80000000)
+                sb.append_printf("Altitude: %dm\n", ms.maxalt);
+            mission_data.buffer.text = sb.str;
         }
-
         ms.version="mwp-area-planner 0.0";
-
         return ms;
     }
 
@@ -458,6 +482,7 @@ public class AreaPlanner : GLib.Object {
         }
         s_export.sensitive = true;
         set_menu_state("menu-save-msn", true);
+        create_mission();
     }
 
     private void add_wp_item(double lat, double lon, uint i, bool use_rth)
@@ -542,6 +567,8 @@ public class AreaPlanner : GLib.Object {
                     });
                 path.remove_node(menu_marker);
                 pmlayer.remove_marker(menu_marker);
+                if(nmpts > 0)
+                    build_mission();
             }
             else
                 mwp_warning_box("Need 3 or more vertices\n");
@@ -642,6 +669,8 @@ public class AreaPlanner : GLib.Object {
         marker.set_flags(ActorFlags.REACTIVE);
         pmlayer.add_marker(marker);
         marker.button_press_event.connect((e) => {
+                if(e.button == 1)
+                    move_time = e.get_time();
                 marker.selected = true;
                 return false;
             });
@@ -663,6 +692,17 @@ public class AreaPlanner : GLib.Object {
         marker.drag_finish.connect(() => {
                 if(nmpts > 0)
                     build_mission();
+            });
+
+        marker.drag_motion.connect((dx,dy,evt) => {
+                if(nmpts > 0)
+                {
+                    if(evt.get_time() - move_time > 20)
+                    {
+                        build_mission();
+                        move_time = evt.get_time();
+                    }
+                }
             });
     }
 

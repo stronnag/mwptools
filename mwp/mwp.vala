@@ -1978,7 +1978,9 @@ public class MWPlanner : Gtk.Application {
                         }
                         else if (sf == null && f.has_suffix(".log"))
                             sf = f;
-                        else if (mf == null && f.has_suffix(".mission"))
+                        else if (mf == null && (
+                                     f.has_suffix(".mission") ||
+                                     f.has_suffix(".json")))
                             mf = f;
                     } catch (Error e) {
                         MWPLog.message("dnd: %s\n", e.message);
