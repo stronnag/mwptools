@@ -728,7 +728,7 @@ public class AreaPlanner : GLib.Object {
     {
         Champlain.Point marker;
         Clutter.Color pcol = { 0xff,0xcd, 0x70, 0xa0};
-        marker = new Champlain.Point.full(15.0, pcol);
+        marker = new Champlain.Point.full(42.0, pcol);
         marker.set_location (lat,lon);
         marker.set_draggable(true);
         marker.set_selectable(true);
