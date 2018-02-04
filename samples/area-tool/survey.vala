@@ -414,7 +414,6 @@ public class AreaPlanner : GLib.Object {
                     Timeout.add(250, () => {
                             if(view.state == Champlain.State.DONE)
                             {
-                                print("render after %d\n", trys);
                                 init_area(null);
                                 return false;
                             }
@@ -738,8 +737,6 @@ public class AreaPlanner : GLib.Object {
         {
             var bb = view.get_bounding_box();
             double np,sp,ep,wp;
-            print("bbox %f %f %f %f\n", bb.bottom,bb.left,bb.top,bb.right);
-
             np = (bb.top*0.9 + bb.bottom*0.1);
             sp = (bb.top*0.1 + bb.bottom*0.9);
             ep = (bb.left*0.9 + bb.right*0.1);
