@@ -95,8 +95,6 @@ public class AreaPlanner : GLib.Object {
     public Gtk.ApplicationWindow window;
     public  Champlain.View view;
     private Gtk.SpinButton zoomer;
-    private int ht_map = 600;
-    private int wd_map = 800;
     public MWPSettings conf;
     private GtkChamplain.Embed embed;
     private double lx;
@@ -132,6 +130,8 @@ public class AreaPlanner : GLib.Object {
     }
 
     private const string DELIMS="\t|;:,";
+    private const int WD_MAP = 800;
+    private const int HT_MAP = 600;
 
     private void set_menu_state(string action, bool state)
     {
@@ -266,8 +266,6 @@ public class AreaPlanner : GLib.Object {
         var pane = builder.get_object ("paned1") as Gtk.Paned;
 
         add_source_combo(conf.defmap);
-        pane.pack1 (embed,true,false);
-
         window.key_press_event.connect( (s,e) =>
             {
                 bool ret = true;
@@ -304,11 +302,10 @@ public class AreaPlanner : GLib.Object {
                 return ret;
             });
 
-        var databox =  builder.get_object ("databox") as Gtk.Box;
+        var databox =  builder.get_object ("data_frame") as Gtk.Frame;
         var poslabel = builder.get_object ("poslabel") as Gtk.Label;
 
         var s_apply =  builder.get_object ("s_apply") as Gtk.Button;
-//        var s_save =  builder.get_object ("s_save") as Gtk.Button;
         s_export =  builder.get_object ("s_export") as Gtk.Button;
         s_publish =  builder.get_object ("s_publish") as Gtk.Button;
         mission_data = builder.get_object ("mission_data") as Gtk.TextView;
@@ -333,10 +330,6 @@ public class AreaPlanner : GLib.Object {
         s_apply.clicked.connect(() => {
                 build_mission();
             });
-
-//        s_save.clicked.connect(() => {
-//                do_file_save("Area");
-//            });
 
         s_angle =  builder.get_object ("s_angle") as Gtk.Entry;
         s_altitude =  builder.get_object ("s_altitude") as Gtk.Entry;
@@ -375,15 +368,17 @@ public class AreaPlanner : GLib.Object {
                 return false;
             });
 
-        pane.add2(databox);
+        pane.pack1 (embed,true,false);
+        embed.set_size_request(WD_MAP, -1);
+        pane.pack2(databox,false, false);
+        databox.set_size_request (50, -1);
+
         view.notify["zoom-level"].connect(() => {
                 var val = view.zoom_level;
                 var zval = (int)zoomer.adjustment.value;
                     if (val != zval)
                         zoomer.adjustment.value = (int)val;
             });
-
-        embed.set_size_request(wd_map, ht_map);
 
         Timeout.add(500, () => {
                 var x = view.get_center_longitude();
