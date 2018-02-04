@@ -432,7 +432,7 @@ public class AreaPlanner : GLib.Object {
         if(!(fn.has_suffix(".mission") || fn.has_suffix(".xml")))
         {
             sb = new StringBuilder(fn);
-            sb.append(".json");
+            sb.append(".mission");
             fn = sb.str;
         }
         XmlIO.to_xml_file(fn, ms);
