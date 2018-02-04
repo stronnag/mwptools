@@ -326,6 +326,8 @@ public class AreaPlanner : GLib.Object {
                     }
             });
 
+
+
         s_apply.clicked.connect(() => {
                 build_mission();
             });
@@ -340,7 +342,18 @@ public class AreaPlanner : GLib.Object {
         s_turn =  builder.get_object ("s_turn") as Gtk.ComboBoxText;
         s_rth =  builder.get_object ("s_rth") as Gtk.Switch;
 
-
+        s_angle.activate.connect(() => {
+                if(nmpts > 0)
+                    build_mission();
+            });
+        s_rowsep.activate.connect(() => {
+                if(nmpts > 0)
+                    build_mission();
+            });
+        s_turn.changed.connect(() => {
+                if(nmpts > 0)
+                    build_mission();
+            });
 
         s_altitude.text = conf.altitude.to_string();
 
