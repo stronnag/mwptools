@@ -266,6 +266,8 @@ public class AreaPlanner : GLib.Object {
         s_publish =  builder.get_object ("s_publish") as Gtk.Button;
         mission_data = builder.get_object ("mission_data") as Gtk.TextView;
 
+        s_publish.sensitive = false;
+
         s_export.clicked.connect(() => {
                 do_file_save("Mission");
             });
