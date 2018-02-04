@@ -404,9 +404,24 @@ public class AreaPlanner : GLib.Object {
         init_marker_menu();
         acquire();
 
-        Timeout.add(500, () => {
-                init_area(afn);
-                return false;
+
+        window.show.connect(() => {
+                if(afn != null)
+                    init_area(afn);
+                else
+                {
+                    int trys=0;
+                    Timeout.add(250, () => {
+                            if(view.state == Champlain.State.DONE)
+                            {
+                                print("render after %d\n", trys);
+                                init_area(null);
+                                return false;
+                            }
+                            trys++;
+                            return true;
+                        });
+                }
             });
 
         window.show_all();
@@ -716,16 +731,14 @@ public class AreaPlanner : GLib.Object {
                 add_node(p.y, p.x);
             }
             if(pls.length != 0)
-            {
                 view.center_on((cya+cyz)/2, (cxa+cxz)/2);
-            }
-
         }
 
         if(pls.length == 0)
         {
             var bb = view.get_bounding_box();
             double np,sp,ep,wp;
+            print("bbox %f %f %f %f\n", bb.bottom,bb.left,bb.top,bb.right);
 
             np = (bb.top*0.9 + bb.bottom*0.1);
             sp = (bb.top*0.1 + bb.bottom*0.9);
