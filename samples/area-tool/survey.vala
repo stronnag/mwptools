@@ -410,14 +410,15 @@ public class AreaPlanner : GLib.Object {
                     init_area(afn);
                 else
                 {
-                    int trys=0;
+                    int ntry=0;
                     Timeout.add(250, () => {
                             if(view.state == Champlain.State.DONE)
                             {
+                                MWPLog.message("Initial render after %d\n", ntry);
                                 init_area(null);
                                 return false;
                             }
-                            trys++;
+                            ntry++;
                             return true;
                         });
                 }
