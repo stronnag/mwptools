@@ -37,6 +37,7 @@
               <object class="GtkComboBox" id="combobox1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="focus_on_click">False</property>
                 <property name="halign">start</property>
                 <property name="valign">center</property>
               </object>
@@ -376,7 +377,7 @@
                 <property name="label">gtk-apply</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes">Calculate the mission path from the area and paramters</property>
                 <property name="use_stock">True</property>
               </object>
@@ -391,7 +392,7 @@
                 <property name="label" translatable="yes">Export</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes">Export the mission as an XML mission file, for use in mwp, ezgui et al.</property>
               </object>
               <packing>
@@ -405,7 +406,7 @@
                 <property name="label" translatable="yes">Publish</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes">Publish the mission to a running instance of mwp</property>
               </object>
               <packing>

@@ -925,8 +925,12 @@ public class AreaPlanner : GLib.Object {
         {
             Timeout.add_seconds(timeout, () => { msg.destroy(); return false; });
         }
-        msg.run();
-        msg.destroy();
+          msg.response.connect ((response_id) => {
+                msg.destroy();
+            });
+
+        msg.set_title("MWP Notice");
+        msg.show();
     }
 
     private void get_wp_text(string no, out string text, out Clutter.Color col, bool nrth = false)
