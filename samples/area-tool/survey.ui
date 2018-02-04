@@ -206,6 +206,7 @@
             <property name="can_focus">False</property>
             <property name="row_spacing">2</property>
             <property name="column_spacing">2</property>
+            <property name="column_homogeneous">True</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
@@ -324,6 +325,7 @@
               <object class="GtkSwitch" id="s_rth">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="halign">start</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
