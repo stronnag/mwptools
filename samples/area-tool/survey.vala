@@ -699,6 +699,8 @@ public class AreaPlanner : GLib.Object {
         msn_points.remove_all();
         s_export.sensitive = false;
         set_menu_state("menu-save-msn",false);
+        nmpts = 0;
+
     }
 
     private void clear_markers()
