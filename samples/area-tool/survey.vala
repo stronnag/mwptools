@@ -374,7 +374,7 @@ public class AreaPlanner : GLib.Object {
         pane.pack1 (box,true,false);
         pane.pack2(databox,false, false);
 
-        window.set_default_size(1024,600);
+        window.set_default_size(1200,720);
         pane.position = 800;
 
         view.notify["zoom-level"].connect(() => {
