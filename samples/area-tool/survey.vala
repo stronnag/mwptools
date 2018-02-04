@@ -131,6 +131,8 @@ public class AreaPlanner : GLib.Object {
         N_COLUMNS
     }
 
+    private const string DELIMS="\t|;:,";
+
     private void set_menu_state(string action, bool state)
     {
         var ac = window.lookup_action(action) as SimpleAction;
@@ -945,8 +947,8 @@ public class AreaPlanner : GLib.Object {
                    !line.has_prefix("#") &&
                    !line.has_prefix(";"))
                 {
-                    var parts = line.split_set("\t|;:");
-                    if(parts.length == 2)
+                    var parts = line.split_set(DELIMS);
+                    if(parts.length > 1)
                     {
                         Vec p = Vec();
                         p.y = double.parse(parts[0]);
@@ -1016,11 +1018,11 @@ public class AreaPlanner : GLib.Object {
     {
         var os = FileStream.open(fn, "w");
         os.puts("# mwp area file\n");
-        os.puts("# Valid delimiters are |;: and <TAB>. Note \",\" is not a delimiter
+        os.puts("# Valid delimiters are |;:, and <TAB>. Note \",\" is not recommended
 # for reasons of localisation.\n");
         os.puts("#\n");
         list.foreach((m) => {
-                os.printf("%f\t%f\n", m.latitude, m.longitude);
+                os.printf("%f;%f;\n", m.latitude, m.longitude);
             });
     }
 

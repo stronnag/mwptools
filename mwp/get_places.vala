@@ -8,6 +8,7 @@ public class Places :  GLib.Object
     }
 
     private PosItem[]pls = {};
+    private const string DELIMS="\t|;:,";
 
     private void parse_delim(string fn)
     {
@@ -21,8 +22,8 @@ public class Places :  GLib.Object
                    !line.has_prefix("#") &&
                    !line.has_prefix(";"))
                 {
-                    var parts = line.split_set("\t|;:");
-                    if(parts.length == 3)
+                    var parts = line.split_set("\t|;:,");
+                    if(parts.length > 2)
                     {
                         var p = PosItem();
                         p.lat = double.parse(parts[1]);
