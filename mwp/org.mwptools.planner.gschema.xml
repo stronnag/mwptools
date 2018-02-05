@@ -5,7 +5,8 @@
     <value nick="none" value="0"/>
     <value nick="LTM" value="1"/>
     <value nick="minLTM" value="2"/>
-    <value nick="all" value="3"/>
+    <value nick="minMAV" value="3"/>
+    <value nick="all" value="4"/>
   </enum>
 
   <schema id="org.mwptools.planner" path="/org/mwptools/planner/" >
@@ -81,10 +82,10 @@
       <description>Default mw-nav compat version in XML</description>
     </key>
 
-    <key type="b" name="show-scary-warning">
+    <key type="b" name="dump-unknown">
       <default>false</default>
-      <summary>Scary warning</summary>
-      <description>Scary warning</description>
+      <summary>dump unknown</summary>
+      <description>dump unknown message payload</description>
     </key>
 
     <key type="b" name="display-dms">

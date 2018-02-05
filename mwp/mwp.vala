@@ -707,6 +707,15 @@ public class MWPlanner : Gtk.Application {
         MINSATS = 6
     }
 
+    private enum FWDS
+    {
+        NONE=0,
+        LTM=1,
+        minLTM=2,
+        minMAV=3,
+        ALL=4
+    }
+
     private const double RAD2DEG = 57.29578;
 
     private Timer lastp;
@@ -868,6 +877,8 @@ public class MWPlanner : Gtk.Application {
         const string[] speakers =  {"none", "espeak","speechd"};
 
         base.startup();
+
+        vi.mrtype = (uint8)dmrtype;
 
         wpmgr = WPMGR();
 
@@ -1707,6 +1718,19 @@ public class MWPlanner : Gtk.Application {
 
         msp = new MWSerial();
         msp.use_v2 = false;
+
+        Idle.add(() => {
+                if(forward_device != null && forward_device.length >= 17 &&
+                   forward_device[2] == ':' && forward_device[5] == ':')
+                {
+                    forward_device = null;
+                    mwp_warning_box("Forward device cannot be a BT address, please use a /dev/rfcomm device\nForwarding is disabled");
+                }
+                return false;
+            });
+
+
+
         if(forward_device != null)
             fwddev = new MWSerial.forwarder();
 
@@ -2047,7 +2071,6 @@ public class MWPlanner : Gtk.Application {
             autocon_cb.active=true;
             mkcon = true;
         }
-
     }
 
     private void acquire_bus()
@@ -3352,7 +3375,7 @@ public class MWPlanner : Gtk.Application {
                         {
                             naze32 = true;
                             mwvar = vi.fctype = MWChooser.MWVAR.CF;
-                            var vers="CF Telemetry";
+                            var vers="iNav Telemetry";
                             verlab.set_label(vers);
                         }
                     }
@@ -3417,19 +3440,23 @@ public class MWPlanner : Gtk.Application {
 
         if(fwddev != null && fwddev.available)
         {
-            if(cmd < MSP.Cmds.LTM_BASE && conf.forward == 3)
+            if(cmd < MSP.Cmds.LTM_BASE && conf.forward == FWDS.ALL)
             {
                 fwddev.send_command(cmd, raw, len);
             }
             if(cmd >= MSP.Cmds.LTM_BASE && cmd < MSP.Cmds.MAV_BASE)
             {
-                if (conf.forward == 1 || conf.forward == 3 ||
-                    (conf.forward == 2 &&
+                if (conf.forward == FWDS.LTM || conf.forward == FWDS.ALL ||
+                    (conf.forward == FWDS.minLTM &&
                      (cmd == MSP.Cmds.TG_FRAME ||
                       cmd == MSP.Cmds.TA_FRAME ||
                       cmd == MSP.Cmds.TS_FRAME )
                      ))
                 fwddev.send_ltm((cmd - MSP.Cmds.LTM_BASE), raw, len);
+            }
+            if(cmd >= MSP.Cmds.MAV_BASE)
+            {
+                fwddev.send_mav((cmd - MSP.Cmds.MAV_BASE), raw, len);
             }
         }
 
@@ -4686,16 +4713,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     if(craft != null)
                     {
-                        if(pos_valid(GPSInfo.lat, GPSInfo.lon))
-                        {
-                            if(follow == true)
-                            {
-                                double cse = (usemag) ? mhead : GPSInfo.cse;
-                                craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
-                            }
-                            if (centreon == true)
-                                map_centre_on(GPSInfo.lat,GPSInfo.lon);
-                        }
+                        update_pos_info();
                         if(want_special != 0)
                             process_pos_states(GPSInfo.lat, GPSInfo.lon,
                                                m.alt/1000.0, "MavGPS");
@@ -4814,15 +4832,35 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             default:
-                StringBuilder sb = new StringBuilder("** Unknown response ");
-                sb.printf("%d (%ubytes)", cmd, len);
-                if(len > 0)
+                uint mcmd;
+                string mtxt;
+                if (cmd < MSP.Cmds.LTM_BASE)
+                {
+                    mcmd = cmd;
+                    mtxt = "MSP";
+                }
+                else if (cmd >= MSP.Cmds.LTM_BASE && cmd < MSP.Cmds.MAV_BASE)
+                {
+                    mcmd = cmd - MSP.Cmds.LTM_BASE;
+                    mtxt = "LTM";
+                }
+                else
+                {
+                    mcmd = cmd - MSP.Cmds.MAV_BASE;
+                    mtxt = "MAVLink";
+                }
+
+                StringBuilder sb = new StringBuilder("** Unknown ");
+                sb.printf("%s : %u / %x (%ubytes)", mtxt, mcmd, mcmd, len);
+                if(len > 0 && conf.dump_unknown)
                 {
                     sb.append(" [");
                     foreach(var r in raw[0:len])
                         sb.append_printf(" %02x", r);
+                    sb.append(" ]");
                 }
-                sb.append(" ]\n");
+                sb.append_c('\n');
+
                 MWPLog.message (sb.str);
                 break;
         }
@@ -4979,32 +5017,8 @@ public class MWPlanner : Gtk.Application {
 
     private void send_mav_heartbeat()
     {
-        uint8 mbuf[32];
-        mbuf[0] = 0xfe;
-        mbuf[1] = 9; // size
-        mbuf[2] = 0;
-        mbuf[3] = 0;
-        mbuf[4] = 0;
-        mbuf[5] = 0;
-        for(var j =0; j < 9; j++)
-            mbuf[6+j] = 0;
-
-        uint8 length = mbuf[1];
-        uint16 sum = 0xFFFF;
-        uint8 i, stoplen;
-        stoplen = length + 6;
-        mbuf[length+6] = 50;
-        stoplen++;
-
-        i = 1;
-        while (i<stoplen)
-        {
-            sum = msp.mavlink_crc(sum, mbuf[i]);
-            i++;
-        }
-        mbuf[length+6] = (uint8)sum&0xFF;
-        mbuf[length+7] = sum>>8;
-        msp.write(mbuf,length+8);
+        uint8 dummy[9]={0};
+        msp.send_mav(0, dummy, 9);
     }
 
     private void report_bits(uint64 bits)
@@ -5433,7 +5447,7 @@ public class MWPlanner : Gtk.Application {
             msp.close();
             c.set_label("Connect");
             set_mission_menus(false);
-            navconf.hide();
+//            navconf.hide();
             duration = -1;
             if(craft != null)
             {
@@ -5525,6 +5539,7 @@ public class MWPlanner : Gtk.Application {
             serstate = SERSTATE.NONE;
             if (msp.open(serdev, conf.baudrate, out estr) == true)
             {
+                MWPLog.message("Try connect %s\n", serdev);
                 xarm_flags=0xffff;
                 lastrx = lastok = nticks;
                 init_state();
@@ -5536,12 +5551,6 @@ public class MWPlanner : Gtk.Application {
                     msp.raw_logging(true);
                 }
                 conbutton.set_label("Disconnect");
-                serstate = SERSTATE.NORMAL;
-                if(nopoll == false)
-                {
-                    queue_cmd(MSP.Cmds.IDENT,null,0);
-                    run_queue();
-                }
                 if(forward_device != null)
                 {
                     string fstr;
@@ -5551,8 +5560,16 @@ public class MWPlanner : Gtk.Application {
                         MWPLog.message("set forwarder %s\n", forward_device);
                     }
                     else
-                        MWPLog.message("Forwarder %s %s\n", forward_device, fstr);
+                    MWPLog.message("Forwarder %s %s\n", forward_device, fstr);
                 }
+
+                serstate = SERSTATE.NORMAL;
+                if(nopoll == false)
+                {
+                    queue_cmd(MSP.Cmds.IDENT,null,0);
+                    run_queue();
+                }
+                MWPLog.message("Serial ready\n");
             }
             else
             {

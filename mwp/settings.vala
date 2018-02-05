@@ -32,7 +32,7 @@ public class MWPSettings : GLib.Object
     public string? defmap {get; set; default=null;}
     public string[]? devices {get; set; default=null;}
     public string? compat_vers {get; set; default=null;}
-    public bool scary_warn {get; set; default=false;}
+    public bool dump_unknown {get; set; default=false;}
     public bool dms {get; set; default=false;}
     public string? map_sources {get; set; default=null;}
     public uint  speakint {get; set; default=0;}
@@ -140,7 +140,8 @@ public class MWPSettings : GLib.Object
             if(map_sources == "")
                 map_sources = null;
         }
-
+        if(s == null || s == "dump-unknown")
+            dump_unknown = settings.get_boolean("dump-unknown");
         if(s == null || s == "display-dms")
             dms = settings.get_boolean("display-dms");
         if(s == null || s == "audio-bearing-is-reciprocal")
