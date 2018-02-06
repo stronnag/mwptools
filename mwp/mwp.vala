@@ -4563,7 +4563,7 @@ public class MWPlanner : Gtk.Application {
                 else
                 {
                     dac++;
-                    if(dac == 1)
+                    if(dac == 1 && armed != 0)
                     {
                         MWPLog.message("Disarm from LTM\n");
                         mwflags = 0;
