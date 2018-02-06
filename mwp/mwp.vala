@@ -5552,14 +5552,28 @@ public class MWPlanner : Gtk.Application {
                 conbutton.set_label("Disconnect");
                 if(forward_device != null)
                 {
-                    string fstr;
-                    if(fwddev.open_w(forward_device, 0, out fstr) == true)
-                    {
-                        fwddev.set_mode(MWSerial.Mode.SIM);
-                        MWPLog.message("set forwarder %s\n", forward_device);
-                    }
-                    else
-                    MWPLog.message("Forwarder %s %s\n", forward_device, fstr);
+                    uint8 retry = 0;
+                    Idle.add(() => {
+                            bool ret = true;
+                            if(!fwddev.available)
+                            {
+                                string fstr;
+                                if(fwddev.open_w(forward_device, 0, out fstr) == true)
+                                {
+                                    fwddev.set_mode(MWSerial.Mode.SIM);
+                                    MWPLog.message("set forwarder %s\n", forward_device);
+                                    ret = false;
+                                }
+                                else
+                                {
+                                    MWPLog.message("Forwarder %s %s\n", forward_device, fstr);
+                                    retry++;
+                                    if(retry == 5)
+                                        ret = false;
+                                }
+                            }
+                            return ret;
+                        });
                 }
                 msp.setup_reader();
                 serstate = SERSTATE.NORMAL;
