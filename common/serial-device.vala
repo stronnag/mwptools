@@ -100,7 +100,8 @@ public class MWSerial : Object
     {
         TTY=1,
         STREAM=2,
-        FD=4
+        FD=4,
+        BT=8
     }
 
     public enum Mode
@@ -204,10 +205,10 @@ public class MWSerial : Object
             MwpSerial.set_speed(fd, (int)rate);
         }
         available = true;
-        setup_reader(fd);
+        setup_reader();
     }
 
-    private void setup_reader(int fd)
+    public void setup_reader()
     {
         clear_counters();
         state = States.S_HEADER;
@@ -293,9 +294,7 @@ public class MWSerial : Object
                             {
                                 if (skt.connect(sockaddr))
                                 {
-                                    Posix.fcntl(fd, Posix.F_SETFL,
-                                                Posix.fcntl(fd, Posix.F_GETFL, 0) |
-                                                Posix.O_NONBLOCK);
+                                    set_noblock();
                                     break;
                                 }
                                 else
@@ -315,7 +314,27 @@ public class MWSerial : Object
         }
     }
 
-    public bool open(string _device, uint rate, out string estr)
+    private void set_noblock()
+    {
+        Posix.fcntl(fd, Posix.F_SETFL,
+                    Posix.fcntl(fd, Posix.F_GETFL, 0) |
+                    Posix.O_NONBLOCK);
+    }
+
+
+    public bool open(string device, uint rate, out string estr)
+    {
+        if(open_w(device, rate, out estr))
+        {
+            if(fwd == false)
+            {
+                setup_reader();
+            }
+        }
+        return available;
+    }
+
+    public bool open_w(string _device, uint rate, out string estr)
     {
         string host = null;
         uint16 port = 0;
@@ -349,7 +368,8 @@ public class MWSerial : Object
             fd = BTSocket.connect(device, &lasterr);
             if (fd != -1)
             {
-                commode = ComMode.FD|ComMode.STREAM;
+                commode = ComMode.FD|ComMode.STREAM|ComMode.BT;
+                set_noblock();
             }
         }
         else
@@ -410,11 +430,10 @@ public class MWSerial : Object
         else
         {
             available = true;
-            if(fwd == false)
-                setup_reader(fd);
         }
         return available;
     }
+
 
     public bool open_fd(int _fd, int rate, bool rawfd = false)
     {
@@ -527,7 +546,11 @@ public class MWSerial : Object
         }
         else if (fd != -1)
         {
-            if((commode & ComMode.STREAM) == ComMode.STREAM)
+            if((commode & ComMode.BT) == ComMode.BT)
+            {
+                res = Posix.recv(fd, buf, 256, 0);
+            }
+            else if((commode & ComMode.STREAM) == ComMode.STREAM)
             {
 #if HAVE_FIONREAD
                 int avb=0;
@@ -973,7 +996,9 @@ public class MWSerial : Object
 
         stats.txbytes += count;
 
-        if((commode & ComMode.STREAM) == ComMode.STREAM)
+        if((commode & ComMode.BT) == ComMode.BT)
+            size = Posix.send(fd, buf, count, 0);
+        else if((commode & ComMode.STREAM) == ComMode.STREAM)
             size = Posix.write(fd, buf, count);
         else
         {
@@ -983,7 +1008,7 @@ public class MWSerial : Object
             {
                 size = skt.send_to (sockaddr, sbuf);
             } catch(Error e) {
-                stderr.printf("err::send: %s", e.message);
+                    //stderr.printf("err::send: %s", e.message);
                 size = 0;
             }
         }
@@ -1000,22 +1025,26 @@ public class MWSerial : Object
         {
             if(len != 0 && data != null)
             {
+                uint8 *ptx = txbuf;
+                uint8* pdata = (uint8*)data;
                 check_txbuf_size(len+4);
                 uint8 ck = 0;
-                txbuf[0]='$';
-                txbuf[1] = 'T';
-                txbuf[2] = cmd;
-                Posix.memcpy(&txbuf[3],data,len);
-                for(var i =3; i < len+3; i++)
-                    ck ^= txbuf[i];
-                txbuf[3+len] = ck;
+                *ptx++ ='$';
+                *ptx++ = 'T';
+                *ptx++ = cmd;
+                for(var i = 0; i < len; i++)
+                {
+                    *ptx = *pdata++;
+                    ck ^= *ptx++;
+                }
+                *ptx = ck;
                 write(txbuf, (len+4));
             }
         }
     }
 
 
-    public void send_mav(uint8 cmd, uint8[]data, size_t len)
+    public void send_mav(uint8 cmd, void *data, size_t len)
     {
         const uint8 MAVID1='j';
         const uint8 MAVID2='h';
@@ -1023,29 +1052,33 @@ public class MWSerial : Object
         if(available == true)
         {
             uint16 mcrc;
+            uint8* ptx = txbuf;
+            uint8* pdata = data;
 
             check_txbuf_size(len+8);
-            txbuf[0] = 0xfe;
-            txbuf[1] = (uint8)len;
-            mcrc = mavlink_crc(0xffff, txbuf[1]);
-            txbuf[2] = mavseqno++; // overflow is fine;
+            mcrc = mavlink_crc(0xffff, (uint8)len);
 
-            mcrc = mavlink_crc(mcrc, txbuf[2]);
-            txbuf[3] = MAVID1;
-            mcrc = mavlink_crc(mcrc, txbuf[3]);
-            txbuf[4] = MAVID2;
-            mcrc = mavlink_crc(mcrc, txbuf[4]);
-            txbuf[5] = cmd;
-            mcrc = mavlink_crc(mcrc, txbuf[5]);
+            *ptx++ = 0xfe;
+            *ptx++ = (uint8)len;
+
+            *ptx++ = mavseqno;
+            mcrc = mavlink_crc(mcrc, mavseqno);
+            mavseqno++;
+            *ptx++ = MAVID1;
+            mcrc = mavlink_crc(mcrc, MAVID1);
+            *ptx++ = MAVID2;
+            mcrc = mavlink_crc(mcrc, MAVID2);
+            *ptx++ = cmd;
+            mcrc = mavlink_crc(mcrc, cmd);
             for(var j = 0; j < len; j++)
             {
-                uint8 c = data[j];
-                txbuf[6+j] = c;
-                mcrc = mavlink_crc(mcrc, c);
+                *ptx = *pdata++;
+                mcrc = mavlink_crc(mcrc, *ptx);
+                ptx++;
             }
             mcrc = mavlink_crc(mcrc, MAVCRCS[cmd]);
-            txbuf[len+6] = (uint8)(mcrc&0xff);
-            txbuf[len+7] = (uint8)(mcrc >> 8);
+            *ptx++ = (uint8)(mcrc&0xff);
+            *ptx++ = (uint8)(mcrc >> 8);
             write(txbuf, (len+8));
         }
     }
@@ -1055,40 +1088,53 @@ public class MWSerial : Object
         uint8 ck = 0;
 
         check_txbuf_size(len+6);
+        uint8* ptx = txbuf;
+        uint8* pdata = data;
 
-        txbuf[0]='$';
-        txbuf[1]='M';
-        txbuf[2]= writedirn;
-        txbuf[3] = (uint8)len;
-        txbuf[4] = cmd;
-        if (data != null && len > 0)
-            Posix.memcpy(&txbuf[5], data, len);
-        for(var i = 3; i < len+ 5; i++)
-            ck ^= txbuf[i];
-        txbuf[len+5] = ck;
+        *ptx++ = '$';
+        *ptx++ = 'M';
+        *ptx++ = writedirn;
+        ck ^= (uint8)len;
+        *ptx++ = (uint8)len;
+        ck ^=  cmd;
+        *ptx++ = cmd;
+        for(var i = 0; i < len; i++)
+        {
+            *ptx = *pdata++;
+            ck ^= *ptx++;
+        }
+        *ptx  = ck;
         return len+6;
     }
 
     public size_t generate_v2(uint16 cmd, void *data, size_t len)
     {
         uint8 ck2=0;
+
         check_txbuf_size(len+9);
 
-        txbuf[0]='$';
-        txbuf[1]='X';
-        txbuf[2]= writedirn;
-        txbuf[3]=0; // flags
-        serialise_u16(txbuf+4, cmd);
-        serialise_u16(txbuf+6, (uint16)len);
+        uint8* ptx = txbuf;
+        uint8* pdata = data;
 
-        if (data != null && len > 0)
-            Posix.memcpy(txbuf+8,data,len);
+        *ptx++ ='$';
+        *ptx++ ='X';
+        *ptx++ = writedirn;
+        *ptx++ = 0; // flags
+        ptx = serialise_u16(ptx, cmd);
+        ptx = serialise_u16(ptx, (uint16)len);
+        ck2 = crc8_dvb_s2(ck2, txbuf[3]);
+        ck2 = crc8_dvb_s2(ck2, txbuf[4]);
+        ck2 = crc8_dvb_s2(ck2, txbuf[5]);
+        ck2 = crc8_dvb_s2(ck2, txbuf[6]);
+        ck2 = crc8_dvb_s2(ck2, txbuf[7]);
 
-        for (var i = 3; i < len+8; i++)
+        for (var i = 0; i < len; i++)
         {
-            ck2 = crc8_dvb_s2(ck2, txbuf[i]);
+            *ptx = *pdata++;
+            ck2 = crc8_dvb_s2(ck2, *ptx);
+            ptx++;
         }
-        txbuf[len+8]= ck2;
+        *ptx = ck2;
         return len+9;
     }
 
@@ -1109,13 +1155,7 @@ public class MWSerial : Object
     {
         if(available == true)
         {
-            uint8 dstr[8];
-            dstr[0]='$';
-            dstr[1]='M';
-            dstr[2]= '!';
-            dstr[3] = 0;
-            dstr[4] = cmd;
-            dstr[5] = cmd;
+            uint8 dstr[8] = {'$', 'M', '!', 0, cmd, cmd};
             write(dstr, 6);
         }
     }

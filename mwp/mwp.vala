@@ -1718,19 +1718,6 @@ public class MWPlanner : Gtk.Application {
 
         msp = new MWSerial();
         msp.use_v2 = false;
-
-        Idle.add(() => {
-                if(forward_device != null && forward_device.length >= 17 &&
-                   forward_device[2] == ':' && forward_device[5] == ':')
-                {
-                    forward_device = null;
-                    mwp_warning_box("Forward device cannot be a BT address, please use a /dev/rfcomm device\nForwarding is disabled");
-                }
-                return false;
-            });
-
-
-
         if(forward_device != null)
             fwddev = new MWSerial.forwarder();
 
@@ -3454,7 +3441,15 @@ public class MWPlanner : Gtk.Application {
                      ))
                 fwddev.send_ltm((cmd - MSP.Cmds.LTM_BASE), raw, len);
             }
-            if(cmd >= MSP.Cmds.MAV_BASE)
+            if(cmd >= MSP.Cmds.MAV_BASE &&
+               (conf.forward == FWDS.ALL ||
+                (conf.forward == FWDS.minLTM &&
+                 (cmd == MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT ||
+                  cmd == MSP.Cmds.MAVLINK_MSG_ID_SYS_STATUS ||
+                  cmd == MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT ||
+                  cmd == MSP.Cmds.MAVLINK_MSG_VFR_HUD ||
+                  cmd == MSP.Cmds.MAVLINK_MSG_ATTITUDE ||
+                  cmd == MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW))))
             {
                 fwddev.send_mav((cmd - MSP.Cmds.MAV_BASE), raw, len);
             }
@@ -4608,8 +4603,11 @@ public class MWPlanner : Gtk.Application {
                         want_special |= POSMODE.RTH;
                     else if(ltmflags != 15)
                     {
-                        MWPLog.message("LTM set normal\n");
-                        craft.set_normal();
+                        if(craft != null)
+                        {
+                            MWPLog.message("LTM set normal\n");
+                            craft.set_normal();
+                        }
                     }
                     MWPLog.message("New LTM Mode %s (%d) %d %ds %f %f %x %x\n",
                                    MSP.ltm_mode(ltmflags), ltmflags,
@@ -5447,7 +5445,7 @@ public class MWPlanner : Gtk.Application {
             msp.close();
             c.set_label("Connect");
             set_mission_menus(false);
-//            navconf.hide();
+            set_menu_state("navconfig", false);
             duration = -1;
             if(craft != null)
             {
@@ -5537,7 +5535,7 @@ public class MWPlanner : Gtk.Application {
             var serdev = dev_entry.get_active_text();
             string estr;
             serstate = SERSTATE.NONE;
-            if (msp.open(serdev, conf.baudrate, out estr) == true)
+            if (msp.open_w(serdev, conf.baudrate, out estr) == true)
             {
                 MWPLog.message("Try connect %s\n", serdev);
                 xarm_flags=0xffff;
@@ -5554,7 +5552,7 @@ public class MWPlanner : Gtk.Application {
                 if(forward_device != null)
                 {
                     string fstr;
-                    if(fwddev.open(forward_device, 0, out fstr) == true)
+                    if(fwddev.open_w(forward_device, 0, out fstr) == true)
                     {
                         fwddev.set_mode(MWSerial.Mode.SIM);
                         MWPLog.message("set forwarder %s\n", forward_device);
@@ -5562,7 +5560,7 @@ public class MWPlanner : Gtk.Application {
                     else
                     MWPLog.message("Forwarder %s %s\n", forward_device, fstr);
                 }
-
+                msp.setup_reader();
                 serstate = SERSTATE.NORMAL;
                 if(nopoll == false)
                 {
