@@ -327,9 +327,9 @@ public class MWSerial : Object
         if(open_w(device, rate, out estr))
         {
             if(fwd == false)
-            {
                 setup_reader();
-            }
+            else
+                set_noblock();
         }
         return available;
     }
@@ -639,9 +639,10 @@ public class MWSerial : Object
                             else
                             {
                                 error_counter();
-                                MWPLog.message("fail on header0 %x\n", buf[nc]);
+                                MWPLog.message("expected header0 (%x)\n", buf[nc]);
                                 state=States.S_ERROR;
                             }
+
                             break;
                         case States.S_HEADER1:
                             encap = false;

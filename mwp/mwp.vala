@@ -3346,7 +3346,7 @@ public class MWPlanner : Gtk.Application {
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
-        if(cmd > MSP.Cmds.LTM_BASE)
+        if(cmd >= MSP.Cmds.LTM_BASE)
         {
             telem = true;
             if (replayer != Player.MWP && cmd != MSP.Cmds.MAVLINK_MSG_ID_RADIO)
@@ -3355,7 +3355,8 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(last_tm == 0)
                     {
-                        MWPLog.message("LTM/Mavlink mode\n");
+                        var mtype= (cmd >= MSP.Cmds.MAV_BASE) ? "MAVlink" : "LTM";
+                        MWPLog.message("%s telemetry\n", mtype);
                         serstate = SERSTATE.TELEM;
                         init_sstats();
                         if(naze32 != true)
