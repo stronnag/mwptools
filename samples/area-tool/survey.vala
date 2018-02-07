@@ -762,7 +762,7 @@ public class AreaPlanner : GLib.Object {
         pmlayer.add_marker(marker);
         marker.button_press_event.connect((e) => {
                 if(e.button == 1)
-                    move_time = e.get_time();
+                    move_time = e.time;
                 marker.selected = true;
                 return false;
             });
