@@ -5574,9 +5574,16 @@ public class MWPlanner : Gtk.Application {
                     {
                         uint8 retry = 0;
                         Timeout.add(500, () => {
+                                if (!msp.available)
+                                    return false;
                                 bool ret = !try_forwarder();
                                 if(ret && retry++ == 5)
+                                {
+                                    mwp_warning_box(
+                                        "Failed to open forwarding device: %s\nReason: %s\n".printf(serdev, estr),
+                                        Gtk.MessageType.ERROR,10);
                                     ret = false;
+                                }
                                 return ret;
                             });
                     }
