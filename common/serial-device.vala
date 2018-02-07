@@ -422,8 +422,8 @@ public class MWSerial : Object
         {
             uint8 [] sbuf = new uint8[1024];
             var s = MwpSerial.error_text(lasterr, sbuf, 1024);
-            estr = "%s %s (%d)\n".printf(device, s,lasterr);
-            MWPLog.message(estr);
+            estr = "%s %s (%d)".printf(device, s,lasterr);
+            MWPLog.message("%s\n", estr);
             fd = -1;
             available = false;
         }

@@ -5520,11 +5520,11 @@ public class MWPlanner : Gtk.Application {
         ls.set_mission_speed(conf.nav_speed);
     }
 
-    private bool try_forwarder()
+    private bool try_forwarder(out string fstr)
     {
+        fstr = null;
         if(!fwddev.available)
         {
-            string fstr;
             if(fwddev.open_w(forward_device, 0, out fstr) == true)
             {
                 fwddev.set_mode(MWSerial.Mode.SIM);
@@ -5532,7 +5532,7 @@ public class MWPlanner : Gtk.Application {
             }
             else
             {
-                MWPLog.message("Forwarder %s %s\n", forward_device, fstr);
+                MWPLog.message("Forwarder %s\n", fstr);
             }
         }
         return fwddev.available;
@@ -5570,17 +5570,18 @@ public class MWPlanner : Gtk.Application {
                 conbutton.set_label("Disconnect");
                 if(forward_device != null)
                 {
-                    if(try_forwarder() == false)
+                    string fstr;
+                    if(try_forwarder(out fstr) == false)
                     {
                         uint8 retry = 0;
                         Timeout.add(500, () => {
                                 if (!msp.available)
                                     return false;
-                                bool ret = !try_forwarder();
+                                bool ret = !try_forwarder(out fstr);
                                 if(ret && retry++ == 5)
                                 {
                                     mwp_warning_box(
-                                        "Failed to open forwarding device: %s\nReason: %s\n".printf(serdev, estr),
+                                        "Failed to open forwarding device: %s\n".printf(fstr),
                                         Gtk.MessageType.ERROR,10);
                                     ret = false;
                                 }
@@ -5601,7 +5602,7 @@ public class MWPlanner : Gtk.Application {
             {
                 if (autocon == false || autocount == 0)
                 {
-                    mwp_warning_box("Unable to open serial device: %s\nReason: %s\nPlease verify you are a member of the owning group\nTypically \"dialout\" or \"uucp\"".printf(serdev, estr));
+                    mwp_warning_box("Unable to open serial device\n%s\nPlease verify you are a member of the owning group\nTypically \"dialout\" or \"uucp\"\n".printf(estr));
                 }
                 autocount = ((autocount + 1) % 4);
             }
