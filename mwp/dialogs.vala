@@ -921,7 +921,7 @@ public class PrefsDialog : GLib.Object
 
         dialog.show_all ();
         id = dialog.run();
-        if (id == 1000)
+        if (id == 1001)
         {
             var str = ents[0].get_text();
             double d;
@@ -956,6 +956,7 @@ public class PrefsDialog : GLib.Object
             }
             str = ents[4].get_text();
             u = (uint)InputParser.get_scaled_int(str);
+
             if(conf.altitude != u)
             {
                 conf.settings.set_uint("default-altitude", u);
