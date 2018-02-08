@@ -682,12 +682,17 @@ public class AreaPlanner : GLib.Object {
     {
         Clutter.Color pcol = { 0xc5,0xc5, 0xc5, 0xa0};
         Clutter.Color rcol = {0xff, 0x0, 0x0, 0x60};
+        Clutter.Color bcol = {0x0, 0x0, 0x0, 0x24};
 
         msn_path = new Champlain.PathLayer();
         msn_points = new Champlain.MarkerLayer();
 
         path = new Champlain.PathLayer();
+        path.closed=true;
         path.set_stroke_color(pcol);
+        path.set_fill_color(bcol);
+        path.fill =true;
+
         pmlayer = new Champlain.MarkerLayer();
 
         msn_path.set_stroke_color(rcol);
@@ -698,7 +703,7 @@ public class AreaPlanner : GLib.Object {
         view.add_layer (path);
         view.add_layer (pmlayer);
 
-        path.closed=true;
+
     }
 
     private void clear_mission()
