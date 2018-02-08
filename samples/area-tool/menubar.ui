@@ -10,10 +10,6 @@
 	  <attribute name="accel">&lt;Primary&gt;o</attribute>
         </item>
         <item>
-          <attribute name="label">Reset Area</attribute>
-          <attribute name="action">win.reset-area</attribute>
-        </item>
-        <item>
           <attribute name="label">Save Area</attribute>
           <attribute name="action">win.menu-save</attribute>
         </item>
@@ -28,6 +24,19 @@
 	  <attribute name="accel">&lt;Primary&gt;q</attribute>
           <attribute name="action">win.quit</attribute>
         </item>
+      </section>
+    </submenu>
+    <submenu>
+      <attribute name="label">_View</attribute>
+      <section>
+        <item>
+          <attribute name="label">Reset Area</attribute>
+          <attribute name="action">win.reset-area</attribute>
+        </item>
+	<item>
+          <attribute name="label">Default location</attribute>
+          <attribute name="action">win.defloc</attribute>
+	</item>
       </section>
     </submenu>
   </menu>
