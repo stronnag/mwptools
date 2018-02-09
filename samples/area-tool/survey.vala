@@ -449,6 +449,7 @@ public class AreaPlanner : GLib.Object {
     private Mission? create_mission()
     {
         int i =0;
+        int k = 0;
 
         var rth = s_rth.active;
         var alt = int.parse(s_altitude.text);
@@ -458,7 +459,7 @@ public class AreaPlanner : GLib.Object {
 
         var pts = msn_points.get_markers();
         int pl = (int)pts.length();
-        for(var k = 0; k < pl; k++)
+        for(k = 0; k < pl; k++)
         {
             var j =  pl-1-k;
             var p = pts.nth_data(j);
@@ -500,7 +501,9 @@ public class AreaPlanner : GLib.Object {
         if(ms.calculate_distance(out ms.dist, out ms.lt))
         {
             if(conf.nav_speed != 0)
-                ms.et = (int)(ms.dist / conf.nav_speed) + (int)ms.npoints * 3;
+            {
+                ms.et = (int)(ms.dist / conf.nav_speed) + k * 3;
+            }
 
             StringBuilder sb = new StringBuilder("Mission Data\n");
             sb.append_printf("Points: %u\n", ms.npoints);
