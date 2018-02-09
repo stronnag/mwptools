@@ -333,6 +333,54 @@
                 <property name="top_attach">4</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="name">s_speed</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Flight Speed (m/s)</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Turn delay (s)</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="s_speed">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="input_purpose">number</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">5</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="s_delay">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="text" translatable="yes">3</property>
+                <property name="input_purpose">number</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">6</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>

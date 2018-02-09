@@ -116,6 +116,8 @@ public class AreaPlanner : GLib.Object {
     private Gtk.Entry s_angle;
     private Gtk.Entry s_altitude;
     private Gtk.Entry s_rowsep;
+    private Gtk.Entry s_speed;
+    private Gtk.Entry s_delay;
     private Gtk.ComboBoxText s_turn;
     private Gtk.Switch s_rth;
     private uint nmpts = 0;
@@ -344,6 +346,9 @@ public class AreaPlanner : GLib.Object {
         s_rowsep =  builder.get_object ("s_rowsep") as Gtk.Entry;
         s_turn =  builder.get_object ("s_turn") as Gtk.ComboBoxText;
         s_rth =  builder.get_object ("s_rth") as Gtk.Switch;
+        s_speed =  builder.get_object ("s_speed") as Gtk.Entry;
+        s_delay =  builder.get_object ("s_delay") as Gtk.Entry;
+
 
         s_angle.activate.connect(() => {
                 if(nmpts > 0)
@@ -357,8 +362,17 @@ public class AreaPlanner : GLib.Object {
                 if(nmpts > 0)
                     build_mission();
             });
+        s_speed.activate.connect(() => {
+                if(nmpts > 0)
+                    build_mission();
+            });
+        s_delay.activate.connect(() => {
+                if(nmpts > 0)
+                    build_mission();
+            });
 
         s_altitude.text = conf.altitude.to_string();
+        s_speed.text = conf.nav_speed.to_string();
 
         s_rth.state_set.connect((s) => {
                 var msn_mks = msn_points.get_markers();
@@ -453,8 +467,10 @@ public class AreaPlanner : GLib.Object {
 
         var rth = s_rth.active;
         var alt = int.parse(s_altitude.text);
-        ms = new Mission();
+        var speed = DStr.strtod(s_speed.text,null);
+        var delay = DStr.strtod(s_delay.text,null);
 
+        ms = new Mission();
         MissionItem [] mi={};
 
         var pts = msn_points.get_markers();
@@ -493,7 +509,7 @@ public class AreaPlanner : GLib.Object {
 
         ms.npoints = mi.length;
         ms.set_ways(mi);
-        ms.nspeed = conf.nav_speed;
+        ms.nspeed = speed;
         ms.cy = (ms.maxy + ms.miny) /2.0;
         ms.cx = (ms.maxx + ms.minx) /2.0;
         ms.maxalt = alt;
@@ -501,23 +517,25 @@ public class AreaPlanner : GLib.Object {
         if(ms.calculate_distance(out ms.dist, out ms.lt))
         {
             if(conf.nav_speed != 0)
-            {
-                ms.et = (int)(ms.dist / conf.nav_speed) + k * 3;
-            }
-
-            StringBuilder sb = new StringBuilder("Mission Data\n");
-            sb.append_printf("Points: %u\n", ms.npoints);
-            sb.append_printf("Distance: %.1fm\n", ms.dist);
-            sb.append_printf("Flight time %02d:%02d\n", ms.et/60, ms.et%60 );
-            if(ms.lt != -1)
-                sb.append_printf("Loiter time: %ds\n", ms.lt);
-            sb.append_printf("Speed: %.1f m/s\n", ms.nspeed);
-            if(ms.maxalt != 0x80000000)
-                sb.append_printf("Altitude: %dm\n", ms.maxalt);
-            mission_data.buffer.text = sb.str;
+                ms.et = (int)(ms.dist / speed + k * delay);
+            display_meta();
         }
         ms.version="mwp-area-planner 0.0";
         return ms;
+    }
+
+    private void display_meta()
+    {
+        StringBuilder sb = new StringBuilder("Mission Data\n");
+        sb.append_printf("Points: %u\n", ms.npoints);
+        sb.append_printf("Distance: %.1fm\n", ms.dist);
+        sb.append_printf("Flight time %02d:%02d\n", ms.et/60, ms.et%60 );
+        if(ms.lt != -1)
+            sb.append_printf("Loiter time: %ds\n", ms.lt);
+        sb.append_printf("Speed: %.1f m/s\n", ms.nspeed);
+        if(ms.maxalt != 0x80000000)
+            sb.append_printf("Altitude: %dm\n", ms.maxalt);
+        mission_data.buffer.text = sb.str;
     }
 
     private void on_file_open()
@@ -562,8 +580,8 @@ public class AreaPlanner : GLib.Object {
                 rpts += v;
             });
 
-        double angle = double.parse(s_angle.text);
-        double sep = double.parse(s_rowsep.text);
+        double angle = DStr.strtod(s_angle.text,null);
+        double sep = DStr.strtod(s_rowsep.text,null);
         int turn = s_turn.active;
         bool rth = s_rth.active;
 
