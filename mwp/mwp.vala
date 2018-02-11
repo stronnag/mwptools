@@ -5761,7 +5761,20 @@ public class MWPlanner : Gtk.Application {
             var dir = File.new_for_path(cached);
             dir.make_directory_with_parents ();
         } catch {}
-        var chk = Checksum.compute_for_string(ChecksumType.MD5, mfn);
+
+        string md5name = mfn;
+        if(!mfn.has_suffix(".mission"))
+        {
+            var ld = mfn.last_index_of_char ('.');
+            if(ld != -1)
+            {
+                StringBuilder s = new StringBuilder(mfn[0:ld]);
+                s.append(".mission");
+                md5name = s.str;
+            }
+        }
+
+        var chk = Checksum.compute_for_string(ChecksumType.MD5, md5name);
         StringBuilder sb = new StringBuilder(chk);
         sb.append(".png");
         return GLib.Path.build_filename(cached,sb.str);
