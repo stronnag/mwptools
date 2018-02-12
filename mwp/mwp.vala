@@ -2624,6 +2624,7 @@ public class MWPlanner : Gtk.Application {
         view.add_child (textb);
         view.add_child (textm);
         map_clean = true;
+        clutextg.use_markup = true;
     }
 
     private void map_show_warning(string text)
@@ -2638,7 +2639,10 @@ public class MWPlanner : Gtk.Application {
 
     private void map_show_wp(string text)
     {
-        clutextg.set_text(text);
+        if(text.get_char() == '<')
+            clutextg.set_markup(text);
+        else
+            clutextg.set_text(text);
         map_clean = false;
     }
 
@@ -3976,7 +3980,10 @@ public class MWPlanner : Gtk.Application {
                                             ns.wp_number != last_nwp))
                     {
                         ls.raise_wp(ns.wp_number);
-                        map_show_wp(ns.wp_number.to_string());
+                        var spt = (ns.wp_number == NavStatus.nm_pts) ?
+                            "<small>RTH</small>" :
+                            ns.wp_number.to_string();
+                        map_show_wp(spt);
                     }
                     else if (ns.gps_mode != 3 && last_nmode == 3)
                         map_hide_wp();
