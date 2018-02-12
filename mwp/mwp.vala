@@ -4791,7 +4791,7 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.REBOOT:
                 MWPLog.message("Reboot scheduled\n");
                 serial_doom(conbutton);
-                Timeout.add(4000, () => {
+                Timeout.add(1000, () => {
                         if(!msp.available && !autocon)
                         {
                             MWPLog.message("Reconnecting\n");
@@ -4828,6 +4828,10 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.SET_RTC:
                 MWPLog.message("Set RTC ack\n");
+                break;
+
+            case MSP.Cmds.DEBUGMSG:
+                MWPLog.message("DEBUG:%s\n", (string)raw);
                 break;
 
             default:
