@@ -281,15 +281,16 @@ public class Craft : GLib.Object
             marker = new Champlain.Point.full(5.0, path_colour);
             marker.set_location (lat,lon);
             if(mod_points == 0 || (npath % mod_points) == 0)
-                pmlayer.add_marker(marker);
-
-            if(stack_size > 0)
             {
-                stack.push_head(marker);
-                if(stack.get_length() > stack_size)
+                pmlayer.add_marker(marker);
+                if(stack_size > 0)
                 {
-                    Champlain.Point xmarker = stack.pop_tail();
-                    pmlayer.remove_marker(xmarker);
+                    stack.push_head(marker);
+                    if(stack.get_length() > stack_size)
+                    {
+                        Champlain.Point xmarker = stack.pop_tail();
+                        pmlayer.remove_marker(xmarker);
+                    }
                 }
             }
             path.add_node(marker);

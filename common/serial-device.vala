@@ -16,12 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-extern int connect_bt_device (string dev, int* lasterr);
-extern int open_serial(string dev, int baudrate);
-extern int set_fd_speed(int fd, int baudrate);
-extern void close_serial(int fd);
-extern void flush_serial(int fd);
-extern unowned string get_error_text(int err, uint8[] buf, size_t len);
 
 public struct SerialStats
 {
@@ -69,27 +63,45 @@ public class MWSerial : Object
     private int64 ltime;
     private SerialStats stats;
     private int commode;
-    private uint8 mavcrc;
-    private uint8 mavlen;
-    private uint8 mavid1;
-    private uint8 mavid2;
     private uint16 mavsum;
     private uint16 rxmavsum;
     private bool encap = false;
     public bool use_v2 = false;
     public ProtoMode pmode  {set; get; default=ProtoMode.NORMAL;}
     private bool fwd = false;
+    private uint8 mavseqno = 0;
+
+    const uint8[] MAVCRCS =
+    {
+        50, 124, 137, 0, 237, 217, 104, 119, 0, 0, 0, 89, 0, 0, 0, 0, 0, 0,
+        0, 0, 214, 159, 220, 168, 24, 23, 170, 144, 67, 115, 39, 246, 185,
+        104, 237, 244, 222, 212, 9, 254, 230, 28, 28, 132, 221, 232, 11, 153,
+        41, 39, 0, 0, 0, 0, 15, 3, 0, 0, 0, 0, 0, 153, 183, 51, 82, 118, 148,
+        21, 0, 243, 124, 0, 0, 38, 20, 158, 152, 143, 0, 0, 0, 106, 49, 22,
+        29, 12, 241, 233, 0, 231, 183, 63, 54, 0, 0, 0, 0, 0, 0, 0, 175, 102,
+        158, 208, 56, 93, 211, 108, 32, 185, 84, 0, 0, 124, 119, 4, 76, 128,
+        56, 116, 134, 237, 203, 250, 87, 203, 220, 25, 226, 0, 29, 223, 85, 6,
+        229, 203, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 42, 49, 0, 134, 219, 208,
+        188, 84, 22, 19, 21, 134, 0, 78, 68, 189, 127, 154, 21, 21, 144, 1,
+        234, 73, 181, 22, 83, 167, 138, 234, 240, 47, 189, 52, 174, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 204, 49, 170,
+        44, 83, 46, 0
+    };
 
     public enum MemAlloc
     {
-        RX=1024
+        RX=1024,
+        TX=256
     }
 
     public enum ComMode
     {
         TTY=1,
         STREAM=2,
-        FD=4
+        FD=4,
+        BT=8
     }
 
     public enum Mode
@@ -147,7 +159,7 @@ public class MWSerial : Object
     {
         fwd = true;
         available = false;
-        txbuf = new uint8[64];
+        set_txbuf(MemAlloc.TX);
     }
 
     public MWSerial()
@@ -190,13 +202,13 @@ public class MWSerial : Object
         if((commode & ComMode.TTY) == ComMode.TTY)
         {
             baudrate = rate;
-            set_fd_speed(fd, (int)rate);
+            MwpSerial.set_speed(fd, (int)rate);
         }
         available = true;
-        setup_reader(fd);
+        setup_reader();
     }
 
-    private void setup_reader(int fd)
+    public void setup_reader()
     {
         clear_counters();
         state = States.S_HEADER;
@@ -282,9 +294,7 @@ public class MWSerial : Object
                             {
                                 if (skt.connect(sockaddr))
                                 {
-                                    Posix.fcntl(fd, Posix.F_SETFL,
-                                                Posix.fcntl(fd, Posix.F_GETFL, 0) |
-                                                Posix.O_NONBLOCK);
+                                    set_noblock();
                                     break;
                                 }
                                 else
@@ -304,7 +314,27 @@ public class MWSerial : Object
         }
     }
 
-    public bool open(string _device, uint rate, out string estr)
+    private void set_noblock()
+    {
+        Posix.fcntl(fd, Posix.F_SETFL,
+                    Posix.fcntl(fd, Posix.F_GETFL, 0) |
+                    Posix.O_NONBLOCK);
+    }
+
+
+    public bool open(string device, uint rate, out string estr)
+    {
+        if(open_w(device, rate, out estr))
+        {
+            if(fwd == false)
+                setup_reader();
+            else
+                set_noblock();
+        }
+        return available;
+    }
+
+    public bool open_w(string _device, uint rate, out string estr)
     {
         string host = null;
         uint16 port = 0;
@@ -335,10 +365,11 @@ public class MWSerial : Object
         if(device.length == 17 &&
            device[2] == ':' && device[5] == ':')
         {
-            fd = connect_bt_device(device, &lasterr);
+            fd = BTSocket.connect(device, &lasterr);
             if (fd != -1)
             {
-                commode = ComMode.FD|ComMode.STREAM;
+                commode = ComMode.FD|ComMode.STREAM|ComMode.BT;
+                set_noblock();
             }
         }
         else
@@ -382,7 +413,7 @@ public class MWSerial : Object
                     device  = parts[0];
                     rate = int.parse(parts[1]);
                 }
-                fd = open_serial(device, (int)rate);
+                fd = MwpSerial.open(device, (int)rate);
             }
             lasterr=Posix.errno;
         }
@@ -390,20 +421,19 @@ public class MWSerial : Object
         if(fd < 0)
         {
             uint8 [] sbuf = new uint8[1024];
-            var s = get_error_text(lasterr, sbuf, 1024);
-            estr = "%s %s (%d)\n".printf(device, s,lasterr);
-            MWPLog.message(estr);
+            var s = MwpSerial.error_text(lasterr, sbuf, 1024);
+            estr = "%s %s (%d)".printf(device, s,lasterr);
+            MWPLog.message("%s\n", estr);
             fd = -1;
             available = false;
         }
         else
         {
             available = true;
-            if(fwd == false)
-                setup_reader(fd);
         }
         return available;
     }
+
 
     public bool open_fd(int _fd, int rate, bool rawfd = false)
     {
@@ -436,7 +466,7 @@ public class MWSerial : Object
             }
             if((commode & ComMode.TTY) == ComMode.TTY)
             {
-                close_serial(fd);
+                MwpSerial.close(fd);
                 fd = -1;
             }
             else if ((commode & ComMode.FD) == ComMode.FD)
@@ -478,7 +508,7 @@ public class MWSerial : Object
     {
         commerr++;
         MWPLog.message("Comm error count %d\r\n", commerr);
-        flush_serial(fd);
+        MwpSerial.flush(fd);
     }
 
     private void check_rxbuf_size()
@@ -488,6 +518,16 @@ public class MWSerial : Object
             while (csize > rxbuf_alloc)
                 rxbuf_alloc += MemAlloc.RX;
             rxbuf = new uint8[rxbuf_alloc];
+        }
+    }
+
+    private void check_txbuf_size(size_t sz)
+    {
+        if (sz > txbuf_alloc)
+        {
+            while (sz > txbuf_alloc)
+                txbuf_alloc += MemAlloc.TX;
+            txbuf = new uint8[txbuf_alloc];
         }
     }
 
@@ -506,7 +546,11 @@ public class MWSerial : Object
         }
         else if (fd != -1)
         {
-            if((commode & ComMode.STREAM) == ComMode.STREAM)
+            if((commode & ComMode.BT) == ComMode.BT)
+            {
+                res = Posix.recv(fd, buf, 256, 0);
+            }
+            else if((commode & ComMode.STREAM) == ComMode.STREAM)
             {
 #if HAVE_FIONREAD
                 int avb=0;
@@ -595,9 +639,10 @@ public class MWSerial : Object
                             else
                             {
                                 error_counter();
-                                MWPLog.message("fail on header0 %x\n", buf[nc]);
+                                MWPLog.message("expected header0 (%x)\n", buf[nc]);
                                 state=States.S_ERROR;
                             }
+
                             break;
                         case States.S_HEADER1:
                             encap = false;
@@ -869,13 +914,11 @@ public class MWSerial : Object
                             state = States.S_M_ID1;
                             break;
                         case States.S_M_ID1:
-                            mavid1 = buf[nc];
-                            mavsum = mavlink_crc(mavsum, mavid1);
+                            mavsum = mavlink_crc(mavsum, buf[nc]);
                             state = States.S_M_ID2;
                             break;
                         case States.S_M_ID2:
-                            mavid2 = buf[nc];
-                            mavsum = mavlink_crc(mavsum, mavid2);
+                            mavsum = mavlink_crc(mavsum, buf[nc]);
                             state = States.S_M_MSGID;
                             break;
                         case States.S_M_MSGID:
@@ -891,13 +934,10 @@ public class MWSerial : Object
                             rxbuf[irxbufp++] = buf[nc];
                             needed--;
                             if(needed == 0)
-                            {
                                 state = States.S_M_CRC1;
-                                mavlink_meta(cmd);
-                                mavsum = mavlink_crc(mavsum, mavcrc);
-                            }
                             break;
                         case States.S_M_CRC1:
+                            mavsum = mavlink_crc(mavsum, MAVCRCS[cmd]);
                             irxbufp = 0;
                             rxmavsum = buf[nc];
                             state = States.S_M_CRC2;
@@ -914,10 +954,8 @@ public class MWSerial : Object
                             else
                             {
                                 error_counter();
-                                MWPLog.message("MAVCRC Fail, got %x != %x [%x %x] (cmd=%u, len=%u)\n",
-                                               rxmavsum, mavsum,
-                                               mavid1, mavid2,
-                                               cmd, csize);
+                                MWPLog.message("MAVCRC Fail, got %x != %x (cmd=%u, len=%u)\n",
+                                               rxmavsum, mavsum, cmd, csize);
                                 state = States.S_ERROR;
                             }
                             break;
@@ -926,58 +964,6 @@ public class MWSerial : Object
             }
         }
         return Source.CONTINUE;
-    }
-
-    private void mavlink_meta(uint8 id)
-    {
-        switch(id)
-        {
-            case 0:
-                mavcrc = 50;
-                mavlen = 9;
-                break;
-            case 1:
-                mavcrc = 124;
-                mavlen = 31;
-                break;
-            case 24:
-                mavcrc = 24;
-                mavlen = 30;
-                break;
-            case 30:
-                mavcrc = 39;
-                mavlen = 28;
-                break;
-            case 33:
-                mavcrc = 104;
-                mavlen = 28;
-                break;
-            case 35:
-                mavcrc = 244;
-                mavlen = 22;
-                break;
-            case 49:
-                mavcrc = 39;
-                mavlen = 12;
-                break;
-            case 74:
-                mavcrc = 20;
-                mavlen = 20;
-                break;
-            case 166:
-                mavcrc = 21;
-                mavlen = 9;
-                break;
-            case 109:
-                mavcrc = 185;
-                mavlen = 9;
-                break;
-
-            default:
-                mavcrc = 255;
-                mavlen = 255;
-                break;
-        }
     }
 
     public uint8 crc8_dvb_s2(uint8 crc, uint8 a)
@@ -1011,7 +997,9 @@ public class MWSerial : Object
 
         stats.txbytes += count;
 
-        if((commode & ComMode.STREAM) == ComMode.STREAM)
+        if((commode & ComMode.BT) == ComMode.BT)
+            size = Posix.send(fd, buf, count, 0);
+        else if((commode & ComMode.STREAM) == ComMode.STREAM)
             size = Posix.write(fd, buf, count);
         else
         {
@@ -1021,7 +1009,7 @@ public class MWSerial : Object
             {
                 size = skt.send_to (sockaddr, sbuf);
             } catch(Error e) {
-                stderr.printf("err::send: %s", e.message);
+                    //stderr.printf("err::send: %s", e.message);
                 size = 0;
             }
         }
@@ -1038,53 +1026,116 @@ public class MWSerial : Object
         {
             if(len != 0 && data != null)
             {
+                uint8 *ptx = txbuf;
+                uint8* pdata = (uint8*)data;
+                check_txbuf_size(len+4);
                 uint8 ck = 0;
-                txbuf[0]='$';
-                txbuf[1] = 'T';
-                txbuf[2] = cmd;
-                Posix.memcpy(&txbuf[3],data,len);
-                for(var i =3; i < len+3; i++)
-                    ck ^= txbuf[i];
-                txbuf[3+len] = ck;
+                *ptx++ ='$';
+                *ptx++ = 'T';
+                *ptx++ = cmd;
+                for(var i = 0; i < len; i++)
+                {
+                    *ptx = *pdata++;
+                    ck ^= *ptx++;
+                }
+                *ptx = ck;
                 write(txbuf, (len+4));
             }
+        }
+    }
+
+
+    public void send_mav(uint8 cmd, void *data, size_t len)
+    {
+        const uint8 MAVID1='j';
+        const uint8 MAVID2='h';
+
+        if(available == true)
+        {
+            uint16 mcrc;
+            uint8* ptx = txbuf;
+            uint8* pdata = data;
+
+            check_txbuf_size(len+8);
+            mcrc = mavlink_crc(0xffff, (uint8)len);
+
+            *ptx++ = 0xfe;
+            *ptx++ = (uint8)len;
+
+            *ptx++ = mavseqno;
+            mcrc = mavlink_crc(mcrc, mavseqno);
+            mavseqno++;
+            *ptx++ = MAVID1;
+            mcrc = mavlink_crc(mcrc, MAVID1);
+            *ptx++ = MAVID2;
+            mcrc = mavlink_crc(mcrc, MAVID2);
+            *ptx++ = cmd;
+            mcrc = mavlink_crc(mcrc, cmd);
+            for(var j = 0; j < len; j++)
+            {
+                *ptx = *pdata++;
+                mcrc = mavlink_crc(mcrc, *ptx);
+                ptx++;
+            }
+            mcrc = mavlink_crc(mcrc, MAVCRCS[cmd]);
+            *ptx++ = (uint8)(mcrc&0xff);
+            *ptx++ = (uint8)(mcrc >> 8);
+            write(txbuf, (len+8));
         }
     }
 
     private size_t generate_v1(uint8 cmd, void *data, size_t len)
     {
         uint8 ck = 0;
-        txbuf[0]='$';
-        txbuf[1]='M';
-        txbuf[2]= writedirn;
-        txbuf[3] = (uint8)len;
-        txbuf[4] = cmd;
-        if (data != null && len > 0)
-            Posix.memcpy(&txbuf[5], data, len);
-        for(var i = 3; i < len+ 5; i++)
-            ck ^= txbuf[i];
-        txbuf[len+5] = ck;
+
+        check_txbuf_size(len+6);
+        uint8* ptx = txbuf;
+        uint8* pdata = data;
+
+        *ptx++ = '$';
+        *ptx++ = 'M';
+        *ptx++ = writedirn;
+        ck ^= (uint8)len;
+        *ptx++ = (uint8)len;
+        ck ^=  cmd;
+        *ptx++ = cmd;
+        for(var i = 0; i < len; i++)
+        {
+            *ptx = *pdata++;
+            ck ^= *ptx++;
+        }
+        *ptx  = ck;
         return len+6;
     }
 
     public size_t generate_v2(uint16 cmd, void *data, size_t len)
     {
         uint8 ck2=0;
-        txbuf[0]='$';
-        txbuf[1]='X';
-        txbuf[2]= writedirn;
-        txbuf[3]=0; // flags
-        serialise_u16(txbuf+4, cmd);
-        serialise_u16(txbuf+6, (uint16)len);
 
-        if (data != null && len > 0)
-            Posix.memcpy(txbuf+8,data,len);
+        check_txbuf_size(len+9);
 
-        for (var i = 3; i < len+8; i++)
+        uint8* ptx = txbuf;
+        uint8* pdata = data;
+
+        *ptx++ ='$';
+        *ptx++ ='X';
+        *ptx++ = writedirn;
+        *ptx++ = 0; // flags
+        ptx = serialise_u16(ptx, cmd);
+        ptx = serialise_u16(ptx, (uint16)len);
+        ck2 = crc8_dvb_s2(ck2, txbuf[3]);
+        ck2 = crc8_dvb_s2(ck2, txbuf[4]);
+        ck2 = crc8_dvb_s2(ck2, txbuf[5]);
+        ck2 = crc8_dvb_s2(ck2, txbuf[6]);
+        ck2 = crc8_dvb_s2(ck2, txbuf[7]);
+
+        for (var i = 0; i < len; i++)
         {
-            ck2 = crc8_dvb_s2(ck2, txbuf[i]);
+            *ptx = *pdata++;
+            ck2 = crc8_dvb_s2(ck2, *ptx);
+            ptx++;
         }
-        txbuf[len+8]= ck2;
+        *ptx = ck2;
         return len+9;
     }
 
@@ -1105,13 +1156,7 @@ public class MWSerial : Object
     {
         if(available == true)
         {
-            uint8 dstr[8];
-            dstr[0]='$';
-            dstr[1]='M';
-            dstr[2]= '!';
-            dstr[3] = 0;
-            dstr[4] = cmd;
-            dstr[5] = cmd;
+            uint8 dstr[8] = {'$', 'M', '!', 0, cmd, cmd};
             write(dstr, 6);
         }
     }
@@ -1144,7 +1189,6 @@ public class MWSerial : Object
             rawlog = false;
         }
     }
-
 
     public void dump_raw_data (uint8[]buf, int len)
     {

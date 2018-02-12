@@ -5,7 +5,8 @@
     <value nick="none" value="0"/>
     <value nick="LTM" value="1"/>
     <value nick="minLTM" value="2"/>
-    <value nick="all" value="3"/>
+    <value nick="minMAV" value="3"/>
+    <value nick="all" value="4"/>
   </enum>
 
   <schema id="org.mwptools.planner" path="/org/mwptools/planner/" >
@@ -81,10 +82,10 @@
       <description>Default mw-nav compat version in XML</description>
     </key>
 
-    <key type="b" name="show-scary-warning">
+    <key type="b" name="dump-unknown">
       <default>false</default>
-      <summary>Scary warning</summary>
-      <description>Scary warning</description>
+      <summary>dump unknown</summary>
+      <description>dump unknown message payload</description>
     </key>
 
     <key type="b" name="display-dms">
@@ -389,7 +390,6 @@
         Defines RGBA colour for 'next way point' highlight
       </description>
     </key>
-
     <key name="flash-warn" type="u">
       <default>0</default>
       <summary>Flash storage warning</summary>
@@ -419,6 +419,12 @@
 	View" mode.
       </description>
     </key>
-
+    <key name="mission-file-type" type="s">
+      <default>"m"</default>
+      <summary>Prefered mission file type</summary>
+      <description>
+        m for XML (.mission), j for json
+      </description>
+    </key>
   </schema>
 </schemalist>

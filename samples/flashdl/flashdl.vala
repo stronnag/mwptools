@@ -258,7 +258,7 @@ public class Flashdl : Object
         }
         else
         {
-            MWPLog.message("open failed serial %s %s\n", dev, estr);
+            MWPLog.message("open failed %s\n", estr);
             return 255;
         }
     }

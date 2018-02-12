@@ -15,8 +15,8 @@ public class CLITerm : Gtk.Window
         this.title = "mwp CLI";
         this.window_position = Gtk.WindowPosition.CENTER;
         this.destroy.connect (() => {
-                uint8 c = 4;
-                s.write(&c, 1);
+                uint8 c[1] = {4};
+                s.write(c, 1);
                 s.pmode = oldmode;
                 on_exit();
             });
@@ -31,13 +31,13 @@ public class CLITerm : Gtk.Window
                         this.destroy();
                         break;
                     case 8:
-                        uint8 c = 127;
-                        s.write(&c,1);
+                    uint8 c[1] = {127};
+                        s.write(c,1);
                         break;
                     case 27:
                         break;
                     default:
-                        s.write(text, size);
+                        s.write(text.data, size);
                     break;
                 }
             });
@@ -54,8 +54,8 @@ public class CLITerm : Gtk.Window
                 if(((string)buf).contains("Rebooting"))
                     term.feed("\r\n\n\x1b[1mEither close this window or type # to re-enter the CLI\x1b[0m\r\n".data);
             });
-        uint8 c = '#';
-        s.write(&c, 1);
+        uint8 c[1] = {'#'};
+        s.write(c, 1);
     }
 
 }

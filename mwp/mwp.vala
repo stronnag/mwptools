@@ -22,14 +22,16 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
-extern string mwpvers;
-extern string mwpid;
+[DBus (name = "org.mwptools.mwp")]
+public class MwpServer : Object {
 
-extern double g_strtod(string str, out char* n);
-extern int atexit(VoidFunc func);
-extern int cf_pipe(int *fds);
-extern void speech_set_api(uint8 a);
-extern uint8 get_speech_api_mask();
+    public signal void recv(string s);
+
+    public int set_mission (string msg) {
+        recv(msg);
+        return msg.length;
+    }
+}
 
 [DBus (name = "org.freedesktop.NetworkManager")]
 interface NetworkManager : GLib.Object {
@@ -705,6 +707,15 @@ public class MWPlanner : Gtk.Application {
         MINSATS = 6
     }
 
+    private enum FWDS
+    {
+        NONE=0,
+        LTM=1,
+        minLTM=2,
+        minMAV=3,
+        ALL=4
+    }
+
     private const double RAD2DEG = 57.29578;
 
     private Timer lastp;
@@ -867,6 +878,8 @@ public class MWPlanner : Gtk.Application {
 
         base.startup();
 
+        vi.mrtype = (uint8)dmrtype;
+
         wpmgr = WPMGR();
 
         vbsamples = new float[MAXVSAMPLE];
@@ -881,7 +894,7 @@ public class MWPlanner : Gtk.Application {
         var spapi =  0;
         if(exvox == null)
         {
-            spapi = get_speech_api_mask();
+            spapi = MwpSpeech.get_api_mask();
             if (spapi == 3)
                 spapi = (conf.speech_api == "espeak") ? 1 :
                     (conf.speech_api == "speechd") ? 2 : 0;
@@ -892,7 +905,7 @@ public class MWPlanner : Gtk.Application {
             MWPLog.message("Using external speech api [%s]\n", exvox);
         }
 
-        speech_set_api(spapi);
+        MwpSpeech.set_api(spapi);
 
         ulang = Intl.setlocale(LocaleCategory.NUMERIC, "");
 
@@ -1687,9 +1700,9 @@ public class MWPlanner : Gtk.Application {
 
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
         about.set_transient_for(window);
-        StringBuilder sb = new StringBuilder(mwpvers);
+        StringBuilder sb = new StringBuilder(MwpVers.build);
         sb.append_c('\n');
-        sb.append(mwpid);
+        sb.append(MwpVers.id);
         if(is_wayland && use_wayland)
             sb.append("\non wayland\n");
         about.version = sb.str;
@@ -1796,7 +1809,7 @@ public class MWPlanner : Gtk.Application {
             var i = 0;
             foreach (unowned string str in parts)
             {
-                var d = g_strtod(str,null);
+                var d = DStr.strtod(str,null);
                 vcol.levels[i].cell = (float)d;
                 i++;
             }
@@ -1987,7 +2000,9 @@ public class MWPlanner : Gtk.Application {
                         }
                         else if (sf == null && f.has_suffix(".log"))
                             sf = f;
-                        else if (mf == null && f.has_suffix(".mission"))
+                        else if (mf == null && (
+                                     f.has_suffix(".mission") ||
+                                     f.has_suffix(".json")))
                             mf = f;
                     } catch (Error e) {
                         MWPLog.message("dnd: %s\n", e.message);
@@ -2013,6 +2028,8 @@ public class MWPlanner : Gtk.Application {
 
 
        get_map_size();
+
+       acquire_bus();
 
        if(rfile != null)
        {
@@ -2041,7 +2058,40 @@ public class MWPlanner : Gtk.Application {
             autocon_cb.active=true;
             mkcon = true;
         }
+    }
 
+    private void acquire_bus()
+    {
+        Bus.own_name (BusType.SESSION, "org.mwptools.mwp", BusNameOwnerFlags.NONE,
+                      on_bus_aquired,
+                      () => {},
+                      () => {
+                          stderr.printf ("Could not aquire name\n");
+                      });
+    }
+
+    private void on_bus_aquired (DBusConnection conn)
+    {
+        MwpServer mss=null;
+
+        try {
+            conn.register_object ("/org/mwptools/mwp",
+                                  (mss = new MwpServer ()));
+        } catch (IOError e) {
+            stderr.printf ("Could not register service\n");
+        }
+        mss.recv.connect((s) => {
+                Mission ms;
+                unichar c = s.get_char(0);
+
+                if(c == '<')
+                    ms = XmlIO.read_xml_string(s);
+                else
+                    ms = JsonIO.from_json(s);
+
+                if(ms != null)
+                    instantiate_mission(ms);
+            });
     }
 
     private void get_map_size()
@@ -3296,7 +3346,7 @@ public class MWPlanner : Gtk.Application {
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
-        if(cmd > MSP.Cmds.LTM_BASE)
+        if(cmd >= MSP.Cmds.LTM_BASE)
         {
             telem = true;
             if (replayer != Player.MWP && cmd != MSP.Cmds.MAVLINK_MSG_ID_RADIO)
@@ -3305,14 +3355,15 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(last_tm == 0)
                     {
-                        MWPLog.message("LTM/Mavlink mode\n");
+                        var mtype= (cmd >= MSP.Cmds.MAV_BASE) ? "MAVlink" : "LTM";
+                        MWPLog.message("%s telemetry\n", mtype);
                         serstate = SERSTATE.TELEM;
                         init_sstats();
                         if(naze32 != true)
                         {
                             naze32 = true;
                             mwvar = vi.fctype = MWChooser.MWVAR.CF;
-                            var vers="CF Telemetry";
+                            var vers="iNav Telemetry";
                             verlab.set_label(vers);
                         }
                     }
@@ -3377,19 +3428,31 @@ public class MWPlanner : Gtk.Application {
 
         if(fwddev != null && fwddev.available)
         {
-            if(cmd < MSP.Cmds.LTM_BASE && conf.forward == 3)
+            if(cmd < MSP.Cmds.LTM_BASE && conf.forward == FWDS.ALL)
             {
                 fwddev.send_command(cmd, raw, len);
             }
             if(cmd >= MSP.Cmds.LTM_BASE && cmd < MSP.Cmds.MAV_BASE)
             {
-                if (conf.forward == 1 || conf.forward == 3 ||
-                    (conf.forward == 2 &&
+                if (conf.forward == FWDS.LTM || conf.forward == FWDS.ALL ||
+                    (conf.forward == FWDS.minLTM &&
                      (cmd == MSP.Cmds.TG_FRAME ||
                       cmd == MSP.Cmds.TA_FRAME ||
                       cmd == MSP.Cmds.TS_FRAME )
                      ))
                 fwddev.send_ltm((cmd - MSP.Cmds.LTM_BASE), raw, len);
+            }
+            if(cmd >= MSP.Cmds.MAV_BASE &&
+               (conf.forward == FWDS.ALL ||
+                (conf.forward == FWDS.minLTM &&
+                 (cmd == MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT ||
+                  cmd == MSP.Cmds.MAVLINK_MSG_ID_SYS_STATUS ||
+                  cmd == MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT ||
+                  cmd == MSP.Cmds.MAVLINK_MSG_VFR_HUD ||
+                  cmd == MSP.Cmds.MAVLINK_MSG_ATTITUDE ||
+                  cmd == MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW))))
+            {
+                fwddev.send_mav((cmd - MSP.Cmds.MAV_BASE), raw, len);
             }
         }
 
@@ -4500,7 +4563,7 @@ public class MWPlanner : Gtk.Application {
                 else
                 {
                     dac++;
-                    if(dac == 1)
+                    if(dac == 1 && armed != 0)
                     {
                         MWPLog.message("Disarm from LTM\n");
                         mwflags = 0;
@@ -4541,8 +4604,11 @@ public class MWPlanner : Gtk.Application {
                         want_special |= POSMODE.RTH;
                     else if(ltmflags != 15)
                     {
-                        MWPLog.message("LTM set normal\n");
-                        craft.set_normal();
+                        if(craft != null)
+                        {
+                            MWPLog.message("LTM set normal\n");
+                            craft.set_normal();
+                        }
                     }
                     MWPLog.message("New LTM Mode %s (%d) %d %ds %f %f %x %x\n",
                                    MSP.ltm_mode(ltmflags), ltmflags,
@@ -4646,16 +4712,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     if(craft != null)
                     {
-                        if(pos_valid(GPSInfo.lat, GPSInfo.lon))
-                        {
-                            if(follow == true)
-                            {
-                                double cse = (usemag) ? mhead : GPSInfo.cse;
-                                craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
-                            }
-                            if (centreon == true)
-                                map_centre_on(GPSInfo.lat,GPSInfo.lon);
-                        }
+                        update_pos_info();
                         if(want_special != 0)
                             process_pos_states(GPSInfo.lat, GPSInfo.lon,
                                                m.alt/1000.0, "MavGPS");
@@ -4734,7 +4791,7 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.REBOOT:
                 MWPLog.message("Reboot scheduled\n");
                 serial_doom(conbutton);
-                Timeout.add(4000, () => {
+                Timeout.add(1000, () => {
                         if(!msp.available && !autocon)
                         {
                             MWPLog.message("Reconnecting\n");
@@ -4773,16 +4830,40 @@ public class MWPlanner : Gtk.Application {
                 MWPLog.message("Set RTC ack\n");
                 break;
 
+            case MSP.Cmds.DEBUGMSG:
+                MWPLog.message("DEBUG:%s\n", (string)raw);
+                break;
+
             default:
-                StringBuilder sb = new StringBuilder("** Unknown response ");
-                sb.printf("%d (%ubytes)", cmd, len);
-                if(len > 0)
+                uint mcmd;
+                string mtxt;
+                if (cmd < MSP.Cmds.LTM_BASE)
+                {
+                    mcmd = cmd;
+                    mtxt = "MSP";
+                }
+                else if (cmd >= MSP.Cmds.LTM_BASE && cmd < MSP.Cmds.MAV_BASE)
+                {
+                    mcmd = cmd - MSP.Cmds.LTM_BASE;
+                    mtxt = "LTM";
+                }
+                else
+                {
+                    mcmd = cmd - MSP.Cmds.MAV_BASE;
+                    mtxt = "MAVLink";
+                }
+
+                StringBuilder sb = new StringBuilder("** Unknown ");
+                sb.printf("%s : %u / %x (%ubytes)", mtxt, mcmd, mcmd, len);
+                if(len > 0 && conf.dump_unknown)
                 {
                     sb.append(" [");
                     foreach(var r in raw[0:len])
                         sb.append_printf(" %02x", r);
+                    sb.append(" ]");
                 }
-                sb.append(" ]\n");
+                sb.append_c('\n');
+
                 MWPLog.message (sb.str);
                 break;
         }
@@ -4939,32 +5020,8 @@ public class MWPlanner : Gtk.Application {
 
     private void send_mav_heartbeat()
     {
-        uint8 mbuf[32];
-        mbuf[0] = 0xfe;
-        mbuf[1] = 9; // size
-        mbuf[2] = 0;
-        mbuf[3] = 0;
-        mbuf[4] = 0;
-        mbuf[5] = 0;
-        for(var j =0; j < 9; j++)
-            mbuf[6+j] = 0;
-
-        uint8 length = mbuf[1];
-        uint16 sum = 0xFFFF;
-        uint8 i, stoplen;
-        stoplen = length + 6;
-        mbuf[length+6] = 50;
-        stoplen++;
-
-        i = 1;
-        while (i<stoplen)
-        {
-            sum = msp.mavlink_crc(sum, mbuf[i]);
-            i++;
-        }
-        mbuf[length+6] = (uint8)sum&0xFF;
-        mbuf[length+7] = sum>>8;
-        msp.write(mbuf,length+8);
+        uint8 dummy[9]={0};
+        msp.send_mav(0, dummy, 9);
     }
 
     private void report_bits(uint64 bits)
@@ -5062,7 +5119,7 @@ public class MWPlanner : Gtk.Application {
         }
         else
         {
-            float  vf = (float)ivbat/10.0f;
+            float  vf = ((float)ivbat)/10.0f;
             if (nsampl == MAXVSAMPLE)
             {
                 for(var i = 1; i < MAXVSAMPLE; i++)
@@ -5150,8 +5207,6 @@ public class MWPlanner : Gtk.Application {
             mwp_warning_box(str, Gtk.MessageType.WARNING);
         }
 
-        serstate = SERSTATE.NORMAL;
-
         if(wps.length == 0)
         {
             if(inav)
@@ -5174,6 +5229,7 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
+        serstate = SERSTATE.NORMAL;
         mq.clear();
         MWPCursor.set_busy_cursor(window);
 
@@ -5394,7 +5450,7 @@ public class MWPlanner : Gtk.Application {
             msp.close();
             c.set_label("Connect");
             set_mission_menus(false);
-            navconf.hide();
+            set_menu_state("navconfig", false);
             duration = -1;
             if(craft != null)
             {
@@ -5468,6 +5524,24 @@ public class MWPlanner : Gtk.Application {
         ls.set_mission_speed(conf.nav_speed);
     }
 
+    private bool try_forwarder(out string fstr)
+    {
+        fstr = null;
+        if(!fwddev.available)
+        {
+            if(fwddev.open_w(forward_device, 0, out fstr) == true)
+            {
+                fwddev.set_mode(MWSerial.Mode.SIM);
+                MWPLog.message("set forwarder %s\n", forward_device);
+            }
+            else
+            {
+                MWPLog.message("Forwarder %s\n", fstr);
+            }
+        }
+        return fwddev.available;
+    }
+
     private void connect_serial()
     {
         map_hide_wp();
@@ -5484,8 +5558,9 @@ public class MWPlanner : Gtk.Application {
             var serdev = dev_entry.get_active_text();
             string estr;
             serstate = SERSTATE.NONE;
-            if (msp.open(serdev, conf.baudrate, out estr) == true)
+            if (msp.open_w(serdev, conf.baudrate, out estr) == true)
             {
+                MWPLog.message("Try connect %s\n", serdev);
                 xarm_flags=0xffff;
                 lastrx = lastok = nticks;
                 init_state();
@@ -5497,29 +5572,41 @@ public class MWPlanner : Gtk.Application {
                     msp.raw_logging(true);
                 }
                 conbutton.set_label("Disconnect");
+                if(forward_device != null)
+                {
+                    string fstr;
+                    if(try_forwarder(out fstr) == false)
+                    {
+                        uint8 retry = 0;
+                        Timeout.add(500, () => {
+                                if (!msp.available)
+                                    return false;
+                                bool ret = !try_forwarder(out fstr);
+                                if(ret && retry++ == 5)
+                                {
+                                    mwp_warning_box(
+                                        "Failed to open forwarding device: %s\n".printf(fstr),
+                                        Gtk.MessageType.ERROR,10);
+                                    ret = false;
+                                }
+                                return ret;
+                            });
+                    }
+                }
+                msp.setup_reader();
                 serstate = SERSTATE.NORMAL;
                 if(nopoll == false)
                 {
                     queue_cmd(MSP.Cmds.IDENT,null,0);
                     run_queue();
                 }
-                if(forward_device != null)
-                {
-                    string fstr;
-                    if(fwddev.open(forward_device, 0, out fstr) == true)
-                    {
-                        fwddev.set_mode(MWSerial.Mode.SIM);
-                        MWPLog.message("set forwarder %s\n", forward_device);
-                    }
-                    else
-                        MWPLog.message("Forwarder %s %s\n", forward_device, fstr);
-                }
+                MWPLog.message("Serial ready\n");
             }
             else
             {
                 if (autocon == false || autocount == 0)
                 {
-                    mwp_warning_box("Unable to open serial device: %s\nReason: %s\nPlease verify you are a member of the owning group\nTypically \"dialout\" or \"uucp\"".printf(serdev, estr));
+                    mwp_warning_box("Unable to open serial device\n%s\nPlease verify you are a member of the owning group\nTypically \"dialout\" or \"uucp\"\n".printf(estr));
                 }
                 autocount = ((autocount + 1) % 4);
             }
@@ -5660,7 +5747,7 @@ public class MWPlanner : Gtk.Application {
         else
         {
             var m = get_mission_data();
-            m.to_xml_file(last_file);
+            XmlIO.to_xml_file(last_file, m);
             update_title_from_file(last_file);
         }
         Timeout.add_seconds(2, () => {
@@ -5678,7 +5765,20 @@ public class MWPlanner : Gtk.Application {
             var dir = File.new_for_path(cached);
             dir.make_directory_with_parents ();
         } catch {}
-        var chk = Checksum.compute_for_string(ChecksumType.MD5, mfn);
+
+        string md5name = mfn;
+        if(!mfn.has_suffix(".mission"))
+        {
+            var ld = mfn.last_index_of_char ('.');
+            if(ld != -1)
+            {
+                StringBuilder s = new StringBuilder(mfn[0:ld]);
+                s.append(".mission");
+                md5name = s.str;
+            }
+        }
+
+        var chk = Checksum.compute_for_string(ChecksumType.MD5, md5name);
         StringBuilder sb = new StringBuilder(chk);
         sb.append(".png");
         return GLib.Path.build_filename(cached,sb.str);
@@ -5736,7 +5836,49 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-    public void on_file_save_as ()
+    private void save_mission_file(string fn)
+    {
+        StringBuilder sb;
+        uint8 ftype=0;
+
+        if(fn.has_suffix(".mission") || fn.has_suffix(".xml"))
+            ftype = 'm';
+
+        if(fn.has_suffix(".json"))
+        {
+            ftype = 'j';
+        }
+
+        if(ftype == 0)
+        {
+            sb = new StringBuilder(fn);
+            if(conf.mission_file_type == "j")
+            {
+                ftype = 'j';
+                sb.append(".json");
+            }
+            else
+            {
+                ftype = 'm';
+                sb.append(".mission");
+            }
+            fn = sb.str;
+        }
+
+        var m = get_mission_data();
+        if (ftype == 'm')
+            XmlIO.to_xml_file(fn, m);
+        else
+            JsonIO.to_json_file(fn, m);
+    }
+
+    public Mission? open_mission_file(string fn)
+    {
+        bool is_j = fn.has_suffix(".json");
+        return (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+    }
+
+    private void on_file_save_as ()
     {
         Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
             "Select a mission file", null, Gtk.FileChooserAction.SAVE,
@@ -5753,7 +5895,7 @@ public class MWPlanner : Gtk.Application {
         filter.set_filter_name ("Mission");
         filter.add_pattern ("*.mission");
         filter.add_pattern ("*.xml");
-//            filter.add_pattern ("*.json");
+        filter.add_pattern ("*.json");
         chooser.add_filter (filter);
 
         filter = new Gtk.FileFilter ();
@@ -5764,11 +5906,7 @@ public class MWPlanner : Gtk.Application {
         chooser.response.connect((id) => {
                 if (id == Gtk.ResponseType.ACCEPT) {
                     last_file = chooser.get_filename ();
-                    if(!(last_file.has_suffix(".mission") ||
-                         last_file.has_suffix(".xml")))
-                        last_file += ".mission";
-                    var m = get_mission_data();
-                    m.to_xml_file(last_file);
+                    save_mission_file(last_file);
                     update_title_from_file(last_file);
                 }
                 chooser.close ();
@@ -5831,45 +5969,50 @@ public class MWPlanner : Gtk.Application {
 
     private void load_file(string fname)
     {
-        var ms = new Mission ();
-        if(ms.read_xml_file (fname) == true)
+        var ms = open_mission_file(fname);
+        if(ms != null)
         {
-            if(armed == 0 && craft != null)
-            {
-                markers.remove_rings(view);
-                craft.init_trail();
-            }
-            validatelab.set_text("");
-            ms.dump();
-            ls.import_mission(ms, (conf.rth_autoland &&
-                                   Craft.is_mr(vi.mrtype)));
-            var mmax = view.get_max_zoom_level();
-            var mmin = view.get_min_zoom_level();
-            map_centre_on(ms.cy, ms.cx);
-            if(ms.zoom == 0)
-                ms.zoom = guess_appropriate_zoom(ms);
-
-            if (ms.zoom < mmin)
-                ms.zoom = mmin;
-
-            if (ms.zoom > mmax)
-                ms.zoom = mmax;
-
-            view.zoom_level =  ms.zoom;
-            markers.add_list_store(ls);
+            instantiate_mission(ms);
             last_file = fname;
             update_title_from_file(fname);
-            if(replayer == Player.MWP)
-                NavStatus.nm_pts = (uint8)ms.npoints;
-
-            if(have_home && ls.have_rth)
-                markers.add_rth_point(home_pos.lat,home_pos.lon,ls);
-            need_preview = true;
         }
         else
         {
             mwp_warning_box("Failed to open file");
         }
+    }
+
+    private void instantiate_mission(Mission ms)
+    {
+        if(armed == 0 && craft != null)
+        {
+            markers.remove_rings(view);
+            craft.init_trail();
+        }
+        validatelab.set_text("");
+        ms.dump();
+        ls.import_mission(ms, (conf.rth_autoland &&
+                               Craft.is_mr(vi.mrtype)));
+        var mmax = view.get_max_zoom_level();
+        var mmin = view.get_min_zoom_level();
+        map_centre_on(ms.cy, ms.cx);
+        if(ms.zoom == 0)
+            ms.zoom = guess_appropriate_zoom(ms);
+
+        if (ms.zoom < mmin)
+            ms.zoom = mmin;
+
+        if (ms.zoom > mmax)
+            ms.zoom = mmax;
+
+        view.zoom_level =  ms.zoom;
+        markers.add_list_store(ls);
+        if(replayer == Player.MWP)
+            NavStatus.nm_pts = (uint8)ms.npoints;
+
+        if(have_home && ls.have_rth)
+            markers.add_rth_point(home_pos.lat,home_pos.lon,ls);
+        need_preview = true;
     }
 
     private void mwp_warning_box(string warnmsg,
@@ -5913,7 +6056,7 @@ public class MWPlanner : Gtk.Application {
         filter.set_filter_name ("Mission");
         filter.add_pattern ("*.mission");
         filter.add_pattern ("*.xml");
-//      filter.add_pattern ("*.json");
+        filter.add_pattern ("*.json");
         chooser.add_filter (filter);
 
         filter = new Gtk.FileFilter ();
@@ -5936,8 +6079,8 @@ public class MWPlanner : Gtk.Application {
                     var fn = uri.substring (7);
                     if(!FileUtils.test (fn, FileTest.IS_DIR))
                     {
-                        var m = new Mission ();
-                        if(m.read_xml_file (fn) == true)
+                        var m = open_mission_file(fn);
+                        if(m != null)
                         {
                             var sb = new StringBuilder();
                             sb.append_printf("Points: %u\n", m.npoints);
@@ -6065,7 +6208,7 @@ public class MWPlanner : Gtk.Application {
         xaudio = conf.audioarmed;
 
         playfd = new int[2];
-        var sr = cf_pipe(playfd);
+        var sr = MwpPipe.pipe(playfd);
 
         if(sr == 0)
         {
@@ -6293,9 +6436,9 @@ public class MWPlanner : Gtk.Application {
                 return 1;
 
             var sb = new StringBuilder("mwp ");
-            sb.append(mwpvers);
+            sb.append(MwpVers.build);
             sb.append_c(' ');
-            sb.append(mwpid);
+            sb.append(MwpVers.id);
             var verstr = sb.str;
             string fixedopts=null;
 
@@ -6327,7 +6470,7 @@ public class MWPlanner : Gtk.Application {
                 if(fixedopts != null)
                     MWPLog.message("default options: %s\n", fixedopts);
                 Gst.init (ref args);
-                atexit(MWPlanner.xchild);
+                MwpLibC.atexit(MWPlanner.xchild);
                 var app = new MWPlanner();
                 app.run ();
                 app.cleanup();

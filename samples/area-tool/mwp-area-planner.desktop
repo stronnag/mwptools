@@ -1,0 +1,7 @@
+[Desktop Entry]
+Comment=
+Terminal=false
+Name=mwp area planner
+Exec=mwp-area-planner
+Type=Application
+Icon=mwp_area_icon

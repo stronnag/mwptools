@@ -23,11 +23,15 @@ ifdef SPK
   OPTS += --pkg gmodule-2.0
 endif
 
+OPTS+= --vapidir $(COMMOND) -X -I$(COMMOND) --pkg mwpfuncs
+
 all: $(APPS)
 
-SRCS=mwp.vala liststore.vala mwp_markers.vala mwp_craft.vala settings.vala dialogs.vala mapsources.vala logger.vala speech_wrapper.c mwp-replay.vala map_seeder.vala mwp-layout.vala layout-test.vala iparser.vala mwp_bbox.vala ah_widget.vala _mwpvers.c $(DEVMAN) get_places.vala
+COMMOND=../common
 
-COMMON=../common/btdev.c ../common/cserial.c ../common/mwp_xml.vala ../common/serial-device.vala ../common/geocalc.vala  ../common/utils.vala ../common/mspmsg.vala ../common/mspcmd.vala  ../common/mwc.vala ../common/mwplog.vala ../common/mavcmd.vala local_geo.vala ../common/cliterm.vala ../common/mlock.vala
+SRCS=mwp.vala liststore.vala mwp_markers.vala mwp_craft.vala settings.vala dialogs.vala mapsources.vala logger.vala speech_wrapper.c mwp-replay.vala map_seeder.vala mwp-layout.vala layout-test.vala iparser.vala mwp_bbox.vala ah_widget.vala _mwpvers.c $(DEVMAN) get_places.vala mission.vala
+
+COMMON=$(COMMOND)/btdev.c $(COMMOND)/cserial.c $(COMMOND)/xmlio.vala $(COMMOND)/serial-device.vala $(COMMOND)/geocalc.vala  $(COMMOND)/utils.vala $(COMMOND)/mspmsg.vala $(COMMOND)/mspcmd.vala  $(COMMOND)/mwc.vala $(COMMOND)/mwplog.vala $(COMMOND)/mavcmd.vala local_geo.vala $(COMMOND)/cliterm.vala $(COMMOND)/mlock.vala $(COMMOND)/json_io.vala
 
 PKGS= --pkg gtk+-3.0 --pkg atk --pkg clutter-1.0 --pkg champlain-gtk-0.12 --pkg champlain-0.12 --pkg libxml-2.0 --pkg gio-2.0 --pkg posix --pkg clutter-gtk-1.0 --pkg gdl-3.0 --pkg pango --pkg cairo --pkg libsoup-2.4 --pkg linux --pkg gstreamer-$(GST) --pkg vte-$(VTEVERS) $(GUDEV)
 
@@ -50,14 +54,14 @@ install: $(APPS)
 	install -d $(prefix)/bin
 	install -s mwp $(prefix)/bin/mwp
 	install -d $(datadir)/share/mwp
-	install -m 644 ../common/mwp_icon.svg $(datadir)/share/mwp/mwp_icon.svg
-	install -d $(datadir)/share/icons/hicolor/scalable
-	install -m 644 ../common/mwp_icon.svg $(datadir)/share/icons/hicolor/scalable/mwp_icon.svg
-	install -m 644 ../common/mwp_icon.svg $(datadir)/share/mwp/mwp.svg
+	install -m 644 $(COMMOND)/mwp_icon.svg $(datadir)/share/mwp/mwp_icon.svg
+	install -d $(datadir)/share/icons/hicolor/scalable/apps/
+	install -m 644 $(COMMOND)/mwp_icon.svg $(datadir)/share/icons/hicolor/scalable/apps/mwp_icon.svg
+	install -m 644 $(COMMOND)/mwp_icon.svg $(datadir)/share/mwp/mwp.svg
 	install -d $(datadir)/share/pixmaps
-	install -m 644 ../common/mwp_icon.svg $(datadir)/share/pixmaps/
+	install -m 644 $(COMMOND)/mwp_icon.svg $(datadir)/share/pixmaps/
 	install -d $(datadir)/share/mwp/pixmaps
-	install -m 644 ../common/mwp_icon.svg $(datadir)/share/mwp/pixmaps/mwp_icon.svg
+	install -m 644 $(COMMOND)/mwp_icon.svg $(datadir)/share/mwp/pixmaps/mwp_icon.svg
 	install -m 644 mwp.ui menubar.ui $(datadir)/share/mwp/
 	install -m 644 vcols.css $(datadir)/share/mwp/vcols.css
 	install -m 644 pixmaps/* $(datadir)/share/mwp/pixmaps/
@@ -71,3 +75,4 @@ install: $(APPS)
 	install -m 644 ../docs/mwptools.pdf $(datadir)/share/doc/mwp/mwptools.pdf
 	install -d /etc/bash_completion.d/
 	install -m 644 mwp_complete.sh /etc/bash_completion.d/mwp
+	gtk-update-icon-cache $(datadir)/share/icons/hicolor

@@ -781,10 +781,10 @@ public class ListBox : GLib.Object
                 if (typ == MSP.Action.WAYPOINT)
                     d = InputParser.get_scaled_real(new_text,"s");
                 else
-                    d = g_strtod(new_text,null);
+                    d = DStr.strtod(new_text,null);
                 break;
             default:
-                d = g_strtod(new_text,null);
+                d = DStr.strtod(new_text,null);
                 break;
         }
 
@@ -1342,7 +1342,6 @@ public class ListBox : GLib.Object
     {
         Gtk.TreeIter iter;
         MissionItem[] arry = {};
-        double ets = 0.0;
         et = 0;
 
         if(ms_speed == 0.0)
@@ -1421,7 +1420,6 @@ public class ListBox : GLib.Object
                     Geo.csedist(ly,lx,cy,cx, out dx, out cse);
 
                     double ltim = (1852.0*dx) / lspd;
-                    ets += ltim;
 
                     Value cell;
                     Gtk.TreeIter xiter;
@@ -1471,10 +1469,9 @@ public class ListBox : GLib.Object
         if(extra != 0)
         {
             d+=extra;
-            ets += (extra*1852/ ms_speed);
         }
         d *= 1852.0;
-        et = (int)ets + 3 * nsize; // 3 * vertices to allow for slow down
+        et = (int)(d/ms_speed) + 3 * nsize; // 3 * vertices to allow for slow down
         lastid = check_last();
         return true;
     }

@@ -102,8 +102,9 @@ public class FlatEarth : GLib.Object
     public static Gdk.Pixbuf getpixbuf(string fn, int width, int height)
     {
         Gdk.Pixbuf spixb = null;
-        var ms = new Mission ();
-        if (ms.read_xml_file (fn) == true)
+        bool is_j = fn.has_suffix(".json");
+        var ms = (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+        if((ms) != null)
         {
             LLPos wpos = {0};
             GridPos gp = {0};

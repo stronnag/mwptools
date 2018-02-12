@@ -123,5 +123,13 @@ _mwp_files()
       cur="$(pwd)"
     fi
   fi
-  _filedir $wanted
+  case $wanted in
+    'mission')
+      _filedir '@(json|mission)'
+      ;;
+    *)
+      _filedir $wanted
+      ;;
+  esac
+
 }

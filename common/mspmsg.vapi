@@ -2,7 +2,7 @@
  * MSP structure definitions via VAPI for 'C' packed attributes
  */
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_IDENT {
     uint8 version;
     uint8 multitype;
@@ -11,7 +11,7 @@ public struct MSP_IDENT {
 }
 
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_STATUS {
     uint16 cycle_time;
     uint16 i2c_errors_count;
@@ -20,7 +20,7 @@ public struct MSP_STATUS {
     uint8 global_conf;
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_MISC {
     uint16 intPowerTrigger1;
     uint16 conf_minthrottle;
@@ -36,13 +36,13 @@ public struct MSP_MISC {
     uint8 conf_vbatlevel_crit;
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_ALTITUDE {
     int32 estalt;
     int16 vario;
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_RAW_GPS
 {
     uint8   gps_fix;
@@ -55,7 +55,7 @@ public struct MSP_RAW_GPS
     uint16  gps_hdop;
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_ATTITUDE
 {
     int16 angx;
@@ -63,7 +63,7 @@ public struct MSP_ATTITUDE
     int16 heading;
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_WP
 {
     public uint8 wp_no;
@@ -77,7 +77,7 @@ public struct MSP_WP
     public uint8 flag;
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_NAV_STATUS
 {
     public uint8 gps_mode;
@@ -88,7 +88,7 @@ public struct MSP_NAV_STATUS
     public uint16 target_bearing;
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_NAV_CONFIG
 {
     public uint8 flag1;
@@ -106,7 +106,7 @@ public struct MSP_NAV_CONFIG
     public uint8 max_wp_number;
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_RC_TUNING
 {
     public uint8 rc_rate;
@@ -118,7 +118,7 @@ public struct MSP_RC_TUNING
     public uint8 throttle_expo;
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_RC_TUNING_CF
 {
     public uint8 rc_rate;
@@ -132,7 +132,7 @@ public struct MSP_RC_TUNING_CF
     public uint16 tpa_breakpoint;
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_RADIO
 {
     public uint16 rxerrors;
@@ -144,7 +144,7 @@ public struct MSP_RADIO
     public uint8 remnoise;
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_COMP_GPS
 {
      uint16 range;
@@ -152,7 +152,7 @@ public struct MSP_COMP_GPS
      uint8 update;
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_ANALOG
 {
      uint8  vbat;
@@ -162,7 +162,7 @@ public struct MSP_ANALOG
 }
 
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_NAV_POSHOLD
 {
     uint8 nav_user_control_mode;
@@ -176,7 +176,7 @@ public struct MSP_NAV_POSHOLD
     uint8 reserved[8];
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct LTM_GFRAME
 {
     int32 lat;
@@ -186,7 +186,7 @@ public struct LTM_GFRAME
     uint8 sats;
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct LTM_AFRAME
 {
     int16 pitch;
@@ -195,7 +195,7 @@ public struct LTM_AFRAME
 }
 
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct LTM_SFRAME
 {
     int16 vbat;
@@ -204,7 +204,7 @@ public struct LTM_SFRAME
     uint8 airspeed;
     uint8 flags;
 }
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct LTM_XFRAME
 {
     uint16 hdop;
@@ -214,7 +214,7 @@ public struct LTM_XFRAME
     uint8 spare;
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_WP_GETINFO
 {
     uint8 wp_cap;
@@ -223,7 +223,7 @@ public struct MSP_WP_GETINFO
     uint8 wp_count;
 }
 
-[CCode (cheader_filename = "../common/mspmsg.h")]
+[CCode (cheader_filename = "mspmsg.h")]
 struct MSP_FW_CONFIG
 {
     uint16 cruise_throttle;

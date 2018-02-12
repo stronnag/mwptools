@@ -17,10 +17,6 @@
  */
 
 
-extern int speech_init(string voice);
-extern void speech_say(string text);
-//extern void speech_terminate();
-
 public class Units :  GLib.Object
 {
     private const string [] dnames = {"m", "ft", "yd","mfg"};
@@ -650,8 +646,8 @@ public class DeltaDialog : GLib.Object
         switch(id)
         {
             case 1001:
-                dlat = g_strtod(dlt_entry1.get_text(),null);
-                dlon = g_strtod(dlt_entry2.get_text(),null);
+                dlat = DStr.strtod(dlt_entry1.get_text(),null);
+                dlon = DStr.strtod(dlt_entry2.get_text(),null);
                 dalt = (int)InputParser.get_scaled_int(dlt_entry3.get_text());
                 res = true;
                 break;
@@ -696,7 +692,7 @@ public class SetPosDialog : GLib.Object
         {
             pcombo.active = 0;
             lat_entry.set_text(PosFormat.lat(pls[0].lat, dms));
-            lon_entry.set_text(PosFormat.lon(pls[1].lon, dms));
+            lon_entry.set_text(PosFormat.lon(pls[0].lon, dms));
         }
 
         pcombo.changed.connect (() => {
@@ -925,7 +921,7 @@ public class PrefsDialog : GLib.Object
 
         dialog.show_all ();
         id = dialog.run();
-        if (id == 1000)
+        if (id == 1001)
         {
             var str = ents[0].get_text();
             double d;
@@ -960,6 +956,7 @@ public class PrefsDialog : GLib.Object
             }
             str = ents[4].get_text();
             u = (uint)InputParser.get_scaled_int(str);
+
             if(conf.altitude != u)
             {
                 conf.settings.set_uint("default-altitude", u);
@@ -1723,7 +1720,7 @@ public class NavStatus : GLib.Object
             }
             else
             {
-                var si = speech_init(voice);
+                var si = MwpSpeech.init(voice);
                 MWPLog.message("Using %s for speech\n",
                                (si == 0) ? "espeak" : (si == 1) ? "speechd" : "none");
             }
@@ -1961,7 +1958,7 @@ public class AudioThread : Object {
                             Posix.write(efd, "\n\n", 2);
                         }
                         else
-                            speech_say(s);
+                            MwpSpeech.say(s);
 //                        MWPLog.message("say %d \"%s\"\n", efd, s);
                     }
                 }
@@ -2177,7 +2174,7 @@ public class NavConfig : GLib.Object
                 ncu.nav_speed_min = u16;
 
                 string s = nav_bank_max.get_text();
-                u16 = (uint16)(g_strtod(s,null)*100);
+                u16 = (uint16)(DStr.strtod(s,null)*100);
                 ncu.nav_bank_max = u16;
                 u16 = (uint16)int.parse(rth_altitude.get_text());
                 ncu.rth_altitude = u16;

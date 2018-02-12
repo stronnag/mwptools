@@ -32,7 +32,7 @@ public class MWPSettings : GLib.Object
     public string? defmap {get; set; default=null;}
     public string[]? devices {get; set; default=null;}
     public string? compat_vers {get; set; default=null;}
-    public bool scary_warn {get; set; default=false;}
+    public bool dump_unknown {get; set; default=false;}
     public bool dms {get; set; default=false;}
     public string? map_sources {get; set; default=null;}
     public uint  speakint {get; set; default=0;}
@@ -84,7 +84,7 @@ public class MWPSettings : GLib.Object
     public uint flash_warn { get; set; default=0; }
     public bool auto_wp_edit {get; set; default=true;}
     public bool use_legacy_centre_on {get; set; default=false;}
-
+    public string mission_file_type {get; set; default="m";}
     public signal void settings_update (string s);
 
     public MWPSettings()
@@ -140,7 +140,8 @@ public class MWPSettings : GLib.Object
             if(map_sources == "")
                 map_sources = null;
         }
-
+        if(s == null || s == "dump-unknown")
+            dump_unknown = settings.get_boolean("dump-unknown");
         if(s == null || s == "display-dms")
             dms = settings.get_boolean("display-dms");
         if(s == null || s == "audio-bearing-is-reciprocal")
@@ -296,6 +297,11 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "use-legacy-centre-on")
             use_legacy_centre_on = settings.get_boolean("use-legacy-centre-on");
+
+        if(s == null || s == "mission-file-type")
+        {
+            mission_file_type = settings.get_string ("mission-file-type");
+        }
     }
 
     public void save_pane()

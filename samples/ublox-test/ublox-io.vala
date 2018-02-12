@@ -18,13 +18,6 @@
 
 /* Based on the Multiwii UBLOX parser, GPL by a cast of thousands */
 
-extern int open_serial(string dev, int baudrate);
-extern void set_fd_speed(int fd, int baudrate);
-extern void close_serial(int fd);
-extern void flush_serial(int fd);
-extern string default_name();
-extern unowned string get_error_text(int err, uint8[] buf, size_t len);
-
 public class MWSerial : Object
 {
     public struct SerialStats
@@ -188,12 +181,12 @@ public class MWSerial : Object
 
     private bool open(string device, int rate)
     {
-        fd = open_serial(device, rate);
+        fd = MwpSerial.open(device, rate);
         if(fd < 0)
         {
             uint8 [] sbuf = new uint8[1024];
             var lasterr=Posix.errno;
-            var s = get_error_text(lasterr, sbuf, 1024);
+            var s = MwpSerial.error_text(lasterr, sbuf, 1024);
             stderr.printf("%s (%d)\n", s, lasterr);
             fd = -1;
             available = false;
@@ -222,7 +215,7 @@ public class MWSerial : Object
                 Source.remove(tag);
             }
             try  { io_read.shutdown(false); } catch {}
-            close_serial(fd);
+            MwpSerial.close(fd);
             fd = -1;
         }
     }
@@ -585,7 +578,7 @@ public class MWSerial : Object
                 Thread.usleep(1000*100);
                 ublox_write(fd,"gpspassthrough\n".data);
                 Thread.usleep(1000*100);
-                flush_serial(fd);
+                MwpSerial.flush(fd);
                 gps_state = State.START;
                 if(noinit == false)
                     Timeout.add(100, () => {
@@ -598,7 +591,7 @@ public class MWSerial : Object
                 if(slow)
                     delay = 200;
                 Timeout.add(delay, () => {
-                        flush_serial(fd);
+                        MwpSerial.flush(fd);
                         return setup_gps();
                     });
             }
@@ -699,7 +692,7 @@ public class MWSerial : Object
                 if(noautob == false)
                 {
                     var str = get_gps_speed_string();
-                    set_fd_speed(fd, init_speed[gps_state]);
+                    MwpSerial.set_speed(fd, init_speed[gps_state]);
                     ublox_write(fd, str.data);
                     gps_state++;
                 }
@@ -709,7 +702,7 @@ public class MWSerial : Object
 
             case State.BAUDRATE:
                 stdout.printf("Rate initialised %d\n", brate);
-                set_fd_speed(fd, brate);
+                MwpSerial.set_speed(fd, brate);
                 gps_state++;
                 break;
 
@@ -830,7 +823,7 @@ public class MWSerial : Object
         }
 
         if(devname == null)
-            devname = default_name();
+            devname = MwpSerial.default_name();
         return 0;
     }
 
