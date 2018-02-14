@@ -54,6 +54,7 @@ public class JsonIO : Object
                                 mi += m;
                             }
                             ms.set_ways(mi);
+                            ms.npoints = mi.length;
                             break;
                         case "meta":
                         var msobj = obj.get_object_member("meta");
