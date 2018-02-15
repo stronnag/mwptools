@@ -36,6 +36,8 @@ public class  BBoxDialog : Object
     private int[] valid = {};
     private bool is_valid;
 
+    private const int BB_MINSIZE = (4*1024);
+
     public BBoxDialog(Gtk.Builder builder, int mrtype = 3, Gtk.Window? w = null,
                       string? logpath = null)
     {
@@ -104,7 +106,7 @@ public class  BBoxDialog : Object
             int idx=0, offset, size=0;
             if(line.scanf(" %d %d %d", &idx, &offset, &size) == 3)
             {
-                if(size > 10240)
+                if(size > BB_MINSIZE)
                 {
                     is_valid = true;
                     valid += idx;
@@ -114,7 +116,6 @@ public class  BBoxDialog : Object
                 maxidx = idx;
             }
         }
-        print("summary %d\n", maxidx);
     }
 
     private void find_valid()
@@ -199,7 +200,6 @@ public class  BBoxDialog : Object
                                     if(n == 0)
                                     {
                                         int slen = line.length;
-                                        n = line.index_of(" of ");
                                         n = line.index_of(" duration ");
                                         if(n > 16)
                                         {
