@@ -115,6 +115,13 @@ public class  BBoxDialog : Object
                     valid += 0;
                 maxidx = idx;
             }
+            else if(line.has_prefix("Log 1 of"))
+            {
+                valid += 1;
+                maxidx = 1;
+                is_valid = true;
+                break;
+            }
         }
     }
 
