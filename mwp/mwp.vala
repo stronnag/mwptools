@@ -1986,17 +1986,26 @@ public class MWPlanner : Gtk.Application {
                 {
                     try {
                         var f = Filename.from_uri(uri);
-                        if (sf == null && f.has_suffix(".TXT"))
-                        {
-                            sf = f;
-                            bbox = true;
+                        var fs = FileStream.open (f, "r");
+                        char buf[100];
+                        if (fs.gets (buf) != null) {
+                            if(buf[0] == '<')
+                            {
+                                mf = f;
+                            }
+                            else if(buf[0] == 'H' && buf[1] == ' ')
+                            {
+                                sf = f;
+                                bbox = true;
+                            }
+                            else if(buf[0] == '{')
+                            {
+                                if(buf[1] == '"')
+                                    sf = f;
+                                else if (buf[1] == '\n')
+                                    mf = f;
+                            }
                         }
-                        else if (sf == null && f.has_suffix(".log"))
-                            sf = f;
-                        else if (mf == null && (
-                                     f.has_suffix(".mission") ||
-                                     f.has_suffix(".json")))
-                            mf = f;
                     } catch (Error e) {
                         MWPLog.message("dnd: %s\n", e.message);
                     }
