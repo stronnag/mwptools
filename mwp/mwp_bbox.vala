@@ -33,6 +33,10 @@ public class  BBoxDialog : Object
     private Gtk.CheckButton bb_force_gps;
     private Gtk.TreeSelection bb_sel;
     private Gtk.Window _w;
+    private int[] valid = {};
+    private bool is_valid;
+
+    private const int BB_MINSIZE = (4*1024);
 
     public BBoxDialog(Gtk.Builder builder, int mrtype = 3, Gtk.Window? w = null,
                       string? logpath = null)
@@ -85,21 +89,48 @@ public class  BBoxDialog : Object
 
     private void get_bbox_file_status()
     {
-        nidx = 1;
         MWPCursor.set_busy_cursor(dialog);
+        find_valid();
         spawn_decoder();
         bb_ok.sensitive = false;
     }
 
-    private void spawn_decoder()
+    private void parse_summary(string s)
+    {
+        is_valid = false;
+        valid = {};
+        maxidx = -1;
+        var lines = s.split("\n");
+        foreach(var line in lines)
+        {
+            int idx=0, offset, size=0;
+            if(line.scanf(" %d %d %d", &idx, &offset, &size) == 3)
+            {
+                if(size > BB_MINSIZE)
+                {
+                    is_valid = true;
+                    valid += idx;
+                }
+                else
+                    valid += 0;
+                maxidx = idx;
+            }
+            else if(line.has_prefix("Log 1 of"))
+            {
+                valid += 1;
+                maxidx = 1;
+                is_valid = true;
+                break;
+            }
+        }
+    }
+
+    private void find_valid()
     {
         try {
-            string[] spawn_args = {"blackbox_decode", "--stdout",
-                                   "--index", "%d".printf(nidx),
-                                   filename};
+            string[] spawn_args = {"blackbox_decode", "--stdout", filename};
             Pid child_pid;
             int p_stderr;
-
             Process.spawn_async_with_pipes (null,
                                             spawn_args,
                                             null,
@@ -112,93 +143,109 @@ public class  BBoxDialog : Object
                                             null,
                                             out p_stderr);
 
-		// stderr:
-            string loginfo = null;
             IOChannel error = new IOChannel.unix_new (p_stderr);
-            error.add_watch ((IOCondition.IN|IOCondition.HUP),
-                             (channel, condition) => {
-                                 Gtk.TreeIter iter;
-                                 try {
-                                     if((condition & IOCondition.IN) == IOCondition.IN)
+            IOStatus eos;
+            string loginfo;
+            try
+            {
+                eos = error.read_to_end (out loginfo, null);
+                if(eos == IOStatus.NORMAL)
+                {
+                    parse_summary(loginfo);
+                }
+            } catch(Error e) {
+            show_child_err(e.message);
+            }
+            Posix.close(p_stderr);
+            Process.close_pid (child_pid);
+        } catch (SpawnError e) {
+            show_child_err(e.message);
+        }
+    }
+    private void spawn_decoder()
+    {
+        string loginfo = null;
+        if(is_valid)
+        {
+            for(var j = 0; j < maxidx; j++)
+            {
+                nidx = j+1;
+                if(valid[j] != 0)
+                {
+                    Gtk.TreeIter iter;
+                    try
+                    {
+                        string[] spawn_args = {"blackbox_decode", "--stdout",
+                                               "--index", "%d".printf(nidx),
+                                               filename};
+                        Pid child_pid;
+                        int p_stderr;
+
+                        Process.spawn_async_with_pipes (null,
+                                                        spawn_args,
+                                                        null,
+                                                        SpawnFlags.SEARCH_PATH |
+                                                        SpawnFlags.DO_NOT_REAP_CHILD |
+                                                        SpawnFlags.STDOUT_TO_DEV_NULL,
+                                                        null,
+                                                        out child_pid,
+                                                        null,
+                                                        null,
+                                                        out p_stderr);
+
+                        IOChannel error = new IOChannel.unix_new (p_stderr);
+                        try
+                        {
+                            IOStatus eos = error.read_to_end (out loginfo, null);
+                            if(eos == IOStatus.NORMAL)
                             {
-                                IOStatus eos;
-                                eos = channel.read_to_end (out loginfo, null);
-                                if(eos == IOStatus.NORMAL)
+                                var lines = loginfo.split("\n");
+                                foreach(var line in lines)
                                 {
-                                    var lines = loginfo.split("\n");
-                                    foreach(var line in lines)
+                                    int n;
+                                    n = line.index_of("Log ");
+                                    if(n == 0)
                                     {
-                                        int n;
-                                        n = line.index_of("Log ");
-                                        if(n == 0)
+                                        int slen = line.length;
+                                        n = line.index_of(" duration ");
+                                        if(n > 16)
                                         {
-                                            int slen = line.length;
-                                            nidx = int.parse(line[n+4:slen]);
-                                            n = line.index_of(" of ");
-                                            maxidx = int.parse(line[n+4:slen]);
-                                            bb_items.label = "Log %d of %d".printf(nidx,maxidx);
-                                            n = line.index_of(" duration ");
-                                            if(n > 16)
-                                            {
-                                                n += 10;
-                                                string dura = line.substring(n, slen - n -1);
-                                                bb_liststore.append (out iter);
-                                                bb_liststore.set (iter, 0, nidx, 1, dura);
-                                            }
+                                            n += 10;
+                                            string dura = line.substring(n, slen - n -1);
+                                            bb_liststore.append (out iter);
+                                            bb_liststore.set (iter, 0, nidx, 1, dura);
                                         }
                                     }
                                 }
                             }
-                            if((condition & IOCondition.HUP) == IOCondition.HUP)
-                            {
-                                return false;
-                            }
-
-                        } catch (IOChannelError e) {
-                            return false;
-                        } catch (ConvertError e) {
-                            return false;
+                        } catch(Error e) {
+                            show_child_err(e.message);
                         }
-                        return true;
-                    });
-		ChildWatch.add (child_pid, (pid, status) => {
                         Posix.close(p_stderr);
-                        Process.close_pid (pid);
-                        if(nidx == maxidx)
-                        {
-                            MWPCursor.set_normal_cursor(dialog);
-                            if((int)bb_liststore.iter_n_children(null) == 1)
-                            {
-                                Gtk.TreeIter iter;
-                                Gtk.TreePath path = new Gtk.TreePath.from_string ("0");
-                                bb_liststore.get_iter (out iter, path);
-                                bb_sel.select_iter(iter);
-                            }
-                            bb_items.label = "File contains %d %s".printf(
-                                maxidx, (maxidx == 1) ? "entry" : "entries");
-                        }
-                        else if (maxidx == -1)
-                        {
-                            StringBuilder sb = new StringBuilder("No valid log detected.\n");
-                            if(loginfo != null)
-                            {
-                                sb.append("blackbox_decode says: ");
-                                sb.append(loginfo.strip());
-                            }
-                            else
-                                sb.append("Please use blackbox_decode to identify the problem with the log file");
-                            bb_items.label = sb.str;
-                            MWPCursor.set_normal_cursor(dialog);
-                        }
-                        else
-                        {
-                            nidx++;
-                            spawn_decoder();
-                        }
-                    });
-	} catch (SpawnError e) {
-            show_child_err(e.message);
+                        Process.close_pid (child_pid);
+                    } catch (SpawnError e) {
+                        show_child_err(e.message);
+                    }
+                }
+            }
         }
+        string label;
+        if(is_valid)
+        {
+            label = "File contains %d %s".printf(maxidx, (maxidx == 1) ? "entry" : "entries");
+        }
+        else
+        {
+            StringBuilder sb = new StringBuilder("No valid log detected.\n");
+            if(loginfo != null)
+            {
+                sb.append("blackbox_decode says: ");
+                sb.append(loginfo.strip());
+            }
+            label = sb.str;
+        }
+        bb_items.label = label;
+        MWPCursor.set_normal_cursor(dialog);
     }
 
     private void show_child_err(string e)

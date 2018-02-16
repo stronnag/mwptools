@@ -22,16 +22,6 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
-[DBus (name = "org.mwptools.mwp")]
-public class MwpServer : Object {
-
-    public signal void recv(string s);
-
-    public int set_mission (string msg) {
-        recv(msg);
-        return msg.length;
-    }
-}
 
 [DBus (name = "org.freedesktop.NetworkManager")]
 interface NetworkManager : GLib.Object {
@@ -595,13 +585,14 @@ public class MWPlanner : Gtk.Application {
 
     private enum WPDL {
         IDLE=0,
-        VALIDATE = 1,
-        REPLACE = 2,
-        POLL = 4,
-        REPLAY = 8,
-        SAVE_EEPROM = 16,
-        GETINFO = 32,
-        CANCEL = 128
+        VALIDATE = (1<<0),
+        REPLACE = (1<<1),
+        POLL = (1<<2),
+        REPLAY = (1<<3),
+        SAVE_EEPROM = (1<<4),
+        GETINFO = (1<<5),
+        CALLBACK = (1<<6),
+        CANCEL = (1<<7)
     }
 
     private struct WPMGR
@@ -747,6 +738,8 @@ public class MWPlanner : Gtk.Application {
     private int nrings = 0;
     private double ringint = 0;
     private bool replay_paused;
+
+    private MwpServer mss=null;
 
     private const Gtk.TargetEntry[] targets = {
         {"text/uri-list",0,0}
@@ -2072,15 +2065,14 @@ public class MWPlanner : Gtk.Application {
 
     private void on_bus_aquired (DBusConnection conn)
     {
-        MwpServer mss=null;
-
         try {
             conn.register_object ("/org/mwptools/mwp",
                                   (mss = new MwpServer ()));
         } catch (IOError e) {
             stderr.printf ("Could not register service\n");
         }
-        mss.recv.connect((s) => {
+
+        mss.__set_mission.connect((s) => {
                 Mission ms;
                 unichar c = s.get_char(0);
 
@@ -2091,7 +2083,49 @@ public class MWPlanner : Gtk.Application {
 
                 if(ms != null)
                     instantiate_mission(ms);
+                return ms.npoints;
             });
+
+        mss.__load_mission.connect((s) => {
+                Mission ms;
+                ms = open_mission_file(s);
+                if(ms != null)
+                    instantiate_mission(ms);
+                return ms.npoints;
+            });
+
+        mss.__clear_mission.connect(() => {
+                ls.clear_mission();
+            });
+
+        mss.__get_devices.connect(() => {
+                int idx;
+                mss.device_names = list_devices();
+                idx =(msp.available) ? dev_entry.active : -1;
+                return idx;
+            });
+
+        mss.__upload_mission.connect((e) => {
+                var flag = WPDL.CALLBACK;
+                flag |= ((e) ? WPDL.SAVE_EEPROM : WPDL.VALIDATE);
+                upload_mission(flag);
+            });
+
+        mss.__connect_device.connect((s) => {
+                int n = append_deventry(s);
+                dev_entry.active = n;
+                connect_serial();
+                return msp.available;
+            });
+
+    }
+
+    private void upload_callback(int pts)
+    {
+        wpmgr.wp_flag &= ~WPDL.CALLBACK;
+        mss.nwpts = pts;
+            // must use Idle.add as we may not otherwise hit the mainloop
+        Idle.add(() => { mss.callback(); return false; });
     }
 
     private void get_map_size()
@@ -2143,6 +2177,22 @@ public class MWPlanner : Gtk.Application {
             append_deventry(s);
     }
 
+    private string?[] list_devices()
+    {
+        string[] devs={};
+        var m = dev_entry.get_model();
+        Gtk.TreeIter iter;
+        bool next;
+
+        for(next = m.get_iter_first(out iter); next; next = m.iter_next(ref iter))
+        {
+            GLib.Value cell;
+            m.get_value (iter, 0, out cell);
+            devs += (string)cell;
+        }
+        return devs;
+    }
+
     private int find_deventry(string s)
     {
         var m = dev_entry.get_model();
@@ -2164,14 +2214,17 @@ public class MWPlanner : Gtk.Application {
         return n;
     }
 
-    private void append_deventry(string s)
+    private int append_deventry(string s)
     {
         var n = find_deventry(s);
         if (n == -1)
+        {
             dev_entry.append_text(s);
+            n = 0;
+        }
         if(dev_entry.active == -1)
             dev_entry.active = 0;
-
+        return n;
     }
 
     private void prepend_deventry(string s)
@@ -2624,6 +2677,7 @@ public class MWPlanner : Gtk.Application {
         view.add_child (textb);
         view.add_child (textm);
         map_clean = true;
+        clutextg.use_markup = true;
     }
 
     private void map_show_warning(string text)
@@ -2638,7 +2692,10 @@ public class MWPlanner : Gtk.Application {
 
     private void map_show_wp(string text)
     {
-        clutextg.set_text(text);
+        if(text.get_char() == '<')
+            clutextg.set_markup(text);
+        else
+            clutextg.set_text(text);
         map_clean = false;
     }
 
@@ -3897,7 +3954,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     mwp_warning_box("FC holds zero  WP (max %u)".printf(wpi.max_wp),
                                     Gtk.MessageType.ERROR, 10);
-                    wpmgr.wp_flag |= ~WPDL.GETINFO;
+                    wpmgr.wp_flag &= ~WPDL.GETINFO;
                 }
                 else if (wpi.wp_count > 0 && wpi.wps_valid == 1 )
                 {
@@ -3976,7 +4033,10 @@ public class MWPlanner : Gtk.Application {
                                             ns.wp_number != last_nwp))
                     {
                         ls.raise_wp(ns.wp_number);
-                        map_show_wp(ns.wp_number.to_string());
+                        var spt = (ns.wp_number == NavStatus.nm_pts) ?
+                            "<small>RTH</small>" :
+                            ns.wp_number.to_string();
+                        map_show_wp(spt);
                     }
                     else if (ns.gps_mode != 3 && last_nmode == 3)
                         map_hide_wp();
@@ -4267,6 +4327,8 @@ public class MWPlanner : Gtk.Application {
                         bleet_sans_merci(Alert.GENERAL);
                         validatelab.set_text("⚠"); // u+26a0
                         mwp_warning_box(mtxt, Gtk.MessageType.ERROR);
+                        if((wpmgr.wp_flag & WPDL.CALLBACK) != 0)
+                            upload_callback(-1);
                     }
                     else if(w.flag != 0xa5)
                     {
@@ -4281,7 +4343,8 @@ public class MWPlanner : Gtk.Application {
                         MWPCursor.set_normal_cursor(window);
                         bleet_sans_merci(Alert.GENERAL);
                         validatelab.set_text("✔"); // u+2714
-
+                        if((wpmgr.wp_flag & WPDL.CALLBACK) != 0)
+                            upload_callback(wpmgr.wps.length);
                         if(vi.fc_api < APIVERS.mspV2)
                             mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
                         MWPLog.message("Mission validated\n");
@@ -5189,15 +5252,24 @@ public class MWPlanner : Gtk.Application {
 
     private void upload_mission(WPDL flag)
     {
+        if(!msp.available)
+        {
+            if ((flag & WPDL.CALLBACK) != 0)
+                upload_callback(0);
+            return;
+        }
+
         validatelab.set_text("");
         downgrade = 0;
 
         var wps = ls.to_wps(out downgrade, inav, Craft.is_fw(vi.mrtype));
         if(wps.length > wp_max)
         {
+            if((flag & WPDL.CALLBACK) != 0)
+                upload_callback(0);
             string str = "Number of waypoints (%d) exceeds max (%d)".printf(
                 wps.length, wp_max);
-            mwp_warning_box(str, Gtk.MessageType.ERROR);
+            mwp_warning_box(str, Gtk.MessageType.ERROR, 60);
             return;
         }
 
@@ -5211,8 +5283,10 @@ public class MWPlanner : Gtk.Application {
         {
             if(inav)
             {
+                if((flag & WPDL.CALLBACK) != 0)
+                    upload_callback(0);
                 mwp_warning_box("Cowardly refusal to upload an empty mission",
-                                Gtk.MessageType.WARNING);
+                                Gtk.MessageType.WARNING, 60);
                 return;
             }
             else
@@ -5263,6 +5337,9 @@ public class MWPlanner : Gtk.Application {
                 MWPLog.message("%s operation probably failed\n", reason);
                 string wmsg = "%s operation timeout.\nThe upload has probably failed".printf(reason);
                 mwp_warning_box(wmsg, Gtk.MessageType.ERROR);
+
+                if((wpmgr.wp_flag & WPDL.CALLBACK) != 0)
+                    upload_callback(-2);
                 return Source.REMOVE;
             });
     }

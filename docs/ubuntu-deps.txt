@@ -20,7 +20,7 @@ apt install libgdl-3-dev \
 ## check the vala version with:
 ## valac --version
 ## then
-# apt search libvala-dev
+##  apt search libvala.\*-dev
 ## and install the current package
 ## e.g.
 # apt install libvala-0.36-dev
