@@ -14,12 +14,16 @@ apt install libgdl-3-dev \
     libespeak-dev \
     libgudev-1.0-dev \
     libgstreamer1.0-dev \
-    libvala-dev \
     libvte-2.91-dev
 
-## If libvala-dev fails, then there may be valac version specific deb
+## For libvala-dev there may be valac version specific deb
 ## check the vala version with:
-# valac --version
+## valac --version
+## then
+# apt search libvala-dev
+## and install the current package
+## e.g.
+# apt install libvala-0.36-dev
 
 ## and for replay_bbox_ltm.rb
 ## ruby version 2 or later
