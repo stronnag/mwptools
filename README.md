@@ -67,6 +67,8 @@ mwptools is tested on x86_64, ia32 and ARM devices.
   make && sudo make install
   ````
 
+[Installation video](https://vimeo.com/256052320/)
+
 ### Updating
 
 As mwptools makes no formal releases, you can update your installation
