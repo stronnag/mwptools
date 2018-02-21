@@ -20,7 +20,7 @@ public class MWPLog : GLib.Object
 {
     private static FileStream fs;
     private static bool init = false;
-    private static string tfstr = "%FT%T%z";
+    private static string tfstr;
 
     public static void set_time_format(string _t)
     {
@@ -45,6 +45,8 @@ public class MWPLog : GLib.Object
             }
             else fs  = FileStream.fdopen(stderr.fileno(), "a");
             init = true;
+            if(tfstr == null)
+                tfstr = "%FT%T%z";
         }
 
         var v = va_list();

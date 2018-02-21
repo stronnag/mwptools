@@ -200,7 +200,7 @@ class FCMgr :Object
         cancel_timers();
         if(msp.available)
         {
-            msp.send_command(MSP.Cmds.IDENT,null,0);
+            msp.send_command(MSP.Cmds.API_VERSION,null,0);
         }
         etid = Timeout.add_seconds(2,() => {try_connect(); return false;});
     }
@@ -363,7 +363,7 @@ class FCMgr :Object
                 {
                     switch(cmd)
                     {
-                        case MSP.Cmds.IDENT:
+                        case MSP.Cmds.API_VERSION:
                         cancel_timers();
                         if(trace == 0)
                             next_state();
