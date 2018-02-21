@@ -441,6 +441,12 @@ public class MWSerial : Object
         }
         return rescode;
     }
+    private void unswamp()
+    {
+        uint8 c;
+        for(var i = 0; i < 10; i++)
+            Posix.read(fd,&c,1);
+    }
 
     private bool drain(out uint8 [] buf, int limit, string line)
     {
@@ -532,6 +538,7 @@ public class MWSerial : Object
         write("version\n");
         while(read_vers(out line, out len) == ResCode.OK)
             ;
+
 
         if(((string)line).contains("# INAV"))
         {
@@ -972,8 +979,9 @@ public class MWSerial : Object
                 ocount--;
             }
         } while(!available && ocount != 0);
-
         message("Connected %s\n", devname);
+        Thread.usleep(500000);
+        unswamp();
         if(available)
         {
             ResCode res = 0;

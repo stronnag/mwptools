@@ -20,6 +20,17 @@ public class MWPLog : GLib.Object
 {
     private static FileStream fs;
     private static bool init = false;
+    private static string tfstr = "%FT%T%z";
+
+    public static void set_time_format(string _t)
+    {
+        tfstr = _t;
+    }
+
+    public static void puts(string s)
+    {
+        fs.puts(s);
+    }
 
     public static void message(string format, ...)
     {
@@ -38,7 +49,7 @@ public class MWPLog : GLib.Object
 
         var v = va_list();
         var now = new DateTime.now_local ();
-        string ds = now.to_string ();
+        string ds = now.format(tfstr);
         fs.puts(ds);
         fs.putc(' ');
         fs.puts(format.vprintf(v));

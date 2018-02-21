@@ -370,9 +370,12 @@ public class FlightBox : GLib.Object
                string htxt;
                if(GPSInfo.hdop > 9.95)
                    htxt = "%.0f".printf(GPSInfo.hdop);
-               else
+               else if(GPSInfo.hdop > 0.95)
                    htxt = "%.1f".printf(GPSInfo.hdop);
-                hdoptxt = " / <span font='%u'>%s</span>".printf(fh2,htxt);
+               else
+                   htxt = "%.2f".printf(GPSInfo.hdop);
+
+               hdoptxt = " / <span font='%u'>%s</span>".printf(fh2,htxt);
            }
            var slabel = "Sats <span font='%u'>%d</span> %s%s".printf(
                fh1, GPSInfo.nsat,Units.fix(GPSInfo.fix), hdoptxt);

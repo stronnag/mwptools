@@ -540,8 +540,19 @@ public class MWSerial : Object
             available = false;
             if(fd != -1)
                 serial_lost();
-            MWPLog.message("Close on condition %x (fd=%d)\r\n", cond, fd);
-
+            StringBuilder sb = new StringBuilder();
+            for(var j = 0; j < 8; j++)
+            {
+                IOCondition n = (IOCondition)(1 << j);
+                if((cond & n) == n)
+                {
+                    sb.append(n.to_string());
+                    sb.append_c('|');
+                }
+            }
+            sb.truncate(sb.len-1);
+            MWPLog.message("Close fd %d on %s (%x)\r\n", fd,sb.str,cond);
+            tag = 0; // REMOVE will remove the iochannel watch
             return Source.REMOVE;
         }
         else if (fd != -1)

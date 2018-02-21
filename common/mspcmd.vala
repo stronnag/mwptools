@@ -81,11 +81,13 @@ public class MSP : Object
         SET_FW_CONFIG = 24,
         STATUS_EX = 150,
         SENSOR_STATUS = 151,
-
         BLACKBOX_CONFIG = 80,
         DATAFLASH_SUMMARY = 70,
         DATAFLASH_READ = 71,
         DATAFLASH_ERASE = 72,
+
+        CALIBRATE_ACC=205,
+        CALIBRATE_MAG=206,
 
         RTC =  246,
         SET_RTC = 247,

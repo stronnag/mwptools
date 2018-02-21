@@ -82,6 +82,8 @@ if [ -n "$BIN" ]
 then
   objcopy -I ihex $IHEX -O binary $BIN
   sleep 1
-  dfu-util -d 0483:df11 --alt 0 -s 0x08000000:mass-erase:force:leave -D $BIN
+  ERASE=
+  [ -n "$FERASE" ] && ERASE="mass-erase:"
+  dfu-util -d 0483:df11 --alt 0 -s 0x08000000:${ERASE}force:leave -D $BIN
   [ -n $RM ] && rm -f $RM
 fi
