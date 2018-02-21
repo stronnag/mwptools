@@ -290,9 +290,7 @@ class FCMgr :Object
     {
         msp = new MWSerial();
         oldmode  =  msp.pmode;
-
         mode = (issetting) ? Mode.SET : Mode.GET;
-
         dmgr = new DevManager(DevMask.USB);
         var devs = dmgr.get_serial_devices();
         if(devs.length == 1)
@@ -300,22 +298,23 @@ class FCMgr :Object
 
         dmgr.device_added.connect((sdev) => {
                 MWPLog.message("Discovered %s\n", sdev);
-                if(sdev == dev || dev == null)
-                    if(msp.open(sdev, baud, out estr) == false)
-                        MWPLog.message("Failed to open %s\n", estr);
-                    else
-                    {
-                        if(tid != 0)
+                if(!msp.available)
+                    if(sdev == dev || dev == null)
+                        if(msp.open(sdev, baud, out estr) == false)
+                            MWPLog.message("Failed to open %s\n", estr);
+                        else
                         {
-                            Source.remove(tid);
-                            tid = 0;
+                            if(tid != 0)
+                            {
+                                Source.remove(tid);
+                                tid = 0;
+                            }
+                            msp.pmode = MWSerial.ProtoMode.NORMAL;
+                            tid = Timeout.add_seconds(1, () => {
+                                    try_connect();
+                                    return true;
+                                });
                         }
-                        msp.pmode = MWSerial.ProtoMode.NORMAL;
-                        tid = Timeout.add_seconds(1, () => {
-                                try_connect();
-                                return true;
-                            });
-                    }
             });
 
         dmgr.device_removed.connect((sdev) => {
