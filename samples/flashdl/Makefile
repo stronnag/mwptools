@@ -4,19 +4,21 @@ include ../../common.mk
 
 CLI=flashdl
 
-COMMON=../../common/serial-device.vala ../../common/btdev.c \
-	../../common/cserial.c ../../common/mspcmd.vala ../../common/mwplog.vala \
-	../../common/mspmsg.vala
-PKGS = --pkg posix --pkg gio-2.0 --pkg linux
-PKGSV = --pkg vte-$(VTEVERS)
-PKGSR = --pkg gio-2.0
+COMMOND=../../common
+COMMONC=$(COMMOND)/serial-device.vala $(COMMOND)/btdev.c \
+        $(COMMOND)/cserial.c $(COMMOND)/mspcmd.vala $(COMMOND)/mwplog.vala \
+        $(COMMOND)/mspmsg.vala $(COMMOND)/devman.vala
 
-APPS=$(CLI)
+PKGS = --pkg posix --pkg gio-2.0 --pkg linux --pkg mwpfuncs $(GUDEV)
+OPTS+=--vapidir=$(COMMOND) -X -I$(COMMOND)
 
-all: $(APPS)
+APP=$(CLI)
 
-flashdl: flashdl.vala $(COMMON)
-	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
+all: $(APP)
+
+
+flashdl: flashdl.vala $(COMMONC)
+	$(VALAC) $(DOPTS) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS)
 
 clean:
 	rm -f flashdl *.vala.c *~
@@ -27,4 +29,3 @@ local: $(APPS)
 install: $(APPS)
 	install -d $(prefix)/bin
 	install -s $(APP) $(prefix)/bin/$(APP)
-	install -s $(CLI) $(prefix)/bin/$(CLI)

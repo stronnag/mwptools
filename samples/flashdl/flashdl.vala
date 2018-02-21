@@ -13,14 +13,15 @@ public class Flashdl : Object
         { "device", 'd', 0, OptionArg.STRING, out dev, "device", null},
         { "outout", 'o', 0, OptionArg.STRING, out fname, "file name", null},
         { "erase", 'e', 0,  OptionArg.NONE, out erase, "erase on completion", null},
-        { "only-erase", 'E', 0,  OptionArg.NONE, out xerase, "erase only", null},
+        { "only-erase", 0, 0,  OptionArg.NONE, out xerase, "erase only", null},
         { "info", 'i', 0,  OptionArg.NONE, out info, "just show info", null},
         { "test", 't', 0,  OptionArg.NONE, out test, "download whole flash", null},
         {null}
     };
 
+    public DevManager dmgr;
     private static MainLoop ml;
-    private MWSerial s;
+    private MWSerial msp;
     private uint32 bread = 0;
     private uint32 used;
     private uint32 fsize;
@@ -33,8 +34,6 @@ public class Flashdl : Object
 
     Flashdl()
     {
-        ml = new MainLoop();
-        s = new MWSerial();
     }
 
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, uint8 xflags, bool errs)
@@ -54,7 +53,7 @@ public class Flashdl : Object
                      case "CLFL":
                      case "BTFL":
                      case "INAV":
-                         s.send_command(MSP.Cmds.API_VERSION,null,0);
+                         msp.send_command(MSP.Cmds.API_VERSION,null,0);
                      break;
                      default:
                          MWPLog.message("Unsupported FC\n");
@@ -66,16 +65,16 @@ public class Flashdl : Object
              case MSP.Cmds.API_VERSION:
                  uint16 fc_api = raw[1] << 8 | raw[2];
                  if (fc_api >=0x0200)
-                     s.use_v2 = true;
-                 s.send_command(MSP.Cmds.BLACKBOX_CONFIG,null,0);
+                     msp.use_v2 = true;
+                 msp.send_command(MSP.Cmds.BLACKBOX_CONFIG,null,0);
                 break;
 
             case MSP.Cmds.BLACKBOX_CONFIG:
                 if (raw[0] == 1 && raw[1] == 1)  // enabled and sd flash
                     if(xerase)
-                        s.send_command(MSP.Cmds.DATAFLASH_ERASE,null,0);
+                        msp.send_command(MSP.Cmds.DATAFLASH_ERASE,null,0);
                     else
-                        s.send_command(MSP.Cmds.DATAFLASH_SUMMARY,null,0);
+                        msp.send_command(MSP.Cmds.DATAFLASH_SUMMARY,null,0);
                 else
                 {
                     MWPLog.message("No dataflash\n");
@@ -162,7 +161,7 @@ public class Flashdl : Object
                      if (erase)
                      {
                          MWPLog.message("Start erase\n");
-                         s.send_command(MSP.Cmds.DATAFLASH_ERASE,null,0);
+                         msp.send_command(MSP.Cmds.DATAFLASH_ERASE,null,0);
                      }
                      else
                          ml.quit();
@@ -179,7 +178,7 @@ public class Flashdl : Object
     {
         echeck = true;
         Timeout.add(1000, () => {
-                s.send_command(MSP.Cmds.DATAFLASH_SUMMARY,null,0);
+                msp.send_command(MSP.Cmds.DATAFLASH_SUMMARY,null,0);
                 return Source.REMOVE;
             });
     }
@@ -222,13 +221,41 @@ public class Flashdl : Object
         uint8 buf[6];
         serialise_u32(buf, addr);
         serialise_u16(buf+4, needed);
-        s.send_command(MSP.Cmds.DATAFLASH_READ,buf, 6);
+        msp.send_command(MSP.Cmds.DATAFLASH_READ,buf, 6);
     }
 
-    private int run()
+    private void init()
     {
-        string estr;
-        bool res;
+        MWPLog.set_time_format("%T");
+        ml = new MainLoop();
+        msp = new MWSerial();
+        dmgr = new DevManager(DevMask.USB);
+
+        var devs = dmgr.get_serial_devices();
+        if(devs.length == 1)
+            dev = devs[0];
+
+        if(dev != null)
+            open_device(dev);
+
+        dmgr.device_added.connect((sdev) => {
+                if(!msp.available)
+                    open_device(sdev);
+            });
+
+        dmgr.device_removed.connect((sdev) => {
+                msp.close();
+            });
+
+
+        msp.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
+                handle_serial(cmd, raw, len, xflags, errs);
+            });
+
+        msp.serial_lost.connect(() => {
+                msp.close();
+                ml.quit();
+            });
 
         Posix.signal (Posix.SIGINT, (s) => {
                 Timeout.add(100, () => {
@@ -236,45 +263,35 @@ public class Flashdl : Object
                         return Source.REMOVE;
                     });
             });
+    }
 
-        if((res = s.open(dev, baud, out estr)) == true)
+    private void open_device(string d)
+    {
+        if(!msp.available)
         {
-            s.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
-                    handle_serial(cmd, raw, len, xflags, errs);
-                });
-
-            s.serial_lost.connect(() => {
-                    s.close();
-                    ml.quit();
-                });
-
-            Timeout.add(250, () => {
-                    s.send_command(MSP.Cmds.FC_VARIANT, null, 0);
-                    return Source.REMOVE;
-                });
-
-            ml.run ();
-            return 0;
+            string estr;
+            if(msp.open(d, baud, out estr) == true)
+            {
+                MWPLog.message("Opened %s\n", d);
+                Timeout.add(250, () => {
+                        msp.send_command(MSP.Cmds.FC_VARIANT, null, 0);
+                        return Source.REMOVE;
+                    });
+            }
+            else
+            {
+                MWPLog.message("open failed %s\n", estr);
+            }
         }
-        else
-        {
-            MWPLog.message("open failed %s\n", estr);
-            return 255;
-        }
+    }
+
+    private void run()
+    {
+        ml.run ();
     }
 
     public static int main (string[] args)
     {
-        string []devs = {"/dev/ttyUSB0","/dev/ttyACM0"};
-        foreach(var d in devs)
-        {
-            if(Posix.access(d,(Posix.R_OK|Posix.W_OK)) == 0)
-            {
-                dev = d;
-                break;
-            }
-        }
-
         try {
             var opt = new OptionContext(" - iNav Flash eraser");
             opt.set_help_enabled(true);
@@ -297,11 +314,9 @@ public class Flashdl : Object
         if (args.length > 1)
             dev = args[1];
 
-        if(dev == null)
-        {
-            stdout.puts("No device found\n");
-            return 0;
-        }
-        return new Flashdl().run();
+        var f = new Flashdl();
+        f.init();
+        f.run();
+        return 0;
     }
 }

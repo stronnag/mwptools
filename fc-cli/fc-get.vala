@@ -72,11 +72,20 @@ class FCMgr :Object
 
     private void start_restore()
     {
-        FileStream fs = FileStream.open (filename, "r");
         string s;
         Fc _fc = Fc.UNKNOWN;
         lines = {};
         lp = 0;
+        FileStream fs = FileStream.open (filename, "r");
+        if(fs == null)
+        {
+            state = State.EXIT;
+            MWPLog.message("Failed to open %s\n", filename);
+            string cmd="exit\n";
+            msp.write(cmd.data, cmd.length);
+            Idle.add( () => { ml.quit(); return false;});
+            return;
+        }
 
         while((s = fs.read_line()) != null)
         {
@@ -284,7 +293,7 @@ class FCMgr :Object
 
         mode = (issetting) ? Mode.SET : Mode.GET;
 
-        dmgr = new DevManager();
+        dmgr = new DevManager(DevMask.USB);
         var devs = dmgr.get_serial_devices();
         if(devs.length == 1)
             dev = devs[0];

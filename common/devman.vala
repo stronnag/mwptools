@@ -20,7 +20,12 @@
  * valac -D TEST --pkg gio-2.0 --pkg gudev-1.0 devman-linux.vala
  */
 
-using GUdev;
+public enum DevMask {
+    USB = 1,
+    BT = 2
+}
+
+#if LINUX
 
 public class DevManager
 {
@@ -31,23 +36,28 @@ public class DevManager
     public signal void device_added (string s);
     public signal void device_removed (string s);
     private string[] bt_serials;
+    private DevMask mask;
 
-    public DevManager()
+    public DevManager(DevMask _dm=(DevMask.BT|DevMask.USB))
     {
+        mask = _dm;
         bt_serials={};
         uc = new GUdev.Client({"tty"});
         uc.uevent.connect((action,dev) => {
                 if(dev.get_property("ID_BUS") == "usb")
                 {
-                    var ds = dev.get_device_file().dup();
-                     switch (action)
+                    if((mask & DevMask.USB) != 0)
                     {
-                        case "add":
-                            device_added(ds);
-                            break;
-                        case "remove":
-                            device_removed(ds);
-                            break;
+                        var ds = dev.get_device_file().dup();
+                        switch (action)
+                        {
+                            case "add":
+                                device_added(ds);
+                                break;
+                            case "remove":
+                                device_removed(ds);
+                                break;
+                        }
                     }
                 }
             });
@@ -90,7 +100,8 @@ public class DevManager
             sb.append_c(' ');
             sb.append(props.get("Alias").get_string());
             bt_serials += sb.str;
-            device_added(sb.str);
+            if((mask & DevMask.BT) != 0)
+                device_added(sb.str);
         }
     }
 
@@ -469,6 +480,31 @@ public class BluezDevice : BluezInterface {
     }
 
 }
+
+#else
+public class DevManager
+{
+    private string []empty_devs;
+    public signal void device_added (string s);
+    public signal void device_removed (string s);
+
+    public DevManager()
+    {
+        empty_devs={};
+    }
+
+    public string[] get_bt_serial_devices()
+    {
+        return empty_devs;
+    }
+
+    public string[] get_serial_devices()
+    {
+        return empty_devs;
+    }
+}
+
+#endif
 
 #if TEST
 public int main(string?[] args)
