@@ -489,7 +489,7 @@ public class DevManager
     public signal void device_removed (string s);
     private DevMask mask;
 
-    public DevManager(DevMask _dm=(DevMask.BT|DevMask.USB)
+    public DevManager(DevMask _dm=(DevMask.BT|DevMask.USB))
     {
         mask = _dm;
         empty_devs={};
