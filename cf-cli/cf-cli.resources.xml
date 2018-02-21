@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<gresources>
-  <gresource prefix="/org/mwptools/cf-cli">
-    <file>cf-cli.svg</file>
-    <file compressed="true">cf-cli.ui</file>
-  </gresource>
-</gresources>
