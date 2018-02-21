@@ -87,7 +87,7 @@ class FCMgr :Object
             if(s.has_prefix("# INAV"))
                 _fc = Fc.INAV;
 
-            if(lines.has_prefix("feature TRACE") && noback == false)
+            if(s.has_prefix("feature TRACE") && noback == false)
             {
                 MWPLog.message("removing \"feature TRACE\"\n");
                 continue;
