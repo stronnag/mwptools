@@ -21,9 +21,9 @@ using Xml;
 
 class LayReader : Object
 {
-    public int ncount;
-    public int read_xml_file(string path)
+    public static int read_xml_file(string path)
     {
+        int ncount  = 0;
         Parser.init ();
         Xml.Doc* doc = Parser.parse_file (path);
         if (doc == null)
@@ -36,7 +36,7 @@ class LayReader : Object
         {
             if (root->name.down() == "dock-layout")
             {
-                parse_node (root);
+                parse_node (root, ref ncount);
             }
         }
         delete doc;
@@ -44,7 +44,7 @@ class LayReader : Object
         return ncount;
     }
 
-    private void parse_node (Xml.Node* node)
+    private static void parse_node (Xml.Node* node, ref int ncount)
     {
         for (Xml.Node* iter = node->children; iter != null; iter = iter->next)
         {
@@ -64,7 +64,7 @@ class LayReader : Object
                                 if(attr_content == "mwp")
                                 {
                                     ncount = 0;
-                                    parse_node(iter);
+                                    parse_node(iter, ref ncount);
                                 }
                                 break;
                         }
@@ -72,7 +72,7 @@ class LayReader : Object
                     break;
                 case "dock":
                 case "paned":
-                    parse_node(iter);
+                    parse_node(iter, ref ncount);
                     break;
 
                 case "item":
@@ -89,18 +89,19 @@ class LayMan : Object
     private DockLayout layout;
     private string confdir;
     private string layname {get; set; default = ".layout";}
+    private int icount;
 
     public LayMan (Dock dock, string _confdir, string? name, int count)
     {
+        icount = count;
         layout = new DockLayout (dock.master);
         confdir = _confdir;
-        var xtest = new LayReader();
 
         foreach (var s in get_layout_names(confdir))
         {
             var fn = getfile(s);
             int nc;
-            if((nc = xtest.read_xml_file(fn)) != count)
+            if((nc = LayReader.read_xml_file(fn)) != count)
             {
                 Posix.unlink(fn);
                 MWPLog.message("Removing %s %d\n",fn,nc);
@@ -117,7 +118,6 @@ class LayMan : Object
             name = layname;
         StringBuilder sb = new StringBuilder(name);
         sb.append(".xml");
-//        stderr.printf("getfile() %s\n", sb.str);
         return GLib.Path.build_filename(confdir,sb.str);
     }
 
@@ -134,7 +134,25 @@ class LayMan : Object
         {
             layout.save_layout("mwp");
         }
-        layout.save_to_file(getfile());
+        try {
+            string of;
+            var fd = FileUtils.open_tmp(".mwp.XXXXXX.xml", out of);
+            FileUtils.close(fd);
+            layout.save_to_file(of);
+            if(LayReader.read_xml_file(of) == icount)
+            {
+                string fn = getfile();
+                string lxml;
+                FileUtils.get_contents(of, out lxml);
+                FileUtils.set_contents(fn, lxml);
+                FileUtils.remove(of);
+            }
+            else
+            {
+                MWPLog.message("Failed to save layout, remains in %s\n",
+                               of);
+            }
+        } catch {}
     }
 
     public void save ()
@@ -231,20 +249,10 @@ class LayMan : Object
         box.show_all ();
         var response = dialog.run ();
         if (response == ResponseType.OK) {
-//            stderr.printf("load %s\n", id);
             layname = id;
             load_init();
         }
         dialog.destroy ();
         return id;
     }
-/****
-    public void remove ()
-    {
-    }
-
-    public void clear ()
-    {
-    }
-***/
 }
