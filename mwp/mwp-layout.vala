@@ -17,6 +17,72 @@
 
 using Gtk;
 using Gdl;
+using Xml;
+
+class LayReader : Object
+{
+    public int ncount;
+    public int read_xml_file(string path)
+    {
+        Parser.init ();
+        Xml.Doc* doc = Parser.parse_file (path);
+        if (doc == null)
+        {
+            stderr.printf ("File %s not found or permissions missing\n", path);
+            return -1;
+        }
+        Xml.Node* root = doc->get_root_element ();
+        if (root != null)
+        {
+            if (root->name.down() == "dock-layout")
+            {
+                parse_node (root);
+            }
+        }
+        delete doc;
+        Parser.cleanup();
+        return ncount;
+    }
+
+    private void parse_node (Xml.Node* node)
+    {
+        for (Xml.Node* iter = node->children; iter != null; iter = iter->next)
+        {
+            if (iter->type != ElementType.ELEMENT_NODE)
+            {
+                continue;
+            }
+            switch(iter->name.down())
+            {
+                case  "layout":
+                    for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next)
+                    {
+                        string attr_content = prop->children->content;
+                        switch( prop->name)
+                        {
+                            case "name":
+                                if(attr_content == "mwp")
+                                {
+                                    ncount = 0;
+                                    parse_node(iter);
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case "dock":
+                case "paned":
+                    parse_node(iter);
+                    break;
+
+                case "item":
+                    ncount++;
+                    break;
+            }
+        }
+    }
+}
+
 
 class LayMan : Object
 {
@@ -28,7 +94,7 @@ class LayMan : Object
     {
         layout = new DockLayout (dock.master);
         confdir = _confdir;
-        var xtest = new LayoutTester();
+        var xtest = new LayReader();
 
         foreach (var s in get_layout_names(confdir))
         {
