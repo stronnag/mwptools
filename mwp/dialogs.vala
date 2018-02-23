@@ -688,6 +688,7 @@ public class SetPosDialog : GLib.Object
     {
         dms = _dms;
         pls = _pls;
+        pcombo.remove_all();
         foreach(var l in pls)
             pcombo.append_text(l.name);
 

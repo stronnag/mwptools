@@ -1180,6 +1180,9 @@ public class MWPlanner : Gtk.Application {
                 conf.longitude = view.get_center_longitude();
                 conf.zoom = view.get_zoom_level();
                 conf.save_settings();
+                pls[0].lat = conf.latitude;
+                pls[0].lon = conf.longitude;
+                setpos.load_places(pls,conf.dms);
             });
         window.add_action(saq);
 
@@ -5811,6 +5814,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 if (chg == true)
                     map_centre_on(cy, cx);
+                zoomer.set_range(mmin, mmax);
             });
     }
 

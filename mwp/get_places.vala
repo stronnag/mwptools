@@ -7,6 +7,13 @@ public class Places :  GLib.Object
         double lon;
     }
 
+    private enum PFmt
+    {
+        CSV,
+        JSON
+    }
+
+    private PFmt pfmt;
     private PosItem[]pls = {};
     private const string DELIMS="\t|;:,";
 
@@ -62,14 +69,16 @@ public class Places :  GLib.Object
     public PosItem[] get_places(double dlat,double dlon)
     {
         string? fn;
+        pfmt = PFmt.CSV;
         pls +=  PosItem(){name="Default", lat=dlat, lon=dlon};
-
-        fn = MWPUtils.find_conf_file("places.json");
-        if(fn != null)
-            parse_json(fn);
-        else if((fn = MWPUtils.find_conf_file("places")) != null)
+        if((fn = MWPUtils.find_conf_file("places")) != null)
         {
             parse_delim(fn);
+        }
+        else if ((fn = MWPUtils.find_conf_file("places.json")) != null)
+        {
+            pfmt = PFmt.JSON;
+            parse_json(fn);
         }
         return pls;
     }
