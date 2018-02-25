@@ -26,8 +26,10 @@ public class MWPMarkers : GLib.Object
     public Champlain.MarkerLayer rlayer;
     public Champlain.Marker homep = null;
     public Champlain.Marker rthp = null;
+    public Champlain.Marker ipos = null;
     public Champlain.Point posring = null;
     public Champlain.PathLayer hpath;
+    public Champlain.PathLayer ipath;
     private Champlain.PathLayer []rings;
     private bool rth_land;
 
@@ -38,10 +40,12 @@ public class MWPMarkers : GLib.Object
         rlayer = new Champlain.MarkerLayer();
         path = new Champlain.PathLayer();
         hpath = new Champlain.PathLayer();
+        ipath = new Champlain.PathLayer();
 
         view.add_layer(rlayer);
         view.add_layer(path);
         view.add_layer(hpath);
+        view.add_layer(ipath);
         view.add_layer(markers);
 
         List<uint> llist = new List<uint>();
@@ -55,6 +59,10 @@ public class MWPMarkers : GLib.Object
         Clutter.Color rcol = {0xff, 0x0, 0x0, 0x80};
         path.set_stroke_color(rcol);
         path.set_stroke_width (8);
+
+        ipath.set_stroke_color(rcol);
+        ipath.set_dash(llist);
+        ipath.set_stroke_width (8);
 
         var colour = Color.from_string(mkcol);
         posring = new Champlain.Point.full(80.0, colour);
@@ -127,41 +135,55 @@ public class MWPMarkers : GLib.Object
         text = "%s %s".printf(symb, no);
     }
 
-    public bool calc_rth_leg(out double extra)
+    private double calc_extra_leg(Champlain.PathLayer p)
     {
-        bool res;
-        if(res = (homep != null && rthp != null))
+        List<weak Champlain.Location> m= p.get_nodes();
+        double extra = 0.0;
+        if(homep != null)
         {
             double cse;
-            Geo.csedist(homep.latitude, homep.longitude,
-                        rthp.latitude, rthp.longitude,
+            Champlain.Location lp0 = m.first().data;
+            Champlain.Location lp1 = m.last().data;
+
+            Geo.csedist(lp0.get_latitude(), lp0.get_longitude(),
+                        lp1.get_latitude(), lp1.get_longitude(),
                         out extra, out cse);
         }
-        else
-        {
-            extra = 0.0;
-        }
-        return res;
+        return extra;
     }
 
-    public void add_rth_point(double lat, double lon, ListBox l)
+    public void add_home_point(double lat, double lon, ListBox l)
     {
         if(homep == null)
         {
-            double extra;
             homep = new  Champlain.Marker();
             homep.set_location (lat,lon);
             hpath.add_node(homep);
-            if(calc_rth_leg(out extra))
-                l.calc_mission(extra);
         }
         else
         {
             homep.set_location (lat,lon);
         }
+        calc_extra_distances(l);
     }
 
-    private uint find_rth_pos(out double lat, out double lon, bool ind = false)
+    void calc_extra_distances(ListBox l)
+    {
+        double extra = 0.0;
+        if(homep != null)
+        {
+            if(ipos != null)
+                extra = calc_extra_leg(ipath);
+
+            if(rthp != null)
+            {
+                extra += calc_extra_leg(hpath);
+            }
+        }
+        l.calc_mission(extra);
+    }
+
+    private uint find_rth_pos(out double lat, out double lon)
     {
         List<weak Champlain.Location> m= path.get_nodes();
         if(m.length() > 0)
@@ -176,29 +198,54 @@ public class MWPMarkers : GLib.Object
         return m.length();
     }
 
-    private void update_rth_base(ListBox l)
+    public void update_ipos(ListBox l, double lat, double lon)
+    {
+        if(ipos == null)
+        {
+            List<weak Champlain.Location> m= path.get_nodes();
+            if(m.length() > 0)
+            {
+                Champlain.Location lp = m.first().data;
+                var ip0 =  new  Champlain.Point();
+                ip0.latitude = lp.latitude;
+                ip0.longitude = lp.longitude;
+                ipath.add_node(ip0);
+                ipos =  new  Champlain.Point();
+                ipos.set_location(lat, lon);
+                ipath.add_node(ipos);
+            }
+            calc_extra_distances(l);
+        }
+    }
+
+    public void negate_ipos()
+    {
+        ipath.remove_all();
+        ipos = null;
+    }
+
+    private void update_rth (ListBox l)
     {
         double lat,lon;
-        if(rthp == null)
+        uint irth = find_rth_pos(out lat, out lon);
+
+        if(irth != 0)
         {
-            double extra;
-            if(0 != find_rth_pos(out lat, out lon, true))
+            if(rthp == null)
             {
                 rthp = new  Champlain.Marker();
                 rthp.set_location (lat,lon);
                 hpath.add_node(rthp);
-                if(calc_rth_leg(out extra))
-                    l.calc_mission(extra);
             }
-        }
-        else
-        {
-            if (0 != find_rth_pos(out lat, out lon))
+            else
+            {
                 rthp.set_location (lat,lon);
+            }
+            calc_extra_distances(l);
         }
     }
 
-    public void negate_rth()
+    public void negate_home()
     {
         if(homep != null)
         {
@@ -258,7 +305,11 @@ public class MWPMarkers : GLib.Object
         string text;
         Clutter.Color colour;
         Clutter.Color black = { 0,0,0, 0xff };
+        Clutter.Color near_black = { 0x40,0x40,0x40, 0xa0 };
+        Clutter.Color white = { 0xff,0xff,0xff, 0xff };
         Gtk.TreeIter ni;
+
+        var ino = int.parse(no);
 
         bool nrth = l.wp_has_rth(iter, out ni);
 
@@ -277,6 +328,7 @@ public class MWPMarkers : GLib.Object
         marker.set_selectable(true);
         marker.set_flags(ActorFlags.REACTIVE);
         markers.add_marker (marker);
+
         if (rth == false)
         {
             if(typ != MSP.Action.SET_POI)
@@ -285,9 +337,38 @@ public class MWPMarkers : GLib.Object
 
         ls.set_value(iter,ListBox.WY_Columns.MARKER,marker);
 
+        var txt = new Clutter.Text.full ("Sans 9", "", white);
+        txt.set_background_color(near_black);
+        txt.line_wrap = true;
+
         marker.button_press_event.connect((e) => {
+                Idle.add(() => {txt.set_text(null); return false;
+                    });
                 if(e.button == 3)
                     l.set_popup_needed(iter);
+                return false;
+            });
+
+        marker.enter_event.connect((ce) => {
+                var s = l.get_marker_tip(ino);
+                if(s == null)
+                    s = "RTH";
+
+                Timeout.add(500, () => {
+                        if(marker.get_has_pointer ())
+                        {
+                            txt.text = s;
+                            if(txt.get_parent() == null)
+                                marker.add_child(txt);
+                        }
+                        return false;
+                    });
+                return false;
+            });
+
+        marker.leave_event.connect((ce) => {
+                if(txt.get_parent() == marker)
+                    marker.remove_child(txt);
                 return false;
             });
 
@@ -296,20 +377,20 @@ public class MWPMarkers : GLib.Object
                 ls.get_value (iter, ListBox.WY_Columns.ACTION, out val);
                 if(val == MSP.Action.UNASSIGNED)
                 {
-                    string txt;
+                    string mtxt;
                     Clutter.Color col;
                     var act = MSP.Action.WAYPOINT;
                     ls.set_value (iter, ListBox.WY_Columns.TYPE, MSP.get_wpname(act));
                     ls.set_value (iter, ListBox.WY_Columns.ACTION, act);
-                    get_text_for(act, no, out txt, out col);
+                    get_text_for(act, no, out mtxt, out col);
                     marker.set_color (col);
-                    marker.set_text(txt);
+                    marker.set_text(mtxt);
                 }
                 ls.set_value(iter, ListBox.WY_Columns.LAT, marker.get_latitude());
                 ls.set_value(iter, ListBox.WY_Columns.LON, marker.get_longitude() );
-                double extra;
-                calc_rth_leg(out extra);
-                l.calc_mission(extra);
+                calc_extra_distances(l);
+                if(txt.get_parent() == marker)
+                    txt.text = l.get_marker_tip(ino);
             } );
 
         return (Champlain.Marker)marker;
@@ -332,7 +413,7 @@ public class MWPMarkers : GLib.Object
             {
                 case MSP.Action.RTH:
                     rth = true;
-                    update_rth_base(l);
+                    update_rth(l);
                     if(mk != null)
                     {
                         add_rth_motion(mk);
@@ -355,6 +436,7 @@ public class MWPMarkers : GLib.Object
                     break;
             }
         }
+        calc_extra_distances(l);
     }
     private void add_rth_motion(Champlain.Marker lp)
     {
@@ -392,6 +474,7 @@ public class MWPMarkers : GLib.Object
         markers.remove_all();
         path.remove_all();
         hpath.remove_all();
-        homep = rthp = null;
+        ipath.remove_all();
+        homep = rthp = ipos = null;
     }
 }

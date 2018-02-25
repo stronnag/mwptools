@@ -99,6 +99,25 @@ public class ListBox : GLib.Object
         marker_menu.show_all();
     }
 
+    public string get_marker_tip(int ino)
+    {
+        StringBuilder sb = new StringBuilder("WP ");
+        Value cell;
+        Gtk.TreeIter iter;
+        var path = new Gtk.TreePath.from_indices (ino - 1);
+        list_model.get_iter(out iter, path);
+        list_model.get_value (iter, WY_Columns.IDX, out cell);
+        sb.append((string)cell);
+        list_model.get_value (iter, WY_Columns.ALT, out cell);
+        sb.append(": Alt ");
+        sb.append(((int)cell).to_string());
+        sb.append("m ");
+        list_model.get_value (iter, WY_Columns.TIP, out cell);
+        if((string)cell != null)
+            sb.append((string)cell);
+        return sb.str;
+    }
+
     public void pop_marker_menu(Gdk.EventButton e)
     {
         if(miter_ok)
@@ -1388,13 +1407,13 @@ public class ListBox : GLib.Object
         lt = 0;
 
         var nsize = arry.length;
-
         if (nsize > 0)
         {
             do
             {
                 var typ = arry[n].action;
                 var p1 = arry[n].param1;
+
                 if(typ == MSP.Action.JUMP && arry[n].param2 == -1)
                 {
                     d = 0.0;
@@ -1418,19 +1437,17 @@ public class ListBox : GLib.Object
                        continue;
                     }
                     Geo.csedist(ly,lx,cy,cx, out dx, out cse);
-
                     double ltim = (1852.0*dx) / lspd;
 
                     Value cell;
                     Gtk.TreeIter xiter;
                     var path = new Gtk.TreePath.from_indices (arry[lastn].no - 1);
                     list_model.get_iter(out xiter, path);
-
                     list_model.get_value (xiter, WY_Columns.TIP, out cell);
                     if((string)cell == null)
                     {
-                        string hint; // CVT
-                        hint = "Dist %.1f%s, to WP %d => %.1f%s, %.0f° %.0fs".printf(
+                        var hint = "Dist %.1f%s, to WP %d => %.1f%s, %.0f° %.0fs".
+                        printf(
                             Units.distance(d*1852),
                             Units.distance_units(),
                             arry[n].no,
@@ -1442,6 +1459,23 @@ public class ListBox : GLib.Object
 
                     d += dx;
                     lastn = n;
+
+                    if(n == nsize -1)
+                    {
+                        var next=list_model.iter_next(ref xiter);
+                        if(next)
+                        {
+                            list_model.get_value (xiter, WY_Columns.TIP, out cell);
+                            if((string)cell == null)
+                            {
+                                var hint = "Dist %.1f%s".printf(
+                                    Units.distance(d*1852),
+                                    Units.distance_units());
+                                list_model.set_value (xiter, WY_Columns.TIP, hint);
+                            }
+                        }
+                    }
+
                     if (typ == MSP.Action.POSHOLD_TIME)
                     {
                         lt += arry[n].param1;

@@ -2544,7 +2544,8 @@ public class MWPlanner : Gtk.Application {
     private void init_have_home()
     {
         have_home = false;
-        markers.negate_rth();
+        markers.negate_home();
+        ls.calc_mission(0);
         home_pos.lat = 0;
         home_pos.lon = 0;
         xlon = 0;
@@ -2704,10 +2705,7 @@ public class MWPlanner : Gtk.Application {
 
     private void map_show_wp(string text)
     {
-        if(text.get_char() == '<')
-            clutextg.set_markup(text);
-        else
-            clutextg.set_text(text);
+        clutextg.set_markup(text);
         map_clean = false;
     }
 
@@ -2856,6 +2854,7 @@ public class MWPlanner : Gtk.Application {
                 MWPLog.message("Disarmed %s\n", reason);
                 armed_spinner.stop();
                 armed_spinner.hide();
+                markers.negate_ipos();
                 duration = -1;
                 armtime = 0;
                 want_special = 0;
@@ -4045,9 +4044,18 @@ public class MWPlanner : Gtk.Application {
                                             ns.wp_number != last_nwp))
                     {
                         ls.raise_wp(ns.wp_number);
-                        var spt = (ns.wp_number == NavStatus.nm_pts) ?
-                            "<small>RTH</small>" :
-                            ns.wp_number.to_string();
+                        string spt;
+                        if(ns.wp_number == NavStatus.nm_pts)
+                            spt = "<span size=\"x-small\">RTH</span>";
+                        else
+                        {
+                            StringBuilder sb = new StringBuilder(ns.wp_number.to_string());
+                            if(NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255)
+                            {
+                                sb.append_printf("<span size=\"xx-small\">/%u</span>", NavStatus.nm_pts);
+                            }
+                            spt = sb.str;
+                        }
                         map_show_wp(spt);
                     }
                     else if (ns.gps_mode != 3 && last_nmode == 3)
@@ -4674,7 +4682,9 @@ public class MWPlanner : Gtk.Application {
                     if(ltmflags == 9)
                         want_special |= POSMODE.PH;
                     else if(ltmflags == 10)
+                    {
                         want_special |= POSMODE.WP;
+                    }
                     else if(ltmflags == 13)
                         want_special |= POSMODE.RTH;
                     else if(ltmflags != 15)
@@ -5021,8 +5031,7 @@ public class MWPlanner : Gtk.Application {
             home_pos.lat = xlat = lat;
             home_pos.lon = xlon = lon;
             home_pos.alt = alt;
-            if(ls.have_rth)
-                markers.add_rth_point(lat,lon,ls);
+            markers.add_home_point(lat,lon,ls);
             init_craft_icon();
             if(craft != null)
             {
@@ -5076,6 +5085,9 @@ public class MWPlanner : Gtk.Application {
             init_craft_icon();
             if(craft != null)
                 craft.special_wp(Craft.Special.WP, lat, lon);
+            markers.update_ipos(ls, lat, lon);
+            if(replayer == Player.MWP && (NavStatus.nm_pts == 0 || NavStatus.nm_pts == 255))
+                NavStatus.nm_pts = (uint8)ls.lastid+1;
         }
     }
 
@@ -6097,11 +6109,9 @@ public class MWPlanner : Gtk.Application {
 
         view.zoom_level =  ms.zoom;
         markers.add_list_store(ls);
-        if(replayer == Player.MWP)
-            NavStatus.nm_pts = (uint8)ms.npoints;
 
-        if(have_home && ls.have_rth)
-            markers.add_rth_point(home_pos.lat,home_pos.lon,ls);
+        if(have_home)
+            markers.add_home_point(home_pos.lat,home_pos.lon,ls);
         need_preview = true;
     }
 
