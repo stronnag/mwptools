@@ -21,16 +21,16 @@ using Clutter;
 
 public class MWPMarkers : GLib.Object
 {
-    public Champlain.PathLayer path;
-    public Champlain.MarkerLayer markers;
-    public Champlain.MarkerLayer rlayer;
-    public Champlain.Marker homep = null;
-    public Champlain.Marker rthp = null;
-    public Champlain.Marker ipos = null;
-    public Champlain.Point posring = null;
-    public Champlain.PathLayer hpath;
-    public Champlain.PathLayer ipath;
-    private Champlain.PathLayer []rings;
+    public Champlain.PathLayer path;                     // Mission outline
+    public Champlain.MarkerLayer markers;                // Mission Markers
+    public Champlain.MarkerLayer rlayer;                 // Next WP pos layer
+    public Champlain.Marker homep = null;                // Home position (just a location)
+    public Champlain.Marker rthp = null;                 // RTH mission position
+    public Champlain.Marker ipos = null;                 // Mission initiation point
+    public Champlain.Point posring = null;               // next WP indication point
+    public Champlain.PathLayer hpath;                    // planned path from RTH WP to home
+    public Champlain.PathLayer ipath;                    // path from WP initiate to WP1
+    private Champlain.PathLayer []rings;                 // range rings layers (per radius)
     private bool rth_land;
 
     public MWPMarkers(ListBox lb, Champlain.View view, string mkcol ="#ffffff60")

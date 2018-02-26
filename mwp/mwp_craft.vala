@@ -16,6 +16,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+
+/* Layer usage
+   path     : craft movement (grey path, coloured dots)
+   layer    : craft icon
+   pmlayer  : special points (home, RTH, WP start)
+   hmlayer  : home position marker
+*/
+
 using Gtk;
 using Clutter;
 using Champlain;
@@ -135,6 +143,14 @@ public class Craft : GLib.Object
         return sb.str;
     }
 */
+
+    public void adjust_z_order(Champlain.Layer l)
+    {
+         var pp = l.get_parent();
+         pp.set_child_above_sibling(l, path);
+         pp.set_child_above_sibling(l, pmlayer);
+    }
+
     public Craft(Champlain.View _view, uint id, bool _norotate = false, bool _trail = true, int _ss = 0, int _mp = 0)
     {
         stack_size = _ss;
@@ -196,6 +212,7 @@ public class Craft : GLib.Object
     {
         layer.remove_marker(icon);
     }
+
 
     public static bool is_fw(uint id)
     {

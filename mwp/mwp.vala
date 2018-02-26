@@ -2584,6 +2584,7 @@ public class MWPlanner : Gtk.Application {
             craft = new Craft(view, vi.mrtype,norotate, !no_trail,
                               stack_size, mod_points);
             craft.park();
+            craft.adjust_z_order(markers.markers);
         }
     }
 
