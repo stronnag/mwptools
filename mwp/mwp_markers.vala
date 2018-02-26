@@ -342,8 +342,7 @@ public class MWPMarkers : GLib.Object
         txt.line_wrap = true;
 
         marker.button_press_event.connect((e) => {
-                Idle.add(() => {txt.set_text(null); return false;
-                    });
+//                Idle.add(() => {txt.set_text(null); return false; });
                 if(e.button == 3)
                     l.set_popup_needed(iter);
                 return false;
@@ -370,6 +369,20 @@ public class MWPMarkers : GLib.Object
                 if(txt.get_parent() == marker)
                     marker.remove_child(txt);
                 return false;
+            });
+
+        uint move_time = 0;
+        marker.drag_motion.connect((dx,dy,evt) => {
+                if(evt.get_time() - move_time > 20)
+                {
+                    if(txt.get_parent() == marker)
+                    {
+                        ls.set_value(iter, ListBox.WY_Columns.LAT, marker.get_latitude());
+                        ls.set_value(iter, ListBox.WY_Columns.LON, marker.get_longitude() );
+                        calc_extra_distances(l);
+                        txt.set_text(l.get_marker_tip(ino));
+                    }
+                }
             });
 
         ((Champlain.Marker)marker).drag_finish.connect(() => {
