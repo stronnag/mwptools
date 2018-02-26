@@ -340,7 +340,6 @@ public class MWPMarkers : GLib.Object
         var txt = new Clutter.Text.full ("Sans 9", "", white);
         txt.set_background_color(near_black);
         txt.line_wrap = true;
-
         marker.button_press_event.connect((e) => {
 //                Idle.add(() => {txt.set_text(null); return false; });
                 if(e.button == 3)
@@ -350,6 +349,10 @@ public class MWPMarkers : GLib.Object
 
         marker.enter_event.connect((ce) => {
                 var s = l.get_marker_tip(ino);
+                txt.set_x(-56);
+                txt.set_y(s.length > 32 ? -32 : -16);
+
+
                 if(s == null)
                     s = "RTH";
 

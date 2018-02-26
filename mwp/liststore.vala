@@ -115,7 +115,8 @@ public class ListBox : GLib.Object
         list_model.get_value (iter, WY_Columns.TIP, out cell);
         if((string)cell != null)
             sb.append((string)cell);
-        return sb.str;
+        string s = sb.str;
+        return s.replace(", to", "\nto");
     }
 
     public void pop_marker_menu(Gdk.EventButton e)
