@@ -341,7 +341,6 @@ public class MWPMarkers : GLib.Object
         txt.set_background_color(near_black);
         txt.line_wrap = true;
         marker.button_press_event.connect((e) => {
-//                Idle.add(() => {txt.set_text(null); return false; });
                 if(e.button == 3)
                     l.set_popup_needed(iter);
                 return false;
@@ -349,9 +348,6 @@ public class MWPMarkers : GLib.Object
 
         marker.enter_event.connect((ce) => {
                 var s = l.get_marker_tip(ino);
-                txt.set_x(-56);
-                txt.set_y(s.length > 32 ? -32 : -16);
-
 
                 if(s == null)
                     s = "RTH";
@@ -359,9 +355,33 @@ public class MWPMarkers : GLib.Object
                 Timeout.add(500, () => {
                         if(marker.get_has_pointer ())
                         {
+                            marker.get_parent().set_child_above_sibling(marker,null);
                             txt.text = s;
                             if(txt.get_parent() == null)
                                 marker.add_child(txt);
+
+                            float w=0,h=0;
+                            float y;
+                            int p;
+                            int n = 1;
+
+                            bool b = false;
+                            if((p = s.index_of_char('\n')) != -1)
+                                n = 2;
+                            else
+                                p = s.length-1;
+
+                            if(p != -1)
+                                b = txt.position_to_coords (p,
+                                                            out w,
+                                                            out y,
+                                                            out h);
+                            if(b == false)
+                                txt.get_size(out w, out h);
+                            w = -w /2 + 10;
+                            h = -(h*n);
+                            txt.set_x(w);
+                            txt.set_y(h);
                         }
                         return false;
                     });
