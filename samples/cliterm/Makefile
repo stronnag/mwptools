@@ -35,6 +35,9 @@ mspcommon: mspcommon.vala $(COMMONC)
 vxtest: vxtest.vala $(COMMONC)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
+rxtest: rxtest.vala $(COMMONC)
+	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
+
 xcliterm: xcliterm-main.vala $(COMMOND)/cliterm.vala $(COMMONC)
 	$(VALAC) $(OPTS) $(PKGS) $(PKGSV) -o $@  $^ $(LOPTS)
 

@@ -112,37 +112,39 @@ public class FlatEarth : GLib.Object
             GridSet gps = {};
             MissionItem []wps = ms.get_ways();
 
-            gps.xmin = gps.ymin = 999;
-            gps.xmax = gps.ymax = -999;
-
-            LLPos origin= {wps[0].lat, wps[0].lon};
-            set_origin (origin);
-
-            foreach (var wp in wps)
+            if(wps.length > 0)
             {
-                if(wp.action != MSP.Action.WAYPOINT &&
-                   wp.action != MSP.Action.POSHOLD_UNLIM &&
-                   wp.action != MSP.Action.POSHOLD_TIME)
-                    continue;
-                wpos.lat = wp.lat;
-                wpos.lon = wp.lon;
-                gp = geo_to_flatearth(wpos);
-                gp.x *= 1000000;
-                gp.y *= 1000000;
-                gpa += gp;
-                if(gp.x < gps.xmin)
-                    gps.xmin = gp.x;
-                if(gp.x > gps.xmax)
-                    gps.xmax = gp.x;
-                if(gp.y < gps.ymin)
-                    gps.ymin = gp.y;
-                if(gp.y > gps.ymax)
-                    gps.ymax = gp.y;
+                gps.xmin = gps.ymin = 999;
+                gps.xmax = gps.ymax = -999;
+                LLPos origin= {wps[0].lat, wps[0].lon};
+                set_origin (origin);
+
+                foreach (var wp in wps)
+                {
+                    if(wp.action != MSP.Action.WAYPOINT &&
+                       wp.action != MSP.Action.POSHOLD_UNLIM &&
+                       wp.action != MSP.Action.POSHOLD_TIME)
+                        continue;
+                    wpos.lat = wp.lat;
+                    wpos.lon = wp.lon;
+                    gp = geo_to_flatearth(wpos);
+                    gp.x *= 1000000;
+                    gp.y *= 1000000;
+                    gpa += gp;
+                    if(gp.x < gps.xmin)
+                        gps.xmin = gp.x;
+                    if(gp.x > gps.xmax)
+                        gps.xmax = gp.x;
+                    if(gp.y < gps.ymin)
+                        gps.ymin = gp.y;
+                    if(gp.y > gps.ymax)
+                        gps.ymax = gp.y;
+                }
+                gps.points = gpa;
+                gps.xrange = gps.xmax - gps.xmin;
+                gps.yrange = gps.ymax - gps.ymin;
+                spixb = conspire(gps, width, height);
             }
-            gps.points = gpa;
-            gps.xrange = gps.xmax - gps.xmin;
-            gps.yrange = gps.ymax - gps.ymin;
-            spixb = conspire(gps, width, height);
         }
         return spixb;
     }

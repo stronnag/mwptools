@@ -5982,8 +5982,13 @@ public class MWPlanner : Gtk.Application {
 
     public Mission? open_mission_file(string fn)
     {
+        Mission m=null;
         bool is_j = fn.has_suffix(".json");
-        return (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+        m =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+        if(m != null && m.npoints > 0)
+            return m;
+        else
+            return null;
     }
 
     private void on_file_save_as ()
@@ -6212,7 +6217,7 @@ public class MWPlanner : Gtk.Application {
                         }
                         catch {
                             if (FileUtils.test (fn, FileTest.EXISTS))
-                            pixbuf = FlatEarth.getpixbuf(fn, 256, 256);
+                                pixbuf = FlatEarth.getpixbuf(fn, 256, 256);
                         }
                     }
                 }

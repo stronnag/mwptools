@@ -18,7 +18,12 @@ public class JsonIO : Object
                 ms = new Mission();
                 var parser = new Json.Parser ();
                 parser.load_from_data (s);
-                var obj = parser.get_root ().get_object ();
+
+                Json.Node root = parser.get_root ();
+                Json.Object obj = null;
+                if(root!= null && !root.is_null())
+                    obj = root.get_object ();
+                if(obj != null)
                 foreach (var name in obj.get_members ())
                 {
                     switch (name)
