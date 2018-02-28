@@ -1443,6 +1443,8 @@ public class MWPlanner : Gtk.Application {
                     zoomer.adjustment.value = (int)val;
 
                 get_map_size();
+                if(craft != null && (!msp.available || !gpsfix))
+                    craft.park();
             });
 
         zoomer.adjustment.value_changed.connect (() =>

@@ -273,7 +273,7 @@ public class ListBox : GLib.Object
                 w.wp_no = n;
                 if(fixwing && (typ == MSP.Action.RTH))
                 {
-                    MWPLog.message("Remove Land from WP RTH\n");
+                    MWPLog.message("Remove Land from FW WP RTH\n");
                     w.p1 = 0;
                     mp.markers.set_rth_icon(false);
                 }
