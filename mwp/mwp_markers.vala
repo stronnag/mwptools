@@ -67,6 +67,7 @@ public class MWPMarkers : GLib.Object
         var colour = Color.from_string(mkcol);
         posring = new Champlain.Point.full(80.0, colour);
         rlayer.add_marker(posring);
+        posring.hide();
     }
 
     public void set_rth_icon(bool iland)

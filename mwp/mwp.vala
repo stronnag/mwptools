@@ -5306,6 +5306,7 @@ public class MWPlanner : Gtk.Application {
 
         if(wps.length == 0)
         {
+/**********
             if(inav)
             {
                 if((flag & WPDL.CALLBACK) != 0)
@@ -5315,11 +5316,13 @@ public class MWPlanner : Gtk.Application {
                 return;
             }
             else
+***********/
             {
                 MSP_WP w0 = MSP_WP();
                 w0.wp_no = 1;
                 w0.action =  MSP.Action.RTH;
-                w0.lat = w0.lon = 0;
+                w0.lat = 0;
+                w0.lon = 0;
                 w0.altitude = 25;
                 w0.p1 = 0;
                 w0.p2 = w0.p3 = 0;
