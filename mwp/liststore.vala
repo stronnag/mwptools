@@ -492,6 +492,8 @@ public class ListBox : GLib.Object
 
     public void create_view(MWPlanner _mp)
     {
+        MWPlanner.SERSTATE ss = MWPlanner.SERSTATE.NONE;
+
         make_menu();
 
         mp = _mp;
@@ -585,7 +587,13 @@ public class ListBox : GLib.Object
             });
 
         cell.set_property ("editable", true);
+        cell.editing_started.connect((e,p) => {
+                ss = mp.get_serstate();
+                mp.set_serstate(MWPlanner.SERSTATE.NONE);
+            });
+
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
+                mp.set_serstate(ss);
                 list_validate(path,new_text,
                               WY_Columns.LAT,-90.0,90.0,false);
             });
@@ -606,11 +614,16 @@ public class ListBox : GLib.Object
 
         cell.set_property ("editable", true);
 
+        cell.editing_started.connect((e,p) => {
+                ss = mp.get_serstate();
+                mp.set_serstate(MWPlanner.SERSTATE.NONE);
+            });
+
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
+                mp.set_serstate(ss);
                 list_validate(path,new_text,
                               WY_Columns.LON,-180.0,180.0,false);
             });
-
 
         cell = new Gtk.CellRendererText ();
         view.insert_column_with_attributes (-1, "Alt.",
@@ -628,7 +641,14 @@ public class ListBox : GLib.Object
             });
 
         cell.set_property ("editable", true);
+
+        cell.editing_started.connect((e,p) => {
+                ss = mp.get_serstate();
+                mp.set_serstate(MWPlanner.SERSTATE.NONE);
+            });
+
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
+                mp.set_serstate(ss);
                 list_validate(path,new_text,
                               WY_Columns.ALT,0.0,1000.0,true);
             });
@@ -657,10 +677,17 @@ public class ListBox : GLib.Object
                 _cell.set_property("text",s);
             });
 
+        cell.editing_started.connect((e,p) => {
+                ss = mp.get_serstate();
+                mp.set_serstate(MWPlanner.SERSTATE.NONE);
+            });
+
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
 
                 GLib.Value icell;
                 Gtk.TreeIter iiter;
+                mp.set_serstate(ss);
+
                 list_model.get_iter (out iiter, new Gtk.TreePath.from_string (path));
                 list_model.get_value (iiter, WY_Columns.ACTION, out icell);
                 var typ = (MSP.Action)icell;
@@ -688,7 +715,14 @@ public class ListBox : GLib.Object
         view.insert_column_with_attributes (-1, "P2",
                                             cell,
                                             "text", WY_Columns.INT2);
+
+        cell.editing_started.connect((e,p) => {
+                ss = mp.get_serstate();
+                mp.set_serstate(MWPlanner.SERSTATE.NONE);
+            });
+
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
+                mp.set_serstate(ss);
                 list_validate(path,new_text,
                               WY_Columns.INT2,-1,65536.0,true);
             });
@@ -699,8 +733,15 @@ public class ListBox : GLib.Object
         view.insert_column_with_attributes (-1, "P3",
                                             cell,
                                             "text", WY_Columns.INT3);
-        // Min val is -1 because only jump uses this.
+
+        cell.editing_started.connect((e,p) => {
+                ss = mp.get_serstate();
+                mp.set_serstate(MWPlanner.SERSTATE.NONE);
+            });
+
+// Min val is -1 because only jump uses this.
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
+                mp.set_serstate(ss);
                 list_validate(path,new_text,
                               WY_Columns.INT3,-1,65536.0,true);
             });

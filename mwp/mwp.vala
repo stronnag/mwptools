@@ -500,7 +500,7 @@ public class MWPlanner : Gtk.Application {
         hasV2STATUS = 0x010801,
     }
 
-    private enum SERSTATE
+    public enum SERSTATE
     {
         NONE=0,
         NORMAL,
@@ -863,6 +863,19 @@ public class MWPlanner : Gtk.Application {
     {
         var ac = window.lookup_action(action) as SimpleAction;
         ac.set_enabled(state);
+    }
+
+    public SERSTATE get_serstate()
+    {
+        return serstate;
+    }
+
+    public void set_serstate(SERSTATE s = SERSTATE.NONE)
+    {
+        lastrx = lastok = nticks;
+        serstate = s;
+//        MWPLog.message("set state %s\n", serstate.to_string());
+        resend_last();
     }
 
     public override void activate ()
@@ -2429,86 +2442,91 @@ public class MWPlanner : Gtk.Application {
         var lmin = 0;
         Timeout.add(TIMINTVL, () => {
                 nticks++;
-                if(msp.available && serstate != SERSTATE.NONE)
+                if(msp.available)
                 {
-                    var tlimit = conf.polltimeout / TIMINTVL;
-                    if((serstate == SERSTATE.POLLER ||
-                        serstate == SERSTATE.TELEM) &&
-                       (nticks - lastrx) > NODATAINTVL)
+                    if(serstate != SERSTATE.NONE)
                     {
-                        if(rxerr == false)
+                        var tlimit = conf.polltimeout / TIMINTVL;
+                        if((serstate == SERSTATE.POLLER ||
+                            serstate == SERSTATE.TELEM) &&
+                           (nticks - lastrx) > NODATAINTVL)
                         {
-                            set_error_status("No data for 5s");
-                            rxerr=true;
-                        }
-                    }
-
-                    if(serstate != SERSTATE.TELEM)
-                    {
-// Probably takes a minute to change the LIPO
-                        if(serstate == SERSTATE.POLLER &&
-                           nticks - lastrx > RESTARTINTVL)
-                        {
-                            serstate = SERSTATE.NONE;
-                            MWPLog.message("Restart poll loop\n");
-                            init_state();
-                            init_sstats();
-                            init_have_home();
-                            serstate = SERSTATE.NORMAL;
-                            queue_cmd(MSP.Cmds.IDENT,null,0);
-                            run_queue();
-                        }
-                        else if ((nticks - lastok) > tlimit)
-                        {
-                            telstats.toc++;
-                            string res;
-                            if(lastmsg.cmd != MSP.Cmds.INVALID)
+                            if(rxerr == false)
                             {
-                                res = lastmsg.cmd.to_string();
+                                set_error_status("No data for 5s");
+                                rxerr=true;
                             }
-                            else
-                                res = "%d".printf(tcycle);
-                            if(nopoll == false)
-                                MWPLog.message("MSP Timeout (%s)\n", res);
-                            lastok = nticks;
-                            tcycle = 0;
-                            resend_last();
+                        }
+
+                        if(serstate != SERSTATE.TELEM)
+                        {
+// Probably takes a minute to change the LIPO
+                            if(serstate == SERSTATE.POLLER &&
+                               nticks - lastrx > RESTARTINTVL)
+                            {
+                                serstate = SERSTATE.NONE;
+                                MWPLog.message("Restart poll loop\n");
+                                init_state();
+                                init_sstats();
+                                init_have_home();
+                                serstate = SERSTATE.NORMAL;
+                                queue_cmd(MSP.Cmds.IDENT,null,0);
+                                run_queue();
+                            }
+                            else if ((nticks - lastok) > tlimit )
+                            {
+                                telstats.toc++;
+                                string res;
+                                if(lastmsg.cmd != MSP.Cmds.INVALID)
+                                {
+                                    res = lastmsg.cmd.to_string();
+                                }
+                                else
+                                    res = "%d".printf(tcycle);
+                                if(nopoll == false)
+                                    MWPLog.message("MSP Timeout (%s)\n", res);
+                                lastok = nticks;
+                                tcycle = 0;
+                                resend_last();
+                            }
+                        }
+                        else
+                        {
+                            if(armed != 0 && msp.available &&
+                               gpsintvl != 0 && last_gps != 0)
+                            {
+                                if (nticks - last_gps > gpsintvl)
+                                {
+                                    if(replayer == Player.NONE)
+                                        bleet_sans_merci(Alert.SAT);
+                                    if(replay_paused == false)
+                                        MWPLog.message("GPS stalled\n");
+                                    gpslab.label = "<span foreground = \"red\">⬤</span>";
+                                    last_gps = nticks;
+                                }
+                            }
+
+                            if(serstate == SERSTATE.TELEM && nopoll == false &&
+                               last_tm > 0 &&
+                               ((nticks - last_tm) > MAVINTVL)
+                               && msp.available && replayer == Player.NONE)
+                            {
+                                MWPLog.message("Restart poller on telemetry timeout\n");
+                                have_api = have_vers = have_misc =
+                                have_status = have_wp = have_nc =
+                                have_fcv = have_fcvv = false;
+                                xbits = icount = api_cnt = 0;
+                                init_sstats();
+                                last_tm = 0;
+                                lastp.start();
+                                serstate = SERSTATE.NORMAL;
+                                queue_cmd(MSP.Cmds.IDENT,null,0);
+                                run_queue();
+                            }
                         }
                     }
                     else
-                    {
-                        if(armed != 0 && msp.available &&
-                           gpsintvl != 0 && last_gps != 0)
-                        {
-                            if (nticks - last_gps > gpsintvl)
-                            {
-                                if(replayer == Player.NONE)
-                                    bleet_sans_merci(Alert.SAT);
-                                if(replay_paused == false)
-                                    MWPLog.message("GPS stalled\n");
-                                gpslab.label = "<span foreground = \"red\">⬤</span>";
-                                last_gps = nticks;
-                            }
-                        }
-
-                        if(serstate == SERSTATE.TELEM && nopoll == false &&
-                            last_tm > 0 &&
-                            ((nticks - last_tm) > MAVINTVL)
-                            && msp.available && replayer == Player.NONE)
-                        {
-                            MWPLog.message("Restart poller on telemetry timeout\n");
-                            have_api = have_vers = have_misc =
-                            have_status = have_wp = have_nc =
-                            have_fcv = have_fcvv = false;
-                            xbits = icount = api_cnt = 0;
-                            init_sstats();
-                            last_tm = 0;
-                            lastp.start();
-                            serstate = SERSTATE.NORMAL;
-                            queue_cmd(MSP.Cmds.IDENT,null,0);
-                            run_queue();
-                        }
-                    }
+                        lastok = lastrx = nticks;
 
                     if((nticks % STATINTVL) == 0)
                     {
@@ -2887,7 +2905,7 @@ public class MWPlanner : Gtk.Application {
             odo.speed = spd;
     }
 
-    private void reset_poller(bool remove = true)
+    private void reset_poller()
     {
         lastok = nticks;
         if(serstate != SERSTATE.NONE && serstate != SERSTATE.TELEM)
@@ -2950,7 +2968,6 @@ public class MWPlanner : Gtk.Application {
         gpslab.label = "<span foreground = \"%s\">⬤</span>".printf(conf.led);
         Timeout.add(50, () =>
             {
-//                gpslab.label = "<span foreground = \"black\">⬤</span>";
                 gpslab.set_label("◯");
                 return false;
             });
@@ -4658,7 +4675,7 @@ public class MWPlanner : Gtk.Application {
                         /* schedule the bubble machine again .. */
                         if(replayer == Player.NONE)
                         {
-                            reset_poller(false);
+                            reset_poller();
                         }
                     }
                 }
