@@ -41,6 +41,7 @@ public class Craft : GLib.Object
     private Champlain.MarkerLayer pmlayer;
     private Champlain.MarkerLayer hmlayer;
     private int npath = 0;
+    private int mpath = 0;
     private static Clutter.Color trk_cyan = { 0,0xff,0xff, 0xa0 };
     private static Clutter.Color trk_green = { 0xce,0xff,0x9d, 0xa0 };
     private static Clutter.Color trk_yellow = { 0xff,0xff,0, 0xa0 };
@@ -52,7 +53,6 @@ public class Craft : GLib.Object
     private static Champlain.Label posp ;
     private static Champlain.Label rthp ;
     private static Champlain.Label wpp ;
-//    private Queue<Champlain.Point> stack;
     private int stack_size = 0;
     private int mod_points = 0;
 
@@ -195,8 +195,6 @@ public class Craft : GLib.Object
         }
         view.add_layer (layer);
         homep = posp = rthp = wpp = null;
-//        if(stack_size > 0)
-//            stack = new Queue<Champlain.Point> ();
 
         icon.set_pivot_point(0.5f, 0.5f);
         icon.set_draw_background (false);
@@ -257,11 +255,10 @@ public class Craft : GLib.Object
             pmlayer.remove_all();
             path.remove_all();
             npath = 0;
+            mpath = 0;
             homep = posp = rthp = wpp = null;
             ici.hide();
         }
-//        if(stack_size > 0)
-//            stack.clear();
     }
 
     public void remove_marker()
@@ -302,11 +299,13 @@ public class Craft : GLib.Object
                 pmlayer.add_marker(marker);
                 if(stack_size > 0)
                 {
-                    var nds = pmlayer.get_markers();
-                    if(nds.length() > stack_size)
+                    mpath++;
+                    if(mpath > stack_size)
                     {
+                        var nds = pmlayer.get_markers();
                         unowned List<Champlain.Marker>  n0 = nds.last();
                         pmlayer.remove_marker(n0.data);
+                        mpath--;
                     }
                 }
             }
