@@ -52,7 +52,7 @@ public class Craft : GLib.Object
     private static Champlain.Label posp ;
     private static Champlain.Label rthp ;
     private static Champlain.Label wpp ;
-    private Queue<Champlain.Point> stack;
+//    private Queue<Champlain.Point> stack;
     private int stack_size = 0;
     private int mod_points = 0;
 
@@ -195,8 +195,8 @@ public class Craft : GLib.Object
         }
         view.add_layer (layer);
         homep = posp = rthp = wpp = null;
-        if(stack_size > 0)
-            stack = new Queue<Champlain.Point> ();
+//        if(stack_size > 0)
+//            stack = new Queue<Champlain.Point> ();
 
         icon.set_pivot_point(0.5f, 0.5f);
         icon.set_draw_background (false);
@@ -260,8 +260,8 @@ public class Craft : GLib.Object
             homep = posp = rthp = wpp = null;
             ici.hide();
         }
-        if(stack_size > 0)
-            stack.clear();
+//        if(stack_size > 0)
+//            stack.clear();
     }
 
     public void remove_marker()
@@ -302,11 +302,11 @@ public class Craft : GLib.Object
                 pmlayer.add_marker(marker);
                 if(stack_size > 0)
                 {
-                    stack.push_head(marker);
-                    if(stack.get_length() > stack_size)
+                    var nds = pmlayer.get_markers();
+                    if(nds.length() > stack_size)
                     {
-                        Champlain.Point xmarker = stack.pop_tail();
-                        pmlayer.remove_marker(xmarker);
+                        unowned List<Champlain.Marker>  n0 = nds.last();
+                        pmlayer.remove_marker(n0.data);
                     }
                 }
             }
