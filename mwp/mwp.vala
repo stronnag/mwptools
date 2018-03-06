@@ -5176,20 +5176,19 @@ public class MWPlanner : Gtk.Application {
         var fn = MWPUtils.find_conf_file(sfn);
         if(fn != null)
         {
+            StringBuilder sb = new StringBuilder();
             if(use_gst)
             {
                 Gst.Element play = Gst.ElementFactory.make ("playbin", "player");
                 File file = File.new_for_path (fn);
                 var uri = file.get_uri ();
-                MWPLog.message("alert %s\n", uri);
                 play.set("uri", uri);
                 play.set("volume", 5.0);
                 play.set_state (Gst.State.PLAYING);
             }
             else
             {
-                MWPLog.message("alert %s\n", fn);
-                StringBuilder sb = new StringBuilder(conf.mediap);
+                sb.assign(conf.mediap);
                 sb.append_c(' ');
                 sb.append(fn);
                 try {
@@ -5198,6 +5197,16 @@ public class MWPlanner : Gtk.Application {
                     use_gst = true;
                 }
             }
+            sb.assign("Alert: ");
+            sb.append(sfn);
+            if(sfn == Alert.SAT)
+            {
+                sb.append(" (");
+                sb.append(nsats.to_string());
+                sb.append_c(')');
+            }
+            sb.append_c('\n');
+            MWPLog.message(sb.str);
         }
     }
 
