@@ -3689,10 +3689,11 @@ public class MWPlanner : Gtk.Application {
                     if(conf.flash_warn > 0 && pct > conf.flash_warn)
                         mwp_warning_box("Data flash is %u%% full".printf(pct),
                                         Gtk.MessageType.WARNING);
-                    queue_cmd(MSP.Cmds.FC_VERSION,null,0);
                 }
                 else
                     MWPLog.message("Flash claims to be 0 bytes!!\n");
+
+                queue_cmd(MSP.Cmds.FC_VERSION,null,0);
                 break;
 
             case MSP.Cmds.FC_VERSION:
