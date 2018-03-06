@@ -3672,10 +3672,8 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.BLACKBOX_CONFIG:
                 MSP.Cmds next = MSP.Cmds.FC_VERSION;
-
                 if (raw[0] == 1 && raw[1] == 1)  // enabled and sd flash
                     next = MSP.Cmds.DATAFLASH_SUMMARY;
-
                 queue_cmd(next,null,0);
                 break;
 
@@ -3684,13 +3682,17 @@ public class MWPlanner : Gtk.Application {
                 uint32 used;
                 deserialise_u32(raw+5, out fsize);
                 deserialise_u32(raw+9, out used);
-                var pct = 100 * used  / fsize;
-                MWPLog.message ("Data Flash %u /  %u (%u%%)\n", used, fsize, pct);
-
-                if(conf.flash_warn > 0 && pct > conf.flash_warn)
-                    mwp_warning_box("Data flash is %u%% full".printf(pct),
-                                    Gtk.MessageType.WARNING);
-                queue_cmd(MSP.Cmds.FC_VERSION,null,0);
+                if(fsize > 0)
+                {
+                    var pct = 100 * used  / fsize;
+                    MWPLog.message ("Data Flash %u /  %u (%u%%)\n", used, fsize, pct);
+                    if(conf.flash_warn > 0 && pct > conf.flash_warn)
+                        mwp_warning_box("Data flash is %u%% full".printf(pct),
+                                        Gtk.MessageType.WARNING);
+                    queue_cmd(MSP.Cmds.FC_VERSION,null,0);
+                }
+                else
+                    MWPLog.message("Flash claims to be 0 bytes!!\n");
                 break;
 
             case MSP.Cmds.FC_VERSION:
