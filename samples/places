@@ -3,7 +3,7 @@
 # add your own favourite locations and copy the file to ~/.config/mwp/
 #
 # You can either edit this file (delimited) or the JSON file
-# (places.json). If both exist under ~/.config/mwp/, then the JSON
+# (places.json). If both exist under ~/.config/mwp/, then the CSV
 # file has priority
 #
 # The valid delimiters are |;: and <TAB>. Note "," is not a delimiter

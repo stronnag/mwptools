@@ -54,7 +54,7 @@
       <default>2.5</default>
       <summary>Default Nav speed</summary>
       <description>
-        Default Nav speed (km/hr). For calculating durations only.
+        Default Nav speed (m/s). For calculating durations only.
       </description>
     </key>
 
