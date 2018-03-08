@@ -1,11 +1,15 @@
 
 private static int baud = 115200;
+private static string eolmstr;
 private static string dev;
 private static bool noinit=false;
+private static int eolm;
+
 const OptionEntry[] options = {
-    { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", null},
+    { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", "115200"},
     { "device", 'd', 0, OptionArg.STRING, out dev, "device", null},
-    { "noinit", 'n', 0,  OptionArg.NONE, out noinit, "noinit",null},
+    { "noinit", 'n', 0,  OptionArg.NONE, out noinit, "noinit","false"},
+    { "eolmode", 'm', 0, OptionArg.STRING, out eolmstr, "eol mode", "[cr,lf,crlf,crcrlf]"},
     {null}
 };
 
@@ -92,12 +96,24 @@ class CliTerm : Object
                                                    IOCondition.NVAL)) != 0);
                                   if(!err)
                                       rc = Posix.read(0,buf,1);
+
                                   if(err || buf[0] == 3 || rc <0)
                                   {
                                       ml.quit();
                                       return false;
                                   }
-                                  msp.write(buf,1);
+
+                                  if(buf[0] == 13 && eolm != 0)
+                                  {
+                                      string eol="\n";
+                                      if(eolm == 2)
+                                          eol="\r\n";
+                                      if(eolm == 3)
+                                          eol="\r\r\n";
+                                      msp.write(eol.data,eol.length);
+                                  }
+                                  else
+                                      msp.write(buf,1);
                                   return true;
                               });
         } catch(IOChannelError e) {
@@ -130,6 +146,22 @@ int main (string[] args)
 
     if (args.length > 1)
         dev = args[1];
+
+    switch (eolmstr)
+    {
+        case "cr":
+            eolm = 0;
+            break;
+        case "lf":
+            eolm = 1;
+            break;
+        case "crlf":
+            eolm = 2;
+            break;
+        case "crcrlf":
+            eolm = 3;
+            break;
+    }
 
     var cli = new CliTerm();
     cli.init();
