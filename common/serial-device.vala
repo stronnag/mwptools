@@ -70,6 +70,7 @@ public class MWSerial : Object
     public ProtoMode pmode  {set; get; default=ProtoMode.NORMAL;}
     private bool fwd = false;
     private uint8 mavseqno = 0;
+    private uint8[] devbuf;
 
     const uint8[] MAVCRCS =
     {
@@ -93,7 +94,8 @@ public class MWSerial : Object
     public enum MemAlloc
     {
         RX=1024,
-        TX=256
+        TX=256,
+        DEV=2048
     }
 
     public enum ComMode
@@ -168,6 +170,7 @@ public class MWSerial : Object
         rxbuf_alloc = MemAlloc.RX;
         rxbuf = new uint8[rxbuf_alloc];
         txbuf = new uint8[txbuf_alloc];
+        devbuf = new uint8[MemAlloc.DEV];
     }
 
     public int get_fd()
@@ -532,7 +535,6 @@ public class MWSerial : Object
     }
 
     private bool device_read(IOChannel gio, IOCondition cond) {
-        uint8 buf[256];
         size_t res = 0;
 
         if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
@@ -559,7 +561,7 @@ public class MWSerial : Object
         {
             if((commode & ComMode.BT) == ComMode.BT)
             {
-                res = Posix.recv(fd, buf, 256, 0);
+                res = Posix.recv(fd, devbuf, MemAlloc.DEV, 0);
             }
             else if((commode & ComMode.STREAM) == ComMode.STREAM)
             {
@@ -569,16 +571,16 @@ public class MWSerial : Object
                 ires = Posix.ioctl(fd,Linux.Termios.FIONREAD,&avb);
                 if(ires == 0 && avb > 0)
                 {
-                    if(avb > 256)
-                        avb = 256;
-                    res = Posix.read(fd,buf,avb);
+                    if(avb > MemAlloc.DEV)
+                        avb = MemAlloc.DEV;
+                    res = Posix.read(fd,devbuf,avb);
                     if(res == 0)
                         return Source.CONTINUE;
                 }
                 else
                     return Source.CONTINUE;
 #else
-                res = Posix.read(fd,buf,256);
+                res = Posix.read(fd,devbuf,MemAlloc.DEV);
                 if(res == 0)
                     return Source.CONTINUE;
 #endif
@@ -587,7 +589,7 @@ public class MWSerial : Object
             {
                 try
                 {
-                    res = skt.receive_from(out sockaddr, buf);
+                    res = skt.receive_from(out sockaddr, devbuf);
                 } catch(Error e) {
                     debug("recv: %s", e.message);
                     res = 0;
@@ -597,7 +599,7 @@ public class MWSerial : Object
             if(pmode == ProtoMode.CLI)
             {
                 csize = (uint16)res;
-                cli_event(buf, csize);
+                cli_event(devbuf, csize);
             }
             else
             {
@@ -608,11 +610,11 @@ public class MWSerial : Object
                 stats.rxbytes += res;
                 if(print_raw == true)
                 {
-                    dump_raw_data(buf, (int)res);
+                    dump_raw_data(devbuf, (int)res);
                 }
                 if(rawlog == true)
                 {
-                    log_raw('i', buf, (int)res);
+                    log_raw('i', devbuf, (int)res);
                 }
 
                 for(var nc = 0; nc < res; nc++)
@@ -620,13 +622,13 @@ public class MWSerial : Object
                     switch(state)
                     {
                         case States.S_ERROR:
-                            if (buf[nc] == '$')
+                            if (devbuf[nc] == '$')
                             {
                                 sp = nc;
                                 state=States.S_HEADER1;
                                 errstate = false;
                             }
-                            else if (buf[nc] == 0xfe)
+                            else if (devbuf[nc] == 0xfe)
                             {
                                 sp = nc;
                                 state=States.S_M_SIZE;
@@ -635,13 +637,13 @@ public class MWSerial : Object
                             break;
 
                         case States.S_HEADER:
-                            if (buf[nc] == '$')
+                            if (devbuf[nc] == '$')
                             {
                                 sp = nc;
                                 state=States.S_HEADER1;
                                 errstate = false;
                             }
-                            else if (buf[nc] == 0xfe)
+                            else if (devbuf[nc] == 0xfe)
                             {
                                 sp = nc;
                                 state=States.S_M_SIZE;
@@ -650,7 +652,7 @@ public class MWSerial : Object
                             else
                             {
                                 error_counter();
-                                MWPLog.message("expected header0 (%x)\n", buf[nc]);
+                                MWPLog.message("expected header0 (%x)\n", devbuf[nc]);
                                 state=States.S_ERROR;
                             }
 
@@ -658,29 +660,29 @@ public class MWSerial : Object
                         case States.S_HEADER1:
                             encap = false;
                             irxbufp=0;
-                            if(buf[nc] == 'M')
+                            if(devbuf[nc] == 'M')
                             {
                                 state=States.S_HEADER2;
                             }
-                            else if(buf[nc] == 'T')
+                            else if(devbuf[nc] == 'T')
                             {
                                 state=States.S_T_HEADER2;
                             }
-                            else if(buf[nc] == 'X')
+                            else if(devbuf[nc] == 'X')
                             {
                                 state=States.S_X_HEADER2;
                             }
                             else
                             {
                                 error_counter();
-                                MWPLog.message("fail on header1 %x\n", buf[nc]);
+                                MWPLog.message("fail on header1 %x\n", devbuf[nc]);
                                 state=States.S_ERROR;
                             }
                             break;
 
                         case States.S_T_HEADER2:
                             needed = 0;
-                            switch(buf[nc])
+                            switch(devbuf[nc])
                             {
                                 case 'G':
                                     needed = (uint16) MSize.LTM_GFRAME;
@@ -716,7 +718,7 @@ public class MWSerial : Object
                                     break;
                                 default:
                                     error_counter();
-                                    MWPLog.message("fail on T_header2 %x\n", buf[nc]);
+                                    MWPLog.message("fail on T_header2 %x\n", devbuf[nc]);
                                     state=States.S_ERROR;
                                     break;
                             }
@@ -730,29 +732,29 @@ public class MWSerial : Object
                             break;
 
                         case States.S_HEADER2:
-                            if((buf[nc] == readdirn ||
-                                buf[nc] == writedirn ||
-                                buf[nc] == '!'))
+                            if((devbuf[nc] == readdirn ||
+                                devbuf[nc] == writedirn ||
+                                devbuf[nc] == '!'))
                             {
-                                errstate = (buf[nc] != readdirn); // == '!'
+                                errstate = (devbuf[nc] != readdirn); // == '!'
                                 state = States.S_SIZE;
                             }
                             else
                             {
                                 error_counter();
-                                MWPLog.message("fail on header2 %x\n", buf[nc]);
+                                MWPLog.message("fail on header2 %x\n", devbuf[nc]);
                                 state=States.S_ERROR;
                             }
                             break;
 
                         case States.S_SIZE:
-                            csize = buf[nc];
-                            checksum = buf[nc];
+                            csize = devbuf[nc];
+                            checksum = devbuf[nc];
                             state = States.S_CMD;
                             break;
                         case States.S_CMD:
-                            debug(" got cmd %d %d", buf[nc], csize);
-                            cmd = (MSP.Cmds)buf[nc];
+                            debug(" got cmd %d %d", devbuf[nc], csize);
+                            cmd = (MSP.Cmds)devbuf[nc];
                             checksum ^= cmd;
                             if(cmd == MSP.Cmds.MSPV2)
                             {
@@ -780,14 +782,14 @@ public class MWSerial : Object
                             break;
 
                         case States.S_JUMBO1:
-                            checksum ^= buf[nc];
-                            csize = buf[nc];
+                            checksum ^= devbuf[nc];
+                            csize = devbuf[nc];
                             state = States.S_JUMBO2;
                             break;
 
                         case States.S_JUMBO2:
-                            checksum ^= buf[nc];
-                            csize |= (uint16)buf[nc] << 8;
+                            checksum ^= devbuf[nc];
+                            csize |= (uint16)devbuf[nc] << 8;
                             needed = csize;
                             irxbufp = 0;
                             if (csize == 0)
@@ -800,14 +802,14 @@ public class MWSerial : Object
                             break;
 
                         case States.S_DATA:
-                            rxbuf[irxbufp++] = buf[nc];
-                            checksum ^= buf[nc];
+                            rxbuf[irxbufp++] = devbuf[nc];
+                            checksum ^= devbuf[nc];
                             needed--;
                             if(needed == 0)
                                 state = States.S_CHECKSUM;
                             break;
                         case States.S_CHECKSUM:
-                            if(checksum  == buf[nc])
+                            if(checksum  == devbuf[nc])
                             {
                                 debug(" OK on %d", cmd);
                                 state = States.S_HEADER;
@@ -820,7 +822,7 @@ public class MWSerial : Object
                             {
                                 error_counter();
                                 MWPLog.message("CRC Fail, got %d != %d (cmd=%d)\n",
-                                               buf[nc],checksum,cmd);
+                                               devbuf[nc],checksum,cmd);
                                 state = States.S_ERROR;
                             }
                             break;
@@ -829,49 +831,49 @@ public class MWSerial : Object
                             break;
 
                         case States.S_X_HEADER2:
-                            if((buf[nc] == readdirn ||
-                                buf[nc] == writedirn ||
-                                buf[nc] == '!'))
+                            if((devbuf[nc] == readdirn ||
+                                devbuf[nc] == writedirn ||
+                                devbuf[nc] == '!'))
                             {
-                                errstate = (buf[nc] != readdirn); // == '!'
+                                errstate = (devbuf[nc] != readdirn); // == '!'
                                 state = States.S_X_FLAGS;
                             }
                             else
                             {
                                 error_counter();
-                                MWPLog.message("fail on header2 %x\n", buf[nc]);
+                                MWPLog.message("fail on header2 %x\n", devbuf[nc]);
                                 state=States.S_ERROR;
                             }
                             break;
 
                         case States.S_X_FLAGS:
-                            checksum ^= buf[nc];
-                            checksum2 = crc8_dvb_s2(0, buf[nc]);
-                            xflags = buf[nc];
+                            checksum ^= devbuf[nc];
+                            checksum2 = crc8_dvb_s2(0, devbuf[nc]);
+                            xflags = devbuf[nc];
                             state = States.S_X_ID1;
                             break;
                         case States.S_X_ID1:
-                            checksum ^= buf[nc];
-                            checksum2 = crc8_dvb_s2(checksum2, buf[nc]);
-                            xcmd = buf[nc];
+                            checksum ^= devbuf[nc];
+                            checksum2 = crc8_dvb_s2(checksum2, devbuf[nc]);
+                            xcmd = devbuf[nc];
                             state = States.S_X_ID2;
                             break;
                         case States.S_X_ID2:
-                            checksum ^= buf[nc];
-                            checksum2 = crc8_dvb_s2(checksum2, buf[nc]);
-                            xcmd |= (uint16)buf[nc] << 8;
+                            checksum ^= devbuf[nc];
+                            checksum2 = crc8_dvb_s2(checksum2, devbuf[nc]);
+                            xcmd |= (uint16)devbuf[nc] << 8;
                             state = States.S_X_LEN1;
                             break;
                         case States.S_X_LEN1:
-                            checksum ^= buf[nc];
-                            checksum2 = crc8_dvb_s2(checksum2, buf[nc]);
-                            csize = buf[nc];
+                            checksum ^= devbuf[nc];
+                            checksum2 = crc8_dvb_s2(checksum2, devbuf[nc]);
+                            csize = devbuf[nc];
                             state = States.S_X_LEN2;
                             break;
                         case States.S_X_LEN2:
-                            checksum ^= buf[nc];
-                            checksum2 = crc8_dvb_s2(checksum2, buf[nc]);
-                            csize |= (uint16)buf[nc] << 8;
+                            checksum ^= devbuf[nc];
+                            checksum2 = crc8_dvb_s2(checksum2, devbuf[nc]);
+                            csize |= (uint16)devbuf[nc] << 8;
                             needed = csize;
                             if(needed > 0)
                             {
@@ -882,16 +884,16 @@ public class MWSerial : Object
                                 state = States.S_X_CHECKSUM;
                             break;
                         case States.S_X_DATA:
-                            checksum ^= buf[nc];
-                            checksum2 = crc8_dvb_s2(checksum2, buf[nc]);
-                            rxbuf[irxbufp++] = buf[nc];
+                            checksum ^= devbuf[nc];
+                            checksum2 = crc8_dvb_s2(checksum2, devbuf[nc]);
+                            rxbuf[irxbufp++] = devbuf[nc];
                             needed--;
                             if(needed == 0)
                                 state = States.S_X_CHECKSUM;
                             break;
                         case States.S_X_CHECKSUM:
-                            checksum ^= buf[nc];
-                            if(checksum2  == buf[nc])
+                            checksum ^= devbuf[nc];
+                            if(checksum2  == devbuf[nc])
                             {
                                 debug(" OK on %d", cmd);
 
@@ -905,13 +907,13 @@ public class MWSerial : Object
                             {
                                 error_counter();
                                 MWPLog.message("X-CRC Fail, got %d != %d (cmd=%d)\n",
-                                               buf[nc],checksum,cmd);
+                                               devbuf[nc],checksum,cmd);
                                 state = States.S_ERROR;
                             }
                             break;
 
                         case States.S_M_SIZE:
-                            csize = needed = buf[nc];
+                            csize = needed = devbuf[nc];
                             mavsum = mavlink_crc(0xffff, (uint8)csize);
                             if(needed > 0)
                             {
@@ -921,19 +923,19 @@ public class MWSerial : Object
                             state = States.S_M_SEQ;
                             break;
                         case States.S_M_SEQ:
-                            mavsum = mavlink_crc(mavsum, buf[nc]);
+                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
                             state = States.S_M_ID1;
                             break;
                         case States.S_M_ID1:
-                            mavsum = mavlink_crc(mavsum, buf[nc]);
+                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
                             state = States.S_M_ID2;
                             break;
                         case States.S_M_ID2:
-                            mavsum = mavlink_crc(mavsum, buf[nc]);
+                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
                             state = States.S_M_MSGID;
                             break;
                         case States.S_M_MSGID:
-                            cmd = (MSP.Cmds)buf[nc];
+                            cmd = (MSP.Cmds)devbuf[nc];
                             mavsum = mavlink_crc(mavsum, cmd);
                             if (csize == 0)
                                 state = States.S_M_CRC1;
@@ -941,8 +943,8 @@ public class MWSerial : Object
                                 state = States.S_M_DATA;
                             break;
                         case States.S_M_DATA:
-                            mavsum = mavlink_crc(mavsum, buf[nc]);
-                            rxbuf[irxbufp++] = buf[nc];
+                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
+                            rxbuf[irxbufp++] = devbuf[nc];
                             needed--;
                             if(needed == 0)
                                 state = States.S_M_CRC1;
@@ -950,11 +952,11 @@ public class MWSerial : Object
                         case States.S_M_CRC1:
                             mavsum = mavlink_crc(mavsum, MAVCRCS[cmd]);
                             irxbufp = 0;
-                            rxmavsum = buf[nc];
+                            rxmavsum = devbuf[nc];
                             state = States.S_M_CRC2;
                             break;
                         case States.S_M_CRC2:
-                            rxmavsum |= (buf[nc] << 8);
+                            rxmavsum |= (devbuf[nc] << 8);
                             if(rxmavsum == mavsum)
                             {
                                 stats.msgs++;

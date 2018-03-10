@@ -37,7 +37,7 @@ do
 done
 
 case $HEX in
-  *QUARKVISION.hex|*SPRACINGF*EVO.hex|*OMNIBUS*.hex|*MATEKF405*.hex|PIXRACER*.hex)
+  *QUARK*.hex|*SPRACINGF*EVO.hex|*OMNIBUS*.hex|*MATEKF405*.hex|PIXRACER*.hex)
     BIN=${HEX%%hex}bin
     IHEX=$HEX
     unset HEX
