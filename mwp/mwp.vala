@@ -3622,7 +3622,7 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.BOARD_INFO:
                 raw[4]=0;
                 vi.board = (string)raw[0:3];
-                if(len > 6)
+                if(len > 8)
                 {
                     raw[len] = 0;
                     vi.name = (string)raw[9:len];

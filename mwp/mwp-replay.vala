@@ -396,8 +396,6 @@ public class ReplayThread : GLib.Object
 
                                     if(obj.has_member("fctype"))
                                         fctype = (uint)obj.get_int_member ("fctype");
-                                    if(obj.has_member("fcboard"))
-                                        fcboard = obj.get_string_member ("fcboard");
                                     if(obj.has_member("profile"))
                                         profile = (uint)obj.get_int_member ("profile");
                                     if(obj.has_member("fc_var"))
@@ -413,13 +411,24 @@ public class ReplayThread : GLib.Object
 
                                     if(obj.has_member("fcboard"))
                                     {
-                                        buf[0] = fcboard[0];
-                                        buf[1] = fcboard[1];
-                                        buf[2] = fcboard[2];
-                                        buf[3] = fcboard[3];
-                                        buf[4] = buf[5] = 0;
-                                        send_rec(fd,MSP.Cmds.BOARD_INFO, 6, buf);
+                                        fcboard = obj.get_string_member ("fcboard");
                                     }
+                                    uint8 mlen = 6;
+                                    buf[0] = fcboard[0];
+                                    buf[1] = fcboard[1];
+                                    buf[2] = fcboard[2];
+                                    buf[3] = fcboard[3];
+                                    buf[4] = buf[5] = 0;
+                                    if(obj.has_member("fcname"))
+                                    {
+                                        string fcname=obj.get_string_member ("fcname");
+                                        buf[6] = buf[7] = 0;
+                                        buf[8] = (uint8)fcname.length;
+                                        for(var k = 0; k < buf[8]; k++)
+                                            buf[k+9] = fcname[k];
+                                        mlen = 9+buf[8];
+                                    }
+                                    send_rec(fd,MSP.Cmds.BOARD_INFO, mlen, buf);
 
                                     if(fcvar != null)
                                     {
