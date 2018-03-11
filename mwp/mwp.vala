@@ -63,6 +63,7 @@ public struct VersInfo
     MWChooser.MWVAR fctype;
     string fc_var;
     string board;
+    string name;
     string fc_git;
     uint16 fc_api;
     uint32 fc_vers;
@@ -3621,6 +3622,13 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.BOARD_INFO:
                 raw[4]=0;
                 vi.board = (string)raw[0:3];
+                if(len > 6)
+                {
+                    raw[len] = 0;
+                    vi.name = (string)raw[9:len];
+                }
+                else
+                    vi.name = null;
                 queue_cmd(MSP.Cmds.FC_VARIANT,null,0);
                 break;
 
@@ -3747,10 +3755,11 @@ public class MWPlanner : Gtk.Application {
                 vi.fc_git = (string)gi;
                 uchar vs[4];
                 serialise_u32(vs, vi.fc_vers);
-                var board = board_by_id();
+                if(vi.name == null)
+                    vi.name = board_by_id();
                 var vers = "%s v%d.%d.%d  %s (%s)".printf(vi.fc_var,
                                                           vs[2],vs[1],vs[0],
-                                                          board, vi.fc_git);
+                                                          vi.name, vi.fc_git);
                 verlab.set_label(vers);
                 MWPLog.message("%s\n", vers);
                 queue_cmd(MSP.Cmds.BOXNAMES,null,0);

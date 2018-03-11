@@ -160,6 +160,7 @@ end
 def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
 
   msps = [
+    # $     M    >     len   msg
     [0x24, 0x4d, 0x3e, 0x07, 0x64, 0xe7, 0x01, 0x00, 0x3c, 0x00, 0x00, 0x80, 0],
     [0x24, 0x4d, 0x3e, 0x03, 0x01, 0x00, 0x00, 0x0, 0x0d],
     [0x24, 0x4d, 0x3e, 0x06, 0x04, 0x55, 0x4E, 0x4B, 0, 0, 0, 0],
@@ -193,11 +194,23 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
 	iv = [m[1],m[2],m[3]].join('.')
 	i = 0
 	m[4].each_byte {|b| msps[5][24+i] = b ; i += 1}
-	bid = BOARD_MAP[m[5].upcase]
+	bname = m[5].upcase
+	bid = BOARD_MAP[bname]
+	bnl = bname.length
 	if bid
 	  i = 0
 	  bid.each_byte {|b| msps[2][5+i] = b; i+= 1}
 	end
+	msps[2][11] = 0
+	msps[2][12] = 0
+	msps[2][13] = bnl
+	i = 14
+	bname.each_byte do |b|
+	  msps[2][i]=b
+	  i += 1
+	end
+	msps[2][3] = 9 + bnl
+	msps[2][i] = 0
       end
     end
   end
@@ -470,7 +483,7 @@ end
 
 def get_autotype nmotor, nservo
   mtyp = 0
-  mtype =   case nmotor
+  mtyp =   case nmotor
 	    when 1
 	      mtyp = (nservo == 4) ? 14 : 8
 	    when 2
@@ -500,7 +513,6 @@ v4 = false
 gpshd = 0
 mindelay = false
 childfd = nil
-lhdop = 100000
 autotyp=nil
 dumph = false
 
@@ -541,8 +553,7 @@ icnt = 0
 origin = nil
 
 begin
-  fds=nil
-  fds = Open3.capture3('blackbox_decode --help')
+  Open3.capture3('blackbox_decode --help')
 rescue
   abort "Can't run 'blackbox_decode' is it installed and on the PATH?"
 end
@@ -722,7 +733,7 @@ IO.popen(cmd,'rt') do |pipe|
 	  send_msg dev, msg
 	end
 	if row.has_key? :gps_hdop
-	  hdop = row[:gps_hdop].to_i
+#	  hdop = row[:gps_hdop].to_i
 	  msg = encode_extra row
 	  send_msg dev, msg
 	end

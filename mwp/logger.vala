@@ -100,6 +100,8 @@ public class Logger : GLib.Object
         builder.add_int_value (profile);
         builder.set_member_name ("fcboard");
         builder.add_string_value (vi.board);
+        builder.set_member_name ("fcname");
+        builder.add_string_value (vi.name);
 
         if(boxnames != null)
         {
