@@ -194,6 +194,7 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
 	iv = [m[1],m[2],m[3]].join('.')
 	i = 0
 	m[4].each_byte {|b| msps[5][24+i] = b ; i += 1}
+	msps[5][3] = 18 + m[4].length
 	bname = m[5].upcase
 	bid = BOARD_MAP[bname]
 	bnl = bname.length
@@ -215,7 +216,8 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
     end
   end
   msps.each do |msp|
-    msp[-1] = mksum msp[3..-2].pack('C*')
+    len = msp[3]
+    msp[len+5] = mksum msp[3,len+2].pack('C*')
     send_msg skt, msp.pack('C*')
     sleep 0.01
   end
