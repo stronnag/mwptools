@@ -344,6 +344,7 @@ public class MWPlanner : Gtk.Application {
     private GPSInfo gpsinfo;
     private ArtWin art_win;
     private FlightBox fbox;
+    private DirnBox dbox;
     private WPMGR wpmgr;
     private MissionItem[] wp_resp;
     private string boxnames = null;
@@ -575,6 +576,7 @@ public class MWPlanner : Gtk.Application {
         TELEMETRY,
         ARTHOR,
         FBOX,
+        DBOX,
         NUMBER
     }
 
@@ -1149,6 +1151,7 @@ public class MWPlanner : Gtk.Application {
         dockmenus[DOCKLETS.TELEMETRY] =  "tel-stats";
         dockmenus[DOCKLETS.ARTHOR] = "art-hor";
         dockmenus[DOCKLETS.FBOX] =  "flight-view";
+        dockmenus[DOCKLETS.DBOX] =  "direction-view";
 
         embed = new GtkChamplain.Embed();
 
@@ -1411,6 +1414,12 @@ public class MWPlanner : Gtk.Application {
             });
         window.add_action(saq);
 
+        saq = new GLib.SimpleAction("direction-view",null);
+        saq.activate.connect(() => {
+                show_dock_id(DOCKLETS.DBOX, true);
+            });
+        window.add_action(saq);
+
         saq = new GLib.SimpleAction("keys",null);
         saq.activate.connect(() => {
                 shortcuts.show_all();
@@ -1445,7 +1454,7 @@ public class MWPlanner : Gtk.Application {
         radstatus = new RadioStatus(builder);
         telemstatus = new TelemetryStats(builder);
         fbox  = new FlightBox(builder,window);
-
+        dbox = new DirnBox(builder);
 
         view = embed.get_view();
         view.set_reactive(true);
@@ -1557,6 +1566,7 @@ public class MWPlanner : Gtk.Application {
                     logb.active=false;
                 gpsinfo.annul();
                 navstatus.annul();
+                dbox.annul();
                 fbox.annul();
                 art_win.update(0, 0, item_visible(DOCKLETS.ARTHOR));
                 set_bat_stat(0);
@@ -1945,6 +1955,9 @@ public class MWPlanner : Gtk.Application {
         dockitem[DOCKLETS.FBOX]= new DockItem.with_stock ("FlightView",
                          "FlightView", "gtk-find",
                          DockItemBehavior.NORMAL);
+        dockitem[DOCKLETS.DBOX]= new DockItem.with_stock ("DirectionView",
+                         "DirectionView", "gtk-fullscreen",
+                         DockItemBehavior.NORMAL);
 
         dockitem[DOCKLETS.MISSION]= new DockItem.with_stock ("Mission",
                          "Mission Tote", "gtk-properties",
@@ -1957,6 +1970,7 @@ public class MWPlanner : Gtk.Application {
         dockitem[DOCKLETS.RADIO].add (radstatus.box);
         dockitem[DOCKLETS.TELEMETRY].add (telemstatus.grid);
         dockitem[DOCKLETS.FBOX].add (fbox.vbox);
+        dockitem[DOCKLETS.DBOX].add (dbox.dbox);
         dockitem[DOCKLETS.ARTHOR].add (art_win.box);
 
         dock.add_item (dockitem[DOCKLETS.ARTHOR], DockPlacement.BOTTOM);
@@ -1966,6 +1980,7 @@ public class MWPlanner : Gtk.Application {
         dock.add_item (dockitem[DOCKLETS.TELEMETRY], DockPlacement.BOTTOM);
         dock.add_item (dockitem[DOCKLETS.RADIO], DockPlacement.BOTTOM);
         dock.add_item (dockitem[DOCKLETS.FBOX], DockPlacement.BOTTOM);
+        dock.add_item (dockitem[DOCKLETS.DBOX], DockPlacement.BOTTOM);
         dock.add_item (dockitem[DOCKLETS.MISSION], DockPlacement.TOP);
         box.show_all();
 
@@ -1978,6 +1993,7 @@ public class MWPlanner : Gtk.Application {
             dockitem[DOCKLETS.RADIO].iconify_item ();
             dockitem[DOCKLETS.TELEMETRY].iconify_item ();
             dockitem[DOCKLETS.FBOX].iconify_item ();
+            dockitem[DOCKLETS.DBOX].iconify_item ();
             lman.save_config();
         }
 
@@ -4243,6 +4259,7 @@ public class MWPlanner : Gtk.Application {
                 gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS),
                                          out ddm) != 0);
                 fbox.update(item_visible(DOCKLETS.FBOX));
+                dbox.update(item_visible(DOCKLETS.DBOX));
                 _nsats = rg.gps_numsat;
 
                 if (gpsfix)
@@ -4605,6 +4622,8 @@ public class MWPlanner : Gtk.Application {
                         process_pos_states(GPSInfo.lat, GPSInfo.lon, gf.alt/100.0, "GFrame");
                 }
                 fbox.update(item_visible(DOCKLETS.FBOX));
+                dbox.update(item_visible(DOCKLETS.DBOX));
+
             }
             break;
 
@@ -4836,6 +4855,7 @@ public class MWPlanner : Gtk.Application {
                     }
                 }
                 fbox.update(item_visible(DOCKLETS.FBOX));
+                dbox.update(item_visible(DOCKLETS.DBOX));
                 break;
 
             case MSP.Cmds.MAVLINK_MSG_ATTITUDE:
@@ -5585,6 +5605,7 @@ public class MWPlanner : Gtk.Application {
             gpsinfo.annul();
             navstatus.annul();
             fbox.annul();
+            dbox.annul();
             art_win.update(0, 0, item_visible(DOCKLETS.ARTHOR));
             set_bat_stat(0);
             nsats = 0;

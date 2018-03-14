@@ -255,6 +255,42 @@ public class TelemetryStats : GLib.Object
     }
 }
 
+public class DirnBox : GLib.Object
+{
+    public Gtk.Box dbox;
+    private Gtk.Label dlabel1;
+    private Gtk.Label dlabel2;
+
+    public DirnBox(Gtk.Builder builder, bool horz=false)
+    {
+        var grid1 = builder.get_object ("dgrid1") as Gtk.Grid;
+        var grid2 = builder.get_object ("dgrid2") as Gtk.Grid;
+        dlabel1  = builder.get_object ("dlabel1") as Gtk.Label;
+        dlabel2  = builder.get_object ("dlabel2") as Gtk.Label;
+        dbox = new Gtk.Box ((horz) ? Gtk.Orientation.HORIZONTAL : Gtk.Orientation.VERTICAL, 0);
+        dbox.pack_start(grid1, true, true,0);
+        dbox.pack_start(grid2, true, true,0);
+        dbox.show_all();
+    }
+
+    public void update(bool visible)
+    {
+        if(visible)
+        {
+            uint fs = FlightBox.fh1/2;
+            dlabel1.set_label("<span font='%u'>%03d°</span>".
+                              printf(fs,NavStatus.hdr));
+            dlabel2.set_label("<span font='%u'>%03d°</span>".
+                              printf(fs, (int)GPSInfo.cse));
+        }
+    }
+
+    public void annul()
+    {
+        update(true);
+    }
+}
+
 public class FlightBox : GLib.Object
 {
     private Gtk.Label big_lat;
@@ -276,6 +312,7 @@ public class FlightBox : GLib.Object
     {
         grid.expand = _allow_resize = exp;
     }
+
 
     public FlightBox(Gtk.Builder builder, Gtk.Window pw)
     {
@@ -347,8 +384,8 @@ public class FlightBox : GLib.Object
                    Units.distance(NavStatus.cg.range),
                    Units.distance_units()
                                                             ));
-           big_bearing.set_label("Bearing <span font='%u'>%d°</span>".printf(fh1,brg));
-           big_hdr.set_label("Heading <span font='%u'>%d°</span>".printf(fh3,NavStatus.hdr));
+           big_bearing.set_label("Bearing <span font='%u'>%03d°</span>".printf(fh1,brg));
+           big_hdr.set_label("Heading <span font='%u'>%03d°</span>".printf(fh3,NavStatus.hdr));
            big_alt.set_label(
                "Alt <span font='%u'>%.1f</span>%s".printf(
                    fh3,
@@ -2381,7 +2418,7 @@ public class GPSInfo : GLib.Object
         calc_cse_dist_delta(lat,lon);
         _ddm = ddm;
         double dalt = m.alt/1000.0;
-        double cse = (m.cog == 0xffff) ? 0 : m.cog/100.0;
+        cse = (m.cog == 0xffff) ? 0 : m.cog/100.0;
         spd  = (m.vel == 0xffff) ? 0 : m.vel/100.0;
         elev = (int16)Math.lround(dalt);
         nsat = m.satellites_visible;
@@ -2433,7 +2470,7 @@ public class GPSInfo : GLib.Object
     {
         lat = g.lat/10000000.0;
         lon = g.lon/10000000.0;
-        var cse =  calc_cse_dist_delta(lat,lon);
+        cse =  calc_cse_dist_delta(lat,lon);
         _ddm = ddm;
         spd =  g.speed;
         double dalt = g.alt/100.0;
