@@ -1454,7 +1454,7 @@ public class MWPlanner : Gtk.Application {
         radstatus = new RadioStatus(builder);
         telemstatus = new TelemetryStats(builder);
         fbox  = new FlightBox(builder,window);
-        dbox = new DirnBox(builder);
+        dbox = new DirnBox(builder, conf.horizontal_dbox);
 
         view = embed.get_view();
         view.set_reactive(true);
@@ -2127,7 +2127,7 @@ public class MWPlanner : Gtk.Application {
 
                 if(ms != null)
                     instantiate_mission(ms);
-                return ms.npoints;
+                return (ms != null) ? ms.npoints : 0;
             });
 
         mss.__load_mission.connect((s) => {
@@ -2135,7 +2135,7 @@ public class MWPlanner : Gtk.Application {
                 ms = open_mission_file(s);
                 if(ms != null)
                     instantiate_mission(ms);
-                return ms.npoints;
+                return (ms != null) ? ms.npoints : 0;
             });
 
         mss.__clear_mission.connect(() => {
@@ -4091,6 +4091,7 @@ public class MWPlanner : Gtk.Application {
                     if(ns.gps_mode == 3 && (last_nmode != 3 ||
                                             ns.wp_number != last_nwp))
                     {
+
                         ls.raise_wp(ns.wp_number);
                         string spt;
                         if(ns.wp_number == NavStatus.nm_pts)
@@ -5138,8 +5139,6 @@ public class MWPlanner : Gtk.Application {
             if(craft != null)
                 craft.special_wp(Craft.Special.WP, lat, lon);
             markers.update_ipos(ls, lat, lon);
-            if(replayer == Player.MWP && (NavStatus.nm_pts == 0 || NavStatus.nm_pts == 255))
-                NavStatus.nm_pts = (uint8)ls.lastid+1;
         }
     }
 
@@ -6045,9 +6044,15 @@ public class MWPlanner : Gtk.Application {
         bool is_j = fn.has_suffix(".json");
         m =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
         if(m != null && m.npoints > 0)
+        {
+            NavStatus.nm_pts = (uint8)m.npoints;
             return m;
+        }
         else
+        {
+            NavStatus.nm_pts = 255;
             return null;
+        }
     }
 
     private void on_file_save_as ()

@@ -419,6 +419,15 @@
 	View" mode.
       </description>
     </key>
+
+    <key name="dbox-is-horizontal" type="b">
+      <default>false</default>
+      <summary>Geometry of the DirectionView box</summary>
+      <description>
+	If true, uses a horizontal organisation, rather than vertical
+      </description>
+    </key>
+
     <key name="mission-file-type" type="s">
       <default>"m"</default>
       <summary>Prefered mission file type</summary>
