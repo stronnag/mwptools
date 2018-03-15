@@ -23,6 +23,14 @@ public class CLITerm : Gtk.Window
         this.set_default_size (640, 400);
 
         term = new Vte.Terminal();
+
+        // bcol="#002B36", fcol="#839496"
+        Gdk.RGBA bcol = {0, 0.168627, 0.21176};
+        Gdk.RGBA fcol = {0.513725, 0.580392, 0.588235};
+
+        term.set_color_background(bcol);
+        term.set_color_foreground(fcol);
+
         term.commit.connect((text,size) =>
             {
                 switch(text[0])
