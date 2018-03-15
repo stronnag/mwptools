@@ -1981,7 +1981,7 @@ public class MWPlanner : Gtk.Application {
         dock.add_item (dockitem[DOCKLETS.RADIO], DockPlacement.BOTTOM);
         dock.add_item (dockitem[DOCKLETS.FBOX], DockPlacement.BOTTOM);
         dock.add_item (dockitem[DOCKLETS.DBOX], DockPlacement.BOTTOM);
-        dock.add_item (dockitem[DOCKLETS.MISSION], DockPlacement.TOP);
+        dock.add_item (dockitem[DOCKLETS.MISSION], DockPlacement.BOTTOM);
         box.show_all();
 
         if(!lman.load_init())
