@@ -138,9 +138,10 @@ class FCMgr :Object
 
     private void start_quit()
     {
+        state = State.EXIT;
+        MWPLog.message("Exiting\n");
         string cmd = "exit\n";
         logging = false;
-        state = State.EXIT;
         msp.write(cmd.data, cmd.length);
         inp = 0;
     }
@@ -235,7 +236,10 @@ class FCMgr :Object
 
             case State.CLI:
                 if(mode == Mode.GET)
-                    start_diff();
+                    Timeout.add(1250, () => {
+                            start_diff();
+                            return false;
+                        });
                 else
                     start_setlines();
                 break;
