@@ -55,6 +55,8 @@ public class  BBoxDialog : Object
         filter.set_filter_name ("BB Logs");
         filter.add_pattern ("*.TXT");
         bb_filechooser.add_filter (filter);
+        filter.add_pattern ("*.txt");
+        bb_filechooser.add_filter (filter);
 
         if(logpath != null)
             bb_filechooser.set_current_folder (logpath);
