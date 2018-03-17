@@ -350,7 +350,7 @@ public class JsonMapDef : Object
     public static void killall()
     {
         foreach(var p in proxypids)
-            Posix.kill(p, Posix.SIGTERM);
+            Posix.kill(p, Posix.Signal.TERM);
     }
 
     public static MapSource[] read_json_sources(string? fn, bool offline=false)

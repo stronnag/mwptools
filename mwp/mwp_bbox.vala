@@ -54,7 +54,6 @@ public class  BBoxDialog : Object
         var filter = new Gtk.FileFilter ();
         filter.set_filter_name ("BB Logs");
         filter.add_pattern ("*.TXT");
-        bb_filechooser.add_filter (filter);
         filter.add_pattern ("*.txt");
         bb_filechooser.add_filter (filter);
 
@@ -79,8 +78,6 @@ public class  BBoxDialog : Object
         bb_sel.changed.connect(() => {
                 bb_ok.sensitive = true;
             });
-
-//        bb_combo.active = 0 /*mrtype+1*/;
 
         bb_treeview.row_activated.connect((p,c) => {
                 dialog.response(1001);
