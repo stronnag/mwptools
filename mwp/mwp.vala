@@ -843,7 +843,7 @@ public class MWPlanner : Gtk.Application {
         int signum;
         if(replay_paused)
         {
-            signum = Posix.Signal.CONT;
+            signum = MwpSignals.Signal.CONT;
             time_t now;
             time_t (out now);
             armtime += (now - pausetm);
@@ -851,7 +851,7 @@ public class MWPlanner : Gtk.Application {
         else
         {
             time_t (out pausetm);
-            signum = Posix.Signal.STOP;
+            signum = MwpSignals.Signal.STOP;
         }
         replay_paused = !replay_paused;
         if(replayer == Player.BBOX)
@@ -6475,7 +6475,7 @@ public class MWPlanner : Gtk.Application {
     {
         if(replayer == Player.BBOX)
         {
-            Posix.kill(child_pid, Posix.Signal.TERM);
+            Posix.kill(child_pid, MwpSignals.Signal.TERM);
         }
         else
         {
@@ -6496,7 +6496,7 @@ public class MWPlanner : Gtk.Application {
     private void stop_replayer()
     {
         if(replayer == Player.BBOX)
-            Posix.kill(child_pid, Posix.Signal.TERM);
+            Posix.kill(child_pid, MwpSignals.Signal.TERM);
 
         if(replayer == Player.MWP && thr != null)
             robj.stop();

@@ -53,6 +53,14 @@ namespace MwpSignals
 {
     [CCode (cname="init_signals")]
     int fd();
+
+    [CCode (cheader_filename = "signal.h", cprefix = "SIG", has_type_id = false)]
+    public enum Signal
+    {
+	CONT,
+	TERM,
+	STOP
+    }
 }
 
 [CCode (cheader_filename = "stdlib.h")]
