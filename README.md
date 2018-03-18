@@ -69,6 +69,9 @@ mwptools is tested on x86_64, ia32 and ARM devices.
 
 [Installation video](https://vimeo.com/256052320/)
 
+If you're new to Linux (or just new to mwp), please start with the [easy install wiki page](https://github.com/stronnag/mwptools/wiki/Install-mwp-on-a-Windows-computer-for-Linux-noobs), which describes installing to an Ubuntu VM using VirtualBox hosted on a Windows computer.
+
+
 ### Updating
 
 As mwptools makes no formal releases, you can update your installation
