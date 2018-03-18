@@ -811,7 +811,13 @@ public class MWPlanner : Gtk.Application {
             update_dockmenu(id);
             if(id == DOCKLETS.FBOX &&
                !dockitem[id].is_closed () && !dockitem[id].is_iconified())
-                fbox.update(true);
+            {
+                    Idle.add(() => {
+                            fbox.check_size();
+                            fbox.update(true);
+                            return Source.REMOVE;
+                        });
+            }
         }
     }
 
@@ -1959,15 +1965,6 @@ public class MWPlanner : Gtk.Application {
         dockitem[DOCKLETS.FBOX]= new DockItem.with_stock ("FlightView",
                          "FlightView", "gtk-find",
                          DockItemBehavior.NORMAL);
-
-/*
-        dockitem[DOCKLETS.FBOX].detach.connect((r) => {
-                print("FBOX detach\n");
-            });
-        dockitem[DOCKLETS.FBOX].dock_drag_end.connect((r) => {
-                print("FBOX drag end\n");
-            });
-*/
 
         dockitem[DOCKLETS.DBOX]= new DockItem.with_stock ("DirectionView",
                          "DirectionView", "gtk-fullscreen",
