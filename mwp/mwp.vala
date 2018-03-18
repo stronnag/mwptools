@@ -793,9 +793,6 @@ public class MWPlanner : Gtk.Application {
         if(dockitem[id].is_closed() && !dockitem[id].is_iconified())
         {
             dockitem[id].show();
-            if(id == DOCKLETS.FBOX)
-                fbox.update(true);
-
             if(iconify)
                 dockitem[id].iconify_item();
         }
@@ -812,6 +809,9 @@ public class MWPlanner : Gtk.Application {
         for(var id = DOCKLETS.MISSION; id < DOCKLETS.NUMBER; id += 1)
         {
             update_dockmenu(id);
+            if(id == DOCKLETS.FBOX &&
+               !dockitem[id].is_closed () && !dockitem[id].is_iconified())
+                fbox.update(true);
         }
     }
 
@@ -1876,6 +1876,7 @@ public class MWPlanner : Gtk.Application {
                             return Source.REMOVE;
                         });
                     get_map_size();
+                    map_warn_set_text();
                 }
             });
 
@@ -1958,6 +1959,16 @@ public class MWPlanner : Gtk.Application {
         dockitem[DOCKLETS.FBOX]= new DockItem.with_stock ("FlightView",
                          "FlightView", "gtk-find",
                          DockItemBehavior.NORMAL);
+
+/*
+        dockitem[DOCKLETS.FBOX].detach.connect((r) => {
+                print("FBOX detach\n");
+            });
+        dockitem[DOCKLETS.FBOX].dock_drag_end.connect((r) => {
+                print("FBOX drag end\n");
+            });
+*/
+
         dockitem[DOCKLETS.DBOX]= new DockItem.with_stock ("DirectionView",
                          "DirectionView", "gtk-fullscreen",
                          DockItemBehavior.NORMAL);
@@ -2712,16 +2723,39 @@ public class MWPlanner : Gtk.Application {
         return reqsize;
     }
 
+    private void map_warn_set_text(bool init = false)
+    {
+        if(clutextg != null)
+        {
+            var parts= conf.wp_text.split("/");
+            if(init)
+            {
+                var grey = Clutter.Color.from_string(parts[1]);
+                clutextg.color = grey;
+            }
+            if(window_h != -1)
+            {
+                var tsplit = parts[0].split(" ");
+                var th = int.parse(tsplit[1]);
+                var ih = (((window_h * 15 / 100) + 4) / 8) * 8;
+                if(ih < th)
+                    parts[0] = "%s %d".printf(tsplit[0], ih);
+            }
+            clutextg.font_name = parts[0];
+        }
+    }
+
     private void map_init_warning(Clutter.LayoutManager lm)
     {
-        var parts= conf.wp_text.split("/");
-        var grey = Clutter.Color.from_string(parts[1]);
         Clutter.Color red = { 0xff,0,0, 0xff};
 
         var textb = new Clutter.Actor ();
         var textm = new Clutter.Actor ();
+
         clutextr = new Clutter.Text.full ("Sans 36", "", red);
-        clutextg = new Clutter.Text.full (parts[0], "", grey);
+        clutextg = new Clutter.Text();
+        map_warn_set_text(true);
+
         lm.child_set(view,textb,"x-align", Clutter.ActorAlign.START);
         lm.child_set(view,textb,"y-align", Clutter.ActorAlign.START);
         lm.child_set(view,textm,"x-align", Clutter.ActorAlign.END);
