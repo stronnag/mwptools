@@ -2,11 +2,13 @@
 private static int baud = 115200;
 private static string dev = null;
 private static string mission = null;
+private static bool save_eeprom = false;
 
 const OptionEntry[] options = {
     { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", null},
     { "device", 'd', 0, OptionArg.STRING, out dev, "device", null},
-    { "mission", 'm', 0, OptionArg.STRING, out mission, "mission", null},
+    { "mission", 'm', 0, OptionArg.STRING, out mission, "mission file", null},
+    { "save", 's', 0, OptionArg.NONE, out save_eeprom, "save to eeprom", "false"},
     {null}
 };
 
@@ -324,29 +326,43 @@ class Muppet :Object
                             else
                             {
                                 MWPLog.message("Mission validated\n");
-                                if((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
-                                {
-                                    uint8 zb=42;
-                                    MWPLog.message("Saving mission\n");
-                                    msp.send_command(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
-                                }
-//                                msp.send_command(MSP.Cmds.WP_GETINFO, null, 0);
-                                ml.quit();
+                                msp.send_command(MSP.Cmds.WP_GETINFO, null, 0);
                             }
                         }
                         break;
 
-                        case MSP.Cmds.WP_MISSION_SAVE:
-                        MWPLog.message("Confirmed mission save\n");
+                        case MSP.Cmds.WP_GETINFO:
+                        var wpi = MSP_WP_GETINFO();
+                        uint8* rp = raw;
+                        rp++;
+                        wpi.max_wp = *rp++;
+                        wpi.wps_valid = *rp++;
+                        wpi.wp_count = *rp;
+                        MWPLog.message("WP_GETINFO: %u/%u/%u\n",
+                                       wpi.max_wp, wpi.wp_count, wpi.wps_valid);
+                        if(save_eeprom)
+                        {
+                            uint8 zb=42;
+                            MWPLog.message("Saving mission\n");
+                            msp.send_command(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
+                        }
+                        else
+                            ml.quit();
                         break;
 
-                        case MSP.Cmds.EEPROM_WRITE:
-                                MWPLog.message("Wrote EEPROM\n");
+                        case MSP.Cmds.WP_MISSION_SAVE:
+                        MWPLog.message("Confirmed mission save\n");
+                        ml.quit();
                         break;
 
                         default:
                         break;
                     }
+                }
+                else
+                {
+                    MWPLog.message("Error on %s\n", cmd.to_string());
+                    ml.quit();
                 }
             });
 
@@ -395,7 +411,7 @@ class Muppet :Object
 static int main (string[] args)
 {
     try {
-        var opt = new OptionContext(" - mission uploader");
+        var opt = new OptionContext(" - Mission UPloader");
         opt.set_help_enabled(true);
         opt.add_main_entries(options, null);
         opt.parse(ref args);
