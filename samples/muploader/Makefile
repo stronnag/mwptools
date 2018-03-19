@@ -2,7 +2,7 @@ VALAC=valac
 
 include ../../common.mk
 
-CLI=muppet
+CLI=mwp-uploader
 APPS=$(CLI)
 
 COMMOND=../../common
@@ -21,7 +21,7 @@ OPTS+=--vapidir=$(COMMOND) -X -I$(COMMOND) -X -lm
 
 all: $(CLI)
 
-$(CLI): $(CLI).vala $(COMMONC)
+$(CLI): muppet.vala $(COMMONC)
 	$(VALAC) $(DOPTS) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
 clean:
