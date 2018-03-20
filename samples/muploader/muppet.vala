@@ -48,19 +48,20 @@ class Muppet :Object
         FLAG = (1<<8)
     }
 
-    public MWSerial msp;
+    private MWSerial msp;
     private uint tid;
     private MainLoop ml;
     public DevManager dmgr;
     private string estr="";
     private WPMGR wpmgr;
     private bool have_wp;
+    public int result;
+    private uint8 eolc = '\n';
 
     private const int SPEED_CONV = 100;
     private const int ALT_CONV = 100;
     private const int POS_CONV = 10000000;
     private const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
-
 
     private MSP_WP[] mission_to_wps(Mission ms, out uint8 dg)
     {
@@ -136,8 +137,7 @@ class Muppet :Object
         }
         if(downgrade != 0)
         {
-            string str = "WARNING\nmwp downgraded %u multiwii specific waypoint(s) to compatible iNav equivalent(s). Once the upload has completed, please check you're happy with the result.\n\nNote that iNav will treat a final bare WAYPOINT as POSHOLD UNLIMITED".printf(downgrade);
-            MWPLog.message(str);
+            MWPLog.message("WARNING\nmwp downgraded %u multiwii specific waypoint(s) to compatible iNav equivalent(s). Once the upload has completed, please check you're happy with the result.\n\nNote that iNav will treat a final bare WAYPOINT as POSHOLD UNLIMITED\n", downgrade);
         }
 
         if(wps.length == 0)
@@ -180,19 +180,14 @@ class Muppet :Object
         Mission m=null;
         bool is_j = fn.has_suffix(".json");
         m =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
-        if(m != null && m.npoints > 0)
-        {
-            print("mission with %u points\n", m.npoints);
-            return m;
-        }
-        else
-        {
-            return null;
-        }
+        return (m != null && m.npoints > 0) ? m : null;
     }
 
     public void init()
     {
+        if(Posix.isatty(stderr.fileno()))
+            eolc = '\r';
+        result = 1;
         msp = new MWSerial();
         dmgr = new DevManager(DevMask.USB);
         var devs = dmgr.get_serial_devices();
@@ -243,7 +238,6 @@ class Muppet :Object
                         switch(fwid)
                         {
                             case "INAV":
-                                print("Detected iNav FC ...\n");
                                 var m =  open_mission_file(mission);
                                 if(m != null)
                                     upload_mission(m, WPDL.VALIDATE);
@@ -281,7 +275,7 @@ class Muppet :Object
                             (wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
                         {
                             WPFAIL fail = WPFAIL.OK;
-                            MWPLog.message("WP:%3d\n", w.wp_no);
+                            MWPLog.message("WP:%3d%c", w.wp_no, eolc);
                             if(w.wp_no != wpmgr.wps[wpmgr.wpidx].wp_no)
                                 fail |= WPFAIL.NO;
                             else if(w.action != wpmgr.wps[wpmgr.wpidx].action)
@@ -325,8 +319,11 @@ class Muppet :Object
                             }
                             else
                             {
+                                if(eolc == '\r')
+                                    MWPLog.puts("\n");
                                 MWPLog.message("Mission validated\n");
                                 msp.send_command(MSP.Cmds.WP_GETINFO, null, 0);
+                                result = 0;
                             }
                         }
                         break;
@@ -339,7 +336,11 @@ class Muppet :Object
                         wpi.wps_valid = *rp++;
                         wpi.wp_count = *rp;
                         MWPLog.message("WP_GETINFO: %u/%u/%u\n",
-                                       wpi.max_wp, wpi.wp_count, wpi.wps_valid);
+                                       wpi.wp_count, wpi.max_wp, wpi.wps_valid);
+                        stdout.printf("uploaded %u/%u WP, %svalid\n",
+                                      wpi.wp_count, wpi.max_wp,
+                                      (wpi.wps_valid == 0) ? "in" : "");
+
                         if(save_eeprom)
                         {
                             uint8 zb=42;
@@ -410,6 +411,7 @@ class Muppet :Object
 
 static int main (string[] args)
 {
+    int res = 1;
     try {
         var opt = new OptionContext(" - Mission UPloader");
         opt.set_help_enabled(true);
@@ -433,6 +435,7 @@ static int main (string[] args)
         var m = new Muppet();
         m.init();
         m.run();
+        res = m.result;
     }
-    return 0;
+    return res;
 }

@@ -33,4 +33,3 @@ local: $(APPS)
 install: $(APPS)
 	install -d $(prefix)/bin
 	install -s $(CLI) $(prefix)/bin/$(CLI)
-	ln -f $(prefix)/bin/$(CLI) $(prefix)/bin/$(CLIS)
