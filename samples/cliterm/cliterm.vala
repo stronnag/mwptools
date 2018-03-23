@@ -3,12 +3,14 @@ private static int baud = 115200;
 private static string eolmstr;
 private static string dev;
 private static bool noinit=false;
+private static string rcfile=null;
 private static int eolm;
 
 const OptionEntry[] options = {
     { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", "115200"},
     { "device", 'd', 0, OptionArg.STRING, out dev, "device", null},
-    { "noinit", 'n', 0,  OptionArg.NONE, out noinit, "noinit","false"},
+    { "noinit", 'n', 0,  OptionArg.NONE, out noinit, "noinit", "false"},
+    { "file", 'f', 0, OptionArg.STRING, out rcfile, "file", null},
     { "eolmode", 'm', 0, OptionArg.STRING, out eolmstr, "eol mode", "[cr,lf,crlf,crcrlf]"},
     {null}
 };
@@ -19,16 +21,25 @@ class CliTerm : Object
     private MWSerial.ProtoMode oldmode;
     public DevManager dmgr;
     private MainLoop ml;
+    private string eol;
 
     public void init()
     {
+        eol="\r";
+        if(eolm == 1)
+            eol="\n";
+        else if(eolm == 2)
+            eol="\r\n";
+        else if(eolm == 3)
+            eol="\r\r\n";
+
         MWPLog.set_time_format("%T");
         ml = new MainLoop();
         msp= new MWSerial();
         dmgr = new DevManager(DevMask.USB);
 
         var devs = dmgr.get_serial_devices();
-        if(devs.length == 1)
+        if(dev == null && devs.length == 1)
             dev = devs[0];
 
         if(dev != null)
@@ -53,6 +64,28 @@ class CliTerm : Object
                 });
     }
 
+    private void replay_file()
+    {
+        FileStream fs = FileStream.open (rcfile, "r");
+        if(fs != null)
+        {
+            Timeout.add(200, () => {
+                    var s = fs.read_line();
+                    if(s != null)
+                    {
+                        if(s.has_prefix("#") == false && s._strip().length != 0)
+                        {
+                            msp.write(s.data, s.length);
+                            msp.write(eol.data, eol.length);
+                        }
+                        return true;
+                    }
+                    else
+                        return false;
+                });
+        }
+    }
+
     private void open_device(string device)
     {
         string estr;
@@ -66,6 +99,13 @@ class CliTerm : Object
                         msp.write("#".data, 1);
                         return false;
                     });
+            if(rcfile != null)
+            {
+                Timeout.add(1000, () => {
+                        replay_file();
+                        return false;
+                    });
+            }
         }
         else
         {
@@ -105,11 +145,6 @@ class CliTerm : Object
 
                                   if(buf[0] == 13 && eolm != 0)
                                   {
-                                      string eol="\n";
-                                      if(eolm == 2)
-                                          eol="\r\n";
-                                      if(eolm == 3)
-                                          eol="\r\r\n";
                                       msp.write(eol.data,eol.length);
                                   }
                                   else
@@ -124,7 +159,6 @@ class CliTerm : Object
         Posix.tcsetattr(0, Posix.TCSANOW, oldtio);
     }
 }
-
 
 int main (string[] args)
 {
