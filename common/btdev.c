@@ -132,7 +132,7 @@ int connect_bt_device(char *btaddr, int *lasterr)
 #else
 int connect_bt_device (char *btaddr, int *lasterr)
 {
-    lasterr = EINVAL;
+    *lasterr = EINVAL;
     return -1;
 }
 #endif

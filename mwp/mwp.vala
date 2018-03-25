@@ -1760,7 +1760,7 @@ public class MWPlanner : Gtk.Application {
         dev_entry.active = 0;
 
         devman.device_added.connect((s) => {
-                if(s.contains(" "))
+                if(s.contains(" ") || msp.available)
                     append_deventry(s);
                 else
                     prepend_deventry(s);
