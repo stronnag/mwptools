@@ -14,11 +14,8 @@ In addition, mwptools provides a small suite of tools to manage a MultiWii NAV f
 
 ## Tools
 
- * mwp : "A mission planner for the rest of us". Simple mission
-   planning and monitoring. Mission Planning is provided for iNav and
-   MW-NAV (MW 2.4). Monitoring, logging and recording for iNav, MW and
-   CleanFlight;
- * cf-cli : Manage backup and restoration of CLI dump and diff
+ * mwp : "A mission planner for the rest of us". Simple mission planning and monitoring. Mission Planning is provided for iNav and MW-NAV (MW 2.4). Monitoring, logging and recording for iNav and MultiWii
+ * fc-cli : Manage backup and restoration of CLI dump and diff (fc-set, fc-get)
 
 ### Legacy (MW)
 
@@ -32,12 +29,7 @@ In addition, mwptools provides a small suite of tools to manage a MultiWii NAV f
 
 ## Platforms and OS
 
-The tools are designed to be portable and as far as possible platform
-and architecture agnostic. The suite is developed on Arch Linux and is
-tested on Ubuntu (latest and most recent LTS), Fedora (current),
-Debian (Stretch), Elementary (current) and
-FreeBSD (current release); building and running on any platform that
-supports (recent versions of):
+The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Ubuntu (latest and most recent LTS), Fedora (current), Debian (Stretch), Elementary (current) and FreeBSD (current release); building and running on any platform that supports (recent versions of):
 
  * gtk+3.0 (3.18 or later);
  * vala and gcc;
@@ -48,16 +40,13 @@ supports (recent versions of):
  * POSIX API
  * mspsim requires Posix pseudo-terminals.
 
-Please see the docs directory for specific development requirements
-for individual OS.
+Please see the docs directory for specific development requirements for individual OS.
 
 mwptools is tested on x86_64, ia32 and ARM devices.
 
 ## Installation
 
-* Review / install the dependencies for your platform. The
-  [documentation](docs/) directory lists dependencies for Fedora and
-  Debian/Ubuntu like systems.
+* Review / install the dependencies for your platform. The [documentation](docs/) directory lists dependencies for Fedora and Debian/Ubuntu like systems.
 
 * Clone the repository `git clone https://github.com/stronnag/mwptools.git`
 
@@ -71,11 +60,11 @@ mwptools is tested on x86_64, ia32 and ARM devices.
 
 If you're new to Linux (or just new to mwp), please start with the [easy install wiki page](https://github.com/stronnag/mwptools/wiki/Install-mwp-on-a-Windows-computer-for-Linux-noobs), which describes installing to an Ubuntu VM using VirtualBox hosted on a Windows computer.
 
+Support questions are best asked in the [RC Groups board](https://www.rcgroups.com/forums/showthread.php?2633708-mwp)
 
 ### Updating
 
-As mwptools makes no formal releases, you can update your installation
-from the master branch:
+As mwptools makes no formal releases, you can update your installation from the master branch:
 
 ````
 cd mwptools # the initial installation directory
@@ -89,10 +78,7 @@ Arch users can install mwptools from the AUR package `mwptools-git`
 
 ## Compatibility
 
-As well as supporting iNav, mwp aims to be compatible with EOSBandi's
-WinGUI for MW. It used the same XML mission file format (with mwp
-extensions) and aims to provide similar functionally where it is
-possible to reverse engineer the required protocol formats.
+As well as supporting iNav, mwp aims to be compatible with EOSBandi's WinGUI for MW. It used the same XML mission file format (with mwp extensions) and aims to provide similar functionally where it is possible to reverse engineer the required protocol formats.
 
 ## Licence
 
