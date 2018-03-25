@@ -352,6 +352,8 @@ public class MWPlanner : Gtk.Application {
     private static string serial;
     private static bool autocon;
     private int autocount = 0;
+    private uint8 last_wp_pts =0;
+
     private static bool mkcon = false;
     private static bool ignore_sz = false;
     private static bool nopoll = false;
@@ -4040,7 +4042,7 @@ public class MWPlanner : Gtk.Application {
                 wp_max = wpi.max_wp = *rp++;
                 wpi.wps_valid = *rp++;
                 wpi.wp_count = *rp;
-                NavStatus.nm_pts = wpi.wp_count;
+                NavStatus.nm_pts = last_wp_pts = wpi.wp_count;
                 MWPLog.message("WP_GETINFO: %u/%u/%u\n",
                                wpi.max_wp, wpi.wp_count, wpi.wps_valid);
                 if((wpmgr.wp_flag & WPDL.GETINFO) != 0 && wpi.wps_valid == 0)
@@ -4770,6 +4772,8 @@ public class MWPlanner : Gtk.Application {
                     else if(ltmflags == 10)
                     {
                         want_special |= POSMODE.WP;
+                        if (NavStatus.nm_pts == 0 || NavStatus.nm_pts == 255)
+                            NavStatus.nm_pts = last_wp_pts;
                     }
                     else if(ltmflags == 13)
                         want_special |= POSMODE.RTH;
