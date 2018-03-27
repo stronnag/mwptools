@@ -62,6 +62,7 @@ class FCMgr :Object
         inp = 0;
         state = State.IDLE;
         inbuf = new uint8[64*1024];
+        MwpTermCap.init();
     }
 
     private void start_calacc()
@@ -171,9 +172,9 @@ class FCMgr :Object
              else
                  sb.append_c(' ');
          MWPLog.puts("\r");
-         MWPLog.message("[%s] %3u%% ", sb.str, pct);
-    }
+         MWPLog.message("[%s] %3u%%%s", sb.str, pct, MwpTermCap.ceol);
 
+    }
 
     private void start_setlines()
     {
@@ -201,7 +202,8 @@ class FCMgr :Object
         if(done)
         {
             lp = lines.length;
-            MWPLog.puts("\r\n");
+            stderr.printf("%s\n", MwpTermCap.cnorm);
+
         }
     }
 
@@ -241,7 +243,10 @@ class FCMgr :Object
                             return false;
                         });
                 else
+                {
+                    stderr.puts(MwpTermCap.civis);
                     start_setlines();
+                }
                 break;
 
             case State.DIFF:

@@ -32,8 +32,10 @@ public class Flashdl : Object
     time_t st;
     time_t et;
 
+
     Flashdl()
     {
+        MwpTermCap.init();
     }
 
     private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, uint8 xflags, bool errs)
@@ -98,14 +100,19 @@ public class Flashdl : Object
                 {
                     deserialise_u32(raw+5, out fsize);
                     deserialise_u32(raw+9, out used);
-                    var pct = 100 * used  / fsize;
-                    MWPLog.message ("Data Flash %u /  %u (%u%%)\n", used, fsize, pct);
+
                     if(test)
                     {
-                        used =fsize;
-                        MWPLog.message("Entering test mode\n");
-                    }
+                        string s2=null;
 
+                        if((s2 = Environment.get_variable("TEST_USED")) != null)
+                           used = int.parse(s2);
+                        else
+                            used =fsize;
+                        MWPLog.message("Entering test mode for %s\n", esize(used));
+                    }
+                    var pct = 100 * used  / fsize;
+                    MWPLog.message ("Data Flash %u /  %u (%u%%)\n", used, fsize, pct);
                     if(used == 0 || info)
                         ml.quit();
                     else
@@ -124,6 +131,7 @@ public class Flashdl : Object
                             MWPLog.message("Downloading to %s\n".printf(fname));
 
                         send_data_read(0, ((used > 4096) ? 4096 : (uint16)used));
+                        stderr.printf("%s", MwpTermCap.civis);
                     }
                 }
                 break;
@@ -140,14 +148,16 @@ public class Flashdl : Object
                  var sb = new StringBuilder();
                  int i;
                  for(i = 0; i < 50; i++)
-                     if(i < pct/2)
+                     if(i < pct*50/100)
                          sb.append_unichar('█');
                      else
                          sb.append_unichar(' ');
 
-                 var str = "\r[%s] %s/%s %3u%% %us    ".printf(sb.str, esize(bread), efsize,
-                                                                   pct, remtime);
-                 Posix.write(2, str, str.length);
+                 stderr.printf("\r[%s] %s/%s %3u%% %us%s", sb.str,
+                               esize(bread),
+                               efsize,
+                               pct,
+                               remtime, MwpTermCap.ceol);
 
                  var rem  = used - bread;
                  if (rem > 0)
@@ -156,7 +166,7 @@ public class Flashdl : Object
                  }
                  else
                  {
-                     print("\n");
+                     stderr.printf("%s\n", MwpTermCap.cnorm);
                      MWPLog.message("%u bytes in %us, %u bytes/s\n", bread, (et-st), rate);
                      if (erase)
                      {
@@ -257,8 +267,9 @@ public class Flashdl : Object
                 ml.quit();
             });
 
-        Posix.signal (Posix.SIGINT, (s) => {
+        Posix.signal (MwpSignals.Signal.INT, (s) => {
                 Timeout.add(100, () => {
+                        stderr.printf("%s\n", MwpTermCap.cnorm);
                         ml.quit();
                         return Source.REMOVE;
                     });

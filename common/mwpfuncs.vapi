@@ -59,6 +59,7 @@ namespace MwpSignals
     {
 	CONT,
 	TERM,
+        INT,
 	STOP
     }
 }
@@ -88,4 +89,13 @@ namespace MwpVers
     static string id;
     [CCode (cname="__progname")]
     string progname;
+}
+
+[CCode (cheader_filename = "termcap.h")]
+namespace Tc
+{
+    [CCode (cname="tgetent")]
+    int tgetent(char *id, char *buf);
+    [CCode (cname="tgetstr")]
+    unowned string tgetstr(char *id, char **buf);
 }
