@@ -16,6 +16,9 @@ apt install libgdl-3-dev \
     libgstreamer1.0-dev \
     libvte-2.91-dev
 
+# vanity, prettier terminal progress bars (fcset, flashdl)
+apt install libncurses5-dev
+
 ## For libvala-dev there may be valac version specific deb
 ## check the vala version with:
 ## valac --version

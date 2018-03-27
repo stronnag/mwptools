@@ -5,7 +5,8 @@ dnf install gtk3-devel gstreamer1-devel clutter-devel webkitgtk3-devel \
     libgda-devel gobject-introspection-devel
 dnf install vala vala-devel vala-tools vala-doc
 dnf install libchamplain-gtk-devel libgdl-devel libgudev1-devel \
-    espeak-devel vte291-devel
+    espeak-devel vte291-devel ncurses-devel
+
 
 ## Shallow clone mwp ....
 # git clone --depth 1 https://github.com/stronnag/mwptools
