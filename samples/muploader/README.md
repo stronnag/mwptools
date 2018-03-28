@@ -5,7 +5,7 @@ Simple standalone uploader for iNav / MultiWii compatible mission files.
 
 ## Overview
 
-`mwp-uploader` performs the upload and validate of XML (mwp, ezgui, Mission Planner for iNav) and JSON (mwp) mission files to an iNav or MultiWii flight controller.
+`mwp-uploader` performs the upload (optionally save to eeprom) and validation of XML (mwp, ezgui, Mission Planner for iNav) and JSON (mwp) mission files to an iNav or MultiWii flight controller.
 
 ````
 $ ./mwp-uploader --help

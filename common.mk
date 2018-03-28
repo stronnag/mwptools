@@ -1,5 +1,7 @@
 XOS := $(shell uname)
 
+-include local.mk
+
 ifeq ($(XOS),Linux)
  DOPTS += -D HAVE_FIONREAD -D LINUX
  GUDEV = --pkg gudev-1.0
@@ -22,6 +24,8 @@ endif
 ifeq ($(VAPI),0.34)
  DOPTS += -D LSRVAL
 endif
+
+USE_TERMCAP := $(shell pkg-config --exists ncurses; echo $$?)
 
 GTKOK := $(shell pkg-config --atleast-version=3.22 gtk+-3.0; echo $$?)
 

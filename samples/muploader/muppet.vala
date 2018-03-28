@@ -5,9 +5,9 @@ private static string mission = null;
 private static bool save_eeprom = false;
 
 const OptionEntry[] options = {
-    { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", null},
-    { "device", 'd', 0, OptionArg.STRING, out dev, "device", null},
-    { "mission", 'm', 0, OptionArg.STRING, out mission, "mission file", null},
+    { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", "115200"},
+    { "device", 'd', 0, OptionArg.STRING, out dev, "device", "DEVICE_NAME"},
+    { "mission", 'm', 0, OptionArg.STRING, out mission, "mission file", "example.mission"},
     { "save", 's', 0, OptionArg.NONE, out save_eeprom, "save to eeprom", "false"},
     {null}
 };

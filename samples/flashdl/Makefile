@@ -11,7 +11,11 @@ COMMONC=$(COMMOND)/serial-device.vala $(COMMOND)/btdev.c \
 
 PKGS = --pkg posix --pkg gio-2.0 --pkg linux --pkg mwpfuncs $(GUDEV)
 OPTS+=--vapidir=$(COMMOND) -X -I$(COMMOND)
-LOPTS+= -X -lncurses
+
+ifeq ($(USE_TERMCAP),0)
+ DOPTS+= -D USE_TERMCAP
+ LOPTS+= -X -lncurses
+endif
 
 APP=$(CLI)
 
