@@ -77,6 +77,7 @@ if sbaud
   sport.write "serial\n"
   res = sio.expect("# ",5)
   if m=res[0].match(/.*(serial #{sid} \d+ \d+ \d+ \d+ \d+)/)
+    puts "Found \"#{m}\""
     defser = m[0]
     params = m[0].split
     params[3] = sbaud
@@ -114,6 +115,10 @@ unless x_erase
   begin
     if res && res.length == 2
       fsize = res[1].to_i
+      unless  ENV['TEST_USED'].nil?
+	fsize = ENV['TEST_USED'].to_i
+	print "Test mode "
+      end
       puts "Size = #{fsize}"
       xfsize = fsize
       stm = Time.now
