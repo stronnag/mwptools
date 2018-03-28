@@ -42,6 +42,16 @@ This may be used in scripts, for example:
 
 If no device is given, `mwp-uploader` will try to auto-detect the FC.
 
+----
+$ mwp-uploader -m nm_multi2.mission
+2018-03-28T16:15:04+0100 No device given ... watching
+2018-03-28T16:15:04+0100 Opening /dev/ttyUSB0
+2018-03-28T16:15:05+0100 WP: 48
+2018-03-28T16:15:05+0100 Mission validated
+2018-03-28T16:15:05+0100 WP_GETINFO: 48/60/1
+uploaded 48/60 WP, valid
+----
+
 == fc-get / fc-set
 
 `fc-get` and `fc-set` are tools to manage CLI settings:
@@ -64,7 +74,7 @@ Application Options:
 
 ----
 
-Note: `fc-get` and `fc-set` are essentially the same program, the function is defined by the name.
+NOTE: `fc-get` and `fc-set` are essentially the same program, the function is defined by the name.
 
 ----
 $ fc-get /tmp/dodo-test.txt
@@ -174,7 +184,7 @@ Got 1638400 bytes in 18.8s 87268.8 b/s
 Exiting
 ----
 
-After the download has completed, the serial port is reset to the prior configured bayd rate (typically 115200). Note the very high speed of the  download, 87268 bytes /sec.
+After the download has completed, the serial port is reset to the prior configured bayd rate (typically 115200). Note the very high speed of the  download, 87268 bytes /sec; this is almost 9 times faster than the standard baud (and 9x the speed of using the configurator with a USB board).
 
 Should the download fail and the board serial is not reset automatically, it will be necessary to manually reset UART1, possibly using `cliterm`.
 
