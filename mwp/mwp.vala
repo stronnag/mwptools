@@ -1081,9 +1081,10 @@ public class MWPlanner : Gtk.Application {
                     sb.append("<b>Hardware Status</b>\n");
                     for(var i = 0; i < 8; i++)
                     {
-                        sb.append_printf("%s : %s\n",
-                                         sensor_names[i],
-                                         health_states[hwstatus[i+1]]);
+                        uint ihs = hwstatus[i+1];
+                        string shs = (ihs < health_states.length) ?
+                            health_states[ihs] : "*broken*";
+                        sb.append_printf("%s : %s\n", sensor_names[i], shs);
                     }
                 }
 
