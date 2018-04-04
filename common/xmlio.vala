@@ -210,7 +210,8 @@ public class XmlIO : Object
 
     }
 
-    public static string to_xml_string(Mission ms, bool pretty=true)
+    public static string to_xml_string(Mission ms, bool pretty=true,
+                                       string generator="mwp")
     {
         Parser.init ();
         Xml.Doc* doc = new Xml.Doc ("1.0");
@@ -238,6 +239,7 @@ public class XmlIO : Object
         subnode->new_prop ("zoom", ms.zoom.to_string());
         subnode->new_prop ("cx", ms.cx.to_string());
         subnode->new_prop ("cy", ms.cy.to_string());
+        subnode->new_prop ("generator", "%s (mwptools)".printf(generator));
 
         if(ms.et > 0)
         {

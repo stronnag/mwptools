@@ -87,7 +87,7 @@ public class PosFormat : GLib.Object
 
 [DBus (name = "org.mwptools.mwp")]
 interface MwpIF : Object {
-    public abstract int set_mission (string msg) throws IOError;
+    public abstract int set_mission (string msg) throws GLib.Error;
 }
 
 public class AreaPlanner : GLib.Object {
@@ -327,10 +327,10 @@ public class AreaPlanner : GLib.Object {
             });
 
         s_publish.clicked.connect(() => {
-                var s = XmlIO.to_xml_string(ms, false);
+                var s = XmlIO.to_xml_string(ms, false, "mwp-area-planner");
                 try {
                     proxy.set_mission(s);
-                } catch (IOError e) {
+                } catch (Error e) {
                         stderr.printf("set_mission : %s\n", e.message);
                     }
             });
