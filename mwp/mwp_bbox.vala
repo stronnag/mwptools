@@ -38,8 +38,7 @@ public class  BBoxDialog : Object
 
     private const int BB_MINSIZE = (4*1024);
 
-    public BBoxDialog(Gtk.Builder builder, int mrtype = 3, Gtk.Window? w = null,
-                      string? logpath = null)
+    public BBoxDialog(Gtk.Builder builder, Gtk.Window? w = null, string? logpath = null)
     {
         _w = w;
         dialog = builder.get_object ("bb_dialog") as Gtk.Dialog;

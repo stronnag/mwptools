@@ -92,6 +92,7 @@ public class MSP : Object
         RTC =  246,
         SET_RTC = 247,
         DEBUGMSG = 253,
+		NAME = 10,
 
         MSPV2 = 255,
         COMMON_TZ = 0x1001,

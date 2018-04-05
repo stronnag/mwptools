@@ -477,7 +477,10 @@ public class MWPlanner : Gtk.Application {
     private static bool use_wayland = false;
     private static bool permawarn = false;
 
+
+
     private uchar hwstatus[9];
+    private ModelMap mmap;
 
     public DevManager devman;
 
@@ -728,7 +731,7 @@ public class MWPlanner : Gtk.Application {
     private static string rfile = null;
     private static string bfile = null;
     private static string forward_device = null;
-    private static int dmrtype=Craft.Vehicles.QUADX; // default to quad
+    private static int dmrtype=0;
     private static DEBUG_FLAGS debug_flags = 0;
     private static VersInfo vi ={0};
     private static bool set_fs;
@@ -898,8 +901,6 @@ public class MWPlanner : Gtk.Application {
 
         base.startup();
 
-        vi.mrtype = (uint8)dmrtype;
-
         wpmgr = WPMGR();
 
         vbsamples = new float[MAXVSAMPLE];
@@ -910,6 +911,9 @@ public class MWPlanner : Gtk.Application {
 
         conf = new MWPSettings();
         conf.read_settings();
+
+        mmap = new ModelMap();
+        mmap.init();
 
         var spapi =  0;
         if(exvox == null)
@@ -1151,7 +1155,7 @@ public class MWPlanner : Gtk.Application {
             });
 
         navconf = new NavConfig(window, builder);
-        bb_runner = new BBoxDialog(builder, dmrtype, window, conf.logpath);
+        bb_runner = new BBoxDialog(builder, window, conf.logpath);
 
         dockmenus = new string[DOCKLETS.NUMBER];
 
@@ -3523,6 +3527,9 @@ public class MWPlanner : Gtk.Application {
             MWPLog.message("Error on cmd %s %d\n", cmd.to_string(), cmd);
             switch(cmd)
             {
+                case MSP.Cmds.NAME:
+                    queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+                    break;
                 case MSP.Cmds.NAV_CONFIG:
                     navcap = NAVCAPS.NONE;
                     break;
@@ -3626,9 +3633,18 @@ public class MWPlanner : Gtk.Application {
                 else
                 {
                     vi.fc_api = raw[1] << 8 | raw[2];
-                    queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+                    queue_cmd(MSP.Cmds.NAME,null,0);
                     xarm_flags = 0xffff;
                 }
+                break;
+
+            case MSP.Cmds.NAME:
+                string name = (string)raw;
+                int mx = mmap.get_model_type(name);
+                if (mx != 0)
+                    vi.mrtype = (uint8)mx;
+                MWPLog.message("Model name : %s\n", name);
+                queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
                 break;
 
             case MSP.Cmds.COMMON_SET_TZ:
@@ -3830,12 +3846,9 @@ public class MWPlanner : Gtk.Application {
                     vi = {0};
                     vi.mvers = raw[0];
                     vi.mrtype = raw[1];
-                    if(dmrtype != vi.mrtype)
-                    {
-                        dmrtype = vi.mrtype;
-                        if(craft != null)
-                            craft.set_icon(vi.mrtype);
-                    }
+                    if(dmrtype != 0)
+                        vi.mrtype = (uint8)dmrtype;
+
                     prlabel = false;
 
                     deserialise_u32(raw+3, out capability);
@@ -3880,7 +3893,6 @@ public class MWPlanner : Gtk.Application {
                     vi.fctype = mwvar;
                     var vers="%s v%03d".printf(MWChooser.mwnames[_mwvar], vi.mvers);
                     verlab.set_label(vers);
-                    typlab.set_label(MSP.get_mrtype(vi.mrtype));
                     queue_cmd(MSP.Cmds.API_VERSION,null,0);
                 }
                 icount++;
@@ -3957,6 +3969,10 @@ public class MWPlanner : Gtk.Application {
                 MWPLog.message("Masks arm %jx angle %jx horz %jx ph %jx rth %jx wp %jx\n",
                                arm_mask, angle_mask, horz_mask, ph_mask,
                                rth_mask, wp_mask);
+
+                if(craft != null)
+                    craft.set_icon(vi.mrtype);
+                typlab.set_label(MSP.get_mrtype(vi.mrtype));
                 if(Logger.is_logging)
                     Logger.fcinfo(last_file,vi,capability,profile, boxnames);
                 queue_cmd(MSP.Cmds.MISC,null,0);
