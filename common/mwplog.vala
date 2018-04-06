@@ -36,14 +36,18 @@ public class MWPLog : GLib.Object
     {
         if(init == false)
         {
+            var s = Environment.get_variable("MWP_NOLOG_REDIRECT");
             time_t currtime;
             time_t(out currtime);
-            if(Posix.isatty(stderr.fileno()) == false)
+            if(s == null && Posix.isatty(stderr.fileno()) == false)
             {
                 var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
                 fs = FileStream.open(fn,"a");
             }
-            else fs  = FileStream.fdopen(stderr.fileno(), "a");
+
+            if(fs == null)
+                fs  = FileStream.fdopen(stderr.fileno(), "a");
+
             init = true;
             if(tfstr == null)
                 tfstr = "%FT%T%z";

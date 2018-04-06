@@ -3643,7 +3643,7 @@ public class MWPlanner : Gtk.Application {
                 int mx = mmap.get_model_type(name);
                 if (mx != 0)
                     vi.mrtype = (uint8)mx;
-                MWPLog.message("Model name : %s\n", name);
+                MWPLog.message("Model name: \"%s\"\n", name);
                 queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
                 break;
 
