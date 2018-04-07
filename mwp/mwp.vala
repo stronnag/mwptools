@@ -6446,9 +6446,9 @@ public class MWPlanner : Gtk.Application {
         if(sr == 0)
         {
             replay_paused = false;
-            MWPLog.message("Replay \"%s\" log %s\n",
+            MWPLog.message("Replay \"%s\" log %s model %d\n",
                            (rtype == 2) ? "bbox" : "mwp",
-                           fn);
+                           fn, btype);
             if(craft != null)
                 craft.park();
 

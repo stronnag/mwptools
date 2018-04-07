@@ -56,6 +56,8 @@ class FCMgr :Object
     private Fc fc;
     private bool dump = false;
     private uint8 trace = 0;
+    private uint32 fc_vers;
+    private bool have_acal = false;
 
     public FCMgr()
     {
@@ -92,6 +94,10 @@ class FCMgr :Object
         {
             if(s.contains("set acc_hardware = NONE"))
                 docal = false;
+
+            if(s.contains("set acc_calibration") || s.contains("set acczero_x"))
+                have_acal = true;
+
             if(s.has_prefix("# Betaflight"))
                 _fc = Fc.BF;
             if(s.has_prefix("# INAV"))
@@ -106,6 +112,7 @@ class FCMgr :Object
             if(s.has_prefix("#") == false && s._strip().length != 0)
                 lines += s;
         }
+
         MWPLog.message("Starting restore\n");
         if(fc != _fc)
         {
@@ -113,7 +120,24 @@ class FCMgr :Object
             ml.quit();
         }
         else
+        {
+            switch(fc)
+            {
+                case Fc.INAV:
+                    docal = false;
+                    break;
+                case Fc.BF:
+                    if(have_acal && fc_vers >= 0x30400)
+                        docal = false;
+                    else
+                        docal = true;
+                    break;
+                default:
+                    docal = true;
+                    break;
+            }
             start_cli();
+        }
     }
 
     private void start_cli()
@@ -149,7 +173,7 @@ class FCMgr :Object
 
     private void start_vers()
     {
-        msp.send_command(MSP.Cmds.FC_VARIANT, null, 0);
+        msp.send_command(MSP.Cmds.FC_VERSION, null, 0);
     }
 
     private void set_save_state()
@@ -385,6 +409,7 @@ class FCMgr :Object
                         if(trace == 0)
                             next_state();
                         break;
+
                         case MSP.Cmds.DEBUGMSG:
                         MWPLog.message((string)raw);
                         trace++;
@@ -407,6 +432,11 @@ class FCMgr :Object
                             });
                         break;
 
+                        case MSP.Cmds.FC_VERSION:
+                        fc_vers = raw[0] << 16 | raw[1] << 8 | raw[2];
+                        msp.send_command(MSP.Cmds.FC_VARIANT, null, 0);
+                        break;
+
                         case MSP.Cmds.FC_VARIANT:
                         string fwid = (string)raw[0:4];
                         switch(fwid)
@@ -421,9 +451,6 @@ class FCMgr :Object
                                 fc = Fc.UNKNOWN;
                                 break;
                         }
-
-                        if(fc != Fc.INAV)
-                            docal = true;
 
                         Idle.add(() => { start_restore(); return false;});
                         break;
