@@ -3529,6 +3529,7 @@ public class MWPlanner : Gtk.Application {
             {
                 case MSP.Cmds.NAME:
                     queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+                    run_queue();
                     break;
                 case MSP.Cmds.NAV_CONFIG:
                     navcap = NAVCAPS.NONE;
@@ -3628,14 +3629,16 @@ public class MWPlanner : Gtk.Application {
                     mwvar = vi.fctype = MWChooser.MWVAR.CF;
                     var vers="CF mwc %03d".printf(vi.mvers);
                     verlab.set_label(vers);
-                    queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                 }
                 else
                 {
                     vi.fc_api = raw[1] << 8 | raw[2];
-                    queue_cmd(MSP.Cmds.NAME,null,0);
                     xarm_flags = 0xffff;
                 }
+                if (vi.fc_api >= 0x200)
+                    queue_cmd(MSP.Cmds.NAME,null,0);
+                else
+                    queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                 break;
 
             case MSP.Cmds.NAME:
