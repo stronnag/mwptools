@@ -100,7 +100,8 @@ public class MSP : Object
         COMMON_SETTING = 0x1003,
         COMMON_SET_SETTING = 0x1004,
 
-        INAV_STATUS = 0x2000,
+		INAV_STATUS = 0x2000,
+		INAV_MIXER = 0x2010,
 
         LTM_BASE  = 0x10000,
         TS_FRAME = (LTM_BASE + 'S'),

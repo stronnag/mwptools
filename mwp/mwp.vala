@@ -496,7 +496,8 @@ public class MWPlanner : Gtk.Application {
 
     private enum APIVERS
     {
-        mspV2 = 0x0200
+        mspV2 = 0x0200,
+        mixer = 0x0202
     }
 
     private enum FCVERS
@@ -3528,6 +3529,7 @@ public class MWPlanner : Gtk.Application {
             switch(cmd)
             {
                 case MSP.Cmds.NAME:
+                case MSP.Cmds.INAV_MIXER:
                     queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
                     run_queue();
                     break;
@@ -3635,20 +3637,51 @@ public class MWPlanner : Gtk.Application {
                     vi.fc_api = raw[1] << 8 | raw[2];
                     xarm_flags = 0xffff;
                 }
-                if (vi.fc_api >= 0x200)
+                if (vi.fc_api >= APIVERS.mspV2)
                     queue_cmd(MSP.Cmds.NAME,null,0);
                 else
                     queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                 break;
 
             case MSP.Cmds.NAME:
+                raw[len] = 0;
                 string name = (string)raw;
+                MWPLog.message("Model name: \"%s\"\n", name);
                 int mx = mmap.get_model_type(name);
                 if (mx != 0)
                     vi.mrtype = (uint8)mx;
-                MWPLog.message("Model name: \"%s\"\n", name);
-                queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+                else
+                    if (vi.fc_api >= APIVERS.mixer)
+                        queue_cmd(MSP.Cmds.INAV_MIXER,null,0);
+                    else
+                        queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                 break;
+
+            case MSP.Cmds.INAV_MIXER:
+                uint16 hx;
+                hx = raw[6]<<8|raw[5];
+                MWPLog.message("V2 mixer %u %u\n", raw[5], raw[3]);
+                if(hx != 0 && hx < 0xff)
+                    vi.mrtype = raw[5]; // legacy types only
+                else
+                {
+                    switch(raw[3])
+                    {
+                        case 0:
+                            vi.mrtype = 3;
+                            break;
+                        case 1:
+                            vi.mrtype = 8;
+                            break;
+                        case 3:
+                            vi.mrtype = 1;
+                            break;
+                        default:
+                            break;
+                    }
+                 }
+                 queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+                 break;
 
             case MSP.Cmds.COMMON_SET_TZ:
                 rtcsecs = 0;

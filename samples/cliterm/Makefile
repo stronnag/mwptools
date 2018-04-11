@@ -16,7 +16,7 @@ PKGSR = --pkg gio-2.0  $(GUDEV)
 OPTS+=--vapidir=$(COMMOND) -X -I$(COMMOND)
 
 
-APPS=$(APP) $(CLI) mspfuzz
+APPS=$(APP) $(CLI)
 
 all: $(APPS)
 
@@ -30,6 +30,9 @@ mspfuzz: mspfuzz.vala $(COMMONC)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
 mspcommon: mspcommon.vala $(COMMONC)
+	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
+
+mspmixer: mspmixer.vala $(COMMONC)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
 vxtest: vxtest.vala $(COMMONC)
