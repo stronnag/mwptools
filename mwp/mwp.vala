@@ -3638,7 +3638,11 @@ public class MWPlanner : Gtk.Application {
                     xarm_flags = 0xffff;
                 }
                 if (vi.fc_api >= APIVERS.mspV2)
+                {
+                    msp.use_v2 = true;
+                    MWPLog.message("Using MSP v2\n");
                     queue_cmd(MSP.Cmds.NAME,null,0);
+                }
                 else
                     queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                 break;
@@ -3834,8 +3838,6 @@ public class MWPlanner : Gtk.Application {
                             (vi.fc_vers >= FCVERS.hasV2STATUS) ? MSP.Cmds.INAV_STATUS : MSP.Cmds.STATUS_EX;
                         if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ)
                         {
-                            msp.use_v2 = true;
-                            MWPLog.message("set MSP v2\n");
                             var dt = new DateTime.now_local();
                             int16 tzoffm = (short)((int64)dt.get_utc_offset()/(1000*1000*60));
                             if(tzoffm != 0)
