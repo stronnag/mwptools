@@ -78,7 +78,8 @@ public class Logger : GLib.Object
     }
 
     public static void fcinfo(string? title, VersInfo vi,uint32 capability,
-                              uint8 profile, string? boxnames = null)
+                              uint8 profile, string? boxnames = null,
+                              string? vname = null)
     {
         gen = new Json.Generator ();
         var builder = init("init");
@@ -102,6 +103,12 @@ public class Logger : GLib.Object
         builder.add_string_value (vi.board);
         builder.set_member_name ("fcname");
         builder.add_string_value (vi.name);
+
+        if(vname != null)
+        {
+            builder.set_member_name ("vname");
+            builder.add_string_value (vname);
+        }
 
         if(boxnames != null)
         {

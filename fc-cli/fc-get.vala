@@ -371,7 +371,7 @@ class FCMgr :Object
                 }
                 if(inp >= 9 && Memory.cmp(&inbuf[inp-9], "Rebooting".data, 9) == 0)
                 {
-                    MWPLog.message("Rebooting\n");
+                    MWPLog.message("Rebooting (%s)\n", state.to_string());
                     inp = 0;
                     msp.pmode = oldmode;
                     if(state == State.EXIT)

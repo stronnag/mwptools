@@ -473,11 +473,11 @@ public class MWPlanner : Gtk.Application {
 
     private MapSize mapsize;
 
+    private string? vname = null;
+
     private static bool is_wayland = false;
     private static bool use_wayland = false;
     private static bool permawarn = false;
-
-
 
     private uchar hwstatus[9];
     private ModelMap mmap;
@@ -1693,7 +1693,8 @@ public class MWPlanner : Gtk.Application {
                 {
                     Logger.start(conf.logsavepath);
                     if(armed != 0)
-                        Logger.fcinfo(last_file,vi,capability,profile, boxnames);
+                        Logger.fcinfo(last_file,vi,capability,profile, boxnames,
+                                      vname);
                 }
                 else
                     Logger.stop();
@@ -3650,9 +3651,9 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.NAME:
                 raw[len] = 0;
-                string name = (string)raw;
-                MWPLog.message("Model name: \"%s\"\n", name);
-                int mx = mmap.get_model_type(name);
+                vname = (string)raw;
+                MWPLog.message("Model name: \"%s\"\n", vname);
+                int mx = mmap.get_model_type(vname);
                 if (mx != 0)
                 {
                     vi.mrtype = (uint8)mx;
