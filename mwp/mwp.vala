@@ -3631,20 +3631,21 @@ public class MWPlanner : Gtk.Application {
                     mwvar = vi.fctype = MWChooser.MWVAR.CF;
                     var vers="CF mwc %03d".printf(vi.mvers);
                     verlab.set_label(vers);
+                    queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                 }
                 else
                 {
                     vi.fc_api = raw[1] << 8 | raw[2];
                     xarm_flags = 0xffff;
+                    if (vi.fc_api >= APIVERS.mspV2)
+                    {
+                        msp.use_v2 = true;
+                        MWPLog.message("Using MSP v2\n");
+                        queue_cmd(MSP.Cmds.NAME,null,0);
+                    }
+                    else
+                        queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
                 }
-                if (vi.fc_api >= APIVERS.mspV2)
-                {
-                    msp.use_v2 = true;
-                    MWPLog.message("Using MSP v2\n");
-                    queue_cmd(MSP.Cmds.NAME,null,0);
-                }
-                else
-                    queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                 break;
 
             case MSP.Cmds.NAME:
@@ -3653,12 +3654,15 @@ public class MWPlanner : Gtk.Application {
                 MWPLog.message("Model name: \"%s\"\n", name);
                 int mx = mmap.get_model_type(name);
                 if (mx != 0)
+                {
                     vi.mrtype = (uint8)mx;
+                    queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+                }
                 else
                     if (vi.fc_api >= APIVERS.mixer)
                         queue_cmd(MSP.Cmds.INAV_MIXER,null,0);
                     else
-                        queue_cmd(MSP.Cmds.BOXNAMES,null,0);
+                        queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
                 break;
 
             case MSP.Cmds.INAV_MIXER:
@@ -5609,6 +5613,10 @@ public class MWPlanner : Gtk.Application {
 
     private void queue_cmd(MSP.Cmds cmd, void* buf, size_t len)
     {
+        if(((debug_flags & DEBUG_FLAGS.INIT) != DEBUG_FLAGS.NONE)
+           && (serstate == SERSTATE.NORMAL))
+            MWPLog.message("Init MSP %s (%u)\n", cmd.to_string(), cmd);
+
         if(replayer == Player.NONE)
         {
             uint8 *dt = (buf == null) ? null : Memory.dup(buf, (uint)len);
@@ -5853,12 +5861,13 @@ public class MWPlanner : Gtk.Application {
                 }
                 msp.setup_reader();
                 serstate = SERSTATE.NORMAL;
+                MWPLog.message("Serial ready\n");
                 if(nopoll == false)
                 {
                     queue_cmd(MSP.Cmds.IDENT,null,0);
                     run_queue();
                 }
-                MWPLog.message("Serial ready\n");
+
             }
             else
             {

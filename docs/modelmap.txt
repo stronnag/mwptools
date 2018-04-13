@@ -1,7 +1,6 @@
-# In iNav 1.91 / 2.0, the old mixer settings will be gone, and it will
-# be difficult to reverse the mixer settings into a model type.
+# In iNav 1.91 / 2.0, the old mixer settings will be gone.
 # As an expediant, mwp provides this file to define a list of
-# model name,old mixer type
+# model name,old mixer type. It is probably not necesary.
 #
 # Where the old mixer types are:
 #        TRI = 1,
