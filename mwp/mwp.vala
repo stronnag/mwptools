@@ -5045,7 +5045,13 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.Tx_FRAME:
                 if (replayer != Player.NONE)
+                {
+                    if(raw[0] != 0)
+                        MWPLog.message("BB Disarm %s (%u)\n",
+                                       MSP.bb_disarm(raw[0]),
+                                       raw[0]);
                     cleanup_replay();
+                }
                 break;
 
             case MSP.Cmds.SET_NAV_POSHOLD:

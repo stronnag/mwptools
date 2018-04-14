@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
@@ -16,16 +15,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-public class MSP : Object
-{
+
+public class MSP : Object {
     public enum Feature
     {
         GPS = (1 << 7),
         TELEMETRY = (1 << 10)
     }
 
-    public enum Cmds
-    {
+    public enum Cmds {
         API_VERSION=1,
         FC_VARIANT=2,
         FC_VERSION=3,
@@ -160,15 +158,14 @@ public class MSP : Object
             default:
                 assert_not_reached();
         }
-        }
+			}
 
         public static Sensors[] all() {return { ACC, BARO, MAG, GPS, SONAR
-                    };
-        }
-        }
+            };
+				}
+			}
 
-    public enum Action
-    {
+    public enum Action {
         UNASSIGNED=0,
         WAYPOINT,
         POSHOLD_UNLIM,
@@ -257,8 +254,20 @@ public class MSP : Object
         "Nav mode undefined"   // 19
     };
 
-    private static HashTable<string, MSP.Action> wp_hash;
 
+    private const string [] bb_disarm_reasons =
+    {
+        "None",
+        "Timeout",
+        "Sticks",
+        "Switch_3D",
+        "Switch",
+        "Killswitch",
+        "Failsafe",
+        "Navigation"
+    };
+
+    private static HashTable<string, MSP.Action> wp_hash;
 
     public static string gps_mode(uint8 nmode)
     {
@@ -268,6 +277,13 @@ public class MSP : Object
             return "Unknown";
     }
 
+    public static string bb_disarm(uint8 reason)
+    {
+        if (reason < bb_disarm_reasons.length)
+            return bb_disarm_reasons[reason];
+        else
+            return "Unknown";
+    }
 
     public static string nav_state(uint8 nstat)
     {

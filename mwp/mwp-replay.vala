@@ -804,7 +804,7 @@ public class ReplayThread : GLib.Object
                     send_rec(fd,MSP.Cmds.STATUS, (uint)nb, buf);
                     Thread.usleep(100);
                 }
-                uint8 x='x';
+                uint8 x=0;
                 send_ltm(fd, 'x', &x, 1);
                 replay_done();
                 return 0;

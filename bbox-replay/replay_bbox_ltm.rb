@@ -300,9 +300,9 @@ def encode_et et
   msg
 end
 
-def encode_x
+def encode_x d=0
   msg='$Tx'
-  sl = [120].pack('c')
+  sl = [d].pack('c')
   msg << sl << mksum(sl)
   msg
 end
@@ -502,7 +502,7 @@ def get_autotype nmotor, nservo
   mtyp
 end
 
-unless RUBY_VERSION.match(/^2/)
+if RUBY_VERSION.match(/^1/)
   abort "This script requires a miniumum of Ruby 2.0"
 end
 
@@ -517,6 +517,7 @@ mindelay = false
 childfd = nil
 autotyp=nil
 dumph = false
+scan = nil
 
 pref_fn = File.join(ENV["HOME"],".config", "mwp", "replay_ltm.json")
 if File.exist? pref_fn
@@ -539,6 +540,7 @@ ARGV.options do |opt|
   opt.on('-f','--fast'){mindelay=true}
   opt.on('-d','--dump-headers'){dumph=true}
   opt.on('-v','--verbose'){$verbose=true}
+  opt.on('-S', '--scan-only'){scan = true}
   opt.on('--fd=FD',Integer){|o| childfd=o}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
@@ -554,6 +556,8 @@ nv = 0
 icnt = 0
 origin = nil
 
+RDISARMS = %w/NONE TIMEOUT STICKS SWITCH_3D SWITCH KILLSWITCH FAILSAFE NAVIGATION/
+
 begin
   Open3.capture3('blackbox_decode --help')
 rescue
@@ -563,6 +567,7 @@ end
 bbox = (ARGV[0]|| abort('no BBOX log'))
 
 gitinfos=[]
+disarms=[]
 
 File.open(bbox,'rb') do |f|
   f.each do |l|
@@ -570,8 +575,18 @@ File.open(bbox,'rb') do |f|
       gitinfos << m[1]
     elsif m = l.match(/^H vbat_scale:(\d+)$/)
       $vbatscale = m[1].to_f / 110.0
+    elsif m = l.match(/End of log \(disarm reason:(\d+)/)
+      disarms << m[1].to_i
     end
   end
+end
+
+if scan
+  mx = [gitinfos.size, disarms.size].max
+  0.upto(mx - 1) do |i|
+    puts "#{i+1} #{gitinfos[i]}, disarm on #{RDISARMS[disarms[i]]}"
+  end
+  exit
 end
 
 unless dumph
@@ -768,5 +783,5 @@ if lastr
   end
 end
 
-send_msg dev, encode_x
+send_msg dev, encode_x(disarms[idx-1])
 #File.unlink(STDERR_LOG) if File.zero?(STDERR_LOG)
