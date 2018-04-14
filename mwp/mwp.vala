@@ -3930,11 +3930,11 @@ public class MWPlanner : Gtk.Application {
                         else
                         {
                             _mwvar = (navcap != NAVCAPS.NONE) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
-                            wp_max = 40; // safety net
+                            wp_max = 30; // safety net
                         }
                     }
                     vi.fctype = mwvar;
-                    var vers="%s v%03d".printf(MWChooser.mwnames[_mwvar], vi.mvers);
+                    var vers="MWvers v%03d".printf(vi.mvers);
                     verlab.set_label(vers);
                     queue_cmd(MSP.Cmds.API_VERSION,null,0);
                 }
