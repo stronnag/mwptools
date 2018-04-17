@@ -662,7 +662,7 @@ public class MWPlanner : Gtk.Application {
         "Failsafe", "Not level","Calibrating","Overload",
         "Navigation unsafe", "Compass cal", "Acc cal", "Arm switch", "H/W fail",
         "Box failsafe", "Box killswitch", "RC Link", "Throttle", "CLI",
-        "CMS Menu", "OSD Menu"
+        "CMS Menu", "OSD Menu", "Roll/Pitch", "Servo Autotrim", "Out of memory"
     };
 
     private enum SENSOR_STATES
@@ -3168,9 +3168,12 @@ public class MWPlanner : Gtk.Application {
         {
             for(var i = 0; i < 32; i++)
             {
-                if(((af & (1<<i)) != 0) && arm_fails[i] != null)
+                if((af & (1<<i)) != 0)
                 {
-                    sb.append(arm_fails[i]);
+                    if(i < arm_fails.length &&  arm_fails[i] != null)
+                        sb.append(arm_fails[i]);
+                    else
+                        sb.append_printf("UNK %d", i);
                     sb.append_c(sep);
                 }
             }
