@@ -1794,35 +1794,47 @@ public class MWPlanner : Gtk.Application {
         labelvbat = builder.get_object ("labelvbat") as Gtk.Label;
         conbutton.clicked.connect(() => { connect_serial(); });
 
-        if (mission == null)
+
+        var zm = conf.zoom;
+        clat= conf.latitude;
+        clon = conf.longitude;
+
+        if(llstr != null)
         {
-            if(llstr != null)
+            string[] delims =  {","," "};
+            foreach (var delim in delims)
             {
-                string[] delims =  {","," "};
-                foreach (var delim in delims)
+                var parts = llstr.split(delim);
+                if(parts.length == 2)
                 {
-                    var parts = llstr.split(delim);
-                    if(parts.length == 2)
-                    {
-                        clat = InputParser.get_latitude(parts[0]);
-                        clon = InputParser.get_longitude(parts[1]);
-                        break;
-                    }
+                    clat = InputParser.get_latitude(parts[0]);
+                    clon = InputParser.get_longitude(parts[1]);
+                    break;
                 }
             }
-            if(clat == 0.0 && clon == 0.0)
-            {
-                clat= conf.latitude;
-                clon = conf.longitude;
-            }
-            map_centre_on(clat, clon);
-            view.zoom_level = conf.zoom;
-            zoomer.adjustment.value = conf.zoom;
         }
-        else
+        else if (mission != null)
         {
-            load_file(mission);
+            var ms = open_mission_file(mission);
+            if(ms != null)
+            {
+                clat = ms.cy;
+                clon = ms.cx;
+                if(ms.zoom != 0)
+                    zm = ms.zoom;
+                else
+                    Timeout.add(1000,() => {
+                            instantiate_mission(ms);
+                            return Source.REMOVE;
+                        });
+                last_file = mission;
+                update_title_from_file(mission);
+            }
         }
+
+        map_centre_on(clat, clon);
+        view.zoom_level = zm;
+        zoomer.adjustment.value = zm;
 
         msp.force4 = force4;
         msp.serial_lost.connect(() => { serial_doom(conbutton); });
@@ -3413,9 +3425,10 @@ public class MWPlanner : Gtk.Application {
                         ms.minx = mi.lon;
                 }
             }
-            ms.zoom = view.get_max_zoom_level();
+
             ms.cy = (ms.maxy + ms.miny) / 2.0;
             ms.cx = (ms.maxx + ms.minx) / 2.0;
+            ms.zoom = guess_appropriate_zoom(ms);
             if (ctr_on)
                 map_centre_on(ms.cy, ms.cx);
         }
@@ -6213,14 +6226,16 @@ public class MWPlanner : Gtk.Application {
 
     private uint guess_appropriate_zoom(Mission ms)
     {
+        uint z = 18;
+
             /**************************************
             // Formula from:
             // http://wiki.openstreetmap.org/wiki/Zoom_levels
             //
 
-        uint z = 18;
         if(window_h != -1 && window_w != -1)
         {
+            print("old z guess\n");
             double cse,m_width,m_height;
             const double erad = 6372.7982; // earth radius
             const double ecirc = erad*Math.PI*2.0; // circumference
@@ -6231,26 +6246,31 @@ public class MWPlanner : Gtk.Application {
             m_width = m_width * 1852;
             m_height = m_height * 1852;
 
+
 //        Gdk.Screen scn = Gdk.Screen.get_default();
 //        double dpi = scn.get_resolution(); // in case we need it ...
             for(z = view.get_max_zoom_level();
                 z >= view.get_min_zoom_level(); z--)
             {
                 double s = 1000 * ecirc * Math.cos(ms.cy * rad) / (Math.pow(2,(z+8)));
+                print("%u %f mw=%f mh=%f ww=%f wh=%f\n",
+                      z, s, m_width, m_height, window_w, window_h);
+
                 if(s*window_w > m_width && s*window_h > m_height)
                     break;
             }
         }
-            ******************************/
-        uint z = 18;
-        if(window_h != -1 && window_w != -1)
+            ************/
+
         {
-            for(z = view.get_max_zoom_level(); z >= view.get_min_zoom_level(); z--)
+            for(z = view.get_max_zoom_level(); ; z--)
             {
                 var bb = view.get_bounding_box_for_zoom_level(z);
                 if(bb.top > ms.maxy && bb.bottom < ms.miny &&
                    bb.right > ms.maxx && bb.left < ms.minx)
                     break;
+                if(z == view.get_min_zoom_level())
+                   break;
             }
         }
         return z;
@@ -6279,14 +6299,17 @@ public class MWPlanner : Gtk.Application {
             craft.init_trail();
         }
         validatelab.set_text("");
+        map_centre_on(ms.cy, ms.cx);
         ms.dump();
         ls.import_mission(ms, (conf.rth_autoland &&
                                Craft.is_mr(vi.mrtype)));
         var mmax = view.get_max_zoom_level();
         var mmin = view.get_min_zoom_level();
-        map_centre_on(ms.cy, ms.cx);
+
         if(ms.zoom == 0)
+        {
             ms.zoom = guess_appropriate_zoom(ms);
+        }
 
         if (ms.zoom < mmin)
             ms.zoom = mmin;
