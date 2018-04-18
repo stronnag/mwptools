@@ -3182,11 +3182,19 @@ public class MWPlanner : Gtk.Application {
             {
                 if((af & (1<<i)) != 0)
                 {
-                    if(i < arm_fails.length &&  arm_fails[i] != null)
-                        sb.append(arm_fails[i]);
+                    if(i < arm_fails.length)
+                    {
+                        if (arm_fails[i] != null)
+                        {
+                            sb.append(arm_fails[i]);
+                            sb.append_c(sep);
+                        }
+                    }
                     else
-                        sb.append_printf("UNK %d", i);
-                    sb.append_c(sep);
+                    {
+                        sb.append_printf("Unknown(%d)", i);
+                        sb.append_c(sep);
+                    }
                 }
             }
             if(sb.len > 0 && sep != '\n')
