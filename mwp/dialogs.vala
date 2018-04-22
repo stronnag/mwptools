@@ -1694,6 +1694,12 @@ public class NavStatus : GLib.Object
         }
     }
 
+    public void audio_test()
+    {
+        mt.message(AudioThread.Vox.AUDIO_TEST, true);
+    }
+
+
     public void alert_home_moved()
     {
         mt.message(AudioThread.Vox.HOME_CHANGED, true);
@@ -1809,7 +1815,8 @@ public class AudioThread : Object {
         FAILSAFE,
         HW_OK,
         HW_BAD,
-        HOME_CHANGED
+        HOME_CHANGED,
+        AUDIO_TEST
     }
 
     private Timer timer;
@@ -1873,6 +1880,9 @@ public class AudioThread : Object {
                     string s=null;
                     switch(c)
                     {
+                        case Vox.AUDIO_TEST:
+                            s = "MWP audio test";
+                            break;
                         case Vox.HW_OK:
                             s = "Sensors OK";
                             break;

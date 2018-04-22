@@ -1266,6 +1266,15 @@ public class MWPlanner : Gtk.Application {
             });
         window.add_action(saq);
 
+        saq = new GLib.SimpleAction("audio",null);
+        saq.activate.connect(() => {
+                audio_on = true;
+                start_audio();
+                navstatus.audio_test();
+            });
+        window.add_action(saq);
+
+
         saq = new GLib.SimpleAction("map-source",null);
         saq.activate.connect(() => {
                 var map_source_factory = Champlain.MapSourceFactory.dup_default();

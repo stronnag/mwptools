@@ -108,6 +108,10 @@
           <attribute name="action">win.reboot</attribute>
 	  <attribute name="accel">&lt;Primary&gt;exclam</attribute>
         </item>
+        <item>
+          <attribute name="label">Audio Test</attribute>
+          <attribute name="action">win.audio</attribute>
+        </item>
       </section>
     </submenu>
     <submenu>
