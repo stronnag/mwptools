@@ -1268,9 +1268,14 @@ public class MWPlanner : Gtk.Application {
 
         saq = new GLib.SimpleAction("audio",null);
         saq.activate.connect(() => {
-                audio_on = true;
-                start_audio();
+                var aon = audio_cb.active;
+                if(aon == false)
+                    audio_cb.active = true;
                 navstatus.audio_test();
+                Timeout.add(1000, () => {
+                        audio_cb.active = aon;
+                        return false;
+                    });
             });
         window.add_action(saq);
 
