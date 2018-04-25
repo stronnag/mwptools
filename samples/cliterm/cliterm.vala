@@ -142,13 +142,15 @@ class CliTerm : Object
                                       ml.quit();
                                       return false;
                                   }
-
-                                  if(buf[0] == 13 && eolm != 0)
+                                  if(msp.available)
                                   {
-                                      msp.write(eol.data,eol.length);
+                                      if(buf[0] == 13 && eolm != 0)
+                                      {
+                                          msp.write(eol.data,eol.length);
+                                      }
+                                      else
+                                          msp.write(buf,1);
                                   }
-                                  else
-                                      msp.write(buf,1);
                                   return true;
                               });
         } catch(IOChannelError e) {
