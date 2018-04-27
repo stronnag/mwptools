@@ -329,13 +329,13 @@ public class Craft : GLib.Object
 
     public void set_normal()
     {
-        MWPLog.message("craft: set normal\n");
+//        MWPLog.message("craft: set normal\n");
         remove_special(RMIcon.ALL);
     }
 
     public void remove_special(RMIcon rmflags)
     {
-        MWPLog.message("craft: remove special %x\n", rmflags);
+//        MWPLog.message("craft: remove special %x\n", rmflags);
         if(((rmflags & RMIcon.PH) != 0) && posp != null)
         {
             pmlayer.remove_marker(posp);

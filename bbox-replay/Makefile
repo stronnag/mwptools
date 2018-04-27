@@ -9,6 +9,6 @@ local:
 install: $(APP) $(DEP)
 	install -d $(prefix)/bin
 	install -m 755 $(APP) $(prefix)/bin/$(APP)
-	install $(DEP) $(prefix)/bin/$(DEP)
+	install -m 644 $(DEP) $(prefix)/bin/$(DEP)
 
 .PHONY: all clean local install
