@@ -157,7 +157,7 @@ def send_msg dev, msg
   end
 end
 
-def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
+def send_init_seq skt,typ,snr=false,baro=true,mag=true,gitinfo=nil
 
   msps = [
     # $     M    >     len   msg
@@ -171,13 +171,10 @@ def send_init_seq skt,typ,snr=false,baro=true,gitinfo=nil
     [0x24, 0x4d, 0x3e, 11,   101,  0, 0, 0, 0, 0, 0, 4,0,0,0, 0, 0], # obviously fake
   ]
 
-  sensors = (1|4|8)
-  if baro
-    sensors |= 2
-  end
-  if snr
-    sensors |= 16
-  end
+  sensors = (1|8)
+  sensors |= 2  if baro
+  sensors |= 4  if mag
+  sensors |= 16 if snr
 
   msps[7][9] = sensors
   msps[0][6] = typ if typ
@@ -565,14 +562,16 @@ rescue
 end
 
 bbox = (ARGV[0]|| abort('no BBOX log'))
+have_mag = true
 
 gitinfos=[]
 disarms=[]
-
 File.open(bbox,'rb') do |f|
   f.each do |l|
     if m = l.match(/^H Firmware revision:(.*)$/)
       gitinfos << m[1]
+    elsif m = l.match(/^H mag_hardware:(\d+)$/)
+      have_mag = m[1] != '0'
     elsif m = l.match(/^H vbat_scale:(\d+)$/)
       $vbatscale = m[1].to_f / 110.0
     elsif m = l.match(/End of log \(disarm reason:(\d+)/)
@@ -718,8 +717,10 @@ IO.popen(cmd,'rt') do |pipe|
   have_sonar = (hdrs.has_key? :sonarraw)
   have_baro = (hdrs.has_key? :baroalt_cm)
 
+  gpshd = 1 if have_mag == false and gpshd == 0
+
 #  STDERR.puts "idx: #{idx} gi: #{gitinfos[idx-1]}"
-  vers = send_init_seq dev,typ,have_sonar,have_baro,gitinfos[idx-1]
+  vers = send_init_seq dev,typ,have_sonar,have_baro,have_mag,gitinfos[idx-1]
 
   csv.each do |row|
     next if row[:gps_numsat].to_i == 0

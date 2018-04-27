@@ -42,10 +42,11 @@ public class Craft : GLib.Object
     private Champlain.MarkerLayer hmlayer;
     private int npath = 0;
     private int mpath = 0;
-    private static Clutter.Color trk_cyan = { 0,0xff,0xff, 0xa0 };
-    private static Clutter.Color trk_green = { 0xce,0xff,0x9d, 0xa0 };
-    private static Clutter.Color trk_yellow = { 0xff,0xff,0, 0xa0 };
-    private static Clutter.Color trk_white = { 0xff,0xff,0xff, 0xa0 };
+    private static Clutter.Color trk_cyan =   { 0x00, 0xff, 0xff, 0xa0 };
+    private static Clutter.Color trk_green =  { 0xce, 0xff, 0x9d, 0xa0 };
+    private static Clutter.Color trk_yellow = { 0xff, 0xff, 0x00, 0xa0 };
+    private static Clutter.Color trk_white =  { 0xff, 0xff, 0xff, 0xa0 };
+    private static Clutter.Color trk_purple = { 0x03, 0xc0, 0xfa, 0xa0 };
 
     private Clutter.Color path_colour;
 
@@ -122,7 +123,8 @@ public class Craft : GLib.Object
         HOME = -1,
         PH = -2,
         RTH = -3,
-        WP = -4
+        WP = -4,
+        ALTH= -5
     }
 
     public enum RMIcon
@@ -327,13 +329,13 @@ public class Craft : GLib.Object
 
     public void set_normal()
     {
-//        MWPLog.message("craft: set normal\n");
+        MWPLog.message("craft: set normal\n");
         remove_special(RMIcon.ALL);
     }
 
     public void remove_special(RMIcon rmflags)
     {
-//        MWPLog.message("craft: remove special %x\n", rmflags);
+        MWPLog.message("craft: remove special %x\n", rmflags);
         if(((rmflags & RMIcon.PH) != 0) && posp != null)
         {
             pmlayer.remove_marker(posp);
@@ -359,7 +361,6 @@ public class Craft : GLib.Object
         Clutter.Color colour;
         Clutter.Color black = { 0,0,0, 0xff };
         RMIcon rmflags = 0;
-//        MWPLog.message("craft: set special %d\n", wpno);
 
         switch(wpno)
         {
@@ -416,6 +417,9 @@ public class Craft : GLib.Object
                 m = wpp;
                 rmflags = RMIcon.PH|RMIcon.RTH;
                 path_colour = trk_white;
+                break;
+            case Special.ALTH:
+                path_colour = trk_purple;
                 break;
             default:
                 path_colour = trk_cyan;

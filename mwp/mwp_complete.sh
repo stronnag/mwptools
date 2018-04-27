@@ -127,6 +127,9 @@ _mwp_files()
     'mission')
       _filedir '@(json|mission)'
       ;;
+    'TXT')
+      _filedir '@(txt|TXT)'
+      ;;
     *)
       _filedir $wanted
       ;;
