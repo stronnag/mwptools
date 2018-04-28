@@ -2187,6 +2187,8 @@ public class MWPlanner : Gtk.Application {
 
         mss.__clear_mission.connect(() => {
                 ls.clear_mission();
+                NavStatus.have_rth = false;
+                NavStatus.nm_pts = 0;
             });
 
         mss.__get_devices.connect(() => {
@@ -4229,7 +4231,7 @@ public class MWPlanner : Gtk.Application {
 
                         ls.raise_wp(ns.wp_number);
                         string spt;
-                        if(ns.wp_number == NavStatus.nm_pts)
+                        if(NavStatus.have_rth && ns.wp_number == NavStatus.nm_pts)
                             spt = "<span size=\"x-small\">RTH</span>";
                         else
                         {
@@ -4552,7 +4554,11 @@ public class MWPlanner : Gtk.Application {
                             upload_callback(wpmgr.wps.length);
                         if(vi.fc_api < APIVERS.mspV2)
                             mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
-                        MWPLog.message("Mission validated\n");
+                        NavStatus.have_rth = ((MSP.Action)w.action == MSP.Action.RTH);
+                        NavStatus.nm_pts = (uint8)wpmgr.wps.length;
+                        MWPLog.message("Mission validated (%u, %s)\n",
+                                       NavStatus.nm_pts,
+                                       NavStatus.have_rth.to_string());
                         if((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
                         {
                             uint8 zb=42;
@@ -4568,8 +4574,8 @@ public class MWPlanner : Gtk.Application {
                             MWPLog.message("Requesting downgraded mission\n");
                             download_mission();
                         }
-                        else if(wpmgr.wps.length > 0 &&
-                                (MSP.Action)w.action == MSP.Action.WAYPOINT)
+                        else if(wpmgr.wps.length > 0  &&
+                                (MSP.Action)wpmgr.wps[0].action == MSP.Action.WAYPOINT)
                             check_mission_safe(wpmgr.wps[0].lat/10000000.0,  wpmgr.wps[0].lon/10000000.0);
                     }
                 }
@@ -6208,6 +6214,7 @@ public class MWPlanner : Gtk.Application {
         else
         {
             NavStatus.nm_pts = 255;
+            NavStatus.have_rth = false;
             return null;
         }
     }
@@ -6335,6 +6342,8 @@ public class MWPlanner : Gtk.Application {
         ms.dump();
         ls.import_mission(ms, (conf.rth_autoland &&
                                Craft.is_mr(vi.mrtype)));
+
+        NavStatus.have_rth = ls.have_rth;
         var mmax = view.get_max_zoom_level();
         var mmin = view.get_min_zoom_level();
 

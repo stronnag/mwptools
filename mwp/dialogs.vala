@@ -1286,6 +1286,7 @@ public class NavStatus : GLib.Object
     private VCol vc;
 
     public static uint8 nm_pts;
+    public static bool  have_rth;
     public static MSP_NAV_STATUS n {get; private set;}
     public static MSP_ATTITUDE atti {get; private set;}
     public static MSP_ALTITUDE alti {get; private set;}
@@ -1722,6 +1723,7 @@ public class NavStatus : GLib.Object
         ns_state = null;
         ns_action = null;
         nm_pts = 255;
+        have_rth = false;
     }
 
     public void reset()
@@ -1920,7 +1922,7 @@ public class AudioThread : Object {
                                     var wpno = NavStatus.n.wp_number;
                                     if(wpno == 0)
                                         s = "Starting Mission";
-                                    else if (wpno == NavStatus.nm_pts)
+                                    else if (NavStatus.have_rth && wpno == NavStatus.nm_pts)
                                         s = "Navigating to home position.";
                                     else
                                         s = "Navigating to waypoint %d.".printf(wpno);
