@@ -121,10 +121,30 @@ class LayMan : Object
         return GLib.Path.build_filename(confdir,sb.str);
     }
 
+    private string? find_default_file()
+    {
+        var confdirs = Environment.get_system_data_dirs();
+        foreach (string c in confdirs)
+        {
+            string f =  GLib.Path.build_filename(c,"mwp", "default.layout");
+            if(Posix.access(f,Posix.R_OK) == 0)
+                return f;
+        }
+        return null;
+    }
+
     public bool load_init()
     {
-        bool ok = false;
-        ok = (layout.load_from_file(getfile()) && layout.load_layout("mwp"));
+        bool ok;
+        ok = layout.load_from_file(getfile());
+        if(!ok)
+        {
+            var fn = find_default_file();
+            if(fn != null)
+                ok = layout.load_from_file(fn);
+        }
+        if(ok)
+            ok = layout.load_layout("mwp");
         return ok;
     }
 

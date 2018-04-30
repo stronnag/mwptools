@@ -64,6 +64,7 @@ install: $(APPS)
 	install -m 644 $(COMMOND)/mwp_icon.svg $(datadir)/share/mwp/pixmaps/mwp_icon.svg
 	install -m 644 mwp.ui menubar.ui $(datadir)/share/mwp/
 	install -m 644 vcols.css $(datadir)/share/mwp/vcols.css
+	install -m 644 default.layout $(datadir)/share/mwp/default.layout
 	install -m 644 pixmaps/* $(datadir)/share/mwp/pixmaps/
 	install -m 644 *.ogg $(datadir)/share/mwp/
 	install -d $(datadir)/share/applications
