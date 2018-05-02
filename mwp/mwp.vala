@@ -3455,7 +3455,10 @@ public class MWPlanner : Gtk.Application {
             ms.cx = (ms.maxx + ms.minx) / 2.0;
             ms.zoom = guess_appropriate_zoom(ms);
             if (ctr_on)
+            {
                 map_centre_on(ms.cy, ms.cx);
+                set_view_zoom(ms.zoom);
+            }
         }
     }
 
@@ -6267,14 +6270,26 @@ public class MWPlanner : Gtk.Application {
     {
         uint z = 18;
 
-            /**************************************
+/********************************
+ * Using the champlain API requires centring the map first
+            for(z = view.get_max_zoom_level();
+                z >= view.get_min_zoom_level(); z--)
+            {
+                var bb = view.get_bounding_box_for_zoom_level(z);
+                if(bb.top > ms.maxy && bb.bottom < ms.miny &&
+                   bb.right > ms.maxx && bb.left < ms.minx)
+                    break;
+            }
+
+**********************************/
+
+            // **************************************
             // Formula from:
             // http://wiki.openstreetmap.org/wiki/Zoom_levels
             //
 
         if(window_h != -1 && window_w != -1)
         {
-            print("old z guess\n");
             double cse,m_width,m_height;
             const double erad = 6372.7982; // earth radius
             const double ecirc = erad*Math.PI*2.0; // circumference
@@ -6285,31 +6300,12 @@ public class MWPlanner : Gtk.Application {
             m_width = m_width * 1852;
             m_height = m_height * 1852;
 
-
-//        Gdk.Screen scn = Gdk.Screen.get_default();
-//        double dpi = scn.get_resolution(); // in case we need it ...
             for(z = view.get_max_zoom_level();
                 z >= view.get_min_zoom_level(); z--)
             {
                 double s = 1000 * ecirc * Math.cos(ms.cy * rad) / (Math.pow(2,(z+8)));
-                print("%u %f mw=%f mh=%f ww=%f wh=%f\n",
-                      z, s, m_width, m_height, window_w, window_h);
-
                 if(s*window_w > m_width && s*window_h > m_height)
                     break;
-            }
-        }
-            ************/
-
-        {
-            for(z = view.get_max_zoom_level(); ; z--)
-            {
-                var bb = view.get_bounding_box_for_zoom_level(z);
-                if(bb.top > ms.maxy && bb.bottom < ms.miny &&
-                   bb.right > ms.maxx && bb.left < ms.minx)
-                    break;
-                if(z == view.get_min_zoom_level())
-                   break;
             }
         }
         return z;
@@ -6330,6 +6326,19 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
+    private void set_view_zoom(uint z)
+    {
+        var mmax = view.get_max_zoom_level();
+        var mmin = view.get_min_zoom_level();
+
+        if (z < mmin)
+            z = mmin;
+
+        if (z > mmax)
+            z = mmax;
+        view.zoom_level = z;
+    }
+
     private void instantiate_mission(Mission ms)
     {
         if(armed == 0 && craft != null)
@@ -6344,21 +6353,10 @@ public class MWPlanner : Gtk.Application {
                                Craft.is_mr(vi.mrtype)));
 
         NavStatus.have_rth = ls.have_rth;
-        var mmax = view.get_max_zoom_level();
-        var mmin = view.get_min_zoom_level();
-
         if(ms.zoom == 0)
-        {
             ms.zoom = guess_appropriate_zoom(ms);
-        }
 
-        if (ms.zoom < mmin)
-            ms.zoom = mmin;
-
-        if (ms.zoom > mmax)
-            ms.zoom = mmax;
-
-        view.zoom_level =  ms.zoom;
+        set_view_zoom(ms.zoom);
         markers.add_list_store(ls);
 
         if(have_home)
