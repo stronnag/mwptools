@@ -1836,12 +1836,15 @@ public class MWPlanner : Gtk.Application {
                 clat = ms.cy;
                 clon = ms.cx;
                 if(ms.zoom != 0)
+                {
                     zm = ms.zoom;
-
-                Timeout.add(1000,() => {
-                        instantiate_mission(ms);
-                        return Source.REMOVE;
-                    });
+                    instantiate_mission(ms);
+                }
+                else
+                    Timeout.add(1000,() => {
+                            instantiate_mission(ms);
+                            return Source.REMOVE;
+                        });
                 last_file = mission;
                 update_title_from_file(mission);
             }

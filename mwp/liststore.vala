@@ -748,7 +748,7 @@ public class ListBox : GLib.Object
 
         view.set_headers_visible (true);
         view.set_reorderable(true);
-        list_model.row_deleted.connect((path,iter) => {
+        list_model.row_deleted.connect((tpath) => {
                 if (purge == false)
                 {
                     renumber_steps(list_model);
@@ -1057,8 +1057,12 @@ public class ListBox : GLib.Object
         foreach (var t in get_selected_refs())
         {
             Gtk.TreeIter iter;
+            Value val;
             var path = t.get_path ();
             list_model.get_iter (out iter, path);
+            list_model.get_value (iter, WY_Columns.ACTION, out val);
+            if ((MSP.Action)val == MSP.Action.SET_POI)
+                shp_item.sensitive=false;
 #if LSRVAL
             list_model.remove(iter);
 #else

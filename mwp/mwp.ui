@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.0 
+<!-- Generated with glade 3.22.1 
 
 Copyright (C)
 
@@ -36,6 +36,9 @@ along with mwp.  If not, see <http://www.gnu.org/licenses/>.
     <property name="documenters">Jonathan Hudson &lt;jh+mwp@daria.co.uk&gt;</property>
     <property name="logo_icon_name"/>
     <property name="license_type">gpl-3-0</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="aboutdialog-vbox1">
         <property name="can_focus">False</property>
@@ -57,9 +60,6 @@ along with mwp.  If not, see <http://www.gnu.org/licenses/>.
           <placeholder/>
         </child>
       </object>
-    </child>
-    <child>
-      <placeholder/>
     </child>
   </object>
   <object class="GtkAdjustment" id="adjustment1">
@@ -93,6 +93,9 @@ along with mwp.  If not, see <http://www.gnu.org/licenses/>.
     <property name="window_position">center-on-parent</property>
     <property name="default_width">2</property>
     <property name="type_hint">dialog</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox10">
         <property name="can_focus">False</property>
@@ -284,14 +287,14 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
     <action-widgets>
       <action-widget response="1002">tile_stop</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkDialog" id="altdialog">
     <property name="can_focus">False</property>
     <property name="modal">True</property>
     <property name="type_hint">dialog</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="__fix1404__00000__">
         <property name="can_focus">False</property>
@@ -377,9 +380,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <action-widget response="1001">gotoapp2</action-widget>
       <action-widget response="1002">gotocan2</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkImage" id="arm_image">
     <property name="visible">True</property>
@@ -397,6 +397,9 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
   <object class="GtkDialog" id="bb_dialog">
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="bb_dialog-vbox1">
         <property name="can_focus">False</property>
@@ -625,13 +628,13 @@ Otherwise, select a valid FC vehicle type</property>
       <action-widget response="999">bb_cancel</action-widget>
       <action-widget response="1001">bb_ok</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkDialog" id="delta-dialog">
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox2">
         <property name="can_focus">False</property>
@@ -759,9 +762,6 @@ Otherwise, select a valid FC vehicle type</property>
       <action-widget response="1001">button4</action-widget>
       <action-widget response="1002">button5</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkGrid" id="dgrid1">
     <property name="visible">True</property>
@@ -953,6 +953,9 @@ Otherwise, select a valid FC vehicle type</property>
     <property name="can_focus">False</property>
     <property name="modal">True</property>
     <property name="type_hint">dialog</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox5">
         <property name="can_focus">False</property>
@@ -1085,9 +1088,6 @@ See the "samples" directory for an example of each.</property>
       <action-widget response="1001">gotoapp</action-widget>
       <action-widget response="1002">gotocan</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkBox" id="gprefs">
     <property name="visible">True</property>
@@ -1881,6 +1881,9 @@ See the "samples" directory for an example of each.</property>
   <object class="GtkWindow" id="inav_fw_config">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">iNav FW Nav Config</property>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
@@ -2125,13 +2128,13 @@ See the "samples" directory for an example of each.</property>
         </child>
       </object>
     </child>
-    <child type="titlebar">
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkWindow" id="inav_mr_conf">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">iNav MR Nav Config</property>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="__fix1404__00002__">
         <property name="visible">True</property>
@@ -2396,13 +2399,13 @@ See the "samples" directory for an example of each.</property>
         </child>
       </object>
     </child>
-    <child type="titlebar">
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkDialog" id="map_source_dialog">
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox8">
         <property name="can_focus">False</property>
@@ -2571,12 +2574,12 @@ See the "samples" directory for an example of each.</property>
     <action-widgets>
       <action-widget response="0">button10</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkWindow" id="nc_window">
     <property name="can_focus">False</property>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="box6">
         <property name="visible">True</property>
@@ -3094,14 +3097,14 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
         </child>
       </object>
     </child>
-    <child type="titlebar">
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkDialog" id="odoview">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Flight Statistics</property>
     <property name="type_hint">dialog</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -3266,14 +3269,14 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
     <action-widgets>
       <action-widget response="0">odoclose</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkDialog" id="prefs-dialog">
     <property name="can_focus">False</property>
     <property name="modal">True</property>
     <property name="type_hint">dialog</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox3">
         <property name="can_focus">False</property>
@@ -3326,14 +3329,14 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
       <action-widget response="1001">button6</action-widget>
       <action-widget response="1002">button7</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkDialog" id="shortcut-dialog">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">MWP Short Cut Keys</property>
     <property name="type_hint">dialog</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -3420,9 +3423,6 @@ Space		Toggle replay pause
         </child>
       </object>
     </child>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkAdjustment" id="shp_adjustment1">
     <property name="lower">3</property>
@@ -3445,6 +3445,9 @@ Space		Toggle replay pause
   <object class="GtkDialog" id="shape-dialog">
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox1">
         <property name="can_focus">False</property>
@@ -3536,7 +3539,7 @@ Space		Toggle replay pause
                 <property name="input_purpose">number</property>
                 <property name="adjustment">shp_adjustment1</property>
                 <property name="numeric">True</property>
-                <property name="value">100</property>
+                <property name="value">20</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -3614,14 +3617,14 @@ Space		Toggle replay pause
       <action-widget response="1001">button2</action-widget>
       <action-widget response="1002">button3</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkDialog" id="speeddialog">
     <property name="can_focus">False</property>
     <property name="modal">True</property>
     <property name="type_hint">dialog</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox13">
         <property name="can_focus">False</property>
@@ -3707,9 +3710,6 @@ Space		Toggle replay pause
       <action-widget response="1001">gotoapp1</action-widget>
       <action-widget response="1002">gotocan1</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkGrid" id="ss_grid">
     <property name="visible">True</property>
@@ -3912,6 +3912,9 @@ Space		Toggle replay pause
     <property name="modal">True</property>
     <property name="window_position">mouse</property>
     <property name="type_hint">normal</property>
+    <child>
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox7">
         <property name="can_focus">False</property>
@@ -3979,9 +3982,6 @@ Clicking Quit will terminate the application.
       <action-widget response="1002">button8</action-widget>
       <action-widget response="0">button9</action-widget>
     </action-widgets>
-    <child>
-      <placeholder/>
-    </child>
   </object>
   <object class="GtkBox" id="uprefs">
     <property name="visible">True</property>
@@ -4403,6 +4403,18 @@ Clicking Quit will terminate the application.
   <object class="GtkApplicationWindow" id="window1">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">mwp</property>
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="hb">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="title">mwp</property>
+        <property name="has_subtitle">False</property>
+        <property name="show_close_button">True</property>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
     <child>
       <object class="GtkBox" id="box1">
         <property name="visible">True</property>
@@ -5042,18 +5054,6 @@ Clicking Quit will terminate the application.
             <property name="padding">2</property>
             <property name="position">4</property>
           </packing>
-        </child>
-      </object>
-    </child>
-    <child type="titlebar">
-      <object class="GtkHeaderBar" id="hb">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="title">mwp</property>
-        <property name="has_subtitle">False</property>
-        <property name="show_close_button">True</property>
-        <child>
-          <placeholder/>
         </child>
       </object>
     </child>
