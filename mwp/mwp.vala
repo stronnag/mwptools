@@ -1837,11 +1837,11 @@ public class MWPlanner : Gtk.Application {
                 clon = ms.cx;
                 if(ms.zoom != 0)
                     zm = ms.zoom;
-                else
-                    Timeout.add(1000,() => {
-                            instantiate_mission(ms);
-                            return Source.REMOVE;
-                        });
+
+                Timeout.add(1000,() => {
+                        instantiate_mission(ms);
+                        return Source.REMOVE;
+                    });
                 last_file = mission;
                 update_title_from_file(mission);
             }
@@ -6209,6 +6209,7 @@ public class MWPlanner : Gtk.Application {
         Mission m=null;
         bool is_j = fn.has_suffix(".json");
         m =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+
         if(m != null && m.npoints > 0)
         {
             NavStatus.nm_pts = (uint8)m.npoints;

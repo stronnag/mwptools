@@ -1133,11 +1133,15 @@ public class ListBox : GLib.Object
     {
         double dlat, dlon;
         int dalt;
+        double val;
 
         if(deltadialog.get_deltas(out dlat, out dlon, out dalt) == true)
         {
             if(dlat != 0.0 || dlon != 0.0 || dalt != 0)
             {
+                if(dlat != 0.0)
+                    dlat = dlat / (60.0 * 1852.0);
+
                  foreach (var t in get_selected_refs())
                  {
                      Gtk.TreeIter iter;
@@ -1146,34 +1150,39 @@ public class ListBox : GLib.Object
                      list_model.get_iter (out iter, path);
 
                      list_model.get_value (iter, WY_Columns.TYPE, out cell);
-                     var act = (MSP.Action)cell;
+                     var act = MSP.lookup_name((string)cell);
+
                      if (act == MSP.Action.RTH ||
                          act == MSP.Action.JUMP ||
                          act == MSP.Action.SET_HEAD)
                          continue;
 
+                     list_model.get_value (iter, WY_Columns.LAT, out cell);
+
+                     var alat = (double)cell;
+
                      if(dlat != 0.0)
                      {
-                         list_model.get_value (iter, WY_Columns.LAT, out cell);
-                         var val = (double)cell;
-                         val += dlat;
+                         val = alat + dlat;
                          list_model.set_value (iter, WY_Columns.LAT, val);
                      }
 
                      if(dlon != 0.0)
                      {
                          list_model.get_value (iter, WY_Columns.LON, out cell);
-                         var val = (double)cell;
-                         val += dlon;
-                             list_model.set_value (iter, WY_Columns.LON, val);
+                         val = (double)cell;
+                         double ddlon;
+                         ddlon = Math.cos(alat*(Math.PI/180.0)) * dlon / (60.0 * 1852.0);
+                         val += ddlon;
+                         list_model.set_value (iter, WY_Columns.LON, val);
                      }
 
                      if(dalt != 0)
                      {
                          list_model.get_value (iter, WY_Columns.ALT, out cell);
-                         var val = (int)cell;
-                         val += dalt;
-                         list_model.set_value (iter, WY_Columns.ALT, val);
+                         var ival = (int)cell;
+                         ival += dalt;
+                         list_model.set_value (iter, WY_Columns.ALT, ival);
                      }
                  }
                  renumber_steps(list_model);

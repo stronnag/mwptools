@@ -674,6 +674,13 @@ public class DeltaDialog : GLib.Object
         dlt_entry1 = builder.get_object ("dlt_entry1") as Gtk.Entry;
         dlt_entry2 = builder.get_object ("dlt_entry2") as Gtk.Entry;
         dlt_entry3 = builder.get_object ("dlt_entry3") as Gtk.Entry;
+        Gtk.Label lab;
+        lab = builder.get_object ("dlt_label1") as Gtk.Label;
+        lab.label = "Latitude (Y) delta (%s)".printf(Units.distance_units());
+        lab = builder.get_object ("dlt_label2") as Gtk.Label;
+        lab.label = "Longitude (X) delta (%s)".printf(Units.distance_units());
+        lab = builder.get_object ("dlt_label3") as Gtk.Label;
+        lab.label = "Altitude (Z) delta (%s)".printf(Units.distance_units());
     }
 
     public bool get_deltas(out double dlat, out double dlon, out int dalt)
@@ -686,8 +693,8 @@ public class DeltaDialog : GLib.Object
         switch(id)
         {
             case 1001:
-                dlat = DStr.strtod(dlt_entry1.get_text(),null);
-                dlon = DStr.strtod(dlt_entry2.get_text(),null);
+                dlat = InputParser.get_scaled_real(dlt_entry1.get_text());
+                dlon = InputParser.get_scaled_real(dlt_entry2.get_text());
                 dalt = (int)InputParser.get_scaled_int(dlt_entry3.get_text());
                 res = true;
                 break;
