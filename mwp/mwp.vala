@@ -4189,7 +4189,7 @@ public class MWPlanner : Gtk.Application {
                             }
                         }
                         if(nwp != wpi.wp_count)
-                            mwp_warning_box("WPs in FC (%u) != MWP mission (%d)".printf(nwp, wpi.wp_count), Gtk.MessageType.ERROR, 0);
+                            mwp_warning_box("WPs in FC (%d) != MWP mission (%u)".printf(wpi.wp_count, nwp), Gtk.MessageType.ERROR, 0);
                     }
                 }
                 break;
