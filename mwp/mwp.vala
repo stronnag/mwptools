@@ -785,7 +785,7 @@ public class MWPlanner : Gtk.Application {
         { "mod-points", 'M', 0, OptionArg.INT, out mod_points, "Modulo points to show in GPS trail", "N"},
 
         { "rings", 0, 0, OptionArg.STRING, out rrstr, "Range rings (number, interval(m)), e.g. --rings 10,20", "number,interval"},
-        { "voice-command", 0, 0, OptionArg.STRING, out exvox, "External speech command", "comamnd string"},
+        { "voice-command", 0, 0, OptionArg.STRING, out exvox, "External speech command", "command string"},
         { "version", 'v', 0, OptionArg.NONE, out show_vers, "show version", null},
         { "wayland", 0, 0, OptionArg.NONE, out use_wayland, "force wayland (if available)", null},
         { "really-really-run-as-root", 0, 0, OptionArg.NONE, out asroot, "no reason to ever use this", null},
@@ -5854,6 +5854,7 @@ public class MWPlanner : Gtk.Application {
         clear_sensor_array();
         nticks = lastrx = lastok = 0;
         last_ltmf = 0xff;
+        validatelab.set_text("");
         ls.set_mission_speed(conf.nav_speed);
     }
 
