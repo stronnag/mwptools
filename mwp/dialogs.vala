@@ -1911,40 +1911,40 @@ public class AudioThread : Object {
                             switch(NavStatus.n.nav_mode)
                             {
                                 case 0:
-                                    s = "Manual mode.";
+                                    s = "Pilot control";
                                     break;
                                 case 1:
-                                    s = "Return to home initiated.";
+                                    s = "Return to home initiated";
                                     break;
                                 case 2:
-                                    s = "Navigating to home position.";
+                                    s = "Navigating to home position";
                                     break;
                                 case 3:
-                                    s = "Infinite position hold.";
+                                    s = "Infinite position hold";
                                     break;
                                 case 4:
-                                    s = "Timed position hold.";
+                                    s = "Timed position hold";
                                     break;
                                 case 5:
                                     var wpno = NavStatus.n.wp_number;
                                     if(wpno == 0)
                                         s = "Starting Mission";
                                     else if (NavStatus.have_rth && wpno == NavStatus.nm_pts)
-                                        s = "Navigating to home position.";
+                                        s = "Navigating to home position";
                                     else
-                                        s = "Navigating to waypoint %d.".printf(wpno);
+                                        s = "Navigating to waypoint %d".printf(wpno);
                                     break;
                                 case 7:
                                     s = "Starting jump for %d".printf(NavStatus.n.wp_number);
                                     break;
                                 case 8:
-                                    s = "Starting to land.";
+                                    s = "Starting to land";
                                     break;
                                 case 9:
-                                    s = "Landing in progress.";
+                                    s = "Landing in progress";
                                     break;
                                 case 10:
-                                    s = "Landed.";
+                                    s = "Landed";
                                     break;
                             }
                             break;
@@ -1961,7 +1961,7 @@ public class AudioThread : Object {
                                 brg += 360;
                             if(NavStatus.recip)
                                 brg = ((brg + 180) % 360);
-                            s = "Range %.0f. Bearing %d.".printf(
+                            s = "Range %.0f bearing %d".printf(
                                 Units.distance(NavStatus.cg.range),
                                 brg);
                             break;
@@ -1973,14 +1973,14 @@ public class AudioThread : Object {
                             double estalt = (double)NavStatus.alti.estalt/100.0;
                             if(estalt < 0.0 || estalt > 20.0)
                                 estalt = Math.round(estalt);
-                            s  = "Altitude %.1f.".printf(Units.distance(estalt));
+                            s  = "Altitude %.1f".printf(Units.distance(estalt));
                             s = str_zero(s);
                             break;
                         case Vox.HEADING:
-                            s = "Heading %d.".printf(NavStatus.hdr);
+                            s = "Heading %d".printf(NavStatus.hdr);
                             break;
                         case Vox.VOLTAGE:
-                            s = "Voltage %.1f.".printf( NavStatus.volts);
+                            s = "Voltage %.1f".printf( NavStatus.volts);
                             s = str_zero(s);
                             break;
                         case Vox.MODSAT:
@@ -1990,7 +1990,7 @@ public class AudioThread : Object {
                                 string ss = "";
                                 if(NavStatus.numsat != 1)
                                     ss = "s";
-                                s = "%d satellite%s.".printf(NavStatus.numsat,ss);
+                                s = "%d satellite%s".printf(NavStatus.numsat,ss);
                                 lsats = NavStatus.numsat;
                                 lsat_t = now;
                             }
@@ -2019,7 +2019,6 @@ public class AudioThread : Object {
                         }
                         else
                             MwpSpeech.say(s);
-//                        MWPLog.message("say %d \"%s\"\n", efd, s);
                     }
                 }
                 return 0;
