@@ -1911,7 +1911,7 @@ public class AudioThread : Object {
                             switch(NavStatus.n.nav_mode)
                             {
                                 case 0:
-                                    s = "Pilot control";
+                                    s = "Pilot has control";
                                     break;
                                 case 1:
                                     s = "Return to home initiated";
@@ -1961,7 +1961,7 @@ public class AudioThread : Object {
                                 brg += 360;
                             if(NavStatus.recip)
                                 brg = ((brg + 180) % 360);
-                            s = "Range %.0f bearing %d".printf(
+                            s = "Range %.0f, bearing %d".printf(
                                 Units.distance(NavStatus.cg.range),
                                 brg);
                             break;
