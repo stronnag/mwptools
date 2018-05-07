@@ -1841,18 +1841,6 @@ public class AudioThread : Object {
         msgs = new AsyncQueue<Vox> ();
     }
 
-    private string str_zero(string str)
-    {
-        if(str[-3:-1] == ".0")
-        {
-            return str[0:-2];
-        }
-        else
-        {
-            return str;
-        }
-    }
-
     public void message(Vox c, bool urgent=false)
     {
         if (msgs.length() > 10)
@@ -1967,21 +1955,18 @@ public class AudioThread : Object {
                             break;
                         case Vox.ELEVATION:
                             s = "Elevation %.0f.".printf(Units.distance(GPSInfo.elev));
-                            s = str_zero(s);
                             break;
                         case Vox.BARO:
                             double estalt = (double)NavStatus.alti.estalt/100.0;
                             if(estalt < 0.0 || estalt > 20.0)
                                 estalt = Math.round(estalt);
-                            s  = "Altitude %.1f".printf(Units.distance(estalt));
-                            s = str_zero(s);
+                            s = "Altitude %.1f".printf(estalt).replace(".0","");
                             break;
                         case Vox.HEADING:
                             s = "Heading %d".printf(NavStatus.hdr);
                             break;
                         case Vox.VOLTAGE:
-                            s = "Voltage %.1f".printf( NavStatus.volts);
-                            s = str_zero(s);
+                            s = "Voltage %.1f".printf(NavStatus.volts).replace(".0","");
                             break;
                         case Vox.MODSAT:
                             var now = timer.elapsed();
