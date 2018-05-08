@@ -2121,7 +2121,7 @@ public class MWPlanner : Gtk.Application {
        if(rfile != null)
        {
            usemag = force_mag;
-           Idle.add(() => {
+           Timeout.add(600, () => {
                    run_replay(Posix.realpath(rfile), true, Player.MWP);
                    return false;
                });
@@ -2129,7 +2129,7 @@ public class MWPlanner : Gtk.Application {
        else if(bfile != null)
        {
            usemag = force_mag;
-           Idle.add(() => {
+           Timeout.add(600, () => {
                    replay_bbox(true, Posix.realpath(bfile));
                    return false;
                });
