@@ -1862,6 +1862,44 @@ public class AudioThread : Object {
             ;
     }
 
+    string say_nicely(int v, bool nice=false)
+    {
+        string s;
+        if(!nice)
+            s = "%d".printf(v);
+        else
+        {
+            StringBuilder sb = new StringBuilder();
+            bool hasn = false;
+            if(v < 0)
+            {
+                sb.append_c('-');
+                v = -v;
+            }
+
+            if(v > 1000)
+            {
+                int x = (v/1000)*1000;
+                sb.append_printf("%d ",x);
+                v = v % 1000;
+                hasn = true;
+            }
+            if(v > 100)
+            {
+                int x = (v/100)*100;
+                sb.append_printf("%d ",x);
+                v = v % 100;
+                hasn = true;
+            }
+            if(hasn && v != 0)
+                sb.append_printf("and %d", v);
+            else
+                sb.append_printf("%d",v);
+            s = sb.str;
+        }
+        return s;
+    }
+
     public void start(bool _use_en = false, int _efd = 0)
     {
         efd = _efd;
@@ -1893,7 +1931,7 @@ public class AudioThread : Object {
                             s = "GPS Critical Failure";
                             break;
                         case Vox.HOME_CHANGED:
-                            s = "Warning: Home position change";
+                            s = "Home position changed";
                             break;
                         case Vox.NAV_STATUS:
                             switch(NavStatus.n.nav_mode)
@@ -1905,7 +1943,7 @@ public class AudioThread : Object {
                                     s = "Return to home initiated";
                                     break;
                                 case 2:
-                                    s = "Navigating to home position";
+                                    s = "Navigating to home";
                                     break;
                                 case 3:
                                     s = "Infinite position hold";
@@ -1918,7 +1956,7 @@ public class AudioThread : Object {
                                     if(wpno == 0)
                                         s = "Starting Mission";
                                     else if (NavStatus.have_rth && wpno == NavStatus.nm_pts)
-                                        s = "Navigating to home position";
+                                        s = "Navigating to home";
                                     else
                                         s = "Navigating to waypoint %d".printf(wpno);
                                     break;
@@ -1949,21 +1987,25 @@ public class AudioThread : Object {
                                 brg += 360;
                             if(NavStatus.recip)
                                 brg = ((brg + 180) % 360);
-                            s = "Range %.0f, bearing %d".printf(
-                                Units.distance(NavStatus.cg.range),
-                                brg);
+                            s = "Range %s, bearing %s".printf(
+                                say_nicely((int)Units.distance(NavStatus.cg.range)),
+                                say_nicely(brg));
                             break;
                         case Vox.ELEVATION:
-                            s = "Elevation %.0f.".printf(Units.distance(GPSInfo.elev));
+                            s = "Elevation %s.".printf(say_nicely((int)Units.distance(GPSInfo.elev)));
                             break;
                         case Vox.BARO:
                             double estalt = (double)NavStatus.alti.estalt/100.0;
                             if(estalt < 0.0 || estalt > 20.0)
+                            {
                                 estalt = Math.round(estalt);
-                            s = "Altitude %.1f".printf(estalt).replace(".0","");
+                                s = "Altitude %s".printf(say_nicely((int)estalt));
+                            }
+                            else
+                                s = "Altitude %.1f".printf(estalt).replace(".0","");
                             break;
                         case Vox.HEADING:
-                            s = "Heading %d".printf(NavStatus.hdr);
+                            s = "Heading %s".printf(say_nicely(NavStatus.hdr));
                             break;
                         case Vox.VOLTAGE:
                             s = "Voltage %.1f".printf(NavStatus.volts).replace(".0","");

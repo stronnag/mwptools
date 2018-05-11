@@ -83,7 +83,7 @@ typedef int (*spd_set_synthesis_voice_t)(SPDConnection *, const char *);
 typedef int (*spd_set_language_t)(SPDConnection *, const char *);
 typedef int (*spd_set_volume_t)(SPDConnection *, signed int);
 typedef int (*spd_set_notification_on_t)(SPDConnection *, SPDNotification);
-
+typedef int (*spd_set_voice_type_t)(SPDConnection*n, SPDVoiceType);
 static void end_of_speech(size_t msg_id, size_t client_id, SPDNotificationType type)
 {
     g_cond_signal (&s_cond);
@@ -106,15 +106,33 @@ static int sd_init(char *voice)
                 spd = (*spdo2)("mwp", NULL, NULL, SPD_MODE_THREADED, NULL, 1, NULL);
             if(spd)
             {
-                spd_set_synthesis_voice_t sssv;
+                spd_set_voice_type_t sssv;
                 spd_set_language_t ssl;
                 spd_set_volume_t ssv;
                 spd_set_notification_on_t ssno;
 
                 if(g_module_symbol(handle, "spd_set_language",(gpointer*)&ssl))
                     (*ssl)(spd,"en");
-                if (g_module_symbol(handle, "spd_set_synthesis_voice",(gpointer*)&sssv))
-                    (*sssv)(spd,voice);
+                if (g_module_symbol(handle, "spd_set_voice_type",(gpointer*)&sssv))
+                {
+                    SPDVoiceType vt = SPD_MALE1;
+                    if(strcmp(voice, "male2"))
+                        vt = SPD_MALE2;
+                    else if(strcmp(voice, "male3"))
+                       vt = SPD_MALE3;
+                    else if(strcmp(voice, "female1"))
+                       vt = SPD_FEMALE1;
+                    else if(strcmp(voice, "female2"))
+                       vt = SPD_FEMALE2;
+                    if(strcmp(voice, "female3"))
+                       vt = SPD_FEMALE3;
+                    if(strcmp(voice, "child_male"))
+                        vt = SPD_CHILD_MALE;
+                    if(strcmp(voice, "child_female"))
+                        vt = SPD_CHILD_FEMALE;
+                    (*sssv)(spd, vt);
+                }
+
                 if(g_module_symbol(handle, "spd_set_volume",(gpointer*)&ssv))
                     (*ssv)(spd, -50);
                 if(g_module_symbol(handle, "spd_set_notification_on",(gpointer*)&ssno))

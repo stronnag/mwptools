@@ -19,6 +19,11 @@ ARGV.options do |opt|
   end
 end
 
+def fmtstr ts, sats, hdop, epv, eph, eeok
+  stat = eeok ? '' : '*'
+  puts ["%.1f" % ts, sats, hdop/100, epv/100, eph/100,stat].join("\t")
+end
+
 bbox = (ARGV[0]|| abort('no BBOX log'))
 cmd = "blackbox_decode 2</dev/null"
 cmd << " --index #{idx}"
@@ -37,19 +42,30 @@ IO.popen(cmd,'r') do |p|
   hdrs = csv.shift
   nsats = -1
 
-  puts %w/Time Sats Hdop/.join("\t")
+  puts %w/Time Sats Hdop EPV EPH Status/.join("\t")
+  leeok = eeok = true
   csv.each do |c|
     ts = c[:time_s].to_f
     st = ts if st.nil?
     ts -= st
+    s = nil
     csats = c[:gps_numsat].to_i
-    if csats != nsats
-      if nsats != -1
-	puts ["%.6f" % ts, nsats, c[:gps_hdop].to_f/100.0].join("\t")
-      end
-      nsats = csats
-      puts ["%.6f" % ts, nsats, c[:gps_hdop].to_f/100.0].join("\t")
+    epv = c[:gps_epv].to_f
+    eph = c[:gps_eph].to_f
+    if epv > 1000 or eph > 1000
+      eeok = false
+    else
+      eeok = true
     end
+    if csats != nsats
+      s= fmtstr ts, csats, c[:gps_hdop].to_f, epv, eph, eeok
+      nsats = csats
+    end
+    if eeok != leeok
+      s = fmtstr ts, csats, c[:gps_hdop].to_f, epv, eph, eeok
+      leeok = eeok
+    end
+    puts(s) if s
   end
 end
 exit (st.nil?) ? 255 : 0

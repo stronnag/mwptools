@@ -21,7 +21,7 @@ fi
 # note also prorata values in ffmpeg command line.
 XRES=1280
 YRES=720
-YYRES=$YRES # no long necessary with client side decorations
+YYRES=$((YRES + 20))  # no long necessary with client side decorations
 
 SX=32
 SY=132
