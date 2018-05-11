@@ -106,6 +106,18 @@
       <description>Default espeak voice (see espeak documentation)</description>
     </key>
 
+    <key name="speechd-voice" type="s">
+      <summary>Default speechd voice</summary>
+      <default>"male1"</default>
+      <description>Default speechd voice (see speechd documentation)</description>
+    </key>
+
+    <key name="flite-voice-uri" type="s">
+      <summary>Default flite voice file</summary>
+      <default>""</default>
+      <description>Default flite voice file URI (file:// etc., see flite documentation)</description>
+    </key>
+
     <key type="b" name="audio-bearing-is-reciprocal">
       <default>false</default>
       <summary>Annouce bearing as reciprocal</summary>
@@ -325,10 +337,11 @@
         <choice value='none'/>
         <choice value='espeak'/>
         <choice value='speechd'/>
+        <choice value='flite'/>
       </choices>
       <default>"espeak"</default>
       <summary>API for speech synthesis</summary>
-      <description>espeak or speechd. Only change this is you know you
+      <description>espeak, speechd, flite. Only change this is you know you
       have the required development files at build time</description>
     </key>
 

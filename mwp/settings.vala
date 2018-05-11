@@ -38,6 +38,8 @@ public class MWPSettings : GLib.Object
     public uint  speakint {get; set; default=0;}
     public uint  buadrate {get; set; default=57600;}
     public string evoice {get; private set; default=null;}
+    public string svoice {get; private set; default=null;}
+    public string fvoice {get; private set; default=null;}
     public bool recip {get; set; default=false;}
     public bool recip_head {get; set; default=false;}
     public bool audioarmed {get; set; default=false;}
@@ -165,6 +167,10 @@ public class MWPSettings : GLib.Object
         }
         if(s == null || s == "espeak-voice")
             evoice = settings.get_string ("espeak-voice");
+        if(s == null || s == "speechd-voice")
+            svoice = settings.get_string ("speechd-voice");
+        if(s == null || s == "flite-voice-uri")
+            fvoice = settings.get_string ("flite-voice-uri");
         if(s == null || s == "baudrate")
             baudrate = settings.get_uint("baudrate");
         if(s == null || s == "media-player")

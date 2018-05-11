@@ -1752,6 +1752,7 @@ public class NavStatus : GLib.Object
 
     public void logspeak_init (string? voice, bool use_en = false, string? espawn=null)
     {
+        int si = 0;
         if(vinit == false)
         {
             efdin=0;
@@ -1776,9 +1777,12 @@ public class NavStatus : GLib.Object
             }
             else
             {
-                var si = MwpSpeech.init(voice);
+                si = MwpSpeech.init(voice);
                 MWPLog.message("Using %s for speech\n",
-                               (si == 0) ? "espeak" : (si == 1) ? "speechd" : "none");
+                               (si == 0) ? "espeak" :
+                               (si == 1) ? "speechd" :
+                               (si == 2) ? "flite" :
+                               "none");
             }
         }
         if (mt != null)
@@ -1786,7 +1790,7 @@ public class NavStatus : GLib.Object
             logspeak_close();
         }
         mt = new AudioThread();
-        mt.start(use_en, efdin);
+        mt.start(use_en, efdin, (si == 2));
         mt_voice=true;
     }
 
@@ -1862,10 +1866,10 @@ public class AudioThread : Object {
             ;
     }
 
-    string say_nicely(int v, bool nice=false)
+    string say_nicely(int v, bool nicely)
     {
         string s;
-        if(!nice)
+        if(!nicely)
             s = "%d".printf(v);
         else
         {
@@ -1900,7 +1904,7 @@ public class AudioThread : Object {
         return s;
     }
 
-    public void start(bool _use_en = false, int _efd = 0)
+    public void start(bool _use_en = false, int _efd = 0, bool _nice=false)
     {
         efd = _efd;
         use_en = _use_en;
@@ -1908,6 +1912,8 @@ public class AudioThread : Object {
         timer = new Timer();
         timer.start();
         lsat_t = timer.elapsed();
+        bool nice = _nice;
+
         thread = new Thread<int> ("mwp audio", () => {
                 Vox c;
                 while((c = msgs.pop()) != Vox.DONE)
@@ -1988,24 +1994,24 @@ public class AudioThread : Object {
                             if(NavStatus.recip)
                                 brg = ((brg + 180) % 360);
                             s = "Range %s, bearing %s".printf(
-                                say_nicely((int)Units.distance(NavStatus.cg.range)),
-                                say_nicely(brg));
+                                say_nicely((int)Units.distance(NavStatus.cg.range), nice),
+                                say_nicely(brg,nice));
                             break;
                         case Vox.ELEVATION:
-                            s = "Elevation %s.".printf(say_nicely((int)Units.distance(GPSInfo.elev)));
+                            s = "Elevation %s.".printf(say_nicely((int)Units.distance(GPSInfo.elev),nice));
                             break;
                         case Vox.BARO:
                             double estalt = (double)NavStatus.alti.estalt/100.0;
                             if(estalt < 0.0 || estalt > 20.0)
                             {
                                 estalt = Math.round(estalt);
-                                s = "Altitude %s".printf(say_nicely((int)estalt));
+                                s = "Altitude %s".printf(say_nicely((int)estalt, nice));
                             }
                             else
                                 s = "Altitude %.1f".printf(estalt).replace(".0","");
                             break;
                         case Vox.HEADING:
-                            s = "Heading %s".printf(say_nicely(NavStatus.hdr));
+                            s = "Heading %s".printf(say_nicely(NavStatus.hdr,nice));
                             break;
                         case Vox.VOLTAGE:
                             s = "Voltage %.1f".printf(NavStatus.volts).replace(".0","");

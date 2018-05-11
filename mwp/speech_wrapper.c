@@ -161,6 +161,98 @@ static void sd_say(char *text)
 }
 #endif
 
+#ifdef USE_FLITE
+
+#include <flite/flite.h>
+
+typedef cst_voice * (*register_cmu_us_slt_t)(void);
+typedef void (*usenglish_init_t)(cst_voice *);
+typedef cst_lexicon *(*cmulex_init_t)(void);
+typedef void (*flite_init_t)(void);
+typedef int (*flite_add_lang_t)(char *,void*,void*);
+typedef cst_voice * (*flite_voice_load_t)(char *);
+typedef float (*flite_text_to_speech_t)(char *,  cst_voice *, char*);
+
+static  cst_voice *voice;
+static flite_text_to_speech_t fl_tts;
+static usenglish_init_t  fl_eng;
+static cmulex_init_t  fl_cmu;
+
+extern void mwp_log_message (const gchar* format, ...);
+
+static int fl_init(char *vname)
+{
+    gchar * modname;
+    modname = g_module_build_path(NULL, "flite");
+    if(modname)
+    {
+        handle = g_module_open(modname, 0);
+        if (handle)
+        {
+            flite_init_t fl_i;
+            if(g_module_symbol(handle, "flite_init", (gpointer *)&fl_i))
+            {
+                (*fl_i)();
+                flite_add_lang_t fl_al;
+                flite_voice_load_t fl_load;
+                g_module_symbol(handle, "flite_add_lang", (gpointer *)&fl_al);
+                g_module_symbol(handle, "flite_voice_load", (gpointer *)&fl_load);
+                g_module_symbol(handle, "flite_text_to_speech", (gpointer *)&fl_tts);
+                GModule *handle2;
+                modname = g_module_build_path(NULL, "flite_usenglish");
+                handle2 = g_module_open(modname, 0);
+                if(handle2 == NULL)
+                    goto out;
+                g_module_symbol(handle2, "usenglish_init", (gpointer *)&fl_eng);
+
+                GModule *handle3;
+                modname = g_module_build_path(NULL, "flite_cmulex");
+                handle3 = g_module_open(modname, 0);
+                if(handle3 == NULL)
+                    goto out;
+
+                g_module_symbol(handle3, "cmulex_init", (gpointer *)&fl_cmu);
+
+                if(fl_al == NULL || fl_load == NULL || fl_tts == NULL ||
+                   fl_eng == NULL || fl_cmu == NULL)
+                    goto out;
+
+                int i0 = (*fl_al)("eng", fl_eng, fl_cmu);
+                int i1 = (*fl_al)("usenglish", fl_eng, fl_cmu);
+                if(i0 != 1 || i1 != 1)
+                    goto out;
+
+                GModule *handle1;
+                modname = g_module_build_path(NULL, "flite_cmu_us_slt");
+                handle1 = g_module_open(modname, 0);
+                if(handle1 == NULL)
+                    goto out;
+                register_cmu_us_slt_t fl_slt;
+                g_module_symbol(handle1, "register_cmu_us_slt", (gpointer *)&fl_slt);
+                if(vname !=NULL && fl_load != NULL && vname != NULL)
+                    voice = (*fl_load)(vname);
+
+                if(voice == NULL && fl_slt != NULL)
+                    voice = (*fl_slt)();
+                else
+                {
+                    mwp_log_message("flite voice = %s\n", voice->name);
+                }
+            }
+        }
+    }
+  out:
+    return (voice == NULL) ? -1 : 2;
+}
+
+static void fl_say(char *text)
+{
+    (*fl_tts)(text, voice, "play");
+}
+
+#endif
+
+
 static int ss_init(char *v)
 {
     fprintf(stderr, "null speech init %s\n", v);
@@ -184,6 +276,9 @@ guchar get_speech_api_mask()
 #ifdef USE_SPEECHD
     api_mask |= 2;
 #endif
+#ifdef USE_FLITE
+    api_mask |= 4;
+#endif
     return api_mask;
 }
 
@@ -202,6 +297,14 @@ void speech_set_api(guchar api)
     {
         _speech_init = sd_init;
         _speech_say = sd_say;
+        return;
+    }
+#endif
+#ifdef USE_FLITE
+    if(api == 3)
+    {
+        _speech_init = fl_init;
+        _speech_say = fl_say;
         return;
     }
 #endif

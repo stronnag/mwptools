@@ -18,6 +18,11 @@ ES2 := $(shell pkg-config --exists speech-dispatcher; echo $$?)
 ifeq ($(ES2),0)
  SPK += -X -DUSE_SPEECHD
 endif
+# yes, it really does exit(1)
+ES3 := $(shell flite --version > /dev/null; echo $$?)
+ifeq ($(ES3),1)
+ SPK += -X -DUSE_FLITE
+endif
 
 ifdef SPK
   OPTS += --pkg gmodule-2.0

@@ -750,6 +750,7 @@ public class MWPlanner : Gtk.Application {
     private bool replay_paused;
 
     private MwpServer mss=null;
+    private uint8 spapi =  0;
 
     private const Gtk.TargetEntry[] targets = {
         {"text/uri-list",0,0}
@@ -899,7 +900,7 @@ public class MWPlanner : Gtk.Application {
 
     public override void activate ()
     {
-        const string[] speakers =  {"none", "espeak","speechd"};
+        const string[] speakers =  {"none", "espeak","speechd","flite"};
 
         base.startup();
 
@@ -917,13 +918,14 @@ public class MWPlanner : Gtk.Application {
         mmap = new ModelMap();
         mmap.init();
 
-        var spapi =  0;
         if(exvox == null)
         {
             spapi = MwpSpeech.get_api_mask();
-            if (spapi == 3)
+            MWPLog.message("speech init api %d\n", spapi);
+            if (spapi == 7)
                 spapi = (conf.speech_api == "espeak") ? 1 :
-                    (conf.speech_api == "speechd") ? 2 : 0;
+                    (conf.speech_api == "speechd") ? 2 :
+                    (conf.speech_api == "flite") ? 3: 0;
             MWPLog.message("Using speech api %d [%s]\n", spapi, speakers[spapi]);
         }
         else
@@ -5701,10 +5703,26 @@ public class MWPlanner : Gtk.Application {
         {
             if(audio_on)
             {
-                string voice = conf.evoice;
-                if (voice == "default")
-                    voice = "en"; // thanks, espeak-ng
-
+                string voice = null;
+                switch(spapi)
+                {
+                    case 1:
+                        voice = conf.evoice;
+                        if (voice == "default")
+                            voice = "en"; // thanks, espeak-ng
+                        break;
+                    case 2:
+                        voice = conf.svoice;
+                        break;
+                    case 3:
+                        if(conf.fvoice.has_prefix("file:") ||
+                           conf.fvoice.has_prefix("http:"))
+                        voice = conf.fvoice;
+                        break;
+                    default:
+                        voice = null;
+                        break;
+                }
                 navstatus.logspeak_init(voice, (conf.uilang == "ev"), exvox);
                 spktid = Timeout.add_seconds(conf.speakint, () => {
                         if(replay_paused == false)
