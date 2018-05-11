@@ -25,6 +25,8 @@ endif
 
 OPTS+= --vapidir $(COMMOND) -X -I$(COMMOND) --pkg mwpfuncs
 
+BASH_COMPLETION_DIR := $(shell pkg-config --variable=completionsdir bash-completion | sed 's/^\/usr\///')
+
 all: $(APPS)
 
 COMMOND=../common
@@ -74,6 +76,5 @@ install: $(APPS)
 	glib-compile-schemas $(datadir)/share/glib-2.0/schemas
 	install -d $(datadir)/share/doc/mwp
 	install -m 644 ../docs/mwptools.pdf $(datadir)/share/doc/mwp/mwptools.pdf
-	install -d /etc/bash_completion.d/
-	install -m 644 mwp_complete.sh /etc/bash_completion.d/mwp
-	gtk-update-icon-cache $(datadir)/share/icons/hicolor
+	install -d $(datadir)/$(BASH_COMPLETION_DIR)
+	install -m 644 mwp_complete.sh $(datadir)/$(BASH_COMPLETION_DIR)/mwp
