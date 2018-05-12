@@ -27,6 +27,9 @@ dnf install rubygem-json
 
 # dnf install speech-dispatcher-devel
 
+## optionally, flite for text to speech ...
+# dnf install flite flite-devel
+
 ## If you want to use serial devices for bbox replay (and you probably
 ## don't) then see
 ##  https://developer.fedoraproject.org/tech/languages/ruby/gems-installation.html
