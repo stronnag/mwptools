@@ -233,13 +233,33 @@ static int fl_init(char *vname)
                     goto out;
                 register_cmu_us_slt_t fl_slt;
                 g_module_symbol(handle1, "register_cmu_us_slt", (gpointer *)&fl_slt);
-                if(vname !=NULL && fl_load != NULL && vname != NULL)
-                    voice = (*fl_load)(vname);
 
+                char *parts[2]  = {NULL};
+                char *s, *dup = NULL;
+                if(vname !=NULL && fl_load != NULL && vname != NULL)
+                {
+                    dup = s = strdup(vname);
+                    int n = 0;
+                    char *tok;
+                    while ((tok = strsep(&s, ",")))
+                    {
+                        if(n < 2)
+                            parts[n] = tok;
+                        n++;
+                    }
+                    if(parts[0] != NULL)
+                        voice = (*fl_load)(parts[0]);
+                }
                 if(voice == NULL && fl_slt != NULL)
                     voice = (*fl_slt)();
-
-                (*fl_fsf)(voice->features,"duration_stretch", 0.85f);
+                if(parts[1] != NULL)
+                {
+                    float f;
+                    f = atof(parts[1]);
+                    if (f != 0.0)
+                        (*fl_fsf)(voice->features,"duration_stretch", f);
+                }
+                free(dup);
                 mwp_log_message("flite voice = %s\n", voice->name);
             }
         }
