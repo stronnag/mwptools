@@ -262,9 +262,7 @@ static int fl_init(char *vname)
                 }
                 free(dup);
 // This is for Fedora 28 and earlier ... (alas)
-#if FLITE_PROJECT_VERSION != "1.3"
-                mwp_log_message("flite voice = %s\n", voice->name);
-#endif
+//                mwp_log_message("flite voice = %s\n", voice->name);
             }
         }
     }
