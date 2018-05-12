@@ -2044,7 +2044,7 @@ public class AudioThread : Object {
                     {
                         if(use_en)
                             s = s.replace(",",".");
-                        MWPLog.message("Q %s\n", s);
+//                        MWPLog.message("Q %s\n", s);
                         if(efd != 0)
                         {
                             Posix.write(efd, s, s.length);
