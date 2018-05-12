@@ -1778,7 +1778,7 @@ public class NavStatus : GLib.Object
             else
             {
                 si = MwpSpeech.init(voice);
-                MWPLog.message("Using %s for speech\n",
+                MWPLog.message("Initialised %s for speech\n",
                                (si == 0) ? "espeak" :
                                (si == 1) ? "speechd" :
                                (si == 2) ? "flite" :

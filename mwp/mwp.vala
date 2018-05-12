@@ -921,7 +921,6 @@ public class MWPlanner : Gtk.Application {
         if(exvox == null)
         {
             spapi = MwpSpeech.get_api_mask();
-            MWPLog.message("speech init api %d\n", spapi);
             if (spapi == 7)
                 spapi = (conf.speech_api == "espeak") ? 1 :
                     (conf.speech_api == "speechd") ? 2 :
@@ -5715,8 +5714,6 @@ public class MWPlanner : Gtk.Application {
                         voice = conf.svoice;
                         break;
                     case 3:
-                        if(conf.fvoice.has_prefix("file:") ||
-                           conf.fvoice.has_prefix("http:"))
                         voice = conf.fvoice;
                         break;
                     default:

@@ -112,10 +112,10 @@
       <description>Default speechd voice (see speechd documentation)</description>
     </key>
 
-    <key name="flite-voice-uri" type="s">
+    <key name="flite-voice-file" type="s">
       <summary>Default flite voice file</summary>
       <default>""</default>
-      <description>Default flite voice file URI (file:// etc., see flite documentation)</description>
+      <description>Default flite voice file (full path, *.flitevox), see flite documentation)</description>
     </key>
 
     <key type="b" name="audio-bearing-is-reciprocal">

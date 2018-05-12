@@ -169,8 +169,8 @@ public class MWPSettings : GLib.Object
             evoice = settings.get_string ("espeak-voice");
         if(s == null || s == "speechd-voice")
             svoice = settings.get_string ("speechd-voice");
-        if(s == null || s == "flite-voice-uri")
-            fvoice = settings.get_string ("flite-voice-uri");
+        if(s == null || s == "flite-voice-file")
+            fvoice = settings.get_string ("flite-voice-file");
         if(s == null || s == "baudrate")
             baudrate = settings.get_uint("baudrate");
         if(s == null || s == "media-player")
