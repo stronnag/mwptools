@@ -4563,7 +4563,7 @@ public class MWPlanner : Gtk.Application {
                             mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
                         NavStatus.have_rth = ((MSP.Action)w.action == MSP.Action.RTH);
                         NavStatus.nm_pts = (uint8)wpmgr.wps.length;
-                        MWPLog.message("Mission validated (%u, %s)\n",
+                        MWPLog.message("Mission validated (points: %u, RTH: %s)\n",
                                        NavStatus.nm_pts,
                                        NavStatus.have_rth.to_string());
                         if((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
@@ -4626,6 +4626,12 @@ public class MWPlanner : Gtk.Application {
                             validatelab.set_text("✔"); // u+2714
                             if (wp_resp[0].action == MSP.Action.WAYPOINT)
                                 check_mission_safe(wp_resp[0].lat,wp_resp[0].lon);
+
+                            NavStatus.have_rth = ((MSP.Action)w.action == MSP.Action.RTH);
+                            NavStatus.nm_pts = (uint8)w.wp_no;
+                            MWPLog.message("Mission restore (points: %u, RTH: %s)\n",
+                                           NavStatus.nm_pts,
+                                           NavStatus.have_rth.to_string());
                         }
                         wp_resp={};
                         reset_poller();

@@ -51,6 +51,7 @@ public static int main (string[] args)
     {
         var ml = new MainLoop();
         int fd = s.get_fd();
+        s.use_v2 = true;
         var robj = new ReplayThread();
         robj.replay_done.connect(() => {
                 ml.quit();

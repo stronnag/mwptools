@@ -6,14 +6,17 @@ LOPTS=-X -lm
 APP=mwplog-runner
 
 all: $(APP)
+COMMOND=../../common
 
-COMMON=../../common/serial-device.vala ../../common/btdev.c \
-        ../../common/cserial.c ../../common/mspcmd.vala  \
-        ../../common/mspmsg.vala ../../common/mavcmd.vala ../../common/mwplog.vala
+COMMON=$(COMMOND)/serial-device.vala $(COMMOND)/btdev.c \
+        $(COMMOND)/cserial.c $(COMMOND)/mspcmd.vala  \
+        $(COMMOND)/mspmsg.vala $(COMMOND)/mavcmd.vala $(COMMOND)/mwplog.vala
 
-PKGS = --pkg posix --pkg gio-2.0 --pkg linux --pkg json-glib-1.0
+PKGS = --pkg posix --pkg gio-2.0 --pkg linux --pkg json-glib-1.0 --pkg mwpfuncs
 
 CLISRC=	$(APP).vala ../../mwp/mwp-replay.vala  $(COMMON)
+
+OPTS+=--vapidir=$(COMMOND) -X -I$(COMMOND)
 
 $(APP): $(CLISRC)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS)
