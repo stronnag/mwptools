@@ -30,8 +30,7 @@ endif
 
 OPTS+= --vapidir $(COMMOND) -X -I$(COMMOND) --pkg mwpfuncs
 
-BASH_COMPLETION_DIR := $(shell pkg-config --variable=completionsdir bash-completion | sed 's/^\/usr\///')
-BASH_COMPLETION_DIR ?= share/bash-completion/completions
+BASH_COMPLETION_DIR := $(shell pkg-config --variable=completionsdir bash-completion 2>/dev/null| sed 's/^\/usr\///')
 
 all: $(APPS)
 
@@ -82,5 +81,7 @@ install: $(APPS)
 	glib-compile-schemas $(datadir)/share/glib-2.0/schemas
 	install -d $(datadir)/share/doc/mwp
 	install -m 644 ../docs/mwptools.pdf $(datadir)/share/doc/mwp/mwptools.pdf
+ifneq ($(BASH_COMPLETION_DIR),'')
 	install -d $(datadir)/$(BASH_COMPLETION_DIR)
-	install -m 644 mwp_complete.sh $(datadir)/$(BASH_COMPLETION_DIR)/mwp
+	install -m 644 blackbox_decode_complete.sh $(datadir)/$(BASH_COMPLETION_DIR)/blackbox_decode
+endif
