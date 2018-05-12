@@ -1789,8 +1789,8 @@ public class NavStatus : GLib.Object
         {
             logspeak_close();
         }
-        mt = new AudioThread();
-        mt.start(use_en, efdin, (si == 2));
+        mt = new AudioThread((si == 2));
+        mt.start(use_en, efdin);
         mt_voice=true;
     }
 
@@ -1837,11 +1837,13 @@ public class AudioThread : Object {
     private uint lsats;
     private bool use_en = false;
     private int efd;
+    private bool nicely = false;
 
     private AsyncQueue<Vox> msgs;
     public Thread<int> thread {private set; get;}
 
-    public AudioThread () {
+    public AudioThread (bool _n = false) {
+        nicely = _n;
         msgs = new AsyncQueue<Vox> ();
     }
 
@@ -1866,14 +1868,13 @@ public class AudioThread : Object {
             ;
     }
 
-    string say_nicely(int v, bool nicely)
+    string say_nicely(int v)
     {
-        string s;
+        StringBuilder sb = new StringBuilder();
         if(!nicely)
-            s = "%d".printf(v);
+            sb.append_printf("%d", v);
         else
         {
-            StringBuilder sb = new StringBuilder();
             bool hasn = false;
             if(v < 0)
             {
@@ -1899,12 +1900,11 @@ public class AudioThread : Object {
                 sb.append_printf("and %d", v);
             else
                 sb.append_printf("%d",v);
-            s = sb.str;
         }
-        return s;
+        return sb.str;
     }
 
-    public void start(bool _use_en = false, int _efd = 0, bool _nice=false)
+    public void start(bool _use_en = false, int _efd = 0)
     {
         efd = _efd;
         use_en = _use_en;
@@ -1912,7 +1912,6 @@ public class AudioThread : Object {
         timer = new Timer();
         timer.start();
         lsat_t = timer.elapsed();
-        bool nice = _nice;
 
         thread = new Thread<int> ("mwp audio", () => {
                 Vox c;
@@ -1994,24 +1993,24 @@ public class AudioThread : Object {
                             if(NavStatus.recip)
                                 brg = ((brg + 180) % 360);
                             s = "Range %s, bearing %s".printf(
-                                say_nicely((int)Units.distance(NavStatus.cg.range), nice),
-                                say_nicely(brg,nice));
+                                say_nicely((int)Units.distance(NavStatus.cg.range)),
+                                say_nicely(brg));
                             break;
                         case Vox.ELEVATION:
-                            s = "Elevation %s.".printf(say_nicely((int)Units.distance(GPSInfo.elev),nice));
+                            s = "Elevation %s.".printf(say_nicely((int)Units.distance(GPSInfo.elev)));
                             break;
                         case Vox.BARO:
                             double estalt = (double)NavStatus.alti.estalt/100.0;
                             if(estalt < 0.0 || estalt > 20.0)
                             {
                                 estalt = Math.round(estalt);
-                                s = "Altitude %s".printf(say_nicely((int)estalt, nice));
+                                s = "Altitude %s".printf(say_nicely((int)estalt));
                             }
                             else
                                 s = "Altitude %.1f".printf(estalt).replace(".0","");
                             break;
                         case Vox.HEADING:
-                            s = "Heading %s".printf(say_nicely(NavStatus.hdr,nice));
+                            s = "Heading %s".printf(say_nicely(NavStatus.hdr));
                             break;
                         case Vox.VOLTAGE:
                             s = "Voltage %.1f".printf(NavStatus.volts).replace(".0","");
@@ -2045,6 +2044,7 @@ public class AudioThread : Object {
                     {
                         if(use_en)
                             s = s.replace(",",".");
+                        MWPLog.message("Q %s\n", s);
                         if(efd != 0)
                         {
                             Posix.write(efd, s, s.length);
@@ -2052,6 +2052,7 @@ public class AudioThread : Object {
                         }
                         else
                             MwpSpeech.say(s);
+
                     }
                 }
                 return 0;
