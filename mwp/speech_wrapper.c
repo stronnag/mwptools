@@ -166,6 +166,7 @@ static void sd_say(char *text)
 #ifdef USE_FLITE
 
 #include <flite/flite.h>
+#include <flite//flite_version.h>
 
 typedef cst_voice * (*register_cmu_us_slt_t)(void);
 typedef void (*usenglish_init_t)(cst_voice *);
@@ -260,7 +261,10 @@ static int fl_init(char *vname)
                         (*fl_fsf)(voice->features,"duration_stretch", f);
                 }
                 free(dup);
+// This is for Fedora 28 and earlier ... (alas)
+#if FLITE_PROJECT_VERSION != "1.3"
                 mwp_log_message("flite voice = %s\n", voice->name);
+#endif
             }
         }
     }
