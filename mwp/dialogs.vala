@@ -1949,7 +1949,7 @@ public class AudioThread : Object {
                                     s = "Return to home initiated";
                                     break;
                                 case 2:
-                                    s = "Navigating to home";
+                                    s = "Navigating home";
                                     break;
                                 case 3:
                                     s = "Infinite position hold";
@@ -1962,9 +1962,9 @@ public class AudioThread : Object {
                                     if(wpno == 0)
                                         s = "Starting Mission";
                                     else if (NavStatus.have_rth && wpno == NavStatus.nm_pts)
-                                        s = "Navigating to home";
+                                        s = "Navigating home";
                                     else
-                                        s = "Navigating to waypoint %d".printf(wpno);
+                                        s = "Navigating to way point %d".printf(wpno);
                                     break;
                                 case 7:
                                     s = "Starting jump for %d".printf(NavStatus.n.wp_number);
@@ -1973,7 +1973,7 @@ public class AudioThread : Object {
                                     s = "Starting to land";
                                     break;
                                 case 9:
-                                    s = "Landing in progress";
+                                    s = "Landing";
                                     break;
                                 case 10:
                                     s = "Landed";

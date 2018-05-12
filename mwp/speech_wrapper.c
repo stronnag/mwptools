@@ -115,7 +115,7 @@ static int sd_init(char *voice)
                     (*ssl)(spd,"en");
                 if (g_module_symbol(handle, "spd_set_voice_type",(gpointer*)&sssv))
                 {
-                    SPDVoiceType vt = SPD_MALE1;
+                    SPDVoiceType vt;
                     if(strcmp(voice, "male2"))
                         vt = SPD_MALE2;
                     else if(strcmp(voice, "male3"))
@@ -124,12 +124,14 @@ static int sd_init(char *voice)
                        vt = SPD_FEMALE1;
                     else if(strcmp(voice, "female2"))
                        vt = SPD_FEMALE2;
-                    if(strcmp(voice, "female3"))
+                    else if(strcmp(voice, "female3"))
                        vt = SPD_FEMALE3;
-                    if(strcmp(voice, "child_male"))
+                    else if(strcmp(voice, "child_male"))
                         vt = SPD_CHILD_MALE;
-                    if(strcmp(voice, "child_female"))
+                    else if(strcmp(voice, "child_female"))
                         vt = SPD_CHILD_FEMALE;
+                    else
+                        vt = SPD_MALE1;
                     (*sssv)(spd, vt);
                 }
 
@@ -172,7 +174,7 @@ typedef void (*flite_init_t)(void);
 typedef int (*flite_add_lang_t)(char *,void*,void*);
 typedef cst_voice * (*flite_voice_load_t)(char *);
 typedef float (*flite_text_to_speech_t)(char *,  cst_voice *, char*);
-
+typedef void (*feat_set_float_t)(cst_features *,char *, float);
 static  cst_voice *voice;
 static flite_text_to_speech_t fl_tts;
 static usenglish_init_t  fl_eng;
@@ -195,8 +197,10 @@ static int fl_init(char *vname)
                 (*fl_i)();
                 flite_add_lang_t fl_al;
                 flite_voice_load_t fl_load;
+                feat_set_float_t fl_fsf;
                 g_module_symbol(handle, "flite_add_lang", (gpointer *)&fl_al);
                 g_module_symbol(handle, "flite_voice_load", (gpointer *)&fl_load);
+                g_module_symbol(handle, "feat_set_float", (gpointer *)&fl_fsf);
                 g_module_symbol(handle, "flite_text_to_speech", (gpointer *)&fl_tts);
                 GModule *handle2;
                 modname = g_module_build_path(NULL, "flite_usenglish");
@@ -234,10 +238,9 @@ static int fl_init(char *vname)
 
                 if(voice == NULL && fl_slt != NULL)
                     voice = (*fl_slt)();
-                else
-                {
-                    mwp_log_message("flite voice = %s\n", voice->name);
-                }
+
+                (*fl_fsf)(voice->features,"duration_stretch", 0.85f);
+                mwp_log_message("flite voice = %s\n", voice->name);
             }
         }
     }
