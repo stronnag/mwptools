@@ -247,12 +247,12 @@ static int fl_init(char *vname)
                             parts[n] = tok;
                         n++;
                     }
-                    if(parts[0] != NULL)
+                    if(parts[0] != NULL && parts[0] != 0)
                         voice = (*fl_load)(parts[0]);
                 }
                 if(voice == NULL && fl_slt != NULL)
                     voice = (*fl_slt)();
-                if(parts[1] != NULL)
+                if(parts[1] != NULL && parts[1] != 0)
                 {
                     float f;
                     f = atof(parts[1]);
