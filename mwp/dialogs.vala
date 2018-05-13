@@ -1840,6 +1840,7 @@ public class AudioThread : Object {
 
     public AudioThread (bool _n = false) {
         nicely = _n;
+        MWPLog.message ("Starting audio thread%s\n", (nicely) ? ", nicely" : "");
         msgs = new AsyncQueue<Vox> ();
     }
 
@@ -1867,9 +1868,7 @@ public class AudioThread : Object {
     string say_nicely(int v)
     {
         StringBuilder sb = new StringBuilder();
-        if(!nicely)
-            sb.append_printf("%d", v);
-        else
+        if(nicely)
         {
             bool hasn = false;
             if(v < 0)
@@ -1897,6 +1896,9 @@ public class AudioThread : Object {
             else
                 sb.append_printf("%d",v);
         }
+        else
+            sb.append_printf("%d", v);
+
         return sb.str;
     }
 
@@ -1917,7 +1919,7 @@ public class AudioThread : Object {
                     switch(c)
                     {
                         case Vox.AUDIO_TEST:
-                            s = "MWP audio test";
+                            s = "MWP audio test, version %s".printf(MwpVers.id);
                             break;
                         case Vox.HW_OK:
                             s = "Sensors OK";

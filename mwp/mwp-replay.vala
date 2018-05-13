@@ -161,128 +161,20 @@ public class ReplayThread : GLib.Object
         return (p - &tx[0]);
     }
 
-    private uint8 cksum(uint8[] dstr, size_t len, uint8 init=0)
-    {
-        var cs = init;
-        for(int n = 0; n < len; n++)
-        {
-            cs ^= dstr[n];
-        }
-        return cs;
-    }
-
-    private void send_ltm(int fd, uint8 cmd, void *data, size_t len)
-    {
-        uint8 dstr[128];
-        if(len != 0 && data != null)
-        {
-            dstr[0]='$';
-            dstr[1] = 'T';
-            dstr[2] = cmd;
-            Posix.memcpy(&dstr[3],data,len);
-            var ck = cksum(dstr[3:len+3],len,0);
-            dstr[3+len] = ck;
-            Posix.write(fd, dstr, len+4);
-        }
-    }
-
-    private void send_msp(int fd, uint8 cmd, void *data, size_t len)
-    {
-        var dsize = (uint8)len;
-        uint8 dstr[256];
-        dstr[0]='$';
-        dstr[1]='M';
-        dstr[2]= '>';
-        dstr[3] = dsize;
-        dstr[4] = cmd;
-        if (data != null && dsize > 0)
-            Posix.memcpy(&dstr[5], data, len);
-        len += 3;
-        var ck = cksum(dstr[3:len], len, 0);
-        dstr[len+2] = ck;
-        len += 3;
-        var n = Posix.write(fd, dstr, len);
-        if(n < 0)
-            print("write %s\n", Posix.strerror(Posix.errno));
-    }
-
-    private void send_rec(int fd, MSP.Cmds cmd, uint len, uint8 []buf)
+    private void send_rec(MWSerial msp, MSP.Cmds cmd, size_t len, void *buf)
     {
         if(cmd < MSP.Cmds.LTM_BASE)
         {
-            send_msp(fd, (uint8)cmd, buf, len);
+            msp.send_command(cmd, buf, len);
         }
         else if (cmd < MSP.Cmds.MAV_BASE)
         {
-            send_ltm(fd, (uint8)(cmd - MSP.Cmds.LTM_BASE), buf, len);
+            msp.send_ltm((uint8)(cmd - MSP.Cmds.LTM_BASE), buf, len);
         }
-    }
-
-
-    private uint8 mav_seed(uint8 mid)
-    {
-        uint8 mavseed = 0xff;
-        switch(mid)
+        else
         {
-            case 0:
-                mavseed = 50;
-                break;
-            case 1:
-                mavseed = 124;
-                break;
-            case 24:
-                mavseed = 24;
-                break;
-            case 30:
-                mavseed = 39;
-                break;
-            case 33:
-                mavseed = 104;
-                break;
-            case 35:
-                mavseed = 244;
-                break;
-            case 49:
-                mavseed = 39;
-                break;
-            case 74:
-                mavseed = 20;
-                break;
-            case 166:
-                mavseed = 21;
-                break;
-            case 109:
-                mavseed = 185;
-                break;
-            default:
-                mavseed = 255;
-                break;
+            msp.send_mav((uint8)(cmd - MSP.Cmds.MAV_BASE), buf, len);
         }
-        return mavseed;
-    }
-
-    private void send_mav_cmd(int fd, MSP.Cmds cmd, uint8 *buf, size_t st)
-    {
-        uint8 pbuf[256];
-        uint8 tmp;
-        uint16 sum = 0xffff;
-        pbuf[0] = 254; // MAV STX
-        pbuf[1] = (uint8)(st & 0xff);
-        pbuf[2] = 0;
-        pbuf[3] = 'J';
-        pbuf[4] = 'H';
-        pbuf[5] = cmd - MSP.Cmds.MAV_BASE;
-        Posix.memcpy(&pbuf[6], buf, st);
-        pbuf[st+6] = mav_seed(pbuf[5]);
-        for(int i = 1; i < st+7; i++)
-        {
-            tmp = pbuf[i] ^ (uint8)(sum & 0xff);
-            tmp ^= (tmp << 4);
-            sum = (sum >> 8) ^ (tmp << 8) ^ (tmp << 3) ^ (tmp >> 4);
-        }
-        pbuf[st+6] = (uint8)(sum & 0xff);
-        pbuf[st+7] = (uint8)(sum >> 8);
-        Posix.write(fd, pbuf, st+8);
     }
 
     public ReplayThread()
@@ -304,7 +196,14 @@ public class ReplayThread : GLib.Object
     public signal void replay_mission_file (string filename);
     public signal void replay_done();
 
-    public Thread<int> run (int fd, string relog, bool delay=true)
+    public Thread<int> run(int fd, string relog, bool delay=true)
+    {
+        MWSerial msp =  new MWSerial.forwarder();
+        msp.open_fd(fd,115200);
+        return run_msp(msp, relog, delay);
+    }
+
+    public Thread<int> run_msp (MWSerial msp, string relog, bool delay=true)
     {
         playon = true;
 
@@ -315,6 +214,7 @@ public class ReplayThread : GLib.Object
                 uint8 buf[256];
                 MSP_STATUS xa = MSP_STATUS();
                 bool mloaded = false;
+                msp.set_mode(MWSerial.Mode.SIM);
 
                 var file = File.new_for_path (relog);
                 if (!file.query_exists ()) {
@@ -392,7 +292,7 @@ public class ReplayThread : GLib.Object
                                     buf[1] = (uint8)mrtype;
                                     buf[2] = 42;
                                     serialise_u32(buf+3, (uint32)cap);
-                                    send_rec(fd,MSP.Cmds.IDENT, 7, buf);
+                                    send_rec(msp,MSP.Cmds.IDENT, 7, buf);
 
                                     if(obj.has_member("fctype"))
                                         fctype = (uint)obj.get_int_member ("fctype");
@@ -428,7 +328,7 @@ public class ReplayThread : GLib.Object
                                             buf[k+9] = fcname[k];
                                         mlen = 9+buf[8];
                                     }
-                                    send_rec(fd,MSP.Cmds.BOARD_INFO, mlen, buf);
+                                    send_rec(msp,MSP.Cmds.BOARD_INFO, mlen, buf);
 
                                     if(fcvar != null)
                                     {
@@ -437,12 +337,12 @@ public class ReplayThread : GLib.Object
                                         buf[2] = fcvar[2];
                                         buf[3] = fcvar[3];
                                         buf[4] = '!';
-                                        send_rec(fd,MSP.Cmds.FC_VARIANT, 4, buf);
+                                        send_rec(msp,MSP.Cmds.FC_VARIANT, 4, buf);
 
                                         buf[0] = (uint8)((fcvers & 0xff0000) >> 16);
                                         buf[1] = (uint8)((fcvers & 0xff00) >> 8);
                                         buf[2] = (uint8)(fcvers & 0xff);
-                                        send_rec(fd,MSP.Cmds.FC_VERSION, 3, buf);
+                                        send_rec(msp,MSP.Cmds.FC_VERSION, 3, buf);
                                     }
 
                                     if(obj.has_member("git_info"))
@@ -451,7 +351,7 @@ public class ReplayThread : GLib.Object
                                         for(var i = 0; i < 7; i++)
                                             buf[19+i] = git[i];
                                         buf[26] = 0;
-                                        send_rec(fd,MSP.Cmds.BUILD_INFO, 32, buf);
+                                        send_rec(msp,MSP.Cmds.BUILD_INFO, 32, buf);
                                     }
 
                                     string bx;
@@ -482,7 +382,7 @@ public class ReplayThread : GLib.Object
                                         }
                                     }
 
-                                    send_rec(fd,MSP.Cmds.BOXNAMES, bx.length, bx.data);
+                                    send_rec(msp,MSP.Cmds.BOXNAMES, bx.length, bx.data);
                                     MSP_MISC a = MSP_MISC();
                                     a.conf_minthrottle=1064;
                                     a.maxthrottle=1864;
@@ -503,7 +403,7 @@ public class ReplayThread : GLib.Object
                                     }
 
                                     var nb = serialise_misc(a, buf);
-                                    send_rec(fd,MSP.Cmds.MISC, (uint)nb, buf);
+                                    send_rec(msp,MSP.Cmds.MISC, (uint)nb, buf);
                                     break;
                                 case "armed":
                                     if(!telem)
@@ -534,7 +434,7 @@ public class ReplayThread : GLib.Object
                                         a.global_conf=(uint8)profile;
                                         xa = a;
                                         var nb = serialise_status(a, buf);
-                                        send_rec(fd,MSP.Cmds.STATUS, (uint)nb, buf);
+                                        send_rec(msp,MSP.Cmds.STATUS, (uint)nb, buf);
                                     }
                                      if(obj.has_member("telem"))
                                      {
@@ -553,7 +453,7 @@ public class ReplayThread : GLib.Object
                                     a.rssi = (uint16)rssi;
                                     a.powermetersum = (uint16)power;
                                     serialise_analogue(a, buf);
-                                    send_rec(fd,MSP.Cmds.ANALOG, MSize.MSP_ANALOG, buf);
+                                    send_rec(msp,MSP.Cmds.ANALOG, MSize.MSP_ANALOG, buf);
                                     break;
                                 case "attitude":
                                         //{"type":"attitude","utime":1408382805,"angx":0,"angy":0,"heading"":0}
@@ -567,7 +467,7 @@ public class ReplayThread : GLib.Object
                                     a.angx = (int16)Math.lround(dangx*10);
                                     a.angy = (int16)Math.lround(dangy*10);
                                     serialise_atti(a, buf);
-                                    send_rec (fd,MSP.Cmds.ATTITUDE, MSize.MSP_ATTITUDE,buf);
+                                    send_rec (msp,MSP.Cmds.ATTITUDE, MSize.MSP_ATTITUDE,buf);
                                     break;
                                 case "altitude":
                                         //{"type":"altitude","utime":1404717912,"estalt":4.4199999999999999,"vario":20.399999999999999}
@@ -575,7 +475,7 @@ public class ReplayThread : GLib.Object
                                     a.estalt = (int32)(Math.lround(obj.get_double_member("estalt")*100));
                                     a.vario = (int16)(Math.lround(obj.get_double_member("vario")* 10));
                                     var nb = serialise_alt(a, buf);
-                                    send_rec(fd,MSP.Cmds.ALTITUDE, (uint)nb, buf);
+                                    send_rec(msp,MSP.Cmds.ALTITUDE, (uint)nb, buf);
                                     break;
                                 case "status":
                                         //{"type":"status","utime":1404717912,"gps_mode":0,"nav_mode":0,"action":0,"wp_number":0,"nav_error":10,"target_bearing":0}
@@ -587,7 +487,7 @@ public class ReplayThread : GLib.Object
                                     a.nav_error = (uint8)obj.get_int_member("nav_error");
                                     a.target_bearing = (uint16)obj.get_int_member("target_bearing");
                                     serialise_nav_status(a, buf);
-                                    send_rec(fd,MSP.Cmds.NAV_STATUS, MSize.MSP_NAV_STATUS,buf);
+                                    send_rec(msp,MSP.Cmds.NAV_STATUS, MSize.MSP_NAV_STATUS,buf);
                                     break;
                                 case "raw_gps":
                                         // {"type":"raw_gps","utime":1404717910,"lat":50.805089199999998,"lon":-1.4939248999999999,"cse":50.899999999999999,"spd":0.22,"alt":41,"fix":1,"numsat":8}
@@ -603,7 +503,7 @@ public class ReplayThread : GLib.Object
                                         a.gps_hdop = (uint16)obj.get_int_member("hdop");
 
                                     serialise_raw_gps(a, buf);
-                                    send_rec(fd,MSP.Cmds.RAW_GPS, MSize.MSP_RAW_GPS,buf);
+                                    send_rec(msp,MSP.Cmds.RAW_GPS, MSize.MSP_RAW_GPS,buf);
                                     break;
                                 case "comp_gps":
                                         // {"type":"comp_gps","utime":1408391119,"bearing":180,"range":0,"update":0}
@@ -616,7 +516,7 @@ public class ReplayThread : GLib.Object
                                     a.direction = (int16)hdr;
                                     a.update = (uint8)obj.get_int_member("update");
                                     serialise_comp_gps(a, buf);
-                                    send_rec(fd,MSP.Cmds.COMP_GPS, MSize.MSP_COMP_GPS,buf);
+                                    send_rec(msp,MSP.Cmds.COMP_GPS, MSize.MSP_COMP_GPS,buf);
                                     break;
                                 case "radio":
                                         //"type":"radio","utime":1404717910,"rxerrors":0,"fixed_errors":0,"localrssi":139,"remrssi":138,"txbuf":100,"noise":93,"remnoise":15}
@@ -630,7 +530,7 @@ public class ReplayThread : GLib.Object
                                     a.rxerrors = (uint16)(obj.get_int_member("rxerrors"));
                                     a.fixed_errors = (uint16)(obj.get_int_member("fixed_errors"));
                                     serialise_radio(a, buf);
-                                    send_rec(fd,MSP.Cmds.RADIO, MSize.MSP_RADIO,buf);
+                                    send_rec(msp,MSP.Cmds.RADIO, MSize.MSP_RADIO,buf);
                                     break;
                                 case "ltm_raw_sframe":
                                     telem = true;
@@ -642,7 +542,7 @@ public class ReplayThread : GLib.Object
                                     s.flags = (uint8)(obj.get_int_member("flags"));
                                     armed = (s.flags & 1) == 1;
                                     serialise_sf(s,buf);
-                                    send_rec(fd,MSP.Cmds.TS_FRAME, MSize.LTM_SFRAME,buf);
+                                    send_rec(msp,MSP.Cmds.TS_FRAME, MSize.LTM_SFRAME,buf);
                                     break;
 
                                 case "ltm_raw_oframe":
@@ -652,7 +552,7 @@ public class ReplayThread : GLib.Object
                                     o.lon = (int32)(obj.get_int_member("lon"));
                                     o.fix = (uint8)(obj.get_int_member("fix"));
                                     serialise_of(o,buf);
-                                    send_rec(fd,MSP.Cmds.TO_FRAME, MSize.LTM_OFRAME,buf);
+                                    send_rec(msp,MSP.Cmds.TO_FRAME, MSize.LTM_OFRAME,buf);
                                     break;
 
                                 case "ltm_xframe":
@@ -666,7 +566,7 @@ public class ReplayThread : GLib.Object
                                     if(obj.has_member("reason"))
                                         x.disarm_reason = (uint8)(obj.get_int_member("reason"));
                                     serialise_xf(x,buf);
-                                    send_rec(fd,MSP.Cmds.TX_FRAME, MSize.LTM_XFRAME,buf);
+                                    send_rec(msp,MSP.Cmds.TX_FRAME, MSize.LTM_XFRAME,buf);
                                     break;
 
                                 case "wp_poll":
@@ -679,7 +579,7 @@ public class ReplayThread : GLib.Object
                                     w.lon = (int32)(lon*10000000);
                                     w.altitude = (uint32)(obj.get_int_member("wp_alt"));
                                     serialise_wp(w,buf);
-                                    send_rec(fd,MSP.Cmds.INFO_WP, MSize.MSP_WP,buf);
+                                    send_rec(msp,MSP.Cmds.INFO_WP, MSize.MSP_WP,buf);
                                         */
                                     break;
 
@@ -692,7 +592,7 @@ public class ReplayThread : GLib.Object
                                     m.base_mode =  (uint8)obj.get_int_member("base_mode");
                                     m.system_status =  (uint8)obj.get_int_member("system_status");
                                     m.mavlink_version =  (uint8)obj.get_int_member("mavlink_version");
-                                    send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT, (uint8*)(&m), sizeof(Mav.MAVLINK_HEARTBEAT));
+                                    send_rec(msp,MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT, sizeof(Mav.MAVLINK_HEARTBEAT),(uint8*)(&m));
                                     break;
                                 case "mavlink_sys_status":
                                     telem = true;
@@ -710,7 +610,7 @@ public class ReplayThread : GLib.Object
                                     m.errors_count3 =  (uint16)obj.get_int_member("errors_count3");
                                     m.errors_count4 =  (uint16)obj.get_int_member("errors_count4");
                                     m.battery_remaining =  (int8)obj.get_int_member("battery_remaining");
-                                    send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_ID_SYS_STATUS, (uint8*)(&m), sizeof(Mav.MAVLINK_SYS_STATUS));
+                                    send_rec(msp,MSP.Cmds.MAVLINK_MSG_ID_SYS_STATUS, sizeof(Mav.MAVLINK_SYS_STATUS),(uint8*)(&m));
                                     break;
                                 case "mavlink_gps_raw_int":
                                     telem = true;
@@ -725,7 +625,7 @@ public class ReplayThread : GLib.Object
                                     m.cog =  (uint16)obj.get_int_member("cog");
                                     m.fix_type =  (uint8)obj.get_int_member("fix_type");
                                     m.satellites_visible =  (uint8)obj.get_int_member("satellites_visible");
-                                    send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT, (uint8*)(&m), sizeof(Mav.MAVLINK_GPS_RAW_INT));
+                                    send_rec(msp,MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT, sizeof(Mav.MAVLINK_GPS_RAW_INT), (uint8*)(&m));
                                     break;
                                 case "mavlink_attitude":
                                     telem = true;
@@ -737,7 +637,7 @@ public class ReplayThread : GLib.Object
                                     m.rollspeed =  (float)obj.get_double_member("rollspeed");
                                     m.pitchspeed =  (float)obj.get_double_member("pitchspeed");
                                     m.yawspeed =  (float)obj.get_double_member("yawspeed");
-                                    send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_ATTITUDE, (uint8*)(&m), sizeof(Mav.MAVLINK_ATTITUDE));
+                                    send_rec(msp,MSP.Cmds.MAVLINK_MSG_ATTITUDE, sizeof(Mav.MAVLINK_ATTITUDE), (uint8*)(&m));
                                     break;
                                 case "mavlink_rc_channels":
                                     telem = true;
@@ -753,7 +653,7 @@ public class ReplayThread : GLib.Object
                                     m.chan8_raw =  (uint16)obj.get_int_member("chan8_raw");
                                     m.port =  (uint8)obj.get_int_member("port");
                                     m.rssi =  (uint8)obj.get_int_member("rssi");
-                                    send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW, (uint8*)(&m), sizeof(Mav.MAVLINK_RC_CHANNELS));
+                                    send_rec(msp,MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW, sizeof(Mav.MAVLINK_RC_CHANNELS), (uint8*)(&m));
                                     break;
                                 case "mavlink_gps_global_origin":
                                     telem = true;
@@ -761,7 +661,7 @@ public class ReplayThread : GLib.Object
                                     m.latitude =  (int32)obj.get_int_member("latitude");
                                     m.longitude =  (int32)obj.get_int_member("longitude");
                                     m.altitude =  (int32)obj.get_int_member("altitude");
-                                    send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN, (uint8*)(&m), sizeof(Mav.MAVLINK_GPS_GLOBAL_ORIGIN));
+                                    send_rec(msp,MSP.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN, sizeof(Mav.MAVLINK_GPS_GLOBAL_ORIGIN), (uint8*)(&m));
                                     break;
                                 case "mavlink_vfr_hud":
                                     telem = true;
@@ -772,7 +672,7 @@ public class ReplayThread : GLib.Object
                                     m.climb =  (float)obj.get_double_member("climb");
                                     m.heading =  (int16)obj.get_int_member("heading");
                                     m.throttle =  (uint16)obj.get_int_member("throttle");
-                                    send_mav_cmd(fd,MSP.Cmds.MAVLINK_MSG_VFR_HUD, (uint8*)(&m), sizeof(Mav.MAVLINK_VFR_HUD));
+                                    send_rec(msp, MSP.Cmds.MAVLINK_MSG_VFR_HUD, sizeof(Mav.MAVLINK_VFR_HUD), (uint8*)(&m));
                                     break;
                                 default:
                                     break;
@@ -794,19 +694,16 @@ public class ReplayThread : GLib.Object
                 if(!delay)
                 {
                     uint16 q=(uint16)(utime-start_tm);
-                    send_ltm(fd, 'q', &q, 2);
+                    send_rec(msp, MSP.Cmds.Tq_FRAME, 2, &q);
                 }
 
                 xa.flag = 0;
                 var nb = serialise_status(xa, buf);
-                for(var xn = 0; xn < 3; xn++)
-                {
-                    send_rec(fd,MSP.Cmds.STATUS, (uint)nb, buf);
-                    Thread.usleep(100);
-                }
+                send_rec(msp, MSP.Cmds.STATUS, (uint)nb, buf);
                 uint8 x=0;
-                send_ltm(fd, 'x', &x, 1);
+                send_rec(msp, MSP.Cmds.Tx_FRAME, 1, &x);
                 replay_done();
+                msp.close();
                 return 0;
             });
         return thr;

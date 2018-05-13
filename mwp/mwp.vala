@@ -1288,12 +1288,17 @@ public class MWPlanner : Gtk.Application {
         saq.activate.connect(() => {
                 var aon = audio_cb.active;
                 if(aon == false)
-                    audio_cb.active = true;
+                {
+                    audio_on = true;
+                    start_audio(false);
+                }
                 navstatus.audio_test();
-                Timeout.add(1000, () => {
+/*
+                Timeout.add(2000, () => {
                         audio_cb.active = aon;
                         return false;
                     });
+*/
             });
         window.add_action(saq);
 
@@ -5718,7 +5723,7 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-    private void start_audio()
+    private void start_audio(bool live = true)
     {
         if (spktid == 0)
         {
@@ -5748,8 +5753,11 @@ public class MWPlanner : Gtk.Application {
                             navstatus.announce(sflags, conf.recip);
                         return Source.CONTINUE;
                     });
-                gps_alert(0);
-                navstatus.announce(sflags,conf.recip);
+                if(live)
+                {
+                    gps_alert(0);
+                    navstatus.announce(sflags,conf.recip);
+                }
             }
         }
     }

@@ -9,10 +9,9 @@ const OptionEntry[] options = {
 
 public static int main (string[] args)
 {
-    var s = new MWSerial();
+    var s = new MWSerial.forwarder();
+
     string file = null;
-
-
     string []devs = {"/dev/ttyUSB0","/dev/ttyACM0"};
 
     foreach(var d in devs)
@@ -50,17 +49,14 @@ public static int main (string[] args)
     if(s.open(dev, baud, out estr))
     {
         var ml = new MainLoop();
-        int fd = s.get_fd();
-        s.use_v2 = true;
         var robj = new ReplayThread();
         robj.replay_done.connect(() => {
                 ml.quit();
             });
 
-        var thr = robj.run(fd, file, true);
+        var thr = robj.run_msp(s, file, true);
         ml.run();
         thr.join();
-        s.close();
     }
     return 0;
 }
