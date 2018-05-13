@@ -1778,18 +1778,14 @@ public class NavStatus : GLib.Object
             else
             {
                 si = MwpSpeech.init(voice);
-                MWPLog.message("Initialised %s for speech\n",
-                               (si == 0) ? "espeak" :
-                               (si == 1) ? "speechd" :
-                               (si == 2) ? "flite" :
-                               "none");
+                MWPLog.message("Initialised \"%s\" for speech\n", MWPlanner.SPEAKERS[si]);
             }
         }
         if (mt != null)
         {
             logspeak_close();
         }
-        mt = new AudioThread((si == 2));
+        mt = new AudioThread((si == MWPlanner.SPEAKER_API.FLITE));
         mt.start(use_en, efdin);
         mt_voice=true;
     }

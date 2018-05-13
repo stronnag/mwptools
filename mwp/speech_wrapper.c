@@ -35,7 +35,7 @@ static espeak_synchronize_t esh;
 
 static int ep_init(char *voice)
 {
-    int res = -1;
+    int res = 0;
     gchar * modname;
     modname = g_module_build_path(NULL, "espeak");
     if(modname)
@@ -53,7 +53,7 @@ static int ep_init(char *voice)
                     (*esv)(voice);
                 if(g_module_symbol(handle, "espeak_Synth",(gpointer *)&ess) &&
                    g_module_symbol(handle, "espeak_Synchronize",(gpointer *)&esh))
-                    res = 0;
+                    res = 1;
             }
         }
         g_free(modname);
@@ -93,7 +93,7 @@ static  spd_say_t ssay;
 
 static int sd_init(char *voice)
 {
-    int ret=-1;
+    int ret=0;
     gchar * modname;
     modname = g_module_build_path(NULL, "speechd");
     if(modname)
@@ -144,7 +144,7 @@ static int sd_init(char *voice)
                     (*ssno)(spd, SPD_CANCEL);
                 }
                 if(g_module_symbol(handle, "spd_say",(gpointer*)&ssay))
-                    ret = 1;
+                    ret = 2;
             }
         }
         g_free(modname);
@@ -176,6 +176,7 @@ typedef int (*flite_add_lang_t)(char *,void*,void*);
 typedef cst_voice * (*flite_voice_load_t)(char *);
 typedef float (*flite_text_to_speech_t)(char *,  cst_voice *, char*);
 typedef void (*feat_set_float_t)(cst_features *,char *, float);
+typedef const char * (*feat_string_t)(cst_features *,const char *);
 static  cst_voice *voice;
 static flite_text_to_speech_t fl_tts;
 static usenglish_init_t  fl_eng;
@@ -185,6 +186,12 @@ extern void mwp_log_message (const gchar* format, ...);
 
 static int fl_init(char *vname)
 {
+    if(FLITE_PROJECT_VERSION[0] < '2')
+    {
+        mwp_log_message("flite requires version 2 or later, this is %s: disabling\n", FLITE_PROJECT_VERSION);
+        goto out;
+    }
+
     gchar * modname;
     modname = g_module_build_path(NULL, "flite");
     if(modname)
@@ -199,9 +206,12 @@ static int fl_init(char *vname)
                 flite_add_lang_t fl_al;
                 flite_voice_load_t fl_load;
                 feat_set_float_t fl_fsf;
+                feat_string_t fl_fstr;
+
                 g_module_symbol(handle, "flite_add_lang", (gpointer *)&fl_al);
                 g_module_symbol(handle, "flite_voice_load", (gpointer *)&fl_load);
                 g_module_symbol(handle, "feat_set_float", (gpointer *)&fl_fsf);
+                g_module_symbol(handle, "feat_string", (gpointer *)&fl_fstr);
                 g_module_symbol(handle, "flite_text_to_speech", (gpointer *)&fl_tts);
                 GModule *handle2;
                 modname = g_module_build_path(NULL, "flite_usenglish");
@@ -217,9 +227,9 @@ static int fl_init(char *vname)
                     goto out;
 
                 g_module_symbol(handle3, "cmulex_init", (gpointer *)&fl_cmu);
-
                 if(fl_al == NULL || fl_load == NULL || fl_tts == NULL ||
-                   fl_eng == NULL || fl_cmu == NULL)
+                   fl_eng == NULL || fl_cmu == NULL || fl_fstr == NULL
+                   || fl_fsf == NULL)
                     goto out;
 
                 int i0 = (*fl_al)("eng", fl_eng, fl_cmu);
@@ -236,9 +246,11 @@ static int fl_init(char *vname)
                 g_module_symbol(handle1, "register_cmu_us_slt", (gpointer *)&fl_slt);
 
                 char *parts[2]  = {NULL};
-                char *s, *dup = NULL;
+                float f = 0.0;
+
                 if(vname !=NULL && fl_load != NULL && vname != NULL)
                 {
+                    char *s, *dup = NULL;
                     dup = s = strdup(vname);
                     int n = 0;
                     char *tok;
@@ -250,24 +262,22 @@ static int fl_init(char *vname)
                     }
                     if(parts[0] != NULL && parts[0] != 0)
                         voice = (*fl_load)(parts[0]);
+
+                    if(parts[1] != NULL && parts[1] != 0)
+                        f = atof(parts[1]);
+                    free(dup);
                 }
                 if(voice == NULL && fl_slt != NULL)
                     voice = (*fl_slt)();
-                if(parts[1] != NULL && parts[1] != 0)
-                {
-                    float f;
-                    f = atof(parts[1]);
-                    if (f != 0.0)
-                        (*fl_fsf)(voice->features,"duration_stretch", f);
-                }
-                free(dup);
-// This is for Fedora 28 and earlier ... (alas)
-//                mwp_log_message("flite voice = %s\n", voice->name);
+                if (f != 0.0)
+                    (*fl_fsf)(voice->features,"duration_stretch", f);
+                const char *name = (*fl_fstr)(voice->features, "name");
+                mwp_log_message("flite voice = %s\n", name);
             }
         }
     }
   out:
-    return (voice == NULL) ? -1 : 2;
+    return (voice == NULL) ? 0 : 3;
 }
 
 static void fl_say(char *text)
@@ -280,13 +290,12 @@ static void fl_say(char *text)
 
 static int ss_init(char *v)
 {
-    fprintf(stderr, "null speech init %s\n", v);
-    return -1;
+    return 0;
 }
 
 static void ss_say(char *t)
 {
-    fprintf(stderr, "null speech say %s\n", t);
+    mwp_log_message("null speech say %s\n", t);
 }
 
 static int (*_speech_init)(char *) = ss_init;

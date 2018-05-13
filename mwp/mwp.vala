@@ -752,6 +752,16 @@ public class MWPlanner : Gtk.Application {
     private MwpServer mss=null;
     private uint8 spapi =  0;
 
+    public const string[] SPEAKERS =  {"none", "espeak","speechd","flite"};
+    public enum SPEAKER_API
+    {
+        NONE=0,
+        ESPEAK=1,
+        SPEECHD=2,
+        FLITE=3,
+        COUNT=4
+    }
+
     private const Gtk.TargetEntry[] targets = {
         {"text/uri-list",0,0}
     };
@@ -900,8 +910,6 @@ public class MWPlanner : Gtk.Application {
 
     public override void activate ()
     {
-        const string[] speakers =  {"none", "espeak","speechd","flite"};
-
         base.startup();
 
         wpmgr = WPMGR();
@@ -918,14 +926,22 @@ public class MWPlanner : Gtk.Application {
         mmap = new ModelMap();
         mmap.init();
 
+        spapi = 0;
         if(exvox == null)
         {
-            spapi = MwpSpeech.get_api_mask();
-            if (spapi == 7)
-                spapi = (conf.speech_api == "espeak") ? 1 :
-                    (conf.speech_api == "speechd") ? 2 :
-                    (conf.speech_api == "flite") ? 3: 0;
-            MWPLog.message("Using speech api %d [%s]\n", spapi, speakers[spapi]);
+            uint8 spapi_mask  = MwpSpeech.get_api_mask();
+            if (spapi_mask != 0)
+            {
+                for(uint8 j = SPEAKER_API.ESPEAK; j < SPEAKER_API.COUNT; j++)
+                {
+                    if(conf.speech_api == SPEAKERS[j] && ((spapi_mask & (1<<(j-1))) != 0))
+                    {
+                        spapi = j;
+                        break;
+                    }
+                }
+            }
+            MWPLog.message("Using speech api %d [%s]\n", spapi, SPEAKERS[spapi]);
         }
         else
         {
