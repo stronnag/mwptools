@@ -20,6 +20,13 @@
 #include <stdlib.h>
 #include <glib.h>
 #include <gmodule.h>
+
+
+#define API_NONE    0
+#define API_ESPEAK  1
+#define API_SPEECHD 2
+#define API_FLITE   3
+
 static GModule *handle;
 
 #ifdef USE_ESPEAK
@@ -35,7 +42,7 @@ static espeak_synchronize_t esh;
 
 static int ep_init(char *voice)
 {
-    int res = 0;
+    int res = API_NONE;
     gchar * modname;
     modname = g_module_build_path(NULL, "espeak");
     if(modname)
@@ -53,7 +60,7 @@ static int ep_init(char *voice)
                     (*esv)(voice);
                 if(g_module_symbol(handle, "espeak_Synth",(gpointer *)&ess) &&
                    g_module_symbol(handle, "espeak_Synchronize",(gpointer *)&esh))
-                    res = 1;
+                    res = API_ESPEAK;
             }
         }
         g_free(modname);
@@ -93,7 +100,7 @@ static  spd_say_t ssay;
 
 static int sd_init(char *voice)
 {
-    int ret=0;
+    int ret=API_NONE;
     gchar * modname;
     modname = g_module_build_path(NULL, "speechd");
     if(modname)
@@ -144,7 +151,7 @@ static int sd_init(char *voice)
                     (*ssno)(spd, SPD_CANCEL);
                 }
                 if(g_module_symbol(handle, "spd_say",(gpointer*)&ssay))
-                    ret = 2;
+                    ret = API_SPEECHD;
             }
         }
         g_free(modname);
@@ -277,7 +284,7 @@ static int fl_init(char *vname)
         }
     }
   out:
-    return (voice == NULL) ? 0 : 3;
+    return (voice == NULL) ? API_NONE : API_FLITE;
 }
 
 static void fl_say(char *text)
@@ -286,7 +293,6 @@ static void fl_say(char *text)
 }
 
 #endif
-
 
 static int ss_init(char *v)
 {
@@ -347,8 +353,8 @@ void speech_set_api(guchar api)
 int speech_init(char *voice)
 {
     int res = (*_speech_init)(voice);
-    if(res == -1)
-         _speech_say = ss_say;
+    if(res == API_NONE)
+        _speech_say = ss_say;
     return res;
 }
 
