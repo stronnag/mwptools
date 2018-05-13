@@ -9,7 +9,7 @@ include ../common.mk
 GST ?= 1.0
 
 SPK=
-ES1 := $(shell espeak --version > /dev/null; echo $$?)
+ES1 := $(shell test -d /usr/include/espeak || test -d /usr/local/include/espeak; echo $$?)
 ifeq ($(ES1),0)
  SPK += -X -DUSE_ESPEAK
 endif
@@ -18,9 +18,10 @@ ES2 := $(shell pkg-config --exists speech-dispatcher; echo $$?)
 ifeq ($(ES2),0)
  SPK += -X -DUSE_SPEECHD
 endif
-# yes, it really does exit(1)
-ES3 := $(shell flite --version > /dev/null; echo $$?)
-ifeq ($(ES3),1)
+
+# avoid runtime false +ves
+ES3 := $(shell test -d /usr/include/flite || test -d /usr/local/include/flite; echo $$?)
+ifeq ($(ES3),0)
  SPK += -X -DUSE_FLITE
 endif
 
