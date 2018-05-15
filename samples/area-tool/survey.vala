@@ -867,7 +867,12 @@ public class AreaPlanner : GLib.Object {
 
         var liststore = new Gtk.ListStore (MS_Column.N_COLUMNS, typeof (string), typeof (string));
 
-        var msources =   JsonMapDef.read_json_sources(null);
+
+        var fn = conf.map_sources;
+        if(fn != null)
+            fn = MWPUtils.find_conf_file(fn);
+
+        var msources =   JsonMapDef.read_json_sources(fn, false);
         foreach (unowned MapSource s0 in msources)
         {
             s0.desc = new  MwpMapSource(
