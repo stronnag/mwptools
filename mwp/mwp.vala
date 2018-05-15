@@ -1685,13 +1685,30 @@ public class MWPlanner : Gtk.Application {
                 return true;
             });
 
-          ag.connect(' ', 0, 0, (a,o,k,m) => {
+        ag.connect(' ', 0, 0, (a,o,k,m) => {
                 if(replayer != Player.NONE)
                 {
                     handle_replay_pause();
                     return true;
                 }
                 else return false;
+            });
+
+        ag.connect(Gdk.Key.Up, Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                key_recentre(Gdk.Key.Up);
+                return true;
+            });
+        ag.connect(Gdk.Key.Down, Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                key_recentre(Gdk.Key.Down);
+                return true;
+            });
+        ag.connect(Gdk.Key.Left, Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                key_recentre(Gdk.Key.Left);
+                return true;
+            });
+        ag.connect(Gdk.Key.Right, Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                key_recentre(Gdk.Key.Right);
+                return true;
             });
 
         window.add_accel_group(ag);
@@ -1873,8 +1890,8 @@ public class MWPlanner : Gtk.Application {
         }
 
         map_centre_on(clat, clon);
-        view.zoom_level = zm;
-        zoomer.adjustment.value = zm;
+        if (check_zoom_sanity(zm))
+            view.zoom_level = zm;
 
         msp.force4 = force4;
         msp.serial_lost.connect(() => { serial_doom(conbutton); });
@@ -2167,6 +2184,29 @@ public class MWPlanner : Gtk.Application {
             autocon_cb.active=true;
             mkcon = true;
         }
+    }
+
+    private void key_recentre(uint key)
+    {
+        var bb = view.get_bounding_box();
+        var x = view.get_center_longitude();
+        var y = view.get_center_latitude();
+        switch (key)
+        {
+            case Gdk.Key.Up:
+                y = (bb.top + 7*y)/8.0;
+                break;
+            case Gdk.Key.Down:
+                y = (bb.bottom + 7*y)/8.0;
+                break;
+            case Gdk.Key.Left:
+                x = (bb.left + 7*x)/8.0;
+                break;
+            case Gdk.Key.Right:
+                x = (bb.right + 7*x)/8.0;
+                break;
+        }
+        view.center_on(y,x);
     }
 
     private void acquire_bus()
@@ -6067,11 +6107,15 @@ public class MWPlanner : Gtk.Application {
         prefs.set_maps(map_names, conf.defmap);
 
         combo.set_model(liststore);
-        if(defsource != null)
+
+        if(defsource == null)
         {
-            var src = map_source_factory.create_cached_source(defsource);
-            view.map_source = src;
+            defsource = sources.nth_data(0).get_id();
+            print("Settings blank id %s\n", defsource);
+            defval = 0;
         }
+        var src = map_source_factory.create_cached_source(defsource);
+        view.set_property("map-source", src);
 
         var cell = new Gtk.CellRendererText();
         combo.pack_start(cell, false);
@@ -6087,26 +6131,30 @@ public class MWPlanner : Gtk.Application {
                 var zval = zoomer.adjustment.value;
                 var cx = lx;
                 var cy = ly;
-                view.set_property("map-source", source);
-
+               view.map_source = source;
                     /* Stop oob zooms messing up the map */
-                var mmax = view.get_max_zoom_level();
-                var mmin = view.get_min_zoom_level();
-                var chg = false;
-                if (zval > mmax)
-                {
-                    chg = true;
-                    view.zoom_level = mmax;
-                }
-                if (zval < mmin)
-                {
-                    chg = true;
-                    view.zoom_level = mmin;
-                }
-                if (chg == true)
-                    map_centre_on(cy, cx);
-                zoomer.set_range(mmin, mmax);
+                if(!check_zoom_sanity(zval))
+                    view.center_on(cy, cx);
             });
+    }
+
+    private bool check_zoom_sanity(double zval)
+    {
+        var mmax = view.get_max_zoom_level();
+        var mmin = view.get_min_zoom_level();
+        var sane = true;
+        if (zval > mmax)
+        {
+            sane= false;
+            view.zoom_level = mmax;
+        }
+        if (zval < mmin)
+        {
+            sane = false;
+            view.zoom_level = mmin;
+        }
+        zoomer.adjustment.value = view.zoom_level;
+        return sane;
     }
 
     public Mission get_mission_data()

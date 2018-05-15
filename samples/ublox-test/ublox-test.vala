@@ -191,8 +191,6 @@ public class MWPlanner : GLib.Object {
 
             var pane = builder.get_object ("paned1") as Gtk.Paned;
 
-
-
             add_source_combo(conf.defmap);
             pane.pack1 (embed,true,false);
 
@@ -281,8 +279,9 @@ public class MWPlanner : GLib.Object {
                     return true;});
 
             view.center_on(conf.latitude,conf.longitude);
-            view.set_property("zoom-level", conf.zoom);
-            zoomer.adjustment.value = conf.zoom;
+
+            if (check_zoom_sanity(conf.zoom))
+                view.zoom_level = conf.zoom;
 
             dev_entry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
             foreach(string a in conf.devices)
@@ -369,6 +368,24 @@ public class MWPlanner : GLib.Object {
             Timeout.add_seconds(5, () => { return try_connect(); });
             window.show_all();
         }
+    }
+
+    private bool check_zoom_sanity(double zval)
+    {
+        var mmax = view.get_max_zoom_level();
+        var mmin = view.get_min_zoom_level();
+        var sane = true;
+        if (zval > mmax)
+        {
+            sane= false;
+            view.zoom_level = mmax;
+        }
+        if (zval < mmin)
+        {
+            sane = false;
+            view.zoom_level = mmin;
+        }
+        return sane;
     }
 
     private bool try_connect()
@@ -467,11 +484,16 @@ public class MWPlanner : GLib.Object {
             i++;
         }
         combo.set_model(liststore);
-        if(defsource != null)
+
+        if(defsource == null)
         {
-            var src = map_source_factory.create_cached_source(defsource);
-            view.set_property("map-source", src);
+            defsource = sources.nth_data(0).get_id();
+            print("Settings blank id %s\n", defsource);
+            defval = 0;
         }
+
+        var src = map_source_factory.create_cached_source(defsource);
+        view.set_property("map-source", src);
 
         var cell = new Gtk.CellRendererText();
         combo.pack_start(cell, false);
@@ -486,26 +508,9 @@ public class MWPlanner : GLib.Object {
                 var zval = zoomer.adjustment.value;
                 var cx = lx;
                 var cy = ly;
-                view.set_property("map-source", source);
-
-                    /* Stop oob zooms messing up the map */
-                var mmax = view.get_max_zoom_level();
-                var mmin = view.get_min_zoom_level();
-                var chg = false;
-                if (zval > mmax)
-                {
-                    chg = true;
-                    view.set_property("zoom-level", mmax);
-                }
-                if (zval < mmin)
-                {
-                    chg = true;
-                        view.set_property("zoom-level", mmin);
-                }
-                if (chg == true)
-                {
+                view.map_source = source;
+                if(!check_zoom_sanity(zval))
                     view.center_on(cy, cx);
-                }
             });
     }
 

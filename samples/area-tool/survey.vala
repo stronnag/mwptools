@@ -418,8 +418,8 @@ public class AreaPlanner : GLib.Object {
                 return true;});
 
         view.center_on(conf.latitude,conf.longitude);
-        view.zoom_level = conf.zoom;
-        zoomer.adjustment.value = conf.zoom;
+        if (check_zoom_sanity(conf.zoom))
+            view.zoom_level = conf.zoom;
 
         init_markers();
         setup_buttons();
@@ -908,11 +908,16 @@ public class AreaPlanner : GLib.Object {
             i++;
         }
         combo.set_model(liststore);
-        if(defsource != null)
+
+        if(defsource == null)
         {
-            var src = map_source_factory.create_cached_source(defsource);
-            view.set_property("map-source", src);
+            defsource = sources.nth_data(0).get_id();
+            print("Settings blank id %s\n", defsource);
+            defval = 0;
         }
+
+        var src = map_source_factory.create_cached_source(defsource);
+        view.set_property("map-source", src);
 
         var cell = new Gtk.CellRendererText();
         combo.pack_start(cell, false);
@@ -930,24 +935,28 @@ public class AreaPlanner : GLib.Object {
                 view.map_source = source;
 
                     /* Stop oob zooms messing up the map */
-                var mmax = view.get_max_zoom_level();
-                var mmin = view.get_min_zoom_level();
-                var chg = false;
-                if (zval > mmax)
-                {
-                    chg = true;
-                    view.zoom_level = mmax;
-                }
-                if (zval < mmin)
-                {
-                    chg = true;
-                        view.zoom_level = mmin;
-                }
-                if (chg == true)
-                {
+                if(!check_zoom_sanity(zval))
                     view.center_on(cy, cx);
-                }
             });
+    }
+
+    private bool check_zoom_sanity(double zval)
+    {
+        var mmax = view.get_max_zoom_level();
+        var mmin = view.get_min_zoom_level();
+        var sane = true;
+        if (zval > mmax)
+        {
+            sane= false;
+            view.zoom_level = mmax;
+        }
+        if (zval < mmin)
+        {
+            sane = false;
+            view.zoom_level = mmin;
+        }
+        zoomer.adjustment.value = view.zoom_level;
+        return sane;
     }
 
     private void mwp_warning_box(string warnmsg,
