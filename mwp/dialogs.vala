@@ -1286,6 +1286,7 @@ public class NavStatus : GLib.Object
     private  Gtk.Label voltlabel;
     public Gtk.Box voltbox{get; private set;}
     private bool vinit = false;
+    private int si = 0;
     private bool mt_voice = false;
     private AudioThread mt = null;
     private bool have_cg = false;
@@ -1752,7 +1753,6 @@ public class NavStatus : GLib.Object
 
     public void logspeak_init (string? voice, bool use_en = false, string? espawn=null)
     {
-        int si = 0;
         if(vinit == false)
         {
             efdin=0;
@@ -1778,7 +1778,9 @@ public class NavStatus : GLib.Object
             else
             {
                 si = MwpSpeech.init(voice);
-                MWPLog.message("Initialised \"%s\" for speech\n", MWPlanner.SPEAKERS[si]);
+                MWPLog.message("Initialised \"%s\" for speech%s\n",
+                               MWPlanner.SPEAKERS[si],
+                               (si == MWPlanner.SPEAKER_API.FLITE) ? ", nicely":"");
             }
         }
         if (mt != null)
@@ -1838,9 +1840,9 @@ public class AudioThread : Object {
     private AsyncQueue<Vox> msgs;
     public Thread<int> thread {private set; get;}
 
-    public AudioThread (bool _n = false) {
+    public AudioThread (bool _n)
+    {
         nicely = _n;
-        MWPLog.message ("Starting audio thread%s\n", (nicely) ? ", nicely" : "");
         msgs = new AsyncQueue<Vox> ();
     }
 
@@ -1887,13 +1889,13 @@ public class AudioThread : Object {
             if(v > 100)
             {
                 int x = (v/100)*100;
-                sb.append_printf("%d ",x);
+                sb.append_printf("%d",x);
                 v = v % 100;
                 hasn = true;
             }
             if(hasn && v != 0)
-                sb.append_printf("and %d", v);
-            else
+                sb.append_printf(" and %d", v);
+            else if (!hasn)
                 sb.append_printf("%d",v);
         }
         else

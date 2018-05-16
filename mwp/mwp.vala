@@ -1293,12 +1293,17 @@ public class MWPlanner : Gtk.Application {
                     start_audio(false);
                 }
                 navstatus.audio_test();
-/*
-                Timeout.add(2000, () => {
-                        audio_cb.active = aon;
-                        return false;
-                    });
-*/
+
+                if(aon == false)
+                {
+                    Timeout.add(8000, () => {
+                            if(audio_cb.active == false)
+                            {
+                                stop_audio();
+                            }
+                            return false;
+                        });
+                }
             });
         window.add_action(saq);
 
@@ -6627,8 +6632,11 @@ public class MWPlanner : Gtk.Application {
         MWPLog.message("============== Replay complete ====================\n");
         if (replayer == Player.MWP)
         {
-            thr.join();
-            thr = null;
+            if(thr != null)
+            {
+                thr.join();
+                thr = null;
+            }
         }
         set_replay_menus(true);
         set_menu_state("stop-replay", false);

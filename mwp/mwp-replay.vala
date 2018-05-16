@@ -194,7 +194,6 @@ public class ReplayThread : GLib.Object
     }
 
     public signal void replay_mission_file (string filename);
-    public signal void replay_done();
 
     public Thread<int> run(int fd, string relog, bool delay=true)
     {
@@ -702,7 +701,7 @@ public class ReplayThread : GLib.Object
                 send_rec(msp, MSP.Cmds.STATUS, (uint)nb, buf);
                 uint8 x=0;
                 send_rec(msp, MSP.Cmds.Tx_FRAME, 1, &x);
-                replay_done();
+                Thread.usleep(1000*1000);
                 msp.close();
                 return 0;
             });
