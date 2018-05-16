@@ -113,10 +113,7 @@ public class GMProxy : Soup.Server
         var iz = int.parse(parts[np]);
         var ix = int.parse(parts[np+1]);
         var iy = int.parse(fn[0]);
-
-//        print("Using x=%d, y=%d, z=%d\n", ix,iy,iz);
         string uri = make_guri(gvers,ix,iy,iz);
-//        print("uri = %s\n", uri);
         return uri;
     }
 
@@ -143,12 +140,40 @@ public class GMProxy : Soup.Server
             return;
         }
 
-        if (msg.method == "GET")
+        if (msg.method == "HEAD")
         {
-//            stderr.printf("request %s\n", path);
-            var xpath = rewrite_path(path);
-//            stderr.printf("fetch %s\n", xpath);
+            bool ok = false;
+            Posix.Stat st;
+            var parts = path.split("/");
+            var np = parts.length;
+            var fnstr = GLib.Path.build_filename(
+                Environment.get_home_dir(),
+                ".cache/champlain",
+                parts[np-4],
+                parts[np-3],
+                parts[np-2],
+                parts[np-1]);
 
+            if(Posix.stat(fnstr, out st) == 0)
+            {
+                ok = true;
+                var dt = new DateTime.from_unix_utc(st.st_mtime);
+                var dstr = dt.format("%a, %d %b %Y %H:%M:%S %Z");
+                msg.response_headers.append("Content-Type","image/png");
+                msg.response_headers.append("Accept-Ranges", "bytes");
+                msg.response_headers.append("Last-Modified", dstr);
+                msg.response_headers.append("Content-Length",
+                                            st.st_size.to_string());
+                msg.set_status(200);
+            }
+            if(!ok)
+            {
+                msg.set_status(404);
+            }
+        }
+        else if (msg.method == "GET")
+        {
+            var xpath = rewrite_path(path);
             var session = new Soup.Session ();
             var message = new Soup.Message ("GET", xpath);
             message.request_headers.append("Referrer", "https://maps.google.com/");
@@ -156,10 +181,6 @@ public class GMProxy : Soup.Server
             message.request_headers.append("Accept","*/*");
 
             session.send_message (message);
-//            stderr.printf ("Message length: %lld %d\n",
-//                           message.response_body.length,
-//                           message.status_code);
-
             if(message.status_code == 200)
             {
                 msg.set_response ("image/jpeg", Soup.MemoryUse.COPY,
