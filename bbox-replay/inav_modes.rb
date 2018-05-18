@@ -57,11 +57,17 @@ IO.popen(cmd,'r') do |p|
   hdrs = csv.shift
   st = nil
   nstate = -1
+  istate = 'IDLE'
 
   csv.each do |c|
     ts = c[:time_us].to_f / 1000000
     st = ts if st.nil?
     xts  = ts - st
+    fs = c[:failsafephase_flags].strip
+    if fs != istate
+      istate = fs
+      puts ["%6.1f" % ts, "(%6.1f)" % xts, "F/S=#{istate}"].join("\t")
+    end
     if c[:navstate].to_i != nstate
       if nstate == -1
 	puts %w/Time(s) Elapsed(s)  State/.join("\t")
