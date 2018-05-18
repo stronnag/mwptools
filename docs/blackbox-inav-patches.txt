@@ -1,0 +1,12 @@
+In the ../samples directory, there is a patch set that can be applied
+to blackbox-tools in order to:
+
+* Increase the number of logs per file to 128 (from 31)
+* correctly report iNav FAILSAFE states.
+
+Usage:
+
+cd blackbox-tools
+patch -p0 < PATH_TO/mwptools/samples/blackbox-inav-patches.dif
+make
+# install obj/blackbox-decode on the PATH somewhere useful
