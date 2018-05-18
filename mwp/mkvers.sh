@@ -1,7 +1,7 @@
 #!/bin/sh
 
 dstr=$(date +%F)
-txt=$(git log -1 --format="%h" 2>/dev/null || echo "local")
+txt=$(git rev-parse --short HEAD 2>/dev/null || echo "local")
 txt="$txt / $dstr"
 if [ -f .master ] ; then
  y=$(($(date +%y)-17))
