@@ -42,10 +42,12 @@ inavers =  get_state_version iv
 
 STDERR.puts "iNav version = #{iv} (states eq #{inavers})"
 
+nul = !Gem.win_platform? ? '/dev/null' : 'NUL'
 
 cmd = "blackbox_decode"
 cmd << " --index #{idx}"
 cmd << " --stdout"
+cmd << " 2>#{nul}"
 cmd << " " << bbox
 
 IO.popen(cmd,'r') do |p|
@@ -66,7 +68,18 @@ IO.popen(cmd,'r') do |p|
     fs = c[:failsafephase_flags].strip
     if fs != istate
       istate = fs
-      puts ["%6.1f" % ts, "(%6.1f)" % xts, "F/S=#{istate}"].join("\t")
+      rcd=''
+      # Old logs don't have rcData[]
+      if c.has_key? :rcdata0
+	rcd = " (#{[c[:rcdata0].strip,c[:rcdata1].strip,c[:rcdata2].strip,c[:rcdata3].strip, ].join(',')})"
+      end
+      rcx=[c[:rxsignalreceived].strip,c[:rxflightchannelsvalid].strip].join(',')
+      if rcd.empty?
+	rcd = " (#{rcx})"
+      else
+	rcd << ';' << "(#{rcx})"
+      end
+      puts ["%6.1f" % ts, "(%6.1f)" % xts, "F/S=#{istate}#{rcd}"].join("\t")
     end
     if c[:navstate].to_i != nstate
       if nstate == -1

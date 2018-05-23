@@ -631,7 +631,8 @@ public class MWPlanner : Gtk.Application {
         PH = 2,
         RTH = 4,
         WP = 8,
-        ALTH = 16
+        ALTH = 16,
+        CRUISE =32
     }
 
     private enum ARMFLAGS
@@ -4963,6 +4964,8 @@ public class MWPlanner : Gtk.Application {
                         want_special |= POSMODE.RTH;
                     else if(ltmflags == 8)
                         want_special |= POSMODE.ALTH;
+                    else if(ltmflags == 18)
+                        want_special |= POSMODE.CRUISE;
                     else if(ltmflags != 15)
                     {
                         if(craft != null)
@@ -5368,6 +5371,13 @@ public class MWPlanner : Gtk.Application {
             init_craft_icon();
             if(craft != null)
                 craft.special_wp(Craft.Special.ALTH, lat, lon);
+        }
+        if((want_special & POSMODE.CRUISE) != 0)
+        {
+            want_special &= ~POSMODE.CRUISE;
+            init_craft_icon();
+            if(craft != null)
+                craft.special_wp(Craft.Special.CRUISE, lat, lon);
         }
         if((want_special & POSMODE.WP) != 0)
         {

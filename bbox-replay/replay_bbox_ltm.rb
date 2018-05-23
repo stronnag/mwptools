@@ -347,6 +347,8 @@ def encode_stats r,inavers,armed=1
 	    :nav_state_waypoint_reached,
 	    :nav_state_waypoint_next
 	  10
+	when :nav_state_cruise
+	  18
 	else
 	  19
 	end
