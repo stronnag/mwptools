@@ -88,6 +88,9 @@ public class  BBoxDialog : Object
     private void get_bbox_file_status()
     {
         MWPCursor.set_busy_cursor(dialog);
+         bb_items.label = "Parsing log ...";
+         while(Gtk.events_pending())
+             Gtk.main_iteration();
         find_valid();
         spawn_decoder();
         bb_ok.sensitive = false;
@@ -212,6 +215,9 @@ public class  BBoxDialog : Object
                                             string dura = line.substring(n, slen - n -1);
                                             bb_liststore.append (out iter);
                                             bb_liststore.set (iter, 0, nidx, 1, dura);
+                                            while(Gtk.events_pending())
+                                                Gtk.main_iteration();
+
                                         }
                                     }
                                 }

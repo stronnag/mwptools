@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # MIT licence
-
+require 'tempfile'
 require 'nokogiri'
 include Math
 
@@ -44,7 +44,8 @@ class MReader
     ipos = []
     dc=[]
     lx=ly=nil
-    doc = Nokogiri::XML(open(fn))
+    s = File.open(fn) {|f| f.read}
+    doc = Nokogiri::XML(s)
     doc.xpath('//MISSIONITEM|//missionitem').each do |t|
       action=t['action']
       next if action == 'RTH'
@@ -105,5 +106,5 @@ class MReader
 end
 
 g = MReader.new
-pos = g.read ARGV[0]
+pos = g.read (ARGV[0]||STDIN.fileno)
 g.to_gpx pos, (ARGV[1]||STDOUT.fileno)
