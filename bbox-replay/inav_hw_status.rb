@@ -9,6 +9,7 @@ require_relative 'inav_states'
 
 idx = 1
 hw=-1
+ft = nil
 
 SENSORS=[:gyro, :acc, :mag, :baro, :gps, :rangef, :pitot]
 STATES=['none','OK','unavailable','unhealthy']
@@ -69,8 +70,9 @@ STDERR.puts "iNav version = #{iv} (states eq #{inavers})"
 cmd = "blackbox_decode"
 cmd << " --index #{idx}"
 cmd << " --stdout"
-cmd << " " << bbox
+cmd << " 2>/dev/null " << bbox
 
+nfail = 0
 IO.popen(cmd,'r') do |p|
   csv = CSV.new(p, :col_sep => ",",
 		:headers => :true,
@@ -80,7 +82,7 @@ IO.popen(cmd,'r') do |p|
   hdrs = csv.shift
   st = nil
   nstate = -1
-
+  astat = nil
   csv.each do |c|
     ts = c[:time_us].to_f / 1000000
     st = ts if st.nil?
@@ -90,7 +92,19 @@ IO.popen(cmd,'r') do |p|
       ret,vals = hwstatus hw
 
       print "%.3fs HW Status change (%x %d)" % [xts,hw,hw]
-      puts " status: #{(ret == 0) ? 'OK' : 'Failure'}"
+      case ret
+      when 0
+	astat = 'OK'
+	if ft
+	  ft = xts - ft
+	  astat <<  " (#{"%.3fs" % ft})"
+	end
+      else
+	ft = xts
+	astat = 'Failure'
+	nfail += 1
+      end
+      puts " status: #{astat}"
       vals.each do |k,v|
 	puts [k.to_s,STATES[v]].join("\t")
       end
@@ -98,3 +112,4 @@ IO.popen(cmd,'r') do |p|
     end
   end
 end
+exit nfail
