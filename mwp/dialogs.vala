@@ -1948,7 +1948,7 @@ public class AudioThread : Object {
                                     s = "Return to home initiated";
                                     break;
                                 case 2:
-                                    s = "Navigating home";
+                                    s = "Returning home";
                                     break;
                                 case 3:
                                     s = "Infinite position hold";

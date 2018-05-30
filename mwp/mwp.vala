@@ -2649,15 +2649,15 @@ public class MWPlanner : Gtk.Application {
                                && msp.available && replayer == Player.NONE)
                             {
                                 MWPLog.message("Restart poller on telemetry timeout\n");
-                                have_api = have_vers = have_misc =
-                                have_status = have_wp = have_nc =
-                                have_fcv = have_fcvv = false;
+//                                have_api = have_vers = have_misc =
+                                have_status  /* =have_wp = have_nc =
+                                                          have_fcv = have_fcvv */ = false;
                                 xbits = icount = api_cnt = 0;
                                 init_sstats();
                                 last_tm = 0;
                                 lastp.start();
                                 serstate = SERSTATE.NORMAL;
-                                queue_cmd(MSP.Cmds.IDENT,null,0);
+                                queue_cmd(msp_get_status/*MSP.Cmds.IDENT*/,null,0);
                                 run_queue();
                             }
                         }
