@@ -13,6 +13,33 @@
 # Note this script only handles DFU targets that the author uses
 #####################################################################
 
+
+function find_serial
+{
+  local USB
+  local SDEV
+
+  if type lsusb 2>&1 >/dev/null ; then
+    USB=$(lsusb -d  0483:)
+    [[ "$USB" =~ "STM32F4" ]] && BASE="ACM"
+  else
+     [ -e /dev/ttyACM0 ] && BASE=ACM || BASE=USB
+  fi
+
+ [ -z "$BASE" ] && BASE=USB
+
+  SDEV=
+  for (( i=0; i<10; i++))
+  do
+    d="/dev/tty${BASE}${i}"
+    if [ -e "$d" ] ; then
+      SDEV=$d
+      break
+    fi
+  done
+  echo $SDEV
+}
+
 DEV=
 SPEED=115200
 HEX=
@@ -35,24 +62,13 @@ do
   esac
 done
 
-####################################################################
-#                           VCP Targets                            #
-# It is necessary to add a glob for *your* VCP targets to this set #
-# (or ask me to do it for you :)                                   #
-####################################################################
+[ -z "$DEV" ] && DEV=$(find_serial)
 
-case $HEX in
-  *QUARK*.hex|*SPRACINGF*EVO.hex|*OMNIBUS*.hex|*MATEKF405*.hex|PIXRACER*.hex)
+if [[ "$DEV" =~ "/dev/ttyACM" ]] ; then
     BIN=${HEX%%hex}bin
     IHEX=$HEX
     unset HEX
     RM=$BIN
-    ;;
-esac
-
-if [ -z "$DEV" ]
-then
- [ -n "$HEX" ] && DEV=/dev/ttyUSB0 || DEV=/dev/ttyACM0
 fi
 
 DEV0=$DEV

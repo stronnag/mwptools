@@ -64,12 +64,25 @@ if dev
   end
 end
 
+upackstr = 'dca'
+rlen=10
+
 puts ARGV[0]
 File.open(ARGV[0]) do |f|
+  s = f.read(3)
+  if s == "v2\n"
+    rlen = 11
+    upackstr = 'dSa'
+  else
+    rlen = 10
+    upackstr = 'dCa'
+    f.rewind
+  end
+
   loop do
-    s = f.read(10)
+    s = f.read(rlen)
     break if s.nil?
-    ts,len,dir=s.unpack('dCa')
+    ts,len,dir=s.unpack(unpackstr)
     data = f.read(len)
     next if in_only && dir == "o"
     next if out_only && dir == "i"

@@ -1172,9 +1172,9 @@ public class MWSerial : Object
     private void log_raw(uint8 dirn, void *buf, int len)
     {
         double dt = timer.elapsed ();
-        uint8 blen = (uint8)len;
+        uint16 blen = (uint8)len;
         Posix.write(raws, &dt, sizeof(double));
-        Posix.write(raws, &blen, 1);
+        Posix.write(raws, &blen, 2);
         Posix.write(raws, &dirn, 1);
         Posix.write(raws, buf,len);
     }
@@ -1189,6 +1189,7 @@ public class MWSerial : Object
             raws = Posix.open (fn, Posix.O_TRUNC|Posix.O_CREAT|Posix.O_WRONLY, 0640);
             timer = new Timer ();
             rawlog = true;
+            Posix.write(raws, "v2\n" , 3);
         }
         else
         {

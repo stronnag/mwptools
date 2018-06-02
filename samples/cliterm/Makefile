@@ -38,6 +38,12 @@ mspmixer: mspmixer.vala $(COMMONC)
 vxtest: vxtest.vala $(COMMONC)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
+msp-msg-test: msp-msg-test.vala $(COMMONC)
+	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
+
+fsender: fsender.vala $(COMMONC)
+	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
+
 rxtest: rxtest.vala $(COMMONC)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
