@@ -215,10 +215,10 @@
     </key>
 
     <key name="poll-timeout" type="u">
-      <default>500</default>
+      <default>900</default>
       <summary>Poll messages timeout (ms)</summary>
       <description>
-	Timeout in milliseconds for telemetry poll messages
+	Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resoltion of 100ms.
       </description>
     </key>
 

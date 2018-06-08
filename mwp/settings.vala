@@ -55,7 +55,7 @@ public class MWPSettings : GLib.Object
     public string? fctype {get; private set;}
     public string? vlevels {get; private set;}
     public bool checkswitches {get; set; default=false;}
-    public uint polltimeout {get; set; default=500;}
+    public uint polltimeout {get; set; default=900;}
     public string deflayout {get; private set; }
     public uint p_distance {get; set; default=0;}
     public uint p_speed {get; set; default=0;}
