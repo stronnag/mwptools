@@ -693,7 +693,7 @@ public class MWPlanner : Gtk.Application {
 
     private const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
 
-    private const uint TIMINTVL=500;
+    private const uint TIMINTVL=100;
     private const uint BEATINTVL=(60000/TIMINTVL);
     private const uint STATINTVL=(1000/TIMINTVL);
     private const uint NODATAINTVL=(5000/TIMINTVL);
