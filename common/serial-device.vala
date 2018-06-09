@@ -1017,7 +1017,7 @@ public class MWSerial : Object
             {
                 size = skt.send_to (sockaddr, sbuf);
             } catch(Error e) {
-                    //stderr.printf("err::send: %s", e.message);
+//                stderr.printf("err::send: %s", e.message);
                 size = 0;
             }
         }

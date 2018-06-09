@@ -482,6 +482,9 @@ public class MWPlanner : Gtk.Application {
     private uchar hwstatus[9];
     private ModelMap mmap;
 
+    private uint16 eph = 9999;
+    private uint16 epv = 9999;
+
     public DevManager devman;
 
     public struct MQI //: Object
@@ -2729,6 +2732,12 @@ public class MWPlanner : Gtk.Application {
                     req = requests[tcycle];
                 }
             }
+                // only is not armed
+            if (req == MSP.Cmds.GPSSTATISTICS && armed == 1)
+            {
+                tcycle = (tcycle + 1) % requests.length;
+                req = requests[tcycle];
+            }
             queue_cmd(req, null, 0);
         }
     }
@@ -2783,7 +2792,9 @@ public class MWPlanner : Gtk.Application {
             }
             requests += MSP.Cmds.RAW_GPS;
             requests += MSP.Cmds.COMP_GPS;
-            reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS);
+            requests += MSP.Cmds.GPSSTATISTICS;
+
+            reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS +MSize.MSP_GPSSTATISTICS );
             init_craft_icon();
         }
         else
@@ -3275,6 +3286,9 @@ public class MWPlanner : Gtk.Application {
                         if (arm_fails[i] != null)
                         {
                             sb.append(arm_fails[i]);
+                            if ((1 << i) == ARMFLAGS.ARMING_DISABLED_NAVIGATION_UNSAFE
+                                && (eph > 1000 || epv > 1000))
+                                sb.append(" (EPH/EPV)");
                             sb.append_c(sep);
                         }
                     }
@@ -4142,9 +4156,9 @@ public class MWPlanner : Gtk.Application {
                 rhdop = xf.hdop;
                 gpsinfo.set_hdop(xf.hdop/100.0);
                 if(Logger.is_logging)
-                {
                     Logger.ltm_xframe(xf);
-                }
+                deserialise_u16(raw+16, out eph);
+                deserialise_u16(raw+18, out epv);
                 break;
 
             case MSP.Cmds.MISC:
