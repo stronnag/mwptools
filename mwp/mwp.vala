@@ -6169,6 +6169,25 @@ public class MWPlanner : Gtk.Application {
 
         prefs.set_maps(map_names, conf.defmap);
 
+        combo.changed.connect (() => {
+                GLib.Value val1;
+                TreeIter iter;
+                combo.get_active_iter (out iter);
+                liststore.get_value (iter, 0, out val1);
+                var source = map_source_factory.create_cached_source((string)val1);
+                var zval = zoomer.adjustment.value;
+                var cx = lx;
+                var cy = ly;
+                view.map_source = source;
+                view.set_max_zoom_level(source.get_max_zoom_level());
+                view.set_min_zoom_level(source.get_min_zoom_level());
+                zoomer.set_range (source.get_min_zoom_level(),source.get_max_zoom_level());
+
+/* Stop oob zooms messing up the map */
+                if(!check_zoom_sanity(zval))
+                    view.center_on(cy, cx);
+            });
+
         combo.set_model(liststore);
 
         if(defsource == null)
@@ -6185,21 +6204,7 @@ public class MWPlanner : Gtk.Application {
 
         combo.add_attribute(cell, "text", 1);
         combo.set_active(defval);
-        combo.changed.connect (() => {
-                GLib.Value val1;
-                TreeIter iter;
-                combo.get_active_iter (out iter);
-                liststore.get_value (iter, 0, out val1);
-                var source = map_source_factory.create_cached_source((string)val1);
-                var zval = zoomer.adjustment.value;
-                var cx = lx;
-                var cy = ly;
-               view.map_source = source;
-                    /* Stop oob zooms messing up the map */
-                if(!check_zoom_sanity(zval))
-                    view.center_on(cy, cx);
-            });
-    }
+   }
 
     private bool check_zoom_sanity(double zval)
     {

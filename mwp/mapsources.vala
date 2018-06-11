@@ -307,6 +307,7 @@ public class BingMap : Object
                  ms.licence =  sb.str;
                  ms.min_zoom = gmin-1;
                  ms.max_zoom = gmax-1;
+                     // notwithstanding what is advertised, this is the working max here, alas
                  if(ms.max_zoom > 19)
                      ms.max_zoom = 19;
                  ms.tile_size = imgw;
