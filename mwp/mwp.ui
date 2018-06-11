@@ -3615,6 +3615,7 @@ Ctrl+P		Preferences
 Shift+T		CLI terminal
 Ctrl+!		Reboot the FC
 
+Ctrl+G		GPS Statistics
 Ctrl+A		Flight Statistics
 
 &lt;span weight="bold"&gt;In all modes&lt;/span&gt;
