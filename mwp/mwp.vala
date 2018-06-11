@@ -459,7 +459,10 @@ public class MWPlanner : Gtk.Application {
     private uint gpsintvl = 0;
     private bool telem = false;
     private uint8 wp_max = 0;
-    private uint16 nav_wp_safe_distance = 0;
+
+    private uint16 nav_wp_safe_distance = 10000;
+    private uint16 inav_max_eph_epv = 1000;
+
     private bool need_mission = false;
     private Clutter.Text clutextr;
     private Clutter.Text clutextg;
@@ -483,7 +486,7 @@ public class MWPlanner : Gtk.Application {
     private ModelMap mmap;
 
     private GPSStatus gps_status;
-    private MSP_GPSSTATISTICS gpsstats; // = {0, 0, 0, 0, 9999, 9999, 9999};
+    private MSP_GPSSTATISTICS gpsstats;
 
     public DevManager devman;
 
@@ -908,13 +911,13 @@ public class MWPlanner : Gtk.Application {
     {
         lastrx = lastok = nticks;
         serstate = s;
-//        MWPLog.message("set state %s\n", serstate.to_string());
         resend_last();
     }
 
     public override void activate ()
     {
         base.startup();
+        gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
 
         wpmgr = WPMGR();
 
@@ -2987,6 +2990,7 @@ public class MWPlanner : Gtk.Application {
             if(replayer == Player.NONE)
                 init_have_home();
             no_ofix = 0;
+            gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
         }
         else
         {
@@ -3299,7 +3303,8 @@ public class MWPlanner : Gtk.Application {
                         {
                             sb.append(arm_fails[i]);
                             if ((1 << i) == ARMFLAGS.ARMING_DISABLED_NAVIGATION_UNSAFE
-                                && (gpsstats.eph > 1000 || gpsstats.epv > 1000))
+                                && (gpsstats.eph > inav_max_eph_epv ||
+                                    gpsstats.epv > inav_max_eph_epv))
                                 sb.append(" (EPH/EPV)");
                             sb.append_c(sep);
                         }
@@ -4210,6 +4215,8 @@ public class MWPlanner : Gtk.Application {
                     MWPLog.message("Requesting nav_wp_safe_distance\n");
                     var s="nav_wp_safe_distance";
                     queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
+                    s="inav_max_eph_epv";
+                    queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
                 }
                 queue_cmd(msp_get_status,null,0);
                 break;
@@ -4221,6 +4228,13 @@ public class MWPlanner : Gtk.Application {
                         deserialise_u16(raw, out nav_wp_safe_distance);
                         MWPLog.message("Received (raw) nav_wp_safe_distance %u\n",
                                        nav_wp_safe_distance);
+                        break;
+                    case "inav_max_eph_epv":
+                        uint32 ift;
+                        deserialise_u32(raw, out ift);
+                        inav_max_eph_epv = (uint16)(*((float *)&ift));
+                        MWPLog.message("Received (raw) inav_max_eph_epv %u\n",
+                                       inav_max_eph_epv);
                         break;
                     default:
                         MWPLog.message("Unknown common setting %s\n",
@@ -5906,6 +5920,7 @@ public class MWPlanner : Gtk.Application {
             navstatus.annul();
             fbox.annul();
             dbox.annul();
+            gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
             art_win.update(0, 0, item_visible(DOCKLETS.ARTHOR));
             set_bat_stat(0);
             nsats = 0;
