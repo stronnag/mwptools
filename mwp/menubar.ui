@@ -136,6 +136,13 @@
       </section>
       <section>
         <item>
+          <attribute name="label">GPS Statistics</attribute>
+          <attribute name="action">win.gps-stats</attribute>
+	  <attribute name="accel">&lt;Primary&gt;g</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
           <attribute name="label">Mission List</attribute>
           <attribute name="action">win.mission-list</attribute>
         </item>

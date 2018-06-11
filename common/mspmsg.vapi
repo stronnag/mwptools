@@ -147,91 +147,102 @@ public struct MSP_RADIO
 [CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_COMP_GPS
 {
-     uint16 range;
-     int16 direction;
-     uint8 update;
+    public uint16 range;
+    public int16 direction;
+    public uint8 update;
 }
 
 [CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_ANALOG
 {
-     uint8  vbat;
-     uint16 powermetersum;
-     uint16 rssi;
-     uint16 amps;
+    public uint8  vbat;
+    public uint16 powermetersum;
+    public uint16 rssi;
+    public uint16 amps;
 }
 
 
 [CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_NAV_POSHOLD
 {
-    uint8 nav_user_control_mode;
-    uint16 nav_max_speed;
-    uint16 nav_max_climb_rate;
-    uint16 nav_manual_speed;
-    uint16 nav_manual_climb_rate;
-    uint8 nav_mc_bank_angle;
-    uint8 nav_use_midthr_for_althold;
-    uint16 nav_mc_hover_thr;
-    uint8 reserved[8];
+    public uint8 nav_user_control_mode;
+    public uint16 nav_max_speed;
+    public uint16 nav_max_climb_rate;
+    public uint16 nav_manual_speed;
+    public uint16 nav_manual_climb_rate;
+    public uint8 nav_mc_bank_angle;
+    public uint8 nav_use_midthr_for_althold;
+    public uint16 nav_mc_hover_thr;
+    public uint8 reserved[8];
 }
 
 [CCode (cheader_filename = "mspmsg.h")]
 public struct LTM_GFRAME
 {
-    int32 lat;
-    int32 lon;
-    uint8 speed;
-    int32 alt;
-    uint8 sats;
+    public int32 lat;
+    public int32 lon;
+    public uint8 speed;
+    public int32 alt;
+    public uint8 sats;
 }
 
 [CCode (cheader_filename = "mspmsg.h")]
 public struct LTM_AFRAME
 {
-    int16 pitch;
-    int16 roll;
-    int16 heading;
+    public int16 pitch;
+    public int16 roll;
+    public int16 heading;
 }
-
 
 [CCode (cheader_filename = "mspmsg.h")]
 public struct LTM_SFRAME
 {
-    int16 vbat;
-    int16 vcurr;
-    uint8 rssi;
-    uint8 airspeed;
-    uint8 flags;
+    public int16 vbat;
+    public int16 vcurr;
+    public uint8 rssi;
+    public uint8 airspeed;
+    public uint8 flags;
 }
 [CCode (cheader_filename = "mspmsg.h")]
 public struct LTM_XFRAME
 {
-    uint16 hdop;
-    uint8 sensorok;
-    uint8 ltm_x_count;
-    uint8 disarm_reason;
-    uint8 spare;
+    public uint16 hdop;
+    public uint8 sensorok;
+    public uint8 ltm_x_count;
+    public uint8 disarm_reason;
+    public uint8 spare;
 }
 
 [CCode (cheader_filename = "mspmsg.h")]
 public struct MSP_WP_GETINFO
 {
-    uint8 wp_cap;
-    uint8 max_wp;
-    uint8 wps_valid;
-    uint8 wp_count;
+    public uint8 wp_cap;
+    public uint8 max_wp;
+    public uint8 wps_valid;
+    public uint8 wp_count;
 }
 
 [CCode (cheader_filename = "mspmsg.h")]
-struct MSP_FW_CONFIG
+public struct MSP_FW_CONFIG
 {
-    uint16 cruise_throttle;
-    uint16 min_throttle;
-    uint16 max_throttle;
-    uint8 max_bank_angle;
-    uint8 max_climb_angle;
-    uint8 max_dive_angle;
-    uint8 pitch_to_throttle;
-    uint16 loiter_radius;
+    public uint16 cruise_throttle;
+    public uint16 min_throttle;
+    public uint16 max_throttle;
+    public uint8 max_bank_angle;
+    public uint8 max_climb_angle;
+    public uint8 max_dive_angle;
+    public uint8 pitch_to_throttle;
+    public uint16 loiter_radius;
+}
+
+[CCode (cheader_filename = "mspmsg.h")]
+public struct MSP_GPSSTATISTICS
+{
+    public uint16 last_message_dt;
+    public uint32 errors;
+    public uint32 timeouts;
+    public uint32 packet_count;
+    public uint16 hdop;
+    public uint16 eph;
+    public uint16 epv;
 }

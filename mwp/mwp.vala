@@ -482,8 +482,8 @@ public class MWPlanner : Gtk.Application {
     private uchar hwstatus[9];
     private ModelMap mmap;
 
-    private uint16 eph = 9999;
-    private uint16 epv = 9999;
+    private GPSStatus gps_status;
+    private MSP_GPSSTATISTICS gpsstats; // = {0, 0, 0, 0, 9999, 9999, 9999};
 
     public DevManager devman;
 
@@ -1194,6 +1194,8 @@ public class MWPlanner : Gtk.Application {
 
         embed = new GtkChamplain.Embed();
 
+        gps_status = new GPSStatus(builder, window);
+
         var saq = new GLib.SimpleAction("file-open",null);
         saq.activate.connect(() => {
                 on_file_open();
@@ -1338,6 +1340,16 @@ public class MWPlanner : Gtk.Application {
                                  (int)zoomer.adjustment.value,
                                  view.get_bounding_box());
 
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("gps-stats",null);
+        saq.activate.connect(() => {
+                if(!gps_status.visible)
+                {
+                    gps_status.update(gpsstats);
+                    gps_status.show();
+                }
             });
         window.add_action(saq);
 
@@ -3287,7 +3299,7 @@ public class MWPlanner : Gtk.Application {
                         {
                             sb.append(arm_fails[i]);
                             if ((1 << i) == ARMFLAGS.ARMING_DISABLED_NAVIGATION_UNSAFE
-                                && (eph > 1000 || epv > 1000))
+                                && (gpsstats.eph > 1000 || gpsstats.epv > 1000))
                                 sb.append(" (EPH/EPV)");
                             sb.append_c(sep);
                         }
@@ -4152,13 +4164,20 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.GPSSTATISTICS:
                 LTM_XFRAME xf = LTM_XFRAME();
-                deserialise_u16(raw+14, out xf.hdop);
-                rhdop = xf.hdop;
+                deserialise_u16(raw, out gpsstats.last_message_dt);
+                deserialise_u16(raw+2, out gpsstats.errors);
+                deserialise_u16(raw+6, out gpsstats.timeouts);
+                deserialise_u16(raw+10, out gpsstats.packet_count);
+                deserialise_u16(raw+14, out gpsstats.hdop);
+                deserialise_u16(raw+16, out gpsstats.eph);
+                deserialise_u16(raw+18, out gpsstats.epv);
+                rhdop = xf.hdop = gpsstats.hdop;
                 gpsinfo.set_hdop(xf.hdop/100.0);
                 if(Logger.is_logging)
                     Logger.ltm_xframe(xf);
-                deserialise_u16(raw+16, out eph);
-                deserialise_u16(raw+18, out epv);
+
+                if(gps_status.visible)
+                    gps_status.update(gpsstats);
                 break;
 
             case MSP.Cmds.MISC:

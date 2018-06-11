@@ -2608,3 +2608,67 @@ public class GPSInfo : GLib.Object
         lat = lon = cse = spd = nsat = elev = fix  = 0;
     }
 }
+
+
+public class GPSStatus : GLib.Object
+{
+    private Gtk.Dialog dialog;
+    private Gtk.Label gps_stats_last_dt;
+    private Gtk.Label gps_stats_errors;
+    private Gtk.Label gps_stats_timeouts;
+    private Gtk.Label gps_stats_packets;
+    private Gtk.Label gps_stats_hdop;
+    private Gtk.Label gps_stats_eph;
+    private Gtk.Label gps_stats_epv;
+
+    private Gtk.Button gps_stats_close;
+    public bool visible {get; private set;}
+
+    public GPSStatus(Gtk.Builder builder, Gtk.Window? w)
+    {
+        dialog = builder.get_object ("gps_stats_dialog") as Gtk.Dialog;
+        gps_stats_last_dt = builder.get_object ("gps_stats_last_dt") as Gtk.Label;
+        gps_stats_errors = builder.get_object ("gps_stats_errors") as Gtk.Label;
+        gps_stats_timeouts = builder.get_object ("gps_stats_timeouts") as Gtk.Label;
+        gps_stats_packets = builder.get_object ("gps_stats_packets") as Gtk.Label;
+        gps_stats_hdop = builder.get_object ("gps_stats_hdop") as Gtk.Label;
+        gps_stats_eph = builder.get_object ("gps_stats_eph") as Gtk.Label;
+        gps_stats_epv = builder.get_object ("gps_stats_epv") as Gtk.Label;
+        gps_stats_close = builder.get_object ("gps_stats_close") as Gtk.Button;
+        dialog.set_transient_for(w);
+        visible = false;
+
+        dialog.delete_event.connect (() => {
+                dismiss();
+                return true;
+            });
+
+        gps_stats_close.clicked.connect (() => {
+                dismiss();
+            });
+    }
+
+    public void update(MSP_GPSSTATISTICS t)
+    {
+        double rate = (t.last_message_dt != 0.0) ? 1000.0 / t.last_message_dt : 0.0;
+        gps_stats_last_dt.label = "%.1fHz".printf(rate);
+        gps_stats_errors.label = "%u".printf(t.errors);
+        gps_stats_timeouts.label = "%u".printf(t.timeouts);
+        gps_stats_packets.label = "%u".printf(t.packet_count);
+        gps_stats_hdop.label = "%.2f".printf(t.hdop/100.0);
+        gps_stats_eph.label = "%.2f".printf(t.eph/100.0);
+        gps_stats_epv.label = "%.2f".printf(t.epv/100.0);
+    }
+
+    public void show()
+    {
+        visible = true;
+        dialog.show_all();
+    }
+
+    public void dismiss()
+    {
+        visible=false;
+        dialog.hide();
+    }
+}

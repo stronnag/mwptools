@@ -257,6 +257,17 @@ public struct MSP_WP_GETINFO
     uint8 wp_count;
 }
 
+public struct MSP_GPSSTATISTICS
+{
+    public uint16 last_message_dt;
+    public uint32 errors;
+    public uint32 timeouts;
+    public uint32 packet_count;
+    public uint16 hdop;
+    public uint16 eph;
+    public uint16 epv;
+}
+
 public enum MSize
 {
     MSP_IDENT=7,

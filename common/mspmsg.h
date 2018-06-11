@@ -240,9 +240,7 @@ struct __attribute__ ((__packed__)) msp_wp_getinfo
     uint8_t wps_valid;
     uint8_t wp_count;
 };
-
 typedef struct _msp_wp_getinfo MSP_WP_GETINFO;
-
 
 struct __attribute__ ((__packed__))  _msp_fw_config
 {
@@ -256,3 +254,16 @@ struct __attribute__ ((__packed__))  _msp_fw_config
     uint16_t loiter_radius;
 };
 typedef struct _msp_fw_config MSP_FW_CONFIG;
+
+struct __attribute__ ((__packed__)) _msp_gpsstatistics
+{
+    uint16_t last_message_dt;
+    uint32_t errors;
+    uint32_t timeouts;
+    uint32_t packet_count;
+    uint16_t hdop;
+    uint16_t eph;
+    uint16_t epv;
+};
+
+typedef struct _msp_gpsstatistics MSP_GPSSTATISTICS
