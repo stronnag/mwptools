@@ -58,7 +58,12 @@ IO.popen(cmd,'r') do |p|
       eeok = true
     end
     if csats != nsats
-      s= fmtstr ts, csats, c[:gps_hdop].to_f, epv, eph, eeok
+      tok = eeok
+      if csats == 0 && nsats > 0 # for momentary failure
+	tok = false
+      else
+      end
+      s= fmtstr ts, csats, c[:gps_hdop].to_f, epv, eph, tok
       nsats = csats
     end
     if eeok != leeok
