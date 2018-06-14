@@ -29,7 +29,7 @@ In addition, mwptools provides a small suite of tools to manage a MultiWii NAV f
 
 ## Platforms and OS
 
-The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Ubuntu (latest and most recent LTS), Fedora (current), Debian (Stretch), Elementary (current) and FreeBSD (current release); building and running on any platform that supports (recent versions of):
+The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Ubuntu (latest and most recent LTS), Fedora (current), Debian (Buster), Elementary (current) and FreeBSD (current release); building and running on any platform that supports (recent versions of):
 
  * gtk+3.0 (3.18 or later);
  * vala and gcc;

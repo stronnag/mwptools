@@ -4232,7 +4232,10 @@ public class MWPlanner : Gtk.Application {
                     case "inav_max_eph_epv":
                         uint32 ift;
                         deserialise_u32(raw, out ift);
-                        inav_max_eph_epv = (uint16)(*((float *)&ift));
+                            // This stupidity is for Mint ...
+                        uint32 *ipt = &ift;
+                        float f = *((float *)ipt);
+                        inav_max_eph_epv = (uint16)f;
                         MWPLog.message("Received (raw) inav_max_eph_epv %u\n",
                                        inav_max_eph_epv);
                         break;
