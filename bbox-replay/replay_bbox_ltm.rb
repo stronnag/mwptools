@@ -347,7 +347,12 @@ def encode_stats r,inavers,armed=1
 	    :nav_state_waypoint_reached,
 	    :nav_state_waypoint_next
 	  10
-	when :nav_state_cruise
+	when :nav_state_cruise_2d_initialize,
+	    :nav_state_cruise_2d_in_progress,
+	    :nav_state_cruise_2d_adjusting,
+	    :nav_state_cruise_3d_initialize,
+	    :nav_state_cruise_3d_in_progress,
+	    :nav_state_cruise_3d_adjusting
 	  18
 	else
 	  19
