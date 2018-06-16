@@ -466,6 +466,7 @@ public class MWPlanner : Gtk.Application {
     private bool need_mission = false;
     private Clutter.Text clutextr;
     private Clutter.Text clutextg;
+    private Clutter.Text clutextd;
     private bool map_clean;
     private VCol vcol;
     private Odostats odo;
@@ -2667,9 +2668,9 @@ public class MWPlanner : Gtk.Application {
                                && msp.available && replayer == Player.NONE)
                             {
                                 MWPLog.message("Restart poller on telemetry timeout\n");
-//                                have_api = have_vers = have_misc =
-                                have_status  /* =have_wp = have_nc =
-                                                          have_fcv = have_fcvv */ = false;
+/*                               have_api = have_vers = have_misc =
+                                 =have_wp = have_nc = have_fcv = have_fcvv = */
+                                have_status = false;
                                 xbits = icount = api_cnt = 0;
                                 init_sstats();
                                 last_tm = 0;
@@ -2864,6 +2865,7 @@ public class MWPlanner : Gtk.Application {
             {
                 var grey = Clutter.Color.from_string(parts[1]);
                 clutextg.color = grey;
+                clutextd.color = grey;
             }
             if(window_h != -1)
             {
@@ -2874,6 +2876,7 @@ public class MWPlanner : Gtk.Application {
                     parts[0] = "%s %d".printf(tsplit[0], ih);
             }
             clutextg.font_name = parts[0];
+            clutextd.font_name = parts[0];
         }
     }
 
@@ -2883,21 +2886,28 @@ public class MWPlanner : Gtk.Application {
 
         var textb = new Clutter.Actor ();
         var textm = new Clutter.Actor ();
+        var textd = new Clutter.Actor ();
 
         clutextr = new Clutter.Text.full ("Sans 36", "", red);
         clutextg = new Clutter.Text();
+        clutextd = new Clutter.Text();
         map_warn_set_text(true);
 
         lm.child_set(view,textb,"x-align", Clutter.ActorAlign.START);
         lm.child_set(view,textb,"y-align", Clutter.ActorAlign.START);
         lm.child_set(view,textm,"x-align", Clutter.ActorAlign.END);
         lm.child_set(view,textm,"y-align", Clutter.ActorAlign.START);
+        lm.child_set(view,textd,"x-align", Clutter.ActorAlign.END);
+        lm.child_set(view,textd,"y-align", Clutter.ActorAlign.END);
         textb.add_child(clutextr);
         textm.add_child(clutextg);
+        textd.add_child(clutextd);
         view.add_child (textb);
         view.add_child (textm);
+        view.add_child (textd);
         map_clean = true;
         clutextg.use_markup = true;
+        clutextd.use_markup = true;
     }
 
     private void map_show_warning(string text)
@@ -2916,11 +2926,18 @@ public class MWPlanner : Gtk.Application {
         map_clean = false;
     }
 
+    private void map_show_dist(string text)
+    {
+        clutextd.set_markup(text);
+        map_clean = false;
+    }
+
     private void map_hide_wp()
     {
         if(!map_clean)
         {
             clutextg.set_text("");
+            clutextd.set_text("");
             markers.clear_ring();
             map_clean = true;
         }
@@ -3637,6 +3654,242 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
+    private void show_wp_distance(uint8 np)
+    {
+        if (wp_resp.length == NavStatus.nm_pts)
+        {
+            uint fs=50000;
+            np = np - 1;
+            var lat = wp_resp[np].lat;
+            var lon = wp_resp[np].lon;
+            if(lat == 0.0 && lon == 0.0)
+            {
+                lat = home_pos.lat;
+                lon = home_pos.lon;
+            }
+            double dist,cse;
+            Geo.csedist(GPSInfo.lat, GPSInfo.lon,
+                        lat, lon, out dist, out cse);
+            StringBuilder sb = new StringBuilder();
+            dist *= 1852.0;
+            sb.append_printf("<span size=\"%u\">%.1fm %.0f°</span>", fs, dist, cse);
+            map_show_dist(sb.str);
+        }
+    }
+
+    MissionItem wp_to_mitem(MSP_WP w)
+    {
+        MissionItem m = MissionItem();
+        m.no= w.wp_no;
+        m.action = (MSP.Action)w.action;
+        m.lat = w.lat/10000000.0;
+        m.lon = w.lon/10000000.0;
+        m.alt = w.altitude/100;
+        m.param1 = w.p1;
+        if(m.action == MSP.Action.SET_HEAD &&
+           conf.recip_head  == true && m.param1 != -1)
+        {
+            m.param1 = (m.param1 + 180) % 360;
+        }
+        m.param2 = w.p2;
+        m.param3 = w.p3;
+        return m;
+    }
+
+    void handle_wp_processing(uint8[] raw, uint len)
+    {
+        have_wp = true;
+        MSP_WP w = MSP_WP();
+        uint8* rp = raw;
+        if((wpmgr.wp_flag & WPDL.CANCEL) != 0)
+            return;
+
+        if((wpmgr.wp_flag & WPDL.POLL) == 0)
+        {
+            w.wp_no = *rp++;
+            w.action = *rp++;
+            rp = deserialise_i32(rp, out w.lat);
+            rp = deserialise_i32(rp, out w.lon);
+            rp = deserialise_i32(rp, out w.altitude);
+            rp = deserialise_i16(rp, out w.p1);
+            rp = deserialise_u16(rp, out w.p2);
+            rp = deserialise_u16(rp, out w.p3);
+            w.flag = *rp;
+        }
+
+        if(w.wp_no == 1)
+            wp_resp = {};
+
+        if ((wpmgr.wp_flag & WPDL.VALIDATE) != 0  ||
+            (wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
+        {
+            WPFAIL fail = WPFAIL.OK;
+            validatelab.set_text("WP:%3d".printf(w.wp_no));
+            if(w.wp_no != wpmgr.wps[wpmgr.wpidx].wp_no)
+                fail |= WPFAIL.NO;
+            else if(w.action != wpmgr.wps[wpmgr.wpidx].action)
+                fail |= WPFAIL.ACT;
+            else if (w.lat != wpmgr.wps[wpmgr.wpidx].lat)
+                fail |= WPFAIL.LAT;
+            else if (w.lon != wpmgr.wps[wpmgr.wpidx].lon)
+                fail |= WPFAIL.LON;
+            else if (w.altitude != wpmgr.wps[wpmgr.wpidx].altitude)
+                fail |= WPFAIL.ALT;
+            else if (w.p1 != wpmgr.wps[wpmgr.wpidx].p1)
+                fail |= WPFAIL.P1;
+            else if (w.p2 != wpmgr.wps[wpmgr.wpidx].p2)
+                fail |= WPFAIL.P2;
+            else if (w.p3 != wpmgr.wps[wpmgr.wpidx].p3)
+                fail |= WPFAIL.P3;
+            else if (w.flag != wpmgr.wps[wpmgr.wpidx].flag)
+            {
+                fail |= WPFAIL.FLAG;
+            }
+
+            if (fail != WPFAIL.OK)
+            {
+                remove_tid(ref upltid);
+                if((debug_flags & DEBUG_FLAGS.WP) != DEBUG_FLAGS.NONE)
+                {
+                    stderr.printf("WP size %d [read,expect]\n", (int)len);
+                    stderr.printf("no %d %d\n",
+                                  w.wp_no, wpmgr.wps[wpmgr.wpidx].wp_no);
+                    stderr.printf("action %d %d\n",
+                                  w.action, wpmgr.wps[wpmgr.wpidx].action);
+                    stderr.printf("lat %d %d\n",
+                                  w.lat, wpmgr.wps[wpmgr.wpidx].lat);
+                    stderr.printf("lon %d %d\n",
+                                  w.lon, wpmgr.wps[wpmgr.wpidx].lon);
+                    stderr.printf("alt %u %u\n",
+                                  w.altitude, wpmgr.wps[wpmgr.wpidx].altitude);
+                    stderr.printf("p1 %d %d\n",
+                                  w.p1, wpmgr.wps[wpmgr.wpidx].p1);
+                    stderr.printf("p2 %d %d\n",
+                                  w.p2, wpmgr.wps[wpmgr.wpidx].p2);
+                    stderr.printf("p3 %d %d\n",
+                                  w.p3, wpmgr.wps[wpmgr.wpidx].p3);
+                    stderr.printf("flag %x %x\n",
+                                  w.flag, wpmgr.wps[wpmgr.wpidx].flag);
+                }
+                StringBuilder sb = new StringBuilder();
+                for(var i = 0; i < failnames.length; i += 1)
+                {
+                    if ((fail & (1 <<i)) == (1 << i))
+                    {
+                        sb.append(failnames[i]);
+                        sb.append_c(' ');
+                    }
+                }
+                MWPCursor.set_normal_cursor(window);
+                reset_poller();
+                var mtxt = "Validation for wp %d fails for %s".printf(w.wp_no, sb.str);
+                bleet_sans_merci(Alert.GENERAL);
+                validatelab.set_text("⚠"); // u+26a0
+                mwp_warning_box(mtxt, Gtk.MessageType.ERROR);
+                if((wpmgr.wp_flag & WPDL.CALLBACK) != 0)
+                    upload_callback(-1);
+            }
+            else if(w.flag != 0xa5)
+            {
+                wp_resp += wp_to_mitem(w);
+                wpmgr.wpidx++;
+                uint8 wtmp[64];
+                var nb = serialise_wp(wpmgr.wps[wpmgr.wpidx], wtmp);
+                queue_cmd(MSP.Cmds.SET_WP, wtmp, nb);
+            }
+            else
+            {
+                wp_resp += wp_to_mitem(w);
+                remove_tid(ref upltid);
+                MWPCursor.set_normal_cursor(window);
+                bleet_sans_merci(Alert.GENERAL);
+                validatelab.set_text("✔"); // u+2714
+                if((wpmgr.wp_flag & WPDL.CALLBACK) != 0)
+                    upload_callback(wpmgr.wps.length);
+                if(vi.fc_api < APIVERS.mspV2)
+                    mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
+                NavStatus.have_rth = ((MSP.Action)w.action == MSP.Action.RTH);
+                NavStatus.nm_pts = (uint8)wpmgr.wps.length;
+                MWPLog.message("Mission validated (points: %u, RTH: %s)\n",
+                               NavStatus.nm_pts,
+                               NavStatus.have_rth.to_string());
+                if((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
+                {
+                    uint8 zb=42;
+                    MWPLog.message("Saving mission\n");
+                    queue_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
+                }
+                wpmgr.wp_flag |= WPDL.GETINFO;
+                if(inav)
+                    queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+                reset_poller();
+                if (downgrade != 0)
+                {
+                    MWPLog.message("Requesting downgraded mission\n");
+                    download_mission();
+                }
+                else if(wpmgr.wps.length > 0  &&
+                        (MSP.Action)wpmgr.wps[0].action == MSP.Action.WAYPOINT)
+                    check_mission_safe(wpmgr.wps[0].lat/10000000.0,  wpmgr.wps[0].lon/10000000.0);
+            }
+        }
+        else if ((wpmgr.wp_flag & WPDL.REPLACE) != 0 ||
+                 (wpmgr.wp_flag & WPDL.REPLAY) != 0)
+        {
+            validatelab.set_text("WP:%3d".printf(w.wp_no));
+            var m = wp_to_mitem(w);
+            wp_resp += m;
+            if(w.flag == 0xa5 || w.wp_no == 255)
+            {
+                remove_tid(ref upltid);
+                MWPCursor.set_normal_cursor(window);
+                var ms = new Mission();
+                if(w.wp_no == 1 && m.action == MSP.Action.RTH
+                   && w.lat == 0 && w.lon == 0)
+                {
+                    ls.clear_mission();
+                }
+                else
+                {
+                    ms.set_ways(wp_resp);
+                    ls.import_mission(ms, (conf.rth_autoland &&
+                                           Craft.is_mr(vi.mrtype)));
+                    centre_mission(ms, !centreon);
+                    markers.add_list_store(ls);
+                    validatelab.set_text("✔"); // u+2714
+                    if (wp_resp[0].action == MSP.Action.WAYPOINT)
+                        check_mission_safe(wp_resp[0].lat,wp_resp[0].lon);
+
+                    NavStatus.have_rth = ((MSP.Action)w.action == MSP.Action.RTH);
+                    NavStatus.nm_pts = (uint8)w.wp_no;
+                    MWPLog.message("Mission restore (points: %u, RTH: %s)\n",
+                                   NavStatus.nm_pts,
+                                   NavStatus.have_rth.to_string());
+                }
+                wp_resp={};
+                reset_poller();
+            }
+            else if(w.flag == 0xfe)
+            {
+                remove_tid(ref upltid);
+                MWPCursor.set_normal_cursor(window);
+                MWPLog.message("Error flag on wp #%d\n", w.wp_no);
+                reset_poller();
+            }
+            else
+            {
+                request_wp(w.wp_no+1);
+            }
+        }
+        else
+        {
+            MWPCursor.set_normal_cursor(window);
+            remove_tid(ref upltid);
+            MWPLog.message("unsolicited WP #%d\n", w.wp_no);
+            reset_poller();
+        }
+    }
+
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
@@ -4349,27 +4602,33 @@ public class MWPlanner : Gtk.Application {
 
                 if(replayer != Player.BBOX)
                 {
-                    if(ns.gps_mode == 3 && (last_nmode != 3 ||
-                                            ns.wp_number != last_nwp))
+                    if(ns.gps_mode == 3)
                     {
-
-                        ls.raise_wp(ns.wp_number);
-                        string spt;
-                        if(NavStatus.have_rth && ns.wp_number == NavStatus.nm_pts)
-                            spt = "<span size=\"x-small\">RTH</span>";
-                        else
+                        if (last_nmode != 3 || ns.wp_number != last_nwp)
                         {
-                            StringBuilder sb = new StringBuilder(ns.wp_number.to_string());
-                            if(NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255)
+                            ls.raise_wp(ns.wp_number);
+                            string spt;
+                            if(NavStatus.have_rth && ns.wp_number == NavStatus.nm_pts)
                             {
-                                sb.append_printf("<span size=\"xx-small\">/%u</span>", NavStatus.nm_pts);
+                                spt = "<span size=\"x-small\">RTH</span>";
                             }
-                            spt = sb.str;
+                            else
+                            {
+                                StringBuilder sb = new StringBuilder(ns.wp_number.to_string());
+                                if(NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255)
+                                {
+                                    sb.append_printf("<span size=\"xx-small\">/%u</span>", NavStatus.nm_pts);
+                                }
+                                spt = sb.str;
+                            }
+                            map_show_wp(spt);
                         }
-                        map_show_wp(spt);
+                        show_wp_distance(ns.wp_number);
                     }
-                    else if (ns.gps_mode != 3 && last_nmode == 3)
+                    else if (last_nmode == 3)
+                    {
                         map_hide_wp();
+                    }
                 }
                 last_nmode = ns.gps_mode;
                 last_nwp= ns.wp_number;
@@ -4570,208 +4829,7 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.WP:
-                have_wp = true;
-                MSP_WP w = MSP_WP();
-                uint8* rp = raw;
-                if((wpmgr.wp_flag & WPDL.CANCEL) != 0)
-                {
-                    break;
-                }
-
-                if((wpmgr.wp_flag & WPDL.POLL) == 0)
-                {
-                    w.wp_no = *rp++;
-                    w.action = *rp++;
-                    rp = deserialise_i32(rp, out w.lat);
-                    rp = deserialise_i32(rp, out w.lon);
-                    rp = deserialise_i32(rp, out w.altitude);
-                    rp = deserialise_i16(rp, out w.p1);
-                    rp = deserialise_u16(rp, out w.p2);
-                    rp = deserialise_u16(rp, out w.p3);
-                    w.flag = *rp;
-//                    show_wp(w);
-                }
-
-                if ((wpmgr.wp_flag & WPDL.VALIDATE) != 0  ||
-                    (wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
-                {
-                    WPFAIL fail = WPFAIL.OK;
-                    validatelab.set_text("WP:%3d".printf(w.wp_no));
-                    if(w.wp_no != wpmgr.wps[wpmgr.wpidx].wp_no)
-                        fail |= WPFAIL.NO;
-                    else if(w.action != wpmgr.wps[wpmgr.wpidx].action)
-                        fail |= WPFAIL.ACT;
-                    else if (w.lat != wpmgr.wps[wpmgr.wpidx].lat)
-                        fail |= WPFAIL.LAT;
-                    else if (w.lon != wpmgr.wps[wpmgr.wpidx].lon)
-                            fail |= WPFAIL.LON;
-                    else if (w.altitude != wpmgr.wps[wpmgr.wpidx].altitude)
-                        fail |= WPFAIL.ALT;
-                    else if (w.p1 != wpmgr.wps[wpmgr.wpidx].p1)
-                        fail |= WPFAIL.P1;
-                    else if (w.p2 != wpmgr.wps[wpmgr.wpidx].p2)
-                        fail |= WPFAIL.P2;
-                    else if (w.p3 != wpmgr.wps[wpmgr.wpidx].p3)
-                        fail |= WPFAIL.P3;
-                    else if (w.flag != wpmgr.wps[wpmgr.wpidx].flag)
-                    {
-                        fail |= WPFAIL.FLAG;
-                    }
-
-                    if (fail != WPFAIL.OK)
-                    {
-                        remove_tid(ref upltid);
-                        if((debug_flags & DEBUG_FLAGS.WP) != DEBUG_FLAGS.NONE)
-                        {
-                            stderr.printf("WP size %d [read,expect]\n", (int)len);
-                            stderr.printf("no %d %d\n",
-                                          w.wp_no, wpmgr.wps[wpmgr.wpidx].wp_no);
-                            stderr.printf("action %d %d\n",
-                                          w.action, wpmgr.wps[wpmgr.wpidx].action);
-                            stderr.printf("lat %d %d\n",
-                                          w.lat, wpmgr.wps[wpmgr.wpidx].lat);
-                            stderr.printf("lon %d %d\n",
-                                          w.lon, wpmgr.wps[wpmgr.wpidx].lon);
-                            stderr.printf("alt %u %u\n",
-                                          w.altitude, wpmgr.wps[wpmgr.wpidx].altitude);
-                            stderr.printf("p1 %d %d\n",
-                                          w.p1, wpmgr.wps[wpmgr.wpidx].p1);
-                            stderr.printf("p2 %d %d\n",
-                                          w.p2, wpmgr.wps[wpmgr.wpidx].p2);
-                            stderr.printf("p3 %d %d\n",
-                                          w.p3, wpmgr.wps[wpmgr.wpidx].p3);
-                            stderr.printf("flag %x %x\n",
-                                          w.flag, wpmgr.wps[wpmgr.wpidx].flag);
-                        }
-                        StringBuilder sb = new StringBuilder();
-                        for(var i = 0; i < failnames.length; i += 1)
-                        {
-                            if ((fail & (1 <<i)) == (1 << i))
-                            {
-                                sb.append(failnames[i]);
-                                sb.append_c(' ');
-                            }
-                        }
-                        MWPCursor.set_normal_cursor(window);
-                        reset_poller();
-                        var mtxt = "Validation for wp %d fails for %s".printf(w.wp_no, sb.str);
-                        bleet_sans_merci(Alert.GENERAL);
-                        validatelab.set_text("⚠"); // u+26a0
-                        mwp_warning_box(mtxt, Gtk.MessageType.ERROR);
-                        if((wpmgr.wp_flag & WPDL.CALLBACK) != 0)
-                            upload_callback(-1);
-                    }
-                    else if(w.flag != 0xa5)
-                    {
-                        wpmgr.wpidx++;
-                        uint8 wtmp[64];
-                        var nb = serialise_wp(wpmgr.wps[wpmgr.wpidx], wtmp);
-                        queue_cmd(MSP.Cmds.SET_WP, wtmp, nb);
-                    }
-                    else
-                    {
-                        remove_tid(ref upltid);
-                        MWPCursor.set_normal_cursor(window);
-                        bleet_sans_merci(Alert.GENERAL);
-                        validatelab.set_text("✔"); // u+2714
-                        if((wpmgr.wp_flag & WPDL.CALLBACK) != 0)
-                            upload_callback(wpmgr.wps.length);
-                        if(vi.fc_api < APIVERS.mspV2)
-                            mwp_warning_box("Mission validated", Gtk.MessageType.INFO,5);
-                        NavStatus.have_rth = ((MSP.Action)w.action == MSP.Action.RTH);
-                        NavStatus.nm_pts = (uint8)wpmgr.wps.length;
-                        MWPLog.message("Mission validated (points: %u, RTH: %s)\n",
-                                       NavStatus.nm_pts,
-                                       NavStatus.have_rth.to_string());
-                        if((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0)
-                        {
-                            uint8 zb=42;
-                            MWPLog.message("Saving mission\n");
-                            queue_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
-                        }
-                        wpmgr.wp_flag |= WPDL.GETINFO;
-                        if(inav)
-                            queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-                        reset_poller();
-                        if (downgrade != 0)
-                        {
-                            MWPLog.message("Requesting downgraded mission\n");
-                            download_mission();
-                        }
-                        else if(wpmgr.wps.length > 0  &&
-                                (MSP.Action)wpmgr.wps[0].action == MSP.Action.WAYPOINT)
-                            check_mission_safe(wpmgr.wps[0].lat/10000000.0,  wpmgr.wps[0].lon/10000000.0);
-                    }
-                }
-                else if ((wpmgr.wp_flag & WPDL.REPLACE) != 0 ||
-                         (wpmgr.wp_flag & WPDL.REPLAY) != 0)
-                {
-                    validatelab.set_text("WP:%3d".printf(w.wp_no));
-                    MissionItem m = MissionItem();
-                    m.no= w.wp_no;
-                    m.action = (MSP.Action)w.action;
-                    m.lat = w.lat/10000000.0;
-                    m.lon = w.lon/10000000.0;
-                    m.alt = w.altitude/100;
-                    m.param1 = w.p1;
-                    if(m.action == MSP.Action.SET_HEAD &&
-                       conf.recip_head  == true && m.param1 != -1)
-                    {
-                        m.param1 = (m.param1 + 180) % 360;
-                    }
-                    m.param2 = w.p2;
-                    m.param3 = w.p3;
-
-                    wp_resp += m;
-                    if(w.flag == 0xa5 || w.wp_no == 255)
-                    {
-                        remove_tid(ref upltid);
-                        MWPCursor.set_normal_cursor(window);
-                        var ms = new Mission();
-                        if(w.wp_no == 1 && m.action == MSP.Action.RTH
-                           && w.lat == 0 && w.lon == 0)
-                        {
-                            ls.clear_mission();
-                        }
-                        else
-                        {
-                            ms.set_ways(wp_resp);
-                            ls.import_mission(ms, (conf.rth_autoland &&
-                                                   Craft.is_mr(vi.mrtype)));
-                            centre_mission(ms, !centreon);
-                            markers.add_list_store(ls);
-                            validatelab.set_text("✔"); // u+2714
-                            if (wp_resp[0].action == MSP.Action.WAYPOINT)
-                                check_mission_safe(wp_resp[0].lat,wp_resp[0].lon);
-
-                            NavStatus.have_rth = ((MSP.Action)w.action == MSP.Action.RTH);
-                            NavStatus.nm_pts = (uint8)w.wp_no;
-                            MWPLog.message("Mission restore (points: %u, RTH: %s)\n",
-                                           NavStatus.nm_pts,
-                                           NavStatus.have_rth.to_string());
-                        }
-                        wp_resp={};
-                        reset_poller();
-                    }
-                    else if(w.flag == 0xfe)
-                    {
-                        remove_tid(ref upltid);
-                        MWPCursor.set_normal_cursor(window);
-                        MWPLog.message("Error flag on wp #%d\n", w.wp_no);
-                        reset_poller();
-                    }
-                    else
-                    {
-                        request_wp(w.wp_no+1);
-                    }
-                }
-                else
-                {
-                    MWPCursor.set_normal_cursor(window);
-                    remove_tid(ref upltid);
-                    MWPLog.message("unsolicited WP #%d\n", w.wp_no);
-                    reset_poller();
-                }
+                handle_wp_processing(raw, len);
                 break;
 
             case MSP.Cmds.WP_MISSION_SAVE:
@@ -6235,6 +6293,7 @@ public class MWPlanner : Gtk.Application {
         m.nspeed = ls.get_mission_speed();
         if (conf.compat_vers != null)
             m.version = conf.compat_vers;
+        wp_resp = m.get_ways();
         return m;
     }
 
@@ -6381,12 +6440,14 @@ public class MWPlanner : Gtk.Application {
         if(m != null && m.npoints > 0)
         {
             NavStatus.nm_pts = (uint8)m.npoints;
+            wp_resp = m.get_ways();
             return m;
         }
         else
         {
             NavStatus.nm_pts = 255;
             NavStatus.have_rth = false;
+            wp_resp ={};
             return null;
         }
     }
