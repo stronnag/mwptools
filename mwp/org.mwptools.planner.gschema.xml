@@ -448,5 +448,23 @@
         m for XML (.mission), j for json
       </description>
     </key>
+
+    <key name="osd-mode" type="u">
+      <default>3</default>
+      <summary>Data items overlaid on the map</summary>
+      <description>
+	0 = none, 1 = current WP/Max WP, 2 = next WP distance and ourse. This is a mask, so 3 means both OSD items.
+      </description>
+    </key>
+
+    <key name="wp-dist-size" type="d">
+      <default>56.0</default>
+      <summary>Font size (points) for OSD WP distance display</summary>
+      <description>
+	Font size (points) for OSD WP distance display
+      </description>
+    </key>
+
+
   </schema>
 </schemalist>

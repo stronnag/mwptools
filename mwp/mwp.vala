@@ -552,6 +552,12 @@ public class MWPlanner : Gtk.Application {
         double alt;
     }
 
+    private enum OSD
+    {
+        show_mission = 1,
+        show_dist = 2
+    }
+
     private Position home_pos;
     private Position rth_pos;
     private Position ph_pos;
@@ -3658,7 +3664,7 @@ public class MWPlanner : Gtk.Application {
     {
         if (wp_resp.length == NavStatus.nm_pts)
         {
-            uint fs=50000;
+            uint fs=(uint)conf.wp_dist_fontsize*1024;
             np = np - 1;
             var lat = wp_resp[np].lat;
             var lon = wp_resp[np].lon;
@@ -4604,26 +4610,32 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(ns.gps_mode == 3)
                     {
-                        if (last_nmode != 3 || ns.wp_number != last_nwp)
+                        if ((conf.osd_mode & OSD.show_mission) != 0)
                         {
-                            ls.raise_wp(ns.wp_number);
-                            string spt;
-                            if(NavStatus.have_rth && ns.wp_number == NavStatus.nm_pts)
+                            if (last_nmode != 3 || ns.wp_number != last_nwp)
                             {
-                                spt = "<span size=\"x-small\">RTH</span>";
-                            }
-                            else
-                            {
-                                StringBuilder sb = new StringBuilder(ns.wp_number.to_string());
-                                if(NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255)
+                                ls.raise_wp(ns.wp_number);
+                                string spt;
+                                if(NavStatus.have_rth && ns.wp_number == NavStatus.nm_pts)
                                 {
-                                    sb.append_printf("<span size=\"xx-small\">/%u</span>", NavStatus.nm_pts);
+                                    spt = "<span size=\"x-small\">RTH</span>";
                                 }
-                                spt = sb.str;
+                                else
+                                {
+                                    StringBuilder sb = new StringBuilder(ns.wp_number.to_string());
+                                    if(NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255)
+                                    {
+                                        sb.append_printf("<span size=\"xx-small\">/%u</span>", NavStatus.nm_pts);
+                                    }
+                                    spt = sb.str;
+                                }
+                                map_show_wp(spt);
                             }
-                            map_show_wp(spt);
                         }
-                        show_wp_distance(ns.wp_number);
+                        if ((conf.osd_mode & OSD.show_dist) != 0)
+                        {
+                            show_wp_distance(ns.wp_number);
+                        }
                     }
                     else if (last_nmode == 3)
                     {

@@ -88,6 +88,9 @@ public class MWPSettings : GLib.Object
     public bool use_legacy_centre_on {get; set; default=false;}
     public bool horizontal_dbox {get; set; default=false;}
     public string mission_file_type {get; set; default="m";}
+    public uint osd_mode {get; set; default=3;}
+    public double wp_dist_fontsize {get; set; default=56;}
+
     public signal void settings_update (string s);
 
     public MWPSettings()
@@ -252,28 +255,31 @@ public class MWPSettings : GLib.Object
             if(missionpath == "")
                 missionpath = null;
         }
+
         if(s == null || s == "log-path")
         {
             logpath = settings.get_string ("log-path");
             if(logpath == "")
                 logpath = null;
         }
+
         if(s == null || s == "log-save_path")
         {
             logsavepath = settings.get_string ("log-save-path");
             if(logsavepath == "")
                 logsavepath = null;
         }
+
         if(s == null || s == "max-home-delta")
-        {
             max_home_delta = settings.get_double ("max-home-delta");
-        }
+
         if(s == null || s == "speech-api")
         {
             speech_api = settings.get_string ("speech-api");
             if(speech_api == "")
                 speech_api = null;
         }
+
         if(s == null || s == "stats-timeout")
             stats_timeout = settings.get_uint("stats-timeout");
 
@@ -287,14 +293,10 @@ public class MWPSettings : GLib.Object
             forward = settings.get_enum("forward");
 
         if(s == null || s == "wp-text-style")
-        {
             wp_text = settings.get_string ("wp-text-style");
-        }
 
         if(s == null || s == "wp-spotlight")
-        {
             wp_spotlight = settings.get_string ("wp-spotlight");
-        }
 
         if(s == null || s == "flash-warn")
             flash_warn = settings.get_uint("flash-warn");
@@ -309,9 +311,14 @@ public class MWPSettings : GLib.Object
             horizontal_dbox = settings.get_boolean("dbox-is-horizontal");
 
         if(s == null || s == "mission-file-type")
-        {
             mission_file_type = settings.get_string ("mission-file-type");
-        }
+
+        if(s == null || s == "osd-mode")
+            osd_mode = settings.get_uint("osd-mode");
+
+        if(s == null || s == "wp-dist-size")
+            wp_dist_fontsize = settings.get_double("wp-dist-size");
+
     }
 
     public void save_pane()
