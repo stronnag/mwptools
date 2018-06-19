@@ -213,6 +213,8 @@ class MwpDockHelper : Object
 {
     private Gtk.Window wdw = null;
     public bool floating {get; private set; default=false;}
+    public signal void menu_key();
+
     public void transient(Gtk.Window w, bool above=false)
     {
         wdw.set_keep_above(above);
@@ -274,6 +276,12 @@ class MwpDockHelper : Object
                     wdw.show_all();
                 }
             });
+        var ag = new Gtk.AccelGroup();
+        ag.connect(Gdk.Key.F3, 0, 0, (a,o,k,m) => {
+                menu_key();
+                return true;
+            });
+        wdw.add_accel_group(ag);
     }
 }
 
@@ -2120,6 +2128,10 @@ public class MWPlanner : Gtk.Application {
         mwpdh = new MwpDockHelper(dockitem[DOCKLETS.MISSION], dock,
                           "Mission Editor", conf.tote_floating);
         mwpdh.transient(window);
+
+        mwpdh.menu_key.connect(() => {
+                ls.show_tote_popup(null);
+            });
 
         fbox.update(true);
 
