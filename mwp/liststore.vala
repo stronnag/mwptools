@@ -761,48 +761,7 @@ public class ListBox : GLib.Object
         view.button_press_event.connect( (event) => {
                 if(event.button == 3)
                 {
-/*
-                    Value val;
-                    list_model.get_iter_first(out _iter);
-                    list_model.get_value (_iter, WY_Columns.ACTION, out val);
-                    shp_item.sensitive=((MSP.Action)val == MSP.Action.SET_POI);
-                        // remove ins, del as well
-                        */
-                    if(sel.count_selected_rows () == 0)
-                    {
-                        del_item.sensitive = delta_item.sensitive =
-                            alts_item.sensitive = altz_item.sensitive =
-                            speedv_item.sensitive = speedz_item.sensitive =
-                            false;
-                    }
-                    else
-                    {
-                        del_item.sensitive = delta_item.sensitive =
-                            alts_item.sensitive = altz_item.sensitive =
-                            speedv_item.sensitive = speedz_item.sensitive =
-                            true;
-                    }
-
-                    if(sel.count_selected_rows () == 1)
-                    {
-                        Value val;
-                        Gtk.TreeIter iv;
-                        up_item.sensitive = down_item.sensitive = true;
-                        var rows = sel.get_selected_rows(null);
-                        list_model.get_iter (out iv, rows.nth_data(0));
-                        list_model.get_value (iv, WY_Columns.ACTION, out val);
-                        shp_item.sensitive=((MSP.Action)val == MSP.Action.SET_POI);
-                    }
-                    else
-                    {
-                        up_item.sensitive = down_item.sensitive = false;
-                    }
-#if OLDGTK||LSRVAL
-                    menu.popup(null, null, null, 3, event.time);
-
-#else
-                    menu.popup_at_pointer(event);
-#endif
+                    show_tote_popup(event);
                     return true;
                 }
                 return false;
@@ -810,6 +769,53 @@ public class ListBox : GLib.Object
 
         foreach (var c in view.get_columns())
             c.set_resizable(true);
+    }
+
+    public void show_tote_popup(Gdk.EventButton ? event)
+    {
+/*
+                    Value val;
+                    list_model.get_iter_first(out _iter);
+                    list_model.get_value (_iter, WY_Columns.ACTION, out val);
+                    shp_item.sensitive=((MSP.Action)val == MSP.Action.SET_POI);
+                        // remove ins, del as well
+                        */
+        var sel = view.get_selection ();
+        if(sel.count_selected_rows () == 0)
+        {
+            del_item.sensitive = delta_item.sensitive =
+            alts_item.sensitive = altz_item.sensitive =
+            speedv_item.sensitive = speedz_item.sensitive =
+            false;
+        }
+        else
+        {
+            del_item.sensitive = delta_item.sensitive =
+            alts_item.sensitive = altz_item.sensitive =
+            speedv_item.sensitive = speedz_item.sensitive =
+            true;
+        }
+
+        if(sel.count_selected_rows () == 1)
+        {
+            Value val;
+            Gtk.TreeIter iv;
+            up_item.sensitive = down_item.sensitive = true;
+            var rows = sel.get_selected_rows(null);
+            list_model.get_iter (out iv, rows.nth_data(0));
+            list_model.get_value (iv, WY_Columns.ACTION, out val);
+            shp_item.sensitive=((MSP.Action)val == MSP.Action.SET_POI);
+        }
+        else
+        {
+            up_item.sensitive = down_item.sensitive = false;
+        }
+#if OLDGTK||LSRVAL
+       uint32 tm = (event == null) ? 0 : event.time;
+       menu.popup(null, null, null, 3, tm);
+#else
+        menu.popup_at_pointer(event);
+#endif
     }
 
     private void list_validate(string path, string new_text, int colno,

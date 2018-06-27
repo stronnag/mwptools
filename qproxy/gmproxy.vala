@@ -21,23 +21,29 @@
  *
  * If a definiton appears in sources.json, a proxy will be started
  * where the definiton includes a 'spawn' line.
- * e.g. for a mythical provider "Zoogle", with the following entry in sources.json:
- *
- *   {
- *       "id": "gm",
- *       "name": "GM Proxy",
- *       "license": "(c) Zoogle ",
- *       "license_uri": "http://maps.zoogle.com/",
- *       "min_zoom": 0,
- *       "max_zoom": 21,
- *       "tile_size": 256,
- *       "projection": "MERCATOR",
- *       "uri_format": "http://localhost:21305/gm/#Z#/#X#/#Y#.png",
- *       "spawn" : "gmproxy 21305",
- *       "warning" : "The only user changeable part of the uri is the port number (21305) which must be consistent"
- *  }
- *
- *
+ * e.g. for a mythical provider "Zoogle", with the exmaple as the file
+ * ~/.config/mwp/sources.json:
+ * ======================================================================
+{
+   "sources" : [
+      {
+         "name" : "GM Proxy",
+         "tile_size" : 256,
+         "min_zoom" : 0,
+         "uri_format" : "http://localhost:21305/gm/#Z#/#X#/#Y#.png",
+         "license" : "(c) Google ",
+         "max_zoom" : 20,
+         "id" : "gm",
+         "projection" : "MERCATOR",
+         "warning" : "The only user changeable part of the uri is the port number (21305) which must be consistent",
+         "license_uri" : "http://maps.zoogle.com/",
+         "spawn" : "gmproxy 21305"
+      }
+   ]
+}
+ * ======================================================================
+ * Then add to settings (terminal commmand line):
+   gsettings set org.mwptools.planner map-sources sources.json
  ************************************************************************/
 
 public class GMProxy : Soup.Server
