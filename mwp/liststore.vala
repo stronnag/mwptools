@@ -811,8 +811,19 @@ public class ListBox : GLib.Object
             up_item.sensitive = down_item.sensitive = false;
         }
 #if OLDGTK||LSRVAL
-       uint32 tm = (event == null) ? 0 : event.time;
-       menu.popup(null, null, null, 3, tm);
+        uint32 tm;
+        uint btn
+        if(event == null)
+        {
+            tm = Gtk.get_current_event_time();
+            btn = 0
+        }
+        else
+        {
+            tm = event.time;
+            btn = event.button;
+        }
+        menu.popup(null, null, null, btn, tm);
 #else
         menu.popup_at_pointer(event);
 #endif
