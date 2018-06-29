@@ -812,11 +812,11 @@ public class ListBox : GLib.Object
         }
 #if OLDGTK||LSRVAL
         uint32 tm;
-        uint btn
+        uint btn;
         if(event == null)
         {
             tm = Gtk.get_current_event_time();
-            btn = 0
+            btn = 0;
         }
         else
         {
