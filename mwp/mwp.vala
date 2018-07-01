@@ -3206,6 +3206,9 @@ public class MWPlanner : Gtk.Application {
             case "MKF4":
                 board = "MatekF4";
                 break;
+            case "MKF7":
+                board = "MatekF7";
+                break;
             case "OMNI":
                 board = "OMNIBUS";
                 break;
@@ -4279,9 +4282,12 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.BUILD_INFO:
-                uint8 gi[16] = raw[19:len];
-                gi[len-19] = 0;
-                vi.fc_git = (string)gi;
+                if(len > 18)
+                {
+                    uint8 gi[16] = raw[19:len];
+                    gi[len-19] = 0;
+                    vi.fc_git = (string)gi;
+                }
                 uchar vs[4];
                 serialise_u32(vs, vi.fc_vers);
                 if(vi.name == null)

@@ -92,11 +92,12 @@ BOARD_MAP ={
   "MATEKF405" => "MKF4",
   "MATEKF405OSD" => "MKF4",
   "QUARKVISION" =>  "QRKV",
+  "MATEKF722" => "MKF7",
 }
 
 def start_io dev
   if RUBY_PLATFORM.include?('cygwin') || !Gem.win_platform?
-    # Easy way for Linux and OSX
+    # Easy way for sane OS (Linux, OSX, FreeBSD, POSIX in general)
     res = select [STDIN,dev[:io]],nil,nil,nil
     case res[0][0]
     when dev[:io]
@@ -184,14 +185,20 @@ def send_init_seq skt,typ,snr=false,baro=true,mag=true,gitinfo=nil
       i = 0
       gitinfo.each_byte {|b| msps[5][24+i] = b ; i += 1}
     else
-      if m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \(([0-9A-Fa-f]{7,})\) (\S+)/)
+      if m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \(([0-9A-Fa-f]{,8})\) (\S+)/)
 	msps[4][5] = m[1][0].ord - '0'.ord
 	msps[4][6] = m[2][0].ord - '0'.ord
 	msps[4][7] = m[3][0].ord - '0'.ord
 	iv = [m[1],m[2],m[3]].join('.')
 	i = 0
-	m[4].each_byte {|b| msps[5][24+i] = b ; i += 1}
-	msps[5][3] = 18 + m[4].length
+	if m[4].size < 7
+	  i = 1
+	  msps[5][3] = 19
+	  msps[5][24] = 0
+	else
+	  m[4].each_byte {|b| msps[5][24+i] = b ; i += 1}
+	  msps[5][3] = 18 + m[4].length
+	end
 	bname = m[5].upcase
 	bid = BOARD_MAP[bname]
 	bnl = bname.length
