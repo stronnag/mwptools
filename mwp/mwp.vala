@@ -5036,9 +5036,15 @@ public class MWPlanner : Gtk.Application {
                 if(xfailsafe != failsafe)
                 {
                     if(failsafe)
+                    {
+                        MWPLog.message("Failsafe asserted\n");
                         map_show_warning("FAILSAFE");
+                    }
                     else
+                    {
+                        MWPLog.message("Failsafe cleared\n");
                         map_hide_warning();
+                    }
                     xfailsafe = failsafe;
                 }
 

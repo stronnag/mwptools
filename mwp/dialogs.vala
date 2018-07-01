@@ -1485,7 +1485,7 @@ public class NavStatus : GLib.Object
                 xfmode = fmode;
                     // only speak modes that are not in N-Frame
                 if(mt_voice && ((xfmode > 0 && xfmode < 5) ||
-                                xfmode == 8 || xfmode == 19))
+                                xfmode == 8 || xfmode == 18 || xfmode == 19))
                 {
                     mt.message(AudioThread.Vox.LTM_MODE,true);
                 }
@@ -2030,7 +2030,7 @@ public class AudioThread : Object {
                         case Vox.LTM_MODE:
                             var xfmode = NavStatus.xfmode;
                             if(((xfmode > 0 && xfmode < 5) || xfmode == 8 ||
-                                xfmode == 19))
+                                xfmode == 18 || xfmode == 19))
                                 s = MSP.ltm_mode(xfmode);
                             break;
                         case Vox.FAILSAFE:

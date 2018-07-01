@@ -275,10 +275,7 @@ public class Craft : GLib.Object
         set_pix_pos(icon, 40,40);
         if (norotate == false)
             icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, 0);
-        if(trail)
-        {
-            init_trail();
-        }
+        init_trail();
     }
 
     public void get_pos(out double lat, out double lon)

@@ -21,7 +21,7 @@ function find_serial
 
   if type lsusb 2>&1 >/dev/null ; then
     USB=$(lsusb -d  0483:)
-    [[ "$USB" =~ "STM32F4" ]] && BASE="ACM"
+    [[ "$USB" =~ "STM" ]] && BASE="ACM"
   else
      [ -e /dev/ttyACM0 ] && BASE=ACM || BASE=USB
   fi
