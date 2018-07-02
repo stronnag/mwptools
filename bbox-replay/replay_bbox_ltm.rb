@@ -185,7 +185,7 @@ def send_init_seq skt,typ,snr=false,baro=true,mag=true,gitinfo=nil
       i = 0
       gitinfo.each_byte {|b| msps[5][24+i] = b ; i += 1}
     else
-      if m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \(([0-9A-Fa-f]{,8})\) (\S+)/)
+      if m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \(([0-9A-Fa-f]*)\) (\S+)/)
 	msps[4][5] = m[1][0].ord - '0'.ord
 	msps[4][6] = m[2][0].ord - '0'.ord
 	msps[4][7] = m[3][0].ord - '0'.ord

@@ -1560,7 +1560,8 @@ public class MWPlanner : Gtk.Application {
 
                 get_map_size();
                 if(craft != null && (!msp.available || !gpsfix))
-                    craft.park();
+                    if (replayer != Player.BBOX)
+                        craft.park();
             });
 
         zoomer.adjustment.value_changed.connect (() =>
@@ -3693,7 +3694,8 @@ public class MWPlanner : Gtk.Application {
                         lat, lon, out dist, out cse);
             StringBuilder sb = new StringBuilder();
             dist *= 1852.0;
-            sb.append_printf("<span size=\"%u\">%.1fm %.0f°</span>", fs, dist, cse);
+            var icse = Math.lrint(cse) % 360;
+            sb.append_printf("<span size=\"%u\">%.1fm %ld°</span>", fs, dist, icse);
             map_show_dist(sb.str);
         }
     }
@@ -4624,7 +4626,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS),flg);
 
-                if(replayer != Player.BBOX)
+                if(replayer != Player.BBOX && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255))
                 {
                     if(ns.gps_mode == 3)
                     {

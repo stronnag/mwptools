@@ -477,20 +477,6 @@ public class MWPMarkers : GLib.Object
 //        dump_path();
     }
 
-        /****
-    private void dump_path()
-    {
-        var nds = path.get_nodes();
-        print(">> Path %u\n", nds.length());
-        unowned List<Champlain.Location>  n = nds.first();
-        var l = n.data;
-        print("First %.6f %.6f\n", l.latitude, l.longitude);
-        n = nds.last();
-        l = n.data;
-        print("Last %.6f %.6f\n", l.latitude, l.longitude);
-    }
-        ***/
-
     private void add_rth_motion(Champlain.Marker lp)
     {
         lp.drag_motion.connect(() => {
@@ -530,4 +516,17 @@ public class MWPMarkers : GLib.Object
         ipath.remove_all();
         homep = rthp = ipos = null;
     }
+    /****
+    private void dump_path()
+    {
+        var nds = path.get_nodes();
+        print(">> Path %u\n", nds.length());
+        unowned List<Champlain.Location>  n = nds.first();
+        var l = n.data;
+        print("First %.6f %.6f\n", l.latitude, l.longitude);
+        n = nds.last();
+        l = n.data;
+        print("Last %.6f %.6f\n", l.latitude, l.longitude);
+    }
+    ***/
 }
