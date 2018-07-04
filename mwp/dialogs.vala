@@ -360,6 +360,8 @@ public class FlightBox : GLib.Object
                fh1 = 96;
 
            var fh3 = fh1*90/100;
+           var fh4 = fh1;
+
            double falt = (double)NavStatus.alti.estalt/100.0;
            if(falt < 0.0 || falt > 20.0)
                falt = Math.round(falt);
@@ -368,6 +370,7 @@ public class FlightBox : GLib.Object
                fh3 = fh3 * 60/100;
            else if(falt > 999.0 || falt < -99.0)
                fh3 = fh3 * 75 /100;
+
 
            var s=PosFormat.lat(GPSInfo.lat,MWPlanner.conf.dms);
            big_lat.set_label("<span font='%u'>%s</span>".printf(fh2,s));
@@ -378,9 +381,15 @@ public class FlightBox : GLib.Object
                brg += 360;
            if(NavStatus.recip)
                brg = ((brg + 180) % 360);
+
+           if(NavStatus.cg.range > 9999.0)
+               fh4 = fh4 * 60/100;
+           else if(NavStatus.cg.range > 999.0)
+               fh4 = fh4 * 75 /100;
+
            big_rng.set_label(
                "Range <span font='%u'>%.0f</span>%s".printf(
-                   fh1,
+                   fh4,
                    Units.distance(NavStatus.cg.range),
                    Units.distance_units()
                                                             ));

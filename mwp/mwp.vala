@@ -5067,7 +5067,7 @@ public class MWPlanner : Gtk.Application {
                     dac++;
                     if(dac == 1 && armed != 0)
                     {
-                        MWPLog.message("Disarm from LTM\n");
+                        MWPLog.message("Assumed disarm via LTM\n");
                         mwflags = 0;
                         armed = 0;
                         init_have_home();
@@ -5116,7 +5116,7 @@ public class MWPlanner : Gtk.Application {
                     {
                         if(craft != null)
                         {
-                            MWPLog.message("LTM set normal\n");
+//                            MWPLog.message("LTM set mode %d\n", ltmflags);
                             craft.set_normal();
                         }
                     }
