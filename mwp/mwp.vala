@@ -5067,7 +5067,7 @@ public class MWPlanner : Gtk.Application {
                     dac++;
                     if(dac == 1 && armed != 0)
                     {
-                        MWPLog.message("Assumed disarm via LTM\n");
+                        MWPLog.message("Assumed disarm from LTM\n");
                         mwflags = 0;
                         armed = 0;
                         init_have_home();
@@ -5314,7 +5314,6 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.Tq_FRAME:
                 uint16 val = *(((uint16*)raw));
-                MWPLog.message("Q frame %u\n", val);
                 odo.time = val;
                 break;
 

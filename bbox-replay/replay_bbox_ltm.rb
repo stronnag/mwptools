@@ -567,6 +567,13 @@ nv = 0
 icnt = 0
 origin = nil
 
+if mindelay
+  mindelay = MINDELAY
+  unless ENV['BB_DELAY'].nil?
+    mindelay = ENV['BB_DELAY'].to_f
+  end
+end
+
 RDISARMS = %w/NONE TIMEOUT STICKS SWITCH_3D SWITCH KILLSWITCH FAILSAFE NAVIGATION/
 
 begin
@@ -778,7 +785,7 @@ IO.popen(cmd,'rt') do |pipe|
 	  send_msg dev, msg
 	end
       end
-      sleep (mindelay) ? MINDELAY : NORMDELAY
+      sleep (mindelay) ? mindelay : NORMDELAY
     end
   end
 end
