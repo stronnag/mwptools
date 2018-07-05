@@ -172,10 +172,8 @@ public class  BBoxDialog : Object
         if (stream != null)
         {
             char buf[1024];
-#if OLDGLIB
-#else
-            TimeZone deftz = new TimeZone.local();
-#endif
+            TimeVal tv;
+            DateTime dt;
             while (stream.gets (buf) != null) {
                 if(buf[0] == 'H' && buf[1] == ' ')
                 {
@@ -184,13 +182,16 @@ public class  BBoxDialog : Object
                         int len = ((string)buf).length;
                         buf[len-1] = 0;
                         string ts = (string)buf[21:len-1];
-#if OLDGLIB
-                        tss += ts;
-#else
-                        DateTime dt = new DateTime.from_iso8601 (ts, deftz);
-                        tss += dt.to_local().format("%F %T %Z");
-#endif
-                        n++;
+                        tv = TimeVal();
+                        if(tv.from_iso8601(ts))
+                        {
+                            dt = new DateTime.from_timeval_utc (tv);
+                            if(Environment.get_variable("MWP_BB_UTC") != null)
+                                tss += dt.format("%F %T %Z");
+                            else
+                                tss += dt.to_local().format("%F %T %Z");
+                            n++;
+                        }
                     }
                 }
             }
