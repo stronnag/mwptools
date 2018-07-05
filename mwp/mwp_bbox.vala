@@ -185,11 +185,20 @@ public class  BBoxDialog : Object
                         tv = TimeVal();
                         if(tv.from_iso8601(ts))
                         {
-                            dt = new DateTime.from_timeval_utc (tv);
-                            if(Environment.get_variable("MWP_BB_UTC") != null)
-                                tss += dt.format("%F %T %Z");
+                            if(tv.tv_sec < 0)
+                                tss += "Invalid";
                             else
-                                tss += dt.to_local().format("%F %T %Z");
+                            {
+                                dt = new DateTime.from_timeval_utc (tv);
+                                string tzstr = Environment.get_variable("MWP_BB_TZ");
+                                if(tzstr != null)
+                                {
+                                    TimeZone tz = new TimeZone(tzstr);
+                                    tss += (dt.to_timezone(tz)).format("%F %T %Z");
+                                }
+                                else
+                                    tss += dt.to_local().format("%F %T %Z");
+                            }
                             n++;
                         }
                     }
