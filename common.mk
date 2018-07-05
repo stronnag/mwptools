@@ -33,6 +33,12 @@ ifneq ($(GTKOK), 0)
  DOPTS += -D OLDGTK
 endif
 
+GLIBDT := $(shell pkg-config --atleast-version=2.56 glib-2.0; echo $$?)
+
+ifneq ($(GLIBDT), 0)
+ DOPTS += -D OLDGLIB
+endif
+
 TARGET=2.46
 VTEVERS=2.91
 
