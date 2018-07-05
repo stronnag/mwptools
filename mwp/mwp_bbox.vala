@@ -181,7 +181,7 @@ public class  BBoxDialog : Object
                         int len = ((string)buf).length;
                         buf[len-1] = 0;
                         string ts = (string)buf[21:len-1];
-                        var dt = new DateTime.from_iso8601 (ts, deftz);
+                        DateTime dt = new DateTime.from_iso8601 (ts, deftz);
                         tss += dt.to_local().format("%F %T %Z");
                         n++;
                     }
