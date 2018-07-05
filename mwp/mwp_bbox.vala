@@ -163,11 +163,41 @@ public class  BBoxDialog : Object
             show_child_err(e.message);
         }
     }
+
+    private string[]? find_start_times()
+    {
+        var n = 0;
+        string [] tss = {};
+        FileStream stream = FileStream.open (filename, "r");
+        if (stream != null)
+        {
+            char buf[1024];
+            TimeZone deftz = new TimeZone.local();
+            while (stream.gets (buf) != null) {
+                if(buf[0] == 'H' && buf[1] == ' ')
+                {
+                    if(((string)buf).has_prefix("H Log start datetime:"))
+                    {
+                        int len = ((string)buf).length;
+                        buf[len-1] = 0;
+                        string ts = (string)buf[21:len-1];
+                        var dt = new DateTime.from_iso8601 (ts, deftz);
+                        tss += dt.to_local().format("%F %T %Z");
+                        n++;
+                    }
+                }
+            }
+        }
+        return (n == 0) ? null : tss;
+    }
+
     private void spawn_decoder()
     {
         string loginfo = null;
         if(is_valid)
         {
+            var tss =  find_start_times();
+            var tsslen = tss.length;
             for(var j = 0; j < maxidx; j++)
             {
                 nidx = j+1;
@@ -214,7 +244,14 @@ public class  BBoxDialog : Object
                                             n += 10;
                                             string dura = line.substring(n, slen - n -1);
                                             bb_liststore.append (out iter);
-                                            bb_liststore.set (iter, 0, nidx, 1, dura);
+                                            string tsval;
+                                            if(tss != null && maxidx == tsslen)
+                                                tsval = tss[j];
+                                            else
+                                                tsval = "Unknown";
+
+                                            bb_liststore.set (iter, 0, nidx, 1, dura, 2, tsval);
+
                                             while(Gtk.events_pending())
                                                 Gtk.main_iteration();
 

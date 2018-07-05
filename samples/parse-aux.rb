@@ -11,10 +11,10 @@ BOXNAME=[
   "CAMSTAB",
   "NAV RTH",
   "NAV POSHOLD",
-  "PASSTHRU",
+  "MANUAL",
   "BEEPER",
   "LEDLOW",
-  "LLIGHTS",
+  "LIGHTS",
   "OSD SW",
   "TELEMETRY",
   "AUTO TUNE",
@@ -32,9 +32,15 @@ BOXNAME=[
   "KILLSWITCH",
   "CAMERA CONTROL 1",
   "CAMERA CONTROL 2",
-  "CAMERA CONTROL 3"]
+  "CAMERA CONTROL 3",
+  "OSD ALT 1",
+  "OSD ALT 2",
+  "OSD ALT 3",
+  "NAV CRUISE"
+]
 
 ARGF.each do |l|
+  bname=''
   if l.match(/^aux/)
     a=l.chomp.split(' ')
     id = a[1].to_i
@@ -42,6 +48,11 @@ ARGF.each do |l|
     chn = a[3].to_i
     min = a[4].to_i
     max = a[5].to_i
-    puts "%-20s AUX%d %4d %4d\n" % [BOXNAME[func], chn, min, max]
+    if func < BOXNAME.size
+      bname = BOXNAME[func]
+    else
+      bname = "PermID #{func}"
+    end
+    puts "%-20s AUX%d %4d %4d\n" % [bname, chn, min, max]
   end
 end
