@@ -172,7 +172,10 @@ public class  BBoxDialog : Object
         if (stream != null)
         {
             char buf[1024];
+#if OLDGLIB
+#else
             TimeZone deftz = new TimeZone.local();
+#endif
             while (stream.gets (buf) != null) {
                 if(buf[0] == 'H' && buf[1] == ' ')
                 {
