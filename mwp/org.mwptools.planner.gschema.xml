@@ -465,6 +465,10 @@
       </description>
     </key>
 
-
+    <key name="adjust-tz" type="b">
+      <default>true</default>
+      <summary>mwp should  adjust TZ (and DST) based in the local clock</summary>
+      <description>mwp should  adjust TZ (and DST) based in the local clock</description>
+    </key>
   </schema>
 </schemalist>

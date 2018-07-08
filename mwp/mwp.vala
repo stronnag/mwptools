@@ -4263,7 +4263,7 @@ public class MWPlanner : Gtk.Application {
                                           vi.fc_vers >= FCVERS.hasEEPROM);
                         msp_get_status = (vi.fc_api < 0x200) ? MSP.Cmds.STATUS :
                             (vi.fc_vers >= FCVERS.hasV2STATUS) ? MSP.Cmds.INAV_STATUS : MSP.Cmds.STATUS_EX;
-                        if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ)
+                        if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ && conf.adjust_tz)
                         {
                             var dt = new DateTime.now_local();
                             int16 tzoffm = (short)((int64)dt.get_utc_offset()/(1000*1000*60));

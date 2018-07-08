@@ -90,6 +90,7 @@ public class MWPSettings : GLib.Object
     public string mission_file_type {get; set; default="m";}
     public uint osd_mode {get; set; default=3;}
     public double wp_dist_fontsize {get; set; default=56;}
+    public bool adjust_tz {get; set; default=true;}
 
     public signal void settings_update (string s);
 
@@ -319,6 +320,8 @@ public class MWPSettings : GLib.Object
         if(s == null || s == "wp-dist-size")
             wp_dist_fontsize = settings.get_double("wp-dist-size");
 
+        if(s == null || s == "adjust-tz")
+            adjust_tz = settings.get_boolean("adjust-tz");
     }
 
     public void save_pane()
