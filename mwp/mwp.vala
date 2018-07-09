@@ -482,7 +482,8 @@ public class MWPlanner : Gtk.Application {
     private uint8 downgrade = 0;
     private uint8 last_nmode = 0;
     private uint8 last_nwp = 0;
-
+    private int wpdist = 0;
+    private uint8 msats;
     private MapSize mapsize;
 
     private string? vname = null;
@@ -3155,7 +3156,7 @@ public class MWPlanner : Gtk.Application {
         uint8 scflags = 0;
         if(nsats != _nsats)
         {
-            if(_nsats < SATS.MINSATS)
+            if(_nsats < msats)
             {
                 if(_nsats < nsats)
                 {
@@ -3168,7 +3169,7 @@ public class MWPlanner : Gtk.Application {
             }
             else
             {
-                if(nsats < SATS.MINSATS)
+                if(nsats < msats)
                     scflags = SAT_FLAGS.URGENT;
                 else if((lastrx - last_ga) > UUSATINTVL)
                 {
@@ -3341,11 +3342,39 @@ public class MWPlanner : Gtk.Application {
                         if (arm_fails[i] != null)
                         {
                             sb.append(arm_fails[i]);
-                            if ((1 << i) == ARMFLAGS.ARMING_DISABLED_NAVIGATION_UNSAFE
-                                && (gpsstats.eph > inav_max_eph_epv ||
-                                    gpsstats.epv > inav_max_eph_epv))
-                                sb.append(" (EPH/EPV)");
-                            sb.append_c(sep);
+                            if ((1 << i) == ARMFLAGS.ARMING_DISABLED_NAVIGATION_UNSAFE)
+                            {
+                                bool navmodes = true;
+
+                                sb.append_c(sep);
+                                if(gpsstats.eph > inav_max_eph_epv ||
+                                    gpsstats.epv > inav_max_eph_epv)
+                                {
+                                    sb.append(" • EPH/EPV");
+                                    sb.append_c(sep);
+                                    navmodes = false;
+                                }
+                                if(_nsats < msats )
+                                {
+                                    sb.append_printf(" • %d satellites", _nsats);
+                                    sb.append_c(sep);
+                                    navmodes = false;
+                                }
+                                if(wpdist > 0)
+                                {
+                                    sb.append_printf(" • 1st wp distance %dm", wpdist);
+                                    sb.append_c(sep);
+                                    navmodes = false;
+                                }
+
+                                if(navmodes)
+                                {
+                                    sb.append(" • Nav mode engaged");
+                                    sb.append_c(sep);
+                                }
+                            }
+                            else
+                                sb.append_c(sep);
                         }
                     }
                     else
@@ -3629,11 +3658,14 @@ public class MWPlanner : Gtk.Application {
                 {
                     mwp_warning_box(
                         "Nav WP Safe Distance exceeded : %.0fm >= %.0fm".printf(dist, nsd), Gtk.MessageType.ERROR,60);
-                    }
+                }
+                wpdist = (int)dist;
             }
             sb.append_c('\n');
             MWPLog.message(sb.str);
         }
+        else
+            wpdist = 0;
     }
 
     private void update_pos_info()
@@ -4491,10 +4523,12 @@ public class MWPlanner : Gtk.Application {
                 MWPLog.message(sb.str);
                 if(vi.fc_vers >= FCVERS.hasTZ)
                 {
-                    MWPLog.message("Requesting nav_wp_safe_distance\n");
+                    MWPLog.message("Requesting common settings\n");
                     var s="nav_wp_safe_distance";
                     queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
                     s="inav_max_eph_epv";
+                    queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
+                    s="gps_min_sats";
                     queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
                 }
                 queue_cmd(msp_get_status,null,0);
@@ -4503,6 +4537,10 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.COMMON_SETTING:
                 switch ((string)lastmsg.data)
                 {
+                    case "gps_min_sats":
+                        msats = raw[0];
+                        MWPLog.message("Received gps_min_sats %u\n", msats);
+                        break;
                     case "nav_wp_safe_distance":
                         deserialise_u16(raw, out nav_wp_safe_distance);
                         MWPLog.message("Received (raw) nav_wp_safe_distance %u\n",
@@ -4819,7 +4857,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ)
                     {
-                        if(rtcsecs == 0 && _nsats > 5 && replayer == Player.NONE)
+                        if(rtcsecs == 0 && _nsats >= msats && replayer == Player.NONE)
                         {
                             MWPLog.message("Request RTC pos: %f %f sats %d hdop %.1f\n",
                                            GPSInfo.lat, GPSInfo.lon,
@@ -4952,7 +4990,7 @@ public class MWPlanner : Gtk.Application {
                         update_odo((double)gf.speed, ddm);
                         if(have_home)
                         {
-                            if(_nsats >= SATS.MINSATS)
+                            if(_nsats >= msats)
                             {
                                 double dist,cse;
                                 Geo.csedist(GPSInfo.lat, GPSInfo.lon,
@@ -4976,7 +5014,7 @@ public class MWPlanner : Gtk.Application {
                         }
                     }
 
-                    if(craft != null && fix > 0 && _nsats >= 5)
+                    if(craft != null && fix > 0 && _nsats >= msats)
                     {
                         update_pos_info();
                     }
@@ -6102,6 +6140,7 @@ public class MWPlanner : Gtk.Application {
         last_ltmf = 0xff;
         validatelab.set_text("");
         ls.set_mission_speed(conf.nav_speed);
+        msats = SATS.MINSATS;
     }
 
     private bool try_forwarder(out string fstr)
