@@ -497,10 +497,8 @@ end
 def get_autotype nmotor, nservo
   mtyp = 0
   mtyp =   case nmotor
-	    when 1
+	    when 1,2
 	      mtyp = (nservo == 4) ? 14 : 8
-	    when 2
-	      mtyp = 4
 	    when 3
 	      mtyp = 1
 	    when 4
