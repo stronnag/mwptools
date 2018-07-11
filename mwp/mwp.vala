@@ -3640,7 +3640,8 @@ public class MWPlanner : Gtk.Application {
 
     private void check_mission_safe(double mlat, double mlon)
     {
-        if(GPSInfo.nsat > 5)
+        wpdist = 0;
+        if(GPSInfo.nsat >= msats)
         {
             var sb = new StringBuilder();
             double dist,cse;
@@ -3658,14 +3659,12 @@ public class MWPlanner : Gtk.Application {
                 {
                     mwp_warning_box(
                         "Nav WP Safe Distance exceeded : %.0fm >= %.0fm".printf(dist, nsd), Gtk.MessageType.ERROR,60);
+                    wpdist = (int)dist;
                 }
-                wpdist = (int)dist;
             }
             sb.append_c('\n');
             MWPLog.message(sb.str);
         }
-        else
-            wpdist = 0;
     }
 
     private void update_pos_info()
