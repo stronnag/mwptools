@@ -1,0 +1,103 @@
+--- src/blackbox_decode.c.orig	2018-07-13 18:34:14.097825354 +0100
++++ src/blackbox_decode.c	2018-07-13 20:01:18.593669543 +0100
+@@ -111,6 +111,8 @@
+ 
+ static seriesStats_t looptimeStats;
+ 
++static uint8_t use_new_vbat;
++
+ #define ADJUSTMENT_FUNCTION_COUNT 21
+ static char *INFLIGHT_ADJUSTMENT_FUNCTIONS[ADJUSTMENT_FUNCTION_COUNT] = {
+         "NONE",
+@@ -178,13 +180,19 @@
+     switch (unit) {
+         case UNIT_VOLTS:
+             if (fieldIndex == log->mainFieldIndexes.vbatLatest) {
+-                fprintf(file, "%.3f", flightLogVbatADCToMillivolts(log, (uint16_t)fieldValue) / 1000.0);
++                if(use_new_vbat)
++                    fprintf(file, "%.3f", (uint16_t)fieldValue / 100.0);
++                else
++                    fprintf(file, "%.3f", flightLogVbatADCToMillivolts(log, (uint16_t)fieldValue) / 1000.0);
+                 return true;
+             }
+         break;
+         case UNIT_MILLIVOLTS:
+             if (fieldIndex == log->mainFieldIndexes.vbatLatest) {
+-                fprintf(file, "%u", flightLogVbatADCToMillivolts(log, (uint16_t)fieldValue));
++                if(use_new_vbat)
++                    fprintf(file, "%u", (uint16_t)fieldValue * 10);
++                else
++                    fprintf(file, "%u", flightLogVbatADCToMillivolts(log, (uint16_t)fieldValue));
+                 return true;
+             }
+         break;
+@@ -826,7 +834,7 @@
+         memset(mainFieldUnit, 0, sizeof(mainFieldUnit));
+         memset(gpsGFieldUnit, 0, sizeof(gpsGFieldUnit));
+         memset(slowFieldUnit, 0, sizeof(slowFieldUnit));
+-    
++
+         if (log->mainFieldIndexes.vbatLatest > -1) {
+             mainFieldUnit[log->mainFieldIndexes.vbatLatest] = options.unitVbat;
+         }
+@@ -1388,6 +1396,51 @@
+     }
+ }
+ 
++#define FWVLEN (sizeof("H Firmware revision:INAV 2")-1)
++#define FWDATELEN (sizeof("H Firmware date:")-1)
++
++static void read_meta(const char *fname)
++{
++    FILE *fp = fopen(fname,"r");
++    if(fp != NULL)
++    {
++        char buf[4096];
++
++        while (fgets(buf, sizeof(buf), fp) != NULL)
++        {
++            if(buf[0] != 'H')
++                break;
++
++            if(strncmp(buf, "H Firmware revision:INAV 2", FWVLEN) == 0)
++            {
++                use_new_vbat = 1;
++                if(*(buf+FWVLEN+1) != '0' || *(buf+FWVLEN+3) != '0')
++                    break; // we're done ...
++            }
++
++            if(use_new_vbat)
++            {
++                if(strncmp(buf, "H Firmware date:", FWDATELEN) == 0)
++                {
++                    char *dstr = buf+FWDATELEN; // mmm dd yyyy WTF ...
++                    int day = atoi(dstr+4);
++                    int yr = atoi(dstr+7);
++                    if (yr == 2018)
++                    {
++                        if(strncmp(dstr,"Apr", 3) == 0 ||
++                           strncmp(dstr,"May", 3) == 0 ||
++                           strncmp(dstr,"Jun", 3) == 0 ||
++                           (strncmp(dstr,"Jul", 3) == 0 && day < 7))
++                            use_new_vbat = 0;
++                    }
++                }
++            }
++        }
++        fclose(fp);
++    }
++}
++
++
+ int main(int argc, char **argv)
+ {
+     flightLog_t *log;
+@@ -1411,6 +1464,8 @@
+     for (int i = optind; i < argc; i++) {
+         const char *filename = argv[i];
+ 
++        read_meta(filename);
++
+         fd = open(filename, O_RDONLY);
+         if (fd < 0) {
+             fprintf(stderr, "Failed to open log file '%s': %s\n\n", filename, strerror(errno));
