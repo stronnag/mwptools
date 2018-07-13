@@ -585,19 +585,47 @@ have_mag = true
 
 gitinfos=[]
 disarms=[]
+need_vbat_scale = true # pre 2.0
+vbstate = false # true means we're 2.0.0 and need to check date
+
 File.open(bbox,'rb') do |f|
   f.each do |l|
     if m = l.match(/^H Firmware revision:(.*)$/)
       gitinfos << m[1]
+      ivers = m[1]
+      if iv=ivers.match(/INAV (\d+).(\d+).(\d+)/)
+	if iv[1].to_i <  2
+	  need_vbat_scale = true
+	elsif iv[1].to_i == 2 and iv[2] == '0' and iv[2] == '0'
+	  vbstate = true
+	else
+	  need_vbat_scale = false
+	end
+      end
+    elsif m = l.match(/^H Firmware date:(...) (\d{2}) (\d{4})/)
+      if vbstate == true
+	if m[3] == '2018'
+	  if m[1] == 'Apr' || m[1] == 'May' || m[1] == 'Jun' ||
+	      (m[1] == 'Jul' and m[2].to_i < 7)
+	    need_vbat_scale = true
+	  else
+	    need_vbat_scale = false
+	  end
+	end
+      end
     elsif m = l.match(/^H mag_hardware:(\d+)$/)
       have_mag = m[1] != '0'
     elsif m = l.match(/^H vbat_scale:(\d+)$/)
-      $vbatscale = m[1].to_f / 110.0
+      if need_vbat_scale
+	$vbatscale = m[1].to_f / 110.0
+      end
     elsif m = l.match(/End of log \(disarm reason:(\d+)/)
       disarms << m[1].to_i
     end
   end
 end
+
+#STDERR.puts "Using vbat scale #{need_vbat_scale}"
 
 if scan
   mx = [gitinfos.size, disarms.size].max
