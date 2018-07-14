@@ -580,7 +580,7 @@ end
 RDISARMS = %w/NONE TIMEOUT STICKS SWITCH_3D SWITCH KILLSWITCH FAILSAFE NAVIGATION/
 
 begin
-  Open3.capture3('blackbox_decode --help')
+  Open3.capture3("#{decoder} --help")
 rescue
   abort "Can't run 'blackbox_decode' is it installed and on the PATH?"
 end
