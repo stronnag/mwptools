@@ -91,6 +91,7 @@ public class MWPSettings : GLib.Object
     public uint osd_mode {get; set; default=3;}
     public double wp_dist_fontsize {get; set; default=56;}
     public bool adjust_tz {get; set; default=true;}
+    public string blackbox_decode {get; set; default="blackbox_decode";}
 
     public signal void settings_update (string s);
 
@@ -322,6 +323,9 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "adjust-tz")
             adjust_tz = settings.get_boolean("adjust-tz");
+
+        if(s == null || s == "blackbox-decode")
+            blackbox_decode = settings.get_string ("blackbox-decode");
     }
 
     public void save_pane()

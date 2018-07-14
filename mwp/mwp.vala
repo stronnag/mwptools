@@ -1197,7 +1197,8 @@ public class MWPlanner : Gtk.Application {
             });
 
         navconf = new NavConfig(window, builder);
-        bb_runner = new BBoxDialog(builder, window, conf.logpath);
+        bb_runner = new BBoxDialog(builder, window, conf.blackbox_decode,
+                                   conf.logpath);
 
         dockmenus = new string[DOCKLETS.NUMBER];
 
@@ -6913,7 +6914,8 @@ public class MWPlanner : Gtk.Application {
         string [] args = {"replay_bbox_ltm.rb",
                           "--fd", "%d".printf(playfd[1]),
                           "-i", "%d".printf(index),
-                          "-t", "%d".printf(btype)};
+                          "-t", "%d".printf(btype),
+                          "--decoder", conf.blackbox_decode};
         if(delay == false)
             args += "-f";
         if(force_gps)

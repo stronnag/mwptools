@@ -33,14 +33,17 @@ public class  BBoxDialog : Object
     private Gtk.CheckButton bb_force_gps;
     private Gtk.TreeSelection bb_sel;
     private Gtk.Window _w;
+    private string bbox_decode;
     private int[] valid = {};
     private bool is_valid;
 
     private const int BB_MINSIZE = (4*1024);
 
-    public BBoxDialog(Gtk.Builder builder, Gtk.Window? w = null, string? logpath = null)
+    public BBoxDialog(Gtk.Builder builder, Gtk.Window? w = null,
+                      string bboxdec, string? logpath = null)
     {
         _w = w;
+        bbox_decode = bboxdec;
         dialog = builder.get_object ("bb_dialog") as Gtk.Dialog;
         bb_cancel = builder.get_object ("bb_cancel") as Button;
         bb_ok = builder.get_object ("bb_ok") as Button;
@@ -129,7 +132,7 @@ public class  BBoxDialog : Object
     private void find_valid()
     {
         try {
-            string[] spawn_args = {"blackbox_decode", "--stdout", filename};
+            string[] spawn_args = {bbox_decode, "--stdout", filename};
             Pid child_pid;
             int p_stderr;
             Process.spawn_async_with_pipes (null,
@@ -223,7 +226,7 @@ public class  BBoxDialog : Object
                     Gtk.TreeIter iter;
                     try
                     {
-                        string[] spawn_args = {"blackbox_decode", "--stdout",
+                        string[] spawn_args = {bbox_decode, "--stdout",
                                                "--index", "%d".printf(nidx),
                                                filename};
                         Pid child_pid;
@@ -325,7 +328,7 @@ public class  BBoxDialog : Object
         int id = 0;
 
         try {
-            string[] spawn_args = {"blackbox_decode", "--help"};
+            string[] spawn_args = {bbox_decode, "--help"};
             Process.spawn_sync ("/",
                                 spawn_args,
                                 null,

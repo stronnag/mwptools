@@ -470,5 +470,12 @@
       <summary>mwp should  adjust TZ (and DST) based in the local clock</summary>
       <description>mwp should  adjust TZ (and DST) based in the local clock</description>
     </key>
+
+    <key name="blackbox-decode" type="s">
+      <default>"blackbox_decode"</default>
+      <summary>Name of the blackbox_decode application</summary>
+      <description>Name of the blackbox_decode application (in case there are separate for iNav and betaflight</description>
+    </key>
+
   </schema>
 </schemalist>
