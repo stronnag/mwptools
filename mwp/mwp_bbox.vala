@@ -495,7 +495,7 @@ public class  BBoxDialog : Object
         bool ok = false;
         xlon = xlat = 0;
         try {
-            string[] spawn_args = {"blackbox_decode", "--stdout",
+            string[] spawn_args = {bbox_decode, "--stdout",
                                    "--index", index, "--merge-gps", filename};
             Pid child_pid;
             int p_stdout;
