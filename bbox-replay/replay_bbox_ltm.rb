@@ -381,7 +381,7 @@ def encode_stats r,inavers,armed=1
   if r.has_key? :vbatlatest_v
     vbat = r[:vbatlatest_v].to_f
   elsif r.has_key? :vbat_v
-    vbat = r[:vbat_v]
+    vbat = r[:vbat_v].to_f
   elsif r.has_key? :vbat
     vbat = r[:vbat].to_f / 100.0
   end
