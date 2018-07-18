@@ -36,6 +36,9 @@ public class  BBoxDialog : Object
     private string bbox_decode;
     private int[] valid = {};
     private bool is_valid;
+    private Gtk.Entry tzentry;
+    private Gtk.ComboBoxText bb_tz_combo;
+    private string []orig_times={};
 
     private const int BB_MINSIZE = (4*1024);
 
@@ -53,6 +56,7 @@ public class  BBoxDialog : Object
         bb_filechooser = builder.get_object("bb_filechooser") as FileChooserButton;
         bb_combo = builder.get_object("bb_comboboxtext") as ComboBoxText;
         bb_force_gps = builder.get_object("bb_force_gps") as CheckButton;
+        bb_tz_combo = builder.get_object("bb_tz_combo") as ComboBoxText;
         var filter = new Gtk.FileFilter ();
         filter.set_filter_name ("BB Logs");
         filter.add_pattern ("*.TXT");
@@ -67,6 +71,27 @@ public class  BBoxDialog : Object
         filter.add_pattern ("*");
         bb_filechooser.set_action(FileChooserAction.OPEN);
         bb_filechooser.add_filter (filter);
+
+        var tzstr = Environment.get_variable("MWP_BB_TZ");
+        if(tzstr != null)
+            foreach(var ts in tzstr.split(","))
+                add_if_missing(ts);
+
+        tzentry = bb_tz_combo.get_child() as Gtk.Entry;
+        bb_tz_combo.active = 0;
+
+        tzentry.activate.connect (() => {
+                unowned string str = tzentry.get_text ();
+                add_if_missing(str,true);
+                update_time_stamps();
+            });
+
+        bb_tz_combo.changed.connect(() => {
+                unowned string str = tzentry.get_text ();
+                if(tz_exists(str))
+                    update_time_stamps();
+            });
+
         bb_filechooser.file_set.connect(() => {
                 filename = bb_filechooser.get_filename();
                 bb_liststore.clear();
@@ -86,6 +111,37 @@ public class  BBoxDialog : Object
             });
 
         dialog.set_transient_for(w);
+    }
+
+    private bool tz_exists(string str)
+    {
+        var m = bb_tz_combo.get_model();
+        Gtk.TreeIter iter;
+        int i,n = -1;
+        bool next;
+
+        for(i = 0, next = m.get_iter_first(out iter);
+            next; next = m.iter_next(ref iter), i++)
+        {
+            GLib.Value cell;
+            m.get_value (iter, 0, out cell);
+            if((string)cell == str)
+            {
+                n = i;
+                break;
+            }
+        }
+        return (n != -1);
+    }
+
+
+    private void add_if_missing(string str,bool top=false)
+    {
+        if(!tz_exists(str))
+            if(top)
+                bb_tz_combo.prepend_text(str);
+            else
+                bb_tz_combo.append_text(str);
     }
 
     private void get_bbox_file_status()
@@ -167,16 +223,14 @@ public class  BBoxDialog : Object
         }
     }
 
-    private string[]? find_start_times()
+    private int find_start_times()
     {
         var n = 0;
-        string [] tss = {};
+        orig_times = {};
         FileStream stream = FileStream.open (filename, "r");
         if (stream != null)
         {
             char buf[1024];
-            TimeVal tv;
-            DateTime dt;
             while (stream.gets (buf) != null) {
                 if(buf[0] == 'H' && buf[1] == ' ')
                 {
@@ -185,30 +239,64 @@ public class  BBoxDialog : Object
                         int len = ((string)buf).length;
                         buf[len-1] = 0;
                         string ts = (string)buf[21:len-1];
-                        tv = TimeVal();
-                        if(tv.from_iso8601(ts))
-                        {
-                            if(tv.tv_sec < 0)
-                                tss += "Invalid";
-                            else
-                            {
-                                dt = new DateTime.from_timeval_utc (tv);
-                                string tzstr = Environment.get_variable("MWP_BB_TZ");
-                                if(tzstr != null)
-                                {
-                                    TimeZone tz = new TimeZone(tzstr);
-                                    tss += (dt.to_timezone(tz)).format("%F %T %Z");
-                                }
-                                else
-                                    tss += dt.to_local().format("%F %T %Z");
-                            }
-                            n++;
-                        }
+                        orig_times += ts;
+                        n++;
                     }
                 }
             }
         }
-        return (n == 0) ? null : tss;
+        return n;
+    }
+
+    private string get_formatted_time_stamp(int j)
+    {
+        string ts = orig_times[j];
+        string tss = "Invalid";
+        TimeVal tv;
+        DateTime dt;
+        tv = TimeVal();
+        if(tv.from_iso8601(ts))
+        {
+            if(tv.tv_sec > 0)
+            {
+                dt = new DateTime.from_timeval_utc (tv);
+                string tzstr = bb_tz_combo.get_active_text ();
+                if(tzstr == null || tzstr == "Local" ||
+                   tzstr == "")
+                {
+                    tss = dt.to_local().format("%F %T %Z");
+                }
+                else
+                {
+                    if(tzstr == "Log")
+                        tzstr = ts.substring(23,6);
+                    TimeZone tz = new TimeZone(tzstr);
+                    tss = (dt.to_timezone(tz)).format("%F %T %Z");
+                }
+            }
+        }
+        return tss;
+    }
+
+    private void update_time_stamps()
+    {
+        if(is_valid)
+        {
+            int j = 0;
+            Gtk.TreeIter iter;
+            for(bool next=bb_liststore.get_iter_first(out iter); next;
+                next=bb_liststore.iter_next(ref iter))
+            {
+                GLib.Value cell;
+                bb_liststore.get_value(iter, 2, out cell);
+                if((string)cell != "Unknown" && (string)cell != "Invalid")
+                {
+                    var tsval = get_formatted_time_stamp(j);
+                    bb_liststore.set_value (iter, 2, tsval);
+                }
+                j++;
+            }
+        }
     }
 
     private void spawn_decoder()
@@ -216,8 +304,7 @@ public class  BBoxDialog : Object
         string loginfo = null;
         if(is_valid)
         {
-            var tss =  find_start_times();
-            var tsslen = tss.length;
+            var tsslen = find_start_times();
             for(var j = 0; j < maxidx; j++)
             {
                 nidx = j+1;
@@ -265,8 +352,8 @@ public class  BBoxDialog : Object
                                             string dura = line.substring(n, slen - n -1);
                                             bb_liststore.append (out iter);
                                             string tsval;
-                                            if(tss != null && maxidx == tsslen)
-                                                tsval = tss[j];
+                                            if(tsslen > 0 && maxidx == tsslen)
+                                                tsval = get_formatted_time_stamp(j);
                                             else
                                                 tsval = "Unknown";
 

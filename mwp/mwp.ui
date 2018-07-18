@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1
+<!-- Generated with glade 3.22.1 
 
 Copyright (C)
 
@@ -392,7 +392,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <column type="gint"/>
       <!-- column-name Duration -->
       <column type="gchararray"/>
-      <!-- column-name Time Stamp -->
+      <!-- column-name Time -->
       <column type="gchararray"/>
     </columns>
   </object>
@@ -466,6 +466,55 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               </packing>
             </child>
             <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Log display time zone</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBoxText" id="bb_tz_combo">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="active">0</property>
+                    <property name="has_entry">True</property>
+                    <items>
+                      <item translatable="yes">Local</item>
+                      <item translatable="yes">Log</item>
+                    </items>
+                    <child internal-child="entry">
+                      <object class="GtkEntry">
+                        <property name="can_focus">True</property>
+                        <property name="caps_lock_warning">False</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkLabel" id="bb_items">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -475,7 +524,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -486,7 +535,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child>
@@ -540,11 +589,11 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">3</property>
+                <property name="position">4</property>
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="box15">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
@@ -555,8 +604,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
 "Auto" means mwp will make its "best guess" from the log
 "Marker" is an arrow that may help debugging mag orientation issues
 Otherwise, select a valid FC vehicle type</property>
-                    <property name="margin_left">4</property>
-                    <property name="margin_right">4</property>
                     <property name="label" translatable="yes">Model type:</property>
                   </object>
                   <packing>
@@ -601,7 +648,7 @@ Otherwise, select a valid FC vehicle type</property>
                     </items>
                   </object>
                   <packing>
-                    <property name="expand">True</property>
+                    <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
@@ -625,7 +672,7 @@ Otherwise, select a valid FC vehicle type</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">4</property>
+                <property name="position">5</property>
               </packing>
             </child>
           </object>

@@ -6981,6 +6981,7 @@ public class MWPlanner : Gtk.Application {
 
         if(replayer == Player.MWP && thr != null)
             robj.stop();
+        replay_paused = false;
     }
 
     private void download_mission()
