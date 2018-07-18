@@ -377,9 +377,15 @@ def encode_stats r,inavers,armed=1
 
   rssi = r[:rssi].to_i * 254 / 1023
 
-  vbat = r[:vbatlatest_v]||r[:vbat_v]
-
-  sl = [(r[:vbatlatest_v].to_f*$vbatscale*1000).to_i, 0, rssi, 0, sts].pack('S<S<CCC')
+  vbat = 0
+  if r.has_key? :vbatlatest_v
+    vbat = r[:vbatlatest_v].to_f
+  elsif r.has_key? :vbat_v
+    vbat = r[:vbat_v]
+  elsif r.has_key? :vbat
+    vbat = r[:vbat].to_f / 100.0
+  end
+  sl = [(vbat*$vbatscale*1000).to_i, 0, rssi, 0, sts].pack('S<S<CCC')
   msg << sl << mksum(sl)
   msg
 end
@@ -626,7 +632,7 @@ File.open("/tmp/.mwp-vbat.txt","a") do |vf|
       elsif m = l.match(/^H vbat_scale:(\d+)$/)
 	if need_vbat_scale
 	  $vbatscale = m[1].to_f / 110.0
-      end
+	end
       elsif m = l.match(/End of log \(disarm reason:(\d+)/)
 	disarms << m[1].to_i
       end

@@ -1,4 +1,5 @@
---- src/blackbox_decode.c.orig	2018-07-13 18:34:14.097825354 +0100
+diff --ignore-all-space -urN orig/blackbox_decode.c src/blackbox_decode.c
+--- orig/blackbox_decode.c	2018-07-18 22:44:49.302942658 +0100
 +++ src/blackbox_decode.c	2018-07-13 22:34:51.315930082 +0100
 @@ -111,6 +111,8 @@
  
@@ -9,37 +10,25 @@
  #define ADJUSTMENT_FUNCTION_COUNT 21
  static char *INFLIGHT_ADJUSTMENT_FUNCTIONS[ADJUSTMENT_FUNCTION_COUNT] = {
          "NONE",
-@@ -178,13 +180,19 @@
+@@ -178,12 +180,18 @@
      switch (unit) {
          case UNIT_VOLTS:
              if (fieldIndex == log->mainFieldIndexes.vbatLatest) {
--                fprintf(file, "%.3f", flightLogVbatADCToMillivolts(log, (uint16_t)fieldValue) / 1000.0);
 +                if(use_new_vbat)
 +                    fprintf(file, "%.3f", (uint16_t)fieldValue / 100.0);
 +                else
-+                    fprintf(file, "%.3f", flightLogVbatADCToMillivolts(log, (uint16_t)fieldValue) / 1000.0);
+                 fprintf(file, "%.3f", flightLogVbatADCToMillivolts(log, (uint16_t)fieldValue) / 1000.0);
                  return true;
              }
          break;
          case UNIT_MILLIVOLTS:
              if (fieldIndex == log->mainFieldIndexes.vbatLatest) {
--                fprintf(file, "%u", flightLogVbatADCToMillivolts(log, (uint16_t)fieldValue));
 +                if(use_new_vbat)
 +                    fprintf(file, "%u", (uint16_t)fieldValue * 10);
 +                else
-+                    fprintf(file, "%u", flightLogVbatADCToMillivolts(log, (uint16_t)fieldValue));
+                 fprintf(file, "%u", flightLogVbatADCToMillivolts(log, (uint16_t)fieldValue));
                  return true;
              }
-         break;
-@@ -826,7 +834,7 @@
-         memset(mainFieldUnit, 0, sizeof(mainFieldUnit));
-         memset(gpsGFieldUnit, 0, sizeof(gpsGFieldUnit));
-         memset(slowFieldUnit, 0, sizeof(slowFieldUnit));
--    
-+
-         if (log->mainFieldIndexes.vbatLatest > -1) {
-             mainFieldUnit[log->mainFieldIndexes.vbatLatest] = options.unitVbat;
-         }
 @@ -1388,6 +1396,66 @@
      }
  }
@@ -116,3 +105,69 @@
          fd = open(filename, O_RDONLY);
          if (fd < 0) {
              fprintf(stderr, "Failed to open log file '%s': %s\n\n", filename, strerror(errno));
+diff --ignore-all-space -urN orig/blackbox_fielddefs.c src/blackbox_fielddefs.c
+--- orig/blackbox_fielddefs.c	2018-07-18 22:44:49.302942658 +0100
++++ src/blackbox_fielddefs.c	2018-05-28 19:59:22.404989396 +0100
+@@ -24,6 +24,10 @@
+ const char * const FLIGHT_LOG_FAILSAFE_PHASE_NAME[] = {
+     "IDLE",
+     "RX_LOSS_DETECTED",
++    "RX_LOSS_IDLE",
++    "RETURN_TO_HOME",
+     "LANDING",
+-    "LANDED"
++    "LANDED",
++    "RX_LOSS_MONITORING",
++    "RX_LOSS_RECOVERED"
+ };
+diff --ignore-all-space -urN orig/blackbox_fielddefs.h src/blackbox_fielddefs.h
+--- orig/blackbox_fielddefs.h	2018-07-18 22:44:49.302942658 +0100
++++ src/blackbox_fielddefs.h	2018-05-28 19:59:22.538319520 +0100
+@@ -127,13 +127,17 @@
+ typedef enum {
+     FAILSAFE_IDLE = 0,
+     FAILSAFE_RX_LOSS_DETECTED,
++    FAILSAFE_RX_LOSS_IDLE,
++    FAILSAFE_RETURN_TO_HOME,
+     FAILSAFE_LANDING,
+-    FAILSAFE_LANDED
++    FAILSAFE_LANDED,
++    FAILSAFE_RX_LOSS_MONITORING,
++    FAILSAFE_RX_LOSS_RECOVERED
+ } failsafePhase_e;
+ 
+ extern const char * const FLIGHT_LOG_FAILSAFE_PHASE_NAME[];
+ 
+-#define FLIGHT_LOG_FAILSAFE_PHASE_COUNT 4
++#define FLIGHT_LOG_FAILSAFE_PHASE_COUNT 8
+ 
+ typedef enum FlightLogEvent {
+     FLIGHT_LOG_EVENT_SYNC_BEEP = 0,
+diff --ignore-all-space -urN orig/parser.c src/parser.c
+--- orig/parser.c	2018-07-18 22:44:49.306275908 +0100
++++ src/parser.c	2018-07-18 22:37:08.141118702 +0100
+@@ -228,8 +228,12 @@
+             log->mainFieldIndexes.servo[servoIndex] = fieldIndex;
+         } else if (strcmp(fieldName, "vbatLatest") == 0) {
+             log->mainFieldIndexes.vbatLatest = fieldIndex;
++        } else if (strcmp(fieldName, "vbat") == 0) {
++            log->mainFieldIndexes.vbatLatest = fieldIndex;
+         } else if (strcmp(fieldName, "amperageLatest") == 0) {
+             log->mainFieldIndexes.amperageLatest = fieldIndex;
++        } else if (strcmp(fieldName, "amperage") == 0) {
++            log->mainFieldIndexes.amperageLatest = fieldIndex;
+         } else if (strcmp(fieldName, "BaroAlt") == 0) {
+             log->mainFieldIndexes.BaroAlt = fieldIndex;
+         } else if (strcmp(fieldName, "sonarRaw") == 0) {
+diff --ignore-all-space -urN orig/parser.h src/parser.h
+--- orig/parser.h	2018-07-18 22:44:49.306275908 +0100
++++ src/parser.h	2018-05-02 11:47:44.878221324 +0100
+@@ -7,7 +7,7 @@
+ 
+ #include "blackbox_fielddefs.h"
+ 
+-#define FLIGHT_LOG_MAX_LOGS_IN_FILE 31
++#define FLIGHT_LOG_MAX_LOGS_IN_FILE 128
+ #define FLIGHT_LOG_MAX_FIELDS 128
+ #define FLIGHT_LOG_MAX_FRAME_LENGTH 256
+ 
