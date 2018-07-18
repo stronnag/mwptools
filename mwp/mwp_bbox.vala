@@ -39,14 +39,18 @@ public class  BBoxDialog : Object
     private Gtk.Entry tzentry;
     private Gtk.ComboBoxText bb_tz_combo;
     private string []orig_times={};
+    private string geouser;
 
     private const int BB_MINSIZE = (4*1024);
 
+    public signal void new_pos(double la, double lo);
+
     public BBoxDialog(Gtk.Builder builder, Gtk.Window? w = null,
-                      string bboxdec, string? logpath = null)
+                      string bboxdec, string? _geouser, string? logpath = null)
     {
         _w = w;
         bbox_decode = bboxdec;
+        geouser = _geouser;
         dialog = builder.get_object ("bb_dialog") as Gtk.Dialog;
         bb_cancel = builder.get_object ("bb_cancel") as Button;
         bb_ok = builder.get_object ("bb_ok") as Button;
@@ -134,7 +138,6 @@ public class  BBoxDialog : Object
         return (n != -1);
     }
 
-
     private void add_if_missing(string str,bool top=false)
     {
         if(!tz_exists(str))
@@ -153,6 +156,21 @@ public class  BBoxDialog : Object
         find_valid();
         spawn_decoder();
         bb_ok.sensitive = false;
+    }
+
+    private void process_tz_record(int idx)
+    {
+        double xlat,xlon;
+        if(find_base_position(filename, idx.to_string(),
+                              out xlat, out xlon))
+        {
+            new_pos(xlat, xlon);
+            while(Gtk.events_pending())
+                Gtk.main_iteration();
+            get_tz(xlat, xlon, geouser);
+            while(Gtk.events_pending())
+                Gtk.main_iteration();
+        }
     }
 
     private void parse_summary(string s)
@@ -227,6 +245,7 @@ public class  BBoxDialog : Object
     {
         var n = 0;
         orig_times = {};
+        bool first_ok = false;
         FileStream stream = FileStream.open (filename, "r");
         if (stream != null)
         {
@@ -241,6 +260,11 @@ public class  BBoxDialog : Object
                         string ts = (string)buf[21:len-1];
                         orig_times += ts;
                         n++;
+                        if(first_ok == false && ts.has_prefix("20"))
+                        {
+                            first_ok = true;
+                            process_tz_record(n);
+                        }
                     }
                 }
             }
@@ -314,7 +338,7 @@ public class  BBoxDialog : Object
                     try
                     {
                         string[] spawn_args = {bbox_decode, "--stdout",
-                                               "--index", "%d".printf(nidx),
+                                               "--index", nidx.to_string(),
                                                filename};
                         Pid child_pid;
                         int p_stderr;
@@ -462,5 +486,130 @@ public class  BBoxDialog : Object
         _index = (int)cell;
         _type = bb_combo.active -1;
         _use_gps_cse = bb_force_gps.active;
+    }
+
+
+    private bool find_base_position(string filename, string index,
+                            out double xlat, out double xlon)
+    {
+        bool ok = false;
+        xlon = xlat = 0;
+        try {
+            string[] spawn_args = {"blackbox_decode", "--stdout",
+                                   "--index", index, "--merge-gps", filename};
+            Pid child_pid;
+            int p_stdout;
+
+            Process.spawn_async_with_pipes (null,
+                                            spawn_args,
+                                            null,
+                                            SpawnFlags.SEARCH_PATH |
+                                            SpawnFlags.DO_NOT_REAP_CHILD |
+                                            SpawnFlags.STDERR_TO_DEV_NULL,
+                                            null,
+                                            out child_pid,
+                                        null,
+                                            out p_stdout,
+                                            null);
+
+            IOChannel chan = new IOChannel.unix_new (p_stdout);
+            IOStatus eos;
+            int n = 0;
+            int latp = -1, lonp = -1, fixp = -1, typp = -1;
+            string str = null;
+            size_t length = -1;
+            int ft=-1,ns=-1;
+
+            try {
+                for(;;)
+                {
+                    eos = chan.read_line (out str, out length, null);
+                    if (eos == IOStatus.EOF)
+                        break;
+
+                    var parts=str.split(",");
+                    if(n == 0)
+                    {
+                        int j = 0;
+                        foreach (var p in parts)
+                        {
+                            var pp = p.strip();
+                            if (pp == "GPS_fixType")
+                                typp = j;
+                            if (pp == "GPS_numSat")
+                                fixp = j;
+                            if (pp == "GPS_coord[0]")
+                            latp = j;
+                            else if(pp == "GPS_coord[1]")
+                            {
+                                lonp = j;
+                                break;
+                            }
+                            j++;
+                        }
+                        if(latp == -1 || lonp == -1 || fixp == -1 || typp == -1)
+                            break;
+                    }
+                    else
+                    {
+                        ft = int.parse(parts[typp]);
+                        if(ft == 2)
+                        {
+                            ns = int.parse(parts[fixp]);
+                            if(ns > 5)
+                            {
+                                xlat = double.parse(parts[latp]);
+                                xlon = double.parse(parts[lonp]);
+                                ok = true;
+                                break;
+                            }
+                        }
+                    }
+                    n++;
+                }
+            } catch  (Error e) {
+                print("%s\n", e.message);
+            }
+            Posix.close(p_stdout);
+            Process.close_pid (child_pid);
+        } catch (SpawnError e) {
+            print("%s\n", e.message);
+        }
+        return ok;
+    }
+
+    const string GURI="http://api.geonames.org/timezoneJSON?lat=%f&lng=%f&username=%s";
+    private void get_tz(double lat, double lon, string user)
+    {
+        string str = null;
+        string uri = GURI.printf(lat, lon, user);
+        var session = new Soup.Session ();
+        var message = new Soup.Message ("GET", uri);
+        string s="";
+        session.queue_message (message, (sess, mess) => {
+                if ( mess.status_code == 200)
+                {
+                    s = (string) mess.response_body.flatten ().data;
+                    try
+                    {
+                        var parser = new Json.Parser ();
+                        parser.load_from_data (s);
+                        var item = parser.get_root ().get_object ();
+                        if (item.has_member("timezoneId"))
+                            str = item.get_string_member ("timezoneId");
+                    } catch { }
+                }
+
+                if(str == null)
+                {
+                    var sb = new StringBuilder("Geonames TZ: ");
+                    sb.append((string) mess.response_body.flatten ().data);
+                    MWPLog.message(sb.str);
+                }
+                else
+                {
+                    add_if_missing(str);
+                }
+            });
     }
 }

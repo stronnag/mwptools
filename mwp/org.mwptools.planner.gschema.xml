@@ -477,5 +477,11 @@
       <description>Name of the blackbox_decode application (in case there are separate for iNav and betaflight</description>
     </key>
 
+    <key name="geouser" type="s">
+      <default>""</default>
+      <summary>User account on geonames.org</summary>
+      <description>If supplied, geonames.org will be queried for blackbox log timezone info</description>
+    </key>
+
   </schema>
 </schemalist>

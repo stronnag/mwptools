@@ -1197,8 +1197,12 @@ public class MWPlanner : Gtk.Application {
             });
 
         navconf = new NavConfig(window, builder);
-        bb_runner = new BBoxDialog(builder, window, conf.blackbox_decode,
+        bb_runner = new BBoxDialog(builder, window, conf.blackbox_decode, conf.geouser,
                                    conf.logpath);
+
+        bb_runner.new_pos.connect((la, lo) => {
+               try_centre_on(la, lo);
+            });
 
         dockmenus = new string[DOCKLETS.NUMBER];
 
@@ -3668,6 +3672,31 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
+    private void try_centre_on(double xlat, double xlon)
+    {
+        if(!view.get_bounding_box().covers(xlat, xlon))
+        {
+            var mlat = view.get_center_latitude();
+            var mlon = view.get_center_longitude();
+            double alat, alon;
+            double msize = Math.fmin(mapsize.width, mapsize.height);
+            double dist,_cse;
+            Geo.csedist(xlat, xlon, mlat, mlon, out dist, out _cse);
+
+            if(dist * 1852.0 > msize)
+            {
+                alat = xlat;
+                alon = xlon;
+            }
+            else
+            {
+                alat = (mlat + xlat)/2.0;
+                alon = (mlon + xlon)/2.0;
+            }
+            map_centre_on(alat,alon);
+        }
+    }
+
     private void update_pos_info()
     {
         if(pos_valid(GPSInfo.lat, GPSInfo.lon))
@@ -3678,29 +3707,8 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(conf.use_legacy_centre_on)
                         map_centre_on(GPSInfo.lat,GPSInfo.lon);
-                    else if(!view.get_bounding_box().covers(
-                                GPSInfo.lat,GPSInfo.lon))
-                    {
-                        var mlat = view.get_center_latitude();
-                        var mlon = view.get_center_longitude();
-                        double alat, alon;
-                        double msize = Math.fmin(mapsize.width, mapsize.height);
-                        double dist,_cse;
-                        Geo.csedist(GPSInfo.lat, GPSInfo.lon,
-                                    mlat, mlon, out dist, out _cse);
-
-                        if(dist * 1852.0 > msize)
-                        {
-                            alat = GPSInfo.lat;
-                            alon = GPSInfo.lon;
-                        }
-                        else
-                        {
-                            alat = (mlat + GPSInfo.lat)/2.0;
-                            alon = (mlon + GPSInfo.lon)/2.0;
-                        }
-                        map_centre_on(alat,alon);
-                    }
+                    else
+                        try_centre_on(GPSInfo.lat,GPSInfo.lon);
                 }
                 double cse = (usemag) ? mhead : GPSInfo.cse;
                 craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);

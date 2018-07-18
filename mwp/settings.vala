@@ -92,6 +92,7 @@ public class MWPSettings : GLib.Object
     public double wp_dist_fontsize {get; set; default=56;}
     public bool adjust_tz {get; set; default=true;}
     public string blackbox_decode {get; set; default="blackbox_decode";}
+    public string geouser {get; set; default=null;}
 
     public signal void settings_update (string s);
 
@@ -326,6 +327,13 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "blackbox-decode")
             blackbox_decode = settings.get_string ("blackbox-decode");
+
+        if(s == null || s == "geouser")
+        {
+            geouser = settings.get_string ("geouser");
+            if(geouser == "")
+                geouser = null;
+        }
     }
 
     public void save_pane()
