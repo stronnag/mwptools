@@ -386,17 +386,15 @@ public class  BBoxDialog : Object
                                             out p_stderr);
 
             IOChannel error = new IOChannel.unix_new (p_stderr);
-            error.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
+            error.add_watch (IOCondition.IN, (source, condition) => {
                     if (condition == IOCondition.HUP)
                         return false;
                     try
                     {
                         string line;
-                        IOStatus eos = error.read_line (out line, null,null);
+                        IOStatus eos = source.read_line (out line, null,null);
                         if(eos == IOStatus.EOF)
-                        {
                             return false;
-                        }
 
                         int n;
                         n = line.index_of("Log ");
