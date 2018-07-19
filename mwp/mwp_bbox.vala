@@ -230,7 +230,7 @@ public class  BBoxDialog : Object
                             valid += 1;
                             maxidx = 1;
                             is_valid = true;
-                            Posix.kill(child_pid, Posix.Signal.QUIT);
+                            Posix.kill(child_pid, MwpSignals.Signal.TERM);
                             return false;
                         }
                         return true;
