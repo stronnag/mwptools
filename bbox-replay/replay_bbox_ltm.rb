@@ -391,14 +391,14 @@ def encode_stats r,inavers,armed=1
 end
 
 def encode_amps r
-  amps = -1
+  amps = nil
   msg = nil
   if r.has_key? :amperagelatest_a
     amps = r[:amperagelatest_a].to_f
   elsif r.has_key? :amperage_a
     amps = r[:amperage_a].to_f
   end
-  if amps > 0
+  if amps and amps > 0
     msg='$Ta'
     sl = [(amps*100).to_i].pack('S')
     msg << sl << mksum(sl)
@@ -840,10 +840,10 @@ IO.popen(cmd,'rt') do |pipe|
 	  send_msg dev, msg
 	  msg = encode_nav row,vers
 	  send_msg dev, msg
-#	  msg = encode_amps row
-#	  if msg
-#	    send_msg dev, msg
-#	  end
+	  msg = encode_amps row
+	  if msg
+	    send_msg dev, msg
+	  end
 	end
       end
       sleep (mindelay) ? mindelay : NORMDELAY
