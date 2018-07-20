@@ -10,7 +10,8 @@
 #
 # Example installation
 # sudo cp library/libzonedetect.so /usr/local/lib
-# sudo cp -a  database /usr/local/share/zonedectect
+# sudo mkdir -p /usr/local/share/zonedectect/
+# sudo cp -a  database /usr/local/share/zonedectect/
 # sudo cp zdemo /usr/local/bin/zone-detect
 # sudo ldconfig
 #
