@@ -572,7 +572,10 @@ public class  BBoxDialog : Object
                             j++;
                         }
                         if(latp == -1 || lonp == -1 || fixp == -1 || typp == -1)
+                        {
+                            Posix.kill(child_pid, MwpSignals.Signal.TERM);
                             break;
+                        }
                     }
                     else
                     {
@@ -584,8 +587,12 @@ public class  BBoxDialog : Object
                             {
                                 xlat = double.parse(parts[latp]);
                                 xlon = double.parse(parts[lonp]);
-                                ok = true;
-                                break;
+                                if(xlat != 0.0 && xlon != 0.0)
+                                {
+                                    ok = true;
+                                    Posix.kill(child_pid, MwpSignals.Signal.TERM);
+                                    break;
+                                }
                             }
                         }
                     }
