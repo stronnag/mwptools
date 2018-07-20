@@ -93,6 +93,7 @@ public class MWPSettings : GLib.Object
     public bool adjust_tz {get; set; default=true;}
     public string blackbox_decode {get; set; default="blackbox_decode";}
     public string geouser {get; set; default=null;}
+    public string zone_detect {get; set; default=null;}
 
     public signal void settings_update (string s);
 
@@ -333,6 +334,12 @@ public class MWPSettings : GLib.Object
             geouser = settings.get_string ("geouser");
             if(geouser == "")
                 geouser = null;
+        }
+        if(s == null || s == "zone-detect")
+        {
+            zone_detect = settings.get_string ("zone-detect");
+            if(zone_detect == "")
+                zone_detect = null;
         }
     }
 

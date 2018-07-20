@@ -483,5 +483,11 @@
       <description>If supplied, geonames.org will be queried for blackbox log timezone info</description>
     </key>
 
+    <key name="zone-detect" type="s">
+      <default>""</default>
+      <summary>Application to return timezone from location</summary>
+      <description>If supplied, the application will be used to return the timezone (in preference to geonames.org). The application should take latitude and longitude as parameters. See samples/tzget.sh</description>
+    </key>
+
   </schema>
 </schemalist>

@@ -1197,8 +1197,10 @@ public class MWPlanner : Gtk.Application {
             });
 
         navconf = new NavConfig(window, builder);
-        bb_runner = new BBoxDialog(builder, window, conf.blackbox_decode, conf.geouser,
+        bb_runner = new BBoxDialog(builder, window, conf.blackbox_decode,
                                    conf.logpath);
+
+        bb_runner.set_tz_tools(conf.geouser, conf.zone_detect);
 
         bb_runner.new_pos.connect((la, lo) => {
                try_centre_on(la, lo);

@@ -40,17 +40,17 @@ public class  BBoxDialog : Object
     private Gtk.ComboBoxText bb_tz_combo;
     private string []orig_times={};
     private string geouser;
+    private string zone_detect;
 
     private const int BB_MINSIZE = (4*1024);
 
     public signal void new_pos(double la, double lo);
 
     public BBoxDialog(Gtk.Builder builder, Gtk.Window? w = null,
-                      string bboxdec, string? _geouser, string? logpath = null)
+                      string bboxdec,  string? logpath = null)
     {
         _w = w;
         bbox_decode = bboxdec;
-        geouser = _geouser;
         dialog = builder.get_object ("bb_dialog") as Gtk.Dialog;
         bb_cancel = builder.get_object ("bb_cancel") as Button;
         bb_ok = builder.get_object ("bb_ok") as Button;
@@ -117,6 +117,12 @@ public class  BBoxDialog : Object
         dialog.set_transient_for(w);
     }
 
+    public void set_tz_tools(string? _geouser, string? _zone_detect)
+    {
+        geouser = _geouser;
+        zone_detect = _zone_detect;
+    }
+
     private void kick_gtk()
     {
         Gtk.main_iteration_do(false);
@@ -171,11 +177,8 @@ public class  BBoxDialog : Object
         {
             new_pos(xlat, xlon);
             kick_gtk();
-            if(geouser != null)
-            {
-                get_tz(xlat, xlon, geouser);
-                kick_gtk();
-            }
+            get_tz(xlat, xlon);
+            kick_gtk();
         }
     }
 
@@ -235,10 +238,10 @@ public class  BBoxDialog : Object
                         }
                         return true;
                     } catch (IOChannelError e) {
-                        print ("IOChannelError: %s\n", e.message);
+                        MWPLog.message("IOChannelError: %s\n", e.message);
                         return false;
                     } catch (ConvertError e) {
-                        print ("ConvertError: %s\n", e.message);
+                        MWPLog.message ("ConvertError: %s\n", e.message);
                         return false;
                     }
                 });
@@ -418,10 +421,10 @@ public class  BBoxDialog : Object
                         }
                         return true;
                     } catch (IOChannelError e) {
-                        print ("IOChannelError: %s\n", e.message);
+                        MWPLog.message ("IOChannelError: %s\n", e.message);
                         return false;
                     } catch (ConvertError e) {
-                        print ("ConvertError: %s\n", e.message);
+                        MWPLog.message ("ConvertError: %s\n", e.message);
                         return false;
                     }
                 });
@@ -587,47 +590,96 @@ public class  BBoxDialog : Object
                     n++;
                 }
             } catch  (Error e) {
-                print("%s\n", e.message);
+                MWPLog.message("%s\n", e.message);
             }
             Process.close_pid (child_pid);
         } catch (SpawnError e) {
-            print("%s\n", e.message);
+            MWPLog.message("%s\n", e.message);
         }
         return ok;
     }
 
     const string GURI="http://api.geonames.org/timezoneJSON?lat=%f&lng=%f&username=%s";
-    private void get_tz(double lat, double lon, string user)
+    private void get_tz(double lat, double lon)
     {
         string str = null;
-        string uri = GURI.printf(lat, lon, user);
-        var session = new Soup.Session ();
-        var message = new Soup.Message ("GET", uri);
-        string s="";
-        session.queue_message (message, (sess, mess) => {
-                if ( mess.status_code == 200)
-                {
-                    s = (string) mess.response_body.flatten ().data;
-                    try
-                    {
-                        var parser = new Json.Parser ();
-                        parser.load_from_data (s);
-                        var item = parser.get_root ().get_object ();
-                        if (item.has_member("timezoneId"))
-                            str = item.get_string_member ("timezoneId");
-                    } catch { }
-                }
+        if(zone_detect != null)
+        {
+            try {
+                string[] spawn_args = {zone_detect, lat.to_string(), lon.to_string()};
+                Pid child_pid;
+                int p_stdout;
+                Process.spawn_async_with_pipes (null,
+                                                spawn_args,
+                                                null,
+                                                SpawnFlags.SEARCH_PATH |
+                                                SpawnFlags.DO_NOT_REAP_CHILD |
+                                                SpawnFlags.STDERR_TO_DEV_NULL,
+                                                null,
+                                                out child_pid,
+                                                null,
+                                                out p_stdout,
+                                                null);
 
-                if(str == null)
-                {
-                    var sb = new StringBuilder("Geonames TZ: ");
-                    sb.append((string) mess.response_body.flatten ().data);
-                    MWPLog.message(sb.str);
+                IOChannel chan = new IOChannel.unix_new (p_stdout);
+                IOStatus eos;
+                try {
+                    for(;;)
+                    {
+                        string s;
+                        eos = chan.read_line (out s, null, null);
+                        if (eos == IOStatus.EOF)
+                            break;
+                        str = s.strip();
+                    }
+                } catch  (Error e) {
+                    MWPLog.message("%s\n", e.message);
                 }
-                else
-                {
-                    add_if_missing(str);
-                }
-            });
+                Process.close_pid (child_pid);
+            } catch (SpawnError e) {
+                MWPLog.message("%s\n", e.message);
+            }
+            if(str != null)
+            {
+                MWPLog.message("Got local app TZ %s for %f %f\n", str, lat, lon);
+                add_if_missing(str);
+            }
+        }
+        else if(geouser != null)
+        {
+            string uri = GURI.printf(lat, lon, geouser);
+            var session = new Soup.Session ();
+            var message = new Soup.Message ("GET", uri);
+            string s="";
+            session.queue_message (message, (sess, mess) => {
+                    if ( mess.status_code == 200)
+                    {
+                        s = (string) mess.response_body.flatten ().data;
+                        try
+                        {
+                            var parser = new Json.Parser ();
+                            parser.load_from_data (s);
+                            var item = parser.get_root ().get_object ();
+                            if (item.has_member("timezoneId"))
+                                str = item.get_string_member ("timezoneId");
+                        } catch { }
+                    }
+
+                    if(str != null)
+                    {
+                        MWPLog.message("Got geonames TZ %s for %f %f\n", str, lat, lon);
+                        add_if_missing(str);
+                    }
+                    else
+                    {
+                        var sb = new StringBuilder("Geonames TZ: ");
+                        sb.append((string) mess.response_body.flatten ().data);
+                        MWPLog.message(sb.str);
+                    }
+                });
+        }
+        if(str != null)
+        {
+        }
     }
 }

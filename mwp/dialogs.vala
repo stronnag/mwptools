@@ -1488,7 +1488,7 @@ public class NavStatus : GLib.Object
             }
             if(xfmode != fmode)
             {
-                if(failsafe == 1)
+                if(failsafe == 1 && mt_voice)
                     mt.message(AudioThread.Vox.FAILSAFE,true);
 
                 xfmode = fmode;
