@@ -92,7 +92,8 @@ public class  BBoxDialog : Object
 
         bb_tz_combo.changed.connect(() => {
                 unowned string str = tzentry.get_text ();
-                if(tz_exists(str))
+                int n;
+                if(tz_exists(str,out n))
                     update_time_stamps();
             });
 
@@ -128,7 +129,7 @@ public class  BBoxDialog : Object
         Gtk.main_iteration_do(false);
     }
 
-    private bool tz_exists(string str)
+    private bool tz_exists(string str, out int row_count)
     {
         var m = bb_tz_combo.get_model();
         Gtk.TreeIter iter;
@@ -141,21 +142,21 @@ public class  BBoxDialog : Object
             GLib.Value cell;
             m.get_value (iter, 0, out cell);
             if((string)cell == str)
-            {
                 n = i;
-                break;
-            }
         }
+        row_count = i;
         return (n != -1);
     }
 
-    private void add_if_missing(string str,bool top=false)
+    private int add_if_missing(string str,bool top=false)
     {
-        if(!tz_exists(str))
+        int nrow = 0;
+        if(!tz_exists(str, out nrow))
             if(top)
                 bb_tz_combo.prepend_text(str);
             else
                 bb_tz_combo.append_text(str);
+        return nrow;
     }
 
     private void get_bbox_file_status()
@@ -641,8 +642,9 @@ public class  BBoxDialog : Object
             }
             if(str != null)
             {
-                MWPLog.message("Got local app TZ %s for %f %f\n", str, lat, lon);
-                add_if_missing(str);
+                MWPLog.message("%s %f %f : %s\n", zone_detect, lat, lon, str);
+                var n = add_if_missing(str);
+                bb_tz_combo.active = n;
             }
         }
         else if(geouser != null)
@@ -667,7 +669,7 @@ public class  BBoxDialog : Object
 
                     if(str != null)
                     {
-                        MWPLog.message("Got geonames TZ %s for %f %f\n", str, lat, lon);
+                        MWPLog.message("Geonames %f %f %s\n", lat, lon, str);
                         add_if_missing(str);
                     }
                     else
@@ -677,9 +679,6 @@ public class  BBoxDialog : Object
                         MWPLog.message(sb.str);
                     }
                 });
-        }
-        if(str != null)
-        {
         }
     }
 }
