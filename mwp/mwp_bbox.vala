@@ -674,8 +674,9 @@ public class  BBoxDialog : Object
                     if(str != null)
                     {
                         MWPLog.message("Geonames %f %f %s\n", lat, lon, str);
-                        add_if_missing(str);
-                    }
+                        var n = add_if_missing(str);
+                        bb_tz_combo.active = n;
+                     }
                     else
                     {
                         var sb = new StringBuilder("Geonames TZ: ");
