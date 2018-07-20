@@ -23,5 +23,5 @@ do
     TimezoneIdPrefix:) ZONE=$V ;;
     TimezoneId:) ZONE=${ZONE}${V} ;;
   esac
-done < <(./zone-detect $DATABASE $1 $2)
+done < <(zone-detect $DATABASE $1 $2)
 echo $ZONE
