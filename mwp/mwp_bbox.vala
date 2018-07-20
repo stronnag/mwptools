@@ -42,7 +42,7 @@ public class  BBoxDialog : Object
     private string geouser;
     private string zone_detect;
 
-    private const int BB_MINSIZE = (4*1024);
+    private const int BB_MINSIZE = (10*1024);
 
     public signal void new_pos(double la, double lo);
 
@@ -277,6 +277,7 @@ public class  BBoxDialog : Object
         var n = 0;
         orig_times = {};
         bool first_ok = false;
+
         FileStream stream = FileStream.open (filename, "r");
         if (stream != null)
         {
@@ -292,7 +293,7 @@ public class  BBoxDialog : Object
                         string ts = (string)buf[21:len-1];
                         orig_times += ts;
                         n++;
-                        if(first_ok == false && ts.has_prefix("20"))
+                        if(first_ok == false && ts.has_prefix("20") && valid[n-1] != 0)
                         {
                             first_ok = true;
                             process_tz_record(n);
@@ -597,6 +598,8 @@ public class  BBoxDialog : Object
         } catch (SpawnError e) {
             MWPLog.message("%s\n", e.message);
         }
+        MWPLog.message("Getting base location from index %s %f %f %s\n",
+                       index, xlat, xlon, ok.to_string());
         return ok;
     }
 
@@ -631,7 +634,8 @@ public class  BBoxDialog : Object
                         eos = chan.read_line (out s, null, null);
                         if (eos == IOStatus.EOF)
                             break;
-                        str = s.strip();
+                        if (s != null)
+                            str = s.strip();
                     }
                 } catch  (Error e) {
                     MWPLog.message("%s\n", e.message);

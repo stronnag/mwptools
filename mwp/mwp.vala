@@ -54,6 +54,9 @@ public struct Odostats
     double speed;
     double distance;
     uint time;
+    double alt;
+    double range;
+    double amps;
 }
 
 public struct VersInfo
@@ -1567,9 +1570,11 @@ public class MWPlanner : Gtk.Application {
                     zoomer.adjustment.value = (int)val;
 
                 get_map_size();
-                if(craft != null && (!msp.available || !gpsfix))
-                    if (replayer != Player.BBOX)
-                        craft.park();
+/* 2018-07-20 --- not sure why this exists
+ *              if(craft != null && (!msp.available || !gpsfix))
+ *                   if (replayer != Player.BBOX)
+ *                        craft.park();
+ */
             });
 
         zoomer.adjustment.value_changed.connect (() =>
@@ -3054,7 +3059,8 @@ public class MWPlanner : Gtk.Application {
             radstatus.annul();
             if (armed == 1)
             {
-                odo.speed = odo.distance = odo.time = 0;
+                odo = {0};
+                odo.alt = -9999;
                 reboot_status();
                 init_craft_icon();
                 if(!no_trail)
@@ -3134,6 +3140,11 @@ public class MWPlanner : Gtk.Application {
         odo.distance += ddm;
         if (spd > odo.speed)
             odo.speed = spd;
+        if(NavStatus.cg.range > odo.range)
+            odo.range = NavStatus.cg.range;
+        double estalt = (double)NavStatus.alti.estalt/100.0;
+        if (estalt > odo.alt)
+         odo.alt = estalt;
     }
 
     private void reset_poller()
@@ -5363,6 +5374,13 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.Tq_FRAME:
                 uint16 val = *(((uint16*)raw));
                 odo.time = val;
+                break;
+
+            case MSP.Cmds.Ta_FRAME:
+                uint16 val = *(((uint16*)raw));
+                double amps = val/100.0;
+                if (amps > odo.amps)
+                    odo.amps = amps;
                 break;
 
             case MSP.Cmds.Tx_FRAME:

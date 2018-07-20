@@ -108,6 +108,7 @@ public class MSP : Object {
         TO_FRAME = (LTM_BASE + 'O'),
         TN_FRAME = (LTM_BASE + 'N'),
         TX_FRAME = (LTM_BASE + 'X'),
+        Ta_FRAME = (LTM_BASE + 'a'), // private, amps message
         Tq_FRAME = (LTM_BASE + 'q'), // private, quit message
         Tx_FRAME = (LTM_BASE + 'x'), // private, quit message
 

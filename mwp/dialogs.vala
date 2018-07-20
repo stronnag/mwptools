@@ -95,11 +95,16 @@ public class Units :  GLib.Object
 public class OdoView : GLib.Object
 {
     private Gtk.Dialog dialog;
-    private Gtk.Label odospeed;
-    private Gtk.Label ododist;
     private Gtk.Label odotime;
+    private Gtk.Label odospeed;
     private Gtk.Label odospeed_u;
+    private Gtk.Label ododist;
     private Gtk.Label ododist_u;
+    private Gtk.Label odorange;
+    private Gtk.Label odorange_u;
+    private Gtk.Label odoalt;
+    private Gtk.Label odoamps;
+    private Gtk.Label odoalt_u;
     private Gtk.Button odoclose;
     private uint to = 15;
     private uint tid = 0;
@@ -108,11 +113,16 @@ public class OdoView : GLib.Object
     public OdoView(Gtk.Builder builder, Gtk.Window? w, uint _to)
     {
         dialog = builder.get_object ("odoview") as Gtk.Dialog;
-        ododist = builder.get_object ("ododist") as Gtk.Label;
-        odospeed = builder.get_object ("odospeed") as Gtk.Label;
-        ododist_u = builder.get_object ("ododist_u") as Gtk.Label;
-        odospeed_u = builder.get_object ("odospeed_u") as Gtk.Label;
         odotime = builder.get_object ("odotime") as Gtk.Label;
+        ododist = builder.get_object ("ododist") as Gtk.Label;
+        ododist_u = builder.get_object ("ododist_u") as Gtk.Label;
+        odospeed = builder.get_object ("odospeed") as Gtk.Label;
+        odospeed_u = builder.get_object ("odospeed_u") as Gtk.Label;
+        odorange = builder.get_object ("odorange") as Gtk.Label;
+        odorange_u = builder.get_object ("odorange_u") as Gtk.Label;
+        odoalt = builder.get_object ("odoalt") as Gtk.Label;
+        odoamps = builder.get_object ("odoamps") as Gtk.Label;
+        odoalt_u = builder.get_object ("odoalt_u") as Gtk.Label;
         odoclose = builder.get_object ("odoclose") as Gtk.Button;
         dialog.set_transient_for(w);
         to = _to;
@@ -129,11 +139,20 @@ public class OdoView : GLib.Object
 
     public void display(Odostats o, bool autohide=false)
     {
-        ododist.label = "  %.0f ".printf(Units.distance(o.distance));
-        odospeed.label = "  %.1f ".printf(Units.speed(o.speed));
         odotime.label = " %u:%02u ".printf(o.time / 60, o.time % 60);
-        ododist_u.label = Units.distance_units();
+        odospeed.label = "  %.1f ".printf(Units.speed(o.speed));
         odospeed_u.label =  Units.speed_units();
+        ododist.label = "  %.0f ".printf(Units.distance(o.distance));
+        ododist_u.label = Units.distance_units();
+        odorange.label = "  %.0f ".printf(Units.distance(o.range));
+        odorange_u.label = Units.distance_units();
+        odoalt.label = "  %.0f ".printf(Units.distance(o.alt));
+        odoalt_u.label = Units.distance_units();
+        if(o.amps > 0)
+            odoamps.label = "  %.2f ".printf(o.amps);
+        else
+            odoamps.label = "N/A";
+
         unhide();
         if(autohide)
         {

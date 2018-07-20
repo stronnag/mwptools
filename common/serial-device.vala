@@ -703,9 +703,14 @@ public class MWSerial : Object
                                     needed = (uint16) MSize.LTM_XFRAME;
                                     cmd = MSP.Cmds.TX_FRAME;
                                     break;
+                                        // Lower case are 'private'
                                 case 'q':
                                     needed = 2;
                                     cmd = MSP.Cmds.Tq_FRAME;
+                                    break;
+                                case 'a':
+                                    needed = 2;
+                                    cmd = MSP.Cmds.Ta_FRAME;
                                     break;
                                 case 'x':
                                     needed = 1;
