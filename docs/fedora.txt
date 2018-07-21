@@ -53,3 +53,17 @@ dnf install rubygem-json
 
 ## Then build it / update
 # cd mwptools; git pull && make && sudo make install
+
+## The default instruction only set up the master branch (in order in
+## minimise the initial setup) .
+## In order to access other branches:
+# git remote set-branches origin '*'
+# git fetch -v
+## Then:
+## $ git branch
+##   development
+## * master
+### And one can checkout development
+#  git checkout development
+## Switched to branch 'development'
+## Your branch is up to date with 'origin/development'.

@@ -66,3 +66,17 @@ apt install ruby ruby-json
 ## cp ubuntu-deps.txt /tmp/ubuntu-deps.sh
 ## chmod +x /tmp/ubuntu-deps.sh
 ## sudo /tmp/ubuntu-deps.sh
+##
+## The default instruction only set up the master branch (in order in
+## minimise the initial setup) .
+## In order to access other branches:
+# git remote set-branches origin '*'
+# git fetch -v
+## Then:
+## $ git branch
+##   development
+## * master
+### And one can checkout development
+#  git checkout development
+## Switched to branch 'development'
+## Your branch is up to date with 'origin/development'.
