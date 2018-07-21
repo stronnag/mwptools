@@ -3615,7 +3615,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="odo_ca0">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Only updated for blackbox replay</property>
@@ -3641,7 +3641,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </packing>
             </child>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="odo_ca2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Only updated for blackbox replay</property>

@@ -104,6 +104,8 @@ public class OdoView : GLib.Object
     private Gtk.Label odorange_u;
     private Gtk.Label odoalt;
     private Gtk.Label odoamps;
+    private Gtk.Label odo_ca0;
+    private Gtk.Label odo_ca2;
     private Gtk.Label odoalt_u;
     private Gtk.Button odoclose;
     private uint to = 15;
@@ -122,6 +124,8 @@ public class OdoView : GLib.Object
         odorange_u = builder.get_object ("odorange_u") as Gtk.Label;
         odoalt = builder.get_object ("odoalt") as Gtk.Label;
         odoamps = builder.get_object ("odoamps") as Gtk.Label;
+        odo_ca0 = builder.get_object ("odo_ca0") as Gtk.Label;
+        odo_ca2 = builder.get_object ("odo_ca2") as Gtk.Label;
         odoalt_u = builder.get_object ("odoalt_u") as Gtk.Label;
         odoclose = builder.get_object ("odoclose") as Gtk.Button;
         dialog.set_transient_for(w);
@@ -137,6 +141,11 @@ public class OdoView : GLib.Object
             });
     }
 
+    private void odosens(bool state)
+    {
+        odo_ca0.sensitive = odo_ca2.sensitive = odoamps.sensitive = state;
+    }
+
     public void display(Odostats o, bool autohide=false)
     {
         odotime.label = " %u:%02u ".printf(o.time / 60, o.time % 60);
@@ -149,9 +158,16 @@ public class OdoView : GLib.Object
         odoalt.label = "  %.0f ".printf(Units.distance(o.alt));
         odoalt_u.label = Units.distance_units();
         if(o.amps > 0)
+        {
             odoamps.label = "  %.2f ".printf(o.amps);
+            odosens(true);
+        }
         else
+        {
             odoamps.label = "N/A";
+            odosens(false);
+        }
+
 
         unhide();
         if(autohide)
