@@ -534,9 +534,12 @@ public class MWSerial : Object
 
         if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
         {
+            string iocs="";
             available = false;
             if(fd != -1)
                 serial_lost();
+#if OLDGTK
+#else
             StringBuilder sb = new StringBuilder();
             for(var j = 0; j < 8; j++)
             {
@@ -548,7 +551,9 @@ public class MWSerial : Object
                 }
             }
             sb.truncate(sb.len-1);
-            MWPLog.message("Close fd %d on %s (%x)\r\n", fd,sb.str,cond);
+            iocs = sb.str;
+#endif
+            MWPLog.message("Close fd %d on %s (%x)\r\n", fd,iocs,cond);
             tag = 0; // REMOVE will remove the iochannel watch
             return Source.REMOVE;
         }
