@@ -46,7 +46,7 @@ HEX=
 RESCUE=
 BIN=
 RM=
-FERASE=
+FERASE=1
 SWITCH=
 
 for P
@@ -58,7 +58,7 @@ do
     *.bin) BIN=$P ;;
     rescue) RESCUE=1 ;;
     switch) SWITCH=1 ;;
-    force|erase) FERASE=1 ;;
+    noerase) FERASE=0 ;;
   esac
 done
 
