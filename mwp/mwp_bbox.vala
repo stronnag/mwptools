@@ -126,7 +126,7 @@ public class  BBoxDialog : Object
 
     private void kick_gtk()
     {
-        Gtk.main_iteration_do(false);
+//        Gtk.main_iteration_do(false);
     }
 
     private bool tz_exists(string str, out int row_count)
@@ -216,6 +216,10 @@ public class  BBoxDialog : Object
                         IOStatus eos = source.read_line (out line, null,null);
                         if(eos == IOStatus.EOF)
                             return false;
+
+                        if(line == null || line.length == 0)
+                            return true;
+                        
                         int idx=0, offset, size=0;
                         lines += line;
                         if(line.scanf(" %d %d %d", &idx, &offset, &size) == 3)
@@ -400,7 +404,9 @@ public class  BBoxDialog : Object
                         IOStatus eos = source.read_line (out line, null,null);
                         if(eos == IOStatus.EOF)
                             return false;
-
+                        if (line  == null || line.length == 0)
+                            return true;
+                                                
                         int n;
                         n = line.index_of("Log ");
                         if(n == 0)
@@ -550,6 +556,9 @@ public class  BBoxDialog : Object
                     eos = chan.read_line (out str, out length, null);
                     if (eos == IOStatus.EOF)
                         break;
+                    if(str == null || str.length == 0)
+                        continue;
+
                     kick_gtk();
                     var parts=str.split(",");
                     if(n == 0)
