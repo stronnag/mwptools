@@ -144,7 +144,7 @@ public class  BBoxDialog : Object
             if((string)cell == str)
                 n = i;
         }
-        row_count = i;
+        row_count = (n == -1) ? i : n;
         return (n != -1);
     }
 

@@ -3620,7 +3620,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Only updated for blackbox replay</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">Maximum Amps</property>
+                <property name="label" translatable="yes">Maximum Current</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
