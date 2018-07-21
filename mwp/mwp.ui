@@ -3616,9 +3616,10 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
             </child>
             <child>
               <object class="GtkLabel">
+                <property name="visible">True</property>
                 <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
-                <property name="no_show_all">True</property>
+                <property name="tooltip_text" translatable="yes">Only updated for blackbox replay</property>
                 <property name="halign">start</property>
                 <property name="label" translatable="yes">Maximum Amps</property>
               </object>
@@ -3629,11 +3630,12 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
             </child>
             <child>
               <object class="GtkLabel" id="odoamps">
+                <property name="visible">True</property>
                 <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
-                <property name="no_show_all">True</property>
+                <property name="tooltip_text" translatable="yes">Only updated for blackbox replay</property>
                 <property name="halign">end</property>
-                <property name="label" translatable="yes">0</property>
+                <property name="label" translatable="yes">n/a</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -3642,9 +3644,10 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
             </child>
             <child>
               <object class="GtkLabel">
+                <property name="visible">True</property>
                 <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
-                <property name="no_show_all">True</property>
+                <property name="tooltip_text" translatable="yes">Only updated for blackbox replay</property>
                 <property name="label" translatable="yes">Amps</property>
               </object>
               <packing>
