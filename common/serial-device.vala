@@ -538,7 +538,7 @@ public class MWSerial : Object
             available = false;
             if(fd != -1)
                 serial_lost();
-#if OLDGTK
+#if LSRVAL
 #else
             StringBuilder sb = new StringBuilder();
             for(var j = 0; j < 8; j++)
