@@ -10,9 +10,8 @@
 #   mission planning, logging replay and utilities for iNav / multiwii 2.4+
 
 #####################################################################
-# Note this script only handles DFU targets that the author uses
+# Note 'rescue' may require explicit device name
 #####################################################################
-
 
 function find_serial
 {
