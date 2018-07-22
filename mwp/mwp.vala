@@ -2983,7 +2983,7 @@ public class MWPlanner : Gtk.Application {
             MWPLog.message("sensor health %04x %d %d\n", sensor, val, xs_state);
             if(val == 1)
             {
-                sound = (sensor_alm) ? Alert.GENERAL : Alert.RED;
+                sound = /*(sensor_alm) ? Alert.GENERAL :*/ Alert.RED;
                 sensor_alm = true;
                 init_craft_icon();
                 map_show_warning("SENSOR FAILURE");
