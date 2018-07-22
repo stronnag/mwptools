@@ -70,6 +70,7 @@ STDERR.puts "iNav version = #{iv} (states eq #{inavers})"
 cmd = "blackbox_decode"
 cmd << " --index #{idx}"
 cmd << " --stdout"
+cmd << " --unit-frame-time s"
 cmd << " 2>/dev/null " << bbox
 
 nfail = 0
@@ -84,14 +85,17 @@ IO.popen(cmd,'r') do |p|
   nstate = -1
   astat = nil
   csv.each do |c|
-    ts = c[:time_us].to_f / 1000000
+    ts = c[:time_s].to_f
     st = ts if st.nil?
     if c[:hwhealthstatus].to_i != hw
       hw = c[:hwhealthstatus].to_i
       xts  = ts - st
       ret,vals = hwstatus hw
+      ftsm = xts / 60
+      ftss = xts % 60
+      ftt = "%02d:%0.2f" % [ftsm, ftss]
 
-      print "%.3fs HW Status change (%x %d)" % [xts,hw,hw]
+      print "%s (%.3fs) HW Status change (%x %d)" % [ftt, xts,hw,hw]
       case ret
       when 0
 	astat = 'OK'

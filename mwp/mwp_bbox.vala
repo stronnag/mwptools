@@ -207,19 +207,20 @@ public class  BBoxDialog : Object
             IOChannel error = new IOChannel.unix_new (p_stderr);
             string line = null;
             string [] lines = {}; // for the error path
+            size_t len = 0;
 
             error.add_watch (IOCondition.IN, (source, condition) => {
                     try
                     {
                         if (condition == IOCondition.HUP)
                             return false;
-                        IOStatus eos = source.read_line (out line, null,null);
+                        IOStatus eos = source.read_line (out line, out len, null);
                         if(eos == IOStatus.EOF)
                             return false;
 
-                        if(line == null || line.length == 0)
+                        if(line == null || len == 0)
                             return true;
-                        
+
                         int idx=0, offset, size=0;
                         lines += line;
                         if(line.scanf(" %d %d %d", &idx, &offset, &size) == 3)
@@ -401,23 +402,24 @@ public class  BBoxDialog : Object
                     try
                     {
                         string line;
-                        IOStatus eos = source.read_line (out line, null,null);
+                        size_t len = 0;
+
+                        IOStatus eos = source.read_line (out line, out len, null);
                         if(eos == IOStatus.EOF)
                             return false;
-                        if (line  == null || line.length == 0)
+                        if (line  == null || len == 0)
                             return true;
-                                                
+
                         int n;
                         n = line.index_of("Log ");
                         if(n == 0)
                         {
-                            int slen = line.length;
                             n = line.index_of(" duration ");
                             if(n > 16)
                             {
                                 Gtk.TreeIter iter;
                                 n += 10;
-                                string dura = line.substring(n, slen - n -1);
+                                string dura = line.substring(n, (long)len - n -1);
                                 bb_liststore.append (out iter);
                                 string tsval;
                                 if(tsslen > 0 && maxidx == tsslen)
@@ -556,7 +558,7 @@ public class  BBoxDialog : Object
                     eos = chan.read_line (out str, out length, null);
                     if (eos == IOStatus.EOF)
                         break;
-                    if(str == null || str.length == 0)
+                    if(str == null || length == 0)
                         continue;
 
                     kick_gtk();
