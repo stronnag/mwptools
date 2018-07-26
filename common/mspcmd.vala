@@ -213,7 +213,9 @@ public class MSP : Object {
         "Land in Progress",	// 9
         "Landed",		// 10
         "Settling before land", // 11
-        "Start descent"		// 12
+        "Start descent",		// 12
+		"Hover above home",		// 13
+		"Emergency landing"		// 14
     };
 
     private const string[] nav_errors =  {

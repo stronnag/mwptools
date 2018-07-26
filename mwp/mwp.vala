@@ -500,6 +500,10 @@ public class MWPlanner : Gtk.Application {
 
     private GPSStatus gps_status;
     private MSP_GPSSTATISTICS gpsstats;
+    private int magdt = -1;
+    private int magtime=0;
+    private int magdiff=0;
+    private bool magcheck;
 
     public DevManager devman;
 
@@ -891,6 +895,8 @@ public class MWPlanner : Gtk.Application {
     private void handle_replay_pause()
     {
         int signum;
+        magcheck = false;
+
         if(replay_paused)
         {
             signum = MwpSignals.Signal.CONT;
@@ -2241,6 +2247,18 @@ public class MWPlanner : Gtk.Application {
             autocon_cb.active=true;
             mkcon = true;
         }
+
+        if(conf.mag_sanity != null)
+        {
+            var parts=conf.mag_sanity.split(",");
+            if (parts.length == 2)
+            {
+                magdiff=int.parse(parts[0]);
+                magtime=int.parse(parts[1]);
+                MWPLog.message("Enabled mag anonaly checking %d⁰, %ds\n", magdiff,magtime);
+                magcheck = true;
+            }
+        }
     }
 
     private void key_recentre(uint key)
@@ -3059,6 +3077,7 @@ public class MWPlanner : Gtk.Application {
             radstatus.annul();
             if (armed == 1)
             {
+                magdt = -1;
                 odo = {0};
                 odo.alt = -9999;
                 reboot_status();
@@ -5033,12 +5052,48 @@ public class MWPlanner : Gtk.Application {
                                 MWPLog.message("No home position yet\n");
                             }
                         }
+                        if(magcheck && magtime > 0 && magdiff > 0)
+                        {
+                            int gcse = (int)GPSInfo.cse;
+                            if(last_ltmf != 9 && last_ltmf != 15)
+                            {
+                                if(gf.speed > 3)
+                                {
+                                    if(get_heading_diff(gcse, mhead).abs() > magdiff)
+                                    {
+                                        if(magdt == -1)
+                                        {
+                                            magdt = (int)duration;
+//                                            MWPLog.message("set mag %d %d %d\n", mhead, (int)gcse, magdt);
+                                        }
+                                    }
+                                    else if (magdt != -1)
+                                    {
+//                                        MWPLog.message("clear magdt %d %d %d\n", mhead, (int)gcse, magdt);
+                                        magdt = -1;
+                                    }
+                                }
+                                else
+                                    magdt = -1;
+
+                            }
+
+                            if(magdt != -1 && ((int)duration - magdt) > magtime)
+                            {
+                                MWPLog.message(" ****** Mag error detected %d %d %d\n",
+                                               mhead, (int)gcse, magdt);
+                                map_show_warning("COMPASS ANOMALY");
+                                bleet_sans_merci(Alert.RED);
+                                magdt = -1;
+                            }
+                        }
                     }
 
                     if(craft != null && fix > 0 && _nsats >= msats)
                     {
                         update_pos_info();
                     }
+
                     if(want_special != 0)
                         process_pos_states(GPSInfo.lat, GPSInfo.lon, gf.alt/100.0, "GFrame");
                 }
@@ -5471,6 +5526,20 @@ public class MWPlanner : Gtk.Application {
         }
         run_queue();
     }
+
+    private int get_heading_diff (int a, int b)
+    {
+        var diff = b - a;
+        var absdiff = diff.abs();
+
+        if (absdiff <= 180)
+            return absdiff == 180 ? absdiff : diff;
+        else if (b > a)
+            return absdiff - 360;
+        else
+            return 360 - absdiff;
+    }
+
 /*
     private void show_wp(MSP_WP w)
     {
@@ -6860,6 +6929,7 @@ public class MWPlanner : Gtk.Application {
 
     private void cleanup_replay()
     {
+        magcheck = (magtime > 0 && magdiff > 0);
         MWPLog.message("============== Replay complete ====================\n");
         if (replayer == Player.MWP)
         {
@@ -6920,6 +6990,7 @@ public class MWPlanner : Gtk.Application {
             msp.open_fd(playfd[0],-1, true);
             set_replay_menus(false);
             set_menu_state("stop-replay", true);
+            magcheck = delay;
             switch(replayer)
             {
                 case Player.MWP:
@@ -6982,6 +7053,8 @@ public class MWPlanner : Gtk.Application {
 
     private void replay_bbox (bool delay, string? fn = null)
     {
+
+
         if(replayer == Player.BBOX)
         {
             Posix.kill(child_pid, MwpSignals.Signal.TERM);

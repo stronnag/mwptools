@@ -489,5 +489,18 @@
       <description>If supplied, the application will be used to return the timezone (in preference to geonames.org). The application should take latitude and longitude as parameters. See samples/tzget.sh</description>
     </key>
 
+    <key name="mag-sanity" type ="s">
+      <default>""</default>
+       <summary>Enable mag sanity checking</summary>
+       <description>mwp offers a primative mag sanity checker that compares compass heading with GPS course over the ground using LTM (only). There are  various hard-coded constraints (speed &gt; 3m/s, certain flight modes) and two configurable parameters that should be set here in order to enable this check. The parameters are angular difference (⁰) and duration (s). The author finds a settings of 45,3 (i.e. 45⁰ over 3 seconds) works OK, detetcting real instances (a monentarily breaking cable) and not reporting false positives.
+       </description>
+    </key>
+
+    <key name="say-bearing" type="b">
+      <default>true</default>
+      <summary>Whether audio report includes bearing</summary>
+      <description>Whether audio report includes bearing</description>
+    </key>
+
   </schema>
 </schemalist>

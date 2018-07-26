@@ -2021,6 +2021,18 @@ public class AudioThread : Object {
                                 case 10:
                                     s = "Landed";
                                     break;
+                                case 11:
+                                    s = "Settling before land";
+                                    break;
+                                case 12:
+                                    s = "Starting descent";
+                                    break;
+                                case 13:
+                                    s = "Hover above home";
+                                    break;
+                                case 14:
+                                    s = "Emergency landing";
+                                    break;
                             }
                             break;
                         case Vox.DURATION:
@@ -2031,14 +2043,20 @@ public class AudioThread : Object {
                             s = "%s mode".printf(NavStatus.fmode);
                             break;
                         case Vox.RANGE_BRG:
-                            var brg = NavStatus.cg.direction;
-                            if(brg < 0)
-                                brg += 360;
-                            if(NavStatus.recip)
-                                brg = ((brg + 180) % 360);
-                            s = "Range %s, bearing %s".printf(
-                                say_nicely((int)Units.distance(NavStatus.cg.range)),
-                                say_nicely(brg));
+                            StringBuilder sbrg = new StringBuilder();
+                            sbrg.append("Range ");
+                            sbrg.append(say_nicely((int)Units.distance(NavStatus.cg.range)));
+                            if(MWPlanner.conf.say_bearing)
+                            {
+                                var brg = NavStatus.cg.direction;
+                                if(brg < 0)
+                                    brg += 360;
+                                if(NavStatus.recip)
+                                    brg = ((brg + 180) % 360);
+                                sbrg.append(", bearing ");
+                                sbrg.append(say_nicely(brg));
+                            }
+                            s = sbrg.str;
                             break;
                         case Vox.ELEVATION:
                             s = "Elevation %s.".printf(say_nicely((int)Units.distance(GPSInfo.elev)));

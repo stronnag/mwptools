@@ -41,6 +41,7 @@ public class  BBoxDialog : Object
     private string []orig_times={};
     private string geouser;
     private string zone_detect;
+    private bool azoom;
 
     private const int BB_MINSIZE = (10*1024);
 
@@ -116,17 +117,15 @@ public class  BBoxDialog : Object
             });
 
         dialog.set_transient_for(w);
+
+        azoom =(Environment.get_variable("MWP_BB_NOZOOM") == null) ;
+        MWPLog.message("BB load async map zoom : %s\n", azoom.to_string());
     }
 
     public void set_tz_tools(string? _geouser, string? _zone_detect)
     {
         geouser = _geouser;
         zone_detect = _zone_detect;
-    }
-
-    private void kick_gtk()
-    {
-//        Gtk.main_iteration_do(false);
     }
 
     private bool tz_exists(string str, out int row_count)
@@ -164,8 +163,6 @@ public class  BBoxDialog : Object
         bb_tz_combo.active = 0;
         bb_items.label = "Analysing log ...";
         MWPCursor.set_busy_cursor(dialog);
-        dialog.queue_draw();
-        kick_gtk();
         find_valid();
         bb_ok.sensitive = false;
     }
@@ -176,10 +173,9 @@ public class  BBoxDialog : Object
         if(find_base_position(filename, idx.to_string(),
                               out xlat, out xlon))
         {
-            new_pos(xlat, xlon);
-            kick_gtk();
+            if (azoom)
+                new_pos(xlat, xlon);
             get_tz(xlat, xlon);
-            kick_gtk();
         }
     }
 
@@ -209,7 +205,7 @@ public class  BBoxDialog : Object
             string [] lines = {}; // for the error path
             size_t len = 0;
 
-            error.add_watch (IOCondition.IN, (source, condition) => {
+            error.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
                     try
                     {
                         if (condition == IOCondition.HUP)
@@ -252,6 +248,7 @@ public class  BBoxDialog : Object
                     }
                 });
             ChildWatch.add (child_pid, (pid, status) => {
+                    try { error.shutdown(false); } catch {}
                     Process.close_pid (pid);
                     if(!is_valid)
                     {
@@ -266,9 +263,7 @@ public class  BBoxDialog : Object
                     }
                     else
                     {
-                        kick_gtk();
                         var tsslen = find_start_times();
-                        kick_gtk();
                         spawn_decoder(0, tsslen);
                     }
                 });
@@ -288,7 +283,6 @@ public class  BBoxDialog : Object
         {
             char buf[1024];
             while (stream.gets (buf) != null) {
-                kick_gtk();
                 if(buf[0] == 'H' && buf[1] == ' ')
                 {
                     if(((string)buf).has_prefix("H Log start datetime:"))
@@ -396,7 +390,7 @@ public class  BBoxDialog : Object
                                             out p_stderr);
 
             IOChannel error = new IOChannel.unix_new (p_stderr);
-            error.add_watch (IOCondition.IN, (source, condition) => {
+            error.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
                     if (condition == IOCondition.HUP)
                         return false;
                     try
@@ -439,6 +433,7 @@ public class  BBoxDialog : Object
                     }
                 });
             ChildWatch.add (child_pid, (pid, status) => {
+                    try { error.shutdown(false); } catch {}
                     Process.close_pid (pid);
                     spawn_decoder(j+1, tsslen);
                 });
@@ -561,7 +556,6 @@ public class  BBoxDialog : Object
                     if(str == null || length == 0)
                         continue;
 
-                    kick_gtk();
                     var parts=str.split(",");
                     if(n == 0)
                     {
@@ -612,6 +606,7 @@ public class  BBoxDialog : Object
             } catch  (Error e) {
                 MWPLog.message("%s\n", e.message);
             }
+            try { chan.shutdown(false); } catch {}
             Process.close_pid (child_pid);
         } catch (SpawnError e) {
             MWPLog.message("%s\n", e.message);
@@ -658,6 +653,7 @@ public class  BBoxDialog : Object
                 } catch  (Error e) {
                     MWPLog.message("%s\n", e.message);
                 }
+                try { chan.shutdown(false); } catch {}
                 Process.close_pid (child_pid);
             } catch (SpawnError e) {
                 MWPLog.message("%s\n", e.message);
