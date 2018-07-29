@@ -1215,6 +1215,18 @@ public class MWPlanner : Gtk.Application {
                try_centre_on(la, lo);
             });
 
+        bb_runner.rescale.connect((lly, llx, ury,urx) => {
+                if(replayer != 0)
+                {
+                    Champlain.BoundingBox bbox = new Champlain.BoundingBox();
+                    bbox.left = lly;
+                    bbox.bottom = llx;
+                    bbox.right = ury;
+                    bbox.top = urx;
+                    view.ensure_visible(bbox, false);
+                }
+            });
+
         dockmenus = new string[DOCKLETS.NUMBER];
 
         dockmenus[DOCKLETS.MISSION] = "mission-list";
@@ -7001,6 +7013,7 @@ public class MWPlanner : Gtk.Application {
                     thr = robj.run(playfd[1], fn, delay);
                     break;
                 case Player.BBOX:
+                    bb_runner.find_bbox_box(fn, idx);
                     spawn_bbox_task(fn, idx, btype, delay, force_gps);
                     break;
             }

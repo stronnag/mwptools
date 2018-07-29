@@ -17,7 +17,10 @@ ARGV.options do |opt|
 end
 
 nzero = nfile = nlog = 0
-ARGV.each do |bbox|
+
+iter = ARGV.empty? ? ARGF : ARGV
+
+iter.each do |bbox|
   idx = 1
   vbox = true
   nfile += 1
