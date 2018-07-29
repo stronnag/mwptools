@@ -138,7 +138,7 @@
     </key>
 
     <key type="b" name="centre-on">
-      <default>false</default>
+      <default>true</default>
       <summary>centre map on GPS as needed</summary>
       <description>centre map on GPS as needed</description>
     </key>
