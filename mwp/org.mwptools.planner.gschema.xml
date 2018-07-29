@@ -478,9 +478,11 @@
     </key>
 
     <key name="geouser" type="s">
-      <default>""</default>
+      <default>"mwptools"</default>
       <summary>User account on geonames.org</summary>
-      <description>If supplied, geonames.org will be queried for blackbox log timezone info</description>
+      <description>A user account to query geonames.org for blackbox
+      log timezone info. A default account of 'mwptools' is available;
+      however users are requested to create their own account.</description>
     </key>
 
     <key name="zone-detect" type="s">
