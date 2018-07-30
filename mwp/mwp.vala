@@ -1215,14 +1215,16 @@ public class MWPlanner : Gtk.Application {
                try_centre_on(la, lo);
             });
 
-        bb_runner.rescale.connect((lly, llx, ury,urx) => {
+        bb_runner.rescale.connect((llx, lly, urx,ury) => {
                 if(replayer != 0)
                 {
                     Champlain.BoundingBox bbox = new Champlain.BoundingBox();
-                    bbox.left = lly;
-                    bbox.bottom = llx;
-                    bbox.right = ury;
-                    bbox.top = urx;
+                    bbox.left = llx;
+                    bbox.bottom = lly;
+                    bbox.right = urx;
+                    bbox.top = ury;
+                    var z = guess_appropriate_zoom(bbox);
+                    view.zoom_level = z;
                     view.ensure_visible(bbox, false);
                 }
             });
@@ -3672,7 +3674,7 @@ public class MWPlanner : Gtk.Application {
 
             ms.cy = (ms.maxy + ms.miny) / 2.0;
             ms.cx = (ms.maxx + ms.minx) / 2.0;
-            ms.zoom = guess_appropriate_zoom(ms);
+            ms.zoom = guess_appropriate_zoom(bb_from_mission(ms));
             if (ctr_on)
             {
                 map_centre_on(ms.cy, ms.cx);
@@ -6681,7 +6683,7 @@ public class MWPlanner : Gtk.Application {
         window.title = sb.str;
     }
 
-    private uint guess_appropriate_zoom(Mission ms)
+    private uint guess_appropriate_zoom(Champlain.BoundingBox bb)
     {
         uint z = 18;
 
@@ -6709,16 +6711,16 @@ public class MWPlanner : Gtk.Application {
             const double erad = 6372.7982; // earth radius
             const double ecirc = erad*Math.PI*2.0; // circumference
             const double rad = 0.017453292; // deg to rad
-
-            Geo.csedist(ms.cy, ms.minx, ms.cy, ms.maxx, out m_width, out cse);
-            Geo.csedist(ms.miny, ms.cx, ms.maxy, ms.cx, out m_height, out cse);
+            double cx,cy;
+            bb.get_center (out cy, out cx);
+            Geo.csedist(cy, bb.left, cy, bb.right, out m_width, out cse);
+            Geo.csedist(bb.bottom, cx, bb.top, cx, out m_height, out cse);
             m_width = m_width * 1852;
             m_height = m_height * 1852;
-
             for(z = view.get_max_zoom_level();
                 z >= view.get_min_zoom_level(); z--)
             {
-                double s = 1000 * ecirc * Math.cos(ms.cy * rad) / (Math.pow(2,(z+8)));
+                double s = 1000 * ecirc * Math.cos(cy * rad) / (Math.pow(2,(z+8)));
                 if(s*window_w > m_width && s*window_h > m_height)
                     break;
             }
@@ -6769,7 +6771,7 @@ public class MWPlanner : Gtk.Application {
 
         NavStatus.have_rth = ls.have_rth;
         if(ms.zoom == 0)
-            ms.zoom = guess_appropriate_zoom(ms);
+            ms.zoom = guess_appropriate_zoom(bb_from_mission(ms));
 
         set_view_zoom(ms.zoom);
         markers.add_list_store(ls);
@@ -6777,6 +6779,16 @@ public class MWPlanner : Gtk.Application {
         if(have_home)
             markers.add_home_point(home_pos.lat,home_pos.lon,ls);
         need_preview = true;
+    }
+
+    private Champlain.BoundingBox bb_from_mission(Mission ms)
+    {
+        Champlain.BoundingBox bb = new Champlain.BoundingBox();
+        bb.top = ms.maxy;
+        bb.bottom = ms.miny;
+        bb.right =  ms.maxx;
+        bb.left = ms.minx;
+        return bb;
     }
 
     private void mwp_warning_box(string warnmsg,
