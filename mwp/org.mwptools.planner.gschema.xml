@@ -46,7 +46,7 @@
       <default>20</default>
       <summary>Default altitude</summary>
       <description>
-        Default Altitude
+        Default Altitude (m)
       </description>
     </key>
 
@@ -91,7 +91,7 @@
     <key type="b" name="display-dms">
       <default>false</default>
       <summary>Position display</summary>
-      <description>Show positions as D:M:S rather than decimal degrees</description>
+      <description>Show positions as dd:mm:ss rather than decimal degrees</description>
     </key>
 
     <key name="map-sources" type="s">
@@ -167,7 +167,7 @@
     </key>
 
     <key name="heartbeat" type="s">
-      <summary>Something that runs every minute (i.e. screensaver disable</summary>
+      <summary>Something that runs every minute (i.e. screensaver disable)</summary>
       <default>""</default>
       <description>e.g. xscreensaver-command -deactivate</description>
     </key>
@@ -301,7 +301,7 @@
     <key name="ignore-nm" type="b">
       <default>false</default>
       <summary>Don't ever query Network Manager for network status</summary>
-      <description>Set to true to always ignore NM status (may slow down startup</description>
+      <description>Set to true to always ignore NM status (may slow down startup)</description>
     </key>
 
     <key name="ah-invert-roll" type="b">
@@ -375,7 +375,7 @@
       <default>"minLTM"</default>
       <summary>Types of message to forward</summary>
       <description>
-        Types of message to forward
+        Types of message to forward (none, LTM, minLTM, minMAV, all)
       </description>
     </key>
 
@@ -402,7 +402,7 @@
     </key>
 
     <key name="auto-wp-edit" type="b">
-      <default>true</default>
+      <default>false</default>
       <summary>Whether you direct WP editing is available
       </summary>
       <description>
@@ -459,7 +459,7 @@
     <key name="blackbox-decode" type="s">
       <default>"blackbox_decode"</default>
       <summary>Name of the blackbox_decode application</summary>
-      <description>Name of the blackbox_decode application (in case there are separate for iNav and betaflight</description>
+      <description>Name of the blackbox_decode application (in case there are separate for iNav and betaflight)</description>
     </key>
 
     <key name="geouser" type="s">
