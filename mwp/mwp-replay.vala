@@ -210,7 +210,8 @@ public class ReplayThread : GLib.Object
                 bool armed = false;
                 double start_tm = 0;
                 double utime = 0;
-                uint8 buf[256];
+                uint16 lq = 0;
+                uint8 buf[1024];
                 MSP_STATUS xa = MSP_STATUS();
                 bool mloaded = false;
                 msp.set_mode(MWSerial.Mode.SIM);
@@ -677,6 +678,12 @@ public class ReplayThread : GLib.Object
                                     break;
                             }
                             lt = utime;
+                            uint16 q =  (uint16)(utime-start_tm);
+                            if (lq != q)
+                            {
+                                send_tq_frame(msp, q);
+                                lq = q;
+                            }
                             while (paused)
                                 Thread.usleep(5);
                         }
@@ -689,13 +696,7 @@ public class ReplayThread : GLib.Object
                     }
                 }
                 MWPLog.message("end of scenario\n");
-
-                if(!delay)
-                {
-                    uint16 q=(uint16)(utime-start_tm);
-                    send_rec(msp, MSP.Cmds.Tq_FRAME, 2, &q);
-                }
-
+                send_tq_frame(msp, (uint16)(utime-start_tm));
                 xa.flag = 0;
                 var nb = serialise_status(xa, buf);
                 send_rec(msp, MSP.Cmds.STATUS, (uint)nb, buf);
@@ -706,5 +707,9 @@ public class ReplayThread : GLib.Object
                 return 0;
             });
         return thr;
+    }
+    void send_tq_frame(MWSerial msp, uint16 q)
+    {
+        send_rec(msp, MSP.Cmds.Tq_FRAME, 2, &q);
     }
 }

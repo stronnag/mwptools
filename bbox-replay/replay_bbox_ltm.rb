@@ -846,16 +846,17 @@ IO.popen(cmd,'rt') do |pipe|
 	  end
 	end
       end
+      et = ((us - st)/1000000).to_i
+      msg = encode_et et
+      send_msg dev, msg
       sleep (mindelay) ? mindelay : NORMDELAY
     end
   end
 end
 
-if mindelay
-  et = ((us - st)/1000000).to_i
-  msg = encode_et et
-  send_msg dev, msg
-end
+et = ((us - st)/1000000).to_i
+msg = encode_et et
+send_msg dev, msg
 
 # fake up a few disarm messages
 if lastr

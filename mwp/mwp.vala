@@ -3077,8 +3077,12 @@ public class MWPlanner : Gtk.Application {
         {
             if(armtime == 0)
                 time_t(out armtime);
-            time_t(out duration);
-            duration -= armtime;
+
+            if(replayer == 0)
+            {
+                time_t(out duration);
+                duration -= armtime;
+            }
         }
 
         if(Logger.is_logging)
@@ -5443,6 +5447,7 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.Tq_FRAME:
                 uint16 val = *(((uint16*)raw));
                 odo.time = val;
+                duration = (time_t)val;
                 break;
 
             case MSP.Cmds.Ta_FRAME:
