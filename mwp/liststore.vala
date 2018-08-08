@@ -650,7 +650,7 @@ public class ListBox : GLib.Object
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
                 mp.set_serstate(ss);
                 list_validate(path,new_text,
-                              WY_Columns.ALT,0.0,1000.0,true);
+                              WY_Columns.ALT,-1000.0,1000.0,true);
             });
 
 

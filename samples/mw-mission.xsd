@@ -91,8 +91,9 @@
       <xs:attribute name="alt" use="required">
 	<xs:simpleType>
 	  <!-- max value is legal limit in most EU countries -->
+	  <!-- min value is randomly arbitrary -->
           <xs:restriction base="xs:integer">
-	    <xs:minInclusive value="0"/>
+	    <xs:minInclusive value="-122"/>
 	    <xs:maxInclusive value="122"/>
           </xs:restriction>
 	</xs:simpleType>
