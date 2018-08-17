@@ -62,15 +62,15 @@ public class MWSerial : Object
 
     public static string devname = null;
     public static int brate = 38400;
-    private static bool ureset = false;
-    private static bool force6 = false;
-    private static int air_model = 1;
-    private static bool force_10hz = false;
-    private static bool noinit = false;
-    private static bool noautob = false;
-    private static bool slow = false;
-    private static bool pass = false;
-    private static bool galileo = false;
+    public static bool ureset = false;
+    public static bool force6 = false;
+    public static int air_model = 1;
+    public static bool noinit = false;
+    public static bool noautob = false;
+    public static bool slow = false;
+    public static bool pass = false;
+    public static bool galileo = false;
+    public static int urate = 5;
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", "/dev/ttyUSB0"},
@@ -80,7 +80,7 @@ public class MWSerial : Object
         { "no-autobaud", 'N', 0, OptionArg.NONE, out noautob, "No autobaud", null},
         { "force-v6", '6', 0, OptionArg.NONE, out force6, "Force V6 init (vice inav autodetect)", null},
         { "air-model", 'a', 0, OptionArg.INT, out air_model, "0,1,4", null},
-        { "force-10hz", 'z', 0, OptionArg.NONE, out force_10hz, "Force 10Hz", null},
+        { "update-rate", 'z', 0, OptionArg.INT, out urate, "1,2,_5_,10 Hz", null},
         { "slow", 's', 0, OptionArg.NONE, out slow, "slower initialisation", null},
         { "pass", 'p', 0, OptionArg.NONE, out pass, "cf gps passthrough", null},
         { "galileo", 'g', 0, OptionArg.NONE, out galileo, "enable Galileo", null},
@@ -660,6 +660,12 @@ public class MWSerial : Object
     0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0x01, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x22, 0x29, // disable VELNED
     0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0x01, 0x07, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x18, 0xE1  // enable PVT 1 cycle
         };
+        uint8 [] rate_1hz = {
+            0xB5, 0x62, 0x06, 0x08, 0x06, 0x03, 0xe8, 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x3f  // set rate to 1Hz (measurement period: 1000ms, navigation rate: 1 cycle)
+        };
+        uint8 [] rate_2hz = {
+    0xB5, 0x62, 0x06, 0x08, 0x06, 0x01, 0xf4, 0x00, 0x01, 0x00, 0x01, 0x00,  0x0b, 0x79 // set rate to 2Hz (measurement period: 500ms, navigation rate: 1 cycle)
+        };
         uint8 [] rate_5hz = {
     0xB5, 0x62, 0x06, 0x08, 0x06, 0x00, 0xC8, 0x00, 0x01, 0x00, 0x01, 0x00, 0xDE, 0x6A  // set rate to 5Hz (measurement period: 200ms, navigation rate: 1 cycle)
         };
@@ -786,15 +792,24 @@ public class MWSerial : Object
                 gps_state++;
                 break;
             case State.RATE:
-                if(force_10hz && (gpsvers >= 70000 ))
-                {
-                    stdout.printf("Set 10Hz\n");
+                if(urate == 10 && (gpsvers >= 70000 ))
                     ublox_write(fd, rate_10hz);
-                }
                 else
                 {
-                    stdout.printf("Set 5Hz\n");
-                    ublox_write(fd, rate_5hz);
+                    switch(urate)
+                    {
+                        case 1:
+                            ublox_write(fd, rate_1hz);
+                            break;
+                        case 2:
+                            ublox_write(fd, rate_2hz);
+                            break;
+                        default:
+                            urate = 5;
+                            ublox_write(fd, rate_5hz);
+                            break;
+                    }
+                    stdout.printf("Set rate %d Hz\n", urate);
                 }
                 gps_state++;
                 break;

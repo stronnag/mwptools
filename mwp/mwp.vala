@@ -5177,12 +5177,12 @@ public class MWPlanner : Gtk.Application {
                 {
                     if(failsafe)
                     {
-                        MWPLog.message("Failsafe asserted\n");
+                        MWPLog.message("Failsafe asserted %ds\n", duration);
                         map_show_warning("FAILSAFE");
                     }
                     else
                     {
-                        MWPLog.message("Failsafe cleared\n");
+                        MWPLog.message("Failsafe cleared %ds\n", duration);
                         map_hide_warning();
                     }
                     xfailsafe = failsafe;
@@ -5199,7 +5199,7 @@ public class MWPlanner : Gtk.Application {
                     dac++;
                     if(dac == 1 && armed != 0)
                     {
-                        MWPLog.message("Assumed disarm from LTM\n");
+                        MWPLog.message("Assumed disarm from LTM %ds\n", duration);
                         mwflags = 0;
                         armed = 0;
                         init_have_home();
