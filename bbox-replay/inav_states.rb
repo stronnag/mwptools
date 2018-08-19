@@ -175,7 +175,7 @@ INAV_STATES = {
     28 => :nav_state_launch_in_progress,
     29 => :nav_state_count,
   },
-  "2.0.0" => {
+  "2.1.0" => {
     0 => :nav_state_undefined,
     1 => :nav_state_idle,
     2 => :nav_state_althold_initialize,
