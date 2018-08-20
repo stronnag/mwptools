@@ -36,10 +36,10 @@ dnf install rubygem-json
 ##  https://developer.fedoraproject.org/tech/languages/ruby/gems-installation.html
 
 ## You must install the blackbox utilities
-## https://github.com/cleanflight/blackbox-tools/
+## https://github.com/iNavFlight/blackbox-tools
 ## in order to replay blackbox logs.
 
-# git clone --depth 1  https://github.com/cleanflight/blackbox-tools/
+# git clone --depth 1  https://github.com/iNavFlight/blackbox-tools
 # cd blackbox-tools/
 # make
 # sudo cp  obj/blackbox_decode obj/blackbox_render /usr/local/bin/

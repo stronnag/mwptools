@@ -55,9 +55,9 @@ apt install ruby ruby-json
 # make && sudo make install
 
 ## You must install the blackbox utilities
-## https://github.com/cleanflight/blackbox-tools/ in order to replay
+## https://github.com/iNavFlight/blackbox-tools in order to replay
 ## blackbox logs.
-# git clone --depth 1  https://github.com/cleanflight/blackbox-tools/
+# git clone --depth 1  https://github.com/iNavFlight/blackbox-tools
 # cd blackbox-tools
 # make && sudo cp obj/blackbox_decode obj/blackbox_render /usr/local/bin/
 
