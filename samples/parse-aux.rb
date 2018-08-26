@@ -1,5 +1,7 @@
 #!/usr/bin/ruby
 
+## src/main/fc/rc_modes.h
+
 BOXNAME=[
   "ARM",
   "ANGLE",

@@ -387,7 +387,7 @@ public class ReplayThread : GLib.Object
                                     a.conf_minthrottle=1064;
                                     a.maxthrottle=1864;
                                     a.mincommand=900;
-                                    a.conf_mag_declination = -15;
+                                    a.conf_mag_declination = 0;
                                     if (fctype == 3)
                                     {
                                         a.conf_vbatscale = 110;
