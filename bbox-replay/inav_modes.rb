@@ -7,6 +7,8 @@ require 'csv'
 require 'optparse'
 require_relative 'inav_states'
 
+RDISARMS = %w/NONE TIMEOUT STICKS SWITCH_3D SWITCH KILLSWITCH FAILSAFE NAVIGATION/
+
 idx = 1
 
 ARGV.options do |opt|
@@ -23,10 +25,14 @@ end
 bbox = (ARGV[0]|| abort('no BBOX log'))
 
 gitinfos=[]
+disarms=[]
+
 File.open(bbox,'rb') do |f|
   f.each do |l|
     if m = l.match(/^H Firmware revision:(.*)$/)
       gitinfos << m[1]
+    elsif m = l.match(/End of log \(disarm reason:(\d+)/)
+      disarms << m[1].to_i
     end
   end
 end
@@ -40,7 +46,9 @@ end
 
 inavers =  get_state_version iv
 
-STDERR.puts "iNav version = #{iv} (states eq #{inavers})"
+#STDERR.puts "iNav version = #{iv} (states eq #{inavers})"
+
+puts "#{File.basename(bbox)}: #{gitinfos[idx-1] if gitinfos.size >= idx}"
 
 nul = !Gem.win_platform? ? '/dev/null' : 'NUL'
 
@@ -92,3 +100,5 @@ IO.popen(cmd,'r') do |p|
     end
   end
 end
+
+puts "Disarmed by: #{RDISARMS[disarms[idx-1]]}" if disarms.size >= idx
