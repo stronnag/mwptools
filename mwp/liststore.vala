@@ -563,6 +563,16 @@ public class ListBox : GLib.Object
         combo.set_property ("has-entry", false);
         column.pack_start (combo, false);
         column.add_attribute (combo, "text", 1);
+
+        combo.editing_started.connect((e,p) => {
+                ss = mp.get_serstate();
+                mp.set_serstate(MWPlanner.SERSTATE.NONE);
+            });
+
+        combo.editing_canceled.connect((e) => {
+                mp.set_serstate(ss);
+            });
+
         combo.changed.connect((path, iter_new) => {
                 Gtk.TreeIter iter_val;
                 Value val;
@@ -570,6 +580,7 @@ public class ListBox : GLib.Object
                 var typ = (string)val;
                 list_model.get_iter (out iter_val, new Gtk.TreePath.from_string (path));
                 update_marker_type(iter_val, typ, 0);
+                mp.set_serstate(ss);
             });
 
         cell = new Gtk.CellRendererText ();
@@ -590,6 +601,10 @@ public class ListBox : GLib.Object
         cell.editing_started.connect((e,p) => {
                 ss = mp.get_serstate();
                 mp.set_serstate(MWPlanner.SERSTATE.NONE);
+            });
+
+        cell.editing_canceled.connect((e) => {
+                mp.set_serstate(ss);
             });
 
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
@@ -618,6 +633,9 @@ public class ListBox : GLib.Object
                 ss = mp.get_serstate();
                 mp.set_serstate(MWPlanner.SERSTATE.NONE);
             });
+        cell.editing_canceled.connect((e) => {
+                mp.set_serstate(ss);
+            });
 
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
                 mp.set_serstate(ss);
@@ -645,6 +663,9 @@ public class ListBox : GLib.Object
         cell.editing_started.connect((e,p) => {
                 ss = mp.get_serstate();
                 mp.set_serstate(MWPlanner.SERSTATE.NONE);
+            });
+        cell.editing_canceled.connect((e) => {
+                mp.set_serstate(ss);
             });
 
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
@@ -680,6 +701,9 @@ public class ListBox : GLib.Object
         cell.editing_started.connect((e,p) => {
                 ss = mp.get_serstate();
                 mp.set_serstate(MWPlanner.SERSTATE.NONE);
+            });
+        cell.editing_canceled.connect((e) => {
+                mp.set_serstate(ss);
             });
 
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
@@ -720,6 +744,9 @@ public class ListBox : GLib.Object
                 ss = mp.get_serstate();
                 mp.set_serstate(MWPlanner.SERSTATE.NONE);
             });
+        cell.editing_canceled.connect((e) => {
+                mp.set_serstate(ss);
+            });
 
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
                 mp.set_serstate(ss);
@@ -737,6 +764,9 @@ public class ListBox : GLib.Object
         cell.editing_started.connect((e,p) => {
                 ss = mp.get_serstate();
                 mp.set_serstate(MWPlanner.SERSTATE.NONE);
+            });
+        cell.editing_canceled.connect((e) => {
+                mp.set_serstate(ss);
             });
 
 // Min val is -1 because only jump uses this.

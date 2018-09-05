@@ -114,7 +114,7 @@ class FCMgr :Object
         }
 
         MWPLog.message("Starting restore\n");
-        if(fc != _fc)
+        if(_fc != Fc.UNKNOWN && fc != _fc)
         {
             MWPLog.message("Refusing to restore incompatible settings\n");
             ml.quit();
