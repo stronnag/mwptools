@@ -3,42 +3,42 @@
 ## src/main/fc/rc_modes.h
 
 BOXNAME=[
-  "ARM",
-  "ANGLE",
-  "HORIZON",
-  "NAV ALTHOLD",
-  "HEADING HOLD",
-  "HEADFREE",
-  "HEADADJ",
-  "CAMSTAB",
-  "NAV RTH",
-  "NAV POSHOLD",
-  "MANUAL",
-  "BEEPER",
-  "LEDLOW",
-  "LIGHTS",
-  "OSD SW",
-  "TELEMETRY",
-  "AUTO TUNE",
-  "BLACKBOX",
-  "FAILSAFE",
-  "NAV WP",
-  "AIR MODE",
-  "HOME RESET",
-  "GCS NAV",
-  "SURFACE",
-  "FLAPERON",
-  "TURN ASSIST",
-  "NAV LAUNCH",
-  "SERVO AUTOTRIM",
-  "KILLSWITCH",
-  "CAMERA CONTROL 1",
-  "CAMERA CONTROL 2",
-  "CAMERA CONTROL 3",
-  "OSD ALT 1",
-  "OSD ALT 2",
-  "OSD ALT 3",
-  "NAV CRUISE"
+  "ARM", #  0
+  "ANGLE", #  1
+  "HORIZON", #  2
+  "NAV ALTHOLD", #  3
+  "HEADINGHOLD", #  4
+  "HEADFREE", #  5
+  "HEADADJ", #  6
+  "CAMSTAB", #  7
+  "NAV RTH", #  8
+  "NAV POSHOLD", #  9
+  "MANUAL", #  10
+  "BEEPER ON", #  11
+  "LEDLOW", #  12
+  "LIGHTS", #  13
+  "NAV LAUNCH", #  14
+  "OSD", #  15
+  "TELEMETRY", #  16
+  "BLACKBOX", #  17
+  "FAILSAFE", #  18
+  "NAV WP", #  19
+  "AIRMODE", #  20
+  "HOME RESET", #  21
+  "GCS NAV", #  22
+  "KILLSWITCH", #  23
+  "SURFACE", #  24
+  "FLAPERON", #  25
+  "TURN ASSIST", #  26
+  "AUTOTRIM", #  27
+  "AUTOTUNE", #  28
+  "CAMERA1", #  29
+  "CAMERA2", #  30
+  "CAMERA3", #  31
+  "OSDALT1", #  32
+  "OSDALT2", #  33
+  "OSDALT3", #  34
+  "CRUISE", #  35
 ]
 
 ARGF.each do |l|
