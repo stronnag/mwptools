@@ -281,7 +281,10 @@ public class ReplayThread : GLib.Object
                                         var mfn =  obj.get_string_member("mission");
                                         var mfile = File.new_for_path (mfn);
                                         if (mfile.query_exists ())
+                                        {
                                             replay_mission_file(mfn);
+                                            Thread.usleep(MAXSLEEP);
+                                        }
                                         mloaded = true;
                                     }
 

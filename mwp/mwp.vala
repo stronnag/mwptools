@@ -1679,34 +1679,7 @@ public class MWPlanner : Gtk.Application {
             });
 
         ag.connect('i', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
-                map_hide_warning();
-                map_hide_wp();
-                init_sstats();
-                armed = 0;
-                rhdop = 10000;
-                init_have_home();
-                armed_spinner.stop();
-                armed_spinner.hide();
-                if (conf.audioarmed == true)
-                    audio_cb.active = false;
-                if(conf.logarmed == true)
-                    logb.active=false;
-                gpsinfo.annul();
-                navstatus.annul();
-                dbox.annul();
-                fbox.annul();
-                art_win.update(0, 0, item_visible(DOCKLETS.ARTHOR));
-                set_bat_stat(0);
-                duration = -1;
-                if(craft != null)
-                {
-                    craft.remove_marker();
-                    markers.remove_rings(view);
-                }
-                set_error_status(null);
-                xsensor = 0;
-                clear_sensor_array();
-                labelvbat.set_text("");
+                hard_display_reset(false);
                 return true;
             });
 
@@ -2273,6 +2246,43 @@ public class MWPlanner : Gtk.Application {
                 magcheck = true;
             }
         }
+    }
+
+    private void hard_display_reset(bool cm = false)
+    {
+        if(cm)
+        {
+            ls.clear_mission();
+            wpmgr.wps = {};
+        }
+        map_hide_warning();
+        map_hide_wp();
+        init_sstats();
+        armed = 0;
+        rhdop = 10000;
+        init_have_home();
+        armed_spinner.stop();
+        armed_spinner.hide();
+        if (conf.audioarmed == true)
+            audio_cb.active = false;
+        if(conf.logarmed == true)
+            logb.active=false;
+        gpsinfo.annul();
+        navstatus.annul();
+        dbox.annul();
+        fbox.annul();
+        art_win.update(0, 0, item_visible(DOCKLETS.ARTHOR));
+        set_bat_stat(0);
+        duration = -1;
+        if(craft != null)
+        {
+            craft.remove_marker();
+            markers.remove_rings(view);
+        }
+        set_error_status(null);
+        xsensor = 0;
+        clear_sensor_array();
+        labelvbat.set_text("");
     }
 
     private void key_recentre(uint key)
@@ -7023,6 +7033,7 @@ public class MWPlanner : Gtk.Application {
             switch(replayer)
             {
                 case Player.MWP:
+                    hard_display_reset(true);
                     robj = new ReplayThread();
                     robj.replay_mission_file.connect((mf) => {
                             load_file(mf);
@@ -7083,8 +7094,6 @@ public class MWPlanner : Gtk.Application {
 
     private void replay_bbox (bool delay, string? fn = null)
     {
-
-
         if(replayer == Player.BBOX)
         {
             Posix.kill(child_pid, MwpSignals.Signal.TERM);
