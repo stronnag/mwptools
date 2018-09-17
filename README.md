@@ -40,7 +40,7 @@ The tools are designed to be portable and as far as possible platform and archit
  * POSIX API
  * mspsim requires Posix pseudo-terminals.
 
-Please see the docs directory for specific development requirements for individual OS.
+Please see the `docs` directory for specific development requirements for individual OS.The `docs` directory also contains a user guide / manual in ODT and PDF formats (`docs/mwptools.{odt,pdf}`).
 
 mwptools is tested on x86_64, ia32 and ARM devices.
 
