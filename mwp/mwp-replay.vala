@@ -193,8 +193,6 @@ public class ReplayThread : GLib.Object
         paused = _paused;
     }
 
-    public signal void replay_mission_file (string filename);
-
     public Thread<int> run(int fd, string relog, bool delay=true)
     {
         MWSerial msp =  new MWSerial.forwarder();
@@ -213,7 +211,6 @@ public class ReplayThread : GLib.Object
                 uint16 lq = 0;
                 uint8 buf[1024];
                 MSP_STATUS xa = MSP_STATUS();
-                bool mloaded = false;
                 msp.set_mode(MWSerial.Mode.SIM);
 
                 var file = File.new_for_path (relog);
@@ -268,6 +265,7 @@ public class ReplayThread : GLib.Object
 
                             var typ = obj.get_string_member("type");
                             have_data = (typ != "init");
+//                            print("Message %s\n", typ);
                             switch(typ)
                             {
                                 case "init":
@@ -276,17 +274,6 @@ public class ReplayThread : GLib.Object
                                     var cap = obj.get_int_member ("capability");
                                     uint fctype = 42;
                                     string fcboard="UNKN";
-                                    if(obj.has_member("mission") && !mloaded)
-                                    {
-                                        var mfn =  obj.get_string_member("mission");
-                                        var mfile = File.new_for_path (mfn);
-                                        if (mfile.query_exists ())
-                                        {
-                                            replay_mission_file(mfn);
-                                            Thread.usleep(MAXSLEEP);
-                                        }
-                                        mloaded = true;
-                                    }
 
                                     if(mwvers == 0)
                                         mwvers = 255;

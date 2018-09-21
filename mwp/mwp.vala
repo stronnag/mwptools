@@ -6751,6 +6751,7 @@ public class MWPlanner : Gtk.Application {
             instantiate_mission(ms);
             last_file = fname;
             update_title_from_file(fname);
+            MWPLog.message("loaded %s\n", fname);
         }
         else
         {
@@ -7033,11 +7034,8 @@ public class MWPlanner : Gtk.Application {
             switch(replayer)
             {
                 case Player.MWP:
-                    hard_display_reset(true);
+                    check_mission(fn);
                     robj = new ReplayThread();
-                    robj.replay_mission_file.connect((mf) => {
-                            load_file(mf);
-                        });
                     thr = robj.run(playfd[1], fn, delay);
                     break;
                 case Player.BBOX:
@@ -7046,6 +7044,52 @@ public class MWPlanner : Gtk.Application {
                     break;
             }
         }
+    }
+
+    private void check_mission(string missionlog)
+    {
+        bool done = false;
+        string mfn = null;
+
+        var dis = FileStream.open(missionlog,"r");
+        if (dis != null)
+        {
+            var parser = new Json.Parser ();
+            string line = null;
+            while (!done && (line = dis.read_line ()) != null) {
+                try
+                {
+                    parser.load_from_data (line);
+                    var obj = parser.get_root ().get_object ();
+                    var typ = obj.get_string_member("type");
+                    switch(typ)
+                    {
+                        case "init":
+                            if(obj.has_member("mission"))
+                            {
+                                mfn =  obj.get_string_member("mission");
+                                var mfile = File.new_for_path (mfn);
+                                if (!mfile.query_exists ())
+                                    mfn = null;
+                            }
+                            done = true;
+                            break;
+                        case "armed":
+                            done = true;
+                            break;
+                    }
+                } catch {
+                    done = true;
+                }
+            }
+        }
+        if(mfn != null)
+        {
+            hard_display_reset(true);
+            load_file(mfn);
+        }
+        else
+            hard_display_reset(false);
     }
 
     private void spawn_bbox_task(string fn, int index, int btype,
