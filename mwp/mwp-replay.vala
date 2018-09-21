@@ -265,7 +265,6 @@ public class ReplayThread : GLib.Object
 
                             var typ = obj.get_string_member("type");
                             have_data = (typ != "init");
-//                            print("Message %s\n", typ);
                             switch(typ)
                             {
                                 case "init":

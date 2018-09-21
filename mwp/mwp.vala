@@ -6743,7 +6743,7 @@ public class MWPlanner : Gtk.Application {
         return z;
     }
 
-    private void load_file(string fname)
+    private void load_file(string fname, bool warn=true)
     {
         var ms = open_mission_file(fname);
         if(ms != null)
@@ -6754,9 +6754,8 @@ public class MWPlanner : Gtk.Application {
             MWPLog.message("loaded %s\n", fname);
         }
         else
-        {
-            mwp_warning_box("Failed to open file");
-        }
+            if (warn)
+                mwp_warning_box("Failed to open file");
     }
 
     private void set_view_zoom(uint z)
@@ -7066,12 +7065,7 @@ public class MWPlanner : Gtk.Application {
                     {
                         case "init":
                             if(obj.has_member("mission"))
-                            {
                                 mfn =  obj.get_string_member("mission");
-                                var mfile = File.new_for_path (mfn);
-                                if (!mfile.query_exists ())
-                                    mfn = null;
-                            }
                             done = true;
                             break;
                         case "armed":
@@ -7086,7 +7080,7 @@ public class MWPlanner : Gtk.Application {
         if(mfn != null)
         {
             hard_display_reset(true);
-            load_file(mfn);
+            load_file(mfn, false);
         }
         else
             hard_display_reset(false);
