@@ -1,36 +1,17 @@
 
 private static int baud = 115200;
 private static string dev;
-private static bool spam=false;
-private int secs = 0;
-private int millis = 20;
-
-
 
 const OptionEntry[] options = {
     { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", null},
     { "device", 'd', 0, OptionArg.STRING, out dev, "device", null},
-    { "spam", 's', 0,  OptionArg.NONE, out spam, "spam",null},
-    { "time", 't', 0,  OptionArg.INT, out secs, "secs",null},
-    { "millis", 'm', 0,  OptionArg.INT, out millis, "secs",null},
     {null}
 };
-
-static uint16 lmin = 64000;
-static uint16 lmax = 0;
-static uint nl = 0;
-static uint ns = 0;
-static uint ne = 0;
-static bool fquit = false;
 
 private static MainLoop ml;
 
 public static int main (string[] args)
 {
-
-    Posix.signal (Posix.SIGINT, (s) => {
-            fquit = true;
-        });
 
     ml = new MainLoop();
     MWSerial s;
@@ -76,58 +57,13 @@ public static int main (string[] args)
 
     if((res = s.open(dev, baud, out estr)) == true)
     {
-        uint tid = 0;
+        MWPLog.message("opened serial %s %d\n", dev, baud);
+        s.use_v2 = true;
         s.serial_event.connect((s,cmd,raw,len,xflags,errs) =>
             {
-                if(errs == false && cmd == MSP.Cmds.STATUS)
-                {
-                    if(tid != 0)
-                    {
-                        Source.remove(tid);
-                        tid = 0;
-                    }
-                    nl++;
-                    uint16 loopt;
-                    deserialise_u16(raw, out loopt);
-                    if(secs == 0)
-                        print("loop %u\n", loopt);
-                    if(loopt > lmax)
-                        lmax =  loopt;
-                    if(loopt < lmin)
-                        lmin =  loopt;
-                }
-                else
-                    ne++;
-
-                if(fquit)
-                    ml.quit();
-
-                if(!spam)
-                {
-                    s.send_command(MSP.Cmds.STATUS,null,0);
-                    ns++;
-                    tid = Timeout.add_seconds(250, () => {
-                            tid =0;
-                            s.send_command(MSP.Cmds.STATUS,null,0);
-                            ns++;
-                            return false;
-                        });
-                }
+                MWPLog.message("cmd %x len %d errs %s\n",
+                               cmd,len, errs.to_string());
             });
-
-        if(spam == false)
-        {
-            s.send_command(MSP.Cmds.STATUS,null,0);
-            ns++;
-        }
-        else
-        {
-            Timeout.add(millis, () => {
-                    s.send_command(MSP.Cmds.STATUS,null,0);
-                    ns++;
-                    return true;
-                });
-        }
 
         s.serial_lost.connect(() => {
                 s.close();
@@ -140,18 +76,26 @@ public static int main (string[] args)
         return 255;
     }
 
-    if(secs > 0)
-        Timeout.add_seconds(secs, () => {
-                fquit = true;
-                return false;
-            });
+    int n = 0;
+    Timeout.add_seconds(1, () => {
+            switch(n)
+            {
+                case 0,2:
+                s.send_command(MSP.Cmds.STATUS,null,0);
+                break;
+                case 1:
+                uint8 [] payl  = {0xD9, 0xB1, 0x3, 0x16, 0x33, 0xA3, 0xF0, 0xD0};
+                s.send_command(0x1F03, payl ,8);
+                MWPLog.message("send bogus message 0x1f03\n");
+                break;
 
+                default:
+                ml.quit();
+                break;
+            }
+            n++;
+            return true;
+        });
     ml.run ();
-    print("\n%s: %d secs,  sent=%u, recv %u, min=%u, max=%u\n",
-          (spam) ? "Async" : "Sync",
-          secs,ns,nl,lmin,lmax);
     return 0;
 }
-
-// 60 secs, interations 1858, min=2000, max=2364
-// 60 secs, interations 2860, min=2000, max=21322

@@ -1,4 +1,4 @@
-extern int open_serial(const char * dev, uint baudrate);
+extern int open_serial(const char * dev, guint baudrate);
 extern void  set_timeout(int fd, int tenths, int cc);
 extern void close_serial(int fd);
 extern int set_fd_speed(int fd, int baudrate);
