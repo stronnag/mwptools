@@ -685,6 +685,10 @@ public class MWPlanner : Gtk.Application {
         ARMING_DISABLED_CLI                             = (1 << 20),
         ARMING_DISABLED_CMS_MENU                        = (1 << 21),
         ARMING_DISABLED_OSD_MENU                        = (1 << 22),
+        ARMING_DISABLED_ROLLPITCH_NOT_CENTERED          = (1 << 23),
+        ARMING_DISABLED_SERVO_AUTOTRIM                  = (1 << 24),
+        ARMING_DISABLED_OOM                             = (1 << 25),
+        ARMING_DISABLED_INVALID_SETTING                 = (1 << 26)
     }
 
     private string? [] arm_fails =
@@ -693,7 +697,9 @@ public class MWPlanner : Gtk.Application {
         "Failsafe", "Not level","Calibrating","Overload",
         "Navigation unsafe", "Compass cal", "Acc cal", "Arm switch", "H/W fail",
         "Box failsafe", "Box killswitch", "RC Link", "Throttle", "CLI",
-        "CMS Menu", "OSD Menu", "Roll/Pitch", "Servo Autotrim", "Out of memory"
+        "CMS Menu", "OSD Menu", "Roll/Pitch", "Servo Autotrim", "Out of memory",
+        "Settings"
+
     };
 
     private enum SENSOR_STATES

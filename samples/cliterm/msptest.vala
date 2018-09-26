@@ -81,17 +81,16 @@ public static int main (string[] args)
             switch(n)
             {
                 case 0,2:
-                s.send_command(MSP.Cmds.STATUS,null,0);
-                break;
+                   s.send_command(MSP.Cmds.STATUS,null,0);
+                   break;
                 case 1:
-                uint8 [] payl  = {0xD9, 0xB1, 0x3, 0x16, 0x33, 0xA3, 0xF0, 0xD0};
-                s.send_command(0x1F03, payl ,8);
-                MWPLog.message("send bogus message 0x1f03\n");
-                break;
-
+                    uint8 [] payl  = {0xD9, 0xB1, 0x3, 0x16, 0x33, 0xA3, 0xF0, 0xD0};
+                    s.send_command(0x1F03, payl ,8);
+                    MWPLog.message("send bogus message 0x1f03\n");
+                    break;
                 default:
-                ml.quit();
-                break;
+                    ml.quit();
+                    break;
             }
             n++;
             return true;
