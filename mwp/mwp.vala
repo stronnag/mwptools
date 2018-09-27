@@ -2888,9 +2888,13 @@ public class MWPlanner : Gtk.Application {
             }
             requests += MSP.Cmds.RAW_GPS;
             requests += MSP.Cmds.COMP_GPS;
-            requests += MSP.Cmds.GPSSTATISTICS;
 
-            reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS +MSize.MSP_GPSSTATISTICS );
+            if((navcap & NAVCAPS.NAVCONFIG) == 0)
+            {
+                requests += MSP.Cmds.GPSSTATISTICS;
+                reqsize += MSize.MSP_GPSSTATISTICS;
+            }
+            reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS);
             init_craft_icon();
         }
         else

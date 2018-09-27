@@ -831,6 +831,7 @@ Otherwise, select a valid FC vehicle type</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="halign">start</property>
+        <property name="margin_left">4</property>
         <property name="label" translatable="yes">Compass</property>
       </object>
       <packing>
@@ -861,6 +862,7 @@ Otherwise, select a valid FC vehicle type</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="halign">start</property>
+        <property name="margin_left">4</property>
         <property name="label" translatable="yes">GPS CoG</property>
       </object>
       <packing>
