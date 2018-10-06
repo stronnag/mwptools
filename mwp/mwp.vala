@@ -1414,6 +1414,10 @@ public class MWPlanner : Gtk.Application {
                 about.response.connect(() => {
                         about.hide();
                     });
+                about.delete_event.connect (() => {
+                        about.hide();
+                        return true;
+                    });
             });
         window.add_action(saq);
 
