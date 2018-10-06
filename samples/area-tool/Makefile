@@ -48,4 +48,3 @@ install: $(APPS)
 	install -m 644 mwp-area-planner.desktop $(datadir)/share/applications/mwp-area-planner.desktop
 	install -d $(datadir)/share/icons/hicolor/scalable/apps
 	install -m 644 mwp_area_icon.svg $(datadir)/share/icons/hicolor/scalable/apps/mwp_area_icon.svg
-	gtk-update-icon-cache $(datadir)/share/icons/hicolor
