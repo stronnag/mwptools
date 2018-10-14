@@ -39,6 +39,7 @@ BOXNAME=[
   "OSDALT2", #  33
   "OSDALT3", #  34
   "CRUISE", #  35
+  "BRAKING", #  36
 ]
 
 ARGF.each do |l|
