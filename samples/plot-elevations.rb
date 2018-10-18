@@ -81,22 +81,29 @@ location (the -h option takes prefence).
       exit
     end
     abort "Need a mission file" unless @file
+    @tmps=[]
+    at_exit {File.unlink(*@tmps) unless @tmps.empty?}
   end
 
   def mktemp sfx=nil
     tf = File.join Dir.tmpdir,".mi-#{$$}-#{rand(0x100000000).to_s(36)}-"
     tf << sfx if sfx
+    @tmps << tf
+    tf
   end
 
-  def mkplt infile, mx, dists, wps
+  def mkplt infile0, infile1, mx, dists, wps
     str=%Q/
 set bmargin 8
 set key top right
 set key box
 set grid
 set xtics (#{dists})
+set xtics rotate by 45 offset -0.8,-1
+set x2tics rotate by 45
 set x2tics (#{wps})
 set xlabel "Distance"
+set bmargin 3
 
 set title "Mission Elevation"
 set ylabel "Elevation"
@@ -108,12 +115,11 @@ set datafile separator "\t"
 set terminal svg enhanced background rgb 'white' font "Droid Sans,9" rounded
 set output \"#{@pf}\"
 
-plot \"#{infile}\" using 11:12 t "AGL" w lines lt -1 lw 2  lc rgb "red", '' using 11:13  t "Terrain" w filledcurve y1=#{mx}  lt -1 lw 2  lc rgb "green"
+plot \"#{infile0}\" using 11:12 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"#{infile1}\" using 2:3  t "Terrain" w filledcurve y1=#{mx}  lt -1 lw 2  lc rgb "green"
 /
     plt = mktemp ".plt"
     File.open(plt, 'w') {|fh| fh.puts str}
     system "gnuplot #{plt}"
-    File.unlink plt
   end
 
   def read
@@ -169,11 +175,41 @@ plot \"#{infile}\" using 11:12 t "AGL" w lines lt -1 lw 2  lc rgb "red", '' usin
     ipos
   end
 
-  def to_info pos
-    pa=[]
-    pos.each {|p| pa << p[:lat] << p[:lon]}
-    rstr='/REST/v1/Elevation/List?points='
-    rstr << pa.join(',') << "&key=Al1bqGaNodeNA71bleJWfjFvW7fApjJOohMSZ2_J0Hpgt4MGdLIYDbgpgCZbZ1xA"
+  def pca pts
+    lat = 0
+    lon = 0
+    str=''
+    (0...pts.length).step(2).each do |i|
+      nlat = (pts[i] * 100000).round.to_i
+      nlon = (pts[i+1] * 100000).round.to_i
+      dy = nlat - lat
+      dx = nlon - lon
+      lat = nlat
+      lon = nlon
+
+      dy = (dy << 1) ^ (dy >> 31)
+      dx = (dx << 1) ^ (dx >> 31)
+      index = ((dy + dx) * (dy + dx + 1) / 2) + dy
+      while (index > 0)
+	rem = index & 31
+	index = (index - rem) / 32
+	if (index > 0)
+	  rem += 32
+	end
+	str << "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-"[rem]
+      end
+    end
+    str
+  end
+
+  def get_bing_elevations pts, nsam=0
+    act = (nsam <= 0) ? 'List' : 'Polyline'
+    rstr="/REST/v1/Elevation/#{act}?points="
+    rstr << pca(pts)
+    if nsam > 0
+      rstr << "&samp=#{nsam}"
+    end
+    rstr << "&key=Al1bqGaNodeNA71bleJWfjFvW7fApjJOohMSZ2_J0Hpgt4MGdLIYDbgpgCZbZ1xA"
     alts=nil
     http = Net::HTTP.new("dev.virtualearth.net")
     request = Net::HTTP::Get.new(rstr)
@@ -182,6 +218,13 @@ plot \"#{infile}\" using 11:12 t "AGL" w lines lt -1 lw 2  lc rgb "red", '' usin
       jalts=JSON.parse(response.body)
       alts = jalts['resourceSets'][0]['resources'][0]['elevations']
     end
+    alts
+  end
+
+  def to_info pos
+    pa=[]
+    pos.each {|p| pa << p[:lat] << p[:lon]}
+    alts = get_bing_elevations pa
 
     fn = @of
     tf = nil
@@ -219,14 +262,29 @@ plot \"#{infile}\" using 11:12 t "AGL" w lines lt -1 lw 2  lc rgb "red", '' usin
       end
     end
     unless @pf.nil?
+      # needs to calc number
+      np = (pos[-1][:tdist]/30).to_i
+      np=1023 if np > 1023
+      elevs = get_bing_elevations pa, np+1
+      dx=pos[-1][:tdist]/np.to_f
+      efn = mktemp ".csv"
+      File.open(efn,"w") do |fh|
+	fh.puts %w/Index Dist Elev/.join("\t")
+	0.upto(np) do |j|
+	  fh.puts [j, (dx*j).to_i, elevs[j]].join("\t")
+	end
+      end
       @pf << ".svg" unless @pf.match(/\.svg$/)
       mx = (mx / 10) * 10
-      mkplt fn, mx, dists.join(','),wps.join(',')
+      mkplt fn, efn, mx, dists.join(','),wps.join(',')
     end
-#    File.unlink tf if tf
   end
 end
 
 g = MReader.new
 pos = g.read
-g.to_info pos
+if pos.size > 1
+  g.to_info pos
+else
+  puts "Truncated mission"
+end
