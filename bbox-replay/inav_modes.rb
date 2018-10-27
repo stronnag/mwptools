@@ -66,11 +66,15 @@ IO.popen(cmd,'r') do |p|
 		:return_headers => true)
   hdrs = csv.shift
   st = nil
+  xts=nil
+  ts=nil
   nstate = -1
   istate = 'IDLE'
+  itn=0
 
   csv.each do |c|
     ts = c[:time_us].to_f / 1000000
+    itn = c[:loopiteration]
     st = ts if st.nil?
     xts  = ts - st
     fs = c[:failsafephase_flags].strip
@@ -91,14 +95,14 @@ IO.popen(cmd,'r') do |p|
     end
     if c[:navstate].to_i != nstate
       if nstate == -1
-	puts %w/Time(s) Elapsed(s)  State/.join("\t")
+	puts %w/Iteration Time(s) Elapsed(s)  State/.join("\t")
       end
       nstate = c[:navstate].to_i
       as = INAV_STATES[inavers][c[:navstate].to_i].to_s
       astate = (as) ? "#{as} (#{nstate})" : "State=%d" % nstate
-      puts ["%6.1f" % ts, "(%6.1f)" % xts, astate].join("\t")
+      puts ["%9d" % itn, "%6.1f" % ts, "(%6.1f)" % xts, astate].join("\t")
     end
   end
+  puts ["%9d" % itn, "%6.1f" % ts, "(%6.1f)" % xts, "end of log"].join("\t")
 end
-
 puts "Disarmed by: #{RDISARMS[disarms[idx-1]]}" if disarms.size >= idx

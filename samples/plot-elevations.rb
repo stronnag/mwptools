@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
 # MIT licence
@@ -119,7 +119,9 @@ plot \"#{infile0}\" using 11:12 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"
 /
     plt = mktemp ".plt"
     File.open(plt, 'w') {|fh| fh.puts str}
-    system "gnuplot #{plt}"
+    unless system "gnuplot #{plt}" == true
+      abort "Failed to run gnuplot"
+    end
   end
 
   def read
