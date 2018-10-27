@@ -119,7 +119,7 @@ plot \"#{infile0}\" using 11:12 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"
 /
     plt = mktemp ".plt"
     File.open(plt, 'w') {|fh| fh.puts str}
-    unless system "gnuplot #{plt}" == true
+    unless system("gnuplot #{plt}") == true
       abort "Failed to run gnuplot"
     end
   end
@@ -285,7 +285,7 @@ end
 
 g = MReader.new
 pos = g.read
-if pos.size > 1
+if pos and pos.size > 1
   g.to_info pos
 else
   puts "Truncated mission"
