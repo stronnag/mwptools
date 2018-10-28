@@ -270,6 +270,8 @@ public class MWSerial : Object
 
     private void display_fix7()
     {
+        var pdate = new DateTime.now_utc ();
+
         stdout.printf("PVT: lat: %f lon: %f elev: %.2f acc(h/v): %.1f/%.1f\n",
                           _buffer.pvt.latitude/10000000.0,
                           _buffer.pvt.longitude/10000000.0,
@@ -286,7 +288,15 @@ public class MWSerial : Object
                                                               _buffer.pvt.min,
                                                               _buffer.pvt.sec,
                                                               nano);
-        stdout.printf("%s\n", u.date);
+        var pdate_s = "%04d-%02d-%02d %02d:%02d:%06.3f".printf(
+            pdate.get_year(),
+            pdate.get_month(),
+            pdate.get_day_of_month(),
+            pdate.get_hour(),
+            pdate.get_minute(),
+            pdate.get_seconds());
+
+        stdout.printf("GPS: %s - Host: %s\n", u.date, pdate_s);
         if(_fix_ok)
         {
             u.fix_ok = true;
