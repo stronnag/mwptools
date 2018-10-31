@@ -57,7 +57,7 @@ do
     *.bin) BIN=$P ;;
     rescue) RESCUE=1 ;;
     switch) SWITCH=1 ;;
-    noerase) FERASE=0 ;;
+    noerase) FERASE= ;;
   esac
 done
 

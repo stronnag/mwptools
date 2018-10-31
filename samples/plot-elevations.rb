@@ -206,15 +206,22 @@ plot \"#{infile0}\" using 11:12 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"
 
   def get_bing_elevations pts, nsam=0
     act = (nsam <= 0) ? 'List' : 'Polyline'
-    rstr="/REST/v1/Elevation/#{act}?points="
-    rstr << pca(pts)
+    u="http://dev.virtualearth.net/REST/v1/Elevation/#{act}"
+    u << "?key=Al1bqGaNodeNA71bleJWfjFvW7fApjJOohMSZ2_J0Hpgt4MGdLIYDbgpgCZbZ1xA"
     if nsam > 0
-      rstr << "&samp=#{nsam}"
+      u << "&samp=#{nsam}"
     end
-    rstr << "&key=Al1bqGaNodeNA71bleJWfjFvW7fApjJOohMSZ2_J0Hpgt4MGdLIYDbgpgCZbZ1xA"
+    uri = URI.parse(u)
+    rstr = "points="
+    rstr << pca(pts)
+
     alts=nil
-    http = Net::HTTP.new("dev.virtualearth.net")
-    request = Net::HTTP::Get.new(rstr)
+    http = Net::HTTP.new(uri.host, uri.port)
+    headers = {"Content-Length" => rstr.length.to_s,
+      "Content-Type" => "text/plain; charset=utf-8"}
+
+    request = Net::HTTP::Post.new(uri.request_uri, headers)
+    request.body = rstr
     response = http.request(request)
     if response.code == '200'
       jalts=JSON.parse(response.body)
@@ -227,7 +234,6 @@ plot \"#{infile0}\" using 11:12 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"
     pa=[]
     pos.each {|p| pa << p[:lat] << p[:lon]}
     alts = get_bing_elevations pa
-
     fn = @of
     tf = nil
     if fn.nil?
