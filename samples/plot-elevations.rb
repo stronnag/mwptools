@@ -48,6 +48,7 @@ class MReader
 
   def initialize
     @pf=@of=@hstr=nil
+    @margin=nil
 
     begin
       opts = OptionParser.new
@@ -73,6 +74,7 @@ location (the -h option takes prefence).
       opts.on("-p",'--plotfile=FILE', 'Plot file (SVG)') {|o| @pf = o }
       opts.on("-h",'--home=LOCATION', 'Home location as lat,long') {|o| @hstr = o }
       opts.on("-o",'--output=FILE', 'Output file (CSV)') {|o| @of = o }
+      opts.on("-m",'--margin=M', 'Clearance Margin (m)', Integer) {|o| @margin = o }
       rest = opts.parse(ARGV)
       @file = rest[0]
     rescue
@@ -92,7 +94,7 @@ location (the -h option takes prefence).
     tf
   end
 
-  def mkplt infile0, infile1, mx, dists, wps
+  def mkplt infile0, infile1, mx, dists, wps,mfile=nil
     str=%Q/
 set bmargin 8
 set key top right
@@ -115,8 +117,10 @@ set datafile separator "\t"
 set terminal svg enhanced background rgb 'white' font "Droid Sans,9" rounded
 set output \"#{@pf}\"
 
-plot \"#{infile0}\" using 11:12 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"#{infile1}\" using 2:3  t "Terrain" w filledcurve y1=#{mx}  lt -1 lw 2  lc rgb "green"
-/
+plot \"#{infile0}\" using 11:12 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"#{infile1}\" using 2:3  t "Terrain" w filledcurve y1=#{mx}  lt -1 lw 2  lc rgb "green"/
+    if mfile
+      str << ", \"#{mfile}\" using 2:3 t \"Margin\" w lines lt -1 lw 2  lc rgb \"blue\""
+    end
     plt = mktemp ".plt"
     File.open(plt, 'w') {|fh| fh.puts str}
     unless system("gnuplot #{plt}") == true
@@ -246,6 +250,7 @@ plot \"#{infile0}\" using 11:12 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"
     mx = 99999
     dists=[]
     wps=[]
+    has_rth = false
     File.open(fn,"w") do |fh|
       fh.puts %w/No Act Lat Lon Alt P1 P2 P3 Course Leg\ (m) Total\ (m) AMSL Elevation/.join("\t")
       pos.each_with_index do |p,j|
@@ -257,14 +262,16 @@ plot \"#{infile0}\" using 11:12 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"
 	mx = terralt if terralt < mx
 	fh.puts [p[:no], p[:act], p[:lat], p[:lon], p[:alt], p[:p1], p[:p2],
 	p[:p3],cse, dist, md,agl, terralt].join("\t")
-	lbl = case p[:act]
-	      when 'HOME'
-		'Home'
-	      when 'RTH'
-		'RTH'
-	      else
-		"WP%d" % p[:no]
-	      end
+	lbl=nil
+	case p[:act]
+	when 'HOME'
+	  lbl = 'Home'
+	when 'RTH'
+	  has_rth = true
+	  lbl = 'RTH'
+	else
+	  lbl = "WP%d" % p[:no]
+	end
 	wps << "\"#{lbl}\" #{p[:tdist].to_i}"
 	dists << p[:tdist].to_i
       end
@@ -282,9 +289,20 @@ plot \"#{infile0}\" using 11:12 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"
 	  fh.puts [j, (dx*j).to_i, elevs[j]].join("\t")
 	end
       end
+      mfile=nil
+      if @margin
+	mfile = mktemp ".csv"
+	File.open(mfile,"w") do |fh|
+	  fh.puts %w/Index Dist Elev/.join("\t")
+	  0.upto(np) do |j|
+	    mh = (j == 0 || (j == np && has_rth)) ? 0 : @margin
+	    fh.puts [j, (dx*j).to_i, mh+elevs[j]].join("\t")
+	  end
+	end
+      end
       @pf << ".svg" unless @pf.match(/\.svg$/)
       mx = (mx / 10) * 10
-      mkplt fn, efn, mx, dists.join(','),wps.join(',')
+      mkplt fn, efn, mx, dists.join(','),wps.join(','),mfile
     end
   end
 end
