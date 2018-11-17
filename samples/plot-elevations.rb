@@ -8,6 +8,7 @@ require 'nokogiri'
 require 'json'
 require 'optparse'
 require 'tmpdir'
+require "base64"
 
 include Math
 
@@ -45,6 +46,8 @@ module Geocalc
 end
 
 class MReader
+
+  BKEY="QWwxYnFHYU5vZGVOQTcxYmxlSldmakZ2VzdmQXBqSk9vaE1TWjJfSjBIcGd0NE1HZExJWURiZ3BnQ1piWjF4QQ=="
 
   def initialize
     @pf=@of=@hstr=nil
@@ -211,7 +214,8 @@ plot \"#{infile0}\" using 11:12 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"
   def get_bing_elevations pts, nsam=0
     act = (nsam <= 0) ? 'List' : 'Polyline'
     u="http://dev.virtualearth.net/REST/v1/Elevation/#{act}"
-    u << "?key=Al1bqGaNodeNA71bleJWfjFvW7fApjJOohMSZ2_J0Hpgt4MGdLIYDbgpgCZbZ1xA"
+    u << "?key="
+    u << Base64.decode64(BKEY)
     if nsam > 0
       u << "&samp=#{nsam}"
     end
