@@ -49,9 +49,42 @@ class MReader
 
   BKEY="QWwxYnFHYU5vZGVOQTcxYmxlSldmakZ2VzdmQXBqSk9vaE1TWjJfSjBIcGd0NE1HZExJWURiZ3BnQ1piWjF4QQ=="
 
+
+  def read_config
+    cfile = File.join ENV['HOME'], ".config/mwp/elev-plot"
+    if !File.exist? cfile
+      cfile = ".elev-plot.rc"
+    end
+    if File.exist? cfile
+      File.open(cfile,'r') do |f|
+	f.each do |l|
+	  l.chomp!
+	  next if l.empty? or l.match(/^\s*#/)
+	  a = l.split('=')
+	  if a.size == 2
+	    case a[0]
+	    when /^home/
+	      @hstr = a[1].strip
+	    when /^rthalt/
+	      @rthh = a[1].strip.to_i
+	    when /^margin/
+	      @margin = a[1].strip.to_i
+	    end
+	  end
+	end
+      end
+    end
+  end
+
   def initialize
-    @pf=@of=@hstr=nil
+    @pf==@hstr=nil
     @margin=nil
+    @rthh = nil
+    @save = nil
+
+    read_config
+
+    @hstr=(@hstr||ENV['MWP_HOME'])
 
     begin
       opts = OptionParser.new
@@ -76,7 +109,8 @@ location (the -h option takes prefence).
       opts.separator "Options:"
       opts.on("-p",'--plotfile=FILE', 'Plot file (SVG)') {|o| @pf = o }
       opts.on("-h",'--home=LOCATION', 'Home location as lat,long') {|o| @hstr = o }
-      opts.on("-o",'--output=FILE', 'Output file (CSV)') {|o| @of = o }
+      opts.on("-o",'--output=FILE', 'Revised mission') {|o| @save = o }
+      opts.on("-r",'--rth-alt=ALT', 'RTH altitude', Integer) {|o| @rthh = o }
       opts.on("-m",'--margin=M', 'Clearance Margin (m)', Integer) {|o| @margin = o }
       rest = opts.parse(ARGV)
       @file = rest[0]
@@ -86,6 +120,7 @@ location (the -h option takes prefence).
       exit
     end
     abort "Need a mission file" unless @file
+    abort "You must provide an estimed home position" unless @hstr
     @tmps=[]
     at_exit {File.unlink(*@tmps) unless @tmps.empty?}
   end
@@ -97,38 +132,118 @@ location (the -h option takes prefence).
     tf
   end
 
-  def mkplt infile0, infile1, mx, dists, wps,mfile=nil
-    str=%Q/
+  def mkplt ap, mx, lwp, rth
+    dists=[]
+    wps=[]
+    gl=[]
+    ml=[]
+    cl=[]
+    ap.each_with_index do |p,n|
+      case p[:typ]
+      when 'h','r',1..60
+	dists << p[:dist]
+	wps << "\"#{p[:label]}\" #{p[:dist]}"
+	# need RTH adjustments
+	ml << [p[:dist], p[:absalt]]
+	if rth
+	  if n == lwp
+	    if p[:absalt] < ap[rth][:absalt]
+	      ml << [p[:dist], ap[rth][:absalt]]
+	    end
+	  end
+	end
+      end
+      if @margin
+	  cl << [p[:dist], @margin+p[:amsl]]
+      end
+      gl << [p[:dist], p[:amsl]]
+    end
+
+    infile0 = mktemp ".csv"
+    File.open(infile0, 'w') do |fh|
+      fh.puts %w/Dist MElev/.join("\t")
+      ml.each do |p|
+	fh.puts p.join("\t")
+      end
+    end
+
+    infile1 = mktemp ".csv"
+    File.open(infile1, 'w') do |fh|
+      fh.puts %w/Dist AMSL/.join("\t")
+      gl.each do |p|
+	fh.puts p.join("\t")
+      end
+    end
+
+    if @margin
+      mfile = mktemp ".csv"
+      File.open(mfile, 'w') do |fh|
+	fh.puts %w/Dist Clear/.join("\t")
+	cl.each do |p|
+	  fh.puts p.join("\t")
+	end
+      end
+    end
+    str = "#!/usr/bin/gnuplot -p\n"
+    str << %Q/
 set bmargin 8
 set key top right
 set key box
 set grid
-set xtics (#{dists})
+set xtics (#{dists.join(',')})
 set xtics rotate by 45 offset -0.8,-1
 set x2tics rotate by 45
-set x2tics (#{wps})
+set x2tics (#{wps.join(',')})
 set xlabel "Distance"
 set bmargin 3
+set offsets graph 0,0,0.01,0.01
 
 set title "Mission Elevation"
 set ylabel "Elevation"
 show label
-set yrange [ #{mx} : ]
 set xrange [ 0 : ]
 set datafile separator "\t"
+set yrange [ #{mx} : ]
 
-set terminal svg enhanced background rgb 'white' font "Droid Sans,9" rounded
+set terminal push
+set terminal svg enhanced background rgb 'white' font "sans,9" rounded
 set output \"#{@pf}\"
 
-plot \"#{infile0}\" using 11:12 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"#{infile1}\" using 2:3  t "Terrain" w filledcurve y1=#{mx}  lt -1 lw 2  lc rgb "green"/
+plot \"#{infile0}\" using 1:2 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"#{infile1}\" using 1:2 t "Terrain" w filledcurve y1=#{mx} lt -1 lw 2  lc rgb "green"/
     if mfile
-      str << ", \"#{mfile}\" using 2:3 t \"Margin\" w lines lt -1 lw 2  lc rgb \"blue\""
+      str << ", \"#{mfile}\" using 1:2 t \"Margin\" w lines lt -1 lw 2  lc rgb \"blue\""
     end
+    str << "
+set terminal pop
+set output
+replot
+"
+
     plt = mktemp ".plt"
     File.open(plt, 'w') {|fh| fh.puts str}
-    unless system("gnuplot #{plt}") == true
+    unless system("gnuplot -p #{plt}") == true
       abort "Failed to run gnuplot"
     end
+  end
+
+  def rewrite fixups
+    doc = Nokogiri::XML(open(@file))
+    x = doc.xpath("//mwp")
+    if x
+      x.first['generator'] = 'plot-elevations.rb (mwptools)'
+      x.first['save-date'] = Time.now.strftime("%FT%T%z")
+    end
+
+    fixups.each_with_index do |f,n|
+      unless f.nil?
+	q = "//MISSIONITEM[@no='#{n}']"
+	x = doc.xpath(q)
+	if x
+	  x.first['alt'] = f.to_s
+	end
+      end
+    end
+    File.open(@save,'w') {|fh| fh.puts doc.to_s}
   end
 
   def read
@@ -138,17 +253,14 @@ plot \"#{infile0}\" using 11:12 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"
     tdist = 0
     hlat = nil
     hlon = nil
-    hstr=(@hstr||ENV['MWP_HOME'])
-    if hstr
-      hp = hstr.split(',')
-      hlat = hp[0].to_f
-      hlon = hp[1].to_f
-      ipos << { :no => 0, :lat => hlat, :lon => hlon, :alt => 0.0,
-	:act=> 'HOME', :p1 => '0', :p2 => '0', :p3 => '0',
-	:cse => nil, :dist => 0.0, :tdist => 0.0}
-      ly = hlat
-      lx = hlon
-    end
+    hp = @hstr.split(',')
+    hlat = hp[0].to_f
+    hlon = hp[1].to_f
+    ipos << { :no => 0, :lat => hlat, :lon => hlon, :alt => 0.0,
+      :act=> 'HOME', :p1 => '0', :p2 => '0', :p3 => '0',
+      :cse => nil, :dist => 0.0, :tdist => 0.0}
+    ly = hlat
+    lx = hlon
 
     doc = Nokogiri::XML(open(@file))
     doc.xpath('//MISSIONITEM|//missionitem').each do |t|
@@ -159,7 +271,7 @@ plot \"#{infile0}\" using 11:12 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"
       lon = t['lon'].to_f
       alt = t['alt'].to_i
       if action == 'RTH'
-	if hstr.nil?
+	if @hstr.nil?
 	  break
 	else
 	  lat = hlat
@@ -242,71 +354,131 @@ plot \"#{infile0}\" using 11:12 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"
     pa=[]
     pos.each {|p| pa << p[:lat] << p[:lon]}
     alts = get_bing_elevations pa
-    fn = @of
-    tf = nil
-    if fn.nil?
-      if @pf
-	tf = fn = mktemp ".csv"
-      else
-	fn = STDOUT.fileno
-      end
-    end
     mx = 99999
     dists=[]
     wps=[]
     has_rth = false
-    File.open(fn,"w") do |fh|
-      fh.puts %w/No Act Lat Lon Alt P1 P2 P3 Course Leg\ (m) Total\ (m) AMSL Elevation/.join("\t")
-      pos.each_with_index do |p,j|
-	cse =  p[:cse] ? "%.1f" % p[:cse] : nil
-        dist = p[:cse] ? "%.0f" % p[:dist] : nil
-        md = "%.0f" % p[:tdist]
-	agl = alts ? alts[0] + p[:alt]  : nil
-	terralt = alts ? alts[j] : nil
-	mx = terralt if terralt < mx
-	fh.puts [p[:no], p[:act], p[:lat], p[:lon], p[:alt], p[:p1], p[:p2],
-	p[:p3],cse, dist, md,agl, terralt].join("\t")
-	lbl=nil
-	case p[:act]
-	when 'HOME'
-	  lbl = 'Home'
-	when 'RTH'
-	  has_rth = true
-	  lbl = 'RTH'
-	else
-	  lbl = "WP%d" % p[:no]
-	end
-	wps << "\"#{lbl}\" #{p[:tdist].to_i}"
-	dists << p[:tdist].to_i
+    allpts = []
+    pos.each_with_index do |p,j|
+      cse =  p[:cse] ? "%.1f" % p[:cse] : nil
+      dist = p[:cse] ? "%.0f" % p[:dist] : nil
+      md = "%.0f" % p[:tdist]
+      agl = alts ? alts[0] + p[:alt]  : nil
+      terralt = alts ? alts[j] : nil
+      mx = terralt if terralt < mx
+      lbl = nil
+      typ = nil
+      case p[:act]
+      when 'HOME'
+	lbl = 'Home'
+	typ = 'h'
+      when 'RTH'
+	has_rth = true
+	lbl = 'RTH'
+	typ = 'r'
+      else
+	lbl = "WP%d" % p[:no]
+	typ = p[:no]
       end
+      allpts << { :dist => p[:tdist].to_i, :typ => typ,
+	:absalt => agl, # wgs84 alt of WP
+	:amsl => terralt, # wgs84 alt of ground here
+	:melev => p[:alt], # mission 'alt'
+	:label => lbl
+      }
+    end
+
+      # needs to calc number
+    np = (pos[-1][:tdist]/30).to_i
+    np=1023 if np > 1023
+    elevs = get_bing_elevations pa, np+1
+    dx=pos[-1][:tdist]/np.to_f
+    0.upto(np) do |j|
+      allpts << { :dist => (dx*j).to_i, :amsl => elevs[j], :typ => "g" }
     end
     unless @pf.nil?
-      # needs to calc number
-      np = (pos[-1][:tdist]/30).to_i
-      np=1023 if np > 1023
-      elevs = get_bing_elevations pa, np+1
-      dx=pos[-1][:tdist]/np.to_f
-      efn = mktemp ".csv"
-      File.open(efn,"w") do |fh|
-	fh.puts %w/Index Dist Elev/.join("\t")
-	0.upto(np) do |j|
-	  fh.puts [j, (dx*j).to_i, elevs[j]].join("\t")
-	end
-      end
-      mfile=nil
-      if @margin
-	mfile = mktemp ".csv"
-	File.open(mfile,"w") do |fh|
-	  fh.puts %w/Index Dist Elev/.join("\t")
-	  0.upto(np) do |j|
-	    mh = (j == 0 || (j == np && has_rth)) ? 0 : @margin
-	    fh.puts [j, (dx*j).to_i, mh+elevs[j]].join("\t")
-	  end
-	end
-      end
       @pf << ".svg" unless @pf.match(/\.svg$/)
       mx = (mx / 10) * 10
-      mkplt fn, efn, mx, dists.join(','),wps.join(','),mfile
+    end
+    allpts.sort! {|a,b| a[:dist] <=> b[:dist]}
+
+    np = allpts.size - 1
+    tdel=[]
+    1.upto(np) do |j|
+      if allpts[j-1][:dist] == allpts[j][:dist]
+	if allpts[j][:typ] == 'g'
+	  tdel << j
+	elsif allpts[j-1][:typ] == 'g'
+	  tdel << j -1
+	end
+      end
+    end
+    tdel.reverse.each {|j| allpts.delete_at(j) }
+
+    h0 = allpts[0][:amsl]
+    ma =nil
+    rth = nil
+    lwp = nil
+    l0 = nil
+
+    allpts.each_with_index do |p,n|
+      case p[:typ]
+      when 'r'
+	rth = n
+	rh = @rthh ? @rthh : allpts[lwp][:melev]
+	allpts[n][:melev] = rh
+	allpts[n][:absalt] = rh + h0
+      when 1..60
+	lwp = n
+      end
+    end
+
+    fixups=[]
+    allpts.each_with_index do |p,n|
+      case p[:typ]
+      when 'h'
+	l0 = p[:typ]
+	ma = h0
+      when 'g'
+	ma = p[:amsl] if p[:amsl] > ma
+      when 'r',1..60
+	ma = p[:amsl] if p[:amsl] > ma
+	cl = p[:absalt] - ma
+	if @margin
+	  if cl < @margin
+	    [l0,p[:typ]].each do |k|
+	      next if k == 'h' || k == 'r'
+	      dif = @margin - cl
+	      if fixups[k].nil?
+		fixups[k] = dif
+	      else
+		if dif > fixups[k]
+		  fixups[k] = dif
+		end
+	      end
+	    end
+	  end
+	end
+	l0 = p[:typ]
+	ma = p[:amsl]
+      end
+    end
+    puts
+
+    if @pf.nil?
+      @pf = mktemp ".svg"
+    end
+    mkplt allpts, mx, lwp, rth
+
+    unless fixups.empty?
+      fixups.each_with_index do |f,n|
+	unless f.nil?
+	  fixups[n] += pos[n][:alt]
+	end
+      end
+      if @save
+	rewrite fixups
+      end
     end
   end
 end
