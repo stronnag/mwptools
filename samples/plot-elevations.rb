@@ -190,6 +190,7 @@ read from $HOME\/.config\/mwp\/elev-plot, .\/.elev-plot.rc or $HOME\/.elev-plot.
 	end
       end
     end
+
     str = "#!/usr/bin/gnuplot -p\n"
     str << %Q/
 set bmargin 8
@@ -197,7 +198,7 @@ set key top right
 set key box
 set grid
 set xtics (#{dists.join(',')})
-set xtics rotate by 45 offset -0.8,-1
+set xtics rotate by 45 offset -0.8,-1.5
 set x2tics rotate by 45
 set x2tics (#{wps.join(',')})
 set xlabel "Distance"
@@ -404,10 +405,10 @@ replot
     end
     unless @pf.nil?
       @pf << ".svg" unless @pf.match(/\.svg$/)
-      mx = (mx / 10) * 10
     end
     allpts.sort! {|a,b| a[:dist] <=> b[:dist]}
 
+    mx = (mx / 10) * 10
     np = allpts.size - 1
     tdel=[]
     1.upto(np) do |j|
