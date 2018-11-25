@@ -203,7 +203,7 @@ set x2tics rotate by 45
 set x2tics (#{wps.join(',')})
 set xlabel "Distance"
 set bmargin 3
-set offsets graph 0,0,0.01,0.01
+set offsets graph 0,0,0.01,0
 
 set title "Mission Elevation"
 set ylabel "Elevation"

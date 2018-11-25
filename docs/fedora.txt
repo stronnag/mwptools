@@ -31,6 +31,9 @@ dnf install rubygem-json
 ## However, at for for fedora 28 and prior, this is pointless as we need 2.x and Fedora ships 1.x
 ## dnf install flite flite-devel
 
+## For plot-elevation.rb
+# dnf install gnuplot rubygem-nokogiri
+
 ## If you want to use serial devices for bbox replay (and you probably
 ## don't) then see
 ##  https://developer.fedoraproject.org/tech/languages/ruby/gems-installation.html

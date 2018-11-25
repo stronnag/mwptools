@@ -49,6 +49,9 @@ apt install ruby ruby-json
 ## for flite as the text to speech API
 # apt install flite flite1-dev
 
+## For plot-elevation.rb
+# apt install gnuplot ruby-nokogiri
+
 ## Shallow clone mwp ....
 # git clone --depth 1 https://github.com/stronnag/mwptools
 # cd mwptools
