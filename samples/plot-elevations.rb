@@ -12,6 +12,8 @@ require "base64"
 
 include Math
 
+SANITY=100
+
 module Geocalc
   RAD = 0.017453292
 
@@ -74,6 +76,8 @@ class MReader
 	      @rthh = a[1].strip.to_i
 	    when /^margin/
 	      @margin = a[1].strip.to_i
+	    when /^sanity/
+	      @sanity = a[1].strip.to_i
 	    end
 	  end
 	end
@@ -86,6 +90,7 @@ class MReader
     @margin=nil
     @rthh = nil
     @save = nil
+    @sanity = SANITY
 
     read_config
 
@@ -294,6 +299,9 @@ replot
       if lx and ly
 	c,d = Geocalc.csedist ly,lx,lat,lon
 	d = d*1852
+	if no == 1 and d > @sanity
+	  abort "1st WP is #{d.to_i}m from home, sanity is #{@sanity}m"
+	end
       end
       lx = lon
       ly = lat
