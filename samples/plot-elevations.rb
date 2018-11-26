@@ -216,7 +216,7 @@ set terminal push
 set terminal svg enhanced background rgb 'white' font "sans,9" rounded
 set output \"#{@pf}\"
 
-plot \"#{infile0}\" using 1:2 t "Mission" w lines lt -1 lw 2  lc rgb "red", \"#{infile1}\" using 1:2 t "Terrain" w filledcurve y1=#{mx} lt -1 lw 2  lc rgb "green"/
+plot \"#{infile1}\" using 1:2 t "Terrain" w filledcurve y1=#{mx} lt -1 lw 2  lc rgb "green", \"#{infile0}\" using 1:2 t "Mission" w lines lt -1 lw 2  lc rgb "red" /
     if mfile
       str << ", \"#{mfile}\" using 1:2 t \"Margin\" w lines lt -1 lw 2  lc rgb \"blue\""
     end
@@ -235,18 +235,21 @@ replot
 
   def rewrite fixups
     doc = Nokogiri::XML(open(@file))
-    x = doc.xpath("//mwp")
-    if x
-      x.first['generator'] = 'plot-elevations.rb (mwptools)'
-      x.first['save-date'] = Time.now.strftime("%FT%T%z")
+    now = Time.now.strftime("%FT%T%z")
+    x = doc.at("/MISSION/mwp")
+    if  x.nil?
+      doc.at('MISSION').add_child("<mwp generator=\"plot-elevations.rb (mwptools)\" save-date=\"#{now}\"")
+    else
+      x['generator'] = 'plot-elevations.rb (mwptools)'
+      x['save-date'] = now
     end
 
     fixups.each_with_index do |f,n|
       unless f.nil?
 	q = "//MISSIONITEM[@no='#{n}']"
-	x = doc.xpath(q)
-	if x
-	  x.first['alt'] = f.to_s
+	x = doc.xpath(q).first
+	unless  x.nil?
+	  x['alt'] = f.to_s
 	end
       end
     end
