@@ -162,7 +162,7 @@ read from $HOME\/.config\/mwp\/elev-plot, .\/.elev-plot.rc or $HOME\/.elev-plot.
       when 'h','r',1..60
 	dists << p[:dist]
 	wps << "\"#{p[:label]}\" #{p[:dist]}"
-	ml << [p[:dist], p[:absalt]]
+	ml << [p[:dist], p[:pabsalt]]
 	unless fixups.empty?
 	  fxalt = fixups[nf].nil?  ?  p[:absalt] : p[:absalt] + fixups[nf]
 	  fx << [p[:dist], fxalt]
@@ -302,7 +302,7 @@ replot
     hp = @hstr.split(',')
     hlat = hp[0].to_f
     hlon = hp[1].to_f
-    ipos << { :no => 0, :lat => hlat, :lon => hlon, :alt => 0.0,
+    ipos << { :no => 0, :lat => hlat, :lon => hlon, :alt => 0, :oa => 0,
       :act=> 'HOME', :p1 => '0', :p2 => '0', :p3 => '0',
       :cse => nil, :dist => 0.0, :tdist => 0.0}
     ly = hlat
@@ -315,7 +315,8 @@ replot
       no = t['no'].to_i
       lat = t['lat'].to_f
       lon = t['lon'].to_f
-      alt = @noalts ? 0 : t['alt'].to_i
+      oa = t['alt'].to_i
+      alt = @noalts ? 0 : oa
       if action == 'RTH'
 	if @hstr.nil?
 	  break
@@ -339,7 +340,7 @@ replot
       tdist += d
       ipos << {:no => no, :lat => lat, :lon => lon, :alt => alt, :act => action,
 	:p1 => t['parameter1'], :p2 => t['parameter2'], :p3 => t['parameter3'],
-	:cse => c, :dist => d, :tdist => tdist}
+	:cse => c, :dist => d, :tdist => tdist, :oa => oa}
       break if action == 'POSHOLD_UNLIM'
     end
     ipos
@@ -413,6 +414,7 @@ replot
       dist = p[:cse] ? "%.0f" % p[:dist] : nil
       md = "%.0f" % p[:tdist]
       agl = alts ? alts[0] + p[:alt]  : nil
+      pagl = alts ? alts[0] + p[:oa]  : nil
       terralt = alts ? alts[j] : nil
       mx = terralt if terralt < mx
       lbl = nil
@@ -433,7 +435,8 @@ replot
 	:absalt => agl, # wgs84 alt of WP
 	:amsl => terralt, # wgs84 alt of ground here
 	:melev => p[:alt], # mission 'alt'
-	:label => lbl
+	:label => lbl,
+	:pabsalt => pagl
       }
     end
 
@@ -477,6 +480,7 @@ replot
 	rh = @rthh ? @rthh : allpts[lwp][:melev]
 	allpts[n][:melev] = rh
 	allpts[n][:absalt] = rh + h0
+	allpts[n][:pabsalt] = rh + h0
       when 1..60
 	lwp = n
       end
