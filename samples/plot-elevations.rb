@@ -90,6 +90,9 @@ class MReader
     @margin=nil
     @rthh = nil
     @save = nil
+    @noplot = false
+    @noalts = false
+
     @sanity = SANITY
 
     read_config
@@ -123,6 +126,8 @@ read from $HOME\/.config\/mwp\/elev-plot, .\/.elev-plot.rc or $HOME\/.elev-plot.
       opts.on("-o",'--output=FILE', 'Revised mission') {|o| @save = o }
       opts.on("-r",'--rth-alt=ALT', 'RTH altitude', Integer) {|o| @rthh = o }
       opts.on("-m",'--margin=M', 'Clearance Margin (m)', Integer) {|o| @margin = o }
+      opts.on("",'--no-plotting', "Don't plot anything, at all") {|o| @noplot = true}
+      opts.on("",'--no-mission-alts', "Don't use extant mission altitudes") {|o| @noalts = true }
       rest = opts.parse(ARGV)
       @file = rest[0]
     rescue
@@ -143,23 +148,36 @@ read from $HOME\/.config\/mwp\/elev-plot, .\/.elev-plot.rc or $HOME\/.elev-plot.
     tf
   end
 
-  def mkplt ap, mx, lwp, rth
+  def mkplt ap, mx, lwp, rth,fixups
     dists=[]
     wps=[]
     gl=[]
     ml=[]
     cl=[]
+    fx=[]
+    mfile = fxfile = nil
+    nf = 0
     ap.each_with_index do |p,n|
       case p[:typ]
       when 'h','r',1..60
 	dists << p[:dist]
 	wps << "\"#{p[:label]}\" #{p[:dist]}"
-	# need RTH adjustments
 	ml << [p[:dist], p[:absalt]]
+	unless fixups.empty?
+	  fxalt = fixups[nf].nil?  ?  p[:absalt] : p[:absalt] + fixups[nf]
+	  fx << [p[:dist], fxalt]
+	  nf += 1
+	end
 	if rth
 	  if n == lwp
 	    if p[:absalt] < ap[rth][:absalt]
 	      ml << [p[:dist], ap[rth][:absalt]]
+	      unless fixups.empty?
+		fxalt = fixups[-1].nil?  ?  p[:absalt] : p[:absalt] + fixups[-1]
+		if fxalt < ap[rth][:absalt]
+		  fx << [p[:dist], ap[rth][:absalt]]
+		end
+	      end
 	    end
 	  end
 	end
@@ -183,6 +201,16 @@ read from $HOME\/.config\/mwp\/elev-plot, .\/.elev-plot.rc or $HOME\/.elev-plot.
       fh.puts %w/Dist AMSL/.join("\t")
       gl.each do |p|
 	fh.puts p.join("\t")
+      end
+    end
+
+    unless fx.empty?
+      fxfile = mktemp ".csv"
+      File.open(fxfile, 'w') do |fh|
+	fh.puts %w/Dist AMSL/.join("\t")
+	fx.each do |p|
+	  fh.puts p.join("\t")
+	end
       end
     end
 
@@ -224,6 +252,9 @@ set output \"#{@pf}\"
 plot \"#{infile1}\" using 1:2 t "Terrain" w filledcurve y1=#{mx} lt -1 lw 2  lc rgb "green", \"#{infile0}\" using 1:2 t "Mission" w lines lt -1 lw 2  lc rgb "red" /
     if mfile
       str << ", \"#{mfile}\" using 1:2 t \"Margin\" w lines lt -1 lw 2  lc rgb \"blue\""
+    end
+    if fxfile
+      str << ", \"#{fxfile}\" using 1:2 t \"Updated\" w lines lt -1 lw 2  lc rgb \"orange\""
     end
     str << "
 set terminal pop
@@ -284,7 +315,7 @@ replot
       no = t['no'].to_i
       lat = t['lat'].to_f
       lon = t['lon'].to_f
-      alt = t['alt'].to_i
+      alt = @noalts ? 0 : t['alt'].to_i
       if action == 'RTH'
 	if @hstr.nil?
 	  break
@@ -486,7 +517,10 @@ replot
     if @pf.nil?
       @pf = mktemp ".svg"
     end
-    mkplt allpts, mx, lwp, rth
+
+    unless @noplot
+      mkplt allpts, mx, lwp, rth, fixups
+    end
 
     unless fixups.empty?
       fixups.each_with_index do |f,n|
