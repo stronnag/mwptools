@@ -483,36 +483,38 @@ replot
     end
 
     fixups=[]
-    allpts.each_with_index do |p,n|
-      case p[:typ]
-      when 'h'
-	l0 = p[:typ]
-	ma = h0
-      when 'g'
-	ma = p[:amsl] if p[:amsl] > ma
-      when 'r',1..60
-	ma = p[:amsl] if p[:amsl] > ma
-	cl = p[:absalt] - ma
-	if @margin
-	  if cl < @margin
-	    [l0,p[:typ]].each do |k|
-	      next if k == 'h' || k == 'r'
-	      dif = @margin - cl
-	      if fixups[k].nil?
-		fixups[k] = dif
-	      else
-		if dif > fixups[k]
+
+    if @save
+      allpts.each_with_index do |p,n|
+	case p[:typ]
+	when 'h'
+	  l0 = p[:typ]
+	  ma = h0
+	when 'g'
+	  ma = p[:amsl] if p[:amsl] > ma
+	when 'r',1..60
+	  ma = p[:amsl] if p[:amsl] > ma
+	  cl = p[:absalt] - ma
+	  if @margin
+	    if cl < @margin
+	      [l0,p[:typ]].each do |k|
+		next if k == 'h' || k == 'r'
+		dif = @margin - cl
+		if fixups[k].nil?
 		  fixups[k] = dif
+		else
+		  if dif > fixups[k]
+		    fixups[k] = dif
+		  end
 		end
 	      end
 	    end
 	  end
+	  l0 = p[:typ]
+	  ma = p[:amsl]
 	end
-	l0 = p[:typ]
-	ma = p[:amsl]
       end
     end
-    puts
 
     if @pf.nil?
       @pf = mktemp ".svg"
