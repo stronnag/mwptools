@@ -126,8 +126,8 @@ read from $HOME\/.config\/mwp\/elev-plot, .\/.elev-plot.rc or $HOME\/.elev-plot.
       opts.on("-o",'--output=FILE', 'Revised mission') {|o| @save = o }
       opts.on("-r",'--rth-alt=ALT', 'RTH altitude', Integer) {|o| @rthh = o }
       opts.on("-m",'--margin=M', 'Clearance Margin (m)', Integer) {|o| @margin = o }
-      opts.on("",'--no-plotting', "Don't plot anything, at all") {|o| @noplot = true}
-      opts.on("",'--no-mission-alts', "Don't use extant mission altitudes") {|o| @noalts = true }
+      opts.on("-P",'--no-plotting', "Don't plot anything, at all") {|o| @noplot = true}
+      opts.on("-A",'--no-mission-alts', "Don't use extant mission altitudes") {|o| @noalts = true }
       rest = opts.parse(ARGV)
       @file = rest[0]
     rescue
@@ -405,7 +405,7 @@ replot
     pos.each {|p| pa << p[:lat] << p[:lon]}
     alts = get_bing_elevations pa
     if alts.size != (pa.size/2)
-      STDERR.puts "warning: bing mismatch, requested #{pa.size/2}, got #{alts.size}"
+      abort "warning: bing mismatch, requested #{pa.size/2}, got #{alts.size}\nThis is probably due to duplicate points in your mission\nPlease raise a bug if you don't think your mission is to blame"
     end
     mx = 99999
     dists=[]
