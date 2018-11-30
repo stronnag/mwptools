@@ -404,6 +404,9 @@ replot
     pa=[]
     pos.each {|p| pa << p[:lat] << p[:lon]}
     alts = get_bing_elevations pa
+    if alts.size != (pa.size/2)
+      STDERR.puts "warning: bing mismatch, requested #{pa.size/2}, got #{alts.size}"
+    end
     mx = 99999
     dists=[]
     wps=[]
@@ -416,6 +419,7 @@ replot
       agl = alts ? alts[0] + p[:alt]  : nil
       pagl = alts ? alts[0] + p[:oa]  : nil
       terralt = alts ? alts[j] : nil
+      terralt ||= alts[0]
       mx = terralt if terralt < mx
       lbl = nil
       typ = nil
