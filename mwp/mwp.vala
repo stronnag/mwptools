@@ -3810,8 +3810,10 @@ public class MWPlanner : Gtk.Application {
             dist *= 1852.0;
             var icse = Math.lrint(cse) % 360;
             sb.append_printf("<span size=\"%u\">%.1fm %ld°", fs, dist, icse);
-            if(GPSInfo.spd > 0.0)
+            if(GPSInfo.spd > 0.0 && dist > 1.0)
                 sb.append_printf(" %ds", (int)(dist/GPSInfo.spd));
+            else
+                sb.append(" --s");
             sb.append("</span>");
             map_show_dist(sb.str);
         }

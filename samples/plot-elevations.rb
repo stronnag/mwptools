@@ -501,7 +501,11 @@ replot
 	when 'g'
 	  ma = p[:amsl] if p[:amsl] > ma
 	when 'r',1..60
-	  ma = p[:amsl] if p[:amsl] > ma
+	  if n != allpts.size - 1
+	    ma = allpts[n+1][:amsl] if allpts[n+1][:amsl] > ma
+	  else
+	    ma = p[:amsl] if p[:amsl] > ma
+	  end
 	  cl = p[:absalt] - ma
 	  if @margin
 	    if cl < @margin
