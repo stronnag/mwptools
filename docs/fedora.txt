@@ -32,7 +32,7 @@ dnf install rubygem-json
 ## dnf install flite flite-devel
 
 ## For plot-elevation.rb
-# dnf install gnuplot rubygem-nokogiri
+dnf install gnuplot rubygem-nokogiri
 
 ## If you want to use serial devices for bbox replay (and you probably
 ## don't) then see
