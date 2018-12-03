@@ -50,6 +50,7 @@ public class ListBox : GLib.Object
     private Gtk.MenuItem alts_item;
     private Gtk.MenuItem altz_item;
     private Gtk.MenuItem delta_item;
+    private Gtk.MenuItem terrain_item;
     private Gtk.MenuItem speedz_item;
     private Gtk.MenuItem speedv_item;
     private ShapeDialog shapedialog;
@@ -60,6 +61,7 @@ public class ListBox : GLib.Object
     private Gtk.Menu marker_menu;
     private Gtk.TreeIter miter;
     private bool miter_ok = false;
+    private FakeHome fhome;
 
     public int lastid {get; private set; default= 0;}
     public bool have_rth {get; private set; default= false;}
@@ -490,6 +492,33 @@ public class ListBox : GLib.Object
         return nrth;
     }
 
+    private void setup_elev_plot()
+    {
+        fhome = new FakeHome(mp.view);
+        fhome.create_dialog(mp.builder, mp.window);
+        fhome.fake_move.connect((lat,lon) => {
+                fhome.fhd.set_pos(PosFormat.pos(lat,lon,MWPlanner.conf.dms));
+            });
+        fhome.fhd.ready.connect((b) => {
+                remove_plots();
+                if(b)
+                    run_elevation_tool();  // run it ...
+                else
+                    fhome.show_fake_home(false);
+            });
+    }
+
+    private void remove_plots()
+    {
+        try
+        {
+            string [] killargs = {"pkill", "-f", "gnuplot" };
+            Process.spawn_async ("/", killargs, null,
+                                 SpawnFlags.SEARCH_PATH, null, null);
+        } catch {}
+    }
+
+
     public void create_view(MWPlanner _mp)
     {
         MWPlanner.SERSTATE ss = MWPlanner.SERSTATE.NONE;
@@ -497,6 +526,9 @@ public class ListBox : GLib.Object
         make_menu();
 
         mp = _mp;
+
+        if(mp.x_plot_elevations_rb)
+            setup_elev_plot();
 
         shapedialog = new ShapeDialog(mp.builder);
         deltadialog = new DeltaDialog(mp.builder);
@@ -1312,7 +1344,162 @@ public class ListBox : GLib.Object
                 clear_mission();
             });
         menu.add (item);
+        terrain_item = new Gtk.MenuItem.with_label ("Terrain Avoidance");
+        terrain_item.activate.connect (() => {
+                terrain_mission();
+            });
+        menu.add (terrain_item);
+        terrain_item.sensitive=false;
         menu.show_all();
+    }
+
+    private void set_terrain_item(bool state)
+    {
+        if(mp.x_plot_elevations_rb == false)
+            state = false;
+        terrain_item.sensitive = state;
+    }
+
+    private void parse_ll(string mhome, out double lat, out double lon)
+    {
+        var parts = mhome.split(",");
+        lat = double.parse(parts[0]);
+        lon = double.parse(parts[1]);
+    }
+
+    private string mstempname()
+    {
+        var t = Environment.get_tmp_dir();
+        var ir = new Rand().int_range (0, 0xffffff);
+        var s = Path.build_filename (t, ".mi-%d-%08x.xml".printf(Posix.getpid(), ir));
+        return s;
+    }
+
+    private void run_elevation_tool()
+    {
+        double lat,lon;
+        var outfn = mstempname();
+        string replname = null;
+        string[] spawn_args = {"plot-elevations.rb", "-A"};
+        fhome.get_fake_home(out lat, out lon);
+        var margin = fhome.fhd.get_elev();
+        spawn_args += "--home=%.8f,%.8f".printf(lat, lon);
+        spawn_args += "--margin=%d".printf(margin);
+        var repl = fhome.fhd.get_replace();
+        if (repl)
+        {
+            replname = mstempname();
+            spawn_args += "--output=%s".printf(replname);
+        }
+        var m = to_mission();
+        XmlIO.to_xml_file(outfn, m);
+        spawn_args += outfn;
+
+        try {
+            Pid child_pid;
+            int p_stderr;
+            Process.spawn_async_with_pipes (null,
+                                            spawn_args,
+                                            null,
+                                            SpawnFlags.SEARCH_PATH |
+                                            SpawnFlags.DO_NOT_REAP_CHILD |
+                                            SpawnFlags.STDOUT_TO_DEV_NULL,
+                                            null,
+                                            out child_pid,
+                                            null,
+                                            null,
+                                            out p_stderr);
+
+            IOChannel error = new IOChannel.unix_new (p_stderr);
+            string line = null;
+            string lastline = null;
+            size_t len = 0;
+
+            error.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
+                    try
+                    {
+                        if (condition == IOCondition.HUP)
+                            return false;
+                        IOStatus eos = source.read_line (out line, out len, null);
+                        if(eos == IOStatus.EOF)
+                            return false;
+
+                        if(line == null || len == 0)
+                            return true;
+                        lastline = line;
+                        return true;
+                    } catch (IOChannelError e) {
+                        MWPLog.message("IOChannelError: %s\n", e.message);
+                        return false;
+                    } catch (ConvertError e) {
+                        MWPLog.message ("ConvertError: %s\n", e.message);
+                        return false;
+                    }
+                });
+            ChildWatch.add (child_pid, (pid, status) => {
+                    try { error.shutdown(false); } catch {}
+                    Process.close_pid (pid);
+                    if(status == 0)
+                    {
+                        if (replname != null)
+                        {
+                            var ms = XmlIO.read_xml_file (replname);
+                            import_mission(ms, false);
+                            mp.markers.add_list_store(this);
+                        }
+                    }
+                    else
+                        mp.mwp_warning_box("Plot Error: %s".printf(lastline), Gtk.MessageType.ERROR, 60);
+
+                    FileUtils.unlink(outfn);
+                    if(replname != null)
+                        FileUtils.unlink(replname);
+                });
+        } catch (SpawnError e) {
+            MWPLog.message ("Spawn Error: %s\n", e.message);
+        }
+    }
+
+    private void terrain_mission()
+    {
+        FakeHome.PlotElevDefs pd;
+        double hlat, hlon;
+
+        if(fhome.fhd.get_pos() == "" || fhome.fhd.get_pos() == null)
+        {
+            pd = fhome.read_defaults();
+            var mhome = Environment.get_variable("MWP_HOME");
+
+            if (mhome != null)
+                pd.hstr = mhome;
+
+            if(pd.hstr != null)
+            {
+                parse_ll(pd.hstr, out hlat, out hlon);
+            }
+            else
+            {
+                hlat = mp.view.get_center_latitude();
+                hlon = mp.view.get_center_longitude();
+            }
+            int margin = 0;
+            if (pd.margin != null)
+                margin = int.parse(pd.margin);
+
+            fhome.fhd.set_elev(margin);
+            fhome.set_fake_home(hlat, hlon);
+        }
+        var bbox = mp.view.get_bounding_box();
+        fhome.get_fake_home(out hlat, out hlon);
+        if (bbox.covers(hlat, hlon) == false)
+        {
+            hlat = mp.view.get_center_latitude();
+            hlon = mp.view.get_center_longitude();
+            fhome.set_fake_home(hlat, hlon);
+        }
+        fhome.fhd.set_pos(PosFormat.pos(hlat,hlon,MWPlanner.conf.dms));
+        fhome.show_fake_home(true);
+        fhome.fhd.unhide();
     }
 
     public void pop_menu_delete()
@@ -1456,6 +1643,7 @@ public class ListBox : GLib.Object
         {
             route = "Empty mission";
         }
+        set_terrain_item(n_rows > 0);
         mp.stslabel.set_text(route);
     }
 
@@ -1507,6 +1695,7 @@ public class ListBox : GLib.Object
         bool ready = false;
         d = 0.0;
         lt = 0;
+        double esttim = 0.0;
 
         var nsize = arry.length;
         if (nsize > 0)
@@ -1539,8 +1728,9 @@ public class ListBox : GLib.Object
                        continue;
                     }
                     Geo.csedist(ly,lx,cy,cx, out dx, out cse);
-                    double ltim = (1852.0*dx) / lspd;
 
+                    double ltim = (1852.0*dx) / lspd;
+                    esttim += ltim;
                     Value cell;
                     Gtk.TreeIter xiter;
                     var path = new Gtk.TreePath.from_indices (arry[lastn].no - 1);
@@ -1607,7 +1797,8 @@ public class ListBox : GLib.Object
             d+=extra;
         }
         d *= 1852.0;
-        et = (int)(d/ms_speed) + 3 * nsize; // 3 * vertices to allow for slow down
+//        et = (int)(d/ms_speed) + 3 * nsize; // 3 * vertices to allow for slow down
+        et = (int)esttim + 3 * nsize; // 3 * vertices to allow for slow down
         lastid = check_last();
         return true;
     }

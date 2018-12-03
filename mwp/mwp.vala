@@ -402,7 +402,6 @@ public class MWPlanner : Gtk.Application {
 
     private uint8 armed = 0;
     private uint8 dac = 0;
-    private bool have_home = false;
     private bool gpsfix;
 
     private Thread<int> thr;
@@ -505,6 +504,9 @@ public class MWPlanner : Gtk.Application {
     private int magdiff=0;
     private bool magcheck;
 
+    private bool x_replay_bbox_ltm_rb;
+    public bool x_plot_elevations_rb {get; private set; default= false;}
+
     public DevManager devman;
 
     public struct MQI //: Object
@@ -574,7 +576,8 @@ public class MWPlanner : Gtk.Application {
         show_dist = 2
     }
 
-    private Position home_pos;
+    public bool have_home {get; private set; default=false;}
+    public Position home_pos {get; private set;}
     private Position rth_pos;
     private Position ph_pos;
     private uint64 ph_mask=0;
@@ -788,6 +791,8 @@ public class MWPlanner : Gtk.Application {
     private MwpServer mss=null;
     private uint8 spapi =  0;
 
+    private bool clickme=false;
+
     public const string[] SPEAKERS =  {"none", "espeak","speechd","flite"};
     public enum SPEAKER_API
     {
@@ -960,6 +965,23 @@ public class MWPlanner : Gtk.Application {
 
         conf = new MWPSettings();
         conf.read_settings();
+
+        {
+            string []  ext_apps = {
+                conf.blackbox_decode, "replay_bbox_ltm.rb",
+                "gnuplot", "mwp-plot-elevations.rb" };
+            bool appsts[4];
+            int i = 0;
+            foreach (var s in ext_apps)
+            {
+                appsts[i] = MWPUtils.exists_on_path(s);
+                if (appsts[i] == false)
+                    MWPLog.message("Failed to find \"%s\" on PATH\n", s);
+                i++;
+            }
+            x_replay_bbox_ltm_rb = (appsts[0]&&appsts[1]);
+            x_plot_elevations_rb = (appsts[2]&&appsts[3]);
+        }
 
         mmap = new ModelMap();
         mmap.init();
@@ -1470,6 +1492,7 @@ public class MWPlanner : Gtk.Application {
             });
         window.add_action(saq);
 
+
         saq = new GLib.SimpleAction("stop-replay",null);
         saq.activate.connect(() => {
                 stop_replayer();
@@ -1561,6 +1584,8 @@ public class MWPlanner : Gtk.Application {
         window.add_action(saq);
 
         reboot_status();
+
+        set_replay_menus(true);
         set_menu_state("upload-mission", false);
         set_menu_state("download-mission", false);
         set_menu_state("restore-mission", false);
@@ -1738,6 +1763,11 @@ public class MWPlanner : Gtk.Application {
 
         ag.connect('h', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
                 map_centre_on(conf.latitude,conf.longitude);
+                return true;
+            });
+
+        ag.connect('?', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                clickme = !clickme;
                 return true;
             });
 
@@ -2550,11 +2580,28 @@ public class MWPlanner : Gtk.Application {
                     insert_new_wp(evt.x, evt.y);
                     ret = true;
                 }
+                else if (evt.button == 1 && clickme && !map_moved())
+                {
+                    var lon = view.x_to_longitude (evt.x);
+                    var lat = view.y_to_latitude (evt.y);
+                    print("Click at %f %f\n", lat,lon);
+                    ret = true;
+                }
                 else
                 {
                     anim_cb(false);
                 }
                 return ret;
+            });
+
+        view.motion_event.connect ((evt) => {
+                if(clickme)
+                {
+                    var lon = view.x_to_longitude (evt.x);
+                    var lat = view.y_to_latitude (evt.y);
+                    print("At %f %f\n", lat,lon);
+                }
+                return false;
             });
     }
 
@@ -6237,8 +6284,13 @@ public class MWPlanner : Gtk.Application {
     private void set_replay_menus(bool state)
     {
         const string [] ms = {"replay-log","load-log","replay-bb","load-bb"};
+        if(x_replay_bbox_ltm_rb == false)
+            state = false;
+
         foreach(var s in ms)
+        {
             set_menu_state(s, state);
+        }
     }
 
     private void set_mission_menus(bool state)
@@ -6825,7 +6877,7 @@ public class MWPlanner : Gtk.Application {
         return bb;
     }
 
-    private void mwp_warning_box(string warnmsg,
+    public void mwp_warning_box(string warnmsg,
                                  Gtk.MessageType klass=Gtk.MessageType.WARNING,
                                  int timeout = 0)
     {

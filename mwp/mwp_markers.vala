@@ -349,14 +349,14 @@ public class MWPMarkers : GLib.Object
 
         marker.enter_event.connect((ce) => {
                 var s = l.get_marker_tip(ino);
-
                 if(s == null)
                     s = "RTH";
-
                 Timeout.add(500, () => {
                         if(marker.get_has_pointer ())
                         {
-                            marker.get_parent().set_child_above_sibling(marker,null);
+                            var par = marker.get_parent();
+                            if (par != null)
+                                par.set_child_above_sibling(marker,null);
                             txt.text = s;
                             if(txt.get_parent() == null)
                                 marker.add_child(txt);

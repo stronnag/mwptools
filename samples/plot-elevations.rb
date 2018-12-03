@@ -62,7 +62,7 @@ class MReader
       end
     end
     unless cfile.nil?
-      STDERR.puts "reading options from #{cfile}"
+      puts "reading options from #{cfile}"
       File.open(cfile,'r') do |f|
 	f.each do |l|
 	  l.chomp!
@@ -264,8 +264,10 @@ replot
 
     plt = mktemp ".plt"
     File.open(plt, 'w') {|fh| fh.puts str}
-    unless system("gnuplot -p #{plt}") == true
-      abort "Failed to run gnuplot"
+    gerr = mktemp ".log"
+    unless system("gnuplot -p #{plt}  2>/#{gerr}") == true
+      s = IO.read(gerr)
+      abort "Failed to run gnuplot: #{s}"
     end
   end
 
@@ -554,5 +556,6 @@ pos = g.read
 if pos and pos.size > 1
   g.to_info pos
 else
-  puts "Truncated mission"
+  STDERR.puts "Truncated mission"
+  exit 1
 end
