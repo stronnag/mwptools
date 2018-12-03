@@ -1344,7 +1344,7 @@ public class ListBox : GLib.Object
                 clear_mission();
             });
         menu.add (item);
-        terrain_item = new Gtk.MenuItem.with_label ("Terrain Avoidance");
+        terrain_item = new Gtk.MenuItem.with_label ("Terrain Analysis");
         terrain_item.activate.connect (() => {
                 terrain_mission();
             });
