@@ -1643,7 +1643,7 @@ public class ListBox : GLib.Object
         {
             route = "Empty mission";
         }
-        set_terrain_item(n_rows > 0);
+        set_terrain_item(n_rows > 2);
         mp.stslabel.set_text(route);
     }
 
