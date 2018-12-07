@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 
+<!-- Generated with glade 3.22.1
 
 Copyright (C)
 
@@ -3915,11 +3915,10 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
           </packing>
         </child>
         <child>
+          <!-- start shortcuts -->
           <object class="GtkGrid" id="scgrid">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="margin_left">4</property>
-            <property name="margin_right">4</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
@@ -4527,10 +4526,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Replay mode</property>
-                <attributes>
-                  <attribute name="weight" value="bold"/>
-                </attributes>
+                <property name="label" translatable="yes">Ctrl+?</property>
               </object>
               <packing>
                 <property name="left_attach">0</property>
@@ -4541,11 +4537,37 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Space</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Toggle map location display (centre or pointer)</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">27</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Replay mode</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
               </object>
               <packing>
                 <property name="left_attach">0</property>
                 <property name="top_attach">28</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Space</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">29</property>
               </packing>
             </child>
             <child>
@@ -4557,24 +4579,11 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">28</property>
+                <property name="top_attach">29</property>
               </packing>
             </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
+          <!-- end shortcuts -->
         </child>
       </object>
     </child>
