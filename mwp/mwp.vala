@@ -2292,12 +2292,17 @@ public class MWPlanner : Gtk.Application {
 
     private bool clip_location(bool fmt)
     {
+        int mx,my;
         Gdk.Display display = Gdk.Display.get_default ();
         Gtk.Clipboard clipboard = Gtk.Clipboard.get_for_display (display, Gdk.SELECTION_CLIPBOARD);
+#if OLDGTK||LSRVAL
+        embed.get_pointer(out mx, out my);
+#else
         var seat = display.get_default_seat();
         var ptr = seat.get_pointer();
-        int mx,my;
         embed.get_window().get_device_position(ptr, out mx, out my, null);
+#endif
+
         var lon = view.x_to_longitude (mx);
         var lat = view.y_to_latitude (my);
         string pos;
