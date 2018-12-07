@@ -96,6 +96,7 @@ public class MWPSettings : GLib.Object
     public string zone_detect {get; set; default=null;}
     public string mag_sanity {get; set; default=null;}
     public bool say_bearing {get; set; default=true;}
+    public bool pos_is_centre {get; set; default=true;}
 
     public signal void settings_update (string s);
 
@@ -353,8 +354,10 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "say-bearing")
             say_bearing = settings.get_boolean("say-bearing");
-    }
 
+        if(s == null || s == "pos-is-centre")
+            pos_is_centre = settings.get_boolean("pos-is-centre");
+    }
 
     public void save_pane()
     {

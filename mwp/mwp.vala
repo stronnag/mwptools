@@ -981,6 +981,7 @@ public class MWPlanner : Gtk.Application {
             x_replay_bbox_ltm_rb = (appsts[0]&&appsts[1]);
             x_plot_elevations_rb = (appsts[2]&&appsts[3]);
         }
+        pos_is_centre = conf.pos_is_centre;
 
         mmap = new ModelMap();
         mmap.init();

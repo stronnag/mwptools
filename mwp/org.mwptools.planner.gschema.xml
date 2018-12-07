@@ -487,5 +487,11 @@
       <description>Whether audio report includes bearing</description>
     </key>
 
+    <key name="pos-is-centre" type="b">
+      <default>true</default>
+      <summary>Determines position label content</summary>
+      <description>Whether the position label is the centre or pointer location</description>
+    </key>
+
   </schema>
 </schemalist>
