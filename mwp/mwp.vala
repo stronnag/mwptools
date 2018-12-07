@@ -301,6 +301,7 @@ public class MWPlanner : Gtk.Application {
     private ListBox ls;
     private Gtk.SpinButton zoomer;
     private Gtk.Label poslabel;
+    private bool pos_is_centre = true;
     public Gtk.Label stslabel;
     public Gtk.Label pointerpos;
     private Gtk.Statusbar statusbar;
@@ -1660,6 +1661,11 @@ public class MWPlanner : Gtk.Application {
 
         var ag = new Gtk.AccelGroup();
 
+        ag.connect('?', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                pos_is_centre = !pos_is_centre;
+                return true;
+            });
+
         ag.connect('l', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
                 return clip_location(false);
             });
@@ -1813,7 +1819,6 @@ public class MWPlanner : Gtk.Application {
   pp.set_child_below_sibling(markers.markers, markers.path);
 */
         poslabel = builder.get_object ("poslabel") as Gtk.Label;
-        pointerpos = builder.get_object ("pointer-location") as Gtk.Label;
         stslabel = builder.get_object ("missionlab") as Gtk.Label;
         statusbar = builder.get_object ("statusbar1") as Gtk.Statusbar;
         context_id = statusbar.get_context_id ("Starting");
@@ -2592,15 +2597,6 @@ public class MWPlanner : Gtk.Application {
                     insert_new_wp(evt.x, evt.y);
                     ret = true;
                 }
-                    /***** removed for now
-                else if (evt.button == 1 && clickme && !map_moved())
-                {
-                    var lon = view.x_to_longitude (evt.x);
-                    var lat = view.y_to_latitude (evt.y);
-                    print("Click at %f %f\n", lat,lon);
-                    ret = true;
-                }
-                    *********/
                 else
                 {
                     anim_cb(false);
@@ -2609,9 +2605,12 @@ public class MWPlanner : Gtk.Application {
             });
 
         view.motion_event.connect ((evt) => {
-                var lon = view.x_to_longitude (evt.x);
-                var lat = view.y_to_latitude (evt.y);
-                pointerpos.label = PosFormat.pos(lat,lon,conf.dms);
+                if (!pos_is_centre)
+                {
+                    var lon = view.x_to_longitude (evt.x);
+                    var lat = view.y_to_latitude (evt.y);
+                    poslabel.label = PosFormat.pos(lat,lon,conf.dms);
+                }
                 return false;
             });
 
@@ -6442,17 +6441,20 @@ public class MWPlanner : Gtk.Application {
 
     private void anim_cb(bool forced=false)
     {
-        if (map_moved() || forced)
+        if(pos_is_centre)
         {
-            poslabel.set_text(PosFormat.pos(ly,lx,conf.dms));
-            if (follow == false && craft != null)
+            if (map_moved() || forced)
             {
-                double plat,plon;
-                craft.get_pos(out plat, out plon);
-                var bbox = view.get_bounding_box();
-                if (bbox.covers(plat, plon) == false)
+                poslabel.set_text(PosFormat.pos(ly,lx,conf.dms));
+                if (follow == false && craft != null)
                 {
-                    craft.park();
+                    double plat,plon;
+                    craft.get_pos(out plat, out plon);
+                    var bbox = view.get_bounding_box();
+                    if (bbox.covers(plat, plon) == false)
+                    {
+                        craft.park();
+                    }
                 }
             }
         }

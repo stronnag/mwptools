@@ -5587,6 +5587,7 @@ Clicking Quit will terminate the application.
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="tooltip_text" translatable="yes">Access the menu when full screen</property>
+                <property name="halign">start</property>
                 <property name="popover">fs_popover</property>
                 <child>
                   <placeholder/>
@@ -5658,22 +5659,6 @@ Clicking Quit will terminate the application.
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="checkbutton1">
-                <property name="label" translatable="yes">In View</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
-                <property name="tooltip_text" translatable="yes">When enabled,  ensures the GPS position is within the map view</property>
-                <property name="halign">start</property>
-                <property name="draw_indicator">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">5</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkBox" id="box3">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -5703,7 +5688,7 @@ Clicking Quit will terminate the application.
                   </object>
                   <packing>
                     <property name="expand">False</property>
-                    <property name="fill">True</property>
+                    <property name="fill">False</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
@@ -5772,52 +5757,16 @@ Clicking Quit will terminate the application.
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="checkbutton2">
-                <property name="label" translatable="yes">Follow</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
-                <property name="tooltip_text" translatable="yes">When enabled, plots the GPS location on the map</property>
-                <property name="halign">start</property>
-                <property name="draw_indicator">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">7</property>
-              </packing>
+              <placeholder/>
             </child>
             <child>
-              <object class="GtkCheckButton" id="logger_cb">
-                <property name="label" translatable="yes">Logger</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
-                <property name="tooltip_text" translatable="yes">Enabled mwp logging (see also gsettings 'log-on-arm' to automatically enable / disable on arm / disarm)</property>
-                <property name="halign">start</property>
-                <property name="draw_indicator">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">8</property>
-              </packing>
+              <placeholder/>
             </child>
             <child>
-              <object class="GtkCheckButton" id="audio_cb">
-                <property name="label" translatable="yes">Audio</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
-                <property name="tooltip_text" translatable="yes">Enabled audio reporting (see also gsettings 'audio-on-arm' to automatically enable / disable on arm / disarm)</property>
-                <property name="halign">start</property>
-                <property name="draw_indicator">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">9</property>
-              </packing>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
             </child>
           </object>
           <packing>
@@ -5853,32 +5802,19 @@ Clicking Quit will terminate the application.
               <object class="GtkLabel" id="poslabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="halign">start</property>
                 <property name="margin_left">2</property>
                 <property name="margin_right">2</property>
                 <property name="label" translatable="yes">0.0000 0.0000</property>
                 <property name="selectable">True</property>
+                <property name="width_chars">24</property>
+                <property name="max_width_chars">24</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="pointer-location">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="halign">start</property>
-                <property name="margin_left">2</property>
-                <property name="margin_right">2</property>
-                <property name="width_chars">24</property>
-                <property name="max_width_chars">25</property>
-                <property name="xalign">0</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -5897,7 +5833,7 @@ Clicking Quit will terminate the application.
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -5911,7 +5847,7 @@ Clicking Quit will terminate the application.
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">3</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -5924,7 +5860,7 @@ Clicking Quit will terminate the application.
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">4</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child>
@@ -5938,17 +5874,72 @@ Clicking Quit will terminate the application.
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="checkbutton2">
+                <property name="label" translatable="yes">Follow</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">When enabled, plots the GPS location on the map</property>
+                <property name="halign">start</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
                 <property name="position">5</property>
               </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkCheckButton" id="checkbutton1">
+                <property name="label" translatable="yes">In View</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">When enabled,  ensures the GPS position is within the map view</property>
+                <property name="halign">start</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">6</property>
+              </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkCheckButton" id="logger_cb">
+                <property name="label" translatable="yes">Logger</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Enabled mwp logging (see also gsettings 'log-on-arm' to automatically enable / disable on arm / disarm)</property>
+                <property name="halign">start</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">7</property>
+              </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkCheckButton" id="audio_cb">
+                <property name="label" translatable="yes">Audio</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Enabled audio reporting (see also gsettings 'audio-on-arm' to automatically enable / disable on arm / disarm)</property>
+                <property name="halign">start</property>
+                <property name="draw_indicator">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">8</property>
+              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="gpslab">
