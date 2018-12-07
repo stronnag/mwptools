@@ -791,8 +791,6 @@ public class MWPlanner : Gtk.Application {
     private MwpServer mss=null;
     private uint8 spapi =  0;
 
-    private bool clickme=false;
-
     public const string[] SPEAKERS =  {"none", "espeak","speechd","flite"};
     public enum SPEAKER_API
     {
@@ -1673,6 +1671,15 @@ public class MWPlanner : Gtk.Application {
         add_source_combo(conf.defmap,msources);
 
         var ag = new Gtk.AccelGroup();
+
+        ag.connect('l', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                return clip_location(false);
+            });
+
+        ag.connect('l', Gdk.ModifierType.CONTROL_MASK|Gdk.ModifierType.SHIFT_MASK, 0, (a,o,k,m) => {
+                return clip_location(true);
+            });
+
         ag.connect('c', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
                 if(craft != null)
                 {
@@ -1763,11 +1770,6 @@ public class MWPlanner : Gtk.Application {
 
         ag.connect('h', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
                 map_centre_on(conf.latitude,conf.longitude);
-                return true;
-            });
-
-        ag.connect('?', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
-                clickme = !clickme;
                 return true;
             });
 
@@ -2288,6 +2290,25 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
+    private bool clip_location(bool fmt)
+    {
+        Gdk.Display display = Gdk.Display.get_default ();
+        Gtk.Clipboard clipboard = Gtk.Clipboard.get_for_display (display, Gdk.SELECTION_CLIPBOARD);
+        var seat = display.get_default_seat();
+        var ptr = seat.get_pointer();
+        int mx,my;
+        embed.get_window().get_device_position(ptr, out mx, out my, null);
+        var lon = view.x_to_longitude (mx);
+        var lat = view.y_to_latitude (my);
+        string pos;
+        if(fmt)
+            pos = PosFormat.pos(lat,lon,conf.dms);
+        else
+            pos = "%f %f".printf(lat,lon);
+        clipboard.set_text (pos, -1);
+        return true;
+    }
+
     private void hard_display_reset(bool cm = false)
     {
         if(cm)
@@ -2580,6 +2601,7 @@ public class MWPlanner : Gtk.Application {
                     insert_new_wp(evt.x, evt.y);
                     ret = true;
                 }
+                    /***** removed for now
                 else if (evt.button == 1 && clickme && !map_moved())
                 {
                     var lon = view.x_to_longitude (evt.x);
@@ -2587,13 +2609,14 @@ public class MWPlanner : Gtk.Application {
                     print("Click at %f %f\n", lat,lon);
                     ret = true;
                 }
+                    *********/
                 else
                 {
                     anim_cb(false);
                 }
                 return ret;
             });
-
+/***
         view.motion_event.connect ((evt) => {
                 if(clickme)
                 {
@@ -2603,6 +2626,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 return false;
             });
+***/
     }
 
     private void insert_new_wp(float x, float y)
