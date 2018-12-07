@@ -3929,11 +3929,9 @@ Ctrl+U		Upload Mission
 Ctrl+E		Upload and Save to EEPROM
 Ctrl+R		Restore from EEPROM (and download)
 Ctrl+Q		Quit (saves dock layout)
-
 Ctrl+P		Preferences
 Shift+T		CLI terminal
 Ctrl+!		Reboot the FC
-
 Ctrl+G		GPS Statistics
 Ctrl+A		Flight Statistics
 
@@ -3947,6 +3945,7 @@ Ctrl+F  		Toggle full screen
 Ctrl+H		Centre on configured default position
 Ctrl+I		Initialise flight displays, clears tracks and range rings
 Ctrl+K		Cancel Mission Upload
+Ctrl+l / L	Copy pointer location to clipboard
 Ctrl+S		Dump serial statistics
 Ctrl+T		Clear flight timer
 Ctrl+V		Generate preview thumbnail for loaded mission

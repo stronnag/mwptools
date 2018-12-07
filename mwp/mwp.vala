@@ -2302,7 +2302,6 @@ public class MWPlanner : Gtk.Application {
         var ptr = seat.get_pointer();
         embed.get_window().get_device_position(ptr, out mx, out my, null);
 #endif
-
         var lon = view.x_to_longitude (mx);
         var lat = view.y_to_latitude (my);
         string pos;
