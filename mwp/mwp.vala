@@ -302,6 +302,7 @@ public class MWPlanner : Gtk.Application {
     private Gtk.SpinButton zoomer;
     private Gtk.Label poslabel;
     public Gtk.Label stslabel;
+    public Gtk.Label pointerpos;
     private Gtk.Statusbar statusbar;
     private uint context_id;
     private Gtk.Label elapsedlab;
@@ -325,7 +326,6 @@ public class MWPlanner : Gtk.Application {
     private Gtk.Spinner armed_spinner;
     private Gtk.Label typlab;
     private Gtk.Label gpslab;
-    private Gtk.Label labelvbat;
 
     private int nsampl = 0;
     private float[] vbsamples;
@@ -576,8 +576,8 @@ public class MWPlanner : Gtk.Application {
         show_dist = 2
     }
 
-    public bool have_home {get; private set; default=false;}
-    public Position home_pos {get; private set;}
+    private bool have_home;
+    private Position home_pos;
     private Position rth_pos;
     private Position ph_pos;
     private uint64 ph_mask=0;
@@ -1638,16 +1638,7 @@ public class MWPlanner : Gtk.Application {
                     view.zoom_level = zval;
             });
 
-        var ent = builder.get_object ("entry1") as Gtk.Entry;
-        var al = Units.distance((double)conf.altitude);
-        ent.set_text("%.0f".printf(al));
-
         conf.settings_update.connect ((s) => {
-                if( s == "display-distance" || s == "default-altitude")
-                {
-                    al = Units.distance((double)conf.altitude);
-                    ent.set_text("%.0f".printf(al));
-                }
                 if (s == "display-dms" ||
                     s == "default-latitude" ||
                     s == "default-longitide")
@@ -1660,9 +1651,6 @@ public class MWPlanner : Gtk.Application {
                     fbox.update(item_visible(DOCKLETS.FBOX));
                 }
             });
-
-        var ent1 = builder.get_object ("entry2") as Gtk.Entry;
-        ent1.set_text(conf.loiter.to_string());
 
         view.set_keep_center_on_resize(true);
 
@@ -1825,6 +1813,7 @@ public class MWPlanner : Gtk.Application {
   pp.set_child_below_sibling(markers.markers, markers.path);
 */
         poslabel = builder.get_object ("poslabel") as Gtk.Label;
+        pointerpos = builder.get_object ("pointer-location") as Gtk.Label;
         stslabel = builder.get_object ("missionlab") as Gtk.Label;
         statusbar = builder.get_object ("statusbar1") as Gtk.Statusbar;
         context_id = statusbar.get_context_id ("Starting");
@@ -1933,7 +1922,6 @@ public class MWPlanner : Gtk.Application {
         armed_spinner = builder.get_object ("armed_spinner") as Gtk.Spinner;
         typlab = builder.get_object ("typlab") as Gtk.Label;
         gpslab = builder.get_object ("gpslab") as Gtk.Label;
-        labelvbat = builder.get_object ("labelvbat") as Gtk.Label;
         conbutton.clicked.connect(() => { connect_serial(); });
 
 
@@ -2347,7 +2335,6 @@ public class MWPlanner : Gtk.Application {
         set_error_status(null);
         xsensor = 0;
         clear_sensor_array();
-        labelvbat.set_text("");
     }
 
     private void key_recentre(uint key)
@@ -2620,17 +2607,14 @@ public class MWPlanner : Gtk.Application {
                 }
                 return ret;
             });
-/***
+
         view.motion_event.connect ((evt) => {
-                if(clickme)
-                {
-                    var lon = view.x_to_longitude (evt.x);
-                    var lat = view.y_to_latitude (evt.y);
-                    print("At %f %f\n", lat,lon);
-                }
+                var lon = view.x_to_longitude (evt.x);
+                var lat = view.y_to_latitude (evt.y);
+                pointerpos.label = PosFormat.pos(lat,lon,conf.dms);
                 return false;
             });
-***/
+
     }
 
     private void insert_new_wp(float x, float y)
@@ -5678,9 +5662,13 @@ public class MWPlanner : Gtk.Application {
     private bool home_changed(double lat, double lon)
     {
         bool ret=false;
-        if(((Math.fabs(home_pos.lat - lat) > 1e-6) ||
-           Math.fabs(home_pos.lon - lon) > 1e-6))
+        var d1 = home_pos.lat - lat;
+        var d2 = home_pos.lon - lon;
+
+        if(((Math.fabs(d1) > 1e-6) ||
+           Math.fabs(d2) > 1e-6))
         {
+            print("Home jump %f %f\n", d1, d2);
             if(have_home && (home_pos.lat != 0.0) && (home_pos.lon != 0.0))
             {
                 double d,cse;
@@ -5970,16 +5958,9 @@ public class MWPlanner : Gtk.Application {
             str = vcol.levels[icol].label;
 
         if(icol != licol)
-        {
-            var lsc = labelvbat.get_style_context();
-            if (licol != -1)
-                lsc.remove_class(vcol.levels[licol].colour);
-            lsc.add_class(vcol.levels[icol].colour);
             licol= icol;
-        }
 
         vbatlab="<span weight=\"bold\">%s</span>".printf(str);
-        labelvbat.set_markup(vbatlab);
         navstatus.volt_update(str,icol,vf,item_visible(DOCKLETS.VOLTAGE));
     }
 
