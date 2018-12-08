@@ -385,11 +385,9 @@ public class ListBox : GLib.Object
         }
     }
 
-    private int get_user_alt()
+    private uint get_user_alt()
     {
-        Gtk.Entry ent = mp.builder.get_object ("entry1") as Gtk.Entry;
-        var ualt = int.parse(ent.get_text());
-        return ualt;
+        return MWPlanner.conf.altitude;
     }
 
     private void update_marker_type(Gtk.TreeIter iter, string typ, int flag)
@@ -416,8 +414,7 @@ public class ListBox : GLib.Object
                     list_model.set_value (iter, WY_Columns.INT2, 0);
                     break;
                 case MSP.Action.POSHOLD_TIME:
-                    Gtk.Entry ent = mp.builder.get_object ("entry2") as Gtk.Entry;
-                    var ltime = int.parse(ent.get_text());
+                    var ltime = MWPlanner.conf.loiter;
                     list_model.set_value (iter, WY_Columns.INT1, (double)ltime);
                     break;
                 case MSP.Action.RTH:
