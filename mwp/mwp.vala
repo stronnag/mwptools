@@ -3633,7 +3633,7 @@ public class MWPlanner : Gtk.Application {
                 if(replayer == Player.NONE)
                 {
                     MWPLog.message("switch val == %08x (%08x)\n", bxflag, lmask);
-                    if(((bxflag & lmask) == 0) && robj == null)
+                    if(Craft.is_mr(vi.mrtype) && ((bxflag & lmask) == 0) && robj == null)
                     {
                         if(conf.checkswitches)
                             swd.run();
