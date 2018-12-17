@@ -50,50 +50,82 @@ NORMDELAY=0.1
 $verbose = false
 $vbatscale=1.0
 
-BOARD_MAP ={
-  "MATEKF4" => "MKF4",
-  "FURYF3" => "FYF3",
-  "AIRHEROF3" => "AIR3",
-  "NAZE" => "AFNA",
-  "ALIENWIIF3" => "AWF3",
-  "OLIMEXINO" => "OLI1",
-  "OMNIBUSF4" => "OBF4",
-  "BLUEJAYF4" => "BJF4",
-  "COLIBRI_RACE" => "CLBR",
-  "COLIBRI" => "COLI",
-  "PIKOBLX_limited" => "PIKO",
-  "SPRACINGF3" => "SRF3",
-  "AIRBOTF4" => "ABF4",
-  "CJMCU" => "CJM1",
-  "STM32F3DISCOVERY" => "SDF3",
-  "RMDO" => "RMDO",
-  "SPARKY" => "SPKY",
-  "YUPIF4" => "YPF4",
-  "PIXRACER" => "PXR4",
-  "ANYFCF7" => "ANY7",
-  "F4BY" => "F4BY",
-  "CRAZEPONYMINI" => "CPM1",
-  "MOTOLAB" => "MOTO",
-  "SPRACINGF3EVO" => "SPEV",
-  "SPRACINGF4EVO" => "SP4E",
-  "EUSTM32F103RC" => "EUF1",
-  "RCEXPLORERF3" => "REF3",
-  "SPARKY2" => "SPK2",
-  "REVO" => "REVO",
-  "ANYFC" => "ANYF",
-  "SPRACINGF3MINI" => "SRFM",
-  "LUX_RACE" => "LUX",
-  "FISHDRONEF4" => "FDV1",
-  "ALIENFLIGHTF3" => "AFF3",
-  "PORT103R" => "103R",
-  "CHEBUZZF3" => "CHF3",
-  "OMNIBUS" => "OMNI",
-  "CC3D" => "CC3D",
-  "MATEKF405" => "MKF4",
-  "MATEKF405OSD" => "MKF4",
-  "QUARKVISION" =>  "QRKV",
-  "MATEKF722" => "MKF7",
-}
+BOARD_MAP = {
+  'AIRBOTF4' => {:names=>["AIRBOTF4"], :id=>"ABF4"},
+  'AIRHEROF3' => {:names=>["AIRHEROF3", "AIRHEROF3_QUAD"], :id=>"AIR3"},
+  'ALIENFLIGHTF3' => {:names=>["ALIENFLIGHTF3"], :id=>"AFF3"},
+  'ALIENFLIGHTF4' => {:names=>["ALIENFLIGHTF4"], :id=>"AFF4"},
+  'ALIENFLIGHTNGF7' => {:names=>["ALIENFLIGHTNGF7"], :id=>"AFF7"},
+  'ANYFC' => {:names=>["ANYFC"], :id=>"ANYF"},
+  'ANYFCF7' => {:names=>["ANYFCF7", "ANYFCF7_EXTERNAL_BARO"], :id=>"ANY7"},
+  'ANYFCM7' => {:names=>["ANYFCM7"], :id=>"ANYM"},
+  'ASGARD32F4' => {:names=>["ASGARD32F4"], :id=>"ASF4"},
+  'ASGARD32F7' => {:names=>["ASGARD32F7"], :id=>"ASF4"},
+  'BEEROTORF4' => {:names=>["BEEROTORF4"], :id=>"BRF4"},
+  'BETAFLIGHTF3' => {:names=>["BETAFLIGHTF3"], :id=>"BFF3"},
+  'BETAFLIGHTF4' => {:names=>["BETAFLIGHTF4"], :id=>"BFF4"},
+  'BLUEJAYF4' => {:names=>["BLUEJAYF4"], :id=>"BJF4"},
+  'CHEBUZZF3' => {:names=>["CHEBUZZF3"], :id=>"CHF3"},
+  'CLRACINGF4AIR' => {:names=>["CLRACINGF4AIR", "CLRACINGF4AIRV2", "CLRACINGF4AIRV3"], :id=>"CLRA"},
+  'COLIBRI' => {:names=>["COLIBRI", "QUANTON"], :id=>"COLI"},
+  'COLIBRI_RACE' => {:names=>["COLIBRI_RACE"], :id=>"CLBR"},
+  'DALRCF405' => {:names=>["DALRCF405"], :id=>"DLF4"},
+  'F4BY' => {:names=>["F4BY"], :id=>"F4BY"},
+  'FALCORE' => {:names=>["FALCORE"], :id=>"FLCR"},
+  'FF_F35_LIGHTNING' => {:names=>["FF_F35_LIGHTNING"], :id=>"FF35"},
+  'FF_FORTINIF4' => {:names=>["FF_FORTINIF4"], :id=>"FORT"},
+  'FF_PIKOF4' => {:names=>["FF_PIKOF4", "FF_PIKOF4OSD"], :id=>"PIK4"},
+  'FIREWORKSV2' => {:names=>["FIREWORKSV2"], :id=>"FWX2"},
+  'FISHDRONEF4' => {:names=>["FISHDRONEF4"], :id=>"FDV1"},
+  'FRSKYF3' => {:names=>["FRSKYF3"], :id=>"FRF3"},
+  'FRSKYF4' => {:names=>["FRSKYF4"], :id=>"FRF4"},
+  'FURYF3' => {:names=>["FURYF3", "FURYF3_SPIFLASH"], :id=>"FYF3"},
+  'KAKUTEF4' => {:names=>["KAKUTEF4", "KAKUTEF4V2"], :id=>"KTV1"},
+  'KAKUTEF7' => {:names=>["KAKUTEF7"], :id=>"KTF7"},
+  'KFC32F3_INAV' => {:names=>["KFC32F3_INAV"], :id=>"KFCi"},
+  'KISSFC' => {:names=>["KISSFC"], :id=>"KISSFC"},
+  'KROOZX' => {:names=>["KROOZX"], :id=>"KROOZX"},
+  'LUX_RACE' => {:names=>["LUX_RACE"], :id=>"LUX"},
+  'MATEKF405' => {:names=>["MATEKF405", "MATEKF405OSD", "MATEKF405_SERVOS6"], :id=>"MKF4"},
+  'MATEKF405SE' => {:names=>["MATEKF405SE"], :id=>"MF4S"},
+  'MATEKF411' => {:names=>["MATEKF411", "MATEKF411_RSSI", "MATEKF411_SFTSRL2"], :id=>"MK41"},
+  'MATEKF722' => {:names=>["MATEKF722", "MATEKF722_HEXSERVO"], :id=>"MKF7"},
+  'MATEKF722SE' => {:names=>["MATEKF722SE"], :id=>"MF7S"},
+  'MOTOLAB' => {:names=>["MOTOLAB"], :id=>"MOTO"},
+  'OMNIBUS' => {:names=>["OMNIBUS"], :id=>"OMNI"},
+  'OMNIBUSF4' => {:names=>["DYSF4PRO", "DYSF4PROV2", "OMNIBUSF4", "OMNIBUSF4PRO", "OMNIBUSF4PRO_LEDSTRIPM5", "OMNIBUSF4V3"], :id=>"OBF4"},
+  'OMNIBUSF7' => {:names=>["OMNIBUSF7", "OMNIBUSF7V2"], :id=>"OBF7"},
+  'OMNIBUSF7NXT' => {:names=>["OMNIBUSF7NXT"], :id=>"ONXT"},
+  'PIKOBLX' => {:names=>["PIKOBLX"], :id=>"PIKO"},
+  'PIXRACER' => {:names=>["PIXRACER"], :id=>"PXR4"},
+  'QUARKVISION' => {:names=>["QUARKVISION"], :id=>"QRKV"},
+  'RADIX' => {:names=>["RADIX"], :id=>"RADIX"},
+  'RCEXPLORERF3' => {:names=>["RCEXPLORERF3"], :id=>"REF3"},
+  'REVO' => {:names=>["REVO"], :id=>"REVO"},
+  'RMDO' => {:names=>["RMDO"], :id=>"RMDO"},
+  'SPARKY' => {:names=>["SPARKY"], :id=>"SPKY"},
+  'SPARKY2' => {:names=>["SPARKY2"], :id=>"SPK2"},
+  'SPEEDYBEEF4' => {:names=>["SPEEDYBEEF4"], :id=>"SBF4"},
+  'SPRACINGF3' => {:names=>["SPRACINGF3"], :id=>"SRF3"},
+  'SPRACINGF3EVO' => {:names=>["SPRACINGF3EVO", "SPRACINGF3EVO_1SS"], :id=>"SPEV"},
+  'SPRACINGF3MINI' => {:names=>["SPRACINGF3MINI"], :id=>"SRFM"},
+  'SPRACINGF3NEO' => {:names=>["SPRACINGF3NEO"], :id=>"SP3N"},
+  'SPRACINGF4EVO' => {:names=>["SPRACINGF4EVO"], :id=>"SP4E"},
+  'SPRACINGF7DUAL' => {:names=>["SPRACINGF7DUAL"], :id=>"SP7D"},
+  'STM32F3DISCOVERY' => {:names=>["STM32F3DISCOVERY"], :id=>"SDF3"},
+  'YUPIF4' => {:names=>["YUPIF4", "YUPIF4MINI", "YUPIF4R2"], :id=>"YPF4"},
+  'YUPIF7' => {:names=>["YUPIF7"], :id=>"YPF7"},
+  'MATEKF4' => {:names=>["MATEKF4"], :id=>"MKF4"},
+  'NAZE' => {:names=>["NAZE"], :id=>"AFNA"},
+  'ALIENWIIF3' => {:names=>["ALIENWIIF3"], :id=>"AWF3"},
+  'OLIMEXINO' => {:names=>["OLIMEXINO"], :id=>"OLI1"},
+  'PIKOBLX_limited' => {:names=>["PIKOBLX_limited"], :id=>"PIKO"},
+  'CJMCU' => {:names=>["CJMCU"], :id=>"CJM1"},
+  'CRAZEPONYMINI' => {:names=>["CRAZEPONYMINI"], :id=>"CPM1"},
+  'EUSTM32F103RC' => {:names=>["EUSTM32F103RC"], :id=>"EUF1"},
+  'PORT103R' => {:names=>["PORT103R"], :id=>"103R"},
+  'CC3D' => {:names=>["CC3D"], :id=>"CC3D"},
+  }
 
 def start_io dev
   if RUBY_PLATFORM.include?('cygwin') || !Gem.win_platform?
@@ -200,7 +232,16 @@ def send_init_seq skt,typ,snr=false,baro=true,mag=true,gitinfo=nil
 	  msps[5][3] = 18 + m[4].length
 	end
 	bname = m[5].upcase
-	bid = BOARD_MAP[bname]
+	bid = nil
+	BOARD_MAP.each do |k,v|
+	  v[:names].each do |vn|
+	    if vn == bname
+	      bid = v[:id]
+	      break
+	    end
+	  end
+	  break if bid
+	end
 	bnl = bname.length
 	if bid
 	  i = 0

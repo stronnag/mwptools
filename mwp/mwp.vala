@@ -3626,6 +3626,7 @@ public class MWPlanner : Gtk.Application {
                         sb.append(" Nav");
                     sb.append_printf(" Pr %d", profile);
                     verlab.set_label(sb.str);
+                    verlab.tooltip_text = sb.str;
                 }
 
                 want_special = 0;
@@ -4113,6 +4114,7 @@ public class MWPlanner : Gtk.Application {
                             mwvar = vi.fctype = MWChooser.MWVAR.CF;
                             var vers="iNav Telemetry";
                             verlab.set_label(vers);
+                            verlab.tooltip_text = vers;
                         }
                     }
                     last_tm = nticks;
@@ -4232,6 +4234,7 @@ public class MWPlanner : Gtk.Application {
                     mwvar = vi.fctype = MWChooser.MWVAR.CF;
                     var vers="CF mwc %03d".printf(vi.mvers);
                     verlab.set_label(vers);
+                    verlab.tooltip_text = vers;
                     queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                 }
                 else
@@ -4427,6 +4430,7 @@ public class MWPlanner : Gtk.Application {
                     vi.fc_vers = raw[0] << 16 | raw[1] << 8 | raw[2];
                     var fcv = "%s v%d.%d.%d".printf(vi.fc_var,raw[0],raw[1],raw[2]);
                     verlab.set_label(fcv);
+                    verlab.tooltip_text = fcv;
                     if(inav)
                     {
                         if(vi.fc_vers < FCVERS.hasMoreWP)
@@ -4476,6 +4480,7 @@ public class MWPlanner : Gtk.Application {
                                                           vs[2],vs[1],vs[0],
                                                           vi.name, vi.fc_git);
                 verlab.set_label(vers);
+                verlab.tooltip_text = vers;
                 MWPLog.message("%s\n", vers);
                 queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                 break;
@@ -4539,6 +4544,7 @@ public class MWPlanner : Gtk.Application {
                     vi.fctype = mwvar;
                     var vers="MWvers v%03d".printf(vi.mvers);
                     verlab.set_label(vers);
+                    verlab.tooltip_text = vers;
                     queue_cmd(MSP.Cmds.API_VERSION,null,0);
                 }
                 icount++;
@@ -6375,6 +6381,7 @@ public class MWPlanner : Gtk.Application {
             serial_doom(conbutton);
             markers.remove_rings(view);
             verlab.set_label("");
+            verlab.tooltip_text = "";
             typlab.set_label("");
             statusbar.push(context_id, "");
         }
