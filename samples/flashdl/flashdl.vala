@@ -42,7 +42,10 @@ public class Flashdl : Object
     {
          if(errs == true)
          {
-             MWPLog.message("Error on cmd %s %d\n", cmd.to_string(), cmd);
+             if (cmd == MSP.Cmds.BLACKBOX_CONFIG)
+                 MWPLog.message("No dataflash\n");
+             else
+                 MWPLog.message("Error on cmd %s %d\n", cmd.to_string(), cmd);
              ml.quit();
          }
 
@@ -72,6 +75,8 @@ public class Flashdl : Object
                 break;
 
             case MSP.Cmds.BLACKBOX_CONFIG:
+            case MSP.Cmds.BLACKBOX_CONFIGv2:
+//                print("Config %x %u %u %u\n", cmd, len, raw[0], raw[1]);
                 if (raw[0] == 1 && raw[1] == 1)  // enabled and sd flash
                     if(xerase)
                         msp.send_command(MSP.Cmds.DATAFLASH_ERASE,null,0);
@@ -79,8 +84,12 @@ public class Flashdl : Object
                         msp.send_command(MSP.Cmds.DATAFLASH_SUMMARY,null,0);
                 else
                 {
-                    MWPLog.message("No dataflash\n");
-                    ml.quit();
+                    if (cmd == MSP.Cmds.BLACKBOX_CONFIGv2)
+                    {
+                        MWPLog.message("No dataflash %u\n", cmd);
+                        ml.quit();
+                    }
+                    msp.send_command(MSP.Cmds.BLACKBOX_CONFIGv2,null,0);
                 }
                 break;
 
