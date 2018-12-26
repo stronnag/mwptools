@@ -576,7 +576,7 @@ if RUBY_VERSION.match(/^1/)
 end
 
 idx = 1
-decl = -1.5
+decl = 0
 typ = 3
 udpspec = nil
 serdev = nil
@@ -603,7 +603,7 @@ ARGV.options do |opt|
   opt.on('-s','--serial-device=DEV'){|o|serdev=o}
   opt.on('-i','--index=IDX',Integer){|o|idx=o}
   opt.on('-t','--vehicle-type=TYPE',Integer){|o|typ=o}
-  opt.on('-d','--declination=DEC',Float,'Mag Declination (default -1.5)'){|o|decl=o}
+  opt.on('-d','--declination=DEC',Float,'Mag Declination (default 0)'){|o|decl=o}
   opt.on('-g','--force-gps-heading','Use GPS course instead of compass'){gpshd=1}
   opt.on('-4','--force-ipv4'){v4=true}
   opt.on('-f','--fast'){mindelay=true}
@@ -779,6 +779,7 @@ end
 cmd = decoder
 cmd << " --index #{idx}"
 cmd << " --merge-gps"
+cmd << " --declination #{decl}"
 cmd << " --stdout"
 cmd << " 2>#{nul}"
 cmd << " \"#{bbox}\""
