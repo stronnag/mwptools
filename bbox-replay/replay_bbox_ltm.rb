@@ -276,16 +276,11 @@ end
 
 def encode_atti r, gpshd=0
   msg='$TA'
-  hdr = case gpshd
-	when 1
-	  r[:gps_ground_course].to_i
-	when 2
-	  r[:heading].to_i
-	else
-	  r[:attitude2].to_i/10
-	end
-
-  sl = [r[:pitch].to_i, r[:roll].to_i, hdr].pack("s<s<s<")
+  hdr = (gpshd == 1) ? r[:gps_ground_course].to_i : r[:attitude2].to_i/10
+  pt =  r[:attitude1].to_i/10
+  rl = r[:attitude0].to_i/10
+  sl = [pt, rl, hdr].pack("s<s<s<")
+#  STDERR.puts "p=#{pt} r=#{rl} h=#{hdr}"
   msg << sl << mksum(sl)
   msg
 end
@@ -611,7 +606,6 @@ ARGV.options do |opt|
   opt.on('-d','--declination=DEC',Float,'Mag Declination (default -1.5)'){|o|decl=o}
   opt.on('-g','--force-gps-heading','Use GPS course instead of compass'){gpshd=1}
   opt.on('-4','--force-ipv4'){v4=true}
-  opt.on('-m','--use-imu-heading'){gpshd=2}
   opt.on('-f','--fast'){mindelay=true}
   opt.on('-d','--dump-headers'){dumph=true}
   opt.on('-v','--verbose'){$verbose=true}
@@ -785,8 +779,6 @@ end
 cmd = decoder
 cmd << " --index #{idx}"
 cmd << " --merge-gps"
-cmd << " --declination #{decl}"
-cmd << " --simulate-imu"
 cmd << " --stdout"
 cmd << " 2>#{nul}"
 cmd << " \"#{bbox}\""
