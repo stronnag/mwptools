@@ -405,7 +405,6 @@ def encode_stats r,inavers,armed=1
     STDERR.puts "** STS 19 for #{INAV_STATES[inavers][r[:navstate].to_i]}\n"
   end
 
-
   sts = (sts << 2) | armed
   if r[:failsafephase_flags].strip != 'IDLE'
     sts |= 2
@@ -576,7 +575,7 @@ if RUBY_VERSION.match(/^1/)
 end
 
 idx = 1
-decl = 0
+decl = nil
 typ = 3
 udpspec = nil
 serdev = nil
@@ -588,6 +587,7 @@ autotyp=nil
 dumph = false
 scan = nil
 decoder="blackbox_decode"
+nobaro = nil
 
 pref_fn = File.join(ENV["HOME"],".config", "mwp", "replay_ltm.json")
 if File.exist? pref_fn
@@ -595,6 +595,7 @@ if File.exist? pref_fn
   prefs = JSON.parse(json, {:symbolize_names => true})
   decl = prefs[:declination].to_f
   autotyp = prefs[:auto]
+  nobaro = prefs[:nobaro]
 end
 
 ARGV.options do |opt|
@@ -631,6 +632,10 @@ if mindelay
   unless ENV['BB_DELAY'].nil?
     mindelay = ENV['BB_DELAY'].to_f
   end
+end
+
+unless ENV['BB_NOBARO'].nil?
+  nobaro = true
 end
 
 RDISARMS = %w/NONE TIMEOUT STICKS SWITCH_3D SWITCH KILLSWITCH FAILSAFE NAVIGATION/
@@ -690,8 +695,6 @@ File.open("/tmp/.mwp-vbat.txt","a") do |vf|
   end
   vf.puts "#{ivers} vbat scale #{need_vbat_scale}"
 end
-
-
 
 if scan
   mx = [gitinfos.size, disarms.size].max
@@ -779,7 +782,9 @@ end
 cmd = decoder
 cmd << " --index #{idx}"
 cmd << " --merge-gps"
-cmd << " --declination #{decl}"
+unless decl.nil?
+  cmd << " --declination-dec #{decl}"
+end
 cmd << " --stdout"
 cmd << " 2>#{nul}"
 cmd << " \"#{bbox}\""
@@ -827,11 +832,11 @@ IO.popen(cmd,'rt') do |pipe|
 #  STDERR.puts "typ #{typ} motors #{nmotor} servos #{nservo}\n"
 
   have_sonar = (hdrs.has_key? :sonarraw)
-  have_baro = (hdrs.has_key? :baroalt_cm)
-
+  unless nobaro
+    have_baro = (hdrs.has_key? :baroalt_cm)
+  end
   gpshd = 1 if have_mag == false and gpshd == 0
 
-#  STDERR.puts "idx: #{idx} gi: #{gitinfos[idx-1]}"
   vers = send_init_seq dev,typ,have_sonar,have_baro,have_mag,gitinfos[idx-1]
 
   csv.each do |row|
