@@ -1609,7 +1609,7 @@ public class MWPlanner : Gtk.Application {
         vcol = new VCol();
 
         odoview = new OdoView(builder,window,conf.stats_timeout);
-        navstatus = new NavStatus(builder, vcol);
+        navstatus = new NavStatus(builder, vcol, conf.recip);
         radstatus = new RadioStatus(builder);
         telemstatus = new TelemetryStats(builder);
         fbox  = new FlightBox(builder,window);
@@ -5335,10 +5335,7 @@ public class MWPlanner : Gtk.Application {
                     else if(ltmflags != 15)
                     {
                         if(craft != null)
-                        {
-//                            MWPLog.message("LTM set mode %d\n", ltmflags);
                             craft.set_normal();
-                        }
                     }
                     MWPLog.message("New LTM Mode %s (%d) %d %ds %f %f %x %x\n",
                                    MSP.ltm_mode(ltmflags), ltmflags,
@@ -5668,7 +5665,6 @@ public class MWPlanner : Gtk.Application {
         if(((Math.fabs(d1) > 1e-6) ||
            Math.fabs(d2) > 1e-6))
         {
-            print("Home jump %f %f\n", d1, d2);
             if(have_home && (home_pos.lat != 0.0) && (home_pos.lon != 0.0))
             {
                 double d,cse;
@@ -6189,13 +6185,13 @@ public class MWPlanner : Gtk.Application {
                 navstatus.logspeak_init(voice, (conf.uilang == "ev"), exvox);
                 spktid = Timeout.add_seconds(conf.speakint, () => {
                         if(replay_paused == false)
-                            navstatus.announce(sflags, conf.recip);
+                            navstatus.announce(sflags);
                         return Source.CONTINUE;
                     });
                 if(live)
                 {
                     gps_alert(0);
-                    navstatus.announce(sflags,conf.recip);
+                    navstatus.announce(sflags);
                 }
             }
         }

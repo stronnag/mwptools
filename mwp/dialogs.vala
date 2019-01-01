@@ -1370,8 +1370,9 @@ public class NavStatus : GLib.Object
         ELEV = 8
     }
 
-    public NavStatus(Gtk.Builder builder, VCol _vc)
+    public NavStatus(Gtk.Builder builder, VCol _vc, bool _recip = false)
     {
+        recip = _recip;
         xfmode = 255;
         numsat = 0;
         modsat = false;
@@ -1721,10 +1722,8 @@ public class NavStatus : GLib.Object
         }
     }
 
-    public void announce(uint8 mask, bool _recip)
+    public void announce(uint8 mask)
     {
-        recip = _recip;
-
         if(have_hdr)
         {
             mt.message(AudioThread.Vox.HEADING);

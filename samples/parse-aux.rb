@@ -45,7 +45,8 @@ BOXNAME=[
 ARGF.each do |l|
   bname=''
   if l.match(/^aux/)
-    a=l.chomp.split(' ')
+    l.chomp!
+    a=l.split(' ')
     id = a[1].to_i
     func = a[2].to_i
     chn = a[3].to_i
@@ -56,6 +57,6 @@ ARGF.each do |l|
     else
       bname = "PermID #{func}"
     end
-    puts "%-20s AUX%d %4d %4d\n" % [bname, chn, min, max]
+    puts "%-20s AUX%d %4d %4d\t(%s)\n" % [bname, chn, min, max, l]
   end
 end

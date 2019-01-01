@@ -846,7 +846,14 @@ IO.popen(cmd,'rt') do |pipe|
     if us > nv
       nv = us + intvl
       icnt  = (icnt + 1) % 10
-      msg = encode_atti row, gpshd
+      # Check for armed and GPS (for origin)
+      if origin.nil? and row[:gps_numsat].to_i > 5
+	origin = {:lat => row[:gps_coord0], :lon => row[:gps_coord1],
+	  :alt => row[:gps_altitude]}
+	msg = encode_origin origin
+	send_msg dev, msg
+      end
+       msg = encode_atti row, gpshd
       send_msg dev, msg
       case icnt
       when 0,2,4,6,8
@@ -855,12 +862,6 @@ IO.popen(cmd,'rt') do |pipe|
 	if  llat != 0.0 and llon != 0.0
 	  msg = encode_gps row, have_baro
 	  send_msg dev, msg
-	  if origin.nil? and row[:gps_numsat].to_i > 4
-	    origin = {:lat => row[:gps_coord0], :lon => row[:gps_coord1],
-	      :alt => row[:gps_altitude]}
-	    msg = encode_origin origin
-	    send_msg dev, msg
-	  end
 	end
       when 5
 	if  llat != 0.0 and llon != 0.0 && origin
@@ -868,7 +869,6 @@ IO.popen(cmd,'rt') do |pipe|
 	  send_msg dev, msg
 	end
 	if row.has_key? :gps_hdop
-#	  hdop = row[:gps_hdop].to_i
 	  msg = encode_extra row
 	  send_msg dev, msg
 	end
