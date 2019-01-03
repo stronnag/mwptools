@@ -2451,6 +2451,7 @@ public class GPSInfo : GLib.Object
     private Gtk.Label speed_lab;
     private double _dlon = 0;
     private double _dlat = 0;
+    private double dlimit = 0.0;
 
     public static double lat {get; private set;}
     public static double lon {get; private set;}
@@ -2462,8 +2463,9 @@ public class GPSInfo : GLib.Object
     public static double hdop = -1.0;
 
 
-    public GPSInfo(Gtk.Grid grid)
+    public GPSInfo(Gtk.Grid grid, double _dlimit = 0.0)
     {
+        dlimit = _dlimit;
         var lab = new Gtk.Label("No. Satellites");
         lab.halign = Gtk.Align.START;
         lab.valign = Gtk.Align.START;
@@ -2516,6 +2518,7 @@ public class GPSInfo : GLib.Object
         speed_lab.valign = Gtk.Align.START;
         grid.attach(speed_lab, 1, 5, 1, 1);
         grid.show_all();
+        MWPLog.message("Delta speed %f\n", dlimit);
     }
 
     public void set_hdop(double _hdop)
@@ -2527,10 +2530,10 @@ public class GPSInfo : GLib.Object
     {
         lat = m.lat/10000000.0;
         lon = m.lon/10000000.0;
+        spd  = (m.vel == 0xffff) ? 0 : m.vel/100.0;
+        cse = (m.cog == 0xffff) ? cse : m.cog/100.0;
         calc_cse_dist_delta(lat,lon,out ddm);
         double dalt = m.alt/1000.0;
-        cse = (m.cog == 0xffff) ? 0 : m.cog/100.0;
-        spd  = (m.vel == 0xffff) ? 0 : m.vel/100.0;
         elev = (int16)Math.lround(dalt);
         nsat = m.satellites_visible;
         fix = m.fix_type;
@@ -2566,7 +2569,7 @@ public class GPSInfo : GLib.Object
         double c = cse;
         ddm = 0;
 
-        if (lat != _dlat || lon != _dlon)
+        if (spd >= dlimit && (lat != _dlat || lon != _dlon))
         {
             if(_dlat != 0 && _dlon != 0)
             {
@@ -2584,8 +2587,8 @@ public class GPSInfo : GLib.Object
     {
         lat = g.lat/10000000.0;
         lon = g.lon/10000000.0;
-        cse =  calc_cse_dist_delta(lat,lon, out ddm);
         spd =  g.speed;
+        cse =  calc_cse_dist_delta(lat,lon, out ddm);
         double dalt = g.alt/100.0;
         fix = (g.sats & 3);
         nsat = (g.sats >> 2);
@@ -2618,9 +2621,8 @@ public class GPSInfo : GLib.Object
     {
         lat = g.gps_lat/10000000.0;
         lon = g.gps_lon/10000000.0;
-
-        calc_cse_dist_delta(lat,lon, out ddm);
         spd = g.gps_speed/100.0;
+        calc_cse_dist_delta(lat,lon, out ddm);
         cse = g.gps_ground_course/10.0;
         nsat = g.gps_numsat;
         fix = g.gps_fix;

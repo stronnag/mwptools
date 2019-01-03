@@ -1805,7 +1805,7 @@ public class MWPlanner : Gtk.Application {
         scroll.add (ls.view);
 
         var grid =  builder.get_object ("grid1") as Gtk.Grid;
-        gpsinfo = new GPSInfo(grid);
+        gpsinfo = new GPSInfo(grid, conf.deltaspeed);
 
         var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL,2);
 

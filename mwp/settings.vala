@@ -97,6 +97,7 @@ public class MWPSettings : GLib.Object
     public string mag_sanity {get; set; default=null;}
     public bool say_bearing {get; set; default=true;}
     public bool pos_is_centre {get; set; default=true;}
+    public double deltaspeed {get; set; default=0.0;}
 
     public signal void settings_update (string s);
 
@@ -357,6 +358,8 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "pos-is-centre")
             pos_is_centre = settings.get_boolean("pos-is-centre");
+        if(s == null || s == "delta-minspeed")
+            deltaspeed = settings.get_double("delta-minspeed");
     }
 
     public void save_pane()

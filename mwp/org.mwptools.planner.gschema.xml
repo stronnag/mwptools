@@ -493,5 +493,18 @@
       <description>Whether the position label is the centre or pointer location</description>
     </key>
 
+
+    <key name="delta-minspeed" type="d">
+      <default>0.0</default>
+      <summary>Minimum speed for elapsed distance updates</summary>
+      <description>
+	Minimum speed for elapsed distance updates (m/s). Default is
+	zero, which means the elapsed distance is always updated;
+	larger values will take out hover / jitter movements.
+      </description>
+    </key>
+
+
+
   </schema>
 </schemalist>
