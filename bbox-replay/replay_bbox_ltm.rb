@@ -605,7 +605,8 @@ ARGV.options do |opt|
   opt.on('-i','--index=IDX',Integer){|o|idx=o}
   opt.on('-t','--vehicle-type=TYPE',Integer){|o|typ=o}
   opt.on('-d','--declination=DEC',Float,'Mag Declination (default 0)'){|o|decl=o}
-  opt.on('-g','--force-gps-heading','Use GPS course instead of compass'){gpshd=1}
+  opt.on('-g','--use-gps-heading','Use GPS course instead of compass'){gpshd=1}
+  opt.on('-G','--use-gps-alt','Use GPS alt instead of baro'){nobaro=true}
   opt.on('-4','--force-ipv4'){v4=true}
   opt.on('-f','--fast'){mindelay=true}
   opt.on('-d','--dump-headers'){dumph=true}

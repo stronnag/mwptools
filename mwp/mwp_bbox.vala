@@ -30,7 +30,8 @@ public class  BBoxDialog : Object
     private Gtk.ListStore bb_liststore;
     private Gtk.ComboBoxText bb_combo;
     private Gtk.FileChooserButton bb_filechooser;
-    private Gtk.CheckButton bb_force_gps;
+    private Gtk.CheckButton bb_force_gps_cog;
+    private Gtk.CheckButton bb_force_gps_alt;
     private Gtk.TreeSelection bb_sel;
     private Gtk.Window _w;
     private string bbox_decode;
@@ -61,7 +62,8 @@ public class  BBoxDialog : Object
         bb_liststore = builder.get_object ("bb_liststore") as Gtk.ListStore;
         bb_filechooser = builder.get_object("bb_filechooser") as FileChooserButton;
         bb_combo = builder.get_object("bb_comboboxtext") as ComboBoxText;
-        bb_force_gps = builder.get_object("bb_force_gps") as CheckButton;
+        bb_force_gps_cog = builder.get_object("bb_force_gps_cog") as CheckButton;
+        bb_force_gps_alt = builder.get_object("bb_force_gps_alt") as CheckButton;
         bb_tz_combo = builder.get_object("bb_tz_combo") as ComboBoxText;
         var filter = new Gtk.FileFilter ();
         filter.set_filter_name ("BB Logs");
@@ -503,7 +505,7 @@ public class  BBoxDialog : Object
         return id;
     }
 
-    public void get_result(out string _name, out int _index, out int _type, out bool _use_gps_cse)
+    public void get_result(out string _name, out int _index, out int _type, out uint8 _use_gps)
     {
         _name = filename;
         Gtk.TreeModel model;
@@ -513,9 +515,8 @@ public class  BBoxDialog : Object
         model.get_value (iter, 0, out cell);
         _index = (int)cell;
         _type = bb_combo.active -1;
-        _use_gps_cse = bb_force_gps.active;
+        _use_gps = ((bb_force_gps_cog.active) ? 1 : 0) + ((bb_force_gps_alt.active) ? 2 : 0);
     }
-
 
     private bool find_base_position(string filename, string index,
                             out double xlat, out double xlon)

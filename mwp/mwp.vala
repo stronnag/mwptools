@@ -7076,7 +7076,7 @@ public class MWPlanner : Gtk.Application {
     }
 
     private void run_replay(string fn, bool delay, Player rtype,
-                            int idx=0, int btype=0, bool force_gps=false)
+                            int idx=0, int btype=0, uint8 force_gps=0)
     {
         xlog = conf.logarmed;
         xaudio = conf.audioarmed;
@@ -7166,7 +7166,7 @@ public class MWPlanner : Gtk.Application {
     }
 
     private void spawn_bbox_task(string fn, int index, int btype,
-                                 bool delay, bool force_gps)
+                                 bool delay, uint8 force_gps)
     {
         string [] args = {"replay_bbox_ltm.rb",
                           "--fd", "%d".printf(playfd[1]),
@@ -7175,8 +7175,10 @@ public class MWPlanner : Gtk.Application {
                           "--decoder", conf.blackbox_decode};
         if(delay == false)
             args += "-f";
-        if(force_gps)
+        if((force_gps & 1) == 1)
             args += "-g";
+        if((force_gps & 2) == 2)
+            args += "-G";
 
         args += fn;
         args += null;
@@ -7223,9 +7225,10 @@ public class MWPlanner : Gtk.Application {
                 string bblog;
                 int index;
                 int btype;
-                bool force_gps;
+                uint8 force_gps = 0;
 
-                bb_runner.get_result(out bblog, out index, out btype, out force_gps);
+                bb_runner.get_result(out bblog, out index, out btype,
+                                     out force_gps);
                 run_replay(bblog, delay, Player.BBOX, index, btype, force_gps);
             }
         }
