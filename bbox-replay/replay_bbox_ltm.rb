@@ -797,103 +797,106 @@ vers=nil
 us=nil
 st=nil
 
+puts cmd
 IO.popen(cmd,'rt') do |pipe|
   csv = CSV.new(pipe, csv_opts)
-  hdrs = csv.shift
-  if dumph
-    require 'ap'
-    ap hdrs
-    exit
-  end
-
-  abort 'Not a useful INAV log' if hdrs[:gps_coord0].nil?
+  lindex = 0
+  csv.each do |row|
+    if lindex == 0
+      hdrs = row
+      if dumph
+	require 'ap'
+	ap hdrs
+	exit
+      end
+      abort 'Not a useful INAV log' if hdrs[:gps_coord0].nil?
 
 #  if !$stderr.isatty
 #    $stderr.reopen(STDERR_LOG, 'w')
 #    $stderr.sync
 #  end
 
-  nmotor = 0
-  nservo = 0
-  0.upto(7).each do |n|
-    s = "motor#{n}"
-    if hdrs.has_key?(s.to_sym)
-      nmotor +=1
-    end
-  end
-  0.upto(7).each do |n|
-    s = "servo#{n}"
-    nservo +=1 if hdrs.has_key?(s.to_sym)
-  end
+      nmotor = 0
+      nservo = 0
+      0.upto(7).each do |n|
+	s = "motor#{n}"
+	if hdrs.has_key?(s.to_sym)
+	  nmotor +=1
+	end
+      end
+      0.upto(7).each do |n|
+	s = "servo#{n}"
+	nservo +=1 if hdrs.has_key?(s.to_sym)
+      end
 
-  if autotyp || typ == -1
-    typ = get_autotype nmotor, nservo
-  end
+      if autotyp || typ == -1
+	typ = get_autotype nmotor, nservo
+      end
 
 #  STDERR.puts "typ #{typ} motors #{nmotor} servos #{nservo}\n"
 
-  have_sonar = (hdrs.has_key? :sonarraw)
-  unless nobaro
-    have_baro = (hdrs.has_key? :baroalt_cm)
-  end
-  gpshd = 1 if have_mag == false and gpshd == 0
-
-  vers = send_init_seq dev,typ,have_sonar,have_baro,have_mag,gitinfos[idx-1]
-
-  csv.each do |row|
-    next if row[:gps_numsat].to_i == 0
-    us = row[:time_us].to_i
-    st = us if st.nil?
-    if us > nv
-      nv = us + intvl
-      icnt  = (icnt + 1) % 10
-      # Check for armed and GPS (for origin)
-      if origin.nil? and row[:gps_numsat].to_i > 5
-	origin = {:lat => row[:gps_coord0], :lon => row[:gps_coord1],
-	  :alt => row[:gps_altitude]}
-	msg = encode_origin origin
-	send_msg dev, msg
+      have_sonar = (hdrs.has_key? :sonarraw)
+      unless nobaro
+	have_baro = (hdrs.has_key? :baroalt_cm)
       end
-       msg = encode_atti row, gpshd
-      send_msg dev, msg
-      case icnt
-      when 0,2,4,6,8
-	llat = row[:gps_coord0].to_f
-	llon = row[:gps_coord1].to_f
-	if  llat != 0.0 and llon != 0.0
-	  msg = encode_gps row, have_baro
-	  send_msg dev, msg
-	end
-      when 5
-	if  llat != 0.0 and llon != 0.0 && origin
+      gpshd = 1 if have_mag == false and gpshd == 0
+
+      vers = send_init_seq dev,typ,have_sonar,have_baro,have_mag,gitinfos[idx-1]
+    else
+      next if row[:gps_numsat].to_i == 0
+      us = row[:time_us].to_i
+      st = us if st.nil?
+      if us > nv
+	nv = us + intvl
+	icnt  = (icnt + 1) % 10
+	# Check for armed and GPS (for origin)
+	if origin.nil? and row[:gps_numsat].to_i > 5
+	  origin = {:lat => row[:gps_coord0], :lon => row[:gps_coord1],
+	    :alt => row[:gps_altitude]}
 	  msg = encode_origin origin
 	  send_msg dev, msg
 	end
-	if row.has_key? :gps_hdop
-	  msg = encode_extra row
-	  send_msg dev, msg
-	end
-      when 1,3,7,9
-	if  llat != 0.0 and llon != 0.0
-	  lastr = row
-	  msg = encode_stats row,vers
-	  send_msg dev, msg
-	  msg = encode_nav row,vers
-	  send_msg dev, msg
-	  msg = encode_amps row
-	  if msg
+	msg = encode_atti row, gpshd
+	send_msg dev, msg
+	case icnt
+	when 0,2,4,6,8
+	  llat = row[:gps_coord0].to_f
+	  llon = row[:gps_coord1].to_f
+	  if  llat != 0.0 and llon != 0.0
+	    msg = encode_gps row, have_baro
 	    send_msg dev, msg
 	  end
+	when 5
+	  if  llat != 0.0 and llon != 0.0 && origin
+	    msg = encode_origin origin
+	    send_msg dev, msg
 	end
+	  if row.has_key? :gps_hdop
+	    msg = encode_extra row
+	    send_msg dev, msg
+	  end
+	when 1,3,7,9
+	  if  llat != 0.0 and llon != 0.0
+	    lastr = row
+	    msg = encode_stats row,vers
+	    send_msg dev, msg
+	    msg = encode_nav row,vers
+	    send_msg dev, msg
+	    msg = encode_amps row
+	    if msg
+	      send_msg dev, msg
+	    end
+	  end
+	end
+	et = ((us - st)/1000000).to_i
+	msg = encode_et et
+	send_msg dev, msg
+	sleep (mindelay) ? mindelay : NORMDELAY
       end
-      et = ((us - st)/1000000).to_i
-      msg = encode_et et
-      send_msg dev, msg
-      sleep (mindelay) ? mindelay : NORMDELAY
     end
+    lindex += 1
   end
 end
-
 et = ((us - st)/1000000).to_i
 msg = encode_et et
 send_msg dev, msg
