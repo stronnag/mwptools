@@ -10,16 +10,16 @@ endif
 VAPI := $(shell valac --api-version)
 
 ifeq ($(VAPI),0.26)
- DOPTS += -D LSRVAL
+ $(error toolset is obsolete)
 endif
 ifeq ($(VAPI),0.28)
- DOPTS += -D LSRVAL
+  $(error toolset is obsolete)
 endif
 ifeq ($(VAPI),0.30)
- DOPTS += -D LSRVAL
+  $(error toolset is obsolete)
 endif
 ifeq ($(VAPI),0.32)
- DOPTS += -D LSRVAL
+  $(error toolset is obsolete)
 endif
 ifeq ($(VAPI),0.34)
  DOPTS += -D LSRVAL
