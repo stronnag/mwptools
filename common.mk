@@ -7,6 +7,8 @@ ifeq ($(XOS),Linux)
  GUDEV = --pkg gudev-1.0
 endif
 
+OPTS += -X -O2 -X -s --thread
+
 VAPI := $(shell valac --api-version)
 
 ifeq ($(VAPI),0.26)
@@ -16,10 +18,12 @@ ifeq ($(VAPI),0.28)
   $(error toolset is obsolete)
 endif
 ifeq ($(VAPI),0.30)
-  $(error toolset is obsolete)
+ DOPTS += -D LSRVAL
+ OPTS += --target-glib=2.48
 endif
 ifeq ($(VAPI),0.32)
-  $(error toolset is obsolete)
+ DOPTS += -D LSRVAL
+ OPTS += --target-glib=2.48
 endif
 ifeq ($(VAPI),0.34)
  DOPTS += -D LSRVAL
@@ -35,7 +39,7 @@ endif
 
 VTEVERS=2.91
 
-OPTS += -X -O2 -X -s --thread
+
 
 prefix?=$(DESTDIR)/usr
 datadir?=$(DESTDIR)/usr
