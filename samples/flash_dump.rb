@@ -19,6 +19,9 @@ class Serial
   end
 end
 
+
+SBAUD = [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 250000, 460800, 921600, 1000000, 1500000, 2000000]
+
 Encoding.default_external = Encoding::BINARY
 
 serdev=nil
@@ -49,6 +52,7 @@ ARGV.options do |opt|
   opt.on('-o','--output=FILE'){|o| ofile=o}
   opt.on('-b','--baud=RATE',Integer){|o|baud=o}
   opt.on('-B','--super-baud=RATE',Integer){|o|sbaud=o}
+  opt.on('-S','--show-super-rates') { puts SBAUD ; exit }
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
     opt.parse!
@@ -57,7 +61,9 @@ ARGV.options do |opt|
   end
 end
 
-abort "Unsupported super-baudrate" unless [nil, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 250000, 460800, 921600, 1000000, 1500000, 2000000].include?(sbaud)
+unless sbaud.nil?
+  abort "Unsupported super-baudrate" unless SBAUD.include?(sbaud)
+end
 
 delok = false
 defser = nil
@@ -65,6 +71,7 @@ xfsize = 0
 stm = 0
 
 sport = Serial.new serdev,baud
+sport.set_vtime 1
 sfd = sport.getfd
 sio = IO.new(sfd)
 
@@ -182,9 +189,9 @@ puts "Exiting"
 
 if defser
   sport.write("#{defser}\n")
-  res = sio.expect("# ",5)
+  sleep 0.1
   sport.write "save\n"
 else
   sport.write "exit\n"
 end
-sio.expect("Rebooting")
+sio.expect("Rebooting") rescue nil
