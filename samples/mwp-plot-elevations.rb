@@ -313,7 +313,7 @@ replot
     hlat = hp0.to_f
     hlon = hp1.to_f
 
-    #STDERR.puts ("hstr [@{hstr}] lat lon #{hlat} #{hlon}")
+    #STDERR.puts ("hstr [#{@hstr}] lat lon #{hlat} #{hlon}")
 
     ipos << { :no => 0, :lat => hlat, :lon => hlon, :alt => 0, :oa => 0,
       :act=> 'HOME', :p1 => '0', :p2 => '0', :p3 => '0',

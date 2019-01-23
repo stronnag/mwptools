@@ -1402,9 +1402,6 @@ public class ListBox : GLib.Object
         XmlIO.to_xml_file(outfn, m);
         spawn_args += outfn;
 
-//        foreach(var a in spawn_args)
-//            print("args %s\n", a);
-
         try {
             Pid child_pid;
             int p_stderr;
@@ -1436,7 +1433,6 @@ public class ListBox : GLib.Object
 
                         if(line == null || len == 0)
                             return true;
-//                        print("res %s", line);
                         lastline = line;
                         return true;
                     } catch (IOChannelError e) {
@@ -1486,11 +1482,9 @@ public class ListBox : GLib.Object
 
             bool llok = false;
 
-//            print("def str = %s\n", pd.hstr);
             if(pd.hstr != null)
             {
                 llok = parse_ll(pd.hstr, out hlat, out hlon);
-//                print("Parse ll %s %f %f\n", llok.to_string(), hlat, hlon);
             }
             if (llok == false)
             {
