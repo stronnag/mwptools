@@ -122,7 +122,7 @@ read from $HOME\/.config\/mwp\/elev-plot, .\/.elev-plot.rc or $HOME\/.elev-plot.
       opts.separator ""
       opts.separator "Options:"
       opts.on("-p",'--plotfile=FILE', 'Plot file (SVG)') {|o| @pf = o }
-      opts.on("-h",'--home=LOCATION', 'Home location as lat,long') {|o| @hstr = o }
+      opts.on("-h",'--home=LOCATION', 'Home location as "lat long"') {|o| @hstr = o }
       opts.on("-o",'--output=FILE', 'Revised mission') {|o| @save = o }
       opts.on("-r",'--rth-alt=ALT', 'RTH altitude', Integer) {|o| @rthh = o }
       opts.on("-m",'--margin=M', 'Clearance Margin (m)', Integer) {|o| @margin = o }
@@ -301,9 +301,20 @@ replot
     tdist = 0
     hlat = nil
     hlon = nil
-    hp = @hstr.split(',')
-    hlat = hp[0].to_f
-    hlon = hp[1].to_f
+
+    hp = @hstr.split(' ')
+    if hp.size != 2
+      hp = @hstr.split(',')
+    end
+
+    # Too ugly, one should not have to do this in the 21st centuary
+    hp0 = hp[0].gsub(',','.')
+    hp1 = hp[1].gsub(',','.')
+    hlat = hp0.to_f
+    hlon = hp1.to_f
+
+    #STDERR.puts ("hstr [@{hstr}] lat lon #{hlat} #{hlon}")
+
     ipos << { :no => 0, :lat => hlat, :lon => hlon, :alt => 0, :oa => 0,
       :act=> 'HOME', :p1 => '0', :p2 => '0', :p3 => '0',
       :cse => nil, :dist => 0.0, :tdist => 0.0}

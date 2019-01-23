@@ -7,7 +7,7 @@ ifeq ($(XOS),Linux)
  GUDEV = --pkg gudev-1.0
 endif
 
-OPTS += -X -O2 -X -s --thread
+OPTS += -X -O2 -X -s
 
 VAPI := $(shell valac --api-version)
 
@@ -29,6 +29,11 @@ ifeq ($(VAPI),0.34)
  DOPTS += -D LSRVAL
 endif
 
+# FIXME, this is unmaintainable
+#ifneq ($(VAPI),0.42)
+OPTS+= --thread
+#endif
+
 USE_TERMCAP := $(shell pkg-config --exists ncurses; echo $$?)
 
 GTKOK := $(shell pkg-config --atleast-version=3.22 gtk+-3.0; echo $$?)
@@ -38,8 +43,6 @@ ifneq ($(GTKOK), 0)
 endif
 
 VTEVERS=2.91
-
-
 
 prefix?=$(DESTDIR)/usr
 datadir?=$(DESTDIR)/usr

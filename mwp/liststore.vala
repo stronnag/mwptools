@@ -1357,11 +1357,21 @@ public class ListBox : GLib.Object
         terrain_item.sensitive = state;
     }
 
-    private void parse_ll(string mhome, out double lat, out double lon)
+    private bool parse_ll(string mhome, out double lat, out double lon)
     {
-        var parts = mhome.split(",");
-        lat = double.parse(parts[0]);
-        lon = double.parse(parts[1]);
+        bool ret=false;
+        lat = lon = 0;
+
+        var parts = mhome.split(" ");
+        if (parts.length != 2)
+            parts = mhome.split(",");
+        if (parts.length == 2)
+        {
+            lat = DStr.strtod(parts[0], null);
+            lon = DStr.strtod(parts[1], null);
+            ret = true;
+        }
+        return ret;
     }
 
     private string mstempname()
@@ -1380,7 +1390,7 @@ public class ListBox : GLib.Object
         string[] spawn_args = {"mwp-plot-elevations.rb", "-A"};
         fhome.get_fake_home(out lat, out lon);
         var margin = fhome.fhd.get_elev();
-        spawn_args += "--home=%.8f,%.8f".printf(lat, lon);
+        spawn_args += "--home=%.8f %.8f".printf(lat, lon);
         spawn_args += "--margin=%d".printf(margin);
         var repl = fhome.fhd.get_replace();
         if (repl)
@@ -1391,6 +1401,9 @@ public class ListBox : GLib.Object
         var m = to_mission();
         XmlIO.to_xml_file(outfn, m);
         spawn_args += outfn;
+
+//        foreach(var a in spawn_args)
+//            print("args %s\n", a);
 
         try {
             Pid child_pid;
@@ -1423,6 +1436,7 @@ public class ListBox : GLib.Object
 
                         if(line == null || len == 0)
                             return true;
+//                        print("res %s", line);
                         lastline = line;
                         return true;
                     } catch (IOChannelError e) {
@@ -1460,7 +1474,7 @@ public class ListBox : GLib.Object
     private void terrain_mission()
     {
         FakeHome.PlotElevDefs pd;
-        double hlat, hlon;
+        double hlat = 0, hlon = 0;
 
         if(fhome.fhd.get_pos() == "" || fhome.fhd.get_pos() == null)
         {
@@ -1470,11 +1484,15 @@ public class ListBox : GLib.Object
             if (mhome != null)
                 pd.hstr = mhome;
 
+            bool llok = false;
+
+//            print("def str = %s\n", pd.hstr);
             if(pd.hstr != null)
             {
-                parse_ll(pd.hstr, out hlat, out hlon);
+                llok = parse_ll(pd.hstr, out hlat, out hlon);
+//                print("Parse ll %s %f %f\n", llok.to_string(), hlat, hlon);
             }
-            else
+            if (llok == false)
             {
                 hlat = mp.view.get_center_latitude();
                 hlon = mp.view.get_center_longitude();
