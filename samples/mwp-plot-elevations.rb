@@ -86,7 +86,7 @@ class MReader
   end
 
   def initialize
-    @pf==@hstr=nil
+    @pf=@hstr=nil
     @margin=nil
     @rthh = nil
     @save = nil
@@ -296,7 +296,6 @@ replot
 
   def read
     ipos = []
-    dc=[]
     lx=ly=nil
     tdist = 0
     hlat = nil
@@ -421,14 +420,8 @@ replot
       abort "warning: bing mismatch, requested #{pa.size/2}, got #{alts.size}\nThis is probably due to duplicate points in your mission\nPlease raise a bug if you don't think your mission is to blame"
     end
     mx = 99999
-    dists=[]
-    wps=[]
-    has_rth = false
     allpts = []
     pos.each_with_index do |p,j|
-      cse =  p[:cse] ? "%.1f" % p[:cse] : nil
-      dist = p[:cse] ? "%.0f" % p[:dist] : nil
-      md = "%.0f" % p[:tdist]
       agl = alts ? alts[0] + p[:alt]  : nil
       pagl = alts ? alts[0] + p[:oa]  : nil
       terralt = alts ? alts[j] : nil
@@ -441,7 +434,6 @@ replot
 	lbl = 'Home'
 	typ = 'h'
       when 'RTH'
-	has_rth = true
 	lbl = 'RTH'
 	typ = 'r'
       else
@@ -478,7 +470,7 @@ replot
 	if allpts[j][:typ] == 'g'
 	  tdel << j
 	elsif allpts[j-1][:typ] == 'g'
-	  tdel << j -1
+	  tdel << j-1
 	end
       end
     end
