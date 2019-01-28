@@ -10,10 +10,12 @@ require_relative 'inav_states'
 RDISARMS = %w/NONE TIMEOUT STICKS SWITCH_3D SWITCH KILLSWITCH FAILSAFE NAVIGATION/
 
 idx = 1
+verbose = nil
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
   opt.on('-i','--index=IDX',Integer){|o|idx=o}
+  opt.on('-v','--verbose'){verbose=true}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
     opt.parse!
@@ -46,7 +48,7 @@ end
 
 inavers =  get_state_version iv
 
-#STDERR.puts "iNav version = #{iv} (states eq #{inavers})"
+STDERR.puts "iNav version = #{iv} (states eq #{inavers})" if verbose
 
 puts "#{File.basename(bbox)}: #{gitinfos[idx-1] if gitinfos.size >= idx}"
 

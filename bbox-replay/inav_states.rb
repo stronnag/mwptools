@@ -1,3 +1,5 @@
+# The version number is the ** lowest ** version to which the states apply
+
 INAV_STATES = {
   "0" => {
     0 => :nav_state_undefined,
