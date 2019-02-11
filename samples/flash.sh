@@ -104,6 +104,7 @@ then
   sleep 1
   ERASE=
   [ -n "$FERASE" ] && ERASE="mass-erase:"
+  echo DFU: dfu-util -d 0483:df11 --alt 0 -s 0x08000000:${ERASE}force:leave -D $BIN
   dfu-util -d 0483:df11 --alt 0 -s 0x08000000:${ERASE}force:leave -D $BIN
   [ -n $RM ] && rm -f $RM
 fi

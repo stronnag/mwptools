@@ -83,3 +83,10 @@ apt install gnuplot ruby-nokogiri
 #  git checkout development
 ## Switched to branch 'development'
 ## Your branch is up to date with 'origin/development'.
+
+## Note: If you change a dependency (e.g. add addtional text to speech
+## modules) then you need to force a rebuild for mwp to recognise the
+## change:
+##
+## cd mwptools; make clean all
+##

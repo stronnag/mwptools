@@ -1,4 +1,8 @@
 # The version number is the ** lowest ** version to which the states apply
+#
+# See src/main/navigation/navigation_private.h
+# navigationFSMState_t
+#
 
 INAV_STATES = {
   "0" => {
