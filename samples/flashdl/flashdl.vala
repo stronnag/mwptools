@@ -3,6 +3,7 @@ public class Flashdl : Object
     private static int baud = 115200;
     private static string dev;
     private static string fname;
+    private static string dname;
     private static bool erase = false;
     private static bool xerase = false;
     private static bool info = false;
@@ -11,7 +12,8 @@ public class Flashdl : Object
     const OptionEntry[] options = {
         { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", null},
         { "device", 'd', 0, OptionArg.STRING, out dev, "device", null},
-        { "outout", 'o', 0, OptionArg.STRING, out fname, "file name", null},
+        { "output", 'o', 0, OptionArg.STRING, out fname, "file name", null},
+        { "outout-dir", 'O', 0, OptionArg.STRING, out dname, "dir name", null},
         { "erase", 'e', 0,  OptionArg.NONE, out erase, "erase on completion", null},
         { "only-erase", 0, 0,  OptionArg.NONE, out xerase, "erase only", null},
         { "info", 'i', 0,  OptionArg.NONE, out info, "just show info", null},
@@ -130,6 +132,9 @@ public class Flashdl : Object
                         time_t(out st);
                         if(fname == null)
                             fname  = "BBL_%s.TXT".printf(Time.local(st).format("%F_%H%M%S"));
+                        if (dname != null)
+                            fname = Path.build_filename (dname, fname);
+
                         fp = FileStream.open (fname, "w");
                         if(fp == null)
                         {

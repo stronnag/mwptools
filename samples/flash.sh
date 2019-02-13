@@ -61,6 +61,9 @@ do
   esac
 done
 
+
+[ -f $HEX ] || { echo "$HEX not found" ; exit ; }
+
 [ -z "$DEV" ] && DEV=$(find_serial)
 
 if [[ "$DEV" =~ "/dev/ttyACM" ]] ; then
