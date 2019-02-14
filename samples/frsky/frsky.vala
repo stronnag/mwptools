@@ -36,7 +36,10 @@ enum FrID {
     BATT_ID = 0xf104,
     SWR_ID = 0xf105,
     XJT_VERSION_ID = 0xf106,
-    FUEL_QTY_ID = 0x0a10
+    FUEL_QTY_ID = 0x0a10,
+    PITCH      = 0x0430 ,
+    ROLL       = 0x0440 ,
+    HOME_DIST  = 0x0420
 }
 
 enum FrProto {
@@ -58,19 +61,15 @@ bool fr_checksum(uint8[] buf)
     return (crc == 0xff);
 }
 
-string parse_lat_lon(uint val)
+double parse_lat_lon(uint val)
 {
-    uint8 ind = (uint8)(val >> 30);
-    val &= 0x3fffffff ;
-    uint16 bp ;
-    uint16 ap ;
-    uint32 parts ;
-
-    parts = val / 10000 ;
-    bp = (uint16)(parts / 60 * 100) + (uint16)(parts % 60) ;
-    ap = (uint16)(val % 10000);
-    char []hss= {'N','S','E','W'};
-    return "%04d%04d %c".printf(bp, ap, hss[ind]);
+    int value = (int)(val & 0x3fffffff);
+    if ((val & (1 << 30))!= 0)
+        value = -value;
+    value = (5*value) / 3; // min/10000 => deg/1000000
+    double dpos;
+    dpos = value/ 1000000.0;
+    return dpos;
 }
 
 void display_data(FrID id, uint val)
@@ -83,19 +82,19 @@ void display_data(FrID id, uint val)
         case FrID.ACCY_ID:
         case FrID.ACCZ_ID:
             r = ((int)val) / 100.0;
-            stdout.printf("%s %.2f g\n",id.to_string(), r);
+//            stdout.printf("%s %.2f g\n",id.to_string(), r);
             break;
         case FrID.VFAS_ID:
             r = val / 100.0;
             stdout.printf("%s %.1f V\n", id.to_string(), r);
             break;
         case FrID.GPS_LONG_LATI_ID:
-            var s = parse_lat_lon (val);
-            stdout.printf("%s %s\n", id.to_string(), s);
+            var d = parse_lat_lon (val);
+            stdout.printf("%s %.6f\n", id.to_string(), d);
             break;
         case FrID.GPS_ALT_ID:
             r =((int)val) / 100.0;
-            stdout.printf("%s %.1f m", id.to_string(), r);
+            stdout.printf("%s %.1f m\n", id.to_string(), r);
             break;
         case FrID.GPS_SPEED_ID:
             r = ((val/1000.0)*0.51444444);
@@ -113,13 +112,109 @@ void display_data(FrID id, uint val)
             r = val / 100.0;
             stdout.printf("%s %.2f m/s\n", id.to_string(), r);
             break;
-        case FrID.VARIO_ID:
+        case FrID.T1_ID: // flight modes
+            uint ival = val;
+            bool armOK = false;
+            bool armed = false;
+            string fmode = "";
+            string nmode = "";
+            string emode = "";
+            for(var j = 0; j < 5; j++)
+            {
+                uint mode = ival % 10;
+                switch(j)
+                {
+                    case 0: // 1s
+                        if((mode & 1) == 1)
+                            armOK = true;
+                        if ((mode & 4) == 4)
+                            armed = true;
+                        break;
+                    case 1: // 10s
+                        if(mode == 1)
+                            fmode = "Angle";
+                        else if(mode == 2)
+                            fmode = "Horizon";
+                        else if(mode == 4)
+                            fmode = "Manual";
+                        break;
+                    case 2: // 100s
+                        StringBuilder sb = new StringBuilder();
+                        if((mode & 1) == 1)
+                            sb.append("Heading ");
+                        if((mode & 2) == 2)
+                            sb.append("Althold ");
+                        if((mode & 4) == 4)
+                            sb.append("PosHold");
+                        nmode = sb.str.strip();
+                        break;
+                    case 3: // 1000s
+                        if(mode == 1)
+                            nmode = "RTH";
+                        if(mode == 2)
+                            nmode = "WP";
+                        if(mode == 4)
+                            nmode = "HEADFREE";
+                        if(mode == 8)
+                            nmode = "CRUISE";
+                        break;
+                    case 4: // 10000s
+                        if(mode == 2)
+                            emode = "AUTOTUNE";
+                        if(mode == 4)
+                            emode = "FAILSAFE";
+                        break;
+                }
+                ival = ival / 10;
+            }
+            stdout.printf("%s armOK:%s armed:%s %s %s %s\n", id.to_string(),
+                          armOK.to_string(), armed.to_string(),
+                          fmode, nmode, emode);
+            break;
+        case FrID.T2_ID: // GPS info
+            uint nsats = val /100;
+            uint8 gfix = (uint8)(val /1000);
+            stdout.printf("%s GPS Sats %u, fix %u\n", id.to_string(), nsats, gfix);
+            break;
+        case FrID.RSSI_ID:
+                // http://ceptimus.co.uk/?p=271
+                // states main (Rx) link quality 100+ is full signal
+                // 40 is no signal
+                // iNav uses 0 - 1023
+            uint rssi;
+            uint issr;
+            rssi = (val & 0xff);
+            if (rssi > 100)
+                rssi = 100;
+            if (rssi < 40)
+                rssi = 40;
+            issr = (rssi - 40)*1023/60;
+            stdout.printf("%s %u (%u)\n", id.to_string(), rssi, issr);
+            break;
+        case FrID.PITCH:
+            r =((int)val) / 10.0;
+            stdout.printf("%s %.1f m\n", id.to_string(), r);
+            break;
+        case FrID.ROLL:
+            r =((int)val) / 10.0;
+            stdout.printf("%s %.1f m\n", id.to_string(), r);
+            break;
+        case FrID.HOME_DIST:
+            stdout.printf("%s %u m\n", id.to_string(), val);
+            break;
+
         case FrID.CURR_ID:
-        case FrID.CELLS_ID:
-        case FrID.T1_ID:
-        case FrID.T2_ID:
-        case FrID.RPM_ID:
+            r =((int)val) / 10.0;
+            stdout.printf("%s %.1f A\n", id.to_string(), r);
+            break;
+
+                /* not handling */
         case FrID.FUEL_ID:
+        case FrID.VARIO_ID:
+            break;
+
+        case FrID.CELLS_ID:
+        case FrID.RPM_ID:
         case FrID.GPS_TIME_DATE_ID:
         case FrID.A3_ID:
         case FrID.AIR_SPEED_ID:
@@ -132,13 +227,10 @@ void display_data(FrID id, uint val)
         case FrID.ADC1_ID:
         case FrID.SP2UART_A_ID:
         case FrID.SP2UART_B_ID:
-            stdout.printf("Unhandled %s, raw value %u\n", id.to_string(), val);
-            break;
-        case FrID.RSSI_ID:
-            stdout.printf("%s %u dB\n", id.to_string(), (val & 0xff));
+//            stderr.printf("Unhandled %s, raw value %u\n", id.to_string(), val);
             break;
         case FrID.XJT_VERSION_ID:
-            stdout.printf("%s %u.%u\n", id.to_string(),
+            stderr.printf("%s %u.%u\n", id.to_string(),
                           ((val & 0xffff) >> 8), (val & 0xff));
             break;
         case FrID.A4_ID:
@@ -153,17 +245,29 @@ void display_data(FrID id, uint val)
     }
 }
 
+uint8 * deserialise_u32(uint8* rp, out uint32 v)
+{
+    v = *rp | (*(rp+1) << 8) |  (*(rp+2) << 16) | (*(rp+3) << 24);
+    return rp + sizeof(uint32);
+}
+
+uint8 * deserialise_u16(uint8* rp, out uint16 v)
+{
+    v = *rp | (*(rp+1) << 8);
+    return rp + sizeof(uint16);
+}
+
 bool check_buffer(uint8[] buf)
 {
     bool res = fr_checksum(buf);
     if(res)
     {
-        FrID id;
+        ushort id;
         uint val;
             /* fixme serialisation */
-        id = (FrID)(*(ushort*)(buf+3));
-        val = *(uint*)(buf+5);
-        display_data(id,val);
+        deserialise_u16(buf+3, out id);
+        deserialise_u32(buf+5, out val);
+        display_data((FrID)id,val);
     }
     return res;
 }
@@ -183,10 +287,12 @@ public static int main (string? []args)
         uint8 buf[256];
         bool stuffed = false;
         uint8 nb = 0;
+        int bp=-1;
 
         while (true)
         {
             uint8 b = dis.read_byte ();
+            bp++;
             if (b == FrProto.P_START)
             {
                 if (nb == FrProto.P_SIZE)
@@ -197,8 +303,9 @@ public static int main (string? []args)
                     else
                         bad++;
                 }
-                else
+                else if (bp >  0)
                 {
+//                    stderr.printf("Short at %d (%d)\n", bp, nb);
                     nshort++;
                 }
                 nb = 0;
