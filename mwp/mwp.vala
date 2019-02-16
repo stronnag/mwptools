@@ -2628,7 +2628,7 @@ public class MWPlanner : Gtk.Application {
                 if (id == SportDev.FrID.ROLL)
                     spi.roll = (int16)val;
                 else
-                    spi.pitch = (int16)val;
+                    spi.pitch = -(int16)val;
 
                 LTM_AFRAME af = LTM_AFRAME();
                 af.pitch = spi.pitch;
@@ -6772,6 +6772,7 @@ public class MWPlanner : Gtk.Application {
             {
                 serstate = SERSTATE.TELEM;
                 ostat = msp.open_sport(sport_device, out estr);
+                spi = {0};
             }
             else
                 ostat = msp.open_w(serdev, conf.baudrate, out estr);
