@@ -1,1 +1,44 @@
-mkmkv
+#!/bin/bash
+
+# This is used to make the videos I've posted to vimeo / you tube for
+# flight analysis
+
+case $(basename $0) in
+  mkmp4) EXT=mp4 ;;
+  mkmkv) EXT=mkv ;;
+  *) { echo "Unknown link" ; exit 255; } ;;
+esac
+
+OUT=${1:-mwp-example.$EXT}
+
+if ! pgrep -x  mwp
+then
+ mwp --dont-maximise  >/dev/null 2>&1 &
+ sleep 2
+fi
+
+# Change the screen size to suite your needs / hardware here
+# note also prorata values in ffmpeg command line.
+XRES=1280
+YRES=800
+YYRES=$((YRES ))  # no long necessary with client side decorations
+
+SX=32
+SY=132
+wmctrl -F -x -r 'mwp.Mwp' -e 0,$SX,$SY,$XRES,$YRES
+
+F=pulse
+S=$(pactl list | grep monitor | grep Name: | cut -d ' ' -f 2)
+#S=default
+
+read -p "Hit ENTER to start > "
+
+# note older versions of Ubuntu / Debian may need avconv rather than ffmpeg
+# FFMPEG=avconv
+#
+FFMPEG=ffmpeg
+$FFMPEG -y -f $F  -thread_queue_size 512 -i $S -thread_queue_size 512 \
+	-f x11grab -framerate 15 -ac 1 -s ${XRES}x${YYRES} \
+	-acodec pcm_s16le \
+	-i ${DISPLAY}+$SX,$SY -vcodec libx264  -preset ultrafast \
+	-tune zerolatency $OUT

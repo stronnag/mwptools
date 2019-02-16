@@ -2628,7 +2628,7 @@ public class MWPlanner : Gtk.Application {
                 if (id == SportDev.FrID.ROLL)
                     spi.roll = (int16)val;
                 else
-                    spi.pitch = -(int16)val;
+                    spi.pitch = (int16)val;
 
                 LTM_AFRAME af = LTM_AFRAME();
                 af.pitch = spi.pitch;
@@ -2654,7 +2654,7 @@ public class MWPlanner : Gtk.Application {
                 break;
             case SportDev.FrID.ACCZ_ID:
                 spi.az = ((int)val) / 100.0;
-                spi.pitch = (int16)(180.0 * Math.atan2 (spi.ax, Math.sqrt(spi.ay*spi.ay + spi.az*spi.az))/Math.PI);
+                spi.pitch = -(int16)(180.0 * Math.atan2 (spi.ax, Math.sqrt(spi.ay*spi.ay + spi.az*spi.az))/Math.PI);
                 spi.roll  = (int16)(180.0 * Math.atan2 (spi.ay, Math.sqrt(spi.ax*spi.ax + spi.az*spi.az))/Math.PI);
                 art_win.update(spi.roll*10, spi.pitch*10, item_visible(DOCKLETS.ARTHOR));
                 break;
