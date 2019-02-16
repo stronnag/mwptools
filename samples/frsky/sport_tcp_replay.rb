@@ -9,7 +9,7 @@ verbose=rest=create=false
 delay = 0.00167
 
 ARGV.options do |opt|
-  opt.banner = "Usage: netcap.rb [options] file"
+  opt.banner = "Usage: #{File.basename $0} [options] file"
   opt.on('-p','--port PORT',Integer, "#{port}") {|o| port=o}
   opt.on('-d','--delay SECS',Float, "#{delay}") {|o| delay=o}
   opt.on('-?', "--help", "Show this message") {puts opt; exit}
