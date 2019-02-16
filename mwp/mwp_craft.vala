@@ -309,8 +309,8 @@ public class Craft : GLib.Object
                         mpath--;
                     }
                 }
+                path.add_node(marker);
             }
-            path.add_node(marker);
         }
         ici.set_location (lat, lon);
         icon.set_location (lat, lon);
