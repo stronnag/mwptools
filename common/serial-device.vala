@@ -77,7 +77,7 @@ public class SportDev : Object
         P_SIZE = 10
     }
 
-    private uint8 buf[16];
+    private uint8 buf[64];
     private bool stuffed = false;
     private uint8 nb = 0;
     private uint good = 0;

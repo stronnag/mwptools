@@ -19,6 +19,7 @@ end
 fn = ARGV[0]||abort("file please ....")
 server = TCPServer.new(host,port)
 server.setsockopt(Socket::SOL_SOCKET, Socket::SO_REUSEADDR,1)
+STDERR.puts "Waiting for a connection ...."
 while (session = server.accept)
   STDERR.puts "++ New session #{session.peeraddr[3]}:#{session.peeraddr[1]}"
   bytes = IO.read(fn)
