@@ -471,6 +471,7 @@ public class MWSerial : Object
     {
         sport  = true;
         fwd = false;
+        MWPLog.message("SPORT: open %s\n", device);
         return open(device, 0, out estr);
     }
 
@@ -723,7 +724,19 @@ public class MWSerial : Object
         {
             if((commode & ComMode.BT) == ComMode.BT)
             {
-                res = Posix.recv(fd, devbuf, MemAlloc.DEV, 0);
+                int avb=0;
+                int ires;
+                ires = Posix.ioctl(fd,Linux.Termios.FIONREAD,&avb);
+                if(ires == 0 && avb > 0)
+                {
+                    if(avb > MemAlloc.DEV)
+                        avb = MemAlloc.DEV;
+                    res = Posix.recv(fd,devbuf,avb,0);
+                    if(res == 0)
+                        return Source.CONTINUE;
+                }
+                else
+                    return Source.CONTINUE;
             }
             else if((commode & ComMode.STREAM) == ComMode.STREAM)
             {
@@ -758,9 +771,10 @@ public class MWSerial : Object
                 }
             }
 
-            if(sport == true && res > 0)
+            if(sport == true)
             {
-                process_sport(devbuf, res);
+                if(res > 0)
+                    process_sport(devbuf, res);
             }
             else if(pmode == ProtoMode.CLI)
             {

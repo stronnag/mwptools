@@ -53,6 +53,10 @@ _mwp_complete()
       return 0
       ;;
 
+    '--smartport')
+      return 0
+      ;;
+
     '-h'|'--help'|'-V'|'--version')
       return 0
       ;;
@@ -92,6 +96,7 @@ _mwp_complete()
 	--really-really-run-as-root
 	--forward-to
 	--perma-warn
+	--smartport
 	--fsmenu"
 
   COMPREPLY=( $(compgen -W "${OPTS[*]}" -- $cur) )
