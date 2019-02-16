@@ -27,6 +27,138 @@ public struct SerialStats
     ulong  msgs;
 }
 
+public class SportDev : Object
+{
+    public enum FrID {
+        ALT_ID = 0x0100,
+        VARIO_ID = 0x0110,
+        CURR_ID = 0x0200,
+        VFAS_ID = 0x0210,
+        CELLS_ID = 0x0300,
+        T1_ID = 0x0400,
+        T2_ID = 0x0410,
+        RPM_ID = 0x0500,
+        FUEL_ID = 0x0600,
+        ACCX_ID = 0x0700,
+        ACCY_ID = 0x0710,
+        ACCZ_ID = 0x0720,
+        GPS_LONG_LATI_ID = 0x0800,
+        GPS_ALT_ID = 0x0820,
+        GPS_SPEED_ID = 0x0830,
+        GPS_COURS_ID = 0x0840,
+        GPS_TIME_DATE_ID = 0x0850,
+        A3_ID = 0x0900,
+        A4_ID = 0x0910,
+        AIR_SPEED_ID = 0x0a00,
+        RBOX_BATT1_ID = 0x0b00,
+        RBOX_BATT2_ID = 0x0b10,
+        RBOX_STATE_ID = 0x0b20,
+        RBOX_CNSP_ID = 0x0b30,
+        DIY_ID = 0x5000,
+        DIY_STREAM_ID = 0x5000,
+        RSSI_ID = 0xf101,
+        ADC1_ID = 0xf102,
+        ADC2_ID = 0xf103,
+        SP2UART_A_ID = 0xfd00,
+        SP2UART_B_ID = 0xfd01,
+        BATT_ID = 0xf104,
+        SWR_ID = 0xf105,
+        XJT_VERSION_ID = 0xf106,
+        FUEL_QTY_ID = 0x0a10,
+        PITCH      = 0x0430 ,
+        ROLL       = 0x0440 ,
+        HOME_DIST  = 0x0420
+    }
+
+    private enum FrProto {
+        P_START = 0x7e,
+        P_STUFF = 0x7d,
+        P_MASK  = 0x20,
+        P_SIZE = 10
+    }
+
+    private uint8 buf[16];
+    private bool stuffed = false;
+    private uint8 nb = 0;
+    private uint good = 0;
+    private uint bad = 0;
+    private uint nshort = 0;
+
+
+    private bool fr_checksum(uint8[] buf)
+    {
+        uint16 crc = 0;
+        for(var i = 2; i < 10; i++)
+        {
+            crc += buf[i];
+            crc += crc >> 8;
+            crc &= 0xff;
+        }
+        return (crc == 0xff);
+    }
+
+    private uint8 * deserialise_u32(uint8* rp, out uint32 v)
+    {
+        v = *rp | (*(rp+1) << 8) |  (*(rp+2) << 16) | (*(rp+3) << 24);
+        return rp + sizeof(uint32);
+    }
+
+    private uint8 * deserialise_u16(uint8* rp, out uint16 v)
+    {
+        v = *rp | (*(rp+1) << 8);
+        return rp + sizeof(uint16);
+    }
+
+    public delegate void DelegateType (uint16 a,uint32 b);
+
+    public void  extract_messages(DelegateType d, uint8* raw, size_t len)
+    {
+        for(var i = 0; i < len; i++)
+        {
+            uint8 b = *raw++;
+            if (b == FrProto.P_START)
+            {
+                if (nb == FrProto.P_SIZE)
+                {
+                    bool res = fr_checksum(buf);
+                    if(res)
+                    {
+                        ushort id;
+                        uint val;
+                        deserialise_u16(buf+3, out id);
+                        deserialise_u32(buf+5, out val);
+                        d(id,val);
+                        good++;
+                    }
+                    else
+                        bad++;
+                }
+                else
+                    nshort++;
+
+                nb = 0;
+            }
+            if (stuffed)
+            {
+                b = b ^ FrProto.P_MASK;
+                stuffed = false;
+            }
+            else if (b == FrProto.P_STUFF)
+            {
+                stuffed = true;
+                continue;
+            }
+            buf[nb] = b;
+            nb++;
+            if (nb > FrProto.P_SIZE)
+            {
+                nb = 0;
+                bad++;
+            }
+        }
+    }
+}
+
 public class MWSerial : Object
 {
     private int fd=-1;
@@ -71,6 +203,8 @@ public class MWSerial : Object
     private bool fwd = false;
     private uint8 mavseqno = 0;
     private uint8[] devbuf;
+    private bool sport = false;
+    private SportDev spdev;
 
     const uint8[] MAVCRCS = {
         50, 124, 137, 0, 237, 217, 104, 119, 0, 0, 0, 89, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -150,18 +284,31 @@ public class MWSerial : Object
     public signal void serial_event (MSP.Cmds event, uint8[]result, uint len, uint8 flags, bool err);
     public signal void cli_event(uint8[]raw, uint len);
     public signal void serial_lost ();
-
+    public signal void sport_event(uint16 a, uint32 b);
 
     public MWSerial.forwarder()
     {
         fwd = true;
-        available = false;
+        available = sport = false;
         set_txbuf(MemAlloc.TX);
+    }
+
+    public MWSerial.smartport()
+    {
+        sport  = true;
+        fwd = available = false;
+        rxbuf_alloc = MemAlloc.RX;
+        rxbuf = new uint8[rxbuf_alloc];
+    }
+
+    public void sport_handler(uint16 a, uint32 b)
+    {
+        sport_event(a, b);
     }
 
     public MWSerial()
     {
-        fwd =  available = false;
+        sport = fwd =  available = false;
         rxbuf_alloc = MemAlloc.RX;
         rxbuf = new uint8[rxbuf_alloc];
         txbuf = new uint8[txbuf_alloc];
@@ -210,6 +357,9 @@ public class MWSerial : Object
     {
         clear_counters();
         state = States.S_HEADER;
+        if(sport == true)
+            spdev = new SportDev();
+
         try {
             io_read = new IOChannel.unix_new(fd);
             if(io_read.set_encoding(null) != IOStatus.NORMAL)
@@ -217,6 +367,7 @@ public class MWSerial : Object
             tag = io_read.add_watch(IOCondition.IN|IOCondition.HUP|
                                     IOCondition.NVAL|IOCondition.ERR,
                                     device_read);
+
         } catch(IOChannelError e) {
             error("IOChannel: %s", e.message);
         }
@@ -287,22 +438,18 @@ public class MWSerial : Object
                         fd = skt.fd;
                         if(fd != -1)
                         {
-// doesn't seem necessary
-//                            if(stype == SocketType.STREAM)
+                            if (skt.connect(sockaddr))
                             {
-                                if (skt.connect(sockaddr))
-                                {
-                                    set_noblock();
-                                    break;
-                                }
-                                else
-                                {
-                                    skt.close();
-                                    fd = -1;
-                                }
+                                set_noblock();
+                                break;
                             }
-                            break;
+                            else
+                            {
+                                skt.close();
+                                fd = -1;
+                            }
                         }
+                        break;
                     }
                 }
             }
@@ -317,6 +464,14 @@ public class MWSerial : Object
         Posix.fcntl(fd, Posix.F_SETFL,
                     Posix.fcntl(fd, Posix.F_GETFL, 0) |
                     Posix.O_NONBLOCK);
+    }
+
+
+    public bool open_sport(string device, out string estr)
+    {
+        sport  = true;
+        fwd = false;
+        return open(device, 0, out estr);
     }
 
 
@@ -436,6 +591,7 @@ public class MWSerial : Object
     public bool open_fd(int _fd, int rate, bool rawfd = false)
     {
         fd = _fd;
+        sport = fwd =  false;
         if(rate != -1)
             commode = ComMode.TTY|ComMode.STREAM;
         if(rawfd)
@@ -529,7 +685,13 @@ public class MWSerial : Object
         }
     }
 
-    private bool device_read(IOChannel gio, IOCondition cond) {
+    private void process_sport(uint8[]raw, size_t len)
+    {
+        spdev.extract_messages(sport_handler, raw, len);
+    }
+
+    private bool device_read(IOChannel gio, IOCondition cond)
+    {
         size_t res = 0;
 
         if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
@@ -596,7 +758,11 @@ public class MWSerial : Object
                 }
             }
 
-            if(pmode == ProtoMode.CLI)
+            if(sport == true && res > 0)
+            {
+                process_sport(devbuf, res);
+            }
+            else if(pmode == ProtoMode.CLI)
             {
                 csize = (uint16)res;
                 cli_event(devbuf, csize);

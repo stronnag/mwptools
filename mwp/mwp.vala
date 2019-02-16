@@ -49,6 +49,25 @@ public enum NMSTATE {
     }
 
 
+public struct SPORT_INFO
+{
+    int32 lat;
+    int32 lon;
+    double cse;
+    double spd;
+    int32 alt;
+    double galt;
+    uint16 rhdop;
+    int16 pitch;
+    int16 roll;
+    uint8 fix;
+    uint8 sats;
+    uint8 flags;
+    double ax;
+    double ay;
+    double az;
+}
+
 public struct Odostats
 {
     double speed;
@@ -132,6 +151,8 @@ public struct MavPOSDef
     uint8 chan;
     uint8 set;
 }
+
+
 
 public class PosFormat : GLib.Object
 {
@@ -645,6 +666,7 @@ public class MWPlanner : Gtk.Application {
         uint8 wpidx;
     }
 
+
     private enum WPFAIL {
         OK=0,
         NO = (1<<0),
@@ -692,7 +714,8 @@ public class MWPlanner : Gtk.Application {
         ARMING_DISABLED_ROLLPITCH_NOT_CENTERED          = (1 << 23),
         ARMING_DISABLED_SERVO_AUTOTRIM                  = (1 << 24),
         ARMING_DISABLED_OOM                             = (1 << 25),
-        ARMING_DISABLED_INVALID_SETTING                 = (1 << 26)
+        ARMING_DISABLED_INVALID_SETTING                 = (1 << 26),
+        ARMING_DISABLED_OTHER                           = (1 << 27)
     }
 
     private string? [] arm_fails =
@@ -702,8 +725,7 @@ public class MWPlanner : Gtk.Application {
         "Navigation unsafe", "Compass cal", "Acc cal", "Arm switch", "H/W fail",
         "Box failsafe", "Box killswitch", "RC Link", "Throttle", "CLI",
         "CMS Menu", "OSD Menu", "Roll/Pitch", "Servo Autotrim", "Out of memory",
-        "Settings"
-
+        "Settings", "Other"
     };
 
     private enum SENSOR_STATES
@@ -773,6 +795,7 @@ public class MWPlanner : Gtk.Application {
     private static string rfile = null;
     private static string bfile = null;
     private static string forward_device = null;
+    private static string sport_device = null;
     private static int dmrtype=0;
     private static DEBUG_FLAGS debug_flags = 0;
     private static VersInfo vi ={0};
@@ -788,6 +811,7 @@ public class MWPlanner : Gtk.Application {
     private int nrings = 0;
     private double ringint = 0;
     private bool replay_paused;
+    private SPORT_INFO spi;
 
     private MwpServer mss=null;
     private uint8 spapi =  0;
@@ -841,6 +865,7 @@ public class MWPlanner : Gtk.Application {
         { "wayland", 0, 0, OptionArg.NONE, out use_wayland, "force wayland (if available)", null},
         { "really-really-run-as-root", 0, 0, OptionArg.NONE, out asroot, "no reason to ever use this", null},
         { "forward-to", 0, 0, OptionArg.STRING, out forward_device, "forward telemetry to", "device-name"},
+        { "smartport", 0, 0, OptionArg.STRING, out sport_device, "smartport device", "device-name"},
         {"perma-warn", 0, 0, OptionArg.NONE, out permawarn, "info dialogues never time out", null},
         {"fsmenu", 0, 0, OptionArg.NONE, out nofsmenu, "use a menu bar in full screen (vice a menu button)", null},
         {null}
@@ -1625,11 +1650,6 @@ public class MWPlanner : Gtk.Application {
                     zoomer.adjustment.value = (int)val;
 
                 get_map_size();
-/* 2018-07-20 --- not sure why this exists
- *              if(craft != null && (!msp.available || !gpsfix))
- *                   if (replayer != Player.BBOX)
- *                        craft.park();
- */
             });
 
         zoomer.adjustment.value_changed.connect (() =>
@@ -1913,6 +1933,7 @@ public class MWPlanner : Gtk.Application {
                 remove_deventry(s);
             });
 
+
         conbutton = builder.get_object ("button1") as Gtk.Button;
 
         var te = dev_entry.get_child() as Gtk.Entry;
@@ -1929,7 +1950,6 @@ public class MWPlanner : Gtk.Application {
         typlab = builder.get_object ("typlab") as Gtk.Label;
         gpslab = builder.get_object ("gpslab") as Gtk.Label;
         conbutton.clicked.connect(() => { connect_serial(); });
-
 
         var zm = conf.zoom;
         clat= conf.latitude;
@@ -1980,6 +2000,10 @@ public class MWPlanner : Gtk.Application {
 
         msp.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
                 handle_serial(cmd,raw,len,xflags,errs);
+            });
+
+        msp.sport_event.connect((id,val) => {
+                process_sport_message ((SportDev.FrID)id, val);
             });
 
         if(serial != null)
@@ -2260,6 +2284,9 @@ public class MWPlanner : Gtk.Application {
                });
        }
 
+        if(sport_device != null)
+            append_deventry("*SMARTPORT*");
+
        if(mkcon)
         {
             connect_serial();
@@ -2281,6 +2308,361 @@ public class MWPlanner : Gtk.Application {
                 MWPLog.message("Enabled mag anonaly checking %d⁰, %ds\n", magdiff,magtime);
                 magcheck = true;
             }
+        }
+    }
+
+    private uint8 sport_parse_lat_lon(uint val, out int32 value)
+    {
+        uint8 imode = (uint8)(val >> 31);
+        value = (int)(val & 0x3fffffff);
+        if ((val & (1 << 30))!= 0)
+            value = -value;
+        value = (50*value) / 3; // min/10000 => deg/10000000
+        return imode;
+    }
+
+    private void process_sport_message (SportDev.FrID id, uint32 val)
+    {
+        double r;
+        switch(id)
+        {
+            case SportDev.FrID.VFAS_ID:
+                r = val / 100.0;
+                set_bat_stat((uint8)(val/10));
+                break;
+            case SportDev.FrID.GPS_LONG_LATI_ID:
+                int32 ipos;
+                uint8 lorl = sport_parse_lat_lon (val, out ipos);
+                if (lorl == 0)
+                    spi.lat = ipos;
+                else
+                {
+                    spi.lon = ipos;
+                    init_craft_icon();
+                    MSP_ALTITUDE al = MSP_ALTITUDE();
+                    al.estalt = spi.alt;
+                    al.vario = 0;
+                    navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
+                    double ddm;
+                    gpsinfo.update_sport(spi, conf.dms, item_visible(DOCKLETS.GPS), out ddm);
+
+                    if(spi.fix > 0)
+                    {
+                        sat_coverage();
+                        if(armed != 0)
+                        {
+                            update_odo(spi.spd, ddm);
+                            if(have_home)
+                            {
+                                if(_nsats >= msats)
+                                {
+                                    double dist,cse;
+                                    Geo.csedist(GPSInfo.lat, GPSInfo.lon,
+                                                home_pos.lat, home_pos.lon,
+                                                out dist, out cse);
+                                    if(dist < 256)
+                                    {
+                                        var cg = MSP_COMP_GPS();
+                                        cg.range = (uint16)Math.lround(dist*1852);
+                                        cg.direction = (int16)Math.lround(cse);
+                                        navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if(no_ofix == 10)
+                                {
+                                    MWPLog.message("No home position yet\n");
+                                }
+                            }
+                        }
+
+                        bool pv = false;
+                        if(craft != null && spi.fix > 0 && spi.sats >= msats)
+                        {
+                            pv = update_pos_info();
+                        }
+
+                        if(want_special != 0)
+                            process_pos_states(GPSInfo.lat, GPSInfo.lon, spi.alt/100.0, "Sport");
+                    }
+                    fbox.update(item_visible(DOCKLETS.FBOX));
+                    dbox.update(item_visible(DOCKLETS.DBOX));
+                }
+                break;
+            case SportDev.FrID.GPS_ALT_ID:
+                r =((int)val) / 100.0;
+                spi.galt = r;
+                break;
+            case SportDev.FrID.GPS_SPEED_ID:
+                r = ((val/1000.0)*0.51444444);
+                spi.spd = r;
+                break;
+            case SportDev.FrID.GPS_COURS_ID:
+                r = val / 100.0;
+                spi.cse = r;
+                navstatus.sport_hdr(r);
+                break;
+            case SportDev.FrID.ADC2_ID: // AKA HDOP
+                rhdop = (uint16)((val &0xff)*10);
+                spi.rhdop = rhdop;
+                spi.flags |= 1;
+//                MWPLog.message("SPORT: HDOP %s %u %u\n", id.to_string(), val, rhdop);
+                break;
+            case SportDev.FrID.ALT_ID:
+                r = (int)val / 100.0;
+                spi.alt = (int)val;
+                break;
+            case SportDev.FrID.T1_ID: // flight modes
+                uint ival = val;
+                uint32 arm_flags = 0;
+                uint64 mwflags = 0;
+                uint8 ltmflags = 0;
+
+                for(var j = 0; j < 5; j++)
+                {
+                    uint mode = ival % 10;
+                    switch(j)
+                    {
+                        case 0: // 1s
+                            if((mode & 1) == 0)
+                                arm_flags |=  ARMFLAGS.ARMING_DISABLED_OTHER;
+                            if ((mode & 4) == 4) // armed
+                            {
+                                mwflags = arm_mask;
+                                armed = 1;
+                                dac = 0;
+                            }
+                            else
+                            {
+                                dac++;
+                                if(dac == 1 && armed != 0)
+                                {
+                                    MWPLog.message("Assumed disarm from SPORT %ds\n", duration);
+                                    mwflags = 0;
+                                    armed = 0;
+                                    init_have_home();
+                                }
+                            }
+                            break;
+                        case 1: // 10s
+                            if(mode == 0)
+                                ltmflags = 4;
+                            if (mode == 1)
+                                ltmflags = 2;
+                            else if (mode == 2)
+                                ltmflags = 3;
+                            else if(mode == 4)
+                                ltmflags = 0;
+                            break;
+                        case 2: // 100s
+//                            if((mode & 1) == 1) // "Heading "
+                            if((mode & 2) == 2)
+                                ltmflags = 8;
+                            if((mode & 4) == 4)
+                                ltmflags = 9;
+                            break;
+                        case 3: // 1000s
+                            if(mode == 1)
+                                ltmflags = 13;
+                            if(mode == 2)
+                                ltmflags = 10;
+//                            if(mode == 4) ltmflags = 11;
+                            if(mode == 8)
+                                ltmflags = 18;
+                            break;
+                        case 4: // 10000s
+                                // if(mode == 2) emode = "AUTOTUNE";
+                            bool failsafe = (mode == 4);
+                            if(xfailsafe != failsafe)
+                            {
+                                if(failsafe)
+                                {
+                                    arm_flags |=  ARMFLAGS.ARMING_DISABLED_FAILSAFE_SYSTEM;
+                                    MWPLog.message("Failsafe asserted %ds\n", duration);
+                                    map_show_warning("FAILSAFE");
+                                }
+                                else
+                                {
+                                    MWPLog.message("Failsafe cleared %ds\n", duration);
+                                    map_hide_warning();
+                                }
+                                xfailsafe = failsafe;
+                            }
+                            break;
+                    }
+                    ival = ival / 10;
+                }
+                if(arm_flags != xarm_flags)
+                {
+                    xarm_flags = arm_flags;
+                   if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0)
+                    {
+                        arm_warn.show();
+                    }
+                    else
+                    {
+                        arm_warn.hide();
+                    }
+                }
+
+                if(ltmflags == 2)
+                    mwflags |= angle_mask;
+                if(ltmflags == 3)
+                    mwflags |= horz_mask;
+                if(ltmflags == 3)
+                    mwflags |= arm_mask;
+                if(ltmflags == 9)
+                    mwflags |= ph_mask;
+                if(ltmflags == 10)
+                    mwflags |= wp_mask;
+                if(ltmflags == 13 || ltmflags == 15)
+                    mwflags |= rth_mask;
+                else
+                    mwflags = xbits; // don't know better
+
+                armed_processing(mwflags,"Sport");
+                var xws = want_special;
+                if(ltmflags != last_ltmf)
+                {
+                    last_ltmf = ltmflags;
+                    if(ltmflags == 9)
+                        want_special |= POSMODE.PH;
+                    else if(ltmflags == 10)
+                    {
+                        want_special |= POSMODE.WP;
+                        if (NavStatus.nm_pts == 0 || NavStatus.nm_pts == 255)
+                            NavStatus.nm_pts = last_wp_pts;
+                    }
+                    else if(ltmflags == 13)
+                        want_special |= POSMODE.RTH;
+                    else if(ltmflags == 8)
+                        want_special |= POSMODE.ALTH;
+                    else if(ltmflags == 18)
+                        want_special |= POSMODE.CRUISE;
+                    else if(ltmflags != 15)
+                    {
+                        if(craft != null)
+                            craft.set_normal();
+                    }
+                    MWPLog.message("New SPort/LTM Mode %s (%d) %d %ds %f %f %x %x\n",
+                                   MSP.ltm_mode(ltmflags), ltmflags,
+                                   armed, duration, xlat, xlon,
+                                   xws, want_special);
+                }
+                if(want_special != 0 /* && have_home*/)
+                    process_pos_states(xlat,xlon, 0, "SPort status");
+
+//              FIXME  navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
+
+                break;
+
+            case SportDev.FrID.T2_ID: // GPS info
+                uint8 ifix = 0;
+                _nsats = (uint8)(val % 100);
+                uint16 hdp;
+                hdp = (uint16)(val % 1000)/100;
+                if (spi.flags == 0) // prefer FR_ID_ADC2_ID
+                    spi.rhdop = rhdop = 550 - (hdp * 50);
+
+                uint8 gfix = (uint8)(val /1000);
+                if ((gfix & 1) == 1)
+                    ifix = 3;
+                if ((gfix & 2) == 2)
+                {
+                    if(have_home == false && armed != 0)
+                    {
+                        if(home_changed(GPSInfo.lat, GPSInfo.lon))
+                        {
+                            if(spi.fix == 0)
+                            {
+                                no_ofix++;
+                            }
+                            else
+                            {
+                                navstatus.cg_on();
+                                sflags |=  NavStatus.SPK.GPS;
+                                want_special |= POSMODE.HOME;
+                                process_pos_states(GPSInfo.lat, GPSInfo.lon, 0.0, "SPort");
+                            }
+                        }
+                    }
+                }
+                if ((gfix & 4) == 4)
+                {
+                    home_changed(GPSInfo.lat, GPSInfo.lon);
+                    want_special |= POSMODE.HOME;
+                    process_pos_states(GPSInfo.lat, GPSInfo.lon, 0.0, "SPort");
+                }
+                if((_nsats == 0 && nsats != 0) || (nsats == 0 && _nsats != 0))
+                {
+                    nsats = _nsats;
+                    navstatus.sats(_nsats, true);
+                }
+                spi.sats = _nsats;
+                spi.fix = ifix;
+                flash_gps();
+                last_gps = nticks;
+                break;
+            case SportDev.FrID.RSSI_ID:
+                    // http://ceptimus.co.uk/?p=271
+                    // states main (Rx) link quality 100+ is full signal
+                    // 40 is no signal --- iNav uses 0 - 1023
+                    //
+                uint rssi;
+                uint issr;
+                rssi = (val & 0xff);
+                if (rssi > 100)
+                    rssi = 100;
+                if (rssi < 40)
+                    rssi = 40;
+                 issr = (rssi - 40)*1023/60;
+//                issr = rssi*1023/100;
+                MSP_ANALOG an = MSP_ANALOG();
+                an.rssi = (uint16)issr;
+                radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
+                break;
+            case SportDev.FrID.PITCH:
+            case SportDev.FrID.ROLL:
+                if (id == SportDev.FrID.ROLL)
+                    spi.roll = (int16)val;
+                else
+                    spi.pitch = (int16)val;
+
+                LTM_AFRAME af = LTM_AFRAME();
+                af.pitch = spi.pitch;
+                af.roll = spi.roll;
+                af.heading = mhead = (int16) spi.cse;
+                navstatus.update_ltm_a(af, true);
+                art_win.update(af.roll*10, af.pitch*10, item_visible(DOCKLETS.ARTHOR));
+                break;
+
+            case SportDev.FrID.HOME_DIST:
+//                stdout.printf("%s %u m\n", id.to_string(), val);
+                break;
+
+            case SportDev.FrID.CURR_ID:
+                r =((int)val) / 10.0;
+//                stdout.printf("%s %.1f A\n", id.to_string(), r);
+                break;
+            case SportDev.FrID.ACCX_ID:
+                spi.ax = ((int)val) / 100.0;
+                break;
+            case SportDev.FrID.ACCY_ID:
+                spi.ay = ((int)val) / 100.0;
+                break;
+            case SportDev.FrID.ACCZ_ID:
+                spi.az = ((int)val) / 100.0;
+                spi.pitch = (int16)(180.0 * Math.atan2 (spi.ax, Math.sqrt(spi.ay*spi.ay + spi.az*spi.az))/Math.PI);
+                spi.roll  = (int16)(180.0 * Math.atan2 (spi.ay, Math.sqrt(spi.ax*spi.ax + spi.az*spi.az))/Math.PI);
+                art_win.update(spi.roll*10, spi.pitch*10, item_visible(DOCKLETS.ARTHOR));
+                break;
+
+            case SportDev.FrID.VARIO_ID:
+                    // TBD
+            default:
+                break;
         }
     }
 
@@ -2905,6 +3287,8 @@ public class MWPlanner : Gtk.Application {
     {
         if(craft == null)
         {
+            if(sport_device != null && dmrtype != 0 && vi.mrtype == 0)
+                vi.mrtype = (uint8)dmrtype;
             MWPLog.message("init icon %d\n",  vi.mrtype);
             craft = new Craft(view, vi.mrtype,norotate, !no_trail,
                               stack_size, mod_points);
@@ -3830,9 +4214,11 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-    private void update_pos_info()
+    private bool update_pos_info()
     {
-        if(pos_valid(GPSInfo.lat, GPSInfo.lon))
+        bool pv;
+        pv = pos_valid(GPSInfo.lat, GPSInfo.lon);
+        if(pv == true)
         {
             if(follow == true)
             {
@@ -3847,6 +4233,7 @@ public class MWPlanner : Gtk.Application {
                 craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
             }
         }
+        return pv;
     }
 
     private void show_wp_distance(uint8 np)
@@ -5024,6 +5411,7 @@ public class MWPlanner : Gtk.Application {
                             navstatus.cg_on();
                         }
                     }
+
                     if(craft != null)
                     {
                         update_pos_info();
@@ -5142,7 +5530,7 @@ public class MWPlanner : Gtk.Application {
                                 Geo.csedist(GPSInfo.lat, GPSInfo.lon,
                                             home_pos.lat, home_pos.lon,
                                             out dist, out cse);
-                                if(dist < 64)
+                                if(dist < 256)
                                 {
                                     var cg = MSP_COMP_GPS();
                                     cg.range = (uint16)Math.lround(dist*1852);
@@ -5662,8 +6050,7 @@ public class MWPlanner : Gtk.Application {
         var d1 = home_pos.lat - lat;
         var d2 = home_pos.lon - lon;
 
-        if(((Math.fabs(d1) > 1e-6) ||
-           Math.fabs(d2) > 1e-6))
+        if(((Math.fabs(d1) > 1e-6) || Math.fabs(d2) > 1e-6))
         {
             if(have_home && (home_pos.lat != 0.0) && (home_pos.lon != 0.0))
             {
@@ -6378,8 +6765,18 @@ public class MWPlanner : Gtk.Application {
         {
             var serdev = dev_entry.get_active_text();
             string estr;
+            bool ostat;
+
             serstate = SERSTATE.NONE;
-            if (msp.open_w(serdev, conf.baudrate, out estr) == true)
+            if(serdev == "*SMARTPORT*")
+            {
+                serstate = SERSTATE.TELEM;
+                ostat = msp.open_sport(sport_device, out estr);
+            }
+            else
+                ostat = msp.open_w(serdev, conf.baudrate, out estr);
+
+            if (ostat == true)
             {
                 MWPLog.message("Try connect %s\n", serdev);
                 xarm_flags=0xffff;
@@ -6415,14 +6812,13 @@ public class MWPlanner : Gtk.Application {
                     }
                 }
                 msp.setup_reader();
-                serstate = SERSTATE.NORMAL;
                 MWPLog.message("Serial ready\n");
-                if(nopoll == false)
+                if(nopoll == false && (serdev != "*SMARTPORT*"))
                 {
+                    serstate = SERSTATE.NORMAL;
                     queue_cmd(MSP.Cmds.IDENT,null,0);
                     run_queue();
                 }
-
             }
             else
             {
@@ -7102,6 +7498,7 @@ public class MWPlanner : Gtk.Application {
                 serial_doom(conbutton);
 
             init_state();
+            serstate = SERSTATE.NONE;
             conbutton.sensitive = false;
             update_title_from_file(fn);
             replayer = rtype;

@@ -6,7 +6,7 @@ require 'optparse'
 host='::'
 port=43210
 verbose=rest=create=false
-delay = .00167
+delay = 0.00167
 
 ARGV.options do |opt|
   opt.banner = "Usage: netcap.rb [options] file"

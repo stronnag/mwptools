@@ -406,7 +406,6 @@ public class FlightBox : GLib.Object
            else if(falt > 999.0 || falt < -99.0)
                fh3 = fh3 * 75 /100;
 
-
            var s=PosFormat.lat(GPSInfo.lat,MWPlanner.conf.dms);
            big_lat.set_label("<span font='%u'>%s</span>".printf(fh2,s));
            s=PosFormat.lon(GPSInfo.lon,MWPlanner.conf.dms);
@@ -1408,6 +1407,11 @@ public class NavStatus : GLib.Object
         grid.show_all();
     }
 
+    public void sport_hdr(double h)
+    {
+        hdr = (int16)h;
+        have_hdr = true;
+    }
 
     public void update_ltm_a(LTM_AFRAME a, bool visible)
     {
@@ -2581,6 +2585,41 @@ public class GPSInfo : GLib.Object
             _dlon = lon;
         }
         return c;
+    }
+
+    public void update_sport(SPORT_INFO spi, bool dms,bool visible, out double ddm)
+    {
+        lat = spi.lat/10000000.0;
+        lon = spi.lon/10000000.0;
+        spd =  spi.spd;
+        cse =  spi.cse;
+        calc_cse_dist_delta(lat,lon, out ddm);
+        hdop = spi.rhdop /100.0;
+        nsat = spi.sats;
+        fix = spi.fix;
+
+        double dalt = spi.alt/100.0;
+        var nsatstr = "%d (%sfix)".printf(spi.sats, Units.fix(spi.fix));
+        elev = (int16)Math.lround(dalt);
+        if(visible)
+        {
+            nsat_lab.set_label(nsatstr);
+            lat_lab.set_label(PosFormat.lat(lat,dms));
+            lon_lab.set_label(PosFormat.lon(lon,dms));
+            speed_lab.set_label(
+                "%.0f %s".printf(
+                    Units.speed(spd), Units.speed_units()
+                                 ));
+            alt_lab.set_label("%.1f %s".printf(
+                                  Units.distance(dalt), Units.distance_units()));
+
+            dirn_lab.set_label("%.1f °".printf(cse));
+        }
+
+        if(Logger.is_logging)
+        {
+            Logger.raw_gps(lat,lon,cse,spd, elev, fix, (uint8)nsat, spi.rhdop);
+        }
     }
 
     public int update_ltm(LTM_GFRAME g, bool dms,bool visible, uint16 hdop, out double ddm)
