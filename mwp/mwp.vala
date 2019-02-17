@@ -67,8 +67,9 @@ public struct SPORT_INFO
     double ay;
     double az;
     uint16 range;
-    double vbat;
+    double volts;
     double amps;
+    uint16 rssi;
 }
 
 public struct Odostats
@@ -2333,7 +2334,7 @@ public class MWPlanner : Gtk.Application {
         switch(id)
         {
             case SportDev.FrID.VFAS_ID:
-                r = val / 100.0;
+                spi.volts = val / 100.0;
                 set_bat_stat((uint8)(val/10));
                 break;
             case SportDev.FrID.GPS_LONG_LATI_ID:
@@ -2627,6 +2628,7 @@ public class MWPlanner : Gtk.Application {
                     // states main (Rx) link quality 100+ is full signal
                     // 40 is no signal --- iNav uses 0 - 1023
                     //
+/*
                 uint rssi;
                 uint issr;
                 rssi = (val & 0xff);
@@ -2634,11 +2636,14 @@ public class MWPlanner : Gtk.Application {
                     rssi = 100;
                 if (rssi < 40)
                     rssi = 40;
-                 issr = (rssi - 40)*1023/60;
-//                issr = rssi*1023/100;
+                issr = (rssi - 40)*1023/60;
+*/
+                spi.rssi = (uint16)((val&0xff)*1023/100);
                 MSP_ANALOG an = MSP_ANALOG();
-                an.rssi = (uint16)issr;
+                an.rssi = spi.rssi;
                 radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
+                if(Logger.is_logging)
+                    Logger.sport_analog(spi);
                 break;
             case SportDev.FrID.PITCH:
             case SportDev.FrID.ROLL:
@@ -2653,6 +2658,8 @@ public class MWPlanner : Gtk.Application {
                 af.heading = mhead = (int16) spi.cse;
                 navstatus.update_ltm_a(af, true);
                 art_win.update(af.roll*10, af.pitch*10, item_visible(DOCKLETS.ARTHOR));
+                if(Logger.is_logging)
+                    Logger.attitude((double)spi.pitch, (double)spi.roll, (int)mhead);
                 break;
 
             case SportDev.FrID.HOME_DIST:
@@ -2662,10 +2669,9 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case SportDev.FrID.CURR_ID:
-                r =((int)val) / 10.0;
-//                stdout.printf("%s %.1f A\n", id.to_string(), r);
-                if (r > odo.amps)
-                    odo.amps = r;
+                spi.amps =((int)val) / 10.0;
+                if (spi.amps > odo.amps)
+                    odo.amps = spi.amps;
                 break;
             case SportDev.FrID.ACCX_ID:
                 spi.ax = ((int)val) / 100.0;
