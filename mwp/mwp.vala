@@ -66,6 +66,7 @@ public struct SPORT_INFO
     double ax;
     double ay;
     double az;
+    uint16 range;
 }
 
 public struct Odostats
@@ -2366,6 +2367,7 @@ public class MWPlanner : Gtk.Application {
                                         cg.range = (uint16)Math.lround(dist*1852);
                                         cg.direction = (int16)Math.lround(cse);
                                         navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+                                        spi.range =  cg.range;
                                     }
                                 }
                             }
@@ -2591,10 +2593,22 @@ public class MWPlanner : Gtk.Application {
                 }
                 if ((gfix & 4) == 4)
                 {
-                    home_changed(GPSInfo.lat, GPSInfo.lon);
-                    want_special |= POSMODE.HOME;
-                    process_pos_states(GPSInfo.lat, GPSInfo.lon, 0.0, "SPort");
+                    if (spi.range < 100)
+                    {
+                        MWPLog.message("SPORT: %s set home: changed home position %f %f\n",
+                                       id.to_string(), GPSInfo.lat, GPSInfo.lon);
+                        home_changed(GPSInfo.lat, GPSInfo.lon);
+                        want_special |= POSMODE.HOME;
+                        process_pos_states(GPSInfo.lat, GPSInfo.lon, 0.0, "SPort");
+                    }
+                    else
+                    {
+                        MWPLog.message("SPORT: %s Ignoring (bogus?)set home > 100m: requested home position %f %f\n",
+                                       id.to_string(), GPSInfo.lat, GPSInfo.lon);
+
+                    }
                 }
+
                 if((_nsats == 0 && nsats != 0) || (nsats == 0 && _nsats != 0))
                 {
                     nsats = _nsats;
@@ -2639,7 +2653,9 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case SportDev.FrID.HOME_DIST:
-//                stdout.printf("%s %u m\n", id.to_string(), val);
+                int diff = (int)(spi.range - val);
+                if(spi.range > 100 && (diff * 100 / spi.range) > 9)
+                    MWPLog.message("%s %um (mwp: %u, diff: %d)\n", id.to_string(), val, spi.range, diff);
                 break;
 
             case SportDev.FrID.CURR_ID:
