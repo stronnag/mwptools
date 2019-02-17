@@ -441,7 +441,6 @@ public class MWSerial : Object
                             if (skt.connect(sockaddr))
                             {
                                 set_noblock();
-                                break;
                             }
                             else
                             {
@@ -691,74 +690,59 @@ public class MWSerial : Object
         spdev.extract_messages(sport_handler, raw, len);
     }
 
+    private string show_cond(IOCondition cond)
+    {
+        string iocs="";
+#if LSRVAL
+        iocs = "Close fd %d on (%x)\r\n".prinf(fd, cond);
+#else
+        StringBuilder sb = new StringBuilder();
+        for(var j = 0; j < 8; j++)
+        {
+            IOCondition n = (IOCondition)(1 << j);
+            if((cond & n) == n)
+            {
+                sb.append(n.to_string());
+                sb.append_c('|');
+            }
+        }
+        sb.truncate(sb.len-1);
+        iocs = sb.str;
+#endif
+        return iocs;
+    }
+
     private bool device_read(IOChannel gio, IOCondition cond)
     {
-        size_t res = 0;
+        ssize_t res = 0;
 
         if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
         {
-            string iocs="";
             available = false;
             if(fd != -1)
                 serial_lost();
-#if LSRVAL
-#else
-            StringBuilder sb = new StringBuilder();
-            for(var j = 0; j < 8; j++)
-            {
-                IOCondition n = (IOCondition)(1 << j);
-                if((cond & n) == n)
-                {
-                    sb.append(n.to_string());
-                    sb.append_c('|');
-                }
-            }
-            sb.truncate(sb.len-1);
-            iocs = sb.str;
-#endif
-            MWPLog.message("Close fd %d on %s (%x)\r\n", fd,iocs,cond);
+            MWPLog.message("Close fd %d on %s (%x)\r\n", fd,show_cond(cond),cond);
             tag = 0; // REMOVE will remove the iochannel watch
             return Source.REMOVE;
         }
-        else if (fd != -1)
+        else if (fd != -1 && (cond & IOCondition.IN) != 0)
         {
             if((commode & ComMode.BT) == ComMode.BT)
             {
-                int avb=0;
-                int ires;
-                ires = Posix.ioctl(fd,Linux.Termios.FIONREAD,&avb);
-                if(ires == 0 && avb > 0)
-                {
-                    if(avb > MemAlloc.DEV)
-                        avb = MemAlloc.DEV;
-                    res = Posix.recv(fd,devbuf,avb,0);
-                    if(res == 0)
-                        return Source.CONTINUE;
-                }
-                else
+                res = Posix.recv(fd,devbuf,MemAlloc.DEV,0);
+                if(res == 0)
                     return Source.CONTINUE;
             }
             else if((commode & ComMode.STREAM) == ComMode.STREAM)
             {
-#if HAVE_FIONREAD
-                int avb=0;
-                int ires;
-                ires = Posix.ioctl(fd,Linux.Termios.FIONREAD,&avb);
-                if(ires == 0 && avb > 0)
-                {
-                    if(avb > MemAlloc.DEV)
-                        avb = MemAlloc.DEV;
-                    res = Posix.read(fd,devbuf,avb);
-                    if(res == 0)
-                        return Source.CONTINUE;
-                }
-                else
-                    return Source.CONTINUE;
-#else
                 res = Posix.read(fd,devbuf,MemAlloc.DEV);
                 if(res == 0)
+                {
+//                    MWPLog.message("Read 0 %d on %s (%x)\r\n", fd,show_cond(cond),cond);
+                    if((commode & ComMode.TTY) != ComMode.TTY)
+                        serial_lost();
                     return Source.CONTINUE;
-#endif
+                }
             }
             else
             {

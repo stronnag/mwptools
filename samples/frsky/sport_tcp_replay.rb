@@ -21,7 +21,8 @@ server = TCPServer.new(host,port)
 server.setsockopt(Socket::SOL_SOCKET, Socket::SO_REUSEADDR,1)
 STDERR.puts "Waiting for a connection ...."
 while (session = server.accept)
-  STDERR.puts "++ New session #{session.peeraddr[3]}:#{session.peeraddr[1]}"
+  peer_str = "#{session.peeraddr[3]}:#{session.peeraddr[1]}"
+  STDERR.puts "#{Time.now.strftime("%FT%T")} connect #{peer_str}"
   bytes = IO.read(fn)
   bytes.each_byte do |b|
     begin
@@ -31,7 +32,7 @@ while (session = server.accept)
     end
     sleep delay
   end
+  STDERR.puts "#{Time.now.strftime("%FT%T")} disconnect #{peer_str}"
   begin session.close rescue nil end
-  STDERR.puts "-- Close session"
 end
 server.close
