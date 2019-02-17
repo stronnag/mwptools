@@ -67,6 +67,8 @@ public struct SPORT_INFO
     double ay;
     double az;
     uint16 range;
+    double vbat;
+    double amps;
 }
 
 public struct Odostats
@@ -2325,6 +2327,9 @@ public class MWPlanner : Gtk.Application {
     private void process_sport_message (SportDev.FrID id, uint32 val)
     {
         double r;
+        if(Logger.is_logging)
+            Logger.log_time();
+
         switch(id)
         {
             case SportDev.FrID.VFAS_ID:
@@ -2603,9 +2608,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     else
                     {
-                        MWPLog.message("SPORT: %s Ignoring (bogus?)set home > 100m: requested home position %f %f\n",
-                                       id.to_string(), GPSInfo.lat, GPSInfo.lon);
-
+                        MWPLog.message("SPORT: %s Ignoring (bogus?) set home > 100m: requested home position %f %f\n", id.to_string(), GPSInfo.lat, GPSInfo.lon);
                     }
                 }
 
@@ -2661,6 +2664,8 @@ public class MWPlanner : Gtk.Application {
             case SportDev.FrID.CURR_ID:
                 r =((int)val) / 10.0;
 //                stdout.printf("%s %.1f A\n", id.to_string(), r);
+                if (r > odo.amps)
+                    odo.amps = r;
                 break;
             case SportDev.FrID.ACCX_ID:
                 spi.ax = ((int)val) / 100.0;
