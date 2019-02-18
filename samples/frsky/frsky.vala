@@ -55,7 +55,7 @@ public class Frsky : Object
     public double ay = 0;
     public double az = 0;
 
-
+    public uint64 offset = 0;
 
     private bool fr_checksum(uint8[] buf)
     {
@@ -197,6 +197,9 @@ public class Frsky : Object
                 hdp = (uint16)(val % 1000)/100;
                 uint16 rhdop = 550 - (hdp * 50);
                 stdout.printf("%s %u sats %u, fix %u %u %u\n", id.to_string(), val, nsats, gfix, hdp, rhdop);
+                if((gfix & 4) == 4)
+                    stdout.printf("Home reset at offset %s\n", offset.to_string());
+
                 break;
             case FrID.RSSI_ID:
                     // http://ceptimus.co.uk/?p=271
@@ -326,10 +329,10 @@ public class Frsky : Object
                             good++;
                         else
                             bad++;
+                        fr.offset = bp;
                     }
                     else if (bp >  0)
                     {
-//                    stderr.printf("Short at %d (%d)\n", bp, nb);
                         nshort++;
                     }
                     nb = 0;
