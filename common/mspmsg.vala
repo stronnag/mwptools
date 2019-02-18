@@ -216,8 +216,8 @@ public struct LTM_AFRAME
 
 public struct LTM_SFRAME
 {
-    int16 vbat;
-    int16 vcurr;
+    uint16 vbat;
+    uint16 vcurr;
     uint8 rssi;
     uint8 airspeed;
     uint8 flags;

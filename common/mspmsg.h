@@ -215,8 +215,8 @@ typedef struct _ltm_aframe LTM_AFRAME;
 
 struct __attribute__ ((__packed__))  _ltm_sframe
 {
-    int16_t vbat;
-    int16_t vcurr;
+    uint16_t vbat;
+    uint16_t vcurr;
     uint8_t rssi;
     uint8_t airspeed;
     uint8_t flags;

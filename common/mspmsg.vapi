@@ -197,8 +197,8 @@ public struct LTM_AFRAME
 [CCode (cheader_filename = "mspmsg.h")]
 public struct LTM_SFRAME
 {
-    public int16 vbat;
-    public int16 vcurr;
+    public uint16 vbat;
+    public uint16 vcurr;
     public uint8 rssi;
     public uint8 airspeed;
     public uint8 flags;

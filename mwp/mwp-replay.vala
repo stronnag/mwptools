@@ -25,8 +25,8 @@ public class ReplayThread : GLib.Object
     private size_t serialise_sf(LTM_SFRAME b, uint8 []tx)
     {
         uint8 *p;
-        p = serialise_i16(tx, b.vbat);
-        p = serialise_i16(p, b.vcurr);
+        p = serialise_u16(tx, b.vbat);
+        p = serialise_u16(p, b.vcurr);
         *p++ = b.rssi;
         *p++ = b.airspeed;
         *p++ = b.flags;
@@ -273,6 +273,7 @@ public class ReplayThread : GLib.Object
                                     var cap = obj.get_int_member ("capability");
                                     uint fctype = 42;
                                     string fcboard="UNKN";
+                                    string fcname="";
 
                                     if(mwvers == 0)
                                         mwvers = 255;
@@ -302,22 +303,28 @@ public class ReplayThread : GLib.Object
                                     {
                                         fcboard = obj.get_string_member ("fcboard");
                                     }
-                                    uint8 mlen = 6;
-                                    buf[0] = fcboard[0];
-                                    buf[1] = fcboard[1];
-                                    buf[2] = fcboard[2];
-                                    buf[3] = fcboard[3];
-                                    buf[4] = buf[5] = 0;
-                                    if(obj.has_member("fcname"))
+                                    if (fcboard != null)
                                     {
-                                        string fcname=obj.get_string_member ("fcname");
-                                        buf[6] = buf[7] = 0;
-                                        buf[8] = (uint8)fcname.length;
-                                        for(var k = 0; k < buf[8]; k++)
-                                            buf[k+9] = fcname[k];
-                                        mlen = 9+buf[8];
+                                        uint8 mlen = 6;
+                                        buf[0] = fcboard[0];
+                                        buf[1] = fcboard[1];
+                                        buf[2] = fcboard[2];
+                                        buf[3] = fcboard[3];
+                                        buf[4] = buf[5] = 0;
+                                        if(obj.has_member("fcname"))
+                                        {
+                                            fcname=obj.get_string_member ("fcname");
+                                            if (fcname != null)
+                                            {
+                                                buf[6] = buf[7] = 0;
+                                                buf[8] = (uint8)fcname.length;
+                                                for(var k = 0; k < buf[8]; k++)
+                                                buf[k+9] = fcname[k];
+                                                mlen = 9+buf[8];
+                                            }
+                                        }
+                                        send_rec(msp,MSP.Cmds.BOARD_INFO, mlen, buf);
                                     }
-                                    send_rec(msp,MSP.Cmds.BOARD_INFO, mlen, buf);
 
                                     if(fcvar != null)
                                     {

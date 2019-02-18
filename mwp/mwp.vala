@@ -2427,6 +2427,7 @@ public class MWPlanner : Gtk.Application {
                 uint32 arm_flags = 0;
                 uint64 mwflags = 0;
                 uint8 ltmflags = 0;
+                bool failsafe = false;
 
                 for(var j = 0; j < 5; j++)
                 {
@@ -2482,7 +2483,7 @@ public class MWPlanner : Gtk.Application {
                             break;
                         case 4: // 10000s
                                 // if(mode == 2) emode = "AUTOTUNE";
-                            bool failsafe = (mode == 4);
+                            failsafe = (mode == 4);
                             if(xfailsafe != failsafe)
                             {
                                 if(failsafe)
@@ -2562,8 +2563,13 @@ public class MWPlanner : Gtk.Application {
                 if(want_special != 0 /* && have_home*/)
                     process_pos_states(xlat,xlon, 0, "SPort status");
 
-//              FIXME  navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
-
+                LTM_SFRAME sf = LTM_SFRAME ();
+                sf.vbat = (uint16)(spi.volts*1000);
+                sf.flags = ((failsafe) ? 2 : 0) | (armed & 1) | ltmflags << 2;
+                sf.vcurr = 0;
+                sf.rssi = (uint8)(spi.rssi * 255/ 1023);
+                sf.airspeed = 0;
+                navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
                 break;
 
             case SportDev.FrID.T2_ID: // GPS info
@@ -2599,7 +2605,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 if ((gfix & 4) == 4)
                 {
-                    if (spi.range < 100)
+                    if (spi.range < 500)
                     {
                         MWPLog.message("SPORT: %s set home: changed home position %f %f\n",
                                        id.to_string(), GPSInfo.lat, GPSInfo.lon);
@@ -2609,7 +2615,7 @@ public class MWPlanner : Gtk.Application {
                     }
                     else
                     {
-                        MWPLog.message("SPORT: %s Ignoring (bogus?) set home > 100m: requested home position %f %f\n", id.to_string(), GPSInfo.lat, GPSInfo.lon);
+                        MWPLog.message("SPORT: %s Ignoring (bogus?) set home, range > 500m: requested home position %f %f\n", id.to_string(), GPSInfo.lat, GPSInfo.lon);
                     }
                 }
 
@@ -2624,11 +2630,11 @@ public class MWPlanner : Gtk.Application {
                 last_gps = nticks;
                 break;
             case SportDev.FrID.RSSI_ID:
+                    /****
                     // http://ceptimus.co.uk/?p=271
                     // states main (Rx) link quality 100+ is full signal
                     // 40 is no signal --- iNav uses 0 - 1023
                     //
-/*
                 uint rssi;
                 uint issr;
                 rssi = (val & 0xff);
@@ -2637,7 +2643,7 @@ public class MWPlanner : Gtk.Application {
                 if (rssi < 40)
                     rssi = 40;
                 issr = (rssi - 40)*1023/60;
-*/
+                    *******/
                 spi.rssi = (uint16)((val&0xff)*1023/100);
                 MSP_ANALOG an = MSP_ANALOG();
                 an.rssi = spi.rssi;
@@ -2684,6 +2690,8 @@ public class MWPlanner : Gtk.Application {
                 spi.pitch = -(int16)(180.0 * Math.atan2 (spi.ax, Math.sqrt(spi.ay*spi.ay + spi.az*spi.az))/Math.PI);
                 spi.roll  = (int16)(180.0 * Math.atan2 (spi.ay, Math.sqrt(spi.ax*spi.ax + spi.az*spi.az))/Math.PI);
                 art_win.update(spi.roll*10, spi.pitch*10, item_visible(DOCKLETS.ARTHOR));
+                if(Logger.is_logging)
+                    Logger.attitude((double)spi.pitch, (double)spi.roll, (int16) spi.cse);
                 break;
 
             case SportDev.FrID.VARIO_ID:
