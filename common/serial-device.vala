@@ -758,7 +758,11 @@ public class MWSerial : Object
             if(sport == true)
             {
                 if(res > 0)
+                {
                     process_sport(devbuf, res);
+                    if(rawlog == true)
+                        log_raw('s',devbuf,(int)res);
+                }
             }
             else if(pmode == ProtoMode.CLI)
             {
@@ -1346,7 +1350,7 @@ public class MWSerial : Object
     private void log_raw(uint8 dirn, void *buf, int len)
     {
         double dt = timer.elapsed ();
-        uint16 blen = (uint8)len;
+        uint16 blen = (uint16)len;
         Posix.write(raws, &dt, sizeof(double));
         Posix.write(raws, &blen, 2);
         Posix.write(raws, &dirn, 1);
