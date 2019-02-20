@@ -3,7 +3,7 @@ XOS := $(shell uname)
 -include local.mk
 
 ifeq ($(XOS),Linux)
- DOPTS += -D HAVE_FIONREAD -D LINUX
+ DOPTS += -D LINUX
  GUDEV = --pkg gudev-1.0
 endif
 

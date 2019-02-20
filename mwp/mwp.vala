@@ -53,7 +53,7 @@ public struct CurrData
 {
     bool ampsok;
     uint16 amps;
-    uint16 mah;
+    uint32 mah;
     uint16 bbla;
 }
 
@@ -2581,7 +2581,7 @@ public class MWPlanner : Gtk.Application {
                 LTM_SFRAME sf = LTM_SFRAME ();
                 sf.vbat = (uint16)(spi.volts*1000);
                 sf.flags = ((failsafe) ? 2 : 0) | (armed & 1) | ltmflags << 2;
-                sf.vcurr = (conf.smartport_fuel == 2) ? curr.mah : 0;
+                sf.vcurr = (conf.smartport_fuel == 2) ? (uint16)curr.mah : 0;
                 sf.rssi = (uint8)(spi.rssi * 255/ 1023);
                 sf.airspeed = 0;
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
@@ -2719,7 +2719,20 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case SportDev.FrID.FUEL_ID:
-                curr.mah = (conf.smartport_fuel == 0) ? 0 : (val > 0xffff) ? 0xffff : (uint16)val;
+                switch (conf.smartport_fuel)
+                {
+                    case 0:
+                        curr.mah = 0;
+                        break;
+                    case 1:
+                    case 2:
+                        curr.mah = (val > 0xffff) ? 0xffff : (uint16)val;
+                        break;
+                    case 3:
+                    default:
+                        curr.mah = val;
+                        break;
+                }
                 break;
 
             default:
@@ -4834,7 +4847,7 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.FEATURE:
                 uint32 fmask;
                 deserialise_u32(raw, out fmask);
-                bool curf = (fmask & MSP.Feature.CURRENT) == 0;
+                bool curf = (fmask & MSP.Feature.CURRENT) != 0;
                 MWPLog.message("Feature Mask [%08x] : telemetry %s, gps %s, current %s\n",
                                fmask,
                                (0 != (fmask & MSP.Feature.TELEMETRY)).to_string(),

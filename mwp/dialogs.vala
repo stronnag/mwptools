@@ -1339,7 +1339,7 @@ public class NavStatus : GLib.Object
     private VCol vc;
     private bool ampsok;
     private uint16 amps;
-    private uint16 mah;
+    private uint32 mah;
     private int fi;
 
     public static uint8 nm_pts;
@@ -1870,7 +1870,8 @@ public class NavStatus : GLib.Object
         alti = {0};
         cg = {0};
         hdr = 0;
-        amps = mah = 0;
+        amps = 0;
+        mah = 0;
         ampsok = false;
         volt_update("n/a",-1, 0f,true);
     }
