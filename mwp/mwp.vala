@@ -2350,6 +2350,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     spi.volts = val / 100.0;
                     set_bat_stat((uint8)(val/10));
+                    sflags |=  NavStatus.SPK.Volts;
                 }
                 break;
             case SportDev.FrID.GPS_LONG_LATI_ID:
@@ -2436,6 +2437,7 @@ public class MWPlanner : Gtk.Application {
             case SportDev.FrID.ALT_ID:
                 r = (int)val / 100.0;
                 spi.alt = (int)val;
+                sflags |=  NavStatus.SPK.ELEV;
                 break;
             case SportDev.FrID.T1_ID: // flight modes
                 uint ival = val;
@@ -2580,11 +2582,11 @@ public class MWPlanner : Gtk.Application {
 
                 LTM_SFRAME sf = LTM_SFRAME ();
                 sf.vbat = (uint16)(spi.volts*1000);
-                sf.flags = ((failsafe) ? 2 : 0) | (armed & 1) | ltmflags << 2;
+                sf.flags = ((failsafe) ? 2 : 0) | (armed & 1) | (ltmflags << 2);
                 sf.vcurr = (conf.smartport_fuel == 2) ? (uint16)curr.mah : 0;
                 sf.rssi = (uint8)(spi.rssi * 255/ 1023);
                 sf.airspeed = 0;
-                navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
+                navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS),true);
                 break;
 
             case SportDev.FrID.T2_ID: // GPS info

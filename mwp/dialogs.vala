@@ -1532,7 +1532,7 @@ public class NavStatus : GLib.Object
         nav_action_label.set_label(sb.str);
     }
 
-    public void update_ltm_s(LTM_SFRAME s, bool visible)
+    public void update_ltm_s(LTM_SFRAME s, bool visible, bool sp = false)
     {
         if(enabled || Logger.is_logging)
         {
@@ -1554,10 +1554,16 @@ public class NavStatus : GLib.Object
 
                 xfmode = fmode;
                     // only speak modes that are not in N-Frame
-                if(mt_voice && ((xfmode > 0 && xfmode < 5) ||
-                                xfmode == 8 || xfmode == 18 || xfmode == 19))
+                if(mt_voice)
                 {
-                    mt.message(AudioThread.Vox.LTM_MODE,true);
+                    if(sp)
+                    {
+//                        MWPLog.message("SP mode %u\n", fmode);
+                        mt.message(AudioThread.Vox.SPORT_MODE,true);
+                    }
+                    else if ((xfmode > 0 && xfmode < 5) ||
+                        xfmode == 8 || xfmode == 18 || xfmode == 19)
+                        mt.message(AudioThread.Vox.LTM_MODE,true);
                 }
             }
 
@@ -1952,7 +1958,8 @@ public class AudioThread : Object {
         HW_OK,
         HW_BAD,
         HOME_CHANGED,
-        AUDIO_TEST
+        AUDIO_TEST,
+        SPORT_MODE
     }
 
     private Timer timer;
@@ -2126,7 +2133,13 @@ public class AudioThread : Object {
                         case Vox.RANGE_BRG:
                             StringBuilder sbrg = new StringBuilder();
                             sbrg.append("Range ");
-                            sbrg.append(say_nicely((int)Units.distance(NavStatus.cg.range)));
+                            if(NavStatus.cg.range > 999 && MWPlanner.conf.p_distance == 0)
+                            {
+                                double km = NavStatus.cg.range/1000.0;
+                                sbrg.append("%.1fk".printf(km));
+                            }
+                            else
+                                sbrg.append(say_nicely((int)Units.distance(NavStatus.cg.range)));
                             if(MWPlanner.conf.say_bearing)
                             {
                                 var brg = NavStatus.cg.direction;
@@ -2175,6 +2188,9 @@ public class AudioThread : Object {
                             if(((xfmode > 0 && xfmode < 5) || xfmode == 8 ||
                                 xfmode == 18 || xfmode == 19))
                                 s = MSP.ltm_mode(xfmode);
+                            break;
+                        case Vox.SPORT_MODE:
+                            s = MSP.ltm_mode(NavStatus.xfmode);
                             break;
                         case Vox.FAILSAFE:
                             s="FAIL SAFE";
