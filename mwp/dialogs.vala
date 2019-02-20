@@ -1687,6 +1687,20 @@ public class NavStatus : GLib.Object
         }
     }
 
+    public void amp_hide(bool hide)
+    {
+        if(hide)
+        {
+            amplabel.hide();
+            mahlabel.hide();
+        }
+        else
+        {
+            amplabel.show();
+            mahlabel.show();
+        }
+    }
+
     public void current(CurrData c, int _fi)
     {
         ampsok = c.ampsok;

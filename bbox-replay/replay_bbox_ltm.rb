@@ -422,7 +422,11 @@ def encode_stats r,inavers,armed=1
   end
 
   mah = (r.has_key? :energycumulative_mah) ? r[:energycumulative_mah].to_i : 0
-  mah = mah & 0xffff
+  if mah > 0
+    mah = mah & 0xffff
+  else
+    mah = 0
+  end
 
   sl = [(vbat*$vbatscale*1000).to_i, mah, rssi, 0, sts].pack('S<S<CCC')
   msg << sl << mksum(sl)
@@ -659,6 +663,7 @@ disarms=[]
 need_vbat_scale = true # pre 2.0
 vbstate = false # true means we're 2.0.0 and need to check date
 ivers = nil
+fmask = nil
 
 File.open("/tmp/.mwp-vbat.txt","a") do |vf|
   File.open(bbox,'rb') do |f|
@@ -693,6 +698,8 @@ File.open("/tmp/.mwp-vbat.txt","a") do |vf|
 	if need_vbat_scale
 	  $vbatscale = m[1].to_f / 110.0
 	end
+      elsif m = l.match(/H features:(\d+)/)
+	fmask = m[1].to_i
       elsif m = l.match(/End of log \(disarm reason:(\d+)/)
 	disarms << m[1].to_i
       end

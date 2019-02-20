@@ -4834,10 +4834,15 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.FEATURE:
                 uint32 fmask;
                 deserialise_u32(raw, out fmask);
-                MWPLog.message("Feature Mask [%08x] : telemetry %s, gps %s\n",
+                bool curf = (fmask & MSP.Feature.CURRENT) == 0;
+                MWPLog.message("Feature Mask [%08x] : telemetry %s, gps %s, current %s\n",
                                fmask,
                                (0 != (fmask & MSP.Feature.TELEMETRY)).to_string(),
-                               (0 != (fmask & MSP.Feature.GPS)).to_string());
+                               (0 != (fmask & MSP.Feature.GPS)).to_string(),
+                               curf.to_string());
+
+                if (curf == false)
+                    navstatus.amp_hide(true);
 
                 if(conf.need_telemetry && (0 == (fmask & MSP.Feature.TELEMETRY)))
                     mwp_warning_box("TELEMETRY requested but not enabled in iNav", Gtk.MessageType.ERROR);

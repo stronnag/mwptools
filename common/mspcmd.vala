@@ -20,7 +20,8 @@ public class MSP : Object {
     public enum Feature
     {
         GPS = (1 << 7),
-        TELEMETRY = (1 << 10)
+        TELEMETRY = (1 << 10),
+        CURRENT = (1 << 11)
     }
 
     public enum Cmds {
