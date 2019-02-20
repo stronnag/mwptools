@@ -1416,9 +1416,9 @@ public class NavStatus : GLib.Object
         amplabel = builder.get_object ("amps_label") as Gtk.Label;
         mahlabel = builder.get_object ("mah_label") as Gtk.Label;
         voltbox.size_allocate.connect((a) => {
-                var fh1 = a.width/4;
+                var fh1 = a.width / 4;
                 var fh2 = a.height / 2;
-                _fs = 90*((fh1 < fh2) ? fh1 : fh2)/100;
+                _fs = (fh1 < fh2) ? fh1 : fh2;
             });
 
         voltlabel.set_use_markup (true);
@@ -1731,19 +1731,32 @@ public class NavStatus : GLib.Object
                 _vn = n;
             }
 
-            var vs = "<span font_family='monospace' font='%d'>%s</span>".printf(_fs,s);
-            voltlabel.set_label(vs);
+            int vfh = _fs;
+            int afh = 0;
+
             if (n == -1 || s == "n/a" || ampsok == false)
             {
+                amplabel.hide();
+                mahlabel.hide();
                 amplabel.set_label("");
                 mahlabel.set_label("");
             }
             else
             {
-                int afs = _fs / 3;
-                amplabel.set_label("<span font_family='monospace' font='%d'>%3uA</span>".printf(afs, amps));
+                vfh = _fs * 9 /10 ;
+                afh = _fs *3 / 10;
+                amplabel.set_label("<span font_family='monospace' font='%d'>%3uA</span>".printf(afh, amps));
                 if(mah > 0 && fi > 0 && fi < 4)
-                    mahlabel.set_label("<span font_family='monospace' font='%d'>%5u%s</span>".printf(afs, mah,fu[fi]));
+                    mahlabel.set_label("<span font_family='monospace' font='%d'>%5u%s</span>".printf(afh, mah,fu[fi]));
+            }
+
+
+            var vs = "<span font_family='monospace' font='%d'>%s</span>".printf(vfh,s);
+            voltlabel.set_label(vs);
+            if(afh > 0)
+            {
+                amplabel.show();
+                mahlabel.show();
             }
         }
     }

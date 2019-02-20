@@ -349,6 +349,7 @@ public class Frsky : Object
                 }
                 else if (b == FrProto.P_STUFF)
                 {
+//                    stdout.printf("Stuffed at offset %s\n", fr.offset.to_string());
                     stuffed = true;
                     continue;
                 }
