@@ -98,6 +98,7 @@ public class MWPSettings : GLib.Object
     public bool say_bearing {get; set; default=true;}
     public bool pos_is_centre {get; set; default=true;}
     public double deltaspeed {get; set; default=0.0;}
+    public int smartport_fuel  {get; set; default = 0;}
 
     public signal void settings_update (string s);
 
@@ -360,6 +361,9 @@ public class MWPSettings : GLib.Object
             pos_is_centre = settings.get_boolean("pos-is-centre");
         if(s == null || s == "delta-minspeed")
             deltaspeed = settings.get_double("delta-minspeed");
+
+        if(s == null || s == "smartport-fuel-unit")
+            smartport_fuel = settings.get_enum("smartport-fuel-unit");
     }
 
     public void save_pane()

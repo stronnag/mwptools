@@ -440,7 +440,7 @@ public class ReplayThread : GLib.Object
                                     break;
                                 case "analog":
                                     var volts = obj.get_double_member("voltage");
-                                    var amps = obj.get_int_member("amps");
+                                    var amps = obj.get_double_member("amps");
                                     var power = obj.get_int_member("power");
                                     var rssi = obj.get_int_member("rssi");
                                     MSP_ANALOG a = MSP_ANALOG();
@@ -531,8 +531,8 @@ public class ReplayThread : GLib.Object
                                 case "ltm_raw_sframe":
                                     telem = true;
                                     var s = LTM_SFRAME();
-                                    s.vbat = (int16)(obj.get_int_member("vbat"));
-                                    s.vcurr = (int16)(obj.get_int_member("vcurr"));
+                                    s.vbat = (uint16)(obj.get_int_member("vbat"));
+                                    s.vcurr = (uint16)(obj.get_int_member("vcurr"));
                                     s.rssi = (uint8)(obj.get_int_member("rssi"));
                                     s.airspeed = (uint8)(obj.get_int_member("airspeed"));
                                     s.flags = (uint8)(obj.get_int_member("flags"));

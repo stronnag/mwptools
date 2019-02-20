@@ -9,6 +9,15 @@
     <value nick="all" value="4"/>
   </enum>
 
+
+  <enum id="org.mwptools.planner.spfuel">
+    <value nick="none" value="0"/>
+    <value nick="pct" value="1"/>
+    <value nick="mAh" value="2"/>
+    <value nick="mWh" value="3"/>
+  </enum>
+
+
   <schema id="org.mwptools.planner" path="/org/mwptools/planner/" >
 
     <key name="device-names" type="as">
@@ -376,6 +385,14 @@
       <summary>Types of message to forward</summary>
       <description>
         Types of message to forward (none, LTM, minLTM, minMAV, all)
+      </description>
+    </key>
+
+    <key name="smartport-fuel-unit" enum="org.mwptools.planner.spfuel">
+      <default>"none"</default>
+      <summary>User selected fuel type</summary>
+      <description>
+        Units label for smartport fuel (none, %, mAh, mWh)
       </description>
     </key>
 

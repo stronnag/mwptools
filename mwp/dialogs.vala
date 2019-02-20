@@ -1327,6 +1327,8 @@ public class NavStatus : GLib.Object
     private bool enabled = false;
     public Gtk.Grid grid {get; private set;}
     private  Gtk.Label voltlabel;
+    private  Gtk.Label amplabel;
+    private  Gtk.Label mahlabel;
     public Gtk.Box voltbox{get; private set;}
     private bool vinit = false;
     private int si = 0;
@@ -1335,6 +1337,10 @@ public class NavStatus : GLib.Object
     private bool have_cg = false;
     private bool have_hdr = false;
     private VCol vc;
+    private bool ampsok;
+    private uint16 amps;
+    private uint16 mah;
+    private int fi;
 
     public static uint8 nm_pts;
     public static bool  have_rth;
@@ -1361,6 +1367,8 @@ public class NavStatus : GLib.Object
 
     private int efdin;
     private Pid epid;
+
+    private string[]fu = {"", "%", "mAh", "mWh"};
 
     public enum SPK  {
         Volts = 1,
@@ -1391,9 +1399,8 @@ public class NavStatus : GLib.Object
         nav_altitude_label = builder.get_object ("altitude_label") as Gtk.Label;
         nav_attitude_label = builder.get_object ("attitude_label") as Gtk.Label;
         enabled = true;
-
+/*
         voltlabel = new Gtk.Label("");
-//        voltlabel.xalign = 0.75f;
         voltbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 2);
         voltbox.pack_start (voltlabel, true, true, 1);
         voltbox.size_allocate.connect((a) => {
@@ -1403,6 +1410,20 @@ public class NavStatus : GLib.Object
             });
 
         voltlabel.set_use_markup (true);
+*/
+        voltbox = builder.get_object ("powerbox") as Gtk.Box;
+        voltlabel = builder.get_object ("volts_label") as Gtk.Label;
+        amplabel = builder.get_object ("amps_label") as Gtk.Label;
+        mahlabel = builder.get_object ("mah_label") as Gtk.Label;
+        voltbox.size_allocate.connect((a) => {
+                var fh1 = a.width/4;
+                var fh2 = a.height / 2;
+                _fs = 90*((fh1 < fh2) ? fh1 : fh2)/100;
+            });
+
+        voltlabel.set_use_markup (true);
+        amplabel.set_use_markup (true);
+        mahlabel.set_use_markup (true);
         volt_update("n/a",-1, 0f,true);
         grid.show_all();
     }
@@ -1666,6 +1687,17 @@ public class NavStatus : GLib.Object
         }
     }
 
+    public void current(CurrData c, int _fi)
+    {
+        ampsok = c.ampsok;
+        if(c.ampsok)
+        {
+            amps = c.amps;
+            mah = c.mah;
+            fi = _fi;
+        }
+    }
+
     public void volt_update(string s, int n, float v, bool visible)
     {
         volts = v;
@@ -1676,13 +1708,29 @@ public class NavStatus : GLib.Object
         {
             if(n != _vn)
             {
-                var lsc = voltlabel.get_style_context();
+                var lsc = voltbox.get_style_context();
                 if(_vn != -1)
+                {
                     lsc.remove_class(vc.levels[_vn].colour);
+                }
                 lsc.add_class(vc.levels[n].colour);
                 _vn = n;
             }
-            voltlabel.set_label("<span font_family='monospace' font='%d'>%s</span>".printf(_fs,s));
+
+            var vs = "<span font_family='monospace' font='%d'>%s</span>".printf(_fs,s);
+            voltlabel.set_label(vs);
+            if (n == -1 || s == "n/a" || ampsok == false)
+            {
+                amplabel.set_label("");
+                mahlabel.set_label("");
+            }
+            else
+            {
+                int afs = _fs / 3;
+                amplabel.set_label("<span font_family='monospace' font='%d'>%3uA</span>".printf(afs, amps));
+                if(mah > 0 && fi > 0 && fi < 4)
+                    mahlabel.set_label("<span font_family='monospace' font='%d'>%5u%s</span>".printf(afs, mah,fu[fi]));
+            }
         }
     }
 
@@ -1795,6 +1843,8 @@ public class NavStatus : GLib.Object
         alti = {0};
         cg = {0};
         hdr = 0;
+        amps = mah = 0;
+        ampsok = false;
         volt_update("n/a",-1, 0f,true);
     }
 

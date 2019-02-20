@@ -420,7 +420,11 @@ def encode_stats r,inavers,armed=1
   elsif r.has_key? :vbat
     vbat = r[:vbat].to_f / 100.0
   end
-  sl = [(vbat*$vbatscale*1000).to_i, 0, rssi, 0, sts].pack('S<S<CCC')
+
+  mah = (r.has_key? :energycumulative_mah) ? r[:energycumulative_mah].to_i : 0
+  mah = mah & 0xffff
+
+  sl = [(vbat*$vbatscale*1000).to_i, mah, rssi, 0, sts].pack('S<S<CCC')
   msg << sl << mksum(sl)
   msg
 end
@@ -878,14 +882,14 @@ IO.popen(cmd,'rt') do |pipe|
 	when 1,3,7,9
 	  if  llat != 0.0 and llon != 0.0
 	    lastr = row
-	    msg = encode_stats row,vers
-	    send_msg dev, msg
-	    msg = encode_nav row,vers
-	    send_msg dev, msg
 	    msg = encode_amps row
 	    if msg
 	      send_msg dev, msg
 	    end
+	    msg = encode_stats row,vers
+	    send_msg dev, msg
+	    msg = encode_nav row,vers
+	    send_msg dev, msg
 	  end
 	end
 	et = ((us - st)/1000000).to_i

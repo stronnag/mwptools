@@ -49,6 +49,14 @@ public enum NMSTATE {
     }
 
 
+public struct CurrData
+{
+    bool ampsok;
+    uint16 amps;
+    uint16 mah;
+    uint16 bbla;
+}
+
 public struct SPORT_INFO
 {
     int32 lat;
@@ -67,9 +75,9 @@ public struct SPORT_INFO
     double ay;
     double az;
     uint16 range;
-    double volts;
-    double amps;
     uint16 rssi;
+    int16 vario;
+    double volts;
 }
 
 public struct Odostats
@@ -535,6 +543,9 @@ public class MWPlanner : Gtk.Application {
 
     public DevManager devman;
 
+    private uint64 lmahtm = 0;
+    private uint16 lmah = 0;
+
     public struct MQI //: Object
     {
         MSP.Cmds cmd;
@@ -816,6 +827,7 @@ public class MWPlanner : Gtk.Application {
     private double ringint = 0;
     private bool replay_paused;
     private SPORT_INFO spi;
+    private CurrData curr;
 
     private MwpServer mss=null;
     private uint8 spapi =  0;
@@ -2334,8 +2346,11 @@ public class MWPlanner : Gtk.Application {
         switch(id)
         {
             case SportDev.FrID.VFAS_ID:
-                spi.volts = val / 100.0;
-                set_bat_stat((uint8)(val/10));
+                if (val /100  < 80)
+                {
+                    spi.volts = val / 100.0;
+                    set_bat_stat((uint8)(val/10));
+                }
                 break;
             case SportDev.FrID.GPS_LONG_LATI_ID:
                 int32 ipos;
@@ -2348,7 +2363,7 @@ public class MWPlanner : Gtk.Application {
                     init_craft_icon();
                     MSP_ALTITUDE al = MSP_ALTITUDE();
                     al.estalt = spi.alt;
-                    al.vario = 0;
+                    al.vario = spi.vario;
                     navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
                     double ddm;
                     gpsinfo.update_sport(spi, conf.dms, item_visible(DOCKLETS.GPS), out ddm);
@@ -2566,7 +2581,7 @@ public class MWPlanner : Gtk.Application {
                 LTM_SFRAME sf = LTM_SFRAME ();
                 sf.vbat = (uint16)(spi.volts*1000);
                 sf.flags = ((failsafe) ? 2 : 0) | (armed & 1) | ltmflags << 2;
-                sf.vcurr = 0;
+                sf.vcurr = (conf.smartport_fuel == 2) ? curr.mah : 0;
                 sf.rssi = (uint8)(spi.rssi * 255/ 1023);
                 sf.airspeed = 0;
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
@@ -2649,7 +2664,7 @@ public class MWPlanner : Gtk.Application {
                 an.rssi = spi.rssi;
                 radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
                 if(Logger.is_logging)
-                    Logger.sport_analog(spi);
+                    Logger.sport_analog(spi, curr.amps);
                 break;
             case SportDev.FrID.PITCH:
             case SportDev.FrID.ROLL:
@@ -2675,9 +2690,14 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case SportDev.FrID.CURR_ID:
-                spi.amps =((int)val) / 10.0;
-                if (spi.amps > odo.amps)
-                    odo.amps = spi.amps;
+                if((val / 10) < 999)
+                {
+                    curr.ampsok = true;
+                    curr.amps =  (uint16)(val / 10);
+                    if (curr.amps > odo.amps)
+                        odo.amps = curr.amps;
+                    navstatus.current(curr, conf.smartport_fuel);
+                }
                 break;
             case SportDev.FrID.ACCX_ID:
                 spi.ax = ((int)val) / 100.0;
@@ -2695,7 +2715,13 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case SportDev.FrID.VARIO_ID:
-                    // TBD
+                spi.vario = (int16)((int) val / 10);
+                break;
+
+            case SportDev.FrID.FUEL_ID:
+                curr.mah = (conf.smartport_fuel == 0) ? 0 : (val > 0xffff) ? 0xffff : (uint16)val;
+                break;
+
             default:
                 break;
         }
@@ -3599,7 +3625,10 @@ public class MWPlanner : Gtk.Application {
             {
                 magdt = -1;
                 odo = {0};
+
                 odo.alt = -9999;
+                lmah = 0;
+                lmahtm = 0;
                 reboot_status();
                 init_craft_icon();
                 if(!no_trail)
@@ -3638,6 +3667,7 @@ public class MWPlanner : Gtk.Application {
                     }
                 }
                 odoview.dismiss();
+                curr = {false,0,0,0};
             }
             else
             {
@@ -5373,16 +5403,26 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.ANALOG:
                 MSP_ANALOG an = MSP_ANALOG();
                 an.vbat = raw[0];
+                deserialise_u16(raw+1, out an.powermetersum);
                 if(!have_mspradio)
                 {
                     deserialise_i16(raw+3, out an.rssi);
                     radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
+                }
+                deserialise_i16(raw+5, out an.amps);
+                curr.amps = an.amps;
+                curr.mah = an.powermetersum;
+                if(curr.amps != 0 || curr.mah != 0)
+                {
+                    curr.ampsok = true;
+                    navstatus.current(curr, 2);
                 }
                 if(Logger.is_logging)
                 {
                     Logger.analog(an);
                 }
                 var ivbat = an.vbat;
+
                 set_bat_stat(ivbat);
                 break;
 
@@ -5672,8 +5712,8 @@ public class MWPlanner : Gtk.Application {
             {
                 LTM_SFRAME sf = LTM_SFRAME ();
                 uint8* rp;
-                rp = deserialise_i16(raw, out sf.vbat);
-                rp = deserialise_i16(rp, out sf.vcurr);
+                rp = deserialise_u16(raw, out sf.vbat);
+                rp = deserialise_u16(rp, out sf.vcurr);
                 sf.rssi = *rp++;
                 sf.airspeed = *rp++;
                 sf.flags = *rp++;
@@ -5768,6 +5808,36 @@ public class MWPlanner : Gtk.Application {
                 if(want_special != 0 /* && have_home*/)
                     process_pos_states(xlat,xlon, 0, "SFrame");
 
+                uint16 mah = sf.vcurr;
+                if (mah > 0 && mah != 0xffff)
+                {
+                    if (replayer == Player.BBOX && curr.bbla > 0)
+                    {
+                        curr.ampsok = true;
+                        curr.amps = curr.bbla;
+                        curr.mah = mah;
+                        navstatus.current(curr, 2);
+                            // already checked for odo with bbl amps
+                    }
+                    else if(mah > 0 && mah > lmah)
+                    {
+                        var mahtm = GLib.get_monotonic_time ();
+                        var tdiff = (mahtm - lmahtm);
+                        var cdiff = mah - lmah;
+                        if(cdiff < 10)
+                        {
+                            /* (3600 / 1000 ) * 1000000 */
+                            lmahtm = mahtm;
+                            lmah = mah;
+                            curr.ampsok = true;
+                            curr.amps = (uint16)(cdiff * 3600000  / tdiff);
+                            curr.mah = mah;
+                            navstatus.current(curr, 2);
+                            if (curr.amps > odo.amps)
+                                odo.amps = curr.amps;
+                        }
+                    }
+                }
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
                 set_bat_stat((uint8)((sf.vbat + 50) / 100));
             }
@@ -5960,7 +6030,8 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.Ta_FRAME:
                 uint16 val = *(((uint16*)raw));
-                double amps = val/100.0;
+                var amps = val/100.0;
+                curr.bbla = (uint16) amps;
                 if (amps > odo.amps)
                     odo.amps = amps;
                 break;
@@ -6367,7 +6438,6 @@ public class MWPlanner : Gtk.Application {
     private void update_bat_indicators(int icol, float vf)
     {
         string str;
-        string vbatlab;
         if(vcol.levels[icol].label == null)
         {
             str = "%.1fv".printf(vf);
@@ -6378,7 +6448,6 @@ public class MWPlanner : Gtk.Application {
         if(icol != licol)
             licol= icol;
 
-        vbatlab="<span weight=\"bold\">%s</span>".printf(str);
         navstatus.volt_update(str,icol,vf,item_visible(DOCKLETS.VOLTAGE));
     }
 
@@ -6765,6 +6834,7 @@ public class MWPlanner : Gtk.Application {
         validatelab.set_text("");
         ls.set_mission_speed(conf.nav_speed);
         msats = SATS.MINSATS;
+        curr = {false, 0, 0, 0};
     }
 
     private bool try_forwarder(out string fstr)

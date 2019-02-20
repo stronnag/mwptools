@@ -233,12 +233,17 @@ public class Frsky : Object
                 stdout.printf("%s %.1f A\n", id.to_string(), r);
                 break;
 
-                    /* not handling */
-            case FrID.FUEL_ID:
             case FrID.VARIO_ID:
+                r = ((int)val) / 100.0;
+                stdout.printf("%s %.2f m/s\n", id.to_string(), r);
                 break;
 
-            case FrID.CELLS_ID:
+                    /* not handling */
+           case FrID.FUEL_ID:
+                stdout.printf("%s %u (units unknown)\n", id.to_string(), val);
+                break;
+
+          case FrID.CELLS_ID:
             case FrID.RPM_ID:
             case FrID.GPS_TIME_DATE_ID:
             case FrID.A3_ID:

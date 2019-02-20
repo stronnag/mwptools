@@ -347,7 +347,7 @@ public class Logger : GLib.Object
         write_stream();
     }
 
-    public static void sport_analog(SPORT_INFO spi)
+    public static void sport_analog(SPORT_INFO spi,uint16 amps)
     {
         var builder = init("analog");
         builder.set_member_name ("voltage");
@@ -357,13 +357,12 @@ public class Logger : GLib.Object
         builder.set_member_name ("rssi");
         builder.add_int_value(spi.rssi);
         builder.set_member_name ("amps");
-        builder.add_int_value((int)spi.amps);
+        builder.add_int_value((int)amps);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);
         write_stream();
     }
-
 
     public static void comp_gps(int brg, uint16 range, uint8 update)
     {
