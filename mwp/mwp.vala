@@ -5430,8 +5430,8 @@ public class MWPlanner : Gtk.Application {
                     radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
                 }
                 deserialise_i16(raw+5, out an.amps);
-                curr.amps = an.amps;
-                curr.mah = an.powermetersum;
+                curr.amps = an.amps/100;
+                curr.mah = an.powermetersum;;
                 if(curr.amps != 0 || curr.mah != 0)
                 {
                     curr.ampsok = true;
