@@ -5648,7 +5648,7 @@ public class MWPlanner : Gtk.Application {
                             {
                                 if(gf.speed > 3)
                                 {
-                                    if(get_heading_diff(gcse, mhead).abs() > magdiff)
+                                    if(get_heading_diff(gcse, mhead) > magdiff)
                                     {
                                         if(magdt == -1)
                                         {
@@ -5669,9 +5669,9 @@ public class MWPlanner : Gtk.Application {
 
                             if(magdt != -1 && ((int)duration - magdt) > magtime)
                             {
-                                MWPLog.message(" ****** Mag error detected %d %d %d\n",
+                                MWPLog.message(" ****** Heading anomaly detected %d %d %d\n",
                                                mhead, (int)gcse, magdt);
-                                map_show_warning("COMPASS ANOMALY");
+                                map_show_warning("HEADING ANOMALY");
                                 bleet_sans_merci(Alert.RED);
                                 magdt = -1;
                             }
@@ -6147,15 +6147,10 @@ public class MWPlanner : Gtk.Application {
 
     private int get_heading_diff (int a, int b)
     {
-        var diff = b - a;
-        var absdiff = diff.abs();
-
-        if (absdiff <= 180)
-            return absdiff == 180 ? absdiff : diff;
-        else if (b > a)
-            return absdiff - 360;
-        else
-            return 360 - absdiff;
+        var d = int.max(a,b) - int.min(a,b);
+        if(d > 180)
+            d = 360 - d;
+        return d;
     }
 
 /*
