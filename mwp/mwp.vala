@@ -55,6 +55,8 @@ public struct CurrData
     uint16 amps;
     uint32 mah;
     uint16 bbla;
+    uint64 lmahtm;
+    uint16 lmah;
 }
 
 public struct SPORT_INFO
@@ -543,9 +545,6 @@ public class MWPlanner : Gtk.Application {
 
     public DevManager devman;
 
-    private uint64 lmahtm = 0;
-    private uint16 lmah = 0;
-
     public struct MQI //: Object
     {
         MSP.Cmds cmd;
@@ -596,8 +595,11 @@ public class MWPlanner : Gtk.Application {
     private enum Player
     {
         NONE = 0,
-        MWP,
-        BBOX
+        MWP = 1,
+        BBOX = 2,
+        FAST_MASK = 4,
+        MWP_FAST = 5,
+        BBOX_FAST = 6
     }
 
     public struct Position
@@ -961,7 +963,7 @@ public class MWPlanner : Gtk.Application {
             signum = MwpSignals.Signal.STOP;
         }
         replay_paused = !replay_paused;
-        if(replayer == Player.BBOX)
+        if((replayer & Player.BBOX) == Player.BBOX)
         {
             Posix.kill(child_pid, signum);
         }
@@ -3642,8 +3644,6 @@ public class MWPlanner : Gtk.Application {
                 odo = {0};
 
                 odo.alt = -9999;
-                lmah = 0;
-                lmahtm = 0;
                 reboot_status();
                 init_craft_icon();
                 if(!no_trail)
@@ -3682,7 +3682,6 @@ public class MWPlanner : Gtk.Application {
                     }
                 }
                 odoview.dismiss();
-                curr = {false,0,0,0};
             }
             else
             {
@@ -4957,6 +4956,7 @@ public class MWPlanner : Gtk.Application {
                 have_vers = true;
                 bat_annul();
                 hwstatus[0]=1;
+
                 for(var j = 1; j < 9; j++)
                     hwstatus[j] = 0;
                 if (icount == 0)
@@ -5282,7 +5282,7 @@ public class MWPlanner : Gtk.Application {
                 }
                 navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS),flg);
 
-                if(replayer != Player.BBOX && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255))
+                if((replayer & Player.BBOX) == 0 && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255))
                 {
                     if(ns.gps_mode == 3)
                     {
@@ -5829,9 +5829,11 @@ public class MWPlanner : Gtk.Application {
                     process_pos_states(xlat,xlon, 0, "SFrame");
 
                 uint16 mah = sf.vcurr;
+                uint16 ivbat = (sf.vbat + 50) / 100;
+
                 if (mah > 0 && mah != 0xffff)
                 {
-                    if (replayer == Player.BBOX && curr.bbla > 0)
+                    if ((replayer & Player.BBOX) == Player.BBOX && curr.bbla > 0)
                     {
                         curr.ampsok = true;
                         curr.amps = curr.bbla;
@@ -5839,27 +5841,56 @@ public class MWPlanner : Gtk.Application {
                         navstatus.current(curr, 2);
                             // already checked for odo with bbl amps
                     }
-                    else if(mah > 0 && mah > lmah)
+                    else if ((replayer & Player.MWP_FAST) == Player.MWP_FAST)
+                    {
+                        curr.lmah = mah;
+                        curr.ampsok = true;
+                        curr.amps = 0;
+                    }
+                    else if(mah > 0 && mah > curr.lmah)
                     {
                         var mahtm = GLib.get_monotonic_time ();
-                        var tdiff = (mahtm - lmahtm);
-                        var cdiff = mah - lmah;
-                        if(cdiff < 10)
+                        var tdiff = (mahtm - curr.lmahtm);
+                        var cdiff = mah - curr.lmah;
+                            // should be time aware
+                        if(cdiff < 100 || curr.lmahtm == 0)
                         {
-                            /* (3600 / 1000 ) * 1000000 */
-                            lmahtm = mahtm;
-                            lmah = mah;
+                            curr.lmahtm = mahtm;
+                            curr.lmah = mah;
                             curr.ampsok = true;
-                            curr.amps = (uint16)(cdiff * 3600000  / tdiff);
-                            curr.mah = mah;
-                            navstatus.current(curr, 2);
-                            if (curr.amps > odo.amps)
-                                odo.amps = curr.amps;
+                            var iamps = (uint16)(cdiff * 3600000  / tdiff);
+                            if (iamps >=  0 && tdiff > 200000)
+                            {
+                                curr.amps = iamps;
+                                curr.mah = mah;
+                                navstatus.current(curr, 2);
+                                if (curr.amps > odo.amps)
+                                {
+                                    MWPLog.message("set max amps %s %s (%s)\n",
+                                                   odo.amps.to_string(),
+                                                   curr.amps.to_string(),
+                                                   mah.to_string());
+                                    odo.amps = curr.amps;
+                                }
+                                if(Logger.is_logging)
+                                {
+                                    MSP_ANALOG an = MSP_ANALOG();
+                                    an.vbat = (uint8)ivbat;
+                                    an.powermetersum = (uint16)curr.mah;
+                                    an.rssi = 1023*sf.rssi/254;
+                                    an.amps = 100*curr.amps;
+                                    Logger.analog(an);
+                                }
+                            }
                         }
+                    }
+                    else if (curr.lmah - mah > 100)
+                    {
+                        MWPLog.message("Negative energy usage, ignoring ...n");
                     }
                 }
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
-                set_bat_stat((uint8)((sf.vbat + 50) / 100));
+                set_bat_stat((uint8)(ivbat));
             }
             break;
 
@@ -6383,6 +6414,8 @@ public class MWPlanner : Gtk.Application {
     private void init_battery(uint8 ivbat)
     {
         bat_annul();
+        curr = {false,0,0,0};
+
         var ncells = ivbat / 37;
         for(var i = 0; i < vcol.levels.length; i++)
         {
@@ -7566,7 +7599,7 @@ public class MWPlanner : Gtk.Application {
     {
         magcheck = (magtime > 0 && magdiff > 0);
         MWPLog.message("============== Replay complete ====================\n");
-        if (replayer == Player.MWP)
+        if ((replayer & Player.MWP) == Player.MWP)
         {
             if(thr != null)
             {
@@ -7623,6 +7656,9 @@ public class MWPlanner : Gtk.Application {
             conbutton.sensitive = false;
             update_title_from_file(fn);
             replayer = rtype;
+            if(delay == false)
+                replayer |= Player.FAST_MASK;
+
             msp.open_fd(playfd[0],-1, true);
             set_replay_menus(false);
             set_menu_state("stop-replay", true);
@@ -7630,11 +7666,13 @@ public class MWPlanner : Gtk.Application {
             switch(replayer)
             {
                 case Player.MWP:
+                case Player.MWP_FAST:
                     check_mission(fn);
                     robj = new ReplayThread();
                     thr = robj.run(playfd[1], fn, delay);
                     break;
                 case Player.BBOX:
+                case Player.BBOX_FAST:
                     bb_runner.find_bbox_box(fn, idx);
                     spawn_bbox_task(fn, idx, btype, delay, force_gps);
                     break;
@@ -7731,7 +7769,7 @@ public class MWPlanner : Gtk.Application {
 
     private void replay_bbox (bool delay, string? fn = null)
     {
-        if(replayer == Player.BBOX)
+        if((replayer & Player.BBOX) == Player.BBOX)
         {
             Posix.kill(child_pid, MwpSignals.Signal.TERM);
         }
@@ -7754,10 +7792,10 @@ public class MWPlanner : Gtk.Application {
 
     private void stop_replayer()
     {
-        if(replayer == Player.BBOX)
+        if((replayer & Player.BBOX) == Player.BBOX)
             Posix.kill(child_pid, MwpSignals.Signal.TERM);
 
-        if(replayer == Player.MWP && thr != null)
+        if((replayer & Player.MWP) == Player.MWP && thr != null)
             robj.stop();
         replay_paused = false;
     }
