@@ -258,7 +258,9 @@ public class MSP : Object {
         "Fly by wire A",	// 16
         "Fly by wire B",	// 17
         "Cruise",		// 18
-        "Nav mode undefined"   // 19
+        "Nav mode undefined",   // 19
+		"Launch", //20
+		"Autotune" // 21
     };
 
 
