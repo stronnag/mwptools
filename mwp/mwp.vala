@@ -6417,8 +6417,6 @@ public class MWPlanner : Gtk.Application {
     private void init_battery(uint8 ivbat)
     {
         bat_annul();
-        curr = {false,0,0,0};
-
         var ncells = ivbat / 37;
         for(var i = 0; i < vcol.levels.length; i++)
         {
@@ -6431,6 +6429,7 @@ public class MWPlanner : Gtk.Application {
 
     private void bat_annul()
     {
+        curr = {false,0,0,0,0 ,0};
         for(var i = 0; i < MAXVSAMPLE; i++)
                 vbsamples[i] = 0;
         nsampl = 0;
@@ -6870,6 +6869,7 @@ public class MWPlanner : Gtk.Application {
         autocount = 0;
         nsats = 0;
         gpsinfo.annul();
+        bat_annul();
         navstatus.reset();
         art_win.update(0, 0, item_visible(DOCKLETS.ARTHOR));
         vinit = false;

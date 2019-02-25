@@ -1746,6 +1746,9 @@ public class NavStatus : GLib.Object
                 mahlabel.hide();
                 amplabel.set_label("");
                 mahlabel.set_label("");
+                amps = 0;
+                mah = 0;
+                ampsok = false;
             }
             else
             {

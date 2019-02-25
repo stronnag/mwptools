@@ -240,7 +240,7 @@ public class MSP : Object {
     private const string [] ltm_modes =
     {
         "Manual", 		// 0
-        "Rate",			// 1
+        "Acro",			// 1
         "Angle",	// 2
         "Horizon",		// 3
         "Acro",			// 4
