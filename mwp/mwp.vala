@@ -2339,6 +2339,7 @@ public class MWPlanner : Gtk.Application {
         return imode;
     }
 
+
     private void process_sport_message (SportDev.FrID id, uint32 val)
     {
         double r;
@@ -2574,10 +2575,11 @@ public class MWPlanner : Gtk.Application {
                         if(craft != null)
                             craft.set_normal();
                     }
+                    var lmstr = MSP.ltm_mode(ltmflags);
                     MWPLog.message("New SPort/LTM Mode %s (%d) %d %ds %f %f %x %x\n",
-                                   MSP.ltm_mode(ltmflags), ltmflags,
-                                   armed, duration, xlat, xlon,
+                                   lmstr, ltmflags, armed, duration, xlat, xlon,
                                    xws, want_special);
+                    fmodelab.set_label(lmstr);
                 }
                 if(want_special != 0 /* && have_home*/)
                     process_pos_states(xlat,xlon, 0, "SPort status");
@@ -5820,10 +5822,11 @@ public class MWPlanner : Gtk.Application {
                         if(craft != null)
                             craft.set_normal();
                     }
+                    var lmstr = MSP.ltm_mode(ltmflags);
                     MWPLog.message("New LTM Mode %s (%d) %d %ds %f %f %x %x\n",
-                                   MSP.ltm_mode(ltmflags), ltmflags,
-                                   armed, duration, xlat, xlon,
-                                   xws, want_special);
+                                   lmstr, ltmflags, armed, duration,
+                                   xlat, xlon, xws, want_special);
+                    fmodelab.set_label(lmstr);
                 }
                 if(want_special != 0 /* && have_home*/)
                     process_pos_states(xlat,xlon, 0, "SFrame");
