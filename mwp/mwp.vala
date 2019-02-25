@@ -5438,6 +5438,8 @@ public class MWPlanner : Gtk.Application {
                 {
                     curr.ampsok = true;
                     navstatus.current(curr, 2);
+                    if (curr.amps > odo.amps)
+                        odo.amps = curr.amps;
                 }
                 if(Logger.is_logging)
                 {
