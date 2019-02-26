@@ -52,7 +52,7 @@ public enum NMSTATE {
 public struct CurrData
 {
     bool ampsok;
-    uint16 amps;
+    uint16 centiA;
     uint32 mah;
     uint16 bbla;
     uint64 lmahtm;
@@ -89,7 +89,7 @@ public struct Odostats
     uint time;
     double alt;
     double range;
-    double amps;
+    uint16 amps; // cenitamps
 }
 
 public struct VersInfo
@@ -2670,7 +2670,7 @@ public class MWPlanner : Gtk.Application {
                 an.rssi = spi.rssi;
                 radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
                 if(Logger.is_logging)
-                    Logger.sport_analog(spi, curr.amps);
+                    Logger.sport_analog(spi, curr.centiA);
                 break;
             case SportDev.FrID.PITCH:
             case SportDev.FrID.ROLL:
@@ -2699,9 +2699,9 @@ public class MWPlanner : Gtk.Application {
                 if((val / 10) < 999)
                 {
                     curr.ampsok = true;
-                    curr.amps =  (uint16)(val / 10);
-                    if (curr.amps > odo.amps)
-                        odo.amps = curr.amps;
+                    curr.centiA =  (uint16)(val * 10);
+                    if (curr.centiA > odo.amps)
+                        odo.amps = curr.centiA;
                     navstatus.current(curr, conf.smartport_fuel);
                 }
                 break;
@@ -5432,14 +5432,14 @@ public class MWPlanner : Gtk.Application {
                     radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
                 }
                 deserialise_i16(raw+5, out an.amps);
-                curr.amps = an.amps/100;
+                curr.centiA = an.amps;
                 curr.mah = an.powermetersum;;
-                if(curr.amps != 0 || curr.mah != 0)
+                if(curr.centiA != 0 || curr.mah != 0)
                 {
                     curr.ampsok = true;
                     navstatus.current(curr, 2);
-                    if (curr.amps > odo.amps)
-                        odo.amps = curr.amps;
+                    if (curr.centiA > odo.amps)
+                        odo.amps = curr.centiA;
                 }
                 if(Logger.is_logging)
                 {
@@ -5841,18 +5841,14 @@ public class MWPlanner : Gtk.Application {
                     if ((replayer & Player.BBOX) == Player.BBOX && curr.bbla > 0)
                     {
                         curr.ampsok = true;
-                        curr.amps = curr.bbla;
+                        curr.centiA = curr.bbla;
                         curr.mah = mah;
                         navstatus.current(curr, 2);
                             // already checked for odo with bbl amps
                     }
-                    else if ((replayer & Player.MWP_FAST) == Player.MWP_FAST)
-                    {
-                        curr.lmah = mah;
-                        curr.ampsok = true;
-                        curr.amps = 0;
-                    }
-                    else if(mah > 0 && mah > curr.lmah)
+                        // for mwp replay, we either have analog or don't bother
+                    else if ((replayer & Player.MWP) == 0
+                             && mah > 0 && mah > curr.lmah)
                     {
                         var mahtm = GLib.get_monotonic_time ();
                         var tdiff = (mahtm - curr.lmahtm);
@@ -5863,19 +5859,19 @@ public class MWPlanner : Gtk.Application {
                             curr.lmahtm = mahtm;
                             curr.lmah = mah;
                             curr.ampsok = true;
-                            var iamps = (uint16)(cdiff * 3600000  / tdiff);
+                            var iamps = (uint16)(cdiff * 3600000 *100 / tdiff);
                             if (iamps >=  0 && tdiff > 200000)
                             {
-                                curr.amps = iamps;
+                                curr.centiA = iamps;
                                 curr.mah = mah;
                                 navstatus.current(curr, 2);
-                                if (curr.amps > odo.amps)
+                                if (curr.centiA > odo.amps)
                                 {
                                     MWPLog.message("set max amps %s %s (%s)\n",
                                                    odo.amps.to_string(),
-                                                   curr.amps.to_string(),
+                                                   curr.centiA.to_string(),
                                                    mah.to_string());
-                                    odo.amps = curr.amps;
+                                    odo.amps = curr.centiA;
                                 }
                                 if(Logger.is_logging)
                                 {
@@ -5883,7 +5879,7 @@ public class MWPlanner : Gtk.Application {
                                     an.vbat = (uint8)ivbat;
                                     an.powermetersum = (uint16)curr.mah;
                                     an.rssi = 1023*sf.rssi/254;
-                                    an.amps = 100*curr.amps;
+                                    an.amps = curr.centiA;
                                     Logger.analog(an);
                                 }
                             }
@@ -6086,10 +6082,9 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.Ta_FRAME:
                 uint16 val = *(((uint16*)raw));
-                var amps = val/100.0;
-                curr.bbla = (uint16) amps;
-                if (amps > odo.amps)
-                    odo.amps = amps;
+                curr.bbla = val;
+                if (val > odo.amps)
+                    odo.amps = val;
                 break;
 
             case MSP.Cmds.Tx_FRAME:

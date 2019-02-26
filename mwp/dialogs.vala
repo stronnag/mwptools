@@ -159,7 +159,8 @@ public class OdoView : GLib.Object
         odoalt_u.label = Units.distance_units();
         if(o.amps > 0)
         {
-            odoamps.label = "  %.2f ".printf(o.amps);
+            double odoA = o.amps/100.0;
+            odoamps.label = "  %.2f ".printf(odoA);
             odosens(true);
         }
         else
@@ -1338,7 +1339,7 @@ public class NavStatus : GLib.Object
     private bool have_hdr = false;
     private VCol vc;
     private bool ampsok;
-    private uint16 amps;
+    private uint16 centiA;
     private uint32 mah;
     private int fi;
 
@@ -1712,7 +1713,7 @@ public class NavStatus : GLib.Object
         ampsok = c.ampsok;
         if(c.ampsok)
         {
-            amps = c.amps;
+            centiA = c.centiA;
             mah = c.mah;
             fi = _fi;
         }
@@ -1746,7 +1747,7 @@ public class NavStatus : GLib.Object
                 mahlabel.hide();
                 amplabel.set_label("");
                 mahlabel.set_label("");
-                amps = 0;
+                centiA = 0;
                 mah = 0;
                 ampsok = false;
             }
@@ -1754,7 +1755,16 @@ public class NavStatus : GLib.Object
             {
                 vfh = _fs * 9 /10 ;
                 afh = _fs *3 / 10;
-                amplabel.set_label("<span font_family='monospace' font='%d'>%3uA</span>".printf(afh, amps));
+                string ampslbl;
+                double ca = centiA / 100.0;
+                if(ca > 10)
+                    ampslbl = "%.0f".printf(ca);
+                else if (ca > 1.0)
+                    ampslbl = "%.1f".printf(ca);
+                else
+                    ampslbl = "%.2f".printf(ca);
+
+                amplabel.set_label("<span font_family='monospace' font='%d'>%sA</span>".printf(afh, ampslbl));
                 if(mah > 0 && fi > 0 && fi < 4)
                     mahlabel.set_label("<span font_family='monospace' font='%d'>%5u%s</span>".printf(afh, mah,fu[fi]));
             }
@@ -1879,7 +1889,7 @@ public class NavStatus : GLib.Object
         alti = {0};
         cg = {0};
         hdr = 0;
-        amps = 0;
+        centiA = 0;
         mah = 0;
         ampsok = false;
         volt_update("n/a",-1, 0f,true);
