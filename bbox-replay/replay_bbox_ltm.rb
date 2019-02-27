@@ -50,6 +50,29 @@ NORMDELAY=0.1
 $verbose = false
 $vbatscale=1.0
 
+LTM_MODE_MANUAL = 0
+LTM_MODE_RATE = 1
+LTM_MODE_ANGLE = 2
+LTM_MODE_HORIZON =3
+LTM_MODE_ACRO = 4
+LTM_MODE_STABALIZED1 = 5
+LTM_MODE_STABALIZED2 = 6
+LTM_MODE_STABILIZED3 = 7
+LTM_MODE_ALTHOLD = 8
+LTM_MODE_GPSHOLD = 9
+LTM_MODE_WAYPOINTS = 10
+LTM_MODE_HEADHOLD = 11
+LTM_MODE_CIRCLE = 12
+LTM_MODE_RTH = 13
+LTM_MODE_FOLLOWWME = 14
+LTM_MODE_LAND = 15
+LTM_MODE_FLYBYWIRE1 = 16
+LTM_MODE_FLYBYWIRE2 = 17
+LTM_MODE_CRUISE = 18
+LTM_MODE_UNKNOWN = 19
+LTM_MODE_LAUNCH = 20
+LTM_MODE_AUTOTUNE = 21
+
 BOARD_MAP = {
   'AIRBOTF4' => {:names=>["AIRBOTF4"], :id=>"ABF4"},
   'AIRHEROF3' => {:names=>["AIRHEROF3", "AIRHEROF3_QUAD"], :id=>"AIR3"},
@@ -356,7 +379,7 @@ def encode_stats r,inavers,armed=1
 	    :nav_state_waypoint_finished,
 	    :nav_state_launch_wait,
 	    :nav_state_launch_in_progress
-	  0 # get from flightmode
+	  ltm_from_flight_mode r[:flightmodeflags_flags]
 	when :nav_state_althold_initialize,
 	    :nav_state_althold_in_progress
 	  8
@@ -431,6 +454,37 @@ def encode_stats r,inavers,armed=1
   sl = [(vbat*$vbatscale*1000).to_i, mah, rssi, 0, sts].pack('S<S<CCC')
   msg << sl << mksum(sl)
   msg
+end
+
+def ltm_from_flight_mode str
+  f = 0
+  f = case str
+      when /MANUAL/
+	LTM_MODE_MANUAL
+      when /NAVWP/
+	LTM_MODE_WAYPOINTS
+      when /NAVRTH/
+	LTM_MODE_RTH
+      when /NAVPOSHOLD/
+	LTM_MODE_GPSHOLD
+      when /NAVCRUISE/
+	LTM_MODE_CRUISE
+      when /NAVLAUNCH/
+	LTM_MODE_LAUNCH
+      when /AUTOTUNE/
+        LTM_MODE_AUTOTUNE
+      when /NAVALTHOLD/
+        LTM_MODE_ALTHOLD;
+      when /HEADFREE|HEADINGHOLD/
+        LTM_MODE_HEADHOLD
+      when /ANGLE/
+        LTM_MODE_ANGLE
+      when /HORIZON/
+        LTM_MODE_HORIZON
+      else
+	LTM_MODE_RATE
+      end
+  f
 end
 
 def encode_amps r
@@ -663,7 +717,6 @@ disarms=[]
 need_vbat_scale = true # pre 2.0
 vbstate = false # true means we're 2.0.0 and need to check date
 ivers = nil
-fmask = nil
 
 File.open("/tmp/.mwp-vbat.txt","a") do |vf|
   File.open(bbox,'rb') do |f|
@@ -698,8 +751,6 @@ File.open("/tmp/.mwp-vbat.txt","a") do |vf|
 	if need_vbat_scale
 	  $vbatscale = m[1].to_f / 110.0
 	end
-      elsif m = l.match(/H features:(\d+)/)
-	fmask = m[1].to_i
       elsif m = l.match(/End of log \(disarm reason:(\d+)/)
 	disarms << m[1].to_i
       end
@@ -881,7 +932,7 @@ IO.popen(cmd,'rt') do |pipe|
 	  if  llat != 0.0 and llon != 0.0 && origin
 	    msg = encode_origin origin
 	    send_msg dev, msg
-	end
+	  end
 	  if row.has_key? :gps_hdop
 	    msg = encode_extra row
 	    send_msg dev, msg
