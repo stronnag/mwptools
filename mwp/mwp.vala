@@ -1287,7 +1287,7 @@ public class MWPlanner : Gtk.Application {
             });
 
         bb_runner.rescale.connect((llx, lly, urx,ury) => {
-                if(replayer != 0)
+                if(replayer != Player.NONE)
                 {
                     Champlain.BoundingBox bbox = new Champlain.BoundingBox();
                     bbox.left = llx;
@@ -3625,7 +3625,7 @@ public class MWPlanner : Gtk.Application {
             if(armtime == 0)
                 time_t(out armtime);
 
-            if(replayer == 0)
+            if(replayer == Player.NONE)
             {
                 time_t(out duration);
                 duration -= armtime;
@@ -5847,7 +5847,7 @@ public class MWPlanner : Gtk.Application {
                             // already checked for odo with bbl amps
                     }
                         // for mwp replay, we either have analog or don't bother
-                    else if ((replayer & Player.MWP) == 0
+                    else if (((replayer & Player.MWP) == Player.NONE)
                              && mah > 0 && mah > curr.lmah)
                     {
                         var mahtm = GLib.get_monotonic_time ();
@@ -5859,7 +5859,9 @@ public class MWPlanner : Gtk.Application {
                             curr.lmahtm = mahtm;
                             curr.lmah = mah;
                             curr.ampsok = true;
-                            var iamps = (uint16)(cdiff * 3600000 *100 / tdiff);
+                                // 100 * 1000 * 1000 * 3600 / 1000
+                                // centiA, microsecs, hours / milli AH
+                            var iamps = (uint16)(cdiff * 3600000*100 / tdiff);
                             if (iamps >=  0 && tdiff > 200000)
                             {
                                 curr.centiA = iamps;

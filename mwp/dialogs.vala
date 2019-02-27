@@ -1563,7 +1563,7 @@ public class NavStatus : GLib.Object
                         mt.message(AudioThread.Vox.SPORT_MODE,true);
                     }
                     else if ((xfmode > 0 && xfmode < 5) ||
-                        xfmode == 8 || xfmode == 18 || xfmode == 19)
+                        xfmode == 8 || xfmode > 17)
                         mt.message(AudioThread.Vox.LTM_MODE,true);
                 }
             }
@@ -1880,6 +1880,7 @@ public class NavStatus : GLib.Object
         have_cg = false;
         have_hdr = false;
         volts = 0;
+        xfmode = 255;
         reset_states();
     }
 
@@ -2198,8 +2199,8 @@ public class AudioThread : Object {
                             break;
                         case Vox.LTM_MODE:
                             var xfmode = NavStatus.xfmode;
-                            if(((xfmode > 0 && xfmode < 5) || xfmode == 8 ||
-                                xfmode == 18 || xfmode == 19))
+                            if((xfmode > 0 && xfmode < 5) || xfmode == 8 ||
+                               xfmode > 17)
                                 s = MSP.ltm_mode(xfmode);
                             break;
                         case Vox.SPORT_MODE:

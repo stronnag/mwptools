@@ -318,7 +318,7 @@ public class Flashdl : Object
     public static int main (string[] args)
     {
         try {
-            var opt = new OptionContext(" - iNav Flash eraser");
+            var opt = new OptionContext(" - iNav Flash download / erase");
             opt.set_help_enabled(true);
             opt.add_main_entries(options, null);
             opt.parse(ref args);
