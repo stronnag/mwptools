@@ -5836,60 +5836,64 @@ public class MWPlanner : Gtk.Application {
                 uint16 mah = sf.vcurr;
                 uint16 ivbat = (sf.vbat + 50) / 100;
 
-                if (mah > 0 && mah != 0xffff)
+                    // for mwp replay, we either have analog or don't bother
+                if ((replayer & Player.MWP) == Player.NONE)
                 {
-                    if ((replayer & Player.BBOX) == Player.BBOX && curr.bbla > 0)
+                    if ((replayer & Player.BBOX) == Player.BBOX
+                        && curr.bbla > 0)
                     {
                         curr.ampsok = true;
                         curr.centiA = curr.bbla;
-                        curr.mah = mah;
+                        if (mah > curr.mah)
+                            curr.mah = mah;
                         navstatus.current(curr, 2);
                             // already checked for odo with bbl amps
                     }
-                        // for mwp replay, we either have analog or don't bother
-                    else if (((replayer & Player.MWP) == Player.NONE)
-                             && mah > 0 && mah > curr.lmah)
+                    else if (mah > 0 && mah != 0xffff)
                     {
-                        var mahtm = GLib.get_monotonic_time ();
-                        var tdiff = (mahtm - curr.lmahtm);
-                        var cdiff = mah - curr.lmah;
-                            // should be time aware
-                        if(cdiff < 100 || curr.lmahtm == 0)
+                        if (mah > curr.lmah)
                         {
-                            curr.lmahtm = mahtm;
-                            curr.lmah = mah;
-                            curr.ampsok = true;
-                                // 100 * 1000 * 1000 * 3600 / 1000
-                                // centiA, microsecs, hours / milli AH
-                            var iamps = (uint16)(cdiff * 3600000*100 / tdiff);
-                            if (iamps >=  0 && tdiff > 200000)
+                            var mahtm = GLib.get_monotonic_time ();
+                            var tdiff = (mahtm - curr.lmahtm);
+                            var cdiff = mah - curr.lmah;
+                                // should be time aware
+                            if(cdiff < 100 || curr.lmahtm == 0)
                             {
-                                curr.centiA = iamps;
-                                curr.mah = mah;
-                                navstatus.current(curr, 2);
-                                if (curr.centiA > odo.amps)
+                                curr.lmahtm = mahtm;
+                                curr.lmah = mah;
+                                curr.ampsok = true;
+                                    // 100 * 1000 * 1000 * 3600 / 1000
+                                    // centiA, microsecs, hours / milli AH
+                                var iamps = (uint16)(cdiff * 3600000*100 / tdiff);
+                                if (iamps >=  0 && tdiff > 200000)
                                 {
-                                    MWPLog.message("set max amps %s %s (%s)\n",
-                                                   odo.amps.to_string(),
-                                                   curr.centiA.to_string(),
-                                                   mah.to_string());
-                                    odo.amps = curr.centiA;
-                                }
-                                if(Logger.is_logging)
-                                {
-                                    MSP_ANALOG an = MSP_ANALOG();
-                                    an.vbat = (uint8)ivbat;
-                                    an.powermetersum = (uint16)curr.mah;
-                                    an.rssi = 1023*sf.rssi/254;
-                                    an.amps = curr.centiA;
-                                    Logger.analog(an);
+                                    curr.centiA = iamps;
+                                    curr.mah = mah;
+                                    navstatus.current(curr, 2);
+                                    if (curr.centiA > odo.amps)
+                                    {
+                                        MWPLog.message("set max amps %s %s (%s)\n",
+                                                       odo.amps.to_string(),
+                                                       curr.centiA.to_string(),
+                                                       mah.to_string());
+                                        odo.amps = curr.centiA;
+                                    }
+                                    if(Logger.is_logging)
+                                    {
+                                        MSP_ANALOG an = MSP_ANALOG();
+                                        an.vbat = (uint8)ivbat;
+                                        an.powermetersum = (uint16)curr.mah;
+                                        an.rssi = 1023*sf.rssi/254;
+                                        an.amps = curr.centiA;
+                                        Logger.analog(an);
+                                    }
                                 }
                             }
                         }
-                    }
-                    else if (curr.lmah - mah > 100)
-                    {
-                        MWPLog.message("Negative energy usage, ignoring ...n");
+                        else if (curr.lmah - mah > 100)
+                        {
+                            MWPLog.message("Negative energy usage %u %u\n", curr.lmah, mah);
+                        }
                     }
                 }
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));

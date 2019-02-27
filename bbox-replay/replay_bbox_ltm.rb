@@ -445,6 +445,7 @@ def encode_stats r,inavers,armed=1
   end
 
   mah = (r.has_key? :energycumulative_mah) ? r[:energycumulative_mah].to_i : 0
+
   if mah > 0
     mah = mah & 0xffff
   else
@@ -495,7 +496,7 @@ def encode_amps r
   elsif r.has_key? :amperage_a
     amps = r[:amperage_a].to_f
   end
-  if amps and amps > 0
+  if amps && amps > 0
     msg='$Ta'
     sl = [(amps*100).to_i].pack('S')
     msg << sl << mksum(sl)

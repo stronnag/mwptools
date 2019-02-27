@@ -1341,7 +1341,7 @@ public class NavStatus : GLib.Object
     private bool ampsok;
     private uint16 centiA;
     private uint32 mah;
-    private int fi;
+    private int fuelidx;
 
     public static uint8 nm_pts;
     public static bool  have_rth;
@@ -1369,7 +1369,7 @@ public class NavStatus : GLib.Object
     private int efdin;
     private Pid epid;
 
-    private string[]fu = {"", "%", "mAh", "mWh"};
+    private string[]fuelunits = {"", "%", "mAh", "mWh"};
 
     public enum SPK  {
         Volts = 1,
@@ -1715,7 +1715,7 @@ public class NavStatus : GLib.Object
         {
             centiA = c.centiA;
             mah = c.mah;
-            fi = _fi;
+            fuelidx = _fi; // units type
         }
     }
 
@@ -1765,8 +1765,8 @@ public class NavStatus : GLib.Object
                     ampslbl = "%.2f".printf(ca);
 
                 amplabel.set_label("<span font_family='monospace' font='%d'>%sA</span>".printf(afh, ampslbl));
-                if(mah > 0 && fi > 0 && fi < 4)
-                    mahlabel.set_label("<span font_family='monospace' font='%d'>%5u%s</span>".printf(afh, mah,fu[fi]));
+                if(mah > 0 && fuelidx  > 0 && fuelidx < 4)
+                    mahlabel.set_label("<span font_family='monospace' font='%d'>%5u%s</span>".printf(afh, mah,fuelunits[fuelidx]));
             }
 
 
