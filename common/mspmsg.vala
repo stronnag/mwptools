@@ -291,7 +291,8 @@ public enum MSize
     LTM_OFRAME=14,
     LTM_NFRAME=6,
     LTM_XFRAME=6,
-    MSP_GPSSTATISTICS=20
+    MSP_GPSSTATISTICS=20,
+    MSP_ANALOG2 = 40
 }
 
 public enum MSPCaps

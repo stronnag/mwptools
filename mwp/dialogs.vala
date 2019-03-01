@@ -1757,9 +1757,9 @@ public class NavStatus : GLib.Object
                 afh = _fs *3 / 10;
                 string ampslbl;
                 double ca = centiA / 100.0;
-                if(ca > 10)
+                if(centiA > 9999)
                     ampslbl = "%.0f".printf(ca);
-                else if (ca > 1.0)
+                else if (centiA > 99)
                     ampslbl = "%.1f".printf(ca);
                 else
                     ampslbl = "%.2f".printf(ca);

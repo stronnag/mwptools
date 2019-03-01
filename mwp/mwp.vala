@@ -46,8 +46,7 @@ public enum NMSTATE {
         NM_STATE_CONNECTED_LOCAL  = 50,
         NM_STATE_CONNECTED_SITE   = 60,
         NM_STATE_CONNECTED_GLOBAL = 70
-    }
-
+}
 
 public struct CurrData
 {
@@ -3340,7 +3339,7 @@ public class MWPlanner : Gtk.Application {
         {
             var req=requests[tcycle];
             lastm = nticks;
-            if (req == MSP.Cmds.ANALOG)
+            if (req == MSP.Cmds.ANALOG || req == MSP.Cmds.ANALOG2)
             {
                 if (lastm - last_an > MAVINTVL)
                 {
@@ -3389,8 +3388,17 @@ public class MWPlanner : Gtk.Application {
             (msp_get_status ==  MSP.Cmds.INAV_STATUS) ? MSize.MSP2_INAV_STATUS :
             MSize.MSP_STATUS;
 
-        requests += MSP.Cmds.ANALOG;
-        reqsize += MSize.MSP_ANALOG;
+
+        if (msp_get_status ==  MSP.Cmds.INAV_STATUS)
+        {
+            requests += MSP.Cmds.ANALOG2;
+            reqsize += MSize.MSP_ANALOG2;
+        }
+        else
+        {
+            requests += MSP.Cmds.ANALOG;
+            reqsize += MSize.MSP_ANALOG;
+        }
 
         sflags = NavStatus.SPK.Volts;
 
@@ -4559,6 +4567,30 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
+
+    private void process_msp_analog(MSP_ANALOG an)
+    {
+        if(have_mspradio)
+            an.rssi = 0;
+        else
+            radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
+        curr.centiA = an.amps;
+        curr.mah = an.powermetersum;
+        MWPLog.message("ana %u %u\n", an.amps, an.powermetersum);
+        if(curr.centiA != 0 || curr.mah != 0)
+        {
+            curr.ampsok = true;
+            navstatus.current(curr, 2);
+            if (curr.centiA > odo.amps)
+                odo.amps = curr.centiA;
+        }
+        if(Logger.is_logging)
+        {
+            Logger.analog(an);
+        }
+        set_bat_stat(an.vbat);
+    }
+
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
@@ -5422,32 +5454,26 @@ public class MWPlanner : Gtk.Application {
                 navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
                 break;
 
+            case MSP.Cmds.ANALOG2:
+                MSP_ANALOG an = MSP_ANALOG();
+                uint16 v;
+                uint32 pmah;
+                deserialise_u16(raw+1, out v);
+                deserialise_u16(raw+3, out an.amps);
+                deserialise_u32(raw+9, out pmah);
+                an.powermetersum = (uint16)pmah;
+                deserialise_u16(raw+22, out an.rssi);
+                an.vbat = v / 10;
+                process_msp_analog(an);
+                break;
+
             case MSP.Cmds.ANALOG:
                 MSP_ANALOG an = MSP_ANALOG();
                 an.vbat = raw[0];
                 deserialise_u16(raw+1, out an.powermetersum);
-                if(!have_mspradio)
-                {
-                    deserialise_i16(raw+3, out an.rssi);
-                    radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
-                }
+                deserialise_i16(raw+3, out an.rssi);
                 deserialise_i16(raw+5, out an.amps);
-                curr.centiA = an.amps;
-                curr.mah = an.powermetersum;;
-                if(curr.centiA != 0 || curr.mah != 0)
-                {
-                    curr.ampsok = true;
-                    navstatus.current(curr, 2);
-                    if (curr.centiA > odo.amps)
-                        odo.amps = curr.centiA;
-                }
-                if(Logger.is_logging)
-                {
-                    Logger.analog(an);
-                }
-                var ivbat = an.vbat;
-
-                set_bat_stat(ivbat);
+                process_msp_analog(an);
                 break;
 
             case MSP.Cmds.RAW_GPS:
@@ -5878,15 +5904,6 @@ public class MWPlanner : Gtk.Application {
                                                        mah.to_string());
                                         odo.amps = curr.centiA;
                                     }
-                                    if(Logger.is_logging)
-                                    {
-                                        MSP_ANALOG an = MSP_ANALOG();
-                                        an.vbat = (uint8)ivbat;
-                                        an.powermetersum = (uint16)curr.mah;
-                                        an.rssi = 1023*sf.rssi/254;
-                                        an.amps = curr.centiA;
-                                        Logger.analog(an);
-                                    }
                                 }
                             }
                         }
@@ -5897,7 +5914,12 @@ public class MWPlanner : Gtk.Application {
                     }
                 }
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
-                set_bat_stat((uint8)(ivbat));
+                MSP_ANALOG an = MSP_ANALOG();
+                an.vbat = (uint8)ivbat;
+                an.powermetersum = (uint16)curr.mah;
+                an.rssi = 1023*sf.rssi/254;
+                an.amps = curr.centiA;
+                process_msp_analog(an);
             }
             break;
 
