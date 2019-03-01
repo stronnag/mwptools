@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 
-# Extract heading & gps_course for analysis
+# Analyse iNav mode changes
 # MIT licence
 
 require 'csv'
@@ -40,6 +40,8 @@ File.open(bbox,'rb') do |f|
 end
 
 gitinfo = gitinfos[idx - 1]
+
+abort "Doesn't look like Blackbox (#{bbox})" unless gitinfo
 
 iv=nil
 if m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \(([0-9A-Fa-f]{7,})\) (\S+)/)
