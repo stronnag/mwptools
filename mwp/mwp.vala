@@ -2380,22 +2380,25 @@ public class MWPlanner : Gtk.Application {
                         sat_coverage();
                         if(armed != 0)
                         {
-                            update_odo(spi.spd, ddm);
                             if(have_home)
                             {
                                 if(_nsats >= msats)
                                 {
-                                    double dist,cse;
-                                    Geo.csedist(GPSInfo.lat, GPSInfo.lon,
-                                                home_pos.lat, home_pos.lon,
-                                                out dist, out cse);
-                                    if(dist < 256)
+                                    if(pos_valid(GPSInfo.lat, GPSInfo.lon))
                                     {
-                                        var cg = MSP_COMP_GPS();
-                                        cg.range = (uint16)Math.lround(dist*1852);
-                                        cg.direction = (int16)Math.lround(cse);
-                                        navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
-                                        spi.range =  cg.range;
+                                        double dist,cse;
+                                        Geo.csedist(GPSInfo.lat, GPSInfo.lon,
+                                                    home_pos.lat, home_pos.lon,
+                                                    out dist, out cse);
+                                        if(dist < 256)
+                                        {
+                                            var cg = MSP_COMP_GPS();
+                                            cg.range = (uint16)Math.lround(dist*1852);
+                                            cg.direction = (int16)Math.lround(cse);
+                                            navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+                                            update_odo(spi.spd, ddm);
+                                            spi.range =  cg.range;
+                                        }
                                     }
                                 }
                             }
@@ -2408,10 +2411,9 @@ public class MWPlanner : Gtk.Application {
                             }
                         }
 
-                        bool pv = false;
                         if(craft != null && spi.fix > 0 && spi.sats >= msats)
                         {
-                            pv = update_pos_info();
+                            update_pos_info();
                         }
 
                         if(want_special != 0)
