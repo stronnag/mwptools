@@ -79,7 +79,8 @@ public class Logger : GLib.Object
 
     public static void fcinfo(string? title, VersInfo vi,uint32 capability,
                               uint8 profile, string? boxnames = null,
-                              string? vname = null)
+                              string? vname = null,
+                              string? device = null)
     {
         gen = new Json.Generator ();
         var builder = init("init");
@@ -134,6 +135,13 @@ public class Logger : GLib.Object
                 builder.add_string_value (vi.fc_git);
             }
         }
+
+        if (device != null)
+        {
+            builder.set_member_name ("source");
+            builder.add_string_value (device);
+        }
+
         builder.end_object ();
         Json.Node root = builder.get_root ();
         gen.set_root (root);
@@ -341,23 +349,6 @@ public class Logger : GLib.Object
         builder.add_int_value(a.rssi);
         builder.set_member_name ("amps");
         builder.add_int_value(a.amps);
-        builder.end_object ();
-        Json.Node root = builder.get_root ();
-	gen.set_root (root);
-        write_stream();
-    }
-
-    public static void sport_analog(SPORT_INFO spi,uint16 amps)
-    {
-        var builder = init("analog");
-        builder.set_member_name ("voltage");
-        builder.add_double_value(spi.volts);
-        builder.set_member_name ("power");
-        builder.add_int_value(0);
-        builder.set_member_name ("rssi");
-        builder.add_int_value(spi.rssi);
-        builder.set_member_name ("amps");
-        builder.add_int_value((int)amps);
         builder.end_object ();
         Json.Node root = builder.get_root ();
 	gen.set_root (root);

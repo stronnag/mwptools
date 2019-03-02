@@ -1867,8 +1867,13 @@ public class MWPlanner : Gtk.Application {
                 {
                     Logger.start(conf.logsavepath);
                     if(armed != 0)
+                    {
+                        string devnam = null;
+                        if(msp.available)
+                            devnam = dev_entry.get_active_text();
                         Logger.fcinfo(last_file,vi,capability,profile, boxnames,
-                                      vname);
+                                      vname, devnam);
+                    }
                 }
                 else
                     Logger.stop();
@@ -2351,7 +2356,6 @@ public class MWPlanner : Gtk.Application {
                 if (val /100  < 80)
                 {
                     spi.volts = val / 100.0;
-                    set_bat_stat((uint8)(val/10));
                     sflags |=  NavStatus.SPK.Volts;
                 }
                 break;
@@ -2434,7 +2438,6 @@ public class MWPlanner : Gtk.Application {
                 rhdop = (uint16)((val &0xff)*10);
                 spi.rhdop = rhdop;
                 spi.flags |= 1;
-//                MWPLog.message("SPORT: HDOP %s %u %u\n", id.to_string(), val, rhdop);
                 break;
             case SportDev.FrID.ALT_ID:
                 r = (int)val / 100.0;
@@ -2667,9 +2670,11 @@ public class MWPlanner : Gtk.Application {
                 spi.rssi = (uint16)((val&0xff)*1023/100);
                 MSP_ANALOG an = MSP_ANALOG();
                 an.rssi = spi.rssi;
-                radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
-                if(Logger.is_logging)
-                    Logger.sport_analog(spi, curr.centiA);
+                an.vbat = (uint8)(spi.volts * 10);
+
+                an.powermetersum = (conf.smartport_fuel == 2 )? (uint16)curr.mah :0;
+                an.amps = curr.centiA;
+                process_msp_analog(an);
                 break;
             case SportDev.FrID.PITCH:
             case SportDev.FrID.ROLL:
@@ -5125,7 +5130,13 @@ public class MWPlanner : Gtk.Application {
                     craft.set_icon(vi.mrtype);
                 typlab.set_label(MSP.get_mrtype(vi.mrtype));
                 if(Logger.is_logging)
-                    Logger.fcinfo(last_file,vi,capability,profile, boxnames);
+                {
+                    string devnam = null;
+                    if(msp.available)
+                        devnam = dev_entry.get_active_text();
+                    Logger.fcinfo(last_file,vi,capability,profile,
+                                  boxnames,vname,devnam);
+                }
                 queue_cmd(MSP.Cmds.MISC,null,0);
                 break;
 
