@@ -29,13 +29,13 @@ public class MWSerial : Object
     public MainLoop loop;
 
     public static string devname = null;
-    public static int brate = 38400;
+    public static int brate = 115200;
     public static uint secs = 0;
     public static uint tosecs = 0;
 
     const OptionEntry[] options = {
-        { "device", 'd', 0, OptionArg.STRING, out devname, "device name", "/dev/ttyUSB0"},
-        { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", "38400"},
+        { "device", 's', 0, OptionArg.STRING, out devname, "device name", "/dev/ttyUSB0"},
+        { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", "115200"},
         { "duration", 'd', 0, OptionArg.INT, out secs, "Duration", "0"},
         { "timeout", 't', 0, OptionArg.INT, out tosecs, "Timeout", "0"},
         {null}

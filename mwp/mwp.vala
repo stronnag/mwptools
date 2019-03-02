@@ -4576,7 +4576,6 @@ public class MWPlanner : Gtk.Application {
             radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
         curr.centiA = an.amps;
         curr.mah = an.powermetersum;
-        MWPLog.message("ana %u %u\n", an.amps, an.powermetersum);
         if(curr.centiA != 0 || curr.mah != 0)
         {
             curr.ampsok = true;
@@ -5646,21 +5645,24 @@ public class MWPlanner : Gtk.Application {
                     sat_coverage();
                     if(armed != 0)
                     {
-                        update_odo((double)gf.speed, ddm);
                         if(have_home)
                         {
                             if(_nsats >= msats)
                             {
-                                double dist,cse;
-                                Geo.csedist(GPSInfo.lat, GPSInfo.lon,
-                                            home_pos.lat, home_pos.lon,
-                                            out dist, out cse);
-                                if(dist < 256)
+                                if(pos_valid(GPSInfo.lat, GPSInfo.lon))
                                 {
-                                    var cg = MSP_COMP_GPS();
-                                    cg.range = (uint16)Math.lround(dist*1852);
-                                    cg.direction = (int16)Math.lround(cse);
-                                    navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+                                    double dist,cse;
+                                    Geo.csedist(GPSInfo.lat, GPSInfo.lon,
+                                                home_pos.lat, home_pos.lon,
+                                                out dist, out cse);
+                                    if(dist < 256)
+                                    {
+                                        var cg = MSP_COMP_GPS();
+                                        cg.range = (uint16)Math.lround(dist*1852);
+                                        cg.direction = (int16)Math.lround(cse);
+                                        navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+                                        update_odo((double)gf.speed, ddm);
+                                    }
                                 }
                             }
                         }
@@ -5718,7 +5720,6 @@ public class MWPlanner : Gtk.Application {
                 }
                 fbox.update(item_visible(DOCKLETS.FBOX));
                 dbox.update(item_visible(DOCKLETS.DBOX));
-
             }
             break;
 
@@ -5861,7 +5862,7 @@ public class MWPlanner : Gtk.Application {
 
                 uint16 mah = sf.vcurr;
                 uint16 ivbat = (sf.vbat + 50) / 100;
-
+                var mahtm = GLib.get_monotonic_time ();
                     // for mwp replay, we either have analog or don't bother
                 if ((replayer & Player.MWP) == Player.NONE)
                 {
@@ -5875,18 +5876,15 @@ public class MWPlanner : Gtk.Application {
                         navstatus.current(curr, 2);
                             // already checked for odo with bbl amps
                     }
-                    else if (mah > 0 && mah != 0xffff)
+                    else if (mah > 0 && mah != 0xffff && curr.lmah > 0)
                     {
                         if (mah > curr.lmah)
                         {
-                            var mahtm = GLib.get_monotonic_time ();
                             var tdiff = (mahtm - curr.lmahtm);
                             var cdiff = mah - curr.lmah;
                                 // should be time aware
                             if(cdiff < 100 || curr.lmahtm == 0)
                             {
-                                curr.lmahtm = mahtm;
-                                curr.lmah = mah;
                                 curr.ampsok = true;
                                     // 100 * 1000 * 1000 * 3600 / 1000
                                     // centiA, microsecs, hours / milli AH
@@ -5913,6 +5911,8 @@ public class MWPlanner : Gtk.Application {
                         }
                     }
                 }
+                curr.lmahtm = mahtm;
+                curr.lmah = mah;
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
                 MSP_ANALOG an = MSP_ANALOG();
                 an.vbat = (uint8)ivbat;

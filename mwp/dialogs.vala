@@ -2689,8 +2689,16 @@ public class GPSInfo : GLib.Object
                 Geo.csedist(_dlat, _dlon, lat, lon, out d, out c);
                 ddm = d * 1852.0;
             }
-            _dlat = lat;
-            _dlon = lon;
+            if (ddm < 128*1000)
+            {
+                _dlat = lat;
+                _dlon = lon;
+            }
+            else
+            {
+                c = cse;
+                ddm = 0;
+            }
         }
         return c;
     }

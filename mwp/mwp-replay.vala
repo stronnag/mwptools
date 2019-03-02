@@ -227,6 +227,7 @@ public class ReplayThread : GLib.Object
                         var dis = FileStream.open(relog,"r");
                         var parser = new Json.Parser ();
                         bool have_data = false;
+                        bool have_init = false;
                         var telem = false;
                         uint profile = 0;
                         string fcvar = null;
@@ -268,138 +269,142 @@ public class ReplayThread : GLib.Object
                             switch(typ)
                             {
                                 case "init":
-                                    var mrtype = obj.get_int_member ("mrtype");
-                                    var mwvers = obj.get_int_member ("mwvers");
-                                    var cap = obj.get_int_member ("capability");
-                                    uint fctype = 42;
-                                    string fcboard="UNKN";
-                                    string fcname="";
-
-                                    if(mwvers == 0)
-                                        mwvers = 255;
-
-                                    buf[0] = (uint8)mwvers;
-                                    buf[1] = (uint8)mrtype;
-                                    buf[2] = 42;
-                                    serialise_u32(buf+3, (uint32)cap);
-                                    send_rec(msp,MSP.Cmds.IDENT, 7, buf);
-
-                                    if(obj.has_member("fctype"))
-                                        fctype = (uint)obj.get_int_member ("fctype");
-                                    if(obj.has_member("profile"))
-                                        profile = (uint)obj.get_int_member ("profile");
-                                    if(obj.has_member("fc_var"))
+                                    if( !have_init)
                                     {
-                                        fcvar =  obj.get_string_member("fc_var");
-                                        fcvers = (uint)obj.get_int_member ("fc_vers");
-                                    }
-                                    else if (fctype == 3)
-                                    {
-                                        fcvar = " CF ";
-                                        fcvers = 0x010501;
-                                    }
+                                        have_init = true;
+                                        var mrtype = obj.get_int_member ("mrtype");
+                                        var mwvers = obj.get_int_member ("mwvers");
+                                        var cap = obj.get_int_member ("capability");
+                                        uint fctype = 42;
+                                        string fcboard="UNKN";
+                                        string fcname="";
 
-                                    if(obj.has_member("fcboard"))
-                                    {
-                                        fcboard = obj.get_string_member ("fcboard");
-                                    }
-                                    if (fcboard != null)
-                                    {
-                                        uint8 mlen = 6;
-                                        buf[0] = fcboard[0];
-                                        buf[1] = fcboard[1];
-                                        buf[2] = fcboard[2];
-                                        buf[3] = fcboard[3];
-                                        buf[4] = buf[5] = 0;
-                                        if(obj.has_member("fcname"))
+                                        if(mwvers == 0)
+                                            mwvers = 255;
+
+                                        buf[0] = (uint8)mwvers;
+                                        buf[1] = (uint8)mrtype;
+                                        buf[2] = 42;
+                                        serialise_u32(buf+3, (uint32)cap);
+                                        send_rec(msp,MSP.Cmds.IDENT, 7, buf);
+
+                                        if(obj.has_member("fctype"))
+                                            fctype = (uint)obj.get_int_member ("fctype");
+                                        if(obj.has_member("profile"))
+                                            profile = (uint)obj.get_int_member ("profile");
+                                        if(obj.has_member("fc_var"))
                                         {
-                                            fcname=obj.get_string_member ("fcname");
-                                            if (fcname != null)
-                                            {
-                                                buf[6] = buf[7] = 0;
-                                                buf[8] = (uint8)fcname.length;
-                                                for(var k = 0; k < buf[8]; k++)
-                                                buf[k+9] = fcname[k];
-                                                mlen = 9+buf[8];
-                                            }
+                                            fcvar =  obj.get_string_member("fc_var");
+                                            fcvers = (uint)obj.get_int_member ("fc_vers");
                                         }
-                                        send_rec(msp,MSP.Cmds.BOARD_INFO, mlen, buf);
-                                    }
-
-                                    if(fcvar != null)
-                                    {
-                                        buf[0] = fcvar[0];
-                                        buf[1] = fcvar[1];
-                                        buf[2] = fcvar[2];
-                                        buf[3] = fcvar[3];
-                                        buf[4] = '!';
-                                        send_rec(msp,MSP.Cmds.FC_VARIANT, 4, buf);
-
-                                        buf[0] = (uint8)((fcvers & 0xff0000) >> 16);
-                                        buf[1] = (uint8)((fcvers & 0xff00) >> 8);
-                                        buf[2] = (uint8)(fcvers & 0xff);
-                                        send_rec(msp,MSP.Cmds.FC_VERSION, 3, buf);
-                                    }
-
-                                    if(obj.has_member("git_info"))
-                                    {
-                                        var git = obj.get_string_member("git_info");
-                                        for(var i = 0; i < 7; i++)
-                                            buf[19+i] = git[i];
-                                        buf[26] = 0;
-                                        send_rec(msp,MSP.Cmds.BUILD_INFO, 32, buf);
-                                    }
-
-                                    string bx;
-                                    if(obj.has_member("boxnames"))
-                                    {
-                                        bx = obj.get_string_member("boxnames");
-                                    }
-                                    else
-                                    {
-                                        if (fctype == 3)
+                                        else if (fctype == 3)
                                         {
-                                            if(fcvar == "INAV")
+                                            fcvar = " CF ";
+                                            fcvers = 0x010501;
+                                        }
+
+                                        if(obj.has_member("fcboard"))
+                                        {
+                                            fcboard = obj.get_string_member ("fcboard");
+                                        }
+                                        if (fcboard != null)
+                                        {
+                                            uint8 mlen = 6;
+                                            buf[0] = fcboard[0];
+                                            buf[1] = fcboard[1];
+                                            buf[2] = fcboard[2];
+                                            buf[3] = fcboard[3];
+                                            buf[4] = buf[5] = 0;
+                                            if(obj.has_member("fcname"))
                                             {
-                                                    // hackety hack time
-                                                if (utime < 1449360000)
-                                                    bx = "ARM;ANGLE;HORIZON;MAG;HEADFREE;HEADADJ;NAV ALTHOLD;NAV POSHOLD;NAV RTH;NAV WP;BEEPER;OSD SW;BLACKBOX;FAILSAFE;";
-                                                else
-                                                    bx = "ARM;ANGLE;HORIZON;AIR MODE;MAG;HEADFREE;HEADADJ;NAV ALTHOLD;NAV POSHOLD;NAV RTH;NAV WP;BEEPER;OSD SW;BLACKBOX;FAILSAFE;";
+                                                fcname=obj.get_string_member ("fcname");
+                                                if (fcname != null)
+                                                {
+                                                    buf[6] = buf[7] = 0;
+                                                    buf[8] = (uint8)fcname.length;
+                                                    for(var k = 0; k < buf[8]; k++)
+                                                        buf[k+9] = fcname[k];
+                                                    mlen = 9+buf[8];
+                                                }
                                             }
-                                            else
-                                            {
-                                                bx= "ARM;ANGLE;HORIZON;BARO;MAG;HEADFREE;HEADADJ;GPS HOME;GPS HOLD;BEEPER;OSD SW;AUTOTUNE;";
-                                            }
+                                            send_rec(msp,MSP.Cmds.BOARD_INFO, mlen, buf);
+                                        }
+
+                                        if(fcvar != null)
+                                        {
+                                            buf[0] = fcvar[0];
+                                            buf[1] = fcvar[1];
+                                            buf[2] = fcvar[2];
+                                            buf[3] = fcvar[3];
+                                            buf[4] = '!';
+                                            send_rec(msp,MSP.Cmds.FC_VARIANT, 4, buf);
+
+                                            buf[0] = (uint8)((fcvers & 0xff0000) >> 16);
+                                            buf[1] = (uint8)((fcvers & 0xff00) >> 8);
+                                            buf[2] = (uint8)(fcvers & 0xff);
+                                            send_rec(msp,MSP.Cmds.FC_VERSION, 3, buf);
+                                        }
+
+                                        if(obj.has_member("git_info"))
+                                        {
+                                            var git = obj.get_string_member("git_info");
+                                            for(var i = 0; i < 7; i++)
+                                                buf[19+i] = git[i];
+                                            buf[26] = 0;
+                                            send_rec(msp,MSP.Cmds.BUILD_INFO, 32, buf);
+                                        }
+
+                                        string bx;
+                                        if(obj.has_member("boxnames"))
+                                        {
+                                            bx = obj.get_string_member("boxnames");
                                         }
                                         else
                                         {
-                                            bx = "ARM;ANGLE;HORIZON;BARO;MAG;GPS HOME;GPS HOLD;BEEPER;MISSION;LAND;";
+                                            if (fctype == 3)
+                                            {
+                                                if(fcvar == "INAV")
+                                                {
+                                                        // hackety hack time
+                                                    if (utime < 1449360000)
+                                                        bx = "ARM;ANGLE;HORIZON;MAG;HEADFREE;HEADADJ;NAV ALTHOLD;NAV POSHOLD;NAV RTH;NAV WP;BEEPER;OSD SW;BLACKBOX;FAILSAFE;";
+                                                    else
+                                                        bx = "ARM;ANGLE;HORIZON;AIR MODE;MAG;HEADFREE;HEADADJ;NAV ALTHOLD;NAV POSHOLD;NAV RTH;NAV WP;BEEPER;OSD SW;BLACKBOX;FAILSAFE;";
+                                                }
+                                                else
+                                                {
+                                                    bx= "ARM;ANGLE;HORIZON;BARO;MAG;HEADFREE;HEADADJ;GPS HOME;GPS HOLD;BEEPER;OSD SW;AUTOTUNE;";
+                                                }
+                                            }
+                                            else
+                                            {
+                                                bx = "ARM;ANGLE;HORIZON;BARO;MAG;GPS HOME;GPS HOLD;BEEPER;MISSION;LAND;";
+                                            }
                                         }
-                                    }
 
-                                    send_rec(msp,MSP.Cmds.BOXNAMES, bx.length, bx.data);
-                                    MSP_MISC a = MSP_MISC();
-                                    a.conf_minthrottle=1064;
-                                    a.maxthrottle=1864;
-                                    a.mincommand=900;
-                                    a.conf_mag_declination = 0;
-                                    if (fctype == 3)
-                                    {
-                                        a.conf_vbatscale = 110;
-                                        a.conf_vbatlevel_warn1 = 33;
-                                        a.conf_vbatlevel_warn2 = 43;
-                                    }
-                                    else
-                                    {
-                                        a.conf_vbatscale = 131;
-                                        a.conf_vbatlevel_warn1 = 107;
-                                        a.conf_vbatlevel_warn2 = 99;
-                                        a.conf_vbatlevel_crit = 93;
-                                    }
+                                        send_rec(msp,MSP.Cmds.BOXNAMES, bx.length, bx.data);
+                                        MSP_MISC a = MSP_MISC();
+                                        a.conf_minthrottle=1064;
+                                        a.maxthrottle=1864;
+                                        a.mincommand=900;
+                                        a.conf_mag_declination = 0;
+                                        if (fctype == 3)
+                                        {
+                                            a.conf_vbatscale = 110;
+                                            a.conf_vbatlevel_warn1 = 33;
+                                            a.conf_vbatlevel_warn2 = 43;
+                                        }
+                                        else
+                                        {
+                                            a.conf_vbatscale = 131;
+                                            a.conf_vbatlevel_warn1 = 107;
+                                            a.conf_vbatlevel_warn2 = 99;
+                                            a.conf_vbatlevel_crit = 93;
+                                        }
 
-                                    var nb = serialise_misc(a, buf);
-                                    send_rec(msp,MSP.Cmds.MISC, (uint)nb, buf);
+                                        var nb = serialise_misc(a, buf);
+                                        send_rec(msp,MSP.Cmds.MISC, (uint)nb, buf);
+                                    }
                                     break;
                                 case "armed":
                                     if(!telem)
