@@ -573,7 +573,8 @@ public class MWPlanner : Gtk.Application {
         NONE=0,
         NORMAL,
         POLLER,
-        TELEM
+        TELEM,
+        TELEM_SP
     }
 
     private enum DEBUG_FLAGS
@@ -2350,6 +2351,13 @@ public class MWPlanner : Gtk.Application {
         if(Logger.is_logging)
             Logger.log_time();
 
+        lastrx = lastok = nticks;
+        if(rxerr)
+        {
+            set_error_status(null);
+            rxerr=false;
+        }
+
         switch(id)
         {
             case SportDev.FrID.VFAS_ID:
@@ -3207,8 +3215,20 @@ public class MWPlanner : Gtk.Application {
     private void start_poll_timer()
     {
         var lmin = 0;
+
         Timeout.add(TIMINTVL, () => {
                 nticks++;
+
+/**********************
+                if((nticks % 10) == 0)
+                {
+                    MWPLog.message("#### %s %s %s %s\n",
+                                   msp.available.to_string(),
+                                   nticks.to_string(),
+                                   lastrx.to_string(),
+                                   serstate.to_string());
+                }
+****************/
                 if(msp.available)
                 {
                     if(serstate != SERSTATE.NONE)
@@ -6964,7 +6984,6 @@ public class MWPlanner : Gtk.Application {
             serstate = SERSTATE.NONE;
             if(serdev == "*SMARTPORT*")
             {
-                serstate = SERSTATE.TELEM;
                 ostat = msp.open_sport(sport_device, out estr);
                 spi = {0};
             }
@@ -7014,6 +7033,8 @@ public class MWPlanner : Gtk.Application {
                     queue_cmd(MSP.Cmds.IDENT,null,0);
                     run_queue();
                 }
+                else
+                    serstate = SERSTATE.TELEM;
             }
             else
             {
