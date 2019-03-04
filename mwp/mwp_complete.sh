@@ -33,6 +33,10 @@ _mwp_complete()
       _mwp_files TXT
       return 0
       ;;
+    '-k'|'--kmlfiles')
+      _mwp_files '@(kml|KML)'
+      return 0
+      ;;
     '--centre')
       return 0
       ;;
@@ -97,7 +101,8 @@ _mwp_complete()
 	--forward-to
 	--perma-warn
 	--smartport
-	--fsmenu"
+	--fsmenu
+	--kmlfile"
 
   COMPREPLY=( $(compgen -W "${OPTS[*]}" -- $cur) )
   return 0

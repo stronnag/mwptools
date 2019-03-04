@@ -395,6 +395,7 @@ public class MWPlanner : Gtk.Application {
     private MissionItem[] wp_resp;
     private string boxnames = null;
     private static string mission;
+    private static string kmlfile;
     private static string serial;
     private static bool autocon;
     private int autocount = 0;
@@ -888,6 +889,7 @@ public class MWPlanner : Gtk.Application {
         { "smartport", 0, 0, OptionArg.STRING, out sport_device, "smartport device", "device-name"},
         {"perma-warn", 0, 0, OptionArg.NONE, out permawarn, "info dialogues never time out", null},
         {"fsmenu", 0, 0, OptionArg.NONE, out nofsmenu, "use a menu bar in full screen (vice a menu button)", null},
+        { "kmlfile", 'k', 0, OptionArg.STRING, out kmlfile, "KML file", "file-name"},
         {null}
     };
 
@@ -2014,6 +2016,17 @@ public class MWPlanner : Gtk.Application {
                         });
                 last_file = mission;
                 update_title_from_file(mission);
+            }
+        }
+
+        if(kmlfile != null)
+        {
+            var ks = kmlfile.split(",");
+            foreach(var kf in ks)
+            {
+                var kml = new KmlOverlay(view);
+                kml.load_overlay(kf);
+                kmls += kml;
             }
         }
 
