@@ -249,7 +249,7 @@ public class ReplayThread : GLib.Object
                                     ms = (ulong)(dly * 1000 *1000);
                                     if(dly > 10)
                                     {
-                                        MWPLog.message("replay sleeping for %.1f s\n", dly);
+                                        MWPLog.message("No data: replay sleeping for %.1f s\n", dly);
                                         ms = 2*1000;
                                     }
                                 }

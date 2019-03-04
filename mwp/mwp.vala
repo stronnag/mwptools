@@ -542,6 +542,8 @@ public class MWPlanner : Gtk.Application {
     private bool x_replay_bbox_ltm_rb;
     public bool x_plot_elevations_rb {get; private set; default= false;}
 
+    private KmlOverlay[] kmls = {};
+
     public DevManager devman;
 
     public struct MQI //: Object
@@ -1850,6 +1852,7 @@ public class MWPlanner : Gtk.Application {
         var pane = builder.get_object ("paned1") as Gtk.Paned;
 
         markers = new MWPMarkers(ls,view, conf.wp_spotlight);
+
 /*
   Sample for range rings. Note that 1st is below second)
   So the following sets the markers *below* the paths, which is NOT wanted
@@ -2236,19 +2239,26 @@ public class MWPlanner : Gtk.Application {
 
        window.drag_data_received.connect(
             (ctx, x, y, data, info, time) => {
-                string mf = null;
-                string sf = null;
+                string mf = null; // mission
+                string sf = null; // replay (bbox / mwp)
+                string kf = null; // overlay
                 bool bbox = false;
+                uint8 buf[1024];
                 foreach(var uri in data.get_uris ())
                 {
                     try {
                         var f = Filename.from_uri(uri);
                         var fs = FileStream.open (f, "r");
-                        char buf[100];
-                        if (fs.gets (buf) != null) {
+                        var nr =  fs.read (buf);
+                        if (nr > 0) {
                             if(buf[0] == '<')
                             {
-                                mf = f;
+                                buf[nr-1] = 0;
+                                string s = (string)buf;
+                                if(s.contains("<MISSION>"))
+                                    mf = f;
+                                else if(s.contains("<kml "))
+                                    kf = f;
                             }
                             else if(buf[0] == 'H' && buf[1] == ' ')
                             {
@@ -2270,6 +2280,13 @@ public class MWPlanner : Gtk.Application {
                 Gtk.drag_finish (ctx, true, false, time);
                 if(mf != null)
                     load_file(mf);
+                if(kf != null)
+                {
+                    var kml = new KmlOverlay(view);
+                    kml.load_overlay(kf);
+                    kmls += kml;
+                }
+
                 if(sf != null)
                 {
                     if(bbox)
@@ -2284,7 +2301,6 @@ public class MWPlanner : Gtk.Application {
        dock.layout_changed.connect(() => {
                set_dock_menu_status();
            });
-
 
        get_map_size();
 
@@ -2332,6 +2348,13 @@ public class MWPlanner : Gtk.Application {
                 magcheck = true;
             }
         }
+    }
+
+    private void remove_all_kml()
+    {
+        foreach(var k in kmls)
+            k.remove_overlay();
+        kmls = {};
     }
 
     private uint8 sport_parse_lat_lon(uint val, out int32 value)
@@ -2817,6 +2840,7 @@ public class MWPlanner : Gtk.Application {
         set_error_status(null);
         xsensor = 0;
         clear_sensor_array();
+        remove_all_kml();
     }
 
     private void key_recentre(uint key)
