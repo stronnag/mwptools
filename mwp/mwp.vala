@@ -543,7 +543,7 @@ public class MWPlanner : Gtk.Application {
     private bool x_replay_bbox_ltm_rb;
     public bool x_plot_elevations_rb {get; private set; default= false;}
 
-    private KmlOverlay[] kmls = {};
+    private Array<KmlOverlay> kmls;
 
     public DevManager devman;
 
@@ -1546,6 +1546,18 @@ public class MWPlanner : Gtk.Application {
             });
         window.add_action(saq);
 
+        saq = new GLib.SimpleAction("kml-load",null);
+        saq.activate.connect(() => {
+                kml_load_dialog();
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("kml-remove",null);
+        saq.activate.connect(() => {
+                kml_remove_dialog();
+            });
+        window.add_action(saq);
+
         saq = new GLib.SimpleAction("navconfig",null);
         saq.activate.connect(() => {
                 navconf.show();
@@ -1983,6 +1995,8 @@ public class MWPlanner : Gtk.Application {
         clat= conf.latitude;
         clon = conf.longitude;
 
+        kmls = new Array<KmlOverlay>();
+
         if(llstr != null)
         {
             string[] delims =  {","," "};
@@ -2026,7 +2040,7 @@ public class MWPlanner : Gtk.Application {
             {
                 var kml = new KmlOverlay(view);
                 kml.load_overlay(kf);
-                kmls += kml;
+                kmls.append_val (kml);
             }
         }
 
@@ -2297,7 +2311,7 @@ public class MWPlanner : Gtk.Application {
                 {
                     var kml = new KmlOverlay(view);
                     kml.load_overlay(kf);
-                    kmls += kml;
+                    kmls.append_val (kml);
                 }
 
                 if(sf != null)
@@ -2363,11 +2377,109 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
+    private bool is_kml_loaded(string name)
+    {
+        var found = false;
+        for (int i = 0; i < kmls.length ; i++)
+        {
+            if(name == kmls.index(i).get_filename())
+            {
+                found = true;
+                break;
+            }
+        }
+        return found;
+    }
+
+    private void kml_load_dialog()
+    {
+        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
+            "Select KML", null, Gtk.FileChooserAction.OPEN,
+            "_Cancel",
+            Gtk.ResponseType.CANCEL,
+            "_Open",
+            Gtk.ResponseType.ACCEPT);
+        chooser.select_multiple = true;
+
+        chooser.set_transient_for(window);
+        Gtk.FileFilter filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("KML");
+        filter.add_pattern ("*.kml");
+        chooser.add_filter (filter);
+
+        filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("All Files");
+        filter.add_pattern ("*");
+        chooser.add_filter (filter);
+
+        chooser.response.connect((id) => {
+                if (id == Gtk.ResponseType.ACCEPT)
+                {
+                    var fns = chooser.get_filenames ();
+                    chooser.close ();
+                    foreach(var fn in fns)
+                    {
+                        if(is_kml_loaded(fn) == false)
+                        {
+                            var kml = new KmlOverlay(view);
+                            kml.load_overlay(fn);
+                            kmls.append_val (kml);
+                        }
+                    }
+                }
+                else
+                    chooser.close ();
+            });
+        chooser.show_all();
+    }
+
+    private void kml_remove_dialog()
+    {
+        var dialog = new Dialog.with_buttons ("Remove KML", null,
+                                              DialogFlags.MODAL |
+                                              DialogFlags.DESTROY_WITH_PARENT,
+                                              "Cancel", ResponseType.CANCEL,
+                                              "OK", ResponseType.OK);
+
+        Gtk.Box box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
+        var content = dialog.get_content_area ();
+        content.pack_start (box, false, false, 0);
+
+        CheckButton[] btns = {};
+
+        for (int i = 0; i < kmls.length ; i++)
+        {
+            var s = kmls.index(i).get_filename();
+            var button = new Gtk.CheckButton.with_label(s);
+            btns += button;
+            box.pack_start (button, false, false, 0);
+        }
+
+        box.show_all ();
+        var response = dialog.run ();
+        if (response == ResponseType.OK)
+        {
+            var i = btns.length;
+            foreach (var b in btns)
+            {
+                i--;
+                if(b.get_active())
+                {
+                    kmls.index(i).remove_overlay();
+                    kmls.remove_index(i);
+                }
+            }
+        }
+        dialog.destroy ();
+    }
+
     private void remove_all_kml()
     {
-        foreach(var k in kmls)
-            k.remove_overlay();
-        kmls = {};
+        for (int i = 0; i < kmls.length ; i++)
+        {
+            kmls.index(i).remove_overlay();
+        }
+        kmls.remove_range(0,kmls.length);
     }
 
     private uint8 sport_parse_lat_lon(uint val, out int32 value)

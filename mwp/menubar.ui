@@ -71,6 +71,22 @@
 	</item>
       </section>
       <section>
+	<submenu>
+        <attribute name="label">KML Static Overlays</attribute>
+	<section>
+          <item>
+            <attribute name="label">Load</attribute>
+            <attribute name="action">win.kml-load</attribute>
+          </item>
+          <item>
+            <attribute name="label">Remove</attribute>
+            <attribute name="action">win.kml-remove</attribute>
+          </item>
+	</section>
+      </submenu>
+      </section>
+
+      <section>
         <item>
           <attribute name="label">Quit</attribute>
 	  <attribute name="accel">&lt;Primary&gt;q</attribute>
@@ -187,17 +203,17 @@
         </item>
       </section>
       <submenu>
-          <attribute name="label">Layout Manager</attribute>
-	  <section>
-            <item>
-              <attribute name="label">Save</attribute>
-              <attribute name="action">win.layout-save</attribute>
-            </item>
-            <item>
-              <attribute name="label">Restore</attribute>
-              <attribute name="action">win.layout-restore</attribute>
-            </item>
-	  </section>
+        <attribute name="label">Layout Manager</attribute>
+	<section>
+          <item>
+            <attribute name="label">Save</attribute>
+            <attribute name="action">win.layout-save</attribute>
+          </item>
+          <item>
+            <attribute name="label">Restore</attribute>
+            <attribute name="action">win.layout-restore</attribute>
+          </item>
+	</section>
       </submenu>
     </submenu>
     <submenu>
