@@ -1558,6 +1558,8 @@ public class MWPlanner : Gtk.Application {
             });
         window.add_action(saq);
 
+        set_menu_state("kml-remove", false);
+
         saq = new GLib.SimpleAction("navconfig",null);
         saq.activate.connect(() => {
                 navconf.show();
@@ -2037,11 +2039,7 @@ public class MWPlanner : Gtk.Application {
         {
             var ks = kmlfile.split(",");
             foreach(var kf in ks)
-            {
-                var kml = new KmlOverlay(view);
-                kml.load_overlay(kf);
-                kmls.append_val (kml);
-            }
+                try_load_overlay(kf);
         }
 
         map_centre_on(clat, clon);
@@ -2308,11 +2306,7 @@ public class MWPlanner : Gtk.Application {
                 if(mf != null)
                     load_file(mf);
                 if(kf != null)
-                {
-                    var kml = new KmlOverlay(view);
-                    kml.load_overlay(kf);
-                    kmls.append_val (kml);
-                }
+                    try_load_overlay(kf);
 
                 if(sf != null)
                 {
@@ -2377,6 +2371,16 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
+    private void try_load_overlay(string kf)
+    {
+        var kml = new KmlOverlay(view);
+        if(kml.load_overlay(kf))
+        {
+            kmls.append_val (kml);
+            set_menu_state("kml-remove", true);
+        }
+    }
+
     private bool is_kml_loaded(string name)
     {
         var found = false;
@@ -2420,11 +2424,7 @@ public class MWPlanner : Gtk.Application {
                     foreach(var fn in fns)
                     {
                         if(is_kml_loaded(fn) == false)
-                        {
-                            var kml = new KmlOverlay(view);
-                            kml.load_overlay(fn);
-                            kmls.append_val (kml);
-                        }
+                            try_load_overlay(fn);
                     }
                 }
                 else
@@ -2470,6 +2470,7 @@ public class MWPlanner : Gtk.Application {
                 }
             }
         }
+        set_menu_state("kml-remove", (kmls.length != 0));
         dialog.destroy ();
     }
 
@@ -2480,6 +2481,7 @@ public class MWPlanner : Gtk.Application {
             kmls.index(i).remove_overlay();
         }
         kmls.remove_range(0,kmls.length);
+        set_menu_state("kml-remove", false);
     }
 
     private uint8 sport_parse_lat_lon(uint val, out int32 value)
