@@ -85,4 +85,5 @@ install: $(APPS)
 ifneq ($(BASH_COMPLETION_DIR),'')
 	install -d $(datadir)/$(BASH_COMPLETION_DIR)
 	install -m 644 blackbox_decode_complete.sh $(datadir)/$(BASH_COMPLETION_DIR)/blackbox_decode
+	install -m 644 mwp_complete.sh $(datadir)/$(BASH_COMPLETION_DIR)/mwp
 endif

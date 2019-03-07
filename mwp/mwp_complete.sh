@@ -33,8 +33,8 @@ _mwp_complete()
       _mwp_files TXT
       return 0
       ;;
-    '-k'|'--kmlfiles')
-      _mwp_files '@(kml|KML)'
+    '-k'|'--kmlfile')
+      _mwp_files KML
       return 0
       ;;
     '--centre')
@@ -140,8 +140,8 @@ _mwp_files()
     'TXT')
       _filedir '@(txt|TXT)'
       ;;
-    *)
-      _filedir $wanted
+    'KML')
+      _filedir '@(kml|KML)'
       ;;
   esac
 

@@ -96,8 +96,10 @@ if [ -n "$HEX" ]
 then
   if [ -n "$FERASE" ]
   then
+    echo STM32FLASH: stm32flash -o -b $SPEED $DEV
     stm32flash -o -b $SPEED $DEV
   fi
+  echo STM32FLASH: stm32flash -w $HEX -v -e 0 -g 0x0 -b $SPEED $DEV
   stm32flash -w $HEX -v -g 0x0 -b $SPEED $DEV
 fi
 
