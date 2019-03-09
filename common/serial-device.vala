@@ -109,7 +109,7 @@ public class SportDev : Object
         return rp + sizeof(uint16);
     }
 
-    public delegate void DelegateType (uint16 a,uint32 b);
+    public delegate void DelegateType (uint32 a,uint32 b);
 
     public void  extract_messages(DelegateType d, uint8* raw, size_t len)
     {
@@ -127,7 +127,7 @@ public class SportDev : Object
                         uint val;
                         deserialise_u16(buf+3, out id);
                         deserialise_u32(buf+5, out val);
-                        d(id,val);
+                        d((uint32)id,val);
                         good++;
                     }
                     else
@@ -284,7 +284,7 @@ public class MWSerial : Object
     public signal void serial_event (MSP.Cmds event, uint8[]result, uint len, uint8 flags, bool err);
     public signal void cli_event(uint8[]raw, uint len);
     public signal void serial_lost ();
-    public signal void sport_event(uint16 a, uint32 b);
+    public signal void sport_event(uint32 a, uint32 b);
 
     public MWSerial.forwarder()
     {
@@ -301,7 +301,7 @@ public class MWSerial : Object
         rxbuf = new uint8[rxbuf_alloc];
     }
 
-    public void sport_handler(uint16 a, uint32 b)
+    public void sport_handler(uint32 a, uint32 b)
     {
         sport_event(a, b);
     }
@@ -694,7 +694,7 @@ public class MWSerial : Object
     {
         string iocs="";
 #if LSRVAL
-        iocs = "Close fd %d on (%x)\r\n".prinf(fd, cond);
+    iocs = "Close fd %d on (%x)\r\n".printf(fd, cond);
 #else
         StringBuilder sb = new StringBuilder();
         for(var j = 0; j < 8; j++)
