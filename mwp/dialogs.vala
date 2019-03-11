@@ -1338,9 +1338,6 @@ public class NavStatus : GLib.Object
     private bool have_cg = false;
     private bool have_hdr = false;
     private VCol vc;
-    private bool ampsok;
-    private uint16 centiA;
-    private uint32 mah;
     private int fuelidx;
 
     public static uint8 nm_pts;
@@ -1358,6 +1355,11 @@ public class NavStatus : GLib.Object
     public static int mins {get; private set;}
     public static bool recip {get; private set;}
     public static string fmode;
+
+    public static bool ampsok {get; private set;}
+    public static uint16 centiA {get; private set;}
+    public static uint32 mah {get; private set;}
+
     private static string ls_state = null;
     private static string ls_action = null;
     private static string ns_action = null;
@@ -1841,7 +1843,10 @@ public class NavStatus : GLib.Object
         if((mask & SPK.Volts) == SPK.Volts && volts > 0.0)
         {
             mt.message(AudioThread.Vox.VOLTAGE);
+            if(NavStatus.ampsok && NavStatus.mah > 0)
+                mt.message(AudioThread.Vox.MAH);
         }
+
     }
 
     public void audio_test()
@@ -1973,7 +1978,8 @@ public class AudioThread : Object {
         HW_BAD,
         HOME_CHANGED,
         AUDIO_TEST,
-        SPORT_MODE
+        SPORT_MODE,
+        MAH
     }
 
     private Timer timer;
@@ -2140,6 +2146,9 @@ public class AudioThread : Object {
                         case Vox.DURATION:
                             var ms = (NavStatus.mins > 1) ? "minutes" : "minute";
                             s = "%d %s".printf(NavStatus.mins, ms);
+                            break;
+                        case Vox.MAH:
+                            s = "%u milliamp hour".printf(NavStatus.mah);
                             break;
                         case Vox.FMODE:
                             s = "%s mode".printf(NavStatus.fmode);
