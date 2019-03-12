@@ -4941,6 +4941,7 @@ public class MWPlanner : Gtk.Application {
                         queue_cmd(MSP.Cmds.INAV_MIXER,null,0);
                     else
                         queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+                set_typlab();
                 break;
 
             case MSP.Cmds.INAV_MIXER:
@@ -5301,7 +5302,9 @@ public class MWPlanner : Gtk.Application {
 
                 if(craft != null)
                     craft.set_icon(vi.mrtype);
-                typlab.set_label(MSP.get_mrtype(vi.mrtype));
+
+                set_typlab();
+
                 if(Logger.is_logging)
                 {
                     string devnam = null;
@@ -6386,6 +6389,19 @@ public class MWPlanner : Gtk.Application {
             }
         }
         run_queue();
+    }
+
+    private void set_typlab()
+    {
+        string s;
+
+        if(vname == null)
+            s = MSP.get_mrtype(vi.mrtype);
+        else
+        {
+            s = "«%s»".printf(vname);
+        }
+        typlab.label = s;
     }
 
     private int get_heading_diff (int a, int b)
