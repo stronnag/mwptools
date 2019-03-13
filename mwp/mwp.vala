@@ -4496,7 +4496,7 @@ public class MWPlanner : Gtk.Application {
                     else
                         try_centre_on(GPSInfo.lat,GPSInfo.lon);
                 }
-                double cse = (usemag) ? mhead : GPSInfo.cse;
+                double cse = (usemag || ((replayer & Player.MWP) == Player.MWP)) ? mhead : GPSInfo.cse;
                 craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
             }
         }

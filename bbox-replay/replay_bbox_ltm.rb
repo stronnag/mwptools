@@ -213,7 +213,7 @@ def send_msg dev, msg
   end
 end
 
-def send_init_seq skt,typ,snr=false,baro=true,mag=true,gitinfo=nil
+def send_init_seq skt,typ,snr=false,baro=true,mag=true,gitinfo=nil,vname=nil
 
   msps = [
     # $     M    >     len   msg
@@ -284,17 +284,36 @@ def send_init_seq skt,typ,snr=false,baro=true,mag=true,gitinfo=nil
     end
   end
   msps.each do |msp|
-    len = msp[3]
-    msp[len+5] = mksum msp[3,len+2].pack('C*')
-    send_msg skt, msp.pack('C*')
-    sleep 0.01
+#    len = msp[3]
+#    msp[len+5] = mksum msp[3,len+2].pack('C*')
+#    send_msg skt, msp.pack('C*')
+    #    sleep 0.01
+    send_msp skt, msp
   end
+
+
+  unless vname.nil?
+    m = [0x24, 0x4d, 0x3e]
+    m << vname.length
+    m << 10
+    vname.each_byte {|b| m << b}
+    m << 0
+    send_msp skt, m
+  end
+
 
   inavers =  get_state_version iv
   if $verbose
     STDERR.puts "iv = #{iv} state vers = #{inavers}"
   end
   return inavers
+end
+
+def send_msp skt, msp
+  len = msp[3]
+  msp[len+5] = mksum msp[3,len+2].pack('C*')
+  send_msg skt, msp.pack('C*')
+  sleep 0.01
 end
 
 def encode_atti r, gpshd=0
@@ -718,6 +737,7 @@ disarms=[]
 need_vbat_scale = true # pre 2.0
 vbstate = false # true means we're 2.0.0 and need to check date
 ivers = nil
+vname = nil
 
 File.open("/tmp/.mwp-vbat.txt","a") do |vf|
   File.open(bbox,'rb') do |f|
@@ -752,6 +772,8 @@ File.open("/tmp/.mwp-vbat.txt","a") do |vf|
 	if need_vbat_scale
 	  $vbatscale = m[1].to_f / 110.0
 	end
+      elsif m = l.match(/^H Craft name:(.*)$/)
+	vname = m[1]
       elsif m = l.match(/End of log \(disarm reason:(\d+)/)
 	disarms << m[1].to_i
       end
@@ -903,8 +925,7 @@ IO.popen(cmd,'rt') do |pipe|
 	have_baro = (hdrs.has_key? :baroalt_cm)
       end
       gpshd = 1 if have_mag == false and gpshd == 0
-
-      vers = send_init_seq dev,typ,have_sonar,have_baro,have_mag,gitinfos[idx-1]
+      vers = send_init_seq dev,typ,have_sonar,have_baro,have_mag,gitinfos[idx-1],vname
     else
       next if row[:gps_numsat].to_i == 0
       us = row[:time_us].to_i

@@ -2690,23 +2690,32 @@ public class GPSInfo : GLib.Object
         double c = cse;
         ddm = 0;
 
-        if (spd >= dlimit && (lat != _dlat || lon != _dlon))
+        if (spd >= dlimit)
         {
-            if(_dlat != 0 && _dlon != 0)
+            if (lat != _dlat || lon != _dlon)
             {
-                double d;
-                Geo.csedist(_dlat, _dlon, lat, lon, out d, out c);
-                ddm = d * 1852.0;
-            }
-            if (ddm < 128*1000)
-            {
-                _dlat = lat;
-                _dlon = lon;
-            }
-            else
-            {
-                c = cse;
-                ddm = 0;
+                if(_dlat != 0 && _dlon != 0)
+                {
+                    double d;
+                    Geo.csedist(_dlat, _dlon, lat, lon, out d, out c);
+                    ddm = d * 1852.0;
+                }
+                else
+                    MWPLog.message("Failed delta %f %f %f %f\n",
+                                   _dlat, _dlon, lat, lon);
+
+                if (ddm < 128*1000)
+                {
+                    _dlat = lat;
+                    _dlon = lon;
+                }
+                else
+                {
+                    c = cse;
+                    ddm = 0;
+                    MWPLog.message("Invalid delta %f %f %f %f\n",
+                                   _dlat, _dlon, lat, lon);
+                }
             }
         }
         return c;

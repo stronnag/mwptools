@@ -232,6 +232,7 @@ public class ReplayThread : GLib.Object
                         uint profile = 0;
                         string fcvar = null;
                         uint fcvers = 0;
+                        string vname  = null;
 
                         while (playon && (line = dis.read_line ()) != null) {
                             parser.load_from_data (line);
@@ -328,6 +329,15 @@ public class ReplayThread : GLib.Object
                                                 }
                                             }
                                             send_rec(msp,MSP.Cmds.BOARD_INFO, mlen, buf);
+                                        }
+                                        if(obj.has_member("vname"))
+                                        {
+                                            vname = obj.get_string_member ("vname");
+                                            if(vname != null && vname.length > 0)
+                                            {
+                                                send_rec(msp,MSP.Cmds.NAME, vname.length,
+                                                         vname.data);
+                                            }
                                         }
 
                                         if(fcvar != null)
