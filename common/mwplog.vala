@@ -21,6 +21,7 @@ public class MWPLog : GLib.Object
     private static FileStream fs;
     private static bool init = false;
     private static string tfstr;
+    private static bool echo = false;
 
     public static void set_time_format(string _t)
     {
@@ -36,29 +37,32 @@ public class MWPLog : GLib.Object
     {
         if(init == false)
         {
-            var s = Environment.get_variable("MWP_NOLOG_REDIRECT");
             time_t currtime;
             time_t(out currtime);
-            if(s == null && Posix.isatty(stderr.fileno()) == false)
-            {
-                var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
-                fs = FileStream.open(fn,"a");
-            }
+            echo = Posix.isatty(stderr.fileno());
+            var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
+            fs = FileStream.open(fn,"a");
 
             if(fs == null)
+            {
+                echo = false;
                 fs  = FileStream.fdopen(stderr.fileno(), "a");
+            }
 
             init = true;
             if(tfstr == null)
                 tfstr = "%FT%T%z";
         }
 
-        var v = va_list();
+        var args = va_list();
         var now = new DateTime.now_local ();
-        string ds = now.format(tfstr);
-        fs.puts(ds);
-        fs.putc(' ');
-        fs.puts(format.vprintf(v));
+        StringBuilder sb = new StringBuilder();
+        sb.append(now.format(tfstr));
+        sb.append_c(' ');
+        sb.append_vprintf(format, args);
+        fs.puts(sb.str);
         fs.flush();
+        if(echo)
+            print(sb.str);
     }
 }
