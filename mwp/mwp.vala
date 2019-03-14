@@ -541,6 +541,7 @@ public class MWPlanner : Gtk.Application {
     private bool magcheck;
 
     private bool x_replay_bbox_ltm_rb;
+    private bool x_kmz;
     public bool x_plot_elevations_rb {get; private set; default= false;}
 
     private Array<KmlOverlay> kmls;
@@ -1015,8 +1016,8 @@ public class MWPlanner : Gtk.Application {
         {
             string []  ext_apps = {
                 conf.blackbox_decode, "replay_bbox_ltm.rb",
-                "gnuplot", "mwp-plot-elevations.rb" };
-            bool appsts[4];
+                "gnuplot", "mwp-plot-elevations.rb", "unzip" };
+            bool appsts[5];
             int i = 0;
             foreach (var s in ext_apps)
             {
@@ -1027,6 +1028,7 @@ public class MWPlanner : Gtk.Application {
             }
             x_replay_bbox_ltm_rb = (appsts[0]&&appsts[1]);
             x_plot_elevations_rb = (appsts[2]&&appsts[3]);
+            x_kmz = appsts[4];
         }
         pos_is_centre = conf.pos_is_centre;
 
@@ -2285,7 +2287,7 @@ public class MWPlanner : Gtk.Application {
                                 else if(s.contains("<kml "))
                                     kf = f;
                             }
-                            else if (f.has_suffix(".kmz") &&
+                            else if (f.has_suffix(".kmz") && x_kmz &&
                                      buf[0] == 'P' &&
                                      buf[1] == 'K' &&
                                      buf[2] == 3 && buf[3] == 4)
@@ -2405,7 +2407,7 @@ public class MWPlanner : Gtk.Application {
     private void kml_load_dialog()
     {
         Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
-            "Select KML", null, Gtk.FileChooserAction.OPEN,
+            "Select Overlay(s)", null, Gtk.FileChooserAction.OPEN,
             "_Cancel",
             Gtk.ResponseType.CANCEL,
             "_Open",
@@ -2414,12 +2416,18 @@ public class MWPlanner : Gtk.Application {
 
         chooser.set_transient_for(window);
         Gtk.FileFilter filter = new Gtk.FileFilter ();
-        filter.set_filter_name ("KML & KMZ");
+        StringBuilder sb = new StringBuilder("KML");
         filter.add_pattern ("*.kml");
-        filter.add_pattern ("*.kmz");
+        if(x_kmz)
+        {
+            filter.add_pattern ("*.kmz");
+            sb.append(" & KMZ");
+        }
+        sb.append(" files");
+        filter.set_filter_name (sb.str);
         chooser.add_filter (filter);
         filter = new Gtk.FileFilter ();
-        filter.set_filter_name ("All Files");
+        filter.set_filter_name ("All files");
         filter.add_pattern ("*");
         chooser.add_filter (filter);
 

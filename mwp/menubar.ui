@@ -72,7 +72,7 @@
       </section>
       <section>
 	<submenu>
-        <attribute name="label">KML Static Overlays</attribute>
+        <attribute name="label">Static Overlays</attribute>
 	<section>
           <item>
             <attribute name="label">Load</attribute>
