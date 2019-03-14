@@ -2285,6 +2285,13 @@ public class MWPlanner : Gtk.Application {
                                 else if(s.contains("<kml "))
                                     kf = f;
                             }
+                            else if (f.has_suffix(".kmz") &&
+                                     buf[0] == 'P' &&
+                                     buf[1] == 'K' &&
+                                     buf[2] == 3 && buf[3] == 4)
+                            {
+                                kf = f;
+                            }
                             else if(buf[0] == 'H' && buf[1] == ' ')
                             {
                                 sf = f;
@@ -2407,10 +2414,10 @@ public class MWPlanner : Gtk.Application {
 
         chooser.set_transient_for(window);
         Gtk.FileFilter filter = new Gtk.FileFilter ();
-        filter.set_filter_name ("KML");
+        filter.set_filter_name ("KML & KMZ");
         filter.add_pattern ("*.kml");
+        filter.add_pattern ("*.kmz");
         chooser.add_filter (filter);
-
         filter = new Gtk.FileFilter ();
         filter.set_filter_name ("All Files");
         filter.add_pattern ("*");

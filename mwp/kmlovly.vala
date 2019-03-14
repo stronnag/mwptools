@@ -54,6 +54,67 @@ public class KmlOverlay : Object
         return name;
     }
 
+    private bool read_kmz(string kname)
+    {
+        bool ok = false;
+        string td;
+        string path = null;
+        try
+        {
+            td = DirUtils.make_tmp(path);
+            string []argv = {"unzip", kname, "-d", td};
+            int status;
+            Process.spawn_sync ("/",
+                                argv,
+                                null,
+                                SpawnFlags.SEARCH_PATH |
+                                SpawnFlags.STDOUT_TO_DEV_NULL|
+                                SpawnFlags.STDERR_TO_DEV_NULL,
+                                null,
+                                null,
+                                null,
+                                out status);
+            if(status == 0)
+            {
+                Dir dir = Dir.open (td, 0);
+                string? name = null;
+                while ((name = dir.read_name ()) != null)
+                {
+                    if(name.has_suffix(".kml"))
+                    {
+                        path = GLib.Path.build_filename (td, name);
+                        break;
+                    }
+                }
+                if(path != null)
+                {
+                    ok = parse(path);
+                }
+                else
+                {
+                    MWPLog.message("Failed to find kml in %s\n", kname);
+                }
+                dir.rewind();
+                while ((name = dir.read_name ()) != null)
+                {
+                    string p = GLib.Path.build_filename (td, name);
+                    FileUtils.unlink(p);
+                }
+            }
+            else
+            {
+                MWPLog.message("unzip failed to decompress %s\n", kname);
+            }
+            DirUtils.remove(td);
+        } catch (Error e) {
+            MWPLog.message("KMZ error: %s\n", e.message);
+        }
+        if(ok)
+            filename = kname;
+        return ok;
+    }
+
+
     private void at_bottom(Champlain.Layer layer)
     {
         var pp = layer.get_parent();
@@ -270,9 +331,13 @@ public class KmlOverlay : Object
     public bool load_overlay(string _fname)
     {
         bool ok;
-
         remove_overlay();
-        ok = parse(_fname);
+
+        if(_fname.has_suffix(".kmz"))
+            ok = read_kmz(_fname);
+        else
+            ok = parse(_fname);
+
         if (ok)
         {
             var ovly = get_overlay();
