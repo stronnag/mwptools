@@ -5634,7 +5634,7 @@ public class MWPlanner : Gtk.Application {
                 rp = deserialise_i16(raw, out at.angx);
                 rp = deserialise_i16(rp, out at.angy);
                 deserialise_i16(rp, out at.heading);
-                if(usemag)
+                if (usemag || ((replayer & Player.MWP) == Player.MWP))
                 {
                     mhead = at.heading;
                     if(mhead < 0)
