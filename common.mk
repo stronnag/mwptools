@@ -29,10 +29,11 @@ ifeq ($(VAPI),0.34)
  DOPTS += -D LSRVAL
 endif
 
-# FIXME, this is unmaintainable
-#ifneq ($(VAPI),0.42)
+NOVTHREAD := $(shell pkg-config --atleast-version 0.43 $$(pkg-config --list-package-names  | grep libvala); echo $$?)
+
+ifneq ($(NOVTHREAD), 0)
 OPTS+= --thread
-#endif
+endif
 
 USE_TERMCAP := $(shell pkg-config --exists ncurses; echo $$?)
 
