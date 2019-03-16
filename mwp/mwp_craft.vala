@@ -304,8 +304,7 @@ public class Craft : GLib.Object
                     if(mpath > stack_size)
                     {
                         var nds = pmlayer.get_markers();
-                        unowned List<Champlain.Marker>  n0 = nds.last();
-                        pmlayer.remove_marker(n0.data);
+                        pmlayer.remove_marker(nds.last().data);
                         mpath--;
                     }
                 }

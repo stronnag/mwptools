@@ -34,6 +34,9 @@ dnf install rubygem-json
 ## For plot-elevation.rb
 dnf install gnuplot rubygem-nokogiri
 
+## To use KMZ as an overlay format, you need 'unzip
+#dnf install unzip
+
 ## If you want to use serial devices for bbox replay (and you probably
 ## don't) then see
 ##  https://developer.fedoraproject.org/tech/languages/ruby/gems-installation.html

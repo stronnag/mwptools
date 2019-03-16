@@ -52,6 +52,9 @@ apt install ruby ruby-json
 ## For plot-elevation.rb
 apt install gnuplot ruby-nokogiri
 
+## To use KMZ as an overlay format, you need 'unzip
+#apt install unzip
+
 ## Shallow clone mwp ....
 # git clone --depth 1 https://github.com/stronnag/mwptools
 # cd mwptools
