@@ -113,7 +113,7 @@ class FCMgr :Object
                 lines += s;
         }
 
-        MWPLog.message("Starting restore\n");
+        MWPLog.message("Starting restore: %s\n", filename);
         if(_fc != Fc.UNKNOWN && fc != _fc)
         {
             MWPLog.message("Refusing to restore incompatible settings\n");
@@ -192,12 +192,11 @@ class FCMgr :Object
          int i;
          for(i = 0; i < 50; i++)
              if(i <= pct/2)
-                 sb.append_unichar('█');
+                 sb.append_unichar(0x2587);
              else
                  sb.append_c(' ');
-         MWPLog.puts("\r");
-         MWPLog.message("[%s] %3u%%%s", sb.str, pct, MwpTermCap.ceol);
-
+         var s = "\r[%s] %3u%%%s".printf(sb.str, pct, MwpTermCap.ceol);
+         MWPLog.sputs(s);
     }
 
     private void start_setlines()

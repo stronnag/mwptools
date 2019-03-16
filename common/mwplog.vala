@@ -31,6 +31,14 @@ public class MWPLog : GLib.Object
     public static void puts(string s)
     {
         fs.puts(s);
+        if(echo)
+            stderr.puts(s);
+    }
+
+    public static void sputs(string s)
+    {
+        if(echo)
+            stderr.puts(s);
     }
 
     public static void message(string format, ...)
@@ -63,6 +71,6 @@ public class MWPLog : GLib.Object
         fs.puts(sb.str);
         fs.flush();
         if(echo)
-            print(sb.str);
+            stderr.puts(sb.str);
     }
 }

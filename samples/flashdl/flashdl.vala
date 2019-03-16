@@ -163,7 +163,7 @@ public class Flashdl : Object
                  int i;
                  for(i = 0; i < 50; i++)
                      if(i < pct*50/100)
-                         sb.append_unichar('█');
+                         sb.append_unichar(0x2587);
                      else
                          sb.append_unichar(' ');
 
