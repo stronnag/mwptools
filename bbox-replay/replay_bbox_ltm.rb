@@ -773,7 +773,7 @@ File.open("/tmp/.mwp-vbat.txt","a") do |vf|
 	  $vbatscale = m[1].to_f / 110.0
 	end
       elsif m = l.match(/^H Craft name:(.*)$/)
-	vname = m[1]
+	vname = m[1] unless m[1].empty?
       elsif m = l.match(/End of log \(disarm reason:(\d+)/)
 	disarms << m[1].to_i
       end

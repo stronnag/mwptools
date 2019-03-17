@@ -99,7 +99,7 @@ public class MWPSettings : GLib.Object
     public bool pos_is_centre {get; set; default=true;}
     public double deltaspeed {get; set; default=0.0;}
     public int smartport_fuel  {get; set; default = 0;}
-
+    public uint speak_amps {get; set; default=0;}
     public signal void settings_update (string s);
 
     public MWPSettings()
@@ -364,6 +364,9 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "smartport-fuel-unit")
             smartport_fuel = settings.get_enum("smartport-fuel-unit");
+
+        if(s == null || s == "speak-amps")
+            speak_amps = settings.get_enum("speak-amps");
     }
 
     public void save_pane()

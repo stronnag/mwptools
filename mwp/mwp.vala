@@ -3840,6 +3840,7 @@ public class MWPlanner : Gtk.Application {
 
         if(armed != larmed)
         {
+            navstatus.set_replay_mode((replayer != Player.NONE));
             radstatus.annul();
             if (armed == 1)
             {
@@ -6410,7 +6411,7 @@ public class MWPlanner : Gtk.Application {
     {
         string s;
 
-        if(vname == null)
+        if(vname == null || vname.length == 0)
             s = MSP.get_mrtype(vi.mrtype);
         else
         {

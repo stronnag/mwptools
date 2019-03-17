@@ -1370,6 +1370,7 @@ public class NavStatus : GLib.Object
 
     private int efdin;
     private Pid epid;
+    private bool replaying = false;
 
     private string[]fuelunits = {"", "%", "mAh", "mWh"};
 
@@ -1429,6 +1430,11 @@ public class NavStatus : GLib.Object
         mahlabel.set_use_markup (true);
         volt_update("n/a",-1, 0f,true);
         grid.show_all();
+    }
+
+    public void set_replay_mode(bool _replaying)
+    {
+        replaying = _replaying;
     }
 
     public void sport_hdr(double h)
@@ -1843,10 +1849,11 @@ public class NavStatus : GLib.Object
         if((mask & SPK.Volts) == SPK.Volts && volts > 0.0)
         {
             mt.message(AudioThread.Vox.VOLTAGE);
+            if(MWPlanner.conf.speak_amps == 2 ||
+               MWPlanner.conf.speak_amps == 1 && replaying == false)
             if(NavStatus.ampsok && NavStatus.mah > 0)
                 mt.message(AudioThread.Vox.MAH);
         }
-
     }
 
     public void audio_test()

@@ -46,6 +46,7 @@ BOXNAME=[
   "LOITERDIRCHN", #  40
 ]
 
+ini=false
 ARGF.each do |l|
   bname=''
   if l.match(/^aux/)
@@ -60,6 +61,10 @@ ARGF.each do |l|
       bname = BOXNAME[func]
     else
       bname = "PermID #{func}"
+    end
+    if !ini
+      ini=true
+      puts
     end
     puts "%-20s AUX%d %4d %4d\t(%s)\n" % [bname, chn, min, max, l]
   end
