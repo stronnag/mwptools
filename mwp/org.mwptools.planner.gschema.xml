@@ -17,6 +17,15 @@
     <value nick="mWh" value="3"/>
   </enum>
 
+  <enum id="org.mwptools.planner.skamps">
+    <value nick="none" value="0"/>
+    <value nick="live-1" value="1"/>
+    <value nick="live-2" value="2"/>
+    <value nick="live-4" value="4"/>
+    <value nick="all-1" value="17"/>
+    <value nick="all-2" value="18"/>
+    <value nick="all-4" value="20"/>
+  </enum>
 
   <schema id="org.mwptools.planner" path="/org/mwptools/planner/" >
 
@@ -521,11 +530,11 @@
       </description>
     </key>
 
-    <key name="speak-amps" type="u">
-      <default>0</default>
+    <key name="speak-amps" enum="org.mwptools.planner.skamps">
+      <default>"none"</default>
       <summary>When to speak amps/hr used</summary>
       <description>
-        0=never, 1=live, 2=always
+	none, live-n, all-n n=1,2,4 : n = how often spoken (modulus basically)
       </description>
     </key>
 

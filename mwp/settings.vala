@@ -99,7 +99,7 @@ public class MWPSettings : GLib.Object
     public bool pos_is_centre {get; set; default=true;}
     public double deltaspeed {get; set; default=0.0;}
     public int smartport_fuel  {get; set; default = 0;}
-    public uint speak_amps {get; set; default=0;}
+    public int speak_amps {get; set; default=0;}
     public signal void settings_update (string s);
 
     public MWPSettings()

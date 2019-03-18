@@ -1381,6 +1381,8 @@ public class NavStatus : GLib.Object
         ELEV = 8
     }
 
+    private uint8 spkamp = 0;
+
     public NavStatus(Gtk.Builder builder, VCol _vc, bool _recip = false)
     {
         recip = _recip;
@@ -1849,10 +1851,21 @@ public class NavStatus : GLib.Object
         if((mask & SPK.Volts) == SPK.Volts && volts > 0.0)
         {
             mt.message(AudioThread.Vox.VOLTAGE);
-            if(MWPlanner.conf.speak_amps == 2 ||
-               MWPlanner.conf.speak_amps == 1 && replaying == false)
-            if(NavStatus.ampsok && NavStatus.mah > 0)
-                mt.message(AudioThread.Vox.MAH);
+            if(MWPlanner.conf.speak_amps > 0)
+            {
+                if((MWPlanner.conf.speak_amps & 0x10) == 0 ||
+                   (MWPlanner.conf.speak_amps & 0x10) == 0x10 && replaying)
+                {
+                    int rpi = MWPlanner.conf.speak_amps & 0xf;
+                    if (rpi == 1 ||
+                        (rpi == 2 && (spkamp & 1) != 0) ||
+                        (rpi == 4 && spkamp == 3))
+                    {
+                        mt.message(AudioThread.Vox.MAH);
+                    }
+                }
+            }
+            spkamp = (spkamp + 1) % 4;
         }
     }
 
