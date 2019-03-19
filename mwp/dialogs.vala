@@ -1853,14 +1853,18 @@ public class NavStatus : GLib.Object
             mt.message(AudioThread.Vox.VOLTAGE);
             if(MWPlanner.conf.speak_amps > 0)
             {
-                if((MWPlanner.conf.speak_amps & 0x10) == 0 ||
-                   (MWPlanner.conf.speak_amps & 0x10) == 0x10 && replaying)
+                if((MWPlanner.conf.speak_amps & 0x10) == 0x10 || !replaying)
                 {
-                    int rpi = MWPlanner.conf.speak_amps & 0xf;
+                    int rpi = (MWPlanner.conf.speak_amps & 0xf);
                     if (rpi == 1 ||
                         (rpi == 2 && (spkamp & 1) != 0) ||
                         (rpi == 4 && spkamp == 3))
                     {
+                        print("Speak amps %s %02x %d\n",
+                              replaying.to_string(),
+                              MWPlanner.conf.speak_amps,
+                              rpi);
+
                         mt.message(AudioThread.Vox.MAH);
                     }
                 }
@@ -2720,10 +2724,11 @@ public class GPSInfo : GLib.Object
                     Geo.csedist(_dlat, _dlon, lat, lon, out d, out c);
                     ddm = d * 1852.0;
                 }
+/***
                 else
                     MWPLog.message("Failed delta %f %f %f %f\n",
                                    _dlat, _dlon, lat, lon);
-
+**/
                 if (ddm < 128*1000)
                 {
                     _dlat = lat;
