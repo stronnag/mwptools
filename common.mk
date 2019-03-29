@@ -29,7 +29,7 @@ ifeq ($(VAPI),0.34)
  DOPTS += -D LSRVAL
 endif
 
-NOVTHREAD := $(shell pkg-config --atleast-version 0.42.4 $$(pkg-config --list-package-names  | grep libvala); echo $$?)
+NOVTHREAD := $(shell LV=$$(pkg-config --list-all | grep libvala | cut -f 1 -d ' ');   [ -n $$LV ] && pkg-config --atleast-version 0.42.4 $$LV || false; echo $$? )
 
 ifneq ($(NOVTHREAD), 0)
 OPTS+= --thread
