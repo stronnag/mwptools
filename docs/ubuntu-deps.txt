@@ -1,7 +1,7 @@
 #!/bin/sh
 ## Starting point for Ubuntu / Debian packages ...
 
-apt install libgdl-3-dev \
+apt -y install libgdl-3-dev \
     libchamplain-gtk-0.12-dev \
     libchamplain-0.12-dev \
     libclutter-1.0-dev \
@@ -14,10 +14,8 @@ apt install libgdl-3-dev \
     libespeak-dev \
     libgudev-1.0-dev \
     libgstreamer1.0-dev \
-    libvte-2.91-dev
-
-# vanity, prettier terminal progress bars (fcset, flashdl)
-apt install libncurses5-dev
+    libvte-2.91-dev \
+    libncurses5-dev
 
 ## For libvala-dev there may be valac version specific deb
 ## check the vala version with:
@@ -27,15 +25,15 @@ apt install libncurses5-dev
 ## and install the current package
 ## e.g.
 # apt install libvala-0.36-dev
+# Current version for bionic is .040
+apt -y install libvala-0.40-dev
 
-## and for replay_bbox_ltm.rb
 ## ruby version 2 or later
-
-apt install ruby ruby-json
+apt -y install ruby ruby-json
 
 ## For some ARM boards, without full OpenGL, you may need
-
-# apt install libegl1-mesa-dev
+## egl1-mesa - this can also be handy for laptops
+apt -y install libegl1-mesa-dev
 ## (or something like that)
 
 ## if you want to use speech-dispatcher instead of espeak for voice
@@ -44,16 +42,16 @@ apt install ruby ruby-json
 ## or (default)
 ## gsettings set org.mwptools.planner speech-api 'espeak'
 
-# apt install libspeechd-dev
+# apt -y install libspeechd-dev
 
 ## for flite as the text to speech API
-# apt install flite flite1-dev
+# apt -y install flite flite1-dev
 
 ## For plot-elevation.rb
 apt install gnuplot ruby-nokogiri
 
 ## To use KMZ as an overlay format, you need 'unzip
-#apt install unzip
+#apt -y install unzip
 
 ## Shallow clone mwp ....
 # git clone --depth 1 https://github.com/stronnag/mwptools
@@ -63,9 +61,10 @@ apt install gnuplot ruby-nokogiri
 ## You must install the blackbox utilities
 ## https://github.com/iNavFlight/blackbox-tools in order to replay
 ## blackbox logs.
-# git clone --depth 1  https://github.com/iNavFlight/blackbox-tools
-# cd blackbox-tools
-# make && sudo cp obj/blackbox_decode obj/blackbox_render /usr/local/bin/
+cd ..
+git clone --depth 1  https://github.com/iNavFlight/blackbox-tools
+cd blackbox-tools
+make && sudo cp obj/blackbox_decode obj/blackbox_render /usr/local/bin/
 
 ## and you can use this file to install everything:)
 #
