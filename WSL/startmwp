@@ -1,8 +1,12 @@
 #!/bin/bash
 
+# Additional flags to sent to mwp
 MWPFLAGS="--layout=Default"
+# Serial device that is attached to UAV telemetry
 MWPDEVICE="/dev/ttyS5"
+# Baud rate for above serial device
 MWPBAUD="57600"
+# Automatically search for MWP
 MWP=`which mwp`
 
 # Under sudo change the device node permissions as these aren't persistant across restarts of WSL
