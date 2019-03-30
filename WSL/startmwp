@@ -1,0 +1,17 @@
+#!/bin/bash
+
+MWPFLAGS="--layout=Default"
+MWPDEVICE="/dev/ttyS5"
+MWPBAUD="57600"
+MWP=`which mwp`
+
+# Under sudo change the device node permissions as these aren't persistant across restarts of WSL
+sudo chmod 775 ${MWPDEVICE}
+
+# Check if display is set
+[ -z "$DISPLAY" ] && echo Display not set && exit 1
+
+#OK We should be good to go.
+echo "Running command: ${MWP} --device=${MWPDEVICE}@${MWPBAUD} ${MWPFLAGS}"
+${MWP} --device=${MWPDEVICE}@${MWPBAUD} ${MWPFLAGS}
+

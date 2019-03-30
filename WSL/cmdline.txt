@@ -1,0 +1,47 @@
+Usage:
+  mwp [OPTION…] 
+
+  mwp 3100be0 / 2019-03-30 2.078.754
+
+Help Options:
+  -h, --help                          Show help options
+
+Application Options:
+  -m, --mission=file-name             Mission file
+  -s, --serial-device=device_name     Serial device
+  -d, --device=device-name            Serial device
+  -f, --flight-controller=fc-name     mw|mwnav|bf|cf
+  -c, --connect                       connect to first device (does not set auto flag)
+  -a, --auto-connect                  auto-connect to first device (sets auto flag)
+  -N, --no-poll                       don't poll for nav info
+  -T, --no-trail                      don't display GPS trail
+  -r, --raw-log                       log raw serial data to file
+  --ignore-sizing                     ignore minimum size constraint
+  --full-screen                       open full screen
+  --ignore-rotation                   ignore vehicle icon rotation on old libchamplain
+  --dont-maximise                     don't maximise the window
+  --force-mag                         force mag for vehicle direction
+  --force-nav                         force nav capaable
+  -l, --layout                        Layout name
+  -t, --force-type=type-code_no       Model type
+  -4, --force4                        Force ipv4
+  -3, --ignore-3dr                    Ignore 3DR RSSI info
+  -H, --centre-on-home                Centre on home
+  --debug-flags                       Debug flags (mask)
+  -p, --replay-mwp=file-name          replay mwp log file
+  -b, --replay-bbox=file-name         replay bbox log file
+  --centre=position                   Centre position
+  --offline                           force offline proxy mode
+  -S, --n-points=N                    Number of points shown in GPS trail
+  -M, --mod-points=N                  Modulo points to show in GPS trail
+  --rings=number,interval             Range rings (number, interval(m)), e.g. --rings 10,20
+  --voice-command=command string      External speech command
+  -v, --version                       show version
+  --wayland                           force wayland (if available)
+  --really-really-run-as-root         no reason to ever use this
+  --forward-to=device-name            forward telemetry to
+  --smartport=device-name             smartport device
+  --perma-warn                        info dialogues never time out
+  --fsmenu                            use a menu bar in full screen (vice a menu button)
+  -k, --kmlfile=file-name             KML file
+
