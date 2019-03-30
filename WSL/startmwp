@@ -10,7 +10,7 @@ MWPBAUD="57600"
 MWP=`which mwp`
 
 # Under sudo change the device node permissions as these aren't persistant across restarts of WSL
-sudo chmod 775 ${MWPDEVICE}
+sudo chmod 666 ${MWPDEVICE}
 
 # Check if display is set
 [ -z "$DISPLAY" ] && echo Display not set && exit 1
