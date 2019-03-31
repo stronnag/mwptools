@@ -82,14 +82,18 @@ File.open(ARGV[0]) do |f|
   loop do
     s = f.read(rlen)
     break if s.nil?
-    ts,len,dir=s.unpack(unpackstr)
+    ts,len,dir=s.unpack(upackstr)
     data = f.read(len)
     next if in_only && dir == "o"
     next if out_only && dir == "i"
     next if ltm_only && data[1] != 'T'
     puts "offset #{ts} len #{len} #{dir}"
-    if data[1] == 'M'
+    if data[0] == '$' && data[1]  == 'M' && len > 4
       STDOUT.printf "MSP %d :" ,data[4].ord
+    end
+
+    if data[0].ord == 0xfe  && len > 5
+      STDOUT.printf "Mav %d :" ,data[5].ord
     end
 
     puts data.inspect

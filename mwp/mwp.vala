@@ -585,7 +585,8 @@ public class MWPlanner : Gtk.Application {
     {
         NONE=0,
         WP = 1,
-        INIT=2
+        INIT=2,
+        MSP=4
     }
 
     private enum SAT_FLAGS
@@ -4870,6 +4871,10 @@ public class MWPlanner : Gtk.Application {
                     break;
             }
             return;
+        }
+        else if(((debug_flags & DEBUG_FLAGS.MSP) != DEBUG_FLAGS.NONE) && cmd < MSP.Cmds.LTM_BASE)
+        {
+            MWPLog.message("Process MSP %s\n", cmd.to_string());
         }
 
         if(fwddev != null && fwddev.available)
