@@ -1083,7 +1083,10 @@ public class MWPlanner : Gtk.Application {
         if(conf.mediap.length == 0)
             use_gst = true;
         else if(conf.mediap == "false" || conf.mediap == "none")
+        {
+            MWPLog.message("Beeps disabled\n");
             beep_disabled = true;
+        }
 
         if(rrstr != null)
         {
