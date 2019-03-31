@@ -349,6 +349,7 @@ public class MWPlanner : Gtk.Application {
     private Gtk.Button arm_warn;
     private Gtk.ToggleButton wp_edit_button;
     private bool wp_edit = false;
+    private bool beep_disabled = false;
 
     public static MWPSettings conf;
     private MWSerial msp;
@@ -1081,6 +1082,8 @@ public class MWPlanner : Gtk.Application {
 
         if(conf.mediap.length == 0)
             use_gst = true;
+        else if(conf.mediap == "false" || conf.mediap == "none")
+            beep_disabled = true;
 
         if(rrstr != null)
         {
@@ -6623,41 +6626,44 @@ public class MWPlanner : Gtk.Application {
 
     private void bleet_sans_merci(string sfn=Alert.RED)
     {
-        var fn = MWPUtils.find_conf_file(sfn);
-        if(fn != null)
+        StringBuilder sb = new StringBuilder();
+        if(beep_disabled == false)
         {
-            StringBuilder sb = new StringBuilder();
-            if(use_gst)
+            var fn = MWPUtils.find_conf_file(sfn);
+            if(fn != null)
             {
-                Gst.Element play = Gst.ElementFactory.make ("playbin", "player");
-                File file = File.new_for_path (fn);
-                var uri = file.get_uri ();
-                play.set("uri", uri);
-                play.set("volume", 5.0);
-                play.set_state (Gst.State.PLAYING);
-            }
-            else
-            {
-                sb.assign(conf.mediap);
-                sb.append_c(' ');
-                sb.append(fn);
-                try {
-                    use_gst = !Process.spawn_command_line_async (sb.str);
-                } catch (SpawnError e) {
-                    use_gst = true;
+                if(use_gst)
+                {
+                    Gst.Element play = Gst.ElementFactory.make ("playbin", "player");
+                    File file = File.new_for_path (fn);
+                    var uri = file.get_uri ();
+                    play.set("uri", uri);
+                    play.set("volume", 5.0);
+                    play.set_state (Gst.State.PLAYING);
+                }
+                else
+                {
+                    sb.assign(conf.mediap);
+                    sb.append_c(' ');
+                    sb.append(fn);
+                    try {
+                        use_gst = !Process.spawn_command_line_async (sb.str);
+                    } catch (SpawnError e) {
+                        use_gst = true;
+                    }
                 }
             }
-            sb.assign("Alert: ");
-            sb.append(sfn);
-            if(sfn == Alert.SAT)
-            {
-                sb.append(" (");
-                sb.append(nsats.to_string());
-                sb.append_c(')');
-            }
-            sb.append_c('\n');
-            MWPLog.message(sb.str);
         }
+        sb.assign("Alert: ");
+        sb.append(sfn);
+        if(sfn == Alert.SAT)
+        {
+            sb.append(" (");
+            sb.append(nsats.to_string());
+            sb.append_c(')');
+        }
+        sb.append_c('\n');
+        MWPLog.message(sb.str);
     }
 
     private void init_battery(uint8 ivbat)
