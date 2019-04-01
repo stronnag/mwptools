@@ -4901,7 +4901,9 @@ public class MWPlanner : Gtk.Application {
                   cmd == MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT ||
                   cmd == MSP.Cmds.MAVLINK_MSG_VFR_HUD ||
                   cmd == MSP.Cmds.MAVLINK_MSG_ATTITUDE ||
-                  cmd == MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW))))
+                  cmd == MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW ||
+		// Added by WX4CB to help with crossfire
+		  cmd == MSP.Cmds.MAVLINK_MSG_ID_BATTERY_STATUS))))
             {
                 fwddev.send_mav((cmd - MSP.Cmds.MAV_BASE), raw, len);
             }
@@ -5787,6 +5789,11 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.MAVLINK_MSG_ID_RADIO:
                 handle_radio(raw);
                 break;
+
+	    // Added by WX4CB to handle crossfire
+	    case MSP.Cmds.MAVLINK_MSG_ID_BATTERY_STATUS:
+		MWPLog.message("handle_serial: Got Mavlink Battery Status\n");
+		break;
 
             case MSP.Cmds.TO_FRAME:
                 LTM_OFRAME of = LTM_OFRAME();
