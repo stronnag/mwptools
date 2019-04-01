@@ -129,7 +129,9 @@ public class MSP : Object {
         MAVLINK_MSG_ID_RADIO = (MAV_BASE+166),
         MAVLINK_MSG_ID_RADIO_STATUS = (MAV_BASE+109),
 
-        INFO_WP = 0x30000,
+	// Added by WX4CB to test crossfire
+	MAVLINK_MSG_ID_BATTERY_STATUS = (MAV_BASE + 147),
+        NFO_WP = 0x30000,
         INVALID = 0xfffff
     }
 
