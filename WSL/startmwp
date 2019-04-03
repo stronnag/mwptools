@@ -1,21 +1,26 @@
 #!/bin/bash
 
+# Make this the name of your layout that you have saved (CASE SENSETIVE)
+MWPLAYOUT="--layout=default"
+
 # Additional flags to sent to mwp
-MWPFLAGS="--layout=Default"
+MWPFLAGS="-r --debug-flags 4"
+
 # Serial device that is attached to UAV telemetry
-MWPDEVICE="/dev/ttyS5"
+MWPDEVICE="/dev/rfcomm0"
 # Baud rate for above serial device
 MWPBAUD="57600"
 # Automatically search for MWP
 MWP=`which mwp`
 
 # Under sudo change the device node permissions as these aren't persistant across restarts of WSL
-sudo chmod 666 ${MWPDEVICE}
+# check to see if we can read/write them first
+if [[ ! -w ${MWPDEVICE} && -r ${MWPDEVICE} ]] sudo chmod 666 ${MWPDEVICE}
 
 # Check if display is set
 [ -z "$DISPLAY" ] && echo Display not set && exit 1
 
 #OK We should be good to go.
 echo "Running command: ${MWP} --device=${MWPDEVICE}@${MWPBAUD} ${MWPFLAGS}"
-${MWP} --device=${MWPDEVICE}@${MWPBAUD} ${MWPFLAGS}
+${MWP} --device=${MWPDEVICE}@${MWPBAUD} ${MWPLAYOUT}  ${MWPFLAGS}
 
