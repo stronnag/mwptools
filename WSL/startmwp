@@ -15,7 +15,7 @@ MWP=`which mwp`
 
 # Under sudo change the device node permissions as these aren't persistant across restarts of WSL
 # check to see if we can read/write them first
-[[ ! -w ${MWPDEVICE} && -r ${MWPDEVICE} ]] sudo chmod 666 ${MWPDEVICE}
+[[ ! -w ${MWPDEVICE} && -r ${MWPDEVICE} ]] && sudo chmod 666 ${MWPDEVICE}
 
 # Check if display is set
 [ -z "$DISPLAY" ] && echo Display not set && exit 1
