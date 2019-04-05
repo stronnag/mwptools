@@ -214,14 +214,6 @@
       <description>Semi-colon(;) separated list of *cell* voltages values for transition between voltage label colours</description>
     </key>
 
-    <key name="update-interval" type="d">
-      <default>1.0</default>
-      <summary>Telemetry update</summary>
-      <description>
-	Telemetry update interval in seconds
-      </description>
-    </key>
-
     <key type="b" name="checkswitches">
       <default>false</default>
       <summary>check switches</summary>

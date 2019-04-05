@@ -49,7 +49,6 @@ public class MWPSettings : GLib.Object
     public uint  baudrate {get; set; default=57600;}
     public string mediap {get; private set;}
     public string heartbeat {get; private set;}
-    public double updint {get; private set; default=1.0;}
     public string atstart {get; private set;}
     public string atexit {get; private set;}
     public string? fctype {get; private set;}
@@ -197,12 +196,6 @@ public class MWPSettings : GLib.Object
             fctype = settings.get_string ("fctype");
         if(s == null || s == "vlevels")
             vlevels = settings.get_string ("vlevels");
-        if(s == null || s == "update-interval")
-        {
-            updint = settings.get_double("update-interval");
-            if(updint > 0 && updint < 0.1)
-                updint = 0.1;
-        }
         if(s == null || s == "checkswitches")
             checkswitches = settings.get_boolean("checkswitches");
         if(s == null || s == "poll-timeout")
