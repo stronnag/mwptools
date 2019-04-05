@@ -8202,6 +8202,7 @@ public class MWPlanner : Gtk.Application {
             else
             {
                 MWPLog.message("mwp startup version: %s\n", verstr);
+                MWPLog.message("on %s\n", Logger.get_host_info());
                 if(fixedopts != null)
                     MWPLog.message("default options: %s\n", fixedopts);
                 Gst.init (ref args);

@@ -148,7 +148,7 @@ public class Logger : GLib.Object
         write_stream();
     }
 
-    private static string get_host_info()
+    public static string get_host_info()
     {
         string r=null;
         var dis = FileStream.open("/etc/os-release","r");
