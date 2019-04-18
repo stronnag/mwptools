@@ -29,6 +29,8 @@
 
 static GModule *handle;
 
+extern void mwp_log_message (const gchar* format, ...);
+
 #ifdef USE_ESPEAK
 #include <espeak/speak_lib.h>
 
@@ -188,8 +190,6 @@ static  cst_voice *voice;
 static flite_text_to_speech_t fl_tts;
 static usenglish_init_t  fl_eng;
 static cmulex_init_t  fl_cmu;
-
-extern void mwp_log_message (const gchar* format, ...);
 
 static int fl_init(char *vname)
 {

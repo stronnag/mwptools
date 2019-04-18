@@ -840,14 +840,15 @@ public class MWPlanner : Gtk.Application {
     private MwpServer mss=null;
     private uint8 spapi =  0;
 
-    public const string[] SPEAKERS =  {"none", "espeak","speechd","flite"};
+    public const string[] SPEAKERS =  {"none", "espeak","speechd","flite","external"};
     public enum SPEAKER_API
     {
         NONE=0,
         ESPEAK=1,
         SPEECHD=2,
         FLITE=3,
-        COUNT=4
+        EXTERNAL=4,
+        COUNT=5
     }
 
     private const Gtk.TargetEntry[] targets = {
@@ -1038,23 +1039,54 @@ public class MWPlanner : Gtk.Application {
         mmap.init();
 
         spapi = 0;
+
         if(exvox == null)
         {
-            uint8 spapi_mask  = MwpSpeech.get_api_mask();
-            if (spapi_mask != 0)
+            StringBuilder vsb = new StringBuilder();
+            if (!MwpMisc.is_cygwin())
             {
-                for(uint8 j = SPEAKER_API.ESPEAK; j < SPEAKER_API.COUNT; j++)
+                uint8 spapi_mask  = MwpSpeech.get_api_mask();
+                if (spapi_mask != 0)
                 {
-                    if(conf.speech_api == SPEAKERS[j] && ((spapi_mask & (1<<(j-1))) != 0))
+                    for(uint8 j = SPEAKER_API.ESPEAK; j < SPEAKER_API.COUNT; j++)
                     {
-                        spapi = j;
-                        break;
+                        if(conf.speech_api == SPEAKERS[j] && ((spapi_mask & (1<<(j-1))) != 0))
+                        {
+                            spapi = j;
+                            break;
+                        }
                     }
                 }
+                MWPLog.message("Using speech api %d [%s]\n", spapi, SPEAKERS[spapi]);
             }
-            MWPLog.message("Using speech api %d [%s]\n", spapi, SPEAKERS[spapi]);
+            else
+            {
+                switch(conf.speech_api)
+                {
+                    case "espeak":
+                        vsb.append("espeak");
+                        if(conf.evoice.length > 0)
+                        {
+                            vsb.append(" -v ");
+                            vsb.append(conf.evoice);
+                        }
+                        break;
+                    case "speechd":
+                        vsb.append("spd-say -e");
+                        if(conf.svoice.length > 0)
+                        {
+                            vsb.append(" -t ");
+                            vsb.append(conf.svoice);
+                        }
+                        break;
+                }
+                if(vsb.len > 0)
+                    exvox = vsb.str;
+            }
         }
-        else
+
+
+        if(exvox != null)
         {
             MWPLog.message("Using external speech api [%s]\n", exvox);
         }

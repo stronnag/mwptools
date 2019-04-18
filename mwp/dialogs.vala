@@ -1961,6 +1961,7 @@ public class NavStatus : GLib.Object
         {
             logspeak_close();
         }
+//        MWPLog.message("Start audio thread\n");
         mt = new AudioThread((si == MWPlanner.SPEAKER_API.FLITE));
         mt.start(use_en, efdin);
         mt_voice=true;
@@ -1968,16 +1969,12 @@ public class NavStatus : GLib.Object
 
     public void logspeak_close()
     {
+//        MWPLog.message("Stop audio thread\n");
         mt_voice=false;
         mt.clear();
         mt.message(AudioThread.Vox.DONE);
         mt.thread.join ();
         mt = null;
-        if(efdin > 0)
-        {
-            Posix.close(efdin);
-            efdin = 0;
-        }
     }
 }
 

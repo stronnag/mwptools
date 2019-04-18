@@ -99,3 +99,10 @@ namespace Tc
     [CCode (cname="tgetstr")]
     unowned string tgetstr(char *id, char **buf);
 }
+
+[CCode (cheader_filename = "mwpfuncs.h")]
+namespace MwpMisc
+{
+    [CCode (cname="is_cygwin")]
+    bool is_cygwin();
+}

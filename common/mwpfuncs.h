@@ -1,3 +1,6 @@
+
+#include <stdbool.h>
+
 extern int open_serial(const char * dev, guint baudrate);
 extern void  set_timeout(int fd, int tenths, int cc);
 extern void close_serial(int fd);
@@ -17,6 +20,8 @@ extern int speech_init(const char *voice);
 extern void speech_say(const char *text);
 
 extern int init_signals();
+
+extern bool is_cygwin();
 
 extern char *__progname;
 extern char *mwpid;

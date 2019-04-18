@@ -22,7 +22,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
-
+#include <stdbool.h>
 #if !defined( WIN32 )
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -313,5 +313,14 @@ char * default_name(void)
     return "/dev/ttyUSB0";
 #else
     return NULL;
+#endif
+}
+
+bool is_cygwin(void)
+{
+#ifdef __CYGWIN__
+    return true;
+#else
+    return false;
 #endif
 }
