@@ -33,8 +33,8 @@ OPTS+= --vapidir $(COMMOND) -X -I$(COMMOND) --pkg mwpfuncs
 
 BASH_COMPLETION_DIR := $(shell pkg-config --variable=completionsdir bash-completion 2>/dev/null| sed 's/^\/usr\///')
 
-ifeq (($BASH_COMPLETION_DIR),"")
-	BASH_COMPLETION_DIR := "share/bash-completion/completions"
+ifeq ($(strip $(BASH_COMPLETION_DIR)),)
+ BASH_COMPLETION_DIR = share/bash-completion/completions
 endif
 
 all: $(APPS)
