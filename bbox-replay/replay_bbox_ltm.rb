@@ -25,7 +25,14 @@ require 'csv'
 require 'optparse'
 require 'socket'
 require 'open3'
-require 'json'
+
+begin
+  require 'json'
+  have_js = true
+rescue LoadError
+  have_js = false
+end
+
 require_relative 'inav_states'
 
 begin
@@ -671,13 +678,15 @@ scan = nil
 decoder="blackbox_decode"
 nobaro = nil
 
-pref_fn = File.join(ENV["HOME"],".config", "mwp", "replay_ltm.json")
-if File.exist? pref_fn
-  json = IO.read(pref_fn)
-  prefs = JSON.parse(json, {:symbolize_names => true})
-  decl = prefs[:declination].to_f
-  autotyp = prefs[:auto]
-  nobaro = prefs[:nobaro]
+if have_js
+  pref_fn = File.join(ENV["HOME"],".config", "mwp", "replay_ltm.json")
+  if File.exist? pref_fn
+    json = IO.read(pref_fn)
+    prefs = JSON.parse(json, {:symbolize_names => true})
+    decl = prefs[:declination].to_f
+    autotyp = prefs[:auto]
+    nobaro = prefs[:nobaro]
+  end
 end
 
 ARGV.options do |opt|
