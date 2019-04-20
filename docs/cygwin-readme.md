@@ -10,13 +10,13 @@ From 2015-12-30, it is possible to build and run pretty much all of the mwptools
 
 * Install the required packages. The file
   `cygwin-example-packages.txt.gz` is taken from a cygwin installation
-  that is capable of building and running mwp. Note that while this seems like a large list, many of the items are automagically installed as dependencies of other items.
+  that is capable of building and running mwp. Note that while this seems like a large list, many of the items are automagically installed as dependencies of other items. See also [Automation Hints](#Automation hints) below.
 
 * At run time, you need to have started the a X server (VcXsrv recommended)
 
 * Serial devices must be prefixed /dev/, e.g. `COM7:` => `/dev/ttyS7`
 
-Once the dependencies are installed, mwp is easily build from the cygwin shell:
+Once the dependencies are installed, mwp is easily built from the cygwin shell:
 
 * Clone the repository
 * `make && make install`
@@ -33,6 +33,7 @@ It's quite easy to install the dependencies as follows:
 * Open the cygwin terminal
 
 * Fetch and make executable the `apt-cyg` script
+
   ```
   wget https://rawgit.com/transcode-open/apt-cyg/master/apt-cyg
   install apt-cyg /bin
