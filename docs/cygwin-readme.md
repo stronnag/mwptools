@@ -10,7 +10,7 @@ From 2015-12-30, it is possible to build and run pretty much all of the mwptools
 
 * Install the required packages. The file
   `cygwin-example-packages.txt.gz` is taken from a cygwin installation
-  that is capable of building and running mwp. Note that while this seems like a large list, many of the items are automagically installed as dependencies of other items. See also [Automation Hints](#Automation hints) below.
+  that is capable of building and running mwp. Note that while this seems like a large list, many of the items are automagically installed as dependencies of other items. See also [Automation Hints](#automation-hints) below.
 
 * At run time, you need to have started the a X server (VcXsrv recommended)
 
