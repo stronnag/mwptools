@@ -66,7 +66,7 @@ export NO_AT_BRIDGE=1
 export LIBGL_ALWAYS_INDIRECT=Y
 ```
 
-The X server (VcXsrv) must be running, it may the convenient to start this automatically from the Windows Startup directory.
+The X server (VcXsrv) must be running, it may be convenient to start this automatically from the Windows Startup directory.
 
 A Windows batch file is provided that may be used as a desktop shortcut `docs/mwp.bat`
 
