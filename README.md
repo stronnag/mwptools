@@ -42,7 +42,16 @@ The tools are designed to be portable and as far as possible platform and archit
 
 Please see the `docs` directory for specific development requirements for individual OS.The `docs` directory also contains a user guide / manual in ODT and PDF formats (`docs/mwptools.{odt,pdf}`).
 
-mwptools is tested on x86_64, ia32 and ARM devices.
+mwptools is tested on x86_64, ia32 and ARM devices (Linux / FreeBSD). 
+
+It is also possible to run mwp on MS Windows using:
+
+* [Cygwin](https://www.cygwin.com/)
+* Windows 10 / WSL
+* A virtual machine with a Linux guest.
+
+The [wiki](https://github.com/stronnag/mwptools/wiki) provides further guidance.
+
 
 ## Installation
 
