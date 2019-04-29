@@ -1851,7 +1851,7 @@ public class NavStatus : GLib.Object
         if((mask & SPK.Volts) == SPK.Volts && volts > 0.0)
         {
             mt.message(AudioThread.Vox.VOLTAGE);
-            if(MWPlanner.conf.speak_amps > 0)
+            if(MWPlanner.conf.speak_amps > 0 && NavStatus.mah > 0)
             {
                 if((MWPlanner.conf.speak_amps & 0x10) == 0x10 || !replaying)
                 {
@@ -1868,8 +1868,8 @@ public class NavStatus : GLib.Object
                         mt.message(AudioThread.Vox.MAH);
                     }
                 }
+                spkamp = (spkamp + 1) % 4;
             }
-            spkamp = (spkamp + 1) % 4;
         }
     }
 
