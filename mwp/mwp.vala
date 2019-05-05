@@ -1029,14 +1029,17 @@ public class MWPlanner : Gtk.Application {
         conf.read_settings();
 
         var vstr = mwp_check_virtual();
-        if(vstr != null)
+        if(vstr == null || vstr.length == 0)
+            MWPLog.message("native or no hypervisor detected\n");
+        else
             MWPLog.message(vstr);
+
         {
             string []  ext_apps = {
-                conf.blackbox_decode, "replay_bbox_ltm.rb",
-                "gnuplot", "mwp-plot-elevations.rb", "unzip" };
+            conf.blackbox_decode, "replay_bbox_ltm.rb",
+            "gnuplot", "mwp-plot-elevations.rb", "unzip" };
             bool appsts[5];
-            int i = 0;
+            var i = 0;
             foreach (var s in ext_apps)
             {
                 appsts[i] = MWPUtils.exists_on_path(s);
@@ -1048,6 +1051,7 @@ public class MWPlanner : Gtk.Application {
             x_plot_elevations_rb = (appsts[2]&&appsts[3]);
             x_kmz = appsts[4];
         }
+
         pos_is_centre = conf.pos_is_centre;
 
         mmap = new ModelMap();
