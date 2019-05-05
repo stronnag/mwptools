@@ -1000,6 +1000,18 @@ public class MWPlanner : Gtk.Application {
         resend_last();
     }
 
+    private string? mwp_check_virtual()
+    {
+        string sstdout = null;
+        try {
+            Process.spawn_command_line_sync ("sh -c \"dmesg --notime | grep -i hypervisor\"",
+                                             out sstdout);
+	} catch (SpawnError e) {
+		print ("Error: %s\n", e.message);
+	}
+	return sstdout;
+    }
+
     public override void activate ()
     {
         base.startup();
@@ -1016,6 +1028,9 @@ public class MWPlanner : Gtk.Application {
         conf = new MWPSettings();
         conf.read_settings();
 
+        var vstr = mwp_check_virtual();
+        if(vstr != null)
+            MWPLog.message(vstr);
         {
             string []  ext_apps = {
                 conf.blackbox_decode, "replay_bbox_ltm.rb",
