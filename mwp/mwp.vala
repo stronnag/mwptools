@@ -1002,14 +1002,53 @@ public class MWPlanner : Gtk.Application {
 
     private string? mwp_check_virtual()
     {
-        string sstdout = null;
+        string hyper = null;
         try {
-            Process.spawn_command_line_sync ("sh -c \"dmesg --notime | grep -i hypervisor\"",
-                                             out sstdout);
-	} catch (SpawnError e) {
-		print ("Error: %s\n", e.message);
-	}
-	return sstdout;
+            string[] spawn_args = {"dmesg"};
+            int p_stdout;
+            Pid child_pid;
+
+            Process.spawn_async_with_pipes (null,
+                                            spawn_args,
+                                            null,
+                                            SpawnFlags.SEARCH_PATH |
+                                            SpawnFlags.DO_NOT_REAP_CHILD |
+                                            SpawnFlags.STDERR_TO_DEV_NULL,
+                                            null,
+                                            out child_pid,
+                                            null,
+                                            out p_stdout,
+                                            null);
+
+            IOChannel chan = new IOChannel.unix_new (p_stdout);
+            IOStatus eos;
+            string line;
+            size_t length = -1;
+
+            try
+            {
+                for(;;)
+                {
+                    eos = chan.read_line (out line, out length, null);
+                    if(eos == IOStatus.EOF)
+                        break;
+
+                    if(line == null || length == 0)
+                        continue;
+
+                    var index = line.index_of("Hypervisor");
+                    if(index != -1)
+                    {
+                        hyper = line.substring(index).chomp();
+                        break;
+                    }
+                }
+            } catch (IOChannelError e) {}
+            catch (ConvertError e) {}
+            try { chan.shutdown(false); } catch {}
+            Process.close_pid (child_pid);
+        } catch (SpawnError e) {}
+        return hyper;
     }
 
     public override void activate ()
@@ -1030,7 +1069,7 @@ public class MWPlanner : Gtk.Application {
 
         var vstr = mwp_check_virtual();
         if(vstr == null || vstr.length == 0)
-            MWPLog.message("native or no hypervisor detected\n");
+            MWPLog.message("No hypervisor detected\n");
         else
             MWPLog.message(vstr);
 
