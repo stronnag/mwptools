@@ -29,14 +29,10 @@ ifeq ($(VAPI),0.34)
  DOPTS += -D LSRVAL
 endif
 
-ifeq ($(XOS),FreeBSD)
- OPTS+= --thread
-else
- NOVTHREAD := $(shell VV=$$(valac --version | cut  -d '.' -f 2,3 --output-delimiter='0');  [ $$VV -gt 4204 ] ; echo $$? )
+NOVTHREAD := $(shell V1=$$(valac --version | cut  -d '.' -f 2); V2=$$(valac --version | cut  -d '.' -f 3); VV=$$(printf "%02d%02d" $$V1 $$V2) ; [ $$VV -gt 4204 ] ; echo $$? )
 
- ifneq ($(NOVTHREAD), 0)
-  OPTS+= --thread
- endif
+ifneq ($(NOVTHREAD), 0)
+ OPTS+= --thread
 endif
 
 USE_TERMCAP := $(shell pkg-config --exists ncurses; echo $$?)
