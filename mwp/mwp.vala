@@ -1039,7 +1039,7 @@ public class MWPlanner : Gtk.Application {
                     var index = line.index_of("Hypervisor");
                     if(index != -1)
                     {
-                        hyper = line.substring(index).chomp();
+                        hyper = line.substring(index);
                         break;
                     }
                 }
