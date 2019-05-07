@@ -1000,56 +1000,6 @@ public class MWPlanner : Gtk.Application {
         resend_last();
     }
 
-    private string? mwp_check_virtual()
-    {
-        string hyper = null;
-        try {
-            string[] spawn_args = {"dmesg"};
-            int p_stdout;
-            Pid child_pid;
-
-            Process.spawn_async_with_pipes (null,
-                                            spawn_args,
-                                            null,
-                                            SpawnFlags.SEARCH_PATH |
-                                            SpawnFlags.DO_NOT_REAP_CHILD |
-                                            SpawnFlags.STDERR_TO_DEV_NULL,
-                                            null,
-                                            out child_pid,
-                                            null,
-                                            out p_stdout,
-                                            null);
-
-            IOChannel chan = new IOChannel.unix_new (p_stdout);
-            IOStatus eos;
-            string line;
-            size_t length = -1;
-
-            try
-            {
-                for(;;)
-                {
-                    eos = chan.read_line (out line, out length, null);
-                    if(eos == IOStatus.EOF)
-                        break;
-
-                    if(line == null || length == 0)
-                        continue;
-
-                    var index = line.index_of("Hypervisor");
-                    if(index != -1)
-                    {
-                        hyper = line.substring(index);
-                        break;
-                    }
-                }
-            } catch (IOChannelError e) {}
-            catch (ConvertError e) {}
-            try { chan.shutdown(false); } catch {}
-            Process.close_pid (child_pid);
-        } catch (SpawnError e) {}
-        return hyper;
-    }
 
     public override void activate ()
     {
@@ -1066,12 +1016,6 @@ public class MWPlanner : Gtk.Application {
 
         conf = new MWPSettings();
         conf.read_settings();
-
-        var vstr = mwp_check_virtual();
-        if(vstr == null || vstr.length == 0)
-            MWPLog.message("No hypervisor detected\n");
-        else
-            MWPLog.message(vstr);
 
         {
             string []  ext_apps = {
@@ -8228,6 +8172,97 @@ public class MWPlanner : Gtk.Application {
         return null;
     }
 
+    private static string? check_virtual(string? os)
+    {
+        string hyper = null;
+        string cmd = null;
+        switch (os)
+        {
+            case "Linux":
+                cmd = "systemd-detect-virt";
+                break;
+            case "FreeBSD":
+                cmd = "sysctl kern.vm_guest";
+                break;
+        }
+
+        if(cmd != null)
+        {
+            try
+            {
+                string strout;
+                int status;
+                Process.spawn_command_line_sync (cmd, out strout,
+                                                 null, out status);
+                if(Process.if_exited(status))
+                {
+                    strout = strout.chomp();
+                    if(strout.length > 0)
+                    {
+                        if(os == "Linux")
+                            hyper = strout;
+                        else
+                        {
+                            var index = strout.index_of("kern.vm_guest: ");
+                            if(index != -1)
+                                hyper = strout.substring(index+"kern.vm_guest: ".length);
+                        }
+                    }
+                }
+            } catch (SpawnError e) {}
+
+            if(hyper != null)
+                return hyper;
+        }
+
+        try {
+            string[] spawn_args = {"dmesg"};
+            int p_stdout;
+            Pid child_pid;
+
+            Process.spawn_async_with_pipes (null,
+                                            spawn_args,
+                                            null,
+                                            SpawnFlags.SEARCH_PATH |
+                                            SpawnFlags.DO_NOT_REAP_CHILD |
+                                            SpawnFlags.STDERR_TO_DEV_NULL,
+                                            null,
+                                            out child_pid,
+                                            null,
+                                            out p_stdout,
+                                            null);
+
+            IOChannel chan = new IOChannel.unix_new (p_stdout);
+            IOStatus eos;
+            string line;
+            size_t length = -1;
+
+            try
+            {
+                for(;;)
+                {
+                    eos = chan.read_line (out line, out length, null);
+                    if(eos == IOStatus.EOF)
+                        break;
+
+                    if(line == null || length == 0)
+                        continue;
+                    line = line.chomp();
+                    var index = line.index_of("Hypervisor");
+                    if(index != -1)
+                    {
+                        hyper = line.substring(index);
+                        break;
+                    }
+                }
+            } catch (IOChannelError e) {}
+            catch (ConvertError e) {}
+            try { chan.shutdown(false); } catch {}
+            Process.close_pid (child_pid);
+        } catch (SpawnError e) {}
+        return hyper;
+    }
+
     public static int main (string[] args)
     {
         var lk = new Locker();
@@ -8292,7 +8327,13 @@ public class MWPlanner : Gtk.Application {
             else
             {
                 MWPLog.message("mwp startup version: %s\n", verstr);
-                MWPLog.message("on %s\n", Logger.get_host_info());
+                string os=null;
+                MWPLog.message("on %s\n", Logger.get_host_info(out os));
+                var vstr = check_virtual(os);
+                if(vstr == null || vstr.length == 0)
+                    vstr = "none";
+                MWPLog.message("hypervisor: %s\n", vstr);
+
                 if(fixedopts != null)
                     MWPLog.message("default options: %s\n", fixedopts);
                 Gst.init (ref args);

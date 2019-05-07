@@ -66,7 +66,7 @@ public class Logger : GLib.Object
         gen = new Json.Generator ();
         var builder = init("environment");
         builder.set_member_name ("host");
-        builder.add_string_value (get_host_info());
+        builder.add_string_value (get_host_info(null));
         builder.set_member_name ("mwpinfo");
         builder.add_string_value (MwpVers.build);
         builder.set_member_name ("mwpid");
@@ -148,7 +148,7 @@ public class Logger : GLib.Object
         write_stream();
     }
 
-    public static string get_host_info()
+    public static string get_host_info(out string os)
     {
         string r=null;
         var dis = FileStream.open("/etc/os-release","r");
@@ -167,11 +167,14 @@ public class Logger : GLib.Object
         var sb = new StringBuilder();
         if (r != null)
         {
+            sb.append_c('"');
             sb.append(r);
+            sb.append_c('"');
             sb.append_c(' ');
         }
         sb.append(u.nodename);
         sb.append_c(' ');
+        os = u.sysname;
         sb.append(u.sysname);
         sb.append_c(' ');
         sb.append(u.release);
