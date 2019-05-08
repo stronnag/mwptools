@@ -194,6 +194,10 @@
           <attribute name="label">Flight View</attribute>
           <attribute name="action">win.flight-view</attribute>
         </item>
+        <item>
+          <attribute name="label">Radar View</attribute>
+          <attribute name="action">win.radar-view</attribute>
+        </item>
       </section>
       <section>
         <item>

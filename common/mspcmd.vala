@@ -94,6 +94,8 @@ public class MSP : Object {
         DEBUGMSG = 253,
 		NAME = 10,
 
+        RADAR_POS = 248,
+
         MSPV2 = 255,
         COMMON_TZ = 0x1001,
         COMMON_SET_TZ = 0x1002,

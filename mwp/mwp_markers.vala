@@ -21,6 +21,8 @@ using Clutter;
 
 public class MWPMarkers : GLib.Object
 {
+
+
     public Champlain.PathLayer path;                     // Mission outline
     public Champlain.MarkerLayer markers;                // Mission Markers
     public Champlain.MarkerLayer rlayer;                 // Next WP pos layer
@@ -32,6 +34,8 @@ public class MWPMarkers : GLib.Object
     public Champlain.PathLayer ipath;                    // path from WP initiate to WP1
     private Champlain.PathLayer []rings;                 // range rings layers (per radius)
     private bool rth_land;
+    public Champlain.MarkerLayer rdrmarkers;                // Mission Markers
+    public Champlain.Label[] rplots;
 
     public MWPMarkers(ListBox lb, Champlain.View view, string mkcol ="#ffffff60")
     {
@@ -41,7 +45,11 @@ public class MWPMarkers : GLib.Object
         path = new Champlain.PathLayer();
         hpath = new Champlain.PathLayer();
         ipath = new Champlain.PathLayer();
+        rdrmarkers = new Champlain.MarkerLayer();
 
+        rplots = { null, null, null, null };
+
+        view.add_layer(rdrmarkers);
         view.add_layer(rlayer);
         view.add_layer(path);
         view.add_layer(hpath);
@@ -68,6 +76,25 @@ public class MWPMarkers : GLib.Object
         posring = new Champlain.Point.full(80.0, colour);
         rlayer.add_marker(posring);
         posring.hide();
+    }
+
+    public void show_radar(uint8 id, RadarPlot r)
+    {
+        if(rplots[id] == null)
+        {
+            var text = "⚙ %c".printf(65+id);
+            Clutter.Color white = { 0xff,0xff,0xff, 0xff };
+            Clutter.Color black = { 0,0,0, 0xff };
+
+            rplots[id] =  new Champlain.Label.with_text (text,"Sans 10",null,null);
+            rplots[id].set_alignment (Pango.Alignment.RIGHT);
+            rplots[id].set_color (white);
+            rplots[id].set_text_color(black);
+            rplots[id].set_draggable(false);
+            rplots[id].set_selectable(false);
+            rdrmarkers.add_marker (rplots[id]);
+        }
+        rplots[id].set_location (r.latitude,r.longitude);
     }
 
     public void set_rth_icon(bool iland)

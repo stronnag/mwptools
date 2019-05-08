@@ -165,7 +165,17 @@ public struct MavPOSDef
     uint8 set;
 }
 
-
+public struct RadarPlot
+{
+    uint8 state;
+    double latitude;
+    double longitude;
+    double altitude;
+    uint16 heading;
+    double speed;
+    uint8 lq;
+    uint lasttick;
+}
 
 public class PosFormat : GLib.Object
 {
@@ -392,6 +402,7 @@ public class MWPlanner : Gtk.Application {
     private ArtWin art_win;
     private FlightBox fbox;
     private DirnBox dbox;
+    private RadarView radarv;
     private WPMGR wpmgr;
     private MissionItem[] wp_resp;
     private string boxnames = null;
@@ -636,6 +647,8 @@ public class MWPlanner : Gtk.Application {
 
     private TelemStats telstats;
     private LayMan lman;
+
+    private RadarPlot radar_plot[4];
 
     public enum NAVCAPS
     {
@@ -899,6 +912,13 @@ public class MWPlanner : Gtk.Application {
 
     void show_dock_id (DOCKLETS id, bool iconify=false)
     {
+/*
+        print("show dock %u, icon %s closed %s, iconified %s\n",
+              id, iconify.to_string(),
+              dockitem[id].is_closed().to_string(),
+              dockitem[id].is_iconified().to_string()
+              );
+*/
         if(dockitem[id].is_closed() && !dockitem[id].is_iconified())
         {
             dockitem[id].show();
@@ -1680,6 +1700,11 @@ public class MWPlanner : Gtk.Application {
                 show_dock_id(DOCKLETS.DBOX, true);
             });
         window.add_action(saq);
+        saq = new GLib.SimpleAction("radar-view",null);
+        saq.activate.connect(() => {
+                radarv.show_or_hide();
+            });
+        window.add_action(saq);
 
         saq = new GLib.SimpleAction("keys",null);
         saq.activate.connect(() => {
@@ -1718,7 +1743,7 @@ public class MWPlanner : Gtk.Application {
         telemstatus = new TelemetryStats(builder);
         fbox  = new FlightBox(builder,window);
         dbox = new DirnBox(builder, conf.horizontal_dbox);
-
+        radarv = new RadarView(builder,window);
         view = embed.get_view();
         view.set_reactive(true);
 
@@ -2214,7 +2239,6 @@ public class MWPlanner : Gtk.Application {
         box.pack_end (dock, true, true, 0);
 
         dockitem = new DockItem[DOCKLETS.NUMBER];
-
         dockitem[DOCKLETS.GPS]= new DockItem.with_stock ("GPS",
                                                          "GPS Info", "gtk-refresh",
                                                          DockItemBehavior.NORMAL);
@@ -2234,7 +2258,6 @@ public class MWPlanner : Gtk.Application {
         dockitem[DOCKLETS.RADIO]= new DockItem.with_stock ("Radio",
                          "Radio Status", "gtk-network",
                          DockItemBehavior.NORMAL );
-        dock.add_item (dockitem[DOCKLETS.RADIO], DockPlacement.BOTTOM);
 
         dockitem[DOCKLETS.TELEMETRY]= new DockItem.with_stock ("Telemetry",
                          "Telemetry", "gtk-disconnect",
@@ -2247,6 +2270,7 @@ public class MWPlanner : Gtk.Application {
         dockitem[DOCKLETS.DBOX]= new DockItem.with_stock ("DirectionView",
                          "DirectionView", "gtk-fullscreen",
                          DockItemBehavior.NORMAL);
+
 
         dockitem[DOCKLETS.MISSION]= new DockItem.with_stock ("Mission",
                          "Mission Tote", "gtk-properties",
@@ -6394,6 +6418,41 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.DEBUGMSG:
                 MWPLog.message("DEBUG:%s\n", (string)raw);
+                break;
+
+            case MSP.Cmds.RADAR_POS:
+                uint8* rp = raw;
+                uint8 id = *rp++;
+                if (id < 4)
+                {
+                    int32 ipos;
+                    uint16 ispd;
+                    radar_plot[id].state = *rp++;
+                    rp = deserialise_i32(rp, out ipos);
+                    radar_plot[id].latitude = ipos/10000000.0;
+                    rp = deserialise_i32(rp, out ipos);
+                    radar_plot[id].longitude = ipos/10000000.0;
+                    rp = deserialise_i32(rp, out ipos);
+                    radar_plot[id].altitude = ipos/100.0;
+                    rp = deserialise_u16(rp, out radar_plot[id].heading);
+                    rp = deserialise_u16(rp, out ispd);
+                    radar_plot[id].speed = ispd/100.0;
+                    radar_plot[id].lq = *rp;
+                    radar_plot[id].lasttick = nticks;
+/*
+                    MWPLog.message("Radar for %u %f %f %.1f %u° %.1f\n",
+                                   id,
+                                   radar_plot[id].latitude,
+                                   radar_plot[id].longitude,
+                                   radar_plot[id].altitude,
+                                   radar_plot[id].heading,
+                                   radar_plot[id].speed,
+                                   radar_plot[id].lq);
+*/
+                    markers.show_radar(id, radar_plot[id]);
+                    radarv.update(id, radar_plot[id], conf.dms);
+//                                  item_visible(DOCKLETS.RADAR));
+                }
                 break;
 
             default:
