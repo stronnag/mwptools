@@ -96,9 +96,8 @@ public class RadarSim : Object
                 if (spd > dspeed * 2)
                     spd = dspeed *2;
 
-                double cse =  radar_plot[id].heading + rand.int_range(-5, 5);
-                if (cse > 360)
-                    cse = 45 + id * (360 / MAXRADAR);
+                double cse = (int)radar_plot[id].heading + rand.int_range(-5, 5);
+                cse = cse % 360;
 
                 var delta = (spd * 0.5)/1852.0; // nm
 
@@ -120,6 +119,7 @@ public class RadarSim : Object
                 Geo.csedist(lat, lon,
                             hlat, hlon,
                             out dist, out cse);
+
                 if(dist*1852.0 > maxrange)
                     radar_plot[id].heading = (uint16)cse;
 
