@@ -201,6 +201,7 @@ public class MWSerial : Object
     public bool use_v2 = false;
     public ProtoMode pmode  {set; get; default=ProtoMode.NORMAL;}
     private bool fwd = false;
+    private bool ro = false;
     private uint8 mavseqno = 0;
     private uint8[] devbuf;
     private bool sport = false;
@@ -296,6 +297,14 @@ public class MWSerial : Object
         fwd = true;
         available = sport = false;
         set_txbuf(MemAlloc.TX);
+    }
+
+    public MWSerial.reader()
+    {
+        available = sport = false;
+        ro = true;
+        rxbuf_alloc = MemAlloc.RX;
+        rxbuf = new uint8[rxbuf_alloc];
     }
 
     public MWSerial.smartport()
@@ -1182,6 +1191,8 @@ public class MWSerial : Object
     public ssize_t write(void *buf, size_t count)
     {
         ssize_t size;
+        if(ro)
+            return 0;
 
         if(stime == 0 && pmode == ProtoMode.NORMAL)
             stime =  GLib.get_monotonic_time();
@@ -1213,7 +1224,7 @@ public class MWSerial : Object
 
     public void send_ltm(uint8 cmd, void *data, size_t len)
     {
-        if(available == true)
+        if(available == true && !ro)
         {
             if(len != 0 && data != null)
             {
@@ -1241,7 +1252,7 @@ public class MWSerial : Object
         const uint8 MAVID1='j';
         const uint8 MAVID2='h';
 
-        if(available == true)
+        if(available == true && !ro)
         {
             uint16 mcrc;
             uint8* ptx = txbuf;
@@ -1332,7 +1343,7 @@ public class MWSerial : Object
 
     public void send_command(uint16 cmd, void *data, size_t len)
     {
-        if(available == true)
+        if(available == true && !ro)
         {
             size_t mlen;
             if(use_v2 || cmd > 254 || len > 254)
@@ -1345,7 +1356,7 @@ public class MWSerial : Object
 
     public void send_error(uint8 cmd)
     {
-        if(available == true)
+        if(available == true && !ro)
         {
             uint8 dstr[8] = {'$', 'M', '!', 0, cmd, cmd};
             write(dstr, 6);

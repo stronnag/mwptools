@@ -3538,7 +3538,7 @@ public class MWPlanner : Gtk.Application {
                                 last_tm = 0;
                                 lastp.start();
                                 serstate = SERSTATE.NORMAL;
-                                queue_cmd(msp_get_status/*MSP.Cmds.IDENT*/,null,0);
+                                queue_cmd(msp_get_status,null,0);
                                 run_queue();
                             }
                         }
@@ -4353,7 +4353,6 @@ public class MWPlanner : Gtk.Application {
                     sb.append(lab);
                     if(naze32 && vi.fc_api != 0)
                         sb.append_printf(" API %d.%d", vi.fc_api >> 8,vi.fc_api & 0xff);
-
                     if(navcap != NAVCAPS.NONE)
                         sb.append(" Nav");
                     sb.append_printf(" Pr %d", profile);
@@ -4361,6 +4360,7 @@ public class MWPlanner : Gtk.Application {
                 }
 
                 want_special = 0;
+                MWPLog.message("%s %s\n", verlab.label, typlab.label);
 
                 if(replayer == Player.NONE)
                 {
@@ -6421,6 +6421,7 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.RADAR_POS:
+            case MSP.Cmds.COMMON_SET_RADAR_POS:
                 uint8* rp = raw;
                 uint8 id = *rp++;
                 if (id < 4)

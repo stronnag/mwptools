@@ -2,7 +2,7 @@
 
 ## Overview
 
-`mwp-radar-sim` is a simulator for the MSP based inav-radar protocol. It simulates 4 aircraft, flying from central location, staying withing a defined range, with specified speed and altitude. The values for heading, speed and altitude have random perturbations applied during the simulation and 'fly' within a specified range of defined start point. 
+`mwp-radar-sim` is a simulator for the MSP based inav-radar protocol. It simulates 4 aircraft, flying from central location, staying withing a defined range, with specified speed and altitude. The values for heading, speed and altitude have random perturbations applied during the simulation and 'fly' within a specified range of defined start point.
 
 ## Building
 
@@ -11,7 +11,7 @@
 ```
 cd mwptools/samples/mwp-radar-sim
 make && sudo make install
-``` 
+```
 
 ## Usage
 
@@ -30,6 +30,7 @@ Application Options:
   -r, --range=metres         Max range
   -s, --speed=metres/sec     Initial speed
   -a, --alt=metres           Initial altitude
+  -2, --mspv2                Use MSPV2
 ```
 ### Options
 
@@ -67,10 +68,3 @@ Then start the simulator:
 ```
 $ mwp-radar-sim -d udp://localhost:3000
 ```
-
-
-
-
-
-
-

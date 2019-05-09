@@ -10,6 +10,7 @@ private static int maxrange;
 private static int dspeed;
 private static int  dalt;
 private static string llstr = null;
+private static bool use_v2 = false;
 
 const OptionEntry[] options = {
     { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", "115200"},
@@ -18,6 +19,7 @@ const OptionEntry[] options = {
     { "range", 'r', 0, OptionArg.INT, out maxrange, "Max range", "metres"},
     { "speed", 's', 0, OptionArg.INT, out dspeed, "Initial speed", "metres/sec"},
     { "alt", 'a', 0, OptionArg.INT, out dalt, "Initial altitude","metres"},
+    { "mspv2", '2', 0, OptionArg.NONE, out use_v2, "Use MSPV2", null},
     {null}
 };
 
@@ -47,6 +49,7 @@ public class RadarSim : Object
     private MWSerial msp;
     private double hlat = HLAT;
     private double hlon = HLON;
+    private MSP.Cmds cmd;
 
     public RadarSim()
     {
@@ -78,6 +81,8 @@ public class RadarSim : Object
             radar_plot[i].heading = 45 + i * (360 / MAXRADAR);
             radar_plot[i].lq = 0;
         }
+
+        cmd = (use_v2) ? MSP.Cmds.COMMON_SET_RADAR_POS : MSP.Cmds.RADAR_POS;
         open_serial();
     }
 
@@ -160,7 +165,7 @@ public class RadarSim : Object
         p = serialise_u16(p, (uint16)r.heading);
         p = serialise_u16(p, (uint16)(r.speed*100));
         *p++ = r.lq;
-        msp.send_command(MSP.Cmds.RADAR_POS, buf, (size_t)(p - &buf[0]));
+        msp.send_command(cmd, buf, (size_t)(p - &buf[0]));
     }
 }
 
