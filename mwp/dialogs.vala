@@ -295,26 +295,38 @@ public class RadarView : Object
 {
 
     public Gtk.Grid grid {get; private set;}
-    private Gtk.Label rlab[7];
+    private Gtk.Label [,] rlab;
     private Gtk.Dialog w;
     private bool vis = false;
+    public const int MAXRADAR = 8;
+    private const int [] WIDTHS = {6, 16, 16, 10, 10, 10, 16 };
+    private uint maxradar;
 
-    public RadarView(Gtk.Builder builder, Gtk.Window _w)
+    public RadarView(Gtk.Builder builder, Gtk.Window _w, uint _maxradar=MAXRADAR)
     {
+        maxradar = _maxradar;
+        rlab = new Gtk.Label[maxradar+1,7];
         w = new Gtk.Dialog();
         w.title = "Radar Data";
         grid = new Gtk.Grid() ; // builder.get_object ("rv_grid") as Gtk.Grid;
-        grid.set_column_homogeneous(true);
 
-        add_label(0, "Id", "-");
-        add_label(1, "Latitude", "---");
-        add_label(2, "Longitude", "---");
-        add_label(3, "Altitude", "---");
-        add_label(4, "Course", "---");
-        add_label(5, "Speed", "---");
-        add_label(6, "Status / lq", "- / -");
+        add_row(0, 0, "Id");
+        add_row(0, 1, "Latitude");
+        add_row(0, 2, "Longitude");
+        add_row(0, 3, "Altitude");
+        add_row(0, 4, "Course");
+        add_row(0, 5, "Speed");
+        add_row(0, 6, "Status / lq");
+
+        for (var i = 0; i < maxradar; i++)
+        {
+            add_row(i+1,0, "# %c".printf(i+65));
+            for(var j = 1; j < 7; j++)
+                add_row(i+1, j, "");
+            clear_radar(i, true);
+        }
+
         w.get_content_area().add(grid);
-
         w.set_transient_for(_w);
         w.delete_event.connect (() => {
                 show_or_hide();
@@ -327,69 +339,56 @@ public class RadarView : Object
 
     }
 
-    private void add_label(int n, string title, string defval)
+    private void add_row(int row, int col, string? defval)
     {
-        var lab =  new Gtk.Label("");
-        rlab[n] = new Gtk.Label("");
-        lab.xalign = 0.0f;
-        rlab[n].xalign = 0.0f;
-        lab.width_chars = 16;
-        rlab[n].width_chars = 24;
+        rlab[row,col] = new Gtk.Label("");
+        rlab[row,col].xalign = 0.0f;
+        rlab[row,col].width_chars = WIDTHS[col];
 
-        if (n == 0)
+        if (row == 0 || col == 0)
         {
-            lab.set_use_markup(true);
-            lab.label = "<b>%s</b>".printf(title);
-            rlab[n].set_use_markup(true);
-            rlab[n].label = "<b>%s</b>".printf(defval);
+            rlab[row,col].set_use_markup(true);
+            rlab[row,col].label = "<b>%s</b>".printf(defval);
         }
         else
         {
-            lab.label = title;
-            rlab[n].label = defval;
+            rlab[row,col].label = defval;
         }
-        grid.attach(lab, 0, n, 1, 1);
-        grid.attach(rlab[n], 1, n, 1, 1);
+        grid.attach(rlab[row, col], col, row, 1, 1);
     }
 
     public void  update(uint8 id, RadarPlot r, bool dms)
     {
         string[] sts = {"Undefined", "Armed", "Hidden"};
-        if(vis)
+        if(id < maxradar && vis)
         {
-           string text;
-           if(id < 26)
-               text = "<b>%c</b>".printf(65+id);
-            else
-                text = "<b>#%u</b>".printf(id);
-
-            rlab[0].label = text;
-            if(r.state != 0)
+            int row = id + 1;
+           if(r.state != 0)
             {
-                rlab[1].label = PosFormat.lat(r.latitude,dms);
-                rlab[2].label = PosFormat.lon(r.longitude,dms);
-                rlab[3].label = "%.1f %s".printf(Units.distance(r.altitude),
+                rlab[row, 1].label = PosFormat.lat(r.latitude,dms);
+                rlab[row, 2].label = PosFormat.lon(r.longitude,dms);
+                rlab[row, 3].label = "%.1f %s".printf(Units.distance(r.altitude),
                                                       Units.distance_units());
-                rlab[4].label = "%d °".printf(r.heading);
-                rlab[5].label = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
+                rlab[row, 4].label = "%d °".printf(r.heading);
+                rlab[row, 5].label = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
             }
             else
             {
-                clear_radar(id, r, false);
+                clear_radar(id, false);
             }
 
             if(r.state > 2)
                 r.state = 0;
-            rlab[6].label = "%s / %u".printf(sts[r.state], r.lq);
+            rlab[row,6].label = "%s / %u".printf(sts[r.state], r.lq);
         }
     }
 
-    public void clear_radar(uint8 id, RadarPlot r, bool all = true)
+    public void clear_radar(uint8 id, bool all = true)
     {
         for(var k = 1; k < 6; k++)
-            rlab[k].label = "---";
+            rlab[id+1,k].label = "---";
         if(all)
-            rlab[6].label = "- / -";
+            rlab[id+1,6].label = "Undefined / -";
     }
 
     public void show_or_hide()

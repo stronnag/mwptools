@@ -1743,7 +1743,7 @@ public class MWPlanner : Gtk.Application {
         telemstatus = new TelemetryStats(builder);
         fbox  = new FlightBox(builder,window);
         dbox = new DirnBox(builder, conf.horizontal_dbox);
-        radarv = new RadarView(builder,window);
+        radarv = new RadarView(builder,window,conf.max_radar);
         view = embed.get_view();
         view.set_reactive(true);
 

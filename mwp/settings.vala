@@ -99,7 +99,7 @@ public class MWPSettings : GLib.Object
     public double deltaspeed {get; set; default=0.0;}
     public int smartport_fuel  {get; set; default = 0;}
     public int speak_amps {get; set; default=0;}
-//    public uint max_radar { get; set; default=4; }
+    public uint max_radar { get; set; default=4; }
     public string radar_device {get; set; default=null;}
 
     public signal void settings_update (string s);
@@ -364,10 +364,10 @@ public class MWPSettings : GLib.Object
         if(s == null || s == "speak-amps")
             speak_amps = settings.get_enum("speak-amps");
 
-/**
+
         if(s == null || s == "max-radar-slots")
             max_radar =  settings.get_uint("max-radar-slots");
-**/
+
         if(s == null || s == "radar-device")
         {
             radar_device = settings.get_string("radar-device");

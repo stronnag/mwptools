@@ -97,6 +97,9 @@ public class RadarSim : Object
     public void run()
     {
         var to = 500 / maxradar;
+        if (to < 100)
+            to = 100; // LoRa xmit c. 70ms + buffer
+
         tid = Timeout.add(to, () => {
                 double lat, lon;
                 double spd = radar_plot[id].speed + rand.double_range(-2.0, 2.0);
@@ -106,6 +109,8 @@ public class RadarSim : Object
                     spd = dspeed *2;
 
                 double cse = radar_plot[id].heading + rand.double_range(-5, 5);
+                if(cse < 0)
+                    cse = cse + 360;
                 cse = cse % 360;
 
                 var delta = (spd * 0.5)/1852.0; // nm

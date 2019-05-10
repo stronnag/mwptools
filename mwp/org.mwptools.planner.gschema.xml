@@ -529,11 +529,11 @@
       </description>
     </key>
 
-    <!-- key name="max-radar-slots" type="u">
+    <key name="max-radar-slots" type="u">
       <default>4</default>
       <summary>Maximum number of aircraft reported by iNav-radar</summary>
       <description>Maximum number of aircraft reported by iNav-radar</description>
-    </key -->
+    </key>
 
     <key name="radar-device" type="s">
       <default>""</default>
