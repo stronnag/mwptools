@@ -34,8 +34,8 @@ public class MWPMarkers : GLib.Object
     public Champlain.PathLayer ipath;                    // path from WP initiate to WP1
     private Champlain.PathLayer []rings;                 // range rings layers (per radius)
     private bool rth_land;
-    public Champlain.MarkerLayer rdrmarkers;                // Mission Markers
-    public Champlain.Label[] rplots;
+    private Champlain.MarkerLayer rdrmarkers;                // Mission Markers
+    private Champlain.Label[] rplots;
 
     public MWPMarkers(ListBox lb, Champlain.View view, string mkcol ="#ffffff60")
     {
@@ -47,7 +47,7 @@ public class MWPMarkers : GLib.Object
         ipath = new Champlain.PathLayer();
         rdrmarkers = new Champlain.MarkerLayer();
 
-        rplots = { null, null, null, null };
+        rplots = {};
 
         view.add_layer(rdrmarkers);
         view.add_layer(rlayer);
@@ -80,13 +80,18 @@ public class MWPMarkers : GLib.Object
 
     public void show_radar(uint8 id, RadarPlot r)
     {
-        if(rplots[id] == null)
+        if(id >= rplots.length)
         {
-            var text = "⚙ %c".printf(65+id);
+            string text;
+            if(id < 26)
+                text = "⚙ %c".printf(65+id);
+            else
+                text = "⚙ #%u".printf(id);
+
             Clutter.Color white = { 0xff,0xff,0xff, 0xff };
             Clutter.Color black = { 0,0,0, 0xff };
-
-            rplots[id] =  new Champlain.Label.with_text (text,"Sans 10",null,null);
+            var rdrp = new Champlain.Label.with_text (text,"Sans 10",null,null);
+            rplots +=  rdrp;
             rplots[id].set_alignment (Pango.Alignment.RIGHT);
             rplots[id].set_color (white);
             rplots[id].set_text_color(black);

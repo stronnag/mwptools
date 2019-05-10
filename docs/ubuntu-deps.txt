@@ -2,8 +2,6 @@
 ## Starting point for Ubuntu / Debian packages ...
 
 CONF=$1
-## If you don't to have to confirm operations
-## uncomment the following
 CONFIRM=
 [ -n "$CONF" ] && CONFIRM=-y
 
@@ -32,7 +30,7 @@ apt $CONFIRM install libncurses5-dev
 ##  apt search libvala.\*-dev
 ## and install the current package
 ## e.g.
-# apt $CONFIRM install libvala-0.36-dev
+# apt $CONFIRM install libvala-0.44-dev
 
 ## and for replay_bbox_ltm.rb
 ## ruby version 2 or later

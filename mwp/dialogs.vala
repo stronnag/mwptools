@@ -295,32 +295,24 @@ public class RadarView : Object
 {
 
     public Gtk.Grid grid {get; private set;}
-    private Gtk.Label vlabs[28];
+    private Gtk.Label rlab[7];
     private Gtk.Dialog w;
     private bool vis = false;
 
     public RadarView(Gtk.Builder builder, Gtk.Window _w)
     {
-        int row = 0;
-        int n = 0;
-
         w = new Gtk.Dialog();
         w.title = "Radar Data";
         grid = new Gtk.Grid() ; // builder.get_object ("rv_grid") as Gtk.Grid;
         grid.set_column_homogeneous(true);
 
-        for(var i = 0; i < 4; i++)
-        {
-            add_label("Id", "%c".printf(i+65), ref row, ref n,true);
-            add_label("Latitude", "---", ref row, ref n);
-            add_label("Longitude", "---", ref row, ref n);
-            add_label("Altitude", "---", ref row, ref n);
-            add_label("Course", "---", ref row, ref n);
-            add_label("Speed", "---", ref row, ref n);
-            add_label("Status / lq", "- / -", ref row, ref n);
-            if(i != 3)
-                add_separator(ref row);
-        }
+        add_label(0, "Id", "-");
+        add_label(1, "Latitude", "---");
+        add_label(2, "Longitude", "---");
+        add_label(3, "Altitude", "---");
+        add_label(4, "Course", "---");
+        add_label(5, "Speed", "---");
+        add_label(6, "Status / lq", "- / -");
         w.get_content_area().add(grid);
 
         w.set_transient_for(_w);
@@ -335,38 +327,29 @@ public class RadarView : Object
 
     }
 
-    private void add_label(string title, string defval, ref int row, ref int n, bool bold=false)
+    private void add_label(int n, string title, string defval)
     {
         var lab =  new Gtk.Label("");
-        vlabs[n] = new Gtk.Label("");
+        rlab[n] = new Gtk.Label("");
         lab.xalign = 0.0f;
-        vlabs[n].xalign = 0.0f;
+        rlab[n].xalign = 0.0f;
         lab.width_chars = 16;
-        vlabs[n].width_chars = 24;
+        rlab[n].width_chars = 24;
 
-        if (bold)
+        if (n == 0)
         {
             lab.set_use_markup(true);
             lab.label = "<b>%s</b>".printf(title);
-            vlabs[n].set_use_markup(true);
-            vlabs[n].label = "<b>%s</b>".printf(defval);
+            rlab[n].set_use_markup(true);
+            rlab[n].label = "<b>%s</b>".printf(defval);
         }
         else
         {
             lab.label = title;
-            vlabs[n].label = defval;
+            rlab[n].label = defval;
         }
-        grid.attach(lab, 0, row, 1, 1);
-        grid.attach(vlabs[n], 1, row, 1, 1);
-        n++;
-        row++;
-    }
-
-    private void add_separator(ref int row)
-    {
-        var sep = new Gtk.Separator(Gtk.Orientation.HORIZONTAL);
-        grid.attach(sep, 0, row, 2, 1);
-        row++;
+        grid.attach(lab, 0, n, 1, 1);
+        grid.attach(rlab[n], 1, n, 1, 1);
     }
 
     public void  update(uint8 id, RadarPlot r, bool dms)
@@ -374,15 +357,21 @@ public class RadarView : Object
         string[] sts = {"Undefined", "Armed", "Hidden"};
         if(vis)
         {
-            uint8 idx = id*7;
+           string text;
+           if(id < 26)
+               text = "<b>%c</b>".printf(65+id);
+            else
+                text = "<b>#%u</b>".printf(id);
+
+            rlab[0].label = text;
             if(r.state != 0)
             {
-                vlabs[idx+1].label = PosFormat.lat(r.latitude,dms);
-                vlabs[idx+2].label = PosFormat.lon(r.longitude,dms);
-                vlabs[idx+3].label = "%.1f %s".printf(Units.distance(r.altitude),
+                rlab[1].label = PosFormat.lat(r.latitude,dms);
+                rlab[2].label = PosFormat.lon(r.longitude,dms);
+                rlab[3].label = "%.1f %s".printf(Units.distance(r.altitude),
                                                       Units.distance_units());
-                vlabs[idx+4].label = "%d °".printf(r.heading);
-                vlabs[idx+5].label = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
+                rlab[4].label = "%d °".printf(r.heading);
+                rlab[5].label = "%.0f %s".printf(Units.speed(r.speed), Units.speed_units());
             }
             else
             {
@@ -391,17 +380,16 @@ public class RadarView : Object
 
             if(r.state > 2)
                 r.state = 0;
-            vlabs[idx+6].label = "%s / %u".printf(sts[r.state], r.lq);
+            rlab[6].label = "%s / %u".printf(sts[r.state], r.lq);
         }
     }
 
     public void clear_radar(uint8 id, RadarPlot r, bool all = true)
     {
-        uint8 idx = id*7;
         for(var k = 1; k < 6; k++)
-            vlabs[idx+k].label = "---";
+            rlab[k].label = "---";
         if(all)
-            vlabs[idx+6].label = "- / -";
+            rlab[6].label = "- / -";
     }
 
     public void show_or_hide()

@@ -31,25 +31,30 @@ Application Options:
   -s, --speed=metres/sec     Initial speed
   -a, --alt=metres           Initial altitude
   -2, --mspv2                Use MSPV2
+  -m, --max-radar=4          number of radar slots
 ```
 ### Options
 
-* device : The name of the input device; all mwp device options are available (serial, IP, BT, USB, wifi, sockets etc.) e.g.
+* **device** : The name of the input device; all mwp device options are available (serial, IP, BT, USB, wifi, sockets etc.) e.g.
  - `/dev/ttyUSB0`, `/dev/ttyACM0` (usb ttl adapters)
  - `/dev/rfcomm0`, `00:14:03:11:35:16` (BT, by device or address)
  - `udp://:3000`, `tcp://random-host:23` (IP sockets)
 
   On Linux, `/dev/ttyUSB0` and `/dev/ttyACM0` are automatically probed.
 
-* baud: Where required, default is `115200`
+* **baud** : Where required, default is `115200`
 
-* centre: The central location / start point. A delimited string of decimal latitude and longitude, delimiters are ' ' or ','. Locale aware, default is `"54.353974 -4.5236"`.
+* **centre** : The central location / start point. A delimited string of decimal latitude and longitude, delimiters are ' ' or ','. Locale aware, default is `"54.353974 -4.5236"`.
 
-* range : The maximum range before the simulated aircraft turn around, default is 500m.
+* **range** : The maximum range before the simulated aircraft turn around, default is 500m.
 
-* speed : Initial speed, default 15 m/s.
+* **speed** : Initial speed, default 15 m/s.
 
-* alt: Initial altitude, default is 50m.
+* **alt** : Initial altitude, default is 50m.
+
+* **mspv2** : Use MSPv2 protocol (default is v1)
+
+* **max-radar** : Number of radar slots, default is 4. Should not exceed the mwp setting `max-radar-slots`.
 
 ## Sample usage
 

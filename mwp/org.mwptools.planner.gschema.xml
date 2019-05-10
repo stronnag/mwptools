@@ -511,7 +511,6 @@
       <description>Whether the position label is the centre or pointer location</description>
     </key>
 
-
     <key name="delta-minspeed" type="d">
       <default>0.0</default>
       <summary>Minimum speed for elapsed distance updates</summary>
@@ -528,6 +527,20 @@
       <description>
 	none, live-n, all-n n=1,2,4 : n = how often spoken (modulus basically)
       </description>
+    </key>
+
+    <!-- key name="max-radar-slots" type="u">
+      <default>4</default>
+      <summary>Maximum number of aircraft reported by iNav-radar</summary>
+      <description>Maximum number of aircraft reported by iNav-radar</description>
+    </key -->
+
+    <key name="radar-device" type="s">
+      <default>""</default>
+      <summary>Device node dedicated for iNav-radar</summary>
+      <description>If supplied, the device will be used for iNav radar
+      reports. This does not preclude iNav-radar reports on the main
+      MSP device.</description>
     </key>
 
   </schema>

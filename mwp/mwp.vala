@@ -648,7 +648,7 @@ public class MWPlanner : Gtk.Application {
     private TelemStats telstats;
     private LayMan lman;
 
-    private RadarPlot radar_plot[4];
+    private RadarPlot[] radar_plot={};
 
     public enum NAVCAPS
     {
@@ -6424,36 +6424,37 @@ public class MWPlanner : Gtk.Application {
             case MSP.Cmds.COMMON_SET_RADAR_POS:
                 uint8* rp = raw;
                 uint8 id = *rp++;
-                if (id < 4)
+                if(id >= radar_plot.length)
                 {
-                    int32 ipos;
-                    uint16 ispd;
-                    radar_plot[id].state = *rp++;
-                    rp = deserialise_i32(rp, out ipos);
-                    radar_plot[id].latitude = ipos/10000000.0;
-                    rp = deserialise_i32(rp, out ipos);
-                    radar_plot[id].longitude = ipos/10000000.0;
-                    rp = deserialise_i32(rp, out ipos);
-                    radar_plot[id].altitude = ipos/100.0;
-                    rp = deserialise_u16(rp, out radar_plot[id].heading);
-                    rp = deserialise_u16(rp, out ispd);
-                    radar_plot[id].speed = ispd/100.0;
-                    radar_plot[id].lq = *rp;
-                    radar_plot[id].lasttick = nticks;
-/*
-                    MWPLog.message("Radar for %u %f %f %.1f %u° %.1f\n",
-                                   id,
-                                   radar_plot[id].latitude,
-                                   radar_plot[id].longitude,
-                                   radar_plot[id].altitude,
-                                   radar_plot[id].heading,
-                                   radar_plot[id].speed,
-                                   radar_plot[id].lq);
-*/
-                    markers.show_radar(id, radar_plot[id]);
-                    radarv.update(id, radar_plot[id], conf.dms);
-//                                  item_visible(DOCKLETS.RADAR));
+                    var rdrp = RadarPlot();
+                    radar_plot += rdrp;
                 }
+                int32 ipos;
+                uint16 ispd;
+                radar_plot[id].state = *rp++;
+                rp = deserialise_i32(rp, out ipos);
+                radar_plot[id].latitude = ipos/10000000.0;
+                rp = deserialise_i32(rp, out ipos);
+                radar_plot[id].longitude = ipos/10000000.0;
+                rp = deserialise_i32(rp, out ipos);
+                radar_plot[id].altitude = ipos/100.0;
+                rp = deserialise_u16(rp, out radar_plot[id].heading);
+                rp = deserialise_u16(rp, out ispd);
+                radar_plot[id].speed = ispd/100.0;
+                radar_plot[id].lq = *rp;
+                radar_plot[id].lasttick = nticks;
+/*
+  MWPLog.message("Radar for %u %f %f %.1f %u° %.1f\n",
+  id,
+  radar_plot[id].latitude,
+  radar_plot[id].longitude,
+  radar_plot[id].altitude,
+  radar_plot[id].heading,
+  radar_plot[id].speed,
+  radar_plot[id].lq);
+*/
+                markers.show_radar(id, radar_plot[id]);
+                radarv.update(id, radar_plot[id], conf.dms);
                 break;
 
             default:

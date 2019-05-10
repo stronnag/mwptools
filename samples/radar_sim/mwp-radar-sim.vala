@@ -3,12 +3,14 @@ private const double HLON = -4.52369;
 private const int ALT = 50;
 private const int SPD = 15;
 private const int MAXRANGE = 500;
+private const int MAXRADAR = 4;
 
 private static int baud = 115200;
 private static string dev;
 private static int maxrange;
 private static int dspeed;
 private static int  dalt;
+private static int  maxradar;
 private static string llstr = null;
 private static bool use_v2 = false;
 
@@ -20,6 +22,7 @@ const OptionEntry[] options = {
     { "speed", 's', 0, OptionArg.INT, out dspeed, "Initial speed", "metres/sec"},
     { "alt", 'a', 0, OptionArg.INT, out dalt, "Initial altitude","metres"},
     { "mspv2", '2', 0, OptionArg.NONE, out use_v2, "Use MSPV2", null},
+    { "max-radar", 'm', 0, OptionArg.INT, out maxradar, "number of radar slots", "4"},
     {null}
 };
 
@@ -31,7 +34,7 @@ public struct RadarPlot
     double latitude;
     double longitude;
     double altitude;
-    uint16 heading;
+    double heading;
     double speed;
     uint8 lq;
     uint lasttick;
@@ -39,9 +42,7 @@ public struct RadarPlot
 
 public class RadarSim : Object
 {
-    private const uint8 MAXRADAR = 4;
-
-    private RadarPlot radar_plot[4];
+    private RadarPlot []radar_plot;
     private uint8 id;
     private bool quit;
     private uint tid;
@@ -53,6 +54,11 @@ public class RadarSim : Object
 
     public RadarSim()
     {
+        if(maxradar > 255)
+            maxradar = 255;
+
+        radar_plot = new RadarPlot[maxradar];
+
         if(llstr != null)
         {
             string[] delims =  {" ",","};
@@ -71,14 +77,16 @@ public class RadarSim : Object
         rand  = new Rand();
         id = 0;
         quit = false;
-        for (var i = 0; i < MAXRADAR; i++)
+        double  angle = 360.0 / maxradar;
+        for (var i = 0; i < maxradar; i++)
         {
             radar_plot[i].state = 0;
             radar_plot[i].latitude = hlat;
             radar_plot[i].longitude = hlon;
             radar_plot[i].altitude = dalt;
             radar_plot[i].speed = dspeed;
-            radar_plot[i].heading = 45 + i * (360 / MAXRADAR);
+            var aoffset = 45 + i * angle % 360;
+            radar_plot[i].heading = aoffset;
             radar_plot[i].lq = 0;
         }
 
@@ -88,7 +96,8 @@ public class RadarSim : Object
 
     public void run()
     {
-        tid = Timeout.add(125, () => {
+        var to = 500 / maxradar;
+        tid = Timeout.add(to, () => {
                 double lat, lon;
                 double spd = radar_plot[id].speed + rand.double_range(-2.0, 2.0);
                 if (spd < dspeed/2)
@@ -96,7 +105,7 @@ public class RadarSim : Object
                 if (spd > dspeed * 2)
                     spd = dspeed *2;
 
-                double cse = (int)radar_plot[id].heading + rand.int_range(-5, 5);
+                double cse = radar_plot[id].heading + rand.double_range(-5, 5);
                 cse = cse % 360;
 
                 var delta = (spd * 0.5)/1852.0; // nm
@@ -110,7 +119,7 @@ public class RadarSim : Object
                 radar_plot[id].longitude = lon;
                 radar_plot[id].altitude += rand.double_range(-0.5, 0.5);
                 radar_plot[id].speed = spd;
-                radar_plot[id].heading = (uint16)cse;
+                radar_plot[id].heading = cse;
                 radar_plot[id].lq += 1;
 
                 transmit_radar(radar_plot[id]);
@@ -121,10 +130,10 @@ public class RadarSim : Object
                             out dist, out cse);
 
                 if(dist*1852.0 > maxrange)
-                    radar_plot[id].heading = (uint16)cse;
+                    radar_plot[id].heading = cse;
 
                 id += 1;
-                if (id == MAXRADAR)
+                if (id == maxradar)
                     id = 0;
                 return Source.CONTINUE;
             });
@@ -175,6 +184,7 @@ public static int main (string[] args)
     dalt = ALT;
     dspeed = SPD;
     maxrange = MAXRANGE;
+    maxradar = MAXRADAR;
 
     ml = new MainLoop();
 
