@@ -535,13 +535,13 @@
       <description>Maximum number of aircraft reported by iNav-radar</description>
     </key>
 
-    <key name="radar-device" type="s">
+    <!-- key name="radar-device" type="s">
       <default>""</default>
       <summary>Device node dedicated for iNav-radar</summary>
       <description>If supplied, the device will be used for iNav radar
       reports. This does not preclude iNav-radar reports on the main
       MSP device.</description>
-    </key>
+    </key -->
 
   </schema>
 </schemalist>

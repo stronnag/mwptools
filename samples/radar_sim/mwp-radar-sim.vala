@@ -156,7 +156,6 @@ public class RadarSim : Object
             msp.serial_lost.connect(() => {
                     if(tid > 0)
                         Source.remove(tid);
-                    msp.close();
                     ml.quit();
                 });
         }

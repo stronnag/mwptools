@@ -161,6 +161,7 @@ public class SportDev : Object
 
 public class MWSerial : Object
 {
+    private string devname;
     private int fd=-1;
     private IOChannel io_read;
     private Socket skt;
@@ -301,10 +302,11 @@ public class MWSerial : Object
 
     public MWSerial.reader()
     {
-        available = sport = false;
+        available = sport = fwd = false;
         ro = true;
         rxbuf_alloc = MemAlloc.RX;
         rxbuf = new uint8[rxbuf_alloc];
+        devbuf = new uint8[MemAlloc.DEV];
     }
 
     public MWSerial.smartport()
@@ -313,6 +315,7 @@ public class MWSerial : Object
         fwd = available = false;
         rxbuf_alloc = MemAlloc.RX;
         rxbuf = new uint8[rxbuf_alloc];
+        devbuf = new uint8[MemAlloc.DEV];
     }
 
     public void sport_handler(uint32 a, uint32 b)
@@ -408,7 +411,7 @@ public class MWSerial : Object
                         skt = new Socket (fam, SocketType.DATAGRAM, SocketProtocol.UDP);
                         skt.bind (sa, true);
                         fd = skt.fd;
-                        print("bind %s %d %d\n", fam.to_string(), fd, port);
+//                        print("bind %s %d %d\n", fam.to_string(), fd, port);
                         break;
                     }
                     if(rhost != null && rport != 0)
@@ -516,6 +519,8 @@ public class MWSerial : Object
         else
             device = _device.substring(0,n);
 
+        devname = device;
+
         estr=null;
 
         print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
@@ -604,6 +609,7 @@ public class MWSerial : Object
 
     public bool open_fd(int _fd, int rate, bool rawfd = false)
     {
+        devname = "fd #%d\n".printf(fd);
         fd = _fd;
         sport = fwd =  false;
         if(rate != -1)
@@ -704,13 +710,14 @@ public class MWSerial : Object
         spdev.extract_messages(sport_handler, raw, len);
     }
 
-    private string show_cond(IOCondition cond)
+    private void show_cond(IOCondition cond)
     {
-        string iocs="";
+        StringBuilder sb = new StringBuilder("");
+        sb.append_printf("Close %s : ", devname);
 #if LSRVAL
-    iocs = "Close fd %d on (%x)\r\n".printf(fd, cond);
+        // no to_string for conditions
 #else
-        StringBuilder sb = new StringBuilder();
+        sb.append_c(' ');
         for(var j = 0; j < 8; j++)
         {
             IOCondition n = (IOCondition)(1 << j);
@@ -721,9 +728,9 @@ public class MWSerial : Object
             }
         }
         sb.truncate(sb.len-1);
-        iocs = sb.str;
 #endif
-        return iocs;
+        sb.append_printf(" (%x)\n", cond);
+        MWPLog.message(sb.str);
     }
 
     private bool device_read(IOChannel gio, IOCondition cond)
@@ -732,10 +739,10 @@ public class MWSerial : Object
 
         if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
         {
+            show_cond(cond);
             available = false;
             if(fd != -1)
                 serial_lost();
-            MWPLog.message("Close fd %d on %s (%x)\r\n", fd,show_cond(cond),cond);
             tag = 0; // REMOVE will remove the iochannel watch
             return Source.REMOVE;
         }
@@ -752,7 +759,6 @@ public class MWSerial : Object
                 res = Posix.read(fd,devbuf,MemAlloc.DEV);
                 if(res == 0)
                 {
-//                    MWPLog.message("Read 0 %d on %s (%x)\r\n", fd,show_cond(cond),cond);
                     if((commode & ComMode.TTY) != ComMode.TTY)
                         serial_lost();
                     return Source.CONTINUE;

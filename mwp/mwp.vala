@@ -364,6 +364,7 @@ public class MWPlanner : Gtk.Application {
     public static MWPSettings conf;
     private MWSerial msp;
     private MWSerial fwddev;
+    private MWSerial rdrdev;
     private Gtk.Button conbutton;
     private Gtk.ComboBoxText dev_entry;
     private Gtk.Label verlab;
@@ -832,6 +833,7 @@ public class MWPlanner : Gtk.Application {
     private static string bfile = null;
     private static string forward_device = null;
     private static string sport_device = null;
+    private static string radar_device = null;
     private static int dmrtype=0;
     private static DEBUG_FLAGS debug_flags = 0;
     private static VersInfo vi ={0};
@@ -903,6 +905,7 @@ public class MWPlanner : Gtk.Application {
         { "wayland", 0, 0, OptionArg.NONE, out use_wayland, "force wayland (if available)", null},
         { "really-really-run-as-root", 0, 0, OptionArg.NONE, out asroot, "no reason to ever use this", null},
         { "forward-to", 0, 0, OptionArg.STRING, out forward_device, "forward telemetry to", "device-name"},
+        { "radar-device", 0, 0, OptionArg.STRING, out radar_device, "dedicated inav radar device", "device-name"},
         { "smartport", 0, 0, OptionArg.STRING, out sport_device, "smartport device", "device-name"},
         {"perma-warn", 0, 0, OptionArg.NONE, out permawarn, "info dialogues never time out", null},
         {"fsmenu", 0, 0, OptionArg.NONE, out nofsmenu, "use a menu bar in full screen (vice a menu button)", null},
@@ -2028,6 +2031,21 @@ public class MWPlanner : Gtk.Application {
         if(forward_device != null)
             fwddev = new MWSerial.forwarder();
 
+        if(radar_device != null)
+        {
+            rdrdev = new MWSerial.reader();
+//            rdrdev.serial_lost.connect(() => {  });
+            rdrdev.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
+                handle_radar(cmd,raw,len,xflags,errs);
+                });
+
+            try_radar_dev();
+            Timeout.add_seconds(15, () => {
+                    try_radar_dev();
+                    return Source.CONTINUE;
+                });
+        }
+
         mq = new Queue<MQI?>();
 
         build_deventry();
@@ -3135,6 +3153,8 @@ public class MWPlanner : Gtk.Application {
 
         mss.__connect_device.connect((s) => {
                 int n = append_deventry(s);
+                if(n == -1)
+                    return false;
                 dev_entry.active = n;
                 connect_serial();
                 return msp.available;
@@ -3238,6 +3258,9 @@ public class MWPlanner : Gtk.Application {
 
     private int append_deventry(string s)
     {
+        if(s == radar_device)
+            return -1;
+
         var n = find_deventry(s);
         if (n == -1)
         {
@@ -3251,6 +3274,9 @@ public class MWPlanner : Gtk.Application {
 
     private void prepend_deventry(string s)
     {
+        if(s == radar_device)
+            return;
+
         var n = find_deventry(s);
         if (n == -1)
         {
@@ -4826,7 +4852,6 @@ public class MWPlanner : Gtk.Application {
         }
     }
 
-
     private void process_msp_analog(MSP_ANALOG an)
     {
         if(have_mspradio)
@@ -4847,6 +4872,13 @@ public class MWPlanner : Gtk.Application {
             Logger.analog(an);
         }
         set_bat_stat(an.vbat);
+    }
+
+    public void handle_radar(MSP.Cmds cmd, uint8[] raw, uint len,
+                              uint8 xflags, bool errs)
+    {
+        if (cmd == MSP.Cmds.RADAR_POS || cmd == MSP.Cmds.COMMON_SET_RADAR_POS)
+            process_radar_pos(raw);
     }
 
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
@@ -6422,39 +6454,7 @@ public class MWPlanner : Gtk.Application {
 
             case MSP.Cmds.RADAR_POS:
             case MSP.Cmds.COMMON_SET_RADAR_POS:
-                uint8* rp = raw;
-                uint8 id = *rp++;
-                if(id >= radar_plot.length)
-                {
-                    var rdrp = RadarPlot();
-                    radar_plot += rdrp;
-                }
-                int32 ipos;
-                uint16 ispd;
-                radar_plot[id].state = *rp++;
-                rp = deserialise_i32(rp, out ipos);
-                radar_plot[id].latitude = ipos/10000000.0;
-                rp = deserialise_i32(rp, out ipos);
-                radar_plot[id].longitude = ipos/10000000.0;
-                rp = deserialise_i32(rp, out ipos);
-                radar_plot[id].altitude = ipos/100.0;
-                rp = deserialise_u16(rp, out radar_plot[id].heading);
-                rp = deserialise_u16(rp, out ispd);
-                radar_plot[id].speed = ispd/100.0;
-                radar_plot[id].lq = *rp;
-                radar_plot[id].lasttick = nticks;
-/*
-  MWPLog.message("Radar for %u %f %f %.1f %u° %.1f\n",
-  id,
-  radar_plot[id].latitude,
-  radar_plot[id].longitude,
-  radar_plot[id].altitude,
-  radar_plot[id].heading,
-  radar_plot[id].speed,
-  radar_plot[id].lq);
-*/
-                markers.show_radar(id, radar_plot[id]);
-                radarv.update(id, radar_plot[id], conf.dms);
+                process_radar_pos(raw);
                 break;
 
             default:
@@ -6511,6 +6511,42 @@ public class MWPlanner : Gtk.Application {
             }
         }
         run_queue();
+    }
+
+    void process_radar_pos(uint8 *rp)
+    {
+        uint8 id = *rp++;
+        if(id >= radar_plot.length)
+        {
+            var rdrp = RadarPlot();
+            radar_plot += rdrp;
+        }
+        int32 ipos;
+        uint16 ispd;
+        radar_plot[id].state = *rp++;
+        rp = deserialise_i32(rp, out ipos);
+        radar_plot[id].latitude = ipos/10000000.0;
+        rp = deserialise_i32(rp, out ipos);
+        radar_plot[id].longitude = ipos/10000000.0;
+        rp = deserialise_i32(rp, out ipos);
+        radar_plot[id].altitude = ipos/100.0;
+        rp = deserialise_u16(rp, out radar_plot[id].heading);
+        rp = deserialise_u16(rp, out ispd);
+        radar_plot[id].speed = ispd/100.0;
+        radar_plot[id].lq = *rp;
+        radar_plot[id].lasttick = nticks;
+/*
+  MWPLog.message("Radar for %u %f %f %.1f %u° %.1f\n",
+  id,
+  radar_plot[id].latitude,
+  radar_plot[id].longitude,
+  radar_plot[id].altitude,
+  radar_plot[id].heading,
+  radar_plot[id].speed,
+  radar_plot[id].lq);
+*/
+        markers.show_radar(id, radar_plot[id]);
+        radarv.update(id, radar_plot[id], conf.dms);
     }
 
     private void set_typlab()
@@ -7254,6 +7290,22 @@ public class MWPlanner : Gtk.Application {
             }
         }
         return fwddev.available;
+    }
+
+    private void try_radar_dev()
+    {
+        string fstr = null;
+        if(!rdrdev.available)
+        {
+            if(rdrdev.open (radar_device, 0, out fstr) == true)
+            {
+                MWPLog.message("start radar reader %s\n", radar_device);
+            }
+            else
+            {
+                MWPLog.message("Radar reader %s\n", fstr);
+            }
+        }
     }
 
     private void connect_serial()
