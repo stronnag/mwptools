@@ -609,7 +609,7 @@ public class MWSerial : Object
 
     public bool open_fd(int _fd, int rate, bool rawfd = false)
     {
-        devname = "fd #%d\n".printf(fd);
+        devname = "fd #%d".printf(_fd);
         fd = _fd;
         sport = fwd =  false;
         if(rate != -1)
