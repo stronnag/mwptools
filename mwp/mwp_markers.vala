@@ -80,7 +80,7 @@ public class MWPMarkers : GLib.Object
 
     public void set_radar_stale(uint8 id)
     {
-        Clutter.Color less_white = { 0xa0,0xa0,0xa0, 0xd0};
+        Clutter.Color less_white = { 0xc0,0xc0,0xc0, 0xf0};
         rplots[id].set_color (less_white);
     }
 

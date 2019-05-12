@@ -2176,7 +2176,7 @@ public class MWPlanner : Gtk.Application {
         pane.pack1(embed,true, true);
         pane.pack2(box, true, true);
 
-        Timeout.add_seconds(5, () => { return try_connect(); });
+//        Timeout.add_seconds(5, () => { return try_connect(); });
         if(set_fs)
             window.fullscreen();
         else if (no_max == false)
@@ -2449,6 +2449,7 @@ public class MWPlanner : Gtk.Application {
         {
             autocon_cb.active=true;
             mkcon = true;
+            try_connect();
         }
 
         if(conf.mag_sanity != null)
@@ -3597,7 +3598,12 @@ public class MWPlanner : Gtk.Application {
                 {
                     if((nticks - r.lasttick) > RADARINTVL)
                     {
-                        markers.set_radar_stale(r.id);
+                        if(r.state != 3)
+                        {
+                            r.state = 3;
+                            radarv.update(r, conf.dms);
+                            markers.set_radar_stale(r.id);
+                        }
                     }
                 }
                 return Source.CONTINUE;
@@ -6545,7 +6551,7 @@ public class MWPlanner : Gtk.Application {
   radar_plot[id].heading, radar_plot[id].speed, radar_plot[id].lq);
 */
         markers.show_radar(id, radar_plot[id]);
-        radarv.update(id, radar_plot[id], conf.dms);
+        radarv.update(radar_plot[id], conf.dms);
     }
 
     private void set_typlab()
@@ -7383,9 +7389,9 @@ public class MWPlanner : Gtk.Application {
             {
                 if (autocon == false || autocount == 0)
                 {
-                    mwp_warning_box("Unable to open serial device\n%s\nPlease verify you are a member of the owning group\nTypically \"dialout\" or \"uucp\"\n".printf(estr));
+                    mwp_warning_box("Unable to open serial device\n%s\nPlease verify you are a member of the owning group\nTypically \"dialout\" or \"uucp\"\n".printf(estr), Gtk.MessageType.WARNING, 60);
                 }
-                autocount = ((autocount + 1) % 4);
+                autocount = ((autocount + 1) % 12);
             }
             reboot_status();
         }

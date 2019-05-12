@@ -357,12 +357,12 @@ public class RadarView : Object
         grid.attach(rlab[row, col], col, row, 1, 1);
     }
 
-    public void  update(uint8 id, RadarPlot r, bool dms)
+    public void  update(RadarPlot r, bool dms)
     {
-        string[] sts = {"Undefined", "Armed", "Hidden"};
-        if(id < maxradar && vis)
+        string[] sts = {"Undefined", "Armed", "Hidden", "Stale"};
+        if(r.id < maxradar && vis)
         {
-            int row = id + 1;
+            int row = r.id + 1;
            if(r.state != 0)
             {
                 rlab[row, 1].label = PosFormat.lat(r.latitude,dms);
@@ -374,10 +374,10 @@ public class RadarView : Object
             }
             else
             {
-                clear_radar(id, false);
+                clear_radar(r.id, false);
             }
 
-            if(r.state > 2)
+            if(r.state >= sts.length)
                 r.state = 0;
             rlab[row,6].label = "%s / %u".printf(sts[r.state], r.lq);
         }
