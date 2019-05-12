@@ -167,6 +167,7 @@ public struct MavPOSDef
 
 public struct RadarPlot
 {
+    uint8 id;
     uint8 state;
     double latitude;
     double longitude;
@@ -801,6 +802,7 @@ public class MWPlanner : Gtk.Application {
     private const uint RESTARTINTVL=(30000/TIMINTVL);
     private const uint MAVINTVL=(2000/TIMINTVL);
     private const uint CRITINTVL=(3000/TIMINTVL);
+    private const uint RADARINTVL=(10000/TIMINTVL);
 
     private enum SATS
     {
@@ -2034,7 +2036,6 @@ public class MWPlanner : Gtk.Application {
         if(radar_device != null)
         {
             rdrdev = new MWSerial.reader();
-//            rdrdev.serial_lost.connect(() => {  });
             rdrdev.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
                 handle_radar(cmd,raw,len,xflags,errs);
                 });
@@ -2052,7 +2053,7 @@ public class MWPlanner : Gtk.Application {
         dev_entry.active = 0;
 
         devman.device_added.connect((s) => {
-                if(s.contains(" ") || msp.available)
+                if(s != null && s.contains(" ") || msp.available)
                     append_deventry(s);
                 else
                     prepend_deventry(s);
@@ -3476,16 +3477,6 @@ public class MWPlanner : Gtk.Application {
         Timeout.add(TIMINTVL, () => {
                 nticks++;
 
-/**********************
-                if((nticks % 10) == 0)
-                {
-                    MWPLog.message("#### %s %s %s %s\n",
-                                   msp.available.to_string(),
-                                   nticks.to_string(),
-                                   lastrx.to_string(),
-                                   serstate.to_string());
-                }
-****************/
                 if(msp.available)
                 {
                     if(serstate != SERSTATE.NONE)
@@ -3600,6 +3591,14 @@ public class MWPlanner : Gtk.Application {
                     }
                     elapsedlab.set_text("%02d:%02d".printf(mins,secs));
                     last_dura = duration;
+                }
+
+                foreach (var r in radar_plot)
+                {
+                    if((nticks - r.lasttick) > RADARINTVL)
+                    {
+                        markers.set_radar_stale(r.id);
+                    }
                 }
                 return Source.CONTINUE;
             });
@@ -6518,11 +6517,16 @@ public class MWPlanner : Gtk.Application {
         uint8 id = *rp++;
         if(id >= radar_plot.length)
         {
-            var rdrp = RadarPlot();
-            radar_plot += rdrp;
+            for(var j = radar_plot.length; j < id+1; j++)
+            {
+                var rdrp = RadarPlot();
+                radar_plot += rdrp;
+                radar_plot[j].id = (uint8)j;
+            }
         }
         int32 ipos;
         uint16 ispd;
+
         radar_plot[id].state = *rp++;
         rp = deserialise_i32(rp, out ipos);
         radar_plot[id].latitude = ipos/10000000.0;
@@ -6537,13 +6541,8 @@ public class MWPlanner : Gtk.Application {
         radar_plot[id].lasttick = nticks;
 /*
   MWPLog.message("Radar for %u %f %f %.1f %u° %.1f\n",
-  id,
-  radar_plot[id].latitude,
-  radar_plot[id].longitude,
-  radar_plot[id].altitude,
-  radar_plot[id].heading,
-  radar_plot[id].speed,
-  radar_plot[id].lq);
+  id, radar_plot[id].latitude, radar_plot[id].longitude, radar_plot[id].altitude,
+  radar_plot[id].heading, radar_plot[id].speed, radar_plot[id].lq);
 */
         markers.show_radar(id, radar_plot[id]);
         radarv.update(id, radar_plot[id], conf.dms);

@@ -13,6 +13,7 @@ private static int  dalt;
 private static int  maxradar;
 private static string llstr = null;
 private static bool use_v2 = false;
+private static string stale = null;
 
 const OptionEntry[] options = {
     { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", "115200"},
@@ -23,6 +24,7 @@ const OptionEntry[] options = {
     { "alt", 'a', 0, OptionArg.INT, out dalt, "Initial altitude","metres"},
     { "mspv2", '2', 0, OptionArg.NONE, out use_v2, "Use MSPV2", null},
     { "max-radar", 'm', 0, OptionArg.INT, out maxradar, "number of radar slots", "4"},
+    { "stale", 0 , 0, OptionArg.STRING, out stale, "stale id:start:end", null},
     {null}
 };
 
@@ -51,9 +53,39 @@ public class RadarSim : Object
     private double hlat = HLAT;
     private double hlon = HLON;
     private MSP.Cmds cmd;
+    private int staleid = -1;
+    private uint start_stale;
+    private uint end_stale;
+    private int rtime = 0;
 
     public RadarSim()
     {
+        if(stale != null)
+        {
+            var parts = stale.split(":");
+            if(parts.length == 3)
+            {
+                var si = int.parse(parts[0]);
+                if (si >= 0 && si < maxradar)
+                {
+                    int ss;
+                    int se;
+
+                    ss = int.parse(parts[1]);
+                    se = int.parse(parts[2]);
+                    if(ss > 0)
+                    {
+                        if(se > si)
+                        {
+                            staleid = si;
+                            start_stale = ss*1000;
+                            end_stale = se*1000;
+                        }
+                    }
+                }
+            }
+        }
+
         if(maxradar > 255)
             maxradar = 255;
 
@@ -101,6 +133,8 @@ public class RadarSim : Object
             to = 100; // LoRa xmit c. 70ms + buffer
 
         tid = Timeout.add(to, () => {
+                rtime += to;
+
                 double lat, lon;
                 double spd = radar_plot[id].speed + rand.double_range(-2.0, 2.0);
                 if (spd < dspeed/2)
@@ -127,7 +161,11 @@ public class RadarSim : Object
                 radar_plot[id].heading = cse;
                 radar_plot[id].lq += 1;
 
-                transmit_radar(radar_plot[id]);
+                if(!(staleid != -1 && id == (uint8)staleid &&
+                    rtime > start_stale && rtime < end_stale))
+                {
+                    transmit_radar(radar_plot[id]);
+                }
 
                 double dist;
                 Geo.csedist(lat, lon,

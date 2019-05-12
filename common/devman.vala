@@ -94,14 +94,18 @@ public class DevManager
     private void add_device(ObjectPath path, HashTable<string, Variant> props)
     {
         var uuids = props.get("UUIDs");
-        if(uuids.get_strv()[0].contains("00001101"))
+        var u0 = uuids.get_strv();
+        if (u0 != null && u0[0] != null)
         {
-            StringBuilder sb = new StringBuilder(props.get("Address").get_string());
-            sb.append_c(' ');
-            sb.append(props.get("Alias").get_string());
-            bt_serials += sb.str;
-            if((mask & DevMask.BT) != 0)
-                device_added(sb.str);
+            if(u0[0].contains("00001101"))
+            {
+                StringBuilder sb = new StringBuilder(props.get("Address").get_string());
+                sb.append_c(' ');
+                sb.append(props.get("Alias").get_string());
+                bt_serials += sb.str;
+                if((mask & DevMask.BT) != 0)
+                    device_added(sb.str);
+            }
         }
     }
 

@@ -78,6 +78,12 @@ public class MWPMarkers : GLib.Object
         posring.hide();
     }
 
+    public void set_radar_stale(uint8 id)
+    {
+        Clutter.Color less_white = { 0xa0,0xa0,0xa0, 0xd0};
+        rplots[id].set_color (less_white);
+    }
+
     public void show_radar(uint8 id, RadarPlot r)
     {
         if(id >= rplots.length)
@@ -87,18 +93,17 @@ public class MWPMarkers : GLib.Object
                 text = "⚙ %c".printf(65+id);
             else
                 text = "⚙ #%u".printf(id);
-
-            Clutter.Color white = { 0xff,0xff,0xff, 0xff };
             Clutter.Color black = { 0,0,0, 0xff };
             var rdrp = new Champlain.Label.with_text (text,"Sans 10",null,null);
             rplots +=  rdrp;
             rplots[id].set_alignment (Pango.Alignment.RIGHT);
-            rplots[id].set_color (white);
             rplots[id].set_text_color(black);
             rplots[id].set_draggable(false);
             rplots[id].set_selectable(false);
             rdrmarkers.add_marker (rplots[id]);
         }
+        Clutter.Color white = { 0xff,0xff,0xff, 0xff };
+        rplots[id].set_color (white);
         rplots[id].set_location (r.latitude,r.longitude);
     }
 
