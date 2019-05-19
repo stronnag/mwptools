@@ -333,6 +333,7 @@ class MwpDockHelper : Object
     }
 }
 
+
 public class MWPlanner : Gtk.Application {
     private const uint MAXVSAMPLE=12;
 
@@ -970,6 +971,8 @@ public class MWPlanner : Gtk.Application {
     {
         if(msp.available)
             msp.close();
+
+        mss.quit();
 
         if(conf.atexit != null)
             try {
@@ -2813,9 +2816,10 @@ public class MWPlanner : Gtk.Application {
                 else
                     mwflags = xbits; // don't know better
 
-                armed_processing(mwflags,"Sport");
+                var achg = armed_processing(mwflags,"Sport");
                 var xws = want_special;
-                if(ltmflags != last_ltmf)
+                var mchg = (ltmflags != last_ltmf);
+                if (mchg)
                 {
                     last_ltmf = ltmflags;
                     if(ltmflags == 9)
@@ -2843,6 +2847,10 @@ public class MWPlanner : Gtk.Application {
                                    xws, want_special);
                     fmodelab.set_label(lmstr);
                 }
+
+                if(achg || mchg)
+                    update_mss_state(ltmflags);
+
                 if(want_special != 0 /* && have_home*/)
                     process_pos_states(xlat,xlon, 0, "SPort status");
 
@@ -3007,6 +3015,63 @@ public class MWPlanner : Gtk.Application {
 
             default:
                 break;
+        }
+    }
+
+    private void update_mss_state(uint8 fmode)
+    {
+        MwpServer.State s = MwpServer.State.UNDEFINED;
+        if(armed == 0)
+            s = MwpServer.State.DISARMED;
+        else
+        {
+            switch(fmode)
+            {
+                case 0:
+                    s = MwpServer.State.MANUAL;
+                    break;
+                case 1,4:
+                    s = MwpServer.State.ACRO;
+                    break;
+                case 2:
+                    s = MwpServer.State.ANGLE;
+                    break;
+                case 3:
+                    s = MwpServer.State.HORIZON;
+                    break;
+                case 8:
+                    s = MwpServer.State.ALTHOLD;
+                    break;
+                case 9:
+                    s = MwpServer.State.POSHOLD;
+                    break;
+                case 10:
+                    s = MwpServer.State.WP;
+                    break;
+                case 11:
+                    s = MwpServer.State.HEADFREE;
+                    break;
+                case 13:
+                    s = MwpServer.State.RTH;
+                    break;
+                case 15:
+                    s = MwpServer.State.RTH;
+                    break;
+                case 18:
+                    s = MwpServer.State.CRUISE;
+                    break;
+                case 20:
+                    s = MwpServer.State.LAUNCH;
+                    break;
+                case 21:
+                    s = MwpServer.State.AUTOTUNE;
+                    break;
+            }
+        }
+        if(s != mss.m_state)
+        {
+            mss.m_state = s;
+            mss.state_changed(s);
         }
     }
 
@@ -3906,8 +3971,9 @@ public class MWPlanner : Gtk.Application {
         set_menu_state("terminal", ((msp != null && msp.available && armed == 0)));
     }
 
-    private void armed_processing(uint64 flag, string reason="")
+    private bool armed_processing(uint64 flag, string reason="")
     {
+        bool changed = false;
         if(armed == 0)
         {
             armtime = 0;
@@ -3936,6 +4002,7 @@ public class MWPlanner : Gtk.Application {
 
         if(armed != larmed)
         {
+            changed = true;
             navstatus.set_replay_mode((replayer != Player.NONE));
             radstatus.annul();
             if (armed == 1)
@@ -4015,6 +4082,7 @@ public class MWPlanner : Gtk.Application {
             }
         }
         larmed = armed;
+        return changed;
     }
 
     private void update_odo(double spd, double ddm)
@@ -4085,7 +4153,12 @@ public class MWPlanner : Gtk.Application {
         }
 
         if(scflags != SAT_FLAGS.NONE)
+        {
             gps_alert(scflags);
+            mss.m_nsats = (uint8)GPSInfo.nsat;
+            mss.m_fix = (uint8)GPSInfo.fix;
+            mss.sats_changed(mss.m_nsats, mss.m_fix);
+        }
     }
 
     private void flash_gps()
@@ -4456,10 +4529,18 @@ public class MWPlanner : Gtk.Application {
             }
 
                 // acro/horizon/angle changed
+            uint8 ltmflags = 0;
+            var mchg = bxflag != xbits;
 
             if((bxflag & lmask) != (xbits & lmask))
             {
                 report_bits(bxflag);
+                if ((bxflag & horz_mask) != 0)
+                    ltmflags = 3;
+                else if((bxflag & angle_mask) != 0)
+                    ltmflags = 2;
+                else
+                    ltmflags = 1;
             }
 
             if(armed != 0)
@@ -4471,6 +4552,7 @@ public class MWPlanner : Gtk.Application {
                     MWPLog.message("set RTH on %08x %u %ds\n", bxflag,bxflag,
                                    (int)duration);
                     want_special |= POSMODE.RTH;
+                    ltmflags = 13;
                 }
                 else if ((ph_mask != 0) &&
                          ((bxflag & ph_mask) != 0) &&
@@ -4479,6 +4561,7 @@ public class MWPlanner : Gtk.Application {
                     MWPLog.message("set PH on %08x %u %ds\n", bxflag, bxflag,
                                    (int)duration);
                     want_special |= POSMODE.PH;
+                    ltmflags = 9;
                 }
                 else if ((wp_mask != 0) &&
                          ((bxflag & wp_mask) != 0) &&
@@ -4487,6 +4570,7 @@ public class MWPlanner : Gtk.Application {
                     MWPLog.message("set WP on %08x %u %ds\n", bxflag, bxflag,
                                    (int)duration);
                     want_special |= POSMODE.WP;
+                    ltmflags = 10;
                 }
                 else if ((xbits != bxflag) && craft != null)
                 {
@@ -4494,8 +4578,10 @@ public class MWPlanner : Gtk.Application {
                 }
             }
             xbits = bxflag;
+            var achg = armed_processing(bxflag,"msp");
+            if(achg || mchg)
+                update_mss_state(ltmflags);
         }
-        armed_processing(bxflag,"msp");
     }
 
     private void centre_mission(Mission ms, bool ctr_on)
@@ -4611,6 +4697,10 @@ public class MWPlanner : Gtk.Application {
                 double cse = (usemag || ((replayer & Player.MWP) == Player.MWP)) ? mhead : GPSInfo.cse;
                 craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
             }
+            mss.v_lat = GPSInfo.lat;
+            mss.v_long = GPSInfo.lon;
+            mss.v_alt = (double)NavStatus.alti.estalt/100.0;
+            mss.location_changed(mss.v_lat, mss.v_long,  mss.v_alt);
         }
         return pv;
     }
@@ -6136,9 +6226,10 @@ public class MWPlanner : Gtk.Application {
                 else
                     mwflags = xbits; // don't know better
 
-                armed_processing(mwflags,"ltm");
+                var achg = armed_processing(mwflags,"ltm");
                 var xws = want_special;
-                if(ltmflags != last_ltmf)
+                var mchg = (ltmflags != last_ltmf);
+                if(mchg)
                 {
                     last_ltmf = ltmflags;
                     if(ltmflags == 9)
@@ -6166,6 +6257,10 @@ public class MWPlanner : Gtk.Application {
                                    xlat, xlon, xws, want_special);
                     fmodelab.set_label(lmstr);
                 }
+
+                if(mchg || achg)
+                    update_mss_state(ltmflags);
+
                 if(want_special != 0 /* && have_home*/)
                     process_pos_states(xlat,xlon, 0, "SFrame");
 
@@ -6251,7 +6346,98 @@ public class MWPlanner : Gtk.Application {
                 else
                     armed = 0;
                 sensor = mavsensors;
-                armed_processing(armed,"mav");
+
+
+                uint8 ltmflags = 0;
+                if(m.type == Mav.TYPE.MAV_TYPE_FIXED_WING)
+                {
+                        // I don't believe the iNav mapping for FW ...
+                    switch(m.custom_mode)
+                    {
+                        case 0:
+                            ltmflags = 0; // manual
+                            break;
+                        case 4:
+                            ltmflags = 1; // acro
+                            break;
+                        case 2:
+                            ltmflags = 2; // angle / horiz
+                            break;
+                        case 5:
+                            ltmflags = 8;  // alth
+                            break;
+                        case 1:
+                            ltmflags = 9; // posh
+                            break;
+                        case 11:
+                            ltmflags = 13; // rth
+                            break;
+                        case 10:
+                            ltmflags = 10; // wp
+                            break;
+                        case 15:
+                            ltmflags = 20; // launch
+                            break;
+                        default:
+                            ltmflags = 1;
+                            break;
+                    }
+                }
+                else
+                {
+                    switch(m.custom_mode)
+                    {
+                        case 1:
+                            ltmflags = 1; // acro / manual
+                            break;
+                        case 0:
+                            ltmflags = 2; // angle / horz
+                            break;
+                        case 2:
+                            ltmflags = 8; // alth
+                            break;
+                        case 16:
+                            ltmflags = 9; // posh
+                            break;
+                        case 6:
+                            ltmflags = 13; // rth
+                            break;
+                        case 3:
+                            ltmflags = 10; // wp
+                            break;
+                        case 18:
+                            ltmflags = 20; // launch
+                            break;
+                        default:
+                            ltmflags = 1;
+                            break;
+                    }
+                }
+
+                var achg = armed_processing(armed,"mav");
+                var mchg = (ltmflags != last_ltmf);
+                if (mchg)
+                {
+                    last_ltmf = ltmflags;
+                    if(ltmflags == 9)
+                        want_special |= POSMODE.PH;
+                    else if(ltmflags == 10)
+                        want_special |= POSMODE.WP;
+                    else if(ltmflags == 13)
+                        want_special |= POSMODE.RTH;
+                    else if(ltmflags == 8)
+                        want_special |= POSMODE.ALTH;
+                    else if(ltmflags == 18)
+                        want_special |= POSMODE.CRUISE;
+                    else if(ltmflags != 15)
+                    {
+                        if(craft != null)
+                            craft.set_normal();
+                    }
+                }
+
+                if(achg || mchg)
+                    update_mss_state(ltmflags);
 
                 if(Logger.is_logging)
                     Logger.mav_heartbeat(m);
@@ -6295,6 +6481,7 @@ public class MWPlanner : Gtk.Application {
 
                 if(gpsfix)
                 {
+                    sat_coverage();
                     if(armed == 1)
                     {
                         if(m.vel != 0xffff)
@@ -6345,6 +6532,7 @@ public class MWPlanner : Gtk.Application {
                 break;
 
             case MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW:
+/*****
                 for (var j = 0; j < mavposdef.length; j++)
                 {
                     if(mavposdef[j].chan != 0)
@@ -6368,6 +6556,7 @@ public class MWPlanner : Gtk.Application {
                         }
                     }
                 }
+**/
                 if(Logger.is_logging)
                 {
                     Mav.MAVLINK_RC_CHANNELS m = *(Mav.MAVLINK_RC_CHANNELS*)raw;
@@ -6381,8 +6570,13 @@ public class MWPlanner : Gtk.Application {
                 var ilat  = m.latitude / 10000000.0;
                 var ilon  = m.longitude / 10000000.0;
 
-                if(want_special != 0)
+                if(home_changed(ilat, ilon))
+                {
+                    navstatus.cg_on();
+                    sflags |=  NavStatus.SPK.GPS;
+                    want_special |= POSMODE.HOME;
                     process_pos_states(ilat, ilon, m.altitude / 1000.0, "MAvOrig");
+                }
 
                 if(Logger.is_logging)
                 {
@@ -6659,6 +6853,10 @@ public class MWPlanner : Gtk.Application {
             }
             sb.append(have_home.to_string());
             MWPLog.message("Set home %f %f (%s)\n", lat, lon, sb.str);
+            mss.h_lat = lat;
+            mss.h_long = lon;
+            mss.h_alt = alt;
+            mss.home_changed(lat, lon, alt);
         }
 
         if((want_special & POSMODE.PH) != 0)

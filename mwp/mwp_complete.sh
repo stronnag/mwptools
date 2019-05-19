@@ -61,6 +61,10 @@ _mwp_complete()
       return 0
       ;;
 
+    '--radar-device')
+      return 0
+      ;;
+
     '-h'|'--help'|'-V'|'--version')
       return 0
       ;;
@@ -100,6 +104,7 @@ _mwp_complete()
 	--really-really-run-as-root
 	--forward-to
 	--perma-warn
+	--radar-device
 	--smartport
 	--fsmenu
 	--kmlfile"
