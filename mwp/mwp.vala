@@ -4535,13 +4535,14 @@ public class MWPlanner : Gtk.Application {
             if((bxflag & lmask) != (xbits & lmask))
             {
                 report_bits(bxflag);
-                if ((bxflag & horz_mask) != 0)
-                    ltmflags = 3;
-                else if((bxflag & angle_mask) != 0)
-                    ltmflags = 2;
-                else
-                    ltmflags = 1;
             }
+
+            if ((bxflag & horz_mask) != 0)
+                ltmflags = 3;
+            else if((bxflag & angle_mask) != 0)
+                ltmflags = 2;
+            else
+                ltmflags = 1;
 
             if(armed != 0)
             {
