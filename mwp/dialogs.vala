@@ -1973,11 +1973,6 @@ public class NavStatus : GLib.Object
                         (rpi == 2 && (spkamp & 1) != 0) ||
                         (rpi == 4 && spkamp == 3))
                     {
-                        print("Speak amps %s %02x %d\n",
-                              replaying.to_string(),
-                              MWPlanner.conf.speak_amps,
-                              rpi);
-
                         mt.message(AudioThread.Vox.MAH);
                     }
                 }
