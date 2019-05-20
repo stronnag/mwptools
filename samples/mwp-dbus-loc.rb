@@ -2,7 +2,7 @@
 
 ### gem install ruby-dbus
 require 'dbus'
-require 'ap'
+
 # Create bus and service object
 bus = DBus::SessionBus.instance
 service = bus.service("org.mwptools.mwp")
