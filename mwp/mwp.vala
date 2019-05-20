@@ -3031,7 +3031,8 @@ public class MWPlanner : Gtk.Application {
                 case 0:
                     s = MwpServer.State.MANUAL;
                     break;
-                case 1,4:
+                case 1:
+                case 4:
                     s = MwpServer.State.ACRO;
                     break;
                 case 2:
