@@ -48,7 +48,7 @@ public class MwpServer : Object {
     public signal void state_changed(State state);
     public signal void sats_changed(uint8 nsats, uint8 fix);
 
-    public uint dbus_pos_interval { get; set; default = 1; }
+    public uint dbus_pos_interval { get; set; default = 2;}
     public signal void quit();
 
     public int get_state_names(out string[]names) throws GLib.Error
