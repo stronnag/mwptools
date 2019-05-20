@@ -47,8 +47,9 @@ public class MwpServer : Object {
                                          double altitude);
     public signal void state_changed(State state);
     public signal void sats_changed(uint8 nsats, uint8 fix);
-    public signal void quit();
 
+    public uint dbus_pos_interval { get; set; default = 1; }
+    public signal void quit();
 
     public int get_state_names(out string[]names) throws GLib.Error
     {

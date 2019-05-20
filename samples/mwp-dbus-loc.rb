@@ -2,7 +2,7 @@
 
 ### gem install ruby-dbus
 require 'dbus'
-
+require 'ap'
 # Create bus and service object
 bus = DBus::SessionBus.instance
 service = bus.service("org.mwptools.mwp")
@@ -21,6 +21,9 @@ end
 # Set the default interface
 mwp.default_iface = "org.mwptools.mwp"
 
+# and explicity for properties
+mwpi = mwp["org.mwptools.mwp"]
+
 # dump out the interface definitions
 puts mwp.introspect
 
@@ -29,12 +32,22 @@ puts "Available states #{state_name.inspect}\n"
 
 state = mwp.GetState[0]
 puts "Inital state #{state_name[state]}"
-home = mwp.GetHome
+home = mwpi.GetHome
 puts "Init Home: #{home.join(' ')}"
 loc= mwp.GetLocation
 puts "Init Location: #{loc.join(' ')}"
 sats= mwp.GetSats
 puts "Init Sats: #{sats.join(' ')}"
+
+intvl = mwpi["DbusPosInterval"]
+print "Update Intvl #{intvl}\n"
+
+if ARGV.length == 1
+  nintvl = ARGV[0].to_i
+  mwpi["DbusPosInterval"] = DBus.variant("u", nintvl)
+  intvl = mwpi["DbusPosInterval"]
+  puts "Updated Intvl = #{intvl}"
+end
 
 mwp.on_signal("HomeChanged") do |lat,lon,alt|
   puts "Home changed: #{[lat,lon,alt].join(' ')}"

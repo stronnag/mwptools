@@ -823,6 +823,7 @@ public class MWPlanner : Gtk.Application {
 
     private Timer lastp;
     private uint nticks = 0;
+    private uint lastdbus = 0;
     private uint lastm = 0;
     private uint lastrx = 0;
     private uint last_ga = 0;
@@ -4701,7 +4702,11 @@ public class MWPlanner : Gtk.Application {
             mss.v_lat = GPSInfo.lat;
             mss.v_long = GPSInfo.lon;
             mss.v_alt = (double)NavStatus.alti.estalt/100.0;
-            mss.location_changed(mss.v_lat, mss.v_long,  mss.v_alt);
+            if(mss.dbus_pos_interval == 0 || nticks - lastdbus >= mss.dbus_pos_interval)
+            {
+                mss.location_changed(mss.v_lat, mss.v_long, mss.v_alt);
+                lastdbus = nticks;
+            }
         }
         return pv;
     }

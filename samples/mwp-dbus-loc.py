@@ -29,6 +29,15 @@ print("Init Home: ", home)
 loc  = mwp.GetLocation()
 print("Init Vehicle: ", loc)
 
+# Access the update interval property, a bit ugly ....
+iface = dbus.Interface(obj, dbus_interface='org.freedesktop.DBus.Properties')
+mg = iface.get_dbus_method("Get", dbus_interface=None)
+intvl = mg("org.mwptools.mwp", "DbusPosInterval")
+print("Pos Update Interval: ", intvl)
+# Set example
+# ms = iface.get_dbus_method("Set", dbus_interface=None)
+# ms("org.mwptools.mwp", "DbusPosInterval", dbus.UInt32(10))
+
 obj.connect_to_signal('LocationChanged', loc_handler)
 obj.connect_to_signal('HomeChanged', home_handler)
 loop = GLib.MainLoop()
