@@ -57,12 +57,12 @@ mwp.on_signal("LocationChanged") do |lat,lon,alt|
   puts "Vehicle changed: #{[lat,lon,alt].join(' ')}"
 end
 
-mwp.on_signal("PolarChanged") do |lat,lon,alt|
-  puts "Polar changed: #{[lat,lon,alt].join(' ')}"
+mwp.on_signal("PolarChanged") do |range, bearing, azimuth|
+  puts "Polar changed: #{[range, bearing, azimuth].join(' ')}"
 end
 
-mwp.on_signal("VelocityChanged") do |lat,lon,alt|
-  puts "Velocity changed: #{[lat,lon,alt].join(' ')}"
+mwp.on_signal("VelocityChanged") do |speed, course|
+  puts "Velocity changed: #{[speed, course].join(' ')}"
 end
 
 mwp.on_signal("SatsChanged") do |sats,fix|
