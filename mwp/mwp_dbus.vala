@@ -73,13 +73,13 @@ public class MwpServer : Object {
         return _names.length;
     }
 
-    public void get_velocity(out uint16 speed, uint16 course) throws GLib.Error
+    public void get_velocity(out uint16 speed, out uint16 course) throws GLib.Error
     {
         speed = v_spd;
         course = v_cse;
     }
 
-    public void get_polar_coordinates(out uint16 range, uint16 direction, uint16 azimuth) throws GLib.Error
+    public void get_polar_coordinates(out uint16 range, out uint16 direction, out uint16 azimuth) throws GLib.Error
     {
         range = v_range;
         direction = v_direction;

@@ -39,6 +39,13 @@ puts "Init Location: #{loc.join(' ')}"
 sats= mwp.GetSats
 puts "Init Sats: #{sats.join(' ')}"
 
+velo= mwp.GetVelocity
+puts "Init Velocity #{sats.join(' ')}"
+
+polar = mwp.GetPolarCoordinates
+puts "Init Polar: #{polar.join(' ')}"
+
+
 intvl = mwpi["DbusPosInterval"]
 print "Update Intvl #{intvl}\n"
 
