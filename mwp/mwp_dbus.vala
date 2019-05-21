@@ -21,11 +21,17 @@ public class MwpServer : Object {
    internal State m_state;
    internal double v_lat;
    internal double v_long;
-   internal double v_alt;
+   internal int v_alt;
 
    internal double h_lat;
    internal double h_long;
-   internal double h_alt;
+   internal int h_alt;
+
+   internal uint16 v_spd;
+   internal uint16 v_cse;
+   internal uint16 v_azimuth;
+   internal uint16 v_range;
+   internal uint16 v_direction;
 
    internal uint8 m_nsats = 0;
    internal uint8 m_fix  = 0;
@@ -42,9 +48,12 @@ public class MwpServer : Object {
    internal signal bool __connect_device(string s);
 
     public signal void home_changed (double latitude, double longitude,
-                                     double altitude);
+                                     int altitude);
     public signal void location_changed (double latitude, double longitude,
-                                         double altitude);
+                                         int altitude);
+    public signal void polar_changed(uint16 range, uint16 direction, uint16 azimuth);
+    public signal void velocity_changed(uint16 speed, uint16 course);
+
     public signal void state_changed(State state);
     public signal void sats_changed(uint8 nsats, uint8 fix);
 
@@ -62,6 +71,19 @@ public class MwpServer : Object {
         }
         names = _names;
         return _names.length;
+    }
+
+    public void get_velocity(out uint16 speed, uint16 course) throws GLib.Error
+    {
+        speed = v_spd;
+        course = v_cse;
+    }
+
+    public void get_polar_coordinates(out uint16 range, uint16 direction, uint16 azimuth) throws GLib.Error
+    {
+        range = v_range;
+        direction = v_direction;
+        azimuth = v_azimuth;
     }
 
     public void get_home(out double latitude, out double longitude,

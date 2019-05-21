@@ -3000,7 +3000,7 @@ public class MWPlanner : Gtk.Application {
             case SportDev.FrID.FUEL_ID:
                 switch (conf.smartport_fuel)
                 {
-                    case 0:
+case 0:
                         curr.mah = 0;
                         break;
                     case 1:
@@ -4700,14 +4700,38 @@ public class MWPlanner : Gtk.Application {
                 double cse = (usemag || ((replayer & Player.MWP) == Player.MWP)) ? mhead : GPSInfo.cse;
                 craft.set_lat_lon(GPSInfo.lat, GPSInfo.lon,cse);
             }
-            mss.v_lat = GPSInfo.lat;
-            mss.v_long = GPSInfo.lon;
-            mss.v_alt = (double)NavStatus.alti.estalt/100.0;
+
+            int32 talt = (int32)NavStatus.alti.estalt/100;
+            int16 tazimuth = (int16)(Math.atan2(talt,  NavStatus.cg.range)/(Math.PI/180.0));
+                // Historic MW baggage ...alas
+            var brg = NavStatus.cg.direction;
+            if(brg < 0)
+               brg += 360;
+            brg = ((brg + 180) % 360);
             if(mss.dbus_pos_interval == 0 || nticks - lastdbus >= mss.dbus_pos_interval)
             {
-                mss.location_changed(mss.v_lat, mss.v_long, mss.v_alt);
+                if(mss.v_lat != GPSInfo.lat ||
+                   mss.v_long != GPSInfo.lon ||
+                   mss.v_alt != talt)
+                    mss.location_changed(GPSInfo.lat, GPSInfo.lon, talt);
+
+                if(mss.v_azimuth != tazimuth ||
+                   NavStatus.cg.range != mss.v_range ||
+                   (uint16)brg != mss.v_direction)
+                    mss.polar_changed(NavStatus.cg.range, brg, tazimuth);
+                if(mss.v_spd != (uint16) GPSInfo.spd || mss.v_cse != (uint16)GPSInfo.cse)
+                    mss.velocity_changed((uint16)GPSInfo.spd, (uint16)GPSInfo.cse);
+
                 lastdbus = nticks;
             }
+            mss.v_lat = GPSInfo.lat;
+            mss.v_long = GPSInfo.lon;
+            mss.v_alt = talt;
+            mss.v_spd = (uint16)GPSInfo.spd;
+            mss.v_cse = (uint16)GPSInfo.cse;
+            mss.v_azimuth = tazimuth;
+            mss.v_range = NavStatus.cg.range;
+            mss.v_direction = brg;
         }
         return pv;
     }
@@ -6862,8 +6886,8 @@ public class MWPlanner : Gtk.Application {
             MWPLog.message("Set home %f %f (%s)\n", lat, lon, sb.str);
             mss.h_lat = lat;
             mss.h_long = lon;
-            mss.h_alt = alt;
-            mss.home_changed(lat, lon, alt);
+            mss.h_alt = (int32)alt;
+            mss.home_changed(lat, lon, mss.h_alt);
         }
 
         if((want_special & POSMODE.PH) != 0)
