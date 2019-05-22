@@ -12,5 +12,6 @@ local: $(APPS)
 install: $(APPS)
 	install -d $(prefix)/bin
 	install ${APPS} $(prefix)/bin/$(APPS)
+	install mwp-plot-elevations.rb $(prefix)/bin/mwp-plot-elevations.rb
 
 .PHONY: clean
