@@ -87,7 +87,7 @@ public class MwpServer : Object {
     }
 
     public void get_home(out double latitude, out double longitude,
-                         out double altitude) throws GLib.Error
+                         out int32 altitude) throws GLib.Error
     {
         latitude = h_lat;
         longitude = h_long;
@@ -95,7 +95,7 @@ public class MwpServer : Object {
     }
 
     public void get_location(out double latitude, out double longitude,
-                         out double altitude) throws GLib.Error
+                         out int32 altitude) throws GLib.Error
     {
         latitude = v_lat;
         longitude = v_long;
