@@ -148,15 +148,22 @@ public class OdoView : GLib.Object
 
     public void display(Odostats o, bool autohide=false)
     {
+        uint m,s;
         odotime.label = " %u:%02u ".printf(o.time / 60, o.time % 60);
+        m = o.spd_secs / 60;
+        s = o.spd_secs % 60;
         odospeed.label = "  %.1f ".printf(Units.speed(o.speed));
-        odospeed_u.label =  Units.speed_units();
+        odospeed_u.label =  "%s (@%u:%02u)".printf(Units.speed_units(),m,s);
         ododist.label = "  %.0f ".printf(Units.distance(o.distance));
         ododist_u.label = Units.distance_units();
         odorange.label = "  %.0f ".printf(Units.distance(o.range));
-        odorange_u.label = Units.distance_units();
+        m = o.rng_secs / 60;
+        s = o.rng_secs % 60;
+        odorange_u.label = "%s (@%u:%02u)".printf(Units.distance_units(),m,s);
         odoalt.label = "  %.0f ".printf(Units.distance(o.alt));
-        odoalt_u.label = Units.distance_units();
+        m = o.alt_secs / 60;
+        s = o.alt_secs % 60;
+        odoalt_u.label = "%s (@%u:%02u)".printf(Units.distance_units(), m,s);
         if(o.amps > 0)
         {
             double odoA = o.amps/100.0;

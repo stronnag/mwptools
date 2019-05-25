@@ -85,10 +85,13 @@ public struct Odostats
 {
     double speed;
     double distance;
-    uint time;
     double alt;
     double range;
     uint16 amps; // cenitamps
+    uint time;
+    uint alt_secs;
+    uint spd_secs;
+    uint rng_secs;
 }
 
 public struct VersInfo
@@ -4092,12 +4095,21 @@ case 0:
         odo.time = (uint)duration;
         odo.distance += ddm;
         if (spd > odo.speed)
+        {
             odo.speed = spd;
+            odo.spd_secs = odo.time;
+        }
         if(NavStatus.cg.range > odo.range)
+        {
             odo.range = NavStatus.cg.range;
+            odo.rng_secs = odo.time;
+        }
         double estalt = (double)NavStatus.alti.estalt/100.0;
         if (estalt > odo.alt)
-         odo.alt = estalt;
+        {
+            odo.alt = estalt;
+            odo.alt_secs = odo.time;
+        }
     }
 
     private void reset_poller()
@@ -5902,7 +5914,8 @@ case 0:
                 deserialise_u16(raw+1, out an.powermetersum);
                 deserialise_i16(raw+3, out an.rssi);
                 deserialise_i16(raw+5, out an.amps);
-                process_msp_analog(an);
+                if ((replayer & Player.MWP) == Player.NONE || curr.lmah == 0)
+                    process_msp_analog(an);
                 break;
 
             case MSP.Cmds.RAW_GPS:
@@ -6297,9 +6310,9 @@ case 0:
 
                 uint16 mah = sf.vcurr;
                 uint16 ivbat = (sf.vbat + 50) / 100;
-                var mahtm = GLib.get_monotonic_time ();
                     // for mwp replay, we either have analog or don't bother
-                if ((replayer & Player.MWP) == Player.NONE)
+//                if ((replayer & Player.MWP) == Player.NONE)
+//                print("s-frame %u %u %u\n", mah, curr.lmah, nticks);
                 {
                     if ((replayer & Player.BBOX) == Player.BBOX
                         && curr.bbla > 0)
@@ -6311,20 +6324,21 @@ case 0:
                         navstatus.current(curr, 2);
                             // already checked for odo with bbl amps
                     }
-                    else if (mah > 0 && mah != 0xffff && curr.lmah > 0)
+                    else if (mah > 0 && mah != 0xffff /*&& curr.lmah > 0*/)
                     {
                         if (mah > curr.lmah)
                         {
+                            var mahtm = nticks;
                             var tdiff = (mahtm - curr.lmahtm);
                             var cdiff = mah - curr.lmah;
                                 // should be time aware
                             if(cdiff < 100 || curr.lmahtm == 0)
                             {
                                 curr.ampsok = true;
-                                    // 100 * 1000 * 1000 * 3600 / 1000
+                                    // 100 * 10 * 3600 / 1000
                                     // centiA, microsecs, hours / milli AH
-                                var iamps = (uint16)(cdiff * 3600000*100 / tdiff);
-                                if (iamps >=  0 && tdiff > 200000)
+                                var iamps = (uint16)(cdiff * 3600 / tdiff);
+                                if (iamps >=  0 && tdiff > 2)
                                 {
                                     curr.centiA = iamps;
                                     curr.mah = mah;
@@ -6337,8 +6351,12 @@ case 0:
                                                        mah.to_string());
                                         odo.amps = curr.centiA;
                                     }
+                                    curr.lmahtm = mahtm;
+                                    curr.lmah = mah;
                                 }
                             }
+                            else
+                                MWPLog.message("curr error %d\n",cdiff);
                         }
                         else if (curr.lmah - mah > 100)
                         {
@@ -6346,8 +6364,6 @@ case 0:
                         }
                     }
                 }
-                curr.lmahtm = mahtm;
-                curr.lmah = mah;
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
                 MSP_ANALOG an = MSP_ANALOG();
                 an.vbat = (uint8)ivbat;
