@@ -108,6 +108,11 @@ public class OdoView : GLib.Object
     private Gtk.Label odo_ca2;
     private Gtk.Label odoalt_u;
     private Gtk.Button odoclose;
+
+    private Gtk.Label odoalt_tm;
+    private Gtk.Label odospeed_tm;
+    private Gtk.Label odorange_tm;
+
     private uint to = 15;
     private uint tid = 0;
     private bool visible = false;
@@ -128,6 +133,11 @@ public class OdoView : GLib.Object
         odo_ca2 = builder.get_object ("odo_ca2") as Gtk.Label;
         odoalt_u = builder.get_object ("odoalt_u") as Gtk.Label;
         odoclose = builder.get_object ("odoclose") as Gtk.Button;
+
+        odoalt_tm = builder.get_object ("odo_alt_time") as Gtk.Label;
+        odorange_tm = builder.get_object ("odo_rng_time") as Gtk.Label;
+        odospeed_tm = builder.get_object ("odo_spd_time") as Gtk.Label;
+
         dialog.set_transient_for(w);
         to = _to;
 
@@ -146,24 +156,40 @@ public class OdoView : GLib.Object
         odo_ca0.sensitive = odo_ca2.sensitive = odoamps.sensitive = state;
     }
 
+    private string format_when(uint at)
+    {
+        string lbl;
+        uint m,s;
+        if (at == 0)
+            lbl = "";
+        else
+        {
+            m = at / 60;
+            s = at % 60;
+            lbl = "%u:%02u".printf(m,s);
+        }
+        return lbl;
+    }
+
     public void display(Odostats o, bool autohide=false)
     {
-        uint m,s;
+
         odotime.label = " %u:%02u ".printf(o.time / 60, o.time % 60);
-        m = o.spd_secs / 60;
-        s = o.spd_secs % 60;
         odospeed.label = "  %.1f ".printf(Units.speed(o.speed));
-        odospeed_u.label =  "%s (@%u:%02u)".printf(Units.speed_units(),m,s);
+        odospeed_u.label = Units.speed_units();
+        odospeed_tm.label = format_when(o.spd_secs);
+
         ododist.label = "  %.0f ".printf(Units.distance(o.distance));
         ododist_u.label = Units.distance_units();
+
         odorange.label = "  %.0f ".printf(Units.distance(o.range));
-        m = o.rng_secs / 60;
-        s = o.rng_secs % 60;
-        odorange_u.label = "%s (@%u:%02u)".printf(Units.distance_units(),m,s);
+        odorange_u.label = Units.distance_units();
+        odorange_tm.label = format_when(o.rng_secs);
+
         odoalt.label = "  %.0f ".printf(Units.distance(o.alt));
-        m = o.alt_secs / 60;
-        s = o.alt_secs % 60;
-        odoalt_u.label = "%s (@%u:%02u)".printf(Units.distance_units(), m,s);
+        odoalt_u.label = Units.distance_units();
+        odoalt_tm.label = format_when(o.alt_secs);
+
         if(o.amps > 0)
         {
             double odoA = o.amps/100.0;
