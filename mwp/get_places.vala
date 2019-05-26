@@ -5,6 +5,7 @@ public class Places :  GLib.Object
         string name;
         double lat;
         double lon;
+        int zoom;
     }
 
     private enum PFmt
@@ -36,6 +37,10 @@ public class Places :  GLib.Object
                         p.lat = double.parse(parts[1]);
                         p.lon = double.parse(parts[2]);
                         p.name = parts[0];
+                        if(parts.length > 3)
+                            p.zoom = int.parse(parts[3]);
+                        else
+                            p.zoom = -1;
                         pls += p;
                     }
                 }
@@ -59,6 +64,10 @@ public class Places :  GLib.Object
                 p.name = item.get_string_member("name");
                 p.lat = item.get_double_member("lat");
                 p.lon = item.get_double_member("lon");
+                if (item.has_member("zoom"))
+                p.zoom = (int)item.get_int_member("zoom");
+                else
+                    p.zoom = -1;
                 pls += p;
             }
         } catch (Error e) {

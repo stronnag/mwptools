@@ -1351,8 +1351,10 @@ public class MWPlanner : Gtk.Application {
         var places = new Places();
         var pls = places.get_places(conf.latitude, conf.longitude);
         setpos.load_places(pls,conf.dms);
-        setpos.new_pos.connect((la, lo) => {
+        setpos.new_pos.connect((la, lo, zoom) => {
                 map_centre_on(la, lo);
+                if(zoom > 0)
+                    view.zoom_level = zoom;
             });
 
         navconf = new NavConfig(window, builder);
@@ -5914,8 +5916,7 @@ case 0:
                 deserialise_u16(raw+1, out an.powermetersum);
                 deserialise_i16(raw+3, out an.rssi);
                 deserialise_i16(raw+5, out an.amps);
-                if ((replayer & Player.MWP) == Player.NONE || curr.lmah == 0)
-                    process_msp_analog(an);
+                process_msp_analog(an);
                 break;
 
             case MSP.Cmds.RAW_GPS:
@@ -6311,8 +6312,7 @@ case 0:
                 uint16 mah = sf.vcurr;
                 uint16 ivbat = (sf.vbat + 50) / 100;
                     // for mwp replay, we either have analog or don't bother
-//                if ((replayer & Player.MWP) == Player.NONE)
-//                print("s-frame %u %u %u\n", mah, curr.lmah, nticks);
+                if ((replayer & Player.MWP) == Player.NONE)
                 {
                     if ((replayer & Player.BBOX) == Player.BBOX
                         && curr.bbla > 0)

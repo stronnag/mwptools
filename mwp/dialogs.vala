@@ -907,7 +907,7 @@ public class SetPosDialog : GLib.Object
     private Places.PosItem[] pls;
     private bool dms;
 
-    public signal void new_pos(double la, double lo);
+    public signal void new_pos(double la, double lo, int zoom);
 
     public SetPosDialog(Gtk.Builder builder,Gtk.Window? w=null)
     {
@@ -967,7 +967,11 @@ public class SetPosDialog : GLib.Object
                     }
                     glat = InputParser.get_latitude(t1);
                     glon = InputParser.get_longitude(t2);
-                    new_pos(glat, glon);
+                    var n = pcombo.get_active ();
+                    int zoom = -1;
+                    if(n > 0)
+                        zoom = pls[n].zoom;
+                    new_pos(glat, glon,zoom);
                 }
                 dialog.hide();
             });
