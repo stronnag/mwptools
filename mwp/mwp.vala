@@ -6324,7 +6324,12 @@ case 0:
                         navstatus.current(curr, 2);
                             // already checked for odo with bbl amps
                     }
-                    else if (mah > 0 && mah != 0xffff /*&& curr.lmah > 0*/)
+                    else if (curr.lmah == 0)
+                    {
+                        curr.lmahtm = nticks;
+                        curr.lmah = mah;
+                    }
+                    else if (mah > 0 && mah != 0xffff)
                     {
                         if (mah > curr.lmah)
                         {
@@ -6338,7 +6343,7 @@ case 0:
                                     // 100 * 10 * 3600 / 1000
                                     // centiA, microsecs, hours / milli AH
                                 var iamps = (uint16)(cdiff * 3600 / tdiff);
-                                if (iamps >=  0 && tdiff > 2)
+                                if (iamps >=  0 && tdiff > 5)
                                 {
                                     curr.centiA = iamps;
                                     curr.mah = mah;
