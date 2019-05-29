@@ -4731,18 +4731,18 @@ case 0:
 
                 if(mss.v_azimuth != tazimuth ||
                    NavStatus.cg.range != mss.v_range ||
-                   (uint16)brg != mss.v_direction)
+                   (uint32)brg != mss.v_direction)
                     mss.polar_changed(NavStatus.cg.range, brg, tazimuth);
-                if(mss.v_spd != (uint16) GPSInfo.spd || mss.v_cse != (uint16)GPSInfo.cse)
-                    mss.velocity_changed((uint16)GPSInfo.spd, (uint16)GPSInfo.cse);
+                if(mss.v_spd != (uint32) GPSInfo.spd || mss.v_cse != (uint32)GPSInfo.cse)
+                    mss.velocity_changed((uint32)GPSInfo.spd, (uint32)GPSInfo.cse);
 
                 lastdbus = nticks;
             }
             mss.v_lat = GPSInfo.lat;
             mss.v_long = GPSInfo.lon;
             mss.v_alt = talt;
-            mss.v_spd = (uint16)GPSInfo.spd;
-            mss.v_cse = (uint16)GPSInfo.cse;
+            mss.v_spd = (uint32)GPSInfo.spd;
+            mss.v_cse = (uint32)GPSInfo.cse;
             mss.v_azimuth = tazimuth;
             mss.v_range = NavStatus.cg.range;
             mss.v_direction = brg;
@@ -8696,7 +8696,7 @@ case 0:
             {
                 MWPLog.message("mwp startup version: %s\n", verstr);
                 string os=null;
-                MWPLog.message("on %s\n", Logger.get_host_info(out os));
+                MWPLog.message("%s\n", Logger.get_host_info(out os));
                 var vstr = check_virtual(os);
                 if(vstr == null || vstr.length == 0)
                     vstr = "none";

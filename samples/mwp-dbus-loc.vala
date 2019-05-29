@@ -6,8 +6,8 @@ interface MwpIF : DBusProxy {
                                      int altitude);
     public signal void location_changed (double latitude, double longitude,
                                          int altitude);
-    public signal void polar_changed(uint16 range, uint16 direction, uint16 azimuth);
-    public signal void velocity_changed(uint16 speed, uint16 course);
+    public signal void polar_changed(uint32 range, uint32 direction, uint32 azimuth);
+    public signal void velocity_changed(uint32 speed, uint32 course);
 
     public signal void state_changed(int state);
     public signal void sats_changed(uint8 nsats, uint8 fix);
@@ -19,11 +19,11 @@ interface MwpIF : DBusProxy {
     public abstract void get_sats(out uint8 nsats, out uint8 fix) throws DBusError,IOError;
     public abstract void get_home(out double latitude, out double longitude,
                                   out int32 altitude) throws DBusError,IOError;
-    public abstract void get_velocity(out uint16 speed,
-                                      out uint16 course) throws DBusError,IOError;
-    public abstract void get_polar_coordinates(out uint16 range,
-                                               out uint16 direction,
-                                               out uint16 azimuth) throws DBusError,IOError;
+    public abstract void get_velocity(out uint32 speed,
+                                      out uint32 course) throws DBusError,IOError;
+    public abstract void get_polar_coordinates(out uint32 range,
+                                               out uint32 direction,
+                                               out uint32 azimuth) throws DBusError,IOError;
     public abstract void get_location(out double latitude, out double longitude,
                                       out int32 altitude) throws DBusError,IOError;
 
@@ -64,7 +64,7 @@ public class App : Object
             double latitude, longitude;
             int altitude;
             int state;
-            uint16 range, bearing, azimuth;
+            uint32 range, bearing, azimuth, course, speed;
 
             mwpif.quit.connect(() => {
                     ml.quit();
@@ -104,8 +104,11 @@ public class App : Object
             stdout.printf("Initial polar coordinates: %um %u° %u°\n",
                   range, bearing, azimuth);
 
+            mwpif.get_velocity(out speed, out course);
+            stdout.printf("Initial velocity: %um/s %u°\n", speed, course);
+
             mwpif.home_changed.connect((la, lo, alt) => {
-            stdout.printf("Home changed: %f %f %dm\n", la, lo, alt);
+                    stdout.printf("Home changed: %f %f %dm\n", la, lo, alt);
                 });
 
             mwpif.location_changed.connect((la, lo, alt) => {
