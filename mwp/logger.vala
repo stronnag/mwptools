@@ -170,10 +170,10 @@ public class Logger : GLib.Object
             sb.append_c('"');
             sb.append(r);
             sb.append_c('"');
-            sb.append_c(' ');
+            sb.append(" on ");
         }
         sb.append(u.nodename);
-        sb.append_c(' ');
+        sb.append(" running ");
         os = u.sysname;
         sb.append(u.sysname);
         sb.append_c(' ');
