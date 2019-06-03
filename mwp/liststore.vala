@@ -256,6 +256,11 @@ public class ListBox : GLib.Object
                     switch(typ)
                     {
                         case MSP.Action.POSHOLD_TIME:
+                            MWPLog.message("Regrade %s to WP\n", typ.to_string());
+                            w.action =  MSP.Action.WAYPOINT;
+                            w.p2 = w.p1;
+                            w.p1 = 0;
+                            break;
                         case MSP.Action.POSHOLD_UNLIM:
                         case MSP.Action.LAND:
                             MWPLog.message("Downgrade %s to WP\n", typ.to_string());
@@ -466,7 +471,7 @@ public class ListBox : GLib.Object
                             list_model.set_value (iter, WY_Columns.LON,
                                                   mp.view.get_center_longitude());
                     }
-                    list_model.set_value (iter, WY_Columns.INT2, 0);
+//                    list_model.set_value (iter, WY_Columns.INT2, 0);
                     list_model.set_value (iter, WY_Columns.INT3, 0);
                     break;
             }
@@ -921,6 +926,11 @@ public class ListBox : GLib.Object
                     d = DStr.strtod(new_text,null);
                 break;
             default:
+                Value icell;
+                list_model.get_value (iter_val, WY_Columns.ACTION, out icell);
+                var typ = (MSP.Action)icell;
+                if (typ == MSP.Action.WAYPOINT)
+                    as_int = false; // force redraw for P2 timer (iNav)
                 d = DStr.strtod(new_text,null);
                 break;
         }

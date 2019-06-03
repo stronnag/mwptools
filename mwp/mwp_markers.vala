@@ -340,6 +340,10 @@ public class MWPMarkers : GLib.Object
         var typ = (MSP.Action)cell;
         ls.get_value (iter, ListBox.WY_Columns.IDX, out cell);
         var no = (string)cell;
+        ls.get_value (iter, ListBox.WY_Columns.INT2, out cell);
+        var p2 = (int)cell;
+        if (typ == MSP.Action.WAYPOINT && p2 > 0)
+            typ = MSP.Action.POSHOLD_TIME;
         string text;
         Clutter.Color colour;
         Clutter.Color black = { 0,0,0, 0xff };
