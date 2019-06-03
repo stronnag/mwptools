@@ -10,7 +10,16 @@ replay / blackbox replay functions for the iNav FC firmware.
 
 ![mwp](https://raw.githubusercontent.com/wiki/stronnag/mwptools/images/ltm-normal.png)
 
-In addition, mwptools provides a small suite of tools to manage a MultiWii NAV flight controller and other CleanFlight based FCs. The suite consists of tools that the author finds useful to manage and monitor 'in the field' using a low powered Linux based netbook or chromebook running Arch Linux.
+mwp supports the following telemetry protocols:
+
+* MSP (MultiWii Serial Protocol)
+* LTM (Lightweight Telemetry)
+* MAVLink (iNav subset)
+* Smartport
+
+In addition to a mission planner and ground control station, mwptools provides a small suite of tools to manage a MultiWii NAV flight controller and other CleanFlight based FCs. The suite consists of tools that the author finds useful to manage and monitor 'in the field' using a low powered Linux based netbook or chromebook running Arch Linux.
+
+mwp also provides logging, the replay of mwp log files and Blackbox logs.
 
 ## Tools
 
