@@ -26,6 +26,7 @@ public class FakeHome : GLib.Object
     public FakeHomeDialog fhd;
     private Champlain.MarkerLayer hmlayer;
     private static Champlain.Label homep ;
+    public bool is_visible = false;
     public signal void fake_move(double lat, double lon);
 
     public struct PlotElevDefs
@@ -97,6 +98,7 @@ public class FakeHome : GLib.Object
 
     public void show_fake_home(bool state)
     {
+        is_visible = state;
         if(state)
         {
             homep.set_draggable(true);

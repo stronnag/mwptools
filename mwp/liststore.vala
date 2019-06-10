@@ -117,6 +117,22 @@ public class ListBox : GLib.Object
         list_model.get_value (iter, WY_Columns.TIP, out cell);
         if((string)cell != null)
             sb.append((string)cell);
+
+        if(fhome != null && fhome.is_visible)
+        {
+            double range;
+            double brg;
+            list_model.get_value (iter, WY_Columns.LAT, out cell);
+            var lat = (double)cell;
+            list_model.get_value (iter, WY_Columns.LON, out cell);
+            var lon = (double)cell;
+            double hlat,hlon;
+            fhome.get_fake_home(out hlat, out hlon);
+            Geo.csedist(hlat, hlon, lat, lon, out range, out brg);
+            range *= 1852;
+            sb.append_printf("\nRange %.1fm, bearing %.0f°", range, brg);
+        }
+
         string s = sb.str;
         return s.replace(", to", "\nto");
     }
@@ -529,7 +545,7 @@ public class ListBox : GLib.Object
 
         mp = _mp;
 
-        if(mp.x_plot_elevations_rb)
+//        if(mp.x_plot_elevations_rb)
             setup_elev_plot();
 
         shapedialog = new ShapeDialog(mp.builder);
@@ -1475,6 +1491,26 @@ public class ListBox : GLib.Object
         } catch (SpawnError e) {
             MWPLog.message ("Spawn Error: %s\n", e.message);
         }
+    }
+
+    public void set_fake_home()
+    {
+        var bbox = mp.view.get_bounding_box();
+        double hlat, hlon;
+
+        fhome.get_fake_home(out hlat, out hlon);
+        if (bbox.covers(hlat, hlon) == false)
+        {
+            hlat = mp.view.get_center_latitude();
+            hlon = mp.view.get_center_longitude();
+            fhome.set_fake_home(hlat, hlon);
+        }
+        fhome.show_fake_home(true);
+    }
+
+    public void unset_fake_home()
+    {
+        fhome.show_fake_home(false);
     }
 
     private void terrain_mission()

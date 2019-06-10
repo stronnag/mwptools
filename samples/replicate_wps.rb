@@ -19,12 +19,17 @@ fn=ARGV[0]
 se=ARGV[1].to_i
 ee=ARGV[2].to_i
 rep=(ARGV[3] || 1).to_i
-doc = Nokogiri::XML(open(ARGV[0]))
 
+if !File.exists?(fn)
+  STDERR.puts "Usage: replicate_wps.rb mission_file first last [iterations]"
+  exit
+end
+
+doc = Nokogiri::XML(open(fn))
 items=[]
 inc = nil
 ninc = 0
-doc.xpath(%Q(//MISSION/MISSIONITEM)).each do |x0|
+doc.xpath(%Q(//MISSION/MISSIONITEM|//mission/missionitem)).each do |x0|
   if x0['no'].to_i >= se and x0['no'].to_i <= ee
     items << x0
   end
@@ -37,7 +42,7 @@ doc.xpath(%Q(//MISSION/MISSIONITEM)).each do |x0|
     basen = xn['no'].to_i
     1.upto(rep) do |m|
       items.each do |x|
-        x2 = Nokogiri::XML::Node.new "MISSIONITEM",doc
+        x2 = Nokogiri::XML::Node.new "missionitem",doc
         ninc += 1
 	orig = x['no']
 	x.each {|k,v| x2[k] = v}

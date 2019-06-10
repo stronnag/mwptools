@@ -1269,6 +1269,10 @@ public class MWPlanner : Gtk.Application {
             wp_edit = !wp_edit;
             wp_edit_button.label= (wp_edit) ? "✔" : "";
             wp_edit_button.tooltip_text = ("Enable / disable the addition of WPs by clicking on the map (%sabled)".printf((wp_edit) ? "en" : "dis"));
+            if(wp_edit)
+                ls.set_fake_home();
+            else
+                ls.unset_fake_home();
         });
 
         arm_warn.clicked.connect(() =>
