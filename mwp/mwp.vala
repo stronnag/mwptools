@@ -6342,7 +6342,7 @@ case 0:
                                 curr.ampsok = true;
                                     // 100 * 10 * 3600 / 1000
                                     // centiA, microsecs, hours / milli AH
-                                var iamps = (uint16)(cdiff * 3600 / tdiff);
+                                var iamps = (uint16)(cdiff * 3600 / tdiff / 10);
                                 if (iamps >=  0 && tdiff > 5)
                                 {
                                     curr.centiA = iamps;
