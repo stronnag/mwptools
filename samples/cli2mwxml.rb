@@ -17,10 +17,10 @@ end
 dt = Time.now.strftime("%FT%T%z")
 
 m = Nokogiri::XML::Builder.new(:encoding => 'UTF-8') do |xml|
-  xml.MISSION {
+  xml.mission {
     xml.mwp ({'generator' => "mwptools/cli2mwxml", 'save-date' => dt})
     wps.each do |w|
-      xml.MISSIONITEM ({'no' => w[:no], 'action' => w[:act],
+      xml.missionitem ({'no' => w[:no], 'action' => w[:act],
 		       'lat' => w[:lat], 'lon' => w[:lon],
 		       'alt' => w[:altm], 'parameter1' => w[:p1],
 			 'parameter2' => '0', 'paramater3' => '0'})

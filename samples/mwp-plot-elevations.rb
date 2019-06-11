@@ -274,7 +274,7 @@ replot
   def rewrite fixups
     doc = Nokogiri::XML(open(@file))
     now = Time.now.strftime("%FT%T%z")
-    x = doc.at("/MISSION/mwp")
+    x = doc.at("/MISSION/mwp|/mission/mwp")
     if  x.nil?
       doc.at('MISSION').add_child("<mwp generator=\"plot-elevations.rb (mwptools)\" save-date=\"#{now}\"")
     else
@@ -284,7 +284,7 @@ replot
 
     fixups.each_with_index do |f,n|
       unless f.nil?
-	q = "//MISSIONITEM[@no='#{n}']"
+	q = "//MISSIONITEM[@no='#{n}']|//missionitem[@no='#{n}']"
 	x = doc.xpath(q).first
 	unless  x.nil?
 	  x['alt'] = f.to_s

@@ -218,7 +218,7 @@ public class XmlIO : Object
 
         Xml.Ns* ns = null;
 
-        Xml.Node* root = new Xml.Node (ns, "MISSION");
+        Xml.Node* root = new Xml.Node (ns, "mission");
         doc->set_root_element (root);
 
         Xml.Node* comment = new Xml.Node.comment ("mw planner 0.01");
@@ -266,7 +266,7 @@ public class XmlIO : Object
 
         foreach (MissionItem m in ms.get_ways())
         {
-            subnode = root->new_text_child (ns, "MISSIONITEM", "");
+            subnode = root->new_text_child (ns, "missionitem", "");
             subnode->new_prop ("no", m.no.to_string());
             subnode->new_prop ("action", MSP.get_wpname(m.action));
             subnode->new_prop ("lat", m.lat.to_string());

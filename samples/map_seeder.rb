@@ -47,7 +47,7 @@ def parse_mission_file mf
   maxy = -999
   begin
     doc = Nokogiri::XML(open(mf))
-    doc.xpath('//MISSIONITEM').each do |t|
+    doc.xpath('//MISSIONITEM|//missionitem').each do |t|
       action=t['action']
       break if action == 'RTH'
       next if action == 'SET_POI'
