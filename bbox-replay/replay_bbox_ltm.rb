@@ -470,8 +470,8 @@ def encode_stats r,inavers,armed=1
     vbat = r[:vbat].to_f / 100.0
   end
 
-  mah = (r.has_key? :energycumulative_mah) ? r[:energycumulative_mah].to_i : 0
-
+  mah = (r.has_key? :energycumulative_mah) ? r[:energycumulative_mah].to_i :
+    (r.has_key? :energycumulativevirtual_mah) ? r[:energycumulativevirtual_mah].to_i : 0
   if mah > 0
     mah = mah & 0xffff
   else
@@ -521,6 +521,9 @@ def encode_amps r
     amps = r[:amperagelatest_a].to_f
   elsif r.has_key? :amperage_a
     amps = r[:amperage_a].to_f
+  elsif r.has_key? :currentvirtual_a
+    amps = r[:currentvirtual_a].to_f
+
   end
   if amps && amps > 0
     msg='$Ta'
@@ -879,6 +882,9 @@ cmd << " --index #{idx}"
 cmd << " --merge-gps"
 unless decl.nil?
   cmd << " --declination-dec #{decl}"
+end
+if ENV['MWP_BB_ARGS']
+  cmd << " #{ENV['MWP_BB_ARGS']}"
 end
 cmd << " --stdout"
 cmd << " 2>#{nul}"
