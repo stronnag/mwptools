@@ -1509,7 +1509,7 @@ public class NavStatus : GLib.Object
     public static bool ampsok {get; private set;}
     public static uint16 centiA {get; private set;}
     public static uint32 mah {get; private set;}
-
+    public static string arm_msg {get; private set;}
     private static string ls_state = null;
     private static string ls_action = null;
     private static string ns_action = null;
@@ -1523,6 +1523,8 @@ public class NavStatus : GLib.Object
     private bool replaying = false;
 
     private string[]fuelunits = {"", "%", "mAh", "mWh"};
+
+
 
     public enum SPK  {
         Volts = 1,
@@ -2023,6 +2025,11 @@ public class NavStatus : GLib.Object
         mt.message(AudioThread.Vox.AUDIO_TEST, true);
     }
 
+    public void arm_status(string s)
+    {
+        arm_msg = s;
+        mt.message(AudioThread.Vox.ARM_STATUS, true);
+    }
 
     public void alert_home_moved()
     {
@@ -2145,6 +2152,7 @@ public class AudioThread : Object {
         HOME_CHANGED,
         AUDIO_TEST,
         SPORT_MODE,
+        ARM_STATUS,
         MAH
     }
 
@@ -2240,6 +2248,9 @@ public class AudioThread : Object {
                     {
                         case Vox.AUDIO_TEST:
                             s = "MWP audio test, version %s".printf(MwpVers.id);
+                            break;
+                        case Vox.ARM_STATUS:
+                            s = NavStatus.arm_msg;
                             break;
                         case Vox.HW_OK:
                             s = "Sensors OK";

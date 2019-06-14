@@ -1500,17 +1500,15 @@ public class MWPlanner : Gtk.Application {
                 var aon = audio_cb.active;
                 if(aon == false)
                 {
-                    audio_on = true;
-                    start_audio(false);
+                    audio_cb.active = true;
                 }
                 navstatus.audio_test();
-
                 if(aon == false)
                 {
                     Timeout.add(8000, () => {
-                            if(audio_cb.active == false)
+                            if(audio_cb.active == true)
                             {
-                                stop_audio();
+                                audio_cb.active = false;
                             }
                             return false;
                         });
@@ -4437,10 +4435,18 @@ case 0:
                 {
                     xarm_flags = arm_flags;
 
-                    string arm_msg = get_arm_fail(xarm_flags);
+                    string arming_msg = get_arm_fail(xarm_flags);
                     MWPLog.message("Arming flags: %s (%04x), load %d%% %s\n",
-                                   arm_msg, xarm_flags, loadpct,
+                                   arming_msg, xarm_flags, loadpct,
                                    msp_get_status.to_string());
+
+
+                    if (conf.audioarmed == true)
+                        audio_cb.active = true;
+
+                    if(audio_cb.active == true)
+                        navstatus.arm_status(arming_msg);
+
                     if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0)
                     {
                         arm_warn.show();
@@ -4998,24 +5004,27 @@ case 0:
 
     private void process_msp_analog(MSP_ANALOG an)
     {
-        if(have_mspradio)
-            an.rssi = 0;
-        else
-            radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
-        curr.centiA = an.amps;
-        curr.mah = an.powermetersum;
-        if(curr.centiA != 0 || curr.mah != 0)
+        if ((replayer & Player.MWP) == Player.NONE)
         {
-            curr.ampsok = true;
-            navstatus.current(curr, 2);
-            if (curr.centiA > odo.amps)
-                odo.amps = curr.centiA;
+            if(have_mspradio)
+                an.rssi = 0;
+            else
+                radstatus.update_rssi(an.rssi, item_visible(DOCKLETS.RADIO));
+            curr.centiA = an.amps;
+            curr.mah = an.powermetersum;
+            if(curr.centiA != 0 || curr.mah != 0)
+            {
+                curr.ampsok = true;
+                navstatus.current(curr, 2);
+                if (curr.centiA > odo.amps)
+                    odo.amps = curr.centiA;
+            }
+            if(Logger.is_logging)
+            {
+                Logger.analog(an);
+            }
+            set_bat_stat(an.vbat);
         }
-        if(Logger.is_logging)
-        {
-            Logger.analog(an);
-        }
-        set_bat_stat(an.vbat);
     }
 
     public void handle_radar(MSP.Cmds cmd, uint8[] raw, uint len,
@@ -6208,7 +6217,6 @@ case 0:
             break;
 
             case MSP.Cmds.TS_FRAME:
-            {
                 LTM_SFRAME sf = LTM_SFRAME ();
                 uint8* rp;
                 rp = deserialise_u16(raw, out sf.vbat);
@@ -6316,72 +6324,55 @@ case 0:
                 uint16 mah = sf.vcurr;
                 uint16 ivbat = (sf.vbat + 50) / 100;
                     // for mwp replay, we either have analog or don't bother
-                if ((replayer & Player.MWP) == Player.NONE)
+                if ((replayer & Player.BBOX) == Player.BBOX
+                    && curr.bbla > 0)
                 {
-                    if ((replayer & Player.BBOX) == Player.BBOX
-                        && curr.bbla > 0)
+                    curr.ampsok = true;
+                    curr.centiA = curr.bbla;
+                    if (mah > curr.mah)
+                        curr.mah = mah;
+                    navstatus.current(curr, 2);
+                        // already checked for odo with bbl amps
+                }
+                else if (curr.lmah == 0)
+                {
+                    curr.lmahtm = nticks;
+                    curr.lmah = mah;
+                }
+                else if (mah > 0 && mah != 0xffff)
+                {
+                    if (mah > curr.lmah)
                     {
-                        curr.ampsok = true;
-                        curr.centiA = curr.bbla;
-                        if (mah > curr.mah)
-                            curr.mah = mah;
-                        navstatus.current(curr, 2);
-                            // already checked for odo with bbl amps
-                    }
-                    else if (curr.lmah == 0)
-                    {
-                        curr.lmahtm = nticks;
-                        curr.lmah = mah;
-                    }
-                    else if (mah > 0 && mah != 0xffff)
-                    {
-                        if (mah > curr.lmah)
+                        var mahtm = nticks;
+                        var tdiff = (mahtm - curr.lmahtm);
+                        var cdiff = mah - curr.lmah;
+                            // should be time aware
+                        if(cdiff < 100 || curr.lmahtm == 0)
                         {
-                            var mahtm = nticks;
-                            var tdiff = (mahtm - curr.lmahtm);
-                            var cdiff = mah - curr.lmah;
-                                // should be time aware
-                            if(cdiff < 100 || curr.lmahtm == 0)
+                            curr.ampsok = true;
+                            var iamps = (uint16)(cdiff * 3600 / tdiff );
+                            if (iamps >=  0 && tdiff > 5)
                             {
-                                curr.ampsok = true;
-                                    // 100 * 10 * 3600 / 1000
-                                    // centiA, microsecs, hours / milli AH
-                                var iamps = (uint16)(cdiff * 3600 / tdiff / 10);
-                                if (iamps >=  0 && tdiff > 5)
-                                {
-                                    curr.centiA = iamps;
-                                    curr.mah = mah;
-                                    navstatus.current(curr, 2);
-                                    if (curr.centiA > odo.amps)
-                                    {
-                                        MWPLog.message("set max amps %s %s (%s)\n",
-                                                       odo.amps.to_string(),
-                                                       curr.centiA.to_string(),
-                                                       mah.to_string());
-                                        odo.amps = curr.centiA;
-                                    }
-                                    curr.lmahtm = mahtm;
-                                    curr.lmah = mah;
-                                }
+                                curr.centiA = iamps;
+                                curr.mah = mah;
+                                navstatus.current(curr, 2);
+                                if (curr.centiA > odo.amps)
+                                    odo.amps = curr.centiA;
+                                curr.lmahtm = mahtm;
+                                curr.lmah = mah;
                             }
-                            else
-                                MWPLog.message("curr error %d\n",cdiff);
                         }
-                        else if (curr.lmah - mah > 100)
-                        {
-                            MWPLog.message("Negative energy usage %u %u\n", curr.lmah, mah);
-                        }
+                        else
+                            MWPLog.message("curr error %d\n",cdiff);
+                    }
+                    else if (curr.lmah - mah > 100)
+                    {
+                        MWPLog.message("Negative energy usage %u %u\n", curr.lmah, mah);
                     }
                 }
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
-                MSP_ANALOG an = MSP_ANALOG();
-                an.vbat = (uint8)ivbat;
-                an.powermetersum = (uint16)curr.mah;
-                an.rssi = 1023*sf.rssi/254;
-                an.amps = curr.centiA;
-                process_msp_analog(an);
-            }
-            break;
+                set_bat_stat((uint8)ivbat);
+                break;
 
             case MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT:
                 Mav.MAVLINK_HEARTBEAT m = *(Mav.MAVLINK_HEARTBEAT*)raw;
@@ -6855,7 +6846,7 @@ case 0:
                     bleet_sans_merci(Alert.GENERAL);
                     navstatus.alert_home_moved();
                     MWPLog.message(
-                        "Established home has jumped %.1fm [%f %f (ex %f %f)]",
+                        "Established home has jumped %.1fm [%f %f (ex %f %f)]\n",
                         d, lat, lon, home_pos.lat, home_pos.lon);
                 }
             }
