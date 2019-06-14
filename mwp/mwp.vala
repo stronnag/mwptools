@@ -4365,7 +4365,7 @@ case 0:
                                 if(gpsstats.eph > inav_max_eph_epv ||
                                     gpsstats.epv > inav_max_eph_epv)
                                 {
-                                    sb.append(" • EPH/EPV");
+                                    sb.append(" • Fix quality");
                                     sb.append_c(sep);
                                     navmodes = false;
                                 }
