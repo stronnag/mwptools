@@ -557,6 +557,7 @@ public class MWPlanner : Gtk.Application {
     private int magtime=0;
     private int magdiff=0;
     private bool magcheck;
+    private uint8 say_state = 0;
 
     private bool x_replay_bbox_ltm_rb;
     private bool x_kmz;
@@ -1505,11 +1506,8 @@ public class MWPlanner : Gtk.Application {
                 navstatus.audio_test();
                 if(aon == false)
                 {
-                    Timeout.add(8000, () => {
-                            if(audio_cb.active == true)
-                            {
-                                audio_cb.active = false;
-                            }
+                    Timeout.add(1000, () => {
+                            audio_cb.active = false;
                             return false;
                         });
                 }
@@ -1763,6 +1761,11 @@ public class MWPlanner : Gtk.Application {
         view = embed.get_view();
         view.set_reactive(true);
 
+        if(conf.arming_speak)
+            say_state=NavStatus.SAY_WHAT.Arm;
+
+        navstatus.set_audio_status(say_state);
+
         view.notify["zoom-level"].connect(() => {
                 var val = view.get_zoom_level();
                 var zval = (int)zoomer.adjustment.value;
@@ -1990,10 +1993,25 @@ public class MWPlanner : Gtk.Application {
         audio_cb.toggled.connect (() => {
                 audio_on = audio_cb.active;
                 if (audio_on)
+                {
                     start_audio();
+                }
                 else
+                {
                     stop_audio();
+                }
             });
+
+        audio_cb.button_release_event.connect (() => {
+                if(audio_cb.active)
+                    say_state &= ~NavStatus.SAY_WHAT.Nav;
+                else
+                    say_state |= NavStatus.SAY_WHAT.Nav;
+
+                navstatus.set_audio_status(say_state);
+                return false;
+            });
+
         var centreonb = builder.get_object ("checkbutton1") as Gtk.CheckButton;
         if(conf.use_legacy_centre_on)
             centreonb.set_label("Centre On");
@@ -4038,7 +4056,10 @@ case 0:
 
                 if (conf.audioarmed == true)
                 {
+                    say_state |= NavStatus.SAY_WHAT.Nav;
+                    navstatus.set_audio_status(say_state);
                     audio_cb.active = true;
+
                 }
                 if(conf.logarmed == true)
                 {
@@ -4079,6 +4100,8 @@ case 0:
                 if (conf.audioarmed == true)
                 {
                     audio_cb.active = false;
+                    say_state &= ~NavStatus.SAY_WHAT.Nav;
+                    navstatus.set_audio_status(say_state);
                 }
                 if(conf.logarmed == true)
                 {
@@ -4322,7 +4345,7 @@ case 0:
     {
         StringBuilder sb = new StringBuilder ();
         if(af == 0)
-            sb.append("OK");
+            sb.append("Arming OK");
         else
         {
             for(var i = 0; i < 32; i++)

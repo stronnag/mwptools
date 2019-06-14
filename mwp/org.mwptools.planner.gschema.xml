@@ -535,6 +535,13 @@
       <description>Maximum number of aircraft reported by iNav-radar</description>
     </key>
 
+    <key type="b" name="arming-speak">
+      <default>false</default>
+      <summary>speak arming states</summary>
+      <description>whether to reporting arming state by audio</description>
+    </key>
+
+
     <!-- key name="radar-device" type="s">
       <default>""</default>
       <summary>Device node dedicated for iNav-radar</summary>

@@ -1510,6 +1510,8 @@ public class NavStatus : GLib.Object
     public static uint16 centiA {get; private set;}
     public static uint32 mah {get; private set;}
     public static string arm_msg {get; private set;}
+    public static uint8 say_state {get; private set; default=0;}
+
     private static string ls_state = null;
     private static string ls_action = null;
     private static string ns_action = null;
@@ -1524,13 +1526,18 @@ public class NavStatus : GLib.Object
 
     private string[]fuelunits = {"", "%", "mAh", "mWh"};
 
-
-
     public enum SPK  {
         Volts = 1,
         GPS = 2,
         BARO = 4,
         ELEV = 8
+    }
+
+    public enum SAY_WHAT
+    {
+        Test = 0,
+        Arm = 1,
+        Nav = 2
     }
 
     private uint8 spkamp = 0;
@@ -1584,6 +1591,11 @@ public class NavStatus : GLib.Object
         mahlabel.set_use_markup (true);
         volt_update("n/a",-1, 0f,true);
         grid.show_all();
+    }
+
+    public void set_audio_status(uint8 s)
+    {
+        say_state = s;
     }
 
     public void set_replay_mode(bool _replaying)
@@ -1641,7 +1653,8 @@ public class NavStatus : GLib.Object
 
             if((_n.nav_mode != xnmode) || (_n.nav_mode !=0 && _n.wp_number != xnwp))
             {
-                mt.message(AudioThread.Vox.NAV_STATUS,true);
+                if((NavStatus.say_state & SAY_WHAT.Nav) == SAY_WHAT.Nav)
+                    mt.message(AudioThread.Vox.NAV_STATUS,true);
             }
         }
 
@@ -1719,14 +1732,14 @@ public class NavStatus : GLib.Object
                     // only speak modes that are not in N-Frame
                 if(mt_voice)
                 {
-                    if(sp)
+                    if((NavStatus.say_state & SAY_WHAT.Nav) == SAY_WHAT.Nav)
                     {
-//                        MWPLog.message("SP mode %u\n", fmode);
-                        mt.message(AudioThread.Vox.SPORT_MODE,true);
+                        if(sp)
+                            mt.message(AudioThread.Vox.SPORT_MODE,true);
+                        else if ((xfmode > 0 && xfmode < 5) ||
+                                 xfmode == 8 || xfmode > 17)
+                            mt.message(AudioThread.Vox.LTM_MODE,true);
                     }
-                    else if ((xfmode > 0 && xfmode < 5) ||
-                        xfmode == 8 || xfmode > 17)
-                        mt.message(AudioThread.Vox.LTM_MODE,true);
                 }
             }
 
@@ -1946,27 +1959,24 @@ public class NavStatus : GLib.Object
     {
         fmode = _fmode;
         if(mt_voice)
-        {
-            mt.message(AudioThread.Vox.FMODE,true);
-        }
+            if((NavStatus.say_state & SAY_WHAT.Nav) == SAY_WHAT.Nav)
+                mt.message(AudioThread.Vox.FMODE,true);
     }
 
     public void update_duration(int _mins)
     {
         mins = _mins;
         if(mt_voice)
-        {
-            mt.message(AudioThread.Vox.DURATION);
-        }
+            if((NavStatus.say_state & SAY_WHAT.Nav) == SAY_WHAT.Nav)
+                mt.message(AudioThread.Vox.DURATION);
     }
 
     public void sats(uint8 nsats, bool urgent=false)
     {
         numsat = nsats;
         if(mt != null)
-        {
-            mt.message(AudioThread.Vox.MODSAT,urgent);
-        }
+            if((NavStatus.say_state & SAY_WHAT.Nav) == SAY_WHAT.Nav)
+                mt.message(AudioThread.Vox.MODSAT,urgent);
     }
 
     public void hw_failure(uint8 bad)
@@ -1984,38 +1994,41 @@ public class NavStatus : GLib.Object
 
     public void announce(uint8 mask)
     {
-        if(have_hdr)
+        if((NavStatus.say_state & SAY_WHAT.Nav) == SAY_WHAT.Nav)
         {
-            mt.message(AudioThread.Vox.HEADING);
-        }
-        if(((mask & SPK.GPS) == SPK.GPS) && have_cg)
-        {
-            mt.message(AudioThread.Vox.RANGE_BRG);
-        }
-        if((mask & SPK.ELEV) == SPK.ELEV)
-        {
-            mt.message(AudioThread.Vox.ELEVATION);
-        }
-        else if((mask & SPK.BARO) == SPK.BARO)
-        {
-            mt.message(AudioThread.Vox.BARO);
-        }
-        if((mask & SPK.Volts) == SPK.Volts && volts > 0.0)
-        {
-            mt.message(AudioThread.Vox.VOLTAGE);
-            if(MWPlanner.conf.speak_amps > 0 && NavStatus.mah > 0)
+            if(have_hdr)
             {
-                if((MWPlanner.conf.speak_amps & 0x10) == 0x10 || !replaying)
+                mt.message(AudioThread.Vox.HEADING);
+            }
+            if(((mask & SPK.GPS) == SPK.GPS) && have_cg)
+            {
+                mt.message(AudioThread.Vox.RANGE_BRG);
+            }
+            if((mask & SPK.ELEV) == SPK.ELEV)
+            {
+                mt.message(AudioThread.Vox.ELEVATION);
+            }
+            else if((mask & SPK.BARO) == SPK.BARO)
+            {
+                mt.message(AudioThread.Vox.BARO);
+            }
+            if((mask & SPK.Volts) == SPK.Volts && volts > 0.0)
+            {
+                mt.message(AudioThread.Vox.VOLTAGE);
+                if(MWPlanner.conf.speak_amps > 0 && NavStatus.mah > 0)
                 {
-                    int rpi = (MWPlanner.conf.speak_amps & 0xf);
-                    if (rpi == 1 ||
-                        (rpi == 2 && (spkamp & 1) != 0) ||
-                        (rpi == 4 && spkamp == 3))
+                    if((MWPlanner.conf.speak_amps & 0x10) == 0x10 || !replaying)
                     {
-                        mt.message(AudioThread.Vox.MAH);
+                        int rpi = (MWPlanner.conf.speak_amps & 0xf);
+                        if (rpi == 1 ||
+                            (rpi == 2 && (spkamp & 1) != 0) ||
+                            (rpi == 4 && spkamp == 3))
+                        {
+                            mt.message(AudioThread.Vox.MAH);
+                        }
                     }
+                    spkamp = (spkamp + 1) % 4;
                 }
-                spkamp = (spkamp + 1) % 4;
             }
         }
     }
@@ -2027,18 +2040,23 @@ public class NavStatus : GLib.Object
 
     public void arm_status(string s)
     {
-        arm_msg = s;
-        mt.message(AudioThread.Vox.ARM_STATUS, true);
+        if((NavStatus.say_state & SAY_WHAT.Arm) == SAY_WHAT.Arm)
+        {
+            arm_msg = s;
+            mt.message(AudioThread.Vox.ARM_STATUS, true);
+        }
     }
 
     public void alert_home_moved()
     {
-        mt.message(AudioThread.Vox.HOME_CHANGED, true);
+        if((NavStatus.say_state & SAY_WHAT.Nav) == SAY_WHAT.Nav)
+            mt.message(AudioThread.Vox.HOME_CHANGED, true);
     }
 
     public void gps_crit()
     {
-        mt.message(AudioThread.Vox.GPS_CRIT, true);
+        if((NavStatus.say_state & SAY_WHAT.Nav) == SAY_WHAT.Nav)
+            mt.message(AudioThread.Vox.GPS_CRIT, true);
     }
 
     public void cg_on()
@@ -2113,7 +2131,6 @@ public class NavStatus : GLib.Object
         {
             logspeak_close();
         }
-//        MWPLog.message("Start audio thread\n");
         mt = new AudioThread((si == MWPlanner.SPEAKER_API.FLITE));
         mt.start(use_en, efdin);
         mt_voice=true;
@@ -2121,7 +2138,6 @@ public class NavStatus : GLib.Object
 
     public void logspeak_close()
     {
-//        MWPLog.message("Stop audio thread\n");
         mt_voice=false;
         mt.clear();
         mt.message(AudioThread.Vox.DONE);

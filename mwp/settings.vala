@@ -99,6 +99,7 @@ public class MWPSettings : GLib.Object
     public double deltaspeed {get; set; default=0.0;}
     public int smartport_fuel  {get; set; default = 0;}
     public int speak_amps {get; set; default=0;}
+    public bool arming_speak {get; set; default=false;}
     public uint max_radar { get; set; default=4; }
 //    public string radar_device {get; set; default=null;}
 
@@ -366,6 +367,9 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "max-radar-slots")
             max_radar =  settings.get_uint("max-radar-slots");
+
+        if(s == null || s == "arming-speak")
+            arming_speak  = settings.get_boolean("arming-speak");
 
             /** CLI for now
         if(s == null || s == "radar-device")
