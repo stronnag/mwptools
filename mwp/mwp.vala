@@ -2488,9 +2488,19 @@ public class MWPlanner : Gtk.Application {
             {
                 magdiff=int.parse(parts[0]);
                 magtime=int.parse(parts[1]);
-                MWPLog.message("Enabled mag anonaly checking %d⁰, %ds\n", magdiff,magtime);
+                MWPLog.message("Enabled mag abnomaly checking %d⁰, %ds\n", magdiff,magtime);
                 magcheck = true;
             }
+        }
+
+        var pstate = new PowerState();
+        if(pstate.init())
+        {
+            MWPLog.message("%s\n", pstate.show_status());
+            pstate.host_power_alert.connect((s) => {
+                    navstatus.host_power(s);
+                    MWPLog.message("%s\n", s);
+                });
         }
     }
 

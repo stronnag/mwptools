@@ -1511,6 +1511,7 @@ public class NavStatus : GLib.Object
     public static uint32 mah {get; private set;}
     public static string arm_msg {get; private set;}
     public static uint8 say_state {get; private set; default=0;}
+    public static string host_batt_status {get; private set;}
 
     private static string ls_state = null;
     private static string ls_action = null;
@@ -1992,6 +1993,13 @@ public class NavStatus : GLib.Object
         }
     }
 
+    public void host_power(string s)
+    {
+        host_batt_status = s;
+        mt.message(AudioThread.Vox.HOST_POWER);
+    }
+
+
     public void announce(uint8 mask)
     {
         if((NavStatus.say_state & SAY_WHAT.Nav) == SAY_WHAT.Nav)
@@ -2169,6 +2177,7 @@ public class AudioThread : Object {
         AUDIO_TEST,
         SPORT_MODE,
         ARM_STATUS,
+        HOST_POWER,
         MAH
     }
 
@@ -2262,6 +2271,9 @@ public class AudioThread : Object {
                     string s=null;
                     switch(c)
                     {
+                        case Vox.HOST_POWER:
+                            s = NavStatus.host_batt_status;
+                            break;
                         case Vox.AUDIO_TEST:
                             s = "MWP audio test, version %s".printf(MwpVers.id);
                             break;
