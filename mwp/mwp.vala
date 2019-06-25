@@ -2498,7 +2498,9 @@ public class MWPlanner : Gtk.Application {
         {
             MWPLog.message("%s\n", pstate.show_status());
             pstate.host_power_alert.connect((s) => {
+                    audio_cb.active = true; // the user will hear this ...
                     navstatus.host_power(s);
+                    mwp_warning_box(s, Gtk.MessageType.ERROR, 30);
                     MWPLog.message("%s\n", s);
                 });
         }
