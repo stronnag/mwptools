@@ -2267,7 +2267,10 @@ public class MWPlanner : Gtk.Application {
 
         arm_warn.hide();
 
-        anim_cb(true);
+            // not anim_cb() as we just want the centre, regardless
+        poslabel.set_text(PosFormat.pos(view.get_center_latitude(),
+                                            view.get_center_longitude(),
+                                            conf.dms));
 
         var scale = new Champlain.Scale();
         scale.connect_view(view);
