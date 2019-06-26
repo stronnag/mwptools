@@ -79,7 +79,7 @@ namespace UPower
         public abstract double percentage {get;}
         public abstract uint32 state {get;}
         public abstract DeviceWarningLevel warning_level {get;}
-        public abstract uint32 time_to_empty {get;}
+        public abstract uint64 time_to_empty {get;}
     }
 }
 
@@ -120,10 +120,7 @@ public class PowerState : Object
                             {
                                 var mins = dev.time_to_empty / 60;
                                 var secs = dev.time_to_empty % 60;
-
-
-                                var msg = "Host Power %s, %.0f%%, %u:%02u left".printf(battery_warning(), dev.percentage, mins,secs);
-                                MWPLog.message("Host power alert [%s]\n", msg);
+                                var msg = "Host Power %s, %.0f%%, %lld:%02lld left".printf(battery_warning(), dev.percentage, mins,secs);
                                 host_power_alert(msg);
                             }
                         }
