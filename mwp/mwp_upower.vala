@@ -79,14 +79,14 @@ namespace UPower
         public abstract double percentage {get;}
         public abstract uint32 state {get;}
         public abstract DeviceWarningLevel warning_level {get;}
+        public abstract uint32 time_to_empty {get;}
     }
 }
 
 public class PowerState : Object
 {
     private const string UPOWER_PATH = "/org/freedesktop/UPower";
-    internal const string UPOWER_NAME = "org.freedesktop.UPower";
-    internal const string DEVPATH="/org/freedesktop/UPower/devices/DisplayDevice";
+    private const string UPOWER_NAME = "org.freedesktop.UPower";
     private UPower.Device dev;
     private UPower.Prop prop;
     public signal void host_power_alert(string alert);
@@ -99,23 +99,31 @@ public class PowerState : Object
     {
         bool ok = false;
         try {
-            dev = Bus.get_proxy_sync(BusType.SYSTEM, UPOWER_NAME, DEVPATH);
+            UPower.Base bas = Bus.get_proxy_sync(BusType.SYSTEM,UPOWER_NAME,UPOWER_PATH);
+            ObjectPath objp;
+            bas.get_display_device(out objp);
+            dev = Bus.get_proxy_sync(BusType.SYSTEM, UPOWER_NAME, objp);
             if(dev != null)
             {
                 ok = true;
-                prop = Bus.get_proxy_sync(BusType.SYSTEM, UPOWER_NAME, DEVPATH);
+                prop = Bus.get_proxy_sync(BusType.SYSTEM, UPOWER_NAME, objp);
                 prop.properties_changed.connect( (s,c,i) => {
                         if (c.contains("Percentage") ||
                             c.contains("State") ||
                             c.contains("WarningLevel"))
                         {
+//                            MWPLog.message("Power: %s / %s / %.0f%%\n", dev.state.to_string(), dev.warning_level.to_string(), dev.percentage);
                             if (dev.state == UPower.BatteryState.DISCHARGING &&
                                 (dev.warning_level == UPower.DeviceWarningLevel.LOW ||
                                  dev.warning_level == UPower.DeviceWarningLevel.CRITICAL ||
                                  dev.warning_level == UPower.DeviceWarningLevel.ACTION))
                             {
-                                var msg = "Host Power %s, %.0f%%".printf(battery_warning(),
-                                                                       dev.percentage);
+                                var mins = dev.time_to_empty / 60;
+                                var secs = dev.time_to_empty % 60;
+
+
+                                var msg = "Host Power %s, %.0f%%, %u:%02u left".printf(battery_warning(), dev.percentage, mins,secs);
+                                MWPLog.message("Host power alert [%s]\n", msg);
                                 host_power_alert(msg);
                             }
                         }

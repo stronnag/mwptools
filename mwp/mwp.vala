@@ -566,6 +566,7 @@ public class MWPlanner : Gtk.Application {
     private Array<KmlOverlay> kmls;
 
     public DevManager devman;
+    public PowerState pstate;
 
     public struct MQI //: Object
     {
@@ -2496,7 +2497,7 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
-        var pstate = new PowerState();
+        pstate = new PowerState();
         if(pstate.init())
         {
             MWPLog.message("%s\n", pstate.show_status());
