@@ -79,7 +79,7 @@ namespace UPower
         public abstract double percentage {get;}
         public abstract uint32 state {get;}
         public abstract DeviceWarningLevel warning_level {get;}
-        public abstract uint64 time_to_empty {get;}
+        public abstract int64 time_to_empty {get;}
     }
 }
 
@@ -118,10 +118,16 @@ public class PowerState : Object
                                  dev.warning_level == UPower.DeviceWarningLevel.CRITICAL ||
                                  dev.warning_level == UPower.DeviceWarningLevel.ACTION))
                             {
-                                var mins = dev.time_to_empty / 60;
-                                var secs = dev.time_to_empty % 60;
-                                var msg = "Host Power %s, %.0f%%, %lld:%02lld left".printf(battery_warning(), dev.percentage, mins,secs);
-                                host_power_alert(msg);
+                                StringBuilder sb = new StringBuilder("Host Power ");
+                                sb.append(battery_warning());
+                                sb.append_printf(", %.0f%%", dev.percentage);
+                                if(dev.time_to_empty > 0)
+                                {
+                                    var mins = dev.time_to_empty / 60;
+                                    var secs = dev.time_to_empty % 60;
+                                    sb.append_printf(", %lld:%02lld remaining", mins,secs);
+                                }
+                                host_power_alert(sb.str);
                             }
                         }
                     });
