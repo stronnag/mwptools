@@ -6362,7 +6362,6 @@ case 0:
 
                 uint16 mah = sf.vcurr;
                 uint16 ivbat = (sf.vbat + 50) / 100;
-                    // for mwp replay, we either have analog or don't bother
                 if ((replayer & Player.BBOX) == Player.BBOX
                     && curr.bbla > 0)
                 {
@@ -6372,6 +6371,12 @@ case 0:
                         curr.mah = mah;
                     navstatus.current(curr, 2);
                         // already checked for odo with bbl amps
+                }
+                else if (replayer == Player.MWP_FAST)
+                {
+                    curr.ampsok = true;
+                    curr.mah = mah;
+                    navstatus.current(curr, 2);
                 }
                 else if (curr.lmah == 0)
                 {
@@ -6389,20 +6394,21 @@ case 0:
                         if(cdiff < 100 || curr.lmahtm == 0)
                         {
                             curr.ampsok = true;
-                            var iamps = (uint16)(cdiff * 3600 / tdiff );
-                            if (iamps >=  0 && tdiff > 5)
-                            {
-                                curr.centiA = iamps;
-                                curr.mah = mah;
-                                navstatus.current(curr, 2);
-                                if (curr.centiA > odo.amps)
-                                    odo.amps = curr.centiA;
-                                curr.lmahtm = mahtm;
-                                curr.lmah = mah;
-                            }
+                            curr.mah = mah;
+                            var iamps = (uint16)(cdiff * 3600 / tdiff);
+                                if (iamps >=  0 && tdiff > 5)
+                                {
+                                    curr.centiA = iamps;
+                                    navstatus.current(curr, 2);
+                                    if (curr.centiA > odo.amps)
+                                        odo.amps = curr.centiA;
+                                    curr.lmahtm = mahtm;
+                                    curr.lmah = mah;
+                                }
                         }
                         else
                             MWPLog.message("curr error %d\n",cdiff);
+
                     }
                     else if (curr.lmah - mah > 100)
                     {
