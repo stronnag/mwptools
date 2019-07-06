@@ -107,11 +107,11 @@ File.open(ARGV[0]) do |f|
       end
     end
 
+    delta = ts-lt
+    puts "%10.6f sleep\n" % delta
     if dev
       if !(omitx && data[1] == 'T' && data[2] == 'X')
 	dev.write data
-	delta = ts-lt
-	puts "Sleep #{delta}"
 	sleep delta if skip == false or delta.zero?
       end
     end
@@ -121,8 +121,6 @@ File.open(ARGV[0]) do |f|
       if data[1] == 'T'
 	next if omitx && data[2] == 'X'
       end
-      delta = ts-lt
-      puts "Sleep #{delta}"
       sleep delta if skip == false or delta.zero?
       skip = false if(skip)
       skt.send data,0,host,port
