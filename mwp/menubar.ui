@@ -187,7 +187,7 @@
           <attribute name="action">win.art-hor</attribute>
         </item>
         <item>
-          <attribute name="label">Diection View</attribute>
+          <attribute name="label">Direction View</attribute>
           <attribute name="action">win.direction-view</attribute>
         </item>
         <item>
