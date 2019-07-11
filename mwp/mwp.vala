@@ -4021,6 +4021,7 @@ case 0:
         {
             armtime = 0;
             duration = -1;
+            mss.m_wp = -1;
             if(replayer == Player.NONE)
                 init_have_home();
             no_ofix = 0;
@@ -5835,6 +5836,8 @@ case 0:
                                     spt = sb.str;
                                 }
                                 map_show_wp(spt);
+                                mss.m_wp = ns.wp_number;
+                                mss.waypoint_changed(mss.m_wp);
                             }
                         }
                         if ((conf.osd_mode & OSD.show_dist) != 0)
@@ -5845,6 +5848,8 @@ case 0:
                     else if (last_nmode == 3)
                     {
                         map_hide_wp();
+                        mss.m_wp = -1;
+                        mss.waypoint_changed(mss.m_wp);
                     }
                 }
                 last_nmode = ns.gps_mode;

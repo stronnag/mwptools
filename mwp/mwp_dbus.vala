@@ -40,6 +40,8 @@ public class MwpServer : Object {
    internal string?[] device_names = {};
    internal int nwpts;
 
+   internal int m_wp = -1;
+
    internal signal uint __set_mission(string s);
    internal signal uint __load_mission(string s);
    internal signal void __clear_mission();
@@ -56,6 +58,7 @@ public class MwpServer : Object {
 
     public signal void state_changed(State state);
     public signal void sats_changed(uint8 nsats, uint8 fix);
+    public signal void waypoint_changed(int wp);
 
     public uint dbus_pos_interval { get; set; default = 2;}
     public signal void quit();
@@ -105,6 +108,11 @@ public class MwpServer : Object {
     public State get_state() throws GLib.Error
     {
         return m_state;
+    }
+
+    public int get_waypoint_number() throws GLib.Error
+    {
+        return m_wp;
     }
 
     public void get_sats(out uint8 nsats, out uint8 fix) throws GLib.Error

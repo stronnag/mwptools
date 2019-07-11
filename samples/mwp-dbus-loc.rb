@@ -17,7 +17,7 @@ begin
 rescue
   abort "Service unavailable"
 end
-
+$stdout.sync = true
 # Set the default interface
 mwp.default_iface = "org.mwptools.mwp"
 
@@ -38,6 +38,9 @@ loc= mwp.GetLocation
 puts "Init Location: #{loc.join(' ')}"
 sats= mwp.GetSats
 puts "Init Sats: #{sats.join(' ')}"
+
+wp= mwp.GetWaypointNumber
+puts "Init WP: #{wp.join(' ')}"
 
 velo= mwp.GetVelocity
 puts "Init Velocity #{sats.join(' ')}"
@@ -78,6 +81,10 @@ end
 
 mwp.on_signal("StateChanged") do |state|
   puts "State Changed: #{state_name[state]}"
+end
+
+mwp.on_signal("WaypointChanged") do |wp|
+  puts "WP Changed: #{wp}"
 end
 
 loop = DBus::Main.new
