@@ -12,6 +12,8 @@ interface MwpIF : DBusProxy {
     public signal void state_changed(int state);
     public signal void sats_changed(uint8 nsats, uint8 fix);
     public abstract uint dbus_pos_interval{get; set;}
+    public signal void  waypoint_changed(int wp);
+
     public signal void quit();
 
     public abstract int get_state() throws DBusError,IOError;
@@ -26,7 +28,7 @@ interface MwpIF : DBusProxy {
                                                out uint32 azimuth) throws DBusError,IOError;
     public abstract void get_location(out double latitude, out double longitude,
                                       out int32 altitude) throws DBusError,IOError;
-
+    public abstract int get_waypoint_number() throws DBusError,IOError;
 }
 
 public class App : Object
@@ -89,6 +91,9 @@ public class App : Object
             state = mwpif.get_state();
             stdout.printf("Iniital state: %s\n", states[state]);
 
+            var wpno = mwpif.get_waypoint_number();
+            stdout.printf("Initial WP: %d\n", wpno);
+
             mwpif.get_sats(out nsats, out fix);
             stdout.printf("Initial satellites: %u %u\n", nsats, fix);
 
@@ -121,6 +126,10 @@ public class App : Object
 
             mwpif.state_changed.connect((s) => {
                     stdout.printf("State changed: %s\n", states[s]);
+                });
+
+            mwpif.waypoint_changed.connect((wp) => {
+                    stdout.printf("WP changed: %d\n", wp);
                 });
 
             mwpif.velocity_changed.connect((s,c) => {
