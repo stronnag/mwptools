@@ -36,7 +36,7 @@ public class App : Object
     private MainLoop ml;
     private MwpIF? mwpif = null;
     private int intvl = -1;
-
+    private Timer timer;
 
     public App(int _i = -1)
     {
@@ -57,6 +57,23 @@ public class App : Object
                                        "/org/mwptools/mwp", 0, null, on_bus_get);
     }
 
+    private void message(string format, ...)
+    {
+        if(timer == null)
+        {
+            timer = new Timer();
+            timer.start();
+        }
+	double seconds;
+        var args = va_list();
+        StringBuilder sb = new StringBuilder();
+ 	seconds = timer.elapsed ();
+	sb.append_printf("%08.1f: ", seconds);
+        sb.append_vprintf(format, args);
+        stdout.puts (sb.str);
+    }
+
+
     private void on_bus_get(Object? o, AsyncResult? res)
     {
         try {
@@ -74,11 +91,11 @@ public class App : Object
 
             if(intvl > -1)
             {
-                print("Setting new interval %d\n", intvl);
+                message("Setting new interval %d\n", intvl);
                 mwpif.dbus_pos_interval = intvl;
             }
             else
-                stdout.printf("Intvl %u\n", mwpif.dbus_pos_interval);
+                message("Intvl %u\n", mwpif.dbus_pos_interval);
             StringBuilder sb = new StringBuilder("State Names:");
             mwpif.get_state_names (out states);
             foreach(var s in states)
@@ -86,62 +103,62 @@ public class App : Object
                 sb.append_c(' ');
                 sb.append(s);
             }
-            print ("%s\n", sb.str);
+            message ("%s\n", sb.str);
 
             state = mwpif.get_state();
-            stdout.printf("Iniital state: %s\n", states[state]);
+            message("Iniital state: %s\n", states[state]);
 
             var wpno = mwpif.get_waypoint_number();
-            stdout.printf("Initial WP: %d\n", wpno);
+            message("Initial WP: %d\n", wpno);
 
             mwpif.get_sats(out nsats, out fix);
-            stdout.printf("Initial satellites: %u %u\n", nsats, fix);
+            message("Initial satellites: %u %u\n", nsats, fix);
 
             mwpif.get_home(out latitude, out longitude, out altitude);
-            stdout.printf("Initial home location: %f %f %dm\n",
+            message("Initial home location: %f %f %dm\n",
                   latitude, longitude, altitude);
 
             mwpif.get_location(out latitude, out longitude, out altitude);
-            stdout.printf("Initial geographic location: %f %f %dm\n",
+            message("Initial geographic location: %f %f %dm\n",
                   latitude, longitude, altitude);
 
             mwpif.get_polar_coordinates(out range, out bearing, out azimuth);
-            stdout.printf("Initial polar coordinates: %um %u° %u°\n",
+            message("Initial polar coordinates: %um %u° %u°\n",
                   range, bearing, azimuth);
 
             mwpif.get_velocity(out speed, out course);
-            stdout.printf("Initial velocity: %um/s %u°\n", speed, course);
+            message("Initial velocity: %um/s %u°\n", speed, course);
 
             mwpif.home_changed.connect((la, lo, alt) => {
-                    stdout.printf("Home changed: %f %f %dm\n", la, lo, alt);
+                    message("Home changed: %f %f %dm\n", la, lo, alt);
                 });
 
             mwpif.location_changed.connect((la, lo, alt) => {
-            stdout.printf("Location changed: %f %f %dm\n", la, lo, alt);
+                    message("Location changed: %f %f %dm\n", la, lo, alt);
                 });
 
             mwpif.polar_changed.connect((r, b, a) => {
-            stdout.printf("Polar coordinates changed: %um %u° %u°\n", r, b, a);
+                    message("Polar coordinates changed: %um %u° %u°\n", r, b, a);
                 });
 
             mwpif.state_changed.connect((s) => {
-                    stdout.printf("State changed: %s\n", states[s]);
+                    message("State changed: %s\n", states[s]);
                 });
 
             mwpif.waypoint_changed.connect((wp) => {
-                    stdout.printf("WP changed: %d\n", wp);
+                    message("WP changed: %d\n", wp);
                 });
 
             mwpif.velocity_changed.connect((s,c) => {
-                    stdout.printf("Velocity changed: %um/s %u°\n", s, c);
+                    message("Velocity changed: %um/s %u°\n", s, c);
                 });
 
             mwpif.sats_changed.connect((s,f) => {
-                    stdout.printf("Satellites changed: %us %u\n", s, f);
+                    message("Satellites changed: %us %u\n", s, f);
                 });
 
         } catch (Error e) {
-            stderr.printf ("%s\n", e.message);
+            message("%s\n", e.message);
             mwpif = null;
         }
     }
