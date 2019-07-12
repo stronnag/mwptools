@@ -700,7 +700,7 @@ public class ReplayThread : GLib.Object
                         }
                     } catch (Error e) {
                         if(e.matches(Quark.from_string("g-io-error-quark"),19))
-                            MWPLog.message("sceanrio cancelled\n");
+                            MWPLog.message("scenario cancelled\n");
                         else
                             MWPLog.message("line: %s  %s \n",line, e.message);
                         playon = false;

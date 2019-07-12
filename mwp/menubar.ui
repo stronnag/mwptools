@@ -163,7 +163,7 @@
           <attribute name="action">win.mission-list</attribute>
         </item>
         <item>
-          <attribute name="label">Nav Status</attribute>
+          <attribute name="label">MW Nav Status</attribute>
           <attribute name="action">win.nav-status</attribute>
         </item>
         <item>
