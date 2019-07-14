@@ -885,8 +885,14 @@ if ENV['MWP_BB_ARGS']
   cmd << " #{ENV['MWP_BB_ARGS']}"
 end
 
-if vname and extra_args.has_key?(vname.to_sym)
-  cmd << " " << extra_args[vname.to_sym]
+if vname
+  exargs=''
+  extra_args.each do |k,v|
+    if vname.match(/#{k.to_s}/)
+      exargs << ' ' << v
+    end
+  end
+  cmd << exargs
 end
 
 cmd << " --stdout"
