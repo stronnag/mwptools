@@ -680,6 +680,7 @@ dumph = false
 scan = nil
 decoder="blackbox_decode"
 nobaro = nil
+extra_args = {}
 
 if have_js
   pref_fn = File.join(ENV["HOME"],".config", "mwp", "replay_ltm.json")
@@ -689,6 +690,7 @@ if have_js
     decl = prefs[:declination].to_f
     autotyp = prefs[:auto]
     nobaro = prefs[:nobaro]
+    extra_args = prefs[:extra]
   end
 end
 
@@ -751,47 +753,43 @@ vbstate = false # true means we're 2.0.0 and need to check date
 ivers = nil
 vname = nil
 
-File.open("/tmp/.mwp-vbat.txt","a") do |vf|
-  File.open(bbox,'rb') do |f|
-    f.each do |l|
-      if m = l.match(/^H Firmware revision:(.*)$/)
-	gitinfos << m[1]
-	ivers = m[1]
-	if iv=ivers.match(/INAV (\d+).(\d+).(\d+)/)
-	  if iv[1].to_i <  2
+File.open(bbox,'rb') do |f|
+  f.each do |l|
+    if m = l.match(/^H Firmware revision:(.*)$/)
+      gitinfos << m[1]
+      ivers = m[1]
+      if iv=ivers.match(/INAV (\d+).(\d+).(\d+)/)
+	if iv[1].to_i <  2
+	  need_vbat_scale = true
+	elsif iv[1].to_i == 2 and iv[2] == '0' and iv[2] == '0'
+	  vbstate = true
+	else
+	  need_vbat_scale = false
+	end
+      end
+    elsif m = l.match(/^H Firmware date:(...) (\d{2}) (\d{4})/)
+      if vbstate == true
+	if m[3] == '2018'
+	  if m[1] == 'Apr' || m[1] == 'May' || m[1] == 'Jun' ||
+	      (m[1] == 'Jul' and m[2].to_i < 7)
 	    need_vbat_scale = true
-	  elsif iv[1].to_i == 2 and iv[2] == '0' and iv[2] == '0'
-	    vbstate = true
 	  else
 	    need_vbat_scale = false
 	  end
 	end
-      elsif m = l.match(/^H Firmware date:(...) (\d{2}) (\d{4})/)
-	vf.puts "#{vbstate} #{m[0]}"
-	if vbstate == true
-	  if m[3] == '2018'
-	    if m[1] == 'Apr' || m[1] == 'May' || m[1] == 'Jun' ||
-		(m[1] == 'Jul' and m[2].to_i < 7)
-	      need_vbat_scale = true
-	    else
-	      need_vbat_scale = false
-	    end
-	  end
-	end
-      elsif m = l.match(/^H mag_hardware:(\d+)$/)
-	have_mag = m[1] != '0'
-      elsif m = l.match(/^H vbat_scale:(\d+)$/)
-	if need_vbat_scale
-	  $vbatscale = m[1].to_f / 110.0
-	end
-      elsif m = l.match(/^H Craft name:(.*)$/)
-	vname = m[1] unless m[1].empty?
-      elsif m = l.match(/End of log \(disarm reason:(\d+)/)
-	disarms << m[1].to_i
       end
+    elsif m = l.match(/^H mag_hardware:(\d+)$/)
+      have_mag = m[1] != '0'
+    elsif m = l.match(/^H vbat_scale:(\d+)$/)
+      if need_vbat_scale
+	$vbatscale = m[1].to_f / 110.0
+      end
+    elsif m = l.match(/^H Craft name:(.*)$/)
+      vname = m[1] unless m[1].empty?
+    elsif m = l.match(/End of log \(disarm reason:(\d+)/)
+      disarms << m[1].to_i
     end
   end
-  vf.puts "#{ivers} vbat scale #{need_vbat_scale}"
 end
 
 if scan
@@ -886,6 +884,11 @@ end
 if ENV['MWP_BB_ARGS']
   cmd << " #{ENV['MWP_BB_ARGS']}"
 end
+
+if vname and extra_args.has_key?(vname.to_sym)
+  cmd << " " << extra_args[vname.to_sym]
+end
+
 cmd << " --stdout"
 cmd << " 2>#{nul}"
 cmd << " \"#{bbox}\""

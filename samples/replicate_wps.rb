@@ -16,14 +16,15 @@ require 'nokogiri'
 # MIT licence
 
 fn=ARGV[0]
+if ARGV.empty? || !File.exists?(fn)
+  STDERR.puts "Usage: replicate_wps.rb mission_file first last [iterations]"
+  exit
+end
+
 se=ARGV[1].to_i
 ee=ARGV[2].to_i
 rep=(ARGV[3] || 1).to_i
 
-if !File.exists?(fn)
-  STDERR.puts "Usage: replicate_wps.rb mission_file first last [iterations]"
-  exit
-end
 
 doc = Nokogiri::XML(open(fn))
 items=[]
