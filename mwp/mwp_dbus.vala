@@ -48,6 +48,8 @@ public class MwpServer : Object {
    internal signal int __get_devices();
    internal signal void __upload_mission(bool e);
    internal signal bool __connect_device(string s);
+   internal signal void __load_blackbox(string s);
+   internal signal void __load_mwp_log(string s);
 
     public signal void home_changed (double latitude, double longitude,
                                      int altitude);
@@ -134,6 +136,14 @@ public class MwpServer : Object {
 
     public void clear_mission () throws GLib.Error {
          __clear_mission();
+    }
+
+    public void load_blackbox (string filename) throws GLib.Error {
+        __load_blackbox(filename);
+    }
+
+    public void load_mwp_log (string filename) throws GLib.Error {
+         __load_mwp_log(filename);
     }
 
     public void get_devices (out string[]devices) throws GLib.Error {

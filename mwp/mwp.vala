@@ -3242,6 +3242,14 @@ case 0:
                 return (ms != null) ? ms.npoints : 0;
             });
 
+        mss.__load_mwp_log.connect((s) => {
+                run_replay(s, true, Player.MWP);
+            });
+
+        mss.__load_blackbox.connect((s) => {
+                replay_bbox(true, s);
+            });
+
         mss.__clear_mission.connect(() => {
                 ls.clear_mission();
                 NavStatus.have_rth = false;
