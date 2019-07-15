@@ -4362,7 +4362,7 @@ case 0:
     {
         StringBuilder sb = new StringBuilder ();
         if(af == 0)
-            sb.append("Arming OK");
+            sb.append("Ready to Arm");
         else
         {
             for(var i = 0; i < 32; i++)
