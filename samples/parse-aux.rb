@@ -57,6 +57,7 @@ ARGF.each do |l|
     chn = a[3].to_i
     min = a[4].to_i
     max = a[5].to_i
+    next if min == max && max == 900
     if func < BOXNAME.size
       bname = BOXNAME[func]
     else

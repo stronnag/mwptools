@@ -606,7 +606,8 @@ public class MWPlanner : Gtk.Application {
         NONE=0,
         WP = 1,
         INIT=2,
-        MSP=4
+        MSP=4,
+        ADHOC=8
     }
 
     private enum SAT_FLAGS
@@ -2005,10 +2006,17 @@ public class MWPlanner : Gtk.Application {
 
         audio_cb.button_release_event.connect (() => {
                 if(audio_cb.active)
+                {
+                    if((debug_flags & DEBUG_FLAGS.ADHOC) != 0)
+                        MWPLog.message("Disable nav speak\n");
                     say_state &= ~NavStatus.SAY_WHAT.Nav;
+                }
                 else
+                {
+                    if((debug_flags & DEBUG_FLAGS.ADHOC) != 0)
+                        MWPLog.message("Enable nav speak\n");
                     say_state |= NavStatus.SAY_WHAT.Nav;
-
+                }
                 navstatus.set_audio_status(say_state);
                 return false;
             });
@@ -4082,6 +4090,7 @@ case 0:
                 if (conf.audioarmed == true)
                 {
                     say_state |= NavStatus.SAY_WHAT.Nav;
+                    MWPLog.message("Enable nav speak\n");
                     navstatus.set_audio_status(say_state);
                     audio_cb.active = true;
 
@@ -4126,6 +4135,8 @@ case 0:
                 {
                     audio_cb.active = false;
                     say_state &= ~NavStatus.SAY_WHAT.Nav;
+                    if((debug_flags & DEBUG_FLAGS.ADHOC) != 0)
+                        MWPLog.message("Disable nav speak\n");
                     navstatus.set_audio_status(say_state);
                 }
                 if(conf.logarmed == true)
@@ -7163,6 +7174,9 @@ case 0:
                 icol += 1;
             }
 
+            if (icol > 4)
+                icol = 3;
+
             update_bat_indicators(icol, vf);
 
             if(vcol.levels[icol].reached == false)
@@ -7182,6 +7196,7 @@ case 0:
     private void update_bat_indicators(int icol, float vf)
     {
         string str;
+
         if(vcol.levels[icol].label == null)
         {
             str = "%.1fv".printf(vf);

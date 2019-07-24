@@ -7,7 +7,13 @@ ifeq ($(XOS),Linux)
  GUDEV = --pkg gudev-1.0
 endif
 
-OPTS += -X -O2 -X -s
+OPTS += -X -O2
+
+ifeq ($(origin DEBUG), undefined)
+ OPTS += -X -s
+else
+ OPTS += -g
+endif
 
 VAPI := $(shell valac --api-version)
 

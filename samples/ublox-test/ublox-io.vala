@@ -589,14 +589,10 @@ public class MWSerial : Object
                 ublox_write(fd,"gpspassthrough\n".data);
                 Thread.usleep(1000*100);
                 MwpSerial.flush(fd);
-                gps_state = State.START;
-                if(noinit == false)
-                    Timeout.add(100, () => {
-                            return setup_gps();
-                        });
             }
-            else
+            if(noinit == false)
             {
+                gps_state = State.START;
                 var delay = 100;
                 if(slow)
                     delay = 200;
