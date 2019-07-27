@@ -140,6 +140,14 @@ public struct MapSize
     double height;
 }
 
+
+public struct FakeOffsets
+{
+    double dlat;
+    double dlon;
+    bool faking;
+}
+
 public class Alert
 {
     public const string RED = "bleet.ogg";
@@ -564,6 +572,7 @@ public class MWPlanner : Gtk.Application {
     public bool x_plot_elevations_rb {get; private set; default= false;}
 
     private Array<KmlOverlay> kmls;
+    private FakeOffsets fakeoff;
 
     public DevManager devman;
     public PowerState pstate;
@@ -1188,6 +1197,24 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
+        var fstr = Environment.get_variable("MWP_POS_OFFSET");
+        if(fstr != null)
+        {
+            string[] delims =  {","," "};
+            foreach (var delim in delims)
+            {
+                var parts = fstr.split(delim);
+                if(parts.length == 2)
+                {
+                    fakeoff.dlat += InputParser.get_latitude(parts[0]);
+                    fakeoff.dlon += InputParser.get_longitude(parts[1]);
+                    fakeoff.faking = true;
+                    MWPLog.message("Faking %f %f\n", fakeoff.dlat, fakeoff.dlon);
+                    break;
+                }
+            }
+        }
+
         var cvers = Champlain.VERSION_S;
         if (cvers == "0.12.11")
         {
@@ -1366,7 +1393,7 @@ public class MWPlanner : Gtk.Application {
 
         navconf = new NavConfig(window, builder);
         bb_runner = new BBoxDialog(builder, window, conf.blackbox_decode,
-                                   conf.logpath);
+                                   conf.logpath, fakeoff);
 
         bb_runner.set_tz_tools(conf.geouser, conf.zone_detect);
 
@@ -6024,6 +6051,13 @@ case 0:
                     gpsinfo.set_hdop(rg.gps_hdop/100.0);
                 }
                 double ddm;
+
+                if(fakeoff.faking)
+                {
+                    rg.gps_lat += (int32)(fakeoff.dlat*10000000);
+                    rg.gps_lon += (int32)(fakeoff.dlon*10000000);
+                }
+
                 gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS),
                                          out ddm) != 0);
                 fbox.update(item_visible(DOCKLETS.FBOX));
@@ -6109,6 +6143,12 @@ case 0:
                 double gflat = of.lat/10000000.0;
                 double gflon = of.lon/10000000.0;
 
+                if(fakeoff.faking)
+                {
+                    gflat += fakeoff.dlat;
+                    gflon += fakeoff.dlon;
+                }
+
                 if(home_changed(gflat, gflon))
                 {
                     if(of.fix == 0)
@@ -6140,6 +6180,12 @@ case 0:
 
                 rp = deserialise_i32(raw, out gf.lat);
                 rp = deserialise_i32(rp, out gf.lon);
+
+                if(fakeoff.faking)
+                {
+                    gf.lat += (int32)(fakeoff.dlat*10000000);
+                    gf.lon += (int32)(fakeoff.dlon*10000000);
+                }
 
                 gf.speed = *rp++;
                 rp = deserialise_i32(rp, out gf.alt);
@@ -8000,6 +8046,19 @@ case 0:
         if(m != null && m.npoints > 0)
         {
             NavStatus.nm_pts = (uint8)m.npoints;
+            if(fakeoff.faking)
+            {
+                for(var i = 0; i < m.npoints; i++)
+                {
+                    var mi = m.get_waypoint(i);
+                    mi.lat += fakeoff.dlat;
+                    mi.lon += fakeoff.dlon;
+                    m.set_waypoint(mi, i);
+                }
+                m.cx += fakeoff.dlon;
+                m.cy += fakeoff.dlat;
+            }
+
             wp_resp = m.get_ways();
             return m;
         }

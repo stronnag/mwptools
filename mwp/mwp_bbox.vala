@@ -43,6 +43,7 @@ public class  BBoxDialog : Object
     private string geouser;
     private string zone_detect;
     private bool azoom;
+    private FakeOffsets fo;
 
     private const int BB_MINSIZE = (10*1024);
 
@@ -50,10 +51,12 @@ public class  BBoxDialog : Object
     public signal void rescale(double lly, double llx, double ury, double urx);
 
     public BBoxDialog(Gtk.Builder builder, Gtk.Window? w = null,
-                      string bboxdec,  string? logpath = null)
+                      string bboxdec,  string? logpath = null, FakeOffsets _fo)
     {
         _w = w;
         bbox_decode = bboxdec;
+        fo = _fo;
+
         dialog = builder.get_object ("bb_dialog") as Gtk.Dialog;
         bb_cancel = builder.get_object ("bb_cancel") as Button;
         bb_ok = builder.get_object ("bb_ok") as Button;
@@ -613,6 +616,11 @@ public class  BBoxDialog : Object
         } catch (SpawnError e) {
             MWPLog.message("%s\n", e.message);
         }
+        if(fo.faking)
+        {
+            xlat += fo.dlat;
+            xlon += fo.dlon;
+        }
         MWPLog.message("Getting base location from index %s %f %f %s\n",
                        index, xlat, xlon, ok.to_string());
         return ok;
@@ -703,7 +711,7 @@ public class  BBoxDialog : Object
         }
     }
 
-public void find_bbox_box(string filename, int index)
+    public void find_bbox_box(string filename, int index)
     {
         double lamin = 999;
         double lamax = -999;
@@ -784,6 +792,12 @@ filename};
                                 {
                                     lat = double.parse(parts[latp]);
                                     lon = double.parse(parts[lonp]);
+                                    if(fo.faking)
+                                    {
+                                        lat += fo.dlat;
+                                        lon += fo.dlon;
+                                    }
+
                                     if(lat < lamin)
                                         lamin = lat;
                                     if(lat > lamax)
