@@ -133,7 +133,11 @@ public class Flashdl : Object
                         if(fname == null)
                             fname  = "BBL_%s.TXT".printf(Time.local(st).format("%F_%H%M%S"));
                         if (dname != null)
+                        {
+                            if(!FileUtils.test (dname, FileTest.EXISTS))
+                                DirUtils.create_with_parents (dname, 0755);
                             fname = Path.build_filename (dname, fname);
+                        }
 
                         fp = FileStream.open (fname, "w");
                         if(fp == null)
