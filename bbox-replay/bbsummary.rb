@@ -24,6 +24,12 @@
 require 'csv'
 require 'optparse'
 require 'open3'
+begin
+  require 'json'
+  have_js = true
+rescue LoadError
+  have_js = false
+end
 
 include Math
 module Poscalc
@@ -169,6 +175,7 @@ bbox = (ARGV[0]|| abort('no BBOX log'))
 
 gitinfos=[]
 disarms=[]
+vname = nil
 
 File.open(bbox,'rb') do |f|
   f.each do |l|
@@ -226,9 +233,41 @@ csv_opts = {
   header_converters: ->(f){f.strip.downcase.gsub(' ','_').gsub(/\W+/,'').to_sym},
   return_headers: true}
 
+extra_args = {}
+if vname && have_js
+  pref_fn = File.join(ENV["HOME"],".config", "mwp", "replay_ltm.json")
+  if File.exist? pref_fn
+    json = IO.read(pref_fn)
+    prefs = JSON.parse(json, {:symbolize_names => true})
+    decl = prefs[:declination].to_f
+    autotyp = prefs[:auto]
+    nobaro = prefs[:nobaro]
+    extra_args = prefs[:extra]
+  end
+end
+
+xcmd = decoder
+xcmd << " --merge-gps"
+unless decl.nil?
+  xcmd << " --declination-dec #{decl}"
+end
+if vname
+  exargs=''
+  extra_args.each do |k,v|
+    if vname.match(/#{k.to_s}/)
+      exargs << ' ' << v
+    end
+  end
+  xcmd << exargs
+end
+
+xcmd << " --stdout"
+xcmd << " 2>#{nul}"
+
 1.upto(idx) do |ilog|
-  cmd =  [ decoder, "--index #{ilog}", "--merge-gps", "--stdout",
-    "2>#{nul}","\"#{bbox}\""].join(' ')
+
+  cmd = xcmd.dup
+  cmd = cmd << " --index #{ilog}" << " \"#{bbox}\""
 
   llat = nil
   llng = nil
@@ -279,7 +318,7 @@ csv_opts = {
 	  amps = get_amps row
 	  if amps and amps > sts[:cmax][:v]
 	    sts[:cmax][:v] = amps
-	    sts[:cmax][:t] = us
+	    sts[:cmax][:t] = us - st
 	  end
 
 	  g = get_gps row
@@ -294,15 +333,15 @@ csv_opts = {
 	  c,d = Poscalc.csedist(origin[:lat],origin[:lng],g[:lat],g[:lng])
 	  if d > sts[:rmax][:v]
 	    sts[:rmax][:v] = d
-	    sts[:rmax][:t] = us
+	    sts[:rmax][:t] = us - st
 	  end
 	  if g[:alt] >  sts[:amax][:v]
 	    sts[:amax][:v] = g[:alt]
-	    sts[:amax][:t] = us
+	    sts[:amax][:t] = us - st
 	  end
 	  if g[:spd] >  sts[:smax][:v]
 	    sts[:smax][:v] = g[:spd]
-	    sts[:smax][:t] = us
+	    sts[:smax][:t] = us - st
 	  end
 	end
       end
@@ -316,7 +355,7 @@ csv_opts = {
   puts "Range    : #{(1852*sts[:rmax][:v]).to_i}m #{format_time(sts[:rmax][:t])}"
   puts "Altitude : #{(sts[:amax][:v]/100).to_i}m #{format_time(sts[:amax][:t])}"
   puts "Speed    : #{sts[:smax][:v]}m/s #{format_time(sts[:smax][:t])}"
-  puts "Current  : #{sts[:cmax][:v]}A #{format_time(sts[:amax][:t])}"
+  puts "Current  : #{sts[:cmax][:v]}A #{format_time(sts[:cmax][:t])}"
   puts "Duration : #{sts[:dura]}"
   if disarms[ilog-1]
     puts "Disarmed : #{REASONS[disarms[ilog-1]]}"

@@ -25,7 +25,8 @@ public class MSP : Object {
     }
 
     public enum Cmds {
-        API_VERSION=1,
+		NOOP = 0,
+		API_VERSION=1,
         FC_VARIANT=2,
         FC_VERSION=3,
         BOARD_INFO=4,

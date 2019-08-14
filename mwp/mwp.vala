@@ -590,7 +590,7 @@ public class MWPlanner : Gtk.Application {
     private enum APIVERS
     {
         mspV2 = 0x0200,
-        mixer = 0x0202
+        mixer = 0x0202,
     }
 
     private enum FCVERS
@@ -3798,7 +3798,8 @@ case 0:
                 tcycle = (tcycle + 1) % requests.length;
                 req = requests[tcycle];
             }
-            queue_cmd(req, null, 0);
+            if (req != MSP.Cmds.NOOP)
+                queue_cmd(req, null, 0);
         }
     }
 
@@ -3914,6 +3915,21 @@ case 0:
         }
         return reqsize;
     }
+
+    /** unused
+    private void remove_req_op(MSP.Cmds c)
+    {
+
+        for(var i = 0; i < requests.length; i++)
+        {
+            if (requests[i] == c)
+            {
+                requests[i] = MSP.Cmds.NOOP;
+                break;
+            }
+        }
+    }
+    **/
 
     private void map_warn_set_text(bool init = false)
     {
@@ -6139,17 +6155,19 @@ case 0:
                 uint8* rp;
                 rp = deserialise_i32(raw, out of.lat);
                 rp = deserialise_i32(rp, out of.lon);
-                of.fix = *(rp+5);
-                double gflat = of.lat/10000000.0;
-                double gflon = of.lon/10000000.0;
+                rp = deserialise_i32(rp, out of.alt);
+                of.fix = raw[13];
+                double oflat = of.lat/10000000.0;
+                double oflon = of.lon/10000000.0;
+                double ofalt = of.alt/100.0;
 
                 if(fakeoff.faking)
                 {
-                    gflat += fakeoff.dlat;
-                    gflon += fakeoff.dlon;
+                    oflat += fakeoff.dlat;
+                    oflon += fakeoff.dlon;
                 }
 
-                if(home_changed(gflat, gflon))
+                if(home_changed(oflat, oflon))
                 {
                     if(of.fix == 0)
                     {
@@ -6160,7 +6178,7 @@ case 0:
                         navstatus.cg_on();
                         sflags |=  NavStatus.SPK.GPS;
                         want_special |= POSMODE.HOME;
-                        process_pos_states(gflat, gflon, 0.0, "LTM OFrame");
+                        process_pos_states(oflat, oflon, ofalt, "LTM OFrame");
                     }
                 }
                 if(Logger.is_logging)
