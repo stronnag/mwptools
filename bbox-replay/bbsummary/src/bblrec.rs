@@ -83,15 +83,18 @@ fn show_time(t: u32) -> String {
 
 fn get_vehicle_args(vname: &str) -> Option<String> {
     let home = env::var("HOME").unwrap();
-    let jfile: PathBuf = [home, ".config/mwp/replay_ltm.json".to_string() ].iter().collect();
-    let s = fs::read_to_string(jfile).unwrap();
-    let parsed = json::parse(&s).unwrap();
     let mut rstr: Option<String> = None;
-    for (k,v) in parsed["extra"].entries() {
-        let re = Regex::new(k).unwrap();
-        if re.is_match(vname) {
-            rstr = Some(v.to_string());
-            break;
+    let jfile: PathBuf = [home, ".config/mwp/replay_ltm.json".to_string() ].iter().collect();
+    if jfile.exists() {
+        let s = fs::read_to_string(jfile).unwrap();
+        let parsed = json::parse(&s).unwrap();
+
+        for (k,v) in parsed["extra"].entries() {
+            let re = Regex::new(k).unwrap();
+            if re.is_match(vname) {
+                rstr = Some(v.to_string());
+                break;
+            }
         }
     }
     rstr
