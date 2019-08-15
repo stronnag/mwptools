@@ -160,86 +160,83 @@ pub fn log_summary(fname: &str, idx: u8, dumph: bool, vname: &str) -> Result<(),
             }
         }
 
-        if !is_valid {
-            Error::new(ErrorKind::Other, "Log does not have GPS data.");
-        }
-
-        for result in rdr.deserialize() {
-            let record: Record = result?;
-
-            let us = record["time (us)"].parse::<u32>().unwrap();
-
-            let g = get_record(record);
-
-            if have_origin == false && g.fix == 2 {
-                have_origin = true;
-                olat = g.lat;
-                olon = g.lon;
-                oalt = g.alt;
-                llat = g.lat;
-                llon = g.lon;
-                st = us;
-            }
-
-            match g.amps {
-                Some(x) => {
-                    if x > summary[CURRENT].value {
-                        summary[CURRENT].value = x;
-                        summary[CURRENT].elapsed = us - st;
-                    }
-                },
-                _ => (),
-            }
-
-            if g.alt > summary[ALTITUDE].value {
-                summary[ALTITUDE].value = g.alt;
-                summary[ALTITUDE].elapsed = us - st;
-            }
-
-            if g.spd > summary[SPEED].value {
-                summary[SPEED].value = g.spd;
-                summary[SPEED].elapsed = us - st;
-            }
-
-            if have_origin == true {
-                let (_c,d) = poscalc::csedist(olat, olon, g.lat, g.lon);
-                if d > summary[RANGE].value {
-                    summary[RANGE].value = d;
-                    summary[RANGE].elapsed = us - st;
-                }
-
-                if llat != g.lat && llon != g.lon {
-                    let (_c,d) = poscalc::csedist(llat, llon, g.lat, g.lon);
-                    summary[DISTANCE].value += d;
+        if is_valid {
+            for result in rdr.deserialize() {
+                let record: Record = result?;
+                let us = record["time (us)"].parse::<u32>().unwrap();
+                let g = get_record(record);
+                if have_origin == false && g.fix == 2 {
+                    have_origin = true;
+                    olat = g.lat;
+                    olon = g.lon;
+                    oalt = g.alt;
                     llat = g.lat;
                     llon = g.lon;
+                    st = us;
                 }
-                lt = us;
+
+                match g.amps {
+                    Some(x) => {
+                        if x > summary[CURRENT].value {
+                            summary[CURRENT].value = x;
+                            summary[CURRENT].elapsed = us - st;
+                        }
+                    },
+                    _ => (),
+                }
+
+                if g.alt > summary[ALTITUDE].value {
+                    summary[ALTITUDE].value = g.alt;
+                    summary[ALTITUDE].elapsed = us - st;
+                }
+
+                if g.spd > summary[SPEED].value {
+                    summary[SPEED].value = g.spd;
+                    summary[SPEED].elapsed = us - st;
+                }
+
+                if have_origin == true {
+                    let (_c,d) = poscalc::csedist(olat, olon, g.lat, g.lon);
+                    if d > summary[RANGE].value {
+                        summary[RANGE].value = d;
+                        summary[RANGE].elapsed = us - st;
+                    }
+
+                    if llat != g.lat && llon != g.lon {
+                        let (_c,d) = poscalc::csedist(llat, llon, g.lat, g.lon);
+                        summary[DISTANCE].value += d;
+                        llat = g.lat;
+                        llon = g.lon;
+                    }
+                    lt = us;
+                }
             }
-        }
 
-        if have_origin  {
-            if have_baro {
-                summary[ALTITUDE].value /= 100.0;
-            } else {
-                summary[ALTITUDE].value -= oalt;
-            }
-            summary[RANGE].value *= 1852.0;
-            summary[DISTANCE].value *= 1852.0;
-
-            let et: u32 = lt - st;
-
-            for s in &summary {
-                print!("{:9}: {:.1} {}", s.name, s.value, s.unit);
-                if s.elapsed > 0 {
-                    println!(" at {}", show_time(s.elapsed));
+            if have_origin  {
+                if have_baro {
+                    summary[ALTITUDE].value /= 100.0;
                 } else {
-                    println!();
+                    summary[ALTITUDE].value -= oalt;
                 }
+                summary[RANGE].value *= 1852.0;
+                summary[DISTANCE].value *= 1852.0;
+
+                let et: u32 = lt - st;
+
+                for s in &summary {
+                    print!("{:9}: {:.1} {}", s.name, s.value, s.unit);
+                    if s.elapsed > 0 {
+                        println!(" at {}", show_time(s.elapsed));
+                    } else {
+                        println!();
+                    }
+                }
+                println!("{:9}: {}", "Duration", show_time(et));
+            } else {
+                println!("failed to process log/index");
             }
-            println!("{:9}: {}", "Duration", show_time(et));
         } else {
-            println!("failed to process log/index");
+            println!("* No GPS information in log");
         }
     }
     Ok(())
