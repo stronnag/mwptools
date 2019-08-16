@@ -8,7 +8,6 @@ use std::process::{Command, Stdio};
 use std::io::{Error,ErrorKind};
 
 use std::path::PathBuf;
-//use std::ffi::OsStr;
 use std::fs;
 use std::env;
 
@@ -24,11 +23,13 @@ struct BBLRec {
     alt: f64,
     spd: f64,
     amps: Option<f64>,
-    fix: u8,
+    fix: Option<u8>,
+    numsat: u8,
 }
 
 fn get_record(r: Record) -> BBLRec {
     let mut amps = None;
+    let mut fix = None;
     let mut alt = 0.0;
 
     match r.get("amperage (A)") {
@@ -50,13 +51,19 @@ fn get_record(r: Record) -> BBLRec {
         },
     };
 
+    match r.get("GPS_fixType") {
+        Some(x) => { fix = Some(x.parse::<u8>().unwrap()) },
+        _ => (),
+    };
+
     let g = BBLRec{
         lat: r["GPS_coord[0]"].parse::<f64>().unwrap(),
         lon: r["GPS_coord[1]"].parse::<f64>().unwrap(),
         spd: r["GPS_speed (m/s)"].parse::<f64>().unwrap(),
-        fix: r["GPS_fixType"].parse::<u8>().unwrap(),
+        fix: fix,
         alt: alt,
-        amps: amps
+        amps: amps,
+        numsat:  r["GPS_numSat"].parse::<u8>().unwrap(),
     };
     return g;
 }
@@ -88,7 +95,6 @@ fn get_vehicle_args(vname: &str) -> Option<String> {
     if jfile.exists() {
         let s = fs::read_to_string(jfile).unwrap();
         let parsed = json::parse(&s).unwrap();
-
         for (k,v) in parsed["extra"].entries() {
             let re = Regex::new(k).unwrap();
             if re.is_match(vname) {
@@ -152,7 +158,7 @@ pub fn log_summary(fname: &str, idx: u8, dumph: bool, vname: &str) -> Result<(),
         let mut llon = 0.0;
 
         for field in headers.iter() {
-            if field == "GPS_fixType" {
+            if field == "GPS_fixType" || field == "GPS_numSat" {
                 is_valid = true;
             }
             if field == "BaroAlt (cm)" {
@@ -165,14 +171,24 @@ pub fn log_summary(fname: &str, idx: u8, dumph: bool, vname: &str) -> Result<(),
                 let record: Record = result?;
                 let us = record["time (us)"].parse::<u32>().unwrap();
                 let g = get_record(record);
-                if have_origin == false && g.fix == 2 {
-                    have_origin = true;
-                    olat = g.lat;
-                    olon = g.lon;
-                    oalt = g.alt;
-                    llat = g.lat;
-                    llon = g.lon;
-                    st = us;
+
+                if have_origin == false {
+                    let mut satok = false;
+
+                    match g.fix {
+                        Some(x) => {if x == 2 { satok = true;}},
+                        _ => {if g.numsat > 5 { satok = true;}},
+                    }
+
+                    if satok {
+                        have_origin = true;
+                        olat = g.lat;
+                        olon = g.lon;
+                        oalt = g.alt;
+                        llat = g.lat;
+                        llon = g.lon;
+                        st = us;
+                    }
                 }
 
                 match g.amps {
