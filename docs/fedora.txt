@@ -37,6 +37,9 @@ dnf install gnuplot rubygem-nokogiri
 ## To use KMZ as an overlay format, you need 'unzip
 #dnf install unzip
 
+## To build bbsummary, you need rust and cargo
+# dnf install rust cargo
+
 ## If you want to use serial devices for bbox replay (and you probably
 ## don't) then see
 ##  https://developer.fedoraproject.org/tech/languages/ruby/gems-installation.html
