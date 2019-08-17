@@ -41,20 +41,24 @@ fn main()  {
         return;
     } else {
         for source in matches.free.iter() {
-            let filename = Path::new(source).file_name().unwrap().to_str().unwrap().to_string();
             let mut b = bblmeta::Bblmeta::new();
-            b.getmeta(source).expect("failed to read log");
-            let mut n = 1;
-            for l in b.l.iter() {
-                if idx == 0 || idx == n {
-                    println!("Log      : {} / {}", filename, n);
-                    println!("Craft    : \"{}\" on {}", l.name, l.ldate);
-                    println!("Firmware : {} of {}", l.git, l.gdate);
-                    bblrec::log_summary(source, n, dumph, &l.name).unwrap();
-                    println!("Disarm   : {}", l.disarm);
-                    n += 1;
-                    println!();
-                }
+            match b.getmeta(source) {
+                Ok(()) => {
+                    let mut n = 1;
+                    let filename = Path::new(source).file_name().unwrap().to_str().unwrap();
+                    for l in b.l.iter() {
+                        if idx == 0 || idx == n {
+                            println!("Log      : {} / {}", filename, n);
+                            println!("Craft    : \"{}\" on {}", l.name, l.ldate);
+                            println!("Firmware : {} of {}", l.git, l.gdate);
+                            bblrec::log_summary(source, n, dumph, &l.name).unwrap();
+                            println!("Disarm   : {}", l.disarm);
+                            n += 1;
+                            println!();
+                        }
+                    }
+                },
+                Err(e) => println!("Failed to open {} - {}", source, e),
             }
         }
     }

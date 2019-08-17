@@ -122,7 +122,7 @@ pub fn log_summary(fname: &str, idx: u8, dumph: bool, vname: &str) -> Result<(),
 
     let mut vargs: Vec<&str> = ["--merge-gps", "--stdout", "--index", istr.as_str()].to_vec();
 
-    let mut _ss = "".to_string();
+    let mut _ss = String::new();
     if let Some(s) =  get_vehicle_args(&vname) {
         _ss = s.to_string();
         let mut split: Vec<&str> = _ss.split(' ').collect();
