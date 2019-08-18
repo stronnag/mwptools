@@ -46,9 +46,54 @@ BOXNAME=[
   "LOITERDIRCHN", #  40
 ]
 
+# src/main/io/serial.h
+
+SERIALS = [
+  "MSP",
+  "GPS",
+  "TELEMETRY_FRSKY",
+  "TELEMETRY_HOTT",
+  "TELEMETRY_LTM",
+  "TELEMETRY_SMARTPORT",
+  "RX_SERIAL",
+  "BLACKBOX",
+  "TELEMETRY_MAVLINK",
+  "TELEMETRY_IBUS",
+  "RCDEVICE",
+  "VTX_SMARTAUDIO",
+  "VTX_TRAMP",
+  "UAV_INTERCONNECT",
+  "OPTICAL_FLOW",
+  "LOG",
+  "RANGEFINDER",
+  "VTX_FFPV",
+  "SERIALSHOT",
+  "TELEMETRY_SIM"
+]
+
 ini=false
 ARGF.each do |l|
   bname=''
+
+  if l.match (/^serial/)
+    l.chomp!
+    a=l.split(' ')
+    id = a[1].to_i
+    fcode = a[2].to_i
+    funcs=[]
+    if fcode == 0
+      funcs << "Unused"
+    else
+      0.upto(19) do |i|
+	mask = (1 << i)
+	if (fcode & mask) == mask
+	  funcs << SERIALS[i]
+	end
+      end
+    end
+    puts "UART#{id+1} #{fcode} #{funcs.join(',')}"
+  end
+
   if l.match(/^aux/)
     l.chomp!
     a=l.split(' ')

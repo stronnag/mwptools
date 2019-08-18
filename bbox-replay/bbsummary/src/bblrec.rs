@@ -9,8 +9,7 @@ use std::io::{Error,ErrorKind};
 
 use std::path::PathBuf;
 use std::fs;
-use std::env;
-
+use dirs;
 use regex::Regex;
 
 mod poscalc;
@@ -89,9 +88,13 @@ fn show_time(t: u32) -> String {
 }
 
 fn get_vehicle_args(vname: &str) -> Option<String> {
-    let home = env::var("HOME").unwrap();
+    let home = dirs::home_dir().unwrap();
     let mut rstr: Option<String> = None;
-    let jfile: PathBuf = [home, ".config/mwp/replay_ltm.json".to_string() ].iter().collect();
+//    let jfile: PathBuf = [home, ".config/mwp/replay_ltm.json".to_string() ].iter().collect();
+    let mut jfile = PathBuf::new();
+    jfile.push(home);
+    jfile.push(".config/mwp/replay_ltm.json");
+
     if jfile.exists() {
         let s = fs::read_to_string(jfile).unwrap();
         let parsed = json::parse(&s).unwrap();

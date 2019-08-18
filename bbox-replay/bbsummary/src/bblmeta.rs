@@ -37,10 +37,10 @@ impl Bblmeta {
                 Some(x) => {
                     match x.get(1).unwrap().as_str() {
                         "Data version" => {
-                            self.l.push(Loginfo {git: "".to_string(),
-                                                 gdate: "".to_string(),
-                                                 name: "".to_string(),
-                                                 ldate: "".to_string(),
+                            self.l.push(Loginfo {git: String::new(),
+                                                 gdate: String::new(),
+                                                 name: String::new(),
+                                                 ldate: String::new(),
                                                  disarm: "NONE".to_string()});
                         },
                         "Firmware date" => if let Some(l) = self.l.last_mut() {
