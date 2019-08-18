@@ -5290,11 +5290,12 @@ case 0:
                     if (vi.fc_api >= APIVERS.mspV2)
                     {
                         msp.use_v2 = true;
-                        MWPLog.message("Using MSP v2\n");
                         queue_cmd(MSP.Cmds.NAME,null,0);
                     }
                     else
                         queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+
+                    MWPLog.message("Using MSP v%c %04x\n", (msp.use_v2) ? '2' : '1', vi.fc_api);
                 }
                 break;
 
