@@ -51,14 +51,17 @@ fn main()  {
                             println!("Log      : {} / {}", filename, n);
                             println!("Craft    : \"{}\" on {}", l.name, l.ldate);
                             println!("Firmware : {} of {}", l.git, l.gdate);
-                            bblrec::log_summary(source, n, dumph, &l.name).unwrap();
+                            match bblrec::log_summary(source, n, dumph, &l.name) {
+                                Ok(()) => (),
+                                Err(e) => println!("! Failed \"blackbox_decode\": {}", e),
+                            }
                             println!("Disarm   : {}", l.disarm);
                             n += 1;
                             println!();
                         }
                     }
                 },
-                Err(e) => println!("Failed to open {} - {}", source, e),
+                Err(e) => println!("! Failed to open {} - {}", source, e),
             }
         }
     }
