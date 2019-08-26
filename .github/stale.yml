@@ -24,12 +24,9 @@ staleLabel: Inactive
 
 # Comment to post when marking as stale. Set to `false` to disable
 markComment: >
-  This issue / pull request has been automatically marked as stale because it
-  has not had any activity in 30 days. The resources of the mwp team are limited,
-  and inactive issues/PR are a burden on the project.
+  This issue / pull request has been automatically marked as stale because it has not had any activity in 30 days.
 
-  This issue / pull request will be closed if no further activity occurs within two weeks.
-
+  The issue / pull request will be closed if no further activity occurs within two weeks.
 
 # Comment to post when removing the stale label.
 # unmarkComment: >
