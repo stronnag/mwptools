@@ -6742,7 +6742,8 @@ case 0:
                 {
                     Mav.MAVLINK_RC_CHANNELS m = *(Mav.MAVLINK_RC_CHANNELS*)raw;
                     Logger.mav_rc_channels(m);
-                    radstatus.update_rssi(m.rssi,item_visible(DOCKLETS.RADIO));
+                    var mrssi = m.rssi*1023/255;
+                    radstatus.update_rssi(mrssi,item_visible(DOCKLETS.RADIO));
                 }
                 break;
 

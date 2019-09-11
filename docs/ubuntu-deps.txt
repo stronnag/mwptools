@@ -60,7 +60,7 @@ apt $CONFIRM install gnuplot ruby-nokogiri
 #apt $CONFIRM install unzip
 
 ## To build bbsummary, you need rust and cargo
-# apt install cargo
+# apt $CONFIRM install cargo
 
 ## Shallow clone mwp ....
 # git clone --depth 1 https://github.com/stronnag/mwptools

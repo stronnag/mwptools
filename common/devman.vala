@@ -216,7 +216,7 @@ public abstract class BluezInterface : GLib.Object {
 
     public ObjectPath object_path = null;
 
-    public BluezInterface(string name, ObjectPath path,
+    /*public*/ BluezInterface(string name, ObjectPath path,
                           HashTable<string, Variant>? props = null) {
         iface_name = name;
         object_path = path;
