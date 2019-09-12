@@ -38,7 +38,7 @@ mwp also provides logging, the replay of mwp log files and Blackbox logs.
 
 ## Platforms and OS
 
-The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Ubuntu (latest and most recent LTS), Fedora (current), Debian (Buster, Stretch) and FreeBSD (current release); building and running on any platform that supports (recent versions of):
+The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Ubuntu (latest and most recent LTS), Fedora (current), Debian (Buster, Sid) and FreeBSD (current release); building and running on any platform that supports (recent versions of):
 
  * gtk+3.0 (3.18 or later);
  * vala and gcc;
@@ -51,7 +51,7 @@ The tools are designed to be portable and as far as possible platform and archit
 
 Please see the `docs` directory for specific development requirements for individual OS.The `docs` directory also contains a user guide / manual in ODT and PDF formats (`docs/mwptools.{odt,pdf}`).
 
-mwptools is tested on x86_64, ia32 and ARM devices (Linux / FreeBSD). 
+mwptools is tested on x86_64, ia32 and ARM devices (Linux / FreeBSD).
 
 It is also possible to run mwp on MS Windows using:
 

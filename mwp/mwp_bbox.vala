@@ -316,27 +316,35 @@ public class  BBoxDialog : Object
     {
         string ts = orig_times[j];
         string tss = "Invalid";
-        TimeVal tv;
-        DateTime dt;
-        tv = TimeVal();
+        DateTime dt = null;
+        bool ok = false;
+#if USE_TV1
+        TimeVal  tv = TimeVal();
         if(tv.from_iso8601(ts))
         {
-            if(tv.tv_sec > 0)
+          if(tv.tv_sec > 0)
+          {
+            dt = new DateTime.from_timeval_utc (tv);
+            ok = true;
+          }
+        }
+#else
+        dt = new DateTime.from_iso8601(ts,  new TimeZone.utc ());
+        ok = (dt.to_unix() > 0);
+#endif
+        if(ok)
+        {
+            string tzstr = bb_tz_combo.get_active_text ();
+            if(tzstr == null || tzstr == "Local" || tzstr == "")
             {
-                dt = new DateTime.from_timeval_utc (tv);
-                string tzstr = bb_tz_combo.get_active_text ();
-                if(tzstr == null || tzstr == "Local" ||
-                   tzstr == "")
-                {
-                    tss = dt.to_local().format("%F %T %Z");
-                }
-                else
-                {
-                    if(tzstr == "Log")
-                        tzstr = ts.substring(23,6);
-                    TimeZone tz = new TimeZone(tzstr);
-                    tss = (dt.to_timezone(tz)).format("%F %T %Z");
-                }
+                tss = dt.to_local().format("%F %T %Z");
+            }
+            else
+            {
+                if(tzstr == "Log")
+                    tzstr = ts.substring(23,6);
+                TimeZone tz = new TimeZone(tzstr);
+                tss = (dt.to_timezone(tz)).format("%F %T %Z");
             }
         }
         return tss;

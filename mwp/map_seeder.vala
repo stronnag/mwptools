@@ -53,7 +53,7 @@ public class TileUtil : Object
     private int in;
     private int ix;
     private int iy;
-    private long delta;
+    private DateTime dtime;
     private bool done;
     private File file;
     private TileList[] tl;
@@ -170,20 +170,22 @@ public class TileUtil : Object
                 }
             }
 
-            if(delta > 0)
+            if (file.query_exists() == true)
             {
-                if (file.query_exists() == true)
-                {
-                    try {
-                        var fi = file.query_info("*", FileQueryInfoFlags.NONE);
-                        var tv = fi.get_modification_time ();
-                        if(tv.tv_sec > delta)
-                        {
-                            r = TILE_ITER_RES.SKIP;
-                            stats.skip++;
-                        }
-                    } catch {};
-                }
+                try {
+                    var fi = file.query_info("*", FileQueryInfoFlags.NONE);
+#if USE_TV
+                    var tv = fi.get_modification_time ();
+                    var dt = new DateTime.from_timeval_local(tv);
+#else
+                    var dt = fi.get_modification_date_time ();
+#endif
+                    if(dt.difference(dtime) > 0)
+                    {
+                        r = TILE_ITER_RES.SKIP;
+                        stats.skip++;
+                    }
+                } catch {};
             }
 
             if(r ==  TILE_ITER_RES.FETCH)
@@ -325,9 +327,8 @@ public class TileUtil : Object
 
     public void set_delta(uint days)
     {
-        var t = TimeVal();
-        t.get_current_time ();
-        delta = t.tv_sec - (24*3600)*days;
+        var t =  new  DateTime.now_local ();
+        dtime = t.add_days(-(int)days);
     }
 
     public void stop()

@@ -17,20 +17,25 @@ endif
 
 VAPI := $(shell valac --api-version)
 
-ifeq ($(VAPI),0.26)
- $(error toolset is obsolete)
+VS := $(shell V1=$$(echo $(VAPI) | cut  -d '.' -f 1); V2=$$(echo $(VAPI) | cut  -d '.' -f 2); printf "%02d%02d" $$V1 $$V2)
+
+VALID_API := $(shell test $(VS) -ge 0034 ; echo $$? )
+
+ifneq ($(VALID_API), 0)
+ $(error Vala toolset is obsolete)
 endif
-ifeq ($(VAPI),0.28)
-  $(error toolset is obsolete)
+
+USE_TV := $(shell test $(VS) -ge 0046 ; echo $$? )
+USE_TV1 := $(shell test $(VS) -ge 0040 ; echo $$? )
+
+ifeq ($(USE_TV), 1)
+ DOPTS+= -D USE_TV
 endif
-ifeq ($(VAPI),0.30)
- DOPTS += -D LSRVAL
- OPTS += --target-glib=2.48
+
+ifeq ($(USE_TV1), 1)
+ DOPTS+= -D USE_TV1
 endif
-ifeq ($(VAPI),0.32)
- DOPTS += -D LSRVAL
- OPTS += --target-glib=2.48
-endif
+
 ifeq ($(VAPI),0.34)
  DOPTS += -D LSRVAL
 endif
