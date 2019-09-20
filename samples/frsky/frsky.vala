@@ -60,7 +60,7 @@ public class Frsky : Object
     private bool fr_checksum(uint8[] buf)
     {
         uint16 crc = 0;
-        for(var i = 2; i < 10; i++)
+        for(var i = 2; i < FrProto.P_SIZE; i++)
         {
             crc += buf[i];
             crc += crc >> 8;
@@ -260,7 +260,7 @@ public class Frsky : Object
 //            stderr.printf("Unhandled %s, raw value %u\n", id.to_string(), val);
                 break;
             case FrID.XJT_VERSION_ID:
-                stderr.printf("%s %u.%u\n", id.to_string(),
+                stdout.printf("%s %u.%u\n", id.to_string(),
                               ((val & 0xffff) >> 8), (val & 0xff));
                 break;
             case FrID.A4_ID:
@@ -307,6 +307,7 @@ public class Frsky : Object
         uint good = 0;
         uint bad = 0;
         uint nshort = 0;
+        int dist[256] = {0};
 
         var fr = new Frsky();
 
@@ -327,11 +328,18 @@ public class Frsky : Object
                 bp++;
                 if (b == FrProto.P_START)
                 {
-                    if (nb == FrProto.P_SIZE)
+                    if (nb >= FrProto.P_SIZE)
                     {
                         var res = fr.check_buffer(buf);
                         if (res)
+                        {
                             good++;
+                            for(var j = 0; j < nb; j++)
+                            {
+                                stderr.printf("%02x ", buf[j]);
+                            }
+                            stderr.putc('\n');
+                        }
                         else
                             bad++;
                         fr.offset = bp;
@@ -340,6 +348,9 @@ public class Frsky : Object
                     {
                         nshort++;
                     }
+                    if (nb < 256)
+                        dist[nb] += 1;
+
                     nb = 0;
                 }
                 if (stuffed)
@@ -349,7 +360,7 @@ public class Frsky : Object
                 }
                 else if (b == FrProto.P_STUFF)
                 {
-//                    stdout.printf("Stuffed at offset %s\n", fr.offset.to_string());
+                    stdout.printf("Stuffed at offset %s\n", fr.offset.to_string());
                     stuffed = true;
                     continue;
                 }
@@ -362,6 +373,10 @@ public class Frsky : Object
         }
         stdout.printf("total %u, good %u, bad %u, short %u\n", (good+bad+nshort),
                       good,bad,nshort);
+        print("Size\tInstances\n~~~~\t~~~~~~~~~\n");
+        for(var j = 0; j < 256; j++)
+            if(dist[j] != 0)
+                print("%2d:\t%8d\n", j, dist[j]);
         return 0;
     }
 }
