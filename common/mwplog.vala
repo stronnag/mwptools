@@ -52,9 +52,10 @@ public class MWPLog : GLib.Object
             if ((logdir = Environment.get_variable ("MWP_LOG_DIR")) == null)
                 logdir = Environment.get_home_dir();
 
-            var fn = Path.build_filename(logdir, "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F")));
+            if(logdir == null)
+                logdir = "./";
 
-            print("******* LOG FILE %s\n", fn);
+            var fn = Path.build_filename(logdir, "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F")));
 
             fs = FileStream.open(fn,"a");
             if(fs == null)
