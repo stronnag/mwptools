@@ -48,9 +48,15 @@ public class MWPLog : GLib.Object
             time_t currtime;
             time_t(out currtime);
             echo = Posix.isatty(stderr.fileno());
-            var fn = "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F"));
-            fs = FileStream.open(fn,"a");
+            string logdir;
+            if ((logdir = Environment.get_variable ("MWP_LOG_DIR")) == null)
+                logdir = Environment.get_home_dir();
 
+            var fn = Path.build_filename(logdir, "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F")));
+
+            print("******* LOG FILE %s\n", fn);
+
+            fs = FileStream.open(fn,"a");
             if(fs == null)
             {
                 echo = false;
