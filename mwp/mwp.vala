@@ -431,7 +431,6 @@ public class MWPlanner : Gtk.Application {
     private static bool ignore_sz = false;
     private static bool nopoll = false;
     private static bool rawlog = false;
-    private static bool norotate = false; // workaround for Ubuntu & old champlain
     private static bool no_trail = false;
     private static bool no_max = false;
     private static bool force_mag = false;
@@ -442,6 +441,7 @@ public class MWPlanner : Gtk.Application {
     private static string llstr=null;
     private static string layfile=null;
     private static bool asroot = false;
+    private static bool legacy_unused;
 
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
     private uint8 vwarn1;
@@ -553,8 +553,9 @@ public class MWPlanner : Gtk.Application {
     private string? vname = null;
 
     private static bool is_wayland = false;
-    private static bool use_wayland = false;
+    private static bool use_xwayland = false;
     private static bool permawarn = false;
+    private static string xlib;
 
     private uchar hwstatus[9];
     private ModelMap mmap;
@@ -901,7 +902,7 @@ public class MWPlanner : Gtk.Application {
         { "raw-log", 'r', 0, OptionArg.NONE, out rawlog, "log raw serial data to file", null},
         { "ignore-sizing", 0, 0, OptionArg.NONE, out ignore_sz, "ignore minimum size constraint", null},
         { "full-screen", 0, 0, OptionArg.NONE, out set_fs, "open full screen", null},
-        { "ignore-rotation", 0, 0, OptionArg.NONE, out norotate, "ignore vehicle icon rotation on old libchamplain", null},
+        { "ignore-rotation", 0, 0, OptionArg.NONE, out legacy_unused, "legacy unused", null},
         { "dont-maximise", 0, 0, OptionArg.NONE, out no_max, "don't maximise the window", null},
         { "force-mag", 0, 0, OptionArg.NONE, out force_mag, "force mag for vehicle direction", null},
         { "force-nav", 0, 0, OptionArg.NONE, out force_nc, "force nav capaable", null},
@@ -921,7 +922,8 @@ public class MWPlanner : Gtk.Application {
         { "rings", 0, 0, OptionArg.STRING, out rrstr, "Range rings (number, interval(m)), e.g. --rings 10,20", "number,interval"},
         { "voice-command", 0, 0, OptionArg.STRING, out exvox, "External speech command", "command string"},
         { "version", 'v', 0, OptionArg.NONE, out show_vers, "show version", null},
-        { "wayland", 0, 0, OptionArg.NONE, out use_wayland, "force wayland (if available)", null},
+        { "wayland", 0, 0, OptionArg.NONE, out legacy_unused, "legacy unused", null},
+        { "noway", 0, 0, OptionArg.NONE, out use_xwayland, "ignore wayland (if available)", null},
         { "really-really-run-as-root", 0, 0, OptionArg.NONE, out asroot, "no reason to ever use this", null},
         { "forward-to", 0, 0, OptionArg.STRING, out forward_device, "forward telemetry to", "device-name"},
         { "radar-device", 0, 0, OptionArg.STRING, out radar_device, "dedicated inav radar device", "device-name"},
@@ -2080,8 +2082,7 @@ public class MWPlanner : Gtk.Application {
         StringBuilder sb = new StringBuilder(MwpVers.build);
         sb.append_c('\n');
         sb.append(MwpVers.id);
-        if(is_wayland && use_wayland)
-            sb.append("\non wayland\n");
+        sb.append_printf("\non %s\n", xlib);
         about.version = sb.str;
 
         about.copyright = "© 2014-%d Jonathan Hudson".printf(
@@ -3810,7 +3811,7 @@ case 0:
             if(sport_device != null && dmrtype != 0 && vi.mrtype == 0)
                 vi.mrtype = (uint8)dmrtype;
             MWPLog.message("init icon %d\n",  vi.mrtype);
-            craft = new Craft(view, vi.mrtype,norotate, !no_trail,
+            craft = new Craft(view, vi.mrtype, !no_trail,
                               stack_size, mod_points);
             craft.park();
             craft.adjust_z_order(markers.markers);
@@ -8789,23 +8790,26 @@ case 0:
             is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
             if (is_wayland)
             {
-                if(defargs != null && defargs.contains("--wayland"))
-                    use_wayland = true;
+                if(defargs != null && defargs.contains("--noway"))
+                    use_xwayland = true;
                 else
                 {
                     foreach (var a in args)
-                        if (a == "--wayland")
-                            use_wayland = true;
+                        if (a == "--noway")
+                            use_xwayland = true;
                 }
 
-                if(use_wayland)
-                    MWPLog.message("Wayland enabled, if you experience problems, remove the --wayland option\n");
-                else
+                if(use_xwayland)
                 {
-                    MWPLog.message("Using Xwayland for safety:)\n");
+                    MWPLog.message("Using Xwayland by user choice\n");
                     Gdk.set_allowed_backends("x11");
+                    xlib = "XWayland";
                 }
+                else
+                    xlib = "Wayland";
             }
+            else
+                xlib="Xlib";
 
             if (GtkClutter.init (ref args) != InitError.SUCCESS)
                 return 1;
@@ -8841,7 +8845,7 @@ case 0:
             }
             else
             {
-                MWPLog.message("mwp startup version: %s\n", verstr);
+                MWPLog.message("mwp startup version: %s on %s\n", verstr, xlib);
                 string os=null;
                 MWPLog.message("%s\n", Logger.get_host_info(out os));
                 var vstr = check_virtual(os);

@@ -35,7 +35,6 @@ public class Craft : GLib.Object
     private Champlain.View view;
     private Champlain.Label icon;
     private Champlain.MarkerLayer layer;
-    private bool norotate;
     private bool trail;
     private Champlain.PathLayer path;
     private Champlain.MarkerLayer pmlayer;
@@ -155,12 +154,11 @@ public class Craft : GLib.Object
          pp.set_child_above_sibling(l, pmlayer);
     }
 
-    public Craft(Champlain.View _view, uint id, bool _norotate = false, bool _trail = true, int _ss = 0, int _mp = 0)
+    public Craft(Champlain.View _view, uint id, bool _trail = true, int _ss = 0, int _mp = 0)
     {
         stack_size = _ss;
         mod_points = _mp;
         view = _view;
-        norotate = _norotate;
         trail = _trail;
 
         if(id >= Craft.Vehicles.LAST)
@@ -273,8 +271,7 @@ public class Craft : GLib.Object
     public void park()
     {
         set_pix_pos(icon, 40,40);
-        if (norotate == false)
-            icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, 0);
+        icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, 0);
         init_trail();
     }
 
@@ -313,8 +310,7 @@ public class Craft : GLib.Object
         }
         ici.set_location (lat, lon);
         icon.set_location (lat, lon);
-        if (norotate == false)
-            icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, cse);
+        icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, cse);
         npath++;
     }
 
