@@ -125,8 +125,8 @@ public class SportDev : Object
                     {
                         ushort id;
                         uint val;
-                        deserialise_u16(buf+3, out id);
-                        deserialise_u32(buf+5, out val);
+                        deserialise_u16(&buf[3], out id);
+                        deserialise_u32(&buf[5], out val);
                         d((uint32)id,val);
                         good++;
                     }

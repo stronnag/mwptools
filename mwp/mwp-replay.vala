@@ -286,7 +286,7 @@ public class ReplayThread : GLib.Object
                                         buf[0] = (uint8)mwvers;
                                         buf[1] = (uint8)mrtype;
                                         buf[2] = 42;
-                                        serialise_u32(buf+3, (uint32)cap);
+                                        serialise_u32(&buf[3], (uint32)cap);
                                         send_rec(msp,MSP.Cmds.IDENT, 7, buf);
 
                                         if(obj.has_member("fctype"))

@@ -5367,7 +5367,7 @@ case 0:
                     uint8 tbuf[6];
                     rtcsecs = (uint32)now.to_unix();
                     serialise_u32(tbuf, rtcsecs);
-                    serialise_u16(tbuf+4, locmillis);
+                    serialise_u16(&tbuf[4], locmillis);
                     queue_cmd(MSP.Cmds.SET_RTC,tbuf, 6);
                     run_queue();
                 }
