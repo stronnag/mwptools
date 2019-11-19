@@ -655,6 +655,8 @@ public class MWPlanner : Gtk.Application {
     private Position home_pos;
     private Position rth_pos;
     private Position ph_pos;
+    private Position wp0;
+
     private uint64 ph_mask=0;
     private uint64 arm_mask=0;
     private uint64 rth_mask=0;
@@ -3769,8 +3771,8 @@ case 0:
         ls.calc_mission(0);
         home_pos.lat = 0;
         home_pos.lon = 0;
-        xlon = 0;
-        xlat = 0;
+        wp0.lon = xlon = 0;
+        wp0.lat = xlat = 0;
         want_special = 0;
     }
 
@@ -3799,8 +3801,11 @@ case 0:
                 tcycle = (tcycle + 1) % requests.length;
                 req = requests[tcycle];
             }
-            if (req != MSP.Cmds.NOOP)
-                queue_cmd(req, null, 0);
+            if(req == MSP.Cmds.WP)
+                request_wp(0);
+            else
+                if (req != MSP.Cmds.NOOP)
+                    queue_cmd(req, null, 0);
         }
     }
 
@@ -3871,7 +3876,9 @@ case 0:
                 requests += MSP.Cmds.GPSSTATISTICS;
                 reqsize += MSize.MSP_GPSSTATISTICS;
             }
-            reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS);
+            requests += MSP.Cmds.WP;
+
+            reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS+1);
             init_craft_icon();
         }
         else
@@ -4919,12 +4926,20 @@ case 0:
         if((wpmgr.wp_flag & WPDL.CANCEL) != 0)
             return;
 
+        w.wp_no = *rp++;
+        w.action = *rp++;
+        rp = deserialise_i32(rp, out w.lat);
+        rp = deserialise_i32(rp, out w.lon);
+
+        if(w.wp_no == 0)
+        {
+            wp0.lat = w.lat/10000000.0;
+            wp0.lon = w.lon/10000000.0;
+            return;
+        }
+
         if((wpmgr.wp_flag & WPDL.POLL) == 0)
         {
-            w.wp_no = *rp++;
-            w.action = *rp++;
-            rp = deserialise_i32(rp, out w.lat);
-            rp = deserialise_i32(rp, out w.lon);
             rp = deserialise_i32(rp, out w.altitude);
             rp = deserialise_i16(rp, out w.p1);
             rp = deserialise_u16(rp, out w.p2);
@@ -5742,6 +5757,8 @@ case 0:
                     queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
                     s="gps_min_sats";
                     queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
+                    s="nav_rth_home_offset_distance";
+                    queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
                 }
                 queue_cmd(msp_get_status,null,0);
                 break;
@@ -5767,6 +5784,22 @@ case 0:
                         inav_max_eph_epv = (uint16)f;
                         MWPLog.message("Received (raw) inav_max_eph_epv %u\n",
                                        inav_max_eph_epv);
+                        break;
+                    case "nav_rth_home_offset_distance":
+                        uint16 odist;
+                        deserialise_u16(raw, out odist);
+                        MWPLog.message("Received nav_rth_home_offset_distance %u\n",
+                                       odist);
+                        if(odist != 0)
+                        {
+                            var s="nav_rth_home_offset_direction";
+                            queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
+                        }
+                        break;
+                    case "nav_rth_home_offset_direction":
+                        uint16 odir;
+                        deserialise_u16(raw, out odir);
+                        MWPLog.message("Received nav_rth_home_offset_direction %u\n", odir);
                         break;
                     default:
                         MWPLog.message("Unknown common setting %s\n",
@@ -6100,7 +6133,7 @@ case 0:
                     {
                         var spd = (double)(rg.gps_speed/100.0);
                         update_odo(spd, ddm);
-                        if(have_home == false && home_changed(GPSInfo.lat, GPSInfo.lon))
+                        if(have_home == false && home_changed(wp0.lat, wp0.lon))
                         {
                             sflags |=  NavStatus.SPK.GPS;
                             want_special |= POSMODE.HOME;
@@ -6159,17 +6192,17 @@ case 0:
                 rp = deserialise_i32(rp, out of.lon);
                 rp = deserialise_i32(rp, out of.alt);
                 of.fix = raw[13];
-                double oflat = of.lat/10000000.0;
-                double oflon = of.lon/10000000.0;
+                wp0.lat = of.lat/10000000.0;
+                wp0.lon = of.lon/10000000.0;
                 double ofalt = of.alt/100.0;
 
                 if(fakeoff.faking)
                 {
-                    oflat += fakeoff.dlat;
-                    oflon += fakeoff.dlon;
+                    wp0.lat += fakeoff.dlat;
+                    wp0.lon += fakeoff.dlon;
                 }
 
-                if(home_changed(oflat, oflon))
+                if(home_changed(wp0.lat, wp0.lon))
                 {
                     if(of.fix == 0)
                     {
@@ -6180,7 +6213,7 @@ case 0:
                         navstatus.cg_on();
                         sflags |=  NavStatus.SPK.GPS;
                         want_special |= POSMODE.HOME;
-                        process_pos_states(oflat, oflon, ofalt, "LTM OFrame");
+                        process_pos_states(wp0.lat, wp0.lon, ofalt, "LTM OFrame");
                     }
                 }
                 if(Logger.is_logging)
@@ -6750,15 +6783,15 @@ case 0:
 
             case MSP.Cmds.MAVLINK_MSG_GPS_GLOBAL_ORIGIN:
                 Mav. MAVLINK_GPS_GLOBAL_ORIGIN m = *(Mav.MAVLINK_GPS_GLOBAL_ORIGIN *)raw;
-                var ilat  = m.latitude / 10000000.0;
-                var ilon  = m.longitude / 10000000.0;
+                wp0.lat  = m.latitude / 10000000.0;
+                wp0.lon  = m.longitude / 10000000.0;
 
-                if(home_changed(ilat, ilon))
+                if(home_changed(wp0.lat, wp0.lon))
                 {
                     navstatus.cg_on();
                     sflags |=  NavStatus.SPK.GPS;
                     want_special |= POSMODE.HOME;
-                    process_pos_states(ilat, ilon, m.altitude / 1000.0, "MAvOrig");
+                    process_pos_states(wp0.lat, wp0.lon, m.altitude / 1000.0, "MAvOrig");
                 }
 
                 if(Logger.is_logging)
@@ -7008,17 +7041,17 @@ case 0:
         {
             have_home = true;
             want_special &= ~POSMODE.HOME;
-            home_pos.lat = xlat = lat;
-            home_pos.lon = xlon = lon;
+            home_pos.lat = xlat = wp0.lat;
+            home_pos.lon = xlon = wp0.lon;
             home_pos.alt = alt;
-            markers.add_home_point(lat,lon,ls);
+            markers.add_home_point(wp0.lat,wp0.lon,ls);
             init_craft_icon();
             if(craft != null)
             {
                 if(nrings != 0)
                     markers.initiate_rings(view, lat,lon, nrings, ringint,
                                            conf.rcolstr);
-                craft.special_wp(Craft.Special.HOME, lat, lon);
+                craft.special_wp(Craft.Special.HOME, wp0.lat, wp0.lon);
             }
             else
             {
@@ -7026,7 +7059,7 @@ case 0:
             }
 
             if(chome)
-                map_centre_on(lat,lon);
+                map_centre_on(wp0.lat,wp0.lon);
 
             StringBuilder sb = new StringBuilder ();
             if(reason != null)
@@ -7035,11 +7068,11 @@ case 0:
                 sb.append_c(' ');
             }
             sb.append(have_home.to_string());
-            MWPLog.message("Set home %f %f (%s)\n", lat, lon, sb.str);
-            mss.h_lat = lat;
-            mss.h_long = lon;
+            MWPLog.message("Set home %f %f (%s)\n", wp0.lat, wp0.lon, sb.str);
+            mss.h_lat = wp0.lat;
+            mss.h_long = wp0.lon;
             mss.h_alt = (int32)alt;
-            mss.home_changed(lat, lon, mss.h_alt);
+            mss.home_changed(wp0.lat, wp0.lon, mss.h_alt);
         }
 
         if((want_special & POSMODE.PH) != 0)
