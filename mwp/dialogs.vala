@@ -2061,6 +2061,12 @@ public class NavStatus : GLib.Object
             mt.message(AudioThread.Vox.HOME_CHANGED, true);
     }
 
+    public void alert_home_offset()
+    {
+        if((NavStatus.say_state & SAY_WHAT.Nav) == SAY_WHAT.Nav)
+            mt.message(AudioThread.Vox.HOME_OFFSET, true);
+    }
+
     public void gps_crit()
     {
         if((NavStatus.say_state & SAY_WHAT.Nav) == SAY_WHAT.Nav)
@@ -2174,6 +2180,7 @@ public class AudioThread : Object {
         HW_OK,
         HW_BAD,
         HOME_CHANGED,
+        HOME_OFFSET,
         AUDIO_TEST,
         SPORT_MODE,
         ARM_STATUS,
@@ -2294,6 +2301,9 @@ public class AudioThread : Object {
                             break;
                         case Vox.HOME_CHANGED:
                             s = "Home position changed";
+                            break;
+                        case Vox.HOME_OFFSET:
+                            s = "Home offset applied";
                             break;
                         case Vox.NAV_STATUS:
                             switch(NavStatus.n.nav_mode)
