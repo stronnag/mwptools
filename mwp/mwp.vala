@@ -5188,7 +5188,8 @@ case 0:
         if(errs == true)
         {
             lastrx = lastok = nticks;
-            MWPLog.message("Error on cmd %s %d\n", cmd.to_string(), cmd);
+            MWPLog.message("MSP Error: %s[%d] %s\n", cmd.to_string(), cmd,
+                           (cmd == MSP.Cmds.COMMON_SETTING) ? (string)lastmsg.data : "");
             switch(cmd)
             {
                 case MSP.Cmds.NAME:
