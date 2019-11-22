@@ -114,6 +114,8 @@ MINDELAY=0.001
 NORMDELAY=0.1
 $verbose = false
 $vbatscale=1.0
+$pstate = -1
+
 
 LTM_MODE_MANUAL = 0
 LTM_MODE_RATE = 1
@@ -458,7 +460,18 @@ def encode_stats r,inavers,armed=1
   msg='$TS'
   sts = nil
 
-  sts = case INAV_STATES[inavers][r[:navstate].to_i]
+  sval = INAV_STATES[inavers][r[:navstate].to_i]
+
+  # This is for the inav 2.x duplication stupidity
+  if sval == :nav_state_cruise_2d_initialize
+    if $pstate == :nav_state_rth_head_home
+      sval = :nav_state_rth_head_home
+    end
+  end
+
+  $pstate = sval
+
+  sts = case sval
 	when :nav_state_undefined,:nav_state_idle,
 	    :nav_state_waypoint_finished,
 	    :nav_state_launch_wait,

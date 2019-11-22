@@ -11,6 +11,7 @@ RDISARMS = %w/NONE TIMEOUT STICKS SWITCH_3D SWITCH KILLSWITCH FAILSAFE NAVIGATIO
 
 idx = 1
 verbose = nil
+pstate = -1
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
@@ -108,6 +109,12 @@ IO.popen(cmd,'r') do |p|
 	end
 	nstate = c[:navstate].to_i
 	as = INAV_STATES[inavers][c[:navstate].to_i].to_s
+	if as == "nav_state_cruise_2d_initialize"
+	  if pstate == "nav_state_rth_head_home"
+	    as = "nav_state_rth_hover_above_home"
+	  end
+	end
+	pstate = as
 	astate = (as) ? "#{as} (#{nstate})" : "State=%d" % nstate
 	puts ["%9d" % itn, "%6.1f" % ts, "(%6.1f)" % xts, astate].join("\t")
       end
