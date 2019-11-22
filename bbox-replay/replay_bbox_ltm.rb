@@ -35,6 +35,64 @@ end
 
 require_relative 'inav_states'
 
+include Math
+module Poscalc
+  RAD = 0.017453292
+  def Poscalc.d2r d
+    private
+    d*RAD
+  end
+  def Poscalc.r2d r
+    private
+    r/RAD
+  end
+  def Poscalc.nm2r nm
+    private
+    (PI/(180*60))*nm
+  end
+  def Poscalc.r2nm r
+    private
+    ((180*60)/PI)*r
+  end
+ def Poscalc.posit lat1, lon1, cse, dist,rhumb=nil
+    tc = d2r(cse)
+    rlat1= d2r(lat1)
+    rdist = nm2r(dist)
+    lat,long,dphi,q,dlon=nil
+   # Use Rhumb lines
+   dphi = 0.0
+   lat= rlat1+rdist*cos(tc)
+   tmp = tan(lat/2.0+PI/4.0)/tan(rlat1/2.0+PI/4.0)
+   tmp = 0.000000001 if(tmp <= 0)
+   dphi=log(tmp)
+   if (dphi == 0.0 || (lat-rlat1).abs < 1.0e-6)
+     q=cos(rlat1)
+   else
+     q= (lat-rlat1)/dphi
+   end
+   dlon = rdist*sin(tc)/q
+   long = ((d2r(lon1)+dlon+PI) % (2*PI)) - PI
+   lat=r2d(lat)
+   long = r2d(long)
+   [lat, long]
+ end
+
+  def Poscalc.csedist lat1,lon1,lat2,lon2
+    lat1 = d2r(lat1)
+    lon1 = d2r(lon1)
+    lat2 = d2r(lat2)
+    lon2 = d2r(lon2)
+    d=2.0*asin(sqrt((sin((lat1-lat2)/2.0))**2 +
+                    cos(lat1)*cos(lat2)*(sin((lon2-lon1)/2.0))**2))
+    d = r2nm(d)
+    cse =  (atan2(sin(lon2-lon1)*cos(lat2),
+                 cos(lat1)*sin(lat2)-sin(lat1)*cos(lat2)*cos(lon2-lon1))) % (2.0*PI)
+    cse = r2d(cse)
+    [cse,d]
+  end
+
+end
+
 begin
 require 'rubyserial'
   noserial = false;
@@ -374,9 +432,9 @@ end
 
 def encode_origin r
   msg='$TO'
-  sl = [(r[:lat].to_f*LLFACT).to_i,
-    (r[:lon].to_f*LLFACT).to_i,
-    (r[:alt].to_f*ALTFACT).to_i,
+  sl = [(r[:lat]*LLFACT).to_i,
+    (r[:lon]*LLFACT).to_i,
+    (r[:alt]*ALTFACT).to_i,
     1,1].pack('l<l<L<cc')
   msg << sl << mksum(sl)
   msg
@@ -691,6 +749,7 @@ if have_js
     autotyp = prefs[:auto]
     nobaro = prefs[:nobaro]
     extra_args = prefs[:extra]
+    home_args = prefs[:home]
   end
 end
 
@@ -885,6 +944,9 @@ if ENV['MWP_BB_ARGS']
   cmd << " #{ENV['MWP_BB_ARGS']}"
 end
 
+
+hoff=nil
+
 if vname
   exargs=''
   extra_args.each do |k,v|
@@ -893,6 +955,13 @@ if vname
     end
   end
   cmd << exargs
+
+  home_args.each do |k,v|
+    if vname.match(/#{k.to_s}/)
+      a = v[:pos].split(',')
+      hoff={dir: v[:dir].to_f, dist: v[:dist].to_f, holat: a[0].to_f, holon: a[1].to_f}
+    end
+  end
 end
 
 cmd << " --stdout"
@@ -959,8 +1028,16 @@ IO.popen(cmd,'rt') do |pipe|
 	icnt  = (icnt + 1) % 10
 	# Check for armed and GPS (for origin)
 	if origin.nil? and row[:gps_numsat].to_i > 5
-	  origin = {:lat => row[:gps_coord0], :lon => row[:gps_coord1],
-	    :alt => row[:gps_altitude]}
+	  hlat = row[:gps_coord0].to_f
+	  hlon = row[:gps_coord1].to_f
+	  unless hoff.nil?
+	    _,d = Poscalc.csedist hlat,hlon,hoff[:holat],hoff[:holon]
+	    hdnm = hoff[:dist]/1852
+	    if d < hdnm
+	      hlat,hlon = Poscalc.posit hlat, hlon, hoff[:dir], hdnm
+	    end
+	  end
+	  origin = {:lat => hlat, :lon => hlon, :alt => row[:gps_altitude].to_f}
 	  msg = encode_origin origin
 	  send_msg dev, msg
 	end
