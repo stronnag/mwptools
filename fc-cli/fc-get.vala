@@ -3,11 +3,13 @@ private static int baud = 115200;
 private static string dev = null;
 private static string filename = null;
 private static bool noback = false;
+private static bool dump = false;
 
 const OptionEntry[] options = {
     { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", null},
     { "device", 'd', 0, OptionArg.STRING, out dev, "device", null},
     { "no-back", 'n', 0, OptionArg.NONE, out noback, "no back", null},
+    { "dump", 0, 0, OptionArg.NONE, out dump, "dump input to stdout", null},
     {null}
 };
 
@@ -42,6 +44,7 @@ class FCMgr :Object
     public MWSerial.ProtoMode oldmode;
     private uint8 [] inbuf;
     private uint inp;
+    private uint linp = 0;
     private string estr="";
     private bool logging = false;
     private State state;
@@ -51,17 +54,17 @@ class FCMgr :Object
     private Mode mode = Mode.GET;
     private bool docal = false;
     private string[]lines;
+    private string[]errors;
     private uint lp = 0;
     private uint etid = 0;
     private Fc fc;
-    private bool dump = false;
     private uint8 trace = 0;
     private uint32 fc_vers;
     private bool have_acal = false;
 
     public FCMgr()
     {
-        inp = 0;
+        inp = linp = 0;
         state = State.IDLE;
         inbuf = new uint8[64*1024];
         MwpTermCap.init();
@@ -73,6 +76,15 @@ class FCMgr :Object
         msp.send_command(MSP.Cmds.CALIBRATE_ACC, null, 0);
     }
 
+    private void force_exit()
+    {
+        state = State.EXIT;
+        string cmd="exit\n";
+        msp.write(cmd.data, cmd.length);
+        Idle.add( () => { ml.quit(); return false;});
+    }
+
+
     private void start_restore()
     {
         string s;
@@ -82,11 +94,8 @@ class FCMgr :Object
         FileStream fs = FileStream.open (filename, "r");
         if(fs == null)
         {
-            state = State.EXIT;
             MWPLog.message("Failed to open %s\n", filename);
-            string cmd="exit\n";
-            msp.write(cmd.data, cmd.length);
-            Idle.add( () => { ml.quit(); return false;});
+            force_exit();
             return;
         }
 
@@ -144,7 +153,7 @@ class FCMgr :Object
     {
         string cmd = "#";
         MWPLog.message("Establishing CLI\n");
-        inp = 0;
+        inp = linp = 0;
         state = State.CLI;
         msp.pmode = MWSerial.ProtoMode.CLI;
         msp.write(cmd.data, cmd.length);
@@ -163,12 +172,10 @@ class FCMgr :Object
 
     private void start_quit()
     {
-        state = State.EXIT;
         MWPLog.message("Exiting\n");
-        string cmd = "exit\n";
         logging = false;
-        msp.write(cmd.data, cmd.length);
-        inp = 0;
+        inp = linp = 0;
+        force_exit();
     }
 
     private void start_vers()
@@ -203,6 +210,7 @@ class FCMgr :Object
     {
         bool done = false;
         state = State.SETLINES;
+	// Note: explicit save will save regardless of any errors
         if(lp < lines.length)
         {
             if(lines[lp].has_prefix("save"))
@@ -217,16 +225,29 @@ class FCMgr :Object
         else
         {
             done = true;
-            set_save_state();
-            string cmd="save\n";
-            msp.write(cmd.data,cmd.length);
+            if(errors.length == 0)
+            {
+                set_save_state();
+                string cmd="save\n";
+                msp.write(cmd.data,cmd.length);
+            }
         }
         show_progress();
         if(done)
         {
             lp = lines.length;
             stderr.printf("%s\n", MwpTermCap.cnorm);
-
+            if(errors.length > 0)
+            {
+                MWPLog.sputs("\007Error(s) in restore\n\007");
+                foreach (var e in errors)
+                {
+                    var s = "\t%s\n".printf(e);
+                    MWPLog.sputs(s);
+                }
+                MWPLog.sputs("** Please check FC settings **\n\007");
+                force_exit();
+            }
         }
     }
 
@@ -368,10 +389,18 @@ class FCMgr :Object
                     if(buf[j] != 13)
                         inbuf[inp++] = buf[j];
                 }
+
+                if(state == State.SETLINES &&
+                   ((string)inbuf).slice(linp,inp).contains("### ERROR:"))
+                {
+                    errors += lines[lp-1];
+                }
+
+                linp = inp;
                 if(inp >= 9 && Memory.cmp(&inbuf[inp-9], "Rebooting".data, 9) == 0)
                 {
                     MWPLog.message("Rebooting (%s)\n", state.to_string());
-                    inp = 0;
+                    inp = linp = 0;
                     msp.pmode = oldmode;
                     if(state == State.EXIT)
                         Timeout.add(1000, () => { ml.quit(); return false; });
@@ -388,10 +417,9 @@ class FCMgr :Object
                         next_state();
                     else
                     {
-                        var lastinp = inp;
                         tid = Timeout.add(500, () => {
                                 tid = 0;
-                                if(inp == lastinp)
+                                if(inp == linp)
                                     next_state();
                                 return false;
                             });
