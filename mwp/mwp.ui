@@ -2177,7 +2177,7 @@ See the "samples" directory for an example of each.</property>
   <object class="GtkImage" id="image2">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="stock">gtk-edit</property>
+    <property name="stock">gtk-add</property>
   </object>
   <object class="GtkWindow" id="inav_fw_config">
     <property name="can_focus">False</property>
