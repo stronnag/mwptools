@@ -8651,6 +8651,9 @@ case 0:
 
     private void stop_replayer()
     {
+        if(replay_paused)
+            handle_replay_pause();
+
         if((replayer & Player.BBOX) == Player.BBOX)
             Posix.kill(child_pid, MwpSignals.Signal.TERM);
 

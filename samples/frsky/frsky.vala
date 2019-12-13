@@ -196,7 +196,7 @@ public class Frsky : Object
                 uint16 hdp;
                 hdp = (uint16)(val % 1000)/100;
                 uint16 rhdop = 550 - (hdp * 50);
-                stdout.printf("%s %u sats %u, fix %u %u %u\n", id.to_string(), val, nsats, gfix, hdp, rhdop);
+                stdout.printf("%s %u sats %u, fix %u %u %u hdop=%.1f\n", id.to_string(), val, nsats, gfix, hdp, rhdop, (double)rhdop/100.0);
                 if((gfix & 4) == 4)
                     stdout.printf("Home reset at offset %s\n", offset.to_string());
 
