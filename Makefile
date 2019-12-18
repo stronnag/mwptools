@@ -1,3 +1,8 @@
+SHELL := bash
+.ONESHELL:
+.SHELLFLAGS := -eu -o pipefail -c
+.DELETE_ON_ERROR:
+
 DIRS = samples/ublox-test samples/area-tool samples/cliterm samples/muploader fc-cli mwp bbox-replay qproxy samples
 INSTALLDIRS = $(DIRS:%=install-%)
 LOCALDIRS = $(DIRS:%=local-%)
