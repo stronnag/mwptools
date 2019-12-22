@@ -3,6 +3,7 @@ private static int baud = 115200;
 private static string eolmstr;
 private static string dev;
 private static bool noinit=false;
+private static bool msc=false;
 private static string rcfile=null;
 private static int eolm;
 
@@ -10,6 +11,7 @@ const OptionEntry[] options = {
     { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", "115200"},
     { "device", 'd', 0, OptionArg.STRING, out dev, "device", null},
     { "noinit", 'n', 0,  OptionArg.NONE, out noinit, "noinit", "false"},
+    { "msc", 'm', 0,  OptionArg.NONE, out msc, "msc mode", "false"},
     { "file", 'f', 0, OptionArg.STRING, out rcfile, "file", null},
     { "eolmode", 'm', 0, OptionArg.STRING, out eolmstr, "eol mode", "[cr,lf,crlf,crcrlf]"},
     {null}
@@ -99,7 +101,15 @@ class CliTerm : Object
                         msp.write("#".data, 1);
                         return false;
                     });
-            if(rcfile != null)
+
+            if(msc)
+            {
+                Timeout.add(500, () => {
+                        msp.write("msc".data, 3);
+                        msp.write(eol.data, eol.length);
+                        return false;
+                    });
+            } else if(rcfile != null)
             {
                 Timeout.add(1000, () => {
                         replay_file();
