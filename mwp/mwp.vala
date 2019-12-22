@@ -5799,7 +5799,7 @@ case 0:
                         uint16 odir;
                         deserialise_u16(raw, out odir);
                         MWPLog.message("Received home offsets %um / %u°\n",
-                                       nav_rth_home_offset_distance, odir);
+                                       nav_rth_home_offset_distance/100, odir);
                         break;
                     default:
                         MWPLog.message("Unknown common setting %s\n",
