@@ -2599,6 +2599,8 @@ public class MWPlanner : Gtk.Application {
         filter.set_filter_name ("All files");
         filter.add_pattern ("*");
         chooser.add_filter (filter);
+        if(conf.kmlpath != null)
+            chooser.set_current_folder (conf.kmlpath);
 
         chooser.response.connect((id) => {
                 if (id == Gtk.ResponseType.ACCEPT)

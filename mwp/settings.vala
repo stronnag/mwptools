@@ -101,6 +101,7 @@ public class MWPSettings : GLib.Object
     public int speak_amps {get; set; default=0;}
     public bool arming_speak {get; set; default=false;}
     public uint max_radar { get; set; default=4; }
+    public string kmlpath {get; private set; default=null;}
 //    public string radar_device {get; set; default=null;}
 
     public signal void settings_update (string s);
@@ -260,6 +261,12 @@ public class MWPSettings : GLib.Object
             missionpath = settings.get_string ("mission-path");
             if(missionpath == "")
                 missionpath = null;
+        }
+        if(s == null || s == "kml-path")
+        {
+            kmlpath = settings.get_string ("kml-path");
+            if(kmlpath == "")
+                kmlpath = null;
         }
 
         if(s == null || s == "log-path")

@@ -326,6 +326,12 @@
       <description>Directory for mission files</description>
     </key>
 
+    <key name="kml-path" type="s">
+      <default>""</default>
+      <summary>Directory for KML overlays</summary>
+      <description>Directory for KML overlays</description>
+    </key>
+
     <key name="log-path" type="s">
       <default>""</default>
       <summary>Directory for replay log files</summary>
