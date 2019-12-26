@@ -1726,6 +1726,7 @@ public class ListBox : GLib.Object
         purge = true;
         list_model.clear();
         purge = false;
+        have_rth = false;
         calc_mission();
     }
 
