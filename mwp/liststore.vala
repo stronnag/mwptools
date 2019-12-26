@@ -51,12 +51,15 @@ public class ListBox : GLib.Object
     private Gtk.MenuItem altz_item;
     private Gtk.MenuItem delta_item;
     private Gtk.MenuItem terrain_item;
+    private Gtk.MenuItem replicate_item;
     private Gtk.MenuItem speedz_item;
     private Gtk.MenuItem speedv_item;
     private ShapeDialog shapedialog;
     private DeltaDialog deltadialog;
     private SpeedDialog speeddialog;
     private AltDialog altdialog;
+    private WPRepDialog wprepdialog;
+
     private double ms_speed;
     private Gtk.Menu marker_menu;
     private Gtk.TreeIter miter;
@@ -552,7 +555,7 @@ public class ListBox : GLib.Object
         deltadialog = new DeltaDialog(mp.builder);
         speeddialog = new SpeedDialog(mp.builder);
         altdialog = new AltDialog(mp.builder);
-
+        wprepdialog = new WPRepDialog(mp.builder);
             // Combo, Model:
         Gtk.ListStore combo_model = new Gtk.ListStore (1, typeof (string));
         Gtk.TreeIter iter;
@@ -1373,7 +1376,69 @@ public class ListBox : GLib.Object
             });
         menu.add (terrain_item);
         terrain_item.sensitive=false;
+
+        replicate_item = new Gtk.MenuItem.with_label ("Replicate Waypoints");
+        replicate_item.activate.connect (() => {
+                replicate_mission();
+            });
+        menu.add (replicate_item);
+        replicate_item.sensitive=false;
+
+
         menu.show_all();
+    }
+
+    private void replicate_mission()
+    {
+        uint number = 0;
+        uint start = 1;
+        uint end = list_model.iter_n_children(null);
+        if(have_rth)
+            end -= 1;
+
+        var sel = view.get_selection ();
+        if(sel != null && sel.count_selected_rows () > 1)
+        {
+            bool have_start=false;
+            foreach (var t in get_selected_refs())
+            {
+                Gtk.TreeIter iter;
+                GLib.Value cell;
+                uint wpno;
+
+                var path = t.get_path ();
+                list_model.get_iter (out iter, path);
+                list_model.get_value (iter, WY_Columns.IDX, out cell);
+                wpno = (uint)int.parse((string)cell);
+                if (have_start == false)
+                {
+                    start = wpno;
+                    have_start=true;
+                }
+		else
+		{
+		    list_model.get_value (iter, WY_Columns.ACTION, out cell);
+                    var act = (MSP.Action)cell;
+                    if (act != MSP.Action.RTH)
+                        end = wpno;
+                }
+            }
+        }
+
+        if(wprepdialog.get_rep(ref start, ref end, ref number) == true)
+        {
+            var np = start-1 +(end-start+1)*number+ list_model.iter_n_children(null)-end;
+
+            if(start < end && number > 1 && np < 61)
+            {
+                var m = to_mission();
+                WPReplicator.replicate(m, start, end, number);
+                import_mission(m);
+                mp.markers.add_list_store(this);
+            }
+            else
+                MWPLog.message("Invalid replication %u %u %u (%u)\n", start, end, number, np);
+        }
     }
 
     private void set_terrain_item(bool state)
@@ -1381,6 +1446,10 @@ public class ListBox : GLib.Object
         if(mp.x_plot_elevations_rb == false)
             state = false;
         terrain_item.sensitive = state;
+    }
+    private void set_replicate_item(bool state)
+    {
+        replicate_item.sensitive = state;
     }
 
     private bool parse_ll(string mhome, out double lat, out double lon)
@@ -1699,6 +1768,7 @@ public class ListBox : GLib.Object
             route = "Empty mission";
         }
         set_terrain_item(n_rows > 2);
+        set_replicate_item(n_rows > 2);
         mp.stslabel.set_text(route);
     }
 

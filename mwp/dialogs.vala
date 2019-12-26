@@ -851,6 +851,48 @@ public class AltDialog : GLib.Object
     }
 }
 
+public class WPRepDialog : GLib.Object
+{
+    private Gtk.Dialog dialog;
+    private Gtk.Entry rep_start;
+    private Gtk.Entry rep_end;
+    private Gtk.Entry rep_num;
+
+    public WPRepDialog(Gtk.Builder builder)
+    {
+        dialog = builder.get_object ("wprep-dialog") as Gtk.Dialog;
+        rep_start = builder.get_object ("rep_start") as Gtk.Entry;
+        rep_end = builder.get_object ("rep_end") as Gtk.Entry;
+        rep_num = builder.get_object ("rep_num") as Gtk.Entry;
+    }
+
+    public bool get_rep(ref uint start, ref uint end, ref uint number)
+    {
+        var res = false;
+        dialog.show_all();
+
+        rep_start.text = start.to_string();
+        rep_end.text = end.to_string();
+        rep_num.text = number.to_string();
+
+        var id = dialog.run();
+        switch(id)
+        {
+            case 1001:
+                start = (uint)int.parse(rep_start.text);
+                end = (uint)int.parse(rep_end.text);
+                number = (uint)int.parse(rep_num.text);
+                res = true;
+                break;
+
+            case 1002:
+                break;
+        }
+        dialog.hide();
+        return res;
+    }
+}
+
 public class DeltaDialog : GLib.Object
 {
     private Gtk.Dialog dialog;

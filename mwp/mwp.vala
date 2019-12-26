@@ -7933,7 +7933,7 @@ case 0:
         if(defsource == null)
         {
             defsource = sources.nth_data(0).get_id();
-            print("Settings blank id %s\n", defsource);
+            MWPLog.message("gsettings blank default-map, using %s\n", defsource);
             defval = 0;
         }
         var src = map_source_factory.create_cached_source(defsource);
