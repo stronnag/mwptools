@@ -969,10 +969,12 @@ if vname
   end
   cmd << exargs
 
-  home_args.each do |k,v|
-    if vname.match(/#{k.to_s}/)
-      a = v[:pos].split(',')
-      hoff={dir: v[:dir].to_f, dist: v[:dist].to_f, holat: a[0].to_f, holon: a[1].to_f}
+  if home_args
+    home_args.each do |k,v|
+      if vname.match(/#{k.to_s}/)
+	a = v[:pos].split(',')
+	hoff={dir: v[:dir].to_f, dist: v[:dist].to_f, holat: a[0].to_f, holon: a[1].to_f}
+      end
     end
   end
 end
