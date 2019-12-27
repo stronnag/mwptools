@@ -28,17 +28,17 @@ public class  WPReplicator : Object {
             uint j, k;
             start--; // 0 index
             end--; // 0 index
-            for(j = 0; j < start; j++)
+            for(j = 0; j <= end; j++) // original set of points
                     nm += om[j];
 
-            for(j = 0; j < number; j++)
+            for(j = 0; j < number; j++) // additional iterations
                 for(k = start; k <= end; k++)
                     nm += om[k];
 
-            for(j = end+1; j < om.length; j++)
+            for(j = end+1; j < om.length; j++) // remaining
                 nm += om[j];
 
-            for(j = 0; j < nm.length; j++)
+            for(j = 0; j < nm.length; j++) // renumber
                 nm[j].no = (int)j+1;
 
             ms.set_ways(nm);
