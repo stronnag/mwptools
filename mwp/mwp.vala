@@ -346,6 +346,9 @@ class MwpDockHelper : Object
 
 
 public class MWPlanner : Gtk.Application {
+
+    private const double FPDELTAPOS=0.00001;
+
     private const uint MAXVSAMPLE=12;
 
     public Builder builder;
@@ -1305,7 +1308,11 @@ public class MWPlanner : Gtk.Application {
             wp_edit_button.label= (wp_edit) ? "✔" : "";
             wp_edit_button.tooltip_text = ("Enable / disable the addition of WPs by clicking on the map (%sabled)".printf((wp_edit) ? "en" : "dis"));
             if(wp_edit)
+            {
                 ls.set_fake_home();
+                lx = view.get_center_longitude();
+                ly = view.get_center_latitude();
+            }
             else
                 ls.unset_fake_home();
         });
@@ -3460,18 +3467,23 @@ case 0:
         }
     }
 
+    private bool fp_delta_diff(double f0, double f1,double delta=FPDELTAPOS)
+    {
+        return (Math.fabs(f0-f1) > delta);
+    }
+
     private bool map_moved()
     {
         bool ret = false;
         var x = view.get_center_longitude();
         var y = view.get_center_latitude();
 
-        if (lx !=  x || ly != y)
+        if (fp_delta_diff(lx,x) || fp_delta_diff(ly,y))
         {
-            ly=y;
-            lx=x;
             ret = true;
         }
+        ly=y;
+        lx=x;
         return ret;
     }
 
@@ -3485,10 +3497,13 @@ case 0:
 
         view.button_release_event.connect((evt) => {
                 bool ret = false;
-                if (evt.button == 1 && wp_edit && !map_moved())
+                if (evt.button == 1 && wp_edit)
                 {
-                    insert_new_wp(evt.x, evt.y);
-                    ret = true;
+                    if(!map_moved())
+                    {
+                        insert_new_wp(evt.x, evt.y);
+                        ret = true;
+                    }
                 }
                 else
                 {
@@ -4756,6 +4771,7 @@ case 0:
                 map_centre_on(ms.cy, ms.cx);
                 set_view_zoom(ms.zoom);
             }
+            map_moved();
         }
     }
 
@@ -8896,7 +8912,7 @@ case 0:
             }
             else if(Posix.geteuid() == 0 && asroot == false)
             {
-                print("You should not run this application as root\n");
+                MWPLog.message("You should not run this application as root\n");
             }
             else
             {
@@ -8919,7 +8935,7 @@ case 0:
             lk.unlock();
         }
         else
-            print("Application is already running\n");
+            MWPLog.message("Application is already running\n");
 
         return lkres;
     }
