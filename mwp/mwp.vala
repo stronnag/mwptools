@@ -347,8 +347,6 @@ class MwpDockHelper : Object
 
 public class MWPlanner : Gtk.Application {
 
-    private const double FPDELTAPOS=0.00001;
-
     private const uint MAXVSAMPLE=12;
 
     public Builder builder;
@@ -1310,8 +1308,7 @@ public class MWPlanner : Gtk.Application {
             if(wp_edit)
             {
                 ls.set_fake_home();
-                lx = view.get_center_longitude();
-                ly = view.get_center_latitude();
+                map_moved();
             }
             else
                 ls.unset_fake_home();
@@ -1401,6 +1398,7 @@ public class MWPlanner : Gtk.Application {
                 map_centre_on(la, lo);
                 if(zoom > 0)
                     view.zoom_level = zoom;
+                map_moved();
             });
 
         navconf = new NavConfig(window, builder);
@@ -1812,8 +1810,8 @@ public class MWPlanner : Gtk.Application {
                 var zval = (int)zoomer.adjustment.value;
                 if (val != zval)
                     zoomer.adjustment.value = (int)val;
-
                 get_map_size();
+                map_moved();
             });
 
         zoomer.adjustment.value_changed.connect (() =>
@@ -1821,7 +1819,10 @@ public class MWPlanner : Gtk.Application {
                 int  zval = (int)zoomer.adjustment.value;
                 var val = view.get_zoom_level();
                 if (val != zval)
+                {
                     view.zoom_level = zval;
+                    map_moved();
+                }
             });
 
         conf.settings_update.connect ((s) => {
@@ -2554,6 +2555,7 @@ public class MWPlanner : Gtk.Application {
                     mwp_warning_box(s, Gtk.MessageType.ERROR, 30);
                 });
         }
+        map_moved();
     }
 
     private void try_load_overlay(string kf)
@@ -3467,23 +3469,26 @@ case 0:
         }
     }
 
-    private bool fp_delta_diff(double f0, double f1,double delta=FPDELTAPOS)
+    private bool view_delta_diff(double f0, double f1)
     {
+        double delta;
+        delta = 0.0000025 * Math.pow(2, (20-view.zoom_level));
         return (Math.fabs(f0-f1) > delta);
     }
 
     private bool map_moved()
     {
         bool ret = false;
-        var x = view.get_center_longitude();
-        var y = view.get_center_latitude();
 
-        if (fp_delta_diff(lx,x) || fp_delta_diff(ly,y))
+        var iy =  view.get_center_latitude();
+        var ix =  view.get_center_longitude();
+
+        if (view_delta_diff(lx,ix) || view_delta_diff(ly,iy))
         {
             ret = true;
         }
-        ly=y;
-        lx=x;
+        ly=iy;
+        lx=ix;
         return ret;
     }
 
