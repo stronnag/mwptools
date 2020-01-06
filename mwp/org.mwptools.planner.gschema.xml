@@ -548,7 +548,7 @@
     </key>
 
     <key type="b" name="fixedfont">
-      <default>true</default>
+      <default>false</default>
       <summary>Use a fixed font for Flight View</summary>
       <description>Use a fixed font for Flight View</description>
     </key>
