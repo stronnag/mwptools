@@ -7709,12 +7709,13 @@ case 0:
     private void set_replay_menus(bool state)
     {
         const string [] ms = {"replay-log","load-log","replay-bb","load-bb"};
-        if(x_replay_bbox_ltm_rb == false)
-            state = false;
-
+        var n = 0;
         foreach(var s in ms)
         {
+            if(n > 1 && x_replay_bbox_ltm_rb == false)
+                state = false;
             set_menu_state(s, state);
+            n++;
         }
     }
 
