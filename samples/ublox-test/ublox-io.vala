@@ -592,7 +592,8 @@ public class MWSerial : Object
             }
             if(noinit == false)
             {
-                gps_state = State.START;
+                if(noautob == true)
+                    gps_state = State.START;
                 var delay = 100;
                 if(slow)
                     delay = 200;
@@ -703,6 +704,7 @@ public class MWSerial : Object
             case State.SPEED4:
                 if(noautob == false)
                 {
+                    stdout.printf("Auobaud %d\n", gps_state);
                     var str = get_gps_speed_string();
                     MwpSerial.set_speed(fd, init_speed[gps_state]);
                     ublox_write(fd, str.data);

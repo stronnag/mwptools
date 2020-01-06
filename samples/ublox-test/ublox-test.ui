@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.18.3 -->
+<!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.8"/>
   <object class="GtkAdjustment" id="adjustment1">
@@ -10,6 +10,9 @@
   <object class="GtkWindow" id="window1">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Ublox Test</property>
+    <child>
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkBox" id="box1">
         <property name="visible">True</property>
@@ -253,19 +256,24 @@
               <placeholder/>
             </child>
             <child>
+              <placeholder/>
+            </child>
+            <child>
               <object class="GtkLabel" id="elapsedlab">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">00:00</property>
+                <attributes>
+                  <attribute name="font-desc" value="Monospace"/>
+                </attributes>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
+                <property name="padding">3</property>
+                <property name="pack_type">end</property>
                 <property name="position">6</property>
               </packing>
-            </child>
-            <child>
-              <placeholder/>
             </child>
             <child>
               <placeholder/>
@@ -365,6 +373,9 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="label" translatable="yes">-</property>
+        <attributes>
+          <attribute name="font-desc" value="Monospace"/>
+        </attributes>
       </object>
       <packing>
         <property name="left_attach">1</property>
@@ -376,6 +387,9 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="label" translatable="yes">-</property>
+        <attributes>
+          <attribute name="font-desc" value="Monospace"/>
+        </attributes>
       </object>
       <packing>
         <property name="left_attach">1</property>
@@ -398,6 +412,9 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="label" translatable="yes">-</property>
+        <attributes>
+          <attribute name="font-desc" value="Monospace"/>
+        </attributes>
       </object>
       <packing>
         <property name="left_attach">1</property>
@@ -409,6 +426,9 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="label" translatable="yes">-</property>
+        <attributes>
+          <attribute name="font-desc" value="Monospace"/>
+        </attributes>
       </object>
       <packing>
         <property name="left_attach">1</property>
@@ -431,6 +451,9 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="label" translatable="yes">Fix</property>
+        <attributes>
+          <attribute name="font-desc" value="Monospace"/>
+        </attributes>
       </object>
       <packing>
         <property name="left_attach">0</property>
@@ -453,6 +476,9 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="label" translatable="yes">Range</property>
+        <attributes>
+          <attribute name="font-desc" value="Monospace"/>
+        </attributes>
       </object>
       <packing>
         <property name="left_attach">0</property>
@@ -464,6 +490,9 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="label" translatable="yes">Bearing</property>
+        <attributes>
+          <attribute name="font-desc" value="Monospace"/>
+        </attributes>
       </object>
       <packing>
         <property name="left_attach">0</property>
@@ -475,6 +504,9 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="label" translatable="yes">-</property>
+        <attributes>
+          <attribute name="font-desc" value="Monospace"/>
+        </attributes>
       </object>
       <packing>
         <property name="left_attach">1</property>
@@ -486,6 +518,9 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="label" translatable="yes">-</property>
+        <attributes>
+          <attribute name="font-desc" value="Monospace"/>
+        </attributes>
       </object>
       <packing>
         <property name="left_attach">1</property>

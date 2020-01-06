@@ -21,8 +21,8 @@ ublox-cli: $(CLISRC)
 	$(VALAC)  $(DOPTS) $(OPTS)  --pkg posix --pkg gio-2.0 --pkg mwpfuncs \
 		$(CLISRC) $(COMMONC) -o ublox-cli
 
-ublox-resources.c: ublox.gresources.xml
-	glib-compile-resources --target=$@ --generate-source $^
+ublox-resources.c: ublox.gresources.xml ublox-test.ui ublox.png
+	glib-compile-resources --target=$@ --generate-source $<
 
 SRCS= ublox-test.vala ublox-io.vala ublox.vapi ublox-resources.c
 
