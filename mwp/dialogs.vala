@@ -522,7 +522,7 @@ public class FlightBox : GLib.Object
                                     return false;});
                     if(MonoFont.fixed)
                     {
-                        fh1 = fh1 * 95/100;
+                        fh1 = fh1 * 90/100;
                     }
                 }
                 last_w = a.width;
