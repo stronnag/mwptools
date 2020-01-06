@@ -547,6 +547,11 @@
       <description>whether to reporting arming state by audio</description>
     </key>
 
+    <key type="b" name="fixedfont">
+      <default>false</default>
+      <summary>Use a fixed font for Flight View</summary>
+      <description>Use a fixed font for Flight View</description>
+    </key>
 
     <!-- key name="radar-device" type="s">
       <default>""</default>

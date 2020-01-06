@@ -489,6 +489,7 @@ public class FlightBox : GLib.Object
     private Gtk.Window _w;
     public static uint fh1=20;
     public int last_w = 0;
+    public static string mono;
 
     public void allow_resize(bool exp)
     {
@@ -510,12 +511,19 @@ public class FlightBox : GLib.Object
         big_alt = builder.get_object ("big_alt") as Gtk.Label;
         big_spd = builder.get_object ("big_spd") as Gtk.Label;
         big_sats = builder.get_object ("big_sats") as Gtk.Label;
+
+        mono= (MonoFont.fixed) ? "face=\"monospace\"" : "";
+
         vbox.size_allocate.connect((a) => {
                 if(_allow_resize && a.width != last_w)
                 {
                     fh1 = a.width*MWPlanner.conf.fontfact/100;
                     Idle.add(() => {update(true);
                                     return false;});
+                    if(MonoFont.fixed)
+                    {
+                        fh1 = fh1 * 95/100;
+                    }
                 }
                 last_w = a.width;
             });
@@ -554,9 +562,9 @@ public class FlightBox : GLib.Object
                fh3 = fh3 * 75 /100;
 
            var s=PosFormat.lat(GPSInfo.lat,MWPlanner.conf.dms);
-           big_lat.set_label("<span font='%u'>%s</span>".printf(fh2,s));
+           big_lat.set_label("<span %s font='%u'>%s</span>".printf(mono,fh2,s));
            s=PosFormat.lon(GPSInfo.lon,MWPlanner.conf.dms);
-           big_lon.set_label("<span font='%u'>%s</span>".printf(fh2,s));
+           big_lon.set_label("<span %s font='%u'>%s</span>".printf(mono,fh2,s));
            var brg = NavStatus.cg.direction;
            if(brg < 0)
                brg += 360;
@@ -569,16 +577,16 @@ public class FlightBox : GLib.Object
                fh4 = fh4 * 75 /100;
 
            big_rng.set_label(
-               "Range <span font='%u'>%.0f</span>%s".printf(
-                   fh4,
+               "Range <span %s font='%u'>%.0f</span>%s".printf(
+                   mono, fh4,
                    Units.distance(NavStatus.cg.range),
                    Units.distance_units()
                                                             ));
-           big_bearing.set_label("Bearing <span font='%u'>%03d°</span>".printf(fh1,brg));
-           big_hdr.set_label("Heading <span font='%u'>%03d°</span>".printf(fh3,NavStatus.hdr));
+           big_bearing.set_label("Bearing <span %s font='%u'>%03d°</span>".printf(mono, fh1,brg));
+           big_hdr.set_label("Heading <span %s font='%u'>%03d°</span>".printf(mono, fh3,NavStatus.hdr));
            big_alt.set_label(
-               "Alt <span font='%u'>%.1f</span>%s".printf(
-                   fh3,
+               "Alt <span %s font='%u'>%.1f</span>%s".printf(
+                   mono, fh3,
                    Units.distance(falt),
                    Units.distance_units() ));
 
@@ -587,8 +595,8 @@ public class FlightBox : GLib.Object
                fhsp = fh1*75/100;
 
            big_spd.set_label(
-               "Speed <span font='%u'>%.1f</span>%s".printf(
-                   fhsp,
+               "Speed <span %s font='%u'>%.1f</span>%s".printf(
+                   mono, fhsp,
                    Units.speed(GPSInfo.spd),
                    Units.speed_units() ) );
            string hdoptxt="";
@@ -604,8 +612,8 @@ public class FlightBox : GLib.Object
 
                hdoptxt = " / <span font='%u'>%s</span>".printf(fh2,htxt);
            }
-           var slabel = "Sats <span font='%u'>%d</span> %s%s".printf(
-               fh1, GPSInfo.nsat,Units.fix(GPSInfo.fix), hdoptxt);
+           var slabel = "Sats <span %s font='%u'>%d</span> %s%s".printf(
+               mono, fh1, GPSInfo.nsat,Units.fix(GPSInfo.fix), hdoptxt);
            big_sats.set_label(slabel);
        }
    }
@@ -1440,9 +1448,11 @@ public class RadioStatus : GLib.Object
             if(mode !=  Radio_modes.RSSI)
                 set_modes(Radio_modes.RSSI);
             uint fs = FlightBox.fh1/2;
-            rssi_value.set_label("<span font='%u'>%s</span>".printf(fs,rssi.to_string()));
+            rssi_value.set_label("<span %s font='%u'>%s</span>".printf(
+                                     FlightBox.mono, fs,rssi.to_string()));
             ushort pct = rssi*100/1023;
-            rssi_pct.set_label("<span font='%u'>%d%%</span>".printf(fs,pct));
+            rssi_pct.set_label("<span %s font='%u'>%d%%</span>".printf(
+                                   FlightBox.mono,fs,pct));
             bar.set_value(rssi);
         }
     }

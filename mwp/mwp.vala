@@ -245,6 +245,29 @@ public class PosFormat : GLib.Object
     }
 }
 
+public class MonoFont : Object
+{
+    public static bool fixed = false;
+    public static void apply(Gtk.Widget w)
+    {
+        if(fixed)
+        {
+            var lsc = w.get_style_context();
+            try
+            {
+                var css1 = new Gtk.CssProvider ();
+                css1.load_from_data(".monolabel {font-family: monospace;}");
+                lsc.add_provider(css1, 801);
+                lsc.add_class("monolabel");
+            }
+            catch (Error e)
+            {
+                stderr.printf("label context %s\n", e.message);
+            }
+        }
+    }
+}
+
 public class MWPCursor : GLib.Object
 {
     private static void set_cursor(Gtk.Widget widget, Gdk.CursorType? cursor_type)
@@ -1790,6 +1813,9 @@ public class MWPlanner : Gtk.Application {
         }
         vcol = new VCol();
 
+        MonoFont.fixed = conf.fixedfont;
+        MWPLog.message("Fixed font %s\n", MonoFont.fixed.to_string());
+
         odoview = new OdoView(builder,window,conf.stats_timeout);
         navstatus = new NavStatus(builder, vcol, conf.recip);
         radstatus = new RadioStatus(builder);
@@ -2006,10 +2032,14 @@ public class MWPlanner : Gtk.Application {
   pp.set_child_below_sibling(markers.markers, markers.path);
 */
         poslabel = builder.get_object ("poslabel") as Gtk.Label;
+        MonoFont.apply(poslabel);
+
         stslabel = builder.get_object ("missionlab") as Gtk.Label;
         statusbar = builder.get_object ("statusbar1") as Gtk.Statusbar;
         context_id = statusbar.get_context_id ("Starting");
         elapsedlab =  builder.get_object ("elapsedlab") as Gtk.Label;
+        MonoFont.apply(elapsedlab);
+
         logb = builder.get_object ("logger_cb") as Gtk.CheckButton;
         logb.toggled.connect (() => {
                 if (logb.active)

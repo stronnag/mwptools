@@ -102,6 +102,8 @@ public class MWPSettings : GLib.Object
     public bool arming_speak {get; set; default=false;}
     public uint max_radar { get; set; default=4; }
     public string kmlpath {get; private set; default=null;}
+    public bool fixedfont {get; set; default=false;}
+
 //    public string radar_device {get; set; default=null;}
 
     public signal void settings_update (string s);
@@ -377,6 +379,9 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "arming-speak")
             arming_speak  = settings.get_boolean("arming-speak");
+
+        if(s == null || s == "fixedfont")
+            fixedfont = settings.get_boolean ("fixedfont");
 
             /** CLI for now
         if(s == null || s == "radar-device")
