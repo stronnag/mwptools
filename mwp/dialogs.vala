@@ -490,12 +490,12 @@ public class FlightBox : GLib.Object
     public static uint fh1=20;
     public int last_w = 0;
     public static string mono;
+    private int fontfact;
 
     public void allow_resize(bool exp)
     {
         grid.expand = _allow_resize = exp;
     }
-
 
     public FlightBox(Gtk.Builder builder, Gtk.Window pw)
     {
@@ -511,8 +511,15 @@ public class FlightBox : GLib.Object
         big_alt = builder.get_object ("big_alt") as Gtk.Label;
         big_spd = builder.get_object ("big_spd") as Gtk.Label;
         big_sats = builder.get_object ("big_sats") as Gtk.Label;
+        fontfact = MWPlanner.conf.fontfact;
 
-        mono= (MonoFont.fixed) ? "face=\"monospace\"" : "";
+        if(MonoFont.fixed)
+        {
+            mono = "face=\"monospace\"";
+            fontfact -= 1;
+        }
+        else
+            mono = "";
 
         vbox.size_allocate.connect((a) => {
                 if(_allow_resize && a.width != last_w)
@@ -541,10 +548,21 @@ public class FlightBox : GLib.Object
         update(true);
     }
 
-   public void update(bool visible)
-   {
+    private string trimfp(double val)
+    {
+        string stext;
+        if (val > 9.95)
+            stext = "%3.0f".printf(val);
+        else
+            stext = "%.1f".printf(val);
+        return stext;
+    }
+
+    public void update(bool visible)
+    {
        if(visible)
        {
+           string stext;
            var fh2 = (MWPlanner.conf.dms) ? fh1*45/100 : fh1/2;
            if(fh1 > 96)
                fh1 = 96;
@@ -553,6 +571,8 @@ public class FlightBox : GLib.Object
            var fh4 = fh1;
 
            double falt = (double)NavStatus.alti.estalt/100.0;
+           falt =  Units.distance(falt);
+
            if(falt < 0.0 || falt > 20.0)
                falt = Math.round(falt);
 
@@ -584,20 +604,26 @@ public class FlightBox : GLib.Object
                                                             ));
            big_bearing.set_label("Bearing <span %s font='%u'>%03d°</span>".printf(mono, fh1,brg));
            big_hdr.set_label("Heading <span %s font='%u'>%03d°</span>".printf(mono, fh3,NavStatus.hdr));
+
+           stext = trimfp(falt);
            big_alt.set_label(
-               "Alt <span %s font='%u'>%.1f</span>%s".printf(
+               "Alt <span %s font='%u'>%s</span>%s".printf(
                    mono, fh3,
-                   Units.distance(falt),
+                   stext,
                    Units.distance_units() ));
 
            var fhsp = fh1;
-           if(GPSInfo.spd >= 100)
+
+           var spd = Units.speed(GPSInfo.spd);
+           if(MonoFont.fixed == false && spd >= 100)
                fhsp = fh1*75/100;
 
+           stext = trimfp(spd);
+
            big_spd.set_label(
-               "Speed <span %s font='%u'>%.1f</span>%s".printf(
+               "Speed <span %s font='%u'>%s</span>%s".printf(
                    mono, fhsp,
-                   Units.speed(GPSInfo.spd),
+                   stext,
                    Units.speed_units() ) );
            string hdoptxt="";
            if(GPSInfo.hdop != -1.0 && GPSInfo.hdop < 100.0)
