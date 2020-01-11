@@ -102,7 +102,7 @@ public class MWPSettings : GLib.Object
     public bool arming_speak {get; set; default=false;}
     public uint max_radar { get; set; default=4; }
     public string kmlpath {get; private set; default=null;}
-    public bool fixedfont {get; set; default=false;}
+    public bool fixedfont {get; set; default=true;}
 
 //    public string radar_device {get; set; default=null;}
 
