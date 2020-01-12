@@ -5566,8 +5566,14 @@ case 0:
                         mission_eeprom = (vi.board != "AFNA" &&
                                           vi.board != "CC3D" &&
                                           vi.fc_vers >= FCVERS.hasEEPROM);
+
                         msp_get_status = (vi.fc_api < 0x200) ? MSP.Cmds.STATUS :
                             (vi.fc_vers >= FCVERS.hasV2STATUS) ? MSP.Cmds.INAV_STATUS : MSP.Cmds.STATUS_EX;
+                        // ugly hack for jh flip32 franken builds post 1.73
+                        if((vi.board == "AFNA" || vi.board == "CC3D") &&
+                           msp_get_status == MSP.Cmds.INAV_STATUS)
+                            msp_get_status = MSP.Cmds.STATUS_EX;
+
                         if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ && conf.adjust_tz)
                         {
                             var dt = new DateTime.now_local();
