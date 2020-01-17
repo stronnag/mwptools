@@ -1,8 +1,8 @@
-= Replay_bbox_ltm
+= Replay_bbox_ltm.rb
 Jonathan Hudson <https://github.com/stronnag/mwptools>
-2015-12-20
+January 2020
 
-replay_bbox_ltm is a ruby scrip to transpose Blackbox / INAV flight
+`replay_bbox_ltm.rb` is a ruby scrip to transpose Blackbox / INAV flight
 data recordings into LTM (LightTelemetry) messages over UDP or serial
 (Bluetooth) devices.
 
@@ -10,23 +10,25 @@ data recordings into LTM (LightTelemetry) messages over UDP or serial
 
 Blackbox is an invaluable tool for development and flight analysis for
 Cleanflight and its derivatives such as INAV. This program
-(replay_bbox_ltm) provides a means to replay a Blackbox recording in a
+(`replay_bbox_ltm.rb`) provides a means to replay a Blackbox recording in a
 geospatial context using one of the well know ground stations
 https://github.com/stronnag/mwptools[mwp] (Linux) and http://ez-gui.com/[ezgui]
 (Android). The LTM (LightTelemetry) protocol is used to replay the
 Blackbox log data into the ground station; thus any ground station or
 OSD that supports LTM can be used for flight visualisation.
 
+Note that `replay_bbox_ltm.rb` is integrated with https://github.com/stronnag/mwptools[mwp] and replay is available as a menu option. It is not necessary to read this document beyond Dependencies to use `replay_bbox_ltm.rb` with https://github.com/stronnag/mwptools[mwp].
+
 == Platforms
 
-replay_bbox_ltm is intended to run on most popular platforms (Linux,
+`replay_bbox_ltm.rb` is intended to run on most popular platforms (Linux,
 OSX, Windows). It is developed on Arch Linux and tested on Arch,
-Fedora, Ubuntu and occasionally, Windows 7.
+Fedora, Ubuntu and occasionally, Windows 10.
 
 == Dependencies
 
 There are a number of dependencies that must be satisfied to run the
-replay_bbox_ltm script:
+`replay_bbox_ltm.rb` script:
 
 * A Ruby Interpreter;
 * The Ruby 'rubyserial' gem, and for Windows, the win32api gem;
@@ -44,7 +46,7 @@ http://rubyinstaller.org/downloads/[rubyinstaller.org] (aka MRI). Alternately,
 the https://www.cygwin.com/[cygwin] version may be used, however this
 requires cygwin gcc is also installed to build ffi (a rubyserial
 dependency otherwise satisfied by the MRI install). For MRI, set the
-options to associate .rb extensions with ruby.
+options to associate `.rb` extensions with ruby.
 
 NOTE: On Windows, run the environment specific interpreter; running
 the MRI (rubyinstaller) interpreter under cygwin may not work as
@@ -69,7 +71,7 @@ https://www.ruby-lang.org/en/documentation/installation/.
 
 Ruby Serial Gem:: This is optional and is only necessary to replay
 blackbox files over bluetooth (e.g. it visualise in EzGui); it is not
-necessary to replay within mwp.
+necessary to replay within https://github.com/stronnag/mwptools[mwp].
 Once you have ruby installed, in a console (CLI)
 window:
 ----
@@ -77,33 +79,33 @@ $ gem install rubyserial
 $ gem install win32api # Windows, excluding cygwin
 ----
 Blackbox Utilities:: Blackbox is hosted at
-https://github.com/cleanflight/blackbox-tools/[github]. Instructions
+https://github.com/iNavFlight/blackbox-tools/[github]. Instructions
 are included for all major operating systems. Binary releases for
 Windows and OSX are available from
-https://github.com/cleanflight/blackbox-tools/releases[the releases
+https://github.com/iNavFlight/blackbox-tools/releases[the releases
 page].
 
-blackbox_decode must be on the user's PATH when the replay_bbox_ltm
+`blackbox_decode` must be on the user's PATH when the `replay_bbox_ltm.rb`
 script is invoked.
 
 == Installation
 
-Installation is as simple as copying the replay_bbox_ltm.rb script
-somewhere convenient. The mwp installer will install it for you, by default.
+Installation is as simple as copying the `replay_bbox_ltm.rb` script
+somewhere convenient. The https://github.com/stronnag/mwptools[mwp] installer will install it for you, by default.
 
 == Communication with the GS
 
-replay_bbox_ltm.rb can communicate with the ground station using a UDP
+`replay_bbox_ltm.rb` can communicate with the ground station using a UDP
 socket or a serial device, typically a Bluetooth device for
 communications. At the time of publication, UDP is only supported
-by mwp.
+by https://github.com/stronnag/mwptools[mwp].
 
 === Setting up serial communications
 
 The easiest way to set up serial comms is to use a USB-TTY adaptor on
-the desktop computer running replay_bbox_ltm.rb, with a cross-over
+the desktop computer running `replay_bbox_ltm.rb`, with a cross-over
 connection to a Bluetooth TTY device, which can then communicate with
-EZGUI (or mwp, though UDP is easier in this case).
+EZGUI (or https://github.com/stronnag/mwptools[mwp], though UDP is easier in this case).
 [width="20%", options="header"]
 |===
 | USB | BT
@@ -119,7 +121,7 @@ wiki]) shows the connection.
 
 image::bt_connect.png[BT / USB connection]
 
-Usage for ezgui and mwp is decribed later.
+Usage for ezgui and https://github.com/stronnag/mwptools[mwp] is decribed later.
 
 Note that it is __possible__ to use just the computer's Bluetooth
 device (without a hardware adapter); setting this up is somewhat OS
@@ -128,9 +130,9 @@ use the `sdptool add channel=N SP` and  `rfcomm listen` commands.
 
 == Usage
 
-It is *_essential_* that blackbox_decode is on the PATH, so either
+It is *_essential_* that `blackbox_decode` is on the PATH, so either
 install it on the extant PATH or extend the PATH to cover the
-directory  containing blackbox_decode.
+directory  containing `blackbox_decode`.
 
 === Verify the installation
 
@@ -160,7 +162,7 @@ The [options] are:
 --udp, -u:: When using UDP as the transport for LTM messages, this defines
   the UDP host and port. If a host name is given, it is assumed that
   the specified host has bound to the defined socket. If the host
-  name is blank, then replay-bbox-ltm will bind to the socket. The UDP
+  name is blank, then `replay_bbox_ltm.rb` will bind to the socket. The UDP
   address is defined as:
 +
 ----
@@ -179,8 +181,8 @@ The udp:// part may be omitted, so valid examples are:
 
 +
 The first two examples are equivalent, and the last two are
-equivalent. By default, replay-bbox-ltm prefers IPv6 where
-available. You can force IPv4 with the --force-ipv4 option.
+equivalent. By default, `replay_bbox_ltm.rb` prefers IPv6 where
+available. You can force IPv4 with the `--force-ipv4` option.
 
 --serial-device, -s:: Defines the serial device, where this is used as
   the LTM transport. For example:
@@ -212,9 +214,9 @@ file. If this is not given, the first recording (index 1) is used.
   England is used.
 +
 You can preset the declination as decimal degrees in a JSON file
-$HOME/.config/mwp/replay_ltm.json, as (for the New Forest):
+`$HOME/.config/mwp/replay_ltm.json`, as (for the New Forest):
 ----
-{"declination":-1.5}
+{"declination":-1}
 ----
 
 --vehicle-type, -t:: The vehicle type defines the vehicle icon shown
@@ -248,27 +250,27 @@ $HOME/.config/mwp/replay_ltm.json, as (for the New Forest):
 --force-ipv4, -4:: Forces IPv4 (for dual stack systems without full
   IPv6 resolvers).
 
-replay-bbox-ltm expects the ground station to poll it (this is normal
-mwp and ezgui behaviour; both these applications will poll using
+`replay_bbox_ltm.rb` expects the ground station to poll it (this is normal
+https://github.com/stronnag/mwptools[mwp] and ezgui behaviour; both these applications will poll using
 MultiWii / Cleanflight identification messages when first
 invoked).
 
 Typically, when using the ground station with a flight controller, one
 first powers up the FC, thus enabling its communications port then
-connects from the ground station: replay-bbox-ltm emulates this
-behaviour. replay-bbox-ltm provides basic INAV identification messages
+connects from the ground station: `replay_bbox_ltm.rb` emulates this
+behaviour. `replay_bbox_ltm.rb` provides basic INAV identification messages
 to the ground station before broadcasting the blackbox file as LTM
 messages.
 
 It is also possible to bypass the polling expectation for serial
 devices and when invoked as a UDP listener. In these circumstances,
-on startup, replay-bbox-ltm displays the message:
+on startup, `replay_bbox_ltm.rb` displays the message:
 ----
 Waiting for GS to start (RETURN to continue) :
 ----
 
 If you press return before any poll from the ground station,
-replay-bbox-ltm will continue; this may be acceptable for serial
+`replay_bbox_ltm.rb` will continue; this may be acceptable for serial
 connections, however it will cause the application to exit for UDP, as
 it does not know the address of the client system. This is intended to
 support any client such as an OSD that does not initially poll.
@@ -285,8 +287,8 @@ support any client such as an OSD that does not initially poll.
 === Connection examples
 
 |===
-| mwp -a -4 -s udp://host:3456 | replay-bbox-ltm.rb -4 -u :3456 |   Recommended. Emulates real world, mwp connects to "FC".
-| mwp -4 -s udp://:3456 | replay-bbox-ltm.rb -4 -u host:3456 | Invoke   mwp first
-| ezgui, connect to BT device xx:xx:xx:xx:xx:xx | replay-bbox-ltm.rb -s /dev/ttyUSB0 | Assumes hardware USB / BT "bridge", start replay-bbox-ltm.rb first
-| mwp -s /dev/rfcomm0 | replay-bbox-ltm.rb -s /dev/ttyUSB0 | Assumes hardware USB / BT "bridge", start replay-bbox-ltm.rb first
+| mwp -a -4 -s udp://host:3456 | replay_bbox_ltm.rb -4 -u :3456 |   Emulates real world, mwp connects to "FC".
+| mwp -4 -s udp://:3456 | replay_bbox_ltm.rb -4 -u host:3456 | Invoke   mwp first
+| ezgui, connect to BT device xx:xx:xx:xx:xx:xx | replay_bbox_ltm.rb -s /dev/ttyUSB0 | Assumes hardware USB / BT "bridge", start replay_bbox_ltm.rb first
+| mwp -s /dev/rfcomm0 | replay_bbox_ltm.rb -s /dev/ttyUSB0 | Assumes hardware USB / BT "bridge", start replay_bbox_ltm.rb first
 |===
