@@ -1429,7 +1429,7 @@ public class ListBox : GLib.Object
         {
             var np = start-1 +(end-start+1)*number+ list_model.iter_n_children(null)-end;
 
-            if(start < end && number > 1 && np < 61)
+            if(start < end && number > 0 && np < 61)
             {
                 var m = to_mission();
                 WPReplicator.replicate(m, start, end, number);
