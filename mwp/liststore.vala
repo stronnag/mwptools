@@ -69,6 +69,16 @@ public class ListBox : GLib.Object
     public int lastid {get; private set; default= 0;}
     public bool have_rth {get; private set; default= false;}
 
+    private enum DELTAS
+    {
+        NONE=0,
+        LAT=1,
+        LON=2,
+        POS=3,
+        ALT=4,
+        ANY=7
+    }
+
     private void init_marker_menu()
     {
         marker_menu =   new Gtk.Menu ();
@@ -1242,59 +1252,66 @@ public class ListBox : GLib.Object
     {
         double dlat, dlon;
         int dalt;
-        double val;
+        var dset = DELTAS.NONE;
 
         if(deltadialog.get_deltas(out dlat, out dlon, out dalt) == true)
         {
-            if(dlat != 0.0 || dlon != 0.0 || dalt != 0)
+            if(dlat != 0.0)
+                dset |= DELTAS.LAT;
+            if(dlon != 0.0)
+                dset |= DELTAS.LON;
+            if(dalt != 0)
+                dset |= DELTAS.ALT;
+
+            if(dset != DELTAS.NONE)
             {
-                if(dlat != 0.0)
-                    dlat = dlat / (60.0 * 1852.0);
+                foreach (var t in get_selected_refs())
+                {
+                    Gtk.TreeIter iter;
+                    GLib.Value cell;
+                    var path = t.get_path ();
+                    list_model.get_iter (out iter, path);
 
-                 foreach (var t in get_selected_refs())
-                 {
-                     Gtk.TreeIter iter;
-                     GLib.Value cell;
-                     var path = t.get_path ();
-                     list_model.get_iter (out iter, path);
+                    list_model.get_value (iter, WY_Columns.TYPE, out cell);
+                    var act = MSP.lookup_name((string)cell);
 
-                     list_model.get_value (iter, WY_Columns.TYPE, out cell);
-                     var act = MSP.lookup_name((string)cell);
+                    if (act == MSP.Action.RTH ||
+                        act == MSP.Action.JUMP ||
+                        act == MSP.Action.SET_HEAD)
+                        continue;
+                    list_model.get_value (iter, WY_Columns.LAT, out cell);
+                    var alat = (double)cell;
+                    list_model.get_value (iter, WY_Columns.LON, out cell);
+                    var alon = (double)cell;
+                    double dnm;
 
-                     if (act == MSP.Action.RTH ||
-                         act == MSP.Action.JUMP ||
-                         act == MSP.Action.SET_HEAD)
-                         continue;
+                    if((dset & DELTAS.LAT) == DELTAS.LAT)
+                    {
+                        dnm = dlat / 1852.0;
+                        Geo.posit(alat,alon,0.0,dnm,out alat, out alon,true);
+                    }
 
-                     list_model.get_value (iter, WY_Columns.LAT, out cell);
+                    if((dset & DELTAS.LON) == DELTAS.LON)
+                    {
+                        dnm = dlon / 1852.0;
+                        Geo.posit(alat,alon,90.0,dnm,out alat, out alon,true);
+                    }
 
-                     var alat = (double)cell;
+                    if((dset & DELTAS.POS) != DELTAS.NONE)
+                    {
+                        list_model.set_value (iter, WY_Columns.LAT, alat);
+                        list_model.set_value (iter, WY_Columns.LON, alon);
+                    }
 
-                     if(dlat != 0.0)
-                     {
-                         val = alat + dlat;
-                         list_model.set_value (iter, WY_Columns.LAT, val);
-                     }
-
-                     if(dlon != 0.0)
-                     {
-                         list_model.get_value (iter, WY_Columns.LON, out cell);
-                         val = (double)cell;
-                         double ddlon;
-                         ddlon = Math.cos(alat*(Math.PI/180.0)) * dlon / (60.0 * 1852.0);
-                         val += ddlon;
-                         list_model.set_value (iter, WY_Columns.LON, val);
-                     }
-
-                     if(dalt != 0)
-                     {
-                         list_model.get_value (iter, WY_Columns.ALT, out cell);
-                         var ival = (int)cell;
-                         ival += dalt;
-                         list_model.set_value (iter, WY_Columns.ALT, ival);
-                     }
-                 }
-                 renumber_steps(list_model);
+                    if((dset & DELTAS.ALT) == DELTAS.ALT)
+                    {
+                        list_model.get_value (iter, WY_Columns.ALT, out cell);
+                        var ival = (int)cell;
+                        ival += dalt;
+                        list_model.set_value (iter, WY_Columns.ALT, ival);
+                    }
+                }
+                renumber_steps(list_model);
             }
         }
     }
