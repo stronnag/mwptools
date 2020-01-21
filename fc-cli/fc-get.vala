@@ -81,9 +81,8 @@ class FCMgr :Object
         state = State.EXIT;
         string cmd="exit\n";
         msp.write(cmd.data, cmd.length);
-        Idle.add( () => { ml.quit(); return false;});
+        Timeout.add(250,  () => { ml.quit(); return false;});
     }
-
 
     private void start_restore()
     {

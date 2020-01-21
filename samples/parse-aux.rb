@@ -44,6 +44,8 @@ BOXNAME=[
   "USER2", #  38
   "FPVANGLEMIX", #  39
   "LOITERDIRCHN", #  40
+  "MSPRCOVERRIDE", # 41,
+  "ACCCOMP"       # 42
 ]
 
 # src/main/io/serial.h
