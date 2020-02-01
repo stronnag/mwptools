@@ -4524,7 +4524,7 @@ case 0:
 
                                 if(navmodes)
                                 {
-                                    sb.append(" • Nav mode engaged");
+                                    sb.append(" • Reason unknown; is a nav mode engaged?");
                                     sb.append_c(sep);
                                 }
                             }

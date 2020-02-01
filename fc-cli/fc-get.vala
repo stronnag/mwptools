@@ -4,12 +4,14 @@ private static string dev = null;
 private static string filename = null;
 private static bool noback = false;
 private static bool dump = false;
+private static int delay = 0;
 
 const OptionEntry[] options = {
     { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", null},
     { "device", 'd', 0, OptionArg.STRING, out dev, "device", null},
     { "no-back", 'n', 0, OptionArg.NONE, out noback, "no back", null},
     { "dump", 0, 0, OptionArg.NONE, out dump, "dump input to stdout", null},
+    { "delay", 'w', 0, OptionArg.INT, out delay, "inter-line in ms", null},
     {null}
 };
 
@@ -61,6 +63,7 @@ class FCMgr :Object
     private uint8 trace = 0;
     private uint32 fc_vers;
     private bool have_acal = false;
+    private bool skip_bbl = false;
 
     public FCMgr()
     {
@@ -100,6 +103,16 @@ class FCMgr :Object
 
         while((s = fs.read_line()) != null)
         {
+                /* old F1 issue */
+            if(s.contains("set blackbox_rate_num = 231"))
+            {
+                MWPLog.message("Skipping bogus BBL settings\n");
+                skip_bbl = true;
+            }
+
+            if(skip_bbl && s.contains(" blackbox_"))
+                continue;
+
             if(s.contains("set acc_hardware = NONE"))
                 docal = false;
 
@@ -217,6 +230,9 @@ class FCMgr :Object
                 set_save_state();
                 done = true;
             }
+            if (delay > 0)
+                Thread.usleep(1000*delay);
+
             msp.write(lines[lp], lines[lp].length);
             msp.write("\n".data, 1);
             lp++;
@@ -392,6 +408,11 @@ class FCMgr :Object
                 if(state == State.SETLINES &&
                    ((string)inbuf).slice(linp,inp).contains("### ERROR:"))
                 {
+                    {
+                        FileStream fs = FileStream.open ("/tmp/fcset-err.txt", "a");
+                        fs.printf("Err: %s\n", ((string)inbuf).slice(linp,inp));
+                        fs.flush();
+                    }
                     errors += lines[lp-1];
                 }
 
