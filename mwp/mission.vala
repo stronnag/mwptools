@@ -127,6 +127,7 @@ public class Mission : GLib.Object
         bool ready = false;
         d = 0.0;
         lt = 0;
+        print("Calc Dist\n");
 
         var nsize = waypoints.length;
         if(nsize == 0)
@@ -174,6 +175,7 @@ public class Mission : GLib.Object
                         n += 1;
                     else
                         n = waypoints[n].param2 - 1;
+                    print("Jump to WP %d (%d) \n", n, rpt);
                 }
                 else if (typ == MSP.Action.POSHOLD_UNLIM || typ == MSP.Action.LAND)
                 {

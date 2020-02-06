@@ -300,7 +300,7 @@ public class ListBox : GLib.Object
                             break;
                         case MSP.Action.SET_POI:
                         case MSP.Action.SET_HEAD:
-                        case MSP.Action.JUMP:
+//                        case MSP.Action.JUMP:
                             MWPLog.message("Remove WP %s\n", typ.to_string());
                             continue;
                     }
@@ -1825,6 +1825,8 @@ public class ListBox : GLib.Object
                     m.param1 = (int) (SPEED_CONV*(double)cell);
                 else
                     m.param1 = (int)((double)cell);
+                list_model.get_value (iter, WY_Columns.INT2, out cell);
+                m.param2= (int)cell;
                 arry += m;
             }
             if (typ == MSP.Action.POSHOLD_UNLIM || typ == MSP.Action.LAND)
@@ -1868,7 +1870,7 @@ public class ListBox : GLib.Object
                             n += 1;
                         else
                             n = arry[n].param1-1;
-                       continue;
+                        continue;
                     }
                     Geo.csedist(ly,lx,cy,cx, out dx, out cse);
 
