@@ -304,8 +304,8 @@ int main (string[] args) {
         var res = ms.calculate_distance(out d, out lt);
         if (res == true)
         {
-            var et = (int)(d / 3.0);
-            print("dist %f %ds (%ds)\n",d,et,lt);
+            var et = (int)(d / 6.0);
+            print("dist %.0f %ds (at 6m/s) (%ds)\n",d,et,lt);
         }
         else
             print("Indeterminate\n");
