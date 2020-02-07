@@ -354,8 +354,21 @@ public class MWPMarkers : GLib.Object
         var ino = int.parse(no);
 
         bool nrth = l.wp_has_rth(iter, out ni);
+        var xtyp = typ;
+        if(typ == MSP.Action.WAYPOINT)
+        {
+            var next=ls.iter_next(ref iter);
+            if(next)
+            {
+                ls.get_value (iter, ListBox.WY_Columns.ACTION, out cell);
+                var ntyp = (MSP.Action)cell;
+                if(ntyp == MSP.Action.JUMP)
+                    xtyp = MSP.Action.JUMP;
+                ls.iter_previous(ref iter);
+            }
+        }
 
-        get_text_for(typ, no, out text, out colour, nrth);
+        get_text_for(xtyp, no, out text, out colour, nrth);
         marker = new Champlain.Label.with_text (text,"Sans 10",null,null);
         marker.set_alignment (Pango.Alignment.RIGHT);
         marker.set_color (colour);
