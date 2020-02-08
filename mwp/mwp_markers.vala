@@ -479,7 +479,10 @@ public class MWPMarkers : GLib.Object
 
         marker.leave_event.connect((ce) => {
                 if(txt.get_parent() == marker)
-                    marker.remove_child(txt);
+                    Timeout.add_seconds(3, () => {
+                            marker.remove_child(txt);
+                            return false;
+                        });
                 return false;
             });
 
