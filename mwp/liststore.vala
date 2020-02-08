@@ -163,7 +163,10 @@ public class ListBox : GLib.Object
                         // get target after JUMP
                     list_model.get_value (iter, WY_Columns.ACTION, out cell);
                     var xact = (MSP.Action)cell;
-                    if (xact == MSP.Action.WAYPOINT)
+                    if (xact == MSP.Action.WAYPOINT ||
+                        xact == MSP.Action.POSHOLD_UNLIM ||
+                        xact == MSP.Action.POSHOLD_TIME ||
+                        xact == MSP.Action.LAND)
                     {
                         list_model.get_value (iter, WY_Columns.IDX, out cell);
                         var xno = (string)cell;
@@ -177,6 +180,10 @@ public class ListBox : GLib.Object
                                          Units.distance(range*1852),
                                          Units.distance_units(),
                                          brg);
+                    }
+                    else if (xact == MSP.Action.RTH)
+                    {
+                        sb.append("\nthen Return home");
                     }
                 }
             }
