@@ -171,6 +171,7 @@ public class Mission : GLib.Object
                 }
                 Geo.csedist(ly,lx,cy,cx, out dx, out cse);
                 d += dx;
+                print("At WP #%d, delta = %6.1f dist = %6.1f\n", n+1, dx*1852.0, d*1852.0);
 
                 if (typ == MSP.Action.POSHOLD_TIME)
                 {
@@ -188,6 +189,7 @@ public class Mission : GLib.Object
             else
 	    {
                 ready = true;
+                print("At WP #1, delta =    0.0 dist =    0.0\n");
 		n += 1;
             }
             lx = cx;

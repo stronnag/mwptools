@@ -130,15 +130,16 @@ public class ListBox : GLib.Object
         list_model.get_value (iter, WY_Columns.TIP, out cell);
         if((string)cell != null)
             sb.append((string)cell);
+        list_model.get_value (iter, WY_Columns.LAT, out cell);
+        var lat = (double)cell;
+        list_model.get_value (iter, WY_Columns.LON, out cell);
+        var lon = (double)cell;
+
+        double range;
+        double brg;
 
         if(fhome != null && fhome.is_visible)
         {
-            double range;
-            double brg;
-            list_model.get_value (iter, WY_Columns.LAT, out cell);
-            var lat = (double)cell;
-            list_model.get_value (iter, WY_Columns.LON, out cell);
-            var lon = (double)cell;
             double hlat,hlon;
             fhome.get_fake_home(out hlat, out hlon);
             Geo.csedist(hlat, hlon, lat, lon, out range, out brg);
@@ -155,11 +156,32 @@ public class ListBox : GLib.Object
                 var p1 = (int)((double)cell);
                 list_model.get_value (iter, ListBox.WY_Columns.INT2, out cell);
                 var p2 = (int)cell;
-                sb.append_printf("\nJUMP WP %d repeat %d", p1, p2);
+                sb.append_printf("\nJUMP to WP %d repeat x%d", p1, p2);
+                if(list_model.iter_next(ref iter))
+                {
+                        // get target after JUMP
+                    list_model.get_value (iter, WY_Columns.ACTION, out cell);
+                    var xact = (MSP.Action)cell;
+                    if (xact == MSP.Action.WAYPOINT)
+                    {
+                        list_model.get_value (iter, WY_Columns.IDX, out cell);
+                        var xno = (string)cell;
+                        list_model.get_value (iter, WY_Columns.LAT, out cell);
+                        var xlat = (double)cell;
+                        list_model.get_value (iter, WY_Columns.LON, out cell);
+                        var xlon = (double)cell;
+                        Geo.csedist(lat, lon, xlat, xlon, out range, out brg);
+                        sb.append_printf("\nthen to WP %s => %.1f%s, %.0f°",
+                                         xno,
+                                         Units.distance(range*1852),
+                                         Units.distance_units(),
+                                         brg);
+                    }
+                }
             }
         }
         string s = sb.str;
-        return s.replace(", to", "\nto");
+        return s;
     }
 
     public void pop_marker_menu(Gdk.EventButton e)
@@ -1895,7 +1917,7 @@ public class ListBox : GLib.Object
                     list_model.get_value (xiter, WY_Columns.TIP, out cell);
                     if((string)cell == null)
                     {
-                        var hint = "Dist %.1f%s, to WP %d => %.1f%s, %.0f° %.0fs".
+                        var hint = "Dist %.1f%s\nto WP %d => %.1f%s, %.0f° %.0fs".
                         printf(
                             Units.distance(d*1852),
                             Units.distance_units(),
@@ -1909,19 +1931,17 @@ public class ListBox : GLib.Object
                     d += dx;
                     lastn = n;
 
-                    if(n == nsize -1)
+                    if(n == nsize - 1)
                     {
-                        var next=list_model.iter_next(ref xiter);
-                        if(next)
+                        path = new Gtk.TreePath.from_indices (arry[lastn].no - 1);
+                        list_model.get_iter(out xiter, path);
+                        list_model.get_value (xiter, WY_Columns.TIP, out cell);
+                        if((string)cell == null)
                         {
-                            list_model.get_value (xiter, WY_Columns.TIP, out cell);
-                            if((string)cell == null)
-                            {
-                                var hint = "Dist %.1f%s".printf(
-                                    Units.distance(d*1852),
-                                    Units.distance_units());
+                            var hint = "Dist %.1f%s".printf(
+                                Units.distance(d*1852),
+                                Units.distance_units());
                                 list_model.set_value (xiter, WY_Columns.TIP, hint);
-                            }
                         }
                     }
 
