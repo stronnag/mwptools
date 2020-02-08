@@ -145,7 +145,19 @@ public class ListBox : GLib.Object
             range *= 1852;
             sb.append_printf("\nRange %.1fm, bearing %.0f°", range, brg);
         }
-
+        if(list_model.iter_next(ref iter))
+        {
+            list_model.get_value (iter, ListBox.WY_Columns.ACTION, out cell);
+            var ntyp = (MSP.Action)cell;
+            if(ntyp == MSP.Action.JUMP)
+            {
+                list_model.get_value (iter, ListBox.WY_Columns.INT1, out cell);
+                var p1 = (int)((double)cell);
+                list_model.get_value (iter, ListBox.WY_Columns.INT2, out cell);
+                var p2 = (int)cell;
+                sb.append_printf("\nJUMP WP %d repeat %d", p1, p2);
+            }
+        }
         string s = sb.str;
         return s.replace(", to", "\nto");
     }
