@@ -370,20 +370,21 @@ public class MWPMarkers : GLib.Object
         var xtyp = typ;
         int jwp = 0;
 
+
         if(typ == MSP.Action.WAYPOINT)
         {
-            var next=ls.iter_next(ref iter);
+            var xiter = iter;
+            var next=ls.iter_next(ref xiter);
             if(next)
             {
-                ls.get_value (iter, ListBox.WY_Columns.ACTION, out cell);
+                ls.get_value (xiter, ListBox.WY_Columns.ACTION, out cell);
                 var ntyp = (MSP.Action)cell;
                 if(ntyp == MSP.Action.JUMP)
                 {
                     xtyp = MSP.Action.JUMP;
-                    ls.get_value (iter, ListBox.WY_Columns.INT1, out cell);
+                    ls.get_value (xiter, ListBox.WY_Columns.INT1, out cell);
                     jwp = (int)((double)cell);
                 }
-                ls.iter_previous(ref iter);
             }
         }
 
@@ -407,9 +408,9 @@ public class MWPMarkers : GLib.Object
         {
             if(typ != MSP.Action.SET_POI)
                 path.add_node(marker);
+
             if(jwp != 0)
             {
-                path.add_node(marker);
                 jpath.add_node(marker);
                 List<weak Champlain.Location> m= path.get_nodes();
                 if(m.length() > 0)

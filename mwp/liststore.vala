@@ -146,6 +146,7 @@ public class ListBox : GLib.Object
             range *= 1852;
             sb.append_printf("\nRange %.1fm, bearing %.0f°", range, brg);
         }
+
         if(list_model.iter_next(ref iter))
         {
             list_model.get_value (iter, ListBox.WY_Columns.ACTION, out cell);
