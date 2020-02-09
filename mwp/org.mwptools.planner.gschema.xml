@@ -95,7 +95,7 @@
     </key>
 
     <key name="compat-version" type="s">
-      <default>"2.3 pre8"</default>
+      <default>"42.0"</default>
       <summary>mw-nav compat version</summary>
       <description>Default mw-nav compat version in XML files</description>
     </key>
