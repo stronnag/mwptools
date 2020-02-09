@@ -25,17 +25,17 @@ public class ListBox : GLib.Object
     public enum WY_Columns
     {
         IDX,
-            TYPE,
-            LAT,
-            LON,
-            ALT,
-            INT1,
-            INT2,
-            INT3,
-            MARKER,
-            ACTION,
-            TIP,
-            N_COLS
+        TYPE,
+        LAT,
+        LON,
+        ALT,
+        INT1,
+        INT2,
+        INT3,
+        MARKER,
+        ACTION,
+        TIP,
+        N_COLS
     }
 
     private Gtk.Menu menu;
@@ -156,7 +156,7 @@ public class ListBox : GLib.Object
                 list_model.get_value (iter, ListBox.WY_Columns.INT1, out cell);
                 var p1 = (int)((double)cell);
                 list_model.get_value (iter, ListBox.WY_Columns.INT2, out cell);
-                var p2 = (int)cell;
+                var p2 = (int)((double)cell);
                 sb.append_printf("\nJUMP to WP %d repeat x%d", p1, p2);
                 if(list_model.iter_next(ref iter))
                 {
@@ -245,6 +245,7 @@ public class ListBox : GLib.Object
             list_model.append (out iter);
             string no;
             double m1 = 0;
+            double m2 = 0;
             switch (m.action)
             {
                 case MSP.Action.RTH:
@@ -267,6 +268,10 @@ public class ListBox : GLib.Object
                         m1 = ((double)m.param1 / SPEED_CONV);
                     else
                         m1 = ((double)m.param1);
+                    if (m.action == MSP.Action.POSHOLD_TIME)
+                        m2 = ((double)m.param2 / SPEED_CONV);
+                    else
+                        m2 = ((double)m.param2);
                     break;
             }
             list_model.set (iter,
@@ -276,7 +281,7 @@ public class ListBox : GLib.Object
                             WY_Columns.LON, m.lon,
                             WY_Columns.ALT, m.alt,
                             WY_Columns.INT1, m1,
-                            WY_Columns.INT2, m.param2,
+                            WY_Columns.INT2, m2,
                             WY_Columns.INT3, m.param3,
                             WY_Columns.ACTION, m.action);
         }
@@ -313,25 +318,30 @@ public class ListBox : GLib.Object
                     w.p1 = (int16)(tint*SPEED_CONV);
                 else
                     w.p1 = (int16)tint;
+
                 list_model.get_value (iter, WY_Columns.INT2, out cell);
-                tint = (int)cell;
-                w.p2 = (uint16)tint;
+                tint = (double)cell;
+                if(w.action == MSP.Action.POSHOLD_TIME)
+                    w.p2 = (int16)(tint*SPEED_CONV);
+                else
+                    w.p2 = (int16)tint;
                 list_model.get_value (iter, WY_Columns.INT3, out cell);
                 tint = (int)cell;
                 w.p3 = (uint16)tint;
                 w.flag = 0;
 
-
                 if(cf)
                 {
                     switch(typ)
                     {
+/*
                         case MSP.Action.POSHOLD_TIME:
                             MWPLog.message("Regrade %s to WP\n", typ.to_string());
                             w.action =  MSP.Action.WAYPOINT;
                             w.p2 = w.p1;
                             w.p1 = 0;
                             break;
+*/
                         case MSP.Action.POSHOLD_UNLIM:
                         case MSP.Action.LAND:
                             MWPLog.message("Downgrade %s to WP\n", typ.to_string());
@@ -427,7 +437,10 @@ public class ListBox : GLib.Object
                 else
                     m.param1 = (int)((double)cell);
                 list_model.get_value (iter, WY_Columns.INT2, out cell);
-                m.param2 = (int)cell;
+                if(typ == MSP.Action.POSHOLD_TIME)
+                    m.param2 = (int)(SPEED_CONV*(double)cell);
+                else
+                    m.param2 = (int)((double)cell);
                 list_model.get_value (iter, WY_Columns.INT3, out cell);
                 m.param3 = (int)cell;
                 arry += m;
@@ -625,7 +638,7 @@ public class ListBox : GLib.Object
                                         typeof (double),
                                         typeof (int),
                                         typeof (double),
-                                        typeof (int),
+                                        typeof (double),
                                         typeof (int),
                                         typeof (Champlain.Label),
                                         typeof (MSP.Action),
@@ -845,6 +858,24 @@ public class ListBox : GLib.Object
                                             cell,
                                             "text", WY_Columns.INT2);
 
+        col = view.get_column(WY_Columns.INT2);
+        col.set_cell_data_func(cell, (col,_cell,model,iter) => {
+                string s;
+                Value icell;
+                Value v;
+                model.get_value(iter, WY_Columns.INT2, out v);
+                model.get_value (iter, WY_Columns.ACTION, out icell);
+                var typ = (MSP.Action)icell;
+                if (typ == MSP.Action.POSHOLD_TIME)
+                {
+                    double val = (double)v;
+                    s = "%.1f".printf(Units.speed(val));
+                }
+                else
+                    s = "%.0f".printf((double)v);
+                _cell.set_property("text",s);
+            });
+
         cell.editing_started.connect((e,p) => {
                 ss = mp.get_serstate();
                 mp.set_serstate(MWPlanner.SERSTATE.NONE);
@@ -996,6 +1027,16 @@ public class ListBox : GLib.Object
                 else
                     d = DStr.strtod(new_text,null);
                 break;
+            case WY_Columns.INT2:
+                Value icell;
+                list_model.get_value (iter_val, WY_Columns.ACTION, out icell);
+                var typ = (MSP.Action)icell;
+                if (typ == MSP.Action.POSHOLD_TIME)
+                    d = InputParser.get_scaled_real(new_text,"s");
+                else
+                    d = DStr.strtod(new_text,null);
+                break;
+
             default:
                 Value icell;
                 list_model.get_value (iter_val, WY_Columns.ACTION, out icell);
@@ -1145,7 +1186,7 @@ public class ListBox : GLib.Object
                     ctitles = {"Lat","Lon","Alt","","",""};
                     break;
                 case MSP.Action.POSHOLD_TIME:
-                    ctitles = {"Lat","Lon","Alt","Secs","",""};
+                    ctitles = {"Lat","Lon","Alt","Secs","Spd",""};
                     break;
                 case MSP.Action.RTH:
                     ctitles = {"","","Alt","Land","",""};
@@ -1736,7 +1777,6 @@ public class ListBox : GLib.Object
         }
     }
 
-
     public void set_speeds(bool flag)
     {
         double dspd = MWPlanner.conf.nav_speed;
@@ -1756,13 +1796,17 @@ public class ListBox : GLib.Object
                     act == MSP.Action.SET_POI ||
                     act == MSP.Action.SET_HEAD)
                     continue;
+
+                var colid = (act == MSP.Action.POSHOLD_TIME) ? WY_Columns.INT2 :
+                    WY_Columns.INT1;
+
                 if(flag == false)
                 {
-                    list_model.get_value (iter, WY_Columns.INT1, out cell);
+                    list_model.get_value (iter, colid, out cell);
                     if ((double)cell != 0)
                         continue;
                 }
-                list_model.set_value (iter, WY_Columns.INT1, dspd);
+                list_model.set_value (iter, colid, dspd);
                 cnt++;
             }
         }
@@ -1868,7 +1912,10 @@ public class ListBox : GLib.Object
                 else
                     m.param1 = (int)((double)cell);
                 list_model.get_value (iter, WY_Columns.INT2, out cell);
-                m.param2= (int)cell;
+                if(typ == MSP.Action.POSHOLD_TIME)
+                    m.param2 = (int) (SPEED_CONV*(double)cell);
+                else
+                    m.param2 = (int)((double)cell);
                 arry += m;
             }
             if (typ == MSP.Action.POSHOLD_UNLIM || typ == MSP.Action.LAND)
@@ -1891,8 +1938,9 @@ public class ListBox : GLib.Object
             {
                 var typ = arry[n].action;
                 var p1 = arry[n].param1;
+                var p2 = arry[n].param2;
 
-                if(typ == MSP.Action.JUMP && arry[n].param2 == -1)
+                if(typ == MSP.Action.JUMP && p2 == -1)
                 {
                     d = 0.0;
                     lt = 0;
@@ -1906,7 +1954,7 @@ public class ListBox : GLib.Object
                     double dx,cse;
                     if(typ == MSP.Action.JUMP)
                     {
-                        var r = arry[n].param2;
+                        var r = p2;
                         rpt += 1;
                         if (rpt > r)
                             n += 1;
@@ -1974,7 +2022,15 @@ public class ListBox : GLib.Object
                 }
                 lx = cx;
                 ly = cy;
-                lspd = (p1 == 0) ? ms_speed : ((double)p1)/SPEED_CONV;
+                lspd = ms_speed;
+                if(typ ==  MSP.Action.WAYPOINT && p1 > 0)
+                {
+                    lspd = ((double)p1)/SPEED_CONV;
+                }
+                if(typ ==  MSP.Action.POSHOLD_TIME && p2 > 0)
+                {
+                    lspd = ((double)p2)/SPEED_CONV;
+                }
             } while (n < nsize);
         }
         if(extra != 0)
