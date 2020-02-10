@@ -5920,7 +5920,7 @@ case 0:
                             {
                                 case MSP.Action.SET_POI:
                                 case MSP.Action.SET_HEAD:
-                                case MSP.Action.JUMP:
+//                                case MSP.Action.JUMP:
                                     break;
                                 default:
                                     nwp++;
