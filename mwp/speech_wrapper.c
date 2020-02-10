@@ -45,25 +45,31 @@ static espeak_synchronize_t esh;
 static int ep_init(char *voice)
 {
     int res = API_NONE;
-    gchar * modname;
+    gchar * modname = NULL;
     modname = g_module_build_path(NULL, "espeak");
+
     if(modname)
-    {
         handle = g_module_open(modname, G_MODULE_BIND_LAZY);
-        if (handle)
+    if(handle == NULL)
+    {
+        g_free(modname);
+        modname = g_module_build_path(NULL, "espeak-ng");
+        if(modname)
+            handle = g_module_open(modname, G_MODULE_BIND_LAZY);
+    }
+    if (handle)
+    {
+        espeak_initialize_t esi;
+        if(g_module_symbol(handle, "espeak_Initialize", (gpointer *)&esi))
+            res = (*esi)(AUDIO_OUTPUT_PLAYBACK,0, NULL, 0);
+        if(res != -1)
         {
-            espeak_initialize_t esi;
-            if(g_module_symbol(handle, "espeak_Initialize", (gpointer *)&esi))
-                res = (*esi)(AUDIO_OUTPUT_PLAYBACK,0, NULL, 0);
-            if(res != -1)
-            {
-                espeak_setvoicebyname_t esv;
-                if(g_module_symbol(handle, "espeak_SetVoiceByName",(gpointer *)&esv))
-                    (*esv)(voice);
-                if(g_module_symbol(handle, "espeak_Synth",(gpointer *)&ess) &&
-                   g_module_symbol(handle, "espeak_Synchronize",(gpointer *)&esh))
-                    res = API_ESPEAK;
-            }
+            espeak_setvoicebyname_t esv;
+            if(g_module_symbol(handle, "espeak_SetVoiceByName",(gpointer *)&esv))
+                (*esv)(voice);
+            if(g_module_symbol(handle, "espeak_Synth",(gpointer *)&ess) &&
+               g_module_symbol(handle, "espeak_Synchronize",(gpointer *)&esh))
+                res = API_ESPEAK;
         }
         g_free(modname);
     }
