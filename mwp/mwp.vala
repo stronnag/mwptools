@@ -8182,8 +8182,11 @@ case 0:
                 for(var i = 0; i < m.npoints; i++)
                 {
                     var mi = m.get_waypoint(i);
-                    mi.lat += fakeoff.dlat;
-                    mi.lon += fakeoff.dlon;
+                    if(mi.lat != 0 && mi.lon != 0)
+                    {
+                        mi.lat += fakeoff.dlat;
+                        mi.lon += fakeoff.dlon;
+                    }
                     m.set_waypoint(mi, i);
                 }
                 m.cx += fakeoff.dlon;
