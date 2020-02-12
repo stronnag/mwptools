@@ -4930,26 +4930,31 @@ case 0:
         {
             uint fs=(uint)conf.wp_dist_fontsize*1024;
             np = np - 1;
-            var lat = wp_resp[np].lat;
-            var lon = wp_resp[np].lon;
-            if(lat == 0.0 && lon == 0.0)
+            if(wp_resp[np].action != MSP.Action.RTH &&
+                   wp_resp[np].action != MSP.Action.JUMP &&
+                   wp_resp[np].action != MSP.Action.SET_HEAD)
             {
-                lat = home_pos.lat;
-                lon = home_pos.lon;
+                var lat = wp_resp[np].lat;
+                var lon = wp_resp[np].lon;
+                if(wp_resp[np].action == MSP.Action.RTH)
+                {
+                    lat = home_pos.lat;
+                    lon = home_pos.lon;
+                }
+                double dist,cse;
+                Geo.csedist(GPSInfo.lat, GPSInfo.lon,
+                            lat, lon, out dist, out cse);
+                StringBuilder sb = new StringBuilder();
+                dist *= 1852.0;
+                var icse = Math.lrint(cse) % 360;
+                sb.append_printf("<span size=\"%u\">%.1fm %ld°", fs, dist, icse);
+                if(GPSInfo.spd > 0.0 && dist > 1.0)
+                    sb.append_printf(" %ds", (int)(dist/GPSInfo.spd));
+                else
+                    sb.append(" --s");
+                sb.append("</span>");
+                map_show_dist(sb.str);
             }
-            double dist,cse;
-            Geo.csedist(GPSInfo.lat, GPSInfo.lon,
-                        lat, lon, out dist, out cse);
-            StringBuilder sb = new StringBuilder();
-            dist *= 1852.0;
-            var icse = Math.lrint(cse) % 360;
-            sb.append_printf("<span size=\"%u\">%.1fm %ld°", fs, dist, icse);
-            if(GPSInfo.spd > 0.0 && dist > 1.0)
-                sb.append_printf(" %ds", (int)(dist/GPSInfo.spd));
-            else
-                sb.append(" --s");
-            sb.append("</span>");
-            map_show_dist(sb.str);
         }
     }
 
@@ -5920,7 +5925,6 @@ case 0:
                             {
                                 case MSP.Action.SET_POI:
                                 case MSP.Action.SET_HEAD:
-//                                case MSP.Action.JUMP:
                                     break;
                                 default:
                                     nwp++;
@@ -8182,7 +8186,10 @@ case 0:
                 for(var i = 0; i < m.npoints; i++)
                 {
                     var mi = m.get_waypoint(i);
-                    if(mi.lat != 0 && mi.lon != 0)
+
+                    if(mi.action != MSP.Action.RTH &&
+                       mi.action != MSP.Action.JUMP &&
+                       mi.action != MSP.Action.SET_HEAD)
                     {
                         mi.lat += fakeoff.dlat;
                         mi.lon += fakeoff.dlon;
@@ -8192,7 +8199,6 @@ case 0:
                 m.cx += fakeoff.dlon;
                 m.cy += fakeoff.dlat;
             }
-
             wp_resp = m.get_ways();
             return m;
         }
