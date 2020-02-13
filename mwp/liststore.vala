@@ -560,6 +560,7 @@ public class ListBox : GLib.Object
                     break;
             }
             renumber_steps(list_model);
+
         }
     }
 
@@ -1003,6 +1004,10 @@ public class ListBox : GLib.Object
 
         list_model.get_iter (out iter_val, new Gtk.TreePath.from_string (path));
 
+        Value icell;
+        list_model.get_value (iter_val, WY_Columns.ACTION, out icell);
+        var typ = (MSP.Action)icell;
+
         double d;
         switch(colno)
         {
@@ -1016,9 +1021,6 @@ public class ListBox : GLib.Object
                 d = InputParser.get_scaled_real(new_text);
                 break;
             case WY_Columns.INT1:
-                Value icell;
-                list_model.get_value (iter_val, WY_Columns.ACTION, out icell);
-                var typ = (MSP.Action)icell;
                 if (typ == MSP.Action.RTH)
                     as_int = false; // force redraw
 
@@ -1028,9 +1030,6 @@ public class ListBox : GLib.Object
                     d = DStr.strtod(new_text,null);
                 break;
             case WY_Columns.INT2:
-                Value icell;
-                list_model.get_value (iter_val, WY_Columns.ACTION, out icell);
-                var typ = (MSP.Action)icell;
                 if (typ == MSP.Action.POSHOLD_TIME)
                     d = InputParser.get_scaled_real(new_text,"s");
                 else
@@ -1038,9 +1037,6 @@ public class ListBox : GLib.Object
                 break;
 
             default:
-                Value icell;
-                list_model.get_value (iter_val, WY_Columns.ACTION, out icell);
-                var typ = (MSP.Action)icell;
                 if (typ == MSP.Action.WAYPOINT)
                     as_int = false; // force redraw for P2 timer (iNav)
                 d = DStr.strtod(new_text,null);
@@ -1049,6 +1045,9 @@ public class ListBox : GLib.Object
 
         if (d <= maxval && d >= minval)
         {
+            if (typ == MSP.Action.JUMP)
+                as_int = false;
+
             if (as_int == true)
             {
                 list_model.set_value (iter_val, colno, d);
@@ -1058,7 +1057,6 @@ public class ListBox : GLib.Object
                 list_model.set_value (iter_val, colno, d);
                 mp.markers.add_list_store(this);
             }
-
             calc_mission();
         }
     }
