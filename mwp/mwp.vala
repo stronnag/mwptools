@@ -8554,7 +8554,7 @@ case 0:
     }
 
     private void run_replay(string fn, bool delay, Player rtype,
-                            int idx=0, int btype=0, uint8 force_gps=0)
+                            int idx=0, int btype=0, uint8 force_gps=0, uint duration =0)
     {
         xlog = conf.logarmed;
         xaudio = conf.audioarmed;
@@ -8602,7 +8602,7 @@ case 0:
                 case Player.BBOX:
                 case Player.BBOX_FAST:
                     bb_runner.find_bbox_box(fn, idx);
-                    spawn_bbox_task(fn, idx, btype, delay, force_gps);
+                    spawn_bbox_task(fn, idx, btype, delay, force_gps, duration);
                     break;
             }
         }
@@ -8650,7 +8650,7 @@ case 0:
     }
 
     private void spawn_bbox_task(string fn, int index, int btype,
-                                 bool delay, uint8 force_gps)
+                                 bool delay, uint8 force_gps, uint duration)
     {
         string [] args = {"replay_bbox_ltm.rb",
                           "--fd", "%d".printf(playfd[1]),
@@ -8663,6 +8663,13 @@ case 0:
             args += "-g";
         if((force_gps & 2) == 2)
             args += "-G";
+
+        if(duration > 600)
+        {
+            uint intvl  =  100000 * duration / 600;
+            args += "-I";
+            args += intvl.to_string();
+        }
 
         args += fn;
         args += null;
@@ -8710,10 +8717,11 @@ case 0:
                 int index;
                 int btype;
                 uint8 force_gps = 0;
+                uint duration;
 
                 bb_runner.get_result(out bblog, out index, out btype,
-                                     out force_gps);
-                run_replay(bblog, delay, Player.BBOX, index, btype, force_gps);
+                                     out force_gps, out duration);
+                run_replay(bblog, delay, Player.BBOX, index, btype, force_gps, duration);
             }
         }
     }

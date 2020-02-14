@@ -15,6 +15,32 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
+/*
+  Serves black tiles for the map background. Useful for demo / videos, as a
+  artefacts like WPs, range circles etc are very obvious.
+
+  Requires an entry in ~/.config/mwp/sources.json like:
+
+  {
+    "id": "Black",
+    "name": "Black Tiles",
+    "license": "(c) jh ",
+    "license_uri": "http://daria.co.uk/",
+    "min_zoom": 0,
+    "max_zoom": 20,
+    "tile_size": 256,
+    "projection": "MERCATOR",
+    "uri_format": "http://localhost:21319/doo/#Z#/#X#/#Y#.png",
+    "spawn" : "bproxy 21319",
+    "warning" : "The only user changeable part of the uri is the port number (21319) which must be consistent"
+  }
+
+ Then put bproxy on the PATH (e.g. /use/local/bin). It is not built or
+ installed automatically
+
+ */
+
+
 public class BProxy : Soup.Server
 {
     uint8 []black_png =  {

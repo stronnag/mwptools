@@ -107,11 +107,11 @@ class Serial
   end
 end
 
-#STDERR_LOG="/tmp/replay_bblog_stderr.txt"
+STDERR_LOG="/tmp/replay_bblog_stderr.txt"
+
 LLFACT=10000000
 ALTFACT=100
 MINDELAY=0.001
-NORMDELAY=0.1
 $verbose = false
 $vbatscale=1.0
 $pstate = -1
@@ -733,6 +733,12 @@ def get_autotype nmotor, nservo
   mtyp
 end
 
+
+############### DEBUG #############
+#$stderr.reopen(STDERR_LOG,"w+")
+#$stdout.reopen(STDERR_LOG,"w+")
+############### DEBUG #############
+
 if RUBY_VERSION.match(/^1/)
   abort "This script requires a miniumum of Ruby 2.0"
 end
@@ -752,6 +758,7 @@ scan = nil
 decoder="blackbox_decode"
 nobaro = nil
 extra_args = {}
+intvl = 100_000
 
 if have_js
   pref_fn = File.join(ENV["HOME"],".config", "mwp", "replay_ltm.json")
@@ -765,6 +772,7 @@ if have_js
     home_args = prefs[:home]
   end
 end
+
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] file\nReplay bbox log as LTM"
@@ -780,18 +788,20 @@ ARGV.options do |opt|
   opt.on('-d','--dump-headers'){dumph=true}
   opt.on('-v','--verbose'){$verbose=true}
   opt.on('-S', '--scan-only'){scan = true}
+  opt.on('-I', '--interval INTVL', Integer){|o| intvl = o}
   opt.on('--fd=FD',Integer){|o| childfd=o}
   opt.on('--decoder=NAME'){|o|decoder=o}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
     opt.parse!
   rescue
+    puts "Argument error"
     puts opt ; exit
   end
 end
 
+#STDERR.puts "INT #{intvl}"
 dev = nil
-intvl = 100000
 nv = 0
 icnt = 0
 origin = nil
@@ -990,9 +1000,12 @@ vers=nil
 us=nil
 st=nil
 
-puts cmd
+ndelay = intvl / 1000000.0
+
+delay = (mindelay) ? mindelay : ndelay
+
 IO.popen(cmd,'rt') do |pipe|
-  csv = CSV.new(pipe, csv_opts)
+  csv = CSV.new(pipe, **csv_opts)
   lindex = 0
   csv.each do |row|
     if lindex == 0
@@ -1003,11 +1016,6 @@ IO.popen(cmd,'rt') do |pipe|
 	exit
       end
       abort 'Not a useful INAV log' if hdrs[:gps_coord0].nil?
-
-#  if !$stderr.isatty
-#    $stderr.reopen(STDERR_LOG, 'w')
-#    $stderr.sync
-#  end
 
       nmotor = 0
       nservo = 0
@@ -1091,7 +1099,7 @@ IO.popen(cmd,'rt') do |pipe|
 	et = ((us - st)/1000000).to_i
 	msg = encode_et et
 	send_msg dev, msg
-	sleep (mindelay) ? mindelay : NORMDELAY
+	sleep delay
       end
     end
     lindex += 1

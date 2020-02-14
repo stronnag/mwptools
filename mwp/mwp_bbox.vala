@@ -516,7 +516,7 @@ public class  BBoxDialog : Object
         return id;
     }
 
-    public void get_result(out string _name, out int _index, out int _type, out uint8 _use_gps)
+    public void get_result(out string _name, out int _index, out int _type, out uint8 _use_gps, out uint duration)
     {
         _name = filename;
         Gtk.TreeModel model;
@@ -527,6 +527,10 @@ public class  BBoxDialog : Object
         _index = (int)cell;
         _type = bb_combo.active -1;
         _use_gps = ((bb_force_gps_cog.active) ? 1 : 0) + ((bb_force_gps_alt.active) ? 2 : 0);
+        model.get_value (iter, 1, out cell);
+        string s = (string)cell;
+        var parts = s.split(":");
+        duration = (parts.length == 2) ? (uint)int.parse(parts[0])*60 + (uint)(double.parse(parts[1])+0.5) : 0;
     }
 
     private bool find_base_position(string filename, string index,
