@@ -70,6 +70,8 @@ public class  BBoxDialog : Object
         bb_tz_combo = builder.get_object("bb_tz_combo") as ComboBoxText;
         var filter = new Gtk.FileFilter ();
         filter.set_filter_name ("BB Logs");
+        filter.add_pattern ("*.bbl");
+        filter.add_pattern ("*.BBL");
         filter.add_pattern ("*.TXT");
         filter.add_pattern ("*.txt");
         bb_filechooser.add_filter (filter);
