@@ -288,7 +288,7 @@ public class ListBox : GLib.Object
         calc_mission();
     }
 
-    public  MSP_WP[] to_wps(out uint8 dg, bool cf = false, bool fixwing = false)
+    public  MSP_WP[] to_wps(out uint8 dg, uint8 flags)
     {
         Gtk.TreeIter iter;
         MSP_WP[] wps =  {};
@@ -330,21 +330,22 @@ public class ListBox : GLib.Object
                 w.p3 = (uint16)tint;
                 w.flag = 0;
 
-                if(cf)
+                if((flags & MWPlanner.WPS.isINAV) == MWPlanner.WPS.isINAV)
                 {
                     switch(typ)
                     {
-/*
                         case MSP.Action.POSHOLD_TIME:
-                            MWPLog.message("Regrade %s to WP\n", typ.to_string());
-                            w.action =  MSP.Action.WAYPOINT;
-                            w.p2 = w.p1;
-                            w.p1 = 0;
+                            if((flags & MWPlanner.WPS.hasPHT) != MWPlanner.WPS.hasPHT)
+                            {
+                                MWPLog.message("Regrade %s to WP (need FW >= 2.5.0)\n", typ.to_string());
+                                w.action =  MSP.Action.WAYPOINT;
+                                w.p2 = w.p1;
+                                w.p1 = 0;
+                            }
                             break;
-*/
                         case MSP.Action.POSHOLD_UNLIM:
                         case MSP.Action.LAND:
-                            MWPLog.message("Downgrade %s to WP\n", typ.to_string());
+                            MWPLog.message("Downgrade %s to WP (need FW >= 2.5.0)\n", typ.to_string());
                             w.action =  MSP.Action.WAYPOINT;
                             w.p1 = 0;
                             w.p2 = w.p3 = 0;
@@ -352,14 +353,20 @@ public class ListBox : GLib.Object
                             break;
                         case MSP.Action.SET_POI:
                         case MSP.Action.SET_HEAD:
-//                        case MSP.Action.JUMP:
-                            MWPLog.message("Remove WP %s\n", typ.to_string());
+                            MWPLog.message("Remove WP %s (need FW >= 2.5.0)\n", typ.to_string());
                             continue;
+                        case MSP.Action.JUMP:
+                            if((flags & MWPlanner.WPS.hasJUMP) != MWPlanner.WPS.hasJUMP)
+                            {
+                                MWPLog.message("Remove WP %s (need FW >= 2.5.0)\n", typ.to_string());
+                                continue;
+                            }
+                            break;
                     }
                 }
                 n++;
                 w.wp_no = n;
-                if(fixwing && (typ == MSP.Action.RTH))
+                if(((flags & MWPlanner.WPS.isFW) == MWPlanner.WPS.isFW) && (typ == MSP.Action.RTH))
                 {
                     MWPLog.message("Remove Land from FW WP RTH\n");
                     w.p1 = 0;

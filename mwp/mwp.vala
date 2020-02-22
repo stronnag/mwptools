@@ -625,6 +625,16 @@ public class MWPlanner : Gtk.Application {
         hasEEPROM = 0x010600,
         hasTZ = 0x010704,
         hasV2STATUS = 0x010801,
+        hasJUMP = 0x020500,
+        hasPHTIME = 0x020500,
+    }
+
+    public enum WPS
+    {
+        isINAV = 1,
+        isFW = 2,
+        hasJUMP = 4,
+        hasPHT = 8,
     }
 
     public enum SERSTATE
@@ -5918,13 +5928,17 @@ case 0:
                     else
                     {
                         uint nwp = 0;
-                        var wps = ls.to_wps(out downgrade);
+                        var wps = ls.to_wps(out downgrade, set_wps_flags());
                         foreach(var w in wps)
                         {
                             switch(w.action)
                             {
                                 case MSP.Action.SET_POI:
                                 case MSP.Action.SET_HEAD:
+                                    break;
+                                case MSP.Action.JUMP:
+                                    if(vi.fc_vers >= FCVERS.hasJUMP)
+                                        nwp++;
                                     break;
                                 default:
                                     nwp++;
@@ -7390,6 +7404,22 @@ case 0:
         navstatus.volt_update(str,icol,vf,item_visible(DOCKLETS.VOLTAGE));
     }
 
+    private uint8 set_wps_flags()
+    {
+        uint8 wps_flags = 0;
+        if(inav)
+            wps_flags |= WPS.isINAV;
+
+        if (Craft.is_fw(vi.mrtype))
+            wps_flags |= WPS.isFW;
+
+        if(vi.fc_vers >= FCVERS.hasJUMP)
+            wps_flags |= WPS.hasJUMP;
+
+        if(vi.fc_vers >= FCVERS.hasPHTIME)
+            wps_flags |= WPS.hasPHT;
+        return wps_flags;
+    }
 
     private void upload_mission(WPDL flag)
     {
@@ -7403,7 +7433,7 @@ case 0:
         validatelab.set_text("");
         downgrade = 0;
 
-        var wps = ls.to_wps(out downgrade, inav, Craft.is_fw(vi.mrtype));
+        var wps = ls.to_wps(out downgrade, set_wps_flags());
         if(wps.length > wp_max)
         {
             if((flag & WPDL.CALLBACK) != 0)
