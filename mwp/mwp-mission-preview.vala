@@ -31,8 +31,13 @@ public class MissionReplayThread : GLib.Object
     public signal void mission_replay_event(double lat, double lon, double cse);
     public signal void mission_replay_done();
 
+
     private bool is_mr = false;
     private bool running = false;
+    private bool warmup;
+    private double speed = MSPEED;
+    private double dist = 0.0;
+
 
     public void stop()
     {
@@ -56,13 +61,18 @@ public class MissionReplayThread : GLib.Object
         double c,d;
         Geo.csedist(slat,slon,elat,elon,out d, out c);
         d *= NM2METRES;
-        int steps = (int)(Math.round(MHERTZ * d / MSPEED));
-        var delta = MSPEED / 5.0 / NM2METRES;
+        dist += d;
 
-        for(var i = 0; running && i < steps; i++)
+        if (!warmup)
         {
-            Geo.posit(slat, slon, c, delta, out slat, out slon);
-            outloc (slat, slon, c);
+            int steps = (int)(Math.round(MHERTZ * d / speed));
+            var delta = speed / 5.0 / NM2METRES;
+
+            for(var i = 0; running && i < steps; i++)
+            {
+                Geo.posit(slat, slon, c, delta, out slat, out slon);
+                outloc (slat, slon, c);
+            }
         }
         return c;
     }
@@ -80,37 +90,45 @@ public class MissionReplayThread : GLib.Object
         var radius = 35.0;
         ry = cy;
         rx = cx;
-        Timer timer = new Timer ();
         if (phtim > 0)
         {
-            var simwait = phtim / 10;
-
-            if(is_mr)
+            if(!warmup)
             {
-                while (running && timer.elapsed (null) < simwait)
-                    Thread.usleep(MAXSLEEP);
+                var simwait = phtim / speed;
+                Timer timer = new Timer ();
+                if(is_mr)
+                {
+                    while (running && timer.elapsed (null) < simwait)
+                    {
+                        Thread.usleep(MAXSLEEP);
+                    }
+                }
+                else
+                {
+                    var rnm = radius / NM2METRES;
+                    Geo.posit(cy, cx, brg, rnm, out ry, out rx);
+                    fly_leg(cy,cx, ry, rx);
+                    var lx = rx;
+                    var ly = ry;
+                    var deginc  = radius / 10;
+                    while (running && timer.elapsed (null) < simwait)
+                    {
+                        double c,d;
+                        brg += deginc;
+                        brg = brg % 360.0;
+                        Geo.posit(cy, cx, brg, rnm, out ry, out rx);
+                        Geo.csedist(ly,lx,ry,rx, out d, out c);
+                        lx = rx;
+                        ly = ry;
+                        outloc (ry, rx, c);
+                    }
+                }
+                timer.stop ();
             }
             else
             {
-                var rnm = radius / NM2METRES;
-                Geo.posit(cy, cx, brg, rnm, out ry, out rx);
-                fly_leg(cy,cx, ry, rx);
-                var lx = rx;
-                var ly = ry;
-                var deginc  = radius / 10;
-                while (running && timer.elapsed (null) < simwait)
-                {
-                    double c,d;
-                    brg += deginc;
-                    brg = brg % 360.0;
-                    Geo.posit(cy, cx, brg, rnm, out ry, out rx);
-                    Geo.csedist(ly,lx,ry,rx, out d, out c);
-                    lx = rx;
-                    ly = ry;
-                    outloc (ry, rx, c);
-                }
+                dist += (phtim * speed);
             }
-            timer.stop ();
         }
     }
 
@@ -128,7 +146,17 @@ public class MissionReplayThread : GLib.Object
         var cy = 0.0;
         for (;;)
         {
+            if (n == nsize)
+                break;
+
             var typ = mi[n].action;
+
+            if (typ == MSP.Action.SET_POI || typ == MSP.Action.SET_HEAD)
+            {
+                n += 1;
+                continue;
+            }
+
             if (valid)
             {
                 if (typ == MSP.Action.JUMP)
@@ -154,14 +182,12 @@ public class MissionReplayThread : GLib.Object
                     break;
                 }
 
-                if (n == nsize - 1)
-                    break;
-
                 cy = mi[n].lat;
                 cx = mi[n].lon;
                 double d;
                 Geo.csedist(ly,lx,cy,cx, out d, out cse);
-
+//                if(warmup)
+//                    print("WP #%d - #%d %1.f\n", lastn+1, n+1,d*NM2METRES);
                 var nc = fly_leg(ly,lx,cy,cx);
                 if (nc != -1)
                     cse = nc;
@@ -174,6 +200,9 @@ public class MissionReplayThread : GLib.Object
                         // really we need cse from start ... in case wp1 is PH
                     if  (typ == MSP.Action.POSHOLD_UNLIM)
                         phtim = -1;
+
+//                    if(warmup)
+//                        print("WP #%d - PH (%.1f)\n", n+1, phtim*speed);
 
                     if (phtim == -1 || phtim > 5)
                         iterate_ph(cy, cx, cse, phtim, out cy, out cx);
@@ -196,24 +225,43 @@ public class MissionReplayThread : GLib.Object
 
 	if (running && ret && h.valid)
         {
+/*
+            if(warmup)
+            {
+                double d;
+                Geo.csedist(cy,cx,h.hlat,h.hlon, out d, out cse);
+                print("WP #%d to home %1.f\n", lastn+1, d*NM2METRES);
+            }
+*/
             fly_leg(cy,cx,h.hlat,h.hlon);
             cy = h.hlat;
             cx = h.hlon;
         }
-//        iterate_ph(cy, cx, cse, -1, out cy, out cx);
     }
 
     public Thread<int> run_mission (Mission m, HomePos h)
     {
         running = true;
-        var mi = m.get_ways();
         var thr = new Thread<int> ("preview", () => {
-                if(h.valid)
+                bool [] passes = {true, false};
+
+                foreach (var p in passes)
                 {
-                    fly_leg(h.hlat, h.hlon, mi[0].lat, mi[0].lon);
+                    warmup = p;
+                    var mi = m.get_ways();
+                    dist = 0.0;
+                    if(h.valid)
+                    {
+                        fly_leg(h.hlat, h.hlon, mi[0].lat, mi[0].lon);
+                    }
+                    if(running && mi.length > 1)
+                        iterate_mission(mi, h);
+                    if(p)
+                    {
+                        speed = (dist/3000) * MSPEED;
+//                        print("Distance %.2fm at %.2fm/s\n", dist, speed);
+                    }
                 }
-                if(running && mi.length > 1)
-                    iterate_mission(mi, h);
                 mission_replay_done();
                 return 0;
             });
