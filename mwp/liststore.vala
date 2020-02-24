@@ -54,6 +54,8 @@ public class ListBox : GLib.Object
     private Gtk.MenuItem replicate_item;
     private Gtk.MenuItem speedz_item;
     private Gtk.MenuItem speedv_item;
+    private Gtk.MenuItem preview_item;
+    private Gtk.MenuItem stop_preview_item;
     private ShapeDialog shapedialog;
     private DeltaDialog deltadialog;
     private SpeedDialog speeddialog;
@@ -65,6 +67,7 @@ public class ListBox : GLib.Object
     private Gtk.TreeIter miter;
     private bool miter_ok = false;
     private FakeHome fhome;
+    private  MissionReplayThread mprv;
 
     public int lastid {get; private set; default= 0;}
     public bool have_rth {get; private set; default= false;}
@@ -1489,8 +1492,63 @@ public class ListBox : GLib.Object
         menu.add (replicate_item);
         replicate_item.sensitive=false;
 
+        preview_item = new Gtk.MenuItem.with_label ("Preview Mission");
+        preview_item.activate.connect (() => {
+                preview_mission();
+            });
+        menu.add (preview_item);
+        preview_item.sensitive=false;
+
+        stop_preview_item = new Gtk.MenuItem.with_label ("Stop Preview");
+        stop_preview_item.activate.connect (() => {
+                stop_preview_mission();
+            });
+        menu.add (stop_preview_item);
+        stop_preview_item.sensitive=false;
 
         menu.show_all();
+    }
+
+    private void preview_mission()
+    {
+        Thread<int> thr = null;
+
+        var craft = new Craft(mp.view, Craft.Vehicles.PREVIEW, false);
+        craft.park();
+
+        mprv = new MissionReplayThread();
+
+        mprv.mission_replay_event.connect((la,lo,co) => {
+                craft.set_lat_lon(la,lo,co);
+            });
+
+        mprv.mission_replay_done.connect(() => {
+                if(thr != null)
+                    thr.join();
+                preview_item.sensitive=true;
+                stop_preview_item.sensitive=false;
+                Timeout.add_seconds(5,() => {
+                        craft=null;
+                        return false;
+                    });
+            });
+
+        HomePos hp={0,0,false};
+
+        if(fhome != null && fhome.is_visible)
+        {
+            hp.valid = true;
+            fhome.get_fake_home(out hp.hlat, out hp.hlon);
+        }
+
+        mprv.run_mission(to_mission(), hp);
+        preview_item.sensitive=false;
+        stop_preview_item.sensitive=true;
+    }
+
+    private void stop_preview_mission()
+    {
+        mprv.stop();
     }
 
     private void replicate_mission()
@@ -1555,6 +1613,11 @@ public class ListBox : GLib.Object
     private void set_replicate_item(bool state)
     {
         replicate_item.sensitive = state;
+    }
+
+    private void set_preview_item(bool state)
+    {
+        preview_item.sensitive = state;
     }
 
     private bool parse_ll(string mhome, out double lat, out double lon)
@@ -1878,6 +1941,7 @@ public class ListBox : GLib.Object
         }
         set_terrain_item(n_rows > 2);
         set_replicate_item(n_rows > 2);
+        set_preview_item(n_rows > 2);
         mp.stslabel.set_text(route);
     }
 

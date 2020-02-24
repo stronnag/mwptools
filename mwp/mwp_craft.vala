@@ -85,6 +85,7 @@ public class Craft : GLib.Object
         CUSTOM = 23,
         CUSTOM_AIRPLANE = 24,
         CUSTOM_TRI = 25,
+        PREVIEW = 26,
         LAST
     }
 
@@ -115,7 +116,8 @@ public class Craft : GLib.Object
         "QuadX.png", // 22
         "QuadX.png", // 23
         "Airplane.png", // 24
-        "Tri.png"   //25
+        "Tri.png",   //25
+        "preview.png" //26
     };
 
     public enum Special
@@ -202,9 +204,9 @@ public class Craft : GLib.Object
         icon.set_draw_background (false);
         park();
 
-        layer.add_marker(ici);
+        if(id != Vehicles.PREVIEW)
+            layer.add_marker(ici);
         layer.add_marker (icon);
-        icon.animate_in();
     }
 
 
@@ -212,7 +214,6 @@ public class Craft : GLib.Object
     {
         layer.remove_marker(icon);
     }
-
 
     public static bool is_fw(uint id)
     {
@@ -246,7 +247,6 @@ public class Craft : GLib.Object
         icon.set_pivot_point(0.5f, 0.5f);
         icon.set_draw_background (false);
         layer.add_marker (icon);
-        icon.animate_in();
     }
 
     public void init_trail()
