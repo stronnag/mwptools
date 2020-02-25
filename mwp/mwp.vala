@@ -2198,8 +2198,15 @@ public class MWPlanner : Gtk.Application {
         conbutton.clicked.connect(() => { connect_serial(); });
 
         var zm = conf.zoom;
+
         clat= conf.latitude;
         clon = conf.longitude;
+
+        if(fakeoff.faking)
+        {
+            clat += fakeoff.dlat;
+            clon += fakeoff.dlon;
+        }
 
         kmls = new Array<KmlOverlay>();
 
