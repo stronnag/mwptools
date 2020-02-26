@@ -2605,6 +2605,11 @@ public class MWPlanner : Gtk.Application {
         map_moved();
     }
 
+    public uint8 get_mrtype()
+    {
+        return vi.mrtype;
+    }
+
     private void try_load_overlay(string kf)
     {
         var kml = new KmlOverlay(view);

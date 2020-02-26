@@ -1514,9 +1514,12 @@ public class ListBox : GLib.Object
         Thread<int> thr = null;
 
         var craft = new Craft(mp.view, Craft.Vehicles.PREVIEW, false);
-        craft.park();
 
         mprv = new MissionReplayThread();
+
+        var mmr = mp.get_mrtype();
+        if(mmr != 0)
+            mprv.set_mr(Craft.is_mr(mmr));
 
         mprv.mission_replay_event.connect((la,lo,co) => {
                 craft.set_lat_lon(la,lo,co);
