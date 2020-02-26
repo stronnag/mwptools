@@ -31,13 +31,18 @@ public class MissionReplayThread : GLib.Object
     public signal void mission_replay_event(double lat, double lon, double cse);
     public signal void mission_replay_done();
 
-
     private bool is_mr = false;
     private bool running = false;
     private bool warmup;
     private double speed = MSPEED;
     private double dist = 0.0;
 
+    private bool multijump = false;
+    private struct JumpCounter
+    {
+        int idx;
+        int count;
+    }
 
     public void stop()
     {
@@ -144,6 +149,25 @@ public class MissionReplayThread : GLib.Object
         var cse = 0.0;
         var cx = 0.0;
         var cy = 0.0;
+#if PREVTEST
+    int jn = -1;
+#endif
+
+        JumpCounter [] jump_counts = {};
+
+        if(multijump)
+        {
+            for (var i = 0; i < mi.length; i++)
+            {
+                if(mi[i].action == MSP.Action.JUMP)
+                {
+                    JumpCounter jc = {i, mi[i].param2};
+                    jump_counts += jc;
+                }
+            }
+        }
+
+
         for (;;)
         {
             if (n == nsize)
@@ -161,12 +185,28 @@ public class MissionReplayThread : GLib.Object
             {
                 if (typ == MSP.Action.JUMP)
                 {
+#if PREVTEST
+                    jn = n + 1;
+#endif
                     if (mi[n].param2 == -1)
                         n = (int)mi[n].param1 - 1;
                     else
                     {
                         if (mi[n].param2 == 0)
+                        {
+                            if(multijump)
+                            {
+                                foreach(var jc in jump_counts)
+                                {
+                                    if(n == jc.idx)
+                                    {
+                                        mi[n].param2 = jc.count;
+                                        break;
+                                    }
+                                }
+                            }
                             n += 1;
+                        }
                         else
                         {
                             mi[n].param2 -= 1;
@@ -186,8 +226,17 @@ public class MissionReplayThread : GLib.Object
                 cx = mi[n].lon;
                 double d;
                 Geo.csedist(ly,lx,cy,cx, out d, out cse);
-//                if(warmup)
-//                    print("WP #%d - #%d %1.f\n", lastn+1, n+1,d*NM2METRES);
+#if PREVTEST
+                if(warmup)
+                {
+                    print("WP #%d", lastn+1);
+                    if (n < lastn) // JUMP
+                    {
+                        print(" - JUMP#%d", jn);
+                    }
+                    print(" - #%d %1.f\n", n+1,d*NM2METRES);
+                }
+#endif
                 var nc = fly_leg(ly,lx,cy,cx);
                 if (nc != -1)
                     cse = nc;
@@ -200,10 +249,10 @@ public class MissionReplayThread : GLib.Object
                         // really we need cse from start ... in case wp1 is PH
                     if  (typ == MSP.Action.POSHOLD_UNLIM)
                         phtim = -1;
-
-//                    if(warmup)
-//                        print("WP #%d - PH (%.1f)\n", n+1, phtim*speed);
-
+#if PREVTEST
+                    if(warmup)
+                        print("WP #%d - PH (%.1f)\n", n+1, phtim*speed);
+#endif
                     if (phtim == -1 || phtim > 5)
                         iterate_ph(cy, cx, cse, phtim, out cy, out cx);
                 }
@@ -225,14 +274,14 @@ public class MissionReplayThread : GLib.Object
 
 	if (running && ret && h.valid)
         {
-/*
+#if PREVTEST
             if(warmup)
             {
                 double d;
                 Geo.csedist(cy,cx,h.hlat,h.hlon, out d, out cse);
                 print("WP #%d to home %1.f\n", lastn+1, d*NM2METRES);
             }
-*/
+#endif
             fly_leg(cy,cx,h.hlat,h.hlon);
             cy = h.hlat;
             cx = h.hlon;
@@ -242,6 +291,9 @@ public class MissionReplayThread : GLib.Object
     public Thread<int> run_mission (Mission m, HomePos h)
     {
         running = true;
+
+        multijump = (Environment.get_variable("INAV_MULTIJUMP") != null);
+
         var thr = new Thread<int> ("preview", () => {
                 bool [] passes = {true, false};
 
@@ -259,7 +311,9 @@ public class MissionReplayThread : GLib.Object
                     if(p)
                     {
                         speed = (dist/3000) * MSPEED;
-//                        print("Distance %.2fm at %.2fm/s\n", dist, speed);
+#if PREVTEST
+                        print("Distance %.2fm at %.2fm/s\n", dist, speed);
+#endif
                     }
                 }
                 mission_replay_done();
