@@ -82,6 +82,11 @@ public class ListBox : GLib.Object
         ANY=7
     }
 
+    private struct JumpCounter {
+        int idx;
+        int count;
+    }
+
     private void init_marker_menu()
     {
         marker_menu =   new Gtk.Menu ();
@@ -1519,7 +1524,7 @@ public class ListBox : GLib.Object
 
         var mmr = mp.get_mrtype();
         if(mmr != 0)
-            mprv.set_mr(Craft.is_mr(mmr));
+            mprv.is_mr = Craft.is_mr(mmr);
 
         mprv.mission_replay_event.connect((la,lo,co) => {
                 craft.set_lat_lon(la,lo,co);
@@ -1544,7 +1549,7 @@ public class ListBox : GLib.Object
             fhome.get_fake_home(out hp.hlat, out hp.hlon);
         }
 
-        mprv.run_mission(to_mission(), hp);
+        mprv.run_mission(to_mission(), hp, MissionReplayThread.Mode.REPLAY);
         preview_item.sensitive=false;
         stop_preview_item.sensitive=true;
     }
@@ -1950,6 +1955,7 @@ public class ListBox : GLib.Object
 
     public bool calc_mission_dist(out double d, out int lt, out int et,double extra=0.0)
     {
+        JumpCounter [] jump_counts = {};
         Gtk.TreeIter iter;
         MissionItem[] arry = {};
         et = 0;
@@ -1957,6 +1963,7 @@ public class ListBox : GLib.Object
         if(ms_speed == 0.0)
             ms_speed = MWPlanner.conf.nav_speed;
 
+        var i = 0;
         for(bool next=list_model.get_iter_first(out iter); next;
             next=list_model.iter_next(ref iter))
         {
@@ -1988,13 +1995,18 @@ public class ListBox : GLib.Object
                     m.param2 = (int) (SPEED_CONV*(double)cell);
                 else
                     m.param2 = (int)((double)cell);
+                if(m.action == MSP.Action.JUMP)
+                {
+                    JumpCounter jc = {i, m.param2};
+                    jump_counts += jc;
+                }
                 arry += m;
+                i++;
             }
             if (typ == MSP.Action.POSHOLD_UNLIM || typ == MSP.Action.LAND)
                 break;
         }
         var n = 0;
-        var rpt = 0;
         double lx = 0.0,ly=0.0;
         double lspd = ms_speed;
         var lastn = 0;
@@ -2010,9 +2022,8 @@ public class ListBox : GLib.Object
             {
                 var typ = arry[n].action;
                 var p1 = arry[n].param1;
-                var p2 = arry[n].param2;
 
-                if(typ == MSP.Action.JUMP && p2 == -1)
+                if(typ == MSP.Action.JUMP && arry[n].param2 == -1)
                 {
                     d = 0.0;
                     lt = 0;
@@ -2026,12 +2037,25 @@ public class ListBox : GLib.Object
                     double dx,cse;
                     if(typ == MSP.Action.JUMP)
                     {
-                        var r = p2;
-                        rpt += 1;
-                        if (rpt > r)
+                        if (arry[n].param2 == 0)
+                        {
+                                // block only needed if inav implements
+                                // JUMP correctly (re-arming embeds)
+                            foreach(var jc in jump_counts)
+                            {
+                                if(n == jc.idx)
+                                {
+                                    arry[n].param2 = jc.count;
+                                    break;
+                                }
+                            }
                             n += 1;
+                        }
                         else
+                        {
+                            arry[n].param2 -= 1;
                             n = arry[n].param1-1;
+                        }
                         continue;
                     }
                     Geo.csedist(ly,lx,cy,cx, out dx, out cse);
@@ -2099,9 +2123,9 @@ public class ListBox : GLib.Object
                 {
                     lspd = ((double)p1)/SPEED_CONV;
                 }
-                if(typ ==  MSP.Action.POSHOLD_TIME && p2 > 0)
+                if(typ ==  MSP.Action.POSHOLD_TIME && arry[n].param2 > 0)
                 {
-                    lspd = ((double)p2)/SPEED_CONV;
+                    lspd = ((double)arry[n].param2)/SPEED_CONV;
                 }
             } while (n < nsize);
         }

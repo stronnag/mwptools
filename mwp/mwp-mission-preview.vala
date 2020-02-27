@@ -24,20 +24,31 @@ public struct HomePos
 
 public class MissionReplayThread : GLib.Object
 {
+    public enum Mode
+    {
+        ONCE = 0,
+        REPLAY = 1,
+        TEST = 2
+    }
+
     private const int MAXSLEEP = 20*1000; // 10 time speedup
     private const double MSPEED = 10.0;
     private const double MHERTZ = 5.0; // nominal reporting rate
     private const double NM2METRES = 1852.0;
+    public signal void mission_check_event(int p1, int p2, double cse, double d, double dx);
     public signal void mission_replay_event(double lat, double lon, double cse);
     public signal void mission_replay_done();
 
-    private bool is_mr = false;
     private bool running = false;
-    private bool warmup;
+    private bool warmup = false;
     private double speed = MSPEED;
     private double dist = 0.0;
+    private MissionItem[] mi;
+    private Mode mode;
 
-    private bool multijump = false;
+    public bool is_mr = false;
+    public bool multijump = true;
+
     private struct JumpCounter
     {
         int idx;
@@ -47,11 +58,6 @@ public class MissionReplayThread : GLib.Object
     public void stop()
     {
         running = false;
-    }
-
-    public void set_mr(bool value)
-    {
-        is_mr = value;
     }
 
     private void outloc (double lat, double lon, double cse)
@@ -132,7 +138,8 @@ public class MissionReplayThread : GLib.Object
             }
             else
             {
-                dist += (phtim * speed);
+                if(!is_mr)
+                    dist += (phtim * speed);
             }
         }
     }
@@ -149,9 +156,6 @@ public class MissionReplayThread : GLib.Object
         var cse = 0.0;
         var cx = 0.0;
         var cy = 0.0;
-#if PREVTEST
-    int jn = -1;
-#endif
 
         JumpCounter [] jump_counts = {};
 
@@ -185,9 +189,6 @@ public class MissionReplayThread : GLib.Object
             {
                 if (typ == MSP.Action.JUMP)
                 {
-#if PREVTEST
-                    jn = n + 1;
-#endif
                     if (mi[n].param2 == -1)
                         n = (int)mi[n].param1 - 1;
                     else
@@ -212,6 +213,7 @@ public class MissionReplayThread : GLib.Object
                             mi[n].param2 -= 1;
                             n = (int)mi[n].param1 - 1;
                         }
+
                     }
                     continue;
                 }
@@ -226,18 +228,10 @@ public class MissionReplayThread : GLib.Object
                 cx = mi[n].lon;
                 double d;
                 Geo.csedist(ly,lx,cy,cx, out d, out cse);
-#if PREVTEST
-                if(warmup)
-                {
-                    print("WP #%d", lastn+1);
-                    if (n < lastn) // JUMP
-                    {
-                        print(" - JUMP#%d", jn);
-                    }
-                    print(" - #%d %1.f\n", n+1,d*NM2METRES);
-                }
-#endif
                 var nc = fly_leg(ly,lx,cy,cx);
+                if(warmup && ((mode & Mode.REPLAY) == 0))
+                    mission_check_event(lastn, n, cse, d*NM2METRES, dist);
+
                 if (nc != -1)
                     cse = nc;
 
@@ -249,10 +243,7 @@ public class MissionReplayThread : GLib.Object
                         // really we need cse from start ... in case wp1 is PH
                     if  (typ == MSP.Action.POSHOLD_UNLIM)
                         phtim = -1;
-#if PREVTEST
-                    if(warmup)
-                        print("WP #%d - PH (%.1f)\n", n+1, phtim*speed);
-#endif
+
                     if (phtim == -1 || phtim > 5)
                         iterate_ph(cy, cx, cse, phtim, out cy, out cx);
                 }
@@ -274,46 +265,43 @@ public class MissionReplayThread : GLib.Object
 
 	if (running && ret && h.valid)
         {
-#if PREVTEST
-            if(warmup)
+            if(warmup && ((mode & Mode.REPLAY) == 0))
             {
                 double d;
-                Geo.csedist(cy,cx,h.hlat,h.hlon, out d, out cse);
-                print("WP #%d to home %1.f\n", lastn+1, d*NM2METRES);
+                Geo.csedist(cy,cx,h.hlat, h.hlon, out d, out cse);
+                mission_check_event(lastn, 255, cse, d*NM2METRES, dist);
             }
-#endif
             fly_leg(cy,cx,h.hlat,h.hlon);
             cy = h.hlat;
             cx = h.hlon;
         }
     }
 
-    public Thread<int> run_mission (Mission m, HomePos h)
+    public Thread<int> run_mission (Mission m, HomePos h, Mode _mode)
     {
         running = true;
-
-        multijump = (Environment.get_variable("INAV_MULTIJUMP") != null);
-
         var thr = new Thread<int> ("preview", () => {
                 bool [] passes = {true, false};
 
+                mode = _mode;
                 foreach (var p in passes)
                 {
                     warmup = p;
-                    var mi = m.get_ways();
+                    mi = m.get_ways();
                     dist = 0.0;
                     if(h.valid)
                     {
-                        fly_leg(h.hlat, h.hlon, mi[0].lat, mi[0].lon);
+                        var cse = fly_leg(h.hlat, h.hlon, mi[0].lat, mi[0].lon);
+                        if(warmup)
+                            mission_check_event(255, 0, cse, dist, dist);
                     }
                     if(running && mi.length > 1)
                         iterate_mission(mi, h);
                     if(p)
                     {
                         speed = (dist/3000) * MSPEED;
-#if PREVTEST
-                        print("Distance %.2fm at %.2fm/s\n", dist, speed);
-#endif
+                        if(mode == Mode.ONCE)
+                            break;
                     }
                 }
                 mission_replay_done();
@@ -321,20 +309,91 @@ public class MissionReplayThread : GLib.Object
             });
         return thr;
     }
+
 #if PREVTEST
+    public string fmtwp(int n)
+    {
+        string s;
+        var typ = mi[n].action;
+
+        if(n == 255)
+            s = "Home";
+        else
+        {
+            n += 1;
+            if(typ == MSP.Action.JUMP)
+                s = "(J%02d)".printf(n);
+            else if (typ == MSP.Action.POSHOLD_TIME)
+                s = "PH%02d".printf(n);
+            else
+                s = "WP%02d".printf(n);
+
+        }
+        return s;
+    }
+
+    private static bool nohome = false;
+    private static bool mr = false;
+    private static bool nmj = false;
+    private static bool checker = false;
+
+    const OptionEntry[] options = {
+        { "nohome", '0', 0, OptionArg.NONE, out nohome, "No home", null},
+        { "multi-rotor", 'm', 0, OptionArg.NONE, out mr, "mr mode", null},
+        { "no-multi-jump", 'n', 0, OptionArg.NONE, out nmj, "single jump", null},
+        { "check", 'c', 0, OptionArg.NONE, out checker, "check only", null},
+        {null}
+    };
+
     public static int main (string[] args)
     {
+
+        try {
+            var opt = new OptionContext(" - test args");
+            opt.set_help_enabled(true);
+            opt.add_main_entries(options, null);
+            opt.parse(ref args);
+        }
+        catch (OptionError e) {
+            stderr.printf("Error: %s\n", e.message);
+            stderr.printf("Run '%s --help' to see a full list of available "+
+                          "options\n", args[0]);
+            return 1;
+        }
+
         Mission ms;
-        HomePos h = { 50.8047104, -1.4942621, true };
+
         if ((ms = XmlIO.read_xml_file (args[1])) != null)
         {
+
+            HomePos h = { 50.8047104, -1.4942621, true };
+
+            h.valid = !nohome;
+
             var ml = new MainLoop();
             var mt = new MissionReplayThread();
-            if(args.length > 2)
-                mt.set_mr(true);
+
+            mt.is_mr = mr;
+            mt.multijump = !nmj;
 
             mt.mission_replay_event.connect((la,lo,co) => {
                     stderr.printf("pos %f %f %.1f\n", la, lo, co);
+                });
+
+            mt.mission_check_event.connect((p1,p2,co,d,dx) => {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(mt.fmtwp(p1));
+                    if(p1 > p2) // JUMPING
+                    {
+                        sb.append(" ");
+                        sb.append(mt.fmtwp(p1+1));
+                        sb.append(" ");
+                    }
+                    else
+                        sb.append(" - ");
+                    sb.append(mt.fmtwp(p2));
+                    sb.append_printf("\t%03.0f° %4.0fm %5.0fm\n", co, d, dx);
+                    stdout.puts(sb.str);
                 });
 
             mt.mission_replay_done.connect(() => {
@@ -343,8 +402,11 @@ public class MissionReplayThread : GLib.Object
 
             Thread<int> thr = null;
 
+            var mode = (checker) ?  MissionReplayThread.Mode.ONCE :
+                MissionReplayThread.Mode.TEST;
+
             Idle.add(() => {
-                    thr = mt.run_mission(ms, h);
+                    thr = mt.run_mission(ms, h, mode);
                     return false;
                 });
             ml.run();
