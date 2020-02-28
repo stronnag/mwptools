@@ -271,7 +271,10 @@ public class MWPMarkers : GLib.Object
     public void negate_jpos()
     {
         foreach(var p in jpath)
+        {
             p.remove_all();
+        }
+        jpath={};
     }
 
     private void update_rth (ListBox l)
@@ -614,8 +617,7 @@ public class MWPMarkers : GLib.Object
         path.remove_all();
         hpath.remove_all();
         ipath.remove_all();
-        foreach(var j in jpath)
-            j.remove_all();
+        negate_jpos();
         homep = rthp = ipos = null;
     }
     /****
