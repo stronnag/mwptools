@@ -1548,10 +1548,10 @@ public class ListBox : GLib.Object
             Gtk.main_iteration();
         }
         thr.join();
-        preview_item.sensitive=true;
         stop_preview_item.sensitive=false;
         Timeout.add_seconds(5,() => {
                 craft=null;
+                preview_item.sensitive=true;
                 return false;
             });
     }
