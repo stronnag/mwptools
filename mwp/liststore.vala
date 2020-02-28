@@ -72,6 +72,9 @@ public class ListBox : GLib.Object
     public int lastid {get; private set; default= 0;}
     public bool have_rth {get; private set; default= false;}
 
+        // signal handler id
+    private ulong mprv_cb_done = 0;
+
     private enum DELTAS
     {
         NONE=0,
@@ -1530,7 +1533,9 @@ public class ListBox : GLib.Object
                 craft.set_lat_lon(la,lo,co);
             });
 
-        mprv.mission_replay_done.connect(() => {
+        if(mprv_cb_done != 0)
+        {
+            mprv_cb_done = mprv.mission_replay_done.connect(() => {
                 if(thr != null)
                     thr.join();
                 preview_item.sensitive=true;
@@ -1540,6 +1545,7 @@ public class ListBox : GLib.Object
                         return false;
                     });
             });
+        }
 
         HomePos hp={0,0,false};
 
@@ -1955,6 +1961,7 @@ public class ListBox : GLib.Object
 
     public bool calc_mission_dist(out double d, out int lt, out int et,double extra=0.0)
     {
+
         JumpCounter [] jump_counts = {};
         Gtk.TreeIter iter;
         MissionItem[] arry = {};
@@ -2138,5 +2145,6 @@ public class ListBox : GLib.Object
         et = (int)esttim + 3 * nsize; // 3 * vertices to allow for slow down
         lastid = check_last();
         return true;
+
     }
 }

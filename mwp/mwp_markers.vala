@@ -32,21 +32,23 @@ public class MWPMarkers : GLib.Object
     public Champlain.Point posring = null;               // next WP indication point
     public Champlain.PathLayer hpath;                    // planned path from RTH WP to home
     public Champlain.PathLayer ipath;                    // path from WP initiate to WP1
-    public Champlain.PathLayer jpath;                    // path from JUMP initiate to target
+    private Champlain.PathLayer []jpath;                    // path from JUMP initiate to target
     private Champlain.PathLayer []rings;                 // range rings layers (per radius)
     private bool rth_land;
     private Champlain.MarkerLayer rdrmarkers;                // Mission Markers
     private Champlain.Label[] rplots;
+    private Champlain.View _v;
 
     public MWPMarkers(ListBox lb, Champlain.View view, string mkcol ="#ffffff60")
     {
+        _v = view;
         rth_land = false;
         markers = new Champlain.MarkerLayer();
         rlayer = new Champlain.MarkerLayer();
         path = new Champlain.PathLayer();
         hpath = new Champlain.PathLayer();
         ipath = new Champlain.PathLayer();
-        jpath = new Champlain.PathLayer();
+        jpath = {};
         rdrmarkers = new Champlain.MarkerLayer();
 
         rplots = {};
@@ -56,7 +58,7 @@ public class MWPMarkers : GLib.Object
         view.add_layer(path);
         view.add_layer(hpath);
         view.add_layer(ipath);
-        view.add_layer(jpath);
+
         view.add_layer(markers);
 
         List<uint> llist = new List<uint>();
@@ -74,10 +76,6 @@ public class MWPMarkers : GLib.Object
         ipath.set_stroke_color(rcol);
         ipath.set_dash(llist);
         ipath.set_stroke_width (8);
-
-        jpath.set_stroke_color(rcol);
-//        jpath.set_dash(llist);
-        jpath.set_stroke_width (8);
 
         var colour = Color.from_string(mkcol);
         posring = new Champlain.Point.full(80.0, colour);
@@ -272,7 +270,8 @@ public class MWPMarkers : GLib.Object
 
     public void negate_jpos()
     {
-        jpath.remove_all();
+        foreach(var p in jpath)
+            p.remove_all();
     }
 
     private void update_rth (ListBox l)
@@ -411,17 +410,26 @@ public class MWPMarkers : GLib.Object
 
             if(jwp != 0)
             {
-                jpath.add_node(marker);
+                Clutter.Color rcol = {0xff, 0x0, 0x0, 0x80};
+                var jpl = new Champlain.PathLayer();
+                _v.add_layer(jpl);
+                jpl.set_stroke_color(rcol);
+                jpl.set_stroke_width (8);
+                jpl.add_node(marker);
                 List<weak Champlain.Location> m= path.get_nodes();
                 if(m.length() > 0)
                 {
                     int i=1;
                     m.foreach((lp) => {
                             if(i == jwp)
-                                  jpath.add_node(lp);
+                            {
+                                jpl.add_node(lp);
+                            }
                             i++;
                         });
                 }
+                jwp = 0;
+                jpath += jpl;
             }
         }
 
@@ -606,7 +614,8 @@ public class MWPMarkers : GLib.Object
         path.remove_all();
         hpath.remove_all();
         ipath.remove_all();
-        jpath.remove_all();
+        foreach(var j in jpath)
+            j.remove_all();
         homep = rthp = ipos = null;
     }
     /****
