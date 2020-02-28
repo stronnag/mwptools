@@ -49,6 +49,13 @@ PKGS= --pkg gtk+-3.0 --pkg atk --pkg clutter-1.0 --pkg champlain-gtk-0.12 --pkg 
 
 LOPTS=-X -lm
 
+
+C = ../common
+TOPTS += -X -O2
+TOPTS += -D PREVTEST --vapidir $(C) -X -I$(C) --pkg mwpfuncs
+TCOMMON = $(C)/xmlio.vala mission.vala  $(C)/geocalc.vala $(C)/mspcmd.vala
+TPKGS =  --pkg gio-2.0 --pkg posix --pkg libxml-2.0
+
 #mwp-gresources.c: mwp-gresources.xml mwp.ui pixmaps/mwp_icon.svg
 #	glib-compile-resources --target=$@ --generate-source  mwp-gresources.xml
 
@@ -61,6 +68,9 @@ clean:
 
 local:
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
+
+mprevtest: mwp-mission-preview.vala
+	valac $(TOPTS) $(TPKGS) $(TCOMMON) -o $@  $^ $(LOPTS)
 
 install: $(APPS)
 	install -d $(prefix)/bin

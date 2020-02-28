@@ -26,7 +26,7 @@ public class MissionReplayThread : GLib.Object
 {
     public enum Mode
     {
-        ONCE = 0,
+        CHECK = 0,
         REPLAY = 1,
         TEST = 2
     }
@@ -48,6 +48,8 @@ public class MissionReplayThread : GLib.Object
 
     public bool is_mr = false;
     public bool multijump = true;
+
+    public bool indet { get; private set; default = false; }
 
     private struct JumpCounter
     {
@@ -190,7 +192,15 @@ public class MissionReplayThread : GLib.Object
                 if (typ == MSP.Action.JUMP)
                 {
                     if (mi[n].param2 == -1)
-                        n = (int)mi[n].param1 - 1;
+                    {
+                        indet = true;
+                        if (warmup)
+                        {
+                            n += 1;
+                        }
+                        else
+                            n = (int)mi[n].param1 - 1;
+                    }
                     else
                     {
                         if (mi[n].param2 == 0)
@@ -299,9 +309,12 @@ public class MissionReplayThread : GLib.Object
                         iterate_mission(mi, h);
                     if(p)
                     {
-                        speed = (dist/3000) * MSPEED;
-                        if(mode == Mode.ONCE)
+                        if(mode == Mode.CHECK)
                             break;
+                        if(indet)
+                            speed = MSPEED;
+                        else
+                            speed = (dist/3000) * MSPEED;
                     }
                 }
                 mission_replay_done();
@@ -402,7 +415,7 @@ public class MissionReplayThread : GLib.Object
 
             Thread<int> thr = null;
 
-            var mode = (checker) ?  MissionReplayThread.Mode.ONCE :
+            var mode = (checker) ?  MissionReplayThread.Mode.CHECK :
                 MissionReplayThread.Mode.TEST;
 
             Idle.add(() => {
