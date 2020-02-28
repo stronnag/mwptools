@@ -100,7 +100,7 @@ public class MissionReplayThread : GLib.Object
     private void iterate_ph (double cy, double cx, double brg,
                              int phtim, out double ry, out double rx)
     {
-        var radius = 35.0;
+        const double RADIUS = 35.0;
         ry = cy;
         rx = cx;
         if (phtim > 0)
@@ -118,22 +118,26 @@ public class MissionReplayThread : GLib.Object
                 }
                 else
                 {
-                    var rnm = radius / NM2METRES;
-                    Geo.posit(cy, cx, brg, rnm, out ry, out rx);
+                    const double DEGINC = 5;
+                    const double SECS_CIRC = 2*Math.PI*RADIUS/MSPEED;
+                    const double RNM = RADIUS / NM2METRES;
+                    Geo.posit(cy, cx, brg, RNM, out ry, out rx);
                     fly_leg(cy,cx, ry, rx);
                     var lx = rx;
                     var ly = ry;
-                    var deginc  = radius / 10;
-                    while (running && timer.elapsed (null) < simwait)
+                    var bcnt = 0;
+                    var maxbcnt = (int) (phtim*360/SECS_CIRC/DEGINC);
+                    while (running && bcnt < maxbcnt)
                     {
                         double c,d;
-                        brg += deginc;
+                        brg += DEGINC;
                         brg = brg % 360.0;
-                        Geo.posit(cy, cx, brg, rnm, out ry, out rx);
+                        Geo.posit(cy, cx, brg, RNM, out ry, out rx);
                         Geo.csedist(ly,lx,ry,rx, out d, out c);
                         lx = rx;
                         ly = ry;
                         outloc (ry, rx, c);
+                        bcnt++;
                     }
                 }
                 timer.stop ();
