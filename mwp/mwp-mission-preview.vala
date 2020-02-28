@@ -311,7 +311,8 @@ public class MissionReplayThread : GLib.Object
                     {
                         if(mode == Mode.CHECK)
                             break;
-                        if(indet)
+
+                        if (dist < 3000)
                             speed = MSPEED;
                         else
                             speed = (dist/3000) * MSPEED;
