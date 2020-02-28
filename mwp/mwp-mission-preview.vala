@@ -22,29 +22,29 @@ public struct HomePos
     bool valid;
 }
 
-public class MissionReplayThread : GLib.Object
+public class  MissionPreviewer : GLib.Object
 {
-    public enum Mode
+    public struct LegPreview
     {
-        CHECK = 0,
-        REPLAY = 1,
-        TEST = 2
+        int p1;
+        int p2;
+        double cse;
+        double legd;
+        double dist;
     }
 
     private const int MAXSLEEP = 20*1000; // 10 time speedup
     private const double MSPEED = 10.0;
     private const double MHERTZ = 5.0; // nominal reporting rate
     private const double NM2METRES = 1852.0;
-    public signal void mission_check_event(int p1, int p2, double cse, double d, double dx);
     public signal void mission_replay_event(double lat, double lon, double cse);
     public signal void mission_replay_done();
 
     private bool running = false;
-    private bool warmup = false;
-    private double speed = MSPEED;
-    private double dist = 0.0;
+    public bool warmup = false;
+    public  double speed = MSPEED;
+    public  double dist = 0.0;
     private MissionItem[] mi;
-    private Mode mode;
 
     public bool is_mr = false;
     public bool multijump = true;
@@ -55,6 +55,12 @@ public class MissionReplayThread : GLib.Object
     {
         int idx;
         int count;
+    }
+
+    public MissionPreviewer()
+    {
+        warmup = true;
+        running = true;
     }
 
     public void stop()
@@ -150,20 +156,33 @@ public class MissionReplayThread : GLib.Object
         }
     }
 
-    private void iterate_mission (MissionItem [] mi, HomePos h)
+    public LegPreview[] iterate_mission (HomePos h)
     {
 	var ret = false;
         var n = 0;
         var lastn = 0;
-        var nsize = mi.length;
         var lx = 0.0;
         var ly = 0.0;
         var valid = false;
         var cse = 0.0;
         var cx = 0.0;
         var cy = 0.0;
-
+        LegPreview[] plist={};
         JumpCounter [] jump_counts = {};
+
+        var nsize = mi.length;
+
+        if(warmup)
+        {
+            dist = 0.0;
+        }
+        else
+        {
+            if (dist < 3000)
+                speed = MSPEED;
+            else
+                speed = (dist/3000) * MSPEED;
+        }
 
         if(multijump)
         {
@@ -177,6 +196,15 @@ public class MissionReplayThread : GLib.Object
             }
         }
 
+        if(h.valid)
+        {
+            cse = fly_leg(h.hlat, h.hlon, mi[0].lat, mi[0].lon);
+            if(warmup)
+            {
+                LegPreview p = {-1, n, cse, dist, dist};
+                plist += p;
+            }
+        }
 
         for (;;)
         {
@@ -243,8 +271,12 @@ public class MissionReplayThread : GLib.Object
                 double d;
                 Geo.csedist(ly,lx,cy,cx, out d, out cse);
                 var nc = fly_leg(ly,lx,cy,cx);
-                if(warmup && ((mode & Mode.REPLAY) == 0))
-                    mission_check_event(lastn, n, cse, d*NM2METRES, dist);
+
+                if(warmup)
+                {
+                    LegPreview p = {lastn, n, cse, d*NM2METRES, dist};
+                    plist += p;
+                }
 
                 if (nc != -1)
                     cse = nc;
@@ -279,49 +311,36 @@ public class MissionReplayThread : GLib.Object
 
 	if (running && ret && h.valid)
         {
-            if(warmup && ((mode & Mode.REPLAY) == 0))
+            if(warmup)
             {
                 double d;
                 Geo.csedist(cy,cx,h.hlat, h.hlon, out d, out cse);
-                mission_check_event(lastn, 255, cse, d*NM2METRES, dist);
+                {
+                    LegPreview p = {lastn, -1, cse, d*NM2METRES, dist};
+                    plist += p;
+                }
             }
             fly_leg(cy,cx,h.hlat,h.hlon);
             cy = h.hlat;
             cx = h.hlon;
         }
+        return plist;
     }
 
-    public Thread<int> run_mission (Mission m, HomePos h, Mode _mode)
+    public  LegPreview[]  check_mission (Mission ms, HomePos h)
     {
-        running = true;
+        mi = ms.get_ways();
+        return iterate_mission(h);
+    }
+
+    public Thread<int> run_mission (Mission ms, HomePos h)
+    {
+        mi = ms.get_ways();
+        iterate_mission(h);
         var thr = new Thread<int> ("preview", () => {
-                bool [] passes = {true, false};
-
-                mode = _mode;
-                foreach (var p in passes)
-                {
-                    warmup = p;
-                    mi = m.get_ways();
-                    dist = 0.0;
-                    if(h.valid)
-                    {
-                        var cse = fly_leg(h.hlat, h.hlon, mi[0].lat, mi[0].lon);
-                        if(warmup)
-                            mission_check_event(255, 0, cse, dist, dist);
-                    }
-                    if(running && mi.length > 1)
-                        iterate_mission(mi, h);
-                    if(p)
-                    {
-                        if(mode == Mode.CHECK)
-                            break;
-
-                        if (dist < 3000)
-                            speed = MSPEED;
-                        else
-                            speed = (dist/3000) * MSPEED;
-                    }
-                }
+                warmup = false;
+                if(running)
+                    iterate_mission(h);
                 mission_replay_done();
                 return 0;
             });
@@ -334,7 +353,7 @@ public class MissionReplayThread : GLib.Object
         string s;
         var typ = mi[n].action;
 
-        if(n == 255)
+        if(n == -1)
             s = "Home";
         else
         {
@@ -363,6 +382,23 @@ public class MissionReplayThread : GLib.Object
         {null}
     };
 
+    private void show_leg(LegPreview p)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(fmtwp(p.p1));
+        if(p.p1 != -1 && p.p2 != -1 && p.p1 > p.p2) // JUMPING
+        {
+            sb.append(" ");
+            sb.append(fmtwp(p.p1+1));
+            sb.append(" ");
+        }
+        else
+            sb.append(" - ");
+        sb.append(fmtwp(p.p2));
+        sb.append_printf("\t%03.0f° %4.0fm %5.0fm\n", p.cse, p.legd, p.dist);
+        stdout.puts(sb.str);
+    }
+
     public static int main (string[] args)
     {
 
@@ -383,52 +419,44 @@ public class MissionReplayThread : GLib.Object
 
         if ((ms = XmlIO.read_xml_file (args[1])) != null)
         {
-
             HomePos h = { 50.8047104, -1.4942621, true };
 
             h.valid = !nohome;
 
-            var ml = new MainLoop();
-            var mt = new MissionReplayThread();
+            var mt = new MissionPreviewer();
 
             mt.is_mr = mr;
             mt.multijump = !nmj;
 
-            mt.mission_replay_event.connect((la,lo,co) => {
-                    stderr.printf("pos %f %f %.1f\n", la, lo, co);
-                });
+            if(checker)
+            {
+                var plist =  mt.check_mission(ms, h);
+                foreach(var p in plist)
+                {
+                    mt.show_leg(p);
+                }
+            }
+            else
+            {
 
-            mt.mission_check_event.connect((p1,p2,co,d,dx) => {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(mt.fmtwp(p1));
-                    if(p1 > p2) // JUMPING
-                    {
-                        sb.append(" ");
-                        sb.append(mt.fmtwp(p1+1));
-                        sb.append(" ");
-                    }
-                    else
-                        sb.append(" - ");
-                    sb.append(mt.fmtwp(p2));
-                    sb.append_printf("\t%03.0f° %4.0fm %5.0fm\n", co, d, dx);
-                    stdout.puts(sb.str);
-                });
+                Thread<int> thr = null;
+                var ml = new MainLoop();
 
-            mt.mission_replay_done.connect(() => {
-                    ml.quit();
-                });
+                mt.mission_replay_event.connect((la,lo,co) => {
+                        stderr.printf("pos %f %f %.1f\n", la, lo, co);
+                    });
 
-            Thread<int> thr = null;
+                mt.mission_replay_done.connect(() => {
+                        ml.quit();
+                    });
 
-            var mode = (checker) ?  MissionReplayThread.Mode.CHECK :
-                MissionReplayThread.Mode.TEST;
-
-            Idle.add(() => {
-                    thr = mt.run_mission(ms, h, mode);
-                    return false;
-                });
-            ml.run();
-            thr.join();
+                Idle.add(() => {
+                        thr = mt.run_mission(ms, h);
+                        return false;
+                    });
+                thr.join();
+                ml.run();
+            }
         }
         return 0;
     }

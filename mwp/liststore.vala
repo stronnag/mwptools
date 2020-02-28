@@ -67,7 +67,7 @@ public class ListBox : GLib.Object
     private Gtk.TreeIter miter;
     private bool miter_ok = false;
     private FakeHome fhome;
-    private  MissionReplayThread mprv;
+    private MissionPreviewer mprv;
 
     public int lastid {get; private set; default= 0;}
     public bool have_rth {get; private set; default= false;}
@@ -1512,10 +1512,11 @@ public class ListBox : GLib.Object
     private void preview_mission()
     {
         Thread<int> thr = null;
+        var done = false;
 
         var craft = new Craft(mp.view, Craft.Vehicles.PREVIEW, false);
 
-        mprv = new MissionReplayThread();
+        mprv = new MissionPreviewer();
 
         var mmr = mp.get_mrtype();
         if(mmr != 0)
@@ -1526,14 +1527,7 @@ public class ListBox : GLib.Object
             });
 
         mprv.mission_replay_done.connect(() => {
-                if(thr != null)
-                    thr.join();
-                preview_item.sensitive=true;
-                stop_preview_item.sensitive=false;
-                Timeout.add_seconds(5,() => {
-                        craft=null;
-                        return false;
-                    });
+                done = true;
             });
 
         HomePos hp={0,0,false};
@@ -1544,9 +1538,22 @@ public class ListBox : GLib.Object
             fhome.get_fake_home(out hp.hlat, out hp.hlon);
         }
 
-        mprv.run_mission(to_mission(), hp, MissionReplayThread.Mode.REPLAY);
         preview_item.sensitive=false;
         stop_preview_item.sensitive=true;
+
+        var ms = to_mission();
+        thr = mprv.run_mission(ms, hp);
+        while(!done)
+        {
+            Gtk.main_iteration();
+        }
+        thr.join();
+        preview_item.sensitive=true;
+        stop_preview_item.sensitive=false;
+        Timeout.add_seconds(5,() => {
+                craft=null;
+                return false;
+            });
     }
 
     private void stop_preview_mission()
@@ -1988,7 +1995,6 @@ public class ListBox : GLib.Object
         var esttim = 0.0;
         var tdx = 0.0;
         var lastn = 0;
-        var done = false;
         var np = 0;
         var llt = 0;
 
@@ -2002,46 +2008,33 @@ public class ListBox : GLib.Object
         var ways = ms.get_ways();
         if (ways.length > 1)
         {
-            Thread<int> thr = null;
-            mprv = new MissionReplayThread();
+            mprv = new MissionPreviewer();
             mprv.is_mr = true;
-
-            mprv.mission_check_event.connect((p1,p2,co,d,dx) => {
-                    var typ = ways[p2].action;
-                    if(typ ==  MSP.Action.WAYPOINT && ways[p2].param1 > 0)
-                    {
-                        lspd = ((double)ways[p2].param1)/SPEED_CONV;
-                    }
-                    else if(typ ==  MSP.Action.POSHOLD_TIME)
-                    {
-                        if(ways[p2].param2 > 0)
-                            lspd = ((double)ways[p2].param1)/SPEED_CONV;
-                        llt += ways[p2].param1;
-                    }
-                    else
-                    {
-                        lspd = ms_speed;
-                    }
-                    double ltim = d / lspd;
-                    esttim += ltim;
-                    update_cell(p1, p2, co, d, dx, ltim);
-                    tdx = dx;
-                    lastn = p2;
-                    np++;
-                });
-
-            mprv.mission_replay_done.connect(() => {
-                    if(thr != null)
-                        thr.join();
-                    done = true;
-                });
-
             HomePos hp={0,0,false};
-            mprv.run_mission(ms, hp, MissionReplayThread.Mode.CHECK);
-
-            while(!done)
+            var plist =  mprv.check_mission(ms, hp);
+            foreach(var p in plist)
             {
-                Gtk.main_iteration_do(true);
+                var typ = ways[p.p2].action;
+                if(typ ==  MSP.Action.WAYPOINT && ways[p.p2].param1 > 0)
+                {
+                    lspd = ((double)ways[p.p2].param1)/SPEED_CONV;
+                }
+                else if(typ ==  MSP.Action.POSHOLD_TIME)
+                {
+                    if(ways[p.p2].param2 > 0)
+                        lspd = ((double)ways[p.p2].param1)/SPEED_CONV;
+                    llt += ways[p.p2].param1;
+                }
+                else
+                {
+                    lspd = ms_speed;
+                }
+                double ltim = p.legd / lspd;
+                esttim += ltim;
+                update_cell(p.p1, p.p2, p.cse, p.legd, p.dist, ltim);
+                tdx = p.dist;
+                lastn = p.p2;
+                np++;
             }
             dist = tdx + extra;
             lt = llt;
