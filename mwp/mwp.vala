@@ -3322,7 +3322,7 @@ case 0:
             stderr.printf ("Could not register service\n");
         }
 
-        mss.__set_mission.connect((s) => {
+        mss.i__set_mission.connect((s) => {
                 Mission ms;
                 unichar c = s.get_char(0);
 
@@ -3336,7 +3336,7 @@ case 0:
                 return (ms != null) ? ms.npoints : 0;
             });
 
-        mss.__load_mission.connect((s) => {
+        mss.i__load_mission.connect((s) => {
                 Mission ms;
                 ms = open_mission_file(s);
                 if(ms != null)
@@ -3344,34 +3344,34 @@ case 0:
                 return (ms != null) ? ms.npoints : 0;
             });
 
-        mss.__load_mwp_log.connect((s) => {
+        mss.i__load_mwp_log.connect((s) => {
                 run_replay(s, true, Player.MWP);
             });
 
-        mss.__load_blackbox.connect((s) => {
+        mss.i__load_blackbox.connect((s) => {
                 replay_bbox(true, s);
             });
 
-        mss.__clear_mission.connect(() => {
+        mss.i__clear_mission.connect(() => {
                 ls.clear_mission();
                 NavStatus.have_rth = false;
                 NavStatus.nm_pts = 0;
             });
 
-        mss.__get_devices.connect(() => {
+        mss.i__get_devices.connect(() => {
                 int idx;
                 mss.device_names = list_devices();
                 idx =(msp.available) ? dev_entry.active : -1;
                 return idx;
             });
 
-        mss.__upload_mission.connect((e) => {
+        mss.i__upload_mission.connect((e) => {
                 var flag = WPDL.CALLBACK;
                 flag |= ((e) ? WPDL.SAVE_EEPROM : WPDL.VALIDATE);
                 upload_mission(flag);
             });
 
-        mss.__connect_device.connect((s) => {
+        mss.i__connect_device.connect((s) => {
                 int n = append_deventry(s);
                 if(n == -1)
                     return false;
