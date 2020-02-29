@@ -485,6 +485,7 @@ public class MWPlanner : Gtk.Application {
     private time_t last_dura;
     private time_t pausetm;
     private uint32 rtcsecs = 0;
+    private time_t phtim;
 
     private uint8 armed = 0;
     private uint8 dac = 0;
@@ -4967,14 +4968,27 @@ case 0:
                 Geo.csedist(GPSInfo.lat, GPSInfo.lon,
                             lat, lon, out dist, out cse);
                 StringBuilder sb = new StringBuilder();
-                dist *= 1852.0;
-                var icse = Math.lrint(cse) % 360;
-                sb.append_printf("<span size=\"%u\">%.1fm %ld°", fs, dist, icse);
-                if(GPSInfo.spd > 0.0 && dist > 1.0)
-                    sb.append_printf(" %ds", (int)(dist/GPSInfo.spd));
+                if( wp_resp[np].action ==  MSP.Action.POSHOLD_TIME &&
+                    NavStatus.n.nav_mode == 4)
+                {
+                    if(phtim == 0)
+                        phtim = duration;
+                    var cdown = wp_resp[np].param1 - (duration - phtim);
+                    sb.append_printf("<span size=\"%u\">PH for %lus", fs, cdown);
+                    sb.append("</span>");
+                }
                 else
-                    sb.append(" --s");
-                sb.append("</span>");
+                {
+                    phtim = 0;
+                    dist *= 1852.0;
+                    var icse = Math.lrint(cse) % 360;
+                    sb.append_printf("<span size=\"%u\">%.1fm %ld°", fs, dist, icse);
+                    if(GPSInfo.spd > 0.0 && dist > 1.0)
+                        sb.append_printf(" %ds", (int)(dist/GPSInfo.spd));
+                    else
+                        sb.append(" --s");
+                    sb.append("</span>");
+                }
                 map_show_dist(sb.str);
             }
         }
