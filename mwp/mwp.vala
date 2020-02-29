@@ -1999,6 +1999,11 @@ public class MWPlanner : Gtk.Application {
                 else return false;
             });
 
+        ag.connect('x', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+                ls.toggle_mission_preview_state();
+                return true;
+            });
+
         ag.connect(Gdk.Key.Up, Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
                 key_recentre(Gdk.Key.Up);
                 return true;

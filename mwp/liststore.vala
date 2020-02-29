@@ -1561,6 +1561,14 @@ public class ListBox : GLib.Object
         mprv.stop();
     }
 
+    public void toggle_mission_preview_state()
+    {
+        if(preview_item.sensitive)
+            preview_mission();
+        else if (stop_preview_item.sensitive)
+            stop_preview_mission();
+    }
+
     private void replicate_mission()
     {
         uint number = 0;
