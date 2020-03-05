@@ -628,6 +628,7 @@ public class MWPlanner : Gtk.Application {
         hasV2STATUS = 0x010801,
         hasJUMP = 0x020500,
         hasPHTIME = 0x020500,
+        hasLAND = 0x020500,
     }
 
     public enum WPS
@@ -636,6 +637,7 @@ public class MWPlanner : Gtk.Application {
         isFW = 2,
         hasJUMP = 4,
         hasPHT = 8,
+        hasLAND = 16,
     }
 
     public enum SERSTATE
@@ -7449,6 +7451,8 @@ case 0:
 
         if(vi.fc_vers >= FCVERS.hasPHTIME)
             wps_flags |= WPS.hasPHT;
+        if(vi.fc_vers >= FCVERS.hasLAND)
+            wps_flags |= WPS.hasLAND;
         return wps_flags;
     }
 

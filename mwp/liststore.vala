@@ -267,7 +267,7 @@ public class ListBox : GLib.Object
                 default:
                     lastid++;
                     no = lastid.to_string();
-                    if (m.action == MSP.Action.WAYPOINT)
+                    if (m.action == MSP.Action.WAYPOINT || m.action == MSP.Action.LAND)
                         m1 = ((double)m.param1 / SPEED_CONV);
                     else
                         m1 = ((double)m.param1);
@@ -317,7 +317,7 @@ public class ListBox : GLib.Object
                 w.altitude = (int32)(((int)cell) * ALT_CONV);
                 list_model.get_value (iter, WY_Columns.INT1, out cell);
                 var tint = (double)cell;
-                if(w.action == MSP.Action.WAYPOINT)
+                if(w.action == MSP.Action.WAYPOINT || w.action == MSP.Action.LAND)
                     w.p1 = (int16)(tint*SPEED_CONV);
                 else
                     w.p1 = (int16)tint;
@@ -346,17 +346,24 @@ public class ListBox : GLib.Object
                                 w.p1 = 0;
                             }
                             break;
-                        case MSP.Action.POSHOLD_UNLIM:
                         case MSP.Action.LAND:
+                            if((flags & MWPlanner.WPS.hasLAND) != MWPlanner.WPS.hasLAND)
+                            {
+                            w.action =  MSP.Action.WAYPOINT;
+                            w.p2 = w.p3 = 0;
+                            dg++;
+                            }
+                            break;
+
+                        case MSP.Action.POSHOLD_UNLIM:
                             MWPLog.message("Downgrade %s to WP (need FW >= 2.5.0)\n", typ.to_string());
                             w.action =  MSP.Action.WAYPOINT;
-                            w.p1 = 0;
                             w.p2 = w.p3 = 0;
                             dg++;
                             break;
                         case MSP.Action.SET_POI:
                         case MSP.Action.SET_HEAD:
-                            MWPLog.message("Remove WP %s (need FW >= 2.5.0)\n", typ.to_string());
+                            MWPLog.message("Remove WP %s (need FW >= 2.x.0)\n", typ.to_string());
                             continue;
                         case MSP.Action.JUMP:
                             if((flags & MWPlanner.WPS.hasJUMP) != MWPlanner.WPS.hasJUMP)
@@ -442,7 +449,7 @@ public class ListBox : GLib.Object
                 list_model.get_value (iter, WY_Columns.ALT, out cell);
                 m.alt = (int)cell;
                 list_model.get_value (iter, WY_Columns.INT1, out cell);
-                if(typ == MSP.Action.WAYPOINT)
+                if(typ == MSP.Action.WAYPOINT || typ == MSP.Action.LAND)
                     m.param1 = (int)(SPEED_CONV*(double)cell);
                 else
                     m.param1 = (int)((double)cell);
@@ -817,7 +824,7 @@ public class ListBox : GLib.Object
                 model.get_value(iter, WY_Columns.INT1, out v);
                 model.get_value (iter, WY_Columns.ACTION, out icell);
                 var typ = (MSP.Action)icell;
-                if (typ == MSP.Action.WAYPOINT)
+                if (typ == MSP.Action.WAYPOINT || typ == MSP.Action.LAND)
                 {
                     double val = (double)v;
                     s = "%.1f".printf(Units.speed(val));
@@ -1034,7 +1041,7 @@ public class ListBox : GLib.Object
                 if (typ == MSP.Action.RTH)
                     as_int = false; // force redraw
 
-                if (typ == MSP.Action.WAYPOINT)
+                if (typ == MSP.Action.WAYPOINT || typ == MSP.Action.LAND)
                     d = InputParser.get_scaled_real(new_text,"s");
                 else
                     d = DStr.strtod(new_text,null);
@@ -1187,10 +1194,10 @@ public class ListBox : GLib.Object
             switch (act)
             {
                 case MSP.Action.WAYPOINT:
+                case MSP.Action.LAND:
                     ctitles = {"Lat","Lon","Alt","Spd","",""};
                     break;
                 case MSP.Action.POSHOLD_UNLIM:
-                case MSP.Action.LAND:
                     ctitles = {"Lat","Lon","Alt","","",""};
                     break;
                 case MSP.Action.POSHOLD_TIME:
@@ -2023,7 +2030,7 @@ public class ListBox : GLib.Object
             foreach(var p in plist)
             {
                 var typ = ways[p.p2].action;
-                if(typ ==  MSP.Action.WAYPOINT && ways[p.p2].param1 > 0)
+                if((typ ==  MSP.Action.WAYPOINT || typ == MSP.Action.LAND) && ways[p.p2].param1 > 0)
                 {
                     lspd = ((double)ways[p.p2].param1)/SPEED_CONV;
                 }
