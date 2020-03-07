@@ -3896,7 +3896,7 @@ case 0:
     {
         if(craft == null)
         {
-            if(sport_device != null && dmrtype != 0 && vi.mrtype == 0)
+            if((sport_device != null || nopoll) && dmrtype != 0 && vi.mrtype == 0)
                 vi.mrtype = (uint8)dmrtype;
             MWPLog.message("init icon %d\n",  vi.mrtype);
             craft = new Craft(view, vi.mrtype, !no_trail,

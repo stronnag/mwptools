@@ -85,14 +85,14 @@ func parse_device() DevDescription {
 func main() {
 
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage of ltm-player [options] [files ...]\n")
+		fmt.Fprintf(os.Stderr, "Usage of ltm-player [options] file\n")
 		flag.PrintDefaults()
 	}
 
 	flag.Parse()
 	files := flag.Args()
-	if len(files) == 0 {
-		log.Fatal("No file given")
+	if len(files) != 1 {
+		log.Fatal("One file required\n")
 	}
 	devdesc := check_device()
 	s := LTMInit(devdesc,files[0])
