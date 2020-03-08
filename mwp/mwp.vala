@@ -3475,13 +3475,28 @@ case 0:
         {
             GLib.Value cell;
             m.get_value (iter, 0, out cell);
-            if((string)cell == s)
+            string cs = (string)cell;
+
+            bool has_s = cs.contains(" ");
+
+            if((has_s && ((string)cell).has_prefix(s)) || ((string)cell == s))
             {
                 n = i;
                 break;
             }
         }
         return n;
+    }
+
+    private void check_pref_dev()
+    {
+        var dstr = Environment.get_variable("MWP_PREF_DEVICE");
+        if (dstr != null)
+        {
+            var npref = find_deventry(dstr);
+            if(npref != -1)
+                dev_entry.active = npref;
+        }
     }
 
     private int append_deventry(string s)
@@ -3495,6 +3510,9 @@ case 0:
             dev_entry.append_text(s);
             n = 0;
         }
+
+        check_pref_dev();
+
         if(dev_entry.active == -1)
             dev_entry.active = 0;
         return n;
