@@ -6,7 +6,20 @@ ARGF.each do |l|
   if l.match(/^wp [0-9]/)
     a = l.chomp.split(' ')
     unless a[2].to_i.zero?
-      act = (a[2] == '4') ? "RTH" : "WAYPOINT"
+      act = case a[2]
+	    when '3'
+	      'POSHOLD_TIME'
+	    when '4'
+	      'RTH'
+	    when '6'
+	      'JUMP'
+	    when '8'
+	      'LAND'
+	    else
+	      'WAYPOINT'
+	    end
+
+
       wps << { :no => 1 + a[1].to_i, :act => act, :lat => a[3].to_i/ 1e7,
 	:lon => a[4].to_i/ 1e7, :altm => ((a[5].to_i + 50)/100).to_i,
 	:p1 => a[6].to_i}

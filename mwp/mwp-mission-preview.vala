@@ -51,12 +51,6 @@ public class  MissionPreviewer : GLib.Object
 
     public bool indet { get; private set; default = false; }
 
-    private struct JumpCounter
-    {
-        int idx;
-        int count;
-    }
-
     public MissionPreviewer()
     {
         warmup = true;
@@ -156,6 +150,26 @@ public class  MissionPreviewer : GLib.Object
         }
     }
 
+    private void setupJumpCounters()
+    {
+        for (var i = 0; i < mi.length; i++)
+            if(mi[i].action == MSP.Action.JUMP)
+                mi[i].param3 = mi[i].param2;
+    }
+
+    private void clearJumpCounters()
+    {
+        for (var i = 0; i < mi.length; i++)
+            if(mi[i].action == MSP.Action.JUMP)
+                mi[i].param3 = 0;
+    }
+
+    private void resetJumpCounter(int n)
+    {
+        if(multijump)
+            mi[n].param3 = mi[n].param2;
+    }
+
     public LegPreview[] iterate_mission (HomePos h)
     {
 	var ret = false;
@@ -168,7 +182,6 @@ public class  MissionPreviewer : GLib.Object
         var cx = 0.0;
         var cy = 0.0;
         LegPreview[] plist={};
-        JumpCounter [] jump_counts = {};
 
         var nsize = mi.length;
 
@@ -184,17 +197,7 @@ public class  MissionPreviewer : GLib.Object
                 speed = (dist/3000) * MSPEED;
         }
 
-        if(multijump)
-        {
-            for (var i = 0; i < mi.length; i++)
-            {
-                if(mi[i].action == MSP.Action.JUMP)
-                {
-                    JumpCounter jc = {i, mi[i].param2};
-                    jump_counts += jc;
-                }
-            }
-        }
+        setupJumpCounters();
 
         if(h.valid)
         {
@@ -223,7 +226,7 @@ public class  MissionPreviewer : GLib.Object
             {
                 if (typ == MSP.Action.JUMP)
                 {
-                    if (mi[n].param2 == -1)
+                    if (mi[n].param3 == -1)
                     {
                         indet = true;
                         if (warmup)
@@ -235,24 +238,14 @@ public class  MissionPreviewer : GLib.Object
                     }
                     else
                     {
-                        if (mi[n].param2 == 0)
+                        if (mi[n].param3 == 0)
                         {
-                            if(multijump)
-                            {
-                                foreach(var jc in jump_counts)
-                                {
-                                    if(n == jc.idx)
-                                    {
-                                        mi[n].param2 = jc.count;
-                                        break;
-                                    }
-                                }
-                            }
+                            resetJumpCounter(n);
                             n += 1;
                         }
                         else
                         {
-                            mi[n].param2 -= 1;
+                            mi[n].param3 -= 1;
                             n = (int)mi[n].param1 - 1;
                         }
 
@@ -324,6 +317,8 @@ public class  MissionPreviewer : GLib.Object
             cy = h.hlat;
             cx = h.hlon;
         }
+
+        clearJumpCounters();
         return plist;
     }
 
@@ -395,7 +390,7 @@ public class  MissionPreviewer : GLib.Object
         else
             sb.append(" - ");
         sb.append(fmtwp(p.p2));
-        sb.append_printf("\t%03.0f° %4.0fm %5.0fm\n", p.cse, p.legd, p.dist);
+        sb.append_printf("\t%03.0f°\t%4.0fm\t%5.0fm\n", p.cse, p.legd, p.dist);
         stdout.puts(sb.str);
     }
 
@@ -431,6 +426,7 @@ public class  MissionPreviewer : GLib.Object
             if(checker)
             {
                 var plist =  mt.check_mission(ms, h);
+                stdout.puts("WP / next wp\tCourse\t Dist\t Total\n");
                 foreach(var p in plist)
                 {
                     mt.show_leg(p);
