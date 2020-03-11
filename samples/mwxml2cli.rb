@@ -1,7 +1,16 @@
 #!/usr/bin/ruby
 require 'xmlsimple'
+require 'optparse'
 
-cli=(ENV['DUMP'] == nil)
+cli = true
+ARGV.options do |opt|
+  opt.on('-p','--pretty'){cli=false}
+  begin
+    opt.parse!
+  rescue
+    puts opt ; exit
+  end
+end
 
 m=XmlSimple.xml_in((ARGV[0] || STDIN), {'ForceArray' => false, 'KeepRoot' => false})
 last = m['missionitem'].size - 1
