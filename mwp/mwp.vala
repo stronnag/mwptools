@@ -785,6 +785,7 @@ public class MWPlanner : Gtk.Application {
         CRUISE =32
     }
 
+        // ./src/main/fc/runtime_config.h
     private enum ARMFLAGS
     {
         ARMED                                           = (1 << 2),
@@ -810,7 +811,8 @@ public class MWPlanner : Gtk.Application {
         ARMING_DISABLED_SERVO_AUTOTRIM                  = (1 << 24),
         ARMING_DISABLED_OOM                             = (1 << 25),
         ARMING_DISABLED_INVALID_SETTING                 = (1 << 26),
-        ARMING_DISABLED_OTHER                           = (1 << 27)
+        ARMING_DISABLED_PWM_OUTPUT                      = (1 << 27),
+        ARMING_DISABLED_OTHER                           = (1 << 28)
     }
 
     private string? [] arm_fails =
@@ -820,7 +822,7 @@ public class MWPlanner : Gtk.Application {
         "Navigation unsafe", "Compass cal", "Acc cal", "Arm switch", "H/W fail",
         "Box failsafe", "Box killswitch", "RC Link", "Throttle", "CLI",
         "CMS Menu", "OSD Menu", "Roll/Pitch", "Servo Autotrim", "Out of memory",
-        "Settings", "Other"
+        "Settings", "PWM Output", "Other"
     };
 
     private enum SENSOR_STATES
