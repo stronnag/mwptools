@@ -503,6 +503,7 @@ public class ListBox : GLib.Object
         var action = MSP.lookup_name(typ);
         list_model.get_value (iter, WY_Columns.ACTION, out val);
         var old = (MSP.Action)val;
+
         if (old != action)
         {
             if(action != MSP.Action.RTH)
@@ -520,8 +521,8 @@ public class ListBox : GLib.Object
                     list_model.set_value (iter, WY_Columns.INT2, 0);
                     break;
                 case MSP.Action.POSHOLD_TIME:
-                    var ltime = MWPlanner.conf.loiter;
-                    list_model.set_value (iter, WY_Columns.INT1, (double)ltime);
+                    list_model.set_value (iter, WY_Columns.INT1, 0.0);
+                    list_model.set_value (iter, WY_Columns.INT2, 0);
                     break;
                 case MSP.Action.RTH:
                     if(old == MSP.Action.POSHOLD_UNLIM ||
@@ -556,9 +557,7 @@ public class ListBox : GLib.Object
                     list_model.set_value (iter, WY_Columns.ALT, 0);
                     break;
                 default:
-                    if(action != MSP.Action.WAYPOINT)
-                        list_model.set_value (iter, WY_Columns.INT1, 0.0);
-                    else
+                    if(action == MSP.Action.WAYPOINT)
                     {
                         Value cell;
                         list_model.get_value (iter, WY_Columns.LAT, out cell);
@@ -572,12 +571,12 @@ public class ListBox : GLib.Object
                             list_model.set_value (iter, WY_Columns.LON,
                                                   mp.view.get_center_longitude());
                     }
-//                    list_model.set_value (iter, WY_Columns.INT2, 0);
+                    list_model.set_value (iter, WY_Columns.INT1, 0.0);
+                    list_model.set_value (iter, WY_Columns.INT2, 0);
                     list_model.set_value (iter, WY_Columns.INT3, 0);
                     break;
             }
             renumber_steps(list_model);
-
         }
     }
 
@@ -1140,6 +1139,7 @@ public class ListBox : GLib.Object
             }
         }
         mp.markers.add_list_store(this);
+        update_selected_cols();
         calc_mission();
     }
 
