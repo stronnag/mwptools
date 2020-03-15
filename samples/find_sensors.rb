@@ -31,7 +31,9 @@ puts "| Target | Gyro | Acc  | Baro | Mag  | Optical Flow | Rangefinder | Target
 puts "| ------ | ---- | ---- | ---- | ---- | ------------ | ----------- | ------ |"
 
 Find.find('.').select { |f| f =~ /target\.h$/ }.each do |fn|
+  next unless fn.match(/src\/main\/target/)
   target=File.dirname(fn).gsub('./','')
+  STDERR.puts "#{target} #{fn}\n"
   devs = find_sensors(fn)
   cols = [target]
   mks = Dir.glob "#{target}/*.mk"
