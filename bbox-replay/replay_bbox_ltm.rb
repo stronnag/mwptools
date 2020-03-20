@@ -508,7 +508,8 @@ def encode_stats r,inavers,armed=1
 	    :nav_state_waypoint_pre_action,
 	    :nav_state_waypoint_in_progress,
 	    :nav_state_waypoint_reached,
-	    :nav_state_waypoint_next
+	    :nav_state_waypoint_next,
+	    :nav_state_waypoint_hold_time
 	  10
 	when :nav_state_cruise_2d_initialize,
 	    :nav_state_cruise_2d_in_progress,
@@ -634,7 +635,8 @@ def encode_nav r,inavers
 		:nav_state_waypoint_reached,
 		:nav_state_waypoint_next,
 		:nav_state_waypoint_finished,
-		:nav_state_waypoint_rth_land
+		:nav_state_waypoint_rth_land,
+		:nav_state_waypoint_hold_time
 	      3
 	    else
 	      0
@@ -674,7 +676,8 @@ def encode_nav r,inavers
 		:nav_state_waypoint_pre_action,
 		:nav_state_waypoint_in_progress,
 		:nav_state_waypoint_reached,
-		:nav_state_waypoint_next
+		:nav_state_waypoint_next,
+		:nav_state_waypoint_hold_time
 	      5
 	    else
 	      0
