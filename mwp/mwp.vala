@@ -490,6 +490,7 @@ public class MWPlanner : Gtk.Application {
     private uint8 armed = 0;
     private uint8 dac = 0;
     private bool gpsfix;
+    private bool ltm_force_sats = false;
 
     private Thread<int> thr;
     private bool xlog;
@@ -1241,6 +1242,7 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
+        ltm_force_sats = (Environment.get_variable("MWP_IGNORE_SATS") != null);
         var fstr = Environment.get_variable("MWP_POS_OFFSET");
         if(fstr != null)
         {
@@ -6396,7 +6398,7 @@ case 0:
                     {
                         if(have_home)
                         {
-                            if(_nsats >= msats)
+                            if(_nsats >= msats || ltm_force_sats)
                             {
                                 if(pos_valid(GPSInfo.lat, GPSInfo.lon))
                                 {
@@ -6459,7 +6461,7 @@ case 0:
                         }
                     }
 
-                    if(craft != null && fix > 0 && _nsats >= msats)
+                    if(craft != null && fix > 0 && (_nsats >= msats || ltm_force_sats))
                     {
                         update_pos_info();
                     }
