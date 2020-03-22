@@ -149,7 +149,12 @@ pub fn log_summary(fname: &str, idx: u8, dumph: bool, vname: &str) -> Result<(),
 
     let headers = rdr.headers()?;
     if dumph == true {
-        println!("{:?}", headers);
+        //        println!("{:?}", headers);
+        println!();
+        for field in headers.iter() {
+            println!(" \"{}\"", field);
+        }
+        println!();
     } else {
         let mut have_origin = false;
         let mut have_baro = false;

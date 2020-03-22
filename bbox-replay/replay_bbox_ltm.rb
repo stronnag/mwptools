@@ -1014,10 +1014,15 @@ IO.popen(cmd,'rt') do |pipe|
     if lindex == 0
       hdrs = row
       if dumph
+	have_ap = false
 	begin
 	  require 'awesome_print'
-	  ap hdrs
+	  have_ap = true
 	rescue LoadError
+	end
+	if have_ap
+	  ap hdrs
+	else
 	  puts hdrs.inspect
 	end
 	exit

@@ -16,7 +16,7 @@ fn main()  {
     let program = args[0].clone();
 
     let mut opts = Options::new();
-    opts.optflag("d", "dump", "Dumps headers and exits" );
+    opts.optflag("d", "dump-headers", "Dumps headers and exits" );
     opts.optopt("i", "index", "Uses log index", "IDX");
     opts.optflag("h", "help", "print this help menu");
 
