@@ -4639,11 +4639,11 @@ case 0:
                     deserialise_u16(raw+11, out loadpct);
                     profile = raw[10];
                 }
-                else
+                else // msp2_inav_status
                 {
                     deserialise_u32(raw+9, out arm_flags);
                     deserialise_u16(raw+6, out loadpct);
-                    profile = raw[8];
+                    profile = (raw[8] & 0xf);
                 }
 
                 if(arm_flags != xarm_flags)
