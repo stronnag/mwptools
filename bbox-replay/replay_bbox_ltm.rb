@@ -1014,8 +1014,12 @@ IO.popen(cmd,'rt') do |pipe|
     if lindex == 0
       hdrs = row
       if dumph
-	require 'ap'
-	ap hdrs
+	begin
+	  require 'awesome_print'
+	  ap hdrs
+	rescue LoadError
+	  puts hdrs.inspect
+	end
 	exit
       end
       abort 'Not a useful INAV log' if hdrs[:gps_coord0].nil?
