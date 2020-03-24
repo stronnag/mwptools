@@ -47,7 +47,6 @@ public class  MissionPreviewer : GLib.Object
     private MissionItem[] mi;
 
     public bool is_mr = false;
-    public bool multijump = true;
 
     public bool indet { get; private set; default = false; }
 
@@ -166,8 +165,7 @@ public class  MissionPreviewer : GLib.Object
 
     private void resetJumpCounter(int n)
     {
-        if(multijump)
-            mi[n].param3 = mi[n].param2;
+        mi[n].param3 = mi[n].param2;
     }
 
     public LegPreview[] iterate_mission (HomePos h)
@@ -366,13 +364,11 @@ public class  MissionPreviewer : GLib.Object
 
     private static bool nohome = false;
     private static bool mr = false;
-    private static bool nmj = false;
     private static bool checker = false;
 
     const OptionEntry[] options = {
         { "nohome", '0', 0, OptionArg.NONE, out nohome, "No home", null},
         { "multi-rotor", 'm', 0, OptionArg.NONE, out mr, "mr mode", null},
-        { "no-multi-jump", 'n', 0, OptionArg.NONE, out nmj, "single jump", null},
         { "check", 'c', 0, OptionArg.NONE, out checker, "check only", null},
         {null}
     };
@@ -421,7 +417,6 @@ public class  MissionPreviewer : GLib.Object
             var mt = new MissionPreviewer();
 
             mt.is_mr = mr;
-            mt.multijump = !nmj;
 
             if(checker)
             {
