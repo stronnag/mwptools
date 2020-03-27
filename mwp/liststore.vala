@@ -1287,7 +1287,7 @@ public class ListBox : GLib.Object
 
     public void menu_insert()
     {
-        insert_item(MSP.Action.UNASSIGNED,
+        insert_item(MSP.Action.WAYPOINT,
                     mp.view.get_center_latitude(),
                     mp.view.get_center_longitude());
         calc_mission();
