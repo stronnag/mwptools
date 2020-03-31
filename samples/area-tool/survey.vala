@@ -197,6 +197,9 @@ public class AreaPlanner : GLib.Object {
         conf.read_settings();
         builder.connect_signals (null);
 
+        XmlIO.uc = conf.ucmissiontags;
+        XmlIO.generator = "mwp-area-planner";
+
         window = builder.get_object ("window1") as Gtk.ApplicationWindow;
         window.destroy.connect (Gtk.main_quit);
         var mm = builder.get_object ("menubar") as MenuModel;
@@ -327,7 +330,7 @@ public class AreaPlanner : GLib.Object {
             });
 
         s_publish.clicked.connect(() => {
-                var s = XmlIO.to_xml_string(ms, false, "mwp-area-planner");
+                var s = XmlIO.to_xml_string(ms, false);
                 try {
                     proxy.set_mission(s);
                 } catch (Error e) {
@@ -457,7 +460,6 @@ public class AreaPlanner : GLib.Object {
             sb.append(".mission");
             fn = sb.str;
         }
-        XmlIO.uc = conf.ucmissiontags;
         XmlIO.to_xml_file(fn, ms);
     }
 

@@ -3,6 +3,7 @@ using Xml;
 public class XmlIO : Object
 {
     public static bool uc = false;
+    public static string generator="mwp";
 
     public static Mission? read_xml_file(string path)
     {
@@ -212,7 +213,7 @@ public class XmlIO : Object
 
     }
 
-    public static string to_xml_string(Mission ms, bool pretty=true, string generator="mwp")
+    public static string to_xml_string(Mission ms, bool pretty=true)
     {
         Parser.init ();
         Xml.Doc* doc = new Xml.Doc ("1.0");

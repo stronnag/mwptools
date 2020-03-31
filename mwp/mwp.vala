@@ -1124,6 +1124,8 @@ public class MWPlanner : Gtk.Application {
             x_kmz = appsts[4];
         }
 
+        XmlIO.uc = conf.ucmissiontags;
+
         pos_is_centre = conf.pos_is_centre;
 
         mmap = new ModelMap();
@@ -8134,7 +8136,6 @@ case 0:
         else
         {
             var m = get_mission_data();
-            XmlIO.uc = conf.ucmissiontags;
             XmlIO.to_xml_file(last_file, m);
             update_title_from_file(last_file);
         }
@@ -8255,10 +8256,7 @@ case 0:
 
         var m = get_mission_data();
         if (ftype == 'm')
-        {
-            XmlIO.uc = conf.ucmissiontags;
             XmlIO.to_xml_file(fn, m);
-        }
         else
             JsonIO.to_json_file(fn, m);
     }
