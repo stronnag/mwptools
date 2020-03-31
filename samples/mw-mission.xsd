@@ -4,16 +4,16 @@
   <!-- XSchema for MW / iNav missions
        e.g. xmllint -​-format -​-schema mw-mission.xsd example.mission
   -->
-  <xs:element name="MISSION">
+  <xs:element name="mission">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="VERSION"/>
+        <xs:element ref="version"/>
         <xs:element ref="mwp"  minOccurs="0"/>
-        <xs:element maxOccurs="unbounded" ref="MISSIONITEM"/>
+        <xs:element maxOccurs="unbounded" ref="missionitem"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="VERSION">
+  <xs:element name="version">
     <xs:complexType>
       <xs:attribute name="value" use="required"/>
     </xs:complexType>
@@ -27,6 +27,7 @@
       <xs:attribute name="cx" use="required" type="xs:decimal"/>
       <xs:attribute name="cy" use="required" type="xs:decimal"/>
       <xs:attribute name="save-date" use="required"/>
+      <xs:attribute name="generator" type="xs:string"/>
       <xs:attribute name="zoom" use="required">
 	<xs:simpleType>
           <xs:restriction base="xs:integer">
@@ -71,7 +72,7 @@
       <xs:attribute name="value" use="required" type="xs:integer"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="MISSIONITEM">
+  <xs:element name="missionitem">
     <xs:complexType>
       <xs:attribute name="action" use="required">
 	<xs:simpleType>
@@ -120,4 +121,9 @@
       <xs:attribute name="parameter3" use="required" type="xs:integer"/>
     </xs:complexType>
   </xs:element>
+
+  <xs:element name="MISSION" substitutionGroup="mission"/>
+  <xs:element name="MISSIONITEM" substitutionGroup="missionitem"/>
+  <xs:element name="VERSION" substitutionGroup="version"/>
+
 </xs:schema>
