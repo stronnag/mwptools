@@ -552,6 +552,11 @@
       <summary>Use a fixed font for Flight View</summary>
       <description>Use a fixed font for Flight View</description>
     </key>
+    <key type="b" name="uc-mission-tags">
+      <default>false</default>
+      <summary>Upper case mission XML tags</summary>
+      <description>If true, MISSION, VERSION and MISSIONITEM tags are upper case (for interoperability with legacy Android applications)</description>
+    </key>
 
     <!-- key name="radar-device" type="s">
       <default>""</default>

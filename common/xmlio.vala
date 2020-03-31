@@ -2,6 +2,8 @@ using Xml;
 
 public class XmlIO : Object
 {
+    public static bool uc = false;
+
     public static Mission? read_xml_file(string path)
     {
 
@@ -210,15 +212,18 @@ public class XmlIO : Object
 
     }
 
-    public static string to_xml_string(Mission ms, bool pretty=true,
-                                       string generator="mwp")
+    public static string to_xml_string(Mission ms, bool pretty=true, string generator="mwp")
     {
         Parser.init ();
         Xml.Doc* doc = new Xml.Doc ("1.0");
 
         Xml.Ns* ns = null;
 
-        Xml.Node* root = new Xml.Node (ns, "mission");
+        string mstr = "mission";
+        if (uc)
+            mstr = mstr.ascii_up();
+        Xml.Node* root = new Xml.Node (ns, mstr);
+
         doc->set_root_element (root);
 
         Xml.Node* comment = new Xml.Node.comment ("mw planner 0.01");
@@ -228,7 +233,10 @@ public class XmlIO : Object
 
         if (ms.version != null)
         {
-            subnode = root->new_text_child (ns, "version", "");
+            mstr = "version";
+            if (uc)
+                mstr = mstr.ascii_up();
+            subnode = root->new_text_child (ns, mstr, "");
             subnode->new_prop ("value", ms.version);
         }
 
@@ -264,9 +272,13 @@ public class XmlIO : Object
             ysubnode->new_prop ("value", ms.lt.to_string());
         }
 
+        mstr = "missionitem";
+        if (uc)
+            mstr = mstr.ascii_up();
+
         foreach (MissionItem m in ms.get_ways())
         {
-            subnode = root->new_text_child (ns, "missionitem", "");
+            subnode = root->new_text_child (ns, mstr, "");
             subnode->new_prop ("no", m.no.to_string());
             subnode->new_prop ("action", MSP.get_wpname(m.action));
             subnode->new_prop ("lat", m.lat.to_string());
@@ -312,6 +324,8 @@ int main (string[] args) {
 
         stdout.puts(XmlIO.to_xml_string(ms, false));
         stdout.putc('\n');
+        stdout.putc('\n');
+        XmlIO.uc = true;
         stdout.puts(XmlIO.to_xml_string(ms, true));
         stdout.putc('\n');
 

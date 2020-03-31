@@ -103,6 +103,7 @@ public class MWPSettings : GLib.Object
     public uint max_radar { get; set; default=4; }
     public string kmlpath {get; private set; default=null;}
     public bool fixedfont {get; set; default=true;}
+    public bool ucmissiontags {get; set; default=false;}
 
 //    public string radar_device {get; set; default=null;}
 
@@ -382,6 +383,9 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "fixedfont")
             fixedfont = settings.get_boolean ("fixedfont");
+
+        if(s == null || s == "uc-mission-tags")
+            ucmissiontags = settings.get_boolean ("uc-mission-tags");
 
             /** CLI for now
         if(s == null || s == "radar-device")

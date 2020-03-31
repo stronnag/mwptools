@@ -457,6 +457,7 @@ public class AreaPlanner : GLib.Object {
             sb.append(".mission");
             fn = sb.str;
         }
+        XmlIO.uc = conf.ucmissiontags;
         XmlIO.to_xml_file(fn, ms);
     }
 
