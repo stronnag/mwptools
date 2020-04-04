@@ -114,6 +114,15 @@ public class ListBox : GLib.Object
                 pop_change_marker("RTH");
             });
         marker_menu.add (item);
+
+        sep = new Gtk.SeparatorMenuItem ();
+        marker_menu.add (sep);
+
+        item = new Gtk.MenuItem.with_label ("Preview Mission");
+        item.activate.connect (() => {
+                toggle_mission_preview_state();
+            });
+        marker_menu.add (item);
         marker_menu.show_all();
     }
 
