@@ -535,7 +535,7 @@ public class ListBox : GLib.Object
                     list_model.set_value (iter, WY_Columns.LON, 0.0);
                     list_model.set_value (iter, WY_Columns.ALT, 0);
                     list_model.set_value (iter, WY_Columns.INT1, 1.0);
-                    list_model.set_value (iter, WY_Columns.INT2, 0);
+                    list_model.set_value (iter, WY_Columns.INT2, 1);
                     break;
                 case MSP.Action.POSHOLD_TIME:
                     list_model.set_value (iter, WY_Columns.INT1, 0.0);
