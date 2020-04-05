@@ -443,7 +443,11 @@ public class MWPMarkers : GLib.Object
         txt.line_wrap = true;
         marker.button_press_event.connect((e) => {
                 if(e.button == 3)
+                {
+                    if(txt.get_parent() == marker)
+                            marker.remove_child(txt);
                     l.set_popup_needed(iter);
+                }
                 return false;
             });
 
