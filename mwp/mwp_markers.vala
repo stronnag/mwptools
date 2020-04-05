@@ -370,11 +370,11 @@ public class MWPMarkers : GLib.Object
 
         bool nrth = l.wp_has_rth(iter, out ni);
         var xtyp = typ;
-        int jwp = 0;
-
+        Champlain.Label jmarker = null;
 
         if(typ == MSP.Action.WAYPOINT)
         {
+            int jwp = 0;
             var xiter = iter;
             var next=ls.iter_next(ref xiter);
             if(next)
@@ -386,6 +386,19 @@ public class MWPMarkers : GLib.Object
                     xtyp = MSP.Action.JUMP;
                     ls.get_value (xiter, ListBox.WY_Columns.INT1, out cell);
                     jwp = (int)((double)cell);
+                    Gtk.TreeIter jiter;
+                    for(bool inext=ls.get_iter_first(out jiter); inext;
+                        inext=ls.iter_next(ref jiter))
+                    {
+                        ls.get_value (jiter, ListBox.WY_Columns.IDX, out cell);
+                        var jtgt = int.parse((string)cell);
+                        if (jtgt == jwp)
+                        {
+                            ls.get_value (jiter, ListBox.WY_Columns.MARKER, out cell);
+                            jmarker = (Champlain.Label)cell;
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -411,7 +424,7 @@ public class MWPMarkers : GLib.Object
             if(typ != MSP.Action.SET_POI)
                 path.add_node(marker);
 
-            if(jwp != 0)
+            if(jmarker != null)
             {
                 Clutter.Color rcol = {0xff, 0x0, 0x0, 0x80};
                 var jpl = new Champlain.PathLayer();
@@ -419,19 +432,8 @@ public class MWPMarkers : GLib.Object
                 jpl.set_stroke_color(rcol);
                 jpl.set_stroke_width (8);
                 jpl.add_node(marker);
-                List<weak Champlain.Location> m= path.get_nodes();
-                if(m.length() > 0)
-                {
-                    int i=1;
-                    m.foreach((lp) => {
-                            if(i == jwp)
-                            {
-                                jpl.add_node(lp);
-                            }
-                            i++;
-                        });
-                }
-                jwp = 0;
+                jpl.add_node(jmarker);
+                jmarker = null;
                 jpath += jpl;
             }
         }

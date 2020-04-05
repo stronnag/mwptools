@@ -515,6 +515,14 @@ public class ListBox : GLib.Object
 
         if (old != action)
         {
+            if(action == MSP.Action.JUMP)
+            {
+                list_model.get_value (iter, WY_Columns.IDX, out val);
+                var idx = int.parse((string)val);
+                if (idx < 3)
+                    return;
+            }
+
             if(action != MSP.Action.RTH)
             {
                 list_model.set_value (iter, WY_Columns.ACTION, action);
@@ -526,7 +534,7 @@ public class ListBox : GLib.Object
                     list_model.set_value (iter, WY_Columns.LAT, 0.0);
                     list_model.set_value (iter, WY_Columns.LON, 0.0);
                     list_model.set_value (iter, WY_Columns.ALT, 0);
-                    list_model.set_value (iter, WY_Columns.INT1, 0.0);
+                    list_model.set_value (iter, WY_Columns.INT1, 1.0);
                     list_model.set_value (iter, WY_Columns.INT2, 0);
                     break;
                 case MSP.Action.POSHOLD_TIME:
@@ -864,8 +872,10 @@ public class ListBox : GLib.Object
                      list_model.get_value (iiter, WY_Columns.IDX, out icell);
                      var iwp = int.parse((string)icell);
                      var nwp = int.parse(new_text);
-                     if(nwp < 1 || nwp >= iwp)
+                     if(nwp < 1 || nwp > (iwp-2))
+                     {
                          return;
+                     }
                 }
                 if (typ == MSP.Action.RTH)
                 {
