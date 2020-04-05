@@ -474,9 +474,12 @@ public class MWPMarkers : GLib.Object
                             int n = 1;
 
                             bool b = false;
-                            if((p = s.index_of_char('\n')) != -1)
-                                n = 2;
-                            else
+
+                            for(int i = 0; i < s.length; i++)
+                                if(s[i] == '\n')
+                                    n++;
+
+                            if((p = s.index_of_char('\n')) == -1)
                                 p = s.length-1;
 
                             if(p != -1)
@@ -487,7 +490,7 @@ public class MWPMarkers : GLib.Object
                             if(b == false)
                                 txt.get_size(out w, out h);
                             w = -w /2 + 10;
-                            h = -(h*n);
+                            h =  -(h*n) - 4;
                             txt.set_x(w);
                             txt.set_y(h);
                         }
