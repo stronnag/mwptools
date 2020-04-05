@@ -372,7 +372,7 @@ public class MWPMarkers : GLib.Object
         var xtyp = typ;
         Champlain.Label jmarker = null;
 
-        if(typ == MSP.Action.WAYPOINT)
+        if(typ == MSP.Action.WAYPOINT || typ == MSP.Action.POSHOLD_TIME)
         {
             int jwp = 0;
             var xiter = iter;
@@ -383,7 +383,8 @@ public class MWPMarkers : GLib.Object
                 var ntyp = (MSP.Action)cell;
                 if(ntyp == MSP.Action.JUMP)
                 {
-                    xtyp = MSP.Action.JUMP;
+                    if(typ == MSP.Action.WAYPOINT)
+                        xtyp = MSP.Action.JUMP; // arbitrary choice really
                     ls.get_value (xiter, ListBox.WY_Columns.INT1, out cell);
                     jwp = (int)((double)cell);
                     Gtk.TreeIter jiter;
