@@ -20,6 +20,10 @@ m['missionitem'].each_with_index do |i,n|
   lat = (i['lat'].to_f*1e7).to_i
   lon = (i['lon'].to_f*1e7).to_i
   alt = i['alt'].to_i*100
+  p1 = i['parameter1'].to_i
+  p2 = i['parameter2']
+  p3 = i['parameter3']
+
   act = case i['action']
 	when 'WAYPOINT'
 	  1
@@ -36,10 +40,13 @@ m['missionitem'].each_with_index do |i,n|
 	end
   flag = (n == last) ? 165 : 0
   if cli
-    puts ['wp', act, lat, lon, alt, i['parameter1'], flag].join(' ')
+    if act == 6
+       p1 -= 1
+    end
+    puts ['wp', n, act, lat, lon, alt, p1, p2, p3, flag].join(' ')
   else
     flag = "0x%x" % flag unless flag == 0
     puts [n+1, i['action'],xlat,xlon,i['alt'],
-      i['parameter1'],i['parameter2'],i['parameter3'], flag].join(' ')
+      p1,p2,p3, flag].join(' ')
 end
 end
