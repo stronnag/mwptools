@@ -1,7 +1,7 @@
 APP=replay_bbox_ltm.rb
 DEP=inav_states.rb
 include ../common.mk
-all: BBS
+
 
 local:
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
