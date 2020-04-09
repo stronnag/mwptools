@@ -415,7 +415,7 @@ def encode_gps r,baro=true
   nsf |= (ns << 2)
   alt = 0
   if baro
-    alt = r[:baroalt_cm].to_i
+    alt = r[:navpos2].to_i
   else
     gps_alt = r[:gps_altitude].to_i
     if @base_alt == nil

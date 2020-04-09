@@ -2063,6 +2063,9 @@ public class ListBox : GLib.Object
                 {
                     lspd = ms_speed;
                 }
+
+                if (lspd == 0)
+                    lspd = ms_speed;
                 double ltim = p.legd / lspd;
                 esttim += ltim;
                 update_cell(p.p1, p.p2, p.cse, p.legd, p.dist, ltim);
