@@ -644,8 +644,10 @@ public class MWPMarkers : GLib.Object
                 if(imarker != null && jmarker != null)
                 {
                     Clutter.Color rcol = {0xed, 0x51, 0xd7, 0xc8};
+                    var pp = markers.get_parent();
                     var jpl = new Champlain.PathLayer();
                     _v.add_layer(jpl);
+                    pp.set_child_below_sibling(jpl, markers);
                     jpl.set_stroke_color(rcol);
                     jpl.set_stroke_width (8);
                     jpl.set_dash(llist);
