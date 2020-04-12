@@ -38,6 +38,7 @@ public class MWPMarkers : GLib.Object
     private Champlain.MarkerLayer rdrmarkers;                // Mission Markers
     private Champlain.Label[] rplots;
     private Champlain.View _v;
+    private List<uint> llist;
 
     public MWPMarkers(ListBox lb, Champlain.View view, string mkcol ="#ffffff60")
     {
@@ -61,7 +62,7 @@ public class MWPMarkers : GLib.Object
 
         view.add_layer(markers);
 
-        List<uint> llist = new List<uint>();
+        llist = new List<uint>();
         llist.append(10);
         llist.append(5);
         Clutter.Color orange = {0xff, 0xa0, 0x0, 0x80};
@@ -370,11 +371,9 @@ public class MWPMarkers : GLib.Object
 
         bool nrth = l.wp_has_rth(iter, out ni);
         var xtyp = typ;
-        Champlain.Label jmarker = null;
 
         if(typ == MSP.Action.WAYPOINT || typ == MSP.Action.POSHOLD_TIME)
         {
-            int jwp = 0;
             var xiter = iter;
             var next=ls.iter_next(ref xiter);
             if(next)
@@ -385,21 +384,6 @@ public class MWPMarkers : GLib.Object
                 {
                     if(typ == MSP.Action.WAYPOINT)
                         xtyp = MSP.Action.JUMP; // arbitrary choice really
-                    ls.get_value (xiter, ListBox.WY_Columns.INT1, out cell);
-                    jwp = (int)((double)cell);
-                    Gtk.TreeIter jiter;
-                    for(bool inext=ls.get_iter_first(out jiter); inext;
-                        inext=ls.iter_next(ref jiter))
-                    {
-                        ls.get_value (jiter, ListBox.WY_Columns.IDX, out cell);
-                        var jtgt = int.parse((string)cell);
-                        if (jtgt == jwp)
-                        {
-                            ls.get_value (jiter, ListBox.WY_Columns.MARKER, out cell);
-                            jmarker = (Champlain.Label)cell;
-                            break;
-                        }
-                    }
                 }
             }
         }
@@ -424,19 +408,6 @@ public class MWPMarkers : GLib.Object
         {
             if(typ != MSP.Action.SET_POI)
                 path.add_node(marker);
-
-            if(jmarker != null)
-            {
-                Clutter.Color rcol = {0xff, 0x0, 0x0, 0x80};
-                var jpl = new Champlain.PathLayer();
-                _v.add_layer(jpl);
-                jpl.set_stroke_color(rcol);
-                jpl.set_stroke_width (8);
-                jpl.add_node(marker);
-                jpl.add_node(jmarker);
-                jmarker = null;
-                jpath += jpl;
-            }
         }
 
         ls.set_value(iter,ListBox.WY_Columns.MARKER,marker);
@@ -583,6 +554,7 @@ public class MWPMarkers : GLib.Object
                     break;
             }
         }
+        refesh_jumpers(ls);
         calc_extra_distances(l);
 //        dump_path();
     }
@@ -620,24 +592,68 @@ public class MWPMarkers : GLib.Object
 
     public void remove_all()
     {
-        markers.remove_all();
         path.remove_all();
         hpath.remove_all();
         ipath.remove_all();
         negate_jpos();
+        markers.remove_all();
         homep = rthp = ipos = null;
     }
-    /****
-    private void dump_path()
+
+    private Champlain.Label get_marker_for_idx(Gtk.ListStore ls, int idx)
     {
-        var nds = path.get_nodes();
-        print(">> Path %u\n", nds.length());
-        unowned List<Champlain.Location>  n = nds.first();
-        var l = n.data;
-        print("First %.6f %.6f\n", l.latitude, l.longitude);
-        n = nds.last();
-        l = n.data;
-        print("Last %.6f %.6f\n", l.latitude, l.longitude);
+        Champlain.Label marker=null;
+        Gtk.TreeIter iter;
+        GLib.Value cell;
+        for(bool next=ls.get_iter_first(out iter); next;
+                        next=ls.iter_next(ref iter))
+        {
+            ls.get_value (iter, ListBox.WY_Columns.IDX, out cell);
+            var jtgt = int.parse((string)cell);
+            if (jtgt == idx)
+            {
+                ls.get_value (iter, ListBox.WY_Columns.MARKER, out cell);
+                marker = (Champlain.Label)cell;
+                break;
+            }
+        }
+        return marker;
     }
-    ***/
+
+    public void refesh_jumpers(Gtk.ListStore ls)
+    {
+        Gtk.TreeIter iter;
+        GLib.Value cell;
+        negate_jpos();
+        for(bool next=ls.get_iter_first(out iter); next;
+            next=ls.iter_next(ref iter))
+        {
+            ls.get_value (iter, ListBox.WY_Columns.ACTION, out cell);
+            var typ = (MSP.Action)cell;
+            if (typ == MSP.Action.JUMP)
+            {
+                ls.get_value (iter, ListBox.WY_Columns.IDX, out cell);
+                var ino = int.parse((string)cell);
+                var jp = ino - 1;
+                ls.get_value (iter, ListBox.WY_Columns.INT1, out cell);
+                var jwp = (int)((double)cell);
+                ls.get_value (iter, ListBox.WY_Columns.MARKER, out cell);
+                var imarker = get_marker_for_idx(ls,jp);
+                var jmarker = get_marker_for_idx(ls,jwp);
+
+                if(imarker != null && jmarker != null)
+                {
+                    Clutter.Color rcol = {0xed, 0x51, 0xd7, 0xc8};
+                    var jpl = new Champlain.PathLayer();
+                    _v.add_layer(jpl);
+                    jpl.set_stroke_color(rcol);
+                    jpl.set_stroke_width (8);
+                    jpl.set_dash(llist);
+                    jpl.add_node(imarker);
+                    jpl.add_node(jmarker);
+                    jpath += jpl;
+                }
+            }
+        }
+    }
 }

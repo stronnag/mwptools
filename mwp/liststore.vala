@@ -109,6 +109,11 @@ public class ListBox : GLib.Object
                 pop_change_marker("POSHOLD_TIME");
             });
         marker_menu.add (item);
+        item = new Gtk.MenuItem.with_label ("JUMP");
+        item.activate.connect (() => {
+                pop_change_marker("JUMP");
+            });
+        marker_menu.add (item);
         item = new Gtk.MenuItem.with_label ("RTH");
         item.activate.connect (() => {
                 pop_change_marker("RTH");
@@ -297,6 +302,7 @@ public class ListBox : GLib.Object
                             WY_Columns.INT3, m.param3,
                             WY_Columns.ACTION, m.action);
         }
+        mp.markers.add_list_store(this);
         calc_mission();
     }
 
@@ -519,11 +525,11 @@ public class ListBox : GLib.Object
             {
                 list_model.get_value (iter, WY_Columns.IDX, out val);
                 var idx = int.parse((string)val);
-                if (idx < 3)
+                if (idx < 2)
                     return;
             }
 
-            if(action != MSP.Action.RTH)
+            if(action != MSP.Action.RTH && action != MSP.Action.JUMP)
             {
                 list_model.set_value (iter, WY_Columns.ACTION, action);
                 list_model.set_value (iter, WY_Columns.TYPE, typ);
@@ -531,19 +537,24 @@ public class ListBox : GLib.Object
             switch (action)
             {
                 case MSP.Action.JUMP:
-                    list_model.set_value (iter, WY_Columns.LAT, 0.0);
-                    list_model.set_value (iter, WY_Columns.LON, 0.0);
-                    list_model.set_value (iter, WY_Columns.ALT, 0);
-                    list_model.set_value (iter, WY_Columns.INT1, 1.0);
-                    list_model.set_value (iter, WY_Columns.INT2, 1);
+                    Gtk.TreeIter ni;
+                    list_model.insert_after (out ni, iter);
+                    list_model.set_value (ni, WY_Columns.ACTION, MSP.Action.JUMP);
+                    list_model.set_value (ni, WY_Columns.LAT, 0.0);
+                    list_model.set_value (ni, WY_Columns.LON, 0.0);
+                    list_model.set_value (ni, WY_Columns.ALT, 0);
+                    list_model.set_value (ni, WY_Columns.INT1, 1.0);
+                    list_model.set_value (ni, WY_Columns.INT2, 1);
+                    list_model.set_value (ni, WY_Columns.INT3, 0);
+                    list_model.set_value (ni, WY_Columns.TYPE,
+                                          MSP.get_wpname(MSP.Action.JUMP));
                     break;
                 case MSP.Action.POSHOLD_TIME:
                     list_model.set_value (iter, WY_Columns.INT1, 0.0);
                     list_model.set_value (iter, WY_Columns.INT2, 0);
                     break;
                 case MSP.Action.RTH:
-                    if(old == MSP.Action.POSHOLD_UNLIM ||
-                       old == MSP.Action.POSHOLD_TIME)
+                    if(old == MSP.Action.POSHOLD_UNLIM)
                     {
                         list_model.set_value (iter,
                                               WY_Columns.ACTION,
@@ -872,10 +883,8 @@ public class ListBox : GLib.Object
                      list_model.get_value (iiter, WY_Columns.IDX, out icell);
                      var iwp = int.parse((string)icell);
                      var nwp = int.parse(new_text);
-                     if(nwp < 1 || nwp > (iwp-2))
-                     {
+                     if(nwp < 1 || (nwp == iwp-1) || (nwp == iwp+1) || (nwp > lastid))
                          return;
-                     }
                 }
                 if (typ == MSP.Action.RTH)
                 {
@@ -1098,6 +1107,8 @@ public class ListBox : GLib.Object
 
     private void renumber_steps(Gtk.ListStore ls)
     {
+/*
+
         int n = 1;
         Gtk.TreeIter iter;
         bool need_del = false;
@@ -1137,10 +1148,10 @@ public class ListBox : GLib.Object
             }
         }
         purge = false;
-            /* rebuild the map */
+            // rebuild the map
         int n_rows = list_model.iter_n_children(null);
 
-            /* if there is just one item, and it's RTH, remove that too */
+            // if there is just one item, and it's RTH, remove that too
         if(n_rows == 1)
         {
             Value val;
@@ -1160,6 +1171,10 @@ public class ListBox : GLib.Object
         mp.markers.add_list_store(this);
         update_selected_cols();
         calc_mission();
+        */
+        var m = to_mission();
+        clear_mission();
+        import_mission(m);
     }
 
     private int check_last()
@@ -1396,6 +1411,7 @@ public class ListBox : GLib.Object
                         act == MSP.Action.JUMP ||
                         act == MSP.Action.SET_HEAD)
                         continue;
+
                     list_model.get_value (iter, WY_Columns.LAT, out cell);
                     var alat = (double)cell;
                     list_model.get_value (iter, WY_Columns.LON, out cell);
@@ -1937,10 +1953,10 @@ public class ListBox : GLib.Object
 
     public void clear_mission()
     {
-        mp.markers.remove_all();
         purge = true;
         list_model.clear();
         purge = false;
+        mp.markers.remove_all();
         have_rth = false;
         calc_mission();
     }
@@ -1956,7 +1972,6 @@ public class ListBox : GLib.Object
     public void calc_mission(double extra=0)
     {
         string route;
-
         int n_rows = list_model.iter_n_children(null) + 1;
         if (n_rows > 0)
         {
@@ -1988,7 +2003,6 @@ public class ListBox : GLib.Object
         set_preview_item(n_rows > 2);
         mp.stslabel.set_text(route);
     }
-
 
     private void update_cell(int lastn, int no, double cse, double d, double dx, double ltim)
     {
