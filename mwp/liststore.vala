@@ -883,7 +883,8 @@ public class ListBox : GLib.Object
                      list_model.get_value (iiter, WY_Columns.IDX, out icell);
                      var iwp = int.parse((string)icell);
                      var nwp = int.parse(new_text);
-                     if(nwp < 1 || (nwp == iwp-1) || (nwp == iwp+1) || (nwp > lastid))
+                         // Jump sanity
+                     if(nwp < 1 || ((nwp > iwp-2) && (nwp < iwp+2)) || (nwp > lastid))
                          return;
                 }
                 if (typ == MSP.Action.RTH)
