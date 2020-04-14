@@ -213,6 +213,33 @@ public class ListBox : GLib.Object
     {
         if(miter_ok)
         {
+            bool desens = false;
+            var xiter = miter;
+            var next=list_model.iter_next(ref xiter);
+
+            if(next)
+            {
+                GLib.Value cell;
+                list_model.get_value (xiter, WY_Columns.ACTION, out cell);
+                var ntyp = (MSP.Action)cell;
+                if(ntyp == MSP.Action.JUMP || ntyp == MSP.Action.RTH)
+                    desens = true;
+            }
+
+            marker_menu.@foreach((mi) => {
+                    var sens = true;
+                    var lbl = ((Gtk.MenuItem)mi).get_label();
+                    if(desens)
+                    {
+                        if (lbl.has_prefix("Way") ||
+                            lbl.has_prefix("PH") ||
+                            lbl.has_prefix("JU") ||
+                            lbl.has_prefix("RT"))
+                            sens = false;
+                    }
+                    ((Gtk.MenuItem)mi).sensitive = sens;
+                });
+
 #if OLDGTK||LSRVAL
             marker_menu.popup(null, null, null, 3, e.time);
 #else
@@ -1857,6 +1884,17 @@ public class ListBox : GLib.Object
 
     public void pop_menu_delete()
     {
+
+        var xiter = miter;
+        var next=list_model.iter_next(ref xiter);
+        if(next)
+        {
+            GLib.Value cell;
+            list_model.get_value (xiter, WY_Columns.ACTION, out cell);
+            var ntyp = (MSP.Action)cell;
+            if(ntyp == MSP.Action.JUMP || ntyp == MSP.Action.RTH)
+                miter = xiter;
+        }
         set_selection(miter);
         menu_delete();
     }
