@@ -1818,6 +1818,14 @@ public class ListBox : GLib.Object
         }
     }
 
+    public void toggle_fake_home()
+    {
+        if (fhome.is_visible)
+            unset_fake_home();
+        else
+            set_fake_home();
+    }
+
     public void set_fake_home()
     {
         var bbox = mp.view.get_bounding_box();

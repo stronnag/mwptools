@@ -4464,7 +4464,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">18</property>
+                <property name="top_attach">19</property>
               </packing>
             </child>
             <child>
@@ -4476,7 +4476,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">18</property>
+                <property name="top_attach">19</property>
               </packing>
             </child>
             <child>
@@ -4487,7 +4487,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">19</property>
+                <property name="top_attach">20</property>
               </packing>
             </child>
             <child>
@@ -4499,7 +4499,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">19</property>
+                <property name="top_attach">20</property>
               </packing>
             </child>
             <child>
@@ -4510,7 +4510,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">20</property>
+                <property name="top_attach">21</property>
               </packing>
             </child>
             <child>
@@ -4522,7 +4522,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">20</property>
+                <property name="top_attach">21</property>
               </packing>
             </child>
             <child>
@@ -4533,7 +4533,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">21</property>
+                <property name="top_attach">22</property>
               </packing>
             </child>
             <child>
@@ -4545,7 +4545,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">21</property>
+                <property name="top_attach">22</property>
               </packing>
             </child>
             <child>
@@ -4556,7 +4556,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">22</property>
+                <property name="top_attach">23</property>
               </packing>
             </child>
             <child>
@@ -4568,7 +4568,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">22</property>
+                <property name="top_attach">23</property>
               </packing>
             </child>
             <child>
@@ -4579,7 +4579,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">23</property>
+                <property name="top_attach">24</property>
               </packing>
             </child>
             <child>
@@ -4591,7 +4591,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">23</property>
+                <property name="top_attach">24</property>
               </packing>
             </child>
             <child>
@@ -4602,7 +4602,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">24</property>
+                <property name="top_attach">25</property>
               </packing>
             </child>
             <child>
@@ -4614,7 +4614,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">24</property>
+                <property name="top_attach">25</property>
               </packing>
             </child>
             <child>
@@ -4625,7 +4625,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">26</property>
+                <property name="top_attach">27</property>
               </packing>
             </child>
             <child>
@@ -4637,7 +4637,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">26</property>
+                <property name="top_attach">27</property>
               </packing>
             </child>
             <child>
@@ -4648,7 +4648,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">27</property>
+                <property name="top_attach">28</property>
               </packing>
             </child>
             <child>
@@ -4660,7 +4660,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">27</property>
+                <property name="top_attach">28</property>
               </packing>
             </child>
             <child>
@@ -4671,7 +4671,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">28</property>
+                <property name="top_attach">29</property>
               </packing>
             </child>
             <child>
@@ -4683,7 +4683,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">28</property>
+                <property name="top_attach">29</property>
               </packing>
             </child>
             <child>
@@ -4697,7 +4697,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">29</property>
+                <property name="top_attach">30</property>
               </packing>
             </child>
             <child>
@@ -4708,7 +4708,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">30</property>
+                <property name="top_attach">31</property>
               </packing>
             </child>
             <child>
@@ -4720,7 +4720,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">30</property>
+                <property name="top_attach">31</property>
               </packing>
             </child>
             <child>
@@ -4731,7 +4731,7 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">25</property>
+                <property name="top_attach">26</property>
               </packing>
             </child>
             <child>
@@ -4743,7 +4743,30 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
               </object>
               <packing>
                 <property name="left_attach">1</property>
-                <property name="top_attach">25</property>
+                <property name="top_attach">26</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Ctrl+Shift+H</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">18</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Toggle display of fake home icon</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">18</property>
               </packing>
             </child>
             <child>

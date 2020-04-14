@@ -1974,6 +1974,11 @@ public class MWPlanner : Gtk.Application {
             });
 
 
+        ag.connect('h', Gdk.ModifierType.CONTROL_MASK|Gdk.ModifierType.SHIFT_MASK, 0, (a,o,k,m) => {
+                ls.toggle_fake_home();
+                return true;
+            });
+
         ag.connect('z', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
                 ls.clear_mission();
                 wpmgr.wps = {};

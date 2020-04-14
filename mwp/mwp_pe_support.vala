@@ -98,19 +98,22 @@ public class FakeHome : GLib.Object
 
     public void show_fake_home(bool state)
     {
-        is_visible = state;
-        if(state)
+        if(state != is_visible)
         {
-            homep.set_draggable(true);
-            homep.set_selectable(true);
-            homep.set_flags(ActorFlags.REACTIVE);
-            hmlayer.add_marker(homep);
-            homep.drag_motion.connect((dx,dy,evt) => {
-                    fake_move(homep.get_latitude(),homep.get_longitude());
-                });
+            if(state)
+            {
+                homep.set_draggable(true);
+                homep.set_selectable(true);
+                homep.set_flags(ActorFlags.REACTIVE);
+                hmlayer.add_marker(homep);
+                homep.drag_motion.connect((dx,dy,evt) => {
+                        fake_move(homep.get_latitude(),homep.get_longitude());
+                    });
+            }
+            else
+                hmlayer.remove_marker(homep);
+            is_visible = state;
         }
-        else
-            hmlayer.remove_marker(homep);
     }
 
     public void set_fake_home(double lat, double lon)
