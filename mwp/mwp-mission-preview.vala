@@ -209,6 +209,9 @@ public class  MissionPreviewer : GLib.Object
 
         for (;;)
         {
+            if(!running)
+                break;
+
             if (n == nsize)
                 break;
 
@@ -296,8 +299,6 @@ public class  MissionPreviewer : GLib.Object
             }
             lx = cx;
             ly = cy;
-            if(!running)
-                break;
         }
 
 	if (running && ret && h.valid)

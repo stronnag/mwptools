@@ -55,7 +55,7 @@ public class ListBox : GLib.Object
     private Gtk.MenuItem speedz_item;
     private Gtk.MenuItem speedv_item;
     private Gtk.MenuItem preview_item;
-    private Gtk.MenuItem stop_preview_item;
+    private Gtk.MenuItem pop_preview_item;
     private ShapeDialog shapedialog;
     private DeltaDialog deltadialog;
     private SpeedDialog speeddialog;
@@ -68,7 +68,7 @@ public class ListBox : GLib.Object
     private bool miter_ok = false;
     private FakeHome fhome;
     private MissionPreviewer mprv;
-
+    private bool preview_running = false;
     public int lastid {get; private set; default= 0;}
     public bool have_rth {get; private set; default= false;}
 
@@ -123,11 +123,11 @@ public class ListBox : GLib.Object
         sep = new Gtk.SeparatorMenuItem ();
         marker_menu.add (sep);
 
-        item = new Gtk.MenuItem.with_label ("Preview Mission");
-        item.activate.connect (() => {
+        pop_preview_item = new Gtk.MenuItem.with_label ("Preview Mission");
+        pop_preview_item.activate.connect (() => {
                 toggle_mission_preview_state();
             });
-        marker_menu.add (item);
+        marker_menu.add (pop_preview_item);
         marker_menu.show_all();
     }
 
@@ -213,7 +213,7 @@ public class ListBox : GLib.Object
     {
         if(miter_ok)
         {
-            bool desens = false;
+            bool sens = true;
             var xiter = miter;
             var next=list_model.iter_next(ref xiter);
 
@@ -223,21 +223,16 @@ public class ListBox : GLib.Object
                 list_model.get_value (xiter, WY_Columns.ACTION, out cell);
                 var ntyp = (MSP.Action)cell;
                 if(ntyp == MSP.Action.JUMP || ntyp == MSP.Action.RTH)
-                    desens = true;
+                    sens = false;
             }
 
             marker_menu.@foreach((mi) => {
-                    var sens = true;
                     var lbl = ((Gtk.MenuItem)mi).get_label();
-                    if(desens)
-                    {
-                        if (lbl.has_prefix("Way") ||
-                            lbl.has_prefix("PH") ||
-                            lbl.has_prefix("JU") ||
-                            lbl.has_prefix("RT"))
-                            sens = false;
-                    }
-                    ((Gtk.MenuItem)mi).sensitive = sens;
+                    if (lbl.has_prefix("Way") ||
+                        lbl.has_prefix("PH") ||
+                        lbl.has_prefix("JU") ||
+                        lbl.has_prefix("RT"))
+                        ((Gtk.MenuItem)mi).sensitive = sens;
                 });
 
 #if OLDGTK||LSRVAL
@@ -1568,21 +1563,14 @@ public class ListBox : GLib.Object
             });
         menu.add (preview_item);
         preview_item.sensitive=false;
-
-        stop_preview_item = new Gtk.MenuItem.with_label ("Stop Preview");
-        stop_preview_item.activate.connect (() => {
-                stop_preview_mission();
-            });
-        menu.add (stop_preview_item);
-        stop_preview_item.sensitive=false;
-
         menu.show_all();
     }
 
     private void preview_mission()
     {
         Thread<int> thr = null;
-        var done = false;
+        preview_item.label = "Stop preview";
+        pop_preview_item.label = "Stop preview";
 
         var craft = new Craft(mp.view, Craft.Vehicles.PREVIEW, false);
 
@@ -1597,7 +1585,7 @@ public class ListBox : GLib.Object
             });
 
         mprv.mission_replay_done.connect(() => {
-                done = true;
+                preview_running = false;
             });
 
         HomePos hp={0,0,false};
@@ -1608,35 +1596,36 @@ public class ListBox : GLib.Object
             fhome.get_fake_home(out hp.hlat, out hp.hlon);
         }
 
-        preview_item.sensitive=false;
-        stop_preview_item.sensitive=true;
-
         var ms = to_mission();
         thr = mprv.run_mission(ms, hp);
-        while(!done)
-        {
-            Gtk.main_iteration();
-        }
+        for(preview_running = true; preview_running; Gtk.main_iteration())
+            ;
+
         thr.join();
-        stop_preview_item.sensitive=false;
+        preview_item.sensitive=false;
+        pop_preview_item.sensitive= false;
+
         Timeout.add_seconds(5,() => {
                 craft=null;
+                preview_item.label = "Preview Mission";
+                pop_preview_item.label = "Preview Mission";
                 preview_item.sensitive=true;
+                pop_preview_item.sensitive=true;
                 return false;
             });
-    }
-
-    private void stop_preview_mission()
-    {
-        mprv.stop();
     }
 
     public void toggle_mission_preview_state()
     {
         if(preview_item.sensitive)
-            preview_mission();
-        else if (stop_preview_item.sensitive)
-            stop_preview_mission();
+        {
+            if (!preview_running)
+                preview_mission();
+            else
+            {
+                mprv.stop();
+            }
+        }
     }
 
     private void replicate_mission()
