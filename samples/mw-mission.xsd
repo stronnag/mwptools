@@ -24,11 +24,11 @@
       <xs:sequence>
         <xs:element ref="details"  minOccurs="0"/>
       </xs:sequence>
-      <xs:attribute name="cx" use="required" type="xs:decimal"/>
-      <xs:attribute name="cy" use="required" type="xs:decimal"/>
+      <xs:attribute name="cx" type="xs:decimal"/>
+      <xs:attribute name="cy" type="xs:decimal"/>
       <xs:attribute name="save-date" use="required" />
       <xs:attribute name="generator" type="xs:string"/>
-      <xs:attribute name="zoom" use="required">
+      <xs:attribute name="zoom">
 	<xs:simpleType>
           <xs:restriction base="xs:integer">
 	    <xs:minInclusive value="0"/>
@@ -118,7 +118,7 @@
       <xs:attribute name="no" use="required" type="xs:integer"/>
       <xs:attribute name="parameter1" use="required" type="xs:integer"/>
       <xs:attribute name="parameter2" use="required" type="xs:integer"/>
-      <xs:attribute name="parameter3" use="required" type="xs:integer"/>
+      <xs:attribute name="parameter3" type="xs:integer"/>
     </xs:complexType>
   </xs:element>
 

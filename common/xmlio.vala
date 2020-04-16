@@ -3,7 +3,7 @@ using Xml;
 public class XmlIO : Object
 {
     public static bool uc = false;
-    public static string generator="mwp";
+    public static string generator;
 
     public static Mission? read_xml_file(string path)
     {
@@ -217,6 +217,9 @@ public class XmlIO : Object
     {
         Parser.init ();
         Xml.Doc* doc = new Xml.Doc ("1.0");
+
+        if(generator == null)
+            generator="mwp";
 
         Xml.Ns* ns = null;
 
