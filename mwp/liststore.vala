@@ -82,6 +82,16 @@ public class ListBox : GLib.Object
         ANY=7
     }
 
+
+    private void add_marker_item(string label, string cue)
+    {
+        var item = new Gtk.MenuItem.with_label (label);
+        item.activate.connect (() => {
+                pop_change_marker(cue);
+            });
+        marker_menu.add (item);
+    }
+
     private void init_marker_menu()
     {
         marker_menu =   new Gtk.Menu ();
@@ -94,32 +104,12 @@ public class ListBox : GLib.Object
         var sep = new Gtk.SeparatorMenuItem ();
         marker_menu.add (sep);
 
-        item = new Gtk.MenuItem.with_label ("Waypoint");
-        item.activate.connect (() => {
-                pop_change_marker("WAYPOINT");
-            });
-        marker_menu.add (item);
-        item = new Gtk.MenuItem.with_label ("PH unlimited");
-        item.activate.connect (() => {
-                pop_change_marker("POSHOLD_UNLIM");
-            });
-        marker_menu.add (item);
-        item = new Gtk.MenuItem.with_label ("PH Timed");
-        item.activate.connect (() => {
-                pop_change_marker("POSHOLD_TIME");
-            });
-        marker_menu.add (item);
-        item = new Gtk.MenuItem.with_label ("JUMP");
-        item.activate.connect (() => {
-                pop_change_marker("JUMP");
-            });
-        marker_menu.add (item);
-        item = new Gtk.MenuItem.with_label ("RTH");
-        item.activate.connect (() => {
-                pop_change_marker("RTH");
-            });
-        marker_menu.add (item);
-
+        add_marker_item("Jump", "JUMP");
+        add_marker_item("Land", "LAND");
+        add_marker_item("PH Timed", "POSHOLD_TIME");
+        add_marker_item("RTH", "RTH");
+        add_marker_item("Waypoint", "WAYPOINT");
+//        add_marker_item("PH Unlimited","POSHOLD_UNLIM");
         sep = new Gtk.SeparatorMenuItem ();
         marker_menu.add (sep);
 
@@ -230,7 +220,8 @@ public class ListBox : GLib.Object
                     var lbl = ((Gtk.MenuItem)mi).get_label();
                     if (lbl.has_prefix("Way") ||
                         lbl.has_prefix("PH") ||
-                        lbl.has_prefix("JU") ||
+                        lbl.has_prefix("Ju") ||
+                        lbl.has_prefix("La") ||
                         lbl.has_prefix("RT"))
                         ((Gtk.MenuItem)mi).sensitive = sens;
                 });
@@ -598,16 +589,14 @@ public class ListBox : GLib.Object
                                           MSP.get_wpname(MSP.Action.RTH));
                     have_rth = true;
                     break;
-                case MSP.Action.LAND:
-                    list_model.set_value (iter, WY_Columns.ALT, 0);
-                    break;
                 case MSP.Action.SET_HEAD:
                     list_model.set_value (iter, WY_Columns.LAT, 0.0);
                     list_model.set_value (iter, WY_Columns.LON, 0.0);
                     list_model.set_value (iter, WY_Columns.ALT, 0);
                     break;
                 default:
-                    if(action == MSP.Action.WAYPOINT)
+                    if(action == MSP.Action.WAYPOINT ||
+                       action == MSP.Action.LAND)
                     {
                         Value cell;
                         list_model.get_value (iter, WY_Columns.LAT, out cell);
