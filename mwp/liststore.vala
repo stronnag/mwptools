@@ -1604,6 +1604,12 @@ public class ListBox : GLib.Object
             });
     }
 
+    public void quit()
+    {
+        if (preview_running)
+            mprv.stop();
+    }
+
     public void toggle_mission_preview_state()
     {
         if(preview_item.sensitive)

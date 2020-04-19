@@ -1033,6 +1033,10 @@ public class MWPlanner : Gtk.Application {
         if(msp.available)
             msp.close();
 
+        // stop any previews / replays
+        ls.quit();
+        stop_replayer();
+
         mss.quit();
 
         if(conf.atexit != null)
