@@ -101,8 +101,8 @@ public class Mission : GLib.Object
                            m.lat, m.lon, m.alt,
                            m.param1, m.param2, m.param3);
         }
-        stdout.printf("lat min,max %f %f\n", minx, maxx);
-        stdout.printf("lon min,max %f %f\n", miny, maxy);
+        stdout.printf("lon (x)  min,max %f %f\n", minx, maxx);
+        stdout.printf("lat (y) min,max %f %f\n", miny, maxy);
         stdout.printf("cy cx %f %f %d\n", cy, cx, (int)zoom);
         if(dist != 1)
         {
