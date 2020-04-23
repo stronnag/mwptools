@@ -1412,6 +1412,7 @@ public class MWPlanner : Gtk.Application {
         aq.activate.connect(() => {
                 conf.save_floating (mwpdh.floating);
                 lman.save_config();
+                cleanup();
                 remove_window(window);
             });
         this.add_action(aq);
@@ -9087,7 +9088,6 @@ case 0:
                 MwpLibC.atexit(MWPlanner.xchild);
                 var app = new MWPlanner();
                 app.run ();
-                app.cleanup();
             }
             lk.unlock();
         }
