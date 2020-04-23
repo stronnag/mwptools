@@ -323,7 +323,7 @@ replot
     doc = Nokogiri::XML(open(@file))
     doc.xpath('//MISSIONITEM|//missionitem').each do |t|
       action=t['action']
-      next if action == 'SET_POI'
+      next if action == 'SET_POI' || action == 'SET_HEAD' || action == 'JUMP'
       no = t['no'].to_i
       lat = t['lat'].to_f
       lon = t['lon'].to_f
@@ -353,7 +353,7 @@ replot
       ipos << {:no => no, :lat => lat, :lon => lon, :alt => alt, :act => action,
 	:p1 => t['parameter1'], :p2 => t['parameter2'], :p3 => t['parameter3'],
 	:cse => c, :dist => d, :tdist => tdist, :oa => oa}
-      break if action == 'POSHOLD_UNLIM'
+      break if action == 'POSHOLD_UNLIM' || action == 'LAND'
     end
     ipos
   end
