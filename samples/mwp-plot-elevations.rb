@@ -265,7 +265,7 @@ replot
     plt = mktemp ".plt"
     File.open(plt, 'w') {|fh| fh.puts str}
     gerr = mktemp ".log"
-    unless system("gnuplot -p #{plt}  2>/#{gerr}") == true
+    unless system("gnuplot -p #{plt}  2>#{gerr}") == true
       s = IO.read(gerr)
       abort "Failed to run gnuplot: #{s}"
     end
