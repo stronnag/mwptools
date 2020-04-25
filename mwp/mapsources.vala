@@ -381,8 +381,10 @@ public class JsonMapDef : Object
                 s = MapSource();
                 var item = node.get_object ();
                 s.id = item.get_string_member ("id");
-                s.uri_format = item.get_string_member("uri_format");
                 s.licence_uri = item.get_string_member("license_uri");
+                if(item.has_member("uri_format"))
+                    s.uri_format = item.get_string_member("uri_format");
+
                 bool skip = (s.id == "BingProxy" ||
                              s.uri_format ==
                              "http://localhost:21303/quadkey-proxy/#Z#/#X#/#Y#.png" ||
@@ -398,7 +400,9 @@ public class JsonMapDef : Object
                     if(item.has_member("spawn"))
                     {
                         var spawncmd = item.get_string_member("spawn");
-                        spawn_proxy(spawncmd);
+                        var iport = spawn_proxy(spawncmd);
+                        if(iport != 0)
+                            s.uri_format="http://localhost:%u/p/#Z#/#X#/#Y#.png".printf(iport);
                     }
                     sources += s;
                 }
@@ -410,25 +414,37 @@ public class JsonMapDef : Object
         return sources;
     }
 
-    private static void spawn_proxy(string cmd)
+    private static uint spawn_proxy(string cmd)
     {
         string[]? argvp = null;
+        uint iport = 0;
+
         try {
             int pid;
+            int p_out;
             Shell.parse_argv (cmd, out argvp);
-            Process.spawn_async ("/",
-                                 argvp,
-                                 null,
-                                 SpawnFlags.SEARCH_PATH |
-                                 SpawnFlags.STDOUT_TO_DEV_NULL |
-                                 SpawnFlags.STDERR_TO_DEV_NULL,
-                                 null,
-                                 out pid);
+            Process.spawn_async_with_pipes ("/",
+                                            argvp,
+                                            null,
+                                            SpawnFlags.SEARCH_PATH|SpawnFlags.STDERR_TO_DEV_NULL,
+                                            null,
+                                            out pid,
+                                            null,
+                                            out p_out,
+                                            null);
             MWPLog.message("Starting external %s process\n", argvp[0]);
             proxypids += pid;
+            IOChannel ioc = new IOChannel.unix_new (p_out);
+            string line = null;
+            size_t len = 0;
+            IOStatus eos = ioc.read_line (out line, out len, null);
+            if(eos != IOStatus.EOF && len != 0)
+                line.scanf("Port: %u", &iport);
+            MWPLog.message("Proxy %s on %u\n", cmd, iport);
         } catch {
             MWPLog.message("Failed to start external proxy process\n");
         }
+        return iport;
     }
 
     private static uint run_proxy(string uri, bool offline)
@@ -438,7 +454,7 @@ public class JsonMapDef : Object
         var sp = new SoupProxy(uri);
         sp.offline = offline;
         try {
-            sp.listen_all(0, 0);
+            sp.listen_local(0, 0);
             var u  = sp.get_uris();
             port = u.nth_data(0).get_port ();
         } catch { port = 0; }

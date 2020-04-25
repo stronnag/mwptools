@@ -30,14 +30,12 @@
          "name" : "GM Proxy",
          "tile_size" : 256,
          "min_zoom" : 0,
-         "uri_format" : "http://localhost:21305/gm/#Z#/#X#/#Y#.png",
          "license" : "(c) Google ",
          "max_zoom" : 20,
          "id" : "gm",
          "projection" : "MERCATOR",
-         "warning" : "The only user changeable part of the uri is the port number (21305) which must be consistent",
          "license_uri" : "http://maps.zoogle.com/",
-         "spawn" : "gmproxy 21305"
+         "spawn" : "gmproxy"
       }
    ]
 }
@@ -202,22 +200,15 @@ public class GMProxy : Soup.Server
 
     public static int main (string []args)
     {
-        int oport = 8088;
         var loop = new MainLoop();
-        if (args.length > 1)
-        {
-            oport = int.parse(args[1]);
-            var o = new GMProxy();
-            try {
-                o.listen_all(oport, 0);
-                loop.run();
-            } catch (Error e) {
-                stdout.printf ("Error: %s\n", e.message);
-            }
-        }
-        else
-        {
-            stderr.puts("gmproxy port\n");
+        var o = new GMProxy();
+        try {
+            o.listen_local(0, 0);
+            var port = o.get_uris().nth_data(0).get_port ();
+            print ("Port: %u\n", port);
+            loop.run();
+        } catch (Error e) {
+            print ("Error: %s\n", e.message);
         }
         return 0;
     }

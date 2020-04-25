@@ -30,9 +30,8 @@
     "max_zoom": 20,
     "tile_size": 256,
     "projection": "MERCATOR",
-    "uri_format": "http://localhost:21319/doo/#Z#/#X#/#Y#.png",
-    "spawn" : "bproxy 21319",
-    "warning" : "The only user changeable part of the uri is the port number (21319) which must be consistent"
+    "uri_format": "http://localhost:%u/doo/#Z#/#X#/#Y#.png",
+    "spawn" : "bproxy",
   }
 
  Then put bproxy on the PATH (e.g. /use/local/bin). It is not built or
@@ -111,7 +110,6 @@ public class BProxy : Soup.Server
 
     public BProxy()
     {
-        print("Black len %d\n", black_png.length);
         this.add_handler (null, default_handler);
     }
 
@@ -124,22 +122,16 @@ public class BProxy : Soup.Server
 
     public static int main (string []args)
     {
-        if (args.length > 1)
-        {
-            var loop = new MainLoop();
-            var port = int.parse(args[1]);
-            var b = new BProxy();
-            try {
-                b.listen_all(port, 0);
-                 } catch (Error e) {
-                stdout.printf ("Error: %s\n", e.message);
-            }
-            loop.run();
+        var loop = new MainLoop();
+        var b = new BProxy();
+        try {
+            b.listen_local(0, 0);
+        } catch (Error e) {
+            stdout.printf ("Error: %s\n", e.message);
         }
-        else
-        {
-            stderr.puts("bproxy port\n");
-        }
+        var port = b.get_uris().nth_data(0).get_port ();
+        print ("Port: %u\n", port);
+        loop.run();
         return 0;
     }
 }
