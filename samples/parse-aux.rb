@@ -77,6 +77,12 @@ ini=false
 ARGF.each do |l|
   bname=''
 
+  if l.match (/^# INAV/)
+    puts
+    puts l[2..]
+    puts
+  end
+
   if l.match (/^serial/)
     l.chomp!
     a=l.split(' ')
