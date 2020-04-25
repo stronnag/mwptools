@@ -432,7 +432,6 @@ public class JsonMapDef : Object
                                             null,
                                             out p_out,
                                             null);
-            MWPLog.message("Starting external %s process\n", argvp[0]);
             proxypids += pid;
             IOChannel ioc = new IOChannel.unix_new (p_out);
             string line = null;
@@ -440,7 +439,7 @@ public class JsonMapDef : Object
             IOStatus eos = ioc.read_line (out line, out len, null);
             if(eos != IOStatus.EOF && len != 0)
                 line.scanf("Port: %u", &iport);
-            MWPLog.message("Proxy %s on %u\n", cmd, iport);
+            MWPLog.message("External proxy \"%s\" listening on :%u\n", cmd, iport);
         } catch {
             MWPLog.message("Failed to start external proxy process\n");
         }
