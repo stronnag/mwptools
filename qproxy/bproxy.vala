@@ -30,14 +30,14 @@
     "max_zoom": 20,
     "tile_size": 256,
     "projection": "MERCATOR",
-    "uri_format": "http://localhost:%u/doo/#Z#/#X#/#Y#.png",
     "spawn" : "bproxy",
   }
 
  Then put bproxy on the PATH (e.g. /use/local/bin). It is not built or
  installed automatically
 
- */
+ Note there is no need to define a URI (or port)
+  */
 
 
 public class BProxy : Soup.Server

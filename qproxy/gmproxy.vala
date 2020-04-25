@@ -40,6 +40,9 @@
    ]
 }
  * ======================================================================
+
+ * Note there is no need to define a URI (or port)
+
  * Then add to settings (terminal commmand line):
    gsettings set org.mwptools.planner map-sources sources.json
  ************************************************************************/
