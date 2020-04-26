@@ -1,6 +1,4 @@
 rem @echo off
+rem run this from a shortcut with SilentCMD to remove the DOS window
 
-C:
-chdir C:\cygwin64\bin
-
-start /b .\bash --login -i -c mwp
+C:\cygwin64\bin\bash.exe --login -c  "DISPLAY=:0 NO_AT_BRIDGE=1 mwp"
