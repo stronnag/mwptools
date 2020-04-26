@@ -401,10 +401,13 @@ public class JsonMapDef : Object
                     {
                         var spawncmd = item.get_string_member("spawn");
                         var iport = spawn_proxy(spawncmd);
-                        if(iport != 0)
+                        if(iport > 0)
                             s.uri_format="http://localhost:%u/p/#Z#/#X#/#Y#.png".printf(iport);
+                        if(iport != -1)
+                            sources += s;
                     }
-                    sources += s;
+                    else
+                        sources += s;
                 }
             }
         }
@@ -414,10 +417,10 @@ public class JsonMapDef : Object
         return sources;
     }
 
-    private static uint spawn_proxy(string cmd)
+    private static int spawn_proxy(string cmd)
     {
         string[]? argvp = null;
-        uint iport = 0;
+        int iport = 0;
 
         try {
             int pid;
@@ -438,10 +441,11 @@ public class JsonMapDef : Object
             size_t len = 0;
             IOStatus eos = ioc.read_line (out line, out len, null);
             if(eos != IOStatus.EOF && len != 0)
-                line.scanf("Port: %u", &iport);
-            MWPLog.message("External proxy \"%s\" listening on :%u\n", cmd, iport);
+                line.scanf("Port: %d", &iport);
+            MWPLog.message("External proxy \"%s\" listening on :%d\n", cmd, iport);
         } catch {
-            MWPLog.message("Failed to start external proxy process\n");
+            MWPLog.message("Failed to start external proxy %s\n", cmd);
+            iport = -1;
         }
         return iport;
     }
