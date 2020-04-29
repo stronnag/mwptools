@@ -897,6 +897,26 @@ public class ListBox : GLib.Object
                          // Jump sanity
                      if(nwp < 1 || ((nwp > iwp-2) && (nwp < iwp+2)) || (nwp > lastid))
                          return;
+
+                         // More sanity, only jump to geo-ref WPs
+                     for(bool next=list_model.get_iter_first(out iiter); next;
+                         next=list_model.iter_next(ref iiter))
+                     {
+                         list_model.get_value (iiter, WY_Columns.IDX, out icell);
+                         var twp = int.parse((string)icell);
+                         if(twp == nwp)
+                         {
+                             list_model.get_value (iiter, WY_Columns.ACTION, out icell);
+                             typ = (MSP.Action)icell;
+                             if(!(typ == MSP.Action.WAYPOINT ||
+                                  typ == MSP.Action.POSHOLD_UNLIM ||
+                                  typ == MSP.Action.POSHOLD_TIME ||
+                                  typ == MSP.Action.LAND))
+                             {
+                                 return;
+                             }
+                         }
+                     }
                 }
                 if (typ == MSP.Action.RTH)
                 {
@@ -996,13 +1016,6 @@ public class ListBox : GLib.Object
 
     public void show_tote_popup(Gdk.EventButton ? event)
     {
-/*
-                    Value val;
-                    list_model.get_iter_first(out _iter);
-                    list_model.get_value (_iter, WY_Columns.ACTION, out val);
-                    shp_item.sensitive=((MSP.Action)val == MSP.Action.SET_POI);
-                        // remove ins, del as well
-                        */
         var sel = view.get_selection ();
         if(sel.count_selected_rows () == 0)
         {
