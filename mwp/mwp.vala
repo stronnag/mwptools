@@ -1990,7 +1990,7 @@ public class MWPlanner : Gtk.Application {
             });
 
         ag.connect('z', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
-                ls.clear_mission();
+                clear_mission();
                 wpmgr.wps = {};
                 return true;
             });
@@ -3281,7 +3281,7 @@ case 0:
     {
         if(cm)
         {
-            ls.clear_mission();
+            clear_mission();
             wpmgr.wps = {};
         }
         map_hide_warning();
@@ -3387,7 +3387,7 @@ case 0:
             });
 
         mss.i__clear_mission.connect(() => {
-                ls.clear_mission();
+                clear_mission();
                 NavStatus.have_rth = false;
                 NavStatus.nm_pts = 0;
             });
@@ -5223,7 +5223,7 @@ case 0:
                 if(w.wp_no == 1 && m.action == MSP.Action.RTH
                    && w.lat == 0 && w.lon == 0)
                 {
-                    ls.clear_mission();
+                    clear_mission();
                 }
                 else
                 {
@@ -5241,6 +5241,7 @@ case 0:
                     MWPLog.message("Mission restore (points: %u, RTH: %s)\n",
                                    NavStatus.nm_pts,
                                    NavStatus.have_rth.to_string());
+                    lastmission=ms;
                 }
                 wp_resp={};
                 reset_poller();
@@ -7831,6 +7832,12 @@ case 0:
         reboot_status();
     }
 
+    private void clear_mission()
+    {
+        ls.clear_mission();
+        lastmission=ls.to_mission();
+    }
+
     private void set_replay_menus(bool state)
     {
         const string [] ms = {"replay-log","load-log","replay-bb","load-bb"};
@@ -8843,6 +8850,7 @@ case 0:
 
     private void download_mission()
     {
+        check_mission_clean(false);
         wp_resp= {};
         wpmgr.wp_flag = WPDL.REPLACE;
         serstate = SERSTATE.NORMAL;
