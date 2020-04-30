@@ -7502,6 +7502,12 @@ case 0:
         validatelab.set_text("");
         downgrade = 0;
 
+        if(!(ls.to_mission().is_valid()))
+        {
+            mwp_warning_box("Misison verification failed, upload aborted", Gtk.MessageType.ERROR, 60);
+            return;
+        }
+
         var wps = ls.to_wps(out downgrade, set_wps_flags());
         if(wps.length > wp_max)
         {

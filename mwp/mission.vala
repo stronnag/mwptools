@@ -89,11 +89,32 @@ public class Mission : GLib.Object
         waypoints = m;
     }
 
+    public bool is_valid()
+    {
+        if(waypoints.length > 60)
+            return false;
+
+            // Urg, Urg array index v. WP Nos ......
+        for(var i = 0; i < waypoints.length; i++)
+        {
+            var target = waypoints[i].param1 - 1;
+            if(waypoints[i].action == MSP.Action.JUMP)
+            {
+                if((i == 0) || ((target > (i-2)) && (target < (i+2)) ) || (target >= waypoints.length) || (waypoints[i].param2 < -1))
+                    return false;
+                if(!(waypoints[target].action == MSP.Action.WAYPOINT || waypoints[target].action == MSP.Action.POSHOLD_TIME || waypoints[target].action == MSP.Action.LAND))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+
     public void dump()
     {
         if(version != null)
             stdout.printf("Version: %s\n",version);
-        foreach (MissionItem m in this.waypoints)
+        foreach (var m in waypoints)
         {
             stdout.printf ("%d %s %f %f %u %d %d %d\n",
                            m.no,
@@ -117,6 +138,8 @@ public class Mission : GLib.Object
         }
         if(maxalt != 0x80000000)
             stdout.printf("max altitude %d\n", maxalt);
+
+        stdout.printf("Mission is %svalid\n", (is_valid() == true) ? "" : "in");
     }
 
     public bool calculate_distance(out double d, out int lt)
