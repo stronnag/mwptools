@@ -1075,6 +1075,23 @@ public class SwitchDialog : GLib.Object
     }
 }
 
+public class DirtyDialog : GLib.Object
+{
+    private Gtk.Dialog dialog;
+    public DirtyDialog(Gtk.Builder builder, Gtk.Window? w=null)
+    {
+        dialog = builder.get_object ("dirty_mission_dialog") as Gtk.Dialog;
+        dialog.set_transient_for(w);
+    }
+
+    public int get_choice()
+    {
+        dialog.show_all();
+        var id = dialog.run();
+        dialog.hide();
+        return id;
+    }
+}
 
 public class PrefsDialog : GLib.Object
 {

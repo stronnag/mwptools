@@ -142,6 +142,55 @@ public class Mission : GLib.Object
         stdout.printf("Mission is %svalid\n", (is_valid() == true) ? "" : "in");
     }
 
+    public bool is_equal(Mission m)
+    {
+        var nwp = waypoints.length;
+        var ways = m.get_ways();
+
+        if(nwp != ways.length)
+            return false;
+
+        for(var i = 0; i < nwp; i++)
+        {
+/*******************
+            StringBuilder sb = new StringBuilder();
+            if(waypoints[i].no != ways[i].no)
+                sb.append("no ");
+            if(waypoints[i].action != ways[i].action)
+                sb.append("act");
+            if( waypoints[i].lat != ways[i].lat)
+                sb.append("lat ");
+            if(waypoints[i].lon != ways[i].lon)
+                sb.append("lon ");
+            if( waypoints[i].alt != ways[i].alt)
+                sb.append("alt ");
+            if(waypoints[i].param1 != ways[i].param1)
+                sb.append("p1 ");
+            if(waypoints[i].param2 != ways[i].param2)
+                sb.append("p2 ");
+            if(waypoints[i].param3 != ways[i].param3)
+                sb.append("p3");
+            if(sb.len > 0)
+            {
+                sb.prepend("WP differ : ");
+                sb.append_printf(" -- WP %d\n", i+1);
+                print(sb.str);
+                return false;
+            }
+********************/
+            if(waypoints[i].no != ways[i].no ||
+               waypoints[i].action != ways[i].action ||
+               waypoints[i].lat != ways[i].lat ||
+               waypoints[i].lon != ways[i].lon ||
+               waypoints[i].alt != ways[i].alt ||
+               waypoints[i].param1 != ways[i].param1 ||
+               waypoints[i].param2 != ways[i].param2 ||
+               waypoints[i].param3 != ways[i].param3)
+                return false;
+        }
+        return true;
+    }
+
     public bool calculate_distance(out double d, out int lt)
     {
         var n = 0;

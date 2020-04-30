@@ -270,6 +270,7 @@ public class ListBox : GLib.Object
         clear_mission();
         lastid = 0;
         have_rth = false;
+
         foreach (MissionItem m in ms.get_ways())
         {
             list_model.append (out iter);
@@ -1132,74 +1133,7 @@ public class ListBox : GLib.Object
 
     private void renumber_steps(Gtk.ListStore ls)
     {
-/*
-
-        int n = 1;
-        Gtk.TreeIter iter;
-        bool need_del = false;
-        have_rth = false;
-        purge = true;
-        for(bool next=ls.get_iter_first(out iter); next;
-            next=ls.iter_next(ref iter))
-        {
-            if(need_del)
-            {
-#if LSRVAL
-                list_model.remove(iter);
-#else
-                list_model.remove(ref iter);
-#endif
-            }
-            else
-            {
-                GLib.Value cell;
-                list_model.get_value (iter, WY_Columns.ACTION, out cell);
-                MSP.Action act = (MSP.Action)cell;
-                switch (act)
-                {
-                    case MSP.Action.RTH:
-                        ls.set_value (iter, WY_Columns.IDX, "");
-                        need_del = true;
-                        have_rth = true;
-                        break;
-
-                    default:
-                        ls.set_value (iter, WY_Columns.IDX, n);
-                        n += 1;
-                        if(act == MSP.Action.POSHOLD_UNLIM)
-                            need_del = true;
-                        break;
-                }
-            }
-        }
-        purge = false;
-            // rebuild the map
-        int n_rows = list_model.iter_n_children(null);
-
-            // if there is just one item, and it's RTH, remove that too
-        if(n_rows == 1)
-        {
-            Value val;
-            list_model.get_iter_first (out iter);
-            list_model.get_value (iter, WY_Columns.ACTION, out val);
-            MSP.Action act = (MSP.Action)val;
-            if(act ==  MSP.Action.RTH)
-            {
-                have_rth = false;
-#if LSRVAL
-                list_model.remove(iter);
-#else
-                list_model.remove(ref iter);
-#endif
-            }
-        }
-        mp.markers.add_list_store(this);
-        update_selected_cols();
-        calc_mission();
-        */
-        var m = to_mission();
-        clear_mission();
-        import_mission(m);
+        import_mission(to_mission());
     }
 
     private int check_last()

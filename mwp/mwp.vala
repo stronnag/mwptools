@@ -427,6 +427,7 @@ public class MWPlanner : Gtk.Application {
     private GtkChamplain.Embed embed;
     private PrefsDialog prefs;
     private SwitchDialog swd;
+    private DirtyDialog dirtyd;
     private SetPosDialog setpos;
     private Gtk.AboutDialog about;
     private BBoxDialog bb_runner;
@@ -466,7 +467,7 @@ public class MWPlanner : Gtk.Application {
     private static string layfile=null;
     private static bool asroot = false;
     private static bool legacy_unused;
-
+    private Mission lastmission;
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
     private uint8 vwarn1;
     private int licol = -1;
@@ -1030,6 +1031,8 @@ public class MWPlanner : Gtk.Application {
 
     public void cleanup()
     {
+        check_mission_clean(false);
+
         if(msp.available)
             msp.close();
 
@@ -1099,6 +1102,7 @@ public class MWPlanner : Gtk.Application {
         base.startup();
         gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
 
+        lastmission = new Mission();
         wpmgr = WPMGR();
 
         vbsamples = new float[MAXVSAMPLE];
@@ -1490,6 +1494,7 @@ public class MWPlanner : Gtk.Application {
 
         var saq = new GLib.SimpleAction("file-open",null);
         saq.activate.connect(() => {
+                check_mission_clean();
                 on_file_open();
             });
         window.add_action(saq);
@@ -2151,6 +2156,7 @@ public class MWPlanner : Gtk.Application {
             });
 
         swd = new SwitchDialog(builder, window);
+        dirtyd = new DirtyDialog(builder, window);
 
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
         about.set_transient_for(window);
@@ -2517,7 +2523,7 @@ public class MWPlanner : Gtk.Application {
                             {
                                 buf[nr-1] = 0;
                                 string s = (string)buf;
-                                if(s.contains("<MISSION>"))
+                                if(s.contains("<MISSION>") || s.contains("<mission>"))
                                     mf = f;
                                 else if(s.contains("<kml "))
                                     kf = f;
@@ -2548,7 +2554,11 @@ public class MWPlanner : Gtk.Application {
                 }
                 Gtk.drag_finish (ctx, true, false, time);
                 if(mf != null)
+                {
+                    check_mission_clean();
                     load_file(mf);
+                }
+
                 if(kf != null)
                     try_load_overlay(kf);
 
@@ -8140,6 +8150,7 @@ case 0:
         if (conf.compat_vers != null)
             m.version = conf.compat_vers;
         wp_resp = m.get_ways();
+        lastmission = m;
         return m;
     }
 
@@ -8277,7 +8288,16 @@ case 0:
             JsonIO.to_json_file(fn, m);
     }
 
-    public Mission? open_mission_file(string fn)
+
+    private void check_mission_clean(bool check_zero=true)
+    {
+        if (!((check_zero && lastmission.get_ways().length == 0) ||
+              ls.to_mission().is_equal(lastmission)))
+            if(dirtyd.get_choice() == 0)
+                on_file_save_as();
+    }
+
+    public Mission? open_mission_file(string fn, bool loader=true)
     {
         Mission m=null;
         bool is_j = fn.has_suffix(".json");
@@ -8305,6 +8325,8 @@ case 0:
                 m.cy += fakeoff.dlat;
             }
             wp_resp = m.get_ways();
+            if(loader )
+                MWPLog.message("Loaded mission: %s\n", fn);
             return m;
         }
         else
@@ -8319,7 +8341,7 @@ case 0:
     private void on_file_save_as ()
     {
         Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
-            "Select a mission file", null, Gtk.FileChooserAction.SAVE,
+            "Save to mission file", null, Gtk.FileChooserAction.SAVE,
             "_Cancel",
             Gtk.ResponseType.CANCEL,
             "_Save",
@@ -8340,16 +8362,14 @@ case 0:
         filter.set_filter_name ("All Files");
         filter.add_pattern ("*");
         chooser.add_filter (filter);
-
-        chooser.response.connect((id) => {
-                if (id == Gtk.ResponseType.ACCEPT) {
-                    last_file = chooser.get_filename ();
-                    save_mission_file(last_file);
-                    update_title_from_file(last_file);
-                }
-                chooser.close ();
-            });
         chooser.show_all();
+        var id = chooser.run();
+        if (id == Gtk.ResponseType.ACCEPT) {
+            last_file = chooser.get_filename ();
+            save_mission_file(last_file);
+            update_title_from_file(last_file);
+        }
+        chooser.destroy ();
     }
 
     private void update_title_from_file(string fname)
@@ -8363,25 +8383,6 @@ case 0:
     private uint guess_appropriate_zoom(Champlain.BoundingBox bb)
     {
         uint z = 18;
-
-/********************************
- * Using the champlain API requires centring the map first
-            for(z = view.get_max_zoom_level();
-                z >= view.get_min_zoom_level(); z--)
-            {
-                var bb = view.get_bounding_box_for_zoom_level(z);
-                if(bb.top > ms.maxy && bb.bottom < ms.miny &&
-                   bb.right > ms.maxx && bb.left < ms.minx)
-                    break;
-            }
-
-**********************************/
-
-            // **************************************
-            // Formula from:
-            // http://wiki.openstreetmap.org/wiki/Zoom_levels
-            //
-
         if(window_h != -1 && window_w != -1)
         {
             double cse,m_width,m_height;
@@ -8413,7 +8414,6 @@ case 0:
             instantiate_mission(ms);
             last_file = fname;
             update_title_from_file(fname);
-            MWPLog.message("loaded %s\n", fname);
         }
         else
             if (warn)
@@ -8456,6 +8456,7 @@ case 0:
         if(have_home)
             markers.add_home_point(home_pos.lat,home_pos.lon,ls);
         need_preview = true;
+        lastmission = ms;
     }
 
     private Champlain.BoundingBox bb_from_mission(Mission ms)
@@ -8495,7 +8496,7 @@ case 0:
     private void on_file_open()
     {
         Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
-            "Select a mission file", null, Gtk.FileChooserAction.OPEN,
+            "Open a mission file", null, Gtk.FileChooserAction.OPEN,
             "_Cancel",
             Gtk.ResponseType.CANCEL,
             "_Open",
@@ -8532,7 +8533,7 @@ case 0:
                     var fn = uri.substring (7);
                     if(!FileUtils.test (fn, FileTest.IS_DIR))
                     {
-                        var m = open_mission_file(fn);
+                        var m = open_mission_file(fn, false);
                         if(m != null)
                         {
                             var sb = new StringBuilder();
@@ -8572,18 +8573,14 @@ case 0:
                 else
                     prebox.hide ();
             });
-
-        chooser.response.connect((id) => {
-                if (id == Gtk.ResponseType.ACCEPT)
-                {
-                    var fn = chooser.get_filename ();
-                    chooser.close ();
-                    load_file(fn);
-                }
-                else
-                    chooser.close ();
-            });
+        var id = chooser.run();
         chooser.show_all();
+        string fn = null;
+        if (id == Gtk.ResponseType.ACCEPT)
+            fn = chooser.get_filename ();
+        chooser.destroy ();
+        if(fn != null)
+            load_file(fn);
     }
 
     private void replay_log(bool delay=true)
