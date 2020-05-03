@@ -221,7 +221,7 @@ public class JsonIO : Object
 
     public static void to_json_file(string fn, Mission  ms)
     {
-        var s = to_json(ms, true);
+        var s = to_json(ms, false);
         try {
             FileUtils.set_contents(fn,s);
         } catch (Error e) {

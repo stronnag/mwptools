@@ -1,52 +1,113 @@
 #!/usr/bin/ruby
 
+require 'optparse'
+
 ## src/main/fc/rc_modes.h
 
-BOXNAME=[
-  "ARM", #  0
-  "ANGLE", #  1
-  "HORIZON", #  2
-  "NAVALTHOLD", #  3
-  "HEADINGHOLD", #  4
-  "HEADFREE", #  5
-  "HEADADJ", #  6
-  "CAMSTAB", #  7
-  "NAVRTH", #  8
-  "NAVPOSHOLD", #  9
-  "MANUAL", #  10
-  "BEEPERON", #  11
-  "LEDLOW", #  12
-  "LIGHTS", #  13
-  "NAVLAUNCH", #  14
-  "OSD", #  15
-  "TELEMETRY", #  16
-  "BLACKBOX", #  17
-  "FAILSAFE", #  18
-  "NAVWP", #  19
-  "AIRMODE", #  20
-  "HOMERESET", #  21
-  "GCSNAV", #  22
-  "KILLSWITCH", #  23
-  "SURFACE", #  24
-  "FLAPERON", #  25
-  "TURNASSIST", #  26
-  "AUTOTRIM", #  27
-  "AUTOTUNE", #  28
-  "CAMERA1", #  29
-  "CAMERA2", #  30
-  "CAMERA3", #  31
-  "OSDALT1", #  32
-  "OSDALT2", #  33
-  "OSDALT3", #  34
-  "NAVCRUISE", #  35
-  "BRAKING", #  36
-  "USER1", #  37
-  "USER2", #  38
-  "FPVANGLEMIX", #  39
-  "LOITERDIRCHN", #  40
-  "MSPRCOVERRIDE", # 41,
-  "ACCCOMP"       # 42
+FLAGMON=5
+FLAGDAY=15
+
+BOXNAMES = [
+  { permid: 0, name: "ARM"},	# 0
+  { permid: 1, name: "ANGLE"},	# 1
+  { permid: 2, name: "HORIZON"},	# 2
+  { permid: 3, name: "NAV ALTHOLD"},	# 3
+  { permid: 5, name: "HEADING HOLD"},	# 4
+  { permid: 6, name: "HEADFREE"},	# 5
+  { permid: 7, name: "HEADADJ"},	# 6
+  { permid: 8, name: "CAMSTAB"},	# 7
+  { permid: 10, name: "NAV RTH"},	# 8
+  { permid: 11, name: "NAV POSHOLD"},	# 9
+  { permid: 12, name: "MANUAL"},	# 10
+  { permid: 13, name: "BEEPER"},	# 11
+  { permid: 15, name: "LEDLOW"},	# 12
+  { permid: 16, name: "LIGHTS"},	# 13
+  { permid: 36, name: "NAV LAUNCH"},	# 14
+  { permid: 19, name: "OSD SW"},	# 15
+  { permid: 20, name: "TELEMETRY"},	# 16
+  { permid: 26, name: "BLACKBOX"},	# 17
+  { permid: 27, name: "FAILSAFE"},	# 18
+  { permid: 28, name: "NAV WP"},	# 19
+  { permid: 29, name: "AIR MODE"},	# 20
+  { permid: 30, name: "HOME RESET"},	# 21
+  { permid: 31, name: "GCS NAV"},	# 22
+  { permid: 38, name: "KILLSWITCH"},	# 23
+  { permid: 33, name: "SURFACE"},	# 24
+  { permid: 34, name: "FLAPERON"},	# 25
+  { permid: 35, name: "TURN ASSIST"},	# 26
+  { permid: 37, name: "SERVO AUTOTRIM"},	# 27
+  { permid: 21, name: "AUTO TUNE"},	# 28
+  { permid: 39, name: "CAMERA CONTROL 1"},	# 29
+  { permid: 40, name: "CAMERA CONTROL 2"},	# 30
+  { permid: 41, name: "CAMERA CONTROL 3"},	# 31
+  { permid: 42, name: "OSD ALT 1"},	# 32
+  { permid: 43, name: "OSD ALT 2"},	# 33
+  { permid: 44, name: "OSD ALT 3"},	# 34
+  { permid: 45, name: "NAV CRUISE"},	# 35
+  { permid: 46, name: "MC BRAKING"},	# 36
+  { permid: 47, name: "USER1"},	# 37
+  { permid: 48, name: "USER2"},	# 38
+  { permid: 32, name: "FPV ANGLE MIX"},	# 39
+  { permid: 49, name: "LOITER CHANGE"},	# 40
+  { permid: 50, name: "MSP RC OVERRIDE"},	# 41
+  { permid: 255, name: "BoxIds"}
 ]
+
+PERMNAMES = [
+  { boxid: 0, name: "ARM"},	# 0
+  { boxid: 1, name: "ANGLE"},	# 1
+  { boxid: 2, name: "HORIZON"},	# 2
+  { boxid: 3, name: "NAV ALTHOLD"},	# 3
+  {},		# 4
+  { boxid: 4, name: "HEADING HOLD"},	# 5
+  { boxid: 5, name: "HEADFREE"},	# 6
+  { boxid: 6, name: "HEADADJ"},	# 7
+  { boxid: 7, name: "CAMSTAB"},	# 8
+  {},		# 9
+  { boxid: 8, name: "NAV RTH"},	# 10
+  { boxid: 9, name: "NAV POSHOLD"},	# 11
+  { boxid: 10, name: "MANUAL"},	# 12
+  { boxid: 11, name: "BEEPER"},	# 13
+  {},		# 14
+  { boxid: 12, name: "LEDLOW"},	# 15
+  { boxid: 13, name: "LIGHTS"},	# 16
+  {},		# 17
+  {},		# 18
+  { boxid: 15, name: "OSD SW"},	# 19
+  { boxid: 16, name: "TELEMETRY"},	# 20
+  { boxid: 28, name: "AUTO TUNE"},	# 21
+  {},		# 22
+  {},		# 23
+  {},		# 24
+  {},		# 25
+  { boxid: 17, name: "BLACKBOX"},	# 26
+  { boxid: 18, name: "FAILSAFE"},	# 27
+  { boxid: 19, name: "NAV WP"},	# 28
+  { boxid: 20, name: "AIR MODE"},	# 29
+  { boxid: 21, name: "HOME RESET"},	# 30
+  { boxid: 22, name: "GCS NAV"},	# 31
+  { boxid: 39, name: "FPV ANGLE MIX"},	# 32
+  { boxid: 24, name: "SURFACE"},	# 33
+  { boxid: 25, name: "FLAPERON"},	# 34
+  { boxid: 26, name: "TURN ASSIST"},	# 35
+  { boxid: 14, name: "NAV LAUNCH"},	# 36
+  { boxid: 27, name: "SERVO AUTOTRIM"},	# 37
+  { boxid: 23, name: "KILLSWITCH"},	# 38
+  { boxid: 29, name: "CAMERA CONTROL 1"},	# 39
+  { boxid: 30, name: "CAMERA CONTROL 2"},	# 40
+  { boxid: 31, name: "CAMERA CONTROL 3"},	# 41
+  { boxid: 32, name: "OSD ALT 1"},	# 42
+  { boxid: 33, name: "OSD ALT 2"},	# 43
+  { boxid: 34, name: "OSD ALT 3"},	# 44
+  { boxid: 35, name: "NAV CRUISE"},	# 45
+  { boxid: 36, name: "MC BRAKING"},	# 46
+  { boxid: 37, name: "USER1"},	# 47
+  { boxid: 38, name: "USER2"},	# 48
+  { boxid: 40, name: "LOITER CHANGE"},	# 49
+  { boxid: 41, name: "MSP RC OVERRIDE"},	# 50
+  { boxid: 255, name: "PermIds"}
+]
+
 
 # src/main/io/serial.h
 
@@ -73,13 +134,47 @@ SERIALS = [
   "TELEMETRY_SIM"
 ]
 
+MON2MON = {"Jan" => 1, "Feb" => 2, "Mar" => 3, "Apr" => 4, "May" => 5,
+           "Jun" => 6, "Jul" => 7, "Aug" => 8, "Sep" => 9, "Oct" => 10,
+           "Nov" => 11, "Dec" => 12}
+
+force=nil
+
+ARGV.options do |opt|
+  opt.on('','--force-mode=[MODES]',[:boxids,:permids], "force aux modes (boxids,permids)") {|o|force=o}
+  opt.on('-?', "--help", "Show this message") {puts opt; exit}
+  begin
+    opt.parse!
+  rescue
+    puts opt ; exit
+  end
+end
+
+if force == :permids
+  nametable = PERMNAMES
+else
+  nametable = BOXNAMES
+end
+
 ini=false
+
 ARGF.each do |l|
   bname=''
 
-  if l.match (/^# INAV/)
+  if m=l.match(/^# INAV\/\S+\s+(\d+)\.(\d+)\.\d+\s+(\S+)\s+(\d+)\s+(\d+) /)
+    if force.nil?
+      major = m[1].to_i
+      minor = m[2].to_i
+      monstr = m[3]
+      day = m[4].to_i
+      mon = MON2MON[monstr]
+      useperm = !(major == 2 && (minor < 5 || (minor == 5 && (mon < FLAGMON || (mon == FLAGMON && day < FLAGDAY)))))
+      nametable = PERMNAMES if useperm
+      force=true
+    end
     puts
     puts l[2..]
+    puts "Using #{nametable[-1][:name]} for modes"
     puts
   end
 
@@ -111,11 +206,12 @@ ARGF.each do |l|
     min = a[4].to_i
     max = a[5].to_i
     next if min == max && max == 900
-    if func < BOXNAME.size
-      bname = BOXNAME[func]
+    if func < nametable.size
+      bname = nametable[func][:name]
     else
-      bname = "PermID #{func}"
+      bname = "Unknown"
     end
+
     if !ini
       ini=true
       puts
