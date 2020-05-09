@@ -16,6 +16,7 @@ port = nil
 rawf = nil
 dev = nil
 skip = false
+fdel = nil
 in_only = out_only = ltm_only = raw = omitx = false
 
 ARGV.options do |opt|
@@ -27,6 +28,7 @@ ARGV.options do |opt|
   opt.on('-l','--ltm') {ltm_only = true}
   opt.on('--omit-x-frame') {omitx = true}
   opt.on('-r','--raw') {raw = true}
+  opt.on('-d','--delay=N',Float) {|o| fdel = o}
   opt.on('-s','--skip-first','skip any initial delay for udp') {skip = true}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
@@ -107,7 +109,12 @@ File.open(ARGV[0]) do |f|
       end
     end
 
-    delta = ts-lt
+    if fdel
+      delta = fdel
+    else
+      delta = ts-lt
+    end
+
     puts "%10.6f sleep\n" % delta
     if dev
       if !(omitx && data[1] == 'T' && data[2] == 'X')

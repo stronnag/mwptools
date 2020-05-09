@@ -25,8 +25,8 @@ public class MSP : Object {
     }
 
     public enum Cmds {
-		NOOP = 0,
-		API_VERSION=1,
+        NOOP = 0,
+        API_VERSION=1,
         FC_VARIANT=2,
         FC_VERSION=3,
         BOARD_INFO=4,
@@ -131,7 +131,10 @@ public class MSP : Object {
         MAVLINK_MSG_VFR_HUD = (MAV_BASE+74),
         MAVLINK_MSG_ID_RADIO = (MAV_BASE+166),
         MAVLINK_MSG_ID_RADIO_STATUS = (MAV_BASE+109),
-
+        MAVLINK_MSG_ID_DATA_REQUEST = (MAV_BASE+66),
+        MAVLINK_MSG_ID_OWNSHIP = (MAV_BASE+202),
+        MAVLINK_MSG_ID_STATUS = (MAV_BASE+203),
+	MAVLINK_MSG_ID_TRAFFIC_REPORT = (MAV_BASE+246),
         INFO_WP = 0x30000,
         INVALID = 0xfffff
     }

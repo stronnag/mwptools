@@ -5,7 +5,7 @@ require 'optparse'
 ## src/main/fc/rc_modes.h
 
 FLAGMON=5
-FLAGDAY=15
+FLAGDAY=5
 
 BOXNAMES = [
   { permid: 0, name: "ARM"},	# 0

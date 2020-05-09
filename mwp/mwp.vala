@@ -48,6 +48,22 @@ public enum NMSTATE {
         NM_STATE_CONNECTED_GLOBAL = 70
 }
 
+public struct RadarPlot
+{
+    public uint id;
+    public string name;
+    public double latitude;
+    public double longitude;
+    public double altitude;
+    public uint16 heading;
+    public double speed;
+    public uint lasttick;
+    public uint8 state;
+    public uint8 lq;
+    public uint8 source;
+    public bool posvalid;
+}
+
 public struct CurrData
 {
     bool ampsok;
@@ -174,19 +190,6 @@ public struct MavPOSDef
     Craft.Special ptype;
     uint8 chan;
     uint8 set;
-}
-
-public struct RadarPlot
-{
-    uint8 id;
-    uint8 state;
-    double latitude;
-    double longitude;
-    double altitude;
-    uint16 heading;
-    double speed;
-    uint8 lq;
-    uint lasttick;
 }
 
 public class PosFormat : GLib.Object
@@ -709,7 +712,7 @@ public class MWPlanner : Gtk.Application {
     private TelemStats telstats;
     private LayMan lman;
 
-    private RadarPlot[] radar_plot={};
+    public SList<RadarPlot?> radar_plot;
 
     public enum NAVCAPS
     {
@@ -2180,6 +2183,7 @@ public class MWPlanner : Gtk.Application {
         if(forward_device != null)
             fwddev = new MWSerial.forwarder();
 
+        radar_plot = new SList<RadarPlot?>();
         if(radar_device != null)
         {
             rdrdev = new MWSerial.reader();
@@ -2193,6 +2197,29 @@ public class MWPlanner : Gtk.Application {
                     return Source.CONTINUE;
                 });
         }
+
+        Timeout.add_seconds(60, () => {
+                radar_plot.@foreach ((r) => {
+                        if((nticks - r.lasttick) > 120*10)
+                        {
+                            if(r.state != 3)
+                            {
+                                r.state = 3; // stale
+                                radarv.update(r, conf.dms);
+                                markers.set_radar_stale(r);
+                            }
+                            else if((nticks - r.lasttick) > 300*10)
+                            {
+                                r.state = 2; // hidden
+                                radarv.update(r, conf.dms);
+                                markers.set_radar_hidden(r);
+                            }
+
+                        }
+                    });
+                return Source.CONTINUE;
+            });
+
 
         mq = new Queue<MQI?>();
 
@@ -3875,18 +3902,9 @@ case 0:
                     last_dura = duration;
                 }
 
-                foreach (var r in radar_plot)
-                {
-                    if((nticks - r.lasttick) > RADARINTVL)
-                    {
-                        if(r.state != 3)
-                        {
-                            r.state = 3;
-                            radarv.update(r, conf.dms);
-                            markers.set_radar_stale(r.id);
-                        }
-                    }
-                }
+//                if((nticks % RADARINTVL) == 0)
+//                {
+//                }
                 return Source.CONTINUE;
             });
     }
@@ -5295,8 +5313,21 @@ case 0:
     public void handle_radar(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
-        if (cmd == MSP.Cmds.RADAR_POS || cmd == MSP.Cmds.COMMON_SET_RADAR_POS)
-            process_radar_pos(raw);
+        switch(cmd)
+        {
+            case MSP.Cmds.RADAR_POS:
+            case MSP.Cmds.COMMON_SET_RADAR_POS:
+                process_inav_radar_pos(raw);
+                break;
+
+            case MSP.Cmds.MAVLINK_MSG_ID_TRAFFIC_REPORT:
+                process_mavlink_radar(raw);
+                break;
+
+            default:
+//                MWPLog.message("Unhandled radar message %s\n", cmd.to_string());
+                break;
+        }
     }
 
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
@@ -7024,8 +7055,19 @@ case 0:
 
             case MSP.Cmds.RADAR_POS:
             case MSP.Cmds.COMMON_SET_RADAR_POS:
-                process_radar_pos(raw);
+                process_inav_radar_pos(raw);
                 break;
+
+            case MAVLINK_MSG_ID_DATA_REQUEST:
+            case MAVLINK_MSG_ID_OWNSHIP:
+            case MAVLINK_MSG_ID_STATUS:
+//                MWPLog.message("Ignoring mavlink %s\n", cmd.to_string());
+                break;
+
+            case MSP.Cmds.MAVLINK_MSG_ID_TRAFFIC_REPORT:
+                process_mavlink_radar(raw);
+                break;
+
 
             default:
                 uint mcmd;
@@ -7083,40 +7125,157 @@ case 0:
         run_queue();
     }
 
-    void process_radar_pos(uint8 *rp)
+    unowned RadarPlot? find_radar_data(uint id)
+    {
+        SearchFunc<RadarPlot?,uint>  plot_search = (a,b) =>  {
+            return (int) (a.id > b) - (int) (a.id < b);
+        };
+        unowned SList<RadarPlot?> res = radar_plot.search(id, plot_search);
+        unowned RadarPlot? ri = res.nth_data(0);
+        return ri;
+    }
+
+    void process_mavlink_radar(uint8 *rp)
+    {
+        var sb = new StringBuilder("MAV radar:");
+        uint32 v;
+        int32 i;
+        uint16 valid;
+
+        deserialise_u16(rp+22, out valid);
+        deserialise_u32(rp, out v);
+        sb.append_printf("ICAO %u ", v);
+        sb.append_printf("flags: %04x ", valid);
+        if ((valid & 1)  == 1)
+        {
+            deserialise_i32(rp+4, out i);
+            double lat = i / 1e7;
+            sb.append_printf("lat %.6f ", lat);
+
+            deserialise_i32(rp+8, out i);
+            double lon = i / 1e7;
+            sb.append_printf("lon %.6f ", lon);
+
+            string callsign;
+            if ((valid & 0x10) == 0x10)
+            {
+                uint8 cs[10];
+                uint8 *csp = cs;
+                for(var j=0; j < 9; j++)
+                    if (*(rp+27+j) != ' ')
+                        *csp++ = *(rp+27+j);
+                *csp  = 0;
+                callsign = (string)cs;
+            }
+            else
+            {
+                callsign = "%u".printf(v);
+            }
+            sb.append_printf("callsign <%s> ", callsign);
+            unowned RadarPlot? ri = find_radar_data(v);
+            if (ri == null)
+            {
+                var r0 = RadarPlot();
+                r0.id =  v;
+                radar_plot.append(r0);
+                ri = find_radar_data(v);
+                ri.name = callsign;
+                ri.source = 2;
+                ri.posvalid = false;
+                sb.append(" * ");
+            }
+            else
+                ri.name = callsign;
+
+            ri.latitude = lat;
+            ri.longitude = lon;
+            ri.lasttick = nticks;
+            ri.state = 4;
+
+            if((valid & 2) == 2)
+            {
+                deserialise_i32(rp+12, out i);
+                var l = i / 1000.0;
+                sb.append_printf("alt %.1f ", l);
+                ri.altitude = l;
+            }
+
+            if((valid & 4) == 4)
+            {
+                uint16 h;
+                deserialise_u16(rp+16, out h);
+                sb.append_printf("heading %u ", h);
+                ri.heading = h/100;
+            }
+            if((valid & 8) == 8)
+            {
+                uint16 hv;
+                deserialise_u16(rp+18, out hv);
+                ri.speed = hv/100.0;
+                sb.append_printf("speed %u ", hv);
+            }
+            sb.append_printf("tslc %u ", *(rp+37));
+            ri.lq = *(rp+37);
+
+            sb.append_printf("ticks %u ", ri.lasttick);
+            if(lat != 0 && lon != 0)
+            {
+                ri.posvalid = true;
+                markers.show_radar(ri);
+            }
+            else
+                ri.posvalid = false;
+            radarv.update(ri, conf.dms);
+        }
+        else
+        {
+            sb.append_printf("invalid location data ");
+        }
+        sb.append_printf("size %u\n", radar_plot.length());
+        MWPLog.message(sb.str);
+
+    }
+
+    void process_inav_radar_pos(uint8 *rp)
     {
         uint8 id = *rp++;
-        if(id >= radar_plot.length)
+        SearchFunc<RadarPlot?,uint>  plot_search = (a,b) =>  {
+           return (int) (a.id > b) - (int) (a.id < b);
+        };
+
+        unowned SList<RadarPlot?> res = radar_plot.search((uint)id, plot_search);
+        var ri = res.nth_data(0);
+        if (ri == null)
         {
-            for(var j = radar_plot.length; j < id+1; j++)
-            {
-                var rdrp = RadarPlot();
-                radar_plot += rdrp;
-                radar_plot[j].id = (uint8)j;
-            }
+            var rdrp = RadarPlot();
+            rdrp.id =  id;
+            rdrp.name = "⚙ %c".printf(65+id);
+            ri = rdrp;
+            radar_plot.insert_sorted(rdrp, ((a,b) => {
+                        return a.name.collate(b.name);
+                        }));
         }
         int32 ipos;
         uint16 ispd;
-
-        radar_plot[id].state = *rp++;
+        ri.state = *rp++;
         rp = deserialise_i32(rp, out ipos);
-        radar_plot[id].latitude = ipos/10000000.0;
+        ri.latitude = ipos/10000000.0;
         rp = deserialise_i32(rp, out ipos);
-        radar_plot[id].longitude = ipos/10000000.0;
+        ri.longitude = ipos/10000000.0;
         rp = deserialise_i32(rp, out ipos);
-        radar_plot[id].altitude = ipos/100.0;
-        rp = deserialise_u16(rp, out radar_plot[id].heading);
+        ri.altitude = ipos/100.0;
+        rp = deserialise_u16(rp, out ri.heading);
         rp = deserialise_u16(rp, out ispd);
-        radar_plot[id].speed = ispd/100.0;
-        radar_plot[id].lq = *rp;
-        radar_plot[id].lasttick = nticks;
+        ri.speed = ispd/100.0;
+        ri.lq = *rp;
+        ri.lasttick = nticks;
 /*
   MWPLog.message("Radar for %u %f %f %.1f %u° %.1f\n",
   id, radar_plot[id].latitude, radar_plot[id].longitude, radar_plot[id].altitude,
   radar_plot[id].heading, radar_plot[id].speed, radar_plot[id].lq);
 */
-        markers.show_radar(id, radar_plot[id]);
-        radarv.update(radar_plot[id], conf.dms);
+        markers.show_radar(ri);
+        radarv.update(ri, conf.dms);
     }
 
     private void set_typlab()

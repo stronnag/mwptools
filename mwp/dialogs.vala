@@ -329,17 +329,20 @@ public class RadarView : Object
 
     public Gtk.Grid grid {get; private set;}
     private Gtk.Label [,] rlab;
-    private Gtk.Dialog w;
+    private Gtk.Window w;
     private bool vis = false;
-    public const int MAXRADAR = 8;
-    private const int [] WIDTHS = {6, 16, 16, 10, 10, 10, 16 };
+    public const int MAXRADAR = 80;
+    private const int [] WIDTHS = {10, 16, 16, 10, 10, 10, 16 };
     private uint maxradar;
 
     public RadarView(Gtk.Builder builder, Gtk.Window _w, uint _maxradar=MAXRADAR)
     {
-        maxradar = _maxradar;
+        maxradar = MAXRADAR; //_maxradar;
         rlab = new Gtk.Label[maxradar+1,7];
-        w = new Gtk.Dialog();
+        w = new Gtk.Window();
+        var scrolled = new Gtk.ScrolledWindow (null, null);
+        w.set_default_size (720, 300);
+        w.add(scrolled);
         w.title = "Radar Data";
         grid = new Gtk.Grid() ; // builder.get_object ("rv_grid") as Gtk.Grid;
 
@@ -349,26 +352,25 @@ public class RadarView : Object
         add_row(0, 3, "Altitude");
         add_row(0, 4, "Course");
         add_row(0, 5, "Speed");
-        add_row(0, 6, "Status / lq");
+        add_row(0, 6, "Status");
 
-        for (var i = 0; i < maxradar; i++)
+        for (var i = 1; i <= maxradar; i++)
         {
-            add_row(i+1,0, "# %c".printf(i+65));
-            for(var j = 1; j < 7; j++)
-                add_row(i+1, j, "");
-            clear_radar(i, true);
+            for(var j = 0; j < 7; j++)
+                add_row(i, j, "");
+            clear_radar(i,false);
         }
-
-        w.get_content_area().add(grid);
+        scrolled.add (grid);
+//        w.get_content_area().add(grid);
         w.set_transient_for(_w);
         w.delete_event.connect (() => {
                 show_or_hide();
                 return true;
             });
 
-        w.close.connect (() => {
-                show_or_hide();
-            });
+//        w.close.connect (() => {
+//                show_or_hide();
+//            });
 
     }
 
@@ -390,14 +392,35 @@ public class RadarView : Object
         grid.attach(rlab[row, col], col, row, 1, 1);
     }
 
+    private int find_row(RadarPlot r)
+    {
+        int lb = -1;
+
+        for(int i = 1; i <= maxradar; i++)
+        {
+            if(lb == -1 && rlab[i,0].label == "")
+                lb = i;
+            if(rlab[i,0].label == r.name)
+                return i;
+            else
+            {
+                var aid = "%u".printf(r.id);
+                if(rlab[i,0].label == aid)
+                return i;
+            }
+        }
+        return lb;
+    }
+
     public void  update(RadarPlot r, bool dms)
     {
-        string[] sts = {"Undefined", "Armed", "Hidden", "Stale"};
-        if(r.id < maxradar && vis)
+        string[] sts = {"Undefined", "Armed", "Hidden", "Stale", "ADS-B"};
+        if(vis)
         {
-            int row = r.id + 1;
-           if(r.state != 0)
+            int row = find_row(r);
+            if(r.state != 0)
             {
+                rlab[row, 0].label = r.name;
                 rlab[row, 1].label = PosFormat.lat(r.latitude,dms);
                 rlab[row, 2].label = PosFormat.lon(r.longitude,dms);
                 rlab[row, 3].label = "%.1f %s".printf(Units.distance(r.altitude),
@@ -407,7 +430,7 @@ public class RadarView : Object
             }
             else
             {
-                clear_radar(r.id, false);
+                clear_radar(row, false);
             }
 
             if(r.state >= sts.length)
@@ -416,12 +439,13 @@ public class RadarView : Object
         }
     }
 
-    public void clear_radar(uint8 id, bool all = true)
+    public void clear_radar(int row, bool all = true)
     {
+        rlab[row,0].label = "";
         for(var k = 1; k < 6; k++)
-            rlab[id+1,k].label = "---";
+            rlab[row,k].label = "---";
         if(all)
-            rlab[id+1,6].label = "Undefined / -";
+            rlab[row,6].label = "Undefined / -";
     }
 
     public void show_or_hide()
@@ -433,7 +457,6 @@ public class RadarView : Object
 
         vis = !vis;
     }
-
 }
 
 

@@ -36,7 +36,6 @@ public class MWPMarkers : GLib.Object
     private Champlain.PathLayer []rings;                 // range rings layers (per radius)
     private bool rth_land;
     private Champlain.MarkerLayer rdrmarkers;                // Mission Markers
-    private Champlain.Label[] rplots;
     private Champlain.View _v;
     private List<uint> llist;
 
@@ -51,8 +50,6 @@ public class MWPMarkers : GLib.Object
         ipath = new Champlain.PathLayer();
         jpath = {};
         rdrmarkers = new Champlain.MarkerLayer();
-
-        rplots = {};
 
         view.add_layer(rdrmarkers);
         view.add_layer(rlayer);
@@ -84,33 +81,59 @@ public class MWPMarkers : GLib.Object
         posring.hide();
     }
 
-    public void set_radar_stale(uint8 id)
+    private unowned Champlain.Label find_radar_item(RadarPlot r)
     {
-        Clutter.Color less_white = { 0xc0,0xc0,0xc0, 0xf0};
-        rplots[id].set_color (less_white);
+        unowned Champlain.Label rd = null;
+        rdrmarkers.get_markers().foreach ((m) => {
+                if(rd == null)
+                {
+                    var aid = "%u".printf(r.id);
+                    if(((Champlain.Label)m).get_text() == aid)
+                        rd = (Champlain.Label)m;
+                    else  if(((Champlain.Label)m).get_text() == r.name)
+                        rd = (Champlain.Label)m;
+                }
+            });
+        return rd;
     }
 
-    public void show_radar(uint8 id, RadarPlot r)
+    public void set_radar_stale(RadarPlot r)
     {
-        if(id >= rplots.length)
-        {
-            string text;
-            if(id < 26)
-                text = "⚙ %c".printf(65+id);
-            else
-                text = "⚙ #%u".printf(id);
-            Clutter.Color black = { 0,0,0, 0xff };
-            var rdrp = new Champlain.Label.with_text (text,"Sans 10",null,null);
-            rplots +=  rdrp;
-            rplots[id].set_alignment (Pango.Alignment.RIGHT);
-            rplots[id].set_text_color(black);
-            rplots[id].set_draggable(false);
-            rplots[id].set_selectable(false);
-            rdrmarkers.add_marker (rplots[id]);
-        }
+        Clutter.Color less_white = { 0xc0,0xc0,0xc0, 0xf0};
+        var rp = find_radar_item(r);
+        if(rp != null)
+            rp.set_color (less_white);
+    }
+
+
+    public void set_radar_hidden(RadarPlot r)
+    {
+        var rp = find_radar_item(r);
+        if(rp != null)
+            rp.visible = false;
+    }
+
+    public void show_radar(RadarPlot r)
+    {
         Clutter.Color white = { 0xff,0xff,0xff, 0xff };
-        rplots[id].set_color (white);
-        rplots[id].set_location (r.latitude,r.longitude);
+        var rp = find_radar_item(r);
+
+        if(rp == null)
+        {
+            Clutter.Color black = { 0,0,0, 0xff };
+            var rdrp = new Champlain.Label.with_text (r.name,"Sans 10",null,null);
+            rdrp .set_alignment (Pango.Alignment.RIGHT);
+            rdrp.set_text_color(black);
+            rdrp.set_draggable(false);
+            rdrp.set_selectable(false);
+            rdrmarkers.add_marker (rdrp);
+            rp = rdrp;
+        }
+        if(rp.text != r.name)
+            rp.text = r.name;
+
+        rp.set_color (white);
+        rp.set_location (r.latitude,r.longitude);
     }
 
     public void set_rth_icon(bool iland)
