@@ -2198,29 +2198,6 @@ public class MWPlanner : Gtk.Application {
                 });
         }
 
-        Timeout.add_seconds(60, () => {
-                radar_plot.@foreach ((r) => {
-                        if((nticks - r.lasttick) > 120*10)
-                        {
-                            if(r.state != 3)
-                            {
-                                r.state = 3; // stale
-                                radarv.update(r, conf.dms);
-                                markers.set_radar_stale(r);
-                            }
-                            else if((nticks - r.lasttick) > 300*10)
-                            {
-                                r.state = 2; // hidden
-                                radarv.update(r, conf.dms);
-                                markers.set_radar_hidden(r);
-                            }
-
-                        }
-                    });
-                return Source.CONTINUE;
-            });
-
-
         mq = new Queue<MQI?>();
 
         build_deventry();
@@ -3902,9 +3879,28 @@ case 0:
                     last_dura = duration;
                 }
 
-//                if((nticks % RADARINTVL) == 0)
-//                {
-//                }
+                if((nticks % RADARINTVL) == 0)
+                {
+                    radar_plot.@foreach ((r) => {
+                            uint delta = nticks - r.lasttick;
+                            if(delta > 120*10)
+                            {
+                                if(r.state != 3)
+                                {
+                                    r.state = 3; // stale
+                                    radarv.update(r, conf.dms);
+                                    markers.set_radar_stale(r);
+                                }
+                                else if(delta > 300*10)
+                            {
+                                r.state = 2; // hidden
+                                radarv.update(r, conf.dms);
+                                markers.set_radar_hidden(r);
+                            }
+
+                        }
+                    });
+                }
                 return Source.CONTINUE;
             });
     }

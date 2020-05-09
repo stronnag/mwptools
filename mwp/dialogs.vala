@@ -332,16 +332,17 @@ public class RadarView : Object
     private Gtk.Window w;
     private bool vis = false;
     public const int MAXRADAR = 80;
-    private const int [] WIDTHS = {10, 16, 16, 10, 10, 10, 16 };
+    public const int NCOL = 8;
+    private const int [] WIDTHS = {10, 16, 16, 10, 10, 10, 12, 12};
     private uint maxradar;
 
     public RadarView(Gtk.Builder builder, Gtk.Window _w, uint _maxradar=MAXRADAR)
     {
         maxradar = MAXRADAR; //_maxradar;
-        rlab = new Gtk.Label[maxradar+1,7];
+        rlab = new Gtk.Label[maxradar+1,NCOL];
         w = new Gtk.Window();
         var scrolled = new Gtk.ScrolledWindow (null, null);
-        w.set_default_size (720, 300);
+        w.set_default_size (750, 300);
         w.add(scrolled);
         w.title = "Radar Data";
         grid = new Gtk.Grid() ; // builder.get_object ("rv_grid") as Gtk.Grid;
@@ -353,10 +354,11 @@ public class RadarView : Object
         add_row(0, 4, "Course");
         add_row(0, 5, "Speed");
         add_row(0, 6, "Status");
+        add_row(0, 7, "Last");
 
         for (var i = 1; i <= maxradar; i++)
         {
-            for(var j = 0; j < 7; j++)
+            for(var j = 0; j < NCOL; j++)
                 add_row(i, j, "");
             clear_radar(i,false);
         }
@@ -436,6 +438,12 @@ public class RadarView : Object
             if(r.state >= sts.length)
                 r.state = 0;
             rlab[row,6].label = "%s / %u".printf(sts[r.state], r.lq);
+
+            if(r.state == 1 || r.state == 4)
+            {
+                var dt = new DateTime.now_local ();
+                rlab[row,7].label = dt.format("%T");
+            }
         }
     }
 
