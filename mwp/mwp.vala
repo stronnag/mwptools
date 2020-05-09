@@ -8081,6 +8081,8 @@ case 0:
             if(rdrdev.open (radar_device, 0, out fstr) == true)
             {
                 MWPLog.message("start radar reader %s\n", radar_device);
+                if(rawlog)
+                    rdrdev.raw_logging(true);
             }
             else
             {
