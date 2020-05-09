@@ -3888,6 +3888,8 @@ case 0:
                             uint delta = nticks - r.lasttick;
                             if (delta > 600*10)
                             {
+                                MWPLog.message("TRAF-DEL %s %u\n",
+                                               r.name, r.source);
                                 if(r.source == 2)
                                 {
                                     radarv.remove(r);
@@ -3897,6 +3899,8 @@ case 0:
                             }
                             else if(delta > 300*10)
                             {
+                                MWPLog.message("TRAF-HID %s %u\n",
+                                               r.name, r.source);
                                 if(r.source == 2)
                                 {
                                     r.state = 2; // hidden
@@ -3904,8 +3908,10 @@ case 0:
                                     markers.set_radar_hidden(r);
                                 }
                             }
-                            else if(delta > staled && r.state != 3)
+                            else if(delta > staled && r.state != 0 && r.state != 3)
                             {
+                                MWPLog.message("TRAF-STALE %s %u\n",
+                                               r.name, r.source);
                                 r.state = 3; // stale
                                 radarv.update(r, conf.dms);
                                 markers.set_radar_stale(r);
@@ -7171,32 +7177,29 @@ case 0:
         deserialise_u32(rp, out v);
         sb.append_printf("ICAO %u ", v);
         sb.append_printf("flags: %04x ", valid);
-        if ((valid & 1)  == 1)
+        string callsign;
+        double lat = 0;
+        double lon = 0;
+
+        if ((valid & 0x10) == 0x10)
         {
-            deserialise_i32(rp+4, out i);
-            double lat = i / 1e7;
-            sb.append_printf("lat %.6f ", lat);
-
-            deserialise_i32(rp+8, out i);
-            double lon = i / 1e7;
-            sb.append_printf("lon %.6f ", lon);
-
-            string callsign;
-            if ((valid & 0x10) == 0x10)
-            {
-                uint8 cs[10];
-                uint8 *csp = cs;
-                for(var j=0; j < 9; j++)
-                    if (*(rp+27+j) != ' ')
-                        *csp++ = *(rp+27+j);
+            uint8 cs[10];
+            uint8 *csp = cs;
+            for(var j=0; j < 9; j++)
+                if (*(rp+27+j) != ' ')
+                    *csp++ = *(rp+27+j);
                 *csp  = 0;
                 callsign = (string)cs;
-            }
-            else
-            {
-                callsign = "%u".printf(v);
-            }
-            sb.append_printf("callsign <%s> ", callsign);
+        }
+        else
+        {
+            callsign = "%u".printf(v);
+        }
+        sb.append_printf("callsign <%s> ", callsign);
+
+
+        if ((valid & 1)  == 1)
+        {
             unowned RadarPlot? ri = find_radar_data(v);
             if (ri == null)
             {
@@ -7212,10 +7215,18 @@ case 0:
             else
                 ri.name = callsign;
 
+            deserialise_i32(rp+4, out i);
+            lat = i / 1e7;
+            sb.append_printf("lat %.6f ", lat);
+
+            deserialise_i32(rp+8, out i);
+            lon = i / 1e7;
+            sb.append_printf("lon %.6f ", lon);
+
             ri.latitude = lat;
             ri.longitude = lon;
-            ri.lasttick = nticks;
             ri.state = 4;
+            ri.lasttick = nticks;
 
             if((valid & 2) == 2)
             {
@@ -7248,17 +7259,15 @@ case 0:
                 ri.posvalid = true;
                 markers.show_radar(ri);
             }
-            else
-                ri.posvalid = false;
             radarv.update(ri, conf.dms);
         }
         else
         {
-            sb.append_printf("invalid location data ");
+            sb.append("invald pos ");
         }
+
         sb.append_printf("size %u\n", radar_plot.length());
         MWPLog.message(sb.str);
-
     }
 
     void process_inav_radar_pos(uint8 *rp)

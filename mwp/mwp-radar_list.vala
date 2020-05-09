@@ -8,7 +8,7 @@ class RadarView : Object
     private bool vis = false;
 
     enum Column {
-        ID,
+        NAME,
         LAT,
         LON,
         ALT,
@@ -16,6 +16,7 @@ class RadarView : Object
         SPEED,
         STATUS,
         LAST,
+        ID,
         NO_COLS
     }
 
@@ -54,8 +55,8 @@ class RadarView : Object
         {
             GLib.Value cell;
             listmodel.get_value (iter, Column.ID, out cell);
-            var name = (string)cell;
-            if(name == r.name)
+            var id = (uint)cell;
+            if(id == r.id)
             {
                 found = true;
                 break;
@@ -83,7 +84,11 @@ class RadarView : Object
         Gtk.TreeIter iter;
         var found = find_entry(r, out iter);
         if(!found)
+        {
             listmodel.append (out iter);
+            listmodel.set (iter, Column.ID,r.id);
+        }
+
 
         string[] sts = {"Undefined", "Armed", "Hidden", "Stale", "ADS-B"};
 
@@ -92,7 +97,7 @@ class RadarView : Object
         var stsstr = "%s / %u".printf(sts[r.state], r.lq);
 
         listmodel.set (iter,
-                       Column.ID,r.name,
+                       Column.NAME,r.name,
                        Column.LAT, "%s".printf(PosFormat.lat(r.latitude,dms)),
                        Column.LON, "%s".printf(PosFormat.lon(r.longitude,dms)),
                        Column.ALT,"%.0f %s".printf(Units.distance(r.altitude), Units.distance_units()),
@@ -118,7 +123,8 @@ class RadarView : Object
                                        typeof (string),
                                        typeof (string),
                                        typeof (string),
-                                       typeof (string) );
+                                       typeof (string),
+                                       typeof (uint));
 
         view.set_model (listmodel);
         var cell = new Gtk.CellRendererText ();
@@ -133,7 +139,7 @@ class RadarView : Object
             /*columns*/
         view.insert_column_with_attributes (-1, "Id",
                                             cell, "text",
-                                            Column.ID);
+                                            Column.NAME);
 
 
         view.insert_column_with_attributes (-1, "Latitude",
@@ -162,14 +168,14 @@ class RadarView : Object
                                             "text", Column.LAST);
 
         int [] widths = {12, 16, 16, 10, 10, 10, 12, 12};
-        for (int j = Column.ID; j < Column.NO_COLS; j++)
+        for (int j = Column.NAME; j <= Column.LAST; j++)
         {
             var scol =  view.get_column(j);
             if(scol!=null)
             {
                 scol.set_min_width(7*widths[j]);
                 scol.resizable = true;
-                if (j == Column.ID || j == Column.STATUS || j == Column.LAST)
+                if (j == Column.NAME || j == Column.STATUS || j == Column.LAST)
                     scol.set_sort_column_id(j);
             }
         }
