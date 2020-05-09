@@ -1854,7 +1854,7 @@ public class MWPlanner : Gtk.Application {
         telemstatus = new TelemetryStats(builder);
         fbox  = new FlightBox(builder,window);
         dbox = new DirnBox(builder, conf.horizontal_dbox);
-        radarv = new RadarView(builder,window,conf.max_radar);
+        radarv = new RadarView(window);
         view = embed.get_view();
         view.set_reactive(true);
 
@@ -2250,10 +2250,12 @@ public class MWPlanner : Gtk.Application {
             foreach (var delim in delims)
             {
                 var parts = llstr.split(delim);
-                if(parts.length == 2)
+                if(parts.length >= 2)
                 {
                     clat = InputParser.get_latitude(parts[0]);
                     clon = InputParser.get_longitude(parts[1]);
+                    if(parts.length == 3)
+                        zm = int.parse(parts[2]);
                     break;
                 }
             }
@@ -3883,22 +3885,25 @@ case 0:
                 {
                     radar_plot.@foreach ((r) => {
                             uint delta = nticks - r.lasttick;
-                            if(delta > 120*10)
+                            if (delta > 600*10)
                             {
-                                if(r.state != 3)
-                                {
-                                    r.state = 3; // stale
-                                    radarv.update(r, conf.dms);
-                                    markers.set_radar_stale(r);
-                                }
-                                else if(delta > 300*10)
+                                MWPLog.message("Killing %s\n", r.name);
+                                radarv.remove(r);
+                                markers.remove_radar(r);
+                                radar_plot.remove_all(r);
+                            }
+                            else if(delta > 300*10)
                             {
                                 r.state = 2; // hidden
                                 radarv.update(r, conf.dms);
                                 markers.set_radar_hidden(r);
                             }
-
-                        }
+                            else if(delta > 120*10 && r.state != 3)
+                            {
+                                r.state = 3; // stale
+                                radarv.update(r, conf.dms);
+                                markers.set_radar_stale(r);
+                            }
                     });
                 }
                 return Source.CONTINUE;
@@ -7054,16 +7059,27 @@ case 0:
                 process_inav_radar_pos(raw);
                 break;
 
-            case MAVLINK_MSG_ID_DATA_REQUEST:
             case MAVLINK_MSG_ID_OWNSHIP:
-            case MAVLINK_MSG_ID_STATUS:
-//                MWPLog.message("Ignoring mavlink %s\n", cmd.to_string());
+                {
+                    int32 i;
+                    uint16 j;
+                    deserialise_i32(raw+4, out i);
+                    double lat = i / 1e7;
+                    deserialise_i32(raw+8, out i);
+                    double lon = i / 1e7;
+                    deserialise_u16(raw+34, out j);
+                    MWPLog.message("MAV-OS %.6f %.6f %04x %02x %02x\n",
+                                   lat,lon, j, raw[38], raw[41]);
+                }
                 break;
 
             case MSP.Cmds.MAVLINK_MSG_ID_TRAFFIC_REPORT:
                 process_mavlink_radar(raw);
                 break;
 
+            case MAVLINK_MSG_ID_DATA_REQUEST:
+            case MAVLINK_MSG_ID_STATUS:
+                break;
 
             default:
                 uint mcmd;

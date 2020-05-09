@@ -105,6 +105,12 @@ public class MWPMarkers : GLib.Object
             rp.set_color (less_white);
     }
 
+    public void remove_radar(RadarPlot r)
+    {
+        var rp = find_radar_item(r);
+        if(rp != null)
+            rdrmarkers.remove_marker(rp);
+    }
 
     public void set_radar_hidden(RadarPlot r)
     {
