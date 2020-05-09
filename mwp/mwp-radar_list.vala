@@ -23,16 +23,16 @@ class RadarView : Object
         w = new Gtk.Window();
         var scrolled = new Gtk.ScrolledWindow (null, null);
         w.set_default_size (750, 300);
-        w.add(scrolled);
         w.title = "Radar Data";
         var view = new Gtk.TreeView ();
-        this.setup_treeview (view);
+        setup_treeview (view);
         view.expand = true;
         label = new Gtk.Label ("");
         var grid = new Gtk.Grid ();
-        grid.attach (view, 0, 0, 1, 1);
+        scrolled.add(view);
+        grid.attach (scrolled, 0, 0, 1, 1);
         grid.attach (label, 0, 1, 1, 1);
-        scrolled.add (grid);
+        w.add (grid);
         w.set_transient_for(_w);
         w.delete_event.connect (() => {
                 show_or_hide();
