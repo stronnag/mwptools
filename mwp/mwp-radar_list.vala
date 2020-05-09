@@ -161,13 +161,14 @@ class RadarView : Object
                                             new Gtk.CellRendererText (),
                                             "text", Column.LAST);
 
-        int [] widths = {10, 16, 16, 10, 10, 10, 12, 12};
+        int [] widths = {12, 16, 16, 10, 10, 10, 12, 12};
         for (int j = Column.ID; j < Column.NO_COLS; j++)
         {
             var scol =  view.get_column(j);
             if(scol!=null)
             {
                 scol.set_min_width(7*widths[j]);
+                scol.resizable = true;
                 if (j == Column.ID || j == Column.STATUS || j == Column.LAST)
                     scol.set_sort_column_id(j);
             }

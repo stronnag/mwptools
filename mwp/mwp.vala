@@ -3884,21 +3884,27 @@ case 0:
                 if((nticks % RADARINTVL) == 0)
                 {
                     radar_plot.@foreach ((r) => {
+                            var staled = (r.source == 2) ? 120*10 : 50;
                             uint delta = nticks - r.lasttick;
                             if (delta > 600*10)
                             {
-                                MWPLog.message("Killing %s\n", r.name);
-                                radarv.remove(r);
-                                markers.remove_radar(r);
-                                radar_plot.remove_all(r);
+                                if(r.source == 2)
+                                {
+                                    radarv.remove(r);
+                                    markers.remove_radar(r);
+                                    radar_plot.remove_all(r);
+                                }
                             }
                             else if(delta > 300*10)
                             {
-                                r.state = 2; // hidden
-                                radarv.update(r, conf.dms);
-                                markers.set_radar_hidden(r);
+                                if(r.source == 2)
+                                {
+                                    r.state = 2; // hidden
+                                    radarv.update(r, conf.dms);
+                                    markers.set_radar_hidden(r);
+                                }
                             }
-                            else if(delta > 120*10 && r.state != 3)
+                            else if(delta > staled && r.state != 3)
                             {
                                 r.state = 3; // stale
                                 radarv.update(r, conf.dms);
@@ -5325,8 +5331,11 @@ case 0:
                 process_mavlink_radar(raw);
                 break;
 
+            case MSP.Cmds.MAVLINK_MSG_ID_OWNSHIP:
+                dump_mav_os_msg(raw);
+                break;
+
             default:
-//                MWPLog.message("Unhandled radar message %s\n", cmd.to_string());
                 break;
         }
     }
@@ -7059,26 +7068,16 @@ case 0:
                 process_inav_radar_pos(raw);
                 break;
 
-            case MAVLINK_MSG_ID_OWNSHIP:
-                {
-                    int32 i;
-                    uint16 j;
-                    deserialise_i32(raw+4, out i);
-                    double lat = i / 1e7;
-                    deserialise_i32(raw+8, out i);
-                    double lon = i / 1e7;
-                    deserialise_u16(raw+34, out j);
-                    MWPLog.message("MAV-OS %.6f %.6f %04x %02x %02x\n",
-                                   lat,lon, j, raw[38], raw[41]);
-                }
+            case MSP.Cmds.MAVLINK_MSG_ID_OWNSHIP:
+                dump_mav_os_msg(raw);
                 break;
 
             case MSP.Cmds.MAVLINK_MSG_ID_TRAFFIC_REPORT:
                 process_mavlink_radar(raw);
                 break;
 
-            case MAVLINK_MSG_ID_DATA_REQUEST:
-            case MAVLINK_MSG_ID_STATUS:
+            case MSP.Cmds.MAVLINK_MSG_ID_DATA_REQUEST:
+            case MSP.Cmds.MAVLINK_MSG_ID_STATUS:
                 break;
 
             default:
@@ -7146,6 +7145,20 @@ case 0:
         unowned RadarPlot? ri = res.nth_data(0);
         return ri;
     }
+
+    void dump_mav_os_msg(uint8 *raw)
+    {
+        int32 i;
+        uint16 j;
+        deserialise_i32(raw+4, out i);
+        double lat = i / 1e7;
+        deserialise_i32(raw+8, out i);
+        double lon = i / 1e7;
+        deserialise_u16(raw+34, out j);
+        MWPLog.message("MAV-OS %.6f %.6f %04x %02x %02x\n",
+                       lat,lon, j, raw[38], raw[41]);
+    }
+
 
     void process_mavlink_radar(uint8 *rp)
     {
