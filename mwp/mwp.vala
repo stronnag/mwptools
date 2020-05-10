@@ -660,7 +660,8 @@ public class MWPlanner : Gtk.Application {
         WP = 1,
         INIT=2,
         MSP=4,
-        ADHOC=8
+        ADHOC=8,
+        RADAR=16
     }
 
     private enum SAT_FLAGS
@@ -3893,8 +3894,8 @@ case 0:
                             uint delta = nticks - r.lasttick;
                             if (delta > 600*10)
                             {
-                                MWPLog.message("TRAF-DEL %s %u\n",
-                                               r.name, r.source);
+                                if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
+                                    MWPLog.message("TRAF-DEL %s %u\n", r.name, r.state);
                                 if(r.source == 2)
                                 {
                                     radarv.remove(r);
@@ -3904,8 +3905,8 @@ case 0:
                             }
                             else if(delta > 300*10)
                             {
-                                MWPLog.message("TRAF-HID %s %u\n",
-                                               r.name, r.source);
+                                if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
+                                    MWPLog.message("TRAF-HID %s %u\n", r.name, r.state);
                                 if(r.source == 2)
                                 {
                                     r.state = 2; // hidden
@@ -3915,8 +3916,8 @@ case 0:
                             }
                             else if(delta > staled && r.state != 0 && r.state != 3)
                             {
-                                MWPLog.message("TRAF-STALE %s %u\n",
-                                               r.name, r.source);
+                                if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
+                                    MWPLog.message("TRAF-STALE %s %u\n", r.name, r.state);
                                 r.state = 3; // stale
                                 radarv.update(r, conf.dms);
                                 markers.set_radar_stale(r);
@@ -7273,7 +7274,8 @@ case 0:
         }
 
         sb.append_printf("size %u\n", radar_plot.length());
-        MWPLog.message(sb.str);
+        if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
+            MWPLog.message(sb.str);
     }
 
     void process_inav_radar_pos(uint8 *rp)

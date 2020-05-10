@@ -44,16 +44,9 @@ class RadarView : Object
         buttons[0].clicked.connect (() => {
                 vis_change(hidden);
                 if(!hidden)
-                {
                     buttons[0].label = "Show symbols";
-                    print("Hiding symbols\n");
-                }
                 else
-                {
                     buttons[0].label = "Hide symbols";
-                    print("Showing symbols\n");
-
-                }
                 hidden = !hidden;
             });
 

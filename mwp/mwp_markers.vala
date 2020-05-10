@@ -38,10 +38,24 @@ public class MWPMarkers : GLib.Object
     private Champlain.MarkerLayer rdrmarkers;                // Mission Markers
     private Champlain.View _v;
     private List<uint> llist;
+    private Quark q0;
+    private Quark q1;
+
+    private Clutter.Color black;
+    private Clutter.Color near_black;
+    private Clutter.Color white;
 
     public MWPMarkers(ListBox lb, Champlain.View view, string mkcol ="#ffffff60")
     {
         _v = view;
+
+        Clutter.Color orange = {0xff, 0xa0, 0x0, 0x80};
+        Clutter.Color rcol = {0xff, 0x0, 0x0, 0x80};
+
+        black.init(0,0,0, 0xff);
+        near_black.init(0x40,0x40,0x40, 0xa0);
+        white.init(0xff,0xff,0xff, 0xff);
+
         rth_land = false;
         markers = new Champlain.MarkerLayer();
         rlayer = new Champlain.MarkerLayer();
@@ -62,12 +76,10 @@ public class MWPMarkers : GLib.Object
         llist = new List<uint>();
         llist.append(10);
         llist.append(5);
-        Clutter.Color orange = {0xff, 0xa0, 0x0, 0x80};
+
         hpath.set_stroke_color(orange);
         hpath.set_dash(llist);
         hpath.set_stroke_width (8);
-
-        Clutter.Color rcol = {0xff, 0x0, 0x0, 0x80};
         path.set_stroke_color(rcol);
         path.set_stroke_width (8);
 
@@ -79,6 +91,8 @@ public class MWPMarkers : GLib.Object
         posring = new Champlain.Point.full(80.0, colour);
         rlayer.add_marker(posring);
         posring.hide();
+        q0 = Quark.from_string("icao_id");
+        q1 = Quark.from_string("tgt_name");
     }
 
     private unowned Champlain.Label find_radar_item(RadarPlot r)
@@ -87,12 +101,8 @@ public class MWPMarkers : GLib.Object
         rdrmarkers.get_markers().foreach ((m) => {
                 if(rd == null)
                 {
-                    var aid = "%u".printf(r.id);
-                    if(((Champlain.Label)m).get_name() == aid)
-                        rd = (Champlain.Label)m;
-                    else  if(((Champlain.Label)m).get_text() == aid)
-                        rd = (Champlain.Label)m;
-                    else  if(((Champlain.Label)m).get_text() == r.name)
+                    uint aid=m.get_qdata<uint>(q0);
+                    if (r.id== aid)
                         rd = (Champlain.Label)m;
                 }
             });
@@ -101,10 +111,9 @@ public class MWPMarkers : GLib.Object
 
     public void set_radar_stale(RadarPlot r)
     {
-        Clutter.Color less_white = { 0xc0,0xc0,0xc0, 0xf0};
         var rp = find_radar_item(r);
         if(rp != null)
-            rp.set_color (less_white);
+            rp.opacity = 100;
     }
 
     public void remove_radar(RadarPlot r)
@@ -131,26 +140,54 @@ public class MWPMarkers : GLib.Object
 
     public void update_radar(RadarPlot r)
     {
-        Clutter.Color white = { 0xff,0xff,0xff, 0xff };
         var rp = find_radar_item(r);
 
         if(rp == null)
         {
-            Clutter.Color black = { 0,0,0, 0xff };
-            var rdrp = new Champlain.Label.with_text (r.name,"Sans 10",null,null);
-            rdrp .set_alignment (Pango.Alignment.RIGHT);
-            rdrp.set_text_color(black);
-            rdrp.set_draggable(false);
-            rdrp.set_selectable(false);
-            rdrp.set_name("%u".printf(r.id));
-            rdrmarkers.add_marker (rdrp);
-            rp = rdrp;
-        }
-        if(rp.text != r.name)
-            rp.text = r.name;
+            var iconfile = MWPUtils.find_conf_file("plane100.svg", "pixmaps");
+            try {
+                rp  = new Champlain.Label.from_file (iconfile);
+                rp.set_pivot_point(0.5f, 0.5f);
+                rp.set_draw_background (false);
+                rp.opacity = 200;
+                rp.set_selectable(true);
+                rp.set_flags(ActorFlags.REACTIVE);
+            } catch (GLib.Error e) {
+                rp = new Champlain.Label.with_text (r.name,"Sans 10",null,null);
+                rp .set_alignment (Pango.Alignment.RIGHT);
+                rp.set_text_color(black);
+                rp.set_draggable(false);
+                rp.set_selectable(false);
+            }
+            rp.set_qdata<uint>(q0,r.id);
 
+            rp.enter_event.connect((ce) => {
+                    var textb = new Clutter.Actor ();
+                    var text = new Clutter.Text.full ("Sans 9", "", white);
+                    text.set_background_color(near_black);
+                    text.text = rp.name;
+                    textb.add_child (text);
+                    textb.set_position(ce.x, ce.y);
+                    _v.add_child (textb);
+                    rp.set_qdata<Clutter.Actor>(q1,textb);
+                    return false;
+                });
+
+            rp.leave_event.connect((ce) => {
+                    var _textb = rp.get_qdata<Clutter.Actor>(q1);
+                    if(_textb.get_parent() == _v)
+                        _v.remove_child(_textb);
+                    return false;
+                });
+            rdrmarkers.add_marker (rp);
+        }
+        if(rp.name != r.name)
+        {
+            rp.name = r.name;
+        }
         rp.set_color (white);
         rp.set_location (r.latitude,r.longitude);
+        rp.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, r.heading);
     }
 
     public void set_rth_icon(bool iland)
@@ -402,9 +439,6 @@ public class MWPMarkers : GLib.Object
             typ = MSP.Action.POSHOLD_TIME;
         string text;
         Clutter.Color colour;
-        Clutter.Color black = { 0,0,0, 0xff };
-        Clutter.Color near_black = { 0x40,0x40,0x40, 0xa0 };
-        Clutter.Color white = { 0xff,0xff,0xff, 0xff };
         Gtk.TreeIter ni;
 
         var ino = int.parse(no);
