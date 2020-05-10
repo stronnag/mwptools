@@ -852,11 +852,7 @@ public class AreaPlanner : GLib.Object {
                     if(mls != null)
                     {
                         menu_marker = mls.first().data;
-#if OLDGTK||LSRVAL
-                        marker_menu.popup(null, null, null, 3, evt.time);
-#else
                         marker_menu.popup_at_pointer(evt);
-#endif
                     }
                 }
                 return false;

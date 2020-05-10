@@ -1275,15 +1275,6 @@ public class MWPlanner : Gtk.Application {
             }
         }
 
-        var cvers = Champlain.VERSION_S;
-        if (cvers == "0.12.11")
-        {
-            MWPLog.message("libchamplain 0.12.11 may not draw maps at scale > 16\n");
-            MWPLog.message("Consider downgrading, upgrading or building from source\n");
-        }
-        else
-            MWPLog.message("libchamplain %s\n", Champlain.VERSION_S);
-
         if(conf.ignore_nm == false)
         {
             if(offline == false)
@@ -3271,13 +3262,9 @@ case 0:
         int mx,my;
         Gdk.Display display = Gdk.Display.get_default ();
         Gtk.Clipboard clipboard = Gtk.Clipboard.get_for_display (display, Gdk.SELECTION_CLIPBOARD);
-#if OLDGTK||LSRVAL
-        embed.get_pointer(out mx, out my);
-#else
         var seat = display.get_default_seat();
         var ptr = seat.get_pointer();
         embed.get_window().get_device_position(ptr, out mx, out my, null);
-#endif
         var lon = view.x_to_longitude (mx);
         var lat = view.y_to_latitude (my);
         string pos;
@@ -3455,18 +3442,12 @@ case 0:
     {
         bool ret = true;
 
-#if OLDGTK||LSRVAL
-        var screen = Gdk.Screen.get_default();
-        var mon = screen.get_monitor_at_point(1,1);
-        screen.get_monitor_geometry(mon, out rect);
-#else
         Gdk.Display dp = Gdk.Display.get_default();
         var mon = dp.get_monitor(0);
         if(mon != null)
             rect = mon.get_geometry();
         else
             ret = false;
-#endif
         return ret;
     }
 

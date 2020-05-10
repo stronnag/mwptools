@@ -714,9 +714,6 @@ public class MWSerial : Object
     {
         StringBuilder sb = new StringBuilder("");
         sb.append_printf("Close %s : ", devname);
-#if LSRVAL
-        // no to_string for conditions
-#else
         sb.append_c(' ');
         for(var j = 0; j < 8; j++)
         {
@@ -728,7 +725,6 @@ public class MWSerial : Object
             }
         }
         sb.truncate(sb.len-1);
-#endif
         sb.append_printf(" (%x)\n", cond);
         MWPLog.message(sb.str);
     }

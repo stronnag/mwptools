@@ -19,7 +19,7 @@ VAPI := $(shell valac --api-version)
 
 VS := $(shell V1=$$(echo $(VAPI) | cut  -d '.' -f 1); V2=$$(echo $(VAPI) | cut  -d '.' -f 2); printf "%02d%02d" $$V1 $$V2)
 
-VALID_API := $(shell test $(VS) -ge 0034 ; echo $$? )
+VALID_API := $(shell test $(VS) -ge 0038 ; echo $$? )
 
 ifneq ($(VALID_API), 0)
  $(error Vala toolset is obsolete)
@@ -36,9 +36,9 @@ ifeq ($(USE_TV1), 1)
  DOPTS+= -D USE_TV1
 endif
 
-ifeq ($(VAPI),0.34)
- DOPTS += -D LSRVAL
-endif
+#ifeq ($(VAPI),0.34)
+# DOPTS += -D LSRVAL
+#endif
 
 NOVTHREAD := $(shell V1=$$(valac --version | cut  -d '.' -f 2); V2=$$(valac --version | cut  -d '.' -f 3); VV=$$(printf "%02d%02d" $$V1 $$V2) ; [ $$VV -gt 4204 ] ; echo $$? )
 
@@ -48,11 +48,10 @@ endif
 
 USE_TERMCAP := $(shell pkg-config --exists ncurses; echo $$?)
 
-GTKOK := $(shell pkg-config --atleast-version=3.22 gtk+-3.0; echo $$?)
-
-ifneq ($(GTKOK), 0)
- DOPTS += -D OLDGTK
-endif
+#GTKOK := $(shell pkg-config --atleast-version=3.22 gtk+-3.0; echo $$?)
+#ifneq ($(GTKOK), 0)
+# DOPTS += -D OLDGTK
+#endif
 
 VTEVERS=2.91
 
