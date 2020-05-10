@@ -186,10 +186,13 @@ public class MWPMarkers : GLib.Object
         if(rp.name != r.name)
         {
             rp.name = r.name;
+            if(r.source == 1)
+                rp.text = r.name;
         }
         rp.set_color (white);
         rp.set_location (r.latitude,r.longitude);
-        rp.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, r.heading);
+        if(r.source != 1)
+            rp.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, r.heading);
     }
 
     public void set_rth_icon(bool iland)
