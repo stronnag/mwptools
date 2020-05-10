@@ -88,7 +88,9 @@ public class MWPMarkers : GLib.Object
                 if(rd == null)
                 {
                     var aid = "%u".printf(r.id);
-                    if(((Champlain.Label)m).get_text() == aid)
+                    if(((Champlain.Label)m).get_name() == aid)
+                        rd = (Champlain.Label)m;
+                    else  if(((Champlain.Label)m).get_text() == aid)
                         rd = (Champlain.Label)m;
                     else  if(((Champlain.Label)m).get_text() == r.name)
                         rd = (Champlain.Label)m;
@@ -119,7 +121,15 @@ public class MWPMarkers : GLib.Object
             rp.visible = false;
     }
 
-    public void show_radar(RadarPlot r)
+    public void rader_layer_visible(bool vis)
+    {
+        if(vis)
+            rdrmarkers.show();
+        else
+            rdrmarkers.hide();
+    }
+
+    public void update_radar(RadarPlot r)
     {
         Clutter.Color white = { 0xff,0xff,0xff, 0xff };
         var rp = find_radar_item(r);
@@ -132,6 +142,7 @@ public class MWPMarkers : GLib.Object
             rdrp.set_text_color(black);
             rdrp.set_draggable(false);
             rdrp.set_selectable(false);
+            rdrp.set_name("%u".printf(r.id));
             rdrmarkers.add_marker (rdrp);
             rp = rdrp;
         }

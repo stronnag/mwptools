@@ -20,6 +20,8 @@ class RadarView : Object
         NO_COLS
     }
 
+    public signal void vis_change(bool hidden);
+
     internal RadarView (Gtk.Window? _w) {
         w = new Gtk.Window();
         var scrolled = new Gtk.ScrolledWindow (null, null);
@@ -31,8 +33,51 @@ class RadarView : Object
         label = new Gtk.Label ("");
         var grid = new Gtk.Grid ();
         scrolled.add(view);
+
+        Gtk.Button[] buttons = {
+            new Gtk.Button.with_label ("Hide symbols"),
+            new Gtk.Button.with_label ("Close")
+        };
+
+        bool hidden = false;
+
+        buttons[0].clicked.connect (() => {
+                vis_change(hidden);
+                if(!hidden)
+                {
+                    buttons[0].label = "Show symbols";
+                    print("Hiding symbols\n");
+                }
+                else
+                {
+                    buttons[0].label = "Hide symbols";
+                    print("Showing symbols\n");
+
+                }
+                hidden = !hidden;
+            });
+
+        buttons[1].clicked.connect (() => {
+                show_or_hide();
+            });
+
+        Gtk.ButtonBox bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
+        bbox.set_layout (Gtk.ButtonBoxStyle.START);
+
+            // The number of pixels to place between children:
+        bbox.set_spacing (5);
+
+            // Add buttons to our ButtonBox:
+        foreach (unowned Gtk.Button button in buttons) {
+            bbox.add (button);
+        }
+
+        Gtk.Box box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 5);
+        box.pack_start (label, true, false, 0);
+        box.pack_end (bbox, false, false, 0);
+
         grid.attach (scrolled, 0, 0, 1, 1);
-        grid.attach (label, 0, 1, 1, 1);
+        grid.attach (box, 0, 1, 1, 1);
         w.add (grid);
         w.set_transient_for(_w);
         w.delete_event.connect (() => {
@@ -44,7 +89,32 @@ class RadarView : Object
     private void show_number()
     {
         int n_rows = listmodel.iter_n_children(null);
-        label.set_text ("Items %d".printf(n_rows));
+        int stale = 0;
+        int hidden = 0;
+        Gtk.TreeIter iter;
+
+        for(bool next=listmodel.get_iter_first(out iter); next;
+            next=listmodel.iter_next(ref iter))
+        {
+            GLib.Value cell;
+            listmodel.get_value (iter, Column.STATUS, out cell);
+            var status = (string)cell;
+            if(status.has_prefix("Stale"))
+                stale++;
+            if(status.has_prefix("Hidden"))
+                hidden++;
+        }
+        var sb = new StringBuilder("Targets: ");
+        int live = n_rows - stale - hidden;
+        sb.append_printf("%d", n_rows);
+        if (live > 0 && (stale+hidden) > 0)
+            sb.append_printf("\tLive: %d", live);
+        if (stale > 0)
+            sb.append_printf("\tStale: %d", stale);
+        if (hidden > 0)
+            sb.append_printf("\tHidden: %d", hidden);
+
+        label.set_text (sb.str);
     }
 
     private bool find_entry(RadarPlot r, out Gtk.TreeIter iter)

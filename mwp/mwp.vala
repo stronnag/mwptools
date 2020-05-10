@@ -1855,6 +1855,11 @@ public class MWPlanner : Gtk.Application {
         fbox  = new FlightBox(builder,window);
         dbox = new DirnBox(builder, conf.horizontal_dbox);
         radarv = new RadarView(window);
+        radarv.vis_change.connect((vh) => {
+                markers.rader_layer_visible(vh);
+            });
+
+
         view = embed.get_view();
         view.set_reactive(true);
 
@@ -5338,7 +5343,7 @@ case 0:
                 break;
 
             case MSP.Cmds.MAVLINK_MSG_ID_OWNSHIP:
-                dump_mav_os_msg(raw);
+//                dump_mav_os_msg(raw);
                 break;
 
             default:
@@ -7075,7 +7080,7 @@ case 0:
                 break;
 
             case MSP.Cmds.MAVLINK_MSG_ID_OWNSHIP:
-                dump_mav_os_msg(raw);
+//                dump_mav_os_msg(raw);
                 break;
 
             case MSP.Cmds.MAVLINK_MSG_ID_TRAFFIC_REPORT:
@@ -7152,6 +7157,7 @@ case 0:
         return ri;
     }
 
+        /**
     void dump_mav_os_msg(uint8 *raw)
     {
         int32 i;
@@ -7164,7 +7170,7 @@ case 0:
         MWPLog.message("MAV-OS %.6f %.6f %04x %02x %02x\n",
                        lat,lon, j, raw[38], raw[41]);
     }
-
+        **/
 
     void process_mavlink_radar(uint8 *rp)
     {
@@ -7257,7 +7263,7 @@ case 0:
             if(lat != 0 && lon != 0)
             {
                 ri.posvalid = true;
-                markers.show_radar(ri);
+                markers.update_radar(ri);
             }
             radarv.update(ri, conf.dms);
         }
@@ -7308,7 +7314,7 @@ case 0:
   id, radar_plot[id].latitude, radar_plot[id].longitude, radar_plot[id].altitude,
   radar_plot[id].heading, radar_plot[id].speed, radar_plot[id].lq);
 */
-        markers.show_radar(ri);
+        markers.update_radar(ri);
         radarv.update(ri, conf.dms);
     }
 
@@ -8111,6 +8117,23 @@ case 0:
         return fwddev.available;
     }
 
+    private void dump_radar_db()
+    {
+        var dt = new DateTime.now_local ();
+        var fn  = "/tmp/radar_%s.log".printf(dt.format("%F_%H%M%S"));
+        var fp = FileStream.open(fn,"w");
+        if(fp != null)
+        {
+            radar_plot.@foreach ((r) => {
+                    fp.printf("%u\t%s\t%.6f\t%.6f\t%u/%u\t%u\t%u\t%u\t%s\n",
+                              r.id, r.name, r.latitude, r.longitude,
+                              r.lasttick, nticks, r.state, r.lq,
+                              r.source, r.posvalid.to_string());
+                });
+        }
+    }
+
+
     private void try_radar_dev()
     {
         string fstr = null;
@@ -8121,6 +8144,10 @@ case 0:
                 MWPLog.message("start radar reader %s\n", radar_device);
                 if(rawlog)
                     rdrdev.raw_logging(true);
+                Timeout.add_seconds(300, () => {
+                        dump_radar_db();
+                        return Source.CONTINUE;
+                    });
             }
             else
             {
