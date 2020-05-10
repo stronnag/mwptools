@@ -144,7 +144,9 @@ public class MWPMarkers : GLib.Object
 
         if(rp == null)
         {
-            var iconfile = MWPUtils.find_conf_file("plane100.svg", "pixmaps");
+            var basename = (r.source == 1) ? "inav-radar.svg" : "plane100.svg";
+
+            var iconfile = MWPUtils.find_conf_file(basename, "pixmaps");
             try {
                 rp  = new Champlain.Label.from_file (iconfile);
                 rp.set_pivot_point(0.5f, 0.5f);

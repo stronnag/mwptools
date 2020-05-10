@@ -7281,21 +7281,16 @@ case 0:
     void process_inav_radar_pos(uint8 *rp)
     {
         uint8 id = *rp++;
-        SearchFunc<RadarPlot?,uint>  plot_search = (a,b) =>  {
-           return (int) (a.id > b) - (int) (a.id < b);
-        };
 
-        unowned SList<RadarPlot?> res = radar_plot.search((uint)id, plot_search);
-        var ri = res.nth_data(0);
+        unowned RadarPlot? ri = find_radar_data((uint)id);
         if (ri == null)
         {
-            var rdrp = RadarPlot();
-            rdrp.id =  id;
-            rdrp.name = "⚙ %c".printf(65+id);
-            ri = rdrp;
-            radar_plot.insert_sorted(rdrp, ((a,b) => {
-                        return a.name.collate(b.name);
-                        }));
+            var r0 = RadarPlot();
+            r0.id =  (uint)id;
+            radar_plot.append(r0);
+            ri = find_radar_data((uint)id);
+            ri.name = "⚙ %c".printf(65+id);
+            ri.source = 1;
         }
         int32 ipos;
         uint16 ispd;
