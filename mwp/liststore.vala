@@ -41,7 +41,7 @@ public class ListBox : GLib.Object
     private Gtk.Menu menu;
     public Gtk.TreeView view;
     public Gtk.ListStore list_model;
-    private MWPlanner mp;
+    private MWP mp;
     private bool purge;
     private Gtk.MenuItem shp_item;
     private Gtk.MenuItem up_item;
@@ -240,8 +240,8 @@ public class ListBox : GLib.Object
     public ListBox()
     {
         purge=false;
-        ms_speed = MWPlanner.conf.nav_speed;
-        MWPlanner.conf.settings_update.connect((s) => {
+        ms_speed = MWP.conf.nav_speed;
+        MWP.conf.settings_update.connect((s) => {
                 if(s == "display-distance" ||
                    s == "default-nav-speed")
                     calc_mission();
@@ -358,12 +358,12 @@ public class ListBox : GLib.Object
                 w.p3 = (uint16)tint;
                 w.flag = 0;
 
-                if((flags & MWPlanner.WPS.isINAV) == MWPlanner.WPS.isINAV)
+                if((flags & MWP.WPS.isINAV) == MWP.WPS.isINAV)
                 {
                     switch(typ)
                     {
                         case MSP.Action.POSHOLD_TIME:
-                            if((flags & MWPlanner.WPS.hasPHT) != MWPlanner.WPS.hasPHT)
+                            if((flags & MWP.WPS.hasPHT) != MWP.WPS.hasPHT)
                             {
                                 MWPLog.message("Regrade %s to WP (need FW >= 2.5.0)\n", typ.to_string());
                                 w.action =  MSP.Action.WAYPOINT;
@@ -372,7 +372,7 @@ public class ListBox : GLib.Object
                             }
                             break;
                         case MSP.Action.LAND:
-                            if((flags & MWPlanner.WPS.hasLAND) != MWPlanner.WPS.hasLAND)
+                            if((flags & MWP.WPS.hasLAND) != MWP.WPS.hasLAND)
                             {
                             w.action =  MSP.Action.WAYPOINT;
                             w.p2 = w.p3 = 0;
@@ -391,7 +391,7 @@ public class ListBox : GLib.Object
                             MWPLog.message("Remove WP %s (need FW >= 2.x.0)\n", typ.to_string());
                             continue;
                         case MSP.Action.JUMP:
-                            if((flags & MWPlanner.WPS.hasJUMP) != MWPlanner.WPS.hasJUMP)
+                            if((flags & MWP.WPS.hasJUMP) != MWP.WPS.hasJUMP)
                             {
                                 MWPLog.message("Remove WP %s (need FW >= 2.5.0)\n", typ.to_string());
                                 continue;
@@ -401,7 +401,7 @@ public class ListBox : GLib.Object
                 }
                 n++;
                 w.wp_no = n;
-                if(((flags & MWPlanner.WPS.isFW) == MWPlanner.WPS.isFW) && (typ == MSP.Action.RTH))
+                if(((flags & MWP.WPS.isFW) == MWP.WPS.isFW) && (typ == MSP.Action.RTH))
                 {
                     MWPLog.message("Remove Land from FW WP RTH\n");
                     w.p1 = 0;
@@ -518,7 +518,7 @@ public class ListBox : GLib.Object
 
     private uint get_user_alt()
     {
-        return MWPlanner.conf.altitude;
+        return MWP.conf.altitude;
     }
 
     private void update_marker_type(Gtk.TreeIter iter, string typ, int flag)
@@ -636,7 +636,7 @@ public class ListBox : GLib.Object
         fhome = new FakeHome(mp.view);
         fhome.create_dialog(mp.builder, mp.window);
         fhome.fake_move.connect((lat,lon) => {
-                fhome.fhd.set_pos(PosFormat.pos(lat,lon,MWPlanner.conf.dms));
+                fhome.fhd.set_pos(PosFormat.pos(lat,lon,MWP.conf.dms));
             });
         fhome.fhd.ready.connect((b) => {
                 remove_plots();
@@ -658,9 +658,9 @@ public class ListBox : GLib.Object
     }
 
 
-    public void create_view(MWPlanner _mp)
+    public void create_view(MWP _mp)
     {
-        MWPlanner.SERSTATE ss = MWPlanner.SERSTATE.NONE;
+        MWP.SERSTATE ss = MWP.SERSTATE.NONE;
 
         make_menu();
 
@@ -737,7 +737,7 @@ public class ListBox : GLib.Object
 
         combo.editing_started.connect((e,p) => {
                 ss = mp.get_serstate();
-                mp.set_serstate(MWPlanner.SERSTATE.NONE);
+                mp.set_serstate(MWP.SERSTATE.NONE);
             });
 
         combo.editing_canceled.connect((e) => {
@@ -764,14 +764,14 @@ public class ListBox : GLib.Object
                 Value v;
                 model.get_value(iter, WY_Columns.LAT, out v);
                 double val = (double)v;
-                string s = PosFormat.lat(val,MWPlanner.conf.dms);
+                string s = PosFormat.lat(val,MWP.conf.dms);
                 _cell.set_property("text",s);
             });
 
         cell.set_property ("editable", true);
         cell.editing_started.connect((e,p) => {
                 ss = mp.get_serstate();
-                mp.set_serstate(MWPlanner.SERSTATE.NONE);
+                mp.set_serstate(MWP.SERSTATE.NONE);
             });
 
         cell.editing_canceled.connect((e) => {
@@ -794,7 +794,7 @@ public class ListBox : GLib.Object
                 Value v;
                 model.get_value(iter, WY_Columns.LON, out v);
                 double val = (double)v;
-                string s = PosFormat.lon(val,MWPlanner.conf.dms);
+                string s = PosFormat.lon(val,MWP.conf.dms);
                 _cell.set_property("text",s);
             });
 
@@ -802,7 +802,7 @@ public class ListBox : GLib.Object
 
         cell.editing_started.connect((e,p) => {
                 ss = mp.get_serstate();
-                mp.set_serstate(MWPlanner.SERSTATE.NONE);
+                mp.set_serstate(MWP.SERSTATE.NONE);
             });
         cell.editing_canceled.connect((e) => {
                 mp.set_serstate(ss);
@@ -833,7 +833,7 @@ public class ListBox : GLib.Object
 
         cell.editing_started.connect((e,p) => {
                 ss = mp.get_serstate();
-                mp.set_serstate(MWPlanner.SERSTATE.NONE);
+                mp.set_serstate(MWP.SERSTATE.NONE);
             });
         cell.editing_canceled.connect((e) => {
                 mp.set_serstate(ss);
@@ -871,7 +871,7 @@ public class ListBox : GLib.Object
 
         cell.editing_started.connect((e,p) => {
                 ss = mp.get_serstate();
-                mp.set_serstate(MWPlanner.SERSTATE.NONE);
+                mp.set_serstate(MWP.SERSTATE.NONE);
             });
         cell.editing_canceled.connect((e) => {
                 mp.set_serstate(ss);
@@ -952,7 +952,7 @@ public class ListBox : GLib.Object
 
         cell.editing_started.connect((e,p) => {
                 ss = mp.get_serstate();
-                mp.set_serstate(MWPlanner.SERSTATE.NONE);
+                mp.set_serstate(MWP.SERSTATE.NONE);
             });
         cell.editing_canceled.connect((e) => {
                 mp.set_serstate(ss);
@@ -973,7 +973,7 @@ public class ListBox : GLib.Object
 
         cell.editing_started.connect((e,p) => {
                 ss = mp.get_serstate();
-                mp.set_serstate(MWPlanner.SERSTATE.NONE);
+                mp.set_serstate(MWP.SERSTATE.NONE);
             });
         cell.editing_canceled.connect((e) => {
                 mp.set_serstate(ss);
@@ -1792,7 +1792,7 @@ public class ListBox : GLib.Object
             hlon = mp.view.get_center_longitude();
             fhome.set_fake_home(hlat, hlon);
         }
-        fhome.fhd.set_pos(PosFormat.pos(hlat,hlon,MWPlanner.conf.dms));
+        fhome.fhd.set_pos(PosFormat.pos(hlat,hlon,MWP.conf.dms));
         fhome.show_fake_home(true);
         fhome.fhd.unhide();
     }
@@ -1861,7 +1861,7 @@ public class ListBox : GLib.Object
 
     public void set_speeds(bool flag)
     {
-        double dspd = MWPlanner.conf.nav_speed;
+        double dspd = MWP.conf.nav_speed;
         int cnt = 0;
         if(speeddialog.get_speed(out dspd) == true)
         {
@@ -2004,7 +2004,7 @@ public class ListBox : GLib.Object
         lt = 0;
 
         if(ms_speed == 0.0)
-            ms_speed = MWPlanner.conf.nav_speed;
+            ms_speed = MWP.conf.nav_speed;
 
         var ms = to_mission();
         var ways = ms.get_ways();

@@ -78,7 +78,7 @@ public class PosFormat : GLib.Object
     }
 }
 
-public class MWPlanner : GLib.Object {
+public class MWP : GLib.Object {
     public Builder builder;
     public Gtk.Window window;
     public  Champlain.View view;
@@ -109,7 +109,7 @@ public class MWPlanner : GLib.Object {
         N_COLUMNS
     }
 
-    public MWPlanner (MWSerial s)
+    public MWP (MWSerial s)
     {
         msp = s;
         {
@@ -581,7 +581,7 @@ public class MWPlanner : GLib.Object {
         var msp = new MWSerial();
         if (msp.parse_option(args) == 0)
         {
-            MWPlanner app = new MWPlanner(msp);
+            MWP app = new MWP(msp);
             app.run ();
         }
         return 0;

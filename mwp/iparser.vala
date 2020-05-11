@@ -82,7 +82,7 @@ class InputParser : GLib.Object
 
         if(s == "d")
         {
-            cvt = MWPlanner.conf.p_distance;
+            cvt = MWP.conf.p_distance;
             if(cvt != 0 && d != 0.0)
             {
                 switch(cvt)
@@ -101,7 +101,7 @@ class InputParser : GLib.Object
         }
         else
         {
-            cvt = MWPlanner.conf.p_speed;
+            cvt = MWP.conf.p_speed;
             if(cvt != 0 && d != 0.0)
             {
                 switch(cvt)

@@ -50,7 +50,7 @@ public class MWPMarkers : GLib.Object
         Clutter.Color rcol = {0xff, 0x0, 0x0, 0x80};
 
         black.init(0,0,0, 0xff);
-        near_black.init(0x40,0x40,0x40, 0xa0);
+        near_black.init(0x20,0x20,0x20, 0xa0);
         white.init(0xff,0xff,0xff, 0xff);
 
         rth_land = false;
@@ -161,12 +161,6 @@ public class MWPMarkers : GLib.Object
             }
             var textb = new Clutter.Actor ();
             var text = new Clutter.Text.full ("Sans 9", "", white);
-/*
-            text.margin_left = 10;
-            text.margin_right = 10;
-            text.margin_top = 6;
-            text.margin_bottom = 6;
-*/
             text.set_background_color(black);
             rp.set_text_color(white);
             textb.add_child (text);
@@ -179,8 +173,8 @@ public class MWPMarkers : GLib.Object
                     var _tx = _ta.last_child as Clutter.Text;
                     _tx.text = "  %s / %s \n  %s %s \n  %.0f %s %0.f %s %.0f°".printf(
                         _r.name, RadarView.status[_r.state],
-                        PosFormat.lat(_r.latitude, true),
-                        PosFormat.lon(_r.longitude, true),
+                        PosFormat.lat(_r.latitude, MWP.conf.dms),
+                        PosFormat.lon(_r.longitude, MWP.conf.dms),
                         Units.distance(_r.altitude), Units.distance_units(),
                         Units.speed(_r.speed), Units.speed_units(),
                         _r.heading);
@@ -505,15 +499,18 @@ public class MWPMarkers : GLib.Object
         }
 
         ls.set_value(iter,ListBox.WY_Columns.MARKER,marker);
-        var txt = new Clutter.Text.full ("Sans 9", "", white);
-        txt.set_background_color(near_black);
-        txt.line_wrap = true;
-        marker.set_qdata<Clutter.Text>(q1,txt);
+        var mc = new Champlain.Label.with_text ("", "Sans 9", null, null);
+        mc.set_color (near_black);
+        mc.set_text_color(white);
+        mc.opacity = 255;
+        mc.x = 40;
+        mc.y = 5;
+        marker.set_qdata<Champlain.Label>(q1,mc);
 
         marker.button_press_event.connect((e) => {
                 if(e.button == 3)
                 {
-                    var _t1 = marker.get_qdata<Clutter.Text>(q1);
+                    var _t1 = marker.get_qdata<Champlain.Label>(q1);
                     if (_t1 != null)
                         marker.remove_child(_t1);
                     l.set_popup_needed(iter);
@@ -522,7 +519,7 @@ public class MWPMarkers : GLib.Object
             });
 
         marker.enter_event.connect((ce) => {
-                var _t1 = marker.get_qdata<Clutter.Text>(q1);
+                var _t1 = marker.get_qdata<Champlain.Label>(q1);
                 if(_t1.get_parent() == null)
                 {
                     var s = l.get_marker_tip(ino);
@@ -533,44 +530,19 @@ public class MWPMarkers : GLib.Object
                     var par = marker.get_parent();
                     if (par != null)
                         par.set_child_above_sibling(marker,null);
-
-                    float w=0,h=0;
-                    float y;
-                    int p;
-                    int n = 1;
-                    bool b = false;
-
-                    for(int i = 0; i < s.length; i++)
-                        if(s[i] == '\n')
-                            n++;
-
-                    if((p = s.index_of_char('\n')) == -1)
-                        p = s.length-1;
-
-                    if(p != -1)
-                        b = _t1.position_to_coords (p,
-                                                    out w,
-                                                    out y,
-                                                    out h);
-                    if(b == false)
-                        _t1.get_size(out w, out h);
-                    w = -w /2 + 10;
-                    h =  -(h*n) - 4;
-                    _t1.set_x(w);
-                    _t1.set_y(h);
                 }
                 return false;
             });
 
         marker.leave_event.connect((ce) => {
-                var _t1 = marker.get_qdata<Clutter.Text>(q1);
+                var _t1 = marker.get_qdata<Champlain.Label>(q1);
                 if(_t1.get_parent() != null)
                     marker.remove_child(_t1);
                 return false;
             });
 
         marker.drag_motion.connect((dx,dy,evt) => {
-                var _t1 = marker.get_qdata<Clutter.Text>(q1);
+                var _t1 = marker.get_qdata<Champlain.Label>(q1);
                 {
                     ls.set_value(iter, ListBox.WY_Columns.LAT, marker.get_latitude());
                     ls.set_value(iter, ListBox.WY_Columns.LON, marker.get_longitude() );
@@ -597,7 +569,7 @@ public class MWPMarkers : GLib.Object
                 ls.set_value(iter, ListBox.WY_Columns.LAT, marker.get_latitude());
                 ls.set_value(iter, ListBox.WY_Columns.LON, marker.get_longitude() );
                 calc_extra_distances(l);
-                var _t1 = marker.get_qdata<Clutter.Text>(q1);
+                var _t1 = marker.get_qdata<Champlain.Label>(q1);
                 _t1.set_text(l.get_marker_tip(ino));
             } );
 

@@ -27,7 +27,7 @@ public class Units :  GLib.Object
 
     public static double distance (double d)
     {
-        switch(MWPlanner.conf.p_distance)
+        switch(MWP.conf.p_distance)
         {
             case 1:
                 d *= 3.2808399;
@@ -43,7 +43,7 @@ public class Units :  GLib.Object
     }
     public static double speed (double d)
     {
-        switch(MWPlanner.conf.p_speed)
+        switch(MWP.conf.p_speed)
         {
             case 1:
                 d *= 3.6;
@@ -63,24 +63,24 @@ public class Units :  GLib.Object
 
     public static double va_speed (double d)
     {
-        if (MWPlanner.conf.p_speed > 1)
+        if (MWP.conf.p_speed > 1)
                 d *= 3.2808399; // ft/sec
         return d;
     }
 
     public static string distance_units()
     {
-        return dnames[MWPlanner.conf.p_distance];
+        return dnames[MWP.conf.p_distance];
     }
 
     public static string speed_units()
     {
-        return dspeeds[MWPlanner.conf.p_speed];
+        return dspeeds[MWP.conf.p_speed];
     }
 
     public static string va_speed_units()
     {
-        return (MWPlanner.conf.p_speed > 1) ? "ft/s" : "m/s";
+        return (MWP.conf.p_speed > 1) ? "ft/s" : "m/s";
     }
 
     public static string fix(uint8 fix)
@@ -246,7 +246,7 @@ public class ArtWin : GLib.Object
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
         ath = new Ath.Horizon();
         box.pack_start(ath, true,true,0);
-        int sz = MWPlanner.conf.ahsize;
+        int sz = MWP.conf.ahsize;
         inv = _inv;
         box.set_size_request (sz, sz);
         box.show_all();
@@ -401,7 +401,7 @@ public class FlightBox : GLib.Object
         big_alt = builder.get_object ("big_alt") as Gtk.Label;
         big_spd = builder.get_object ("big_spd") as Gtk.Label;
         big_sats = builder.get_object ("big_sats") as Gtk.Label;
-        fontfact = MWPlanner.conf.fontfact;
+        fontfact = MWP.conf.fontfact;
 
         if(MonoFont.fixed)
         {
@@ -414,7 +414,7 @@ public class FlightBox : GLib.Object
         vbox.size_allocate.connect((a) => {
                 if(_allow_resize && a.width != last_w)
                 {
-                    fh1 = a.width*MWPlanner.conf.fontfact/100;
+                    fh1 = a.width*MWP.conf.fontfact/100;
                     Idle.add(() => {update(true);
                                     return false;});
                     if(MonoFont.fixed)
@@ -429,7 +429,7 @@ public class FlightBox : GLib.Object
 
     public void check_size()
     {
-        fh1 = last_w*MWPlanner.conf.fontfact/100;
+        fh1 = last_w*MWP.conf.fontfact/100;
         update(true);
     }
 
@@ -453,7 +453,7 @@ public class FlightBox : GLib.Object
        if(visible)
        {
            string stext;
-           var fh2 = (MWPlanner.conf.dms) ? fh1*45/100 : fh1/2;
+           var fh2 = (MWP.conf.dms) ? fh1*45/100 : fh1/2;
            if(fh1 > 96)
                fh1 = 96;
 
@@ -471,9 +471,9 @@ public class FlightBox : GLib.Object
            else if(falt > 999.0 || falt < -99.0)
                fh3 = fh3 * 75 /100;
 
-           var s=PosFormat.lat(GPSInfo.lat,MWPlanner.conf.dms);
+           var s=PosFormat.lat(GPSInfo.lat,MWP.conf.dms);
            big_lat.set_label("<span %s font='%u'>%s</span>".printf(mono,fh2,s));
-           s=PosFormat.lon(GPSInfo.lon,MWPlanner.conf.dms);
+           s=PosFormat.lon(GPSInfo.lon,MWP.conf.dms);
            big_lon.set_label("<span %s font='%u'>%s</span>".printf(mono,fh2,s));
            var brg = NavStatus.cg.direction;
            if(brg < 0)
@@ -2008,11 +2008,11 @@ public class NavStatus : GLib.Object
             if((mask & SPK.Volts) == SPK.Volts && volts > 0.0)
             {
                 mt.message(AudioThread.Vox.VOLTAGE);
-                if(MWPlanner.conf.speak_amps > 0 && NavStatus.mah > 0)
+                if(MWP.conf.speak_amps > 0 && NavStatus.mah > 0)
                 {
-                    if((MWPlanner.conf.speak_amps & 0x10) == 0x10 || !replaying)
+                    if((MWP.conf.speak_amps & 0x10) == 0x10 || !replaying)
                     {
-                        int rpi = (MWPlanner.conf.speak_amps & 0xf);
+                        int rpi = (MWP.conf.speak_amps & 0xf);
                         if (rpi == 1 ||
                             (rpi == 2 && (spkamp & 1) != 0) ||
                             (rpi == 4 && spkamp == 3))
@@ -2122,15 +2122,15 @@ public class NavStatus : GLib.Object
             {
                 si = MwpSpeech.init(voice);
                 MWPLog.message("Initialised \"%s\" for speech%s\n",
-                               MWPlanner.SPEAKERS[si],
-                               (si == MWPlanner.SPEAKER_API.FLITE) ? ", nicely":"");
+                               MWP.SPEAKERS[si],
+                               (si == MWP.SPEAKER_API.FLITE) ? ", nicely":"");
             }
         }
         if (mt != null)
         {
             logspeak_close();
         }
-        mt = new AudioThread((si == MWPlanner.SPEAKER_API.FLITE));
+        mt = new AudioThread((si == MWP.SPEAKER_API.FLITE));
         mt.start(use_en, efdin);
         mt_voice=true;
     }
@@ -2356,14 +2356,14 @@ public class AudioThread : Object {
                         case Vox.RANGE_BRG:
                             StringBuilder sbrg = new StringBuilder();
                             sbrg.append("Range ");
-                            if(NavStatus.cg.range > 999 && MWPlanner.conf.p_distance == 0)
+                            if(NavStatus.cg.range > 999 && MWP.conf.p_distance == 0)
                             {
                                 double km = NavStatus.cg.range/1000.0;
                                 sbrg.append("%.1fk".printf(km));
                             }
                             else
                                 sbrg.append(say_nicely((int)Units.distance(NavStatus.cg.range)));
-                            if(MWPlanner.conf.say_bearing)
+                            if(MWP.conf.say_bearing)
                             {
                                 var brg = NavStatus.cg.direction;
                                 if(brg < 0)
@@ -2449,7 +2449,7 @@ public class NavConfig : GLib.Object
 
     private Gtk.Window window;
     private bool visible;
-    private MWPlanner.NAVCAPS typ;
+    private MWP.NAVCAPS typ;
 
         // MW variables
     private Gtk.CheckButton nvcb1_01;
@@ -2692,7 +2692,7 @@ public class NavConfig : GLib.Object
         parent = _parent;
     }
 
-    public void setup (MWPlanner.NAVCAPS _typ)
+    public void setup (MWP.NAVCAPS _typ)
     {
         if(window != null && typ != _typ)
         {
@@ -2702,9 +2702,9 @@ public class NavConfig : GLib.Object
         typ = _typ;
         if(window == null)
         {
-            if((typ & MWPlanner.NAVCAPS.INAV_MR) != 0)
+            if((typ & MWP.NAVCAPS.INAV_MR) != 0)
                 window = inav_mr_open(builder);
-            else if((typ & MWPlanner.NAVCAPS.INAV_FW) != 0)
+            else if((typ & MWP.NAVCAPS.INAV_FW) != 0)
                 window = inav_fw_open(builder);
             else
                 window = mw_open(builder);

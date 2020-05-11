@@ -371,7 +371,7 @@ class MwpDockHelper : Object
 }
 
 
-public class MWPlanner : Gtk.Application {
+public class MWP : Gtk.Application {
 
     private const uint MAXVSAMPLE=12;
 
@@ -1028,7 +1028,7 @@ public class MWPlanner : Gtk.Application {
         set_menu_state(dockmenus[id], !res);
     }
 
-    MWPlanner ()
+    MWP ()
     {
         Object(application_id: "mwp.application", flags: ApplicationFlags.FLAGS_NONE);
     }
@@ -9296,8 +9296,8 @@ case 0:
                 if(fixedopts != null)
                     MWPLog.message("default options: %s\n", fixedopts);
                 Gst.init (ref args);
-                MwpLibC.atexit(MWPlanner.xchild);
-                var app = new MWPlanner();
+                MwpLibC.atexit(MWP.xchild);
+                var app = new MWP();
                 app.run ();
             }
             lk.unlock();
