@@ -1912,6 +1912,7 @@ public class ListBox : GLib.Object
         purge = false;
         mp.markers.remove_all();
         have_rth = false;
+        lastid = 0;
         calc_mission();
     }
 
@@ -1967,7 +1968,6 @@ public class ListBox : GLib.Object
 
         list_model.get_iter(out xiter, path);
         list_model.get_value (xiter, WY_Columns.TIP, out cell);
-        if((string)cell == null)
         {
             string hint;
             if(no >= 0)

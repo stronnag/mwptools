@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
@@ -21,8 +20,6 @@ using Clutter;
 
 public class MWPMarkers : GLib.Object
 {
-
-
     public Champlain.PathLayer path;                     // Mission outline
     public Champlain.MarkerLayer markers;                // Mission Markers
     public Champlain.MarkerLayer rlayer;                 // Next WP pos layer
@@ -91,8 +88,8 @@ public class MWPMarkers : GLib.Object
         posring = new Champlain.Point.full(80.0, colour);
         rlayer.add_marker(posring);
         posring.hide();
-        q0 = Quark.from_string("icao_id");
-        q1 = Quark.from_string("tgt_name");
+        q0 = Quark.from_string("mwp0");
+        q1 = Quark.from_string("mwp1");
     }
 
     private unowned Champlain.Label find_radar_item(RadarPlot r)
@@ -101,8 +98,8 @@ public class MWPMarkers : GLib.Object
         rdrmarkers.get_markers().foreach ((m) => {
                 if(rd == null)
                 {
-                    uint aid=m.get_qdata<uint>(q0);
-                    if (r.id== aid)
+                    RadarPlot a = m.get_qdata<RadarPlot?>(q0);
+                    if (r.id== a.id)
                         rd = (Champlain.Label)m;
                 }
             });
@@ -112,6 +109,7 @@ public class MWPMarkers : GLib.Object
     public void set_radar_stale(RadarPlot r)
     {
         var rp = find_radar_item(r);
+        rp.set_qdata<RadarPlot?>(q0,r);
         if(rp != null)
             rp.opacity = 100;
     }
@@ -126,6 +124,7 @@ public class MWPMarkers : GLib.Object
     public void set_radar_hidden(RadarPlot r)
     {
         var rp = find_radar_item(r);
+        rp.set_qdata<RadarPlot?>(q0,r);
         if(rp != null)
             rp.visible = false;
     }
@@ -161,28 +160,45 @@ public class MWPMarkers : GLib.Object
                 rp.set_draggable(false);
                 rp.set_selectable(false);
             }
-            rp.set_qdata<uint>(q0,r.id);
+            var textb = new Clutter.Actor ();
+            var text = new Clutter.Text.full ("Sans 9", "", white);
+/*
+            text.margin_left = 10;
+            text.margin_right = 10;
+            text.margin_top = 6;
+            text.margin_bottom = 6;
+*/
+            text.set_background_color(black);
+            rp.set_text_color(white);
+            textb.add_child (text);
+
+            rp.set_qdata<Clutter.Actor>(q1,textb);
 
             rp.enter_event.connect((ce) => {
-                    var textb = new Clutter.Actor ();
-                    var text = new Clutter.Text.full ("Sans 9", "", white);
-                    text.set_background_color(near_black);
-                    text.text = rp.name;
-                    textb.add_child (text);
-                    textb.set_position(ce.x, ce.y);
-                    _v.add_child (textb);
-                    rp.set_qdata<Clutter.Actor>(q1,textb);
+                    var _r = rp.get_qdata<RadarPlot?>(q0);
+                    var _ta = rp.get_qdata<Clutter.Actor>(q1);
+                    var _tx = _ta.last_child as Clutter.Text;
+                    _tx.text = "  %s / %s \n  %s %s \n  %.0f %s %0.f %s %.0f°".printf(
+                        _r.name, RadarView.status[_r.state],
+                        PosFormat.lat(_r.latitude, true),
+                        PosFormat.lon(_r.longitude, true),
+                        Units.distance(_r.altitude), Units.distance_units(),
+                        Units.speed(_r.speed), Units.speed_units(),
+                        _r.heading);
+                    _tx.set_position(ce.x, ce.y);
+                    _v.add_child (_ta);
                     return false;
                 });
 
             rp.leave_event.connect((ce) => {
-                    var _textb = rp.get_qdata<Clutter.Actor>(q1);
-                    if(_textb.get_parent() == _v)
-                        _v.remove_child(_textb);
+                    var _ta = rp.get_qdata<Clutter.Actor>(q1);
+                    _v.remove_child(_ta);
                     return false;
                 });
             rdrmarkers.add_marker (rp);
         }
+
+        rp.set_qdata<RadarPlot?>(q0,r);
         if(rp.name != r.name)
         {
             rp.name = r.name;
@@ -490,82 +506,78 @@ public class MWPMarkers : GLib.Object
         }
 
         ls.set_value(iter,ListBox.WY_Columns.MARKER,marker);
-
         var txt = new Clutter.Text.full ("Sans 9", "", white);
         txt.set_background_color(near_black);
         txt.line_wrap = true;
+        marker.set_qdata<Clutter.Text>(q1,txt);
+
         marker.button_press_event.connect((e) => {
                 if(e.button == 3)
                 {
-                    if(txt.get_parent() == marker)
-                            marker.remove_child(txt);
+                    var _t1 = marker.get_qdata<Clutter.Text>(q1);
+                    if (_t1 != null)
+                        marker.remove_child(_t1);
                     l.set_popup_needed(iter);
                 }
                 return false;
             });
 
         marker.enter_event.connect((ce) => {
-                var s = l.get_marker_tip(ino);
-                if(s == null)
-                    s = "RTH";
-                Timeout.add(500, () => {
-                        if(marker.get_has_pointer ())
-                        {
-                            var par = marker.get_parent();
-                            if (par != null)
-                                par.set_child_above_sibling(marker,null);
-                            txt.text = s;
-                            if(txt.get_parent() == null)
-                                marker.add_child(txt);
+                var _t1 = marker.get_qdata<Clutter.Text>(q1);
+                if(_t1.get_parent() == null)
+                {
+                    var s = l.get_marker_tip(ino);
+                    if(s == null)
+                        s = "RTH";
+                    _t1.text = s;
+                    marker.add_child(_t1);
+                    var par = marker.get_parent();
+                    if (par != null)
+                        par.set_child_above_sibling(marker,null);
 
-                            float w=0,h=0;
-                            float y;
-                            int p;
-                            int n = 1;
+                    float w=0,h=0;
+                    float y;
+                    int p;
+                    int n = 1;
+                    bool b = false;
 
-                            bool b = false;
+                    for(int i = 0; i < s.length; i++)
+                        if(s[i] == '\n')
+                            n++;
 
-                            for(int i = 0; i < s.length; i++)
-                                if(s[i] == '\n')
-                                    n++;
+                    if((p = s.index_of_char('\n')) == -1)
+                        p = s.length-1;
 
-                            if((p = s.index_of_char('\n')) == -1)
-                                p = s.length-1;
-
-                            if(p != -1)
-                                b = txt.position_to_coords (p,
-                                                            out w,
-                                                            out y,
-                                                            out h);
-                            if(b == false)
-                                txt.get_size(out w, out h);
-                            w = -w /2 + 10;
-                            h =  -(h*n) - 4;
-                            txt.set_x(w);
-                            txt.set_y(h);
-                        }
-                        return false;
-                    });
+                    if(p != -1)
+                        b = _t1.position_to_coords (p,
+                                                    out w,
+                                                    out y,
+                                                    out h);
+                    if(b == false)
+                        _t1.get_size(out w, out h);
+                    w = -w /2 + 10;
+                    h =  -(h*n) - 4;
+                    _t1.set_x(w);
+                    _t1.set_y(h);
+                }
                 return false;
             });
 
         marker.leave_event.connect((ce) => {
-                if(txt.get_parent() == marker)
-                    marker.remove_child(txt);
+                var _t1 = marker.get_qdata<Clutter.Text>(q1);
+                if(_t1.get_parent() != null)
+                    marker.remove_child(_t1);
                 return false;
             });
 
-        uint move_time = 0;
         marker.drag_motion.connect((dx,dy,evt) => {
-                if(evt.get_time() - move_time > 20)
+                var _t1 = marker.get_qdata<Clutter.Text>(q1);
                 {
-                    if(txt.get_parent() == marker)
-                    {
-                        ls.set_value(iter, ListBox.WY_Columns.LAT, marker.get_latitude());
-                        ls.set_value(iter, ListBox.WY_Columns.LON, marker.get_longitude() );
-                        calc_extra_distances(l);
-                        txt.set_text(l.get_marker_tip(ino));
-                    }
+                    ls.set_value(iter, ListBox.WY_Columns.LAT, marker.get_latitude());
+                    ls.set_value(iter, ListBox.WY_Columns.LON, marker.get_longitude() );
+                    calc_extra_distances(l);
+                    var s = l.get_marker_tip(ino);
+                    _t1.set_text(s);
                 }
             });
 
@@ -586,8 +598,8 @@ public class MWPMarkers : GLib.Object
                 ls.set_value(iter, ListBox.WY_Columns.LAT, marker.get_latitude());
                 ls.set_value(iter, ListBox.WY_Columns.LON, marker.get_longitude() );
                 calc_extra_distances(l);
-                if(txt.get_parent() == marker)
-                    txt.text = l.get_marker_tip(ino);
+                var _t1 = marker.get_qdata<Clutter.Text>(q1);
+                _t1.set_text(l.get_marker_tip(ino));
             } );
 
         return (Champlain.Marker)marker;

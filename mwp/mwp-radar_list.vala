@@ -20,6 +20,8 @@ class RadarView : Object
         NO_COLS
     }
 
+
+    public static string[] status = {"Undefined", "Armed", "Hidden", "Stale", "ADS-B"};
     public signal void vis_change(bool hidden);
 
     internal RadarView (Gtk.Window? _w) {
@@ -152,12 +154,9 @@ class RadarView : Object
             listmodel.set (iter, Column.ID,r.id);
         }
 
-
-        string[] sts = {"Undefined", "Armed", "Hidden", "Stale", "ADS-B"};
-
-        if(r.state >= sts.length)
+        if(r.state >= RadarView.status.length)
             r.state = 0;
-        var stsstr = "%s / %u".printf(sts[r.state], r.lq);
+        var stsstr = "%s / %u".printf(RadarView.status[r.state], r.lq);
 
         listmodel.set (iter,
                        Column.NAME,r.name,
