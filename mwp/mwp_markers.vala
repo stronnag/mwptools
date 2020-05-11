@@ -150,7 +150,6 @@ public class MWPMarkers : GLib.Object
                 rp  = new Champlain.Label.from_file (iconfile);
                 rp.set_pivot_point(0.5f, 0.5f);
                 rp.set_draw_background (false);
-                rp.opacity = 200;
                 rp.set_selectable(true);
                 rp.set_flags(ActorFlags.REACTIVE);
             } catch (GLib.Error e) {
@@ -197,7 +196,7 @@ public class MWPMarkers : GLib.Object
                 });
             rdrmarkers.add_marker (rp);
         }
-
+        rp.opacity = 200;
         rp.set_qdata<RadarPlot?>(q0,r);
         if(rp.name != r.name)
         {

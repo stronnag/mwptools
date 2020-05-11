@@ -16,6 +16,11 @@ mwp supports the following telemetry protocols:
 * MAVLink (iNav subset)
 * Smartport
 
+mwp also supports the real-time display of adjacent aircraft using:
+
+* inav-radar (INAV UAS)
+* MAVlink Traffic Report (e.g. full-size aviation, typically ADS-B via a device such as uAvionix PingRX)
+
 mwp also provides logging, the replay of mwp log files and Blackbox logs.
 
 In addition, mwp proivdes legacy suport for multiwii navigation functions.
