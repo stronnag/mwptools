@@ -54,7 +54,7 @@ Application Options:
 
 * **mspv2** : Use MSPv2 protocol (default is v1)
 
-* **max-radar** : Number of radar slots, default is 4. Should not exceed the mwp setting `max-radar-slots`.
+* **max-radar** : Number of radar slots, default is 4.
 
 ## Sample usage
 

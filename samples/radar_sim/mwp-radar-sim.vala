@@ -159,7 +159,10 @@ public class RadarSim : Object
                 radar_plot[id].altitude += rand.double_range(-0.5, 0.5);
                 radar_plot[id].speed = spd;
                 radar_plot[id].heading = cse;
-                radar_plot[id].lq += 1;
+                var tmp = radar_plot[id].lq + 1;
+                if (tmp > 4)
+                    tmp = 0;
+                radar_plot[id].lq = tmp;
 
                 if(!(staleid != -1 && id == (uint8)staleid &&
                     rtime > start_stale && rtime < end_stale))

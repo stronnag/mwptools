@@ -3871,7 +3871,7 @@ case 0:
                 if((nticks % RADARINTVL) == 0)
                 {
                     radar_plot.@foreach ((r) => {
-                            var staled = (r.source == 2) ? 120*10 : 50;
+                            var staled = 120*10 ; //(r.source == 2) ? 120*10 : 50;
                             uint delta = nticks - r.lasttick;
                             if (delta > 600*10)
                             {
@@ -7270,7 +7270,7 @@ case 0:
             r0.id =  (uint)id;
             radar_plot.append(r0);
             ri = find_radar_data((uint)id);
-            ri.name = "⚙ %c".printf(65+id);
+            ri.name = "⚙ inav %c".printf(65+id);
             ri.source = 1;
         }
         int32 ipos;
@@ -7287,11 +7287,7 @@ case 0:
         ri.speed = ispd/100.0;
         ri.lq = *rp;
         ri.lasttick = nticks;
-/*
-  MWPLog.message("Radar for %u %f %f %.1f %u° %.1f\n",
-  id, radar_plot[id].latitude, radar_plot[id].longitude, radar_plot[id].altitude,
-  radar_plot[id].heading, radar_plot[id].speed, radar_plot[id].lq);
-*/
+
         markers.update_radar(ri);
         radarv.update(ri, conf.dms);
     }
