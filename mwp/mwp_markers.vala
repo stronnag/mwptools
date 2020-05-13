@@ -150,21 +150,19 @@ public class MWPMarkers : GLib.Object
                 rp  = new Champlain.Label.from_file (iconfile);
                 rp.set_pivot_point(0.5f, 0.5f);
                 rp.set_draw_background (false);
-                rp.set_selectable(true);
                 rp.set_flags(ActorFlags.REACTIVE);
             } catch (GLib.Error e) {
                 rp = new Champlain.Label.with_text (r.name,"Sans 10",null,null);
                 rp .set_alignment (Pango.Alignment.RIGHT);
                 rp.set_text_color(black);
-                rp.set_draggable(false);
-                rp.set_selectable(false);
             }
+            rp.set_selectable(false);
+            rp.set_draggable(false);
             var textb = new Clutter.Actor ();
             var text = new Clutter.Text.full ("Sans 9", "", white);
             text.set_background_color(black);
             rp.set_text_color(white);
             textb.add_child (text);
-
             rp.set_qdata<Clutter.Actor>(q1,textb);
 
             rp.enter_event.connect((ce) => {
