@@ -2,11 +2,14 @@
 
 ## Overview
 
-`mwp-radar-sim` is a simulator for the MSP based inav-radar protocol. It simulates 4 aircraft, flying from central location, staying withing a defined range, with specified speed and altitude. The values for heading, speed and altitude have random perturbations applied during the simulation and 'fly' within a specified range of defined start point.
+`mwp-inav-radar-sim` is a simulator for the MSP based inav-radar protocol. It simulates 4 aircraft, flying from central location, staying withing a defined range, with specified speed and altitude. The values for heading, speed and altitude have random perturbations applied during the simulation and 'fly' within a specified range of defined start point.
+
+`mwp-mavlink-traffic-sim` is a simulator for the  MAVLink TRAFFIC REPORT protocol. It behaves in a similar fashion.
+
 
 ## Building
 
-`mwp-radar-sim` is not built by default, it is necessary to:
+Niether simulator is built by default, it is necessary to:
 
 ```
 cd mwptools/samples/mwp-radar-sim
@@ -72,4 +75,21 @@ Then start the simulator:
 
 ```
 $ mwp-radar-sim -d udp://localhost:3000
+```
+
+Similarly:
+
+``` vala
+$ ./mwp-mavlink-traffic-sim --help
+Usage:
+  mwp-mavlink-traffic-sim [OPTION?]  - mavlink traffic report simulation tool
+
+Help Options:
+  -h, --help                Show help options
+
+Application Options:
+  -b, --baud=115200         baud rate
+  -d, --device=name         device
+  -c, --centre=lat,long     Centre position
+  -m, --max-radar=256       number of radar slots
 ```
