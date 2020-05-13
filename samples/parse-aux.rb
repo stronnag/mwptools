@@ -168,7 +168,7 @@ ARGF.each do |l|
       monstr = m[3]
       day = m[4].to_i
       mon = MON2MON[monstr]
-      useperm = !(major == 2 && (minor < 5 || (minor == 5 && (mon < FLAGMON || (mon == FLAGMON && day < FLAGDAY)))))
+      useperm = !(major == 1 ||(major == 2 && (minor < 5 || (minor == 5 && (mon < FLAGMON || (mon == FLAGMON && day < FLAGDAY))))))
       nametable = PERMNAMES if useperm
       force=true
     end
