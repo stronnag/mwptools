@@ -1,0 +1,144 @@
+{
+  "type" : "object",
+  "properties" : {
+    "meta" : {
+      "type" : "object",
+      "properties" : {
+        "generator" : {
+          "type" : "string",
+        },
+        "cx" : {
+          "type" : "number"
+        },
+        "save-date" : {
+          "type" : "string",
+          "format" : "date-time",
+          "minLength" : 24,
+          "maxLength" : 24
+        },
+        "cy" : {
+          "type" : "number",
+          "minimum" : 0
+        },
+        "details" : {
+          "type" : "object",
+          "properties" : {
+            "distance" : {
+              "type" : "object",
+              "properties" : {
+                "units" : {
+                  "type" : "string",
+                  "minLength" : 1,
+                  "maxLength" : 1
+                },
+                "value" : {
+                  "type" : "number",
+                  "minimum" : 0
+                }
+              },
+              "additionalProperties" : false
+            },
+            "nav-speed" : {
+              "type" : "object",
+              "properties" : {
+                "units" : {
+                  "type" : "string",
+                  "minLength" : 3,
+                  "maxLength" : 3
+                },
+                "value" : {
+                  "type" : "number",
+                  "minimum" : 0
+                }
+              },
+              "additionalProperties" : false
+            },
+            "fly-time" : {
+              "type" : "object",
+              "properties" : {
+                "units" : {
+                  "type" : "string",
+                  "minLength" : 1,
+                  "maxLength" : 1
+                },
+                "value" : {
+                  "type" : "integer",
+                  "maximum" : 32767,
+                  "minimum" : 0
+                }
+              },
+              "additionalProperties" : false
+            },
+            "loiter-time" : {
+              "type" : "object",
+              "properties" : {
+                "units" : {
+                  "type" : "string",
+                  "minLength" : 1,
+                  "maxLength" : 1
+                },
+                "value" : {
+                  "type" : "integer",
+                  "maximum" : 32767,
+                  "minimum" : 0
+                }
+              },
+              "additionalProperties" : false
+            }
+          },
+          "additionalProperties" : false
+        },
+        "zoom" : {
+          "type" : "integer",
+          "maximum" : 20,
+          "minimum" : 0
+        }
+      },
+      "additionalProperties" : false
+    },
+    "mission" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "p3" : {
+            "type" : "integer",
+            "maximum" : 32767,
+            "minimum" : -32768
+          },
+          "alt" : {
+            "type" : "integer",
+          },
+          "p2" : {
+            "type" : "integer",
+            "maximum" : 32767,
+            "minimum" : -1
+          },
+          "lon" : {
+            "type" : "number"
+          },
+          "no" : {
+            "type" : "integer",
+            "maximum" : 32767,
+            "minimum" : 0
+          },
+          "p1" : {
+            "type" : "integer",
+            "maximum" : 32767,
+            "minimum" : 0
+          },
+          "action" : {
+            "type" : "string",
+            "minLength" : 4,
+            "maxLength" : 12
+          },
+          "lat" : {
+            "type" : "number",
+          }
+        },
+        "additionalProperties" : false
+      }
+    }
+  },
+  "additionalProperties" : false
+}
