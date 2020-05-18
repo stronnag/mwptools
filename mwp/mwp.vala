@@ -8365,9 +8365,7 @@ case 0:
         }
         else
         {
-            var m = get_mission_data();
-            XmlIO.to_xml_file(last_file, m);
-            update_title_from_file(last_file);
+            save_mission_file(last_file);
         }
         Timeout.add_seconds(2, () => {
                 get_mission_pix();
