@@ -138,6 +138,39 @@ MON2MON = {"Jan" => 1, "Feb" => 2, "Mar" => 3, "Apr" => 4, "May" => 5,
            "Jun" => 6, "Jul" => 7, "Aug" => 8, "Sep" => 9, "Oct" => 10,
            "Nov" => 11, "Dec" => 12}
 
+SMIXES = [
+  "Stabilised ROLL",
+  "Stabilised PITCH",
+  "Stabilised YAW",
+  "Stabilised THROTTLE",
+  "RC ROLL",
+  "RC PITCH",
+  "RC YAW",
+  "RC THROTTLE",
+  "RC channel 5",
+  "RC channel 6",
+  "RC channel 7",
+  "RC channel 8",
+  "GIMBAL PITCH",
+  "GIMBAL ROLL",
+  "FEATURE FLAPS",
+  "RC channel 9",
+  "RC channel 10",
+  "RC channel 11",
+  "RC channel 12",
+  "RC channel 13",
+  "RC channel 14",
+  "RC channel 15",
+  "RC channel 16",
+  "Stabilized ROLL+",
+  "Stabilized ROLL-",
+  "Stabilized PITCH+",
+  "Stabilized PITCH-",
+  "Stabilized YAW+",
+  "Stabilized YAW-",
+  "MAX"
+]
+
 force=nil
 
 ARGV.options do |opt|
@@ -156,7 +189,8 @@ else
   nametable = BOXNAMES
 end
 
-ini=false
+inis=false
+inia=false
 
 ARGF.each do |l|
   bname=''
@@ -178,6 +212,21 @@ ARGF.each do |l|
     puts
   end
 
+  if l.match (/^smix/)
+    l.chomp!
+    a=l.split(' ')
+    if a.size > 5
+      id = a[1].to_i
+      sidx = a[2].to_i
+      iid = a[3].to_i
+      wid = a[4].to_i
+      spd = a[5].to_i
+      lid = a[6].to_i
+      idstr = SMIXES[iid]
+      puts "SMIX#{id} #{sidx} #{idstr} #{wid}"
+    end
+  end
+
   if l.match (/^serial/)
     l.chomp!
     a=l.split(' ')
@@ -194,8 +243,12 @@ ARGF.each do |l|
 	end
       end
     end
+    if !inis
+      inis=true
+      puts
+    end
     puts "UART#{id+1} #{fcode} #{funcs.join(',')}"
-  end
+    end
 
   if l.match(/^aux/)
     l.chomp!
@@ -212,8 +265,8 @@ ARGF.each do |l|
       bname = "Unknown"
     end
 
-    if !ini
-      ini=true
+    if !inia
+      inia=true
       puts
     end
     puts "%-20s AUX%d %4d %4d\t(%s)\n" % [bname, chn, min, max, l]
