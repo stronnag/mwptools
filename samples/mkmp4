@@ -28,8 +28,12 @@ SY=132
 wmctrl -F -x -r 'mwp.Mwp' -e 0,$SX,$SY,$XRES,$YRES
 
 F=pulse
-S=$(pactl list | grep monitor | grep Name: | cut -d ' ' -f 2)
+#S=$(pactl list | grep monitor | grep Name: | cut -d ' ' -f 2)
 #S=default
+while read -r S
+do
+  echo $S; break
+done < <(pactl list | grep monitor | grep Name: | cut -d ' ' -f 2)
 
 read -p "Hit ENTER to start > "
 

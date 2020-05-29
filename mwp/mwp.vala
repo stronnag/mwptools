@@ -6734,10 +6734,6 @@ case 0:
             case MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT:
                 Mav.MAVLINK_HEARTBEAT m = *(Mav.MAVLINK_HEARTBEAT*)raw;
                 force_mav = false;
-                if(mavc == 0 &&  msp.available)
-                    send_mav_heartbeat();
-                mavc++;
-                mavc %= 64;
 
                 if(craft == null)
                 {
@@ -7127,6 +7123,13 @@ case 0:
             }
         }
         run_queue();
+        if (cmd >= MSP.Cmds.MAV_BASE)
+        {
+            if(mavc == 0 &&  msp.available)
+                send_mav_heartbeat();
+            mavc++;
+            mavc %= 64;
+        }
     }
 
     unowned RadarPlot? find_radar_data(uint id)
