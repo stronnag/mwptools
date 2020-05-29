@@ -7123,7 +7123,7 @@ case 0:
             }
         }
         run_queue();
-        if (cmd >= MSP.Cmds.MAV_BASE)
+        if (cmd >= MSP.Cmds.MAV_BASE && cmd < MSP.Cmds.MAV_BASE+256)
         {
             if(mavc == 0 &&  msp.available)
                 send_mav_heartbeat();
