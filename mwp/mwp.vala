@@ -374,6 +374,7 @@ class MwpDockHelper : Object
 public class MWP : Gtk.Application {
 
     private const uint MAXVSAMPLE=12;
+    private const uint8 MAV_BEAT_MASK=7; // mask, some power of 2 - 1
 
     public Builder builder;
     public Gtk.ApplicationWindow window;
@@ -5346,15 +5347,15 @@ case 0:
                     if(last_tm == 0)
                     {
                         var mtype= (cmd >= MSP.Cmds.MAV_BASE) ? "MAVlink" : "LTM";
-                        MWPLog.message("%s telemetry\n", mtype);
+                        var mstr = "%s telemetry".printf(mtype);
+                        MWPLog.message("%s\n", mstr);
                         serstate = SERSTATE.TELEM;
                         init_sstats();
                         if(naze32 != true)
                         {
                             naze32 = true;
                             mwvar = vi.fctype = MWChooser.MWVAR.CF;
-                            var vers="iNav Telemetry";
-                            verlab.label = verlab.tooltip_text = vers;
+                            verlab.label = verlab.tooltip_text = mstr;
                         }
                     }
                     last_tm = nticks;
@@ -5363,6 +5364,17 @@ case 0:
                         last_tm =1;
                 }
             }
+        }
+
+
+        if (cmd >= MSP.Cmds.MAV_BASE && cmd < MSP.Cmds.MAV_BASE+256)
+        {
+            if(mavc == 0 &&  msp.available)
+            {
+                MWPLog.message("Send mav heartbeat\n");
+                send_mav_heartbeat();
+            }
+            mavc = (mavc+1) & MAV_BEAT_MASK;
         }
 
         if(errs == true)
@@ -7123,13 +7135,6 @@ case 0:
             }
         }
         run_queue();
-        if (cmd >= MSP.Cmds.MAV_BASE && cmd < MSP.Cmds.MAV_BASE+256)
-        {
-            if(mavc == 0 &&  msp.available)
-                send_mav_heartbeat();
-            mavc++;
-            mavc %= 64;
-        }
     }
 
     unowned RadarPlot? find_radar_data(uint id)

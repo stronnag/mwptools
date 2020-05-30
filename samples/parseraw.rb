@@ -52,6 +52,14 @@ if port
   end
   addrs = Socket.getaddrinfo(host, port,nil,:DGRAM)
   skt = ((addrs[0][0] == 'AF_INET6') ? UDPSocket.new(Socket::AF_INET6) : UDPSocket.new)
+
+  Thread.new do
+    while true
+      msg, sender = skt.recvfrom(128)
+      rem = sender[3]
+      STDOUT.puts "RECV #{msg.size}b from #{rem}"
+    end
+  end
 end
 
 if raw
