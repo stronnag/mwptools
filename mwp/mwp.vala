@@ -5371,7 +5371,6 @@ case 0:
         {
             if(mavc == 0 &&  msp.available)
             {
-                MWPLog.message("Send mav heartbeat\n");
                 send_mav_heartbeat();
             }
             mavc = (mavc+1) & MAV_BEAT_MASK;
@@ -7101,7 +7100,7 @@ case 0:
                 }
 
                 StringBuilder sb = new StringBuilder("** Unknown ");
-                sb.printf("%s : %u / %x (%ubytes)", mtxt, mcmd, mcmd, len);
+                sb.printf("%s : %u / 0x%x (%ubytes)", mtxt, mcmd, mcmd, len);
                 if(len > 0 && conf.dump_unknown)
                 {
                     sb.append(" [");

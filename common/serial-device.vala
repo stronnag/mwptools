@@ -159,6 +159,75 @@ public class SportDev : Object
     }
 }
 
+private class MavCRC : Object
+{
+
+    private struct MavCRCList
+    {
+        uint32 msgid;
+        uint8 seed;
+    }
+        /*
+          generated from mavlink library, standard.h, via mavcrc.go
+         */
+    private const MavCRCList mavcrcs[] = {
+        { 0, 50 }, { 1, 124 }, { 2, 137 }, { 4, 237 }, { 5, 217 },
+        { 6, 104 }, { 7, 119 }, { 8, 117 }, { 11, 89 }, { 20, 214 },
+        { 21, 159 }, { 22, 220 }, { 23, 168 }, { 24, 24 }, { 25, 23 },
+        { 26, 170 }, { 27, 144 }, { 28, 67 }, { 29, 115 }, { 30, 39 },
+        { 31, 246 }, { 32, 185 }, { 33, 104 }, { 34, 237 }, { 35, 244 },
+        { 36, 222 }, { 37, 212 }, { 38, 9 }, { 39, 254 }, { 40, 230 },
+        { 41, 28 }, { 42, 28 }, { 43, 132 }, { 44, 221 }, { 45, 232 },
+        { 46, 11 }, { 47, 153 }, { 48, 41 }, { 49, 39 }, { 50, 78 },
+        { 51, 196 }, { 52, 132 }, { 54, 15 }, { 55, 3 }, { 61, 167 },
+        { 62, 183 }, { 63, 119 }, { 64, 191 }, { 65, 118 }, { 66, 148 },
+        { 67, 21 }, { 69, 243 }, { 70, 124 }, { 73, 38 }, { 74, 20 },
+        { 75, 158 }, { 76, 152 }, { 77, 143 }, { 81, 106 }, { 82, 49 },
+        { 83, 22 }, { 84, 143 }, { 85, 140 }, { 86, 5 }, { 87, 150 },
+        { 89, 231 }, { 90, 183 }, { 91, 63 }, { 92, 54 }, { 93, 47 },
+        { 100, 175 }, { 101, 102 }, { 102, 158 }, { 103, 208 }, { 104, 56 },
+        { 105, 93 }, { 106, 138 }, { 107, 108 }, { 108, 32 }, { 109, 185 },
+        { 110, 84 }, { 111, 34 }, { 112, 174 }, { 113, 124 }, { 114, 237 },
+        { 115, 4 }, { 116, 76 }, { 117, 128 }, { 118, 56 }, { 119, 116 },
+        { 120, 134 }, { 121, 237 }, { 122, 203 }, { 123, 250 }, { 124, 87 },
+        { 125, 203 }, { 126, 220 }, { 127, 25 }, { 128, 226 }, { 129, 46 },
+        { 130, 29 }, { 131, 223 }, { 132, 85 }, { 133, 6 }, { 134, 229 },
+        { 135, 203 }, { 136, 1 }, { 137, 195 }, { 138, 109 }, { 139, 168 },
+        { 140, 181 }, { 141, 47 }, { 142, 72 }, { 143, 131 }, { 144, 127 },
+        { 146, 103 }, { 147, 154 }, { 148, 178 }, { 149, 200 }, { 162, 189 },
+        { 230, 163 }, { 231, 105 }, { 232, 151 }, { 233, 35 }, { 234, 150 },
+        { 235, 179 }, { 241, 90 }, { 242, 104 }, { 243, 85 }, { 244, 95 },
+        { 245, 130 }, { 246, 184 }, { 247, 81 }, { 248, 8 }, { 249, 204 },
+        { 250, 49 }, { 251, 170 }, { 252, 44 }, { 253, 83 }, { 254, 46 },
+        { 256, 71 }, { 257, 131 }, { 258, 187 }, { 259, 92 }, { 260, 146 },
+        { 261, 179 }, { 262, 12 }, { 263, 133 }, { 264, 49 }, { 265, 26 },
+        { 266, 193 }, { 267, 35 }, { 268, 14 }, { 269, 109 }, { 270, 59 },
+        { 280, 166 }, { 281, 0 }, { 282, 123 }, { 283, 247 }, { 284, 99 },
+        { 285, 82 }, { 286, 62 }, { 299, 19 }, { 300, 217 }, { 301, 243 },
+        { 310, 28 }, { 311, 95 }, { 320, 243 }, { 321, 88 }, { 322, 243 },
+        { 323, 78 }, { 324, 132 }, { 330, 23 }, { 331, 91 }, { 332, 236 },
+        { 333, 231 }, { 334, 135 }, { 335, 225 }, { 339, 199 }, { 340, 99 },
+        { 350, 232 }, { 360, 11 }, { 370, 98 }, { 371, 161 }, { 373, 192 },
+        { 375, 251 }, { 380, 232 }, { 385, 147 }, { 390, 156 }, { 395, 231 },
+        { 400, 110 }, { 401, 183 }, { 9000, 113 }, { 12900, 114 }, { 12901, 254 },
+        { 12902, 49 }, { 12903, 249 }, { 12904, 85 }, { 12905, 49 }, { 12915, 62 },
+    };
+
+    public static uint8 lookup(uint32 id)
+    {
+        uint8 res = 0;
+        foreach (var v in mavcrcs)
+        {
+            if (v.msgid == id)
+            {
+                res = v.seed;
+                break;
+            }
+        }
+        return res;
+    }
+}
+
 public class MWSerial : Object
 {
     private string devname;
@@ -207,25 +276,7 @@ public class MWSerial : Object
     private uint8[] devbuf;
     private bool sport = false;
     private SportDev spdev;
-
-    const uint8[] MAVCRCS = {
-        50,124,137,  0,237,217,104,119,  0,  0,  0, 89,  0,  0,  0,  0,
-        0,  0,  0,  0,214,159,220,168, 24, 23,170,144, 67,115, 39,246,
-        185,104,237,244,222,212,  9,254,230, 28, 28,132,221,232, 11,153,
-        41, 39,  0,  0,  0,  0, 15,  3,  0,  0,  0,  0,  0,153,183, 51,
-        82,118,148, 21,  0,243,124,  0,  0, 38, 20,158,152,143,  0,  0,
-        0,106, 49, 22,143,140,  5,150,  0,231,183, 63, 54,  0,  0,  0,
-        0,  0,  0,  0,175,102,158,208, 56, 93,138,108, 32,185, 84, 34,
-        0,124,237,  4, 76,128, 56,116,134,237,203,250, 87,203,220, 25,
-        226,  0, 29,223, 85,  6,229,203,  1,  0,  0,  0,  0,  0,  0,  0,
-        0,  0,  0,154, 49,  0,  0,108, 86, 95,224,  0,  0,  0,  0,  0,
-        22,  0,  0,  0,  0,  0,  0,  0,  0,  0, 28,249,182,  0,  0,  0,
-        0,  0,  0,  0,153, 16, 29,162,  0,  0,  0,  0,  0,  0, 90, 95,
-        36,  0,  0, 88,  0,  0,  0,  0,254,126, 7,  85,  0, 87, 19,  0,
-        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-        0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-        0,  0,  0,  0,  0,  0,  184,  0,  8,204, 49,170, 44, 83, 46,  0
-    };
+    private uint16 mavsig = 0;
 
     public enum MemAlloc
     {
@@ -285,7 +336,21 @@ public class MWSerial : Object
         S_M_MSGID,
         S_M_DATA,
         S_M_CRC1,
-        S_M_CRC2
+        S_M_CRC2,
+        S_M2_STX = 400,
+        S_M2_SIZE,
+        S_M2_FLG1,
+        S_M2_FLG2,
+        S_M2_SEQ,
+        S_M2_ID1,
+        S_M2_ID2,
+        S_M2_MSGID0,
+        S_M2_MSGID1,
+        S_M2_MSGID2,
+        S_M2_DATA,
+        S_M2_CRC1,
+        S_M2_CRC2,
+        S_M2_SIG,
     }
 
     public signal void serial_event (MSP.Cmds event, uint8[]result, uint len, uint8 flags, bool err);
@@ -818,6 +883,12 @@ public class MWSerial : Object
                                 state=States.S_M_SIZE;
                                 errstate = false;
                             }
+                            else if (devbuf[nc] == 0xfd)
+                            {
+                                sp = nc;
+                                state=States.S_M2_SIZE;
+                                errstate = false;
+                            }
                             break;
 
                         case States.S_HEADER:
@@ -831,6 +902,12 @@ public class MWSerial : Object
                             {
                                 sp = nc;
                                 state=States.S_M_SIZE;
+                                errstate = false;
+                            }
+                            else if (devbuf[nc] == 0xfd)
+                            {
+                                sp = nc;
+                                state=States.S_M2_SIZE;
                                 errstate = false;
                             }
                             else
@@ -1139,7 +1216,8 @@ public class MWSerial : Object
                                 state = States.S_M_CRC1;
                             break;
                         case States.S_M_CRC1:
-                            mavsum = mavlink_crc(mavsum, MAVCRCS[cmd]);
+                            var seed  = MavCRC.lookup(cmd);
+                            mavsum = mavlink_crc(mavsum, seed);
                             irxbufp = 0;
                             rxmavsum = devbuf[nc];
                             state = States.S_M_CRC2;
@@ -1160,6 +1238,99 @@ public class MWSerial : Object
                                                rxmavsum, mavsum, cmd, csize);
                                 state = States.S_ERROR;
                             }
+                            break;
+                        case States.S_M2_SIZE:
+                            csize = needed = devbuf[nc];
+                            mavsum = mavlink_crc(0xffff, (uint8)csize);
+                            if(needed > 0)
+                            {
+                                irxbufp= 0;
+                                check_rxbuf_size();
+                            }
+                            state = States.S_M2_FLG1;
+                            break;
+                        case States.S_M2_FLG1:
+                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
+                            if((devbuf[nc] & 1) == 1)
+                                mavsig = 13;
+                            else
+                                mavsig = 0;
+                            state = States.S_M2_FLG2;
+                            break;
+                        case States.S_M2_FLG2:
+                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
+                            state = States.S_M2_SEQ;
+                            break;
+                        case States.S_M2_SEQ:
+                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
+                            state = States.S_M2_ID1;
+                            break;
+                        case States.S_M2_ID1:
+                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
+                            state = States.S_M2_ID2;
+                            break;
+                        case States.S_M2_ID2:
+                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
+                            state = States.S_M2_MSGID0;
+                            break;
+                        case States.S_M2_MSGID0:
+                            cmd = (MSP.Cmds)devbuf[nc];
+                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
+                            state = States.S_M2_MSGID1;
+                            break;
+
+                        case States.S_M2_MSGID1:
+                            cmd |= (MSP.Cmds)(devbuf[nc] << 8);
+                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
+                            state = States.S_M2_MSGID2;
+                            break;
+
+                        case States.S_M2_MSGID2:
+                            cmd |= (MSP.Cmds)(devbuf[nc] << 16);
+                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
+                            if (csize == 0)
+                                state = States.S_M2_CRC1;
+                            else
+                                state = States.S_M2_DATA;
+                            break;
+                        case States.S_M2_DATA:
+                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
+                            rxbuf[irxbufp++] = devbuf[nc];
+                            needed--;
+                            if(needed == 0)
+                                state = States.S_M2_CRC1;
+                            break;
+                        case States.S_M2_CRC1:
+                            var seed  = MavCRC.lookup(cmd);
+                            mavsum = mavlink_crc(mavsum, seed);
+                            irxbufp = 0;
+                            rxmavsum = devbuf[nc];
+                            state = States.S_M2_CRC2;
+                            break;
+                        case States.S_M2_CRC2:
+                            rxmavsum |= (devbuf[nc] << 8);
+                            if(rxmavsum == mavsum)
+                            {
+                                stats.msgs++;
+                                serial_event (cmd+MSP.Cmds.MAV_BASE,
+                                              rxbuf, csize, 0, errstate);
+                                if(mavsig == 0)
+                                    state = States.S_HEADER;
+                                else
+                                    state = States.S_M2_SIG;
+                            }
+                            else
+                            {
+                                error_counter();
+                                MWPLog.message("MAVCRC2 Fail, got %x != %x (cmd=%u, len=%u)\n",
+                                               rxmavsum, mavsum, cmd, csize);
+                                state = States.S_ERROR;
+                            }
+                            break;
+                        case States.S_M2_SIG:
+                            mavsig--;
+                            if (mavsig == 0)
+                                state = States.S_HEADER;
                             break;
                     }
                 }
@@ -1281,7 +1452,8 @@ public class MWSerial : Object
                 mcrc = mavlink_crc(mcrc, *ptx);
                 ptx++;
             }
-            mcrc = mavlink_crc(mcrc, MAVCRCS[cmd]);
+            var seed  = MavCRC.lookup(cmd);
+            mcrc = mavlink_crc(mcrc, seed);
             *ptx++ = (uint8)(mcrc&0xff);
             *ptx++ = (uint8)(mcrc >> 8);
             write(txbuf, (len+8));
