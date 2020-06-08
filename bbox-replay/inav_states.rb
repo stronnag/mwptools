@@ -272,6 +272,6 @@ def get_state_version iv
       inavers = k
     end
   end
-  STDERR.puts "Using states for #{inavers}"
+  STDERR.puts "#{iv} using states for #{inavers}"
   inavers
 end

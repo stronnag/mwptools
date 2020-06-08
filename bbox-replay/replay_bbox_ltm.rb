@@ -38,23 +38,8 @@ require_relative 'inav_states'
 include Math
 module Poscalc
   RAD = 0.017453292
-  def Poscalc.d2r d
-    private
-    d*RAD
-  end
-  def Poscalc.r2d r
-    private
-    r/RAD
-  end
-  def Poscalc.nm2r nm
-    private
-    (PI/(180*60))*nm
-  end
-  def Poscalc.r2nm r
-    private
-    ((180*60)/PI)*r
-  end
- def Poscalc.posit lat1, lon1, cse, dist,rhumb=nil
+
+  def Poscalc.posit lat1, lon1, cse, dist,rhumb=nil
     tc = d2r(cse)
     rlat1= d2r(lat1)
     rdist = nm2r(dist)
@@ -89,6 +74,21 @@ module Poscalc
                  cos(lat1)*sin(lat2)-sin(lat1)*cos(lat2)*cos(lon2-lon1))) % (2.0*PI)
     cse = r2d(cse)
     [cse,d]
+  end
+
+  private
+
+  def Poscalc.d2r d
+    d*RAD
+  end
+  def Poscalc.r2d r
+    r/RAD
+  end
+  def Poscalc.nm2r nm
+    (PI/(180*60))*nm
+  end
+  def Poscalc.r2nm r
+    ((180*60)/PI)*r
   end
 
 end
@@ -523,7 +523,7 @@ def encode_stats r,inavers,armed=1
 	end
 
   if $verbose && sts == 19
-    STDERR.puts "** STS 19 for #{INAV_STATES[inavers][r[:navstate].to_i]}\n"
+    STDERR.puts "** STS 19 for <#{INAV_STATES[inavers][r[:navstate].to_i]}> <#{r[:navstate]}>\n"
   end
 
   sts = (sts << 2) | armed
