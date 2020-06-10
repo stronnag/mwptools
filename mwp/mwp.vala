@@ -633,17 +633,19 @@ public class MWP : Gtk.Application {
         hasTZ = 0x010704,
         hasV2STATUS = 0x010801,
         hasJUMP = 0x020500,
+        hasPOI = 0x020600,
         hasPHTIME = 0x020500,
         hasLAND = 0x020500,
     }
 
     public enum WPS
     {
-        isINAV = 1,
-        isFW = 2,
-        hasJUMP = 4,
-        hasPHT = 8,
-        hasLAND = 16,
+        isINAV = (1<<0),
+        isFW = (1<<1),
+        hasJUMP = (1<<2),
+        hasPHT = (1<<3),
+        hasLAND = (1<<4),
+        hasPOI = (1<<5),
     }
 
     public enum SERSTATE
@@ -6058,6 +6060,8 @@ case 0:
                             {
                                 case MSP.Action.SET_POI:
                                 case MSP.Action.SET_HEAD:
+                                    if(vi.fc_vers >= FCVERS.hasPOI)
+                                        nwp++;
                                     break;
                                 case MSP.Action.JUMP:
                                     if(vi.fc_vers >= FCVERS.hasJUMP)
@@ -7674,8 +7678,12 @@ case 0:
         if(vi.fc_vers >= FCVERS.hasJUMP)
             wps_flags |= WPS.hasJUMP;
 
+        if(vi.fc_vers >= FCVERS.hasPOI)
+            wps_flags |= WPS.hasPOI;
+
         if(vi.fc_vers >= FCVERS.hasPHTIME)
             wps_flags |= WPS.hasPHT;
+
         if(vi.fc_vers >= FCVERS.hasLAND)
             wps_flags |= WPS.hasLAND;
         return wps_flags;
@@ -8016,6 +8024,7 @@ case 0:
     {
         ls.clear_mission();
         lastmission=ls.to_mission();
+        last_file = null;
     }
 
     private void set_replay_menus(bool state)

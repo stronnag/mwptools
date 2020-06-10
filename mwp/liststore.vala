@@ -388,8 +388,11 @@ public class ListBox : GLib.Object
                             break;
                         case MSP.Action.SET_POI:
                         case MSP.Action.SET_HEAD:
-                            MWPLog.message("Remove WP %s (need FW >= 2.x.0)\n", typ.to_string());
-                            continue;
+                            if((flags & MWP.WPS.hasPOI) != MWP.WPS.hasPOI)
+                            {
+                                MWPLog.message("Remove WP %s (need FW >= 2.6.0)\n", typ.to_string());                            continue;
+                            }
+                            break;
                         case MSP.Action.JUMP:
                             if((flags & MWP.WPS.hasJUMP) != MWP.WPS.hasJUMP)
                             {
@@ -507,7 +510,7 @@ public class ListBox : GLib.Object
 
     private void change_marker(string typ, int flag=0)
     {
-        foreach (var t in get_selected_refs())
+        foreach (var t in list_selected_refs())
         {
             Gtk.TreeIter iter;
             var path = t.get_path ();
@@ -711,7 +714,7 @@ public class ListBox : GLib.Object
                 {
                     update_selected_cols();
                 }
-                foreach (var t in get_selected_refs())
+                foreach (var t in list_selected_refs())
                 {
                     Gtk.TreeIter seliter;
                     list_model.get_iter (out seliter, t.get_path ());
@@ -1225,31 +1228,86 @@ public class ListBox : GLib.Object
         }
     }
 
-    private  Gtk.TreeRowReference[] get_selected_refs()
+    private List<Gtk.TreeRowReference> list_selected_refs(bool rev = false)
     {
+	List<Gtk.TreeRowReference> list = new List<Gtk.TreeRowReference> ();
+        Gtk.TreeModel m;
         var sel = view.get_selection();
-        var rows = sel.get_selected_rows(null);
-        var list_model = view.get_model() as Gtk.ListStore;
+        var rows = sel.get_selected_rows(out m);
 
-        Gtk.TreeRowReference[] trefs = {};
         foreach (var r in rows) {
-            trefs += new Gtk.TreeRowReference (list_model, r);
+            var rr = new Gtk.TreeRowReference (m, r);
+            list.append(rr);
         }
-        return trefs;
+        if(rev)
+            list.reverse();
+        return list;
+    }
+
+    private bool is_wp_valid_for_delete(int i)
+    {
+        bool ok = true;
+        Gtk.TreeIter iter;
+        Value val;
+
+        for(bool next=list_model.get_iter_first(out iter); next;
+            next=list_model.iter_next(ref iter))
+        {
+            list_model.get_value (iter, WY_Columns.ACTION, out val);
+            if ((MSP.Action)val == MSP.Action.JUMP)
+            {
+                list_model.get_value (iter, WY_Columns.INT1, out val);
+                var jumptgt = (int)((double)val);
+                if (i == jumptgt)
+                {
+                    ok = false;
+                    break;
+                }
+            }
+        }
+        return ok;
     }
 
     private void menu_delete()
     {
-        foreach (var t in get_selected_refs())
+        int []todel = {};
+        Gtk.TreeIter iter;
+        Value val;
+
+        foreach (var t in list_selected_refs(true))
         {
-            Gtk.TreeIter iter;
-            Value val;
             var path = t.get_path ();
             list_model.get_iter (out iter, path);
-            list_model.get_value (iter, WY_Columns.ACTION, out val);
-            if ((MSP.Action)val == MSP.Action.SET_POI)
-                shp_item.sensitive=false;
-            list_model.remove(ref iter);
+            list_model.get_value (iter, WY_Columns.IDX, out val);
+            var i = int.parse((string)val);
+            if(is_wp_valid_for_delete(i))
+            {
+                todel += i;
+            }
+            else
+            {
+                var msg = "Cowardly refusing to delete JUMP target  WP %d".printf(i);
+                mp.mwp_warning_box(msg, Gtk.MessageType.ERROR, 60);
+                return;
+            }
+        }
+
+        foreach (var id in todel)
+        {
+            for(bool next=list_model.get_iter_first(out iter); next;
+                next=list_model.iter_next(ref iter))
+            {
+                list_model.get_value (iter, WY_Columns.IDX, out val);
+                var i = int.parse((string)val);
+                if (i == id)
+                {
+                    list_model.get_value (iter, WY_Columns.ACTION, out val);
+                    if ((MSP.Action)val == MSP.Action.SET_POI)
+                        shp_item.sensitive=false;
+                    list_model.remove(ref iter);
+                    break;
+                }
+            }
         }
         calc_mission();
     }
@@ -1332,7 +1390,7 @@ public class ListBox : GLib.Object
 
             if(dset != DELTAS.NONE)
             {
-                foreach (var t in get_selected_refs())
+                foreach (var t in list_selected_refs())
                 {
                     Gtk.TreeIter iter;
                     GLib.Value cell;
@@ -1558,7 +1616,7 @@ public class ListBox : GLib.Object
         if(sel != null && sel.count_selected_rows () > 1)
         {
             bool have_start=false;
-            foreach (var t in get_selected_refs())
+            foreach (var t in list_selected_refs())
             {
                 Gtk.TreeIter iter;
                 GLib.Value cell;
@@ -1835,7 +1893,7 @@ public class ListBox : GLib.Object
 
         if(altdialog.get_alt(out dalt) == true)
         {
-            foreach (var t in get_selected_refs())
+            foreach (var t in list_selected_refs())
             {
                 Gtk.TreeIter iter;
                 GLib.Value cell;
@@ -1865,7 +1923,7 @@ public class ListBox : GLib.Object
         int cnt = 0;
         if(speeddialog.get_speed(out dspd) == true)
         {
-            foreach (var t in get_selected_refs())
+            foreach (var t in list_selected_refs())
             {
                 Gtk.TreeIter iter;
                 GLib.Value cell;
@@ -1965,30 +2023,35 @@ public class ListBox : GLib.Object
         Value cell;
         Gtk.TreeIter xiter;
         var path = new Gtk.TreePath.from_indices (lastn);
-
-        list_model.get_iter(out xiter, path);
-        list_model.get_value (xiter, WY_Columns.TIP, out cell);
+//        stderr.printf("path from index %d %s\n", lastn, path.to_string());
+        var ok = list_model.get_iter(out xiter, path);
+        if(ok)
         {
-            string hint;
-            if(no >= 0)
+            list_model.get_value (xiter, WY_Columns.TIP, out cell);
             {
-                hint = "Dist %.1f%s\nto WP %d => %.1f%s, %.0f° %.0fs".
-                printf(
-                    Units.distance(dx-d),
-                    Units.distance_units(),
-                    no+1,
-                    Units.distance(d),
-                    Units.distance_units(),
-                    cse, ltim);
+                string hint;
+                if(no >= 0)
+                {
+                    hint = "Dist %.1f%s\nto WP %d => %.1f%s, %.0f° %.0fs".
+                    printf(
+                        Units.distance(dx-d),
+                        Units.distance_units(),
+                        no+1,
+                        Units.distance(d),
+                        Units.distance_units(),
+                        cse, ltim);
+                }
+                else
+                {
+                    hint = "Dist %.1f%s".printf(
+                        Units.distance(dx),
+                        Units.distance_units());
+                }
+                list_model.set_value (xiter, WY_Columns.TIP, hint);
             }
-            else
-            {
-                hint = "Dist %.1f%s".printf(
-                    Units.distance(dx),
-                    Units.distance_units());
-            }
-            list_model.set_value (xiter, WY_Columns.TIP, hint);
         }
+        else
+            stderr.printf("invalid iter for %d\n", lastn);
     }
 
     public bool calc_mission_dist(out double dist, out int lt, out int et,double extra=0.0)
