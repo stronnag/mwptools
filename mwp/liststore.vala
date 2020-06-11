@@ -1471,7 +1471,7 @@ public class ListBox : GLib.Object
             });
         menu.add (item);
 
-        alts_item = new Gtk.MenuItem.with_label ("Set all altitudes");
+        alts_item = new Gtk.MenuItem.with_label ("Set altitudes");
         alts_item.activate.connect (() => {
                 set_alts(true);
             });
@@ -1483,7 +1483,7 @@ public class ListBox : GLib.Object
             });
         menu.add (altz_item);
 
-        speedv_item = new Gtk.MenuItem.with_label ("Set all leg speeds");
+        speedv_item = new Gtk.MenuItem.with_label ("Set leg speeds");
         speedv_item.activate.connect (() => {
                 set_speeds(true);
             });
@@ -1903,7 +1903,6 @@ public class ListBox : GLib.Object
                 var act = (MSP.Action)cell;
                 if (act == MSP.Action.RTH ||
                     act == MSP.Action.JUMP ||
-                    act == MSP.Action.SET_POI ||
                     act == MSP.Action.SET_HEAD)
                     continue;
                 if(flag == false)

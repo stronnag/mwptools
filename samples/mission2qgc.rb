@@ -41,6 +41,10 @@ class QGCBuilder
       pos << {:no => no, :lat => lat, :lon => lon, :alt => alt, :act => action,
 	:p1 => p1, :p2 => p2, :p3 => p3}
     end
+    if pos.size == 0
+      STDERR.puts "Doesn't look like an XML mission"
+      exit
+    end
     if cx.nil?
       cx = cy = 0
       np = 0
