@@ -4880,7 +4880,8 @@ case 0:
             {
                 if(mi.action != MSP.Action.RTH &&
                    mi.action != MSP.Action.JUMP &&
-                   mi.action != MSP.Action.SET_HEAD)
+                   mi.action != MSP.Action.SET_HEAD &&
+                   mi.action != MSP.Action.SET_POI)
                 {
                     if (mi.lat > ms.maxy)
                         ms.maxy = mi.lat;
@@ -5025,17 +5026,19 @@ case 0:
         {
             uint fs=(uint)conf.wp_dist_fontsize*1024;
             np = np - 1;
-            if(wp_resp[np].action != MSP.Action.RTH &&
-                   wp_resp[np].action != MSP.Action.JUMP &&
-                   wp_resp[np].action != MSP.Action.SET_HEAD)
+            if( wp_resp[np].action != MSP.Action.JUMP &&
+                wp_resp[np].action != MSP.Action.SET_HEAD &&
+                wp_resp[np].action != MSP.Action.SET_POI)
             {
-                var lat = wp_resp[np].lat;
-                var lon = wp_resp[np].lon;
+                double lat,lon;
+
                 if(wp_resp[np].action == MSP.Action.RTH)
                 {
                     lat = home_pos.lat;
                     lon = home_pos.lon;
                 }
+                lat = wp_resp[np].lat;
+                lon = wp_resp[np].lon;
                 double dist,cse;
                 Geo.csedist(GPSInfo.lat, GPSInfo.lon,
                             lat, lon, out dist, out cse);

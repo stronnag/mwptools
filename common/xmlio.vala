@@ -160,7 +160,8 @@ public class XmlIO : Object
                         }
                     }
 
-                    if(m.action != MSP.Action.RTH && m.action != MSP.Action.JUMP)
+                    if(m.action != MSP.Action.RTH && m.action != MSP.Action.JUMP
+                       && m.action != MSP.Action.SET_HEAD && m.action != MSP.Action.SET_POI)
                     {
                         if (m.lat > ms.maxy)
                             ms.maxy = m.lat;

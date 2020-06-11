@@ -45,7 +45,8 @@ public class JsonIO : Object
                                 m.param1 = (int) rsitem.get_int_member("p1");
                                 m.param2 = (int) rsitem.get_int_member("p2");
                                 m.param3 = (int) rsitem.get_int_member("p3");
-                                if(m.action != MSP.Action.RTH && m.action != MSP.Action.JUMP)
+                                if(m.action != MSP.Action.RTH && m.action != MSP.Action.JUMP &&
+                                   m.action != MSP.Action.SET_HEAD && m.action != MSP.Action.SET_POI)
                                 {
                                     if (m.lat > ms.maxy)
                                         ms.maxy = m.lat;
