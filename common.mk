@@ -7,6 +7,10 @@ ifeq ($(XOS),Linux)
  GUDEV = --pkg gudev-1.0
 endif
 
+ifeq ($(OS),Windows_NT)
+ MWIN = -X -mwindows
+endif
+
 OPTS += -X -O2
 
 ifeq ($(origin DEBUG), undefined)

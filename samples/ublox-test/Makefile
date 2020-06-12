@@ -36,7 +36,7 @@ PKGS= --pkg gtk+-3.0 --pkg atk --pkg clutter-1.0 --pkg champlain-gtk-0.12 \
 LOPTS=-X -lm
 
 $(APP) : $(SRCS) $(COMMONM)
-	$(VALAC) $(OPTS) $(DOPTS) $(PKGS) -o $@ $^ $(LOPTS)
+	$(VALAC) $(OPTS) $(DOPTS) $(PKGS) -o $@ $^ $(LOPTS) $(MWIN)
 
 clean:
 	rm -f ublox-cli ublox-geo  *~ *.vala.c ublox-resources.c
