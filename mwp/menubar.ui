@@ -134,7 +134,7 @@
       <attribute name="label">_View</attribute>
       <section>
         <item>
-          <attribute name="label">Recentre Mission</attribute>
+          <attribute name="label">Zoom to Mission</attribute>
           <attribute name="action">win.recentre</attribute>
         </item>
         <item>
