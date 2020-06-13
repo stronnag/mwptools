@@ -5036,9 +5036,10 @@ case 0:
                 {
                     lat = home_pos.lat;
                     lon = home_pos.lon;
+                } else {
+                    lat = wp_resp[np].lat;
+                    lon = wp_resp[np].lon;
                 }
-                lat = wp_resp[np].lat;
-                lon = wp_resp[np].lon;
                 double dist,cse;
                 Geo.csedist(GPSInfo.lat, GPSInfo.lon,
                             lat, lon, out dist, out cse);
