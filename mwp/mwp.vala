@@ -6499,7 +6499,7 @@ case 0:
                                 MWPLog.message("No home position yet\n");
                             }
                         }
-                        if(magcheck && magtime > 0 && magdiff > 0)
+                        if(last_nmode != 3 && magcheck && magtime > 0 && magdiff > 0)
                         {
                             int gcse = (int)GPSInfo.cse;
                             if(last_ltmf != 9 && last_ltmf != 15)
