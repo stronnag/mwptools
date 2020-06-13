@@ -438,6 +438,17 @@ public class  MissionPreviewer : GLib.Object
         stdout.puts(sb.str);
     }
 
+    public static bool mission_is_json(string fn)
+    {
+        uint8 buf[16];
+        var fs = FileStream.open (fn, "r");
+        fs.read (buf);
+        if (((string)buf).contains("<?xml"))
+            return false;
+        else
+            return true;
+    }
+
     public static int main (string[] args)
     {
 
@@ -455,8 +466,10 @@ public class  MissionPreviewer : GLib.Object
         }
 
         Mission ms;
-
-        if ((ms = XmlIO.read_xml_file (args[1])) != null)
+        var fn = args[1];
+        var is_j = MissionPreviewer.mission_is_json(fn);
+        ms =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+        if (ms != null)
         {
             HomePos h = { 50.8047104, -1.4942621, true };
 
