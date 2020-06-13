@@ -22,6 +22,21 @@ public struct HomePos
     bool valid;
 }
 
+private enum NAVMODE
+{
+    NONE=0,
+    POI,
+    FIXED
+}
+
+private struct HeadingMode
+{
+    uint8  mode;
+    uint32 heading; // fixed heading
+    double poi_lat;
+    double poi_lon;
+}
+
 public class  MissionPreviewer : GLib.Object
 {
     public struct LegPreview
@@ -45,6 +60,7 @@ public class  MissionPreviewer : GLib.Object
     public  double speed = MSPEED;
     public  double dist = 0.0;
     private MissionItem[] mi;
+    private HeadingMode head_mode;
 
     public bool is_mr = false;
 
@@ -63,6 +79,18 @@ public class  MissionPreviewer : GLib.Object
 
     private void outloc (double lat, double lon, double cse)
     {
+        switch (head_mode.mode)
+        {
+            case NAVMODE.NONE:
+                break;
+            case NAVMODE.POI:
+                double d;
+                Geo.csedist(lat,lon, head_mode.poi_lat,head_mode.poi_lon, out d, out cse);
+                break;
+            case NAVMODE.FIXED:
+                cse = head_mode.heading;
+                break;
+        }
         mission_replay_event(lat, lon,cse);
         Thread.usleep(MAXSLEEP);
     }
@@ -190,7 +218,9 @@ public class  MissionPreviewer : GLib.Object
         else
         {
             if (dist < 3000)
-                speed = MSPEED;
+            {
+                speed = MSPEED/4 + (MSPEED*3/4) * (dist/3000);
+            }
             else
                 speed = (dist/3000) * MSPEED;
         }
@@ -212,19 +242,36 @@ public class  MissionPreviewer : GLib.Object
             if(!running)
                 break;
 
-            if (n == nsize)
+            if (n >= nsize)
                 break;
 
             var typ = mi[n].action;
 
-            if (typ == MSP.Action.SET_POI || typ == MSP.Action.SET_HEAD)
-            {
-                n += 1;
-                continue;
-            }
-
             if (valid)
             {
+
+                if (typ == MSP.Action.SET_POI)
+                {
+                    head_mode.mode = NAVMODE.POI;
+                    head_mode.poi_lat = mi[n].lat;
+                    head_mode.poi_lon = mi[n].lon;
+                    n += 1;
+                    continue;
+                }
+
+                if (typ == MSP.Action.SET_HEAD)
+                {
+                    var fhead = (int)mi[n].param1;
+                    if (fhead < 0 || fhead > 359) {
+                        head_mode.mode = NAVMODE.NONE;
+                    } else {
+                        head_mode.mode = NAVMODE.FIXED;
+                        head_mode.heading = fhead;
+                    }
+                    n += 1;
+                    continue;
+                }
+
                 if (typ == MSP.Action.JUMP)
                 {
                     if (mi[n].param3 == -1)
