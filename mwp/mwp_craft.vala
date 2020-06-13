@@ -86,6 +86,7 @@ public class Craft : GLib.Object
         CUSTOM_AIRPLANE = 24,
         CUSTOM_TRI = 25,
         PREVIEW = 26,
+        FORCE_ARROW= 27,
         LAST
     }
 
@@ -117,7 +118,8 @@ public class Craft : GLib.Object
         "QuadX.png", // 23
         "Airplane.png", // 24
         "Tri.png",   //25
-        "preview.png" //26
+        "preview.png", //26
+        "arrow.png", // 27
     };
 
     public enum Special

@@ -143,7 +143,10 @@ _mwp_files()
       _filedir '@(json|mission)'
       ;;
     'TXT')
-      _filedir '@(txt|TXT)'
+      _filedir '@(txt|TXT|bbl|BBL)'
+      ;;
+    'log')
+      _filedir '@(log|LOG)'
       ;;
     'KML')
       _filedir '@(kml|KML)'

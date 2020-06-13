@@ -3961,10 +3961,11 @@ case 0:
     {
         if(craft == null)
         {
+            uint8 ctype = vi.mrtype;
             if((sport_device != null || nopoll) && dmrtype != 0 && vi.mrtype == 0)
-                vi.mrtype = (uint8)dmrtype;
-            MWPLog.message("init icon %d\n",  vi.mrtype);
-            craft = new Craft(view, vi.mrtype, !no_trail,
+                ctype = (uint8)dmrtype;
+            MWPLog.message("init icon %d %d %d (%s)\n",  ctype, dmrtype, vi.mrtype, nopoll.to_string());
+            craft = new Craft(view, ctype, !no_trail,
                               stack_size, mod_points);
             craft.park();
             craft.adjust_z_order(markers.markers);
