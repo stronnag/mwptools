@@ -126,71 +126,89 @@ public class ListBox : GLib.Object
         StringBuilder sb = new StringBuilder("WP ");
         Value cell;
         Gtk.TreeIter iter;
+        double lat = 0;
+        double lon = 0;
+
         var path = new Gtk.TreePath.from_indices (ino - 1);
         list_model.get_iter(out iter, path);
+
+        list_model.get_value (iter, ListBox.WY_Columns.ACTION, out cell);
+        var ntyp = (MSP.Action)cell;
         list_model.get_value (iter, WY_Columns.IDX, out cell);
         sb.append((string)cell);
-        list_model.get_value (iter, WY_Columns.ALT, out cell);
-        sb.append(": Alt ");
-        sb.append(((int)cell).to_string());
-        sb.append("m ");
+        if (ntyp != MSP.Action.SET_POI)
+        {
+            list_model.get_value (iter, WY_Columns.ALT, out cell);
+            var alt = ((int)cell);
+            sb.append(": Alt ");
+            sb.append(alt.to_string());
+            sb.append("m ");
+            list_model.get_value (iter, WY_Columns.LAT, out cell);
+            lat = (double)cell;
+            list_model.get_value (iter, WY_Columns.LON, out cell);
+            lon = (double)cell;
+        }
+
         list_model.get_value (iter, WY_Columns.TIP, out cell);
         if((string)cell != null)
             sb.append((string)cell);
-        list_model.get_value (iter, WY_Columns.LAT, out cell);
-        var lat = (double)cell;
-        list_model.get_value (iter, WY_Columns.LON, out cell);
-        var lon = (double)cell;
 
         double range;
         double brg;
 
-        if(fhome != null && fhome.is_visible)
+        if(ntyp == MSP.Action.SET_POI)
         {
-            double hlat,hlon;
-            fhome.get_fake_home(out hlat, out hlon);
-            Geo.csedist(hlat, hlon, lat, lon, out range, out brg);
-            range *= 1852;
-            sb.append_printf("\nRange %.1fm, bearing %.0f°", range, brg);
+            sb.append(": Point of interest");
         }
-
-        if(list_model.iter_next(ref iter))
+        else
         {
-            list_model.get_value (iter, ListBox.WY_Columns.ACTION, out cell);
-            var ntyp = (MSP.Action)cell;
-            if(ntyp == MSP.Action.JUMP)
+            if(fhome != null && fhome.is_visible)
             {
-                list_model.get_value (iter, ListBox.WY_Columns.INT1, out cell);
-                var p1 = (int)((double)cell);
-                list_model.get_value (iter, ListBox.WY_Columns.INT2, out cell);
-                var p2 = (int)((double)cell);
-                sb.append_printf("\nJUMP to WP %d repeat x%d", p1, p2);
-                if(list_model.iter_next(ref iter))
+                double hlat,hlon;
+                fhome.get_fake_home(out hlat, out hlon);
+                Geo.csedist(hlat, hlon, lat, lon, out range, out brg);
+                range *= 1852;
+                sb.append_printf("\nRange %.1fm, bearing %.0f°", range, brg);
+            }
+
+            if(list_model.iter_next(ref iter))
+            {
+                list_model.get_value (iter, ListBox.WY_Columns.ACTION, out cell);
+                ntyp = (MSP.Action)cell;
+                if(ntyp == MSP.Action.JUMP)
                 {
-                        // get target after JUMP
-                    list_model.get_value (iter, WY_Columns.ACTION, out cell);
-                    var xact = (MSP.Action)cell;
-                    if (xact == MSP.Action.WAYPOINT ||
-                        xact == MSP.Action.POSHOLD_UNLIM ||
-                        xact == MSP.Action.POSHOLD_TIME ||
-                        xact == MSP.Action.LAND)
+                    list_model.get_value (iter, ListBox.WY_Columns.INT1, out cell);
+                    var p1 = (int)((double)cell);
+                    list_model.get_value (iter, ListBox.WY_Columns.INT2, out cell);
+                    var p2 = (int)((double)cell);
+                    sb.append_printf("\nJUMP to WP %d repeat x%d", p1, p2);
+                    if(list_model.iter_next(ref iter))
                     {
-                        list_model.get_value (iter, WY_Columns.IDX, out cell);
-                        var xno = (string)cell;
-                        list_model.get_value (iter, WY_Columns.LAT, out cell);
-                        var xlat = (double)cell;
-                        list_model.get_value (iter, WY_Columns.LON, out cell);
-                        var xlon = (double)cell;
-                        Geo.csedist(lat, lon, xlat, xlon, out range, out brg);
-                        sb.append_printf("\nthen to WP %s => %.1f%s, %.0f°",
-                                         xno,
-                                         Units.distance(range*1852),
-                                         Units.distance_units(),
-                                         brg);
-                    }
-                    else if (xact == MSP.Action.RTH)
-                    {
-                        sb.append("\nthen Return home");
+                            // get target after JUMP
+                        list_model.get_value (iter, WY_Columns.ACTION, out cell);
+                        var xact = (MSP.Action)cell;
+                        if (xact == MSP.Action.WAYPOINT ||
+                            xact == MSP.Action.POSHOLD_UNLIM ||
+                            xact == MSP.Action.POSHOLD_TIME ||
+                            xact == MSP.Action.LAND)
+                        {
+                            list_model.get_value (iter, WY_Columns.IDX, out cell);
+                            var xno = (string)cell;
+                            list_model.get_value (iter, WY_Columns.LAT, out cell);
+                            var xlat = (double)cell;
+                            list_model.get_value (iter, WY_Columns.LON, out cell);
+                            var xlon = (double)cell;
+                            Geo.csedist(lat, lon, xlat, xlon, out range, out brg);
+                            sb.append_printf("\nthen to WP %s => %.1f%s, %.0f°",
+                                             xno,
+                                             Units.distance(range*1852),
+                                             Units.distance_units(),
+                                             brg);
+                        }
+                        else if (xact == MSP.Action.RTH)
+                        {
+                            sb.append("\nthen Return home");
+                        }
                     }
                 }
             }
