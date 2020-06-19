@@ -1001,7 +1001,7 @@ llat = 0.0
 llon = 0.0
 vers=nil
 us=nil
-st=nil
+st = nil
 
 ndelay = intvl / 1000000.0
 
@@ -1010,6 +1010,7 @@ delay = (mindelay) ? mindelay : ndelay
 IO.popen(cmd,'rt') do |pipe|
   csv = CSV.new(pipe, **csv_opts)
   lindex = 0
+  lastrid = -1
   csv.each do |row|
     if lindex == 0
       hdrs = row
@@ -1055,8 +1056,13 @@ IO.popen(cmd,'rt') do |pipe|
       gpshd = 1 if have_mag == false and gpshd == 0
       vers = send_init_seq dev,typ,have_sonar,have_baro,have_mag,gitinfos[idx-1],vname
     else
+      rid = row[:loopiteration].to_i
+      next if rid <= lastrid
+      lastrid = rid
+
       next if row[:gps_numsat].to_i == 0
       us = row[:time_us].to_i
+
       st = us if st.nil?
       if us > nv
 	nv = us + intvl
@@ -1108,7 +1114,7 @@ IO.popen(cmd,'rt') do |pipe|
 	    send_msg dev, msg
 	  end
 	end
-	et = ((us - st)/1000000).to_i
+        et = ((us - st)/1000000).to_i
 	msg = encode_et et
 	send_msg dev, msg
 	sleep delay
