@@ -50,6 +50,7 @@ _blackbox_decode_complete()
 	--index
 	--limits
 	--stdout
+	--datetime
 	--unit-amperage
 	--unit-flags
 	--unit-frame-time

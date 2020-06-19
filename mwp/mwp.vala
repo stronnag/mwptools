@@ -8914,7 +8914,7 @@ case 0:
             msp.open_fd(playfd[0],-1, true);
             set_replay_menus(false);
             set_menu_state("stop-replay", true);
-            magcheck = delay;
+            magcheck = delay; // only check for normal replays (delay == true)
             switch(replayer)
             {
                 case Player.MWP:
