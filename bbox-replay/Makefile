@@ -10,7 +10,6 @@ install: $(APP) $(DEP)
 	install -d $(prefix)/bin
 	install -m 755 $(APP) $(prefix)/bin/$(APP)
 	install -m 644 $(DEP) $(prefix)/bin/$(DEP)
-	$(MAKE) -C bbsummary install
 
 BBS:
 	$(MAKE) -C bbsummary
