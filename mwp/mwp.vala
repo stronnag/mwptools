@@ -609,6 +609,7 @@ public class MWP : Gtk.Application {
 
     public DevManager devman;
     public PowerState pstate;
+    private bool seenMSP = false;
 
     public struct MQI //: Object
     {
@@ -2926,29 +2927,29 @@ public class MWP : Gtk.Application {
                             break;
                         case 1: // 10s
                             if(mode == 0)
-                                ltmflags = 4;
+                                ltmflags = 0; // Acro
                             if (mode == 1)
-                                ltmflags = 2;
+                                ltmflags = 2; // Angle
                             else if (mode == 2)
-                                ltmflags = 3;
+                                ltmflags = 3; // Horizon
                             else if(mode == 4)
-                                ltmflags = 0;
+                                ltmflags = 4; // Acro
                             break;
                         case 2: // 100s
 //                            if((mode & 1) == 1) // "Heading "
                             if((mode & 2) == 2)
-                                ltmflags = 8;
+                                ltmflags = 8; // AltHold
                             if((mode & 4) == 4)
-                                ltmflags = 9;
+                                ltmflags = 9; // PH
                             break;
                         case 3: // 1000s
                             if(mode == 1)
-                                ltmflags = 13;
+                                ltmflags = 13; // RTH
                             if(mode == 2)
-                                ltmflags = 10;
+                                ltmflags = 10;  // WP
 //                            if(mode == 4) ltmflags = 11;
                             if(mode == 8)
-                                ltmflags = 18;
+                                ltmflags = 18; // Cruise
                             break;
                         case 4: // 10000s
                                 // if(mode == 2) emode = "AUTOTUNE";
@@ -5347,6 +5348,9 @@ case 0:
         if(cmd >= MSP.Cmds.LTM_BASE)
         {
             telem = true;
+            if (seenMSP == false)
+                nopoll = true;
+
             if (replayer != Player.MWP && cmd != MSP.Cmds.MAVLINK_MSG_ID_RADIO)
             {
                 if (errs == false)
@@ -5371,6 +5375,10 @@ case 0:
                         last_tm =1;
                 }
             }
+        }
+        else
+        {
+            seenMSP = true;
         }
 
 
@@ -5771,8 +5779,8 @@ case 0:
                     vi = {0};
                     vi.mvers = raw[0];
                     vi.mrtype = raw[1];
-                    if(dmrtype != 0)
-                        vi.mrtype = (uint8)dmrtype;
+//                    if(dmrtype != 0)
+//                        vi.mrtype = (uint8)dmrtype;
 
                     prlabel = false;
 

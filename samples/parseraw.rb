@@ -12,6 +12,14 @@ rescue LoadError
   noserial = true;
 end
 
+def cksum(s,init=0)
+  ck=init
+  s.each_byte do |c|
+    ck ^= c
+  end
+  ck
+end
+
 port = nil
 rawf = nil
 dev = nil
@@ -116,7 +124,17 @@ File.open(ARGV[0]) do |f|
 	rawf.print data
       end
     end
-
+=begin
+    if data[1] == 'T'
+      cs = data[-1].ord
+      ck = cksum data[3 .. -2]
+      if ck != cs
+        puts "Bad LTM CRC %x %x" % [cs.ord,ck]
+      else
+        puts "Checks"
+      end
+    end
+=end
     if fdel
       delta = fdel
     else
