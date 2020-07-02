@@ -248,10 +248,11 @@ public class XmlIO : Object
         subnode = root->new_text_child (ns, "mwp", "");
         time_t currtime;
         time_t(out currtime);
+        char[] dbuf = new char[double.DTOSTR_BUF_SIZE];
         subnode->new_prop ("save-date", Time.local(currtime).format("%FT%T%z"));
         subnode->new_prop ("zoom", ms.zoom.to_string());
-        subnode->new_prop ("cx", ms.cx.to_string());
-        subnode->new_prop ("cy", ms.cy.to_string());
+        subnode->new_prop ("cx", ms.cx.format(dbuf,"%.7f"));
+        subnode->new_prop ("cy", ms.cy.format(dbuf,"%.7f"));
         subnode->new_prop ("generator", "%s (mwptools)".printf(generator));
 
         if(ms.et > 0)
@@ -262,7 +263,7 @@ public class XmlIO : Object
 
             ysubnode = xsubnode->new_text_child (ns, "distance", "");
             ysubnode->new_prop ("units", "m");
-            ysubnode->new_prop ("value", ms.dist.to_string());
+            ysubnode->new_prop ("value", ms.dist.format(dbuf,"%.0f"));
 
             ysubnode = xsubnode->new_text_child (ns, "nav-speed", "");
             ysubnode->new_prop ("units", "m/s");
@@ -286,8 +287,8 @@ public class XmlIO : Object
             subnode = root->new_text_child (ns, mstr, "");
             subnode->new_prop ("no", m.no.to_string());
             subnode->new_prop ("action", MSP.get_wpname(m.action));
-            subnode->new_prop ("lat", m.lat.to_string());
-            subnode->new_prop ("lon", m.lon.to_string());
+            subnode->new_prop ("lat", m.lat.format(dbuf,"%.7f"));
+            subnode->new_prop ("lon", m.lon.format(dbuf,"%.7f"));
             subnode->new_prop ("alt", m.alt.to_string());
             subnode->new_prop ("parameter1", m.param1.to_string());
             subnode->new_prop ("parameter2", m.param2.to_string());
