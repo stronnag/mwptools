@@ -7,13 +7,14 @@ import (
 )
 
 var (
-	baud   = flag.Int("b", 115200, "Baud rate")
-	device = flag.String("d", "", "LTM to serial device")
-	fd     = flag.Int("fd", -1, "LTM to file descriptor")
-	output = flag.String("out", "", "output LTM to file")
-	gpxout = flag.String("gpx", "", "write gpx to file")
-	dump   = flag.Bool("dump", false, "dump headers, exit")
-	fast   = flag.Bool("fast", false, "fast replay, exit")
+	baud    = flag.Int("b", 115200, "Baud rate")
+	device  = flag.String("d", "", "LTM to serial device")
+	fd      = flag.Int("fd", -1, "LTM to file descriptor")
+	output  = flag.String("out", "", "output LTM to file")
+	gpxout  = flag.String("gpx", "", "write gpx to file")
+	dump    = flag.Bool("dump", false, "dump headers, exit")
+	fast    = flag.Bool("fast", false, "fast replay, exit")
+	verbose = flag.Bool("verbose", false, "verbose LTM debug")
 )
 
 func main() {
@@ -50,5 +51,6 @@ func main() {
 		}
 		o.Stream_init(s)
 	}
+	o.Verbose(*verbose)
 	o.Reader(files[0], *fast)
 }
