@@ -50,8 +50,8 @@ apt $CONFIRM install gnuplot ruby-nokogiri
 ## To use KMZ as an overlay format, you need 'unzip
 #apt $CONFIRM install unzip
 
-## To build bbsummary, you need rust and cargo
-# apt $CONFIRM install cargo
+## To build the optional bbsummary and otxlog you need golang
+# apt $CONFIRM install golang-go
 
 ## Shallow clone mwp ....
 # git clone --depth 1 https://github.com/stronnag/mwptools

@@ -602,6 +602,7 @@ public class MWP : Gtk.Application {
 
     private bool x_replay_bbox_ltm_rb;
     private bool x_kmz;
+    private bool x_otxlog;
     public bool x_plot_elevations_rb {get; private set; default= false;}
 
     private Array<KmlOverlay> kmls;
@@ -683,7 +684,9 @@ public class MWP : Gtk.Application {
         BBOX = 2,
         FAST_MASK = 4,
         MWP_FAST = 5,
-        BBOX_FAST = 6
+        BBOX_FAST = 6,
+        OTX = 8,
+        OTX_FAST = 12
     }
 
     public struct Position
@@ -1075,7 +1078,7 @@ public class MWP : Gtk.Application {
             signum = MwpSignals.Signal.STOP;
         }
         replay_paused = !replay_paused;
-        if((replayer & Player.BBOX) == Player.BBOX)
+        if((replayer & (Player.BBOX|Player.OTX)) != 0)
         {
             Posix.kill(child_pid, signum);
         }
@@ -1125,8 +1128,8 @@ public class MWP : Gtk.Application {
         {
             string []  ext_apps = {
             conf.blackbox_decode, "replay_bbox_ltm.rb",
-            "gnuplot", "mwp-plot-elevations.rb", "unzip" };
-            bool appsts[5];
+            "gnuplot", "mwp-plot-elevations.rb", "unzip", "otxlog" };
+            bool appsts[6];
             var i = 0;
             foreach (var s in ext_apps)
             {
@@ -1138,6 +1141,7 @@ public class MWP : Gtk.Application {
             x_replay_bbox_ltm_rb = (appsts[0]&&appsts[1]);
             x_plot_elevations_rb = (appsts[2]&&appsts[3]);
             x_kmz = appsts[4];
+            x_otxlog = appsts[5];
         }
 
         XmlIO.uc = conf.ucmissiontags;
@@ -1706,6 +1710,17 @@ public class MWP : Gtk.Application {
             });
         window.add_action(saq);
 
+        saq = new GLib.SimpleAction("replay-otx",null);
+        saq.activate.connect(() => {
+                replay_otx(true);
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("load-otx",null);
+        saq.activate.connect(() => {
+                replay_otx(false);
+            });
+        window.add_action(saq);
 
         saq = new GLib.SimpleAction("stop-replay",null);
         saq.activate.connect(() => {
@@ -2899,80 +2914,72 @@ public class MWP : Gtk.Application {
                 uint8 ltmflags = 0;
                 bool failsafe = false;
 
-                for(var j = 0; j < 5; j++)
+                var modeU = ival % 10;
+                var modeT = (ival % 100) / 10;
+                var modeH = (ival % 1000) / 100;
+                var modeK = (ival % 10000) / 1000;
+                var modeJ = ival / 10000;
+
+                if((modeU & 1) == 0)
+                    arm_flags |=  ARMFLAGS.ARMING_DISABLED_OTHER;
+                if ((modeU & 4) == 4) // armed
                 {
-                    uint mode = ival % 10;
-                    switch(j)
-                    {
-                        case 0: // 1s
-                            if((mode & 1) == 0)
-                                arm_flags |=  ARMFLAGS.ARMING_DISABLED_OTHER;
-                            if ((mode & 4) == 4) // armed
-                            {
-                                mwflags = arm_mask;
-                                armed = 1;
-                                dac = 0;
-                            }
-                            else
-                            {
-                                dac++;
-                                if(dac == 1 && armed != 0)
-                                {
-                                    MWPLog.message("Assumed disarm from SPORT %ds\n", duration);
-                                    mwflags = 0;
-                                    armed = 0;
-                                    init_have_home();
-                                }
-                            }
-                            break;
-                        case 1: // 10s
-                            if(mode == 0)
-                                ltmflags = 0; // Acro
-                            if (mode == 1)
-                                ltmflags = 2; // Angle
-                            else if (mode == 2)
-                                ltmflags = 3; // Horizon
-                            else if(mode == 4)
-                                ltmflags = 4; // Acro
-                            break;
-                        case 2: // 100s
-//                            if((mode & 1) == 1) // "Heading "
-                            if((mode & 2) == 2)
-                                ltmflags = 8; // AltHold
-                            if((mode & 4) == 4)
-                                ltmflags = 9; // PH
-                            break;
-                        case 3: // 1000s
-                            if(mode == 1)
-                                ltmflags = 13; // RTH
-                            if(mode == 2)
-                                ltmflags = 10;  // WP
-//                            if(mode == 4) ltmflags = 11;
-                            if(mode == 8)
-                                ltmflags = 18; // Cruise
-                            break;
-                        case 4: // 10000s
-                                // if(mode == 2) emode = "AUTOTUNE";
-                            failsafe = (mode == 4);
-                            if(xfailsafe != failsafe)
-                            {
-                                if(failsafe)
-                                {
-                                    arm_flags |=  ARMFLAGS.ARMING_DISABLED_FAILSAFE_SYSTEM;
-                                    MWPLog.message("Failsafe asserted %ds\n", duration);
-                                    map_show_warning("FAILSAFE");
-                                }
-                                else
-                                {
-                                    MWPLog.message("Failsafe cleared %ds\n", duration);
-                                    map_hide_warning();
-                                }
-                                xfailsafe = failsafe;
-                            }
-                            break;
-                    }
-                    ival = ival / 10;
+                    mwflags = arm_mask;
+                    armed = 1;
+                    dac = 0;
                 }
+                else
+                {
+                    dac++;
+                    if(dac == 1 && armed != 0)
+                    {
+                        MWPLog.message("Assumed disarm from SPORT %ds\n", duration);
+                        mwflags = 0;
+                        armed = 0;
+                        init_have_home();
+                    }
+                }
+
+                if(modeT == 0)
+                    ltmflags = 0; // Acro
+                if (modeT == 1)
+                    ltmflags = 2; // Angle
+                else if (modeT == 2)
+                    ltmflags = 3; // Horizon
+                else if(modeT == 4)
+                    ltmflags = 4; // Acro
+
+                if((modeH & 2) == 2)
+                    ltmflags = 8; // AltHold
+                if((modeH & 4) == 4)
+                    ltmflags = 9; // PH
+
+                if(modeK == 1)
+                    ltmflags = 13; // RTH
+                if(modeK == 2)
+                    ltmflags = 10;  // WP
+//                            if(modeK == 4) ltmflags = 11;
+                if(modeK == 8)
+                    ltmflags = 18; // Cruise
+
+                    // if(modeK == 2) emode = "AUTOTUNE";
+                failsafe = (modeJ == 4);
+                if(xfailsafe != failsafe)
+                {
+                    if(failsafe)
+                    {
+                        arm_flags |=  ARMFLAGS.ARMING_DISABLED_FAILSAFE_SYSTEM;
+                        MWPLog.message("Failsafe asserted %ds\n", duration);
+                        map_show_warning("FAILSAFE");
+                    }
+                    else
+                    {
+                        MWPLog.message("Failsafe cleared %ds\n", duration);
+                        map_hide_warning();
+                    }
+                    xfailsafe = failsafe;
+                }
+
                 if(arm_flags != xarm_flags)
                 {
                     xarm_flags = arm_flags;
@@ -6126,7 +6133,7 @@ case 0:
                 }
                 navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS),flg);
 
-                if((replayer & Player.BBOX) == 0 && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255))
+                if((replayer & (Player.BBOX|Player.OTX)) == 0 && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255))
                 {
                     if(ns.gps_mode == 3)
                     {
@@ -8042,13 +8049,16 @@ case 0:
 
     private void set_replay_menus(bool state)
     {
-        const string [] ms = {"replay-log","load-log","replay-bb","load-bb"};
+        const string [] ms = {"replay-log","load-log","replay-bb","load-bb",
+                              "replay-otx","load-otx"};
         var n = 0;
         foreach(var s in ms)
         {
-            if(n > 1 && x_replay_bbox_ltm_rb == false)
-                state = false;
-            set_menu_state(s, state);
+            var istate = state;
+            if( ((n == 2 || n == 3) && x_replay_bbox_ltm_rb == false) ||
+                ((n == 4 || n == 5) && x_otxlog == false) )
+                istate = false;
+            set_menu_state(s, istate);
             n++;
         }
     }
@@ -8813,6 +8823,46 @@ case 0:
             load_file(fn);
     }
 
+
+    private void get_otx_file(bool delay)
+    {
+        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
+            "Select a log file", null, Gtk.FileChooserAction.OPEN,
+            "_Cancel",
+            Gtk.ResponseType.CANCEL,
+            "_Open",
+            Gtk.ResponseType.ACCEPT);
+            chooser.select_multiple = false;
+            chooser.set_transient_for(window);
+            Gtk.FileFilter filter = new Gtk.FileFilter ();
+            filter.set_filter_name ("CSV");
+            filter.add_pattern ("*.csv");
+            chooser.add_filter (filter);
+            if(conf.logpath != null)
+                chooser.set_current_folder (conf.logpath);
+
+            filter = new Gtk.FileFilter ();
+            filter.set_filter_name ("All Files");
+            filter.add_pattern ("*");
+            chooser.add_filter (filter);
+
+            chooser.response.connect((res) => {
+                    if ( res == Gtk.ResponseType.ACCEPT) {
+                        var fn = chooser.get_filename ();
+                        chooser.close ();
+                        run_replay(fn, delay, Player.OTX);
+                    }
+                    else
+                        chooser.close ();
+                });
+            chooser.show_all();
+    }
+
+    private void replay_otx(bool delay=true)
+    {
+        get_otx_file(delay);
+    }
+
     private void replay_log(bool delay=true)
     {
         if(thr != null)
@@ -8898,7 +8948,7 @@ case 0:
         {
             replay_paused = false;
             MWPLog.message("Replay \"%s\" log %s model %d\n",
-                           (rtype == 2) ? "bbox" : "mwp",
+                           (rtype == 3) ? "otx" : (rtype == 2) ? "bbox" : "mwp",
                            fn, btype);
             if(craft != null)
                 craft.park();
@@ -8935,6 +8985,10 @@ case 0:
                 case Player.BBOX_FAST:
                     bb_runner.find_bbox_box(fn, idx);
                     spawn_bbox_task(fn, idx, btype, delay, force_gps, duration);
+                    break;
+                case Player.OTX:
+                case Player.OTX_FAST:
+                    spawn_otx_task(fn, delay);
                     break;
             }
         }
@@ -8979,6 +9033,43 @@ case 0:
         }
         else
             hard_display_reset(false);
+    }
+
+    private void spawn_otx_task(string fn, bool delay)
+    {
+        string [] args = {"otxlog",
+                          "--fd", "%d".printf(playfd[1])};
+        if(delay == false)
+            args += "--fast";
+        args += fn;
+        args += null;
+
+        MWPLog.message("%s\n", string.joinv(" ",args));
+        try {
+            Process.spawn_async_with_pipes (null, args, null,
+                                            SpawnFlags.SEARCH_PATH |
+                                            SpawnFlags.LEAVE_DESCRIPTORS_OPEN |
+                                            SpawnFlags.STDOUT_TO_DEV_NULL |
+                                            SpawnFlags.STDERR_TO_DEV_NULL |
+                                            SpawnFlags.DO_NOT_REAP_CHILD,
+                                            (() => {
+                                                for(var i = 3; i < 512; i++)
+                                                {
+                                                    if(i != playfd[1])
+                                                        Posix.close(i);
+                                                }
+                                            }),
+                                            out child_pid,
+                                            null, null, null);
+            ChildWatch.add (child_pid, (pid, status) => {
+                    MWPLog.message("Close child pid %u, %u\n",
+                                   pid, Process.exit_status(status));
+                    Process.close_pid (pid);
+                    cleanup_replay();
+                });
+        } catch (SpawnError e) {
+            MWPLog.message("spawnerror: %s\n", e.message);
+        }
     }
 
     private void spawn_bbox_task(string fn, int index, int btype,
@@ -9063,7 +9154,7 @@ case 0:
         if(replay_paused)
             handle_replay_pause();
 
-        if((replayer & Player.BBOX) == Player.BBOX)
+        if((replayer & (Player.BBOX|Player.OTX)) != 0)
             Posix.kill(child_pid, MwpSignals.Signal.TERM);
 
         if((replayer & Player.MWP) == Player.MWP && thr != null)

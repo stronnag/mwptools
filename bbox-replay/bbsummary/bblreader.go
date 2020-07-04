@@ -133,7 +133,6 @@ func bblreader(bbfile string, idx int, dump bool) {
 	var st, lt uint64
 
 	have_origin := false
-	lrec := int64(-1)
 
 	for i := 0; ; i++ {
 		record, err := r.Read()
@@ -146,13 +145,6 @@ func bblreader(bbfile string, idx int, dump bool) {
 				dump_headers(hdrs)
 				return
 			}
-		}
-
-		irec, ok := strconv.ParseInt(record[0], 10, 64)
-		if ok != nil || irec <= lrec {
-			continue
-		} else {
-			lrec = irec
 		}
 
 		br := get_bbl_line(record)

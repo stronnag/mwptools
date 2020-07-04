@@ -65,6 +65,16 @@
       </section>
       <section>
         <item>
+          <attribute name="label">Replay OTX log</attribute>
+          <attribute name="action">win.replay-otx</attribute>
+        </item>
+        <item>
+          <attribute name="label">Load OTX log</attribute>
+          <attribute name="action">win.load-otx</attribute>
+	</item>
+      </section>
+      <section>
+        <item>
           <attribute name="label">Stop Replay</attribute>
           <attribute name="action">win.stop-replay</attribute>
 	  <link name="loadbb" id="loadbb"></link>
