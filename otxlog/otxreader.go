@@ -174,7 +174,7 @@ func get_otx_line(r []string) otxrec {
 			b.fix = 0
 		}
 		hdp := uint16((tmp2 % 1000) / 100)
-		b.hdop = uint16(550 - (hdp*50))
+		b.hdop = uint16(550 - (hdp * 50))
 	}
 
 	if s, ok := get_rec_value(r, "GPS"); ok {
@@ -422,7 +422,7 @@ func (o *OTX) Reader(otxfile string, fast bool) {
 				}
 
 				if fast {
-					time.Sleep(10*time.Millisecond)
+					time.Sleep(10 * time.Millisecond)
 				} else if tdiff > 0 {
 					time.Sleep(tdiff)
 				}
@@ -455,16 +455,12 @@ func (o *OTX) Reader(otxfile string, fast bool) {
 		}
 		o.s.Close()
 	} else if o.mode == OTX_gpx {
-		gfh,err := openStdoutOrFile(o.gpxfile)
+		gfh, err := openStdoutOrFile(o.gpxfile)
 		if err == nil {
-			var ts []*gpx.TrkType
-
-			tss := []*gpx.TrkSegType{{ TrkPt: wp, },}
-			t := &gpx.TrkType{ TrkSeg: tss,}
-			ts = append(ts, t)
-			g := &gpx.GPX{ Version: "1.0", Creator: "otxreader", Trk: ts}
+			g := &gpx.GPX{Version: "1.0", Creator: "otxreader",
+				Trk: []*gpx.TrkType{&gpx.TrkType{TrkSeg: []*gpx.TrkSegType{&gpx.TrkSegType{TrkPt: wp}}}}}
 			gfh.Write([]byte(xml.Header))
-			g.WriteIndent(gfh," "," ")
+			g.WriteIndent(gfh, " ", " ")
 			gfh.Write([]byte("\n"))
 			gfh.Close()
 		} else {
