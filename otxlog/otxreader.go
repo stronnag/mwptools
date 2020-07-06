@@ -28,6 +28,7 @@ type OTX struct {
 	gpxfile string
 	mode    int
 	verbose bool
+	armed   bool
 }
 
 type otxrec struct {
@@ -202,8 +203,12 @@ func get_otx_line(r []string) otxrec {
 		b.alt = int32(100 * alt)
 	}
 
-	if s, ok := get_rec_value(r, "VSpd(m/s)"); ok {
+	if s, ok := get_rec_value(r, "GSpd(kts)"); ok {
 		spd, _ := strconv.ParseFloat(s, 64)
+		spd = spd * 1852.0 / 3600.0
+		if spd > 255 || spd < 0 {
+			spd = 0
+		}
 		b.speed = uint8(spd)
 	}
 
@@ -247,11 +252,14 @@ func get_otx_line(r []string) otxrec {
 		case 4:
 			ltmflags = 0 // Manual
 		}
+
 		if (modeH & 2) == 2 {
 			ltmflags = 8 // Alt Hold
-		} else if (modeH & 4) == 4 {
+		}
+		if (modeH & 4) == 4 {
 			ltmflags = 9 // PH
 		}
+
 		if modeK == 1 {
 			ltmflags = 13 // RTH
 		} else if modeK == 2 {
@@ -340,6 +348,10 @@ func (o *OTX) Verbose(v bool) {
 	o.verbose = v
 }
 
+func (o *OTX) Armed(v bool) {
+	o.armed = v
+}
+
 func (o *OTX) Reader(otxfile string, fast bool) {
 	hlat := int32(0)
 	hlon := int32(0)
@@ -371,6 +383,9 @@ func (o *OTX) Reader(otxfile string, fast bool) {
 			}
 		} else {
 			b := get_otx_line(record)
+			if o.armed && ((b.status & 1) == 0) {
+				continue
+			}
 
 			if st.IsZero() {
 				st = b.ts

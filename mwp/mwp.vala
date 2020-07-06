@@ -8846,11 +8846,21 @@ case 0:
             filter.add_pattern ("*");
             chooser.add_filter (filter);
 
+            var label = new Gtk.Label ("Only include Armed:");
+            var tb = new Gtk.Switch();
+            tb.active = false;
+            var xhbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 5);
+            xhbox.pack_start(label, false, false, 1);
+            xhbox.pack_start(tb, false, false, 1);
+
+            chooser.set_extra_widget(xhbox);
+
             chooser.response.connect((res) => {
                     if ( res == Gtk.ResponseType.ACCEPT) {
                         var fn = chooser.get_filename ();
+                        int ao = tb.active ? 1 : 0;
                         chooser.close ();
-                        run_replay(fn, delay, Player.OTX);
+                        run_replay(fn, delay, Player.OTX,ao);
                     }
                     else
                         chooser.close ();
@@ -8988,7 +8998,7 @@ case 0:
                     break;
                 case Player.OTX:
                 case Player.OTX_FAST:
-                    spawn_otx_task(fn, delay);
+                    spawn_otx_task(fn, delay, (idx==1));
                     break;
             }
         }
@@ -9035,12 +9045,14 @@ case 0:
             hard_display_reset(false);
     }
 
-    private void spawn_otx_task(string fn, bool delay)
+    private void spawn_otx_task(string fn, bool delay, bool armed)
     {
         string [] args = {"otxlog",
                           "--fd", "%d".printf(playfd[1])};
         if(delay == false)
             args += "--fast";
+        if(armed == true)
+            args += "--armed-only";
         args += fn;
         args += null;
 

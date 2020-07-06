@@ -12,9 +12,10 @@ var (
 	fd      = flag.Int("fd", -1, "LTM to file descriptor")
 	output  = flag.String("out", "", "output LTM to file")
 	gpxout  = flag.String("gpx", "", "write gpx to file")
-	dump    = flag.Bool("dump", false, "dump headers, exit")
-	fast    = flag.Bool("fast", false, "fast replay, exit")
+	dump    = flag.Bool("dump", false, "dump headers & exit")
+	fast    = flag.Bool("fast", false, "fast replay")
 	verbose = flag.Bool("verbose", false, "verbose LTM debug")
+	armed   = flag.Bool("armed-only", false, "skip not armed")
 )
 
 func main() {
@@ -52,5 +53,6 @@ func main() {
 		o.Stream_init(s)
 	}
 	o.Verbose(*verbose)
+	o.Armed(*armed)
 	o.Reader(files[0], *fast)
 }
