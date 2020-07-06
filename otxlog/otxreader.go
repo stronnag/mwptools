@@ -13,6 +13,7 @@ import (
 	"encoding/binary"
 	"encoding/xml"
 	gpx "github.com/twpayne/go-gpx"
+	"regexp"
 )
 
 
@@ -45,6 +46,7 @@ type otxrec struct {
 	hdop    uint16
 	rssi    uint8
 	speed   uint8
+	aspeed  uint8
 	status  uint8
 	fix     uint8
 }
@@ -125,7 +127,7 @@ func (l *ltmbuf) sframe(b otxrec) {
 	binary.LittleEndian.PutUint16(l.msg[3:5], b.mvbat)
 	binary.LittleEndian.PutUint16(l.msg[5:7], b.mah)
 	l.msg[7] = b.rssi
-	l.msg[8] = 0
+	l.msg[8] = b.aspeed
 	l.msg[9] = b.status
 	l.checksum()
 }
@@ -143,15 +145,72 @@ func (l *ltmbuf) lxframe() {
 	l.checksum()
 }
 
-var hdrs map[string]int
+type hdrrec struct {
+	i int
+	u string
+}
 
-func get_rec_value(r []string, key string) (string, bool) {
-	var s string
-	i, ok := hdrs[key]
-	if ok {
-		s = r[i]
+var hdrs map[string]hdrrec
+
+func read_headers(r []string) {
+	hdrs = make(map[string]hdrrec)
+	rx := regexp.MustCompile(`(\w+)\(([A-Za-z/@]*)\)`)
+	var k string
+	var u string
+	for i, s := range r {
+		m := rx.FindAllStringSubmatch(s, -1)
+		if len(m) > 0 {
+			k = m[0][1]
+			u = m[0][2]
+		} else {
+			k = s
+			u = ""
+		}
+		hdrs[k] = hdrrec{i, u}
 	}
-	return s, ok
+}
+
+func dump_headers() {
+	var s string
+	n := map[int][]string{}
+	var a []int
+	for k, v := range hdrs {
+		if v.u == "" {
+			s = k
+		} else {
+			s = fmt.Sprintf("%s(%s)", k, v.u)
+		}
+		n[v.i] = append(n[v.i], s)
+	}
+
+	for k := range n {
+		a = append(a, k)
+	}
+	sort.Sort(sort.IntSlice(a))
+	for _, k := range a {
+		for _, s := range n[k] {
+			fmt.Printf("%3d: %s\n", k, s)
+		}
+	}
+	/*
+		for k, v := range hdrs {
+			if v.u == "" {
+				s = k
+			} else {
+				s = fmt.Sprintf("%s(%s)", k, v.u)
+			}
+			fmt.Printf("%s, %d\n", s, v.i)
+		}
+	*/
+}
+
+func get_rec_value(r []string, key string) (string, string, bool) {
+	var s string
+	v, ok := hdrs[key]
+	if ok {
+		s = r[v.i]
+	}
+	return s, v.u, ok
 }
 
 func acc_to_ah(ax, ay, az float64) (pitch int16, roll int16) {
@@ -160,10 +219,22 @@ func acc_to_ah(ax, ay, az float64) (pitch int16, roll int16) {
 	return pitch, roll
 }
 
+func normalise_speed(v float64, u string) float64 {
+	switch u {
+	case "kmh":
+		v = v / 3.6
+	case "mph":
+		v = v * 0.44704
+	case "kts":
+		v = v * 0.51444444
+	}
+	return v
+}
+
 func get_otx_line(r []string) otxrec {
 	b := otxrec{}
 
-	if s, ok := get_rec_value(r, "Tmp2(@C)"); ok {
+	if s, _, ok := get_rec_value(r, "Tmp2"); ok {
 		tmp2, _ := strconv.ParseInt(s, 10, 16)
 		b.nsats = uint8(tmp2 % 100)
 		gfix := tmp2 / 1000
@@ -178,7 +249,7 @@ func get_otx_line(r []string) otxrec {
 		b.hdop = uint16(550 - (hdp * 50))
 	}
 
-	if s, ok := get_rec_value(r, "GPS"); ok {
+	if s, _, ok := get_rec_value(r, "GPS"); ok {
 		lstr := strings.Split(s, " ")
 		if len(lstr) == 2 {
 			val, _ := strconv.ParseFloat(lstr[0], 64)
@@ -188,8 +259,8 @@ func get_otx_line(r []string) otxrec {
 		}
 	}
 
-	if s, ok := get_rec_value(r, "Date"); ok {
-		if s1, ok := get_rec_value(r, "Time"); ok {
+	if s, _, ok := get_rec_value(r, "Date"); ok {
+		if s1, _, ok := get_rec_value(r, "Time"); ok {
 			var sb strings.Builder
 			sb.WriteString(s)
 			sb.WriteByte(' ')
@@ -198,37 +269,50 @@ func get_otx_line(r []string) otxrec {
 		}
 	}
 
-	if s, ok := get_rec_value(r, "Alt(m)"); ok {
+	if s, u, ok := get_rec_value(r, "Alt"); ok {
 		alt, _ := strconv.ParseFloat(s, 64)
+		if u == "ft" {
+			alt = alt * 0.3048
+		}
 		b.alt = int32(100 * alt)
 	}
 
-	if s, ok := get_rec_value(r, "GSpd(kts)"); ok {
+	if s, units, ok := get_rec_value(r, "GSpd"); ok {
 		spd, _ := strconv.ParseFloat(s, 64)
-		spd = spd * 1852.0 / 3600.0
+		spd = normalise_speed(spd, units)
 		if spd > 255 || spd < 0 {
 			spd = 0
 		}
 		b.speed = uint8(spd)
+		b.aspeed = b.speed
 	}
 
-	if s, ok := get_rec_value(r, "AccX(g)"); ok {
+	if s, units, ok := get_rec_value(r, "VSpd"); ok {
+		spd, _ := strconv.ParseFloat(s, 64)
+		spd = normalise_speed(spd, units)
+		if spd > 255 || spd < 0 {
+			spd = 0
+		}
+		b.aspeed = uint8(spd)
+	}
+
+	if s, _, ok := get_rec_value(r, "AccX"); ok {
 		ax, _ := strconv.ParseFloat(s, 64)
-		if s, ok := get_rec_value(r, "AccY(g)"); ok {
+		if s, _, ok := get_rec_value(r, "AccY"); ok {
 			ay, _ := strconv.ParseFloat(s, 64)
-			if s, ok = get_rec_value(r, "AccZ(g)"); ok {
+			if s, _, ok = get_rec_value(r, "AccZ"); ok {
 				az, _ := strconv.ParseFloat(s, 64)
 				b.pitch, b.roll = acc_to_ah(ax, ay, az)
 			}
 		}
 	}
 
-	if s, ok := get_rec_value(r, "Hdg(@)"); ok {
+	if s, _, ok := get_rec_value(r, "Hdg"); ok {
 		v, _ := strconv.ParseFloat(s, 64)
 		b.heading = int16(v)
 	}
 
-	if s, ok := get_rec_value(r, "Tmp1(@C)"); ok {
+	if s, _, ok := get_rec_value(r, "Tmp1"); ok {
 		tmp1, _ := strconv.ParseInt(s, 10, 16)
 		modeU := tmp1 % 10
 		modeT := (tmp1 % 100) / 10
@@ -276,42 +360,17 @@ func get_otx_line(r []string) otxrec {
 		b.status = armed | failsafe | (ltmflags << 2)
 	}
 
-	if s, ok := get_rec_value(r, "VFAS(V)"); ok {
+	if s, _, ok := get_rec_value(r, "VFAS"); ok {
 		v, _ := strconv.ParseFloat(s, 64)
 		b.mvbat = uint16(v * 1000)
 	}
 
-	if s, ok := get_rec_value(r, "RSSI(dB)"); ok {
+	if s, _, ok := get_rec_value(r, "RSSI"); ok {
 		rssi, _ := strconv.ParseInt(s, 10, 32)
 		rssi = rssi * 255 / 100
 		b.rssi = uint8(rssi)
 	}
 	return b
-}
-
-func get_headers(r []string) map[string]int {
-	m := make(map[string]int)
-	for i, s := range r {
-		m[s] = i
-	}
-	return m
-}
-
-func dump_headers(m map[string]int) {
-	n := map[int][]string{}
-	var a []int
-	for k, v := range m {
-		n[v] = append(n[v], k)
-	}
-	for k := range n {
-		a = append(a, k)
-	}
-	sort.Sort(sort.IntSlice(a))
-	for _, k := range a {
-		for _, s := range n[k] {
-			fmt.Printf("%s, %d\n", s, k)
-		}
-	}
 }
 
 func openStdoutOrFile(path string) (io.WriteCloser, error) {
@@ -376,9 +435,9 @@ func (o *OTX) Reader(otxfile string, fast bool) {
 			break
 		}
 		if i == 0 {
-			hdrs = get_headers(record)
+			read_headers(record)
 			if o.mode == OTX_dump {
-				dump_headers(hdrs)
+				dump_headers()
 				return
 			}
 		} else {
