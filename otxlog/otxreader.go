@@ -364,6 +364,13 @@ func get_otx_line(r []string) otxrec {
 		b.rssi = uint8(rssi)
 	}
 
+	if s, u, ok := get_rec_value(r, "Fuel"); ok {
+		if u == "mAh" {
+			a, _ := strconv.ParseFloat(s, 64)
+			b.mah = uint16(a)
+		}
+	}
+
 	// Crossfire
 	if s, _, ok := get_rec_value(r, "1RSS"); ok {
 		rssi, _ := strconv.ParseInt(s, 10, 32)
@@ -373,22 +380,54 @@ func get_otx_line(r []string) otxrec {
 
 		if s, _, ok = get_rec_value(r, "FM"); ok {
 			fm := s
+			ltmmode := byte(0)
+			fs := byte(0)
+			armed := byte(1)
 			switch fm {
-			case "0", "ACRO":
+			case "0", "OK", "WAIT", "!ERR":
+				armed = 0
+			case "ACRO", "AIR":
+				ltmmode = 4
+			case "ANGL", "STAB":
+				ltmmode = 2
+			case "HOR":
+				ltmmode = 3
+			case "MANU":
+				ltmmode = 0
+			case "AH":
+				ltmmode = 8
+			case "HOLD":
+				ltmmode = 9
+			case "CRS", "3CRS":
+				ltmmode = 18
+			case "WP":
+				ltmmode = 10
+			case "RTH":
+				ltmmode = 13
+			case "!FS!":
+				fs = 2
 			}
+			b.status = 0
+			if ltmmode > 4 {
+				b.status = 1
+			}
+			b.status |= (fs | (ltmmode << 2))
 		}
 		if s, _, ok := get_rec_value(r, "Sats"); ok {
 			ns, _ := strconv.ParseInt(s, 10, 16)
 			b.nsats = uint8(ns)
 			if ns > 5 {
 				b.fix = 3
-				b.hdop = 200
+				b.hdop = uint16((3.3 - float64(ns)/12.0) * 100)
+				if b.hdop < 50 {
+					b.hdop = 50
+				}
 				if b.alt > 1 {
-					b.status = 1
+					b.status |= 1
 				}
 			} else if ns > 0 {
 				b.fix = 1
-				b.hdop = 400
+				b.hdop = 800
 			} else {
 				b.fix = 0
 				b.hdop = 999
@@ -405,6 +444,18 @@ func get_otx_line(r []string) otxrec {
 		if s, _, ok := get_rec_value(r, "Yaw"); ok {
 			v1, _ := strconv.ParseFloat(s, 64)
 			b.heading = int16(to_degrees(v1))
+		}
+		if s, u, ok := get_rec_value(r, "RxBt"); ok {
+			if u == "V" {
+				v, _ := strconv.ParseFloat(s, 64)
+				b.mvbat = uint16(v * 1000)
+			}
+		}
+		if s, u, ok := get_rec_value(r, "Capa"); ok {
+			if u == "mAh" {
+				a, _ := strconv.ParseFloat(s, 64)
+				b.mah = uint16(a)
+			}
 		}
 	}
 	return b
