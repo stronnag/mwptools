@@ -1,4 +1,8 @@
-Simple OpenTX log replay (and GPX generator)
+#Simple OpenTX log replay (and GPX generator)
+
+## otxlog
+
+Replay OpenTX log files / generate GPX from OpenTX logs.
 
 ```
 $ otxlog
@@ -26,6 +30,14 @@ options have a precedence:
 * -gpx
 * other output
 
-Not built or installed by default.
+Built and installed if the optional dependency 'go' is installed.
 
 Required by `mwp` for the `Replay OTX ..` menu options.
+
+## otx-split.rb
+
+Splits a nulti-log CSV log into individual log files, based on time stamp. By default, a time difference of 30s causes a split.
+
+$ ./otx-split.rb logfile.csv [interval]
+
+where interval defaults to 30s.

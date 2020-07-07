@@ -407,11 +407,15 @@ func get_otx_line(r []string) otxrec {
 			case "!FS!":
 				fs = 2
 			}
-			b.status = 0
-			if ltmmode > 4 {
-				b.status = 1
+			if fm == "0" {
+				if s, _, ok := get_rec_value(r, "Thr"); ok {
+					thr, _ := strconv.ParseInt(s, 10, 32)
+					if thr > -800 {
+						armed = 1
+					}
+				}
 			}
-			b.status |= (fs | (ltmmode << 2))
+			b.status = armed | fs | (ltmmode << 2)
 		}
 		if s, _, ok := get_rec_value(r, "Sats"); ok {
 			ns, _ := strconv.ParseInt(s, 10, 16)
@@ -422,9 +426,6 @@ func get_otx_line(r []string) otxrec {
 				if b.hdop < 50 {
 					b.hdop = 50
 				}
-				if b.alt > 1 {
-					b.status |= 1
-				}
 			} else if ns > 0 {
 				b.fix = 1
 				b.hdop = 800
@@ -433,6 +434,7 @@ func get_otx_line(r []string) otxrec {
 				b.hdop = 999
 			}
 		}
+
 		if s, _, ok := get_rec_value(r, "Ptch"); ok {
 			v1, _ := strconv.ParseFloat(s, 64)
 			b.pitch = int16(to_degrees(v1))

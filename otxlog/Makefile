@@ -4,9 +4,9 @@ include ../common.mk
 
 APP = otxlog
 
-APP:
-	go build -ldflags "-w -s"
+$(APP):	$(wildcard *.go)
+	-go build -ldflags "-w -s"
 
 install: $(APP)
-	install -d $(prefix)/bin
-	install -s $(APP) $(prefix)/bin/$(APP)
+	-install -d $(prefix)/bin
+	-install -s $(APP) $(prefix)/bin/$(APP)

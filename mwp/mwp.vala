@@ -666,7 +666,8 @@ public class MWP : Gtk.Application {
         INIT=2,
         MSP=4,
         ADHOC=8,
-        RADAR=16
+        RADAR=16,
+        OTXSTDERR = 32
     }
 
     private enum SAT_FLAGS
@@ -6723,7 +6724,7 @@ case 0:
                     navstatus.current(curr, 2);
                         // already checked for odo with bbl amps
                 }
-                else if (replayer == Player.MWP_FAST)
+                else if (replayer == Player.MWP_FAST || replayer == Player.OTX_FAST)
                 {
                     curr.ampsok = true;
                     curr.mah = mah;
@@ -9062,12 +9063,15 @@ case 0:
 
         MWPLog.message("%s\n", string.joinv(" ",args));
         try {
-            Process.spawn_async_with_pipes (null, args, null,
-                                            SpawnFlags.SEARCH_PATH |
-                                            SpawnFlags.LEAVE_DESCRIPTORS_OPEN |
-                                            SpawnFlags.STDOUT_TO_DEV_NULL |
-                                            SpawnFlags.STDERR_TO_DEV_NULL |
-                                            SpawnFlags.DO_NOT_REAP_CHILD,
+            var spf = SpawnFlags.SEARCH_PATH |
+            SpawnFlags.LEAVE_DESCRIPTORS_OPEN |
+            SpawnFlags.STDOUT_TO_DEV_NULL |
+            SpawnFlags.DO_NOT_REAP_CHILD;
+
+            if ((debug_flags & DEBUG_FLAGS.OTXSTDERR) == 0) {
+                spf |= SpawnFlags.STDERR_TO_DEV_NULL;
+            }
+            Process.spawn_async_with_pipes (null, args, null, spf,
                                             (() => {
                                                 for(var i = 3; i < 512; i++)
                                                 {
