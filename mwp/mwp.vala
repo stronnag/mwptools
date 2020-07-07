@@ -3708,11 +3708,10 @@ case 0:
     private bool pos_valid(double lat, double lon)
     {
         bool vpos;
-
         if(have_home)
         {
-            if( (Math.fabs(lat - xlat) < 0.25) &&
-                (Math.fabs(lon - xlon) < 0.25))
+            if( ((Math.fabs(lat - xlat) < 0.25) &&
+                 (Math.fabs(lon - xlon) < 0.25)) || (xlon == 0 && xlat == 0))
             {
                 vpos = true;
                 xlat = lat;
@@ -3728,6 +3727,10 @@ case 0:
         }
         else
             vpos = true;
+
+//        MWPLog.message("pv %s %s %f %f (%f %f)\n",
+//                       have_home.to_string(), vpos.to_string(), lat, lon, xlat, xlon);
+
         return vpos;
     }
 
@@ -4979,6 +4982,7 @@ case 0:
     {
         bool pv;
         pv = pos_valid(GPSInfo.lat, GPSInfo.lon);
+
         if(pv == true)
         {
             if(follow == true)

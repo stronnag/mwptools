@@ -200,7 +200,7 @@ func bblreader(bbfile string, idx int, dump bool) {
 	bblsmry.distance *= 1852.0
 	fmt.Printf("Altitude : %.1f m at %s\n", bblsmry.max_alt, show_time(bblsmry.max_alt_time))
 	fmt.Printf("Speed    : %.1f m/s at %s\n", bblsmry.max_speed, show_time(bblsmry.max_speed_time))
-	fmt.Printf("Range    : %.0f m/s at %s\n", bblsmry.max_range, show_time(bblsmry.max_range_time))
+	fmt.Printf("Range    : %.0f m at %s\n", bblsmry.max_range, show_time(bblsmry.max_range_time))
 	if bblsmry.max_current > 0 {
 		fmt.Printf("Current  : %.1f A at %s\n", bblsmry.max_current, show_time(bblsmry.max_current_time))
 	}

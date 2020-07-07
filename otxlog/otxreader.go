@@ -34,9 +34,9 @@ type OTX struct {
 
 type otxrec struct {
 	ts      time.Time
-	lat     int32
-	lon     int32
-	alt     int32
+	lat     float64
+	lon     float64
+	alt     float64
 	nsats   uint8
 	pitch   int16
 	roll    int16
@@ -49,6 +49,7 @@ type otxrec struct {
 	aspeed  uint8
 	status  uint8
 	fix     uint8
+	crsf    bool
 }
 
 type ltmbuf struct {
@@ -106,17 +107,22 @@ func (l *ltmbuf) aframe(b otxrec) {
 }
 
 func (l *ltmbuf) gframe(b otxrec) {
-	binary.LittleEndian.PutUint32(l.msg[3:7], uint32(b.lat))
-	binary.LittleEndian.PutUint32(l.msg[7:11], uint32(b.lon))
+	lat := int32(b.lat * 1.0e7)
+	lon := int32(b.lon * 1.0e7)
+	alt := int32(b.alt * 100)
+	binary.LittleEndian.PutUint32(l.msg[3:7], uint32(lat))
+	binary.LittleEndian.PutUint32(l.msg[7:11], uint32(lon))
 	l.msg[11] = b.speed
-	binary.LittleEndian.PutUint32(l.msg[12:16], uint32(b.alt))
+	binary.LittleEndian.PutUint32(l.msg[12:16], uint32(alt))
 	l.msg[16] = b.fix | (b.nsats << 2)
 	l.checksum()
 }
 
-func (l *ltmbuf) oframe(b otxrec, hlat int32, hlon int32) {
-	binary.LittleEndian.PutUint32(l.msg[3:7], uint32(hlat))
-	binary.LittleEndian.PutUint32(l.msg[7:11], uint32(hlon))
+func (l *ltmbuf) oframe(b otxrec, hlat float64, hlon float64) {
+	lat := int32(hlat * 1.0e7)
+	lon := int32(hlon * 1.0e7)
+	binary.LittleEndian.PutUint32(l.msg[3:7], uint32(lat))
+	binary.LittleEndian.PutUint32(l.msg[7:11], uint32(lon))
 	binary.LittleEndian.PutUint32(l.msg[11:15], 0)
 	l.msg[15] = 1
 	l.msg[16] = b.fix
@@ -192,16 +198,6 @@ func dump_headers() {
 			fmt.Printf("%3d: %s\n", k, s)
 		}
 	}
-	/*
-		for k, v := range hdrs {
-			if v.u == "" {
-				s = k
-			} else {
-				s = fmt.Sprintf("%s(%s)", k, v.u)
-			}
-			fmt.Printf("%s, %d\n", s, v.i)
-		}
-	*/
 }
 
 func get_rec_value(r []string, key string) (string, string, bool) {
@@ -252,10 +248,8 @@ func get_otx_line(r []string) otxrec {
 	if s, _, ok := get_rec_value(r, "GPS"); ok {
 		lstr := strings.Split(s, " ")
 		if len(lstr) == 2 {
-			val, _ := strconv.ParseFloat(lstr[0], 64)
-			b.lat = int32(val * 1e7)
-			val, _ = strconv.ParseFloat(lstr[1], 64)
-			b.lon = int32(val * 1e7)
+			b.lat, _ = strconv.ParseFloat(lstr[0], 64)
+			b.lon, _ = strconv.ParseFloat(lstr[1], 64)
 		}
 	}
 
@@ -270,11 +264,10 @@ func get_otx_line(r []string) otxrec {
 	}
 
 	if s, u, ok := get_rec_value(r, "Alt"); ok {
-		alt, _ := strconv.ParseFloat(s, 64)
+		b.alt, _ = strconv.ParseFloat(s, 64)
 		if u == "ft" {
-			alt = alt * 0.3048
+			b.alt = b.alt * 0.3048
 		}
-		b.alt = int32(100 * alt)
 	}
 
 	if s, units, ok := get_rec_value(r, "GSpd"); ok {
@@ -370,7 +363,71 @@ func get_otx_line(r []string) otxrec {
 		rssi = rssi * 255 / 100
 		b.rssi = uint8(rssi)
 	}
+
+	// Crossfire
+	if s, _, ok := get_rec_value(r, "1RSS"); ok {
+		rssi, _ := strconv.ParseInt(s, 10, 32)
+		rssi = rssi * 255 / 100
+		b.rssi = uint8(rssi)
+		b.crsf = true
+
+		if s, _, ok = get_rec_value(r, "FM"); ok {
+			fm := s
+			switch fm {
+			case "0", "ACRO":
+			}
+		}
+		if s, _, ok := get_rec_value(r, "Sats"); ok {
+			ns, _ := strconv.ParseInt(s, 10, 16)
+			b.nsats = uint8(ns)
+			if ns > 5 {
+				b.fix = 3
+				b.hdop = 200
+				if b.alt > 1 {
+					b.status = 1
+				}
+			} else if ns > 0 {
+				b.fix = 1
+				b.hdop = 400
+			} else {
+				b.fix = 0
+				b.hdop = 999
+			}
+		}
+		if s, _, ok := get_rec_value(r, "Ptch"); ok {
+			v1, _ := strconv.ParseFloat(s, 64)
+			b.pitch = int16(to_degrees(v1))
+		}
+		if s, _, ok := get_rec_value(r, "Roll"); ok {
+			v1, _ := strconv.ParseFloat(s, 64)
+			b.roll = int16(to_degrees(v1))
+		}
+		if s, _, ok := get_rec_value(r, "Yaw"); ok {
+			v1, _ := strconv.ParseFloat(s, 64)
+			b.heading = int16(to_degrees(v1))
+		}
+	}
 	return b
+}
+
+func to_degrees(rad float64) float64 {
+	return (rad * 180.0 / math.Pi)
+}
+
+func to_radians(deg float64) float64 {
+	return (deg * math.Pi / 180.0)
+}
+
+func calc_speed(b otxrec, tdiff time.Duration, llat, llon float64) uint8 {
+	spd := uint8(0)
+	if tdiff > 0 && llat != 0 && llon != 0 {
+		// Flat earth
+		x := math.Abs(to_radians(b.lon-llon) * math.Cos(to_radians(b.lat)))
+		y := math.Abs(to_radians(b.lat - llat))
+		d := math.Sqrt(x*x+y*y) * 6371009.0
+		spd = uint8(d / tdiff.Seconds())
+	}
+	return spd
 }
 
 func openStdoutOrFile(path string) (io.WriteCloser, error) {
@@ -412,8 +469,10 @@ func (o *OTX) Armed(v bool) {
 }
 
 func (o *OTX) Reader(otxfile string, fast bool) {
-	hlat := int32(0)
-	hlon := int32(0)
+	hlat := float64(0)
+	hlon := float64(0)
+	llat := float64(0)
+	llon := float64(0)
 	xcount := uint8(0)
 	var wp []*gpx.WptType
 
@@ -459,6 +518,12 @@ func (o *OTX) Reader(otxfile string, fast bool) {
 
 			if o.mode == OTX_stream {
 				tdiff := b.ts.Sub(lt)
+				if b.crsf {
+					b.speed = calc_speed(b, tdiff, llat, llon)
+					llat = b.lat
+					llon = b.lon
+				}
+
 				l := newLTM('G')
 				l.gframe(b)
 				o.s.Write(l.msg)
@@ -502,9 +567,9 @@ func (o *OTX) Reader(otxfile string, fast bool) {
 				}
 			} else if o.mode == OTX_gpx {
 				if b.nsats > 0 {
-					w0 := gpx.WptType{Lat: float64(b.lat) / 1e7,
-						Lon:  float64(b.lon) / 1e7,
-						Ele:  float64(b.alt) / 100,
+					w0 := gpx.WptType{Lat: b.lat,
+						Lon:  b.lon,
+						Ele:  b.alt,
 						Time: b.ts,
 						Name: fmt.Sprintf("WP%d", i)}
 					wp = append(wp, &w0)
