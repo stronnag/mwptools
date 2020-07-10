@@ -413,6 +413,12 @@ func get_otx_line(r []string) otxrec {
 					if thr > -800 {
 						armed = 1
 					}
+					/**
+										if armed == 0 {
+											fmt.Fprintf(os.Stderr, "disarmed t=%v thr=%v sat=%v alt=%v\n",
+												b.ts, thr, b.nsats, b.alt)
+										}
+					          **/
 				}
 			}
 			b.status = armed | fs | (ltmmode << 2)

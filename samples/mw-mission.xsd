@@ -99,6 +99,9 @@
           </xs:restriction>
 	</xs:simpleType>
       </xs:attribute>
+        <!--
+	     Locations are decimal degrees, WGS84 (EPSG:4326)
+	-->
       <xs:attribute name="lat" use="required">
 	<xs:simpleType>
           <xs:restriction base="xs:decimal">
