@@ -248,7 +248,7 @@ public class Flashdl : Object
     {
         uint8 buf[6];
         serialise_u32(buf, addr);
-        serialise_u16(buf+4, needed);
+        serialise_u16(&buf[4], needed);
         msp.send_command(MSP.Cmds.DATAFLASH_READ,buf, 6);
     }
 

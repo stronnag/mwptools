@@ -7,6 +7,9 @@ APP = otxlog
 $(APP):	$(wildcard *.go)
 	-go build -ldflags "-w -s"
 
+clean:
+	go clean
+
 install: $(APP)
 	-install -d $(prefix)/bin
 	-install -s $(APP) $(prefix)/bin/$(APP)
