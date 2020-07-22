@@ -126,6 +126,57 @@ public class Mav : Object
         MAV_MODE_FLAG_ENUM_END=129, /*  | */
     }
 
+    private enum APM_PLANE_MODE
+    {
+        PLANE_MODE_MANUAL=0,
+        PLANE_MODE_CIRCLE=1,
+        PLANE_MODE_STABILIZE=2,
+        PLANE_MODE_TRAINING=3,
+        PLANE_MODE_ACRO=4,
+        PLANE_MODE_FLY_BY_WIRE_A=5,
+        PLANE_MODE_FLY_BY_WIRE_B=6,
+        PLANE_MODE_CRUISE=7,
+        PLANE_MODE_AUTOTUNE=8,
+        PLANE_MODE_AUTO=10,
+        PLANE_MODE_RTL=11,
+        PLANE_MODE_LOITER=12,
+        PLANE_MODE_TAKEOFF=13,
+        PLANE_MODE_AVOID_ADSB=14,
+        PLANE_MODE_GUIDED=15,
+        PLANE_MODE_INITIALIZING=16,
+        PLANE_MODE_QSTABILIZE=17,
+        PLANE_MODE_QHOVER=18,
+        PLANE_MODE_QLOITER=19,
+        PLANE_MODE_QLAND=20,
+        PLANE_MODE_QRTL=21,
+        PLANE_MODE_QAUTOTUNE=22,
+        PLANE_MODE_ENUM_END=23,
+    }
+
+    private enum APM_COPTER_MODE
+    {
+        COPTER_MODE_STABILIZE=0,
+        COPTER_MODE_ACRO=1,
+        COPTER_MODE_ALT_HOLD=2,
+        COPTER_MODE_AUTO=3,
+        COPTER_MODE_GUIDED=4,
+        COPTER_MODE_LOITER=5,
+        COPTER_MODE_RTL=6,
+        COPTER_MODE_CIRCLE=7,
+        COPTER_MODE_LAND=9,
+        COPTER_MODE_DRIFT=11,
+        COPTER_MODE_SPORT=13,
+        COPTER_MODE_FLIP=14,
+        COPTER_MODE_AUTOTUNE=15,
+        COPTER_MODE_POSHOLD=16,
+        COPTER_MODE_BRAKE=17,
+        COPTER_MODE_THROW=18,
+        COPTER_MODE_AVOID_ADSB=19,
+        COPTER_MODE_GUIDED_NOGPS=20,
+        COPTER_MODE_SMART_RTL=21,
+        COPTER_MODE_ENUM_END=22,
+    }
+
     public struct MAVLINK_HEARTBEAT
     {
         uint32 custom_mode; ///< A bitfield for use for autopilot-specific flags.
@@ -248,5 +299,147 @@ public class Mav : Object
                 break;
         }
         return mw;
+    }
+
+    public static uint8 xmav2inav(uint32 mavmode, bool is_fw)
+    {
+        uint8 ltmmode = 0;
+        if(is_fw)
+        {
+                // I don't believe the iNav mapping for FW ...
+            switch(mavmode)
+            {
+                case 0:
+                    ltmmode = MSP.LTM.manual; // manual
+                    break;
+                case 4:
+                    ltmmode = MSP.LTM.acro; // acro
+                    break;
+                case 2:
+                    ltmmode = MSP.LTM.horizon; // angle / horiz
+                    break;
+                case 5:
+                    ltmmode = MSP.LTM.althold;  // alth
+                    break;
+                case 1:
+                    ltmmode = MSP.LTM.poshold; // posh
+                    break;
+                case 11:
+                    ltmmode = MSP.LTM.rth; // rth
+                    break;
+                case 10:
+                    ltmmode = MSP.LTM.waypoints; // wp
+                    break;
+                case 15:
+                    ltmmode = MSP.LTM.launch; // launch
+                    break;
+                default:
+                    ltmmode = MSP.LTM.acro;
+                    break;
+            }
+        }
+        else
+        {
+            switch(mavmode)
+            {
+                case 1:
+                    ltmmode = MSP.LTM.acro; // acro / manual
+                    break;
+                case 0:
+                    ltmmode = MSP.LTM.horizon; // angle / horz
+                    break;
+                case 2:
+                    ltmmode = MSP.LTM.althold; // alth
+                    break;
+                case 16:
+                    ltmmode = MSP.LTM.poshold; // posh
+                    break;
+                case 6:
+                    ltmmode = MSP.LTM.rth; // rth
+                    break;
+                case 3:
+                    ltmmode = MSP.LTM.waypoints; // wp
+                    break;
+                case 18:
+                    ltmmode = MSP.LTM.launch; // launch
+                    break;
+                default:
+                    ltmmode = MSP.LTM.acro;
+                    break;
+            }
+        }
+        return ltmmode;
+    }
+
+    public static uint8 mav2inav(uint32 mavmode, bool is_fw)
+    {
+        uint8 ltmmode = 0;
+        if(is_fw)
+        {
+            switch (mavmode)
+            {
+                case APM_PLANE_MODE.PLANE_MODE_MANUAL:
+                    ltmmode = MSP.LTM.manual;
+                    break;
+                case APM_PLANE_MODE.PLANE_MODE_ACRO:
+                    ltmmode = MSP.LTM.acro;
+                    break;
+                case APM_PLANE_MODE.PLANE_MODE_FLY_BY_WIRE_A:
+                    ltmmode = MSP.LTM.angle;
+                    break;
+                case APM_PLANE_MODE.PLANE_MODE_STABILIZE:
+                    ltmmode = MSP.LTM.horizon;
+                    break;
+                case APM_PLANE_MODE.PLANE_MODE_FLY_BY_WIRE_B:
+                    ltmmode = MSP.LTM.althold;
+                    break;
+                case APM_PLANE_MODE.PLANE_MODE_LOITER:
+                    ltmmode = MSP.LTM.poshold;
+                    break;
+                case APM_PLANE_MODE.PLANE_MODE_RTL:
+                    ltmmode = MSP.LTM.rth;
+                    break;
+                case APM_PLANE_MODE.PLANE_MODE_AUTO:
+                    ltmmode = MSP.LTM.waypoints;
+                    break;
+                case APM_PLANE_MODE.PLANE_MODE_CRUISE:
+                    ltmmode = MSP.LTM.cruise;
+                    break;
+                case APM_PLANE_MODE.PLANE_MODE_TAKEOFF:
+                    ltmmode = MSP.LTM.launch;
+                    break;
+                default:
+                    ltmmode = MSP.LTM.acro;
+                    break;
+            }
+        }
+        else
+        {
+            switch (mavmode)
+            {
+                case APM_COPTER_MODE.COPTER_MODE_ACRO:
+                    ltmmode = MSP.LTM.acro;
+                    break;
+                case APM_COPTER_MODE.COPTER_MODE_STABILIZE:
+                    ltmmode = MSP.LTM.horizon;
+                    break;
+                case APM_COPTER_MODE.COPTER_MODE_ALT_HOLD:
+                    ltmmode = MSP.LTM.althold;
+                    break;
+                case APM_COPTER_MODE.COPTER_MODE_POSHOLD:
+                    ltmmode = MSP.LTM.poshold;
+                    break;
+                case APM_COPTER_MODE.COPTER_MODE_RTL:
+                    ltmmode = MSP.LTM.rth;
+                    break;
+                case APM_COPTER_MODE.COPTER_MODE_AUTO:
+                    ltmmode = MSP.LTM.waypoints;
+                    break;
+                default:
+                    ltmmode = MSP.LTM.acro;
+                    break;
+            }
+        }
+        return ltmmode;
     }
 }

@@ -2942,26 +2942,26 @@ public class MWP : Gtk.Application {
                 }
 
                 if(modeT == 0)
-                    ltmflags = 0; // Acro
+                    ltmflags = MSP.LTM.acro; // Acro
                 if (modeT == 1)
-                    ltmflags = 2; // Angle
+                    ltmflags = MSP.LTM.angle; // Angle
                 else if (modeT == 2)
-                    ltmflags = 3; // Horizon
+                    ltmflags = MSP.LTM.horizon; // Horizon
                 else if(modeT == 4)
-                    ltmflags = 4; // Acro
+                    ltmflags = MSP.LTM.acro; // Acro
 
                 if((modeH & 2) == 2)
-                    ltmflags = 8; // AltHold
+                    ltmflags = MSP.LTM.althold; // AltHold
                 if((modeH & 4) == 4)
-                    ltmflags = 9; // PH
+                    ltmflags = MSP.LTM.poshold; // PH
 
                 if(modeK == 1)
-                    ltmflags = 13; // RTH
+                    ltmflags = MSP.LTM.rth; // RTH
                 if(modeK == 2)
-                    ltmflags = 10;  // WP
+                    ltmflags = MSP.LTM.waypoints;  // WP
 //                            if(modeK == 4) ltmflags = 11;
                 if(modeK == 8)
-                    ltmflags = 18; // Cruise
+                    ltmflags = MSP.LTM.cruise; // Cruise
 
                     // if(modeK == 2) emode = "AUTOTUNE";
                 failsafe = (modeJ == 4);
@@ -2994,17 +2994,15 @@ public class MWP : Gtk.Application {
                     }
                 }
 
-                if(ltmflags == 2)
+                if(ltmflags == MSP.LTM.angle)
                     mwflags |= angle_mask;
-                if(ltmflags == 3)
+                if(ltmflags == MSP.LTM.horizon)
                     mwflags |= horz_mask;
-                if(ltmflags == 3)
-                    mwflags |= arm_mask;
-                if(ltmflags == 9)
+                if(ltmflags == MSP.LTM.poshold)
                     mwflags |= ph_mask;
-                if(ltmflags == 10)
+                if(ltmflags == MSP.LTM.waypoints)
                     mwflags |= wp_mask;
-                if(ltmflags == 13 || ltmflags == 15)
+                if(ltmflags == MSP.LTM.rth || ltmflags == MSP.LTM.land)
                     mwflags |= rth_mask;
                 else
                     mwflags = xbits; // don't know better
@@ -3015,21 +3013,21 @@ public class MWP : Gtk.Application {
                 if (mchg)
                 {
                     last_ltmf = ltmflags;
-                    if(ltmflags == 9)
+                    if(ltmflags == MSP.LTM.poshold)
                         want_special |= POSMODE.PH;
-                    else if(ltmflags == 10)
+                    else if(ltmflags == MSP.LTM.waypoints)
                     {
                         want_special |= POSMODE.WP;
                         if (NavStatus.nm_pts == 0 || NavStatus.nm_pts == 255)
                             NavStatus.nm_pts = last_wp_pts;
                     }
-                    else if(ltmflags == 13)
+                    else if(ltmflags == MSP.LTM.rth)
                         want_special |= POSMODE.RTH;
-                    else if(ltmflags == 8)
+                    else if(ltmflags == MSP.LTM.althold)
                         want_special |= POSMODE.ALTH;
-                    else if(ltmflags == 18)
+                    else if(ltmflags == MSP.LTM.cruise)
                         want_special |= POSMODE.CRUISE;
-                    else if(ltmflags != 15)
+                    else if(ltmflags != MSP.LTM.land)
                     {
                         if(craft != null)
                             craft.set_normal();
@@ -4835,11 +4833,11 @@ case 0:
             }
 
             if ((bxflag & horz_mask) != 0)
-                ltmflags = 3;
+                ltmflags = MSP.LTM.horizon;
             else if((bxflag & angle_mask) != 0)
-                ltmflags = 2;
+                ltmflags = MSP.LTM.angle;
             else
-                ltmflags = 1;
+                ltmflags = MSP.LTM.acro;
 
             if(armed != 0)
             {
@@ -4850,7 +4848,7 @@ case 0:
                     MWPLog.message("set RTH on %08x %u %ds\n", bxflag,bxflag,
                                    (int)duration);
                     want_special |= POSMODE.RTH;
-                    ltmflags = 13;
+                    ltmflags = MSP.LTM.rth;
                 }
                 else if ((ph_mask != 0) &&
                          ((bxflag & ph_mask) != 0) &&
@@ -4859,7 +4857,7 @@ case 0:
                     MWPLog.message("set PH on %08x %u %ds\n", bxflag, bxflag,
                                    (int)duration);
                     want_special |= POSMODE.PH;
-                    ltmflags = 9;
+                    ltmflags = MSP.LTM.poshold;
                 }
                 else if ((wp_mask != 0) &&
                          ((bxflag & wp_mask) != 0) &&
@@ -4868,7 +4866,7 @@ case 0:
                     MWPLog.message("set WP on %08x %u %ds\n", bxflag, bxflag,
                                    (int)duration);
                     want_special |= POSMODE.WP;
-                    ltmflags = 10;
+                    ltmflags = MSP.LTM.waypoints;
                 }
                 else if ((xbits != bxflag) && craft != null)
                 {
@@ -6524,7 +6522,7 @@ case 0:
                         if(last_nmode != 3 && magcheck && magtime > 0 && magdiff > 0)
                         {
                             int gcse = (int)GPSInfo.cse;
-                            if(last_ltmf != 9 && last_ltmf != 15)
+                            if(last_ltmf != MSP.LTM.poshold && last_ltmf != MSP.LTM.land)
                             {
                                 if(gf.speed > 3)
                                 {
@@ -6659,17 +6657,15 @@ case 0:
                         }
                     }
                 }
-                if(ltmflags == 2)
+                if(ltmflags == MSP.LTM.angle)
                     mwflags |= angle_mask;
-                if(ltmflags == 3)
+                if(ltmflags == MSP.LTM.horizon)
                     mwflags |= horz_mask;
-                if(ltmflags == 3)
-                    mwflags |= arm_mask;
-                if(ltmflags == 9)
+                if(ltmflags == MSP.LTM.poshold)
                     mwflags |= ph_mask;
-                if(ltmflags == 10)
+                if(ltmflags == MSP.LTM.waypoints)
                     mwflags |= wp_mask;
-                if(ltmflags == 13 || ltmflags == 15)
+                if(ltmflags == MSP.LTM.rth || ltmflags == MSP.LTM.land)
                     mwflags |= rth_mask;
                 else
                     mwflags = xbits; // don't know better
@@ -6680,21 +6676,21 @@ case 0:
                 if(mchg)
                 {
                     last_ltmf = ltmflags;
-                    if(ltmflags == 9)
+                    if(ltmflags == MSP.LTM.poshold)
                         want_special |= POSMODE.PH;
-                    else if(ltmflags == 10)
+                    else if(ltmflags == MSP.LTM.waypoints)
                     {
                         want_special |= POSMODE.WP;
                         if (NavStatus.nm_pts == 0 || NavStatus.nm_pts == 255)
                             NavStatus.nm_pts = last_wp_pts;
                     }
-                    else if(ltmflags == 13)
+                    else if(ltmflags == MSP.LTM.rth)
                         want_special |= POSMODE.RTH;
-                    else if(ltmflags == 8)
+                    else if(ltmflags == MSP.LTM.althold)
                         want_special |= POSMODE.ALTH;
-                    else if(ltmflags == 18)
+                    else if(ltmflags == MSP.LTM.cruise)
                         want_special |= POSMODE.CRUISE;
-                    else if(ltmflags != 15)
+                    else if(ltmflags != MSP.LTM.land)
                     {
                         if(craft != null)
                             craft.set_normal();
@@ -6787,89 +6783,26 @@ case 0:
                     armed = 0;
                 sensor = mavsensors;
 
-
-                uint8 ltmflags = 0;
-                if(m.type == Mav.TYPE.MAV_TYPE_FIXED_WING)
-                {
-                        // I don't believe the iNav mapping for FW ...
-                    switch(m.custom_mode)
-                    {
-                        case 0:
-                            ltmflags = 0; // manual
-                            break;
-                        case 4:
-                            ltmflags = 1; // acro
-                            break;
-                        case 2:
-                            ltmflags = 2; // angle / horiz
-                            break;
-                        case 5:
-                            ltmflags = 8;  // alth
-                            break;
-                        case 1:
-                            ltmflags = 9; // posh
-                            break;
-                        case 11:
-                            ltmflags = 13; // rth
-                            break;
-                        case 10:
-                            ltmflags = 10; // wp
-                            break;
-                        case 15:
-                            ltmflags = 20; // launch
-                            break;
-                        default:
-                            ltmflags = 1;
-                            break;
-                    }
-                }
-                else
-                {
-                    switch(m.custom_mode)
-                    {
-                        case 1:
-                            ltmflags = 1; // acro / manual
-                            break;
-                        case 0:
-                            ltmflags = 2; // angle / horz
-                            break;
-                        case 2:
-                            ltmflags = 8; // alth
-                            break;
-                        case 16:
-                            ltmflags = 9; // posh
-                            break;
-                        case 6:
-                            ltmflags = 13; // rth
-                            break;
-                        case 3:
-                            ltmflags = 10; // wp
-                            break;
-                        case 18:
-                            ltmflags = 20; // launch
-                            break;
-                        default:
-                            ltmflags = 1;
-                            break;
-                    }
-                }
-
                 var achg = armed_processing(armed,"mav");
+                uint8 ltmflags = (vi.fc_vers >= FCVERS.hasPOI) ?
+                    Mav.mav2inav(m.custom_mode, (m.type == Mav.TYPE.MAV_TYPE_FIXED_WING)) :
+                    Mav.xmav2inav(m.custom_mode, (m.type == Mav.TYPE.MAV_TYPE_FIXED_WING));
+
                 var mchg = (ltmflags != last_ltmf);
                 if (mchg)
                 {
                     last_ltmf = ltmflags;
-                    if(ltmflags == 9)
+                    if(ltmflags == MSP.LTM.poshold)
                         want_special |= POSMODE.PH;
-                    else if(ltmflags == 10)
+                    else if(ltmflags == MSP.LTM.waypoints)
                         want_special |= POSMODE.WP;
-                    else if(ltmflags == 13)
+                    else if(ltmflags == MSP.LTM.rth)
                         want_special |= POSMODE.RTH;
-                    else if(ltmflags == 8)
+                    else if(ltmflags == MSP.LTM.althold)
                         want_special |= POSMODE.ALTH;
-                    else if(ltmflags == 18)
+                    else if(ltmflags == MSP.LTM.cruise)
                         want_special |= POSMODE.CRUISE;
-                    else if(ltmflags != 15)
+                    else if(ltmflags != MSP.LTM.land)
                     {
                         if(craft != null)
                             craft.set_normal();

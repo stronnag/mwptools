@@ -24,7 +24,32 @@ public class MSP : Object {
         CURRENT = (1 << 11)
     }
 
-    public enum Cmds {
+    public enum LTM {
+      manual = 0,
+      acro = 1,
+      angle = 2,
+      horizon = 3,
+      acro4 = 4,
+      stabilized1 = 5,
+      stabilized2 = 6,
+      stabilized3 = 7,
+      althold = 8,
+      poshold = 9,
+      waypoints = 10,
+      headfree = 11,
+      circle = 12,
+      rth = 13,
+      followme = 14,
+      land = 15,
+      flybywireA = 16,
+      flybywireB = 17,
+      cruise = 18,
+      undefined = 19,
+      launch = 20,
+      autotune = 21,
+  }
+
+  public enum Cmds {
         NOOP = 0,
         API_VERSION=1,
         FC_VARIANT=2,
