@@ -191,10 +191,10 @@ end
 
 inis=false
 inia=false
+auxs=[]
 
 ARGF.each do |l|
   bname=''
-
   if m=l.match(/^# INAV\/\S+\s+(\d+)\.(\d+)\.\d+\s+(\S+)\s+(\d+)\s+(\d+) /)
     if force.nil?
       major = m[1].to_i
@@ -247,8 +247,14 @@ ARGF.each do |l|
       inis=true
       puts
     end
-    puts "UART#{id+1} #{fcode} #{funcs.join(',')}"
+    if id /10 == 2 # VCP
+      puts "VCP    %5d %s" % [fcode, funcs.join(',')]
+    elsif id / 10 == 3 # SS
+      puts "SSer%2d %5d %s" % [(id+1) % 10, fcode, funcs.join(',')]
+    else
+      puts "UART%2d %5d %s" % [id+1, fcode, funcs.join(',')]
     end
+  end
 
   if l.match(/^aux/)
     l.chomp!
@@ -269,6 +275,8 @@ ARGF.each do |l|
       inia=true
       puts
     end
-    puts "%-20s AUX%d %4d %4d\t(%s)\n" % [bname, chn, min, max, l]
+    auxs << "%-20s CHAN%2d %4d %4d\t(%s)\n" % [bname, chn+5, min, max, l]
   end
 end
+
+auxs.sort{|a,b| a[21..-1] <=> b[21..-1]}.each{|a| puts a}
