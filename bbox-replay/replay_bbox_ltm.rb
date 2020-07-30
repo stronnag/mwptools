@@ -473,9 +473,7 @@ def encode_stats r,inavers,armed=1
 
   sts = case sval
 	when :nav_state_undefined,:nav_state_idle,
-	    :nav_state_waypoint_finished,
-	    :nav_state_launch_wait,
-	    :nav_state_launch_in_progress
+	    :nav_state_waypoint_finished
 	  ltm_from_flight_mode r[:flightmodeflags_flags]
 	when :nav_state_althold_initialize,
 	    :nav_state_althold_in_progress
@@ -518,6 +516,11 @@ def encode_stats r,inavers,armed=1
 	    :nav_state_cruise_3d_in_progress,
 	    :nav_state_cruise_3d_adjusting
 	  18
+	when :nav_state_launch_initialize,
+             :nav_state_launch_wait,
+             :nav_state_launch_motor_delay,
+	     :nav_state_launch_in_progress
+          20
 	else
 	  19
 	end
@@ -556,24 +559,24 @@ def encode_stats r,inavers,armed=1
 end
 
 def ltm_from_flight_mode str
-  f = 0
+  f = LTM_MODE_RATE
   f = case str
       when /MANUAL/
 	LTM_MODE_MANUAL
-      when /NAVWP/
-	LTM_MODE_WAYPOINTS
-      when /NAVRTH/
-	LTM_MODE_RTH
-      when /NAVPOSHOLD/
-	LTM_MODE_GPSHOLD
-      when /NAVCRUISE/
-	LTM_MODE_CRUISE
-      when /NAVLAUNCH/
-	LTM_MODE_LAUNCH
+#      when /NAVWP/
+#	LTM_MODE_WAYPOINTS
+#      when /NAVRTH/
+#	LTM_MODE_RTH
+#      when /NAVPOSHOLD/
+#	LTM_MODE_GPSHOLD
+#      when /NAVCRUISE/
+#	LTM_MODE_CRUISE
+#      when /NAVLAUNCH/
+#	LTM_MODE_LAUNCH
       when /AUTOTUNE/
         LTM_MODE_AUTOTUNE
-      when /NAVALTHOLD/
-        LTM_MODE_ALTHOLD;
+#      when /NAVALTHOLD/
+#        LTM_MODE_ALTHOLD
       when /HEADFREE|HEADINGHOLD/
         LTM_MODE_HEADHOLD
       when /ANGLE/
@@ -762,6 +765,7 @@ decoder="blackbox_decode"
 nobaro = nil
 extra_args = {}
 intvl = 100_000
+safehomes = nil
 
 if have_js
   pref_fn = File.join(ENV["HOME"],".config", "mwp", "replay_ltm.json")
@@ -773,6 +777,7 @@ if have_js
     nobaro = prefs[:nobaro]
     extra_args = prefs[:extra]
     home_args = prefs[:home]
+    safehomes = prefs[:safehomes]
   end
 end
 
@@ -1071,7 +1076,21 @@ IO.popen(cmd,'rt') do |pipe|
 	if origin.nil? and row[:gps_numsat].to_i > 5
 	  hlat = row[:gps_coord0].to_f
 	  hlon = row[:gps_coord1].to_f
-	  unless hoff.nil?
+          has_safe=false
+          if safehomes
+            safehomes.each do |sh|
+              _,d = Poscalc.csedist hlat,hlon,sh[0],sh[1]
+              if d*1852 <= 200
+                hlat = sh[0]
+                hlon = sh[1]
+                has_safe = true
+#                STDERR.puts "Using safe home #{sh[0]} #{sh[1]}"
+                break
+              end
+            end
+          end
+
+          if !has_safe and ! hoff.nil?
 	    _,d = Poscalc.csedist hlat,hlon,hoff[:holat],hoff[:holon]
 	    hdnm = hoff[:dist]/1852
 	    if d < hdnm
