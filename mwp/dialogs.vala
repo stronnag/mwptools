@@ -2914,8 +2914,6 @@ public class GPSInfo : GLib.Object
                 {
                     c = cse;
                     ddm = 0;
-                    MWPLog.message("Invalid delta %f %f %f %f\n",
-                                   _dlat, _dlon, lat, lon);
                 }
             }
         }
