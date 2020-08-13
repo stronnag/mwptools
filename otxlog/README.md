@@ -34,6 +34,12 @@ Built and installed if the optional dependency 'go' is installed.
 
 Required by `mwp` for the `Replay OTX ..` menu options.
 
+`otxlog` has no dependency on any other part of `mwp` and may be used as a standalone tool (e.g. to generate GPX files from OTX logs) on any platform that provides golang. Standalone build as:
+
+```
+go build -ldflags "-w -s"
+```
+
 ## otx-split.rb
 
 Splits a nulti-log CSV log into individual log files, based on time stamp. By default, a time difference of 30s causes a split.
