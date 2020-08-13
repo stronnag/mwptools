@@ -1,4 +1,4 @@
-#Simple OpenTX log replay (and GPX generator)
+# Simple OpenTX log replay (and GPX generator)
 
 ## otxlog
 
