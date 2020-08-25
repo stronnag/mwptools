@@ -25,11 +25,28 @@ public class CLITerm : Gtk.Window
         term = new Vte.Terminal();
 
         // bcol="#002B36", fcol="#839496"
-        Gdk.RGBA bcol = {0, 0.168627, 0.21176};
-        Gdk.RGBA fcol = {0.513725, 0.580392, 0.588235};
-
+/**
+        Gdk.RGBA bcol = Gdk.RGBA() {
+            red = 0.0,
+            green = 0.1686,
+            blue = 0.2118,
+            alpha = 1.0
+        };
+        Gdk.RGBA fcol = Gdk.RGBA() {
+            red = 0.513725,
+            green = 0.580392,
+            blue = 0.588235,
+            alpha = 1.0
+        };
         term.set_color_background(bcol);
         term.set_color_foreground(fcol);
+**/
+
+        var  cols = new Gdk.RGBA[2];
+        cols[0].parse("#002B36");
+        cols[1].parse("#839496");
+        term.set_color_background(cols[0]);
+        term.set_color_foreground(cols[1]);
 
         term.commit.connect((text,size) =>
             {
