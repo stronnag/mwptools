@@ -33,7 +33,7 @@ rescue LoadError
   have_js = false
 end
 
-require_relative 'inav_states'
+require_relative 'inav_states_data'
 
 include Math
 module Poscalc

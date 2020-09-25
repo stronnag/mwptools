@@ -1,277 +1,125 @@
-# The version number is the ** lowest ** version to which the states apply
-#
-# See src/main/navigation/navigation_private.h
-# navigationFSMState_t
-#
+#!/usr/bin/ruby
 
-INAV_STATES = {
-  "0" => {
-    0 => :nav_state_undefined,
-    1 => :nav_state_idle,
-    2 => :nav_state_althold_initialize,
-    3 => :nav_state_althold_in_progress,
-    4 => :nav_state_poshold_2d_initialize,
-    5 => :nav_state_poshold_2d_in_progress,
-    6 => :nav_state_poshold_3d_initialize,
-    7 => :nav_state_poshold_3d_in_progress,
-    8 => :nav_state_rth_initialize,
-    9 => :nav_state_rth_2d_initialize,
-    10 => :nav_state_rth_2d_head_home,
-    11 => :nav_state_rth_2d_gps_failing,
-    12 => :nav_state_rth_2d_finishing,
-    13 => :nav_state_rth_2d_finished,
-    14 => :nav_state_rth_3d_initialize,
-    15 => :nav_state_rth_3d_climb_to_safe_alt,
-    16 => :nav_state_rth_3d_head_home,
-    17 => :nav_state_rth_3d_gps_failing,
-    18 => :nav_state_rth_3d_hover_prior_to_landing,
-    19 => :nav_state_rth_3d_landing,
-    20 => :nav_state_rth_3d_finishing,
-    21 => :nav_state_rth_3d_finished,
-    22 => :nav_state_waypoint_initialize,
-    23 => :nav_state_waypoint_pre_action,
-    24 => :nav_state_waypoint_in_progress,
-    25 => :nav_state_waypoint_reached,
-    26 => :nav_state_waypoint_finished,
-    27 => :nav_state_emergency_landing_initialize,
-    28 => :nav_state_emergency_landing_in_progress,
-    29 => :nav_state_emergency_landing_finished,
-    30 => :nav_state_count,
-  },
-  "1.2.0" => {
-    0 => :nav_state_undefined,
-    1 => :nav_state_idle,
-    2 => :nav_state_althold_initialize,
-    3 => :nav_state_althold_in_progress,
-    4 => :nav_state_poshold_2d_initialize,
-    5 => :nav_state_poshold_2d_in_progress,
-    6 => :nav_state_poshold_3d_initialize,
-    7 => :nav_state_poshold_3d_in_progress,
-    8 => :nav_state_rth_initialize,
-    9 => :nav_state_rth_2d_initialize,
-    10 => :nav_state_rth_2d_head_home,
-    11 => :nav_state_rth_2d_gps_failing,
-    12 => :nav_state_rth_2d_finishing,
-    13 => :nav_state_rth_2d_finished,
-    14 => :nav_state_rth_3d_initialize,
-    15 => :nav_state_rth_3d_climb_to_safe_alt,
-    16 => :nav_state_rth_3d_head_home,
-    17 => :nav_state_rth_3d_gps_failing,
-    18 => :nav_state_rth_3d_hover_prior_to_landing,
-    19 => :nav_state_rth_3d_landing,
-    20 => :nav_state_rth_3d_finishing,
-    21 => :nav_state_rth_3d_finished,
-    22 => :nav_state_waypoint_initialize,
-    23 => :nav_state_waypoint_pre_action,
-    24 => :nav_state_waypoint_in_progress,
-    25 => :nav_state_waypoint_reached,
-    26 => :nav_state_waypoint_next,
-    27 => :nav_state_waypoint_finished,
-    28 => :nav_state_waypoint_rth_land,
-    29 => :nav_state_emergency_landing_initialize,
-    30 => :nav_state_emergency_landing_in_progress,
-    31 => :nav_state_emergency_landing_finished,
-    32 => :nav_state_count,
-  },
-  "1.4.0" => {
-    0 => :nav_state_undefined,
-    1 => :nav_state_idle,
-    2 => :nav_state_althold_initialize,
-    3 => :nav_state_althold_in_progress,
-    4 => :nav_state_poshold_2d_initialize,
-    5 => :nav_state_poshold_2d_in_progress,
-    6 => :nav_state_poshold_3d_initialize,
-    7 => :nav_state_poshold_3d_in_progress,
-    8 => :nav_state_rth_initialize,
-    9 => :nav_state_rth_2d_initialize,
-    10 => :nav_state_rth_2d_head_home,
-    11 => :nav_state_rth_2d_gps_failing,
-    12 => :nav_state_rth_2d_finishing,
-    13 => :nav_state_rth_2d_finished,
-    14 => :nav_state_rth_3d_initialize,
-    15 => :nav_state_rth_3d_climb_to_safe_alt,
-    16 => :nav_state_rth_3d_head_home,
-    17 => :nav_state_rth_3d_gps_failing,
-    18 => :nav_state_rth_3d_hover_prior_to_landing,
-    19 => :nav_state_rth_3d_landing,
-    20 => :nav_state_rth_3d_finishing,
-    21 => :nav_state_rth_3d_finished,
-    22 => :nav_state_waypoint_initialize,
-    23 => :nav_state_waypoint_pre_action,
-    24 => :nav_state_waypoint_in_progress,
-    25 => :nav_state_waypoint_reached,
-    26 => :nav_state_waypoint_next,
-    27 => :nav_state_waypoint_finished,
-    28 => :nav_state_waypoint_rth_land,
-    29 => :nav_state_emergency_landing_initialize,
-    30 => :nav_state_emergency_landing_in_progress,
-    31 => :nav_state_emergency_landing_finished,
-    32 => :nav_state_launch_initialize,
-    33 => :nav_state_launch_wait,
-    34 => :nav_state_launch_motor_delay,
-    35 => :nav_state_launch_in_progress,
-    36 => :nav_state_count,
-  },
-  "1.6.0" => {
-    0 => :nav_state_undefined,
-    1 => :nav_state_idle,
-    2 => :nav_state_althold_initialize,
-    3 => :nav_state_althold_in_progress,
-    4 => :nav_state_poshold_2d_initialize,
-    5 => :nav_state_poshold_2d_in_progress,
-    6 => :nav_state_poshold_3d_initialize,
-    7 => :nav_state_poshold_3d_in_progress,
-    8 => :nav_state_rth_initialize,
-    9 => :nav_state_rth_2d_initialize,
-    10 => :nav_state_rth_2d_head_home,
-    11 => :nav_state_rth_2d_finishing,
-    12 => :nav_state_rth_2d_finished,
-    13 => :nav_state_rth_3d_initialize,
-    14 => :nav_state_rth_3d_climb_to_safe_alt,
-    15 => :nav_state_rth_3d_head_home,
-    16 => :nav_state_rth_3d_hover_prior_to_landing,
-    17 => :nav_state_rth_3d_landing,
-    18 => :nav_state_rth_3d_finishing,
-    19 => :nav_state_rth_3d_finished,
-    20 => :nav_state_waypoint_initialize,
-    21 => :nav_state_waypoint_pre_action,
-    22 => :nav_state_waypoint_in_progress,
-    23 => :nav_state_waypoint_reached,
-    24 => :nav_state_waypoint_next,
-    25 => :nav_state_waypoint_finished,
-    26 => :nav_state_waypoint_rth_land,
-    27 => :nav_state_emergency_landing_initialize,
-    28 => :nav_state_emergency_landing_in_progress,
-    29 => :nav_state_emergency_landing_finished,
-    30 => :nav_state_launch_initialize,
-    31 => :nav_state_launch_wait,
-    32 => :nav_state_launch_motor_delay,
-    33 => :nav_state_launch_in_progress,
-    34 => :nav_state_count,
-  },
-  "1.6.2" => {
-    0 => :nav_state_undefined,
-    1 => :nav_state_idle,
-    2 => :nav_state_althold_initialize,
-    3 => :nav_state_althold_in_progress,
-    4 => :nav_state_poshold_2d_initialize,
-    5 => :nav_state_poshold_2d_in_progress,
-    6 => :nav_state_poshold_3d_initialize,
-    7 => :nav_state_poshold_3d_in_progress,
-    8 => :nav_state_rth_initialize,
-    9 => :nav_state_rth_climb_to_safe_alt,
-    10 => :nav_state_rth_head_home,
-    11 => :nav_state_rth_hover_prior_to_landing,
-    12 => :nav_state_rth_landing,
-    13 => :nav_state_rth_finishing,
-    14 => :nav_state_rth_finished,
-    15 => :nav_state_waypoint_initialize,
-    16 => :nav_state_waypoint_pre_action,
-    17 => :nav_state_waypoint_in_progress,
-    18 => :nav_state_waypoint_reached,
-    19 => :nav_state_waypoint_next,
-    20 => :nav_state_waypoint_finished,
-    21 => :nav_state_waypoint_rth_land,
-    22 => :nav_state_emergency_landing_initialize,
-    23 => :nav_state_emergency_landing_in_progress,
-    24 => :nav_state_emergency_landing_finished,
-    25 => :nav_state_launch_initialize,
-    26 => :nav_state_launch_wait,
-    27 => :nav_state_launch_motor_delay,
-    28 => :nav_state_launch_in_progress,
-    29 => :nav_state_count,
-  },
-  "2.0.0" => {
-    0 => :nav_state_undefined,
-    1 => :nav_state_idle,
-    2 => :nav_state_althold_initialize,
-    3 => :nav_state_althold_in_progress,
-    4 => :nav_state_undefined,
-    5 => :nav_state_undefined,
-    6 => :nav_state_poshold_3d_initialize,
-    7 => :nav_state_poshold_3d_in_progress,
-    8 => :nav_state_rth_initialize,
-    9 => :nav_state_rth_climb_to_safe_alt,
-    10 => :nav_state_rth_head_home,
-    11 => :nav_state_rth_hover_prior_to_landing,
-    12 => :nav_state_rth_landing,
-    13 => :nav_state_rth_finishing,
-    14 => :nav_state_rth_finished,
-    15 => :nav_state_waypoint_initialize,
-    16 => :nav_state_waypoint_pre_action,
-    17 => :nav_state_waypoint_in_progress,
-    18 => :nav_state_waypoint_reached,
-    19 => :nav_state_waypoint_next,
-    20 => :nav_state_waypoint_finished,
-    21 => :nav_state_waypoint_rth_land,
-    22 => :nav_state_emergency_landing_initialize,
-    23 => :nav_state_emergency_landing_in_progress,
-    24 => :nav_state_emergency_landing_finished,
-    25 => :nav_state_launch_initialize,
-    26 => :nav_state_launch_wait,
-    27 => :nav_state_undefined,
-    28 => :nav_state_launch_in_progress,
-    29 => :nav_state_cruise_2d_initialize,
-    30 => :nav_state_cruise_2d_in_progress,
-    31 => :nav_state_cruise_2d_adjusting,
-    32 => :nav_state_cruise_3d_initialize,
-    33 => :nav_state_cruise_3d_in_progress,
-    34 => :nav_state_cruise_3d_adjusting,
-    35 => :nav_state_count,
+# Analyse iNav mode changes
+# MIT licence
 
-  },
-  "2.5.0" => {
-    0 => :nav_state_undefined,
-    1 => :nav_state_idle,
-    2 => :nav_state_althold_initialize,
-    3 => :nav_state_althold_in_progress,
-    4 => :nav_state_undefined,
-    5 => :nav_state_undefined,
-    6 => :nav_state_poshold_3d_initialize,
-    7 => :nav_state_poshold_3d_in_progress,
-    8 => :nav_state_rth_initialize,
-    9 => :nav_state_rth_climb_to_safe_alt,
-    10 => :nav_state_rth_head_home,
-    11 => :nav_state_rth_hover_prior_to_landing,
-    12 => :nav_state_rth_landing,
-    13 => :nav_state_rth_finishing,
-    14 => :nav_state_rth_finished,
-    15 => :nav_state_waypoint_initialize,
-    16 => :nav_state_waypoint_pre_action,
-    17 => :nav_state_waypoint_in_progress,
-    18 => :nav_state_waypoint_reached,
-    19 => :nav_state_waypoint_next,
-    20 => :nav_state_waypoint_finished,
-    21 => :nav_state_waypoint_rth_land,
-    22 => :nav_state_emergency_landing_initialize,
-    23 => :nav_state_emergency_landing_in_progress,
-    24 => :nav_state_emergency_landing_finished,
-    25 => :nav_state_launch_initialize,
-    26 => :nav_state_launch_wait,
-    27 => :nav_state_undefined,
-    28 => :nav_state_launch_in_progress,
-    29 => :nav_state_cruise_2d_initialize,
-    30 => :nav_state_cruise_2d_in_progress,
-    31 => :nav_state_cruise_2d_adjusting,
-    32 => :nav_state_cruise_3d_initialize,
-    33 => :nav_state_cruise_3d_in_progress,
-    34 => :nav_state_cruise_3d_adjusting,
-    35 => :nav_state_waypoint_hold_time,
-    36 => :nav_state_count,
-  },
+require 'csv'
+require 'optparse'
+require_relative 'inav_states_data'
 
-}
+RDISARMS = %w/NONE TIMEOUT STICKS SWITCH_3D SWITCH KILLSWITCH FAILSAFE NAVIGATION/
 
-def get_state_version iv
-  inavers=nil
-  if iv.nil?
-    inavers = '0'
-  else
-    INAV_STATES.each do |k,v|
-      break if iv < k
-      inavers = k
+idx = 1
+verbose = nil
+pstate = -1
+
+ARGV.options do |opt|
+  opt.banner = "#{File.basename($0)} [options] [file]"
+  opt.on('-i','--index=IDX',Integer){|o|idx=o}
+  opt.on('-v','--verbose'){verbose=true}
+  opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
+  begin
+    opt.parse!
+  rescue
+    puts opt ; exit
+  end
+end
+
+bbox = (ARGV[0]|| abort('no BBOX log'))
+
+gitinfos=[]
+disarms=[]
+
+File.open(bbox,'rb') do |f|
+  f.each do |l|
+    if m = l.match(/^H Firmware revision:(.*)$/)
+      gitinfos << m[1]
+    elsif m = l.match(/End of log \(disarm reason:(\d+)/)
+      disarms << m[1].to_i
     end
   end
-  STDERR.puts "#{iv} using states for #{inavers}"
-  inavers
 end
+
+gitinfo = gitinfos[idx - 1]
+
+abort "Doesn't look like Blackbox (#{bbox})" unless gitinfo
+
+iv=nil
+if m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \((\S*)\) (\S+)/)
+  iv = [m[1],m[2],m[3]].join('.')
+end
+
+inavers =  get_state_version iv
+
+STDERR.puts "iNav version = #{iv} (states eq #{inavers})" if verbose
+
+puts "#{File.basename(bbox)}: #{gitinfos[idx-1] if gitinfos.size >= idx}"
+
+nul = !Gem.win_platform? ? '/dev/null' : 'NUL'
+
+cmd = "blackbox_decode"
+cmd << " --index #{idx}"
+cmd << " --stdout"
+cmd << " 2>#{nul}"
+cmd << " " << bbox
+
+IO.popen(cmd,'r') do |p|
+  csv = CSV.new(p, :col_sep => ",",
+		:headers => :true,
+		:header_converters =>
+		->(f) {f.strip.downcase.gsub(' ','_').gsub(/\W+/,'').to_sym},
+		:return_headers => true)
+
+  nhdr=false
+  itn=0
+  nstate = -1
+  istate = 'IDLE'
+  st = nil
+  xts=nil
+  ts=nil
+
+  csv.each do |c|
+    if  nhdr == false
+      hdrs = c
+      nhdr = true
+    else
+      ts = c[:time_us].to_f / 1000000
+      itn = c[:loopiteration]
+      st = ts if st.nil?
+      xts  = ts - st
+      fs = c[:failsafephase_flags].strip
+      if fs != istate
+	istate = fs
+	rcd=''
+	# Old logs don't have rcData[]
+	if c.has_key? :rcdata0
+	  rcd = " (#{[c[:rcdata0].strip,c[:rcdata1].strip,c[:rcdata2].strip,c[:rcdata3].strip, ].join(',')})"
+	end
+	rcx=[c[:rxsignalreceived].strip,c[:rxflightchannelsvalid].strip].join(',')
+	if rcd.empty?
+	  rcd = " (#{rcx})"
+	else
+	  rcd << ';' << "(#{rcx})"
+	end
+	puts ["%9d" % itn, "%6.1f" % ts, "(%6.1f)" % xts, "F/S=#{istate}#{rcd}"].join("\t")
+      end
+      if c[:navstate].to_i != nstate
+	if nstate == -1
+	  puts %w/Iteration Time(s) Elapsed(s)  State/.join("\t")
+	end
+	nstate = c[:navstate].to_i
+	as = INAV_STATES[inavers][c[:navstate].to_i].to_s
+	if as == "nav_state_cruise_2d_initialize"
+	  if pstate == "nav_state_rth_head_home"
+	    as = "nav_state_rth_hover_above_home"
+	  end
+	end
+	pstate = as
+	astate = (as) ? "#{as} (#{nstate})" : "State=%d" % nstate
+	puts ["%9d" % itn, "%6.1f" % ts, "(%6.1f)" % xts, astate].join("\t")
+      end
+    end
+  end
+  puts ["%9d" % itn, "%6.1f" % ts, "(%6.1f)" % xts, "end of log"].join("\t")
+end
+puts "Disarmed by: #{RDISARMS[disarms[idx-1]]}" if disarms.size >= idx

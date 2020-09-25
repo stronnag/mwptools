@@ -1,5 +1,5 @@
 APP=replay_bbox_ltm.rb
-DEP=inav_states.rb
+DEP=inav_states_data.rb
 include ../common.mk
 
 
