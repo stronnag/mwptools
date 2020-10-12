@@ -418,6 +418,8 @@ public class ListBox : GLib.Object
                                 continue;
                             }
                             break;
+                        default: // unassigned, rth, wp
+                            break;
                     }
                 }
                 n++;
@@ -1208,6 +1210,8 @@ public class ListBox : GLib.Object
                     break;
                 case MSP.Action.SET_HEAD:
                     ctitles = {"","","","Head","",""};
+                    break;
+                default: // unassigned
                     break;
             }
             var n = 2;

@@ -99,6 +99,8 @@ class Muppet :Object
                 case MSP.Action.JUMP:
                     MWPLog.message("Remove WP %s\n", m.action.to_string());
                     continue;
+                default:
+                    break;
             }
             n++;
             w.wp_no = n;

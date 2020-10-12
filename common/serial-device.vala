@@ -1332,6 +1332,8 @@ public class MWSerial : Object
                             if (mavsig == 0)
                                 state = States.S_HEADER;
                             break;
+                        default:
+                            break; // S_M_STX, S_M2_STX
                     }
                 }
             }

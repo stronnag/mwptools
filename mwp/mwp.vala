@@ -7374,17 +7374,17 @@ case 0:
             mss.h_alt = (int32)alt;
             mss.home_changed(wp0.lat, wp0.lon, mss.h_alt);
 
-            if(nav_rth_home_offset_distance > 0)
-            {
-                double dist,cse;
-                Geo.csedist(GPSInfo.lat, GPSInfo.lon,
-                            home_pos.lat, home_pos.lon,
-                            out dist, out cse);
+            double dist,cse;
+            Geo.csedist(GPSInfo.lat, GPSInfo.lon,
+                        home_pos.lat, home_pos.lon,
+                        out dist, out cse);
 
-                var s = "Home offset %.0fm @ %.0f°".printf(dist*1852, cse);
+            dist *= 1852;
+            if(nav_rth_home_offset_distance > 0 || (dist > 10.0 && dist <= 200.0))
+            {
+                var s = "Home offset %.0fm @ %.0f°".printf(dist, cse);
                 map_show_warning(s);
                 navstatus.alert_home_offset();
-
                 Timeout.add_seconds(15, () => {
                         map_hide_warning();
                         return Source.REMOVE;
