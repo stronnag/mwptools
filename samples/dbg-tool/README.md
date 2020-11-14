@@ -20,4 +20,4 @@ dbg-tool
 
 ## Restrictions
 
-Only have one USB serial device can be active.
+Only one USB serial device can be active.
