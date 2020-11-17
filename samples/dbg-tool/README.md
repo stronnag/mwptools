@@ -6,13 +6,14 @@
 
 ## Features
 
+* Linux only (uses `udev` for device discovery).
 * Displays inav debug messages in a terminal
 * Reboots the FC when 'R' is pressed
 * Uses `udev` to discover the serial port.
 
 ## Usage
 
-Just run the `dbg-tool`; it will discover USB serial devices.
+Just run the `dbg-tool`; it will discover USB serial devices as they are plugged / unplugged.
 
 ```
 dbg-tool
