@@ -56,6 +56,7 @@ public class ListBox : GLib.Object
     private Gtk.MenuItem speedv_item;
     private Gtk.MenuItem preview_item;
     private Gtk.MenuItem pop_preview_item;
+    private Gtk.MenuItem pop_editor_item;
     private ShapeDialog shapedialog;
     private DeltaDialog deltadialog;
     private SpeedDialog speeddialog;
@@ -100,25 +101,48 @@ public class ListBox : GLib.Object
                 pop_menu_delete();
             });
         marker_menu.add (item);
-
-        var sep = new Gtk.SeparatorMenuItem ();
-        marker_menu.add (sep);
+        marker_menu.add (new Gtk.SeparatorMenuItem ());
 
         add_marker_item("Jump", "JUMP");
         add_marker_item("Land", "LAND");
         add_marker_item("PH Timed", "POSHOLD_TIME");
         add_marker_item("RTH", "RTH");
         add_marker_item("Waypoint", "WAYPOINT");
-//        add_marker_item("PH Unlimited","POSHOLD_UNLIM");
-        sep = new Gtk.SeparatorMenuItem ();
-        marker_menu.add (sep);
 
+        marker_menu.add (new Gtk.SeparatorMenuItem ());
         pop_preview_item = new Gtk.MenuItem.with_label ("Preview Mission");
         pop_preview_item.activate.connect (() => {
                 toggle_mission_preview_state();
             });
         marker_menu.add (pop_preview_item);
+
+        marker_menu.add (new Gtk.SeparatorMenuItem ());
+        pop_editor_item = new Gtk.MenuItem.with_label ("Mission Editor");
+        pop_editor_item.activate.connect (() => {
+                toggle_editor_state();
+            });
+        marker_menu.add (pop_editor_item);
+
         marker_menu.show_all();
+    }
+
+    private void  toggle_editor_state()
+    {
+        if(mp.mwpdh.floating)
+        {
+            if(mp.mwpdh.visible)
+            {
+                mp.mwpdh.hide();
+            }
+            else
+            {
+                mp.mwpdh.show();
+            }
+        }
+        else
+        {
+            mp.mwpdh.pop_out();
+        }
     }
 
     public string get_marker_tip(int ino)
@@ -616,7 +640,7 @@ public class ListBox : GLib.Object
                     break;
                 default:
                     if(action == MSP.Action.WAYPOINT ||
-                       action == MSP.Action.LAND)
+                       action == MSP.Action.LAND || action == MSP.Action.SET_POI )
                     {
                         Value cell;
                         list_model.get_value (iter, WY_Columns.LAT, out cell);

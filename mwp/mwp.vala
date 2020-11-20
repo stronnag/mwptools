@@ -294,11 +294,13 @@ public class MWPCursor : GLib.Object
     }
 }
 
-class MwpDockHelper : Object
+public class MwpDockHelper : Object
 {
     private Gtk.Window wdw = null;
     public bool floating {get; private set; default=false;}
+    public bool visible = false;
     public signal void menu_key();
+    private Gdl.DockItem di;
 
     public void transient(Gtk.Window w, bool above=false)
     {
@@ -313,8 +315,9 @@ class MwpDockHelper : Object
         w.add(p);
     }
 
-    public MwpDockHelper (Gdl.DockItem di, Gdl.Dock dock, string title, bool _floater = false)
+    public MwpDockHelper (Gdl.DockItem _di, Gdl.Dock dock, string title, bool _floater = false)
     {
+        di = _di;
         floating = _floater;
         wdw = new Gtk.Window();
         wdw.title = title;
@@ -322,13 +325,7 @@ class MwpDockHelper : Object
         wdw.window_position = Gtk.WindowPosition.MOUSE;
         wdw.type_hint =  Gdk.WindowTypeHint.DIALOG;
 
-
-        if(!di.iconified && floating)
-        {
-            di.dock_to (null, Gdl.DockPlacement.FLOATING, 0);
-            myreparent(di,wdw);
-            wdw.show_all();
-        }
+        pop_out();
 
         wdw.delete_event.connect(() => {
                 di.iconify_item();
@@ -339,27 +336,20 @@ class MwpDockHelper : Object
                 if(di.get_toplevel() == dock)
                 {
                     floating = false;
-                    wdw.hide();
+                    hide();
                 }
                 else
                 {
                     floating = true;
-                    di.dock_to (null, Gdl.DockPlacement.FLOATING, 0);
-                    myreparent(di,wdw);
-                    wdw.show_all();
+                    pop_out();
                 }
             });
         di.hide.connect(() => {
-                wdw.hide();
+                hide();
             });
 
         di.show.connect(() => {
-                if(!di.iconified && floating)
-                {
-                    di.dock_to (null, Gdl.DockPlacement.FLOATING, 0);
-                    myreparent(di,wdw);
-                    wdw.show_all();
-                }
+                pop_out();
             });
         var ag = new Gtk.AccelGroup();
         ag.connect(Gdk.Key.F3, 0, 0, (a,o,k,m) => {
@@ -367,6 +357,27 @@ class MwpDockHelper : Object
                 return true;
             });
         wdw.add_accel_group(ag);
+    }
+    public void pop_out()
+    {
+        if(!di.iconified && floating)
+        {
+            di.dock_to (null, Gdl.DockPlacement.FLOATING, 0);
+            myreparent(di,wdw);
+            show();
+        }
+    }
+    public void show()
+    {
+        di.show_item();
+        wdw.show_all();
+        visible = true;
+    }
+    public void hide()
+    {
+        visible = false;
+        di.iconify_item();
+        wdw.hide();
     }
 }
 
@@ -547,7 +558,7 @@ public class MWP : Gtk.Application {
     private double clat = 0.0;
     private double clon = 0.0;
 
-    private MwpDockHelper mwpdh;
+    public MwpDockHelper mwpdh;
 
         /* for jump protection */
     private double xlon = 0;
