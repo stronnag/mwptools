@@ -1436,10 +1436,10 @@ public class MWP : Gtk.Application {
             });
         this.add_action(aq);
 
-        window.destroy.connect(() => {
+        window.delete_event.connect(() => {
                 cleanup();
                 remove_window(window);
-                this.quit();
+                return false;
             });
 
         mseed = new MapSeeder(builder,window);
