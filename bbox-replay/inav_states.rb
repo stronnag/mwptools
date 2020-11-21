@@ -105,7 +105,7 @@ IO.popen(cmd,'r') do |p|
       end
       if c[:navstate].to_i != nstate
 	if nstate == -1
-	  puts %w/Iteration Time(s) Elapsed(s)  State/.join("\t")
+	  puts %w/Iteration Time(s) Elapsed(s)  State FltMode/.join("\t")
 	end
 	nstate = c[:navstate].to_i
 	as = INAV_STATES[inavers][c[:navstate].to_i].to_s
@@ -116,7 +116,7 @@ IO.popen(cmd,'r') do |p|
 	end
 	pstate = as
 	astate = (as) ? "#{as} (#{nstate})" : "State=%d" % nstate
-	puts ["%9d" % itn, "%6.1f" % ts, "(%6.1f)" % xts, astate].join("\t")
+	puts ["%9d" % itn, "%6.1f" % ts, "(%6.1f)" % xts, astate, c[:flightmodeflags_flags]].join("\t")
       end
     end
   end
