@@ -101,7 +101,7 @@ IO.popen(cmd,'r') do |p|
 	else
 	  rcd << ';' << "(#{rcx})"
 	end
-	puts ["%9d" % itn, "%6.1f" % ts, "(%6.1f)" % xts, "F/S=#{istate}#{rcd}"].join("\t")
+	puts ["%9d" % itn, "%6.1f" % ts, "(%6.1f)" % xts, "FAILSAFE=>#{istate}#{rcd}"].join("\t")
       end
       if c[:navstate].to_i != nstate
 	if nstate == -1
