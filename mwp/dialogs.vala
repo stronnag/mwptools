@@ -1637,7 +1637,8 @@ public class NavStatus : GLib.Object
                 mt.message(AudioThread.Vox.NAV_ERR,true);
             }
 
-            if((_n.nav_mode != xnmode) || (_n.nav_mode !=0 && _n.wp_number != xnwp))
+            if((_n.nav_mode != xnmode) || (_n.nav_mode !=0 && _n.nav_mode !=6
+                                           && _n.wp_number != xnwp))
             {
                 if((NavStatus.say_state & SAY_WHAT.Nav) == SAY_WHAT.Nav)
                     mt.message(AudioThread.Vox.NAV_STATUS,true);

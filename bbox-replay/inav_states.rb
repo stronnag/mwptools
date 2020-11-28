@@ -108,13 +108,15 @@ IO.popen(cmd,'r') do |p|
 	  puts %w/Iteration Time(s) Elapsed(s)  State FltMode/.join("\t")
 	end
 	nstate = c[:navstate].to_i
-	as = INAV_STATES[inavers][c[:navstate].to_i].to_s
-	if as == "nav_state_cruise_2d_initialize"
-	  if pstate == "nav_state_rth_head_home"
-	    as = "nav_state_rth_hover_above_home"
-	  end
+	asx = INAV_STATES[inavers][c[:navstate].to_i]
+        if asx == :nav_state_cruise_2d_initialize
+          # Sadly broekn per\m ids introduced for 2.x by inav/#3332
+          if [:nav_state_rth_initialize, :nav_state_rth_climb_to_safe_alt].include?(pstate)
+            asx = :nav_state_rth_head_home
+          end
 	end
-	pstate = as
+        as = asx.to_s
+	pstate = asx
 	astate = (as) ? "#{as} (#{nstate})" : "State=%d" % nstate
 	puts ["%9d" % itn, "%6.1f" % ts, "(%6.1f)" % xts, astate, c[:flightmodeflags_flags]].join("\t")
       end

@@ -60,7 +60,7 @@ module Poscalc
    lat=r2d(lat)
    long = r2d(long)
    [lat, long]
- end
+  end
 
   def Poscalc.csedist lat1,lon1,lat2,lon2
     lat1 = d2r(lat1)
@@ -456,21 +456,25 @@ def encode_x d=0
   msg
 end
 
+# fix up the f*cked up  nav perm ids broken in inav/#3332
+def resolve_version_state r, inavers
+  sval = INAV_STATES[inavers][r[:navstate].to_i]
+  # This is for the inav 2.x duplication stupidity
+  if sval == :nav_state_cruise_2d_initialize
+    if r[:flightmodeflags_flags].match(/NAVRTH/) ||
+       [:nav_state_rth_initialize, :nav_state_rth_climb_to_safe_alt, :nav_state_rth_head_home].include?($pstate)
+      sval = :nav_state_rth_head_home
+    end
+  end
+  $pstate = sval
+  return sval
+end
+
 def encode_stats r,inavers,armed=1
   msg='$TS'
   sts = nil
 
-  sval = INAV_STATES[inavers][r[:navstate].to_i]
-
-  # This is for the inav 2.x duplication stupidity
-  if sval == :nav_state_cruise_2d_initialize
-    if $pstate == :nav_state_rth_head_home
-      sval = :nav_state_rth_head_home
-    end
-  end
-
-  $pstate = sval
-
+  sval = resolve_version_state r,inavers
   sts = case sval
 	when :nav_state_undefined,:nav_state_idle,
 	    :nav_state_waypoint_finished
@@ -561,28 +565,28 @@ end
 def ltm_from_flight_mode str
   f = LTM_MODE_RATE
   f = case str
-      when /MANUAL/
-	LTM_MODE_MANUAL
-#      when /NAVWP/
-#	LTM_MODE_WAYPOINTS
-#      when /NAVRTH/
-#	LTM_MODE_RTH
-#      when /NAVPOSHOLD/
-#	LTM_MODE_GPSHOLD
-#      when /NAVCRUISE/
-#	LTM_MODE_CRUISE
-#      when /NAVLAUNCH/
-#	LTM_MODE_LAUNCH
+      when /NAVWP/
+	LTM_MODE_WAYPOINTS
+      when /NAVRTH/
+	LTM_MODE_RTH
+      when /NAVPOSHOLD/
+	LTM_MODE_GPSHOLD
+      when /NAVCRUISE/
+	LTM_MODE_CRUISE
+      when /NAVLAUNCH/
+	LTM_MODE_LAUNCH
       when /AUTOTUNE/
         LTM_MODE_AUTOTUNE
-#      when /NAVALTHOLD/
-#        LTM_MODE_ALTHOLD
+      when /NAVALTHOLD/
+        LTM_MODE_ALTHOLD
       when /HEADFREE|HEADINGHOLD/
         LTM_MODE_HEADHOLD
       when /ANGLE/
         LTM_MODE_ANGLE
       when /HORIZON/
         LTM_MODE_HORIZON
+      when /MANUAL/
+	LTM_MODE_MANUAL
       else
 	LTM_MODE_RATE
       end
@@ -611,7 +615,9 @@ end
 
 def encode_nav r,inavers
   msg='$TN'
-  gpsmode = case INAV_STATES[inavers][r[:navstate].to_i]
+  sval = resolve_version_state r,inavers
+
+  gpsmode = case sval
 	    when :nav_state_poshold_2d_initialize,
 		:nav_state_poshold_2d_in_progress,
 		:nav_state_poshold_3d_initialize,
@@ -645,7 +651,7 @@ def encode_nav r,inavers
 	      0
 	    end
 
-  navmode = case INAV_STATES[inavers][r[:navstate].to_i]
+  navmode = case sval
 	    when :nav_state_althold_initialize,
 		:nav_state_althold_in_progress
 	      99
@@ -667,13 +673,12 @@ def encode_nav r,inavers
 		:nav_state_rth_hover_prior_to_landing
 	      8
 	    when :nav_state_rth_3d_landing,
-		:nav_state_waypoint_rth_land,
-		:nav_state_emergency_landing_in_progress,
-		:nav_state_rth_landing,
-		:nav_state_rth_3d_finishing
+		 :nav_state_waypoint_rth_land,
+		 :nav_state_emergency_landing_in_progress,
+		 :nav_state_rth_landing,
+		 :nav_state_rth_3d_finishing
 	      9
-	    when :nav_state_waypoint_rth_land,
-		:nav_state_emergency_landing_finished
+	    when :nav_state_emergency_landing_finished
 	      10
 	    when :nav_state_waypoint_initialize,
 		:nav_state_waypoint_pre_action,
@@ -682,6 +687,13 @@ def encode_nav r,inavers
 		:nav_state_waypoint_next,
 		:nav_state_waypoint_hold_time
 	      5
+            when :nav_state_cruise_2d_initialize,
+	         :nav_state_cruise_2d_in_progress,
+	         :nav_state_cruise_2d_adjusting,
+	         :nav_state_cruise_3d_initialize,
+	         :nav_state_cruise_3d_in_progress,
+	         :nav_state_cruise_3d_adjusting
+              6
 	    else
 	      0
 	    end
