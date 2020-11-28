@@ -166,7 +166,7 @@ func bblreader(bbfile string, idx int, dump bool) {
 				bblsmry.max_range_time = us - st
 			}
 
-			if llat != br.lat && llon != br.lon {
+			if us-lt > 1000*50 && llat != br.lat && llon != br.lon {
 				_, d := Csedist(llat, llon, br.lat, br.lon)
 				bblsmry.distance += d
 				llat = br.lat
