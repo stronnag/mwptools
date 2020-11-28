@@ -160,17 +160,21 @@ func bblreader(bbfile string, idx int, dump bool) {
 			}
 		} else {
 			us := br.stamp
-			_, d := Csedist(home_lat, home_lon, br.lat, br.lon)
-			if d > bblsmry.max_range {
-				bblsmry.max_range = d
-				bblsmry.max_range_time = us - st
-			}
 
-			if us-lt > 1000*50 && llat != br.lat && llon != br.lon {
-				_, d := Csedist(llat, llon, br.lat, br.lon)
-				bblsmry.distance += d
-				llat = br.lat
-				llon = br.lon
+			// Do the expensive calc every 50ms
+			if us-lt > 1000*50 {
+				_, d := Csedist(home_lat, home_lon, br.lat, br.lon)
+				if d > bblsmry.max_range {
+					bblsmry.max_range = d
+					bblsmry.max_range_time = us - st
+				}
+
+				if llat != br.lat && llon != br.lon {
+					_, d := Csedist(llat, llon, br.lat, br.lon)
+					bblsmry.distance += d
+					llat = br.lat
+					llon = br.lon
+				}
 			}
 
 			if br.alt > bblsmry.max_alt {
