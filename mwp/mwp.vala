@@ -9305,6 +9305,12 @@ case 0:
         var lk = new Locker();
         int lkres;
 
+        var sb = new StringBuilder("mwp ");
+        sb.append(MwpVers.build);
+        sb.append_c(' ');
+        sb.append(MwpVers.id);
+        var verstr = sb.str;
+
         if((lkres = lk.lock()) == 0)
         {
             string defargs = read_env_args();
@@ -9335,11 +9341,6 @@ case 0:
             if (GtkClutter.init (ref args) != InitError.SUCCESS)
                 return 1;
 
-            var sb = new StringBuilder("mwp ");
-            sb.append(MwpVers.build);
-            sb.append_c(' ');
-            sb.append(MwpVers.id);
-            var verstr = sb.str;
             string fixedopts=null;
 
             var opt = new OptionContext("");
@@ -9384,8 +9385,38 @@ case 0:
             lk.unlock();
         }
         else
+        {
             MWPLog.message("Application is already running\n");
+            var opt = new OptionContext("");
+            try {
+                opt.set_summary("  %s".printf(verstr));
+                opt.set_help_enabled(true);
+                opt.add_main_entries(options, null);
+                opt.parse(ref args);
+            } catch (OptionError e) {
+                stderr.printf("Error: %s\n", e.message);
+                stderr.printf("Run '%s --help' to see a full list of available "+
+                              "options\n", args[0]);
+                return 1;
+            }
 
+            string[] fargs = {};
+            if(mission != null)
+                fargs += mission;
+
+            if (rfile != null)
+                fargs += rfile;
+            else if (bfile != null)
+                fargs += bfile;
+
+            if (fargs.length > 0)
+            {
+                var m  = new MwpBusClient();
+                m.set_filename(fargs);
+                m.acquire();
+                m.run();
+            }
+        }
         return lkres;
     }
 }
