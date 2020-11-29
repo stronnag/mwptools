@@ -1,3 +1,7 @@
+# bbsummary
+
+## Overview
+
 Simple blackbox summary application:
 
 ```
@@ -11,10 +15,18 @@ Usage of bbsummary [options] file
 
 Multiple logs (with multiple indices) may be given.
 
+## Building
+
 Compiled with
 
 ```
 $ go build
 ```
 
-Not built or installed by default.
+or
+
+```
+make
+```
+
+Not built or installed by default. Obviously cross-platform.
