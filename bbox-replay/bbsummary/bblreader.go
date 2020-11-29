@@ -130,7 +130,7 @@ func bblreader(bbfile string, idx int, dump bool) {
 	bblsmry := BBLStats{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 	var home_lat, home_lon, llat, llon float64
-	var st, lt uint64
+	var dt, st, lt uint64
 
 	have_origin := false
 
@@ -162,7 +162,7 @@ func bblreader(bbfile string, idx int, dump bool) {
 			us := br.stamp
 
 			// Do the expensive calc every 50ms
-			if us-lt > 1000*50 {
+			if (us - dt) > 1000*50 {
 				_, d := Csedist(home_lat, home_lon, br.lat, br.lon)
 				if d > bblsmry.max_range {
 					bblsmry.max_range = d
@@ -175,6 +175,7 @@ func bblreader(bbfile string, idx int, dump bool) {
 					llat = br.lat
 					llon = br.lon
 				}
+				dt = us
 			}
 
 			if br.alt > bblsmry.max_alt {
@@ -191,7 +192,6 @@ func bblreader(bbfile string, idx int, dump bool) {
 				bblsmry.max_current = br.amps
 				bblsmry.max_current_time = us - st
 			}
-
 			lt = us
 		}
 		if err != nil {
