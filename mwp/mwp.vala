@@ -9386,7 +9386,6 @@ case 0:
         }
         else
         {
-            MWPLog.message("Application is already running\n");
             var opt = new OptionContext("");
             try {
                 opt.set_summary("  %s".printf(verstr));
@@ -9416,6 +9415,7 @@ case 0:
                 m.acquire();
                 m.run();
             }
+            stderr.puts("Application is already running\n");
         }
         return lkres;
     }
