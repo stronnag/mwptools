@@ -459,11 +459,13 @@ end
 # fix up the f*cked up  nav perm ids broken in inav/#3332
 def resolve_version_state r, inavers
   sval = INAV_STATES[inavers][r[:navstate].to_i]
-  # This is for the inav 2.x duplication stupidity
-  if sval == :nav_state_cruise_2d_initialize
-    if r[:flightmodeflags_flags].match(/NAVRTH/) ||
-       [:nav_state_rth_initialize, :nav_state_rth_climb_to_safe_alt, :nav_state_rth_head_home].include?($pstate)
-      sval = :nav_state_rth_head_home
+  if inavers < "2.7.0"
+  # This is for the inav 2.x duplication stupidity #3332
+    if sval == :nav_state_cruise_2d_initialize
+      if r[:flightmodeflags_flags].match(/NAVRTH/) ||
+         [:nav_state_rth_initialize, :nav_state_rth_climb_to_safe_alt, :nav_state_rth_head_home].include?($pstate)
+        sval = :nav_state_rth_head_home
+      end
     end
   end
   $pstate = sval

@@ -109,12 +109,14 @@ IO.popen(cmd,'r') do |p|
 	end
 	nstate = c[:navstate].to_i
 	asx = INAV_STATES[inavers][c[:navstate].to_i]
-        if asx == :nav_state_cruise_2d_initialize
-          # Sadly broekn per\m ids introduced for 2.x by inav/#3332
-          if [:nav_state_rth_initialize, :nav_state_rth_climb_to_safe_alt].include?(pstate)
-            asx = :nav_state_rth_head_home
-          end
-	end
+        # Sadly broekn perm ids introduced for 2.x by inav/#3332
+        if inavers < "2.7.0"
+          if asx == :nav_state_cruise_2d_initialize
+            if [:nav_state_rth_initialize, :nav_state_rth_climb_to_safe_alt, :nav_state_rth_head_home].include?(pstate)
+              asx = :nav_state_rth_head_home
+            end
+	  end
+        end
         as = asx.to_s
 	pstate = asx
 	astate = (as) ? "#{as} (#{nstate})" : "State=%d" % nstate
