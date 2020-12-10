@@ -297,7 +297,8 @@ INAV_STATES = {
     34 => :nav_state_cruise_3d_adjusting,
     35 => :nav_state_waypoint_hold_time,
     36 => :nav_state_rth_hover_above_home,
-    37 => :nav_state_count,
+    37 => :nav_state_waypoint_hover_above_home,
+    38 => :nav_state_count,
   },
 }
 

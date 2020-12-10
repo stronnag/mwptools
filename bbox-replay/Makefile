@@ -3,6 +3,12 @@ APP1=inav_states.rb
 DEP=inav_states_data.rb
 include ../common.mk
 
+.PHONY: clean local install
+.PHONY: BBS all
+.SILENT: all
+
+all:
+
 local:
 	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
@@ -14,6 +20,3 @@ install: $(APP) $(DEP)
 
 BBS:
 	$(MAKE) -C bbsummary
-
-.PHONY: clean local install
-.PHONY: BBS

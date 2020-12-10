@@ -57,7 +57,8 @@ puts "#{File.basename(bbox)}: #{gitinfos[idx-1] if gitinfos.size >= idx}"
 
 nul = !Gem.win_platform? ? '/dev/null' : 'NUL'
 
-cmd = "blackbox_decode"
+cmd = ''
+cmd << (ENV["BLACKBOX_DECODE"] || "blackbox_decode")
 cmd << " --index #{idx}"
 cmd << " --stdout"
 cmd << " 2>#{nul}"
@@ -105,7 +106,9 @@ IO.popen(cmd,'r') do |p|
       end
       if c[:navstate].to_i != nstate
 	if nstate == -1
-	  puts %w/Iteration Time(s) Elapsed(s)  State FltMode/.join("\t")
+          hdrs = %w/Iteration Time(s) Elapsed(s)  State FltMode/
+          hdrs << "OSDMode" if (c.has_key? :simplifiedmode)
+	  puts hdrs.join("\t")
 	end
 	nstate = c[:navstate].to_i
 	asx = INAV_STATES[inavers][c[:navstate].to_i]
@@ -120,7 +123,9 @@ IO.popen(cmd,'r') do |p|
         as = asx.to_s
 	pstate = asx
 	astate = (as) ? "#{as} (#{nstate})" : "State=%d" % nstate
-	puts ["%9d" % itn, "%6.1f" % ts, "(%6.1f)" % xts, astate, c[:flightmodeflags_flags]].join("\t")
+        simplemode= (c.has_key? :simplifiedmode) ? c[:simplifiedmode] : ''
+
+	puts ["%9d" % itn, "%6.1f" % ts, "(%6.1f)" % xts, astate, c[:flightmodeflags_flags], simplemode].join("\t")
       end
     end
   end

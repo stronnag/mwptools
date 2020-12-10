@@ -844,7 +844,7 @@ public class MWP : Gtk.Application {
     {
         null, null, "Armed",null, /*"Ever Armed"*/ null,null,null,
         "Failsafe", "Not level","Calibrating","Overload",
-        "Navigation unsafe", "Compass cal", "Acc cal", "Arm switch", "H/W fail",
+        "Navigation unsafe", "Compass cal", "Acc cal", "Arm switch", "Hardware failure",
         "Box failsafe", "Box killswitch", "RC Link", "Throttle", "CLI",
         "CMS Menu", "OSD Menu", "Roll/Pitch", "Servo Autotrim", "Out of memory",
         "Settings", "PWM Output", "Other"
