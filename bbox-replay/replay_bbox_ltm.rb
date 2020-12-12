@@ -1103,10 +1103,11 @@ class BBReplay
             if origin.nil? and row[:gps_numsat].to_i > 5 and (fixt == 2 or fixt == -1)
               hlat = row[:gps_coord0].to_f
 	      hlon = row[:gps_coord1].to_f
-              has_safe=false
+              use_hoff=!hoff.nil?
               if row.has_key?(:homedirection) and row.has_key?(:distance_m)
                 if row[:distance_m].to_i > 0
 	          hlat,hlon = Poscalc.posit hlat, hlon, row[:homedirection].to_f,row[:distance_m].to_f/1852.0
+                  use_hoff = false
                 end
               else
                 if safehomes
@@ -1115,14 +1116,14 @@ class BBReplay
                     if d*1852 <= 650
                       hlat = sh[0]
                       hlon = sh[1]
-                      has_safe = true
+                      use_hoff = false
                       #                STDERR.puts "Using safe home #{sh[0]} #{sh[1]}"
                       break
                     end
                   end
                 end
               end
-              if !has_safe and ! hoff.nil?
+              if use_hoff
 	        _,d = Poscalc.csedist hlat,hlon,hoff[:holat],hoff[:holon]
 	        hdnm = hoff[:dist]/1852
 	        if d < hdnm
