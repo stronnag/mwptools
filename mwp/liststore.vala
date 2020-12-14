@@ -241,7 +241,7 @@ public class ListBox : GLib.Object
         return s;
     }
 
-    public void pop_marker_menu(Gdk.EventButton e)
+    public bool pop_marker_menu(Gdk.EventButton e)
     {
         if(miter_ok)
         {
@@ -270,7 +270,9 @@ public class ListBox : GLib.Object
 
             marker_menu.popup_at_pointer(e);
             miter_ok = false;
+            return true;
         }
+        return false;
     }
 
     public void set_popup_needed(Gtk.TreeIter _miter)

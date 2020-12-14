@@ -623,6 +623,8 @@ public class MWP : Gtk.Application {
     public PowerState pstate;
     private bool seenMSP = false;
 
+    private SafeHomeDialog safehomed;
+
     public struct MQI //: Object
     {
         MSP.Cmds cmd;
@@ -1507,6 +1509,8 @@ public class MWP : Gtk.Application {
 
         gps_status = new GPSStatus(builder, window);
 
+        safehomed  = new SafeHomeDialog(builder);
+
         var saq = new GLib.SimpleAction("file-open",null);
         saq.activate.connect(() => {
                 check_mission_clean();
@@ -1619,7 +1623,6 @@ public class MWP : Gtk.Application {
                 }
             });
         window.add_action(saq);
-
 
         saq = new GLib.SimpleAction("map-source",null);
         saq.activate.connect(() => {
@@ -1754,6 +1757,12 @@ public class MWP : Gtk.Application {
 
         set_menu_state("kml-remove", false);
 
+        saq = new GLib.SimpleAction("safe-homes",null);
+        saq.activate.connect(() => {
+                safehomed.show(window);
+            });
+        window.add_action(saq);
+
         saq = new GLib.SimpleAction("navconfig",null);
         saq.activate.connect(() => {
                 navconf.show();
@@ -1885,6 +1894,8 @@ public class MWP : Gtk.Application {
 
         view = embed.get_view();
         view.set_reactive(true);
+
+        safehomed.set_view(view);
 
         if(conf.arming_speak)
             say_state=NavStatus.SAY_WHAT.Arm;
@@ -3614,7 +3625,8 @@ case 0:
     {
         embed.button_release_event.connect((evt) => {
                 if(evt.button == 3)
-                    ls.pop_marker_menu(evt);
+                    if(!ls.pop_marker_menu(evt))
+                        safehomed.pop_menu(evt);
                 return false;
             });
 
