@@ -558,6 +558,13 @@
       <description>If true, MISSION, VERSION and MISSIONITEM tags are upper case (for interoperability with legacy Android applications)</description>
     </key>
 
+    <key type="s" name="load-safehome">
+      <default>""</default>
+      <summary>Load default set of safehomes</summary>
+      <description>Set to file[,Y]. File defines a set of safehome lines (CLI format), optionally followed by a comma and Y. If the definition includes ",Y", then the safehome locations will be displayed.</description>
+
+    </key>
+
     <!-- key name="radar-device" type="s">
       <default>""</default>
       <summary>Device node dedicated for iNav-radar</summary>

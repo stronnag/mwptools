@@ -1896,6 +1896,12 @@ public class MWP : Gtk.Application {
         view.set_reactive(true);
 
         safehomed.set_view(view);
+        if(conf.load_safehomes != "")
+        {
+            var parts = conf.load_safehomes.split(",");
+            bool disp = (parts.length == 2 && (parts[1] == "Y" || parts[1] == "y"));
+            safehomed.load_homes(parts[0],disp);
+        }
 
         if(conf.arming_speak)
             say_state=NavStatus.SAY_WHAT.Arm;
