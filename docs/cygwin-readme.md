@@ -14,7 +14,7 @@ From 2015-12-30, it is possible to build and run pretty much all of the mwptools
 
 * At run time, you need to have started the a X server. [MobaXterm](https://mobaxterm.mobatek.net) is recommended for its stability and performance (and OpenGL hardware suport). VcXsrv is a less stable alternative.
 
-* Serial devices must be prefixed /dev/, e.g. `COM7:` => `/dev/ttyS7`
+* Serial devices must be prefixed /dev/ and are zero indexed, e.g. `COM3:` => `/dev/ttyS2`
 
 Once the dependencies are installed, mwp is easily built from the cygwin shell:
 
@@ -28,7 +28,7 @@ It's quite easy to install the dependencies as follows:
 
 * Install the base cygwin package using the graphical installer from [cygwin](https://www.cygwin.com/).
 
-* Install a few (additional) packages `git`, `wget` and `gzip`.
+* Install a few (additional) packages `git`, `wget` and `gzip`, using the graphical installer.
 
 * Open the cygwin terminal
 

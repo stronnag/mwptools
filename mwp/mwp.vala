@@ -7414,10 +7414,11 @@ case 0:
                 var s = "Home offset %.0fm @ %.0f°".printf(dist, cse);
                 map_show_warning(s);
                 navstatus.alert_home_offset();
-                Timeout.add_seconds(15, () => {
-                        map_hide_warning();
-                        return Source.REMOVE;
-                    });
+                if(!permawarn)
+                    Timeout.add_seconds(15, () => {
+                            map_hide_warning();
+                            return Source.REMOVE;
+                        });
             }
         }
 
