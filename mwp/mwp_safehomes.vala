@@ -83,7 +83,7 @@ public class SafeHomeMarkers : GLib.Object
         for(var i = 0; i < SAFEHOMES.maxhomes; i++)
         {
             safept[i].set_draggable(state);
-            safept[i].set_selectable(state);
+//            safept[i].set_selectable(state);
         }
     }
 
