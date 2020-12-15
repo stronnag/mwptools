@@ -1338,19 +1338,20 @@ public class MWP : Gtk.Application {
         window.set_application (this);
         window.window_state_event.connect( (e) => {
                 wdw_state = ((e.new_window_state & Gdk.WindowState.FULLSCREEN) != 0);
-                if(wdw_state)
+                if(wdw_state)     // true == full screen
+                {
                     if(nofsmenu)
                         window.set_show_menubar(true);
                     else
                         fsmenu_button.show();
-                else
+                } else {
                     if(nofsmenu)
                         window.set_show_menubar(false);
                     else
                         fsmenu_button.hide();
-            return false;
+                }
+                return false;
         });
-
 
         dev_entry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
 
@@ -1430,6 +1431,7 @@ public class MWP : Gtk.Application {
                                                      Gtk.IconSize.BUTTON);
         fsmenu_button.add(img);
         fsmenu_button.set_menu_model(mm);
+        fsmenu_button.set_use_popover(false);
 
         var aq = new GLib.SimpleAction("quit",null);
         aq.activate.connect(() => {
