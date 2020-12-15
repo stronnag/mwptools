@@ -31,14 +31,18 @@ public class SafeHomeMarkers : GLib.Object
     private Champlain.Label safept[SAFEHOMES.maxhomes];
     private bool onscreen[SAFEHOMES.maxhomes];
     public signal void safe_move(int idx, double lat, double lon);
-    private Clutter.Color c_enabled = {0xfb, 0xea, 0x04, 0xc8};
-    private Clutter.Color c_disabled = {0xfb, 0xea, 0x04, 0x68};
-    private Clutter.Color white = { 0xff,0xff,0xff, 0xff};
+    private Clutter.Color c_enabled;
+    private Clutter.Color c_disabled;
+    private Clutter.Color white;
     public signal void safept_move(int idx, double lat, double lon);
     public signal void safept_need_menu(int idx);
 
     public SafeHomeMarkers(Champlain.View view)
     {
+        c_enabled.init(0xfb, 0xea, 0x04, 0xc8);
+        c_disabled.init(0xfb, 0xea, 0x04, 0x68);
+        white.init(0xff,0xff,0xff, 0xff);
+
         safelayer = new Champlain.MarkerLayer();
         view.add_layer (safelayer);
         for(var idx = 0; idx < SAFEHOMES.maxhomes; idx++)
@@ -469,7 +473,7 @@ public class  SafeHomeDialog : Object
 
     private void display_homes(bool state)
     {
-        for(var idx = 0; idx < SAFEHOMES.maxhomes; idx++)
+        for (var idx = 0; idx < SAFEHOMES.maxhomes; idx++)
         {
             if(state)
             {
