@@ -133,6 +133,8 @@ public class MSP : Object {
 		INAV_MIXER = 0x2010,
 
 	    BLACKBOX_CONFIGv2 = 0x201A,
+		SAFEHOME = 0x2038,
+		SET_SAFEHOME = 0x2039,
 
         LTM_BASE  = 0x10000,
         TS_FRAME = (LTM_BASE + 'S'),

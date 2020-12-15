@@ -21,11 +21,15 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
+public enum SAFEHOMES {
+    maxhomes = 8
+}
+
 public class SafeHomeMarkers : GLib.Object
 {
     private Champlain.MarkerLayer safelayer;
-    private Champlain.Label safept[8];
-    private bool onscreen[8];
+    private Champlain.Label safept[SAFEHOMES.maxhomes];
+    private bool onscreen[SAFEHOMES.maxhomes];
     public signal void safe_move(int idx, double lat, double lon);
     private Clutter.Color c_enabled = {0xfb, 0xea, 0x04, 0xc8};
     private Clutter.Color c_disabled = {0xfb, 0xea, 0x04, 0x68};
@@ -37,7 +41,7 @@ public class SafeHomeMarkers : GLib.Object
     {
         safelayer = new Champlain.MarkerLayer();
         view.add_layer (safelayer);
-        for(var idx = 0; idx < 8; idx++)
+        for(var idx = 0; idx < SAFEHOMES.maxhomes; idx++)
         {
             safept[idx] = new Champlain.Label.with_text ("⏏#%d".printf(idx), "Sans 10",null,null);
             safept[idx].set_alignment (Pango.Alignment.RIGHT);
@@ -72,7 +76,7 @@ public class SafeHomeMarkers : GLib.Object
 
     public void set_interactive(bool state)
     {
-        for(var i = 0; i < 8; i++)
+        for(var i = 0; i < SAFEHOMES.maxhomes; i++)
         {
             safept[i].set_draggable(state);
             safept[i].set_selectable(state);
@@ -112,6 +116,11 @@ public class  SafeHomeDialog : Object
     private Champlain.View view;
     private int pop_idx = -1;
     private Gtk.Switch switcher;
+    private Gtk.MenuItem mifcl;
+    private Gtk.MenuItem mifcs;
+
+    public signal void request_safehomes(uint8 first, uint8 last);
+    public signal void notify_publish_request();
 
     enum Column {
         ID,
@@ -121,7 +130,7 @@ public class  SafeHomeDialog : Object
         NO_COLS
     }
 
-    private SafeHome homes[8];
+    private SafeHome homes[SAFEHOMES.maxhomes];
     private SafeHomeMarkers shmarkers;
 
     public SafeHomeDialog(Gtk.Builder builder)
@@ -150,16 +159,30 @@ public class  SafeHomeDialog : Object
         mi.activate.connect (() => {
                 read_safehomes();
             });
+
         mi = builder.get_object("sh_menu02") as Gtk.MenuItem;
         mi.sensitive=true;
         mi.activate.connect (() => {
                 save_to_file();
             });
 
+        mifcl = builder.get_object("sh_menu03") as Gtk.MenuItem;
+        mifcl.sensitive=false;
+        mifcl.activate.connect (() => {
+                request_safehomes(0, 7);
+            });
+
+        mifcs = builder.get_object("sh_menu04") as Gtk.MenuItem;
+        mifcs.sensitive=false;
+        mifcs.activate.connect (() => {
+                notify_publish_request();
+            });
+
         switcher =  builder.get_object ("sh_switch") as Gtk.Switch;
         switcher.notify["active"].connect (() => {
                 var state = switcher.get_active();
-                display_homes(state);
+                for(var i = 0; i < SAFEHOMES.maxhomes; i++)
+                    display_home(i, state);
             });
 
         dialog.delete_event.connect (() => {
@@ -264,7 +287,7 @@ public class  SafeHomeDialog : Object
         box.pack_start (tview, false, false, 0);
 
         Gtk.TreeIter iter;
-        for(var i = 0; i < 8; i++)
+        for(var i = 0; i < SAFEHOMES.maxhomes; i++)
         {
             sh_liststore.append (out iter);
             sh_liststore.set (iter,
@@ -273,6 +296,18 @@ public class  SafeHomeDialog : Object
                               Column.LAT, 0.0,
                               Column.LON, 0.0);
         }
+    }
+
+    public void online_change(uint32 v)
+    {
+        var sens = (v >= MWP.FCVERS.hasSAFEAPI); //.0x020700
+        mifcs.sensitive = sens;
+        mifcl.sensitive = sens;
+    }
+
+    public SafeHome get_home(uint8 idx)
+    {
+        return homes[idx];
     }
 
     private void row_menu(Gdk.EventButton e, Gtk.TreeIter iter)
@@ -296,13 +331,18 @@ public class  SafeHomeDialog : Object
         marker_menu.add (item);
         item = new Gtk.MenuItem.with_label ("Clear All");
         item.activate.connect (() => {
-                for(var i = 0; i < 8; i++)
+                for(var i = 0; i < SAFEHOMES.maxhomes; i++)
                     if(sh_liststore.iter_nth_child (out iter, null, i))
                         clear_item(i, iter);
             });
         marker_menu.add (item);
         marker_menu.show_all();
         marker_menu.popup_at_pointer(e);
+    }
+
+    public void receive_safehome(uint8 idx, SafeHome shm)
+    {
+        refresh_home(idx,  shm.enabled, shm.lat, shm.lon);
     }
 
     private void clear_item(int idx, Gtk.TreeIter iter)
@@ -395,39 +435,45 @@ public class  SafeHomeDialog : Object
                     if(parts.length == 5)
                     {
                         var idx = int.parse(parts[1]);
-                        if (idx >= 0 && idx < 8)
+                        if (idx >= 0 && idx < SAFEHOMES.maxhomes)
                         {
-                            homes[idx].enabled = (parts[2] == "1") ? true : false;
-                            homes[idx].lat = double.parse(parts[3]) /10000000.0;
-                            homes[idx].lon = double.parse(parts[4]) /10000000.0;
-                            Gtk.TreeIter iter;
-                            if(sh_liststore.iter_nth_child (out iter, null, idx))
-                                sh_liststore.set (iter,
-                                                  Column.STATUS, homes[idx].enabled,
-                                                  Column.LAT, homes[idx].lat,
-                                                  Column.LON, homes[idx].lon);
+                            var ena = (parts[2] == "1") ? true : false;
+                            var lat = double.parse(parts[3]) /10000000.0;
+                            var lon = double.parse(parts[4]) /10000000.0;
+                            refresh_home(idx, ena, lat, lon);
                         }
                     }
             }
         }
     }
 
-    private void display_homes(bool state)
+    private void refresh_home(int idx, bool ena, double lat, double lon)
     {
-        var idx = 0;
-        foreach(var h in homes)
+        homes[idx].enabled = ena;
+        homes[idx].lat = lat;
+        homes[idx].lon = lon;
+        Gtk.TreeIter iter;
+        if(sh_liststore.iter_nth_child (out iter, null, idx))
+            sh_liststore.set (iter,
+                              Column.STATUS, homes[idx].enabled,
+                              Column.LAT, homes[idx].lat,
+                              Column.LON, homes[idx].lon);
+        if(switcher.active)
+            display_home(idx, true);
+    }
+
+
+    private void display_home(int idx, bool state)
+    {
+        if(state)
         {
-            if(state)
+            if(homes[idx].lat != 0 && homes[idx].lon != 0)
             {
-                if(h.lat != 0 && h.lon != 0)
-                {
-                    shmarkers.show_safe_home(idx, h);
-                }
+                shmarkers.show_safe_home(idx, homes[idx]);
             }
-            else
-                shmarkers.hide_safe_home(idx);
-            idx++;
         }
+        else
+            shmarkers.hide_safe_home(idx);
     }
 
     public void load_homes(string fn, bool disp)
@@ -436,7 +482,10 @@ public class  SafeHomeDialog : Object
         read_file();
         if (disp)
         {
-            display_homes(true);
+            for (var i = 0; i < SAFEHOMES.maxhomes; i++)
+            {
+                display_home(i, true);
+            }
             switcher.set_active(true);
         }
     }

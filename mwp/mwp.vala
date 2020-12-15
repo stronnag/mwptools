@@ -381,7 +381,6 @@ public class MwpDockHelper : Object
     }
 }
 
-
 public class MWP : Gtk.Application {
 
     private const uint MAXVSAMPLE=12;
@@ -624,6 +623,8 @@ public class MWP : Gtk.Application {
     private bool seenMSP = false;
 
     private SafeHomeDialog safehomed;
+    private uint8 last_safehome = 0;
+    private uint8 safeindex = 0;
 
     public struct MQI //: Object
     {
@@ -641,7 +642,7 @@ public class MWP : Gtk.Application {
         mixer = 0x0202,
     }
 
-    private enum FCVERS
+    public enum FCVERS
     {
         hasMoreWP = 0x010400,
         hasEEPROM = 0x010600,
@@ -651,6 +652,7 @@ public class MWP : Gtk.Application {
         hasPOI = 0x020600,
         hasPHTIME = 0x020500,
         hasLAND = 0x020500,
+        hasSAFEAPI = 0x020700,
     }
 
     public enum WPS
@@ -1510,6 +1512,16 @@ public class MWP : Gtk.Application {
         gps_status = new GPSStatus(builder, window);
 
         safehomed  = new SafeHomeDialog(builder);
+        safehomed.request_safehomes.connect((first, last) => {
+                last_safehome = last;
+                uint8 shid = first;
+                queue_cmd(MSP.Cmds.SAFEHOME,&shid,1);
+            });
+
+        safehomed.notify_publish_request.connect(() => {
+                safeindex = 0;
+                msp_publish_home(safeindex);
+            });
 
         var saq = new GLib.SimpleAction("file-open",null);
         saq.activate.connect(() => {
@@ -5381,6 +5393,25 @@ case 0:
         }
     }
 
+    private void msp_publish_home(uint8 id)
+    {
+        if(id < SAFEHOMES.maxhomes)
+        {
+            var h = safehomed.get_home(id);
+            uint8 tbuf[10];
+            tbuf[0] = id;
+            tbuf[1] = (h.enabled) ? 1 : 0;
+            var ll = (int32) (h.lat * 10000000);
+            serialise_i32(&tbuf[2], ll);
+            ll = (int32)(h.lon * 10000000);
+            serialise_i32(&tbuf[6], ll);
+            queue_cmd(MSP.Cmds.SET_SAFEHOME, tbuf, 10);
+        } else {
+            queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
+        }
+        run_queue();
+    }
+
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
@@ -5744,6 +5775,8 @@ case 0:
                     set_menu_state("reboot", true);
                     set_menu_state("terminal", true);
                     vi.fc_vers = raw[0] << 16 | raw[1] << 8 | raw[2];
+                    safehomed.online_change(vi.fc_vers);
+
                     var fcv = "%s v%d.%d.%d".printf(vi.fc_var,raw[0],raw[1],raw[2]);
                     verlab.label = verlab.tooltip_text = fcv;
                     if(inav)
@@ -6422,6 +6455,28 @@ case 0:
 
             case MSP.Cmds.WP:
                 handle_wp_processing(raw, len);
+                break;
+
+            case MSP.Cmds.SAFEHOME:
+                uint8* rp = raw;
+                uint8 id = *rp++;
+                SafeHome shm = SafeHome();
+                shm.enabled = (*rp == 1) ? true : false;
+                rp++;
+                int32 ll;
+                rp = deserialise_i32(rp, out ll);
+                shm.lat = ll / 10000000.0;
+                deserialise_i32(rp, out ll);
+                shm.lon = ll / 10000000.0;
+                safehomed.receive_safehome(id, shm);
+                id += 1;
+                if (id < 8 && id <= last_safehome)
+                    queue_cmd(MSP.Cmds.SAFEHOME,&id,1);
+                break;
+
+            case MSP.Cmds.SET_SAFEHOME:
+                safeindex += 1;
+                msp_publish_home(safeindex);
                 break;
 
             case MSP.Cmds.WP_MISSION_SAVE:
@@ -7961,6 +8016,7 @@ case 0:
         map_hide_wp();
         if(replayer == Player.NONE)
         {
+            safehomed.online_change(0);
             arm_warn.hide();
             serstate = SERSTATE.NONE;
             sflags = 0;
