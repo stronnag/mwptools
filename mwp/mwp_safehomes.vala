@@ -181,8 +181,7 @@ public class  SafeHomeDialog : Object
         switcher =  builder.get_object ("sh_switch") as Gtk.Switch;
         switcher.notify["active"].connect (() => {
                 var state = switcher.get_active();
-                for(var i = 0; i < SAFEHOMES.maxhomes; i++)
-                    display_home(i, state);
+                display_homes(state);
             });
 
         dialog.delete_event.connect (() => {
@@ -459,21 +458,29 @@ public class  SafeHomeDialog : Object
                               Column.LAT, homes[idx].lat,
                               Column.LON, homes[idx].lon);
         if(switcher.active)
-            display_home(idx, true);
+        {
+            if(homes[idx].lat != 0 && homes[idx].lon != 0)
+                shmarkers.show_safe_home(idx, homes[idx]);
+            else
+                shmarkers.hide_safe_home(idx);
+        }
     }
 
 
-    private void display_home(int idx, bool state)
+    private void display_homes(bool state)
     {
-        if(state)
+        for(var idx = 0; idx < SAFEHOMES.maxhomes; idx++)
         {
-            if(homes[idx].lat != 0 && homes[idx].lon != 0)
+            if(state)
             {
-                shmarkers.show_safe_home(idx, homes[idx]);
+                if(homes[idx].lat != 0 && homes[idx].lon != 0)
+                {
+                    shmarkers.show_safe_home(idx, homes[idx]);
+                }
             }
+            else
+                shmarkers.hide_safe_home(idx);
         }
-        else
-            shmarkers.hide_safe_home(idx);
     }
 
     public void load_homes(string fn, bool disp)
@@ -482,10 +489,7 @@ public class  SafeHomeDialog : Object
         read_file();
         if (disp)
         {
-            for (var i = 0; i < SAFEHOMES.maxhomes; i++)
-            {
-                display_home(i, true);
-            }
+            display_homes(true);
             switcher.set_active(true);
         }
     }
