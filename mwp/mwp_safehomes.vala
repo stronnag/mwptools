@@ -28,8 +28,8 @@ public enum SAFEHOMES {
 public class SafeHomeMarkers : GLib.Object
 {
     private Champlain.MarkerLayer safelayer;
-    private Champlain.Label safept[SAFEHOMES.maxhomes];
-    private bool onscreen[SAFEHOMES.maxhomes];
+    private Champlain.Label []safept;
+    private bool []onscreen;
     public signal void safe_move(int idx, double lat, double lon);
     private Clutter.Color c_enabled;
     private Clutter.Color c_disabled;
@@ -42,7 +42,8 @@ public class SafeHomeMarkers : GLib.Object
         c_enabled.init(0xfb, 0xea, 0x04, 0xc8);
         c_disabled.init(0xfb, 0xea, 0x04, 0x68);
         white.init(0xff,0xff,0xff, 0xff);
-
+        onscreen = new bool[SAFEHOMES.maxhomes];
+        safept = new  Champlain.Label[SAFEHOMES.maxhomes];
         safelayer = new Champlain.MarkerLayer();
         view.add_layer (safelayer);
         for(var idx = 0; idx < SAFEHOMES.maxhomes; idx++)
@@ -134,13 +135,13 @@ public class  SafeHomeDialog : Object
         NO_COLS
     }
 
-    private SafeHome homes[SAFEHOMES.maxhomes];
+    private SafeHome []homes;
     private SafeHomeMarkers shmarkers;
 
     public SafeHomeDialog(Gtk.Builder builder)
     {
+        homes = new SafeHome[SAFEHOMES.maxhomes];
         filename = "None";
-
         dialog = builder.get_object ("sh_dialog") as Gtk.Dialog;
         sh_ok = builder.get_object ("sh_ok") as Button;
 
