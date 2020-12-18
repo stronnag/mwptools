@@ -446,19 +446,19 @@ public class MWSerial : Object
                         if (svid >= 1 && svid <= 32)
                             gnssid = "G%d".printf(svid);
                         else if (svid >= 120 && svid <= 158)
-                            gnssid = "SBAS%d".printf(svid-119);
+                            gnssid = "SBAS%d".printf(svid);
                         else if (svid >= 211 && svid <= 246)
-                            gnssid = "E%d".printf(svid-210);
+                            gnssid = "E%d".printf(svid);
                         else if (svid >= 159 && svid <= 163)
-                            gnssid = "B%d".printf(svid-158);
+                            gnssid = "B%d".printf(svid);
                         else if (svid >= 33 && svid <= 64)
-                            gnssid = "B%d".printf(svid-26);
+                            gnssid = "B%d".printf(svid);
                         else if (svid >= 173 && svid <= 182)
-                            gnssid = "I%d".printf(svid-182);
+                            gnssid = "I%d".printf(svid);
                         else if (svid >= 193 && svid <= 197)
-                            gnssid = "Q%d".printf(svid-192);
+                            gnssid = "Q%d".printf(svid);
                         else if (svid >= 65 && svid <= 96)
-                            gnssid = "R%d".printf(svid-64);
+                            gnssid = "R%d".printf(svid);
                         else
                             gnssid = "????";
                         stdout.printf("%2d %6.6s %s %s %d\n",

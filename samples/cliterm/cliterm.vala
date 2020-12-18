@@ -13,7 +13,7 @@ const OptionEntry[] options = {
     { "device", 'd', 0, OptionArg.STRING, out dev, "device", null},
     { "noinit", 'n', 0,  OptionArg.NONE, out noinit, "noinit", "false"},
     { "msc", 'm', 0,  OptionArg.NONE, out msc, "msc mode", "false"},
-    { "gpspass", 'p', 0,  OptionArg.NONE, out gpspass, "gpspassthrough", "false"},
+    { "gpspass", 'g', 0,  OptionArg.NONE, out gpspass, "gpspassthrough", "false"},
     { "file", 'f', 0, OptionArg.STRING, out rcfile, "file", null},
     { "eolmode", 'm', 0, OptionArg.STRING, out eolmstr, "eol mode", "[cr,lf,crlf,crcrlf]"},
     {null}
