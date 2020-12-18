@@ -14,6 +14,7 @@ const OptionEntry[] options = {
     { "noinit", 'n', 0,  OptionArg.NONE, out noinit, "noinit", "false"},
     { "msc", 'm', 0,  OptionArg.NONE, out msc, "msc mode", "false"},
     { "gpspass", 'g', 0,  OptionArg.NONE, out gpspass, "gpspassthrough", "false"},
+    { "gpspass", 'p', 0,  OptionArg.NONE, out gpspass, "gpspassthrough", "false"},
     { "file", 'f', 0, OptionArg.STRING, out rcfile, "file", null},
     { "eolmode", 'm', 0, OptionArg.STRING, out eolmstr, "eol mode", "[cr,lf,crlf,crcrlf]"},
     {null}
@@ -26,6 +27,7 @@ class CliTerm : Object
     public DevManager dmgr;
     private MainLoop ml;
     private string eol;
+    private bool sendpass = false;
 
     public void init()
     {
@@ -61,6 +63,8 @@ class CliTerm : Object
 
         msp.cli_event.connect((buf,len) => {
                     Posix.write(1,buf,len);
+                    if(sendpass && ((string)buf).contains("\n"))
+                        ml.quit();
                 });
 
         msp.serial_lost.connect(() => {
@@ -118,11 +122,9 @@ class CliTerm : Object
                         var g = "gpspassthrough";
                         msp.write(g.data, g.length);
                         msp.write(eol.data, eol.length);
-                        ml.quit();
+                        sendpass = true;
                         return false;
                     });
-
-
             } else if(rcfile != null)
             {
                 Timeout.add(1000, () => {
