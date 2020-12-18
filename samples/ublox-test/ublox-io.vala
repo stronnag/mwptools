@@ -61,7 +61,7 @@ public class MWSerial : Object
     private int64 ltime;
 
     public static string devname = null;
-    public static int brate = 38400;
+    public static int brate = 115200;
     public static bool ureset = false;
     public static bool force6 = false;
     public static int air_model = 1;
@@ -74,7 +74,7 @@ public class MWSerial : Object
 
     const OptionEntry[] options = {
         { "device", 'd', 0, OptionArg.STRING, out devname, "device name", "/dev/ttyUSB0"},
-        { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", "38400"},
+        { "baudrate", 'b', 0, OptionArg.INT, out brate, "Baud rate", "115200"},
         { "reset", 'r', 0, OptionArg.NONE, out ureset, "Reset device", null},
         { "no-init", 'n', 0, OptionArg.NONE, out noinit, "No init", null},
         { "no-autobaud", 'N', 0, OptionArg.NONE, out noautob, "No autobaud", null},
@@ -602,7 +602,7 @@ public class MWSerial : Object
                         return setup_gps();
                     });
             } else {
-                gps_state = State.START;
+                gps_state = State.V7INIT;
                 Timeout.add(delay, () => {
                         MwpSerial.flush(fd);
                         return setup_gps();
@@ -736,7 +736,7 @@ public class MWSerial : Object
                 else
                 {
                     ublox_write(fd, svinfo);
-                    return true;
+                    return false;
                 }
                 gps_state++;
                 break;
@@ -757,7 +757,7 @@ public class MWSerial : Object
                     else
                     {
                         stdout.printf("No init requested\n");
-                        ret = true;
+                        ret = false;
                     }
                     break;
             case State.MOTION:
@@ -839,6 +839,9 @@ public class MWSerial : Object
 
     public int parse_option(string [] args)
     {
+        var dmgr = new DevManager(DevMask.USB);
+        var devs = dmgr.get_serial_devices();
+
         try {
             var opt = new OptionContext("");
             opt.set_help_enabled(true);
@@ -853,7 +856,10 @@ public class MWSerial : Object
         }
 
         if(devname == null)
-            devname = MwpSerial.default_name();
+            if(devname == null && devs.length > 0)
+                devname = devs[0];
+            else
+                devname = MwpSerial.default_name();
         return 0;
     }
 
