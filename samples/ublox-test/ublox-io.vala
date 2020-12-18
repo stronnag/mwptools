@@ -461,7 +461,7 @@ public class MWSerial : Object
                             gnssid = "R%d".printf(svid);
                         else
                             gnssid = "????";
-                        stdout.printf("%2d %6.6s %s %s %d\n",
+                        stdout.printf("%2d %8.8s %s %s %d\n",
                                       sv.chn,
                                       gnssid,
                                       ((sv.flags & 1) == 1) ? "Y" : "-",
