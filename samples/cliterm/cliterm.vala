@@ -4,6 +4,7 @@ private static string eolmstr;
 private static string dev;
 private static bool noinit=false;
 private static bool msc=false;
+private static bool gpspass=false;
 private static string rcfile=null;
 private static int eolm;
 
@@ -12,6 +13,7 @@ const OptionEntry[] options = {
     { "device", 'd', 0, OptionArg.STRING, out dev, "device", null},
     { "noinit", 'n', 0,  OptionArg.NONE, out noinit, "noinit", "false"},
     { "msc", 'm', 0,  OptionArg.NONE, out msc, "msc mode", "false"},
+    { "gpspass", 'p', 0,  OptionArg.NONE, out gpspass, "gpspassthrough", "false"},
     { "file", 'f', 0, OptionArg.STRING, out rcfile, "file", null},
     { "eolmode", 'm', 0, OptionArg.STRING, out eolmstr, "eol mode", "[cr,lf,crlf,crcrlf]"},
     {null}
@@ -109,6 +111,18 @@ class CliTerm : Object
                         msp.write(eol.data, eol.length);
                         return false;
                     });
+
+            } else if(gpspass)
+            {
+                Timeout.add(500, () => {
+                        var g = "gpspassthrough";
+                        msp.write(g.data, g.length);
+                        msp.write(eol.data, eol.length);
+                        ml.quit();
+                        return false;
+                    });
+
+
             } else if(rcfile != null)
             {
                 Timeout.add(1000, () => {
