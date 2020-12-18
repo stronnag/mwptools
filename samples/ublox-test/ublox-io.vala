@@ -585,18 +585,24 @@ public class MWSerial : Object
             {
                 stdout.printf("Passthrough\n");
                 ublox_write(fd,"#\n".data);
-                Thread.usleep(1000*100);
+                Thread.usleep(1000*1000);
                 ublox_write(fd,"gpspassthrough\n".data);
-                Thread.usleep(1000*100);
+                Thread.usleep(1000*1000);
                 MwpSerial.flush(fd);
             }
+            var delay = 100;
             if(noinit == false)
             {
                 if(noautob == true)
                     gps_state = State.START;
-                var delay = 100;
                 if(slow)
                     delay = 200;
+                Timeout.add(delay, () => {
+                        MwpSerial.flush(fd);
+                        return setup_gps();
+                    });
+            } else {
+                gps_state = State.START;
                 Timeout.add(delay, () => {
                         MwpSerial.flush(fd);
                         return setup_gps();
@@ -730,6 +736,7 @@ public class MWSerial : Object
                 else
                 {
                     ublox_write(fd, svinfo);
+                    return true;
                 }
                 gps_state++;
                 break;
