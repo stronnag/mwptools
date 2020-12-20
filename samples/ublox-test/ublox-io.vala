@@ -438,7 +438,7 @@ public class MWSerial : Object
             {
                 case UPXProto.MSG_SVINFO:
                     stdout.printf("SVINFO: Channels %d\n", _buffer.svinfo.numch);
-                    stdout.printf("Chn ID used healthy quality\n");
+                    stdout.printf("Chn\tID\tused\thealthy\tquality\n");
                     for(var i = 0; i < _buffer.svinfo.numch; i++)
                     {
                         string gnssid;
@@ -462,7 +462,7 @@ public class MWSerial : Object
                             gnssid = "R%d".printf(svid);
                         else
                             gnssid = "----";
-                        stdout.printf("%2d %8.8s %s %s %d\n",
+                        stdout.printf("%3d\t%s\t%s\t%s\t%d\n",
                                       sv.chn,
                                       gnssid,
                                       ((sv.flags & (1 << 0)) != 0) ? "Y" : "-",

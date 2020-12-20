@@ -31,9 +31,6 @@ class CliTerm : Object
 
     public void init()
     {
-        int bpos = 0;
-        uint8 []rbuf = new uint8[128];
-
         eol="\r";
         if(eolm == 1)
             eol="\n";
@@ -65,23 +62,11 @@ class CliTerm : Object
             });
 
         msp.cli_event.connect((buf,len) => {
-                Posix.write(1,buf,len);
-                foreach (var b in buf)
-                {
-                    if(sendpass && ((string)rbuf).contains("gpspassthrough"))
-                        ml.quit();
-
-                    if(bpos == 127)
-                        bpos = 0;
-
-                    if (b == '\n' || b == '\r')
-                        bpos = 0;
-                    rbuf[bpos++] = b;
-                }
-
-                if(sendpass && ((string)buf).contains("\n"))
-                        ml.quit();
-                });
+                if(sendpass)
+                    ml.quit();
+                else
+                    Posix.write(1,buf,len);
+            });
 
         msp.serial_lost.connect(() => {
                     ml.quit();
