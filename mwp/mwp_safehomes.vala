@@ -183,7 +183,7 @@ public class  SafeHomeDialog : Object
         fsmenu_button.remove(childs.nth_data(0));
         fsmenu_button.add(img);
 
-        var tbox = dialog.get_header_bar();
+	var /* Gtk.HeaderBar */ tbox = (Gtk.HeaderBar)dialog.get_header_bar();
         tbox.pack_start (fsmenu_button);
 
         switcher =  new Gtk.Switch();
