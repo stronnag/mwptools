@@ -1513,7 +1513,7 @@ public class MWP : Gtk.Application {
 
         gps_status = new GPSStatus(builder, window);
 
-        safehomed  = new SafeHomeDialog(builder);
+        safehomed  = new SafeHomeDialog(window);
         safehomed.request_safehomes.connect((first, last) => {
                 last_safehome = last;
                 uint8 shid = first;

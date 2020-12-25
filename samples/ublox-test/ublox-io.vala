@@ -512,7 +512,7 @@ public class MWSerial : Object
         else if(_class == 0x0a && _msg_id == 4)
         {
             var dt = timer.elapsed ();
-            stdout.printf("Version info after %fs (%db)\n", dt, _payload_length);
+            stdout.printf("Version info after %fs (len %db)\n", dt, _payload_length);
             unowned uint8*v2 = &_buffer.xbytes[30];
             gpsvers = int.parse((string)(v2));
             stdout.printf("SW: [%s] HW: %s %d\n", (string)_buffer.xbytes,

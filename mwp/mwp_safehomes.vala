@@ -114,15 +114,14 @@ public struct SafeHome
 public class  SafeHomeDialog : Object
 {
     private string filename;
-    private Gtk.Dialog dialog;
-    private Gtk.Button sh_ok;
     private Gtk.ListStore sh_liststore;
     private bool visible = false;
     private Champlain.View view;
     private int pop_idx = -1;
     private Gtk.Switch switcher;
-    private Gtk.MenuItem mifcl;
-    private Gtk.MenuItem mifcs;
+    private Gtk.Dialog dialog;
+    private GLib.SimpleAction aq_fcl;
+    private GLib.SimpleAction aq_fcs;
 
     public signal void request_safehomes(uint8 first, uint8 last);
     public signal void notify_publish_request();
@@ -138,12 +137,44 @@ public class  SafeHomeDialog : Object
     private SafeHome []homes;
     private SafeHomeMarkers shmarkers;
 
-    public SafeHomeDialog(Gtk.Builder builder)
+    public SafeHomeDialog(Gtk.Window _w)
     {
+        var xml = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <interface>
+        <menu id="app-menu">
+        <section>
+        <item>
+        <attribute name="label">Load safehome file</attribute>
+        <attribute name="action">dialog.load</attribute>
+        </item>
+        <item>
+        <attribute name="label">Save safehome file</attribute>
+        <attribute name="action">dialog.save</attribute>
+        </item>
+        </section>
+        <section>
+        <item>
+        <attribute name="label">Load from FC</attribute>
+        <attribute name="action">dialog.loadfc</attribute>
+        </item>
+        <item>
+        <attribute name="label">Save to FC</attribute>
+        <attribute name="action">dialog.savefc</attribute>
+        </item>
+        </section>
+        </menu>
+        </interface>
+        """;
+
+
         homes = new SafeHome[SAFEHOMES.maxhomes];
         filename = "None";
-        dialog = builder.get_object ("sh_dialog") as Gtk.Dialog;
-        sh_ok = builder.get_object ("sh_ok") as Button;
+
+        dialog = new Gtk.Dialog.with_buttons("Safehomes", _w,
+                                             DialogFlags.DESTROY_WITH_PARENT|
+                                             DialogFlags.USE_HEADER_BAR);
+        dialog.set_transient_for(_w);
 
         var fsmenu_button = new Gtk.MenuButton();
         Gtk.Image img = new Gtk.Image.from_icon_name("open-menu-symbolic",
@@ -152,42 +183,59 @@ public class  SafeHomeDialog : Object
         fsmenu_button.remove(childs.nth_data(0));
         fsmenu_button.add(img);
 
-        var tbox = builder.get_object("sh_topbox") as Gtk.Box;
-        tbox.pack_start (fsmenu_button, false, false, 2);
-        tbox.reorder_child (fsmenu_button, 0);
+        var tbox = dialog.get_header_bar();
+        tbox.pack_start (fsmenu_button);
 
-        var menu = builder.get_object("sh_menu") as Gtk.Menu;
-        fsmenu_button.set_popup(menu);
-
-        var mi = builder.get_object("sh_menu01") as Gtk.MenuItem;
-        mi.sensitive=true;
-        mi.activate.connect (() => {
-                read_safehomes();
-            });
-
-        mi = builder.get_object("sh_menu02") as Gtk.MenuItem;
-        mi.sensitive=true;
-        mi.activate.connect (() => {
-                save_to_file();
-            });
-
-        mifcl = builder.get_object("sh_menu03") as Gtk.MenuItem;
-        mifcl.sensitive=false;
-        mifcl.activate.connect (() => {
-                request_safehomes(0, 7);
-            });
-
-        mifcs = builder.get_object("sh_menu04") as Gtk.MenuItem;
-        mifcs.sensitive=false;
-        mifcs.activate.connect (() => {
-                notify_publish_request();
-            });
-
-        switcher =  builder.get_object ("sh_switch") as Gtk.Switch;
+        switcher =  new Gtk.Switch();
         switcher.notify["active"].connect (() => {
                 var state = switcher.get_active();
                 display_homes(state);
             });
+
+        dialog.response.connect((v) => {
+                visible = false;
+                shmarkers.set_interactive(false);
+                dialog.hide();
+            });
+
+        tbox.pack_end (switcher);
+        tbox.pack_end (new Gtk.Label("Display on map"));
+
+        var sbuilder = new Gtk.Builder.from_string(xml, -1);
+        var menu = sbuilder.get_object("app-menu") as GLib.MenuModel;
+        var pop = new Gtk.Popover.from_model(fsmenu_button, menu);
+        fsmenu_button.set_popover(pop);
+        fsmenu_button.set_use_popover(false);
+
+        var dg = new GLib.SimpleActionGroup();
+
+        var aq = new GLib.SimpleAction("load",null);
+        aq.activate.connect(() => {
+                run_chooser( Gtk.FileChooserAction.OPEN, _w);
+            });
+        dg.add_action(aq);
+
+        aq = new GLib.SimpleAction("save",null);
+        aq.activate.connect(() => {
+                run_chooser( Gtk.FileChooserAction.SAVE, _w);
+            });
+        dg.add_action(aq);
+
+        aq_fcl = new GLib.SimpleAction("loadfc",null);
+        aq_fcl.activate.connect(() => {
+                request_safehomes(0, 7);
+            });
+        aq_fcl.set_enabled(false);
+        dg.add_action(aq_fcl);
+
+        aq_fcs = new GLib.SimpleAction("savefc",null);
+        aq_fcs.activate.connect(() => {
+                notify_publish_request();
+            });
+        aq_fcs.set_enabled(false);
+        dg.add_action(aq_fcs);
+
+        dialog.insert_action_group("dialog", dg);
 
         dialog.delete_event.connect (() => {
                 dialog.hide();
@@ -195,14 +243,6 @@ public class  SafeHomeDialog : Object
                 shmarkers.set_interactive(false);
                 return true;
             });
-
-        sh_ok.clicked.connect(() => {
-                visible = false;
-                shmarkers.set_interactive(false);
-                dialog.hide();
-            });
-
-        var box = builder.get_object("sh_box1") as Gtk.Box;
 
         var tview = new Gtk.TreeView ();
         tview.button_press_event.connect( (event) => {
@@ -288,7 +328,11 @@ public class  SafeHomeDialog : Object
                 _cell.set_property("text",s);
             });
 
+        var box = dialog.get_content_area();
         box.pack_start (tview, false, false, 0);
+
+        tbox.set_decoration_layout(":close");
+        tbox.set_show_close_button(true);
 
         Gtk.TreeIter iter;
         for(var i = 0; i < SAFEHOMES.maxhomes; i++)
@@ -305,8 +349,8 @@ public class  SafeHomeDialog : Object
     public void online_change(uint32 v)
     {
         var sens = (v >= MWP.FCVERS.hasSAFEAPI); //.0x020700
-        mifcs.sensitive = sens;
-        mifcl.sensitive = sens;
+        aq_fcs.set_enabled(sens);
+        aq_fcl.set_enabled(sens);
     }
 
     public SafeHome get_home(uint8 idx)
@@ -343,7 +387,13 @@ public class  SafeHomeDialog : Object
         marker_menu.show_all();
         marker_menu.popup_at_pointer(e);
     }
-
+        /*
+    private void set_menu_state(string action, bool state)
+    {
+        var ac = window.lookup_action(action) as SimpleAction;
+        ac.set_enabled(state);
+    }
+        */
     public void receive_safehome(uint8 idx, SafeHome shm)
     {
         refresh_home(idx,  shm.enabled, shm.lat, shm.lon);
@@ -471,7 +521,6 @@ public class  SafeHomeDialog : Object
         }
     }
 
-
     private void display_homes(bool state)
     {
         for (var idx = 0; idx < SAFEHOMES.maxhomes; idx++)
@@ -496,24 +545,6 @@ public class  SafeHomeDialog : Object
         {
             display_homes(true);
             switcher.set_active(true);
-        }
-    }
-
-    private void read_safehomes()
-    {
-        var res = run_chooser( Gtk.FileChooserAction.OPEN);
-        if (res == Gtk.ResponseType.ACCEPT)
-        {
-            load_homes(filename, switcher.active);
-        }
-    }
-
-    private void save_to_file()
-    {
-        var res = run_chooser( Gtk.FileChooserAction.SAVE);
-        if (res == Gtk.ResponseType.ACCEPT)
-        {
-            save_file();
         }
     }
 
@@ -566,37 +597,48 @@ public class  SafeHomeDialog : Object
             write_out(fs);
         }
     }
-
-    private Gtk.ResponseType run_chooser(Gtk.FileChooserAction action)
+//current_folder_changed ()
+    private void run_chooser(Gtk.FileChooserAction action, Gtk.Window window)
     {
-        Gtk.ResponseType result;
         Gtk.FileChooserDialog fc = new Gtk.FileChooserDialog (
             "Safehome definition",
-            null, action,
+            window, action,
             "_Cancel",
             Gtk.ResponseType.CANCEL,
             (action == Gtk.FileChooserAction.SAVE) ? "_Save" : "_Open",
             Gtk.ResponseType.ACCEPT);
+
+        fc.set_modal(true);
         fc.select_multiple = false;
 
-        if(filename != null)
+        if(action == Gtk.FileChooserAction.SAVE && filename != null)
             fc.set_filename(filename);
+
         var filter = new Gtk.FileFilter ();
         filter.set_filter_name ("Text files");
         filter.add_pattern ("*.txt");
         fc.add_filter (filter);
+
         filter = new Gtk.FileFilter ();
         filter.set_filter_name ("All Files");
         filter.add_pattern ("*");
         fc.add_filter (filter);
 
-        fc.set_do_overwrite_confirmation(true);
-        if ((result = (Gtk.ResponseType)fc.run ()) == Gtk.ResponseType.ACCEPT) {
-            filename  = fc.get_filename ();
-        }
-        fc.close();
-        fc.destroy();
-        return result;
+        fc.response.connect((result) => {
+                if (result== Gtk.ResponseType.ACCEPT) {
+                    filename  = fc.get_file().get_path ();
+                    if (action == Gtk.FileChooserAction.OPEN) {
+                        load_homes(filename, switcher.active);
+                    }
+                    else if (result == Gtk.ResponseType.ACCEPT)
+                    {
+                        save_file();
+                    }
+                }
+                fc.close();
+                fc.destroy();
+            });
+        fc.show();
     }
 
     public void show(Gtk.Window w)
@@ -604,7 +646,6 @@ public class  SafeHomeDialog : Object
         if(!visible)
         {
             visible = true;
-            dialog.set_transient_for(w);
             dialog.show_all ();
             shmarkers.set_interactive(true);
         }
