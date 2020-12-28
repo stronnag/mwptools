@@ -1109,6 +1109,7 @@ class BBReplay
                 hd = row[:homedirection].to_f
               elsif row.has_key?(:azimuth)
                 hd = row[:azimuth].to_f
+                hd = (hd + 180) % 360
               end
 
               if hd != -1 and row.has_key?(:distance_m)
