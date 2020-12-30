@@ -12,11 +12,13 @@ RDISARMS = %w/NONE TIMEOUT STICKS SWITCH_3D SWITCH KILLSWITCH FAILSAFE NAVIGATIO
 idx = 1
 verbose = nil
 pstate = -1
+force = nil
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
   opt.on('-i','--index=IDX',Integer){|o|idx=o}
-  opt.on('-v','--verbose'){verbose=true}
+  opt.on('-v','--verbose') {verbose=true}
+  opt.on('-f','--force') {force=true}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
     opt.parse!
@@ -42,11 +44,21 @@ end
 
 gitinfo = gitinfos[idx - 1]
 
-abort "Doesn't look like Blackbox (#{bbox})" unless gitinfo
+if gitinfo.nil?
+  if force
+  else
+    abort "Doesn't look like Blackbox (#{bbox})"
+  end
+end
 
 iv=nil
-if m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \((\S*)\) (\S+)/)
+if gitinfo and  m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \((\S*)\) (\S+)/)
   iv = [m[1],m[2],m[3]].join('.')
+end
+
+inavers = nil
+if iv.nil?
+  iv = "2.0.99"
 end
 
 inavers =  get_state_version iv

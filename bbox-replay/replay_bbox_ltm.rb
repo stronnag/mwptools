@@ -1104,19 +1104,11 @@ class BBReplay
               hlat = row[:gps_coord0].to_f
 	      hlon = row[:gps_coord1].to_f
               use_hoff=!hoff.nil?
-              hd = -1
-              if row.has_key?(:homedirection)
-                hd = row[:homedirection].to_f
-              elsif row.has_key?(:azimuth)
-                hd = row[:azimuth].to_f
-                hd = (hd + 180) % 360
-              end
 
-              if hd != -1 and row.has_key?(:distance_m)
-                if row[:distance_m].to_i > 0
-	          hlat,hlon = Poscalc.posit hlat, hlon, hd, row[:distance_m].to_f/1852.0
-                  use_hoff = false
-                end
+	      if row.has_key?(:gps_home_lat) && row.has_key?(:gps_home_lon)
+                use_hoff = false
+                hlat = row[:gps_home_lat].to_f
+	        hlon = row[:gps_home_lon].to_f
               else
                 if safehomes
                   safehomes.each do |sh|

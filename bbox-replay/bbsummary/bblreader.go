@@ -41,11 +41,14 @@ func get_rec_value(r []string, key string) (string, bool) {
 	var s string
 	i, ok := hdrs[key]
 	if ok {
-		s = r[i]
+		if i < len(r) {
+			s = r[i]
+		} else {
+			ok = false
+		}
 	}
 	return s, ok
 }
-
 func get_bbl_line(r []string) BBLRec {
 	b := BBLRec{}
 	s, ok := get_rec_value(r, "amperage (A)")
@@ -148,9 +151,11 @@ func bblreader(bbfile string, idx int, dump bool) {
 		}
 
 		br := get_bbl_line(record)
-
+		if br.fix != 2 {
+			continue
+		}
 		if !have_origin {
-			if br.fix > 1 && br.numsat > 5 {
+			if br.fix == 2 && br.numsat > 5 {
 				have_origin = true
 				home_lat = br.lat
 				home_lon = br.lon
