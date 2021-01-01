@@ -58,7 +58,10 @@ end
 
 inavers = nil
 if iv.nil?
-  iv = "2.0.99"
+  if force
+    iv = "2.0.99"
+  else
+    iv ="0"
 end
 
 inavers =  get_state_version iv

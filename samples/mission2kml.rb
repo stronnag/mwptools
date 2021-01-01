@@ -32,15 +32,25 @@ class KMLBuilder
 
   def pts_from_file inf
     pos = []
+    llat = llon = lalt = nil
     doc = Nokogiri::XML(open(inf))
     doc.xpath('//MISSIONITEM|//missionitem').each do |t|
       action=t['action']
       break if action == 'RTH'
       no = t['no'].to_i
-      lat = t['lat'].to_f
-      lon = t['lon'].to_f
-      alt = t['alt'].to_i
+      if action == "JUMP" || action == "SET_HEAD"
+        lat = llat
+        lon = llon
+        alt = lalt
+      else
+        lat = t['lat'].to_f
+        lon = t['lon'].to_f
+        alt = t['alt'].to_i
+      end
       pos << {:no => no, :lat => lat, :lon => lon, :alt => alt, :act => action}
+      llat = lat
+      llon = lon
+      lalt = alt
       break if action == 'POSHOLD_UNLIM'
     end
     pos
@@ -49,7 +59,7 @@ class KMLBuilder
   def build arry, outf
     kml = KMLFile.new
     linestr=''
-    title='MWP Log'
+    title='Mission'
     desc=title
     arry.each do |el|
       if el[:act] != 'SET_POI'
@@ -68,55 +78,72 @@ class KMLBuilder
       :name => 'Tracker',
       :styles => [
 	Style.new(
-		  :id => 'SET_POI',
-		  :icon_style => IconStyle.new(
-					       :icon => Icon.new(
-								 :href => "http://maps.google.com/mapfiles/kml/paddle/ylw-diamond.png"
-								 )
-					       )
-		  ),
+	  :id => 'SET_POI',
+	  :icon_style => IconStyle.new(
+	    :icon => Icon.new(
+	      :href => "http://maps.google.com/mapfiles/kml/paddle/ylw-diamond.png"
+	    )
+	  )
+	),
+	Style.new(
+	  :id => 'SET_HEAD',
+	  :icon_style => IconStyle.new(
+	    :icon => Icon.new(
+	      :href => "http://maps.google.com/mapfiles/kml/paddle/ylw-diamond.png"
+	    )
+	  )
+	),
 
 	Style.new(
-		  :id => 'WAYPOINT',
-		  :icon_style => IconStyle.new(
-					       :icon => Icon.new(
-								 :href => "http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png"
-								 )
-					       )
-		  ),
+	  :id => 'WAYPOINT',
+	  :icon_style => IconStyle.new(
+	    :icon => Icon.new(
+	      :href => "http://maps.google.com/mapfiles/kml/paddle/ltblu-circle.png"
+	    )
+	  )
+	),
 
 	Style.new(
-		  :id => 'POSHOLD_UNLIM',
-		  :icon_style => IconStyle.new(
-					       :icon => Icon.new(
-								 :href => "http://maps.google.com/mapfiles/kml/paddle/grn-diamond.png"
-								 )
-					       )
-		  ),
+	  :id => 'POSHOLD_UNLIM',
+	  :icon_style => IconStyle.new(
+	    :icon => Icon.new(
+	      :href => "http://maps.google.com/mapfiles/kml/paddle/grn-diamond.png"
+	    )
+	  )
+	),
 
 	Style.new(
-		  :id => 'POSHOLD_TIME',
-		  :icon_style => IconStyle.new(
-					       :icon => Icon.new(
-								 :href => "http://maps.google.com/mapfiles/kml/paddle/purple-circle.png"
-								 )
-					       )
-		  ),
+	  :id => 'POSHOLD_TIME',
+	  :icon_style => IconStyle.new(
+	    :icon => Icon.new(
+	      :href => "http://maps.google.com/mapfiles/kml/paddle/grn-circle.png"
+	    )
+	  )
+	),
 
 	Style.new(
-		  :id => 'LAND',
-		  :icon_style => IconStyle.new(
-					       :icon => Icon.new(
-								 :href => "http://maps.google.com/mapfiles/kml/paddle/pink-stars.png"
-								 )
-					       )
-		  ),
+	  :id => 'JUMP',
+	  :icon_style => IconStyle.new(
+	    :icon => Icon.new(
+	      :href => "http://maps.google.com/mapfiles/kml/paddle/purple-circle.png"
+	    )
+	  )
+	),
+
+	Style.new(
+	  :id => 'LAND',
+	  :icon_style => IconStyle.new(
+	    :icon => Icon.new(
+	      :href => "http://maps.google.com/mapfiles/kml/paddle/pink-stars.png"
+	    )
+	  )
+	),
 
 
 	Style.new(:id => "transBluePoly",
 		  :line_style => LineStyle.new(:width => 1.5),
 		  :poly_style => PolyStyle.new(:color => '7dff0000')
-		  )
+		 )
       ],
       :features => []
     }
@@ -127,20 +154,20 @@ class KMLBuilder
                        :geometry => LineString.new(
                                                    :extrude => true,
                                                    :tessellate => false,
-                                                   :altitude_mode => 'absolute',
+                                                   :altitude_mode => 'relativeToGround',
                                                    :coordinates => linestr
-                                                   )
-		       )
+                       )
+		      )
 
     doc[:features] << pm
     arry.each do |p|
       adesc = "#{title}<br/>Action: #{p[:act]}<br/>Position: #{posstrg(p[:lat],p[:lon])}<br/>Altitude: #{p[:alt]}m<br/>"
       coords = "#{p[:lon]},#{p[:lat]},#{p[:alt]}"
-      pt = Placemark.new(:name => 'Track',
+      pt = Placemark.new(:name => "WP #{p[:no]}",
 			 :description => adesc,
-			 :geometry => Point.new(:coordinates=> coords),
-			 :style_url => "##{p[:act]}"
-			 )
+			 :geometry => Point.new(:altitude_mode => 'relativeToGround', :coordinates=> coords),
+			 :style_url => "##{p[:act]}",
+			)
       doc[:features] << pt
     end
     kml.objects <<  Document.new(doc)
