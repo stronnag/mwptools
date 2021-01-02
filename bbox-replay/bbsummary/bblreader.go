@@ -165,45 +165,47 @@ func bblreader(bbfile string, idx int, dump bool) {
 			}
 		} else {
 			us := br.stamp
+			if us > st {
+				// Do the expensive calc every 50ms
+				if (us - dt) > 1000*50 {
+					_, d := Csedist(home_lat, home_lon, br.lat, br.lon)
+					if d > bblsmry.max_range {
+						bblsmry.max_range = d
+						bblsmry.max_range_time = us - st
+					}
 
-			// Do the expensive calc every 50ms
-			if (us - dt) > 1000*50 {
-				_, d := Csedist(home_lat, home_lon, br.lat, br.lon)
-				if d > bblsmry.max_range {
-					bblsmry.max_range = d
-					bblsmry.max_range_time = us - st
+					if llat != br.lat && llon != br.lon {
+						_, d := Csedist(llat, llon, br.lat, br.lon)
+						bblsmry.distance += d
+						llat = br.lat
+						llon = br.lon
+					}
+					dt = us
 				}
 
-				if llat != br.lat && llon != br.lon {
-					_, d := Csedist(llat, llon, br.lat, br.lon)
-					bblsmry.distance += d
-					llat = br.lat
-					llon = br.lon
+				if br.alt > bblsmry.max_alt {
+					bblsmry.max_alt = br.alt
+					bblsmry.max_alt_time = us - st
 				}
-				dt = us
-			}
 
-			if br.alt > bblsmry.max_alt {
-				bblsmry.max_alt = br.alt
-				bblsmry.max_alt_time = us - st
-			}
+				if br.spd > bblsmry.max_speed {
+					bblsmry.max_speed = br.spd
+					bblsmry.max_speed_time = us - st
+				}
 
-			if br.spd > bblsmry.max_speed {
-				bblsmry.max_speed = br.spd
-				bblsmry.max_speed_time = us - st
+				if br.amps > bblsmry.max_current {
+					bblsmry.max_current = br.amps
+					bblsmry.max_current_time = us - st
+				}
+				lt = us
 			}
-
-			if br.amps > bblsmry.max_current {
-				bblsmry.max_current = br.amps
-				bblsmry.max_current_time = us - st
-			}
-			lt = us
 		}
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 	bblsmry.duration = lt - st
+
 	bblsmry.max_alt /= 100
 	bblsmry.max_range *= 1852.0
 	bblsmry.distance *= 1852.0
