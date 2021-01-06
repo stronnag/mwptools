@@ -6698,6 +6698,7 @@ case 0:
                 LTM_SFRAME sf = LTM_SFRAME ();
                 uint8* rp;
                 rp = deserialise_u16(raw, out sf.vbat);
+
                 rp = deserialise_u16(rp, out sf.vcurr);
                 sf.rssi = *rp++;
                 sf.airspeed = *rp++;
@@ -6853,7 +6854,7 @@ case 0:
                     }
                 }
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS));
-                set_bat_stat((uint8)ivbat);
+                set_bat_stat(ivbat);
                 break;
 
             case MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT:
@@ -7623,7 +7624,7 @@ case 0:
         MWPLog.message(sb.str);
     }
 
-    private void init_battery(uint8 ivbat)
+    private void init_battery(uint16 ivbat)
     {
         bat_annul();
         var ncells = ivbat / 37;
@@ -7644,7 +7645,7 @@ case 0:
         nsampl = 0;
     }
 
-    private void set_bat_stat(uint8 ivbat)
+    private void set_bat_stat(uint16 ivbat)
     {
         if(ivbat < 20)
         {
