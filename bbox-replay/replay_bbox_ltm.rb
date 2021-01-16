@@ -1001,12 +1001,14 @@ class BBReplay
 
     if vname
       exargs=''
-      extra_args.each do |k,v|
-        if vname.match(/#{k.to_s}/)
-          exargs << ' ' << v
+      if extra_args
+        extra_args.each do |k,v|
+          if vname.match(/#{k.to_s}/)
+            exargs << ' ' << v
+          end
         end
+        cmd << exargs
       end
-      cmd << exargs
 
       if home_args
         home_args.each do |k,v|
