@@ -455,6 +455,7 @@ public class MWP : Gtk.Application {
     private ArtWin art_win;
     private FlightBox fbox;
     private DirnBox dbox;
+    private VarioBox vabox;
     private RadarView radarv;
     private WPMGR wpmgr;
     private MissionItem[] wp_resp;
@@ -753,15 +754,16 @@ public class MWP : Gtk.Application {
     private enum DOCKLETS
     {
         MISSION=0,
-        GPS,
-        NAVSTATUS,
-        VOLTAGE,
-        RADIO,
-        TELEMETRY,
-        ARTHOR,
-        FBOX,
-        DBOX,
-        NUMBER
+        GPS = 1,
+        NAVSTATUS = 2,
+        VOLTAGE = 3,
+        RADIO = 4,
+        TELEMETRY = 5,
+        ARTHOR = 6,
+        FBOX = 7,
+        DBOX = 8,
+        VBOX = 9,
+        NUMBER = 10
     }
 
     private enum MS_Column {
@@ -1016,13 +1018,11 @@ public class MWP : Gtk.Application {
 
     void show_dock_id (DOCKLETS id, bool iconify=false)
     {
-/*
         print("show dock %u, icon %s closed %s, iconified %s\n",
               id, iconify.to_string(),
               dockitem[id].is_closed().to_string(),
               dockitem[id].is_iconified().to_string()
               );
-*/
         if(dockitem[id].is_closed() && !dockitem[id].is_iconified())
         {
             dockitem[id].show();
@@ -1517,6 +1517,7 @@ public class MWP : Gtk.Application {
         dockmenus[DOCKLETS.ARTHOR] = "art-hor";
         dockmenus[DOCKLETS.FBOX] =  "flight-view";
         dockmenus[DOCKLETS.DBOX] =  "direction-view";
+        dockmenus[DOCKLETS.VBOX] =  "vario-view";
 
         embed = new GtkChamplain.Embed();
 
@@ -1863,6 +1864,11 @@ public class MWP : Gtk.Application {
                 show_dock_id(DOCKLETS.DBOX, true);
             });
         window.add_action(saq);
+        saq = new GLib.SimpleAction("vario-view",null);
+        saq.activate.connect(() => {
+                show_dock_id(DOCKLETS.VBOX, true);
+            });
+        window.add_action(saq);
         saq = new GLib.SimpleAction("radar-view",null);
         saq.activate.connect(() => {
                 radarv.show_or_hide();
@@ -1909,6 +1915,7 @@ public class MWP : Gtk.Application {
         telemstatus = new TelemetryStats(builder);
         fbox  = new FlightBox(builder,window);
         dbox = new DirnBox(builder, conf.horizontal_dbox);
+        vabox = new VarioBox();
         radarv = new RadarView(window);
         radarv.vis_change.connect((vh) => {
                 markers.rader_layer_visible(vh);
@@ -2521,6 +2528,9 @@ public class MWP : Gtk.Application {
                          "DirectionView", "gtk-fullscreen",
                          DockItemBehavior.NORMAL);
 
+        dockitem[DOCKLETS.VBOX]= new DockItem.with_stock ("VarioView",
+                         "VarioView", "gtk-go-up",
+                         DockItemBehavior.NORMAL);
 
         dockitem[DOCKLETS.MISSION]= new DockItem.with_stock ("Mission",
                          "Mission Tote", "gtk-properties",
@@ -2534,6 +2544,7 @@ public class MWP : Gtk.Application {
         dockitem[DOCKLETS.TELEMETRY].add (telemstatus.grid);
         dockitem[DOCKLETS.FBOX].add (fbox.vbox);
         dockitem[DOCKLETS.DBOX].add (dbox.dbox);
+        dockitem[DOCKLETS.VBOX].add (vabox.vbox);
         dockitem[DOCKLETS.ARTHOR].add (art_win.box);
 
         dock.add_item (dockitem[DOCKLETS.ARTHOR], DockPlacement.BOTTOM);
@@ -2544,6 +2555,7 @@ public class MWP : Gtk.Application {
         dock.add_item (dockitem[DOCKLETS.RADIO], DockPlacement.BOTTOM);
         dock.add_item (dockitem[DOCKLETS.FBOX], DockPlacement.BOTTOM);
         dock.add_item (dockitem[DOCKLETS.DBOX], DockPlacement.BOTTOM);
+        dock.add_item (dockitem[DOCKLETS.VBOX], DockPlacement.BOTTOM);
         dock.add_item (dockitem[DOCKLETS.MISSION], DockPlacement.BOTTOM);
         box.show_all();
 
@@ -2557,6 +2569,7 @@ public class MWP : Gtk.Application {
             dockitem[DOCKLETS.TELEMETRY].iconify_item ();
             dockitem[DOCKLETS.FBOX].iconify_item ();
             dockitem[DOCKLETS.DBOX].iconify_item ();
+            dockitem[DOCKLETS.VBOX].iconify_item ();
             lman.save_config();
         }
 
@@ -2885,6 +2898,7 @@ public class MWP : Gtk.Application {
                     al.estalt = spi.alt;
                     al.vario = spi.vario;
                     navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
+                    vabox.update(item_visible(DOCKLETS.VBOX), al.vario);
                     double ddm;
                     gpsinfo.update_sport(spi, conf.dms, item_visible(DOCKLETS.GPS), out ddm);
 
@@ -5426,7 +5440,7 @@ case 0:
     private int16 calc_vario(int ealt)
     {
         int16 diff = 0;
-        if((replayer & (Player.BBOX_FAST)) == 0) {
+        if((replayer & (Player.BBOX_FAST)) != Player.FAST_MASK) {
             var i = Varios.idx % NVARIO;
             Varios.alts[i] = ealt;
             Varios.ticks[i] = nticks;
@@ -5435,7 +5449,7 @@ case 0:
                 var j = (i + 1) % NVARIO;
                 int adiff = ealt - Varios.alts[j];
                 var et  = nticks - Varios.ticks[j];
-                double fdiff = (int)(((double)adiff)/10.0/et);
+                double fdiff = (int)(((double)adiff*10)/et);
                 diff = (int16)fdiff;
             }
         }
@@ -6371,6 +6385,7 @@ case 0:
                 rp = deserialise_i32(raw, out al.estalt);
                 deserialise_i16(rp, out al.vario);
                 navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
+                vabox.update(item_visible(DOCKLETS.VBOX), al.vario);
                 break;
 
             case MSP.Cmds.ANALOG2:
@@ -6592,6 +6607,7 @@ case 0:
                 al.estalt = gf.alt;
                 al.vario =  calc_vario(gf.alt);
                 navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
+                vabox.update(item_visible(DOCKLETS.VBOX), al.vario);
 
                 double ddm;
                 int fix = gpsinfo.update_ltm(gf, conf.dms, item_visible(DOCKLETS.GPS), rhdop, out ddm);

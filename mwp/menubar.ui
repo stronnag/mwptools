@@ -213,6 +213,10 @@
           <attribute name="label">Radar View</attribute>
           <attribute name="action">win.radar-view</attribute>
         </item>
+        <item>
+          <attribute name="label">Vario View</attribute>
+          <attribute name="action">win.vario-view</attribute>
+        </item>
       </section>
       <section>
         <item>

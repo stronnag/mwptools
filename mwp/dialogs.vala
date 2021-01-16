@@ -327,6 +327,58 @@ public class TelemetryStats : GLib.Object
 }
 
 
+public class VarioBox : GLib.Object
+{
+    public Gtk.Box vbox;
+    private Gtk.Image vimage;
+    private Gtk.Label vlabel;
+    private static string mono;
+
+    public VarioBox()
+    {
+        if(MonoFont.fixed)
+        {
+            mono = "face=\"monospace\"";
+        }
+        else
+            mono = "";
+
+        vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
+        vimage = new Gtk.Image.from_icon_name ("mail-send-receive-symbolic", Gtk.IconSize.DIALOG);
+        vlabel  = new Gtk.Label("");
+        vbox.pack_start(vimage, true, true,0);
+        vbox.pack_start(vlabel, true, true,0);
+        update(true, 0);
+        vbox.show_all();
+    }
+
+    public void update(bool visible, int16 vs)
+    {
+        if(visible)
+        {
+            uint fs = FlightBox.fh1*75/100;
+
+            string str;
+            if (vs > 0) {
+                str = "go-up-symbolic";
+            } else if (vs < 0) {
+                str = "go-down-symbolic";
+            } else {
+                str = "mail-send-receive-symbolic";
+            }
+
+            var v = Units.speed(((double)vs)/100.0);
+            vimage.set_from_icon_name (str, Gtk.IconSize.DIALOG);
+            vlabel.set_markup("<span %s font='%u'>%6.2f</span>%s".printf(mono, fs, v, Units.speed_units()));
+        }
+    }
+
+    public void annul()
+    {
+        update(true, 0);
+    }
+}
+
 public class DirnBox : GLib.Object
 {
     public Gtk.Box dbox;

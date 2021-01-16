@@ -136,15 +136,17 @@ class LayMan : Object
     public bool load_init()
     {
         bool ok;
-        ok = layout.load_from_file(getfile());
+        string lname = getfile();
+        ok = layout.load_from_file(lname);
         if(!ok)
         {
             var fn = find_default_file();
             if(fn != null)
                 ok = layout.load_from_file(fn);
         }
-        if(ok)
+        if(ok) {
             ok = layout.load_layout("mwp");
+        }
         return ok;
     }
 
