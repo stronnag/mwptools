@@ -209,6 +209,8 @@ public class ReplayThread : GLib.Object
                 double start_tm = 0;
                 double utime = 0;
                 uint16 lq = 0;
+                double variodiv = 100.0;
+
                 uint8 buf[1024];
                 MSP_STATUS xa = MSP_STATUS();
                 msp.set_mode(MWSerial.Mode.SIM);
@@ -239,8 +241,12 @@ public class ReplayThread : GLib.Object
                             var obj = parser.get_root ().get_object ();
                             utime = obj.get_double_member ("utime");
                             if(start_tm == 0)
+                            {
                                 start_tm = utime;
-
+                                if (utime < 1610807618) { // vario log bug fixed 2021-01-16
+                                    variodiv = 10;
+                                }
+                            }
                             if(lt != 0)
                             {
                                 ulong ms = 0;
@@ -484,7 +490,7 @@ public class ReplayThread : GLib.Object
                                         //{"type":"altitude","utime":1404717912,"estalt":4.4199999999999999,"vario":20.399999999999999}
                                     var a = MSP_ALTITUDE();
                                     a.estalt = (int32)(Math.lround(obj.get_double_member("estalt")*100));
-                                    a.vario = (int16)(Math.lround(obj.get_double_member("vario")* 10));
+                                    a.vario = (int16)(Math.lround(obj.get_double_member("vario")* variodiv));
                                     var nb = serialise_alt(a, buf);
                                     send_rec(msp,MSP.Cmds.ALTITUDE, (uint)nb, buf);
                                     break;

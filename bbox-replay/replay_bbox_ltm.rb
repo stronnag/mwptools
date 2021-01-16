@@ -786,7 +786,7 @@ class BBReplay
     dumph = false
     scan = nil
     decoder="blackbox_decode"
-    nobaro = nil
+    nobaro = false
     extra_args = {}
     intvl = 100_000
     safehomes = nil
@@ -1038,6 +1038,11 @@ class BBReplay
       csv = CSV.new(pipe, **csv_opts)
       lindex = 0
       lastrid = -1
+
+      have_baro = false
+      have_sonar = false
+      have_mag = false
+
       csv.each do |row|
         if lindex == 0
           hdrs = row
@@ -1080,6 +1085,7 @@ class BBReplay
           unless nobaro
 	    have_baro = (hdrs.has_key? :baroalt_cm)
           end
+
           gpshd = 1 if have_mag == false and gpshd == 0
           vers = send_init_seq dev,typ,have_sonar,have_baro,have_mag,gitinfos[idx-1],vname
         else

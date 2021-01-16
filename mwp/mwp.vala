@@ -906,8 +906,17 @@ public class MWP : Gtk.Application {
         ALL=4
     }
 
+    private const uint NVARIO=2;
+    private struct varios
+    {
+        uint idx;
+        int alts[2];
+        uint ticks[2];
+    }
+
     private const double RAD2DEG = 57.29578;
 
+    private varios Varios;
     private Timer lastp;
     private uint nticks = 0;
     private uint lastdbus = 0;
@@ -5414,6 +5423,25 @@ case 0:
         run_queue();
     }
 
+    private int16 calc_vario(int ealt)
+    {
+        int16 diff = 0;
+        if((replayer & (Player.BBOX_FAST)) == 0) {
+            var i = Varios.idx % NVARIO;
+            Varios.alts[i] = ealt;
+            Varios.ticks[i] = nticks;
+            Varios.idx += 1;
+            if (Varios.idx > NVARIO-1) {
+                var j = (i + 1) % NVARIO;
+                int adiff = ealt - Varios.alts[j];
+                var et  = nticks - Varios.ticks[j];
+                double fdiff = (int)(((double)adiff)/10.0/et);
+                diff = (int16)fdiff;
+            }
+        }
+        return diff;
+    }
+
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
@@ -6562,7 +6590,7 @@ case 0:
                 init_craft_icon();
                 MSP_ALTITUDE al = MSP_ALTITUDE();
                 al.estalt = gf.alt;
-                al.vario = 0;
+                al.vario =  calc_vario(gf.alt);
                 navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
 
                 double ddm;
@@ -8140,6 +8168,7 @@ case 0:
         ls.set_mission_speed(conf.nav_speed);
         msats = SATS.MINSATS;
         curr = {false, 0, 0, 0};
+        Varios.idx = 0;
     }
 
     private bool try_forwarder(out string fstr)

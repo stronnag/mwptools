@@ -1771,7 +1771,7 @@ public class NavStatus : GLib.Object
         alti = _alti;
         if(enabled || Logger.is_logging)
         {
-            double vario = alti.vario/10.0;
+            double vario = alti.vario/100.0; // fixed 20210116 (was /10)
             double estalt = alti.estalt/100.0;
             if(visible)
             {
