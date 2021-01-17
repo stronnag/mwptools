@@ -4108,6 +4108,203 @@ Also aborts mission if the next waypoint distance is more than this number.</pro
       <action-widget response="0">odoclose</action-widget>
     </action-widgets>
   </object>
+  <object class="GtkDialog" id="otx_dialog">
+    <property name="can-focus">False</property>
+    <property name="type-hint">dialog</property>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can-focus">False</property>
+            <property name="layout-style">end</property>
+            <child>
+              <object class="GtkButton" id="otx_cancel">
+                <property name="label">Cancel</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="otx_ok">
+                <property name="label">OK</property>
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">OK is enabled once a log index has been selected</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="bb_box2">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkFileChooserButton" id="otx_filechooser">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="title" translatable="yes">Select an OTX log</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkTreeView" id="otx_treeview">
+                <property name="width-request">400</property>
+                <property name="height-request">200</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="vexpand">True</property>
+                <property name="hscroll-policy">natural</property>
+                <property name="vscroll-policy">natural</property>
+                <property name="search-column">0</property>
+                <property name="enable-grid-lines">both</property>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection"/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSeparator" id="bb_separator2">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="bb_items1">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">start</property>
+                <property name="wrap">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">The model type
+"Auto" means mwp will make its "best guess" from the log
+"Marker" is an arrow that may help debugging mag orientation issues
+Otherwise, select a valid FC vehicle type</property>
+                    <property name="label" translatable="yes">Model type:</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkComboBoxText" id="otx_combo">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="active">0</property>
+                    <items>
+                      <item translatable="yes">Auto</item>
+                      <item translatable="yes">Marker</item>
+                      <item translatable="yes">TRI</item>
+                      <item translatable="yes">QUADP</item>
+                      <item translatable="yes">QUADX</item>
+                      <item translatable="yes">BI</item>
+                      <item translatable="yes">GIMBAL</item>
+                      <item translatable="yes">Y6</item>
+                      <item translatable="yes">HEX6</item>
+                      <item translatable="yes">FLYING_WING</item>
+                      <item translatable="yes">Y4</item>
+                      <item translatable="yes">HEX6X</item>
+                      <item translatable="yes">OCTOX8</item>
+                      <item translatable="yes">OCTOFLATP</item>
+                      <item translatable="yes">OCTOFLATX</item>
+                      <item translatable="yes">AEROPLANE</item>
+                      <item translatable="yes">HELI_120</item>
+                      <item translatable="yes">HELI_90</item>
+                      <item translatable="yes">VTAIL4</item>
+                      <item translatable="yes">HEX6H</item>
+                      <item translatable="yes">PPM_SERVO?</item>
+                      <item translatable="yes">DUALCOPTER</item>
+                      <item translatable="yes">SINGLECOPTER</item>
+                      <item translatable="yes">ATAIL4</item>
+                      <item translatable="yes">CUSTOM</item>
+                      <item translatable="yes">CUSTOM_AEROPLANE</item>
+                      <item translatable="yes">CUSTOM_TRI</item>
+                    </items>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="999">otx_cancel</action-widget>
+      <action-widget response="1001">otx_ok</action-widget>
+    </action-widgets>
+  </object>
   <object class="GtkDialog" id="pe-dialog">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Terrain Analysis</property>

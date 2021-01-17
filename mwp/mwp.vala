@@ -445,6 +445,7 @@ public class MWP : Gtk.Application {
     private SetPosDialog setpos;
     private Gtk.AboutDialog about;
     private BBoxDialog bb_runner;
+    private OTXDialog otx_runner;
     private NavStatus navstatus;
     private RadioStatus radstatus;
     private NavConfig navconf;
@@ -1485,6 +1486,7 @@ public class MWP : Gtk.Application {
         navconf = new NavConfig(window, builder);
         bb_runner = new BBoxDialog(builder, window, conf.blackbox_decode,
                                    conf.logpath, fakeoff);
+        otx_runner = new OTXDialog(builder, window,null);
 
         bb_runner.set_tz_tools(conf.geouser, conf.zone_detect);
 
@@ -8898,7 +8900,7 @@ case 0:
             load_file(fn);
     }
 
-
+/*
     private void get_otx_file(bool delay)
     {
         Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
@@ -8942,10 +8944,17 @@ case 0:
                 });
             chooser.show_all();
     }
-
+*/
     private void replay_otx(bool delay=true)
     {
-        get_otx_file(delay);
+        var id = otx_runner.run();
+        otx_runner.hide();
+        if (id == 1001) {
+            string fname;
+            int idx;
+            otx_runner.get_index(out fname, out idx);
+            run_replay(fname, delay, Player.OTX,idx);
+        }
     }
 
     private void replay_log(bool delay=true)
@@ -9073,7 +9082,7 @@ case 0:
                     break;
                 case Player.OTX:
                 case Player.OTX_FAST:
-                    spawn_otx_task(fn, delay, (idx==1));
+                    spawn_otx_task(fn, delay, idx);
                     break;
             }
         }
@@ -9120,14 +9129,14 @@ case 0:
             hard_display_reset(false);
     }
 
-    private void spawn_otx_task(string fn, bool delay, bool armed)
+    private void spawn_otx_task(string fn, bool delay, int idx)
     {
         string [] args = {"otxlog",
-                          "--fd", "%d".printf(playfd[1])};
+            "--fd", playfd[1].to_string(),
+            "--index", idx.to_string()
+        };
         if(delay == false)
             args += "--fast";
-        if(armed == true)
-            args += "--armed-only";
         args += fn;
         args += null;
 

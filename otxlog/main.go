@@ -16,6 +16,8 @@ var (
 	fast    = flag.Bool("fast", false, "fast replay")
 	verbose = flag.Bool("verbose", false, "verbose LTM debug")
 	armed   = flag.Bool("armed-only", false, "skip not armed")
+	idx     = flag.Int("index", 1, "Log entry index")
+	metas   = flag.Bool("metas", false, "list metadata and exit")
 )
 
 func main() {
@@ -32,27 +34,33 @@ func main() {
 		os.Exit(-1)
 	}
 
-	o := NewOTX()
-
-	if *dump {
-		o.Set_dump()
-	} else if *gpxout != "" {
-		o.Gpx_init(*gpxout)
-	} else {
-		var s *MSPSerial
-		if *fd > 0 {
-			s = NewMSPFd(*fd)
-		} else if len(*device) > 0 {
-			s = NewMSPSerial(*device, *baud)
-		} else if len(*output) > 0 {
-			s = NewMSPFile(*output)
-		} else {
-			fmt.Fprintf(os.Stderr, "No output specified\n")
-			os.Exit(-1)
+	o := NewOTX(files[0])
+	m, err := o.GetMetas()
+	if err == nil {
+		if *metas {
+			for _, mx := range m {
+				fmt.Printf("%d,%s,%s,%d,%d,%x\n", mx.Index, mx.Logname, mx.Date, mx.Start, mx.End, mx.Flags)
+			}
+		} else if *dump {
+			o.Dump()
+		} else if *idx > 0 && *idx <= len(m) {
+			recs := o.Reader(m[*idx-1])
+			if len(*gpxout) > 0 {
+				GPXgen(*gpxout, recs)
+			} else {
+				var s *MSPSerial
+				if *fd > 0 {
+					s = NewMSPFd(*fd)
+				} else if len(*device) > 0 {
+					s = NewMSPSerial(*device, *baud)
+				} else if len(*output) > 0 {
+					s = NewMSPFile(*output)
+				} else {
+					fmt.Fprintf(os.Stderr, "No output specified\n")
+					os.Exit(-1)
+				}
+				LTMGen(s, recs, *verbose, *fast)
+			}
 		}
-		o.Stream_init(s)
 	}
-	o.Verbose(*verbose)
-	o.Armed(*armed)
-	o.Reader(files[0], *fast)
 }
