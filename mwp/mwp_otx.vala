@@ -41,8 +41,6 @@ public class  OTXDialog : Object
                      string? logpath = null) //, FakeOffsets? _fo = null)
     {
         _w = w;
-//        fo = _fo;
-
         dialog = builder.get_object ("otx_dialog") as Gtk.Dialog;
         otx_cancel = builder.get_object ("otx_cancel") as Button;
         otx_ok = builder.get_object ("otx_ok") as Button;
@@ -94,6 +92,7 @@ public class  OTXDialog : Object
                 dialog.response(1001);
             });
 
+        dialog.title = "mwp OTX Log replay";
         dialog.set_transient_for(w);
     }
 

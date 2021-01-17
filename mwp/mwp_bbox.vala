@@ -124,6 +124,7 @@ public class  BBoxDialog : Object
                 dialog.response(1001);
             });
 
+        dialog.title = "mwp BBL replay";
         dialog.set_transient_for(w);
 
         azoom =(Environment.get_variable("MWP_BB_NOZOOM") == null) ;
