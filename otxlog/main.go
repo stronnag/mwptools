@@ -18,6 +18,7 @@ var (
 	armed   = flag.Bool("armed-only", false, "skip not armed")
 	idx     = flag.Int("index", 1, "Log entry index")
 	metas   = flag.Bool("metas", false, "list metadata and exit")
+	list    = flag.Bool("list", false, "list log data")
 )
 
 func main() {
@@ -47,6 +48,8 @@ func main() {
 			recs := o.Reader(m[*idx-1])
 			if len(*gpxout) > 0 {
 				GPXgen(*gpxout, recs)
+			} else if *list {
+				Listgen(recs)
 			} else {
 				var s *MSPSerial
 				if *fd > 0 {

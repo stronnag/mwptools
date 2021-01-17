@@ -4326,7 +4326,7 @@ case 0:
             if(armtime == 0)
                 time_t(out armtime);
 
-            if(replayer == Player.NONE)
+            if(replayer == Player.NONE || replayer == Player.OTX)
             {
                 time_t(out duration);
                 duration -= armtime;
@@ -4360,7 +4360,7 @@ case 0:
                     }
                 }
                 init_have_home();
-                MWPLog.message("Armed %x\n", want_special);
+                MWPLog.message("Craft is armed, special=%x\n", want_special);
                 armed_spinner.show();
                 armed_spinner.start();
                 sflags |= NavStatus.SPK.Volts;
