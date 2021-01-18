@@ -333,6 +333,13 @@ public class VarioBox : GLib.Object
     private Gtk.Image vimage;
     private Gtk.Label vlabel;
     private static string mono;
+    private Gdk.Pixbuf up;
+    private Gdk.Pixbuf down;
+    private Gdk.Pixbuf none;
+    private uint lastfs = 0;
+    private string uparrow;
+    private string downarrow;
+    private string doublearrow;
 
     public VarioBox()
     {
@@ -344,7 +351,11 @@ public class VarioBox : GLib.Object
             mono = "";
 
         vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
-        vimage = new Gtk.Image.from_icon_name ("mail-send-receive-symbolic", Gtk.IconSize.DIALOG);
+        uparrow = MWPUtils.find_conf_file("up-arrow.svg", "pixmaps");
+        downarrow = MWPUtils.find_conf_file("down-arrow.svg", "pixmaps");
+        doublearrow = MWPUtils.find_conf_file("double-arrow.svg", "pixmaps");
+
+        vimage = new Gtk.Image();
         vlabel  = new Gtk.Label("");
         vbox.pack_start(vimage, true, true,0);
         vbox.pack_start(vlabel, true, true,0);
@@ -357,18 +368,30 @@ public class VarioBox : GLib.Object
         if(visible)
         {
             uint fs = FlightBox.fh1*75/100;
+            if(fs != lastfs)
+            {
+                try
+                {
+                    var isz = (int)(fs *4);
+                    up =  new Gdk.Pixbuf.from_file_at_scale(uparrow, isz, isz, true);
+                    down = new Gdk.Pixbuf.from_file_at_scale(downarrow, isz, isz, true);
+                    none = new Gdk.Pixbuf.from_file_at_scale(doublearrow, isz, isz, true);
+                } catch (Error e) {
+                    stderr.printf("loading pixmaps: %s\n", e.message);
+                }
+                lastfs = fs;
+            }
 
-            string str;
             if (vs > 0) {
-                str = "go-up-symbolic";
+                vimage.set_from_pixbuf(up);
             } else if (vs < 0) {
-                str = "go-down-symbolic";
+                vimage.set_from_pixbuf(down);
             } else {
-                str = "mail-send-receive-symbolic";
+                vimage.set_from_pixbuf(none);
             }
 
             var v = Units.speed(((double)vs)/100.0);
-            vimage.set_from_icon_name (str, Gtk.IconSize.DIALOG);
+//            vimage.set_from_icon_name (str, Gtk.IconSize.DIALOG);
             vlabel.set_markup("<span %s font='%u'>%6.2f</span>%s".printf(mono, fs, v, Units.speed_units()));
         }
     }
