@@ -54,6 +54,7 @@ type OTXrec struct {
 	Aspeed  uint8
 	Status  uint8
 	Fix     uint8
+	Amps    float64
 	Crsf    bool
 }
 
@@ -292,6 +293,12 @@ func get_otx_line(r []string) OTXrec {
 		if u == "mAh" {
 			a, _ := strconv.ParseFloat(s, 64)
 			b.Mah = uint16(a)
+		}
+	}
+	if s, u, ok := get_rec_value(r, "Curr"); ok {
+		b.Amps, _ = strconv.ParseFloat(s, 64)
+		if u == "mA" {
+			b.Amps /= 1000
 		}
 	}
 

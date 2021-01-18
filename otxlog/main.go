@@ -4,6 +4,7 @@ import (
 	"os"
 	"flag"
 	"fmt"
+	"strings"
 )
 
 var (
@@ -19,6 +20,7 @@ var (
 	idx     = flag.Int("index", 1, "Log entry index")
 	metas   = flag.Bool("metas", false, "list metadata and exit")
 	list    = flag.Bool("list", false, "list log data")
+	mqttdef = flag.String("mqtt", "", "broker,topic")
 )
 
 func main() {
@@ -50,6 +52,17 @@ func main() {
 				GPXgen(*gpxout, recs)
 			} else if *list {
 				Listgen(recs)
+			} else if *mqttdef != "" {
+				mq := strings.Split(*mqttdef, ",")
+				broker := ""
+				topic := ""
+				if len(mq) > 1 {
+					broker = mq[0]
+					if len(mq) >= 2 {
+						topic = mq[1]
+					}
+					MQTTGen(broker, topic, recs)
+				}
 			} else {
 				var s *MSPSerial
 				if *fd > 0 {
