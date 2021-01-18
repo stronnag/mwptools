@@ -22,6 +22,7 @@ public class  OTXDialog : Object
     enum Column {
         IDX,
         STAMP,
+        DURATION,
         LINES,
         NO_COLS
     }
@@ -51,6 +52,7 @@ public class  OTXDialog : Object
         otx_liststore = new Gtk.ListStore (Column.NO_COLS,
                                            typeof (int),
                                            typeof (string),
+                                           typeof (string),
                                            typeof (int));
         otx_treeview.set_model (otx_liststore);
         otx_treeview.insert_column_with_attributes (-1, "Index",
@@ -59,6 +61,9 @@ public class  OTXDialog : Object
         otx_treeview.insert_column_with_attributes (-1, "TimeStemp",
                                                     new Gtk.CellRendererText (), "text",
                                                     Column.STAMP);
+        otx_treeview.insert_column_with_attributes (-1, "Duration",
+                                                    new Gtk.CellRendererText (), "text",
+                                                    Column.DURATION);
         otx_treeview.insert_column_with_attributes (-1, "Lines",
                                                     new Gtk.CellRendererText (), "text",
                                                     Column.LINES);
@@ -151,7 +156,7 @@ public class  OTXDialog : Object
                         if (line  == null || len == 0)
                             return true;
                         var parts = line.split(",");
-                        if (parts.length == 6)
+                        if (parts.length == 7)
                         {
                             int flags = int.parse(parts[5]);
                             if (flags != 0) {
@@ -159,9 +164,12 @@ public class  OTXDialog : Object
                                 int idx = int.parse(parts[0]);
                                 int istart = int.parse(parts[3]);
                                 int iend= int.parse(parts[4]);
+                                int dura= int.parse(parts[5]);
+                                var dtext="%02d:%02d".printf(dura/60, dura%60);
                                 otx_liststore.append (out iter);
                                 otx_liststore.set (iter, Column.IDX, idx,
                                                    Column.STAMP, parts[2],
+                                                   Column.DURATION, dtext,
                                                    Column.LINES, iend-istart+1);
                             }
                         }

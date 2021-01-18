@@ -40,7 +40,7 @@ func main() {
 	if err == nil {
 		if *metas {
 			for _, mx := range m {
-				fmt.Printf("%d,%s,%s,%d,%d,%x\n", mx.Index, mx.Logname, mx.Date, mx.Start, mx.End, mx.Flags)
+				fmt.Printf("%d,%s,%s,%d,%d,%.0f,%x\n", mx.Index, mx.Logname, mx.Date, mx.Start, mx.End, mx.Duration.Seconds(), mx.Flags)
 			}
 		} else if *dump {
 			o.Dump()

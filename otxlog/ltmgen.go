@@ -7,6 +7,7 @@ import (
 	"time"
 	"math"
 	"os"
+	"log"
 )
 
 type ltmbuf struct {
@@ -31,6 +32,10 @@ func newLTM(mtype byte) *ltmbuf {
 		paylen = 6
 	case 'x':
 		paylen = 1
+	case 'q':
+		paylen = 2
+	default:
+		log.Fatal("LTM: No payload defined for type '%c'\n", mtype)
 	}
 
 	buf := make([]byte, paylen+4)
@@ -95,8 +100,8 @@ func (l *ltmbuf) sframe(b OTXrec) {
 	l.checksum()
 }
 
-func (l *ltmbuf) xframe(b OTXrec, xcount uint8) {
-	binary.LittleEndian.PutUint16(l.msg[3:5], b.Hdop)
+func (l *ltmbuf) xframe(hdop uint16, xcount uint8) {
+	binary.LittleEndian.PutUint16(l.msg[3:5], hdop)
 	l.msg[5] = 0
 	l.msg[6] = xcount
 	l.msg[7] = 0
@@ -105,6 +110,11 @@ func (l *ltmbuf) xframe(b OTXrec, xcount uint8) {
 
 func (l *ltmbuf) lxframe() {
 	l.msg[3] = 0
+	l.checksum()
+}
+
+func (l *ltmbuf) qframe(d uint16) {
+	binary.LittleEndian.PutUint16(l.msg[3:5], d)
 	l.checksum()
 }
 
@@ -125,9 +135,16 @@ func LTMGen(s *MSPSerial, seg OTXSegment, verbose bool, fast bool) {
 	llat := float64(0)
 	llon := float64(0)
 	xcount := uint8(0)
-	var lt time.Time
+	ld := uint16(0)
+
+	var st, lt time.Time
 
 	for _, b := range seg.Recs {
+
+		if st.IsZero() {
+			st = b.Ts
+		}
+
 		tdiff := b.Ts.Sub(lt)
 		if b.Crsf {
 			b.Speed = calc_speed(b, tdiff, llat, llon)
@@ -164,7 +181,7 @@ func LTMGen(s *MSPSerial, seg OTXSegment, verbose bool, fast bool) {
 		}
 
 		l = newLTM('X')
-		l.xframe(b, xcount)
+		l.xframe(b.Hdop, xcount)
 		s.Write(l.msg)
 		xcount = (xcount + 1) & 0xff
 		if verbose {
@@ -178,14 +195,21 @@ func LTMGen(s *MSPSerial, seg OTXSegment, verbose bool, fast bool) {
 				time.Sleep(tdiff)
 			}
 		}
+
+		if s.Klass() == DevClass_FD {
+			et := b.Ts.Sub(st)
+			d := uint16(et.Seconds())
+			if d != ld {
+				l = newLTM('q')
+				l.qframe(d)
+				s.Write(l.msg)
+				ld = d
+			}
+		}
 		lt = b.Ts
 	}
 	if s.Klass() == DevClass_FD {
-		b := OTXrec{}
-		l := newLTM('X')
-		l.xframe(b, xcount)
-		s.Write(l.msg)
-		l = newLTM('x')
+		l := newLTM('x')
 		l.lxframe()
 		s.Write(l.msg)
 	}

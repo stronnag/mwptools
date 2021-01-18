@@ -4326,7 +4326,7 @@ case 0:
             if(armtime == 0)
                 time_t(out armtime);
 
-            if(replayer == Player.NONE || replayer == Player.OTX)
+            if(replayer == Player.NONE)
             {
                 time_t(out duration);
                 duration -= armtime;

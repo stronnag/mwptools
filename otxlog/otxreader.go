@@ -28,12 +28,13 @@ const LOGTIMEPARSE = "2006-01-02 15:04:05.000"
 const TIMEDATE = "2006-01-02 15:04:05"
 
 type FlightMeta struct {
-	Logname string
-	Date    string
-	Index   int
-	Start   int
-	End     int
-	Flags   int
+	Logname  string
+	Date     time.Time
+	Index    int
+	Start    int
+	End      int
+	Flags    int
+	Duration time.Duration
 }
 
 type OTXrec struct {
@@ -423,6 +424,7 @@ func (o *OTXLOG) GetMetas() ([]FlightMeta, error) {
 		record, err := r.Read()
 		if err == io.EOF {
 			metas[idx-1].End = (i - 1)
+			metas[idx-1].Duration = lasttm.Sub(metas[idx-1].Date)
 			break
 		}
 		if i == 1 {
@@ -447,9 +449,10 @@ func (o *OTXLOG) GetMetas() ([]FlightMeta, error) {
 			if t_utc.Sub(lasttm).Seconds() > (time.Duration(120) * time.Second).Seconds() {
 				if idx > 0 {
 					metas[idx-1].End = i - 1
+					metas[idx-1].Duration = lasttm.Sub(metas[idx-1].Date)
 				}
 				idx += 1
-				mt := FlightMeta{Logname: basefile, Date: t_utc.Format(TIMEDATE), Index: idx, Start: i}
+				mt := FlightMeta{Logname: basefile, Date: t_utc, Index: idx, Start: i}
 				metas = append(metas, mt)
 			}
 			lasttm = t_utc
