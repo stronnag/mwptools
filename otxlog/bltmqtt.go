@@ -114,8 +114,16 @@ func (m *MQTTClient) sub() {
    broker.emqx.io
 */
 
-func make_bullet_msg(b OTXrec, dist float64, bearing float64, homeamsl float64) string {
+func make_bullet_msg(b OTXrec, dist float64, bearing float64, homeamsl float64, elapsed int) string {
 	var sb strings.Builder
+
+	sb.WriteString("flt:")
+	sb.WriteString(strconv.Itoa(elapsed))
+	sb.WriteByte(',')
+	elapsed += 60
+	sb.WriteString("ont:")
+	sb.WriteString(strconv.Itoa(elapsed))
+	sb.WriteByte(',')
 
 	sb.WriteString("ran:")
 	sb.WriteString(strconv.Itoa(int(b.Roll) * 10))
@@ -229,7 +237,7 @@ func make_bullet_mode(mode string, ncells int) string {
 
 	sb.WriteString("ftm:")
 	sb.WriteString(mode)
-	sb.WriteString(",css:3")
+	sb.WriteString(",css:1")
 	return sb.String()
 }
 
@@ -263,7 +271,10 @@ func MQTTGen(broker string, topic string, s OTXSegment) {
 	laststat := uint8(0)
 	fmode := ""
 
+	st := time.Now()
 	for i, b := range s.Recs {
+		now := time.Now()
+		et := int(now.Sub(st).Seconds())
 		cse, dist := Csedist(b.Lat, b.Lon, s.Hlat, s.Hlon)
 		dist *= 1852.0
 		stat := b.Status >> 2
@@ -307,7 +318,7 @@ func MQTTGen(broker string, topic string, s OTXSegment) {
 			c.publish(msg)
 		}
 
-		msg := make_bullet_msg(b, dist, cse, homeamsl)
+		msg := make_bullet_msg(b, dist, cse, homeamsl, et)
 		c.publish(msg)
 		if !lastm.IsZero() {
 			tdiff := b.Ts.Sub(lastm)
