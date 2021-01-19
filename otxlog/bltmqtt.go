@@ -1,5 +1,7 @@
 package main
 
+// $ ./otxlog -mqtt "broker.emqx.io,org/mwptools/mqtt/otxplayer" jtest.csv
+
 import (
 	"fmt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -116,11 +118,11 @@ func make_bullet_msg(b OTXrec, dist float64, bearing float64, homeamsl float64) 
 	var sb strings.Builder
 
 	sb.WriteString("ran:")
-	sb.WriteString(strconv.Itoa(int(b.Roll)))
+	sb.WriteString(strconv.Itoa(int(b.Roll) * 10))
 	sb.WriteByte(',')
 
 	sb.WriteString("pan:")
-	sb.WriteString(strconv.Itoa(int(b.Pitch)))
+	sb.WriteString(strconv.Itoa(int(b.Pitch) * 10))
 	sb.WriteByte(',')
 
 	sb.WriteString("hea:")
@@ -128,7 +130,7 @@ func make_bullet_msg(b OTXrec, dist float64, bearing float64, homeamsl float64) 
 	sb.WriteByte(',')
 
 	sb.WriteString("alt:")
-	sb.WriteString(strconv.Itoa(int(b.Alt)))
+	sb.WriteString(strconv.Itoa(int(b.Alt) * 100))
 	sb.WriteByte(',')
 
 	sb.WriteString("asl:")
@@ -137,7 +139,7 @@ func make_bullet_msg(b OTXrec, dist float64, bearing float64, homeamsl float64) 
 	sb.WriteByte(',')
 
 	sb.WriteString("gsp:")
-	sb.WriteString(strconv.Itoa(int(b.Speed)))
+	sb.WriteString(strconv.Itoa(int(b.Speed) * 100))
 	sb.WriteByte(',')
 
 	sb.WriteString("bpv:")
@@ -186,7 +188,18 @@ func make_bullet_msg(b OTXrec, dist float64, bearing float64, homeamsl float64) 
 	sb.WriteString(strconv.Itoa(int(bearing)))
 	sb.WriteByte(',')
 
-	sb.WriteString("arm:1")
+	thr := 100 * (int(b.Throttle) + 1024) / 2048
+	sb.WriteString("trp:")
+	sb.WriteString(strconv.Itoa(thr))
+	sb.WriteByte(',')
+
+	fs := (b.Status & 2) >> 1
+	sb.WriteString("fs:")
+	sb.WriteString(strconv.Itoa(int(fs)))
+	sb.WriteByte(',')
+
+	armed := b.Status & 1
+	sb.WriteString(fmt.Sprintf("arm:%d", armed))
 	return sb.String()
 }
 
@@ -206,10 +219,32 @@ func make_bullet_home(hlat float64, hlon float64, halt float64) string {
 	return sb.String()
 }
 
-func make_bullet_mode(mode string) string {
-	return fmt.Sprintf("ftm:%s", mode)
+func make_bullet_mode(mode string, ncells int) string {
+	var sb strings.Builder
+	if ncells > 0 {
+		sb.WriteString("bcc:")
+		sb.WriteString(strconv.Itoa(ncells))
+		sb.WriteByte(',')
+	}
+
+	sb.WriteString("ftm:")
+	sb.WriteString(mode)
+	sb.WriteString(",css:3")
+	return sb.String()
 }
 
+func get_cells(mvbat uint16) int {
+	ncell := 0
+	vbat := float64(mvbat) / 1000.0
+	for i := 1; i < 10; i++ {
+		v := 3.0 * float64(i)
+		if vbat < v {
+			ncell = i - 1
+			break
+		}
+	}
+	return ncell
+}
 
 func MQTTGen(broker string, topic string, s OTXSegment) {
 	if broker == "" {
@@ -219,13 +254,11 @@ func MQTTGen(broker string, topic string, s OTXSegment) {
 		topic = "org/mwptools/mqtt/otxplayer"
 	}
 
+	ncells := 0
 	homeamsl, _ := GetElevation(s.Hlat, s.Hlon)
 
 	c := NewMQTTClient(broker, topic)
 	var lastm time.Time
-
-	msg := make_bullet_home(s.Hlat, s.Hlon, homeamsl)
-	c.publish(msg)
 
 	laststat := uint8(0)
 	fmode := ""
@@ -233,9 +266,12 @@ func MQTTGen(broker string, topic string, s OTXSegment) {
 	for i, b := range s.Recs {
 		cse, dist := Csedist(b.Lat, b.Lon, s.Hlat, s.Hlon)
 		dist *= 1852.0
-		msg := make_bullet_msg(b, dist, cse, homeamsl)
-		c.publish(msg)
 		stat := b.Status >> 2
+
+		if ncells == 0 {
+			ncells = get_cells(b.Mvbat)
+		}
+
 		if stat != laststat {
 			switch stat {
 			case 0:
@@ -260,17 +296,19 @@ func MQTTGen(broker string, topic string, s OTXSegment) {
 				fmode = "ACRO"
 			}
 			laststat = stat
-			msg := make_bullet_mode(fmode)
+			msg := make_bullet_mode(fmode, ncells)
 			c.publish(msg)
 		}
 
 		if i%10 == 0 {
-			msg := make_bullet_mode(fmode)
+			msg := make_bullet_mode(fmode, ncells)
 			c.publish(msg)
 			msg = make_bullet_home(s.Hlat, s.Hlon, homeamsl)
 			c.publish(msg)
 		}
 
+		msg := make_bullet_msg(b, dist, cse, homeamsl)
+		c.publish(msg)
 		if !lastm.IsZero() {
 			tdiff := b.Ts.Sub(lastm)
 			time.Sleep(tdiff)

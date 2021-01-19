@@ -38,24 +38,25 @@ type FlightMeta struct {
 }
 
 type OTXrec struct {
-	Ts      time.Time
-	Lat     float64
-	Lon     float64
-	Alt     float64
-	Nsats   uint8
-	Pitch   int16
-	Roll    int16
-	Heading int16
-	Mvbat   uint16
-	Mah     uint16
-	Hdop    uint16
-	Rssi    uint8
-	Speed   uint8
-	Aspeed  uint8
-	Status  uint8
-	Fix     uint8
-	Amps    float64
-	Crsf    bool
+	Ts       time.Time
+	Lat      float64
+	Lon      float64
+	Alt      float64
+	Nsats    uint8
+	Pitch    int16
+	Roll     int16
+	Heading  int16
+	Mvbat    uint16
+	Mah      uint16
+	Hdop     uint16
+	Rssi     uint8
+	Speed    uint8
+	Aspeed   uint8
+	Status   uint8
+	Fix      uint8
+	Amps     float64
+	Throttle int
+	Crsf     bool
 }
 
 type OTXSegment struct {
@@ -228,6 +229,11 @@ func get_otx_line(r []string) OTXrec {
 	if s, _, ok := get_rec_value(r, "Hdg"); ok {
 		v, _ := strconv.ParseFloat(s, 64)
 		b.Heading = int16(v)
+	}
+
+	if s, _, ok := get_rec_value(r, "Thr"); ok {
+		v, _ := strconv.ParseInt(s, 10, 32)
+		b.Throttle = int(v)
 	}
 
 	if s, _, ok := get_rec_value(r, "Tmp1"); ok {
