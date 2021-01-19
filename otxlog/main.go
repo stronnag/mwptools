@@ -16,7 +16,6 @@ var (
 	dump    = flag.Bool("dump", false, "dump headers & exit")
 	fast    = flag.Bool("fast", false, "fast replay")
 	verbose = flag.Bool("verbose", false, "verbose LTM debug")
-	armed   = flag.Bool("armed-only", false, "skip not armed")
 	idx     = flag.Int("index", 1, "Log entry index")
 	metas   = flag.Bool("metas", false, "list metadata and exit")
 	list    = flag.Bool("list", false, "list log data")
