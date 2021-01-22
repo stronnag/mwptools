@@ -1577,7 +1577,7 @@ public class ListBox : GLib.Object
 
         preview_item = new Gtk.MenuItem.with_label ("Preview Mission");
         preview_item.activate.connect (() => {
-                preview_mission();
+                toggle_mission_preview_state();
             });
         menu.add (preview_item);
         preview_item.sensitive=false;

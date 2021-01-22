@@ -66,16 +66,7 @@ type MQTTClient struct {
 	topic  string
 }
 
-func NewMQTTClient(_broker string, topic string) *MQTTClient {
-	var broker string
-	if _broker == "" {
-		//		broker = "test.mosquitto.org"
-		broker = "broker.emqx.io"
-	} else {
-		broker = _broker
-	}
-	var port = 1883
-
+func NewMQTTClient(broker string, topic string, port int) *MQTTClient {
 	clientid := fmt.Sprintf("mwp_%x", rand.Int())
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", broker, port))
@@ -162,9 +153,8 @@ func make_bullet_msg(b OTXrec, dist float64, bearing float64, homeamsl float64, 
 	sb.WriteString(fmt.Sprintf("%.2f", b.Amps))
 	sb.WriteByte(',')
 
-	rssi := 100 * int(b.Rssi) / 255
 	sb.WriteString("rsi:")
-	sb.WriteString(strconv.Itoa(rssi))
+	sb.WriteString(strconv.Itoa(int(b.Rssi)))
 	sb.WriteByte(',')
 
 	sb.WriteString("gla:")
@@ -254,18 +244,21 @@ func get_cells(mvbat uint16) int {
 	return ncell
 }
 
-func MQTTGen(broker string, topic string, s OTXSegment) {
+func MQTTGen(broker string, topic string, port int, s OTXSegment) {
 	if broker == "" {
 		broker = "broker.emqx.io"
 	}
 	if topic == "" {
-		topic = "org/mwptools/mqtt/otxplayer"
+		topic = fmt.Sprintf("org/mwptools/mqtt/otxp_%d", rand.Int())
+	}
+	if port == 0 {
+		port = 1883
 	}
 
 	ncells := 0
 	homeamsl, _ := GetElevation(s.Hlat, s.Hlon)
 
-	c := NewMQTTClient(broker, topic)
+	c := NewMQTTClient(broker, topic, port)
 	var lastm time.Time
 
 	laststat := uint8(0)

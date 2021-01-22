@@ -94,7 +94,7 @@ func (l *ltmbuf) oframe(b OTXrec, hlat float64, hlon float64) {
 func (l *ltmbuf) sframe(b OTXrec) {
 	binary.LittleEndian.PutUint16(l.msg[3:5], b.Mvbat)
 	binary.LittleEndian.PutUint16(l.msg[5:7], b.Mah)
-	l.msg[7] = b.Rssi
+	l.msg[7] = uint8(255 * int(b.Rssi) / 100)
 	l.msg[8] = b.Aspeed
 	l.msg[9] = b.Status
 	l.checksum()

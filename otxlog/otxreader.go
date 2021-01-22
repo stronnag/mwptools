@@ -291,7 +291,6 @@ func get_otx_line(r []string) OTXrec {
 
 	if s, _, ok := get_rec_value(r, "RSSI"); ok {
 		rssi, _ := strconv.ParseInt(s, 10, 32)
-		rssi = rssi * 255 / 100
 		b.Rssi = uint8(rssi)
 	}
 
@@ -311,7 +310,6 @@ func get_otx_line(r []string) OTXrec {
 	// Crossfire
 	if s, _, ok := get_rec_value(r, "1RSS"); ok {
 		rssi, _ := strconv.ParseInt(s, 10, 32)
-		rssi = rssi * 255 / 100
 		b.Rssi = uint8(rssi)
 		b.Crsf = true
 

@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"strings"
+	"strconv"
 )
 
 var (
@@ -19,7 +20,7 @@ var (
 	idx     = flag.Int("index", 1, "Log entry index")
 	metas   = flag.Bool("metas", false, "list metadata and exit")
 	list    = flag.Bool("list", false, "list log data")
-	mqttdef = flag.String("mqtt", "", "broker,topic")
+	mqttdef = flag.String("mqtt", "", "broker,topic,port")
 )
 
 func main() {
@@ -55,12 +56,16 @@ func main() {
 				mq := strings.Split(*mqttdef, ",")
 				broker := ""
 				topic := ""
+				port := 0
 				if len(mq) > 1 {
 					broker = mq[0]
 					if len(mq) >= 2 {
 						topic = mq[1]
 					}
-					MQTTGen(broker, topic, recs)
+					if len(mq) >= 3 {
+						port, _ = strconv.Atoi(mq[3])
+					}
+					MQTTGen(broker, topic, port, recs)
 				}
 			} else {
 				var s *MSPSerial
