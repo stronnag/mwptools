@@ -474,8 +474,7 @@ public class MwpMQTT : Object {
             if (mi.get_match_count() >= 7) {
                 broker = mi.fetch(4);
                 var aport = mi.fetch(5);
-                var atopic = mi.fetch(6);
-                topic = atopic.substring(1);
+                topic = mi.fetch(6);
                 var up = mi.fetch(3);
                 if (up.length > 2) {
                     var fup = up.substring(0, up.length-1);
