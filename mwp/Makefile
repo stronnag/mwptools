@@ -29,7 +29,7 @@ ifdef SPK
   OPTS += --pkg gmodule-2.0
 endif
 
-OPTS+= --vapidir $(COMMOND) -X -I$(COMMOND) --pkg mwpfuncs
+OPTS+= --vapidir $(COMMOND) -X -I$(COMMOND) --pkg mwpfuncs --pkg libmosquitto
 
 BASH_COMPLETION_DIR := $(shell pkg-config --variable=completionsdir bash-completion 2>/dev/null| sed 's/^\/usr\///')
 
@@ -41,7 +41,7 @@ all: $(APPS)
 
 COMMOND=../common
 
-SRCS=mwp.vala liststore.vala mwp_markers.vala mwp_craft.vala settings.vala dialogs.vala mapsources.vala logger.vala speech_wrapper.c mwp-replay.vala map_seeder.vala mwp-layout.vala iparser.vala mwp_bbox.vala ah_widget.vala _mwpvers.c get_places.vala mission.vala mwp_dbus.vala name_type_map.vala mwp_pe_support.vala kmlovly.vala mwp_upower.vala replicate_wp.vala mwp-mission-preview.vala mwp-radar_list.vala dbus-mwp-client.vala mwp_safehomes.vala mwp_otx.vala
+SRCS=mwp.vala liststore.vala mwp_markers.vala mwp_craft.vala settings.vala dialogs.vala mapsources.vala logger.vala speech_wrapper.c mwp-replay.vala map_seeder.vala mwp-layout.vala iparser.vala mwp_bbox.vala ah_widget.vala _mwpvers.c get_places.vala mission.vala mwp_dbus.vala name_type_map.vala mwp_pe_support.vala kmlovly.vala mwp_upower.vala replicate_wp.vala mwp-mission-preview.vala mwp-radar_list.vala dbus-mwp-client.vala mwp_safehomes.vala mwp_otx.vala mwp_mqtt.vala
 
 COMMON=$(COMMOND)/btdev.c $(COMMOND)/cserial.c $(COMMOND)/xmlio.vala $(COMMOND)/serial-device.vala $(COMMOND)/geocalc.vala  $(COMMOND)/utils.vala $(COMMOND)/mspmsg.vala $(COMMOND)/mspcmd.vala  $(COMMOND)/mwc.vala $(COMMOND)/mwplog.vala $(COMMOND)/mavcmd.vala local_geo.vala $(COMMOND)/cliterm.vala $(COMMOND)/mlock.vala $(COMMOND)/json_io.vala $(COMMOND)/devman.vala
 

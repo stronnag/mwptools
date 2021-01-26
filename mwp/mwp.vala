@@ -521,7 +521,7 @@ public class MWP : Gtk.Application {
     private uint32 xarm_flags=0xffff;
     private int tcycle = 0;
     private SERSTATE serstate = SERSTATE.NONE;
-
+    private MwpMQTT mqtt;
     private bool rxerr = false;
 
     private uint64 acycle;
@@ -672,8 +672,9 @@ public class MWP : Gtk.Application {
         NONE=0,
         NORMAL,
         POLLER,
-        TELEM,
-        TELEM_SP
+        TELEM = 128,
+        TELEM_SP,
+        TELEM_MQTT
     }
 
     private enum DEBUG_FLAGS
@@ -2279,6 +2280,27 @@ public class MWP : Gtk.Application {
 
         build_deventry();
         dev_entry.active = 0;
+
+        mqtt = newMwpMQTT();
+        mqtt.mqtt_mission.connect((w,n) => {
+                wp_resp = {};
+                for(var j = 0; j < n; j++)
+                    wp_resp += wp_to_mitem(w[j]);
+
+                clear_mission();
+                var ms = new Mission();
+                ms.set_ways(wp_resp);
+                ls.import_mission(ms, (conf.rth_autoland && Craft.is_mr(vi.mrtype)));
+                markers.add_list_store(ls);
+            });
+        mqtt.mqtt_frame.connect((cmd, raw, len) => {
+                handle_serial(cmd,raw,(uint)len,0, false);
+            });
+
+        mqtt.mqtt_craft_name.connect((s) => {
+                vname = s;
+                set_typlab();
+            });
 
         devman.device_added.connect((s) => {
                 if(s != null && s.contains(" ") || msp.available)
@@ -4373,7 +4395,7 @@ case 0:
                     audio_cb.active = true;
 
                 }
-                if(conf.logarmed == true)
+                if(conf.logarmed == true && !mqtt.available)
                 {
                     logb.active = true;
                 }
@@ -6594,7 +6616,6 @@ case 0:
 
                 rp = deserialise_i32(raw, out gf.lat);
                 rp = deserialise_i32(rp, out gf.lon);
-
                 if(fakeoff.faking)
                 {
                     gf.lat += (int32)(fakeoff.dlat*10000000);
@@ -8091,7 +8112,10 @@ case 0:
             last_tm = 0;
             last_ga = 0;
             boxnames = null;
-            msp.close();
+            if (msp.available)
+                msp.close();
+            else if (mqtt.available)
+                mqtt.mdisconnect();
             c.set_label("Connect");
             set_mission_menus(false);
             set_menu_state("navconfig", false);
@@ -8256,11 +8280,15 @@ case 0:
             verlab.label = verlab.tooltip_text = "";
             typlab.set_label("");
             statusbar.push(context_id, "");
-        }
-        else
-        {
+        } else if (mqtt.available) {
+            serial_doom(conbutton);
+            markers.remove_rings(view);
+            verlab.label = verlab.tooltip_text = "";
+            typlab.set_label("");
+            statusbar.push(context_id, "");
+        } else {
             var serdev = dev_entry.get_active_text();
-            string estr;
+            string estr="";
             bool ostat;
 
             serstate = SERSTATE.NONE;
@@ -8268,8 +8296,13 @@ case 0:
             {
                 ostat = msp.open_sport(sport_device, out estr);
                 spi = {0};
-            }
-            else
+            } else if (serdev.has_prefix("mqtt://"))
+            {
+                ostat = mqtt.mosquitto_setup(serdev);
+                rawlog = false;
+                nopoll = true;
+                serstate = SERSTATE.TELEM;
+            } else
                 ostat = msp.open_w(serdev, conf.baudrate, out estr);
 
             if (ostat == true)
@@ -8307,16 +8340,18 @@ case 0:
                             });
                     }
                 }
-                msp.setup_reader();
-                MWPLog.message("Serial ready\n");
-                if(nopoll == false && (serdev != "*SMARTPORT*"))
-                {
-                    serstate = SERSTATE.NORMAL;
-                    queue_cmd(MSP.Cmds.IDENT,null,0);
-                    run_queue();
+                if (!mqtt.available) {
+                    msp.setup_reader();
+                    MWPLog.message("Serial ready\n");
+                    if(nopoll == false && !mqtt.available && (serdev != "*SMARTPORT*"))
+                    {
+                        serstate = SERSTATE.NORMAL;
+                        queue_cmd(MSP.Cmds.IDENT,null,0);
+                        run_queue();
+                    }
+                    else
+                        serstate = SERSTATE.TELEM;
                 }
-                else
-                    serstate = SERSTATE.TELEM;
             }
             else
             {
