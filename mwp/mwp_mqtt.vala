@@ -87,7 +87,7 @@ public class MwpMQTT : Object {
                         break;
                     case "3df":
                         tmp = (gframe.sats & ~3);
-                        gframe.sats = tmp | ((((uint8)(int.parse(attrs[1]))) == 1) ? 3 : 0);
+                        gframe.sats = tmp | ((((uint8)(int.parse(attrs[1]))) != 0) ? 3 : 0);
                         break;
                     case "gsp":
                         gframe.speed = (uint8)(int.parse(attrs[1])/100);
