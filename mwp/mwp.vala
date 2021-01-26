@@ -521,9 +521,11 @@ public class MWP : Gtk.Application {
     private uint32 xarm_flags=0xffff;
     private int tcycle = 0;
     private SERSTATE serstate = SERSTATE.NONE;
-    private MwpMQTT mqtt;
     private bool rxerr = false;
-
+#if MQTT
+    private MwpMQTT mqtt;
+#endif
+    private bool mqtt_available = false;
     private uint64 acycle;
     private uint64 anvals;
     private uint64 xbits = 0;
@@ -674,7 +676,6 @@ public class MWP : Gtk.Application {
         POLLER,
         TELEM = 128,
         TELEM_SP,
-        TELEM_MQTT
     }
 
     private enum DEBUG_FLAGS
@@ -2280,7 +2281,7 @@ public class MWP : Gtk.Application {
 
         build_deventry();
         dev_entry.active = 0;
-
+#if MQTT
         mqtt = newMwpMQTT();
         mqtt.mqtt_mission.connect((w,n) => {
                 wp_resp = {};
@@ -2301,7 +2302,7 @@ public class MWP : Gtk.Application {
                 vname = s;
                 set_typlab();
             });
-
+#endif
         devman.device_added.connect((s) => {
                 if(s != null && s.contains(" ") || msp.available)
                     append_deventry(s);
@@ -4395,7 +4396,7 @@ case 0:
                     audio_cb.active = true;
 
                 }
-                if(conf.logarmed == true && !mqtt.available)
+                if(conf.logarmed == true && !mqtt_available)
                 {
                     logb.active = true;
                 }
@@ -8114,8 +8115,10 @@ case 0:
             boxnames = null;
             if (msp.available)
                 msp.close();
+#if MQTT
             else if (mqtt.available)
                 mqtt.mdisconnect();
+#endif
             c.set_label("Connect");
             set_mission_menus(false);
             set_menu_state("navconfig", false);
@@ -8280,12 +8283,14 @@ case 0:
             verlab.label = verlab.tooltip_text = "";
             typlab.set_label("");
             statusbar.push(context_id, "");
+#if MQTT
         } else if (mqtt.available) {
             serial_doom(conbutton);
             markers.remove_rings(view);
             verlab.label = verlab.tooltip_text = "";
             typlab.set_label("");
             statusbar.push(context_id, "");
+#endif
         } else {
             var serdev = dev_entry.get_active_text();
             string estr="";
@@ -8296,12 +8301,14 @@ case 0:
             {
                 ostat = msp.open_sport(sport_device, out estr);
                 spi = {0};
-            } else if (serdev.has_prefix("mqtt://"))
-            {
+#if MQTT
+            } else if (serdev.has_prefix("mqtt://")) {
                 ostat = mqtt.mosquitto_setup(serdev);
+                mqtt_available = mqtt.available;
                 rawlog = false;
                 nopoll = true;
                 serstate = SERSTATE.TELEM;
+#endif
             } else
                 ostat = msp.open_w(serdev, conf.baudrate, out estr);
 
@@ -8340,10 +8347,10 @@ case 0:
                             });
                     }
                 }
-                if (!mqtt.available) {
+                if (!mqtt_available) {
                     msp.setup_reader();
                     MWPLog.message("Serial ready\n");
-                    if(nopoll == false && !mqtt.available && (serdev != "*SMARTPORT*"))
+                    if(nopoll == false && !mqtt_available && (serdev != "*SMARTPORT*"))
                     {
                         serstate = SERSTATE.NORMAL;
                         queue_cmd(MSP.Cmds.IDENT,null,0);
