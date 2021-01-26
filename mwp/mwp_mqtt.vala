@@ -437,18 +437,18 @@ public class MwpMQTT : Object {
 
     public bool mosquitto_setup(string s)
     {
-        string host = null;
+        string broker = null;
         string topic = null;
-        int port = 0;
+        int port = -1;
         string user = null;
         string passwd = null;
         string query = null;
         string cafile = null;
-
+#if USE_URIPARSE
         try
         {
             var u = Uri.parse(s, UriFlags.HAS_PASSWORD);
-            host = u.get_host();
+            broker = u.get_host();
             port = u.get_port();
             topic = u.get_path();
             user = u.get_user();
@@ -464,14 +464,51 @@ public class MwpMQTT : Object {
                 cafile = parts[1];
             }
         }
-
+#else
+    try
+    {
+        MatchInfo mi;
+        var regex = new Regex ("""^([a-z][a-z0-9+.-]+):(\/\/([^@]+@)?([a-z0-9.\-_~]+)(:\d+)?)?((?:[a-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])+(?:\/(?:[a-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])*)*|(?:\/(?:[a-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])+)*)?(\?(?:[a-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@]|[/?])+)?(\#(?:[a-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@]|[/?])+)?$""");
+        if(regex.match(s, 0, out mi))
+        {
+            if (mi.get_match_count() >= 7) {
+                broker = mi.fetch(4);
+                var aport = mi.fetch(5);
+                var atopic = mi.fetch(6);
+                topic = atopic.substring(1);
+                var up = mi.fetch(3);
+                if (up.length > 2) {
+                    var fup = up.substring(0, up.length-1);
+                    var cred = fup.split(":");
+                    user = cred[0];
+                    if (cred.length  > 1 )
+                        passwd = cred[1];
+                }
+                if (aport.length > 1) {
+                    port = int.parse(aport.substring(1));
+                }
+                if (mi.get_match_count() == 8) {
+                    query = mi.fetch(7);
+                    var parts = query.substring(1).split("&");
+                    foreach (var p in parts) {
+                        var q = p.split("=");
+                        if (q[0] == "cafile") {
+                            cafile = q[1];
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    } catch(GLib.Error e) {
+        stderr.printf("regex err: %s", e.message);
+    }
+#endif
         if (port <= 0)
             port = 1883;
 
         if (topic.length > 0)
             topic = topic.slice(1,topic.length);
-
-//        stdout.printf("h=%s\np=%d\nt=%s\nc=%s\nu=%s\nw=%s\n", host, port, topic, cafile,user,passwd);
 
         Mosquitto.init ();
         client = new Mosquitto.Client (null, true, null);
@@ -482,7 +519,7 @@ public class MwpMQTT : Object {
             client.tls_set(cafile, null, null, null, ()=>{return 0;});
         }
 
-        if (client.connect (host, port, KEEPALIVE) != 0) {
+        if (client.connect (broker, port, KEEPALIVE) != 0) {
             stderr.printf ("Unable to connect.\n");
             return false;
         }
