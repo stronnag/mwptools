@@ -44,6 +44,9 @@ apt $CONFIRM install ruby ruby-json
 ## for flite as the text to speech API
 # apt $CONFIRM install flite flite1-dev
 
+## for MQTT (BulletGCSS) protocol
+# apt $CONFIRM install libmosquitto-dev
+
 ## For plot-elevation.rb
 apt $CONFIRM install gnuplot ruby-nokogiri
 
