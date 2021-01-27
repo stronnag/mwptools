@@ -266,7 +266,7 @@ public class MwpMQTT : Object {
 
     private void serialise_oframe()
     {
-        uint8 raw[MSize.LTM_OFRAME];
+        uint8 raw[32];
         uint8 *p;
         p = serialise_i32(raw, oframe.lat);
         p = serialise_i32(p, oframe.lon);
@@ -278,7 +278,7 @@ public class MwpMQTT : Object {
 
     private void serialise_gframe()
     {
-        uint8 raw[MSize.LTM_GFRAME];
+        uint8 raw[32];
         uint8 *p;
         p = serialise_i32(raw, gframe.lat);
         p = serialise_i32(p, gframe.lon);
@@ -290,7 +290,7 @@ public class MwpMQTT : Object {
 
     private void serialise_aframe()
     {
-        uint8 raw[MSize.LTM_AFRAME];
+        uint8 raw[32];
         uint8 *p;
         p = serialise_u16(raw, aframe.pitch);
         p = serialise_u16(p, aframe.roll);
@@ -300,7 +300,7 @@ public class MwpMQTT : Object {
 
     private void serialise_sframe()
     {
-        uint8 raw[MSize.LTM_SFRAME];
+        uint8 raw[32];
         uint8 *p;
         p = serialise_u16(raw, sframe.vbat);
         p = serialise_u16(p, sframe.vcurr);
@@ -312,7 +312,7 @@ public class MwpMQTT : Object {
 
     private void serialise_xframe()
     {
-        uint8 raw[MSize.LTM_XFRAME];
+        uint8 raw[32];
         uint8 *p;
         p = serialise_u16(raw, xframe.hdop);
         *p++ = 0;
@@ -324,7 +324,7 @@ public class MwpMQTT : Object {
 
     private void serialise_nframe()
     {
-        uint8 raw[MSize.LTM_NFRAME];
+        uint8 raw[32];
         uint8 *p = raw;
         *p++ = nframe.gps_mode;
         *p++ = nframe.nav_mode;
@@ -477,18 +477,18 @@ public class MwpMQTT : Object {
                 topic = mi.fetch(6);
                 var up = mi.fetch(3);
                 if (up.length > 2) {
-                    var fup = up.substring(0, up.length-1);
+                    var fup = up[0:-1];
                     var cred = fup.split(":");
                     user = cred[0];
                     if (cred.length  > 1 )
                         passwd = cred[1];
                 }
                 if (aport.length > 1) {
-                    port = int.parse(aport.substring(1));
+                    port = int.parse(aport[1:]);
                 }
                 if (mi.get_match_count() == 8) {
                     query = mi.fetch(7);
-                    var parts = query.substring(1).split("&");
+                    var parts = query[1:].split("&");
                     foreach (var p in parts) {
                         var q = p.split("=");
                         if (q[0] == "cafile") {

@@ -4,8 +4,6 @@ import (
 	"os"
 	"flag"
 	"fmt"
-	"strings"
-	"strconv"
 )
 
 var (
@@ -20,7 +18,7 @@ var (
 	idx     = flag.Int("index", 1, "Log entry index")
 	metas   = flag.Bool("metas", false, "list metadata and exit")
 	list    = flag.Bool("list", false, "list log data")
-	mqttdef = flag.String("mqtt", "", "broker,topic,port")
+	mqttdef = flag.String("broker", "", "MQTT uri (mqtt://[user[:pass]@]broker[:port]/topic[?cafile=file])")
 )
 
 func main() {
@@ -53,20 +51,7 @@ func main() {
 			} else if *list {
 				Listgen(recs)
 			} else if *mqttdef != "" {
-				mq := strings.Split(*mqttdef, ",")
-				broker := ""
-				topic := ""
-				port := 0
-				if len(mq) > 1 {
-					broker = mq[0]
-					if len(mq) >= 2 {
-						topic = mq[1]
-					}
-					if len(mq) >= 3 {
-						port, _ = strconv.Atoi(mq[3])
-					}
-					MQTTGen(broker, topic, port, recs)
-				}
+				MQTTGen(*mqttdef, recs)
 			} else {
 				var s *MSPSerial
 				if *fd > 0 {

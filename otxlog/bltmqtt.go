@@ -7,10 +7,17 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"time"
 	"math/rand"
-	"strings"
-	"strconv"
 	"math"
+	"net/url"
+	"log"
+	"os"
+	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
+	"strconv"
+	"strings"
 )
+
 
 func nm2r(nm float64) float64 {
 	return (math.Pi / (180.0 * 60.0)) * nm
@@ -66,16 +73,76 @@ type MQTTClient struct {
 	topic  string
 }
 
-func NewMQTTClient(broker string, topic string, port int) *MQTTClient {
+func NewTlsConfig(cafile string) (*tls.Config, string) {
+	if len(cafile) == 0 {
+		return &tls.Config{InsecureSkipVerify: true, ClientAuth: tls.NoClientCert}, "tcp"
+	} else {
+		certpool := x509.NewCertPool()
+		ca, err := ioutil.ReadFile(cafile)
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+		certpool.AppendCertsFromPEM(ca)
+		return &tls.Config{
+			RootCAs:            certpool,
+			InsecureSkipVerify: true, ClientAuth: tls.NoClientCert,
+		},
+			"ssl"
+	}
+}
+
+func NewMQTTClient(mqttopts string) *MQTTClient {
+
+	var broker string
+	var topic string
+	var port int
+	var cafile string
+	var user string
+	var passwd string
+
+	u, err := url.Parse(mqttopts)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(u.Path) > 0 {
+		topic = u.Path[1:]
+	}
+	port, _ = strconv.Atoi(u.Port())
+	broker = u.Hostname()
+
+	up := u.User
+	user = up.Username()
+	passwd, _ = up.Password()
+
+	q := u.Query()
+	ca := q["cafile"]
+	if len(ca) > 0 {
+		cafile = ca[0]
+	}
+
+	if broker == "" || topic == "" {
+		fmt.Fprintln(os.Stderr, "need broker and topic")
+		os.Exit(1)
+	}
+
+	if port == 0 {
+		port = 1883
+	}
+
+	tlsconf, scheme := NewTlsConfig(cafile)
 	clientid := fmt.Sprintf("mwp_%x", rand.Int())
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", broker, port))
+	opts.AddBroker(fmt.Sprintf("%s://%s:%d", scheme, broker, port))
+	opts.SetTLSConfig(tlsconf)
 	opts.SetClientID(clientid)
-	opts.SetUsername("")
-	opts.SetPassword("")
+	opts.SetUsername(user)
+	opts.SetPassword(passwd)
 	opts.SetDefaultPublishHandler(messagePubHandler)
+
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
+
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
@@ -244,21 +311,11 @@ func get_cells(mvbat uint16) int {
 	return ncell
 }
 
-func MQTTGen(broker string, topic string, port int, s OTXSegment) {
-	if broker == "" {
-		broker = "broker.emqx.io"
-	}
-	if topic == "" {
-		topic = fmt.Sprintf("org/mwptools/mqtt/otxp_%d", rand.Int())
-	}
-	if port == 0 {
-		port = 1883
-	}
-
+func MQTTGen(broker string, s OTXSegment) {
 	ncells := 0
 	homeamsl, _ := GetElevation(s.Hlat, s.Hlon)
 
-	c := NewMQTTClient(broker, topic, port)
+	c := NewMQTTClient(broker)
 	var lastm time.Time
 
 	laststat := uint8(0)
