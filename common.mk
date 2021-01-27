@@ -51,6 +51,7 @@ ifneq ($(NOVTHREAD), 0)
 endif
 
 USE_TERMCAP := $(shell pkg-config --exists ncurses; echo $$?)
+USE_MQTT := $(shell pkg-config --exists libmosquitto; echo $$?)
 
 #GTKOK := $(shell pkg-config --atleast-version=3.22 gtk+-3.0; echo $$?)
 #ifneq ($(GTKOK), 0)

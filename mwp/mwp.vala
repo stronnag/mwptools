@@ -8301,13 +8301,17 @@ case 0:
             {
                 ostat = msp.open_sport(sport_device, out estr);
                 spi = {0};
-#if MQTT
+
             } else if (serdev.has_prefix("mqtt://")) {
+#if MQTT
                 ostat = mqtt.mosquitto_setup(serdev);
                 mqtt_available = mqtt.available;
                 rawlog = false;
                 nopoll = true;
                 serstate = SERSTATE.TELEM;
+#else
+                mwp_warning_box("MQTT is not enabled in this build\nPlease see the wiki for more information\nhttps://github.com/stronnag/mwptools/wiki/mqtt---bulletgcss-telemetry\n", Gtk.MessageType.WARNING, 60);
+                return;
 #endif
             } else
                 ostat = msp.open_w(serdev, conf.baudrate, out estr);

@@ -30,6 +30,11 @@ ifdef SPK
 endif
 
 OPTS+= --vapidir $(COMMOND) -X -I$(COMMOND) --pkg mwpfuncs
+
+ifeq ($(USE_MQTT),0)
+ MQTT=1
+endif
+
 ifdef MQTT
   DOPTS += -D MQTT
   OPTS += --pkg libmosquitto
