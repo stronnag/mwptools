@@ -484,11 +484,11 @@ public class MwpMQTT : Object {
                         passwd = cred[1];
                 }
                 if (aport.length > 1) {
-                    port = int.parse(aport[1:]);
+                    port = int.parse(aport[1:aport.length]);
                 }
                 if (mi.get_match_count() == 8) {
                     query = mi.fetch(7);
-                    var parts = query[1:].split("&");
+                    var parts = query[1:query.length].split("&");
                     foreach (var p in parts) {
                         var q = p.split("=");
                         if (q[0] == "cafile") {
@@ -507,7 +507,7 @@ public class MwpMQTT : Object {
             port = 1883;
 
         if (topic.length > 0)
-            topic = topic.slice(1,topic.length);
+            topic = topic[1:topic.length];
 
         Mosquitto.init ();
         client = new Mosquitto.Client (null, true, null);
