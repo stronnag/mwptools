@@ -9555,6 +9555,9 @@ case 0:
 
                 if(fixedopts != null)
                     MWPLog.message("default options: %s\n", fixedopts);
+#if MQTT
+                MWPLog.message("mwp is MQTT enabled\n");
+#endif
                 Gst.init (ref args);
                 MwpLibC.atexit(MWP.xchild);
                 var app = new MWP();
