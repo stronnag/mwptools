@@ -45,6 +45,7 @@ public class MwpMQTT : Object {
         if (payload.has_prefix("wpno:")) {
             parse_wp(payload);
         } else {
+
             var parts = payload.split(",");
             uint8 gattr = 0;
             uint8 oattr = 0;
@@ -465,10 +466,10 @@ public class MwpMQTT : Object {
             }
         }
 #else
-    try
-    {
+        try
+        {
         MatchInfo mi;
-        var regex = new Regex ("""^([a-z][a-z0-9+.-]+):(\/\/([^@]+@)?([a-z0-9.\-_~]+)(:\d+)?)?((?:[a-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])+(?:\/(?:[a-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])*)*|(?:\/(?:[a-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])+)*)?(\?(?:[a-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@]|[/?])+)?(\#(?:[a-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@]|[/?])+)?$""");
+        var regex = new Regex ("""^([a-z][a-z0-9+.-]+):(\/\/([^@]+@)?([a-z0-9.\-_~]+)(:\d+)?)?((?:[a-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])+(?:\/(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])*)*|(?:\/(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])+)*)?(\?(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@]|[/?])+)?(\#(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@]|[/?])+)?$""");
         if(regex.match(s, 0, out mi))
         {
             if (mi.get_match_count() >= 7) {
@@ -498,8 +499,10 @@ public class MwpMQTT : Object {
                     }
                 }
             }
+        } else {
+            return false;
         }
-    } catch(GLib.Error e) {
+        } catch(GLib.Error e) {
         stderr.printf("regex err: %s", e.message);
     }
 #endif
@@ -508,7 +511,6 @@ public class MwpMQTT : Object {
 
         if (topic.length > 0)
             topic = topic[1:topic.length];
-
         Mosquitto.init ();
         client = new Mosquitto.Client (null, true, null);
         if (user != null)
@@ -522,6 +524,7 @@ public class MwpMQTT : Object {
             stderr.printf ("Unable to connect.\n");
             return false;
         }
+
         client.message_callback_set ((client, userdata, message) => {
                 if (message.payloadlen != 0) {
                     mqtt.handle_mqtt(message.payload);
