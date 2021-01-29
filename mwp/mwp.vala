@@ -1074,10 +1074,10 @@ public class MWP : Gtk.Application {
 
         if(msp.available)
             msp.close();
-
+#if MQTT
         if (mqtt_available)
             mqtt.mdisconnect();
-
+#endif
         // stop any previews / replays
         ls.quit();
         stop_replayer();
