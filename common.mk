@@ -32,6 +32,12 @@ endif
 USE_TV := $(shell test $(VS) -ge 0046 ; echo $$? )
 USE_TV1 := $(shell test $(VS) -ge 0040 ; echo $$? )
 
+USE_URIPARSE := $(shell test $(VS) -ge 0050 ; echo $$? )
+
+ifeq ($(USE_URIPARSE), 0)
+ DOPTS+= -D USE_URIPARSE
+endif
+
 ifeq ($(USE_TV), 1)
  DOPTS+= -D USE_TV
 endif

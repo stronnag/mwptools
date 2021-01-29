@@ -96,10 +96,10 @@ public class MwpMQTT : Object {
 
 // AFRAME data --------------------------------------------------------------
                     case "ran":
-                        aframe.roll = (int16)(int.parse(attrs[1]));
+                        aframe.roll = (int16)(int.parse(attrs[1])/10);
                         break;
                     case "pan":
-                        aframe.pitch = (int16)(int.parse(attrs[1]));
+                        aframe.pitch = (int16)(int.parse(attrs[1])/10);
                         break;
                     case "hea":
                         aframe.heading = (int16)(int.parse(attrs[1]));
