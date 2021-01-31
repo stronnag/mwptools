@@ -35,10 +35,7 @@ ifeq ($(USE_MQTT),0)
  MQTT=1
 endif
 
-ifdef MQTT
-  DOPTS += -D MQTT
-  OPTS += --pkg libmosquitto
-endif
+LOPTS=-X -lm
 
 BASH_COMPLETION_DIR := $(shell pkg-config --variable=completionsdir bash-completion 2>/dev/null| sed 's/^\/usr\///')
 
@@ -52,15 +49,21 @@ COMMOND=../common
 
 SRCS=mwp.vala liststore.vala mwp_markers.vala mwp_craft.vala settings.vala dialogs.vala mapsources.vala logger.vala speech_wrapper.c mwp-replay.vala map_seeder.vala mwp-layout.vala iparser.vala mwp_bbox.vala ah_widget.vala _mwpvers.c get_places.vala mission.vala mwp_dbus.vala name_type_map.vala mwp_pe_support.vala kmlovly.vala mwp_upower.vala replicate_wp.vala mwp-mission-preview.vala mwp-radar_list.vala dbus-mwp-client.vala mwp_safehomes.vala mwp_otx.vala
 
-ifdef MQTT
- SRCS += mwp_mqtt.vala
-endif
-
 COMMON=$(COMMOND)/btdev.c $(COMMOND)/cserial.c $(COMMOND)/xmlio.vala $(COMMOND)/serial-device.vala $(COMMOND)/geocalc.vala  $(COMMOND)/utils.vala $(COMMOND)/mspmsg.vala $(COMMOND)/mspcmd.vala  $(COMMOND)/mwc.vala $(COMMOND)/mwplog.vala $(COMMOND)/mavcmd.vala local_geo.vala $(COMMOND)/cliterm.vala $(COMMOND)/mlock.vala $(COMMOND)/json_io.vala $(COMMOND)/devman.vala
 
 PKGS= --pkg gtk+-3.0 --pkg atk --pkg clutter-1.0 --pkg champlain-gtk-0.12 --pkg champlain-0.12 --pkg libxml-2.0 --pkg gio-2.0 --pkg posix --pkg clutter-gtk-1.0 --pkg gdl-3.0 --pkg pango --pkg cairo --pkg libsoup-2.4 --pkg linux --pkg gstreamer-$(GST) --pkg vte-$(VTEVERS) $(GUDEV)
 
-LOPTS=-X -lm
+ifdef MQTT
+ DOPTS += -D MQTT
+ ifeq ($(MQTTLIB), paho)
+  OPTS += --pkg paho_wrapper
+  SRCS += mwp_paho.vala paho_wrapper.c
+  LOPTS += -X -lpaho-mqtt3cs
+ else
+  OPTS += --pkg libmosquitto
+  SRCS += mwp_mqtt.vala
+ endif
+endif
 
 C = ../common
 TOPTS += -X -O2

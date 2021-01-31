@@ -57,8 +57,15 @@ ifneq ($(NOVTHREAD), 0)
 endif
 
 USE_TERMCAP := $(shell pkg-config --exists ncurses; echo $$?)
-USE_MQTT := $(shell pkg-config --exists libmosquitto; echo $$?)
-
+USE_MQTT := $(shell test -f /usr/include/MQTTClient.h || test -f /usr/local/include/MQTTClient.h; echo $$?)
+ifneq ($(USE_MQTT), 0)
+ USE_MQTT := $(shell pkg-config --exists libmosquitto; echo $$?)
+ ifeq ($(USE_MQTT), 0)
+  MQTTLIB := $(or $(MQTTLIB),mosquitto)
+ endif
+else
+ MQTTLIB := $(or $(MQTTLIB),paho)
+endif
 #GTKOK := $(shell pkg-config --atleast-version=3.22 gtk+-3.0; echo $$?)
 #ifneq ($(GTKOK), 0)
 # DOPTS += -D OLDGTK

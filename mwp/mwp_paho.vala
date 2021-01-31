@@ -1,10 +1,8 @@
-using Mosquitto;
 
-const int DEFPORT = 1883;
 const int KEEPALIVE = 60;
 
 private static MwpMQTT mqtt;
-private static Mosquitto.Client client;
+private static MQTT.Client client;
 
 public class MwpMQTT : Object {
 
@@ -29,7 +27,7 @@ public class MwpMQTT : Object {
 
     public static string provider()
     {
-        return "mosquitto";
+        return "paho";
     }
 
     public void init () {
@@ -445,11 +443,13 @@ public class MwpMQTT : Object {
     {
         string broker = null;
         string topic = null;
-        int port = -1;
+        int port = 0;
         string user = null;
         string passwd = null;
         string query = null;
         string cafile = null;
+        string scheme = null;
+
 #if USE_URIPARSE
         try
         {
@@ -460,6 +460,7 @@ public class MwpMQTT : Object {
             user = u.get_user();
             passwd = u.get_password();
             query = u.get_query();
+            scheme = u.get_scheme();
         } catch {
             return false;
         }
@@ -469,6 +470,9 @@ public class MwpMQTT : Object {
             if (parts.length == 2 && parts[0] == "cafile") {
                 cafile = parts[1];
             }
+//            if (parts.length == 2 && parts[0] == "capath") {
+//                capath = parts[1];
+//            }
         }
 #else
         try
@@ -477,7 +481,13 @@ public class MwpMQTT : Object {
         var regex = new Regex ("""^([a-z][a-z0-9+.-]+):(\/\/([^@]+@)?([a-z0-9.\-_~]+)(:\d+)?)?((?:[a-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])+(?:\/(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])*)*|(?:\/(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])+)*)?(\?(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@]|[/?])+)?(\#(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@]|[/?])+)?$""");
         if(regex.match(s, 0, out mi))
         {
+/**
+            for(var j = 0; j < mi.get_match_count(); j++) {
+                stdout.printf("%d: %s\n", j,mi.fetch(j));
+            }
+**/
             if (mi.get_match_count() >= 7) {
+                scheme = mi.fetch(1);
                 broker = mi.fetch(4);
                 var aport = mi.fetch(5);
                 topic = mi.fetch(6);
@@ -511,42 +521,68 @@ public class MwpMQTT : Object {
         stderr.printf("regex err: %s", e.message);
     }
 #endif
+
         if (port <= 0)
             port = 1883;
 
         if (topic.length > 0)
-            topic = topic[1:topic.length];
-        Mosquitto.init ();
-        client = new Mosquitto.Client (null, true, null);
-        if (user != null)
-            client.username_pw_set(user, passwd);
+            topic = topic.slice(1,topic.length);
 
-        if(cafile != null) {
-            client.tls_set(cafile, null, null, null, ()=>{return 0;});
+//        stdout.printf("h=%s\np=%d\nt=%s\nc=%s\nu=%s\nw=%s\n", host, port, topic, cafile,user,passwd);
+
+        if(scheme == "mqtt")
+            scheme = "tcp";
+        if(scheme == "mqtts")
+            scheme = "ssl";
+
+        var sb = new StringBuilder(scheme);
+        var up = false;
+        sb.append("://");
+        if (user != null) {
+            sb.append(user);
+            up = true;
         }
+        if (passwd != null) {
+            up = true;
+            sb.append_c(':');
+             sb.append(passwd);
+        }
+        if (up) {
+            sb.append_c('@');
+        }
+        sb.append(broker);
+        if (port > 0) {
+            sb.append_c(':');
+            sb.append(port.to_string());
+        }
+        if(scheme.has_prefix("ws")) {
+            sb.append("/mqtt");
+        }
+        var server = sb.str;
+        client = new MQTT.Client(server, cafile);
+        if (client != null)
+        {
+            if (client.subscribe(topic) == 0) {
+                thr = new Thread<int>("mqtt", () => {
+                        string str;
+                        while(client.poll_message(out str) == 0)
+                        {
+                            if(str != null) {
+                                mqtt.handle_mqtt(str);
+                            }
+                        }
+                        return 0;
+                    });
+            } else
+                return false;
 
-        if (client.connect (broker, port, KEEPALIVE) != 0) {
-            stderr.printf ("Unable to connect.\n");
+            available = true;
+            return true;
+        }
+        else {
+            stdout.printf("Connect Error: %d\n", MQTT.connect_status());
             return false;
         }
-
-        client.message_callback_set ((client, userdata, message) => {
-                if (message.payloadlen != 0) {
-                    mqtt.handle_mqtt(message.payload);
-                }
-            });
-
-        if (client.subscribe(null, topic, 0) == 0) {
-            thr = new Thread<int>("mqtt", () => {
-                    for(active = true ; active;) {
-                        active = (client.loop(-1,1) == 0);
-                    }
-                    return 0;
-                });
-        } else
-            return false;
-        available = true;
-        return true;
     }
 
     public bool mdisconnect()
@@ -554,7 +590,6 @@ public class MwpMQTT : Object {
         available = false;
         client.disconnect ();
         thr.join();
-        Mosquitto.cleanup ();
         return available;
     }
 }

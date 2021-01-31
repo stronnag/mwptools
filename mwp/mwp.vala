@@ -1075,8 +1075,8 @@ public class MWP : Gtk.Application {
         if(msp.available)
             msp.close();
 #if MQTT
-        if (mqtt_available)
-            mqtt.mdisconnect();
+        if (mqtt.available)
+            mqtt_available = mqtt.mdisconnect();
 #endif
         // stop any previews / replays
         ls.quit();
@@ -8119,8 +8119,10 @@ case 0:
             if (msp.available)
                 msp.close();
 #if MQTT
-            else if (mqtt.available)
-                mqtt.mdisconnect();
+            else if (mqtt_available)
+            {
+                mqtt_available = mqtt.mdisconnect();
+            }
 #endif
             c.set_label("Connect");
             set_mission_menus(false);
@@ -8305,10 +8307,12 @@ case 0:
                 ostat = msp.open_sport(sport_device, out estr);
                 spi = {0};
 
-            } else if (serdev.has_prefix("mqtt://")) {
+            } else if (serdev.has_prefix("mqtt://") ||
+                       serdev.has_prefix("ssl://") ||
+                       serdev.has_prefix("mqtts://") ||
+                       serdev.has_prefix("ws://") /*|| serdev.has_prefix("wss://")*/ ) {
 #if MQTT
-                ostat = mqtt.mosquitto_setup(serdev);
-                mqtt_available = mqtt.available;
+                mqtt_available = ostat = mqtt.setup(serdev);
                 rawlog = false;
                 nopoll = true;
                 serstate = SERSTATE.TELEM;
@@ -9559,7 +9563,8 @@ case 0:
                 if(fixedopts != null)
                     MWPLog.message("default options: %s\n", fixedopts);
 #if MQTT
-                MWPLog.message("mwp is MQTT enabled\n");
+                MWPLog.message("MQTT enabled via the \"%s\" library\n",
+                              MwpMQTT.provider());
 #endif
                 Gst.init (ref args);
                 MwpLibC.atexit(MWP.xchild);
