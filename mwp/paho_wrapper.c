@@ -37,9 +37,11 @@ MQTTClient paho_wrapper_setup(const char *host, const char *cafile)
      inits.do_openssl_init = 1;
      MQTTClient_global_init(&inits);
 
-     if((strncmp(host, "ssl://", 6) == 0 || strncmp(host, "wss://", 6) == 0))
+     if((strncmp(host, "ssl://", 6) == 0 || strncmp(host, "mqtts://", 8) == 0 || strncmp(host, "wss://", 6) == 0))
      {
           ssl_opts.verify = 0;
+          if (cafile != NULL)
+               ssl_opts.enableServerCertAuth = 0;
           ssl_opts.trustStore = cafile;
           /*
           ssl_opts.CApath = cafile;

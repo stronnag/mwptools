@@ -45,6 +45,8 @@ apt $CONFIRM install ruby ruby-json
 # apt $CONFIRM install flite flite1-dev
 
 ## for MQTT (BulletGCSS) protocol
+# apt $CONFIRM install libpaho-mqtt-dev
+## *OR* for MQTT (BulletGCSS) protocol
 # apt $CONFIRM install libmosquitto-dev
 
 ## For plot-elevation.rb

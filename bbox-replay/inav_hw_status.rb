@@ -5,7 +5,7 @@
 
 require 'csv'
 require 'optparse'
-require_relative 'inav_states'
+require_relative 'inav_states_data'
 
 idx = 1
 hw=-1

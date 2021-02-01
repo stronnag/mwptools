@@ -35,6 +35,8 @@ dnf install rubygem-json
 dnf install gnuplot rubygem-nokogiri
 
 ## for MQTT
+# dnf install paho-c-devel
+## **OR ** for MQTT
 # dnf install mosquitto-devel
 
 ## To use KMZ as an overlay format, you need 'unzip
