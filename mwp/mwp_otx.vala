@@ -125,15 +125,17 @@ public class  OTXDialog : Object
     private void get_otx_metas()
     {
         try {
-            string[] spawn_args = {"otxlog", "--metas", filename};
+            string[] spawn_args = {"otxlog", "--metas"};
+            spawn_args += (MwpMisc.is_cygwin()==false) ? filename : MwpMisc.get_native_path(filename);
+            spawn_args += null;
+
             int p_stdout;
             Pid child_pid;
             Process.spawn_async_with_pipes (null,
                                             spawn_args,
                                             null,
                                             SpawnFlags.SEARCH_PATH |
-                                            SpawnFlags.DO_NOT_REAP_CHILD |
-                                            SpawnFlags.STDERR_TO_DEV_NULL,
+                                            SpawnFlags.DO_NOT_REAP_CHILD /*|SpawnFlags.STDERR_TO_DEV_NULL*/,
                                             null,
                                             out child_pid,
                                             null,

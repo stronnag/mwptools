@@ -325,3 +325,24 @@ bool is_cygwin(void)
     return false;
 #endif
 }
+
+#ifdef __CYGWIN__
+#include <sys/cygwin.h>
+/* Conversion from incoming posix path to win32 path */
+//CCP_RELATIVE
+char * get_native_path(char *upath)
+{
+     ssize_t size;
+     char *wpath = NULL;
+     wpath = cygwin_create_path (CCP_POSIX_TO_WIN_A, upath);
+
+     if(wpath == NULL)
+          perror ("cygwin_create");
+     return wpath;
+}
+#else
+char * get_native_path(char *upath)
+{
+     return upath;
+}
+#endif

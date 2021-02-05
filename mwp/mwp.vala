@@ -702,11 +702,11 @@ public class MWP : Gtk.Application {
         NONE = 0,
         MWP = 1,
         BBOX = 2,
-        FAST_MASK = 4,
-        MWP_FAST = 5,
-        BBOX_FAST = 6,
-        OTX = 8,
-        OTX_FAST = 12
+        OTX = 4,
+        FAST_MASK = 128,
+        MWP_FAST = MWP|FAST_MASK,
+        BBOX_FAST = BBOX|FAST_MASK,
+        OTX_FAST = OTX|FAST_MASK
     }
 
     public struct Position
@@ -8140,6 +8140,8 @@ case 0:
         }
         else
         {
+            if (msp.available)
+                msp.close();
             replayer = Player.NONE;
         }
         if(fwddev != null && fwddev.available)
@@ -9067,8 +9069,9 @@ case 0:
         }
         set_replay_menus(true);
         set_menu_state("stop-replay", false);
-        Posix.close(playfd[0]);
-        Posix.close(playfd[1]);
+        serial_doom(conbutton);
+        if ((replayer  & Player.OTX) == 0)
+            Posix.close(playfd[1]);
         if (conf.audioarmed == true)
             audio_cb.active = false;
         conf.logarmed = xlog;
@@ -9088,15 +9091,26 @@ case 0:
     {
         xlog = conf.logarmed;
         xaudio = conf.audioarmed;
+        int sr = 0;
+        bool rawfd = ((rtype & Player.OTX) == 0);
 
         playfd = new int[2];
-        var sr = MwpPipe.pipe(playfd);
+
+        if(msp.available)
+            serial_doom(conbutton);
+
+        if (rawfd)
+        {
+            sr = MwpPipe.pipe(playfd);
+        } else {
+            sr = msp.randomUDP(playfd);
+        }
 
         if(sr == 0)
         {
             replay_paused = false;
             MWPLog.message("Replay \"%s\" log %s model %d\n",
-                           (rtype == 3) ? "otx" : (rtype == 2) ? "bbox" : "mwp",
+                           (rtype == Player.OTX) ? "otx" : (rtype == Player.BBOX) ? "bbox" : "mwp",
                            fn, btype);
             if(craft != null)
                 craft.park();
@@ -9106,9 +9120,6 @@ case 0:
             if(delay == false)
                 conf.audioarmed = false;
 
-            if(msp.available)
-                serial_doom(conbutton);
-
             init_state();
             serstate = SERSTATE.NONE;
             conbutton.sensitive = false;
@@ -9117,7 +9128,8 @@ case 0:
             if(delay == false)
                 replayer |= Player.FAST_MASK;
 
-            msp.open_fd(playfd[0],-1, true);
+            if(rawfd)
+                msp.open_fd(playfd[0],-1, true);
             set_replay_menus(false);
             set_menu_state("stop-replay", true);
             magcheck = delay; // only check for normal replays (delay == true)
@@ -9185,33 +9197,35 @@ case 0:
 
     private void spawn_otx_task(string fn, bool delay, int idx)
     {
+        var dstr = "udp://localhost:%d".printf(playfd[1]);
         string [] args = {"otxlog",
-            "--fd", playfd[1].to_string(),
+            "-d",dstr,
             "--index", idx.to_string()
         };
         if(delay == false)
             args += "--fast";
-        args += fn;
+        args += (MwpMisc.is_cygwin()==false) ? fn : MwpMisc.get_native_path(fn);
         args += null;
 
         MWPLog.message("%s\n", string.joinv(" ",args));
+
         try {
             var spf = SpawnFlags.SEARCH_PATH |
-            SpawnFlags.LEAVE_DESCRIPTORS_OPEN |
-            SpawnFlags.STDOUT_TO_DEV_NULL |
+/*            SpawnFlags.LEAVE_DESCRIPTORS_OPEN |
+              SpawnFlags.STDOUT_TO_DEV_NULL |*/
             SpawnFlags.DO_NOT_REAP_CHILD;
 
             if ((debug_flags & DEBUG_FLAGS.OTXSTDERR) == 0) {
                 spf |= SpawnFlags.STDERR_TO_DEV_NULL;
             }
             Process.spawn_async_with_pipes (null, args, null, spf,
-                                            (() => {
+                                                /*(() => {
                                                 for(var i = 3; i < 512; i++)
                                                 {
                                                     if(i != playfd[1])
                                                         Posix.close(i);
                                                 }
-                                            }),
+                                                })*/ null,
                                             out child_pid,
                                             null, null, null);
             ChildWatch.add (child_pid, (pid, status) => {

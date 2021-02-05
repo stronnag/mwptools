@@ -22,6 +22,7 @@ extern void speech_say(const char *text);
 extern int init_signals();
 
 extern bool is_cygwin();
+extern char* get_native_path(char *);
 
 extern char *__progname;
 extern char *mwpid;

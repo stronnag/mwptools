@@ -196,7 +196,7 @@ func LTMGen(s *MSPSerial, seg OTXSegment, verbose bool, fast bool) {
 			}
 		}
 
-		if s.Klass() == DevClass_FD {
+		if s.Klass() == DevClass_FD || s.Klass() == DevClass_UDP {
 			et := b.Ts.Sub(st)
 			d := uint16(et.Seconds())
 			if d != ld {
@@ -208,7 +208,7 @@ func LTMGen(s *MSPSerial, seg OTXSegment, verbose bool, fast bool) {
 		}
 		lt = b.Ts
 	}
-	if s.Klass() == DevClass_FD {
+	if s.Klass() == DevClass_FD || s.Klass() == DevClass_UDP {
 		l := newLTM('x')
 		l.lxframe()
 		s.Write(l.msg)

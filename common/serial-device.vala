@@ -358,6 +358,27 @@ public class MWSerial : Object
     public signal void serial_lost ();
     public signal void sport_event(uint32 a, uint32 b);
 
+    public int randomUDP(int[] res)
+    {
+        int result = -1;
+        setup_ip(null,0);
+        if (fd > -1) {
+            try
+            {
+                commode = 0;
+                var xsa = skt.get_local_address();
+                var outp = ((InetSocketAddress)xsa).get_port();
+                res[0] = fd;
+                res[1] = (int)outp;
+                result = 0;
+                available = true;
+                devname = "udp #%d".printf(outp);
+                setup_reader();
+            } catch {}
+        }
+        return result;
+    }
+
     public MWSerial.forwarder()
     {
         fwd = true;
@@ -455,8 +476,11 @@ public class MWSerial : Object
         }
     }
 
-    private void setup_ip(string host, uint16 port, string? rhost=null, uint16 rport = 0)
+    private void setup_ip(string? host, uint16 port, string? rhost=null, uint16 rport = 0)
     {
+        if(MwpMisc.is_cygwin())
+            force4 = true;
+
         fd = -1;
         try
         {

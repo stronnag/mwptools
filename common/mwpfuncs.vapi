@@ -105,4 +105,7 @@ namespace MwpMisc
 {
     [CCode (cname="is_cygwin")]
     bool is_cygwin();
+
+    [CCode (cname="get_native_path")]
+    string get_native_path(string upath);
 }

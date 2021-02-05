@@ -108,17 +108,19 @@ func (m *MSPSerial) Read(inp []byte) (int, error) {
 }
 
 func (m *MSPSerial) Write(payload []byte) (int, error) {
+	n := -1
+	var err error
 	switch m.klass {
 	case DevClass_SERIAL:
-		return m.p.Write(payload)
+		n, err = m.p.Write(payload)
 	case DevClass_BT:
-		return m.bt.Write(payload)
+		n, err = m.bt.Write(payload)
 	case DevClass_FILE, DevClass_FD:
-		return m.fh.Write(payload)
+		n, err = m.fh.Write(payload)
 	default:
-		return m.conn.Write(payload)
+		n, err = m.conn.Write(payload)
 	}
-	return -1, nil
+	return n, err
 }
 
 func (m *MSPSerial) Close() {
