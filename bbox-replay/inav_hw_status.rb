@@ -73,6 +73,8 @@ cmd << " --stdout"
 cmd << " --unit-frame-time s"
 cmd << " 2>/dev/null " << bbox
 
+puts "File: #{File.basename(ARGV[0])}, index: #{idx}"
+
 nfail = 0
 IO.popen(cmd,'r') do |p|
   csv = CSV.new(p, :col_sep => ",",
