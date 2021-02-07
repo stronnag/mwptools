@@ -31,8 +31,12 @@ m['missionitem'].each_with_index do |i,n|
 	  3
 	when 'RTH'
 	  4
+	when 'SET_POI'
+	  5
 	when 'JUMP'
 	  6
+	when 'SET_HEAD'
+	  7
 	when 'LAND'
 	  8
 	else

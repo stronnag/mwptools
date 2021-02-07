@@ -26,6 +26,9 @@ cliterm: cliterm.vala $(COMMONC)
 msptest: msptest.vala $(COMMONC)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
+msptest1: msptest1.vala $(COMMONC)
+	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
+
 wp0: wp0.vala $(COMMONC)
 	$(VALAC) $(OPTS) -o $@  $^ $(LOPTS) $(PKGS) $(PKGSR)
 
