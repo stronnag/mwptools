@@ -22,6 +22,7 @@ public class MwpMQTT : Object {
     public bool available = false;
     private Thread<int> thr;
     private uint8 send_once = 0;
+    private uint8 bltvers = 2;
 
         //private bool wppub ;
 
@@ -45,6 +46,9 @@ public class MwpMQTT : Object {
 
     public void handle_mqtt(string payload)
     {
+        if (bltvers == 2 && payload.contains("."))
+            bltvers = 0;
+
         if (payload.has_prefix("wpno:")) {
             parse_wp(payload);
         } else {
@@ -75,12 +79,18 @@ public class MwpMQTT : Object {
                         break;
 // GFRAME data --------------------------------------------------------------
                     case "gla":
-                        gframe.lat = (int)(double.parse(attrs[1]) * 1.0e7);
+                        if (bltvers == 2)
+                            gframe.lat = int.parse(attrs[1]);
+                        else
+                            gframe.lat = (int)(double.parse(attrs[1]) * 1.0e7);
                         gattr |= 1;
                         break;
                     case "glo":
                         gattr |= 2;
-                        gframe.lon = (int)(double.parse(attrs[1]) * 1.0e7);
+                        if (bltvers == 2)
+                            gframe.lon = int.parse(attrs[1]);
+                        else
+                            gframe.lon = (int)(double.parse(attrs[1]) * 1.0e7);
                         break;
                     case "alt":
                         gframe.alt = int.parse(attrs[1]);
@@ -111,7 +121,10 @@ public class MwpMQTT : Object {
 
 // SFRAME data --------------------------------------------------------------
                     case "bpv": // mv
-                        sframe.vbat = (uint16)(double.parse(attrs[1])*1000);
+                        if (bltvers == 2)
+                            sframe.vbat = (uint16)int.parse(attrs[1])*10;
+                        else
+                            sframe.vbat = (uint16)(double.parse(attrs[1])*1000);
                         sattr = 1;
                         break;
                     case "cad": // mah
@@ -145,17 +158,17 @@ public class MwpMQTT : Object {
 // OFRAME data --------------------------------------------------------------
                     case "hla":
                         oattr |= 1;
-                        oframe.lat = (int)(double.parse(attrs[1]) * 1.0e7);
+                        oframe.lat =int.parse(attrs[1]);
                         oframe.osd = oframe.fix = 1;
                         oframe.alt = 0;
                         break;
                     case "hlo":
                         oattr |= 2;
-                        oframe.lon = (int)(double.parse(attrs[1]) * 1.0e7);
+                        oframe.lon = int.parse(attrs[1]);
                         break;
 
 // XFRAME data --------------------------------------------------------------
-                    case "hdp":
+                    case "ghp":
                         xframe.hdop = (uint16)(int.parse(attrs[1]));
                         xframe.ltm_x_count = xcount+1;
                         xframe.disarm_reason = 0;
@@ -260,6 +273,160 @@ public class MwpMQTT : Object {
         }
     }
 
+    private void parse_wp(string payload)
+    {
+        int wpno = 0;
+        int wpidx = 0;
+        MSP_WP wp = MSP_WP();
+        var parts = payload.split(",");
+        foreach (var p in parts)
+        {
+            var attrs = p.split(":");
+            switch (attrs[0])
+            {
+                case "wpno":
+                    wpno = int.parse(attrs[1]);
+                    if (wpno < 1 || wpno > 60)
+                        return;
+                    wpidx = wpno - 1;
+                    wp.wp_no = (uint8)wpno;
+                    break;
+                case "la":
+                    if (bltvers == 2)
+                        wp.lat = int.parse(attrs[1]);
+                    else
+                        wp.lat = (int)(double.parse(attrs[1]) * 1.0e7);
+                    break;
+                case "lo":
+                    if (bltvers == 2)
+                        wp.lon = int.parse(attrs[1]);
+                    else
+                        wp.lon = (int)(double.parse(attrs[1]) * 1.0e7);
+                    break;
+                case "al":
+                    wp.altitude = int.parse(attrs[1]);
+                    break;
+                case "ac":
+                    wp.action = (uint8)int.parse(attrs[1]);
+                    break;
+                case "p1":
+                    wp.p1 = (int16)int.parse(attrs[1]);
+                    break;
+                case "p2":
+                    wp.p2 = (uint16)int.parse(attrs[1]);
+                    break;
+                case "p3":
+                    wp.p3 = (uint16)int.parse(attrs[1]);
+                    break;
+                case "f":
+                    wp.flag = (uint8)int.parse(attrs[1]);
+                    break;
+            }
+        }
+        wps[wpidx]= wp;
+    }
+
+    private uint8 parse_flight_mode(string flm)
+    {
+        var ltmmode = 0;
+        if (bltvers == 2)
+        {
+            switch (flm)
+            {
+                case "1":
+                    ltmmode = 0;
+                    break;
+
+                case "9":
+                    ltmmode = 2;
+                    break;
+
+                case "10":
+                    ltmmode = 3;
+                    break;
+
+                case "11":
+                    ltmmode = 1;
+                    break;
+
+                case "8":
+                    ltmmode = 8;
+                    break;
+
+                case "4":
+                    ltmmode = 9;
+                    break;
+
+                case "7":
+                    ltmmode = 10;
+                    break;
+
+                case "2":
+                    ltmmode = 13;
+                    break;
+
+                case "5":
+                case "6":
+                    ltmmode = 18;
+                    break;
+
+                default:
+                    ltmmode = 1;
+                    break;
+            }
+        } else {
+            switch (flm)
+            {
+                case "MANU":
+                    ltmmode = 0;
+                    break;
+
+                case "ANGL":
+                    ltmmode = 2;
+                    break;
+
+                case "HOR":
+                    ltmmode = 3;
+                    break;
+
+                case "ACRO":
+                    ltmmode = 1;
+                    break;
+
+                case "A H":
+                    ltmmode = 8;
+                    break;
+
+                case "P H":
+                    ltmmode = 9;
+                    break;
+
+                case "WP":
+                    ltmmode = 10;
+                    break;
+
+                case "RTH":
+                    ltmmode = 13;
+                    break;
+
+                case "3CRS":
+                case "CRS":
+                    ltmmode = 18;
+                    break;
+
+                case "LNCH":
+                    ltmmode = 20;
+                    break;
+
+                default:
+                    ltmmode = 1;
+                    break;
+            }
+        }
+        return ltmmode;
+    }
+
+
     private void serialise_qframe(uint16 v)
     {
         uint8 raw[2];
@@ -337,106 +504,6 @@ public class MwpMQTT : Object {
         *p++ = nframe.nav_error;
         p = serialise_u16(p, 0);
         Idle.add(() => { mqtt_frame(TN_FRAME, raw, (p - &raw[0])); return false; });
-    }
-
-    private void parse_wp(string payload)
-    {
-        int wpno = 0;
-        int wpidx = 0;
-        MSP_WP wp = MSP_WP();
-        var parts = payload.split(",");
-        foreach (var p in parts)
-        {
-            var attrs = p.split(":");
-            switch (attrs[0])
-            {
-                case "wpno":
-                    wpno = int.parse(attrs[1]);
-                    if (wpno < 1 || wpno > 60)
-                        return;
-                    wpidx = wpno - 1;
-                    wp.wp_no = (uint8)wpno;
-                    break;
-                case "la":
-                    wp.lat = (int)(double.parse(attrs[1]) * 1.0e7);
-                    break;
-                case "lo":
-                    wp.lon =(int)(double.parse(attrs[1]) * 1.0e7);
-                    break;
-                case "al":
-                    wp.altitude = int.parse(attrs[1]);
-                    break;
-                case "ac":
-                    wp.action = (uint8)int.parse(attrs[1]);
-                    break;
-                case "p1":
-                    wp.p1 = (int16)int.parse(attrs[1]);
-                    break;
-                case "p2":
-                    wp.p2 = (uint16)int.parse(attrs[1]);
-                    break;
-                case "p3":
-                    wp.p3 = (uint16)int.parse(attrs[1]);
-                    break;
-                case "f":
-                    wp.flag = (uint8)int.parse(attrs[1]);
-                    break;
-            }
-        }
-        wps[wpidx]= wp;
-    }
-
-    private uint8 parse_flight_mode(string flm)
-    {
-        var ltmmode = 0;
-        switch (flm)
-        {
-            case "MANU":
-                ltmmode = 0;
-                break;
-
-            case "ANGL":
-                ltmmode = 2;
-                break;
-
-            case "HOR":
-                ltmmode = 3;
-                break;
-
-            case "ACRO":
-                ltmmode = 1;
-                break;
-
-            case "A H":
-                ltmmode = 8;
-                break;
-
-            case "P H":
-                ltmmode = 9;
-                break;
-
-            case "WP":
-                ltmmode = 10;
-                break;
-
-            case "RTH":
-                ltmmode = 13;
-                break;
-
-            case "3CRS":
-            case "CRS":
-                ltmmode = 18;
-                break;
-
-            case "LNCH":
-                ltmmode = 20;
-                break;
-
-            default:
-                ltmmode = 1;
-                break;
-        }
-        return ltmmode;
     }
 
     public bool setup(string s)
