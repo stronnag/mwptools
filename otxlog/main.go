@@ -18,6 +18,7 @@ var (
 	idx     = flag.Int("index", 1, "Log entry index")
 	metas   = flag.Bool("metas", false, "list metadata and exit")
 	list    = flag.Bool("list", false, "list log data")
+	bltvers = flag.Int("bltvers", 2, "bulletgcss mqtt protocol version")
 	mqttdef = flag.String("broker", "", "MQTT uri (mqtt://[user[:pass]@]broker[:port]/topic[?cafile=file])")
 )
 

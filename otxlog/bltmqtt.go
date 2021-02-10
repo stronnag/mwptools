@@ -209,7 +209,11 @@ func make_bullet_msg(b OTXrec, dist float64, bearing float64, homeamsl float64, 
 	sb.WriteByte(',')
 
 	sb.WriteString("bpv:")
-	sb.WriteString(fmt.Sprintf("%.2f", float64(b.Mvbat)/1000.0))
+	if *bltvers == 2 {
+		sb.WriteString(strconv.Itoa(int(b.Mvbat / 10)))
+	} else {
+		sb.WriteString(fmt.Sprintf("%.2f", float64(b.Mvbat)/1000.0))
+	}
 	sb.WriteByte(',')
 
 	sb.WriteString("cad:")
@@ -217,7 +221,11 @@ func make_bullet_msg(b OTXrec, dist float64, bearing float64, homeamsl float64, 
 	sb.WriteByte(',')
 
 	sb.WriteString("cud:")
-	sb.WriteString(fmt.Sprintf("%.2f", b.Amps))
+	if *bltvers == 2 {
+		sb.WriteString(strconv.Itoa(int(b.Amps * 100)))
+	} else {
+		sb.WriteString(fmt.Sprintf("%.2f", b.Amps))
+	}
 	sb.WriteByte(',')
 
 	sb.WriteString("rsi:")
@@ -225,11 +233,19 @@ func make_bullet_msg(b OTXrec, dist float64, bearing float64, homeamsl float64, 
 	sb.WriteByte(',')
 
 	sb.WriteString("gla:")
-	sb.WriteString(fmt.Sprintf("%.8f", b.Lat))
+	if *bltvers == 2 {
+		sb.WriteString(strconv.Itoa(int(b.Lat * 10000000)))
+	} else {
+		sb.WriteString(fmt.Sprintf("%.8f", b.Lat))
+	}
 	sb.WriteByte(',')
 
 	sb.WriteString("glo:")
-	sb.WriteString(fmt.Sprintf("%.8f", b.Lon))
+	if *bltvers == 2 {
+		sb.WriteString(strconv.Itoa(int(b.Lon * 10000000)))
+	} else {
+		sb.WriteString(fmt.Sprintf("%.8f", b.Lon))
+	}
 	sb.WriteByte(',')
 
 	sb.WriteString("gsc:")
@@ -237,8 +253,12 @@ func make_bullet_msg(b OTXrec, dist float64, bearing float64, homeamsl float64, 
 	sb.WriteByte(',')
 
 	sb.WriteString("ghp:")
-	hdop := float64(b.Hdop) / 100.0
-	sb.WriteString(fmt.Sprintf("%.1f", hdop))
+	if *bltvers == 2 {
+		sb.WriteString(strconv.Itoa(int(b.Hdop)))
+	} else {
+		hdop := float64(b.Hdop) / 100.0
+		sb.WriteString(fmt.Sprintf("%.1f", hdop))
+	}
 	sb.WriteByte(',')
 
 	sb.WriteString("3df:")
@@ -272,15 +292,26 @@ func make_bullet_home(hlat float64, hlon float64, halt float64) string {
 	var sb strings.Builder
 	sb.WriteString("cs:JRandomUAV,")
 	sb.WriteString("hla:")
-	sb.WriteString(fmt.Sprintf("%.8f", hlat))
+	if *bltvers == 2 {
+		sb.WriteString(strconv.Itoa(int(hlat * 10000000)))
+	} else {
+		sb.WriteString(fmt.Sprintf("%.8f", hlat))
+	}
 	sb.WriteByte(',')
 
 	sb.WriteString("hlo:")
-	sb.WriteString(fmt.Sprintf("%.8f", hlon))
+	if *bltvers == 2 {
+		sb.WriteString(strconv.Itoa(int(hlon * 10000000)))
+	} else {
+		sb.WriteString(fmt.Sprintf("%.8f", hlon))
+	}
 	sb.WriteByte(',')
 	sb.WriteString("hal:")
-	sb.WriteString(fmt.Sprintf("%.0f", halt))
-
+	if *bltvers == 2 {
+		sb.WriteString(strconv.Itoa(int(halt)))
+	} else {
+		sb.WriteString(fmt.Sprintf("%.0f", halt))
+	}
 	return sb.String()
 }
 
@@ -334,27 +365,52 @@ func MQTTGen(broker string, s OTXSegment) {
 		}
 
 		if stat != laststat {
-			switch stat {
-			case 0:
-				fmode = "MANU"
-			case 2:
-				fmode = "ANGL"
-			case 3:
-				fmode = "HOR"
-			case 4:
-				fmode = "ACRO"
-			case 8:
-				fmode = "A H"
-			case 9:
-				fmode = "P H"
-			case 10:
-				fmode = "WP"
-			case 13:
-				fmode = "RTH"
-			case 18:
-				fmode = "3CRS"
-			default:
-				fmode = "ACRO"
+			if *bltvers == 2 {
+				switch stat {
+				case 0:
+					fmode = "1"
+				case 2:
+					fmode = "9"
+				case 3:
+					fmode = "10"
+				case 4:
+					fmode = "11"
+				case 8:
+					fmode = "8"
+				case 9:
+					fmode = "4"
+				case 10:
+					fmode = "7"
+				case 13:
+					fmode = "2"
+				case 18:
+					fmode = "5"
+				default:
+					fmode = "11"
+				}
+			} else {
+				switch stat {
+				case 0:
+					fmode = "MANU"
+				case 2:
+					fmode = "ANGL"
+				case 3:
+					fmode = "HOR"
+				case 4:
+					fmode = "ACRO"
+				case 8:
+					fmode = "A H"
+				case 9:
+					fmode = "P H"
+				case 10:
+					fmode = "WP"
+				case 13:
+					fmode = "RTH"
+				case 18:
+					fmode = "3CRS"
+				default:
+					fmode = "ACRO"
+				}
 			}
 			laststat = stat
 			msg := make_bullet_mode(fmode, ncells)
