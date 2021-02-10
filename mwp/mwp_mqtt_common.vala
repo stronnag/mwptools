@@ -1,10 +1,15 @@
-using Mosquitto;
-
-const int DEFPORT = 1883;
-const int KEEPALIVE = 60;
+//#if MQTT_MOSQUITTO
+//using Mosquitto;
+//#endif
 
 private static MwpMQTT mqtt;
+#if MQTT_MOSQUITTO
 private static Mosquitto.Client client;
+const int DEFPORT = 1883;
+const int KEEPALIVE = 60;
+#else
+private static MQTT.Client client;
+#endif
 
 public class MwpMQTT : Object {
 
@@ -30,7 +35,11 @@ public class MwpMQTT : Object {
 
     public static string provider()
     {
+#if MQTT_MOSQUITTO
         return "mosquitto";
+#else
+        return "paho";
+#endif
     }
 
     public void init () {
@@ -275,7 +284,7 @@ public class MwpMQTT : Object {
         }
     }
 
-        private void parse_wp(string payload)
+    private void parse_wp(string payload)
     {
         int wpno = 0;
         int wpidx = 0;
@@ -428,6 +437,7 @@ public class MwpMQTT : Object {
         return ltmmode;
     }
 
+
     private void serialise_qframe(uint16 v)
     {
         uint8 raw[2];
@@ -511,11 +521,13 @@ public class MwpMQTT : Object {
     {
         string broker = null;
         string topic = null;
-        int port = -1;
+        int port = 0;
         string user = null;
         string passwd = null;
         string query = null;
         string cafile = null;
+        string scheme = null;
+
 #if USE_URIPARSE
         try
         {
@@ -526,6 +538,7 @@ public class MwpMQTT : Object {
             user = u.get_user();
             passwd = u.get_password();
             query = u.get_query();
+            scheme = u.get_scheme();
         } catch {
             return false;
         }
@@ -543,7 +556,13 @@ public class MwpMQTT : Object {
         var regex = new Regex ("""^([a-z][a-z0-9+.-]+):(\/\/([^@]+@)?([a-z0-9.\-_~]+)(:\d+)?)?((?:[a-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])+(?:\/(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])*)*|(?:\/(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])+)*)?(\?(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@]|[/?])+)?(\#(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@]|[/?])+)?$""");
         if(regex.match(s, 0, out mi))
         {
+/**
+            for(var j = 0; j < mi.get_match_count(); j++) {
+                stdout.printf("%d: %s\n", j,mi.fetch(j));
+            }
+**/
             if (mi.get_match_count() >= 7) {
+                scheme = mi.fetch(1);
                 broker = mi.fetch(4);
                 var aport = mi.fetch(5);
                 topic = mi.fetch(6);
@@ -577,11 +596,14 @@ public class MwpMQTT : Object {
         stderr.printf("regex err: %s", e.message);
     }
 #endif
+
         if (port <= 0)
             port = 1883;
 
         if (topic.length > 0)
-            topic = topic[1:topic.length];
+            topic = topic.slice(1,topic.length);
+
+#if MQTT_MOSQUITTO
         Mosquitto.init ();
         client = new Mosquitto.Client (null, true, null);
         if (user != null)
@@ -613,6 +635,61 @@ public class MwpMQTT : Object {
             return false;
         available = true;
         return true;
+#else
+        if(scheme == "mqtt")
+            scheme = "tcp";
+        if(scheme == "mqtts")
+            scheme = "ssl";
+
+        var sb = new StringBuilder(scheme);
+        var up = false;
+        sb.append("://");
+        if (user != null) {
+            sb.append(user);
+            up = true;
+        }
+        if (passwd != null) {
+            up = true;
+            sb.append_c(':');
+             sb.append(passwd);
+        }
+        if (up) {
+            sb.append_c('@');
+        }
+        sb.append(broker);
+        if (port > 0) {
+            sb.append_c(':');
+            sb.append(port.to_string());
+        }
+        if(scheme.has_prefix("ws")) {
+            sb.append("/mqtt");
+        }
+        var server = sb.str;
+        client = new MQTT.Client(server, cafile);
+        if (client != null)
+        {
+            if (client.subscribe(topic) == 0) {
+                thr = new Thread<int>("mqtt", () => {
+                        string str;
+                        while(client.poll_message(out str) == 0)
+                        {
+                            if(str != null) {
+                                mqtt.handle_mqtt(str);
+                            }
+                        }
+                        return 0;
+                    });
+            } else
+                return false;
+
+            available = true;
+            return true;
+        }
+        else {
+            stdout.printf("Connect Error: %d\n", MQTT.connect_status());
+            return false;
+        }
+#endif
     }
 
     public bool mdisconnect()
@@ -620,10 +697,14 @@ public class MwpMQTT : Object {
         available = false;
         client.disconnect ();
         thr.join();
-        Mosquitto.cleanup ();
+#if MQTT_MOSQUITTO
+        Mosquitto.cleanup();
+#endif
         return available;
     }
 }
+
+
 MwpMQTT newMwpMQTT()
 {
     mqtt = new MwpMQTT();

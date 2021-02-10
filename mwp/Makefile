@@ -55,13 +55,15 @@ PKGS= --pkg gtk+-3.0 --pkg atk --pkg clutter-1.0 --pkg champlain-gtk-0.12 --pkg 
 
 ifdef MQTT
  DOPTS += -D MQTT
+ SRCS += mwp_mqtt_common.vala
  ifeq ($(MQTTLIB), paho)
+  DOPTS += -D MQTT_PAHO
   OPTS += --pkg paho_wrapper
-  SRCS += mwp_paho.vala paho_wrapper.c
+  SRCS += paho_wrapper.c
   LOPTS += -X -lpaho-mqtt3cs
  else
+  DOPTS += -D MQTT_MOSQUITTO
   OPTS += --pkg libmosquitto
-  SRCS += mwp_mqtt.vala
  endif
 endif
 
