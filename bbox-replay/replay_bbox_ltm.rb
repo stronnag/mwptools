@@ -857,6 +857,8 @@ class BBReplay
 
     bbox = (ARGV[0]|| abort('no BBOX log'))
     have_mag = true
+    have_baro = false
+    have_sonar = false
 
     gitinfos=[]
     disarms=[]
@@ -892,6 +894,7 @@ class BBReplay
           end
         elsif m = l.match(/^H mag_hardware:(\d+)$/)
           have_mag = m[1] != '0'
+#          STDERR.puts "Mag detect #{have_mag} #{m[1]} #{l}"
         elsif m = l.match(/^H vbat_scale:(\d+)$/)
           if need_vbat_scale
 	    @vbatscale = m[1].to_f / 110.0
@@ -1040,10 +1043,6 @@ class BBReplay
       csv = CSV.new(pipe, **csv_opts)
       lindex = 0
       lastrid = -1
-
-      have_baro = false
-      have_sonar = false
-      have_mag = false
 
       csv.each do |row|
         if lindex == 0
