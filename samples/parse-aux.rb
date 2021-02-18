@@ -191,6 +191,7 @@ end
 
 inis=false
 inia=false
+iniv = false
 auxs=[]
 
 ARGF.each do |l|
@@ -279,4 +280,8 @@ ARGF.each do |l|
   end
 end
 
-auxs.sort{|a,b| a[21..-1] <=> b[21..-1]}.each{|a| puts a}
+if iniv || force != nil
+  auxs.sort{|a,b| a[21..-1] <=> b[21..-1]}.each{|a| puts a}
+else
+  puts "*********** No Version or --force=IDTYPE **************"
+end
