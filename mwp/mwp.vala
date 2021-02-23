@@ -8318,6 +8318,7 @@ case 0:
                 mqtt_available = ostat = mqtt.setup(serdev);
                 rawlog = false;
                 nopoll = true;
+                autocon_cb.active = false;
                 serstate = SERSTATE.TELEM;
 #else
                 mwp_warning_box("MQTT is not enabled in this build\nPlease see the wiki for more information\nhttps://github.com/stronnag/mwptools/wiki/mqtt---bulletgcss-telemetry\n", Gtk.MessageType.WARNING, 60);

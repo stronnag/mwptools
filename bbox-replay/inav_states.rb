@@ -62,8 +62,8 @@ if iv.nil?
     iv = "2.0.99"
   else
     iv ="0"
+  end
 end
-
 inavers =  get_state_version iv
 
 STDERR.puts "iNav version = #{iv} (states eq #{inavers})" if verbose
