@@ -224,7 +224,10 @@ public class MwpMQTT : Object {
                         if (wpvalid == 1 && wpcount > 0) {
                             if (wps[wpcount -1].flag == 0xa5) {
                                 if ((send_once & 2) == 0) {
-                                    mqtt_mission(wps, (int)wpcount);
+                                    Idle.add(() => {
+                                            mqtt_mission(wps, (int)wpcount);
+                                            return false;
+                                        });
                                     send_once |= 2;
                                 }
                             }
