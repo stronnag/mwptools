@@ -629,6 +629,7 @@ public class MWP : Gtk.Application {
     private SafeHomeDialog safehomed;
     private uint8 last_safehome = 0;
     private uint8 safeindex = 0;
+    private bool is_shutdown = false;
 
     public struct MQI //: Object
     {
@@ -1071,6 +1072,7 @@ public class MWP : Gtk.Application {
 
     public void cleanup()
     {
+        is_shutdown = true;
         check_mission_clean(false);
 
         if(msp.available)
@@ -1460,7 +1462,6 @@ public class MWP : Gtk.Application {
 
         window.delete_event.connect(() => {
                 cleanup();
-                remove_window(window);
                 return false;
             });
 
@@ -8087,6 +8088,8 @@ case 0:
 
     private void serial_doom(Gtk.Button c)
     {
+        if(is_shutdown == true)
+            return;
         MWPLog.message("Serial doom replay %d\n", replayer);
         map_hide_wp();
         if(replayer == Player.NONE)
@@ -9068,6 +9071,8 @@ case 0:
                 thr = null;
             }
         }
+        if (is_shutdown)
+            return;
         set_replay_menus(true);
         set_menu_state("stop-replay", false);
         serial_doom(conbutton);
