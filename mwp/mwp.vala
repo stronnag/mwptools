@@ -617,6 +617,7 @@ public class MWP : Gtk.Application {
     private bool x_replay_bbox_ltm_rb;
     private bool x_kmz;
     private bool x_otxlog;
+    private bool x_fl2ltm;
     public bool x_plot_elevations_rb {get; private set; default= false;}
 
     private Array<KmlOverlay> kmls;
@@ -704,10 +705,12 @@ public class MWP : Gtk.Application {
         MWP = 1,
         BBOX = 2,
         OTX = 4,
+        FL2LTM = 8,
         FAST_MASK = 128,
         MWP_FAST = MWP|FAST_MASK,
         BBOX_FAST = BBOX|FAST_MASK,
-        OTX_FAST = OTX|FAST_MASK
+        OTX_FAST = OTX|FAST_MASK,
+        FL2_FAST = FL2LTM|FAST_MASK
     }
 
     public struct Position
@@ -1162,8 +1165,8 @@ public class MWP : Gtk.Application {
         {
             string []  ext_apps = {
             conf.blackbox_decode, "replay_bbox_ltm.rb",
-            "gnuplot", "mwp-plot-elevations.rb", "unzip", "otxlog" };
-            bool appsts[6];
+            "gnuplot", "mwp-plot-elevations.rb", "unzip", "otxlog", "fl2ltm" };
+            bool appsts[7];
             var i = 0;
             foreach (var s in ext_apps)
             {
@@ -1176,6 +1179,7 @@ public class MWP : Gtk.Application {
             x_plot_elevations_rb = (appsts[2]&&appsts[3]);
             x_kmz = appsts[4];
             x_otxlog = appsts[5];
+            x_fl2ltm = appsts[6];
         }
 
         XmlIO.uc = conf.ucmissiontags;
@@ -1493,7 +1497,10 @@ public class MWP : Gtk.Application {
         navconf = new NavConfig(window, builder);
         bb_runner = new BBoxDialog(builder, window, conf.blackbox_decode,
                                    conf.logpath, fakeoff);
+//        bb_runner.x_fl2ltm = x_fl2ltm;
+
         otx_runner = new OTXDialog(builder, window,null);
+        otx_runner.x_fl2ltm = x_fl2ltm;
 
         bb_runner.set_tz_tools(conf.geouser, conf.zone_detect);
 
@@ -3207,20 +3214,6 @@ public class MWP : Gtk.Application {
                 last_gps = nticks;
                 break;
             case SportDev.FrID.RSSI_ID:
-                    /****
-                    // http://ceptimus.co.uk/?p=271
-                    // states main (Rx) link quality 100+ is full signal
-                    // 40 is no signal --- iNav uses 0 - 1023
-                    //
-                uint rssi;
-                uint issr;
-                rssi = (val & 0xff);
-                if (rssi > 100)
-                    rssi = 100;
-                if (rssi < 40)
-                    rssi = 40;
-                issr = (rssi - 40)*1023/60;
-                    *******/
                 spi.rssi = (uint16)((val&0xff)*1023/100);
                 MSP_ANALOG an = MSP_ANALOG();
                 an.rssi = spi.rssi;
@@ -4179,21 +4172,6 @@ case 0:
         return reqsize;
     }
 
-    /** unused
-    private void remove_req_op(MSP.Cmds c)
-    {
-
-        for(var i = 0; i < requests.length; i++)
-        {
-            if (requests[i] == c)
-            {
-                requests[i] = MSP.Cmds.NOOP;
-                break;
-            }
-        }
-    }
-    **/
-
     private void map_warn_set_text(bool init = false)
     {
         if(clutextg != null)
@@ -4774,6 +4752,7 @@ case 0:
                 sflags |= NavStatus.SPK.GPS;
                 init_craft_icon();
             }
+            update_sensor_array();
         }
         else
         {
@@ -6275,7 +6254,7 @@ case 0:
                 }
                 navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS),flg);
 
-                if((replayer & (Player.BBOX|Player.OTX)) == 0 && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255))
+                if((replayer & Player.BBOX) == 0 && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255))
                 {
                     if(ns.gps_mode == 3)
                     {
@@ -6681,7 +6660,8 @@ case 0:
                                 MWPLog.message("No home position yet\n");
                             }
                         }
-                        if(last_nmode != 3 && magcheck && magtime > 0 && magdiff > 0)
+                        if((sensor & MSP.Sensors.MAG) == MSP.Sensors.MAG
+                           && last_nmode != 3 && magcheck && magtime > 0 && magdiff > 0)
                         {
                             int gcse = (int)GPSInfo.cse;
                             if(last_ltmf != MSP.LTM.poshold && last_ltmf != MSP.LTM.land)
@@ -7156,14 +7136,8 @@ case 0:
                 break;
 
             case MSP.Cmds.Tx_FRAME:
-                if (replayer != Player.NONE)
-                {
-                    if(raw[0] != 0)
-                        MWPLog.message("BB Disarm %s (%u)\n",
-                                       MSP.bb_disarm(raw[0]),
-                                       raw[0]);
-                    cleanup_replay();
-                }
+                MWPLog.message("Replay disarm %s (%u)\n", MSP.bb_disarm(raw[0]), raw[0]);
+                cleanup_replay();
                 break;
 
             case MSP.Cmds.SET_NAV_POSHOLD:
@@ -7848,17 +7822,6 @@ case 0:
 
         if(wps.length == 0)
         {
-/**********
-            if(inav)
-            {
-                if((flag & WPDL.CALLBACK) != 0)
-                    upload_callback(0);
-                mwp_warning_box("Cowardly refusal to upload an empty mission",
-                                Gtk.MessageType.WARNING, 60);
-                return;
-            }
-            else
-***********/
             {
                 MSP_WP w0 = MSP_WP();
                 w0.wp_no = 1;
@@ -8143,6 +8106,7 @@ case 0:
         }
         else
         {
+            show_serial_stats();
             if (msp.available)
                 msp.close();
             replayer = Player.NONE;
@@ -8159,6 +8123,7 @@ case 0:
         ls.clear_mission();
         lastmission=ls.to_mission();
         last_file = null;
+        navstatus.reset_mission();
     }
 
     private void set_replay_menus(bool state)
@@ -8703,7 +8668,7 @@ case 0:
             }
             wp_resp = m.get_ways();
             if(loader )
-                MWPLog.message("Loaded mission: %s\n", fn);
+                MWPLog.message("Loaded mission: %d %s\n", NavStatus.nm_pts, fn);
             return m;
         }
         else
@@ -8960,51 +8925,6 @@ case 0:
             load_file(fn);
     }
 
-/*
-    private void get_otx_file(bool delay)
-    {
-        Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
-            "Select a log file", null, Gtk.FileChooserAction.OPEN,
-            "_Cancel",
-            Gtk.ResponseType.CANCEL,
-            "_Open",
-            Gtk.ResponseType.ACCEPT);
-            chooser.select_multiple = false;
-            chooser.set_transient_for(window);
-            Gtk.FileFilter filter = new Gtk.FileFilter ();
-            filter.set_filter_name ("CSV");
-            filter.add_pattern ("*.csv");
-            chooser.add_filter (filter);
-            if(conf.logpath != null)
-                chooser.set_current_folder (conf.logpath);
-
-            filter = new Gtk.FileFilter ();
-            filter.set_filter_name ("All Files");
-            filter.add_pattern ("*");
-            chooser.add_filter (filter);
-
-            var label = new Gtk.Label ("Only include Armed:");
-            var tb = new Gtk.Switch();
-            tb.active = false;
-            var xhbox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 5);
-            xhbox.pack_start(label, false, false, 1);
-            xhbox.pack_start(tb, false, false, 1);
-
-            chooser.set_extra_widget(xhbox);
-
-            chooser.response.connect((res) => {
-                    if ( res == Gtk.ResponseType.ACCEPT) {
-                        var fn = chooser.get_filename ();
-                        int ao = tb.active ? 1 : 0;
-                        chooser.close ();
-                        run_replay(fn, delay, Player.OTX,ao);
-                    }
-                    else
-                        chooser.close ();
-                });
-            chooser.show_all();
-    }
-*/
     private void replay_otx(bool delay=true)
     {
         var id = otx_runner.run();
@@ -9012,8 +8932,9 @@ case 0:
         if (id == 1001) {
             string fname;
             int idx;
-            otx_runner.get_index(out fname, out idx);
-            run_replay(fname, delay, Player.OTX,idx);
+            int dura;
+            otx_runner.get_index(out fname, out idx, out dura);
+            run_replay(fname, delay, Player.OTX,idx,0,0,dura);
         }
     }
 
@@ -9061,35 +8982,37 @@ case 0:
 
     private void cleanup_replay()
     {
-        magcheck = (magtime > 0 && magdiff > 0);
-        MWPLog.message("============== Replay complete ====================\n");
-        if ((replayer & Player.MWP) == Player.MWP)
-        {
-            if(thr != null)
+        if (replayer != Player.NONE) {
+            magcheck = (magtime > 0 && magdiff > 0);
+            MWPLog.message("============== Replay complete ====================\n");
+            if ((replayer & Player.MWP) == Player.MWP)
             {
-                thr.join();
-                thr = null;
+                if(thr != null)
+                {
+                    thr.join();
+                    thr = null;
+                }
             }
+            if (is_shutdown)
+                return;
+            set_replay_menus(true);
+            set_menu_state("stop-replay", false);
+            if (replayer != Player.OTX)
+                Posix.close(playfd[1]);
+            serial_doom(conbutton);
+            if (conf.audioarmed == true)
+                audio_cb.active = false;
+            conf.logarmed = xlog;
+            conf.audioarmed = xaudio;
+            duration = -1;
+            armtime = 0;
+            armed_spinner.stop();
+            armed_spinner.hide();
+            conbutton.sensitive = true;
+            armed = larmed = 0;
+            replay_paused = false;
+            window.title = "mwp";
         }
-        if (is_shutdown)
-            return;
-        set_replay_menus(true);
-        set_menu_state("stop-replay", false);
-        serial_doom(conbutton);
-        if ((replayer  & Player.OTX) == 0)
-            Posix.close(playfd[1]);
-        if (conf.audioarmed == true)
-            audio_cb.active = false;
-        conf.logarmed = xlog;
-        conf.audioarmed = xaudio;
-        duration = -1;
-        armtime = 0;
-        armed_spinner.stop();
-        armed_spinner.hide();
-        conbutton.sensitive = true;
-        armed = larmed = 0;
-        replay_paused = false;
-        window.title = "mwp";
     }
 
     private void run_replay(string fn, bool delay, Player rtype,
@@ -9098,7 +9021,10 @@ case 0:
         xlog = conf.logarmed;
         xaudio = conf.audioarmed;
         int sr = 0;
-        bool rawfd = ((rtype & Player.OTX) == 0);
+        bool rawfd = false;
+        if ((rtype & Player.MWP) != 0 || (rtype & Player.BBOX) != 0 && x_fl2ltm == false) {
+            rawfd = true;
+        }
 
         playfd = new int[2];
 
@@ -9154,7 +9080,7 @@ case 0:
                     break;
                 case Player.OTX:
                 case Player.OTX_FAST:
-                    spawn_otx_task(fn, delay, idx);
+                    spawn_otx_task(fn, delay, idx, btype, duration);
                     break;
             }
         }
@@ -9201,15 +9127,39 @@ case 0:
             hard_display_reset(false);
     }
 
-    private void spawn_otx_task(string fn, bool delay, int idx)
+    private void spawn_otx_task(string fn, bool delay, int idx, int typ=0, uint dura=0)
     {
         var dstr = "udp://localhost:%d".printf(playfd[1]);
-        string [] args = {"otxlog",
-            "-d",dstr,
-            "--index", idx.to_string()
-        };
+        string [] args={};
+
+        if (x_fl2ltm) {
+            args += "fl2ltm";
+            if (last_file != null) {
+                args += "-mission";
+                args += (MwpMisc.is_cygwin()==false) ? last_file : MwpMisc.get_native_path(last_file);
+            }
+            args += "-device";
+        } else {
+            args += "otxlog";
+            args += "-d";
+        }
+        args += dstr;
+        args += "--index";
+        args += idx.to_string();
         if(delay == false)
             args += "--fast";
+        if(typ > 0)
+        {
+            args += "--type";
+            args += typ.to_string();
+        }
+        if (dura > 600)
+        {
+            uint intvl  =  100 * dura / 600;
+            args += "-interval";
+            args += intvl.to_string();
+        }
+
         args += (MwpMisc.is_cygwin()==false) ? fn : MwpMisc.get_native_path(fn);
         args += null;
 
@@ -9248,53 +9198,57 @@ case 0:
     private void spawn_bbox_task(string fn, int index, int btype,
                                  bool delay, uint8 force_gps, uint duration)
     {
-        string [] args = {"replay_bbox_ltm.rb",
-                          "--fd", "%d".printf(playfd[1]),
-                          "-i", "%d".printf(index),
-                          "-t", "%d".printf(btype),
-                          "--decoder", conf.blackbox_decode};
-        if(delay == false)
-            args += "-f";
-        if((force_gps & 1) == 1)
-            args += "-g";
-        if((force_gps & 2) == 2)
-            args += "-G";
+        if(x_fl2ltm) {
+            replayer &= ~Player.BBOX;
+            replayer |= Player.OTX;
+            spawn_otx_task(fn, delay, index, btype, duration);
+        } else {
+            string [] args = {"replay_bbox_ltm.rb",
+                "--fd", "%d".printf(playfd[1]),
+                "-i", "%d".printf(index),
+                "-t", "%d".printf(btype),
+                "--decoder", conf.blackbox_decode};
+            if(delay == false)
+                args += "-f";
+            if((force_gps & 1) == 1)
+                args += "-g";
+            if((force_gps & 2) == 2)
+                args += "-G";
 
-        if(duration > 600)
-        {
-            uint intvl  =  100000 * duration / 600;
-            args += "-I";
-            args += intvl.to_string();
-        }
-
-        args += fn;
-        args += null;
-
-        MWPLog.message("%s\n", string.joinv(" ",args));
-        try {
-            Process.spawn_async_with_pipes (null, args, null,
-                                            SpawnFlags.SEARCH_PATH |
-                                            SpawnFlags.LEAVE_DESCRIPTORS_OPEN |
-                                            SpawnFlags.STDOUT_TO_DEV_NULL |
-                                            SpawnFlags.STDERR_TO_DEV_NULL |
-                                            SpawnFlags.DO_NOT_REAP_CHILD,
-                                            (() => {
-                                                for(var i = 3; i < 512; i++)
-                                                {
-                                                    if(i != playfd[1])
-                                                        Posix.close(i);
-                                                }
-                                            }),
-                                            out child_pid,
-                                            null, null, null);
-            ChildWatch.add (child_pid, (pid, status) => {
-                    MWPLog.message("Close child pid %u, %u\n",
-                                   pid, Process.exit_status(status));
-                    Process.close_pid (pid);
-                    cleanup_replay();
-                });
-        } catch (SpawnError e) {
-            MWPLog.message("spawnerror: %s\n", e.message);
+            if(duration > 600)
+            {
+                uint intvl  =  100000 * duration / 600;
+                args += "-I";
+                args += intvl.to_string();
+            }
+            args += fn;
+            args += null;
+            MWPLog.message("%s\n", string.joinv(" ",args));
+            try {
+                Process.spawn_async_with_pipes (null, args, null,
+                                                SpawnFlags.SEARCH_PATH |
+                                                SpawnFlags.LEAVE_DESCRIPTORS_OPEN |
+                                                SpawnFlags.STDOUT_TO_DEV_NULL |
+                                                SpawnFlags.STDERR_TO_DEV_NULL |
+                                                SpawnFlags.DO_NOT_REAP_CHILD,
+                                                (() => {
+                                                    for(var i = 3; i < 512; i++)
+                                                    {
+                                                        if(i != playfd[1])
+                                                            Posix.close(i);
+                                                    }
+                                                }),
+                                                out child_pid,
+                                                null, null, null);
+                ChildWatch.add (child_pid, (pid, status) => {
+                        MWPLog.message("Close child pid %u, %u\n",
+                                       pid, Process.exit_status(status));
+                        Process.close_pid (pid);
+                        cleanup_replay();
+                    });
+            } catch (SpawnError e) {
+                MWPLog.message("spawnerror: %s\n", e.message);
+            }
         }
     }
 
@@ -9303,9 +9257,9 @@ case 0:
         if((replayer & Player.BBOX) == Player.BBOX)
         {
             Posix.kill(child_pid, MwpSignals.Signal.TERM);
-        }
-        else
-        {
+        } else if ((replayer & Player.OTX) == Player.OTX) {
+                /// tidy this up
+        } else {
             var id = bb_runner.run(fn);
             if(id == 1001)
             {

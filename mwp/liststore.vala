@@ -547,11 +547,13 @@ public class ListBox : GLib.Object
     public void raise_wp(int n)
     {
         Gtk.TreeIter iter;
-        if(list_model.iter_nth_child(out iter, null, n-1))
-            raise_iter_wp(iter, true);
+        if(n > 0)
+        {
+            if(list_model.iter_nth_child(out iter, null, n-1))
+                raise_iter_wp(iter, true);
+        }
         if(list_model.iter_nth_child(out iter, null, n))
             raise_iter_wp(iter, false);
-
     }
 
     private void change_marker(string typ, int flag=0)

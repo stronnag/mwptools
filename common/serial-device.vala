@@ -717,6 +717,7 @@ public class MWSerial : Object
 
     public void close()
     {
+        MWPLog.message("Close for fd %d\n", fd);
         available=false;
         if(fd != -1)
         {

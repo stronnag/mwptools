@@ -2145,6 +2145,10 @@ public class NavStatus : GLib.Object
         ls_action = null;
         ns_state = null;
         ns_action = null;
+    }
+
+    public void reset_mission()
+    {
         nm_pts = 255;
         have_rth = false;
     }

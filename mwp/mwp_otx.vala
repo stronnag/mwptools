@@ -37,6 +37,7 @@ public class  OTXDialog : Object
     private Gtk.FileChooserButton otx_filechooser;
     private Gtk.TreeSelection otx_sel;
     private Gtk.Window _w;
+    public bool x_fl2ltm = false;
 
     public OTXDialog(Gtk.Builder builder, Gtk.Window? w = null,
                      string? logpath = null) //, FakeOffsets? _fo = null)
@@ -101,15 +102,23 @@ public class  OTXDialog : Object
         dialog.set_transient_for(w);
     }
 
-    public void get_index(out string fname, out int idx)
+    public void get_index(out string fname, out int idx, out int dura)
     {
         Gtk.TreeModel model;
         Gtk.TreeIter iter;
         otx_sel.get_selected (out model, out iter);
         Value cell;
-        model.get_value (iter, 0, out cell);
+        model.get_value (iter, Column.IDX, out cell);
         idx = (int)cell;
         fname = filename;
+        model.get_value (iter, Column.DURATION, out cell);
+        string duras = (string)cell;
+
+        dura = 0;
+        var parts = duras.split(":");
+        if (parts.length == 2) {
+            dura = int.parse(parts[0])*60 + int.parse(parts[1]);
+        }
     }
 
     public int run()
@@ -126,6 +135,9 @@ public class  OTXDialog : Object
     {
         try {
             string[] spawn_args = {"otxlog", "--metas"};
+            if (x_fl2ltm)
+                spawn_args[0] = "fl2ltm";
+
             spawn_args += (MwpMisc.is_cygwin()==false) ? filename : MwpMisc.get_native_path(filename);
             spawn_args += null;
 
