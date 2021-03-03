@@ -1179,7 +1179,9 @@ public class MWP : Gtk.Application {
             x_plot_elevations_rb = (appsts[2]&&appsts[3]);
             x_kmz = appsts[4];
             x_otxlog = appsts[5];
-            x_fl2ltm = appsts[6];
+            if (Environment.get_variable("MWP_LEGACY_REPLAY") == null)
+                x_fl2ltm = appsts[6];
+
         }
 
         XmlIO.uc = conf.ucmissiontags;
