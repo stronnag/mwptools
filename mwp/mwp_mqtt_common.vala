@@ -195,28 +195,24 @@ public class MwpMQTT : Object {
                         break;
                     case "cwn":
                         nframe.wp_number =  (uint8)(int.parse(attrs[1]));
-                        if (nframe.wp_number > 0 && nframe.nav_mode != 0) {
-                            uint8 gpsmode = 0;
-                            switch (sframe.flags >> 2)
-                            {
-                                case 10:
-                                    gpsmode = 3;
-                                    break;
-                                case 13:
-                                    gpsmode = 2;
-                                    break;
-                                case 8,9:
-                                    gpsmode = 1;
-                                    break;
-                                default :
-                                    gpsmode = 0;
-                                    break;
-                            }
-                            if (gpsmode != 0) {
-                                nframe.gps_mode = gpsmode;
-                                nattr = 1;
-                            }
+                        uint8 gpsmode = 0;
+                        switch (sframe.flags >> 2)
+                        {
+                            case 10:
+                                gpsmode = 3;
+                                break;
+                            case 13:
+                                gpsmode = 2;
+                                break;
+                            case 8,9:
+                                gpsmode = 1;
+                                break;
+                            default :
+                                gpsmode = 0;
+                                break;
                         }
+                        nframe.gps_mode = gpsmode;
+                        nattr = 1;
                         break;
 // Misc ----------------------------------------------------------------------
                     case "wpv":

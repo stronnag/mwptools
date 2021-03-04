@@ -2300,13 +2300,16 @@ public class MWP : Gtk.Application {
         mqtt.mqtt_mission.connect((w,n) => {
                 wp_resp = {};
                 for(var j = 0; j < n; j++)
+                {
                     wp_resp += wp_to_mitem(w[j]);
-
+                }
                 clear_mission();
                 var ms = new Mission();
                 ms.set_ways(wp_resp);
                 ls.import_mission(ms, (conf.rth_autoland && Craft.is_mr(vi.mrtype)));
                 markers.add_list_store(ls);
+                NavStatus.nm_pts = (uint8)wp_resp.length;
+                NavStatus.have_rth = (wp_resp[n-1].action == MSP.Action.RTH);
             });
         mqtt.mqtt_frame.connect((cmd, raw, len) => {
                 handle_serial(cmd,raw,(uint)len,0, false);
@@ -6255,6 +6258,8 @@ case 0:
                     ns.target_bearing = *rp++;
                 }
                 navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS),flg);
+
+//                stderr.printf("Nframe gps %d wp %d np %d\n", ns.gps_mode,   ns.wp_number,NavStatus.nm_pts);
 
                 if((replayer & Player.BBOX) == 0 && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255))
                 {
