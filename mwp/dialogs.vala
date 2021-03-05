@@ -2383,7 +2383,7 @@ public class AudioThread : Object {
                                     s = "Returning home";
                                     break;
                                 case 3:
-                                    s = "Infinite position hold";
+                                    s = "Position hold";
                                     break;
                                 case 4:
                                     s = "Timed position hold";

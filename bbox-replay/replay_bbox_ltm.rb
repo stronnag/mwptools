@@ -511,7 +511,7 @@ class BBReplay
 	       :nav_state_waypoint_rth_land,
 	       :nav_state_emergency_landing_initialize,
 	       :nav_state_emergency_landing_in_progress,
-	       :nav_state_emergency_landing_finished,
+	       :nav_state_emergency_landing_finished
 	       15
 	  when :nav_state_waypoint_initialize,
 	       :nav_state_waypoint_pre_action,
@@ -541,7 +541,12 @@ class BBReplay
       STDERR.puts "** STS 19 for <#{INAV_STATES[inavers][r[:navstate].to_i]}> <#{r[:navstate]}>\n"
     end
 
-    sts = (sts << 2) | armed
+    begin
+      sts = (sts << 2) | armed
+    rescue
+      STDERR.puts "** SVAL=#{sval}, STS=#{sts} navstate=#{[r[:navstate].to_i]}\n"
+      exit
+    end
     if r[:failsafephase_flags].strip != 'IDLE'
       sts |= 2
     end
@@ -1195,7 +1200,7 @@ class BBReplay
       end
     end
 
-    send_msg dev, encode_x(disarms[idx-1])
+    send_msg dev, encode_x(disarms[idx-1]||0)
     #File.unlink(STDERR_LOG) if File.zero?(STDERR_LOG)
   end
 end
