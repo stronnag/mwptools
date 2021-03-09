@@ -6904,9 +6904,11 @@ case 0:
                                     curr.lmah = mah;
                                 }
                         }
-                        else
+                        else {
                             MWPLog.message("curr error %d\n",cdiff);
-
+                        }
+                        curr.lmahtm = mahtm;
+                        curr.lmah = mah;
                     }
                     else if (curr.lmah - mah > 100)
                     {
