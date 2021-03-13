@@ -5,6 +5,11 @@ CONF=$1
 CONFIRM=
 [ -n "$CONF" ] && CONFIRM=-y
 
+
+## ************* FIRST make sure you're current *********************
+apt update && apt full-upgrade
+## ************* Otherwise, bad stuff may happen ********************
+
 apt $CONFIRM install libgdl-3-dev \
     libchamplain-gtk-0.12-dev \
     libchamplain-0.12-dev \
