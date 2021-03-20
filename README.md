@@ -5,7 +5,7 @@ mwptools
 
 ## Overview
 
-mwptools provides a mission planner, ground control station, real time flight logger and log replay / blackbox replay functions for the inav FC firmware.
+mwptools provides a mission planner, ground control station, real time flight logger and log replay / blackbox replay functions for the [inav](https://github.com/iNavFlight/inav) FC firmware.
 
 mwptools supports the full set of inav and multiwii WP types.
 
@@ -17,6 +17,7 @@ mwp supports the following telemetry protocols:
 * LTM (Lightweight Telemetry)
 * MAVLink (iNav subset)
 * Smartport
+* BulletGCCS MQTT
 
 mwp also supports the real-time display of adjacent aircraft using:
 
@@ -28,6 +29,8 @@ mwp also provides logging and the replay of:
 * mwp log files
 * Blackbox logs
 * OpenTX CSV sdcard logs
+
+There is also an [inav](https://github.com/iNavFlight/inav) Safehome editor
 
 In addition, mwp proivdes legacy suport for multiwii navigation functions.
 
@@ -69,7 +72,7 @@ The [wiki](https://github.com/stronnag/mwptools/wiki) provides further guidance.
 
 ### Other OS / See also
 
-For OS not supported by mwp (e.g. MacOS, IOS, Andriod), see also https://github.com/stronnag/impload for a mission format converter and upload application.
+For OS not supported by mwp (e.g. MacOS, IOS, Andriod), see also [impload](https://github.com/stronnag/impload) for a mission format converter and upload application.
 
 ## Installation
 
