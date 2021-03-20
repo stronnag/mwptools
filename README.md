@@ -17,7 +17,7 @@ mwp supports the following telemetry protocols:
 * LTM (Lightweight Telemetry)
 * MAVLink (iNav subset)
 * Smartport
-* BulletGCCS MQTT
+* [BulletGCCS MQTT](https://github.com/stronnag/mwptools/wiki/mqtt---bulletgcss-telemetry)
 
 mwp also supports the real-time display of adjacent aircraft using:
 
@@ -28,9 +28,9 @@ mwp also provides logging and the replay of:
 
 * mwp log files
 * Blackbox logs
-* OpenTX CSV sdcard logs
+* OpenTX CSV (sdcard) logs
 
-There is also an [inav](https://github.com/iNavFlight/inav) Safehome editor
+There is also an [inav](https://github.com/iNavFlight/inav) [Safehome editor](https://github.com/stronnag/mwptools/wiki/mwp-safehomes-editor).
 
 In addition, mwp proivdes legacy suport for multiwii navigation functions.
 
