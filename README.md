@@ -64,8 +64,8 @@ mwptools is tested on x86_64, ia32 and ARM32 devices (Linux / FreeBSD).
 
 It is also possible to build and run mwp on MS Windows using:
 
-* [Cygwin](https://www.cygwin.com/)
-* Windows 10 / WSL
+* [Cygwin](https://www.cygwin.com/) Recommended Windows solution.
+* Windows 10 / WSL (slow, unstable, not recommended)
 * A virtual machine with a Linux guest.
 
 The [wiki](https://github.com/stronnag/mwptools/wiki) provides further guidance.
