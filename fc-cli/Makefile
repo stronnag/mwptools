@@ -32,9 +32,6 @@ fc-get: fc-get.vala $(COMMONC)
 clean:
 	rm -f fc-get fc-set *.vala.c *~
 
-local: $(APPS)
-	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
-
 install: $(APPS)
 	install -d $(prefix)/bin
 	install -s $(CLI) $(prefix)/bin/$(CLI)

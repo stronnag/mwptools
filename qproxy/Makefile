@@ -14,9 +14,6 @@ bproxy: bproxy.vala
 clean:
 	rm -f gmproxy qproxy *~ *.vala.c
 
-local:
-	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
-
 install: $(APP) gmproxy
 	install -d $(prefix)/bin
 	install -s gmproxy $(prefix)/bin/gmproxy

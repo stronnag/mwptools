@@ -24,8 +24,5 @@ $(APP): $(CLISRC)
 clean:
 	rm -f $(APP) *~ *.vala.c
 
-local:
-	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
-
 install: $(APPS)
 	install -s -D $(APP) $(prefix)/bin/$(APP)

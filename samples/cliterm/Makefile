@@ -59,8 +59,6 @@ xcliterm: xcliterm-main.vala $(COMMOND)/cliterm.vala $(COMMONC)
 clean:
 	rm -f cliterm xcliterm *.vala.c *~ vxtest mspfuzz msptest
 
-local: $(APPS)
-	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
 install: $(APPS)
 	install -d $(prefix)/bin

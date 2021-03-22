@@ -27,9 +27,6 @@ flashdl: flashdl.vala $(COMMONC)
 clean:
 	rm -f flashdl *.vala.c *~
 
-local: $(APPS)
-	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
-
 install: $(APPS)
 	install -d $(prefix)/bin
 	install -s $(APP) $(prefix)/bin/$(APP)

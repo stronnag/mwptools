@@ -83,9 +83,6 @@ mwp: $(SRCS) $(COMMON)
 clean:
 	rm -f mwp *~ *.vala.c
 
-local:
-	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
-
 mprevtest: mwp-mission-preview.vala
 	valac $(TOPTS) $(TPKGS) $(TCOMMON) -o $@  $^ $(LOPTS)
 
