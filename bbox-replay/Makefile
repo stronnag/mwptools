@@ -9,6 +9,8 @@ include ../common.mk
 
 all:
 
+local:
+	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
 
 install: $(APP) $(DEP)
 	install -d $(prefix)/bin

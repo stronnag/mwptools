@@ -18,6 +18,11 @@ install: $(INSTALLDIRS)
 $(INSTALLDIRS):
 	$(MAKE) -C $(@:install-%=%) install
 
+local: $(LOCALDIRS)
+$(LOCALDIRS):
+	$(MAKE) -C $(@:local-%=%) local
+	@cat docs/warn-local.txt
+
 clean: $(CLEANDIRS)
 $(CLEANDIRS):
 	$(MAKE) -C $(@:clean-%=%) clean
@@ -28,4 +33,4 @@ $(CLEANDIRS):
 .PHONY: subdirs $(SYSINSTALLDIRS)
 .PHONY: subdirs $(TESTDIRS)
 .PHONY: subdirs $(CLEANDIRS)
-.PHONY: all install clean sysinstall
+.PHONY: all install clean local sysinstall

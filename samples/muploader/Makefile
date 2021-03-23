@@ -27,6 +27,9 @@ $(CLI): muppet.vala $(COMMONC)
 clean:
 	rm -f $(CLI) *.vala.c *~
 
+local: $(APPS)
+	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
+
 install: $(APPS)
 	install -d $(prefix)/bin
 	install -s $(CLI) $(prefix)/bin/$(CLI)

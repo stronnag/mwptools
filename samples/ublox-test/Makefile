@@ -44,6 +44,9 @@ $(APP) : $(SRCS) $(COMMONM)
 clean:
 	rm -f ublox-cli ublox-geo  *~ *.vala.c ublox-resources.c
 
+local: $(APPS)
+	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
+
 install: $(APPS)
 	install -d $(prefix)/bin
 	install -s $(APP) $(prefix)/bin/$(APP)

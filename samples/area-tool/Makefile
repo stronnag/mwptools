@@ -37,6 +37,9 @@ genpat : genpat.vala
 clean:
 	rm -f genpat $(APP)  *~ *.vala.c survey-resources.c
 
+local: $(APPS)
+	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
+
 install: $(APPS)
 	install -d $(prefix)/bin
 	install -s $(APP) $(prefix)/bin/$(APP)

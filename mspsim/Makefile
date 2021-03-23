@@ -20,6 +20,9 @@ $(APP): $(SRC)  $(COMMON)
 clean:
 	rm -f $(APP) *.vala.c
 
+local:
+	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
+
 install: $(APP)
 	install -d $(prefix)/bin
 	install -d $(datadir)/share/$(APP)
