@@ -91,8 +91,8 @@ IO.popen(cmd,'r') do |p|
   nstate = -1
   istate = 'IDLE'
   st = nil
-  xts=nil
-  ts=nil
+  xts=0
+  ts=0
 
   csv.each do |c|
     if  nhdr == false

@@ -110,7 +110,9 @@ install: $(APPS)
 	install -m 644 mwp.desktop $(datadir)/share/applications/mwp.desktop
 	install -d $(datadir)/share/glib-2.0/schemas
 	install -m 644 org.mwptools.planner.gschema.xml $(datadir)/share/glib-2.0/schemas/org.mwptools.planner.gschema.xml
+ifndef NOSCHEMAS
 	glib-compile-schemas $(datadir)/share/glib-2.0/schemas
+endif
 	install -d $(datadir)/share/doc/mwp
 	install -m 644 ../docs/mwptools.pdf $(datadir)/share/doc/mwp/mwptools.pdf
 ifneq ($(BASH_COMPLETION_DIR),'')
