@@ -12,7 +12,9 @@ ARGV.options do |opt|
   end
 end
 
-m=XmlSimple.xml_in((ARGV[0] || STDIN), {'ForceArray' => false, 'KeepRoot' => false})
+doc=IO.read(ARGV[0] || STDIN)
+doc.downcase!
+m=XmlSimple.xml_in(doc, {'ForceArray' => false, 'KeepRoot' => false})
 last = m['missionitem'].size - 1
 m['missionitem'].each_with_index do |i,n|
   xlat = "%.6f" % i['lat'].to_f
@@ -24,7 +26,7 @@ m['missionitem'].each_with_index do |i,n|
   p2 = i['parameter2'].to_i
   p3 = i['parameter3'].to_i
 
-  act = case i['action']
+  act = case i['action'].upcase
 	when 'WAYPOINT'
 	  1
 	when 'POSHOLD_TIME'
