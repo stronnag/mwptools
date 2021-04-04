@@ -100,6 +100,7 @@ public class MWPSettings : GLib.Object
     public int smartport_fuel  {get; set; default = 0;}
     public int speak_amps {get; set; default=0;}
     public bool arming_speak {get; set; default=false;}
+    public bool manage_power {get; set; default=false;}
     public uint max_radar { get; set; default=4; }
     public string kmlpath {get; private set; default=null;}
     public bool fixedfont {get; set; default=true;}
@@ -381,6 +382,9 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "arming-speak")
             arming_speak  = settings.get_boolean("arming-speak");
+
+        if(s == null || s == "manage-power")
+            manage_power = settings.get_boolean("manage-power");
 
         if(s == null || s == "fixedfont")
             fixedfont = settings.get_boolean ("fixedfont");

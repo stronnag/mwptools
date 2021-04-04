@@ -547,6 +547,12 @@
       <description>whether to reporting arming state by audio</description>
     </key>
 
+    <key type="b" name="manage-power">
+      <default>false</default>
+      <summary>manage power and screen</summary>
+      <description>whether to manage idle and screen saver</description>
+    </key>
+
     <key type="b" name="fixedfont">
       <default>true</default>
       <summary>Use a fixed font for Flight View</summary>
