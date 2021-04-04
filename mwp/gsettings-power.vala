@@ -69,14 +69,11 @@ public class GSPowerSettings : GLib.Object {
             }
             if ((managed & 1) == 1) {
                 isettings.set_boolean ("idle-activation-enabled", iae);
-                isettings.apply();
             }
             if ((managed & 2) == 2) {
                 psettings.set_boolean ("idle-dim", idm);
                 psettings.set_int ("sleep-inactive-battery-timeout", islp);
-                psettings.apply();
             }
-            Settings.sync();
         }
         return xison;
     }
