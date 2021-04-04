@@ -7,12 +7,26 @@ ifeq ($(XOS),Linux)
  GUDEV = --pkg gudev-1.0
 endif
 
-ifeq ($(OS),Windows_NT)
+ifeq ($(XOS),Windows_NT)
  MWIN = -X -mwindows
 endif
 
 OPTS += -X -O2
-OPTS += -X -Wno-incompatible-pointer-types -X  -Wno-discarded-qualifiers -X -Wno-deprecated-declarations -X -Wno-unused-result -X -Wno-format
+
+ifeq ($(WARN),)
+OPTS += -X -Wno-unused-result -X -Wno-format
+ ifeq ($(XOS),FreeBSD)
+  USE_CLANG=1
+ endif
+ ifeq ($(CC),clang)
+  USE_CLANG=1
+ endif
+ ifeq ($(USE_CLANG),1)
+  OPTS += -X -Wno-incompatible-pointer-types-discards-qualifiers -X -Wno-pointer-sign -X -Wno-incompatible-pointer-types -X -Wno-sentinel -X -Wno-deprecated-declarations -X -Wno-tautological-pointer-compare -X -Wno-void-pointer-to-enum-cast -X -Wno-unused-value
+ else
+  OPTS += -X -Wno-incompatible-pointer-types -X  -Wno-discarded-qualifiers -X -Wno-deprecated-declarations
+ endif
+endif
 
 ifeq ($(origin DEBUG), undefined)
  OPTS += -X -s
@@ -46,10 +60,6 @@ endif
 ifeq ($(USE_TV1), 1)
  DOPTS+= -D USE_TV1
 endif
-
-#ifeq ($(VAPI),0.34)
-# DOPTS += -D LSRVAL
-#endif
 
 NOVTHREAD := $(shell V1=$$(valac --version | cut  -d '.' -f 2); V2=$$(valac --version | cut  -d '.' -f 3); VV=$$(printf "%02d%02d" $$V1 $$V2) ; [ $$VV -gt 4204 ] ; echo $$? )
 
