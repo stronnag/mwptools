@@ -9,6 +9,8 @@ include ../common.mk
 GST ?= 1.0
 
 SPK=
+PKGS = --vapidir $(COMMOND) -X -I$(COMMOND) --pkg mwpfuncs
+
 ES1 := $(shell test -d /usr/include/espeak || test -d /usr/local/include/espeak; echo $$?)
 ifeq ($(ES1),0)
  SPK += -X -DUSE_ESPEAK
@@ -26,10 +28,8 @@ ifeq ($(ES3),0)
 endif
 
 ifdef SPK
-  OPTS += --pkg gmodule-2.0
+  PKGS += --pkg gmodule-2.0
 endif
-
-OPTS+= --vapidir $(COMMOND) -X -I$(COMMOND) --pkg mwpfuncs
 
 ifeq ($(USE_MQTT),0)
  MQTT=1
@@ -47,23 +47,23 @@ all: $(APPS)
 
 COMMOND=../common
 
-SRCS=mwp.vala liststore.vala mwp_markers.vala mwp_craft.vala settings.vala dialogs.vala mapsources.vala logger.vala speech_wrapper.c mwp-replay.vala map_seeder.vala mwp-layout.vala iparser.vala mwp_bbox.vala ah_widget.vala _mwpvers.c get_places.vala mission.vala mwp_dbus.vala name_type_map.vala mwp_pe_support.vala kmlovly.vala mwp_upower.vala replicate_wp.vala mwp-mission-preview.vala mwp-radar_list.vala dbus-mwp-client.vala mwp_safehomes.vala mwp_otx.vala
+SRCS=mwp.vala liststore.vala mwp_markers.vala mwp_craft.vala settings.vala dialogs.vala mapsources.vala logger.vala speech_wrapper.c mwp-replay.vala map_seeder.vala mwp-layout.vala iparser.vala mwp_bbox.vala ah_widget.vala _mwpvers.c get_places.vala mission.vala mwp_dbus.vala name_type_map.vala mwp_pe_support.vala kmlovly.vala mwp_upower.vala replicate_wp.vala mwp-mission-preview.vala mwp-radar_list.vala dbus-mwp-client.vala mwp_safehomes.vala mwp_otx.vala gsettings-power.vala
 
 COMMON=$(COMMOND)/btdev.c $(COMMOND)/cserial.c $(COMMOND)/xmlio.vala $(COMMOND)/serial-device.vala $(COMMOND)/geocalc.vala  $(COMMOND)/utils.vala $(COMMOND)/mspmsg.vala $(COMMOND)/mspcmd.vala  $(COMMOND)/mwc.vala $(COMMOND)/mwplog.vala $(COMMOND)/mavcmd.vala local_geo.vala $(COMMOND)/cliterm.vala $(COMMOND)/mlock.vala $(COMMOND)/json_io.vala $(COMMOND)/devman.vala
 
-PKGS= --pkg gtk+-3.0 --pkg atk --pkg clutter-1.0 --pkg champlain-gtk-0.12 --pkg champlain-0.12 --pkg libxml-2.0 --pkg gio-2.0 --pkg posix --pkg clutter-gtk-1.0 --pkg gdl-3.0 --pkg pango --pkg cairo --pkg libsoup-2.4 --pkg linux --pkg gstreamer-$(GST) --pkg vte-$(VTEVERS) $(GUDEV)
+PKGS += --pkg gtk+-3.0 --pkg atk --pkg clutter-1.0 --pkg champlain-gtk-0.12 --pkg champlain-0.12 --pkg libxml-2.0 --pkg gio-2.0 --pkg posix --pkg clutter-gtk-1.0 --pkg gdl-3.0 --pkg pango --pkg cairo --pkg libsoup-2.4 --pkg linux --pkg gstreamer-$(GST) --pkg vte-$(VTEVERS) $(GUDEV)
 
 ifdef MQTT
  DOPTS += -D MQTT
  SRCS += mwp_mqtt_common.vala
  ifeq ($(MQTTLIB), paho)
   DOPTS += -D MQTT_PAHO
-  OPTS += --pkg paho_wrapper
+  PKGS += --pkg paho_wrapper
   SRCS += paho_wrapper.c
   LOPTS += -X -lpaho-mqtt3cs
  else
   DOPTS += -D MQTT_MOSQUITTO
-  OPTS += --pkg libmosquitto
+  PKGS += --pkg libmosquitto
  endif
 endif
 
@@ -72,6 +72,7 @@ TOPTS += -X -O2
 TOPTS += -D PREVTEST --vapidir $(C) -X -I$(C) --pkg mwpfuncs
 TCOMMON = $(C)/xmlio.vala mission.vala  $(C)/geocalc.vala $(C)/mspcmd.vala
 TPKGS =  --pkg gio-2.0 --pkg posix --pkg libxml-2.0
+
 
 #mwp-gresources.c: mwp-gresources.xml mwp.ui pixmaps/mwp_icon.svg
 #	glib-compile-resources --target=$@ --generate-source  mwp-gresources.xml

@@ -12,6 +12,7 @@ ifeq ($(OS),Windows_NT)
 endif
 
 OPTS += -X -O2
+OPTS += -X -Wno-incompatible-pointer-types -X  -Wno-discarded-qualifiers -X -Wno-deprecated-declarations
 
 ifeq ($(origin DEBUG), undefined)
  OPTS += -X -s
@@ -66,10 +67,11 @@ ifneq ($(USE_MQTT), 0)
 else
  MQTTLIB := $(or $(MQTTLIB),paho)
 endif
-#GTKOK := $(shell pkg-config --atleast-version=3.22 gtk+-3.0; echo $$?)
-#ifneq ($(GTKOK), 0)
-# DOPTS += -D OLDGTK
-#endif
+
+VTI := $(shell pkg-config --atleast-version=2.68 glib-2.0; echo $$?)
+ifneq ($(VTI), 0)
+ DOPTS += -D OLDTVI
+endif
 
 VTEVERS=2.91
 

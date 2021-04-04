@@ -346,7 +346,11 @@ public class  BBoxDialog : Object
             {
                 if(tzstr == "Log")
                     tzstr = ts.substring(23,6);
+#if OLDTVI
                 TimeZone tz = new TimeZone(tzstr);
+#else
+                TimeZone tz = new TimeZone.identifier(tzstr);
+#endif
                 tss = (dt.to_timezone(tz)).format("%F %T %Z");
             }
         }
