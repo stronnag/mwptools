@@ -12,7 +12,7 @@ ifeq ($(OS),Windows_NT)
 endif
 
 OPTS += -X -O2
-OPTS += -X -Wno-incompatible-pointer-types -X  -Wno-discarded-qualifiers -X -Wno-deprecated-declarations
+OPTS += -X -Wno-incompatible-pointer-types -X  -Wno-discarded-qualifiers -X -Wno-deprecated-declarations -X -Wno-unused-result -X -Wno-format
 
 ifeq ($(origin DEBUG), undefined)
  OPTS += -X -s
