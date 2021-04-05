@@ -627,7 +627,6 @@ public class MWP : Gtk.Application {
     public PowerState pstate;
     private bool seenMSP = false;
 
-    private GSPowerSettings gpower;
     private SafeHomeDialog safehomed;
     private uint8 last_safehome = 0;
     private uint8 safeindex = 0;
@@ -965,6 +964,7 @@ public class MWP : Gtk.Application {
 
     private MwpServer mss=null;
     private uint8 spapi =  0;
+    private uint inhibit_cookie = 0;
 
     public const string[] SPEAKERS =  {"none", "espeak","speechd","flite","external"};
     public enum SPEAKER_API
@@ -1090,11 +1090,6 @@ public class MWP : Gtk.Application {
         stop_replayer();
 
         mss.quit();
-        if(conf.manage_power && gpower.is_managed() != 0)
-        {
-            if (gpower.SetScreen(false))
-                MWPLog.message("Restore power settings\n");
-        }
 
         if(conf.atexit != null)
             try {
@@ -2770,12 +2765,8 @@ public class MWP : Gtk.Application {
                 });
         }
 
-        if(conf.manage_power) {
-            gpower = new GSPowerSettings();
-            var gpm = gpower.is_managed();
-            if (gpm != 0)
-                MWPLog.message("Managing power and screen saver / idle (%d)\n", gpm);
-        }
+        if(conf.manage_power)
+            MWPLog.message("mwp will manage power and screen saver / idle\n");
 
         map_moved();
 
@@ -3901,9 +3892,10 @@ case 0:
                                 init_have_home();
                                 serstate = SERSTATE.NORMAL;
                                 queue_cmd(MSP.Cmds.IDENT,null,0);
-                                if(conf.manage_power && gpower.is_managed() != 0) {
-                                    if (gpower.SetScreen(false))
-                                        MWPLog.message("Restore screen and power settings\n");
+                                if(inhibit_cookie != 0) {
+                                    uninhibit(inhibit_cookie);
+                                    inhibit_cookie = 0;
+                                    MWPLog.message("Not managing screen / power settings\n");
                                 }
                                 run_queue();
                             }
@@ -5505,9 +5497,10 @@ case 0:
                         var mtype= (cmd >= MSP.Cmds.MAV_BASE) ? "MAVlink" : "LTM";
                         var mstr = "%s telemetry".printf(mtype);
                         MWPLog.message("%s\n", mstr);
-                        if (conf.manage_power && gpower.is_managed() != 0) {
-                            MWPLog.message("Managing screen / power settings\n");
-                            gpower.SetScreen(true);
+                        if (conf.manage_power && inhibit_cookie == 0)
+                        {
+                            this.inhibit(null, ApplicationInhibitFlags.IDLE|ApplicationInhibitFlags.SUSPEND,"mwp telem");
+                            MWPLog.message("Managing screen idle and suspend\n");
                         }
                         serstate = SERSTATE.TELEM;
                         init_sstats();
@@ -8084,9 +8077,10 @@ case 0:
         if(is_shutdown == true)
             return;
         MWPLog.message("Serial doom replay %d\n", replayer);
-        if(conf.manage_power && gpower.is_managed() != 0) {
-            if (gpower.SetScreen(false))
-                MWPLog.message("Restore screen / power settings\n");
+        if(inhibit_cookie != 0) {
+            uninhibit(inhibit_cookie);
+            inhibit_cookie = 0;
+            MWPLog.message("Not managing screen / power settings\n");
         }
         map_hide_wp();
         if(replayer == Player.NONE)
