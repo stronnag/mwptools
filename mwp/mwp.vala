@@ -5499,7 +5499,7 @@ case 0:
                         MWPLog.message("%s\n", mstr);
                         if (conf.manage_power && inhibit_cookie == 0)
                         {
-                            this.inhibit(null, ApplicationInhibitFlags.IDLE|ApplicationInhibitFlags.SUSPEND,"mwp telem");
+                            inhibit_cookie = inhibit(null, ApplicationInhibitFlags.IDLE|ApplicationInhibitFlags.SUSPEND,"mwp telem");
                             MWPLog.message("Managing screen idle and suspend\n");
                         }
                         serstate = SERSTATE.TELEM;
