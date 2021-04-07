@@ -9593,12 +9593,12 @@ case 0:
 
             string[] fargs = {};
             if(mission != null)
-                fargs += mission;
+                fargs += Posix.realpath(mission);
 
             if (rfile != null)
-                fargs += rfile;
+                fargs += Posix.realpath(rfile);
             else if (bfile != null)
-                fargs += bfile;
+                fargs += Posix.realpath(bfile);
 
             if (fargs.length > 0)
             {
