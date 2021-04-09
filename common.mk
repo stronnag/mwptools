@@ -78,9 +78,16 @@ else
  MQTTLIB := $(or $(MQTTLIB),paho)
 endif
 
+
 VTI := $(shell pkg-config --atleast-version=2.68 glib-2.0; echo $$?)
-ifneq ($(VTI), 0)
+VT0 := $(shell test $(VS) -ge 0052 ; echo $$? )
+
+ifeq ($(VT0), 1)
  DOPTS += -D OLDTVI
+else
+ ifeq ($(VT1), 1)
+  DOPTS += -D OLDTVI
+ endif
 endif
 
 VTEVERS=2.91
