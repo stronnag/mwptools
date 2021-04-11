@@ -631,6 +631,7 @@ public class MWP : Gtk.Application {
     private uint8 last_safehome = 0;
     private uint8 safeindex = 0;
     private bool is_shutdown = false;
+    private MwpNotify? dtnotify = null;
 
     public struct MQI //: Object
     {
@@ -1071,7 +1072,7 @@ public class MWP : Gtk.Application {
 
     MWP ()
     {
-        Object(application_id: "mwp.application", flags: ApplicationFlags.FLAGS_NONE);
+        Object(application_id: "mwp.app", flags: ApplicationFlags.FLAGS_NONE);
     }
 
     public void cleanup()
@@ -2766,11 +2767,23 @@ public class MWP : Gtk.Application {
         }
 
         if(conf.manage_power)
+        {
             MWPLog.message("mwp will manage power and screen saver / idle\n");
-
+            dtnotify = new MwpNotify();
+        }
         map_moved();
 
     }
+
+    public void mwp_notify(string s)
+    {
+        var notification = new Notification ("mwp");
+        notification.set_body (s);
+        var icon = new GLib.ThemedIcon ("dialog-warning");
+        notification.set_icon (icon);
+        send_notification ("mwp", notification);
+    }
+
 
     public uint8 get_mrtype()
     {
@@ -3895,6 +3908,7 @@ case 0:
                                 if(inhibit_cookie != 0) {
                                     uninhibit(inhibit_cookie);
                                     inhibit_cookie = 0;
+                                    dtnotify.send_notification("mwp", "Unhibit screen/idle/suspend");
                                     MWPLog.message("Not managing screen / power settings\n");
                                 }
                                 run_queue();
@@ -5500,7 +5514,10 @@ case 0:
                         if (conf.manage_power && inhibit_cookie == 0)
                         {
                             inhibit_cookie = inhibit(null, ApplicationInhibitFlags.IDLE|ApplicationInhibitFlags.SUSPEND,"mwp telem");
+                            dtnotify.send_notification("mwp", "Inhibiting screen/idle/suspend");
+
                             MWPLog.message("Managing screen idle and suspend\n");
+
                         }
                         serstate = SERSTATE.TELEM;
                         init_sstats();
@@ -8080,6 +8097,7 @@ case 0:
         if(inhibit_cookie != 0) {
             uninhibit(inhibit_cookie);
             inhibit_cookie = 0;
+            dtnotify.send_notification("mwp", "Unhibit screen/idle/suspend");
             MWPLog.message("Not managing screen / power settings\n");
         }
         map_hide_wp();
