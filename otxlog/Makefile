@@ -5,7 +5,7 @@ include ../common.mk
 APP = otxlog
 
 $(APP):	$(wildcard *.go)
-	-go build -ldflags "-w -s"
+	-go build -trimpath -ldflags "-w -s"
 
 clean:
 	go clean

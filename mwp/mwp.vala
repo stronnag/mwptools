@@ -4994,8 +4994,7 @@ case 0:
             {
                 if(mi.action != MSP.Action.RTH &&
                    mi.action != MSP.Action.JUMP &&
-                   mi.action != MSP.Action.SET_HEAD &&
-                   mi.action != MSP.Action.SET_POI)
+                   mi.action != MSP.Action.SET_HEAD)
                 {
                     if (mi.lat > ms.maxy)
                         ms.maxy = mi.lat;
@@ -8836,7 +8835,7 @@ case 0:
 
         NavStatus.have_rth = ls.have_rth;
         if(ms.zoom == 0)
-            ms.zoom = guess_appropriate_zoom(bb_from_mission(ms));
+            ms.zoom = guess_appropriate_zoom(bb_from_mission(ms)) - 1;
 
         set_view_zoom(ms.zoom);
         markers.add_list_store(ls);

@@ -5,7 +5,7 @@ include ../../common.mk
 APP = bbsummary
 
 APP:
-	go build -ldflags "-w -s"
+	go build -trimpath -ldflags "-w -s"
 
 install: $(APP)
 	install -d $(prefix)/bin
