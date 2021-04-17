@@ -3556,6 +3556,10 @@ case 0:
         apos = (bb.left+bb.right)/2;
         Geo.csedist(bb.top, apos, bb.bottom, apos, out dist, out cse);
         mapsize.height = dist *= 1852.0;
+/*
+        double diag = Math.sqrt(mapsize.height*mapsize.height+mapsize.width*mapsize.width);
+        stderr.printf("For zoom %u, width=%.0f height=%.0f diag=%.0f\n", view.zoom_level,  mapsize.width,mapsize.height, diag);
+*/
     }
 
     private bool get_primary_size(ref Gdk.Rectangle rect)
@@ -8835,7 +8839,7 @@ case 0:
 
         NavStatus.have_rth = ls.have_rth;
         if(ms.zoom == 0)
-            ms.zoom = guess_appropriate_zoom(bb_from_mission(ms)) - 1;
+            ms.zoom = guess_appropriate_zoom(bb_from_mission(ms));
 
         set_view_zoom(ms.zoom);
         markers.add_list_store(ls);
