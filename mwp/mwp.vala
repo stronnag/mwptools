@@ -8773,7 +8773,16 @@ case 0:
 
     private uint guess_appropriate_zoom(Champlain.BoundingBox bb)
     {
-        uint z = 18;
+        uint z;
+
+        for(z = view.get_max_zoom_level(); z >= view.get_min_zoom_level(); z--)  {
+            var abb =  view.get_bounding_box_for_zoom_level (z);
+            if (bb.bottom > abb.bottom && bb.top < abb.top && bb.left > abb.left && bb.right < abb.right)
+                break;
+        }
+
+
+/**
         if(window_h != -1 && window_w != -1)
         {
             double cse,m_width,m_height;
@@ -8794,6 +8803,7 @@ case 0:
                     break;
             }
         }
+**/
         return z;
     }
 
