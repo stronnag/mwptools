@@ -8780,30 +8780,6 @@ case 0:
             if (bb.bottom > abb.bottom && bb.top < abb.top && bb.left > abb.left && bb.right < abb.right)
                 break;
         }
-
-
-/**
-        if(window_h != -1 && window_w != -1)
-        {
-            double cse,m_width,m_height;
-            const double erad = 6372.7982; // earth radius
-            const double ecirc = erad*Math.PI*2.0; // circumference
-            const double rad = 0.017453292; // deg to rad
-            double cx,cy;
-            bb.get_center (out cy, out cx);
-            Geo.csedist(cy, bb.left, cy, bb.right, out m_width, out cse);
-            Geo.csedist(bb.bottom, cx, bb.top, cx, out m_height, out cse);
-            m_width = m_width * 1852;
-            m_height = m_height * 1852;
-            for(z = view.get_max_zoom_level();
-                z >= view.get_min_zoom_level(); z--)
-            {
-                double s = 1000 * ecirc * Math.cos(cy * rad) / (Math.pow(2,(z+8)));
-                if(s*window_w > m_width && s*window_h > m_height)
-                    break;
-            }
-        }
-**/
         return z;
     }
 
@@ -9207,7 +9183,7 @@ case 0:
         args += idx.to_string();
         if(delay == false)
             args += "--fast";
-        if(typ > 0)
+//        if(typ >= 0)
         {
             args += "--type";
             args += typ.to_string();

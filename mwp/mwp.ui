@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 
+<!-- Generated with glade 3.38.2
 
 Copyright (C)
 
@@ -653,6 +653,7 @@ Otherwise, select a valid FC vehicle type</property>
                       <item translatable="yes">CUSTOM</item>
                       <item translatable="yes">CUSTOM_AEROPLANE</item>
                       <item translatable="yes">CUSTOM_TRI</item>
+                      <item translatable="yes">Paper Dart</item>
                     </items>
                   </object>
                   <packing>
