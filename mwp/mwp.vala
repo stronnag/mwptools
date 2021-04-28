@@ -5013,10 +5013,10 @@ case 0:
 
             ms.cy = (ms.maxy + ms.miny) / 2.0;
             ms.cx = (ms.maxx + ms.minx) / 2.0;
-            ms.zoom = guess_appropriate_zoom(bb_from_mission(ms));
             if (ctr_on)
             {
                 map_centre_on(ms.cy, ms.cx);
+                ms.zoom = guess_appropriate_zoom(bb_from_mission(ms));
                 set_view_zoom(ms.zoom);
             }
             map_moved();
