@@ -660,6 +660,7 @@ public class MWP : Gtk.Application {
         hasPHTIME = 0x020500,
         hasLAND = 0x020500,
         hasSAFEAPI = 0x020700,
+        hasMONORTH = 0x020600,
     }
 
     public enum WPS
@@ -7861,6 +7862,19 @@ case 0:
         {
             string str = "WARNING\nmwp downgraded %u multiwii specific waypoint(s) to compatible iNav equivalent(s). Once the upload has completed, please check you're happy with the result.\n\nNote that iNav will treat a final bare WAYPOINT as POSHOLD UNLIMITED".printf(downgrade);
             mwp_warning_box(str, Gtk.MessageType.WARNING);
+        }
+
+        int nrth = 0;
+
+        foreach(var w in wps)
+        {
+            if (w.action ==  MSP.Action.RTH)
+                nrth++;
+        }
+
+        if(((vi.fc_vers >= FCVERS.hasMONORTH) || (navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG) && nrth > 1)
+        {
+            mwp_warning_box("Mission will terminate at 1st RTH", Gtk.MessageType.WARNING);
         }
 
         if(wps.length == 0)

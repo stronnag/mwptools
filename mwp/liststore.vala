@@ -1218,8 +1218,10 @@ public class ListBox : GLib.Object
             switch (act)
             {
                 case MSP.Action.WAYPOINT:
-                case MSP.Action.LAND:
                     ctitles = {"Lat","Lon","Alt","Spd","",""};
+                    break;
+                case MSP.Action.LAND:
+                    ctitles = {"Lat","Lon","Alt","Spd","Elv",""};
                     break;
                 case MSP.Action.POSHOLD_UNLIM:
                     ctitles = {"Lat","Lon","Alt","","",""};
