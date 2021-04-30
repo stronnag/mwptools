@@ -323,10 +323,10 @@ public class MwpMQTT : Object {
                     wp.p1 = (int16)int.parse(attrs[1]);
                     break;
                 case "p2":
-                    wp.p2 = (uint16)int.parse(attrs[1]);
+                    wp.p2 = (int16)int.parse(attrs[1]);
                     break;
                 case "p3":
-                    wp.p3 = (uint16)int.parse(attrs[1]);
+                    wp.p3 = (int16)int.parse(attrs[1]);
                     break;
                 case "f":
                     wp.flag = (uint8)int.parse(attrs[1]);

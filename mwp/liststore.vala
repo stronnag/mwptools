@@ -62,6 +62,7 @@ public class ListBox : GLib.Object
     private SpeedDialog speeddialog;
     private AltDialog altdialog;
     private WPRepDialog wprepdialog;
+    private AltModeDialog  altmodedialog;
 
     private double ms_speed;
     private Gtk.Menu marker_menu;
@@ -399,7 +400,7 @@ public class ListBox : GLib.Object
                     w.p2 = (int16)tint;
                 list_model.get_value (iter, WY_Columns.INT3, out cell);
                 tint = (int)cell;
-                w.p3 = (uint16)tint;
+                w.p3 = (int16)tint;
                 w.flag = 0;
 
                 if((flags & MWP.WPS.isINAV) == MWP.WPS.isINAV)
@@ -725,7 +726,9 @@ public class ListBox : GLib.Object
         speeddialog = new SpeedDialog(mp.builder);
         altdialog = new AltDialog(mp.builder);
         wprepdialog = new WPRepDialog(mp.builder);
-            // Combo, Model:
+        altmodedialog = new AltModeDialog(mp.builder);
+
+// Combo, Model:
         Gtk.ListStore combo_model = new Gtk.ListStore (1, typeof (string));
         Gtk.TreeIter iter;
 
@@ -893,9 +896,8 @@ public class ListBox : GLib.Object
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
                 mp.set_serstate(ss);
                 list_validate(path,new_text,
-                              WY_Columns.ALT,-1000.0,1000.0,true);
+                              WY_Columns.ALT,-10000.0,10000.0,true);
             });
-
 
         cell = new Gtk.CellRendererText ();
         cell.set_property ("editable", true);
@@ -995,6 +997,10 @@ public class ListBox : GLib.Object
                 {
                     double val = (double)v;
                     s = "%.1f".printf(Units.speed(val));
+                } else if (typ == MSP.Action.LAND)
+                {
+                    double val = (double)v;
+                    s = "%.0f".printf(Units.distance(val));
                 }
                 else
                     s = "%.0f".printf((double)v);
@@ -1011,8 +1017,7 @@ public class ListBox : GLib.Object
 
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
                 mp.set_serstate(ss);
-                list_validate(path,new_text,
-                              WY_Columns.INT2,-1,65536.0,true);
+                list_validate(path,new_text, WY_Columns.INT2,-32768,32767,true);
             });
 
 
@@ -1133,6 +1138,8 @@ public class ListBox : GLib.Object
             case WY_Columns.INT2:
                 if (typ == MSP.Action.POSHOLD_TIME)
                     d = InputParser.get_scaled_real(new_text,"s");
+                else if (typ == MSP.Action.LAND)
+                    d = InputParser.get_scaled_real(new_text);
                 else
                     d = DStr.strtod(new_text,null);
                 break;
@@ -1425,6 +1432,28 @@ public class ListBox : GLib.Object
         calc_mission();
     }
 
+    private void set_alt_mode()
+    {
+        int amode = 0;
+        if (altmodedialog.get_alt_mode(out amode) == true) {
+            foreach (var t in list_selected_refs())
+            {
+                Gtk.TreeIter iter;
+                GLib.Value val;
+                var path = t.get_path ();
+                list_model.get_iter (out iter, path);
+                {
+                    list_model.get_value (iter, WY_Columns.ACTION, out val);
+                    if ((MSP.Action)val == MSP.Action.SET_HEAD ||
+                        (MSP.Action)val  == MSP.Action.RTH ||
+                        (MSP.Action)val == MSP.Action.JUMP)
+                        continue;
+                    list_model.set_value (iter, WY_Columns.INT3, amode);
+                }
+            }
+        }
+    }
+
     private void do_deltas()
     {
         double dlat, dlon;
@@ -1560,11 +1589,19 @@ public class ListBox : GLib.Object
             });
         menu.add (delta_item);
 
+        item = new Gtk.MenuItem.with_label ("Set Altitude mode");
+        item.activate.connect (() => {
+                set_alt_mode();
+            });
+//        item.sensitive=false;
+        menu.add (item);
+
         item = new Gtk.MenuItem.with_label ("Clear Mission");
         item.activate.connect (() => {
                 clear_mission();
             });
         menu.add (item);
+
         terrain_item = new Gtk.MenuItem.with_label ("Terrain Analysis");
         terrain_item.activate.connect (() => {
                 terrain_mission();

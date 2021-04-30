@@ -92,7 +92,7 @@ class InputParser : GLib.Object
                         break;
                     case 2:
                         d /= 1.0936133;
-                    break;
+                        break;
                     case 3:
                         d /= 0.0049709695;
                         break;

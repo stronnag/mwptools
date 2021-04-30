@@ -79,8 +79,8 @@ class Muppet :Object
                 w.p1 = (int16)(m.param1*SPEED_CONV);
             else
                 w.p1 = (int16)m.param1;
-            w.p2 = (uint16)m.param2;
-            w.p3 = (uint16)m.param2;
+            w.p2 = (int16)m.param2;
+            w.p3 = (int16)m.param2;
             w.flag = 0;
 
             switch(m.action)
@@ -269,8 +269,8 @@ class Muppet :Object
                         rp = deserialise_i32(rp, out w.lon);
                         rp = deserialise_i32(rp, out w.altitude);
                         rp = deserialise_i16(rp, out w.p1);
-                        rp = deserialise_u16(rp, out w.p2);
-                        rp = deserialise_u16(rp, out w.p3);
+                        rp = deserialise_i16(rp, out w.p2);
+                        rp = deserialise_i16(rp, out w.p3);
                         w.flag = *rp;
 
                         if ((wpmgr.wp_flag & WPDL.VALIDATE) != 0  ||

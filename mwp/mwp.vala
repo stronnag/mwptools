@@ -5232,8 +5232,8 @@ case 0:
         {
             rp = deserialise_i32(rp, out w.altitude);
             rp = deserialise_i16(rp, out w.p1);
-            rp = deserialise_u16(rp, out w.p2);
-            rp = deserialise_u16(rp, out w.p3);
+            rp = deserialise_i16(rp, out w.p2);
+            rp = deserialise_i16(rp, out w.p3);
             w.flag = *rp;
         }
 

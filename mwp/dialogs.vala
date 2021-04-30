@@ -939,6 +939,42 @@ public class DeltaDialog : GLib.Object
 
 }
 
+public class AltModeDialog : GLib.Object
+{
+    private Gtk.Dialog dialog;
+    private Gtk.RadioButton button_rel;
+
+    public AltModeDialog(Gtk.Builder builder)
+    {
+        dialog = builder.get_object ("altmode_dialog") as Gtk.Dialog;
+        button_rel = builder.get_object ("alt_mode_rel") as Gtk.RadioButton;
+    }
+
+    public bool get_alt_mode(out int amode)
+    {
+        var res = false;
+        amode = 0;
+        button_rel.set_active((amode == 0));
+        dialog.show_all();
+        var id = dialog.run();
+        switch(id)
+        {
+            case 1001:
+                if(button_rel.get_active())
+                    amode = 0;
+                else
+                    amode = 1;
+                res = true;
+                break;
+
+            case 1002:
+                break;
+        }
+        dialog.hide();
+        return res;
+    }
+}
+
 public class SetPosDialog : GLib.Object
 {
     private Gtk.Dialog dialog;
