@@ -2624,6 +2624,9 @@ public class MWP : Gtk.Application {
                 ls.show_tote_popup(null);
             });
 
+        dockitem[DOCKLETS.MISSION].hide.connect(() => {
+                ls.unset_selection();
+            });
         fbox.update(true);
 
         if(conf.mavph != null)

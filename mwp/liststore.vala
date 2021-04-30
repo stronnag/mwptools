@@ -48,6 +48,7 @@ public class ListBox : GLib.Object
     private Gtk.MenuItem down_item;
     private Gtk.MenuItem del_item;
     private Gtk.MenuItem alts_item;
+    private Gtk.MenuItem sam_item;
     private Gtk.MenuItem altz_item;
     private Gtk.MenuItem delta_item;
     private Gtk.MenuItem terrain_item;
@@ -975,7 +976,7 @@ public class ListBox : GLib.Object
                 }
 
                 list_validate(path,new_text,
-                              WY_Columns.INT1,-1,65536.0,true);
+                              WY_Columns.INT1,-32768,32767,true);
             });
 
 
@@ -1035,11 +1036,10 @@ public class ListBox : GLib.Object
                 mp.set_serstate(ss);
             });
 
-// Min val is -1 because only jump uses this.
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
                 mp.set_serstate(ss);
                 list_validate(path,new_text,
-                              WY_Columns.INT3,-1,65536.0,true);
+                              WY_Columns.INT3,-32768,32767,true);
             });
 
         view.set_headers_visible (true);
@@ -1070,19 +1070,32 @@ public class ListBox : GLib.Object
     public void show_tote_popup(Gdk.EventButton ? event)
     {
         var sel = view.get_selection ();
-        if(sel.count_selected_rows () == 0)
+
+        del_item.sensitive = delta_item.sensitive =
+        alts_item.sensitive = altz_item.sensitive =
+        speedv_item.sensitive = speedz_item.sensitive =
+        sam_item.sensitive = false;
+
+        if(sel.count_selected_rows () > 0)
         {
-            del_item.sensitive = delta_item.sensitive =
-            alts_item.sensitive = altz_item.sensitive =
-            speedv_item.sensitive = speedz_item.sensitive =
-            false;
-        }
-        else
-        {
-            del_item.sensitive = delta_item.sensitive =
-            alts_item.sensitive = altz_item.sensitive =
-            speedv_item.sensitive = speedz_item.sensitive =
-            true;
+            del_item.sensitive = true;
+            foreach (var t in list_selected_refs())
+            {
+                Gtk.TreeIter iter;
+                Value val;
+                list_model.get_iter (out iter, t.get_path ());
+                list_model.get_value (iter, WY_Columns.ACTION, out val);
+                if ((MSP.Action)val != MSP.Action.SET_HEAD &&
+                    (MSP.Action)val != MSP.Action.RTH &&
+                    (MSP.Action)val != MSP.Action.JUMP)
+                {
+                    delta_item.sensitive =
+                    alts_item.sensitive = altz_item.sensitive =
+                    speedv_item.sensitive = speedz_item.sensitive =
+                        sam_item.sensitive = true;
+                    break;
+                }
+            }
         }
 
         if(sel.count_selected_rows () == 1)
@@ -1225,22 +1238,22 @@ public class ListBox : GLib.Object
             switch (act)
             {
                 case MSP.Action.WAYPOINT:
-                    ctitles = {"Lat","Lon","Alt","Spd","",""};
+                    ctitles = {"Lat","Lon","Alt","Spd","","R/A"};
                     break;
                 case MSP.Action.LAND:
-                    ctitles = {"Lat","Lon","Alt","Spd","Elv",""};
+                    ctitles = {"Lat","Lon","Alt","Spd","Elv","R/A"};
                     break;
                 case MSP.Action.POSHOLD_UNLIM:
-                    ctitles = {"Lat","Lon","Alt","","",""};
+                    ctitles = {"Lat","Lon","Alt","","","R/A"};
                     break;
                 case MSP.Action.POSHOLD_TIME:
-                    ctitles = {"Lat","Lon","Alt","Secs","Spd",""};
+                    ctitles = {"Lat","Lon","Alt","Secs","Spd","R/A"};
                     break;
                 case MSP.Action.RTH:
                     ctitles = {"","","Alt","Land","",""};
                     break;
                 case MSP.Action.SET_POI:
-                    ctitles = {"Lat","Lon","","","",""};
+                    ctitles = {"Lat","Lon","Alt","","","R/A"};
                     break;
                 case MSP.Action.JUMP:
                     ctitles = {"","","","WP#","Rpt",""};
@@ -1435,13 +1448,35 @@ public class ListBox : GLib.Object
     private void set_alt_mode()
     {
         int amode = 0;
-        if (altmodedialog.get_alt_mode(out amode) == true) {
+        int ra = 0;
+        int aa = 0;
+
+        foreach (var t in list_selected_refs())
+        {
+            Gtk.TreeIter iter;
+            Value val;
+            list_model.get_iter (out iter, t.get_path ());
+            list_model.get_value (iter, WY_Columns.ACTION, out val);
+            if ((MSP.Action)val == MSP.Action.SET_HEAD ||
+                (MSP.Action)val  == MSP.Action.RTH ||
+                (MSP.Action)val == MSP.Action.JUMP)
+                continue;
+            list_model.get_value (iter, WY_Columns.INT3, out val);
+            var i3 = (int)val;
+            if (i3 == 0)
+                ra++;
+            else
+                aa++;
+        }
+        if (ra > aa)
+            amode = 1;
+
+        if (altmodedialog.get_alt_mode(ref amode) == true) {
             foreach (var t in list_selected_refs())
             {
                 Gtk.TreeIter iter;
                 GLib.Value val;
-                var path = t.get_path ();
-                list_model.get_iter (out iter, path);
+                list_model.get_iter (out iter, t.get_path());
                 {
                     list_model.get_value (iter, WY_Columns.ACTION, out val);
                     if ((MSP.Action)val == MSP.Action.SET_HEAD ||
@@ -1540,7 +1575,7 @@ public class ListBox : GLib.Object
             });
         menu.add (down_item);
 
-        del_item = new Gtk.MenuItem.with_label ("Delete");
+        del_item = new Gtk.MenuItem.with_label ("Delete (Selection)");
         del_item.activate.connect (() => {
                 menu_delete();
             });
@@ -1552,25 +1587,25 @@ public class ListBox : GLib.Object
             });
         menu.add (item);
 
-        alts_item = new Gtk.MenuItem.with_label ("Set altitudes");
+        alts_item = new Gtk.MenuItem.with_label ("Set altitudes (Selection)");
         alts_item.activate.connect (() => {
                 set_alts(true);
             });
         menu.add (alts_item);
 
-        altz_item = new Gtk.MenuItem.with_label ("Set zero value altitudes");
+        altz_item = new Gtk.MenuItem.with_label ("Set zero value altitudes (Selection)");
         altz_item.activate.connect (() => {
                 set_alts(false);
             });
         menu.add (altz_item);
 
-        speedv_item = new Gtk.MenuItem.with_label ("Set leg speeds");
+        speedv_item = new Gtk.MenuItem.with_label ("Set leg speeds (Selection)");
         speedv_item.activate.connect (() => {
                 set_speeds(true);
             });
         menu.add (speedv_item);
 
-        speedz_item = new Gtk.MenuItem.with_label ("Set zero leg speeds");
+        speedz_item = new Gtk.MenuItem.with_label ("Set zero leg speeds (Selection)");
         speedz_item.activate.connect (() => {
                 set_speeds(false);
             });
@@ -1583,18 +1618,17 @@ public class ListBox : GLib.Object
         menu.add (shp_item);
         shp_item.sensitive=false;
 
-        delta_item = new Gtk.MenuItem.with_label ("Delta updates");
+        delta_item = new Gtk.MenuItem.with_label ("Delta Location Update (Selection)");
         delta_item.activate.connect (() => {
                 do_deltas();
             });
         menu.add (delta_item);
 
-        item = new Gtk.MenuItem.with_label ("Set Altitude mode");
-        item.activate.connect (() => {
+        sam_item = new Gtk.MenuItem.with_label ("Set Altitude mode (Selection)");
+        sam_item.activate.connect (() => {
                 set_alt_mode();
             });
-//        item.sensitive=false;
-        menu.add (item);
+        menu.add (sam_item);
 
         item = new Gtk.MenuItem.with_label ("Clear Mission");
         item.activate.connect (() => {
@@ -2049,6 +2083,12 @@ public class ListBox : GLib.Object
         var treesel = view.get_selection ();
         treesel.unselect_all();
         treesel.select_iter(iter);
+    }
+
+    public void unset_selection()
+    {
+        var treesel = view.get_selection ();
+        treesel.unselect_all();
     }
 
     public void clear_mission()

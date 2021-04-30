@@ -943,18 +943,23 @@ public class AltModeDialog : GLib.Object
 {
     private Gtk.Dialog dialog;
     private Gtk.RadioButton button_rel;
+    private Gtk.RadioButton button_abs;
 
     public AltModeDialog(Gtk.Builder builder)
     {
         dialog = builder.get_object ("altmode_dialog") as Gtk.Dialog;
         button_rel = builder.get_object ("alt_mode_rel") as Gtk.RadioButton;
+        button_abs = builder.get_object ("alt_mode_amsl") as Gtk.RadioButton;
     }
 
-    public bool get_alt_mode(out int amode)
+    public bool get_alt_mode(ref int amode)
     {
         var res = false;
-        amode = 0;
-        button_rel.set_active((amode == 0));
+        if (amode == 0 )
+            button_rel.set_active(true);
+        else
+            button_abs.set_active(true);
+
         dialog.show_all();
         var id = dialog.run();
         switch(id)
