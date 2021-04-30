@@ -199,7 +199,7 @@ public class  SafeHomeDialog : Object
             });
 
         tbox.pack_end (switcher);
-        tbox.pack_end (new Gtk.Label("Display on map"));
+        tbox.pack_end (new Gtk.Label("Persistent map display"));
 
         var sbuilder = new Gtk.Builder.from_string(xml, -1);
         var menu = sbuilder.get_object("app-menu") as GLib.MenuModel;
