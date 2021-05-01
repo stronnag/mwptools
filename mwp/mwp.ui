@@ -397,6 +397,7 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
   <object class="GtkDialog" id="altmode_dialog">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Altitude Mode</property>
+    <property name="resizable">False</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="alt_mode_box">
@@ -437,6 +438,27 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">inav 3.0 and later supports both Relative (to home) altitudes, and Absolue (AMSL) altitudes. 
+Versions prior to 3.0 and Multiwii only support Relative (to home) altitudes.
+This dialogue allows you to change the &lt;b&gt;interpretation&lt;/b&gt; of the altitude value;
+it does not alter the value.
+
+Note that for versions prior to 3.0 and Multiwii, altitudes will be interpreted as Relative
+regardless of any setting made here.
+</property>
+            <property name="use-markup">True</property>
+            <property name="max-width-chars">64</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
             <property name="position">0</property>
           </packing>
         </child>
@@ -805,6 +827,86 @@ Otherwise, select a valid FC vehicle type</property>
     <action-widgets>
       <action-widget response="999">bb_cancel</action-widget>
       <action-widget response="1001">bb_ok</action-widget>
+    </action-widgets>
+  </object>
+  <object class="GtkDialog" id="cvtmode_dialog">
+    <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Absolute Altitudes</property>
+    <property name="resizable">False</property>
+    <property name="modal">True</property>
+    <property name="window-position">mouse</property>
+    <property name="type-hint">normal</property>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can-focus">False</property>
+            <property name="layout-style">end</property>
+            <child>
+              <object class="GtkButton" id="alt_mode_apply1">
+                <property name="label" translatable="yes">Apply</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="alt_mode_cancel1">
+                <property name="label" translatable="yes">Cancel</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">inav 3.0 and later supports Absolue (AMSL) altitudes. 
+Versions prior to 3.0 and Multiwii only support Relative (to home) altitudes.
+
+Clicking &lt;b&gt;Apply&lt;/b&gt; will cause all Relative Altitudes to be converted to Absolute Altitudes as follows:
+
+*  The extant relative altitude is assumed to be 'above terrain' &lt;b&gt;at the WP location&lt;/b&gt;.
+*  The ground elevation is obtained from an on-line service
+*  The absolute (AMSL) altiude is calculated from the ground elevation and the WP's relative altitude.
+* The WP is set to be 'absolute altitude'.
+
+Note that for versions prior to 3.0 and Multiwii, altitudes will be interpreted as Relative regardless of any setting made here.
+</property>
+            <property name="use-markup">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="1001">alt_mode_apply1</action-widget>
+      <action-widget response="1002">alt_mode_cancel1</action-widget>
     </action-widgets>
   </object>
   <object class="GtkDialog" id="delta-dialog">

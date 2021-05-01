@@ -820,21 +820,21 @@ public class SpeedDialog : GLib.Object
 
 public class AltDialog : GLib.Object
 {
-    private Gtk.Dialog dialog;
+    private Gtk.Dialog adialog;
     private Gtk.Entry alt_entry;
 
     public AltDialog(Gtk.Builder builder)
     {
-        dialog = builder.get_object ("altdialog") as Gtk.Dialog;
+        adialog = builder.get_object ("altdialog") as Gtk.Dialog;
         alt_entry = builder.get_object ("defaltset") as Gtk.Entry;
     }
 
     public bool get_alt(out double alt)
     {
         var res = false;
-        dialog.show_all();
+        adialog.show_all();
         alt = 0.0;
-        var id = dialog.run();
+        var id = adialog.run();
         switch(id)
         {
             case 1001:
@@ -845,7 +845,7 @@ public class AltDialog : GLib.Object
             case 1002:
                 break;
         }
-        dialog.hide();
+        adialog.hide();
         return res;
     }
 }
@@ -941,15 +941,29 @@ public class DeltaDialog : GLib.Object
 
 public class AltModeDialog : GLib.Object
 {
-    private Gtk.Dialog dialog;
+    private Gtk.Dialog adialog;
+    private Gtk.Dialog cdialog;
     private Gtk.RadioButton button_rel;
     private Gtk.RadioButton button_abs;
 
     public AltModeDialog(Gtk.Builder builder)
     {
-        dialog = builder.get_object ("altmode_dialog") as Gtk.Dialog;
+        adialog = builder.get_object ("altmode_dialog") as Gtk.Dialog;
+        cdialog = builder.get_object ("cvtmode_dialog") as Gtk.Dialog;
         button_rel = builder.get_object ("alt_mode_rel") as Gtk.RadioButton;
         button_abs = builder.get_object ("alt_mode_amsl") as Gtk.RadioButton;
+    }
+
+    public bool confirm_cvt()
+    {
+        cdialog.show_all();
+        var id = cdialog.run();
+        cdialog.hide();
+/**
+        while(Gtk.events_pending())
+            Gtk.main_iteration();
+**/
+        return (id == 1001);
     }
 
     public bool get_alt_mode(ref int amode)
@@ -960,8 +974,8 @@ public class AltModeDialog : GLib.Object
         else
             button_abs.set_active(true);
 
-        dialog.show_all();
-        var id = dialog.run();
+        adialog.show_all();
+        var id = adialog.run();
         switch(id)
         {
             case 1001:
@@ -975,7 +989,7 @@ public class AltModeDialog : GLib.Object
             case 1002:
                 break;
         }
-        dialog.hide();
+        adialog.hide();
         return res;
     }
 }

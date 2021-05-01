@@ -198,12 +198,12 @@ public class SoupProxy : Soup.Server
 public class BingMap : Object
 {
     private const string BURI="https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial/0,0?zl=1&include=ImageryProviders&key=";
-    private const string BKEY="QWwxYnFHYU5vZGVOQTcxYmxlSldmakZ2VzdmQXBqSk9vaE1TWjJfSjBIcGd0NE1HZExJWURiZ3BnQ1piWjF4QQ==";
+    public const string KENC="QWwxYnFHYU5vZGVOQTcxYmxlSldmakZ2VzdmQXBqSk9vaE1TWjJfSjBIcGd0NE1HZExJWURiZ3BnQ1piWjF4QQ==";
 
     public static bool get_source(out MapSource ms, out string buri)
     {
         StringBuilder sb = new StringBuilder(BURI);
-        sb.append((string)Base64.decode(BKEY));
+        sb.append((string)Base64.decode(KENC));
         var session = new Soup.Session ();
         var message = new Soup.Message ("GET", sb.str);
         session.send_message (message);

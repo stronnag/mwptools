@@ -300,7 +300,6 @@ replot
     tdist = 0
     hlat = nil
     hlon = nil
-
     hp = @hstr.split(' ')
     if hp.size != 2
       hp = @hstr.split(',')
@@ -324,6 +323,12 @@ replot
     doc.xpath('//MISSIONITEM|//missionitem').each do |t|
       action=t['action']
       next if action == 'SET_POI' || action == 'SET_HEAD' || action == 'JUMP'
+      p3 = t['parameter3']
+      unless p3.nil?
+        if p3.to_i != 0
+          abort "Relative altitudes only"
+        end
+      end
       no = t['no'].to_i
       lat = t['lat'].to_f
       lon = t['lon'].to_f
