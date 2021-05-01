@@ -661,6 +661,7 @@ public class MWP : Gtk.Application {
         hasLAND = 0x020500,
         hasSAFEAPI = 0x020700,
         hasMONORTH = 0x020600,
+        hasABSALT = 0x030000,
     }
 
     public enum WPS
@@ -7868,16 +7869,24 @@ case 0:
         }
 
         int nrth = 0;
-
+        bool aa = false;
         foreach(var w in wps)
         {
             if (w.action ==  MSP.Action.RTH)
                 nrth++;
+            if (w.p3 != 0)
+                aa = true;
         }
 
         if(((vi.fc_vers >= FCVERS.hasMONORTH) || (navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG) && nrth > 1)
         {
             mwp_warning_box("Mission will terminate at 1st RTH", Gtk.MessageType.WARNING);
+        }
+
+        if(aa && (vi.fc_vers < FCVERS.hasABSALT))
+        {
+            mwp_warning_box("Mission has ABSOLUTE altitude settings not supported by firmware version\nUpload cancelled", Gtk.MessageType.WARNING);
+            return;
         }
 
         if(wps.length == 0)
