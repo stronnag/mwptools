@@ -40,6 +40,7 @@ type Options struct {
 	sanity  int
 	noplot  bool
 	noalts  bool
+	upland  bool
 	dump    bool
 }
 
@@ -81,6 +82,7 @@ func main() {
 	flag.IntVar(&Conf.rthalt, "rth-alt", Conf.rthalt, "RTH altitude (m)")
 	flag.IntVar(&Conf.margin, "margin", Conf.margin, "Clearance margin (m)")
 	flag.BoolVar(&Conf.noplot, "no-plot", false, "No interactive plot")
+	flag.BoolVar(&Conf.upland, "upland", false, "Update landing elevation offset")
 	flag.BoolVar(&Conf.noalts, "no-mission-alts", false, "Ignore extant mission altitudes")
 	flag.BoolVar(&Conf.dump, "dump", false, "Dump  internal data,exit")
 

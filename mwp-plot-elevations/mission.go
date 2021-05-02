@@ -71,9 +71,17 @@ func (m *Mission) Save(mpts []Point) {
 	w, err := os.Create(Conf.output)
 	if err == nil {
 		defer w.Close()
+		landno := int8(-1)
 		m.Version.Value = "0.0-rc0"
 		m.MwpMeta.Stamp = time.Now().UTC().Format(time.RFC3339)
 		m.MwpMeta.Generator = "mwp-plot-elevations"
+		for _, mi := range m.MissionItems {
+			if mi.Action == "LAND" {
+				landno = int8(mi.No)
+				break
+			}
+		}
+
 		for _, p := range mpts {
 			if p.set == WP_UPDATED {
 				midx := p.wpno - 1
@@ -85,6 +93,11 @@ func (m *Mission) Save(mpts []Point) {
 				} else {
 					m.MissionItems[midx].Alt = int32(p.xz)
 				}
+			}
+			if Conf.upland && landno > 0 && p.wpno == landno {
+				laltdiff := p.gz - mpts[0].gz
+				fmt.Printf("LAND diff %d\n", laltdiff)
+				m.MissionItems[landno-1].P2 = int16(laltdiff)
 			}
 		}
 		out, _ := xml.MarshalIndent(m, " ", " ")

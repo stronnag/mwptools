@@ -134,6 +134,7 @@ public class FakeHomeDialog : GLib.Object
     private Gtk.Entry pe_home_text;
     private Gtk.Entry pe_margin;
     private Gtk.CheckButton pe_replace;
+    private Gtk.CheckButton pe_land;
     private Gtk.Button pe_close;
     private Gtk.Button pe_ok;
     private bool visible = false;
@@ -146,9 +147,10 @@ public class FakeHomeDialog : GLib.Object
         pe_home_text = builder.get_object ("pe-home-text") as Gtk.Entry;
         pe_margin = builder.get_object ("pe-clearance") as Gtk.Entry;
         pe_replace = builder.get_object ("pe-replace") as Gtk.CheckButton;
+        pe_land = builder.get_object ("pe-land") as Gtk.CheckButton;
         pe_close = builder.get_object ("pe-close") as Gtk.Button;
         pe_ok = builder.get_object ("pe-ok") as Gtk.Button;
-
+        pe_land.sensitive = false;
         pe_dialog.set_transient_for(w);
 
         pe_dialog.delete_event.connect (() => {
@@ -191,6 +193,16 @@ public class FakeHomeDialog : GLib.Object
     public bool get_replace()
     {
         return pe_replace.active;
+    }
+
+    public bool get_land()
+    {
+        return pe_land.active;
+    }
+
+    public void set_land_sensitive(bool sens)
+    {
+        pe_land.sensitive = sens;
     }
 
     public void unhide()

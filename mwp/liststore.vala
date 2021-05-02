@@ -1921,12 +1921,84 @@ public class ListBox : GLib.Object
         return s;
     }
 
+    private void set_land_option()
+    {
+        var iland = false;
+        Gtk.TreeIter iter;
+        Value val;
+
+        for(bool next=list_model.get_iter_first(out iter); next;
+            next=list_model.iter_next(ref iter))
+        {
+            list_model.get_value (iter, WY_Columns.ACTION, out val);
+            if ((MSP.Action)val == MSP.Action.LAND) {
+                iland = true;
+                break;
+            }
+        }
+
+        if (iland) {
+            string[] spawn_args = {"mwp-plot-elevations","--help"};
+            try {
+                Pid child_pid;
+                int p_stderr;
+                Process.spawn_async_with_pipes (null,
+                                                spawn_args,
+                                                null,
+                                                SpawnFlags.SEARCH_PATH |
+                                                SpawnFlags.DO_NOT_REAP_CHILD |
+                                                SpawnFlags.STDOUT_TO_DEV_NULL,
+                                                null,
+                                                out child_pid,
+                                                null,
+                                                null,
+                                                out p_stderr);
+
+                IOChannel error = new IOChannel.unix_new (p_stderr);
+                string line = null;
+                size_t len = 0;
+
+                error.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
+                        try
+                        {
+                            if (condition == IOCondition.HUP)
+                                return false;
+                            IOStatus eos = source.read_line (out line, out len, null);
+                            if(eos == IOStatus.EOF)
+                                return false;
+
+                            if(line == null || len == 0)
+                                return true;
+                            if(line.contains("-upland"))
+                            {
+                                fhome.fhd.set_land_sensitive(true);
+                            }
+                            return true;
+                        } catch (IOChannelError e) {
+                            MWPLog.message("IOChannelError: %s\n", e.message);
+                            return false;
+                        } catch (ConvertError e) {
+                            MWPLog.message ("ConvertError: %s\n", e.message);
+                            return false;
+                        }
+                    });
+                ChildWatch.add (child_pid, (pid, status) => {
+                        try { error.shutdown(false); } catch {}
+                        Process.close_pid (pid);
+                    });
+            } catch (SpawnError e) {
+                MWPLog.message ("Spawn Error: %s\n", e.message);
+            }
+        }
+    }
+
     private void run_elevation_tool()
     {
         double lat,lon;
         var outfn = mstempname();
         string replname = null;
-        string[] spawn_args = {"mwp-plot-elevations", "--no-mission-alts"};
+        string[] spawn_args = {"mwp-plot-elevations"};
+        spawn_args += "--no-mission-alts";
         fhome.get_fake_home(out lat, out lon);
         var margin = fhome.fhd.get_elev();
         spawn_args += "--home=%.8f %.8f".printf(lat, lon);
@@ -1937,9 +2009,16 @@ public class ListBox : GLib.Object
             replname = mstempname();
             spawn_args += "--output=%s".printf(replname);
         }
+        var land = fhome.fhd.get_land();
+        if (land)
+        {
+            spawn_args += "--upland";
+        }
+
         var m = to_mission();
         XmlIO.to_xml_file(outfn, m);
         spawn_args += outfn;
+//        stderr.printf("%s\n", string.joinv (" ", spawn_args));
 
         try {
             Pid child_pid;
@@ -2075,6 +2154,7 @@ public class ListBox : GLib.Object
         }
         fhome.fhd.set_pos(PosFormat.pos(hlat,hlon,MWP.conf.dms));
         fhome.show_fake_home(true);
+        set_land_option();
         fhome.fhd.unhide();
     }
 
