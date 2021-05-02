@@ -18,17 +18,14 @@ module Geocalc
   RAD = 0.017453292
 
   def Geocalc.d2r d
-    private
     d*RAD
   end
 
   def Geocalc.r2d r
-    private
     r/RAD
   end
 
   def Geocalc.r2nm r
-    private
     ((180*60)/PI)*r
   end
 
@@ -54,8 +51,8 @@ class MReader
 
   def read_config
     cfile=nil
-    [File.join(ENV['HOME'],".config/mwp/elev-plot"), ".elev-plot.rc",
-      File.join(ENV['HOME'],".elev-plot.rc")].each do |f|
+    [".elev-plot.rc", File.join(ENV['HOME'],".config/mwp/elev-plot"), ".elev-plot.rc",
+      File.join(ENV['HOME'])].each do |f|
       if File.exist? f
 	cfile = f
 	break
