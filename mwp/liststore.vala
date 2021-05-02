@@ -1926,7 +1926,7 @@ public class ListBox : GLib.Object
         double lat,lon;
         var outfn = mstempname();
         string replname = null;
-        string[] spawn_args = {"mwp-plot-elevations.rb", "-A"};
+        string[] spawn_args = {"mwp-plot-elevations", "--no-mission-alts"};
         fhome.get_fake_home(out lat, out lon);
         var margin = fhome.fhd.get_elev();
         spawn_args += "--home=%.8f %.8f".printf(lat, lon);

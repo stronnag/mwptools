@@ -1167,7 +1167,7 @@ public class MWP : Gtk.Application {
         {
             string []  ext_apps = {
             conf.blackbox_decode, "replay_bbox_ltm.rb",
-            "gnuplot", "mwp-plot-elevations.rb", "unzip", "otxlog", "fl2ltm" };
+            "gnuplot", "mwp-plot-elevations", "unzip", "otxlog", "fl2ltm" };
             bool appsts[7];
             var i = 0;
             foreach (var s in ext_apps)

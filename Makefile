@@ -3,7 +3,7 @@ SHELL := bash
 .SHELLFLAGS := -eu -o pipefail -c
 .DELETE_ON_ERROR:
 
-DIRS = samples/ublox-test samples/area-tool samples/cliterm fc-cli mwp bbox-replay qproxy samples otxlog
+DIRS = samples/ublox-test samples/area-tool samples/cliterm fc-cli mwp bbox-replay qproxy samples otxlog mwp-plot-elevations
 INSTALLDIRS = $(DIRS:%=install-%)
 LOCALDIRS = $(DIRS:%=local-%)
 CLEANDIRS = $(DIRS:%=clean-%)
