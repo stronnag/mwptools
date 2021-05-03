@@ -78,7 +78,6 @@ else
  MQTTLIB := $(or $(MQTTLIB),paho)
 endif
 
-
 VTI := $(shell pkg-config --atleast-version=2.68 glib-2.0; echo $$?)
 VT0 := $(shell test $(VS) -ge 0052 ; echo $$? )
 

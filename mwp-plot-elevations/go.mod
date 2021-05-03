@@ -1,4 +1,4 @@
-module org.stronnag/etest
+module github.com/stronnag/mwp-plot-elevations
 
 go 1.16
 
