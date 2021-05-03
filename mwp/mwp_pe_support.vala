@@ -35,6 +35,7 @@ public class FakeHome : GLib.Object
     {
         string hstr;
         string margin;
+        string rthalt;
     }
 
     public FakeHome(Champlain.View view)
@@ -69,13 +70,17 @@ public class FakeHome : GLib.Object
                     var parts = line.split_set("=");
                     if(parts.length == 2)
                     {
+                        var str = parts[1].strip();
                         switch(parts[0].strip())
                         {
                             case "home":
-                                p.hstr = parts[1].strip();
+                                p.hstr = str;
                                 break;
                             case "margin":
-                                p.margin = parts[1].strip();
+                                p.margin = str;
+                                break;
+                            case "rth-alt":
+                                p.rthalt = str;
                                 break;
                         }
                     }
@@ -88,7 +93,7 @@ public class FakeHome : GLib.Object
 
     public PlotElevDefs read_defaults()
     {
-        PlotElevDefs p = PlotElevDefs(){hstr=null, margin=null};
+        PlotElevDefs p = PlotElevDefs();
         string fn;
 
         if((fn = MWPUtils.find_conf_file("elev-plot")) != null)
@@ -139,6 +144,7 @@ public class FakeHomeDialog : GLib.Object
     private Gtk.Dialog pe_dialog;
     private Gtk.Entry pe_home_text;
     private Gtk.Entry pe_margin;
+    private Gtk.Entry pe_rthalt;
     private Gtk.CheckButton pe_replace;
     private Gtk.CheckButton pe_land;
     private Gtk.Button pe_close;
@@ -152,6 +158,7 @@ public class FakeHomeDialog : GLib.Object
         pe_dialog = builder.get_object ("pe-dialog") as Gtk.Dialog;
         pe_home_text = builder.get_object ("pe-home-text") as Gtk.Entry;
         pe_margin = builder.get_object ("pe-clearance") as Gtk.Entry;
+        pe_rthalt = builder.get_object ("pe-rthalt") as Gtk.Entry;
         pe_replace = builder.get_object ("pe-replace") as Gtk.CheckButton;
         pe_land = builder.get_object ("pe-land") as Gtk.CheckButton;
         pe_close = builder.get_object ("pe-close") as Gtk.Button;
@@ -186,14 +193,24 @@ public class FakeHomeDialog : GLib.Object
         return pe_home_text.text;
     }
 
-    public void set_elev(int d)
+    public void set_margin(int d)
     {
         pe_margin.text = "%d".printf(d);
     }
 
-    public int get_elev()
+    public int get_margin()
     {
         return int.parse(pe_margin.text);
+    }
+
+    public void set_rthalt(int d)
+    {
+        pe_rthalt.text = "%d".printf(d);
+    }
+
+    public int get_rthalt()
+    {
+        return int.parse(pe_rthalt.text);
     }
 
     public bool get_replace()

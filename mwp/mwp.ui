@@ -4654,7 +4654,7 @@ Otherwise, select a valid FC vehicle type</property>
           </packing>
         </child>
         <child>
-          <!-- n-columns=3 n-rows=4 -->
+          <!-- n-columns=3 n-rows=5 -->
           <object class="GtkGrid">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -4694,7 +4694,7 @@ Otherwise, select a valid FC vehicle type</property>
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">2</property>
+                <property name="top-attach">3</property>
               </packing>
             </child>
             <child>
@@ -4720,7 +4720,7 @@ Otherwise, select a valid FC vehicle type</property>
                 <property name="can-focus">True</property>
                 <property name="secondary-icon-tooltip-text" translatable="yes">Terrain clearance in metres</property>
                 <property name="placeholder-text" translatable="yes">Clearance (m) optional</property>
-                <property name="input-purpose">number</property>
+                <property name="input-purpose">digits</property>
               </object>
               <packing>
                 <property name="left-attach">1</property>
@@ -4736,7 +4736,7 @@ Otherwise, select a valid FC vehicle type</property>
               </object>
               <packing>
                 <property name="left-attach">1</property>
-                <property name="top-attach">2</property>
+                <property name="top-attach">3</property>
               </packing>
             </child>
             <child>
@@ -4748,7 +4748,7 @@ Otherwise, select a valid FC vehicle type</property>
               </object>
               <packing>
                 <property name="left-attach">1</property>
-                <property name="top-attach">3</property>
+                <property name="top-attach">4</property>
               </packing>
             </child>
             <child>
@@ -4759,8 +4759,36 @@ Otherwise, select a valid FC vehicle type</property>
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">3</property>
+                <property name="top-attach">4</property>
               </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">end</property>
+                <property name="label" translatable="yes">RTH Altitude	</property>
+                <property name="justify">right</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="pe-rthalt">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="placeholder-text" translatable="yes">RTH Alttude (m)</property>
+                <property name="input-purpose">digits</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
             </child>
             <child>
               <placeholder/>

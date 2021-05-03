@@ -7,18 +7,25 @@ public class Places :  GLib.Object
         double lon;
         int zoom;
     }
-
+/*
+    public struct TerrainDefs
+    {
+        int margin;
+        int rthalt;
+        int sanity;
+    }
+*/
     private enum PFmt
     {
         CSV,
         JSON
     }
 
-    private PFmt pfmt;
-    private PosItem[]pls = {};
+    private static PFmt pfmt;
+    private static PosItem[]pls = {};
     private const string DELIMS="\t|;:,";
 
-    private void parse_delim(string fn)
+    private static void parse_delim(string fn)
     {
         var file = File.new_for_path(fn);
         try {
@@ -50,7 +57,7 @@ public class Places :  GLib.Object
         }
     }
 
-    private void parse_json(string fn)
+    private static void parse_json(string fn)
     {
         try {
             var parser = new Json.Parser ();
@@ -75,7 +82,7 @@ public class Places :  GLib.Object
         }
     }
 
-    public PosItem[] get_places(double dlat,double dlon)
+    public static PosItem[] get_places(double dlat,double dlon)
     {
         string? fn;
         pfmt = PFmt.CSV;
@@ -91,17 +98,68 @@ public class Places :  GLib.Object
         }
         return pls;
     }
-}
-
-/*************
-public int main(string?[]args)
-{
-    var p = new Places(50.9, -1.53);
-    var pl = p.get_places();
-    foreach(var l in pl)
+/*
+    private static TerrainDefs parse_terrain_defs(File file)
     {
-        print ("Key %s = %f %f\n",l.name, l.lat, l.lon);
+        TerrainDefs td = {0,0};
+        try {
+            var dis = new DataInputStream(file.read());
+            string line;
+            while ((line = dis.read_line (null)) != null)
+            {
+                if(line.strip().length > 0 &&
+                   !line.has_prefix("#") &&
+                   !line.has_prefix(";"))
+                {
+                    var parts = line.split("=");
+                    if(parts.length == 2)
+                    {
+                        var p0 = parts[0].strip();
+                        var p1 = parts[1].strip();
+                        var iv = InputParser.get_scaled_int(p1);
+
+                        switch (p0)
+                        {
+                            case "margin":
+                                td.margin = (int)iv;
+                                break;
+                            case "sanity":
+                                td.sanity = (int)iv;
+                                break;
+                            case "rth-alt":
+                                td.rthalt = (int)iv;
+                                break;
+                        }
+                    }
+                }
+            }
+        } catch (Error e) {
+            error ("%s", e.message);
+        }
+        return td;
     }
-    return 0;
+
+    public static TerrainDefs get_terrain_defs()
+    {
+        string []tfiles = {".config/mwp/elev-plot", ".elev-plot.rc"};
+        var file = File.new_for_path(tfiles[1]);
+        if (file.query_exists ())
+        {
+            var tf = parse_terrain_defs(file);
+            return tf;
+        } else {
+            var hd = Environment.get_home_dir();
+            foreach(var tn in tfiles) {
+                string tnx = Path.build_filename(hd, tn);
+                file = File.new_for_path(tnx);
+                if (file.query_exists ())
+                {
+                    var tf = parse_terrain_defs(file);
+                    return tf;
+                }
+            }
+        }
+        return TerrainDefs();// {margin = 0, sanity = 0, rthalt = 0};
+    }
+*/
 }
-*****************/

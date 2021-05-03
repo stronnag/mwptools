@@ -1488,8 +1488,7 @@ public class MWP : Gtk.Application {
 
         msview = new MapSourceDialog(builder, window);
         setpos = new SetPosDialog(builder, window);
-        var places = new Places();
-        var pls = places.get_places(conf.latitude, conf.longitude);
+        var pls = Places.get_places(conf.latitude, conf.longitude);
         setpos.load_places(pls,conf.dms);
         setpos.new_pos.connect((la, lo, zoom) => {
                 map_centre_on(la, lo);
@@ -1501,7 +1500,6 @@ public class MWP : Gtk.Application {
         navconf = new NavConfig(window, builder);
         bb_runner = new BBoxDialog(builder, window, conf.blackbox_decode,
                                    conf.logpath, fakeoff);
-//        bb_runner.x_fl2ltm = x_fl2ltm;
 
         otx_runner = new OTXDialog(builder, window,null);
         otx_runner.x_fl2ltm = x_fl2ltm;
@@ -2577,7 +2575,7 @@ public class MWP : Gtk.Application {
                          DockItemBehavior.NORMAL);
 
         dockitem[DOCKLETS.MISSION]= new DockItem.with_stock ("Mission",
-                         "Mission Tote", "gtk-properties",
+                         "Mission Editor", "gtk-properties",
                          DockItemBehavior.NORMAL);
 
         dockitem[DOCKLETS.VOLTAGE].add (navstatus.voltbox);

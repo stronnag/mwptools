@@ -2028,9 +2028,15 @@ public class ListBox : GLib.Object
         string[] spawn_args = {"mwp-plot-elevations"};
         spawn_args += "--no-mission-alts";
         fhome.get_fake_home(out lat, out lon);
-        var margin = fhome.fhd.get_elev();
+        var margin = fhome.fhd.get_margin();
+        var rthalt = fhome.fhd.get_rthalt();
         spawn_args += "--home=%.8f %.8f".printf(lat, lon);
-        spawn_args += "--margin=%d".printf(margin);
+        if (margin != 0)
+            spawn_args += "--margin=%d".printf(margin);
+
+        if (rthalt != 0)
+            spawn_args += "--rth-alt=%d".printf(rthalt);
+
         var repl = fhome.fhd.get_replace();
         if (repl)
         {
@@ -2046,6 +2052,7 @@ public class ListBox : GLib.Object
         var m = to_mission();
         XmlIO.to_xml_file(outfn, m);
         spawn_args += outfn;
+        MWPLog.message("%s\n", string.joinv(" ",spawn_args));
 
         try {
             Pid child_pid;
@@ -2164,11 +2171,13 @@ public class ListBox : GLib.Object
                 hlat = mp.view.get_center_latitude();
                 hlon = mp.view.get_center_longitude();
             }
-            int margin = 0;
+            int taval = 0;
             if (pd.margin != null)
-                margin = int.parse(pd.margin);
-
-            fhome.fhd.set_elev(margin);
+                taval = int.parse(pd.margin);
+            fhome.fhd.set_margin(taval);
+            if (pd.rthalt != null)
+                taval = int.parse(pd.rthalt);
+            fhome.fhd.set_rthalt(taval);
             fhome.set_fake_home(hlat, hlon);
         }
         var bbox = mp.view.get_bounding_box();
