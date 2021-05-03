@@ -375,9 +375,9 @@ public class MwpDockHelper : Object
     }
     public void hide()
     {
-        visible = false;
         di.iconify_item();
         wdw.hide();
+        visible = false;
     }
 }
 

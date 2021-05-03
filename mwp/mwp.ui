@@ -394,123 +394,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
       <action-widget response="1002">gotocan2</action-widget>
     </action-widgets>
   </object>
-  <object class="GtkDialog" id="altmode_dialog">
-    <property name="can-focus">False</property>
-    <property name="title" translatable="yes">Altitude Mode</property>
-    <property name="resizable">False</property>
-    <property name="type-hint">dialog</property>
-    <child internal-child="vbox">
-      <object class="GtkBox" id="alt_mode_box">
-        <property name="can-focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox">
-            <property name="can-focus">False</property>
-            <property name="layout-style">end</property>
-            <child>
-              <object class="GtkButton" id="alt_mode_apply">
-                <property name="label" translatable="yes">Apply</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="alt_mode_cancel">
-                <property name="label" translatable="yes">Cancel</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">True</property>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label" translatable="yes">inav 3.0 and later supports both Relative (to home) altitudes, and Absolue (AMSL) altitudes. 
-Versions prior to 3.0 and Multiwii only support Relative (to home) altitudes.
-This dialogue allows you to change the &lt;b&gt;interpretation&lt;/b&gt; of the altitude value;
-it does not alter the value.
-
-Note that for versions prior to 3.0 and Multiwii, altitudes will be interpreted as Relative
-regardless of any setting made here.
-</property>
-            <property name="use-markup">True</property>
-            <property name="max-width-chars">64</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="orientation">vertical</property>
-            <child>
-              <object class="GtkRadioButton" id="alt_mode_rel">
-                <property name="label" translatable="yes">Relative to Home</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">False</property>
-                <property name="active">True</property>
-                <property name="draw-indicator">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkRadioButton" id="alt_mode_amsl">
-                <property name="label" translatable="yes">Absolute (AMSL)</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="receives-default">False</property>
-                <property name="draw-indicator">True</property>
-                <property name="group">alt_mode_rel</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="1001">alt_mode_apply</action-widget>
-      <action-widget response="1002">alt_mode_cancel</action-widget>
-    </action-widgets>
-  </object>
   <object class="GtkImage" id="arm_image">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -831,11 +714,11 @@ Otherwise, select a valid FC vehicle type</property>
   </object>
   <object class="GtkDialog" id="cvtmode_dialog">
     <property name="can-focus">False</property>
-    <property name="title" translatable="yes">Absolute Altitudes</property>
+    <property name="title" translatable="yes">Convert  Altitude Mode</property>
     <property name="resizable">False</property>
-    <property name="modal">True</property>
     <property name="window-position">mouse</property>
     <property name="type-hint">normal</property>
+    <property name="gravity">north-east</property>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can-focus">False</property>
@@ -846,7 +729,7 @@ Otherwise, select a valid FC vehicle type</property>
             <property name="can-focus">False</property>
             <property name="layout-style">end</property>
             <child>
-              <object class="GtkButton" id="alt_mode_apply1">
+              <object class="GtkButton" id="alt_mode_apply">
                 <property name="label" translatable="yes">Apply</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -859,7 +742,7 @@ Otherwise, select a valid FC vehicle type</property>
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="alt_mode_cancel1">
+              <object class="GtkButton" id="alt_mode_cancel">
                 <property name="label" translatable="yes">Cancel</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -882,19 +765,15 @@ Otherwise, select a valid FC vehicle type</property>
           <object class="GtkLabel">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">inav 3.0 and later supports Absolue (AMSL) altitudes. 
+            <property name="label" translatable="yes">nav 3.0 and later supports both Relative (to home) altitudes, and Absolute (AMSL) altitudes. 
 Versions prior to 3.0 and Multiwii only support Relative (to home) altitudes.
 
-Clicking &lt;b&gt;Apply&lt;/b&gt; will cause all Relative Altitudes to be converted to Absolute Altitudes as follows:
+This dialogue allows you to convert the selected WPs to either Relative or Absolute altitudes. In order to do this, it is necesary to have a reference ground elevation from the "Reference Ground Elevation" optons below.
 
-*  The extant relative altitude is assumed to be 'above terrain' &lt;b&gt;at the WP location&lt;/b&gt;.
-*  The ground elevation is obtained from an on-line service
-*  The absolute (AMSL) altiude is calculated from the ground elevation and the WP's relative altitude.
-* The WP is set to be 'absolute altitude'.
-
-Note that for versions prior to 3.0 and Multiwii, altitudes will be interpreted as Relative regardless of any setting made here.
-</property>
+Note that for versions prior to 3.0 and Multiwii, altitudes will be interpreted as Relative regardless of any setting made here, which is unlikley to be desirable.</property>
             <property name="use-markup">True</property>
+            <property name="wrap">True</property>
+            <property name="max-width-chars">96</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -902,11 +781,235 @@ Note that for versions prior to 3.0 and Multiwii, altitudes will be interpreted 
             <property name="position">0</property>
           </packing>
         </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="ypad">4</property>
+            <property name="label" translatable="yes">&lt;b&gt;Convert To:&lt;/b&gt;</property>
+            <property name="use-markup">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkRadioButton" id="alt_mode_rel">
+            <property name="label" translatable="yes">Relative to Home</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="halign">start</property>
+            <property name="active">True</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkRadioButton" id="alt_mode_amsl">
+            <property name="label" translatable="yes">Absolute (AMSL)</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="active">True</property>
+            <property name="draw-indicator">True</property>
+            <property name="group">alt_mode_rel</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">start</property>
+            <property name="ypad">4</property>
+            <property name="label" translatable="yes">&lt;b&gt;Reference Ground Elevation:&lt;/b&gt;</property>
+            <property name="use-markup">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <child>
+          <!-- n-columns=3 n-rows=3 -->
+          <object class="GtkGrid">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkRadioButton" id="ground_ref0">
+                <property name="label" translatable="yes">Manual Entry</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="active">True</property>
+                <property name="draw-indicator">True</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkRadioButton" id="ground_ref1">
+                <property name="label" translatable="yes">Ground elevation from Home marker</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="active">True</property>
+                <property name="draw-indicator">True</property>
+                <property name="group">ground_ref0</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkRadioButton" id="ground_ref2">
+                <property name="label" translatable="yes">Ground Elevation of 1st Geographic WP</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="active">True</property>
+                <property name="draw-indicator">True</property>
+                <property name="group">ground_ref0</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="altmodemanual">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="placeholder-text" translatable="yes">0</property>
+                <property name="input-purpose">number</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">&lt;i&gt;Enter a value in the currently selected distance unit&lt;/i&gt;</property>
+                <property name="use-markup">True</property>
+                <property name="wrap">True</property>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">&lt;i&gt;Drag the brown "home" icon to the required location 
+then select &lt;b&gt;Apply&lt;/b&gt;. Uses an Internet service&lt;/i&gt;</property>
+                <property name="use-markup">True</property>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="altmode_location">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">DD.dddddd DDD.ddddd</property>
+                <property name="selectable">True</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">&lt;i&gt; Uses an Internet service&lt;/i&gt;</property>
+                <property name="use-markup">True</property>
+              </object>
+              <packing>
+                <property name="left-attach">2</property>
+                <property name="top-attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkFrame">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label-xalign">0</property>
+            <property name="shadow-type">none</property>
+            <child>
+              <object class="GtkAlignment">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="left-padding">12</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="ypad">4</property>
+                    <property name="label" translatable="yes">Ground Elevation from the "home" icon or 1st Geographic WP both &lt;b&gt;require internet access&lt;/b&gt;</property>
+                    <property name="use-markup">True</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child type="label">
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">&lt;b&gt;Note&lt;/b&gt;</property>
+                <property name="use-markup">True</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">6</property>
+          </packing>
+        </child>
       </object>
     </child>
     <action-widgets>
-      <action-widget response="1001">alt_mode_apply1</action-widget>
-      <action-widget response="1002">alt_mode_cancel1</action-widget>
+      <action-widget response="1001">alt_mode_apply</action-widget>
+      <action-widget response="1002">alt_mode_cancel</action-widget>
     </action-widgets>
   </object>
   <object class="GtkDialog" id="delta-dialog">

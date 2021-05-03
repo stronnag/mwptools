@@ -25,8 +25,10 @@ public class FakeHome : GLib.Object
 {
     public FakeHomeDialog fhd;
     private Champlain.MarkerLayer hmlayer;
-    private static Champlain.Label homep ;
+    private static Champlain.Label homep;
     public bool is_visible = false;
+    private double xlat;
+    private double xlon;
     public signal void fake_move(double lat, double lon);
 
     public struct PlotElevDefs
@@ -107,7 +109,9 @@ public class FakeHome : GLib.Object
                 homep.set_flags(ActorFlags.REACTIVE);
                 hmlayer.add_marker(homep);
                 homep.drag_motion.connect((dx,dy,evt) => {
-                        fake_move(homep.get_latitude(),homep.get_longitude());
+                        xlat = homep.get_latitude();
+                        xlon = homep.get_longitude();
+                        fake_move(xlat, xlon);
                     });
             }
             else
@@ -119,12 +123,14 @@ public class FakeHome : GLib.Object
     public void set_fake_home(double lat, double lon)
     {
         homep.set_location (lat, lon);
+        xlat = lat;
+        xlon = lon;
     }
 
     public void get_fake_home(out double lat, out double lon)
     {
-        lat = homep.get_latitude();
-        lon = homep.get_longitude();
+        lat = xlat; //homep.get_latitude();
+        lon = xlon; //homep.get_longitude();
     }
 }
 

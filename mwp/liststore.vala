@@ -48,7 +48,6 @@ public class ListBox : GLib.Object
     private Gtk.MenuItem down_item;
     private Gtk.MenuItem del_item;
     private Gtk.MenuItem alts_item;
-    private Gtk.MenuItem sam_item;
     private Gtk.MenuItem cvt_item;
     private Gtk.MenuItem altz_item;
     private Gtk.MenuItem delta_item;
@@ -84,6 +83,21 @@ public class ListBox : GLib.Object
         POS=3,
         ALT=4,
         ANY=7
+    }
+
+    public enum ALTMODES
+    {
+        RELATIVE=0,
+        ABSOLUTE=1,
+        NONE=-1
+    }
+
+    public enum POSREF
+    {
+        MANUAL=0,
+        HOME=1,
+        WPONE=2,
+        NONE=-1
     }
 
     private void add_marker_item(string label, string cue)
@@ -686,7 +700,6 @@ public class ListBox : GLib.Object
 
     private void setup_elev_plot()
     {
-        fhome = new FakeHome(mp.view);
         fhome.create_dialog(mp.builder, mp.window);
         fhome.fake_move.connect((lat,lon) => {
                 fhome.fhd.set_pos(PosFormat.pos(lat,lon,MWP.conf.dms));
@@ -714,16 +727,58 @@ public class ListBox : GLib.Object
     public void create_view(MWP _mp)
     {
         mp = _mp;
+        fhome = new FakeHome(mp.view);
         MWP.SERSTATE ss = MWP.SERSTATE.NONE;
         make_menu();
         setup_elev_plot();
-
         shapedialog = new ShapeDialog(mp.builder);
         deltadialog = new DeltaDialog(mp.builder);
         speeddialog = new SpeedDialog(mp.builder);
         altdialog = new AltDialog(mp.builder);
         wprepdialog = new WPRepDialog(mp.builder);
-        altmodedialog = new AltModeDialog(mp.builder);
+        altmodedialog = new AltModeDialog(mp.builder, mp.window);
+        altmodedialog.complete.connect((amode, posref) => {
+                if (altmodedialog.iset_fhome)
+                    unset_fake_home();
+
+                toggle_editor_state();
+                unset_selection();
+
+                switch (posref)
+                {
+                    case POSREF.HOME:
+                    case POSREF.WPONE:
+                        var pts = get_geo_points_for_mission(posref);
+                        if(pts.length == 1)
+                        {
+                            Thread<int> thr = null;
+                            thr = new Thread<int> ("fetch-alt", () => {
+                                    var elevs = BingElevations.get_elevations(pts);
+                                    Idle.add(() => {
+                                            if (elevs.length == 1)
+                                                update_altmode(amode, elevs[0]);
+                                            thr.join();
+                                            return false;
+                                        });
+                                    return 0;
+                                });
+                        }
+                        break;
+
+                    case POSREF.MANUAL:
+                        int refalt = altmodedialog.get_manual();
+                        update_altmode(amode, refalt);
+                        break;
+
+                    default:
+                        break;
+                }
+            });
+
+
+        fhome.fake_move.connect((lat,lon) => {
+                altmodedialog.set_location(PosFormat.pos(lat,lon,MWP.conf.dms));
+            });
 
         Gtk.ListStore combo_model = new Gtk.ListStore (1, typeof (string));
         Gtk.TreeIter iter;
@@ -1069,7 +1124,7 @@ public class ListBox : GLib.Object
         del_item.sensitive = delta_item.sensitive =
         alts_item.sensitive = altz_item.sensitive =
         speedv_item.sensitive = speedz_item.sensitive =
-        sam_item.sensitive = cvt_item.sensitive = false;
+        cvt_item.sensitive = false;
 
         if(sel.count_selected_rows () > 0)
         {
@@ -1085,11 +1140,16 @@ public class ListBox : GLib.Object
                     (MSP.Action)val != MSP.Action.JUMP)
                 {
                     delta_item.sensitive =alts_item.sensitive = altz_item.sensitive =
-                    speedv_item.sensitive = speedz_item.sensitive =
-                    sam_item.sensitive = true;
+                    speedv_item.sensitive = speedz_item.sensitive = true;
                     break;
                 }
             }
+
+            int ra,aa;
+            get_alt_modes(out ra, out aa, false);
+            if (ra > 0 || aa > 0)
+                cvt_item.sensitive = true;
+
         }
 
         if(sel.count_selected_rows () == 1)
@@ -1106,13 +1166,6 @@ public class ListBox : GLib.Object
         {
             up_item.sensitive = down_item.sensitive = false;
         }
-
-        int ra,aa;
-        get_alt_modes(out ra, out aa, false);
-
-        if (ra > 0)
-            cvt_item.sensitive = true;
-
         menu.popup_at_pointer(event);
     }
 
@@ -1483,11 +1536,43 @@ public class ListBox : GLib.Object
         }
     }
 
-    private BingElevations.Point [] get_geo_points_for_mission()
+    private BingElevations.Point [] get_geo_points_for_mission(int amode)
     {
         BingElevations.Point [] pts = {};
         Gtk.TreeIter iter;
         GLib.Value val;
+        if (amode == 1)
+        {
+            double hlat, hlon;
+            fhome.get_fake_home(out hlat, out hlon);
+            pts += BingElevations.Point(){y = hlat, x = hlon};
+        } else {
+            for(bool next=list_model.get_iter_first(out iter); next;
+                next=list_model.iter_next(ref iter))
+            {
+                list_model.get_value (iter, WY_Columns.ACTION, out val);
+                if ((MSP.Action)val == MSP.Action.SET_HEAD ||
+                    (MSP.Action)val  == MSP.Action.RTH ||
+                    (MSP.Action)val  == MSP.Action.SET_POI ||
+                    (MSP.Action)val == MSP.Action.JUMP)
+                    continue;
+                list_model.get_value (iter, WY_Columns.LAT, out val);
+                var alat = (double)val;
+                list_model.get_value (iter, WY_Columns.LON, out val);
+                var alon = (double)val;
+                pts += BingElevations.Point(){y = alat, x = alon};
+                break;
+            }
+        }
+        return pts;
+    }
+
+    private void update_altmode(ALTMODES amode, int refalt)
+    {
+        Gtk.TreeIter iter;
+        GLib.Value val;
+        ALTMODES xamode = (amode == ALTMODES.RELATIVE) ? ALTMODES.ABSOLUTE : ALTMODES.RELATIVE;
+
         for(bool next=list_model.get_iter_first(out iter); next;
             next=list_model.iter_next(ref iter))
         {
@@ -1498,89 +1583,38 @@ public class ListBox : GLib.Object
                 continue;
             list_model.get_value (iter, WY_Columns.INT3, out val);
             var i3 = (int)val;
-            if (i3 == 0)
+            if (i3 == xamode)
             {
-                list_model.get_value (iter, WY_Columns.LAT, out val);
-                var alat = (double)val;
-                list_model.get_value (iter, WY_Columns.LON, out val);
-                var alon = (double)val;
-                pts += BingElevations.Point(){y = alat, x = alon};
+                list_model.get_value (iter, WY_Columns.ALT, out val);
+                var ival = (int)val;
+                if (amode == ALTMODES.RELATIVE)
+                    ival -= refalt;
+                else
+                    ival += refalt;
+                list_model.set_value (iter, WY_Columns.ALT, ival);
+                list_model.set_value (iter, WY_Columns.INT3, amode);
             }
         }
-        return pts;
     }
 
     private void cvt_alt_mode()
     {
-        if (altmodedialog.confirm_cvt() == true) {
-            var pts = get_geo_points_for_mission();
-            if(pts.length > 0)
-            {
-                Thread<int> thr = null;
-                view.set_sensitive(false);
-                thr = new Thread<int> ("preview", () => {
-                        var elevs = BingElevations.get_elevations(pts);
-                        var eidx = 0;
-                        Idle.add(() => {
-                                view.set_sensitive(true);
-                                if (elevs.length > 0)
-                                {
-                                    Gtk.TreeIter iter;
-                                    GLib.Value val;
-                                    for(bool next=list_model.get_iter_first(out iter); next;
-                                        next=list_model.iter_next(ref iter))
-                                    {
-                                        list_model.get_value (iter, WY_Columns.ACTION, out val);
-                                        if ((MSP.Action)val == MSP.Action.SET_HEAD ||
-                                            (MSP.Action)val  == MSP.Action.RTH ||
-                                            (MSP.Action)val == MSP.Action.JUMP)
-                                            continue;
-                                        list_model.get_value (iter, WY_Columns.INT3, out val);
-                                        var i3 = (int)val;
-                                        if (i3 == 0) {
-                                            list_model.set_value (iter, WY_Columns.INT3, 1);
-                                            list_model.get_value (iter, WY_Columns.ALT, out val);
-                                            var ival = (int)val;
-                                            ival += elevs[eidx];
-                                            list_model.set_value (iter, WY_Columns.ALT, ival);
-                                            eidx++;
-                                        }
-                                    }
-                                }
-                                thr.join();
-                                return false;
-                            });
-                        return 0;
-                    });
-            }
+        altmodedialog.iset_fhome = false;
+        if (!fhome.is_visible)
+        {
+            set_fake_home();
+            altmodedialog.iset_fhome = true;
         }
-    }
 
-    private void set_alt_mode()
-    {
-        int amode = 0;
+        double lat,lon;
+        fhome.get_fake_home(out lat, out lon);
         int ra,aa;
-
-        get_alt_modes(out ra, out aa);
+        get_alt_modes(out ra, out aa, true);
+        ALTMODES amode = ALTMODES.RELATIVE;
         if (ra > aa)
-            amode = 1;
-
-        if (altmodedialog.get_alt_mode(ref amode) == true) {
-            foreach (var t in list_selected_refs())
-            {
-                Gtk.TreeIter iter;
-                GLib.Value val;
-                list_model.get_iter (out iter, t.get_path());
-                {
-                    list_model.get_value (iter, WY_Columns.ACTION, out val);
-                    if ((MSP.Action)val == MSP.Action.SET_HEAD ||
-                        (MSP.Action)val  == MSP.Action.RTH ||
-                        (MSP.Action)val == MSP.Action.JUMP)
-                        continue;
-                    list_model.set_value (iter, WY_Columns.INT3, amode);
-                }
-            }
-        }
+            amode = ALTMODES.ABSOLUTE;
+        altmodedialog.edit_alt_modes(amode, PosFormat.pos(lat,lon,MWP.conf.dms));
+        toggle_editor_state();
     }
 
     private void do_deltas()
@@ -1718,13 +1752,7 @@ public class ListBox : GLib.Object
             });
         menu.add (delta_item);
 
-        sam_item = new Gtk.MenuItem.with_label ("Set Altitude mode (Selection)");
-        sam_item.activate.connect (() => {
-                set_alt_mode();
-            });
-        menu.add (sam_item);
-
-        cvt_item = new Gtk.MenuItem.with_label ("Convert to Absolute Altitudes");
+        cvt_item = new Gtk.MenuItem.with_label ("Convert Altitudes (selection)");
         cvt_item.activate.connect (() => {
                 cvt_alt_mode();
             });
@@ -2018,7 +2046,6 @@ public class ListBox : GLib.Object
         var m = to_mission();
         XmlIO.to_xml_file(outfn, m);
         spawn_args += outfn;
-//        stderr.printf("%s\n", string.joinv (" ", spawn_args));
 
         try {
             Pid child_pid;
@@ -2331,7 +2358,7 @@ public class ListBox : GLib.Object
         Value cell;
         Gtk.TreeIter xiter;
         var path = new Gtk.TreePath.from_indices (lastn);
-//        stderr.printf("path from index %d %s\n", lastn, path.to_string());
+
         var ok = list_model.get_iter(out xiter, path);
         if(ok)
         {

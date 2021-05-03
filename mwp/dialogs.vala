@@ -941,56 +941,83 @@ public class DeltaDialog : GLib.Object
 
 public class AltModeDialog : GLib.Object
 {
-    private Gtk.Dialog adialog;
     private Gtk.Dialog cdialog;
     private Gtk.RadioButton button_rel;
     private Gtk.RadioButton button_abs;
+    private Gtk.RadioButton ground_ref0;
+    private Gtk.RadioButton ground_ref1;
+    private Gtk.RadioButton ground_ref2;
+    private Gtk.Entry altmodemanual;
+    private Gtk.Label altmode_location;
 
-    public AltModeDialog(Gtk.Builder builder)
+    public bool iset_fhome;
+
+    public signal void complete (ListBox.ALTMODES amode, ListBox.POSREF posref);
+
+    public AltModeDialog(Gtk.Builder builder, Gtk.Window w)
     {
-        adialog = builder.get_object ("altmode_dialog") as Gtk.Dialog;
         cdialog = builder.get_object ("cvtmode_dialog") as Gtk.Dialog;
         button_rel = builder.get_object ("alt_mode_rel") as Gtk.RadioButton;
         button_abs = builder.get_object ("alt_mode_amsl") as Gtk.RadioButton;
+
+        ground_ref0 = builder.get_object ("ground_ref0") as Gtk.RadioButton;
+        ground_ref1 = builder.get_object ("ground_ref1") as Gtk.RadioButton;
+        ground_ref2 = builder.get_object ("ground_ref2") as Gtk.RadioButton;
+        altmodemanual = builder.get_object ("altmodemanual") as Gtk.Entry;
+        altmode_location = builder.get_object ("altmode_location") as Gtk.Label;
+        var am_apply = builder.get_object ("alt_mode_apply") as Gtk.Button;
+        var am_close = builder.get_object ("alt_mode_cancel") as Gtk.Button;
+
+        am_apply.clicked.connect(() => {
+                ListBox.ALTMODES amode = ListBox.ALTMODES.RELATIVE;
+                if(button_abs.get_active())
+                    amode = ListBox.ALTMODES.ABSOLUTE;
+
+                ListBox.POSREF posref = ListBox.POSREF.MANUAL;
+                if (ground_ref1.get_active())
+                    posref = ListBox.POSREF.HOME;
+                else if (ground_ref2.get_active())
+                    posref = ListBox.POSREF.WPONE;
+                complete(amode,posref);
+                cdialog.hide();
+            });
+
+        am_close.clicked.connect(() => {
+                complete( ListBox.ALTMODES.NONE, ListBox.POSREF.NONE);
+                cdialog.hide();
+            });
+
+        cdialog.delete_event.connect (() => {
+                complete( ListBox.ALTMODES.NONE, ListBox.POSREF.NONE);
+                cdialog.hide();
+                return true;
+            });
+
+        cdialog.set_keep_above(true);
+        cdialog.set_transient_for (w);
     }
 
-    public bool confirm_cvt()
+    public void edit_alt_modes(ListBox.ALTMODES amode, string s)
     {
-        cdialog.show_all();
-        var id = cdialog.run();
-        cdialog.hide();
-/**
-        while(Gtk.events_pending())
-            Gtk.main_iteration();
-**/
-        return (id == 1001);
-    }
-
-    public bool get_alt_mode(ref int amode)
-    {
-        var res = false;
-        if (amode == 0 )
+        if (amode == ListBox.ALTMODES.RELATIVE)
             button_rel.set_active(true);
         else
             button_abs.set_active(true);
+        ground_ref0.set_active(true);
+        altmodemanual.text = "0";
+        altmode_location.label = s;
+        cdialog.show_all();
+        cdialog.set_keep_above(true);
+    }
 
-        adialog.show_all();
-        var id = adialog.run();
-        switch(id)
-        {
-            case 1001:
-                if(button_rel.get_active())
-                    amode = 0;
-                else
-                    amode = 1;
-                res = true;
-                break;
+    public int get_manual()
+    {
+        return (int)InputParser.get_scaled_real(altmodemanual.text);
+    }
 
-            case 1002:
-                break;
-        }
-        adialog.hide();
-        return res;
+    public void set_location(string s)
+    {
+        altmode_location.label = s;
     }
 }
 
