@@ -82,6 +82,9 @@ func (m *Mission) Save(mpts []Point) {
 		}
 
 		for _, p := range mpts {
+			if Conf.P3 != -1 && p.P3 != int16(Conf.P3) { // also update of changing alt mode
+				p.Set = WP_UPDATED
+			}
 			if p.Set == WP_UPDATED {
 				midx := p.Wpno - 1
 				if m.MissionItems[midx].No != int(p.Wpno) {
@@ -203,6 +206,7 @@ func (m *Mission) Update_details(mpts []Point, elev []int) {
 				mpts[n].Xz = mpts[n].Az
 			}
 			mpts[n].Set = WP_INIT
+
 			if llat != 0.0 && llon != 0.0 {
 				_, dm := geo.Csedist(llat, llon, mi.Lat, mi.Lon)
 				d += dm * 1852.0

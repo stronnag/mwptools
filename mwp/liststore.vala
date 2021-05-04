@@ -1965,58 +1965,57 @@ public class ListBox : GLib.Object
             }
         }
 
-        if (iland) {
-            string[] spawn_args = {"mwp-plot-elevations","--help"};
-            try {
-                Pid child_pid;
-                int p_stderr;
-                Process.spawn_async_with_pipes (null,
-                                                spawn_args,
-                                                null,
-                                                SpawnFlags.SEARCH_PATH |
-                                                SpawnFlags.DO_NOT_REAP_CHILD |
-                                                SpawnFlags.STDOUT_TO_DEV_NULL,
-                                                null,
-                                                out child_pid,
-                                                null,
-                                                null,
-                                                out p_stderr);
 
-                IOChannel error = new IOChannel.unix_new (p_stderr);
-                string line = null;
-                size_t len = 0;
+        string[] spawn_args = {"mwp-plot-elevations","--help"};
+        try {
+            Pid child_pid;
+            int p_stderr;
+            Process.spawn_async_with_pipes (null,
+                                            spawn_args,
+                                            null,
+                                            SpawnFlags.SEARCH_PATH |
+                                            SpawnFlags.DO_NOT_REAP_CHILD |
+                                            SpawnFlags.STDOUT_TO_DEV_NULL,
+                                            null,
+                                            out child_pid,
+                                            null,
+                                            null,
+                                            out p_stderr);
 
-                error.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
-                        try
-                        {
-                            if (condition == IOCondition.HUP)
-                                return false;
-                            IOStatus eos = source.read_line (out line, out len, null);
-                            if(eos == IOStatus.EOF)
-                                return false;
+            IOChannel error = new IOChannel.unix_new (p_stderr);
+            string line = null;
+            size_t len = 0;
 
-                            if(line == null || len == 0)
-                                return true;
-                            if(line.contains("-upland"))
-                            {
-                                fhome.fhd.set_land_sensitive(true);
-                            }
-                            return true;
-                        } catch (IOChannelError e) {
-                            MWPLog.message("IOChannelError: %s\n", e.message);
+            error.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
+                    try
+                    {
+                        if (condition == IOCondition.HUP)
                             return false;
-                        } catch (ConvertError e) {
-                            MWPLog.message ("ConvertError: %s\n", e.message);
+                        IOStatus eos = source.read_line (out line, out len, null);
+                        if(eos == IOStatus.EOF)
+                                return false;
+
+                        if(line == null || len == 0)
+                            return true;
+                        if (line.contains("-force-alt"))
+                            fhome.fhd.set_altmode_sensitive(true);
+                        if (iland && line.contains("-upland"))
+                            fhome.fhd.set_land_sensitive(true);
+                        return true;
+                    } catch (IOChannelError e) {
+                        MWPLog.message("IOChannelError: %s\n", e.message);
+                        return false;
+                    } catch (ConvertError e) {
+                        MWPLog.message ("ConvertError: %s\n", e.message);
                             return false;
                         }
-                    });
-                ChildWatch.add (child_pid, (pid, status) => {
-                        try { error.shutdown(false); } catch {}
-                        Process.close_pid (pid);
-                    });
-            } catch (SpawnError e) {
-                MWPLog.message ("Spawn Error: %s\n", e.message);
-            }
+                });
+            ChildWatch.add (child_pid, (pid, status) => {
+                    try { error.shutdown(false); } catch {}
+                    Process.close_pid (pid);
+                });
+        } catch (SpawnError e) {
+            MWPLog.message ("Spawn Error: %s\n", e.message);
         }
     }
 
@@ -2047,6 +2046,11 @@ public class ListBox : GLib.Object
         if (land)
         {
             spawn_args += "--upland";
+        }
+        var altid = fhome.fhd.get_altmode();
+        if (altid != -1)
+        {
+            spawn_args += "--force-alt=%d".printf(altid);
         }
 
         var m = to_mission();
