@@ -9,64 +9,26 @@ import (
 	"log"
 )
 
-const (
-	WP_INIT = iota
-	WP_HOME
-	WP_RTH
-	WP_UPDATED
-)
-
-
-type Point struct {
-	x      float64 // longitude
-	y      float64 // latitude
-	d      float64 // distance
-	gz     int     // ground amsl
-	mz     int     // above home
-	az     int     // WP AMSL
-	xz     int     // Adjusted
-	flag   int8    // P3
-	wpno   int8    // WP no
-	wpname string  //
-	set    uint8
-}
-
-type Options struct {
-	homepos string
-	svgfile string
-	output  string
-	rthalt  int
-	margin  int
-	sanity  int
-	noplot  bool
-	noalts  bool
-	upland  bool
-	dump    bool
-}
-
 var (
 	Conf  Options
 	Homep Point
 )
 
-
 func parse_home() {
-	parts := strings.Split(Conf.homepos, " ")
+	parts := strings.Split(Conf.Homepos, " ")
 	if len(parts) != 2 {
-		parts = strings.Split(Conf.homepos, ",")
+		parts = strings.Split(Conf.Homepos, ",")
 	}
 	if len(parts) == 2 {
 		p0 := strings.Replace(parts[0], ",", ",", -1)
 		p1 := strings.Replace(parts[1], ",", ",", -1)
-		Homep.y, _ = strconv.ParseFloat(p0, 64)
-		Homep.x, _ = strconv.ParseFloat(p1, 64)
-		Homep.set = WP_HOME
+		Homep.Y, _ = strconv.ParseFloat(p0, 64)
+		Homep.X, _ = strconv.ParseFloat(p1, 64)
+		Homep.Set = WP_HOME
 	}
 }
 
 func main() {
-	var mpts []Point
-	var npts int
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s [options] missionfile\n", os.Args[0])
@@ -76,15 +38,16 @@ func main() {
 
 	Read_config()
 
-	flag.StringVar(&Conf.homepos, "home", Conf.homepos, "home as DD.dddd,DDD.dddd")
-	flag.StringVar(&Conf.svgfile, "plotfile", "", "SVG graph file")
-	flag.StringVar(&Conf.output, "output", "", "Revised mission file")
-	flag.IntVar(&Conf.rthalt, "rth-alt", Conf.rthalt, "RTH altitude (m)")
-	flag.IntVar(&Conf.margin, "margin", Conf.margin, "Clearance margin (m)")
-	flag.BoolVar(&Conf.noplot, "no-plot", false, "No interactive plot")
-	flag.BoolVar(&Conf.upland, "upland", false, "Update landing elevation offset")
-	flag.BoolVar(&Conf.noalts, "no-mission-alts", false, "Ignore extant mission altitudes")
-	flag.BoolVar(&Conf.dump, "dump", false, "Dump  internal data,exit")
+	flag.StringVar(&Conf.Homepos, "home", Conf.Homepos, "home as DD.dddd,DDD.dddd")
+	flag.StringVar(&Conf.Svgfile, "plotfile", "", "SVG graph file")
+	flag.StringVar(&Conf.Output, "output", "", "Revised mission file")
+	flag.IntVar(&Conf.Rthalt, "rth-alt", Conf.Rthalt, "RTH altitude (m)")
+	flag.IntVar(&Conf.P3, "force-alt", -1, "Force Altitude Mode (-1=from mission, 0=Relative, 1=Absolute")
+	flag.IntVar(&Conf.Margin, "margin", Conf.Margin, "Clearance margin (m)")
+	flag.BoolVar(&Conf.Noplot, "no-plot", false, "No interactive plot")
+	flag.BoolVar(&Conf.Upland, "upland", false, "Update landing elevation offset")
+	flag.BoolVar(&Conf.Noalts, "no-mission-alts", false, "Ignore extant mission altitudes")
+	flag.BoolVar(&Conf.Dump, "dump", false, "Dump  internal data,exit")
 
 	flag.Parse()
 	parse_home()
@@ -93,24 +56,22 @@ func main() {
 		log.Fatal("need mission")
 	}
 
+	var mpts []Point
+
 	m, err := NewMission(files[0])
 	if err == nil {
 		mpts = m.Get_points()
-		d := m.Get_distance()
-		npts = int(d) / 30
 	} else {
 		log.Fatal(err)
 	}
 	elev, err := Get_elevations(mpts, 0)
 	if err == nil {
 		m.Update_details(mpts, elev)
-		if Conf.dump {
-			for _, p := range mpts {
-				fmt.Printf("%+v\n", p)
-			}
+		if Conf.Dump {
+			Dump_data(mpts)
 			os.Exit(0)
 		}
-
+		npts := int(mpts[len(mpts)-1].D) / 30
 		if npts > 1024 {
 			npts = 1024
 		}
@@ -118,7 +79,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if Conf.output != "" {
+		if Conf.Output != "" {
 			Rework(mpts, telev)
 			m.Save(mpts)
 		}

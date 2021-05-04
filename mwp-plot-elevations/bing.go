@@ -32,8 +32,8 @@ func pca(pts []Point) string {
 	var sb strings.Builder
 
 	for _, s := range pts {
-		nlat := int(math.Round(s.y * 100000.0))
-		nlon := int(math.Round(s.x * 100000.0))
+		nlat := int(math.Round(s.Y * 100000.0))
+		nlon := int(math.Round(s.X * 100000.0))
 		dy := nlat - lat
 		dx := nlon - lon
 		lat = nlat

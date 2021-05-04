@@ -13,7 +13,7 @@ type mindex struct {
 func Rework(mpts []Point, gnd []int) {
 	d := 0.0
 	nmp := len(mpts)
-	mr := mpts[nmp-1].d
+	mr := mpts[nmp-1].D
 	np := len(gnd)
 	ddif := mr / float64(np)
 	idx := 0
@@ -21,7 +21,7 @@ func Rework(mpts []Point, gnd []int) {
 
 	for n, _ := range gnd {
 		d += ddif
-		if math.Round(mpts[idx].d) <= math.Round(d) {
+		if math.Round(mpts[idx].D) <= math.Round(d) {
 			mx := mindex{}
 			mx.midx = idx
 			if idx == 0 {
@@ -42,25 +42,25 @@ func Rework(mpts []Point, gnd []int) {
 		if n == 0 || n == len(mlist)-1 {
 			continue
 		}
-		wpdist := mpts[n+1].d - mpts[n].d
-		astart := mpts[n].xz
-		wpadelta := mpts[n+1].xz - astart
+		wpdist := mpts[n+1].D - mpts[n].D
+		astart := mpts[n].Xz
+		wpadelta := mpts[n+1].Xz - astart
 		ldiff := 0.0
 		adj := 0.0
 		for j := m.postgnd; j < mlist[n+1].pregnd; j++ {
 			ax := float64(astart) + float64(wpadelta)*ldiff/wpdist
-			adif := float64(Conf.margin+gnd[j]) - ax
+			adif := float64(Conf.Margin+gnd[j]) - ax
 			if adif > adj {
 				adj = adif
 			}
 			ldiff += ddif
 		}
 		if adj != 0.0 {
-			mpts[n].xz += int(math.Ceil(adj))
-			mpts[n].set = WP_UPDATED
-			if mpts[n+1].set != WP_RTH {
-				mpts[n+1].xz += int(math.Ceil(adj))
-				mpts[n+1].set = WP_UPDATED
+			mpts[n].Xz += int(math.Ceil(adj))
+			mpts[n].Set = WP_UPDATED
+			if mpts[n+1].Set != WP_RTH {
+				mpts[n+1].Xz += int(math.Ceil(adj))
+				mpts[n+1].Set = WP_UPDATED
 			}
 		}
 	}

@@ -11,17 +11,17 @@ import (
 
 func Gnuplot_mission(mpts []Point, gnd []int) {
 	req := 0
-	if Conf.noplot == false {
+	if Conf.Noplot == false {
 		req |= 1
 	}
-	if Conf.svgfile != "" {
+	if Conf.Svgfile != "" {
 		req |= 2
 	}
 	if req == 0 {
 		return
 	}
 	np := len(mpts)
-	mr := mpts[np-1].d
+	mr := mpts[np-1].D
 	np = len(gnd)
 	ddif := mr / float64(np-1)
 	minz := 99999
@@ -37,7 +37,7 @@ func Gnuplot_mission(mpts []Point, gnd []int) {
 	w, _ := os.Create(tfname)
 	fmt.Fprintln(w, "Dist\tAMSL\tMargin")
 	for _, g := range gnd {
-		mgn := g + Conf.margin
+		mgn := g + Conf.Margin
 		fmt.Fprintf(w, "%.0f\t%d\t%d\n", d, g, mgn)
 		d += ddif
 		if g < minz {
@@ -50,9 +50,9 @@ func Gnuplot_mission(mpts []Point, gnd []int) {
 	w, _ = os.Create(mfname)
 	fmt.Fprintln(w, "Dist\tMission")
 	for _, p := range mpts {
-		fmt.Fprintf(w, "%.0f\t%d\t%d\n", p.d, p.az, p.xz)
-		if p.az < minz {
-			minz = p.az
+		fmt.Fprintf(w, "%.0f\t%d\t%d\n", p.D, p.Az, p.Xz)
+		if p.Az < minz {
+			minz = p.Az
 		}
 	}
 	w.Close()
@@ -71,7 +71,7 @@ set xtics (`)
 		if i != 0 {
 			w.WriteString(",")
 		}
-		fmt.Fprintf(w, "%.0f", p.d)
+		fmt.Fprintf(w, "%.0f", p.D)
 	}
 	w.WriteString(")\n")
 
@@ -82,7 +82,7 @@ set x2tics (`)
 		if i != 0 {
 			w.WriteString(",")
 		}
-		fmt.Fprintf(w, "\"%s\" %.0f", p.wpname, p.d)
+		fmt.Fprintf(w, "\"%s\" %.0f", p.Wpname, p.D)
 	}
 	w.WriteString(")\n")
 	w.WriteString(`set xlabel "Distance"
@@ -99,13 +99,13 @@ set yrange [ `)
 		w.WriteString("set terminal push\n")
 	}
 	if req&2 == 2 {
-		fmt.Fprintf(w, "set terminal svg background rgb 'white' font 'sans,8' rounded\nset output \"%s\"\n", Conf.svgfile)
+		fmt.Fprintf(w, "set terminal svg background rgb 'white' font 'sans,8' rounded\nset output \"%s\"\n", Conf.Svgfile)
 	}
 	fmt.Fprintf(w, "plot \"%s\" using 1:2 t \"Terrain\" w filledcurve y1=%d lt -1 lw 2  lc rgb \"web-green\", \"%s\" using 1:2 t \"Mission\" w lines lt -1 lw 2  lc rgb \"red\"", tfname, minz, mfname)
-	if Conf.margin != 0 {
+	if Conf.Margin != 0 {
 		fmt.Fprintf(w, ", \"%s\" using 1:3 t \"Margin\" w lines lt -1 lw 2  lc rgb \"web-blue\"", tfname)
 	}
-	if Conf.output != "" {
+	if Conf.Output != "" {
 		fmt.Fprintf(w, ", \"%s\" using 1:3 t \"Adjust\" w lines lt -1 lw 2  lc rgb \"orange\"", mfname)
 	}
 	w.WriteString("\n")
