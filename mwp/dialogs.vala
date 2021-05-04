@@ -993,7 +993,7 @@ public class AltModeDialog : GLib.Object
             });
 
         lu_apply.clicked.connect(() => {
-                complete(ListBox.ALTMODES.NONE, ListBox.POSREF.LAND, ui_action);
+                complete(ListBox.ALTMODES.NONE, ListBox.POSREF.LANDR, ui_action);
                 ldialog.hide();
             });
 

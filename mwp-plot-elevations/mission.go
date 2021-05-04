@@ -85,6 +85,7 @@ func (m *Mission) Save(mpts []Point) {
 			if Conf.P3 != -1 && p.Flag != int8(Conf.P3) { // also update of changing alt mode
 				p.Set = WP_UPDATED
 			}
+
 			if p.Set == WP_UPDATED {
 				midx := p.Wpno - 1
 				if m.MissionItems[midx].No != int(p.Wpno) {
@@ -101,8 +102,15 @@ func (m *Mission) Save(mpts []Point) {
 				}
 			}
 			if Conf.Upland && landno > 0 && p.Wpno == landno {
-				laltdiff := p.Gz - mpts[0].Gz
-				m.MissionItems[landno-1].P2 = int16(laltdiff)
+				lidx := landno - 1
+				if m.MissionItems[lidx].Action != "LAND" {
+					panic("LAND WP mismatch")
+				}
+				if m.MissionItems[lidx].P3 == 0 {
+					m.MissionItems[lidx].P2 = int16(p.Gz - mpts[0].Gz)
+				} else {
+					m.MissionItems[lidx].P2 = int16(p.Gz)
+				}
 			}
 		}
 		out, _ := xml.MarshalIndent(m, " ", " ")

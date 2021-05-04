@@ -98,7 +98,8 @@ public class ListBox : GLib.Object
         MANUAL=0,
         HOME=1,
         WPONE=2,
-        LAND=4,
+        LANDR=4,
+        LANDA=8,
         NONE=-1
     }
 
@@ -727,9 +728,9 @@ public class ListBox : GLib.Object
 
     private void update_land_offset(int[]elevs)
     {
-        var diff = elevs[1] - elevs[0];
         bool res = false;
         var sel = view.get_selection ();
+
         if(sel.count_selected_rows () == 1)
         {
             Value val;
@@ -740,7 +741,12 @@ public class ListBox : GLib.Object
             list_model.get_value (iv, WY_Columns.ACTION, out val);
             res =((MSP.Action)val == MSP.Action.LAND);
             if (res) {
-                list_model.set_value (iv, WY_Columns.INT2, diff);
+                list_model.get_value (iv, WY_Columns.INT3, out val);
+                int p3 = (int)val;
+                if (p3 == 0)
+                    list_model.set_value (iv, WY_Columns.INT2, (elevs[1] - elevs[0]));
+                else
+                    list_model.set_value (iv, WY_Columns.INT2, elevs[0]);
             }
         }
     }
@@ -752,7 +758,7 @@ public class ListBox : GLib.Object
 
         if((act & 2) == 2)
         {
-            toggle_editor_state();
+//            toggle_editor_state();
             unset_selection();
         }
 
@@ -760,7 +766,8 @@ public class ListBox : GLib.Object
         {
             case POSREF.HOME:
             case POSREF.WPONE:
-            case POSREF.LAND:
+            case POSREF.LANDA:
+            case POSREF.LANDR:
                 var pts = get_geo_points_for_mission(posref);
                 if(pts.length > 0)
                 {
@@ -769,7 +776,7 @@ public class ListBox : GLib.Object
                             var elevs = BingElevations.get_elevations(pts);
                             Idle.add(() => {
                                     if (elevs.length > 0)
-                                        if (posref == POSREF.LAND)
+                                        if ((posref & (POSREF.LANDA|POSREF.LANDR)) != 0)
                                             update_land_offset(elevs);
                                         else
                                             update_altmode(amode, elevs[0]);
@@ -1571,15 +1578,15 @@ public class ListBox : GLib.Object
         BingElevations.Point [] pts = {};
         Gtk.TreeIter iter;
         GLib.Value val;
-        if (posref == POSREF.HOME || posref == POSREF.LAND)
+        if ((posref & (POSREF.HOME|POSREF.LANDR)) != 0)
         {
             double hlat, hlon;
             fhome.get_fake_home(out hlat, out hlon);
             pts += BingElevations.Point(){y = hlat, x = hlon};
         }
 
-        if (posref == POSREF.WPONE || posref == POSREF.LAND)
-         {
+        if ((posref & (POSREF.WPONE|POSREF.LANDA|POSREF.LANDR)) != 0)
+        {
             for(bool next=list_model.get_iter_first(out iter); next;
                 next=list_model.iter_next(ref iter))
             {
@@ -1598,7 +1605,7 @@ public class ListBox : GLib.Object
                     var alon = (double)val;
                     pts += BingElevations.Point(){y = alat, x = alon};
                     break;
-                } else if (posref == POSREF.LAND) {
+                } else {
                     if ((MSP.Action)val == MSP.Action.LAND) {
                         list_model.get_value (iter, WY_Columns.LAT, out val);
                         var alat = (double)val;
@@ -1617,15 +1624,15 @@ public class ListBox : GLib.Object
     {
         Gtk.TreeIter iter;
         GLib.Value val;
+        MSP.Action act;
         ALTMODES xamode = (amode == ALTMODES.RELATIVE) ? ALTMODES.ABSOLUTE : ALTMODES.RELATIVE;
 
         for(bool next=list_model.get_iter_first(out iter); next;
             next=list_model.iter_next(ref iter))
         {
             list_model.get_value (iter, WY_Columns.ACTION, out val);
-            if ((MSP.Action)val == MSP.Action.SET_HEAD ||
-                (MSP.Action)val  == MSP.Action.RTH ||
-                (MSP.Action)val == MSP.Action.JUMP)
+            act = (MSP.Action)val;
+            if (act == MSP.Action.SET_HEAD || act  == MSP.Action.RTH || act == MSP.Action.JUMP)
                 continue;
             list_model.get_value (iter, WY_Columns.INT3, out val);
             var i3 = (int)val;
@@ -1639,22 +1646,61 @@ public class ListBox : GLib.Object
                     ival += refalt;
                 list_model.set_value (iter, WY_Columns.ALT, ival);
                 list_model.set_value (iter, WY_Columns.INT3, amode);
+
+                if (act == MSP.Action.LAND) {
+                    list_model.get_value (iter, WY_Columns.INT2, out val);
+                    ival = (int)((double)val);
+                    if(ival != 0) {
+                        if (amode == ALTMODES.RELATIVE)
+                            ival -= refalt;
+                        else
+                            ival += refalt;
+                        list_model.set_value (iter, WY_Columns.INT2, ival);
+                    }
+                }
             }
         }
     }
 
+
+    private int get_land_alt_mode()
+    {
+        var sel = view.get_selection ();
+        if(sel.count_selected_rows () == 1)
+        {
+            Value val;
+            Gtk.TreeIter iter;
+            var rows = sel.get_selected_rows(null);
+            list_model.get_iter (out iter, rows.nth_data(0));
+            list_model.get_value (iter, WY_Columns.ACTION, out val);
+            if (((MSP.Action)val == MSP.Action.LAND)) {
+                list_model.get_value (iter, WY_Columns.INT3, out val);
+                int p3 = (int)val;
+                return p3;
+            }
+        }
+        return 0;
+    }
+
+
     private void land_set_mode()
     {
-        altmodedialog.ui_action = 0;
-        if (!fhome.is_visible)
-        {
-            set_fake_home();
-            altmodedialog.ui_action = 1;
+        altmodedialog.ui_action = 2;
+        var atype = get_land_alt_mode();
+        if (atype == 1)
+            bing_complete(ALTMODES.NONE, POSREF.LANDA, altmodedialog.ui_action);
+        else {
+            if (!fhome.is_visible)
+            {
+                set_fake_home();
+                altmodedialog.ui_action = 3;
+            }
+            double lat,lon;
+            fhome.get_fake_home(out lat, out lon);
+            altmodedialog.update_land(PosFormat.pos(lat,lon,MWP.conf.dms));
         }
-        double lat,lon;
-        fhome.get_fake_home(out lat, out lon);
-        altmodedialog.update_land(PosFormat.pos(lat,lon,MWP.conf.dms));
     }
+
 
     private void cvt_alt_mode()
     {
@@ -1673,7 +1719,7 @@ public class ListBox : GLib.Object
         if (ra > aa)
             amode = ALTMODES.ABSOLUTE;
         altmodedialog.edit_alt_modes(amode, PosFormat.pos(lat,lon,MWP.conf.dms));
-        toggle_editor_state();
+//        toggle_editor_state();
     }
 
     private void do_deltas()
