@@ -53,6 +53,7 @@ public class FakeHome : GLib.Object
     public void create_dialog(Gtk.Builder b, Gtk.Window? w)
     {
         fhd = new FakeHomeDialog(b, w);
+        read_defaults();
     }
 
     private void parse_delim(string fn, ref PlotElevDefs p)

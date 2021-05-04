@@ -940,7 +940,6 @@ public class DeltaDialog : GLib.Object
 public class AltModeDialog : GLib.Object
 {
     private Gtk.Dialog cdialog;
-    private Gtk.Dialog ldialog;
     private Gtk.RadioButton button_rel;
     private Gtk.RadioButton button_abs;
     private Gtk.RadioButton ground_ref0;
@@ -948,16 +947,15 @@ public class AltModeDialog : GLib.Object
     private Gtk.RadioButton ground_ref2;
     private Gtk.Entry altmodemanual;
     private Gtk.Label altmode_location;
-    private Gtk.Label land_upd_location;
-
+    private Gtk.Box  altmode_box;
     public int ui_action;
+    private bool is_land;
 
     public signal void complete (ListBox.ALTMODES amode, ListBox.POSREF posref, int act);
 
     public AltModeDialog(Gtk.Builder builder, Gtk.Window w)
     {
         cdialog = builder.get_object ("cvtmode_dialog") as Gtk.Dialog;
-        ldialog = builder.get_object ("land-update-dialog") as Gtk.Dialog;
         button_rel = builder.get_object ("alt_mode_rel") as Gtk.RadioButton;
         button_abs = builder.get_object ("alt_mode_amsl") as Gtk.RadioButton;
 
@@ -966,35 +964,26 @@ public class AltModeDialog : GLib.Object
         ground_ref2 = builder.get_object ("ground_ref2") as Gtk.RadioButton;
         altmodemanual = builder.get_object ("altmodemanual") as Gtk.Entry;
         altmode_location = builder.get_object ("altmode_location") as Gtk.Label;
-        land_upd_location = builder.get_object ("land-update-pos") as Gtk.Label;
+        altmode_box = builder.get_object ("alt_cvt_amode_box") as Gtk.Box;
         var am_apply = builder.get_object ("alt_mode_apply") as Gtk.Button;
         var am_close = builder.get_object ("alt_mode_cancel") as Gtk.Button;
 
-        var lu_apply = builder.get_object ("land-update-apply") as Gtk.Button;
-        var lu_close = builder.get_object ("land-update-cancel") as Gtk.Button;
-
         am_apply.clicked.connect(() => {
-                ListBox.ALTMODES amode = ListBox.ALTMODES.RELATIVE;
-                if(button_abs.get_active())
-                    amode = ListBox.ALTMODES.ABSOLUTE;
-
+                ListBox.ALTMODES amode = ListBox.ALTMODES.NONE;
+                if (is_land == false) {
+                    amode = ListBox.ALTMODES.RELATIVE;
+                    if(button_abs.get_active())
+                        amode = ListBox.ALTMODES.ABSOLUTE;
+                }
                 ListBox.POSREF posref = ListBox.POSREF.MANUAL;
                 if (ground_ref1.get_active())
                     posref = ListBox.POSREF.HOME;
                 else if (ground_ref2.get_active())
                     posref = ListBox.POSREF.WPONE;
+                if(is_land)
+                    posref |= ListBox.POSREF.LANDR;
                 complete(amode,posref,ui_action);
                 cdialog.hide();
-            });
-
-        lu_close.clicked.connect(() => {
-                complete(ListBox.ALTMODES.NONE, ListBox.POSREF.NONE, ui_action);
-                ldialog.hide();
-            });
-
-        lu_apply.clicked.connect(() => {
-                complete(ListBox.ALTMODES.NONE, ListBox.POSREF.LANDR, ui_action);
-                ldialog.hide();
             });
 
         am_close.clicked.connect(() => {
@@ -1008,36 +997,28 @@ public class AltModeDialog : GLib.Object
                 return true;
             });
 
-        ldialog.delete_event.connect (() => {
-                complete( ListBox.ALTMODES.NONE, ListBox.POSREF.NONE, ui_action);
-                ldialog.hide();
-                return true;
-            });
-
         cdialog.set_transient_for (w);
         cdialog.set_keep_above(true);
-        ldialog.set_transient_for (w);
-        ldialog.set_keep_above(true);
     }
 
     public void edit_alt_modes(ListBox.ALTMODES amode, string s)
     {
-        if (amode == ListBox.ALTMODES.RELATIVE)
-            button_rel.set_active(true);
-        else
-            button_abs.set_active(true);
         ground_ref0.set_active(true);
-        altmodemanual.text = "0";
+//        altmodemanual.text = "0";
         altmode_location.label = s;
+        if (amode == ListBox.ALTMODES.NONE) {
+            is_land = true;
+            altmode_box.hide();
+        } else {
+            is_land = false;
+            if (amode == ListBox.ALTMODES.RELATIVE)
+                button_rel.set_active(true);
+            else
+                button_abs.set_active(true);
+            altmode_box.show();
+        }
         cdialog.show_all();
         cdialog.set_keep_above(true);
-    }
-
-    public void update_land(string s)
-    {
-        land_upd_location.label = s;
-        ldialog.show_all();
-        ldialog.set_keep_above(true);
     }
 
     public int get_manual()
@@ -1048,7 +1029,6 @@ public class AltModeDialog : GLib.Object
     public void set_location(string s)
     {
         altmode_location.label = s;
-        land_upd_location.label = s;
     }
 }
 

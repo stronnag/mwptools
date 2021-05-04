@@ -95,12 +95,12 @@ public class ListBox : GLib.Object
 
     public enum POSREF
     {
-        MANUAL=0,
-        HOME=1,
-        WPONE=2,
-        LANDR=4,
-        LANDA=8,
-        NONE=-1
+        NONE=0,
+        MANUAL=1,
+        HOME=2,
+        WPONE=4,
+        LANDR=8,
+        LANDA=16
     }
 
     private void add_marker_item(string label, string cue)
@@ -746,55 +746,74 @@ public class ListBox : GLib.Object
                 if (p3 == 0)
                     list_model.set_value (iv, WY_Columns.INT2, (elevs[1] - elevs[0]));
                 else
-                    list_model.set_value (iv, WY_Columns.INT2, elevs[0]);
+                    list_model.set_value (iv, WY_Columns.INT2, elevs[1]);
             }
         }
     }
 
+/*******
+    private string show_posref(POSREF p)
+    {
+        StringBuilder sb = new StringBuilder("posref:");
+        if ((p & 1) == 1)
+            sb.append(" MANUAL");
+        if ((p & 2) == 2)
+            sb.append(" HOME");
+        if ((p & 4) == 4)
+            sb.append(" WPONE");
+        if ((p & 8) == 8)
+            sb.append(" LANDR ");
+        if ((p & 16) == 16)
+            sb.append(" LANDA ");
+        return sb.str;
+    }
+**************/
     private void bing_complete(ALTMODES amode, POSREF posref, int act)
     {
         if ((act & 1) == 1)
             unset_fake_home();
 
-        if((act & 2) == 2)
+//        stderr.printf("Complete %x %s\n", posref, show_posref(posref));
+
+        if(posref == POSREF.MANUAL)
         {
-//            toggle_editor_state();
-            unset_selection();
-        }
-
-        switch (posref)
-        {
-            case POSREF.HOME:
-            case POSREF.WPONE:
-            case POSREF.LANDA:
-            case POSREF.LANDR:
-                var pts = get_geo_points_for_mission(posref);
-                if(pts.length > 0)
-                {
-                    Thread<int> thr = null;
-                    thr = new Thread<int> ("fetch-alt", () => {
-                            var elevs = BingElevations.get_elevations(pts);
-                            Idle.add(() => {
-                                    if (elevs.length > 0)
-                                        if ((posref & (POSREF.LANDA|POSREF.LANDR)) != 0)
-                                            update_land_offset(elevs);
-                                        else
-                                            update_altmode(amode, elevs[0]);
-                                    thr.join();
-                                    return false;
-                                });
-                            return 0;
-                        });
-                }
-                break;
-
-            case POSREF.MANUAL:
-                int refalt = altmodedialog.get_manual();
-                update_altmode(amode, refalt);
-                break;
-
-            default:
-                break;
+            int refalt = altmodedialog.get_manual();
+            update_altmode(amode, refalt);
+            if((act & 2) == 2)
+                unset_selection();
+        } else {
+            var pts = get_geo_points_for_mission(posref);
+            if(pts.length > 0)
+            {
+                Thread<int> thr = null;
+                thr = new Thread<int> ("fetch-alt", () => {
+                        var elevs = BingElevations.get_elevations(pts);
+                        Idle.add(() => {
+                                if (elevs.length > 0) {
+                                    if ((posref & (POSREF.LANDA|POSREF.LANDR)) != 0) {
+//                                        stderr.printf("land update\n");
+                                        if((posref & POSREF.MANUAL) != 0) {
+                                            var tmp = elevs[0];
+                                            elevs[0] = altmodedialog.get_manual();
+//                                            stderr.printf("land manual value L=%d, H=%d\n", elevs[0], tmp);
+                                            elevs += tmp;
+                                        }
+                                        update_land_offset(elevs);
+                                    } else {
+                                        update_altmode(amode, elevs[0]);
+                                    }
+                                }
+                                if((act & 2) == 2)
+                                    unset_selection();
+                                thr.join();
+                                return false;
+                            });
+                        return 0;
+                    });
+            } else {
+                if((act & 2) == 2)
+                    unset_selection();
+            }
         }
     }
 
@@ -1578,41 +1597,48 @@ public class ListBox : GLib.Object
         BingElevations.Point [] pts = {};
         Gtk.TreeIter iter;
         GLib.Value val;
-        if ((posref & (POSREF.HOME|POSREF.LANDR)) != 0)
+        if ((posref & POSREF.HOME) != 0)
         {
             double hlat, hlon;
             fhome.get_fake_home(out hlat, out hlon);
             pts += BingElevations.Point(){y = hlat, x = hlon};
+//            stderr.printf("Request home %f %f \n", hlat, hlon);
         }
 
         if ((posref & (POSREF.WPONE|POSREF.LANDA|POSREF.LANDR)) != 0)
         {
+            bool needone = true;
+            bool needland = true;
             for(bool next=list_model.get_iter_first(out iter); next;
                 next=list_model.iter_next(ref iter))
             {
                 list_model.get_value (iter, WY_Columns.ACTION, out val);
-                if ((MSP.Action)val == MSP.Action.SET_HEAD ||
-                    (MSP.Action)val  == MSP.Action.RTH ||
-                    (MSP.Action)val  == MSP.Action.SET_POI ||
-                    (MSP.Action)val == MSP.Action.JUMP)
+                MSP.Action act  = (MSP.Action)val;
+
+                if (act == MSP.Action.SET_HEAD || act  == MSP.Action.RTH ||
+                    act  == MSP.Action.SET_POI || act == MSP.Action.JUMP)
                     continue;
 
-                if (posref == POSREF.WPONE)
+                if (needone && ((posref & POSREF.WPONE) != 0))
                 {
                     list_model.get_value (iter, WY_Columns.LAT, out val);
                     var alat = (double)val;
                     list_model.get_value (iter, WY_Columns.LON, out val);
                     var alon = (double)val;
                     pts += BingElevations.Point(){y = alat, x = alon};
-                    break;
-                } else {
-                    if ((MSP.Action)val == MSP.Action.LAND) {
+//                    stderr.printf("Request 1st (%s)\n",act.to_string());
+                    needone = false;
+                }
+
+                if (((posref & POSREF.LANDA|POSREF.LANDR) != 0) && needland) {
+                    if (act == MSP.Action.LAND) {
                         list_model.get_value (iter, WY_Columns.LAT, out val);
                         var alat = (double)val;
                         list_model.get_value (iter, WY_Columns.LON, out val);
                         var alon = (double)val;
                         pts += BingElevations.Point(){y = alat, x = alon};
-                        break;
+//                        stderr.printf("Request land (%s)\n",act.to_string());
+                        needland = false;
                     }
                 }
             }
@@ -1662,45 +1688,18 @@ public class ListBox : GLib.Object
         }
     }
 
-
-    private int get_land_alt_mode()
-    {
-        var sel = view.get_selection ();
-        if(sel.count_selected_rows () == 1)
-        {
-            Value val;
-            Gtk.TreeIter iter;
-            var rows = sel.get_selected_rows(null);
-            list_model.get_iter (out iter, rows.nth_data(0));
-            list_model.get_value (iter, WY_Columns.ACTION, out val);
-            if (((MSP.Action)val == MSP.Action.LAND)) {
-                list_model.get_value (iter, WY_Columns.INT3, out val);
-                int p3 = (int)val;
-                return p3;
-            }
-        }
-        return 0;
-    }
-
-
     private void land_set_mode()
     {
         altmodedialog.ui_action = 2;
-        var atype = get_land_alt_mode();
-        if (atype == 1)
-            bing_complete(ALTMODES.NONE, POSREF.LANDA, altmodedialog.ui_action);
-        else {
-            if (!fhome.is_visible)
-            {
-                set_fake_home();
-                altmodedialog.ui_action = 3;
-            }
-            double lat,lon;
-            fhome.get_fake_home(out lat, out lon);
-            altmodedialog.update_land(PosFormat.pos(lat,lon,MWP.conf.dms));
+        if (!fhome.is_visible)
+        {
+            set_fake_home();
+            altmodedialog.ui_action = 3;
         }
+        double lat,lon;
+        fhome.get_fake_home(out lat, out lon);
+        altmodedialog.edit_alt_modes(ALTMODES.NONE, PosFormat.pos(lat,lon,MWP.conf.dms));
     }
-
 
     private void cvt_alt_mode()
     {
@@ -1719,7 +1718,6 @@ public class ListBox : GLib.Object
         if (ra > aa)
             amode = ALTMODES.ABSOLUTE;
         altmodedialog.edit_alt_modes(amode, PosFormat.pos(lat,lon,MWP.conf.dms));
-//        toggle_editor_state();
     }
 
     private void do_deltas()
