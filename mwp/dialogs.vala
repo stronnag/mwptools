@@ -17,8 +17,6 @@
  */
 
 
-
-
 public class Units :  GLib.Object
 {
     private const string [] dnames = {"m", "ft", "yd","mfg"};
@@ -942,6 +940,7 @@ public class DeltaDialog : GLib.Object
 public class AltModeDialog : GLib.Object
 {
     private Gtk.Dialog cdialog;
+    private Gtk.Dialog ldialog;
     private Gtk.RadioButton button_rel;
     private Gtk.RadioButton button_abs;
     private Gtk.RadioButton ground_ref0;
@@ -949,14 +948,16 @@ public class AltModeDialog : GLib.Object
     private Gtk.RadioButton ground_ref2;
     private Gtk.Entry altmodemanual;
     private Gtk.Label altmode_location;
+    private Gtk.Label land_upd_location;
 
-    public bool iset_fhome;
+    public int ui_action;
 
-    public signal void complete (ListBox.ALTMODES amode, ListBox.POSREF posref);
+    public signal void complete (ListBox.ALTMODES amode, ListBox.POSREF posref, int act);
 
     public AltModeDialog(Gtk.Builder builder, Gtk.Window w)
     {
         cdialog = builder.get_object ("cvtmode_dialog") as Gtk.Dialog;
+        ldialog = builder.get_object ("land-update-dialog") as Gtk.Dialog;
         button_rel = builder.get_object ("alt_mode_rel") as Gtk.RadioButton;
         button_abs = builder.get_object ("alt_mode_amsl") as Gtk.RadioButton;
 
@@ -965,8 +966,12 @@ public class AltModeDialog : GLib.Object
         ground_ref2 = builder.get_object ("ground_ref2") as Gtk.RadioButton;
         altmodemanual = builder.get_object ("altmodemanual") as Gtk.Entry;
         altmode_location = builder.get_object ("altmode_location") as Gtk.Label;
+        land_upd_location = builder.get_object ("land-update-pos") as Gtk.Label;
         var am_apply = builder.get_object ("alt_mode_apply") as Gtk.Button;
         var am_close = builder.get_object ("alt_mode_cancel") as Gtk.Button;
+
+        var lu_apply = builder.get_object ("land-update-apply") as Gtk.Button;
+        var lu_close = builder.get_object ("land-update-cancel") as Gtk.Button;
 
         am_apply.clicked.connect(() => {
                 ListBox.ALTMODES amode = ListBox.ALTMODES.RELATIVE;
@@ -978,23 +983,41 @@ public class AltModeDialog : GLib.Object
                     posref = ListBox.POSREF.HOME;
                 else if (ground_ref2.get_active())
                     posref = ListBox.POSREF.WPONE;
-                complete(amode,posref);
+                complete(amode,posref,ui_action);
                 cdialog.hide();
             });
 
+        lu_close.clicked.connect(() => {
+                complete(ListBox.ALTMODES.NONE, ListBox.POSREF.NONE, ui_action);
+                ldialog.hide();
+            });
+
+        lu_apply.clicked.connect(() => {
+                complete(ListBox.ALTMODES.NONE, ListBox.POSREF.LAND, ui_action);
+                ldialog.hide();
+            });
+
         am_close.clicked.connect(() => {
-                complete( ListBox.ALTMODES.NONE, ListBox.POSREF.NONE);
+                complete( ListBox.ALTMODES.NONE, ListBox.POSREF.NONE, ui_action);
                 cdialog.hide();
             });
 
         cdialog.delete_event.connect (() => {
-                complete( ListBox.ALTMODES.NONE, ListBox.POSREF.NONE);
+                complete( ListBox.ALTMODES.NONE, ListBox.POSREF.NONE, ui_action);
                 cdialog.hide();
                 return true;
             });
 
-        cdialog.set_keep_above(true);
+        ldialog.delete_event.connect (() => {
+                complete( ListBox.ALTMODES.NONE, ListBox.POSREF.NONE, ui_action);
+                ldialog.hide();
+                return true;
+            });
+
         cdialog.set_transient_for (w);
+        cdialog.set_keep_above(true);
+        ldialog.set_transient_for (w);
+        ldialog.set_keep_above(true);
     }
 
     public void edit_alt_modes(ListBox.ALTMODES amode, string s)
@@ -1010,6 +1033,13 @@ public class AltModeDialog : GLib.Object
         cdialog.set_keep_above(true);
     }
 
+    public void update_land(string s)
+    {
+        land_upd_location.label = s;
+        ldialog.show_all();
+        ldialog.set_keep_above(true);
+    }
+
     public int get_manual()
     {
         return (int)InputParser.get_scaled_real(altmodemanual.text);
@@ -1018,6 +1048,7 @@ public class AltModeDialog : GLib.Object
     public void set_location(string s)
     {
         altmode_location.label = s;
+        land_upd_location.label = s;
     }
 }
 

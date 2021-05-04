@@ -82,7 +82,7 @@ func (m *Mission) Save(mpts []Point) {
 		}
 
 		for _, p := range mpts {
-			if Conf.P3 != -1 && p.P3 != int16(Conf.P3) { // also update of changing alt mode
+			if Conf.P3 != -1 && p.Flag != int8(Conf.P3) { // also update of changing alt mode
 				p.Set = WP_UPDATED
 			}
 			if p.Set == WP_UPDATED {
