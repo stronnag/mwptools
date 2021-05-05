@@ -1088,6 +1088,9 @@ public class MWP : Gtk.Application {
         if (mqtt.available)
             mqtt_available = mqtt.mdisconnect();
 #endif
+        if(rdrdev.available)
+            rdrdev.close();
+
         // stop any previews / replays
         ls.quit();
         stop_replayer();

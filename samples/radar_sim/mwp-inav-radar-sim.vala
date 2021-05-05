@@ -251,8 +251,10 @@ public class RadarSim : Object
         {
             msp.serial_lost.connect(() => {
                     stderr.printf("Lost connection\n");
-                    if(tid > 0)
+                    if(tid > 0) {
                         Source.remove(tid);
+                        tid = 0;
+                    }
                     Timeout.add_seconds(10, () => {
                             open_serial();
                             return Source.REMOVE;
