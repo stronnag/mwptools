@@ -2279,7 +2279,9 @@ public class MWP : Gtk.Application {
         radar_plot = new SList<RadarPlot?>();
         if(radar_device != null)
         {
-            rdrdev = new MWSerial.reader();
+            MWPLog.message("Set up radar device %s\n", radar_device);
+            rdrdev = new MWSerial();
+            rdrdev.set_mode(MWSerial.Mode.SIM);
             rdrdev.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
                 handle_radar(cmd,raw,len,xflags,errs);
                 });
@@ -3858,7 +3860,7 @@ case 0:
         {
             if(lastmsg.cmd != MSP.Cmds.INVALID)
             {
-//                MWPLog.message("resend %s\n", lastmsg.cmd.to_string());
+//                MWPLog.message("resend %s\n", lastmsg.cmd.o_string());
                 msp.send_command((uint16)lastmsg.cmd, lastmsg.data, lastmsg.len);
             }
             else
@@ -5441,17 +5443,56 @@ case 0:
     public void handle_radar(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
+        if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
+            stderr.printf("RADAR: %s\n", cmd.to_string());
         switch(cmd)
         {
-            case MSP.Cmds.RADAR_POS:
+            case MSP.Cmds.NAME:
+                var node = "MWP Fake Node";
+                rdrdev.send_command(MSP.Cmds.NAME, node, node.length);
+                break;
+            case MSP.Cmds.RAW_GPS:
+                {
+                    uint8 oraw[18]={0};
+                    uint8 *p = &oraw[0];
+
+                    *p++ = 2;
+                    *p++ = 42;
+                    if (wp0.lat == 0 && wp0.lon == 0)
+                    {
+                        wp0.lat = view.get_center_latitude();
+                        wp0.lon = view.get_center_longitude();
+                    }
+                    p = serialise_i32(p, (int)(wp0.lat*1e7));
+                    p = serialise_i32(p, (int)(wp0.lon*1e7));
+                    p = serialise_i16(p, 0);
+                    p = serialise_u16(p, 0);
+                    p = serialise_u16(p, 0);
+                    serialise_u16(p, 99);
+                    rdrdev.send_command(MSP.Cmds.RAW_GPS, oraw, 18);
+                }
+                break;
+            case MSP.Cmds.FC_VARIANT:
+                rdrdev.send_command(MSP.Cmds.FC_VARIANT, "INAV", 4);
+                break;
+            case MSP.Cmds.FC_VERSION:
+                {
+                    uint8 oraw[3] = {6,6,6};
+                    rdrdev.send_command(MSP.Cmds.FC_VERSION, oraw, 3);
+                }
+                break;
+            case MSP.Cmds.ANALOG:
+                {
+                    uint8 []oraw = {255, 0, 0, 0, 0, 0, 0};
+                    rdrdev.send_command(MSP.Cmds.ANALOG, oraw, raw.length);
+                }
+                break;
             case MSP.Cmds.COMMON_SET_RADAR_POS:
                 process_inav_radar_pos(raw);
                 break;
-
             case MSP.Cmds.MAVLINK_MSG_ID_TRAFFIC_REPORT:
                 process_mavlink_radar(raw);
                 break;
-
             case MSP.Cmds.MAVLINK_MSG_ID_OWNSHIP:
 //                dump_mav_os_msg(raw);
                 break;

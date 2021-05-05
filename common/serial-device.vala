@@ -550,6 +550,7 @@ public class MWSerial : Object
                             }
                             else
                             {
+                                MWPLog.message("connection fails\n");
                                 skt.close();
                                 fd = -1;
                             }

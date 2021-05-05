@@ -12,8 +12,8 @@ private static int dspeed;
 private static int  dalt;
 private static int  maxradar;
 private static string llstr = null;
-private static bool use_v2 = false;
 private static string stale = null;
+private static bool verbose;
 
 const OptionEntry[] options = {
     { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", "115200"},
@@ -22,9 +22,9 @@ const OptionEntry[] options = {
     { "range", 'r', 0, OptionArg.INT, out maxrange, "Max range", "metres"},
     { "speed", 's', 0, OptionArg.INT, out dspeed, "Initial speed", "metres/sec"},
     { "alt", 'a', 0, OptionArg.INT, out dalt, "Initial altitude","metres"},
-    { "mspv2", '2', 0, OptionArg.NONE, out use_v2, "Use MSPV2", null},
     { "max-radar", 'm', 0, OptionArg.INT, out maxradar, "number of radar slots", "4"},
     { "stale", 0 , 0, OptionArg.STRING, out stale, "stale id:start:end", null},
+    { "verbose", 'v', 0, OptionArg.NONE, out verbose, "verbose", null},
     {null}
 };
 
@@ -49,14 +49,14 @@ public class RadarSim : Object
     private bool quit;
     private uint tid;
     private Rand rand;
-    private MWSerial msp;
+    public MWSerial msp;
     private double hlat = HLAT;
     private double hlon = HLON;
-    private MSP.Cmds cmd;
     private int staleid = -1;
     private uint start_stale;
     private uint end_stale;
     private int rtime = 0;
+    private bool init = false;
 
     public RadarSim()
     {
@@ -105,7 +105,15 @@ public class RadarSim : Object
                 }
             }
         }
+    }
 
+    public void start_sim()
+    {
+        open_serial();
+    }
+
+    private void setup_radar()
+    {
         rand  = new Rand();
         id = 0;
         quit = false;
@@ -121,12 +129,9 @@ public class RadarSim : Object
             radar_plot[i].heading = aoffset;
             radar_plot[i].lq = 0;
         }
-
-        cmd = (use_v2) ? MSP.Cmds.COMMON_SET_RADAR_POS : MSP.Cmds.RADAR_POS;
-        open_serial();
     }
 
-    public void run()
+    public void run_radar_msgs()
     {
         var to = 500 / maxradar;
         if (to < 100)
@@ -178,30 +183,86 @@ public class RadarSim : Object
                 if(dist*1852.0 > maxrange)
                     radar_plot[id].heading = cse;
 
+                if (id == 0)
+                    msp.send_command(MSP.Cmds.ANALOG, null, 0);
+
                 id += 1;
                 if (id == maxradar)
+                {
                     id = 0;
+                    msp.send_command(MSP.Cmds.RAW_GPS, null, 0);
+                }
                 return Source.CONTINUE;
             });
     }
 
+    public void handle_radar(MSP.Cmds cmd, uint8[] raw, uint len,
+                              uint8 xflags, bool errs)
+    {
+        if (errs)
+            stderr.printf("Error!!!!!!!!! serial\n");
+
+        switch(cmd)
+        {
+            case MSP.Cmds.NAME:
+                raw[len] = 0;
+                stderr.printf("Got name %s\n", (string)raw[0:len]);
+                msp.send_command(MSP.Cmds.FC_VARIANT, null, 0);
+                break;
+            case MSP.Cmds.FC_VARIANT:
+                raw[len] = 0;
+                stderr.printf("Got Variant %s\n", (string)raw[0:len]);
+                msp.send_command(MSP.Cmds.FC_VERSION, null, 0);
+                break;
+            case MSP.Cmds.FC_VERSION:
+                stderr.printf("Got Version %d.%d.%d\n", raw[0], raw[1], raw[2]);
+                msp.send_command(MSP.Cmds.RAW_GPS, null, 0);
+                break;
+            case MSP.Cmds.RAW_GPS:
+                if(!init) {
+                    int ilat, ilon;
+                    deserialise_i32(&raw[2], out ilat);
+                    deserialise_i32(&raw[6], out ilon);
+                    hlat = ((double)ilat) / 1e7;
+                    hlon = ((double)ilon) / 1e7;
+                    stderr.printf("GPS %.6f %.6f, %u sats, %ud fix\n",
+                                  hlat, hlon, raw[1], raw[0]);
+                    setup_radar();
+                    run_radar_msgs();
+                    init = true;
+                }
+                break;
+            case MSP.Cmds.ANALOG:
+                break;
+            default:
+                stderr.printf("Got unknown %s\n", cmd.to_string());
+                break;
+        }
+    }
+
     private void open_serial()
     {
+        msp = new MWSerial();
+        msp.set_mode(MWSerial.Mode.NORMAL);
+        stderr.printf("Set up serial %s\n", dev);
         bool res;
         string estr;
-        msp = new MWSerial();
-        msp.set_mode(MWSerial.Mode.SIM);
-
         if((res = msp.open(dev, baud, out estr)) == true)
         {
             msp.serial_lost.connect(() => {
+                    stderr.printf("Lost connection\n");
                     if(tid > 0)
                         Source.remove(tid);
-                    ml.quit();
+                    Timeout.add_seconds(10, () => {
+                            open_serial();
+                            return Source.REMOVE;
+                        });
                 });
-        }
-        else
-        {
+            msp.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
+                    handle_radar(cmd,raw,len,xflags,errs);
+                });
+            msp.send_command(MSP.Cmds.NAME, null, 0);
+        } else {
             MWPLog.message("open failed serial %s %s\n", dev, estr);
             ml.quit();
         }
@@ -219,19 +280,18 @@ public class RadarSim : Object
         p = serialise_u16(p, (uint16)r.heading);
         p = serialise_u16(p, (uint16)(r.speed*100));
         *p++ = r.lq;
-        msp.send_command(cmd, buf, (size_t)(p - &buf[0]));
+        msp.send_command(MSP.Cmds.COMMON_SET_RADAR_POS, buf, (size_t)(p - &buf[0]));
     }
 }
 
-
-public static int main (string[] args)
+int main (string[] args)
 {
     dalt = ALT;
     dspeed = SPD;
     maxrange = MAXRANGE;
     maxradar = MAXRADAR;
 
-    ml = new MainLoop();
+    stderr.puts("inav radar  sim .. \n");
 
     string []devs = {"/dev/ttyUSB0","/dev/ttyACM0"};
 
@@ -268,13 +328,10 @@ public static int main (string[] args)
         stdout.puts("No device found\n");
         return 0;
     }
-
-    Idle.add(() => {
-            var rsim = new RadarSim();
-            rsim.run();
-            return Source.REMOVE;
-        });
-
+    ml = new MainLoop();
+    stderr.printf("Start sim .. \n");
+    var r = new RadarSim();
+    r.start_sim();
     ml.run ();
     return 0;
 }
