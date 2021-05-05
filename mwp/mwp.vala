@@ -5452,7 +5452,7 @@ case 0:
         {
             case MSP.Cmds.NAME:
                 var node = "MWP Fake Node";
-                rdrdev.send_command(MSP.Cmds.NAME, node, node.length);
+                rdrdev.send_command(cmd, node, node.length);
                 break;
             case MSP.Cmds.RAW_GPS:
                 {
@@ -5472,24 +5472,37 @@ case 0:
                     p = serialise_u16(p, 0);
                     p = serialise_u16(p, 0);
                     serialise_u16(p, 99);
-                    rdrdev.send_command(MSP.Cmds.RAW_GPS, oraw, 18);
+                    rdrdev.send_command(cmd, oraw, 18);
                 }
                 break;
             case MSP.Cmds.FC_VARIANT:
-                rdrdev.send_command(MSP.Cmds.FC_VARIANT, "INAV", 4);
+                rdrdev.send_command(cmd, "INAV", 4);
                 break;
             case MSP.Cmds.FC_VERSION:
                 {
                     uint8 oraw[3] = {6,6,6};
-                    rdrdev.send_command(MSP.Cmds.FC_VERSION, oraw, 3);
+                    rdrdev.send_command(cmd, oraw, 3);
                 }
                 break;
             case MSP.Cmds.ANALOG:
                 {
-                    uint8 []oraw = {255, 0, 0, 0, 0, 0, 0};
-                    rdrdev.send_command(MSP.Cmds.ANALOG, oraw, raw.length);
+                    uint8 []oraw = {0x76, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0};
+                    rdrdev.send_command(cmd, oraw, oraw.length);
                 }
                 break;
+            case MSP.Cmds.STATUS:
+                {
+                    uint8 []oraw = {0xe8, 0x3, 0x0, 0x0, 0x83, 0x0, 0x0, 0x10, 0x10, 0x0, 0x0};
+                    rdrdev.send_command(cmd, oraw, oraw.length);
+                }
+                break;
+            case MSP.Cmds.BOXIDS:
+                {
+                    uint8 []oraw = {0x0, 0x33, 0x1, 0x2, 0x23, 0x5, 0x6, 0x7, 0x20, 0x8, 0x3, 0x21, 0xc, 0x24, 0x25, 0x15, 0xd, 0x13, 0x1a, 0x26, 0x1b, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c};
+                    rdrdev.send_command(cmd, oraw, oraw.length);
+                }
+                break;
+
             case MSP.Cmds.COMMON_SET_RADAR_POS:
                 process_inav_radar_pos(raw);
                 break;

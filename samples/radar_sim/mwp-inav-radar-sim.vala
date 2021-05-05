@@ -216,23 +216,34 @@ public class RadarSim : Object
                 break;
             case MSP.Cmds.FC_VERSION:
                 stderr.printf("Got Version %d.%d.%d\n", raw[0], raw[1], raw[2]);
+                msp.send_command(MSP.Cmds.STATUS, null, 0);
+                break;
+            case MSP.Cmds.STATUS:
+                stderr.printf("Got Status\n");
+                msp.send_command(MSP.Cmds.BOXIDS, null, 0);
+                break;
+            case MSP.Cmds.BOXIDS:
+                stderr.printf("Got BOXIDS (len=%u)\n", len);
                 msp.send_command(MSP.Cmds.RAW_GPS, null, 0);
                 break;
+
             case MSP.Cmds.RAW_GPS:
-                if(!init) {
-                    int ilat, ilon;
-                    deserialise_i32(&raw[2], out ilat);
-                    deserialise_i32(&raw[6], out ilon);
-                    hlat = ((double)ilat) / 1e7;
-                    hlon = ((double)ilon) / 1e7;
-                    stderr.printf("GPS %.6f %.6f, %u sats, %ud fix\n",
-                                  hlat, hlon, raw[1], raw[0]);
+                int ilat, ilon;
+                deserialise_i32(&raw[2], out ilat);
+                deserialise_i32(&raw[6], out ilon);
+                hlat = ((double)ilat) / 1e7;
+                hlon = ((double)ilon) / 1e7;
+                stderr.printf("GPS %.6f %.6f, %u sats, %ud fix\n",
+                              hlat, hlon, raw[1], raw[0]);
+                if (init == false)
+                {
                     setup_radar();
                     run_radar_msgs();
-                    init = true;
                 }
+                init = true;
                 break;
             case MSP.Cmds.ANALOG:
+                stderr.printf("Got ANALOG\n");
                 break;
             default:
                 stderr.printf("Got unknown %s\n", cmd.to_string());
