@@ -477,7 +477,7 @@ public class MWP : Gtk.Application {
     private static bool force_mag = false;
     private static bool force_nc = false;
     private static bool force4 = false;
-    private static bool chome= false;
+    private static bool chome = false;
     private static string mwoptstr;
     private static string llstr=null;
     private static string layfile=null;
@@ -5454,8 +5454,6 @@ case 0:
     public void handle_radar(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
-        if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
-            stderr.printf("RADAR: %s\n", cmd.to_string());
         switch(cmd)
         {
             case MSP.Cmds.NAME:
@@ -5464,22 +5462,33 @@ case 0:
                 break;
             case MSP.Cmds.RAW_GPS:
                {
-                    uint8 oraw[18]={0};
-                    uint8 *p = &oraw[0];
+                   double rlat, rlon;
+                   uint8 oraw[18]={0};
+                   uint8 *p = &oraw[0];
 
                     *p++ = 2;
                     *p++ = 42;
-                    if (wp0.lat == 0 && wp0.lon == 0)
-                    {
-                        wp0.lat = view.get_center_latitude();
-                        wp0.lon = view.get_center_longitude();
+                    if(have_home) {
+                        rlat = home_pos.lat;
+                        rlon = home_pos.lon;
+                    } else {
+                        rlat = view.get_center_latitude();
+                        rlon = view.get_center_longitude();
                     }
-                    p = serialise_i32(p, (int)(wp0.lat*1e7));
-                    p = serialise_i32(p, (int)(wp0.lon*1e7));
+                    p = serialise_i32(p, (int)(rlat*1e7));
+                    p = serialise_i32(p, (int)(rlon*1e7));
                     p = serialise_i16(p, 0);
                     p = serialise_u16(p, 0);
                     p = serialise_u16(p, 0);
                     serialise_u16(p, 99);
+                    if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
+                        MWPLog.message("RDR-rgps: Lat, Lon %f %f\n", rlat, rlon);
+                        StringBuilder sb = new StringBuilder("RDR-rgps:");
+                        foreach(var r in oraw)
+                            sb.append_printf(" %02x", r);
+                        sb.append_c('\n');
+                        MWPLog.message(sb.str);
+                    }
                     rdrdev.send_command(cmd, oraw, 18);
                 }
                 break;
@@ -5515,7 +5524,7 @@ case 0:
                 break;
 
             case MSP.Cmds.COMMON_SET_RADAR_POS:
-                process_inav_radar_pos(raw);
+                process_inav_radar_pos(raw,len);
                 break;
             case MSP.Cmds.MAVLINK_MSG_ID_TRAFFIC_REPORT:
                 process_mavlink_radar(raw);
@@ -5525,6 +5534,7 @@ case 0:
                 break;
 
             default:
+                MWPLog.message("RADAR: %s %d (%u)\n", cmd.to_string(), cmd, len);
                 break;
         }
     }
@@ -7278,7 +7288,7 @@ case 0:
 
             case MSP.Cmds.RADAR_POS:
             case MSP.Cmds.COMMON_SET_RADAR_POS:
-                process_inav_radar_pos(raw);
+                process_inav_radar_pos(raw, len);
                 break;
 
             case MSP.Cmds.MAVLINK_MSG_ID_OWNSHIP:
@@ -7479,9 +7489,23 @@ case 0:
             MWPLog.message(sb.str);
     }
 
-    void process_inav_radar_pos(uint8 *rp)
+        /*
+          uint8_t id;
+          uint8_t state;    // disarmed(0) armed (1)
+          int32_t lat;      // decimal degrees latitude * 10000000
+          int32_t lon;      // decimal degrees longitude * 10000000
+          int32_t alt;      // cm
+          uint16_t heading; // deg
+          uint16_t speed;   // cm/s
+          uint8_t lq;       // lq
+        */
+
+    void process_inav_radar_pos(uint8 []raw, uint len)
     {
-        uint8 id = *rp++;
+        uint8 *rp = &raw[0];
+        int32 ipos;
+        uint16 ispd;
+        uint8 id = *rp++; // id
 
         unowned RadarPlot? ri = find_radar_data((uint)id);
         if (ri == null)
@@ -7493,13 +7517,11 @@ case 0:
             ri.name = "⚙ inav %c".printf(65+id);
             ri.source = 1;
         }
-        int32 ipos;
-        uint16 ispd;
         ri.state = *rp++;
         rp = deserialise_i32(rp, out ipos);
-        ri.latitude = ipos/10000000.0;
+        ri.latitude = ((double)ipos)/1e7;
         rp = deserialise_i32(rp, out ipos);
-        ri.longitude = ipos/10000000.0;
+        ri.longitude = ((double)ipos)/1e7;
         rp = deserialise_i32(rp, out ipos);
         ri.altitude = ipos/100.0;
         rp = deserialise_u16(rp, out ri.heading);
@@ -7510,6 +7532,14 @@ case 0:
 
         markers.update_radar(ri);
         radarv.update(ri, conf.dms);
+        if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
+            StringBuilder sb = new StringBuilder("RDR-recv:");
+            MWPLog.message("RDR-recv: Lat, Lon %f %f\n", ri.latitude, ri.longitude);
+            foreach(var r in raw[0:len])
+                sb.append_printf(" %02x", r);
+            sb.append_c('\n');
+            MWPLog.message(sb.str);
+        }
     }
 
     private void set_typlab()
