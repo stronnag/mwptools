@@ -3654,6 +3654,10 @@ case 0:
     {
         if(s == radar_device)
             return -1;
+        if(s == sport_device)
+            return -1;
+        if(s == forward_device)
+            return -1;
 
         var n = find_deventry(s);
         if (n == -1)
@@ -3672,6 +3676,10 @@ case 0:
     private void prepend_deventry(string s)
     {
         if(s == radar_device)
+            return;
+        if(s == sport_device)
+            return;
+        if(s == forward_device)
             return;
 
         var n = find_deventry(s);
@@ -5455,7 +5463,7 @@ case 0:
                 rdrdev.send_command(cmd, node, node.length);
                 break;
             case MSP.Cmds.RAW_GPS:
-                {
+               {
                     uint8 oraw[18]={0};
                     uint8 *p = &oraw[0];
 
@@ -5476,12 +5484,15 @@ case 0:
                 }
                 break;
             case MSP.Cmds.FC_VARIANT:
-                rdrdev.send_command(cmd, "INAV", 4);
+                {
+                    uint8 []oraw = {0x49, 0x4e, 0x41, 0x56};
+                    rdrdev.send_command(cmd, oraw, oraw.length);
+                }
                 break;
             case MSP.Cmds.FC_VERSION:
                 {
                     uint8 oraw[3] = {6,6,6};
-                    rdrdev.send_command(cmd, oraw, 3);
+                    rdrdev.send_command(cmd, oraw, oraw.length);
                 }
                 break;
             case MSP.Cmds.ANALOG:
@@ -8403,7 +8414,11 @@ case 0:
             bool ostat;
 
             serstate = SERSTATE.NONE;
-            if(serdev == "*SMARTPORT*")
+            if(serdev == radar_device || serdev == forward_device || serdev == sport_device) {
+                mwp_warning_box("The selected device is assigned to a special function (radar / forwarding / S-Port).\nPlease choose another device", Gtk.MessageType.WARNING, 60);
+                return;
+            }
+            else if(serdev == "*SMARTPORT*")
             {
                 ostat = msp.open_sport(sport_device, out estr);
                 spi = {0};
