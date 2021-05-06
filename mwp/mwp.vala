@@ -8404,7 +8404,7 @@ case 0:
         string fstr = null;
         if(!rdrdev.available)
         {
-            if(rdrdev.open (radar_device, 0, out fstr) == true)
+            if(rdrdev.open (radar_device, 115200, out fstr) == true)
             {
                 MWPLog.message("start radar reader %s\n", radar_device);
                 if(rawlog)
