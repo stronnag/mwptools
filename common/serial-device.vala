@@ -1028,7 +1028,10 @@ public class MWSerial : Object
                                 devbuf[nc] == writedirn ||
                                 devbuf[nc] == '!'))
                             {
-                                if (!relaxed)
+                                if (relaxed)
+                                    errstate = !(devbuf[nc] == readdirn ||
+                                                 devbuf[nc] == writedirn);
+                                else
                                     errstate = (devbuf[nc] != readdirn); // == '!'
                                 state = States.S_SIZE;
                             }
@@ -1128,7 +1131,10 @@ public class MWSerial : Object
                                 devbuf[nc] == writedirn ||
                                 devbuf[nc] == '!'))
                             {
-                                if (!relaxed)
+                                if (relaxed)
+                                    errstate = !(devbuf[nc] == readdirn ||
+                                                 devbuf[nc] == writedirn);
+                                else
                                     errstate = (devbuf[nc] != readdirn); // == '!'
                                 state = States.S_X_FLAGS;
                             }
