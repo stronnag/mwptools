@@ -107,7 +107,8 @@ _mwp_complete()
 	--radar-device
 	--smartport
 	--fsmenu
-	--kmlfile"
+	--kmlfile
+	--relaxed-msp"
 
   COMPREPLY=( $(compgen -W "${OPTS[*]}" -- $cur) )
   return 0

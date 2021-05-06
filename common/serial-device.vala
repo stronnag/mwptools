@@ -277,6 +277,7 @@ public class MWSerial : Object
     private bool sport = false;
     private SportDev spdev;
     private uint16 mavsig = 0;
+    private bool relaxed;
 
     public enum MemAlloc
     {
@@ -1027,7 +1028,8 @@ public class MWSerial : Object
                                 devbuf[nc] == writedirn ||
                                 devbuf[nc] == '!'))
                             {
-                                errstate = (devbuf[nc] != readdirn); // == '!'
+                                if (!relaxed)
+                                    errstate = (devbuf[nc] != readdirn); // == '!'
                                 state = States.S_SIZE;
                             }
                             else
@@ -1126,7 +1128,8 @@ public class MWSerial : Object
                                 devbuf[nc] == writedirn ||
                                 devbuf[nc] == '!'))
                             {
-                                errstate = (devbuf[nc] != readdirn); // == '!'
+                                if (!relaxed)
+                                    errstate = (devbuf[nc] != readdirn); // == '!'
                                 state = States.S_X_FLAGS;
                             }
                             else
@@ -1542,15 +1545,19 @@ public class MWSerial : Object
         return len+9;
     }
 
-    public void send_command(uint16 cmd, void *data, size_t len)
+    public void send_command(uint16 cmd, void *data, size_t len, bool sim=false)
     {
         if(available == true && !ro)
         {
+            char tmp = writedirn;
+            if (sim) // forces SIM mode (inav-radar)
+                writedirn = '>';
             size_t mlen;
             if(use_v2 || cmd > 254 || len > 254)
                 mlen = generate_v2(cmd,data,len);
             else
                 mlen  = generate_v1((uint8)cmd, data, len);
+            writedirn = tmp;
             write(txbuf, mlen);
         }
     }
@@ -1618,4 +1625,10 @@ public class MWSerial : Object
             writedirn= '>';
         }
     }
+
+    public void set_relaxed(bool _rlx)
+    {
+        relaxed = _rlx;
+    }
+
 }

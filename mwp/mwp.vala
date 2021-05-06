@@ -959,6 +959,7 @@ public class MWP : Gtk.Application {
     private static string? exvox = null;
     private static string rrstr;
     private static bool nofsmenu = false;
+    private static bool relaxed = false;
     private int nrings = 0;
     private double ringint = 0;
     private bool replay_paused;
@@ -1025,6 +1026,7 @@ public class MWP : Gtk.Application {
         {"perma-warn", 0, 0, OptionArg.NONE, out permawarn, "info dialogues never time out", null},
         {"fsmenu", 0, 0, OptionArg.NONE, out nofsmenu, "use a menu bar in full screen (vice a menu button)", null},
         { "kmlfile", 'k', 0, OptionArg.STRING, out kmlfile, "KML file", "file-name"},
+        {"relaxed-msp", 0, 0, OptionArg.NONE, out relaxed, "don't check MSP direction flag", null},
         {null}
     };
 
@@ -2276,6 +2278,11 @@ public class MWP : Gtk.Application {
 
         msp = new MWSerial();
         msp.use_v2 = false;
+        if (relaxed) {
+            MWPLog.message("using \"relaxed\" MSP for main port\n");
+            msp.set_relaxed(true);
+        }
+
         if(forward_device != null)
             fwddev = new MWSerial.forwarder();
 
@@ -2286,7 +2293,7 @@ public class MWP : Gtk.Application {
             rdrdev = new MWSerial();
             rdrdev.set_mode(MWSerial.Mode.SIM);
             rdrdev.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
-                handle_radar(cmd,raw,len,xflags,errs);
+                    handle_radar(s, cmd,raw,len,xflags,errs);
                 });
 
             try_radar_dev();
@@ -5451,14 +5458,15 @@ case 0:
         }
     }
 
-    public void handle_radar(MSP.Cmds cmd, uint8[] raw, uint len,
+    public void handle_radar(MWSerial s, MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
+        nopoll = true;
         switch(cmd)
         {
             case MSP.Cmds.NAME:
                 var node = "MWP Fake Node";
-                rdrdev.send_command(cmd, node, node.length);
+                s.send_command(cmd, node, node.length, true);
                 break;
             case MSP.Cmds.RAW_GPS:
                {
@@ -5489,38 +5497,37 @@ case 0:
                         sb.append_c('\n');
                         MWPLog.message(sb.str);
                     }
-                    rdrdev.send_command(cmd, oraw, 18);
+                    s.send_command(cmd, oraw, 18, true);
                 }
                 break;
             case MSP.Cmds.FC_VARIANT:
                 {
-//                    uint8 []oraw = {0x49, 0x4e, 0x41, 0x56}; // INAV
                     uint8 []oraw = {0x47, 0x43, 0x53}; // 'GCS'
-                    rdrdev.send_command(cmd, oraw, oraw.length);
+                    s.send_command(cmd, oraw, oraw.length, true);
                 }
                 break;
             case MSP.Cmds.FC_VERSION:
                 {
                     uint8 oraw[3] = {6,6,6};
-                    rdrdev.send_command(cmd, oraw, oraw.length);
+                    s.send_command(cmd, oraw, oraw.length,true);
                 }
                 break;
             case MSP.Cmds.ANALOG:
                 {
                     uint8 []oraw = {0x76, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0};
-                    rdrdev.send_command(cmd, oraw, oraw.length);
+                    s.send_command(cmd, oraw, oraw.length,true);
                 }
                 break;
             case MSP.Cmds.STATUS:
                 {
                     uint8 []oraw = {0xe8, 0x3, 0x0, 0x0, 0x83, 0x0, 0x0, 0x10, 0x10, 0x0, 0x0};
-                    rdrdev.send_command(cmd, oraw, oraw.length);
+                    s.send_command(cmd, oraw, oraw.length,true);
                 }
                 break;
             case MSP.Cmds.BOXIDS:
                 {
                     uint8 []oraw = {0x0, 0x33, 0x1, 0x2, 0x23, 0x5, 0x6, 0x7, 0x20, 0x8, 0x3, 0x21, 0xc, 0x24, 0x25, 0x15, 0xd, 0x13, 0x1a, 0x26, 0x1b, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c};
-                    rdrdev.send_command(cmd, oraw, oraw.length);
+                    s.send_command(cmd, oraw, oraw.length,true);
                 }
                 break;
 
@@ -5643,6 +5650,13 @@ case 0:
             switch(cmd)
             {
                 case MSP.Cmds.NAME:
+                    if (len == 0) {
+                        handle_radar(msp, cmd, raw, len, xflags, errs);
+                    } else {
+                        queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+                        run_queue();
+                    }
+                    break;
                 case MSP.Cmds.INAV_MIXER:
                     queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
                     run_queue();
@@ -5768,21 +5782,33 @@ case 0:
                 break;
 
             case MSP.Cmds.NAME:
-                raw[len] = 0;
-                vname = (string)raw;
-                MWPLog.message("Model name: \"%s\"\n", vname);
-                int mx = mmap.get_model_type(vname);
-                if (mx != 0)
-                {
-                    vi.mrtype = (uint8)mx;
-                    queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
-                }
-                else
-                    if (vi.fc_api >= APIVERS.mixer)
-                        queue_cmd(MSP.Cmds.INAV_MIXER,null,0);
-                    else
+                if (len == 0) {
+                    handle_radar(msp, cmd, raw, len, xflags, errs);
+                    return;
+                } else {
+                    raw[len] = 0;
+                    vname = (string)raw;
+                    MWPLog.message("Model name: \"%s\"\n", vname);
+                    int mx = mmap.get_model_type(vname);
+                    if (mx != 0)
+                    {
+                        vi.mrtype = (uint8)mx;
                         queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
-                set_typlab();
+                    }
+                    else
+                        if (vi.fc_api >= APIVERS.mixer)
+                            queue_cmd(MSP.Cmds.INAV_MIXER,null,0);
+                        else
+                            queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+                    set_typlab();
+                }
+                break;
+
+            case MSP.Cmds.BOXIDS:
+                if (len == 0) {
+                    handle_radar(msp, cmd, raw, len, xflags, errs);
+                    return;
+                }
                 break;
 
             case MSP.Cmds.INAV_MIXER:
@@ -5866,34 +5892,39 @@ case 0:
                 break;
 
             case MSP.Cmds.FC_VARIANT:
-                naze32 = true;
-                raw[4] = 0;
-                inav = false;
-                vi.fc_var = (string)raw[0:4];
-                if (have_fcv == false)
-                {
-                    have_fcv = true;
-                    switch(vi.fc_var)
+                if (len == 0) {
+                    handle_radar(msp, cmd, raw, len, xflags, errs);
+                    return;
+                } else {
+                    naze32 = true;
+                    raw[len] = 0;
+                    inav = false;
+                    vi.fc_var = (string)raw[0:len];
+                    if (have_fcv == false)
                     {
-                        case "CLFL":
-                        case "BTFL":
-                            vi.fctype = mwvar = MWChooser.MWVAR.CF;
-                            queue_cmd(MSP.Cmds.FC_VERSION,null,0);
-                            break;
-                        case "INAV":
-                            navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS;
-                            if (Craft.is_mr(vi.mrtype))
-                                navcap |= NAVCAPS.INAV_MR;
-                            else
-                                navcap |= NAVCAPS.INAV_FW;
+                        have_fcv = true;
+                        switch(vi.fc_var)
+                        {
+                            case "CLFL":
+                            case "BTFL":
+                                vi.fctype = mwvar = MWChooser.MWVAR.CF;
+                                queue_cmd(MSP.Cmds.FC_VERSION,null,0);
+                                break;
+                            case "INAV":
+                                navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS;
+                                if (Craft.is_mr(vi.mrtype))
+                                    navcap |= NAVCAPS.INAV_MR;
+                                else
+                                    navcap |= NAVCAPS.INAV_FW;
 
-                            vi.fctype = mwvar = MWChooser.MWVAR.CF;
-                            inav = true;
-                            queue_cmd(MSP.Cmds.FEATURE,null,0);
-                            break;
-                        default:
-                            queue_cmd(MSP.Cmds.BOXNAMES,null,0);
-                            break;
+                                vi.fctype = mwvar = MWChooser.MWVAR.CF;
+                                inav = true;
+                                queue_cmd(MSP.Cmds.FEATURE,null,0);
+                                break;
+                            default:
+                                queue_cmd(MSP.Cmds.BOXNAMES,null,0);
+                                break;
+                        }
                     }
                 }
                 break;
@@ -5943,6 +5974,10 @@ case 0:
                 break;
 
             case MSP.Cmds.FC_VERSION:
+                if (len == 0) {
+                    handle_radar(msp, cmd, raw, len, xflags, errs);
+                    return;
+                } else {
                 if(have_fcvv == false)
                 {
                     have_fcvv = true;
@@ -5990,6 +6025,7 @@ case 0:
                     }
                     else
                         queue_cmd(MSP.Cmds.BOXNAMES,null,0);
+                }
                 }
                 break;
 
@@ -6270,6 +6306,13 @@ case 0:
                 break;
 
             case MSP.Cmds.STATUS:
+                if (len == 0) {
+                    handle_radar(msp, cmd, raw, len, xflags, errs);
+                    return;
+                } else {
+                    handle_msp_status(raw, len);
+                }
+                break;
             case MSP.Cmds.STATUS_EX:
             case MSP.Cmds.INAV_STATUS:
                 handle_msp_status(raw, len);
@@ -6543,6 +6586,9 @@ case 0:
                 break;
 
             case MSP.Cmds.RAW_GPS:
+                if (len == 0) {
+                    handle_radar(msp, cmd, raw, len, xflags, errs);
+                } else {
                 MSP_RAW_GPS rg = MSP_RAW_GPS();
                 uint8* rp = raw;
                 rg.gps_fix = *rp++;
@@ -6615,8 +6661,8 @@ case 0:
                         update_pos_info();
                     }
                     if(want_special != 0)
-                        process_pos_states(GPSInfo.lat,GPSInfo.lon,
-                                           rg.gps_altitude, "RAW GPS");
+                            process_pos_states(GPSInfo.lat,GPSInfo.lon, rg.gps_altitude, "RAW GPS");
+                    }
                 }
                 break;
 
