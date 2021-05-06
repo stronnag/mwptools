@@ -57,6 +57,7 @@ public class RadarSim : Object
     private uint end_stale;
     private int rtime = 0;
     private bool init = false;
+    private uint8 variant;
 
     public RadarSim()
     {
@@ -190,7 +191,8 @@ public class RadarSim : Object
                 if (id == maxradar)
                 {
                     id = 0;
-                    msp.send_command(MSP.Cmds.RAW_GPS, null, 0);
+                    if (variant == 'I')
+                        msp.send_command(MSP.Cmds.RAW_GPS, null, 0);
                 }
                 return Source.CONTINUE;
             });
@@ -211,6 +213,7 @@ public class RadarSim : Object
                 break;
             case MSP.Cmds.FC_VARIANT:
                 raw[len] = 0;
+                variant = raw[0];
                 stderr.printf("Got Variant %s (%u)\n", (string)raw[0:len], len);
                 msp.send_command(MSP.Cmds.FC_VERSION, null, 0);
                 break;
@@ -220,7 +223,10 @@ public class RadarSim : Object
                 break;
             case MSP.Cmds.STATUS:
                 stderr.printf("Got Status (%u)\n", len);
-                msp.send_command(MSP.Cmds.BOXIDS, null, 0);
+                if (variant == 'I')
+                    msp.send_command(MSP.Cmds.BOXIDS, null, 0);
+                else // for GCS we do this *once* so we can use the CGS's viewport
+                    msp.send_command(MSP.Cmds.RAW_GPS, null, 0);
                 break;
             case MSP.Cmds.BOXIDS:
                 stderr.printf("Got BOXIDS (%u)\n", len);
@@ -236,11 +242,7 @@ public class RadarSim : Object
                 stderr.printf("GPS %.6f %.6f, %u sats, %ud fix (%u)\n",
                               hlat, hlon, raw[1], raw[0], len);
                 if (init == false)
-                {
-                    setup_radar();
-                    run_radar_msgs();
-                }
-                init = true;
+                    start_sim_msgs() ;
                 break;
             case MSP.Cmds.ANALOG:
                 stderr.printf("Got ANALOG (%u)\n", len);
@@ -249,6 +251,13 @@ public class RadarSim : Object
                 stderr.printf("Unknown %s (%u)\n", cmd.to_string(), len);
                 break;
         }
+    }
+
+    private void start_sim_msgs()
+    {
+        setup_radar();
+        run_radar_msgs();
+        init = true;
     }
 
     private void open_serial()
