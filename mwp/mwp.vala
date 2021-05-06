@@ -1088,7 +1088,7 @@ public class MWP : Gtk.Application {
         if (mqtt.available)
             mqtt_available = mqtt.mdisconnect();
 #endif
-        if(rdrdev.available)
+        if(rdrdev != null && rdrdev.available)
             rdrdev.close();
 
         // stop any previews / replays
@@ -5494,7 +5494,8 @@ case 0:
                 break;
             case MSP.Cmds.FC_VARIANT:
                 {
-                    uint8 []oraw = {0x49, 0x4e, 0x41, 0x56};
+//                    uint8 []oraw = {0x49, 0x4e, 0x41, 0x56}; // INAV
+                    uint8 []oraw = {0x47, 0x43, 0x53}; // 'GCS'
                     rdrdev.send_command(cmd, oraw, oraw.length);
                 }
                 break;
