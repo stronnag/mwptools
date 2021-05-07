@@ -198,7 +198,7 @@ public class MWPMarkers : GLib.Object
         }
         rp.set_color (white);
         rp.set_location (r.latitude,r.longitude);
-        if(r.source != 1)
+        if(r.source != 1 || MWP.conf.rotate_inav_radar == true)
             rp.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, r.heading);
     }
 

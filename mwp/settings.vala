@@ -105,6 +105,7 @@ public class MWPSettings : GLib.Object
     public string kmlpath {get; private set; default=null;}
     public bool fixedfont {get; set; default=true;}
     public bool ucmissiontags {get; set; default=false;}
+    public bool rotate_inav_radar {get; set; default=false;}
     public string load_safehomes {get; set; default=null;}
 
 //    public string radar_device {get; set; default=null;}
@@ -394,6 +395,9 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "load-safehome")
             load_safehomes = settings.get_string ("load-safehome");
+
+        if(s == null || s == "rotate-inav-radar")
+            rotate_inav_radar = settings.get_boolean ("rotate-inav-radar");
 
             /** CLI for now
         if(s == null || s == "radar-device")
