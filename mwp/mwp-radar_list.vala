@@ -85,6 +85,7 @@ class RadarView : Object
                 pan_to_swarm();
             });
 
+        buttons[Buttons.CENTRE].sensitive = false;
         Gtk.ButtonBox bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
         bbox.set_layout (Gtk.ButtonBoxStyle.START);
 
@@ -144,6 +145,7 @@ class RadarView : Object
         Gtk.TreeIter iter;
 
         buttons[Buttons.CENTRE].sensitive = (n_rows != 0);
+
         for(bool next=listmodel.get_iter_first(out iter); next;
             next=listmodel.iter_next(ref iter))
         {
