@@ -21,7 +21,7 @@ mwp supports the following telemetry protocols:
 
 mwp also supports the real-time display of adjacent aircraft using:
 
-* inav-radar (INAV UAS)
+* [inav-radar](https://github.com/OlivierC-FR/ESP32-INAV-Radar/) (INAV UAS)
 * MAVlink Traffic Report (e.g. full-size aviation, typically ADS-B via a device such as uAvionix PingRX)
 
 mwp also provides logging and the replay of:
@@ -119,7 +119,7 @@ In addition to mwp, the following inav mission planners exist, in various states
 
 * [Inav Configurator (for inav 2.x)](https://github.com/iNavFlight/inav-configurator/tree/2.6.1), limited planning support
 * [Inav Configurator (for inav 3.x)]( https://github.com/iNavFlight/inav-configurator), supports all current WP types. [Preview builds](http://seyrsnys.myzen.co.uk/inav-configurator-next/), may be augmented with [impload](https://github.com/stronnag/impload/) to upload missions to 2.x firmware.
-* Drone Helper (Window 10 App Store)
+* [Drone Helper](https://www.microsoft.com/en-us/p/drone-helper/9ncs8zwxn58x?activetab=pivot:overviewtab) (Window 10 App Store)
 * [Ezgui](https://play.google.com/store/apps/details?id=com.ezio.multiwii&hl=en_GB), [MissionPlanner for Inav](https://play.google.com/store/apps/details?id=com.eziosoft.ezgui.inav&hl=en) (Android) Unsupported, somewhat outdated.
 * [Mobile Flight](https://itunes.apple.com/us/app/mobile-flight-configuration/id1079191425?ls=1&mt=8) (IOS) Unsupported, obsolete.
 * [Apmplanner2](https://ardupilot.org/planner2/) with [impload](https://github.com/stronnag/impload/). Ardupilot planner, missions can be uploaded to inav using [impload](https://github.com/stronnag/impload/).
