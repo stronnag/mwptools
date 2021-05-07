@@ -21,6 +21,7 @@ class RadarView : Object
     Gtk.Label label;
     Gtk.Window w;
     Gtk.ListStore listmodel;
+    Gtk.Button[] buttons;
     private bool vis = false;
 
     enum Column {
@@ -36,9 +37,16 @@ class RadarView : Object
         NO_COLS
     }
 
+    enum Buttons
+    {
+        CENTRE,
+        HIDE,
+        CLOSE
+    }
 
     public static string[] status = {"Undefined", "Armed", "Hidden", "Stale", "ADS-B"};
     public signal void vis_change(bool hidden);
+    public signal void zoom_to_swarm(double lat, double lon);
 
     internal RadarView (Gtk.Window? _w) {
         w = new Gtk.Window();
@@ -52,24 +60,29 @@ class RadarView : Object
         var grid = new Gtk.Grid ();
         scrolled.add(view);
 
-        Gtk.Button[] buttons = {
+        buttons = {
+            new Gtk.Button.with_label ("Centre on swarm"),
             new Gtk.Button.with_label ("Hide symbols"),
             new Gtk.Button.with_label ("Close")
         };
 
         bool hidden = false;
 
-        buttons[0].clicked.connect (() => {
+        buttons[Buttons.HIDE].clicked.connect (() => {
                 vis_change(hidden);
                 if(!hidden)
-                    buttons[0].label = "Show symbols";
+                    buttons[Buttons.HIDE].label = "Show symbols";
                 else
-                    buttons[0].label = "Hide symbols";
+                    buttons[Buttons.HIDE].label = "Hide symbols";
                 hidden = !hidden;
             });
 
-        buttons[1].clicked.connect (() => {
+        buttons[Buttons.CLOSE].clicked.connect (() => {
                 show_or_hide();
+            });
+
+        buttons[Buttons.CENTRE].clicked.connect (() => {
+                pan_to_swarm();
             });
 
         Gtk.ButtonBox bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
@@ -97,6 +110,32 @@ class RadarView : Object
             });
     }
 
+    private void pan_to_swarm()
+    {
+        int n = 0;
+        double alat = 0;
+        double alon = 0;
+        Gtk.TreeIter iter;
+
+        for(bool next=listmodel.get_iter_first(out iter); next;
+            next=listmodel.iter_next(ref iter))
+        {
+            GLib.Value cell;
+            listmodel.get_value (iter, Column.LAT, out cell);
+            var dpos = (double)cell;
+            alat += dpos;
+            listmodel.get_value (iter, Column.LON, out cell);
+            dpos = (double)cell;
+            alon += dpos;
+            n++;
+        }
+        if(n != 0) {
+            alat /= n;
+            alon /= n;
+            zoom_to_swarm(alat, alon);
+        }
+    }
+
     private void show_number()
     {
         int n_rows = listmodel.iter_n_children(null);
@@ -104,6 +143,7 @@ class RadarView : Object
         int hidden = 0;
         Gtk.TreeIter iter;
 
+        buttons[Buttons.CENTRE].sensitive = (n_rows != 0);
         for(bool next=listmodel.get_iter_first(out iter); next;
             next=listmodel.iter_next(ref iter))
         {
@@ -172,8 +212,8 @@ class RadarView : Object
 
         listmodel.set (iter,
                        Column.NAME,r.name,
-                       Column.LAT, "%s".printf(PosFormat.lat(r.latitude,dms)),
-                       Column.LON, "%s".printf(PosFormat.lon(r.longitude,dms)),
+                       Column.LAT, r.latitude,
+                       Column.LON, r.longitude,
                        Column.ALT,"%.0f %s".printf(Units.distance(r.altitude), Units.distance_units()),
                        Column.COURSE, "%d °".printf(r.heading),
                        Column.SPEED, "%.0f %s".printf(Units.speed(r.speed), Units.speed_units()),
@@ -191,8 +231,8 @@ class RadarView : Object
 
         listmodel = new Gtk.ListStore (Column.NO_COLS,
                                        typeof (string),
-                                       typeof (string),
-                                       typeof (string),
+                                       typeof (double),
+                                       typeof (double),
                                        typeof (string),
                                        typeof (string),
                                        typeof (string),
@@ -215,14 +255,30 @@ class RadarView : Object
                                             cell, "text",
                                             Column.NAME);
 
-
+        cell = new Gtk.CellRendererText ();
         view.insert_column_with_attributes (-1, "Latitude",
-                                            new Gtk.CellRendererText (),
-                                            "text", Column.LAT);
+                                            cell, "text", Column.LAT);
+        var col = view.get_column(Column.LAT);
+        col.set_cell_data_func(cell, (col,_cell,model,iter) => {
+                Value v;
+                model.get_value(iter, Column.LAT, out v);
+                double val = (double)v;
+                string s = PosFormat.lat(val,MWP.conf.dms);
+                _cell.set_property("text",s);
+            });
 
+
+        cell = new Gtk.CellRendererText ();
         view.insert_column_with_attributes (-1, "Longitude",
-                                            new Gtk.CellRendererText (),
-                                            "text", Column.LON);
+                                            cell, "text", Column.LON);
+        col = view.get_column(Column.LON);
+        col.set_cell_data_func(cell, (col,_cell,model,iter) => {
+                Value v;
+                model.get_value(iter, Column.LON, out v);
+                double val = (double)v;
+                string s = PosFormat.lon(val,MWP.conf.dms);
+                _cell.set_property("text",s);
+            });
 
         view.insert_column_with_attributes (-1, "Altitude",
                                             new Gtk.CellRendererText (),

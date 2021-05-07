@@ -1944,6 +1944,9 @@ public class MWP : Gtk.Application {
                 markers.rader_layer_visible(vh);
             });
 
+        radarv.zoom_to_swarm.connect((y, x) =>{
+                view.center_on(y,x);
+            });
 
         view = embed.get_view();
         view.set_reactive(true);
