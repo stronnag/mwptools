@@ -184,7 +184,7 @@ public class RadarSim : Object
                 if(dist*1852.0 > maxrange)
                     radar_plot[id].heading = cse;
 
-                if (id == 0)
+                if (id == 0 && variant == 'I')
                     msp.send_command(MSP.Cmds.ANALOG, null, 0);
 
                 id += 1;
@@ -219,14 +219,14 @@ public class RadarSim : Object
                 break;
             case MSP.Cmds.FC_VERSION:
                 stderr.printf("Got Version %d.%d.%d (%u)\n", raw[0], raw[1], raw[2], len);
-                msp.send_command(MSP.Cmds.STATUS, null, 0);
-                break;
-            case MSP.Cmds.STATUS:
-                stderr.printf("Got Status (%u)\n", len);
                 if (variant == 'I')
                     msp.send_command(MSP.Cmds.BOXIDS, null, 0);
                 else // for GCS we do this *once* so we can use the CGS's viewport
                     msp.send_command(MSP.Cmds.RAW_GPS, null, 0);
+                break;
+            case MSP.Cmds.STATUS:
+                stderr.printf("Got Status (%u)\n", len);
+                msp.send_command(MSP.Cmds.BOXIDS, null, 0);
                 break;
             case MSP.Cmds.BOXIDS:
                 stderr.printf("Got BOXIDS (%u)\n", len);

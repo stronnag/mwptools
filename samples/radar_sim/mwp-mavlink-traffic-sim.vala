@@ -206,12 +206,8 @@ public static int main (string[] args)
         return 0;
     }
 
-    Idle.add(() => {
-            var rsim = new RadarSim();
-            rsim.run();
-            return Source.REMOVE;
-        });
-
+    var rsim = new RadarSim();
+    rsim.run();
     ml.run ();
     return 0;
 }
