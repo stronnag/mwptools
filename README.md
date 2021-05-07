@@ -5,7 +5,7 @@ mwptools
 
 ## Overview
 
-mwptools provides a mission planner, ground control station, real time flight logger and log replay / blackbox replay functions for the [inav](https://github.com/iNavFlight/inav) FC firmware.
+mwptools provides a mission planner, [terrain analysis]((https://github.com/stronnag/mwptools/wiki/Mission-Elevation-Plot-and-Terrain-Analysis), ground control station, real time flight logger and log replay / blackbox replay functions for the [inav](https://github.com/iNavFlight/inav) FC firmware.
 
 mwptools supports the full set of inav and multiwii WP types.
 
@@ -112,3 +112,15 @@ As well as supporting inav, mwp aims to be compatible with EOSBandi's WinGUI for
 ## Licence
 
 GPL v3 or later
+
+## Alternatives
+
+In addition to mwp, the following inav mission planners exist, in various states of usefulness:
+
+* [Inav Configurator (for inav 2.x)](https://github.com/iNavFlight/inav-configurator/tree/2.6.1), limited planning support
+* [Inav Configurator (for inav 3.x)]( https://github.com/iNavFlight/inav-configurator), supports all current WP types. [Preview builds](http://seyrsnys.myzen.co.uk/inav-configurator-next/), may be augmented with [impload](https://github.com/stronnag/impload/) to upload missions to 2.x firmware.
+* Drone Helper (Window 10 App Store)
+* [Ezgui](https://play.google.com/store/apps/details?id=com.ezio.multiwii&hl=en_GB), [MissionPlanner for Inav](https://play.google.com/store/apps/details?id=com.eziosoft.ezgui.inav&hl=en) (Android) Unsupported, somewhat outdated.
+* [Mobile Flight](https://itunes.apple.com/us/app/mobile-flight-configuration/id1079191425?ls=1&mt=8) (IOS) Unsupported, obsolete.
+* [Apmplanner2](https://ardupilot.org/planner2/) with [impload](https://github.com/stronnag/impload/). Ardupilot planner, missions can be uploaded to inav using [impload](https://github.com/stronnag/impload/).
+* [qgroundcontrol](https://docs.qgroundcontrol.com/master/en/) with [impload](https://github.com/stronnag/impload/). Ardupilot planner, missions can be uploaded to inav using [impload](https://github.com/stronnag/impload/).

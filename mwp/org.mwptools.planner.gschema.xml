@@ -1,4 +1,3 @@
-
 <schemalist>
 
   <enum id="org.mwptools.planner.fwds">
@@ -97,7 +96,8 @@
     <key name="compat-version" type="s">
       <default>"42.0"</default>
       <summary>mw-nav compat version</summary>
-      <description>Default mw-nav compat version in XML files</description>
+      <description>Default mw-nav compat version in XML files. mwp
+      doesn't care, older (MW) applications might.</description>
     </key>
 
     <key type="b" name="dump-unknown">
@@ -187,25 +187,27 @@
     <key name="heartbeat" type="s">
       <summary>Something that runs every minute (i.e. screensaver disable)</summary>
       <default>""</default>
-      <description>e.g. xscreensaver-command -deactivate</description>
+      <description>e.g. `xscreensaver-command -deactivate`. See also `manage-power` (and consider setting to true). </description>
     </key>
 
     <key name="atstart" type="s">
       <summary>Something that is executed at startup</summary>
       <default>""</default>
-      <description>e.g. gsettings set org.gnome.settings-daemon.plugins.power idle-dim false</description>
+      <description>e.g. `gsettings set
+      org.gnome.settings-daemon.plugins.power idle-dim false`. See also `manage-power` (and consider setting to true). </description>
     </key>
 
     <key name="atexit" type="s">
       <summary>Something that is executed at exit</summary>
       <default>""</default>
-      <description>e.g. gsettings set org.gnome.settings-daemon.plugins.power idle-dim true</description>
+      <description>e.g. `gsettings set
+      org.gnome.settings-daemon.plugins.power idle-dim true`. See also `manage-power` (and consider setting to true). </description>
     </key>
 
     <key name="fctype" type="s">
       <summary>Force fc type</summary>
       <default>"auto"</default>
-      <description></description>
+      <description>Forces fc type (mw,mwnav,bf,cf)</description>
     </key>
 
     <key name="vlevels" type="s">
@@ -266,7 +268,8 @@
     <key name="font-fv" type="i">
       <default>12</default>
       <summary>flight view font scaling</summary>
-      <description>(private setting)</description>
+      <description>Scales the flight view widget. Smaller screens may
+      need a lower value</description>
     </key>
     <key name="ah-size" type="i">
       <default>32</default>
@@ -277,7 +280,7 @@
     <key name="gpsintvl" type="u">
       <default>2000</default>
       <summary>gps sanity time (m/s)</summary>
-      <description></description>
+      <description>gps sanity time (m/s), check for current fix</description>
     </key>
 
     <key name="uilang" type="s">
