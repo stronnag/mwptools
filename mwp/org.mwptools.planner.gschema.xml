@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <schemalist>
 
   <enum id="org.mwptools.planner.fwds">
@@ -565,14 +566,6 @@
       <default>false</default>
       <summary>Upper case mission XML tags</summary>
       <description>If true, MISSION, VERSION and MISSIONITEM tags are upper case (for interoperability with legacy Android applications)</description>
-    </key>
-
-    <key type="b" name="rotate-inav-radar">
-      <default>false</default>
-      <summary>Rotate ianv radar symbols for heading</summary>
-      <description>If true, inav radar symbols (and labels) are
-      rotated from heading. If you use set a more direction aware
-      icon, set true</description>
     </key>
 
     <key type="s" name="load-safehome">
