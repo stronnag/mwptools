@@ -207,6 +207,7 @@ public class RadarSim : Object
         switch(cmd)
         {
             case MSP.Cmds.NAME:
+                init = false;
                 raw[len] = 0;
                 stderr.printf("Got name %s (%u)\n", (string)raw[0:len], len);
                 msp.send_command(MSP.Cmds.FC_VARIANT, null, 0);
@@ -241,8 +242,10 @@ public class RadarSim : Object
                 hlon = ((double)ilon) / 1e7;
                 stderr.printf("GPS %.6f %.6f, %u sats, %ud fix (%u)\n",
                               hlat, hlon, raw[1], raw[0], len);
-                if (init == false)
-                    start_sim_msgs() ;
+                if (init == false) {
+                    stderr.printf("Start sim tracks\n");
+                    start_sim_msgs();
+                }
                 break;
             case MSP.Cmds.ANALOG:
                 stderr.printf("Got ANALOG (%u)\n", len);

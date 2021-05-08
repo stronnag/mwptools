@@ -37,9 +37,11 @@ public class MWPMarkers : GLib.Object
     private List<uint> llist;
     private Quark q0;
     private Quark q1;
+    private Quark qtxt;
 
     private Clutter.Color black;
     private Clutter.Color near_black;
+    private Clutter.Color grayish;
     private Clutter.Color white;
 
     public MWPMarkers(ListBox lb, Champlain.View view, string mkcol ="#ffffff60")
@@ -51,6 +53,8 @@ public class MWPMarkers : GLib.Object
 
         black.init(0,0,0, 0xff);
         near_black.init(0x20,0x20,0x20, 0xa0);
+        grayish.init(0x40,0x40,0x40, 0x80);
+
         white.init(0xff,0xff,0xff, 0xff);
 
         rth_land = false;
@@ -90,6 +94,7 @@ public class MWPMarkers : GLib.Object
         posring.hide();
         q0 = Quark.from_string("mwp0");
         q1 = Quark.from_string("mwp1");
+        qtxt = Quark.from_string("irtext");
     }
 
     private unowned Champlain.Label find_radar_item(RadarPlot r)
@@ -98,9 +103,13 @@ public class MWPMarkers : GLib.Object
         rdrmarkers.get_markers().foreach ((m) => {
                 if(rd == null)
                 {
-                    RadarPlot a = m.get_qdata<RadarPlot?>(q0);
-                    if (r.id== a.id)
-                        rd = (Champlain.Label)m;
+                    if (((Champlain.Label)m).name != "irdr")  {
+                        var a = m.get_qdata<RadarPlot?>(q0);
+                        if(a != null) {
+                            if (r.id== a.id)
+                                rd = (Champlain.Label)m;
+                        }
+                    }
                 }
             });
         return rd;
@@ -109,24 +118,31 @@ public class MWPMarkers : GLib.Object
     public void set_radar_stale(RadarPlot r)
     {
         var rp = find_radar_item(r);
-        rp.set_qdata<RadarPlot?>(q0,r);
-        if(rp != null)
+        if(rp != null) {
+            rp.set_qdata<RadarPlot?>(q0,r);
             rp.opacity = 100;
+        }
     }
 
     public void remove_radar(RadarPlot r)
     {
         var rp = find_radar_item(r);
         if(rp != null)
+        {
+            unowned var _t = rp.get_qdata<Champlain.Label>(qtxt);
+            if (_t != null)
+                rdrmarkers.remove_marker(_t);
             rdrmarkers.remove_marker(rp);
+        }
     }
 
     public void set_radar_hidden(RadarPlot r)
     {
         var rp = find_radar_item(r);
-        rp.set_qdata<RadarPlot?>(q0,r);
-        if(rp != null)
+        if(rp != null) {
+            rp.set_qdata<RadarPlot?>(q0,r);
             rp.visible = false;
+        }
     }
 
     public void rader_layer_visible(bool vis)
@@ -140,7 +156,6 @@ public class MWPMarkers : GLib.Object
     public void update_radar(RadarPlot r)
     {
         var rp = find_radar_item(r);
-
         if(rp == null)
         {
             var basename = (r.source == 1) ? "inav-radar.svg" : "plane100.svg";
@@ -186,6 +201,16 @@ public class MWPMarkers : GLib.Object
                     _v.remove_child(_ta);
                     return false;
                 });
+
+            if(r.source == 1) {
+                var irlabel = new Champlain.Label.with_text (r.name, "Sans 9", null, null);
+                irlabel.set_use_markup (true);
+                irlabel.set_color (grayish);
+                irlabel.set_location (r.latitude,r.longitude);
+                irlabel.set_name("irdr");
+                rp.set_qdata<Champlain.Marker>(qtxt, irlabel);
+                rdrmarkers.add_marker(irlabel);
+            }
             rdrmarkers.add_marker (rp);
         }
         rp.opacity = 200;
@@ -194,12 +219,26 @@ public class MWPMarkers : GLib.Object
         {
             rp.name = r.name;
             if(r.source == 1)
-                rp.text = r.name;
+            {
+                unowned var _t = rp.get_qdata<Champlain.Label>(qtxt);
+                if (_t != null)
+                {
+                    _t.text = r.name;
+                }
+            }
         }
+
         rp.set_color (white);
         rp.set_location (r.latitude,r.longitude);
-        if(r.source != 1 || MWP.conf.rotate_inav_radar == true)
-            rp.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, r.heading);
+
+        if(r.source == 1) {
+            unowned var _t = rp.get_qdata<Champlain.Label>(qtxt);
+            if (_t != null)
+            {
+                _t.set_location (r.latitude,r.longitude);
+            }
+        }
+        rp.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, r.heading);
     }
 
     public void set_rth_icon(bool iland)
