@@ -471,6 +471,7 @@ public class MWP : Gtk.Application {
     private static bool mkcon = false;
     private static bool ignore_sz = false;
     private static bool nopoll = false;
+    private static bool xnopoll = false;
     private static bool rawlog = false;
     private static bool no_trail = false;
     private static bool no_max = false;
@@ -9253,6 +9254,7 @@ case 0:
             armed = larmed = 0;
             replay_paused = false;
             window.title = "mwp";
+            nopoll = xnopoll;
         }
     }
 
@@ -9263,6 +9265,7 @@ case 0:
         xaudio = conf.audioarmed;
         int sr = 0;
         bool rawfd = false;
+        xnopoll = nopoll;
         nopoll = true;
 
         if ((rtype & Player.MWP) != 0 || (rtype & Player.BBOX) != 0 && x_fl2ltm == false) {
