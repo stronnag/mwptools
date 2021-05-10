@@ -1151,6 +1151,30 @@ public class MWP : Gtk.Application {
         resend_last();
     }
 
+    private void update_menu_labels(Gtk.MenuBar  menu)
+    {
+        int done = 0;
+        menu.@foreach((mi) => {
+                if (mi.name == "GtkModelMenuItem")
+                {
+                    Gtk.Menu sm = (Gtk.Menu) ((Gtk.MenuItem)mi).get_submenu();
+                    if (sm != null) {
+                        sm.@foreach((smi) => {
+                                if(smi.name == "GtkModelMenuItem") {
+                                    var slbl = ((Gtk.MenuItem)smi).get_label();
+                                    if (slbl.contains(" OTX ")) {
+                                        slbl = slbl.replace(" OTX ", " OpenTX / BulletGCSS ");
+                                        ((Gtk.MenuItem)smi).set_label(slbl);
+                                        done++;
+                                        if (done == 2)
+                                            return;
+                                    }
+                                }
+                            });
+                    }
+                }
+            });
+    }
 
     public override void activate ()
     {
@@ -1188,7 +1212,6 @@ public class MWP : Gtk.Application {
             x_otxlog = appsts[5];
             if (Environment.get_variable("MWP_LEGACY_REPLAY") == null)
                 x_fl2ltm = appsts[6];
-
         }
 
         XmlIO.uc = conf.ucmissiontags;
@@ -1451,6 +1474,13 @@ public class MWP : Gtk.Application {
 
         var mm = builder.get_object ("menubar") as MenuModel;
         Gtk.MenuBar  menubar = new MenuBar.from_model(mm);
+
+        if(x_fl2ltm)
+        {
+            update_menu_labels(menubar);
+        }
+
+
         this.set_menubar(mm);
         var hb = builder.get_object ("hb") as HeaderBar;
         window.set_show_menubar(false);
@@ -1506,8 +1536,7 @@ public class MWP : Gtk.Application {
         bb_runner = new BBoxDialog(builder, window, conf.blackbox_decode,
                                    conf.logpath, fakeoff);
 
-        otx_runner = new OTXDialog(builder, window,null);
-        otx_runner.x_fl2ltm = x_fl2ltm;
+        otx_runner = new OTXDialog(builder, window, null, x_fl2ltm);
 
         bb_runner.set_tz_tools(conf.geouser, conf.zone_detect);
 
@@ -9144,8 +9173,9 @@ case 0:
             string fname;
             int idx;
             int dura;
-            otx_runner.get_index(out fname, out idx, out dura);
-            run_replay(fname, delay, Player.OTX,idx,0,0,dura);
+            int btype;
+            otx_runner.get_index(out fname, out idx, out dura, out btype);
+            run_replay(fname, delay, Player.OTX,idx,btype,0,dura);
         }
     }
 
@@ -9233,6 +9263,8 @@ case 0:
         xaudio = conf.audioarmed;
         int sr = 0;
         bool rawfd = false;
+        nopoll = true;
+
         if ((rtype & Player.MWP) != 0 || (rtype & Player.BBOX) != 0 && x_fl2ltm == false) {
             rawfd = true;
         }

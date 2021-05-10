@@ -37,12 +37,13 @@ public class  OTXDialog : Object
     private Gtk.FileChooserButton otx_filechooser;
     private Gtk.TreeSelection otx_sel;
     private Gtk.Window _w;
-    public bool x_fl2ltm = false;
+    private bool x_fl2ltm = false;
 
-    public OTXDialog(Gtk.Builder builder, Gtk.Window? w = null,
-                     string? logpath = null) //, FakeOffsets? _fo = null)
+    public OTXDialog(Gtk.Builder builder, Gtk.Window? w,
+                     string? logpath, bool _fl2ltm) //, FakeOffsets? _fo = null)
     {
         _w = w;
+        x_fl2ltm = _fl2ltm;
         dialog = builder.get_object ("otx_dialog") as Gtk.Dialog;
         otx_cancel = builder.get_object ("otx_cancel") as Button;
         otx_ok = builder.get_object ("otx_ok") as Button;
@@ -69,8 +70,10 @@ public class  OTXDialog : Object
                                                     new Gtk.CellRendererText (), "text",
                                                     Column.LINES);
         var filter = new Gtk.FileFilter ();
-        filter.set_filter_name ("OTX Logs");
+        filter.set_filter_name ("Log Files");
         filter.add_pattern ("*.csv");
+        if(x_fl2ltm)
+            filter.add_pattern ("*.txt");
         otx_filechooser.add_filter (filter);
 
         if(logpath != null)
@@ -102,7 +105,7 @@ public class  OTXDialog : Object
         dialog.set_transient_for(w);
     }
 
-    public void get_index(out string fname, out int idx, out int dura)
+    public void get_index(out string fname, out int idx, out int dura, out int btype)
     {
         Gtk.TreeModel model;
         Gtk.TreeIter iter;
@@ -119,6 +122,7 @@ public class  OTXDialog : Object
         if (parts.length == 2) {
             dura = int.parse(parts[0])*60 + int.parse(parts[1]);
         }
+        btype = otx_combo.active -1;
     }
 
     public int run()
