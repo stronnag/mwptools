@@ -9404,6 +9404,9 @@ case 0:
             uint intvl  =  100 * dura / 600;
             args += "-interval";
             args += intvl.to_string();
+        } else if (x_fl2ltm) {
+            args += "-interval";
+            args += "100";
         }
 
         args += (MwpMisc.is_cygwin()==false) ? fn : MwpMisc.get_native_path(fn);
