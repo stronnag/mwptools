@@ -129,7 +129,7 @@ public class MWPMarkers : GLib.Object
         var rp = find_radar_item(r);
         if(rp != null)
         {
-            unowned var _t = rp.get_qdata<Champlain.Label>(qtxt);
+            unowned Champlain.Label _t = rp.get_qdata<Champlain.Label>(qtxt);
             if (_t != null)
                 rdrmarkers.remove_marker(_t);
             rdrmarkers.remove_marker(rp);
@@ -220,7 +220,7 @@ public class MWPMarkers : GLib.Object
             rp.name = r.name;
             if(r.source == 1)
             {
-                unowned var _t = rp.get_qdata<Champlain.Label>(qtxt);
+                unowned Champlain.Label _t = rp.get_qdata<Champlain.Label>(qtxt);
                 if (_t != null)
                 {
                     _t.text = r.name;
@@ -232,7 +232,7 @@ public class MWPMarkers : GLib.Object
         rp.set_location (r.latitude,r.longitude);
 
         if(r.source == 1) {
-            unowned var _t = rp.get_qdata<Champlain.Label>(qtxt);
+            unowned Champlain.Label _t = rp.get_qdata<Champlain.Label>(qtxt);
             if (_t != null)
             {
                 _t.set_location (r.latitude,r.longitude);

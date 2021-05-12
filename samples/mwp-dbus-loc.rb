@@ -27,6 +27,9 @@ mwpi = mwp["org.mwptools.mwp"]
 # dump out the interface definitions
 puts mwp.introspect
 
+props = mwp["org.freedesktop.DBus.Properties"]
+puts props.GetAll("org.mwptools.mwp")
+
 state_name = mwp.GetStateNames[0]
 puts "Available states #{state_name.inspect}\n"
 
