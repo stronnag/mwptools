@@ -23,7 +23,8 @@ apt $CONFIRM install libgdl-3-dev \
     libespeak-dev \
     libgudev-1.0-dev \
     libgstreamer1.0-dev \
-    libvte-2.91-dev
+    libvte-2.91-dev \
+    meson
 
 # vanity, prettier terminal progress bars (fcset, flashdl)
 apt $CONFIRM install libncurses5-dev
@@ -66,7 +67,9 @@ apt $CONFIRM install gnuplot ruby-nokogiri
 ## Shallow clone mwp ....
 # git clone --depth 1 https://github.com/stronnag/mwptools
 # cd mwptools
-# make && sudo make install
+# meson build --buildtype=release --prefix=/usr --strip
+# cd build
+# ninja reconfigure && ninja && sudo ninja install
 
 ## You must install the blackbox utilities
 ## https://github.com/iNavFlight/blackbox-tools in order to replay
@@ -100,5 +103,6 @@ apt $CONFIRM install gnuplot ruby-nokogiri
 ## modules) then you need to force a rebuild for mwp to recognise the
 ## change:
 ##
-## cd mwptools; make clean all
-##
+## cd mwptools
+## cd build && ninja && sudo ninja install
+## unlike the older `make` builds, meson should work it out!

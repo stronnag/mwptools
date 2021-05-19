@@ -37,7 +37,10 @@ mwpdeps = [deps,
 #  opts += '-mwindows'
 #endif
 
-paho = meson.get_compiler('c').find_library('paho-mqtt3cs', required: false)
+# for BSD etc.
+ldirs = ['/usr/lib', '/usr/local/lib']
+
+paho = meson.get_compiler('c').find_library('paho-mqtt3cs', dirs: ldirs, required: false)
 
 if paho.found()
   dopts += 'MQTT'
@@ -45,7 +48,7 @@ if paho.found()
   mwpdeps += paho
   mwpsrcs += files('paho_wrapper.c', 'mwp_mqtt_common.vala')
 else
-  mosquitto = meson.get_compiler('c').find_library('mosquitto', required: false)
+  mosquitto = meson.get_compiler('c').find_library('mosquitto', dirs: ldirs, required: false)
   if mosquitto.found()
     dopts += 'MQTT'
     dopts += 'MQTT_MOSQUITTO'
@@ -55,9 +58,9 @@ else
 endif
 
 spk = false
-speak = meson.get_compiler('c').find_library('espeak-ng', required: false).found()
+speak = meson.get_compiler('c').find_library('espeak-ng', dirs: ldirs, required: false).found()
 if not speak
-  speak = meson.get_compiler('c').find_library('espeak', required: false).found()
+  speak = meson.get_compiler('c').find_library('espeak', dirs: ldirs, required: false).found()
 endif
 
 if speak
@@ -66,14 +69,14 @@ if speak
   spk = true
 endif
 
-speak = meson.get_compiler('c').find_library('speechd', required: false).found()
+speak = meson.get_compiler('c').find_library('speechd', dirs: ldirs, required: false).found()
 if speak
   dopts += 'USE_SPEECHD'
   xopts += 'USE_SPEECHD'
   spk = true
 endif
 
-speak = meson.get_compiler('c').find_library('flite', required: false).found()
+speak = meson.get_compiler('c').find_library('flite', dirs: ldirs, required: false).found()
 if speak
   dopts += 'USE_FLITE'
   xopts += 'USE_FLITE'
