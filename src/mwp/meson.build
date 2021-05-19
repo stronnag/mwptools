@@ -12,6 +12,8 @@ mwpsrcs = files('mwp.vala', 'liststore.vala', 'mwp_markers.vala',
 
 ublxguisrc = files('settings.vala',  'mapsources.vala')
 
+apuisrcs = files('settings.vala',  'mapsources.vala', 'mission.vala')
+
 mwpdeps = [deps,
 	   dependency('gtk+-3.0'),
            dependency('atk'),
@@ -31,9 +33,9 @@ mwpdeps = [deps,
            meson.get_compiler('vala').find_library('linux'),
           ]
 
-if host_machine.system() == 'windows'
-  opts += '-mwindows'
-endif
+#if host_machine.system() == 'windows'
+#  opts += '-mwindows'
+#endif
 
 paho = meson.get_compiler('c').find_library('paho-mqtt3cs', required: false)
 
@@ -121,13 +123,6 @@ endif
 
 common_inc_dir += include_directories('.')
 
-bcd =  dependency('bash-completion', required: false)
-if bcd.found()
-  bcd_dir = bcd.get_pkgconfig_variable('completionsdir')
-endif
-#message('BCD = ' + bcd_dir)
-
-
 install_data (
   'org.mwptools.planner.gschema.xml',
   install_dir: get_option('datadir') / 'glib-2.0/schemas'
@@ -135,13 +130,19 @@ install_data (
 
 install_data (
   ['vcols.css', 'default.layout', 'beep-sound.ogg', 'bleet.ogg',
-   'menubar.ui', 'mwp.ui', 'orange.ogg', 'sat_alert.ogg', 'vcols.css'],
+   'menubar.ui', 'mwp.ui', 'orange.ogg', 'sat_alert.ogg'],
   install_dir: get_option('datadir') / 'mwp'
 )
 
 install_subdir('pixmaps', install_dir : get_option('datadir') / 'mwp')
-
 install_data('mwp.desktop', install_dir : get_option('datadir') / 'applications')
 
-install_data('mwp_complete.sh', install_dir: bcd_dir / 'mwp')
-install_data('blackbox_decode_complete.sh', install_dir: bcd_dir / 'blackbox_decode')
+bcd =  dependency('bash-completion', required: false)
+if bcd.found()
+  bcd_dir = bcd.get_variable(pkgconfig : 'completionsdir')
+  if bcd_dir.startswith(get_option('prefix'))
+    install_data(['mwp_complete.sh', 'blackbox_decode_complete.sh'],
+		 rename: ['mwp','blackbox-devcode'],
+		 install_dir: bcd_dir )
+  endif
+endif

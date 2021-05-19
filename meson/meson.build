@@ -51,5 +51,7 @@ else
   endif
 endif
 
+termcap = dependency('ncurses', required: false)
+
 libm = meson.get_compiler('c').find_library('m', required : false)
 deps += libm

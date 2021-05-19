@@ -1,9 +1,10 @@
-#!/usr/bin/env bash
-ln ${DESTDIR}/${MESON_INSTALL_PREFIX}/bin/fc-get  ${DESTDIR}/${MESON_INSTALL_PREFIX}/bin/fc-set
+#!/bin/sh
+
+ln -f ${DESTDIR}/${MESON_INSTALL_PREFIX}/bin/fc-get  ${DESTDIR}/${MESON_INSTALL_PREFIX}/bin/fc-set
 
 # Go programs, without whinging
-for FN in /mwp-plot-elevations otxlog bbsummary ; do
-  [ -e  $MESON_BUILD_ROOT/bin/$FN ] && cp $MESON_BUILD_ROOT/bin/$FN $MESON_INSTALL_PREFIX/bin
+for FN in mwp-plot-elevations otxlog bbsummary bproxy ublox-geo ublox-cli flashdl ; do
+  [ -e  $MESON_BUILD_ROOT/$FN ] && install -C $MESON_BUILD_ROOT/$FN $MESON_INSTALL_PREFIX/bin
 done
 
 if [ -z $DESTDIR ]; then

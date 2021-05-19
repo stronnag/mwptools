@@ -1409,12 +1409,7 @@ public class MWP : Gtk.Application {
         });
 
         dev_entry = builder.get_object ("comboboxtext1") as Gtk.ComboBoxText;
-
-        string icon=null;
-        try {
-            icon = MWPUtils.find_conf_file("mwp_icon.svg");
-            window.set_icon_from_file(icon);
-        } catch {};
+        window.set_icon_name("mwp_icon");
 
         arm_warn = builder.get_object ("arm_warn") as Gtk.Button;
         wp_edit_button = builder.get_object ("wp_edit_button") as Gtk.ToggleButton;
@@ -2302,12 +2297,6 @@ public class MWP : Gtk.Application {
 
         about.copyright = "© 2014-%d Jonathan Hudson".printf(
             new DateTime.now_local().get_year());
-
-        Gdk.Pixbuf pix = null;
-        try  {
-            pix = new Gdk.Pixbuf.from_file_at_size (icon, 200,200);
-        } catch  {};
-        about.logo = pix;
 
         msp = new MWSerial();
         msp.use_v2 = false;

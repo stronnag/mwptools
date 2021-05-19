@@ -8,7 +8,6 @@ fcdeps = [deps,
 
 fc_v_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
 
-termcap = dependency('ncurses', required: false)
 if termcap.found()
   fcdeps += meson.get_compiler('c').find_library('ncurses')
   fc_v_args += ['-D', 'USE_TERMCAP']

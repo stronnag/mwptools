@@ -12,6 +12,7 @@ ublxgsrcs = files('ublox-test.vala', 'ublox-io.vala')
 ublxgsrcs += ublxresources
 
 ublxgdeps =  [deps,
+	      dependency('gio-2.0'),
 	      dependency('gtk+-3.0'),
 	      dependency('atk'),
 	      dependency('clutter-1.0'),
@@ -23,6 +24,7 @@ ublxgdeps =  [deps,
 	     ]
 
 ublxcdeps =  [deps,
+	      dependency('gio-2.0'),
 	      meson.get_compiler('vala').find_library('posix')
 	     ]
 

@@ -34,7 +34,7 @@ along with mwp.  If not, see <http://www.gnu.org/licenses/>.
     <property name="website-label" translatable="yes">mwptools</property>
     <property name="authors">Jonathan Hudson &lt;jh+mwp@daria.co.uk&gt;</property>
     <property name="documenters">Jonathan Hudson &lt;jh+mwp@daria.co.uk&gt;</property>
-    <property name="logo-icon-name"/>
+    <property name="logo-icon-name">mwp_icon</property>
     <property name="license-type">gpl-3-0</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="aboutdialog-vbox1">

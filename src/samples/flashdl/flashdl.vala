@@ -199,6 +199,8 @@ public class Flashdl : Object
                  MWPLog.message("Erase in progress ... \n");
                  schedule_echeck();
                  break;
+             default:
+                 break;
          }
     }
 
@@ -291,6 +293,7 @@ public class Flashdl : Object
                         ml.quit();
                         return Source.REMOVE;
                     });
+                return Source.REMOVE;
             });
     }
 
