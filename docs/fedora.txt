@@ -5,13 +5,15 @@ dnf install gtk3-devel gstreamer1-devel clutter-devel webkitgtk3-devel \
     libgda-devel gobject-introspection-devel
 dnf install vala vala-devel vala-tools vala-doc
 dnf install libchamplain-gtk-devel libgdl-devel libgudev1-devel \
-    espeak-devel vte291-devel ncurses-devel
-
+    espeak-devel vte291-devel ncurses-devel meson
 
 ## Shallow clone mwp ....
 # git clone --depth 1 https://github.com/stronnag/mwptools
 # cd mwptools
-# make && sudo make install
+# meson build --buildtype=release --prefix=/usr --strip
+# cd build
+# ninja && sudo ninja install
+
 
 ## for bbox-replay stuff
 dnf install ruby
@@ -66,7 +68,7 @@ dnf install gnuplot rubygem-nokogiri
 # sudo /tmp/fedora-deps.sh
 
 ## Then build it / update
-# cd mwptools; git pull && make && sudo make install
+# cd mwptools; git pull && cd build && ninja  && sudo ninja install
 
 ## The default instruction only set up the master branch (in order in
 ## minimise the initial setup) .
@@ -86,5 +88,6 @@ dnf install gnuplot rubygem-nokogiri
 ## modules) then you need to force a rebuild for mwp to recognise the
 ## change:
 ##
-## cd mwptools; make clean all
-##
+## cd mwptools
+## cd build && ninja && sudo ninja install
+## unlike the older `make` builds, meson should work it out!

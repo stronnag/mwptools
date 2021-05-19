@@ -69,7 +69,7 @@ apt $CONFIRM install gnuplot ruby-nokogiri
 # cd mwptools
 # meson build --buildtype=release --prefix=/usr --strip
 # cd build
-# ninja reconfigure && ninja && sudo ninja install
+# ninja && sudo ninja install
 
 ## You must install the blackbox utilities
 ## https://github.com/iNavFlight/blackbox-tools in order to replay
