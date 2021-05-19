@@ -51,7 +51,6 @@ SWITCH=
 for P
 do
   case $P in
-    [123456789]*) SPEED=$P ;;
     /dev/*) DEV=$P ;;
     *.hex) HEX=$P ;;
     *.bin) BIN=$P ;;
@@ -59,6 +58,7 @@ do
     switch) SWITCH=1 ;;
     erase) FERASE=1 ;;
     noerase) FERASE= ;;
+    [123456789]*) SPEED=$P ;;
   esac
 done
 
