@@ -48,6 +48,19 @@ namespace MwpSpeech
     void set_api(uint8 api);
 }
 
+[CCode (cheader_filename = "mwpfuncs.h")]
+namespace MwpSignals
+{
+    [CCode (cheader_filename = "signal.h", cprefix = "SIG", has_type_id = false)]
+    public enum Signal
+    {
+        CONT,
+        TERM,
+        INT,
+        STOP
+    }
+}
+
 [CCode (cheader_filename = "stdlib.h")]
 namespace MwpLibC
 {

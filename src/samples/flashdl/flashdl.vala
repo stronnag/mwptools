@@ -287,7 +287,7 @@ public class Flashdl : Object
                 ml.quit();
             });
 
-        Unix.signal_add(Posix.Signal.USR1, () => {
+        Unix.signal_add(MwpSignals.Signal.INT, () => {
                 Timeout.add(100, () => {
                         stderr.printf("%s\n", MwpTermCap.cnorm);
                         ml.quit();

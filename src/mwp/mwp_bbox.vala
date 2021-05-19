@@ -244,7 +244,7 @@ public class  BBoxDialog : Object
                             valid += 1;
                             maxidx = 1;
                             is_valid = true;
-                            Posix.kill(child_pid, Posix.Signal.TERM);
+                            Posix.kill(child_pid, MwpSignals.Signal.TERM);
                             return false;
                         }
                         return true;
@@ -602,7 +602,7 @@ public class  BBoxDialog : Object
                         }
                         if(latp == -1 || lonp == -1 || fixp == -1 || typp == -1)
                         {
-                            Posix.kill(child_pid, Posix.Signal.TERM);
+                            Posix.kill(child_pid, MwpSignals.Signal.TERM);
                             break;
                         }
                     }
@@ -619,7 +619,7 @@ public class  BBoxDialog : Object
                                 if(xlat != 0.0 && xlon != 0.0)
                                 {
                                     ok = true;
-                                    Posix.kill(child_pid, Posix.Signal.TERM);
+                                    Posix.kill(child_pid, MwpSignals.Signal.TERM);
                                     break;
                                 }
                             }

@@ -56,9 +56,9 @@ public static int main (string[] args)
     {
         if(msp.ublox_open(MWSerial.devname, MWSerial.brate))
         {
-            Unix.signal_add(Posix.Signal.INT, sigfunc_quit);
-            Unix.signal_add(Posix.Signal.USR1, sigfunc);
-            Unix.signal_add(Posix.Signal.USR2, sigfunc);
+            Unix.signal_add(MwpSignals.Signal.INT, sigfunc_quit);
+            Unix.signal_add(MwpSignals.Signal.USR1, sigfunc);
+            Unix.signal_add(MwpSignals.Signal.USR2, sigfunc);
             ml.run();
         }
     }
