@@ -38,10 +38,6 @@ if r.returncode() != 0
 endif
 valacvers = r.stdout().strip()
 
-if valacvers.version_compare('<0.42.4')
-  opts += '--thread'
-endif
-
 if vapivers.version_compare('<0.51')
   dopts += 'OLDTVI'
 else
