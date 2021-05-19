@@ -33,10 +33,6 @@ mwpdeps = [deps,
            meson.get_compiler('vala').find_library('linux'),
           ]
 
-#if host_machine.system() == 'windows'
-#  opts += '-mwindows'
-#endif
-
 # for BSD etc.
 ldirs = ['/usr/lib', '/usr/local/lib']
 
@@ -112,6 +108,11 @@ if spk
   foreach x : xopts
     mwp_c_args += '-D'+x
   endforeach
+endif
+
+if host_machine.system() == 'windows'
+  mwp_v_args += '-X'
+  mwp_v_args += '-mwindows'
 endif
 
 mwp_v_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']

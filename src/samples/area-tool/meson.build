@@ -23,6 +23,12 @@ apdeps =  [deps,
 	      meson.get_compiler('vala').find_library('posix'),
 	  ]
 
+
+if host_machine.system() == 'windows'
+  ap_v_args += '-X'
+  ap_v_args += '-mwindows'
+endif
+
 ap_v_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
 
 install_data(
