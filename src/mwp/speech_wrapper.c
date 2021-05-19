@@ -27,9 +27,10 @@
 #define API_SPEECHD 2
 #define API_FLITE   3
 
-static GModule *handle;
-
 extern void mwp_log_message (const gchar* format, ...);
+#if defined(USE_ESPEAK) || defined (USE_SPEECHD) || defined(USE_FLITE)
+
+static GModule *handle;
 
 #ifdef USE_ESPEAK
 #include <espeak/speak_lib.h>
@@ -299,21 +300,9 @@ static void fl_say(char *text)
 }
 
 #endif
+#endif
 
-static int ss_init(char *v)
-{
-    return 0;
-}
-
-static void ss_say(char *t)
-{
-    mwp_log_message("null speech say %s\n", t);
-}
-
-static int (*_speech_init)(char *) = ss_init;
-static void (*_speech_say)(char *) = ss_say;
-
-guchar get_speech_api_mask()
+unsigned char get_speech_api_mask()
 {
     guchar  api_mask = 0;
 #ifdef USE_ESPEAK
@@ -328,7 +317,20 @@ guchar get_speech_api_mask()
     return api_mask;
 }
 
-void speech_set_api(guchar api)
+static int ss_init(char *v)
+{
+    return 0;
+}
+
+static void ss_say(char *t)
+{
+    mwp_log_message("null speech say %s\n", t);
+}
+
+static int (*_speech_init)(char *) = ss_init;
+static void (*_speech_say)(char *) = ss_say;
+
+void speech_set_api(unsigned char api)
 {
 #ifdef USE_ESPEAK
     if(api == 1)

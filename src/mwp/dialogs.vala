@@ -2440,7 +2440,7 @@ public class AudioThread : Object {
                             s = NavStatus.host_batt_status;
                             break;
                         case Vox.AUDIO_TEST:
-                            s = "MWP audio test, version %s".printf(MwpVers.id);
+                            s = "MWP audio test, version %s".printf(MwpVers.get_id());
                             break;
                         case Vox.ARM_STATUS:
                             s = NavStatus.arm_msg;

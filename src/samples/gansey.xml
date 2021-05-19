@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mission>
+  <!--mw planner 0.01-->
+  <version value="2.3 pre8"></version>
+  <mwp zoom="18" cx="-4.7290134429931641" cy="54.082177682152214"></mwp>
+  <missionitem no="1" action="WAYPOINT" lat="54.081642188591395" lon="-4.7306065279940412" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="2" action="WAYPOINT" lat="54.082111590015693" lon="-4.7302154283204345" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="3" action="WAYPOINT" lat="54.082962846306408" lon="-4.7289696680127236" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="4" action="WAYPOINT" lat="54.083330477200981" lon="-4.7279943659668788" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="5" action="WAYPOINT" lat="54.083670331349069" lon="-4.7271575167542323" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="6" action="WAYPOINT" lat="54.083830224353903" lon="-4.7263530347845517" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="7" action="WAYPOINT" lat="54.084070975579863" lon="-4.7259407564706635" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="8" action="WAYPOINT" lat="54.084261776320474" lon="-4.7249190391448792" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="9" action="WAYPOINT" lat="54.084428169464076" lon="-4.7234806390770245" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="10" action="WAYPOINT" lat="54.084598983934853" lon="-4.7225104141398333" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="11" action="WAYPOINT" lat="54.084740054921149" lon="-4.7219018372811661" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="12" action="POSHOLD_TIME" lat="54.085058908731483" lon="-4.7209040638358601" alt="25" parameter1="30" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="13" action="WAYPOINT" lat="54.084512600747388" lon="-4.7212414022260418" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="14" action="WAYPOINT" lat="54.084375243566512" lon="-4.7218210446771991" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="15" action="WAYPOINT" lat="54.084274558797112" lon="-4.7226149050402455" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="16" action="WAYPOINT" lat="54.084186450012517" lon="-4.7236448733019643" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="17" action="WAYPOINT" lat="54.08413610205163" lon="-4.7243529764818959" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="18" action="WAYPOINT" lat="54.083971365625736" lon="-4.7253532204194926" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="19" action="WAYPOINT" lat="54.083795146582062" lon="-4.7258252892061137" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="20" action="WAYPOINT" lat="54.083593752088873" lon="-4.7264261040254496" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="21" action="WAYPOINT" lat="54.083404944224014" lon="-4.7269840035005473" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="22" action="WAYPOINT" lat="54.083266923256787" lon="-4.7275883256224915" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="23" action="WAYPOINT" lat="54.083040351931565" lon="-4.7278243600158021" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="24" action="WAYPOINT" lat="54.082700492624468" lon="-4.7282320557860658" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="25" action="WAYPOINT" lat="54.082473918206865" lon="-4.7288328706054017" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="26" action="WAYPOINT" lat="54.082054098614023" lon="-4.7292038562591188" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="27" action="WAYPOINT" lat="54.081840108363657" lon="-4.7296115520293824" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+  <missionitem no="28" action="POSHOLD_UNLIM" lat="54.081581697814485" lon="-4.7305718016013998" alt="25" parameter1="0" parameter2="0" parameter3="0"></missionitem>
+</mission>

@@ -1112,7 +1112,7 @@ public class MWP : Gtk.Application {
 
         if(replay_paused)
         {
-            signum = MwpSignals.Signal.CONT;
+            signum = Posix.Signal.CONT;
             time_t now;
             time_t (out now);
             armtime += (now - pausetm);
@@ -1120,7 +1120,7 @@ public class MWP : Gtk.Application {
         else
         {
             time_t (out pausetm);
-            signum = MwpSignals.Signal.STOP;
+            signum = Posix.Signal.STOP;
         }
         replay_paused = !replay_paused;
         if((replayer & (Player.BBOX|Player.OTX)) != 0)
@@ -2294,9 +2294,9 @@ public class MWP : Gtk.Application {
 
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
         about.set_transient_for(window);
-        StringBuilder sb = new StringBuilder(MwpVers.build);
+        StringBuilder sb = new StringBuilder(MwpVers.get_build());
         sb.append_c('\n');
-        sb.append(MwpVers.id);
+        sb.append(MwpVers.get_id());
         sb.append_printf("\non %s\n", xlib);
         about.version = sb.str;
 
@@ -9505,7 +9505,7 @@ case 0:
     {
         if((replayer & Player.BBOX) == Player.BBOX)
         {
-            Posix.kill(child_pid, MwpSignals.Signal.TERM);
+            Posix.kill(child_pid, Posix.Signal.TERM);
         } else if ((replayer & Player.OTX) == Player.OTX) {
                 /// tidy this up
         } else {
@@ -9531,7 +9531,7 @@ case 0:
             handle_replay_pause();
 
         if((replayer & (Player.BBOX|Player.OTX)) != 0)
-            Posix.kill(child_pid, MwpSignals.Signal.TERM);
+            Posix.kill(child_pid, Posix.Signal.TERM);
 
         if((replayer & Player.MWP) == Player.MWP && thr != null)
             robj.stop();
@@ -9715,9 +9715,11 @@ case 0:
         int lkres;
 
         var sb = new StringBuilder("mwp ");
-        sb.append(MwpVers.build);
+        var s_0 = MwpVers.get_build();
+        var s_1 = MwpVers.get_id();
+        sb.append(s_0);
         sb.append_c(' ');
-        sb.append(MwpVers.id);
+        sb.append(s_1);
         var verstr = sb.str;
 
         if((lkres = lk.lock()) == 0)

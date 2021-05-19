@@ -63,9 +63,8 @@ static int rate_to_constant(int baudrate) {
 int set_fd_speed(int fd, int rate)
 {
     struct termios tio;
-    int res;
-    int speed = 0;
-    speed = rate_to_constant(rate);
+    int res=0;
+    int speed = rate_to_constant(rate);
 
 #ifdef __linux__
     if(speed == 0)

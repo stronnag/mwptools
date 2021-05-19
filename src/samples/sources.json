@@ -1,0 +1,26 @@
+{
+  "sources": [
+    {
+      "id": "historic-gb",
+      "name": "GB Historic",
+      "license": "(c) National Library of Scotland",
+      "license_uri": "http://maps.nls.uk/projects/api/index.html",
+      "min_zoom": 5,
+      "max_zoom": 16,
+      "tile_size": 256,
+      "projection": "MERCATOR",
+      "uri_format": "http://geo.nls.uk/mapdata2/os/seventh/#Z#/#X#/#TMSY#.png"
+    },
+    {
+      "id": "osv",
+      "name": "OS Street View",
+      "license": "© Crown copyright and database rights 2010",
+      "license_uri": "http://www.nationalarchives.gov.uk/doc/open-government-licence/open-government-licence.htm",
+      "min_zoom": 0,
+      "max_zoom": 19,
+      "tile_size": 256,
+      "projection": "MERCATOR",
+      "uri_format": "http://os.openstreetmap.org/sv/#Z#/#X#/#Y#.png"
+    }
+  ]
+}

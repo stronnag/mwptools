@@ -25,7 +25,7 @@ namespace MwpSerial
     [CCode (cname="get_error_text")]
     unowned string error_text(int err, char *buf, size_t len);
     [CCode (cname="default_name")]
-    string default_name();
+    unowned string default_name();
 }
 
 [CCode (cheader_filename = "mwpfuncs.h")]
@@ -48,22 +48,6 @@ namespace MwpSpeech
     void set_api(uint8 api);
 }
 
-[CCode (cheader_filename = "mwpfuncs.h")]
-namespace MwpSignals
-{
-    [CCode (cname="init_signals")]
-    int fd();
-
-    [CCode (cheader_filename = "signal.h", cprefix = "SIG", has_type_id = false)]
-    public enum Signal
-    {
-	CONT,
-	TERM,
-        INT,
-	STOP
-    }
-}
-
 [CCode (cheader_filename = "stdlib.h")]
 namespace MwpLibC
 {
@@ -83,10 +67,10 @@ namespace DStr
 [CCode (cheader_filename = "mwpfuncs.h")]
 namespace MwpVers
 {
-    [CCode (cname="mwpvers")]
-    static string build;
-    [CCode (cname="mwpid")]
-    static string id;
+    [CCode (cname="get_build")]
+    unowned string get_build();
+    [CCode (cname="get_id")]
+    unowned string get_id();
     [CCode (cname="__progname")]
     string progname;
 }

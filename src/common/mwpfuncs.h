@@ -19,11 +19,9 @@ extern unsigned char get_speech_api_mask();
 extern int speech_init(const char *voice);
 extern void speech_say(const char *text);
 
-extern int init_signals();
-
 extern bool is_cygwin();
 extern char* get_native_path(char *);
 
 extern char *__progname;
-extern char *mwpid;
-extern char *mwpvers;
+extern const char * get_build();
+extern const char * get_id();

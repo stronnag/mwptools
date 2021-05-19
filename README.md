@@ -107,7 +107,7 @@ As mwptools makes no formal releases, you can update your installation from the 
 
 ````
 cd mwptools # the initial installation directory
-git pull && make && sudo make install
+git pull && cd build && ninja && sudo ninja install
 ````
 
 ## Arch Linux

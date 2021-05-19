@@ -1,0 +1,15 @@
+Experimental script to parse data from Frsky SPort telemetry.
+
+I do not have a Trannis / Frsky TX; the data was provided by another
+(see <https://github.com/opentx/opentx/wiki/Taranis-serial-port> for
+details of TX connections).
+
+In future source data and black box log will hopefully become
+available, for the moment there is the script and a test log (captured
+data).
+
+E&OE. The detail encapsulated in the script has been compiled from
+various internet sources; no thanks to the unhelpful, anti-free
+software, proprietary attitude from Frsky.
+
+Consider this BSD licenced.

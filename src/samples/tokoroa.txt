@@ -1,0 +1,15 @@
+#
+# This file matchesis an adaption of the scenario used by iforce2d at
+# http://www.iforce2d.net/surveyplanner/ as an example.
+#
+# mwp-area-planner tokoroa.txt
+#
+# or paste the (non-comment, non-blank) lines below into the location
+# form at http://www.iforce2d.net/surveyplanner
+#
+
+-38.237338658933, 175.89407975361996,
+-38.236338658933, 175.89407975361996,
+-38.236309164006684, 175.89536406777552,
+-38.23690818388154, 175.89567788623026,
+-38.237338658933, 175.89507975361994
