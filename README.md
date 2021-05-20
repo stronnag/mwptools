@@ -50,13 +50,13 @@ The tools are designed to be portable and as far as possible platform and archit
 mwp should  build and running on any platform that supports (recent versions of):
 
  * gtk+3.0 (3.18 or later);
+ * meson
  * vala and gcc;
  * Clutter (software GL is fine);
  * libchamplain;
  * libespeak;
  * libgdl;
  * POSIX API
- * mspsim requires Posix pseudo-terminals.
 
 Please see the `docs` directory for specific development requirements for individual OS.The `docs` directory also contains a user guide / manual in ODT and PDF formats (`docs/mwptools.{odt,pdf}`).
 
@@ -80,11 +80,15 @@ For OS not supported by mwp (e.g. MacOS, IOS, Andriod), see also [impload](https
 
 * Clone the repository `git clone https://github.com/stronnag/mwptools.git`
 
-* Compile and install
+* Compile and install (choose prefix appropriately, see the [wiki](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/).
   ````
   cd mwptools
-  make && sudo make install
+  meson build --prefix=/usr  --buildtype=release --strip
+  cd build
+  ninja && ninja install
   ````
+
+  For now, the legacy `Makefiles` remain, see [wiki](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/).
 
 [Installation video](https://vimeo.com/256052320/)
 
@@ -98,7 +102,7 @@ As mwptools makes no formal releases, you can update your installation from the 
 
 ````
 cd mwptools # the initial installation directory
-git pull && make && sudo make install
+git pull && cd build && ninja && sudo ninja install
 ````
 
 ## Arch Linux
