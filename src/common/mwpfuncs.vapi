@@ -57,7 +57,9 @@ namespace MwpSignals
         CONT,
         TERM,
         INT,
-        STOP
+        STOP,
+        USR1,
+        USR2
     }
 }
 
