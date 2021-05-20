@@ -5,7 +5,7 @@ dopts = []
 xopts = []
 
 if host_machine.system() == 'linux'
-  dopts += 'LINUX'
+  dopts += '--define=LINUX'
   deps += dependency('gudev-1.0')
 endif
 
@@ -21,15 +21,15 @@ endif
 
 # Time value etc
 if vapivers.version_compare('<0.40')
-  dopts += 'USE_TV1'
+  dopts += '--define=USE_TV1'
 endif
 
 if vapivers.version_compare('<0.46')
-  dopts += 'USE_TV'
+  dopts += '--define=USE_TV'
 endif
 
 if vapivers.version_compare('>=<0.50')
-  dopts += 'USE_URIPARSE'
+  dopts += '--define=USE_URIPARSE'
 endif
 
 r = run_command('valac', '--api-version')
@@ -39,11 +39,11 @@ endif
 valacvers = r.stdout().strip()
 
 if vapivers.version_compare('<0.51')
-  dopts += 'OLDTVI'
+  dopts += '--define=OLDTVI'
 else
   glib = dependency('glib-2.0', version: '>=2.68')
   if not glib.found()
-    dopts += 'OLDTVI'
+    dopts += '--define=OLDTVI'
   endif
 endif
 

@@ -22,28 +22,28 @@ subdir('docs')
 configuration_inc = include_directories('build')
 
 executable('mwp', mwpsrcs, mwpcommon, dependencies: [ mwpdeps ],
-	   include_directories : common_inc_dir, vala_args : mwp_v_args,
+	   include_directories : common_inc_dir, vala_args : [dopts, mwp_v_args],
 	   c_args: mwp_c_args,  install : true)
 
 executable('cliterm', clisrcs, clicommon, dependencies: [ clideps ],
-  include_directories : common_inc_dir, vala_args :cli_v_args, install : true)
+  include_directories : common_inc_dir, vala_args : [dopts, cli_v_args], install : true)
 
 executable('qproxy', proxsrc, dependencies: [ proxdeps ], install : true)
 executable('bproxy', bproxsrc, dependencies: [ proxdeps ], install : false, build_by_default: false)
 
 executable('fc-get', fcsrcs, fccommon, dependencies: [ fcdeps ],
-  include_directories : common_inc_dir, vala_args : fc_v_args, install : true)
+  include_directories : common_inc_dir, vala_args : [dopts, fc_v_args], install : true)
 
 executable('ublox-geo', ublxgsrcs, ublxguisrc, ublxgcommon, dependencies: [ ublxgdeps ],
-  include_directories : common_inc_dir, vala_args : ublx_v_args, install:false, build_by_default: false )
+  include_directories : common_inc_dir, vala_args : [dopts, ublx_v_args], install:false, build_by_default: false )
 executable('ublox-cli', ublxcsrcs, ublxccommon, dependencies: [ ublxcdeps ],
-  include_directories : common_inc_dir, vala_args : ublx_v_args, install: false, build_by_default: false )
+  include_directories : common_inc_dir, vala_args : [dopts, ublx_v_args], install: false, build_by_default: false )
 
 executable('mwp-area-planner', apsrcs, apuisrcs, apcommon, dependencies: [ apdeps ],
-  include_directories : common_inc_dir, vala_args : ap_v_args, install:true )
+  include_directories : common_inc_dir, vala_args : [dopts, ap_v_args], install:true )
 
 executable('flashdl', fdlsrcs, fccommon, dependencies: [ fdldeps ],
-  include_directories : common_inc_dir, vala_args : fdl_v_args, install : false, build_by_default: false )
+  include_directories : common_inc_dir, vala_args : [dopts, fdl_v_args], install : false, build_by_default: false )
 
 subdir('src/bbox-replay')
 

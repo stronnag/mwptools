@@ -80,7 +80,7 @@ For OS not supported by mwp (e.g. MacOS, IOS, Andriod), see also [impload](https
 
 * Clone the repository `git clone https://github.com/stronnag/mwptools.git`
 
-* Compile and install
+* Compile and install (choose prefix appropriately, see the [wiki](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/).
   ````
   cd mwptools
   meson build --prefix=/usr  --buildtype=release --strip
@@ -88,12 +88,7 @@ For OS not supported by mwp (e.g. MacOS, IOS, Andriod), see also [impload](https
   ninja && ninja install
   ````
 
-  For now, the legacy `Makefiles` remain:
-  ````
-  cd mwptools
-  cd src
-  make && sudo make install
-  ````
+  For now, the legacy `Makefiles` remain, see [wiki](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/).
 
 [Installation video](https://vimeo.com/256052320/)
 

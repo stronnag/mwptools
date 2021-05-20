@@ -36,18 +36,21 @@ mwpdeps = [deps,
 # for BSD etc.
 ldirs = ['/usr/lib', '/usr/local/lib']
 
+mwp_v_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
+mwp_c_args = []
+
 paho = meson.get_compiler('c').find_library('paho-mqtt3cs', dirs: ldirs, required: false)
 
 if paho.found()
-  dopts += 'MQTT'
-  dopts += 'MQTT_PAHO'
+  mwp_v_args += '--define=MQTT'
+  mwp_v_args += '--define=MQTT_PAHO'
   mwpdeps += paho
   mwpsrcs += files('paho_wrapper.c', 'mwp_mqtt_common.vala')
 else
   mosquitto = meson.get_compiler('c').find_library('mosquitto', dirs: ldirs, required: false)
   if mosquitto.found()
-    dopts += 'MQTT'
-    dopts += 'MQTT_MOSQUITTO'
+    mwp_v_args += '--define=MQTT'
+    mwp_v_args += '--define=MQTT_MOSQUITTO'
     mwpdeps += mosquitto
     mwpsrcs += files('mwp_mqtt_common.vala')
   endif
@@ -60,26 +63,24 @@ if not speak
 endif
 
 if speak
-  dopts += 'USE_ESPEAK'
+  mwp_v_args += '--define=USE_ESPEAK'
   xopts += 'USE_ESPEAK'
   spk = true
 endif
 
 speak = meson.get_compiler('c').find_library('speechd', dirs: ldirs, required: false).found()
 if speak
-  dopts += 'USE_SPEECHD'
+  mwp_v_args += '--define=USE_SPEECHD'
   xopts += 'USE_SPEECHD'
   spk = true
 endif
 
 speak = meson.get_compiler('c').find_library('flite', dirs: ldirs, required: false).found()
 if speak
-  dopts += 'USE_FLITE'
+  mwp_v_args += '--define=USE_FLITE'
   xopts += 'USE_FLITE'
   spk = true
 endif
-
-mwp_c_args=[]
 
 gitvers='local'
 r = run_command('git', 'rev-parse','--short','HEAD')
@@ -115,12 +116,6 @@ if host_machine.system() == 'windows'
   mwp_v_args += '-mwindows'
 endif
 
-mwp_v_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
-
-foreach d : dopts
-  mwp_v_args += '-D'
-  mwp_v_args += d
-endforeach
 if paho.found()
   mwp_v_args += ['--pkg', 'paho_wrapper']
 endif
