@@ -139,7 +139,11 @@ install_data('mwp.desktop', install_dir : get_option('datadir') / 'applications'
 
 bcd =  dependency('bash-completion', required: false)
 if bcd.found()
-  bcd_dir = bcd.get_variable(pkgconfig : 'completionsdir')
+  if meson.version().version_compare('>=0.51.0')
+    bcd_dir = bcd.get_variable(pkgconfig : 'completionsdir')
+  else
+    bcd_dir = bcd.get_pkgconfig_variable('completionsdir')
+  endif
   if bcd_dir.startswith(get_option('prefix'))
     install_data(['mwp_complete.sh', 'blackbox_decode_complete.sh'],
 		 rename: ['mwp','blackbox-devcode'],

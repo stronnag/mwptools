@@ -1,4 +1,5 @@
-otx_build = files('build.sh')
+
+otx_dir = meson.current_source_dir()
 otx_files = files('bltmqtt.go',
 		  'btaddr_linux.go',
 		  'btaddr_other.go',

@@ -47,13 +47,11 @@ executable('flashdl', fdlsrcs, fccommon, dependencies: [ fdldeps ],
 
 subdir('src/bbox-replay')
 
-golang = find_program('go')
-if golang.found()
+if gobuild != ''
   broot = meson.current_source_dir() / 'build'
-  mpe = custom_target('mwp-plot-elevations', output: 'mwp-plot-elevations',
-		      command : [mpe_build, broot /  '@OUTPUT@'], build_by_default: true)
-  otx = custom_target('otxlog', output: 'otxlog', command : [otx_build, broot / '@OUTPUT@'],
-		      build_by_default: true)
-  bbs = custom_target('bbsummary', output: 'bbsummary',
-		      command : [bbs_build, broot / '@OUTPUT@'], build_by_default: true)
+  if gotrim != ''
+    mpe = custom_target('mwp-plot-elevations', output: 'mwp-plot-elevations', command : [gobuild, broot /  '@OUTPUT@', mpe_dir, gotrim], build_by_default: true)
+  endif
+  otx = custom_target('otxlog', output: 'otxlog', command : [gobuild, broot / '@OUTPUT@',otx_dir,gotrim], build_by_default: true)
+  bbs = custom_target('bbsummary', output: 'bbsummary', command : [gobuild, broot / '@OUTPUT@',bbs_dir, gotrim], build_by_default: true)
 endif

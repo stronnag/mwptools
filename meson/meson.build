@@ -28,7 +28,7 @@ if vapivers.version_compare('<0.46')
   dopts += '--define=USE_TV'
 endif
 
-if vapivers.version_compare('>=<0.50')
+if vapivers.version_compare('>=0.50')
   dopts += '--define=USE_URIPARSE'
 endif
 
@@ -51,3 +51,22 @@ termcap = dependency('ncurses', required: false)
 
 libm = meson.get_compiler('c').find_library('m', required : false)
 deps += libm
+
+gotrim = ''
+gobuild = ''
+golang = find_program('go')
+if golang.found()
+  gobuild = meson.current_source_dir() / 'gobuild.sh'
+  r = run_command('go', 'version')
+  if r.returncode() != 0
+  error('failed to get go version')
+  else
+    govers = r.stdout().strip()
+    go1 = govers.split()
+    go2 = go1[2].split('.')
+    gminor = go2[1].to_int()
+    if gminor > 12
+      gotrim = '-trimpath'
+    endif
+  endif
+endif
