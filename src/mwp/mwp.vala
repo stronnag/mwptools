@@ -461,29 +461,9 @@ public class MWP : Gtk.Application {
     private WPMGR wpmgr;
     private MissionItem[] wp_resp;
     private string boxnames = null;
-    private static string mission;
-    private static string kmlfile;
-    private static string serial;
-    private static bool autocon;
     private int autocount = 0;
     private uint8 last_wp_pts =0;
 
-    private static bool mkcon = false;
-    private static bool ignore_sz = false;
-    private static bool nopoll = false;
-    private static bool xnopoll = false;
-    private static bool rawlog = false;
-    private static bool no_trail = false;
-    private static bool no_max = false;
-    private static bool force_mag = false;
-    private static bool force_nc = false;
-    private static bool force4 = false;
-    private static bool chome = false;
-    private static string mwoptstr;
-    private static string llstr=null;
-    private static string layfile=null;
-    private static bool asroot = false;
-    private static bool legacy_unused;
     private Mission lastmission;
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
     private uint8 vwarn1;
@@ -534,7 +514,7 @@ public class MWP : Gtk.Application {
     private uint8 icount = 0;
     private bool usemag = false;
     private int16 mhead;
-    public static string exstr;
+
 
     private bool have_vers;
     private bool have_misc;
@@ -598,11 +578,6 @@ public class MWP : Gtk.Application {
     private MapSize mapsize;
 
     private string? vname = null;
-
-    private static bool is_wayland = false;
-    private static bool use_xwayland = false;
-    private static bool permawarn = false;
-    private static string xlib;
 
     private uchar hwstatus[9];
     private ModelMap mmap;
@@ -942,30 +917,12 @@ public class MWP : Gtk.Application {
     private uint last_tm = 0;
     private uint lastok = 0;
     private uint last_an = 0;
-    private static bool offline = false;
-    private static string rfile = null;
-    private static string bfile = null;
-    private static string forward_device = null;
-    private static string sport_device = null;
-    private static string radar_device = null;
-    private static int dmrtype=0;
-    private static DEBUG_FLAGS debug_flags = 0;
-    private static VersInfo vi ={0};
-    private static bool set_fs;
-    private static bool show_vers = false;
-    private static int stack_size = 0;
-    private static int mod_points = 0;
-    public static unowned string ulang;
-    private static bool ignore_3dr = false;
-    private static string? exvox = null;
-    private static string rrstr;
-    private static bool nofsmenu = false;
-    private static bool relaxed = false;
     private int nrings = 0;
     private double ringint = 0;
     private bool replay_paused;
     private SPORT_INFO spi;
     private CurrData curr;
+    private VersInfo vi;
 
     private MwpServer mss=null;
     private uint8 spapi =  0;
@@ -986,50 +943,210 @@ public class MWP : Gtk.Application {
         {"text/uri-list",0,0}
     };
 
-    const OptionEntry[] options = {
-        { "mission", 'm', 0, OptionArg.STRING, out mission, "Mission file", "file-name"},
-        { "serial-device", 's', 0, OptionArg.STRING, out serial, "Serial device", "device_name"},
-        { "device", 'd', 0, OptionArg.STRING, out serial, "Serial device", "device-name"},
-        { "flight-controller", 'f', 0, OptionArg.STRING, out mwoptstr, "mw|mwnav|bf|cf", "fc-name"},
-        { "connect", 'c', 0, OptionArg.NONE, out mkcon, "connect to first device (does not set auto flag)", null},
-        { "auto-connect", 'a', 0, OptionArg.NONE, out autocon, "auto-connect to first device (sets auto flag)", null},
-        { "no-poll", 'N', 0, OptionArg.NONE, out nopoll, "don't poll for nav info", null},
-        { "no-trail", 'T', 0, OptionArg.NONE, out no_trail, "don't display GPS trail", null},
-        { "raw-log", 'r', 0, OptionArg.NONE, out rawlog, "log raw serial data to file", null},
-        { "ignore-sizing", 0, 0, OptionArg.NONE, out ignore_sz, "ignore minimum size constraint", null},
-        { "full-screen", 0, 0, OptionArg.NONE, out set_fs, "open full screen", null},
-        { "ignore-rotation", 0, 0, OptionArg.NONE, out legacy_unused, "legacy unused", null},
-        { "dont-maximise", 0, 0, OptionArg.NONE, out no_max, "don't maximise the window", null},
-        { "force-mag", 0, 0, OptionArg.NONE, out force_mag, "force mag for vehicle direction", null},
-        { "force-nav", 0, 0, OptionArg.NONE, out force_nc, "force nav capaable", null},
-        { "layout", 'l', 0, OptionArg.STRING, out layfile, "Layout name", null},
-        { "force-type", 't', 0, OptionArg.INT, out dmrtype, "Model type", "type-code_no"},
-        { "force4", '4', 0, OptionArg.NONE, out force4, "Force ipv4", null},
-        { "ignore-3dr", '3', 0, OptionArg.NONE, out ignore_3dr, "Ignore 3DR RSSI info", null},
-        { "centre-on-home", 'H', 0, OptionArg.NONE, out chome, "Centre on home", null},
-        { "debug-flags", 0, 0, OptionArg.INT, out debug_flags, "Debug flags (mask)", null},
-        { "replay-mwp", 'p', 0, OptionArg.STRING, out rfile, "replay mwp log file", "file-name"},
-        { "replay-bbox", 'b', 0, OptionArg.STRING, out bfile, "replay bbox log file", "file-name"},
-        { "centre", 0, 0, OptionArg.STRING, out llstr, "Centre position", "position"},
-        { "offline", 0, 0, OptionArg.NONE, out offline, "force offline proxy mode", null},
-        { "n-points", 'S', 0, OptionArg.INT, out stack_size, "Number of points shown in GPS trail", "N"},
-        { "mod-points", 'M', 0, OptionArg.INT, out mod_points, "Modulo points to show in GPS trail", "N"},
+    private string xlib;
+    private bool is_wayland = false;
+    private bool xnopoll = false;
 
-        { "rings", 0, 0, OptionArg.STRING, out rrstr, "Range rings (number, interval(m)), e.g. --rings 10,20", "number,interval"},
-        { "voice-command", 0, 0, OptionArg.STRING, out exvox, "External speech command", "command string"},
-        { "version", 'v', 0, OptionArg.NONE, out show_vers, "show version", null},
-        { "wayland", 0, 0, OptionArg.NONE, out legacy_unused, "legacy unused", null},
-        { "noway", 0, 0, OptionArg.NONE, out use_xwayland, "ignore wayland (if available)", null},
-        { "really-really-run-as-root", 0, 0, OptionArg.NONE, out asroot, "no reason to ever use this", null},
-        { "forward-to", 0, 0, OptionArg.STRING, out forward_device, "forward telemetry to", "device-name"},
-        { "radar-device", 0, 0, OptionArg.STRING, out radar_device, "dedicated inav radar device", "device-name"},
-        { "smartport", 0, 0, OptionArg.STRING, out sport_device, "smartport device", "device-name"},
-        {"perma-warn", 0, 0, OptionArg.NONE, out permawarn, "info dialogues never time out", null},
-        {"fsmenu", 0, 0, OptionArg.NONE, out nofsmenu, "use a menu bar in full screen (vice a menu button)", null},
-        { "kmlfile", 'k', 0, OptionArg.STRING, out kmlfile, "KML file", "file-name"},
-        {"relaxed-msp", 0, 0, OptionArg.NONE, out relaxed, "don't check MSP direction flag", null},
+        /* Options parsing */
+    private bool permawarn = false;
+    private string mission;
+    private string kmlfile;
+    private string serial;
+    private bool autocon;
+    private bool mkcon = false;
+    private bool ignore_sz = false;
+    private bool nopoll = false;
+    private bool rawlog = false;
+    private bool no_trail = false;
+    private bool no_max = false;
+    private bool force_mag = false;
+    private bool force_nc = false;
+    private bool force4 = false;
+    private bool chome = false;
+    private string mwoptstr;
+    private string llstr=null;
+    private string layfile=null;
+    private bool asroot = false;
+    private bool legacy_unused;
+    public string exstr;
+    private bool offline = false;
+    private string rfile = null;
+    private string bfile = null;
+    private string forward_device = null;
+    private string sport_device = null;
+    private string radar_device = null;
+    private int dmrtype=0;
+    private DEBUG_FLAGS debug_flags = 0;
+    private bool set_fs;
+    private int stack_size = 0;
+    private int mod_points = 0;
+    private bool ignore_3dr = false;
+    private string? exvox = null;
+    private string rrstr;
+    private bool nofsmenu = false;
+    private bool relaxed = false;
+    private bool ready;
+
+    const OptionEntry[] options = {
+        { "mission", 'm', 0, OptionArg.STRING, null, "Mission file", "file-name"},
+        { "serial-device", 's', 0, OptionArg.STRING, null, "Serial device", "device_name"},
+        { "device", 'd', 0, OptionArg.STRING, null, "Serial device", "device-name"},
+        { "flight-controller", 'f', 0, OptionArg.STRING, null, "mw|mwnav|bf|cf", "fc-name"},
+        { "connect", 'c', 0, OptionArg.NONE, null, "connect to first device (does not set auto flag)", null},
+        { "auto-connect", 'a', 0, OptionArg.NONE, null, "auto-connect to first device (sets auto flag)", null},
+        { "no-poll", 'N', 0, OptionArg.NONE, null, "don't poll for nav info", null},
+        { "no-trail", 'T', 0, OptionArg.NONE, null, "don't display GPS trail", null},
+        { "raw-log", 'r', 0, OptionArg.NONE, null, "log raw serial data to file", null},
+        { "ignore-sizing", 0, 0, OptionArg.NONE, null, "ignore minimum size constraint", null},
+        { "full-screen", 0, 0, OptionArg.NONE, null, "open full screen", null},
+        { "ignore-rotation", 0, 0, OptionArg.NONE, null, "legacy unused", null},
+        { "dont-maximise", 0, 0, OptionArg.NONE, null, "don't maximise the window", null},
+        { "force-mag", 0, 0, OptionArg.NONE, null, "force mag for vehicle direction", null},
+        { "force-nav", 0, 0, OptionArg.NONE, null, "force nav capaable", null},
+        { "layout", 'l', 0, OptionArg.STRING, null, "Layout name", null},
+        { "force-type", 't', 0, OptionArg.INT, null, "Model type", "type-code_no"},
+        { "force4", '4', 0, OptionArg.NONE, null, "Force ipv4", null},
+        { "ignore-3dr", '3', 0, OptionArg.NONE, null, "Ignore 3DR RSSI info", null},
+        { "centre-on-home", 'H', 0, OptionArg.NONE, null, "Centre on home", null},
+        { "debug-flags", 0, 0, OptionArg.INT, null, "Debug flags (mask)", null},
+        { "replay-mwp", 'p', 0, OptionArg.STRING, null, "replay mwp log file", "file-name"},
+        { "replay-bbox", 'b', 0, OptionArg.STRING, null, "replay bbox log file", "file-name"},
+        { "centre", 0, 0, OptionArg.STRING, null, "Centre position", "position"},
+        { "offline", 0, 0, OptionArg.NONE, null, "force offline proxy mode", null},
+        { "n-points", 'S', 0, OptionArg.INT, null, "Number of points shown in GPS trail", "N"},
+        { "mod-points", 'M', 0, OptionArg.INT, null, "Modulo points to show in GPS trail", "N"},
+
+        { "rings", 0, 0, OptionArg.STRING, null, "Range rings (number, interval(m)), e.g. --rings 10,20", "number,interval"},
+        { "voice-command", 0, 0, OptionArg.STRING, null, "External speech command", "command string"},
+        { "version", 'v', 0, OptionArg.NONE, null, "show version", null},
+        { "build-id", 0, 0, OptionArg.NONE, null, "show build id", null},
+        { "really-really-run-as-root", 0, 0, OptionArg.NONE, null, "no reason to ever use this", null},
+        { "forward-to", 0, 0, OptionArg.STRING, null, "forward telemetry to", "device-name"},
+        { "radar-device", 0, 0, OptionArg.STRING, null, "dedicated inav radar device", "device-name"},
+        { "smartport", 0, 0, OptionArg.STRING, null, "smartport device", "device-name"},
+        {"perma-warn", 0, 0, OptionArg.NONE, null, "info dialogues never time out", null},
+        {"fsmenu", 0, 0, OptionArg.NONE, null, "use a menu bar in full screen (vice a menu button)", null},
+        { "kmlfile", 'k', 0, OptionArg.STRING, null, "KML file", "file-name"},
+        {"relaxed-msp", 0, 0, OptionArg.NONE, null, "don't check MSP direction flag", null},
         {null}
     };
+
+    void show_startup()
+    {
+        var sb = new StringBuilder("mwp ");
+        var s_0 = MwpVers.get_build();
+        var s_1 = MwpVers.get_id();
+        sb.append(s_0);
+        sb.append_c(' ');
+        sb.append(s_1);
+        var verstr = sb.str;
+        var xlib = "Wayland";
+        var is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
+        if(!is_wayland)
+            xlib="Xlib";
+        MWPLog.message("mwp startup version: %s on %s\n", verstr, xlib);
+        string os=null;
+        MWPLog.message("%s\n", Logger.get_host_info(out os));
+        var vstr = check_virtual(os);
+        if(vstr == null || vstr.length == 0)
+            vstr = "none";
+        MWPLog.message("hypervisor: %s\n", vstr);
+#if MQTT
+        MWPLog.message("MQTT enabled via the \"%s\" library\n", MwpMQTT.provider());
+#endif
+    }
+
+    public MWP ()
+    {
+        Object(application_id: "org.mwp.app",
+               flags: ApplicationFlags.HANDLES_COMMAND_LINE);
+        var s = read_env_args();
+        var v = check_env_args(s);
+        set_opts_from_dict(v);
+        add_main_option_entries(options);
+        handle_local_options.connect(do_handle_local_options);
+        activate.connect(handle_activate);
+    }
+
+    private int _command_line (ApplicationCommandLine command_line) {
+        var o = command_line.get_options_dict();
+        set_opts_from_dict(o);
+        activate();
+        return 0;
+    }
+
+    public override int command_line (ApplicationCommandLine command_line) {
+        this.hold ();
+        int res = _command_line (command_line);
+        this.release ();
+        return res;
+    }
+
+    private int do_handle_local_options(VariantDict o)
+    {
+            // return 0 to stop here ..
+        if (o.contains("version")) {
+            stdout.printf("%s\n", MwpVers.get_id());
+            return 0;
+        }
+        if (o.contains("build-id")) {
+            stdout.printf("%s\n", MwpVers.get_build());
+            return 0;
+        }
+        string oval = null;
+        string []vars={"replay-bbox", "kmlfile", "mission", "replay-mwp"};
+        foreach (var k in vars) {
+            if (o.contains(k)) {
+                o.lookup(k, "s", ref oval);
+                if (oval != null)
+                    o.insert_value(k, new Variant.string(Posix.realpath(oval)));
+            }
+        }
+        return -1;
+    }
+
+    private void set_opts_from_dict(VariantDict o) {
+        o.lookup("mission", "s", ref mission);
+        o.lookup("kmlfile", "s", ref kmlfile);
+        o.lookup("replay-mwp", "s", ref rfile);
+        o.lookup("replay-bbox", "s", ref bfile);
+
+        if(!ready) {
+            o.lookup("serial-device", "s", ref serial);
+            o.lookup("device", "s", ref serial);
+            o.lookup("flight-controller", "s", ref mwoptstr);
+            o.lookup("connect", "b", ref mkcon);
+            o.lookup("auto-connect", "b", ref autocon);
+            o.lookup("no-poll", "b", ref nopoll);
+            o.lookup("no-trail", "b", ref no_trail);
+            o.lookup("raw-log", "b", ref rawlog);
+            o.lookup("ignore-sizing", "b", ref ignore_sz);
+            o.lookup("full-screen", "b", ref set_fs);
+            o.lookup("ignore-rotation", "b", ref legacy_unused);
+            o.lookup("dont-maximise", "b", ref no_max);
+            o.lookup("force-mag", "b", ref force_mag);
+            o.lookup("force-nav", "b", ref force_nc);
+            o.lookup("layout", "s", ref layfile);
+            o.lookup("force-type", "i", ref dmrtype);
+            o.lookup("force4", "b", ref force4);
+            o.lookup("ignore-3dr", "b", ref ignore_3dr);
+            o.lookup("centre-on-home", "b", ref chome);
+            o.lookup("debug-flags", "i", ref debug_flags);
+            o.lookup("centre", "s", ref llstr);
+            o.lookup("offline", "b", ref offline);
+            o.lookup("n-points", "i", ref stack_size);
+            o.lookup("mod-points", "i", ref mod_points);
+            o.lookup("rings", "s", ref rrstr);
+            o.lookup("voice-command", "s", ref exvox);
+            o.lookup("really-really-run-as-root", "b", ref asroot);
+            o.lookup("forward-to", "s", ref forward_device);
+            o.lookup("radar-device", "s", ref radar_device);
+            o.lookup("smartport", "s", ref sport_device);
+            o.lookup("perma-warn", "b", ref permawarn);
+            o.lookup("fsmenu", "b", ref nofsmenu);
+            o.lookup("relaxed-msp", "b", ref relaxed);
+        }
+    }
 
     void show_dock_id (DOCKLETS id, bool iconify=false)
     {
@@ -1073,11 +1190,6 @@ public class MWP : Gtk.Application {
     {
         var res = (dockitem[id].is_closed () == dockitem[id].is_iconified());
         set_menu_state(dockmenus[id], !res);
-    }
-
-    MWP ()
-    {
-        Object(application_id: "mwp.app", flags: ApplicationFlags.FLAGS_NONE);
     }
 
     public void cleanup()
@@ -1177,11 +1289,76 @@ public class MWP : Gtk.Application {
             });
     }
 
-    public override void activate ()
+    public void handle_activate ()
     {
-        base.startup();
-        gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
+        if (window == null) {
+            show_startup();
+            parse_cli_options();
+            ready = true;
+            create_main_window();
+        }
+        parse_cli_options();
+    }
 
+    private void parse_cli_options()
+    {
+        if (mission != null)
+        {
+            var fn = mission;
+            mission = null;
+            Idle.add(() => {
+                    var ms = open_mission_file(fn);
+                    if(ms != null)
+                    {
+                        clat = ms.cy;
+                        clon = ms.cx;
+                        if(ms.zoom != 0)
+                        {
+                            instantiate_mission(ms);
+                        }
+                        last_file = fn;
+                        update_title_from_file(fn);
+                    }
+                    return Source.REMOVE;
+                });
+        }
+
+        if(kmlfile != null)
+        {
+            var ks = kmlfile.split(",");
+            kmlfile = null;
+            Idle.add(() => {
+                    foreach(var kf in ks)
+                        try_load_overlay(kf);
+                    return Source.REMOVE;
+                });
+        }
+
+       if(rfile != null)
+       {
+           var fn = Posix.realpath(rfile);
+           rfile = null;
+           Idle.add(() => { // was Timeout.add(600, ...
+                   usemag = force_mag;
+                   run_replay(fn, true, Player.MWP);
+                   return Source.REMOVE;
+               });
+       }
+       else if(bfile != null)
+       {
+           var fn = Posix.realpath(bfile);
+           bfile = null;
+           Idle.add(() => {
+                   usemag = force_mag;
+                   replay_bbox(true, fn);
+                   return Source.REMOVE;
+               });
+       }
+    }
+
+    private void create_main_window()
+    {
+        gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
         lastmission = new Mission();
         wpmgr = WPMGR();
 
@@ -1194,26 +1371,24 @@ public class MWP : Gtk.Application {
         conf = new MWPSettings();
         conf.read_settings();
 
-        {
-            string []  ext_apps = {
+        string []  ext_apps = {
             conf.blackbox_decode, "replay_bbox_ltm.rb",
             "gnuplot", "mwp-plot-elevations", "unzip", "otxlog", "fl2ltm" };
-            bool appsts[7];
-            var i = 0;
-            foreach (var s in ext_apps)
-            {
-                appsts[i] = MWPUtils.exists_on_path(s);
-                if (appsts[i] == false)
-                    MWPLog.message("Failed to find \"%s\" on PATH\n", s);
-                i++;
-            }
-            x_replay_bbox_ltm_rb = (appsts[0]&&appsts[1]);
-            x_plot_elevations_rb = (appsts[2]&&appsts[3]);
-            x_kmz = appsts[4];
-            x_otxlog = appsts[5];
-            if (Environment.get_variable("MWP_LEGACY_REPLAY") == null)
-                x_fl2ltm = appsts[6];
+        bool appsts[7];
+        var si = 0;
+        foreach (var s in ext_apps)
+        {
+            appsts[si] = MWPUtils.exists_on_path(s);
+            if (appsts[si] == false)
+                MWPLog.message("Failed to find \"%s\" on PATH\n", s);
+            si++;
         }
+        x_replay_bbox_ltm_rb = (appsts[0]&&appsts[1]);
+        x_plot_elevations_rb = (appsts[2]&&appsts[3]);
+        x_kmz = appsts[4];
+        x_otxlog = appsts[5];
+        if (Environment.get_variable("MWP_LEGACY_REPLAY") == null)
+            x_fl2ltm = appsts[6];
 
         XmlIO.uc = conf.ucmissiontags;
 
@@ -1265,10 +1440,9 @@ public class MWP : Gtk.Application {
                         break;
                 }
                 if(vsb.len > 0)
-                    exvox = vsb.str;
+                        exvox = vsb.str;
             }
         }
-
 
         if(exvox != null)
         {
@@ -1277,7 +1451,7 @@ public class MWP : Gtk.Application {
 
         MwpSpeech.set_api(spapi);
 
-        ulang = Intl.setlocale(LocaleCategory.NUMERIC, "");
+//        var ulang = Intl.setlocale(LocaleCategory.NUMERIC, "");
 
         if(conf.uilang == "en")
             Intl.setlocale(LocaleCategory.NUMERIC, "C");
@@ -2411,35 +2585,6 @@ public class MWP : Gtk.Application {
                 }
             }
         }
-        else if (mission != null)
-        {
-            var ms = open_mission_file(mission);
-            if(ms != null)
-            {
-                clat = ms.cy;
-                clon = ms.cx;
-                if(ms.zoom != 0)
-                {
-                    zm = ms.zoom;
-                    instantiate_mission(ms);
-                }
-                else
-                    Timeout.add(1000,() => {
-                            instantiate_mission(ms);
-                            return Source.REMOVE;
-                        });
-                last_file = mission;
-                update_title_from_file(mission);
-            }
-        }
-
-        if(kmlfile != null)
-        {
-            var ks = kmlfile.split(",");
-            foreach(var kf in ks)
-                try_load_overlay(kf);
-        }
-
         map_centre_on(clat, clon);
         if (check_zoom_sanity(zm))
             view.zoom_level = zm;
@@ -2747,23 +2892,6 @@ public class MWP : Gtk.Application {
 
        acquire_bus();
 
-       if(rfile != null)
-       {
-           usemag = force_mag;
-           Timeout.add(600, () => {
-                   run_replay(Posix.realpath(rfile), true, Player.MWP);
-                   return false;
-               });
-       }
-       else if(bfile != null)
-       {
-           usemag = force_mag;
-           Timeout.add(600, () => {
-                   replay_bbox(true, Posix.realpath(bfile));
-                   return false;
-               });
-       }
-
         if(sport_device != null)
             append_deventry("*SMARTPORT*");
 
@@ -2820,7 +2948,6 @@ public class MWP : Gtk.Application {
         notification.set_icon (icon);
         send_notification ("mwp", notification);
     }
-
 
     public uint8 get_mrtype()
     {
@@ -9545,7 +9672,22 @@ case 0:
             Logger.stop();
     }
 
-    private static string read_cmd_opts()
+
+    private string? read_env_args()
+    {
+        var s1 = read_cmd_opts();
+        var s2 = Environment.get_variable("MWP_ARGS");
+        var sb = new StringBuilder();
+        if(s1.length > 0)
+           sb.append(s1);
+        if(s2 != null)
+            sb.append(s2);
+        if(sb.len > 0)
+            return sb.str;
+            return null;
+    }
+
+    private string read_cmd_opts()
     {
         var sb = new StringBuilder ();
         var fn = MWPUtils.find_conf_file("cmdopts");
@@ -9572,39 +9714,66 @@ case 0:
         return sb.str;
     }
 
-    private static string? read_env_args()
+    OptionEntry ? find_option(string s)
     {
-        var s1 = read_cmd_opts();
-        var s2 = Environment.get_variable("MWP_ARGS");
-        var sb = new StringBuilder();
-        if(s1.length > 0)
-           sb.append(s1);
-        if(s2 != null)
-            sb.append(s2);
-        if(sb.len > 0)
+        foreach(var o in options)
         {
-            sb.prepend("mwp ");
-            return sb.str;
-
+            if (s[1] == '-') {
+                if(s[2:s.length] == o.long_name) {
+                    return o;
+                }
+            } else if (s[1] == o.short_name) {
+                return o;
+            }
         }
-        else
-            return null;
+        return null;
     }
 
-    private static string? check_env_args(OptionContext opt, string?s)
+    private  VariantDict  check_env_args(string?s)
     {
+        VariantDict v = new VariantDict();
         if(s != null)
         {
             string []m;
             try
             {
                 Shell.parse_argv(s, out m);
-                unowned string? []om = m;
-                opt.parse(ref om);
+                for(var i = 0; i < m.length; i++)
+                {
+                    string extra=null;
+                    int iarg;
+
+                    var o = find_option(m[i]);
+                    if (o.arg !=  OptionArg.NONE)
+                        extra = m[++i];
+
+                    switch(o.arg) {
+                        case OptionArg.NONE:
+                            if (o.long_name != null)
+                                v.insert(o.long_name, "b", true);
+                            if (o.short_name != 0)
+                                v.insert(o.short_name.to_string(), "b", true);
+                            break;
+                        case OptionArg.STRING:
+                            if (o.long_name != null)
+                                v.insert(o.long_name, "s", extra);
+                            if (o.short_name != 0)
+                                v.insert(o.short_name.to_string(), "s", extra);
+                            break;
+                        case OptionArg.INT:
+                            iarg = int.parse(extra);
+                            if (o.long_name != null)
+                                v.insert(o.long_name, "i", iarg);
+                            if (o.short_name != 0)
+                                v.insert(o.short_name.to_string(), "i", iarg);
+                            break;
+                        default:
+                            break;
+                    }
+                }
             } catch {}
-            return s[4:s.length];
         }
-        return null;
+        return v;
     }
 
     private static string? check_virtual(string? os)
@@ -9700,127 +9869,11 @@ case 0:
 
     public static int main (string[] args)
     {
-        var lk = new Locker();
-        int lkres;
-
-        var sb = new StringBuilder("mwp ");
-        var s_0 = MwpVers.get_build();
-        var s_1 = MwpVers.get_id();
-        sb.append(s_0);
-        sb.append_c(' ');
-        sb.append(s_1);
-        var verstr = sb.str;
-
-        if((lkres = lk.lock()) == 0)
-        {
-            string defargs = read_env_args();
-            is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
-            if (is_wayland)
-            {
-                if(defargs != null && defargs.contains("--noway"))
-                    use_xwayland = true;
-                else
-                {
-                    foreach (var a in args)
-                        if (a == "--noway")
-                            use_xwayland = true;
-                }
-
-                if(use_xwayland)
-                {
-                    MWPLog.message("Using Xwayland by user choice\n");
-                    Gdk.set_allowed_backends("x11");
-                    xlib = "XWayland";
-                }
-                else
-                    xlib = "Wayland";
-            }
-            else
-                xlib="Xlib";
-
-            if (GtkClutter.init (ref args) != InitError.SUCCESS)
-                return 1;
-
-            string fixedopts=null;
-
-            var opt = new OptionContext("");
-            try {
-                opt.set_summary("  %s".printf(verstr));
-                opt.set_help_enabled(true);
-                opt.add_main_entries(options, null);
-                fixedopts = check_env_args(opt, defargs);
-                opt.parse(ref args);
-            } catch (OptionError e) {
-                stderr.printf("Error: %s\n", e.message);
-                stderr.printf("Run '%s --help' to see a full list of available "+
-                              "options\n", args[0]);
-                return 1;
-            }
-
-            if(show_vers)
-            {
-                stderr.printf("%s\n", verstr);
-            }
-            else if(Posix.geteuid() == 0 && asroot == false)
-            {
-                MWPLog.message("You should not run this application as root\n");
-            }
-            else
-            {
-                MWPLog.message("mwp startup version: %s on %s\n", verstr, xlib);
-                string os=null;
-                MWPLog.message("%s\n", Logger.get_host_info(out os));
-                var vstr = check_virtual(os);
-                if(vstr == null || vstr.length == 0)
-                    vstr = "none";
-                MWPLog.message("hypervisor: %s\n", vstr);
-
-                if(fixedopts != null)
-                    MWPLog.message("default options: %s\n", fixedopts);
-#if MQTT
-                MWPLog.message("MQTT enabled via the \"%s\" library\n",
-                              MwpMQTT.provider());
-#endif
-                Gst.init (ref args);
-                MwpLibC.atexit(MWP.xchild);
-                var app = new MWP();
-                app.run ();
-            }
-            lk.unlock();
-        }
-        else
-        {
-            var opt = new OptionContext("");
-            try {
-                opt.set_summary("  %s".printf(verstr));
-                opt.set_help_enabled(true);
-                opt.add_main_entries(options, null);
-                opt.parse(ref args);
-            } catch (OptionError e) {
-                stderr.printf("Error: %s\n", e.message);
-                stderr.printf("Run '%s --help' to see a full list of available "+
-                              "options\n", args[0]);
-                return 1;
-            }
-
-            string[] fargs = {};
-            if(mission != null)
-                fargs += Posix.realpath(mission);
-
-            if (rfile != null)
-                fargs += Posix.realpath(rfile);
-            else if (bfile != null)
-                fargs += Posix.realpath(bfile);
-
-            if (fargs.length > 0)
-            {
-                var m  = new MwpBusClient();
-                m.set_filename(fargs);
-                m.acquire();
-                m.run();
-            }
-            stderr.puts("Application is already running\n");
-        }
-        return lkres;
+        MwpLibC.atexit(MWP.xchild);
+        if (GtkClutter.init (ref args) != InitError.SUCCESS)
+            return 1;
+        Gst.init (ref args);
+        var app = new MWP();
+        return app.run (args);
     }
 }

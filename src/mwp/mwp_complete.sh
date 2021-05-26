@@ -100,7 +100,7 @@ _mwp_complete()
 	--rings
 	--voice-command
 	--version
-	--noway
+	--build-id
 	--really-really-run-as-root
 	--forward-to
 	--perma-warn
