@@ -2055,6 +2055,8 @@ public class ListBox : GLib.Object
         var t = Environment.get_tmp_dir();
         var ir = new Rand().int_range (0, 0xffffff);
         var s = Path.build_filename (t, ".mi-%d-%08x.xml".printf(Posix.getpid(), ir));
+        if (MwpMisc.is_cygwin())
+            s = MwpMisc.get_native_path(s);
         return s;
     }
 
