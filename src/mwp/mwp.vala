@@ -8652,7 +8652,8 @@ case 0:
             } else if (serdev.has_prefix("mqtt://") ||
                        serdev.has_prefix("ssl://") ||
                        serdev.has_prefix("mqtts://") ||
-                       serdev.has_prefix("ws://") /*|| serdev.has_prefix("wss://")*/ ) {
+                       serdev.has_prefix("ws://") ||
+                       serdev.has_prefix("wss://") ) {
 #if MQTT
                 mqtt_available = ostat = mqtt.setup(serdev);
                 rawlog = false;
