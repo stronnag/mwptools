@@ -7499,6 +7499,20 @@ case 0:
             case MSP.Cmds.MAVLINK_MSG_ID_STATUS:
                 break;
 
+            case MSP.Cmds.MAVLINK_MSG_SCALED_PRESSURE:
+            case MSP.Cmds.MAVLINK_MSG_BATTERY_STATUS:
+                break;
+
+            case MSP.Cmds.MAVLINK_MSG_STATUSTEXT:
+                {
+                    uint8 sev = raw[0];
+                    raw[51] = 0;
+                    string text = (string)raw[1:50];
+                    var stext = text.strip();
+                    MWPLog.message("mavstatus (%d) %s\n", sev, stext);
+                }
+                break;
+
             default:
                 uint mcmd;
                 string mtxt;
