@@ -118,7 +118,7 @@ public class MSP : Object {
         RTC =  246,
         SET_RTC = 247,
         DEBUGMSG = 253,
-		NAME = 10,
+        NAME = 10,
 
         RADAR_POS = 248,
 
@@ -127,14 +127,14 @@ public class MSP : Object {
         COMMON_SET_TZ = 0x1002,
         COMMON_SETTING = 0x1003,
         COMMON_SET_SETTING = 0x1004,
-	    COMMON_SET_RADAR_POS = 0x100B,
+        COMMON_SET_RADAR_POS = 0x100B,
         INAV_STATUS = 0x2000,
-		ANALOG2 = 0x2002,
-		INAV_MIXER = 0x2010,
+        ANALOG2 = 0x2002,
+        INAV_MIXER = 0x2010,
 
-	    BLACKBOX_CONFIGv2 = 0x201A,
-		SAFEHOME = 0x2038,
-		SET_SAFEHOME = 0x2039,
+        BLACKBOX_CONFIGv2 = 0x201A,
+        SAFEHOME = 0x2038,
+        SET_SAFEHOME = 0x2039,
 
         LTM_BASE  = 0x10000,
         TS_FRAME = (LTM_BASE + 'S'),

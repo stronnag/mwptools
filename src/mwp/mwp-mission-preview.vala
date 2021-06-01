@@ -63,8 +63,9 @@ public class  MissionPreviewer : GLib.Object
     private HeadingMode head_mode;
 
     public bool is_mr = false;
-
     public bool indet { get; private set; default = false; }
+
+    private int[] jumpC;
 
     public MissionPreviewer()
     {
@@ -181,19 +182,19 @@ public class  MissionPreviewer : GLib.Object
     {
         for (var i = 0; i < mi.length; i++)
             if(mi[i].action == MSP.Action.JUMP)
-                mi[i].param3 = mi[i].param2;
+                jumpC[i] = mi[i].param2;
     }
 
     private void clearJumpCounters()
     {
         for (var i = 0; i < mi.length; i++)
             if(mi[i].action == MSP.Action.JUMP)
-                mi[i].param3 = 0;
+                jumpC[i] = 0;
     }
 
     private void resetJumpCounter(int n)
     {
-        mi[n].param3 = mi[n].param2;
+        jumpC[n] = mi[n].param2;
     }
 
     public LegPreview[] iterate_mission (HomePos h)
@@ -210,6 +211,8 @@ public class  MissionPreviewer : GLib.Object
         LegPreview[] plist={};
 
         var nsize = mi.length;
+
+        jumpC = new int[nsize];
 
         if(warmup)
         {
@@ -274,7 +277,7 @@ public class  MissionPreviewer : GLib.Object
 
                 if (typ == MSP.Action.JUMP)
                 {
-                    if (mi[n].param3 == -1)
+                    if (jumpC[n] == -1)
                     {
                         indet = true;
                         if (warmup)
@@ -286,14 +289,14 @@ public class  MissionPreviewer : GLib.Object
                     }
                     else
                     {
-                        if (mi[n].param3 == 0)
+                        if (jumpC[n] == 0)
                         {
                             resetJumpCounter(n);
                             n += 1;
                         }
                         else
                         {
-                            mi[n].param3 -= 1;
+                            jumpC[n] -= 1;
                             n = (int)mi[n].param1 - 1;
                         }
 
