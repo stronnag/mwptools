@@ -96,10 +96,9 @@ public class  MissionPreviewer : GLib.Object
         Thread.usleep(MAXSLEEP);
     }
 
-    private double fly_leg (double slat, double slon,
-                            double elat, double elon)
+    private void fly_leg (double slat, double slon, double elat, double elon,
+                          out double c, out double d)
     {
-        double c,d;
         Geo.csedist(slat,slon,elat,elon,out d, out c);
         d *= NM2METRES;
         dist += d;
@@ -115,7 +114,6 @@ public class  MissionPreviewer : GLib.Object
                 outloc (slat, slon, c);
             }
         }
-        return c;
     }
 
 /*
@@ -149,15 +147,15 @@ public class  MissionPreviewer : GLib.Object
                     const double DEGINC = 5;
                     const double SECS_CIRC = 2*Math.PI*RADIUS/MSPEED;
                     const double RNM = RADIUS / NM2METRES;
+                    double c,d;
                     Geo.posit(cy, cx, brg, RNM, out ry, out rx);
-                    fly_leg(cy,cx, ry, rx);
+                    fly_leg(cy,cx, ry, rx, out c, out d);
                     var lx = rx;
                     var ly = ry;
                     var bcnt = 0;
                     var maxbcnt = (int) (phtim*360/SECS_CIRC/DEGINC);
                     while (running && bcnt < maxbcnt)
                     {
-                        double c,d;
                         brg += DEGINC;
                         brg = brg % 360.0;
                         Geo.posit(cy, cx, brg, RNM, out ry, out rx);
@@ -208,6 +206,7 @@ public class  MissionPreviewer : GLib.Object
         var cse = 0.0;
         var cx = 0.0;
         var cy = 0.0;
+        double d;
         LegPreview[] plist={};
 
         var nsize = mi.length;
@@ -232,7 +231,7 @@ public class  MissionPreviewer : GLib.Object
 
         if(h.valid)
         {
-            cse = fly_leg(h.hlat, h.hlon, mi[0].lat, mi[0].lon);
+            fly_leg(h.hlat, h.hlon, mi[0].lat, mi[0].lon, out cse, out d);
             if(warmup)
             {
                 LegPreview p = {-1, n, cse, dist, dist};
@@ -312,13 +311,12 @@ public class  MissionPreviewer : GLib.Object
 
                 cy = mi[n].lat;
                 cx = mi[n].lon;
-                double d;
-                Geo.csedist(ly,lx,cy,cx, out d, out cse);
-                var nc = fly_leg(ly,lx,cy,cx);
+                double nc;
+                fly_leg(ly,lx,cy,cx, out nc, out d);
 
                 if(warmup)
                 {
-                    LegPreview p = {lastn, n, cse, d*NM2METRES, dist};
+                    LegPreview p = {lastn, n, cse, d, dist};
                     plist += p;
                 }
 
@@ -353,20 +351,15 @@ public class  MissionPreviewer : GLib.Object
 
 	if (running && ret && h.valid)
         {
-            if(warmup)
-            {
-                double d;
-                Geo.csedist(cy,cx,h.hlat, h.hlon, out d, out cse);
-                {
-                    LegPreview p = {lastn, -1, cse, d*NM2METRES, dist};
-                    plist += p;
-                }
-            }
-            fly_leg(cy,cx,h.hlat,h.hlon);
+            fly_leg(ly, lx, h.hlat, h.hlon, out cse, out d);
             cy = h.hlat;
             cx = h.hlon;
+            if(warmup)
+            {
+                LegPreview p = {lastn, -1, cse, d, dist};
+                plist += p;
+            }
         }
-
         clearJumpCounters();
         return plist;
     }
