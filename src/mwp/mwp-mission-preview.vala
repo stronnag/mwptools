@@ -416,9 +416,12 @@ public class  MissionPreviewer : GLib.Object
     private static bool nohome = false;
     private static bool mr = false;
     private static bool checker = false;
+    private static string hp = null;
+
 
     const OptionEntry[] options = {
         { "nohome", '0', 0, OptionArg.NONE, out nohome, "No home", null},
+        { "home", '0', 0, OptionArg.STRING, out hp, "lat,lon", null},
         { "multi-rotor", 'm', 0, OptionArg.NONE, out mr, "mr mode", null},
         { "check", 'c', 0, OptionArg.NONE, out checker, "check only", null},
         {null}
@@ -474,7 +477,19 @@ public class  MissionPreviewer : GLib.Object
         ms =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
         if (ms != null)
         {
-            HomePos h = { 50.8047104, -1.4942621, true };
+            HomePos h = {0};
+
+            if(hp != null) {
+                var parts = hp.split(",");
+                if (parts.length == 2) {
+                    h.hlat = double.parse(parts[0]);
+                    h.hlon = double.parse(parts[1]);
+                    h.valid = true;
+                }
+            } else {
+                h = { 50.8047104, -1.4942621, true };
+            }
+
 
             h.valid = !nohome;
 

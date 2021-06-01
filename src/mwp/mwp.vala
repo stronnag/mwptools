@@ -1312,7 +1312,7 @@ public class MWP : Gtk.Application {
                     {
                         clat = ms.cy;
                         clon = ms.cx;
-                        if(ms.zoom != 0)
+//                        if(ms.zoom != 0) // why??
                         {
                             instantiate_mission(ms);
                         }
