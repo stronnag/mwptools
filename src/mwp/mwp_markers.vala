@@ -35,6 +35,7 @@ public class MWPMarkers : GLib.Object
     private Champlain.MarkerLayer rdrmarkers;                // Mission Markers
     private Champlain.View _v;
     private List<uint> llist;
+    private List<uint> llistb;
     private Quark q0;
     private Quark q1;
     private Quark qtxt;
@@ -77,6 +78,10 @@ public class MWPMarkers : GLib.Object
         llist = new List<uint>();
         llist.append(10);
         llist.append(5);
+
+        llistb = new List<uint>();
+        llistb.append(5);
+        llistb.append(5);
 
         hpath.set_stroke_color(orange);
         hpath.set_dash(llist);
@@ -247,7 +252,7 @@ public class MWPMarkers : GLib.Object
     }
 
     private void get_text_for(MSP.Action typ, string no, out string text,
-                              out  Clutter.Color colour, bool nrth=false)
+                              out  Clutter.Color colour, bool nrth=false, bool jumpfwd=false)
     {
         string symb;
         switch (typ)
@@ -289,7 +294,11 @@ public class MWPMarkers : GLib.Object
                 break;
 
             case MSP.Action.JUMP:
-                symb = "⇒";
+                if(jumpfwd)
+                    symb = "⇐";
+                else
+                    symb = "⇒";
+
                 colour = { 0xed, 0x51, 0xd7, 0xc8};
                 break;
 
@@ -496,6 +505,7 @@ public class MWPMarkers : GLib.Object
 
         bool nrth = l.wp_has_rth(iter, out ni);
         var xtyp = typ;
+        bool jumpfwd = false;
 
         if(typ == MSP.Action.WAYPOINT || typ == MSP.Action.POSHOLD_TIME)
         {
@@ -509,11 +519,14 @@ public class MWPMarkers : GLib.Object
                 {
                     if(typ == MSP.Action.WAYPOINT)
                         xtyp = MSP.Action.JUMP; // arbitrary choice really
+
+                    ls.get_value (xiter, ListBox.WY_Columns.INT1, out cell);
+                    var jwp = (int)((double)cell);
+                    jumpfwd = (jwp > ino);
                 }
             }
         }
-
-        get_text_for(xtyp, no, out text, out colour, nrth);
+        get_text_for(xtyp, no, out text, out colour, nrth, jumpfwd);
         marker = new Champlain.Label.with_text (text,"Sans 10",null,null);
         marker.set_alignment (Pango.Alignment.RIGHT);
         marker.set_color (colour);
@@ -733,10 +746,10 @@ public class MWPMarkers : GLib.Object
             {
                 ls.get_value (iter, ListBox.WY_Columns.IDX, out cell);
                 var ino = int.parse((string)cell);
-                var jp = ino - 1;
                 ls.get_value (iter, ListBox.WY_Columns.INT1, out cell);
                 var jwp = (int)((double)cell);
-                ls.get_value (iter, ListBox.WY_Columns.MARKER, out cell);
+                var jp = ino - 1;
+//                ls.get_value (iter, ListBox.WY_Columns.MARKER, out cell);
                 var imarker = get_marker_for_idx(ls,jp);
                 var jmarker = get_marker_for_idx(ls,jwp);
 
@@ -749,7 +762,11 @@ public class MWPMarkers : GLib.Object
                     pp.set_child_below_sibling(jpl, markers);
                     jpl.set_stroke_color(rcol);
                     jpl.set_stroke_width (8);
-                    jpl.set_dash(llist);
+                    if (jwp < jp)
+                        jpl.set_dash(llist);
+                    else
+                        jpl.set_dash(llistb);
+
                     jpl.add_node(imarker);
                     jpl.add_node(jmarker);
                     jpath += jpl;

@@ -7130,6 +7130,7 @@ Clicking Quit will terminate the application.
             </child>
             <child>
               <object class="GtkToggleButton" id="wp_edit_button">
+                <property name="label" translatable="yes">Edit WPs</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <property name="tooltip-text" translatable="yes">Enable / disable the addition of WPs by clicking on the map (disabled)</property>

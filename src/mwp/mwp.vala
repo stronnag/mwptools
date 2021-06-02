@@ -1597,7 +1597,7 @@ public class MWP : Gtk.Application {
         wp_edit_button.clicked.connect(() =>
         {
             wp_edit = !wp_edit;
-            wp_edit_button.label= (wp_edit) ? "✔" : "";
+            wp_edit_button.label= (wp_edit) ? "✔" : "Edit WPs";
             wp_edit_button.tooltip_text = ("Enable / disable the addition of WPs by clicking on the map (%sabled)".printf((wp_edit) ? "en" : "dis"));
             if(wp_edit)
             {
