@@ -68,7 +68,7 @@ func main() {
 	if err == nil {
 		m.Update_details(mpts, elev)
 		if Conf.Dump {
-			Dump_data(mpts)
+			Dump_data(mpts, "")
 			os.Exit(0)
 		}
 		npts := int(mpts[len(mpts)-1].D) / 30
@@ -84,5 +84,7 @@ func main() {
 			m.Save(mpts)
 		}
 		Gnuplot_mission(mpts, telev)
+		Dump_climb_dive(mpts, true)
 	}
+	Dump_data(mpts, "/tmp/.mwpmission.json")
 }

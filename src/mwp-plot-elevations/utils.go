@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"fmt"
 	"encoding/json"
+	"math"
 )
 
 const (
@@ -45,9 +46,55 @@ type Options struct {
 	Dump    bool
 }
 
-func Dump_data(mpts []Point) {
+func Dump_data(mpts []Point, fn string) {
 	js, _ := json.Marshal(mpts)
-	fmt.Println(string(js))
+	if fn == "" {
+		fmt.Println(string(js))
+	} else {
+		fh, err := os.Create(fn)
+		if err == nil {
+			defer fh.Close()
+			fh.Write(js)
+		}
+	}
+}
+
+func Dump_climb_dive(mpts []Point, tofs bool) {
+	var fh *os.File
+	var err error
+	havefh := false
+	if tofs {
+		fn := filepath.Join(os.TempDir(), "mwpmission-angles.txt")
+		fh, err = os.Create(fn)
+		if err == nil {
+			defer fh.Close()
+			havefh = true
+		}
+	}
+	lastd := 0.0
+	lasta := 0
+	var lastp string
+	var act string
+	for _, m := range mpts {
+		if m.D > 0 {
+			ddif := m.D - lastd
+			adif := m.Xz - lasta
+			if adif < 0 {
+				act = "dive"
+			} else {
+				act = "climb"
+			}
+			angle := (180.0 / math.Pi) * math.Atan2(float64(adif), ddif)
+			str := fmt.Sprintf("%4s - %4s\t%5.1f°\t(%s)\n", lastp, m.Wpname, angle, act)
+			if havefh {
+				fh.WriteString(str)
+			}
+			os.Stdout.WriteString(str)
+		}
+		lastd = m.D
+		lasta = m.Xz
+		lastp = m.Wpname
+	}
 }
 
 func Read_config() {

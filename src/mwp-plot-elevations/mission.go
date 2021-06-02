@@ -257,7 +257,7 @@ func (m *Mission) Get_points() []Point {
 func (m *Mission) Update_details(mpts []Point, elev []int) {
 	n := 0
 
-	if mpts[0].Flag == WP_HOME {
+	if mpts[0].Set == WP_HOME {
 		mpts[0].Gz = elev[0]
 		mpts[0].Mz = 0
 		mpts[0].Az = elev[0]
