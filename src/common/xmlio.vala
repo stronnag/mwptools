@@ -195,6 +195,12 @@ public class XmlIO : Object
                             case "cy":
                                 ms.cy = DStr.strtod(prop->children->content,null);
                                 break;
+                            case "home-x":
+                                ms.homex = DStr.strtod(prop->children->content,null);
+                                break;
+                            case "home-y":
+                                ms.homey = DStr.strtod(prop->children->content,null);
+                                break;
                         }
                     }
                     parse_sub_node(iter, ref ms);
@@ -253,6 +259,10 @@ public class XmlIO : Object
         subnode->new_prop ("zoom", ms.zoom.to_string());
         subnode->new_prop ("cx", ms.cx.format(dbuf,"%.7f"));
         subnode->new_prop ("cy", ms.cy.format(dbuf,"%.7f"));
+        if(ms.homex != 0 && ms.homey != 0) {
+            subnode->new_prop ("home-x", ms.homex.format(dbuf,"%.7f"));
+            subnode->new_prop ("home-y", ms.homey.format(dbuf,"%.7f"));
+        }
         subnode->new_prop ("generator", "%s (mwptools)".printf(generator));
 
         if(ms.et > 0)

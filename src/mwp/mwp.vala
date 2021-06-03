@@ -9053,6 +9053,9 @@ case 0:
                 m.cy += fakeoff.dlat;
             }
             wp_resp = m.get_ways();
+            if (m.homex != 0.0 && m.homey != 0.0)
+                    ls.set_fake_home_pos(m.homey, m.homex);
+
             if(loader )
                 MWPLog.message("Loaded mission: %d %s\n", NavStatus.nm_pts, fn);
             return m;
@@ -9190,8 +9193,16 @@ case 0:
         var msg = new Gtk.MessageDialog.with_markup (window,
                                                      0,
                                                      klass,
-                                                     Gtk.ButtonsType.OK,
-                                                     warnmsg);
+                                                     Gtk.ButtonsType.OK, null);
+        msg.set_markup(warnmsg);
+
+        var bin = msg.get_message_area() as Gtk.Container;
+        var glist = bin.get_children();
+        glist.foreach((i) => {
+                if (i.get_class().get_name() == "GtkLabel")
+                    ((Gtk.Label)i).set_selectable(true);
+            });
+
         if(timeout > 0 && permawarn == false)
         {
             Timeout.add_seconds(timeout, () => {

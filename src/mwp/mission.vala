@@ -39,6 +39,8 @@ public class Mission : GLib.Object
     public double minx;
     public double cy;
     public double cx;
+    public double homey;
+    public double homex;
     public uint npoints;
     public uint zoom;
     public double nspeed;

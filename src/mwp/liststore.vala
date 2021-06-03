@@ -375,6 +375,10 @@ public class ListBox : GLib.Object
                             WY_Columns.INT3, m.param3,
                             WY_Columns.ACTION, m.action);
         }
+
+        if(ms.homex != 0 && ms.homey != 0) {
+            fhome.set_fake_home(ms.homey, ms.homex);
+        }
         mp.markers.add_list_store(this);
         calc_mission();
     }
@@ -559,6 +563,9 @@ public class ListBox : GLib.Object
         ms.zoom = mp.view.get_zoom_level();
         ms.cy = mp.view.get_center_latitude();
         ms.cx = mp.view.get_center_longitude();
+        if(fhome != null) {
+            fhome.get_fake_home(out ms.homey, out ms.homex);
+        }
         ms.set_ways(arry);
         return ms;
     }
@@ -751,29 +758,10 @@ public class ListBox : GLib.Object
         }
     }
 
-/*******
-    private string show_posref(POSREF p)
-    {
-        StringBuilder sb = new StringBuilder("posref:");
-        if ((p & 1) == 1)
-            sb.append(" MANUAL");
-        if ((p & 2) == 2)
-            sb.append(" HOME");
-        if ((p & 4) == 4)
-            sb.append(" WPONE");
-        if ((p & 8) == 8)
-            sb.append(" LANDR ");
-        if ((p & 16) == 16)
-            sb.append(" LANDA ");
-        return sb.str;
-    }
-**************/
     private void bing_complete(ALTMODES amode, POSREF posref, int act)
     {
         if ((act & 1) == 1)
             unset_fake_home();
-
-//        stderr.printf("Complete %x %s\n", posref, show_posref(posref));
 
         if(posref == POSREF.MANUAL)
         {
@@ -791,11 +779,9 @@ public class ListBox : GLib.Object
                         Idle.add(() => {
                                 if (elevs.length > 0) {
                                     if ((posref & (POSREF.LANDA|POSREF.LANDR)) != 0) {
-//                                        stderr.printf("land update\n");
                                         if((posref & POSREF.MANUAL) != 0) {
                                             var tmp = elevs[0];
                                             elevs[0] = altmodedialog.get_manual();
-//                                            stderr.printf("land manual value L=%d, H=%d\n", elevs[0], tmp);
                                             elevs += tmp;
                                         }
                                         update_land_offset(elevs);
@@ -1602,7 +1588,6 @@ public class ListBox : GLib.Object
             double hlat, hlon;
             fhome.get_fake_home(out hlat, out hlon);
             pts += BingElevations.Point(){y = hlat, x = hlon};
-//            stderr.printf("Request home %f %f \n", hlat, hlon);
         }
 
         if ((posref & (POSREF.WPONE|POSREF.LANDA|POSREF.LANDR)) != 0)
@@ -1626,7 +1611,6 @@ public class ListBox : GLib.Object
                     list_model.get_value (iter, WY_Columns.LON, out val);
                     var alon = (double)val;
                     pts += BingElevations.Point(){y = alat, x = alon};
-//                    stderr.printf("Request 1st (%s)\n",act.to_string());
                     needone = false;
                 }
 
@@ -1637,7 +1621,6 @@ public class ListBox : GLib.Object
                         list_model.get_value (iter, WY_Columns.LON, out val);
                         var alon = (double)val;
                         pts += BingElevations.Point(){y = alat, x = alon};
-//                        stderr.printf("Request land (%s)\n",act.to_string());
                         needland = false;
                     }
                 }
@@ -2168,22 +2151,24 @@ public class ListBox : GLib.Object
         XmlIO.to_xml_file(outfn, m);
         spawn_args += outfn;
         MWPLog.message("%s\n", string.joinv(" ",spawn_args));
+        string []cdlines = {};
 
         try {
             Pid child_pid;
             int p_stderr;
+            int p_stdout;
             Process.spawn_async_with_pipes (null,
                                             spawn_args,
                                             null,
                                             SpawnFlags.SEARCH_PATH |
-                                            SpawnFlags.DO_NOT_REAP_CHILD |
-                                            SpawnFlags.STDOUT_TO_DEV_NULL,
+                                            SpawnFlags.DO_NOT_REAP_CHILD,
                                             null,
                                             out child_pid,
                                             null,
-                                            null,
+                                            out p_stdout,
                                             out p_stderr);
 
+            IOChannel outp = new IOChannel.unix_new (p_stdout);
             IOChannel error = new IOChannel.unix_new (p_stderr);
             string line = null;
             string lastline = null;
@@ -2210,6 +2195,30 @@ public class ListBox : GLib.Object
                         return false;
                     }
                 });
+
+            outp.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
+                    try
+                    {
+                        if (condition == IOCondition.HUP)
+                            return false;
+                        IOStatus eos = source.read_line (out line, out len, null);
+                        if(eos == IOStatus.EOF)
+                            return false;
+
+                        if(line == null || len == 0)
+                            return true;
+                        cdlines += line;
+                        return true;
+                    } catch (IOChannelError e) {
+                        MWPLog.message("IOChannelError: %s\n", e.message);
+                        return false;
+                    } catch (ConvertError e) {
+                        MWPLog.message ("ConvertError: %s\n", e.message);
+                        return false;
+                    }
+                });
+
+
             ChildWatch.add (child_pid, (pid, status) => {
                     try { error.shutdown(false); } catch {}
                     Process.close_pid (pid);
@@ -2218,6 +2227,8 @@ public class ListBox : GLib.Object
                         if (replname != null)
                         {
                             var ms = XmlIO.read_xml_file (replname);
+                            if(fhome != null)
+                                fhome.get_fake_home(out ms.homey, out ms.homex);
                             import_mission(ms, false);
                             mp.markers.add_list_store(this);
                         }
@@ -2228,10 +2239,34 @@ public class ListBox : GLib.Object
                     FileUtils.unlink(outfn);
                     if(replname != null)
                         FileUtils.unlink(replname);
+                    if (cdlines.length > 0) {
+                        string cdl = string.joinv("", cdlines);
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("<tt>");
+                        sb.append(cdl);
+                        sb.append("</tt>");
+                        show_climb_dive(sb.str);
+                    }
                 });
         } catch (SpawnError e) {
             MWPLog.message ("Spawn Error: %s\n", e.message);
         }
+    }
+
+    private void show_climb_dive (string s)
+    {
+        var msg = new Gtk.MessageDialog.with_markup (null, 0, Gtk.MessageType.INFO,
+                                                     Gtk.ButtonsType.OK, null);
+        msg.set_markup(s);
+        var bin = msg.get_message_area() as Gtk.Container;
+        var glist = bin.get_children();
+        glist.foreach((i) => {
+                if (i.get_class().get_name() == "GtkLabel")
+                    ((Gtk.Label)i).set_selectable(true);
+            });
+        msg.response.connect ((response_id) => { msg.destroy(); });
+        msg.set_title("MWP Altitude Analysis");
+        msg.show();
     }
 
     public void toggle_fake_home()
@@ -2242,17 +2277,25 @@ public class ListBox : GLib.Object
             set_fake_home();
     }
 
-    public void set_fake_home()
+    public void set_fake_home_pos(double hy, double hx)
     {
-        var bbox = mp.view.get_bounding_box();
-        double hlat, hlon;
+        fhome.set_fake_home(hy, hx);
+    }
 
-        fhome.get_fake_home(out hlat, out hlon);
-        if (bbox.covers(hlat, hlon) == false)
-        {
-            hlat = mp.view.get_center_latitude();
-            hlon = mp.view.get_center_longitude();
-            fhome.set_fake_home(hlat, hlon);
+    public void set_fake_home(double hy = 0.0, double hx = 0.0)
+    {
+        if (hy == 0.0 && hx == 0.0) {
+            var bbox = mp.view.get_bounding_box();
+            double hlat, hlon;
+            fhome.get_fake_home(out hlat, out hlon);
+            if (bbox.covers(hlat, hlon) == false)
+            {
+                hlat = mp.view.get_center_latitude();
+                hlon = mp.view.get_center_longitude();
+                fhome.set_fake_home(hlat, hlon);
+            }
+        } else {
+            fhome.set_fake_home(hy, hx);
         }
         fhome.show_fake_home(true);
     }
@@ -2272,19 +2315,22 @@ public class ListBox : GLib.Object
             pd = fhome.read_defaults();
             var mhome = Environment.get_variable("MWP_HOME");
 
-            if (mhome != null)
-                pd.hstr = mhome;
+            fhome.get_fake_home(out hlat, out hlon);
+            if (hlat == 0.0 && hlon == 0.0) {
+                if (mhome != null)
+                    pd.hstr = mhome;
 
-            bool llok = false;
-
-            if(pd.hstr != null)
-            {
-                llok = parse_ll(pd.hstr, out hlat, out hlon);
-            }
-            if (llok == false)
-            {
-                hlat = mp.view.get_center_latitude();
-                hlon = mp.view.get_center_longitude();
+                bool llok = false;
+                if(pd.hstr != null)
+                {
+                    llok = parse_ll(pd.hstr, out hlat, out hlon);
+                }
+                if (llok == false)
+                {
+                    hlat = mp.view.get_center_latitude();
+                    hlon = mp.view.get_center_longitude();
+                    fhome.set_fake_home(hlat, hlon);
+                }
             }
             int taval = 0;
             if (pd.margin != null)
@@ -2293,10 +2339,8 @@ public class ListBox : GLib.Object
             if (pd.rthalt != null)
                 taval = int.parse(pd.rthalt);
             fhome.fhd.set_rthalt(taval);
-            fhome.set_fake_home(hlat, hlon);
         }
         var bbox = mp.view.get_bounding_box();
-        fhome.get_fake_home(out hlat, out hlon);
         if (bbox.covers(hlat, hlon) == false)
         {
             hlat = mp.view.get_center_latitude();

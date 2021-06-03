@@ -88,6 +88,12 @@ public class JsonIO : Object
                 case "cy":
                     ms.cy = o.get_double_member("cy");
                     break;
+                case "home-x":
+                    ms.homex = o.get_double_member("home-x");
+                    break;
+                case "home-y":
+                    ms.homey = o.get_double_member("home-y");
+                    break;
                 case "details":
                     var dobj = o.get_object_member("details");
                     parse_details(dobj, ref ms);
@@ -143,6 +149,12 @@ public class JsonIO : Object
         builder.add_double_value (ms.cx);
         builder.set_member_name ("cy");
         builder.add_double_value (ms.cy);
+        if (ms.homex != 0 && ms.homey != 0) {
+            builder.set_member_name ("home-x");
+            builder.add_double_value (ms.homex);
+            builder.set_member_name ("home-y");
+            builder.add_double_value (ms.homey);
+        }
         builder.set_member_name ("details");
         builder.begin_object ();
 
