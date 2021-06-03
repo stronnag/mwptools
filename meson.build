@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '4.154.301')
+project('mwptools', 'c', 'vala', version : '4.154.334')
 
 meson.add_install_script('meson/post_install.sh')
 conf_data = configuration_data()
@@ -48,10 +48,10 @@ executable('flashdl', fdlsrcs, fccommon, dependencies: [ fdldeps ],
 subdir('src/bbox-replay')
 
 if gobuild != ''
-  broot = meson.current_source_dir() / 'build'
-  if gotrim != ''
-    mpe = custom_target('mwp-plot-elevations', output: 'mwp-plot-elevations', command : [gobuild, broot /  '@OUTPUT@', mpe_dir, gotrim], build_by_default: true, input: mpe_deps)
+   broot = meson.current_source_dir() / 'build'
+     if gotrim != ''
+    mpe = custom_target('mwp-plot-elevations', output: 'mwp-plot-elevations', command : [gobuild, '@OUTPUT@', mpe_dir, gotrim, broot], build_by_default: true, input: mpe_deps)
   endif
-  otx = custom_target('otxlog', output: 'otxlog', command : [gobuild, broot / '@OUTPUT@',otx_dir,gotrim], build_by_default: true)
-  bbs = custom_target('bbsummary', output: 'bbsummary', command : [gobuild, broot / '@OUTPUT@',bbs_dir, gotrim], build_by_default: true)
+  otx = custom_target('otxlog', output: 'otxlog', command : [gobuild, '@OUTPUT@',otx_dir,gotrim, broot], build_by_default: true)
+  bbs = custom_target('bbsummary', output: 'bbsummary', command : [gobuild, '@OUTPUT@',bbs_dir, gotrim, broot], build_by_default: true)
 endif
