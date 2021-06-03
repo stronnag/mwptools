@@ -103,12 +103,12 @@ set yrange [ `)
 	if req&2 == 2 {
 		fmt.Fprintf(w, "set terminal svg background rgb 'white' font 'sans,8' rounded\nset output \"%s\"\n", Conf.Svgfile)
 	}
-	fmt.Fprintf(w, "plot \"%s\" using 1:2 t \"Terrain\" w filledcurve y1=%d lt -1 lw 2  lc rgb \"web-green\", \"%s\" using 1:2 t \"Mission\" w lines lt -1 lw 2  lc rgb \"red\"", tfname, minz, mfname)
+	fmt.Fprintf(w, "plot '%s' using 1:2 t \"Terrain\" w filledcurve y1=%d lt -1 lw 2  lc rgb \"web-green\", '%s' using 1:2 t \"Mission\" w lines lt -1 lw 2  lc rgb \"red\"", tfname, minz, mfname)
 	if Conf.Margin != 0 {
-		fmt.Fprintf(w, ", \"%s\" using 1:3 t \"Margin %dm\" w lines lt -1 lw 2  lc rgb \"web-blue\"", tfname, Conf.Margin)
+		fmt.Fprintf(w, ", '%s' using 1:3 t \"Margin %dm\" w lines lt -1 lw 2  lc rgb \"web-blue\"", tfname, Conf.Margin)
 	}
 	if Conf.Output != "" {
-		fmt.Fprintf(w, ", \"%s\" using 1:3 t \"Adjust\" w lines lt -1 lw 2  lc rgb \"orange\"", mfname)
+		fmt.Fprintf(w, ", '%s' using 1:3 t \"Adjust\" w lines lt -1 lw 2  lc rgb \"orange\"", mfname)
 	}
 	w.WriteString("\n")
 
