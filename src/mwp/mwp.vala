@@ -9770,31 +9770,33 @@ case 0:
                     int iarg;
 
                     var o = find_option(m[i]);
-                    if (o.arg !=  OptionArg.NONE)
-                        extra = m[++i];
+                    if (o != null) {
+                        if (o.arg !=  OptionArg.NONE)
+                            extra = m[++i];
 
-                    switch(o.arg) {
-                        case OptionArg.NONE:
-                            if (o.long_name != null)
-                                v.insert(o.long_name, "b", true);
-                            if (o.short_name != 0)
-                                v.insert(o.short_name.to_string(), "b", true);
-                            break;
-                        case OptionArg.STRING:
-                            if (o.long_name != null)
-                                v.insert(o.long_name, "s", extra);
-                            if (o.short_name != 0)
-                                v.insert(o.short_name.to_string(), "s", extra);
-                            break;
-                        case OptionArg.INT:
-                            iarg = int.parse(extra);
-                            if (o.long_name != null)
-                                v.insert(o.long_name, "i", iarg);
-                            if (o.short_name != 0)
-                                v.insert(o.short_name.to_string(), "i", iarg);
-                            break;
-                        default:
-                            break;
+                        switch(o.arg) {
+                            case OptionArg.NONE:
+                                if (o.long_name != null)
+                                    v.insert(o.long_name, "b", true);
+                                if (o.short_name != 0)
+                                    v.insert(o.short_name.to_string(), "b", true);
+                                break;
+                            case OptionArg.STRING:
+                                if (o.long_name != null)
+                                    v.insert(o.long_name, "s", extra);
+                                if (o.short_name != 0)
+                                    v.insert(o.short_name.to_string(), "s", extra);
+                                break;
+                            case OptionArg.INT:
+                                iarg = int.parse(extra);
+                                if (o.long_name != null)
+                                    v.insert(o.long_name, "i", iarg);
+                                if (o.short_name != 0)
+                                    v.insert(o.short_name.to_string(), "i", iarg);
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
             } catch {}
