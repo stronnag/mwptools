@@ -91,17 +91,10 @@
 	  </xs:restriction>
 	</xs:simpleType>
       </xs:attribute>
-      <xs:attribute name="alt" use="required">
-	<xs:simpleType>
-	  <!-- max value is legal limit in most EU countries -->
-	  <!-- min value is randomly arbitrary -->
-          <xs:restriction base="xs:integer">
-	    <xs:minInclusive value="-122"/>
-	    <xs:maxInclusive value="122"/>
-          </xs:restriction>
-	</xs:simpleType>
-      </xs:attribute>
-        <!--
+      <!-- no min,max as may be AMSL -->
+      <xs:attribute name="alt" use="required" type="xs:integer"/>
+
+      <!--
 	     Locations are decimal degrees, WGS84 (EPSG:4326)
 	-->
       <xs:attribute name="lat" use="required">
@@ -124,6 +117,10 @@
       <xs:attribute name="parameter1" use="required" type="xs:integer"/>
       <xs:attribute name="parameter2" use="required" type="xs:integer"/>
       <xs:attribute name="parameter3" type="xs:integer"/>
+      <!--
+	   flag is not strictly required unless the WP is "Flyby Home"
+      -->
+      <xs:attribute name="flag" use="optional" type="xs:integer"/>
     </xs:complexType>
   </xs:element>
 
