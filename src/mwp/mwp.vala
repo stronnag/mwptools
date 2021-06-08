@@ -5376,6 +5376,7 @@ case 0:
         }
         m.param2 = w.p2;
         m.param3 = w.p3;
+        m.flag = w.flag;
         return m;
     }
 
@@ -8182,6 +8183,8 @@ case 0:
                 nrth++;
             if (w.p3 != 0)
                 aa = true;
+
+//            stderr.printf("Got %d %x\n", w.wp_no, w.flag);
         }
 
         if(((vi.fc_vers >= FCVERS.hasMONORTH) || (navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG) && nrth > 1)
@@ -8337,6 +8340,14 @@ case 0:
 
     private void queue_cmd(MSP.Cmds cmd, void* buf, size_t len)
     {
+/**
+        if (cmd == MSP.Cmds.SET_WP) {
+            char *p = (char*)buf;
+            uint8 flag = p[20];
+            uint8 wpno = p[0];
+            stderr.printf("WP l=%d %d %02x\n", (int)len, wpno, flag);
+        }
+**/
         if(((debug_flags & DEBUG_FLAGS.INIT) != DEBUG_FLAGS.NONE)
            && (serstate == SERSTATE.NORMAL))
             MWPLog.message("Init MSP %s (%u)\n", cmd.to_string(), cmd);
@@ -9033,6 +9044,7 @@ case 0:
 
         if(m != null && m.npoints > 0)
         {
+            ls.reset_fake_home();
             NavStatus.nm_pts = (uint8)m.npoints;
             if(fakeoff.faking)
             {

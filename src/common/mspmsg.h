@@ -84,15 +84,15 @@ typedef struct _msp_attitude MSP_ATTITUDE;
 
 struct __attribute__ ((__packed__))  _msp_wp
 {
-    uint8_t wp_no;
-    uint8_t action;
-    int32_t lat;
-    int32_t lon;
-    int32_t altitude;
-    uint16_t p1;
-    uint16_t p2;
-    uint16_t p3;
-    uint8_t flag;
+     uint8_t wp_no;
+     uint8_t action;
+     int32_t lat;
+     int32_t lon;
+     int32_t altitude;
+     int16_t p1;
+     int16_t p2;
+     int16_t p3;
+     uint8_t flag;
 };
 typedef struct _msp_wp MSP_WP;
 

@@ -152,6 +152,9 @@ public class XmlIO : Object
                             case "parameter3":
                                 m.param3 = int.parse(attr_content);
                                 break;
+                            case "flag":
+                                m.flag = (uint8)int.parse(attr_content);
+                                break;
                             case "alt":
                                 m.alt = int.parse(attr_content);
                                 if(m.alt > ms.maxalt)
@@ -303,8 +306,10 @@ public class XmlIO : Object
             subnode->new_prop ("parameter1", m.param1.to_string());
             subnode->new_prop ("parameter2", m.param2.to_string());
             subnode->new_prop ("parameter3", m.param3.to_string());
+            if(m.flag == 0x48) {
+                subnode->new_prop ("flag", m.flag.to_string());
+            }
         }
-
         string s;
         doc->dump_memory_enc_format (out s, null, "utf-8", pretty);
         delete doc;

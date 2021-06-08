@@ -32,6 +32,7 @@ public class ListBox : GLib.Object
         INT1,
         INT2,
         INT3,
+        FLAG,
         MARKER,
         ACTION,
         TIP,
@@ -127,6 +128,14 @@ public class ListBox : GLib.Object
         add_marker_item("PH Timed", "POSHOLD_TIME");
         add_marker_item("RTH", "RTH");
         add_marker_item("Waypoint", "WAYPOINT");
+
+        var mchk = new Gtk.CheckMenuItem.with_label ("Home FlyBy");
+        mchk.sensitive = false;
+        mchk.toggled.connect(() => {
+                int flag = (mchk.active) ? 0x48 : 0;
+                list_model.set_value (miter, WY_Columns.FLAG, flag);
+            });
+        marker_menu.add (mchk);
 
         marker_menu.add (new Gtk.SeparatorMenuItem ());
         pop_preview_item = new Gtk.MenuItem.with_label ("Preview Mission");
@@ -267,15 +276,17 @@ public class ListBox : GLib.Object
             bool sens = true;
             var xiter = miter;
             var next=list_model.iter_next(ref xiter);
+            GLib.Value cell;
 
             if(next)
             {
-                GLib.Value cell;
                 list_model.get_value (xiter, WY_Columns.ACTION, out cell);
                 var ntyp = (MSP.Action)cell;
                 if(ntyp == MSP.Action.JUMP || ntyp == MSP.Action.RTH)
                     sens = false;
             }
+            list_model.get_value (miter, WY_Columns.FLAG, out cell);
+            uint8 flag = (uint8)((int)cell);
 
             marker_menu.@foreach((mi) => {
                     var lbl = ((Gtk.MenuItem)mi).get_label();
@@ -285,6 +296,10 @@ public class ListBox : GLib.Object
                         lbl.has_prefix("La") ||
                         lbl.has_prefix("RT"))
                         ((Gtk.MenuItem)mi).sensitive = sens;
+                    if (lbl.has_prefix("Home")) {
+                        ((Gtk.CheckMenuItem)mi).sensitive =  fhome.has_loc;
+                        ((Gtk.CheckMenuItem)mi).active = (flag == 0x48);
+                    }
                 });
 
             marker_menu.popup_at_pointer(e);
@@ -373,6 +388,7 @@ public class ListBox : GLib.Object
                             WY_Columns.INT1, m1,
                             WY_Columns.INT2, m2,
                             WY_Columns.INT3, m.param3,
+                            WY_Columns.FLAG, m.flag,
                             WY_Columns.ACTION, m.action);
         }
 
@@ -423,7 +439,9 @@ public class ListBox : GLib.Object
                 list_model.get_value (iter, WY_Columns.INT3, out cell);
                 tint = (int)cell;
                 w.p3 = (int16)tint;
-                w.flag = 0;
+                list_model.get_value (iter, WY_Columns.FLAG, out cell);
+                tint = (int)cell;
+                w.flag = (uint8)tint;
 
                 if((flags & MWP.WPS.isINAV) == MWP.WPS.isINAV)
                 {
@@ -557,6 +575,8 @@ public class ListBox : GLib.Object
                     m.param2 = (int)((double)cell);
                 list_model.get_value (iter, WY_Columns.INT3, out cell);
                 m.param3 = (int)cell;
+                list_model.get_value (iter, WY_Columns.FLAG, out cell);
+                m.flag  = (uint8)((int)cell);
                 arry += m;
             }
         }
@@ -838,6 +858,7 @@ public class ListBox : GLib.Object
                                         typeof (int),
                                         typeof (double),
                                         typeof (double),
+                                        typeof (int),
                                         typeof (int),
                                         typeof (Champlain.Label),
                                         typeof (MSP.Action),
@@ -2275,6 +2296,11 @@ public class ListBox : GLib.Object
             unset_fake_home();
         else
             set_fake_home();
+    }
+
+    public void reset_fake_home()
+    {
+        fhome.reset_fake_home();
     }
 
     public void set_fake_home_pos(double hy, double hx)

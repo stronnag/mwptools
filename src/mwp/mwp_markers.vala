@@ -45,6 +45,8 @@ public class MWPMarkers : GLib.Object
     private Clutter.Color grayish;
     private Clutter.Color white;
 
+    public signal void wp_moved(Gtk.TreeIter i, double lat, double lon);
+
     public MWPMarkers(ListBox lb, Champlain.View view, string mkcol ="#ffffff60")
     {
         _v = view;
@@ -252,16 +254,23 @@ public class MWPMarkers : GLib.Object
     }
 
     private void get_text_for(MSP.Action typ, string no, out string text,
-                              out  Clutter.Color colour, bool nrth=false, bool jumpfwd=false)
+                              out  Clutter.Color colour, bool nrth=false,
+                              bool jumpfwd=false, bool fby = false)
     {
         string symb;
+        uint8 alpha = 0xc8;
+
+        if (fby)
+            alpha = 0x40;
+
+
         switch (typ)
         {
 
             case MSP.Action.WAYPOINT:
                 if(nrth)
                 {
-                    colour = { 0, 0xaa, 0xff, 0xc8};
+                    colour = { 0, 0xaa, 0xff, alpha};
                         // nice to set different icon for land ⛳ or ⏬
 //                    symb = (rth_land) ? "⏬WP" : "⏏WP";
                     symb = (rth_land) ? "▼WP" : "⏏WP";
@@ -269,28 +278,28 @@ public class MWPMarkers : GLib.Object
                 else
                 {
                     symb = "WP";
-                    colour = { 0, 0xff, 0xff, 0xc8};
+                    colour = { 0, 0xff, 0xff, alpha};
                 }
                 break;
 
             case MSP.Action.POSHOLD_TIME:
                 symb = "◷";
-                colour = { 152, 70, 234, 0xc8};
+                colour = { 152, 70, 234, alpha};
                 break;
 
             case MSP.Action.POSHOLD_UNLIM:
                 symb = "∞";
-                colour = { 0x4c, 0xfe, 0, 0xc8};
+                colour = { 0x4c, 0xfe, 0, alpha};
                 break;
 
             case MSP.Action.RTH:
                 symb = (rth_land) ? "▼" : "⏏";
-                colour = { 0xff, 0x0, 0x0, 0xc8};
+                colour = { 0xff, 0x0, 0x0, alpha};
                 break;
 
             case MSP.Action.LAND:
                 symb = "♜";
-                colour = { 0xff, 0x9a, 0xf0, 0xc8};
+                colour = { 0xff, 0x9a, 0xf0, alpha};
                 break;
 
             case MSP.Action.JUMP:
@@ -299,18 +308,18 @@ public class MWPMarkers : GLib.Object
                 else
                     symb = "⇒";
 
-                colour = { 0xed, 0x51, 0xd7, 0xc8};
+                colour = { 0xed, 0x51, 0xd7, alpha};
                 break;
 
             case MSP.Action.SET_POI:
             case MSP.Action.SET_HEAD:
                 symb = "⌘";
-                colour = { 0xff, 0xfb, 0x2b, 0xc8};
+                colour = { 0xff, 0xfb, 0x2b, alpha};
                 break;
 
             default:
                 symb = "??";
-                colour = { 0xe0, 0xe0, 0xe0, 0xc8};
+                colour = { 0xe0, 0xe0, 0xe0, alpha};
                 break;
         }
         text = "%s %s".printf(symb, no);
@@ -489,6 +498,8 @@ public class MWPMarkers : GLib.Object
         Gtk.ListStore ls = l.list_model;
         Champlain.Label marker;
         GLib.Value cell;
+        bool fby;
+
         ls.get_value (iter, ListBox.WY_Columns.ACTION, out cell);
         var typ = (MSP.Action)cell;
         ls.get_value (iter, ListBox.WY_Columns.IDX, out cell);
@@ -500,6 +511,9 @@ public class MWPMarkers : GLib.Object
         string text;
         Clutter.Color colour;
         Gtk.TreeIter ni;
+
+        ls.get_value (iter, ListBox.WY_Columns.FLAG, out cell);
+        fby = ((int)cell == 0x48);
 
         var ino = int.parse(no);
 
@@ -526,7 +540,7 @@ public class MWPMarkers : GLib.Object
                 }
             }
         }
-        get_text_for(xtyp, no, out text, out colour, nrth, jumpfwd);
+        get_text_for(xtyp, no, out text, out colour, nrth, jumpfwd, fby);
         marker = new Champlain.Label.with_text (text,"Sans 10",null,null);
         marker.set_alignment (Pango.Alignment.RIGHT);
         marker.set_color (colour);
@@ -537,7 +551,7 @@ public class MWPMarkers : GLib.Object
         var lon = (double)cell;
 
         marker.set_location (lat,lon);
-        marker.set_draggable(true);
+        marker.set_draggable(!fby);
         marker.set_selectable(true);
         marker.set_flags(ActorFlags.REACTIVE);
         markers.add_marker (marker);
@@ -594,8 +608,7 @@ public class MWPMarkers : GLib.Object
         marker.drag_motion.connect((dx,dy,evt) => {
                 var _t1 = marker.get_qdata<Champlain.Label>(q1);
                 {
-                    ls.set_value(iter, ListBox.WY_Columns.LAT, marker.get_latitude());
-                    ls.set_value(iter, ListBox.WY_Columns.LON, marker.get_longitude() );
+                    wp_moved(iter, marker.get_latitude(), marker.get_longitude());
                     calc_extra_distances(l);
                     var s = l.get_marker_tip(ino);
                     _t1.set_text(s);

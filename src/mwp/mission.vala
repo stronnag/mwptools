@@ -27,6 +27,7 @@ public struct MissionItem
     int param1;
     int param2;
     int param3;
+    uint8 flag;
 }
 
 public class Mission : GLib.Object

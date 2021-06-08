@@ -30,6 +30,7 @@ public class FakeHome : GLib.Object
     private double xlat;
     private double xlon;
     public signal void fake_move(double lat, double lon);
+    public bool has_loc {private set; get;}
 
     public struct PlotElevDefs
     {
@@ -128,6 +129,7 @@ public class FakeHome : GLib.Object
 
     public void set_fake_home(double lat, double lon)
     {
+        has_loc = true;
         homep.set_location (lat, lon);
         xlat = lat;
         xlon = lon;
@@ -137,6 +139,15 @@ public class FakeHome : GLib.Object
     {
         lat = xlat; //homep.get_latitude();
         lon = xlon; //homep.get_longitude();
+    }
+
+    public void reset_fake_home()
+    {
+        if(!is_visible) {
+            has_loc = false;
+            xlat = 0.0;
+            xlon = 0.0;
+        }
     }
 }
 

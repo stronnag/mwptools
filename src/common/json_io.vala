@@ -45,6 +45,7 @@ public class JsonIO : Object
                                 m.param1 = (int) rsitem.get_int_member("p1");
                                 m.param2 = (int) rsitem.get_int_member("p2");
                                 m.param3 = (int) rsitem.get_int_member("p3");
+                                m.flag = (uint8) rsitem.get_int_member("flag");
                                 if(m.action != MSP.Action.RTH && m.action != MSP.Action.JUMP &&
                                    m.action != MSP.Action.SET_HEAD)
                                 {
@@ -216,6 +217,10 @@ public class JsonIO : Object
             builder.add_int_value( m.param2);
             builder.set_member_name ("p3");
             builder.add_int_value( m.param3);
+            if (m.flag == 0x48) {
+                builder.set_member_name ("flag");
+                builder.add_int_value( m.flag);
+            }
             builder.end_object (); // mi
         }
         builder.end_array ();
