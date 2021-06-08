@@ -41,7 +41,7 @@ public class FakeHome : GLib.Object
 
     public FakeHome(Champlain.View view)
     {
-        Clutter.Color colour = {0x8c, 0x43, 0x43, 0xc8};
+        Clutter.Color colour = {0x8c, 0x43, 0x43, 0x40};
         Clutter.Color white = { 0xff,0xff,0xff, 0xff};
         hmlayer = new Champlain.MarkerLayer();
         homep = new Champlain.Label.with_text ("⏏", "Sans 10",null,null);
@@ -76,7 +76,7 @@ public class FakeHome : GLib.Object
                         switch(parts[0].strip())
                         {
                             case "home":
-                                p.hstr = str;
+//                                p.hstr = str;
                                 break;
                             case "margin":
                                 p.margin = str;
@@ -120,6 +120,10 @@ public class FakeHome : GLib.Object
                         xlon = homep.get_longitude();
                         fake_move(xlat, xlon);
                     });
+
+                var pp = hmlayer.get_parent();
+                pp.set_child_above_sibling(hmlayer, null);
+
             }
             else
                 hmlayer.remove_marker(homep);
