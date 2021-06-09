@@ -2366,6 +2366,7 @@ public class MWP : Gtk.Application {
 
         markers = new MWPMarkers(ls,view, conf.wp_spotlight);
 
+        ls.connect_markers();
 /*
   Sample for range rings. Note that 1st is below second)
   So the following sets the markers *below* the paths, which is NOT wanted
@@ -2518,6 +2519,7 @@ public class MWP : Gtk.Application {
                 markers.add_list_store(ls);
                 NavStatus.nm_pts = (uint8)wp_resp.length;
                 NavStatus.have_rth = (wp_resp[n-1].action == MSP.Action.RTH);
+                check_mission_home();
             });
         mqtt.mqtt_frame.connect((cmd, raw, len) => {
                 handle_serial(cmd,raw,(uint)len,0, false);
@@ -4573,6 +4575,8 @@ case 0:
                 MWPLog.message("Craft is armed, special=%x\n", want_special);
                 armed_spinner.show();
                 armed_spinner.start();
+                check_mission_home();
+
                 sflags |= NavStatus.SPK.Volts;
 
                 if (conf.audioarmed == true)
@@ -4639,6 +4643,31 @@ case 0:
         }
         larmed = armed;
         return changed;
+    }
+
+    private void check_mission_home()
+    {
+        if (have_home)
+        {
+            var homed = false;
+            var ms = ls.to_mission();
+            if(ms.npoints > 0) {
+                for(var i = 0; i < ms.npoints; i++)
+                {
+                    var mi = ms.get_waypoint(i);
+                    if (mi.flag == 0x48) {
+                        homed = true;
+                        mi.lat = home_pos.lat;
+                        mi.lon = home_pos.lon;
+                        ms.set_waypoint(mi, i);
+                    }
+                }
+                if(homed) {
+                    ls.set_fake_home_pos(home_pos.lat, home_pos.lon);
+                    instantiate_mission(ms);
+                }
+            }
+        }
     }
 
     private void update_odo(double spd, double ddm)
@@ -5548,6 +5577,7 @@ case 0:
                                            Craft.is_mr(vi.mrtype)));
                     centre_mission(ms, !centreon);
                     markers.add_list_store(ls);
+                    check_mission_home();
                     validatelab.set_text("✔"); // u+2714
                     if (wp_resp[0].action == MSP.Action.WAYPOINT)
                         check_mission_safe(wp_resp[0].lat,wp_resp[0].lon);
@@ -9066,7 +9096,18 @@ case 0:
             }
             wp_resp = m.get_ways();
             if (m.homex != 0.0 && m.homey != 0.0)
-                    ls.set_fake_home_pos(m.homey, m.homex);
+            {
+                ls.set_fake_home_pos(m.homey, m.homex);
+                for(var i = 0; i < m.npoints; i++)
+                {
+                    var mi = m.get_waypoint(i);
+                    if (mi.flag == 0x48) {
+                        mi.lat = m.homey;
+                        mi.lon = m.homex;
+                        m.set_waypoint(mi, i);
+                    }
+                }
+            }
 
             if(loader )
                 MWPLog.message("Loaded mission: %d %s\n", NavStatus.nm_pts, fn);

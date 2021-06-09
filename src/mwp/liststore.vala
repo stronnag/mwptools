@@ -69,13 +69,13 @@ public class ListBox : GLib.Object
 
     private double ms_speed;
     private Gtk.Menu marker_menu;
-    private Gtk.TreeIter miter;
     private bool miter_ok = false;
     private FakeHome fhome;
     private MissionPreviewer mprv;
     private bool preview_running = false;
     public int lastid {get; private set; default= 0;}
     public bool have_rth {get; private set; default= false;}
+    private int mpop_no;
 
     private enum DELTAS
     {
@@ -132,8 +132,17 @@ public class ListBox : GLib.Object
         var mchk = new Gtk.CheckMenuItem.with_label ("Home FlyBy");
         mchk.sensitive = false;
         mchk.toggled.connect(() => {
-                int flag = (mchk.active) ? 0x48 : 0;
-                list_model.set_value (miter, WY_Columns.FLAG, flag);
+                Gtk.TreeIter iter;
+                if(list_model.iter_nth_child(out iter, null, mpop_no-1))
+                {
+                    int flag = (mchk.active) ? 0x48 : 0;
+                    list_model.set_value (iter, WY_Columns.FLAG, flag);
+                    double hlat,hlon;
+                    fhome.get_fake_home(out hlat, out hlon);
+                    list_model.set (iter, WY_Columns.LAT, hlat,
+                                    WY_Columns.LON, hlon);
+                    renumber_steps(list_model);
+                }
             });
         marker_menu.add (mchk);
 
@@ -271,10 +280,13 @@ public class ListBox : GLib.Object
 
     public bool pop_marker_menu(Gdk.EventButton e)
     {
+        Gtk.TreeIter miter;
         if(miter_ok)
         {
-            bool sens = true;
-            var xiter = miter;
+            if(list_model.iter_nth_child(out miter, null, mpop_no-1))
+            {
+                bool sens = true;
+                var xiter = miter;
             var next=list_model.iter_next(ref xiter);
             GLib.Value cell;
 
@@ -287,7 +299,8 @@ public class ListBox : GLib.Object
             }
             list_model.get_value (miter, WY_Columns.FLAG, out cell);
             uint8 flag = (uint8)((int)cell);
-
+            list_model.get_value (miter, WY_Columns.IDX, out cell);
+            mpop_no = int.parse((string)cell);
             marker_menu.@foreach((mi) => {
                     var lbl = ((Gtk.MenuItem)mi).get_label();
                     if (lbl.has_prefix("Way") ||
@@ -301,17 +314,17 @@ public class ListBox : GLib.Object
                         ((Gtk.CheckMenuItem)mi).active = (flag == 0x48);
                     }
                 });
-
             marker_menu.popup_at_pointer(e);
             miter_ok = false;
             return true;
         }
+        }
         return false;
     }
 
-    public void set_popup_needed(Gtk.TreeIter _miter)
+    public void set_popup_needed(int _ino)
     {
-        miter = _miter;
+        mpop_no =  _ino;
         miter_ok = true;
     }
 
@@ -394,6 +407,7 @@ public class ListBox : GLib.Object
 
         if(ms.homex != 0 && ms.homey != 0) {
             fhome.set_fake_home(ms.homey, ms.homex);
+            fhome.show_fake_home(true);
         }
         mp.markers.add_list_store(this);
         calc_mission();
@@ -733,6 +747,7 @@ public class ListBox : GLib.Object
         fhome.create_dialog(mp.builder, mp.window);
         fhome.fake_move.connect((lat,lon) => {
                 fhome.fhd.set_pos(PosFormat.pos(lat,lon,MWP.conf.dms));
+                update_fby_wp(lat, lon);
             });
         fhome.fhd.ready.connect((b) => {
                 remove_plots();
@@ -821,6 +836,21 @@ public class ListBox : GLib.Object
                     unset_selection();
             }
         }
+    }
+
+
+
+
+    public void connect_markers()
+    {
+        mp.markers.wp_moved.connect((ino, lat, lon) => {
+                Gtk.TreeIter iter;
+                if(list_model.iter_nth_child(out iter, null, ino-1))
+                    list_model.set (iter, WY_Columns.LAT, lat, WY_Columns.LON, lon);
+            });
+
+            // mp.markers.wp_selected.connect((ino) => {    });
+
     }
 
     public void create_view(MWP _mp)
@@ -1302,6 +1332,24 @@ public class ListBox : GLib.Object
     private void renumber_steps(Gtk.ListStore ls)
     {
         import_mission(to_mission());
+    }
+
+    private void update_fby_wp(double lat, double lon)
+    {
+        Gtk.TreeIter iter;
+        for(bool next=list_model.get_iter_first(out iter); next;
+            next=list_model.iter_next(ref iter))
+        {
+            GLib.Value cell;
+            list_model.get_value (iter, WY_Columns.FLAG, out cell);
+            if ( (int)cell == 0x48) {
+                list_model.get_value (iter, WY_Columns.MARKER, out cell);
+                var mk =  (Champlain.Label)cell;
+                if(mk != null)
+                    mk.set_location(lat,lon);
+                list_model.set (iter, WY_Columns.LAT, lat, WY_Columns.LON, lon);
+            }
+        }
     }
 
     private int check_last()
@@ -2381,33 +2429,40 @@ public class ListBox : GLib.Object
 
     public void pop_menu_delete()
     {
-
-        var xiter = miter;
-        var next=list_model.iter_next(ref xiter);
-        if(next)
+        Gtk.TreeIter miter;
+        if(list_model.iter_nth_child(out miter, null, mpop_no-1))
         {
-            GLib.Value cell;
-            list_model.get_value (xiter, WY_Columns.ACTION, out cell);
-            var ntyp = (MSP.Action)cell;
-            if(ntyp == MSP.Action.JUMP || ntyp == MSP.Action.RTH)
-                miter = xiter;
+            var xiter = miter.copy();
+            var next=list_model.iter_next(ref xiter);
+            if(next)
+            {
+                GLib.Value cell;
+                list_model.get_value (xiter, WY_Columns.ACTION, out cell);
+                var ntyp = (MSP.Action)cell;
+                if(ntyp == MSP.Action.JUMP || ntyp == MSP.Action.RTH)
+                    miter = xiter;
+            }
+            set_selection(miter);
+            menu_delete();
         }
-        set_selection(miter);
-        menu_delete();
     }
 
     public void pop_change_marker(string s)
     {
-        Gtk.TreeIter ni;
-        if(wp_has_rth(miter, out ni))
+        Gtk.TreeIter miter;
+        if(list_model.iter_nth_child(out miter, null, mpop_no-1))
         {
-            set_selection(ni);
-            menu_delete();
-        }
-        else
-        {
-            set_selection(miter);
-            change_marker(s);
+            Gtk.TreeIter ni;
+            if(wp_has_rth(miter, out ni))
+            {
+                set_selection(ni);
+                menu_delete();
+            }
+            else
+            {
+                set_selection(miter);
+                change_marker(s);
+            }
         }
     }
 

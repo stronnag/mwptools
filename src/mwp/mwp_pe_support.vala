@@ -41,7 +41,7 @@ public class FakeHome : GLib.Object
 
     public FakeHome(Champlain.View view)
     {
-        Clutter.Color colour = {0x8c, 0x43, 0x43, 0x40};
+        Clutter.Color colour = {0x8c, 0x43, 0x43, 0xa0};
         Clutter.Color white = { 0xff,0xff,0xff, 0xff};
         hmlayer = new Champlain.MarkerLayer();
         homep = new Champlain.Label.with_text ("⏏", "Sans 10",null,null);

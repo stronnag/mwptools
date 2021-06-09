@@ -45,7 +45,8 @@ public class MWPMarkers : GLib.Object
     private Clutter.Color grayish;
     private Clutter.Color white;
 
-    public signal void wp_moved(Gtk.TreeIter i, double lat, double lon);
+    public signal void wp_moved(int ino, double lat, double lon);
+    public signal void wp_selected(int ino);
 
     public MWPMarkers(ListBox lb, Champlain.View view, string mkcol ="#ffffff60")
     {
@@ -554,6 +555,7 @@ public class MWPMarkers : GLib.Object
         marker.set_draggable(!fby);
         marker.set_selectable(true);
         marker.set_flags(ActorFlags.REACTIVE);
+
         markers.add_marker (marker);
 
         if (rth == false)
@@ -571,13 +573,21 @@ public class MWPMarkers : GLib.Object
         mc.y = 5;
         marker.set_qdata<Champlain.Label>(q1,mc);
 
+       marker.captured_event.connect((e) => {
+               if(e.get_type() == Clutter.EventType.BUTTON_PRESS)
+                   if(e.button.button == 1) {
+                       wp_selected(ino);
+                   }
+               return false;
+           });
+
         marker.button_press_event.connect((e) => {
                 if(e.button == 3)
                 {
                     var _t1 = marker.get_qdata<Champlain.Label>(q1);
                     if (_t1 != null)
                         marker.remove_child(_t1);
-                    l.set_popup_needed(iter);
+                    l.set_popup_needed(ino);
                 }
                 return false;
             });
@@ -608,7 +618,7 @@ public class MWPMarkers : GLib.Object
         marker.drag_motion.connect((dx,dy,evt) => {
                 var _t1 = marker.get_qdata<Champlain.Label>(q1);
                 {
-                    wp_moved(iter, marker.get_latitude(), marker.get_longitude());
+                    wp_moved(ino, marker.get_latitude(), marker.get_longitude());
                     calc_extra_distances(l);
                     var s = l.get_marker_tip(ino);
                     _t1.set_text(s);
@@ -629,8 +639,7 @@ public class MWPMarkers : GLib.Object
                     marker.set_color (col);
                     marker.set_text(mtxt);
                 }
-                ls.set_value(iter, ListBox.WY_Columns.LAT, marker.get_latitude());
-                ls.set_value(iter, ListBox.WY_Columns.LON, marker.get_longitude() );
+                wp_moved(ino, marker.get_latitude(), marker.get_longitude());
                 calc_extra_distances(l);
                 var _t1 = marker.get_qdata<Champlain.Label>(q1);
                 _t1.set_text(l.get_marker_tip(ino));
