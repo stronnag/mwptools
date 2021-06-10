@@ -139,8 +139,7 @@ public class ListBox : GLib.Object
                     list_model.set_value (iter, WY_Columns.FLAG, flag);
                     double hlat,hlon;
                     fhome.get_fake_home(out hlat, out hlon);
-                    list_model.set (iter, WY_Columns.LAT, hlat,
-                                    WY_Columns.LON, hlon);
+                    list_model.set (iter, WY_Columns.LAT, hlat, WY_Columns.LON, hlon);
                     renumber_steps(list_model);
                 }
             });
@@ -1182,6 +1181,23 @@ public class ListBox : GLib.Object
                 mp.set_serstate(ss);
                 list_validate(path,new_text,
                               WY_Columns.INT3,-32768,32767,true);
+            });
+
+
+
+        cell = new Gtk.CellRendererText ();
+        cell.set_property ("editable", false);
+        view.insert_column_with_attributes (-1, "Hfb",
+                                            cell,
+                                            "text", WY_Columns.FLAG);
+        col = view.get_column(WY_Columns.FLAG);
+        col.set_cell_data_func(cell, (col,_cell,model,iter) => {
+                string s="";
+                Value v;
+                model.get_value(iter, WY_Columns.FLAG, out v);
+                if((int)v == 0x48)
+                    s = "H";
+                _cell.set_property("text",s);
             });
 
         view.set_headers_visible (true);
