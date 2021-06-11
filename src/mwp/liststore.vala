@@ -600,6 +600,7 @@ public class ListBox : GLib.Object
             fhome.get_fake_home(out ms.homey, out ms.homex);
         }
         ms.set_ways(arry);
+        ms.npoints=arry.length;
         return ms;
     }
 
@@ -2352,6 +2353,11 @@ public class ListBox : GLib.Object
         msg.response.connect ((response_id) => { msg.destroy(); });
         msg.set_title("MWP Altitude Analysis");
         msg.show();
+    }
+
+    public bool fake_home_visible()
+    {
+        return fhome.is_visible;
     }
 
     public void toggle_fake_home()

@@ -4663,8 +4663,8 @@ case 0:
                     }
                 }
                 if(homed) {
-                    ls.set_fake_home_pos(home_pos.lat, home_pos.lon);
                     instantiate_mission(ms);
+                    ls.set_fake_home_pos(home_pos.lat, home_pos.lon);
                 }
             }
         }
@@ -7910,6 +7910,7 @@ case 0:
                             return Source.REMOVE;
                         });
             }
+            check_mission_home();
         }
 
         if((want_special & POSMODE.PH) != 0)
@@ -8546,6 +8547,8 @@ case 0:
         lastmission=ls.to_mission();
         last_file = null;
         navstatus.reset_mission();
+        if(!wp_edit && ls.fake_home_visible())
+            ls.unset_fake_home();
     }
 
     private void set_replay_menus(bool state)
