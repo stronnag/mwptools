@@ -161,6 +161,8 @@ public class FakeHomeDialog : GLib.Object
     private Gtk.Entry pe_home_text;
     private Gtk.Entry pe_margin;
     private Gtk.Entry pe_rthalt;
+    private Gtk.Entry pe_climb;
+    private Gtk.Entry pe_dive;
     private Gtk.CheckButton pe_replace;
     private Gtk.CheckButton pe_land;
     private Gtk.ComboBoxText pe_altmode;
@@ -181,8 +183,13 @@ public class FakeHomeDialog : GLib.Object
         pe_altmode = builder.get_object ("pe-altmode") as Gtk.ComboBoxText;
         pe_close = builder.get_object ("pe-close") as Gtk.Button;
         pe_ok = builder.get_object ("pe-ok") as Gtk.Button;
+        pe_climb = builder.get_object ("pe-climb") as Gtk.Entry;
+        pe_dive = builder.get_object ("pe-dive") as Gtk.Entry;
+
         pe_land.sensitive = false;
         pe_altmode.sensitive = false;
+        pe_climb.sensitive = pe_dive.sensitive = false;
+
         pe_dialog.set_transient_for(w);
 
         pe_dialog.delete_event.connect (() => {
@@ -192,13 +199,40 @@ public class FakeHomeDialog : GLib.Object
             });
 
         pe_close.clicked.connect (() => {
+                get_climb_opts();
                 dismiss();
                 ready(false);
             });
 
         pe_ok.clicked.connect (() => {
+                get_climb_opts();
                 ready(true);
             });
+
+        set_climb_opts();
+    }
+
+    private void get_climb_opts()
+    {
+        MWP.conf.maxclimb = double.parse(pe_climb.text);
+        if (MWP.conf.maxclimb < 0.0)
+            MWP.conf.maxclimb = -MWP.conf.maxclimb;
+        MWP.conf.settings.set_double("max-climb-angle", MWP.conf.maxclimb);
+
+        MWP.conf.maxdive = double.parse(pe_dive.text);
+        if (MWP.conf.maxdive > 0.0)
+            MWP.conf.maxdive = -MWP.conf.maxdive;
+        MWP.conf.settings.set_double("max-dive-angle", MWP.conf.maxdive);
+    }
+
+    private void set_climb_opts()
+    {
+        if (MWP.conf.maxclimb < 0.0)
+            MWP.conf.maxclimb = -MWP.conf.maxclimb;
+        if (MWP.conf.maxdive  > 0.0)
+            MWP.conf.maxdive = -MWP.conf.maxdive;
+        pe_climb.text = "%.1f".printf(MWP.conf.maxclimb);
+        pe_dive.text = "%.1f".printf(MWP.conf.maxdive);
     }
 
     public void set_pos(string s)
@@ -254,7 +288,7 @@ public class FakeHomeDialog : GLib.Object
 
     public void set_altmode_sensitive(bool sens)
     {
-        pe_altmode.sensitive = sens;
+        pe_altmode.sensitive = pe_climb.sensitive = pe_dive.sensitive = sens;
     }
 
     public void unhide()

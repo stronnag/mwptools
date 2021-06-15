@@ -54,6 +54,7 @@ public class ListBox : GLib.Object
     private Gtk.MenuItem altz_item;
     private Gtk.MenuItem delta_item;
     private Gtk.MenuItem terrain_item;
+    private Gtk.MenuItem terrain_popitem;
     private Gtk.MenuItem replicate_item;
     private Gtk.MenuItem speedz_item;
     private Gtk.MenuItem speedv_item;
@@ -151,6 +152,14 @@ public class ListBox : GLib.Object
                 toggle_mission_preview_state();
             });
         marker_menu.add (pop_preview_item);
+
+        terrain_popitem = new Gtk.MenuItem.with_label ("Terrain Analysis");
+        terrain_popitem.activate.connect (() => {
+                terrain_mission();
+            });
+
+        terrain_popitem.sensitive = false;
+        marker_menu.add (terrain_popitem);
 
         marker_menu.add (new Gtk.SeparatorMenuItem ());
         pop_editor_item = new Gtk.MenuItem.with_label ("Mission Editor");
@@ -313,6 +322,7 @@ public class ListBox : GLib.Object
                         ((Gtk.CheckMenuItem)mi).active = (flag == 0x48);
                     }
                 });
+            terrain_popitem.sensitive = terrain_item.sensitive;
             marker_menu.popup_at_pointer(e);
             miter_ok = false;
             return true;
@@ -2233,6 +2243,11 @@ public class ListBox : GLib.Object
             spawn_args += "--force-alt=%d".printf(altid);
         }
 
+            /*
+        double maxclimb = 0.0;
+        double maxdive = 0.0;
+        fhome.get_best_angles(out maxclimb, out maxdive);
+            */
         var m = to_mission();
         XmlIO.to_xml_file(outfn, m);
         spawn_args += outfn;
@@ -2326,12 +2341,7 @@ public class ListBox : GLib.Object
                     if(replname != null)
                         FileUtils.unlink(replname);
                     if (cdlines.length > 0) {
-                        string cdl = string.joinv("", cdlines);
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("<tt>");
-                        sb.append(cdl);
-                        sb.append("</tt>");
-                        show_climb_dive(sb.str);
+                        generate_climb_dive(cdlines);
                     }
                 });
         } catch (SpawnError e) {
@@ -2339,11 +2349,35 @@ public class ListBox : GLib.Object
         }
     }
 
-    private void show_climb_dive (string s)
+    private void generate_climb_dive(string[] cdlines)
     {
+        bool hilite;
+        double maxclimb = MWP.conf.maxclimb;
+        double maxdive = MWP.conf.maxdive;
+
+        var sb = new StringBuilder();
+        sb.append("<tt>");
+        foreach (var l in cdlines)
+        {
+            hilite = false;
+            var parts = l.split("\t");
+            if (parts.length == 3) {
+                double angle=double.parse(parts[1]);
+                if((angle > 0.0 && maxclimb > 0.0 && angle > maxclimb) ||
+                   (angle < 0.0 && maxdive < 0.0 && angle < maxdive))
+                    hilite = true;
+            }
+            if(hilite)
+                sb.append("<span foreground='red'>");
+            sb.append(l);
+            if(hilite)
+                sb.append("</span>");
+        }
+        sb.append("</tt>");
+
         var msg = new Gtk.MessageDialog.with_markup (null, 0, Gtk.MessageType.INFO,
                                                      Gtk.ButtonsType.OK, null);
-        msg.set_markup(s);
+        msg.set_markup(sb.str);
         var bin = msg.get_message_area() as Gtk.Container;
         var glist = bin.get_children();
         glist.foreach((i) => {
@@ -2435,7 +2469,10 @@ public class ListBox : GLib.Object
             if (pd.rthalt != null)
                 taval = int.parse(pd.rthalt);
             fhome.fhd.set_rthalt(taval);
+        } else {
+            fhome.get_fake_home(out hlat, out hlon);
         }
+
         var bbox = mp.view.get_bounding_box();
         if (bbox.covers(hlat, hlon) == false)
         {

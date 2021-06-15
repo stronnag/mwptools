@@ -105,6 +105,10 @@ PERMNAMES = [
   { boxid: 38, name: "USER2"},	# 48
   { boxid: 40, name: "LOITER CHANGE"},	# 49
   { boxid: 41, name: "MSP RC OVERRIDE"},	# 50
+  { boxid: 42, name: "PREARM"},
+  { boxid: 43, name: "TURTLE"},
+  { boxid: 44, name: "NAVCRUISE"},
+  { boxid: 45, name: "AUTOLEVEL"},
   { boxid: 255, name: "PermIds"}
 ]
 
@@ -112,26 +116,31 @@ PERMNAMES = [
 # src/main/io/serial.h
 
 SERIALS = [
-  "MSP",
-  "GPS",
-  "TELEMETRY_FRSKY",
-  "TELEMETRY_HOTT",
-  "TELEMETRY_LTM",
-  "TELEMETRY_SMARTPORT",
-  "RX_SERIAL",
-  "BLACKBOX",
-  "TELEMETRY_MAVLINK",
-  "TELEMETRY_IBUS",
-  "RCDEVICE",
-  "VTX_SMARTAUDIO",
-  "VTX_TRAMP",
-  "UAV_INTERCONNECT",
-  "OPTICAL_FLOW",
-  "LOG",
-  "RANGEFINDER",
-  "VTX_FFPV",
-  "SERIALSHOT",
-  "TELEMETRY_SIM"
+  "MSP",                # 0
+  "GPS",                # 1
+  "TELEMETRY_FRSKY",    # 2
+  "TELEMETRY_HOTT",	# 3
+  "TELEMETRY_LTM",	# 4
+  "TELEMETRY_SMARTPORT",# 5
+  "RX_SERIAL", 		# 5
+  "BLACKBOX", 		# 7
+  "TELEMETRY_MAVLINK",	# 8
+  "TELEMETRY_IBUS",	# 9
+  "RCDEVICE",		# 10
+  "VTX_SMARTAUDIO",	# 11
+  "VTX_TRAMP",		# 12
+  "UAV_INTERCONNECT",	# 13, aka unused
+  "OPTICAL_FLOW",	# 14
+  "LOG",		# 15
+  "RANGEFINDER",	# 16
+  "VTX_FFPV",		# 17
+  "SERIALSHOT",		# 18
+  "TELEMETRY_SIM",	# 19
+  "FRSKY_OSD",		# 20
+  "DJI_HD_OSD",		# 21
+  "SERVO_SERIAL",	#22
+  "TELEMETRY_SMARTPORT_MASTER", # 23
+  "IMU2", 		#24
 ]
 
 MON2MON = {"Jan" => 1, "Feb" => 2, "Mar" => 3, "Apr" => 4, "May" => 5,

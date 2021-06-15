@@ -107,6 +107,9 @@ public class MWPSettings : GLib.Object
     public bool ucmissiontags {get; set; default=false;}
     public string load_safehomes {get; set; default=null;}
 
+    public double maxclimb {get; set; default=0;}
+    public double maxdive {get; set; default=0;}
+
 //    public string radar_device {get; set; default=null;}
 
     public signal void settings_update (string s);
@@ -403,6 +406,11 @@ public class MWPSettings : GLib.Object
                 radar_device = null;
         }
             ***/
+        if(s == null || s == "max-climb-angle")
+            maxclimb = settings.get_double ("max-climb-angle");
+
+        if(s == null || s == "max-dive-angle")
+            maxdive = settings.get_double ("max-dive-angle");
     }
 
     public void save_pane()
