@@ -415,6 +415,7 @@ public class ListBox : GLib.Object
         }
 
         if(ms.homex != 0 && ms.homey != 0) {
+            FakeHome.usedby |= FakeHome.USERS.Mission;
             fhome.set_fake_home(ms.homey, ms.homex);
             fhome.show_fake_home(true);
         }
@@ -763,8 +764,10 @@ public class ListBox : GLib.Object
                 remove_plots();
                 if(b)
                     run_elevation_tool();  // run it ...
-                else
-                    fhome.show_fake_home(false);
+                else {
+                    FakeHome.usedby &= ~FakeHome.USERS.Terrain;
+                    unset_fake_home();
+                }
             });
     }
 
@@ -806,7 +809,10 @@ public class ListBox : GLib.Object
     private void bing_complete(ALTMODES amode, POSREF posref, int act)
     {
         if ((act & 1) == 1)
+        {
+            FakeHome.usedby |= FakeHome.USERS.ElevMode;
             unset_fake_home();
+        }
 
         if(posref == POSREF.MANUAL)
         {
@@ -1773,6 +1779,7 @@ public class ListBox : GLib.Object
         if (!fhome.is_visible)
         {
             set_fake_home();
+            FakeHome.usedby |= FakeHome.USERS.ElevMode;
             altmodedialog.ui_action = 3;
         }
         double lat,lon;
@@ -1785,6 +1792,7 @@ public class ListBox : GLib.Object
         altmodedialog.ui_action = 2;
         if (!fhome.is_visible)
         {
+            FakeHome.usedby |= FakeHome.USERS.ElevMode;
             set_fake_home();
             altmodedialog.ui_action = 3;
         }
@@ -2426,13 +2434,15 @@ public class ListBox : GLib.Object
             }
         } else {
             fhome.set_fake_home(hy, hx);
+
         }
         fhome.show_fake_home(true);
     }
 
     public void unset_fake_home()
     {
-        fhome.show_fake_home(false);
+        if (FakeHome.usedby == 0)
+            fhome.show_fake_home(false);
     }
 
     private void terrain_mission()
@@ -2460,6 +2470,7 @@ public class ListBox : GLib.Object
                     hlat = mp.view.get_center_latitude();
                     hlon = mp.view.get_center_longitude();
                     fhome.set_fake_home(hlat, hlon);
+                    FakeHome.usedby |= FakeHome.USERS.Terrain;
                 }
             }
             int taval = 0;
@@ -2479,6 +2490,7 @@ public class ListBox : GLib.Object
             hlat = mp.view.get_center_latitude();
             hlon = mp.view.get_center_longitude();
             fhome.set_fake_home(hlat, hlon);
+            FakeHome.usedby |= FakeHome.USERS.Terrain;
         }
         fhome.fhd.set_pos(PosFormat.pos(hlat,hlon,MWP.conf.dms));
         fhome.show_fake_home(true);
@@ -2615,6 +2627,8 @@ public class ListBox : GLib.Object
         have_rth = false;
         lastid = 0;
         calc_mission();
+        FakeHome.usedby &= ~FakeHome.USERS.Mission;
+        unset_fake_home();
     }
 
     private string show_time(int s)

@@ -1601,11 +1601,15 @@ public class MWP : Gtk.Application {
             wp_edit_button.tooltip_text = ("Enable / disable the addition of WPs by clicking on the map (%sabled)".printf((wp_edit) ? "en" : "dis"));
             if(wp_edit)
             {
+                FakeHome.usedby |= FakeHome.USERS.Editor;
                 ls.set_fake_home();
                 map_moved();
             }
             else
+            {
+                FakeHome.usedby &= ~FakeHome.USERS.Editor;
                 ls.unset_fake_home();
+            }
         });
 
         arm_warn.clicked.connect(() =>
@@ -4664,6 +4668,7 @@ case 0:
                 }
                 if(homed) {
                     instantiate_mission(ms);
+                    FakeHome.usedby |= FakeHome.USERS.Mission;
                     ls.set_fake_home_pos(home_pos.lat, home_pos.lon);
                 }
             }
@@ -8547,8 +8552,8 @@ case 0:
         lastmission=ls.to_mission();
         last_file = null;
         navstatus.reset_mission();
-        if(!wp_edit && ls.fake_home_visible())
-            ls.unset_fake_home();
+        FakeHome.usedby &= ~FakeHome.USERS.Mission;
+        ls.unset_fake_home();
     }
 
     private void set_replay_menus(bool state)
@@ -9100,6 +9105,7 @@ case 0:
             wp_resp = m.get_ways();
             if (m.homex != 0.0 && m.homey != 0.0)
             {
+                FakeHome.usedby |= FakeHome.USERS.Mission;
                 ls.set_fake_home_pos(m.homey, m.homex);
                 for(var i = 0; i < m.npoints; i++)
                 {

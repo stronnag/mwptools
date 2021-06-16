@@ -23,6 +23,17 @@ using GtkChamplain;
 
 public class FakeHome : GLib.Object
 {
+    public enum USERS
+    {
+        None = 0,
+        Mission = 1,
+        Editor = 2,
+        Terrain = 4,
+        ElevMode = 8
+    }
+
+    public static USERS usedby = USERS.None;
+
     public FakeHomeDialog fhd;
     private Champlain.MarkerLayer hmlayer;
     private static Champlain.Label homep;
