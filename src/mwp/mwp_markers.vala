@@ -304,10 +304,12 @@ public class MWPMarkers : GLib.Object
                 break;
 
             case MSP.Action.JUMP:
+                    // ⟲⟳⥀⥁
+
                 if(jumpfwd)
-                    symb = "⇐";
+                    symb = "⟳" ; // "⇐";
                 else
-                    symb = "⇒";
+                    symb = "⟲" ; //"⇒";
 
                 colour = { 0xed, 0x51, 0xd7, alpha};
                 break;
