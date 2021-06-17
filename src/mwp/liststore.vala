@@ -182,7 +182,7 @@ public class ListBox : GLib.Object
         add_marker_item("RTH", "RTH");
         add_marker_item("Waypoint", "WAYPOINT");
 
-        var pop_fbh_item = new Gtk.CheckMenuItem.with_label ("Home FlyBy");
+        var pop_fbh_item = new Gtk.CheckMenuItem.with_label ("Fly By Home");
         pop_fbh_item.sensitive = false;
 
         pop_fbh_item.activate.connect(() => {
@@ -376,7 +376,7 @@ public class ListBox : GLib.Object
                                 lbl.has_prefix("RT"))
                                 ((Gtk.MenuItem)mi).sensitive = sens;
 
-                            if (lbl.has_prefix("Home")) {
+                            if (lbl.has_prefix("Fly By")) {
                                 if (!fhome.has_loc)
                                     ((Gtk.CheckMenuItem)mi).sensitive = false;
                                 else {
@@ -1290,7 +1290,7 @@ public class ListBox : GLib.Object
                 tcell.active = !tcell.active;
             });
 
-        view.insert_column_with_attributes (-1, "Hfb", tcell, "active", WY_Columns.FLAG);
+        view.insert_column_with_attributes (-1, "FBH", tcell, "active", WY_Columns.FLAG);
         col = view.get_column(WY_Columns.FLAG);
         col.set_cell_data_func(tcell, (col, _cell, model, iter) => {
                 Value v;
