@@ -105,6 +105,52 @@ public class ListBox : GLib.Object
         LANDA=16
     }
 
+    private void raise_fby_wp(int wpno)
+    {
+        Gtk.TreeIter iter;
+        if(list_model.iter_nth_child(out iter, null, wpno-1))
+        {
+            Value val;
+            list_model.get_value (iter, WY_Columns.MARKER, out val);
+            var mk =  (Champlain.Label)val;
+            if(mk != null)
+            {
+                Gtk.TreeIter niter;
+                Value cell;
+                for(bool next=list_model.get_iter_first(out niter); next;
+                    next=list_model.iter_next(ref niter)) {
+                    list_model.get_value (niter, WY_Columns.FLAG, out cell);
+                    uint8 flag = (uint8)((int)cell);
+                    if(flag == 0x48) {
+                        list_model.get_value (niter, WY_Columns.MARKER, out val);
+                        var fbymk =  (Champlain.Label)val;
+                        if (mk != fbymk)
+                            mk.get_parent().set_child_above_sibling(mk, fbymk);
+                    }
+                }
+            }
+        }
+    }
+
+    private void toggle_flyby_status(int wpno, int flag)
+    {
+        Gtk.TreeIter iter;
+        if(list_model.iter_nth_child(out iter, null, wpno-1))
+        {
+            list_model.set_value (iter, WY_Columns.FLAG, flag);
+            if(flag == 0x48)
+            {
+                double hlat,hlon;
+                fhome.get_fake_home(out hlat, out hlon);
+                list_model.set (iter, WY_Columns.LAT, hlat, WY_Columns.LON, hlon);
+            }
+            renumber_steps(list_model);
+            if(flag == 0)
+                raise_fby_wp(wpno);
+        }
+    }
+
+
     private void add_marker_item(string label, string cue)
     {
         var item = new Gtk.MenuItem.with_label (label);
@@ -117,7 +163,13 @@ public class ListBox : GLib.Object
     private void init_marker_menu()
     {
         marker_menu =   new Gtk.Menu ();
-        var item = new Gtk.MenuItem.with_label ("Delete");
+        var item = new Gtk.MenuItem.with_label ("WP: 0");
+        marker_menu.add (item);
+        item.sensitive = false;
+
+        marker_menu.add (new Gtk.SeparatorMenuItem ());
+
+        item = new Gtk.MenuItem.with_label ("Delete");
         item.activate.connect (() => {
                 pop_menu_delete();
             });
@@ -130,21 +182,14 @@ public class ListBox : GLib.Object
         add_marker_item("RTH", "RTH");
         add_marker_item("Waypoint", "WAYPOINT");
 
-        var mchk = new Gtk.CheckMenuItem.with_label ("Home FlyBy");
-        mchk.sensitive = false;
-        mchk.toggled.connect(() => {
-                Gtk.TreeIter iter;
-                if(list_model.iter_nth_child(out iter, null, mpop_no-1))
-                {
-                    int flag = (mchk.active) ? 0x48 : 0;
-                    list_model.set_value (iter, WY_Columns.FLAG, flag);
-                    double hlat,hlon;
-                    fhome.get_fake_home(out hlat, out hlon);
-                    list_model.set (iter, WY_Columns.LAT, hlat, WY_Columns.LON, hlon);
-                    renumber_steps(list_model);
-                }
+        var pop_fbh_item = new Gtk.CheckMenuItem.with_label ("Home FlyBy");
+        pop_fbh_item.sensitive = false;
+
+        pop_fbh_item.activate.connect(() => {
+                int flag = (pop_fbh_item.active) ? 0x48 : 0;
+                toggle_flyby_status(mpop_no, flag);
             });
-        marker_menu.add (mchk);
+        marker_menu.add (pop_fbh_item);
 
         marker_menu.add (new Gtk.SeparatorMenuItem ());
         pop_preview_item = new Gtk.MenuItem.with_label ("Preview Mission");
@@ -167,6 +212,12 @@ public class ListBox : GLib.Object
                 toggle_editor_state();
             });
         marker_menu.add (pop_editor_item);
+
+        item = new Gtk.MenuItem.with_label ("Clear Mission");
+        item.activate.connect (() => {
+                clear_mission();
+            });
+        marker_menu.add (item);
 
         marker_menu.show_all();
     }
@@ -288,45 +339,63 @@ public class ListBox : GLib.Object
 
     public bool pop_marker_menu(Gdk.EventButton e)
     {
-        Gtk.TreeIter miter;
         if(miter_ok)
         {
+            Gtk.TreeIter miter;
             if(list_model.iter_nth_child(out miter, null, mpop_no-1))
             {
                 bool sens = true;
                 var xiter = miter;
-            var next=list_model.iter_next(ref xiter);
-            GLib.Value cell;
+                var next=list_model.iter_next(ref xiter);
+                GLib.Value cell;
 
-            if(next)
-            {
-                list_model.get_value (xiter, WY_Columns.ACTION, out cell);
+                list_model.get_value (miter, WY_Columns.ACTION, out cell);
                 var ntyp = (MSP.Action)cell;
-                if(ntyp == MSP.Action.JUMP || ntyp == MSP.Action.RTH)
-                    sens = false;
+
+                if(next)
+                {
+                    list_model.get_value (xiter, WY_Columns.ACTION, out cell);
+                    ntyp = (MSP.Action)cell;
+                    if(ntyp == MSP.Action.JUMP || ntyp == MSP.Action.RTH)
+                        sens = false;
+                }
+                list_model.get_value (miter, WY_Columns.FLAG, out cell);
+                uint8 flag = (uint8)((int)cell);
+                list_model.get_value (miter, WY_Columns.IDX, out cell);
+                mpop_no = int.parse((string)cell);
+                int j = 0;
+                marker_menu.@foreach((mi) => {
+                        if(j == 0)
+                            ((Gtk.MenuItem)mi).set_label("WP: %d".printf(mpop_no));
+                        else {
+                            var lbl = ((Gtk.MenuItem)mi).get_label();
+                            if (lbl.has_prefix("Way") ||
+                                lbl.has_prefix("PH") ||
+                                lbl.has_prefix("Ju") ||
+                                lbl.has_prefix("La") ||
+                                lbl.has_prefix("RT"))
+                                ((Gtk.MenuItem)mi).sensitive = sens;
+
+                            if (lbl.has_prefix("Home")) {
+                                if (!fhome.has_loc)
+                                    ((Gtk.CheckMenuItem)mi).sensitive = false;
+                                else {
+                                    if(ntyp == MSP.Action.JUMP || ntyp == MSP.Action.RTH
+                                       || ntyp == MSP.Action.SET_POI || ntyp == MSP.Action.SET_HEAD)
+                                        ((Gtk.CheckMenuItem)mi).sensitive = false;
+                                    else
+                                        ((Gtk.CheckMenuItem)mi).sensitive = true;
+                                }
+                                ((Gtk.CheckMenuItem)mi).active = (flag == 0x48);
+                            }
+                        }
+                        j++;
+                    });
+                terrain_popitem.sensitive = terrain_item.sensitive;
+                marker_menu.popup_at_pointer(e);
+                miter_ok = false;
+                return true;
             }
-            list_model.get_value (miter, WY_Columns.FLAG, out cell);
-            uint8 flag = (uint8)((int)cell);
-            list_model.get_value (miter, WY_Columns.IDX, out cell);
-            mpop_no = int.parse((string)cell);
-            marker_menu.@foreach((mi) => {
-                    var lbl = ((Gtk.MenuItem)mi).get_label();
-                    if (lbl.has_prefix("Way") ||
-                        lbl.has_prefix("PH") ||
-                        lbl.has_prefix("Ju") ||
-                        lbl.has_prefix("La") ||
-                        lbl.has_prefix("RT"))
-                        ((Gtk.MenuItem)mi).sensitive = sens;
-                    if (lbl.has_prefix("Home")) {
-                        ((Gtk.CheckMenuItem)mi).sensitive =  fhome.has_loc;
-                        ((Gtk.CheckMenuItem)mi).active = (flag == 0x48);
-                    }
-                });
-            terrain_popitem.sensitive = terrain_item.sensitive;
-            marker_menu.popup_at_pointer(e);
-            miter_ok = false;
-            return true;
-        }
         }
         return false;
     }
@@ -928,7 +997,15 @@ public class ListBox : GLib.Object
                 {
                     Gtk.TreeIter seliter;
                     list_model.get_iter (out seliter, t.get_path ());
-                    raise_iter_wp(seliter);
+/**
+                    Value v;
+                    list_model.get_value(seliter, WY_Columns.FLAG, out v);
+                    uint8 flag = (uint8)((int)v);
+                    if(flag == 0x48)
+                        raise_fby_wp(seliter);
+                    else
+**/
+                        raise_iter_wp(seliter);
                 }
             });
 
@@ -1201,20 +1278,28 @@ public class ListBox : GLib.Object
             });
 
 
+        var tcell = new Gtk.CellRendererToggle();
+        tcell.toggled.connect((p) => {
+                Gtk.TreeIter citer;
+                Value val;
+                list_model.get_iter(out citer, new Gtk.TreePath.from_string(p));
+                int flag = (tcell.active) ? 0: 0x48;
+                list_model.get_value (citer, WY_Columns.IDX, out val);
+                int wpno = int.parse((string)val);
+                toggle_flyby_status(wpno, flag);
+                tcell.active = !tcell.active;
+            });
 
-        cell = new Gtk.CellRendererText ();
-        cell.set_property ("editable", false);
-        view.insert_column_with_attributes (-1, "Hfb",
-                                            cell,
-                                            "text", WY_Columns.FLAG);
+        view.insert_column_with_attributes (-1, "Hfb", tcell, "active", WY_Columns.FLAG);
         col = view.get_column(WY_Columns.FLAG);
-        col.set_cell_data_func(cell, (col,_cell,model,iter) => {
-                string s="";
+        col.set_cell_data_func(tcell, (col, _cell, model, iter) => {
                 Value v;
-                model.get_value(iter, WY_Columns.FLAG, out v);
-                if((int)v == 0x48)
-                    s = "H";
-                _cell.set_property("text",s);
+                model.get_value (iter, WY_Columns.ACTION, out v);
+                var typ = (MSP.Action)v;
+                bool sts = false;
+                if(typ == MSP.Action.WAYPOINT || typ == MSP.Action.LAND || typ == MSP.Action.POSHOLD_TIME)
+                    sts = true;
+                _cell.sensitive = _cell.visible = sts;
             });
 
         view.set_headers_visible (true);
