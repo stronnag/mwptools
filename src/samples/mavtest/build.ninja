@@ -1,0 +1,4 @@
+rule go
+    command = go build -ldflags "-w -s"  -o $out $in
+
+build mavreader: go mavreader.go
