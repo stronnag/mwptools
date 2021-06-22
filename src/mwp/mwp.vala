@@ -7399,7 +7399,7 @@ case 0:
                         mhead += 360;
                 }
                 navstatus.set_mav_attitude(m,item_visible(DOCKLETS.NAVSTATUS));
-                art_win.update((int16)(m.roll*57.29578*10), (int16)(m.pitch*57.29578*10),
+                art_win.update((int16)(m.roll*57.29578*10), -(int16)(m.pitch*57.29578*10),
                                item_visible(DOCKLETS.ARTHOR));
                 break;
 
@@ -7536,7 +7536,23 @@ case 0:
                 break;
 
             case MSP.Cmds.MAVLINK_MSG_SCALED_PRESSURE:
+                break;
+
             case MSP.Cmds.MAVLINK_MSG_BATTERY_STATUS:
+                int32 mavmah;
+                int16 mavamps;
+
+                deserialise_i32(raw, out mavmah);
+                deserialise_i16(&raw[30], out mavamps);
+                curr.centiA = mavamps;
+                curr.mah = mavmah;
+                if(curr.centiA != 0 || curr.mah != 0)
+                {
+                    curr.ampsok = true;
+                    navstatus.current(curr, 2);
+                    if (curr.centiA > odo.amps)
+                        odo.amps = curr.centiA;
+                }
                 break;
 
             case MSP.Cmds.MAVLINK_MSG_STATUSTEXT:
