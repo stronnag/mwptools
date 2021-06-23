@@ -2469,8 +2469,8 @@ public class ListBox : GLib.Object
         sb.append("</tt>");
 
         var msg = new Gtk.MessageDialog.with_markup (null, 0, Gtk.MessageType.INFO,
-                                                     Gtk.ButtonsType.OK, null);
-        msg.set_markup(sb.str);
+                                                     Gtk.ButtonsType.OK, sb.str,null);
+
         var bin = msg.get_message_area() as Gtk.Container;
         var glist = bin.get_children();
         glist.foreach((i) => {
@@ -2588,7 +2588,9 @@ public class ListBox : GLib.Object
         Gtk.TreeIter miter;
         if(list_model.iter_nth_child(out miter, null, mpop_no-1))
         {
-            var xiter = miter.copy();
+            var xiter = miter;
+//            var xiter = miter.copy();
+
             var next=list_model.iter_next(ref xiter);
             if(next)
             {

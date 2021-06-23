@@ -9271,8 +9271,7 @@ case 0:
         var msg = new Gtk.MessageDialog.with_markup (window,
                                                      0,
                                                      klass,
-                                                     Gtk.ButtonsType.OK, null);
-        msg.set_markup(warnmsg);
+                                                     Gtk.ButtonsType.OK, warnmsg, null);
 
         var bin = msg.get_message_area() as Gtk.Container;
         var glist = bin.get_children();
