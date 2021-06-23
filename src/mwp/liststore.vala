@@ -2468,7 +2468,7 @@ public class ListBox : GLib.Object
         }
         sb.append("</tt>");
 
-        var msg = new Gtk.MessageDialog.with_markup (null, 0, Gtk.MessageType.INFO,
+        var msg = new Gtk.MessageDialog.with_markup (mp.window, 0, Gtk.MessageType.INFO,
                                                      Gtk.ButtonsType.OK, sb.str,null);
 
         var bin = msg.get_message_area() as Gtk.Container;
