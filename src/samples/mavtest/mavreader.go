@@ -4,12 +4,21 @@ import (
 	"fmt"
 	"os"
 	"encoding/binary"
+	"encoding/json"
 	"bytes"
 	"strings"
+	"io"
+	"bufio"
 )
 
 const (
-	S_UNKNOWN = iota
+	LOG_RAW = iota
+	LOG_V2RAW
+	LOG_JSON
+)
+
+const (
+	S_UNKNOWN = 0 + iota
 	S_M_STX
 	S_M_SIZE
 	S_M_SEQ
@@ -40,8 +49,7 @@ type MavCRCList struct {
 	seed uint8
 }
 
-var mavcrcs =  [] MavCRCList{
-	{ 0, 50 }, { 1, 124 }, { 2, 137 }, { 4, 237 }, { 5, 217 },
+var mavcrcs =  [] MavCRCList{	{ 0, 50 }, { 1, 124 }, { 2, 137 }, { 4, 237 }, { 5, 217 },
 	{ 6, 104 }, { 7, 119 }, { 8, 117 }, { 11, 89 }, { 20, 214 },
 	{ 21, 159 }, { 22, 220 }, { 23, 168 }, { 24, 24 }, { 25, 23 },
 	{ 26, 170 }, { 27, 144 }, { 28, 67 }, { 29, 115 }, { 30, 39 },
@@ -83,21 +91,34 @@ var mavcrcs =  [] MavCRCList{
 	{ 12902, 49 }, { 12903, 249 }, { 12904, 85 }, { 12905, 49 }, { 12915, 62 },
 }
 
-func retrieve_mav(filename string) ([]byte, error) {
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
+type MavReader struct {
+	state int
+	cmd uint32
+	csize byte
+	needed byte
+	mavsum uint16
+	rxmavsum uint16
+	mavsig int
+	m1_ok int
+	m1_fail int
+	m2_ok int
+	m2_fail int
+	ftype uint8
+	payload []byte
+	reader *bufio.Reader
+}
 
-	stats, statsErr := file.Stat()
-	if statsErr != nil {
-		return nil, statsErr
-	}
-	var size int64 = stats.Size()
-	bytes := make([]byte, size)
-	_, err = file.Read(bytes)
-	return bytes, err
+type V2Header struct  {
+	Offset float64
+	Size   uint16
+	Dirn   byte
+}
+
+type JSItem struct {
+	Stamp    float64     `json:"stamp"`
+	Length   uint16      `json:"length"`
+	Dirn     byte        `json:"direction"`
+	RawBytes []byte      `json:"rawdata"`
 }
 
 func lookup(id uint32) uint8 {
@@ -119,291 +140,301 @@ func mavlink_crc(acc uint16, val uint8) (uint16) {
 	return acc
 }
 
-func main() {
-	if len(os.Args) > 1 {
-		if dat, err := retrieve_mav(os.Args[1]); err == nil {
-			state := S_UNKNOWN
-			cmd := uint32(0)
-			csize := byte(0)
-			needed := byte(0)
-			mavsum := uint16(0)
-			rxmavsum := uint16(0)
-			mavsig := 0
-			m1_ok := 0
-			m1_fail := 0
-			m2_ok := 0
-			m2_fail := 0
-			m_offset := 0
-			for n, b := range dat {
-				switch state {
-				case S_UNKNOWN:
-					m_offset = 0
-					if b == 0xfe {
-						state = S_M_SIZE
-					} else if b == 0xfd {
-						state = S_M2_SIZE
-					}
-				case S_M_SIZE:
-					csize = b
-					needed = b
-					mavsum = mavlink_crc(0xffff, csize)
-					state = S_M_SEQ
-				case S_M_SEQ:
-					mavsum = mavlink_crc(mavsum, b)
-					state = S_M_ID1
-				case S_M_ID1:
-					mavsum = mavlink_crc(mavsum, b)
-					state = S_M_ID2
-				case S_M_ID2:
-					mavsum = mavlink_crc(mavsum, b)
-					state = S_M_MSGID
-				case S_M_MSGID:
-					mavsum = mavlink_crc(mavsum, b)
-					if csize == 0 {
-						state = S_M_CRC1
-					} else {
-						state = S_M_DATA
-						m_offset = n + 1
-					}
-					cmd = uint32(b)
-				case S_M_DATA:
-					mavsum = mavlink_crc(mavsum, b)
-					needed -= 1
-					if needed == 0 {
-						state = S_M_CRC1
-					}
-				case S_M_CRC1:
-					var seed  = lookup(cmd)
-					mavsum = mavlink_crc(mavsum, seed)
-					rxmavsum = uint16(b)
-					state = S_M_CRC2
-				case S_M_CRC2:
-					rxmavsum |= (uint16(b) << 8)
-					if rxmavsum != mavsum {
-						m1_fail += 1
-						fmt.Fprintf(os.Stderr, "MAV v1 CRC Fail, got %x != %x (cmd=%d, len=%d)\n", rxmavsum, mavsum, cmd, csize)
-					} else {
-						m_end := m_offset+int(csize)
-						if m_end <= len(dat) {
-							mav_show(1, cmd, dat[m_offset:m_end])
-						}
-						m1_ok += 1
-					}
-					state = S_UNKNOWN
+func (m *MavReader) set_reader(rfh io.ReadCloser) (error) {
+	m.reader = bufio.NewReader(rfh)
+	sig, err := m.reader.Peek(3)
+	if err == nil {
+		if sig[0] == 'v' && sig[1] == '2' && sig[2] == '\n' {
+			m.ftype = LOG_V2RAW
+			m.reader.Discard(3)
+		} else if sig[0] == '{' && sig[1] == '"' {
+			m.ftype = LOG_JSON
+		}
+	}
+	return err
+}
 
-				case S_M2_SIZE:
-					csize = b
-					needed = b
-					mavsum = mavlink_crc(0xffff, uint8(csize))
-					state = S_M2_FLG1
+func (m *MavReader) get_data() ([]byte, error) {
+	var err error = nil
+	switch m.ftype {
+	case LOG_RAW:
+		buf := make([]byte, 128)
+		_, err = io.ReadFull(m.reader, buf)
+		return buf, err
 
-				case S_M2_FLG1:
-					mavsum = mavlink_crc(mavsum, b)
-					if((b & 1) == 1) {
-						mavsig = 13
-					}	else {
-						mavsig = 0
-					}
-					state = S_M2_FLG2
-
-				case S_M2_FLG2:
-					mavsum = mavlink_crc(mavsum, b)
-					state = S_M2_SEQ
-
-				case S_M2_SEQ:
-					mavsum = mavlink_crc(mavsum, b)
-					state = S_M2_ID1
-
-				case S_M2_ID1:
-					mavsum = mavlink_crc(mavsum, b)
-					state = S_M2_ID2
-
-				case S_M2_ID2:
-					mavsum = mavlink_crc(mavsum, b)
-					state = S_M2_MSGID0
-
-				case S_M2_MSGID0:
-					cmd = uint32(b)
-					mavsum = mavlink_crc(mavsum, b)
-					state = S_M2_MSGID1
-					break
-
-				case S_M2_MSGID1:
-					cmd |= uint32(b << 8)
-					mavsum = mavlink_crc(mavsum, b)
-					state = S_M2_MSGID2
-					break
-
-				case S_M2_MSGID2:
-					cmd |= uint32(b << 16)
-					mavsum = mavlink_crc(mavsum, b)
-					if csize == 0 {
-						state = S_M2_CRC1
-					} else {
-						state = S_M2_DATA
-						m_offset = n + 1
-					}
-
-				case S_M2_DATA:
-					mavsum = mavlink_crc(mavsum, b)
-					needed -= 1
-					if needed == 0 {
-						state = S_M2_CRC1
-					}
-
-				case S_M2_CRC1:
-					var seed  = lookup(cmd)
-					mavsum = mavlink_crc(mavsum, seed)
-					rxmavsum = uint16(b)
-					state = S_M2_CRC2
-
-				case S_M2_CRC2:
-					rxmavsum |= (uint16(b) << 8)
-					if rxmavsum != mavsum {
-						m2_fail += 1
-						fmt.Fprintf(os.Stderr, "MAV 2 CRC Fail, got %x != %x (cmd=%d, len=%d)\n", rxmavsum, mavsum, cmd, csize)
-						state = S_UNKNOWN
-					} else {
-						m2_ok += 1
-						if csize != 0 {
-							m_end := m_offset+int(csize)
-							if m_end <= len(dat) {
-								mav_show(2, cmd, dat[m_offset:m_offset+int(csize)])
-							}
-						}
-						if mavsig == 0 {
-							state = S_UNKNOWN
-						} else {
-							state = S_M2_SIG
-						}
-					}
-				case S_M2_SIG:
-					mavsig -= 1
-					if  mavsig == 0 {
-						state = S_UNKNOWN
-					}
-				default:
-					state = S_UNKNOWN
+	case LOG_V2RAW:
+		var hdr V2Header
+		for err == nil {
+			err = binary.Read(m.reader, binary.LittleEndian, &hdr)
+			nr := int(hdr.Size)
+			if err == nil {
+				if hdr.Dirn == 'i' {
+					buf := make([]byte, nr)
+					_, err = io.ReadFull(m.reader, buf)
+					return buf, err
+				} else {
+					_, err = m.reader.Discard(nr)
 				}
 			}
-			if m1_ok + m1_fail > 0 {
-				fmt.Printf("V1 OK %d, fail %d\n", m1_ok, m1_fail)
+		}
+
+	case LOG_JSON:
+		dat, err := m.reader.ReadBytes('\n')
+		if err == nil {
+			var js JSItem
+			err := json.Unmarshal(dat, &js)
+			if err == nil {
+				return js.RawBytes, err
 			}
-			if m2_ok + m2_fail > 0 {
-				fmt.Printf("V2 OK %d, fail %d\n", m2_ok, m2_fail)
+		}
+	}
+	return nil, err
+}
+func (m *MavReader) process(dat []byte) {
+	for _, b := range dat {
+		switch m.state {
+		case S_UNKNOWN:
+			if b == 0xfe {
+				m.state = S_M_SIZE
+			} else if b == 0xfd {
+				m.state = S_M2_SIZE
 			}
+		case S_M_SIZE:
+			m.csize = b
+			m.needed = b
+			m.payload = make([]byte, m.csize)
+			m.mavsum = mavlink_crc(0xffff, m.csize)
+			m.state = S_M_SEQ
+		case S_M_SEQ:
+			m.mavsum = mavlink_crc(m.mavsum, b)
+			m.state = S_M_ID1
+		case S_M_ID1:
+			m.mavsum = mavlink_crc(m.mavsum, b)
+			m.state = S_M_ID2
+		case S_M_ID2:
+			m.mavsum = mavlink_crc(m.mavsum, b)
+			m.state = S_M_MSGID
+		case S_M_MSGID:
+			m.mavsum = mavlink_crc(m.mavsum, b)
+			if m.csize == 0 {
+				m.state = S_M_CRC1
+			} else {
+				m.state = S_M_DATA
+			}
+			m.cmd = uint32(b)
+		case S_M_DATA:
+			m.mavsum = mavlink_crc(m.mavsum, b)
+			m.payload[m.csize-m.needed] = b
+			m.needed -= 1
+			if m.needed == 0 {
+				m.state = S_M_CRC1
+			}
+		case S_M_CRC1:
+			var seed  = lookup(m.cmd)
+			m.mavsum = mavlink_crc(m.mavsum, seed)
+			m.rxmavsum = uint16(b)
+			m.state = S_M_CRC2
+		case S_M_CRC2:
+			m.rxmavsum |= (uint16(b) << 8)
+			if m.rxmavsum != m.mavsum {
+				m.m1_fail += 1
+				fmt.Fprintf(os.Stderr, "MAV v1 CRC Fail, got %x != %x (.cmd=%d, len=%d)\n", m.rxmavsum, m.mavsum, m.cmd, m.csize)
+			} else {
+				m.mav_show(1) // cmd,payload
+				m.m1_ok += 1
+			}
+			m.state = S_UNKNOWN
+
+		case S_M2_SIZE:
+			m.csize = b
+			m.needed = b
+			m.payload = make([]byte, m.csize)
+			m.mavsum = mavlink_crc(0xffff, uint8(m.csize))
+			m.state = S_M2_FLG1
+
+		case S_M2_FLG1:
+			m.mavsum = mavlink_crc(m.mavsum, b)
+			if((b & 1) == 1) {
+				m.mavsig = 13
+			}	else {
+				m.mavsig = 0
+			}
+			m.state = S_M2_FLG2
+
+		case S_M2_FLG2:
+			m.mavsum = mavlink_crc(m.mavsum, b)
+			m.state = S_M2_SEQ
+
+		case S_M2_SEQ:
+			m.mavsum = mavlink_crc(m.mavsum, b)
+			m.state = S_M2_ID1
+
+		case S_M2_ID1:
+			m.mavsum = mavlink_crc(m.mavsum, b)
+			m.state = S_M2_ID2
+
+		case S_M2_ID2:
+			m.mavsum = mavlink_crc(m.mavsum, b)
+			m.state = S_M2_MSGID0
+
+		case S_M2_MSGID0:
+			m.cmd = uint32(b)
+			m.mavsum = mavlink_crc(m.mavsum, b)
+			m.state = S_M2_MSGID1
+			break
+
+		case S_M2_MSGID1:
+			m.cmd |= uint32(b << 8)
+			m.mavsum = mavlink_crc(m.mavsum, b)
+			m.state = S_M2_MSGID2
+			break
+
+		case S_M2_MSGID2:
+			m.cmd |= uint32(b << 16)
+			m.mavsum = mavlink_crc(m.mavsum, b)
+			if m.csize == 0 {
+				m.state = S_M2_CRC1
+			} else {
+				m.state = S_M2_DATA
+			}
+
+		case S_M2_DATA:
+			m.mavsum = mavlink_crc(m.mavsum, b)
+			m.payload[m.csize-m.needed] = b
+			m.needed -= 1
+			if m.needed == 0 {
+				m.state = S_M2_CRC1
+			}
+
+		case S_M2_CRC1:
+			var seed  = lookup(m.cmd)
+			m.mavsum = mavlink_crc(m.mavsum, seed)
+			m.rxmavsum = uint16(b)
+			m.state = S_M2_CRC2
+
+		case S_M2_CRC2:
+			m.rxmavsum |= (uint16(b) << 8)
+			if m.rxmavsum != m.mavsum {
+				m.m2_fail += 1
+				fmt.Fprintf(os.Stderr, "MAV 2 CRC Fail, got %x != %x (cmd=%d, len=%d)\n", m.rxmavsum, m.mavsum, m.cmd, m.csize)
+				m.state = S_UNKNOWN
+			} else {
+				m.m2_ok += 1
+				if m.csize != 0 {
+					m.mav_show(2)
+				}
+				if m.mavsig == 0 {
+					m.state = S_UNKNOWN
+				} else {
+					m.state = S_M2_SIG
+				}
+			}
+		case S_M2_SIG:
+			m.mavsig -= 1
+			if  m.mavsig == 0 {
+				m.state = S_UNKNOWN
+			}
+		default:
+			m.state = S_UNKNOWN
 		}
 	}
 }
 
-func mav_show(vers int, cmd uint32, payload []byte) {
-	fmt.Printf("Mav%d: %d %d : ", vers, cmd, len(payload))
-	lpay := len(payload)
+func (m *MavReader) mav_len_error(expect int) {
+	fmt.Printf("mav #%d len error %d, expected %d (%d)\n", m.cmd, len(m.payload), expect, m.csize)
+}
+
+func (m *MavReader) mav_show(vers int) {
+	fmt.Printf("Mav%d: %d %d : ", vers, m.cmd, m.csize)
 	var expect int
-	switch cmd {
+	switch m.cmd {
 	case 0: // heartbeat
 		expect = 9
-		if lpay <= expect {
-			b := make([]byte, expect)
-			copy(b, payload)
-			fmt.Printf("Heartbeat: t: %d a: %d b: %d s: %d m: %d\n", b[4],b[5],b[6],b[7],b[8])
+		if m.csize <= byte(expect) {
+			fmt.Printf("Heartbeat: t: %d a: %d b: %d s: %d m: %d\n", m.payload[4],m.payload[5],m.payload[6],m.payload[7],m.payload[8])
 		} else {
-			fmt.Printf("mav #%d len error %d, expected %d\n", cmd, lpay, expect)
+			m.mav_len_error(expect)
 		}
 
 	case 1: // sys_status
 		expect = 31
-		if len(payload) <= expect {
-			b := make([]byte, expect)
-			copy(b, payload)
+		if m.csize <= byte(expect) {
 			fmt.Printf("Status: l: %d v: %d c: %d\n",
-				binary.LittleEndian.Uint16(b[12:14]),
-				binary.LittleEndian.Uint16(b[14:16]),
-				int(binary.LittleEndian.Uint16(b[16:18])))
+				binary.LittleEndian.Uint16(m.payload[12:14]),
+				binary.LittleEndian.Uint16(m.payload[14:16]),
+				int(binary.LittleEndian.Uint16(m.payload[16:18])))
 		} else {
-			fmt.Printf("mav #%d len error %d, expected %d\n", cmd, lpay, expect)
+			m.mav_len_error(expect)
 		}
 
 	case 24: // gps_raw_int
 		expect = 52
-		if len(payload) <= expect {
-			b := make([]byte, expect)
-			copy(b, payload)
+		if m.csize <= byte(expect) {
 			fmt.Printf("GPS: la: %d lo: %d\n",
-				int(binary.LittleEndian.Uint32(b[8:12])),
-				int(binary.LittleEndian.Uint32(b[12:16])))
+				int(binary.LittleEndian.Uint32(m.payload[8:12])),
+				int(binary.LittleEndian.Uint32(m.payload[12:16])))
 
 		} else {
-			fmt.Printf("mav #%d len error %d, expected %d\n", cmd, lpay, expect)
+			m.mav_len_error(expect)
 		}
 
 	case 29: // scaled_pressure
 		expect = 16
-		if lpay <= expect {
+		if m.csize <= byte(expect) {
 			var it uint32
 			var pa,pr float32
 			var itemp int16
-			b := make([]byte, expect)
-			copy(b, payload)
-			buf := bytes.NewReader(b)
+			buf := bytes.NewReader(m.payload)
 			binary.Read(buf, binary.LittleEndian, &it)
 			binary.Read(buf, binary.LittleEndian, &pa)
 			binary.Read(buf, binary.LittleEndian, &pr)
 			binary.Read(buf, binary.LittleEndian, &itemp)
 			fmt.Printf("Pressure: t: %d %.1f t°: %d\n", it, pa, itemp)
 		} else {
-			fmt.Printf("mav #%d len error %d, expected %d\n", cmd, lpay, expect)
+			m.mav_len_error(expect)
 		}
 
 	case 30: // attitude
 		expect = 28
-		if lpay <= expect {
-			b := make([]byte, expect)
-			copy(b, payload)
+		if m.csize <= byte(expect) {
 			var it uint32
 			var r,p,y float32
-			buf := bytes.NewReader(b)
+			buf := bytes.NewReader(m.payload)
 			binary.Read(buf, binary.LittleEndian, &it)
 			binary.Read(buf, binary.LittleEndian, &r)
 			binary.Read(buf, binary.LittleEndian, &p)
 			binary.Read(buf, binary.LittleEndian, &y)
 			fmt.Printf("Attitude: t: %d r: %.1f p: %.1f y: %.1f\n", it, r, p, y)
 		} else {
-			fmt.Printf("mav #%d len error %d, expected %d\n", cmd, lpay, expect)
+			m.mav_len_error(expect)
 		}
 	case 35: // rc_channels_raw
 		expect = 22
-		if len(payload) <= expect {
-			b := make([]byte, expect)
-			copy(b, payload)
+		if m.csize <= byte(expect) {
 			fmt.Printf("RC Chan t: %d 1: %d 2: %d 3: %d 4: %d r: %d\n",
-				binary.LittleEndian.Uint32(b[0:4]),
-				binary.LittleEndian.Uint16(b[4:6]),
-				binary.LittleEndian.Uint16(b[6:8]),
-				binary.LittleEndian.Uint16(b[8:10]),
-				binary.LittleEndian.Uint16(b[10:12]),
-				b[21])
+				binary.LittleEndian.Uint32(m.payload[0:4]),
+				binary.LittleEndian.Uint16(m.payload[4:6]),
+				binary.LittleEndian.Uint16(m.payload[6:8]),
+				binary.LittleEndian.Uint16(m.payload[8:10]),
+				binary.LittleEndian.Uint16(m.payload[10:12]),
+				m.payload[21])
 		} else {
-			fmt.Printf("mav #%d len error %d, expected %d\n", cmd, lpay, expect)
+			m.mav_len_error(expect)
 		}
 	case 51:
 		expect = 5
-		if len(payload) <= expect {
-			b := make([]byte, expect)
-			copy(b, payload)
+		if m.csize <= byte(expect) {
 			fmt.Println()
 		} else {
-			fmt.Printf("mav #%d len error %d, expected %d\n", cmd, lpay, expect)
+			m.mav_len_error(expect)
 		}
 
 	case 74: // vfr_hud
 		expect = 20
-		if len(payload) <= expect {
-			b := make([]byte, expect)
-			copy(b, payload)
+		if m.csize <= byte(expect) {
 			var as, gs, alt, climb float32
 			var hd,th uint16
-			buf := bytes.NewReader(b)
+			buf := bytes.NewReader(m.payload)
 			binary.Read(buf, binary.LittleEndian, &as)
 			binary.Read(buf, binary.LittleEndian, &gs)
 			binary.Read(buf, binary.LittleEndian, &alt)
@@ -413,44 +444,64 @@ func mav_show(vers int, cmd uint32, payload []byte) {
 			fmt.Printf("vfr hud a: %.1f g: %.1f h: %d thr: %d a: %.1f cl: %.1f\n",
 				as,gs,hd,th,alt,climb)
 		} else {
-			fmt.Printf("mav #%d len error %d, expected %d\n", cmd, lpay, expect)
+			m.mav_len_error(expect)
 		}
 
 	case 109: // radio_statusx1
 		expect = 9
-		if len(payload) <= expect {
-			b := make([]byte, expect)
-			copy(b, payload)
-			fmt.Printf("Radio rssi: %d rem: %d\n", b[4], b[5])
+		if m.csize <= byte(expect) {
+			fmt.Printf("Radio rssi: %d rem: %d\n", m.payload[4], m.payload[5])
 		} else {
-			fmt.Printf("mav #%d len error %d, expected %d\n", cmd, lpay, expect)
+			m.mav_len_error(expect)
 		}
 
 	case 147: // battery_status
 		expect = 54
-		if len(payload) <= expect {
-			b := make([]byte, expect)
-			copy(b, payload)
+		if m.csize <= byte(expect) {
 			fmt.Printf("Bat Status: c: %d v0-4: %d %d %d %d\n",
-				int(binary.LittleEndian.Uint32(b[0:4])),
-				int16(binary.LittleEndian.Uint16(b[10:12])),
-				int16(binary.LittleEndian.Uint16(b[12:14])),
-				int16(binary.LittleEndian.Uint16(b[14:16])),
-				int16(binary.LittleEndian.Uint16(b[16:18])))
+				int(binary.LittleEndian.Uint32(m.payload[0:4])),
+				int16(binary.LittleEndian.Uint16(m.payload[10:12])),
+				int16(binary.LittleEndian.Uint16(m.payload[12:14])),
+				int16(binary.LittleEndian.Uint16(m.payload[14:16])),
+				int16(binary.LittleEndian.Uint16(m.payload[16:18])))
 		} else {
-			fmt.Printf("mav #%d len error %d, expected %d\n", cmd, lpay, expect)
+			m.mav_len_error(expect)
 		}
 
 	case 253: // statustext
 		expect = 54
-		if len(payload) <= expect {
-			b := make([]byte, expect)
-			copy(b, payload)
-			str := strings.TrimSpace(string(payload[1:51]))
-			fmt.Printf("status: s: %d t: %s\n", payload[0], str)
+		if m.csize <= byte(expect) {
+			str := strings.TrimSpace(string(m.payload[1:51]))
+			fmt.Printf("status: s: %d t: %s\n", m.payload[0], str)
 		} else {
-			fmt.Printf("mav #%d len error %d, expected %d\n", cmd, lpay, expect)
+			m.mav_len_error(expect)
 		}
+	}
+}
 
+func main() {
+	if len(os.Args) > 1 {
+		rfh, err := os.Open(os.Args[1])
+		if err == nil {
+			defer rfh.Close()
+			m := MavReader{}
+			err := m.set_reader(rfh)
+			if err == nil {
+				for {
+					dat, err := m.get_data()
+					if err == nil {
+						m.process(dat)
+					} else {
+						break
+					}
+				}
+				if m.m1_ok + m.m1_fail > 0 {
+					fmt.Printf("V1 OK %d, fail %d\n", m.m1_ok, m.m1_fail)
+				}
+				if m.m2_ok + m.m2_fail > 0 {
+					fmt.Printf("V2 OK %d, fail %d\n", m.m2_ok, m.m2_fail)
+				}
+			}
+		}
 	}
 }

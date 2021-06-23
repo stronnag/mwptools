@@ -119,6 +119,7 @@ File.open(ARGV[0]) do |f|
       STDOUT.printf "%02x ",b
     end
     puts
+
     if raw
       if !(omitx && data[1] == 'T' && data[2] == 'X')
 	rawf.print data

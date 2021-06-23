@@ -1,0 +1,4 @@
+rule go
+    command = go build -ldflags "-w -s"
+
+build mwp-serial-cap: go mwp-serial-cap.go btaddr_linux.go  btaddr_other.go
