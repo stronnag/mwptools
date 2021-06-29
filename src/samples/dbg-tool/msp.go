@@ -222,3 +222,7 @@ func MSPRunner(name string, c0 chan SChan) serial.Port {
 	go msp_reader(p, c0)
 	return p
 }
+
+func MSPClose(p serial.Port) {
+	p.Close()
+}

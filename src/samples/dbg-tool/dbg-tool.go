@@ -15,7 +15,9 @@ type SChan struct {
 	data []byte
 }
 
+
 func main() {
+	connected := ""
 	var sp serial.Port
 	c0 := make(chan SChan)
 	u := udev.Udev{}
@@ -30,7 +32,10 @@ func main() {
 	for i := range devices {
 		d := devices[i]
 		fmt.Printf("Found: /dev/%s\n", d.Sysname())
-		sp = MSPRunner(d.Sysname(), c0)
+		if len(connected) == 0 {
+			connected = d.Sysname()
+			sp = MSPRunner(d.Sysname(), c0)
+		}
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -51,7 +56,9 @@ func main() {
 			}
 			if ev.Key == 0 {
 				if ev.Rune == 'R' {
-					MSPReboot(sp)
+					if sp != nil {
+						MSPReboot(sp)
+					}
 				}
 			} else if ev.Key == keyboard.KeyCtrlC {
 				done = true
@@ -69,9 +76,16 @@ func main() {
 			switch d.Action() {
 			case "add":
 				fmt.Printf("Add event: /dev/%s\n", d.Sysname())
-				sp = MSPRunner(d.Sysname(), c0)
+				if len(connected) == 0 {
+					connected = d.Sysname()
+					sp = MSPRunner(d.Sysname(), c0)
+				}
 			case "remove":
 				fmt.Printf("Remove event: /dev/%s\n", d.Sysname())
+				if d.Sysname() == connected {
+					sp = nil
+					connected = ""
+				}
 			}
 		}
 	}
