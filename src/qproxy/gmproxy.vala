@@ -30,7 +30,7 @@
          "name" : "GM Proxy",
          "tile_size" : 256,
          "min_zoom" : 0,
-         "license" : "(c) Google ",
+         "license" : "(c) Zoogle ",
          "max_zoom" : 20,
          "id" : "gm",
          "projection" : "MERCATOR",
@@ -45,6 +45,8 @@
 
  * Then add to settings (terminal commmand line):
    gsettings set org.mwptools.planner map-sources sources.json
+ * It is also necessary to build annd install gmproxy
+   make && sudo make install
  ************************************************************************/
 
 public class GMProxy : Soup.Server
