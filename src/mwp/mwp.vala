@@ -2920,7 +2920,7 @@ public class MWP : Gtk.Application {
             {
                 magdiff=int.parse(parts[0]);
                 magtime=int.parse(parts[1]);
-                MWPLog.message("Enabled mag abnomaly checking %d⁰, %ds\n", magdiff,magtime);
+                MWPLog.message("Enabled mag anomaly checking %d⁰, %ds\n", magdiff,magtime);
                 magcheck = true;
             }
         }

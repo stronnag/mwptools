@@ -13,7 +13,7 @@ Niether simulator is built by default, it is necessary to:
 
 ```
 cd mwptools/samples/mwp-radar-sim
-make && sudo make install
+ninja && sudo ninja install
 ```
 
 ## Usage
