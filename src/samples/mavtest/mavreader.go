@@ -91,6 +91,26 @@ var mavcrcs =  [] MavCRCList{	{ 0, 50 }, { 1, 124 }, { 2, 137 }, { 4, 237 }, { 5
 	{ 12902, 49 }, { 12903, 249 }, { 12904, 85 }, { 12905, 49 }, { 12915, 62 },
 }
 
+const (
+  MAVLINK_MSG_HEARTBEAT = 0
+  MAVLINK_MSG_SYS_STATUS = 1
+  MAVLINK_MSG_GPS_RAW_INT = 24
+  MAVLINK_MSG_SCALED_PRESSURE = 29
+  MAVLINK_MSG_ATTITUDE = 30
+  MAVLINK_MSG_GLOBAL_POSITION_INT = 33
+  MAVLINK_MSG_RC_CHANNELS_RAW = 35
+  MAVLINK_MSG_GPS_GLOBAL_ORIGIN = 49
+  MAVLINK_MSG_VFR_HUD = 74
+	MAVLINK_MSG_RADIO_STATUS = 109
+  MAVLINK_MSG_BATTERY_STATUS = 147
+  MAVLINK_MSG_STATUSTEXT = 253
+)
+
+type MavMsg struct {
+	name string
+	expect byte
+}
+
 type MavReader struct {
 	state int
 	cmd uint32
@@ -106,6 +126,8 @@ type MavReader struct {
 	ftype uint8
 	payload []byte
 	reader *bufio.Reader
+	mavmeta map[uint32]MavMsg
+	vers byte
 }
 
 type V2Header struct  {
@@ -196,13 +218,15 @@ func (m *MavReader) process(dat []byte) {
 		case S_UNKNOWN:
 			if b == 0xfe {
 				m.state = S_M_SIZE
+				m.vers = 1
 			} else if b == 0xfd {
 				m.state = S_M2_SIZE
+				m.vers = 2
 			}
 		case S_M_SIZE:
 			m.csize = b
 			m.needed = b
-			m.payload = make([]byte, m.csize+32)
+			m.payload = make([]byte, 256)
 			m.mavsum = mavlink_crc(0xffff, m.csize)
 			m.state = S_M_SEQ
 		case S_M_SEQ:
@@ -240,7 +264,7 @@ func (m *MavReader) process(dat []byte) {
 				m.m1_fail += 1
 				fmt.Fprintf(os.Stderr, "MAV v1 CRC Fail, got %x != %x (.cmd=%d, len=%d)\n", m.rxmavsum, m.mavsum, m.cmd, m.csize)
 			} else {
-				m.mav_show(1) // cmd,payload
+				m.mav_show() // cmd,payload
 				m.m1_ok += 1
 			}
 			m.state = S_UNKNOWN
@@ -248,7 +272,7 @@ func (m *MavReader) process(dat []byte) {
 		case S_M2_SIZE:
 			m.csize = b
 			m.needed = b
-			m.payload = make([]byte, m.csize+32)
+			m.payload = make([]byte, 256)
 			m.mavsum = mavlink_crc(0xffff, uint8(m.csize))
 			m.state = S_M2_FLG1
 
@@ -321,7 +345,7 @@ func (m *MavReader) process(dat []byte) {
 			} else {
 				m.m2_ok += 1
 				if m.csize != 0 {
-					m.mav_show(2)
+					m.mav_show()
 				}
 				if m.mavsig == 0 {
 					m.state = S_UNKNOWN
@@ -340,50 +364,45 @@ func (m *MavReader) process(dat []byte) {
 	}
 }
 
-func (m *MavReader) mav_len_check(vers int, expect byte) bool {
-	fmt.Printf("Mav%d: %d %d", vers, m.cmd, m.csize)
-	if m.csize > expect {
-		fmt.Printf(" : len error %d, expected %d (%d)\n", len(m.payload), expect, m.csize)
-		return false
-	} else if  m.csize < expect {
-		for j:= m.csize; j < expect; j++ {
-			m.payload[j] = 0
+func (m *MavReader) mav_len_check() bool {
+	mm,ok := m.mavmeta[m.cmd]
+	if ok {
+		fmt.Printf("Mav%d: %s %d", m.vers, mm.name, m.csize)
+		if m.csize > mm.expect {
+			fmt.Printf(" : len error %d, expected %d (%d)\n", len(m.payload), mm.expect, m.csize)
+			return false
+		} else if  m.csize < mm.expect {
+			for j:= m.csize; j < mm.expect; j++ {
+				m.payload[j] = 0
+			}
+			fmt.Printf("/%d", mm.expect)
 		}
-		fmt.Printf("/%d", expect)
+		fmt.Print(" : ")
+		return true
+	} else {
+		return true
 	}
-	fmt.Print(" : ")
-	return true
 }
 
-func (m *MavReader) mav_show(vers int) {
-	var expect byte
-	switch m.cmd {
-	case 0: // heartbeat
-		expect = 9
-		if m.mav_len_check(vers, expect) {
-			fmt.Printf("Heartbeat: t: %d a: %d b: %d s: %d m: %d\n", m.payload[4],m.payload[5],m.payload[6],m.payload[7],m.payload[8])
-		}
+func (m *MavReader) mav_show() {
 
-	case 1: // sys_status
-		expect = 31
-		if m.mav_len_check(vers, expect) {
+	if m.mav_len_check() {
+		switch m.cmd {
+		case MAVLINK_MSG_HEARTBEAT: // heartbeat
+			fmt.Printf("Heartbeat: t: %d a: %d b: %d s: %d m: %d\n", m.payload[4],m.payload[5],m.payload[6],m.payload[7],m.payload[8])
+
+		case MAVLINK_MSG_SYS_STATUS: // sys_status
 			fmt.Printf("Status: l: %d v: %d c: %d\n",
 				binary.LittleEndian.Uint16(m.payload[12:14]),
 				binary.LittleEndian.Uint16(m.payload[14:16]),
 				int(binary.LittleEndian.Uint16(m.payload[16:18])))
-		}
 
-	case 24: // gps_raw_int
-		expect = 52
-		if m.mav_len_check(vers, expect) {
+		case MAVLINK_MSG_GPS_RAW_INT: // gps_raw_int
 			fmt.Printf("GPS: la: %d lo: %d\n",
 				int(binary.LittleEndian.Uint32(m.payload[8:12])),
 				int(binary.LittleEndian.Uint32(m.payload[12:16])))
-		}
 
-	case 29: // scaled_pressure
-		expect = 16
-		if m.mav_len_check(vers, expect) {
+		case MAVLINK_MSG_SCALED_PRESSURE: // scaled_pressure
 			var it uint32
 			var pa,pr float32
 			var itemp int16
@@ -393,11 +412,8 @@ func (m *MavReader) mav_show(vers int) {
 			binary.Read(buf, binary.LittleEndian, &pr)
 			binary.Read(buf, binary.LittleEndian, &itemp)
 			fmt.Printf("Pressure: t: %d %.1f t°: %d\n", it, pa, itemp)
-		}
 
-	case 30: // attitude
-		expect = 28
-		if m.mav_len_check(vers, expect) {
+		case MAVLINK_MSG_ATTITUDE: // attitude
 			var it uint32
 			var r,p,y float32
 			buf := bytes.NewReader(m.payload)
@@ -406,10 +422,13 @@ func (m *MavReader) mav_show(vers int) {
 			binary.Read(buf, binary.LittleEndian, &p)
 			binary.Read(buf, binary.LittleEndian, &y)
 			fmt.Printf("Attitude: t: %d r: %.1f p: %.1f y: %.1f\n", it, r, p, y)
-		}
-	case 35: // rc_channels_raw
-		expect = 22
-		if  m.mav_len_check(vers, expect) {
+
+		case MAVLINK_MSG_GLOBAL_POSITION_INT:
+			fmt.Printf("Gbl Pos: la: %d lo: %d\n",
+				int(binary.LittleEndian.Uint32(m.payload[4:8])),
+				int(binary.LittleEndian.Uint32(m.payload[8:12])))
+
+		case MAVLINK_MSG_RC_CHANNELS_RAW: // rc_channels_raw
 			fmt.Printf("RC Chan t: %d 1: %d 2: %d 3: %d 4: %d r: %d\n",
 				binary.LittleEndian.Uint32(m.payload[0:4]),
 				binary.LittleEndian.Uint16(m.payload[4:6]),
@@ -417,16 +436,13 @@ func (m *MavReader) mav_show(vers int) {
 				binary.LittleEndian.Uint16(m.payload[8:10]),
 				binary.LittleEndian.Uint16(m.payload[10:12]),
 				m.payload[21])
-		}
-	case 51:
-		expect = 5
-		if  m.mav_len_check(vers, expect) {
-			fmt.Println()
-		}
 
-	case 74: // vfr_hud
-		expect = 20
-		if  m.mav_len_check(vers, expect) {
+		case MAVLINK_MSG_GPS_GLOBAL_ORIGIN:
+			fmt.Printf("Origin: la: %d lo: %d\n",
+				int(binary.LittleEndian.Uint32(m.payload[0:4])),
+				int(binary.LittleEndian.Uint32(m.payload[4:8])))
+
+		case MAVLINK_MSG_VFR_HUD: // vfr_hud
 			var as, gs, alt, climb float32
 			var hd,th uint16
 			buf := bytes.NewReader(m.payload)
@@ -436,33 +452,45 @@ func (m *MavReader) mav_show(vers int) {
 			binary.Read(buf, binary.LittleEndian, &climb)
 			binary.Read(buf, binary.LittleEndian, &hd)
 			binary.Read(buf, binary.LittleEndian, &th)
-			fmt.Printf("vfr hud a: %.1f g: %.1f h: %d thr: %d a: %.1f cl: %.1f\n",
-				as,gs,hd,th,alt,climb)
-		}
+			fmt.Printf("vfr hud a: %.1f g: %.1f h: %d thr: %d a: %.1f cl: %.1f\n",as,gs,hd,th,alt,climb)
 
-	case 109: // radio_statusx1
-		expect = 9
-		if  m.mav_len_check(vers, expect) {
+		case MAVLINK_MSG_RADIO_STATUS: // radio_statusx1
 			fmt.Printf("Radio rssi: %d rem: %d\n", m.payload[4], m.payload[5])
-		}
 
-	case 147: // battery_status
-		expect = 54
-		if  m.mav_len_check(vers, expect) {
+		case MAVLINK_MSG_BATTERY_STATUS: // battery_status
 			fmt.Printf("Bat Status: c: %d v0-4: %d %d %d %d\n",
 				int(binary.LittleEndian.Uint32(m.payload[0:4])),
 				int16(binary.LittleEndian.Uint16(m.payload[10:12])),
 				int16(binary.LittleEndian.Uint16(m.payload[12:14])),
 				int16(binary.LittleEndian.Uint16(m.payload[14:16])),
 				int16(binary.LittleEndian.Uint16(m.payload[16:18])))
-		}
 
-	case 253: // statustext
-		expect = 54
-		if  m.mav_len_check(vers, expect) {
+		case MAVLINK_MSG_STATUSTEXT: // statustext
 			str := strings.TrimSpace(string(m.payload[1:51]))
 			fmt.Printf("status: s: %d t: %s\n", m.payload[0], str)
+
+		default:
+			fmt.Printf("** Unhandled **\n")
 		}
+	} else {
+		fmt.Printf("Mav%d: Unrecognised %d %d\n", m.vers, m.cmd, m.csize)
+	}
+}
+
+func (m *MavReader) load_meta() {
+	m.mavmeta = map[uint32]MavMsg{
+		MAVLINK_MSG_HEARTBEAT: {"mavlink_msg_heartbeat", 9},
+		MAVLINK_MSG_SYS_STATUS: {"mavlink_msg_sys_status", 31},
+		MAVLINK_MSG_GPS_RAW_INT: {"mavlink_msg_gps_raw_int", 52},
+		MAVLINK_MSG_SCALED_PRESSURE: {"mavlink_msg_scaled_pressure", 16},
+		MAVLINK_MSG_ATTITUDE: {"mavlink_msg_attitude", 28},
+		MAVLINK_MSG_GLOBAL_POSITION_INT: {"mavlink_msg_global_position_int", 28},
+		MAVLINK_MSG_RC_CHANNELS_RAW: {"mavlink_msg_rc_channels_raw", 22},
+		MAVLINK_MSG_GPS_GLOBAL_ORIGIN: {"mavlink_msg_gps_global_origin", 12},
+		MAVLINK_MSG_VFR_HUD: {"mavlink_msg_vfr_hud", 20},
+		MAVLINK_MSG_RADIO_STATUS: {"mavlink_msg_radio_status", 9},
+		MAVLINK_MSG_BATTERY_STATUS: {"mavlink_msg_battery_status", 54},
+		MAVLINK_MSG_STATUSTEXT: {"mavlink_msg_statustext", 54},
 	}
 }
 
@@ -472,6 +500,7 @@ func main() {
 		if err == nil {
 			defer rfh.Close()
 			m := MavReader{}
+			m.load_meta()
 			err := m.set_reader(rfh)
 			if err == nil {
 				for {
