@@ -202,7 +202,7 @@ func (m *MavReader) process(dat []byte) {
 		case S_M_SIZE:
 			m.csize = b
 			m.needed = b
-			m.payload = make([]byte, m.csize)
+			m.payload = make([]byte, m.csize+32)
 			m.mavsum = mavlink_crc(0xffff, m.csize)
 			m.state = S_M_SEQ
 		case S_M_SEQ:
@@ -248,7 +248,7 @@ func (m *MavReader) process(dat []byte) {
 		case S_M2_SIZE:
 			m.csize = b
 			m.needed = b
-			m.payload = make([]byte, m.csize)
+			m.payload = make([]byte, m.csize+32)
 			m.mavsum = mavlink_crc(0xffff, uint8(m.csize))
 			m.state = S_M2_FLG1
 
@@ -340,47 +340,50 @@ func (m *MavReader) process(dat []byte) {
 	}
 }
 
-func (m *MavReader) mav_len_error(expect int) {
-	fmt.Printf("mav #%d len error %d, expected %d (%d)\n", m.cmd, len(m.payload), expect, m.csize)
+func (m *MavReader) mav_len_check(vers int, expect byte) bool {
+	fmt.Printf("Mav%d: %d %d", vers, m.cmd, m.csize)
+	if m.csize > expect {
+		fmt.Printf(" : len error %d, expected %d (%d)\n", len(m.payload), expect, m.csize)
+		return false
+	} else if  m.csize < expect {
+		for j:= m.csize; j < expect; j++ {
+			m.payload[j] = 0
+		}
+		fmt.Printf("/%d", expect)
+	}
+	fmt.Print(" : ")
+	return true
 }
 
 func (m *MavReader) mav_show(vers int) {
-	fmt.Printf("Mav%d: %d %d : ", vers, m.cmd, m.csize)
-	var expect int
+	var expect byte
 	switch m.cmd {
 	case 0: // heartbeat
 		expect = 9
-		if m.csize <= byte(expect) {
+		if m.mav_len_check(vers, expect) {
 			fmt.Printf("Heartbeat: t: %d a: %d b: %d s: %d m: %d\n", m.payload[4],m.payload[5],m.payload[6],m.payload[7],m.payload[8])
-		} else {
-			m.mav_len_error(expect)
 		}
 
 	case 1: // sys_status
 		expect = 31
-		if m.csize <= byte(expect) {
+		if m.mav_len_check(vers, expect) {
 			fmt.Printf("Status: l: %d v: %d c: %d\n",
 				binary.LittleEndian.Uint16(m.payload[12:14]),
 				binary.LittleEndian.Uint16(m.payload[14:16]),
 				int(binary.LittleEndian.Uint16(m.payload[16:18])))
-		} else {
-			m.mav_len_error(expect)
 		}
 
 	case 24: // gps_raw_int
 		expect = 52
-		if m.csize <= byte(expect) {
+		if m.mav_len_check(vers, expect) {
 			fmt.Printf("GPS: la: %d lo: %d\n",
 				int(binary.LittleEndian.Uint32(m.payload[8:12])),
 				int(binary.LittleEndian.Uint32(m.payload[12:16])))
-
-		} else {
-			m.mav_len_error(expect)
 		}
 
 	case 29: // scaled_pressure
 		expect = 16
-		if m.csize <= byte(expect) {
+		if m.mav_len_check(vers, expect) {
 			var it uint32
 			var pa,pr float32
 			var itemp int16
@@ -390,13 +393,11 @@ func (m *MavReader) mav_show(vers int) {
 			binary.Read(buf, binary.LittleEndian, &pr)
 			binary.Read(buf, binary.LittleEndian, &itemp)
 			fmt.Printf("Pressure: t: %d %.1f t°: %d\n", it, pa, itemp)
-		} else {
-			m.mav_len_error(expect)
 		}
 
 	case 30: // attitude
 		expect = 28
-		if m.csize <= byte(expect) {
+		if m.mav_len_check(vers, expect) {
 			var it uint32
 			var r,p,y float32
 			buf := bytes.NewReader(m.payload)
@@ -405,12 +406,10 @@ func (m *MavReader) mav_show(vers int) {
 			binary.Read(buf, binary.LittleEndian, &p)
 			binary.Read(buf, binary.LittleEndian, &y)
 			fmt.Printf("Attitude: t: %d r: %.1f p: %.1f y: %.1f\n", it, r, p, y)
-		} else {
-			m.mav_len_error(expect)
 		}
 	case 35: // rc_channels_raw
 		expect = 22
-		if m.csize <= byte(expect) {
+		if  m.mav_len_check(vers, expect) {
 			fmt.Printf("RC Chan t: %d 1: %d 2: %d 3: %d 4: %d r: %d\n",
 				binary.LittleEndian.Uint32(m.payload[0:4]),
 				binary.LittleEndian.Uint16(m.payload[4:6]),
@@ -418,20 +417,16 @@ func (m *MavReader) mav_show(vers int) {
 				binary.LittleEndian.Uint16(m.payload[8:10]),
 				binary.LittleEndian.Uint16(m.payload[10:12]),
 				m.payload[21])
-		} else {
-			m.mav_len_error(expect)
 		}
 	case 51:
 		expect = 5
-		if m.csize <= byte(expect) {
+		if  m.mav_len_check(vers, expect) {
 			fmt.Println()
-		} else {
-			m.mav_len_error(expect)
 		}
 
 	case 74: // vfr_hud
 		expect = 20
-		if m.csize <= byte(expect) {
+		if  m.mav_len_check(vers, expect) {
 			var as, gs, alt, climb float32
 			var hd,th uint16
 			buf := bytes.NewReader(m.payload)
@@ -443,38 +438,30 @@ func (m *MavReader) mav_show(vers int) {
 			binary.Read(buf, binary.LittleEndian, &th)
 			fmt.Printf("vfr hud a: %.1f g: %.1f h: %d thr: %d a: %.1f cl: %.1f\n",
 				as,gs,hd,th,alt,climb)
-		} else {
-			m.mav_len_error(expect)
 		}
 
 	case 109: // radio_statusx1
 		expect = 9
-		if m.csize <= byte(expect) {
+		if  m.mav_len_check(vers, expect) {
 			fmt.Printf("Radio rssi: %d rem: %d\n", m.payload[4], m.payload[5])
-		} else {
-			m.mav_len_error(expect)
 		}
 
 	case 147: // battery_status
 		expect = 54
-		if m.csize <= byte(expect) {
+		if  m.mav_len_check(vers, expect) {
 			fmt.Printf("Bat Status: c: %d v0-4: %d %d %d %d\n",
 				int(binary.LittleEndian.Uint32(m.payload[0:4])),
 				int16(binary.LittleEndian.Uint16(m.payload[10:12])),
 				int16(binary.LittleEndian.Uint16(m.payload[12:14])),
 				int16(binary.LittleEndian.Uint16(m.payload[14:16])),
 				int16(binary.LittleEndian.Uint16(m.payload[16:18])))
-		} else {
-			m.mav_len_error(expect)
 		}
 
 	case 253: // statustext
 		expect = 54
-		if m.csize <= byte(expect) {
+		if  m.mav_len_check(vers, expect) {
 			str := strings.TrimSpace(string(m.payload[1:51]))
 			fmt.Printf("status: s: %d t: %s\n", m.payload[0], str)
-		} else {
-			m.mav_len_error(expect)
 		}
 	}
 }
