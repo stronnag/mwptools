@@ -8,13 +8,15 @@ Captures serial data into a log file. Each entry in the log file has metadata (t
 
 ```
 $ mwp-serial-cap --help
-Usage of mwp-serial-cap [options] outfile
+Usage of mwp-serial-cap [options] file
   -b int
     	Baud rate (default 115200)
   -d string
     	Serial Device
+  -js
+    	JSON stream
   -nometa
-        Don't include metadata (packet size, timing) in capture file
+    	No metadata
 
 $ mwp-serial-cap -d /dev/ttyUSB1 -b 57600 stuff.cap
 ^C
@@ -37,16 +39,31 @@ go build
 
 # Capture file
 
-The capture file stores the raw data received. If `-nometa` is omitted, then metadata is included that allows facimile playback by other mwp tools. If metadata is included (the default), then the following is written:
+The capture file stores the raw data received. This may be either a record orientated binary file or delimited JSON records.
 
-* A header "v2\n"
+If `-nometa` is omitted, then metadata is included that allows facimile playback by other mwp tools. If metadata is included (the default), then the following is written:
+
+* A header "v2\n" `[0x76 0x32 0x0a]`
 * Data encapsualted as a packed "pseudo-C" structure:
 
 ```
     struct {
-       double time_offset; // seconds
+       double time_offset; // seconds (IEEE 754 double)
        ushort data_size; // bytes
        uchar direction; // 'i' or 'o' (in or out, 'i' for a capture)
        uchar raw_bytes[data_size]; data read
     }
 ```
+
+All binary fields are host native-endian, typically little-endian on modern CPUs.
+
+If the `-js` (JSON) option is selected, a JSON file is created, containing LF (0x0a) delimited lines of a JSON structure, for example:
+```
+{"stamp":0.023195534,"length":36,"direction":105,"rawdata":"/hxTAfoeq+sBAPytAL2mkqs7QK6AvT+CGL2evDi8ynDFPCVR"}
+```
+* `stamp`: elapsed time (seconds)
+* `length`: raw data size (bytes)
+* `direction`: 105 ('i') or 111 ('o'), interpreted as above
+* `rawdata`: JSON encoded byte array
+
+`-js` has precedence over `-nometa`.
