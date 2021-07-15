@@ -2,3 +2,9 @@ rule go
     command = go build -ldflags "-w -s"  -o $out $in
 
 build mavreader: go mavreader.go
+default mavreader
+
+rule copy
+  command = cp $in $$HOME/bin
+
+build install: copy mavreader

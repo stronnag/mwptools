@@ -12,9 +12,7 @@ import (
 	"time"
 	"go.bug.st/serial"
 	"encoding/binary"
-	"github.com/xo/terminfo"
 	"encoding/json"
-	"bytes"
 )
 
 type JSONu8Slice []uint8
@@ -24,7 +22,6 @@ type JSItem struct {
 	Dirn     byte        `json:"direction"`
 	RawBytes JSONu8Slice `json:"rawdata"`
 }
-
 
 /*
  * uncomment for non-standard byte array formatting
@@ -84,11 +81,6 @@ func main() {
 		log.Fatalln("No output file given\n")
 	}
 
-	ti, err := terminfo.LoadFromEnv()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	file, err := os.Create(adata[0])
 	if err != nil {
 		log.Fatal(err)
@@ -131,18 +123,15 @@ func main() {
 			time.Sleep(2 * time.Second)
 		}
 	}
-	tbuf := new(bytes.Buffer)
-	ti.Fprintf(tbuf, terminfo.ClrEol)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 
-	cbuf := new(bytes.Buffer)
-	ti.Fprintf(cbuf, terminfo.CursorInvisible)
-	xbuf := new(bytes.Buffer)
-	ti.Fprintf(xbuf, terminfo.CursorNormal)
-	os.Stdout.Write(cbuf.Bytes())
-	defer os.Stdout.Write(xbuf.Bytes())
+	ti_init()
+	defer func() {
+		ti_cleanup()
+		fmt.Printf("\n\r")
+	} ()
 
 	go func() {
 		var start time.Time
@@ -176,13 +165,10 @@ func main() {
 					file.Write(buf[0:n])
 				}
 				nb += n
-				fmt.Printf("Read (%d) : %d [%.2fs]", n, nb, diff)
-				os.Stdout.Write(tbuf.Bytes())
-				os.Stdout.Write([]byte("\r"))
+				fmt.Printf("\rRead (%3d)\t: %9d [%.2fs]", n, nb, diff)
+				ti_clreol()
 			}
 		}
 	}()
 	<-c
-	//	os.Stdout.Write(xbuf.Bytes())
-	fmt.Println()
 }

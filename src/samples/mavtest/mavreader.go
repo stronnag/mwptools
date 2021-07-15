@@ -178,11 +178,12 @@ func (m *MavReader) set_reader(rfh io.ReadCloser) (error) {
 
 func (m *MavReader) get_data() ([]byte, error) {
 	var err error = nil
+	var dat []byte
 	switch m.ftype {
 	case LOG_RAW:
-		buf := make([]byte, 128)
-		_, err = io.ReadFull(m.reader, buf)
-		return buf, err
+		dat = make([]byte, 128)
+		_, err = io.ReadFull(m.reader, dat)
+		return dat, err
 
 	case LOG_V2RAW:
 		var hdr V2Header
@@ -191,9 +192,9 @@ func (m *MavReader) get_data() ([]byte, error) {
 			nr := int(hdr.Size)
 			if err == nil {
 				if hdr.Dirn == 'i' {
-					buf := make([]byte, nr)
-					_, err = io.ReadFull(m.reader, buf)
-					return buf, err
+					dat = make([]byte, nr)
+					_, err = io.ReadFull(m.reader, dat)
+					return dat, err
 				} else {
 					_, err = m.reader.Discard(nr)
 				}
@@ -201,10 +202,10 @@ func (m *MavReader) get_data() ([]byte, error) {
 		}
 
 	case LOG_JSON:
-		dat, err := m.reader.ReadBytes('\n')
+		dat, err = m.reader.ReadBytes('\n')
 		if err == nil {
 			var js JSItem
-			err := json.Unmarshal(dat, &js)
+			err = json.Unmarshal(dat, &js)
 			if err == nil {
 				return js.RawBytes, err
 			}
@@ -369,8 +370,7 @@ func (m *MavReader) mav_len_check() bool {
 	if ok {
 		fmt.Printf("Mav%d: %s %d", m.vers, mm.name, m.csize)
 		if m.csize > mm.expect {
-			fmt.Printf(" : len error %d, expected %d (%d)\n", len(m.payload), mm.expect, m.csize)
-			return false
+			fmt.Printf("!%d", mm.expect)
 		} else if  m.csize < mm.expect {
 			for j:= m.csize; j < mm.expect; j++ {
 				m.payload[j] = 0
@@ -380,7 +380,7 @@ func (m *MavReader) mav_len_check() bool {
 		fmt.Print(" : ")
 		return true
 	} else {
-		return true
+		return false
 	}
 }
 
@@ -486,7 +486,7 @@ func (m *MavReader) load_meta() {
 		MAVLINK_MSG_ATTITUDE: {"mavlink_msg_attitude", 28},
 		MAVLINK_MSG_GLOBAL_POSITION_INT: {"mavlink_msg_global_position_int", 28},
 		MAVLINK_MSG_RC_CHANNELS_RAW: {"mavlink_msg_rc_channels_raw", 22},
-		MAVLINK_MSG_GPS_GLOBAL_ORIGIN: {"mavlink_msg_gps_global_origin", 12},
+		MAVLINK_MSG_GPS_GLOBAL_ORIGIN: {"mavlink_msg_gps_global_origin", 16},
 		MAVLINK_MSG_VFR_HUD: {"mavlink_msg_vfr_hud", 20},
 		MAVLINK_MSG_RADIO_STATUS: {"mavlink_msg_radio_status", 9},
 		MAVLINK_MSG_BATTERY_STATUS: {"mavlink_msg_battery_status", 54},
@@ -518,6 +518,10 @@ func main() {
 					fmt.Printf("V2 OK %d, fail %d\n", m.m2_ok, m.m2_fail)
 				}
 			}
+		} else {
+			fmt.Fprintf(os.Stderr, "File %v\n", err)
 		}
+	} else {
+		fmt.Fprintf(os.Stderr, "Need a file\n")
 	}
 }
