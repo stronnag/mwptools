@@ -52,6 +52,7 @@ public class DevManager
                         switch (action)
                         {
                             case "add":
+                                print_device(dev);
                                 device_added(ds);
                                 break;
                             case "remove":
@@ -62,6 +63,23 @@ public class DevManager
                 }
             });
         evince_bt_devices.begin();
+    }
+
+    private void print_device(GUdev.Device d)
+    {
+        StringBuilder sb = new StringBuilder();
+        if(d.get_property("ID_BUS") == "usb") {
+            sb.append_printf("Registered USB device: %s ", d.get_device_file());
+            sb.append_printf("[%s:%s], ", d.get_property("ID_VENDOR_ID"),
+                             d.get_property("ID_MODEL_ID"));
+            sb.append_printf("Vendor: %s, Model: %s, ",
+                             d.get_property("ID_VENDOR"),
+                             d.get_property("ID_MODEL"));
+            sb.append_printf("Serial: %s, Driver: %s\n",
+                             d.get_property("ID_SERIAL_SHORT"),
+                             d.get_property("ID_USB_DRIVER"));
+            MWPLog.message (sb.str);
+        }
     }
 
     private async void evince_bt_devices()
@@ -136,8 +154,10 @@ public class DevManager
         var devs = uc.query_by_subsystem("tty");
         foreach (var d in devs)
         {
-            if(d.get_property("ID_BUS") == "usb")
+            if(d.get_property("ID_BUS") == "usb") {
+                print_device(d);
                 dlist += d.get_device_file().dup();
+            }
         }
         return dlist;
     }
