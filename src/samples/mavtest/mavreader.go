@@ -398,9 +398,9 @@ func (m *MavReader) mav_show() {
 				int(binary.LittleEndian.Uint16(m.payload[16:18])))
 
 		case MAVLINK_MSG_GPS_RAW_INT: // gps_raw_int
-			fmt.Printf("GPS: la: %d lo: %d\n",
-				int(binary.LittleEndian.Uint32(m.payload[8:12])),
-				int(binary.LittleEndian.Uint32(m.payload[12:16])))
+			fmt.Printf("GPS: la: %.7f lo: %.7f\n",
+				float64(int32(binary.LittleEndian.Uint32(m.payload[8:12])))/1e7,
+				float64(int32(binary.LittleEndian.Uint32(m.payload[12:16])))/1e7)
 
 		case MAVLINK_MSG_SCALED_PRESSURE: // scaled_pressure
 			var it uint32
@@ -424,9 +424,9 @@ func (m *MavReader) mav_show() {
 			fmt.Printf("Attitude: t: %d r: %.1f p: %.1f y: %.1f\n", it, r, p, y)
 
 		case MAVLINK_MSG_GLOBAL_POSITION_INT:
-			fmt.Printf("Gbl Pos: la: %d lo: %d\n",
-				int(binary.LittleEndian.Uint32(m.payload[4:8])),
-				int(binary.LittleEndian.Uint32(m.payload[8:12])))
+			fmt.Printf("Gbl Pos: la: %.7f lo: %.7f\n",
+				float64(int32(binary.LittleEndian.Uint32(m.payload[4:8])))/1e7,
+				float64(int32(binary.LittleEndian.Uint32(m.payload[8:12])))/1e7)
 
 		case MAVLINK_MSG_RC_CHANNELS_RAW: // rc_channels_raw
 			fmt.Printf("RC Chan t: %d 1: %d 2: %d 3: %d 4: %d r: %d\n",
@@ -438,9 +438,10 @@ func (m *MavReader) mav_show() {
 				m.payload[21])
 
 		case MAVLINK_MSG_GPS_GLOBAL_ORIGIN:
-			fmt.Printf("Origin: la: %d lo: %d\n",
-				int(binary.LittleEndian.Uint32(m.payload[0:4])),
-				int(binary.LittleEndian.Uint32(m.payload[4:8])))
+			fmt.Printf("Origin: la: %.7f lo: %.7f\n",
+				float64(int32(binary.LittleEndian.Uint32(m.payload[0:4])))/1e7,
+				float64(int32(binary.LittleEndian.Uint32(m.payload[4:8])))/1e7)
+
 
 		case MAVLINK_MSG_VFR_HUD: // vfr_hud
 			var as, gs, alt, climb float32
