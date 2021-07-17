@@ -263,7 +263,7 @@ func (m *MavReader) process(dat []byte) {
 			m.rxmavsum |= (uint16(b) << 8)
 			if m.rxmavsum != m.mavsum {
 				m.m1_fail += 1
-				fmt.Fprintf(os.Stderr, "MAV v1 CRC Fail, got %x != %x (.cmd=%d, len=%d)\n", m.rxmavsum, m.mavsum, m.cmd, m.csize)
+				fmt.Printf("Mav1: CRC Fail, got %x != %x (cmd=%d, len=%d)\n", m.rxmavsum, m.mavsum, m.cmd, m.csize)
 			} else {
 				m.mav_show() // cmd,payload
 				m.m1_ok += 1
@@ -341,7 +341,7 @@ func (m *MavReader) process(dat []byte) {
 			m.rxmavsum |= (uint16(b) << 8)
 			if m.rxmavsum != m.mavsum {
 				m.m2_fail += 1
-				fmt.Fprintf(os.Stderr, "MAV 2 CRC Fail, got %x != %x (cmd=%d, len=%d)\n", m.rxmavsum, m.mavsum, m.cmd, m.csize)
+				fmt.Printf("Mav2: CRC Fail, got %x != %x (cmd=%d, len=%d)\n", m.rxmavsum, m.mavsum, m.cmd, m.csize)
 				m.state = S_UNKNOWN
 			} else {
 				m.m2_ok += 1
