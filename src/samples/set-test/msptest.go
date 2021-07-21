@@ -8,6 +8,7 @@ import (
 	"go.bug.st/serial"
 	"os"
 	"strconv"
+	"time"
 )
 
 type SChan struct {
@@ -59,6 +60,7 @@ func main() {
 	}
 	defer keyboard.Close()
 
+	var wstart time.Time
 	for done := false; !done; {
 		select {
 		case ev := <-keysEvents:
@@ -104,9 +106,12 @@ func main() {
 
 			case msp_COMMON_SET_SETTING:
 				fmt.Fprintf(os.Stderr, "Saving ...\n")
+				wstart = time.Now()
 				MSPSave(sp)
 
 			case msp_EEPROM_WRITE:
+				et := time.Since(wstart)
+				fmt.Fprintf(os.Stderr, "Save took %s\n", et)
 				MSPReboot(sp)
 			case msp_REBOOT:
 			default:

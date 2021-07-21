@@ -54,6 +54,23 @@ Read value = 32 (32)
 $
 ```
 
+For MSP, we record the save time; this may take longer than you imagined (around 1.2s on F405).
+
+```
+$ msptest
+...
+Add device: /dev/ttyACM0 (INAV, FURIOUS_F35-LIGHTNING)
+Read value = 0 (0)
+Saving ...
+Save took 1.217040242s
+Remove device: /dev/ttyACM0
+Add device: /dev/ttyACM0 (INAV, FURIOUS_F35-LIGHTNING)
+Read value = 1 (1)
+Saving ...
+Save took 1.228760661s
+Remove device: /dev/ttyACM0
+```
+
 ## Other
 
 The author has been unable to experience any lost settings issue with multiple 100 iterations of these (well-behaved) tools
