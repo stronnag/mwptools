@@ -20,7 +20,7 @@ The setting `nav_rth_home_altitude` is incremented sequentially from 0.
 * Linux only (uses `udev` for device discovery).
 * Reports progress / issues
 
-Go is an inherently cross-platform language; if one wished to implement this for any other operation system, it would just be necessary to replace the Linux specific (udev) device notification (addition / removal) part.
+Go is an inherently cross-platform language; if one wished to implement this for any other operating system, it would merely be necessary to replace the Linux specific (udev) device notification (addition / removal) part.
 
 ## Usage
 
