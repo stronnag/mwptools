@@ -67,6 +67,7 @@ set key box
 set grid
 set termopt enhanced
 set termopt font "sans,8"
+set terminal qt size 960,400
 set xtics font ", 7"
 set xtics (`)
 	for i, p := range mpts {
@@ -101,7 +102,7 @@ set yrange [ `)
 		w.WriteString("set terminal push\n")
 	}
 	if req&2 == 2 {
-		fmt.Fprintf(w, "set terminal svg background rgb 'white' font 'sans,8' rounded\nset output \"%s\"\n", Conf.Svgfile)
+		fmt.Fprintf(w, "set terminal svg size 960 400 dynamic background rgb 'white' font 'sans,8' rounded\nset output \"%s\"\n", Conf.Svgfile)
 	}
 	fmt.Fprintf(w, "plot '%s' using 1:2 t \"Terrain\" w filledcurve y1=%d lt -1 lw 2  lc rgb \"web-green\", '%s' using 1:2 t \"Mission\" w lines lt -1 lw 2  lc rgb \"red\"", tfname, minz, mfname)
 	if Conf.Margin != 0 {
