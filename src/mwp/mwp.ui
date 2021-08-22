@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 
+<!-- Generated with glade 3.38.2
 
 Copyright (C)
 
@@ -773,7 +773,7 @@ Otherwise, select a valid FC vehicle type</property>
             <property name="can-focus">False</property>
             <property name="halign">start</property>
             <property name="ypad">6</property>
-            <property name="label" translatable="yes">inav 3.0 and later supports both Relative (to home) altitudes, and Absolute (WGS84) altitudes. 
+            <property name="label" translatable="yes">inav 3.0 and later supports both Relative (to home) altitudes, and Absolute (AMSL) altitudes.
 Versions prior to 3.0 and Multiwii only support Relative (to home) altitudes.
 
 Note that for versions prior to 3.0 and Multiwii, altitudes will be interpreted as Relative regardless of any setting made here, which is unlikley to be desirable.</property>
@@ -843,7 +843,7 @@ Note that for versions prior to 3.0 and Multiwii, altitudes will be interpreted 
             </child>
             <child>
               <object class="GtkRadioButton" id="alt_mode_amsl">
-                <property name="label" translatable="yes">Absolute (WGS84)</property>
+                <property name="label" translatable="yes">Absolute (AMSL)</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">False</property>
@@ -974,7 +974,7 @@ Note that for versions prior to 3.0 and Multiwii, altitudes will be interpreted 
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="halign">start</property>
-                <property name="label" translatable="yes">&lt;i&gt;Drag the brown "home" icon to the required location 
+                <property name="label" translatable="yes">&lt;i&gt;Drag the brown "home" icon to the required location
 then select &lt;b&gt;Apply&lt;/b&gt;. Uses an Internet service&lt;/i&gt;</property>
                 <property name="use-markup">True</property>
               </object>
