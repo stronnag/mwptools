@@ -830,7 +830,8 @@ public class MWP : Gtk.Application {
         ARMING_DISABLED_INVALID_SETTING                 = (1 << 26), // 4000000
         ARMING_DISABLED_PWM_OUTPUT                      = (1 << 27), // 8000000
         ARMING_DISABLED_PREARM                          = (1 << 28), // 10000000
-        ARMING_DISABLED_OTHER                           = (1 << 29), // 20000000
+        ARMING_DISABLED_DSHOTBEEPER                     = (1 << 29), // 20000000
+        ARMING_DISABLED_OTHER                           = (1 << 30), // 40000000
     }
 
     private string? [] arm_fails =
@@ -840,7 +841,7 @@ public class MWP : Gtk.Application {
         "Navigation unsafe", "Compass cal", "Acc cal", "Arm switch", "Hardware failure",
         "Box failsafe", "Box killswitch", "RC Link", "Throttle", "CLI",
         "CMS Menu", "OSD Menu", "Roll/Pitch", "Servo Autotrim", "Out of memory",
-        "Settings", "PWM Output", "PreArm", "Other"
+        "Settings", "PWM Output", "PreArm", "DSHOTBeeper", "Other"
     };
 
     private enum SENSOR_STATES
