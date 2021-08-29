@@ -154,35 +154,35 @@ func LTMGen(s *MSPSerial, seg OTXSegment, verbose bool, fast bool) {
 
 		l := newLTM('G')
 		l.gframe(b)
-		s.Write(l.msg)
+		s.sd.Write(l.msg)
 		if verbose {
 			fmt.Fprintf(os.Stderr, "Gframe : %s\n", l)
 		}
 
 		l = newLTM('A')
 		l.aframe(b)
-		s.Write(l.msg)
+		s.sd.Write(l.msg)
 		if verbose {
 			fmt.Fprintf(os.Stderr, "Aframe : %s\n", l)
 		}
 
 		l = newLTM('O')
 		l.oframe(b, seg.Hlat, seg.Hlon)
-		s.Write(l.msg)
+		s.sd.Write(l.msg)
 		if verbose {
 			fmt.Fprintf(os.Stderr, "Oframe : %s\n", l)
 		}
 
 		l = newLTM('S')
 		l.sframe(b)
-		s.Write(l.msg)
+		s.sd.Write(l.msg)
 		if verbose {
 			fmt.Fprintf(os.Stderr, "Sframe : %s\n", l)
 		}
 
 		l = newLTM('X')
 		l.xframe(b.Hdop, xcount)
-		s.Write(l.msg)
+		s.sd.Write(l.msg)
 		xcount = (xcount + 1) & 0xff
 		if verbose {
 			fmt.Fprintf(os.Stderr, "Xframe : %s\n", l)
@@ -202,7 +202,7 @@ func LTMGen(s *MSPSerial, seg OTXSegment, verbose bool, fast bool) {
 			if d != ld {
 				l = newLTM('q')
 				l.qframe(d)
-				s.Write(l.msg)
+				s.sd.Write(l.msg)
 				ld = d
 			}
 		}
@@ -211,7 +211,7 @@ func LTMGen(s *MSPSerial, seg OTXSegment, verbose bool, fast bool) {
 	if s.Klass() == DevClass_FD || s.Klass() == DevClass_UDP {
 		l := newLTM('x')
 		l.lxframe()
-		s.Write(l.msg)
+		s.sd.Write(l.msg)
 	}
-	s.Close()
+	s.sd.Close()
 }

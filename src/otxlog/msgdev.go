@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"go.bug.st/serial"
 	"log"
@@ -31,12 +30,8 @@ type DevDescription struct {
 }
 
 type MSPSerial struct {
-	klass  int
-	p      serial.Port
-	conn   net.Conn
-	reader *bufio.Reader
-	bt     *BTConn
-	fh     *os.File
+	klass int
+	sd    SerDev
 }
 
 func parse_device(device string, baud int) DevDescription {
@@ -91,50 +86,6 @@ func check_device(device string, baud int) DevDescription {
 	return devdesc
 }
 
-func (m *MSPSerial) Read(inp []byte) (int, error) {
-	switch m.klass {
-	case DevClass_SERIAL:
-		return m.p.Read(inp)
-	case DevClass_TCP:
-		return m.conn.Read(inp)
-	case DevClass_UDP:
-		return m.reader.Read(inp)
-	case DevClass_BT:
-		return m.bt.Read(inp)
-	case DevClass_FILE, DevClass_FD:
-		return m.fh.Read(inp)
-	}
-	return -1, nil
-}
-
-func (m *MSPSerial) Write(payload []byte) (int, error) {
-	n := -1
-	var err error
-	switch m.klass {
-	case DevClass_SERIAL:
-		n, err = m.p.Write(payload)
-	case DevClass_BT:
-		n, err = m.bt.Write(payload)
-	case DevClass_FILE, DevClass_FD:
-		n, err = m.fh.Write(payload)
-	default:
-		n, err = m.conn.Write(payload)
-	}
-	return n, err
-}
-
-func (m *MSPSerial) Close() {
-	switch m.klass {
-	case DevClass_SERIAL:
-		m.p.Close()
-	case DevClass_BT:
-		m.bt.Close()
-	case DevClass_FILE, DevClass_FD:
-		m.fh.Close()
-	default:
-		m.conn.Close()
-	}
-}
 
 func (m *MSPSerial) Klass() int {
 	return m.klass
@@ -142,12 +93,12 @@ func (m *MSPSerial) Klass() int {
 
 func NewMSPFd(fd int) *MSPSerial {
 	fh := os.NewFile(uintptr(fd), "pipe")
-	return &MSPSerial{klass: DevClass_FD, fh: fh}
+	return &MSPSerial{klass: DevClass_FD, sd: fh}
 }
 
 func NewMSPFile(fn string) *MSPSerial {
 	fh, _ := os.Create(fn)
-	return &MSPSerial{klass: DevClass_FILE, fh: fh}
+	return &MSPSerial{klass: DevClass_FILE, sd: fh}
 }
 
 func NewMSPSerial(device string, baud int) *MSPSerial {
@@ -158,10 +109,10 @@ func NewMSPSerial(device string, baud int) *MSPSerial {
 		if err != nil {
 			log.Fatal(err)
 		}
-		return &MSPSerial{klass: dd.klass, p: p}
+		return &MSPSerial{klass: dd.klass, sd: p}
 	case DevClass_BT:
 		bt := NewBT(dd.name)
-		return &MSPSerial{klass: dd.klass, bt: bt}
+		return &MSPSerial{klass: dd.klass, sd: bt}
 	case DevClass_TCP:
 		var conn net.Conn
 		remote := fmt.Sprintf("%s:%d", dd.name, dd.param)
@@ -172,10 +123,9 @@ func NewMSPSerial(device string, baud int) *MSPSerial {
 		if err != nil {
 			log.Fatal(err)
 		}
-		return &MSPSerial{klass: dd.klass, conn: conn}
+		return &MSPSerial{klass: dd.klass, sd: conn}
 	case DevClass_UDP:
 		var laddr, raddr *net.UDPAddr
-		var reader *bufio.Reader
 		var conn net.Conn
 		var err error
 		if dd.param1 != 0 {
@@ -190,14 +140,11 @@ func NewMSPSerial(device string, baud int) *MSPSerial {
 		}
 		if err == nil {
 			conn, err = net.DialUDP("udp", laddr, raddr)
-			if err == nil {
-				reader = bufio.NewReader(conn)
-			}
 		}
 		if err != nil {
 			log.Fatal(err)
 		}
-		return &MSPSerial{klass: dd.klass, conn: conn, reader: reader}
+		return &MSPSerial{klass: dd.klass, sd: conn}
 	default:
 		fmt.Fprintln(os.Stderr, "Unsupported device")
 		os.Exit(1)

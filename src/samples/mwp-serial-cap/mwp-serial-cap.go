@@ -36,6 +36,12 @@ func (u JSONu8Slice) MarshalJSON() ([]byte, error) {
 }
 */
 
+type SerDev interface {
+	Read(buf []byte) (int, error)
+	Write(buf []byte) (int, error)
+	Close() error
+}
+
 var (
 	_baud   = flag.Int("b", 115200, "Baud rate")
 	_device = flag.String("d", "", "Serial Device")
@@ -105,23 +111,22 @@ func main() {
 	    }
 	*/
 
-	btdev := false
-	var s serial.Port
-	var bt *BTConn
+	var sd SerDev
 
 	if len(name) == 17 && name[2] == ':' && name[8] == ':' && name[14] == ':' {
-		bt = NewBT(name)
-		btdev = true
-		defer bt.Close()
+		sd = NewBT(name)
 	} else {
 		mode := &serial.Mode{BaudRate: baud}
-		s, err = serial.Open(name, mode)
+
+		s, err := serial.Open(name, mode)
 		if err != nil {
 			log.Fatal(err)
 		}
+		sd = s
 		if strings.Contains(name, "rfcomm") {
 			time.Sleep(2 * time.Second)
 		}
+		defer sd.Close()
 	}
 
 	c := make(chan os.Signal, 1)
@@ -131,7 +136,7 @@ func main() {
 	defer func() {
 		ti_cleanup()
 		fmt.Printf("\n\r")
-	} ()
+	}()
 
 	go func() {
 		var start time.Time
@@ -139,11 +144,7 @@ func main() {
 		n := 0
 		nb := 0
 		for {
-			if btdev {
-				n, _ = bt.Read(buf)
-			} else {
-				n, _ = s.Read(buf)
-			}
+			n, _ = sd.Read(buf)
 			if n > 0 {
 				if start.IsZero() {
 					start = time.Now()

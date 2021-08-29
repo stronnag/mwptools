@@ -23,5 +23,7 @@ func (bt *BTConn) Read(buf []byte) (int, error) {
 func (bt *BTConn) Write(buf []byte) (int, error) {
 	return -1, errors.New("Unsupported OS")
 }
-func (bt *BTConn) Close() {
+func (bt *BTConn) Close() error {
+	return errors.New("Unsupported OS")
+
 }

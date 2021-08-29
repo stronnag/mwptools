@@ -22,6 +22,12 @@ var (
 	mqttdef = flag.String("broker", "", "MQTT uri (mqtt://[user[:pass]@]broker[:port]/topic[?cafile=file])")
 )
 
+type SerDev interface {
+	Read(buf []byte) (int, error)
+	Write(buf []byte) (int, error)
+	Close() error
+}
+
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of otxlog [options] [files ...]\n")
