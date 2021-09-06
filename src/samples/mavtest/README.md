@@ -2,14 +2,14 @@
 
 ## Usage
 
-* Validate captured raw data from mavlink telemetry. It is recommended that you use use `mwp-serial-capture` for the data capture, however any raw data capture should do.
+* Validate captured raw data from mavlink telemetry. It is recommended that you use use [`mwp-serial-capture`](../mwp-serial-cap) for the data capture, however any raw data capture should do.
   ```
   $ mwp-serial-cap [-b 115200] [-d /dev/ttyACM0] [-other-options] mavraw.bin
   ```
 
 * Analyse the data
   ```
-  $ mavtest mavraw.bin
+  $ mavreader mavraw.bin
   ```
 
 ## Build
@@ -17,8 +17,9 @@
 ```
 $ ninja
 ## or
-$ go build mavtest.go
+$ go build -o mavreader mavreader.go
 ```
+As `mavreader` is a Golang program, it may be compiled for any platform with a Go compiler (Linux, FreeBSD, MacOS, Windows etc.)
 
 ## Data file format
 
