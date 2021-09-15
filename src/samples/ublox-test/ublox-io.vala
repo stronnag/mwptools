@@ -247,10 +247,11 @@ public class MWSerial : Object
 
     private void display_fix()
     {
-        stdout.printf("POSLLH: lat: %f lon: %f elev: %.2f acc(h/v): %.1f/%.1f\n",
+        stdout.printf("POSLLH: lat: %f lon: %f elev (msl/elpsd): %.2f %2.f acc(h/v): %.1f/%.1f\n",
                       _buffer.posllh.latitude/10000000.0,
                       _buffer.posllh.longitude/10000000.0,
                       _buffer.posllh.altitude_msl / 1000.0,
+                      _buffer.posllh.altitude_ellipsoid /1000.0,
                       _buffer.posllh.horizontal_accuracy/1000.0,
                       _buffer.posllh.vertical_accuracy/1000.0
                       );
@@ -272,13 +273,14 @@ public class MWSerial : Object
     {
         var pdate = new DateTime.now_utc ();
 
-        stdout.printf("PVT: lat: %f lon: %f elev: %.2f acc(h/v): %.1f/%.1f\n",
-                          _buffer.pvt.latitude/10000000.0,
-                          _buffer.pvt.longitude/10000000.0,
-                          _buffer.pvt.altitude_msl / 1000.0,
-                          _buffer.pvt.horizontal_accuracy/1000.0,
-                          _buffer.pvt.vertical_accuracy/1000.0
-                          );
+        stdout.printf("PVT: lat: %f lon: %f elev (msl/elpsd): %.2f %.2f acc(h/v): %.1f/%.1f\n",
+                      _buffer.pvt.latitude/10000000.0,
+                      _buffer.pvt.longitude/10000000.0,
+                      _buffer.pvt.altitude_msl / 1000.0,
+                      _buffer.pvt.altitude_ellipsoid /1000.0,
+                      _buffer.pvt.horizontal_accuracy/1000.0,
+                      _buffer.pvt.vertical_accuracy/1000.0
+                      );
         stdout.printf("sats: %d, fix %d\n", _buffer.pvt.satellites, _buffer.pvt.fix_type);
         int32 nano =  ( _buffer.pvt.nano +999999) /1000000;
         u.date = "%04d-%02d-%02d %02d:%02d:%02d.%03d".printf( _buffer.pvt.year,
