@@ -686,7 +686,7 @@ public class MWP : Gtk.Application {
         OTX = 4,
         FL2LTM = 8,
         FAST_MASK = 128,
-        MWP_FAST = MWP|FAST_MASK,
+        MWP_FAST = MWP |FAST_MASK,
         BBOX_FAST = BBOX|FAST_MASK,
         OTX_FAST = OTX|FAST_MASK,
         FL2_FAST = FL2LTM|FAST_MASK
@@ -7208,6 +7208,7 @@ case 0:
 
                 uint16 mah = sf.vcurr;
                 uint16 ivbat = (sf.vbat + 50) / 100;
+//                stderr.printf("TS/a frame %u %.1f mah=%u r=%d\n", curr.bbla, ((double)curr.bbla)/100.0,mah, replayer);
                 if ((replayer & Player.BBOX) == Player.BBOX
                     && curr.bbla > 0)
                 {
@@ -7488,8 +7489,7 @@ case 0:
             case MSP.Cmds.Ta_FRAME:
                 uint16 val = *(((uint16*)raw));
                 curr.bbla = val;
-                if (val > odo.amps)
-                    odo.amps = val;
+//                stderr.printf("Ta frame %u %.1f\n", val, ((double)val)/100.0);
                 break;
 
             case MSP.Cmds.Tx_FRAME:
@@ -9668,7 +9668,7 @@ case 0:
                                  bool delay, uint8 force_gps, uint duration)
     {
         if(x_fl2ltm) {
-            replayer &= ~Player.BBOX;
+//            replayer &= ~Player.BBOX;
             replayer |= Player.OTX;
             spawn_otx_task(fn, delay, index, btype, duration);
         } else {
