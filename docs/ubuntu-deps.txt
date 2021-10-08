@@ -19,6 +19,8 @@ apt $CONFIRM install libgdl-3-dev \
     valac \
     pkg-config \
     build-essential \
+    meson \
+    ninja-build \
     libbluetooth-dev \
     libespeak-dev \
     libgudev-1.0-dev \
