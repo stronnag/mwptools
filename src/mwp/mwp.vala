@@ -6249,6 +6249,7 @@ case 0:
                     vi.mrtype = raw[1];
 //                    if(dmrtype != 0)
 //                        vi.mrtype = (uint8)dmrtype;
+                    craft = null;
 
                     prlabel = false;
 
@@ -9510,6 +9511,7 @@ case 0:
             MWPLog.message("Replay \"%s\" log %s model %d\n",
                            (rtype == Player.OTX) ? "otx" : (rtype == Player.BBOX) ? "bbox" : "mwp",
                            fn, btype);
+
             if(craft != null)
                 craft.park();
 
