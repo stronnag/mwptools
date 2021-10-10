@@ -558,10 +558,10 @@ public class MWSerial : Object
                             {
                                 try
                                 {
-                                    if (skt.connect(sockaddr))
-                                        set_noblock();
-                                    else
-                                        MWPLog.message("Failed to connection, probably not fatal\n");
+                                    print("Connect UDP\n");
+                                    skt.connect(sockaddr);
+                                    set_noblock();
+                                    print("Nonblocked UDP\n");
 
                                 } catch (Error e) {
                                     MWPLog.message("connection fails %s\n", e.message);
