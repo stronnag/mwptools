@@ -80,7 +80,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "\n")
 	}
 
-	flag.IntVar(&verbose, "verbose", 0, "verbosity (0:none, 1:open/close, >1:I/O")
+	flag.IntVar(&verbose, "verbose", 0, "verbosity (0:none, 1:open/close, >1:I/O)")
 
 	flag.Parse()
 	rest := flag.Args()
