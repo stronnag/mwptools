@@ -534,9 +534,7 @@ public class MWSerial : Object
                     {
                         sockaddr = new InetSocketAddress (address, port);
                         var fam = sockaddr.get_family();
-//                        print("sockaddr try %s (%s)\n",
-//                              sockaddr.to_string(), fam.to_string());
-
+                        MWPLog.message("sockaddr try %s (%s)\n", sockaddr.to_string(), fam.to_string());
                         if(force4 && fam != SocketFamily.IPV4)
                             continue;
 
@@ -558,11 +556,9 @@ public class MWSerial : Object
                             {
                                 try
                                 {
-                                    print("Connect UDP\n");
-                                    skt.connect(sockaddr);
+                                    if (sproto != SocketProtocol.UDP)
+                                        skt.connect(sockaddr);
                                     set_noblock();
-                                    print("Nonblocked UDP\n");
-
                                 } catch (Error e) {
                                     MWPLog.message("connection fails %s\n", e.message);
                                     skt.close();
