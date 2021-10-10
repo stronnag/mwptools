@@ -534,8 +534,8 @@ public class MWSerial : Object
                     {
                         sockaddr = new InetSocketAddress (address, port);
                         var fam = sockaddr.get_family();
-                        print("sockaddr try %s (%s)\n",
-                              sockaddr.to_string(), fam.to_string());
+//                        print("sockaddr try %s (%s)\n",
+//                              sockaddr.to_string(), fam.to_string());
 
                         if(force4 && fam != SocketFamily.IPV4)
                             continue;
@@ -558,8 +558,11 @@ public class MWSerial : Object
                             {
                                 try
                                 {
-                                    skt.connect(sockaddr);
-                                    set_noblock();
+                                    if (skt.connect(sockaddr))
+                                        set_noblock();
+                                    else
+                                        MWPLog.message("Failed to connection, probably not fatal\n");
+
                                 } catch (Error e) {
                                     MWPLog.message("connection fails %s\n", e.message);
                                     skt.close();
