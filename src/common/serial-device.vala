@@ -483,86 +483,99 @@ public class MWSerial : Object
             force4 = true;
 
         fd = -1;
-        try
+        baudrate = 0;
+        if((host == null || host.length == 0) &&
+           ((commode & ComMode.STREAM) != ComMode.STREAM))
         {
-            baudrate = 0;
-            if((host == null || host.length == 0) &&
-               ((commode & ComMode.STREAM) != ComMode.STREAM))
-            {
-                try {
-                    SocketFamily[] fams = {};
-                    if(!force4)
-                        fams += SocketFamily.IPV6;
-                    fams += SocketFamily.IPV4;
-                    foreach(var fam in fams)
-                    {
-                        var sa = new InetSocketAddress (new InetAddress.any(fam),
-                                                        (uint16)port);
-                        skt = new Socket (fam, SocketType.DATAGRAM, SocketProtocol.UDP);
+            try {
+                SocketFamily[] fams = {};
+                if(!force4)
+                    fams += SocketFamily.IPV6;
+                fams += SocketFamily.IPV4;
+                foreach(var fam in fams)
+                {
+                    var sa = new InetSocketAddress (new InetAddress.any(fam),
+                                                    (uint16)port);
+                    skt = new Socket (fam, SocketType.DATAGRAM, SocketProtocol.UDP);
+                    if (skt != null) {
                         skt.bind (sa, true);
                         fd = skt.fd;
-//                        print("bind %s %d %d\n", fam.to_string(), fd, port);
+                        MWPLog.message("bound: %s %d %d\n", fam.to_string(), fd, port);
                         break;
                     }
-                    if(rhost != null && rport != 0)
-                    {
-                        var resolver = Resolver.get_default ();
-                        var addresses = resolver.lookup_by_name (rhost, null);
-                        var addr0 = addresses.nth_data (0);
-                        sockaddr = new InetSocketAddress(addr0,rport);
-                    }
-                } catch (Error e) {
-                    MWPLog.message ("%s\n",e.message);
                 }
-            }
-            else
-            {
-                SocketProtocol sproto;
-                SocketType stype;
-                var resolver = Resolver.get_default ();
-                var addresses = resolver.lookup_by_name (host, null);
-                foreach (var address in addresses)
+                if(rhost != null && rport != 0)
                 {
-                    sockaddr = new InetSocketAddress (address, port);
-                    var fam = sockaddr.get_family();
+                    var resolver = Resolver.get_default ();
+                    var addresses = resolver.lookup_by_name (rhost, null);
+                    var addr0 = addresses.nth_data (0);
+                    sockaddr = new InetSocketAddress(addr0,rport);
+                }
+            } catch (Error e) {
+                MWPLog.message ("binder: %s\n", e.message);
+            }
+        } else {
+            SocketProtocol sproto;
+            SocketType stype;
+            List<InetAddress> addresses = null;
 
-                    if(force4 && fam != SocketFamily.IPV4)
-                        continue;
+            var resolver = Resolver.get_default ();
+            try
+            {
+                addresses = resolver.lookup_by_name (host, null);
+            } catch (Error e) {
+                MWPLog.message ("resolver: %s\n", e.message);
+            }
 
-                    if((commode & ComMode.STREAM) == ComMode.STREAM)
+            try
+            {
+                if (addresses != null) {
+                    foreach (var address in addresses)
                     {
-                        stype = SocketType.STREAM;
-                        sproto = SocketProtocol.TCP;
-                    }
-                    else
-                    {
-                        stype = SocketType.DATAGRAM;
-                        sproto = SocketProtocol.UDP;
-                    }
-                    skt = new Socket (fam, stype, sproto);
-                    if(skt != null)
-                    {
-                        fd = skt.fd;
-                        if(fd != -1)
+                        sockaddr = new InetSocketAddress (address, port);
+                        var fam = sockaddr.get_family();
+                        print("sockaddr try %s (%s)\n",
+                              sockaddr.to_string(), fam.to_string());
+
+                        if(force4 && fam != SocketFamily.IPV4)
+                            continue;
+
+                        if((commode & ComMode.STREAM) == ComMode.STREAM)
                         {
-                            if (skt.connect(sockaddr))
-                            {
-                                set_noblock();
-                            }
-                            else
-                            {
-                                MWPLog.message("connection fails\n");
-                                skt.close();
-                                fd = -1;
-                            }
+                            stype = SocketType.STREAM;
+                            sproto = SocketProtocol.TCP;
                         }
-                        break;
+                        else
+                        {
+                            stype = SocketType.DATAGRAM;
+                            sproto = SocketProtocol.UDP;
+                        }
+                        skt = new Socket (fam, stype, sproto);
+                        if(skt != null)
+                        {
+                            fd = skt.fd;
+                            if(fd != -1)
+                            {
+                                try
+                                {
+                                    skt.connect(sockaddr);
+                                    set_noblock();
+                                } catch (Error e) {
+                                    MWPLog.message("connection fails %s\n", e.message);
+                                    skt.close();
+                                    fd = -1;
+                                }
+                            }
+                            break;
+                        }
                     }
                 }
+            } catch(Error e) {
+                MWPLog.message("client socket: %s %d: %s\n", host, port, e.message);
+                if (fd > 0)
+                    try { skt.close(); } catch {}
+                fd = -1;
             }
-        } catch(Error e) {
-            MWPLog.message("socket: %s\n", e.message);
-            fd = -1;
         }
     }
 
@@ -617,7 +630,7 @@ public class MWSerial : Object
         print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
         try
         {
-            regex = new Regex("^(tcp|udp):\\/\\/([\\[\\]:A-Za-z\\-\\.0-9]*):(\\d+)\\/{0,1}([A\\-Za-z\\-\\.0-9]*):{0,1}(\\d*)");
+            regex = new Regex("^(tcp|udp):\\/\\/([\\[\\]:A-Za-z\\-\\.0-9\\%]*):(\\d+)\\/{0,1}([A\\-Za-z\\-\\.0-9]*):{0,1}(\\d*)");
         } catch(Error e) {
             stderr.printf("err: %s", e.message);
             return false;
