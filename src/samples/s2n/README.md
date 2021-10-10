@@ -34,3 +34,17 @@ If verbosity is > 0, then additional debug messages will be displayed:
 | 0         | No debug |
 | 1         | Open and close of serial device |
 | > 1       | as 1, plus serial / network writes |
+
+## Automation
+
+For running mwp in Win11/WSL-g, the required IP address is the default gateway, so we automate things with a little wrapper script.
+
+```
+#!/bin/bash
+
+# The WSL is also the default gateway
+# Assumes you're running `ser2udp` on the Windows side.
+WSLIP=$(ip route show 0.0.0.0/0  | cut -d\  -f3)
+exec mwp -d udp://${WSLIP}:17071 $@
+
+```
