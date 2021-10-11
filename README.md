@@ -45,7 +45,7 @@ In addition, mwp proivdes legacy suport for multiwii navigation functions.
 
 ## Platforms and OS
 
-The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Buster, Sid), Ubuntu (latest and most recent LTS), Fedora (current)  and FreeBSD (current release). mwp also runs on MS Windows, but is less well tested.
+The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Buster, Sid), Ubuntu (latest and most recent LTS), Fedora (current)  and FreeBSD (current release). mwp also runs on MS Windows, with Windows 11 / WSL-g is is pretty much on feature parity with Linux / FreeBSD.
 
 mwp should  build and running on any platform that supports (recent versions of):
 
@@ -64,7 +64,8 @@ mwptools is tested on x86_64, ia32 and ARM32 devices (Linux / FreeBSD).
 
 It is also possible to build and run mwp on MS Windows using:
 
-* [Cygwin](https://www.cygwin.com/) Recommended Windows solution.
+* Windows 11 / WSL-g [Installation instructions](https://github.com/stronnag/mwptools/wiki/mwp-in-Windows-11---WSL-G)
+* [Cygwin](https://www.cygwin.com/) Recommended Windows solution prior to Windows 11
 * Windows 10 / WSL (slow, unstable, not recommended)
 * A virtual machine with a Linux guest.
 
