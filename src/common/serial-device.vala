@@ -607,6 +607,32 @@ public class MWSerial : Object
         return available;
     }
 
+    private string resolve_mwp_serial_host()
+    {
+        var host = Environment.get_variable("MWP_SERIAL_HOST");
+        if(host == null) {
+            string []  routes =
+            {
+                "sh -c \"ip route show 0.0.0.0/0 | cut -d ' ' -f3\"",
+                "sh -c \"route -n | grep UG | awk '{print $2}'\"",
+                "sh -c \"route -n show  0.0.0.0 | grep gateway | awk '{print $2}'\""
+            };
+            int rstatus;
+            string rerr;
+
+            foreach (var cmd in routes) {
+                try {
+                    Process.spawn_command_line_sync (cmd, out host, out rerr, out rstatus);
+                    if (rstatus == 0 && host != null && host.length > 0) {
+                        host = host.chomp();
+                        break;
+                    }
+                } catch (Error e) {print("%s\n", e.message);};
+            }
+        }
+        return host;
+    }
+
     public bool open_w(string _device, uint rate, out string estr)
     {
         string host = null;
@@ -629,7 +655,7 @@ public class MWSerial : Object
         print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
         try
         {
-            regex = new Regex("^(tcp|udp):\\/\\/([\\[\\]:A-Za-z\\-\\.0-9\\%]*):(\\d+)\\/{0,1}([A\\-Za-z\\-\\.0-9]*):{0,1}(\\d*)");
+            regex = new Regex("^(tcp|udp):\\/\\/(__MWP_SERIAL_HOST|[\\[\\]:A-Za-z\\-\\.0-9\\%]*):(\\d+)\\/{0,1}([A\\-Za-z\\-\\.0-9]*):{0,1}(\\d*)");
         } catch(Error e) {
             stderr.printf("err: %s", e.message);
             return false;
@@ -637,8 +663,7 @@ public class MWSerial : Object
 
         commode = 0;
 
-        if(device.length == 17 &&
-           device[2] == ':' && device[5] == ':')
+        if(device.length == 17 && device[2] == ':' && device[5] == ':' && device[8] == ':' && device[11] == ':' && device[14] == ':')
         {
             fd = BTSocket.connect(device, &lasterr);
             if (fd != -1)
@@ -677,6 +702,9 @@ public class MWSerial : Object
 
             if(host != null)
             {
+                if (host == "__MWP_SERIAL_HOST")
+                    host = resolve_mwp_serial_host();
+
                 setup_ip(host, port, remhost, remport);
             }
             else

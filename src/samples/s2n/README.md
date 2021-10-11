@@ -37,14 +37,20 @@ If verbosity is > 0, then additional debug messages will be displayed:
 
 ## Automation
 
-For running mwp in Win11/WSL-g, the required IP address is the default gateway, so we automate things with a little wrapper script.
+For running mwp in Win11/WSL-g, the required IP address is the default gateway, this can be automated by using the magic `__MWP_SERIAL_HOST` name is the serial device.
 
 ```
-#!/bin/bash
-
-# The WSL IP is also the default gateway
-# Assumes you're running `ser2udp` on the Windows side.
-WSLIP=$(ip route show 0.0.0.0/0  | cut -d\  -f3)
-exec mwp -d udp://${WSLIP}:17071 $@
-
+mwp -d udp://__MWP_SERIAL_HOST:17071
+# recognised by other tools as well ...
+cliterm udp://__MWP_SERIAL_HOST:17071
 ```
+
+`__MWP_SERIAL_HOST` is resolved as:
+
+* If an enviroment variable `$MWP_SERIAL_HOST` exists, it is used; else
+* The default gateway (which on WSL in the Windows host IP) is used.
+
+Thus:
+
+* In mwp preferences, set the serial device to `udp://__MWP_SERIAL_HOST:17071` for WSL and `ser2udp`
+* Or in the shell, for some other provider `export MWP_SERIAL_HOST=foobox.org`
