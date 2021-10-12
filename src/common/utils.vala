@@ -60,7 +60,7 @@ public class MWPUtils
         string cfile=null;
         string wanted = (dir != null) ? dir+"/"+fn  : fn;
 
-        var uc = Environment.get_user_data_dir();
+        var uc = Environment.get_user_config_dir();
         var app = Environment.get_application_name();
         if(app == null)
             app = MwpVers.progname;
@@ -68,7 +68,7 @@ public class MWPUtils
         cfile = have_conf_file(GLib.Path.build_filename(uc,app,wanted));
         if (cfile == null)
         {
-            uc =  Environment.get_user_config_dir();
+            uc =  Environment.get_user_data_dir();
             cfile = have_conf_file(GLib.Path.build_filename(uc,app,wanted));
             if(cfile == null)
             {

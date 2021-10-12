@@ -2126,6 +2126,7 @@ public class MWP : Gtk.Application {
         try
         {
             string cssfile = MWPUtils.find_conf_file("vcols.css");
+            MWPLog.message("Loaded %s\n", cssfile);
             css.load_from_file(File.new_for_path(cssfile));
             Gtk.StyleContext.add_provider_for_screen(screen, css, Gtk.STYLE_PROVIDER_PRIORITY_USER);
         } catch (Error e) {
