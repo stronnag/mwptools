@@ -1,6 +1,6 @@
 # mwp on Cygwin
 
-From 2015-12-30, it is possible to build and run pretty much all of the mwptools suite in [cygwin](https://www.cygwin.com/). It is the best performing Windows option.
+From 2015-12-30, it is possible to build and run pretty much all of the mwptools suite in [cygwin](https://www.cygwin.com/). It is the best performing Windows option, other than Windows 11 / WSLG.
 
 * Runs from a desktop short cut
 * Audio works

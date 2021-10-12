@@ -7,147 +7,19 @@ $ meson build buildtype=release --strip [--prefix=DIR]
   * Linux
     o System wide install --prefix=/usr
       Binaries in /use/bin etc.
-    o User install --prefix=$HOME/.local
-      Binaries in $HOME/.local/bin etc.
+
+  * User install --prefix=$HOME/.local
+      Binaries in $HOME/.local/bin etc. Recommended.
 
 then:
 
 $ cd build
+# Local install. Preferred mode, requires ~/.local/bin on PATH
+$ ninja install
+# or, System wide install
 $ ninja && sudo ninja install
 
 Other useful bits
 $ sudo ninja uninstall
 $ ninja clean
 $ ninja reconfigure
-
-
-Legacy stuff below, unmaintained ....
-=====================================================================
-
-Dependencies
-~~~~~~~~~~~~
-
-You have to build from source (this is a feature). In order to do this
-you will need to satisfy some external dependencies. Dependencies
-(packages) are listed in the docs/ directory for Fedora, FreeBSD and
-Ubuntu (and thus Debian and derivatives).
-
-You should use your OS package manager (dnf, pkg, apt-get) as root (or
-via sudo) to install OS packages.
-
-For other operating systems it will be necessary to work out what is
-required from one of these lists. There is also some information on
-installing on Cygwin in docs/, mainly for the clinically certifiable.
-
-On Arch Linux, you can install mwptools from the AUR, the package is
-mwptools-git, it will also install the AUR package blackbox-tools-git.
-
-For other systems, you must compile from source, as below.
-
-Optional Dependencies
-~~~~~~~~~~~~~~~~~~~~~
-
-If you wish to replay blackbox logs in mwp, it is necessary to install
-a Ruby language interpreter and the open source blackbox_tools
-package. Instructions on doing this may be found on the bblox_replay
-directory (e.g. bbox-replay/replay_bbox_ltm.pdf). For most Linux
-distributions and FreeBSD, you should install Ruby using your OS
-package manager.
-
-Note that the mwptools installer will now install replay_bbox_ltm.rb
-for you.
-
-Installation Location
-~~~~~~~~~~~~~~~~~~~~~
-
-You have the choice of installing:
-
-* "System Install" : in system directories (/usr/bin et al); or
-* "Local Install" " in the user's home directory (~/bin et al).
-
-There are advantages and disadvantages to both:
-
-System Install : You have to install as root and you write to system
-       	       	 locations
-
-Local Install :  You don't have to be root to install, but you do have
-      	      	 to add some environment configuration items.
-
-**********************************************************************
-******** For most users, a system install is the best choice. ********
-**********************************************************************
-
-Common Build
-~~~~~~~~~~~~
-
-In the mwptools source directory:
-
-$ make
-
-Then for System Install
-~~~~~~~~~~~~~~~~~~~~~~~
-
- $ sudo make install
-
-or for Local Install
-~~~~~~~~~~~~~~~~~~~~
-
- $ make local
-
- For the Local Install only, add to ~/.profile (or another file
-sourced at login), the following lines:
-
- export PATH=$PATH:$HOME/bin
- export XDG_DATA_DIRS=/usr/share:$HOME/.local/share
- (or for FreeBSD)
- export XDG_DATA_DIRS=/usr/local/share:$HOME/.local/share:
-
- In order for the changes to .profile to have effect, it is easiest to
- log and log in again.
-
-
-Did I mention that the system install is recommended?
-
-Short Cuts
-~~~~~~~~~~
-
-Build and installation can be simplified as:
-
-$ make && sudo make install ## System wide
-or
-$ make local                ## Local
-
-Caveat
-~~~~~~
-
-Don't run the build (make) phase as root (sudo).
-
-Switching from a local install to a system install
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-As the default has been a local install, users with an installation
-prior to 2016-03-03 may wish to change to a system install. In order
-to do this, it is necessary to purge local files as follows:
-
-$ rm -f ~/bin/{cf-cli,cf-cli-ui,mspsim,mwp,mwp_ath}
-$ rm -f ~/bin/{qproxy,switchedit,ublox-cli,ublox-geo}
-$ rm -rf ~/.local/share/{cf-cli,cf-cli-ui,mspsim,mwp,mwp_ath}
-$ rm -rf ~/.local/share/{qproxy,switchedit,ublox-cli,ublox-geo}
-$ rm -f~/.local/share/glib-2.0/schemas/org.mwptools.planner.gschema.xml
-$ rm -f ~/.local/share/glib-2.0/schemas/gschemas.compiled
-$ glib-compile-schemas ~/.local/share/glib-2.0/schemas
-# ignore any "No schema files found: doing nothing." output
-
-The above commands are in samples/clean-local.sh. In the event that
-wished to remove a system install, see samples/clean-system.sh.
-
-You should also remove any definition of XDG_DATA_DIRS added to
-.profile **for mwp**
-
-Cleaning up a corrupt installation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-$ samples/clean-local.sh
-$ sudo samples/clean-system.sh
-$ ### remove any mwp specific instance of XDG_DATA_DIRS
-
-jh 2016-03-04
