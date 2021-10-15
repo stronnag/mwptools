@@ -361,6 +361,7 @@ public class ListBox : GLib.Object
                 }
                 list_model.get_value (miter, WY_Columns.FLAG, out cell);
                 uint8 flag = (uint8)((int)cell);
+
                 list_model.get_value (miter, WY_Columns.IDX, out cell);
                 mpop_no = int.parse((string)cell);
                 int j = 0;
@@ -470,6 +471,7 @@ public class ListBox : GLib.Object
                         m2 = ((double)m.param2);
                     break;
             }
+            uint8 flag = (m.flag == 0x48) ? 0x48 : 0;
             list_model.set (iter,
                             WY_Columns.IDX, no,
                             WY_Columns.TYPE, MSP.get_wpname(m.action),
@@ -479,7 +481,7 @@ public class ListBox : GLib.Object
                             WY_Columns.INT1, m1,
                             WY_Columns.INT2, m2,
                             WY_Columns.INT3, m.param3,
-                            WY_Columns.FLAG, m.flag,
+                            WY_Columns.FLAG, flag,
                             WY_Columns.ACTION, m.action);
         }
 
@@ -1279,6 +1281,8 @@ public class ListBox : GLib.Object
 
 
         var tcell = new Gtk.CellRendererToggle();
+        tcell.active = false;
+
         tcell.toggled.connect((p) => {
                 Gtk.TreeIter citer;
                 Value val;

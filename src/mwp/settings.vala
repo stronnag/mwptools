@@ -109,6 +109,8 @@ public class MWPSettings : GLib.Object
 
     public double maxclimb {get; set; default=0;}
     public double maxdive {get; set; default=0;}
+    public uint max_wps { get; set; default=60; }
+
 
 //    public string radar_device {get; set; default=null;}
 
@@ -411,6 +413,11 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "max-dive-angle")
             maxdive = settings.get_double ("max-dive-angle");
+
+        if(s == null || s == "max-wps")
+            max_wps =  settings.get_uint("max-wps");
+
+
     }
 
     public void save_pane()

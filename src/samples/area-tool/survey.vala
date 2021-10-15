@@ -22,6 +22,7 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
+
 public struct SPos
 {
     double lat;

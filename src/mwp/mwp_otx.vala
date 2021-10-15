@@ -91,6 +91,7 @@ public class  OTXDialog : Object
         otx_filechooser.file_set.connect(() => {
                 filename = otx_filechooser.get_filename();
                 otx_liststore.clear();
+                MWPCursor.set_busy_cursor(dialog);
                 get_otx_metas();
             });
 
@@ -135,6 +136,7 @@ public class  OTXDialog : Object
 
     public void hide()
     {
+        MWPCursor.set_normal_cursor(dialog);
         dialog.hide();
     }
 
@@ -169,6 +171,7 @@ public class  OTXDialog : Object
             chan.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
                     if (condition == IOCondition.HUP)
                     {
+                        MWPCursor.set_normal_cursor(dialog);
                         return false;
                     }
 

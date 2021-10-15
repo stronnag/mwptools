@@ -107,4 +107,5 @@ namespace MwpMisc
 
     [CCode (cname="get_native_path")]
     string get_native_path(string upath);
+    public const int MWP_MAX_WP;
 }

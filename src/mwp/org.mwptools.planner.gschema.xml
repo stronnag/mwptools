@@ -591,6 +591,11 @@
       (dive) angle</description>
     </key>
 
+    <key name="max-wps" type="u">
+      <default>120</default>
+      <summary>Maximum number of WP supported</summary>
+      <description>Maximum number of WP supported</description>
+    </key>
 
     <!-- key name="radar-device" type="s">
       <default>""</default>

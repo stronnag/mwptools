@@ -30,8 +30,6 @@ public struct MissionItem
     uint8 flag;
 }
 
-const uint INAV_MAX_WP = 120;
-
 public class Mission : GLib.Object
 {
     private MissionItem[] waypoints;
@@ -94,9 +92,9 @@ public class Mission : GLib.Object
         waypoints = m;
     }
 
-    public bool is_valid()
+    public bool is_valid(int maxwp)
     {
-        if(waypoints.length > INAV_MAX_WP)
+        if(waypoints.length > maxwp)
             return false;
 
             // Urg, Urg array index v. WP Nos ......
@@ -115,17 +113,17 @@ public class Mission : GLib.Object
     }
 
 
-    public void dump()
+    public void dump(int maxwp)
     {
         if(version != null)
             stdout.printf("Version: %s\n",version);
         foreach (var m in waypoints)
         {
-            stdout.printf ("%d %s %f %f %u %d %d %d\n",
+            stdout.printf ("%d %s %f %f %u p1=%d p2=%d p3=%d flg=%0x\n",
                            m.no,
                            MSP.get_wpname(m.action),
                            m.lat, m.lon, m.alt,
-                           m.param1, m.param2, m.param3);
+                           m.param1, m.param2, m.param3, m.flag);
         }
         stdout.printf("lon (x)  min,max %f %f\n", minx, maxx);
         stdout.printf("lat (y) min,max %f %f\n", miny, maxy);
@@ -144,7 +142,7 @@ public class Mission : GLib.Object
         if(maxalt != 0x80000000)
             stdout.printf("max altitude %d\n", maxalt);
 
-        stdout.printf("Mission is %svalid\n", (is_valid() == true) ? "" : "in");
+        stdout.printf("Mission is %svalid\n", (is_valid(maxwp) == true) ? "" : "in");
     }
 
     public bool is_equal(Mission m)

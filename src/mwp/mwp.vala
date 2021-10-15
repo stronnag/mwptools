@@ -639,6 +639,7 @@ public class MWP : Gtk.Application {
         hasSAFEAPI = 0x020700,
         hasMONORTH = 0x020600,
         hasABSALT = 0x030000,
+        hasWPMAX = 0x040000,
     }
 
     public enum WPS
@@ -882,8 +883,6 @@ public class MWP : Gtk.Application {
     private const uint MAVINTVL=(2000/TIMINTVL);
     private const uint CRITINTVL=(3000/TIMINTVL);
     private const uint RADARINTVL=(10000/TIMINTVL);
-
-    public const uint INAV_MAX_WP=120;
 
     private enum SATS
     {
@@ -1377,6 +1376,8 @@ public class MWP : Gtk.Application {
 
         conf = new MWPSettings();
         conf.read_settings();
+
+        wp_max = (uint8)conf.max_wps;
 
         string []  ext_apps = {
             conf.blackbox_decode, "replay_bbox_ltm.rb",
@@ -2528,6 +2529,7 @@ public class MWP : Gtk.Application {
                 clear_mission();
                 var ms = new Mission();
                 ms.set_ways(wp_resp);
+
                 ls.import_mission(ms, (conf.rth_autoland && Craft.is_mr(vi.mrtype)));
                 markers.add_list_store(ls);
                 NavStatus.nm_pts = (uint8)wp_resp.length;
@@ -6187,7 +6189,7 @@ case 0:
                         if(vi.fc_vers < FCVERS.hasMoreWP)
                             wp_max = 15;
                         else if (vi.board != "AFNA" && vi.board != "CC3D")
-                            wp_max = (uint8)INAV_MAX_WP;
+                            wp_max =  (vi.fc_vers >= FCVERS.hasWPMAX) ? (uint8)conf.max_wps :  60;
                         else
                             wp_max = 30;
 
@@ -8214,7 +8216,7 @@ case 0:
         validatelab.set_text("");
         downgrade = 0;
 
-        if(!(ls.to_mission().is_valid()))
+        if(!(ls.to_mission().is_valid(wp_max)))
         {
             mwp_warning_box("Misison verification failed, upload aborted", Gtk.MessageType.ERROR, 60);
             return;
@@ -9247,7 +9249,7 @@ case 0:
         }
         validatelab.set_text("");
         map_centre_on(ms.cy, ms.cx);
-        ms.dump();
+        ms.dump(wp_max);
         ls.import_mission(ms, (conf.rth_autoland &&
                                Craft.is_mr(vi.mrtype)));
 

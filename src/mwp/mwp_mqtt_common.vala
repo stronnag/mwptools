@@ -11,9 +11,10 @@ const int KEEPALIVE = 60;
 private static MQTT.Client client;
 #endif
 
-public class MwpMQTT : Object {
+const int MAX_WPS = 255;
 
-    private MSP_WP wps[60];
+public class MwpMQTT : Object {
+    private MSP_WP wps[255];
     private LTM_GFRAME gframe;
     private LTM_OFRAME oframe;
     private LTM_AFRAME aframe;
@@ -49,6 +50,9 @@ public class MwpMQTT : Object {
         xframe = LTM_XFRAME();
         sframe = LTM_SFRAME();
         nframe = MSP_NAV_STATUS();
+        wpcount = 0;
+        wpvalid = 0;
+        send_once = 0;
     }
 
     public signal void mqtt_mission(MSP_WP[] wps, int nwp);
@@ -296,7 +300,7 @@ public class MwpMQTT : Object {
             {
                 case "wpno":
                     wpno = int.parse(attrs[1]);
-                    if (wpno < 1 || wpno > 60)
+                    if (wpno < 1 || wpno > MAX_WPS)
                         return;
                     wpidx = wpno - 1;
                     wp.wp_no = (uint8)wpno;
@@ -333,7 +337,7 @@ public class MwpMQTT : Object {
                     break;
             }
         }
-        wps[wpidx]= wp;
+        wps[wpidx] = wp;
     }
 
     private uint8 parse_flight_mode(string flm)
@@ -682,6 +686,7 @@ public class MwpMQTT : Object {
                 return false;
 
             available = true;
+            init();
             return true;
         }
         else {

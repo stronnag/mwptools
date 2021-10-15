@@ -25,3 +25,5 @@ extern char* get_native_path(char *);
 extern char *__progname;
 extern const char * get_build();
 extern const char * get_id();
+
+#define MWP_MISC_MWP_MAX_WP 60
