@@ -30,6 +30,8 @@ public struct MissionItem
     uint8 flag;
 }
 
+const uint INAV_MAX_WP = 120;
+
 public class Mission : GLib.Object
 {
     private MissionItem[] waypoints;
@@ -94,7 +96,7 @@ public class Mission : GLib.Object
 
     public bool is_valid()
     {
-        if(waypoints.length > 60)
+        if(waypoints.length > INAV_MAX_WP)
             return false;
 
             // Urg, Urg array index v. WP Nos ......

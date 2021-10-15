@@ -74,6 +74,9 @@ public class  OTXDialog : Object
         filter.add_pattern ("*.csv");
         if(x_fl2ltm)
             filter.add_pattern ("*.txt");
+        if(x_fl2ltm)
+            filter.add_pattern ("*.bin");
+
         otx_filechooser.add_filter (filter);
 
         if(logpath != null)
@@ -101,7 +104,7 @@ public class  OTXDialog : Object
                 dialog.response(1001);
             });
 
-        dialog.title = "mwp OTX Log replay";
+        dialog.title = "mwp Misc Log replay";
         dialog.set_transient_for(w);
     }
 
@@ -165,12 +168,18 @@ public class  OTXDialog : Object
 
             chan.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
                     if (condition == IOCondition.HUP)
+                    {
                         return false;
+                    }
+
                     try
                     {
                         eos = source.read_line (out line, out len, null);
                         if(eos == IOStatus.EOF)
+                        {
                             return false;
+                        }
+
                         if (line  == null || len == 0)
                             return true;
                         var parts = line.split(",");

@@ -593,6 +593,7 @@ public class MWP : Gtk.Application {
     private bool x_replay_bbox_ltm_rb;
     private bool x_kmz;
     private bool x_otxlog;
+    private bool x_aplog;
     private bool x_fl2ltm;
     public bool x_plot_elevations_rb {get; private set; default= false;}
 
@@ -881,6 +882,8 @@ public class MWP : Gtk.Application {
     private const uint MAVINTVL=(2000/TIMINTVL);
     private const uint CRITINTVL=(3000/TIMINTVL);
     private const uint RADARINTVL=(10000/TIMINTVL);
+
+    public const uint INAV_MAX_WP=120;
 
     private enum SATS
     {
@@ -1277,7 +1280,10 @@ public class MWP : Gtk.Application {
                                 if(smi.name == "GtkModelMenuItem") {
                                     var slbl = ((Gtk.MenuItem)smi).get_label();
                                     if (slbl.contains(" OTX ")) {
-                                        slbl = slbl.replace(" OTX ", " OpenTX / BulletGCSS ");
+                                        if (x_aplog)
+                                            slbl = slbl.replace(" OTX ", " OpenTX / BulletGCSS / AP");
+                                        else
+                                            slbl = slbl.replace(" OTX ", " OpenTX / BulletGCSS");
                                         ((Gtk.MenuItem)smi).set_label(slbl);
                                         done++;
                                         if (done == 2)
@@ -1374,8 +1380,8 @@ public class MWP : Gtk.Application {
 
         string []  ext_apps = {
             conf.blackbox_decode, "replay_bbox_ltm.rb",
-            "gnuplot", "mwp-plot-elevations", "unzip", "otxlog", "fl2ltm" };
-        bool appsts[7];
+            "gnuplot", "mwp-plot-elevations", "unzip", "otxlog", "fl2ltm", "mavlogdump.py" };
+        bool appsts[8];
         var si = 0;
         foreach (var s in ext_apps)
         {
@@ -1390,6 +1396,7 @@ public class MWP : Gtk.Application {
         x_otxlog = appsts[5];
         if (Environment.get_variable("MWP_LEGACY_REPLAY") == null)
             x_fl2ltm = appsts[6];
+        x_aplog = appsts[7];
 
         XmlIO.uc = conf.ucmissiontags;
 
@@ -6180,7 +6187,7 @@ case 0:
                         if(vi.fc_vers < FCVERS.hasMoreWP)
                             wp_max = 15;
                         else if (vi.board != "AFNA" && vi.board != "CC3D")
-                            wp_max = 60;
+                            wp_max = (uint8)INAV_MAX_WP;
                         else
                             wp_max = 30;
 
