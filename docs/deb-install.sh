@@ -14,7 +14,7 @@ sudo apt update && sudo apt full-upgrade && \
     libgtk-3-dev \
     valac \
     pkg-config \
-    build-essential \
+    git build-essential \
     meson \
     ninja-build \
     libbluetooth-dev \
