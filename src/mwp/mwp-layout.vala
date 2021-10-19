@@ -123,10 +123,15 @@ class LayMan : Object
 
     private string? find_default_file()
     {
+        var uc = Environment.get_user_config_dir();
+        string f =  GLib.Path.build_filename(uc, "mwp", "default.layout");
+        if(Posix.access(f,Posix.R_OK) == 0)
+            return f;
+
         var confdirs = Environment.get_system_data_dirs();
         foreach (string c in confdirs)
         {
-            string f =  GLib.Path.build_filename(c,"mwp", "default.layout");
+            f =  GLib.Path.build_filename(c,"mwp", "default.layout");
             if(Posix.access(f,Posix.R_OK) == 0)
                 return f;
         }
