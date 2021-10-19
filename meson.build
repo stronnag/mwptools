@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '4.292.558')
+project('mwptools', 'c', 'vala', version : '4.292.712')
 
 meson.add_install_script('meson/post_install.sh')
 conf_data = configuration_data()
@@ -13,7 +13,7 @@ subdir('meson')
 subdir('src/common')
 subdir('src/mwp')
 subdir('src/mwp-plot-elevations')
-subdir('src/otxlog')
+#subdir('src/otxlog')
 subdir('src/fc-cli')
 subdir('src/qproxy')
 subdir('src/samples/')
@@ -52,6 +52,6 @@ if gobuild != ''
      if gotrim != ''
     mpe = custom_target('mwp-plot-elevations', output: 'mwp-plot-elevations', command : [gobuild, '@OUTPUT@', mpe_dir, gotrim, broot], build_by_default: true, input: mpe_deps)
   endif
-  otx = custom_target('otxlog', output: 'otxlog', command : [gobuild, '@OUTPUT@',otx_dir,gotrim, broot], build_by_default: true)
+#  otx = custom_target('otxlog', output: 'otxlog', command : [gobuild, '@OUTPUT@',otx_dir,gotrim, broot], build_by_default: true)
   bbs = custom_target('bbsummary', output: 'bbsummary', command : [gobuild, '@OUTPUT@',bbs_dir, gotrim, broot], build_by_default: true)
 endif

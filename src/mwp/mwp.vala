@@ -1381,22 +1381,25 @@ public class MWP : Gtk.Application {
 
         string []  ext_apps = {
             conf.blackbox_decode, "replay_bbox_ltm.rb",
-            "gnuplot", "mwp-plot-elevations", "unzip", "otxlog", "fl2ltm", "mavlogdump.py" };
+            "gnuplot", "mwp-plot-elevations", "unzip", null, "fl2ltm", "mavlogdump.py" };
         bool appsts[8];
         var si = 0;
         foreach (var s in ext_apps)
         {
-            appsts[si] = MWPUtils.exists_on_path(s);
-            if (appsts[si] == false)
-                MWPLog.message("Failed to find \"%s\" on PATH\n", s);
+            if (s != null) {
+                appsts[si] = MWPUtils.exists_on_path(s);
+                if (appsts[si] == false)
+                    MWPLog.message("Failed to find \"%s\" on PATH\n", s);
+            }
             si++;
         }
         x_replay_bbox_ltm_rb = (appsts[0]&&appsts[1]);
         x_plot_elevations_rb = (appsts[2]&&appsts[3]);
         x_kmz = appsts[4];
-        x_otxlog = appsts[5];
-        if (Environment.get_variable("MWP_LEGACY_REPLAY") == null)
-            x_fl2ltm = appsts[6];
+        x_otxlog = false;
+        if (Environment.get_variable("MWP_LEGACY_REPLAY") == null) {
+            x_fl2ltm = x_otxlog = appsts[6];
+        }
         x_aplog = appsts[7];
 
         XmlIO.uc = conf.ucmissiontags;
