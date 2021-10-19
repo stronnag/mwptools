@@ -62,11 +62,15 @@ Please see the `docs` directory for specific development requirements for indivi
 
 mwptools is tested on x86_64, ia32 and ARM32 devices (Linux / FreeBSD).
 
+* There is a "Release" debian package (x86_64, Debian, Ubuntu etc).
+* Simple, ["one stop shop" build and install script](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/)
+* AUR package 'mwptools-git' for Arch Linux.
+
 It is also possible to build and run mwp on MS Windows using:
 
 * Windows 11 / WSL-g [Installation instructions](https://github.com/stronnag/mwptools/wiki/mwp-in-Windows-11---WSL-G)
 * [Cygwin](https://www.cygwin.com/) Recommended Windows solution prior to Windows 11
-* Windows 10 / WSL (slow, unstable, not recommended)
+* Windows 10 / WSL (slow, less stable, less recommended)
 * A virtual machine with a Linux guest.
 
 The [wiki](https://github.com/stronnag/mwptools/wiki) provides further guidance.
@@ -79,23 +83,9 @@ For OS not supported by mwp (e.g. MacOS, IOS, Andriod), see also [impload](https
 
 * Review / install the dependencies for your platform. The [documentation](docs/) directory lists dependencies for Fedora and Debian/Ubuntu like systems.
 
-* Clone the repository `git clone https://github.com/stronnag/mwptools.git`
+* [Installation Guide (wiki)](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/).
 
-* Compile and install (choose prefix appropriately, see the [wiki](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/).
-  ````
-  cd mwptools
-  meson build --prefix=/usr  --buildtype=release --strip
-  cd build
-  ninja && ninja install
-  ````
-
-  For now, the legacy `Makefiles` remain, see [wiki](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/).
-
-[Installation video](https://vimeo.com/256052320/)
-
-If you're new to Linux (or just new to mwp), see also the [easy install wiki page](https://github.com/stronnag/mwptools/wiki/Install-mwp-on-a-Windows-computer-for-Linux-noobs), which describes installing to an Ubuntu VM using VirtualBox hosted on a Windows computer.
-
-Support questions are best asked in the [RC Groups board](https://www.rcgroups.com/forums/showthread.php?2633708-mwp)
+Support questions are best asked in the [RC Groups board](https://www.rcgroups.com/forums/showthread.php?2633708-mwp), the inav discord (off-topic) or telegram channels or Github discussions / issues.
 
 ### Updating
 
@@ -103,7 +93,7 @@ As mwptools makes no formal releases, you can update your installation from the 
 
 ````
 cd mwptools # the initial installation directory
-git pull && cd build && ninja && sudo ninja install
+git pull && cd build && ninja install
 ````
 
 ## Arch Linux
