@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '4.293.460')
+project('mwptools', 'c', 'vala', version : '4.293.468')
 
 meson.add_install_script('meson/post_install.sh')
 conf_data = configuration_data()
@@ -13,7 +13,6 @@ subdir('meson')
 subdir('src/common')
 subdir('src/mwp')
 subdir('src/mwp-plot-elevations')
-#subdir('src/otxlog')
 subdir('src/fc-cli')
 subdir('src/qproxy')
 subdir('src/samples/')
