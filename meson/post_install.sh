@@ -3,7 +3,7 @@
 ln -f ${DESTDIR}/${MESON_INSTALL_PREFIX}/bin/fc-get  ${DESTDIR}/${MESON_INSTALL_PREFIX}/bin/fc-set
 
 # Go programs, without whinging
-for FN in mwp-plot-elevations otxlog bbsummary bproxy ublox-geo ublox-cli flashdl ; do
+for FN in mwp-plot-elevations bproxy ublox-geo ublox-cli flashdl ; do
   if [ -e  $MESON_BUILD_ROOT/$FN ] ; then
     rm -f $MESON_INSTALL_PREFIX/bin/$FN
     install -C $MESON_BUILD_ROOT/$FN $MESON_INSTALL_PREFIX/bin
