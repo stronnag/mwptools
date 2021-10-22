@@ -344,7 +344,7 @@ public class  BBoxDialog : Object
             }
             else
             {
-                TimeZone tz = null;
+                TimeZone tz = new TimeZone.local();
                 if(tzstr == "Log")
                     tzstr = ts.substring(23,6);
 #if OLDTVI
