@@ -146,7 +146,7 @@ if bcd.found()
   endif
   if bcd_dir.startswith(get_option('prefix'))
     install_data(['mwp_complete.sh', 'blackbox_decode_complete.sh'],
-		 rename: ['mwp','blackbox-devcode'],
+		 rename: ['mwp','blackbox_decode'],
 		 install_dir: bcd_dir )
   endif
 endif
