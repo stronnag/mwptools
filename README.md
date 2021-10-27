@@ -110,7 +110,7 @@ GPL v3 or later
 
 ## Alternatives
 
-In addition to **mwp**, the following inav mission planners exist, in various states of usefulness:
+In addition to [mwp](https://github.com/stronnag/mwptools), the following inav mission planners (and GCS in some cases) exist, in various states of usefulness, at least:
 
 * [Inav Configurator (for inav 2.x)](https://github.com/iNavFlight/inav-configurator/tree/2.6.1), limited planning support
 * [Inav Configurator (for inav 3.x)]( https://github.com/iNavFlight/inav-configurator), supports all current WP types. [Preview builds](http://seyrsnys.myzen.co.uk/inav-configurator-next/), may be augmented with [impload](https://github.com/stronnag/impload/) to upload missions to 2.x firmware.

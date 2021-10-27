@@ -125,17 +125,17 @@ common_inc_dir += include_directories('.')
 
 install_data (
   'org.mwptools.planner.gschema.xml',
-  install_dir: get_option('datadir') / 'glib-2.0/schemas'
+  install_dir: join_paths(get_option('datadir'), 'glib-2.0', 'schemas'),
 )
 
 install_data (
   ['vcols.css', 'default.layout', 'beep-sound.ogg', 'bleet.ogg',
    'menubar.ui', 'mwp.ui', 'orange.ogg', 'sat_alert.ogg'],
-  install_dir: get_option('datadir') / 'mwp'
+  install_dir: join_paths(get_option('datadir'), 'mwp')
 )
 
-install_subdir('pixmaps', install_dir : get_option('datadir') / 'mwp')
-install_data('mwp.desktop', install_dir : get_option('datadir') / 'applications')
+install_subdir('pixmaps', install_dir : join_paths(get_option('datadir'), 'mwp'))
+install_data('mwp.desktop', install_dir : join_paths(get_option('datadir') , 'applications'))
 
 bcd =  dependency('bash-completion', required: false)
 if bcd.found()
@@ -144,9 +144,10 @@ if bcd.found()
   else
     bcd_dir = bcd.get_pkgconfig_variable('completionsdir')
   endif
-  if bcd_dir.startswith(get_option('prefix'))
-    install_data(['mwp_complete.sh', 'blackbox_decode_complete.sh'],
-		 rename: ['mwp','blackbox_decode'],
-		 install_dir: bcd_dir )
+  if not bcd_dir.startswith(get_option('prefix'))
+    bcd_dir = join_paths(get_option('prefix'), 'share', 'bash-completion', 'completions')
   endif
+  install_data(['mwp_complete.sh', 'blackbox_decode_complete.sh'],
+	       rename: ['mwp','blackbox_decode'],
+	       install_dir: bcd_dir )
 endif

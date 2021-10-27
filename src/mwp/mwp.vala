@@ -1043,7 +1043,7 @@ public class MWP : Gtk.Application {
         sb.append_c(' ');
         sb.append(s_1);
         var verstr = sb.str;
-        var xlib = "Wayland";
+        xlib = "Wayland";
         var is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
         if(!is_wayland)
             xlib="Xlib";

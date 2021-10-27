@@ -10,13 +10,6 @@ for FN in mwp-plot-elevations bproxy ublox-geo ublox-cli flashdl ; do
   fi
 done
 
-if [ $MESON_INSTALL_PREFIX = $HOME/.local ] ; then
-    BCD=$HOME/.local/share/bash-completion/completions
-    mkdir -p $BCD
-    install -v -C $MESON_SOURCE_ROOT/src/mwp/mwp_complete.sh $BCD/mwp
-    install -v -C $MESON_SOURCE_ROOT/src/mwp/blackbox_decode_complete.sh $BCD/blackbox_decode
-fi
-
 if [ -z $DESTDIR ]; then
   echo Compiling gsettings schemas...
   glib-compile-schemas $MESON_INSTALL_PREFIX/share/glib-2.0/schemas
