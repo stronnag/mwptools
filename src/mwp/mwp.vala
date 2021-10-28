@@ -1280,9 +1280,9 @@ public class MWP : Gtk.Application {
                                     var slbl = ((Gtk.MenuItem)smi).get_label();
                                     if (slbl.contains(" OTX ")) {
                                         if (x_aplog)
-                                            slbl = slbl.replace(" OTX ", " OpenTX / BulletGCSS / AP");
+                                            slbl = slbl.replace(" OTX", " OpenTX / BulletGCSS / AP");
                                         else
-                                            slbl = slbl.replace(" OTX ", " OpenTX / BulletGCSS");
+                                            slbl = slbl.replace(" OTX", " OpenTX / BulletGCSS");
                                         ((Gtk.MenuItem)smi).set_label(slbl);
                                         done++;
                                         if (done == 2)
