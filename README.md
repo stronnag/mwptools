@@ -29,6 +29,10 @@ mwp also provides logging and the replay of:
 * mwp log files
 * Blackbox logs
 * OpenTX CSV (sdcard) logs
+* BulletGCSS logs
+* Ardupilot (`.bin`) log
+
+Log replay requires tools from the [flightlog2x](https://github.com/stronnag/bbl2kml) project.
 
 There is also an [inav](https://github.com/iNavFlight/inav) [Safehome editor](https://github.com/stronnag/mwptools/wiki/mwp-safehomes-editor).
 
@@ -50,15 +54,13 @@ The tools are designed to be portable and as far as possible platform and archit
 mwp should  build and running on any platform that supports (recent versions of):
 
  * gtk+3.0 (3.18 or later);
- * meson
+ * meson / ninja
  * vala and gcc;
  * Clutter (software GL is fine);
  * libchamplain;
  * libespeak;
  * libgdl;
  * POSIX API
-
-Please see the `docs` directory for specific development requirements for individual OS.The `docs` directory also contains a user guide / manual in ODT and PDF formats (`docs/mwptools.{odt,pdf}`).
 
 mwptools is tested on x86_64, ia32 and ARM32 devices (Linux / FreeBSD).
 
@@ -106,7 +108,7 @@ Arch users can install mwptools from the AUR package `mwptools-git`
 
 ## Compatibility
 
-As well as supporting inav, mwp aims to be compatible with EOSBandi's WinGUI for MW. It used the same XML mission file format (with mwp extensions) and aims to provide similar functionally where it is possible to reverse engineer the required protocol formats.
+As well as supporting inav, mwp aims to be compatible with EOSBandi's WinGUI for MW. It used the same XML mission file format (with inav and mwp extensions) and aims to provide similar functionally where possible.
 
 ## Licence
 
