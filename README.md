@@ -87,6 +87,10 @@ For OS not supported by mwp (e.g. MacOS, IOS, Andriod), see also [impload](https
 
 Support questions are best asked in the [RC Groups board](https://www.rcgroups.com/forums/showthread.php?2633708-mwp), the inav discord (off-topic) or telegram channels or Github discussions / issues.
 
+### Changelog / Announcements
+
+Important changes are [announced on the wiki](https://github.com/stronnag/mwptools/wiki/Recent-Changes).
+
 ### Updating
 
 As mwptools makes no formal releases, you can update your installation from the master branch:
