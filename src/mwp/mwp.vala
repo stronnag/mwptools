@@ -1709,14 +1709,6 @@ public class MWP : Gtk.Application {
 
         msview = new MapSourceDialog(builder, window);
         setpos = new SetPosDialog(builder, window);
-        var pls = Places.get_places(conf.latitude, conf.longitude);
-        setpos.load_places(pls,conf.dms);
-        setpos.new_pos.connect((la, lo, zoom) => {
-                map_centre_on(la, lo);
-                if(zoom > 0)
-                    view.zoom_level = zoom;
-                map_moved();
-            });
 
         navconf = new NavConfig(window, builder);
         bb_runner = new BBoxDialog(builder, window, conf.blackbox_decode,
@@ -1773,6 +1765,15 @@ public class MWP : Gtk.Application {
                 msp_publish_home(safeindex);
             });
 
+        Places.get_places();
+        setpos.load_places();
+        setpos.new_pos.connect((la, lo, zoom) => {
+                map_centre_on(la, lo);
+                if(zoom > 0)
+                    view.zoom_level = zoom;
+                map_moved();
+            });
+
         var saq = new GLib.SimpleAction("file-open",null);
         saq.activate.connect(() => {
                 check_mission_clean();
@@ -1816,9 +1817,7 @@ public class MWP : Gtk.Application {
                 conf.longitude = view.get_center_longitude();
                 conf.zoom = view.get_zoom_level();
                 conf.save_settings();
-                pls[0].lat = conf.latitude;
-                pls[0].lon = conf.longitude;
-                setpos.load_places(pls,conf.dms);
+                setpos.load_places();
             });
         window.add_action(saq);
 
@@ -2166,6 +2165,18 @@ public class MWP : Gtk.Application {
 
         view = embed.get_view();
         view.set_reactive(true);
+
+
+        var place_editor = new PlaceEdit(window, view);
+        setpos.place_edit.connect(() => {
+                place_editor.show();
+            });
+
+
+        place_editor.places_changed.connect(() => {
+                setpos.load_places();
+                place_editor.hide();
+            });
 
         safehomed.set_view(view);
         if(conf.load_safehomes != "")

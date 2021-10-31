@@ -1038,10 +1038,10 @@ public class SetPosDialog : GLib.Object
     private Gtk.Entry lat_entry;
     private Gtk.Entry lon_entry;
     private Gtk.ComboBoxText pcombo;
-    private Places.PosItem[] pls;
-    private bool dms;
+    Places.PosItem[] pls;
 
     public signal void new_pos(double la, double lo, int zoom);
+    public signal void place_edit();
 
     public SetPosDialog(Gtk.Builder builder,Gtk.Window? w=null)
     {
@@ -1052,10 +1052,15 @@ public class SetPosDialog : GLib.Object
         pcombo = builder.get_object("place_combo") as Gtk.ComboBoxText;
     }
 
-    public void load_places(Places.PosItem[] _pls, bool _dms)
+    public void load_places()
     {
-        dms = _dms;
-        pls = _pls;
+        pls = {};
+        pls +=  Places.PosItem(){name="Default", lat=MWP.conf.latitude, lon=MWP.conf.longitude};
+        foreach(var pl in Places.points())
+        {
+            pls += pl;
+        }
+
         pcombo.remove_all();
         foreach(var l in pls)
             pcombo.append_text(l.name);
@@ -1063,8 +1068,8 @@ public class SetPosDialog : GLib.Object
         if(pls.length != 0)
         {
             pcombo.active = 0;
-            lat_entry.set_text(PosFormat.lat(pls[0].lat, dms));
-            lon_entry.set_text(PosFormat.lon(pls[0].lon, dms));
+            lat_entry.set_text(PosFormat.lat(pls[0].lat, MWP.conf.dms));
+            lon_entry.set_text(PosFormat.lon(pls[0].lon, MWP.conf.dms));
         }
 
         pcombo.changed.connect (() => {
@@ -1073,8 +1078,8 @@ public class SetPosDialog : GLib.Object
                 {
                     if(l.name == s)
                     {
-                        lat_entry.set_text(PosFormat.lat(l.lat, dms));
-                        lon_entry.set_text(PosFormat.lon(l.lon, dms));
+                        lat_entry.set_text(PosFormat.lat(l.lat, MWP.conf.dms));
+                        lon_entry.set_text(PosFormat.lon(l.lon, MWP.conf.dms));
                         break;
                     }
                 }
@@ -1085,8 +1090,9 @@ public class SetPosDialog : GLib.Object
     {
         double glat = 0,  glon = 0;
         dialog.response.connect((id) => {
-                if (id == 1001)
+                switch (id)
                 {
+                    case 1001:
                     var t1 = lat_entry.get_text();
                     var t2 = lon_entry.get_text();
                     if (t2 == "")
@@ -1105,7 +1111,13 @@ public class SetPosDialog : GLib.Object
                     int zoom = -1;
                     if(n > 0)
                         zoom = pls[n].zoom;
-                    new_pos(glat, glon,zoom);
+                    new_pos(glat, glon, zoom);
+                    break;
+                    case 1003:
+                    place_edit();
+                    break;
+                    default:
+                    break;
                 }
                 dialog.hide();
             });

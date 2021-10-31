@@ -2,12 +2,10 @@
 #
 # add your own favourite locations and copy the file to ~/.config/mwp/
 #
-# You can either edit this file (delimited) or the JSON file
-# (places.json). If both exist under ~/.config/mwp/, then the CSV
-# file has priority
+# You can either edit this file (delimited) or use the GUI editor
 #
 # The valid delimiters are |;: and <TAB>. Note "," is not a delimiter
 # for reasons of localisation.
 #
-Beaulieu|50.8047104|-1.4942621
-Lordshill|50.9414699|-1.4612946
+Beaulieu|50.8047104|-1.4942621|17
+Jurby:54.353974:-4.523600:-1

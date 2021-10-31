@@ -925,9 +925,6 @@ public class ListBox : GLib.Object
         }
     }
 
-
-
-
     public void connect_markers()
     {
         mp.markers.wp_moved.connect((ino, lat, lon) => {

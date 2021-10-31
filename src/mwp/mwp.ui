@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2
+<!-- Generated with glade 3.38.2 
 
 Copyright (C)
 
@@ -1534,6 +1534,23 @@ Uncommiitted changes will be lost unless the current mssion is saved.</property>
             <property name="valign">start</property>
             <property name="layout-style">end</property>
             <child>
+              <object class="GtkButton" id="place_edit">
+                <property name="label" translatable="yes">Editor ...</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="tooltip-text" translatable="yes">Opens the stored places editor</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
               <object class="GtkButton" id="gotoapp">
                 <property name="label">Apply</property>
                 <property name="visible">True</property>
@@ -1543,7 +1560,7 @@ Uncommiitted changes will be lost unless the current mssion is saved.</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">0</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -1556,7 +1573,7 @@ Uncommiitted changes will be lost unless the current mssion is saved.</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">3</property>
               </packing>
             </child>
           </object>
@@ -1623,7 +1640,7 @@ Uncommiitted changes will be lost unless the current mssion is saved.</property>
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="tooltip-text" translatable="yes">Named places are read from ~/.config/mwp/places.json or ~/.config/mwp/places, whichever is found first.
+                <property name="tooltip-text" translatable="yes">Named places are read from ~/.config/mwp/places.
 See the "samples" directory for an example of each.</property>
                 <property name="label" translatable="yes">Place</property>
               </object>
@@ -1661,6 +1678,7 @@ See the "samples" directory for an example of each.</property>
       </object>
     </child>
     <action-widgets>
+      <action-widget response="1003">place_edit</action-widget>
       <action-widget response="1001">gotoapp</action-widget>
       <action-widget response="1002">gotocan</action-widget>
     </action-widgets>
