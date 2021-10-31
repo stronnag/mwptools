@@ -282,8 +282,10 @@ class PlaceEdit : Object {
     private void build_mm(Champlain.View cv) {
         menu = new Gtk.Menu();
         mname = new Gtk.MenuItem.with_label ("");
+
         menu.add (mname);
         menu.add (new Gtk.SeparatorMenuItem ());
+        mname.sensitive = false;
 
         var item = new Gtk.MenuItem.with_label ("Zoom to location");
         menu.add (item);
