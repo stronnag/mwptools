@@ -18,6 +18,7 @@ public class Places :  GLib.Object
 
     private static void parse_delim(string fn)
     {
+        var comma = false;
         var file = File.new_for_path(fn);
         try {
             var dis = new DataInputStream(file.read());
@@ -29,6 +30,11 @@ public class Places :  GLib.Object
                    !line.has_prefix(";"))
                 {
                     var parts = line.split_set(DELIMS);
+                    if(parts.length <  3) {
+                        parts = line.split(",");
+                        comma = true;
+                    }
+
                     if(parts.length > 2)
                     {
                         var p = PosItem();
@@ -46,6 +52,8 @@ public class Places :  GLib.Object
         } catch (Error e) {
             error ("%s", e.message);
         }
+        if(pls.length > 0 && comma)
+            save_file();
     }
 
     public static PosItem[] get_places()
