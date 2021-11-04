@@ -8,7 +8,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="version"/>
-        <xs:element ref="mwp"  minOccurs="0"/>
+        <xs:element ref="mwp"  minOccurs="0" maxOccurs="unbounded"/>
         <xs:element maxOccurs="unbounded" ref="missionitem"/>
       </xs:sequence>
     </xs:complexType>
