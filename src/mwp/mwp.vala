@@ -1044,7 +1044,7 @@ public class MWP : Gtk.Application {
         sb.append(s_1);
         var verstr = sb.str;
         xlib = "Wayland";
-        var is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
+        is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
         if(!is_wayland)
             xlib="Xlib";
         MWPLog.message("mwp startup version: %s on %s\n", verstr, xlib);
