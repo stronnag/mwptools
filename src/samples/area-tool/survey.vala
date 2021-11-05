@@ -331,7 +331,7 @@ public class AreaPlanner : GLib.Object {
             });
 
         s_publish.clicked.connect(() => {
-                var s = XmlIO.to_xml_string(ms, false);
+                var s = XmlIO.to_xml_string({ms}, false);
                 try {
                     proxy.set_mission(s);
                 } catch (Error e) {
@@ -461,7 +461,7 @@ public class AreaPlanner : GLib.Object {
             sb.append(".mission");
             fn = sb.str;
         }
-        XmlIO.to_xml_file(fn, ms);
+        XmlIO.to_xml_file(fn, {ms});
     }
 
     private Mission? create_mission()

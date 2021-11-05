@@ -128,7 +128,7 @@ public class Mission : GLib.Object
         stdout.printf("lon (x)  min,max %f %f\n", minx, maxx);
         stdout.printf("lat (y) min,max %f %f\n", miny, maxy);
         stdout.printf("cy cx %f %f %d\n", cy, cx, (int)zoom);
-        if(dist != 1)
+        if(dist != -1)
         {
             stdout.printf("distance %.1f m\n", dist);
             stdout.printf("flight time %d s\n", et);
@@ -205,7 +205,8 @@ public class Mission : GLib.Object
         lt = 0;
 
         var nsize = waypoints.length;
-        if(nsize == 0)
+
+		if(nsize == 0)
             return false;
 
         do
@@ -246,7 +247,7 @@ public class Mission : GLib.Object
                 }
                 Geo.csedist(ly,lx,cy,cx, out dx, out cse);
                 d += dx;
-                print("At WP #%d, delta = %6.1f dist = %6.1f\n", n+1, dx*1852.0, d*1852.0);
+//                print("At WP #%d, delta = %6.1f dist = %6.1f\n", n+1, dx*1852.0, d*1852.0);
 
                 if (typ == MSP.Action.POSHOLD_TIME)
                 {
@@ -262,10 +263,10 @@ public class Mission : GLib.Object
                 }
             }
             else
-	    {
+			{
                 ready = true;
-                print("At WP #1, delta =    0.0 dist =    0.0\n");
-		n += 1;
+//				print("At WP #1, delta =    0.0 dist =    0.0 (%d)\n", n);
+				n += 1;
             }
             lx = cx;
             ly = cy;

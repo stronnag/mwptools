@@ -2343,7 +2343,7 @@ public class ListBox : GLib.Object
         fhome.get_best_angles(out maxclimb, out maxdive);
             */
         var m = to_mission();
-        XmlIO.to_xml_file(outfn, m);
+        XmlIO.to_xml_file(outfn, {m});
         spawn_args += outfn;
         MWPLog.message("%s\n", string.joinv(" ",spawn_args));
         string []cdlines = {};
@@ -2421,7 +2421,9 @@ public class ListBox : GLib.Object
                     {
                         if (replname != null)
                         {
-                            var ms = XmlIO.read_xml_file (replname);
+							Mission ms;
+                            var msx = XmlIO.read_xml_file (replname);
+							ms = msx[0];
                             if(fhome != null)
                                 fhome.get_fake_home(out ms.homey, out ms.homex);
                             import_mission(ms, false);

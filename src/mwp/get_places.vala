@@ -1,4 +1,4 @@
-public class Places :  GLib.Object
+namespace Places
 {
     public struct PosItem
     {
@@ -8,15 +8,15 @@ public class Places :  GLib.Object
         int zoom;
     }
 
-    private static PosItem[]pls = {};
+    private PosItem[]pls;
     private const string DELIMS="\t|;:";
-    private static string? cfile = null;
+    private  string? cfile = null;
 
-    public static  PosItem[] points() {
+    public   PosItem[] points() {
         return pls;
     }
 
-    private static void parse_delim(string fn)
+    private  void parse_delim(string fn)
     {
         var comma = false;
         var file = File.new_for_path(fn);
@@ -56,7 +56,7 @@ public class Places :  GLib.Object
             save_file();
     }
 
-    public static PosItem[] get_places()
+    public  PosItem[] get_places()
     {
         string? fn;
         pls = {};
@@ -68,7 +68,7 @@ public class Places :  GLib.Object
         return pls;
     }
 
-    private static string? find_conf_file(string fn)
+    private  string? find_conf_file(string fn)
     {
         var uc =  Environment.get_user_config_dir();
         var cfile = GLib.Path.build_filename(uc,"mwp",fn);
@@ -79,7 +79,7 @@ public class Places :  GLib.Object
             return null;
     }
 
-    public static void save_file() {
+    public  void save_file() {
         var uc =  Environment.get_user_config_dir();
         var cfile = GLib.Path.build_filename(uc,"mwp","places");
         var fp = FileStream.open (cfile, "w");
@@ -92,7 +92,7 @@ public class Places :  GLib.Object
         }
     }
 
-    public static void replace (PosItem[] ps) {
+    public  void replace (PosItem[] ps) {
         pls = ps;
         save_file();
     }

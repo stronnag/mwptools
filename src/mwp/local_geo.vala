@@ -103,9 +103,17 @@ public class FlatEarth : GLib.Object
     {
         Gdk.Pixbuf spixb = null;
         bool is_j = fn.has_suffix(".json");
-        var ms = (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
-        if((ms) != null)
+		Mission ms;
+        var msx = (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+        if(msx.length > 0)
         {
+			var xlen = 0;
+			for(var j = 0 ; j < msx.length; j++) {
+				if(msx[j].npoints > msx[xlen].npoints)
+					xlen = j;
+			}
+
+			ms = msx[xlen];
             LLPos wpos = {0};
             GridPos gp = {0};
             GridPos [] gpa = {};

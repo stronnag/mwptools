@@ -1,6 +1,6 @@
 public class JsonIO : Object
 {
-    public static Mission? read_json_file(string fn)
+    public static Mission? [] read_json_file(string fn)
     {
         try
         {
@@ -9,70 +9,68 @@ public class JsonIO : Object
                 return from_json(s);
         } catch {}
 
-        return null;
+        return {};
     }
-    public static Mission? from_json(string s)
+    public static Mission? [] from_json(string s)
     {
         Mission ms = null;
-            try {
-                ms = new Mission();
-                var parser = new Json.Parser ();
-                parser.load_from_data (s);
+		try {
+			ms = new Mission();
+			var parser = new Json.Parser ();
+			parser.load_from_data (s);
 
-                Json.Node root = parser.get_root ();
-                Json.Object obj = null;
-                if(root!= null && !root.is_null())
-                    obj = root.get_object ();
-                if(obj != null)
-                foreach (var name in obj.get_members ())
-                {
-                    switch (name)
-                    {
-                        case "mission":
-                            MissionItem [] mi={};
-                            foreach (var rsnode in
-                                     obj.get_array_member ("mission").get_elements())
-                            {
-                                var rsitem = rsnode.get_object ();
-                                var m = MissionItem();
-                                m.no = (int) rsitem.get_int_member("no");
-                                m.action =  MSP.lookup_name(rsitem.get_string_member("action"));
-                                m.lat = rsitem.get_double_member("lat");
-                                m.lon = rsitem.get_double_member("lon");
-                                m.alt = (int) rsitem.get_int_member("alt");
-                                if(m.alt > ms.maxalt)
-                                    ms.maxalt = m.alt;
-                                m.param1 = (int) rsitem.get_int_member("p1");
-                                m.param2 = (int) rsitem.get_int_member("p2");
-                                m.param3 = (int) rsitem.get_int_member("p3");
-                                if(rsitem.has_member("flag"))
-                                    m.flag = (uint8) rsitem.get_int_member("flag");
-                                if(m.action != MSP.Action.RTH && m.action != MSP.Action.JUMP &&
-                                   m.action != MSP.Action.SET_HEAD)
-                                {
-                                    if (m.lat > ms.maxy)
-                                        ms.maxy = m.lat;
-                                    if (m.lon > ms.maxx)
-                                        ms.maxx = m.lon;
-                                    if (m.lat <  ms.miny)
-                                        ms.miny = m.lat;
-                                    if (m.lon <  ms.minx)
-                                        ms.minx = m.lon;
-                                }
-                                mi += m;
-                            }
-                            ms.set_ways(mi);
-                            ms.npoints = mi.length;
-                            break;
-                        case "meta":
+			Json.Node root = parser.get_root ();
+			Json.Object obj = null;
+			if(root!= null && !root.is_null())
+				obj = root.get_object ();
+			if(obj != null)
+                foreach (var name in obj.get_members ()) {
+					switch (name)
+					{
+					case "mission":
+						MissionItem [] mi={};
+						foreach (var rsnode in
+								 obj.get_array_member ("mission").get_elements())
+						{
+							var rsitem = rsnode.get_object ();
+							var m = MissionItem();
+							m.no = (int) rsitem.get_int_member("no");
+							m.action =  MSP.lookup_name(rsitem.get_string_member("action"));
+							m.lat = rsitem.get_double_member("lat");
+							m.lon = rsitem.get_double_member("lon");
+							m.alt = (int) rsitem.get_int_member("alt");
+							if(m.alt > ms.maxalt)
+								ms.maxalt = m.alt;
+							m.param1 = (int) rsitem.get_int_member("p1");
+							m.param2 = (int) rsitem.get_int_member("p2");
+							m.param3 = (int) rsitem.get_int_member("p3");
+							if(rsitem.has_member("flag"))
+								m.flag = (uint8) rsitem.get_int_member("flag");
+							if(m.action != MSP.Action.RTH && m.action != MSP.Action.JUMP &&
+							   m.action != MSP.Action.SET_HEAD)
+							{
+								if (m.lat > ms.maxy)
+									ms.maxy = m.lat;
+								if (m.lon > ms.maxx)
+									ms.maxx = m.lon;
+								if (m.lat <  ms.miny)
+									ms.miny = m.lat;
+								if (m.lon <  ms.minx)
+									ms.minx = m.lon;
+							}
+							mi += m;
+						}
+						ms.set_ways(mi);
+						ms.npoints = mi.length;
+						break;
+					case "meta":
                         var msobj = obj.get_object_member("meta");
                         parse_meta(msobj, ref ms);
                         break;
                     }
                 }
-
-            } catch {}
-        return ms;
+		} catch {}
+		return {ms};
     }
 
     private static void parse_meta(Json.Object o, ref Mission ms)
@@ -258,10 +256,10 @@ int main (string[] args) {
         return 1;
     }
 
-    Mission ms;
-    if ((ms = JsonIO.read_json_file (args[1])) != null)
-    {
-        ms.dump();
+    Mission []msx;
+    msx = JsonIO.read_json_file (args[1]);
+	foreach (var ms in msx) {
+        ms.dump(120);
         double d;
         int lt;
         var res = ms.calculate_distance(out d, out lt);
