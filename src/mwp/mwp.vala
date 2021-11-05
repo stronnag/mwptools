@@ -1374,7 +1374,11 @@ public class MWP : Gtk.Application {
 			var k = j + 1;
 			actmission.append_text(k.to_string());
 		}
-		actmission.append_text("New");
+		if (j < 9)
+			actmission.append_text("New");
+		else
+			MWPLog.message("MM size exceeded\n");
+
 		actmission.active = isnew ? j-1 : imdx;
 	}
 
@@ -5508,7 +5512,14 @@ case 0:
 		rp = deserialise_i16(rp, out w.p3);
 		w.flag = *rp;
         wpmgr.wps += w;
-		if(wpmgr.wps.length == wpmgr.npts) {
+		bool done;
+
+		if(vi.fc_vers >= FCVERS.hasWPMAX)
+			done = (wpmgr.wps.length == wpmgr.npts);
+		else
+			done = (w.flag == 0xa5);
+
+		if(done) {
 			var mmsx = MultiM.wps_to_missonx(wpmgr.wps);
 			msx = mmsx;
 			clear_mission();
@@ -5740,59 +5751,62 @@ case 0:
                            (cmd == MSP.Cmds.COMMON_SETTING) ? (string)lastmsg.data : "");
             switch(cmd)
             {
-                case MSP.Cmds.NAME:
-                    if (len == 0) {
+			case MSP.Cmds.NAME:
+				if (len == 0) {
                         handle_radar(msp, cmd, raw, len, xflags, errs);
-                    } else {
-                        queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
-                        run_queue();
-                    }
-                    break;
-                case MSP.Cmds.INAV_MIXER:
-                    queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
-                    run_queue();
-                    break;
-                case MSP.Cmds.NAV_CONFIG:
-                    navcap = NAVCAPS.NONE;
-                    break;
-                case MSP.Cmds.API_VERSION:
-                    queue_cmd(MSP.Cmds.BOXNAMES, null,0);
-                    run_queue();
-                    break;
-                case MSP.Cmds.IDENT:
-                    queue_cmd(MSP.Cmds.API_VERSION, null,0);
-                    run_queue();
-                    break;
-                case MSP.Cmds.WP_MISSION_LOAD:
-                case MSP.Cmds.MISC:
-                    queue_cmd(msp_get_status,null,0);
-                    run_queue();
-                    break;
-                case MSP.Cmds.INAV_STATUS:
-                case MSP.Cmds.BOX: // e.g. ACTIVEBOXES
-                    msp_get_status = MSP.Cmds.STATUS_EX;
-                    queue_cmd(msp_get_status,null,0);
-                    run_queue();
-                    break;
-                case MSP.Cmds.STATUS_EX:
-                    msp_get_status = MSP.Cmds.STATUS;
-                    queue_cmd(msp_get_status,null,0);
-                    run_queue();
-                    break;
-                case  MSP.Cmds.WP_GETINFO:
-                case  MSP.Cmds.COMMON_SETTING:
-                case  MSP.Cmds.SET_RTC:
-                    run_queue();
-                    break;
-                case MSP.Cmds.COMMON_SET_TZ:
-                    rtcsecs = 0;
-                    queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
-                    run_queue();
-                    break;
-                default:
-                    queue_cmd(msp_get_status,null,0);
-                    run_queue();
-                    break;
+				} else {
+					queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+					run_queue();
+				}
+				break;
+			case MSP.Cmds.INAV_MIXER:
+				queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
+				run_queue();
+				break;
+			case MSP.Cmds.NAV_CONFIG:
+				navcap = NAVCAPS.NONE;
+				break;
+			case MSP.Cmds.API_VERSION:
+				queue_cmd(MSP.Cmds.BOXNAMES, null,0);
+				run_queue();
+				break;
+			case MSP.Cmds.IDENT:
+				queue_cmd(MSP.Cmds.API_VERSION, null,0);
+				run_queue();
+				break;
+			case MSP.Cmds.WP_MISSION_LOAD:
+			case MSP.Cmds.MISC:
+				queue_cmd(msp_get_status,null,0);
+				run_queue();
+				break;
+			case MSP.Cmds.INAV_STATUS:
+			case MSP.Cmds.BOX: // e.g. ACTIVEBOXES
+				msp_get_status = MSP.Cmds.STATUS_EX;
+				queue_cmd(msp_get_status,null,0);
+				run_queue();
+				break;
+			case MSP.Cmds.STATUS_EX:
+				msp_get_status = MSP.Cmds.STATUS;
+				queue_cmd(msp_get_status,null,0);
+				run_queue();
+				break;
+			case  MSP.Cmds.WP_GETINFO:
+			case  MSP.Cmds.COMMON_SETTING:
+			case  MSP.Cmds.SET_RTC:
+				run_queue();
+				break;
+			case MSP.Cmds.COMMON_SET_TZ:
+				rtcsecs = 0;
+				queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
+				run_queue();
+				break;
+			case  MSP.Cmds.COMMON_SET_SETTING:
+				run_queue();
+				break;
+			default:
+				queue_cmd(msp_get_status,null,0);
+				run_queue();
+				break;
             }
             return;
         }
@@ -6213,7 +6227,8 @@ case 0:
                     {
 						set_menu_state("upload-menu", true);
 						set_menu_state("upload-mission", true);
-						set_menu_state("upload-missions", true);
+						if(vi.fc_vers >= FCVERS.hasWPMAX)
+							set_menu_state("upload-missions", true);
 						set_menu_state("download-mission", true);
                     }
 
@@ -6739,7 +6754,8 @@ case 0:
 					} else {
 						MWPCursor.set_normal_cursor(window);
 						remove_tid(ref upltid);
-						if ((wpmgr.wp_flag & WPDL.SET_ACTIVE) != 0) {
+						if(vi.fc_vers >= FCVERS.hasWPMAX &&
+						   (wpmgr.wp_flag & WPDL.SET_ACTIVE) != 0) {
 							uint8 msg[128];
 							var s = "nav_wp_multi_mission_index";
 							Memory.copy (msg, s.data, s.length);
@@ -9622,8 +9638,10 @@ case 0:
         mq.clear();
         start_wp_timer(30*1000);
 		imdx = 0;
-		var s="nav_wp_multi_mission_index";
-		queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
+		if(vi.fc_vers >= FCVERS.hasWPMAX) {
+			var s="nav_wp_multi_mission_index";
+			queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
+		}
         request_wp(1);
     }
 
