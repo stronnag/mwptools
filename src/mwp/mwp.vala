@@ -1828,8 +1828,8 @@ public class MWP : Gtk.Application {
         saq = new GLib.SimpleAction("mman",null);
         saq.activate.connect(() => {
 				var dialog = new MDialog (msx);
-				dialog.remitems.connect((items) => {
-						mm_regenerate(items);
+				dialog.remitems.connect((mitem) => {
+						mm_regenerate(mitem);
 					});
 				dialog.show ();
 			});
@@ -3034,10 +3034,10 @@ public class MWP : Gtk.Application {
 
     }
 
-	private void mm_regenerate(uint8[] items) {
+	private void mm_regenerate(uint mitem) {
 		Mission [] mmsx = {};
-		for(var j = 0; j < items.length; j++) {
-			if (items[j] == 0) {
+		for(var j = 0; j < msx.length; j++) {
+			if ((mitem & (1 << j)) == 0) {
 				mmsx += msx[j];
 			}
 		}
@@ -8879,7 +8879,7 @@ case 0:
         }
     }
 
-    private void save_mission_file(string fn)
+    private void save_mission_file(string fn, uint mask=0)
     {
         StringBuilder sb;
         uint8 ftype=0;
@@ -8911,8 +8911,15 @@ case 0:
         var m = get_mission_data();
 
 		msx[mdx] = m; /* **** FIXME **** */
-        if (ftype == 'm')
-            XmlIO.to_xml_file(fn, msx);
+        if (ftype == 'm') {
+			Mission [] mmsx = {};
+			for(var j = 0; j < msx.length; j++) {
+				if ((mask & (1 << j)) == 0) {
+					mmsx += msx[j];
+				}
+			}
+			XmlIO.to_xml_file(fn, mmsx);
+		}
         else
             JsonIO.to_json_file(fn, m);
     }
@@ -9012,11 +9019,26 @@ case 0:
         filter.set_filter_name ("All Files");
         filter.add_pattern ("*");
         chooser.add_filter (filter);
-        chooser.show_all();
+		uint smask = 0;
+
+		if (msx.length > 1) {
+			var btn = new Gtk.Button.with_label("Remove segments from file");
+			btn.clicked.connect(() => {
+					var dialog = new MDialog (msx);
+					dialog.remitems.connect((mitem) => {
+							smask = mitem;
+					});
+					dialog.set_transient_for(chooser);
+				dialog.run ();
+				});
+			chooser.set_extra_widget(btn);
+			btn.show();
+		}
+		chooser.show();
         var id = chooser.run();
         if (id == Gtk.ResponseType.ACCEPT) {
             last_file = chooser.get_filename ();
-            save_mission_file(last_file);
+			save_mission_file(last_file, smask);
             update_title_from_file(last_file);
         }
         chooser.destroy ();

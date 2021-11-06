@@ -2,14 +2,13 @@ using Gtk;
 
 public class MDialog : Dialog {
 
-	public signal void remitems (uint8[]mstat);
+	public signal void remitems (uint mstat);
 	private Gtk.CheckButton[] cbs;
 
-	public MDialog (Mission []msx) {
-        this.title = "Mission Dialog";
+	public MDialog (Mission []msx, string _title="Remove Segments from Mission") {
+        this.title = _title;
         this.border_width = 5;
         create_widgets (msx);
-
     }
 
 	private void create_widgets (Mission []msx) {
@@ -42,17 +41,16 @@ public class MDialog : Dialog {
 				}
 				destroy();
 			});
+		set_modal(true);
 		show_all ();
     }
 	private void get_rem_items() {
 		bool needed = false;
-		var mstat = new uint8[cbs.length];
+		uint mstat = 0;
 		for(var j = 0; j < cbs.length; j++) {
 			if (cbs[j].active) {
 				needed = true;
-				mstat[j] = 1;
-			} else {
-				mstat[j] = 0;
+				mstat |= (1<<j);
 			}
 		}
 		if (needed) {
