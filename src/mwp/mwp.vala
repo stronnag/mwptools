@@ -762,7 +762,7 @@ public class MWP : Gtk.Application {
 
     private enum WPDL {
         IDLE=0,
-        VALIDATE = (1<<0),
+        DOWNLOAD = (1<<0),
         REPLACE = (1<<1),
         POLL = (1<<2),
         REPLAY = (1<<3),
@@ -771,7 +771,6 @@ public class MWP : Gtk.Application {
         CALLBACK = (1<<6),
         CANCEL = (1<<7),
 		SET_ACTIVE = (1<<8),
-
     }
 
     private struct WPMGR
@@ -6453,6 +6452,10 @@ case 0:
                     mwp_warning_box(s, Gtk.MessageType.INFO, 20);
 					wpmgr.wp_flag &= ~WPDL.GETINFO;
 				}
+				if ((wpmgr.wp_flag & WPDL.DOWNLOAD) != 0) {
+					wpmgr.wp_flag &= ~WPDL.DOWNLOAD;
+					download_mission();
+				}
 				break;
 
             case MSP.Cmds.NAV_STATUS:
@@ -7426,7 +7429,8 @@ case 0:
                 break;
 
             case MSP.Cmds.WP_MISSION_LOAD:
-                download_mission();
+				wpmgr.wp_flag = WPDL.DOWNLOAD;
+                queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
                 break;
 
             case MSP.Cmds.SET_RTC:
@@ -9654,15 +9658,20 @@ case 0:
         wpmgr.wp_flag = 0;
 		wpmgr.wps = {};
 		wpmgr.npts = last_wp_pts;
-        serstate = SERSTATE.NORMAL;
-        mq.clear();
-        start_wp_timer(30*1000);
-		imdx = 0;
-		if(vi.fc_vers >= FCVERS.hasWPMAX) {
-			var s="nav_wp_multi_mission_index";
-			queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
+		if (last_wp_pts > 0) {
+			serstate = SERSTATE.NORMAL;
+			mq.clear();
+			start_wp_timer(30*1000);
+			imdx = 0;
+			if(vi.fc_vers >= FCVERS.hasWPMAX) {
+				var s="nav_wp_multi_mission_index";
+				queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
+			}
+			request_wp(1);
+		} else {
+			mwp_warning_box("No WPs in FC to download\nMaybe 'Restore' is needed?",
+							Gtk.MessageType.WARNING, 10);
 		}
-        request_wp(1);
     }
 
     public static void xchild()
