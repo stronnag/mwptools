@@ -1,4 +1,4 @@
-public class JsonIO : Object
+namespace JsonIO
 {
     public static Mission? [] read_json_file(string fn)
     {
@@ -70,7 +70,46 @@ public class JsonIO : Object
                     }
                 }
 		} catch {}
-		return {ms};
+
+		Mission? [] mx = {};
+		Mission? mex = null;
+		MissionItem[]mix = {};
+		var wpno = 1;
+		foreach(var mi in ms.get_ways()) {
+			if(mex == null)
+				mex = new Mission();
+			mix += mi;
+			if (mi.flag == 0xa5) {
+				foreach(var im in mix) {
+					im.no = wpno++;
+					 if(im.action != MSP.Action.RTH && im.action != MSP.Action.JUMP
+                                   && im.action != MSP.Action.SET_HEAD)
+					 {
+						 if (im.lat > mex.maxy)
+							 mex.maxy = im.lat;
+						 if (im.lon > mex.maxx)
+							 mex.maxx = im.lon;
+						 if (im.lat <  mex.miny)
+							 mex.miny = im.lat;
+						 if (im.lon <  mex.minx)
+							 mex.minx = im.lon;
+					 }
+				}
+				mex.version = ms.version;
+				mex.update_meta(mix);
+				mx += mex;
+				mex = null;
+				mix = {};
+				wpno = 1;
+			}
+		}
+
+		if(mex != null) { // legacy, no flag
+			mex.version = ms.version;
+			mex.update_meta(mix);
+			mx += mex;
+		}
+		return mx;
     }
 
     private static void parse_meta(Json.Object o, ref Mission ms)
@@ -133,9 +172,25 @@ public class JsonIO : Object
         }
     }
 
-    public static string? to_json(Mission ms, bool indent=true)
+    public static string? to_json(Mission []msx, bool indent=true)
     {
-        var builder = new Json.Builder ();
+		double cx =0 ,cy = 0;
+		double maxx=-180,maxy=-180,minx=180,miny=180;
+		foreach(var ms in msx) {
+			if (ms.maxx > maxx)
+				maxx = ms.maxx;
+			if (ms.minx <  minx)
+				minx = ms.minx;
+			if (ms.maxy > maxy)
+				maxy = ms.maxy;
+			if (ms.miny <  miny)
+				miny = ms.miny;
+		}
+
+		cy = (maxy + miny) / 2.0;
+		cx = (maxx + minx) / 2.0;
+
+		var builder = new Json.Builder ();
         builder.begin_object ();
         builder.set_member_name ("meta");
         builder.begin_object ();
@@ -143,52 +198,12 @@ public class JsonIO : Object
         time_t currtime;
         time_t(out currtime);
         builder.add_string_value(Time.local(currtime).format("%FT%T%z"));
-        builder.set_member_name ("zoom");
-        builder.add_int_value (ms.zoom);
         builder.set_member_name ("cx");
-        builder.add_double_value (ms.cx);
+        builder.add_double_value (cx);
         builder.set_member_name ("cy");
-        builder.add_double_value (ms.cy);
-        if (ms.homex != 0 && ms.homey != 0) {
-            builder.set_member_name ("home-x");
-            builder.add_double_value (ms.homex);
-            builder.set_member_name ("home-y");
-            builder.add_double_value (ms.homey);
-        }
+        builder.add_double_value (cy);
         builder.set_member_name ("details");
         builder.begin_object ();
-
-        builder.set_member_name ("distance");
-        builder.begin_object (); //dx
-        builder.set_member_name ("units");
-        builder.add_string_value("m");
-        builder.set_member_name ("value");
-        builder.add_double_value (ms.dist);
-        builder.end_object (); // dx
-
-        builder.set_member_name ("nav-speed");
-        builder.begin_object (); //dx
-        builder.set_member_name ("units");
-        builder.add_string_value("m/s");
-        builder.set_member_name ("value");
-        builder.add_double_value (ms.nspeed);
-        builder.end_object (); // dx
-
-        builder.set_member_name ("fly-time");
-        builder.begin_object (); //dx
-        builder.set_member_name ("units");
-        builder.add_string_value("s");
-        builder.set_member_name ("value");
-        builder.add_int_value (ms.et);
-        builder.end_object (); // dx
-
-        builder.set_member_name ("loiter-time");
-        builder.begin_object (); //dx
-        builder.set_member_name ("units");
-        builder.add_string_value("s");
-        builder.set_member_name ("value");
-        builder.add_int_value (ms.lt);
-        builder.end_object (); // dx
 
         builder.end_object (); // details
         builder.set_member_name ("generator");
@@ -197,31 +212,31 @@ public class JsonIO : Object
 
         builder.set_member_name ("mission");
         builder.begin_array ();
-        foreach (MissionItem m in ms.get_ways())
-        {
-            builder.begin_object (); //mi
-            builder.set_member_name ("no");
-            builder.add_int_value (m.no);
-            builder.set_member_name ("action");
-            builder.add_string_value(MSP.get_wpname(m.action));
-            builder.set_member_name ("lat");
-            builder.add_double_value( m.lat);
-            builder.set_member_name ("lon");
-            builder.add_double_value( m.lon);
-            builder.set_member_name ("alt");
-            builder.add_int_value( m.alt);
-            builder.set_member_name ("p1");
-            builder.add_int_value( m.param1);
-            builder.set_member_name ("p2");
-            builder.add_int_value( m.param2);
-            builder.set_member_name ("p3");
-            builder.add_int_value( m.param3);
-            if (m.flag == 0x48) {
-                builder.set_member_name ("flag");
-                builder.add_int_value( m.flag);
-            }
-            builder.end_object (); // mi
-        }
+		foreach (var ms in msx) {
+			var wpno = 1;
+			foreach (MissionItem m in ms.get_ways()) {
+				builder.begin_object (); //mi
+				builder.set_member_name ("no");
+				builder.add_int_value (wpno++);
+				builder.set_member_name ("action");
+				builder.add_string_value(MSP.get_wpname(m.action));
+				builder.set_member_name ("lat");
+				builder.add_double_value( m.lat);
+				builder.set_member_name ("lon");
+				builder.add_double_value( m.lon);
+				builder.set_member_name ("alt");
+				builder.add_int_value( m.alt);
+				builder.set_member_name ("p1");
+				builder.add_int_value( m.param1);
+				builder.set_member_name ("p2");
+				builder.add_int_value( m.param2);
+				builder.set_member_name ("p3");
+				builder.add_int_value( m.param3);
+				builder.set_member_name ("flag");
+				builder.add_int_value( m.flag);
+				builder.end_object (); // mi
+			}
+		}
         builder.end_array ();
         builder.end_object (); // root
         var generator = new Json.Generator ();
@@ -236,9 +251,9 @@ public class JsonIO : Object
         return generator.to_data (null);
     }
 
-    public static void to_json_file(string fn, Mission  ms)
+    public static void to_json_file(string fn, Mission [] msx)
     {
-        var s = to_json(ms, false);
+        var s = to_json(msx, false);
         try {
             FileUtils.set_contents(fn,s);
         } catch (Error e) {
@@ -270,10 +285,9 @@ int main (string[] args) {
         }
         else
             print("Indeterminate\n");
-
-        if (args.length == 3)
-            JsonIO.to_json_file(args[2], ms);
     }
-    return 0;
+	if (args.length == 3)
+		JsonIO.to_json_file(args[2], msx);
+	return 0;
 }
 #endif

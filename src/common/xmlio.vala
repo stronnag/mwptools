@@ -104,23 +104,6 @@ namespace XmlIO
         }
     }
 
-	private void update_meta(ref Mission ms, MissionItem[]mi) {
-		ms.npoints = mi.length;
-		if (ms.npoints > 0) {
-			mi[ms.npoints-1].flag = 0xa5;
-			ms.set_ways(mi);
-			ms.cy = (ms.maxy + ms.miny) / 2.0;
-			ms.cx = (ms.maxx + ms.minx) / 2.0;
-			if (ms.dist < 0) {
-				double d;
-				int lt;
-				if (ms.calculate_distance(out d, out lt) == true) {
-					ms.dist = d;
-				}
-			}
-		}
-	}
-
     private Mission[] parse_node (Xml.Node* node)
     {
 		Mission[] msx = {};
@@ -229,7 +212,7 @@ namespace XmlIO
 			if (lflag == 0xa5) {
 				ms.npoints = mi.length;
 				if(ms.npoints != 0)
-					update_meta(ref ms, mi);
+					ms.update_meta(mi);
 				msx += ms;
 				ms = null;
 				lflag = 0;
@@ -243,7 +226,7 @@ namespace XmlIO
 			ms.set_ways(mi);
 			if(ms.npoints != 0)
 			{
-				update_meta(ref ms, mi);
+				ms.update_meta(mi);
 			}
 			msx += ms;
 		}

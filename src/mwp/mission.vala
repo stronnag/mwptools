@@ -145,6 +145,24 @@ public class Mission : GLib.Object
         stdout.printf("Mission is %svalid\n", (is_valid(maxwp) == true) ? "" : "in");
     }
 
+	public void update_meta(MissionItem[]mi) {
+		this.npoints = mi.length;
+		if (this.npoints > 0) {
+			mi[this.npoints-1].flag = 0xa5;
+			this.set_ways(mi);
+			this.cy = (this.maxy + this.miny) / 2.0;
+			this.cx = (this.maxx + this.minx) / 2.0;
+			if (this.dist < 0) {
+				double d;
+				int lt;
+				if (calculate_distance(out d, out lt) == true) {
+					this.dist = d;
+				}
+			}
+		}
+	}
+
+
     public bool is_equal(Mission m)
     {
         var nwp = waypoints.length;

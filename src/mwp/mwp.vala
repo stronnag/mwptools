@@ -2605,6 +2605,7 @@ public class MWP : Gtk.Application {
                 NavStatus.nm_pts = (uint8)wp_resp.length;
                 NavStatus.have_rth = (wp_resp[n-1].action == MSP.Action.RTH);
                 check_mission_home();
+				msx[mdx] = ms;
             });
         mqtt.mqtt_frame.connect((cmd, raw, len) => {
                 handle_serial(cmd,raw,(uint)len,0, false);
@@ -3745,12 +3746,12 @@ case 0:
                 Mission? ms = null;
                 unichar c = s.get_char(0);
 
-                if(c == '<')
+                if(c == '<') {
                     msx = XmlIO.read_xml_string(s);
-                else
+				} else
                     msx = JsonIO.from_json(s);
 
-                if(msx.length > 0) {
+				if(msx.length > 0) {
 					ms = msx[0];
 					instantiate_mission(ms);
 				}
@@ -3788,8 +3789,8 @@ case 0:
 
         mss.i__upload_mission.connect((e) => {
                 var flag = WPDL.CALLBACK;
-                flag |= ((e) ? WPDL.SAVE_EEPROM : WPDL.VALIDATE);
-                //upload_mission(flag);
+                flag |= ((e) ? WPDL.SAVE_EEPROM : 0);
+                upload_mm (-1, flag);
             });
 
         mss.i__connect_device.connect((s) => {
@@ -6761,6 +6762,10 @@ case 0:
 							uint8 zb=42;
 							queue_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
 						}
+
+						if((wpmgr.wp_flag & WPDL.CALLBACK) != 0)
+							upload_callback(wpmgr.npts);
+
 						wpmgr.wp_flag = WPDL.GETINFO;
 						queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
 						validatelab.set_text("✔"); // u+2714
@@ -8904,19 +8909,19 @@ case 0:
         var m = get_mission_data();
 
 		msx[mdx] = m; /* **** FIXME **** */
-        if (ftype == 'm') {
-			Mission [] mmsx = {};
-			for(var j = 0; j < msx.length; j++) {
-				if ((mask & (1 << j)) == 0) {
-					mmsx += msx[j];
-				}
+		Mission [] mmsx = {};
+		for(var j = 0; j < msx.length; j++) {
+			if ((mask & (1 << j)) == 0) {
+				mmsx += msx[j];
 			}
-			XmlIO.to_xml_file(fn, mmsx);
 		}
-        else
-            JsonIO.to_json_file(fn, m);
-    }
 
+		if (ftype == 'm') {
+			XmlIO.to_xml_file(fn, mmsx);
+		} else {
+            JsonIO.to_json_file(fn, mmsx);
+		}
+    }
 
     private void check_mission_clean(bool check_zero=true)
     {
