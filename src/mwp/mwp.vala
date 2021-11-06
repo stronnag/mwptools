@@ -1967,10 +1967,6 @@ public class MWP : Gtk.Application {
             });
         window.add_action(saq);
 
-        saq = new GLib.SimpleAction("upload-menu",null);
-		saq.set_enabled(false);
-        window.add_action(saq);
-
         saq = new GLib.SimpleAction("upload-mission",null);
         saq.activate.connect(() => {
                 upload_mm(mdx, 0);
@@ -2161,7 +2157,6 @@ public class MWP : Gtk.Application {
         reboot_status();
 
         set_replay_menus(true);
-        set_menu_state("upload-menu", false);
         set_menu_state("upload-mission", false);
         set_menu_state("upload-missions", false);
         set_menu_state("download-mission", false);
@@ -6225,7 +6220,6 @@ case 0:
                     var ncbits = (navcap & (NAVCAPS.NAVCONFIG|NAVCAPS.INAV_MR|NAVCAPS.INAV_FW));
                     if(navcap != NAVCAPS.NONE)
                     {
-						set_menu_state("upload-menu", true);
 						set_menu_state("upload-mission", true);
 						if(vi.fc_vers >= FCVERS.hasWPMAX)
 							set_menu_state("upload-missions", true);
@@ -8419,7 +8413,6 @@ case 0:
         const string[] ms0 = {
 			"store-mission",
 			"restore-mission",
-			"upload-menu",
 			"upload-mission",
 			"upload-missions",
 			"download-mission",
@@ -9029,7 +9022,7 @@ case 0:
 							smask = mitem;
 					});
 					dialog.set_transient_for(chooser);
-				dialog.run ();
+					dialog.run ();
 				});
 			chooser.set_extra_widget(btn);
 			btn.show();

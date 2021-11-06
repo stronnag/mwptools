@@ -28,7 +28,8 @@
           <attribute name="label">Upload Mission to FC</attribute>
           <attribute name="action">win.upload-menu</attribute>
           <attribute name="submenu-action">win.upload-smenu</attribute>
-          <attribute name="hidden-when">action-disabled</attribute>
+          <!-- attribute name="hidden-when">action-disabled</attribute
+	       -->
 	  <section>
             <item>
               <attribute name="label">Upload Active Mission</attribute>
