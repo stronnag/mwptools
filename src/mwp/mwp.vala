@@ -465,7 +465,7 @@ public class MWP : Gtk.Application {
     private int autocount = 0;
     private uint8 last_wp_pts =0;
 
-    private Mission lastmission;
+    private Mission? []lastmission;
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
     private uint8 vwarn1;
     private int licol = -1;
@@ -995,6 +995,7 @@ public class MWP : Gtk.Application {
 	private Mission [] msx;  // v4 multis
 	private int mdx = 0;
 	private int imdx = 0;
+	private bool ms_from_loader; // loading from file
 
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, null, "Mission file", "file-name"},
@@ -1386,7 +1387,7 @@ public class MWP : Gtk.Application {
     private void create_main_window()
     {
         gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
-        lastmission = new Mission();
+        lastmission = {};
         wpmgr = WPMGR();
 
         vbsamples = new float[MAXVSAMPLE];
@@ -2250,6 +2251,11 @@ public class MWP : Gtk.Application {
 				var s = actmission.get_active_text();
 				if (s == null)
 					return;
+
+				if(!ms_from_loader && msx.length > 0)
+				{
+					msx[mdx] = ls.to_mission();
+				}
 				if (s == "New") {
 					mdx = msx.length;
 					msx += new Mission();
@@ -8415,7 +8421,8 @@ case 0:
     private void clear_mission()
     {
         ls.clear_mission();
-        lastmission=ls.to_mission();
+		msx[mdx] = ls.to_mission();
+        lastmission=msx;
         last_file = null;
         navstatus.reset_mission();
         FakeHome.usedby &= ~FakeHome.USERS.Mission;
@@ -8802,7 +8809,8 @@ case 0:
         if (conf.compat_vers != null)
             m.version = conf.compat_vers;
         wp_resp = m.get_ways();
-        lastmission = m;
+		msx[mdx] = m;
+        lastmission = msx;
         return m;
     }
 
@@ -8959,9 +8967,9 @@ case 0:
 
     public Mission? open_mission_file(string fn, bool append=false)
     {
-		// TODO : WP limits
-		//        Add check also to upload code
-        bool is_j = fn.has_suffix(".json");
+		ms_from_loader = true;
+		Mission _ms = null;
+		bool is_j = fn.has_suffix(".json");
 		var _msx =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
 		if (append) {
 			var mlim = msx.length;
@@ -8985,9 +8993,10 @@ case 0:
 			mwp_warning_box("Total number of WP (%u) exceeds firmware maximum (%u).\nYou will not be able to download the whole set to the FC".printf(nwp,wp_max), Gtk.MessageType.WARNING, 30);
 		}
 		if (msx.length > 0) {
-			return setup_mission_from_mm();
+			_ms = setup_mission_from_mm();
 		}
-		return null;
+		ms_from_loader = false;
+		return _ms;
     }
 
 	public Mission? setup_mission_from_mm() {
