@@ -885,6 +885,8 @@ public class MWP : Gtk.Application {
     private const uint CRITINTVL=(3000/TIMINTVL);
     private const uint RADARINTVL=(10000/TIMINTVL);
 
+	private const uint MAXMULTI = 9;
+
     private enum SATS
     {
         MINSATS = 6
@@ -1373,7 +1375,7 @@ public class MWP : Gtk.Application {
 			var k = j + 1;
 			actmission.append_text(k.to_string());
 		}
-		if (j < 9)
+		if (j < MAXMULTI)
 			actmission.append_text("New");
 		else
 			MWPLog.message("MM size exceeded\n");
@@ -1797,6 +1799,13 @@ public class MWP : Gtk.Application {
         saq.activate.connect(() => {
                 check_mission_clean();
                 on_file_open();
+            });
+        window.add_action(saq);
+
+        saq = new GLib.SimpleAction("file-append",null);
+        saq.activate.connect(() => {
+                check_mission_clean();
+                on_file_open(true);
             });
         window.add_action(saq);
 
@@ -2381,15 +2390,7 @@ public class MWP : Gtk.Application {
             });
 
         ag.connect('k', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
-                if(wpmgr.wp_flag != 0)
-                {
-                    wpmgr.wp_flag = WPDL.CANCEL;
-                    remove_tid(ref upltid);
-                    MWPCursor.set_normal_cursor(window);
-                    reset_poller();
-                    validatelab.set_text("⚠"); // u+26a0
-                    mwp_warning_box("Upload cancelled", Gtk.MessageType.ERROR,10);
-                }
+				wpmgr.wp_flag = WPDL.CANCEL;
                 return true;
             });
 
@@ -5487,9 +5488,15 @@ case 0:
         have_wp = true;
         MSP_WP w = MSP_WP();
         uint8* rp = raw;
-        if((wpmgr.wp_flag & WPDL.CANCEL) != 0)
+        if((wpmgr.wp_flag & WPDL.CANCEL) != 0) {
+			wpmgr.wp_flag  = 0;
+			remove_tid(ref upltid);
+			MWPCursor.set_normal_cursor(window);
+			reset_poller();
+			validatelab.set_text("⚠"); // u+26a0
+			mwp_warning_box("Upload cancelled", Gtk.MessageType.ERROR,10);
             return;
-
+		}
         w.wp_no = *rp++;
         w.action = *rp++;
         rp = deserialise_i32(rp, out w.lat);
@@ -5526,6 +5533,7 @@ case 0:
 			validatelab.set_text("✔"); // u+2714
             reset_poller();
 		} else {
+            validatelab.set_text("WP:%3d".printf(w.wp_no));
 			request_wp(w.wp_no+1);
 		}
 	}
@@ -6330,6 +6338,7 @@ case 0:
                     queue_cmd(MSP.Cmds.STATUS,null,0);
                 else
                 {
+					wpmgr.wp_flag = WPDL.GETINFO;
                     queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
                     queue_cmd(MSP.Cmds.ACTIVEBOXES,null,0);
                 }
@@ -6455,6 +6464,9 @@ case 0:
 				if ((wpmgr.wp_flag & WPDL.DOWNLOAD) != 0) {
 					wpmgr.wp_flag &= ~WPDL.DOWNLOAD;
 					download_mission();
+				}
+				if(wpi.wp_count > 0 && wpi.wps_valid == 1 && ls.lastid == 0) {
+					need_mission = true;
 				}
 				break;
 
@@ -6748,6 +6760,7 @@ case 0:
 					if(wpmgr.wpidx < wpmgr.npts) {
 						uint8 wtmp[32];
 						var nb = serialise_wp(wpmgr.wps[wpmgr.wpidx], wtmp);
+						validatelab.set_text("WP:%3d".printf(wpmgr.wpidx+1));
 						queue_cmd(MSP.Cmds.SET_WP, wtmp, nb);
 					} else {
 						MWPCursor.set_normal_cursor(window);
@@ -8094,6 +8107,13 @@ case 0:
 
 	private void upload_mm(int id, WPDL flag) {
 		var wps = MultiM.missonx_to_wps(msx, id);
+		var  mlim = (id == -1) ? msx.length : 1;
+		if(wps.length > wp_max || mlim > MAXMULTI) {
+			mwp_warning_box(
+				"Mission set exceeds FC limits:\nWP: %d/%d\nSegments: %d/%u".printf(wps.length, wp_max, mlim, MAXMULTI), Gtk.MessageType.ERROR);
+			return;
+		}
+
 		if (wps.length == 0) {
 			MSP_WP w0 = MSP_WP();
 			w0.wp_no = 1;
@@ -8132,6 +8152,7 @@ case 0:
 
                 if((wpmgr.wp_flag & WPDL.CALLBACK) != 0)
                     upload_callback(-2);
+				reset_poller();
                 return Source.REMOVE;
             });
     }
@@ -8936,10 +8957,33 @@ case 0:
     }
 
 
-    public Mission? open_mission_file(string fn)
+    public Mission? open_mission_file(string fn, bool append=false)
     {
+		// TODO : WP limits
+		//        Add check also to upload code
         bool is_j = fn.has_suffix(".json");
-		msx =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+		var _msx =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+		if (append) {
+			var mlim = msx.length;
+			imdx += mlim;
+			foreach(var m in _msx) {
+				msx += m;
+				mlim++;
+			}
+			if (mlim > MAXMULTI) {
+				mwp_warning_box("Mission set count (%d) exceeds firmware maximum of 9.\nYou will not be able to download the whole set to the FC".printf(mlim), Gtk.MessageType.WARNING, 30);
+			}
+		} else {
+			msx = _msx;
+		}
+		uint nwp = 0;
+		foreach(var m in msx) {
+			nwp += m.npoints;
+		}
+
+		if (nwp > wp_max) {
+			mwp_warning_box("Total number of WP (%u) exceeds firmware maximum (%u).\nYou will not be able to download the whole set to the FC".printf(nwp,wp_max), Gtk.MessageType.WARNING, 30);
+		}
 		if (msx.length > 0) {
 			return setup_mission_from_mm();
 		}
@@ -9066,9 +9110,9 @@ case 0:
         return z;
     }
 
-    private void load_file(string fname, bool warn=true)
+    private void load_file(string fname, bool warn=true, bool append=false)
     {
-        var ms = open_mission_file(fname);
+        var ms = open_mission_file(fname,append);
         if(ms != null)
         {
             instantiate_mission(ms);
@@ -9160,7 +9204,7 @@ case 0:
         msg.show();
     }
 
-    private void on_file_open()
+    private void on_file_open(bool append=false)
     {
         Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
             "Open a mission file", null, Gtk.FileChooserAction.OPEN,
@@ -9274,8 +9318,8 @@ case 0:
         chooser.destroy ();
         if(fn != null)
 		{
-			mdx = 0; // Selected iyem
-            load_file(fn);
+			mdx = 0; // Selected item
+            load_file(fn,true,append);
 		}
     }
 

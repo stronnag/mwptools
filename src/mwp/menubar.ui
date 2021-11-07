@@ -10,6 +10,10 @@
 	  <attribute name="accel">&lt;Primary&gt;m</attribute>
         </item>
         <item>
+          <attribute name="label">Append Mission file</attribute>
+          <attribute name="action">win.file-append</attribute>
+        </item>
+        <item>
           <attribute name="label">Save Mission</attribute>
           <attribute name="action">win.menu-save</attribute>
         </item>
