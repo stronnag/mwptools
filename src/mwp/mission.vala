@@ -173,32 +173,6 @@ public class Mission : GLib.Object
 
         for(var i = 0; i < nwp; i++)
         {
-/*******************
-            StringBuilder sb = new StringBuilder();
-            if(waypoints[i].no != ways[i].no)
-                sb.append("no ");
-            if(waypoints[i].action != ways[i].action)
-                sb.append("act");
-            if( waypoints[i].lat != ways[i].lat)
-                sb.append("lat ");
-            if(waypoints[i].lon != ways[i].lon)
-                sb.append("lon ");
-            if( waypoints[i].alt != ways[i].alt)
-                sb.append("alt ");
-            if(waypoints[i].param1 != ways[i].param1)
-                sb.append("p1 ");
-            if(waypoints[i].param2 != ways[i].param2)
-                sb.append("p2 ");
-            if(waypoints[i].param3 != ways[i].param3)
-                sb.append("p3");
-            if(sb.len > 0)
-            {
-                sb.prepend("WP differ : ");
-                sb.append_printf(" -- WP %d\n", i+1);
-                print(sb.str);
-                return false;
-            }
-********************/
             if(waypoints[i].no != ways[i].no ||
                waypoints[i].action != ways[i].action ||
                waypoints[i].lat != ways[i].lat ||
@@ -212,7 +186,29 @@ public class Mission : GLib.Object
         return true;
     }
 
-    public bool calculate_distance(out double d, out int lt)
+	public Mission clone() {
+		var m = new Mission();
+		MissionItem[] _mi={};
+        foreach(var w in this.waypoints)
+        {
+			var mi = MissionItem();
+			mi.no = w.no;
+			mi.action = w.action;
+			mi.lat = w.lat;
+			mi.lon = w.lon;
+            mi.alt = w.alt;
+			mi.param1 = w.param1;
+			mi.param2 = w.param2;
+            mi.param3 = w.param3;
+			mi.flag = w.flag;
+			_mi += mi;
+        }
+		m.set_ways(_mi);
+		m.npoints = this.npoints;
+		return m;
+	}
+
+	public bool calculate_distance(out double d, out int lt)
     {
         var n = 0;
         var rpt = 0;

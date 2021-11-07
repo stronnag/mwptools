@@ -8422,7 +8422,7 @@ case 0:
     {
         ls.clear_mission();
 		msx[mdx] = ls.to_mission();
-        lastmission=msx;
+        lastmission=msx_clone();
         last_file = null;
         navstatus.reset_mission();
         FakeHome.usedby &= ~FakeHome.USERS.Mission;
@@ -8810,7 +8810,7 @@ case 0:
             m.version = conf.compat_vers;
         wp_resp = m.get_ways();
 		msx[mdx] = m;
-        lastmission = msx;
+        lastmission = msx_clone();
         return m;
     }
 
@@ -8958,12 +8958,24 @@ case 0:
 
     private void check_mission_clean(bool check_zero=true)
     {
-        if (!((check_zero && lastmission.get_ways().length == 0) ||
-              ls.to_mission().is_equal(lastmission)))
-            if(dirtyd.get_choice() == 0)
+		msx[mdx] = ls.to_mission();
+		var is_dirty = false;
+		if (msx.length == lastmission.length) {
+			for(var j = 0; j < msx.length; j++) {
+				if (!msx[j].is_equal(lastmission[j])) {
+					is_dirty = true;
+					break;
+				}
+			}
+		} else {
+			is_dirty = true;
+		}
+		if(is_dirty) {
+			if(dirtyd.get_choice() == 0) {
                 on_file_save_as();
+			}
+		}
     }
-
 
     public Mission? open_mission_file(string fn, bool append=false)
     {
@@ -8983,6 +8995,7 @@ case 0:
 			}
 		} else {
 			msx = _msx;
+			lastmission = msx_clone();
 		}
 		uint nwp = 0;
 		foreach(var m in msx) {
@@ -9169,8 +9182,16 @@ case 0:
         if(have_home)
             markers.add_home_point(home_pos.lat,home_pos.lon,ls);
         need_preview = true;
-        lastmission = ms;
+		msx[mdx] = ms;
     }
+
+	private Mission?[] msx_clone() {
+		Mission? []_lm = {};
+		foreach (var m in msx) {
+			_lm +=  m.clone();
+		}
+		return _lm;
+	}
 
     private Champlain.BoundingBox bb_from_mission(Mission ms)
     {
