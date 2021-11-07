@@ -639,7 +639,7 @@ public class MWP : Gtk.Application {
         hasSAFEAPI = 0x020700,
         hasMONORTH = 0x020600,
         hasABSALT = 0x030000,
-        hasWPMAX = 0x040000,
+        hasWP_V4 = 0x040000,
     }
 
     public enum WPS
@@ -5522,7 +5522,7 @@ case 0:
         wpmgr.wps += w;
 		bool done;
 
-		if(vi.fc_vers >= FCVERS.hasWPMAX)
+		if(vi.fc_vers >= FCVERS.hasWP_V4)
 			done = (wpmgr.wps.length == wpmgr.npts);
 		else
 			done = (w.flag == 0xa5);
@@ -6107,7 +6107,7 @@ case 0:
                         if(vi.fc_vers < FCVERS.hasMoreWP)
                             wp_max = 15;
                         else if (vi.board != "AFNA" && vi.board != "CC3D")
-                            wp_max =  (vi.fc_vers >= FCVERS.hasWPMAX) ? (uint8)conf.max_wps :  60;
+                            wp_max =  (vi.fc_vers >= FCVERS.hasWP_V4) ? (uint8)conf.max_wps :  60;
                         else
                             wp_max = 30;
 
@@ -6235,7 +6235,7 @@ case 0:
                     if(navcap != NAVCAPS.NONE)
                     {
 						set_menu_state("upload-mission", true);
-						if(vi.fc_vers >= FCVERS.hasWPMAX)
+						if(vi.fc_vers >= FCVERS.hasWP_V4)
 							set_menu_state("upload-missions", true);
 						set_menu_state("download-mission", true);
                     }
@@ -6771,7 +6771,7 @@ case 0:
 					} else {
 						MWPCursor.set_normal_cursor(window);
 						remove_tid(ref upltid);
-						if(vi.fc_vers >= FCVERS.hasWPMAX &&
+						if(vi.fc_vers >= FCVERS.hasWP_V4 &&
 						   (wpmgr.wp_flag & WPDL.SET_ACTIVE) != 0) {
 							uint8 msg[128];
 							var s = "nav_wp_multi_mission_index";
@@ -8451,13 +8451,15 @@ case 0:
 			"store-mission",
 			"restore-mission",
 			"upload-mission",
-			"upload-missions",
 			"download-mission",
 			"navconfig",
 			"mission-info"};
-        foreach(var s in ms0)
+        foreach(var s in ms0) {
             set_menu_state(s, state);
-    }
+		}
+		if(vi.fc_vers >= FCVERS.hasWP_V4)
+			set_menu_state("upload-missions", state);
+	}
 
     private void init_sstats()
     {
@@ -9737,7 +9739,7 @@ case 0:
 			mq.clear();
 			start_wp_timer(30*1000);
 			imdx = 0;
-			if(vi.fc_vers >= FCVERS.hasWPMAX) {
+			if(vi.fc_vers >= FCVERS.hasWP_V4) {
 				var s="nav_wp_multi_mission_index";
 				queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
 			}
