@@ -68,6 +68,24 @@ public class Mission : GLib.Object
         nspeed = -1;
     }
 
+	public Mission.clone(Mission m) {
+        foreach(var w in m.waypoints)
+        {
+			var mi = MissionItem();
+			mi.no = w.no;
+			mi.action = w.action;
+			mi.lat = w.lat;
+			mi.lon = w.lon;
+            mi.alt = w.alt;
+			mi.param1 = w.param1;
+			mi.param2 = w.param2;
+            mi.param3 = w.param3;
+			mi.flag = w.flag;
+			waypoints += mi;
+        }
+		npoints = m.npoints;
+	}
+
     public MissionItem[] get_ways()
     {
         return waypoints;
@@ -185,28 +203,6 @@ public class Mission : GLib.Object
         }
         return true;
     }
-
-	public Mission clone() {
-		var m = new Mission();
-		MissionItem[] _mi={};
-        foreach(var w in this.waypoints)
-        {
-			var mi = MissionItem();
-			mi.no = w.no;
-			mi.action = w.action;
-			mi.lat = w.lat;
-			mi.lon = w.lon;
-            mi.alt = w.alt;
-			mi.param1 = w.param1;
-			mi.param2 = w.param2;
-            mi.param3 = w.param3;
-			mi.flag = w.flag;
-			_mi += mi;
-        }
-		m.set_ways(_mi);
-		m.npoints = this.npoints;
-		return m;
-	}
 
 	public bool calculate_distance(out double d, out int lt)
     {

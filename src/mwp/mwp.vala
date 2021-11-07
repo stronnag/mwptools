@@ -9190,7 +9190,7 @@ case 0:
 	private Mission?[] msx_clone() {
 		Mission? []_lm = {};
 		foreach (var m in msx) {
-			_lm +=  m.clone();
+			_lm +=  new Mission.clone(m);
 		}
 		return _lm;
 	}
