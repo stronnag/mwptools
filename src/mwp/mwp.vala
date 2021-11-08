@@ -1380,8 +1380,8 @@ public class MWP : Gtk.Application {
 			actmission.append_text("New");
 		else
 			MWPLog.message("MM size exceeded\n");
-
 		actmission.active = isnew ? j-1 : imdx;
+
 	}
 
     private void create_main_window()
@@ -5528,11 +5528,10 @@ case 0:
 			done = (w.flag == 0xa5);
 
 		if(done) {
+			clear_mission();
 			var mmsx = MultiM.wps_to_missonx(wpmgr.wps);
 			msx = mmsx;
-			clear_mission();
 			setup_mission_from_mm();
-
 			MWPCursor.set_normal_cursor(window);
             remove_tid(ref upltid);
             MWPLog.message("Download completed #%d\n", w.wp_no);
@@ -9017,6 +9016,7 @@ case 0:
 	public Mission? setup_mission_from_mm() {
 		Mission m=null;
 		mdx = imdx;
+		ms_from_loader = true;
 		set_act_mission_combo();
 		imdx = 0;
 		if(msx[mdx] != null && msx[mdx].npoints > 0)
@@ -9062,6 +9062,7 @@ case 0:
 			NavStatus.have_rth = false;
 			wp_resp ={};
 		}
+		ms_from_loader = false;
 		return m;
 	}
 

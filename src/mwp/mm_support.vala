@@ -25,23 +25,6 @@ namespace MultiM {
 		return wps;
 	}
 
-	private void update_meta(ref Mission ms, MissionItem[]mi) {
-		ms.npoints = mi.length;
-		if (ms.npoints > 0) {
-			mi[ms.npoints-1].flag = 0xa5;
-			ms.set_ways(mi);
-			ms.cy = (ms.maxy + ms.miny) / 2.0;
-			ms.cx = (ms.maxx + ms.minx) / 2.0;
-			if (ms.dist < 0) {
-				double d;
-				int lt;
-				if (ms.calculate_distance(out d, out lt) == true) {
-					ms.dist = d;
-				}
-			}
-		}
-	}
-
 	public Mission[] wps_to_missonx(MSP_WP[] wps) {
 		Mission[] mx = {};
 		Mission? ms = null;
@@ -78,7 +61,7 @@ namespace MultiM {
 			}
 			mi += m;
 			if (m.flag == 0xa5) {
-				update_meta(ref ms, mi);
+				ms.update_meta(mi);
 				mx += ms;
 				ms = null;
 				wp_no = 1;
@@ -90,7 +73,7 @@ namespace MultiM {
 		if (ms != null) { // legacy, no flags
 			ms.npoints = mi.length;
 			if (ms.npoints > 0) {
-				update_meta(ref ms, mi);
+				ms.update_meta(mi);
 			}
 			mx += ms;
 		}
