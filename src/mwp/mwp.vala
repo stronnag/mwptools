@@ -6388,7 +6388,10 @@ case 0:
                 {
 				    case "nav_wp_multi_mission_index":
                         MWPLog.message("Received mm index %u\n", raw[0]);
-						imdx = raw[0];
+						if (raw[0] > 0)
+							imdx = raw[0]-1;
+						else
+							imdx = 0;
 						break;
                     case "gps_min_sats":
                         msats = raw[0];
