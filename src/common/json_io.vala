@@ -1,6 +1,6 @@
 namespace JsonIO
 {
-    public static Mission? [] read_json_file(string fn)
+    public Mission? [] read_json_file(string fn)
     {
         try
         {
@@ -11,11 +11,62 @@ namespace JsonIO
 
         return {};
     }
-    public static Mission? [] from_json(string s)
+
+	private Mission? parse_segment(Json.Object obj) {
+		var ms = new Mission();
+		foreach (var name in obj.get_members ()) {
+			switch (name)
+			{
+			case "mission":
+				MissionItem [] mi={};
+				foreach (var rsnode in
+						 obj.get_array_member ("mission").get_elements())
+				{
+					var rsitem = rsnode.get_object ();
+					var m = MissionItem();
+					m.no = (int) rsitem.get_int_member("no");
+					m.action =  MSP.lookup_name(rsitem.get_string_member("action"));
+					m.lat = rsitem.get_double_member("lat");
+					m.lon = rsitem.get_double_member("lon");
+					m.alt = (int) rsitem.get_int_member("alt");
+					if(m.alt > ms.maxalt)
+						ms.maxalt = m.alt;
+					m.param1 = (int) rsitem.get_int_member("p1");
+					m.param2 = (int) rsitem.get_int_member("p2");
+					m.param3 = (int) rsitem.get_int_member("p3");
+					if(rsitem.has_member("flag"))
+						m.flag = (uint8) rsitem.get_int_member("flag");
+					if(m.action != MSP.Action.RTH && m.action != MSP.Action.JUMP &&
+					   m.action != MSP.Action.SET_HEAD)
+					{
+						if (m.lat > ms.maxy)
+							ms.maxy = m.lat;
+						if (m.lon > ms.maxx)
+							ms.maxx = m.lon;
+						if (m.lat <  ms.miny)
+							ms.miny = m.lat;
+						if (m.lon <  ms.minx)
+							ms.minx = m.lon;
+					}
+					mi += m;
+				}
+				ms.set_ways(mi);
+				ms.update_meta(mi);
+				break;
+			case "meta":
+				var msobj = obj.get_object_member("meta");
+				parse_meta(msobj, ref ms);
+				break;
+			}
+		}
+		return ms;
+	}
+
+
+    public Mission? [] from_json(string s)
     {
-        Mission ms = null;
+		Mission[] msx = {};
 		try {
-			ms = new Mission();
 			var parser = new Json.Parser ();
 			parser.load_from_data (s);
 
@@ -23,93 +74,25 @@ namespace JsonIO
 			Json.Object obj = null;
 			if(root!= null && !root.is_null())
 				obj = root.get_object ();
-			if(obj != null)
-                foreach (var name in obj.get_members ()) {
-					switch (name)
+			if(obj != null) {
+				Json.Node? node;
+				node = obj.get_member("missions");
+				if (node != null) {
+					foreach (var mmnode in
+							 obj.get_array_member ("missions").get_elements())
 					{
-					case "mission":
-						MissionItem [] mi={};
-						foreach (var rsnode in
-								 obj.get_array_member ("mission").get_elements())
-						{
-							var rsitem = rsnode.get_object ();
-							var m = MissionItem();
-							m.no = (int) rsitem.get_int_member("no");
-							m.action =  MSP.lookup_name(rsitem.get_string_member("action"));
-							m.lat = rsitem.get_double_member("lat");
-							m.lon = rsitem.get_double_member("lon");
-							m.alt = (int) rsitem.get_int_member("alt");
-							if(m.alt > ms.maxalt)
-								ms.maxalt = m.alt;
-							m.param1 = (int) rsitem.get_int_member("p1");
-							m.param2 = (int) rsitem.get_int_member("p2");
-							m.param3 = (int) rsitem.get_int_member("p3");
-							if(rsitem.has_member("flag"))
-								m.flag = (uint8) rsitem.get_int_member("flag");
-							if(m.action != MSP.Action.RTH && m.action != MSP.Action.JUMP &&
-							   m.action != MSP.Action.SET_HEAD)
-							{
-								if (m.lat > ms.maxy)
-									ms.maxy = m.lat;
-								if (m.lon > ms.maxx)
-									ms.maxx = m.lon;
-								if (m.lat <  ms.miny)
-									ms.miny = m.lat;
-								if (m.lon <  ms.minx)
-									ms.minx = m.lon;
-							}
-							mi += m;
-						}
-						ms.set_ways(mi);
-						ms.npoints = mi.length;
-						break;
-					case "meta":
-                        var msobj = obj.get_object_member("meta");
-                        parse_meta(msobj, ref ms);
-                        break;
-                    }
-                }
+						var mmitem = mmnode.get_object ();
+						var ms =  parse_segment(mmitem);
+						msx += ms;
+					}
+				} else {
+					var ms =  parse_segment(obj);
+					msx += ms;
+				}
+			}
 		} catch {}
 
-		Mission? [] mx = {};
-		Mission? mex = null;
-		MissionItem[]mix = {};
-		var wpno = 1;
-		foreach(var mi in ms.get_ways()) {
-			if(mex == null)
-				mex = new Mission();
-			mix += mi;
-			if (mi.flag == 0xa5) {
-				foreach(var im in mix) {
-					im.no = wpno++;
-					 if(im.action != MSP.Action.RTH && im.action != MSP.Action.JUMP
-                                   && im.action != MSP.Action.SET_HEAD)
-					 {
-						 if (im.lat > mex.maxy)
-							 mex.maxy = im.lat;
-						 if (im.lon > mex.maxx)
-							 mex.maxx = im.lon;
-						 if (im.lat <  mex.miny)
-							 mex.miny = im.lat;
-						 if (im.lon <  mex.minx)
-							 mex.minx = im.lon;
-					 }
-				}
-				mex.version = ms.version;
-				mex.update_meta(mix);
-				mx += mex;
-				mex = null;
-				mix = {};
-				wpno = 1;
-			}
-		}
-
-		if(mex != null) { // legacy, no flag
-			mex.version = ms.version;
-			mex.update_meta(mix);
-			mx += mex;
-		}
-		return mx;
+		return msx;
     }
 
     private static void parse_meta(Json.Object o, ref Mission ms)
@@ -172,26 +155,7 @@ namespace JsonIO
         }
     }
 
-    public static string? to_json(Mission []msx, bool indent=true)
-    {
-		double cx =0 ,cy = 0;
-		double maxx=-180,maxy=-180,minx=180,miny=180;
-		foreach(var ms in msx) {
-			if (ms.maxx > maxx)
-				maxx = ms.maxx;
-			if (ms.minx <  minx)
-				minx = ms.minx;
-			if (ms.maxy > maxy)
-				maxy = ms.maxy;
-			if (ms.miny <  miny)
-				miny = ms.miny;
-		}
-
-		cy = (maxy + miny) / 2.0;
-		cx = (maxx + minx) / 2.0;
-
-		var builder = new Json.Builder ();
-        builder.begin_object ();
+	private void encode_mission(Json.Builder builder, Mission ms) {
         builder.set_member_name ("meta");
         builder.begin_object ();
         builder.set_member_name ("save-date");
@@ -199,20 +163,19 @@ namespace JsonIO
         time_t(out currtime);
         builder.add_string_value(Time.local(currtime).format("%FT%T%z"));
         builder.set_member_name ("cx");
-        builder.add_double_value (cx);
+        builder.add_double_value (ms.cx);
         builder.set_member_name ("cy");
-        builder.add_double_value (cy);
+        builder.add_double_value (ms.cy);
         builder.set_member_name ("details");
         builder.begin_object ();
-
+        builder.set_member_name ("distance");
+        builder.add_double_value (ms.dist);
         builder.end_object (); // details
         builder.set_member_name ("generator");
         builder.add_string_value ("mwp");
         builder.end_object (); // meta
-
         builder.set_member_name ("mission");
         builder.begin_array ();
-		foreach (var ms in msx) {
 			var wpno = 1;
 			foreach (MissionItem m in ms.get_ways()) {
 				builder.begin_object (); //mi
@@ -236,9 +199,26 @@ namespace JsonIO
 				builder.add_int_value( m.flag);
 				builder.end_object (); // mi
 			}
+			builder.end_array ();
+	}
+
+    public string? to_json(Mission []msx, bool indent=true)
+    {
+		var builder = new Json.Builder ();
+		builder.begin_object ();
+		if (msx.length == 1) {
+			encode_mission(builder, msx[0]);
+		} else {
+			builder.set_member_name ("missions");
+			builder.begin_array ();
+			foreach (var ms in msx) {
+				builder.begin_object ();
+				encode_mission(builder, ms);
+				builder.end_object ();
+			}
+			builder.end_array ();
 		}
-        builder.end_array ();
-        builder.end_object (); // root
+		builder.end_object (); // root
         var generator = new Json.Generator ();
         if(indent)
         {
