@@ -3,6 +3,7 @@ using Xml;
 namespace XmlIO
 {
     public static bool uc = false;
+    public static bool ugly = false;
     public static string generator;
 
     public Mission[]? read_xml_file(string path)
@@ -319,8 +320,8 @@ namespace XmlIO
 			{
 				wpno++;
 				subnode = root->new_text_child (ns, mstr, "");
-				subnode->new_prop ("no", m.no.to_string());
-//				subnode->new_prop ("no", wpno.to_string() );
+//				subnode->new_prop ("no", m.no.to_string());
+				subnode->new_prop ("no", wpno.to_string() );
 				subnode->new_prop ("action", MSP.get_wpname(m.action));
 				subnode->new_prop ("lat", m.lat.format(dbuf,"%.7f"));
 				subnode->new_prop ("lon", m.lon.format(dbuf,"%.7f"));
@@ -336,6 +337,8 @@ namespace XmlIO
 				}
 				subnode->new_prop ("flag", flg.to_string());
 			}
+			if(!ugly)
+				wpno = 0;
 		}
 		string s;
 		doc->dump_memory_enc_format (out s, null, "utf-8", pretty);
@@ -354,6 +357,9 @@ int main (string[] args) {
         stderr.printf ("Argument required!\n");
         return 1;
     }
+
+	if (args.length == 4)
+		XmlIO.ugly = true;
 
     var  msx = XmlIO.read_xml_file (args[1]);
 	foreach (var ms in msx) {
@@ -378,7 +384,8 @@ int main (string[] args) {
 
 **/
     }
-	if (args.length == 3)
+	stderr.printf("Dump  %d %s\n", args.length, XmlIO.ugly.to_string());
+	if (args.length >= 3)
 		XmlIO.to_xml_file(args[2], msx);
     return 0;
 }

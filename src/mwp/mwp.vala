@@ -1425,6 +1425,10 @@ public class MWP : Gtk.Application {
         x_aplog = appsts[7];
 
         XmlIO.uc = conf.ucmissiontags;
+		// Ugly MM xml for the configurator
+        if (Environment.get_variable("CFG_UGLY_XML") != null) {
+			XmlIO.ugly = true;
+		}
 
         pos_is_centre = conf.pos_is_centre;
 
