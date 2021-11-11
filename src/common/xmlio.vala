@@ -186,6 +186,7 @@ namespace XmlIO
 				}
 				break;
 			case "mwp":
+			case "meta":
 				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next)
 				{
 					switch(prop->name)
