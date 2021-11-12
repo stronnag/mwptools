@@ -105,6 +105,7 @@ public class MWPSettings : GLib.Object
     public string kmlpath {get; private set; default=null;}
     public bool fixedfont {get; set; default=true;}
     public bool ucmissiontags {get; set; default=false;}
+    public bool missionmetatag {get; set; default=false;}
     public string load_safehomes {get; set; default=null;}
 
     public double maxclimb {get; set; default=0;}
@@ -396,6 +397,9 @@ public class MWPSettings : GLib.Object
 
         if(s == null || s == "uc-mission-tags")
             ucmissiontags = settings.get_boolean ("uc-mission-tags");
+
+        if(s == null || s == "mission-meta-tag")
+            missionmetatag = settings.get_boolean ("mission-meta-tag");
 
         if(s == null || s == "load-safehome")
             load_safehomes = settings.get_string ("load-safehome");

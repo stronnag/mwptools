@@ -568,6 +568,12 @@
       <description>If true, MISSION, VERSION and MISSIONITEM tags are upper case (for interoperability with legacy Android applications)</description>
     </key>
 
+    <key type="b" name="mission-meta-tag">
+      <default>false</default>
+      <summary>use meta vice mwp in mission file</summary>
+      <description>If true, the legacy mwp tag is named meta</description>
+    </key>
+
     <key type="s" name="load-safehome">
       <default>""</default>
       <summary>Load default set of safehomes</summary>

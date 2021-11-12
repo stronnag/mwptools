@@ -4,6 +4,7 @@ namespace XmlIO
 {
     public static bool uc = false;
     public static bool ugly = false;
+    public static bool meta = false;
     public static string generator;
 
     public Mission[]? read_xml_file(string path)
@@ -275,7 +276,9 @@ namespace XmlIO
         }
 		int wpno = 0;
 		foreach (var ms in msx) {
-			subnode = root->new_text_child (ns, "mwp", "");
+			string nname;
+			nname = (XmlIO.meta) ? "meta" : "mwp";
+			subnode = root->new_text_child (ns, nname, "");
 			time_t currtime;
 			time_t(out currtime);
 			char[] dbuf = new char[double.DTOSTR_BUF_SIZE];
@@ -359,9 +362,13 @@ int main (string[] args) {
         return 1;
     }
 
-	if (args.length == 4)
-		XmlIO.ugly = true;
-
+	if (args.length == 4) {
+		var iv = int.parse(args[3]);
+		if ((iv & 1) == 1)
+			XmlIO.ugly = true;
+		if ((iv & 2) == 2)
+			XmlIO.meta = true;
+	}
     var  msx = XmlIO.read_xml_file (args[1]);
 	foreach (var ms in msx) {
 
