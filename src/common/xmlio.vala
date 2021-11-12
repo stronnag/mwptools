@@ -19,7 +19,6 @@ namespace XmlIO
             stderr.putc('\n');
             return null;
         }
-
         return read_xml_string(s);
     }
 
@@ -276,6 +275,12 @@ namespace XmlIO
         }
 		int wpno = 0;
 		foreach (var ms in msx) {
+			double d;
+			int lt;
+			if (ms.dist <= 0 && ms.npoints > 1)
+				if (ms.calculate_distance(out d, out lt) == true) {
+					ms.dist = d;
+				}
 			string nname;
 			nname = (XmlIO.meta) ? "meta" : "mwp";
 			subnode = root->new_text_child (ns, nname, "");
@@ -292,7 +297,7 @@ namespace XmlIO
 			}
 			subnode->new_prop ("generator", "%s (mwptools)".printf(generator));
 
-			if(ms.dist > -1)
+			if(ms.dist > 0)
 			{
 				Xml.Node* xsubnode;
 				Xml.Node* ysubnode;

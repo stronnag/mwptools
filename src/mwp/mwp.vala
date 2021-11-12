@@ -1325,10 +1325,7 @@ public class MWP : Gtk.Application {
                     {
                         clat = ms.cy;
                         clon = ms.cx;
-//                        if(ms.zoom != 0) // why??
-                        {
-                            instantiate_mission(ms);
-                        }
+						instantiate_mission(ms);
                         last_file = fn;
                         update_title_from_file(fn);
                     }
@@ -8992,6 +8989,8 @@ case 0:
 		Mission _ms = null;
 		bool is_j = fn.has_suffix(".json");
 		var _msx =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+		if (_msx == null)
+			return null;
 		if (append) {
 			var mlim = msx.length;
 			imdx += mlim;
