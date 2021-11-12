@@ -2623,6 +2623,7 @@ public class MWP : Gtk.Application {
                 vname = s;
                 set_typlab();
             });
+
 #endif
         devman.device_added.connect((s) => {
                 if(s != null && s.contains(" ") || msp.available)
@@ -3037,6 +3038,27 @@ public class MWP : Gtk.Application {
         map_moved();
 
     }
+
+
+	private MissionItem wp_to_mitem(MSP_WP w)
+	{
+		MissionItem m = MissionItem();
+		m.no= w.wp_no;
+		m.action = (MSP.Action)w.action;
+		m.lat = w.lat/10000000.0;
+		m.lon = w.lon/10000000.0;
+		m.alt = w.altitude/100;
+		m.param1 = w.p1;
+		if(m.action == MSP.Action.SET_HEAD &&
+		   conf.recip_head  == true && m.param1 != -1)
+		{
+			m.param1 = (m.param1 + 180) % 360;
+		}
+		m.param2 = w.p2;
+		m.param3 = w.p3;
+		m.flag = w.flag;
+		return m;
+	}
 
 	private void mm_regenerate(uint mitem) {
 		Mission [] mmsx = {};
@@ -5470,26 +5492,6 @@ case 0:
                 map_show_dist(sb.str);
             }
         }
-    }
-
-    MissionItem wp_to_mitem(MSP_WP w)
-    {
-        MissionItem m = MissionItem();
-        m.no= w.wp_no;
-        m.action = (MSP.Action)w.action;
-        m.lat = w.lat/10000000.0;
-        m.lon = w.lon/10000000.0;
-        m.alt = w.altitude/100;
-        m.param1 = w.p1;
-        if(m.action == MSP.Action.SET_HEAD &&
-           conf.recip_head  == true && m.param1 != -1)
-        {
-            m.param1 = (m.param1 + 180) % 360;
-        }
-        m.param2 = w.p2;
-        m.param3 = w.p3;
-        m.flag = w.flag;
-        return m;
     }
 
 	private void handle_mm_download(uint8[] raw, uint len) {
