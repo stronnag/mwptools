@@ -1,6 +1,5 @@
 #!/usr/bin/ruby
 # -*- coding: utf-8 -*-
-require 'ap'
 
 P_START = 0x7e
 P_STUFF = 0x7d
@@ -29,6 +28,8 @@ DTYPE_MAP = {
   0x0100 => 'VARIO_ALT_DATA_ID',
   0x0110 => 'VARIO_VSI_DATA_ID'
 }
+
+shorts = {}
 
 def parse_lat_lon val
   ap=nil
@@ -138,7 +139,9 @@ data.each_byte do |b|
       end
     else
       short += 1
-      puts "Invalid packet #{packet.size}b"
+      puts "Invalid packet #{packet.size} bytes"
+      shorts[packet.size] ||= 0
+      shorts[packet.size] += 1
     end
     packet = []
   end
@@ -151,3 +154,4 @@ data.each_byte do |b|
   packet << b unless stuffed
 end
 STDERR.puts "Total/good/bad/short: #{good+bad+short} / #{good} / #{bad} / #{short}"
+STDERR.puts shorts.inspect

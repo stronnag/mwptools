@@ -27,8 +27,7 @@ public struct SerialStats
     ulong  msgs;
 }
 
-public class SportDev : Object
-{
+namespace SportDev {
     public enum FrID {
         ALT_ID = 0x0100,
         VARIO_ID = 0x0110,
@@ -77,6 +76,13 @@ public class SportDev : Object
         P_SIZE = 10
     }
 
+	public enum FrStatus {
+		OK = 0,
+		SHORT = 1,
+		CRC = 2,
+		SIZE = 3
+	}
+
     private uint8 buf[64];
     private bool stuffed = false;
     private uint8 nb = 0;
@@ -111,51 +117,56 @@ public class SportDev : Object
 
     public delegate void DelegateType (uint32 a,uint32 b);
 
-    public void  extract_messages(DelegateType d, uint8* raw, size_t len)
-    {
-        for(var i = 0; i < len; i++)
-        {
-            uint8 b = *raw++;
-            if (b == FrProto.P_START)
-            {
-                if (nb == FrProto.P_SIZE)
-                {
-                    bool res = fr_checksum(buf);
-                    if(res)
-                    {
-                        ushort id;
-                        uint val;
-                        deserialise_u16(&buf[3], out id);
-                        deserialise_u32(&buf[5], out val);
-                        d((uint32)id,val);
-                        good++;
-                    }
-                    else
-                        bad++;
-                }
-                else
-                    nshort++;
+	public FrStatus extract_messages(DelegateType d, uint8 b) {
+		FrStatus status = FrStatus.OK;
+		if (b == FrProto.P_START && nb > 0)
+		{
+			if (nb == FrProto.P_SIZE)
+			{
+				bool res = fr_checksum(buf);
+				if(res)
+				{
+					ushort id;
+					uint val;
+					deserialise_u16(&buf[3], out id);
+					deserialise_u32(&buf[5], out val);
+					d((uint32)id,val);
+					good++;
+				} else {
+					bad++;
+					status = FrStatus.CRC;
+				}
+			} else {
+				nshort++;
+				if(nb > 3) {
+					status = FrStatus.SHORT;
+				}
+				nb = 0;
+			}
+		}
+		if (stuffed)
+		{
+			b = b ^ FrProto.P_MASK;
+			stuffed = false;
+		}
+		else if (b == FrProto.P_STUFF)
+		{
+			stuffed = true;
+		}
 
-                nb = 0;
-            }
-            if (stuffed)
-            {
-                b = b ^ FrProto.P_MASK;
-                stuffed = false;
-            }
-            else if (b == FrProto.P_STUFF)
-            {
-                stuffed = true;
-                continue;
-            }
-            buf[nb] = b;
-            nb++;
-            if (nb > FrProto.P_SIZE)
-            {
-                nb = 0;
-                bad++;
-            }
-        }
+		if(status != FrStatus.OK) {
+			nb = 0;
+		} else {
+			buf[nb] = b;
+			nb++;
+			if (nb > FrProto.P_SIZE)
+			{
+				nb = 0;
+				bad++;
+				status = FrStatus.SIZE;
+			}
+		}
+		return status;
     }
 }
 
@@ -231,7 +242,7 @@ namespace CRSF {
 
 	const uint8 TELEMETRY_RX_PACKET_SIZE = 128;
 	static uint8 crsf_buffer[128];
-	static uint8 crsf_index = 0;
+	static uint8 crsf_index;
 	static uint8 detect_idx=0;
 
 	int crsf_decode(uint8 data) {
@@ -351,8 +362,6 @@ public class MWSerial : Object {
     private bool ro = false;
     private uint8 mavseqno = 0;
     private uint8[] devbuf;
-    private bool sport = false;
-    private SportDev spdev;
     private uint16 mavsig = 0;
     private bool relaxed;
 
@@ -429,10 +438,8 @@ public class MWSerial : Object {
         S_M2_CRC1,
         S_M2_CRC2,
         S_M2_SIG,
-		S_CRSF_0 = 500,
-		S_CRSF_1,
-		S_CRSF_2,
-		S_CRSF_OK,
+		S_CRSF_OK = 500,
+		S_SPORT_OK,
 	}
 
     public signal void serial_event (MSP.Cmds event, uint8[]result, uint len, uint8 flags, bool err);
@@ -465,13 +472,13 @@ public class MWSerial : Object {
     public MWSerial.forwarder()
     {
         fwd = true;
-        available = sport = false;
+        available = false;
         set_txbuf(MemAlloc.TX);
     }
 
     public MWSerial.reader()
     {
-        available = sport = fwd = false;
+        available = fwd = false;
         ro = true;
         rxbuf_alloc = MemAlloc.RX;
         rxbuf = new uint8[rxbuf_alloc];
@@ -480,7 +487,6 @@ public class MWSerial : Object {
 
     public MWSerial.smartport()
     {
-        sport  = true;
         fwd = available = false;
         rxbuf_alloc = MemAlloc.RX;
         rxbuf = new uint8[rxbuf_alloc];
@@ -494,7 +500,7 @@ public class MWSerial : Object {
 
     public MWSerial()
     {
-        sport = fwd =  available = false;
+        fwd =  available = false;
         rxbuf_alloc = MemAlloc.RX;
         rxbuf = new uint8[rxbuf_alloc];
         txbuf = new uint8[txbuf_alloc];
@@ -543,9 +549,6 @@ public class MWSerial : Object {
     {
         clear_counters();
         state = States.S_HEADER;
-        if(sport == true)
-            spdev = new SportDev();
-
         try {
             io_read = new IOChannel.unix_new(fd);
             if(io_read.set_encoding(null) != IOStatus.NORMAL)
@@ -670,7 +673,6 @@ public class MWSerial : Object {
 
     public bool open_sport(string device, out string estr)
     {
-        sport  = true;
         fwd = false;
         MWPLog.message("SPORT: open %s\n", device);
         return open(device, 0, out estr);
@@ -824,7 +826,7 @@ public class MWSerial : Object {
     {
         devname = "fd #%d".printf(_fd);
         fd = _fd;
-        sport = fwd =  false;
+        fwd =  false;
         if(rate != -1)
             commode = ComMode.TTY|ComMode.STREAM;
         if(rawfd)
@@ -918,11 +920,6 @@ public class MWSerial : Object {
         }
     }
 
-    private void process_sport(uint8[]raw, size_t len)
-    {
-        spdev.extract_messages(sport_handler, raw, len);
-    }
-
     private void show_cond(IOCondition cond)
     {
         StringBuilder sb = new StringBuilder("");
@@ -984,16 +981,7 @@ public class MWSerial : Object {
                 }
             }
 
-            if(sport == true)
-            {
-                if(res > 0)
-                {
-                    process_sport(devbuf, res);
-                    if(rawlog == true)
-                        log_raw('s',devbuf,(int)res);
-                }
-            }
-            else if(pmode == ProtoMode.CLI)
+            if(pmode == ProtoMode.CLI)
             {
                 csize = (uint16)res;
                 cli_event(devbuf, csize);
@@ -1035,11 +1023,20 @@ public class MWSerial : Object {
 							state=States.S_M2_SIZE;
 							errstate = false;
 							break;
-						case 0xea:
+						case CRSF.RADIO_ADDRESS:
 							CRSF.detect_idx = 0;
 							state = States.S_CRSF_OK;
 							MWPLog.message("CRSF detect 0x%02x\n", devbuf[nc]);
 							CRSF.crsf_decode(devbuf[nc]);
+							break;
+						case SportDev.FrProto.P_START:
+							var sbx = SportDev.extract_messages(sport_handler, devbuf[nc]);
+							if(sbx != SportDev.FrStatus.OK) {
+								state = States.S_ERROR;
+//								MWPLog.message("SPORT detect 0x%02x %s %s\n", devbuf[nc], sbx.to_string(), state.to_string());
+							} else {
+								state = States.S_SPORT_OK;
+							}
 							break;
 						default:
 							if (state == States.S_HEADER) {
@@ -1050,24 +1047,15 @@ public class MWSerial : Object {
 							break;
 						}
 						break;
-					case States.S_CRSF_0:
-						if(devbuf[nc] == 0) {
-							state = States.S_CRSF_1;
-							CRSF.detect_idx++;
-						} /*else {
-							state = States.S_HEADER;
-							CRSF.detect_idx = 0;
-							}*/
-						break;
-					case States.S_CRSF_1:
-						if (devbuf[nc] == 0xa7 && CRSF.detect_idx == 1) {
-							state = States.S_CRSF_OK;
-							CRSF.detect_idx = 0;
-						} /*else {
-							state = States.S_HEADER;
-							}*/
 
+					case States.S_SPORT_OK:
+						var sbx = SportDev.extract_messages(sport_handler, devbuf[nc]);
+						if(sbx != SportDev.FrStatus.OK) {
+							state = States.S_ERROR;
+//							MWPLog.message("SPORT data 0x%02x %s %s\n", devbuf[nc], sbx.to_string(), state.to_string());
+						}
 						break;
+
 					case States.S_CRSF_OK:
 						var crsf_len = CRSF.crsf_decode(devbuf[nc]);
 						if (crsf_len > 0) {
@@ -1078,429 +1066,429 @@ public class MWSerial : Object {
 						break;
 
 					case States.S_HEADER1:
-                            encap = false;
-                            irxbufp=0;
-                            if(devbuf[nc] == 'M')
-                            {
-                                state=States.S_HEADER2;
-                            }
-                            else if(devbuf[nc] == 'T')
-                            {
-                                state=States.S_T_HEADER2;
-                            }
-                            else if(devbuf[nc] == 'X')
-                            {
-                                state=States.S_X_HEADER2;
-                            }
-                            else
-                            {
-                                error_counter();
-                                MWPLog.message("fail on header1 %x\n", devbuf[nc]);
-                                state=States.S_ERROR;
-                            }
-                            break;
+						encap = false;
+						irxbufp=0;
+						if(devbuf[nc] == 'M')
+						{
+							state=States.S_HEADER2;
+						}
+						else if(devbuf[nc] == 'T')
+						{
+							state=States.S_T_HEADER2;
+						}
+						else if(devbuf[nc] == 'X')
+						{
+							state=States.S_X_HEADER2;
+						}
+						else
+						{
+							error_counter();
+							MWPLog.message("fail on header1 %x\n", devbuf[nc]);
+							state=States.S_ERROR;
+						}
+						break;
 
-                        case States.S_T_HEADER2:
-                            needed = 0;
-                            switch(devbuf[nc])
-                            {
-                                case 'G':
-                                    needed = (uint16) MSize.LTM_GFRAME;
-                                    cmd = MSP.Cmds.TG_FRAME;
-                                    break;
-                                case 'A':
-                                    needed = (uint16) MSize.LTM_AFRAME;
-                                    cmd = MSP.Cmds.TA_FRAME;
-                                    break;
-                                case 'S':
-                                    needed = (uint16) MSize.LTM_SFRAME;
-                                    cmd = MSP.Cmds.TS_FRAME;
-                                    break;
-                                case 'O':
-                                    needed = (uint16) MSize.LTM_OFRAME;
-                                    cmd = MSP.Cmds.TO_FRAME;
-                                    break;
-                                case 'N':
-                                    needed = (uint16) MSize.LTM_NFRAME;
-                                    cmd = MSP.Cmds.TN_FRAME;
-                                    break;
-                                case 'X':
-                                    needed = (uint16) MSize.LTM_XFRAME;
-                                    cmd = MSP.Cmds.TX_FRAME;
-                                    break;
-                                        // Lower case are 'private'
-                                case 'q':
-                                    needed = 2;
-                                    cmd = MSP.Cmds.Tq_FRAME;
-                                    break;
-                                case 'a':
-                                    needed = 2;
-                                    cmd = MSP.Cmds.Ta_FRAME;
-                                    break;
-                                case 'x':
-                                    needed = 1;
-                                    cmd = MSP.Cmds.Tx_FRAME;
-                                    break;
-                                default:
-                                    error_counter();
-                                    MWPLog.message("fail on T_header2 %x\n", devbuf[nc]);
-                                    state=States.S_ERROR;
-                                    break;
-                            }
-                            if (needed > 0)
-                            {
-                                csize = needed;
-                                irxbufp = 0;
-                                checksum = 0;
-                                state = States.S_DATA;
-                            }
-                            break;
+					case States.S_T_HEADER2:
+						needed = 0;
+						switch(devbuf[nc])
+						{
+						case 'G':
+							needed = (uint16) MSize.LTM_GFRAME;
+							cmd = MSP.Cmds.TG_FRAME;
+							break;
+						case 'A':
+							needed = (uint16) MSize.LTM_AFRAME;
+							cmd = MSP.Cmds.TA_FRAME;
+							break;
+						case 'S':
+							needed = (uint16) MSize.LTM_SFRAME;
+							cmd = MSP.Cmds.TS_FRAME;
+							break;
+						case 'O':
+							needed = (uint16) MSize.LTM_OFRAME;
+							cmd = MSP.Cmds.TO_FRAME;
+							break;
+						case 'N':
+							needed = (uint16) MSize.LTM_NFRAME;
+							cmd = MSP.Cmds.TN_FRAME;
+							break;
+						case 'X':
+							needed = (uint16) MSize.LTM_XFRAME;
+							cmd = MSP.Cmds.TX_FRAME;
+							break;
+							// Lower case are 'private'
+						case 'q':
+							needed = 2;
+							cmd = MSP.Cmds.Tq_FRAME;
+							break;
+						case 'a':
+							needed = 2;
+							cmd = MSP.Cmds.Ta_FRAME;
+							break;
+						case 'x':
+							needed = 1;
+							cmd = MSP.Cmds.Tx_FRAME;
+							break;
+						default:
+							error_counter();
+							MWPLog.message("fail on T_header2 %x\n", devbuf[nc]);
+							state=States.S_ERROR;
+							break;
+						}
+						if (needed > 0)
+						{
+							csize = needed;
+							irxbufp = 0;
+							checksum = 0;
+							state = States.S_DATA;
+						}
+						break;
 
-                        case States.S_HEADER2:
-                            if((devbuf[nc] == readdirn ||
-                                devbuf[nc] == writedirn ||
-                                devbuf[nc] == '!'))
-                            {
-                                if (relaxed)
-                                    errstate = !(devbuf[nc] == readdirn ||
-                                                 devbuf[nc] == writedirn);
-                                else
-                                    errstate = (devbuf[nc] != readdirn); // == '!'
-                                state = States.S_SIZE;
-                            }
-                            else
-                            {
-                                error_counter();
-                                MWPLog.message("fail on header2 %x\n", devbuf[nc]);
-                                state=States.S_ERROR;
-                            }
-                            break;
+					case States.S_HEADER2:
+						if((devbuf[nc] == readdirn ||
+							devbuf[nc] == writedirn ||
+							devbuf[nc] == '!'))
+						{
+							if (relaxed)
+								errstate = !(devbuf[nc] == readdirn ||
+											 devbuf[nc] == writedirn);
+							else
+								errstate = (devbuf[nc] != readdirn); // == '!'
+							state = States.S_SIZE;
+						}
+						else
+						{
+							error_counter();
+							MWPLog.message("fail on header2 %x\n", devbuf[nc]);
+							state=States.S_ERROR;
+						}
+						break;
 
-                        case States.S_SIZE:
-                            csize = devbuf[nc];
-                            checksum = devbuf[nc];
-                            state = States.S_CMD;
-                            break;
-                        case States.S_CMD:
-                            debug(" got cmd %d %d", devbuf[nc], csize);
-                            cmd = (MSP.Cmds)devbuf[nc];
-                            checksum ^= cmd;
-                            if(cmd == MSP.Cmds.MSPV2)
-                            {
-                                encap = true;
-                                state = States.S_X_FLAGS;
-                            }
-                            else if (csize == 255)
-                            {
-                                state = States.S_JUMBO1;
-                            }
-                            else
-                            {
-                                if (csize == 0)
-                                {
-                                    state = States.S_CHECKSUM;
-                                }
-                                else
-                                {
-                                    state = States.S_DATA;
-                                    irxbufp = 0;
-                                    needed = csize;
-                                    check_rxbuf_size();
-                                }
-                            }
-                            break;
+					case States.S_SIZE:
+						csize = devbuf[nc];
+						checksum = devbuf[nc];
+						state = States.S_CMD;
+						break;
+					case States.S_CMD:
+						debug(" got cmd %d %d", devbuf[nc], csize);
+						cmd = (MSP.Cmds)devbuf[nc];
+						checksum ^= cmd;
+						if(cmd == MSP.Cmds.MSPV2)
+						{
+							encap = true;
+							state = States.S_X_FLAGS;
+						}
+						else if (csize == 255)
+						{
+							state = States.S_JUMBO1;
+						}
+						else
+						{
+							if (csize == 0)
+							{
+								state = States.S_CHECKSUM;
+							}
+							else
+							{
+								state = States.S_DATA;
+								irxbufp = 0;
+								needed = csize;
+								check_rxbuf_size();
+							}
+						}
+						break;
 
-                        case States.S_JUMBO1:
-                            checksum ^= devbuf[nc];
-                            csize = devbuf[nc];
-                            state = States.S_JUMBO2;
-                            break;
+					case States.S_JUMBO1:
+						checksum ^= devbuf[nc];
+						csize = devbuf[nc];
+						state = States.S_JUMBO2;
+						break;
 
-                        case States.S_JUMBO2:
-                            checksum ^= devbuf[nc];
-                            csize |= (uint16)devbuf[nc] << 8;
-                            needed = csize;
-                            irxbufp = 0;
-                            if (csize == 0)
-                                state = States.S_CHECKSUM;
-                            else
-                            {
-                                state = States.S_DATA;
-                                check_rxbuf_size();
-                            }
-                            break;
+					case States.S_JUMBO2:
+						checksum ^= devbuf[nc];
+						csize |= (uint16)devbuf[nc] << 8;
+						needed = csize;
+						irxbufp = 0;
+						if (csize == 0)
+							state = States.S_CHECKSUM;
+						else
+						{
+							state = States.S_DATA;
+							check_rxbuf_size();
+						}
+						break;
 
-                        case States.S_DATA:
-                            rxbuf[irxbufp++] = devbuf[nc];
-                            checksum ^= devbuf[nc];
-                            needed--;
-                            if(needed == 0)
-                                state = States.S_CHECKSUM;
-                            break;
-                        case States.S_CHECKSUM:
-                            if(checksum  == devbuf[nc])
-                            {
-                                debug(" OK on %d", cmd);
-                                state = States.S_HEADER;
-                                stats.msgs++;
-                                if(cmd < MSP.Cmds.MSPV2 || cmd > MSP.Cmds.LTM_BASE)
-                                    serial_event(cmd, rxbuf, csize, 0, errstate);
-                                irxbufp = 0;
-                            }
-                            else
-                            {
-                                error_counter();
-                                MWPLog.message("CRC Fail, got %d != %d (cmd=%d)\n",
-                                               devbuf[nc],checksum,cmd);
-                                state = States.S_ERROR;
-                            }
-                            break;
-                        case States.S_END:
-                            state = States.S_HEADER;
-                            break;
+					case States.S_DATA:
+						rxbuf[irxbufp++] = devbuf[nc];
+						checksum ^= devbuf[nc];
+						needed--;
+						if(needed == 0)
+							state = States.S_CHECKSUM;
+						break;
+					case States.S_CHECKSUM:
+						if(checksum  == devbuf[nc])
+						{
+							debug(" OK on %d", cmd);
+							state = States.S_HEADER;
+							stats.msgs++;
+							if(cmd < MSP.Cmds.MSPV2 || cmd > MSP.Cmds.LTM_BASE)
+								serial_event(cmd, rxbuf, csize, 0, errstate);
+							irxbufp = 0;
+						}
+						else
+						{
+							error_counter();
+							MWPLog.message("CRC Fail, got %d != %d (cmd=%d)\n",
+										   devbuf[nc],checksum,cmd);
+							state = States.S_ERROR;
+						}
+						break;
+					case States.S_END:
+						state = States.S_HEADER;
+						break;
 
-                        case States.S_X_HEADER2:
-                            if((devbuf[nc] == readdirn ||
-                                devbuf[nc] == writedirn ||
-                                devbuf[nc] == '!'))
-                            {
-                                if (relaxed)
-                                    errstate = !(devbuf[nc] == readdirn ||
-                                                 devbuf[nc] == writedirn);
-                                else
-                                    errstate = (devbuf[nc] != readdirn); // == '!'
-                                state = States.S_X_FLAGS;
-                            }
-                            else
-                            {
-                                error_counter();
-                                MWPLog.message("fail on header2 %x\n", devbuf[nc]);
-                                state=States.S_ERROR;
-                            }
-                            break;
+					case States.S_X_HEADER2:
+						if((devbuf[nc] == readdirn ||
+							devbuf[nc] == writedirn ||
+							devbuf[nc] == '!'))
+						{
+							if (relaxed)
+								errstate = !(devbuf[nc] == readdirn ||
+											 devbuf[nc] == writedirn);
+							else
+								errstate = (devbuf[nc] != readdirn); // == '!'
+							state = States.S_X_FLAGS;
+						}
+						else
+						{
+							error_counter();
+							MWPLog.message("fail on header2 %x\n", devbuf[nc]);
+							state=States.S_ERROR;
+						}
+						break;
 
-                        case States.S_X_FLAGS:
-                            checksum ^= devbuf[nc];
-                            checksum2 = CRC8.dvb_s2(0, devbuf[nc]);
-                            xflags = devbuf[nc];
-                            state = States.S_X_ID1;
-                            break;
-                        case States.S_X_ID1:
-                            checksum ^= devbuf[nc];
-                            checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
-                            xcmd = devbuf[nc];
-                            state = States.S_X_ID2;
-                            break;
-                        case States.S_X_ID2:
-                            checksum ^= devbuf[nc];
-                            checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
-                            xcmd |= (uint16)devbuf[nc] << 8;
-                            state = States.S_X_LEN1;
-                            break;
-                        case States.S_X_LEN1:
-                            checksum ^= devbuf[nc];
-                            checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
-                            csize = devbuf[nc];
-                            state = States.S_X_LEN2;
-                            break;
-                        case States.S_X_LEN2:
-                            checksum ^= devbuf[nc];
-                            checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
-                            csize |= (uint16)devbuf[nc] << 8;
-                            needed = csize;
-                            if(needed > 0)
-                            {
-                                check_rxbuf_size();
-                                state = States.S_X_DATA;
-                            }
-                            else
-                                state = States.S_X_CHECKSUM;
-                            break;
-                        case States.S_X_DATA:
-                            checksum ^= devbuf[nc];
-                            checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
-                            rxbuf[irxbufp++] = devbuf[nc];
-                            needed--;
-                            if(needed == 0)
-                                state = States.S_X_CHECKSUM;
-                            break;
-                        case States.S_X_CHECKSUM:
-                            checksum ^= devbuf[nc];
-                            if(checksum2  == devbuf[nc])
-                            {
-                                debug(" OK on %d", cmd);
+					case States.S_X_FLAGS:
+						checksum ^= devbuf[nc];
+						checksum2 = CRC8.dvb_s2(0, devbuf[nc]);
+						xflags = devbuf[nc];
+						state = States.S_X_ID1;
+						break;
+					case States.S_X_ID1:
+						checksum ^= devbuf[nc];
+						checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
+						xcmd = devbuf[nc];
+						state = States.S_X_ID2;
+						break;
+					case States.S_X_ID2:
+						checksum ^= devbuf[nc];
+						checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
+						xcmd |= (uint16)devbuf[nc] << 8;
+						state = States.S_X_LEN1;
+						break;
+					case States.S_X_LEN1:
+						checksum ^= devbuf[nc];
+						checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
+						csize = devbuf[nc];
+						state = States.S_X_LEN2;
+						break;
+					case States.S_X_LEN2:
+						checksum ^= devbuf[nc];
+						checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
+						csize |= (uint16)devbuf[nc] << 8;
+						needed = csize;
+						if(needed > 0)
+						{
+							check_rxbuf_size();
+							state = States.S_X_DATA;
+						}
+						else
+							state = States.S_X_CHECKSUM;
+						break;
+					case States.S_X_DATA:
+						checksum ^= devbuf[nc];
+						checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
+						rxbuf[irxbufp++] = devbuf[nc];
+						needed--;
+						if(needed == 0)
+							state = States.S_X_CHECKSUM;
+						break;
+					case States.S_X_CHECKSUM:
+						checksum ^= devbuf[nc];
+						if(checksum2  == devbuf[nc])
+						{
+							debug(" OK on %d", cmd);
 
-                                state = (encap) ? States.S_CHECKSUM : States.S_HEADER;
-                                stats.msgs++;
-                                serial_event((MSP.Cmds)xcmd, rxbuf, csize,
-                                             xflags, errstate);
-                                irxbufp = 0;
-                            }
-                            else
-                            {
-                                error_counter();
-                                MWPLog.message("X-CRC Fail, got %d != %d (cmd=%d)\n",
-                                               devbuf[nc],checksum,cmd);
-                                state = States.S_ERROR;
-                            }
-                            break;
+							state = (encap) ? States.S_CHECKSUM : States.S_HEADER;
+							stats.msgs++;
+							serial_event((MSP.Cmds)xcmd, rxbuf, csize,
+										 xflags, errstate);
+							irxbufp = 0;
+						}
+						else
+						{
+							error_counter();
+							MWPLog.message("X-CRC Fail, got %d != %d (cmd=%d)\n",
+										   devbuf[nc],checksum,cmd);
+							state = States.S_ERROR;
+						}
+						break;
 
-                        case States.S_M_SIZE:
-                            csize = needed = devbuf[nc];
-                            mavsum = mavlink_crc(0xffff, (uint8)csize);
-                            if(needed > 0)
-                            {
-                                irxbufp= 0;
-                                check_rxbuf_size();
-                            }
-                            state = States.S_M_SEQ;
+					case States.S_M_SIZE:
+						csize = needed = devbuf[nc];
+						mavsum = mavlink_crc(0xffff, (uint8)csize);
+						if(needed > 0)
+						{
+							irxbufp= 0;
+							check_rxbuf_size();
+						}
+						state = States.S_M_SEQ;
+						break;
+					case States.S_M_SEQ:
+						mavsum = mavlink_crc(mavsum, devbuf[nc]);
+						state = States.S_M_ID1;
+						break;
+					case States.S_M_ID1:
+						mavsum = mavlink_crc(mavsum, devbuf[nc]);
+						state = States.S_M_ID2;
+						break;
+					case States.S_M_ID2:
+						mavsum = mavlink_crc(mavsum, devbuf[nc]);
+						state = States.S_M_MSGID;
+						break;
+					case States.S_M_MSGID:
+						cmd = (MSP.Cmds)devbuf[nc];
+						mavsum = mavlink_crc(mavsum, cmd);
+						if (csize == 0)
+							state = States.S_M_CRC1;
+						else
+							state = States.S_M_DATA;
                             break;
-                        case States.S_M_SEQ:
-                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
-                            state = States.S_M_ID1;
+					case States.S_M_DATA:
+						mavsum = mavlink_crc(mavsum, devbuf[nc]);
+						rxbuf[irxbufp++] = devbuf[nc];
+						needed--;
+						if(needed == 0)
+							state = States.S_M_CRC1;
+						break;
+					case States.S_M_CRC1:
+						var seed  = MavCRC.lookup(cmd);
+						mavsum = mavlink_crc(mavsum, seed);
+						irxbufp = 0;
+						rxmavsum = devbuf[nc];
+						state = States.S_M_CRC2;
                             break;
-                        case States.S_M_ID1:
-                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
-                            state = States.S_M_ID2;
-                            break;
-                        case States.S_M_ID2:
-                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
-                            state = States.S_M_MSGID;
-                            break;
-                        case States.S_M_MSGID:
-                            cmd = (MSP.Cmds)devbuf[nc];
-                            mavsum = mavlink_crc(mavsum, cmd);
-                            if (csize == 0)
-                                state = States.S_M_CRC1;
-                            else
-                                state = States.S_M_DATA;
-                            break;
-                        case States.S_M_DATA:
-                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
-                            rxbuf[irxbufp++] = devbuf[nc];
-                            needed--;
-                            if(needed == 0)
-                                state = States.S_M_CRC1;
-                            break;
-                        case States.S_M_CRC1:
-                            var seed  = MavCRC.lookup(cmd);
-                            mavsum = mavlink_crc(mavsum, seed);
-                            irxbufp = 0;
-                            rxmavsum = devbuf[nc];
-                            state = States.S_M_CRC2;
-                            break;
-                        case States.S_M_CRC2:
-                            rxmavsum |= (devbuf[nc] << 8);
-                            if(rxmavsum == mavsum)
-                            {
-                                stats.msgs++;
-                                serial_event (cmd+MSP.Cmds.MAV_BASE,
-                                              rxbuf, csize, 0, errstate);
-                                state = States.S_HEADER;
-                            }
-                            else
-                            {
-                                error_counter();
-                                MWPLog.message("MAVCRC Fail, got %x != %x (cmd=%u, len=%u)\n",
-                                               rxmavsum, mavsum, cmd, csize);
-                                state = States.S_ERROR;
-                            }
-                            break;
-                        case States.S_M2_SIZE:
-                            csize = needed = devbuf[nc];
-                            mavsum = mavlink_crc(0xffff, (uint8)csize);
-                            if(needed > 0)
-                            {
-                                irxbufp= 0;
-                                check_rxbuf_size();
-                            }
-                            state = States.S_M2_FLG1;
-                            break;
-                        case States.S_M2_FLG1:
-                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
-                            if((devbuf[nc] & 1) == 1)
-                                mavsig = 13;
-                            else
-                                mavsig = 0;
-                            state = States.S_M2_FLG2;
-                            break;
-                        case States.S_M2_FLG2:
-                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
-                            state = States.S_M2_SEQ;
-                            break;
-                        case States.S_M2_SEQ:
-                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
-                            state = States.S_M2_ID1;
-                            break;
-                        case States.S_M2_ID1:
-                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
-                            state = States.S_M2_ID2;
-                            break;
-                        case States.S_M2_ID2:
-                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
-                            state = States.S_M2_MSGID0;
-                            break;
-                        case States.S_M2_MSGID0:
-                            cmd = (MSP.Cmds)devbuf[nc];
-                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
-                            state = States.S_M2_MSGID1;
-                            break;
+					case States.S_M_CRC2:
+						rxmavsum |= (devbuf[nc] << 8);
+						if(rxmavsum == mavsum)
+						{
+							stats.msgs++;
+							serial_event (cmd+MSP.Cmds.MAV_BASE,
+										  rxbuf, csize, 0, errstate);
+							state = States.S_HEADER;
+						}
+						else
+						{
+							error_counter();
+							MWPLog.message("MAVCRC Fail, got %x != %x (cmd=%u, len=%u)\n",
+										   rxmavsum, mavsum, cmd, csize);
+							state = States.S_ERROR;
+						}
+						break;
+					case States.S_M2_SIZE:
+						csize = needed = devbuf[nc];
+						mavsum = mavlink_crc(0xffff, (uint8)csize);
+						if(needed > 0)
+						{
+							irxbufp= 0;
+							check_rxbuf_size();
+						}
+						state = States.S_M2_FLG1;
+						break;
+					case States.S_M2_FLG1:
+						mavsum = mavlink_crc(mavsum, devbuf[nc]);
+						if((devbuf[nc] & 1) == 1)
+							mavsig = 13;
+						else
+							mavsig = 0;
+						state = States.S_M2_FLG2;
+						break;
+					case States.S_M2_FLG2:
+						mavsum = mavlink_crc(mavsum, devbuf[nc]);
+						state = States.S_M2_SEQ;
+						break;
+					case States.S_M2_SEQ:
+						mavsum = mavlink_crc(mavsum, devbuf[nc]);
+						state = States.S_M2_ID1;
+						break;
+					case States.S_M2_ID1:
+						mavsum = mavlink_crc(mavsum, devbuf[nc]);
+						state = States.S_M2_ID2;
+						break;
+					case States.S_M2_ID2:
+						mavsum = mavlink_crc(mavsum, devbuf[nc]);
+						state = States.S_M2_MSGID0;
+						break;
+					case States.S_M2_MSGID0:
+						cmd = (MSP.Cmds)devbuf[nc];
+						mavsum = mavlink_crc(mavsum, devbuf[nc]);
+						state = States.S_M2_MSGID1;
+						break;
 
-                        case States.S_M2_MSGID1:
-                            cmd |= (MSP.Cmds)(devbuf[nc] << 8);
-                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
-                            state = States.S_M2_MSGID2;
-                            break;
+					case States.S_M2_MSGID1:
+						cmd |= (MSP.Cmds)(devbuf[nc] << 8);
+						mavsum = mavlink_crc(mavsum, devbuf[nc]);
+						state = States.S_M2_MSGID2;
+						break;
 
-                        case States.S_M2_MSGID2:
-                            cmd |= (MSP.Cmds)(devbuf[nc] << 16);
-                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
-                            if (csize == 0)
-                                state = States.S_M2_CRC1;
-                            else
-                                state = States.S_M2_DATA;
-                            break;
-                        case States.S_M2_DATA:
-                            mavsum = mavlink_crc(mavsum, devbuf[nc]);
-                            rxbuf[irxbufp++] = devbuf[nc];
-                            needed--;
-                            if(needed == 0)
-                                state = States.S_M2_CRC1;
-                            break;
-                        case States.S_M2_CRC1:
-                            var seed  = MavCRC.lookup(cmd);
-                            mavsum = mavlink_crc(mavsum, seed);
-                            irxbufp = 0;
-                            rxmavsum = devbuf[nc];
-                            state = States.S_M2_CRC2;
-                            break;
-                        case States.S_M2_CRC2:
-                            rxmavsum |= (devbuf[nc] << 8);
-                            if(rxmavsum == mavsum)
-                            {
-                                stats.msgs++;
-                                serial_event (cmd+MSP.Cmds.MAV_BASE,
-                                              rxbuf, csize, 0, errstate);
-                                if(mavsig == 0)
-                                    state = States.S_HEADER;
-                                else
-                                    state = States.S_M2_SIG;
-                            }
-                            else
-                            {
-                                error_counter();
-                                MWPLog.message("MAVCRC2 Fail, got %x != %x (cmd=%u, len=%u)\n",
-                                               rxmavsum, mavsum, cmd, csize);
-                                state = States.S_ERROR;
-                            }
-                            break;
-                        case States.S_M2_SIG:
-                            mavsig--;
-                            if (mavsig == 0)
-                                state = States.S_HEADER;
-                            break;
-                        default:
-                            break; // S_M_STX, S_M2_STX
+					case States.S_M2_MSGID2:
+						cmd |= (MSP.Cmds)(devbuf[nc] << 16);
+						mavsum = mavlink_crc(mavsum, devbuf[nc]);
+						if (csize == 0)
+							state = States.S_M2_CRC1;
+						else
+							state = States.S_M2_DATA;
+						break;
+					case States.S_M2_DATA:
+						mavsum = mavlink_crc(mavsum, devbuf[nc]);
+						rxbuf[irxbufp++] = devbuf[nc];
+						needed--;
+						if(needed == 0)
+							state = States.S_M2_CRC1;
+						break;
+					case States.S_M2_CRC1:
+						var seed  = MavCRC.lookup(cmd);
+						mavsum = mavlink_crc(mavsum, seed);
+						irxbufp = 0;
+						rxmavsum = devbuf[nc];
+						state = States.S_M2_CRC2;
+						break;
+					case States.S_M2_CRC2:
+						rxmavsum |= (devbuf[nc] << 8);
+						if(rxmavsum == mavsum)
+						{
+							stats.msgs++;
+							serial_event (cmd+MSP.Cmds.MAV_BASE,
+										  rxbuf, csize, 0, errstate);
+							if(mavsig == 0)
+								state = States.S_HEADER;
+							else
+								state = States.S_M2_SIG;
+						}
+						else
+						{
+							error_counter();
+							MWPLog.message("MAVCRC2 Fail, got %x != %x (cmd=%u, len=%u)\n",
+										   rxmavsum, mavsum, cmd, csize);
+							state = States.S_ERROR;
+						}
+						break;
+					case States.S_M2_SIG:
+						mavsig--;
+						if (mavsig == 0)
+							state = States.S_HEADER;
+						break;
+					default:
+						break; // S_M_STX, S_M2_STX
                     }
                 }
             }

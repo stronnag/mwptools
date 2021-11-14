@@ -74,29 +74,6 @@ public struct CurrData
     uint16 lmah;
 }
 
-public struct SPORT_INFO
-{
-    int32 lat;
-    int32 lon;
-    double cse;
-    double spd;
-    int32 alt;
-    double galt;
-    uint16 rhdop;
-    int16 pitch;
-    int16 roll;
-    uint8 fix;
-    uint8 sats;
-    uint8 flags;
-    double ax;
-    double ay;
-    double az;
-    uint16 range;
-    uint16 rssi;
-    int16 vario;
-    double volts;
-}
-
 public struct Odostats
 {
     double speed;
@@ -427,6 +404,30 @@ namespace CRSF {
         return (crc == buffer[len+1]);
 	}
 }
+
+namespace SportDev {
+	bool active;
+    int32 lat;
+    int32 lon;
+    double cse;
+    double spd;
+    int32 alt;
+    double galt;
+    uint16 rhdop;
+    int16 pitch;
+    int16 roll;
+    uint8 fix;
+    uint8 sats;
+    uint8 flags;
+    double ax;
+    double ay;
+    double az;
+    uint16 range;
+    uint16 rssi;
+    int16 vario;
+    double volts;
+}
+
 
 public class MWP : Gtk.Application {
 
@@ -973,7 +974,6 @@ public class MWP : Gtk.Application {
     private int nrings = 0;
     private double ringint = 0;
     private bool replay_paused;
-    private SPORT_INFO spi;
     private CurrData curr;
     private VersInfo vi;
 
@@ -1026,7 +1026,6 @@ public class MWP : Gtk.Application {
     private string rfile = null;
     private string bfile = null;
     private string forward_device = null;
-    private string sport_device = null;
     private string radar_device = null;
     private int dmrtype=0;
     private DEBUG_FLAGS debug_flags = 0;
@@ -1080,7 +1079,6 @@ public class MWP : Gtk.Application {
         { "really-really-run-as-root", 0, 0, OptionArg.NONE, null, "no reason to ever use this", null},
         { "forward-to", 0, 0, OptionArg.STRING, null, "forward telemetry to", "device-name"},
         { "radar-device", 0, 0, OptionArg.STRING, null, "dedicated inav radar device", "device-name"},
-        { "smartport", 0, 0, OptionArg.STRING, null, "smartport device", "device-name"},
         {"perma-warn", 0, 0, OptionArg.NONE, null, "info dialogues never time out", null},
         {"fsmenu", 0, 0, OptionArg.NONE, null, "use a menu bar in full screen (vice a menu button)", null},
         { "kmlfile", 'k', 0, OptionArg.STRING, null, "KML file", "file-name"},
@@ -1198,7 +1196,6 @@ public class MWP : Gtk.Application {
             o.lookup("really-really-run-as-root", "b", ref asroot);
             o.lookup("forward-to", "s", ref forward_device);
             o.lookup("radar-device", "s", ref radar_device);
-            o.lookup("smartport", "s", ref sport_device);
             o.lookup("perma-warn", "b", ref permawarn);
             o.lookup("fsmenu", "b", ref nofsmenu);
             o.lookup("relaxed-msp", "b", ref relaxed);
@@ -3042,9 +3039,6 @@ public class MWP : Gtk.Application {
 
        acquire_bus();
 
-        if(sport_device != null)
-            append_deventry("*SMARTPORT*");
-
        if(mkcon)
         {
             connect_serial();
@@ -3285,6 +3279,9 @@ public class MWP : Gtk.Application {
 		if(!CRSF.teledata.setlab) {
 			verlab.label = verlab.tooltip_text = "CRSF telemetry";
 			CRSF.teledata.setlab = true;
+			xnopoll = nopoll;
+			nopoll = true;
+			serstate = SERSTATE.TELEM;
 		}
 
 		uint8 id = buffer[2];
@@ -3586,6 +3583,14 @@ public class MWP : Gtk.Application {
 
     private void process_sport_message (SportDev.FrID id, uint32 val)
     {
+		if(!SportDev.active) {
+			verlab.label = verlab.tooltip_text = "S-Port telemetry";
+			SportDev.active = true;
+			xnopoll = nopoll;
+			nopoll = true;
+			serstate = SERSTATE.TELEM;
+		}
+
         double r;
         if(Logger.is_logging)
             Logger.log_time();
@@ -3602,7 +3607,7 @@ public class MWP : Gtk.Application {
             case SportDev.FrID.VFAS_ID:
                 if (val /100  < 80)
                 {
-                    spi.volts = val / 100.0;
+                    SportDev.volts = val / 100.0;
                     sflags |=  NavStatus.SPK.Volts;
                 }
                 break;
@@ -3610,20 +3615,20 @@ public class MWP : Gtk.Application {
                 int32 ipos;
                 uint8 lorl = sport_parse_lat_lon (val, out ipos);
                 if (lorl == 0)
-                    spi.lat = ipos;
+                    SportDev.lat = ipos;
                 else
                 {
-                    spi.lon = ipos;
+                    SportDev.lon = ipos;
                     init_craft_icon();
                     MSP_ALTITUDE al = MSP_ALTITUDE();
-                    al.estalt = spi.alt;
-                    al.vario = spi.vario;
+                    al.estalt = SportDev.alt;
+                    al.vario = SportDev.vario;
                     navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
                     vabox.update(item_visible(DOCKLETS.VBOX), al.vario);
                     double ddm;
-                    gpsinfo.update_sport(spi, conf.dms, item_visible(DOCKLETS.GPS), out ddm);
+                    gpsinfo.update_sport(conf.dms, item_visible(DOCKLETS.GPS), out ddm);
 
-                    if(spi.fix > 0)
+                    if(SportDev.fix > 0)
                     {
                         sat_coverage();
                         if(armed != 0)
@@ -3644,8 +3649,8 @@ public class MWP : Gtk.Application {
                                             cg.range = (uint16)Math.lround(dist*1852);
                                             cg.direction = (int16)Math.lround(cse);
                                             navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
-                                            update_odo(spi.spd, ddm);
-                                            spi.range =  cg.range;
+                                            update_odo(SportDev.spd, ddm);
+                                            SportDev.range =  cg.range;
                                         }
                                     }
                                 }
@@ -3659,13 +3664,13 @@ public class MWP : Gtk.Application {
                             }
                         }
 
-                        if(craft != null && spi.fix > 0 && spi.sats >= msats)
+                        if(craft != null && SportDev.fix > 0 && SportDev.sats >= msats)
                         {
                             update_pos_info();
                         }
 
                         if(want_special != 0)
-                            process_pos_states(GPSInfo.lat, GPSInfo.lon, spi.alt/100.0, "Sport");
+                            process_pos_states(GPSInfo.lat, GPSInfo.lon, SportDev.alt/100.0, "Sport");
                     }
                     fbox.update(item_visible(DOCKLETS.FBOX));
                     dbox.update(item_visible(DOCKLETS.DBOX));
@@ -3673,25 +3678,25 @@ public class MWP : Gtk.Application {
                 break;
             case SportDev.FrID.GPS_ALT_ID:
                 r =((int)val) / 100.0;
-                spi.galt = r;
+                SportDev.galt = r;
                 break;
             case SportDev.FrID.GPS_SPEED_ID:
                 r = ((val/1000.0)*0.51444444);
-                spi.spd = r;
+                SportDev.spd = r;
                 break;
             case SportDev.FrID.GPS_COURS_ID:
                 r = val / 100.0;
-                spi.cse = r;
+                SportDev.cse = r;
                 navstatus.sport_hdr(r);
                 break;
             case SportDev.FrID.ADC2_ID: // AKA HDOP
                 rhdop = (uint16)((val &0xff)*10);
-                spi.rhdop = rhdop;
-                spi.flags |= 1;
+                SportDev.rhdop = rhdop;
+                SportDev.flags |= 1;
                 break;
             case SportDev.FrID.ALT_ID:
                 r = (int)val / 100.0;
-                spi.alt = (int)val;
+                SportDev.alt = (int)val;
                 sflags |=  NavStatus.SPK.ELEV;
                 break;
             case SportDev.FrID.T1_ID: // flight modes
@@ -3832,10 +3837,10 @@ public class MWP : Gtk.Application {
                     process_pos_states(xlat,xlon, 0, "SPort status");
 
                 LTM_SFRAME sf = LTM_SFRAME ();
-                sf.vbat = (uint16)(spi.volts*1000);
+                sf.vbat = (uint16)(SportDev.volts*1000);
                 sf.flags = ((failsafe) ? 2 : 0) | (armed & 1) | (ltmflags << 2);
                 sf.vcurr = (conf.smartport_fuel == 2) ? (uint16)curr.mah : 0;
-                sf.rssi = (uint8)(spi.rssi * 255/ 1023);
+                sf.rssi = (uint8)(SportDev.rssi * 255/ 1023);
                 sf.airspeed = 0;
                 navstatus.update_ltm_s(sf, item_visible(DOCKLETS.NAVSTATUS),true);
                 break;
@@ -3845,8 +3850,8 @@ public class MWP : Gtk.Application {
                 _nsats = (uint8)(val % 100);
                 uint16 hdp;
                 hdp = (uint16)(val % 1000)/100;
-                if (spi.flags == 0) // prefer FR_ID_ADC2_ID
-                    spi.rhdop = rhdop = 550 - (hdp * 50);
+                if (SportDev.flags == 0) // prefer FR_ID_ADC2_ID
+                    SportDev.rhdop = rhdop = 550 - (hdp * 50);
 
                 uint8 gfix = (uint8)(val /1000);
                 if ((gfix & 1) == 1)
@@ -3857,7 +3862,7 @@ public class MWP : Gtk.Application {
                     {
                         if(home_changed(GPSInfo.lat, GPSInfo.lon))
                         {
-                            if(spi.fix == 0)
+                            if(SportDev.fix == 0)
                             {
                                 no_ofix++;
                             }
@@ -3873,7 +3878,7 @@ public class MWP : Gtk.Application {
                 }
                 if ((gfix & 4) == 4)
                 {
-                    if (spi.range < 500)
+                    if (SportDev.range < 500)
                     {
                         MWPLog.message("SPORT: %s set home: changed home position %f %f\n",
                                        id.to_string(), GPSInfo.lat, GPSInfo.lon);
@@ -3892,16 +3897,16 @@ public class MWP : Gtk.Application {
                     nsats = _nsats;
                     navstatus.sats(_nsats, true);
                 }
-                spi.sats = _nsats;
-                spi.fix = ifix;
+                SportDev.sats = _nsats;
+                SportDev.fix = ifix;
                 flash_gps();
                 last_gps = nticks;
                 break;
             case SportDev.FrID.RSSI_ID:
-                spi.rssi = (uint16)((val&0xff)*1023/100);
+                SportDev.rssi = (uint16)((val&0xff)*1023/100);
                 MSP_ANALOG an = MSP_ANALOG();
-                an.rssi = spi.rssi;
-                an.vbat = (uint8)(spi.volts * 10);
+                an.rssi = SportDev.rssi;
+                an.vbat = (uint8)(SportDev.volts * 10);
 
                 an.powermetersum = (conf.smartport_fuel == 2 )? (uint16)curr.mah :0;
                 an.amps = curr.centiA;
@@ -3910,24 +3915,24 @@ public class MWP : Gtk.Application {
             case SportDev.FrID.PITCH:
             case SportDev.FrID.ROLL:
                 if (id == SportDev.FrID.ROLL)
-                    spi.roll = (int16)val;
+                    SportDev.roll = (int16)val;
                 else
-                    spi.pitch = (int16)val;
+                    SportDev.pitch = (int16)val;
 
                 LTM_AFRAME af = LTM_AFRAME();
-                af.pitch = spi.pitch;
-                af.roll = spi.roll;
-                af.heading = mhead = (int16) spi.cse;
+                af.pitch = SportDev.pitch;
+                af.roll = SportDev.roll;
+                af.heading = mhead = (int16) SportDev.cse;
                 navstatus.update_ltm_a(af, true);
                 art_win.update(af.roll*10, af.pitch*10, item_visible(DOCKLETS.ARTHOR));
                 if(Logger.is_logging)
-                    Logger.attitude((double)spi.pitch, (double)spi.roll, (int)mhead);
+                    Logger.attitude((double)SportDev.pitch, (double)SportDev.roll, (int)mhead);
                 break;
 
             case SportDev.FrID.HOME_DIST:
-                int diff = (int)(spi.range - val);
-                if(spi.range > 100 && (diff * 100 / spi.range) > 9)
-                    MWPLog.message("%s %um (mwp: %u, diff: %d)\n", id.to_string(), val, spi.range, diff);
+                int diff = (int)(SportDev.range - val);
+                if(SportDev.range > 100 && (diff * 100 / SportDev.range) > 9)
+                    MWPLog.message("%s %um (mwp: %u, diff: %d)\n", id.to_string(), val, SportDev.range, diff);
                 break;
 
             case SportDev.FrID.CURR_ID:
@@ -3941,22 +3946,22 @@ public class MWP : Gtk.Application {
                 }
                 break;
             case SportDev.FrID.ACCX_ID:
-                spi.ax = ((int)val) / 100.0;
+                SportDev.ax = ((int)val) / 100.0;
                 break;
             case SportDev.FrID.ACCY_ID:
-                spi.ay = ((int)val) / 100.0;
+                SportDev.ay = ((int)val) / 100.0;
                 break;
             case SportDev.FrID.ACCZ_ID:
-                spi.az = ((int)val) / 100.0;
-                spi.pitch = -(int16)(180.0 * Math.atan2 (spi.ax, Math.sqrt(spi.ay*spi.ay + spi.az*spi.az))/Math.PI);
-                spi.roll  = (int16)(180.0 * Math.atan2 (spi.ay, Math.sqrt(spi.ax*spi.ax + spi.az*spi.az))/Math.PI);
-                art_win.update(spi.roll*10, spi.pitch*10, item_visible(DOCKLETS.ARTHOR));
+                SportDev.az = ((int)val) / 100.0;
+                SportDev.pitch = -(int16)(180.0 * Math.atan2 (SportDev.ax, Math.sqrt(SportDev.ay*SportDev.ay + SportDev.az*SportDev.az))/Math.PI);
+                SportDev.roll  = (int16)(180.0 * Math.atan2 (SportDev.ay, Math.sqrt(SportDev.ax*SportDev.ax + SportDev.az*SportDev.az))/Math.PI);
+                art_win.update(SportDev.roll*10, SportDev.pitch*10, item_visible(DOCKLETS.ARTHOR));
                 if(Logger.is_logging)
-                    Logger.attitude((double)spi.pitch, (double)spi.roll, (int16) spi.cse);
+                    Logger.attitude((double)SportDev.pitch, (double)SportDev.roll, (int16) SportDev.cse);
                 break;
 
             case SportDev.FrID.VARIO_ID:
-                spi.vario = (int16)((int) val / 10);
+                SportDev.vario = (int16)((int) val / 10);
                 break;
 
             case SportDev.FrID.FUEL_ID:
@@ -4310,8 +4315,6 @@ case 0:
     {
         if(s == radar_device)
             return -1;
-        if(s == sport_device)
-            return -1;
         if(s == forward_device)
             return -1;
 
@@ -4332,8 +4335,6 @@ case 0:
     private void prepend_deventry(string s)
     {
         if(s == radar_device)
-            return;
-        if(s == sport_device)
             return;
         if(s == forward_device)
             return;
@@ -4765,7 +4766,7 @@ case 0:
         if(craft == null)
         {
             uint8 ctype = vi.mrtype;
-            if((sport_device != null || nopoll) && dmrtype != 0 && vi.mrtype == 0)
+            if((SportDev.active || nopoll) && dmrtype != 0 && vi.mrtype == 0)
                 ctype = (uint8)dmrtype;
             MWPLog.message("init icon %d %d %d (%s)\n",  ctype, dmrtype, vi.mrtype, nopoll.to_string());
             craft = new Craft(view, ctype, !no_trail,
@@ -8172,8 +8173,8 @@ case 0:
                         d, lat, lon, home_pos.lat, home_pos.lon);
                 }
             }
-            home_pos.lat = lat;
-            home_pos.lon = lon;
+            home_pos.lat = wp0.lat = lat;
+            home_pos.lon = wp0.lon = lon;
             have_home = true;
             ret = true;
         }
@@ -8718,6 +8719,9 @@ case 0:
     {
         if(is_shutdown == true)
             return;
+
+		if(xnopoll != nopoll)
+			nopoll = xnopoll;
         MWPLog.message("Serial doom replay %d\n", replayer);
         if(inhibit_cookie != 0) {
             uninhibit(inhibit_cookie);
@@ -8936,6 +8940,7 @@ case 0:
     {
 		radstatus.set_title(0);
 		CRSF.teledata.setlab = false;
+		SportDev.active = false;
         map_hide_wp();
         if(msp.available)
         {
@@ -8958,15 +8963,9 @@ case 0:
             bool ostat;
 
             serstate = SERSTATE.NONE;
-            if(serdev == radar_device || serdev == forward_device || serdev == sport_device) {
-                mwp_warning_box("The selected device is assigned to a special function (radar / forwarding / S-Port).\nPlease choose another device", Gtk.MessageType.WARNING, 60);
+            if(serdev == radar_device || serdev == forward_device) {
+                mwp_warning_box("The selected device is assigned to a special function (radar / forwarding).\nPlease choose another device", Gtk.MessageType.WARNING, 60);
                 return;
-            }
-            else if(serdev == "*SMARTPORT*")
-            {
-                ostat = msp.open_sport(sport_device, out estr);
-                spi = {0};
-
             } else if (serdev.has_prefix("mqtt://") ||
                        serdev.has_prefix("ssl://") ||
                        serdev.has_prefix("mqtts://") ||
@@ -8992,7 +8991,7 @@ case 0:
                 lastrx = lastok = nticks;
                 init_state();
                 init_sstats();
-                MWPLog.message("Connected %s\n", serdev);
+                MWPLog.message("Connected %s %s\n", serdev, nopoll.to_string());
                 set_replay_menus(false);
                 if(rawlog == true)
                 {
@@ -9023,7 +9022,7 @@ case 0:
                 if (!mqtt_available) {
                     msp.setup_reader();
                     MWPLog.message("Serial ready\n");
-                    if(nopoll == false && !mqtt_available && (serdev != "*SMARTPORT*"))
+                    if(nopoll == false && !mqtt_available )
                     {
                         serstate = SERSTATE.NORMAL;
                         queue_cmd(MSP.Cmds.IDENT,null,0);

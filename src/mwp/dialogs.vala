@@ -3115,19 +3115,19 @@ public class GPSInfo : GLib.Object
         return c;
     }
 
-    public void update_sport(SPORT_INFO spi, bool dms,bool visible, out double ddm)
+    public void update_sport(bool dms,bool visible, out double ddm)
     {
-        lat = spi.lat/10000000.0;
-        lon = spi.lon/10000000.0;
-        spd =  spi.spd;
-        cse =  spi.cse;
+        lat = SportDev.lat/10000000.0;
+        lon = SportDev.lon/10000000.0;
+        spd =  SportDev.spd;
+        cse =  SportDev.cse;
         calc_cse_dist_delta(lat,lon, out ddm);
-        hdop = spi.rhdop /100.0;
-        nsat = spi.sats;
-        fix = spi.fix;
+        hdop = SportDev.rhdop /100.0;
+        nsat = SportDev.sats;
+        fix = SportDev.fix;
 
-        double dalt = spi.alt/100.0;
-        var nsatstr = "%d (%sfix)".printf(spi.sats, Units.fix(spi.fix));
+        double dalt = SportDev.alt/100.0;
+        var nsatstr = "%d (%sfix)".printf(SportDev.sats, Units.fix(SportDev.fix));
         elev = (int16)Math.lround(dalt);
         if(visible)
         {
@@ -3146,7 +3146,7 @@ public class GPSInfo : GLib.Object
 
         if(Logger.is_logging)
         {
-            Logger.raw_gps(lat,lon,cse,spd, elev, fix, (uint8)nsat, spi.rhdop);
+            Logger.raw_gps(lat,lon,cse,spd, elev, fix, (uint8)nsat, SportDev.rhdop);
         }
     }
 
