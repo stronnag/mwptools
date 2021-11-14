@@ -1042,6 +1042,7 @@ public class MWP : Gtk.Application {
 	private int mdx = 0;
 	private int imdx = 0;
 	private bool ms_from_loader; // loading from file
+	private bool smart_warn = false;
 
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, null, "Mission file", "file-name"},
@@ -1083,6 +1084,7 @@ public class MWP : Gtk.Application {
         {"fsmenu", 0, 0, OptionArg.NONE, null, "use a menu bar in full screen (vice a menu button)", null},
         { "kmlfile", 'k', 0, OptionArg.STRING, null, "KML file", "file-name"},
         {"relaxed-msp", 0, 0, OptionArg.NONE, null, "don't check MSP direction flag", null},
+        {"smartport", 0, 0, OptionArg.NONE, null, "Unsupported", null},
         {null}
     };
 
@@ -1144,6 +1146,11 @@ public class MWP : Gtk.Application {
             stdout.printf("%s\n", MwpVers.get_id());
             return 0;
         }
+
+        if (o.contains("smartport")) {
+			smart_warn = true;
+        }
+
         if (o.contains("build-id")) {
             stdout.printf("%s\n", MwpVers.get_build());
             return 0;
@@ -3081,6 +3088,13 @@ public class MWP : Gtk.Application {
             dtnotify = new MwpNotify();
         }
         map_moved();
+		if (smart_warn) {
+			Idle.add(() => {
+			mwp_warning_box("--smartport is no longer required or supported\nEnter enter the device name as normal and it will be detected as Smart Port",
+							Gtk.MessageType.ERROR, 60);
+			return false;
+				});
+		}
 
     }
 

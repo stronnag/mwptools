@@ -57,10 +57,6 @@ _mwp_complete()
       return 0
       ;;
 
-    '--smartport')
-      return 0
-      ;;
-
     '--radar-device')
       return 0
       ;;
@@ -105,7 +101,6 @@ _mwp_complete()
 	--forward-to
 	--perma-warn
 	--radar-device
-	--smartport
 	--fsmenu
 	--kmlfile
 	--relaxed-msp"
