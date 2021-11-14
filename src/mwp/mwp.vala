@@ -381,6 +381,52 @@ public class MwpDockHelper : Object
     }
 }
 
+namespace CRSF {
+
+	const uint8 GPS_ID = 0x02;
+	const uint8 VARIO_ID = 0x07;
+	const uint8 BAT_ID = 0x08;
+	const uint8 ATTI_ID = 0x1E;
+	const uint8 FM_ID = 0x21;
+	const uint8 DEV_ID = 0x29;
+	const uint8 LINKSTATS_ID = 0x14;
+	const double ATTITODEG = (57.29578 / 10000.0);
+
+	struct Teledata {
+		double lat;
+		double lon;
+		int heading;
+		int speed;
+		int alt;
+		int vario;
+		uint8 nsat;
+		uint8 fix;
+		int16 pitch;
+		int16 roll;
+		int16 yaw;
+		double volts;
+		uint16 rssi;
+	}
+
+	Teledata teledata;
+
+	uint8 * deserialise_be_u24(uint8* rp, out uint32 v)
+	{
+        v = (*(rp) << 16 |  (*(rp+1) << 8) | *(rp+2));
+        return rp + 3*sizeof(uint8);
+	}
+
+	bool check_crc(uint8 []buffer)
+	{
+        uint8 len = buffer[1];
+        uint8 crc = 0;
+        for(var k = 2; k <= len; k++) {
+			crc = CRC8.dvb_s2(crc, crsf_buffer[k]);
+        }
+        return (crc == buffer[len+1]);
+	}
+}
+
 public class MWP : Gtk.Application {
 
     private const uint MAXVSAMPLE=12;
@@ -2693,6 +2739,10 @@ public class MWP : Gtk.Application {
                 handle_serial(cmd,raw,len,xflags,errs);
             });
 
+        msp.crsf_event.connect((raw) => {
+				ProcessCRSF(raw);
+            });
+
         msp.sport_event.connect((id,val) => {
                 process_sport_message ((SportDev.FrID)id, val);
             });
@@ -3218,6 +3268,315 @@ public class MWP : Gtk.Application {
         return imode;
     }
 
+	private void crsf_analog() {
+		MSP_ANALOG an = MSP_ANALOG();
+		an.rssi = CRSF.teledata.rssi;
+		an.vbat = (uint8)(CRSF.teledata.volts * 10);
+		an.powermetersum = (conf.smartport_fuel == 2 )? (uint16)curr.mah :0;
+		an.amps = curr.centiA;
+		process_msp_analog(an);
+	}
+	private void ProcessCRSF(uint8 []buffer) {
+		if (!CRSF.check_crc(buffer)) {
+			stderr.printf("CRSF: CRC Fails!\n");
+			return;
+		}
+		uint8 id = buffer[2];
+		uint8 *ptr = &buffer[3];
+		uint32 val32;
+		uint16 val16;
+		switch(id) {
+		case CRSF.GPS_ID:
+			ptr= deserialise_u32(ptr, out val32);  // Latitude (deg * 1e7)
+			int32 lat = (int32)Posix.ntohl(val32);
+			ptr= deserialise_u32(ptr, out val32); // Longitude (deg * 1e7)
+			int32 lon = (int32)Posix.ntohl(val32);
+			ptr= deserialise_u16(ptr, out val16); // Groundspeed ( km/h * 10 )
+			double gspeed = 0;
+			if (val16 != 0xffff) {
+				gspeed = Posix.ntohs(val16) / 36.0; // m/s
+			}
+			ptr= deserialise_u16(ptr, out val16);  // COG Heading ( degree * 100 )
+			double hdg = 0;
+			if (val16 != 0xffff) {
+				hdg = Posix.ntohs(val16) / 100.0; // deg
+			}
+			ptr= deserialise_u16(ptr, out val16);
+			int32 alt= (int32)Posix.ntohs(val16) - 1000; // m
+			uint8 nsat = *ptr;
+			CRSF.teledata.lat = lat / 1e7;
+			CRSF.teledata.lon = lon / 1e7;
+			CRSF.teledata.heading = (int)hdg;
+			CRSF.teledata.alt = (int)alt;
+			CRSF.teledata.nsat = nsat;
+			CRSF.teledata.speed = (int)gspeed;
+			if (nsat > 5)
+				CRSF.teledata.fix = 3;
+			else
+				CRSF.teledata.fix = 1;
+
+			MSP_RAW_GPS rg = MSP_RAW_GPS();
+			rg.gps_fix = CRSF.teledata.fix;
+			if(rg.gps_fix != 0)
+			{
+				last_gps = nticks;
+			}
+			flash_gps();
+
+			rg.gps_numsat = nsat;
+			rg.gps_lat = lat;
+			rg.gps_lon = lon;
+			rg.gps_altitude = (int16)alt;
+			rg.gps_speed = (uint16)gspeed*100;
+			rg.gps_ground_course = (uint16)hdg;
+			/*
+			  {
+                    deserialise_u16(rp, out rg.gps_hdop);
+                    rhdop = rg.gps_hdop;
+                    gpsinfo.set_hdop(rg.gps_hdop/100.0);
+                }
+			*/
+			double ddm;
+			if(fakeoff.faking)
+			{
+				rg.gps_lat += (int32)(fakeoff.dlat*10000000);
+				rg.gps_lon += (int32)(fakeoff.dlon*10000000);
+			}
+
+			gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS),
+									 out ddm) != 0);
+			fbox.update(item_visible(DOCKLETS.FBOX));
+			dbox.update(item_visible(DOCKLETS.DBOX));
+			_nsats = rg.gps_numsat;
+
+			if (gpsfix)
+			{
+				sat_coverage();
+				if(armed == 1) {
+					var spd = (double)(rg.gps_speed/100.0);
+					update_odo(spd, ddm);
+/*
+					stderr.printf("MM: armed %s, gpsfix %s home_home %s lat %d lon %d sats %d\n",								  armed.to_string(), gpsfix.to_string(),
+								  have_home.to_string(), lat, lon, nsat);
+*/
+					if(have_home == false && (nsat > 5) &&
+					   (lat != 0 && lon != 0) ) {
+						wp0.lat = GPSInfo.lat;
+						wp0.lon = GPSInfo.lon;
+						sflags |=  NavStatus.SPK.GPS;
+						want_special |= POSMODE.HOME;
+						navstatus.cg_on();
+					}
+				}
+
+				if(craft != null) {
+					update_pos_info();
+				}
+				if(want_special != 0)
+					process_pos_states(GPSInfo.lat,GPSInfo.lon, rg.gps_altitude, "CRSF");
+			}
+			break;
+		case CRSF.BAT_ID:
+			ptr= deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
+			double volts = 0;
+			if (val16 != 0xffff) {
+				volts = Posix.ntohs(val16) / 10.0; // Volts
+			}
+			ptr= deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
+			double amps = 0;
+			if (val16 != 0xffff) {
+				amps = Posix.ntohs(val16) / 10.0; // Amps
+			}
+			ptr = CRSF.deserialise_be_u24(ptr, out val32);
+			uint32 capa = val32;
+			//uint8 pctrem = *ptr; // Not used.
+//			stdout.printf("MM: Battery %.1fV, %.1fA  Draw: %u mAh Remain %d\n", volts, amps, capa, pctrem);
+
+			CRSF.teledata.volts = volts;
+			curr.mah = capa;
+			curr.centiA = (int16)amps*100;
+			curr.ampsok = true;
+			if (curr.centiA > odo.amps)
+				odo.amps = curr.centiA;
+			navstatus.current(curr, conf.smartport_fuel);
+			crsf_analog();
+			break;
+
+		case CRSF.VARIO_ID:
+			ptr= deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
+//			stdout.printf("VARIO %d cm/s\n", (int16)val16);
+			CRSF.teledata.vario = (int)val16;
+			break;
+		case CRSF.ATTI_ID:
+			ptr= deserialise_u16(ptr, out val16);  // Pitch radians *10000
+			double pitch = 0;
+			pitch = ((int16)Posix.ntohs(val16)) * CRSF.ATTITODEG;
+			ptr= deserialise_u16(ptr, out val16);  // Roll radians *10000
+			double roll = 0;
+			roll = ((int16)Posix.ntohs(val16)) * CRSF.ATTITODEG;
+			ptr= deserialise_u16(ptr, out val16);  // Roll radians *10000
+			double yaw = 0;
+			yaw = ((int16)Posix.ntohs(val16)) * CRSF.ATTITODEG;
+//			stdout.printf("Pitch %.1f, Roll %.1f, Yaw %.1f\n", pitch, roll, yaw);
+			CRSF.teledata.pitch = (int16)pitch;
+			CRSF.teledata.roll = (int16)roll;
+			CRSF.teledata.yaw = mhead = (int16)yaw ;
+			art_win.update(CRSF.teledata.roll*10, CRSF.teledata.pitch*10, item_visible(DOCKLETS.ARTHOR));
+			break;
+		case CRSF.FM_ID:
+			bool c_armed = true;
+			uint32 arm_flags = 0;
+			uint64 mwflags = 0;
+			uint8 ltmflags = 0;
+			bool failsafe = false;
+			string fm = (string)ptr;
+//			stdout.printf("FM %s\n", (string)ptr );
+			switch(fm) {
+			case "AIR":
+			case "ACRO":
+				ltmflags = MSP.LTM.acro;
+				break;
+			case "!FS!":
+				if(xfailsafe != failsafe)
+                {
+                    if(failsafe) {
+                        arm_flags |=  ARMFLAGS.ARMING_DISABLED_FAILSAFE_SYSTEM;
+                        MWPLog.message("Failsafe asserted %ds\n", duration);
+                        map_show_warning("FAILSAFE");
+                    } else {
+                        MWPLog.message("Failsafe cleared %ds\n", duration);
+                        map_hide_warning();
+                    }
+                    xfailsafe = failsafe;
+                }
+				break;
+			case "MANU":
+				ltmflags = MSP.LTM.manual; // RTH
+				break;
+			case "RTH":
+				ltmflags = MSP.LTM.rth; // RTH
+				break;
+			case "HOLD":
+				ltmflags = MSP.LTM.poshold; // PH
+				break;
+			case "CRUZ":
+			case "CRSH":
+				ltmflags = MSP.LTM.cruise; // Cruise
+				break;
+			case "AH":
+				ltmflags = MSP.LTM.althold; // AltHold
+				break;
+			case "WP":
+				ltmflags = MSP.LTM.waypoints;  // WP
+				break;
+			case "ANGL":
+				ltmflags = MSP.LTM.angle; // Angle
+				break;
+			case "HOR":
+				ltmflags = MSP.LTM.horizon; // Horizon
+				break;
+/*
+			case "WAIT":
+			case "OK":
+			case "HRST":
+*/
+			default:
+//				stderr.printf("MM: Unarmed Status %s\n", fm);
+				c_armed = false;
+				break;
+			}
+
+			armed = (c_armed) ? 1 : 0;
+			if(arm_flags != xarm_flags)
+			{
+				xarm_flags = arm_flags;
+				if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0)
+				{
+					arm_warn.show();
+				}
+				else
+				{
+					arm_warn.hide();
+				}
+			}
+
+			if(ltmflags == MSP.LTM.angle)
+				mwflags |= angle_mask;
+			if(ltmflags == MSP.LTM.horizon)
+				mwflags |= horz_mask;
+			if(ltmflags == MSP.LTM.poshold)
+				mwflags |= ph_mask;
+			if(ltmflags == MSP.LTM.waypoints)
+				mwflags |= wp_mask;
+			if(ltmflags == MSP.LTM.rth || ltmflags == MSP.LTM.land)
+				mwflags |= rth_mask;
+			else
+				mwflags = xbits; // don't know better
+
+			var achg = armed_processing(mwflags,"CRSF");
+			var xws = want_special;
+			var mchg = (ltmflags != last_ltmf);
+			if (mchg)
+			{
+				last_ltmf = ltmflags;
+				if(ltmflags == MSP.LTM.poshold)
+					want_special |= POSMODE.PH;
+				else if(ltmflags == MSP.LTM.waypoints)
+				{
+					want_special |= POSMODE.WP;
+					if (NavStatus.nm_pts == 0 || NavStatus.nm_pts == 255)
+						NavStatus.nm_pts = last_wp_pts;
+				}
+				else if(ltmflags == MSP.LTM.rth)
+					want_special |= POSMODE.RTH;
+				else if(ltmflags == MSP.LTM.althold)
+					want_special |= POSMODE.ALTH;
+				else if(ltmflags == MSP.LTM.cruise)
+					want_special |= POSMODE.CRUISE;
+				else if(ltmflags != MSP.LTM.land)
+				{
+					if(craft != null)
+						craft.set_normal();
+				}
+				var lmstr = MSP.ltm_mode(ltmflags);
+				MWPLog.message("New CRSF Mode %s (%d) %d %ds %f %f %x %x\n",
+							   lmstr, ltmflags, armed, duration, xlat, xlon,
+							   xws, want_special);
+				fmodelab.set_label(lmstr);
+			}
+
+			if(achg || mchg)
+				update_mss_state(ltmflags);
+
+			if(wp0.lat == 0.0 && wp0.lon == 0.0) {
+				if(CRSF.teledata.fix > 1) {
+					wp0.lat = CRSF.teledata.lat;
+					wp0.lon = CRSF.teledata.lon;
+				}
+			}
+			if(want_special != 0 /* && have_home*/)
+				process_pos_states(xlat,xlon, 0, "CRSF status");
+			break;
+
+		case CRSF.LINKSTATS_ID:
+			if(ptr[2] == 0) {
+				CRSF.teledata.rssi = (ptr[0] > ptr[1]) ? ptr[0] : ptr[1];
+				CRSF.teledata.rssi = 1023*CRSF.teledata.rssi/255;
+				radstatus.set_title(0);
+			} else {
+				CRSF.teledata.rssi = 1023*ptr[2]/100;
+				radstatus.set_title(1);
+			}
+			crsf_analog();
+			break;
+
+		case CRSF.DEV_ID:
+			stdout.printf("DEV %s\n", (string)(ptr+5));
+			break;
+		default:
+			break;
+		}
+	}
 
     private void process_sport_message (SportDev.FrID id, uint32 val)
     {
@@ -8569,6 +8928,7 @@ case 0:
 
     private void connect_serial()
     {
+		radstatus.set_title(0);
         map_hide_wp();
         if(msp.available)
         {

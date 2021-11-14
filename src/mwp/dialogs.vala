@@ -1514,6 +1514,7 @@ public class RadioStatus : GLib.Object
     private Radio_modes mode;
     private Gtk.Label rssi_pct;
     private Gtk.Label rssi_value;
+	private Gtk.Label rssi_title;
     private Gtk.LevelBar bar;
 
     public RadioStatus(Gtk.Builder builder)
@@ -1521,7 +1522,7 @@ public class RadioStatus : GLib.Object
         mode = Radio_modes.UNDEF;
 
         grid0 = builder.get_object ("grid4a") as Gtk.Grid;
-        rxerr_label = builder.get_object ("rxerrlab") as Gtk.Label;
+		rxerr_label = builder.get_object ("rxerrlab") as Gtk.Label;
         fixerr_label = builder.get_object ("fixerrlab") as Gtk.Label;
         locrssi_label = builder.get_object ("locrssilab") as Gtk.Label;
         remrssi_label = builder.get_object ("remrssilab") as Gtk.Label;
@@ -1533,6 +1534,7 @@ public class RadioStatus : GLib.Object
         bar.set_value(0);
         rssi_pct = builder.get_object ("rssi_pct") as Gtk.Label;
         rssi_value = builder.get_object ("rssi_val") as Gtk.Label;
+        rssi_title = builder.get_object ("rssi_title") as Gtk.Label;
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
         box.pack_start(grid1, true, true,0);
         box.show_all();
@@ -1554,7 +1556,15 @@ public class RadioStatus : GLib.Object
         }
     }
 
-    public void update_rssi(ushort rssi, bool visible)
+	public void set_title(uint8 idx=0) {
+		string [] titles = {"RSSI", "LQ"};
+		if (idx > 1)
+			idx = 0;
+		var lab = "<span size='xx-small'>%s</span>".printf(titles[idx]);
+		rssi_title.set_label(lab);
+	}
+
+	public void update_rssi(ushort rssi, bool visible)
     {
         if(visible)
         {
