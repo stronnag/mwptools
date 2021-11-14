@@ -406,6 +406,7 @@ namespace CRSF {
 		int16 yaw;
 		double volts;
 		uint16 rssi;
+		bool setlab;
 	}
 
 	Teledata teledata;
@@ -3281,6 +3282,11 @@ public class MWP : Gtk.Application {
 			stderr.printf("CRSF: CRC Fails!\n");
 			return;
 		}
+		if(!CRSF.teledata.setlab) {
+			verlab.label = verlab.tooltip_text = "CRSF telemetry";
+			CRSF.teledata.setlab = true;
+		}
+
 		uint8 id = buffer[2];
 		uint8 *ptr = &buffer[3];
 		uint32 val32;
@@ -8929,6 +8935,7 @@ case 0:
     private void connect_serial()
     {
 		radstatus.set_title(0);
+		CRSF.teledata.setlab = false;
         map_hide_wp();
         if(msp.available)
         {
