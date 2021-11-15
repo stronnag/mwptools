@@ -1,0 +1,4 @@
+rule go
+    command = go build -ldflags "-s -w" -o $out
+
+build mwp-log-replay: go btaddr_linux.go  btaddr_other.go  mwp-log-replay.go

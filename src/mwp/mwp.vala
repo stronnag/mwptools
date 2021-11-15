@@ -3090,7 +3090,7 @@ public class MWP : Gtk.Application {
         map_moved();
 		if (smart_warn) {
 			Idle.add(() => {
-			mwp_warning_box("--smartport is no longer required or supported\nEnter enter the device name as normal and it will be detected as Smart Port",
+			mwp_warning_box("--smartport is no longer required or supported\nEnter enter the Device name as a  normal device and it will be detected as Smart Port",
 							Gtk.MessageType.ERROR, 60);
 			return false;
 				});
@@ -10157,9 +10157,13 @@ case 0:
            sb.append(s1);
         if(s2 != null)
             sb.append(s2);
-        if(sb.len > 0)
+
+		if(sb.str.contains("--smartport")) {
+			smart_warn = true;
+		}
+		if(sb.len > 0)
             return sb.str;
-            return null;
+		return null;
     }
 
     private string read_cmd_opts()
@@ -10174,15 +10178,15 @@ case 0:
                 string line;
                 while ((line = dis.read_line (null)) != null)
                 {
-                    if(line.strip().length > 0 &&
-                       !line.has_prefix("#") &&
-                       !line.has_prefix(";"))
-                    {
+                    if(line.strip().length > 0) {
+						if(line.has_prefix("#") || line.has_prefix(";")) {
+							continue;
+						}
                         sb.append(line);
                         sb.append_c(' ');
-                    }
-                }
-            } catch (Error e) {
+					}
+				}
+			} catch (Error e) {
                 error ("%s", e.message);
             }
         }
