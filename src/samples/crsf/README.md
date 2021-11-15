@@ -2,8 +2,6 @@
 
 ## Introduction
 
-I have an opinion of undocumented propriety protocols that is not repeatable in polite company; so I'll say no more.
-
 This small project illustrates my effort to understand the CRSF telemetry protocol.
 The protocol is actually quite simple.
 
@@ -11,11 +9,11 @@ The protocol is actually quite simple.
 
 ### Packet
 
-CSRF data consists of frames decribing a data item (GPS, BATTERY etc.). Auto-detection is problematic; the method used by, for example, u360gts, only works for some streams. Looking for `0xea` and heuristics over the frame seem like the best bet.
+CSRF data consists of frames decribing a data item (GPS, BATTERY etc.). Auto-detection is problematic. Looking for `0xea` and applying heuristics over the frame seems like the best bet.
 
 ### Frame
 
-The following illustration is from inav's crsf.c :
+The following illustrations are from ELRS:
 
 ```
 CRSF frame has the structure:
@@ -58,16 +56,16 @@ uint8     Battery remaining (percent)
 #### Link Statistics id=0x14
 
 ```
-uint8     Uplink RSSI Ant. 1 ( dBm * -1 )
-uint8     Uplink RSSI Ant. 2 ( dBm * -1 )
-uint8     Uplink Package success rate / Link quality ( % )
-int8      Uplink SNR ( db )
-uint8     Diversity active antenna ( enum ant. 1 = 0, ant. 2 )
-uint8     RF Mode ( enum 4fps = 0 , 50fps, 150hz)
-uint8     Uplink TX Power ( enum 0mW = 0, 10mW, 25 mW, 100 mW, 500 mW, 1000 mW, 2000mW )
-uint8     Downlink RSSI ( dBm * -1 )
-uint8     Downlink package success rate / Link quality ( % )
-int8      Downlink SNR ( db )
+uint8     Uplink RSSI Ant. 1 (dBm * -1)
+uint8     Uplink RSSI Ant. 2 (dBm * -1)
+uint8     Uplink Package success rate / Link quality (%)
+int8      Uplink SNR (db)
+uint8     Diversity active antenna (enum ant. 1 = 0, ant. 2)
+uint8     RF Mode (enum 4fps = 0 , 50fps, 150hz)
+uint8     Uplink TX Power (enum 0mW = 0, 10mW, 25 mW, 100 mW, 500 mW, 1000 mW, 2000mW)
+uint8     Downlink RSSI (dBm * -1)
+uint8     Downlink package success rate / Link quality (%)
+int8      Downlink SNR (db)
 ```
 
 Uplink is the connection from the TX to the vehicle, downlink from the vehicle to TX.
@@ -101,4 +99,33 @@ uint8     0x01 (aPrameter version 1)
 
 ## Credits
 
-Thanks to the ExpressLRS, inav and u360gts projects for the necessary clues.
+Thanks to the ExpressLRS and inav projects for the necessary clues.
+
+## Tools
+
+### Replay
+
+To replay into mwp:
+
+* Start mwp using a UDP port (40042 is the default for the replay script)
+```
+  mwp -d udp://:40042 -a
+```
+* Start the replay tool, using the same port number:
+```
+  # Using default port, else -u PORT_NO
+  ./crsf_to_udp.rb crsf_raw.log
+```
+
+### Dump Data
+
+First, build the `crsf_test` tool
+```
+ninja
+```
+then
+
+```
+$ crsf_test FILE_NAME
+```
+The decoded file is dumped to the terminal.

@@ -1,13 +1,5 @@
 // machine states
 
-enum Detects {
-    DETECTION_STATE_IDLE,
-    DETECTION_STATE_START,
-	DETECTION_STATE_CRSF_0,
-	DETECTION_STATE_CRSF_1,
-    DETECTION_STATE_CRSF
-  }
-
 private const uint8 crc8_dvb_s2_tab[] = {
 	0x00, 0xd5, 0x7f, 0xaa, 0xfe, 0x2b, 0x81, 0x54,
 	0x29, 0xfc, 0x56, 0x83, 0xd7, 0x02, 0xa8, 0x7d,
@@ -57,65 +49,33 @@ const double ATTITODEG = (57.29578 / 10000.0);
 
 static uint8 crsf_buffer[128];
 static uint8 crsf_index = 0;
-static uint8 detect_idx=0;
-
-static uint offset = 0;
 
 const string[] sRFMode = {"4fps","50fps","150hz"};
 const uint16[] sUpTXPwr = {0, 10, 25, 100, 500, 1000, 2000};
 
-Detects check_crsf_protocol (uint8 c, Detects d) {
-/*
- // The unreliable u360gts schema
-	switch(d){
-	case Detects.DETECTION_STATE_IDLE:
-		if (c == 0x08 ) {
-			d = Detects.DETECTION_STATE_CRSF_0;
-			detect_idx = 0;
-		}
-		break;
-	case Detects.DETECTION_STATE_CRSF_0:
-		if (c == 0x00){
-			d = Detects.DETECTION_STATE_CRSF_1;
-			detect_idx++;
-		}
-		break;
-	case Detects.DETECTION_STATE_CRSF_1:
-		if (c == 0xa7 && detect_idx == 1) {
-			d = Detects.DETECTION_STATE_CRSF;
-			detect_idx = 0;
-			stdout.printf("In sync at %u (%x)\n", offset, offset);
-		}
-		break;
-	default:
-		break;
-	}
-*/
-	if ( d ==  Detects.DETECTION_STATE_IDLE && c == 0xea) {
-		d = Detects.DETECTION_STATE_CRSF;
-		detect_idx = 0;
-	}
-	return d;
+bool check_crsf_protocol (uint8 c) {
+	return (c == 0xea) ? true : false;
 }
 
-void crsf_decode(uint8 data)
+bool crsf_decode(uint8 c)
 {
 
-  if (crsf_index == 0 && data != RADIO_ADDRESS) {
-	  return;
+  if (crsf_index == 0 && c != RADIO_ADDRESS) {
+	  return false;
   }
 
-  if (crsf_index == 1 && (data < 2 || data > TELEMETRY_RX_PACKET_SIZE-2)) {
+  if (crsf_index == 1 && (c < 2 || c > TELEMETRY_RX_PACKET_SIZE-2)) {
 	  crsf_index = 0;
-	  return;
+	  return false;
   }
 
   if (crsf_index < TELEMETRY_RX_PACKET_SIZE) {
-	  crsf_buffer[crsf_index] = data;
+	  crsf_buffer[crsf_index] = c;
 	  crsf_index++;
   }
   else {
 	  crsf_index = 0;
+	  return false;
   }
 
   if (crsf_index > 4) {
@@ -125,6 +85,7 @@ void crsf_decode(uint8 data)
 		crsf_index = 0;
     }
   }
+  return true;
 }
 
 uint8 crc8_dvb_s2(uint8 crc, uint8 a)
@@ -191,7 +152,7 @@ void process_crsf()
 		ptr= deserialise_u16(ptr, out val16);
 		int32 alt= (int32)Posix.ntohs(val16) - 1000; // m
 		uint8 nsat = *ptr;
-		stdout.printf("GPS %.6f %.6f %d m %.1f deg %.1f m/s %d sats\n", lat, lon, alt, hdg,
+		stdout.printf("GPS: %.6f %.6f %d m %.1f deg %.1f m/s %d sats\n", lat, lon, alt, hdg,
 					  gspeed, nsat);
 		break;
       case BAT_ID:
@@ -208,12 +169,12 @@ void process_crsf()
 		  ptr = deserialise_be_u24(ptr, out val32);
 		  uint32 capa = val32;
 		  uint8 pctrem = *ptr;
-		  stdout.printf("Battery %.1fV, %.1fA  Draw: %u mAh Remain %d\n", volts, amps, capa, pctrem);
+		  stdout.printf("BAT: %.1fV, %.1fA  Draw: %u mAh Remain %d\n", volts, amps, capa, pctrem);
 		break;
 
   case VARIO_ID:
 	  ptr= deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
-	  stdout.printf("VARIO %d cm/s\n", (int16)val16);
+	  stdout.printf("VARIO: %d cm/s\n", (int16)val16);
 	  break;
   case ATTI_ID:
 	  ptr= deserialise_u16(ptr, out val16);  // Pitch radians *10000
@@ -225,13 +186,13 @@ void process_crsf()
 	  ptr= deserialise_u16(ptr, out val16);  // Roll radians *10000
 	  double yaw = 0;
 	  yaw = ((int16)Posix.ntohs(val16)) * ATTITODEG;
-	  stdout.printf("Pitch %.1f, Roll %.1f, Yaw %.1f\n", pitch, roll, yaw);
+	  stdout.printf("ATTI: Pitch %.1f, Roll %.1f, Yaw %.1f\n", pitch, roll, yaw);
 	  break;
   case FM_ID:
-	  stdout.printf("FM %s\n", (string)ptr );
+	  stdout.printf("FM: %s\n", (string)ptr );
 	  break;
   case DEV_ID:
-	  stdout.printf("DEV %s\n", (string)(ptr+5));
+	  stdout.printf("DEV: %s\n", (string)(ptr+5));
 	  break;
   case LINKSTATS_ID:
 	  uint8 rssi1 = ptr[0];
@@ -252,10 +213,10 @@ void process_crsf()
 	  string spwr = "??";
 	  if (uptxpwr < sUpTXPwr.length)
 		  spwr = "%dmW".printf(sUpTXPwr[uptxpwr]);
-
-	  stdout.printf("RSSI1 %d RSSI2 %d UpLQ %d UpSNR %d ActAnt %d Mode %s TXPwr %s DnRSSI %d DnLQ %d DnSNR %d\n", rssi1, rssi2, uplq, upsnr, actant, smode, spwr, downrssi, downlq, downsnr);
+	  stdout.printf("LINK: RSSI1 %d RSSI2 %d UpLQ %d UpSNR %d ActAnt %d Mode %s TXPwr %s DnRSSI %d DnLQ %d DnSNR %d\n", rssi1, rssi2, uplq, upsnr, actant, smode, spwr, downrssi, downlq, downsnr);
 	  break;
   default:
+	  stdout.printf("UNK: Type %x %d\n", id, id);
 	  break;
   }
 }
@@ -264,15 +225,14 @@ static int main(string?[] args) {
 	var fp = FileStream.open(args[1], "r");
 	if(fp != null)
 	{
-		Detects d = Detects.DETECTION_STATE_IDLE;
 		int c;
+		bool is_crsf = false;
 		while((c = fp.getc()) != -1) {
-			if (d != Detects.DETECTION_STATE_CRSF) {
-				d = check_crsf_protocol((uint8)c, d);
-			} else {
-				crsf_decode((uint8)c);
-			}
-			offset++;
+			if (!is_crsf)
+				is_crsf = check_crsf_protocol((uint8)c);
+
+			if(is_crsf)
+				is_crsf = crsf_decode((uint8)c);
 		}
 	}
 	return 0;
