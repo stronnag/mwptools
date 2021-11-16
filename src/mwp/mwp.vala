@@ -3098,7 +3098,7 @@ public class MWP : Gtk.Application {
 
     }
 
-
+#if MQTT
 	private MissionItem wp_to_mitem(MSP_WP w)
 	{
 		MissionItem m = MissionItem();
@@ -3118,6 +3118,7 @@ public class MWP : Gtk.Application {
 		m.flag = w.flag;
 		return m;
 	}
+#endif
 
 	private void mm_regenerate(uint mitem) {
 		Mission [] mmsx = {};
