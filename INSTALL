@@ -1,7 +1,7 @@
 mwptools installation instructions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-$ meson build buildtype=release --strip [--prefix=DIR]
+$ meson build --buildtype=release --strip [--prefix=DIR]
   * FreeBSD --- don't provide --prefix
     Binaries in /use/local/bin etc.
   * Linux
