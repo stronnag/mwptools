@@ -47,11 +47,15 @@ func Rework(mpts []Point, gnd []int) {
 		wpadelta := mpts[n+1].Xz - astart
 		ldiff := 0.0
 		adj := 0.0
-		for j := m.postgnd; j < mlist[n+1].pregnd; j++ {
+		jj := m.postgnd
+		j0 := jj
+		j1 := mlist[n+1].pregnd
+		for j := j0; j < j1; j++ {
 			ax := float64(astart) + float64(wpadelta)*ldiff/wpdist
 			adif := float64(Conf.Margin+gnd[j]) - ax
 			if adif > adj {
 				adj = adif
+				jj = j
 			}
 			ldiff += ddif
 		}
@@ -61,6 +65,10 @@ func Rework(mpts []Point, gnd []int) {
 			if mpts[n+1].Set != WP_RTH {
 				mpts[n+1].Xz += int(math.Ceil(adj))
 				mpts[n+1].Set = WP_UPDATED
+			} else {
+				// Adjust pre RTH for proportional diff less Margin (we already have margin at RTH)
+				xadj := int(math.Ceil(adj)*(1.0-float64((jj-j0))/float64((j1-j0)))) - Conf.Margin
+				mpts[n].Xz += xadj
 			}
 		}
 	}

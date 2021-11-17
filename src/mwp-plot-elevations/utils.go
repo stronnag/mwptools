@@ -73,12 +73,18 @@ func Dump_climb_dive(mpts []Point, tofs bool) {
 	}
 	lastd := 0.0
 	lasta := 0
+	altv := 0
 	var lastp string
 	var act string
 	for _, m := range mpts {
 		if m.D > 0 {
 			ddif := m.D - lastd
-			adif := m.Xz - lasta
+			if Conf.Output == "" {
+				altv = m.Az
+			} else {
+				altv = m.Xz
+			}
+			adif := altv - lasta
 			if adif < 0 {
 				act = "dive"
 			} else {
@@ -92,7 +98,7 @@ func Dump_climb_dive(mpts []Point, tofs bool) {
 			os.Stdout.WriteString(str)
 		}
 		lastd = m.D
-		lasta = m.Xz
+		lasta = altv
 		lastp = m.Wpname
 	}
 }

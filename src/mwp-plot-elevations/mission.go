@@ -161,8 +161,10 @@ func (m *Mission) check_for_home() error {
 	}
 	if Homep.Set == WP_HOME && Conf.Sanity != 0 {
 		_, dm := geo.Csedist(Homep.Y, Homep.X, mlat, mlon)
-		if int(dm*1852) > Conf.Sanity {
-			return errors.New("Acceptable first WP distance exceeded")
+		dmm := int(dm * 1852)
+		if dmm > Conf.Sanity {
+			str := fmt.Sprintf("Acceptable first WP distance %d exceeded %d", dmm, Conf.Sanity)
+			return errors.New(str)
 		}
 	}
 	return nil
@@ -245,12 +247,35 @@ func (m *Mission) Get_points() []Point {
 		lx = cx
 		ly = cy
 	}
+
 	if ret {
 		_, dm := geo.Csedist(ly, lx, Homep.Y, Homep.X)
 		dist += dm * 1852.0
 		mpts = append(mpts, Point{Y: Homep.Y, X: Homep.X, Wpno: -1, Wpname: "RTH", D: dist,
 			Flag: 0, Set: WP_RTH})
 	}
+	/*** Not used here
+		var vpts map[int8][]int8
+		vpts = make(map[int8][]int8)
+		for i := 0; i < len(mpts)-1; i++ {
+			m := mpts[i]
+			nwp := mpts[i+1].Wpno
+
+			need := true
+			for j, _ := range vpts[m.Wpno] {
+				if vpts[m.Wpno][j] == nwp {
+					need = false
+					break
+				}
+			}
+			if need {
+				vpts[m.Wpno] = append(vpts[m.Wpno], nwp)
+			}
+		}
+		for k, v := range vpts {
+			fmt.Fprintf(os.Stderr, "%d => %v\n", k, v)
+		}
+	  ***/
 	return mpts
 }
 
