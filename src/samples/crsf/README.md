@@ -7,11 +7,11 @@ The protocol is actually quite simple.
 
 ## CRSF
 
-### Packet
+### Detection
 
 CSRF data consists of frames decribing a data item (GPS, BATTERY etc.). Auto-detection is problematic. Looking for `0xea` and applying heuristics over the frame seems like the best bet.
 
-### Frame
+### Frame Format
 
 The following illustrations are from ELRS:
 
@@ -49,7 +49,7 @@ int16      Vertical speed (cm/s)
 ```
 uint16    Voltage (mV * 100)
 uint16    Current (mA * 100)
-uint24    Used (mAh)
+uint24    Used (mAh) ... yes, 3 bytes
 uint8     Battery remaining (percent)
 ```
 
@@ -105,16 +105,16 @@ Thanks to the ExpressLRS and inav projects for the necessary clues.
 
 ### Replay
 
-To replay into mwp:
+To replay a capture file into mwp:
 
-* Start mwp using a UDP port (40042 is the default for the replay script)
+* Start mwp using a UDP port (40042 is a random port number)
 ```
   mwp -d udp://:40042 -a
 ```
-* Start the replay tool, using the same port number:
+* Start the mwp log replay tool, using the same port number:
 ```
-  # Using default port, else -u PORT_NO
-  ./crsf_to_udp.rb crsf_raw.log
+  # Note we must also specific the target host here (localhost)
+  mwp-log-replay -d udp://localhost:40042 crsf_raw.log
 ```
 
 ### Dump Data
