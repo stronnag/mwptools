@@ -54,9 +54,9 @@ type MWPLog struct {
 	fh    *os.File
 	rd    *bufio.Reader
 	last  float64
-	vers  byte
 	skip  bool
 	noout bool
+	vers  byte
 }
 
 const (
@@ -79,15 +79,6 @@ func check_device() (string, int) {
 	} else {
 		baud = *_baud
 	}
-	if name == "" {
-		for _, v := range []string{"/dev/ttyACM0", "/dev/ttyUSB0"} {
-			if _, err := os.Stat(v); err == nil {
-				name = v
-				baud = *_baud
-				break
-			}
-		}
-	}
 	if name != "" {
 		log.Printf("Using device %s\n", name)
 	}
@@ -108,6 +99,9 @@ func (l *MWPLog) readlog() ([]byte, error) {
 			l.last = hdr.Offset
 			buf = make([]byte, hdr.Size)
 			l.fh.Read(buf)
+			if hdr.Dirn == 'o' {
+				return nil, nil
+			}
 		}
 	case LOG_JSON:
 		dat, err0 := l.rd.ReadBytes('\n')
@@ -116,6 +110,9 @@ func (l *MWPLog) readlog() ([]byte, error) {
 			err = json.Unmarshal(dat, &js)
 			buf = js.RawBytes
 			delay = js.Stamp - l.last
+			if js.Dirn == 'o' {
+				return nil, nil
+			}
 		} else {
 			err = err0
 		}
@@ -133,7 +130,6 @@ func (l *MWPLog) readlog() ([]byte, error) {
 	if l.skip == false && delay > 0 {
 		dt := time.Duration(delay * 1000000)
 		if l.noout == false {
-			//			fmt.Fprintf(os.Stderr, "sleep: %+v %f\n", dt*time.Microsecond, delay)
 			time.Sleep(dt * time.Microsecond)
 		}
 	}
@@ -141,24 +137,29 @@ func (l *MWPLog) readlog() ([]byte, error) {
 	return buf, err
 }
 
-func (l *MWPLog) checkvers() {
-	sig := make([]byte, 3)
+func (l *MWPLog) checkvers() string {
+	logfmt := "raw data"
+	sig := make([]byte, 7)
 	_, err := l.fh.Read(sig)
 	if err == nil {
-		switch string(sig) {
-		case "v2\n":
+		if string(sig)[0:3] == "v2\n" {
+			logfmt = "mwp binary log v2"
 			l.vers = LOG_V2
-		case `{"s`:
-			l.vers = LOG_JSON
+		} else {
+			if string(sig) == `{"stamp` {
+				logfmt = "mwp JSON log"
+				l.vers = LOG_JSON
+				l.rd = bufio.NewReader(l.fh)
+			}
 			l.fh.Seek(0, 0)
-			l.rd = bufio.NewReader(l.fh)
 		}
 	}
+	return logfmt
 }
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage of mwp-serial-cap [options] file\n")
+		fmt.Fprintf(os.Stderr, "Usage of mwp-log-replay [options] file\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
@@ -194,11 +195,6 @@ func main() {
 				dd.proto = DevClass_UDP
 			}
 			dd.name = m[0][2]
-			/*
-				if dd.name == "__MWP_SERIAL_HOST" {
-					dd.name = resolve_default_gw()
-				}
-			*/
 			dd.port, _ = strconv.Atoi(m[0][3])
 			switch dd.proto {
 			case DevClass_TCP:
@@ -247,19 +243,22 @@ func main() {
 		defer sd.Close()
 	}
 
-	logf.checkvers()
+	logfmt := logf.checkvers()
+	fmt.Fprintf(os.Stderr, "%s: %s\n", adata[0], logfmt)
 
 	for {
 		buf, err := logf.readlog()
 		if err == nil {
-			if name != "" {
-				sd.Write(buf)
-			} else {
-				fmt.Printf("Read %d bytes\n", len(buf))
-				for _, bx := range buf {
-					fmt.Printf("%02x ", bx)
+			if len(buf) > 0 {
+				if name != "" {
+					sd.Write(buf)
+				} else {
+					fmt.Printf("Read %d bytes\n", len(buf))
+					for _, bx := range buf {
+						fmt.Printf("%02x ", bx)
+					}
+					fmt.Println()
 				}
-				fmt.Println()
 			}
 		} else if err == io.EOF {
 			break

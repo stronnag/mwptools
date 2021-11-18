@@ -67,3 +67,7 @@ If the `-js` (JSON) option is selected, a JSON file is created, containing LF (0
 * `rawdata`: JSON encoded byte array
 
 `-js` has precedence over `-nometa`.
+
+## Replay
+
+Captured log files may be replayed using the [mwp-log-replay](../mwp-log-replay/README.md) replay tool.

@@ -5,6 +5,7 @@ build mwp-serial-cap: go mwp-serial-cap.go btaddr_linux.go btaddr_other.go ti_po
 default mwp-serial-cap
 
 rule copy
-  command = cp $in $$HOME/bin
+    command = cp $in $$HOME/.local/bin
+
 
 build install: copy mwp-serial-cap
