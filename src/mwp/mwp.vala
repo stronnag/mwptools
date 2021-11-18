@@ -3286,9 +3286,10 @@ public class MWP : Gtk.Application {
 		an.amps = curr.centiA;
 		process_msp_analog(an);
 	}
+
 	private void ProcessCRSF(uint8 []buffer) {
 		if (!CRSF.check_crc(buffer)) {
-			stderr.printf("CRSF: CRC Fails!\n");
+			MWPLog.message("CRSF: CRC Fails\n");
 			return;
 		}
 		if(!CRSF.teledata.setlab) {
