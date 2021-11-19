@@ -267,7 +267,6 @@ func main() {
 		}
 	}
 	if name != "" {
-		fmt.Printf("Close\n")
 		sd.Close()
 	}
 }
