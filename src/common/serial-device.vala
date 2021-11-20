@@ -93,9 +93,9 @@ namespace SportDev {
     private bool fr_checksum(uint8[] buf)
     {
         uint16 crc = 0;
-        for(var i = 2; i < 10; i++)
+        foreach (var b in buf[2:10])
         {
-            crc += buf[i];
+            crc += b;
             crc += crc >> 8;
             crc &= 0xff;
         }
@@ -116,20 +116,27 @@ namespace SportDev {
 
     public delegate void DelegateType (uint32 a,uint32 b);
 
+	public bool fr_publish(DelegateType d, uint8 []buf) {
+		bool res = fr_checksum(buf);
+		if(res)
+		{
+			ushort id;
+			uint val;
+			deserialise_u16(&buf[3], out id);
+			deserialise_u32(&buf[5], out val);
+			d((uint32)id,val);
+		}
+		return res;
+	}
+
 	public FrStatus extract_messages(DelegateType d, uint8 b) {
 		FrStatus status = FrStatus.OK;
 		if (b == FrProto.P_START && nb > 0)
 		{
 			if (nb == FrProto.P_SIZE)
 			{
-				bool res = fr_checksum(buf);
-				if(res)
+				if(fr_publish(d, buf))
 				{
-					ushort id;
-					uint val;
-					deserialise_u16(&buf[3], out id);
-					deserialise_u32(&buf[5], out val);
-					d((uint32)id,val);
 					good++;
 				} else {
 					bad++;
@@ -143,8 +150,7 @@ namespace SportDev {
 				nb = 0;
 			}
 		}
-		if (stuffed)
-		{
+		if (stuffed) {
 			b = b ^ FrProto.P_MASK;
 			stuffed = false;
 		}
@@ -174,9 +180,9 @@ private class MavCRC : Object {
         uint32 msgid;
         uint8 seed;
     }
-        /*
-          generated from mavlink library, standard.h, via mavcrc.go
-         */
+	/*
+	  generated from mavlink library, standard.h, via mavcrc.go
+	*/
     private const MavCRCList mavcrcs[] = {
         { 0, 50 }, { 1, 124 }, { 2, 137 }, { 4, 237 }, { 5, 217 },
         { 6, 104 }, { 7, 119 }, { 8, 117 }, { 11, 89 }, { 20, 214 },
@@ -270,6 +276,92 @@ namespace CRSF {
 			}
 		}
 		return 0;
+	}
+}
+
+namespace MPM {
+	enum State {
+		L_TYPE,
+		L_LEN,
+		L_DATA,
+		L_SKIP,
+	}
+
+	enum Mtype {
+		MPM_STATUS = 1,
+		MPM_FRSKY = 2,
+		MPM_FRHUB = 3,
+		MPM_DSM_T = 4,
+		MPM_DSM_B = 5,
+		MPM_FLYSKY2 = 6,
+		MPM_UNUSED1 = 7,
+		MPM_ISYNC = 8,
+		MPM_UNUSED2 = 9,
+		MPM_HITEC = 0xa,
+		MPM_SPEKSCAN = 0xb,
+		MPM_FLYSKYAC = 0xc,
+		MPM_CHANFWD = 0xd,
+		MPM_HOTT = 0xe,
+		MPM_MLINK = 0xf,
+		MPM_CONFIG = 0x10,
+		MPM_PLIST = 0x11,
+		MPM_MAXTYPE = 0x12
+	}
+
+	static uint8 frbuf[16];
+	static uint8 skip = 0;
+	static uint8 type = 0;
+	//                      0    1   2  3   4   5   6  7  8  9  a  b   c  d   e  f  10 11
+	const uint8 []tlens = {0, 0x18, 9, 9, 16, 16, 29, 0, 4, 0, 8, 6, 29, 0, 14, 10, 22, 0};
+
+	static State state = State.L_TYPE;
+
+	public uint8[] get_buffer() {
+		return frbuf;
+	}
+
+	public bool decode(uint8 c) {
+		bool res = false;
+		switch (state) {
+		case State.L_TYPE:
+			if (c > 0 && c < Mtype.MPM_MAXTYPE &&
+				c != Mtype.MPM_UNUSED1 && c != Mtype.MPM_UNUSED2 )  {
+				type = c;
+				state = State.L_LEN;
+			} else {
+				state = State.L_TYPE;
+			}
+			break;
+		case State.L_LEN:
+			var tl  = tlens[type];
+			if (tl != 0 && c == tl) {
+				if (type == Mtype.MPM_FRSKY) {
+					frbuf[0] = 0x7e; // legacy
+					state = State.L_DATA;
+				} else {
+					state = State.L_SKIP;
+				}
+				skip = tl;
+			} else {
+				state = State.L_TYPE;
+			}
+			break;
+		case State.L_DATA:
+			frbuf[tlens[Mtype.MPM_FRSKY] - skip + 1] = c;
+			skip--;
+			if (skip == 0) {
+				state = State.L_TYPE;
+				res = true;
+			}
+			break;
+		case State.L_SKIP:
+			skip--;
+			if (skip == 0) {
+				state = State.L_TYPE;
+			}
+			break;
+		}
+		return res;
 	}
 }
 
@@ -496,13 +588,13 @@ public class MWSerial : Object {
     }
 
 /*
-    public MWSerial.smartport()
-    {
-        fwd = available = false;
-        rxbuf_alloc = MemAlloc.RX;
-        rxbuf = new uint8[rxbuf_alloc];
-        devbuf = new uint8[MemAlloc.DEV];
-    }
+  public MWSerial.smartport()
+  {
+  fwd = available = false;
+  rxbuf_alloc = MemAlloc.RX;
+  rxbuf = new uint8[rxbuf_alloc];
+  devbuf = new uint8[MemAlloc.DEV];
+  }
 */
     public void sport_handler(uint32 a, uint32 b)
     {
@@ -569,7 +661,7 @@ public class MWSerial : Object {
         try {
             io_read = new IOChannel.unix_new(fd);
             if(io_read.set_encoding(null) != IOStatus.NORMAL)
-                    error("Failed to set encoding");
+				error("Failed to set encoding");
             tag = io_read.add_watch(IOCondition.IN|IOCondition.HUP|
                                     IOCondition.NVAL|IOCondition.ERR,
                                     device_read);
@@ -688,12 +780,12 @@ public class MWSerial : Object {
     }
 
 /*
-    public bool open_sport(string device, out string estr)
-    {
-        fwd = false;
-        MWPLog.message("SPORT: open %s\n", device);
-        return open(device, 0, out estr);
-    }
+  public bool open_sport(string device, out string estr)
+  {
+  fwd = false;
+  MWPLog.message("SPORT: open %s\n", device);
+  return open(device, 0, out estr);
+  }
 */
 
     public bool open(string device, uint rate, out string estr)
@@ -1021,755 +1113,760 @@ public class MWSerial : Object {
 
                 for(var nc = 0; nc < res; nc++)
                 {
-                    switch(state) {
-					case States.S_ERROR:
-					case States.S_HEADER:
-						switch (devbuf[nc])  {
-						case '$':
-							if ((pmask & PMask.INAV) == PMask.INAV) {
-								sp = nc;
-								state=States.S_HEADER1;
-								errstate = false;
-							}
-							break;
-						case 0xfe:
-							if ((pmask & PMask.INAV) == PMask.INAV) {
-								sp = nc;
-								state=States.S_M_SIZE;
-								errstate = false;
-							}
-							break;
-						case 0xfd:
-							if ((pmask & PMask.INAV) == PMask.INAV) {
-								sp = nc;
-								state=States.S_M2_SIZE;
-								errstate = false;
-							}
-							break;
-						case CRSF.RADIO_ADDRESS:
-							if ((pmask & PMask.CRSF) == PMask.CRSF) {
-								CRSF.detect_idx = 0;
-								state = States.S_CRSF_OK;
-								MWPLog.message("CRSF detect 0x%02x\n", devbuf[nc]);
-								CRSF.crsf_decode(devbuf[nc]);
-							}
-							break;
-						case SportDev.FrProto.P_START:
-							if ((pmask & PMask.SPORT) == PMask.SPORT) {
-								var sbx = SportDev.extract_messages(sport_handler, devbuf[nc]);
-								if(sbx != SportDev.FrStatus.OK) {
-									state = States.S_ERROR;
-//								MWPLog.message("SPORT detect 0x%02x %s %s\n", devbuf[nc], sbx.to_string(), state.to_string());
-								} else {
-									state = States.S_SPORT_OK;
+					if (pmask ==  PMask.MPM) {
+						if(MPM.decode(devbuf[nc])) {
+							SportDev.fr_publish(sport_handler, MPM.get_buffer());
+						}
+					} else {
+						switch(state) {
+						case States.S_ERROR:
+						case States.S_HEADER:
+							switch (devbuf[nc])  {
+							case '$':
+								if ((pmask & PMask.INAV) == PMask.INAV) {
+									sp = nc;
+									state=States.S_HEADER1;
+									errstate = false;
 								}
+								break;
+							case 0xfe:
+								if ((pmask & PMask.INAV) == PMask.INAV) {
+									sp = nc;
+									state=States.S_M_SIZE;
+									errstate = false;
+								}
+								break;
+							case 0xfd:
+								if ((pmask & PMask.INAV) == PMask.INAV) {
+									sp = nc;
+									state=States.S_M2_SIZE;
+									errstate = false;
+								}
+								break;
+							case CRSF.RADIO_ADDRESS:
+								if ((pmask & PMask.CRSF) == PMask.CRSF) {
+									CRSF.detect_idx = 0;
+									state = States.S_CRSF_OK;
+									MWPLog.message("CRSF detect 0x%02x\n", devbuf[nc]);
+									CRSF.crsf_decode(devbuf[nc]);
+								}
+								break;
+							case SportDev.FrProto.P_START:
+								if ((pmask & PMask.SPORT) == PMask.SPORT) {
+									var sbx = SportDev.extract_messages(sport_handler, devbuf[nc]);
+									if(sbx != SportDev.FrStatus.OK) {
+										state = States.S_ERROR;
+//								MWPLog.message("SPORT detect 0x%02x %s %s\n", devbuf[nc], sbx.to_string(), state.to_string());
+									} else {
+										state = States.S_SPORT_OK;
+									}
+								}
+								break;
+							default:
+								if (state == States.S_HEADER) {
+									error_counter();
+									MWPLog.message("expected header0 (0x%x)\n", devbuf[nc]);
+									state=States.S_ERROR;
+								}
+								break;
 							}
 							break;
-						default:
-							if (state == States.S_HEADER) {
-								error_counter();
-								MWPLog.message("expected header0 (0x%x)\n", devbuf[nc]);
+
+						case States.S_SPORT_OK:
+							var sbx = SportDev.extract_messages(sport_handler, devbuf[nc]);
+							if(sbx != SportDev.FrStatus.OK) {
+								state = States.S_ERROR;
+//							MWPLog.message("SPORT data 0x%02x %s %s\n", devbuf[nc], sbx.to_string(), state.to_string());
+							}
+							break;
+
+						case States.S_CRSF_OK:
+							var crsf_len = CRSF.crsf_decode(devbuf[nc]);
+							if (crsf_len > 0) {
+								crsf_event(CRSF.crsf_buffer);
+							} else if (crsf_len == -1) {
 								state=States.S_ERROR;
 							}
 							break;
-						}
-						break;
 
-					case States.S_SPORT_OK:
-						var sbx = SportDev.extract_messages(sport_handler, devbuf[nc]);
-						if(sbx != SportDev.FrStatus.OK) {
-							state = States.S_ERROR;
-//							MWPLog.message("SPORT data 0x%02x %s %s\n", devbuf[nc], sbx.to_string(), state.to_string());
-						}
-						break;
-
-					case States.S_CRSF_OK:
-						var crsf_len = CRSF.crsf_decode(devbuf[nc]);
-						if (crsf_len > 0) {
-							crsf_event(CRSF.crsf_buffer);
-						} else if (crsf_len == -1) {
-							state=States.S_ERROR;
-						}
-						break;
-
-					case States.S_HEADER1:
-						encap = false;
-						irxbufp=0;
-						if(devbuf[nc] == 'M')
-						{
-							state=States.S_HEADER2;
-						}
-						else if(devbuf[nc] == 'T')
-						{
-							state=States.S_T_HEADER2;
-						}
-						else if(devbuf[nc] == 'X')
-						{
-							state=States.S_X_HEADER2;
-						}
-						else
-						{
-							error_counter();
-							MWPLog.message("fail on header1 %x\n", devbuf[nc]);
-							state=States.S_ERROR;
-						}
-						break;
-
-					case States.S_T_HEADER2:
-						needed = 0;
-						switch(devbuf[nc])
-						{
-						case 'G':
-							needed = (uint16) MSize.LTM_GFRAME;
-							cmd = MSP.Cmds.TG_FRAME;
-							break;
-						case 'A':
-							needed = (uint16) MSize.LTM_AFRAME;
-							cmd = MSP.Cmds.TA_FRAME;
-							break;
-						case 'S':
-							needed = (uint16) MSize.LTM_SFRAME;
-							cmd = MSP.Cmds.TS_FRAME;
-							break;
-						case 'O':
-							needed = (uint16) MSize.LTM_OFRAME;
-							cmd = MSP.Cmds.TO_FRAME;
-							break;
-						case 'N':
-							needed = (uint16) MSize.LTM_NFRAME;
-							cmd = MSP.Cmds.TN_FRAME;
-							break;
-						case 'X':
-							needed = (uint16) MSize.LTM_XFRAME;
-							cmd = MSP.Cmds.TX_FRAME;
-							break;
-							// Lower case are 'private'
-						case 'q':
-							needed = 2;
-							cmd = MSP.Cmds.Tq_FRAME;
-							break;
-						case 'a':
-							needed = 2;
-							cmd = MSP.Cmds.Ta_FRAME;
-							break;
-						case 'x':
-							needed = 1;
-							cmd = MSP.Cmds.Tx_FRAME;
-							break;
-						default:
-							error_counter();
-							MWPLog.message("fail on T_header2 %x\n", devbuf[nc]);
-							state=States.S_ERROR;
-							break;
-						}
-						if (needed > 0)
-						{
-							csize = needed;
-							irxbufp = 0;
-							checksum = 0;
-							state = States.S_DATA;
-						}
-						break;
-
-					case States.S_HEADER2:
-						if((devbuf[nc] == readdirn ||
-							devbuf[nc] == writedirn ||
-							devbuf[nc] == '!'))
-						{
-							if (relaxed)
-								errstate = !(devbuf[nc] == readdirn ||
-											 devbuf[nc] == writedirn);
-							else
-								errstate = (devbuf[nc] != readdirn); // == '!'
-							state = States.S_SIZE;
-						}
-						else
-						{
-							error_counter();
-							MWPLog.message("fail on header2 %x\n", devbuf[nc]);
-							state=States.S_ERROR;
-						}
-						break;
-
-					case States.S_SIZE:
-						csize = devbuf[nc];
-						checksum = devbuf[nc];
-						state = States.S_CMD;
-						break;
-					case States.S_CMD:
-						debug(" got cmd %d %d", devbuf[nc], csize);
-						cmd = (MSP.Cmds)devbuf[nc];
-						checksum ^= cmd;
-						if(cmd == MSP.Cmds.MSPV2)
-						{
-							encap = true;
-							state = States.S_X_FLAGS;
-						}
-						else if (csize == 255)
-						{
-							state = States.S_JUMBO1;
-						}
-						else
-						{
-							if (csize == 0)
+						case States.S_HEADER1:
+							encap = false;
+							irxbufp=0;
+							if(devbuf[nc] == 'M')
 							{
-								state = States.S_CHECKSUM;
+								state=States.S_HEADER2;
 							}
+							else if(devbuf[nc] == 'T')
+							{
+								state=States.S_T_HEADER2;
+							}
+							else if(devbuf[nc] == 'X')
+							{
+								state=States.S_X_HEADER2;
+							}
+							else
+							{
+								error_counter();
+								MWPLog.message("fail on header1 %x\n", devbuf[nc]);
+								state=States.S_ERROR;
+							}
+							break;
+
+						case States.S_T_HEADER2:
+							needed = 0;
+							switch(devbuf[nc])
+							{
+							case 'G':
+								needed = (uint16) MSize.LTM_GFRAME;
+								cmd = MSP.Cmds.TG_FRAME;
+								break;
+							case 'A':
+								needed = (uint16) MSize.LTM_AFRAME;
+								cmd = MSP.Cmds.TA_FRAME;
+								break;
+							case 'S':
+								needed = (uint16) MSize.LTM_SFRAME;
+								cmd = MSP.Cmds.TS_FRAME;
+								break;
+							case 'O':
+								needed = (uint16) MSize.LTM_OFRAME;
+								cmd = MSP.Cmds.TO_FRAME;
+								break;
+							case 'N':
+								needed = (uint16) MSize.LTM_NFRAME;
+								cmd = MSP.Cmds.TN_FRAME;
+								break;
+							case 'X':
+								needed = (uint16) MSize.LTM_XFRAME;
+								cmd = MSP.Cmds.TX_FRAME;
+								break;
+								// Lower case are 'private'
+							case 'q':
+								needed = 2;
+								cmd = MSP.Cmds.Tq_FRAME;
+								break;
+							case 'a':
+								needed = 2;
+								cmd = MSP.Cmds.Ta_FRAME;
+								break;
+							case 'x':
+								needed = 1;
+								cmd = MSP.Cmds.Tx_FRAME;
+								break;
+							default:
+								error_counter();
+								MWPLog.message("fail on T_header2 %x\n", devbuf[nc]);
+								state=States.S_ERROR;
+								break;
+							}
+							if (needed > 0)
+							{
+								csize = needed;
+								irxbufp = 0;
+								checksum = 0;
+								state = States.S_DATA;
+							}
+							break;
+
+						case States.S_HEADER2:
+							if((devbuf[nc] == readdirn ||
+								devbuf[nc] == writedirn ||
+								devbuf[nc] == '!'))
+							{
+								if (relaxed)
+									errstate = !(devbuf[nc] == readdirn ||
+												 devbuf[nc] == writedirn);
+								else
+									errstate = (devbuf[nc] != readdirn); // == '!'
+								state = States.S_SIZE;
+							}
+							else
+							{
+								error_counter();
+								MWPLog.message("fail on header2 %x\n", devbuf[nc]);
+								state=States.S_ERROR;
+							}
+							break;
+
+						case States.S_SIZE:
+							csize = devbuf[nc];
+							checksum = devbuf[nc];
+							state = States.S_CMD;
+							break;
+						case States.S_CMD:
+							debug(" got cmd %d %d", devbuf[nc], csize);
+							cmd = (MSP.Cmds)devbuf[nc];
+							checksum ^= cmd;
+							if(cmd == MSP.Cmds.MSPV2)
+							{
+								encap = true;
+								state = States.S_X_FLAGS;
+							}
+							else if (csize == 255)
+							{
+								state = States.S_JUMBO1;
+							}
+							else
+							{
+								if (csize == 0)
+								{
+									state = States.S_CHECKSUM;
+								}
+								else
+								{
+									state = States.S_DATA;
+									irxbufp = 0;
+									needed = csize;
+									check_rxbuf_size();
+								}
+							}
+							break;
+
+						case States.S_JUMBO1:
+							checksum ^= devbuf[nc];
+							csize = devbuf[nc];
+							state = States.S_JUMBO2;
+							break;
+
+						case States.S_JUMBO2:
+							checksum ^= devbuf[nc];
+							csize |= (uint16)devbuf[nc] << 8;
+							needed = csize;
+							irxbufp = 0;
+							if (csize == 0)
+								state = States.S_CHECKSUM;
 							else
 							{
 								state = States.S_DATA;
-								irxbufp = 0;
-								needed = csize;
 								check_rxbuf_size();
 							}
-						}
-						break;
+							break;
 
-					case States.S_JUMBO1:
-						checksum ^= devbuf[nc];
-						csize = devbuf[nc];
-						state = States.S_JUMBO2;
-						break;
-
-					case States.S_JUMBO2:
-						checksum ^= devbuf[nc];
-						csize |= (uint16)devbuf[nc] << 8;
-						needed = csize;
-						irxbufp = 0;
-						if (csize == 0)
-							state = States.S_CHECKSUM;
-						else
-						{
-							state = States.S_DATA;
-							check_rxbuf_size();
-						}
-						break;
-
-					case States.S_DATA:
-						rxbuf[irxbufp++] = devbuf[nc];
-						checksum ^= devbuf[nc];
-						needed--;
-						if(needed == 0)
-							state = States.S_CHECKSUM;
-						break;
-					case States.S_CHECKSUM:
-						if(checksum  == devbuf[nc])
-						{
-							debug(" OK on %d", cmd);
-							state = States.S_HEADER;
-							stats.msgs++;
-							if(cmd < MSP.Cmds.MSPV2 || cmd > MSP.Cmds.LTM_BASE)
-								serial_event(cmd, rxbuf, csize, 0, errstate);
-							irxbufp = 0;
-						}
-						else
-						{
-							error_counter();
-							MWPLog.message("CRC Fail, got %d != %d (cmd=%d)\n",
-										   devbuf[nc],checksum,cmd);
-							state = States.S_ERROR;
-						}
-						break;
-					case States.S_END:
-						state = States.S_HEADER;
-						break;
-
-					case States.S_X_HEADER2:
-						if((devbuf[nc] == readdirn ||
-							devbuf[nc] == writedirn ||
-							devbuf[nc] == '!'))
-						{
-							if (relaxed)
-								errstate = !(devbuf[nc] == readdirn ||
-											 devbuf[nc] == writedirn);
-							else
-								errstate = (devbuf[nc] != readdirn); // == '!'
-							state = States.S_X_FLAGS;
-						}
-						else
-						{
-							error_counter();
-							MWPLog.message("fail on header2 %x\n", devbuf[nc]);
-							state=States.S_ERROR;
-						}
-						break;
-
-					case States.S_X_FLAGS:
-						checksum ^= devbuf[nc];
-						checksum2 = CRC8.dvb_s2(0, devbuf[nc]);
-						xflags = devbuf[nc];
-						state = States.S_X_ID1;
-						break;
-					case States.S_X_ID1:
-						checksum ^= devbuf[nc];
-						checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
-						xcmd = devbuf[nc];
-						state = States.S_X_ID2;
-						break;
-					case States.S_X_ID2:
-						checksum ^= devbuf[nc];
-						checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
-						xcmd |= (uint16)devbuf[nc] << 8;
-						state = States.S_X_LEN1;
-						break;
-					case States.S_X_LEN1:
-						checksum ^= devbuf[nc];
-						checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
-						csize = devbuf[nc];
-						state = States.S_X_LEN2;
-						break;
-					case States.S_X_LEN2:
-						checksum ^= devbuf[nc];
-						checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
-						csize |= (uint16)devbuf[nc] << 8;
-						needed = csize;
-						if(needed > 0)
-						{
-							check_rxbuf_size();
-							state = States.S_X_DATA;
-						}
-						else
-							state = States.S_X_CHECKSUM;
-						break;
-					case States.S_X_DATA:
-						checksum ^= devbuf[nc];
-						checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
-						rxbuf[irxbufp++] = devbuf[nc];
-						needed--;
-						if(needed == 0)
-							state = States.S_X_CHECKSUM;
-						break;
-					case States.S_X_CHECKSUM:
-						checksum ^= devbuf[nc];
-						if(checksum2  == devbuf[nc])
-						{
-							debug(" OK on %d", cmd);
-
-							state = (encap) ? States.S_CHECKSUM : States.S_HEADER;
-							stats.msgs++;
-							serial_event((MSP.Cmds)xcmd, rxbuf, csize,
-										 xflags, errstate);
-							irxbufp = 0;
-						}
-						else
-						{
-							error_counter();
-							MWPLog.message("X-CRC Fail, got %d != %d (cmd=%d)\n",
-										   devbuf[nc],checksum,cmd);
-							state = States.S_ERROR;
-						}
-						break;
-
-					case States.S_M_SIZE:
-						csize = needed = devbuf[nc];
-						mavsum = mavlink_crc(0xffff, (uint8)csize);
-						if(needed > 0)
-						{
-							irxbufp= 0;
-							check_rxbuf_size();
-						}
-						state = States.S_M_SEQ;
-						break;
-					case States.S_M_SEQ:
-						mavsum = mavlink_crc(mavsum, devbuf[nc]);
-						state = States.S_M_ID1;
-						break;
-					case States.S_M_ID1:
-						mavsum = mavlink_crc(mavsum, devbuf[nc]);
-						state = States.S_M_ID2;
-						break;
-					case States.S_M_ID2:
-						mavsum = mavlink_crc(mavsum, devbuf[nc]);
-						state = States.S_M_MSGID;
-						break;
-					case States.S_M_MSGID:
-						cmd = (MSP.Cmds)devbuf[nc];
-						mavsum = mavlink_crc(mavsum, cmd);
-						if (csize == 0)
-							state = States.S_M_CRC1;
-						else
-							state = States.S_M_DATA;
-                            break;
-					case States.S_M_DATA:
-						mavsum = mavlink_crc(mavsum, devbuf[nc]);
-						rxbuf[irxbufp++] = devbuf[nc];
-						needed--;
-						if(needed == 0)
-							state = States.S_M_CRC1;
-						break;
-					case States.S_M_CRC1:
-						var seed  = MavCRC.lookup(cmd);
-						mavsum = mavlink_crc(mavsum, seed);
-						irxbufp = 0;
-						rxmavsum = devbuf[nc];
-						state = States.S_M_CRC2;
-                            break;
-					case States.S_M_CRC2:
-						rxmavsum |= (devbuf[nc] << 8);
-						if(rxmavsum == mavsum)
-						{
-							stats.msgs++;
-							serial_event (cmd+MSP.Cmds.MAV_BASE,
-										  rxbuf, csize, 0, errstate);
-							state = States.S_HEADER;
-						}
-						else
-						{
-							error_counter();
-							MWPLog.message("MAVCRC Fail, got %x != %x (cmd=%u, len=%u)\n",
-										   rxmavsum, mavsum, cmd, csize);
-							state = States.S_ERROR;
-						}
-						break;
-					case States.S_M2_SIZE:
-						csize = needed = devbuf[nc];
-						mavsum = mavlink_crc(0xffff, (uint8)csize);
-						if(needed > 0)
-						{
-							irxbufp= 0;
-							check_rxbuf_size();
-						}
-						state = States.S_M2_FLG1;
-						break;
-					case States.S_M2_FLG1:
-						mavsum = mavlink_crc(mavsum, devbuf[nc]);
-						if((devbuf[nc] & 1) == 1)
-							mavsig = 13;
-						else
-							mavsig = 0;
-						state = States.S_M2_FLG2;
-						break;
-					case States.S_M2_FLG2:
-						mavsum = mavlink_crc(mavsum, devbuf[nc]);
-						state = States.S_M2_SEQ;
-						break;
-					case States.S_M2_SEQ:
-						mavsum = mavlink_crc(mavsum, devbuf[nc]);
-						state = States.S_M2_ID1;
-						break;
-					case States.S_M2_ID1:
-						mavsum = mavlink_crc(mavsum, devbuf[nc]);
-						state = States.S_M2_ID2;
-						break;
-					case States.S_M2_ID2:
-						mavsum = mavlink_crc(mavsum, devbuf[nc]);
-						state = States.S_M2_MSGID0;
-						break;
-					case States.S_M2_MSGID0:
-						cmd = (MSP.Cmds)devbuf[nc];
-						mavsum = mavlink_crc(mavsum, devbuf[nc]);
-						state = States.S_M2_MSGID1;
-						break;
-
-					case States.S_M2_MSGID1:
-						cmd |= (MSP.Cmds)(devbuf[nc] << 8);
-						mavsum = mavlink_crc(mavsum, devbuf[nc]);
-						state = States.S_M2_MSGID2;
-						break;
-
-					case States.S_M2_MSGID2:
-						cmd |= (MSP.Cmds)(devbuf[nc] << 16);
-						mavsum = mavlink_crc(mavsum, devbuf[nc]);
-						if (csize == 0)
-							state = States.S_M2_CRC1;
-						else
-							state = States.S_M2_DATA;
-						break;
-					case States.S_M2_DATA:
-						mavsum = mavlink_crc(mavsum, devbuf[nc]);
-						rxbuf[irxbufp++] = devbuf[nc];
-						needed--;
-						if(needed == 0)
-							state = States.S_M2_CRC1;
-						break;
-					case States.S_M2_CRC1:
-						var seed  = MavCRC.lookup(cmd);
-						mavsum = mavlink_crc(mavsum, seed);
-						irxbufp = 0;
-						rxmavsum = devbuf[nc];
-						state = States.S_M2_CRC2;
-						break;
-					case States.S_M2_CRC2:
-						rxmavsum |= (devbuf[nc] << 8);
-						if(rxmavsum == mavsum)
-						{
-							stats.msgs++;
-							serial_event (cmd+MSP.Cmds.MAV_BASE,
-										  rxbuf, csize, 0, errstate);
-							if(mavsig == 0)
+						case States.S_DATA:
+							rxbuf[irxbufp++] = devbuf[nc];
+							checksum ^= devbuf[nc];
+							needed--;
+							if(needed == 0)
+								state = States.S_CHECKSUM;
+							break;
+						case States.S_CHECKSUM:
+							if(checksum  == devbuf[nc])
+							{
+								debug(" OK on %d", cmd);
 								state = States.S_HEADER;
+								stats.msgs++;
+								if(cmd < MSP.Cmds.MSPV2 || cmd > MSP.Cmds.LTM_BASE)
+									serial_event(cmd, rxbuf, csize, 0, errstate);
+								irxbufp = 0;
+							}
 							else
-								state = States.S_M2_SIG;
-						}
-						else
-						{
-							error_counter();
-							MWPLog.message("MAVCRC2 Fail, got %x != %x (cmd=%u, len=%u)\n",
-										   rxmavsum, mavsum, cmd, csize);
-							state = States.S_ERROR;
-						}
-						break;
-					case States.S_M2_SIG:
-						mavsig--;
-						if (mavsig == 0)
+							{
+								error_counter();
+								MWPLog.message("CRC Fail, got %d != %d (cmd=%d)\n",
+											   devbuf[nc],checksum,cmd);
+								state = States.S_ERROR;
+							}
+							break;
+						case States.S_END:
 							state = States.S_HEADER;
-						break;
-					default:
-						break; // S_M_STX, S_M2_STX
-                    }
-                }
-            }
-        }
-        return Source.CONTINUE;
-    }
+							break;
 
-    public uint16 mavlink_crc(uint16 acc, uint8 val)
-    {
-        uint8 tmp;
-        tmp = val ^ (uint8)(acc&0xff);
-        tmp ^= (tmp<<4);
-        acc = (acc>>8) ^ (tmp<<8) ^ (tmp<<3) ^ (tmp>>4);
-        return acc;
-    }
+						case States.S_X_HEADER2:
+							if((devbuf[nc] == readdirn ||
+								devbuf[nc] == writedirn ||
+								devbuf[nc] == '!'))
+							{
+								if (relaxed)
+									errstate = !(devbuf[nc] == readdirn ||
+												 devbuf[nc] == writedirn);
+								else
+									errstate = (devbuf[nc] != readdirn); // == '!'
+								state = States.S_X_FLAGS;
+							}
+							else
+							{
+								error_counter();
+								MWPLog.message("fail on header2 %x\n", devbuf[nc]);
+								state=States.S_ERROR;
+							}
+							break;
 
-    public ssize_t write(void *buf, size_t count)
-    {
-        ssize_t size;
-        if(ro)
-            return 0;
+						case States.S_X_FLAGS:
+							checksum ^= devbuf[nc];
+							checksum2 = CRC8.dvb_s2(0, devbuf[nc]);
+							xflags = devbuf[nc];
+							state = States.S_X_ID1;
+							break;
+						case States.S_X_ID1:
+							checksum ^= devbuf[nc];
+							checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
+							xcmd = devbuf[nc];
+							state = States.S_X_ID2;
+							break;
+						case States.S_X_ID2:
+							checksum ^= devbuf[nc];
+							checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
+							xcmd |= (uint16)devbuf[nc] << 8;
+							state = States.S_X_LEN1;
+							break;
+						case States.S_X_LEN1:
+							checksum ^= devbuf[nc];
+							checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
+							csize = devbuf[nc];
+							state = States.S_X_LEN2;
+							break;
+						case States.S_X_LEN2:
+							checksum ^= devbuf[nc];
+							checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
+							csize |= (uint16)devbuf[nc] << 8;
+							needed = csize;
+							if(needed > 0)
+							{
+								check_rxbuf_size();
+								state = States.S_X_DATA;
+							}
+							else
+								state = States.S_X_CHECKSUM;
+							break;
+						case States.S_X_DATA:
+							checksum ^= devbuf[nc];
+							checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
+							rxbuf[irxbufp++] = devbuf[nc];
+							needed--;
+							if(needed == 0)
+								state = States.S_X_CHECKSUM;
+							break;
+						case States.S_X_CHECKSUM:
+							checksum ^= devbuf[nc];
+							if(checksum2  == devbuf[nc])
+							{
+								debug(" OK on %d", cmd);
 
-        if(stime == 0 && pmode == ProtoMode.NORMAL)
-            stime =  GLib.get_monotonic_time();
+								state = (encap) ? States.S_CHECKSUM : States.S_HEADER;
+								stats.msgs++;
+								serial_event((MSP.Cmds)xcmd, rxbuf, csize,
+											 xflags, errstate);
+								irxbufp = 0;
+							}
+							else
+							{
+								error_counter();
+								MWPLog.message("X-CRC Fail, got %d != %d (cmd=%d)\n",
+											   devbuf[nc],checksum,cmd);
+								state = States.S_ERROR;
+							}
+							break;
 
-        stats.txbytes += count;
+						case States.S_M_SIZE:
+							csize = needed = devbuf[nc];
+							mavsum = mavlink_crc(0xffff, (uint8)csize);
+							if(needed > 0)
+							{
+								irxbufp= 0;
+								check_rxbuf_size();
+							}
+							state = States.S_M_SEQ;
+							break;
+						case States.S_M_SEQ:
+							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							state = States.S_M_ID1;
+							break;
+						case States.S_M_ID1:
+							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							state = States.S_M_ID2;
+							break;
+						case States.S_M_ID2:
+							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							state = States.S_M_MSGID;
+							break;
+						case States.S_M_MSGID:
+							cmd = (MSP.Cmds)devbuf[nc];
+							mavsum = mavlink_crc(mavsum, cmd);
+							if (csize == 0)
+								state = States.S_M_CRC1;
+							else
+								state = States.S_M_DATA;
+                            break;
+						case States.S_M_DATA:
+							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							rxbuf[irxbufp++] = devbuf[nc];
+							needed--;
+							if(needed == 0)
+								state = States.S_M_CRC1;
+							break;
+						case States.S_M_CRC1:
+							var seed  = MavCRC.lookup(cmd);
+							mavsum = mavlink_crc(mavsum, seed);
+							irxbufp = 0;
+							rxmavsum = devbuf[nc];
+							state = States.S_M_CRC2;
+                            break;
+						case States.S_M_CRC2:
+							rxmavsum |= (devbuf[nc] << 8);
+							if(rxmavsum == mavsum)
+							{
+								stats.msgs++;
+								serial_event (cmd+MSP.Cmds.MAV_BASE,
+											  rxbuf, csize, 0, errstate);
+								state = States.S_HEADER;
+							}
+							else
+							{
+								error_counter();
+								MWPLog.message("MAVCRC Fail, got %x != %x (cmd=%u, len=%u)\n",
+											   rxmavsum, mavsum, cmd, csize);
+								state = States.S_ERROR;
+							}
+							break;
+						case States.S_M2_SIZE:
+							csize = needed = devbuf[nc];
+							mavsum = mavlink_crc(0xffff, (uint8)csize);
+							if(needed > 0)
+							{
+								irxbufp= 0;
+								check_rxbuf_size();
+							}
+							state = States.S_M2_FLG1;
+							break;
+						case States.S_M2_FLG1:
+							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							if((devbuf[nc] & 1) == 1)
+								mavsig = 13;
+							else
+								mavsig = 0;
+							state = States.S_M2_FLG2;
+							break;
+						case States.S_M2_FLG2:
+							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							state = States.S_M2_SEQ;
+							break;
+						case States.S_M2_SEQ:
+							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							state = States.S_M2_ID1;
+							break;
+						case States.S_M2_ID1:
+							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							state = States.S_M2_ID2;
+							break;
+						case States.S_M2_ID2:
+							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							state = States.S_M2_MSGID0;
+							break;
+						case States.S_M2_MSGID0:
+							cmd = (MSP.Cmds)devbuf[nc];
+							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							state = States.S_M2_MSGID1;
+							break;
 
-        if((commode & ComMode.BT) == ComMode.BT)
-            size = Posix.send(fd, buf, count, 0);
-        else if((commode & ComMode.STREAM) == ComMode.STREAM)
-            size = Posix.write(fd, buf, count);
-        else
-        {
-            unowned uint8[] sbuf = (uint8[]) buf;
-            sbuf.length = (int)count;
-            try
-            {
-                size = skt.send_to (sockaddr, sbuf);
-            } catch(Error e) {
+						case States.S_M2_MSGID1:
+							cmd |= (MSP.Cmds)(devbuf[nc] << 8);
+							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							state = States.S_M2_MSGID2;
+							break;
+
+						case States.S_M2_MSGID2:
+							cmd |= (MSP.Cmds)(devbuf[nc] << 16);
+							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							if (csize == 0)
+								state = States.S_M2_CRC1;
+							else
+								state = States.S_M2_DATA;
+							break;
+						case States.S_M2_DATA:
+							mavsum = mavlink_crc(mavsum, devbuf[nc]);
+							rxbuf[irxbufp++] = devbuf[nc];
+							needed--;
+							if(needed == 0)
+								state = States.S_M2_CRC1;
+							break;
+						case States.S_M2_CRC1:
+							var seed  = MavCRC.lookup(cmd);
+							mavsum = mavlink_crc(mavsum, seed);
+							irxbufp = 0;
+							rxmavsum = devbuf[nc];
+							state = States.S_M2_CRC2;
+							break;
+						case States.S_M2_CRC2:
+							rxmavsum |= (devbuf[nc] << 8);
+							if(rxmavsum == mavsum)
+							{
+								stats.msgs++;
+								serial_event (cmd+MSP.Cmds.MAV_BASE,
+											  rxbuf, csize, 0, errstate);
+								if(mavsig == 0)
+									state = States.S_HEADER;
+								else
+									state = States.S_M2_SIG;
+							}
+							else
+							{
+								error_counter();
+								MWPLog.message("MAVCRC2 Fail, got %x != %x (cmd=%u, len=%u)\n",
+											   rxmavsum, mavsum, cmd, csize);
+								state = States.S_ERROR;
+							}
+							break;
+						case States.S_M2_SIG:
+							mavsig--;
+							if (mavsig == 0)
+								state = States.S_HEADER;
+							break;
+						default:
+							break; // S_M_STX, S_M2_STX
+						}
+					}
+				}
+			}
+		}
+		return Source.CONTINUE;
+	}
+	public uint16 mavlink_crc(uint16 acc, uint8 val)
+	{
+		uint8 tmp;
+		tmp = val ^ (uint8)(acc&0xff);
+		tmp ^= (tmp<<4);
+		acc = (acc>>8) ^ (tmp<<8) ^ (tmp<<3) ^ (tmp>>4);
+		return acc;
+	}
+
+	public ssize_t write(void *buf, size_t count)
+	{
+		ssize_t size;
+		if(ro)
+			return 0;
+
+		if(stime == 0 && pmode == ProtoMode.NORMAL)
+			stime =  GLib.get_monotonic_time();
+
+		stats.txbytes += count;
+
+		if((commode & ComMode.BT) == ComMode.BT)
+			size = Posix.send(fd, buf, count, 0);
+		else if((commode & ComMode.STREAM) == ComMode.STREAM)
+			size = Posix.write(fd, buf, count);
+		else
+		{
+			unowned uint8[] sbuf = (uint8[]) buf;
+			sbuf.length = (int)count;
+			try
+			{
+				size = skt.send_to (sockaddr, sbuf);
+			} catch(Error e) {
 //                stderr.printf("err::send: %s", e.message);
-                size = 0;
-            }
-        }
-        if(rawlog == true)
-        {
-            log_raw('o',buf,(int)count);
-        }
-        return size;
-    }
+				size = 0;
+			}
+		}
+		if(rawlog == true)
+		{
+			log_raw('o',buf,(int)count);
+		}
+		return size;
+	}
 
-    public void send_ltm(uint8 cmd, void *data, size_t len)
-    {
-        if(available == true && !ro)
-        {
-            if(len != 0 && data != null)
-            {
-                uint8 *ptx = txbuf;
-                uint8* pdata = (uint8*)data;
-                check_txbuf_size(len+4);
-                uint8 ck = 0;
-                *ptx++ ='$';
-                *ptx++ = 'T';
-                *ptx++ = cmd;
-                for(var i = 0; i < len; i++)
-                {
-                    *ptx = *pdata++;
-                    ck ^= *ptx++;
-                }
-                *ptx = ck;
-                write(txbuf, (len+4));
-            }
-        }
-    }
+	public void send_ltm(uint8 cmd, void *data, size_t len)
+	{
+		if(available == true && !ro)
+		{
+			if(len != 0 && data != null)
+			{
+				uint8 *ptx = txbuf;
+				uint8* pdata = (uint8*)data;
+				check_txbuf_size(len+4);
+				uint8 ck = 0;
+				*ptx++ ='$';
+				*ptx++ = 'T';
+				*ptx++ = cmd;
+				for(var i = 0; i < len; i++)
+				{
+					*ptx = *pdata++;
+					ck ^= *ptx++;
+				}
+				*ptx = ck;
+				write(txbuf, (len+4));
+			}
+		}
+	}
 
 
-    public void send_mav(uint8 cmd, void *data, size_t len)
-    {
-        const uint8 MAVID1='j';
-        const uint8 MAVID2='h';
+	public void send_mav(uint8 cmd, void *data, size_t len)
+	{
+		const uint8 MAVID1='j';
+		const uint8 MAVID2='h';
 
-        if(available == true && !ro)
-        {
-            uint16 mcrc;
-            uint8* ptx = txbuf;
-            uint8* pdata = data;
+		if(available == true && !ro)
+		{
+			uint16 mcrc;
+			uint8* ptx = txbuf;
+			uint8* pdata = data;
 
-            check_txbuf_size(len+8);
-            mcrc = mavlink_crc(0xffff, (uint8)len);
+			check_txbuf_size(len+8);
+			mcrc = mavlink_crc(0xffff, (uint8)len);
 
-            *ptx++ = 0xfe;
-            *ptx++ = (uint8)len;
+			*ptx++ = 0xfe;
+			*ptx++ = (uint8)len;
 
-            *ptx++ = mavseqno;
-            mcrc = mavlink_crc(mcrc, mavseqno);
-            mavseqno++;
-            *ptx++ = MAVID1;
-            mcrc = mavlink_crc(mcrc, MAVID1);
-            *ptx++ = MAVID2;
-            mcrc = mavlink_crc(mcrc, MAVID2);
-            *ptx++ = cmd;
-            mcrc = mavlink_crc(mcrc, cmd);
-            for(var j = 0; j < len; j++)
-            {
-                *ptx = *pdata++;
-                mcrc = mavlink_crc(mcrc, *ptx);
-                ptx++;
-            }
-            var seed  = MavCRC.lookup(cmd);
-            mcrc = mavlink_crc(mcrc, seed);
-            *ptx++ = (uint8)(mcrc&0xff);
-            *ptx++ = (uint8)(mcrc >> 8);
-            write(txbuf, (len+8));
-        }
-    }
+			*ptx++ = mavseqno;
+			mcrc = mavlink_crc(mcrc, mavseqno);
+			mavseqno++;
+			*ptx++ = MAVID1;
+			mcrc = mavlink_crc(mcrc, MAVID1);
+			*ptx++ = MAVID2;
+			mcrc = mavlink_crc(mcrc, MAVID2);
+			*ptx++ = cmd;
+			mcrc = mavlink_crc(mcrc, cmd);
+			for(var j = 0; j < len; j++)
+			{
+				*ptx = *pdata++;
+				mcrc = mavlink_crc(mcrc, *ptx);
+				ptx++;
+			}
+			var seed  = MavCRC.lookup(cmd);
+			mcrc = mavlink_crc(mcrc, seed);
+			*ptx++ = (uint8)(mcrc&0xff);
+			*ptx++ = (uint8)(mcrc >> 8);
+			write(txbuf, (len+8));
+		}
+	}
 
-    private size_t generate_v1(uint8 cmd, void *data, size_t len)
-    {
-        uint8 ck = 0;
+	private size_t generate_v1(uint8 cmd, void *data, size_t len)
+	{
+		uint8 ck = 0;
 
-        check_txbuf_size(len+6);
-        uint8* ptx = txbuf;
-        uint8* pdata = data;
+		check_txbuf_size(len+6);
+		uint8* ptx = txbuf;
+		uint8* pdata = data;
 
-        *ptx++ = '$';
-        *ptx++ = 'M';
-        *ptx++ = writedirn;
-        ck ^= (uint8)len;
-        *ptx++ = (uint8)len;
-        ck ^=  cmd;
-        *ptx++ = cmd;
-        for(var i = 0; i < len; i++)
-        {
-            *ptx = *pdata++;
-            ck ^= *ptx++;
-        }
-        *ptx  = ck;
-        return len+6;
-    }
+		*ptx++ = '$';
+		*ptx++ = 'M';
+		*ptx++ = writedirn;
+		ck ^= (uint8)len;
+		*ptx++ = (uint8)len;
+		ck ^=  cmd;
+		*ptx++ = cmd;
+		for(var i = 0; i < len; i++)
+		{
+			*ptx = *pdata++;
+			ck ^= *ptx++;
+		}
+		*ptx  = ck;
+		return len+6;
+	}
 
-    public size_t generate_v2(uint16 cmd, void *data, size_t len)
-    {
-        uint8 ck2=0;
+	public size_t generate_v2(uint16 cmd, void *data, size_t len)
+	{
+		uint8 ck2=0;
 
-        check_txbuf_size(len+9);
+		check_txbuf_size(len+9);
 
-        uint8* ptx = txbuf;
-        uint8* pdata = data;
+		uint8* ptx = txbuf;
+		uint8* pdata = data;
 
-        *ptx++ ='$';
-        *ptx++ ='X';
-        *ptx++ = writedirn;
-        *ptx++ = 0; // flags
-        ptx = serialise_u16(ptx, cmd);
-        ptx = serialise_u16(ptx, (uint16)len);
-        ck2 = CRC8.dvb_s2(ck2, txbuf[3]);
-        ck2 = CRC8.dvb_s2(ck2, txbuf[4]);
-        ck2 = CRC8.dvb_s2(ck2, txbuf[5]);
-        ck2 = CRC8.dvb_s2(ck2, txbuf[6]);
-        ck2 = CRC8.dvb_s2(ck2, txbuf[7]);
+		*ptx++ ='$';
+		*ptx++ ='X';
+		*ptx++ = writedirn;
+		*ptx++ = 0; // flags
+		ptx = serialise_u16(ptx, cmd);
+		ptx = serialise_u16(ptx, (uint16)len);
+		ck2 = CRC8.dvb_s2(ck2, txbuf[3]);
+		ck2 = CRC8.dvb_s2(ck2, txbuf[4]);
+		ck2 = CRC8.dvb_s2(ck2, txbuf[5]);
+		ck2 = CRC8.dvb_s2(ck2, txbuf[6]);
+		ck2 = CRC8.dvb_s2(ck2, txbuf[7]);
 
-        for (var i = 0; i < len; i++)
-        {
-            *ptx = *pdata++;
-            ck2 = CRC8.dvb_s2(ck2, *ptx);
-            ptx++;
-        }
-        *ptx = ck2;
-        return len+9;
-    }
+		for (var i = 0; i < len; i++)
+		{
+			*ptx = *pdata++;
+			ck2 = CRC8.dvb_s2(ck2, *ptx);
+			ptx++;
+		}
+		*ptx = ck2;
+		return len+9;
+	}
 
-    public void send_command(uint16 cmd, void *data, size_t len, bool sim=false)
-    {
-        if(available == true && !ro)
-        {
-            char tmp = writedirn;
-            if (sim) // forces SIM mode (inav-radar)
-                writedirn = '>';
-            size_t mlen;
-            if(use_v2 || cmd > 254 || len > 254)
-                mlen = generate_v2(cmd,data,len);
-            else
-                mlen  = generate_v1((uint8)cmd, data, len);
-            writedirn = tmp;
-            write(txbuf, mlen);
-        }
-    }
+	public void send_command(uint16 cmd, void *data, size_t len, bool sim=false)
+	{
+		if(available == true && !ro)
+		{
+			char tmp = writedirn;
+			if (sim) // forces SIM mode (inav-radar)
+				writedirn = '>';
+			size_t mlen;
+			if(use_v2 || cmd > 254 || len > 254)
+				mlen = generate_v2(cmd,data,len);
+			else
+				mlen  = generate_v1((uint8)cmd, data, len);
+			writedirn = tmp;
+			write(txbuf, mlen);
+		}
+	}
 
-    public void send_error(uint8 cmd)
-    {
-        if(available == true && !ro)
-        {
-            uint8 dstr[8] = {'$', 'M', '!', 0, cmd, cmd};
-            write(dstr, 6);
-        }
-    }
+	public void send_error(uint8 cmd)
+	{
+		if(available == true && !ro)
+		{
+			uint8 dstr[8] = {'$', 'M', '!', 0, cmd, cmd};
+			write(dstr, 6);
+		}
+	}
 
-    private void log_raw(uint8 dirn, void *buf, int len)
-    {
-        double dt = timer.elapsed ();
-        uint16 blen = (uint16)len;
-        Posix.write(raws, &dt, sizeof(double));
-        Posix.write(raws, &blen, 2);
-        Posix.write(raws, &dirn, 1);
-        Posix.write(raws, buf,len);
-    }
+	private void log_raw(uint8 dirn, void *buf, int len)
+	{
+		double dt = timer.elapsed ();
+		uint16 blen = (uint16)len;
+		Posix.write(raws, &dt, sizeof(double));
+		Posix.write(raws, &blen, 2);
+		Posix.write(raws, &dirn, 1);
+		Posix.write(raws, buf,len);
+	}
 
-    public void raw_logging(bool state)
-    {
-        if(state == true)
-        {
-            time_t currtime;
-            time_t(out currtime);
-            var fn  = "mwp_%s.raw".printf(Time.local(currtime).format("%F_%H%M%S"));
-            raws = Posix.open (fn, Posix.O_TRUNC|Posix.O_CREAT|Posix.O_WRONLY, 0640);
-            timer = new Timer ();
-            rawlog = true;
-            Posix.write(raws, "v2\n" , 3);
-        }
-        else
-        {
-            Posix.close(raws);
-            timer.stop();
-            rawlog = false;
-        }
-    }
+	public void raw_logging(bool state)
+	{
+		if(state == true)
+		{
+			time_t currtime;
+			time_t(out currtime);
+			var fn  = "mwp_%s.raw".printf(Time.local(currtime).format("%F_%H%M%S"));
+			raws = Posix.open (fn, Posix.O_TRUNC|Posix.O_CREAT|Posix.O_WRONLY, 0640);
+			timer = new Timer ();
+			rawlog = true;
+			Posix.write(raws, "v2\n" , 3);
+		}
+		else
+		{
+			Posix.close(raws);
+			timer.stop();
+			rawlog = false;
+		}
+	}
 
-    public void dump_raw_data (uint8[]buf, int len)
-    {
-        for(var nc = 0; nc < len; nc++)
-        {
-            if(buf[nc] == '$')
-                MWPLog.message("\n");
-            stderr.printf("%02x ", buf[nc]);
-        }
-        stderr.printf("(%d) ",len);
-    }
+	public void dump_raw_data (uint8[]buf, int len)
+	{
+		for(var nc = 0; nc < len; nc++)
+		{
+			if(buf[nc] == '$')
+				MWPLog.message("\n");
+			stderr.printf("%02x ", buf[nc]);
+		}
+		stderr.printf("(%d) ",len);
+	}
 
-    public void set_mode(Mode mode)
-    {
-        if (mode == Mode.NORMAL)
-        {
-            readdirn='>';
-            writedirn= '<';
-        }
-        else
-        {
-            readdirn='<';
-            writedirn= '>';
-        }
-    }
+	public void set_mode(Mode mode)
+	{
+		if (mode == Mode.NORMAL)
+		{
+			readdirn='>';
+			writedirn= '<';
+		}
+		else
+		{
+			readdirn='<';
+			writedirn= '>';
+		}
+	}
 
-    public void set_relaxed(bool _rlx)
-    {
-        relaxed = _rlx;
-    }
+	public void set_relaxed(bool _rlx)
+	{
+		relaxed = _rlx;
+	}
 
 }

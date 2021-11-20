@@ -47,7 +47,7 @@ namespace FRSKY {
     bool fr_checksum(uint8[] buf)
     {
         uint16 crc = 0;
-        foreach (var b in buf)
+        foreach (var b in buf[2:10])
         {
             crc += b;
             crc += crc >> 8;
@@ -69,13 +69,13 @@ namespace FRSKY {
     }
 
 	bool frsky_decode(uint8 []buf) {
-		bool res = fr_checksum(buf[1:]);
+		bool res = fr_checksum(buf);
         if(res)
         {
             ushort id;
             uint val;
-            deserialise_u16(buf+2, out id);
-            deserialise_u32(buf+4, out val);
+            deserialise_u16(buf+3, out id);
+            deserialise_u32(buf+5, out val);
 			string s;
 			s = ((FrID)id).to_string();
 			if (s == null)
@@ -118,7 +118,7 @@ namespace MPM {
 		MPM_MAXTYPE = 0x12
 	}
 
-	static uint8 frbuf[9];
+	static uint8 frbuf[16];
 	static uint8 skip = 0;
 	static uint8 type = 0;
 	//                      0    1   2  3   4   5   6  7  8  9  a  b   c  d   e  f  10 11
@@ -139,6 +139,7 @@ namespace MPM {
 			var tl  = tlens[type];
 			if (tl != 0 && c == tl) {
 				if (type == Mtype.MPM_FRSKY) {
+					frbuf[0] = 0x7e; // legacy
 					state = State.L_DATA;
 				} else {
 					state = State.L_SKIP;
@@ -149,7 +150,7 @@ namespace MPM {
 			}
 			break;
 		case State.L_DATA:
-			frbuf[tlens[Mtype.MPM_FRSKY] - skip] = c;
+			frbuf[tlens[Mtype.MPM_FRSKY] - skip + 1] = c;
 			skip--;
 			if (skip == 0) {
 				stdout.printf("Got a FRSKY buffer\n");

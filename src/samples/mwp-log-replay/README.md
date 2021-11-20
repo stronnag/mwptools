@@ -29,19 +29,22 @@ See [the mwp-serial-cap README](../mwp-serial-cap/README.md) for details of the 
 # Usage
 
 ```
-$ ./mwp-log-replay --help
-Usage of mwp-log-replay [options] file
+$ mwp-log-replay --help
+Usage of mwp-log-replay [options] input-file [outfile]
   -b int
     	Baud rate (default 115200)
   -d string
     	(serial) Device [device node, BT Addr (linux), udp/tcp URI]
   -delay float
     	Delay (s) for non-v2 logs (default 0.01)
+  -raw
+    	write raw log
   -wait-first
     	honour first delay
 ```
 
 If no device name is given, hex formatted bytes are dumped to stdout.
+If `-raw` is given, raw bytes (no metadata) are written to the optional output file, if provided.
 
 
 # Building
