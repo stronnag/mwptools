@@ -30,6 +30,7 @@ var (
 	_device = flag.String("d", "", "(serial) Device [device node, BT Addr (linux), udp/tcp URI]")
 	_delay  = flag.Float64("delay", 0.01, "Delay (s) for non-v2 logs")
 	_noskip = flag.Bool("wait-first", false, "honour first delay")
+	_raw    = flag.Bool("raw", false, "write raw log")
 )
 
 type SerDev interface {
@@ -145,13 +146,16 @@ func (l *MWPLog) checkvers() string {
 		if string(sig)[0:3] == "v2\n" {
 			logfmt = "mwp binary log v2"
 			l.vers = LOG_V2
+			l.fh.Seek(3, 0)
 		} else {
 			if string(sig) == `{"stamp` {
+				l.fh.Seek(0, 0)
 				logfmt = "mwp JSON log"
 				l.vers = LOG_JSON
 				l.rd = bufio.NewReader(l.fh)
+			} else {
+				l.fh.Seek(0, 0)
 			}
-			l.fh.Seek(0, 0)
 		}
 	}
 	return logfmt
@@ -159,7 +163,7 @@ func (l *MWPLog) checkvers() string {
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage of mwp-log-replay [options] file\n")
+		fmt.Fprintf(os.Stderr, "Usage of mwp-log-replay [options] input-file [outfile]\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
@@ -167,6 +171,10 @@ func main() {
 	adata := flag.Args()
 	if len(adata) == 0 {
 		log.Fatalln("No input file given")
+	}
+
+	if *_raw && len(adata) < 2 {
+		*_raw = false
 	}
 
 	logf := MWPLog{vers: LOG_LEGACY, last: 0.0, skip: !*_noskip}
@@ -246,6 +254,16 @@ func main() {
 	logfmt := logf.checkvers()
 	fmt.Fprintf(os.Stderr, "%s: %s\n", adata[0], logfmt)
 
+	var rl *os.File
+	if *_raw {
+		rl, err = os.Create(adata[1])
+		if err == nil {
+			defer rl.Close()
+		} else {
+			log.Fatalln("Open raw:", err)
+		}
+	}
+
 	for {
 		buf, err := logf.readlog()
 		if err == nil {
@@ -253,11 +271,15 @@ func main() {
 				if name != "" {
 					sd.Write(buf)
 				} else {
-					fmt.Printf("Read %d bytes\n", len(buf))
-					for _, bx := range buf {
-						fmt.Printf("%02x ", bx)
+					fmt.Fprintf(os.Stderr, "Read %d bytes\n", len(buf))
+					if !*_raw {
+						for _, bx := range buf {
+							fmt.Printf("%02x ", bx)
+						}
+						fmt.Println()
+					} else {
+						rl.Write(buf)
 					}
-					fmt.Println()
 				}
 			}
 		} else if err == io.EOF {
@@ -265,8 +287,5 @@ func main() {
 		} else {
 			log.Fatal(err)
 		}
-	}
-	if name != "" {
-		sd.Close()
 	}
 }

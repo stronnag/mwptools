@@ -657,6 +657,7 @@ public class MWP : Gtk.Application {
     private uint8 safeindex = 0;
     private bool is_shutdown = false;
     private MwpNotify? dtnotify = null;
+	private Gtk.ComboBoxText dev_protoc;
 
     public struct MQI //: Object
     {
@@ -828,7 +829,6 @@ public class MWP : Gtk.Application {
         uint8 npts;
         uint8 wpidx;
     }
-
 
     private enum WPFAIL {
         OK=0,
@@ -1741,6 +1741,12 @@ public class MWP : Gtk.Application {
             update_menu_labels(menubar);
         }
 
+
+        dev_protoc = builder.get_object ("dev_proto_combo") as Gtk.ComboBoxText;
+		dev_protoc.changed.connect(() => {
+				var pmask = (MWSerial.PMask)(int.parse(dev_protoc.active_id));
+				set_pmask_poller(pmask);
+			});
 
         this.set_menubar(mm);
         var hb = builder.get_object ("hb") as HeaderBar;
@@ -3097,6 +3103,16 @@ public class MWP : Gtk.Application {
 		}
 
     }
+
+	private void set_pmask_poller(MWSerial.PMask pmask) {
+		if (pmask == MWSerial.PMask.AUTO || pmask == MWSerial.PMask.INAV) {
+			nopoll = false;
+		} else {
+			xnopoll = nopoll;
+			nopoll = true;
+		}
+		msp.set_pmask(pmask);
+	}
 
 #if MQTT
 	private MissionItem wp_to_mitem(MSP_WP w)
@@ -9036,8 +9052,10 @@ case 0:
                     }
                 }
                 if (!mqtt_available) {
+					var pmask = (MWSerial.PMask)(int.parse(dev_protoc.active_id));
+					set_pmask_poller(pmask);
                     msp.setup_reader();
-                    MWPLog.message("Serial ready\n");
+					MWPLog.message("Serial ready\n");
                     if(nopoll == false && !mqtt_available )
                     {
                         serstate = SERSTATE.NORMAL;
@@ -9863,6 +9881,7 @@ case 0:
             sr = MwpPipe.pipe(playfd);
         } else {
             sr = msp.randomUDP(playfd);
+			set_pmask_poller(MWSerial.PMask.AUTO);
         }
 
         if(sr == 0)
@@ -9888,8 +9907,10 @@ case 0:
             if(delay == false)
                 replayer |= Player.FAST_MASK;
 
-            if(rawfd)
+            if(rawfd) {
                 msp.open_fd(playfd[0],-1, true);
+				set_pmask_poller(MWSerial.PMask.AUTO);
+			}
             set_replay_menus(false);
             set_menu_state("stop-replay", true);
             magcheck = delay; // only check for normal replays (delay == true)

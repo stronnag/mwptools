@@ -90,7 +90,6 @@ namespace SportDev {
     private uint bad = 0;
     private uint nshort = 0;
 
-
     private bool fr_checksum(uint8[] buf)
     {
         uint16 crc = 0;
@@ -318,7 +317,15 @@ namespace CRC8 {
 }
 
 public class MWSerial : Object {
-    private string devname;
+	public enum PMask {
+		AUTO = 0xff,
+		INAV = 1,
+		SPORT = 2,
+		CRSF = 4,
+		MPM = 8,
+	}
+
+	private string devname;
     private int fd=-1;
     private IOChannel io_read;
     private Socket skt;
@@ -364,6 +371,7 @@ public class MWSerial : Object {
     private uint8[] devbuf;
     private uint16 mavsig = 0;
     private bool relaxed;
+	private PMask pmask;
 
     public enum MemAlloc
     {
@@ -474,6 +482,7 @@ public class MWSerial : Object {
         fwd = true;
         available = false;
         set_txbuf(MemAlloc.TX);
+		pmask = PMask.AUTO;
     }
 
     public MWSerial.reader()
@@ -483,8 +492,10 @@ public class MWSerial : Object {
         rxbuf_alloc = MemAlloc.RX;
         rxbuf = new uint8[rxbuf_alloc];
         devbuf = new uint8[MemAlloc.DEV];
+		pmask = PMask.AUTO;
     }
 
+/*
     public MWSerial.smartport()
     {
         fwd = available = false;
@@ -492,7 +503,7 @@ public class MWSerial : Object {
         rxbuf = new uint8[rxbuf_alloc];
         devbuf = new uint8[MemAlloc.DEV];
     }
-
+*/
     public void sport_handler(uint32 a, uint32 b)
     {
         sport_event(a, b);
@@ -505,7 +516,13 @@ public class MWSerial : Object {
         rxbuf = new uint8[rxbuf_alloc];
         txbuf = new uint8[txbuf_alloc];
         devbuf = new uint8[MemAlloc.DEV];
+		pmask = 0xff;
     }
+
+
+	public void set_pmask(PMask _pm) {
+		pmask = _pm;
+	}
 
     public int get_fd()
     {
@@ -670,14 +687,14 @@ public class MWSerial : Object {
                     Posix.O_NONBLOCK);
     }
 
-
+/*
     public bool open_sport(string device, out string estr)
     {
         fwd = false;
         MWPLog.message("SPORT: open %s\n", device);
         return open(device, 0, out estr);
     }
-
+*/
 
     public bool open(string device, uint rate, out string estr)
     {
@@ -1009,33 +1026,43 @@ public class MWSerial : Object {
 					case States.S_HEADER:
 						switch (devbuf[nc])  {
 						case '$':
-							sp = nc;
-							state=States.S_HEADER1;
-							errstate = false;
+							if ((pmask & PMask.INAV) == PMask.INAV) {
+								sp = nc;
+								state=States.S_HEADER1;
+								errstate = false;
+							}
 							break;
 						case 0xfe:
-							sp = nc;
-							state=States.S_M_SIZE;
-							errstate = false;
+							if ((pmask & PMask.INAV) == PMask.INAV) {
+								sp = nc;
+								state=States.S_M_SIZE;
+								errstate = false;
+							}
 							break;
 						case 0xfd:
-							sp = nc;
-							state=States.S_M2_SIZE;
-							errstate = false;
+							if ((pmask & PMask.INAV) == PMask.INAV) {
+								sp = nc;
+								state=States.S_M2_SIZE;
+								errstate = false;
+							}
 							break;
 						case CRSF.RADIO_ADDRESS:
-							CRSF.detect_idx = 0;
-							state = States.S_CRSF_OK;
-							MWPLog.message("CRSF detect 0x%02x\n", devbuf[nc]);
-							CRSF.crsf_decode(devbuf[nc]);
+							if ((pmask & PMask.CRSF) == PMask.CRSF) {
+								CRSF.detect_idx = 0;
+								state = States.S_CRSF_OK;
+								MWPLog.message("CRSF detect 0x%02x\n", devbuf[nc]);
+								CRSF.crsf_decode(devbuf[nc]);
+							}
 							break;
 						case SportDev.FrProto.P_START:
-							var sbx = SportDev.extract_messages(sport_handler, devbuf[nc]);
-							if(sbx != SportDev.FrStatus.OK) {
-								state = States.S_ERROR;
+							if ((pmask & PMask.SPORT) == PMask.SPORT) {
+								var sbx = SportDev.extract_messages(sport_handler, devbuf[nc]);
+								if(sbx != SportDev.FrStatus.OK) {
+									state = States.S_ERROR;
 //								MWPLog.message("SPORT detect 0x%02x %s %s\n", devbuf[nc], sbx.to_string(), state.to_string());
-							} else {
-								state = States.S_SPORT_OK;
+								} else {
+									state = States.S_SPORT_OK;
+								}
 							}
 							break;
 						default:
