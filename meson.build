@@ -47,8 +47,7 @@ executable('flashdl', fdlsrcs, fccommon, dependencies: [ fdldeps ],
 subdir('src/bbox-replay')
 
 if gobuild != ''
-   broot = meson.current_source_dir() / 'build'
-     if gotrim != ''
-    mpe = custom_target('mwp-plot-elevations', output: 'mwp-plot-elevations', command : [gobuild, '@OUTPUT@', mpe_dir, gotrim, broot], build_by_default: true, input: mpe_deps)
-  endif
+   if gotrim != ''
+     mpe = custom_target('mwp-plot-elevations', output: 'mwp-plot-elevations', command : [gobuild, '@OUTPUT@', mpe_dir, gotrim], build_by_default: true, input: mpe_deps)
+   endif
 endif
