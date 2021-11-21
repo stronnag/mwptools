@@ -21,20 +21,38 @@ Usage of mwp-serial-cap [options] file
 $ mwp-serial-cap -d /dev/ttyUSB1 -b 57600 stuff.cap
 ^C
 # Control-C to end the recording
+
+
+### BT device, by address
+$ mwp-serial-cap -d 35:53:17:04:14:BA -b 57600 stuff.cap
+2021/11/21 08:45:36 Using device 35:53:17:04:14:BA
+Read ( 11)	:     15841 [22.52s]^C
+# Control-C to end the recording
 ```
 
-On Linux, `/dev/ttyUSB0` and `/dev/ttyACMO` will be probed if no device name is given; on other platforms the device name must be supplied.
+On Linux, `/dev/ttyUSB0` and `/dev/ttyACMO` will be probed if no device name is given; otherwise, and always on other platforms, the device name must be supplied.
 
 # Building
 
 mwp-serial-cap is a Go language program, which should make it usable on most modern CPUs (ia32, x86-64, ARM) and OS (Linux, Windows, MacOS, *BSD) etc
-
 
 ```
 #### Go (golang) must be installed ####
 
 go build
 
+```
+
+There is also a Makefile file.
+
+```
+# default install in ~/.local/bin, most modern distros support this
+make install
+## or
+# install in ~/bin
+make install prefix=~
+## or install in /usr/local/bin (system wide, needs sudo)
+make && sudo make install prefix=/usr/local
 ```
 
 # Capture file

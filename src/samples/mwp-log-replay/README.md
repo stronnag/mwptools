@@ -54,6 +54,16 @@ mwp-log-replay is a Go language program, which should make it usable on most mod
 ```
 #### Go (golang) must be installed ####
 go build
-# or (if the ninja build tool is installed)
-ninja
+```
+
+There is also a Makefile file.
+
+```
+# default install in ~/.local/bin, most modern distros support this
+make install
+## or
+# install in ~/bin
+make install prefix=~
+## or install in /usr/local/bin (system wide, needs sudo)
+make && sudo make install prefix=/usr/local
 ```

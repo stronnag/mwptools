@@ -1,5 +1,5 @@
 /*
- * Extant OpenTX / EdgeTX (no 'M', 'P' signature)
+ * If  EDGETX Issue #1104 is implemented, this expects 'M', 'P' signature
  */
 
 // See  https://github.com/pascallanger/DIY-Multiprotocol-TX-Module/blob/master/Multiprotocol/Multiprotocol.h
@@ -95,6 +95,8 @@ namespace FRSKY {
 
 namespace MPM {
 	enum State {
+		L_M,
+		L_P,
 		L_TYPE,
 		L_LEN,
 		L_DATA,
@@ -131,12 +133,23 @@ namespace MPM {
 	static State state = State.L_TYPE;
 	void decode(uint8 c) {
 		switch (state) {
+		case State.L_M:
+			if (c == 'M')
+				state = State.L_P;
+			break;
+		case State.L_P:
+			if (c == 'P')
+				state = State.L_TYPE;
+			else
+				state = State.L_M;
+			break;
+
 		case State.L_TYPE:
 			if (c > 0 && c < Mtype.MPM_MAXTYPE && c != Mtype.MPM_UNUSED1 && c != Mtype.MPM_UNUSED2 )  {
 				type = c;
 				state = State.L_LEN;
 			} else {
-				state = State.L_TYPE;
+				state = State.L_M;
 			}
 			break;
 		case State.L_LEN:
@@ -150,7 +163,7 @@ namespace MPM {
 				}
 				skip = tl;
 			} else {
-				state = State.L_TYPE;
+				state = State.L_M;
 			}
 			break;
 		case State.L_DATA:
@@ -159,13 +172,13 @@ namespace MPM {
 			if (skip == 0) {
 				stdout.printf("Got a FRSKY buffer\n");
 				FRSKY.frsky_decode(frbuf);
-				state = State.L_TYPE;
+				state = State.L_M;
 			}
 			break;
 		case State.L_SKIP:
 			skip--;
 			if (skip == 0) {
-				state = State.L_TYPE;
+				state = State.L_M;
 			}
 			break;
 		}
