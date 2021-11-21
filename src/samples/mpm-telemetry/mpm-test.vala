@@ -1,5 +1,8 @@
 /*
- * Extant OpenTX / EdgeTX (no 'M', 'P' signature)
+ * If  EDGETX Issue #1104 is implemented, this expects 'M', 'P' signature
+ * with second parameter
+ * mpm-test file # no headers
+ * mpm-test file Y # headers
  */
 
 // See  https://github.com/pascallanger/DIY-Multiprotocol-TX-Module/blob/master/Multiprotocol/Multiprotocol.h
@@ -95,6 +98,8 @@ namespace FRSKY {
 
 namespace MPM {
 	enum State {
+		L_M,
+		L_P,
 		L_TYPE,
 		L_LEN,
 		L_DATA,
@@ -128,15 +133,32 @@ namespace MPM {
 	//                      0    1   2  3   4   5   6  7  8  9  a  b   c  d   e  f  10 11
 	const uint8 []tlens = {0, 0x18, 9, 9, 16, 16, 29, 0, 4, 0, 8, 6, 29, 0, 14, 10, 22, 0};
 
-	static State state = State.L_TYPE;
-	void decode(uint8 c) {
+	static State state;
+
+	void  set_init(bool use_mp) {
+		state = (use_mp) ? State.L_M : State.L_TYPE;
+	}
+
+	void decode(uint8 c, bool use_mp) {
+
 		switch (state) {
+		case State.L_M:
+			if (c == 'M')
+				state = State.L_P;
+			break;
+		case State.L_P:
+			if (c == 'P')
+				state = State.L_TYPE;
+			else
+				set_init(use_mp);
+			break;
+
 		case State.L_TYPE:
 			if (c > 0 && c < Mtype.MPM_MAXTYPE && c != Mtype.MPM_UNUSED1 && c != Mtype.MPM_UNUSED2 )  {
 				type = c;
 				state = State.L_LEN;
 			} else {
-				state = State.L_TYPE;
+				set_init(use_mp);
 			}
 			break;
 		case State.L_LEN:
@@ -150,22 +172,23 @@ namespace MPM {
 				}
 				skip = tl;
 			} else {
-				state = State.L_TYPE;
+				set_init(use_mp);
 			}
 			break;
+
 		case State.L_DATA:
 			frbuf[tlens[Mtype.MPM_FRSKY] - skip + 1] = c;
 			skip--;
 			if (skip == 0) {
 				stdout.printf("Got a FRSKY buffer\n");
 				FRSKY.frsky_decode(frbuf);
-				state = State.L_TYPE;
+				set_init(use_mp);
 			}
 			break;
 		case State.L_SKIP:
 			skip--;
 			if (skip == 0) {
-				state = State.L_TYPE;
+				set_init(use_mp);
 			}
 			break;
 		}
@@ -173,12 +196,15 @@ namespace MPM {
 }
 
 static int main(string?[] args) {
-	var fp = FileStream.open(args[1], "r");
-	if(fp != null)
-	{
-		int c;
-		while((c = fp.getc()) != -1) {
-			MPM.decode((uint8)c);
+	if (args.length > 1) {
+		bool use_mp = (args.length > 2);
+		var fp = FileStream.open(args[1], "r");
+		if(fp != null) {
+			int c;
+			MPM.set_init(use_mp);
+			while((c = fp.getc()) != -1) {
+				MPM.decode((uint8)c, use_mp);
+			}
 		}
 	}
 	return 0;
