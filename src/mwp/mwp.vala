@@ -3672,6 +3672,7 @@ public class MWP : Gtk.Application {
                                 {
                                     if(pos_valid(GPSInfo.lat, GPSInfo.lon))
                                     {
+										last_gps = nticks;
                                         double dist,cse;
                                         Geo.csedist(GPSInfo.lat, GPSInfo.lon,
                                                     home_pos.lat, home_pos.lon,
