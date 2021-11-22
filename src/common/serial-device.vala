@@ -255,13 +255,14 @@ namespace MPM {
 		L_SKIP,
 	}
 
-	enum Mtype {
+	public enum Mtype {
+		MPM_NONE = 0,
 		MPM_STATUS = 1,
 		MPM_FRSKY = 2,
 		MPM_FRHUB = 3,
 		MPM_DSM_T = 4,
 		MPM_DSM_B = 5,
-		MPM_FLYSKY2 = 6,
+		MPM_FLYSKYAA = 6,
 		MPM_UNUSED1 = 7,
 		MPM_ISYNC = 8,
 		MPM_UNUSED2 = 9,
@@ -278,23 +279,23 @@ namespace MPM {
 
 	static uint8 mpm_buf[64];
 	static uint8 skip = 0;
-	static uint8 type = 0;
+	static Mtype type = MPM_NONE;
+	static State state = State.L_TYPE;
 	//                      0    1   2  3   4   5   6  7  8  9  a  b   c  d   e  f  10 11
 	const uint8 []tlens = {0, 0x18, 9, 9, 16, 16, 29, 0, 4, 0, 8, 6, 29, 0, 14, 10, 22, 0};
 
-	static State state = State.L_TYPE;
 
 	public uint8[] get_buffer() {
 		return mpm_buf;
 	}
 
-	public bool decode(uint8 c) {
-		bool res = false;
+	public Mtype decode(uint8 c) {
+		Mtype res = MPM_NONE;
 		switch (state) {
 		case State.L_TYPE:
 			if (c > 0 && c < Mtype.MPM_MAXTYPE &&
 				c != Mtype.MPM_UNUSED1 && c != Mtype.MPM_UNUSED2 )  {
-				type = c;
+				type = (Mtype)c;
 				state = State.L_LEN;
 			} else {
 				state = State.L_TYPE;
@@ -303,7 +304,7 @@ namespace MPM {
 		case State.L_LEN:
 			var tl  = tlens[type];
 			if (tl != 0 && c == tl) {
-				if (type == Mtype.MPM_FRSKY) {
+				if (type == Mtype.MPM_FRSKY || type == Mtype.MPM_FLYSKYAA) {
 					state = State.L_DATA;
 				} else {
 					state = State.L_SKIP;
@@ -318,7 +319,7 @@ namespace MPM {
 			skip--;
 			if (skip == 0) {
 				state = State.L_TYPE;
-				res = true;
+				res = type;
 			}
 			break;
 		case State.L_SKIP:
@@ -513,6 +514,7 @@ public class MWSerial : Object {
     public signal void cli_event(uint8[]raw, uint len);
     public signal void serial_lost ();
     public signal void sport_event(uint32 a, uint32 b);
+    public signal void flysky_event(uint8[]buf);
     public signal void crsf_event(uint8[]raw);
 
     public int randomUDP(int[] res)
@@ -552,20 +554,6 @@ public class MWSerial : Object {
         rxbuf = new uint8[rxbuf_alloc];
         devbuf = new uint8[MemAlloc.DEV];
 		pmask = PMask.AUTO;
-    }
-
-/*
-  public MWSerial.smartport()
-  {
-  fwd = available = false;
-  rxbuf_alloc = MemAlloc.RX;
-  rxbuf = new uint8[rxbuf_alloc];
-  devbuf = new uint8[MemAlloc.DEV];
-  }
-*/
-    public void sport_handler(uint32 a, uint32 b)
-    {
-        sport_event(a, b);
     }
 
     public MWSerial()
@@ -1095,8 +1083,11 @@ public class MWSerial : Object {
                 for(var nc = 0; nc < res; nc++)
                 {
 					if (pmask ==  PMask.MPM) {
-						if(MPM.decode(devbuf[nc])) {
+						var mpmres = MPM.decode(devbuf[nc]);
+						if(mpmres == MPM.Mtype.MPM_FRSKY) {
 							fr_publish(MPM.get_buffer());
+						} else if (mpmres == MPM.Mtype.MPM_FLYSKYAA) {
+							flysky_event(MPM.get_buffer());
 						}
 					} else {
 						switch(state) {
