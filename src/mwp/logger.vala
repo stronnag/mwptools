@@ -127,7 +127,7 @@ public class Logger : GLib.Object
             builder.add_int_value (vi.fc_vers);
             builder.set_member_name ("fc_vers_str");
             uchar vs[4];
-            serialise_u32(vs, vi.fc_vers);
+            SEDE.serialise_u32(vs, vi.fc_vers);
             builder.add_string_value ("%d.%d.%d".printf(vs[2],vs[1],vs[0]));
             if(vi.fc_git != null)
             {

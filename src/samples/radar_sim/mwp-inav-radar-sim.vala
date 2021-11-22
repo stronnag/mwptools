@@ -236,8 +236,8 @@ public class RadarSim : Object
 
             case MSP.Cmds.RAW_GPS:
                 int ilat, ilon;
-                deserialise_i32(&raw[2], out ilat);
-                deserialise_i32(&raw[6], out ilon);
+                SEDE.deserialise_i32(&raw[2], out ilat);
+                SEDE.deserialise_i32(&raw[6], out ilon);
                 hlat = ((double)ilat) / 1e7;
                 hlon = ((double)ilon) / 1e7;
                 stderr.printf("GPS %.6f %.6f, %u sats, %ud fix (%u)\n",
@@ -299,11 +299,11 @@ public class RadarSim : Object
         uint8 *p = buf;
         *p++ = id;
         *p++ = r.state;
-        p = serialise_i32(p, (int32)Math.lround(r.latitude * 10000000));
-        p = serialise_i32(p, (int32)Math.lround(r.longitude * 10000000));
-        p = serialise_i32(p, (int32)Math.lround(r.altitude * 100));
-        p = serialise_u16(p, (uint16)r.heading);
-        p = serialise_u16(p, (uint16)(r.speed*100));
+        p = SEDE.serialise_i32(p, (int32)Math.lround(r.latitude * 10000000));
+        p = SEDE.serialise_i32(p, (int32)Math.lround(r.longitude * 10000000));
+        p = SEDE.serialise_i32(p, (int32)Math.lround(r.altitude * 100));
+        p = SEDE.serialise_u16(p, (uint16)r.heading);
+        p = SEDE.serialise_u16(p, (uint16)(r.speed*100));
         *p++ = r.lq;
         msp.send_command(MSP.Cmds.COMMON_SET_RADAR_POS, buf, (size_t)(p - &buf[0]));
     }

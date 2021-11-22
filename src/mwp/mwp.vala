@@ -388,12 +388,6 @@ namespace CRSF {
 
 	Teledata teledata;
 
-	uint8 * deserialise_be_u24(uint8* rp, out uint32 v)
-	{
-        v = (*(rp) << 16 |  (*(rp+1) << 8) | *(rp+2));
-        return rp + 3*sizeof(uint8);
-	}
-
 	bool check_crc(uint8 []buffer)
 	{
         uint8 len = buffer[1];
@@ -403,6 +397,13 @@ namespace CRSF {
         }
         return (crc == buffer[len+1]);
 	}
+
+	uint8 * deserialise_be_u24(uint8* rp, out uint32 v)
+	{
+        v = (*(rp) << 16 |  (*(rp+1) << 8) | *(rp+2));
+        return rp + 3*sizeof(uint8);
+	}
+
 }
 
 namespace SportDev {
@@ -3322,21 +3323,21 @@ public class MWP : Gtk.Application {
 		uint16 val16;
 		switch(id) {
 		case CRSF.GPS_ID:
-			ptr= deserialise_u32(ptr, out val32);  // Latitude (deg * 1e7)
+			ptr= SEDE.deserialise_u32(ptr, out val32);  // Latitude (deg * 1e7)
 			int32 lat = (int32)Posix.ntohl(val32);
-			ptr= deserialise_u32(ptr, out val32); // Longitude (deg * 1e7)
+			ptr= SEDE.deserialise_u32(ptr, out val32); // Longitude (deg * 1e7)
 			int32 lon = (int32)Posix.ntohl(val32);
-			ptr= deserialise_u16(ptr, out val16); // Groundspeed ( km/h * 10 )
+			ptr= SEDE.deserialise_u16(ptr, out val16); // Groundspeed ( km/h * 10 )
 			double gspeed = 0;
 			if (val16 != 0xffff) {
 				gspeed = Posix.ntohs(val16) / 36.0; // m/s
 			}
-			ptr= deserialise_u16(ptr, out val16);  // COG Heading ( degree * 100 )
+			ptr= SEDE.deserialise_u16(ptr, out val16);  // COG Heading ( degree * 100 )
 			double hdg = 0;
 			if (val16 != 0xffff) {
 				hdg = Posix.ntohs(val16) / 100.0; // deg
 			}
-			ptr= deserialise_u16(ptr, out val16);
+			ptr= SEDE.deserialise_u16(ptr, out val16);
 			int32 alt= (int32)Posix.ntohs(val16) - 1000; // m
 			uint8 nsat = *ptr;
 			CRSF.teledata.lat = lat / 1e7;
@@ -3366,7 +3367,7 @@ public class MWP : Gtk.Application {
 			rg.gps_ground_course = (uint16)hdg;
 			/*
 			  {
-                    deserialise_u16(rp, out rg.gps_hdop);
+                    SEDE.deserialise_u16(rp, out rg.gps_hdop);
                     rhdop = rg.gps_hdop;
                     gpsinfo.set_hdop(rg.gps_hdop/100.0);
                 }
@@ -3412,12 +3413,12 @@ public class MWP : Gtk.Application {
 			}
 			break;
 		case CRSF.BAT_ID:
-			ptr= deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
+			ptr= SEDE.deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
 			double volts = 0;
 			if (val16 != 0xffff) {
 				volts = Posix.ntohs(val16) / 10.0; // Volts
 			}
-			ptr= deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
+			ptr= SEDE.deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
 			double amps = 0;
 			if (val16 != 0xffff) {
 				amps = Posix.ntohs(val16) / 10.0; // Amps
@@ -3438,18 +3439,18 @@ public class MWP : Gtk.Application {
 			break;
 
 		case CRSF.VARIO_ID:
-			ptr= deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
+			ptr= SEDE.deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
 //			stdout.printf("VARIO %d cm/s\n", (int16)val16);
 			CRSF.teledata.vario = (int)val16;
 			break;
 		case CRSF.ATTI_ID:
-			ptr= deserialise_u16(ptr, out val16);  // Pitch radians *10000
+			ptr= SEDE.deserialise_u16(ptr, out val16);  // Pitch radians *10000
 			double pitch = 0;
 			pitch = ((int16)Posix.ntohs(val16)) * CRSF.ATTITODEG;
-			ptr= deserialise_u16(ptr, out val16);  // Roll radians *10000
+			ptr= SEDE.deserialise_u16(ptr, out val16);  // Roll radians *10000
 			double roll = 0;
 			roll = ((int16)Posix.ntohs(val16)) * CRSF.ATTITODEG;
-			ptr= deserialise_u16(ptr, out val16);  // Roll radians *10000
+			ptr= SEDE.deserialise_u16(ptr, out val16);  // Roll radians *10000
 			double yaw = 0;
 			yaw = ((int16)Posix.ntohs(val16)) * CRSF.ATTITODEG;
 //			stdout.printf("Pitch %.1f, Roll %.1f, Yaw %.1f\n", pitch, roll, yaw);
@@ -5495,15 +5496,15 @@ case 0:
         uint64 bxflag;
         uint64 lmask;
 
-        deserialise_u16(raw+4, out sensor);
+        SEDE.deserialise_u16(raw+4, out sensor);
         if(msp_get_status != MSP.Cmds.INAV_STATUS)
         {
             uint32 bx32;
-            deserialise_u32(raw+6, out bx32);
+            SEDE.deserialise_u32(raw+6, out bx32);
             bxflag = bx32;
         }
         else
-            deserialise_u64(raw+13, out bxflag);
+            SEDE.deserialise_u64(raw+13, out bxflag);
 
         lmask = (angle_mask|horz_mask);
 
@@ -5528,15 +5529,15 @@ case 0:
                 if(msp_get_status == MSP.Cmds.STATUS_EX)
                 {
                     uint16 xaf;
-                    deserialise_u16(raw+13, out xaf);
+                    SEDE.deserialise_u16(raw+13, out xaf);
                     arm_flags = xaf;
-                    deserialise_u16(raw+11, out loadpct);
+                    SEDE.deserialise_u16(raw+11, out loadpct);
                     profile = raw[10];
                 }
                 else // msp2_inav_status
                 {
-                    deserialise_u32(raw+9, out arm_flags);
-                    deserialise_u16(raw+6, out loadpct);
+                    SEDE.deserialise_u32(raw+9, out arm_flags);
+                    SEDE.deserialise_u16(raw+6, out loadpct);
                     profile = (raw[8] & 0xf);
                 }
 
@@ -5907,8 +5908,8 @@ case 0:
 		}
         w.wp_no = *rp++;
         w.action = *rp++;
-        rp = deserialise_i32(rp, out w.lat);
-        rp = deserialise_i32(rp, out w.lon);
+        rp = SEDE.deserialise_i32(rp, out w.lat);
+        rp = SEDE.deserialise_i32(rp, out w.lon);
 
         if(w.wp_no == 0)
         {
@@ -5916,10 +5917,10 @@ case 0:
             wp0.lon = w.lon/10000000.0;
             return;
         }
-		rp = deserialise_i32(rp, out w.altitude);
-		rp = deserialise_i16(rp, out w.p1);
-		rp = deserialise_i16(rp, out w.p2);
-		rp = deserialise_i16(rp, out w.p3);
+		rp = SEDE.deserialise_i32(rp, out w.altitude);
+		rp = SEDE.deserialise_i16(rp, out w.p1);
+		rp = SEDE.deserialise_i16(rp, out w.p2);
+		rp = SEDE.deserialise_i16(rp, out w.p3);
 		w.flag = *rp;
         wpmgr.wps += w;
 		bool done;
@@ -5995,12 +5996,12 @@ case 0:
                         rlat = view.get_center_latitude();
                         rlon = view.get_center_longitude();
                     }
-                    p = serialise_i32(p, (int)(rlat*1e7));
-                    p = serialise_i32(p, (int)(rlon*1e7));
-                    p = serialise_i16(p, 0);
-                    p = serialise_u16(p, 0);
-                    p = serialise_u16(p, 0);
-                    serialise_u16(p, 99);
+                    p = SEDE.serialise_i32(p, (int)(rlat*1e7));
+                    p = SEDE.serialise_i32(p, (int)(rlon*1e7));
+                    p = SEDE.serialise_i16(p, 0);
+                    p = SEDE.serialise_u16(p, 0);
+                    p = SEDE.serialise_u16(p, 0);
+                    SEDE.serialise_u16(p, 99);
                     if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
                         MWPLog.message("RDR-rgps: Lat, Lon %f %f\n", rlat, rlon);
                         StringBuilder sb = new StringBuilder("RDR-rgps:");
@@ -6068,9 +6069,9 @@ case 0:
             tbuf[0] = id;
             tbuf[1] = (h.enabled) ? 1 : 0;
             var ll = (int32) (h.lat * 10000000);
-            serialise_i32(&tbuf[2], ll);
+            SEDE.serialise_i32(&tbuf[2], ll);
             ll = (int32)(h.lon * 10000000);
-            serialise_i32(&tbuf[6], ll);
+            SEDE.serialise_i32(&tbuf[6], ll);
             queue_cmd(MSP.Cmds.SET_SAFEHOME, tbuf, 10);
         } else {
             queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
@@ -6360,8 +6361,8 @@ case 0:
             case MSP.Cmds.RTC:
                 uint16 millis;
                 uint8* rp = raw;
-                rp = deserialise_i32(rp, out rtcsecs);
-                deserialise_u16(rp, out millis);
+                rp = SEDE.deserialise_i32(rp, out rtcsecs);
+                SEDE.deserialise_u16(rp, out millis);
                 var now = new DateTime.now_local();
                 uint16 locmillis = (uint16)(now.get_microsecond()/1000);
                 var rem = new DateTime.from_unix_local((int64)rtcsecs);
@@ -6374,8 +6375,8 @@ case 0:
                 {
                     uint8 tbuf[6];
                     rtcsecs = (uint32)now.to_unix();
-                    serialise_u32(tbuf, rtcsecs);
-                    serialise_u16(&tbuf[4], locmillis);
+                    SEDE.serialise_u32(tbuf, rtcsecs);
+                    SEDE.serialise_u16(&tbuf[4], locmillis);
                     queue_cmd(MSP.Cmds.SET_RTC,tbuf, 6);
                     run_queue();
                 }
@@ -6446,7 +6447,7 @@ case 0:
 
             case MSP.Cmds.FEATURE:
                 uint32 fmask;
-                deserialise_u32(raw, out fmask);
+                SEDE.deserialise_u32(raw, out fmask);
                 bool curf = (fmask & MSP.Feature.CURRENT) != 0;
                 MWPLog.message("Feature Mask [%08x] : telemetry %s, gps %s, current %s\n",
                                fmask,
@@ -6472,8 +6473,8 @@ case 0:
             case MSP.Cmds.DATAFLASH_SUMMARY:
                 uint32 fsize;
                 uint32 used;
-                deserialise_u32(raw+5, out fsize);
-                deserialise_u32(raw+9, out used);
+                SEDE.deserialise_u32(raw+5, out fsize);
+                SEDE.deserialise_u32(raw+9, out used);
                 if(fsize > 0)
                 {
                     var pct = 100 * used  / fsize;
@@ -6552,7 +6553,7 @@ case 0:
                     vi.fc_git = (string)gi;
                 }
                 uchar vs[4];
-                serialise_u32(vs, vi.fc_vers);
+                SEDE.serialise_u32(vs, vi.fc_vers);
                 if(vi.name == null)
                     vi.name = board_by_id();
                 var vers = "%s v%d.%d.%d  %s (%s)".printf(vi.fc_var,
@@ -6582,7 +6583,7 @@ case 0:
 
                     prlabel = false;
 
-                    deserialise_u32(raw+3, out capability);
+                    SEDE.deserialise_u32(raw+3, out capability);
 
                     MWPLog.message("set mrtype=%u cap =%x\n", vi.mrtype, raw[3]);
                     MWChooser.MWVAR _mwvar = mwvar;
@@ -6721,13 +6722,13 @@ case 0:
 
             case MSP.Cmds.GPSSTATISTICS:
                 LTM_XFRAME xf = LTM_XFRAME();
-                deserialise_u16(raw, out gpsstats.last_message_dt);
-                deserialise_u16(raw+2, out gpsstats.errors);
-                deserialise_u16(raw+6, out gpsstats.timeouts);
-                deserialise_u16(raw+10, out gpsstats.packet_count);
-                deserialise_u16(raw+14, out gpsstats.hdop);
-                deserialise_u16(raw+16, out gpsstats.eph);
-                deserialise_u16(raw+18, out gpsstats.epv);
+                SEDE.deserialise_u16(raw, out gpsstats.last_message_dt);
+                SEDE.deserialise_u16(raw+2, out gpsstats.errors);
+                SEDE.deserialise_u16(raw+6, out gpsstats.timeouts);
+                SEDE.deserialise_u16(raw+10, out gpsstats.packet_count);
+                SEDE.deserialise_u16(raw+14, out gpsstats.hdop);
+                SEDE.deserialise_u16(raw+16, out gpsstats.eph);
+                SEDE.deserialise_u16(raw+18, out gpsstats.epv);
                 rhdop = xf.hdop = gpsstats.hdop;
                 gpsinfo.set_hdop(xf.hdop/100.0);
                 if(Logger.is_logging)
@@ -6753,12 +6754,12 @@ case 0:
 
             case MSP.Cmds.ACTIVEBOXES:
                 uint32 ab;
-                deserialise_u32(raw, out ab);
+                SEDE.deserialise_u32(raw, out ab);
                 StringBuilder sb = new StringBuilder();
                 sb.append_printf("Activeboxes %u %08x", len, ab);
                 if(len > 4)
                 {
-                    deserialise_u32(raw+4, out ab);
+                    SEDE.deserialise_u32(raw+4, out ab);
                     sb.append_printf(" %08x", ab);
                 }
                 sb.append_c('\n');
@@ -6800,13 +6801,13 @@ case 0:
                         MWPLog.message("Received gps_min_sats %u\n", msats);
                         break;
                     case "nav_wp_safe_distance":
-                        deserialise_u16(raw, out nav_wp_safe_distance);
+                        SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
                         MWPLog.message("Received (raw) nav_wp_safe_distance %u\n",
                                        nav_wp_safe_distance);
                         break;
                     case "inav_max_eph_epv":
                         uint32 ift;
-                        deserialise_u32(raw, out ift);
+                        SEDE.deserialise_u32(raw, out ift);
                             // This stupidity is for Mint ...
                         uint32 *ipt = &ift;
                         float f = *((float *)ipt);
@@ -6815,7 +6816,7 @@ case 0:
                                        inav_max_eph_epv);
                         break;
                     case "nav_rth_home_offset_distance":
-                        deserialise_u16(raw, out nav_rth_home_offset_distance);
+                        SEDE.deserialise_u16(raw, out nav_rth_home_offset_distance);
                         if(nav_rth_home_offset_distance != 0)
                         {
                             var s="nav_rth_home_offset_direction";
@@ -6824,7 +6825,7 @@ case 0:
                         break;
                     case "nav_rth_home_offset_direction":
                         uint16 odir;
-                        deserialise_u16(raw, out odir);
+                        SEDE.deserialise_u16(raw, out odir);
                         MWPLog.message("Received home offsets %um / %u°\n",
                                        nav_rth_home_offset_distance/100, odir);
                         break;
@@ -6907,7 +6908,7 @@ case 0:
                 ns.nav_error = *rp++;
 
                 if(cmd == MSP.Cmds.NAV_STATUS)
-                    deserialise_u16(rp, out ns.target_bearing);
+                    SEDE.deserialise_u16(rp, out ns.target_bearing);
                 else
                 {
                     flg = 1;
@@ -6967,13 +6968,13 @@ case 0:
                 MSP_NAV_POSHOLD poscfg = MSP_NAV_POSHOLD();
                 uint8* rp = raw;
                 poscfg.nav_user_control_mode = *rp++;
-                rp = deserialise_u16(rp, out poscfg.nav_max_speed);
-                rp = deserialise_u16(rp, out poscfg.nav_max_climb_rate);
-                rp = deserialise_u16(rp, out poscfg.nav_manual_speed);
-                rp = deserialise_u16(rp, out poscfg.nav_manual_climb_rate);
+                rp = SEDE.deserialise_u16(rp, out poscfg.nav_max_speed);
+                rp = SEDE.deserialise_u16(rp, out poscfg.nav_max_climb_rate);
+                rp = SEDE.deserialise_u16(rp, out poscfg.nav_manual_speed);
+                rp = SEDE.deserialise_u16(rp, out poscfg.nav_manual_climb_rate);
                 poscfg.nav_mc_bank_angle = *rp++;
                 poscfg.nav_use_midthr_for_althold = *rp++;
-                rp = deserialise_u16(rp, out poscfg.nav_mc_hover_thr);
+                rp = SEDE.deserialise_u16(rp, out poscfg.nav_mc_hover_thr);
                 ls.set_mission_speed(poscfg.nav_max_speed / 100.0);
                 navconf.mr_update(poscfg);
                 if (ls.lastid > 0)
@@ -6984,14 +6985,14 @@ case 0:
                 have_nc = true;
                 MSP_FW_CONFIG fw = MSP_FW_CONFIG();
                 uint8* rp = raw;
-                rp = deserialise_u16(rp, out fw.cruise_throttle);
-                rp = deserialise_u16(rp, out fw.min_throttle);
-                rp = deserialise_u16(rp, out fw.max_throttle);
+                rp = SEDE.deserialise_u16(rp, out fw.cruise_throttle);
+                rp = SEDE.deserialise_u16(rp, out fw.min_throttle);
+                rp = SEDE.deserialise_u16(rp, out fw.max_throttle);
                 fw.max_bank_angle = *rp++;
                 fw.max_climb_angle = *rp++;
                 fw.max_dive_angle = *rp++;
                 fw.pitch_to_throttle = *rp++;
-                rp = deserialise_u16(rp, out fw.loiter_radius);
+                rp = SEDE.deserialise_u16(rp, out fw.loiter_radius);
                 navconf.fw_update(fw);
                 break;
 
@@ -7001,16 +7002,16 @@ case 0:
                 uint8* rp = raw;
                 nc.flag1 = *rp++;
                 nc.flag2 = *rp++;
-                rp = deserialise_u16(rp, out nc.wp_radius);
-                rp = deserialise_u16(rp, out nc.safe_wp_distance);
-                rp = deserialise_u16(rp, out nc.nav_max_altitude);
-                rp = deserialise_u16(rp, out nc.nav_speed_max);
-                rp = deserialise_u16(rp, out nc.nav_speed_min);
+                rp = SEDE.deserialise_u16(rp, out nc.wp_radius);
+                rp = SEDE.deserialise_u16(rp, out nc.safe_wp_distance);
+                rp = SEDE.deserialise_u16(rp, out nc.nav_max_altitude);
+                rp = SEDE.deserialise_u16(rp, out nc.nav_speed_max);
+                rp = SEDE.deserialise_u16(rp, out nc.nav_speed_min);
                 nc.crosstrack_gain = *rp++;
-                rp = deserialise_u16(rp, out nc.nav_bank_max);
-                rp = deserialise_u16(rp, out nc.rth_altitude);
+                rp = SEDE.deserialise_u16(rp, out nc.nav_bank_max);
+                rp = SEDE.deserialise_u16(rp, out nc.rth_altitude);
                 nc.land_speed = *rp++;
-                rp = deserialise_u16(rp, out nc.fence);
+                rp = SEDE.deserialise_u16(rp, out nc.fence);
                 wp_max = nc.max_wp_number = *rp;
                 navconf.mw_update(nc);
                 ls.set_mission_speed(nc.nav_speed_max / 100.0);
@@ -7026,8 +7027,8 @@ case 0:
             case MSP.Cmds.COMP_GPS:
                 MSP_COMP_GPS cg = MSP_COMP_GPS();
                 uint8* rp;
-                rp = deserialise_u16(raw, out cg.range);
-                rp = deserialise_i16(rp, out cg.direction);
+                rp = SEDE.deserialise_u16(raw, out cg.range);
+                rp = SEDE.deserialise_i16(rp, out cg.direction);
                 cg.update = *rp;
                 navstatus.comp_gps(cg,item_visible(DOCKLETS.NAVSTATUS));
                 break;
@@ -7035,9 +7036,9 @@ case 0:
             case MSP.Cmds.ATTITUDE:
                 MSP_ATTITUDE at = MSP_ATTITUDE();
                 uint8* rp;
-                rp = deserialise_i16(raw, out at.angx);
-                rp = deserialise_i16(rp, out at.angy);
-                deserialise_i16(rp, out at.heading);
+                rp = SEDE.deserialise_i16(raw, out at.angx);
+                rp = SEDE.deserialise_i16(rp, out at.angy);
+                SEDE.deserialise_i16(rp, out at.heading);
                 if (usemag || ((replayer & Player.MWP) == Player.MWP))
                 {
                     mhead = at.heading;
@@ -7054,8 +7055,8 @@ case 0:
             case MSP.Cmds.ALTITUDE:
                 MSP_ALTITUDE al = MSP_ALTITUDE();
                 uint8* rp;
-                rp = deserialise_i32(raw, out al.estalt);
-                deserialise_i16(rp, out al.vario);
+                rp = SEDE.deserialise_i32(raw, out al.estalt);
+                SEDE.deserialise_i16(rp, out al.vario);
                 navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
                 vabox.update(item_visible(DOCKLETS.VBOX), al.vario);
                 break;
@@ -7064,11 +7065,11 @@ case 0:
                 MSP_ANALOG an = MSP_ANALOG();
                 uint16 v;
                 uint32 pmah;
-                deserialise_u16(raw+1, out v);
-                deserialise_u16(raw+3, out an.amps);
-                deserialise_u32(raw+9, out pmah);
+                SEDE.deserialise_u16(raw+1, out v);
+                SEDE.deserialise_u16(raw+3, out an.amps);
+                SEDE.deserialise_u32(raw+9, out pmah);
                 an.powermetersum = (uint16)pmah;
-                deserialise_u16(raw+22, out an.rssi);
+                SEDE.deserialise_u16(raw+22, out an.rssi);
                 an.vbat = v / 10;
                 process_msp_analog(an);
                 break;
@@ -7076,9 +7077,9 @@ case 0:
             case MSP.Cmds.ANALOG:
                 MSP_ANALOG an = MSP_ANALOG();
                 an.vbat = raw[0];
-                deserialise_u16(raw+1, out an.powermetersum);
-                deserialise_i16(raw+3, out an.rssi);
-                deserialise_i16(raw+5, out an.amps);
+                SEDE.deserialise_u16(raw+1, out an.powermetersum);
+                SEDE.deserialise_i16(raw+3, out an.rssi);
+                SEDE.deserialise_i16(raw+5, out an.amps);
                 process_msp_analog(an);
                 break;
 
@@ -7102,14 +7103,14 @@ case 0:
                 flash_gps();
 
                 rg.gps_numsat = *rp++;
-                rp = deserialise_i32(rp, out rg.gps_lat);
-                rp = deserialise_i32(rp, out rg.gps_lon);
-                rp = deserialise_i16(rp, out rg.gps_altitude);
-                rp = deserialise_u16(rp, out rg.gps_speed);
-                rp = deserialise_u16(rp, out rg.gps_ground_course);
+                rp = SEDE.deserialise_i32(rp, out rg.gps_lat);
+                rp = SEDE.deserialise_i32(rp, out rg.gps_lon);
+                rp = SEDE.deserialise_i16(rp, out rg.gps_altitude);
+                rp = SEDE.deserialise_u16(rp, out rg.gps_speed);
+                rp = SEDE.deserialise_u16(rp, out rg.gps_ground_course);
                 if(len == 18)
                 {
-                    deserialise_u16(rp, out rg.gps_hdop);
+                    SEDE.deserialise_u16(rp, out rg.gps_hdop);
                     rhdop = rg.gps_hdop;
                     gpsinfo.set_hdop(rg.gps_hdop/100.0);
                 }
@@ -7217,9 +7218,9 @@ case 0:
                 shm.enabled = (*rp == 1) ? true : false;
                 rp++;
                 int32 ll;
-                rp = deserialise_i32(rp, out ll);
+                rp = SEDE.deserialise_i32(rp, out ll);
                 shm.lat = ll / 10000000.0;
-                deserialise_i32(rp, out ll);
+                SEDE.deserialise_i32(rp, out ll);
                 shm.lon = ll / 10000000.0;
                 safehomed.receive_safehome(id, shm);
                 id += 1;
@@ -7255,9 +7256,9 @@ case 0:
             case MSP.Cmds.TO_FRAME:
                 LTM_OFRAME of = LTM_OFRAME();
                 uint8* rp;
-                rp = deserialise_i32(raw, out of.lat);
-                rp = deserialise_i32(rp, out of.lon);
-                rp = deserialise_i32(rp, out of.alt);
+                rp = SEDE.deserialise_i32(raw, out of.lat);
+                rp = SEDE.deserialise_i32(rp, out of.lon);
+                rp = SEDE.deserialise_i32(rp, out of.alt);
                 of.fix = raw[13];
                 wp0.lat = of.lat/10000000.0;
                 wp0.lon = of.lon/10000000.0;
@@ -7298,8 +7299,8 @@ case 0:
                 flash_gps();
                 last_gps = nticks;
 
-                rp = deserialise_i32(raw, out gf.lat);
-                rp = deserialise_i32(rp, out gf.lon);
+                rp = SEDE.deserialise_i32(raw, out gf.lat);
+                rp = SEDE.deserialise_i32(rp, out gf.lon);
                 if(fakeoff.faking)
                 {
                     gf.lat += (int32)(fakeoff.dlat*10000000);
@@ -7307,7 +7308,7 @@ case 0:
                 }
 
                 gf.speed = *rp++;
-                rp = deserialise_i32(rp, out gf.alt);
+                rp = SEDE.deserialise_i32(rp, out gf.alt);
                 gf.sats = *rp;
                 init_craft_icon();
                 MSP_ALTITUDE al = MSP_ALTITUDE();
@@ -7413,7 +7414,7 @@ case 0:
             case MSP.Cmds.TX_FRAME:
                 uint8* rp;
                 LTM_XFRAME xf = LTM_XFRAME();
-                rp = deserialise_u16(raw, out rhdop);
+                rp = SEDE.deserialise_u16(raw, out rhdop);
                 xf.hdop = rhdop;
                 xf.sensorok = *rp++;
                 xf.ltm_x_count = *rp++;
@@ -7434,9 +7435,9 @@ case 0:
             {
                 LTM_AFRAME af = LTM_AFRAME();
                 uint8* rp;
-                rp = deserialise_i16(raw, out af.pitch);
-                rp = deserialise_i16(rp, out af.roll);
-                rp = deserialise_i16(rp, out af.heading);
+                rp = SEDE.deserialise_i16(raw, out af.pitch);
+                rp = SEDE.deserialise_i16(rp, out af.roll);
+                rp = SEDE.deserialise_i16(rp, out af.heading);
                 var h = af.heading;
                 if(h < 0)
                     h += 360;
@@ -7449,9 +7450,9 @@ case 0:
             case MSP.Cmds.TS_FRAME:
                 LTM_SFRAME sf = LTM_SFRAME ();
                 uint8* rp;
-                rp = deserialise_u16(raw, out sf.vbat);
+                rp = SEDE.deserialise_u16(raw, out sf.vbat);
 
-                rp = deserialise_u16(rp, out sf.vcurr);
+                rp = SEDE.deserialise_u16(rp, out sf.vcurr);
                 sf.rssi = *rp++;
                 sf.airspeed = *rp++;
                 sf.flags = *rp++;
@@ -7888,8 +7889,8 @@ case 0:
                 int32 mavmah;
                 int16 mavamps;
 
-                deserialise_i32(raw, out mavmah);
-                deserialise_i16(&raw[30], out mavamps);
+                SEDE.deserialise_i32(raw, out mavmah);
+                SEDE.deserialise_i16(&raw[30], out mavamps);
                 curr.centiA = mavamps;
                 curr.mah = mavmah;
                 if(curr.centiA != 0 || curr.mah != 0)
@@ -7982,11 +7983,11 @@ case 0:
     {
         int32 i;
         uint16 j;
-        deserialise_i32(raw+4, out i);
+        SEDE.deserialise_i32(raw+4, out i);
         double lat = i / 1e7;
-        deserialise_i32(raw+8, out i);
+        SEDE.deserialise_i32(raw+8, out i);
         double lon = i / 1e7;
-        deserialise_u16(raw+34, out j);
+        SEDE.deserialise_u16(raw+34, out j);
         MWPLog.message("MAV-OS %.6f %.6f %04x %02x %02x\n",
                        lat,lon, j, raw[38], raw[41]);
     }
@@ -7999,8 +8000,8 @@ case 0:
         int32 i;
         uint16 valid;
 
-        deserialise_u16(rp+22, out valid);
-        deserialise_u32(rp, out v);
+        SEDE.deserialise_u16(rp+22, out valid);
+        SEDE.deserialise_u32(rp, out v);
         sb.append_printf("ICAO %u ", v);
         sb.append_printf("flags: %04x ", valid);
         string callsign;
@@ -8041,11 +8042,11 @@ case 0:
             else
                 ri.name = callsign;
 
-            deserialise_i32(rp+4, out i);
+            SEDE.deserialise_i32(rp+4, out i);
             lat = i / 1e7;
             sb.append_printf("lat %.6f ", lat);
 
-            deserialise_i32(rp+8, out i);
+            SEDE.deserialise_i32(rp+8, out i);
             lon = i / 1e7;
             sb.append_printf("lon %.6f ", lon);
 
@@ -8056,7 +8057,7 @@ case 0:
 
             if((valid & 2) == 2)
             {
-                deserialise_i32(rp+12, out i);
+                SEDE.deserialise_i32(rp+12, out i);
                 var l = i / 1000.0;
                 sb.append_printf("alt %.1f ", l);
                 ri.altitude = l;
@@ -8065,14 +8066,14 @@ case 0:
             if((valid & 4) == 4)
             {
                 uint16 h;
-                deserialise_u16(rp+16, out h);
+                SEDE.deserialise_u16(rp+16, out h);
                 sb.append_printf("heading %u ", h);
                 ri.heading = h/100;
             }
             if((valid & 8) == 8)
             {
                 uint16 hv;
-                deserialise_u16(rp+18, out hv);
+                SEDE.deserialise_u16(rp+18, out hv);
                 ri.speed = hv/100.0;
                 sb.append_printf("speed %u ", hv);
             }
@@ -8126,14 +8127,14 @@ case 0:
             ri.source = 1;
         }
         ri.state = *rp++;
-        rp = deserialise_i32(rp, out ipos);
+        rp = SEDE.deserialise_i32(rp, out ipos);
         ri.latitude = ((double)ipos)/1e7;
-        rp = deserialise_i32(rp, out ipos);
+        rp = SEDE.deserialise_i32(rp, out ipos);
         ri.longitude = ((double)ipos)/1e7;
-        rp = deserialise_i32(rp, out ipos);
+        rp = SEDE.deserialise_i32(rp, out ipos);
         ri.altitude = ipos/100.0;
-        rp = deserialise_u16(rp, out ri.heading);
-        rp = deserialise_u16(rp, out ispd);
+        rp = SEDE.deserialise_u16(rp, out ri.heading);
+        rp = SEDE.deserialise_u16(rp, out ispd);
         ri.speed = ispd/100.0;
         ri.lq = *rp;
         ri.lasttick = nticks;
@@ -8329,8 +8330,8 @@ case 0:
     {
         MSP_RADIO r = MSP_RADIO();
         uint8 *rp;
-        rp = deserialise_u16(raw, out r.rxerrors);
-        rp = deserialise_u16(rp, out r.fixed_errors);
+        rp = SEDE.deserialise_u16(raw, out r.rxerrors);
+        rp = SEDE.deserialise_u16(rp, out r.fixed_errors);
         r.localrssi = *rp++;
         r.remrssi = *rp++;
         r.txbuf = *rp++;
@@ -8372,12 +8373,12 @@ case 0:
         uint8* rp = tmp;
         *rp++ = w.wp_no;
         *rp++ = w.action;
-        rp = serialise_i32(rp, w.lat);
-        rp = serialise_i32(rp, w.lon);
-        rp = serialise_u32(rp, w.altitude);
-        rp = serialise_u16(rp, w.p1);
-        rp = serialise_u16(rp, w.p2);
-        rp = serialise_u16(rp, w.p3);
+        rp = SEDE.serialise_i32(rp, w.lat);
+        rp = SEDE.serialise_i32(rp, w.lon);
+        rp = SEDE.serialise_u32(rp, w.altitude);
+        rp = SEDE.serialise_u16(rp, w.p1);
+        rp = SEDE.serialise_u16(rp, w.p2);
+        rp = SEDE.serialise_u16(rp, w.p3);
         *rp++ = w.flag;
         return (rp-&tmp[0]);
     }
@@ -8582,16 +8583,16 @@ case 0:
         *rp++ = nc.flag1;
         *rp++ = nc.flag2;
 
-        rp = serialise_u16(rp, nc.wp_radius);
-        rp = serialise_u16(rp, nc.safe_wp_distance);
-        rp = serialise_u16(rp, nc.nav_max_altitude);
-        rp = serialise_u16(rp, nc.nav_speed_max);
-        rp = serialise_u16(rp, nc.nav_speed_min);
+        rp = SEDE.serialise_u16(rp, nc.wp_radius);
+        rp = SEDE.serialise_u16(rp, nc.safe_wp_distance);
+        rp = SEDE.serialise_u16(rp, nc.nav_max_altitude);
+        rp = SEDE.serialise_u16(rp, nc.nav_speed_max);
+        rp = SEDE.serialise_u16(rp, nc.nav_speed_min);
         *rp++ = nc.crosstrack_gain;
-        rp = serialise_u16(rp, nc.nav_bank_max);
-        rp = serialise_u16(rp, nc.rth_altitude);
+        rp = SEDE.serialise_u16(rp, nc.nav_bank_max);
+        rp = SEDE.serialise_u16(rp, nc.rth_altitude);
         *rp++ = nc.land_speed;
-        rp = serialise_u16(rp, nc.fence);
+        rp = SEDE.serialise_u16(rp, nc.fence);
         *rp++ = nc.max_wp_number;
         return (rp-&tmp[0]);
     }
@@ -8601,27 +8602,27 @@ case 0:
         uint8* rp = tmp;
 
         *rp++ = pcfg.nav_user_control_mode;
-        rp = serialise_u16(rp, pcfg.nav_max_speed);
-        rp = serialise_u16(rp, pcfg.nav_max_climb_rate);
-        rp = serialise_u16(rp, pcfg.nav_manual_speed);
-        rp = serialise_u16(rp, pcfg.nav_manual_climb_rate);
+        rp = SEDE.serialise_u16(rp, pcfg.nav_max_speed);
+        rp = SEDE.serialise_u16(rp, pcfg.nav_max_climb_rate);
+        rp = SEDE.serialise_u16(rp, pcfg.nav_manual_speed);
+        rp = SEDE.serialise_u16(rp, pcfg.nav_manual_climb_rate);
         *rp++ = pcfg.nav_mc_bank_angle;
         *rp++ = pcfg.nav_use_midthr_for_althold;
-        rp = serialise_u16(rp, pcfg.nav_mc_hover_thr);
+        rp = SEDE.serialise_u16(rp, pcfg.nav_mc_hover_thr);
         return (rp-&tmp[0]);
     }
 
     private size_t serialise_fw (MSP_FW_CONFIG fw, uint8[] tmp)
     {
         uint8* rp = tmp;
-        rp = serialise_u16(rp, fw.cruise_throttle);
-        rp = serialise_u16(rp, fw.min_throttle);
-        rp = serialise_u16(rp, fw.max_throttle);
+        rp = SEDE.serialise_u16(rp, fw.cruise_throttle);
+        rp = SEDE.serialise_u16(rp, fw.min_throttle);
+        rp = SEDE.serialise_u16(rp, fw.max_throttle);
         *rp++ = fw.max_bank_angle;
         *rp++ = fw.max_climb_angle;
         *rp++ = fw.max_dive_angle;
         *rp++ = fw.pitch_to_throttle;
-        rp = serialise_u16(rp, fw.loiter_radius);
+        rp = SEDE.serialise_u16(rp, fw.loiter_radius);
         return (rp-&tmp[0]);
     }
 

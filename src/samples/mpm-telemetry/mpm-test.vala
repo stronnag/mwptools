@@ -7,6 +7,20 @@
 
 // See  https://github.com/pascallanger/DIY-Multiprotocol-TX-Module/blob/master/Multiprotocol/Multiprotocol.h
 
+namespace SEDE {
+	uint8 * deserialise_u32(uint8* rp, out uint32 v)
+    {
+        v = *rp | (*(rp+1) << 8) |  (*(rp+2) << 16) | (*(rp+3) << 24);
+        return rp + sizeof(uint32);
+    }
+
+    uint8 * deserialise_u16(uint8* rp, out uint16 v)
+    {
+        v = *rp | (*(rp+1) << 8);
+        return rp + sizeof(uint16);
+    }
+}
+
 namespace FRSKY {
     enum FrID {
         ALT_ID = 0x0100,
@@ -63,26 +77,14 @@ namespace FRSKY {
         return (crc == 0xff);
     }
 
-	uint8 * deserialise_u32(uint8* rp, out uint32 v)
-    {
-        v = *rp | (*(rp+1) << 8) |  (*(rp+2) << 16) | (*(rp+3) << 24);
-        return rp + sizeof(uint32);
-    }
-
-    uint8 * deserialise_u16(uint8* rp, out uint16 v)
-    {
-        v = *rp | (*(rp+1) << 8);
-        return rp + sizeof(uint16);
-    }
-
 	bool frsky_decode(uint8 []buf) {
 		bool res = fr_checksum(buf);
         if(res)
         {
             ushort id;
             uint val;
-            deserialise_u16(buf+3, out id);
-            deserialise_u32(buf+5, out val);
+            SEDE.deserialise_u16(buf+3, out id);
+            SEDE.deserialise_u32(buf+5, out val);
 			string s;
 			s = ((FrID)id).to_string();
 			if (s == null)
@@ -93,6 +95,137 @@ namespace FRSKY {
             stdout.printf("Sport: Checksum error\n");
 		}
         return res;
+	}
+}
+
+namespace FLYSKY {
+	struct Telem {
+		int32 mask;
+		int status;
+		double vbat;
+		double curr;
+		int rssi;
+		int heading;
+		int alt;
+		int homedirn;
+		int homedist;
+		int cog;
+		int ilat;
+		int ilon;
+		int galt;
+		double speed;
+	}
+
+	private const string[] modemap = {"Manual","Acro","Horizon","Angle","WP", "AH", "PH",
+		"RTH", "Launch", "Failsafe"};
+
+	enum Func {
+		VBAT = 2,
+		STATUS = 4,
+		HEADING = 5,
+		CURR = 6,
+		ALT = 7,
+		HOMEDIRN = 8,
+		HOMEDIST = 9,
+		COG = 10,
+		GALT = 11,
+		LAT1 = 12,
+		LON1 = 13,
+		LAT0 = 14,
+		LON0 = 15,
+		SPEED = 16,
+	}
+	private const int32 essential = ((1<<Func.STATUS)|(1<<Func.LAT1)|(1<<Func.LON1)|(1<<Func.LAT0)|(1<<Func.LON0));
+
+	private Telem telem;
+
+	void show_telem() {
+		int mode = telem.status % 10;
+		int hdop = (telem.status % 100) / 10;
+		int nsat = (telem.status / 1000);
+		hdop = hdop*10 + 1;
+		int fix = 0;
+		bool home = false;
+		int ifix = (telem.status % 1000) / 100;
+		if (ifix > 4) {
+			home = true;
+			ifix =- 5;
+		}
+		fix = ifix & 3;
+		stdout.printf("Status %d, Mode %s (%d) , nsat %d, fix %d, hdop %d, home %s\n",
+					  telem.status, modemap[mode], mode, nsat, fix, hdop, home.to_string());
+		stdout.printf("VBat: %.2f V\n", telem.vbat);
+		stdout.printf("RSSI: %d %%\n", telem.rssi);
+		stdout.printf("Alt: %d m\n", telem.alt);
+		stdout.printf("HDirn: %d deg\n", telem.homedirn);
+		stdout.printf("HDist: %d m\n", telem.homedist);
+		stdout.printf("Cog: %d deg\n", telem.cog);
+		stdout.printf("Hdr: %d deg\n", telem.heading);
+		stdout.printf("lat: %f \n", (double)telem.ilat/1e7);
+		stdout.printf("lon: %f \n", (double)telem.ilon/1e7);
+		stdout.printf("galt: %d m\n", telem.galt);
+		stdout.printf("speed: %.1f m/s\n", telem.speed);
+	}
+
+	void decode(uint8[]buf, uint8 typ) {
+		uint8 *bp = buf;
+		uint16 val;
+		telem.rssi = (*bp * 100) / 255;
+		bp++;
+		for(var s = 0; s < 7; s++) {
+			bp = SEDE.deserialise_u16(bp+2, out val);
+			telem.mask |= (1 <<  bp[1]);
+			switch (bp[1]) { // instance
+			case 2:
+				telem.vbat = val/100.0;
+				break;
+			case 4:
+				telem.status = val;
+				break;
+			case 5:
+				telem.heading = val / 100;
+				break;
+			case 6:
+				telem.curr = val/100.0;
+				break;
+			case 7:
+				telem.alt = val/100;
+				break;
+			case 8:
+				telem.homedirn = val;
+				break;
+			case 9:
+				telem.homedist = val;
+				break;
+			case 10:
+				telem.cog = val;
+				break;
+			case 11:
+				telem.galt = val;
+				break;
+			case 12:
+				telem.ilat += 10*(int16)val;
+				break;
+			case 13:
+				telem.ilon += 10*(int16)val;
+				break;
+			case 14:
+				telem.ilat += 100000 * (int16)val;
+				break;
+			case 15:
+				telem.ilon += 100000 * (int16)val;
+				break;
+			case 16:
+				telem.speed = val/3.6;
+				break;
+			case 255:
+				if((telem.mask & essential) > 0) {
+					show_telem();
+				}
+				telem = {0};
+				break;
+			}
+		}
 	}
 }
 
@@ -112,7 +245,7 @@ namespace MPM {
 		MPM_FRHUB = 3,
 		MPM_DSM_T = 4,
 		MPM_DSM_B = 5,
-		MPM_FLYSKY2 = 6,
+		MPM_FLYSKYAA = 6,
 		MPM_UNUSED1 = 7,
 		MPM_ISYNC = 8,
 		MPM_UNUSED2 = 9,
@@ -127,15 +260,15 @@ namespace MPM {
 		MPM_MAXTYPE = 0x12
 	}
 
-	static uint8 frbuf[16];
+	static uint8 mpm_buf[128];
 	static uint8 skip = 0;
-	static uint8 type = 0;
+	static Mtype type = 0;
 	//                      0    1   2  3   4   5   6  7  8  9  a  b   c  d   e  f  10 11
 	const uint8 []tlens = {0, 0x18, 9, 9, 16, 16, 29, 0, 4, 0, 8, 6, 29, 0, 14, 10, 22, 0};
 
 	static State state;
 
-	void  set_init(bool use_mp) {
+	void  init_state(bool use_mp) {
 		state = (use_mp) ? State.L_M : State.L_TYPE;
 	}
 
@@ -150,50 +283,63 @@ namespace MPM {
 			if (c == 'P')
 				state = State.L_TYPE;
 			else
-				set_init(use_mp);
+				init_state(use_mp);
 			break;
 
 		case State.L_TYPE:
 			if (c > 0 && c < Mtype.MPM_MAXTYPE && c != Mtype.MPM_UNUSED1 && c != Mtype.MPM_UNUSED2 )  {
-				type = c;
+				type = (Mtype)c;
 				state = State.L_LEN;
 			} else {
-				set_init(use_mp);
+				init_state(use_mp);
 			}
 			break;
 		case State.L_LEN:
 			var tl  = tlens[type];
 			if (tl != 0 && c == tl) {
-				if (type == Mtype.MPM_FRSKY) {
-					frbuf[0] = 0x7e; // legacy
-					state = State.L_DATA;
-				} else {
-					state = State.L_SKIP;
-				}
+				state = State.L_DATA;
 				skip = tl;
 			} else {
-				set_init(use_mp);
+				init_state(use_mp);
 			}
 			break;
 
 		case State.L_DATA:
-			frbuf[tlens[Mtype.MPM_FRSKY] - skip + 1] = c;
+			mpm_buf[tlens[type] - skip] = c;
 			skip--;
 			if (skip == 0) {
-				stdout.printf("Got a FRSKY buffer\n");
-				FRSKY.frsky_decode(frbuf);
-				set_init(use_mp);
+				switch(type) {
+				case Mtype.MPM_FRSKY:
+					stdout.printf("Got a FRSKY buffer\n");
+					mpm_buf.move(0, 1, 10);
+					mpm_buf[0] = 0x7e;
+					FRSKY.frsky_decode(mpm_buf);
+					break;
+				case Mtype.MPM_FLYSKYAA:
+					stdout.printf("Got a FLYSKY AA buffer\n");
+					FLYSKY.decode(mpm_buf, 0xaa);
+					break;
+				case Mtype.MPM_FLYSKYAC:
+					stdout.printf("Got a FLYSKY AC buffer\n");
+					FLYSKY.decode(mpm_buf, 0xac);
+					break;
+				default:
+					stdout.printf("Unknown %s\n", type.to_string());
+					break;
+				}
+				init_state(use_mp);
 			}
 			break;
 		case State.L_SKIP:
 			skip--;
 			if (skip == 0) {
-				set_init(use_mp);
+				init_state(use_mp);
 			}
 			break;
 		}
 	}
 }
+
 
 static int main(string?[] args) {
 	if (args.length > 1) {
@@ -201,7 +347,7 @@ static int main(string?[] args) {
 		var fp = FileStream.open(args[1], "r");
 		if(fp != null) {
 			int c;
-			MPM.set_init(use_mp);
+			MPM.init_state(use_mp);
 			while((c = fp.getc()) != -1) {
 				MPM.decode((uint8)c, use_mp);
 			}

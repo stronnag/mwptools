@@ -144,15 +144,15 @@ public class RadarSim : Object
         uint8 buf[128];
 
         uint8 *p = buf;
-        p = serialise_u32(p, r.icao);
-        p = serialise_i32(p, (int32)Math.lround(r.lat * 10000000));
-        p = serialise_i32(p, (int32)Math.lround(r.lon * 10000000));
-        p = serialise_i32(p, (r.alt * 1000));
-        p = serialise_u16(p, (uint16)r.hdr*100);
-        p = serialise_u16(p, (uint16)(r.hv*0.51444444)*100); // knots => m/s
-        p = serialise_u16(p, (uint16)r.vv*100);
-        p = serialise_u16(p, (uint16)r.valid);
-        p = serialise_u16(p, (uint16)r.squawk);
+        p = SEDE.serialise_u32(p, r.icao);
+        p = SEDE.serialise_i32(p, (int32)Math.lround(r.lat * 10000000));
+        p = SEDE.serialise_i32(p, (int32)Math.lround(r.lon * 10000000));
+        p = SEDE.serialise_i32(p, (r.alt * 1000));
+        p = SEDE.serialise_u16(p, (uint16)r.hdr*100);
+        p = SEDE.serialise_u16(p, (uint16)(r.hv*0.51444444)*100); // knots => m/s
+        p = SEDE.serialise_u16(p, (uint16)r.vv*100);
+        p = SEDE.serialise_u16(p, (uint16)r.valid);
+        p = SEDE.serialise_u16(p, (uint16)r.squawk);
         *p++ = r.atype;
         for(var j = 0; j < 9; j++)
             *p++ = r.callsign[j];

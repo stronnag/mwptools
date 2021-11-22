@@ -453,9 +453,9 @@ public class MwpMQTT : Object {
     {
         uint8 raw[32];
         uint8 *p;
-        p = serialise_i32(raw, oframe.lat);
-        p = serialise_i32(p, oframe.lon);
-        p = serialise_i32(p, oframe.alt);
+        p = SEDE.serialise_i32(raw, oframe.lat);
+        p = SEDE.serialise_i32(p, oframe.lon);
+        p = SEDE.serialise_i32(p, oframe.alt);
         *p++ = 1;
         *p++ = 1;
         Idle.add(() => { mqtt_frame(MSP.Cmds.TO_FRAME, raw, (p - &raw[0])); return false; });
@@ -465,10 +465,10 @@ public class MwpMQTT : Object {
     {
         uint8 raw[32];
         uint8 *p;
-        p = serialise_i32(raw, gframe.lat);
-        p = serialise_i32(p, gframe.lon);
+        p = SEDE.serialise_i32(raw, gframe.lat);
+        p = SEDE.serialise_i32(p, gframe.lon);
         *p++ = gframe.speed;
-        p = serialise_i32(p, gframe.alt);
+        p = SEDE.serialise_i32(p, gframe.alt);
         *p++ = gframe.sats;
         Idle.add(() => { mqtt_frame(MSP.Cmds.TG_FRAME, raw, (p - &raw[0])); return false; });
     }
@@ -477,9 +477,9 @@ public class MwpMQTT : Object {
     {
         uint8 raw[32];
         uint8 *p;
-        p = serialise_u16(raw, aframe.pitch);
-        p = serialise_u16(p, aframe.roll);
-        p = serialise_u16(p, aframe.heading);
+        p = SEDE.serialise_u16(raw, aframe.pitch);
+        p = SEDE.serialise_u16(p, aframe.roll);
+        p = SEDE.serialise_u16(p, aframe.heading);
         Idle.add(() => { mqtt_frame(MSP.Cmds.TA_FRAME, raw, (p - &raw[0])); return false; });
     }
 
@@ -487,8 +487,8 @@ public class MwpMQTT : Object {
     {
         uint8 raw[32];
         uint8 *p;
-        p = serialise_u16(raw, sframe.vbat);
-        p = serialise_u16(p, sframe.vcurr);
+        p = SEDE.serialise_u16(raw, sframe.vbat);
+        p = SEDE.serialise_u16(p, sframe.vcurr);
         *p++ = sframe.rssi;
         *p++ = sframe.airspeed;
         *p++ = sframe.flags;
@@ -499,7 +499,7 @@ public class MwpMQTT : Object {
     {
         uint8 raw[32];
         uint8 *p;
-        p = serialise_u16(raw, xframe.hdop);
+        p = SEDE.serialise_u16(raw, xframe.hdop);
         *p++ = 0;
         *p++ = xframe.ltm_x_count;
         *p++ = 0;
@@ -516,7 +516,7 @@ public class MwpMQTT : Object {
         *p++ = nframe.action;
         *p++ = nframe.wp_number;
         *p++ = nframe.nav_error;
-        p = serialise_u16(p, 0);
+        p = SEDE.serialise_u16(p, 0);
         Idle.add(() => { mqtt_frame(TN_FRAME, raw, (p - &raw[0])); return false; });
     }
 

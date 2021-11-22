@@ -102,18 +102,6 @@ namespace SportDev {
         return (crc == 0xff);
     }
 
-    private uint8 * deserialise_u32(uint8* rp, out uint32 v)
-    {
-        v = *rp | (*(rp+1) << 8) |  (*(rp+2) << 16) | (*(rp+3) << 24);
-        return rp + sizeof(uint32);
-    }
-
-    private uint8 * deserialise_u16(uint8* rp, out uint16 v)
-    {
-        v = *rp | (*(rp+1) << 8);
-        return rp + sizeof(uint16);
-    }
-
     public delegate void DelegateType (uint32 a,uint32 b);
 
 	public bool fr_publish(DelegateType d, uint8 []buf) {
@@ -122,8 +110,8 @@ namespace SportDev {
 		{
 			ushort id;
 			uint val;
-			deserialise_u16(&buf[3], out id);
-			deserialise_u32(&buf[5], out val);
+			SEDE.deserialise_u16(&buf[3], out id);
+			SEDE.deserialise_u32(&buf[5], out val);
 			d((uint32)id,val);
 		}
 		return res;
@@ -1765,8 +1753,8 @@ public class MWSerial : Object {
 		*ptx++ ='X';
 		*ptx++ = writedirn;
 		*ptx++ = 0; // flags
-		ptx = serialise_u16(ptx, cmd);
-		ptx = serialise_u16(ptx, (uint16)len);
+		ptx = SEDE.serialise_u16(ptx, cmd);
+		ptx = SEDE.serialise_u16(ptx, (uint16)len);
 		ck2 = CRC8.dvb_s2(ck2, txbuf[3]);
 		ck2 = CRC8.dvb_s2(ck2, txbuf[4]);
 		ck2 = CRC8.dvb_s2(ck2, txbuf[5]);

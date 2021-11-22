@@ -109,8 +109,8 @@ public class Flashdl : Object
                 }
                 else
                 {
-                    deserialise_u32(raw+5, out fsize);
-                    deserialise_u32(raw+9, out used);
+                    SEDE.deserialise_u32(raw+5, out fsize);
+                    SEDE.deserialise_u32(raw+9, out used);
 
                     if(test)
                     {
@@ -156,7 +156,7 @@ public class Flashdl : Object
 
              case MSP.Cmds.DATAFLASH_READ:
                  uint32 newaddr;
-                 deserialise_u32(raw, out newaddr);
+                 SEDE.deserialise_u32(raw, out newaddr);
                  var dlen = len - 4;
                  fp.write(raw[4:len]);
                  bread += dlen;
@@ -249,8 +249,8 @@ public class Flashdl : Object
     private void send_data_read(uint32 addr, uint16 needed)
     {
         uint8 buf[6];
-        serialise_u32(buf, addr);
-        serialise_u16(&buf[4], needed);
+        SEDE.serialise_u32(buf, addr);
+        SEDE.serialise_u16(&buf[4], needed);
         msp.send_command(MSP.Cmds.DATAFLASH_READ,buf, 6);
     }
 

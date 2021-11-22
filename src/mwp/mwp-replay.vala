@@ -25,8 +25,8 @@ public class ReplayThread : GLib.Object
     private size_t serialise_sf(LTM_SFRAME b, uint8 []tx)
     {
         uint8 *p;
-        p = serialise_u16(tx, b.vbat);
-        p = serialise_u16(p, b.vcurr);
+        p = SEDE.serialise_u16(tx, b.vbat);
+        p = SEDE.serialise_u16(p, b.vcurr);
         *p++ = b.rssi;
         *p++ = b.airspeed;
         *p++ = b.flags;
@@ -36,8 +36,8 @@ public class ReplayThread : GLib.Object
     private size_t serialise_of(LTM_OFRAME o, uint8 []tx)
     {
         uint8 *p;
-        p = serialise_i32(tx, o.lat);
-        p = serialise_i32(p, o.lon);
+        p = SEDE.serialise_i32(tx, o.lat);
+        p = SEDE.serialise_i32(p, o.lon);
         *p++ = 0;
         *p++ = 0;
         *p++ = 0;
@@ -50,7 +50,7 @@ public class ReplayThread : GLib.Object
     private size_t serialise_xf(LTM_XFRAME x, uint8 []tx)
     {
         uint8 *p;
-        p = serialise_u16(tx, x.hdop);
+        p = SEDE.serialise_u16(tx, x.hdop);
         *p++ = x.sensorok;
         *p++ = x.ltm_x_count;
         *p++ = x.disarm_reason;
@@ -60,14 +60,14 @@ public class ReplayThread : GLib.Object
     private size_t serialise_misc(MSP_MISC misc, uint8 [] tbuf)
     {
         uint8 *rp;
-        rp = serialise_u16(tbuf, misc.intPowerTrigger1);
-        rp = serialise_u16(rp, misc.conf_minthrottle);
-        rp = serialise_u16(rp, misc.maxthrottle);
-        rp = serialise_u16(rp, misc.mincommand);
-        rp = serialise_u16(rp, misc.failsafe_throttle);
-        rp = serialise_u16(rp, misc.plog_arm_counter);
-        rp = serialise_u32(rp, misc.plog_lifetime);
-        rp = serialise_i16(rp, misc.conf_mag_declination);
+        rp = SEDE.serialise_u16(tbuf, misc.intPowerTrigger1);
+        rp = SEDE.serialise_u16(rp, misc.conf_minthrottle);
+        rp = SEDE.serialise_u16(rp, misc.maxthrottle);
+        rp = SEDE.serialise_u16(rp, misc.mincommand);
+        rp = SEDE.serialise_u16(rp, misc.failsafe_throttle);
+        rp = SEDE.serialise_u16(rp, misc.plog_arm_counter);
+        rp = SEDE.serialise_u32(rp, misc.plog_lifetime);
+        rp = SEDE.serialise_i16(rp, misc.conf_mag_declination);
         *rp++ = misc.conf_vbatscale;
         *rp++ = misc.conf_vbatlevel_warn1;
         *rp++ = misc.conf_vbatlevel_warn2;
@@ -83,15 +83,15 @@ public class ReplayThread : GLib.Object
         *p++ = b.action;
         *p++ = b.wp_number;
         *p++ = b.nav_error;
-        p = serialise_u16(p, b.target_bearing);
+        p = SEDE.serialise_u16(p, b.target_bearing);
         return (p - &tx[0]);
     }
 
     private size_t serialise_alt(MSP_ALTITUDE b, uint8 []tx)
     {
         uint8 *p;
-        p = serialise_i32(tx, b.estalt);
-        p = serialise_i16(p, b.vario);
+        p = SEDE.serialise_i32(tx, b.estalt);
+        p = SEDE.serialise_i16(p, b.vario);
         return (p - &tx[0]);
     }
 
@@ -100,22 +100,22 @@ public class ReplayThread : GLib.Object
         uint8 *p = tx;
         *p++ = b.gps_fix;
         *p++ = b.gps_numsat;
-        p = serialise_i32(p, b.gps_lat);
-        p = serialise_i32(p, b.gps_lon);
-        p = serialise_i16(p, b.gps_altitude);
-        p = serialise_u16(p, b.gps_speed);
-        p = serialise_u16(p, b.gps_ground_course);
-        p = serialise_u16(p, b.gps_hdop);
+        p = SEDE.serialise_i32(p, b.gps_lat);
+        p = SEDE.serialise_i32(p, b.gps_lon);
+        p = SEDE.serialise_i16(p, b.gps_altitude);
+        p = SEDE.serialise_u16(p, b.gps_speed);
+        p = SEDE.serialise_u16(p, b.gps_ground_course);
+        p = SEDE.serialise_u16(p, b.gps_hdop);
         return (p - &tx[0]);
     }
 
     private size_t serialise_status(MSP_STATUS b, uint8 []tx)
     {
         uint8 *p;
-        p = serialise_u16(tx, b.cycle_time);
-        p = serialise_u16(p, b.i2c_errors_count);
-        p = serialise_u16(p, b.sensor);
-        p = serialise_u32(p, b.flag);
+        p = SEDE.serialise_u16(tx, b.cycle_time);
+        p = SEDE.serialise_u16(p, b.i2c_errors_count);
+        p = SEDE.serialise_u16(p, b.sensor);
+        p = SEDE.serialise_u32(p, b.flag);
         *p++ = b.global_conf;
         return (p - &tx[0]);
     }
@@ -123,8 +123,8 @@ public class ReplayThread : GLib.Object
     private size_t serialise_radio(MSP_RADIO b, uint8 []tx)
     {
         uint8 *p;
-        p = serialise_u16(tx, b.rxerrors);
-        p = serialise_u16(p, b.fixed_errors);
+        p = SEDE.serialise_u16(tx, b.rxerrors);
+        p = SEDE.serialise_u16(p, b.fixed_errors);
         *p++ = b.localrssi;
         *p++ = b.remrssi;
         *p++ = b.txbuf;
@@ -137,17 +137,17 @@ public class ReplayThread : GLib.Object
     {
         uint8 *p = tx;
         *p++ = b.vbat;
-        p = serialise_u16(p, b.powermetersum);
-        p = serialise_u16(p, b.rssi);
-        p = serialise_u16(p, b.amps);
+        p = SEDE.serialise_u16(p, b.powermetersum);
+        p = SEDE.serialise_u16(p, b.rssi);
+        p = SEDE.serialise_u16(p, b.amps);
         return (p - &tx[0]);
     }
 
     private size_t serialise_comp_gps(MSP_COMP_GPS b, uint8 []tx)
     {
         uint8 *p;
-        p = serialise_u16(tx, b.range);
-        p = serialise_i16(p, b.direction);
+        p = SEDE.serialise_u16(tx, b.range);
+        p = SEDE.serialise_i16(p, b.direction);
         *p++ = b.update;
         return (p - &tx[0]);
     }
@@ -155,9 +155,9 @@ public class ReplayThread : GLib.Object
     private size_t serialise_atti(MSP_ATTITUDE b, uint8 []tx)
     {
         uint8 *p;
-        p = serialise_i16(tx, b.angx);
-        p = serialise_i16(p, b.angy);
-        p = serialise_u16(p, b.heading);
+        p = SEDE.serialise_i16(tx, b.angx);
+        p = SEDE.serialise_i16(p, b.angy);
+        p = SEDE.serialise_u16(p, b.heading);
         return (p - &tx[0]);
     }
 
@@ -292,7 +292,7 @@ public class ReplayThread : GLib.Object
                                         buf[0] = (uint8)mwvers;
                                         buf[1] = (uint8)mrtype;
                                         buf[2] = 42;
-                                        serialise_u32(&buf[3], (uint32)cap);
+                                        SEDE.serialise_u32(&buf[3], (uint32)cap);
                                         send_rec(msp,MSP.Cmds.IDENT, 7, buf);
 
                                         if(obj.has_member("fctype"))
