@@ -80,20 +80,22 @@ namespace SportDev {
 		OK = 0,
 		SHORT = 1,
 		CRC = 2,
-		SIZE = 3
+		SIZE = 3,
+		PUBLISH = 4
 	}
 
     private uint8 buf[64];
     private bool stuffed = false;
     private uint8 nb = 0;
-    private uint good = 0;
-    private uint bad = 0;
-    private uint nshort = 0;
+
+	public uint8[] get_buffer() {
+		return buf;
+	}
 
     private bool fr_checksum(uint8[] buf)
     {
         uint16 crc = 0;
-        foreach (var b in buf[2:10])
+        foreach (var b in buf[1:9])
         {
             crc += b;
             crc += crc >> 8;
@@ -102,36 +104,15 @@ namespace SportDev {
         return (crc == 0xff);
     }
 
-    public delegate void DelegateType (uint32 a,uint32 b);
-
-	public bool fr_publish(DelegateType d, uint8 []buf) {
-		bool res = fr_checksum(buf);
-		if(res)
-		{
-			ushort id;
-			uint val;
-			SEDE.deserialise_u16(&buf[3], out id);
-			SEDE.deserialise_u32(&buf[5], out val);
-			d((uint32)id,val);
-		}
-		return res;
-	}
-
-	public FrStatus extract_messages(DelegateType d, uint8 b) {
+ 	public FrStatus extract_messages(uint8 b) {
 		FrStatus status = FrStatus.OK;
 		if (b == FrProto.P_START && nb > 0)
 		{
 			if (nb == FrProto.P_SIZE)
 			{
-				if(fr_publish(d, buf))
-				{
-					good++;
-				} else {
-					bad++;
-					status = FrStatus.CRC;
-				}
+				nb = 1; // leave the 0x7e in the buffer ...
+				return FrStatus.PUBLISH;
 			} else {
-				nshort++;
 				if(nb > 3) {
 					status = FrStatus.SHORT;
 				}
@@ -147,17 +128,16 @@ namespace SportDev {
 			stuffed = true;
 		}
 
-		if(status != FrStatus.OK) {
-			nb = 0;
-		} else {
+		if(status == FrStatus.OK) {
 			buf[nb] = b;
 			nb++;
 			if (nb > FrProto.P_SIZE)
 			{
 				nb = 0;
-				bad++;
 				status = FrStatus.SIZE;
 			}
+		} else {
+			nb = 0;
 		}
 		return status;
     }
@@ -296,7 +276,7 @@ namespace MPM {
 		MPM_MAXTYPE = 0x12
 	}
 
-	static uint8 frbuf[16];
+	static uint8 mpm_buf[64];
 	static uint8 skip = 0;
 	static uint8 type = 0;
 	//                      0    1   2  3   4   5   6  7  8  9  a  b   c  d   e  f  10 11
@@ -305,7 +285,7 @@ namespace MPM {
 	static State state = State.L_TYPE;
 
 	public uint8[] get_buffer() {
-		return frbuf;
+		return mpm_buf;
 	}
 
 	public bool decode(uint8 c) {
@@ -324,7 +304,6 @@ namespace MPM {
 			var tl  = tlens[type];
 			if (tl != 0 && c == tl) {
 				if (type == Mtype.MPM_FRSKY) {
-					frbuf[0] = 0x7e; // legacy
 					state = State.L_DATA;
 				} else {
 					state = State.L_SKIP;
@@ -335,7 +314,7 @@ namespace MPM {
 			}
 			break;
 		case State.L_DATA:
-			frbuf[tlens[Mtype.MPM_FRSKY] - skip + 1] = c;
+			mpm_buf[tlens[type] - skip] = c;
 			skip--;
 			if (skip == 0) {
 				state = State.L_TYPE;
@@ -1036,6 +1015,20 @@ public class MWSerial : Object {
         MWPLog.message(sb.str);
     }
 
+	private bool fr_publish(uint8 []buf) {
+		bool res = SportDev.fr_checksum(buf);
+		if(res)
+		{
+			ushort id;
+			uint val;
+			SEDE.deserialise_u16(&buf[2], out id);
+			SEDE.deserialise_u32(&buf[4], out val);
+			sport_event((uint32)id,val);
+		}
+		return res;
+	}
+
+
     private bool device_read(IOChannel gio, IOCondition cond)
     {
         ssize_t res = 0;
@@ -1103,7 +1096,7 @@ public class MWSerial : Object {
                 {
 					if (pmask ==  PMask.MPM) {
 						if(MPM.decode(devbuf[nc])) {
-							SportDev.fr_publish(sport_handler, MPM.get_buffer());
+							fr_publish(MPM.get_buffer());
 						}
 					} else {
 						switch(state) {
@@ -1141,10 +1134,12 @@ public class MWSerial : Object {
 								break;
 							case SportDev.FrProto.P_START:
 								if ((pmask & PMask.SPORT) == PMask.SPORT) {
-									var sbx = SportDev.extract_messages(sport_handler, devbuf[nc]);
-									if(sbx != SportDev.FrStatus.OK) {
+									var sbx = SportDev.extract_messages(devbuf[nc]);
+									if (sbx == SportDev.FrStatus.PUBLISH) {
+										fr_publish(SportDev.get_buffer()[1:]);
+										state = States.S_SPORT_OK;
+									} else if(sbx != SportDev.FrStatus.OK) {
 										state = States.S_ERROR;
-//								MWPLog.message("SPORT detect 0x%02x %s %s\n", devbuf[nc], sbx.to_string(), state.to_string());
 									} else {
 										state = States.S_SPORT_OK;
 									}
@@ -1161,10 +1156,11 @@ public class MWSerial : Object {
 							break;
 
 						case States.S_SPORT_OK:
-							var sbx = SportDev.extract_messages(sport_handler, devbuf[nc]);
-							if(sbx != SportDev.FrStatus.OK) {
-								state = States.S_ERROR;
-//							MWPLog.message("SPORT data 0x%02x %s %s\n", devbuf[nc], sbx.to_string(), state.to_string());
+							var sbx = SportDev.extract_messages(devbuf[nc]);
+							if (sbx == SportDev.FrStatus.PUBLISH) {
+								fr_publish(SportDev.get_buffer()[1:]);
+							} else if(sbx != SportDev.FrStatus.OK) {
+										state = States.S_ERROR;
 							}
 							break;
 
