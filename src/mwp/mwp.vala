@@ -465,7 +465,6 @@ public class MWP : Gtk.Application {
     public static MWPSettings conf;
     private MWSerial msp;
     private MWSerial fwddev;
-    private MWSerial rdrdev;
     private Gtk.Button conbutton;
     private Gtk.ComboBoxText dev_entry;
     private Gtk.Label verlab;
@@ -660,7 +659,14 @@ public class MWP : Gtk.Application {
     private MwpNotify? dtnotify = null;
 	private Gtk.ComboBoxText dev_protoc;
 
-    public struct MQI //: Object
+	private struct RadarDev {
+		MWSerial dev;
+		string name;
+	}
+	private RadarDev[] radardevs;
+	private uint radartid = -1;
+
+	public struct MQI //: Object
     {
         MSP.Cmds cmd;
         size_t len;
@@ -1265,8 +1271,11 @@ public class MWP : Gtk.Application {
         if (mqtt.available)
             mqtt_available = mqtt.mdisconnect();
 #endif
-        if(rdrdev != null && rdrdev.available)
-            rdrdev.close();
+
+		foreach (var r in radardevs) {
+			if(r.dev != null && r.dev.available)
+				r.dev.close();
+		}
 
         // stop any previews / replays
         ls.quit();
@@ -2636,17 +2645,22 @@ public class MWP : Gtk.Application {
         radar_plot = new SList<RadarPlot?>();
         if(radar_device != null)
         {
-            MWPLog.message("Set up radar device %s\n", radar_device);
-            rdrdev = new MWSerial();
-            rdrdev.set_mode(MWSerial.Mode.SIM);
-            rdrdev.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
+			var parts = radar_device.split(",");
+			foreach(var p in parts) {
+				RadarDev r = {};
+				r.name = p.strip();
+				MWPLog.message("Set up radar device %s\n", r.name);
+				r.dev = new MWSerial();
+				r.dev.set_mode(MWSerial.Mode.SIM);
+				r.dev.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
                     handle_radar(s, cmd,raw,len,xflags,errs);
                 });
-
-            try_radar_dev();
-            Timeout.add_seconds(15, () => {
-                    try_radar_dev();
-                    return Source.CONTINUE;
+				radardevs += r;
+			}
+			try_radar_dev();
+			Timeout.add_seconds(15, () => {
+						try_radar_dev();
+						return Source.CONTINUE;
                 });
         }
 
@@ -8950,24 +8964,29 @@ case 0:
 
     private void try_radar_dev()
     {
-        string fstr = null;
-        if(!rdrdev.available)
-        {
-            if(rdrdev.open (radar_device, 115200, out fstr) == true)
-            {
-                MWPLog.message("start radar reader %s\n", radar_device);
-                if(rawlog)
-                    rdrdev.raw_logging(true);
-                Timeout.add_seconds(300, () => {
-                        dump_radar_db();
-                        return Source.CONTINUE;
-                    });
-            }
-            else
-            {
-                MWPLog.message("Radar reader %s\n", fstr);
-            }
-        }
+		foreach (var r in radardevs) {
+			string fstr = null;
+			if(!r.dev.available)
+			{
+				if(r.dev.open (r.name, 115200, out fstr) == true)
+				{
+					MWPLog.message("start radar reader %s\n", r.name);
+					if(rawlog)
+						r.dev.raw_logging(true);
+
+					if(radartid == -1) {
+						radartid = Timeout.add_seconds(300, () => {
+								dump_radar_db();
+								return Source.CONTINUE;
+							});
+					}
+				}
+				else
+				{
+					MWPLog.message("Radar reader %s\n", fstr);
+				}
+			}
+		}
     }
 
     private void connect_serial()
