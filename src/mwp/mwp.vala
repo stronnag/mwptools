@@ -2590,8 +2590,7 @@ public class MWP : Gtk.Application {
 			var parts = radar_device.split(",");
 			foreach(var p in parts) {
 				RadarDev r = {};
-				r.name = p;
-
+				r.name = p.strip();
 				MWPLog.message("Set up radar device %s\n", r.name);
 				r.dev = new MWSerial();
 				r.dev.set_mode(MWSerial.Mode.SIM);
