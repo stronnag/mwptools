@@ -2769,6 +2769,10 @@ public class MWP : Gtk.Application {
 				ProcessCRSF(raw);
             });
 
+        msp.flysky_event.connect((raw) => {
+				ProcessFlysky(raw);
+            });
+
         msp.sport_event.connect((id,val) => {
                 process_sport_message ((SportDev.FrID)id, val);
             });
@@ -3487,18 +3491,7 @@ public class MWP : Gtk.Application {
 				ltmflags = MSP.LTM.acro;
 				break;
 			case "!FS!":
-				if(xfailsafe != failsafe)
-                {
-                    if(failsafe) {
-                        arm_flags |=  ARMFLAGS.ARMING_DISABLED_FAILSAFE_SYSTEM;
-                        MWPLog.message("Failsafe asserted %ds\n", duration);
-                        map_show_warning("FAILSAFE");
-                    } else {
-                        MWPLog.message("Failsafe cleared %ds\n", duration);
-                        map_hide_warning();
-                    }
-                    xfailsafe = failsafe;
-                }
+				failsafe = true;
 				break;
 			case "MANU":
 				ltmflags = MSP.LTM.manual; // RTH
@@ -3534,6 +3527,18 @@ public class MWP : Gtk.Application {
 //				stderr.printf("MM: Unarmed Status %s\n", fm);
 				c_armed = false;
 				break;
+			}
+			if(xfailsafe != failsafe)
+			{
+				if(failsafe) {
+					arm_flags |=  ARMFLAGS.ARMING_DISABLED_FAILSAFE_SYSTEM;
+					MWPLog.message("Failsafe asserted %ds\n", duration);
+					map_show_warning("FAILSAFE");
+				} else {
+					MWPLog.message("Failsafe cleared %ds\n", duration);
+					map_hide_warning();
+				}
+				xfailsafe = failsafe;
 			}
 
 			armed = (c_armed) ? 1 : 0;
@@ -3625,6 +3630,228 @@ public class MWP : Gtk.Application {
 			break;
 		default:
 			break;
+		}
+	}
+
+	private void ProcessFlysky(uint8[] raw) {
+		if(FLYSKY.decode(raw)) {
+			processFlysky_telem(FLYSKY.get_telem());
+			FLYSKY.reset();
+		}
+	}
+
+	private void processFlysky_telem(FLYSKY.Telem t) {
+		if ((t.mask & (1 << FLYSKY.Func.VBAT)) != 0) {
+			MSP_ANALOG an = MSP_ANALOG();
+			an.rssi = 4*(uint16)t.rssi;
+			an.vbat = (uint8)(t.vbat * 10);
+			an.amps = (uint16)t.curr*100;
+			process_msp_analog(an);
+		}
+		if ((t.mask & (1 << FLYSKY.Func.LAT0|FLYSKY.Func.LAT1|FLYSKY.Func.LON0|FLYSKY.Func.LON1|FLYSKY.Func.STATUS)) != 0) {
+			int hdop = (t.status % 100) / 10;
+			int nsat = (t.status / 1000);
+			hdop = hdop*10 + 1;
+			int fix = 0;
+			bool home = false;
+
+			int ifix = (t.status % 1000) / 100;
+			if (ifix > 4) {
+				home = true;
+				ifix =- 5;
+			}
+			fix = ifix & 3;
+
+			MSP_RAW_GPS rg = MSP_RAW_GPS();
+			rg.gps_fix =(uint8) fix;
+			if(rg.gps_fix != 0)
+			{
+				last_gps = nticks;
+			}
+			flash_gps();
+
+			rg.gps_numsat = (uint8)nsat;
+			rg.gps_lat = t.ilat;
+			rg.gps_lon = t.ilon;
+			rg.gps_altitude = (int16)t.alt;
+			rg.gps_speed = (uint16)t.speed*100;
+			rg.gps_ground_course = (uint16)t.cog*10;
+			double ddm;
+			if(fakeoff.faking) {
+				rg.gps_lat += (int32)(fakeoff.dlat*10000000);
+				rg.gps_lon += (int32)(fakeoff.dlon*10000000);
+			}
+
+			mhead = (int16)t.heading;
+			LTM_AFRAME af = LTM_AFRAME();
+			af.pitch = 0;
+			af.roll = 0;
+			af.heading = mhead;
+			navstatus.update_ltm_a(af, true);
+
+			gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS),
+									 out ddm) != 0);
+			fbox.update(item_visible(DOCKLETS.FBOX));
+			dbox.update(item_visible(DOCKLETS.DBOX));
+			_nsats = rg.gps_numsat;
+
+			if (gpsfix)	{
+				sat_coverage();
+				if(armed == 1) {
+					var spd = (double)(rg.gps_speed/100.0);
+					update_odo(spd, ddm);
+					if(have_home == false && (nsat > 5) &&
+					   (t.ilat != 0 && t.ilon != 0) ) {
+						wp0.lat = GPSInfo.lat;
+						wp0.lon = GPSInfo.lon;
+						sflags |=  NavStatus.SPK.GPS;
+						want_special |= POSMODE.HOME;
+						navstatus.cg_on();
+					}
+				}
+
+				if(craft != null) {
+					update_pos_info();
+				}
+				if(want_special != 0)
+					process_pos_states(GPSInfo.lat,GPSInfo.lon, rg.gps_altitude, "Flysky");
+				rhdop = (uint16)hdop*100;
+				gpsinfo.set_hdop(hdop);
+			}
+
+			if((t.mask & (1 << FLYSKY.Func.HOMEDIRN|FLYSKY.Func.HOMEDIST)) != 0) {
+				var cg = MSP_COMP_GPS();
+				cg.range = (uint16)t.homedist;
+				cg.direction = (int16)t.homedirn;
+				navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+				update_odo(t.speed, ddm);
+			}
+		}
+
+		if ((t.mask & (1 << FLYSKY.Func.STATUS)) != 0) {
+			int mode = t.status % 10;
+			int ifix = (t.status % 1000) / 100;
+			bool fl_armed = (ifix > 4) ? true : false;
+			bool failsafe = false;
+			uint32 arm_flags = 0;
+			uint64 mwflags = 0;
+			uint8 ltmflags = 0;
+
+			switch(mode) {
+			case 0:
+				ltmflags = MSP.LTM.manual;
+				break;
+			case 1:
+				ltmflags = MSP.LTM.acro;
+				break;
+			case 2:
+				ltmflags = MSP.LTM.horizon;
+				break;
+			case 3:
+				ltmflags = MSP.LTM.angle;
+				break;
+			case 4:
+				ltmflags = MSP.LTM.waypoints;
+				break;
+			case 5:
+				ltmflags = MSP.LTM.althold;
+				break;
+			case 6:
+				ltmflags = MSP.LTM.poshold;
+				break;
+			case 7:
+				ltmflags = MSP.LTM.rth;
+				break;
+			case 8:
+				ltmflags = MSP.LTM.launch;
+				break;
+			case 9:
+				failsafe = true;
+				break;
+			}
+			if(xfailsafe != failsafe)
+			{
+				if(failsafe) {
+					arm_flags |=  ARMFLAGS.ARMING_DISABLED_FAILSAFE_SYSTEM;
+					MWPLog.message("Failsafe asserted %ds\n", duration);
+					map_show_warning("FAILSAFE");
+				} else {
+					MWPLog.message("Failsafe cleared %ds\n", duration);
+					map_hide_warning();
+				}
+				xfailsafe = failsafe;
+			}
+
+			armed = (fl_armed) ? 1 : 0;
+			if(arm_flags != xarm_flags)
+			{
+				xarm_flags = arm_flags;
+				if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0)
+				{
+					arm_warn.show();
+				}
+				else
+				{
+					arm_warn.hide();
+				}
+			}
+
+			if(ltmflags == MSP.LTM.angle)
+				mwflags |= angle_mask;
+			if(ltmflags == MSP.LTM.horizon)
+				mwflags |= horz_mask;
+			if(ltmflags == MSP.LTM.poshold)
+				mwflags |= ph_mask;
+			if(ltmflags == MSP.LTM.waypoints)
+				mwflags |= wp_mask;
+			if(ltmflags == MSP.LTM.rth || ltmflags == MSP.LTM.land)
+				mwflags |= rth_mask;
+			else
+				mwflags = xbits; // don't know better
+
+			var achg = armed_processing(mwflags,"Flysky");
+			var xws = want_special;
+			var mchg = (ltmflags != last_ltmf);
+			if (mchg)
+			{
+				last_ltmf = ltmflags;
+				if(ltmflags == MSP.LTM.poshold)
+					want_special |= POSMODE.PH;
+				else if(ltmflags == MSP.LTM.waypoints)
+				{
+					want_special |= POSMODE.WP;
+					if (NavStatus.nm_pts == 0 || NavStatus.nm_pts == 255)
+						NavStatus.nm_pts = last_wp_pts;
+				}
+				else if(ltmflags == MSP.LTM.rth)
+					want_special |= POSMODE.RTH;
+				else if(ltmflags == MSP.LTM.althold)
+					want_special |= POSMODE.ALTH;
+				else if(ltmflags == MSP.LTM.cruise)
+					want_special |= POSMODE.CRUISE;
+				else if(ltmflags != MSP.LTM.land)
+				{
+					if(craft != null)
+						craft.set_normal();
+				}
+				var lmstr = MSP.ltm_mode(ltmflags);
+				MWPLog.message("New Flysky Mode %s (%d) %d %ds %f %f %x %x\n",
+							   lmstr, ltmflags, armed, duration, xlat, xlon,
+							   xws, want_special);
+				fmodelab.set_label(lmstr);
+			}
+
+			if(achg || mchg)
+				update_mss_state(ltmflags);
+
+			if(wp0.lat == 0.0 && wp0.lon == 0.0) {
+				if(CRSF.teledata.fix > 1) {
+					wp0.lat = CRSF.teledata.lat;
+					wp0.lon = CRSF.teledata.lon;
+				}
+			}
+			if(want_special != 0 /* && have_home*/)
+				process_pos_states(xlat,xlon, 0, "Flysky");
 		}
 	}
 

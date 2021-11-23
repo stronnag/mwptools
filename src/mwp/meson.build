@@ -9,7 +9,7 @@ mwpsrcs = files('mwp.vala', 'liststore.vala', 'mwp_markers.vala',
 		'mwp-mission-preview.vala', 'mwp-radar_list.vala',
 		'dbus-mwp-client.vala', 'mwp_safehomes.vala', 'mwp_otx.vala',
 		'mwp_xdg_notify.vala', 'mwp_elevations.vala', 'mdialog.vala',
-		'mm_support.vala')
+		'mm_support.vala', 'flysky.vala')
 
 ublxguisrc = files('settings.vala',  'mapsources.vala')
 

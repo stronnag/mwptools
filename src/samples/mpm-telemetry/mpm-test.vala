@@ -120,22 +120,21 @@ namespace FLYSKY {
 		"RTH", "Launch", "Failsafe"};
 
 	enum Func {
-		VBAT = 2,
-		STATUS = 4,
-		HEADING = 5,
-		CURR = 6,
-		ALT = 7,
-		HOMEDIRN = 8,
-		HOMEDIST = 9,
-		COG = 10,
-		GALT = 11,
-		LAT1 = 12,
-		LON1 = 13,
-		LAT0 = 14,
-		LON0 = 15,
-		SPEED = 16,
+		VBAT = 1,
+		STATUS = 3,
+		HEADING = 4,
+		CURR = 5,
+		ALT = 6,
+		HOMEDIRN = 7,
+		HOMEDIST = 8,
+		COG = 9,
+		GALT = 10,
+		LAT1 = 11,
+		LON1 = 12,
+		LAT0 = 13,
+		LON0 = 14,
+		SPEED = 15,
 	}
-	private const int32 essential = ((1<<Func.STATUS)|(1<<Func.LAT1)|(1<<Func.LON1)|(1<<Func.LAT0)|(1<<Func.LON0));
 
 	private Telem telem;
 
@@ -165,6 +164,7 @@ namespace FLYSKY {
 		stdout.printf("lon: %f \n", (double)telem.ilon/1e7);
 		stdout.printf("galt: %d m\n", telem.galt);
 		stdout.printf("speed: %.1f m/s\n", telem.speed);
+		telem = {};
 	}
 
 	void decode(uint8[]buf, uint8 typ) {
@@ -173,58 +173,61 @@ namespace FLYSKY {
 		telem.rssi = (*bp * 100) / 255;
 		bp++;
 		for(var s = 0; s < 7; s++) {
+			uint8 sensid = bp[1];
+			uint8 id = bp[0];
 			bp = SEDE.deserialise_u16(bp+2, out val);
-			telem.mask |= (1 <<  bp[1]);
-			switch (bp[1]) { // instance
-			case 2:
+			stderr.printf("%d %d %d\n", id, sensid, val);
+			switch (sensid) { // instance
+			case 1:
 				telem.vbat = val/100.0;
 				break;
-			case 4:
+			case 3:
 				telem.status = val;
 				break;
-			case 5:
+			case 4:
 				telem.heading = val / 100;
 				break;
-			case 6:
+			case 5:
 				telem.curr = val/100.0;
 				break;
-			case 7:
+			case 6:
 				telem.alt = val/100;
 				break;
-			case 8:
+			case 7:
 				telem.homedirn = val;
 				break;
-			case 9:
+			case 8:
 				telem.homedist = val;
 				break;
+			case 9:
+				telem.cog = (int16)val;
+				break;
 			case 10:
-				telem.cog = val;
+				telem.galt = (int16)val;
 				break;
 			case 11:
-				telem.galt = val;
-				break;
-			case 12:
 				telem.ilat += 10*(int16)val;
 				break;
-			case 13:
+			case 12:
 				telem.ilon += 10*(int16)val;
 				break;
-			case 14:
+			case 13:
 				telem.ilat += 100000 * (int16)val;
 				break;
-			case 15:
+			case 14:
 				telem.ilon += 100000 * (int16)val;
 				break;
-			case 16:
+			case 15:
 				telem.speed = val/3.6;
 				break;
 			case 255:
-				if((telem.mask & essential) > 0) {
+				if (telem.mask != 0) {
 					show_telem();
 				}
-				telem = {0};
 				break;
 			}
+			if(sensid != 0xff)
+				telem.mask |= (1 <<  sensid);
 		}
 	}
 }
