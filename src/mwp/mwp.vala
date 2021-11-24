@@ -6243,7 +6243,11 @@ case 0:
                               uint8 xflags, bool errs)
     {
         nopoll = true;
-        switch(cmd)
+		if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
+			MWPLog.message("RDR-msg: %s\n", cmd.to_string());
+		}
+
+		switch(cmd)
         {
             case MSP.Cmds.NAME:
                 var node = "MWP Fake Node";
@@ -8411,7 +8415,7 @@ case 0:
         radarv.update(ri, conf.dms);
         if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
             StringBuilder sb = new StringBuilder("RDR-recv:");
-            MWPLog.message("RDR-recv: Lat, Lon %f %f\n", ri.latitude, ri.longitude);
+            MWPLog.message("RDR-recv %d: Lat, Lon %f %f\n", id, ri.latitude, ri.longitude);
             foreach(var r in raw[0:len])
                 sb.append_printf(" %02x", r);
             sb.append_c('\n');
