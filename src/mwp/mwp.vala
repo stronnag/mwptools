@@ -3382,7 +3382,7 @@ public class MWP : Gtk.Application {
 			rg.gps_lon = lon;
 			rg.gps_altitude = (int16)alt;
 			rg.gps_speed = (uint16)gspeed*100;
-			rg.gps_ground_course = (uint16)hdg;
+			rg.gps_ground_course = (uint16)hdg*10;
 			/*
 			  {
                     SEDE.deserialise_u16(rp, out rg.gps_hdop);
@@ -3399,6 +3399,13 @@ public class MWP : Gtk.Application {
 
 			gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS),
 									 out ddm) != 0);
+
+			MSP_ALTITUDE al = MSP_ALTITUDE();
+			al.estalt = alt*100;
+			al.vario =  calc_vario(alt*100);
+			navstatus.set_altitude(al, item_visible(DOCKLETS.NAVSTATUS));
+			vabox.update(item_visible(DOCKLETS.VBOX), al.vario);
+
 			fbox.update(item_visible(DOCKLETS.FBOX));
 			dbox.update(item_visible(DOCKLETS.DBOX));
 			_nsats = rg.gps_numsat;
@@ -3409,10 +3416,6 @@ public class MWP : Gtk.Application {
 				if(armed == 1) {
 					var spd = (double)(rg.gps_speed/100.0);
 					update_odo(spd, ddm);
-/*
-					stderr.printf("MM: armed %s, gpsfix %s home_home %s lat %d lon %d sats %d\n",								  armed.to_string(), gpsfix.to_string(),
-								  have_home.to_string(), lat, lon, nsat);
-*/
 					if(have_home == false && (nsat > 5) &&
 					   (lat != 0 && lon != 0) ) {
 						wp0.lat = GPSInfo.lat;
@@ -3420,6 +3423,22 @@ public class MWP : Gtk.Application {
 						sflags |=  NavStatus.SPK.GPS;
 						want_special |= POSMODE.HOME;
 						navstatus.cg_on();
+					}
+
+					if(pos_valid(GPSInfo.lat, GPSInfo.lon))
+					{
+						last_gps = nticks;
+						double dist,cse;
+						Geo.csedist(GPSInfo.lat, GPSInfo.lon,
+									home_pos.lat, home_pos.lon,
+									out dist, out cse);
+						if(dist < 256)
+						{
+							var cg = MSP_COMP_GPS();
+							cg.range = (uint16)Math.lround(dist*1852);
+							cg.direction = (int16)Math.lround(cse);
+							navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+						}
 					}
 				}
 
@@ -3475,6 +3494,12 @@ public class MWP : Gtk.Application {
 			CRSF.teledata.pitch = (int16)pitch;
 			CRSF.teledata.roll = (int16)roll;
 			CRSF.teledata.yaw = mhead = (int16)yaw ;
+			LTM_AFRAME af = LTM_AFRAME();
+			af.pitch = CRSF.teledata.pitch;
+			af.roll = CRSF.teledata.roll;
+			af.heading = mhead;
+			navstatus.update_ltm_a(af, true);
+
 			art_win.update(CRSF.teledata.roll*10, CRSF.teledata.pitch*10, item_visible(DOCKLETS.ARTHOR));
 			break;
 		case CRSF.FM_ID:
@@ -3691,6 +3716,7 @@ public class MWP : Gtk.Application {
 
 			gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS),
 									 out ddm) != 0);
+
 			fbox.update(item_visible(DOCKLETS.FBOX));
 			dbox.update(item_visible(DOCKLETS.DBOX));
 			_nsats = rg.gps_numsat;
