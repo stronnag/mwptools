@@ -4614,7 +4614,7 @@ case 0:
 
     private int append_deventry(string s)
     {
-        if(s == radar_device)
+        if(radar_device.contains(s))
             return -1;
         if(s == forward_device)
             return -1;
@@ -4635,7 +4635,7 @@ case 0:
 
     private void prepend_deventry(string s)
     {
-        if(s == radar_device)
+        if(radar_device.contains(s))
             return;
         if(s == forward_device)
             return;
