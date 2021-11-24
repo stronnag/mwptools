@@ -1127,7 +1127,8 @@ public class MWSerial : Object {
 								if ((pmask & PMask.SPORT) == PMask.SPORT) {
 									var sbx = SportDev.extract_messages(devbuf[nc]);
 									if (sbx == SportDev.FrStatus.PUBLISH) {
-										fr_publish(SportDev.get_buffer()[1:]);
+										var sbuf = SportDev.get_buffer();
+										fr_publish(sbuf[1:10]);
 										state = States.S_SPORT_OK;
 									} else if(sbx != SportDev.FrStatus.OK) {
 										state = States.S_ERROR;
@@ -1149,7 +1150,8 @@ public class MWSerial : Object {
 						case States.S_SPORT_OK:
 							var sbx = SportDev.extract_messages(devbuf[nc]);
 							if (sbx == SportDev.FrStatus.PUBLISH) {
-								fr_publish(SportDev.get_buffer()[1:]);
+								var sbuf = SportDev.get_buffer();
+								fr_publish(sbuf[1:10]);
 							} else if(sbx != SportDev.FrStatus.OK) {
 										state = States.S_ERROR;
 							}
