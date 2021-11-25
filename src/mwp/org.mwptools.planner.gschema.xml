@@ -603,6 +603,15 @@
       <description>Maximum number of WP supported</description>
     </key>
 
+    <key name="max-radar-altitude" type="u">
+      <default>5000</default>
+      <summary>Maximum altitude to show in the radar list view</summary>
+      <description>Maximum altitude (meters) to show hits in the radar list view 
+      higher than this value will only show in the map view 
+      Lower than this will show in the radar list table. This is mainly for ADS-B 
+      receivers as there's no need for 30,000 feet hits to be shown</description>
+    </key>
+
     <!-- key name="radar-device" type="s">
       <default>""</default>
       <summary>Device node dedicated for iNav-radar</summary>
