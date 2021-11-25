@@ -1,0 +1,11 @@
+Build started at 2021-11-25T15:02:39.603538
+Main binary: /usr/bin/python3
+Build Options: 
+Python system: Linux
+The Meson build system
+Version: 0.56.2
+Source dir: /usr/src/wx4cb/mwptools/src/mwp
+Build dir: /usr/src/wx4cb/mwptools/src/mwp/build
+Build type: native build
+
+ERROR: First statement must be a call to project

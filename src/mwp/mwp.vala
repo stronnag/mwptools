@@ -725,8 +725,7 @@ public class MWP : Gtk.Application {
         MSP=4,
         ADHOC=8,
         RADAR=16,
-        OTXSTDERR = 32,
-        CHUCKIE = 64
+        OTXSTDERR = 32
     }
 
     private enum SAT_FLAGS
@@ -5005,9 +5004,7 @@ case 0:
 // CB - 11.25.21 - Only update if < max alt
                                     if (r.altitude < conf.max_radar_altitude) {
                                         radarv.update(r, conf.dms);
-                                    } else { // if((debug_flags & DEBUG_FLAGS.CHUCKIE) != DEBUG_FLAGS.NONE) {
-                                        MWPLog.message("Not listing %s at %d m\n", r.name, r.altitude);
-                                    }
+                                    } 
                                     markers.set_radar_hidden(r);
                                 }
                             }
@@ -5016,11 +5013,9 @@ case 0:
                                 if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
                                     MWPLog.message("TRAF-STALE %s %u\n", r.name, r.state);
                                 r.state = 3; // stale
-                                // CB - 11.25.21 - Only update if < max alt
+// CB - 11.25.21 - Only update if < max alt
                                     if (r.altitude < conf.max_radar_altitude) {
                                         radarv.update(r, conf.dms);
-                                    } else { // if((debug_flags & DEBUG_FLAGS.CHUCKIE) != DEBUG_FLAGS.NONE) {
-                                        MWPLog.message("Not listing %s at %d m\n", r.name, r.altitude);
                                     }
                                 markers.set_radar_stale(r);
                             }
@@ -8374,8 +8369,8 @@ case 0:
 // CB - 11.25.21 - Only update if < max alt
             if (ri.altitude < conf.max_radar_altitude) {
                 radarv.update(ri, conf.dms);
-            } else { // if((debug_flags & DEBUG_FLAGS.CHUCKIE) != DEBUG_FLAGS.NONE) {
-                MWPLog.message("Not listing %s at %d m\n", ri.name, ri.altitude);
+            } else  if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
+                MWPLog.message("Not listing %s at %.lf m\n", ri.name, ri.altitude);
             }
         }
         else
@@ -8430,12 +8425,8 @@ case 0:
         ri.lasttick = nticks;
 
         markers.update_radar(ri);
-        // CB - 11.25.21 - Only update if < max alt
-        if (ri.altitude < conf.max_radar_altitude) {
-            radarv.update(ri, conf.dms);
-        } else { // if((debug_flags & DEBUG_FLAGS.CHUCKIE) != DEBUG_FLAGS.NONE) {
-            MWPLog.message("Not listing %s at %d m\n", ri.name, ri.altitude);
-        }
+        radarv.update(ri, conf.dms);
+
         if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
             StringBuilder sb = new StringBuilder("RDR-recv:");
             MWPLog.message("RDR-recv %d: Lat, Lon %f %f\n", id, ri.latitude, ri.longitude);
