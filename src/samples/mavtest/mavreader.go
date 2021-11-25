@@ -103,6 +103,7 @@ const (
   MAVLINK_MSG_VFR_HUD = 74
 	MAVLINK_MSG_RADIO_STATUS = 109
   MAVLINK_MSG_BATTERY_STATUS = 147
+	MAVLINK_MSG_ID_TRAFFIC_REPORT = 246
   MAVLINK_MSG_STATUSTEXT = 253
 )
 
@@ -470,6 +471,25 @@ func (m *MavReader) mav_show() {
 			str := strings.TrimSpace(string(m.payload[1:51]))
 			fmt.Printf("status: s: %d t: %s\n", m.payload[0], str)
 
+		case MAVLINK_MSG_ID_TRAFFIC_REPORT:
+			var valid uint16;
+			var icao uint32;
+			var callsign string;
+			icao = binary.LittleEndian.Uint32(m.payload[0:4])
+			valid = binary.LittleEndian.Uint16(m.payload[22:24])
+			if (valid & 0x10) == 0x10 {
+				var cs []byte
+				for j:= 0; j < 9; j++ {
+					if m.payload[27+j] != ' ' {
+						cs = append(cs, m.payload[27+j])
+					}
+				}
+				callsign = string(cs)
+			} else {
+				callsign = "unknown"
+			}
+			fmt.Printf("ICAO %d, callsign %s\n", icao, callsign)
+
 		default:
 			fmt.Printf("** Unhandled **\n")
 		}
@@ -492,6 +512,7 @@ func (m *MavReader) load_meta() {
 		MAVLINK_MSG_RADIO_STATUS: {"mavlink_msg_radio_status", 9},
 		MAVLINK_MSG_BATTERY_STATUS: {"mavlink_msg_battery_status", 54},
 		MAVLINK_MSG_STATUSTEXT: {"mavlink_msg_statustext", 54},
+		MAVLINK_MSG_ID_TRAFFIC_REPORT:  {"mavlink_traffic_report", 38},
 	}
 }
 
