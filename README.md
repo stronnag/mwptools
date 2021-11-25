@@ -125,6 +125,7 @@ In addition to [mwp](https://github.com/stronnag/mwptools), the following inav m
 * [Mobile Flight](https://github.com/flyinghead/mobile-flight) (IOS) Unsupported, obsolete. May not work with either contemporary IOS or inav firmware.
 * [Apmplanner2](https://ardupilot.org/planner2/) with [impload](https://github.com/stronnag/impload/). Ardupilot planner, missions can be uploaded to inav using [impload](https://github.com/stronnag/impload/).
 * [qgroundcontrol](https://docs.qgroundcontrol.com/master/en/) with [impload](https://github.com/stronnag/impload/). Ardupilot planner, missions can be uploaded to inav using [impload](https://github.com/stronnag/impload/).
+* [Side-Pilot](https://sidepilot.net/) with [impload](https://github.com/stronnag/impload)  (untested). Ardupilot telemetry viewer, tested with wifi connection toa  full crossfire module. Still being tested
 
 The following alternatives exist for **mwp-area-planner** :
 
