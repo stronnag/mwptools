@@ -3253,12 +3253,17 @@ public class MWP : Gtk.Application {
 			uri = "v4l2://%s".printf(viddev_c.active_id);
 			break;
 		case 1:
-			if (!uri.contains("""://""")) {
-				try {
-					uri = Gst.filename_to_uri(uri);
-					rt = VideoPlayer.discover(uri);
-				} catch {
+			uri = uri.strip();
+			if (uri.length > 0) {
+				if (!uri.contains("""://""")) {
+					try {
+						uri = Gst.filename_to_uri(uri);
+						rt = VideoPlayer.discover(uri);
+					} catch {}
 				}
+			} else {
+				MWPLog.message("Not playing empty video uri\n");
+				id = -1;
 			}
 			break;
 		}

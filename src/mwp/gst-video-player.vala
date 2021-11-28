@@ -95,10 +95,10 @@ public class VideoPlayer : Window {
 			GLib.Error err;
 			string debug;
 			message.parse_error (out err, out debug);
-			stdout.printf ("Error: %s\n", err.message);
+			MWPLog.message("Video error: %s\n", err.message);
+			destroy();
 			break;
 		case Gst.MessageType.EOS:
-			stdout.printf ("end of stream\n");
 			playing = false;
 			playbin.set_state (Gst.State.READY);
 				break;
