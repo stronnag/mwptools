@@ -2654,6 +2654,7 @@ public class MWP : Gtk.Application {
 				MWPLog.message("Set up radar device %s\n", r.name);
 				r.dev = new MWSerial();
 				r.dev.set_mode(MWSerial.Mode.SIM);
+				r.dev.set_pmask(MWSerial.PMask.INAV);
 				r.dev.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
                     handle_radar(s, cmd,raw,len,xflags,errs);
                 });
