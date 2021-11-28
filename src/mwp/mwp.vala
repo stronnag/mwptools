@@ -3120,13 +3120,8 @@ public class MWP : Gtk.Application {
             dtnotify = new MwpNotify();
         }
 
-
-
 		viddevs = new List<GstMonitor.VideoDev?> ();
 		viddev_c = new Gtk.ComboBoxText();
-		viddev_c.destroy.connect(() => {
-				stderr.printf("VID --- Widget destroyed!!!!!\n");
-			});
 
 		var gstdm = new GstMonitor();
 		gstdm.source_changed.connect((a,d) => {
