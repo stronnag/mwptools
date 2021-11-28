@@ -3122,7 +3122,7 @@ public class MWP : Gtk.Application {
 
 
 
-		viddevs = new List<GstMonitor.VideoDev> ();
+		viddevs = new List<GstMonitor.VideoDev?> ();
 		viddev_c = new Gtk.ComboBoxText();
 		viddev_c.destroy.connect(() => {
 				stderr.printf("VID --- Widget destroyed!!!!!\n");
