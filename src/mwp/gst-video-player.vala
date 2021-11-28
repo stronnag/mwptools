@@ -8,6 +8,7 @@ public class VideoPlayer : Window {
 	private Gtk.Scale slider;
 	private bool playing = false;
 	private uint tid;
+	private Gtk.Box vbox;
 
 	public VideoPlayer() {
 		Widget video_area;
@@ -16,22 +17,12 @@ public class VideoPlayer : Window {
 		gtksink.get ("widget", out video_area);
 		playbin["video-sink"] = gtksink;
 
-		var vbox = new Box (Gtk.Orientation.VERTICAL, 0);
+		vbox = new Box (Gtk.Orientation.VERTICAL, 0);
 		vbox.pack_start (video_area);
 
 		play_button = new Button.from_icon_name ("gtk-media-play", Gtk.IconSize.BUTTON);
 		play_button.clicked.connect (on_play);
-		slider = new Scale.with_range(Orientation.HORIZONTAL, 0, 1, 1);
-		slider.set_draw_value(false);
-		slider.change_value.connect((st, d) => {
-				int64 pos = (int64)(1e9*d);
-				playbin.seek_simple (Gst.Format.TIME,
-									 Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT,
-									 pos);
-				return true;
-			});
-		vbox.pack_start (slider, false);
-		set_size_request(320, 320);
+		set_size_request(480, 400);
 		add (vbox);
 		var bus = playbin.get_bus ();
 		bus.add_watch(Priority.DEFAULT, bus_callback);
@@ -50,17 +41,35 @@ public class VideoPlayer : Window {
 				});
 		}
 
+
+	private void add_slider() {
+		slider = new Scale.with_range(Orientation.HORIZONTAL, 0, 1, 1);
+		slider.set_draw_value(false);
+		slider.change_value.connect((st, d) => {
+				int64 pos = (int64)(1e9*d);
+				playbin.seek_simple (Gst.Format.TIME,
+									 Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT,
+									 pos);
+				return true;
+			});
+		vbox.pack_start (slider, false, false,0);
+	}
+
 	public void set_slider_range(double min, double max) {
-		slider.set_range(min, max);
+		if (max > 0) {
+			add_slider();
+			slider.set_range(min, max);
+		}
 	}
 
 	public void set_slider_value(double value) {
+		if (slider != null)
 			slider.set_value(value);
 	}
 
 	public void add_stream(string fn) {
 		bool start = false;
-		if (fn.has_prefix("v4l2://")) {
+		if (!fn.has_prefix("file://")) {
 			start = true;
 		}
 			playbin["uri"] = fn;
