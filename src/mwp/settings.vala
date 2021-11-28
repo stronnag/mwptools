@@ -112,7 +112,6 @@ public class MWPSettings : GLib.Object
     public double maxdive {get; set; default=0;}
     public uint max_wps { get; set; default=60; }
 
-// CB - 11.25.21 - add a max altitude variable with a default of 10000m
     public uint max_radar_altitude {get; set; default=5000; }
 
 
@@ -424,7 +423,6 @@ public class MWPSettings : GLib.Object
         if(s == null || s == "max-wps")
             max_wps =  settings.get_uint("max-wps");
 
-// CB - 11.25.21 - Added handling for Maximum alt 
         if (s == null || s == "max-radar-altitude")
             max_radar_altitude = settings.get_uint("max-radar-altitude");
     }

@@ -1457,7 +1457,9 @@ public class MWP : Gtk.Application {
         conf = new MWPSettings();
         conf.read_settings();
 
-        MWPLog.message("Maximum Altitude set to: %u\n", conf.max_radar_altitude);
+        if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
+		MWPLog.message("RADAR: Maximum Altitude set to: %u\n", conf.max_radar_altitude);
+	}
 
         wp_max = (uint8)conf.max_wps;
 
@@ -5001,8 +5003,6 @@ case 0:
                                 if(r.source == 2)
                                 {
                                     r.state = 2; // hidden
-// CB - 11.25.21 - Only update if < max alt
-                                    if (r.altitude < conf.max_radar_altitude) {
                                         radarv.update(r, conf.dms);
                                     } 
                                     markers.set_radar_hidden(r);
@@ -5013,7 +5013,6 @@ case 0:
                                 if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
                                     MWPLog.message("TRAF-STALE %s %u\n", r.name, r.state);
                                 r.state = 3; // stale
-// CB - 11.25.21 - Only update if < max alt
                                     if (r.altitude < conf.max_radar_altitude) {
                                         radarv.update(r, conf.dms);
                                     }
@@ -8366,11 +8365,10 @@ case 0:
                 ri.posvalid = true;
                 markers.update_radar(ri);
             }
-// CB - 11.25.21 - Only update if < max alt
             if (ri.altitude < conf.max_radar_altitude) {
                 radarv.update(ri, conf.dms);
             } else  if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
-                MWPLog.message("Not listing %s at %.lf m\n", ri.name, ri.altitude);
+                MWPLog.message("RADAR: Not listing %s at %.lf m\n", ri.name, ri.altitude);
             }
         }
         else
