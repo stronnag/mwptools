@@ -597,7 +597,6 @@ public class MWP : Gtk.Application {
     private double xlon = 0;
     private double xlat = 0;
 
-    private bool use_gst = false;
     private bool inav = false;
     private bool sensor_alm = false;
     private uint8 xs_state = 0;
@@ -658,6 +657,9 @@ public class MWP : Gtk.Application {
     private bool is_shutdown = false;
     private MwpNotify? dtnotify = null;
 	private Gtk.ComboBoxText dev_protoc;
+	private Gtk.ComboBoxText viddev_c;
+	public List<GstMonitor.VideoDev?>viddevs;
+	private V4L2_dialog vid_dialog;
 
 	private struct RadarDev {
 		MWSerial dev;
@@ -1567,9 +1569,7 @@ public class MWP : Gtk.Application {
 
         gpsintvl = conf.gpsintvl / TIMINTVL;
 
-        if(conf.mediap.length == 0)
-            use_gst = true;
-        else if(conf.mediap == "false" || conf.mediap == "none")
+        if(conf.mediap == "false" || conf.mediap == "none")
         {
             MWPLog.message("Beeps disabled\n");
             beep_disabled = true;
@@ -1895,7 +1895,7 @@ public class MWP : Gtk.Application {
         saq.activate.connect(() => {
                 if(prefs.run_prefs(ref conf) == 1001)
                 {
-                    build_deventry();
+                    build_serial_combo();
                     if(conf.speakint == 0)
                         conf.speakint = 15;
                     audio_cb.sensitive = true;
@@ -2147,6 +2147,12 @@ public class MWP : Gtk.Application {
         saq = new GLib.SimpleAction("flight-stats",null);
         saq.activate.connect(() => {
                 odoview.display(odo, false);
+            });
+        window.add_action(saq);
+
+		saq = new GLib.SimpleAction("vstream",null);
+        saq.activate.connect(() => {
+                load_v4l2_video();
             });
         window.add_action(saq);
 
@@ -2667,7 +2673,7 @@ public class MWP : Gtk.Application {
 
         mq = new Queue<MQI?>();
 
-        build_deventry();
+        build_serial_combo();
         dev_entry.active = 0;
 #if MQTT
         mqtt = newMwpMQTT();
@@ -2700,12 +2706,12 @@ public class MWP : Gtk.Application {
 #endif
         devman.device_added.connect((s) => {
                 if(s != null && s.contains(" ") || msp.available)
-                    append_deventry(s);
+                    append_combo(dev_entry, s);
                 else
-                    prepend_deventry(s);
+                    prepend_combo(dev_entry, s);
             });
         devman.device_removed.connect((s) => {
-                remove_deventry(s);
+                remove_combo(dev_entry, s);
             });
 
 
@@ -3113,10 +3119,38 @@ public class MWP : Gtk.Application {
             MWPLog.message("mwp will manage power and screen saver / idle\n");
             dtnotify = new MwpNotify();
         }
-        map_moved();
+
+
+
+		viddevs = new List<GstMonitor.VideoDev> ();
+		viddev_c = new Gtk.ComboBoxText();
+		viddev_c.destroy.connect(() => {
+				stderr.printf("VID --- Widget destroyed!!!!!\n");
+			});
+
+		var gstdm = new GstMonitor();
+		gstdm.source_changed.connect((a,d) => {
+				MWPLog.message("Gst: %s %s <%s>\n", a, d.displayname, d.devicename);
+				switch (a) {
+				case "add":
+					if(viddevs.index(d) == -1) {
+						viddevs.append(d);
+						viddev_c.append(d.devicename, d.displayname);
+						viddev_c.active_id = d.devicename;
+					}
+					break;
+				case "remove":
+					remove_combo(viddev_c, d.displayname);
+					viddevs.remove(d);
+					break;
+				}
+			});
+		gstdm.setup_device_monitor();
+
+		map_moved();
 		if (smart_warn) {
 			Idle.add(() => {
-			mwp_warning_box("--smartport is no longer required or supported\nEnter enter the Device name as a  normal device and it will be detected as Smart Port",
+			mwp_warning_box("--smartport is no longer required or supported\nEnter enter the Device name as a  normal device and it will be detected as Smart Port\nBetter, set the protocol to Smartport as well\n",
 							Gtk.MessageType.ERROR, 60);
 			return false;
 				});
@@ -3206,6 +3240,37 @@ public class MWP : Gtk.Application {
         }
         return found;
     }
+
+	private void load_v4l2_video() {
+		if (vid_dialog == null) {
+			vid_dialog = new V4L2_dialog(viddev_c);
+		}
+		string uri;
+		double rt = 0.0;
+		var id = vid_dialog.runner(out uri);
+		switch(id) {
+		case 0:
+			uri = "v4l2://%s".printf(viddev_c.active_id);
+			break;
+		case 1:
+			if (!uri.contains("""://""")) {
+				try {
+					uri = Gst.filename_to_uri(uri);
+					rt = VideoPlayer.discover(uri);
+				} catch {
+				}
+			}
+			break;
+		}
+		if (id != -1) {
+			var vp = new VideoPlayer();
+			vp.set_slider_range(0, rt);
+			vp.show_all ();
+			vp.set_transient_for(window);
+			vp.set_keep_above(true);
+			vp.add_stream(uri);
+		}
+	}
 
     private void kml_load_dialog()
     {
@@ -4484,7 +4549,7 @@ case 0:
 
         mss.i__get_devices.connect(() => {
                 int idx;
-                mss.device_names = list_devices();
+                mss.device_names = list_combo(dev_entry);
                 idx =(msp.available) ? dev_entry.active : -1;
                 return idx;
             });
@@ -4496,7 +4561,7 @@ case 0:
             });
 
         mss.i__connect_device.connect((s) => {
-                int n = append_deventry(s);
+                int n = append_combo(dev_entry, s);
                 if(n == -1)
                     return false;
                 dev_entry.active = n;
@@ -4546,40 +4611,41 @@ case 0:
         return ret;
     }
 
-    public void build_deventry()
+    public void build_serial_combo()
     {
         dev_entry.remove_all ();
-        foreach (var s in devman.get_serial_devices())
-            prepend_deventry(s);
+        foreach (var s in devman.get_serial_devices()) {
+			prepend_combo(dev_entry, s);
+		}
 
-        foreach(string a in conf.devices)
-        {
+        foreach(string a in conf.devices) {
             dev_entry.append_text(a);
         }
 
-        foreach (var s in devman.get_bt_serial_devices())
-            append_deventry(s);
+        foreach (var s in devman.get_bt_serial_devices()) {
+			append_combo(dev_entry, s);
+		}
     }
 
-    private string?[] list_devices()
+    private string?[] list_combo(Gtk.ComboBoxText cbtx, int id=0)
     {
-        string[] devs={};
-        var m = dev_entry.get_model();
+        string[] items={};
+        var m = cbtx.get_model();
         Gtk.TreeIter iter;
         bool next;
 
         for(next = m.get_iter_first(out iter); next; next = m.iter_next(ref iter))
         {
             GLib.Value cell;
-            m.get_value (iter, 0, out cell);
-            devs += (string)cell;
+            m.get_value (iter, id, out cell);
+            items += (string)cell;
         }
-        return devs;
+        return items;
     }
 
-    private int find_deventry(string s)
+    private int find_combo(Gtk.ComboBoxText cbtx, string s, int id=0)
     {
-        var m = dev_entry.get_model();
+        var m = cbtx.get_model();
         Gtk.TreeIter iter;
         int i,n = -1;
         bool next;
@@ -4588,7 +4654,7 @@ case 0:
             next; next = m.iter_next(ref iter), i++)
         {
             GLib.Value cell;
-            m.get_value (iter, 0, out cell);
+            m.get_value (iter, id, out cell);
             string cs = (string)cell;
 
             bool has_s = cs.contains(" ");
@@ -4607,61 +4673,61 @@ case 0:
         var dstr = Environment.get_variable("MWP_PREF_DEVICE");
         if (dstr != null)
         {
-            var npref = find_deventry(dstr);
+            var npref = find_combo(dev_entry, dstr);
             if(npref != -1)
                 dev_entry.active = npref;
         }
     }
 
-    private int append_deventry(string s)
+    private int append_combo(Gtk.ComboBoxText cbtx, string s)
     {
         if(radar_device != null && radar_device.contains(s))
             return -1;
         if(s == forward_device)
             return -1;
 
-        var n = find_deventry(s);
+        var n = find_combo(cbtx, s);
         if (n == -1)
         {
-            dev_entry.append_text(s);
+            cbtx.append_text(s);
             n = 0;
         }
 
         check_pref_dev();
 
-        if(dev_entry.active == -1)
-            dev_entry.active = 0;
+        if(cbtx.active == -1)
+            cbtx.active = 0;
         return n;
     }
 
-    private void prepend_deventry(string s)
+    private void prepend_combo(Gtk.ComboBoxText cbtx, string s)
     {
 		if(radar_device != null && radar_device.contains(s))
             return;
         if(s == forward_device)
             return;
 
-        var n = find_deventry(s);
-        if (n == -1)
-        {
-            dev_entry.prepend_text(s);
-            dev_entry.active = 0;
-        }
-        else
-            dev_entry.active = n;
+        var n = find_combo(cbtx, s);
+        if (n == -1) {
+            cbtx.prepend_text(s);
+            cbtx.active = 0;
+        } else {
+            cbtx.active = n;
+		}
     }
 
-    private void remove_deventry(string s)
+    private void remove_combo(Gtk.ComboBoxText cbtx,string s)
     {
-        foreach(string a in conf.devices)
-            if (a == s)
+        foreach(string a in conf.devices) {
+			if (a == s)
                 return;
+		}
 
-        var n = find_deventry(s);
+		var n = find_combo(cbtx, s);
         if (n != -1)
         {
-            dev_entry.remove(n);
-            dev_entry.active = 0;
+            cbtx.remove(n);
+            cbtx.active = 0;
         }
     }
 
@@ -8664,28 +8730,14 @@ case 0:
             var fn = MWPUtils.find_conf_file(sfn);
             if(fn != null)
             {
-                if(use_gst)
-                {
-                    Gst.Element play = Gst.ElementFactory.make ("playbin", "player");
-                    File file = File.new_for_path (fn);
-                    var uri = file.get_uri ();
-                    play.set("uri", uri);
-                    play.set("volume", 5.0);
-                    play.set_state (Gst.State.PLAYING);
-                }
-                else
-                {
-                    sb.assign(conf.mediap);
-                    sb.append_c(' ');
-                    sb.append(fn);
-                    try {
-                        use_gst = !Process.spawn_command_line_async (sb.str);
-                    } catch (SpawnError e) {
-                        use_gst = true;
-                    }
-                }
-            }
-        }
+				Gst.Element play = Gst.ElementFactory.make ("playbin", "player");
+				File file = File.new_for_path (fn);
+				var uri = file.get_uri ();
+				play.set("uri", uri);
+				play.set("volume", 5.0);
+				play.set_state (Gst.State.PLAYING);
+			}
+		}
         sb.assign("Alert: ");
         sb.append(sfn);
         if(sfn == Alert.SAT)

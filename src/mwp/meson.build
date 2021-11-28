@@ -9,7 +9,8 @@ mwpsrcs = files('mwp.vala', 'liststore.vala', 'mwp_markers.vala',
 		'mwp-mission-preview.vala', 'mwp-radar_list.vala',
 		'dbus-mwp-client.vala', 'mwp_safehomes.vala', 'mwp_otx.vala',
 		'mwp_xdg_notify.vala', 'mwp_elevations.vala', 'mdialog.vala',
-		'mm_support.vala', 'flysky.vala')
+		'mm_support.vala', 'flysky.vala', 'gst-devmon.vala',
+		'gst-video-player.vala')
 
 ublxguisrc = files('settings.vala',  'mapsources.vala')
 
@@ -29,6 +30,7 @@ mwpdeps = [deps,
            dependency('cairo'),
            dependency('libsoup-2.4'),
            dependency('gstreamer-1.0'),
+           dependency('gstreamer-pbutils-1.0'),
            dependency('vte-2.91'),
            meson.get_compiler('vala').find_library('posix'),
            meson.get_compiler('vala').find_library('linux'),

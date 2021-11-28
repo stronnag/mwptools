@@ -261,6 +261,12 @@
           </item>
 	</section>
       </submenu>
+      <section>
+	<item>
+          <attribute name="label">Video Stream</attribute>
+          <attribute name="action">win.vstream</attribute>
+        </item>
+      </section>
     </submenu>
     <submenu>
       <attribute name="label">Help</attribute>
