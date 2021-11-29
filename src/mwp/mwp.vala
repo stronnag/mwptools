@@ -5004,6 +5004,8 @@ case 0:
                                 if(r.source == 2)
                                 {
                                     r.state = 2; // hidden
+				    if (r.altitude < conf.max_radar_altitude) {
+
                                         radarv.update(r, conf.dms);
                                     } 
                                     markers.set_radar_hidden(r);
