@@ -27,9 +27,11 @@ public class GstMonitor : Gst.Object {
             vd.displayname = model;
 #else
             vd = {"Camera", dn};
+#endif
             return vd;
 	}
-#endif
+
+
 	private bool bus_callback (Gst.Bus bus, Gst.Message message) {
 		Device device;
 		switch (message.type) {
