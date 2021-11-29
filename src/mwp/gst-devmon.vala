@@ -8,6 +8,7 @@ public class GstMonitor : Gst.Object {
 
 	public signal void source_changed(string s, VideoDev d);
 
+#if LINUX
 	private VideoDev udev_get_info(string dn) {
 		var uc = new GUdev.Client({});
 		var dv = uc.query_by_device_file(dn);
@@ -26,7 +27,7 @@ public class GstMonitor : Gst.Object {
 		vd.displayname = model;
 		return vd;
 	}
-
+#endif
 	private bool bus_callback (Gst.Bus bus, Gst.Message message) {
 		Device device;
 		switch (message.type) {
@@ -35,7 +36,11 @@ public class GstMonitor : Gst.Object {
 			var s = device.get_properties();
 			var dn = s.get_string("api.v4l2.path");
 			if (dn != null) {
+#if LINUX
 				var ds = udev_get_info(dn);
+#else
+				var ds = {"Camera", dn};
+#endif
 				source_changed("add", ds);
 			}
 			break;
