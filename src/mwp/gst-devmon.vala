@@ -8,24 +8,26 @@ public class GstMonitor : Gst.Object {
 
 	public signal void source_changed(string s, VideoDev d);
 
+	private VideoDev get_info(string dn) {
+            VideoDev vd = {};
 #if LINUX
-	private VideoDev udev_get_info(string dn) {
-		var uc = new GUdev.Client({});
-		var dv = uc.query_by_device_file(dn);
-		string model;
-		VideoDev vd = {};
-		vd.devicename = dn;
-		if (dv != null) {
-			model = dv.get_property("ID_MODEL");
-			var vendor = dv.get_property("ID_VENDOR");
-			if (vendor != model) {
-				model = "%s - %s".printf(model, vendor);
+            var uc = new GUdev.Client({});
+            var dv = uc.query_by_device_file(dn);
+            string model;
+            vd.devicename = dn;
+            if (dv != null) {
+                model = dv.get_property("ID_MODEL");
+                var vendor = dv.get_property("ID_VENDOR");
+                if (vendor != model) {
+                    model = "%s - %s".printf(model, vendor);
 			}
-		} else {
-			model = "";
-	}
-		vd.displayname = model;
-		return vd;
+            } else {
+                model = "";
+            }
+            vd.displayname = model;
+#else
+            vd = {"Camera", dn};
+            return vd;
 	}
 #endif
 	private bool bus_callback (Gst.Bus bus, Gst.Message message) {
@@ -36,12 +38,8 @@ public class GstMonitor : Gst.Object {
 			var s = device.get_properties();
 			var dn = s.get_string("api.v4l2.path");
 			if (dn != null) {
-#if LINUX
-				var ds = udev_get_info(dn);
-#else
-				var ds = {"Camera", dn};
-#endif
-				source_changed("add", ds);
+                            var ds = get_info(dn);
+                            source_changed("add", ds);
 			}
 			break;
 
@@ -51,8 +49,8 @@ public class GstMonitor : Gst.Object {
 			var s = device.get_properties();
 			var dn = s.get_string("api.v4l2.path");
 			if (dn != null) {
-				var ds = udev_get_info(dn);
-				source_changed("remove", ds);
+                            var ds = get_info(dn);
+                            source_changed("remove", ds);
 			}
 			break;
 		}
@@ -75,7 +73,7 @@ public class GstMonitor : Gst.Object {
 static int main (string? []args) {
 	Gst.init (ref args);
 	var dm = new GstMonitor();
-	dm.device_changed.connect((a,d) => {
+	dm.source_changed.connect((a,d) => {
 			print("GST: %s %s <%s>\n", a, d.displayname, d.devicename);
 		});
 	dm.setup_device_monitor();
