@@ -660,6 +660,12 @@ public class MWP : Gtk.Application {
 	private Gtk.ComboBoxText viddev_c;
 	public List<GstMonitor.VideoDev?>viddevs;
 	private V4L2_dialog vid_dialog;
+	private struct BBVideoList {
+		VideoPlayer vp;
+		int64 timer;
+		bool vauto;
+	}
+	private BBVideoList bbvlist = {};
 
 	private struct RadarDev {
 		MWSerial dev;
@@ -7819,6 +7825,11 @@ case 0:
 
                 if ((saf & 1) == 1)
                 {
+					if(bbvlist.vauto) {
+						if (bbvlist.vp != null)
+							bbvlist.vp.start_at(bbvlist.timer);
+						bbvlist={};
+					}
                     mwflags = arm_mask;
                     armed = 1;
                     dac = 0;
@@ -10240,7 +10251,7 @@ case 0:
 
             if(rawfd) {
                 msp.open_fd(playfd[0],-1, true);
-				set_pmask_poller(MWSerial.PMask.AUTO);
+				set_pmask_poller(MWSerial.PMask.INAV);
 			}
             set_replay_menus(false);
             set_menu_state("stop-replay", true);
@@ -10437,27 +10448,55 @@ case 0:
 
     private void replay_bbox (bool delay, string? fn = null)
     {
-        if((replayer & Player.BBOX) == Player.BBOX)
+		VideoPlayer vp = null;
+		bbvlist = {};
+		if((replayer & Player.BBOX) == Player.BBOX)
         {
             Posix.kill(child_pid, MwpSignals.Signal.TERM);
         } else if ((replayer & Player.OTX) == Player.OTX) {
                 /// tidy this up
         } else {
-            var id = bb_runner.run(fn);
-            if(id == 1001)
-            {
-                string bblog;
-                int index;
-                int btype;
-                uint8 force_gps = 0;
-                uint duration;
+			bb_runner.videofile.connect((uri) => {
+					double rt = 0.0;
+					if (uri != null) {
+						try {
+							uri = Gst.filename_to_uri(uri);
+							rt = VideoPlayer.discover(uri);
+							vp = new VideoPlayer();
+							vp.set_slider_range(0, rt);
+							vp.show_all ();
+							vp.set_transient_for(window);
+							vp.set_keep_above(true);
+							vp.add_stream(uri, false);
+							bbvlist.vp = vp;
+						} catch {}
+					} else {
+						MWPLog.message("Not playing empty video uri\n");
+					}
+				});
 
-                bb_runner.get_result(out bblog, out index, out btype,
-                                     out force_gps, out duration);
-                run_replay(bblog, delay, Player.BBOX, index, btype, force_gps, duration);
-            }
-        }
-    }
+			bb_runner.run(fn);
+			bb_runner.complete.connect( (id) => {
+					if(id == 1001)
+					{
+						string bblog;
+						int index;
+						int btype;
+						uint8 force_gps = 0;
+						uint duration;
+						int64 nsecs;
+						bb_runner.get_result(out bblog, out index, out btype,
+											 out force_gps, out duration);
+						var vauto = bb_runner.get_vtimer(out nsecs);
+						bbvlist.vauto = vauto;
+						if (vauto) {
+							bbvlist.timer = nsecs;
+						};
+						run_replay(bblog, delay, Player.BBOX, index, btype, force_gps, duration);
+					}
+				});
+		}
+	}
 
     private void stop_replayer()
     {

@@ -67,9 +67,26 @@ public class VideoPlayer : Window {
 			slider.set_value(value);
 	}
 
-	public void add_stream(string fn) {
+	public void start_at(int64 tstart = 0) {
+		if(tstart < 0) {
+			int msec = (int)(-1*(tstart / 1000000));
+			Timeout.add(msec, () => {
+					on_play();
+					return Source.REMOVE;
+				});
+		} else {
+			on_play();
+			if (tstart > 0) {
+				playbin.seek_simple (Gst.Format.TIME,
+									 Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT,
+									 tstart);
+			}
+		}
+	}
+
+	public void add_stream(string fn, bool force=true) {
 		bool start = false;
-		if (!fn.has_prefix("file://")) {
+		if (force || !fn.has_prefix("file://")) {
 			start = true;
 		}
 			playbin["uri"] = fn;

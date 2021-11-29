@@ -30,10 +30,14 @@ public class  BBoxDialog : Object
     private Gtk.ListStore bb_liststore;
     private Gtk.ComboBoxText bb_combo;
     private Gtk.FileChooserButton bb_filechooser;
+    private Gtk.FileChooserButton bb_videochooser;
     private Gtk.CheckButton bb_force_gps_cog;
     private Gtk.CheckButton bb_force_gps_alt;
     private Gtk.TreeSelection bb_sel;
-    private Gtk.Window _w;
+	private Gtk.CheckButton bb_vstart;
+	private Gtk.Entry bb_vmins;
+	private Gtk.Entry bb_vsecs;
+	private Gtk.Window _w;
     private string bbox_decode;
     private int[] valid = {};
     private bool is_valid;
@@ -47,8 +51,10 @@ public class  BBoxDialog : Object
 
     private const int BB_MINSIZE = (10*1024);
 
+	public signal void complete(int id);
     public signal void new_pos(double la, double lo);
     public signal void rescale(double lly, double llx, double ury, double urx);
+	public signal void videofile(string fn);
 
     public BBoxDialog(Gtk.Builder builder, Gtk.Window? w = null,
                       string bboxdec,  string? logpath = null, FakeOffsets _fo)
@@ -64,11 +70,16 @@ public class  BBoxDialog : Object
         bb_treeview = builder.get_object ("bb_treeview") as TreeView;
         bb_liststore = builder.get_object ("bb_liststore") as Gtk.ListStore;
         bb_filechooser = builder.get_object("bb_filechooser") as FileChooserButton;
+        bb_videochooser = builder.get_object("bb_video") as FileChooserButton;
         bb_combo = builder.get_object("bb_comboboxtext") as ComboBoxText;
         bb_force_gps_cog = builder.get_object("bb_force_gps_cog") as CheckButton;
         bb_force_gps_alt = builder.get_object("bb_force_gps_alt") as CheckButton;
         bb_tz_combo = builder.get_object("bb_tz_combo") as ComboBoxText;
-        var filter = new Gtk.FileFilter ();
+		bb_vstart = builder.get_object("bb_vstart") as CheckButton;
+		bb_vmins = builder.get_object("bb_vmins") as Entry;
+		bb_vsecs = builder.get_object("bb_vsecs") as Entry;
+
+		var filter = new Gtk.FileFilter ();
         filter.set_filter_name ("BB Logs");
         filter.add_pattern ("*.bbl");
         filter.add_pattern ("*.BBL");
@@ -76,14 +87,26 @@ public class  BBoxDialog : Object
         filter.add_pattern ("*.txt");
         bb_filechooser.add_filter (filter);
 
-        if(logpath != null)
+        filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("All Files");
+        filter.add_pattern ("*");
+        bb_filechooser.add_filter (filter);
+        bb_filechooser.set_action(FileChooserAction.OPEN);
+		if(logpath != null)
             bb_filechooser.set_current_folder (logpath);
+
+        filter = new Gtk.FileFilter ();
+        filter.set_filter_name ("Video files");
+        filter.add_pattern ("*.mkv");
+        filter.add_pattern ("*.webm");
+        filter.add_pattern ("*.mp4");
+        bb_videochooser.add_filter (filter);
 
         filter = new Gtk.FileFilter ();
         filter.set_filter_name ("All Files");
         filter.add_pattern ("*");
-        bb_filechooser.set_action(FileChooserAction.OPEN);
-        bb_filechooser.add_filter (filter);
+        bb_videochooser.add_filter (filter);
+        bb_videochooser.set_action(FileChooserAction.OPEN);
 
         var tzstr = Environment.get_variable("MWP_BB_TZ");
         if(tzstr != null)
@@ -105,6 +128,11 @@ public class  BBoxDialog : Object
                 if(tz_exists(str,out n))
                     update_time_stamps();
             });
+
+        bb_videochooser.file_set.connect(() => {
+				var uri = bb_videochooser.get_filename();
+				videofile(uri);
+			});
 
         bb_filechooser.file_set.connect(() => {
                 filename = bb_filechooser.get_filename();
@@ -131,7 +159,7 @@ public class  BBoxDialog : Object
         MWPLog.message("BB load async map zoom : %s\n", azoom.to_string());
     }
 
-    public void set_tz_tools(string? _geouser, string? _zone_detect)
+	public void set_tz_tools(string? _geouser, string? _zone_detect)
     {
         geouser = _geouser;
         zone_detect = _zone_detect;
@@ -485,10 +513,9 @@ public class  BBoxDialog : Object
             msg.destroy();
     }
 
-    public int run(string? fn = null)
+    public void run(string? fn = null)
     {
         int id = 0;
-
         try {
             string[] spawn_args = {bbox_decode, "--help"};
             Process.spawn_sync ("/",
@@ -501,15 +528,13 @@ public class  BBoxDialog : Object
                                 null,
                                 null,
                                 null);
-        }
-        catch (SpawnError e) {
+        } catch (SpawnError e) {
             show_child_err(e.message);
             id = -1;
         }
 
-        if(id == 0)
-        {
-            dialog.show_all ();
+        if(id == 0) {
+			dialog.show_all ();
             if(fn != null)
             {
                 filename = fn;
@@ -519,14 +544,28 @@ public class  BBoxDialog : Object
                 bb_items.label = "";
                 get_bbox_file_status();
             }
-            id = dialog.run();
-            MWPCursor.set_normal_cursor(dialog);
-            dialog.hide();
-        }
-        return id;
-    }
+			dialog.response.connect((id) => {
+					MWPCursor.set_normal_cursor(dialog);
+					dialog.hide();
+					complete(id);
+				});
+        } else {
+			complete(id);
+		}
+	}
 
-    public void get_result(out string _name, out int _index, out int _type, out uint8 _use_gps, out uint duration)
+	public bool get_vtimer(out int64 nsecs) {
+		var vauto = bb_vstart.active;
+		nsecs = 0;
+		if (vauto) {
+			var mins = int.parse(bb_vmins.text);
+			var secs = DStr.strtod(bb_vsecs.text, null);
+			nsecs = (int64)((mins*60 + secs)*1e9);
+		}
+		return vauto;
+	}
+
+	public void get_result(out string _name, out int _index, out int _type, out uint8 _use_gps, out uint duration)
     {
         _name = filename;
         Gtk.TreeModel model;
