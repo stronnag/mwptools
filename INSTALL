@@ -2,12 +2,16 @@ mwptools installation instructions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 $ meson build --buildtype=release --strip [--prefix=DIR]
+
+* recommended everywhere:
+  meson build --buildtype=release --strip --prefix=~/.local
+
+* Otherwise
   * FreeBSD --- don't provide --prefix
     Binaries in /use/local/bin etc.
   * Linux
     o System wide install --prefix=/usr
       Binaries in /use/bin etc.
-
   * User install --prefix=$HOME/.local
       Binaries in $HOME/.local/bin etc. Recommended.
 
@@ -23,3 +27,11 @@ Other useful bits
 $ sudo ninja uninstall
 $ ninja clean
 $ ninja reconfigure
+
+Local one hit build and install, in top level directory:
+
+$ meson install -C build
+
+
+More Information:
+ https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja

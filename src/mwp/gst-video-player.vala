@@ -12,7 +12,12 @@ public class VideoPlayer : Window {
 
 	public VideoPlayer() {
 		Widget video_area;
-		playbin = ElementFactory.make ("playbin", "bin");
+		string playbinx;
+
+		if((playbinx = Environment.get_variable("MWP_PLAYBIN")) == null) {
+			playbinx = "playbin";
+		}
+		playbin = ElementFactory.make (playbinx, playbinx);
 		var gtksink = ElementFactory.make ("gtksink", "sink");
 		gtksink.get ("widget", out video_area);
 		playbin["video-sink"] = gtksink;

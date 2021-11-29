@@ -817,7 +817,7 @@ Otherwise, select a valid FC vehicle type</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="bb_vsecs">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="width-chars">6</property>

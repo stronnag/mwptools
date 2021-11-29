@@ -558,9 +558,16 @@ public class  BBoxDialog : Object
 		var vauto = bb_vstart.active;
 		nsecs = 0;
 		if (vauto) {
-			var mins = int.parse(bb_vmins.text);
+			string s;
+			bool neg = false;
+			s = bb_vmins.text;
+			if (s.has_prefix("-"))
+				neg = true;
+			var mins = int.parse(s);
 			var secs = DStr.strtod(bb_vsecs.text, null);
 			nsecs = (int64)((mins*60 + secs)*1e9);
+			if(neg && nsecs > 0) // for the '-0' case
+				nsecs *= -1;
 		}
 		return vauto;
 	}
