@@ -1,4 +1,3 @@
-
 using Gtk;
 using Gst;
 
@@ -9,10 +8,15 @@ public class VideoPlayer : Window {
 	private bool playing = false;
 	private uint tid;
 	private Gtk.Box vbox;
+	private const SeekFlags SEEK_FLAGS=(SeekFlags.FLUSH|SeekFlags.ACCURATE|SeekFlags.KEY_UNIT);
+	private Gst.ClockTime duration;
 
 	public VideoPlayer() {
 		Widget video_area;
 		string playbinx;
+
+		duration =  (int64)0x7ffffffffffffff;
+        set_icon_name("mwp_icon");
 
 		if((playbinx = Environment.get_variable("MWP_PLAYBIN")) == null) {
 			playbinx = "playbin";
@@ -33,10 +37,20 @@ public class VideoPlayer : Window {
 		bus.add_watch(Priority.DEFAULT, bus_callback);
 
 		var header_bar = new Gtk.HeaderBar ();
-		header_bar.decoration_layout = ":minimize,maximize,close";
+		header_bar.decoration_layout = "icon,menu:minimize,maximize,close";
 		header_bar.set_title ("Video Replay");
 		header_bar.show_close_button = true;
-		header_bar.pack_end (play_button);
+		var vb = new Gtk.VolumeButton();
+		double vol;
+		playbin.get("volume", out vol);
+		vb.value = vol;
+		vb.value_changed.connect((v) => {
+				playbin.set("volume", v);
+			});
+
+		header_bar.pack_end (vb);
+		header_bar.pack_start (play_button);
+
 		header_bar.has_subtitle = false;
 		set_titlebar (header_bar);
 			destroy.connect (() => {
@@ -52,18 +66,37 @@ public class VideoPlayer : Window {
 		slider.set_draw_value(false);
 		slider.change_value.connect((st, d) => {
 				int64 pos = (int64)(1e9*d);
-				playbin.seek_simple (Gst.Format.TIME,
-									 Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT,
-									 pos);
+				playbin.seek_simple (Gst.Format.TIME, SEEK_FLAGS, pos);
 				return true;
 			});
-		vbox.pack_start (slider, false, false,0);
+
+		var hbox = new Box (Gtk.Orientation.HORIZONTAL, 0);
+		  var rewind = new Button.from_icon_name ("gtk-media-previous", Gtk.IconSize.BUTTON);
+		  rewind.clicked.connect(() => {
+				  Gst.State st;
+				  playbin.get_state (out st, null, CLOCK_TIME_NONE);
+				  playbin.set_state (Gst.State.PAUSED);
+				  playbin.seek_simple (Gst.Format.TIME, SEEK_FLAGS, (int64)0);
+				  playbin.set_state (st);
+			  });
+		  var forward = new Button.from_icon_name ("gtk-media-next", Gtk.IconSize.BUTTON);
+		  forward.clicked.connect(() => {
+				  playbin.set_state (Gst.State.PAUSED);
+				  playbin.seek_simple (Gst.Format.TIME, SEEK_FLAGS, (int64)duration);
+
+			  });
+		  hbox.pack_start (rewind, false, false, 0);
+		  hbox.pack_start (slider, true, true);
+		  hbox.pack_start (forward, false, false, 0);
+		  vbox.pack_start(hbox, false);
 	}
 
-	public void set_slider_range(double min, double max) {
+	public void set_slider_max(Gst.ClockTime max) {
 		if (max > 0) {
+			duration = max;
+			double rt =  max / 1e9;
 			add_slider();
-			slider.set_range(min, max);
+			slider.set_range(0.0, rt);
 		}
 	}
 
@@ -82,9 +115,7 @@ public class VideoPlayer : Window {
 		} else {
 			on_play();
 			if (tstart > 0) {
-				playbin.seek_simple (Gst.Format.TIME,
-									 Gst.SeekFlags.FLUSH | Gst.SeekFlags.KEY_UNIT,
-									 tstart);
+				playbin.seek_simple (Gst.Format.TIME, SEEK_FLAGS, tstart);
 			}
 		}
 	}
@@ -94,21 +125,21 @@ public class VideoPlayer : Window {
 		if (force || !fn.has_prefix("file://")) {
 			start = true;
 		}
-			playbin["uri"] = fn;
-			if (start) {
-				on_play();
-			} else {
-				playbin.set_state (Gst.State.PAUSED);
-			}
-			tid = Timeout.add(50, () => {
-					Gst.Format fmt = Gst.Format.TIME;
-					int64 current = -1;
-					if (playbin.query_position (fmt, out current)) {
-						double rt = current/1e9;
-						set_slider_value(rt);
-					}
-					return true;
-				});
+		playbin["uri"] = fn;
+		if (start) {
+			on_play();
+		} else {
+			playbin.set_state (Gst.State.PAUSED);
+		}
+		tid = Timeout.add(50, () => {
+				Gst.Format fmt = Gst.Format.TIME;
+				int64 current = -1;
+				if (playbin.query_position (fmt, out current)) {
+					double rt = current/1e9;
+					set_slider_value(rt);
+				}
+				return true;
+			});
 	}
 
 	private bool bus_callback (Gst.Bus bus, Gst.Message message) {
@@ -123,13 +154,13 @@ public class VideoPlayer : Window {
 		case Gst.MessageType.EOS:
 			playing = false;
 			playbin.set_state (Gst.State.READY);
-				break;
+			break;
 		case Gst.MessageType.STATE_CHANGED:
 			Gst.State oldstate;
 			Gst.State newstate;
 			Gst.State pending;
 			message.parse_state_changed (out oldstate, out newstate, out pending);
-
+/**
 			if(newstate == Gst.State.PLAYING && !playing) {
 				var img = new Gtk.Image.from_icon_name("gtk-media-pause", Gtk.IconSize.BUTTON);
 					play_button.set_image(img);
@@ -140,6 +171,16 @@ public class VideoPlayer : Window {
 				play_button.set_image(img);
 				playing = false;
 				}
+**/
+			if(newstate == Gst.State.PLAYING) {
+				var img = new Gtk.Image.from_icon_name("gtk-media-pause", Gtk.IconSize.BUTTON);
+					play_button.set_image(img);
+					playing = true;
+			} else {
+				var img = new Gtk.Image.from_icon_name("gtk-media-play", Gtk.IconSize.BUTTON);
+				play_button.set_image(img);
+				playing = false;
+			}
 			break;
 		default:
 			break;
@@ -154,15 +195,14 @@ public class VideoPlayer : Window {
 			playbin.set_state (Gst.State.PAUSED);
 		}
 	}
-	public static double discover(string fn) {
-		double rt = 0;
+	public static Gst.ClockTime discover(string fn) {
+		Gst.ClockTime id = 0;
 		try {
 			var d = new Gst.PbUtils.Discoverer((Gst.ClockTime) (Gst.SECOND * 5));
 			var di = d.discover_uri(fn);
-			var id = di.get_duration ();
-			rt =  id/1e9;
+			id = di.get_duration ();
 		} catch {}
-		return rt;
+		return id;
 	}
 }
 

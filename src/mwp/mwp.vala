@@ -3247,7 +3247,7 @@ public class MWP : Gtk.Application {
 			vid_dialog = new V4L2_dialog(viddev_c);
 		}
 		string uri;
-		double rt = 0.0;
+		Gst.ClockTime rt = 0;
 		var id = vid_dialog.runner(out uri);
 		switch(id) {
 		case 0:
@@ -3256,6 +3256,10 @@ public class MWP : Gtk.Application {
 		case 1:
 			uri = uri.strip();
 			if (uri.length > 0) {
+				if (uri.has_prefix("~")) {
+					var h = Environment.get_home_dir();
+					uri = h + uri[1:uri.length];
+				}
 				if (!uri.contains("""://""")) {
 					try {
 						uri = Gst.filename_to_uri(uri);
@@ -3270,7 +3274,7 @@ public class MWP : Gtk.Application {
 		}
 		if (id != -1) {
 			var vp = new VideoPlayer();
-			vp.set_slider_range(0, rt);
+			vp.set_slider_max(rt);
 			vp.show_all ();
 			vp.set_transient_for(window);
 			vp.set_keep_above(true);
@@ -10457,13 +10461,12 @@ case 0:
                 /// tidy this up
         } else {
 			bb_runner.videofile.connect((uri) => {
-					double rt = 0.0;
 					if (uri != null) {
 						try {
 							uri = Gst.filename_to_uri(uri);
-							rt = VideoPlayer.discover(uri);
+							var rt = VideoPlayer.discover(uri);
 							vp = new VideoPlayer();
-							vp.set_slider_range(0, rt);
+							vp.set_slider_max(rt);
 							vp.show_all ();
 							vp.set_transient_for(window);
 							vp.set_keep_above(true);
