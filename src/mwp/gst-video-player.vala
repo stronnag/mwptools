@@ -52,6 +52,7 @@ public class VideoPlayer : Window {
 		header_bar.pack_start (play_button);
 
 		header_bar.has_subtitle = false;
+		type_hint = Gdk.WindowTypeHint.NORMAL;
 		set_titlebar (header_bar);
 			destroy.connect (() => {
 					if (tid > 0)
