@@ -733,7 +733,8 @@ public class MWP : Gtk.Application {
         MSP=4,
         ADHOC=8,
         RADAR=16,
-        OTXSTDERR = 32
+        OTXSTDERR = 32,
+		COMMS = 64,
     }
 
     private enum SAT_FLAGS
@@ -1466,8 +1467,8 @@ public class MWP : Gtk.Application {
         conf.read_settings();
 
         if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
-		MWPLog.message("RADAR: Maximum Altitude set to: %u\n", conf.max_radar_altitude);
-	}
+			MWPLog.message("RADAR: Maximum Altitude set to: %u\n", conf.max_radar_altitude);
+		}
 
         wp_max = (uint8)conf.max_wps;
 
@@ -6413,7 +6414,9 @@ case 0:
                 break;
 
             default:
-                MWPLog.message("RADAR: %s %d (%u)\n", cmd.to_string(), cmd, len);
+				if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
+					MWPLog.message("RADAR: %s %d (%u)\n", cmd.to_string(), cmd, len);
+				}
                 break;
         }
     }

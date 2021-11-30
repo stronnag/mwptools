@@ -176,6 +176,7 @@ private class MavCRC : Object {
         { 135, 203 }, { 136, 1 }, { 137, 195 }, { 138, 109 }, { 139, 168 },
         { 140, 181 }, { 141, 47 }, { 142, 72 }, { 143, 131 }, { 144, 127 },
         { 146, 103 }, { 147, 154 }, { 148, 178 }, { 149, 200 }, { 162, 189 },
+		{ 202, 7}, { 203, 85},
         { 230, 163 }, { 231, 105 }, { 232, 151 }, { 233, 35 }, { 234, 150 },
         { 235, 179 }, { 241, 90 }, { 242, 104 }, { 243, 85 }, { 244, 95 },
         { 245, 130 }, { 246, 184 }, { 247, 81 }, { 248, 8 }, { 249, 204 },
@@ -1479,21 +1480,25 @@ public class MWSerial : Object {
 							state = States.S_M_CRC2;
                             break;
 						case States.S_M_CRC2:
-							rxmavsum |= (devbuf[nc] << 8);
-							if(rxmavsum == mavsum)
-							{
-								stats.msgs++;
-								serial_event (cmd+MSP.Cmds.MAV_BASE,
-											  rxbuf, csize, 0, errstate);
-								state = States.S_HEADER;
-							}
-							else
-							{
-								error_counter();
-								MWPLog.message("MAVCRC Fail, got %x != %x (cmd=%u, len=%u)\n",
-											   rxmavsum, mavsum, cmd, csize);
-								state = States.S_ERROR;
-							}
+							var seed  = MavCRC.lookup(cmd);
+							if (seed == 0) { // silently ignore unseeded messages
+									state = States.S_ERROR;
+								} else {
+									rxmavsum |= (devbuf[nc] << 8);
+									if(rxmavsum == mavsum)
+									{
+										stats.msgs++;
+										serial_event (cmd+MSP.Cmds.MAV_BASE, rxbuf, csize, 0, errstate);
+										state = States.S_HEADER;
+									}
+									else
+									{
+										error_counter();
+										MWPLog.message("MAVCRC Fail, got %x != %x (cmd=%u, len=%u)\n",
+													   rxmavsum, mavsum, cmd, csize);
+										state = States.S_ERROR;
+									}
+								}
 							break;
 						case States.S_M2_SIZE:
 							csize = needed = devbuf[nc];
