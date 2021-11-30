@@ -665,7 +665,7 @@ public class MWP : Gtk.Application {
 		int64 timer;
 		bool vauto;
 	}
-	private BBVideoList bbvlist = {};
+	private BBVideoList bbvlist;
 
 	private struct RadarDev {
 		MWSerial dev;
@@ -5083,7 +5083,7 @@ case 0:
 				    if (r.altitude < conf.max_radar_altitude) {
 
                                         radarv.update(r, conf.dms);
-                                    } 
+                                    }
                                     markers.set_radar_hidden(r);
                                 }
                             }
