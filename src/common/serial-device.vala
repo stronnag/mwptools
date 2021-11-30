@@ -1482,23 +1482,23 @@ public class MWSerial : Object {
 						case States.S_M_CRC2:
 							var seed  = MavCRC.lookup(cmd);
 							if (seed == 0) { // silently ignore unseeded messages
-									state = States.S_ERROR;
-								} else {
-									rxmavsum |= (devbuf[nc] << 8);
-									if(rxmavsum == mavsum)
-									{
-										stats.msgs++;
-										serial_event (cmd+MSP.Cmds.MAV_BASE, rxbuf, csize, 0, errstate);
-										state = States.S_HEADER;
-									}
-									else
-									{
-										error_counter();
-										MWPLog.message("MAVCRC Fail, got %x != %x (cmd=%u, len=%u)\n",
-													   rxmavsum, mavsum, cmd, csize);
-										state = States.S_ERROR;
-									}
+								state = States.S_ERROR;
+							} else {
+								rxmavsum |= (devbuf[nc] << 8);
+								if(rxmavsum == mavsum)
+								{
+									stats.msgs++;
+									serial_event (cmd+MSP.Cmds.MAV_BASE, rxbuf, csize, 0, errstate);
+									state = States.S_HEADER;
 								}
+								else
+								{
+									error_counter();
+									MWPLog.message("MAVCRC Fail, got %x != %x (cmd=%u, len=%u)\n",
+												   rxmavsum, mavsum, cmd, csize);
+									state = States.S_ERROR;
+								}
+							}
 							break;
 						case States.S_M2_SIZE:
 							csize = needed = devbuf[nc];
