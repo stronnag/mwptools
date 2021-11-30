@@ -8,8 +8,10 @@ public class VideoPlayer : Window {
 	private bool playing = false;
 	private uint tid;
 	private Gtk.Box vbox;
-	private const SeekFlags SEEK_FLAGS=(SeekFlags.FLUSH|SeekFlags.ACCURATE|SeekFlags.KEY_UNIT);
+	private const SeekFlags SEEK_FLAGS=(SeekFlags.FLUSH|SeekFlags.KEY_UNIT);
 	private Gst.ClockTime duration;
+	private bool seeking = false;
+	Gst.State st;
 
 	public VideoPlayer() {
 		Widget video_area;
@@ -52,39 +54,43 @@ public class VideoPlayer : Window {
 		header_bar.pack_start (play_button);
 
 		header_bar.has_subtitle = false;
-		type_hint = Gdk.WindowTypeHint.NORMAL;
 		set_titlebar (header_bar);
-			destroy.connect (() => {
-					if (tid > 0)
-						Source.remove(tid);
-					playbin.set_state (Gst.State.NULL);
-				});
+		destroy.connect (() => {
+				if (tid > 0)
+					Source.remove(tid);
+				playbin.set_state (Gst.State.NULL);
+			});
 		}
 
 
 	private void add_slider() {
 		slider = new Scale.with_range(Orientation.HORIZONTAL, 0, 1, 1);
 		slider.set_draw_value(false);
-		slider.change_value.connect((st, d) => {
-				int64 pos = (int64)(1e9*d);
-				playbin.seek_simple (Gst.Format.TIME, SEEK_FLAGS, pos);
+		slider.change_value.connect((stype, d) => {
+				seeking = true;
+				playbin.get_state (out st, null, CLOCK_TIME_NONE);
+				playbin.set_state (Gst.State.PAUSED);
+				playbin.seek (1.0,
+							  Gst.Format.TIME, SEEK_FLAGS,
+							  Gst.SeekType.SET, (int64)(d * Gst.SECOND),
+							  Gst.SeekType.NONE, (int64)Gst.CLOCK_TIME_NONE);
 				return true;
 			});
 
 		var hbox = new Box (Gtk.Orientation.HORIZONTAL, 0);
 		  var rewind = new Button.from_icon_name ("gtk-media-previous", Gtk.IconSize.BUTTON);
 		  rewind.clicked.connect(() => {
-				  Gst.State st;
 				  playbin.get_state (out st, null, CLOCK_TIME_NONE);
+				  seeking = true;
 				  playbin.set_state (Gst.State.PAUSED);
 				  playbin.seek_simple (Gst.Format.TIME, SEEK_FLAGS, (int64)0);
-				  playbin.set_state (st);
 			  });
 		  var forward = new Button.from_icon_name ("gtk-media-next", Gtk.IconSize.BUTTON);
 		  forward.clicked.connect(() => {
+				  seeking = true;
+				  playbin.get_state (out st, null, CLOCK_TIME_NONE);
 				  playbin.set_state (Gst.State.PAUSED);
 				  playbin.seek_simple (Gst.Format.TIME, SEEK_FLAGS, (int64)duration);
-
 			  });
 		  hbox.pack_start (rewind, false, false, 0);
 		  hbox.pack_start (slider, true, true);
@@ -173,14 +179,24 @@ public class VideoPlayer : Window {
 				playing = false;
 				}
 **/
-			if(newstate == Gst.State.PLAYING) {
+			if(newstate == Gst.State.PLAYING && !playing) {
+//				stderr.printf("CHG: pause %s\n", oldstate.to_string());
 				var img = new Gtk.Image.from_icon_name("gtk-media-pause", Gtk.IconSize.BUTTON);
 					play_button.set_image(img);
 					playing = true;
-			} else {
+			} else if(playing) {
+//				stderr.printf("CHG: play %s %s\n", newstate.to_string(), oldstate.to_string());
 				var img = new Gtk.Image.from_icon_name("gtk-media-play", Gtk.IconSize.BUTTON);
 				play_button.set_image(img);
 				playing = false;
+			}
+			break;
+
+		case Gst.MessageType.ASYNC_DONE:
+			// stderr.printf ("ASync %s: \n", seeking.to_string());
+			if (seeking) {
+				seeking = false;
+				playbin.set_state (st);
 			}
 			break;
 		default:
@@ -254,3 +270,47 @@ public class V4L2_dialog : Dialog {
 		return res;
 	}
 }
+
+#if TEST
+
+namespace MWPLog {
+	public static void message(string format, ...)
+    {
+		var args = va_list();
+        stderr.vprintf(format, args);
+        stderr.flush();
+    }
+}
+
+
+public static int main (string[] args) {
+        Gst.init (ref args);
+        Gtk.init (ref args);
+        string? fn = null;
+        Gst.ClockTime rt = 0;
+
+        if (args.length > 1) {
+			fn = args[1];
+			if (fn.contains("""://"""))
+				rt = 0;
+			else {
+				try {
+					fn = Gst.filename_to_uri(args[1]);
+					rt = VideoPlayer.discover(fn);
+				} catch {
+					return 127;
+				}
+			}
+			var sample = new VideoPlayer();
+			sample.set_slider_max(rt);
+			sample.show_all ();
+			Idle.add(() => {
+					sample.add_stream(fn);
+					return false;
+				});
+			sample.destroy.connect(Gtk.main_quit);
+			Gtk.main ();
+        }
+        return 0;
+}
+#endif
