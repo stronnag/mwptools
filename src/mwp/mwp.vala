@@ -70,7 +70,13 @@ public struct RadarPlot
     public uint8 lq;
     public uint8 source;
     public bool posvalid;
-	public bool alert;
+	public uint8 alert;
+}
+
+public enum RadarAlert {
+	NONE = 0,
+	ALERT = 1,
+	SET= 2
 }
 
 public struct CurrData
@@ -8460,6 +8466,7 @@ case 0:
             ri.lq = *(rp+37);
 
             sb.append_printf("ticks %u ", ri.lasttick);
+			ri.alert &= ~RadarAlert.SET;
 			ri.alert = radarv.update(ri, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
             if(lat != 0 && lon != 0)
             {

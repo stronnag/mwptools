@@ -204,13 +204,40 @@ class RadarView : Object
         }
     }
 
-    public bool update (RadarPlot r, bool verbose = false)
+    public uint8 update (RadarPlot r, bool verbose = false)
     {
+		var dt = new DateTime.now_local ();
+		uint idm = TOTHEMOON;
+		uint cse =0;
+		uint8 htype;
+		double hlat, hlon;
+		var alert = r.alert;
+
+		if(MWP.any_home(out htype, out hlat, out hlon)) {
+			double c,d;
+			Geo.csedist(hlat, hlon, r.latitude, r.longitude, out d, out c);
+			idm = (uint)(d*1852); // nm to m
+			cse = (uint)c;
+			if(MWP.conf.radar_alert_altitude > 0 && MWP.conf.radar_alert_range > 0 &&
+			   r.altitude < MWP.conf.radar_alert_altitude && idm < MWP.conf.radar_alert_range) {
+				alert = RadarAlert.ALERT;
+				var this_sec = dt.get_second();
+				if(this_sec != last_sec) {
+					MWP.play_alarm_sound(MWPAlert.GENERAL);
+					last_sec =  this_sec;
+				}
+			} else {
+				alert = RadarAlert.NONE;
+			}
+		}
+		if (alert != r.alert) {
+			alert |= RadarAlert.SET;
+		}
 		if(MWP.conf.max_radar_altitude > 0 && r.altitude > MWP.conf.max_radar_altitude) {
 			if(verbose) {
                 MWPLog.message("RADAR: Not listing %s at %.lf m\n", r.name, r.altitude);
             }
-			return false;
+			return alert;
 		}
 
         Gtk.TreeIter iter;
@@ -234,33 +261,10 @@ class RadarView : Object
                        Column.SPEED, "%.0f %s".printf(Units.speed(r.speed), Units.speed_units()),
                        Column.STATUS, stsstr);
 
-
-		var dt = new DateTime.now_local ();
 		if(r.state == 1 || r.state == 4) {
 			listmodel.set (iter, Column.LAST, dt.format("%T"));
         }
 
-		uint idm = TOTHEMOON;
-		uint cse =0;
-		uint8 htype;
-		double hlat, hlon;
-		bool alert = false;
-
-		if(MWP.any_home(out htype, out hlat, out hlon)) {
-			double c,d;
-			Geo.csedist(hlat, hlon, r.latitude, r.longitude, out d, out c);
-			idm = (uint)(d*1852); // nm to m
-			cse = (uint)c;
-			if(MWP.conf.radar_alert_altitude > 0 && MWP.conf.radar_alert_range > 0 &&
-			   r.altitude < MWP.conf.radar_alert_altitude && idm < MWP.conf.radar_alert_range) {
-				alert = true;
-				var this_sec = dt.get_second();
-				if(this_sec != last_sec) {
-					MWP.play_alarm_sound(MWPAlert.GENERAL);
-					last_sec =  this_sec;
-				}
-			}
-		}
 		listmodel.set (iter, Column.RANGE, idm, Column.BEARING, cse, Column.ALERT, alert);
 		show_number();
 		return alert;
@@ -345,7 +349,7 @@ class RadarView : Object
 				}
                 model.get_value(iter, Column.ALERT, out v);
                 val = (uint)v;
-				if (val == 1) {
+				if ((val & RadarAlert.ALERT) == RadarAlert.ALERT) {
 					_cell.cell_background = "red";
 					_cell.cell_background_set = true;
 				} else {

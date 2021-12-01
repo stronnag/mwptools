@@ -192,7 +192,8 @@ public class MWPMarkers : GLib.Object
         if(rp == null)
         {
 			Clutter.Actor actor = new Clutter.Actor ();
-			Clutter.Image img = (r.source == 1) ? inavradar : (r.alert) ? rplane : yplane;
+			Clutter.Image img = (r.source == 1) ? inavradar :
+				((r.alert & RadarAlert.ALERT) == RadarAlert.ALERT) ? rplane : yplane;
 			float w,h;
 			img.get_preferred_size(out w, out h);
 			actor.set_size((int)w, (int)h);
@@ -263,9 +264,10 @@ public class MWPMarkers : GLib.Object
         rp.set_location (r.latitude,r.longitude);
 		if (r.source == 2) {
 			var act = rp.get_image();
-			if(r.alert) {
+			if((r.alert & (RadarAlert.ALERT|RadarAlert.SET)) ==
+			   (RadarAlert.ALERT|RadarAlert.SET)) {
 				act.content = rplane;
-			} else {
+			} else if (r.alert == RadarAlert.SET) {
 				act.content = yplane;
 			}
 		}
