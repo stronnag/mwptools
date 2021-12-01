@@ -113,9 +113,8 @@ public class MWPSettings : GLib.Object
     public uint max_wps { get; set; default=60; }
 
     public uint max_radar_altitude {get; set; default=5000; }
-
-
-//    public string radar_device {get; set; default=null;}
+    public uint radar_alert_altitude {get; set; default=0; }
+    public uint radar_alert_range {get; set; default=0; }
 
     public signal void settings_update (string s);
 
@@ -406,14 +405,6 @@ public class MWPSettings : GLib.Object
         if(s == null || s == "load-safehome")
             load_safehomes = settings.get_string ("load-safehome");
 
-            /** CLI for now
-        if(s == null || s == "radar-device")
-        {
-            radar_device = settings.get_string("radar-device");
-            if (radar_device == "")
-                radar_device = null;
-        }
-            ***/
         if(s == null || s == "max-climb-angle")
             maxclimb = settings.get_double ("max-climb-angle");
 
@@ -425,6 +416,12 @@ public class MWPSettings : GLib.Object
 
         if (s == null || s == "max-radar-altitude")
             max_radar_altitude = settings.get_uint("max-radar-altitude");
+
+        if (s == null || s == "radar-alert-altitude")
+            radar_alert_altitude = settings.get_uint("radar-alert-altitude");
+
+		if (s == null || s == "radar-alert-range")
+            radar_alert_range = settings.get_uint("radar-alert-range");
     }
 
     public void save_pane()

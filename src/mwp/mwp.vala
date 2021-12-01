@@ -48,6 +48,14 @@ public enum NMSTATE {
         NM_STATE_CONNECTED_GLOBAL = 70
 }
 
+
+namespace MWPAlert {
+    public const string RED = "bleet.ogg";
+    public const string ORANGE = "orange.ogg";
+    public const string GENERAL = "beep-sound.ogg";
+    public const string SAT = "sat_alert.ogg";
+}
+
 public struct RadarPlot
 {
     public uint id;
@@ -62,6 +70,7 @@ public struct RadarPlot
     public uint8 lq;
     public uint8 source;
     public bool posvalid;
+	public bool alert;
 }
 
 public struct CurrData
@@ -141,21 +150,13 @@ public struct FakeOffsets
     bool faking;
 }
 
-public class Alert
-{
-    public const string RED = "bleet.ogg";
-    public const string ORANGE = "orange.ogg";
-    public const string GENERAL = "beep-sound.ogg";
-    public const string SAT = "sat_alert.ogg";
-}
-
 public class VCol
 {
     public BatteryLevels [] levels = {
         BatteryLevels(3.7f, "volthigh", null, null),
         BatteryLevels(3.57f, "voltmedium", null, null),
-        BatteryLevels(3.47f, "voltlow", Alert.ORANGE, null),
-        BatteryLevels(3.0f,  "voltcritical", Alert.RED, null),
+        BatteryLevels(3.47f, "voltlow", MWPAlert.ORANGE, null),
+        BatteryLevels(3.0f,  "voltcritical", MWPAlert.RED, null),
         BatteryLevels(2.0f, "voltundef", null, "n/a")
     };
 }
@@ -450,7 +451,7 @@ public class MWP : Gtk.Application {
     private Gtk.Button arm_warn;
     private Gtk.ToggleButton wp_edit_button;
     private bool wp_edit = false;
-    private bool beep_disabled = false;
+    private static bool beep_disabled = false;
 
     public static MWPSettings conf;
     private MWSerial msp;
@@ -762,8 +763,8 @@ public class MWP : Gtk.Application {
         show_dist = 2
     }
 
-    private bool have_home;
-    private Position home_pos;
+    private static bool have_home;
+    private static Position home_pos;
     private Position rth_pos;
     private Position ph_pos;
     private Position wp0;
@@ -1050,6 +1051,13 @@ public class MWP : Gtk.Application {
 	private bool ms_from_loader; // loading from file
 	private bool smart_warn = false;
 
+	public enum HomeType {
+		NONE,
+		ORIGIN,
+		PLAN
+	}
+
+
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, null, "Mission file", "file-name"},
         { "serial-device", 's', 0, OptionArg.STRING, null, "Serial device", "device_name"},
@@ -1093,6 +1101,24 @@ public class MWP : Gtk.Application {
         {"smartport", 0, 0, OptionArg.NONE, null, "Unsupported", null},
         {null}
     };
+
+	public static bool any_home(out uint8 type, out double hlat, out double hlon) {
+		bool res = true;
+		if(have_home) {
+			type = HomeType.ORIGIN;
+			hlat = home_pos.lat;
+			hlon = home_pos.lon;
+		} else if (FakeHome.has_loc) {
+			type = HomeType.PLAN;
+			hlat = FakeHome.xlat;
+			hlon = FakeHome.xlon;
+		} else {
+			res = false;
+			type = HomeType.NONE;
+			hlat = hlon = 0.0;
+		}
+		return res;
+	}
 
     void show_startup()
     {
@@ -4848,7 +4874,7 @@ case 0:
         {
             MWPLog.message("message => %s\n", e);
             statusbar.push(context_id, e);
-            bleet_sans_merci(Alert.GENERAL);
+            play_alarm_sound(MWPAlert.GENERAL);
         }
         else
         {
@@ -4988,7 +5014,7 @@ case 0:
                                 if (nticks - last_gps > gpsintvl)
                                 {
                                     if(replayer == Player.NONE)
-                                        bleet_sans_merci(Alert.SAT);
+                                        play_alarm_sound(MWPAlert.SAT);
                                     if(replay_paused == false)
                                         MWPLog.message("GPS stalled\n");
                                     gpslab.label = "<span foreground = \"red\">⬤</span>";
@@ -5345,18 +5371,18 @@ case 0:
             MWPLog.message("sensor health %04x %d %d\n", sensor, val, xs_state);
             if(val == 1)
             {
-                sound = /*(sensor_alm) ? Alert.GENERAL :*/ Alert.RED;
+                sound = /*(sensor_alm) ? MWPAlert.GENERAL :*/ MWPAlert.RED;
                 sensor_alm = true;
                 init_craft_icon();
                 map_show_warning("SENSOR FAILURE");
             }
             else
             {
-                sound = Alert.GENERAL;
+                sound = MWPAlert.GENERAL;
                 map_hide_warning();
                 hwstatus[0] = 1;
             }
-            bleet_sans_merci(sound);
+            play_alarm_sound(sound);
             navstatus.hw_failure(val);
             xs_state = val;
             if(serstate != SERSTATE.TELEM)
@@ -5582,7 +5608,7 @@ case 0:
         bool beep = ((scflags & SAT_FLAGS.BEEP) != 0);
         navstatus.sats(_nsats, urgent);
         if(beep && replayer == Player.NONE)
-            bleet_sans_merci(Alert.SAT);
+            play_alarm_sound(MWPAlert.SAT);
         nsats = _nsats;
         last_ga = lastrx;
     }
@@ -7239,7 +7265,7 @@ case 0:
                 {
                     if (nticks - last_crit > CRITINTVL)
                     {
-                        bleet_sans_merci(Alert.GENERAL);
+                        play_alarm_sound(MWPAlert.GENERAL);
                         MWPLog.message("GPS Critial Failure!!!\n");
                         navstatus.gps_crit();
                         last_crit = nticks;
@@ -7738,7 +7764,7 @@ case 0:
                                 MWPLog.message(" ****** Heading anomaly detected %d %d %d\n",
                                                mhead, (int)gcse, magdt);
                                 map_show_warning("HEADING ANOMALY");
-                                bleet_sans_merci(Alert.RED);
+                                play_alarm_sound(MWPAlert.RED);
                                 magdt = -1;
                             }
                         }
@@ -8434,12 +8460,13 @@ case 0:
             ri.lq = *(rp+37);
 
             sb.append_printf("ticks %u ", ri.lasttick);
+			ri.alert = radarv.update(ri, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
             if(lat != 0 && lon != 0)
             {
                 ri.posvalid = true;
                 markers.update_radar(ri);
             }
-			radarv.update(ri, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
+
         }
         else
         {
@@ -8492,8 +8519,8 @@ case 0:
         ri.lq = *rp;
         ri.lasttick = nticks;
 
-        markers.update_radar(ri);
         radarv.update(ri);
+        markers.update_radar(ri);
 
         if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
             StringBuilder sb = new StringBuilder("RDR-recv:");
@@ -8553,7 +8580,7 @@ case 0:
                 d*=1852.0;
                 if(d > conf.max_home_delta)
                 {
-                    bleet_sans_merci(Alert.GENERAL);
+                    play_alarm_sound(MWPAlert.GENERAL);
                     navstatus.alert_home_moved();
                     MWPLog.message(
                         "Established home has jumped %.1fm [%f %f (ex %f %f)]\n",
@@ -8737,10 +8764,9 @@ case 0:
         return (rp-&tmp[0]);
     }
 
-    private void bleet_sans_merci(string sfn=Alert.RED)
+    public static void play_alarm_sound(string sfn=MWPAlert.RED)
     {
-        StringBuilder sb = new StringBuilder();
-        if(beep_disabled == false)
+		if(beep_disabled == false)
         {
             var fn = MWPUtils.find_conf_file(sfn);
             if(fn != null)
@@ -8753,9 +8779,11 @@ case 0:
 				play.set_state (Gst.State.PLAYING);
 			}
 		}
+#if 0
+		StringBuilder sb = new StringBuilder();
         sb.assign("Alert: ");
         sb.append(sfn);
-        if(sfn == Alert.SAT)
+        if(sfn == MWPAlert.SAT)
         {
             sb.append(" (");
             sb.append(nsats.to_string());
@@ -8763,6 +8791,7 @@ case 0:
         }
         sb.append_c('\n');
         MWPLog.message(sb.str);
+#endif
     }
 
     private void init_battery(uint16 ivbat)
@@ -8831,7 +8860,7 @@ case 0:
                 if(vcol.levels[icol].audio != null)
                 {
                     if(replayer == Player.NONE)
-                        bleet_sans_merci(vcol.levels[icol].audio);
+                        play_alarm_sound(vcol.levels[icol].audio);
                     else
                         MWPLog.message("battery alarm %.1f\n", vf);
                 }

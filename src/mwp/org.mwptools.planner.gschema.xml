@@ -613,6 +613,22 @@
       to be shown. Setting to 0 disables.</description>
     </key>
 
+    <key name="radar-alert-altitude" type="u">
+      <default>0</default>
+      <summary>Altitude below which ADS-B alerts may be generated</summary>
+      <description>Target altitude (metres) below which ADS-B
+      proximity alerts may be generated. Requires that 'radar-alert-range'
+      is also set (none zero). Setting to 0 disables.</description>
+    </key>
+
+    <key name="radar-alert-range" type="u">
+      <default>0</default>
+      <summary>Range below which ADS-B alerts may be generated</summary>
+      <description>Target range (metres) below which ADS-B
+      proximity alerts may be generated. Requires that 'radar-alert-altitude'
+      is also set (none zero). Setting to 0 disables.</description>
+    </key>
+
     <!-- key name="radar-device" type="s">
       <default>""</default>
       <summary>Device node dedicated for iNav-radar</summary>

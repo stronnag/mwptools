@@ -23,6 +23,7 @@ class RadarView : Object
     Gtk.ListStore listmodel;
     Gtk.Button[] buttons;
     private bool vis = false;
+	private int last_sec = -1;
 
     enum Column {
         NAME,
@@ -33,18 +34,23 @@ class RadarView : Object
         SPEED,
         STATUS,
         LAST,
-        ID,
+		RANGE,
+		BEARING,
+		ALERT,
+		ID,
         NO_COLS
     }
 
-    enum Buttons
-    {
+    enum Buttons {
         CENTRE,
         HIDE,
         CLOSE
     }
 
-    public static string[] status = {"Undefined", "Armed", "Hidden", "Stale", "ADS-B"};
+
+	const uint TOTHEMOON = 0xfffffff;
+
+	public static string[] status = {"Undefined", "Armed", "Hidden", "Stale", "ADS-B"};
     public signal void vis_change(bool hidden);
     public signal void zoom_to_swarm(double lat, double lon);
 
@@ -198,13 +204,13 @@ class RadarView : Object
         }
     }
 
-    public void update (RadarPlot r, bool verbose = false)
+    public bool update (RadarPlot r, bool verbose = false)
     {
 		if(MWP.conf.max_radar_altitude > 0 && r.altitude > MWP.conf.max_radar_altitude) {
 			if(verbose) {
                 MWPLog.message("RADAR: Not listing %s at %.lf m\n", r.name, r.altitude);
             }
-			return;
+			return false;
 		}
 
         Gtk.TreeIter iter;
@@ -223,17 +229,41 @@ class RadarView : Object
                        Column.NAME,r.name,
                        Column.LAT, r.latitude,
                        Column.LON, r.longitude,
-                       Column.ALT,"%.0f %s".printf(Units.distance(r.altitude), Units.distance_units()),
+                       Column.ALT, "%.0f %s".printf(Units.distance(r.altitude), Units.distance_units()),
                        Column.COURSE, "%d °".printf(r.heading),
                        Column.SPEED, "%.0f %s".printf(Units.speed(r.speed), Units.speed_units()),
                        Column.STATUS, stsstr);
 
-        if(r.state == 1 || r.state == 4)
-        {
-          var dt = new DateTime.now_local ();
-          listmodel.set (iter, Column.LAST, dt.format("%T"));
+
+		var dt = new DateTime.now_local ();
+		if(r.state == 1 || r.state == 4) {
+			listmodel.set (iter, Column.LAST, dt.format("%T"));
         }
-        show_number();
+
+		uint idm = TOTHEMOON;
+		uint cse =0;
+		uint8 htype;
+		double hlat, hlon;
+		bool alert = false;
+
+		if(MWP.any_home(out htype, out hlat, out hlon)) {
+			double c,d;
+			Geo.csedist(hlat, hlon, r.latitude, r.longitude, out d, out c);
+			idm = (uint)(d*1852); // nm to m
+			cse = (uint)c;
+			if(MWP.conf.radar_alert_altitude > 0 && MWP.conf.radar_alert_range > 0 &&
+			   r.altitude < MWP.conf.radar_alert_altitude && idm < MWP.conf.radar_alert_range) {
+				alert = true;
+				var this_sec = dt.get_second();
+				if(this_sec != last_sec) {
+					MWP.play_alarm_sound(MWPAlert.GENERAL);
+					last_sec =  this_sec;
+				}
+			}
+		}
+		listmodel.set (iter, Column.RANGE, idm, Column.BEARING, cse, Column.ALERT, alert);
+		show_number();
+		return alert;
     }
 
     private void setup_treeview (Gtk.TreeView view) {
@@ -247,7 +277,10 @@ class RadarView : Object
                                        typeof (string),
                                        typeof (string),
                                        typeof (string),
-                                       typeof (uint));
+                                       typeof (uint),
+                                       typeof (uint),
+                                       typeof (uint),
+									   typeof (uint));
 
         view.set_model (listmodel);
         var cell = new Gtk.CellRendererText ();
@@ -278,8 +311,7 @@ class RadarView : Object
 
 
         cell = new Gtk.CellRendererText ();
-        view.insert_column_with_attributes (-1, "Longitude",
-                                            cell, "text", Column.LON);
+        view.insert_column_with_attributes (-1, "Longitude", cell, "text", Column.LON);
         col = view.get_column(Column.LON);
         col.set_cell_data_func(cell, (col,_cell,model,iter) => {
                 Value v;
@@ -289,32 +321,63 @@ class RadarView : Object
                 _cell.set_property("text",s);
             });
 
-        view.insert_column_with_attributes (-1, "Altitude",
-                                            new Gtk.CellRendererText (),
+        view.insert_column_with_attributes (-1, "Altitude", new Gtk.CellRendererText (),
                                             "text", Column.ALT);
-        view.insert_column_with_attributes (-1, "Course",
-                                            new Gtk.CellRendererText (),
+        view.insert_column_with_attributes (-1, "Course", new Gtk.CellRendererText (),
                                             "text", Column.COURSE);
-        view.insert_column_with_attributes (-1, "Speed",
-                                            new Gtk.CellRendererText (),
+        view.insert_column_with_attributes (-1, "Speed", new Gtk.CellRendererText (),
                                             "text", Column.SPEED);
-        view.insert_column_with_attributes (-1, "Status",
-                                            new Gtk.CellRendererText (),
+        view.insert_column_with_attributes (-1, "Status", new Gtk.CellRendererText (),
                                             "text", Column.STATUS);
 
-        view.insert_column_with_attributes (-1, "Last",
-                                            new Gtk.CellRendererText (),
+        view.insert_column_with_attributes (-1, "Last", new Gtk.CellRendererText (),
                                             "text", Column.LAST);
+        cell = new Gtk.CellRendererText ();
+		view.insert_column_with_attributes (-1, "Range", cell, "text", Column.RANGE);
+        col = view.get_column(Column.RANGE);
+        col.set_cell_data_func(cell, (col, _cell, model, iter) => {
+                Value v;
+                model.get_value(iter, Column.RANGE, out v);
+                uint val = (uint)v;
+				string s = "";
+				if (val != TOTHEMOON) {
+					s = "%.0f %s".printf(Units.distance(val), Units.distance_units());
+				}
+                model.get_value(iter, Column.ALERT, out v);
+                val = (uint)v;
+				if (val == 1) {
+					_cell.cell_background = "red";
+					_cell.cell_background_set = true;
+				} else {
+					_cell.cell_background_set = false;
+				}
+                _cell.set_property("text", s);
+            });
+        cell = new Gtk.CellRendererText ();
+		view.insert_column_with_attributes (-1, "Bearing", cell, "text", Column.BEARING);
+        col = view.get_column(Column.BEARING);
+        col.set_cell_data_func(cell, (col, _cell, model, iter) => {
+                Value v;
+                model.get_value(iter, Column.RANGE, out v);
+                uint val = (uint)v;
+				string s = "";
+				if (val != TOTHEMOON) {
+					model.get_value(iter, Column.BEARING, out v);
+					val = (uint)v;
+					s = "%u°".printf(val);
+				}
+                _cell.set_property("text",s);
+            });
 
-        int [] widths = {12, 16, 16, 10, 10, 10, 12, 12};
-        for (int j = Column.NAME; j <= Column.LAST; j++)
+        int [] widths = {12, 16, 16, 10, 10, 10, 12, 12, 12, 6};
+        for (int j = Column.NAME; j <= Column.RANGE; j++)
         {
             var scol =  view.get_column(j);
             if(scol!=null)
             {
                 scol.set_min_width(7*widths[j]);
                 scol.resizable = true;
-                if (j == Column.NAME || j == Column.STATUS || j == Column.LAST)
+                if (j == Column.NAME || j == Column.STATUS || j == Column.LAST || j == Column.RANGE)
                     scol.set_sort_column_id(j);
             }
         }

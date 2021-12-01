@@ -45,8 +45,24 @@ public class MWPMarkers : GLib.Object
     private Clutter.Color grayish;
     private Clutter.Color white;
 
+	private Clutter.Image yplane;
+	private Clutter.Image rplane;
+	private Clutter.Image inavradar;
+
     public signal void wp_moved(int ino, double lat, double lon);
     public signal void wp_selected(int ino);
+
+	private static Clutter.Image load_image_from_file(string file) throws GLib.Error {
+		var iconfile = MWPUtils.find_conf_file(file, "pixmaps");
+		var pixbuf = new Gdk.Pixbuf.from_file (iconfile);
+        var image = new Clutter.Image ();
+		image.set_data (pixbuf.get_pixels (),
+						pixbuf.has_alpha ? Cogl.PixelFormat.RGBA_8888 : Cogl.PixelFormat.RGB_888,
+						pixbuf.width,
+						pixbuf.height,
+						pixbuf.rowstride);
+        return image;
+	}
 
     public MWPMarkers(ListBox lb, Champlain.View view, string mkcol ="#ffffff60")
     {
@@ -103,7 +119,16 @@ public class MWPMarkers : GLib.Object
         q0 = Quark.from_string("mwp0");
         q1 = Quark.from_string("mwp1");
         qtxt = Quark.from_string("irtext");
-    }
+
+		try {
+			inavradar = load_image_from_file("inav-radar.svg");
+			yplane = load_image_from_file("plane100.svg");
+			rplane = load_image_from_file("plane100red.svg");
+		} catch {
+			stderr.puts("Failed to load icons\n");
+			Posix.exit(127);
+		}
+	}
 
     private unowned Champlain.Label find_radar_item(RadarPlot r)
     {
@@ -166,19 +191,17 @@ public class MWPMarkers : GLib.Object
         var rp = find_radar_item(r);
         if(rp == null)
         {
-            var basename = (r.source == 1) ? "inav-radar.svg" : "plane100.svg";
+			Clutter.Actor actor = new Clutter.Actor ();
+			Clutter.Image img = (r.source == 1) ? inavradar : (r.alert) ? rplane : yplane;
+			float w,h;
+			img.get_preferred_size(out w, out h);
+			actor.set_size((int)w, (int)h);
+			actor.content = img;
 
-            var iconfile = MWPUtils.find_conf_file(basename, "pixmaps");
-            try {
-                rp  = new Champlain.Label.from_file (iconfile);
-                rp.set_pivot_point(0.5f, 0.5f);
-                rp.set_draw_background (false);
-                rp.set_flags(ActorFlags.REACTIVE);
-            } catch (GLib.Error e) {
-                rp = new Champlain.Label.with_text (r.name,"Sans 10",null,null);
-                rp .set_alignment (Pango.Alignment.RIGHT);
-                rp.set_text_color(black);
-            }
+			rp  = new Champlain.Label.with_image(actor);
+			rp.set_pivot_point(0.5f, 0.5f);
+			rp.set_draw_background (false);
+			rp.set_flags(ActorFlags.REACTIVE);
             rp.set_selectable(false);
             rp.set_draggable(false);
             var textb = new Clutter.Actor ();
@@ -238,6 +261,14 @@ public class MWPMarkers : GLib.Object
 
         rp.set_color (white);
         rp.set_location (r.latitude,r.longitude);
+		if (r.source == 2) {
+			var act = rp.get_image();
+			if(r.alert) {
+				act.content = rplane;
+			} else {
+				act.content = yplane;
+			}
+		}
 
         if(r.source == 1) {
             unowned Champlain.Label _t = rp.get_qdata<Champlain.Label>(qtxt);
