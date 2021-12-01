@@ -33,15 +33,16 @@ public class FakeHome : GLib.Object
     }
 
     public static USERS usedby = USERS.None;
+    public static bool has_loc {private set; get;}
+    public static double xlat {private set; get;}
+    public static double xlon {private set; get;}
 
     public FakeHomeDialog fhd;
     private Champlain.MarkerLayer hmlayer;
     private static Champlain.Label homep;
     public bool is_visible = false;
-    private double xlat;
-    private double xlon;
     public signal void fake_move(double lat, double lon);
-    public bool has_loc {private set; get;}
+
 
     public struct PlotElevDefs
     {

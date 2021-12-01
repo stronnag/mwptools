@@ -378,7 +378,7 @@ public class ListBox : GLib.Object
                                 ((Gtk.MenuItem)mi).sensitive = sens;
 
                             if (lbl.has_prefix("Fly By")) {
-                                if (!fhome.has_loc)
+                                if (!FakeHome.has_loc)
                                     ((Gtk.CheckMenuItem)mi).sensitive = false;
                                 else {
                                     if(ntyp == MSP.Action.JUMP || ntyp == MSP.Action.RTH

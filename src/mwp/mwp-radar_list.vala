@@ -198,8 +198,15 @@ class RadarView : Object
         }
     }
 
-    public void update (RadarPlot r, bool dms)
+    public void update (RadarPlot r, bool verbose = false)
     {
+		if(MWP.conf.max_radar_altitude > 0 && r.altitude > MWP.conf.max_radar_altitude) {
+			if(verbose) {
+                MWPLog.message("RADAR: Not listing %s at %.lf m\n", r.name, r.altitude);
+            }
+			return;
+		}
+
         Gtk.TreeIter iter;
         var found = find_entry(r, out iter);
         if(!found)
@@ -265,7 +272,7 @@ class RadarView : Object
                 Value v;
                 model.get_value(iter, Column.LAT, out v);
                 double val = (double)v;
-                string s = PosFormat.lat(val,MWP.conf.dms);
+                string s = PosFormat.lat(val, MWP.conf.dms);
                 _cell.set_property("text",s);
             });
 

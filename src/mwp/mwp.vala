@@ -715,7 +715,7 @@ public class MWP : Gtk.Application {
         TELEM_SP,
     }
 
-    private enum DEBUG_FLAGS
+    public enum DEBUG_FLAGS
     {
         NONE=0,
         WP = 1,
@@ -5071,11 +5071,8 @@ case 0:
                                 if(r.source == 2)
                                 {
                                     r.state = 2; // hidden
-				    if (r.altitude < conf.max_radar_altitude) {
-
-                                        radarv.update(r, conf.dms);
-                                    }
-                                    markers.set_radar_hidden(r);
+									radarv.update(r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
+									markers.set_radar_hidden(r);
                                 }
                             }
                             else if(delta > staled && r.state != 0 && r.state != 3)
@@ -5083,9 +5080,7 @@ case 0:
                                 if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
                                     MWPLog.message("TRAF-STALE %s %u\n", r.name, r.state);
                                 r.state = 3; // stale
-                                    if (r.altitude < conf.max_radar_altitude) {
-                                        radarv.update(r, conf.dms);
-                                    }
+								radarv.update(r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
                                 markers.set_radar_stale(r);
                             }
                     });
@@ -8444,11 +8439,7 @@ case 0:
                 ri.posvalid = true;
                 markers.update_radar(ri);
             }
-            if (ri.altitude < conf.max_radar_altitude) {
-                radarv.update(ri, conf.dms);
-            } else  if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
-                MWPLog.message("RADAR: Not listing %s at %.lf m\n", ri.name, ri.altitude);
-            }
+			radarv.update(ri, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
         }
         else
         {
@@ -8502,7 +8493,7 @@ case 0:
         ri.lasttick = nticks;
 
         markers.update_radar(ri);
-        radarv.update(ri, conf.dms);
+        radarv.update(ri);
 
         if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
             StringBuilder sb = new StringBuilder("RDR-recv:");
