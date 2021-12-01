@@ -388,16 +388,6 @@ namespace CRSF {
 
 	Teledata teledata;
 
-	bool check_crc(uint8 []buffer)
-	{
-        uint8 len = buffer[1];
-        uint8 crc = 0;
-        for(var k = 2; k <= len; k++) {
-			crc = CRC8.dvb_s2(crc, crsf_buffer[k]);
-        }
-        return (crc == buffer[len+1]);
-	}
-
 	uint8 * deserialise_be_u24(uint8* rp, out uint32 v)
 	{
         v = (*(rp) << 16 |  (*(rp+1) << 8) | *(rp+2));
@@ -734,7 +724,7 @@ public class MWP : Gtk.Application {
         ADHOC=8,
         RADAR=16,
         OTXSTDERR = 32,
-		COMMS = 64,
+		SERIAL = 64,
     }
 
     private enum SAT_FLAGS
@@ -1469,6 +1459,8 @@ public class MWP : Gtk.Application {
         if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
 			MWPLog.message("RADAR: Maximum Altitude set to: %u\n", conf.max_radar_altitude);
 		}
+
+		MWSerial.debug = ((debug_flags & DEBUG_FLAGS.SERIAL) == DEBUG_FLAGS.SERIAL);
 
         wp_max = (uint8)conf.max_wps;
 
@@ -3404,10 +3396,6 @@ public class MWP : Gtk.Application {
 	}
 
 	private void ProcessCRSF(uint8 []buffer) {
-		if (!CRSF.check_crc(buffer)) {
-			MWPLog.message("CRSF: CRC Fails\n");
-			return;
-		}
 		if(!CRSF.teledata.setlab) {
 			verlab.label = verlab.tooltip_text = "CRSF telemetry";
 			CRSF.teledata.setlab = true;
@@ -3732,7 +3720,9 @@ public class MWP : Gtk.Application {
 			break;
 
 		case CRSF.DEV_ID:
-			stdout.printf("DEV %s\n", (string)(ptr+5));
+			if((debug_flags & DEBUG_FLAGS.SERIAL) != DEBUG_FLAGS.NONE) {
+				MWPLog.message("CRSF-DEV %s\n", (string)(ptr+5));
+			}
 			break;
 		default:
 			break;
@@ -8201,6 +8191,8 @@ case 0:
                 uint16 val = *(((uint16*)raw));
                 curr.bbla = val;
 //                stderr.printf("Ta frame %u %.1f\n", val, ((double)val)/100.0);
+				if (curr.bbla > odo.amps)
+					odo.amps = curr.bbla;
                 break;
 
             case MSP.Cmds.Tx_FRAME:

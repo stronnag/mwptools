@@ -219,6 +219,16 @@ namespace CRSF {
 	static uint8 crsf_index;
 	static uint8 detect_idx=0;
 
+	bool check_crc(uint8 []buffer)
+	{
+        uint8 len = buffer[1];
+        uint8 crc = 0;
+        for(var k = 2; k <= len; k++) {
+			crc = CRC8.dvb_s2(crc, crsf_buffer[k]);
+        }
+        return (crc == buffer[len+1]);
+	}
+
 	int crsf_decode(uint8 data) {
 		if (crsf_index == 0 && data != RADIO_ADDRESS) {
 			return -1;
@@ -434,7 +444,9 @@ public class MWSerial : Object {
     private bool relaxed;
 	private PMask pmask;
 
-    public enum MemAlloc
+	public static bool debug;
+
+	public enum MemAlloc
     {
         RX=1024,
         TX=256,
@@ -650,7 +662,9 @@ public class MWSerial : Object {
                     if (skt != null) {
                         skt.bind (sa, true);
                         fd = skt.fd;
-                        MWPLog.message("bound: %s %d %d\n", fam.to_string(), fd, port);
+						if(debug) {
+							MWPLog.message("bound: %s %d %d\n", fam.to_string(), fd, port);
+						}
                         break;
                     }
                 }
@@ -684,7 +698,9 @@ public class MWSerial : Object {
                     {
                         sockaddr = new InetSocketAddress (address, port);
                         var fam = sockaddr.get_family();
-                        MWPLog.message("sockaddr try %s (%s)\n", sockaddr.to_string(), fam.to_string());
+						if(debug) {
+							MWPLog.message("sockaddr try %s (%s)\n", sockaddr.to_string(), fam.to_string());
+						}
                         if(force4 && fam != SocketFamily.IPV4)
                             continue;
 
@@ -913,8 +929,6 @@ public class MWSerial : Object {
         {
             if(tag > 0)
             {
-                if(print_raw)
-                    MWPLog.message("remove tag\n");
                 Source.remove(tag);
                 tag = 0;
             }
@@ -958,10 +972,10 @@ public class MWSerial : Object {
         return stats;
     }
 
-    private void error_counter()
+    private void error_counter(string? why=null)
     {
         commerr++;
-        MWPLog.message("Comm error count %d\r\n", commerr);
+        MWPLog.message("Comms error %s %d\n", (why!=null) ? why : "", commerr);
         MwpSerial.flush(fd);
     }
 
@@ -1055,7 +1069,6 @@ public class MWSerial : Object {
                 {
                     res = skt.receive_from(out sockaddr, devbuf);
                 } catch(Error e) {
-                    debug("recv: %s", e.message);
                     res = 0;
                 }
             }
@@ -1120,7 +1133,9 @@ public class MWSerial : Object {
 								if ((pmask & PMask.CRSF) == PMask.CRSF) {
 									CRSF.detect_idx = 0;
 									state = States.S_CRSF_OK;
-									MWPLog.message("CRSF detect 0x%02x\n", devbuf[nc]);
+									if(debug) {
+										MWPLog.message("CRSF detect 0x%02x\n", devbuf[nc]);
+									}
 									CRSF.crsf_decode(devbuf[nc]);
 								}
 								break;
@@ -1140,8 +1155,10 @@ public class MWSerial : Object {
 								break;
 							default:
 								if (state == States.S_HEADER) {
-									error_counter();
-									MWPLog.message("expected header0 (0x%x)\n", devbuf[nc]);
+									error_counter("Detect");
+									if(debug) {
+										MWPLog.message("expected header0 (0x%x)\n", devbuf[nc]);
+									}
 									state=States.S_ERROR;
 								}
 								break;
@@ -1154,15 +1171,25 @@ public class MWSerial : Object {
 								var sbuf = SportDev.get_buffer();
 								fr_publish(sbuf[1:10]);
 							} else if(sbx != SportDev.FrStatus.OK) {
-										state = States.S_ERROR;
+								error_counter("Sport/Proto");
+								state = States.S_ERROR;
 							}
 							break;
 
 						case States.S_CRSF_OK:
 							var crsf_len = CRSF.crsf_decode(devbuf[nc]);
 							if (crsf_len > 0) {
-								crsf_event(CRSF.crsf_buffer);
-							} else if (crsf_len == -1) {
+								if (!CRSF.check_crc(CRSF.crsf_buffer)) {
+									if(debug) {
+										MWPLog.message("CRSF: CRC Fails\n");
+									}
+									crsf_len = -1;
+								} else {
+									crsf_event(CRSF.crsf_buffer);
+								}
+							}
+							if (crsf_len == -1) {
+								error_counter("CRSF/CRC");
 								state=States.S_ERROR;
 							}
 							break;
@@ -1184,8 +1211,10 @@ public class MWSerial : Object {
 							}
 							else
 							{
-								error_counter();
-								MWPLog.message("fail on header1 %x\n", devbuf[nc]);
+								error_counter("MSP/Proto");
+								if(debug) {
+									MWPLog.message("fail on header1 %x\n", devbuf[nc]);
+								}
 								state=States.S_ERROR;
 							}
 							break;
@@ -1232,8 +1261,10 @@ public class MWSerial : Object {
 								cmd = MSP.Cmds.Tx_FRAME;
 								break;
 							default:
-								error_counter();
-								MWPLog.message("fail on T_header2 %x\n", devbuf[nc]);
+								error_counter("LTM/Proto");
+								if(debug) {
+									MWPLog.message("fail on T_header2 %x\n", devbuf[nc]);
+								}
 								state=States.S_ERROR;
 								break;
 							}
@@ -1260,8 +1291,10 @@ public class MWSerial : Object {
 							}
 							else
 							{
-								error_counter();
-								MWPLog.message("fail on header2 %x\n", devbuf[nc]);
+								error_counter("MSP/Proto");
+								if(debug) {
+									MWPLog.message("fail on header2 %x\n", devbuf[nc]);
+								}
 								state=States.S_ERROR;
 							}
 							break;
@@ -1272,7 +1305,6 @@ public class MWSerial : Object {
 							state = States.S_CMD;
 							break;
 						case States.S_CMD:
-							debug(" got cmd %d %d", devbuf[nc], csize);
 							cmd = (MSP.Cmds)devbuf[nc];
 							checksum ^= cmd;
 							if(cmd == MSP.Cmds.MSPV2)
@@ -1330,7 +1362,6 @@ public class MWSerial : Object {
 						case States.S_CHECKSUM:
 							if(checksum  == devbuf[nc])
 							{
-								debug(" OK on %d", cmd);
 								state = States.S_HEADER;
 								stats.msgs++;
 								if(cmd < MSP.Cmds.MSPV2 || cmd > MSP.Cmds.LTM_BASE)
@@ -1339,9 +1370,11 @@ public class MWSerial : Object {
 							}
 							else
 							{
-								error_counter();
-								MWPLog.message("CRC Fail, got %d != %d (cmd=%d)\n",
-											   devbuf[nc],checksum,cmd);
+								error_counter("MSP/CRC");
+								if(debug) {
+									MWPLog.message("CRC Fail, got %d != %d (cmd=%d)\n",
+												   devbuf[nc],checksum,cmd);
+								}
 								state = States.S_ERROR;
 							}
 							break;
@@ -1363,8 +1396,10 @@ public class MWSerial : Object {
 							}
 							else
 							{
-								error_counter();
-								MWPLog.message("fail on header2 %x\n", devbuf[nc]);
+								error_counter("MSP2/Proto");
+								if(debug) {
+									MWPLog.message("fail on header2 %x\n", devbuf[nc]);
+								}
 								state=States.S_ERROR;
 							}
 							break;
@@ -1418,8 +1453,6 @@ public class MWSerial : Object {
 							checksum ^= devbuf[nc];
 							if(checksum2  == devbuf[nc])
 							{
-								debug(" OK on %d", cmd);
-
 								state = (encap) ? States.S_CHECKSUM : States.S_HEADER;
 								stats.msgs++;
 								serial_event((MSP.Cmds)xcmd, rxbuf, csize,
@@ -1428,9 +1461,11 @@ public class MWSerial : Object {
 							}
 							else
 							{
-								error_counter();
-								MWPLog.message("X-CRC Fail, got %d != %d (cmd=%d)\n",
-											   devbuf[nc],checksum,cmd);
+								error_counter("MSP2/CRC");
+								if(debug) {
+									MWPLog.message("X-CRC Fail, got %d != %d (cmd=%d)\n",
+												   devbuf[nc],checksum,cmd);
+								}
 								state = States.S_ERROR;
 							}
 							break;
@@ -1493,9 +1528,11 @@ public class MWSerial : Object {
 								}
 								else
 								{
-									error_counter();
-									MWPLog.message("MAVCRC Fail, got %x != %x (cmd=%u, len=%u)\n",
-												   rxmavsum, mavsum, cmd, csize);
+									error_counter("Mav/CRC");
+									if(debug) {
+										MWPLog.message("MAVCRC Fail, got %x != %x (cmd=%u, len=%u)\n",
+													   rxmavsum, mavsum, cmd, csize);
+									}
 									state = States.S_ERROR;
 								}
 							}
@@ -1582,9 +1619,11 @@ public class MWSerial : Object {
 							}
 							else
 							{
-								error_counter();
-								MWPLog.message("MAVCRC2 Fail, got %x != %x (cmd=%u, len=%u)\n",
-											   rxmavsum, mavsum, cmd, csize);
+								error_counter("Mav2/CRC");
+								if(debug) {
+									MWPLog.message("MAVCRC2 Fail, got %x != %x (cmd=%u, len=%u)\n",
+												   rxmavsum, mavsum, cmd, csize);
+								}
 								state = States.S_ERROR;
 							}
 							break;
