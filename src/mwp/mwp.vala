@@ -5104,7 +5104,7 @@ case 0:
                                 {
                                     r.state = 2; // hidden
 									r.alert = RadarAlert.SET;
-									radarv.update(r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
+									radarv.update(ref r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
 									markers.set_radar_hidden(r);
                                 }
                             }
@@ -5114,7 +5114,7 @@ case 0:
                                     MWPLog.message("TRAF-STALE %s %u\n", r.name, r.state);
                                 r.state = 3; // stale
 								r.alert = RadarAlert.SET;
-								radarv.update(r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
+								radarv.update(ref r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
                                 markers.set_radar_stale(r);
                             }
                     });
@@ -8473,14 +8473,12 @@ case 0:
             ri.lq = *(rp+37);
 
             sb.append_printf("ticks %u ", ri.lasttick);
-			ri.alert &= ~RadarAlert.SET;
-			ri.alert = radarv.update(ri, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
+			radarv.update(ref ri, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
             if(lat != 0 && lon != 0)
             {
                 ri.posvalid = true;
-                markers.update_radar(ri);
+                markers.update_radar(ref ri);
             }
-
         }
         else
         {
@@ -8533,8 +8531,8 @@ case 0:
         ri.lq = *rp;
         ri.lasttick = nticks;
 
-        radarv.update(ri);
-        markers.update_radar(ri);
+        radarv.update(ref ri);
+        markers.update_radar(ref ri);
 
         if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
             StringBuilder sb = new StringBuilder("RDR-recv:");

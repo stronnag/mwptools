@@ -217,7 +217,7 @@ class RadarView : Object
 		cell.set_property("text", s);
 	}
 
-	public uint8 update (RadarPlot r, bool verbose = false)
+	public void update (ref unowned RadarPlot r, bool verbose = false)
     {
 		var dt = new DateTime.now_local ();
 		uint idm = TOTHEMOON;
@@ -234,26 +234,26 @@ class RadarView : Object
 			if(r.source == 2) {
 				if(MWP.conf.radar_alert_altitude > 0 && MWP.conf.radar_alert_range > 0 &&
 				   r.altitude < MWP.conf.radar_alert_altitude && idm < MWP.conf.radar_alert_range) {
-					alert = RadarAlert.ALERT;
+					r.alert = RadarAlert.ALERT;
 					var this_sec = dt.to_unix();
 					if(this_sec >= last_sec + 2) {
 						MWP.play_alarm_sound(MWPAlert.GENERAL);
 						last_sec =  this_sec;
 					}
 				} else {
-					alert = RadarAlert.NONE;
+					r.alert = RadarAlert.NONE;
 				}
 			}
 		}
 		if (alert != r.alert) {
-			alert |= RadarAlert.SET;
+			r.alert |= RadarAlert.SET;
 		}
 
 		if(MWP.conf.max_radar_altitude > 0 && r.altitude > MWP.conf.max_radar_altitude) {
 			if(verbose) {
                 MWPLog.message("RADAR: Not listing %s at %.lf m\n", r.name, r.altitude);
             }
-			return alert;
+			return;
 		}
 
         Gtk.TreeIter iter;
@@ -283,7 +283,6 @@ class RadarView : Object
 
 		listmodel.set (iter, Column.RANGE, idm, Column.BEARING, cse, Column.ALERT, alert);
 		show_number();
-		return alert;
     }
 
     private void setup_treeview (Gtk.TreeView view) {

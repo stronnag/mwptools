@@ -186,7 +186,7 @@ public class MWPMarkers : GLib.Object
             rdrmarkers.hide();
     }
 
-    public void update_radar(RadarPlot r)
+    public void update_radar(ref unowned RadarPlot r)
     {
         var rp = find_radar_item(r);
         if(rp == null)
@@ -277,6 +277,7 @@ public class MWPMarkers : GLib.Object
 				} else if (r.alert == RadarAlert.SET) {
 					act.content = yplane;
 				}
+				r.alert &= ~RadarAlert.SET;
 			}
 		}
 
