@@ -167,25 +167,11 @@ public class VideoPlayer : Window {
 			Gst.State newstate;
 			Gst.State pending;
 			message.parse_state_changed (out oldstate, out newstate, out pending);
-/**
 			if(newstate == Gst.State.PLAYING && !playing) {
-				var img = new Gtk.Image.from_icon_name("gtk-media-pause", Gtk.IconSize.BUTTON);
-					play_button.set_image(img);
-					playing = true;
-			}
-			if (newstate == Gst.State.PAUSED && playing) {
-				var img = new Gtk.Image.from_icon_name("gtk-media-play", Gtk.IconSize.BUTTON);
-				play_button.set_image(img);
-				playing = false;
-				}
-**/
-			if(newstate == Gst.State.PLAYING && !playing) {
-//				stderr.printf("CHG: pause %s\n", oldstate.to_string());
 				var img = new Gtk.Image.from_icon_name("gtk-media-pause", Gtk.IconSize.BUTTON);
 					play_button.set_image(img);
 					playing = true;
 			} else if(playing) {
-//				stderr.printf("CHG: play %s %s\n", newstate.to_string(), oldstate.to_string());
 				var img = new Gtk.Image.from_icon_name("gtk-media-play", Gtk.IconSize.BUTTON);
 				play_button.set_image(img);
 				playing = false;
@@ -193,7 +179,6 @@ public class VideoPlayer : Window {
 			break;
 
 		case Gst.MessageType.ASYNC_DONE:
-			// stderr.printf ("ASync %s: \n", seeking.to_string());
 			if (seeking) {
 				seeking = false;
 				playbin.set_state (st);

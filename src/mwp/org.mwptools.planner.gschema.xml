@@ -604,13 +604,13 @@
     </key>
 
     <key name="max-radar-altitude" type="u">
-      <default>5000</default>
+      <default>0</default>
       <summary>Maximum altitude to show in the radar list view</summary>
       <description>Maximum altitude (metres) to show hits in the radar
       list view  higher than this value will only show in the map view
       Lower than this will show in the radar list table. This is mainly for ADS-B
-      receivers as there's no need for 5000 metres (16,000+ feet) hits
-      to be shown. Setting to 0 disables.</description>
+      receivers as there's no need for high altitude hits to be shown.
+      Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid).</description>
     </key>
 
     <key name="radar-alert-altitude" type="u">
@@ -618,7 +618,7 @@
       <summary>Altitude below which ADS-B alerts may be generated</summary>
       <description>Target altitude (metres) below which ADS-B
       proximity alerts may be generated. Requires that 'radar-alert-range'
-      is also set (none zero). Setting to 0 disables.</description>
+      is also set (none zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid). </description>
     </key>
 
     <key name="radar-alert-range" type="u">

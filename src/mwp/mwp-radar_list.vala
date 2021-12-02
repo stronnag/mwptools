@@ -23,7 +23,7 @@ class RadarView : Object
     Gtk.ListStore listmodel;
     Gtk.Button[] buttons;
     private bool vis = false;
-	private int last_sec = -1;
+	private int64 last_sec = 0;
 
     enum Column {
         NAME,
@@ -218,21 +218,24 @@ class RadarView : Object
 			Geo.csedist(hlat, hlon, r.latitude, r.longitude, out d, out c);
 			idm = (uint)(d*1852); // nm to m
 			cse = (uint)c;
-			if(MWP.conf.radar_alert_altitude > 0 && MWP.conf.radar_alert_range > 0 &&
-			   r.altitude < MWP.conf.radar_alert_altitude && idm < MWP.conf.radar_alert_range) {
-				alert = RadarAlert.ALERT;
-				var this_sec = dt.get_second();
-				if(this_sec != last_sec) {
-					MWP.play_alarm_sound(MWPAlert.GENERAL);
-					last_sec =  this_sec;
+			if(r.source == 2) {
+				if(MWP.conf.radar_alert_altitude > 0 && MWP.conf.radar_alert_range > 0 &&
+				   r.altitude < MWP.conf.radar_alert_altitude && idm < MWP.conf.radar_alert_range) {
+					alert = RadarAlert.ALERT;
+					var this_sec = dt.to_unix();
+					if(this_sec >= last_sec + 2) {
+						MWP.play_alarm_sound(MWPAlert.GENERAL);
+						last_sec =  this_sec;
+					}
+				} else {
+					alert = RadarAlert.NONE;
 				}
-			} else {
-				alert = RadarAlert.NONE;
 			}
 		}
 		if (alert != r.alert) {
 			alert |= RadarAlert.SET;
 		}
+
 		if(MWP.conf.max_radar_altitude > 0 && r.altitude > MWP.conf.max_radar_altitude) {
 			if(verbose) {
                 MWPLog.message("RADAR: Not listing %s at %.lf m\n", r.name, r.altitude);
@@ -347,7 +350,7 @@ class RadarView : Object
 				if (val != TOTHEMOON) {
 					s = "%.0f %s".printf(Units.distance(val), Units.distance_units());
 				}
-                model.get_value(iter, Column.ALERT, out v);
+				model.get_value(iter, Column.ALERT, out v);
                 val = (uint)v;
 				if ((val & RadarAlert.ALERT) == RadarAlert.ALERT) {
 					_cell.cell_background = "red";

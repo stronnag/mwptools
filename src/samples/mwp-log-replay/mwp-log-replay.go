@@ -30,6 +30,7 @@ var (
 	_device = flag.String("d", "", "(serial) Device [device node, BT Addr (linux), udp/tcp URI]")
 	_delay  = flag.Float64("delay", 0.01, "Delay (s) for non-v2 logs")
 	_noskip = flag.Bool("wait-first", false, "honour first delay")
+	_jump   = flag.Float64("j", 0, "jump some seconds")
 	_raw    = flag.Bool("raw", false, "write raw log")
 )
 
@@ -100,7 +101,7 @@ func (l *MWPLog) readlog() ([]byte, error) {
 			l.last = hdr.Offset
 			buf = make([]byte, hdr.Size)
 			l.fh.Read(buf)
-			if hdr.Dirn == 'o' {
+			if (*_jump > 0 && hdr.Offset < *_jump) || hdr.Dirn == 'o' {
 				return nil, nil
 			}
 		}
@@ -111,7 +112,7 @@ func (l *MWPLog) readlog() ([]byte, error) {
 			err = json.Unmarshal(dat, &js)
 			buf = js.RawBytes
 			delay = js.Stamp - l.last
-			if js.Dirn == 'o' {
+			if (*_jump > 0 && js.Stamp < *_jump) || js.Dirn == 'o' {
 				return nil, nil
 			}
 		} else {

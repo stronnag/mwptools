@@ -5103,6 +5103,7 @@ case 0:
                                 if(r.source == 2)
                                 {
                                     r.state = 2; // hidden
+									r.alert = RadarAlert.SET;
 									radarv.update(r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
 									markers.set_radar_hidden(r);
                                 }
@@ -5112,6 +5113,7 @@ case 0:
                                 if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
                                     MWPLog.message("TRAF-STALE %s %u\n", r.name, r.state);
                                 r.state = 3; // stale
+								r.alert = RadarAlert.SET;
 								radarv.update(r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
                                 markers.set_radar_stale(r);
                             }
@@ -8389,7 +8391,7 @@ case 0:
         SEDE.deserialise_u32(rp, out v);
         sb.append_printf("ICAO %u ", v);
         sb.append_printf("flags: %04x ", valid);
-        string callsign;
+        string callsign = "";
         double lat = 0;
         double lon = 0;
 
@@ -8397,15 +8399,20 @@ case 0:
         {
             uint8 cs[10];
             uint8 *csp = cs;
-            for(var j=0; j < 9; j++)
-                if (*(rp+27+j) != ' ')
+            for(var j=0; j < 9; j++) {
+                if (*(rp+27+j) != ' ') {
                     *csp++ = *(rp+27+j);
-                *csp  = 0;
-                callsign = (string)cs;
+				}
+			}
+			*csp  = 0;
+			callsign = ((string)cs).strip();
+			if(callsign.length == 0) {
+				callsign = "[%u]".printf(v);
+			}
         }
         else
         {
-            callsign = "%u".printf(v);
+            callsign = "[%u]".printf(v);
         }
         sb.append_printf("callsign <%s> ", callsign);
 
@@ -8776,14 +8783,8 @@ case 0:
 		if(beep_disabled == false)
         {
             var fn = MWPUtils.find_conf_file(sfn);
-            if(fn != null)
-            {
-				Gst.Element play = Gst.ElementFactory.make ("playbin", "player");
-				File file = File.new_for_path (fn);
-				var uri = file.get_uri ();
-				play.set("uri", uri);
-				play.set("volume", 5.0);
-				play.set_state (Gst.State.PLAYING);
+            if(fn != null) {
+				AudioPlayer.play(fn);
 			}
 		}
 #if 0

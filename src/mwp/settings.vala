@@ -112,9 +112,9 @@ public class MWPSettings : GLib.Object
     public double maxdive {get; set; default=0;}
     public uint max_wps { get; set; default=60; }
 
-    public uint max_radar_altitude {get; set; default=5000; }
-    public uint radar_alert_altitude {get; set; default=0; }
-    public uint radar_alert_range {get; set; default=0; }
+    public uint max_radar_altitude {get; set; default=0;}
+    public uint radar_alert_altitude {get; set; default=0;}
+    public uint radar_alert_range {get; set; default=0;}
 
     public signal void settings_update (string s);
 
