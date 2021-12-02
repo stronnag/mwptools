@@ -181,8 +181,8 @@
 
     <key name="media-player" type="s">
       <summary>Media player for alerts</summary>
-      <default>"paplay"</default>
-      <description>Application spawned to play 'beep' alerts. None means internal gstreamer.</description>
+      <default>""</default>
+      <description>Blank means internal gstreamer, "false" or "none" means no beeps.</description>
     </key>
 
     <key name="heartbeat" type="s">

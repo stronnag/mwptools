@@ -2,12 +2,11 @@
 
 dnf groupinstall development-libs development-tools gnome-software-development
 dnf install gtk3-devel gstreamer1-devel clutter-devel webkitgtk3-devel \
-    libgda-devel gobject-introspection-devel
-dnf install vala vala-devel vala-tools vala-doc
-dnf install libchamplain-gtk-devel libgdl-devel libgudev1-devel \
-    espeak-devel vte291-devel ncurses-devel
+  libgda-devel gobject-introspection-devel vala vala-devel vala-tools vala-doc \
+  libchamplain-gtk-devel libgdl-devel libgudev1-devel espeak-devel vte291-devel \
+  ncurses-devel gstreamer1-plugins-base gstreamer1-plugins-good
 
-# To build bbsummary and otxlog you need golang
+# To build mwp-plot-elevation and other tools, golang
 dnf install golang
 
 ## Shallow clone mwp ....

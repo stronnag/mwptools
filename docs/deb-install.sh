@@ -21,6 +21,7 @@ sudo apt update && sudo apt full-upgrade && \
     libespeak-dev \
     libgudev-1.0-dev \
     libgstreamer1.0-dev \
+    gstreamer1.0-plugins-good \
     libgstreamer-plugins-base1.0-dev \
     libvte-2.91-dev \
     libncurses5-dev \
