@@ -603,13 +603,12 @@
       <description>Maximum number of WP supported</description>
     </key>
 
-    <key name="max-radar-altitude" type="u">
+    <key name="radar-list-max-altitude" type="u">
       <default>0</default>
       <summary>Maximum altitude to show in the radar list view</summary>
-      <description>Maximum altitude (metres) to show hits in the radar
-      list view  higher than this value will only show in the map view
-      Lower than this will show in the radar list table. This is mainly for ADS-B
-      receivers as there's no need for high altitude hits to be shown.
+      <description>Maximum altitude (metres) to include targets in the radar
+      list view. Targets higher than this value will only show in the map view.
+      This is mainly for ADS-B receivers where there is no need for high altitude targets to be shown.
       Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid).</description>
     </key>
 

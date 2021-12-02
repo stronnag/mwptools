@@ -414,8 +414,8 @@ public class MWPSettings : GLib.Object
         if(s == null || s == "max-wps")
             max_wps =  settings.get_uint("max-wps");
 
-        if (s == null || s == "max-radar-altitude")
-            max_radar_altitude = settings.get_uint("max-radar-altitude");
+        if (s == null || s == "radar-list-max-altitude")
+            max_radar_altitude = settings.get_uint("radar-list-max-altitude");
 
         if (s == null || s == "radar-alert-altitude")
             radar_alert_altitude = settings.get_uint("radar-alert-altitude");
