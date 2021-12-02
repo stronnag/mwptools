@@ -204,7 +204,20 @@ class RadarView : Object
         }
     }
 
-    public uint8 update (RadarPlot r, bool verbose = false)
+	private void set_cell_text_bg(Gtk.TreeModel model, Gtk.TreeIter iter, Gtk.CellRenderer cell, string s) {
+		Value v;
+		model.get_value(iter, Column.ALERT, out v);
+		var val = (uint)v;
+		if ((val & RadarAlert.ALERT) == RadarAlert.ALERT) {
+			cell.cell_background = "red";
+			cell.cell_background_set = true;
+		} else {
+			cell.cell_background_set = false;
+		}
+		cell.set_property("text", s);
+	}
+
+	public uint8 update (RadarPlot r, bool verbose = false)
     {
 		var dt = new DateTime.now_local ();
 		uint idm = TOTHEMOON;
@@ -304,16 +317,23 @@ class RadarView : Object
                                             cell, "text",
                                             Column.NAME);
 
-        cell = new Gtk.CellRendererText ();
+        var col = view.get_column(Column.NAME);
+        col.set_cell_data_func(cell, (col,_cell, model, iter) => {
+                Value v;
+                model.get_value(iter, Column.NAME, out v);
+				set_cell_text_bg(model, iter, _cell, (string)v);
+			});
+
+		cell = new Gtk.CellRendererText ();
         view.insert_column_with_attributes (-1, "Latitude",
                                             cell, "text", Column.LAT);
-        var col = view.get_column(Column.LAT);
-        col.set_cell_data_func(cell, (col,_cell,model,iter) => {
+        col = view.get_column(Column.LAT);
+        col.set_cell_data_func(cell, (col,_cell, model, iter) => {
                 Value v;
                 model.get_value(iter, Column.LAT, out v);
                 double val = (double)v;
                 string s = PosFormat.lat(val, MWP.conf.dms);
-                _cell.set_property("text",s);
+				set_cell_text_bg(model, iter, _cell, s);
             });
 
 
@@ -325,20 +345,55 @@ class RadarView : Object
                 model.get_value(iter, Column.LON, out v);
                 double val = (double)v;
                 string s = PosFormat.lon(val,MWP.conf.dms);
-                _cell.set_property("text",s);
+				set_cell_text_bg(model, iter, _cell, s);
             });
 
-        view.insert_column_with_attributes (-1, "Altitude", new Gtk.CellRendererText (),
-                                            "text", Column.ALT);
-        view.insert_column_with_attributes (-1, "Course", new Gtk.CellRendererText (),
-                                            "text", Column.COURSE);
-        view.insert_column_with_attributes (-1, "Speed", new Gtk.CellRendererText (),
-                                            "text", Column.SPEED);
-        view.insert_column_with_attributes (-1, "Status", new Gtk.CellRendererText (),
-                                            "text", Column.STATUS);
+		cell = new Gtk.CellRendererText ();
+        view.insert_column_with_attributes (-1, "Altitude", cell, "text", Column.ALT);
+        col = view.get_column(Column.ALT);
+        col.set_cell_data_func(cell, (col,_cell, model, iter) => {
+                Value v;
+                model.get_value(iter, Column.ALT, out v);
+				set_cell_text_bg(model, iter, _cell, (string)v);
+			});
 
-        view.insert_column_with_attributes (-1, "Last", new Gtk.CellRendererText (),
-                                            "text", Column.LAST);
+
+        cell = new Gtk.CellRendererText ();
+		view.insert_column_with_attributes (-1, "Course", cell, "text", Column.COURSE);
+        col = view.get_column(Column.COURSE);
+        col.set_cell_data_func(cell, (col,_cell, model, iter) => {
+                Value v;
+                model.get_value(iter, Column.COURSE, out v);
+				set_cell_text_bg(model, iter, _cell, (string)v);
+			});
+
+        cell = new Gtk.CellRendererText ();
+        view.insert_column_with_attributes (-1, "Speed", cell, "text", Column.SPEED);
+        col = view.get_column(Column.SPEED);
+        col.set_cell_data_func(cell, (col,_cell, model, iter) => {
+                Value v;
+                model.get_value(iter, Column.SPEED, out v);
+				set_cell_text_bg(model, iter, _cell, (string)v);
+			});
+
+        cell = new Gtk.CellRendererText ();
+		view.insert_column_with_attributes (-1, "Status", cell, "text", Column.STATUS);
+        col = view.get_column(Column.STATUS);
+        col.set_cell_data_func(cell, (col,_cell, model, iter) => {
+                Value v;
+                model.get_value(iter, Column.STATUS, out v);
+				set_cell_text_bg(model, iter, _cell, (string)v);
+			});
+
+        cell = new Gtk.CellRendererText ();
+        view.insert_column_with_attributes (-1, "Last", cell, "text", Column.LAST);
+        col = view.get_column(Column.LAST);
+        col.set_cell_data_func(cell, (col,_cell, model, iter) => {
+                Value v;
+                model.get_value(iter, Column.LAST, out v);
+				set_cell_text_bg(model, iter, _cell, (string)v);
+			});
+
         cell = new Gtk.CellRendererText ();
 		view.insert_column_with_attributes (-1, "Range", cell, "text", Column.RANGE);
         col = view.get_column(Column.RANGE);
@@ -350,16 +405,9 @@ class RadarView : Object
 				if (val != TOTHEMOON) {
 					s = "%.0f %s".printf(Units.distance(val), Units.distance_units());
 				}
-				model.get_value(iter, Column.ALERT, out v);
-                val = (uint)v;
-				if ((val & RadarAlert.ALERT) == RadarAlert.ALERT) {
-					_cell.cell_background = "red";
-					_cell.cell_background_set = true;
-				} else {
-					_cell.cell_background_set = false;
-				}
-                _cell.set_property("text", s);
+				set_cell_text_bg(model, iter, _cell, s);
             });
+
         cell = new Gtk.CellRendererText ();
 		view.insert_column_with_attributes (-1, "Bearing", cell, "text", Column.BEARING);
         col = view.get_column(Column.BEARING);
@@ -373,7 +421,7 @@ class RadarView : Object
 					val = (uint)v;
 					s = "%u°".printf(val);
 				}
-                _cell.set_property("text",s);
+				set_cell_text_bg(model, iter, _cell, s);
             });
 
         int [] widths = {12, 16, 16, 10, 10, 10, 12, 12, 12, 6};
