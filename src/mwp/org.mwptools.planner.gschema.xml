@@ -605,9 +605,9 @@
 
     <key name="radar-list-max-altitude" type="u">
       <default>0</default>
-      <summary>Maximum altitude to show in the radar list view</summary>
+      <summary>Maximum altitude for targets to show in the radar list view</summary>
       <description>Maximum altitude (metres) to include targets in the radar
-      list view. Targets higher than this value will only show in the map view.
+      list view. Targets higher than this value will show only in the map view.
       This is mainly for ADS-B receivers where there is no need for high altitude targets to be shown.
       Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid).</description>
     </key>
