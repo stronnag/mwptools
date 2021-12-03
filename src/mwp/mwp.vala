@@ -3163,23 +3163,27 @@ public class MWP : Gtk.Application {
 		viddev_c = new Gtk.ComboBoxText();
 		var gstdm = new GstMonitor();
 		gstdm.source_changed.connect((a,d) => {
-				MWPLog.message("GST: \"%s\" <%s> <%s>\n", a, d.displayname, d.devicename);
+				bool act = false;
 				switch (a) {
 				case "add":
 					if(viddevs.find_custom(d, devname_comp) == null) {
 						viddevs.append(d);
 						viddev_c.append(d.devicename, d.displayname);
 						viddev_c.active_id = d.devicename;
+						act = true;
 					}
 					break;
 				case "remove":
-					remove_combo(viddev_c, d.displayname);
 					unowned var da  = viddevs.find_custom(d, devname_comp);
 					if (da != null) {
 						viddevs.remove_link(da);
+						remove_combo(viddev_c, d.displayname);
+						act = true;
 					}
 					break;
 				}
+				if(act)
+					MWPLog.message("GST: \"%s\" <%s> <%s>\n", a, d.displayname, d.devicename);
 				if((debug_flags & DEBUG_FLAGS.VIDEO) == DEBUG_FLAGS.VIDEO) {
 					viddevs.@foreach((d) => {
 							MWPLog.message("VideoDevs <%s> <%s>\n", d.devicename, d.displayname);
