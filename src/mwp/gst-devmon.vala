@@ -2,59 +2,69 @@ using Gst;
 
 public class GstMonitor : Gst.Object {
 	public struct VideoDev {
-		string devicename;
-		string displayname;
+            string devicename;
+            string displayname;
 	}
+
+	public bool verbose;
 
 	public signal void source_changed(string s, VideoDev d);
 
-	private VideoDev get_info(string dn) {
-            VideoDev vd = {};
-#if LINUX
-            var uc = new GUdev.Client({});
-            var dv = uc.query_by_device_file(dn);
-            string model;
-            vd.devicename = dn;
-            if (dv != null) {
-                model = dv.get_property("ID_MODEL");
-                var vendor = dv.get_property("ID_VENDOR");
-                if (vendor != model) {
-                    model = "%s - %s".printf(model, vendor);
-			}
-            } else {
-                model = "";
+        private string[] namekeys = {
+            "api.v4l2.cap.card", "node.description", "device.product.name",
+            "v4l2.device.card", "device.serial"
+        };
+
+        private VideoDev? get_node_info(Device device) {
+            var s = device.get_properties();
+            if(verbose) {
+                var p = s.to_string();
+                var parts = p.split(", ");
+                foreach(var pl in parts) {
+                    print("%s\n", pl);
+                }
             }
-            vd.displayname = model;
-#else
-            vd = {"Camera", dn};
-#endif
-            return vd;
-	}
 
+            var dn = s.get_string("api.v4l2.path");
+            if (dn == null)
+                dn = s.get_string("device.path");
+            if (dn != null) {
+                VideoDev ds = {};
+                ds.devicename = dn;
+                foreach (var nk in namekeys) {
+                    var nks = s.get_string(nk);
+                    if (nks != null) {
+                        ds.displayname = nks;
+                        break;
+                    }
+                }
+                if(ds.displayname == null) {
+                    ds.displayname = "?Camera?";
+                }
+                return ds;
+            }
+            return null;
+        }
 
-	private bool bus_callback (Gst.Bus bus, Gst.Message message) {
+        private bool bus_callback (Gst.Bus bus, Gst.Message message) {
 		Device device;
 		switch (message.type) {
 		case Gst.MessageType.DEVICE_ADDED:
-			message.parse_device_added (out device);
-			var s = device.get_properties();
-			var dn = s.get_string("api.v4l2.path");
-			if (dn != null) {
-                            var ds = get_info(dn);
-                            source_changed("add", ds);
-			}
-			break;
+                    message.parse_device_added (out device);
+                    var ds = get_node_info(device);
+                    if (ds != null) {
+                        source_changed("add", ds);
+                    }
+                    break;
 
 //	case Gst.MessageType.DEVICE_REMOVED:
 		default:
-			message.parse_device_removed (out device);
-			var s = device.get_properties();
-			var dn = s.get_string("api.v4l2.path");
-			if (dn != null) {
-                            var ds = get_info(dn);
-                            source_changed("remove", ds);
-			}
-			break;
+                    message.parse_device_removed (out device);
+                    var ds = get_node_info(device);
+                    if (ds != null) {
+                        source_changed("remove", ds);
+                    }
+                    break;
 		}
 		return true;
 	}
@@ -64,22 +74,26 @@ public class GstMonitor : Gst.Object {
 		var bus  = monitor.get_bus();
 		bus.add_watch(Priority.DEFAULT, bus_callback);
 
-		var caps = new Caps.any(); //gst_caps_new_empty_simple ("video/x-raw");
+//		var caps = new Caps.any(); //gst_caps_new_empty_simple ("video/x-raw");
+		var caps = new Caps.empty();
+		caps.append(new Caps.empty_simple ("video/x-raw"));
+		caps.append(new Caps.empty_simple ("image/jpeg"));
 		monitor.add_filter ("Video/Source", caps);
 		monitor.start();
 		return monitor;
 	}
-}
 
 #if TEST
-static int main (string? []args) {
-	Gst.init (ref args);
-	var dm = new GstMonitor();
-	dm.source_changed.connect((a,d) => {
-			print("GST: %s %s <%s>\n", a, d.displayname, d.devicename);
-		});
-	dm.setup_device_monitor();
-	new GLib.MainLoop().run();
-	return 0;
-}
+        public static int main (string? []args) {
+            Gst.init (ref args);
+            var dm = new GstMonitor();
+			dm.verbose = true;
+			dm.source_changed.connect((a,d) => {
+                    print("GST: \"%s\" %s <%s>\n", a, d.displayname, d.devicename);
+                });
+            dm.setup_device_monitor();
+            new GLib.MainLoop().run();
+            return 0;
+        }
 #endif
+}

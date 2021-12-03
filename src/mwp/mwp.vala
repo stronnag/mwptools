@@ -732,6 +732,7 @@ public class MWP : Gtk.Application {
         RADAR=16,
         OTXSTDERR = 32,
 		SERIAL = 64,
+		VIDEO = 128,
     }
 
     private enum SAT_FLAGS
@@ -3156,14 +3157,16 @@ public class MWP : Gtk.Application {
         }
 
 		viddevs = new List<GstMonitor.VideoDev?> ();
+		CompareFunc<GstMonitor.VideoDev?>  devname_comp = (a,b) =>  {
+			return strcmp(a.devicename, b.devicename);
+		};
 		viddev_c = new Gtk.ComboBoxText();
-
 		var gstdm = new GstMonitor();
 		gstdm.source_changed.connect((a,d) => {
-				MWPLog.message("Gst: %s %s <%s>\n", a, d.displayname, d.devicename);
+				MWPLog.message("GST: \"%s\" <%s> <%s>\n", a, d.displayname, d.devicename);
 				switch (a) {
 				case "add":
-					if(viddevs.index(d) == -1) {
+					if(viddevs.find_custom(d, devname_comp) == null) {
 						viddevs.append(d);
 						viddev_c.append(d.devicename, d.displayname);
 						viddev_c.active_id = d.devicename;
@@ -3171,8 +3174,16 @@ public class MWP : Gtk.Application {
 					break;
 				case "remove":
 					remove_combo(viddev_c, d.displayname);
-					viddevs.remove(d);
+					unowned var da  = viddevs.find_custom(d, devname_comp);
+					if (da != null) {
+						viddevs.remove_link(da);
+					}
 					break;
+				}
+				if((debug_flags & DEBUG_FLAGS.VIDEO) == DEBUG_FLAGS.VIDEO) {
+					viddevs.@foreach((d) => {
+							MWPLog.message("VideoDevs <%s> <%s>\n", d.devicename, d.displayname);
+						});
 				}
 			});
 		gstdm.setup_device_monitor();
