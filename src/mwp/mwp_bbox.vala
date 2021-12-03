@@ -563,7 +563,7 @@ public class  BBoxDialog : Object
 			s = bb_vmins.text;
 			if (s.has_prefix("-"))
 				neg = true;
-			var mins = int.parse(s);
+			var mins = (int.parse(s)).abs();
 			var secs = DStr.strtod(bb_vsecs.text, null);
 			nsecs = (int64)((mins*60 + secs)*1e9);
 			if(neg && nsecs > 0) // for the '-0' case

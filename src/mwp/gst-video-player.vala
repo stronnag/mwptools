@@ -13,6 +13,9 @@ public class VideoPlayer : Window {
 	private bool seeking = false;
 	Gst.State st;
 
+	public signal void video_playing(bool is_playing);
+	public signal void video_closed();
+
 	public VideoPlayer() {
 		Widget video_area;
 		string playbinx;
@@ -59,6 +62,7 @@ public class VideoPlayer : Window {
 				if (tid > 0)
 					Source.remove(tid);
 				playbin.set_state (Gst.State.NULL);
+				video_closed();
 			});
 		}
 
@@ -193,10 +197,26 @@ public class VideoPlayer : Window {
 	void on_play() {
 		if (playing ==  false)  {
 			playbin.set_state (Gst.State.PLAYING);
+			video_playing(true);
 		} else {
 			playbin.set_state (Gst.State.PAUSED);
+			video_playing(false);
 		}
 	}
+
+	public void toggle_stream() {
+		switch (playbin.current_state) {
+		case Gst.State.PLAYING:
+			playbin.set_state (Gst.State.PAUSED);
+			break;
+		case Gst.State.PAUSED:
+			playbin.set_state (Gst.State.PLAYING);
+			break;
+		default:
+			break;
+		}
+	}
+
 	public static Gst.ClockTime discover(string fn) {
 		Gst.ClockTime id = 0;
 		try {

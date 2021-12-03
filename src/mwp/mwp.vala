@@ -662,7 +662,7 @@ public class MWP : Gtk.Application {
 		int64 timer;
 		bool vauto;
 	}
-	private BBVideoList bbvlist;
+	private BBVideoList? bbvlist;
 
 	private struct RadarDev {
 		MWSerial dev;
@@ -1320,7 +1320,7 @@ public class MWP : Gtk.Application {
                 Process.spawn_command_line_sync (conf.atexit);
             } catch {}
     }
-    private void handle_replay_pause()
+    private void handle_replay_pause(bool from_vid=false)
     {
         int signum;
         magcheck = false;
@@ -1337,6 +1337,11 @@ public class MWP : Gtk.Application {
             time_t (out pausetm);
             signum = MwpSignals.Signal.STOP;
         }
+		if(!from_vid) {
+			if (bbvlist != null && bbvlist.vp != null) {
+				bbvlist.vp.toggle_stream();
+			}
+		}
         replay_paused = !replay_paused;
         if((replayer & (Player.BBOX|Player.OTX)) != 0)
         {
@@ -5497,8 +5502,12 @@ case 0:
                 armed_spinner.show();
                 armed_spinner.start();
                 check_mission_home();
-
-                sflags |= NavStatus.SPK.Volts;
+				if(bbvlist != null && bbvlist.vauto) {
+					if (bbvlist.vp != null) {
+						bbvlist.vp.start_at(bbvlist.timer);
+					}
+				}
+				sflags |= NavStatus.SPK.Volts;
 
                 if (conf.audioarmed == true)
                 {
@@ -7846,7 +7855,6 @@ case 0:
                 LTM_SFRAME sf = LTM_SFRAME ();
                 uint8* rp;
                 rp = SEDE.deserialise_u16(raw, out sf.vbat);
-
                 rp = SEDE.deserialise_u16(rp, out sf.vcurr);
                 sf.rssi = *rp++;
                 sf.airspeed = *rp++;
@@ -7875,11 +7883,6 @@ case 0:
 
                 if ((saf & 1) == 1)
                 {
-					if(bbvlist.vauto) {
-						if (bbvlist.vp != null)
-							bbvlist.vp.start_at(bbvlist.timer);
-						bbvlist={};
-					}
                     mwflags = arm_mask;
                     armed = 1;
                     dac = 0;
@@ -9204,6 +9207,9 @@ case 0:
         }
         else
         {
+			if(bbvlist != null) {
+				bbvlist = null;
+			}
             show_serial_stats();
             if (msp.available)
                 msp.close();
@@ -10516,6 +10522,22 @@ case 0:
 							uri = Gst.filename_to_uri(uri);
 							var rt = VideoPlayer.discover(uri);
 							vp = new VideoPlayer();
+							vp.video_playing.connect((vstate) => {
+									if((debug_flags & DEBUG_FLAGS.VIDEO) == DEBUG_FLAGS.VIDEO) {
+										MWPLog.message("VIDEO: BBL is %s, video requests %s\n",
+													   (replay_paused) ? "paused" : "playing",
+													   (vstate) ? "playing" : "paused");
+									}
+									if(vstate == replay_paused) {
+										handle_replay_pause(true);
+									}
+								});
+							vp.video_closed.connect(() => {
+									if((debug_flags & DEBUG_FLAGS.VIDEO) == DEBUG_FLAGS.VIDEO) {
+										MWPLog.message("VIDEO: Video quits\n");
+									}
+									bbvlist = null;
+								});
 							vp.set_slider_max(rt);
 							vp.show_all ();
 							vp.set_transient_for(window);
