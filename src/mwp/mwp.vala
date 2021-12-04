@@ -1920,9 +1920,8 @@ public class MWP : Gtk.Application {
             });
 
         bb_runner.rescale.connect((llx, lly, urx,ury) => {
-                if(replayer != Player.NONE)
-                {
-                    Champlain.BoundingBox bbox = new Champlain.BoundingBox();
+                if(replayer != Player.NONE) {
+					Champlain.BoundingBox bbox = new Champlain.BoundingBox();
                     bbox.left = llx;
                     bbox.bottom = lly;
                     bbox.right = urx;
@@ -10400,8 +10399,8 @@ case 0:
                     break;
                 case Player.BBOX:
                 case Player.BBOX_FAST:
-                    bb_runner.find_bbox_box(fn, idx);
-                    spawn_bbox_task(fn, idx, btype, delay, force_gps, duration);
+					bb_runner.find_bbox_box(fn, idx);
+					spawn_bbox_task(fn, idx, btype, delay, force_gps, duration);
                     break;
                 case Player.OTX:
                 case Player.OTX_FAST:

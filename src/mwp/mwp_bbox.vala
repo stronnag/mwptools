@@ -781,117 +781,108 @@ public class  BBoxDialog : Object
 
     public void find_bbox_box(string filename, int index)
     {
-        double lamin = 999;
-        double lamax = -999;
-        double lomin = 999;
-        double lomax = -999;
-        try {
-            string[] spawn_args = {bbox_decode, "--stdout",
-                                   "--index", index.to_string(), "--merge-gps",
-filename};
-            Pid child_pid;
-            int p_stdout;
+		new Thread<int> (null, () => {
+				double lamin = 999;
+				double lamax = -999;
+				double lomin = 999;
+				double lomax = -999;
+				try {
+					Pid child_pid;
+					string[] spawn_args = {bbox_decode, "--stdout",
+						"--index", index.to_string(), "--merge-gps", filename};
+					int p_stdout;
+					Process.spawn_async_with_pipes (null,
+													spawn_args,
+													null,
+													SpawnFlags.SEARCH_PATH |
+													SpawnFlags.STDERR_TO_DEV_NULL,
+													null,
+													out child_pid,
+													null,
+													out p_stdout,
+													null);
 
-            Process.spawn_async_with_pipes (null,
-                                            spawn_args,
-                                            null,
-                                            SpawnFlags.SEARCH_PATH |
-                                            SpawnFlags.DO_NOT_REAP_CHILD |
-                                            SpawnFlags.STDERR_TO_DEV_NULL,
-                                            null,
-                                            out child_pid,
-                                            null,
-                                            out p_stdout,
-                                            null);
+					IOChannel chan = new IOChannel.unix_new (p_stdout);
+					int latp = -1, lonp = -1, fixp = -1, typp = -1;
+					string str = null;
+					size_t length = -1;
+					int ft=-1,ns=-1;
+					double lon = 0;
+					double lat = 0;
+					bool hdr = false;
 
-            IOChannel chan = new IOChannel.unix_new (p_stdout);
-            int latp = -1, lonp = -1, fixp = -1, typp = -1;
-            string str = null;
-            size_t length = -1;
-            int ft=-1,ns=-1;
-            double lon = 0;
-            double lat = 0;
-            bool hdr = false;
+					try {
+						var done = false;
+						for (;!done;) {
+							var eos = chan.read_line (out str, out length, null);
+							if (eos == IOStatus.EOF)
+								done = true;
+							if(str == null || length == 0)
+								continue;
+							var parts=str.split(",");
+							if(hdr == false)
+							{
+								hdr = true;
+								int j = 0;
+								foreach (var p in parts)
+								{
+									var pp = p.strip();
+									if (pp == "GPS_fixType")
+										typp = j;
+									if (pp == "GPS_numSat")
+										fixp = j;
+									if (pp == "GPS_coord[0]")
+										latp = j;
+									else if(pp == "GPS_coord[1]")
+									{
+										lonp = j;
+										break;
+									}
+									j++;
+								}
+								if(latp == -1 || lonp == -1 || fixp == -1 || typp == -1)
+								{
+									Posix.kill(child_pid, 15);
+									done = true;
+								}
+							}
+							else
+							{
+								ft = int.parse(parts[typp]);
+								if(ft == 2) {
+									ns = int.parse(parts[fixp]);
+									if(ns > 5) {
+										lat = double.parse(parts[latp]);
+										lon = double.parse(parts[lonp]);
+										if(fo.faking) {
+											lat += fo.dlat;
+											lon += fo.dlon;
+										}
+										if(lat < lamin)
+											lamin = lat;
+										if(lat > lamax)
+											lamax = lat;
+										if(lon < lomin)
+											lomin = lon;
+										if(lon > lomax)
+											lomax = lon;
+									}
+								}
+							}
+						}
+					} catch  (Error e) {
+						print("%s\n", e.message);
+					}
 
-            chan.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
-                    if (condition == IOCondition.HUP)
-                        return false;
-                    try
-                    {
-                        var eos = chan.read_line (out str, out length, null);
-                        if (eos == IOStatus.EOF)
-                            return false;
-                        if(str == null || length == 0)
-                            return true;
-                        var parts=str.split(",");
-                        if(hdr == false)
-                        {
-                            hdr = true;
-                            int j = 0;
-                            foreach (var p in parts)
-                            {
-                                var pp = p.strip();
-                                if (pp == "GPS_fixType")
-                                    typp = j;
-                                if (pp == "GPS_numSat")
-                                    fixp = j;
-                                if (pp == "GPS_coord[0]")
-                                    latp = j;
-                                else if(pp == "GPS_coord[1]")
-                                {
-                                    lonp = j;
-                                    break;
-                                }
-                                j++;
-                            }
-                            if(latp == -1 || lonp == -1 || fixp == -1 || typp == -1)
-                            {
-                                Posix.kill(child_pid, 15);
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            ft = int.parse(parts[typp]);
-                            if(ft == 2)
-                            {
-                                ns = int.parse(parts[fixp]);
-                                if(ns > 5)
-                                {
-                                    lat = double.parse(parts[latp]);
-                                    lon = double.parse(parts[lonp]);
-                                    if(fo.faking)
-                                    {
-                                        lat += fo.dlat;
-                                        lon += fo.dlon;
-                                    }
-
-                                    if(lat < lamin)
-                                        lamin = lat;
-                                    if(lat > lamax)
-                                        lamax = lat;
-                                    if(lon < lomin)
-                                        lomin = lon;
-                                    if(lon > lomax)
-                                        lomax = lon;
-                                }
-                            }
-                        }
-                        return true;
-                    } catch  (Error e) {
-                        print("%s\n", e.message);
-                        return false;
-                    }
-                });
-
-            ChildWatch.add (child_pid, (pid, status) => {
-                    try { chan.shutdown(false); } catch {}
-                    Process.close_pid (pid);
-                    if(lamin > -90 && lamax < 90 && lomin > -180 && lomax < 180)
-                        rescale(lomin, lamin, lomax, lamax);
-                });
-        } catch (SpawnError e) {
-            print("%s\n", e.message);
-        }
+					try { chan.shutdown(false); } catch {}
+					Process.close_pid (child_pid);
+					if(lamin > -90 && lamax < 90 && lomin > -180 && lomax < 180) {
+						rescale(lomin, lamin, lomax, lamax);
+					}
+				} catch (SpawnError e) {
+					print("%s\n", e.message);
+				}
+				return 0;
+			});
     }
 }
