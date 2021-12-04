@@ -3239,7 +3239,7 @@ public class MWP : Gtk.Application {
 					}
 					break;
 				case "remove":
-					unowned var da  = viddevs.find_custom(d, devname_comp);
+					unowned List<GstMonitor.VideoDev?> da  = viddevs.find_custom(d, devname_comp);
 					if (da != null) {
 						viddevs.remove_link(da);
 						remove_combo(viddev_c, d.displayname);
