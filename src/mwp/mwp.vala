@@ -1040,7 +1040,7 @@ public class MWP : Gtk.Application {
     private string rfile = null;
     private string bfile = null;
     private string forward_device = null;
-    private string radar_device = null;
+    private string[]? radar_device = null;
     private int dmrtype=0;
     private DEBUG_FLAGS debug_flags = 0;
     private bool set_fs;
@@ -1100,7 +1100,7 @@ public class MWP : Gtk.Application {
         { "build-id", 0, 0, OptionArg.NONE, null, "show build id", null},
         { "really-really-run-as-root", 0, 0, OptionArg.NONE, null, "no reason to ever use this", null},
         { "forward-to", 0, 0, OptionArg.STRING, null, "forward telemetry to", "device-name"},
-        { "radar-device", 0, 0, OptionArg.STRING, null, "dedicated inav radar device", "device-name"},
+        { "radar-device", 0, 0, OptionArg.STRING_ARRAY, null, "dedicated inav radar device", "device-name"},
         {"perma-warn", 0, 0, OptionArg.NONE, null, "info dialogues never time out", null},
         {"fsmenu", 0, 0, OptionArg.NONE, null, "use a menu bar in full screen (vice a menu button)", null},
         { "kmlfile", 'k', 0, OptionArg.STRING, null, "KML file", "file-name"},
@@ -1241,7 +1241,10 @@ public class MWP : Gtk.Application {
             o.lookup("voice-command", "s", ref exvox);
             o.lookup("really-really-run-as-root", "b", ref asroot);
             o.lookup("forward-to", "s", ref forward_device);
-            o.lookup("radar-device", "s", ref radar_device);
+			if (o.contains("radar-device")) {
+				var ox = o.lookup_value("radar-device", VariantType.STRING_ARRAY);
+				radar_device = ox.dup_strv();
+			}
             o.lookup("perma-warn", "b", ref permawarn);
             o.lookup("fsmenu", "b", ref nofsmenu);
             o.lookup("relaxed-msp", "b", ref relaxed);
@@ -2690,9 +2693,9 @@ public class MWP : Gtk.Application {
             fwddev = new MWSerial.forwarder();
 
         radar_plot = new SList<RadarPlot?>();
-        if(radar_device != null)
-        {
-			var parts = radar_device.split(",");
+
+		foreach (var rd in radar_device) {
+			var parts = rd.split(",");
 			foreach(var p in parts) {
 				RadarDev r = {};
 				r.name = p.strip();
@@ -2701,17 +2704,16 @@ public class MWP : Gtk.Application {
 				r.dev.set_mode(MWSerial.Mode.SIM);
 				r.dev.set_pmask(MWSerial.PMask.INAV);
 				r.dev.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
-                    handle_radar(s, cmd,raw,len,xflags,errs);
-                });
+						handle_radar(s, cmd,raw,len,xflags,errs);
+					});
 				radardevs += r;
 			}
 			try_radar_dev();
 			Timeout.add_seconds(15, () => {
-						try_radar_dev();
-						return Source.CONTINUE;
+					try_radar_dev();
+					return Source.CONTINUE;
                 });
-        }
-
+		}
         mq = new Queue<MQI?>();
 
         build_serial_combo();
@@ -4736,11 +4738,21 @@ case 0:
         }
     }
 
+	private bool lookup_radar(string s) {
+		foreach (var r in radardevs) {
+			if (r.name == s) {
+				return true;
+			}
+		}
+		return false;
+	}
+
     private int append_combo(Gtk.ComboBoxText cbtx, string s)
     {
-        if(radar_device != null && radar_device.contains(s))
+		if(lookup_radar(s))
             return -1;
-        if(s == forward_device)
+
+		if(s == forward_device)
             return -1;
 
         var n = find_combo(cbtx, s);
@@ -4759,7 +4771,7 @@ case 0:
 
     private void prepend_combo(Gtk.ComboBoxText cbtx, string s)
     {
-		if(radar_device != null && radar_device.contains(s))
+		if(lookup_radar(s))
             return;
         if(s == forward_device)
             return;
@@ -9397,7 +9409,7 @@ case 0:
             bool ostat;
 
             serstate = SERSTATE.NONE;
-            if(serdev == radar_device || serdev == forward_device) {
+            if(lookup_radar(serdev) || serdev == forward_device) {
                 mwp_warning_box("The selected device is assigned to a special function (radar / forwarding).\nPlease choose another device", Gtk.MessageType.WARNING, 60);
                 return;
             } else if (serdev.has_prefix("mqtt://") ||
