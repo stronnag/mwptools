@@ -1510,7 +1510,7 @@ public class MWP : Gtk.Application {
         wp_max = (uint8)conf.max_wps;
 
         string []  ext_apps = {
-            conf.blackbox_decode, "replay_bbox_ltm.rb",
+            conf.blackbox_decode, null, /* ex "replay_bbox_ltm.rb",*/
             "gnuplot", "mwp-plot-elevations", "unzip", null, "fl2ltm", "mavlogdump.py" };
         bool appsts[8];
         var si = 0;
@@ -1523,14 +1523,11 @@ public class MWP : Gtk.Application {
             }
             si++;
         }
-        x_replay_bbox_ltm_rb = (appsts[0]&&appsts[1]);
+        x_replay_bbox_ltm_rb = (appsts[0]&&appsts[6]);
         x_plot_elevations_rb = (appsts[2]&&appsts[3]);
         x_kmz = appsts[4];
-        x_otxlog = false;
-        if (Environment.get_variable("MWP_LEGACY_REPLAY") == null) {
-            x_fl2ltm = x_otxlog = appsts[6];
-        }
-        x_aplog = appsts[7];
+		x_fl2ltm = x_otxlog = appsts[6];
+		x_aplog = appsts[7];
 
         XmlIO.uc = conf.ucmissiontags;
         XmlIO.meta = conf.missionmetatag;
