@@ -561,7 +561,6 @@ public class MWP : Gtk.Application {
     private bool usemag = false;
     private int16 mhead;
 
-
     private bool have_vers;
     private bool have_misc;
     private bool have_api;
@@ -663,6 +662,7 @@ public class MWP : Gtk.Application {
 		bool vauto;
 	}
 	private BBVideoList? bbvlist;
+	private  bool bbl_delay = true;
 
 	private struct RadarDev {
 		MWSerial dev;
@@ -1853,6 +1853,29 @@ public class MWP : Gtk.Application {
         bb_runner = new BBoxDialog(builder, window, conf.blackbox_decode,
                                    conf.logpath, fakeoff);
 
+		bb_runner.complete.connect( (id) => {
+				if(id == 1001)
+				{
+					string bblog;
+					int index;
+					int btype;
+					uint8 force_gps = 0;
+					uint duration;
+					int64 nsecs;
+					bb_runner.get_result(out bblog, out index, out btype,
+										 out force_gps, out duration);
+
+					if(bbvlist != null) {
+						var vauto = bb_runner.get_vtimer(out nsecs);
+						bbvlist.vauto = vauto;
+						if (vauto) {
+							bbvlist.timer = nsecs;
+						};
+					}
+					run_replay(bblog, bbl_delay, Player.BBOX, index, btype, force_gps, duration);
+				}
+			});
+
 		bb_runner.videofile.connect((uri) => {
 				if (uri != null) {
 					try {
@@ -1880,6 +1903,7 @@ public class MWP : Gtk.Application {
 						vp.set_transient_for(window);
 						vp.set_keep_above(true);
 						vp.add_stream(uri, false);
+						bbvlist = {};
 						bbvlist.vp = vp;
 					} catch {}
 				} else {
@@ -10558,32 +10582,13 @@ case 0:
 
     private void replay_bbox (bool delay, string? fn = null)
     {
-		bbvlist = {};
+		bbl_delay = delay;
 		if((replayer & Player.BBOX) == Player.BBOX)
         {
             Posix.kill(child_pid, MwpSignals.Signal.TERM);
         } else if ((replayer & Player.OTX) == Player.OTX) {
                 /// tidy this up
         } else {
-			bb_runner.complete.connect( (id) => {
-					if(id == 1001)
-					{
-						string bblog;
-						int index;
-						int btype;
-						uint8 force_gps = 0;
-						uint duration;
-						int64 nsecs;
-						bb_runner.get_result(out bblog, out index, out btype,
-											 out force_gps, out duration);
-						var vauto = bb_runner.get_vtimer(out nsecs);
-						bbvlist.vauto = vauto;
-						if (vauto) {
-							bbvlist.timer = nsecs;
-						};
-						run_replay(bblog, delay, Player.BBOX, index, btype, force_gps, duration);
-					}
-				});
 			bb_runner.run(fn);
 		}
 	}
