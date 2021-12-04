@@ -1058,6 +1058,8 @@ public class MWP : Gtk.Application {
 	private bool ms_from_loader; // loading from file
 	private bool smart_warn = false;
 
+	public static string? user_args;
+
 	public enum HomeType {
 		NONE,
 		ORIGIN,
@@ -1129,6 +1131,8 @@ public class MWP : Gtk.Application {
 
     void show_startup()
     {
+		MWPLog.message("%s\n", MWP.user_args);
+		MWP.user_args = null;
         var sb = new StringBuilder("mwp ");
         var s_0 = MwpVers.get_build();
         var s_1 = MwpVers.get_id();
@@ -1140,7 +1144,7 @@ public class MWP : Gtk.Application {
         is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
         if(!is_wayland)
             xlib="Xlib";
-        MWPLog.message("mwp startup version: %s on %s\n", verstr, xlib);
+        MWPLog.message("version: %s on %s\n", verstr, xlib);
         string os=null;
         MWPLog.message("%s\n", Logger.get_host_info(out os));
         var vstr = check_virtual(os);
@@ -1173,7 +1177,7 @@ public class MWP : Gtk.Application {
 
     public override int command_line (ApplicationCommandLine command_line) {
         this.hold ();
-        int res = _command_line (command_line);
+		int res = _command_line (command_line);
         this.release ();
         return res;
     }
@@ -1849,6 +1853,40 @@ public class MWP : Gtk.Application {
         bb_runner = new BBoxDialog(builder, window, conf.blackbox_decode,
                                    conf.logpath, fakeoff);
 
+		bb_runner.videofile.connect((uri) => {
+				if (uri != null) {
+					try {
+						uri = Gst.filename_to_uri(uri);
+						var rt = VideoPlayer.discover(uri);
+						var vp = new VideoPlayer();
+						vp.video_playing.connect((vstate) => {
+								if((debug_flags & DEBUG_FLAGS.VIDEO) == DEBUG_FLAGS.VIDEO) {
+									MWPLog.message("VIDEO: BBL is %s, video requests %s\n",
+												   (replay_paused) ? "paused" : "playing",
+												   (vstate) ? "playing" : "paused");
+								}
+								if(vstate == replay_paused) {
+									handle_replay_pause(true);
+								}
+							});
+						vp.video_closed.connect(() => {
+								if((debug_flags & DEBUG_FLAGS.VIDEO) == DEBUG_FLAGS.VIDEO) {
+									MWPLog.message("VIDEO: Video quits\n");
+								}
+								bbvlist = null;
+							});
+						vp.set_slider_max(rt);
+						vp.show_all ();
+						vp.set_transient_for(window);
+						vp.set_keep_above(true);
+						vp.add_stream(uri, false);
+						bbvlist.vp = vp;
+					} catch {}
+				} else {
+					MWPLog.message("Not playing empty video uri\n");
+				}
+			});
+
         otx_runner = new OTXDialog(builder, window, null, x_fl2ltm);
 
         bb_runner.set_tz_tools(conf.geouser, conf.zone_detect);
@@ -1871,7 +1909,7 @@ public class MWP : Gtk.Application {
                 }
             });
 
-        dockmenus = new string[DOCKLETS.NUMBER];
+		dockmenus = new string[DOCKLETS.NUMBER];
 
         dockmenus[DOCKLETS.MISSION] = "mission-list";
         dockmenus[DOCKLETS.GPS] = "gps-status";
@@ -10520,7 +10558,6 @@ case 0:
 
     private void replay_bbox (bool delay, string? fn = null)
     {
-		VideoPlayer vp = null;
 		bbvlist = {};
 		if((replayer & Player.BBOX) == Player.BBOX)
         {
@@ -10528,41 +10565,6 @@ case 0:
         } else if ((replayer & Player.OTX) == Player.OTX) {
                 /// tidy this up
         } else {
-			bb_runner.videofile.connect((uri) => {
-					if (uri != null) {
-						try {
-							uri = Gst.filename_to_uri(uri);
-							var rt = VideoPlayer.discover(uri);
-							vp = new VideoPlayer();
-							vp.video_playing.connect((vstate) => {
-									if((debug_flags & DEBUG_FLAGS.VIDEO) == DEBUG_FLAGS.VIDEO) {
-										MWPLog.message("VIDEO: BBL is %s, video requests %s\n",
-													   (replay_paused) ? "paused" : "playing",
-													   (vstate) ? "playing" : "paused");
-									}
-									if(vstate == replay_paused) {
-										handle_replay_pause(true);
-									}
-								});
-							vp.video_closed.connect(() => {
-									if((debug_flags & DEBUG_FLAGS.VIDEO) == DEBUG_FLAGS.VIDEO) {
-										MWPLog.message("VIDEO: Video quits\n");
-									}
-									bbvlist = null;
-								});
-							vp.set_slider_max(rt);
-							vp.show_all ();
-							vp.set_transient_for(window);
-							vp.set_keep_above(true);
-							vp.add_stream(uri, false);
-							bbvlist.vp = vp;
-						} catch {}
-					} else {
-						MWPLog.message("Not playing empty video uri\n");
-					}
-				});
-
-			bb_runner.run(fn);
 			bb_runner.complete.connect( (id) => {
 					if(id == 1001)
 					{
@@ -10582,6 +10584,7 @@ case 0:
 						run_replay(bblog, delay, Player.BBOX, index, btype, force_gps, duration);
 					}
 				});
+			bb_runner.run(fn);
 		}
 	}
 
@@ -10693,6 +10696,10 @@ case 0:
         VariantDict v = new VariantDict();
         if(s != null)
         {
+			var sb = new StringBuilder(MWP.user_args);
+			sb.append(s);
+			MWP.user_args = sb.str;
+
             string []m;
             try
             {
@@ -10828,13 +10835,19 @@ case 0:
         return hyper;
     }
 
-    public static int main (string[] args)
+	public static int main (string[] args)
     {
         MwpLibC.atexit(MWP.xchild);
         if (GtkClutter.init (ref args) != InitError.SUCCESS)
             return 1;
         Gst.init (ref args);
+		StringBuilder sb = new StringBuilder();
+		foreach(var a in args) {
+			sb.append(a);
+			sb.append_c(' ');
+		}
+		MWP.user_args = sb.str;
         var app = new MWP();
-        return app.run (args);
+		return app.run (args);
     }
 }

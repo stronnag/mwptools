@@ -46,7 +46,7 @@ IO.popen(cmd,'r') do |p|
     if hdrs
       w_x = c[:wind0].to_f
       w_y = c[:wind1].to_f
-      alt = (c[:baroalt_cm].to_f / 100).round
+      alt = (c[:navpos2].to_f / 100).round
       angle = atan2(w_y, w_x) / RAD
       angle += 360 if angle < 0
       angle = angle.to_i
