@@ -3231,6 +3231,7 @@ public class MWP : Gtk.Application {
 				bool act = false;
 				switch (a) {
 				case "add":
+				case "init":
 					if(viddevs.find_custom(d, devname_comp) == null) {
 						viddevs.append(d);
 						viddev_c.append(d.devicename, d.displayname);
