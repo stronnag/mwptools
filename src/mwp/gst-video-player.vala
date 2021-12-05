@@ -28,44 +28,48 @@ public class VideoPlayer : Window {
 		}
 		playbin = ElementFactory.make (playbinx, playbinx);
 		var gtksink = ElementFactory.make ("gtksink", "sink");
-		gtksink.get ("widget", out video_area);
-		playbin["video-sink"] = gtksink;
+		if (gtksink == null) {
+			MWPLog.message("gstreamer1-plugins-gtk appears missing\n");
+			this.destroy();
+		} else {
+			gtksink.get ("widget", out video_area);
+			playbin["video-sink"] = gtksink;
 
-		vbox = new Box (Gtk.Orientation.VERTICAL, 0);
-		vbox.pack_start (video_area);
+			vbox = new Box (Gtk.Orientation.VERTICAL, 0);
+			vbox.pack_start (video_area);
 
-		play_button = new Button.from_icon_name ("gtk-media-play", Gtk.IconSize.BUTTON);
-		play_button.clicked.connect (on_play);
-		set_size_request(480, 400);
-		add (vbox);
-		var bus = playbin.get_bus ();
-		bus.add_watch(Priority.DEFAULT, bus_callback);
+			play_button = new Button.from_icon_name ("gtk-media-play", Gtk.IconSize.BUTTON);
+			play_button.clicked.connect (on_play);
+			set_size_request(480, 400);
+			add (vbox);
+			var bus = playbin.get_bus ();
+			bus.add_watch(Priority.DEFAULT, bus_callback);
 
-		var header_bar = new Gtk.HeaderBar ();
-		header_bar.decoration_layout = "icon,menu:minimize,maximize,close";
-		header_bar.set_title ("Video Replay");
-		header_bar.show_close_button = true;
-		var vb = new Gtk.VolumeButton();
-		double vol;
-		playbin.get("volume", out vol);
-		vb.value = vol;
-		vb.value_changed.connect((v) => {
-				playbin.set("volume", v);
-			});
+			var header_bar = new Gtk.HeaderBar ();
+			header_bar.decoration_layout = "icon,menu:minimize,maximize,close";
+			header_bar.set_title ("Video Replay");
+			header_bar.show_close_button = true;
+			var vb = new Gtk.VolumeButton();
+			double vol;
+			playbin.get("volume", out vol);
+			vb.value = vol;
+			vb.value_changed.connect((v) => {
+					playbin.set("volume", v);
+				});
 
-		header_bar.pack_end (vb);
-		header_bar.pack_start (play_button);
+			header_bar.pack_end (vb);
+			header_bar.pack_start (play_button);
 
-		header_bar.has_subtitle = false;
-		set_titlebar (header_bar);
-		destroy.connect (() => {
-				if (tid > 0)
-					Source.remove(tid);
-				playbin.set_state (Gst.State.NULL);
-				video_closed();
-			});
+			header_bar.has_subtitle = false;
+			set_titlebar (header_bar);
+			destroy.connect (() => {
+					if (tid > 0)
+						Source.remove(tid);
+					playbin.set_state (Gst.State.NULL);
+					video_closed();
+				});
 		}
-
+	}
 
 	private void add_slider() {
 		slider = new Scale.with_range(Orientation.HORIZONTAL, 0, 1, 1);
