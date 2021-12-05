@@ -10,7 +10,7 @@ gst-video-player: gst-video-player.vala
 gst-devmon: gst-devmon.vala
 	valac -D TEST --pkg gstreamer-1.0 --pkg gio-2.0 --pkg gudev-1.0 gst-devmon.vala
 
-install:
+install: $(ALL)
 	install -d $(prefix)/bin
 	install $(ALL) $(prefix)/bin/
 
