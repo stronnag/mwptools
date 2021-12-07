@@ -42,7 +42,7 @@
 
 public class BProxy : Soup.Server
 {
-    uint8 []black_png =  {
+    private uint8 []black_png =  {
         0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
         0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00,
         0x08, 0x02, 0x00, 0x00, 0x00, 0xd3, 0x10, 0x3f, 0x31, 0x00, 0x00, 0x01,
@@ -107,16 +107,31 @@ public class BProxy : Soup.Server
         0xc2, 0xed, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42,
         0x60, 0x82
     };
+	private uint8 []base_png;
 
     public BProxy()
     {
+		var fn = Environment.get_variable("MWP_BLACK_TILE");
+		ssize_t nb = 0;
+		if(fn != null) {
+			Posix.Stat st;
+			if(Posix.stat(fn, out st) == 0) {
+				base_png = new uint8[st.st_size];
+				int fd = Posix.open (fn, Posix.O_RDONLY);
+				nb = Posix.read(fd, base_png, (int)st.st_size);
+				Posix.close(fd);
+			}
+		}
+		if (nb == 0 || base_png == null)
+			base_png = black_png;
+
         this.add_handler (null, default_handler);
     }
 
     private void default_handler (Soup.Server server, Soup.Message msg, string path,
                           GLib.HashTable? query, Soup.ClientContext client)
     {
-        msg.set_response ("image/png", Soup.MemoryUse.COPY, black_png);
+        msg.set_response ("image/png", Soup.MemoryUse.COPY, base_png);
         msg.set_status(200);
     }
 

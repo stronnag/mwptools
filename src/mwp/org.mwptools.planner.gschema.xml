@@ -628,13 +628,20 @@
       is also set (none zero). Setting to 0 disables.</description>
     </key>
 
-    <!-- key name="radar-device" type="s">
-      <default>""</default>
-      <summary>Device node dedicated for iNav-radar</summary>
-      <description>If supplied, the device will be used for iNav radar
-      reports. This does not preclude iNav-radar reports on the main
-      MSP device.</description>
-    </key -->
+    <key type="s" name="gpsd-host">
+      <default>"localhost"</default>
+      <summary>gpsd provider</summary>
+      <description>Provider for GCS location via gpsd.
+      Default is "localhost", can be set to other host name or IP
+      address. Setting blank ("") disables.</description>
+    </key>
+
+    <key name="misc-icon-size" type="i">
+      <default>32</default>
+      <summary>Miscellaneous icon size</summary>
+      <description>Size for miscellaneous icons (radar, GCS location)
+      in pixels. -1 means the image's natural size (no scaling).</description>
+    </key>
 
   </schema>
 </schemalist>

@@ -69,7 +69,7 @@ public class DevManager
     {
         StringBuilder sb = new StringBuilder();
         if(d.get_property("ID_BUS") == "usb") {
-            sb.append_printf("Registered USB device: %s ", d.get_device_file());
+            sb.append_printf("Registered serial device: %s ", d.get_device_file());
             sb.append_printf("[%s:%s], ", d.get_property("ID_VENDOR_ID"),
                              d.get_property("ID_MODEL_ID"));
             sb.append_printf("Vendor: %s, Model: %s, ",

@@ -267,6 +267,12 @@
           <attribute name="action">win.vstream</attribute>
         </item>
       </section>
+      <section>
+	<item>
+          <attribute name="label">GCS Location</attribute>
+          <attribute name="action">win.locicon</attribute>
+        </item>
+      </section>
     </submenu>
     <submenu>
       <attribute name="label">Help</attribute>

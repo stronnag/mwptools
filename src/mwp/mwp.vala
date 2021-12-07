@@ -725,14 +725,15 @@ public class MWP : Gtk.Application {
     public enum DEBUG_FLAGS
     {
         NONE=0,
-        WP = 1,
-        INIT=2,
-        MSP=4,
-        ADHOC=8,
-        RADAR=16,
-        OTXSTDERR = 32,
-		SERIAL = 64,
-		VIDEO = 128,
+        WP = (1 << 0),
+        INIT = (1 << 1),
+        MSP = (1 << 2),
+        ADHOC = (1 << 3),
+        RADAR= (1 << 4),
+        OTXSTDERR = (1 << 5),
+		SERIAL = (1 << 6),
+		VIDEO = (1 << 7),
+		GCSLOC = (1 << 8),
     }
 
     private enum SAT_FLAGS
@@ -2258,6 +2259,16 @@ public class MWP : Gtk.Application {
             });
         window.add_action(saq);
 
+		var lsaq = new GLib.SimpleAction.stateful ("locicon", null, false);
+		lsaq.change_state.connect((s) => {
+				var b = s.get_boolean();
+				GCSIcon.default_location(view.get_center_latitude(),
+									 view.get_center_longitude());
+				GCSIcon.set_visible(b);
+				lsaq.set_state (s);
+		});
+		window.add_action(lsaq);
+
         saq = new GLib.SimpleAction("layout-save",null);
         saq.activate.connect(() => {
                 lman.save();
@@ -2634,6 +2645,8 @@ public class MWP : Gtk.Application {
 
         ls.connect_markers();
 
+		GCSDebug.debug = ((debug_flags & DEBUG_FLAGS.GCSLOC) == DEBUG_FLAGS.GCSLOC);
+		GCSIcon.gcs_icon();
 /*
   Sample for range rings. Note that 1st is below second)
   So the following sets the markers *below* the paths, which is NOT wanted

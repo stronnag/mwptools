@@ -21,8 +21,7 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
-public class FakeHome : GLib.Object
-{
+public class FakeHome : GLib.Object {
     public enum USERS
     {
         None = 0,
@@ -38,7 +37,7 @@ public class FakeHome : GLib.Object
     public static double xlon {private set; get;}
 
     public FakeHomeDialog fhd;
-    private Champlain.MarkerLayer hmlayer;
+    private static Champlain.MarkerLayer hmlayer;
     private static Champlain.Label homep;
     public bool is_visible = false;
     public signal void fake_move(double lat, double lon);
@@ -50,6 +49,10 @@ public class FakeHome : GLib.Object
         string margin;
         string rthalt;
     }
+
+	public static Champlain.MarkerLayer get_hmlayer() {
+		return hmlayer;
+	}
 
     public FakeHome(Champlain.View view)
     {

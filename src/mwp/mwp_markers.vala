@@ -52,9 +52,9 @@ public class MWPMarkers : GLib.Object
     public signal void wp_moved(int ino, double lat, double lon);
     public signal void wp_selected(int ino);
 
-	private static Clutter.Image load_image_from_file(string file) throws GLib.Error {
+	public static Clutter.Image load_image_from_file(string file, int w=-1, int h=-1) throws GLib.Error {
 		var iconfile = MWPUtils.find_conf_file(file, "pixmaps");
-		var pixbuf = new Gdk.Pixbuf.from_file (iconfile);
+		var pixbuf = new Gdk.Pixbuf.from_file_at_scale(iconfile, w, h, true);
         var image = new Clutter.Image ();
 		image.set_data (pixbuf.get_pixels (),
 						pixbuf.has_alpha ? Cogl.PixelFormat.RGBA_8888 : Cogl.PixelFormat.RGB_888,
@@ -91,7 +91,6 @@ public class MWPMarkers : GLib.Object
         view.add_layer(path);
         view.add_layer(hpath);
         view.add_layer(ipath);
-
         view.add_layer(markers);
 
         llist = new List<uint>();
@@ -121,9 +120,9 @@ public class MWPMarkers : GLib.Object
         qtxt = Quark.from_string("irtext");
 
 		try {
-			inavradar = load_image_from_file("inav-radar.svg");
-			yplane = load_image_from_file("plane100.svg");
-			rplane = load_image_from_file("plane100red.svg");
+			inavradar = load_image_from_file("inav-radar.svg", MWP.conf.misciconsize,MWP.conf.misciconsize);
+			yplane = load_image_from_file("plane100.svg",MWP.conf.misciconsize, MWP.conf.misciconsize);
+			rplane = load_image_from_file("plane100red.svg", MWP.conf.misciconsize, MWP.conf.misciconsize);
 		} catch {
 			stderr.puts("Failed to load icons\n");
 			Posix.exit(127);
@@ -148,7 +147,7 @@ public class MWPMarkers : GLib.Object
         return rd;
     }
 
-    public void set_radar_stale(RadarPlot r)
+	public void set_radar_stale(RadarPlot r)
     {
         var rp = find_radar_item(r);
         if(rp != null) {
