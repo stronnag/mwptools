@@ -701,10 +701,15 @@ public class  BBoxDialog : Object
     private void get_tz(double lat, double lon)
     {
         string str = null;
+		char cbuflat[16];
+		char cbuflon[16];
+		lat.format(cbuflat, "%.6f");
+		lon.format(cbuflon, "%.6f");
+
         if(zone_detect != null)
         {
             try {
-                string[] spawn_args = {zone_detect, lat.to_string(), lon.to_string()};
+                string[] spawn_args = {zone_detect, (string)cbuflat, (string)cbuflon};
                 Pid child_pid;
                 int p_stdout;
                 Process.spawn_async_with_pipes (null,
@@ -749,7 +754,7 @@ public class  BBoxDialog : Object
         }
         else if(geouser != null)
         {
-            string uri = GURI.printf(lat.to_string(), lon.to_string(), geouser);
+            string uri = GURI.printf((string)cbuflat, (string)cbuflon, geouser);
             var session = new Soup.Session ();
             var message = new Soup.Message ("GET", uri);
             string s="";
