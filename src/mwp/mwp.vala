@@ -10501,12 +10501,10 @@ case 0:
         args += (MwpMisc.is_cygwin()==false) ? fn : MwpMisc.get_native_path(fn);
         args += null;
 
-        MWPLog.message("%s\n", string.joinv(" ",args));
+		string sargs = string.joinv(" ",args);
 
         try {
             var spf = SpawnFlags.SEARCH_PATH |
-/*            SpawnFlags.LEAVE_DESCRIPTORS_OPEN |
-              SpawnFlags.STDOUT_TO_DEV_NULL |*/
             SpawnFlags.DO_NOT_REAP_CHILD;
 
             if ((debug_flags & DEBUG_FLAGS.OTXSTDERR) == 0) {
@@ -10522,15 +10520,16 @@ case 0:
                                                 })*/ null,
                                             out child_pid,
                                             null, null, null);
-            ChildWatch.add (child_pid, (pid, status) => {
-                    MWPLog.message("Close child pid %u, %u\n",
-                                   pid, Process.exit_status(status));
-                    Process.close_pid (pid);
-                    cleanup_replay();
-                });
         } catch (SpawnError e) {
-            MWPLog.message("spawnerror: %s\n", e.message);
+            MWPLog.message("spawnerror: %s %s \n", sargs, e.message);
         }
+		MWPLog.message("%s %u\n", sargs, child_pid);
+
+		ChildWatch.add (child_pid, (pid, status) => {
+//				MWPLog.message("bbl-o child pid %u, %u\n", pid, Process.exit_status(status));
+				Process.close_pid (pid);
+				cleanup_replay();
+			});
     }
 
     private void spawn_bbox_task(string fn, int index, int btype,
@@ -10579,8 +10578,7 @@ case 0:
                                                 out child_pid,
                                                 null, null, null);
                 ChildWatch.add (child_pid, (pid, status) => {
-                        MWPLog.message("Close child pid %u, %u\n",
-                                       pid, Process.exit_status(status));
+//                        MWPLog.message("bbl-r child pid %u, %u\n", pid, Process.exit_status(status));
                         Process.close_pid (pid);
                         cleanup_replay();
                     });

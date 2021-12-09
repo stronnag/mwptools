@@ -2,7 +2,8 @@ include ../common.mk
 
 all: gmproxy
 
-# This is unadulated evil, and it's all Ubuntu 1.4.04 LTS's fault
+prefix ?= $(HOME)/.local
+OPTS ?= -X -O3 -X -s
 
 gmproxy: gmproxy.vala
 	valac $(OPTS) --pkg libsoup-2.4 --pkg posix --pkg gio-2.0 -o gmproxy gmproxy.vala
@@ -14,9 +15,6 @@ bproxy: bproxy.vala
 clean:
 	rm -f gmproxy qproxy *~ *.vala.c
 
-local:
-	$(MAKE) prefix=$(HOME) datadir=$(HOME)/.local install
-
-install: $(APP) gmproxy
+install: $(APP)
 	install -d $(prefix)/bin
 	install -s gmproxy $(prefix)/bin/gmproxy
