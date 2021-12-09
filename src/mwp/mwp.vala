@@ -10809,7 +10809,6 @@ case 0:
                                             spawn_args,
                                             null,
                                             SpawnFlags.SEARCH_PATH |
-                                            SpawnFlags.DO_NOT_REAP_CHILD |
                                             SpawnFlags.STDERR_TO_DEV_NULL,
                                             null,
                                             out child_pid,

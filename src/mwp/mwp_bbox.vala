@@ -892,7 +892,6 @@ public class  BBoxDialog : Object
 					}
 
 					try { chan.shutdown(false); } catch {}
-					Process.close_pid (child_pid);
 					if(lamin > -90 && lamax < 90 && lomin > -180 && lomax < 180) {
 						rescale(lomin, lamin, lomax, lamax);
 					}
