@@ -697,7 +697,7 @@ public class  BBoxDialog : Object
         return ok;
     }
 
-    const string GURI="http://api.geonames.org/timezoneJSON?lat=%f&lng=%f&username=%s";
+    const string GURI="http://api.geonames.org/timezoneJSON?lat=%s&lng=%s&username=%s";
     private void get_tz(double lat, double lon)
     {
         string str = null;
@@ -749,12 +749,12 @@ public class  BBoxDialog : Object
         }
         else if(geouser != null)
         {
-            string uri = GURI.printf(lat, lon, geouser);
+            string uri = GURI.printf(lat.to_string(), lon.to_string(), geouser);
             var session = new Soup.Session ();
             var message = new Soup.Message ("GET", uri);
             string s="";
             session.queue_message (message, (sess, mess) => {
-                    if ( mess.status_code == 200)
+                    if (mess.status_code == 200)
                     {
                         s = (string) mess.response_body.flatten ().data;
                         try
@@ -764,9 +764,10 @@ public class  BBoxDialog : Object
                             var item = parser.get_root ().get_object ();
                             if (item.has_member("timezoneId"))
                                 str = item.get_string_member ("timezoneId");
-                        } catch { }
+                        } catch {
+							MWPLog.message("Geonames resp error: %d\n", mess.status_code);
+						}
                     }
-
                     if(str != null)
                     {
                         MWPLog.message("Geonames %f %f %s\n", lat, lon, str);
@@ -775,9 +776,10 @@ public class  BBoxDialog : Object
                      }
                     else
                     {
+						MWPLog.message("Geonames: <%s>\n", uri);
                         var sb = new StringBuilder("Geonames TZ: ");
                         sb.append((string) mess.response_body.flatten ().data);
-                        MWPLog.message(sb.str);
+                        MWPLog.message("%s\n", sb.str);
                     }
                 });
         }
