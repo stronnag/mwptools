@@ -893,7 +893,10 @@ public class  BBoxDialog : Object
 
 					try { chan.shutdown(false); } catch {}
 					if(lamin > -90 && lamax < 90 && lomin > -180 && lomax < 180) {
-						rescale(lomin, lamin, lomax, lamax);
+						Idle.add(() => {
+								rescale(lomin, lamin, lomax, lamax);
+								return false;
+							});
 					}
 				} catch (SpawnError e) {
 					print("%s\n", e.message);
