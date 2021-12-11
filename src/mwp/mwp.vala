@@ -1486,17 +1486,16 @@ public class MWP : Gtk.Application {
 
 	}
 
-	private bool get_bbl_status() {
-        bool ok = false;
-        string bblhelp="";
+	private bool get_app_status(string app, out string bblhelp) {
+        bool ok = true;
+        bblhelp="";
         try {
 			var bbl = new Subprocess(SubprocessFlags.STDERR_MERGE|SubprocessFlags.STDOUT_PIPE,
-									 conf.blackbox_decode, "--help");
+									 app, "--help");
 			bbl.communicate_utf8(null, null, out bblhelp, null);
-			ok = bblhelp.contains("--datetime");
 			bbl.wait_check_async.begin();
         } catch (Error e) {
-			stderr.printf("BBL: %s\n", e.message);
+			bblhelp = e.message;
 			ok = false;
 		}
         return ok;
@@ -1541,10 +1540,42 @@ public class MWP : Gtk.Application {
         }
 
 		if (appsts[0]) {
-			appsts[0] = get_bbl_status();
-			if(appsts[0] == false) {
-				MWPLog.message("%s too old or otherwise unsuitable\n", conf.blackbox_decode);
+			string text;
+			var res = get_app_status(conf.blackbox_decode, out text);
+			if(res == false) {
+				MWPLog.message("%s %s\n", conf.blackbox_decode, text);
+			} else if (!text.contains("--datetime")) {
+				MWPLog.message("\"%s\" too old, replay disabled\n", conf.blackbox_decode);
+				res = false;
 			}
+			appsts[0] = res;
+		}
+
+		if(appsts[6]) {
+			string text;
+			var res = get_app_status("fl2ltm", out text);
+			if(res == false) {
+				MWPLog.message("fl2ltm %s\n", text);
+			} else {
+				var parts = text.split("\n");
+				bool ok = false;
+				double d = 0;
+				text = "fl2ltm";
+				foreach (var p in parts) {
+					if (p.has_prefix("fl2ltm")) {
+						d = double.parse(p[6:20]);
+						if ((int)100*d > 11) {
+							ok = true;
+						} else {
+							text = p;
+						}
+						break;
+					}
+				}
+				if (!ok)
+					MWPLog.message("\"%s\" may be too old, upgrade recommended\n", text);
+			}
+			appsts[6] = res;
 		}
 
 		x_replay_bbox_ltm_rb = (appsts[0]&&appsts[6]);
