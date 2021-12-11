@@ -1487,6 +1487,22 @@ public class MWP : Gtk.Application {
 
 	}
 
+	bool get_bbl_status() {
+        bool ok = false;
+        string bblhelp="";
+        try {
+			var bbl = new Subprocess(SubprocessFlags.STDERR_MERGE|SubprocessFlags.STDOUT_PIPE,
+									 conf.blackbox_decode, "--help");
+			bbl.communicate_utf8(null, null, out bblhelp, null);
+			ok = bblhelp.contains("--datetime");
+			bbl.wait_check_async.begin();
+        } catch (Error e) {
+			stderr.printf("BBL: %s\n", e.message);
+			ok = false;
+		}
+        return ok;
+	}
+
     private void create_main_window()
     {
         gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
@@ -1524,8 +1540,15 @@ public class MWP : Gtk.Application {
             }
             si++;
         }
-        x_replay_bbox_ltm_rb = (appsts[0]&&appsts[6]);
-        x_plot_elevations_rb = (appsts[2]&&appsts[3]);
+
+		if (appsts[0]) {
+			appsts[0] = get_bbl_status();
+			if(appsts[0] == false) {
+				MWPLog.message("%s too old or otherwise unsuitable\n", conf.blackbox_decode);
+			}
+		}
+		x_replay_bbox_ltm_rb = (appsts[0]&&appsts[6]);
+		x_plot_elevations_rb = (appsts[2]&&appsts[3]);
         x_kmz = appsts[4];
 		x_fl2ltm = x_otxlog = appsts[6];
 		x_aplog = appsts[7];
