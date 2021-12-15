@@ -19,7 +19,10 @@ Usage of ltm-player [options] [files ...]
     	Baud rate (default 115200)
   -d string
     	Serial Device
+  -v	Verbose
 ```
+
+If no device is given, or -v, then decoded data is shown.
 
 ## Example
 
