@@ -188,6 +188,8 @@ void process_crsf()
 	  ptr= deserialise_u16(ptr, out val16);  // Roll radians *10000
 	  double yaw = 0;
 	  yaw = ((int16)Posix.ntohs(val16)) * ATTITODEG;
+	  if(yaw < 0)
+		  yaw += 360;
 	  stdout.printf("ATTI: Pitch %.1f, Roll %.1f, Yaw %.1f\n", pitch, roll, yaw);
 	  break;
   case FM_ID:
