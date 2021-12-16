@@ -126,6 +126,17 @@ ninja
 then
 
 ```
-$ crsf_test FILE_NAME
+$ ./crsf_test FILE_NAME
 ```
-The decoded file is dumped to the terminal.
+The decoded file is dumped to the terminal, formatted (for example, location obfuscated).
+
+```
+FM: MANU
+GPS: dd.119125 -dd.062258 43 m 7.8 deg 13.1 m/s 11 sats
+VARIO: 284 cm/s
+ATTI: Pitch -7.6, Roll -14.6, Yaw 11.9
+GPS: dd.119148 -dd.062254 43 m 8.2 deg 13.1 m/s 10 sats
+VARIO: 261 cm/s
+LINK: RSSI1 53 RSSI2 53 UpLQ 100 UpSNR 43 ActAnt 248 Mode 150hz TXPwr ?? DnRSSI 61 DnLQ 100 DnSNR 38
+ATTI: Pitch -9.0, Roll -16.6, Yaw 10.6
+```
