@@ -612,8 +612,13 @@ public class  BBoxDialog : Object
                                             out p_stdout,
                                             null);
 
+
             IOChannel chan = new IOChannel.unix_new (p_stdout);
-            IOStatus eos;
+			ChildWatch.add (child_pid, (pid, status) => {
+                    Process.close_pid (pid);
+				});
+
+			IOStatus eos;
             int n = 0;
             int latp = -1, lonp = -1, fixp = -1, typp = -1;
             string str = null;
@@ -679,8 +684,6 @@ public class  BBoxDialog : Object
             } catch  (Error e) {
                 MWPLog.message("%s\n", e.message);
             }
-            try { chan.shutdown(false); } catch {}
-            Process.close_pid (child_pid);
         } catch (SpawnError e) {
             MWPLog.message("%s\n", e.message);
         }
@@ -721,8 +724,11 @@ public class  BBoxDialog : Object
                                                 out p_stdout,
                                                 null);
 
-                IOChannel chan = new IOChannel.unix_new (p_stdout);
-                IOStatus eos;
+				ChildWatch.add (child_pid, (pid, status) => {
+						Process.close_pid (pid);
+					});
+				IOChannel chan = new IOChannel.unix_new (p_stdout);
+				IOStatus eos;
                 try {
                     for(;;)
                     {
@@ -736,8 +742,6 @@ public class  BBoxDialog : Object
                 } catch  (Error e) {
                     MWPLog.message("%s\n", e.message);
                 }
-                try { chan.shutdown(false); } catch {}
-                Process.close_pid (child_pid);
             } catch (SpawnError e) {
                 MWPLog.message("%s\n", e.message);
             }
@@ -750,7 +754,7 @@ public class  BBoxDialog : Object
         }
         else if(geouser != null)
         {
-			string uri = GURI.printf((string)cbuflat, (string)cbuflon, geouser);
+            string uri = GURI.printf((string)cbuflat, (string)cbuflon, geouser);
             var session = new Soup.Session ();
             var message = new Soup.Message ("GET", uri);
             string s="";
@@ -802,6 +806,7 @@ public class  BBoxDialog : Object
 													spawn_args,
 													null,
 													SpawnFlags.SEARCH_PATH |
+													SpawnFlags.DO_NOT_REAP_CHILD |
 													SpawnFlags.STDERR_TO_DEV_NULL,
 													null,
 													out child_pid,
@@ -810,6 +815,11 @@ public class  BBoxDialog : Object
 													null);
 
 					IOChannel chan = new IOChannel.unix_new (p_stdout);
+					ChildWatch.add (child_pid, (pid, status) => {
+							Process.close_pid (pid);
+						});
+
+
 					int latp = -1, lonp = -1, fixp = -1, typp = -1;
 					string str = null;
 					size_t length = -1;
@@ -882,7 +892,6 @@ public class  BBoxDialog : Object
 					}
 
 					try { chan.shutdown(false); } catch {}
-					Process.close_pid (child_pid);
 					if(lamin > -90 && lamax < 90 && lomin > -180 && lomax < 180) {
 						Idle.add(() => {
 								rescale(lomin, lamin, lomax, lamax);

@@ -115,6 +115,8 @@ public class MWPSettings : GLib.Object
     public uint max_radar_altitude {get; set; default=0;}
     public uint radar_alert_altitude {get; set; default=0;}
     public uint radar_alert_range {get; set; default=0;}
+    public string gpsdhost {get; set; default="localhost";}
+    public int misciconsize {get; set; default=32;}
 
     public signal void settings_update (string s);
 
@@ -422,7 +424,13 @@ public class MWPSettings : GLib.Object
 
 		if (s == null || s == "radar-alert-range")
             radar_alert_range = settings.get_uint("radar-alert-range");
-    }
+
+        if(s == null || s == "gpsd-host")
+            gpsdhost = settings.get_string ("gpsd-host");
+
+        if (s == null || s == "misc-icon-size")
+            misciconsize = settings.get_int("misc-icon-size");
+	}
 
     public void save_pane()
     {

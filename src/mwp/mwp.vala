@@ -725,14 +725,15 @@ public class MWP : Gtk.Application {
     public enum DEBUG_FLAGS
     {
         NONE=0,
-        WP = 1,
-        INIT=2,
-        MSP=4,
-        ADHOC=8,
-        RADAR=16,
-        OTXSTDERR = 32,
-		SERIAL = 64,
-		VIDEO = 128,
+        WP = (1 << 0),
+        INIT = (1 << 1),
+        MSP = (1 << 2),
+        ADHOC = (1 << 3),
+        RADAR= (1 << 4),
+        OTXSTDERR = (1 << 5),
+		SERIAL = (1 << 6),
+		VIDEO = (1 << 7),
+		GCSLOC = (1 << 8),
     }
 
     private enum SAT_FLAGS
@@ -1563,7 +1564,7 @@ public class MWP : Gtk.Application {
 				text = "fl2ltm";
 				foreach (var p in parts) {
 					if (p.has_prefix("fl2ltm")) {
-						d = double.parse(p[6:20]);
+						d = double.parse(p[6:p.length-1]);
 						if ((int)100*d > 11) {
 							ok = true;
 						} else {
@@ -1579,7 +1580,7 @@ public class MWP : Gtk.Application {
 		}
 
 		x_replay_bbox_ltm_rb = (appsts[0]&&appsts[6]);
-        x_plot_elevations_rb = (appsts[2]&&appsts[3]);
+		x_plot_elevations_rb = (appsts[2]&&appsts[3]);
         x_kmz = appsts[4];
 		x_fl2ltm = x_otxlog = appsts[6];
 		x_aplog = appsts[7];
@@ -2313,6 +2314,16 @@ public class MWP : Gtk.Application {
             });
         window.add_action(saq);
 
+		var lsaq = new GLib.SimpleAction.stateful ("locicon", null, false);
+		lsaq.change_state.connect((s) => {
+				var b = s.get_boolean();
+				GCSIcon.default_location(view.get_center_latitude(),
+									 view.get_center_longitude());
+				GCSIcon.set_visible(b);
+				lsaq.set_state (s);
+		});
+		window.add_action(lsaq);
+
         saq = new GLib.SimpleAction("layout-save",null);
         saq.activate.connect(() => {
                 lman.save();
@@ -2689,6 +2700,8 @@ public class MWP : Gtk.Application {
 
         ls.connect_markers();
 
+		GCSDebug.debug = ((debug_flags & DEBUG_FLAGS.GCSLOC) == DEBUG_FLAGS.GCSLOC);
+		GCSIcon.gcs_icon();
 /*
   Sample for range rings. Note that 1st is below second)
   So the following sets the markers *below* the paths, which is NOT wanted
@@ -3715,7 +3728,7 @@ public class MWP : Gtk.Application {
 		case CRSF.VARIO_ID:
 			ptr= SEDE.deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
 //			stdout.printf("VARIO %d cm/s\n", (int16)val16);
-			CRSF.teledata.vario = (int)val16;
+			CRSF.teledata.vario = (int)Posix.ntohs(val16);
 			break;
 		case CRSF.ATTI_ID:
 			ptr= SEDE.deserialise_u16(ptr, out val16);  // Pitch radians *10000
@@ -3727,6 +3740,8 @@ public class MWP : Gtk.Application {
 			ptr= SEDE.deserialise_u16(ptr, out val16);  // Roll radians *10000
 			double yaw = 0;
 			yaw = ((int16)Posix.ntohs(val16)) * CRSF.ATTITODEG;
+			if(yaw < 0)
+				yaw += 360;
 //			stdout.printf("Pitch %.1f, Roll %.1f, Yaw %.1f\n", pitch, roll, yaw);
 			CRSF.teledata.pitch = (int16)pitch;
 			CRSF.teledata.roll = (int16)roll;
@@ -10543,12 +10558,10 @@ case 0:
         args += (MwpMisc.is_cygwin()==false) ? fn : MwpMisc.get_native_path(fn);
         args += null;
 
-        MWPLog.message("%s\n", string.joinv(" ",args));
+		string sargs = string.joinv(" ",args);
 
         try {
             var spf = SpawnFlags.SEARCH_PATH |
-/*            SpawnFlags.LEAVE_DESCRIPTORS_OPEN |
-              SpawnFlags.STDOUT_TO_DEV_NULL |*/
             SpawnFlags.DO_NOT_REAP_CHILD;
 
             if ((debug_flags & DEBUG_FLAGS.OTXSTDERR) == 0) {
@@ -10564,15 +10577,16 @@ case 0:
                                                 })*/ null,
                                             out child_pid,
                                             null, null, null);
-            ChildWatch.add (child_pid, (pid, status) => {
-                    MWPLog.message("Close child pid %u, %u\n",
-                                   pid, Process.exit_status(status));
-                    Process.close_pid (pid);
-                    cleanup_replay();
-                });
         } catch (SpawnError e) {
-            MWPLog.message("spawnerror: %s\n", e.message);
+            MWPLog.message("spawnerror: %s %s \n", sargs, e.message);
         }
+		MWPLog.message("%s %u\n", sargs, child_pid);
+
+		ChildWatch.add (child_pid, (pid, status) => {
+//				MWPLog.message("bbl-o child pid %u, %u\n", pid, Process.exit_status(status));
+				Process.close_pid (pid);
+				cleanup_replay();
+			});
     }
 
     private void spawn_bbox_task(string fn, int index, int btype,
@@ -10621,8 +10635,7 @@ case 0:
                                                 out child_pid,
                                                 null, null, null);
                 ChildWatch.add (child_pid, (pid, status) => {
-                        MWPLog.message("Close child pid %u, %u\n",
-                                       pid, Process.exit_status(status));
+//                        MWPLog.message("bbl-r child pid %u, %u\n", pid, Process.exit_status(status));
                         Process.close_pid (pid);
                         cleanup_replay();
                     });
@@ -10853,7 +10866,6 @@ case 0:
                                             spawn_args,
                                             null,
                                             SpawnFlags.SEARCH_PATH |
-                                            SpawnFlags.DO_NOT_REAP_CHILD |
                                             SpawnFlags.STDERR_TO_DEV_NULL,
                                             null,
                                             out child_pid,

@@ -43,6 +43,7 @@ const uint8 LINKSTATS_ID = 0x14;
 const uint8 ATTI_ID = 0x1E;
 const uint8 FM_ID = 0x21;
 const uint8 DEV_ID = 0x29;
+const uint8 RADIO_ID = 0x3a;
 
 const uint8 TELEMETRY_RX_PACKET_SIZE = 128;
 const double ATTITODEG = (57.29578 / 10000.0);
@@ -174,7 +175,8 @@ void process_crsf()
 
   case VARIO_ID:
 	  ptr= deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
-	  stdout.printf("VARIO: %d cm/s\n", (int16)val16);
+	  var vario = Posix.ntohs(val16);
+	  stdout.printf("VARIO: %d cm/s\n", (int16)vario);
 	  break;
   case ATTI_ID:
 	  ptr= deserialise_u16(ptr, out val16);  // Pitch radians *10000
@@ -186,6 +188,8 @@ void process_crsf()
 	  ptr= deserialise_u16(ptr, out val16);  // Roll radians *10000
 	  double yaw = 0;
 	  yaw = ((int16)Posix.ntohs(val16)) * ATTITODEG;
+	  if(yaw < 0)
+		  yaw += 360;
 	  stdout.printf("ATTI: Pitch %.1f, Roll %.1f, Yaw %.1f\n", pitch, roll, yaw);
 	  break;
   case FM_ID:
@@ -215,8 +219,13 @@ void process_crsf()
 		  spwr = "%dmW".printf(sUpTXPwr[uptxpwr]);
 	  stdout.printf("LINK: RSSI1 %d RSSI2 %d UpLQ %d UpSNR %d ActAnt %d Mode %s TXPwr %s DnRSSI %d DnLQ %d DnSNR %d\n", rssi1, rssi2, uplq, upsnr, actant, smode, spwr, downrssi, downlq, downsnr);
 	  break;
+
+  case RADIO_ID:
+	  stdout.printf("RadioID: Type 0x%x %d bytes\n", id, crsf_buffer[1]);
+	  break;
+
   default:
-	  stdout.printf("UNK: Type %x %d\n", id, id);
+	  stdout.printf("UNK: Type 0x%x %d, %d bytes\n", id, id, crsf_buffer[1]);
 	  break;
   }
 }

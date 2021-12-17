@@ -16,7 +16,7 @@ mwp supports the following telemetry protocols:
 * MSP (MultiWii Serial Protocol)
 * LTM (Lightweight Telemetry)
 * MAVLink (iNav subset)
-* Smartport (direct via inverter or from Multi-protocol Module)
+* Smartport (direct /  via inverter / or from Multi-protocol Module)
 * Crossfire (CRSF)
 * Flysky AA (via Multi-protocol Module)
 * [BulletGCCS MQTT](https://github.com/stronnag/mwptools/wiki/mqtt---bulletgcss-telemetry)
@@ -51,7 +51,7 @@ In addition, mwp proivdes legacy suport for multiwii navigation functions.
 
 ## Platforms and OS
 
-The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Bullseye, Sid), Ubuntu (latest and most recent LTS), Fedora (current)  and FreeBSD (current release). mwp also runs on MS Windows, with Windows 11 / WSL-g is is pretty much on feature parity with Linux / FreeBSD. Other (older) OS are unsupported, but may work (i.e. Debian 10).
+The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Bullseye, Sid), Ubuntu (latest and most recent LTS), Fedora (current)  and FreeBSD (current release). mwp also runs on MS Windows, with Windows 11 / WSL-g is is pretty almost on feature parity with Linux / FreeBSD. Other (older) OS are unsupported, but may work (i.e. Debian 10).
 
 mwp should  build and running on any platform that supports (recent versions of):
 
@@ -64,7 +64,7 @@ mwp should  build and running on any platform that supports (recent versions of)
  * libgdl;
  * POSIX API
 
-mwptools is tested on x86_64, ia32 and ARM32 devices (Linux / FreeBSD).
+mwptools is tested on x86_64, ia32, Arm32 and aarch64 devices (Linux / FreeBSD).
 
 * There is a "Release" debian package (x86_64, Debian, Ubuntu etc).
 * Simple, ["one stop shop" build and install script](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/)

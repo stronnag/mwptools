@@ -93,6 +93,7 @@ IO.popen(cmd,'r') do |p|
   st = nil
   xts=0
   ts=0
+  nflags = 0
 
   csv.each do |c|
     if  nhdr == false
@@ -121,7 +122,7 @@ IO.popen(cmd,'r') do |p|
       end
       if c[:navstate].to_i != nstate
 	if nstate == -1
-          hdrs = %w/Iteration Time(s) Elapsed(s)  State FltMode/
+          hdrs = %w/Iteration Time(s) Elapsed(s)  State FltMode navFlag/
           hdrs << "OSDMode" if (c.has_key? :simplifiedmode)
 	  puts hdrs.join("\t")
 	end
@@ -139,8 +140,25 @@ IO.popen(cmd,'r') do |p|
 	pstate = asx
 	astate = (as) ? "#{as} (#{nstate})" : "State=%d" % nstate
         simplemode= (c.has_key? :simplifiedmode) ? c[:simplifiedmode] : ''
+        nfs=""
+        nf = c[:navflags].to_i
+        if nf & (1<<0) == 0
+          nfs << "!AltTrust "
+        end
+#        if nf & (1<<1) == 0
+#          nfs << "!AglTrust "
+#        end
+        if nf & (1<<2) == 0
+          nfs << "!PosTrust "
+        end
+        if nf & (1<<4) != 0
+          nfs << "GPSGLitch "
+        end
+        if nf & (1<<5) == 0
+          nfs << "!HdgTrust"
+        end
 
-	puts ["%9d" % itn, "%6.1f" % ts, "(%6.1f)" % xts, astate, c[:flightmodeflags_flags], simplemode].join("\t")
+	puts ["%9d" % itn, "%6.1f" % ts, "(%6.1f)" % xts, astate, c[:flightmodeflags_flags], simplemode,nfs].join("\t")
       end
     end
   end
