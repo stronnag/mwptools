@@ -55,7 +55,8 @@
 	  <attribute name="accel">&lt;Primary&gt;r</attribute>
         </item>
         <item>
-          <attribute name="label">Save Mission to EEPROM</attribute>
+          <attribute name="label">Save Mission to EEPROM
+	  </attribute>
           <attribute name="action">win.store-mission</attribute>
 	  <attribute name="accel">&lt;Primary&gt;e</attribute>
 	</item>
@@ -76,7 +77,8 @@
           <attribute name="action">win.replay-bb</attribute>
         </item>
         <item>
-          <attribute name="label">Load blackbox log</attribute>
+          <attribute name="label">Load blackbox log
+	  </attribute>
           <attribute name="action">win.load-bb</attribute>
 	  <link name="loadbb" id="loadbb"></link>
 	</item>
@@ -176,7 +178,8 @@
           <attribute name="action">win.recentre</attribute>
         </item>
         <item>
-          <attribute name="label">Set location as default</attribute>
+          <attribute name="label">Set location as default
+	  </attribute>
           <attribute name="action">win.defloc</attribute>
         </item>
         <item>
@@ -233,12 +236,14 @@
           <attribute name="action">win.flight-view</attribute>
         </item>
         <item>
-          <attribute name="label">Radar View</attribute>
-          <attribute name="action">win.radar-view</attribute>
-        </item>
-        <item>
           <attribute name="label">Vario View</attribute>
           <attribute name="action">win.vario-view</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
+          <attribute name="label">Radar View</attribute>
+          <attribute name="action">win.radar-view</attribute>
         </item>
       </section>
       <section>
