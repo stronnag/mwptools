@@ -1,1 +1,0 @@
-../../mwp/gst-devmon.vala

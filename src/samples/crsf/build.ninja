@@ -1,4 +1,0 @@
-rule vala
-    command = valac --pkg posix -X -O2 -o $out $in
-
-build crsf_test: vala crsf_test.vala

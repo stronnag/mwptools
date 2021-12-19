@@ -1,4 +1,0 @@
-***** Latest information is now maintained in the iNav wiki
-      Please see
-      https://github.com/iNavFlight/inav/wiki/Lightweight-Telemetry-(LTM)
-*****

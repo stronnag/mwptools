@@ -1,6 +1,0 @@
-rule go
-    command = go build -ldflags "-w -s"  -o $out $in
-
-build clitest: go clitest.go cliser.go
-
-build msptest: go msptest.go mspser.go
