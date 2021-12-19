@@ -83,6 +83,10 @@ The [wiki](https://github.com/stronnag/mwptools/wiki) provides further guidance.
 
 For OS not supported by mwp (e.g. MacOS, IOS, Andriod), see also [impload](https://github.com/stronnag/impload) for a mission format converter and upload application.
 
+## Manual / User Guide
+
+[mwp manual / user guide](https://stronnag.github.io/mwp-manual/)
+
 ## Installation
 
 * Review / install the dependencies for your platform. The [documentation](docs/) directory lists dependencies for Fedora and Debian/Ubuntu like systems.
