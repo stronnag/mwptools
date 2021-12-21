@@ -69,19 +69,19 @@ At some stage, more of the Makefiles will be removed (or just rot into uselessne
 
 | Application | Usage |
 | ----------- | ----- |
-| `bbsummary` [1] | Blackbox log summary |
 | `cliterm` | Interact with the CLI |
-| `fc-get`, `fc-set` [1] | Backup / restore CLI diff |
+| `fc-get`, `fc-set` [1](#note1) | Backup / restore CLI diff |
 | `mwp` | Mission planner, GCS, log relay etc. |
 | `mwp-area-planner` | Survey planner |
-| `mwp-plot-elevations` [2] | Mission elevation / terrain analysis |
+| `mwp-plot-elevations` [2](#note2) | Mission elevation / terrain analysis |
 | `qproxy` | Proxy for certain commercial TMS |
 | `inav_states.rb` | Summarise BBL state changes, also installed `inav_states_data.rb` |
 | `fcflash` | FC flashing tool, requires `dfu-util` and / or `stmflash32` |
 
-!!! {note} Notes:
-	1. `fc-set` is a hard link to `fc-get`
-	2. This may either be the new Go executable or the legacy, less functional Ruby script.
+!!! note "Notes:"
+    <a name="note1">1. `fc-set` is a hard link to `fc-get`</a>
+
+	<a name="note2">2. This may either be the new Go executable or the legacy, less functional Ruby script.	</a>
 
 ### Optional
 
