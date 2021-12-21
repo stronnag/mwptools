@@ -85,7 +85,7 @@ For OS not supported by mwp (e.g. MacOS, IOS, Andriod), see also [impload](https
 
 ## Manual / User Guide
 
-[mwp manual / user guide](https://stronnag.github.io/mwp-manual/)
+[mwp manual / user guide](https://stronnag.github.io/mwptools/)
 
 ## Installation
 
