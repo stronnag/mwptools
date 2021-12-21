@@ -10734,9 +10734,17 @@ case 0:
                     if(line.strip().length > 0) {
 						if(line.has_prefix("#") || line.has_prefix(";")) {
 							continue;
+						} else if (line.has_prefix("-")) {
+							sb.append(line);
+							sb.append_c(' ');
+						} else if (line.contains("=")) {
+							var parts = line.split("=");
+							if (parts.length == 2) {
+								var ename = parts[0].strip();
+								var evar = parts[1].strip();
+								Environment.set_variable(ename, evar, true);
+							}
 						}
-                        sb.append(line);
-                        sb.append_c(' ');
 					}
 				}
 			} catch (Error e) {

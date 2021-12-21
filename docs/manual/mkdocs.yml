@@ -1,0 +1,86 @@
+site_name: mwptools
+site_description: Mission Planner, Ground Control Station, Log Replay
+site_author: Jonathan Hudson
+copyright: Copyright &copy; 2013 - 2021 <a href="https://github.com/stronnag/mwptools">Jonathan Hudson</a>
+
+theme:
+  name: material
+  icon:
+    logo: material/book-open-variant
+  palette:
+    scheme: slate
+    primary: grey
+    accent: dark orange
+
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+  favicon: images/mwp_icon.ico
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - footnotes
+  - attr_list
+  - md_in_html
+  - toc:
+        permalink: "#"
+
+plugins:
+  - search
+  - macros
+  - with-pdf:
+      cover_subtitle: Mission Planner, GCS, Log replay for inav
+      toc_level: 3
+      output_path: ../../mwptools.pdf
+      cover_logo: images/mwp_icon.svg
+      enabled_if_env: ENABLE_PDF_EXPORT
+      copyright: (c) Jonathan Hudson 2014-2021
+
+#      convert_iframe:
+#        - src: https://player.vimeo.com/video/267437907?h=015ed1fdc6
+#          img: http://localhost/mkdocs/video-running1.png
+
+extra_css:
+  - assets/extra.css
+  - assets/pdf.css
+
+nav:
+  - Home:
+      - index.md
+      - running.md
+      - ui.md
+      - dock.md
+      - mission-editor.md
+      - gcs-features.md
+      - replay-tools.md
+      - misc-ui-elements.md
+      - Mission-Elevation-Plot-and-Terrain-Analysis.md
+      - mwp-multi-procotol.md
+      - mwp-Configuration.md
+      - mwp-safehomes-editor.md
+      - mwp-Radar-View.md
+      - mwp_video_player.md
+      - Fly-By-Home-waypoints-(inav-4-new-feature).md
+      - Black-Ops.md
+  - 'Build and Install':
+      - Building-with-meson-and-ninja.md
+      - mwp-in-Windows-11---WSL-G.md
+  - Miscellaneous:
+      - mwp-Power-and-screen-management.md
+      - inav-4.0-multi-missions.md
+      - mqtt---bulletgcss-telemetry.md
+      - Support-for-inav-3.0-WP-features.md
+      - Replaying-Ardupilot-logs.md
+      - Flite-text-to-speech.md
+      - mwp-Dbus-API.md
+      - mwp_support.md
+      - licence-misc-info.md
+
+extra:
+    inav: "[inav](https://github.com/iNavFlight/inav)"
+    mwp: "[mwp](https://github.com/stronnag/mwptools)"
+    bbl2kml: "[bbl2kml](https://github.com/stronnag/bbl2kml)"
+    impload: "[impload](https://github.com/stronnag/impload)"
