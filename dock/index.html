@@ -1,0 +1,1100 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Mission Planner, Ground Control Station, Log Replay">
+      
+      
+      
+        <meta name="author" content="Jonathan Hudson">
+      
+      
+      <link rel="icon" href="../images/mwp_icon.ico">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.6">
+    
+    
+      
+        <title>Dock Concepts and Usage - mwptools</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.a57b2b03.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#757575">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../assets/extra.css">
+    
+      <link rel="stylesheet" href="../assets/pdf.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="grey" data-md-color-accent="dark-orange">
+  
+    
+    <script>function __prefix(e){return new URL("..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#dock-concepts-and-usage" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="mwptools" class="md-header__button md-logo" aria-label="mwptools" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            mwptools
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Dock Concepts and Usage
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="mwptools" class="md-nav__button md-logo" aria-label="mwptools" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+
+    </a>
+    mwptools
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          Home
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Home" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          Home
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../running/" class="md-nav__link">
+        Running mwp
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/" class="md-nav__link">
+        User interface
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Dock Concepts and Usage
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Dock Concepts and Usage
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dock-overview" class="md-nav__link">
+    Dock Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dock-usage" class="md-nav__link">
+    Dock Usage
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dock-items-dockets" class="md-nav__link">
+    Dock Items (Dockets)
+  </a>
+  
+    <nav class="md-nav" aria-label="Dock Items (Dockets)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#artificial-horizon" class="md-nav__link">
+    Artificial Horizon
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#direction-view" class="md-nav__link">
+    Direction View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flight-view" class="md-nav__link">
+    Flight View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mission-editor" class="md-nav__link">
+    Mission Editor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#radio-status" class="md-nav__link">
+    Radio Status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#battery-monitor" class="md-nav__link">
+    Battery Monitor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vario-view" class="md-nav__link">
+    Vario View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#telemetry-view" class="md-nav__link">
+    Telemetry View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mw-nav-status" class="md-nav__link">
+    MW Nav Status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mw-gps-status" class="md-nav__link">
+    MW GPS Status
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mission-editor/" class="md-nav__link">
+        Mission Editor
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gcs-features/" class="md-nav__link">
+        Ground Control Station Features
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../replay-tools/" class="md-nav__link">
+        Replay Tools
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../misc-ui-elements/" class="md-nav__link">
+        Miscellaneous Ui Elements
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Mission-Elevation-Plot-and-Terrain-Analysis/" class="md-nav__link">
+        Mission Elevations
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-multi-procotol/" class="md-nav__link">
+        "Serial" device support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Configuration/" class="md-nav__link">
+        mwp Configuration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-safehomes-editor/" class="md-nav__link">
+        mwp and inav safehome
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Radar-View/" class="md-nav__link">
+        Radar View
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp_video_player/" class="md-nav__link">
+        Playing Video in mwp
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Fly-By-Home-waypoints-%28inav-4-new-feature%29/" class="md-nav__link">
+        Fly By Home Waypoints
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Black-Ops/" class="md-nav__link">
+        Anonymous Maps
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Build and Install
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Build and Install" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Build and Install
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Building-with-meson-and-ninja/" class="md-nav__link">
+        Building mwp (Generic)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-in-Windows-11---WSL-G/" class="md-nav__link">
+        Windows 11 / WSL-G
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Miscellaneous
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Miscellaneous" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Miscellaneous
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Power-and-screen-management/" class="md-nav__link">
+        Power and screen management
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inav-4.0-multi-missions/" class="md-nav__link">
+        INAV 4.0 Multi-Mission Support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mqtt---bulletgcss-telemetry/" class="md-nav__link">
+        BulletGCSS Telemetry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Support-for-inav-3.0-WP-features/" class="md-nav__link">
+        mwp and inav 3.0 Mission Updates
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Replaying-Ardupilot-logs/" class="md-nav__link">
+        Ardupilot log replay
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Flite-text-to-speech/" class="md-nav__link">
+        Flite text to speech
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Dbus-API/" class="md-nav__link">
+        DBus API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp_support/" class="md-nav__link">
+        Support Policy
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../licence-misc-info/" class="md-nav__link">
+        Licence
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dock-overview" class="md-nav__link">
+    Dock Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dock-usage" class="md-nav__link">
+    Dock Usage
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dock-items-dockets" class="md-nav__link">
+    Dock Items (Dockets)
+  </a>
+  
+    <nav class="md-nav" aria-label="Dock Items (Dockets)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#artificial-horizon" class="md-nav__link">
+    Artificial Horizon
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#direction-view" class="md-nav__link">
+    Direction View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flight-view" class="md-nav__link">
+    Flight View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mission-editor" class="md-nav__link">
+    Mission Editor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#radio-status" class="md-nav__link">
+    Radio Status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#battery-monitor" class="md-nav__link">
+    Battery Monitor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vario-view" class="md-nav__link">
+    Vario View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#telemetry-view" class="md-nav__link">
+    Telemetry View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mw-nav-status" class="md-nav__link">
+    MW Nav Status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mw-gps-status" class="md-nav__link">
+    MW GPS Status
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="dock-concepts-and-usage">Dock Concepts and Usage<a class="headerlink" href="#dock-concepts-and-usage" title="Permanent link">#</a></h1>
+<h2 id="dock-overview">Dock Overview<a class="headerlink" href="#dock-overview" title="Permanent link">#</a></h2>
+<p>The <strong>dock</strong>, items 5 and 6 in the main window guide provides an area for optional widgets.</p>
+<p><img alt="main" src="../images/main-window.png" width="100%" /></p>
+<p>This <a href="https://vimeo.com/267437907">slighty outdated video</a> that describes dock usage probably better than words might do.</p>
+<iframe src="https://player.vimeo.com/video/267437907?h=015ed1fdc6" width="640" height="431" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+
+<div class="admonition info">
+<p class="admonition-title">Current Status</p>
+<ul>
+<li>The dock is now installed populated.</li>
+<li>WP editor switch is enabled by default</li>
+<li>There is now a graphical "favourite places" editor</li>
+<li>The build system is no longer <code>make</code></li>
+</ul>
+</div>
+<h2 id="dock-usage">Dock Usage<a class="headerlink" href="#dock-usage" title="Permanent link">#</a></h2>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> uses the GNOME Docking Library (<code>gdl</code>) to provide a dock capability. Items in the dock may be hidden, iconified or torn off into a separate window (that may then be returned to the dock). This section explains how use gdl in mwp. There is also an <a href="https://vimeo.com/147958984">ancient short (silent) video</a> illustrating dock actions.</p>
+<ul>
+<li>Load a mission into the mission tote</li>
+<li>Load the Nav Status into the dock bar</li>
+<li>Click the Nav Status icon to view nav status in the dock</li>
+<li>Move the Nav status view into a window</li>
+<li>Drag the Nav Status window back into the dock, selecting one of dock locations offered</li>
+<li>Minimise the Nav Status back to the dock bar (the little arrow)</li>
+<li>Reopen the Nav Status into the dock</li>
+<li>Hide the Nav Status</li>
+<li>Restore the Nav Status as a dock icon</li>
+<li>Reopen Nav Status in the dock.</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Caveat updates</p>
+<p>If a <a href="https://github.com/stronnag/mwptools">mwp</a> update expands the  dock adding new dock items, any previously saved dock layouts are invalidated, and you will have to manually recreate them. Fortunately, this is a rare occurrence.</p>
+</div>
+<p>The main dock controls are shown below:</p>
+<p><img alt="dock controls" src="../images/ui_dock_controls.png" width="50%" /></p>
+<div class="admonition note">
+<p class="admonition-title">This is an old image from c. 2015.</p>
+</div>
+<ul>
+<li>Highlight in <strong>red</strong> : the dock icons. Clicking on these will restore the window (either to the dock, or as a separate window)</li>
+<li>Hightlight in <strong>green</strong> : the dock item bar. Where multiple items are in the dock, the tab icon may be dragged to reposition the docked window. In also has a pop-up menu, that allows the item
+to be completely hidden (but recoverable from the View menu), and</li>
+<li>Highlight in  <strong>blue</strong> :  a iconify widget that will add the item to dock icon bar (the red highlight).</li>
+</ul>
+<p>If the item bar icon (left-most in the green area) is dragged from the dock, the item will appear as a separate window. The detached window may be added back to the dock by dragging the window's “item bar” back into the dock, or added back to the dock icon bar using the iconify button (the left facing arrow to the right of the window's “item bar”. If the detached window is closed, then it becomes hidden, and may be reattached to the dock (as an iconified dock item) from the View menu.</p>
+<div class="admonition info">
+<p class="admonition-title">Wayland Display API</p>
+<p>When docklets are dragged around to reposition then, an "target" landing area is shown on the dock area. Unfortunately, the some older versions of the "modern" <strong>Wayland</strong> display manager breaks this in a way that only the upstream maintainers can fix. The workaround is to temporarily force X11 mode:</p>
+<div class="highlight"><pre><span></span><code># In a terminal
+$ GDK_BACKEND=x11 mwp
+# Drag dock items around
+$ mwp # items moved, Wayland again
+</code></pre></div>
+</div>
+<h2 id="dock-items-dockets">Dock Items (Dockets)<a class="headerlink" href="#dock-items-dockets" title="Permanent link">#</a></h2>
+<p>The following items are provided.</p>
+<h3 id="artificial-horizon">Artificial Horizon<a class="headerlink" href="#artificial-horizon" title="Permanent link">#</a></h3>
+<p><img alt="dockah" src="../images/dock_ah.png" width="30%" /></p>
+<h3 id="direction-view">Direction View<a class="headerlink" href="#direction-view" title="Permanent link">#</a></h3>
+<p><img alt="dockdir" src="../images/dock_dirn.png" width="15%" /></p>
+<h3 id="flight-view">Flight View<a class="headerlink" href="#flight-view" title="Permanent link">#</a></h3>
+<p><img alt="dockdir" src="../images/dock_fv.png" width="33%" /></p>
+<h3 id="mission-editor">Mission Editor<a class="headerlink" href="#mission-editor" title="Permanent link">#</a></h3>
+<p><img alt="dockmw" src="../images/dock_mission.png" width="35%" /></p>
+<h3 id="radio-status">Radio Status<a class="headerlink" href="#radio-status" title="Permanent link">#</a></h3>
+<p><img alt="dockdir" src="../images/dock_radio.png" width="15%" /></p>
+<h3 id="battery-monitor">Battery Monitor<a class="headerlink" href="#battery-monitor" title="Permanent link">#</a></h3>
+<p><img alt="dockdir" src="../images/dock_batt.png" width="30%" /></p>
+<h3 id="vario-view">Vario View<a class="headerlink" href="#vario-view" title="Permanent link">#</a></h3>
+<p><img alt="dockdir" src="../images/dock_vario.png" width="25%" />
+<img alt="dockdir" src="../images/dock_vario_l.png" width="25%" />
+<img alt="dockdir" src="../images/dock_vario_d.png" width="25%" /></p>
+<h3 id="telemetry-view">Telemetry View<a class="headerlink" href="#telemetry-view" title="Permanent link">#</a></h3>
+<p><img alt="dockdir" src="../images/dock_telem.png" width="15%" /></p>
+<h3 id="mw-nav-status">MW Nav Status<a class="headerlink" href="#mw-nav-status" title="Permanent link">#</a></h3>
+<p><img alt="dockdir" src="../images/dock_mwnav.png" width="30%" /></p>
+<h3 id="mw-gps-status">MW GPS Status<a class="headerlink" href="#mw-gps-status" title="Permanent link">#</a></h3>
+<p><img alt="dockdir" src="../images/dock_mwgps.png" width="17%" /></p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../ui/" class="md-footer__link md-footer__link--prev" aria-label="Previous: User interface" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              User interface
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../mission-editor/" class="md-footer__link md-footer__link--next" aria-label="Next: Mission Editor" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Mission Editor
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2013 - 2021 <a href="https://github.com/stronnag/mwptools">Jonathan Hudson</a>
+          </div>
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+            Material for MkDocs
+          </a>
+        
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.fcfe8b6d.min.js", "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.b1047164.min.js"></script>
+      
+    
+  </body>
+</html>

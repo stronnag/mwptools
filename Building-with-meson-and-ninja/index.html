@@ -1,0 +1,1385 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Mission Planner, Ground Control Station, Log Replay">
+      
+      
+      
+        <meta name="author" content="Jonathan Hudson">
+      
+      
+      <link rel="icon" href="../images/mwp_icon.ico">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.6">
+    
+    
+      
+        <title>Building mwp (Generic) - mwptools</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.a57b2b03.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#757575">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../assets/extra.css">
+    
+      <link rel="stylesheet" href="../assets/pdf.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="grey" data-md-color-accent="dark-orange">
+  
+    
+    <script>function __prefix(e){return new URL("..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#building-mwp-generic" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="mwptools" class="md-header__button md-logo" aria-label="mwptools" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            mwptools
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Building mwp (Generic)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="mwptools" class="md-nav__button md-logo" aria-label="mwptools" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+
+    </a>
+    mwptools
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          Home
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Home" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          Home
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../running/" class="md-nav__link">
+        Running mwp
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/" class="md-nav__link">
+        User interface
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dock/" class="md-nav__link">
+        Dock Concepts and Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mission-editor/" class="md-nav__link">
+        Mission Editor
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gcs-features/" class="md-nav__link">
+        Ground Control Station Features
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../replay-tools/" class="md-nav__link">
+        Replay Tools
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../misc-ui-elements/" class="md-nav__link">
+        Miscellaneous Ui Elements
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Mission-Elevation-Plot-and-Terrain-Analysis/" class="md-nav__link">
+        Mission Elevations
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-multi-procotol/" class="md-nav__link">
+        "Serial" device support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Configuration/" class="md-nav__link">
+        mwp Configuration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-safehomes-editor/" class="md-nav__link">
+        mwp and inav safehome
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Radar-View/" class="md-nav__link">
+        Radar View
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp_video_player/" class="md-nav__link">
+        Playing Video in mwp
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Fly-By-Home-waypoints-%28inav-4-new-feature%29/" class="md-nav__link">
+        Fly By Home Waypoints
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Black-Ops/" class="md-nav__link">
+        Anonymous Maps
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Build and Install
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Build and Install" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Build and Install
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Building mwp (Generic)
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Building mwp (Generic)
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rationale" class="md-nav__link">
+    Rationale
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#migration" class="md-nav__link">
+    Migration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#first-time" class="md-nav__link">
+    First time
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-and-update" class="md-nav__link">
+    Build and update
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#legacy" class="md-nav__link">
+    Legacy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files-built-installed" class="md-nav__link">
+    Files built / installed
+  </a>
+  
+    <nav class="md-nav" aria-label="Files built / installed">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#default" class="md-nav__link">
+    Default
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional" class="md-nav__link">
+    Optional
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supporting-data-files" class="md-nav__link">
+    Supporting data files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#troubleshooting-and-hints" class="md-nav__link">
+    Troubleshooting and Hints
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting and Hints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#migrate-from-a-system-install-to-a-user-install" class="md-nav__link">
+    Migrate from a system install to a user install
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixing-build-permissions" class="md-nav__link">
+    Fixing build permissions
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#easy-first-time-install-on-debian-and-ubuntu" class="md-nav__link">
+    Easy first-time install on Debian and Ubuntu
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#help-youve-installed-a-new-version-but-you-still-get-the-old-one" class="md-nav__link">
+    Help!!!! You've installed a new version but you still get the old one!
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-in-Windows-11---WSL-G/" class="md-nav__link">
+        Windows 11 / WSL-G
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Miscellaneous
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Miscellaneous" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Miscellaneous
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Power-and-screen-management/" class="md-nav__link">
+        Power and screen management
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inav-4.0-multi-missions/" class="md-nav__link">
+        INAV 4.0 Multi-Mission Support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mqtt---bulletgcss-telemetry/" class="md-nav__link">
+        BulletGCSS Telemetry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Support-for-inav-3.0-WP-features/" class="md-nav__link">
+        mwp and inav 3.0 Mission Updates
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Replaying-Ardupilot-logs/" class="md-nav__link">
+        Ardupilot log replay
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Flite-text-to-speech/" class="md-nav__link">
+        Flite text to speech
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Dbus-API/" class="md-nav__link">
+        DBus API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp_support/" class="md-nav__link">
+        Support Policy
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../licence-misc-info/" class="md-nav__link">
+        Licence
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rationale" class="md-nav__link">
+    Rationale
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#migration" class="md-nav__link">
+    Migration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#first-time" class="md-nav__link">
+    First time
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-and-update" class="md-nav__link">
+    Build and update
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#legacy" class="md-nav__link">
+    Legacy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files-built-installed" class="md-nav__link">
+    Files built / installed
+  </a>
+  
+    <nav class="md-nav" aria-label="Files built / installed">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#default" class="md-nav__link">
+    Default
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional" class="md-nav__link">
+    Optional
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supporting-data-files" class="md-nav__link">
+    Supporting data files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#troubleshooting-and-hints" class="md-nav__link">
+    Troubleshooting and Hints
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting and Hints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#migrate-from-a-system-install-to-a-user-install" class="md-nav__link">
+    Migrate from a system install to a user install
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixing-build-permissions" class="md-nav__link">
+    Fixing build permissions
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#easy-first-time-install-on-debian-and-ubuntu" class="md-nav__link">
+    Easy first-time install on Debian and Ubuntu
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#help-youve-installed-a-new-version-but-you-still-get-the-old-one" class="md-nav__link">
+    Help!!!! You've installed a new version but you still get the old one!
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="building-mwp-generic">Building mwp (Generic)<a class="headerlink" href="#building-mwp-generic" title="Permanent link">#</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
+<p>The <strong>mwptools</strong> suite is built using the <a href="https://mesonbuild.com/SimpleStart.html">meson</a> and <a href="https://ninja-build.org/">ninja</a> toolchain. For most users these will be automatically provided by a <code>build-essentials</code> type of package transparently to the user.</p>
+<p>Prior to late May 2021, the build system used a convoluted <code>Makefile</code>.</p>
+<p>For Debian and derivatives (Ubuntu, WSL etc.) there is a simple <a href="#easy-first-time-install-on-debian-and-ubuntu">"one stop" installation script</a>, as well as a x86_64 "Release" .deb archive.</p>
+<p>For Arch Linux, you can install using the AUR package <code>mwptools-git</code></p>
+<h2 id="rationale">Rationale<a class="headerlink" href="#rationale" title="Permanent link">#</a></h2>
+<p>In its early days, <code>make</code> was a suitable build tool. As <strong>mwptools</strong> has gained in features and functionality, this has become un-maintainable.
+The migration to <code>meson</code> and <code>ninja</code> solves this problem and allows the project structure to be rationalised.</p>
+<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">#</a></h2>
+<h3 id="migration">Migration<a class="headerlink" href="#migration" title="Permanent link">#</a></h3>
+<p>Please ensure your extant mwptools instance does not have untracked files:</p>
+<div class="highlight"><pre><span></span><code>git clean -fd -fx
+git pull
+</code></pre></div>
+<h3 id="first-time">First time<a class="headerlink" href="#first-time" title="Permanent link">#</a></h3>
+<p>Set up the <code>meson</code> build system from the top level:</p>
+<div class="highlight"><pre><span></span><code>meson build --buildtype=release --strip [--prefix $HOME/.local`]
+</code></pre></div>
+<ul>
+<li>For a user / non-system install, set <code>--prefix $HOME/.local</code><ul>
+<li>This will install the binaries in <code>$HOME/.local/bin</code>, which should be added to <code>$PATH</code> as required.</li>
+</ul>
+</li>
+<li>For a Linux system wide install, set <code>--prefix /usr</code></li>
+<li>For FreeBSD (*BSD), for a system-wide install,  don't set <code>--prefix</code> as the default (<code>/usr/local</code>) is suitable</li>
+</ul>
+<p>Unless you need a multi-user setup, a local install is preferable, as you don't need <code>sudo</code> to install, and you'll not risk messing up build permissions.</p>
+<ul>
+<li>If you're using a really old OS (e.g. Debian 10), you may also need <code>export XDG_DATA_DIRS=/usr/share:$HOME/.local/share</code> for a local install.</li>
+</ul>
+<h3 id="build-and-update">Build and update<a class="headerlink" href="#build-and-update" title="Permanent link">#</a></h3>
+<div class="highlight"><pre><span></span><code>cd build
+# for a local install (and cygwin)
+ninja install
+# for system install
+ninja &amp;&amp; sudo ninja install
+</code></pre></div>
+<h3 id="legacy">Legacy<a class="headerlink" href="#legacy" title="Permanent link">#</a></h3>
+<p>For now, some of the legacy <code>Makefiles</code> remain, and can be used similar to before, e.g. :</p>
+<p><div class="highlight"><pre><span></span><code>cd mwptools/src/mwp
+make &amp;&amp; sudo make install
+</code></pre></div>
+At some stage, more of the Makefiles will be removed (or just rot into uselessness).</p>
+<h2 id="files-built-installed">Files built / installed<a class="headerlink" href="#files-built-installed" title="Permanent link">#</a></h2>
+<h3 id="default">Default<a class="headerlink" href="#default" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Application</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bbsummary</code> [1]</td>
+<td>Blackbox log summary</td>
+</tr>
+<tr>
+<td><code>cliterm</code></td>
+<td>Interact with the CLI</td>
+</tr>
+<tr>
+<td><code>fc-get</code>, <code>fc-set</code> [1]</td>
+<td>Backup / restore CLI diff</td>
+</tr>
+<tr>
+<td><code>mwp</code></td>
+<td>Mission planner, GCS, log relay etc.</td>
+</tr>
+<tr>
+<td><code>mwp-area-planner</code></td>
+<td>Survey planner</td>
+</tr>
+<tr>
+<td><code>mwp-plot-elevations</code> [2]</td>
+<td>Mission elevation / terrain analysis</td>
+</tr>
+<tr>
+<td><code>qproxy</code></td>
+<td>Proxy for certain commercial TMS</td>
+</tr>
+<tr>
+<td><code>inav_states.rb</code></td>
+<td>Summarise BBL state changes, also installed <code>inav_states_data.rb</code></td>
+</tr>
+<tr>
+<td><code>fcflash</code></td>
+<td>FC flashing tool, requires <code>dfu-util</code> and / or <code>stmflash32</code></td>
+</tr>
+</tbody>
+</table>
+<p>!!! {note} Notes:
+    1. <code>fc-set</code> is a hard link to <code>fc-get</code>
+    2. This may either be the new Go executable or the legacy, less functional Ruby script.</p>
+<h3 id="optional">Optional<a class="headerlink" href="#optional" title="Permanent link">#</a></h3>
+<p>These are only built by explicit target name; they will be installed if built.</p>
+<div class="highlight"><pre><span></span><code># one of more of the following targets
+ninja bproxy ublox-geo ublox-cli flashdl
+sudo ninja install
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Application</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>flashdl</code></td>
+<td>Download, optionally delete BBL from flash</td>
+</tr>
+<tr>
+<td><code>bproxy</code></td>
+<td>Black tile map proxy, for those anonymous needs</td>
+</tr>
+<tr>
+<td><code>ublox-cli</code></td>
+<td>Ublox GPS tool</td>
+</tr>
+<tr>
+<td><code>ublox-geo</code></td>
+<td>Graphical Ublox GPS tool</td>
+</tr>
+</tbody>
+</table>
+<h3 id="supporting-data-files">Supporting data files<a class="headerlink" href="#supporting-data-files" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Target</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/common/mwp_icon.svg</code></td>
+<td><code>$prefix/share/icons/hicolor/scalable/apps/</code></td>
+<td>Desktop icon</td>
+</tr>
+<tr>
+<td><code>src/mwp/org.mwptools.planner.gschema.xml</code></td>
+<td><code>$prefix/share/glib-2.0/schemas/</code></td>
+<td>Settings schema</td>
+</tr>
+<tr>
+<td><code>src/mwp/vcols.css</code></td>
+<td><code>$prefix/share/mwp/</code></td>
+<td>Colours used by battery widget</td>
+</tr>
+<tr>
+<td><code>src/mwp/default.layout</code></td>
+<td><code>$prefix/share/mwp/</code></td>
+<td>Default dock layout</td>
+</tr>
+<tr>
+<td><code>src/mwp/beep-sound.ogg</code></td>
+<td><code>$prefix/share/mwp/</code></td>
+<td>Alert sound</td>
+</tr>
+<tr>
+<td><code>src/mwp/bleet.ogg</code></td>
+<td><code>$prefix/share/mwp/</code></td>
+<td>Alert sound</td>
+</tr>
+<tr>
+<td><code>src/mwp/menubar.ui</code></td>
+<td><code>$prefix/share/mwp/</code></td>
+<td>Menu definition</td>
+</tr>
+<tr>
+<td><code>src/mwp/mwp.ui</code></td>
+<td><code>$prefix/share/mwp/</code></td>
+<td>UI definition</td>
+</tr>
+<tr>
+<td><code>src/mwp/orange.ogg</code></td>
+<td><code>$prefix/share/mwp/</code></td>
+<td>Alert sound</td>
+</tr>
+<tr>
+<td><code>src/mwp/sat_alert.ogg</code></td>
+<td><code>$prefix/share/mwp/</code></td>
+<td>Alert sound</td>
+</tr>
+<tr>
+<td><code>src/mwp/mwp.desktop</code></td>
+<td><code>$prefix/share/applications/</code></td>
+<td>Desktop launcher</td>
+</tr>
+<tr>
+<td><code>src/mwp/mwp_complete.sh</code></td>
+<td><code>$prefix/share/bash-completion/completions/</code></td>
+<td>bash completion for <code>mwp</code></td>
+</tr>
+<tr>
+<td><code>src/mwp/pixmaps</code></td>
+<td><code>$prefix/share/mwp/pixmaps/</code></td>
+<td>UI Icons</td>
+</tr>
+<tr>
+<td><code>src/mwp/blackbox_decode_complete.sh</code></td>
+<td><code>$prefix/share/bash-completion/completions/</code></td>
+<td>bash completion for <code>blackbox-decode</code></td>
+</tr>
+<tr>
+<td><code>src/samples/area-tool/mwp_area_icon.svg</code></td>
+<td><code>$prefix/share/icons/hicolor/scalable/apps/</code></td>
+<td>Desktop icon</td>
+</tr>
+<tr>
+<td><code>src/samples/area-tool/mwp-area-planner.desktop</code></td>
+<td><code>$prefix/share/applications/</code></td>
+<td>Desktop launcher</td>
+</tr>
+<tr>
+<td><code>docs/mwptools.pdf</code></td>
+<td><code>$prefix/share/doc/mwp/</code></td>
+<td>(Obsolete) manual</td>
+</tr>
+<tr>
+<td><code>docs/debian-ubuntu-dependencies.txt</code></td>
+<td><code>$prefix/share/doc/mwp/</code></td>
+<td>Debian / Ubuntu dependencies</td>
+</tr>
+<tr>
+<td><code>docs/fedora.txt</code></td>
+<td><code>$prefix/share/doc/mwp/</code></td>
+<td>Fedora dependencies</td>
+</tr>
+</tbody>
+</table>
+<h3 id="troubleshooting-and-hints">Troubleshooting and Hints<a class="headerlink" href="#troubleshooting-and-hints" title="Permanent link">#</a></h3>
+<h4 id="migrate-from-a-system-install-to-a-user-install">Migrate from a system install to a user install<a class="headerlink" href="#migrate-from-a-system-install-to-a-user-install" title="Permanent link">#</a></h4>
+<div class="highlight"><pre><span></span><code>cd build
+sudo ninja uninstall
+meson --reconfigure --prefix=$HOME/.local
+ninja install
+</code></pre></div>
+<h4 id="fixing-build-permissions">Fixing build permissions<a class="headerlink" href="#fixing-build-permissions" title="Permanent link">#</a></h4>
+<p>If you install to system locations, it is possible that <code>sudo ninja install</code> will write as <code>root</code> to some of the install files, and they become non-writable to the normal user.</p>
+<ul>
+<li>In the <code>build</code> directory, run <code>sudo chown -R $USER .</code></li>
+<li>Consider migrating to a local install</li>
+</ul>
+<h3 id="easy-first-time-install-on-debian-and-ubuntu">Easy first-time install on Debian and Ubuntu<a class="headerlink" href="#easy-first-time-install-on-debian-and-ubuntu" title="Permanent link">#</a></h3>
+<ul>
+<li>Download the <a href="https://raw.githubusercontent.com/stronnag/mwptools/master/docs/deb-install.sh">first time build script</a></li>
+<li>Make it executable <code>chmod +x deb-install.sh</code></li>
+<li>Run it <code>./deb-install.sh Y</code></li>
+<li>Note that the script may ask for a password to install system packages</li>
+<li>The resulting executables are in <code>~/.local/bin</code>. Ensure this exists on <code>$PATH</code></li>
+<li>If you get messages like <code>Removing /home/$USER/.config/mwp/.layout.xml 0</code> and <code>Failed to save layout, remains in /tmp/.mwp.xxxxxx.xml</code> you also need <code>export XDG_DATA_DIRS=$XDG_DATA_DIRS:$HOME/.local/share</code>; this is fixed in 206efe2 / 4.295.560 of 2021-10-22.</li>
+</ul>
+<h3 id="help-youve-installed-a-new-version-but-you-still-get-the-old-one">Help!!!! You've installed a new version but you still get the old one!<a class="headerlink" href="#help-youve-installed-a-new-version-but-you-still-get-the-old-one" title="Permanent link">#</a></h3>
+<p>If you used the <code>deb-install.sh</code> script, then it installed everything into <code>$HOME/.local/bin</code> (and other folders under <code>~/.local</code>). This is  nice because:</p>
+<ul>
+<li>mwp does not pollute the system directories;</li>
+<li>you don't need <code>sudo</code> to install it.</li>
+</ul>
+<p>Linux (like most other OS) has the concept of a <code>PATH</code>, a list of places where it looks for exec
+utable files). You can see this from a terminal:</p>
+<div class="highlight"><pre><span></span><code>## a colon separated list
+echo $PATH
+</code></pre></div>
+<p>So check that <code>$HOME/.local/bin</code> is on <code>$PATH</code>; preferably near the front.</p>
+<p>If it is, then the problem may be  that the older mwp also exists elsewhere on the PATH, and the system will not re-evaluate the possible chain of locations if it previously found the file it wants.</p>
+<p>So, maybe you have an old install. You didn't remove it (alas); so the system thinks that mwp is <code>/usr/bin/mwp</code>; in fact it's now <code>$HOME/.local/bin/mwp</code></p>
+<p>If <code>$HOME/.local/bin</code> is on the PATH before <code>/usr/bin</code>, the you have two choices:</p>
+<p><div class="highlight"><pre><span></span><code># reset the path search
+hash -r
+# mwp, where art thou? Hopefully now is ~/.local/bin
+which mwp
+# From **this terminal** executing mwp will run the location reported by `which mwp`
+</code></pre></div>
+or</p>
+<p>Log out, log in. The PATH will be re-evaluated.</p>
+<p>If <code>$HOME/.local/bin</code> is not on PATH. then it needs to be added to a login file (<code>.profile</code>, <code>.bashrc</code>, <code>.bash_profile</code> etc.). Modern distros do this for you, however if you've updated an older install you may have to add it yourself.</p>
+<div class="highlight"><pre><span></span><code># set PATH so it includes user&#39;s private bin if it exists
+if [ -d &quot;$HOME/bin&quot; ] ; then
+    PATH=&quot;$HOME/bin:$PATH&quot;
+fi
+
+# set PATH so it includes user&#39;s private bin if it exists
+if [ -d &quot;$HOME/.local/bin&quot; ] ; then
+    PATH=&quot;$HOME/.local/bin:$PATH&quot;
+fi
+</code></pre></div>
+<p>If an older (perhaps Makefile generated) mwp exists; then you should remove all evidence of an earlier system install.</p>
+<p><div class="highlight"><pre><span></span><code>find /usr -iname \*mwp\*
+</code></pre></div>
+review the list and as root, delete the old files. Do similar for blackbox-decode.</p>
+<p>If you're content with the list, then (<em>caveat emptor</em>):
+<div class="highlight"><pre><span></span><code>sudo find /usr -iname \*mwp\* -delete
+</code></pre></div></p>
+<p>You'll still have to remove non-empty directories manually.</p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../Black-Ops/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Anonymous Maps" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Anonymous Maps
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../mwp-in-Windows-11---WSL-G/" class="md-footer__link md-footer__link--next" aria-label="Next: Windows 11 / WSL-G" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Windows 11 / WSL-G
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2013 - 2021 <a href="https://github.com/stronnag/mwptools">Jonathan Hudson</a>
+          </div>
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+            Material for MkDocs
+          </a>
+        
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.fcfe8b6d.min.js", "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.b1047164.min.js"></script>
+      
+    
+  </body>
+</html>

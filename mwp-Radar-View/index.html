@@ -1,0 +1,1283 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Mission Planner, Ground Control Station, Log Replay">
+      
+      
+      
+        <meta name="author" content="Jonathan Hudson">
+      
+      
+      <link rel="icon" href="../images/mwp_icon.ico">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.6">
+    
+    
+      
+        <title>Radar View - mwptools</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.a57b2b03.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#757575">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../assets/extra.css">
+    
+      <link rel="stylesheet" href="../assets/pdf.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="grey" data-md-color-accent="dark-orange">
+  
+    
+    <script>function __prefix(e){return new URL("..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#radar-view" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="mwptools" class="md-header__button md-logo" aria-label="mwptools" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            mwptools
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Radar View
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="mwptools" class="md-nav__button md-logo" aria-label="mwptools" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+
+    </a>
+    mwptools
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          Home
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Home" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          Home
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../running/" class="md-nav__link">
+        Running mwp
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/" class="md-nav__link">
+        User interface
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dock/" class="md-nav__link">
+        Dock Concepts and Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mission-editor/" class="md-nav__link">
+        Mission Editor
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gcs-features/" class="md-nav__link">
+        Ground Control Station Features
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../replay-tools/" class="md-nav__link">
+        Replay Tools
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../misc-ui-elements/" class="md-nav__link">
+        Miscellaneous Ui Elements
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Mission-Elevation-Plot-and-Terrain-Analysis/" class="md-nav__link">
+        Mission Elevations
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-multi-procotol/" class="md-nav__link">
+        "Serial" device support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Configuration/" class="md-nav__link">
+        mwp Configuration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-safehomes-editor/" class="md-nav__link">
+        mwp and inav safehome
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Radar View
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Radar View
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#mwp-configuration" class="md-nav__link">
+    mwp Configuration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-the-main-serial-port" class="md-nav__link">
+    Using the main serial port
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#name" class="md-nav__link">
+    Name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#status" class="md-nav__link">
+    Status
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#live-ads-b-and-simulated-inav-targets-with-proximity-alerts-range-3000m" class="md-nav__link">
+    Live ADS-B and simulated inav targets, with proximity alerts (range &lt; 3000m).
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-manned-aircraft-view-over-florida-may-2020" class="md-nav__link">
+    Local manned aircraft view over Florida (May 2020).
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#simulated-inav-radar-view" class="md-nav__link">
+    Simulated inav radar view
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#simulators" class="md-nav__link">
+    Simulators
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#changing-the-radar-symbols" class="md-nav__link">
+    Changing the Radar Symbols
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#protocol-documentation" class="md-nav__link">
+    Protocol documentation
+  </a>
+  
+    <nav class="md-nav" aria-label="Protocol documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mavlink-traffic-report-eg-uavionix-pingrx" class="md-nav__link">
+    MAVLink 'Traffic Report' (e.g. uAvionix PingRX)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inav-radar" class="md-nav__link">
+    inav radar
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp_video_player/" class="md-nav__link">
+        Playing Video in mwp
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Fly-By-Home-waypoints-%28inav-4-new-feature%29/" class="md-nav__link">
+        Fly By Home Waypoints
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Black-Ops/" class="md-nav__link">
+        Anonymous Maps
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Build and Install
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Build and Install" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Build and Install
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Building-with-meson-and-ninja/" class="md-nav__link">
+        Building mwp (Generic)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-in-Windows-11---WSL-G/" class="md-nav__link">
+        Windows 11 / WSL-G
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Miscellaneous
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Miscellaneous" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Miscellaneous
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Power-and-screen-management/" class="md-nav__link">
+        Power and screen management
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inav-4.0-multi-missions/" class="md-nav__link">
+        INAV 4.0 Multi-Mission Support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mqtt---bulletgcss-telemetry/" class="md-nav__link">
+        BulletGCSS Telemetry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Support-for-inav-3.0-WP-features/" class="md-nav__link">
+        mwp and inav 3.0 Mission Updates
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Replaying-Ardupilot-logs/" class="md-nav__link">
+        Ardupilot log replay
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Flite-text-to-speech/" class="md-nav__link">
+        Flite text to speech
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Dbus-API/" class="md-nav__link">
+        DBus API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp_support/" class="md-nav__link">
+        Support Policy
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../licence-misc-info/" class="md-nav__link">
+        Licence
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#mwp-configuration" class="md-nav__link">
+    mwp Configuration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-the-main-serial-port" class="md-nav__link">
+    Using the main serial port
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    Settings
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    Usage
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#name" class="md-nav__link">
+    Name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#status" class="md-nav__link">
+    Status
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#live-ads-b-and-simulated-inav-targets-with-proximity-alerts-range-3000m" class="md-nav__link">
+    Live ADS-B and simulated inav targets, with proximity alerts (range &lt; 3000m).
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-manned-aircraft-view-over-florida-may-2020" class="md-nav__link">
+    Local manned aircraft view over Florida (May 2020).
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#simulated-inav-radar-view" class="md-nav__link">
+    Simulated inav radar view
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#simulators" class="md-nav__link">
+    Simulators
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#changing-the-radar-symbols" class="md-nav__link">
+    Changing the Radar Symbols
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#protocol-documentation" class="md-nav__link">
+    Protocol documentation
+  </a>
+  
+    <nav class="md-nav" aria-label="Protocol documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mavlink-traffic-report-eg-uavionix-pingrx" class="md-nav__link">
+    MAVLink 'Traffic Report' (e.g. uAvionix PingRX)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inav-radar" class="md-nav__link">
+    inav radar
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="radar-view">Radar View<a class="headerlink" href="#radar-view" title="Permanent link">#</a></h1>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> supports the display of "radar" contacts. This provides a view of adjacent aircraft obtained from a number of sources:</p>
+<ul>
+<li>
+<p><a href="https://www.rcgroups.com/forums/showthread.php?3304673-iNav-Radar-ESP32-LoRa-modems">inav-radar</a>. inav radar works in conjunction with <a href="https://github.com/iNavFlight/inav">inav</a> flight controllers to broadcast the location of UAS fitted with an ESP32 LoRa module. <a href="https://github.com/stronnag/mwptools">mwp</a> can listen to one of these modems in ground station mode to display the positions of the rest of the 'swarm' (up to 4 UAS); <a href="#inav-radar">technical / MSP details</a>.</p>
+</li>
+<li>
+<p><strong>Full size aircraft</strong> reported by the MAVLink 'Traffic Report' message. An example is the <a href="https://uavionix.com/products/pingrx/">uAvionix PingRX</a>, a compact device that receives ADS-B location data from full sized aircraft and publishes the locations as MAVLink. For a ground based installation, this device has around a 40Km detection radius. <a href="https://uavionix.com/downloads/integration/uAvionix%20Ping%20Integration%20Guide.pdf">MAVLink ICD</a>.</p>
+</li>
+<li>
+<p>Proximity alerts (visual and audible) for manned (ADS-B) aircraft, based on planned or actual home location.</p>
+</li>
+</ul>
+<h2 id="mwp-configuration">mwp Configuration<a class="headerlink" href="#mwp-configuration" title="Permanent link">#</a></h2>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> can receive the 'radar' data over one or two connections, either or both may be active, and <a href="https://github.com/stronnag/mwptools">mwp</a> can receive and display 'own vehicle' telemetry (MSP, LTM or Smartpost), 'inav-radar' and 'MAVlink Traffic' data simultaneously. Radar data may be received over:</p>
+<ul>
+<li>The main serial port device (see <a href="#using-the-main-serial-port">caveat</a> for inav-radar) or</li>
+<li>device(s) defined by the <code>radar-device</code> CLI or configuration parameter (MAVLink Traffic, inav-radar)</li>
+</ul>
+<p>The <code>radar-device</code> option is defined by the standard <a href="https://github.com/stronnag/mwptools">mwp</a> naming scheme:</p>
+<ul>
+<li>A serial device node, with optional baud rate, e.g.:</li>
+<li><code>/dev/ttyACM0</code>, <code>/dev/ttyUSB4@567600</code>, <code>/dev/rfcomm3</code></li>
+<li>Serial defaults to 115200 baud, but may be set in the device name (@baudrate)</li>
+<li>A Bluetooth address (for BT bridges)</li>
+<li><code>00:0B:0D:87:13:A2</code></li>
+<li>An IP address, e.g. for simulation, recording replays or serial multiplexer.</li>
+<li><code>udp://:30001</code> local UDP listener.</li>
+</ul>
+<p>The specific (not shared with the main serial port) radar device(s) may be defined on the command line, or in the static command options file (<code>~/.config/mwp/cmdopts</code>):</p>
+<ul>
+<li><code>mwp --radar-device udp://:30001</code></li>
+<li><code>$ cat ~/.config/mwp/cmdopts</code></li>
+</ul>
+<p><div class="highlight"><pre><span></span><code>  # Default options for mwp
+  # using udev rule to associate a specifc USB-TTL adaptor to a name
+  --radar-device=/dev/pingRX@57600
+</code></pre></div>
+Multiple devices may be defined, e.g.</p>
+<ul>
+<li>As separate options, <code>--radar-device=/dev/pingRX@57600 --radar-device= /dev/inavradar@115200</code></li>
+<li>As a comma separated list: <code>--radar-device=/dev/pingRX@57600,/dev/inavradar@115200</code></li>
+</ul>
+<p>Any bespoke <code>radar-device</code> is started automatically on startup (or when it shows up). It is not managed via the serial <code>Connect</code> button.</p>
+<h2 id="using-the-main-serial-port">Using the main serial port<a class="headerlink" href="#using-the-main-serial-port" title="Permanent link">#</a></h2>
+<p>The main serial port may be used for MavLink Traffic without any further configuration. For inav-radar, to use the main msp port for inav-radar (vice using <code>--radar-device</code>), it is still necessary to add a command option to <a href="https://github.com/stronnag/mwptools">mwp</a>; it needs to told to relax the default inbound MSP direction check.</p>
+<p>This is enabled as
+<div class="highlight"><pre><span></span><code>mwp --relaxed-msp
+</code></pre></div>
+which should be 'mainly harmless' for normal operations. It's entirely acceptable to put this in <code>~/config/mwp/cmdopts</code> to make it the default, as the protocol check dilution is slight.</p>
+<h2 id="settings">Settings<a class="headerlink" href="#settings" title="Permanent link">#</a></h2>
+<p>The following <code>dconf</code> setting affect the radar function:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>radar-list-max-altitude</code></td>
+<td>Maximum altitude (metres) to show targets in the radar list view; targets higher than this value will show only in the map view. Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid)</td>
+</tr>
+<tr>
+<td><code>radar-alert-altitude</code></td>
+<td>Target altitude (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-range' is also set (none zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid).</td>
+</tr>
+<tr>
+<td><code>radar-alert-range</code></td>
+<td>Target range (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-altitude' is also set (none zero). Setting to 0 disables.</td>
+</tr>
+</tbody>
+</table>
+<p>Note that proximity alerts require that both the <code>radar-alert-altitude</code> and <code>radar-alert-range</code> values are set, and that there is a planned or actual home location.</p>
+<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">#</a></h2>
+<p>Once the radar interface is open, radar tracks are displayed on the map and in a list available from the "View -&gt; Radar View' menu option.</p>
+<ul>
+<li>The list view is sort-able on the <code>Id</code>, <code>Status</code>, <code>Last</code> (time) and <code>Range</code> columns.</li>
+<li>The map visualisation may be toggled by the <code>Hide Tracks</code> (<code>Show Tracks</code>) button.</li>
+<li>List and map views are updated in (near) real time.</li>
+<li>Preference for display units are used for positions, altitude and speed.</li>
+</ul>
+<h3 id="name">Name<a class="headerlink" href="#name" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>inav-radar</td>
+<td>Node Id (typically 'A' - 'D')</td>
+</tr>
+<tr>
+<td>Traffic Report</td>
+<td>Callsign if reported, otherwise [ICAO number]</td>
+</tr>
+</tbody>
+</table>
+<h3 id="status">Status<a class="headerlink" href="#status" title="Permanent link">#</a></h3>
+<p>Radar contacts have one of the following status values:</p>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Undefined</td>
+<td>Not shown in list or on the map</td>
+</tr>
+<tr>
+<td>Stale</td>
+<td>The last contact was more that 120s previous. Displayed in the list and shown on the map with reduced intensity or an inav-radar node has'lost' status</td>
+</tr>
+<tr>
+<td>Armed</td>
+<td>An active inav-radar contact</td>
+</tr>
+<tr>
+<td>ADS-B</td>
+<td>A live MAVLink Traffic report</td>
+</tr>
+<tr>
+<td>Hidden</td>
+<td>A MAVLink Traffic contact is between 5 and 10 minutes old. It remains in the list but is not displayed in the map. MAVLink Traffic Report tracks are removed from the list (and internal storage) after 10 minutes inactivity. inav-radar ground station</td>
+</tr>
+</tbody>
+</table>
+<p>Stale / 'Lost' inav-radar contacts do not expire, as they may relate to a lost model.</p>
+<p>The number displayed after the status text is:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>inav-radar</td>
+<td>The link quality</td>
+</tr>
+<tr>
+<td>Traffic Report</td>
+<td>Time since last communication in seconds</td>
+</tr>
+</tbody>
+</table>
+<h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">#</a></h2>
+<ul>
+<li>Proximity Alerts</li>
+<li>Live and stale aircraft</li>
+<li>Aircraft tooltip</li>
+<li>Mission Plan</li>
+<li>List view</li>
+</ul>
+<h3 id="live-ads-b-and-simulated-inav-targets-with-proximity-alerts-range-3000m">Live ADS-B and simulated inav targets, with proximity alerts (range &lt; 3000m).<a class="headerlink" href="#live-ads-b-and-simulated-inav-targets-with-proximity-alerts-range-3000m" title="Permanent link">#</a></h3>
+<p><img alt="radar-alerts" src="../images/mwp-radar-alert.png" width="80%" /></p>
+<h3 id="local-manned-aircraft-view-over-florida-may-2020">Local manned aircraft view over Florida (May 2020).<a class="headerlink" href="#local-manned-aircraft-view-over-florida-may-2020" title="Permanent link">#</a></h3>
+<p><img alt="Florida-may-2020" src="../images/florida-2020-05.png" width="80%" /></p>
+<h3 id="simulated-inav-radar-view">Simulated inav radar view<a class="headerlink" href="#simulated-inav-radar-view" title="Permanent link">#</a></h3>
+<p><img alt="inav-radar-sim" src="../images/mwp-inav-radar.png" width="60%" /></p>
+<h2 id="simulators">Simulators<a class="headerlink" href="#simulators" title="Permanent link">#</a></h2>
+<p>There are simulators for both inav-radar and MAVLink 'Traffic Report' (e.g. uAvionix PingRX) in the <code>mwptools/samples/radar</code> directory.</p>
+<h2 id="changing-the-radar-symbols">Changing the Radar Symbols<a class="headerlink" href="#changing-the-radar-symbols" title="Permanent link">#</a></h2>
+<p>Any map symbol used by <a href="https://github.com/stronnag/mwptools">mwp</a> can be changed by the user; in the image above, the inav radar node symbol has been changed from the default stylised inav multirotor to a smaller version of the mission replay "paper plane" symbol as follows:</p>
+<ul>
+<li>All the default <a href="https://github.com/stronnag/mwptools">mwp</a> icons / map symbols can be found in <code>$prefix/share/mwp/pixmaps/</code> (e.g. <code>~/.local/share/mwp/pixmaps</code> for a "local" installation).</li>
+<li>Create your own icon with the equivalent name in <code>~/config/mwp/pixmaps/</code>.</li>
+</ul>
+<p>The icons in <code>~/config/mwp/pixmaps/</code> are found before the defaults.</p>
+<div class="highlight"><pre><span></span><code>mkdir -p `~/config/mwp/pixmaps
+# copy the preview image
+cp /usr/share/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/
+# (optionally) resize it to 32x32 pixels
+mogrify -resize 80% ~/config/mwp/pixmaps/preview.png
+# and rename it, mwp doesn&#39;t care about the &#39;extension&#39;, this is not MSDOS:)
+mv  ~/config/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/inav-radar.svg
+# and verify ... perfect
+file ~/.config/mwp/pixmaps/inav-radar.svg
+/home/jrh/.config/mwp/pixmaps/inav-radar.svg: PNG image data, 32 x 32, 8-bit/color RGBA, non-interlaced
+</code></pre></div>
+<h2 id="protocol-documentation">Protocol documentation<a class="headerlink" href="#protocol-documentation" title="Permanent link">#</a></h2>
+<h3 id="mavlink-traffic-report-eg-uavionix-pingrx">MAVLink 'Traffic Report' (e.g. uAvionix PingRX)<a class="headerlink" href="#mavlink-traffic-report-eg-uavionix-pingrx" title="Permanent link">#</a></h3>
+<p>The MAVLink implementation is <a href="https://uavionix.com/downloads/integration/uAvionix%20Ping%20Integration%20Guide.pdf">comprehensively documented</a> by the vendor.</p>
+<h3 id="inav-radar">inav radar<a class="headerlink" href="#inav-radar" title="Permanent link">#</a></h3>
+<p>The following is required by a device wishing to act as a ground node (it either masquerades as an inav FC, or declares itself a GCS)</p>
+<ul>
+<li>Receive and respond to the following MSP data requests:</li>
+<li>MSP_FC_VARIANT (responding as <code>INAV</code> or (from 2021/05/06) <code>GCS</code> for generic ground control stations).</li>
+<li>MSP_FC_VERSION (in <code>INAV</code> and <code>GCS</code> modes)</li>
+<li>MSP_NAME (in <code>INAV</code> and <code>GCS</code> modes)</li>
+<li>MSP_STATUS (in <code>INAV</code> mode)</li>
+<li>MSP_ANALOG (in <code>INAV</code> mode)</li>
+<li>MSP_BOXIDS (in <code>INAV</code> mode)</li>
+<li>
+<p>MSP_RAW_GPS (in <code>INAV</code> mode)</p>
+</li>
+<li>
+<p>Receive unsolicited</p>
+</li>
+<li>MSP2_COMMON_SET_RADAR_POS</li>
+</ul>
+<p>Note that the device firmware assumes that MSP buffer sizes are "as specification"; exceeding the expected message buffer size may crash the device (mea culpa).</p>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../mwp-safehomes-editor/" class="md-footer__link md-footer__link--prev" aria-label="Previous: mwp and inav safehome" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              mwp and inav safehome
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../mwp_video_player/" class="md-footer__link md-footer__link--next" aria-label="Next: Playing Video in mwp" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Playing Video in mwp
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2013 - 2021 <a href="https://github.com/stronnag/mwptools">Jonathan Hudson</a>
+          </div>
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+            Material for MkDocs
+          </a>
+        
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.fcfe8b6d.min.js", "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.b1047164.min.js"></script>
+      
+    
+  </body>
+</html>

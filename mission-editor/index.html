@@ -1,0 +1,1194 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Mission Planner, Ground Control Station, Log Replay">
+      
+      
+      
+        <meta name="author" content="Jonathan Hudson">
+      
+      
+      <link rel="icon" href="../images/mwp_icon.ico">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.6">
+    
+    
+      
+        <title>Mission Editor - mwptools</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.a57b2b03.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#757575">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../assets/extra.css">
+    
+      <link rel="stylesheet" href="../assets/pdf.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="grey" data-md-color-accent="dark-orange">
+  
+    
+    <script>function __prefix(e){return new URL("..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#mission-editor" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="mwptools" class="md-header__button md-logo" aria-label="mwptools" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            mwptools
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Mission Editor
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="mwptools" class="md-nav__button md-logo" aria-label="mwptools" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+
+    </a>
+    mwptools
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          Home
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Home" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          Home
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../running/" class="md-nav__link">
+        Running mwp
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/" class="md-nav__link">
+        User interface
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dock/" class="md-nav__link">
+        Dock Concepts and Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Mission Editor
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Mission Editor
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#map-features" class="md-nav__link">
+    Map Features
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mission-editor_1" class="md-nav__link">
+    Mission Editor
+  </a>
+  
+    <nav class="md-nav" aria-label="Mission Editor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-operations" class="md-nav__link">
+    Common Operations
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#editing" class="md-nav__link">
+    Editing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-shape" class="md-nav__link">
+    Add Shape
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#location-updates" class="md-nav__link">
+    Location Updates
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#speed-and-altitude-updates" class="md-nav__link">
+    Speed and Altitude updates
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convert-altitudes" class="md-nav__link">
+    Convert Altitudes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replicate-waypoints" class="md-nav__link">
+    Replicate Waypoints
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preview-mission" class="md-nav__link">
+    Preview Mission
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clear-mission" class="md-nav__link">
+    Clear Mission
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-wp-types-video-tutorials" class="md-nav__link">
+    Advanced WP types / Video Tutorials
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced WP types / Video Tutorials">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#jump-poshold-timed-land" class="md-nav__link">
+    JUMP, POSHOLD TIMED, LAND
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_poi-set_head-as-mission-elements" class="md-nav__link">
+    SET_POI, SET_HEAD as mission elements
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mission-preview" class="md-nav__link">
+    Mission Preview
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gcs-features/" class="md-nav__link">
+        Ground Control Station Features
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../replay-tools/" class="md-nav__link">
+        Replay Tools
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../misc-ui-elements/" class="md-nav__link">
+        Miscellaneous Ui Elements
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Mission-Elevation-Plot-and-Terrain-Analysis/" class="md-nav__link">
+        Mission Elevations
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-multi-procotol/" class="md-nav__link">
+        "Serial" device support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Configuration/" class="md-nav__link">
+        mwp Configuration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-safehomes-editor/" class="md-nav__link">
+        mwp and inav safehome
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Radar-View/" class="md-nav__link">
+        Radar View
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp_video_player/" class="md-nav__link">
+        Playing Video in mwp
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Fly-By-Home-waypoints-%28inav-4-new-feature%29/" class="md-nav__link">
+        Fly By Home Waypoints
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Black-Ops/" class="md-nav__link">
+        Anonymous Maps
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Build and Install
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Build and Install" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Build and Install
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Building-with-meson-and-ninja/" class="md-nav__link">
+        Building mwp (Generic)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-in-Windows-11---WSL-G/" class="md-nav__link">
+        Windows 11 / WSL-G
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Miscellaneous
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Miscellaneous" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Miscellaneous
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Power-and-screen-management/" class="md-nav__link">
+        Power and screen management
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inav-4.0-multi-missions/" class="md-nav__link">
+        INAV 4.0 Multi-Mission Support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mqtt---bulletgcss-telemetry/" class="md-nav__link">
+        BulletGCSS Telemetry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Support-for-inav-3.0-WP-features/" class="md-nav__link">
+        mwp and inav 3.0 Mission Updates
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Replaying-Ardupilot-logs/" class="md-nav__link">
+        Ardupilot log replay
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Flite-text-to-speech/" class="md-nav__link">
+        Flite text to speech
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Dbus-API/" class="md-nav__link">
+        DBus API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp_support/" class="md-nav__link">
+        Support Policy
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../licence-misc-info/" class="md-nav__link">
+        Licence
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#map-features" class="md-nav__link">
+    Map Features
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mission-editor_1" class="md-nav__link">
+    Mission Editor
+  </a>
+  
+    <nav class="md-nav" aria-label="Mission Editor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-operations" class="md-nav__link">
+    Common Operations
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#editing" class="md-nav__link">
+    Editing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-shape" class="md-nav__link">
+    Add Shape
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#location-updates" class="md-nav__link">
+    Location Updates
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#speed-and-altitude-updates" class="md-nav__link">
+    Speed and Altitude updates
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convert-altitudes" class="md-nav__link">
+    Convert Altitudes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replicate-waypoints" class="md-nav__link">
+    Replicate Waypoints
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preview-mission" class="md-nav__link">
+    Preview Mission
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clear-mission" class="md-nav__link">
+    Clear Mission
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-wp-types-video-tutorials" class="md-nav__link">
+    Advanced WP types / Video Tutorials
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced WP types / Video Tutorials">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#jump-poshold-timed-land" class="md-nav__link">
+    JUMP, POSHOLD TIMED, LAND
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_poi-set_head-as-mission-elements" class="md-nav__link">
+    SET_POI, SET_HEAD as mission elements
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mission-preview" class="md-nav__link">
+    Mission Preview
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="mission-editor">Mission Editor<a class="headerlink" href="#mission-editor" title="Permanent link">#</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
+<p>Another <a href="https://vimeo.com/268036585">slightly outdated video</a>, generic misson editing.</p>
+<iframe src="https://player.vimeo.com/video/268036585?h=e81256c10e" width="640" height="431" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+
+<div class="admonition info">
+<p class="admonition-title">Current situation</p>
+<ul>
+<li><a href="https://github.com/iNavFlight/inav">inav</a> now supports 120 waypoints</li>
+<li><a href="https://github.com/iNavFlight/inav">inav</a> now supports <code>SET_POI</code> and other multiwii waypoint types.</li>
+<li>Delete from the map popup context menu behaves as it does in the tabular editor; it removes the RTH state.</li>
+</ul>
+</div>
+<p>Please also refer to the following articles that provide specific information for advanced <a href="https://github.com/iNavFlight/inav">inav</a> topics:</p>
+<ul>
+<li><a href="../inav-4.0-multi-missions/">inav multi-missions</a></li>
+<li><a href="../Fly-By-Home-waypoints-%28inav-4-new-feature%29/">inav fly-by-home</a></li>
+</ul>
+<h2 id="map-features">Map Features<a class="headerlink" href="#map-features" title="Permanent link">#</a></h2>
+<p>Missions are edited on the map by enabling mission edit mode:</p>
+<p><img alt="ui_edit" src="../images/wp-create-button.png" width="40%" /></p>
+<p>This will:</p>
+<ul>
+<li>Display a notional home location (brown icon)</li>
+<li>Allow new WPs to be created by clicking on the map</li>
+<li>Provide a context popup menu by right click on a WP icon</li>
+</ul>
+<p>The context menu depends on the type of the current WP, for example:</p>
+<p><img alt="ui_edit" src="../images/mission-context.png" width="30%" /></p>
+<p>The use of more advanced functions, for example setting parameter values, moving multiple WP, mission preview etc. requires the tabular mission editor</p>
+<h2 id="mission-editor_1">Mission Editor<a class="headerlink" href="#mission-editor_1" title="Permanent link">#</a></h2>
+<p>The mission editor may be invoked from the <a href="dock">dock</a> or from a WP context menu.</p>
+<p>It provides the following functions:</p>
+<ul>
+<li>Create, delete, modify, reorder waypoints.</li>
+<li>Inline editing of parameters</li>
+<li>Context sensitive column titles for parameter editing</li>
+<li>Bulk updates (altitudes, speeds, position offsets)</li>
+<li>Automated path (polygon around a shape) generation.</li>
+<li><a href="../Mission-Elevation-Plot-and-Terrain-Analysis/">Terrain Analysis</a>, automated altitude correction.</li>
+</ul>
+<p>There is a right mouse context menu, the availability of items depending on whether zero, one or multiple items are selected.</p>
+<figure>
+<p><img alt="mission_single" src="../images/mission_edit_s.png" width="75%" /></p>
+<figcaption>Single selection context menu</figcaption>
+</figure>
+<figure>
+<p><img alt="mission_single" src="../images/mission_edit_m.png" width="75%" /></p>
+<figcaption>Multiple selection context menu</figcaption>
+</figure>
+<h3 id="common-operations">Common Operations<a class="headerlink" href="#common-operations" title="Permanent link">#</a></h3>
+<p>Many of the operations described below are shown in the videos, which probably provide a clearer explanation that any textual description could.</p>
+<h4 id="editing">Editing<a class="headerlink" href="#editing" title="Permanent link">#</a></h4>
+<p>Way points can be edited Mission Editor. When a row is selected, the column headers will change to indicate the data fields appropriate to the point type (in particular the “parameters” P1,P2,P3 whose interpretation is dependent on the point type.</p>
+<ul>
+<li>Position. The position of a way point may be changed by dragging the way point icon on the map or editing in the list.</li>
+<li>Order. The order of way points may be changed by either:</li>
+<li>Using the “Move Up” and “Move Down” entries from the mission pop-up menu; or</li>
+<li>Dragging the list item to the desired position. In order to drag, the entry must be 'grabbed' on the ID column. In that screen-shot (below), way point 7 is being dropped between way points 3 and 4.</li>
+<li>
+<p>At the end of the drop, the list and markers on the map will be re-ordered.</p>
+<p><img alt="dnd" src="../images/ui_mission_dnd.png" width="35%" /></p>
+</li>
+<li>
+<p>Type. The way point type may be selected from a drop down menu embedded in the "Type" column of the list:</p>
+<p><img alt="type" src="../images/ui_mission_type.png" width="35%" /></p>
+</li>
+</ul>
+<p>Once the type has been changed, default parameters for that way point type or action will be set. The type may also be set by a right mouse button click on the map symbol.</p>
+<ul>
+<li>Altitude. New points are created with the default altitude (from the "Preferences". Some basic validation is performed</li>
+<li>Parameters P1, P2 and P3. The parameters P1,P2 and P3 are integer values that have a meaning specific to the way-point type or action. For example, for action type of JUMP, P1 is the point to which to jump, and P2 is the number of repeats. This usage is documented in the <a href="https://github.com/iNavFlight/inav/wiki/MSP-Navigation-Messages">inav wiki</a>.</li>
+<li>Delete. The delete action will delete the selected (highlighted) way point(s). If no way point is selected, this option has no affect.</li>
+</ul>
+<h4 id="add-shape">Add Shape<a class="headerlink" href="#add-shape" title="Permanent link">#</a></h4>
+<p>If a SET POI point is added to the mission, (there may also be other extant way-points), this option will display a dialogue to enter the number of points in a shape, the radial distance (from the SET POI to each point), an offset angle and the direction of rotation. i.e this defines a polygon around the POI.</p>
+<ul>
+<li>The offset is relative to North. If you wanted the lines to be horizontal / vertical, specify an offset of 45° for a square.</li>
+<li>Shape points are appended to any extant mission points, and the shape tool may be invoked multiple times, for example to create 'concentric' circles.</li>
+<li>The <code>SET_POI</code> point may be deleted, unless you really want <code>SET_POI</code> functionality.</li>
+</ul>
+<h4 id="location-updates">Location Updates<a class="headerlink" href="#location-updates" title="Permanent link">#</a></h4>
+<p>Bulk location updates may be applied to selected waypopints.</p>
+<p><img alt="mission_upd" src="../images/ui_mission_offset.png" width="30%" /></p>
+<p>If an item if left black (or 0), then no adjustment is applied to that axis. Offsets are in metres, regardless of the user's preference distance unit.</p>
+<h4 id="speed-and-altitude-updates">Speed and Altitude updates<a class="headerlink" href="#speed-and-altitude-updates" title="Permanent link">#</a></h4>
+<p>Bulk speed and altitude updates may be applied to selected waypopints.</p>
+<h4 id="convert-altitudes">Convert Altitudes<a class="headerlink" href="#convert-altitudes" title="Permanent link">#</a></h4>
+<p>From <a href="https://github.com/iNavFlight/inav">inav</a> 3.0, <a href="https://github.com/iNavFlight/inav">inav</a> supports both relative and AMSL altitudes. This, and the <a href="https://github.com/stronnag/mwptools">mwp</a> features for managing this, are described <a href="../Support-for-inav-3.0-WP-features/">in a separate article</a></p>
+<h4 id="replicate-waypoints">Replicate Waypoints<a class="headerlink" href="#replicate-waypoints" title="Permanent link">#</a></h4>
+<p>This item facilitates the cloning of waypoints. Since <a href="https://github.com/iNavFlight/inav">inav</a> now supports the JUMP waypoint type, this option is less useful.</p>
+<h4 id="preview-mission">Preview Mission<a class="headerlink" href="#preview-mission" title="Permanent link">#</a></h4>
+<p><a href="#mission-preview">"Flys"</a> an aircraft icon around the mission; this may be useful for predicting the behaviour of embedded JUMPs.</p>
+<h4 id="clear-mission">Clear Mission<a class="headerlink" href="#clear-mission" title="Permanent link">#</a></h4>
+<p>The Clear Mission option clears the mission. There is no confirmation, so be sure you really want to do this.</p>
+<h2 id="advanced-wp-types-video-tutorials">Advanced WP types / Video Tutorials<a class="headerlink" href="#advanced-wp-types-video-tutorials" title="Permanent link">#</a></h2>
+<h3 id="jump-poshold-timed-land">JUMP, POSHOLD TIMED, LAND<a class="headerlink" href="#jump-poshold-timed-land" title="Permanent link">#</a></h3>
+<p><a href="https://www.youtube.com/watch?v=w6M-v4qM5Yg">Video example</a> setting up JUMP, POSHOLD TIMED and LAND waypoints.</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/w6M-v4qM5Yg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+<h3 id="set_poi-set_head-as-mission-elements">SET_POI, SET_HEAD as mission elements<a class="headerlink" href="#set_poi-set_head-as-mission-elements" title="Permanent link">#</a></h3>
+<p><a href="https://www.youtube.com/watch?v=RO5N9tbzNg8">Video example</a> SET_POI and SET_HEAD (real mission usage).</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/RO5N9tbzNg8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+<h3 id="mission-preview">Mission Preview<a class="headerlink" href="#mission-preview" title="Permanent link">#</a></h3>
+<p><a href="https://www.youtube.com/watch?v=MTA42WUOjUY">Video example</a> of preview for a complex (multiple jumps, timed POSHOLD) mission (preview from the first video).</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/MTA42WUOjUY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../dock/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Dock Concepts and Usage" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Dock Concepts and Usage
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../gcs-features/" class="md-footer__link md-footer__link--next" aria-label="Next: Ground Control Station Features" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Ground Control Station Features
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2013 - 2021 <a href="https://github.com/stronnag/mwptools">Jonathan Hudson</a>
+          </div>
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+            Material for MkDocs
+          </a>
+        
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.fcfe8b6d.min.js", "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.b1047164.min.js"></script>
+      
+    
+  </body>
+</html>

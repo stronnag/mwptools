@@ -1,0 +1,1673 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Mission Planner, Ground Control Station, Log Replay">
+      
+      
+      
+        <meta name="author" content="Jonathan Hudson">
+      
+      
+      <link rel="icon" href="../images/mwp_icon.ico">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.6">
+    
+    
+      
+        <title>mwp Configuration - mwptools</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.a57b2b03.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#757575">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../assets/extra.css">
+    
+      <link rel="stylesheet" href="../assets/pdf.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="grey" data-md-color-accent="dark-orange">
+  
+    
+    <script>function __prefix(e){return new URL("..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#mwp-configuration" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="mwptools" class="md-header__button md-logo" aria-label="mwptools" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            mwptools
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              mwp Configuration
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="mwptools" class="md-nav__button md-logo" aria-label="mwptools" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+
+    </a>
+    mwptools
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          Home
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Home" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          Home
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../running/" class="md-nav__link">
+        Running mwp
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/" class="md-nav__link">
+        User interface
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dock/" class="md-nav__link">
+        Dock Concepts and Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mission-editor/" class="md-nav__link">
+        Mission Editor
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gcs-features/" class="md-nav__link">
+        Ground Control Station Features
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../replay-tools/" class="md-nav__link">
+        Replay Tools
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../misc-ui-elements/" class="md-nav__link">
+        Miscellaneous Ui Elements
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Mission-Elevation-Plot-and-Terrain-Analysis/" class="md-nav__link">
+        Mission Elevations
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-multi-procotol/" class="md-nav__link">
+        "Serial" device support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          mwp Configuration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        mwp Configuration
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#command-line-options" class="md-nav__link">
+    Command line options
+  </a>
+  
+    <nav class="md-nav" aria-label="Command line options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#debug-flags" class="md-nav__link">
+    Debug flags
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-files" class="md-nav__link">
+    Configuration Files
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmdopts" class="md-nav__link">
+    cmdopts
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#layout" class="md-nav__link">
+    .layout
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sourcesjson" class="md-nav__link">
+    sources.json
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vcolcss" class="md-nav__link">
+    vcol.css
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#places" class="md-nav__link">
+    places
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dconf-gsettings" class="md-nav__link">
+    Dconf / gsettings
+  </a>
+  
+    <nav class="md-nav" aria-label="Dconf / gsettings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#list-of-mwp-settings" class="md-nav__link">
+    List of mwp settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-safehomes-editor/" class="md-nav__link">
+        mwp and inav safehome
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Radar-View/" class="md-nav__link">
+        Radar View
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp_video_player/" class="md-nav__link">
+        Playing Video in mwp
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Fly-By-Home-waypoints-%28inav-4-new-feature%29/" class="md-nav__link">
+        Fly By Home Waypoints
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Black-Ops/" class="md-nav__link">
+        Anonymous Maps
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Build and Install
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Build and Install" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Build and Install
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Building-with-meson-and-ninja/" class="md-nav__link">
+        Building mwp (Generic)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-in-Windows-11---WSL-G/" class="md-nav__link">
+        Windows 11 / WSL-G
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Miscellaneous
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Miscellaneous" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Miscellaneous
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Power-and-screen-management/" class="md-nav__link">
+        Power and screen management
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inav-4.0-multi-missions/" class="md-nav__link">
+        INAV 4.0 Multi-Mission Support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mqtt---bulletgcss-telemetry/" class="md-nav__link">
+        BulletGCSS Telemetry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Support-for-inav-3.0-WP-features/" class="md-nav__link">
+        mwp and inav 3.0 Mission Updates
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Replaying-Ardupilot-logs/" class="md-nav__link">
+        Ardupilot log replay
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Flite-text-to-speech/" class="md-nav__link">
+        Flite text to speech
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Dbus-API/" class="md-nav__link">
+        DBus API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp_support/" class="md-nav__link">
+        Support Policy
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../licence-misc-info/" class="md-nav__link">
+        Licence
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#command-line-options" class="md-nav__link">
+    Command line options
+  </a>
+  
+    <nav class="md-nav" aria-label="Command line options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#debug-flags" class="md-nav__link">
+    Debug flags
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-files" class="md-nav__link">
+    Configuration Files
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmdopts" class="md-nav__link">
+    cmdopts
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#layout" class="md-nav__link">
+    .layout
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sourcesjson" class="md-nav__link">
+    sources.json
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vcolcss" class="md-nav__link">
+    vcol.css
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#places" class="md-nav__link">
+    places
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dconf-gsettings" class="md-nav__link">
+    Dconf / gsettings
+  </a>
+  
+    <nav class="md-nav" aria-label="Dconf / gsettings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#list-of-mwp-settings" class="md-nav__link">
+    List of mwp settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="mwp-configuration">mwp Configuration<a class="headerlink" href="#mwp-configuration" title="Permanent link">#</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> stores configuration in a number of places, to some degree at the developer's whim, but also in accordance with the data item's volatility.</p>
+<ul>
+<li>Command line options</li>
+<li>Configuration Files</li>
+<li>dconf / gsettings</li>
+</ul>
+<p>Each type is further discussed below.</p>
+<h2 id="command-line-options">Command line options<a class="headerlink" href="#command-line-options" title="Permanent link">#</a></h2>
+<p>Command line options provide a 'per instantiation' means to control <a href="https://github.com/stronnag/mwptools">mwp</a> behaviour; the current set of command line options may be viewed by running <a href="https://github.com/stronnag/mwptools">mwp</a> from the command line with the single option <code>--help</code>:</p>
+<div class="highlight"><pre><span></span><code>$ mwp --help
+</code></pre></div>
+<p>Where it is required to give permanence to command line options, they can be added to the configuration file <code>$HOME/.config/cmdopts</code>, which is described in more detail in the following section.</p>
+<h3 id="debug-flags">Debug flags<a class="headerlink" href="#debug-flags" title="Permanent link">#</a></h3>
+<p>The <code>--debug-flags</code> option takes a numeric value defines areas where additional debug information may be output.</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Waypoints</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Startup</td>
+</tr>
+<tr>
+<td>4</td>
+<td>MSP</td>
+</tr>
+<tr>
+<td>8</td>
+<td>ADHOC</td>
+</tr>
+<tr>
+<td>16</td>
+<td>RADAR</td>
+</tr>
+<tr>
+<td>32</td>
+<td>LOG REPLAY</td>
+</tr>
+<tr>
+<td>64</td>
+<td>SERIAL</td>
+</tr>
+<tr>
+<td>128</td>
+<td>VIDEO</td>
+</tr>
+<tr>
+<td>256</td>
+<td>GCS Location</td>
+</tr>
+</tbody>
+</table>
+<p>Values may be added together (so 511 means all).</p>
+<h2 id="configuration-files">Configuration Files<a class="headerlink" href="#configuration-files" title="Permanent link">#</a></h2>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> configuration files are stored in a standard directory <code>$HOME/.config/mwp</code>. This directory is created on first invocation if it does not exist. The following files may be found there:</p>
+<h2 id="cmdopts"><code>cmdopts</code><a class="headerlink" href="#cmdopts" title="Permanent link">#</a></h2>
+<p>The file <code>cmdopts</code> contains command line options that the user wishes to apply permanently (and conveniently when run from a launcher icon rather than the command line).</p>
+<p>The file contains CLI options exactly as would be issued from the terminal. Options may be on separate lines, and blank lines and line prefixed with a hash '#' are ignored. For example:</p>
+<p>In addition to options (<code>--</code>), the file may also contain environment variables e.g. <code>FOO=BAR</code>.</p>
+<div class="highlight"><pre><span></span><code># Default options for mwp
+--rings 50,20
+#--voice-command &quot;spd-say -t female2 -e&quot;
+#--debug-flags=2
+--dont-maximise
+#-S 8192
+
+# set the anonymous tile file.
+MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
+</code></pre></div>
+<p>So here the only current, valid options are  <code>--rings 50,20 -dont-maximise</code>, and the environment variable MWP_BLACK_TILE is set (for <a href="../Black-Ops/#custom-tile">anonymous maps</a>).</p>
+<h2 id="layout"><code>.layout</code><a class="headerlink" href="#layout" title="Permanent link">#</a></h2>
+<p><code>.layout</code> contains the current arrangement of Dock items. You are advised not to manually edit this file (or other named, alternate layout files).</p>
+<h2 id="sourcesjson"><code>sources.json</code><a class="headerlink" href="#sourcesjson" title="Permanent link">#</a></h2>
+<p><code>sources.json</code> facilitates adding non-standard map sources to <a href="https://github.com/stronnag/mwptools">mwp</a>. See the manual and comments in the source files in the <code>qproxy</code> directory.</p>
+<h2 id="vcolcss"><code>vcol.css</code><a class="headerlink" href="#vcolcss" title="Permanent link">#</a></h2>
+<p><code>vol.css</code> contains alternate CSS themeing for the battery voltage dock item that may work better on dark desktop themes. An example file is provided as <code>mwp/vcol.css</code> which can be copied into <code>.config/mwp/</code>.</p>
+<h2 id="places"><code>places</code><a class="headerlink" href="#places" title="Permanent link">#</a></h2>
+<p>The <code>places</code> (<code>~/.config/mwp/places</code>) file is a delimited (CSV) file that defines a list of "shortcut" home locations used by the "View / Centre on Position ..." menu item. It consists of a Name, Latitude, Longitude and optionally zoom level, separated by a <code>TAB</code>,<code>|</code>,<code>:</code> or <code>;</code>. Note that positions may be localised in the file and thus <code>.</code> is no longer recognised as a field separator.</p>
+<p>Example <code>places</code></p>
+<div class="highlight"><pre><span></span><code># mwp places name,lat,lon [,zoom]
+Beaulieu|50.8047104|-1.4942621|17
+Jurby:54.353974:-4.523600:-1
+</code></pre></div>
+<p>The user may maintain these files manually if used, or use the graphic editor.</p>
+<h2 id="dconf-gsettings">Dconf / gsettings<a class="headerlink" href="#dconf-gsettings" title="Permanent link">#</a></h2>
+<p>Linux has a facility for storing configuration items in a registry like facility. This is used extensively by <a href="https://github.com/stronnag/mwptools">mwp</a>. The items can viewed and modified using a number of tools:</p>
+<ul>
+<li><a href="https://github.com/stronnag/mwptools">mwp</a> preference dialogue (for a small subset of the items)</li>
+<li>The <code>dconf-editor</code> graphical editor</li>
+<li>The command line <code>gsettings</code> tool</li>
+</ul>
+<p>For <code>gsettings</code> and <code>dconf-editor</code>, the name-space is <code>org.mwptools.planner</code>, so to list of items:</p>
+<div class="highlight"><pre><span></span><code>$ gsettings list-recursively  org.mwptools.planner
+</code></pre></div>
+<p>and to list then set a single item:</p>
+<div class="highlight"><pre><span></span><code>$ gsettings get org.mwptools.planner log-save-path
+..
+$ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
+</code></pre></div>
+<h3 id="list-of-mwp-settings">List of mwp settings<a class="headerlink" href="#list-of-mwp-settings" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>adjust-tz</td>
+<td>mwp should adjust TZ (and DST) based in the local clock</td>
+<td>mwp should adjust TZ (and DST) based in the local clock</td>
+<td>true</td>
+</tr>
+<tr>
+<td>ah-invert-roll</td>
+<td>Invert AH roll</td>
+<td>Set to true to invert roll in the AH (so it becomes an attitude indicator)</td>
+<td>false</td>
+</tr>
+<tr>
+<td>ah-size</td>
+<td>minimum size of artificial horizon</td>
+<td>(private setting)</td>
+<td>32</td>
+</tr>
+<tr>
+<td>arming-speak</td>
+<td>speak arming states</td>
+<td>whether to reporting arming state by audio</td>
+<td>false</td>
+</tr>
+<tr>
+<td>atexit</td>
+<td>Something that is executed at exit</td>
+<td>e.g. <code>gsettings set org.gnome.settings-daemon.plugins.power idle-dim true</code>. See also <code>manage-power</code> (and consider setting to true).</td>
+<td>""</td>
+</tr>
+<tr>
+<td>atstart</td>
+<td>Something that is executed at startup</td>
+<td>e.g. <code>gsettings set org.gnome.settings-daemon.plugins.power idle-dim false</code>. See also <code>manage-power</code> (and consider setting to true).</td>
+<td>""</td>
+</tr>
+<tr>
+<td>audio-bearing-is-reciprocal</td>
+<td>Announce bearing as reciprocal</td>
+<td>Whether the audio bearing is the reciprocal (i.e. bearing from home to machine, rather than from machine to home)</td>
+<td>false</td>
+</tr>
+<tr>
+<td>audio-on-arm</td>
+<td>start audio on arm</td>
+<td>start audio on arm (and stop on disarm)</td>
+<td>true</td>
+</tr>
+<tr>
+<td>auto-follow</td>
+<td>set auto-follow on start</td>
+<td>set auto-follow on start</td>
+<td>true</td>
+</tr>
+<tr>
+<td>auto-restore-mission</td>
+<td>Whether to automatically import a mission in FC memory to MWP</td>
+<td>If the FC holds a valid mission in memory, and there is no mission loaded into MWP, this setting controls whether MWP automatically downloads the mission.</td>
+<td>false</td>
+</tr>
+<tr>
+<td>auto-wp-edit</td>
+<td>Whether you direct WP editing is available</td>
+<td>If true, the user can edit / create waypoints directly by clicking on the map, if false, it is necessary to toggle the WP Edit button to enable editing.</td>
+<td>false</td>
+</tr>
+<tr>
+<td>baudrate</td>
+<td>Baud rate</td>
+<td>Serial baud rate</td>
+<td>115200</td>
+</tr>
+<tr>
+<td>blackbox-decode</td>
+<td>Name of the blackbox_decode application</td>
+<td>Name of the blackbox_decode application (in case there are separate for iNav and betaflight)</td>
+<td>"blackbox_decode"</td>
+</tr>
+<tr>
+<td>centre-on</td>
+<td>centre map on GPS as needed</td>
+<td>centre map on GPS as needed</td>
+<td>true</td>
+</tr>
+<tr>
+<td>checkswitches</td>
+<td>check switches</td>
+<td>check switches (a JH sanity check)</td>
+<td>false</td>
+</tr>
+<tr>
+<td>compat-version</td>
+<td>mw-nav compat version</td>
+<td>Default mw-nav compat version in XML files. mwp doesn't care, older (MW) applications might.</td>
+<td>"42.0"</td>
+</tr>
+<tr>
+<td>dbox-is-horizontal</td>
+<td>Geometry of the DirectionView box</td>
+<td>If true, uses a horizontal organisation, rather than vertical</td>
+<td>false</td>
+</tr>
+<tr>
+<td>default-altitude</td>
+<td>Default altitude</td>
+<td>Default Altitude (m)</td>
+<td>20</td>
+</tr>
+<tr>
+<td>default-latitude</td>
+<td>Default Latitude</td>
+<td>Default Latitude when no GPS</td>
+<td>50.909528</td>
+</tr>
+<tr>
+<td>default-layout</td>
+<td>Default layout name</td>
+<td>Default layout name. If not set, .layout is used.</td>
+<td>""</td>
+</tr>
+<tr>
+<td>default-loiter</td>
+<td>Default Loiter time</td>
+<td>Default Loiter time</td>
+<td>30</td>
+</tr>
+<tr>
+<td>default-longitude</td>
+<td>Default Longitude</td>
+<td>Default Longitude when no GPS</td>
+<td>-1.532936</td>
+</tr>
+<tr>
+<td>default-map</td>
+<td>Default Map</td>
+<td>Default map <em>key</em></td>
+<td>""</td>
+</tr>
+<tr>
+<td>default-nav-speed</td>
+<td>Default Nav speed</td>
+<td>Default Nav speed (m/s). For calculating durations only.</td>
+<td>2.5</td>
+</tr>
+<tr>
+<td>default-zoom</td>
+<td>Default Map zoom</td>
+<td>Default map zoom</td>
+<td>15</td>
+</tr>
+<tr>
+<td>delta-minspeed</td>
+<td>Minimum speed for elapsed distance updates</td>
+<td>Minimum speed for elapsed distance updates (m/s). Default is zero, which means the elapsed distance is always updated; larger values will take out hover / jitter movements.</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td>device-names</td>
+<td>Device names</td>
+<td>A list of device names to be added to those that can be auto-discovered</td>
+<td>[]</td>
+</tr>
+<tr>
+<td>display-distance</td>
+<td>Distance units</td>
+<td>0=metres, 1=feet, 2=yards</td>
+<td>0</td>
+</tr>
+<tr>
+<td>display-dms</td>
+<td>Position display</td>
+<td>Show positions as dd:mm:ss rather than decimal degrees</td>
+<td>false</td>
+</tr>
+<tr>
+<td>display-speed</td>
+<td>Speed units</td>
+<td>0=metres/sec, 1=kilometres/hour, 2=miles/hour, 3=knots</td>
+<td>0</td>
+</tr>
+<tr>
+<td>dump-unknown</td>
+<td>dump unknown</td>
+<td>dump unknown message payload</td>
+<td>false</td>
+</tr>
+<tr>
+<td>espeak-voice</td>
+<td>Default espeak voice</td>
+<td>Default espeak voice (see espeak documentation)</td>
+<td>"en"</td>
+</tr>
+<tr>
+<td>fctype</td>
+<td>Force fc type</td>
+<td>Forces fc type (mw,mwnav,bf,cf)</td>
+<td>"auto"</td>
+</tr>
+<tr>
+<td>fixedfont</td>
+<td>Use a fixed font for Flight View</td>
+<td>Use a fixed font for Flight View</td>
+<td>true</td>
+</tr>
+<tr>
+<td>flash-warn</td>
+<td>Flash storage warning</td>
+<td>If a dataflash is configured for black box, and this key is non-zero, a warning in generated if the data flash is greater than "flash-warn" percent full.</td>
+<td>0</td>
+</tr>
+<tr>
+<td>flite-voice-file</td>
+<td>Default flite voice file</td>
+<td>Default flite voice file (full path, *.flitevox), see flite documentation)</td>
+<td>""</td>
+</tr>
+<tr>
+<td>font-fv</td>
+<td>flight view font scaling</td>
+<td>Scales the flight view widget. Smaller screens may need a lower value</td>
+<td>12</td>
+</tr>
+<tr>
+<td>forward</td>
+<td>Types of message to forward</td>
+<td>Types of message to forward (none, LTM, minLTM, minMAV, all)</td>
+<td>"minLTM"</td>
+</tr>
+<tr>
+<td>geouser</td>
+<td>User account on geonames.org</td>
+<td>A user account to query geonames.org for blackbox log timezone info. A default account of 'mwptools' is provided; however users are requested to create their own account.</td>
+<td>"mwptools"</td>
+</tr>
+<tr>
+<td>gpsd-host</td>
+<td>gpsd provider</td>
+<td>Provider for GCS location via gpsd. Default is "localhost", can be set to other host name or IP address. Setting blank ("") disables.</td>
+<td>"localhost"</td>
+</tr>
+<tr>
+<td>gpsintvl</td>
+<td>gps sanity time (m/s)</td>
+<td>gps sanity time (m/s), check for current fix</td>
+<td>2000</td>
+</tr>
+<tr>
+<td>heartbeat</td>
+<td>Something that runs every minute (i.e. screensaver disable)</td>
+<td>e.g. <code>xscreensaver-command -deactivate</code>. See also <code>manage-power</code> (and consider setting to true).</td>
+<td>""</td>
+</tr>
+<tr>
+<td>ignore-nm</td>
+<td>Don't ever query Network Manager for network status</td>
+<td>Set to true to always ignore NM status (may slow down startup)</td>
+<td>false</td>
+</tr>
+<tr>
+<td>kml-path</td>
+<td>Directory for KML overlays</td>
+<td>Directory for KML overlays</td>
+<td>""</td>
+</tr>
+<tr>
+<td>led</td>
+<td>GPS LED colour</td>
+<td>GPS LED colour as well know string or #RRGGBB</td>
+<td>"#60ff00"</td>
+</tr>
+<tr>
+<td>load-safehome</td>
+<td>Load default set of safehomes</td>
+<td>Set to file[,Y]. File defines a set of safehome lines (CLI format), optionally followed by a comma and Y. If the definition includes ",Y", then the safehome locations will be displayed.</td>
+<td>""</td>
+</tr>
+<tr>
+<td>log-on-arm</td>
+<td>start logging on arm</td>
+<td>start logging on arm (and stop on disarm)</td>
+<td>false</td>
+</tr>
+<tr>
+<td>log-path</td>
+<td>Directory for replay log files</td>
+<td>Directory for log files (for replay)</td>
+<td>""</td>
+</tr>
+<tr>
+<td>log-save-path</td>
+<td>Directory for storing log files</td>
+<td>Directory for log files (for save), default = current directory</td>
+<td>""</td>
+</tr>
+<tr>
+<td>mag-sanity</td>
+<td>Enable mag sanity checking</td>
+<td>mwp offers a primitive mag sanity checker that compares compass heading with GPS course over the ground using LTM (only). There are various hard-coded constraints (speed &gt; 3m/s, certain flight modes) and two configurable parameters that should be set here in order to enable this check. The parameters are angular difference (⁰) and duration (s). The author finds a settings of 45,3 (i.e. 45⁰ over 3 seconds) works OK, detecting real instances (a momentarily breaking cable) and not reporting false positives.</td>
+<td>""</td>
+</tr>
+<tr>
+<td>manage-power</td>
+<td>manage power and screen</td>
+<td>whether to manage idle and screen saver</td>
+<td>false</td>
+</tr>
+<tr>
+<td>map-sources</td>
+<td>Additional Map sources</td>
+<td>JSON file defining additional map sources</td>
+<td>""</td>
+</tr>
+<tr>
+<td>mavph</td>
+<td>RC settings for Mav PH</td>
+<td>RC settings for Mav PH (chanid:minval:maxval)</td>
+<td>""</td>
+</tr>
+<tr>
+<td>mavrth</td>
+<td>RC settings for Mav RTH</td>
+<td>RC settings for Mav RTH (chanid:minval:maxval)</td>
+<td>""</td>
+</tr>
+<tr>
+<td>max-climb-angle</td>
+<td>Maximum climb angle highlight for terrain analysis</td>
+<td>If non-zero, any climb angles exceeding the specified value will be highlighted in Terrain Analysis Climb / Dive report. Note that the absolute value is taken as a positive (climb) angle</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td>max-dive-angle</td>
+<td>Maximum dive angle highlight for terrain analysis</td>
+<td>If non-zero, any dive angles exceeding the specified value will be highlighted in Terrain Analysis Climb / Dive report. Note that the absolute value is taken as a negative (dive) angle</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td>max-home-delta</td>
+<td>home position delta (m)</td>
+<td>Maximum variation of home position without verbal alert</td>
+<td>2.5</td>
+</tr>
+<tr>
+<td>max-radar-slots</td>
+<td>Maximum number of aircraft reported by iNav-radar</td>
+<td>Maximum number of aircraft reported by iNav-radar</td>
+<td>4</td>
+</tr>
+<tr>
+<td>max-wps</td>
+<td>Maximum number of WP supported</td>
+<td>Maximum number of WP supported</td>
+<td>120</td>
+</tr>
+<tr>
+<td>media-player</td>
+<td>Media player for alerts</td>
+<td>Blank means internal gstreamer, "false" or "none" means no beeps.</td>
+<td>""</td>
+</tr>
+<tr>
+<td>misc-icon-size</td>
+<td>Miscellaneous icon size</td>
+<td>Size for miscellaneous icons (radar, GCS location) in pixels. -1 means the image's natural size (no scaling).</td>
+<td>32</td>
+</tr>
+<tr>
+<td>mission-file-type</td>
+<td>Preferred mission file type</td>
+<td>m for XML (.mission), j for json (change at your peril)</td>
+<td>"m"</td>
+</tr>
+<tr>
+<td>mission-meta-tag</td>
+<td>use meta vice mwp in mission file</td>
+<td>If true, the legacy mwp tag is named meta</td>
+<td>false</td>
+</tr>
+<tr>
+<td>mission-path</td>
+<td>Directory for mission files</td>
+<td>Directory for mission files</td>
+<td>""</td>
+</tr>
+<tr>
+<td>osd-mode</td>
+<td>Data items overlaid on the map</td>
+<td>0 = none, 1 = current WP/Max WP, 2 = next WP distance and course. This is a mask, so 3 means both OSD items.</td>
+<td>3</td>
+</tr>
+<tr>
+<td>poll-timeout</td>
+<td>Poll messages timeout (ms)</td>
+<td>Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resoltion of 100ms.</td>
+<td>900</td>
+</tr>
+<tr>
+<td>pos-is-centre</td>
+<td>Determines position label content</td>
+<td>Whether the position label is the centre or pointer location</td>
+<td>true</td>
+</tr>
+<tr>
+<td>pwdw-p</td>
+<td>internal parameter</td>
+<td>(private setting)</td>
+<td>72</td>
+</tr>
+<tr>
+<td>radar-alert-altitude</td>
+<td>Altitude below which ADS-B alerts may be generated</td>
+<td>Target altitude (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-range' is also set (none zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid).</td>
+<td>0</td>
+</tr>
+<tr>
+<td>radar-alert-range</td>
+<td>Range below which ADS-B alerts may be generated</td>
+<td>Target range (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-altitude' is also set (none zero). Setting to 0 disables.</td>
+<td>0</td>
+</tr>
+<tr>
+<td>radar-list-max-altitude</td>
+<td>Maximum altitude for targets to show in the radar list view</td>
+<td>Maximum altitude (metres) to include targets in the radar list view. Targets higher than this value will show only in the map view. This is mainly for ADS-B receivers where there is no need for high altitude targets to be shown. Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid).</td>
+<td>0</td>
+</tr>
+<tr>
+<td>require-telemetry</td>
+<td>Whether to warn the operator if telemetry is disabled in iNav</td>
+<td>if set, and telemetry is disabled, a non-timeout dialogue is displayed</td>
+<td>false</td>
+</tr>
+<tr>
+<td>rings-colour</td>
+<td>range rings colour</td>
+<td>range rings colour as well know string or #RRGGBBAA</td>
+<td>"#ffffff20"</td>
+</tr>
+<tr>
+<td>rth-autoland</td>
+<td>Automatically assert land on RTH waypoints</td>
+<td>Automatically assert land on RTH waypoints</td>
+<td>false</td>
+</tr>
+<tr>
+<td>say-bearing</td>
+<td>Whether audio report includes bearing</td>
+<td>Whether audio report includes bearing</td>
+<td>true</td>
+</tr>
+<tr>
+<td>set-head-is-b0rken</td>
+<td>set head bearing as reciprocal</td>
+<td>Whether the set head bearing is the reciprocal (i.e. ancient bug in mw nav)</td>
+<td>false</td>
+</tr>
+<tr>
+<td>smartport-fuel-unit</td>
+<td>User selected fuel type</td>
+<td>Units label for smartport fuel (none, %, mAh, mWh)</td>
+<td>"none"</td>
+</tr>
+<tr>
+<td>speak-amps</td>
+<td>When to speak amps/hr used</td>
+<td>none, live-n, all-n n=1,2,4 : n = how often spoken (modulus basically)</td>
+<td>"none"</td>
+</tr>
+<tr>
+<td>speak-interval</td>
+<td>Interval between voice prompts</td>
+<td>Interval between voice prompts, 0 disables</td>
+<td>15</td>
+</tr>
+<tr>
+<td>speech-api</td>
+<td>API for speech synthesis</td>
+<td>espeak, speechd, flite. Only change this if you know you have the required development files at build time</td>
+<td>"espeak"</td>
+</tr>
+<tr>
+<td>speechd-voice</td>
+<td>Default speechd voice</td>
+<td>Default speechd voice (see speechd documentation)</td>
+<td>"male1"</td>
+</tr>
+<tr>
+<td>stats-timeout</td>
+<td>timeout for flight statistics display (s)</td>
+<td>Timeout before the flight statistics popup automatically closes. A value of 0 means no timeout.</td>
+<td>30</td>
+</tr>
+<tr>
+<td>tote-float-p</td>
+<td>Do Mission tote float</td>
+<td>(private setting)</td>
+<td>true</td>
+</tr>
+<tr>
+<td>uc-mission-tags</td>
+<td>Upper case mission XML tags</td>
+<td>If true, MISSION, VERSION and MISSIONITEM tags are upper case (for interoperability with legacy Android applications)</td>
+<td>false</td>
+</tr>
+<tr>
+<td>uilang</td>
+<td>Language Handling</td>
+<td>"en" do everything as English (UI numeric decimal points, voice), "ev" do voice as English (so say 'point' for decimals even when shown as 'comma')</td>
+<td>""</td>
+</tr>
+<tr>
+<td>use-legacy-centre-on</td>
+<td>If true, uses legacy centre-on</td>
+<td>If true, uses legacy centre-on mode rather than the new "In View" mode.</td>
+<td>false</td>
+</tr>
+<tr>
+<td>vlevels</td>
+<td>Voltage levels</td>
+<td>Semi-colon(;) separated list of <em>cell</em> voltages values for transition between voltage label colours</td>
+<td>""</td>
+</tr>
+<tr>
+<td>wp-dist-size</td>
+<td>Font size (points) for OSD WP distance display</td>
+<td>Font size (points) for OSD WP distance display</td>
+<td>56.0</td>
+</tr>
+<tr>
+<td>wp-spotlight</td>
+<td>Style for the 'next waypoint' highlight</td>
+<td>Defines RGBA colour for 'next way point' highlight</td>
+<td>"#ffffff60"</td>
+</tr>
+<tr>
+<td>wp-text-style</td>
+<td>Style of text used for next WP display</td>
+<td>Defines the way the WP numbers are displayed. Font, size and RGBA description (or well known name, with alpha)</td>
+<td>"Sans 144/#ff000080"</td>
+</tr>
+<tr>
+<td>zone-detect</td>
+<td>Application to return timezone from location</td>
+<td>If supplied, the application will be used to return the timezone (in preference to geonames.org). The application should take latitude and longitude as parameters. See samples/tzget.sh</td>
+<td>""</td>
+</tr>
+</tbody>
+</table>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../mwp-multi-procotol/" class="md-footer__link md-footer__link--prev" aria-label="Previous: &#34;Serial&#34; device support" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              "Serial" device support
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../mwp-safehomes-editor/" class="md-footer__link md-footer__link--next" aria-label="Next: mwp and inav safehome" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              mwp and inav safehome
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2013 - 2021 <a href="https://github.com/stronnag/mwptools">Jonathan Hudson</a>
+          </div>
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+            Material for MkDocs
+          </a>
+        
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.fcfe8b6d.min.js", "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.b1047164.min.js"></script>
+      
+    
+  </body>
+</html>

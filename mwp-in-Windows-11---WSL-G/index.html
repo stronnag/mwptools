@@ -1,0 +1,1346 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Mission Planner, Ground Control Station, Log Replay">
+      
+      
+      
+        <meta name="author" content="Jonathan Hudson">
+      
+      
+      <link rel="icon" href="../images/mwp_icon.ico">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.6">
+    
+    
+      
+        <title>Windows 11 / WSL-G - mwptools</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.a57b2b03.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#757575">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../assets/extra.css">
+    
+      <link rel="stylesheet" href="../assets/pdf.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="grey" data-md-color-accent="dark-orange">
+  
+    
+    <script>function __prefix(e){return new URL("..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#windows-11-wsl-g" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="mwptools" class="md-header__button md-logo" aria-label="mwptools" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            mwptools
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Windows 11 / WSL-G
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="mwptools" class="md-nav__button md-logo" aria-label="mwptools" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+
+    </a>
+    mwptools
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          Home
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Home" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          Home
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../running/" class="md-nav__link">
+        Running mwp
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/" class="md-nav__link">
+        User interface
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dock/" class="md-nav__link">
+        Dock Concepts and Usage
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mission-editor/" class="md-nav__link">
+        Mission Editor
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gcs-features/" class="md-nav__link">
+        Ground Control Station Features
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../replay-tools/" class="md-nav__link">
+        Replay Tools
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../misc-ui-elements/" class="md-nav__link">
+        Miscellaneous Ui Elements
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Mission-Elevation-Plot-and-Terrain-Analysis/" class="md-nav__link">
+        Mission Elevations
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-multi-procotol/" class="md-nav__link">
+        "Serial" device support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Configuration/" class="md-nav__link">
+        mwp Configuration
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-safehomes-editor/" class="md-nav__link">
+        mwp and inav safehome
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Radar-View/" class="md-nav__link">
+        Radar View
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp_video_player/" class="md-nav__link">
+        Playing Video in mwp
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Fly-By-Home-waypoints-%28inav-4-new-feature%29/" class="md-nav__link">
+        Fly By Home Waypoints
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Black-Ops/" class="md-nav__link">
+        Anonymous Maps
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          Build and Install
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Build and Install" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Build and Install
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Building-with-meson-and-ninja/" class="md-nav__link">
+        Building mwp (Generic)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Windows 11 / WSL-G
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Windows 11 / WSL-G
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#intro" class="md-nav__link">
+    Intro
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment" class="md-nav__link">
+    Environment
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wsl-installation" class="md-nav__link">
+    WSL Installation
+  </a>
+  
+    <nav class="md-nav" aria-label="WSL Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#windows-wsl-pre-requisites" class="md-nav__link">
+    Windows / WSL Pre-requisites
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mwp-installation" class="md-nav__link">
+    mwp Installation
+  </a>
+  
+    <nav class="md-nav" aria-label="mwp Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-install-the-current-release-from-github" class="md-nav__link">
+    (a) Install the current release from github.
+  </a>
+  
+    <nav class="md-nav" aria-label="(a) Install the current release from github.">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#b-unified-first-time-build-script-build-and-install-from-source" class="md-nav__link">
+    (b) Unified first-time build script (build and install from source)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-tradition-build-process-build-and-install-from-source" class="md-nav__link">
+    (c) Tradition build process (build and install from source)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-mwp" class="md-nav__link">
+    Running mwp
+  </a>
+  
+    <nav class="md-nav" aria-label="Running mwp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#one-off-changes" class="md-nav__link">
+    One off changes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serial-devices" class="md-nav__link">
+    Serial devices
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#building-mwps-ser2udp" class="md-nav__link">
+    Building mwp's ser2udp
+  </a>
+  
+    <nav class="md-nav" aria-label="Building mwp's ser2udp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-ser2udp-in-mwp" class="md-nav__link">
+    Using ser2udp in mwp
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#launch-ser2udp-and-mwp-in-one-go" class="md-nav__link">
+    Launch ser2udp and MWP in one go
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-file-considerations" class="md-nav__link">
+    BATch file considerations
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#other-packages-for-additional-functionality" class="md-nav__link">
+    Other packages for additional functionality.
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    Summary
+  </a>
+  
+    <nav class="md-nav" aria-label="Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#connection-via-ser2udp-bridge" class="md-nav__link">
+    Connection via ser2udp bridge
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#terrain-elevation-analysis" class="md-nav__link">
+    Terrain / elevation analysis
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blackbox-replay" class="md-nav__link">
+    Blackbox replay
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Miscellaneous
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Miscellaneous" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Miscellaneous
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Power-and-screen-management/" class="md-nav__link">
+        Power and screen management
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inav-4.0-multi-missions/" class="md-nav__link">
+        INAV 4.0 Multi-Mission Support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mqtt---bulletgcss-telemetry/" class="md-nav__link">
+        BulletGCSS Telemetry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Support-for-inav-3.0-WP-features/" class="md-nav__link">
+        mwp and inav 3.0 Mission Updates
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Replaying-Ardupilot-logs/" class="md-nav__link">
+        Ardupilot log replay
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Flite-text-to-speech/" class="md-nav__link">
+        Flite text to speech
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp-Dbus-API/" class="md-nav__link">
+        DBus API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mwp_support/" class="md-nav__link">
+        Support Policy
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../licence-misc-info/" class="md-nav__link">
+        Licence
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#intro" class="md-nav__link">
+    Intro
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment" class="md-nav__link">
+    Environment
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wsl-installation" class="md-nav__link">
+    WSL Installation
+  </a>
+  
+    <nav class="md-nav" aria-label="WSL Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#windows-wsl-pre-requisites" class="md-nav__link">
+    Windows / WSL Pre-requisites
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mwp-installation" class="md-nav__link">
+    mwp Installation
+  </a>
+  
+    <nav class="md-nav" aria-label="mwp Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-install-the-current-release-from-github" class="md-nav__link">
+    (a) Install the current release from github.
+  </a>
+  
+    <nav class="md-nav" aria-label="(a) Install the current release from github.">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#b-unified-first-time-build-script-build-and-install-from-source" class="md-nav__link">
+    (b) Unified first-time build script (build and install from source)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-tradition-build-process-build-and-install-from-source" class="md-nav__link">
+    (c) Tradition build process (build and install from source)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-mwp" class="md-nav__link">
+    Running mwp
+  </a>
+  
+    <nav class="md-nav" aria-label="Running mwp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#one-off-changes" class="md-nav__link">
+    One off changes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serial-devices" class="md-nav__link">
+    Serial devices
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#building-mwps-ser2udp" class="md-nav__link">
+    Building mwp's ser2udp
+  </a>
+  
+    <nav class="md-nav" aria-label="Building mwp's ser2udp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-ser2udp-in-mwp" class="md-nav__link">
+    Using ser2udp in mwp
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#launch-ser2udp-and-mwp-in-one-go" class="md-nav__link">
+    Launch ser2udp and MWP in one go
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-file-considerations" class="md-nav__link">
+    BATch file considerations
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#other-packages-for-additional-functionality" class="md-nav__link">
+    Other packages for additional functionality.
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    Summary
+  </a>
+  
+    <nav class="md-nav" aria-label="Summary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#connection-via-ser2udp-bridge" class="md-nav__link">
+    Connection via ser2udp bridge
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#terrain-elevation-analysis" class="md-nav__link">
+    Terrain / elevation analysis
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#blackbox-replay" class="md-nav__link">
+    Blackbox replay
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="windows-11-wsl-g">Windows 11 / WSL-G<a class="headerlink" href="#windows-11-wsl-g" title="Permanent link">#</a></h1>
+<h2 id="intro">Intro<a class="headerlink" href="#intro" title="Permanent link">#</a></h2>
+<p>As a result of user interest in running <a href="https://github.com/stronnag/mwptools">mwp</a> on Windows 11 / WSL-G, here's an experiment to see if it's possible. By a Windows neophyte, so if I can install mwp on WSL, anyone can.</p>
+<p>There is also an excellent <a href="https://www.youtube.com/watch?v=VvnBzQR7aE8">you-tube video tutorial</a> from Marc Hoffmann (in English and German).</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/VvnBzQR7aE8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+<h2 id="environment">Environment<a class="headerlink" href="#environment" title="Permanent link">#</a></h2>
+<p>Tested with Windows 11 VM hosted on Arch Linux by the developer.</p>
+<h2 id="wsl-installation">WSL Installation<a class="headerlink" href="#wsl-installation" title="Permanent link">#</a></h2>
+<ul>
+<li>Installed default Ubuntu</li>
+<li>Note that serial ports <strong>still</strong> don't appear to work in WSL (workaround described below)</li>
+</ul>
+<h3 id="windows-wsl-pre-requisites">Windows / WSL Pre-requisites<a class="headerlink" href="#windows-wsl-pre-requisites" title="Permanent link">#</a></h3>
+<p>None other than the serial port issue, Wayland (GUI) and sound just work.
+The serial port problem can be mitigated by a "serial to IP" solution; mwptools provides <a href="#serial-devices"><code>ser2udp</code></a> for this purpose.</p>
+<h2 id="mwp-installation">mwp Installation<a class="headerlink" href="#mwp-installation" title="Permanent link">#</a></h2>
+<p>Use one of the following:</p>
+<h3 id="a-install-the-current-release-from-github">(a) Install the <a href="https://github.com/stronnag/mwptools/releases/latest">current release from github</a>.<a class="headerlink" href="#a-install-the-current-release-from-github" title="Permanent link">#</a></h3>
+<ul>
+<li>Down load the <code>.deb</code> file</li>
+<li><code>cd</code> to where ever you saved the <code>.deb</code> file</li>
+<li>In the wsl terminal
+  <code>sudo apt install mwptools_0.0.0-1_amd64.deb</code></li>
+</ul>
+<h4 id="b-unified-first-time-build-script-build-and-install-from-source">(b) Unified first-time build script (build and install from source)<a class="headerlink" href="#b-unified-first-time-build-script-build-and-install-from-source" title="Permanent link">#</a></h4>
+<p>For the initial installation, there is a unified / simplified install / build / install script: <a href="https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/#easy-first-time-install-on-debian-and-ubuntu">Instructions</a></p>
+<p>This install mwptools and blackbox-tools-inav to <code>$HOME/.local/bin</code>.</p>
+<h4 id="c-tradition-build-process-build-and-install-from-source">(c) Tradition build process (build and install from source)<a class="headerlink" href="#c-tradition-build-process-build-and-install-from-source" title="Permanent link">#</a></h4>
+<p>If you want more control over build options.</p>
+<p>If <code>git</code> is not pre-installed in WSL, then it will be necessary to install it.</p>
+<div class="highlight"><pre><span></span><code>sudo apt update &amp;&amp; sudo apt upgrade
+sudo apt install git
+</code></pre></div>
+<p>Note: <code>/etc/sudoers</code> (via <code>visudo</code>) was edited to allows the WSL user to run commands as root without asking for a password.</p>
+<p>Then it was just a case of cloning the mwp repository and following mwp's instructions (<code>mwptools/docs/debian-ubuntu-dependencies.txt</code>), to install the dependencies, thusly:</p>
+<div class="highlight"><pre><span></span><code>cp mwptools/docs/debian-ubuntu-dependencies.txt /tmp/u.sh
+chmod +x /tmp/u.sh
+# edit /tmp/u.sh for any optional items ...
+sudo /tmp/u.sh Y # &quot;Y&quot; bypasses interactive query / responses
+</code></pre></div>
+<p>Then build and install mwp and optionally the blackbox tools (as <code>mwptools/docs/debian-ubuntu-dependencies.txt</code>). <a href="https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja">Build documentation</a>.</p>
+<p>For the optimal blackbox replay, install the <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a> tools, either from the Github release or build from source in Linux/WSL.</p>
+<h2 id="running-mwp">Running mwp<a class="headerlink" href="#running-mwp" title="Permanent link">#</a></h2>
+<p>There is no longer any need to mess around the <code>DISPLAY</code> or <code>udev</code> settings. No 3rd party X-server, Windows handles all the GUI.</p>
+<h3 id="one-off-changes">One off changes<a class="headerlink" href="#one-off-changes" title="Permanent link">#</a></h3>
+<ul>
+<li>
+<p>WSL installs a very cut down icon theme that does not provide the all the system / standard icons used by mwp. Fix this by:
+  <div class="highlight"><pre><span></span><code>sudo apt install adwaita-icon-theme-full
+</code></pre></div></p>
+</li>
+<li>
+<p>If you wish to replay blackbox / OTX / BulletGCSS logs, it is necessary to have an IPv6 definition of <code>localhost</code>; WSL's <code>/etc/hosts</code> does not provide this:</p>
+</li>
+</ul>
+<div class="highlight"><pre><span></span><code># updated in /etc/hosts for ipv6
+::1   localhost ip6-localhost ip6-loopback
+</code></pre></div>
+<p>Note: This is caused by an unnecessary assumption in <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a>'s <code>fl2ltm</code> which is corrected in <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a> release (&gt; 0.11.0)</p>
+<ul>
+<li>Then tell WSL to please not break your <code>hosts</code> file again
+  <div class="highlight"><pre><span></span><code>### Add the following entry to /etc/wsl.conf:
+[network]
+generateHosts = false
+</code></pre></div></li>
+<li>Due font differences, it is may be necessary to reduce the font scaling in the mwp 'Flight View' docklet.</li>
+</ul>
+<div class="highlight"><pre><span></span><code>gsettings set org.mwptools.planner font-fv 10
+# if you still have resizing problems, try 9 ....
+</code></pre></div>
+<p>Then you are ready to run mwp.</p>
+<div class="highlight"><pre><span></span><code>mwp
+</code></pre></div>
+<h3 id="serial-devices">Serial devices<a class="headerlink" href="#serial-devices" title="Permanent link">#</a></h3>
+<p>In order to use a serial device, it is necessary to run a "serial to IP" bridge on the Windows side. This application will need to be white-listed in the Windows firewall.</p>
+<p>There are a number of existing solutions that may work; <strong>mwp</strong> provides a simple, dedicated <code>ser2udp</code> tool that works well.</p>
+<h3 id="building-mwps-ser2udp">Building mwp's <code>ser2udp</code><a class="headerlink" href="#building-mwps-ser2udp" title="Permanent link">#</a></h3>
+<p>On the <strong>Linux/WSL side</strong>:</p>
+<ul>
+<li><code>cd mwptools/src/samples/s2n</code></li>
+<li><code>make ser2udp.exe</code></li>
+<li>copy <code>ser2udp.exe</code> to the d̶a̶r̶k̶  Windows side</li>
+</ul>
+<p>On the Windows side:</p>
+<ul>
+<li>Use the Windows firewall settings to allow <code>ser2udp.exe</code> to accept UDP traffic.</li>
+<li>
+<p>Run <code>ser2udp.exe</code> ; it will autodetect your serial port. By default this listens on UDP port 17071, you can change this by supplying a second parameter, e.g., to use port 34567. In this case, either define the serial port or use <code>auto</code> (auto-detect).
+  <div class="highlight"><pre><span></span><code>&gt; ser2udp.exe auto :34567
+## or just let ser2udp autodetect
+&gt; ser2udp.exe
+External address: fe80::1439:d6de:efcb:97e1%7
+External address: 172.29.32.1
+</code></pre></div>
+  The colon is required to define an alternative port.</p>
+</li>
+<li>
+<p><code>ser2udp</code> will survive removal of USB devices and attempt to re-connect (e.g. if the FC is rebooted).</p>
+</li>
+<li><code>ser2udp</code> will <em>only</em> attempt to acquire STM32 USB devices (<code>0483:5740</code> vid:pid)</li>
+<li>You need to terminate <code>ser2udp</code> when you're done with it (e.g. to use the inav configurator in Windows).</li>
+</ul>
+<h4 id="using-ser2udp-in-mwp">Using <code>ser2udp</code> in mwp<a class="headerlink" href="#using-ser2udp-in-mwp" title="Permanent link">#</a></h4>
+<ul>
+<li>We need to know the IP address (or have a hostname for) the Windows WSL endpoint. Fortunately this happens to be Linux's default gateway, so we can handle it fairly transparently.</li>
+</ul>
+<p>It is easily automated by using the magic <code>__MWP_SERIAL_HOST</code> name in the serial device.</p>
+<div class="highlight"><pre><span></span><code>mwp -d udp://__MWP_SERIAL_HOST:17071
+# recognised by other tools as well ...
+cliterm udp://__MWP_SERIAL_HOST:17071
+</code></pre></div>
+<p><code>__MWP_SERIAL_HOST</code> is resolved as:</p>
+<ul>
+<li>If an environment variable <code>$MWP_SERIAL_HOST</code> exists, it is used; else</li>
+<li>The default gateway (which on WSL in the Windows host IP) is used; else</li>
+<li>It will fail, as the literal name is unlikely to exist as a resolvable host name (not even a RFC legal host name).</li>
+</ul>
+<p>Thus:</p>
+<ul>
+<li>For WSL and <code>ser2udp</code>, in mwp preferences, set the serial device to <code>udp://__MWP_SERIAL_HOST:17071</code></li>
+<li>Or in the shell, for some other scenario, <code>export MWP_SERIAL_HOST=foobox.org</code> in the event that you have a valid use case</li>
+</ul>
+<h3 id="launch-ser2udp-and-mwp-in-one-go">Launch ser2udp and MWP in one go<a class="headerlink" href="#launch-ser2udp-and-mwp-in-one-go" title="Permanent link">#</a></h3>
+<ul>
+<li>Create a new <code>txt</code> file in the same folder where <code>ser2udp.exe</code> is located and copy the following lines into that file:
+<div class="highlight"><pre><span></span><code>@echo off
+echo Launching MWP Mission Planner
+start wslg.exe -d Ubuntu mwp
+echo Waiting for WSL System to boot up
+timeout 5
+echo Launching Serial to UDP Tool
+start &quot;Serial2UDP&quot; cmd /c ser2udp.exe -verbose 1
+exit
+</code></pre></div></li>
+<li>rename the file with any name and change the extension to <code>.cmd</code></li>
+<li>Create a shortcut anywhere on your PC or in <code>C:\Users\&lt;username&gt;\AppData\Roaming\Microsoft\Windows\Start Menu\Programs</code> to pin it to your Start Menu</li>
+<li>Replace the shortcut symbol with the MWP icon <a href="https://github.com/stronnag/mwptools/wiki/images/mwp_icon.ico">from here</a></li>
+</ul>
+<h3 id="batch-file-considerations">BATch file considerations<a class="headerlink" href="#batch-file-considerations" title="Permanent link">#</a></h3>
+<ul>
+<li>The <code>timeout</code> value may need changing (or not be needed at all). YMMV.</li>
+<li>Consider adding the <code>/min</code> to <code>cmd</code> to minimise the <code>ser2udp</code> window on startup.</li>
+</ul>
+<h2 id="other-packages-for-additional-functionality">Other packages for additional functionality.<a class="headerlink" href="#other-packages-for-additional-functionality" title="Permanent link">#</a></h2>
+<ul>
+<li>To replay blackbox logs, you need</li>
+<li><a href="https://github.com/iNavFlight/blackbox-tools">inav blackbox tools</a>, mandatory</li>
+<li><a href="https://github.com/stronnag/bbl2kml">flightlog2x / bbl2kml</a>. Provides a much better blackbox replayer than the default shipped with mwp (and you can generate really pretty Google Earth files from blackbox / opentx / bulletgcss logs).</li>
+<li>Terrain Analysis</li>
+<li>Gnuplot. Check the installer script that it's enabled.</li>
+</ul>
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">#</a></h2>
+<ul>
+<li>Much, much better than the prior WSL instances, pity about the lack of support for serial ports (still). Overall, the seamless WSL-g experience is impressive.</li>
+</ul>
+<h3 id="connection-via-ser2udp-bridge">Connection via <code>ser2udp</code> bridge<a class="headerlink" href="#connection-via-ser2udp-bridge" title="Permanent link">#</a></h3>
+<p><img alt="Connected" src="../images/win11-a.png" width="80%" />
+Dark theme, <a href="#one-off-changes">correct system icons installed</a>, connected to FC via <code>ser2udp</code>.</p>
+<h3 id="terrain-elevation-analysis">Terrain / elevation analysis<a class="headerlink" href="#terrain-elevation-analysis" title="Permanent link">#</a></h3>
+<p><img alt="Terrain" src="../images/win11-b.png" width="80%" /></p>
+<h3 id="blackbox-replay">Blackbox replay<a class="headerlink" href="#blackbox-replay" title="Permanent link">#</a></h3>
+<p><img alt="BBL" src="../images/win11-c.png" width="80%" /></p>
+<div class="admonition note">
+<p class="admonition-title">Good enough!</p>
+<p>The user's compass seems good enough for navigation functions (top right widget comparing GPS CoG v. compass heading).</p>
+</div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../Building-with-meson-and-ninja/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Building mwp (Generic)" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Building mwp (Generic)
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../mwp-Power-and-screen-management/" class="md-footer__link md-footer__link--next" aria-label="Next: Power and screen management" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Power and screen management
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2013 - 2021 <a href="https://github.com/stronnag/mwptools">Jonathan Hudson</a>
+          </div>
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+            Material for MkDocs
+          </a>
+        
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.fcfe8b6d.min.js", "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.b1047164.min.js"></script>
+      
+    
+  </body>
+</html>
