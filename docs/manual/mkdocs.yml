@@ -1,7 +1,7 @@
 site_name: mwptools
 site_description: Mission Planner, Ground Control Station, Log Replay
 site_author: Jonathan Hudson
-copyright: Copyright &copy; 2013 - 2021 <a href="https://github.com/stronnag/mwptools">Jonathan Hudson</a>
+copyright: Copyright &copy; 2014 - 2021 <a href="https://github.com/stronnag/mwptools">Jonathan Hudson</a>
 
 theme:
   name: material
