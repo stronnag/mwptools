@@ -38,10 +38,27 @@ plugins:
       cover_logo: images/mwp_icon.svg
       enabled_if_env: ENABLE_PDF_EXPORT
       copyright: (c) Jonathan Hudson 2014-2021
-
-#      convert_iframe:
-#        - src: https://player.vimeo.com/video/267437907?h=015ed1fdc6
-#          img: http://localhost/mkdocs/video-running1.png
+      convert_iframe:
+        - src: https://player.vimeo.com/video/268036585?h=e81256c10e
+          text: Watch on Vimeo
+        - src: https://www.youtube.com/embed/w6M-v4qM5Yg
+          text: Watch on Youtube
+          img: https://i9.ytimg.com/vi/w6M-v4qM5Yg/mq2.jpg?sqp=CLiLiI4G&rs=AOn4CLDW1AdLYxuqrS_Mq6MuPvFKl1_Aeg
+        - src: https://www.youtube.com/embed/RO5N9tbzNg8
+          img: https://i9.ytimg.com/vi/RO5N9tbzNg8/mq2.jpg?sqp=CIyJiI4G&rs=AOn4CLDGRlgze193RhoeKhGmQhUesKs7eQ
+          text: Youtube video
+        - src: https://www.youtube.com/embed/MTA42WUOjUY
+          text: Watch on Youtube
+          img: https://i9.ytimg.com/vi/MTA42WUOjUY/mq2.jpg?sqp=CIyJiI4G&rs=AOn4CLC4Qe6-8_9i80MQ-S4wLNdajSuynw
+        - src: https://www.youtube.com/embed/oE3t5Asqhio
+          text: Watch on Youtube
+          img: https://i9.ytimg.com/vi_webp/oE3t5Asqhio/mqdefault.webp?v=5c082ba5&sqp=CIyJiI4G&rs=AOn4CLCY_ZfofE7BJi64-cJu0A9Eih4_-Q
+        - src: https://www.youtube.com/embed/VvnBzQR7aE8
+          text: Watch on Youtube
+        - src: https://player.vimeo.com/video/267437907?h=015ed1fdc6
+          text: Watch on Vimeo
+        - src: https://player.vimeo.com/video/256052320?h=83d47b048d
+          text: Watch on Vimeo
 
 extra_css:
   - assets/extra.css
