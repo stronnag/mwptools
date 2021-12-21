@@ -1056,15 +1056,11 @@ At some stage, more of the Makefiles will be removed (or just rot into uselessne
 </thead>
 <tbody>
 <tr>
-<td><code>bbsummary</code> [1]</td>
-<td>Blackbox log summary</td>
-</tr>
-<tr>
 <td><code>cliterm</code></td>
 <td>Interact with the CLI</td>
 </tr>
 <tr>
-<td><code>fc-get</code>, <code>fc-set</code> [1]</td>
+<td><code>fc-get</code>, <code>fc-set</code> <a href="#note1">1</a></td>
 <td>Backup / restore CLI diff</td>
 </tr>
 <tr>
@@ -1076,7 +1072,7 @@ At some stage, more of the Makefiles will be removed (or just rot into uselessne
 <td>Survey planner</td>
 </tr>
 <tr>
-<td><code>mwp-plot-elevations</code> [2]</td>
+<td><code>mwp-plot-elevations</code> <a href="#note2">2</a></td>
 <td>Mission elevation / terrain analysis</td>
 </tr>
 <tr>
@@ -1093,9 +1089,11 @@ At some stage, more of the Makefiles will be removed (or just rot into uselessne
 </tr>
 </tbody>
 </table>
-<p>!!! {note} Notes:
-    1. <code>fc-set</code> is a hard link to <code>fc-get</code>
-    2. This may either be the new Go executable or the legacy, less functional Ruby script.</p>
+<div class="admonition note">
+<p class="admonition-title">Notes:</p>
+<p><a name="note1">1. <code>fc-set</code> is a hard link to <code>fc-get</code></a></p>
+<p><a name="note2">2. This may either be the new Go executable or the legacy, less functional Ruby script. </a></p>
+</div>
 <h3 id="optional">Optional<a class="headerlink" href="#optional" title="Permanent link">#</a></h3>
 <p>These are only built by explicit target name; they will be installed if built.</p>
 <div class="highlight"><pre><span></span><code># one of more of the following targets
