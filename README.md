@@ -40,14 +40,14 @@ There is also an [inav](https://github.com/iNavFlight/inav) [Safehome editor](ht
 
 In addition, mwp proivdes legacy suport for multiwii navigation functions.
 
+## User Guide
+
+PDF in `docs`, [online](https://stronnag.github.io/mwptools/).
+
 ## Tools
 
  * mwp : "A mission planner for the rest of us". Simple mission planning and monitoring. Mission Planning is provided for inav and MW-NAV (MW 2.4+). Monitoring, logging and recording for inav and MultiWii
- * fc-cli : Manage backup and restoration of CLI dump and diff (fc-set, fc-get)
-
- ### Miscellaneous
-
- * Tools to transform mwp log files to SQL, GPX and KML, analyse black box logs, Ublox GPS and more.
+ * Many standalone tools to manage flight logs, maintain CLI `diff`s, analyse logs etc.
 
 ## Platforms and OS
 
