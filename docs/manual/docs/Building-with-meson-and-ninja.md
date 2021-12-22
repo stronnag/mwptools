@@ -151,7 +151,9 @@ If you install to system locations, it is possible that `sudo ninja install` wil
 * The resulting executables are in `~/.local/bin`. Ensure this exists on `$PATH`
 * If you get messages like `Removing /home/$USER/.config/mwp/.layout.xml 0` and `Failed to save layout, remains in /tmp/.mwp.xxxxxx.xml` you also need `export XDG_DATA_DIRS=$XDG_DATA_DIRS:$HOME/.local/share`; this is fixed in 206efe2 / 4.295.560 of 2021-10-22.
 
-### Help!!!! You've installed a new version but you still get the old one!
+### Help!!!!
+
+#### You've installed a new version but you still get the old one!
 
 If you used the `deb-install.sh` script, then it installed everything into `$HOME/.local/bin` (and other folders under `~/.local`). This is  nice because:
 
@@ -212,3 +214,22 @@ sudo find /usr -iname \*mwp\* -delete
 ```
 
 You'll still have to remove non-empty directories manually.
+
+#### "ninja: error: loading 'build.ninja': No such file or directory
+
+Something, or persons unknown has removed this file.
+
+
+```
+cd mwptools
+meson setup --reconfigure  build --prefix ~/.local
+cd build
+ninja install
+```
+
+#### ERROR: Dependency "?????" not found, tried pkgconfig
+
+{{ mwp }} requires a new dependency. This will be documented in the wiki [Recent Changes](https://github.com/stronnag/mwptools/wiki/Recent-Changes) document.
+
+* Install the newly required dependencies
+* Rerun your build
