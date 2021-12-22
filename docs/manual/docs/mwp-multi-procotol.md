@@ -39,7 +39,7 @@ Bluetooth may be specified by either an `rfcomm` device node (`/dev/rfcommX`) or
 
 ## IP protocols (UDP and TCP)
 
-mwp uses a pseudo-URL format for TCP and UDP connections `udp://host:‍port` and `tcp://host:‍port` (where `host` is either a hostname or an IP address as required).
+mwp uses a pseudo-URL format for TCP and UDP connections `udp://host:port` and `tcp://host:port` (where `host` is either a hostname or an IP address as required).
 
 Typically on one side of the connection you'll provide a hostname /IP and on the other you won't (as it can get the peer address from the first data packet).
 
