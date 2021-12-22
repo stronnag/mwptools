@@ -34,7 +34,7 @@ plugins:
   - with-pdf:
       cover_subtitle: Mission Planner, GCS, Log replay for inav
       toc_level: 3
-      output_path: ../../mwptools.pdf
+      output_path: ../mwptools.pdf
       cover_logo: images/mwp_icon.svg
       enabled_if_env: ENABLE_PDF_EXPORT
       copyright: (c) Jonathan Hudson 2014-2021
