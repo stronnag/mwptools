@@ -631,9 +631,36 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#help-youve-installed-a-new-version-but-you-still-get-the-old-one" class="md-nav__link">
-    Help!!!! You've installed a new version but you still get the old one!
+  <a href="#help" class="md-nav__link">
+    Help!!!!
   </a>
+  
+    <nav class="md-nav" aria-label="Help!!!!">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#youve-installed-a-new-version-but-you-still-get-the-old-one" class="md-nav__link">
+    You've installed a new version but you still get the old one!
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ninja-error-loading-buildninja-no-such-file-or-directory" class="md-nav__link">
+    "ninja: error: loading 'build.ninja': No such file or directory
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-dependency-not-found-tried-pkgconfig" class="md-nav__link">
+    ERROR: Dependency "?????" not found, tried pkgconfig
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -977,9 +1004,36 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#help-youve-installed-a-new-version-but-you-still-get-the-old-one" class="md-nav__link">
-    Help!!!! You've installed a new version but you still get the old one!
+  <a href="#help" class="md-nav__link">
+    Help!!!!
   </a>
+  
+    <nav class="md-nav" aria-label="Help!!!!">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#youve-installed-a-new-version-but-you-still-get-the-old-one" class="md-nav__link">
+    You've installed a new version but you still get the old one!
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ninja-error-loading-buildninja-no-such-file-or-directory" class="md-nav__link">
+    "ninja: error: loading 'build.ninja': No such file or directory
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-dependency-not-found-tried-pkgconfig" class="md-nav__link">
+    ERROR: Dependency "?????" not found, tried pkgconfig
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1255,7 +1309,8 @@ ninja install
 <li>The resulting executables are in <code>~/.local/bin</code>. Ensure this exists on <code>$PATH</code></li>
 <li>If you get messages like <code>Removing /home/$USER/.config/mwp/.layout.xml 0</code> and <code>Failed to save layout, remains in /tmp/.mwp.xxxxxx.xml</code> you also need <code>export XDG_DATA_DIRS=$XDG_DATA_DIRS:$HOME/.local/share</code>; this is fixed in 206efe2 / 4.295.560 of 2021-10-22.</li>
 </ul>
-<h3 id="help-youve-installed-a-new-version-but-you-still-get-the-old-one">Help!!!! You've installed a new version but you still get the old one!<a class="headerlink" href="#help-youve-installed-a-new-version-but-you-still-get-the-old-one" title="Permanent link">#</a></h3>
+<h3 id="help">Help!!!!<a class="headerlink" href="#help" title="Permanent link">#</a></h3>
+<h4 id="youve-installed-a-new-version-but-you-still-get-the-old-one">You've installed a new version but you still get the old one!<a class="headerlink" href="#youve-installed-a-new-version-but-you-still-get-the-old-one" title="Permanent link">#</a></h4>
 <p>If you used the <code>deb-install.sh</code> script, then it installed everything into <code>$HOME/.local/bin</code> (and other folders under <code>~/.local</code>). This is  nice because:</p>
 <ul>
 <li>mwp does not pollute the system directories;</li>
@@ -1297,6 +1352,19 @@ review the list and as root, delete the old files. Do similar for blackbox-decod
 <div class="highlight"><pre><span></span><code>sudo find /usr -iname \*mwp\* -delete
 </code></pre></div></p>
 <p>You'll still have to remove non-empty directories manually.</p>
+<h4 id="ninja-error-loading-buildninja-no-such-file-or-directory">"ninja: error: loading 'build.ninja': No such file or directory<a class="headerlink" href="#ninja-error-loading-buildninja-no-such-file-or-directory" title="Permanent link">#</a></h4>
+<p>Something, or persons unknown has removed this file.</p>
+<div class="highlight"><pre><span></span><code>cd mwptools
+meson setup --reconfigure  build --prefix ~/.local
+cd build
+ninja install
+</code></pre></div>
+<h4 id="error-dependency-not-found-tried-pkgconfig">ERROR: Dependency "?????" not found, tried pkgconfig<a class="headerlink" href="#error-dependency-not-found-tried-pkgconfig" title="Permanent link">#</a></h4>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> requires a new dependency. This will be documented in the wiki <a href="https://github.com/stronnag/mwptools/wiki/Recent-Changes">Recent Changes</a> document.</p>
+<ul>
+<li>Install the newly required dependencies</li>
+<li>Rerun your build</li>
+</ul>
                 
               
               
