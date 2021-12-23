@@ -21,6 +21,15 @@ The html site can then be build with `mkdocs build` or `mkdocs serve`.
 
 The PDF is built with `ENABLE_PDF_EXPORT=1 mkdocs build`
 
+The PDF file is exteremely large (c. 40MB), reduce to an acceptable size ...
+
+```
+gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook \
+  -dNOPAUSE -dBATCH -dColorImageResolution=150 \
+    -sOutputFile=../mwptools.pdf mwptools.pdf
+```
+
+
 Push html docs to github pages (maintainer):
 
 `mkdocs gh-deploy --force`

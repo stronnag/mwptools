@@ -6,6 +6,7 @@ import (
 	"github.com/jochenvg/go-udev"
 	"github.com/eiannone/keyboard"
 	"go.bug.st/serial"
+	"time"
 )
 
 type SChan struct {
@@ -15,6 +16,8 @@ type SChan struct {
 	data []byte
 }
 
+
+var st time.Time
 
 func main() {
 	connected := ""
@@ -33,6 +36,7 @@ func main() {
 		d := devices[i]
 		fmt.Printf("Found: /dev/%s\n", d.Sysname())
 		if len(connected) == 0 {
+			st = time.Now()
 			connected = d.Sysname()
 			sp = MSPRunner(d.Sysname(), c0)
 		}
@@ -57,6 +61,7 @@ func main() {
 			if ev.Key == 0 {
 				if ev.Rune == 'R' {
 					if sp != nil {
+						fmt.Println("Rebooting ...")
 						MSPReboot(sp)
 					}
 				}
@@ -68,6 +73,9 @@ func main() {
 			switch v.cmd {
 			case msp_DEBUG:
 				fmt.Printf("DBG: %s", string(v.data))
+			case msp_FC_VERSION:
+				var et = time.Since(st)
+				fmt.Printf("Version %d.%d.%d (%s)\n", v.data[0], v.data[1], v.data[2], et)
 			case msp_REBOOT:
 			default:
 				fmt.Printf("Unexpected MSP %d %x\n", v.cmd, v.cmd)
@@ -77,6 +85,7 @@ func main() {
 			case "add":
 				fmt.Printf("Add event: /dev/%s\n", d.Sysname())
 				if len(connected) == 0 {
+					st = time.Now()
 					connected = d.Sysname()
 					sp = MSPRunner(d.Sysname(), c0)
 				}
