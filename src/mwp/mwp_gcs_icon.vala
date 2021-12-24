@@ -70,6 +70,18 @@ public class GCSIcon : GLib.Object {
 	public static void hide() {
 		icon.visible = false;
 	}
+
+	public static bool get_location(out double lat, out double lon) {
+		if(icon.visible) {
+			lat = icon.latitude;
+			lon = icon.longitude;
+			return true;
+		} else {
+			lat = -91;
+			lon = -181;
+			return false;
+		}
+	}
 }
 
 public class GpsdReader :Object {

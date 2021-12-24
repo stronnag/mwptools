@@ -6513,6 +6513,7 @@ case 0:
     public void handle_radar(MWSerial s, MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
     {
+		double rlat, rlon;
         nopoll = true;
 		if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE) {
 			MWPLog.message("RDR-msg: %s\n", cmd.to_string());
@@ -6526,19 +6527,21 @@ case 0:
                 break;
             case MSP.Cmds.RAW_GPS:
                {
-                   double rlat, rlon;
                    uint8 oraw[18]={0};
                    uint8 *p = &oraw[0];
 
                     *p++ = 2;
                     *p++ = 42;
-                    if(have_home) {
-                        rlat = home_pos.lat;
-                        rlon = home_pos.lon;
-                    } else {
-                        rlat = view.get_center_latitude();
-                        rlon = view.get_center_longitude();
-                    }
+
+					if (GCSIcon.get_location(out rlat, out rlon) == false) {
+						if(have_home) {
+							rlat = home_pos.lat;
+							rlon = home_pos.lon;
+						} else {
+							rlat = view.get_center_latitude();
+							rlon = view.get_center_longitude();
+						}
+					}
                     p = SEDE.serialise_i32(p, (int)(rlat*1e7));
                     p = SEDE.serialise_i32(p, (int)(rlon*1e7));
                     p = SEDE.serialise_i16(p, 0);
@@ -6558,8 +6561,13 @@ case 0:
                 break;
             case MSP.Cmds.FC_VARIANT:
                 {
-                    uint8 []oraw = {0x47, 0x43, 0x53}; // 'GCS'
-                    s.send_command(cmd, oraw, oraw.length, true);
+					uint8 []oraw;
+					if (GCSIcon.get_location(out rlat, out rlon)) {
+						oraw = "INAV".data;
+					} else {
+						oraw = "GCS".data; //{0x47, 0x43, 0x53}; // 'GCS'
+					}
+					s.send_command(cmd, oraw, oraw.length, true);
                 }
                 break;
             case MSP.Cmds.FC_VERSION:

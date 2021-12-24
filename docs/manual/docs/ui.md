@@ -84,7 +84,7 @@ The following tables summarise the available menu options. Where usage is not ob
 | Layout Manager > Save | Saves the current dock layout |
 | Layout Manager > Restore | Restores a saved dock layout |
 | Video Stream | Opens the (live_ video stream window |
-| GCS Location | Displays the indicative GCS location icon |
+| GCS Location | Displays the indicative [GCS location icon](gcs-features.md#gcs-location-icon) |
 
 ### Help Menu
 

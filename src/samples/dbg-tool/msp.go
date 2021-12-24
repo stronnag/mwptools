@@ -9,6 +9,7 @@ import (
 )
 
 const (
+	msp_FC_VARIANT = 2
 	msp_FC_VERSION = 3
 	msp_REBOOT     = 68
 	msp_DEBUG      = 253
@@ -212,6 +213,11 @@ func MSPVersion(p serial.Port) {
 	p.Write(rb)
 }
 
+func MSPVariant(p serial.Port) {
+	rb := encode_msp(msp_FC_VARIANT, nil)
+	p.Write(rb)
+}
+
 func MSPRunner(name string, c0 chan SChan) serial.Port {
 	mode := &serial.Mode{
 		BaudRate: 115200,
@@ -226,7 +232,7 @@ func MSPRunner(name string, c0 chan SChan) serial.Port {
 		log.Fatal(err)
 	}
 	go msp_reader(p, c0)
-	MSPVersion(p)
+	MSPVariant(p)
 	return p
 }
 

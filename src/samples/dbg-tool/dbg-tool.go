@@ -73,9 +73,13 @@ func main() {
 			switch v.cmd {
 			case msp_DEBUG:
 				fmt.Printf("DBG: %s", string(v.data))
+			case msp_FC_VARIANT:
+				var et = time.Since(st)
+				fmt.Printf("Variant: %s (%s)\n", string(v.data[0:4]), et)
+				MSPVersion(sp)
 			case msp_FC_VERSION:
 				var et = time.Since(st)
-				fmt.Printf("Version %d.%d.%d (%s)\n", v.data[0], v.data[1], v.data[2], et)
+				fmt.Printf("Version: %d.%d.%d (%s)\n", v.data[0], v.data[1], v.data[2], et)
 			case msp_REBOOT:
 			default:
 				fmt.Printf("Unexpected MSP %d %x\n", v.cmd, v.cmd)

@@ -241,7 +241,7 @@ public class RadarSim : Object
                 hlat = ((double)ilat) / 1e7;
                 hlon = ((double)ilon) / 1e7;
                 stderr.printf("GPS %.6f %.6f, %u sats, %ud fix (%u)\n",
-                              hlat, hlon, raw[1], raw[0], len);
+                              hlat, hlon, raw[1], raw[0]+1, len);
                 if (init == false) {
                     stderr.printf("Start sim tracks\n");
                     start_sim_msgs();
