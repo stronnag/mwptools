@@ -36,9 +36,9 @@ Use one of the following:
 
 For the initial installation, there is a unified / simplified install / build / install script: [Instructions](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/#easy-first-time-install-on-debian-and-ubuntu)
 
-This install mwptools and blackbox-tools-inav to `$HOME/.local/bin`.
+This installs mwptools and blackbox-tools-inav to `$HOME/.local/bin`.
 
-#### (c) Tradition build process (build and install from source)
+#### (c) Traditional build process (build and install from source)
 
 If you want more control over build options.
 
@@ -66,7 +66,7 @@ For the optimal blackbox replay, install the [flightlog2x](https://github.com/st
 
 ## Running mwp
 
-There is no longer any need to mess around the `DISPLAY` or `udev` settings. No 3rd party X-server, Windows handles all the GUI.
+Compared to Win10/WSL or Cygwin, there is no longer any need to mess around the `DISPLAY` or `udev` settings. No 3rd party X-server, Windows 11 handles all the GUI.
 
 ### One off changes
 
@@ -82,7 +82,7 @@ There is no longer any need to mess around the `DISPLAY` or `udev` settings. No 
   ::1   localhost ip6-localhost ip6-loopback
   ```
 
-  Note: This is caused by an unnecessary assumption in [flightlog2x](https://github.com/stronnag/bbl2kml)'s `fl2ltm` which is corrected in [flightlog2x](https://github.com/stronnag/bbl2kml) release (> 0.11.0)
+  Note: This was caused by an unnecessary assumption in [flightlog2x](https://github.com/stronnag/bbl2kml)'s `fl2ltm` which is corrected in [flightlog2x](https://github.com/stronnag/bbl2kml) release (> 0.11.0)
 
 * Then tell WSL to please not break your `hosts` file again
   ```
@@ -90,7 +90,7 @@ There is no longer any need to mess around the `DISPLAY` or `udev` settings. No 
   [network]
   generateHosts = false
   ```
-* Due font differences, it is may be necessary to reduce the font scaling in the mwp 'Flight View' docklet.
+* Due font differences, it may be necessary to reduce the font scaling in the mwp 'Flight View' docklet.
 
   ```
   gsettings set org.mwptools.planner font-fv 10
@@ -131,12 +131,12 @@ On the Windows side:
   The colon is required to define an alternative port.
 
 * `ser2udp` will survive removal of USB devices and attempt to re-connect (e.g. if the FC is rebooted).
-* `ser2udp` will _only_ attempt to acquire STM32 USB devices (`0483:5740` vid:pid)
+* `ser2udp` will _only_ attempt to automatically acquire STM32 USB devices (`0483:5740` vid:pid)
 * You need to terminate `ser2udp` when you're done with it (e.g. to use the inav configurator in Windows).
 
 #### Using `ser2udp` in mwp
 
-* We need to know the IP address (or have a hostname for) the Windows WSL endpoint. Fortunately this happens to be Linux's default gateway, so we can handle it fairly transparently.
+* On the Linux side, we need to know the IP address (or have a hostname for) the Windows WSL endpoint. Fortunately this happens to be Linux's default gateway, so we can handle it fairly transparently.
 
 It is easily automated by using the magic `__MWP_SERIAL_HOST` name in the serial device.
 
@@ -149,16 +149,18 @@ cliterm udp://__MWP_SERIAL_HOST:17071
 `__MWP_SERIAL_HOST` is resolved as:
 
 * If an environment variable `$MWP_SERIAL_HOST` exists, it is used; else
-* The default gateway (which on WSL in the Windows host IP) is used; else
+* The default gateway (which on WSL is the Windows host IP) is used; else
 * It will fail, as the literal name is unlikely to exist as a resolvable host name (not even a RFC legal host name).
 
 Thus:
 
-* For WSL and `ser2udp`, in mwp preferences, set the serial device to `udp://__MWP_SERIAL_HOST:17071`
+* For WSL and `ser2udp`, in mwp [preferences](misc-ui-elements.md#general-preferences), set the serial device to `udp://__MWP_SERIAL_HOST:17071`
 * Or in the shell, for some other scenario, `export MWP_SERIAL_HOST=foobox.org` in the event that you have a valid use case
 
 ### Launch ser2udp and MWP in one go
+
 * Create a new `txt` file in the same folder where `ser2udp.exe` is located and copy the following lines into that file:
+
 ```
 @echo off
 echo Launching MWP Mission Planner
@@ -169,6 +171,7 @@ echo Launching Serial to UDP Tool
 start "Serial2UDP" cmd /c ser2udp.exe -verbose 1
 exit
 ```
+
 * rename the file with any name and change the extension to `.cmd`
 * Create a shortcut anywhere on your PC or in `C:\Users\<username>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs` to pin it to your Start Menu
 * Replace the shortcut symbol with the MWP icon [from here](https://github.com/stronnag/mwptools/wiki/images/mwp_icon.ico)
@@ -181,10 +184,10 @@ exit
 ## Other packages for additional functionality.
 
 * To replay blackbox logs, you need
-  * [inav blackbox tools](https://github.com/iNavFlight/blackbox-tools), mandatory
-  * [flightlog2x / bbl2kml](https://github.com/stronnag/bbl2kml). Provides a much better blackbox replayer than the default shipped with mwp (and you can generate really pretty Google Earth files from blackbox / opentx / bulletgcss logs).
+    * [inav blackbox tools](https://github.com/iNavFlight/blackbox-tools), mandatory
+    * [flightlog2x / bbl2kml](https://github.com/stronnag/bbl2kml). Provides a much better blackbox replayer than the default shipped with mwp (and you can generate really pretty Google Earth files from blackbox / opentx / bulletgcss logs).
 * Terrain Analysis
-  * Gnuplot. Check the installer script that it's enabled.
+    * Gnuplot. Check the installer script that it's enabled.
 
 ## Summary
 
