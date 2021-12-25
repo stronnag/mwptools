@@ -584,8 +584,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#c-tradition-build-process-build-and-install-from-source" class="md-nav__link">
-    (c) Tradition build process (build and install from source)
+  <a href="#c-traditional-build-process-build-and-install-from-source" class="md-nav__link">
+    (c) Traditional build process (build and install from source)
   </a>
   
 </li>
@@ -962,8 +962,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#c-tradition-build-process-build-and-install-from-source" class="md-nav__link">
-    (c) Tradition build process (build and install from source)
+  <a href="#c-traditional-build-process-build-and-install-from-source" class="md-nav__link">
+    (c) Traditional build process (build and install from source)
   </a>
   
 </li>
@@ -1120,8 +1120,8 @@ The serial port problem can be mitigated by a "serial to IP" solution; mwptools 
 </ul>
 <h4 id="b-unified-first-time-build-script-build-and-install-from-source">(b) Unified first-time build script (build and install from source)<a class="headerlink" href="#b-unified-first-time-build-script-build-and-install-from-source" title="Permanent link">#</a></h4>
 <p>For the initial installation, there is a unified / simplified install / build / install script: <a href="https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/#easy-first-time-install-on-debian-and-ubuntu">Instructions</a></p>
-<p>This install mwptools and blackbox-tools-inav to <code>$HOME/.local/bin</code>.</p>
-<h4 id="c-tradition-build-process-build-and-install-from-source">(c) Tradition build process (build and install from source)<a class="headerlink" href="#c-tradition-build-process-build-and-install-from-source" title="Permanent link">#</a></h4>
+<p>This installs mwptools and blackbox-tools-inav to <code>$HOME/.local/bin</code>.</p>
+<h4 id="c-traditional-build-process-build-and-install-from-source">(c) Traditional build process (build and install from source)<a class="headerlink" href="#c-traditional-build-process-build-and-install-from-source" title="Permanent link">#</a></h4>
 <p>If you want more control over build options.</p>
 <p>If <code>git</code> is not pre-installed in WSL, then it will be necessary to install it.</p>
 <div class="highlight"><pre><span></span><code>sudo apt update &amp;&amp; sudo apt upgrade
@@ -1137,7 +1137,7 @@ sudo /tmp/u.sh Y # &quot;Y&quot; bypasses interactive query / responses
 <p>Then build and install mwp and optionally the blackbox tools (as <code>mwptools/docs/debian-ubuntu-dependencies.txt</code>). <a href="https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja">Build documentation</a>.</p>
 <p>For the optimal blackbox replay, install the <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a> tools, either from the Github release or build from source in Linux/WSL.</p>
 <h2 id="running-mwp">Running mwp<a class="headerlink" href="#running-mwp" title="Permanent link">#</a></h2>
-<p>There is no longer any need to mess around the <code>DISPLAY</code> or <code>udev</code> settings. No 3rd party X-server, Windows handles all the GUI.</p>
+<p>Compared to Win10/WSL or Cygwin, there is no longer any need to mess around the <code>DISPLAY</code> or <code>udev</code> settings. No 3rd party X-server, Windows 11 handles all the GUI.</p>
 <h3 id="one-off-changes">One off changes<a class="headerlink" href="#one-off-changes" title="Permanent link">#</a></h3>
 <ul>
 <li>
@@ -1152,14 +1152,14 @@ sudo /tmp/u.sh Y # &quot;Y&quot; bypasses interactive query / responses
 <div class="highlight"><pre><span></span><code># updated in /etc/hosts for ipv6
 ::1   localhost ip6-localhost ip6-loopback
 </code></pre></div>
-<p>Note: This is caused by an unnecessary assumption in <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a>'s <code>fl2ltm</code> which is corrected in <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a> release (&gt; 0.11.0)</p>
+<p>Note: This was caused by an unnecessary assumption in <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a>'s <code>fl2ltm</code> which is corrected in <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a> release (&gt; 0.11.0)</p>
 <ul>
 <li>Then tell WSL to please not break your <code>hosts</code> file again
   <div class="highlight"><pre><span></span><code>### Add the following entry to /etc/wsl.conf:
 [network]
 generateHosts = false
 </code></pre></div></li>
-<li>Due font differences, it is may be necessary to reduce the font scaling in the mwp 'Flight View' docklet.</li>
+<li>Due font differences, it may be necessary to reduce the font scaling in the mwp 'Flight View' docklet.</li>
 </ul>
 <div class="highlight"><pre><span></span><code>gsettings set org.mwptools.planner font-fv 10
 # if you still have resizing problems, try 9 ....
@@ -1193,12 +1193,12 @@ External address: 172.29.32.1
 <li>
 <p><code>ser2udp</code> will survive removal of USB devices and attempt to re-connect (e.g. if the FC is rebooted).</p>
 </li>
-<li><code>ser2udp</code> will <em>only</em> attempt to acquire STM32 USB devices (<code>0483:5740</code> vid:pid)</li>
+<li><code>ser2udp</code> will <em>only</em> attempt to automatically acquire STM32 USB devices (<code>0483:5740</code> vid:pid)</li>
 <li>You need to terminate <code>ser2udp</code> when you're done with it (e.g. to use the inav configurator in Windows).</li>
 </ul>
 <h4 id="using-ser2udp-in-mwp">Using <code>ser2udp</code> in mwp<a class="headerlink" href="#using-ser2udp-in-mwp" title="Permanent link">#</a></h4>
 <ul>
-<li>We need to know the IP address (or have a hostname for) the Windows WSL endpoint. Fortunately this happens to be Linux's default gateway, so we can handle it fairly transparently.</li>
+<li>On the Linux side, we need to know the IP address (or have a hostname for) the Windows WSL endpoint. Fortunately this happens to be Linux's default gateway, so we can handle it fairly transparently.</li>
 </ul>
 <p>It is easily automated by using the magic <code>__MWP_SERIAL_HOST</code> name in the serial device.</p>
 <div class="highlight"><pre><span></span><code>mwp -d udp://__MWP_SERIAL_HOST:17071
@@ -1208,17 +1208,18 @@ cliterm udp://__MWP_SERIAL_HOST:17071
 <p><code>__MWP_SERIAL_HOST</code> is resolved as:</p>
 <ul>
 <li>If an environment variable <code>$MWP_SERIAL_HOST</code> exists, it is used; else</li>
-<li>The default gateway (which on WSL in the Windows host IP) is used; else</li>
+<li>The default gateway (which on WSL is the Windows host IP) is used; else</li>
 <li>It will fail, as the literal name is unlikely to exist as a resolvable host name (not even a RFC legal host name).</li>
 </ul>
 <p>Thus:</p>
 <ul>
-<li>For WSL and <code>ser2udp</code>, in mwp preferences, set the serial device to <code>udp://__MWP_SERIAL_HOST:17071</code></li>
+<li>For WSL and <code>ser2udp</code>, in mwp <a href="../misc-ui-elements/#general-preferences">preferences</a>, set the serial device to <code>udp://__MWP_SERIAL_HOST:17071</code></li>
 <li>Or in the shell, for some other scenario, <code>export MWP_SERIAL_HOST=foobox.org</code> in the event that you have a valid use case</li>
 </ul>
 <h3 id="launch-ser2udp-and-mwp-in-one-go">Launch ser2udp and MWP in one go<a class="headerlink" href="#launch-ser2udp-and-mwp-in-one-go" title="Permanent link">#</a></h3>
 <ul>
-<li>Create a new <code>txt</code> file in the same folder where <code>ser2udp.exe</code> is located and copy the following lines into that file:
+<li>Create a new <code>txt</code> file in the same folder where <code>ser2udp.exe</code> is located and copy the following lines into that file:</li>
+</ul>
 <div class="highlight"><pre><span></span><code>@echo off
 echo Launching MWP Mission Planner
 start wslg.exe -d Ubuntu mwp
@@ -1227,7 +1228,8 @@ timeout 5
 echo Launching Serial to UDP Tool
 start &quot;Serial2UDP&quot; cmd /c ser2udp.exe -verbose 1
 exit
-</code></pre></div></li>
+</code></pre></div>
+<ul>
 <li>rename the file with any name and change the extension to <code>.cmd</code></li>
 <li>Create a shortcut anywhere on your PC or in <code>C:\Users\&lt;username&gt;\AppData\Roaming\Microsoft\Windows\Start Menu\Programs</code> to pin it to your Start Menu</li>
 <li>Replace the shortcut symbol with the MWP icon <a href="https://github.com/stronnag/mwptools/wiki/images/mwp_icon.ico">from here</a></li>
@@ -1239,11 +1241,15 @@ exit
 </ul>
 <h2 id="other-packages-for-additional-functionality">Other packages for additional functionality.<a class="headerlink" href="#other-packages-for-additional-functionality" title="Permanent link">#</a></h2>
 <ul>
-<li>To replay blackbox logs, you need</li>
+<li>To replay blackbox logs, you need<ul>
 <li><a href="https://github.com/iNavFlight/blackbox-tools">inav blackbox tools</a>, mandatory</li>
 <li><a href="https://github.com/stronnag/bbl2kml">flightlog2x / bbl2kml</a>. Provides a much better blackbox replayer than the default shipped with mwp (and you can generate really pretty Google Earth files from blackbox / opentx / bulletgcss logs).</li>
-<li>Terrain Analysis</li>
+</ul>
+</li>
+<li>Terrain Analysis<ul>
 <li>Gnuplot. Check the installer script that it's enabled.</li>
+</ul>
+</li>
 </ul>
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">#</a></h2>
 <ul>
