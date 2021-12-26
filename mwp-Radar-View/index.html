@@ -1197,6 +1197,12 @@ file ~/.config/mwp/pixmaps/inav-radar.svg
 <li>MSP2_COMMON_SET_RADAR_POS</li>
 </ul>
 <p>Note that the device firmware assumes that MSP buffer sizes are "as specification"; exceeding the expected message buffer size may crash the device (mea culpa).</p>
+<p>In <code>GCS</code> mode, the node is passive; it does not use a LoRa slot and does not attempt to broadcast a location. In <code>INAV</code> mode, the node takes up a LoRa slot and is expected to reply to the additional MSP queries.</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a>'s behaviour is defined by the <a href="../gcs-features/#gcs-location-icon">GCS Location</a></p>
+<ul>
+<li>If the <a href="../gcs-features/#gcs-location-icon">GCS Location</a> is defined (when the radar device is iniitilised, then <a href="https://github.com/stronnag/mwptools">mwp</a> will respond as <code>INAV</code> and return the <a href="../gcs-features/#gcs-location-icon">GCS Location</a>, which may be driven by gpsd if required.</li>
+<li>Otherwise, mwp will respond as a passive <code>GCS</code>.</li>
+</ul>
                 
               
               
