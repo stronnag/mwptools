@@ -933,11 +933,13 @@
 <p>Here the user can select a media file and start options, i.e. whether and when to start the video replay with respect to the start of the BB log replay.</p>
 <ul>
 <li>In order for mwp to start the replay, the <strong>Start</strong> check-button must be selected. If it is:</li>
-<li>The user can enter an optional time (minutes : seconds) that defines when the video starts relative to the start of the BB log:</li>
+<li>The user can enter an optional time (minutes : seconds) that defines when the video starts relative to the start of the BB log:<ul>
 <li>No time is entered, or the time is 0:00 : The video starts at the start of the BBL replay.</li>
 <li>The time is positive (e.g. 2:34.5 (two minutes, 34.5 seconds), as the example: Here the video would start when BB log starts, at an offset 2:34.5 into the video (i.e. the pilot started FPV recording 2m 34.5s before arming the aircraft).</li>
 <li>If the time is negative (including "-0" minutes), then the start of the video is delayed by that amount; so -0:57 would delay the start of the video by 57 seconds relative to the start of BB log replay.</li>
 <li>Pausing the replay will pause the video, and vice-versa.</li>
+</ul>
+</li>
 </ul>
 <p>When playing a file (vice a stream), the player gains a progress bar (which can be used to position the stream and "beginning" and "end" buttons.</p>
 <h2 id="issues-workarounds">Issues / Workarounds<a class="headerlink" href="#issues-workarounds" title="Permanent link">#</a></h2>
@@ -970,10 +972,12 @@ make install
 </code></pre></div>
 <ul>
 <li><code>gst-devmon</code> provides the same video device monitoring as employed by mwp. It should report the insertion and removal of camera devices, together with their attributes.</li>
-<li><code>gst-video-player</code> provides the same video replay capability as <a href="https://github.com/stronnag/mwptools">mwp</a></li>
+<li><code>gst-video-player</code> provides the same video replay capability as <a href="https://github.com/stronnag/mwptools">mwp</a><ul>
 <li>Camera stream : <code>gst-video-player v4l2:///dev/video0</code> . Assuming the camera, as reported by <code>gst-devmon</code> is <code>/dev/video0</code>.</li>
 <li>File: <code>gst-video-player somefile.mp4</code></li>
 <li>Web stream <code>gst-video-player https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm</code></li>
+</ul>
+</li>
 </ul>
 <h2 id="other-os">Other OS<a class="headerlink" href="#other-os" title="Permanent link">#</a></h2>
 <ul>

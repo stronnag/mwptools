@@ -1008,13 +1008,19 @@
 </ul>
 <p>The <code>radar-device</code> option is defined by the standard <a href="https://github.com/stronnag/mwptools">mwp</a> naming scheme:</p>
 <ul>
-<li>A serial device node, with optional baud rate, e.g.:</li>
+<li>A serial device node, with optional baud rate, e.g.:<ul>
 <li><code>/dev/ttyACM0</code>, <code>/dev/ttyUSB4@567600</code>, <code>/dev/rfcomm3</code></li>
 <li>Serial defaults to 115200 baud, but may be set in the device name (@baudrate)</li>
-<li>A Bluetooth address (for BT bridges)</li>
+</ul>
+</li>
+<li>A Bluetooth address (for BT bridges)<ul>
 <li><code>00:0B:0D:87:13:A2</code></li>
-<li>An IP address, e.g. for simulation, recording replays or serial multiplexer.</li>
+</ul>
+</li>
+<li>An IP address, e.g. for simulation, recording replays or serial multiplexer.<ul>
 <li><code>udp://:30001</code> local UDP listener.</li>
+</ul>
+</li>
 </ul>
 <p>The specific (not shared with the main serial port) radar device(s) may be defined on the command line, or in the static command options file (<code>~/.config/mwp/cmdopts</code>):</p>
 <ul>
@@ -1181,20 +1187,20 @@ file ~/.config/mwp/pixmaps/inav-radar.svg
 <h3 id="inav-radar">inav radar<a class="headerlink" href="#inav-radar" title="Permanent link">#</a></h3>
 <p>The following is required by a device wishing to act as a ground node (it either masquerades as an inav FC, or declares itself a GCS)</p>
 <ul>
-<li>Receive and respond to the following MSP data requests:</li>
+<li>Receive and respond to the following MSP data requests:<ul>
 <li>MSP_FC_VARIANT (responding as <code>INAV</code> or (from 2021/05/06) <code>GCS</code> for generic ground control stations).</li>
 <li>MSP_FC_VERSION (in <code>INAV</code> and <code>GCS</code> modes)</li>
 <li>MSP_NAME (in <code>INAV</code> and <code>GCS</code> modes)</li>
 <li>MSP_STATUS (in <code>INAV</code> mode)</li>
 <li>MSP_ANALOG (in <code>INAV</code> mode)</li>
 <li>MSP_BOXIDS (in <code>INAV</code> mode)</li>
-<li>
-<p>MSP_RAW_GPS (in <code>INAV</code> mode)</p>
+<li>MSP_RAW_GPS (in <code>INAV</code> mode)</li>
+</ul>
 </li>
-<li>
-<p>Receive unsolicited</p>
-</li>
+<li>Receive unsolicited<ul>
 <li>MSP2_COMMON_SET_RADAR_POS</li>
+</ul>
+</li>
 </ul>
 <p>Note that the device firmware assumes that MSP buffer sizes are "as specification"; exceeding the expected message buffer size may crash the device (mea culpa).</p>
 <p>In <code>GCS</code> mode, the node is passive; it does not use a LoRa slot and does not attempt to broadcast a location. In <code>INAV</code> mode, the node takes up a LoRa slot and is expected to reply to the additional MSP queries.</p>
