@@ -1143,8 +1143,15 @@ public class MWP : Gtk.Application {
         var verstr = sb.str;
         xlib = "Wayland";
         is_wayland = (Environment.get_variable("WAYLAND_DISPLAY") != null);
-        if(!is_wayland)
+        if(!is_wayland) {
             xlib="Xlib";
+		} else {
+			var window_type = Gdk.DisplayManager.get().default_display.get_type();
+			if (window_type.name() ==  "GdkX11Display") {
+				xlib = "XWayland";
+				is_wayland = false;
+			}
+		}
         MWPLog.message("version: %s on %s\n", verstr, xlib);
         string os=null;
         MWPLog.message("%s\n", Logger.get_host_info(out os));
@@ -1650,8 +1657,6 @@ public class MWP : Gtk.Application {
         }
 
         MwpSpeech.set_api(spapi);
-
-//        var ulang = Intl.setlocale(LocaleCategory.NUMERIC, "");
 
         if(conf.uilang == "en")
             Intl.setlocale(LocaleCategory.NUMERIC, "C");
@@ -9826,10 +9831,8 @@ case 0:
             var w = wdw.get_width();
             var h = wdw.get_height();
             Gdk.Pixbuf pixb = null;
-            try
-            {
-                if(is_wayland)
-                {
+            try {
+                if(is_wayland) {
                     int x,y;
                     bool ok;
                     string ofn;
@@ -9837,31 +9840,26 @@ case 0:
                     ScreenShot ss = Bus.get_proxy_sync (BusType.SESSION,
                                                  "org.gnome.Shell.Screenshot",
                                                  "/org/gnome/Shell/Screenshot");
-                    ss.ScreenshotArea(x, y, w, h,
-                                      false, path,
-                                      out ok, out ofn);
-                    var img = new Gtk.Image.from_file(ofn);
-                    pixb = img.get_pixbuf();
-                }
-                else
-                {
-                    {
-                        pixb = Gdk.pixbuf_get_from_window (wdw, 0, 0, w, h);
-                    }
+                    ss.ScreenshotArea(x, y, w, h, false, path, out ok, out ofn);
+					if (ok) {
+						var img = new Gtk.Image.from_file(ofn);
+						pixb = img.get_pixbuf();
+					}
+                } else {
+					pixb = Gdk.pixbuf_get_from_window (wdw, 0, 0, w, h);
                 }
                 int dw,dh;
-                if(w > h)
-                {
+                if(w > h) {
                     dw = 256;
                     dh = 256* h / w;
-                }
-                else
-                {
+                } else {
                     dh = 256;
                     dw = 256* w / h;
                 }
-                var spixb = pixb.scale_simple(dw, dh, Gdk.InterpType.BILINEAR);
-                spixb.save(path, "png");
+				if(pixb != null) {
+					var spixb = pixb.scale_simple(dw, dh, Gdk.InterpType.BILINEAR);
+					spixb.save(path, "png");
+				}
             }
             catch (Error e) {
                 MWPLog.message ("save preview: %s\n", e.message);
@@ -10922,7 +10920,7 @@ case 0:
 
 	public static int main (string[] args)
     {
-        MwpLibC.atexit(MWP.xchild);
+		MwpLibC.atexit(MWP.xchild);
         if (GtkClutter.init (ref args) != InitError.SUCCESS)
             return 1;
         Gst.init (ref args);
