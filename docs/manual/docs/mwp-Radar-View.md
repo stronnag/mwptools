@@ -169,3 +169,10 @@ The following is required by a device wishing to act as a ground node (it either
   * MSP2_COMMON_SET_RADAR_POS
 
 Note that the device firmware assumes that MSP buffer sizes are "as specification"; exceeding the expected message buffer size may crash the device (mea culpa).
+
+In `GCS` mode, the node is passive; it does not use a LoRa slot and does not attempt to broadcast a location. In `INAV` mode, the node takes up a LoRa slot and is expected to reply to the additional MSP queries.
+
+{{ mwp }}'s behaviour is defined by the [GCS Location](gcs-features.md#gcs-location-icon)
+
+* If the [GCS Location](gcs-features.md#gcs-location-icon) is defined (when the radar device is iniitilised, then {{ mwp }} will respond as `INAV` and return the [GCS Location](gcs-features.md#gcs-location-icon), which may be driven by gpsd if required.
+* Otherwise, mwp will respond as a passive `GCS`.
