@@ -68,28 +68,27 @@ public class FlatEarth : GLib.Object
     {
         double scale;
         int xaxis,yaxis;
-        if (g.xrange > g.yrange)
-        {
+        if (g.xrange > g.yrange) {
             scale = 256.0 / g.xrange;
             xaxis = 256;
             yaxis = (int)(g.yrange*scale + 0.5);
-        }
-        else
-        {
+        } else {
             scale = 256.0 / g.yrange;
             yaxis = 256;
             xaxis = (int)(g.xrange*scale + 0.5);
         }
         var cst = new Cairo.ImageSurface (Cairo.Format.ARGB32, xaxis, yaxis);
-        var cr = new Cairo.Context (cst);
-        cr.set_line_cap(Cairo.LineCap.ROUND);
+		var cr = new Cairo.Context (cst);
+        cr.set_source_rgb (0.2, 0.6, 0.02);
+		cr.rectangle(0, 0, xaxis, yaxis);
+		cr.fill();
+		cr.set_line_cap(Cairo.LineCap.ROUND);
         cr.set_line_width(8);
         cr.set_source_rgb (0.81, 0, 0);
         var xp = scale*(g.points[0].x - g.xmin);
         var yp = scale*(g.ymax - g.points[0].y);
         cr.move_to(xp, yp);
-        foreach (var p in g.points)
-        {
+        foreach (var p in g.points) {
             xp = scale*(p.x - g.xmin);
             yp = scale*(g.ymax - p.y);
             cr.line_to(xp, yp);
