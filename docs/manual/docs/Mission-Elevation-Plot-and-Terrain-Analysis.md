@@ -88,7 +88,7 @@ The **`mwp-plot-elevations`** has **NO** dependency on {{ mwp }} or Linux / Free
 
 * ruby (2.0 or later)
 * ruby 'gems' (libraries)
-  * nokogiri
+    * nokogiri
 * gnuplot
 
 `gnuplot` is easily provided (by your distro or from a binary download), and the `nokogiri` dependency is also easily satisfied by either the distro or Ruby's `gem` command:

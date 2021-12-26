@@ -4,7 +4,7 @@
 
 * Github issues preferred
 * RCG, inav discord and telegram
-  * Most likely you will be requested to raise a Gihub issue for non-trivial cases.
+    * Most likely you will be requested to raise a Gihub issue for non-trivial cases.
 
 ## Supported OS
 

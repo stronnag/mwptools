@@ -18,12 +18,12 @@
 The `radar-device` option is defined by the standard {{ mwp }} naming scheme:
 
 * A serial device node, with optional baud rate, e.g.:
-  * `/dev/ttyACM0`, `/dev/ttyUSB4@567600`, `/dev/rfcomm3`
-  * Serial defaults to 115200 baud, but may be set in the device name (@baudrate)
+    * `/dev/ttyACM0`, `/dev/ttyUSB4@567600`, `/dev/rfcomm3`
+    * Serial defaults to 115200 baud, but may be set in the device name (@baudrate)
 * A Bluetooth address (for BT bridges)
-  * `00:0B:0D:87:13:A2`
+    * `00:0B:0D:87:13:A2`
 * An IP address, e.g. for simulation, recording replays or serial multiplexer.
-  * `udp://:30001` local UDP listener.
+    * `udp://:30001` local UDP listener.
 
 The specific (not shared with the main serial port) radar device(s) may be defined on the command line, or in the static command options file (`~/.config/mwp/cmdopts`):
 
@@ -157,16 +157,15 @@ The MAVLink implementation is [comprehensively documented](https://uavionix.com/
 The following is required by a device wishing to act as a ground node (it either masquerades as an inav FC, or declares itself a GCS)
 
 * Receive and respond to the following MSP data requests:
-  * MSP_FC_VARIANT (responding as `INAV` or (from 2021/05/06) `GCS` for generic ground control stations).
-  * MSP_FC_VERSION (in `INAV` and `GCS` modes)
-  * MSP_NAME (in `INAV` and `GCS` modes)
-  * MSP_STATUS (in `INAV` mode)
-  * MSP_ANALOG (in `INAV` mode)
-  * MSP_BOXIDS (in `INAV` mode)
-  * MSP_RAW_GPS (in `INAV` mode)
-
+    * MSP_FC_VARIANT (responding as `INAV` or (from 2021/05/06) `GCS` for generic ground control stations).
+    * MSP_FC_VERSION (in `INAV` and `GCS` modes)
+    * MSP_NAME (in `INAV` and `GCS` modes)
+    * MSP_STATUS (in `INAV` mode)
+    * MSP_ANALOG (in `INAV` mode)
+    * MSP_BOXIDS (in `INAV` mode)
+    * MSP_RAW_GPS (in `INAV` mode)
 * Receive unsolicited
-  * MSP2_COMMON_SET_RADAR_POS
+    * MSP2_COMMON_SET_RADAR_POS
 
 Note that the device firmware assumes that MSP buffer sizes are "as specification"; exceeding the expected message buffer size may crash the device (mea culpa).
 

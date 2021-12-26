@@ -51,10 +51,10 @@ Here the user can select a media file and start options, i.e. whether and when t
 
 * In order for mwp to start the replay, the **Start** check-button must be selected. If it is:
 * The user can enter an optional time (minutes : seconds) that defines when the video starts relative to the start of the BB log:
-  * No time is entered, or the time is 0:00 : The video starts at the start of the BBL replay.
-  * The time is positive (e.g. 2:34.5 (two minutes, 34.5 seconds), as the example: Here the video would start when BB log starts, at an offset 2:34.5 into the video (i.e. the pilot started FPV recording 2m 34.5s before arming the aircraft).
-  * If the time is negative (including "-0" minutes), then the start of the video is delayed by that amount; so -0:57 would delay the start of the video by 57 seconds relative to the start of BB log replay.
-  * Pausing the replay will pause the video, and vice-versa.
+    * No time is entered, or the time is 0:00 : The video starts at the start of the BBL replay.
+    * The time is positive (e.g. 2:34.5 (two minutes, 34.5 seconds), as the example: Here the video would start when BB log starts, at an offset 2:34.5 into the video (i.e. the pilot started FPV recording 2m 34.5s before arming the aircraft).
+    * If the time is negative (including "-0" minutes), then the start of the video is delayed by that amount; so -0:57 would delay the start of the video by 57 seconds relative to the start of BB log replay.
+    * Pausing the replay will pause the video, and vice-versa.
 
 When playing a file (vice a stream), the player gains a progress bar (which can be used to position the stream and "beginning" and "end" buttons.
 
@@ -105,9 +105,9 @@ make install
 
 * `gst-devmon` provides the same video device monitoring as employed by mwp. It should report the insertion and removal of camera devices, together with their attributes.
 * `gst-video-player` provides the same video replay capability as {{ mwp }}
-  * Camera stream : `gst-video-player v4l2:///dev/video0` . Assuming the camera, as reported by `gst-devmon` is `/dev/video0`.
-  * File: `gst-video-player somefile.mp4`
-  * Web stream `gst-video-player https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm`
+    * Camera stream : `gst-video-player v4l2:///dev/video0` . Assuming the camera, as reported by `gst-devmon` is `/dev/video0`.
+    * File: `gst-video-player somefile.mp4`
+    * Web stream `gst-video-player https://www.freedesktop.org/software/gstreamer-sdk/data/media/sintel_trailer-480p.webm`
 
 ## Other OS
 

@@ -55,9 +55,9 @@ When "Convert Altitudes ..." is invoked, the user is presented with the followin
 
 * The user can select to convert the selected WPs to either Relative or Absolute. Only geospatial WPs are converted, and if the WP is already of the selected mode, it will be ignored.
 * The user can select the reference home altitude by:
-  * Entering a manual value, does not require an internet connection.
-  * Dragging the brown "home" icon to the required position
-  * Using the position of the 1st geographic WP, which does not have to be in the conversion selection.
+    * Entering a manual value, does not require an internet connection.
+    * Dragging the brown "home" icon to the required position
+    * Using the position of the 1st geographic WP, which does not have to be in the conversion selection.
 
   If "Apply" is clicked, the conversion proceeds, downloading elevation data from the internet as required. Cancel closes the dialogue and clears the selection from the Mission Editor.
 

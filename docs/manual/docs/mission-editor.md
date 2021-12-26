@@ -70,11 +70,11 @@ Way points can be edited Mission Editor. When a row is selected, the column head
 
 * Position. The position of a way point may be changed by dragging the way point icon on the map or editing in the list.
 * Order. The order of way points may be changed by either:
-  * Using the “Move Up” and “Move Down” entries from the mission pop-up menu; or
-  * Dragging the list item to the desired position. In order to drag, the entry must be 'grabbed' on the ID column. In that screen-shot (below), way point 7 is being dropped between way points 3 and 4.
-  * At the end of the drop, the list and markers on the map will be re-ordered.
+    * Using the “Move Up” and “Move Down” entries from the mission pop-up menu; or
+    * Dragging the list item to the desired position. In order to drag, the entry must be 'grabbed' on the ID column. In that screen-shot (below), way point 7 is being dropped between way points 3 and 4.
+    * At the end of the drop, the list and markers on the map will be re-ordered.
 
-    ![dnd](images/ui_mission_dnd.png){: width="35%" }
+        ![dnd](images/ui_mission_dnd.png){: width="35%" }
 
 * Type. The way point type may be selected from a drop down menu embedded in the "Type" column of the list:
 

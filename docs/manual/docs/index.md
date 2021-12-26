@@ -68,7 +68,7 @@ The tools are designed to be portable and as far as possible platform and archit
 Build and installation is described in the following sections:
 
 * [Generic build and installation](Building-with-meson-and-ninja.md) Linux, FreeBSD, Windows / WSL
-  * Windows additional information ([Win11](mwp-in-Windows-11---WSL-G.md), [Win10](https://github.com/stronnag/mwptools/wiki/mwp-in-WSL) and [earlier](https://github.com/stronnag/mwptools/wiki/mwp-on-cygwin))
+    * Windows additional information ([Win11](mwp-in-Windows-11---WSL-G.md), [Win10](https://github.com/stronnag/mwptools/wiki/mwp-in-WSL) and [earlier](https://github.com/stronnag/mwptools/wiki/mwp-on-cygwin))
 
 ### Installation Tutorial
 
