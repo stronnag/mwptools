@@ -38,8 +38,8 @@ public class FakeHome : GLib.Object {
 
     public FakeHomeDialog fhd;
     private static Champlain.MarkerLayer hmlayer;
-    private static Champlain.Label homep;
-    public bool is_visible = false;
+    public static Champlain.Label homep;
+    public static bool is_visible = false;
     public signal void fake_move(double lat, double lon);
 
 

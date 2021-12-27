@@ -282,7 +282,7 @@ public class ListBox : GLib.Object
         }
         else
         {
-            if(fhome != null && fhome.is_visible)
+            if(fhome != null && FakeHome.is_visible)
             {
                 double hlat,hlon;
                 fhome.get_fake_home(out hlat, out hlon);
@@ -1755,7 +1755,7 @@ public class ListBox : GLib.Object
     private void land_set_mode()
     {
         altmodedialog.ui_action = 2;
-        if (!fhome.is_visible)
+        if (!FakeHome.is_visible)
         {
             set_fake_home();
             FakeHome.usedby |= FakeHome.USERS.ElevMode;
@@ -1769,7 +1769,7 @@ public class ListBox : GLib.Object
     private void cvt_alt_mode()
     {
         altmodedialog.ui_action = 2;
-        if (!fhome.is_visible)
+        if (!FakeHome.is_visible)
         {
             FakeHome.usedby |= FakeHome.USERS.ElevMode;
             set_fake_home();
@@ -1986,7 +1986,7 @@ public class ListBox : GLib.Object
 
         HomePos hp={0,0,false};
 
-        if(fhome != null && fhome.is_visible)
+        if(fhome != null && FakeHome.is_visible)
         {
             hp.valid = true;
             fhome.get_fake_home(out hp.hlat, out hp.hlon);
@@ -2380,12 +2380,12 @@ public class ListBox : GLib.Object
 
     public bool fake_home_visible()
     {
-        return fhome.is_visible;
+        return FakeHome.is_visible;
     }
 
     public void toggle_fake_home()
     {
-        if (fhome.is_visible)
+        if (FakeHome.is_visible)
             unset_fake_home();
         else
             set_fake_home();

@@ -9788,10 +9788,7 @@ case 0:
         {
             save_mission_file(last_file);
         }
-        Timeout.add_seconds(1, () => {
-                get_mission_pix();
-                return Source.REMOVE;
-            });
+		get_mission_pix();
     }
 
     private string get_cached_mission_image(string mfn)
@@ -9822,6 +9819,25 @@ case 0:
         return GLib.Path.build_filename(cached,sb.str);
     }
 
+	private Champlain.MarkerLayer show_marker_points() {
+		var ml = new Champlain.MarkerLayer();
+		if (FakeHome.is_visible) {
+			var c = FakeHome.homep.get_color();
+			var p = new Champlain.Point.full(40.0, c);
+			p.latitude = FakeHome.homep.latitude;
+			p.longitude = FakeHome.homep.longitude;
+			ml.add_marker(p);
+		}
+		foreach(var m in markers.markers.get_markers()) {
+			var c = ((Champlain.Label)m).get_color();
+			var p = new Champlain.Point.full(40.0, c);
+			p.latitude = m.latitude;
+			p.longitude = m.longitude;
+			ml.add_marker(p);
+		}
+		return ml;
+	}
+
     private void get_mission_pix()
     {
         if(last_file != null)
@@ -9830,40 +9846,26 @@ case 0:
             var wdw = embed.get_window();
             var w = wdw.get_width();
             var h = wdw.get_height();
-            Gdk.Pixbuf pixb = null;
-            try {
-                if(is_wayland) {
-                    int x,y;
-                    bool ok;
-                    string ofn;
-                    wdw.get_origin (out x, out y);
-                    ScreenShot ss = Bus.get_proxy_sync (BusType.SESSION,
-                                                 "org.gnome.Shell.Screenshot",
-                                                 "/org/gnome/Shell/Screenshot");
-                    ss.ScreenshotArea(x, y, w, h, false, path, out ok, out ofn);
-					if (ok) {
-						var img = new Gtk.Image.from_file(ofn);
-						pixb = img.get_pixbuf();
-					}
-                } else {
-					pixb = Gdk.pixbuf_get_from_window (wdw, 0, 0, w, h);
-                }
-                int dw,dh;
-                if(w > h) {
-                    dw = 256;
-                    dh = 256* h / w;
-                } else {
-                    dh = 256;
-                    dw = 256* w / h;
-                }
-				if(pixb != null) {
-					var spixb = pixb.scale_simple(dw, dh, Gdk.InterpType.BILINEAR);
-					spixb.save(path, "png");
-				}
-            }
-            catch (Error e) {
-                MWPLog.message ("save preview: %s\n", e.message);
-            }
+			double dw,dh;
+			if(w > h) {
+				dw = 256;
+				dh = 256* h / w;
+			} else {
+				dh = 256;
+				dw = 256* w / h;
+			}
+
+			var ml = show_marker_points();
+			view.add_layer(ml);
+			var ssurf = view.to_surface(true);
+			var nsurf = new Cairo.Surface.similar (ssurf, Cairo.Content.COLOR, (int)dw, (int)dh);
+			var cr = new Cairo.Context(nsurf);
+			cr.scale  (dw/w, dh/h);
+			cr.set_source_surface(ssurf, 0, 0);
+			cr.paint();
+			ml.remove_all();
+			view.remove_layer(ml);
+			nsurf.write_to_png(path);
         }
     }
 
