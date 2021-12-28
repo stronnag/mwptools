@@ -1116,8 +1116,13 @@ The serial port problem can be mitigated by a "serial to IP" solution; mwptools 
 <li>Down load the <code>.deb</code> file</li>
 <li><code>cd</code> to where ever you saved the <code>.deb</code> file</li>
 <li>In the wsl terminal
-  <code>sudo apt install mwptools_0.0.0-1_amd64.deb</code></li>
+  <code>sudo apt install mwptools_x.y.z_amd64.deb</code></li>
 </ul>
+<p>Example: using <code>curl</code> to download ...</p>
+<div class="highlight"><pre><span></span><code>$ curl -LO https://github.com/stronnag/mwptools/releases/download/x.y.z/mwptools_x.y.z_amd64.deb
+$ sudo apt install ./mwptools_x.y.z_amd64.deb
+</code></pre></div>
+<p>Where <code>x.y.z</code> represents the build tag.</p>
 <h4 id="b-unified-first-time-build-script-build-and-install-from-source">(b) Unified first-time build script (build and install from source)<a class="headerlink" href="#b-unified-first-time-build-script-build-and-install-from-source" title="Permanent link">#</a></h4>
 <p>For the initial installation, there is a unified / simplified install / build / install script: <a href="https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/#easy-first-time-install-on-debian-and-ubuntu">Instructions</a></p>
 <p>This installs mwptools and blackbox-tools-inav to <code>$HOME/.local/bin</code>.</p>
