@@ -60,9 +60,9 @@ namespace MissionPix {
 		mlayer.hide();
 	}
 
-	public void get_mission_pix(GtkChamplain.Embed e, Champlain.MarkerLayer ml, string last_file)
+	public void get_mission_pix(GtkChamplain.Embed e, Champlain.MarkerLayer? ml, string? last_file)
     {
-        if(last_file != null)
+        if(last_file != null && ml != null)
         {
             var path = get_cached_mission_image(last_file);
             var wdw = e.get_window();
