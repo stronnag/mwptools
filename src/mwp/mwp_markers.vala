@@ -18,6 +18,28 @@
 using GLib;
 using Clutter;
 
+public class MissionMarkers : Champlain.MarkerLayer {
+	public MissionMarkers(Champlain.MarkerLayer ml) {
+		if (FakeHome.is_visible) {
+			var c = FakeHome.homep.get_color();
+			var p = new Champlain.Point.full(40.0, c);
+			p.latitude = FakeHome.homep.latitude;
+			p.longitude = FakeHome.homep.longitude;
+			this.add_marker(p);
+		}
+		var lm = ml.get_markers();
+		lm.reverse();
+		foreach(var m in lm) {
+			var c = ((Champlain.Label)m).get_color();
+			var p = new Champlain.Point.full(40.0, c);
+			p.latitude = m.latitude;
+			p.longitude = m.longitude;
+			this.add_marker(p);
+		}
+	}
+}
+
+
 public class MWPMarkers : GLib.Object
 {
     public Champlain.PathLayer path;                     // Mission outline

@@ -9819,25 +9819,6 @@ case 0:
         return GLib.Path.build_filename(cached,sb.str);
     }
 
-	private Champlain.MarkerLayer show_marker_points() {
-		var ml = new Champlain.MarkerLayer();
-		if (FakeHome.is_visible) {
-			var c = FakeHome.homep.get_color();
-			var p = new Champlain.Point.full(40.0, c);
-			p.latitude = FakeHome.homep.latitude;
-			p.longitude = FakeHome.homep.longitude;
-			ml.add_marker(p);
-		}
-		foreach(var m in markers.markers.get_markers()) {
-			var c = ((Champlain.Label)m).get_color();
-			var p = new Champlain.Point.full(40.0, c);
-			p.latitude = m.latitude;
-			p.longitude = m.longitude;
-			ml.add_marker(p);
-		}
-		return ml;
-	}
-
     private void get_mission_pix()
     {
         if(last_file != null)
@@ -9855,7 +9836,7 @@ case 0:
 				dw = 256* w / h;
 			}
 
-			var ml = show_marker_points();
+			var ml = new MissionMarkers(markers.markers);
 			view.add_layer(ml);
 			var ssurf = view.to_surface(true);
 			var nsurf = new Cairo.Surface.similar (ssurf, Cairo.Content.COLOR, (int)dw, (int)dh);
