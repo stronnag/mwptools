@@ -2621,7 +2621,7 @@ public class MWP : Gtk.Application {
                    });
 
         ag.connect('v', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
-                get_mission_pix();
+                MissionPix.get_mission_pix(embed, markers.markers, last_file);
                 return true;
             });
 
@@ -9788,67 +9788,9 @@ case 0:
         {
             save_mission_file(last_file);
         }
-		get_mission_pix();
+		MissionPix.get_mission_pix(embed, markers.markers, last_file);
     }
 
-    private string get_cached_mission_image(string mfn)
-    {
-        var cached = GLib.Path.build_filename(Environment.get_user_cache_dir(),
-                                              "mwp");
-        try
-        {
-            var dir = File.new_for_path(cached);
-            dir.make_directory_with_parents ();
-        } catch {}
-
-        string md5name = mfn;
-        if(!mfn.has_suffix(".mission"))
-        {
-            var ld = mfn.last_index_of_char ('.');
-            if(ld != -1)
-            {
-                StringBuilder s = new StringBuilder(mfn[0:ld]);
-                s.append(".mission");
-                md5name = s.str;
-            }
-        }
-
-        var chk = Checksum.compute_for_string(ChecksumType.MD5, md5name);
-        StringBuilder sb = new StringBuilder(chk);
-        sb.append(".png");
-        return GLib.Path.build_filename(cached,sb.str);
-    }
-
-    private void get_mission_pix()
-    {
-        if(last_file != null)
-        {
-            var path = get_cached_mission_image(last_file);
-            var wdw = embed.get_window();
-            var w = wdw.get_width();
-            var h = wdw.get_height();
-			double dw,dh;
-			if(w > h) {
-				dw = 256;
-				dh = 256* h / w;
-			} else {
-				dh = 256;
-				dw = 256* w / h;
-			}
-
-			var ml = new MissionMarkers(markers.markers);
-			view.add_layer(ml);
-			var ssurf = view.to_surface(true);
-			var nsurf = new Cairo.Surface.similar (ssurf, Cairo.Content.COLOR, (int)dw, (int)dh);
-			var cr = new Cairo.Context(nsurf);
-			cr.scale  (dw/w, dh/h);
-			cr.set_source_surface(ssurf, 0, 0);
-			cr.paint();
-			ml.remove_all();
-			view.remove_layer(ml);
-			nsurf.write_to_png(path);
-        }
-    }
 
     private void save_mission_file(string fn, uint mask=0)
     {
@@ -10263,7 +10205,7 @@ case 0:
 							}
                         }
 
-                        var ifn = get_cached_mission_image(fn);
+                        var ifn = MissionPix.get_cached_mission_image(fn);
                         try
                         {
                             pixbuf = new Gdk.Pixbuf.from_file_at_scale (ifn, 256,
