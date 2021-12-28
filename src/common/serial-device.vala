@@ -1278,6 +1278,7 @@ public class MWSerial : Object {
 							break;
 
 						case States.S_HEADER2:
+							xflags = devbuf[nc];
 							if((devbuf[nc] == readdirn ||
 								devbuf[nc] == writedirn ||
 								devbuf[nc] == '!'))
@@ -1365,7 +1366,7 @@ public class MWSerial : Object {
 								state = States.S_HEADER;
 								stats.msgs++;
 								if(cmd < MSP.Cmds.MSPV2 || cmd > MSP.Cmds.LTM_BASE)
-									serial_event(cmd, rxbuf, csize, 0, errstate);
+									serial_event(cmd, rxbuf, csize, xflags, errstate);
 								irxbufp = 0;
 							}
 							else
@@ -1383,6 +1384,7 @@ public class MWSerial : Object {
 							break;
 
 						case States.S_X_HEADER2:
+							xflags = devbuf[nc];
 							if((devbuf[nc] == readdirn ||
 								devbuf[nc] == writedirn ||
 								devbuf[nc] == '!'))
@@ -1407,7 +1409,6 @@ public class MWSerial : Object {
 						case States.S_X_FLAGS:
 							checksum ^= devbuf[nc];
 							checksum2 = CRC8.dvb_s2(0, devbuf[nc]);
-							xflags = devbuf[nc];
 							state = States.S_X_ID1;
 							break;
 						case States.S_X_ID1:
@@ -1455,8 +1456,7 @@ public class MWSerial : Object {
 							{
 								state = (encap) ? States.S_CHECKSUM : States.S_HEADER;
 								stats.msgs++;
-								serial_event((MSP.Cmds)xcmd, rxbuf, csize,
-											 xflags, errstate);
+								serial_event((MSP.Cmds)xcmd, rxbuf, csize, xflags, errstate);
 								irxbufp = 0;
 							}
 							else

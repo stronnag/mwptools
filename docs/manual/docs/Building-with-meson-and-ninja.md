@@ -153,6 +153,15 @@ If you install to system locations, it is possible that `sudo ninja install` wil
 
 ### Help!!!!
 
+#### Accessing the serial port
+
+The user needs to have read / write permissions on the serial port in order to communicate with a flight controller. This is done by adding the user to a group:
+
+* Arch Linux: `sudo usermod -aG uucp $USER`
+* Debian / Ubuntu / Fedora (and derivatives): `sudo usermod -aG dialout $USER`
+* FreeBSD: `sudo pw group mod dialer -m $USER`
+* Windows/WSL: Not needed, no serial passthrough. Use the [ser2udp](mwp-in-Windows-11---WSL-G.md#serial-device) bridge instead.
+
 #### You've installed a new version but you still get the old one!
 
 If you used the `deb-install.sh` script, then it installed everything into `$HOME/.local/bin` (and other folders under `~/.local`). This is  nice because:

@@ -37,6 +37,10 @@ Bluetooth may be specified by either an `rfcomm` device node (`/dev/rfcommX`) or
 35:53:17:04:07:27
 ```
 
+### Serial permissions
+
+It is necesary for the user to have read / write permission on serial devices. The installation guide provides [instructions](Building-with-meson-and-ninja.md#accessing-the-serial-port).
+
 ## IP protocols (UDP and TCP)
 
 mwp uses a pseudo-URL format for TCP and UDP connections `udp://host:port` and `tcp://host:port` (where `host` is either a hostname or an IP address as required).

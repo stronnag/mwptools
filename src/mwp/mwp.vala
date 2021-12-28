@@ -6721,7 +6721,7 @@ case 0:
             switch(cmd)
             {
 			case MSP.Cmds.NAME:
-				if (len == 0) {
+				if (xflags == '<') {
                         handle_radar(msp, cmd, raw, len, xflags, errs);
 				} else {
 					queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
@@ -6856,7 +6856,7 @@ case 0:
                 break;
 
             case MSP.Cmds.NAME:
-                if (len == 0) {
+                if (xflags == '<') {
                     handle_radar(msp, cmd, raw, len, xflags, errs);
                     return;
                 } else {
@@ -6879,7 +6879,7 @@ case 0:
                 break;
 
             case MSP.Cmds.BOXIDS:
-                if (len == 0) {
+                if (xflags == '<') {
                     handle_radar(msp, cmd, raw, len, xflags, errs);
                     return;
                 }
@@ -6966,7 +6966,7 @@ case 0:
                 break;
 
             case MSP.Cmds.FC_VARIANT:
-                if (len == 0) {
+                if (xflags == '<') {
                     handle_radar(msp, cmd, raw, len, xflags, errs);
                     return;
                 } else {
@@ -7048,7 +7048,7 @@ case 0:
                 break;
 
             case MSP.Cmds.FC_VERSION:
-                if (len == 0) {
+                if (xflags == '<') {
                     handle_radar(msp, cmd, raw, len, xflags, errs);
                     return;
                 } else {
@@ -7395,7 +7395,7 @@ case 0:
                 break;
 
             case MSP.Cmds.STATUS:
-                if (len == 0) {
+                if (xflags == '<') {
                     handle_radar(msp, cmd, raw, len, xflags, errs);
                     return;
                 } else {
@@ -7642,7 +7642,7 @@ case 0:
                 break;
 
             case MSP.Cmds.RAW_GPS:
-                if (len == 0) {
+                if (xflags == '<') {
                     handle_radar(msp, cmd, raw, len, xflags, errs);
                 } else {
                 MSP_RAW_GPS rg = MSP_RAW_GPS();
@@ -10027,9 +10027,9 @@ case 0:
             last_file = fname;
             update_title_from_file(fname);
         }
-        else
-            if (warn)
-                mwp_warning_box("Failed to open file");
+        else if (warn) {
+			mwp_warning_box("Failed to open file");
+		}
     }
 
     private void set_view_zoom(uint z)

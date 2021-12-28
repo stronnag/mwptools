@@ -30,7 +30,16 @@ Use one of the following:
 * Down load the `.deb` file
 * `cd ` to where ever you saved the `.deb` file
 * In the wsl terminal
-  `sudo apt install mwptools_0.0.0-1_amd64.deb`
+  `sudo apt install mwptools_x.y.z_amd64.deb`
+
+Example: using `curl` to download ...
+
+```
+$ curl -LO https://github.com/stronnag/mwptools/releases/download/x.y.z/mwptools_x.y.z_amd64.deb
+$ sudo apt install ./mwptools_x.y.z_amd64.deb
+```
+
+Where `x.y.z` represents the build tag.
 
 #### (b) Unified first-time build script (build and install from source)
 
