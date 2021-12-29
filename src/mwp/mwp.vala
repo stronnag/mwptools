@@ -2621,7 +2621,7 @@ public class MWP : Gtk.Application {
                    });
 
         ag.connect('v', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
-                MissionPix.get_mission_pix(embed, markers.markers, last_file);
+                MissionPix.get_mission_pix(embed, ls.to_mission(), last_file);
                 return true;
             });
 
@@ -9788,7 +9788,7 @@ case 0:
         {
             save_mission_file(last_file);
         }
-		MissionPix.get_mission_pix(embed, markers.markers, last_file);
+		MissionPix.get_mission_pix(embed, ls.to_mission(), last_file);
     }
 
 

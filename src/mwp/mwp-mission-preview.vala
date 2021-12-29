@@ -15,6 +15,136 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
+
+class MissionPix {
+//	private static Champlain.MarkerLayer mlayer;
+//	private static bool is_init = false;
+	public static string get_cached_mission_image(string mfn)
+    {
+        var cached = GLib.Path.build_filename(Environment.get_user_cache_dir(),
+                                              "mwp");
+        try
+        {
+            var dir = File.new_for_path(cached);
+            dir.make_directory_with_parents ();
+        } catch {}
+
+        string md5name = mfn;
+        if(!mfn.has_suffix(".mission"))
+        {
+            var ld = mfn.last_index_of_char ('.');
+            if(ld != -1)
+            {
+                StringBuilder s = new StringBuilder(mfn[0:ld]);
+                s.append(".mission");
+                md5name = s.str;
+            }
+        }
+
+        var chk = Checksum.compute_for_string(ChecksumType.MD5, md5name);
+        StringBuilder sb = new StringBuilder(chk);
+        sb.append(".png");
+        return GLib.Path.build_filename(cached,sb.str);
+    }
+
+	/*
+	private static Clutter.Color get_colour(MSP.Action typ) {
+		Clutter.Color colour;
+		switch (typ) {
+		case MSP.Action.WAYPOINT:
+			colour = { 0, 0xff, 0xff, 0xff};
+			break;
+		case MSP.Action.POSHOLD_TIME:
+			colour = { 152, 70, 234, 0xff};
+			break;
+		case MSP.Action.POSHOLD_UNLIM:
+			colour = { 0x4c, 0xfe, 0, 0xff};
+			break;
+		case MSP.Action.RTH:
+			colour = { 0xff, 0x0, 0x0, 0xff};
+			break;
+		case MSP.Action.LAND:
+			colour = { 0xff, 0x9a, 0xf0, 0xff};
+			break;
+		case MSP.Action.JUMP:
+			colour = { 0xed, 0x51, 0xd7, 0xff};
+			break;
+		case MSP.Action.SET_POI:
+		case MSP.Action.SET_HEAD:
+			colour = { 0xff, 0xfb, 0x2b, 0xff};
+			break;
+		default:
+			colour = { 0xe0, 0xe0, 0xe0, 0xff};
+			break;
+        }
+		return colour;
+	}
+
+	public static void temp_mission_markers(Champlain.View view, Mission ms) {
+		if (!is_init) {
+			mlayer = new Champlain.MarkerLayer();
+			view.add_layer(mlayer);
+			is_init = true;
+		}
+		if (FakeHome.is_visible) {
+			var c = FakeHome.homep.get_color();
+			var p = new Champlain.Point.full(MWP.conf.misciconsize, c);
+			p.latitude = FakeHome.homep.latitude;
+			p.longitude = FakeHome.homep.longitude;
+			mlayer.add_marker(p);
+		}
+		Champlain.Point p = null;
+		foreach (var m in ms.get_ways()) {
+			var col = get_colour(m.action);
+			if (m.action == MSP.Action.RTH ||
+				m.action == MSP.Action.JUMP ||
+				m.action == MSP.Action.SET_HEAD) {
+				p.set_color(col);
+			} else {
+				p = new Champlain.Point.full(32, col);
+				p.latitude = m.lat;
+				p.longitude = m.lon;
+				print("%d %f %f %s\n", m.no, m.lat, m.lon, col.to_string());
+				mlayer.add_marker(p);
+			}
+		}
+		mlayer.show();
+	}
+
+	private static void remove_mission_markers() {
+		mlayer.remove_all();
+		mlayer.hide();
+	}
+	*/
+	public static void get_mission_pix(GtkChamplain.Embed e, Mission? ms, string? last_file)
+    {
+        if(last_file != null && ms != null)
+        {
+            var path = get_cached_mission_image(last_file);
+            var wdw = e.get_window();
+            var w = wdw.get_width();
+            var h = wdw.get_height();
+			double dw,dh;
+			if(w > h) {
+				dw = 256;
+				dh = 256* h / w;
+			} else {
+				dh = 256;
+				dw = 256* w / h;
+			}
+
+//			temp_mission_markers(e.champlain_view, ms);
+			var ssurf = e.champlain_view.to_surface(true);
+			var nsurf = new Cairo.Surface.similar (ssurf, Cairo.Content.COLOR, (int)dw, (int)dh);			var cr = new Cairo.Context(nsurf);
+			cr.scale  (dw/w, dh/h);
+			cr.set_source_surface(ssurf, 0, 0);
+			cr.paint();
+			nsurf.write_to_png(path);
+//			remove_mission_markers();
+        }
+    }
+}
+
 public struct HomePos
 {
     double hlat;
