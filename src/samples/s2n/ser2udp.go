@@ -10,6 +10,8 @@ import (
 	"flag"
 	"strings"
 	"fmt"
+	"os/signal"
+	"syscall"
 )
 
 type SChan struct {
@@ -123,60 +125,66 @@ func main() {
 
 	mc0 := make(chan SChan)
 	uc0 := make(chan UChan)
+	cc := make(chan os.Signal, 1)
+	signal.Notify(cc, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	var ua net.Addr
-	go read_UDP(uc0)
+	go func() {
+		var ua net.Addr
+		go read_UDP(uc0)
 
-	for {
-		portnam := ""
-		if devnam == "auto" {
-			portnam = enumerate_ports()
-		} else {
-			portnam = devnam
-		}
-		if portnam != "" {
-			serdev, err = serial.Open(portnam, mode)
-			if err == nil {
-				if verbose > 0 {
-					log.Printf("Opened %s\n", portnam)
-				}
-				go read_Serial(mc0)
-				serok = true
+		for {
+			portnam := ""
+			if devnam == "auto" {
+				portnam = enumerate_ports()
 			} else {
-				serok = false
+				portnam = devnam
 			}
+			if portnam != "" {
+				serdev, err = serial.Open(portnam, mode)
+				if err == nil {
+					if verbose > 0 {
+						log.Printf("Opened %s\n", portnam)
+					}
+					go read_Serial(mc0)
+					serok = true
+				} else {
+					serok = false
+				}
 
-			for serok {
-				select {
-				case s := <-mc0:
-					if len(s.data) == 0 {
-						serok = false
-						serdev.Close()
-						if verbose > 0 {
-							log.Println("Closed serial")
-						}
-					} else {
-						if ua != nil && len(s.data) > 0 {
-							if verbose > 1 {
-								log.Printf("Write to udp %d: <%s>\n", len(s.data), string(s.data))
+				for serok {
+					select {
+					case s := <-mc0:
+						if len(s.data) == 0 {
+							serok = false
+							serdev.Close()
+							if verbose > 0 {
+								log.Println("Closed serial")
 							}
-							uconn.WriteTo(s.data, ua)
+						} else {
+							if ua != nil && len(s.data) > 0 {
+								if verbose > 1 {
+									log.Printf("Write to udp %d: <%s>\n", len(s.data), string(s.data))
+								}
+								uconn.WriteTo(s.data, ua)
+							}
 						}
-					}
-				case u := <-uc0:
-					if len(u.data) == 0 {
-						return
-					}
-					ua = u.addr
-					if serok {
-						if verbose > 1 {
-							log.Printf("Write to serial %d: <%s>\n", len(u.data), string(u.data))
+					case u := <-uc0:
+						if len(u.data) == 0 {
+							return
 						}
-						serdev.Write(u.data)
+						ua = u.addr
+						if serok {
+							if verbose > 1 {
+								log.Printf("Write to serial %d: <%s>\n", len(u.data), string(u.data))
+							}
+							serdev.Write(u.data)
+						}
 					}
 				}
+				time.Sleep(1 * time.Second)
 			}
-			time.Sleep(1 * time.Second)
 		}
-	}
+	}()
+	<-cc
+	log.Fatalln("Terminated")
 }
