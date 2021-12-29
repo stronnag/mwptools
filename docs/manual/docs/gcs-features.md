@@ -20,7 +20,7 @@ By default, it will display a tasteful gold star which one may drag around. It h
 
 ![Screenshot-20211206184606-246x131](https://user-images.githubusercontent.com/158229/144904439-33b82a8e-1b09-4bec-91ed-c8f04bfb7f88.png)
 
-If you don't like the icon, you can override it by creating your own icon in `~/.config/mwp/pixmaps/` (as one can for _any_ mwp specific icon), with the same file name as the default in `$prefix/share/mwp/pixmaps/`; i.e. override `$prefix/share/mwp/pixmaps/gcs.svg` with `~/.config/mwp/pixmaps/gcs.svg` (which could be a PNG, vice SVG; we're a real OS and file "extensions" are an advisory illusion).
+If you don't like the icon, you can override it [by creating your own icon](mwp-Configuration.md#settings-precedence-and-user-updates).
 
 * If `gpsd` is detected (on `localhost`), then the position will be driven by `gpsd`, as long as it has  a 3D fix.
 

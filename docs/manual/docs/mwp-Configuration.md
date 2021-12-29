@@ -221,3 +221,30 @@ This *may* not be installed by default, but should be available via the OS packa
 | wp-spotlight | Style for the 'next waypoint' highlight | Defines RGBA colour for 'next way point' highlight | "#ffffff60" |
 | wp-text-style | Style of text used for next WP display | Defines the way the WP numbers are displayed. Font, size and RGBA description (or well known name, with alpha) | "Sans 144/#ff000080" |
 | zone-detect | Application to return timezone from location | If supplied, the application will be used to return the timezone (in preference to geonames.org). The application should take latitude and longitude as parameters. See samples/tzget.sh | "" |
+
+## Settings precedence and user updates
+
+{{ mwp }} installs a number of files in `$prefix/share/mwp/`. The user can override these by creating an eponymous file in the user configuration directory, `~/.config/mwp/pixmaps/`. Such user configurations are never over-written on upgrade.
+
+For example, to replace a {{ mwp }} specific icon; i.e. replace the GCS Location icon (`$prefix/share/mwp/pixmaps/gcs.svg`) with a user defined file `~/.config/mwp/pixmaps/gcs.svg`.
+
+While the file name must be consistent, the format does not have to be; the replacement could be be a PNG, rather than SVG; we're a real OS and file "extensions" are an advisory illusion.
+
+### Example
+
+e.g. replace the inav-radar icon.
+
+```
+mkdir -p `~/config/mwp/pixmaps
+# copy the preview image
+cp ~/.local/share/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/
+# (optionally) resize it to 32x32 pixels
+mogrify -resize 80% ~/config/mwp/pixmaps/preview.png
+# and rename it, mwp doesn't care about the 'extension', this is not MSDOS:)
+mv  ~/config/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/inav-radar.svg
+# and verify ... perfect
+file ~/.config/mwp/pixmaps/inav-radar.svg
+/home/jrh/.config/mwp/pixmaps/inav-radar.svg: PNG image data, 32 x 32, 8-bit/color RGBA, non-interlaced
+```
+
+Note also that the resize step is no longer required, as {{ mwp }} scales the icon according to the `misc-icon-size` setting.

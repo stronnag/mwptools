@@ -1,7 +1,7 @@
 # mwp manual
 
 * Uses `mkdocs`
-  * Build navigable HTML documentation
+  * Build navigable and searchable HTML documentation
   * Generate PDF manual
 
 ## Dependencies
@@ -28,7 +28,6 @@ gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook \
   -dNOPAUSE -dBATCH -dColorImageResolution=150 \
     -sOutputFile=../mwptools.pdf mwptools.pdf
 ```
-
 
 Push HTML docs to GitHub pages (maintainer):
 

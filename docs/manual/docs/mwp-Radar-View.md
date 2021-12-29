@@ -127,25 +127,8 @@ There are simulators for both inav-radar and MAVLink 'Traffic Report' (e.g. uAvi
 
 ## Changing the Radar Symbols
 
-Any map symbol used by {{ mwp }} can be changed by the user; in the image above, the inav radar node symbol has been changed from the default stylised inav multirotor to a smaller version of the mission replay "paper plane" symbol as follows:
+Any map symbol used by {{ mwp }} can be changed by the user; in the image above, the inav radar node symbol has been changed from the default stylised inav multirotor to a smaller version of the mission replay "paper plane" symbol as described in [creating your own icon](mwp-Configuration.md#settings-precedence-and-user-updates).
 
-* All the default {{ mwp }} icons / map symbols can be found in `$prefix/share/mwp/pixmaps/` (e.g. `~/.local/share/mwp/pixmaps` for a "local" installation).
-* Create your own icon with the equivalent name in `~/config/mwp/pixmaps/`.
-
-The icons in `~/config/mwp/pixmaps/` are found before the defaults.
-
-```
-mkdir -p `~/config/mwp/pixmaps
-# copy the preview image
-cp /usr/share/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/
-# (optionally) resize it to 32x32 pixels
-mogrify -resize 80% ~/config/mwp/pixmaps/preview.png
-# and rename it, mwp doesn't care about the 'extension', this is not MSDOS:)
-mv  ~/config/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/inav-radar.svg
-# and verify ... perfect
-file ~/.config/mwp/pixmaps/inav-radar.svg
-/home/jrh/.config/mwp/pixmaps/inav-radar.svg: PNG image data, 32 x 32, 8-bit/color RGBA, non-interlaced
-```
 ## Protocol documentation
 
 ###  MAVLink 'Traffic Report' (e.g. uAvionix PingRX)
