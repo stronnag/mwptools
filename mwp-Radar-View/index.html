@@ -1164,23 +1164,7 @@ which should be 'mainly harmless' for normal operations. It's entirely acceptabl
 <h2 id="simulators">Simulators<a class="headerlink" href="#simulators" title="Permanent link">#</a></h2>
 <p>There are simulators for both inav-radar and MAVLink 'Traffic Report' (e.g. uAvionix PingRX) in the <code>mwptools/samples/radar</code> directory.</p>
 <h2 id="changing-the-radar-symbols">Changing the Radar Symbols<a class="headerlink" href="#changing-the-radar-symbols" title="Permanent link">#</a></h2>
-<p>Any map symbol used by <a href="https://github.com/stronnag/mwptools">mwp</a> can be changed by the user; in the image above, the inav radar node symbol has been changed from the default stylised inav multirotor to a smaller version of the mission replay "paper plane" symbol as follows:</p>
-<ul>
-<li>All the default <a href="https://github.com/stronnag/mwptools">mwp</a> icons / map symbols can be found in <code>$prefix/share/mwp/pixmaps/</code> (e.g. <code>~/.local/share/mwp/pixmaps</code> for a "local" installation).</li>
-<li>Create your own icon with the equivalent name in <code>~/config/mwp/pixmaps/</code>.</li>
-</ul>
-<p>The icons in <code>~/config/mwp/pixmaps/</code> are found before the defaults.</p>
-<div class="highlight"><pre><span></span><code>mkdir -p `~/config/mwp/pixmaps
-# copy the preview image
-cp /usr/share/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/
-# (optionally) resize it to 32x32 pixels
-mogrify -resize 80% ~/config/mwp/pixmaps/preview.png
-# and rename it, mwp doesn&#39;t care about the &#39;extension&#39;, this is not MSDOS:)
-mv  ~/config/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/inav-radar.svg
-# and verify ... perfect
-file ~/.config/mwp/pixmaps/inav-radar.svg
-/home/jrh/.config/mwp/pixmaps/inav-radar.svg: PNG image data, 32 x 32, 8-bit/color RGBA, non-interlaced
-</code></pre></div>
+<p>Any map symbol used by <a href="https://github.com/stronnag/mwptools">mwp</a> can be changed by the user; in the image above, the inav radar node symbol has been changed from the default stylised inav multirotor to a smaller version of the mission replay "paper plane" symbol as described in <a href="../mwp-Configuration/#settings-precedence-and-user-updates">creating your own icon</a>.</p>
 <h2 id="protocol-documentation">Protocol documentation<a class="headerlink" href="#protocol-documentation" title="Permanent link">#</a></h2>
 <h3 id="mavlink-traffic-report-eg-uavionix-pingrx">MAVLink 'Traffic Report' (e.g. uAvionix PingRX)<a class="headerlink" href="#mavlink-traffic-report-eg-uavionix-pingrx" title="Permanent link">#</a></h3>
 <p>The MAVLink implementation is <a href="https://uavionix.com/downloads/integration/uAvionix%20Ping%20Integration%20Guide.pdf">comprehensively documented</a> by the vendor.</p>

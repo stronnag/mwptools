@@ -490,6 +490,26 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#settings-precedence-and-user-updates" class="md-nav__link">
+    Settings precedence and user updates
+  </a>
+  
+    <nav class="md-nav" aria-label="Settings precedence and user updates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -911,6 +931,26 @@
           <li class="md-nav__item">
   <a href="#list-of-mwp-settings" class="md-nav__link">
     List of mwp settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings-precedence-and-user-updates" class="md-nav__link">
+    Settings precedence and user updates
+  </a>
+  
+    <nav class="md-nav" aria-label="Settings precedence and user updates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    Example
   </a>
   
 </li>
@@ -1611,6 +1651,24 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 </tr>
 </tbody>
 </table>
+<h2 id="settings-precedence-and-user-updates">Settings precedence and user updates<a class="headerlink" href="#settings-precedence-and-user-updates" title="Permanent link">#</a></h2>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> installs a number of files in <code>$prefix/share/mwp/</code>. The user can override these by creating an eponymous file in the user configuration directory, <code>~/.config/mwp/pixmaps/</code>. Such user configurations are never over-written on upgrade.</p>
+<p>For example, to replace a <a href="https://github.com/stronnag/mwptools">mwp</a> specific icon; i.e. replace the GCS Location icon (<code>$prefix/share/mwp/pixmaps/gcs.svg</code>) with a user defined file <code>~/.config/mwp/pixmaps/gcs.svg</code>.</p>
+<p>While the file name must be consistent, the format does not have to be; the replacement could be be a PNG, rather than SVG; we're a real OS and file "extensions" are an advisory illusion.</p>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">#</a></h3>
+<p>e.g. replace the inav-radar icon.</p>
+<div class="highlight"><pre><span></span><code>mkdir -p `~/config/mwp/pixmaps
+# copy the preview image
+cp ~/.local/share/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/
+# (optionally) resize it to 32x32 pixels
+mogrify -resize 80% ~/config/mwp/pixmaps/preview.png
+# and rename it, mwp doesn&#39;t care about the &#39;extension&#39;, this is not MSDOS:)
+mv  ~/config/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/inav-radar.svg
+# and verify ... perfect
+file ~/.config/mwp/pixmaps/inav-radar.svg
+/home/jrh/.config/mwp/pixmaps/inav-radar.svg: PNG image data, 32 x 32, 8-bit/color RGBA, non-interlaced
+</code></pre></div>
+<p>Note also that the resize step is no longer required, as <a href="https://github.com/stronnag/mwptools">mwp</a> scales the icon according to the <code>misc-icon-size</code> setting.</p>
                 
               
               
