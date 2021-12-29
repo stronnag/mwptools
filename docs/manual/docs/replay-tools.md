@@ -15,7 +15,7 @@ in order to replay log files, {{ mwp }} has a number of external dependencies, i
 <figcaption>Efficiency view</figcaption>
 </figure>
 !!! Note "Analysis"
-    The RSSI view shows why the aricraft is playing "failsafe ping-pong" at the right extreme of flight
+    The RSSI view shows why the aircraft is playing "failsafe ping-pong" at the right extreme of flight
 
 Binary packages are provided for many popular platforms.
 

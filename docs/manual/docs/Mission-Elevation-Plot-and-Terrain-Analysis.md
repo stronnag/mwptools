@@ -113,7 +113,7 @@ On all operating systems, the terrain graph is also plotted interactively, regar
 * The tool does not faithfully model the vehicle motion. As multi-rotor and fixed-wing have different climb behaviours, this would be quite complex.
 * RTH altitude has to specified if you wish to model it, and assumes 'AT LEAST' behaviour.
 
-## Datums
+## Datum
 
 Digital elevation services can use the WGS84 Ellipsoid or "sea level"; survey maps typically use AMSL (Above Mean Sea Level); GPS can report either or both of WGS Ellipsoid and above MSL (mean sea level). The "sea level" used by Bing Elevations is computed from a magnetic anomaly / gravity database and may not be the same as the AMSL "sea level" used by the survey.  **Caveat User**.
 
@@ -231,7 +231,7 @@ It's not yet perfect, we could be more aggressive in reaching just the clearance
 ## Climb and Dive Angle Report
 
 <figure markdown>
-![exmaple mission](images/barrule-mission.png){: width="60%" }
+![example mission](images/barrule-mission.png){: width="60%" }
 
 <figcaption>Mission used for climb /dive example</figcaption>
 </figure>
@@ -272,7 +272,7 @@ WP15 -  RTH	 -3.6°	(dive)
 
 If you run **mwp-plot-elevations** via **mwp**, the information is presented in a separate window.
 
-![cd-analysist](images/mwp-elev-cd-analysis.png){: width="30%" }
+![cd-analysts](images/mwp-elev-cd-analysis.png){: width="30%" }
 
 **mwp** can also highlight any legs that exceed user-defined (not 0) climb and dive angle limits. However, it's up to you to work out the best solution.
 

@@ -21,7 +21,7 @@ Flite is configured using two `gsettings` keys:
 
 | Key | Usage |
 | --- | ----- |
-| `speech-api` | Defines the speech api to be used, one of `none`, `espeak`, `speechd` or `flite`  |
+| `speech-api` | Defines the speech API to be used, one of `none`, `espeak`, `speechd` or `flite`  |
 | `flite-voice` | The voice file to be used. If not specified, the internal `slt` (female) voice is used. The value takes the absolute path name to a voice file, optionally followed by a `,` and a floating point speed factor (see below) |
 
 ```
@@ -33,7 +33,7 @@ $ gsettings set org.mwptools.planner flite-voice-file /home/jrh/.config/mwp/cmu_
 
 ### Voice Files
 
-flite can use external voice files that provide better quality than the built-in voices. Your distro may provide these voice files in an optional package, or you can download from http://www.festvox.org, eg. for flite 2.1 http://www.festvox.org/flite/packed/flite-2.1/voices/ (replace 2.1 with 2.0 etc., not all the 2.1 voices may exist for 2.0). The following script will bulk download the non-Indic voices; you can test them out with the `flite` application, or mwp's `ftest` [application](#test)).
+flite can use external voice files that provide better quality than the built-in voices. Your distro may provide these voice files in an optional package, or you can download from http://www.festvox.org, e.g. for flite 2.1 http://www.festvox.org/flite/packed/flite-2.1/voices/ (replace 2.1 with 2.0 etc., not all the 2.1 voices may exist for 2.0). The following script will bulk download the non-Indic voices; you can test them out with the `flite` application, or mwp's `ftest` [application](#test)).
 
 ```
 #!/bin/bash

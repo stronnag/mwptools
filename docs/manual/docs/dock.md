@@ -6,7 +6,7 @@ The **dock**, items 5 and 6 in the main window guide provides an area for option
 
 ![main](images/main-window.png){: width="100%" }
 
-This [slighty outdated video](https://vimeo.com/267437907) that describes dock usage probably better than words might do.
+This [slightly outdated video](https://vimeo.com/267437907) that describes dock usage probably better than words might do.
 
 <iframe src="https://player.vimeo.com/video/267437907?h=015ed1fdc6" width="640" height="431" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
 
@@ -41,7 +41,7 @@ The main dock controls are shown below:
 !!! note "This is an old image from c. 2015."
 
 * Highlight in **red** : the dock icons. Clicking on these will restore the window (either to the dock, or as a separate window)
-* Hightlight in **green** : the dock item bar. Where multiple items are in the dock, the tab icon may be dragged to reposition the docked window. In also has a pop-up menu, that allows the item
+* Highlight in **green** : the dock item bar. Where multiple items are in the dock, the tab icon may be dragged to reposition the docked window. In also has a pop-up menu, that allows the item
 to be completely hidden (but recoverable from the View menu), and
 * Highlight in  **blue** :  a iconify widget that will add the item to dock icon bar (the red highlight).
 

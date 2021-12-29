@@ -4,7 +4,8 @@ One of the great features of {{ inav }} 2.6 was the `safehome` capability. The u
 
 ## inav setting
 
-`safehome` is set in {{ inav }} usng the CLI, here's an example:
+`safehome` is set in {{ inav }} using the CLI, here's an example:
+
 ```
 # safehome
 safehome 0 1 508047750 -14948970
@@ -17,7 +18,7 @@ safehome 6 0 540954148 -47328458
 safehome 7 0 0 0
 ```
 
-As you see, it's not too user friendly; the parmeters are
+As you see, it's not too user friendly; the parameters are
 
 * Index (0 - 7)
 * Status (0 = don't use, 1 = can use)

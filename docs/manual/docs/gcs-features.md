@@ -16,7 +16,7 @@ A icon representing the "somewhat static" GCS location can be activated from the
 
 ![mwp-gcs](images/mwp-gcs_option.png){: width "20%" }.
 
-By default, it will display a tasteful gold star which one may drag around. It has little purpose other than showing some user specificed location (but see [below](#radar)).
+By default, it will display a tasteful gold star which one may drag around. It has little purpose other than showing some user specified location (but see [below](#radar)).
 
 ![Screenshot-20211206184606-246x131](https://user-images.githubusercontent.com/158229/144904439-33b82a8e-1b09-4bec-91ed-c8f04bfb7f88.png)
 
@@ -24,5 +24,5 @@ If you don't like the icon, you can override it by creating your own icon in `~/
 
 * If `gpsd` is detected (on `localhost`), then the position will be driven by `gpsd`, as long as it has  a 3D fix.
 
-* <span id="radar">The one  usage is when [inav-radar](mwp-Radar-View.md) is active; if the GCS icon is enabled (either by manual location or driven by `gpsd`), then rather than being a passive 'GCS' node, {{ mwp }} will masquerade as an 'INAV' node and advertise the GCS (icon) location to other nodes. This implies that you have sufficent LoRa slots to support this node usage.
+* <span id="radar">The one  usage is when [inav-radar](mwp-Radar-View.md) is active; if the GCS icon is enabled (either by manual location or driven by `gpsd`), then rather than being a passive 'GCS' node, {{ mwp }} will masquerade as an 'INAV' node and advertise the GCS (icon) location to other nodes. This implies that you have sufficient LoRa slots to support this node usage.
 </span>

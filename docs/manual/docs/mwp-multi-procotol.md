@@ -39,7 +39,7 @@ Bluetooth may be specified by either an `rfcomm` device node (`/dev/rfcommX`) or
 
 ### Serial permissions
 
-It is necesary for the user to have read / write permission on serial devices. The installation guide provides [instructions](Building-with-meson-and-ninja.md#accessing-the-serial-port).
+It is necessary for the user to have read / write permission on serial devices. The installation guide provides [instructions](Building-with-meson-and-ninja.md#accessing-the-serial-port).
 
 ## IP protocols (UDP and TCP)
 

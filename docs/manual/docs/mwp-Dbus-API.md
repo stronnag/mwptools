@@ -8,7 +8,7 @@ Dbus is a common Linux API for inter-process communications, and can be used fro
 
 It is intended that that the `ruby` examples cover the majority of the  API and provide canonical examples of usage.
 
-As this is a developer topic, please raise Github issues if clarification is needed or you have a use case that would benefit from extending the API.
+As this is a developer topic, please raise GitHub issues if clarification is needed or you have a use case that would benefit from extending the API.
 
 Please also note that the definitive definition of the DBus API is provided by DBus inspection.
 

@@ -1,6 +1,6 @@
 # Anonymous Maps
 
-**mwp** povides a pseudo-map proxy that just gives you a black map (or user specified tile). This may be useful for a number of use-cases:
+**mwp** provides a pseudo-map proxy that just gives you a black map (or user specified tile). This may be useful for a number of use-cases:
 
 * privacy
 * general obstinacy

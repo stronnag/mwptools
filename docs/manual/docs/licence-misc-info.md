@@ -1,6 +1,7 @@
-# Licence
+# Licence and Alternative Tools
 
-GPL v3 or later
+[GPL v3](https://www.gnu.org/licenses/gpl-3.0.en.html) or later.
+(c) Jonathan Hudson and contributors.
 
 # Alternative Tools
 

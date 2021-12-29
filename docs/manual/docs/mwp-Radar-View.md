@@ -44,7 +44,7 @@ Any bespoke `radar-device` is started automatically on startup (or when it shows
 
 ## Using the main serial port
 
-The main serial port may be used for MavLink Traffic without any further configuration. For inav-radar, to use the main msp port for inav-radar (vice using `--radar-device`), it is still necessary to add a command option to {{ mwp }}; it needs to told to relax the default inbound MSP direction check.
+The main serial port may be used for MavLink Traffic without any further configuration. For inav-radar, to use the main MSP port for inav-radar (vice using `--radar-device`), it is still necessary to add a command option to {{ mwp }}; it needs to told to relax the default inbound MSP direction check.
 
 This is enabled as
 ```
@@ -87,7 +87,7 @@ Radar contacts have one of the following status values:
 | Status | Explanation |
 | ------ | ----------- |
 | Undefined | Not shown in list or on the map |
-| Stale | The last contact was more that 120s previous. Displayed in the list and shown on the map with reduced intensity or an inav-radar node has'lost' status |
+| Stale | The last contact was more that 120s previous. Displayed in the list and shown on the map with reduced intensity or an inav-radar node has 'lost' status |
 | Armed | An active inav-radar contact |
 | ADS-B | A live MAVLink Traffic report |
 | Hidden | A MAVLink Traffic contact is between 5 and 10 minutes old. It remains in the list but is not displayed in the map. MAVLink Traffic Report tracks are removed from the list (and internal storage) after 10 minutes inactivity. inav-radar ground station |
@@ -173,5 +173,5 @@ In `GCS` mode, the node is passive; it does not use a LoRa slot and does not att
 
 {{ mwp }}'s behaviour is defined by the [GCS Location](gcs-features.md#gcs-location-icon)
 
-* If the [GCS Location](gcs-features.md#gcs-location-icon) is defined (when the radar device is iniitilised, then {{ mwp }} will respond as `INAV` and return the [GCS Location](gcs-features.md#gcs-location-icon), which may be driven by gpsd if required.
+* If the [GCS Location](gcs-features.md#gcs-location-icon) is defined (when the radar device is initialised, then {{ mwp }} will respond as `INAV` and return the [GCS Location](gcs-features.md#gcs-location-icon), which may be driven by gpsd if required.
 * Otherwise, mwp will respond as a passive `GCS`.

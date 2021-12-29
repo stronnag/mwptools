@@ -1,4 +1,4 @@
-# Miscellaneous Ui Elements
+# Miscellaneous UI Elements
 
 ## Preferences
 

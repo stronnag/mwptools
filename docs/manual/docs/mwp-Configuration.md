@@ -70,7 +70,7 @@ So here the only current, valid options are  `--rings 50,20 -dont-maximise`, and
 
 ## `sources.json`
 
-`sources.json` facilitates adding non-standard map sources to {{ mwp }}. See the manual and comments in the source files in the `qproxy` directory.
+`sources.json` facilitates adding non-standard map sources to {{ mwp }}. See the  [anonymous maps](Black-Ops.md#custom-tile) section and comments in the source files in the `qproxy` directory.
 
 ## `vcol.css`
 
@@ -88,7 +88,7 @@ Beaulieu|50.8047104|-1.4942621|17
 Jurby:54.353974:-4.523600:-1
 ```
 
-The user may maintain these files manually if used, or use the graphic editor.
+The user may maintain these files manually if used, or use the [graphic places editor](misc-ui-elements.md#favourite-places).
 
 ## Dconf / gsettings
 
@@ -111,6 +111,20 @@ $ gsettings get org.mwptools.planner log-save-path
 ..
 $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 ```
+
+#### dconf-editor
+
+This *may* not be installed by default, but should be available via the OS package manager / software centre.
+
+<figure markdown>
+![dconf editor](images/dconf-0.png){: width="50%" }
+<figcaption>Initial dconf-editor showing all mwp settings</figcaption>
+</figure>
+
+<figure markdown>
+![dconf editor](images/dconf-1.png){: width="50%" }
+<figcaption>dconf-editor, editing a setting</figcaption>
+</figure>
 
 ### List of mwp settings
 
@@ -181,7 +195,7 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 | mission-meta-tag | use meta vice mwp in mission file | If true, the legacy mwp tag is named meta | false |
 | mission-path | Directory for mission files | Directory for mission files | "" |
 | osd-mode | Data items overlaid on the map | 0 = none, 1 = current WP/Max WP, 2 = next WP distance and course. This is a mask, so 3 means both OSD items. | 3 |
-| poll-timeout | Poll messages timeout (ms) | Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resoltion of 100ms. | 900 |
+| poll-timeout | Poll messages timeout (ms) | Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 100ms. | 900 |
 | pos-is-centre | Determines position label content | Whether the position label is the centre or pointer location | true |
 | pwdw-p | internal parameter | (private setting) | 72 |
 | radar-alert-altitude | Altitude below which ADS-B alerts may be generated | Target altitude (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-range' is also set (none zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid). | 0 |

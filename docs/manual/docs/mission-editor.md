@@ -2,7 +2,7 @@
 
 ## Overview
 
-Another [slightly outdated video](https://vimeo.com/268036585), generic misson editing.
+Another [slightly outdated video](https://vimeo.com/268036585), generic mission editing.
 
 <iframe src="https://player.vimeo.com/video/268036585?h=e81256c10e" width="640" height="431" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
 
@@ -96,7 +96,7 @@ If a SET POI point is added to the mission, (there may also be other extant way-
 
 #### Location Updates
 
-Bulk location updates may be applied to selected waypopints.
+Bulk location updates may be applied to selected waypoints.
 
 ![mission_upd](images/ui_mission_offset.png){: width="30%" }
 
@@ -104,7 +104,7 @@ If an item if left black (or 0), then no adjustment is applied to that axis. Off
 
 #### Speed and Altitude updates
 
-Bulk speed and altitude updates may be applied to selected waypopints.
+Bulk speed and altitude updates may be applied to selected waypoints.
 
 #### Convert Altitudes
 

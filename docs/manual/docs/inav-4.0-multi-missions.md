@@ -30,7 +30,7 @@ The file open dialog has a preview pane that displays the missions in a multi-mi
 
 ![open_file](images/mm_open.png){: width="75%" }
 
-### Apppend Mission File
+### Append Mission File
 
 It is now possible to append an existing mission file (which may hold multiple missions) into a multi-mission set. This uses same dialog as [Open Mission File](#open-mission-file).
 

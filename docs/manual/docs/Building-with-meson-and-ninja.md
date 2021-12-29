@@ -1,4 +1,4 @@
-# Building mwp (Generic)
+# Build / install mwp (Generic)
 
 ## Overview
 
@@ -43,6 +43,15 @@ Unless you need a multi-user setup, a local install is preferable, as you don't 
 
 * If you're using a really old OS (e.g. Debian 10), you may also need `export XDG_DATA_DIRS=/usr/share:$HOME/.local/share` for a local install.
 
+### Easy first-time install on Debian and Ubuntu
+
+* Download the [first time build script](https://raw.githubusercontent.com/stronnag/mwptools/master/docs/deb-install.sh)
+* Make it executable `chmod +x deb-install.sh`
+* Run it `./deb-install.sh Y`
+* Note that the script may ask for a password to install system packages
+* The resulting executables are in `~/.local/bin`. Ensure this exists on `$PATH`
+* If you get messages like `Removing /home/$USER/.config/mwp/.layout.xml 0` and `Failed to save layout, remains in /tmp/.mwp.xxxxxx.xml` you also need `export XDG_DATA_DIRS=$XDG_DATA_DIRS:$HOME/.local/share`. This is rare and should not occur on [supported platforms](mwp_support.md#supported-os).
+
 ### Build and update
 
 ```
@@ -52,6 +61,15 @@ ninja install
 # for system install
 ninja && sudo ninja install
 ```
+
+### Accessing the serial port
+
+The user needs to have read / write permissions on the serial port in order to communicate with a flight controller. This is done by adding the user to a group:
+
+* Arch Linux: `sudo usermod -aG uucp $USER`
+* Debian / Ubuntu / Fedora (and derivatives): `sudo usermod -aG dialout $USER`
+* FreeBSD: `sudo pw group mod dialer -m $USER`
+* Windows/WSL: Not needed, no serial pass-through. Use the [ser2udp](mwp-in-Windows-11---WSL-G.md#serial-device) bridge instead.
 
 ### Legacy
 
@@ -100,29 +118,6 @@ sudo ninja install
 | `ublox-cli` | Ublox GPS tool |
 | `ublox-geo` | Graphical Ublox GPS tool |
 
-### Supporting data files
-
-| File | Target | Usage |
-| ---- | ------ | ----- |
-| `src/common/mwp_icon.svg` | `$prefix/share/icons/hicolor/scalable/apps/` | Desktop icon |
-| `src/mwp/org.mwptools.planner.gschema.xml` | `$prefix/share/glib-2.0/schemas/` | Settings schema |
-| `src/mwp/vcols.css` | `$prefix/share/mwp/` | Colours used by battery widget |
-| `src/mwp/default.layout` | `$prefix/share/mwp/` | Default dock layout |
-| `src/mwp/beep-sound.ogg` | `$prefix/share/mwp/` | Alert sound  |
-| `src/mwp/bleet.ogg` | `$prefix/share/mwp/` | Alert sound  |
-| `src/mwp/menubar.ui` | `$prefix/share/mwp/` | Menu definition |
-| `src/mwp/mwp.ui` | `$prefix/share/mwp/` | UI definition |
-| `src/mwp/orange.ogg` | `$prefix/share/mwp/` | Alert sound  |
-| `src/mwp/sat_alert.ogg` | `$prefix/share/mwp/` | Alert sound  |
-| `src/mwp/mwp.desktop` | `$prefix/share/applications/` | Desktop launcher |
-| `src/mwp/mwp_complete.sh` | `$prefix/share/bash-completion/completions/` | bash completion for `mwp` |
-| `src/mwp/pixmaps` | `$prefix/share/mwp/pixmaps/` | UI Icons |
-| `src/mwp/blackbox_decode_complete.sh` | `$prefix/share/bash-completion/completions/` | bash completion for `blackbox-decode` |
-| `src/samples/area-tool/mwp_area_icon.svg` | `$prefix/share/icons/hicolor/scalable/apps/` | Desktop icon |
-| `src/samples/area-tool/mwp-area-planner.desktop` | `$prefix/share/applications/` | Desktop launcher |
-| `docs/mwptools.pdf` | `$prefix/share/doc/mwp/` | (Obsolete) manual |
-| `docs/debian-ubuntu-dependencies.txt` | `$prefix/share/doc/mwp/` | Debian / Ubuntu dependencies |
-| `docs/fedora.txt` | `$prefix/share/doc/mwp/` | Fedora dependencies |
 
 ### Troubleshooting and Hints
 
@@ -142,25 +137,7 @@ If you install to system locations, it is possible that `sudo ninja install` wil
 * In the `build` directory, run `sudo chown -R $USER .`
 * Consider migrating to a local install
 
-### Easy first-time install on Debian and Ubuntu
-
-* Download the [first time build script](https://raw.githubusercontent.com/stronnag/mwptools/master/docs/deb-install.sh)
-* Make it executable `chmod +x deb-install.sh`
-* Run it `./deb-install.sh Y`
-* Note that the script may ask for a password to install system packages
-* The resulting executables are in `~/.local/bin`. Ensure this exists on `$PATH`
-* If you get messages like `Removing /home/$USER/.config/mwp/.layout.xml 0` and `Failed to save layout, remains in /tmp/.mwp.xxxxxx.xml` you also need `export XDG_DATA_DIRS=$XDG_DATA_DIRS:$HOME/.local/share`; this is fixed in 206efe2 / 4.295.560 of 2021-10-22.
-
 ### Help!!!!
-
-#### Accessing the serial port
-
-The user needs to have read / write permissions on the serial port in order to communicate with a flight controller. This is done by adding the user to a group:
-
-* Arch Linux: `sudo usermod -aG uucp $USER`
-* Debian / Ubuntu / Fedora (and derivatives): `sudo usermod -aG dialout $USER`
-* FreeBSD: `sudo pw group mod dialer -m $USER`
-* Windows/WSL: Not needed, no serial passthrough. Use the [ser2udp](mwp-in-Windows-11---WSL-G.md#serial-device) bridge instead.
 
 #### You've installed a new version but you still get the old one!
 
@@ -169,8 +146,7 @@ If you used the `deb-install.sh` script, then it installed everything into `$HOM
 * mwp does not pollute the system directories;
 * you don't need `sudo` to install it.
 
-Linux (like most other OS) has the concept of a `PATH`, a list of places where it looks for exec
-utable files). You can see this from a terminal:
+Linux (like most other OS) has the concept of a `PATH`, a list of places where it looks for executable files). You can see this from a terminal:
 
 ```
 ## a colon separated list
@@ -242,3 +218,27 @@ ninja install
 
 * Install the newly required dependencies
 * Rerun your build
+
+### Supporting data files
+
+| File | Target | Usage |
+| ---- | ------ | ----- |
+| `src/common/mwp_icon.svg` | `$prefix/share/icons/hicolor/scalable/apps/` | Desktop icon |
+| `src/mwp/org.mwptools.planner.gschema.xml` | `$prefix/share/glib-2.0/schemas/` | Settings schema |
+| `src/mwp/vcols.css` | `$prefix/share/mwp/` | Colours used by battery widget |
+| `src/mwp/default.layout` | `$prefix/share/mwp/` | Default dock layout |
+| `src/mwp/beep-sound.ogg` | `$prefix/share/mwp/` | Alert sound  |
+| `src/mwp/bleet.ogg` | `$prefix/share/mwp/` | Alert sound  |
+| `src/mwp/menubar.ui` | `$prefix/share/mwp/` | Menu definition |
+| `src/mwp/mwp.ui` | `$prefix/share/mwp/` | UI definition |
+| `src/mwp/orange.ogg` | `$prefix/share/mwp/` | Alert sound  |
+| `src/mwp/sat_alert.ogg` | `$prefix/share/mwp/` | Alert sound  |
+| `src/mwp/mwp.desktop` | `$prefix/share/applications/` | Desktop launcher |
+| `src/mwp/mwp_complete.sh` | `$prefix/share/bash-completion/completions/` | bash completion for `mwp` |
+| `src/mwp/pixmaps` | `$prefix/share/mwp/pixmaps/` | UI Icons |
+| `src/mwp/blackbox_decode_complete.sh` | `$prefix/share/bash-completion/completions/` | bash completion for `blackbox-decode` |
+| `src/samples/area-tool/mwp_area_icon.svg` | `$prefix/share/icons/hicolor/scalable/apps/` | Desktop icon |
+| `src/samples/area-tool/mwp-area-planner.desktop` | `$prefix/share/applications/` | Desktop launcher |
+| `docs/mwptools.pdf` | `$prefix/share/doc/mwp/` | (Obsolete) manual |
+| `docs/debian-ubuntu-dependencies.txt` | `$prefix/share/doc/mwp/` | Debian / Ubuntu dependencies |
+| `docs/fedora.txt` | `$prefix/share/doc/mwp/` | Fedora dependencies |

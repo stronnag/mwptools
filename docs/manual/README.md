@@ -6,7 +6,7 @@
 
 ## Dependencies
 
-As most people won't want to actually build the manaul, these are not hard build requirements, but are necessary to build the manual.
+As most people won't want to actually build the manual, these are not hard build requirements, but are necessary to build the manual.
 
 * mkdocs
 * mkdocs-with-pdf
@@ -17,11 +17,11 @@ Most distros don't package all of these; you'll end up with `pip` packages as we
 
 Note that due to `mkdocs-with-pdf`, it is necessary to pin `mkdocs-material` at `7.3.6`
 
-The html site can then be build with `mkdocs build` or `mkdocs serve`.
+The HTML site can then be build with `mkdocs build` or `mkdocs serve`.
 
 The PDF is built with `ENABLE_PDF_EXPORT=1 mkdocs build`
 
-The PDF file is exteremely large (c. 40MB), reduce to an acceptable size ...
+The PDF file is extremely large (c. 40MB), reduce to an acceptable size ...
 
 ```
 gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook \
@@ -30,6 +30,6 @@ gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook \
 ```
 
 
-Push html docs to github pages (maintainer):
+Push HTML docs to GitHub pages (maintainer):
 
 `mkdocs gh-deploy --force`

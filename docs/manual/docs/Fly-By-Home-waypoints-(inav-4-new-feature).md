@@ -33,7 +33,7 @@ The practical results being:
 
 A waypoint may set set to FBH (or have FBH removed) from either the right mouse popup or the mission editor.
 
-![FBH inital](images/fbh-1.png){: width="50%" }
+![FBH initial](images/fbh-1.png){: width="50%" }
 
 In the first image, no FBH waypoints have been set. We can see the planned home (the brown icon, which was read from the extant mission file), and the popup menu and mission editor. Note: the popup entry has since been renamed 'Fly By Home' for consistency.
 

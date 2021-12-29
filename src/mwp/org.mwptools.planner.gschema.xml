@@ -227,7 +227,7 @@
       <default>900</default>
       <summary>Poll messages timeout (ms)</summary>
       <description>
-	Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resoltion of 100ms.
+	Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 100ms.
       </description>
     </key>
 

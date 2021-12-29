@@ -25,11 +25,11 @@ The serial port problem can be mitigated by a "serial to IP" solution; mwptools 
 ## mwp Installation
 
 Use one of the following:
-### (a) Install the [current release from github](https://github.com/stronnag/mwptools/releases/latest).
+### (a) Install the [current release from GitHub](https://github.com/stronnag/mwptools/releases/latest).
 
 * Down load the `.deb` file
 * `cd ` to where ever you saved the `.deb` file
-* In the wsl terminal
+* In the WSL terminal
   `sudo apt install mwptools_x.y.z_amd64.deb`
 
 Example: using `curl` to download ...
@@ -71,7 +71,7 @@ sudo /tmp/u.sh Y # "Y" bypasses interactive query / responses
 
 Then build and install mwp and optionally the blackbox tools (as `mwptools/docs/debian-ubuntu-dependencies.txt`). [Build documentation](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja).
 
-For the optimal blackbox replay, install the [flightlog2x](https://github.com/stronnag/bbl2kml) tools, either from the Github release or build from source in Linux/WSL.
+For the optimal blackbox replay, install the [flightlog2x](https://github.com/stronnag/bbl2kml) tools, either from the GitHub release or build from source in Linux/WSL.
 
 ## Running mwp
 

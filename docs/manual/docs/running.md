@@ -17,7 +17,7 @@ Apart from that, it's quite informative.
 
 ### Tutorial Playlist
 
-All the developer's tutorial videos are in a [youtube playlist](https://www.youtube.com/playlist?list=PLE_mnLfCdjvAH4pLe9HCqaWm682_r8NT3).
+All the developer's tutorial videos are in a [YouTube playlist](https://www.youtube.com/playlist?list=PLE_mnLfCdjvAH4pLe9HCqaWm682_r8NT3).
 
 ## Graphical User Interface
 
