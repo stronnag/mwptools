@@ -317,7 +317,7 @@
   
     <li class="md-nav__item">
       <a href="../misc-ui-elements/" class="md-nav__link">
-        Miscellaneous Ui Elements
+        Miscellaneous UI Elements
       </a>
     </li>
   
@@ -477,7 +477,7 @@
   
     <li class="md-nav__item">
       <a href="../Building-with-meson-and-ninja/" class="md-nav__link">
-        Building mwp (Generic)
+        Build / install mwp (Generic)
       </a>
     </li>
   
@@ -722,7 +722,7 @@
   
     <li class="md-nav__item">
       <a href="../mwp_support/" class="md-nav__link">
-        Support Policy
+        Troubleshooting and Support
       </a>
     </li>
   
@@ -736,7 +736,7 @@
   
     <li class="md-nav__item">
       <a href="../licence-misc-info/" class="md-nav__link">
-        Licence
+        Licence and Alternative Tools
       </a>
     </li>
   
@@ -861,7 +861,7 @@
 <tbody>
 <tr>
 <td><code>speech-api</code></td>
-<td>Defines the speech api to be used, one of <code>none</code>, <code>espeak</code>, <code>speechd</code> or <code>flite</code></td>
+<td>Defines the speech API to be used, one of <code>none</code>, <code>espeak</code>, <code>speechd</code> or <code>flite</code></td>
 </tr>
 <tr>
 <td><code>flite-voice</code></td>
@@ -874,7 +874,7 @@ $ gsettings set org.mwptools.planner flite-voice-file /home/jrh/.config/mwp/cmu_
 </code></pre></div>
 <h2 id="discussion">Discussion<a class="headerlink" href="#discussion" title="Permanent link">#</a></h2>
 <h3 id="voice-files">Voice Files<a class="headerlink" href="#voice-files" title="Permanent link">#</a></h3>
-<p>flite can use external voice files that provide better quality than the built-in voices. Your distro may provide these voice files in an optional package, or you can download from http://www.festvox.org, eg. for flite 2.1 http://www.festvox.org/flite/packed/flite-2.1/voices/ (replace 2.1 with 2.0 etc., not all the 2.1 voices may exist for 2.0). The following script will bulk download the non-Indic voices; you can test them out with the <code>flite</code> application, or mwp's <code>ftest</code> <a href="#test">application</a>).</p>
+<p>flite can use external voice files that provide better quality than the built-in voices. Your distro may provide these voice files in an optional package, or you can download from http://www.festvox.org, e.g. for flite 2.1 http://www.festvox.org/flite/packed/flite-2.1/voices/ (replace 2.1 with 2.0 etc., not all the 2.1 voices may exist for 2.0). The following script will bulk download the non-Indic voices; you can test them out with the <code>flite</code> application, or mwp's <code>ftest</code> <a href="#test">application</a>).</p>
 <div class="highlight"><pre><span></span><code>#!/bin/bash
 
 BASE=http://www.festvox.org/flite/packed/flite-2.1/voices

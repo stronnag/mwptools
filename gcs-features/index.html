@@ -381,7 +381,7 @@
   
     <li class="md-nav__item">
       <a href="../misc-ui-elements/" class="md-nav__link">
-        Miscellaneous Ui Elements
+        Miscellaneous UI Elements
       </a>
     </li>
   
@@ -541,7 +541,7 @@
   
     <li class="md-nav__item">
       <a href="../Building-with-meson-and-ninja/" class="md-nav__link">
-        Building mwp (Generic)
+        Build / install mwp (Generic)
       </a>
     </li>
   
@@ -701,7 +701,7 @@
   
     <li class="md-nav__item">
       <a href="../mwp_support/" class="md-nav__link">
-        Support Policy
+        Troubleshooting and Support
       </a>
     </li>
   
@@ -715,7 +715,7 @@
   
     <li class="md-nav__item">
       <a href="../licence-misc-info/" class="md-nav__link">
-        Licence
+        Licence and Alternative Tools
       </a>
     </li>
   
@@ -804,7 +804,7 @@
 <h3 id="gcs-location-icon">GCS Location Icon<a class="headerlink" href="#gcs-location-icon" title="Permanent link">#</a></h3>
 <p>A icon representing the "somewhat static" GCS location can be activated from the <strong>View/GCS Location</strong>" menu option:</p>
 <p><img _20_="&quot;20%&quot;" alt="mwp-gcs" src="../images/mwp-gcs_option.png" width="width" />.</p>
-<p>By default, it will display a tasteful gold star which one may drag around. It has little purpose other than showing some user specificed location (but see <a href="#radar">below</a>).</p>
+<p>By default, it will display a tasteful gold star which one may drag around. It has little purpose other than showing some user specified location (but see <a href="#radar">below</a>).</p>
 <p><img alt="Screenshot-20211206184606-246x131" src="https://user-images.githubusercontent.com/158229/144904439-33b82a8e-1b09-4bec-91ed-c8f04bfb7f88.png" /></p>
 <p>If you don't like the icon, you can override it by creating your own icon in <code>~/.config/mwp/pixmaps/</code> (as one can for <em>any</em> mwp specific icon), with the same file name as the default in <code>$prefix/share/mwp/pixmaps/</code>; i.e. override <code>$prefix/share/mwp/pixmaps/gcs.svg</code> with <code>~/.config/mwp/pixmaps/gcs.svg</code> (which could be a PNG, vice SVG; we're a real OS and file "extensions" are an advisory illusion).</p>
 <ul>
@@ -812,7 +812,7 @@
 <p>If <code>gpsd</code> is detected (on <code>localhost</code>), then the position will be driven by <code>gpsd</code>, as long as it has  a 3D fix.</p>
 </li>
 <li>
-<p><span id="radar">The one  usage is when <a href="../mwp-Radar-View/">inav-radar</a> is active; if the GCS icon is enabled (either by manual location or driven by <code>gpsd</code>), then rather than being a passive 'GCS' node, <a href="https://github.com/stronnag/mwptools">mwp</a> will masquerade as an 'INAV' node and advertise the GCS (icon) location to other nodes. This implies that you have sufficent LoRa slots to support this node usage.
+<p><span id="radar">The one  usage is when <a href="../mwp-Radar-View/">inav-radar</a> is active; if the GCS icon is enabled (either by manual location or driven by <code>gpsd</code>), then rather than being a passive 'GCS' node, <a href="https://github.com/stronnag/mwptools">mwp</a> will masquerade as an 'INAV' node and advertise the GCS (icon) location to other nodes. This implies that you have sufficient LoRa slots to support this node usage.
 </span></p>
 </li>
 </ul>

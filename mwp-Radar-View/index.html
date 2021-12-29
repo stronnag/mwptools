@@ -319,7 +319,7 @@
   
     <li class="md-nav__item">
       <a href="../misc-ui-elements/" class="md-nav__link">
-        Miscellaneous Ui Elements
+        Miscellaneous UI Elements
       </a>
     </li>
   
@@ -637,7 +637,7 @@
   
     <li class="md-nav__item">
       <a href="../Building-with-meson-and-ninja/" class="md-nav__link">
-        Building mwp (Generic)
+        Build / install mwp (Generic)
       </a>
     </li>
   
@@ -797,7 +797,7 @@
   
     <li class="md-nav__item">
       <a href="../mwp_support/" class="md-nav__link">
-        Support Policy
+        Troubleshooting and Support
       </a>
     </li>
   
@@ -811,7 +811,7 @@
   
     <li class="md-nav__item">
       <a href="../licence-misc-info/" class="md-nav__link">
-        Licence
+        Licence and Alternative Tools
       </a>
     </li>
   
@@ -1038,7 +1038,7 @@ Multiple devices may be defined, e.g.</p>
 </ul>
 <p>Any bespoke <code>radar-device</code> is started automatically on startup (or when it shows up). It is not managed via the serial <code>Connect</code> button.</p>
 <h2 id="using-the-main-serial-port">Using the main serial port<a class="headerlink" href="#using-the-main-serial-port" title="Permanent link">#</a></h2>
-<p>The main serial port may be used for MavLink Traffic without any further configuration. For inav-radar, to use the main msp port for inav-radar (vice using <code>--radar-device</code>), it is still necessary to add a command option to <a href="https://github.com/stronnag/mwptools">mwp</a>; it needs to told to relax the default inbound MSP direction check.</p>
+<p>The main serial port may be used for MavLink Traffic without any further configuration. For inav-radar, to use the main MSP port for inav-radar (vice using <code>--radar-device</code>), it is still necessary to add a command option to <a href="https://github.com/stronnag/mwptools">mwp</a>; it needs to told to relax the default inbound MSP direction check.</p>
 <p>This is enabled as
 <div class="highlight"><pre><span></span><code>mwp --relaxed-msp
 </code></pre></div>
@@ -1111,7 +1111,7 @@ which should be 'mainly harmless' for normal operations. It's entirely acceptabl
 </tr>
 <tr>
 <td>Stale</td>
-<td>The last contact was more that 120s previous. Displayed in the list and shown on the map with reduced intensity or an inav-radar node has'lost' status</td>
+<td>The last contact was more that 120s previous. Displayed in the list and shown on the map with reduced intensity or an inav-radar node has 'lost' status</td>
 </tr>
 <tr>
 <td>Armed</td>
@@ -1206,7 +1206,7 @@ file ~/.config/mwp/pixmaps/inav-radar.svg
 <p>In <code>GCS</code> mode, the node is passive; it does not use a LoRa slot and does not attempt to broadcast a location. In <code>INAV</code> mode, the node takes up a LoRa slot and is expected to reply to the additional MSP queries.</p>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a>'s behaviour is defined by the <a href="../gcs-features/#gcs-location-icon">GCS Location</a></p>
 <ul>
-<li>If the <a href="../gcs-features/#gcs-location-icon">GCS Location</a> is defined (when the radar device is iniitilised, then <a href="https://github.com/stronnag/mwptools">mwp</a> will respond as <code>INAV</code> and return the <a href="../gcs-features/#gcs-location-icon">GCS Location</a>, which may be driven by gpsd if required.</li>
+<li>If the <a href="../gcs-features/#gcs-location-icon">GCS Location</a> is defined (when the radar device is initialised, then <a href="https://github.com/stronnag/mwptools">mwp</a> will respond as <code>INAV</code> and return the <a href="../gcs-features/#gcs-location-icon">GCS Location</a>, which may be driven by gpsd if required.</li>
 <li>Otherwise, mwp will respond as a passive <code>GCS</code>.</li>
 </ul>
                 

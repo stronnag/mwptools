@@ -319,7 +319,7 @@
   
     <li class="md-nav__item">
       <a href="../misc-ui-elements/" class="md-nav__link">
-        Miscellaneous Ui Elements
+        Miscellaneous UI Elements
       </a>
     </li>
   
@@ -429,8 +429,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#datums" class="md-nav__link">
-    Datums
+  <a href="#datum" class="md-nav__link">
+    Datum
   </a>
   
 </li>
@@ -645,7 +645,7 @@
   
     <li class="md-nav__item">
       <a href="../Building-with-meson-and-ninja/" class="md-nav__link">
-        Building mwp (Generic)
+        Build / install mwp (Generic)
       </a>
     </li>
   
@@ -805,7 +805,7 @@
   
     <li class="md-nav__item">
       <a href="../mwp_support/" class="md-nav__link">
-        Support Policy
+        Troubleshooting and Support
       </a>
     </li>
   
@@ -819,7 +819,7 @@
   
     <li class="md-nav__item">
       <a href="../licence-misc-info/" class="md-nav__link">
-        Licence
+        Licence and Alternative Tools
       </a>
     </li>
   
@@ -922,8 +922,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#datums" class="md-nav__link">
-    Datums
+  <a href="#datum" class="md-nav__link">
+    Datum
   </a>
   
 </li>
@@ -1090,7 +1090,7 @@ Using the package manager is recommended for non-proprietary operating systems.<
 <li>The tool does not faithfully model the vehicle motion. As multi-rotor and fixed-wing have different climb behaviours, this would be quite complex.</li>
 <li>RTH altitude has to specified if you wish to model it, and assumes 'AT LEAST' behaviour.</li>
 </ul>
-<h2 id="datums">Datums<a class="headerlink" href="#datums" title="Permanent link">#</a></h2>
+<h2 id="datum">Datum<a class="headerlink" href="#datum" title="Permanent link">#</a></h2>
 <p>Digital elevation services can use the WGS84 Ellipsoid or "sea level"; survey maps typically use AMSL (Above Mean Sea Level); GPS can report either or both of WGS Ellipsoid and above MSL (mean sea level). The "sea level" used by Bing Elevations is computed from a magnetic anomaly / gravity database and may not be the same as the AMSL "sea level" used by the survey.  <strong>Caveat User</strong>.</p>
 <ul>
 <li>mwp currently uses Bing "Sea level" to obtain elevations. The user should apply a suitable margin.</li>
@@ -1179,7 +1179,7 @@ $ mwp-plot-elevations.rb -h  54.068826,-4.735472   -m 40 /tmp/perwick.mission
 <p>It's not yet perfect, we could be more aggressive in reaching just the clearance altitude, but we clear the hill!.</p>
 <h2 id="climb-and-dive-angle-report">Climb and Dive Angle Report<a class="headerlink" href="#climb-and-dive-angle-report" title="Permanent link">#</a></h2>
 <figure>
-<p><img alt="exmaple mission" src="../images/barrule-mission.png" width="60%" /></p>
+<p><img alt="example mission" src="../images/barrule-mission.png" width="60%" /></p>
 <figcaption>Mission used for climb /dive example</figcaption>
 </figure>
 <p>As of 2021-06, it's also possible to get climb and dive angles for the calculated mission. Before I added the WP12 =&gt; WP7 jump in the mission shown below, it was almost OK; below the desired clearance in a couple of places and just failing to clear the hill at WP15. After adding the JUMP, it hits the terrain pretty conclusively between WP12 and WP7. The modified mission is interesting, as it has to adjust the WPs within the JUMP for the worst case (so the WP7, the second pass is definitive).</p>
@@ -1211,7 +1211,7 @@ WP14 - WP15  -5.2°  (dive)
 WP15 -  RTH  -3.6°  (dive)
 </code></pre></div>
 <p>If you run <strong>mwp-plot-elevations</strong> via <strong>mwp</strong>, the information is presented in a separate window.</p>
-<p><img alt="cd-analysist" src="../images/mwp-elev-cd-analysis.png" width="30%" /></p>
+<p><img alt="cd-analysts" src="../images/mwp-elev-cd-analysis.png" width="30%" /></p>
 <p><strong>mwp</strong> can also highlight any legs that exceed user-defined (not 0) climb and dive angle limits. However, it's up to you to work out the best solution.</p>
 <p><img alt="cd-limits" src="../images/climb-dive-indicators.png" width="50%" /></p>
 <p>The steep hill and valley at the start are just too much here; best to reroute.</p>
@@ -1237,7 +1237,7 @@ WP15 -  RTH  -3.6°  (dive)
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../misc-ui-elements/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Miscellaneous Ui Elements" rel="prev">
+        <a href="../misc-ui-elements/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Miscellaneous UI Elements" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1246,7 +1246,7 @@ WP15 -  RTH  -3.6°  (dive)
               <span class="md-footer__direction">
                 Previous
               </span>
-              Miscellaneous Ui Elements
+              Miscellaneous UI Elements
             </div>
           </div>
         </a>

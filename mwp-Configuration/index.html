@@ -319,7 +319,7 @@
   
     <li class="md-nav__item">
       <a href="../misc-ui-elements/" class="md-nav__link">
-        Miscellaneous Ui Elements
+        Miscellaneous UI Elements
       </a>
     </li>
   
@@ -472,6 +472,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#dconf-editor" class="md-nav__link">
+    dconf-editor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#list-of-mwp-settings" class="md-nav__link">
     List of mwp settings
   </a>
@@ -603,7 +610,7 @@
   
     <li class="md-nav__item">
       <a href="../Building-with-meson-and-ninja/" class="md-nav__link">
-        Building mwp (Generic)
+        Build / install mwp (Generic)
       </a>
     </li>
   
@@ -763,7 +770,7 @@
   
     <li class="md-nav__item">
       <a href="../mwp_support/" class="md-nav__link">
-        Support Policy
+        Troubleshooting and Support
       </a>
     </li>
   
@@ -777,7 +784,7 @@
   
     <li class="md-nav__item">
       <a href="../licence-misc-info/" class="md-nav__link">
-        Licence
+        Licence and Alternative Tools
       </a>
     </li>
   
@@ -895,6 +902,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#dconf-editor" class="md-nav__link">
+    dconf-editor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#list-of-mwp-settings" class="md-nav__link">
     List of mwp settings
   </a>
@@ -1002,7 +1016,7 @@ MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 <h2 id="layout"><code>.layout</code><a class="headerlink" href="#layout" title="Permanent link">#</a></h2>
 <p><code>.layout</code> contains the current arrangement of Dock items. You are advised not to manually edit this file (or other named, alternate layout files).</p>
 <h2 id="sourcesjson"><code>sources.json</code><a class="headerlink" href="#sourcesjson" title="Permanent link">#</a></h2>
-<p><code>sources.json</code> facilitates adding non-standard map sources to <a href="https://github.com/stronnag/mwptools">mwp</a>. See the manual and comments in the source files in the <code>qproxy</code> directory.</p>
+<p><code>sources.json</code> facilitates adding non-standard map sources to <a href="https://github.com/stronnag/mwptools">mwp</a>. See the  <a href="../Black-Ops/#custom-tile">anonymous maps</a> section and comments in the source files in the <code>qproxy</code> directory.</p>
 <h2 id="vcolcss"><code>vcol.css</code><a class="headerlink" href="#vcolcss" title="Permanent link">#</a></h2>
 <p><code>vol.css</code> contains alternate CSS themeing for the battery voltage dock item that may work better on dark desktop themes. An example file is provided as <code>mwp/vcol.css</code> which can be copied into <code>.config/mwp/</code>.</p>
 <h2 id="places"><code>places</code><a class="headerlink" href="#places" title="Permanent link">#</a></h2>
@@ -1012,7 +1026,7 @@ MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 Beaulieu|50.8047104|-1.4942621|17
 Jurby:54.353974:-4.523600:-1
 </code></pre></div>
-<p>The user may maintain these files manually if used, or use the graphic editor.</p>
+<p>The user may maintain these files manually if used, or use the <a href="../misc-ui-elements/#favourite-places">graphic places editor</a>.</p>
 <h2 id="dconf-gsettings">Dconf / gsettings<a class="headerlink" href="#dconf-gsettings" title="Permanent link">#</a></h2>
 <p>Linux has a facility for storing configuration items in a registry like facility. This is used extensively by <a href="https://github.com/stronnag/mwptools">mwp</a>. The items can viewed and modified using a number of tools:</p>
 <ul>
@@ -1028,6 +1042,16 @@ Jurby:54.353974:-4.523600:-1
 ..
 $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 </code></pre></div>
+<h4 id="dconf-editor">dconf-editor<a class="headerlink" href="#dconf-editor" title="Permanent link">#</a></h4>
+<p>This <em>may</em> not be installed by default, but should be available via the OS package manager / software centre.</p>
+<figure>
+<p><img alt="dconf editor" src="../images/dconf-0.png" width="50%" /></p>
+<figcaption>Initial dconf-editor showing all mwp settings</figcaption>
+</figure>
+<figure>
+<p><img alt="dconf editor" src="../images/dconf-1.png" width="50%" /></p>
+<figcaption>dconf-editor, editing a setting</figcaption>
+</figure>
 <h3 id="list-of-mwp-settings">List of mwp settings<a class="headerlink" href="#list-of-mwp-settings" title="Permanent link">#</a></h3>
 <table>
 <thead>
@@ -1432,7 +1456,7 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 <tr>
 <td>poll-timeout</td>
 <td>Poll messages timeout (ms)</td>
-<td>Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resoltion of 100ms.</td>
+<td>Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 100ms.</td>
 <td>900</td>
 </tr>
 <tr>
