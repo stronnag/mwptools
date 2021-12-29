@@ -2621,7 +2621,7 @@ public class MWP : Gtk.Application {
                    });
 
         ag.connect('v', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
-                MissionPix.get_mission_pix(embed, ls.to_mission(), last_file);
+                MissionPix.get_mission_pix(embed, markers, ls.to_mission(), last_file);
                 return true;
             });
 
@@ -5172,7 +5172,7 @@ case 0:
                                 else
                                     res = "%d".printf(tcycle);
                                 if(nopoll == false)
-                                    MWPLog.message("MSP Timeout (%s)\n", res);
+                                    MWPLog.message("MSP Timeout %u %u (%s)\n", nticks, lastok, res);
                                 lastok = nticks;
                                 tcycle = 0;
                                 resend_last();
@@ -7732,6 +7732,7 @@ case 0:
 						validatelab.set_text("WP:%3d".printf(wpmgr.wpidx+1));
 						queue_cmd(MSP.Cmds.SET_WP, wtmp, nb);
 					} else {
+						lastok = nticks;
 						MWPCursor.set_normal_cursor(window);
 						remove_tid(ref upltid);
 						if(vi.fc_vers >= FCVERS.hasWP_V4 &&
@@ -7747,7 +7748,6 @@ case 0:
 							uint8 zb=42;
 							queue_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
 						}
-
 						if((wpmgr.wp_flag & WPDL.CALLBACK) != 0)
 							upload_callback(wpmgr.npts);
 
@@ -7757,10 +7757,7 @@ case 0:
 						mwp_warning_box("Mission uploaded", Gtk.MessageType.INFO,5);
 						wpmgr.npts = 0;
 						wpmgr.wps = {};
-						Timeout.add_seconds(2, () => {
-								reset_poller();
-								return Source.REMOVE;
-							});
+						reset_poller();
 					}
                 }
                 break;
@@ -9788,7 +9785,7 @@ case 0:
         {
             save_mission_file(last_file);
         }
-		MissionPix.get_mission_pix(embed, ls.to_mission(), last_file);
+		MissionPix.get_mission_pix(embed, markers, ls.to_mission(), last_file);
     }
 
 

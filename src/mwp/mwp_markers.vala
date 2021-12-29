@@ -22,6 +22,7 @@ public class MWPMarkers : GLib.Object
 {
     public Champlain.PathLayer path;                     // Mission outline
     public Champlain.MarkerLayer markers;                // Mission Markers
+    public Champlain.MarkerLayer tmpmarkers;                // Mission Markers
     public Champlain.MarkerLayer rlayer;                 // Next WP pos layer
     public Champlain.Marker homep = null;                // Home position (just a location)
     public Champlain.Marker rthp = null;                 // RTH mission position
@@ -79,6 +80,7 @@ public class MWPMarkers : GLib.Object
 
         rth_land = false;
         markers = new Champlain.MarkerLayer();
+        tmpmarkers = new Champlain.MarkerLayer();
         rlayer = new Champlain.MarkerLayer();
         path = new Champlain.PathLayer();
         hpath = new Champlain.PathLayer();
@@ -91,6 +93,7 @@ public class MWPMarkers : GLib.Object
         view.add_layer(path);
         view.add_layer(hpath);
         view.add_layer(ipath);
+		view.add_layer(tmpmarkers);
         view.add_layer(markers);
 
         llist = new List<uint>();
@@ -839,4 +842,66 @@ public class MWPMarkers : GLib.Object
             }
         }
     }
+
+	private Clutter.Color get_colour(MSP.Action typ) {
+		Clutter.Color colour;
+		switch (typ) {
+		case MSP.Action.WAYPOINT:
+			colour = { 0, 0xff, 0xff, 0xff};
+			break;
+		case MSP.Action.POSHOLD_TIME:
+			colour = { 152, 70, 234, 0xff};
+			break;
+		case MSP.Action.POSHOLD_UNLIM:
+			colour = { 0x4c, 0xfe, 0, 0xff};
+			break;
+		case MSP.Action.RTH:
+			colour = { 0x0, 0xaa, 0xff, 0xff};
+			break;
+		case MSP.Action.LAND:
+			colour = { 0xff, 0x9a, 0xf0, 0xff};
+			break;
+		case MSP.Action.JUMP:
+			colour = { 0xed, 0x51, 0xd7, 0xff};
+			break;
+		case MSP.Action.SET_POI:
+		case MSP.Action.SET_HEAD:
+			colour = { 0xff, 0xfb, 0x2b, 0xff};
+			break;
+		default:
+			colour = { 0xe0, 0xe0, 0xe0, 0xff};
+			break;
+        }
+		return colour;
+	}
+
+	public void remove_tmp_mission() {
+		tmpmarkers.remove_all();
+	}
+
+	public  void temp_mission_markers(Mission ms) {
+		Champlain.Point p = null;
+
+		if (FakeHome.is_visible) {
+			Clutter.Color hcol = {0x8c, 0x43, 0x43, 0xa0};
+			p = new Champlain.Point.full(MWP.conf.misciconsize, hcol);
+			p.latitude = FakeHome.homep.latitude;
+			p.longitude = FakeHome.homep.longitude;
+			tmpmarkers.add_marker(p);
+		}
+
+		foreach (var m in ms.get_ways()) {
+			var col = get_colour(m.action);
+			if (m.no > 0 && (m.action == MSP.Action.RTH ||
+							 m.action == MSP.Action.JUMP ||
+							 m.action == MSP.Action.SET_HEAD)) {
+				p.set_color(col);
+			} else {
+				p = new Champlain.Point.full(MWP.conf.misciconsize, col);
+				p.latitude = m.lat;
+				p.longitude = m.lon;
+				tmpmarkers.add_marker(p);
+			}
+		}
+	}
 }
