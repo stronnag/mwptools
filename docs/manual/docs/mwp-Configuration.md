@@ -62,7 +62,7 @@ In addition to options (`--`), the file may also contain environment variables e
 MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 ```
 
-So here the only current, valid options are  `--rings 50,20 -dont-maximise`, and the environment variable MWP_BLACK_TILE is set (for [anonymous maps](Black-Ops.md#custom-tile)).
+So here the only current, valid options are  `--rings 50,20 -dont-maximise`, and the [environment variable](#environment-variables) MWP_BLACK_TILE is set (for [anonymous maps](Black-Ops.md#custom-tile)).
 
 ## `.layout`
 
@@ -248,3 +248,21 @@ file ~/.config/mwp/pixmaps/inav-radar.svg
 ```
 
 Note also that the resize step is no longer required, as {{ mwp }} scales the icon according to the `misc-icon-size` setting.
+
+## Environment variables
+
+{{ mwp }} recognises the following environment variables
+
+| Name | Usage |
+| ------------- | ----- |
+| `CFG_UGLY_XML` | Generate ugly multi-mission XML, so as not to confuse the inav configurator |
+| `MWP_ARGS` | Extra command line arguments |
+| `MWP_BLACK_TILE` | Specify a black tile to be used by the Black Tiles map proxy |
+| `MWP_IGNORE_SATS` | Consider LTM positions valid even with low satellite count |
+| `MWP_LOG_DIR` | Location of console logs ($HOME if undefined) |
+| `MWP_PLAYBIN` | The gstreamer playbin for video. By default, mwp uses `playbin`, `playbin3` is an experimental (gstreamer_) alternative |
+| `MWP_POS_OFFSET` | The fake position offset "delta-lat,delta-lon" |
+| `MWP_PREF_DEVICE` | The serial device (from the preferences set) to display as default |
+| `MWP_PRINT_RAW` | If defined, output hex bytes from serial I/O |
+| `MWP_SERIAL_HOST` | The host for the magic `udp://__MWP_SERIAL_HOST` name (default undefined)  |
+| `MWP_TIME_FMT` | The time format for log output; by default "%FT%T%z", any GLib2 DateTime (strftime-like) format may be used; "%T.%f" works well on modern GLib. |
