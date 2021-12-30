@@ -718,6 +718,7 @@ public class MWP : Gtk.Application {
         NONE=0,
         NORMAL,
         POLLER,
+		SET_WP,
         TELEM = 128,
         TELEM_SP,
     }
@@ -5129,7 +5130,11 @@ case 0:
                     if(serstate != SERSTATE.NONE)
                     {
                         var tlimit = conf.polltimeout / TIMINTVL;
-                        if((serstate == SERSTATE.POLLER ||
+						if ((lastmsg.cmd == MSP.Cmds.WP_MISSION_SAVE) ||
+							lastmsg.cmd == MSP.Cmds.EEPROM_WRITE) {
+							tlimit *= 3;
+						}
+						if((serstate == SERSTATE.POLLER ||
                             serstate == SERSTATE.TELEM) &&
                            (nticks - lastrx) > NODATAINTVL)
                         {
@@ -5143,8 +5148,7 @@ case 0:
                         if(serstate != SERSTATE.TELEM)
                         {
 // Probably takes a minute to change the LIPO
-                            if(serstate == SERSTATE.POLLER &&
-                               nticks - lastrx > RESTARTINTVL)
+                            if(serstate == SERSTATE.POLLER && nticks - lastrx > RESTARTINTVL)
                             {
                                 serstate = SERSTATE.NONE;
                                 MWPLog.message("Restart poll loop\n");
@@ -5172,7 +5176,8 @@ case 0:
                                 else
                                     res = "%d".printf(tcycle);
                                 if(nopoll == false)
-                                    MWPLog.message("MSP Timeout %u %u (%s)\n", nticks, lastok, res);
+                                    MWPLog.message("MSP Timeout %u %u %u (%s %s)\n",
+												   nticks, lastok, lastrx, res, serstate.to_string());
                                 lastok = nticks;
                                 tcycle = 0;
                                 resend_last();
@@ -5212,9 +5217,9 @@ case 0:
                                 run_queue();
                             }
                         }
-                    }
-                    else
+                    } else {
                         lastok = lastrx = nticks;
+					}
 
                     if((nticks % STATINTVL) == 0)
                     {
@@ -7725,6 +7730,7 @@ case 0:
             case MSP.Cmds.SET_WP:
                 if(wpmgr.wps.length > 0)
                 {
+					lastok = lastrx = nticks;
 					wpmgr.wpidx++;
 					if(wpmgr.wpidx < wpmgr.npts) {
 						uint8 wtmp[32];
@@ -7732,7 +7738,6 @@ case 0:
 						validatelab.set_text("WP:%3d".printf(wpmgr.wpidx+1));
 						queue_cmd(MSP.Cmds.SET_WP, wtmp, nb);
 					} else {
-						lastok = nticks;
 						MWPCursor.set_normal_cursor(window);
 						remove_tid(ref upltid);
 						if(vi.fc_vers >= FCVERS.hasWP_V4 &&
@@ -8521,7 +8526,7 @@ case 0:
                 send_poll();
             }
         }
-        run_queue();
+		run_queue();
     }
 
     unowned RadarPlot? find_radar_data(uint id)
@@ -9086,7 +9091,7 @@ case 0:
         wpmgr.wps = wps;
         wpmgr.wp_flag = flag;
 
-        serstate = SERSTATE.NORMAL;
+        serstate = SERSTATE.SET_WP;
         mq.clear();
 
         MWPCursor.set_busy_cursor(window);
