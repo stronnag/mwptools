@@ -2701,6 +2701,7 @@ public class MWP : Gtk.Application {
         var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL,2);
 
         var pane = builder.get_object ("paned1") as Gtk.Paned;
+		pane.wide_handle = true;
 
         markers = new MWPMarkers(ls,view, conf.wp_spotlight);
 

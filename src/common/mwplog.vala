@@ -65,7 +65,8 @@ public class MWPLog : GLib.Object
             }
 
             init = true;
-            if(tfstr == null)
+
+            if ((tfstr = Environment.get_variable ("MWP_TIME_FMT")) == null)
                 tfstr = "%FT%T%z";
         }
 
