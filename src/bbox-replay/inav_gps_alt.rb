@@ -11,6 +11,7 @@ idx = 1
 every = 0
 outf = nil
 graph = false
+amsl = true
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
@@ -18,6 +19,7 @@ ARGV.options do |opt|
   opt.on('-n','--every=N',Integer){|o|every=o}
   opt.on('-o','--output=FILE'){|o|outf=o}
   opt.on('-g','--graph'){graph=true}
+  opt.on('-a','--noamsl'){amsl=false}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
     opt.parse!
@@ -56,11 +58,16 @@ IO.popen(cmd,'r') do |p|
     gpsz = nil
     lts = 0
     id=0
+    ahdrs = %w/Time Baro GPS_agl Est_Alt/
+    if amsl
+      ahdrs << 'GPS_amsl'
+    end
+
     csv.each do |c|
       id += 1
       if hdrs.nil?
         hdrs = csv
-        fh.puts %w/Time Baro GPS_agl Est_Alt GPS_amsl/.join(',')
+        fh.puts ahdrs.join(',')
       else
         n += 1
         if every != 0
@@ -77,8 +84,12 @@ IO.popen(cmd,'r') do |p|
 	  gpsz = gpsa
         end
         gpsd = gpsa - gpsz
+        arry = [xts,baro_alt,gpsd,estalt]
+        if amsl
+          arry << gpsa
+        end
         if xts > lts
-          fh.puts "#{[xts,baro_alt,gpsd,estalt,gpsa].join(',')}\n"
+          fh.puts arry.join(',')
         else
           STDERR.puts "Backwards time at line #{id} #{ts} #{xts} #{lts}"
         end
@@ -89,7 +100,11 @@ IO.popen(cmd,'r') do |p|
 end
 
 if graph && n > 0
-  File.open(".inav_gps_alt.plt","w") {|plt| plt.write DATA.read}
+  pltfile = DATA.read
+  if amsl
+    pltfile << ', filename using 1:5 t "GPS AMSL" w lines lt -1 lw 2  lc rgb "green"'
+  end
+  File.open(".inav_gps_alt.plt","w") {|plt| plt.puts pltfile}
   system "gnuplot -e 'filename=\"#{outf}\"' .inav_gps_alt.plt"
   STDERR.puts "Graph in #{outf}.svg"
   File.unlink ".inav_gps_alt.plt"
@@ -109,8 +124,8 @@ set title "Altitude Comparison"
 set ylabel "Elev (m)"
 show label
 set xrange [ 0 : ]
-set yrange [ 0 : ]
+#set yrange [ 0 : ]
 set datafile separator ","
 set terminal svg background rgb 'white' font "Droid Sans,9" rounded
 set output filename.'.svg'
-plot filename using 1:2 t "Baro" w lines lt -1 lw 3  lc rgb "blue", filename using 1:3 t "GPS AGL" w lines lt -1 lw 2  lc rgb "red", filename using 1:4 t "Est Alt" w lines lt -1 lw 2  lc rgb "gold", filename using 1:5 t "GPS AMSL" w lines lt -1 lw 2  lc rgb "green"
+plot filename using 1:2 t "Baro" w lines lt -1 lw 3  lc rgb "blue", filename using 1:3 t "GPS AGL" w lines lt -1 lw 2  lc rgb "red", filename using 1:4 t "Est Alt" w lines lt -1 lw 2  lc rgb "gold"

@@ -60,7 +60,6 @@ bool check_crsf_protocol (uint8 c) {
 
 bool crsf_decode(uint8 c)
 {
-
   if (crsf_index == 0 && c != RADIO_ADDRESS) {
 	  return false;
   }
@@ -124,15 +123,17 @@ private uint8 * deserialise_u16(uint8* rp, out uint16 v)
 
 void process_crsf()
 {
-	if (!check_crsf_crc()) {
-		stderr.printf("CRC Fails!\n");
-		return;
-  }
-
   uint8 id = crsf_buffer[2];
   uint8 *ptr = &crsf_buffer[3];
   uint32 val32;
   uint16 val16;
+
+  if (!check_crsf_crc()) {
+	  stderr.printf("CRC Fails id=%x\n", id);
+		return;
+  }
+
+
 
   switch(id) {
     case GPS_ID:
@@ -221,7 +222,16 @@ void process_crsf()
 	  break;
 
   case RADIO_ID:
-	  stdout.printf("RadioID: Type 0x%x %d bytes\n", id, crsf_buffer[1]);
+	  if (*ptr  == 0xea && *(ptr+2) == 0x10) {
+         // values are in 10th of micro-seconds
+		  ptr= deserialise_u32(ptr+3, out val32);
+		  uint32 update_int = Posix.ntohl(val32) / 10;
+		  deserialise_u32(ptr, out val32);
+		  int32 offset = (int32)Posix.ntohl(val32) / 10;
+		  stdout.printf("RadioID: rate %u us, offset %d us\n", update_int, offset);
+	  } else {
+		  stdout.printf("RadioID: failed to decode\n");
+	  }
 	  break;
 
   default:

@@ -99,8 +99,8 @@ Offering:
 
 #### Notes
 
-* For radar functions (inav-radar, ADSB), it is necessary to set the `--radar-device=`. Leave the protocol selector at 'Auto'.
-* For telemetry forwarding, it is necessary to set the `--forward-to=`. Leave the protocol selector at 'Auto'.
+* For [radar functions](mwp-Radar-View.md) (inav-radar, ADSB), it is necessary to set the `--radar-device=` [option](running.md#command-line-options). Leave the protocol selector at 'Auto'.
+* For telemetry forwarding, it is necessary to set the `--forward-to=` [option](running.md#command-line-options). Leave the protocol selector at 'Auto'.
 * For FlySky MPM telemetry, the inav CLI setting `set ibus_telemetry_type = 0` is required; any other `ibus_telemetry_type` value will not work.
 
 #### Auto-detection
