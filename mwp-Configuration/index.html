@@ -510,6 +510,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    Environment variables
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -960,6 +967,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    Environment variables
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1052,7 +1066,7 @@
 # set the anonymous tile file.
 MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 </code></pre></div>
-<p>So here the only current, valid options are  <code>--rings 50,20 -dont-maximise</code>, and the environment variable MWP_BLACK_TILE is set (for <a href="../Black-Ops/#custom-tile">anonymous maps</a>).</p>
+<p>So here the only current, valid options are  <code>--rings 50,20 -dont-maximise</code>, and the <a href="#environment-variables">environment variable</a> MWP_BLACK_TILE is set (for <a href="../Black-Ops/#custom-tile">anonymous maps</a>).</p>
 <h2 id="layout"><code>.layout</code><a class="headerlink" href="#layout" title="Permanent link">#</a></h2>
 <p><code>.layout</code> contains the current arrangement of Dock items. You are advised not to manually edit this file (or other named, alternate layout files).</p>
 <h2 id="sourcesjson"><code>sources.json</code><a class="headerlink" href="#sourcesjson" title="Permanent link">#</a></h2>
@@ -1669,6 +1683,62 @@ file ~/.config/mwp/pixmaps/inav-radar.svg
 /home/jrh/.config/mwp/pixmaps/inav-radar.svg: PNG image data, 32 x 32, 8-bit/color RGBA, non-interlaced
 </code></pre></div>
 <p>Note also that the resize step is no longer required, as <a href="https://github.com/stronnag/mwptools">mwp</a> scales the icon according to the <code>misc-icon-size</code> setting.</p>
+<h2 id="environment-variables">Environment variables<a class="headerlink" href="#environment-variables" title="Permanent link">#</a></h2>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> recognises the following environment variables</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CFG_UGLY_XML</code></td>
+<td>Generate ugly multi-mission XML, so as not to confuse the inav configurator</td>
+</tr>
+<tr>
+<td><code>MWP_ARGS</code></td>
+<td>Extra command line arguments</td>
+</tr>
+<tr>
+<td><code>MWP_BLACK_TILE</code></td>
+<td>Specify a black tile to be used by the Black Tiles map proxy</td>
+</tr>
+<tr>
+<td><code>MWP_IGNORE_SATS</code></td>
+<td>Consider LTM positions valid even with low satellite count</td>
+</tr>
+<tr>
+<td><code>MWP_LOG_DIR</code></td>
+<td>Location of console logs ($HOME if undefined)</td>
+</tr>
+<tr>
+<td><code>MWP_PLAYBIN</code></td>
+<td>The gstreamer playbin for video. By default, mwp uses <code>playbin</code>, <code>playbin3</code> is an experimental (gstreamer_) alternative</td>
+</tr>
+<tr>
+<td><code>MWP_POS_OFFSET</code></td>
+<td>The fake position offset "delta-lat,delta-lon"</td>
+</tr>
+<tr>
+<td><code>MWP_PREF_DEVICE</code></td>
+<td>The serial device (from the preferences set) to display as default</td>
+</tr>
+<tr>
+<td><code>MWP_PRINT_RAW</code></td>
+<td>If defined, output hex bytes from serial I/O</td>
+</tr>
+<tr>
+<td><code>MWP_SERIAL_HOST</code></td>
+<td>The host for the magic <code>udp://__MWP_SERIAL_HOST</code> name (default undefined)</td>
+</tr>
+<tr>
+<td><code>MWP_TIME_FMT</code></td>
+<td>The time format for log output; by default "%FT%T%z", any GLib2 DateTime (strftime-like) format may be used; "%T.%f" works well on modern GLib.</td>
+</tr>
+</tbody>
+</table>
                 
               
               
