@@ -1439,7 +1439,6 @@ public class MWP : Gtk.Application {
                     {
                         clat = ms.cy;
                         clon = ms.cx;
-						instantiate_mission(ms);
                         last_file = fn;
                         update_title_from_file(fn);
                     }
@@ -2512,10 +2511,11 @@ public class MWP : Gtk.Application {
 				} else {
 					mdx = actmission.active;
 				}
-				if(msx[mdx].npoints > 0)
+				if(msx[mdx].npoints > 0) {
 					instantiate_mission(msx[mdx]);
-				else
+				} else {
 					clear_mission();
+				}
 			});
 
 		zoomer.adjustment.value_changed.connect (() =>
@@ -5745,7 +5745,8 @@ case 0:
                     }
                 }
                 if(homed) {
-                    instantiate_mission(ms);
+//					MWPLog.message("MSX: Instantiate from ## homed\n");
+//                    instantiate_mission(ms);
                     FakeHome.usedby |= FakeHome.USERS.Mission;
                     ls.set_fake_home_pos(home_pos.lat, home_pos.lon);
                 }
@@ -10026,7 +10027,6 @@ case 0:
         var ms = open_mission_file(fname,append);
         if(ms != null)
         {
-            instantiate_mission(ms);
             last_file = fname;
             update_title_from_file(fname);
         }
@@ -10057,10 +10057,9 @@ case 0:
         }
         validatelab.set_text("");
         map_centre_on(ms.cy, ms.cx);
-        ms.dump(wp_max);
+//        ms.dump(wp_max);
         ls.import_mission(ms, (conf.rth_autoland &&
                                Craft.is_mr(vi.mrtype)));
-
         NavStatus.have_rth = ls.have_rth;
         if(ms.zoom == 0)
             ms.zoom = guess_appropriate_zoom(bb_from_mission(ms));
