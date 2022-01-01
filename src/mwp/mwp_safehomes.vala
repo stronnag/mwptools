@@ -187,15 +187,16 @@ public class  SafeHomeDialog : Object
         tbox.pack_start (fsmenu_button);
 
         switcher =  new Gtk.Switch();
-        switcher.notify["active"].connect (() => {
+
+/*
+ * This does not affec the edit display, just the permanence
+		switcher.notify["active"].connect (() => {
                 var state = switcher.get_active();
                 display_homes(state);
             });
-
+*/
         dialog.response.connect((v) => {
-                visible = false;
-                shmarkers.set_interactive(false);
-                dialog.hide();
+				hide_action();
             });
 
         tbox.pack_end (switcher);
@@ -238,9 +239,7 @@ public class  SafeHomeDialog : Object
         dialog.insert_action_group("dialog", dg);
 
         dialog.delete_event.connect (() => {
-                dialog.hide();
-                visible = false;
-                shmarkers.set_interactive(false);
+				hide_action();
                 return true;
             });
 
@@ -346,7 +345,16 @@ public class  SafeHomeDialog : Object
         }
     }
 
-    public void online_change(uint32 v)
+	private void hide_action() {
+		visible = false;
+		shmarkers.set_interactive(false);
+		var state = switcher.get_active();
+		if(!state)
+			display_homes(false);
+		dialog.hide();
+	}
+
+	public void online_change(uint32 v)
     {
         var sens = (v >= MWP.FCVERS.hasSAFEAPI); //.0x020700
         aq_fcs.set_enabled(sens);
@@ -648,6 +656,9 @@ public class  SafeHomeDialog : Object
             visible = true;
             dialog.show_all ();
             shmarkers.set_interactive(true);
-        }
+			var state = switcher.get_active();
+			if(!state)
+				display_homes(true);
+		}
     }
 }

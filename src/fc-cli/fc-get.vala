@@ -423,7 +423,7 @@ class FCMgr :Object
                     inp = linp = 0;
                     msp.pmode = oldmode;
                     if(state == State.EXIT)
-                        Timeout.add(1000, () => { ml.quit(); return false; });
+                        Timeout.add(2000, () => { ml.quit(); return false; });
                     else
                     {
                         msp.pmode = MWSerial.ProtoMode.NORMAL;
