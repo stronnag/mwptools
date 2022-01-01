@@ -234,6 +234,7 @@ public class  MissionPreviewer : GLib.Object
             fly_leg(h.hlat, h.hlon, mi[0].lat, mi[0].lon, out cse, out d);
             if(warmup)
             {
+//				print("H,1 %f %f %f %f %f %f\n", cse, d, h.hlat, h.hlon, mi[0].lat, mi[0].lon);
                 LegPreview p = {-1, n, cse, dist, dist};
                 plist += p;
             }
@@ -313,10 +314,10 @@ public class  MissionPreviewer : GLib.Object
                 cx = mi[n].lon;
                 double nc;
                 fly_leg(ly,lx,cy,cx, out nc, out d);
-
+//				print("%d %d %f %f %f %f %f %f\n", lastn, n, nc, d, ly, lx, cy, cx);
                 if(warmup)
                 {
-                    LegPreview p = {lastn, n, cse, d, dist};
+                    LegPreview p = {lastn, n, nc, d, dist};
                     plist += p;
                 }
 
@@ -340,8 +341,8 @@ public class  MissionPreviewer : GLib.Object
             }
             else
             {
-                cy = mi[n].lat;
-                cx = mi[n].lon;
+                cy = mi[0].lat;
+                cx = mi[0].lon;
                 valid = true;
                 n += 1;
             }
@@ -349,9 +350,11 @@ public class  MissionPreviewer : GLib.Object
             ly = cy;
         }
 
-	if (running && ret && h.valid)
+		if (running && ret && h.valid)
         {
             fly_leg(ly, lx, h.hlat, h.hlon, out cse, out d);
+//			print("%d home %f %f %f %f %f %f\n", lastn, cse, d, ly, lx, h.hlat, h.hlon);
+
             cy = h.hlat;
             cx = h.hlon;
             if(warmup)
@@ -467,23 +470,24 @@ public class  MissionPreviewer : GLib.Object
         Mission ms;
         var fn = args[1];
         var is_j = MissionPreviewer.mission_is_json(fn);
-        ms =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+
+        var msx =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
+		ms = msx[0];
         if (ms != null)
         {
             HomePos h = {0};
-
-            if(hp != null) {
-                var parts = hp.split(",");
-                if (parts.length == 2) {
-                    h.hlat = double.parse(parts[0]);
-                    h.hlon = double.parse(parts[1]);
-                    h.valid = true;
-                }
-            } else {
+			if (ms.homex != 0 && ms.homey != 0) {
+				h = { ms.homey, ms.homex, true };
+			} else if(hp != null) {
+				var parts = hp.split(",");
+				if (parts.length == 2) {
+					h.hlat = double.parse(parts[0]);
+					h.hlon = double.parse(parts[1]);
+					h.valid = true;
+				}
+			} else {
                 h = { 50.8047104, -1.4942621, true };
             }
-
-
             h.valid = !nohome;
 
             var mt = new MissionPreviewer();
