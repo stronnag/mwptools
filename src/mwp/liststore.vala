@@ -491,7 +491,10 @@ public class ListBox : GLib.Object
             fhome.show_fake_home(true);
         }
         mp.markers.add_list_store(this);
-        calc_mission();
+        Idle.add(() => {
+				calc_mission();
+				return false;
+			});
     }
 
     public bool validate_mission(MissionItem []wp, uint8 wp_flag)

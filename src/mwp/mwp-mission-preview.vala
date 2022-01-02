@@ -314,7 +314,7 @@ public class  MissionPreviewer : GLib.Object
                 cx = mi[n].lon;
                 double nc;
                 fly_leg(ly,lx,cy,cx, out nc, out d);
-//				print("%d %d %f %f %f %f %f %f\n", lastn, n, nc, d, ly, lx, cy, cx);
+				// stderr.printf("%d %d %f %f %f %f %f %f\n", lastn, n, nc, d, ly, lx, cy, cx);
                 if(warmup)
                 {
                     LegPreview p = {lastn, n, nc, d, dist};
@@ -412,6 +412,7 @@ public class  MissionPreviewer : GLib.Object
     private static bool nohome = false;
     private static bool mr = false;
     private static bool checker = false;
+    private static bool minchecker = false;
     private static string hp = null;
 
 
@@ -420,6 +421,7 @@ public class  MissionPreviewer : GLib.Object
         { "home", '0', 0, OptionArg.STRING, out hp, "lat,lon", null},
         { "multi-rotor", 'm', 0, OptionArg.NONE, out mr, "mr mode", null},
         { "check", 'c', 0, OptionArg.NONE, out checker, "check only", null},
+        { "mincheck", 'C', 0, OptionArg.NONE, out minchecker, "check only", null},
         {null}
     };
 
@@ -467,7 +469,10 @@ public class  MissionPreviewer : GLib.Object
             return 1;
         }
 
-        Mission ms;
+		if (minchecker)
+			checker = true;
+
+		Mission ms;
         var fn = args[1];
         var is_j = MissionPreviewer.mission_is_json(fn);
 
@@ -496,12 +501,21 @@ public class  MissionPreviewer : GLib.Object
 
             if(checker)
             {
+				double secs;
+				var t = new Timer();
                 var plist =  mt.check_mission(ms, h);
-                stdout.puts("WP / next wp\tCourse\t Dist\t Total\n");
-                foreach(var p in plist)
-                {
-                    mt.show_leg(p);
-                }
+				t.stop ();
+				secs = t.elapsed (null);
+				stderr.printf("Time %.6f\n", secs);
+				if (minchecker) {
+					stderr.printf("mincheck: %d %f\n", plist.length, plist[plist.length-1].dist);
+				} else {
+					stdout.puts("WP / next wp\tCourse\t Dist\t Total\n");
+					foreach(var p in plist)
+					{
+						mt.show_leg(p);
+					}
+				}
             }
             else
             {

@@ -1624,9 +1624,7 @@ public class MWP : Gtk.Application {
                     }
                 }
                 MWPLog.message("Using speech api %d [%s]\n", spapi, SPEAKERS[spapi]);
-            }
-            else
-            {
+            } else {
                 switch(conf.speech_api)
                 {
                     case "espeak":
@@ -10024,7 +10022,7 @@ case 0:
 
     private void load_file(string fname, bool warn=true, bool append=false)
     {
-        var ms = open_mission_file(fname,append);
+        var ms = open_mission_file(fname, append);
         if(ms != null)
         {
             last_file = fname;
@@ -10065,7 +10063,6 @@ case 0:
             ms.zoom = guess_appropriate_zoom(bb_from_mission(ms));
 
         set_view_zoom(ms.zoom);
-        markers.add_list_store(ls);
 
         if(have_home)
             markers.add_home_point(home_pos.lat,home_pos.lon,ls);
@@ -10237,7 +10234,12 @@ case 0:
         if(fn != null)
 		{
 			mdx = 0; // Selected item
-            load_file(fn,true,append);
+			MWPCursor.set_busy_cursor(window);
+            Idle.add(() => {
+					load_file(fn,true,append);
+					MWPCursor.set_normal_cursor(window);
+					return false;
+				});
 		}
     }
 
