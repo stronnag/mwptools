@@ -102,12 +102,13 @@ end
 if graph && n > 0
   pltfile = DATA.read
   if amsl
+    pltfile.chomp!
     pltfile << ', filename using 1:5 t "GPS AMSL" w lines lt -1 lw 2  lc rgb "green"'
   end
   File.open(".inav_gps_alt.plt","w") {|plt| plt.puts pltfile}
   system "gnuplot -e 'filename=\"#{outf}\"' .inav_gps_alt.plt"
   STDERR.puts "Graph in #{outf}.svg"
-  File.unlink ".inav_gps_alt.plt"
+#  File.unlink ".inav_gps_alt.plt"
 end
 
 File.unlink outf if rm
