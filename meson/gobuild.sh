@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-env > /tmp/e.txt
 
 OUTPUT=$1
 cd $2
