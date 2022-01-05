@@ -15,32 +15,27 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
-public struct HomePos
-{
+public struct HomePos {
     double hlat;
     double hlon;
     bool valid;
 }
 
-private enum NAVMODE
-{
+private enum NAVMODE {
     NONE=0,
     POI,
     FIXED
 }
 
-private struct HeadingMode
-{
+private struct HeadingMode {
     uint8  mode;
     uint32 heading; // fixed heading
     double poi_lat;
     double poi_lon;
 }
 
-public class  MissionPreviewer : GLib.Object
-{
-    public struct LegPreview
-    {
+public class  MissionPreviewer : GLib.Object {
+    public struct LegPreview {
         int p1;
         int p2;
         double cse;
@@ -67,21 +62,17 @@ public class  MissionPreviewer : GLib.Object
 
     private int[] jumpC;
 
-    public MissionPreviewer()
-    {
+    public MissionPreviewer() {
         warmup = true;
         running = true;
     }
 
-    public void stop()
-    {
+    public void stop() {
         running = false;
     }
 
-    private void outloc (double lat, double lon, double cse)
-    {
-        switch (head_mode.mode)
-        {
+    private void outloc (double lat, double lon, double cse) {
+        switch (head_mode.mode) {
             case NAVMODE.NONE:
                 break;
             case NAVMODE.POI:
@@ -97,19 +88,16 @@ public class  MissionPreviewer : GLib.Object
     }
 
     private void fly_leg (double slat, double slon, double elat, double elon,
-                          out double c, out double d)
-    {
+                          out double c, out double d) {
         Geo.csedist(slat,slon,elat,elon,out d, out c);
         d *= NM2METRES;
         dist += d;
 
-        if (!warmup)
-        {
+        if (!warmup) {
             int steps = (int)(Math.round(MHERTZ * d / speed));
             var delta = speed / 5.0 / NM2METRES;
 
-            for(var i = 0; running && i < steps; i++)
-            {
+            for(var i = 0; running && i < steps; i++) {
                 Geo.posit(slat, slon, c, delta, out slat, out slon);
                 outloc (slat, slon, c);
             }
@@ -124,26 +112,19 @@ public class  MissionPreviewer : GLib.Object
 */
 
     private void iterate_ph (double cy, double cx, double brg,
-                             int phtim, out double ry, out double rx)
-    {
+                             int phtim, out double ry, out double rx) {
         const double RADIUS = 35.0;
         ry = cy;
         rx = cx;
-        if (phtim > 0)
-        {
-            if(!warmup)
-            {
+        if (phtim > 0) {
+            if(!warmup) {
                 var simwait = phtim / speed;
                 Timer timer = new Timer ();
-                if(is_mr)
-                {
-                    while (running && timer.elapsed (null) < simwait)
-                    {
+                if(is_mr) {
+                    while (running && timer.elapsed (null) < simwait) {
                         Thread.usleep(MAXSLEEP);
                     }
-                }
-                else
-                {
+                } else {
                     const double DEGINC = 5;
                     const double SECS_CIRC = 2*Math.PI*RADIUS/MSPEED;
                     const double RNM = RADIUS / NM2METRES;
@@ -154,8 +135,7 @@ public class  MissionPreviewer : GLib.Object
                     var ly = ry;
                     var bcnt = 0;
                     var maxbcnt = (int) (phtim*360/SECS_CIRC/DEGINC);
-                    while (running && bcnt < maxbcnt)
-                    {
+                    while (running && bcnt < maxbcnt) {
                         brg += DEGINC;
                         brg = brg % 360.0;
                         Geo.posit(cy, cx, brg, RNM, out ry, out rx);
@@ -167,37 +147,31 @@ public class  MissionPreviewer : GLib.Object
                     }
                 }
                 timer.stop ();
-            }
-            else
-            {
+            } else {
                 if(!is_mr)
                     dist += (phtim * speed);
             }
         }
     }
 
-    private void setupJumpCounters()
-    {
+    private void setupJumpCounters() {
         for (var i = 0; i < mi.length; i++)
             if(mi[i].action == MSP.Action.JUMP)
                 jumpC[i] = mi[i].param2;
     }
 
-    private void clearJumpCounters()
-    {
+    private void clearJumpCounters() {
         for (var i = 0; i < mi.length; i++)
             if(mi[i].action == MSP.Action.JUMP)
                 jumpC[i] = 0;
     }
 
-    private void resetJumpCounter(int n)
-    {
+    private void resetJumpCounter(int n) {
         jumpC[n] = mi[n].param2;
     }
 
-    public LegPreview[] iterate_mission (HomePos h)
-    {
-	var ret = false;
+    public LegPreview[] iterate_mission (HomePos h) {
+		var ret = false;
         var n = 0;
         var lastn = 0;
         var lx = 0.0;
@@ -208,8 +182,10 @@ public class  MissionPreviewer : GLib.Object
         var cy = 0.0;
         double d;
         LegPreview[] plist={};
-
-        var nsize = mi.length;
+#if TREED
+		Tree<int, LegPreview?> tree = new Tree<int, LegPreview?>((a,b) => {return (a-b);});
+#endif
+		var nsize = mi.length;
 
         jumpC = new int[nsize];
 
@@ -232,9 +208,7 @@ public class  MissionPreviewer : GLib.Object
         if(h.valid)
         {
             fly_leg(h.hlat, h.hlon, mi[0].lat, mi[0].lon, out cse, out d);
-            if(warmup)
-            {
-//				print("H,1 %f %f %f %f %f %f\n", cse, d, h.hlat, h.hlon, mi[0].lat, mi[0].lon);
+            if(warmup) {
                 LegPreview p = {-1, n, cse, dist, dist};
                 plist += p;
             }
@@ -250,11 +224,9 @@ public class  MissionPreviewer : GLib.Object
 
             var typ = mi[n].action;
 
-            if (valid)
-            {
+            if (valid) {
 
-                if (typ == MSP.Action.SET_POI)
-                {
+                if (typ == MSP.Action.SET_POI) {
                     head_mode.mode = NAVMODE.POI;
                     head_mode.poi_lat = mi[n].lat;
                     head_mode.poi_lon = mi[n].lon;
@@ -262,8 +234,7 @@ public class  MissionPreviewer : GLib.Object
                     continue;
                 }
 
-                if (typ == MSP.Action.SET_HEAD)
-                {
+                if (typ == MSP.Action.SET_HEAD) {
                     var fhead = (int)mi[n].param1;
                     if (fhead < 0 || fhead > 359) {
                         head_mode.mode = NAVMODE.NONE;
@@ -275,49 +246,53 @@ public class  MissionPreviewer : GLib.Object
                     continue;
                 }
 
-                if (typ == MSP.Action.JUMP)
-                {
-                    if (jumpC[n] == -1)
-                    {
+                if (typ == MSP.Action.JUMP) {
+                    if (jumpC[n] == -1) {
                         indet = true;
-                        if (warmup)
-                        {
+                        if (warmup) {
                             n += 1;
-                        }
-                        else
+                        } else {
                             n = (int)mi[n].param1 - 1;
-                    }
-                    else
-                    {
-                        if (jumpC[n] == 0)
-                        {
+						}
+                    } else {
+                        if (jumpC[n] == 0) {
                             resetJumpCounter(n);
                             n += 1;
-                        }
-                        else
-                        {
+                        } else {
                             jumpC[n] -= 1;
                             n = (int)mi[n].param1 - 1;
                         }
-
                     }
                     continue;
                 }
 
-                if (typ == MSP.Action.RTH)
-                {
+                if (typ == MSP.Action.RTH) {
                     ret = true;
                     break;
                 }
 
-                cy = mi[n].lat;
-                cx = mi[n].lon;
-                double nc;
-                fly_leg(ly,lx,cy,cx, out nc, out d);
-				// stderr.printf("%d %d %f %f %f %f %f %f\n", lastn, n, nc, d, ly, lx, cy, cx);
-                if(warmup)
-                {
-                    LegPreview p = {lastn, n, nc, d, dist};
+				cy = mi[n].lat;
+				cx = mi[n].lon;
+				double nc;
+#if TREED
+				unowned LegPreview? px;
+				int ky = (int)((lastn<<16)|(n&0xffff));
+				px = tree.lookup(ky);
+				if(px == null) {
+					fly_leg(ly,lx,cy,cx, out nc, out d);
+					LegPreview np;
+                    np = {lastn, n, nc, d, dist};
+					tree.insert(ky, np);
+				} else {
+					nc = px.cse;
+					d = px.legd;
+					dist += d;
+				}
+#else
+				fly_leg(ly,lx,cy,cx, out nc, out d);
+#endif
+                if(warmup) {
+					LegPreview p = {lastn, n, nc, d, dist};
                     plist += p;
                 }
 
@@ -341,20 +316,18 @@ public class  MissionPreviewer : GLib.Object
             }
             else
             {
-                cy = mi[0].lat;
-                cx = mi[0].lon;
+                cy = mi[n].lat;
+                cx = mi[n].lon;
                 valid = true;
                 n += 1;
             }
             lx = cx;
             ly = cy;
-        }
+		}
 
 		if (running && ret && h.valid)
         {
             fly_leg(ly, lx, h.hlat, h.hlon, out cse, out d);
-//			print("%d home %f %f %f %f %f %f\n", lastn, cse, d, ly, lx, h.hlat, h.hlon);
-
             cy = h.hlat;
             cx = h.hlon;
             if(warmup)
@@ -364,17 +337,15 @@ public class  MissionPreviewer : GLib.Object
             }
         }
         clearJumpCounters();
-        return plist;
+		return plist;
     }
 
-    public  LegPreview[]  check_mission (Mission ms, HomePos h)
-    {
+    public  LegPreview[]  check_mission (Mission ms, HomePos h) {
         mi = ms.get_ways();
         return iterate_mission(h);
     }
 
-    public Thread<int> run_mission (Mission ms, HomePos h)
-    {
+    public Thread<int> run_mission (Mission ms, HomePos h) {
         mi = ms.get_ways();
         iterate_mission(h);
         var thr = new Thread<int> ("preview", () => {
@@ -388,15 +359,13 @@ public class  MissionPreviewer : GLib.Object
     }
 
 #if PREVTEST
-    public string fmtwp(int n)
-    {
+    public string fmtwp(int n) {
         string s;
         var typ = mi[n].action;
 
         if(n == -1)
             s = "Home";
-        else
-        {
+        else {
             n += 1;
             if(typ == MSP.Action.JUMP)
                 s = "(J%02d)".printf(n);
@@ -415,7 +384,6 @@ public class  MissionPreviewer : GLib.Object
     private static bool minchecker = false;
     private static string hp = null;
 
-
     const OptionEntry[] options = {
         { "nohome", '0', 0, OptionArg.NONE, out nohome, "No home", null},
         { "home", '0', 0, OptionArg.STRING, out hp, "lat,lon", null},
@@ -425,25 +393,21 @@ public class  MissionPreviewer : GLib.Object
         {null}
     };
 
-    private void show_leg(LegPreview p)
-    {
+    private void show_leg(LegPreview p) {
         StringBuilder sb = new StringBuilder();
         sb.append(fmtwp(p.p1));
-        if(p.p1 != -1 && p.p2 != -1 && p.p1 > p.p2) // JUMPING
-        {
+        if(p.p1 != -1 && p.p2 != -1 && p.p1 > p.p2) { // JUMPING
             sb.append(" ");
             sb.append(fmtwp(p.p1+1));
             sb.append(" ");
-        }
-        else
+        } else
             sb.append(" - ");
         sb.append(fmtwp(p.p2));
         sb.append_printf("\t%03.0f°\t%4.0fm\t%5.0fm\n", p.cse, p.legd, p.dist);
         stdout.puts(sb.str);
     }
 
-    public static bool mission_is_json(string fn)
-    {
+    public static bool mission_is_json(string fn) {
         uint8 buf[16];
         var fs = FileStream.open (fn, "r");
         fs.read (buf);
@@ -453,21 +417,22 @@ public class  MissionPreviewer : GLib.Object
             return true;
     }
 
-    public static int main (string[] args)
-    {
-
+    public static int main (string[] args) {
         try {
             var opt = new OptionContext(" - test args");
             opt.set_help_enabled(true);
             opt.add_main_entries(options, null);
             opt.parse(ref args);
-        }
-        catch (OptionError e) {
+        } catch (OptionError e) {
             stderr.printf("Error: %s\n", e.message);
             stderr.printf("Run '%s --help' to see a full list of available "+
                           "options\n", args[0]);
             return 1;
         }
+
+#if TREED
+		stderr.printf("Using Binary Tree cache\n");
+#endif
 
 		if (minchecker)
 			checker = true;
@@ -475,32 +440,30 @@ public class  MissionPreviewer : GLib.Object
 		Mission ms;
         var fn = args[1];
         var is_j = MissionPreviewer.mission_is_json(fn);
-
         var msx =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
 		ms = msx[0];
-        if (ms != null)
-        {
+        if (ms != null) {
             HomePos h = {0};
 			if (ms.homex != 0 && ms.homey != 0) {
 				h = { ms.homey, ms.homex, true };
 			} else if(hp != null) {
-				var parts = hp.split(",");
-				if (parts.length == 2) {
-					h.hlat = double.parse(parts[0]);
-					h.hlon = double.parse(parts[1]);
-					h.valid = true;
-				}
-			} else {
+                var parts = hp.split(",");
+                if (parts.length == 2) {
+                    h.hlat = double.parse(parts[0]);
+                    h.hlon = double.parse(parts[1]);
+                    h.valid = true;
+                }
+            } else {
                 h = { 50.8047104, -1.4942621, true };
             }
+
             h.valid = !nohome;
 
             var mt = new MissionPreviewer();
 
             mt.is_mr = mr;
 
-            if(checker)
-            {
+            if(checker) {
 				double secs;
 				var t = new Timer();
                 var plist =  mt.check_mission(ms, h);
@@ -511,15 +474,11 @@ public class  MissionPreviewer : GLib.Object
 					stderr.printf("mincheck: %d %f\n", plist.length, plist[plist.length-1].dist);
 				} else {
 					stdout.puts("WP / next wp\tCourse\t Dist\t Total\n");
-					foreach(var p in plist)
-					{
+					foreach(var p in plist)	{
 						mt.show_leg(p);
 					}
 				}
-            }
-            else
-            {
-
+            } else {
                 Thread<int> thr = null;
                 var ml = new MainLoop();
 
