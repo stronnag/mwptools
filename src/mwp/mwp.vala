@@ -866,7 +866,8 @@ public class MWP : Gtk.Application {
         RTH = 4,
         WP = 8,
         ALTH = 16,
-        CRUISE =32
+        CRUISE = 32,
+		UNDEF = 64, // emergency maybe
     }
 
         // ./src/main/fc/runtime_config.h
@@ -4114,8 +4115,9 @@ public class MWP : Gtk.Application {
 					want_special |= POSMODE.ALTH;
 				else if(ltmflags == MSP.LTM.cruise)
 					want_special |= POSMODE.CRUISE;
-				else if(ltmflags != MSP.LTM.land)
-				{
+				else if (ltmflags == MSP.LTM.undefined)
+					want_special |= POSMODE.UNDEF;
+				else if(ltmflags != MSP.LTM.land) {
 					if(craft != null)
 						craft.set_normal();
 				}
@@ -8092,6 +8094,8 @@ case 0:
                         want_special |= POSMODE.ALTH;
                     else if(ltmflags == MSP.LTM.cruise)
                         want_special |= POSMODE.CRUISE;
+					else if (ltmflags == MSP.LTM.undefined)
+						want_special |= POSMODE.UNDEF;
                     else if(ltmflags != MSP.LTM.land)
                     {
                         if(craft != null)
@@ -8889,6 +8893,14 @@ case 0:
             init_craft_icon();
             if(craft != null)
                 craft.special_wp(Craft.Special.WP, lat, lon);
+            markers.update_ipos(ls, lat, lon);
+        }
+        if((want_special & POSMODE.UNDEF) != 0)
+        {
+            want_special &= ~POSMODE.UNDEF;
+            init_craft_icon();
+            if(craft != null)
+                craft.special_wp(Craft.Special.UNDEF, lat, lon);
             markers.update_ipos(ls, lat, lon);
         }
     }
