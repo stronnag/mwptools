@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '5.006.477')
+project('mwptools', 'c', 'vala', version : '5.008.490')
 
 meson.add_install_script('meson/post_install.sh')
 conf_data = configuration_data()

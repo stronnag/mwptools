@@ -108,7 +108,7 @@ if graph && n > 0
   File.open(".inav_gps_alt.plt","w") {|plt| plt.puts pltfile}
   system "gnuplot -e 'filename=\"#{outf}\"' .inav_gps_alt.plt"
   STDERR.puts "Graph in #{outf}.svg"
-#  File.unlink ".inav_gps_alt.plt"
+  File.unlink ".inav_gps_alt.plt"
 end
 
 File.unlink outf if rm
