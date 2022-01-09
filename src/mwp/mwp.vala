@@ -1288,7 +1288,7 @@ public class MWP : Gtk.Application {
 
     private void set_dock_menu_status()
     {
-        for(var id = (int)DOCKLETS.MISSION; id < (int)DOCKLETS.NUMBER; id += 1)
+        for(var id = DOCKLETS.MISSION; id < DOCKLETS.NUMBER; id += (DOCKLETS)1)
         {
             update_dockmenu((DOCKLETS)id);
             if(id == DOCKLETS.FBOX &&

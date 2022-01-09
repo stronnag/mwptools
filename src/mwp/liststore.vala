@@ -854,7 +854,7 @@ public class ListBox : GLib.Object
         Gtk.ListStore combo_model = new Gtk.ListStore (1, typeof (string));
         Gtk.TreeIter iter;
 
-        for(var n = (int)MSP.Action.WAYPOINT; n <= (int)MSP.Action.LAND; n += 1)
+        for(var n = MSP.Action.WAYPOINT; n <= MSP.Action.LAND; n += (MSP.Action)1)
         {
             combo_model.append (out iter);
             combo_model.set (iter, 0, MSP.get_wpname((MSP.Action)n));
