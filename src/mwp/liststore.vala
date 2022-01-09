@@ -857,7 +857,7 @@ public class ListBox : GLib.Object
         for(var n = (int)MSP.Action.WAYPOINT; n <= (int)MSP.Action.LAND; n += 1)
         {
             combo_model.append (out iter);
-            combo_model.set (iter, 0, MSP.get_wpname(n));
+            combo_model.set (iter, 0, MSP.get_wpname((MSP.Action)n));
         }
 
         list_model = new Gtk.ListStore (WY_Columns.N_COLS,
