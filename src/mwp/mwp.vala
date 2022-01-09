@@ -1290,7 +1290,7 @@ public class MWP : Gtk.Application {
     {
         for(var id = DOCKLETS.MISSION; id < DOCKLETS.NUMBER; id += (DOCKLETS)1)
         {
-            update_dockmenu((DOCKLETS)id);
+            update_dockmenu(id);
             if(id == DOCKLETS.FBOX &&
                !dockitem[id].is_closed () && !dockitem[id].is_iconified())
             {

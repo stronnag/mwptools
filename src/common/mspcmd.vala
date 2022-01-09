@@ -400,7 +400,7 @@ public class MSP : Object {
             wp_hash = new HashTable<string, MSP.Action> (str_hash, str_equal);
             for (var n = MSP.Action.UNASSIGNED; n <= MSP.Action.LAND; n += (MSP.Action)1)
             {
-				wp_hash.insert(get_wpname(n), n);
+	         wp_hash.insert(get_wpname(n), n);
             }
         }
         return wp_hash.get(xs);
