@@ -398,7 +398,7 @@ public class MSP : Object {
         if(wp_hash == null)
         {
             wp_hash = new HashTable<string, MSP.Action> (str_hash, str_equal);
-            for (var n = MSP.Action.UNASSIGNED; n <= MSP.Action.LAND; n += 1)
+            for (var n = (int)MSP.Action.UNASSIGNED; n <= (int)MSP.Action.LAND; n += 1)
             {
                 wp_hash.insert(get_wpname(n), n);
             }

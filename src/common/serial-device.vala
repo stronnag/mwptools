@@ -576,7 +576,7 @@ public class MWSerial : Object {
         rxbuf = new uint8[rxbuf_alloc];
         txbuf = new uint8[txbuf_alloc];
         devbuf = new uint8[MemAlloc.DEV];
-		pmask = 0xff;
+		pmask = PMask.AUTO ;
     }
 
 
