@@ -33,25 +33,35 @@ The practical results being:
 
 A waypoint may set set to FBH (or have FBH removed) from either the right mouse popup or the mission editor.
 
-![FBH initial](images/fbh-1.png){: width="50%" }
-
 In the first image, no FBH waypoints have been set. We can see the planned home (the brown icon, which was read from the extant mission file), and the popup menu and mission editor. Note: the popup entry has since been renamed 'Fly By Home' for consistency.
-
-![FBH set](images/fbh-2.png){: width="60%" }
+<figure markdown>
+![FBH initial](images/fbh-1.png){: width="50%" }
+<figcaption>1. Initial state, no FBH</figcaption>
+</figure>
 
 In the second image, WP2 has been made a FBH WP; we can see that it is now attached the home icon (and slightly faded). The home icon can be dragged, the attached FBH waypoint is no longer independently draggable.
-
-![FBH move](images/fbh-3.png){: width="60%" }
+<figure markdown>
+![FBH set](images/fbh-2.png){: width="60%" }
+<figcaption>2. WP2 set as FBH</figcaption>
+</figure>
 
 In the third image, the planned home has been moved slightly north, WP2 has moved with it.
-
-![FBH add](images/fbh-4.png){: width="60%" }
+<figure markdown>
+![FBH move](images/fbh-3.png){: width="60%" }
+<figcaption>3. Home moved, WP2 moved as FBH</figcaption>
+</figure>
 
 In the forth image, a second waypoint (WP14) has been set as FBH; it is also now locked to the planned home location.
-
-![FBH split](images/fbh-5.png){: width="60%" }
+<figure markdown>
+![FBH add](images/fbh-4.png){: width="60%" }
+<figcaption>4. Add WP14 as FBH</figcaption>
+</figure>
 
 In the fifth image, the FBH attribute as been cleared on WP2; it has been independently dragged to a new location.
+<figure markdown>
+![FBH split](images/fbh-5.png){: width="60%" }
+<figcaption>5. Remove FBH from WP2</figcaption>
+</figure>
 
 ## mwp Ground Control Station and Replay modes
 
