@@ -8585,7 +8585,7 @@ case 0:
 				ri.name = name;
 		}
 		if (ri.name == null || ri.name == "")
-			ri.name = p[4];
+			ri.name = "[%s]".printf(p[4]);
 
 		if(posrep) {
 			double lat = double.parse(p[14]);
@@ -8595,25 +8595,36 @@ case 0:
 			var isvalid = (lat != 0 && lng != 0);
 			var currdt = make_sbs_time(p[6], p[7]);
 			if ( isvalid && hdg == 0 && spd == 0 && ri.posvalid && ri.dt != null) {
-				double c,d;
-				Geo.csedist(ri.latitude, ri.longitude, lat, lng, out d, out c);
-				hdg = (uint16)c;
-				var tdiff = currdt.difference(ri.dt);
-				if (tdiff > 0) {
-					ri.speed = d*1852.0 / (tdiff / 1e6) ;
+				if (ri.speed == 0.0) {
+					double c,d;
+					Geo.csedist(ri.latitude, ri.longitude, lat, lng, out d, out c);
+					hdg = (uint16)c;
+					ri.heading = hdg;
+					var tdiff = currdt.difference(ri.dt);
+					if (tdiff > 0) {
+						ri.speed = d*1852.0 / (tdiff / 1e6) ;
+					}
 				}
 			} else {
 				ri.speed = spd * (1852.0/3600.0);
+				ri.heading = hdg;
 			}
-			ri.heading = hdg;
 			ri.latitude = lat;
 			ri.longitude = lng;
 			ri.posvalid = isvalid;
 			ri.altitude = int.parse(p[11])*0.3048;
 			ri.lasttick = nticks;
-
 			if (isvalid) {
 				ri.dt = currdt;
+			}
+		} else if (p[1] == "4") {
+			uint16 hdg = (uint16)int.parse(p[13]);
+			int spd = int.parse(p[12]);
+			if(spd != 0) {
+				ri.speed = spd * (1852.0/3600.0);
+			}
+			if (hdg != 0) {
+				ri.heading = hdg;
 			}
 		}
 		var rdebug = ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE);

@@ -236,7 +236,7 @@ class RadarView : Object
 				   r.altitude < MWP.conf.radar_alert_altitude && idm < MWP.conf.radar_alert_range) {
 					r.alert = RadarAlert.ALERT;
 					var this_sec = dt.to_unix();
-					if(this_sec >= last_sec + 2) {
+					if(r.state > 3 && this_sec >= last_sec + 2) {
 						MWP.play_alarm_sound(MWPAlert.GENERAL);
 						last_sec =  this_sec;
 					}

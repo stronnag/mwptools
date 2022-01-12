@@ -65,7 +65,8 @@ public class SbsReader :Object {
 		if (p.length > 8) {
 			switch(p[0]) {
 			case "MSG":
-				if(p[1] == "1" || p[1] == "2" || p[1] == "3" || p[1] == "5") {
+				var p1 = int.parse(p[1]);
+				if(p1 < 6) {
 					return p;
 				}
 				break;

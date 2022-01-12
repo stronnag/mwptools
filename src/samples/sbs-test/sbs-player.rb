@@ -4,7 +4,7 @@ require 'socket'
 require 'optparse'
 require 'time'
 
-def handle_client(s, fnam)
+def handle_client(s, fnam, once)
   Thread.new do
     lts = nil
     peer = "#{s.peeraddr[3]}:#{s.peeraddr[1]}"
@@ -20,15 +20,19 @@ def handle_client(s, fnam)
     end
     STDERR.puts "--- Close session #{peer}"
     s.close rescue nil
+    Kernel.exit if once
   end
 end
 
 
 host='::'
 port=30003
+once=nil
+
 ARGV.options do |opt|
   opt.banner = "Usage: netcap.rb [options] file"
   opt.on('-p','--port PORT',Integer, port) {|o| port=o}
+  opt.on('--once') {once=true}
   opt.parse!
 end
 fnam = ARGV.shift
@@ -37,5 +41,5 @@ server.setsockopt(Socket::SOL_SOCKET, Socket::SO_REUSEADDR,1)
 while (session = server.accept)
   peer = "#{session.peeraddr[3]}:#{session.peeraddr[1]}"
   STDERR.puts "++ New session #{peer}"
-  handle_client(session, fnam)
+  handle_client(session, fnam, once)
 end
