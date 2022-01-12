@@ -50,7 +50,7 @@ class RadarView : Object
 
 	const uint TOTHEMOON = 0xfffffff;
 
-	public static string[] status = {"Undefined", "Armed", "Hidden", "Stale", "ADS-B"};
+	public static string[] status = {"Undefined", "Armed", "Hidden", "Stale", "ADS-B", "SBS"};
     public signal void vis_change(bool hidden);
     public signal void zoom_to_swarm(double lat, double lon);
 
@@ -204,7 +204,7 @@ class RadarView : Object
         }
     }
 
-	private void set_cell_text_bg(Gtk.TreeModel model, Gtk.TreeIter iter, Gtk.CellRenderer cell, string s) {
+	private void set_cell_text_bg(Gtk.TreeModel model, Gtk.TreeIter iter, Gtk.CellRenderer cell, string? s) {
 		Value v;
 		model.get_value(iter, Column.ALERT, out v);
 		var val = (uint)v;
@@ -231,7 +231,7 @@ class RadarView : Object
 			Geo.csedist(hlat, hlon, r.latitude, r.longitude, out d, out c);
 			idm = (uint)(d*1852); // nm to m
 			cse = (uint)c;
-			if(r.source == 2) {
+			if(r.source == 2 || r.source == 3) {
 				if(MWP.conf.radar_alert_altitude > 0 && MWP.conf.radar_alert_range > 0 &&
 				   r.altitude < MWP.conf.radar_alert_altitude && idm < MWP.conf.radar_alert_range) {
 					r.alert = RadarAlert.ALERT;
@@ -277,7 +277,7 @@ class RadarView : Object
                        Column.SPEED, "%.0f %s".printf(Units.speed(r.speed), Units.speed_units()),
                        Column.STATUS, stsstr);
 
-		if(r.state == 1 || r.state == 4) {
+		if(r.state == 1 || r.state == 4 || r.state == 5) {
 			listmodel.set (iter, Column.LAST, dt.format("%T"));
         }
 

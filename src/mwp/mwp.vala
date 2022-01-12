@@ -71,6 +71,7 @@ public struct RadarPlot
     public uint8 source;
     public bool posvalid;
 	public uint8 alert;
+	public DateTime dt;
 }
 
 public enum RadarAlert {
@@ -2829,22 +2830,43 @@ public class MWP : Gtk.Application {
 		foreach (var rd in radar_device) {
 			var parts = rd.split(",");
 			foreach(var p in parts) {
-				RadarDev r = {};
-				r.name = p.strip();
-				MWPLog.message("Set up radar device %s\n", r.name);
-				r.dev = new MWSerial();
-				r.dev.set_mode(MWSerial.Mode.SIM);
-				r.dev.set_pmask(MWSerial.PMask.INAV);
-				r.dev.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
-						handle_radar(s, cmd,raw,len,xflags,errs);
-					});
-				radardevs += r;
+				var pn = p.strip();
+				if (pn.has_prefix("sbs://")) {
+					var sbs = new SbsReader(pn);
+					sbs.read_sbs.begin();
+					sbs.sbs_result.connect((s) => {
+							if (s == null) {
+								Timeout.add_seconds(60, () => {
+										sbs.read_sbs.begin();
+										return false;
+									});
+							} else {
+								var px = sbs.parse_sbs_message(s);
+								if (px != null) {
+									decode_sbs(px);
+								}
+							}
+						});
+				} else {
+					RadarDev r = {};
+					r.name = pn;
+					MWPLog.message("Set up radar device %s\n", r.name);
+					r.dev = new MWSerial();
+					r.dev.set_mode(MWSerial.Mode.SIM);
+					r.dev.set_pmask(MWSerial.PMask.INAV);
+					r.dev.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
+							handle_radar(s, cmd,raw,len,xflags,errs);
+						});
+					radardevs += r;
+				}
 			}
-			try_radar_dev();
-			Timeout.add_seconds(15, () => {
-					try_radar_dev();
-					return Source.CONTINUE;
-                });
+			if(radardevs.length > 0) {
+				try_radar_dev();
+				Timeout.add_seconds(15, () => {
+						try_radar_dev();
+						return Source.CONTINUE;
+					});
+			}
 		}
         mq = new Queue<MQI?>();
 
@@ -5261,7 +5283,7 @@ case 0:
                             {
                                 if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
                                     MWPLog.message("TRAF-DEL %s %u\n", r.name, r.state);
-                                if(r.source == 2)
+                                if(r.source == 2 || r.source == 3)
                                 {
                                     radarv.remove(r);
                                     markers.remove_radar(r);
@@ -5272,7 +5294,7 @@ case 0:
                             {
                                 if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
                                     MWPLog.message("TRAF-HID %s %u\n", r.name, r.state);
-                                if(r.source == 2)
+                                if(r.source == 2 || r.source == 3)
                                 {
                                     r.state = 2; // hidden
 									r.alert = RadarAlert.SET;
@@ -8543,6 +8565,78 @@ case 0:
         return ri;
     }
 
+	void decode_sbs(string[] p) {
+		bool posrep = (p[1] == "2" || p[1] == "3");
+		string s4 = "0x%s".printf(p[4]);
+		uint v = (uint)uint64.parse(s4);
+		unowned RadarPlot? ri = find_radar_data(v);
+		var name = p[10].strip();
+		if(ri == null) {
+			var r0 = RadarPlot();
+			r0.id =  v;
+			radar_plot.append(r0);
+			ri = find_radar_data(v);
+			ri.source = 3;
+			ri.posvalid = false;
+			ri.state = 5;
+			ri.name = name;
+		} else {
+			if (name.length > 0)
+				ri.name = name;
+		}
+		if (ri.name == null || ri.name == "")
+			ri.name = p[4];
+
+		if(posrep) {
+			double lat = double.parse(p[14]);
+			double lng = double.parse(p[15]);
+			uint16 hdg = (uint16)int.parse(p[13]);
+			int spd = int.parse(p[12]);
+			var isvalid = (lat != 0 && lng != 0);
+			var currdt = make_sbs_time(p[6], p[7]);
+			if ( isvalid && hdg == 0 && spd == 0 && ri.posvalid && ri.dt != null) {
+				double c,d;
+				Geo.csedist(ri.latitude, ri.longitude, lat, lng, out d, out c);
+				hdg = (uint16)c;
+				var tdiff = currdt.difference(ri.dt);
+				if (tdiff > 0) {
+					ri.speed = d*1852.0 / (tdiff / 1e6) ;
+				}
+			} else {
+				ri.speed = spd * (1852.0/3600.0);
+			}
+			ri.heading = hdg;
+			ri.latitude = lat;
+			ri.longitude = lng;
+			ri.posvalid = isvalid;
+			ri.altitude = int.parse(p[11])*0.3048;
+			ri.lasttick = nticks;
+
+			if (isvalid) {
+				ri.dt = currdt;
+			}
+		}
+		var rdebug = ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE);
+		if(ri.posvalid) {
+			markers.update_radar(ref ri);
+			if (rdebug) {
+				MWPLog.message("SBS p[1]=%s id=%x calls=%s lat=%f lon=%f alt=%.0f hdg=%u speed=%.1f last=%u\n",
+							   p[1], ri.id, ri.name, ri.latitude, ri.longitude, ri.altitude, ri.heading, ri.speed, ri.lasttick);
+			}
+			radarv.update(ref ri, rdebug);
+		} else {
+			radarv.remove(ri);
+			markers.remove_radar(ri);
+			radar_plot.remove_all(ri);
+		}
+	}
+
+	private DateTime make_sbs_time(string d, string t) {
+		var p = d.split("/");
+		var ts = "%s-%s-%sT%s+00".printf(p[0], p[1], p[2], t);
+		return new DateTime.from_iso8601(ts, null);
+	}
+
         /**
     void dump_mav_os_msg(uint8 *raw)
     {
@@ -8593,7 +8687,6 @@ case 0:
             callsign = "[%u]".printf(v);
         }
         sb.append_printf("callsign <%s> ", callsign);
-
 
         if ((valid & 1)  == 1)
         {

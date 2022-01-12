@@ -271,7 +271,7 @@ public class MWPMarkers : GLib.Object
 
         rp.set_color (white);
         rp.set_location (r.latitude,r.longitude);
-		if (r.source == 2) {
+		if (r.source == 2 || r.source == 3) {
 			var act = rp.get_image();
 			if((r.alert & RadarAlert.SET) == RadarAlert.SET) {
 				if((r.alert & RadarAlert.ALERT) == RadarAlert.ALERT) {
