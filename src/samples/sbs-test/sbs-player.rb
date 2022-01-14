@@ -7,13 +7,14 @@ require 'time'
 def handle_client(s, fnam, once)
   Thread.new do
     lts = nil
-    peer = "#{s.peeraddr[3]}:#{s.peeraddr[1]}"
+    now = Time.now.strftime("%F %T")
+    peer = "#{now} #{s.peeraddr[3]}:#{s.peeraddr[1]}"
     File.open(fnam) do |fh|
       fh.each do |l|
         l.chomp!
         a = l.split(',')
         ts  = Time.parse([a[8],a[9]].join(' '))
-        sleep ts - lts if lts
+        sleep ts - lts if lts and ts-lts > 0
         s.puts l rescue break
         lts = ts
       end
@@ -44,7 +45,8 @@ fnam = ARGV[0]
 server = TCPServer.new(host,port)
 server.setsockopt(Socket::SOL_SOCKET, Socket::SO_REUSEADDR,1)
 while (session = server.accept)
-  peer = "#{session.peeraddr[3]}:#{session.peeraddr[1]}"
-  STDERR.puts "++ New session #{peer}"
+  now = Time.now.strftime("%F %T")
+  peer = "#{now} #{session.peeraddr[3]}:#{session.peeraddr[1]}"
+  STDERR.puts "+++   New session #{peer}"
   handle_client(session, fnam, once)
 end
