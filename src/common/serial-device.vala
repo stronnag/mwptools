@@ -290,7 +290,7 @@ namespace MPM {
 
 	static uint8 mpm_buf[64];
 	static uint8 skip = 0;
-	static Mtype type = MPM_NONE;
+	static Mtype type = Mtype.MPM_NONE;
 	static State state = State.L_TYPE;
 	//                      0    1   2  3   4   5   6  7  8  9  a  b   c  d   e  f  10 11
 	const uint8 []tlens = {0, 0x18, 9, 9, 16, 16, 29, 0, 4, 0, 8, 6, 29, 0, 14, 10, 22, 0};
@@ -301,7 +301,7 @@ namespace MPM {
 	}
 
 	public Mtype decode(uint8 c) {
-		Mtype res = MPM_NONE;
+		Mtype res = Mtype.MPM_NONE;
 		switch (state) {
 		case State.L_TYPE:
 			if (c > 0 && c < Mtype.MPM_MAXTYPE &&

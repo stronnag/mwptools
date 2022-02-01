@@ -8643,8 +8643,16 @@ case 0:
 
 	private DateTime make_sbs_time(string d, string t) {
 		var p = d.split("/");
+#if USE_TV1
+		var q = t.split(":");
+		return new DateTime.local(int.parse(p[0]), int.parse(p[1]),
+								  int.parse(p[2]),
+								  int.parse(q[0]), int.parse(q[1]),
+								  double.parse(q[2]));
+#else
 		var ts = "%s-%s-%sT%s+00".printf(p[0], p[1], p[2], t);
 		return new DateTime.from_iso8601(ts, null);
+#endif
 	}
 
         /**

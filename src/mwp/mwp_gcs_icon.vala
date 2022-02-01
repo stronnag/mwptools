@@ -168,9 +168,19 @@ public class GpsdReader :Object {
 				if (obj.has_member("time")) {
 					d.time = obj.get_string_member("time");
 					d.mask |= Mask.TIME;
+ #if USE_TV1
+					var q = d.time.split("T:+-");
+					var dt = new DateTime.local(
+						int.parse(q[0]), int.parse(q[1]),
+						int.parse(q[2]),
+						int.parse(q[3]), int.parse(q[4]),
+						double.parse(q[5]));
+
+#else
 					var dt = new DateTime.from_iso8601 (d.time, null);
+#endif
 					if (dt.get_second() != lastsec) {
-						if (obj.has_member("mode")) {
+                                            if (obj.has_member("mode")) {
 							d.fix = (uint8)obj.get_int_member("mode");
 							d.mask |= Mask.FIX;
 						}
