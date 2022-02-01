@@ -88,20 +88,20 @@ if speak
 endif
 
 gitvers='local'
-r = run_command('git', 'rev-parse','--short','HEAD')
+r = run_command('git', 'rev-parse','--short','HEAD', check: false)
 if r.returncode() == 0
   gitvers = r.stdout().strip()
 endif
 mwp_c_args += '-DMWPGITVERSION=' + gitvers
 
 gitstamp='0000-00-00T00:00:00'
-r = run_command('git', 'log','-1','--format=%cI')
+r = run_command('git', 'log','-1','--format=%cI', check: false)
 if r.returncode() == 0
   gitstamp = r.stdout().strip()
 endif
 mwp_c_args += '-DMWPGITSTAMP=' + gitstamp
 
-r = run_command('date', '+%FT%T')
+r = run_command('date', '+%FT%T', check: true)
 if r.returncode() == 0
   bstamp = r.stdout().strip()
 else

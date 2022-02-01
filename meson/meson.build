@@ -9,7 +9,7 @@ if host_machine.system() == 'linux'
   deps += dependency('gudev-1.0')
 endif
 
-r = run_command('valac', '--api-version')
+r = run_command('valac', '--api-version', check: true)
 if r.returncode() != 0
   error('failed to get vala api-version')
 endif
@@ -32,12 +32,6 @@ if vapivers.version_compare('>=0.50')
   dopts += '--define=USE_URIPARSE'
 endif
 
-r = run_command('valac', '--api-version')
-if r.returncode() != 0
-  error('failed to get vala api-version')
-endif
-valacvers = r.stdout().strip()
-
 if vapivers.version_compare('<0.51')
   dopts += '--define=OLDTVI'
 else
@@ -57,7 +51,7 @@ gobuild = ''
 golang = find_program('go')
 if golang.found()
   gobuild = meson.current_source_dir() / 'gobuild.sh'
-  r = run_command('go', 'version')
+  r = run_command('go', 'version', check: true)
   if r.returncode() != 0
   error('failed to get go version')
   else
