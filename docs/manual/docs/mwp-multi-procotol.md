@@ -66,14 +66,14 @@ Note that for TCP, mwp only supports the latter form (it expects to be the TCP c
 
 ### MQTT / BulletGCSS
 
-See the [mwp's MQTT support](mqtt---bulletgcss-telemetry) article for a detailed description of the URI format:
+See the [mwp's MQTT support](mqtt---bulletgcss-telemetry.md) article for a detailed description of the URI format:
 ```
 mqtt://[user[:pass]@]broker[:port]/topic[?cafile=file]
 ```
 
 ### WSL UDP bridge
 
-As WSL does not support serial connections, mwp provides a bespoke serial / UDP bridge using the pseudo-device name `udp://__MWP_SERIAL_HOST:17071`. See the [WSL article](mwp-in-Windows-11---WSL-G) for more detail.
+As WSL does not support serial connections, mwp provides a bespoke serial / UDP bridge using the pseudo-device name `udp://__MWP_SERIAL_HOST:17071`. See the [WSL article](mwp-in-Windows-11---WSL-G.md) for more detail.
 
 ## Multi Protocol selection
 

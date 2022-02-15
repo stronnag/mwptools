@@ -39,7 +39,7 @@ No addition software requirements.
 
 ## BulletGCSS Logs
 
-Requires that {{ mwp }} is built with [MQTT support](mqtt---bulletgcss-telemetry).
+Requires that {{ mwp }} is built with [MQTT support](mqtt---bulletgcss-telemetry.md).
 
 No addition software requirements.
 

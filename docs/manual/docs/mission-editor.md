@@ -36,7 +36,7 @@ The use of more advanced functions, for example setting parameter values, moving
 
 ## Mission Editor
 
-The mission editor may be invoked from the [dock](dock) or from a WP context menu.
+The mission editor may be invoked from the [dock](dock.md) or from a WP context menu.
 
 It provides the following functions:
 

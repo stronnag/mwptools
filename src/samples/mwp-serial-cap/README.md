@@ -23,7 +23,7 @@ $ mwp-serial-cap -d /dev/ttyUSB1 -b 57600 stuff.cap
 # Control-C to end the recording
 
 
-### BT device, by address
+### BT device, by address (Linux)
 $ mwp-serial-cap -d 35:53:17:04:14:BA -b 57600 stuff.cap
 2021/11/21 08:45:36 Using device 35:53:17:04:14:BA
 Read ( 11)	:     15841 [22.52s]^C
@@ -31,6 +31,8 @@ Read ( 11)	:     15841 [22.52s]^C
 ```
 
 On Linux, `/dev/ttyUSB0` and `/dev/ttyACMO` will be probed if no device name is given; otherwise, and always on other platforms, the device name must be supplied.
+
+All mwptools serial transports are available (Bluetooth, IP (TCP and UDP)) in addition to USB-TTL.
 
 # Building
 

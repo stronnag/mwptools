@@ -141,6 +141,7 @@ SERIALS = [
   "SERVO_SERIAL",	#22
   "TELEMETRY_SMARTPORT_MASTER", # 23
   "IMU2", 		#24
+  "HDZERO",             #25
 ]
 
 MON2MON = {"Jan" => 1, "Feb" => 2, "Mar" => 3, "Apr" => 4, "May" => 5,
@@ -246,7 +247,7 @@ ARGF.each do |l|
     if fcode == 0
       funcs << "Unused"
     else
-      0.upto(19) do |i|
+      0.upto(SERIALS.size) do |i|
 	mask = (1 << i)
 	if (fcode & mask) == mask
 	  funcs << SERIALS[i]

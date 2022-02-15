@@ -26,8 +26,8 @@ Once you've [built and / or installed](Building-with-meson-and-ninja.md) {{ mwp 
 The install process installs an desktop icon and `mwp.desktop` application file ![icon](images/mwp_icon.svg)
 
   The `desktop` file tells the window manager where to find {{ mwp }} and on modern desktop environments (e.g. Gnome Shell, xfce, kde), {{ mwp }} will be added to the system application menu and / or 'finder'.
-* It is also possible to run {{ mwp }} from a terminal, passing additional [options](mwp-Configuration) if required.
-* Such [options can be added to a configuration file](mwp-Configuration) for persistence or use from the graphical icon.
+* It is also possible to run {{ mwp }} from a terminal, passing additional [options](mwp-Configuration.md) if required.
+* Such [options can be added to a configuration file](mwp-Configuration.md) for persistence or use from the graphical icon.
 
 ## Command line options
 

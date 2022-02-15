@@ -46,6 +46,7 @@ Usage of mwp-log-replay [options] input-file [outfile]
 If no device name is given, hex formatted bytes are dumped to stdout.
 If `-raw` is given, raw bytes (no metadata) are written to the optional output file, if provided.
 
+All mwptools serial transports are available (Bluetooth, IP (TCP and UDP)) in addition to USB-TTL.
 
 # Building
 
