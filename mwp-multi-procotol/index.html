@@ -1002,11 +1002,11 @@ i.e. the host part is empty.</p>
 <p>Note that for TCP, mwp only supports the latter form (it expects to be the TCP client).</p>
 <h2 id="special-cases">Special Cases<a class="headerlink" href="#special-cases" title="Permanent link">#</a></h2>
 <h3 id="mqtt-bulletgcss">MQTT / BulletGCSS<a class="headerlink" href="#mqtt-bulletgcss" title="Permanent link">#</a></h3>
-<p>See the <a href="mqtt---bulletgcss-telemetry">mwp's MQTT support</a> article for a detailed description of the URI format:
+<p>See the <a href="../mqtt---bulletgcss-telemetry/">mwp's MQTT support</a> article for a detailed description of the URI format:
 <div class="highlight"><pre><span></span><code>mqtt://[user[:pass]@]broker[:port]/topic[?cafile=file]
 </code></pre></div></p>
 <h3 id="wsl-udp-bridge">WSL UDP bridge<a class="headerlink" href="#wsl-udp-bridge" title="Permanent link">#</a></h3>
-<p>As WSL does not support serial connections, mwp provides a bespoke serial / UDP bridge using the pseudo-device name <code>udp://__MWP_SERIAL_HOST:17071</code>. See the <a href="mwp-in-Windows-11---WSL-G">WSL article</a> for more detail.</p>
+<p>As WSL does not support serial connections, mwp provides a bespoke serial / UDP bridge using the pseudo-device name <code>udp://__MWP_SERIAL_HOST:17071</code>. See the <a href="../mwp-in-Windows-11---WSL-G/">WSL article</a> for more detail.</p>
 <h2 id="multi-protocol-selection">Multi Protocol selection<a class="headerlink" href="#multi-protocol-selection" title="Permanent link">#</a></h2>
 <h3 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h3>
 <p>From 4.317.587 (2021-11-21), mwp does away with some of the weirdness around serial protocols (e.g. having to separately specify <code>--smartport</code> in order to use S-Port telemetry).</p>
