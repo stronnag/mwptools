@@ -15,6 +15,13 @@ In this case, the waypoint position is determined at run time (when the WP is ac
 
 As the waypoint location is determined during execution, it is not stored; so downloading a completed mission will return the original locations, not the locations used during the mission.
 
+{{ mwp }} will perform the following checks when importing WAYPOINT, POSHOLD_TIME and LAND points:
+
+* If the latitude and longitude are 0, then the flag is set to 0x48
+* If the flag is set to 0x48 and latitude and longitude are 0, the latitude and longitude are set to the mission file home (which may also be 0)
+
+This will ensure, as far as possible, that when such a mission is exported, it is safe on earlier {{ inav }} firmware. Note that this excludes using exactly 0,0 as an actual waypoint location (but 0.00001,0.00001 would be OK); in practical terms this is only likely to affect 007 villains.
+
 ## Implications for a graphical mission planner
 
 {{ inav }} (and {{ mwp }}) do not require a planned homed location, so providing graphical support for waypoints whose location is indeterminate prior to mission execution is an interesting challenge. {{ mwp }} incorporates a number of new features to support FBH.

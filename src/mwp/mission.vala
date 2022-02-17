@@ -99,7 +99,31 @@ public class Mission : GLib.Object
             return null;
     }
 
-    public void set_waypoint(MissionItem m, uint n)
+	public void check_wp_sanity(ref MissionItem m) {
+		if((m.action == MSP.Action.WAYPOINT || m.action == MSP.Action.POSHOLD_TIME
+			|| m.action == MSP.Action.LAND) && m.lat == 0.0 && m.lon == 0.0) {
+			m.flag = 0x48;
+		}
+		if(m.flag == 0x48) {
+			if(m.lat == 0.0)
+				m.lat = this.homey;
+			if(m.lon == 0.0)
+				m.lon = this.homex;
+		}
+		if(m.action != MSP.Action.RTH && m.action != MSP.Action.JUMP
+		   && m.action != MSP.Action.SET_HEAD) {
+			if (m.lat > this.maxy)
+				this.maxy = m.lat;
+			if (m.lon > this.maxx)
+				this.maxx = m.lon;
+			if (m.lat <  this.miny)
+				this.miny = m.lat;
+			if (m.lon <  this.minx)
+				this.minx = m.lon;
+		}
+	}
+
+	public void set_waypoint(MissionItem m, uint n)
     {
         if(n < waypoints.length)
             waypoints[n] = m;

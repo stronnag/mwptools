@@ -163,26 +163,7 @@ namespace XmlIO
 						break;
 					}
 				}
-
-				if(m.flag == 0x48) {
-					if(m.lat == 0.0)
-						m.lat = ms.homey;
-					if(m.lon == 0.0)
-						m.lon = ms.homex;
-				}
-
-				if(m.action != MSP.Action.RTH && m.action != MSP.Action.JUMP
-				   && m.action != MSP.Action.SET_HEAD)
-				{
-					if (m.lat > ms.maxy)
-						ms.maxy = m.lat;
-					if (m.lon > ms.maxx)
-						ms.maxx = m.lon;
-					if (m.lat <  ms.miny)
-						ms.miny = m.lat;
-					if (m.lon <  ms.minx)
-						ms.minx = m.lon;
-				}
+				ms.check_wp_sanity(ref m);
 				mi += m;
 				break;
 			case "version":
