@@ -164,6 +164,13 @@ namespace XmlIO
 					}
 				}
 
+				if(m.flag == 0x48) {
+					if(m.lat == 0.0)
+						m.lat = ms.homey;
+					if(m.lon == 0.0)
+						m.lon = ms.homex;
+				}
+
 				if(m.action != MSP.Action.RTH && m.action != MSP.Action.JUMP
 				   && m.action != MSP.Action.SET_HEAD)
 				{

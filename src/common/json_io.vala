@@ -36,6 +36,14 @@ namespace JsonIO
 					m.param3 = (int) rsitem.get_int_member("p3");
 					if(rsitem.has_member("flag"))
 						m.flag = (uint8) rsitem.get_int_member("flag");
+
+					if(m.flag == 0x48) {
+						if(m.lat == 0.0)
+							m.lat = ms.homey;
+						if(m.lon == 0.0)
+							m.lon = ms.homex;
+					}
+
 					if(m.action != MSP.Action.RTH && m.action != MSP.Action.JUMP &&
 					   m.action != MSP.Action.SET_HEAD)
 					{
