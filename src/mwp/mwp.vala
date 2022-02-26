@@ -8298,6 +8298,8 @@ case 0:
                         {
                             sflags |=  NavStatus.SPK.GPS;
                             navstatus.cg_on();
+							home_changed(GPSInfo.lat, GPSInfo.lon);
+							want_special |= POSMODE.HOME;
                         }
                         else
                         {
