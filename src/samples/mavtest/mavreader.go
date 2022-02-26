@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"bufio"
+	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"bytes"
-	"strings"
+	"fmt"
 	"io"
-	"bufio"
+	"os"
+	"strings"
 )
 
 const (
@@ -46,125 +46,125 @@ const (
 
 type MavCRCList struct {
 	msgid uint32
-	seed uint8
+	seed  uint8
 }
 
-var mavcrcs =  [] MavCRCList{	{ 0, 50 }, { 1, 124 }, { 2, 137 }, { 4, 237 }, { 5, 217 },
-	{ 6, 104 }, { 7, 119 }, { 8, 117 }, { 11, 89 }, { 20, 214 },
-	{ 21, 159 }, { 22, 220 }, { 23, 168 }, { 24, 24 }, { 25, 23 },
-	{ 26, 170 }, { 27, 144 }, { 28, 67 }, { 29, 115 }, { 30, 39 },
-	{ 31, 246 }, { 32, 185 }, { 33, 104 }, { 34, 237 }, { 35, 244 },
-	{ 36, 222 }, { 37, 212 }, { 38, 9 }, { 39, 254 }, { 40, 230 },
-	{ 41, 28 }, { 42, 28 }, { 43, 132 }, { 44, 221 }, { 45, 232 },
-	{ 46, 11 }, { 47, 153 }, { 48, 41 }, { 49, 39 }, { 50, 78 },
-	{ 51, 196 }, { 52, 132 }, { 54, 15 }, { 55, 3 }, { 61, 167 },
-	{ 62, 183 }, { 63, 119 }, { 64, 191 }, { 65, 118 }, { 66, 148 },
-	{ 67, 21 }, { 69, 243 }, { 70, 124 }, { 73, 38 }, { 74, 20 },
-	{ 75, 158 }, { 76, 152 }, { 77, 143 }, { 81, 106 }, { 82, 49 },
-	{ 83, 22 }, { 84, 143 }, { 85, 140 }, { 86, 5 }, { 87, 150 },
-	{ 89, 231 }, { 90, 183 }, { 91, 63 }, { 92, 54 }, { 93, 47 },
-	{ 100, 175 }, { 101, 102 }, { 102, 158 }, { 103, 208 }, { 104, 56 },
-	{ 105, 93 }, { 106, 138 }, { 107, 108 }, { 108, 32 }, { 109, 185 },
-	{ 110, 84 }, { 111, 34 }, { 112, 174 }, { 113, 124 }, { 114, 237 },
-	{ 115, 4 }, { 116, 76 }, { 117, 128 }, { 118, 56 }, { 119, 116 },
-	{ 120, 134 }, { 121, 237 }, { 122, 203 }, { 123, 250 }, { 124, 87 },
-	{ 125, 203 }, { 126, 220 }, { 127, 25 }, { 128, 226 }, { 129, 46 },
-	{ 130, 29 }, { 131, 223 }, { 132, 85 }, { 133, 6 }, { 134, 229 },
-	{ 135, 203 }, { 136, 1 }, { 137, 195 }, { 138, 109 }, { 139, 168 },
-	{ 140, 181 }, { 141, 47 }, { 142, 72 }, { 143, 131 }, { 144, 127 },
-	{ 146, 103 }, { 147, 154 }, { 148, 178 }, { 149, 200 }, { 162, 189 },
-	{ 202, 7}, { 203, 85},
-	{ 230, 163 }, { 231, 105 }, { 232, 151 }, { 233, 35 }, { 234, 150 },
-	{ 235, 179 }, { 241, 90 }, { 242, 104 }, { 243, 85 }, { 244, 95 },
-	{ 245, 130 }, { 246, 184 }, { 247, 81 }, { 248, 8 }, { 249, 204 },
-	{ 250, 49 }, { 251, 170 }, { 252, 44 }, { 253, 83 }, { 254, 46 },
-	{ 256, 71 }, { 257, 131 }, { 258, 187 }, { 259, 92 }, { 260, 146 },
-	{ 261, 179 }, { 262, 12 }, { 263, 133 }, { 264, 49 }, { 265, 26 },
-	{ 266, 193 }, { 267, 35 }, { 268, 14 }, { 269, 109 }, { 270, 59 },
-	{ 280, 166 }, { 281, 0 }, { 282, 123 }, { 283, 247 }, { 284, 99 },
-	{ 285, 82 }, { 286, 62 }, { 299, 19 }, { 300, 217 }, { 301, 243 },
-	{ 310, 28 }, { 311, 95 }, { 320, 243 }, { 321, 88 }, { 322, 243 },
-	{ 323, 78 }, { 324, 132 }, { 330, 23 }, { 331, 91 }, { 332, 236 },
-	{ 333, 231 }, { 334, 135 }, { 335, 225 }, { 339, 199 }, { 340, 99 },
-	{ 350, 232 }, { 360, 11 }, { 370, 98 }, { 371, 161 }, { 373, 192 },
-		{ 375, 251 }, { 380, 232 }, { 385, 147 }, { 390, 156 }, { 395, 231 },
-	{ 400, 110 }, { 401, 183 }, { 9000, 113 }, { 12900, 114 }, { 12901, 254 },
-	{ 12902, 49 }, { 12903, 249 }, { 12904, 85 }, { 12905, 49 }, { 12915, 62 },
+var mavcrcs = []MavCRCList{{0, 50}, {1, 124}, {2, 137}, {4, 237}, {5, 217},
+	{6, 104}, {7, 119}, {8, 117}, {11, 89}, {20, 214},
+	{21, 159}, {22, 220}, {23, 168}, {24, 24}, {25, 23},
+	{26, 170}, {27, 144}, {28, 67}, {29, 115}, {30, 39},
+	{31, 246}, {32, 185}, {33, 104}, {34, 237}, {35, 244},
+	{36, 222}, {37, 212}, {38, 9}, {39, 254}, {40, 230},
+	{41, 28}, {42, 28}, {43, 132}, {44, 221}, {45, 232},
+	{46, 11}, {47, 153}, {48, 41}, {49, 39}, {50, 78},
+	{51, 196}, {52, 132}, {54, 15}, {55, 3}, {61, 167},
+	{62, 183}, {63, 119}, {64, 191}, {65, 118}, {66, 148},
+	{67, 21}, {69, 243}, {70, 124}, {73, 38}, {74, 20},
+	{75, 158}, {76, 152}, {77, 143}, {81, 106}, {82, 49},
+	{83, 22}, {84, 143}, {85, 140}, {86, 5}, {87, 150},
+	{89, 231}, {90, 183}, {91, 63}, {92, 54}, {93, 47},
+	{100, 175}, {101, 102}, {102, 158}, {103, 208}, {104, 56},
+	{105, 93}, {106, 138}, {107, 108}, {108, 32}, {109, 185},
+	{110, 84}, {111, 34}, {112, 174}, {113, 124}, {114, 237},
+	{115, 4}, {116, 76}, {117, 128}, {118, 56}, {119, 116},
+	{120, 134}, {121, 237}, {122, 203}, {123, 250}, {124, 87},
+	{125, 203}, {126, 220}, {127, 25}, {128, 226}, {129, 46},
+	{130, 29}, {131, 223}, {132, 85}, {133, 6}, {134, 229},
+	{135, 203}, {136, 1}, {137, 195}, {138, 109}, {139, 168},
+	{140, 181}, {141, 47}, {142, 72}, {143, 131}, {144, 127},
+	{146, 103}, {147, 154}, {148, 178}, {149, 200}, {162, 189},
+	{202, 7}, {203, 85},
+	{230, 163}, {231, 105}, {232, 151}, {233, 35}, {234, 150},
+	{235, 179}, {241, 90}, {242, 104}, {243, 85}, {244, 95},
+	{245, 130}, {246, 184}, {247, 81}, {248, 8}, {249, 204},
+	{250, 49}, {251, 170}, {252, 44}, {253, 83}, {254, 46},
+	{256, 71}, {257, 131}, {258, 187}, {259, 92}, {260, 146},
+	{261, 179}, {262, 12}, {263, 133}, {264, 49}, {265, 26},
+	{266, 193}, {267, 35}, {268, 14}, {269, 109}, {270, 59},
+	{280, 166}, {281, 0}, {282, 123}, {283, 247}, {284, 99},
+	{285, 82}, {286, 62}, {299, 19}, {300, 217}, {301, 243},
+	{310, 28}, {311, 95}, {320, 243}, {321, 88}, {322, 243},
+	{323, 78}, {324, 132}, {330, 23}, {331, 91}, {332, 236},
+	{333, 231}, {334, 135}, {335, 225}, {339, 199}, {340, 99},
+	{350, 232}, {360, 11}, {370, 98}, {371, 161}, {373, 192},
+	{375, 251}, {380, 232}, {385, 147}, {390, 156}, {395, 231},
+	{400, 110}, {401, 183}, {9000, 113}, {12900, 114}, {12901, 254},
+	{12902, 49}, {12903, 249}, {12904, 85}, {12905, 49}, {12915, 62},
 }
 
 const (
-  MAVLINK_MSG_HEARTBEAT = 0
-  MAVLINK_MSG_SYS_STATUS = 1
-  MAVLINK_MSG_GPS_RAW_INT = 24
-  MAVLINK_MSG_SCALED_PRESSURE = 29
-  MAVLINK_MSG_ATTITUDE = 30
-  MAVLINK_MSG_GLOBAL_POSITION_INT = 33
-  MAVLINK_MSG_RC_CHANNELS_RAW = 35
-  MAVLINK_MSG_GPS_GLOBAL_ORIGIN = 49
-  MAVLINK_MSG_VFR_HUD = 74
-	MAVLINK_MSG_RADIO_STATUS = 109
-  MAVLINK_MSG_BATTERY_STATUS = 147
-	MAVLINK_MSG_ID_TRAFFIC_REPORT = 246
-  MAVLINK_MSG_STATUSTEXT = 253
+	MAVLINK_MSG_HEARTBEAT           = 0
+	MAVLINK_MSG_SYS_STATUS          = 1
+	MAVLINK_MSG_GPS_RAW_INT         = 24
+	MAVLINK_MSG_SCALED_PRESSURE     = 29
+	MAVLINK_MSG_ATTITUDE            = 30
+	MAVLINK_MSG_GLOBAL_POSITION_INT = 33
+	MAVLINK_MSG_RC_CHANNELS_RAW     = 35
+	MAVLINK_MSG_GPS_GLOBAL_ORIGIN   = 49
+	MAVLINK_MSG_VFR_HUD             = 74
+	MAVLINK_MSG_RADIO_STATUS        = 109
+	MAVLINK_MSG_BATTERY_STATUS      = 147
+	MAVLINK_MSG_ID_TRAFFIC_REPORT   = 246
+	MAVLINK_MSG_STATUSTEXT          = 253
 )
 
 type MavMsg struct {
-	name string
+	name   string
 	expect byte
 }
 
 type MavReader struct {
-	state int
-	cmd uint32
-	csize byte
-	needed byte
-	mavsum uint16
+	state    int
+	cmd      uint32
+	csize    byte
+	needed   byte
+	mavsum   uint16
 	rxmavsum uint16
-	mavsig int
-	m1_ok int
-	m1_fail int
-	m2_ok int
-	m2_fail int
-	ftype uint8
-	payload []byte
-	reader *bufio.Reader
-	mavmeta map[uint32]MavMsg
-	vers byte
+	mavsig   int
+	m1_ok    int
+	m1_fail  int
+	m2_ok    int
+	m2_fail  int
+	ftype    uint8
+	payload  []byte
+	reader   *bufio.Reader
+	mavmeta  map[uint32]MavMsg
+	vers     byte
 }
 
-type V2Header struct  {
+type V2Header struct {
 	Offset float64
 	Size   uint16
 	Dirn   byte
 }
 
 type JSItem struct {
-	Stamp    float64     `json:"stamp"`
-	Length   uint16      `json:"length"`
-	Dirn     byte        `json:"direction"`
-	RawBytes []byte      `json:"rawdata"`
+	Stamp    float64 `json:"stamp"`
+	Length   uint16  `json:"length"`
+	Dirn     byte    `json:"direction"`
+	RawBytes []byte  `json:"rawdata"`
 }
 
 func lookup(id uint32) uint8 {
 	res := uint8(0)
-	for _, v := range(mavcrcs) {
+	for _, v := range mavcrcs {
 		if v.msgid == id {
 			res = v.seed
-			break;
+			break
 		}
 	}
-	return res;
+	return res
 }
 
-func mavlink_crc(acc uint16, val uint8) (uint16) {
+func mavlink_crc(acc uint16, val uint8) uint16 {
 	var tmp uint8
 	tmp = val ^ uint8(acc&0xff)
-	tmp ^= (tmp<<4)
+	tmp ^= (tmp << 4)
 	acc = acc>>8 ^ uint16(tmp)<<8 ^ uint16(tmp)<<3 ^ uint16(tmp)>>4
 	return acc
 }
 
-func (m *MavReader) set_reader(rfh io.ReadCloser) (error) {
+func (m *MavReader) set_reader(rfh io.ReadCloser) error {
 	m.reader = bufio.NewReader(rfh)
 	sig, err := m.reader.Peek(3)
 	if err == nil {
@@ -257,7 +257,7 @@ func (m *MavReader) process(dat []byte) {
 				m.state = S_M_CRC1
 			}
 		case S_M_CRC1:
-			var seed  = lookup(m.cmd)
+			var seed = lookup(m.cmd)
 			m.mavsum = mavlink_crc(m.mavsum, seed)
 			m.rxmavsum = uint16(b)
 			m.state = S_M_CRC2
@@ -281,9 +281,9 @@ func (m *MavReader) process(dat []byte) {
 
 		case S_M2_FLG1:
 			m.mavsum = mavlink_crc(m.mavsum, b)
-			if((b & 1) == 1) {
+			if (b & 1) == 1 {
 				m.mavsig = 13
-			}	else {
+			} else {
 				m.mavsig = 0
 			}
 			m.state = S_M2_FLG2
@@ -334,7 +334,7 @@ func (m *MavReader) process(dat []byte) {
 			}
 
 		case S_M2_CRC1:
-			var seed  = lookup(m.cmd)
+			var seed = lookup(m.cmd)
 			m.mavsum = mavlink_crc(m.mavsum, seed)
 			m.rxmavsum = uint16(b)
 			m.state = S_M2_CRC2
@@ -358,7 +358,7 @@ func (m *MavReader) process(dat []byte) {
 			}
 		case S_M2_SIG:
 			m.mavsig -= 1
-			if  m.mavsig == 0 {
+			if m.mavsig == 0 {
 				m.state = S_UNKNOWN
 			}
 		default:
@@ -368,13 +368,13 @@ func (m *MavReader) process(dat []byte) {
 }
 
 func (m *MavReader) mav_len_check() bool {
-	mm,ok := m.mavmeta[m.cmd]
+	mm, ok := m.mavmeta[m.cmd]
 	if ok {
 		fmt.Printf("Mav%d: %s %d", m.vers, mm.name, m.csize)
 		if m.csize > mm.expect {
 			fmt.Printf("!%d", mm.expect)
-		} else if  m.csize < mm.expect {
-			for j:= m.csize; j < mm.expect; j++ {
+		} else if m.csize < mm.expect {
+			for j := m.csize; j < mm.expect; j++ {
 				m.payload[j] = 0
 			}
 			fmt.Printf("/%d", mm.expect)
@@ -391,7 +391,7 @@ func (m *MavReader) mav_show() {
 	if m.mav_len_check() {
 		switch m.cmd {
 		case MAVLINK_MSG_HEARTBEAT: // heartbeat
-			fmt.Printf("Heartbeat: t: %d a: %d b: %d s: %d m: %d\n", m.payload[4],m.payload[5],m.payload[6],m.payload[7],m.payload[8])
+			fmt.Printf("Heartbeat: t: %d a: %d b: %d s: %d m: %d\n", m.payload[4], m.payload[5], m.payload[6], m.payload[7], m.payload[8])
 
 		case MAVLINK_MSG_SYS_STATUS: // sys_status
 			fmt.Printf("Status: l: %d v: %d c: %d\n",
@@ -400,13 +400,20 @@ func (m *MavReader) mav_show() {
 				int(binary.LittleEndian.Uint16(m.payload[16:18])))
 
 		case MAVLINK_MSG_GPS_RAW_INT: // gps_raw_int
-			fmt.Printf("GPS: la: %.7f lo: %.7f\n",
+			var hdg uint16
+			hdg = binary.LittleEndian.Uint16(m.payload[26:28])
+			fmt.Printf("GPS: la: %.7f lo: %.7f",
 				float64(int32(binary.LittleEndian.Uint32(m.payload[8:12])))/1e7,
 				float64(int32(binary.LittleEndian.Uint32(m.payload[12:16])))/1e7)
+			if hdg != 65535 {
+				hdg /= 100
+				fmt.Printf(" cog: %u\n", hdg)
+			}
+			fmt.Println()
 
 		case MAVLINK_MSG_SCALED_PRESSURE: // scaled_pressure
 			var it uint32
-			var pa,pr float32
+			var pa, pr float32
 			var itemp int16
 			buf := bytes.NewReader(m.payload)
 			binary.Read(buf, binary.LittleEndian, &it)
@@ -417,18 +424,31 @@ func (m *MavReader) mav_show() {
 
 		case MAVLINK_MSG_ATTITUDE: // attitude
 			var it uint32
-			var r,p,y float32
+			var r, p, y float32
 			buf := bytes.NewReader(m.payload)
 			binary.Read(buf, binary.LittleEndian, &it)
 			binary.Read(buf, binary.LittleEndian, &r)
 			binary.Read(buf, binary.LittleEndian, &p)
 			binary.Read(buf, binary.LittleEndian, &y)
+			r *= 57.29578
+			p *= 57.29578
+			y *= 57.29578
+			if y < 0 {
+				y += 360
+			}
 			fmt.Printf("Attitude: t: %d r: %.1f p: %.1f y: %.1f\n", it, r, p, y)
 
 		case MAVLINK_MSG_GLOBAL_POSITION_INT:
-			fmt.Printf("Gbl Pos: la: %.7f lo: %.7f\n",
+			var hdg uint16
+			hdg = binary.LittleEndian.Uint16(m.payload[26:28])
+			fmt.Printf("Gbl Pos: la: %.7f lo: %.7f",
 				float64(int32(binary.LittleEndian.Uint32(m.payload[4:8])))/1e7,
 				float64(int32(binary.LittleEndian.Uint32(m.payload[8:12])))/1e7)
+			if hdg != 65535 {
+				hdg /= 100
+				fmt.Printf(" hdg: %u\n", hdg)
+			}
+			fmt.Println()
 
 		case MAVLINK_MSG_RC_CHANNELS_RAW: // rc_channels_raw
 			fmt.Printf("RC Chan t: %d 1: %d 2: %d 3: %d 4: %d r: %d\n",
@@ -440,14 +460,13 @@ func (m *MavReader) mav_show() {
 				m.payload[21])
 
 		case MAVLINK_MSG_GPS_GLOBAL_ORIGIN:
-			fmt.Printf("Origin: la: %.7f lo: %.7f\n",
+			fmt.Printf("Origin: la: %.7f lo: %.7f cog %u\n",
 				float64(int32(binary.LittleEndian.Uint32(m.payload[0:4])))/1e7,
 				float64(int32(binary.LittleEndian.Uint32(m.payload[4:8])))/1e7)
 
-
 		case MAVLINK_MSG_VFR_HUD: // vfr_hud
 			var as, gs, alt, climb float32
-			var hd,th uint16
+			var hd, th uint16
 			buf := bytes.NewReader(m.payload)
 			binary.Read(buf, binary.LittleEndian, &as)
 			binary.Read(buf, binary.LittleEndian, &gs)
@@ -455,7 +474,7 @@ func (m *MavReader) mav_show() {
 			binary.Read(buf, binary.LittleEndian, &climb)
 			binary.Read(buf, binary.LittleEndian, &hd)
 			binary.Read(buf, binary.LittleEndian, &th)
-			fmt.Printf("vfr hud a: %.1f g: %.1f h: %d thr: %d a: %.1f cl: %.1f\n",as,gs,hd,th,alt,climb)
+			fmt.Printf("vfr hud a: %.1f g: %.1f h: %d thr: %d a: %.1f cl: %.1f\n", as, gs, hd, th, alt, climb)
 
 		case MAVLINK_MSG_RADIO_STATUS: // radio_statusx1
 			fmt.Printf("Radio rssi: %d rem: %d\n", m.payload[4], m.payload[5])
@@ -473,14 +492,14 @@ func (m *MavReader) mav_show() {
 			fmt.Printf("status: s: %d t: %s\n", m.payload[0], str)
 
 		case MAVLINK_MSG_ID_TRAFFIC_REPORT:
-			var valid uint16;
-			var icao uint32;
-			var callsign string;
+			var valid uint16
+			var icao uint32
+			var callsign string
 			icao = binary.LittleEndian.Uint32(m.payload[0:4])
 			valid = binary.LittleEndian.Uint16(m.payload[22:24])
 			if (valid & 0x10) == 0x10 {
 				var cs []byte
-				for j:= 0; j < 9; j++ {
+				for j := 0; j < 9; j++ {
 					if m.payload[27+j] != ' ' {
 						cs = append(cs, m.payload[27+j])
 					}
@@ -501,19 +520,19 @@ func (m *MavReader) mav_show() {
 
 func (m *MavReader) load_meta() {
 	m.mavmeta = map[uint32]MavMsg{
-		MAVLINK_MSG_HEARTBEAT: {"mavlink_msg_heartbeat", 9},
-		MAVLINK_MSG_SYS_STATUS: {"mavlink_msg_sys_status", 31},
-		MAVLINK_MSG_GPS_RAW_INT: {"mavlink_msg_gps_raw_int", 52},
-		MAVLINK_MSG_SCALED_PRESSURE: {"mavlink_msg_scaled_pressure", 16},
-		MAVLINK_MSG_ATTITUDE: {"mavlink_msg_attitude", 28},
+		MAVLINK_MSG_HEARTBEAT:           {"mavlink_msg_heartbeat", 9},
+		MAVLINK_MSG_SYS_STATUS:          {"mavlink_msg_sys_status", 31},
+		MAVLINK_MSG_GPS_RAW_INT:         {"mavlink_msg_gps_raw_int", 52},
+		MAVLINK_MSG_SCALED_PRESSURE:     {"mavlink_msg_scaled_pressure", 16},
+		MAVLINK_MSG_ATTITUDE:            {"mavlink_msg_attitude", 28},
 		MAVLINK_MSG_GLOBAL_POSITION_INT: {"mavlink_msg_global_position_int", 28},
-		MAVLINK_MSG_RC_CHANNELS_RAW: {"mavlink_msg_rc_channels_raw", 22},
-		MAVLINK_MSG_GPS_GLOBAL_ORIGIN: {"mavlink_msg_gps_global_origin", 16},
-		MAVLINK_MSG_VFR_HUD: {"mavlink_msg_vfr_hud", 20},
-		MAVLINK_MSG_RADIO_STATUS: {"mavlink_msg_radio_status", 9},
-		MAVLINK_MSG_BATTERY_STATUS: {"mavlink_msg_battery_status", 54},
-		MAVLINK_MSG_STATUSTEXT: {"mavlink_msg_statustext", 54},
-		MAVLINK_MSG_ID_TRAFFIC_REPORT:  {"mavlink_traffic_report", 38},
+		MAVLINK_MSG_RC_CHANNELS_RAW:     {"mavlink_msg_rc_channels_raw", 22},
+		MAVLINK_MSG_GPS_GLOBAL_ORIGIN:   {"mavlink_msg_gps_global_origin", 16},
+		MAVLINK_MSG_VFR_HUD:             {"mavlink_msg_vfr_hud", 20},
+		MAVLINK_MSG_RADIO_STATUS:        {"mavlink_msg_radio_status", 9},
+		MAVLINK_MSG_BATTERY_STATUS:      {"mavlink_msg_battery_status", 54},
+		MAVLINK_MSG_STATUSTEXT:          {"mavlink_msg_statustext", 54},
+		MAVLINK_MSG_ID_TRAFFIC_REPORT:   {"mavlink_traffic_report", 38},
 	}
 }
 
@@ -534,10 +553,10 @@ func main() {
 						break
 					}
 				}
-				if m.m1_ok + m.m1_fail > 0 {
+				if m.m1_ok+m.m1_fail > 0 {
 					fmt.Printf("V1 OK %d, fail %d\n", m.m1_ok, m.m1_fail)
 				}
-				if m.m2_ok + m.m2_fail > 0 {
+				if m.m2_ok+m.m2_fail > 0 {
 					fmt.Printf("V2 OK %d, fail %d\n", m.m2_ok, m.m2_fail)
 				}
 			}

@@ -8278,6 +8278,7 @@ case 0:
             case MSP.Cmds.MAVLINK_MSG_GPS_RAW_INT:
                 Mav.MAVLINK_GPS_RAW_INT m = *(Mav.MAVLINK_GPS_RAW_INT*)raw;
                 double ddm;
+				usemag = (m.cog == 0xffff);
                 var fix  = gpsinfo.update_mav_gps(m, conf.dms,
                                                   item_visible(DOCKLETS.GPS), out ddm);
                 gpsfix = (fix > 1);
@@ -8324,12 +8325,9 @@ case 0:
 
             case MSP.Cmds.MAVLINK_MSG_ATTITUDE:
                 Mav.MAVLINK_ATTITUDE m = *(Mav.MAVLINK_ATTITUDE*)raw;
-                if(usemag)
-                {
-                    mhead = (int16)(m.yaw*RAD2DEG);
-                    if(mhead < 0)
-                        mhead += 360;
-                }
+				mhead = (int16)(m.yaw*RAD2DEG);
+				if(mhead < 0)
+					mhead += 360;
                 navstatus.set_mav_attitude(m,item_visible(DOCKLETS.NAVSTATUS));
                 art_win.update((int16)(m.roll*57.29578*10), -(int16)(m.pitch*57.29578*10),
                                item_visible(DOCKLETS.ARTHOR));

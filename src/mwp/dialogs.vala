@@ -3047,8 +3047,8 @@ public class GPSInfo : GLib.Object
         lat = m.lat/10000000.0;
         lon = m.lon/10000000.0;
         spd  = (m.vel == 0xffff) ? 0 : m.vel/100.0;
+		cse = calc_cse_dist_delta(lat,lon,out ddm);
         cse = (m.cog == 0xffff) ? cse : m.cog/100.0;
-        calc_cse_dist_delta(lat,lon,out ddm);
         double dalt = m.alt/1000.0;
         elev = (int16)Math.lround(dalt);
         nsat = m.satellites_visible;
