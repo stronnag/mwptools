@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#if defined( __linux__ ) || defined(__FreeBSD__)
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -23,15 +25,18 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
-
-#ifdef __linux__
 #include <sys/socket.h>
 
-/* I'd really prefer not to have to require bluez-lib-devel ... */
+#ifdef __FreeBSD__
+#include <bluetooth.h>
+#endif
 
+#define RFCOMM_CHANNEL 1
 #define _BA_SIZE 6
-#define BTPROTO_RFCOMM	3
 
+#if __linux
+#define BTPROTO_RFCOMM  3
+/* I'd really prefer not to have to require bluez-lib-devel ... */
 /* BD Address */
 typedef struct {
         uint8_t b[6];
@@ -43,24 +48,25 @@ struct sockaddr_rc {
         bdaddr_t        rc_bdaddr;
         uint8_t         rc_channel;
 };
+#endif
 
 static int _mwp_str2ba(const char *str, bdaddr_t * ba)
 {
-       uint8_t b[6];
-       const char *ptr = str;
-       int i;
+     uint8_t b[6];
+     const char *ptr = str;
+     int i;
 
-       for (i = 0; i < 6; i++) {
-              b[5-i] = (uint8_t) strtol(ptr, NULL, 16);
-              if (i != 5 && !(ptr = strchr(ptr, ':')))
-                     ptr = ":00:00:00:00:00";
-              ptr++;
-       }
-       memcpy(ba, b, _BA_SIZE);
-       return 0;
+     for (i = 0; i < 6; i++) {
+	  b[5-i] = (uint8_t) strtol(ptr, NULL, 16);
+	  if (i != 5 && !(ptr = strchr(ptr, ':')))
+	       ptr = ":00:00:00:00:00";
+	  ptr++;
+     }
+     memcpy(ba, b, _BA_SIZE);
+     return 0;
 }
 
-static int connect_nb(int s, struct sockaddr_rc *addr, size_t slen)
+static int connect_nb(int s, struct sockaddr *addr, size_t slen)
 {
     int flags;
     int res;
@@ -69,7 +75,7 @@ static int connect_nb(int s, struct sockaddr_rc *addr, size_t slen)
     flags = fcntl(s, F_GETFL, NULL) | O_NONBLOCK;
     fcntl(s, F_SETFL, flags);
 
-    res = connect(s, (const struct sockaddr *)addr, slen);
+    res = connect(s, (struct sockaddr *)addr, slen);
     if (res < 0)
     {
         fd_set set;
@@ -109,25 +115,53 @@ static int connect_nb(int s, struct sockaddr_rc *addr, size_t slen)
 
 int connect_bt_device(char *btaddr, int *lasterr)
 {
-    struct sockaddr_rc addr = { 0 };
-    int s=-1;
+     int fd = -1;
+#ifdef __FreeBSD__
+     struct sockaddr_rfcomm rem_addr;
+     memset(&rem_addr, 0, sizeof(rem_addr));
+     rem_addr.rfcomm_len = sizeof(rem_addr);
+     rem_addr.rfcomm_family = AF_BLUETOOTH;
+     rem_addr.rfcomm_channel = RFCOMM_CHANNEL;
+/**
+     struct hostent * he;
+     if(strlen(btaddr) == 17 && btaddr[2] == ':') {
+          _mwp_str2ba (btaddr, &rem_addr.rfcomm_bdaddr);
+     } else if ((he = bt_gethostbyname(btaddr))) {
+          rem_addr.rfcomm_bdaddr = *(bdaddr_t *) he->h_addr_list[0];
+          if (0)
+               printf("Actual BT address for '%s': %s\n",
+                      btaddr, bt_ntoa(&(rem_addr.rfcomm_bdaddr),NULL));
+     } else {
+          *lasterr = errno;
+          return -1;
+     }
+**/
+     _mwp_str2ba (btaddr, &rem_addr.rfcomm_bdaddr);
+#else
+     struct sockaddr_rc rem_addr;
+     _mwp_str2ba (btaddr, &rem_addr.rc_bdaddr);
+     rem_addr.rc_family  = AF_BLUETOOTH;
+     rem_addr.rc_channel = RFCOMM_CHANNEL;
+#endif
+     if ((fd = socket (PF_BLUETOOTH,
+                       SOCK_STREAM,
+#ifdef __FreeBSD__
+                       BLUETOOTH_PROTO_RFCOMM
+#else
+                       BTPROTO_RFCOMM
+#endif
+               )) < 0 ) {
+	  *lasterr = errno;
+          return -1;
+     }
 
-    s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-    if (s <  0)
-        *lasterr = errno;
-    else
-    {
-        addr.rc_family = AF_BLUETOOTH;
-        addr.rc_channel = (uint8_t) 1;
-        _mwp_str2ba(btaddr, &addr.rc_bdaddr );
-        *lasterr = connect_nb (s, &addr, sizeof(addr));
-        if(*lasterr != 0)
-        {
-            close(s);
-            s = -1;
-        }
-    }
-    return s;
+     int res = connect_nb (fd, (struct sockaddr *)&rem_addr, sizeof(rem_addr));
+     if (res != 0) {
+	  *lasterr = errno;
+	  close(fd);
+	  fd = -1;
+     }
+     return fd;
 }
 #else
 int connect_bt_device (char *btaddr, int *lasterr)
