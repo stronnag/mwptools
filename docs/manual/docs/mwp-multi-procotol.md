@@ -27,7 +27,7 @@ Serial devices are defined by the operating system device node name and optional
 ```
 ## Bluetooth
 
-Bluetooth may be specified by either an `rfcomm` device node (`/dev/rfcommX`) or by the device address (`BD_ADDR`, Linux only):
+Bluetooth may be specified by either an `rfcomm` device node (`/dev/rfcommX` on Linux, `/dev/ttypX` pseudo-terminal abstraction on FreeBSD) or by the device address (`BD_ADDR`, Linux and FreeBSD only):
 
 ```
 # BT RFCOMM device node
