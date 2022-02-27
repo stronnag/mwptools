@@ -73,7 +73,7 @@ var mavcrcs = []MavCRCList{{0, 50}, {1, 124}, {2, 137}, {4, 237}, {5, 217},
 	{135, 203}, {136, 1}, {137, 195}, {138, 109}, {139, 168},
 	{140, 181}, {141, 47}, {142, 72}, {143, 131}, {144, 127},
 	{146, 103}, {147, 154}, {148, 178}, {149, 200}, {162, 189},
-	{202, 7}, {203, 85},
+	{166, 21}, {202, 7}, {203, 85},
 	{230, 163}, {231, 105}, {232, 151}, {233, 35}, {234, 150},
 	{235, 179}, {241, 90}, {242, 104}, {243, 85}, {244, 95},
 	{245, 130}, {246, 184}, {247, 81}, {248, 8}, {249, 204},
@@ -104,6 +104,7 @@ const (
 	MAVLINK_MSG_VFR_HUD             = 74
 	MAVLINK_MSG_RADIO_STATUS        = 109
 	MAVLINK_MSG_BATTERY_STATUS      = 147
+	MAVLINK_MSG_ID_RADIO            = 166
 	MAVLINK_MSG_ID_TRAFFIC_REPORT   = 246
 	MAVLINK_MSG_STATUSTEXT          = 253
 )
@@ -407,7 +408,7 @@ func (m *MavReader) mav_show() {
 				float64(int32(binary.LittleEndian.Uint32(m.payload[12:16])))/1e7)
 			if hdg != 65535 {
 				hdg /= 100
-				fmt.Printf(" cog: %u\n", hdg)
+				fmt.Printf(" cog: %v\n", hdg)
 			}
 			fmt.Println()
 
@@ -446,7 +447,7 @@ func (m *MavReader) mav_show() {
 				float64(int32(binary.LittleEndian.Uint32(m.payload[8:12])))/1e7)
 			if hdg != 65535 {
 				hdg /= 100
-				fmt.Printf(" hdg: %u\n", hdg)
+				fmt.Printf(" hdg: %v\n", hdg)
 			}
 			fmt.Println()
 
@@ -460,7 +461,7 @@ func (m *MavReader) mav_show() {
 				m.payload[21])
 
 		case MAVLINK_MSG_GPS_GLOBAL_ORIGIN:
-			fmt.Printf("Origin: la: %.7f lo: %.7f cog %u\n",
+			fmt.Printf("Origin: la: %.7f lo: %.7f\n",
 				float64(int32(binary.LittleEndian.Uint32(m.payload[0:4])))/1e7,
 				float64(int32(binary.LittleEndian.Uint32(m.payload[4:8])))/1e7)
 
@@ -476,7 +477,7 @@ func (m *MavReader) mav_show() {
 			binary.Read(buf, binary.LittleEndian, &th)
 			fmt.Printf("vfr hud a: %.1f g: %.1f h: %d thr: %d a: %.1f cl: %.1f\n", as, gs, hd, th, alt, climb)
 
-		case MAVLINK_MSG_RADIO_STATUS: // radio_statusx1
+		case MAVLINK_MSG_RADIO_STATUS, MAVLINK_MSG_ID_RADIO: // radio_statusx1
 			fmt.Printf("Radio rssi: %d rem: %d\n", m.payload[4], m.payload[5])
 
 		case MAVLINK_MSG_BATTERY_STATUS: // battery_status
@@ -530,6 +531,7 @@ func (m *MavReader) load_meta() {
 		MAVLINK_MSG_GPS_GLOBAL_ORIGIN:   {"mavlink_msg_gps_global_origin", 16},
 		MAVLINK_MSG_VFR_HUD:             {"mavlink_msg_vfr_hud", 20},
 		MAVLINK_MSG_RADIO_STATUS:        {"mavlink_msg_radio_status", 9},
+		MAVLINK_MSG_ID_RADIO:            {"mavlink_msg_id_radio", 9},
 		MAVLINK_MSG_BATTERY_STATUS:      {"mavlink_msg_battery_status", 54},
 		MAVLINK_MSG_STATUSTEXT:          {"mavlink_msg_statustext", 54},
 		MAVLINK_MSG_ID_TRAFFIC_REPORT:   {"mavlink_traffic_report", 38},
