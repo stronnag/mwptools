@@ -47,3 +47,9 @@ In order to perform MAG calibration:
 * **V** : Fetch and display calibration data
 * **R** : Reboot FC
 * **Q** : Quit
+
+## Installation
+
+* `make`
+* `make install prefix=~/.local` (install in `~/.local/bin`)
+* or `sudo make install` (install in `/usr/local/bin`)
