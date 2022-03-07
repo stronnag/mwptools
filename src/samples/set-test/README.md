@@ -24,7 +24,7 @@ Go is an inherently cross-platform language; if one wished to implement this for
 
 ## Usage
 
-Build with `ninja`.
+Build with `make`.
 
 Just run the `clitest` or `msptest` tool; it will discover USB serial devices as they are plugged / unplugged.
 

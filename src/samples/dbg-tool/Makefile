@@ -1,15 +1,15 @@
--include ../../local.mk
--include local.mk
--include ../../common.mk
-
+prefix ?= /usr/local
 APP = dbg-tool
 
-$(APP):	$(wildcard *.go)
+$(APP):	$(wildcard *.go) go.sum
 	-go build -ldflags "-w -s"
+
+go.sum: go.mod
+	go mod tidy
 
 clean:
 	go clean
 
 install: $(APP)
 	-install -d $(prefix)/bin
-	-install -s $(APP) $(prefix)/bin/$(APP)
+	-install -s $(APP) $(prefix)/bin/
