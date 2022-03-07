@@ -18,6 +18,7 @@ const (
 	msp_ACC_CALIBRATION  = 205
 	msp_MAG_CALIBRATION  = 206
 	msp_EEPROM_WRITE     = 250
+	msp_QUIT             = 0x7fff
 )
 
 const (
@@ -188,7 +189,12 @@ func (p *MSPSerial) msp_reader(c0 chan SChan) {
 		} else {
 			p.Close()
 			if err != nil {
-				log.Fatal("Read error: %s\n", err)
+				fmt.Fprintf(os.Stderr, "Read error: %v\n", err)
+				sc.len = 0
+				sc.ok = false
+				sc.cmd = msp_QUIT
+				c0 <- sc
+				return
 			}
 		}
 	}

@@ -72,6 +72,8 @@ func main() {
 
 		case v := <-c0:
 			switch v.cmd {
+			case msp_QUIT:
+				done = true
 			case msp_DEBUG:
 				fmt.Printf("DBG: %s", string(v.data))
 			case msp_FC_VARIANT:
@@ -102,8 +104,9 @@ func main() {
 				}
 			case msp_ACC_CALIBRATION:
 				acx += 1
-				fmt.Printf("Done axis %d, ", acx)
+				fmt.Printf("Done axis %d (%d, %v), ", acx, v.len, v.ok)
 				if acx == 6 {
+					time.Sleep(1000 * time.Millisecond)
 					sp.MSPCalData()
 					acx = 0
 				} else {
