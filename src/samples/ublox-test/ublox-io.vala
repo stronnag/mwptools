@@ -534,12 +534,8 @@ public class MWSerial : Object
 
     public void ublox_write(int fd, uint8[]data)
     {
-        foreach(uint8 b in data)
-        {
-            Posix.write(fd, &b, 1);
-            stats.txbytes++;
-            Thread.usleep(10);
-        }
+		Posix.write(fd, data, data.length);
+		stats.txbytes += data.length;
     }
 
     private string get_gps_speed_string()
