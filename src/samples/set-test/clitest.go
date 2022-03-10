@@ -1,14 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"context"
-	"github.com/jochenvg/go-udev"
+	"fmt"
 	"github.com/eiannone/keyboard"
+	"github.com/jochenvg/go-udev"
 	"go.bug.st/serial"
 	"os"
-	"strings"
 	"strconv"
+	"strings"
+	"time"
 )
 
 type SChan struct {
@@ -16,7 +17,6 @@ type SChan struct {
 	ok   bool
 	data []byte
 }
-
 
 func main() {
 	connected := ""
@@ -59,6 +59,7 @@ func main() {
 		panic(err)
 	}
 	defer keyboard.Close()
+	var wstart time.Time
 
 	for done := false; !done; {
 		select {
@@ -80,6 +81,11 @@ func main() {
 			}
 
 		case v := <-c0:
+			if strings.Contains(string(v.data), "Reboot") {
+				et := time.Since(wstart)
+				fmt.Fprintf(os.Stderr, "Save took %s\n", et)
+			}
+
 			switch step {
 			case 0:
 				Serial_write(sp, "get nav_rth_home_altitude\n")
@@ -118,6 +124,7 @@ func main() {
 				Serial_write(sp, str)
 
 			case 2:
+				wstart = time.Now()
 				Serial_write(sp, "save\n")
 			}
 

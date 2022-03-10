@@ -15,7 +15,7 @@ func serial_reader(p serial.Port, c0 chan SChan) {
 	for {
 		nb, err := p.Read(inp)
 		if err == nil && nb > 0 {
-			outb = append(outb,inp[0:nb]...)
+			outb = append(outb, inp[0:nb]...)
 			// require "# " as prompt
 			if nb > 1 && inp[nb-2] == 0x23 && inp[nb-1] == 0x20 {
 				sc.len = len(outb)
@@ -23,6 +23,11 @@ func serial_reader(p serial.Port, c0 chan SChan) {
 				copy(sc.data, outb)
 				c0 <- sc
 				outb = outb[:0]
+			} else if strings.Contains(string(outb), "Reboot") {
+				sc.len = len(outb)
+				sc.data = make([]byte, sc.len)
+				copy(sc.data, outb)
+				c0 <- sc
 			}
 		} else {
 			if err != nil {
