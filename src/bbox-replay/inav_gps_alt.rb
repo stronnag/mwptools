@@ -70,23 +70,25 @@ IO.popen(cmd,'r') do |p|
         fh.puts ahdrs.join(',')
       else
         n += 1
-        if every != 0
-          next unless n % every == 0
+        next if c[:gps_numsat].to_i < 6
+        if !gpsz.nil?
+          if every != 0
+            next unless n % every == 0
+          end
         end
-        next if c[:gps_numsat].to_i < 5
         ts = c[:time_us].to_f / 1000000.0
         st = ts if st.nil?
         xts  = ts - st
         baro_alt = c[:baroalt_cm].to_f / 100
-        gpsa = c[:gps_altitude].to_f
+        gpsalt = c[:gps_altitude].to_f
         estalt = c[:navpos2].to_f / 100
         if gpsz.nil?
-	  gpsz = gpsa
+	  gpsz = gpsalt
         end
-        gpsd = gpsa - gpsz
+        gpsd = gpsalt - gpsz
         arry = [xts,baro_alt,gpsd,estalt]
         if amsl
-          arry << gpsa
+          arry << gpsalt
         end
         if xts > lts
           fh.puts arry.join(',')
