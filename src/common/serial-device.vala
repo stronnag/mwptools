@@ -264,6 +264,8 @@ namespace MPM {
 		L_LEN,
 		L_DATA,
 		L_SKIP,
+		L_M,
+		L_P
 	}
 
 	public enum Mtype {
@@ -303,8 +305,22 @@ namespace MPM {
 	public Mtype decode(uint8 c) {
 		Mtype res = Mtype.MPM_NONE;
 		switch (state) {
+		case State.L_M:
+		    if (c == 'M') {
+				state = State.L_P;
+			}
+			break;
+		case State.L_P:
+			if (c == 'P') {
+				state = State.L_TYPE;
+			} else {
+				state = State.L_M;
+			}
+			break;
 		case State.L_TYPE:
-			if (c > 0 && c < Mtype.MPM_MAXTYPE &&
+			if (c == 'M') {
+				state = State.L_P;
+			} else if (c > 0 && c < Mtype.MPM_MAXTYPE &&
 				c != Mtype.MPM_UNUSED1 && c != Mtype.MPM_UNUSED2 )  {
 				type = (Mtype)c;
 				state = State.L_LEN;
@@ -443,6 +459,7 @@ public class MWSerial : Object {
     private uint16 mavsig = 0;
     private bool relaxed;
 	private PMask pmask;
+	private bool mpm_auto = false;
 
 	public static bool debug;
 
@@ -521,6 +538,7 @@ public class MWSerial : Object {
         S_M2_SIG,
 		S_CRSF_OK = 500,
 		S_SPORT_OK,
+		S_MPM_P = 600,
 	}
 
     public signal void serial_event (MSP.Cmds event, uint8[]result, uint len, uint8 flags, bool err);
@@ -577,8 +595,10 @@ public class MWSerial : Object {
         txbuf = new uint8[txbuf_alloc];
         devbuf = new uint8[MemAlloc.DEV];
 		pmask = PMask.AUTO ;
+		if (Environment.get_variable("MWP_MPM_AUTO") != null) {
+			mpm_auto = true;
+		}
     }
-
 
 	public void set_pmask(PMask _pm) {
 		pmask = _pm;
@@ -1153,6 +1173,13 @@ public class MWSerial : Object {
 									}
 								}
 								break;
+							case 'M':
+								if(mpm_auto) {
+									if ((pmask & PMask.MPM) == PMask.MPM) {
+										state = States.S_MPM_P;
+									}
+								}
+								break;
 							default:
 								if (state == States.S_HEADER) {
 									error_counter("Detect");
@@ -1163,6 +1190,10 @@ public class MWSerial : Object {
 								}
 								break;
 							}
+							break;
+
+						case States.S_MPM_P:
+							pmask = PMask.MPM;
 							break;
 
 						case States.S_SPORT_OK:
