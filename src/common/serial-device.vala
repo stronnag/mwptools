@@ -595,13 +595,13 @@ public class MWSerial : Object {
         txbuf = new uint8[txbuf_alloc];
         devbuf = new uint8[MemAlloc.DEV];
 		pmask = PMask.AUTO ;
-		if (Environment.get_variable("MWP_MPM_AUTO") != null) {
-			mpm_auto = true;
-		}
     }
 
-	public void set_pmask(PMask _pm) {
+	public void set_pmask(PMask _pm, bool _mpm_auto=false) {
 		pmask = _pm;
+		if (pmask == PMask.AUTO) {
+			mpm_auto = _mpm_auto;
+		}
 	}
 
     public int get_fd()

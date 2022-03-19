@@ -62,8 +62,14 @@ do
   esac
 done
 
-
 [ -f $HEX ] || { echo "$HEX not found" ; exit ; }
+
+if [ -n "$RESCUE" ] ; then
+  echo "Checking DFU for rescue"
+  if dfu-util -l -d 0483:df11 | grep -q "Found DFU" ; then
+    [ -z "$DEV" ] && DEV=/dev/ttyACMx # to force BIN mode
+  fi
+fi
 
 [ -z "$DEV" ] && DEV=$(find_serial)
 
@@ -80,7 +86,6 @@ then
    [ -e /dev/ttyACM0 ] &&  DEV0=/dev/ttyACM0
 fi
 
-echo $DEV0 $RESCUE
 if [ -z "$RESCUE" ]
 then
   stty -F $DEV0 raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon || { echo "stty failed to set speed, doomed" ; exit 1 ; }

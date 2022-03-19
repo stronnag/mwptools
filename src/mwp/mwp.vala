@@ -3372,7 +3372,7 @@ public class MWP : Gtk.Application {
 			xnopoll = nopoll;
 			nopoll = true;
 		}
-		msp.set_pmask(pmask);
+		msp.set_pmask(pmask, conf.mpm_auto);
 	}
 
 #if MQTT

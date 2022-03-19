@@ -643,5 +643,13 @@
       in pixels. -1 means the image's natural size (no scaling).</description>
     </key>
 
+    <key name="mpm-auto" type="b">
+      <default>false</default>
+      <summary>Protocol AUTO mode for MPM</summary>
+      <description>
+	If one is using EdgeTX 2.7 or later, MPM can be reliably auto-detected and this setting allows such auto-detection. For	other TX and versions, do not set.
+      </description>
+    </key>
+
   </schema>
 </schemalist>
