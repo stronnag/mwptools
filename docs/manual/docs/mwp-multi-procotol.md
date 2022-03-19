@@ -30,9 +30,11 @@ Serial devices are defined by the operating system device node name and optional
 Bluetooth may be specified by either an `rfcomm` device node (`/dev/rfcommX` on Linux, `/dev/ttypX` pseudo-terminal abstraction on FreeBSD) or by the device address (`BD_ADDR`, Linux and FreeBSD only):
 
 ```
-# BT RFCOMM device node
+# BT RFCOMM device node (Linux)
 /dev/rfcomm1
 /dev/rfcomm1@57600
+# RFCOMM / SPP (FreeBSD)
+/dev/ttyp6
 # BT device address (note here baud rate is immaterial)
 35:53:17:04:07:27
 ```
@@ -95,7 +97,7 @@ Offering:
 | INAV | INAV protocols, MSP, LTM and MAVLink. Legacy behaviours |
 | S-Port | Smartport telemetry, previously required `--smartport` options. Expects a non-inverted stream |
 | CRSF | Crossfire Telemetry. |
-| MPM | Multi-Protocol-Module telemetry. The output from an EdgeTX / OpenTX radio with a multi-protocol module, FrSky Smartport or Flysky 'AA' via the EdgeTX / OpenTX "Telem Mirror" function. Is not auto-detected, must be explicitly selected. |
+| MPM | Multi-Protocol-Module telemetry. The output from an EdgeTX / OpenTX radio with a multi-protocol module, FrSky Smartport or Flysky 'AA' via the EdgeTX / OpenTX "Telem Mirror" function. Is not auto-detected, must be explicitly selected; with EdgeTX 2.7 and later, auto-detection will be possible.. |
 
 #### Notes
 
@@ -107,5 +109,5 @@ Offering:
 
 * INAV (MSP, LTM, MAVLink) auto-detection should be reliable (legacy function).
 * S-Port and CRSF may be less reliably detected.
-* MPM is not auto-detected. This may change if EdgeTX merges an [extant PR](https://github.com/EdgeTX/edgetx/pull/1115)
+* MPM is not auto-detected. This will change with EdgeTX 2.7, when MPM auto-detection will work reliably.
 * It is recommended that for S-Port, CRSF and MPM, the desired protocol is set explicitly (not left at "Auto").
