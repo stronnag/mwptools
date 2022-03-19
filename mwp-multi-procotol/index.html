@@ -979,10 +979,12 @@
 /dev/cuaU0
 </code></pre></div></p>
 <h2 id="bluetooth">Bluetooth<a class="headerlink" href="#bluetooth" title="Permanent link">#</a></h2>
-<p>Bluetooth may be specified by either an <code>rfcomm</code> device node (<code>/dev/rfcommX</code>) or by the device address (<code>BD_ADDR</code>, Linux only):</p>
-<div class="highlight"><pre><span></span><code># BT RFCOMM device node
+<p>Bluetooth may be specified by either an <code>rfcomm</code> device node (<code>/dev/rfcommX</code> on Linux, <code>/dev/ttypX</code> pseudo-terminal abstraction on FreeBSD) or by the device address (<code>BD_ADDR</code>, Linux and FreeBSD only):</p>
+<div class="highlight"><pre><span></span><code># BT RFCOMM device node (Linux)
 /dev/rfcomm1
 /dev/rfcomm1@57600
+# RFCOMM / SPP (FreeBSD)
+/dev/ttyp6
 # BT device address (note here baud rate is immaterial)
 35:53:17:04:07:27
 </code></pre></div>
@@ -1041,7 +1043,7 @@ i.e. the host part is empty.</p>
 </tr>
 <tr>
 <td>MPM</td>
-<td>Multi-Protocol-Module telemetry. The output from an EdgeTX / OpenTX radio with a multi-protocol module, FrSky Smartport or Flysky 'AA' via the EdgeTX / OpenTX "Telem Mirror" function. Is not auto-detected, must be explicitly selected.</td>
+<td>Multi-Protocol-Module telemetry. The output from an EdgeTX / OpenTX radio with a multi-protocol module, FrSky Smartport or Flysky 'AA' via the EdgeTX / OpenTX "Telem Mirror" function. Is not auto-detected, must be explicitly selected; with EdgeTX 2.7 and later, auto-detection will be possible..</td>
 </tr>
 </tbody>
 </table>
@@ -1055,7 +1057,7 @@ i.e. the host part is empty.</p>
 <ul>
 <li>INAV (MSP, LTM, MAVLink) auto-detection should be reliable (legacy function).</li>
 <li>S-Port and CRSF may be less reliably detected.</li>
-<li>MPM is not auto-detected. This may change if EdgeTX merges an <a href="https://github.com/EdgeTX/edgetx/pull/1115">extant PR</a></li>
+<li>MPM is not auto-detected. This will change with EdgeTX 2.7, when MPM auto-detection will work reliably.</li>
 <li>It is recommended that for S-Port, CRSF and MPM, the desired protocol is set explicitly (not left at "Auto").</li>
 </ul>
                 
