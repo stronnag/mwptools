@@ -597,11 +597,12 @@ public class MWSerial : Object {
 		pmask = PMask.AUTO ;
     }
 
-	public void set_pmask(PMask _pm, bool _mpm_auto=false) {
+	public void set_pmask(PMask _pm) {
 		pmask = _pm;
-		if (pmask == PMask.AUTO) {
-			mpm_auto = _mpm_auto;
-		}
+	}
+
+	public void set_auto_mpm(bool _a) {
+		mpm_auto = _a;
 	}
 
     public int get_fd()
