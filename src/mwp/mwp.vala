@@ -9509,7 +9509,7 @@ case 0:
         last_file = null;
         navstatus.reset_mission();
         FakeHome.usedby &= ~FakeHome.USERS.Mission;
-        ls.unset_fake_home();
+        ls.reset_fake_home();
     }
 
     private void set_replay_menus(bool state)

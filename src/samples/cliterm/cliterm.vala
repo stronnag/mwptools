@@ -187,31 +187,63 @@ class CliTerm : Object
         msp.close();
         Posix.tcsetattr(0, Posix.TCSANOW, oldtio);
     }
-}
 
-int main (string[] args)
-{
-    try {
-        var opt = new OptionContext(" - cli tool");
-        opt.set_help_enabled(true);
-        opt.add_main_entries(options, null);
-        opt.parse(ref args);
-    }
-    catch (OptionError e) {
-        stderr.printf("Error: %s\n", e.message);
-        stderr.printf("Run '%s --help' to see a full list of available "+
-                      "options\n", args[0]);
-        return 1;
-    }
+	public static string[]? set_def_args() {
+		var fn = MWPUtils.find_conf_file("cliopts");
+        if(fn != null) {
+			var file = File.new_for_path(fn);
+			try {
+				var dis = new DataInputStream(file.read());
+				string line;
+				string []m;
+				var sb = new StringBuilder ("cli");
+				while ((line = dis.read_line (null)) != null)
+				{
+					if(line.strip().length > 0) {
+						if (line.has_prefix("-")) {
+							sb.append_c(' ');
+							sb.append(line);
+						}
+					}
+					Shell.parse_argv(sb.str, out m);
+					if (m.length > 1) {
+						return m;
+					}
+				}
+			} catch (Error e) {
+				error ("%s", e.message);
+			}
+		}
+		return null;
+	}
 
-    if (args.length > 2)
-        baud = int.parse(args[2]);
+	static int main (string[] args)
+	{
+		try {
+			var opt = new OptionContext(" - cli tool");
+			opt.set_help_enabled(true);
+			opt.add_main_entries(options, null);
+			var m = set_def_args();
+			if (m != null) {
+				opt.parse_strv(ref m);
+			}
+			opt.parse(ref args);
+		}
+		catch (OptionError e) {
+			stderr.printf("Error: %s\n", e.message);
+			stderr.printf("Run '%s --help' to see a full list of available "+
+						  "options\n", args[0]);
+			return 1;
+		}
 
-    if (args.length > 1)
-        dev = args[1];
+		if (args.length > 2)
+			baud = int.parse(args[2]);
 
-    switch (eolmstr)
-    {
+		if (args.length > 1)
+			dev = args[1];
+
+		switch (eolmstr)
+		{
         case "cr":
             eolm = 0;
             break;
@@ -224,11 +256,11 @@ int main (string[] args)
         case "crcrlf":
             eolm = 3;
             break;
-    }
+		}
+		var cli = new CliTerm();
+		cli.init();
+		cli.run();
 
-    var cli = new CliTerm();
-    cli.init();
-    cli.run();
-
-    return 0;
+		return 0;
+	}
 }

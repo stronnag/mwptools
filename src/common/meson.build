@@ -23,6 +23,7 @@ clicommon = files('btdev.c',
 		  'sede.vala',
 		  'mspcmd.vala',
 		  'mwplog.vala',
+		  'utils.vala',
 		  'devman.vala')
 
 fccommon = files('btdev.c',
