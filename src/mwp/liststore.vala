@@ -2396,6 +2396,7 @@ public class ListBox : GLib.Object
 
     public void reset_fake_home()
     {
+		unset_fake_home();
         fhome.reset_fake_home();
     }
 
