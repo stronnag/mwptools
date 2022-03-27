@@ -64,7 +64,7 @@ mwp should  build and running on any platform that supports (recent versions of)
  * libgdl;
  * POSIX API
 
-mwptools is tested on x86_64, ia32, Arm32 and aarch64 devices (Linux / FreeBSD).
+mwptools is tested on x86_64, ia32, and aarch64 architectures (Linux / FreeBSD).
 
 * There is a "Release" debian package (x86_64, Debian, Ubuntu etc).
 * Simple, ["one stop shop" build and install script](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/)
@@ -93,7 +93,7 @@ For OS not supported by mwp (e.g. MacOS, IOS, Andriod), see also [impload](https
 
 * [Installation Guide (wiki)](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/).
 
-Support questions are best asked in the [RC Groups board](https://www.rcgroups.com/forums/showthread.php?2633708-mwp), the inav discord (off-topic) or telegram channels or Github discussions / issues.
+Support questions are best asked in the [RC Groups board](https://www.rcgroups.com/forums/showthread.php?2633708-mwp), the inav Discord (off-topic) or Telegram channels or Github discussions / issues.
 
 ### Changelog / Announcements
 
@@ -126,7 +126,7 @@ In addition to [mwp](https://github.com/stronnag/mwptools), the following inav m
 
 * [Inav Configurator (for inav 2.x)](https://github.com/iNavFlight/inav-configurator/tree/2.6.1), limited planning support
 * [Inav Configurator (for current inav)]( https://github.com/iNavFlight/inav-configurator), supports all current WP types. [Preview builds](http://seyrsnys.myzen.co.uk/inav-configurator-next/), may be augmented with [impload](https://github.com/stronnag/impload/) to upload missions to 2.x firmware.
-* [Drone Helper](https://www.microsoft.com/en-us/p/drone-helper/9ncs8zwxn58x?activetab=pivot:overviewtab) (Windows 10)
+* [Drone Helper](https://www.microsoft.com/en-us/p/drone-helper/9ncs8zwxn58x?activetab=pivot:overviewtab) (Windows 10+)
 * [Ezgui](https://play.google.com/store/apps/details?id=com.ezio.multiwii&hl=en_GB), [MissionPlanner for Inav](https://play.google.com/store/apps/details?id=com.eziosoft.ezgui.inav&hl=en) (Android) Unsupported, obsolete. May not work with either contemporary Android or inav firmware.
 * [Mobile Flight](https://github.com/flyinghead/mobile-flight) (IOS) Unsupported, obsolete. May not work with either contemporary IOS or inav firmware.
 * [Apmplanner2](https://ardupilot.org/planner2/) with [impload](https://github.com/stronnag/impload/). Ardupilot planner, missions can be uploaded to inav using [impload](https://github.com/stronnag/impload/).

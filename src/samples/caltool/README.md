@@ -2,7 +2,7 @@
 
 ## Description
 
-`caltool` is a simple tool to for inav 6 point ACC calibration and mag calibraton
+`caltool` is a simple tool to for inav 6 point ACC calibration and mag calibration
 
 ## Features
 

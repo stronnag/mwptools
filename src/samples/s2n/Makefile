@@ -1,6 +1,7 @@
-EXES = ser2udp
+EXE = ser2udp
+prefix ?= /usr/local
 
-all: $(EXES)
+all: $(EXE)
 
 ser2udp: ser2udp.go get_interface_other.go go.sum
 	go build -ldflags "-w -s" -o $@
@@ -21,3 +22,7 @@ go.sum: go.mod
 
 clean:
 	rm -f ser2udp ser2udp.exe ser2udp.linux ser2udp.freebsd
+
+install: $(EXE)
+	-install -d $(prefix)/bin
+	-install -s $(EXE) $(prefix)/bin/
