@@ -1170,9 +1170,15 @@ public class MWP : Gtk.Application {
 				is_wayland = false;
 			}
 		}
-        MWPLog.message("version: %s on %s\n", verstr, xlib);
+
+		var dmstr = Environment.get_variable("XDG_CURRENT_DESKTOP");
+		if (dmstr == null) {
+			dmstr = "Unknown DM";
+		}
+        MWPLog.message("version: %s\n", verstr);
         string os=null;
         MWPLog.message("%s\n", Logger.get_host_info(out os));
+		MWPLog.message("Desktop: %s / %s\n", xlib, dmstr);
 		MWPLog.message("%s\n", rsb.str);
         var vstr = check_virtual(os);
         if(vstr == null || vstr.length == 0)
