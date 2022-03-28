@@ -26,4 +26,6 @@ extern char *__progname;
 extern const char * get_build();
 extern const char * get_id();
 
+extern void get_glinfo(char **vendp, char **rendp);
+
 #define MWP_MISC_MWP_MAX_WP 60

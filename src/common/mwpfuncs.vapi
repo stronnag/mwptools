@@ -10,6 +10,13 @@ namespace MwpPipe
 }
 
 [CCode (cheader_filename = "mwpfuncs.h")]
+namespace MwpGL
+{
+    [CCode (cname = "get_glinfo")]
+	void glinfo(out unowned string? vendor, out unowned string? renderer);
+}
+
+[CCode (cheader_filename = "mwpfuncs.h")]
 namespace MwpSerial
 {
     [CCode (cname = "flush_serial")]

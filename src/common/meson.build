@@ -1,6 +1,7 @@
 
 mwpcommon = files('btdev.c',
 		  'cserial.c',
+		  'mwp_glinfo.c',
 		  'xmlio.vala',
 		  'serial-device.vala',
 		  'geocalc.vala',

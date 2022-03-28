@@ -1140,7 +1140,22 @@ public class MWP : Gtk.Application {
         var sb = new StringBuilder("mwp ");
         var s_0 = MwpVers.get_build();
         var s_1 = MwpVers.get_id();
-        sb.append(s_0);
+		string vendor=null;
+		string renderer=null;
+
+		MwpGL.glinfo(out vendor, out renderer);
+        var rsb = new StringBuilder("GL: ");
+		if (vendor == null)
+			rsb.append("Unknown");
+		else
+			rsb.append(vendor);
+		rsb.append(" / ");
+		if (renderer == null)
+			rsb.append("Unsupported");
+		else
+			rsb.append(renderer);
+
+		sb.append(s_0);
         sb.append_c(' ');
         sb.append(s_1);
         var verstr = sb.str;
@@ -1158,6 +1173,7 @@ public class MWP : Gtk.Application {
         MWPLog.message("version: %s on %s\n", verstr, xlib);
         string os=null;
         MWPLog.message("%s\n", Logger.get_host_info(out os));
+		MWPLog.message("%s\n", rsb.str);
         var vstr = check_virtual(os);
         if(vstr == null || vstr.length == 0)
             vstr = "none";
