@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '5.087.552')
+project('mwptools', 'c', 'vala', version : '5.087.559')
 
 meson.add_install_script('meson/post_install.sh')
 conf_data = configuration_data()
@@ -27,7 +27,7 @@ executable('mwp', mwpsrcs, mwpcommon, dependencies: [ mwpdeps ],
 executable('cliterm', clisrcs, clicommon, dependencies: [ clideps ],
   include_directories : common_inc_dir, vala_args : [dopts, cli_v_args], install : true)
 
-executable('qproxy', proxsrc, dependencies: [ proxdeps ], install : true)
+executable('gmproxy', proxsrc, dependencies: [ proxdeps ], install : true)
 executable('bproxy', bproxsrc, dependencies: [ proxdeps ], install : false, build_by_default: false)
 
 executable('fc-get', fcsrcs, fccommon, dependencies: [ fcdeps ],
