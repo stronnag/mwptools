@@ -1178,7 +1178,7 @@ public class MWP : Gtk.Application {
         MWPLog.message("version: %s\n", verstr);
         string os=null;
         MWPLog.message("%s\n", Logger.get_host_info(out os));
-		MWPLog.message("Desktop: %s / %s\n", xlib, dmstr);
+		MWPLog.message("WM: %s / %s\n", xlib, dmstr);
 		MWPLog.message("%s\n", rsb.str);
         var vstr = check_virtual(os);
         if(vstr == null || vstr.length == 0)

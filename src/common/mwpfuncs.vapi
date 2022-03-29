@@ -13,7 +13,7 @@ namespace MwpPipe
 namespace MwpGL
 {
     [CCode (cname = "get_glinfo")]
-	void glinfo(out unowned string? vendor, out unowned string? renderer);
+	void glinfo(out string? vendor, out string? renderer);
 }
 
 [CCode (cheader_filename = "mwpfuncs.h")]
