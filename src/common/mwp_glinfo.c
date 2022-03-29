@@ -21,8 +21,8 @@ void get_glinfo(char **vendp, char **rendp)
 	       if(g_module_symbol(handle, "glGetString", (gpointer *)&glfunc)) {
 		    char *renderer = (*glfunc)(GL_RENDERER);
 		    char *vendor = (*glfunc)(GL_VENDOR);
-		    *vendp = strdup(vendor);
-		    *rendp = strdup(renderer);
+		    *vendp = g_strdup(vendor);
+		    *rendp = g_strdup(renderer);
 	       }
 	       g_module_close (handle);
 	  }
