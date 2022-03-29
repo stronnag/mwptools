@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <glib.h>
 #include <gmodule.h>
-#include <GL/gl.h>
+
+// Don't require installation, the runtime must be present
+//#include <GL/gl.h>
+#define GL_VENDOR                         0x1F00
+#define GL_RENDERER                       0x1F01
 
 typedef char*(*glfunc_t)(int);
 
@@ -20,6 +24,7 @@ void get_glinfo(char **vendp, char **rendp)
 		    *vendp = vendor;
 		    *rendp = renderer;
 	       }
+	       g_module_close (handle);
 	  }
      }
      return;
