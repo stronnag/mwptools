@@ -176,8 +176,7 @@
           <attribute name="action">win.recentre</attribute>
         </item>
         <item>
-          <attribute name="label">Set location as default
-	  </attribute>
+          <attribute name="label">Set location as default</attribute>
           <attribute name="action">win.defloc</attribute>
         </item>
         <item>

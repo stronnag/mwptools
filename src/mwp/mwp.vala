@@ -1173,7 +1173,7 @@ public class MWP : Gtk.Application {
 
 		var dmstr = Environment.get_variable("XDG_CURRENT_DESKTOP");
 		if (dmstr == null) {
-			dmstr = "Unknown DM";
+			dmstr = "Unknown DE";
 		}
         MWPLog.message("version: %s\n", verstr);
         string os=null;
@@ -10661,7 +10661,7 @@ case 0:
         } catch (SpawnError e) {
             MWPLog.message("spawnerror: %s %s \n", sargs, e.message);
         }
-		MWPLog.message("%s %u\n", sargs, child_pid);
+		MWPLog.message("%s # pid=%u\n", sargs, child_pid);
 
 		ChildWatch.add (child_pid, (pid, status) => {
 //				MWPLog.message("bbl-o child pid %u, %u\n", pid, Process.exit_status(status));
