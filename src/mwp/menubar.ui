@@ -77,8 +77,7 @@
           <attribute name="action">win.replay-bb</attribute>
         </item>
         <item>
-          <attribute name="label">Load blackbox log
-	  </attribute>
+          <attribute name="label">Load blackbox log</attribute>
           <attribute name="action">win.load-bb</attribute>
 	  <link name="loadbb" id="loadbb"></link>
 	</item>
