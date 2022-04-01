@@ -55,8 +55,7 @@
 	  <attribute name="accel">&lt;Primary&gt;r</attribute>
         </item>
         <item>
-          <attribute name="label">Save Mission to EEPROM
-	  </attribute>
+          <attribute name="label">Save Mission to EEPROM</attribute>
           <attribute name="action">win.store-mission</attribute>
 	  <attribute name="accel">&lt;Primary&gt;e</attribute>
 	</item>
