@@ -1060,7 +1060,6 @@ public class MWP : Gtk.Application {
 	private int mdx = 0;
 	private int imdx = 0;
 	private bool ms_from_loader; // loading from file
-	private bool smart_warn = false;
 
 	public static string? user_args;
 
@@ -1111,7 +1110,6 @@ public class MWP : Gtk.Application {
         {"fsmenu", 0, 0, OptionArg.NONE, null, "use a menu bar in full screen (vice a menu button)", null},
         { "kmlfile", 'k', 0, OptionArg.STRING, null, "KML file", "file-name"},
         {"relaxed-msp", 0, 0, OptionArg.NONE, null, "don't check MSP direction flag", null},
-        {"smartport", 0, 0, OptionArg.NONE, null, "Unsupported", null},
         {null}
     };
 
@@ -1189,11 +1187,10 @@ public class MWP : Gtk.Application {
 #endif
     }
 
-    public MWP ()
+    public MWP (string s)
     {
         Object(application_id: "org.mwp.app",
                flags: ApplicationFlags.HANDLES_COMMAND_LINE);
-        var s = read_env_args();
         var v = check_env_args(s);
         set_opts_from_dict(v);
         add_main_option_entries(options);
@@ -1221,10 +1218,6 @@ public class MWP : Gtk.Application {
         if (o.contains("version")) {
             stdout.printf("%s\n", MwpVers.get_id());
             return 0;
-        }
-
-        if (o.contains("smartport")) {
-			smart_warn = true;
         }
 
         if (o.contains("build-id")) {
@@ -3101,7 +3094,6 @@ public class MWP : Gtk.Application {
         poslabel.set_text(PosFormat.pos(view.get_center_latitude(),
                                             view.get_center_longitude(),
                                             conf.dms));
-
         var scale = new Champlain.Scale();
         scale.connect_view(view);
         view.add_child(scale);
@@ -3377,14 +3369,6 @@ public class MWP : Gtk.Application {
 		gstdm.setup_device_monitor();
 
 		map_moved();
-		if (smart_warn) {
-			Idle.add(() => {
-			mwp_warning_box("--smartport is no longer required or supported\nEnter enter the Device name as a  normal device and it will be detected as Smart Port\nBetter, set the protocol to Smartport as well\n",
-							Gtk.MessageType.ERROR, 60);
-			return false;
-				});
-		}
-
     }
 
 	private void set_pmask_poller(MWSerial.PMask pmask) {
@@ -10782,59 +10766,6 @@ case 0:
     }
 
 
-    private string? read_env_args()
-    {
-        var s1 = read_cmd_opts();
-        var s2 = Environment.get_variable("MWP_ARGS");
-        var sb = new StringBuilder();
-        if(s1.length > 0)
-           sb.append(s1);
-        if(s2 != null)
-            sb.append(s2);
-
-		if(sb.str.contains("--smartport")) {
-			smart_warn = true;
-		}
-		if(sb.len > 0)
-            return sb.str;
-		return null;
-    }
-
-    private string read_cmd_opts()
-    {
-        var sb = new StringBuilder ();
-        var fn = MWPUtils.find_conf_file("cmdopts");
-        if(fn != null)
-        {
-            var file = File.new_for_path(fn);
-            try {
-                var dis = new DataInputStream(file.read());
-                string line;
-                while ((line = dis.read_line (null)) != null)
-                {
-                    if(line.strip().length > 0) {
-						if(line.has_prefix("#") || line.has_prefix(";")) {
-							continue;
-						} else if (line.has_prefix("-")) {
-							sb.append(line);
-							sb.append_c(' ');
-						} else if (line.contains("=")) {
-							var parts = line.split("=");
-							if (parts.length == 2) {
-								var ename = parts[0].strip();
-								var evar = parts[1].strip();
-								Environment.set_variable(ename, evar, true);
-							}
-						}
-					}
-				}
-			} catch (Error e) {
-                error ("%s", e.message);
-            }
-        }
-        return sb.str;
-    }
-
     OptionEntry ? find_option(string s)
     {
         foreach(var o in options)
@@ -10993,10 +10924,61 @@ case 0:
         return hyper;
     }
 
+    private static string? read_env_args()
+    {
+        var s1 = read_cmd_opts();
+        var s2 = Environment.get_variable("MWP_ARGS");
+        var sb = new StringBuilder();
+        if(s1.length > 0)
+           sb.append(s1);
+        if(s2 != null)
+            sb.append(s2);
+
+		if(sb.len > 0)
+            return sb.str;
+		return null;
+    }
+
+    private static string read_cmd_opts()
+    {
+        var sb = new StringBuilder ();
+        var fn = MWPUtils.find_conf_file("cmdopts");
+        if(fn != null)
+        {
+            var file = File.new_for_path(fn);
+            try {
+                var dis = new DataInputStream(file.read());
+                string line;
+                while ((line = dis.read_line (null)) != null)
+                {
+                    if(line.strip().length > 0) {
+						if(line.has_prefix("#") || line.has_prefix(";")) {
+							continue;
+						} else if (line.has_prefix("-")) {
+							sb.append(line);
+							sb.append_c(' ');
+						} else if (line.contains("=")) {
+							var parts = line.split("=");
+							if (parts.length == 2) {
+								var ename = parts[0].strip();
+								var evar = parts[1].strip();
+								Environment.set_variable(ename, evar, true);
+							}
+						}
+					}
+				}
+			} catch (Error e) {
+                error ("%s", e.message);
+            }
+        }
+        return sb.str;
+    }
+
 	public static int main (string[] args)
     {
 		MwpLibC.atexit(MWP.xchild);
-        if (GtkClutter.init (ref args) != InitError.SUCCESS)
+        var s = MWP.read_env_args();
+		if (GtkClutter.init (ref args) != InitError.SUCCESS)
             return 1;
         Gst.init (ref args);
 		StringBuilder sb = new StringBuilder();
@@ -11005,7 +10987,7 @@ case 0:
 			sb.append_c(' ');
 		}
 		MWP.user_args = sb.str;
-        var app = new MWP();
+        var app = new MWP(s);
 		return app.run (args);
     }
 }

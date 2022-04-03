@@ -64,6 +64,12 @@ MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 
 So here the only current, valid options are  `--rings 50,20 -dont-maximise`, and the [environment variable](#environment-variables) MWP_BLACK_TILE is set (for [anonymous maps](Black-Ops.md#custom-tile)).
 
+The environment is set before any GTK / UI calls are made, thus if you have issues using Wayland (which still has some issues with some (older, mainly) GPU hardware and OpenGL), then you can force Xwayland by setting the `GTK_BACKEND` variable in `cmdopts`.
+
+```
+GDK_BACKEND=x11
+```
+
 ## `.layout`
 
 `.layout` contains the current arrangement of Dock items. You are advised not to manually edit this file (or other named, alternate layout files).
@@ -206,7 +212,6 @@ This *may* not be installed by default, but should be available via the OS packa
 | rth-autoland | Automatically assert land on RTH waypoints | Automatically assert land on RTH waypoints | false |
 | say-bearing | Whether audio report includes bearing | Whether audio report includes bearing | true |
 | set-head-is-b0rken | set head bearing as reciprocal | Whether the set head bearing is the reciprocal (i.e. ancient bug in mw nav) | false |
-| smartport-fuel-unit | User selected fuel type | Units label for smartport fuel (none, %, mAh, mWh) | "none" |
 | speak-amps | When to speak amps/hr used | none, live-n, all-n n=1,2,4 : n = how often spoken (modulus basically) | "none" |
 | speak-interval | Interval between voice prompts | Interval between voice prompts, 0 disables | 15 |
 | speech-api | API for speech synthesis | espeak, speechd, flite. Only change this if you know you have the required development files at build time | "espeak" |
