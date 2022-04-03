@@ -14,7 +14,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-7.3.6">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-7.3.6">
     
     
       
@@ -729,6 +729,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#wayland-xlib" class="md-nav__link">
+    Wayland / XLib
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -847,6 +854,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#wayland-xlib" class="md-nav__link">
+    Wayland / XLib
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -904,12 +918,22 @@
 <li>Little endian (big endian never tested).</li>
 </ul>
 <h3 id="information-requirements">Information requirements<a class="headerlink" href="#information-requirements" title="Permanent link">#</a></h3>
-<p>Where relevant, please include <a href="https://github.com/stronnag/mwptools">mwp</a>'s console log, from your home directory, <code>mwp_stderr_YYYY-MM-DD.txt</code>, e.g. <code>$HOME/mwp_stderr_2021-12-28.txt</code>. Please do not delete any information from this file; the contents are there for a purpose.</p>
+<p>Where relevant, please include <a href="https://github.com/stronnag/mwptools">mwp</a>'s console log, from your home directory, <code>mwp_stderr_YYYY-MM-DD.txt</code>, e.g. <code>$HOME/mwp_stderr_2021-12-28.txt</code>. Please do not delete any information from this file; the contents are there for a purpose, or paste the terminal output into a file (or copy paste into the issue). The terminal output may include information from system components that are not the mwp log (e.g. GDK / GTK / Wayland messages).</p>
 <h3 id="unsupported">Unsupported<a class="headerlink" href="#unsupported" title="Permanent link">#</a></h3>
 <ul>
 <li>Anything else!</li>
 </ul>
 <p>Problem reports on non-supported platforms will not be dismissed without <em>some</em> consideration, however it's unlikely that too much time be expended on such environments unless the problem can also be demonstrated on a supported platform.</p>
+<h3 id="wayland-xlib">Wayland / XLib<a class="headerlink" href="#wayland-xlib" title="Permanent link">#</a></h3>
+<p>Different outcomes (including crash / not crash) may be experienced using different display environments.</p>
+<p>If you experience an issue using Wayland, you can force <a href="https://github.com/stronnag/mwptools">mwp</a> to use XWayland, which may behave better. Such issues are sometimes deep in system libraries (GTK, OpenGL, Wayland).</p>
+<p>To force XWayland:</p>
+<ul>
+<li>From the command line
+  <div class="highlight"><pre><span></span><code>GDK_BACKEND=x11 mwp
+</code></pre></div></li>
+<li>If that improves matters, add the setting to <a href="../mwp-Configuration/#cmdopts">the configuration file</a>.</li>
+</ul>
                 
               
               
@@ -986,7 +1010,7 @@
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.fcfe8b6d.min.js", "version": null}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.fcfe8b6d.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.b1047164.min.js"></script>
