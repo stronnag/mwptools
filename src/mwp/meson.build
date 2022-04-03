@@ -96,13 +96,7 @@ if r.returncode() == 0
 endif
 mwp_c_args += '-DMWPGITVERSION=' + gitvers
 
-gitstamp='0000-00-00T00:00:00'
-r = run_command('git', 'log','-1','--format=%cI', check: false)
-if r.returncode() == 0
-  gitstamp = r.stdout().strip()
-endif
-mwp_c_args += '-DMWPGITSTAMP=' + gitstamp
-
+bstamp=''
 r = run_command('date', '+%FT%T', check: true)
 if r.returncode() == 0
   bstamp = r.stdout().strip()
@@ -110,6 +104,13 @@ else
   bstamp='0000-00-00T00:00:00'
 endif
 mwp_c_args += '-DMWPSTAMP=' + bstamp
+
+gitstamp=bstamp
+r = run_command('git', 'log','-1','--format=%cI', check: false)
+if r.returncode() == 0
+  gitstamp = r.stdout().strip()
+endif
+mwp_c_args += '-DMWPGITSTAMP=' + gitstamp
 
 if spk
   mwpdeps += dependency('gmodule-2.0')
