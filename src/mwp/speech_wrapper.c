@@ -32,8 +32,14 @@ extern void mwp_log_message (const gchar* format, ...);
 
 static GModule *handle;
 
+
 #ifdef USE_ESPEAK
+
+#ifdef USE_ESPEAK_NG
+#include <espeak-ng/speak_lib.h>
+#else
 #include <espeak/speak_lib.h>
+#endif
 
 typedef int (*espeak_synth_t)(const void *, size_t, unsigned int, espeak_POSITION_TYPE, unsigned int, unsigned int, unsigned int*, void*);
 typedef void (*espeak_synchronize_t)(void);
@@ -47,32 +53,28 @@ static int ep_init(char *voice)
 {
     int res = API_NONE;
     gchar * modname = NULL;
-    modname = g_module_build_path(NULL, "espeak");
 
-    if(modname)
-        handle = g_module_open(modname, G_MODULE_BIND_LAZY);
-    if(handle == NULL)
-    {
-        g_free(modname);
-        modname = g_module_build_path(NULL, "espeak-ng");
-        if(modname)
-            handle = g_module_open(modname, G_MODULE_BIND_LAZY);
-    }
-    if (handle)
-    {
-        espeak_initialize_t esi;
-        if(g_module_symbol(handle, "espeak_Initialize", (gpointer *)&esi))
-            res = (*esi)(AUDIO_OUTPUT_PLAYBACK,0, NULL, 0);
-        if(res != -1)
-        {
-            espeak_setvoicebyname_t esv;
-            if(g_module_symbol(handle, "espeak_SetVoiceByName",(gpointer *)&esv))
-                (*esv)(voice);
-            if(g_module_symbol(handle, "espeak_Synth",(gpointer *)&ess) &&
-               g_module_symbol(handle, "espeak_Synchronize",(gpointer *)&esh))
-                res = API_ESPEAK;
-        }
-        g_free(modname);
+#ifdef USE_ESPEAK_NG
+    modname = g_module_build_path(NULL, "espeak-ng");
+#else
+    modname = g_module_build_path(NULL, "espeak");
+#endif
+    if(modname) {
+	 handle = g_module_open(modname, G_MODULE_BIND_LAZY);
+	 if (handle) {
+	      espeak_initialize_t esi;
+	      if(g_module_symbol(handle, "espeak_Initialize", (gpointer *)&esi))
+		   res = (*esi)(AUDIO_OUTPUT_PLAYBACK,0, NULL, 0);
+	      if(res != -1) {
+		   espeak_setvoicebyname_t esv;
+		   if(g_module_symbol(handle, "espeak_SetVoiceByName",(gpointer *)&esv))
+			(*esv)(voice);
+		   if(g_module_symbol(handle, "espeak_Synth",(gpointer *)&ess) &&
+		      g_module_symbol(handle, "espeak_Synchronize",(gpointer *)&esh))
+			res = API_ESPEAK;
+	      }
+	 }
+	 g_free(modname);
     }
     return res;
 }

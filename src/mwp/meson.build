@@ -63,14 +63,16 @@ endif
 
 spk = false
 speak = meson.get_compiler('c').find_library('espeak-ng', dirs: ldirs, required: false).found()
-if not speak
+if speak
+    xopts += 'USE_ESPEAK_NG'
+else
   speak = meson.get_compiler('c').find_library('espeak', dirs: ldirs, required: false).found()
 endif
 
 if speak
   mwp_v_args += '--define=USE_ESPEAK'
-  xopts += 'USE_ESPEAK'
   spk = true
+  xopts += 'USE_ESPEAK'
 endif
 
 speak = meson.get_compiler('c').find_library('speechd', dirs: ldirs, required: false).found()
