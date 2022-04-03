@@ -1187,7 +1187,7 @@ public class MWP : Gtk.Application {
 #endif
     }
 
-    public MWP (string s)
+    public MWP (string? s)
     {
         Object(application_id: "org.mwp.app",
                flags: ApplicationFlags.HANDLES_COMMAND_LINE);
