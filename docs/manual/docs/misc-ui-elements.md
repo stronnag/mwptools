@@ -2,7 +2,7 @@
 
 ## Preferences
 
-The "Edit > Preferences" menu provides a UI for some `gsetting` / `dconf` [settings](../mwp-Configuration). The setting here applied immediately if 'Apply' is clicked.
+The "Edit > Preferences" menu provides a UI for some `gsetting` / `dconf` [settings](mwp-Configuration.md). The setting here applied immediately if 'Apply' is clicked.
 
 ### General Preferences
 

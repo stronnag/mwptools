@@ -83,7 +83,6 @@ Application Options:
   --fsmenu                            use a menu bar in full screen (vice a menu button)
   -k, --kmlfile=file-name             KML file
   --relaxed-msp                       don't check MSP direction flag
-  --smartport                         Unsupported
   --display=DISPLAY                   X display to use
 ```
 
