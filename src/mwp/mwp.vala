@@ -3044,11 +3044,10 @@ public class MWP : Gtk.Application {
             }
         }
 
-        window.size_allocate.connect((a) => {
-                if(((a.width != window_w) || (a.height != window_h)))
-                {
-                    window_w  = a.width;
-                    window_h = a.height;
+		window.configure_event.connect((e) => {
+                if( !((e.width == window_w) && (e.height == window_h))) {
+                    window_w  = e.width;
+                    window_h = e.height;
                     var nppos = conf.window_p * (double)(pane.max_position - pane.min_position) /100.0;
                     pane.position = (int)Math.lround(nppos);
                     Idle.add(() => {
@@ -3057,8 +3056,10 @@ public class MWP : Gtk.Application {
                         });
                     get_map_size();
                     map_warn_set_text();
-                }
-            });
+				}
+
+				return false;
+			});
 
         pane.button_press_event.connect((evt) => {
                 fbox.allow_resize(true);
