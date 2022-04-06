@@ -484,12 +484,14 @@ public class FlightBox : GLib.Object
         else
             mono = "";
 
-        vbox.size_allocate.connect((a) => {
+		vbox.size_allocate.connect((a) => {
                 if(_allow_resize && a.width != last_w)
                 {
                     fh1 = a.width*MWP.conf.fontfact/100;
-                    Idle.add(() => {update(true);
-                                    return false;});
+                    Idle.add(() => {
+							update(true);
+							return false;
+						});
                     if(MonoFont.fixed)
                     {
                         fh1 = fh1 * 90/100;
