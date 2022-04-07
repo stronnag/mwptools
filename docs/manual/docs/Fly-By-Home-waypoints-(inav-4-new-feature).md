@@ -4,6 +4,8 @@
 
 For inav 4.0, there is a "FlyBy Home" (FBH) waypoint modifier.
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/wjUzXyf2XEM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 This will set waypoints of types WAYPOINT, POSHOLD_TIME and LAND to execute at the arming home location (any safehome is ignored).
 
 The flight controller applies FBH behaviour to waypoints having one (or both) of the following characteristics:
