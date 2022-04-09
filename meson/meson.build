@@ -58,9 +58,11 @@ if golang.found()
     govers = r.stdout().strip()
     go1 = govers.split()
     go2 = go1[2].split('.')
-    gminor = go2[1].to_int()
-    if gminor > 12
-      gotrim = '-trimpath'
+    if go2.length() > 1
+      gminor = go2[1].to_int()
+      if gminor > 12
+	gotrim = '-trimpath'
+      endif
     endif
   endif
 endif
