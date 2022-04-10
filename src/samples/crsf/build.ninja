@@ -1,4 +1,20 @@
 rule vala
-    command = valac --pkg posix -X -O2 -o $out $in
+    command = valac --pkg posix --pkg json-glib-1.0 -X -O2 -o $out $in
 
-build crsf_test: vala crsf_test.vala
+rule valad
+    command = valac --pkg posix --pkg json-glib-1.0 --define TEST -X -O2 -o $out $in
+
+rule copy
+    command = install $in $$HOME/.local/bin/
+
+rule clean
+     command = rm -f crsf_test logreader
+
+build crsf_test: vala crsf_test.vala logreader.vala
+default crsf_test
+
+build logreader: valad logreader.vala
+
+build install: copy crsf_test
+
+build clean: clean

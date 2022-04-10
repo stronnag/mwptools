@@ -128,7 +128,7 @@ then
 ```
 $ ./crsf_test FILE_NAME
 ```
-The decoded file is dumped to the terminal, formatted (for example, location obfuscated).
+The decoded file is dumped to the terminal, formatted (for example, location obfuscated). The log file may be a raw capture (no metadata), an mwp serial raw log with metadata / record chunking ("v2") or mwp serial JSON log.
 
 ```
 FM: MANU

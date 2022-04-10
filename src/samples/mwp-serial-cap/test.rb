@@ -33,8 +33,10 @@ File.open(ARGV[0]) do |f|
         break if !cld
         ts,len,dir=s.unpack(UPS)
         data = f.read(len)
-        io.write data
-        sleep ts-lt
+        if dir == 'i'
+          io.write data
+          sleep ts-lt
+        end
         lt = ts
       end
     end
