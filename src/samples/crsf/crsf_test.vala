@@ -107,9 +107,9 @@ bool check_crsf_crc()
 	return (crc == crsf_buffer[len+1]);
 }
 
-private uint8 * deserialise_u32(uint8* rp, out uint32 v)
+private uint8 * deserialise_be_u32(uint8* rp, out uint32 v)
 {
-	v = *rp | (*(rp+1) << 8) |  (*(rp+2) << 16) | (*(rp+3) << 24);
+	v = *(rp+3) | (*(rp+2) << 8) |  (*(rp+1) << 16) | (*rp << 24);
 	return rp + sizeof(uint32);
 }
 
@@ -119,9 +119,9 @@ private uint8 * deserialise_be_u24(uint8* rp, out uint32 v)
 	return rp + 3*sizeof(uint8);
 }
 
-private uint8 * deserialise_u16(uint8* rp, out uint16 v)
+private uint8 * deserialise_be_u16(uint8* rp, out uint16 v)
 {
-	v = *rp | (*(rp+1) << 8);
+	v = (*(rp+1) | (*rp << 8));
 	return rp + sizeof(uint16);
 }
 
@@ -142,36 +142,36 @@ void process_crsf()
 
   switch(id) {
     case GPS_ID:
-		ptr= deserialise_u32(ptr, out val32);  // Latitude (deg * 1e7)
-		double lat = ((int32)Posix.ntohl(val32)) / 1e7;
-		ptr= deserialise_u32(ptr, out val32); // Longitude (deg * 1e7)
-		double lon = ((int32)Posix.ntohl(val32)) / 1e7;
-		ptr= deserialise_u16(ptr, out val16); // Groundspeed ( km/h * 10 )
+		ptr= deserialise_be_u32(ptr, out val32);  // Latitude (deg * 1e7)
+		double lat = ((int32)(val32)) / 1e7;
+		ptr= deserialise_be_u32(ptr, out val32); // Longitude (deg * 1e7)
+		double lon = ((int32)(val32)) / 1e7;
+		ptr= deserialise_be_u16(ptr, out val16); // Groundspeed ( km/h * 10 )
 		double gspeed = 0;
 		if (val16 != 0xffff) {
-			gspeed = Posix.ntohs(val16) / 36.0; // m/s
+			gspeed = (val16) / 36.0; // m/s
 		}
-		ptr= deserialise_u16(ptr, out val16);  // COG Heading ( degree * 100 )
+		ptr= deserialise_be_u16(ptr, out val16);  // COG Heading ( degree * 100 )
 		double hdg = 0;
 		if (val16 != 0xffff) {
-			hdg = Posix.ntohs(val16) / 100.0; // deg
+			hdg = (val16) / 100.0; // deg
 		}
-		ptr= deserialise_u16(ptr, out val16);
-		int32 alt= (int32)Posix.ntohs(val16) - 1000; // m
+		ptr= deserialise_be_u16(ptr, out val16);
+		int32 alt= (int32)(val16) - 1000; // m
 		uint8 nsat = *ptr;
 		stdout.printf("GPS: %.6f %.6f %d m %.1f deg %.1f m/s %d sats\n", lat, lon, alt, hdg,
 					  gspeed, nsat);
 		break;
       case BAT_ID:
-		  ptr= deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
+		  ptr= deserialise_be_u16(ptr, out val16);  // Voltage ( mV * 100 )
 		  double volts = 0;
 		  if (val16 != 0xffff) {
-			  volts = Posix.ntohs(val16) / 10.0; // Volts
+			  volts = (val16) / 10.0; // Volts
 		  }
-		  ptr= deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
+		  ptr= deserialise_be_u16(ptr, out val16);  // Voltage ( mV * 100 )
 		  double amps = 0;
 		  if (val16 != 0xffff) {
-			  amps = Posix.ntohs(val16) / 10.0; // Amps
+			  amps = (val16) / 10.0; // Amps
 		  }
 		  ptr = deserialise_be_u24(ptr, out val32);
 		  uint32 capa = val32;
@@ -180,20 +180,20 @@ void process_crsf()
 		break;
 
   case VARIO_ID:
-	  ptr= deserialise_u16(ptr, out val16);  // Voltage ( mV * 100 )
-	  var vario = Posix.ntohs(val16);
+	  ptr= deserialise_be_u16(ptr, out val16);  // Voltage ( mV * 100 )
+	  var vario = (val16);
 	  stdout.printf("VARIO: %d cm/s\n", (int16)vario);
 	  break;
   case ATTI_ID:
-	  ptr= deserialise_u16(ptr, out val16);  // Pitch radians *10000
+	  ptr= deserialise_be_u16(ptr, out val16);  // Pitch radians *10000
 	  double pitch = 0;
-	  pitch = ((int16)Posix.ntohs(val16)) * ATTITODEG;
-	  ptr= deserialise_u16(ptr, out val16);  // Roll radians *10000
+	  pitch = ((int16)(val16)) * ATTITODEG;
+	  ptr= deserialise_be_u16(ptr, out val16);  // Roll radians *10000
 	  double roll = 0;
-	  roll = ((int16)Posix.ntohs(val16)) * ATTITODEG;
-	  ptr= deserialise_u16(ptr, out val16);  // Roll radians *10000
+	  roll = ((int16)(val16)) * ATTITODEG;
+	  ptr= deserialise_be_u16(ptr, out val16);  // Roll radians *10000
 	  double yaw = 0;
-	  yaw = ((int16)Posix.ntohs(val16)) * ATTITODEG;
+	  yaw = ((int16)(val16)) * ATTITODEG;
 	  if(yaw < 0)
 		  yaw += 360;
 	  stdout.printf("ATTI: Pitch %.1f, Roll %.1f, Yaw %.1f\n", pitch, roll, yaw);
@@ -229,10 +229,10 @@ void process_crsf()
   case RADIO_ID:
 	  if (*ptr  == 0xea && *(ptr+2) == 0x10) {
          // values are in 10th of micro-seconds
-		  ptr= deserialise_u32(ptr+3, out val32);
-		  uint32 update_int = Posix.ntohl(val32) / 10;
-		  deserialise_u32(ptr, out val32);
-		  int32 offset = (int32)Posix.ntohl(val32) / 10;
+		  ptr= deserialise_be_u32(ptr+3, out val32);
+		  uint32 update_int = (val32) / 10;
+		  deserialise_be_u32(ptr, out val32);
+		  int32 offset = (int32)(val32) / 10;
 		  stdout.printf("RadioID: rate %u us, offset %d us\n", update_int, offset);
 	  } else {
 		  stdout.printf("RadioID: failed to decode\n");
