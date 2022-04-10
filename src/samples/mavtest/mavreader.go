@@ -131,6 +131,9 @@ type MavReader struct {
 	reader   *bufio.Reader
 	mavmeta  map[uint32]MavMsg
 	vers     byte
+	firstoff float64
+	elapsed  float64
+	nbytes   uint
 }
 
 type V2Header struct {
@@ -197,6 +200,8 @@ func (m *MavReader) get_data() ([]byte, error) {
 				if hdr.Dirn == 'i' {
 					dat = make([]byte, nr)
 					_, err = io.ReadFull(m.reader, dat)
+					m.elapsed = hdr.Offset
+					m.nbytes += uint(hdr.Size)
 					return dat, err
 				} else {
 					_, err = m.reader.Discard(nr)
@@ -210,7 +215,11 @@ func (m *MavReader) get_data() ([]byte, error) {
 			var js JSItem
 			err = json.Unmarshal(dat, &js)
 			if err == nil {
-				return js.RawBytes, err
+				if js.Dirn == 'i' {
+					m.elapsed = js.Stamp
+					m.nbytes += uint(js.Length)
+					return js.RawBytes, err
+				}
 			}
 		}
 	}
@@ -222,8 +231,14 @@ func (m *MavReader) process(dat []byte) {
 		case S_UNKNOWN:
 			if b == 0xfe {
 				m.state = S_M_SIZE
+				if m.vers == 0 {
+					m.firstoff = m.elapsed
+				}
 				m.vers = 1
 			} else if b == 0xfd {
+				if m.vers == 0 {
+					m.firstoff = m.elapsed
+				}
 				m.state = S_M2_SIZE
 				m.vers = 2
 			}
@@ -555,11 +570,18 @@ func main() {
 						break
 					}
 				}
+
 				if m.m1_ok+m.m1_fail > 0 {
 					fmt.Printf("V1 OK %d, fail %d\n", m.m1_ok, m.m1_fail)
 				}
 				if m.m2_ok+m.m2_fail > 0 {
 					fmt.Printf("V2 OK %d, fail %d\n", m.m2_ok, m.m2_fail)
+				}
+				m.elapsed -= m.firstoff
+				if m.elapsed > 0 {
+					nmsg := m.m1_ok + m.m1_fail + m.m2_ok + m.m2_fail
+					fmt.Printf("%d bytes, %d messages in %.1fsec\n", m.nbytes, nmsg, m.elapsed)
+					fmt.Printf("%.0f messages/sec, %.0f bytes/sec\n", float64(nmsg)/m.elapsed, float64(m.nbytes)/m.elapsed)
 				}
 			}
 		} else {

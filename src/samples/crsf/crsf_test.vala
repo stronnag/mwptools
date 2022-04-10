@@ -1,5 +1,83 @@
 // machine states
 
+
+public class LogReader : Object {
+	private struct Header {
+		double delta;
+		uint16 size;
+		uint8 dirn;
+	}
+	private enum FTYPE {
+        raw=0,
+		v2=2,
+		js=4,
+    }
+
+	private int fd;
+	private uint8 mode;
+
+	public double elapsed;
+	public size_t nbytes;
+
+	public LogReader() {
+		elapsed = 0.0;
+		nbytes = 0;
+	}
+
+	public bool open(string s) {
+		fd = Posix.open(s, Posix.O_RDONLY);
+		mode = FTYPE.raw;
+		if (fd != -1) {
+			uint8[] buf = new uint8[3];
+			if(Posix.read(fd, buf, 3) == 3) {
+				if(buf[0] == 'v' && buf[1] == '2' && buf[2] == '\n') {
+					mode = FTYPE.v2;
+					stderr.printf("V2 data\n");
+				} else if (buf[0] == '{' && buf[1] == '"') { // "
+					mode = FTYPE.js;
+					return false;
+				} else {
+					stderr.printf("Raw data\n");
+					Posix.lseek(fd, 0, Posix.SEEK_SET);
+				}
+			}
+			stderr.printf("Opened\n");
+			return true;
+		}
+		return false;
+	}
+
+	public size_t read_buffer(uint8[] b) {
+		size_t nr = -1;
+		if (mode == FTYPE.raw) {
+			nr = Posix.read(fd, b, 128);
+		} else if (mode == FTYPE.v2) {
+			Header hdr={0};
+			uint8[] hb=new uint8[11];
+			nr = Posix.read(fd, hb, 11);
+			if (nr > 0) {
+				hdr.delta = *((double*)&hb[0]);
+				hdr.size = *((uint16*)&hb[8]);
+				hdr.dirn = hb[10];
+				nr = Posix.read(fd, b, (size_t)hdr.size);
+				if (nr > 0) {
+					if (hdr.dirn == 'i') {
+						elapsed = hdr.delta;
+						nbytes += nr;
+					} else {
+						nr = 0;
+					}
+				} else {
+					return -1;
+				}
+			} else {
+				return -1;
+			}
+		}
+		return nr;
+	}
+}
+
 private const uint8 crc8_dvb_s2_tab[] = {
 	0x00, 0xd5, 0x7f, 0xaa, 0xfe, 0x2b, 0x81, 0x54,
 	0x29, 0xfc, 0x56, 0x83, 0xd7, 0x02, 0xa8, 0x7d,
@@ -53,6 +131,9 @@ static uint8 crsf_index = 0;
 
 const string[] sRFMode = {"4fps","50fps","150hz"};
 const uint16[] sUpTXPwr = {0, 10, 25, 100, 500, 1000, 2000};
+
+static int n_ok = 0;
+static int n_fail = 0;
 
 bool check_crsf_protocol (uint8 c) {
 	return (c == 0xea) ? true : false;
@@ -130,10 +211,11 @@ void process_crsf()
 
   if (!check_crsf_crc()) {
 	  stderr.printf("CRC Fails id=%x\n", id);
-		return;
+	  n_fail += 1;
+	  return;
+  } else {
+	  n_ok += 1;
   }
-
-
 
   switch(id) {
     case GPS_ID:
@@ -241,18 +323,38 @@ void process_crsf()
 }
 
 static int main(string?[] args) {
-	var fp = FileStream.open(args[1], "r");
-	if(fp != null)
-	{
-		int c;
+	var lr = new LogReader();
+	if (lr.open(args[1])) {
+		double firstoff = 0;
+		stderr.printf("Ready to read\n");
+		var buf = new uint8[1024];
+		size_t nr;
 		bool is_crsf = false;
-		while((c = fp.getc()) != -1) {
-			if (!is_crsf)
-				is_crsf = check_crsf_protocol((uint8)c);
-
-			if(is_crsf)
-				is_crsf = crsf_decode((uint8)c);
+		while((nr = lr.read_buffer(buf)) != -1) {
+			for(var i = 0; i < nr; i++) {
+				var c = buf[i];
+				if (!is_crsf)
+					is_crsf = check_crsf_protocol((uint8)c);
+				if(is_crsf) {
+					if (n_ok + n_fail == 0) {
+						firstoff = lr.elapsed;
+					}
+					is_crsf = crsf_decode((uint8)c);
+				}
+			}
 		}
+		if(n_ok + n_fail > 0) {
+			stdout.printf("Messages %d (%d CRC fail)\n", n_ok, n_fail);
+			lr.elapsed -= firstoff;
+			stdout.printf("%d bytes, %d messages\n", (int)lr.nbytes, n_ok + n_fail);
+			if(lr.elapsed > 0) {
+				stdout.printf("%.0f messages/sec, %.0f bytes/sec in %.1fsec\n",
+							  (n_ok + n_fail)/lr.elapsed, lr.nbytes/lr.elapsed,lr.elapsed);
+			}
+		}
+
+	} else {
+		stderr.printf("Failed to open\n");
 	}
 	return 0;
 }
