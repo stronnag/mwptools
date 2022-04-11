@@ -250,10 +250,10 @@ static int main(string?[] args) {
 	if (lr.open(args[1])) {
 		double firstoff = 0;
 		stderr.printf("Ready to read\n");
-		var buf = new uint8[1024];
+		uint8[]buf = {};
 		size_t nr;
 		bool is_crsf = false;
-		while((nr = lr.read_buffer(buf)) != -1) {
+		while((nr = lr.read_buffer(ref buf)) != -1) {
 			for(var i = 0; i < nr; i++) {
 				var c = buf[i];
 				if (!is_crsf)

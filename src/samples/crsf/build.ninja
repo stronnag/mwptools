@@ -1,8 +1,8 @@
 rule vala
-    command = valac --pkg posix --pkg json-glib-1.0 -X -O2 -o $out $in
+    command = valac --pkg json-glib-1.0 -X -O2 -o $out $in
 
 rule valad
-    command = valac --pkg posix --pkg json-glib-1.0 --define TEST -X -O2 -o $out $in
+    command = valac --pkg json-glib-1.0 --define TEST -X -O2 -o $out $in
 
 rule copy
     command = install $in $$HOME/.local/bin/
