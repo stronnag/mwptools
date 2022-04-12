@@ -1,9 +1,4 @@
 public class LogReader : Object {
-	private struct Header {
-		double delta;
-		uint16 size;
-		uint8 dirn;
-	}
 	public enum Ftype {
         RAW=0,
 		V2=2,
@@ -50,18 +45,14 @@ public class LogReader : Object {
 			if (nr == 0)
 				nr = -1;
 		} else if (mode == Ftype.V2) {
-			Header hdr={0};
-			uint8[] hb=new uint8[11];
-			nr = fp.read(hb);
+			V2HEADER hdr={0};
+			nr = fp.read((uint8[])&hdr);
 			if (nr > 0) {
-				hdr.delta = *((double*)&hb[0]);
-				hdr.size = *((uint16*)&hb[8]);
-				hdr.dirn = hb[10];
 				b = new uint8[(size_t)hdr.size];
 				nr = fp.read(b);
 				if (nr > 0) {
-					if (hdr.dirn == 'i') {
-						elapsed = hdr.delta;
+					if (hdr.direction == 'i') {
+						elapsed = hdr.offset;
 						nbytes +=  (size_t)hdr.size;
 					} else {
 						nr = 0;
@@ -115,8 +106,7 @@ public static int main(string?[]args) {
 		stderr.printf("Ready to read %s\n", lr.mode.to_string());
 		uint8[] buf={};
 		size_t nr;
-		while((nr = lr.read_buffer(ref buf)) != -1) {
-		}
+		while((nr = lr.read_buffer(ref buf)) != -1) ; /* read all */
 		stdout.printf("%d bytes in %.1f\n", (int)lr.nbytes,lr.elapsed);
 	}
    	return 0;

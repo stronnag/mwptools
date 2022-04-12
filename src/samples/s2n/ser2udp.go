@@ -1,17 +1,17 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"go.bug.st/serial"
 	"go.bug.st/serial/enumerator"
 	"log"
 	"net"
 	"os"
-	"time"
-	"flag"
-	"strings"
-	"fmt"
 	"os/signal"
+	"strings"
 	"syscall"
+	"time"
 )
 
 type SChan struct {
@@ -19,12 +19,14 @@ type SChan struct {
 }
 type UChan struct {
 	data []byte
+}
+
+type UConn struct {
+	conn *net.UDPConn
 	addr net.Addr
 }
 
 var (
-	uconn   *net.UDPConn
-	serdev  serial.Port
 	verbose int
 )
 
@@ -44,11 +46,11 @@ func enumerate_ports() string {
 	}
 	return ""
 }
-func read_Serial(c0 chan SChan) {
+func read_Serial(s serial.Port, c0 chan SChan) {
 	inp := make([]byte, 4096)
 
 	for {
-		n, err := serdev.Read(inp)
+		n, err := s.Read(inp)
 		var sc SChan
 		sc.data = make([]byte, n)
 		copy(sc.data, inp[0:n])
@@ -59,14 +61,14 @@ func read_Serial(c0 chan SChan) {
 	}
 }
 
-func read_UDP(c0 chan UChan) {
+func read_UDP(uc *UConn, c0 chan SChan) {
 	inp := make([]byte, 4096)
 	for {
-		n, addr, _ := uconn.ReadFrom(inp)
-		var sc UChan
+		n, addr, _ := uc.conn.ReadFrom(inp)
+		var sc SChan
 		sc.data = make([]byte, n)
 		copy(sc.data, inp[0:n])
-		sc.addr = addr
+		uc.addr = addr
 		c0 <- sc
 	}
 }
@@ -113,25 +115,26 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	uconn, err = net.ListenUDP("udp", uaddr)
+
+	conn, err := net.ListenUDP("udp", uaddr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer uconn.Close()
+	defer conn.Close()
+
+	uconn := &UConn{conn, nil}
 
 	if verbose > 0 {
 		log.Printf("Listening on %s\n", udpnam)
 	}
 
 	mc0 := make(chan SChan)
-	uc0 := make(chan UChan)
+	uc0 := make(chan SChan)
 	cc := make(chan os.Signal, 1)
 	signal.Notify(cc, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		var ua net.Addr
-		go read_UDP(uc0)
-
+		go read_UDP(uconn, uc0)
 		for {
 			portnam := ""
 			if devnam == "auto" {
@@ -140,12 +143,12 @@ func main() {
 				portnam = devnam
 			}
 			if portnam != "" {
-				serdev, err = serial.Open(portnam, mode)
+				serdev, err := serial.Open(portnam, mode)
 				if err == nil {
 					if verbose > 0 {
 						log.Printf("Opened %s\n", portnam)
 					}
-					go read_Serial(mc0)
+					go read_Serial(serdev, mc0)
 					serok = true
 				} else {
 					serok = false
@@ -161,18 +164,17 @@ func main() {
 								log.Println("Closed serial")
 							}
 						} else {
-							if ua != nil && len(s.data) > 0 {
+							if len(s.data) > 0 {
 								if verbose > 1 {
 									log.Printf("Write to udp %d: <%s>\n", len(s.data), string(s.data))
 								}
-								uconn.WriteTo(s.data, ua)
+								uconn.conn.WriteTo(s.data, uconn.addr)
 							}
 						}
 					case u := <-uc0:
 						if len(u.data) == 0 {
 							return
 						}
-						ua = u.addr
 						if serok {
 							if verbose > 1 {
 								log.Printf("Write to serial %d: <%s>\n", len(u.data), string(u.data))
