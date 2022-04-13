@@ -821,94 +821,84 @@ public class MWSerial : Object {
 
     public bool open_w(string _device, uint rate, out string estr)
     {
-        string host = null;
-        uint16 port = 0;
-        Regex regex;
-        string []parts;
         int lasterr = 0;
         string device;
         int n;
 
-        if((n = _device.index_of_char(' ')) == -1)
+        if((n = _device.index_of_char(' ')) == -1) {
             device = _device;
-        else
+		} else {
             device = _device.substring(0,n);
-
+		}
         devname = device;
-
-        estr=null;
+		estr=null;
 
         print_raw = (Environment.get_variable("MWP_PRINT_RAW") != null);
-        try
-        {
-            regex = new Regex("^(tcp|udp):\\/\\/(__MWP_SERIAL_HOST|[\\[\\]:A-Za-z\\-\\.0-9\\%]*):(\\d+)\\/{0,1}([A\\-Za-z\\-\\.0-9]*):{0,1}(\\d*)");
-        } catch(Error e) {
-            stderr.printf("err: %s", e.message);
-            return false;
-        }
-
         commode = 0;
 
-        if(device.length == 17 && device[2] == ':' && device[5] == ':' && device[8] == ':' && device[11] == ':' && device[14] == ':')
-        {
+        if(device.length == 17 && device[2] == ':' && device[5] == ':' && device[8] == ':' && device[11] == ':' && device[14] == ':') {
             fd = BTSocket.connect(device, &lasterr);
-            if (fd != -1)
-            {
+            if (fd != -1) {
                 commode = ComMode.FD|ComMode.STREAM|ComMode.BT;
                 set_noblock();
             }
-        }
-        else
-        {
-            string remhost = null;
-            uint16 remport = 0;
-            parts = regex.split(device);
-            if (parts.length == 7)
-            {
-                if(parts[1] == "tcp")
-                    commode = ComMode.STREAM;
+        } else {
+			var u = UriParser.parse(device);
+			if (u != null) {
+				string host = null;
+				uint16 port = 0;
+				string remhost = null;
+				uint16 remport = 0;
+				if(u.scheme == "tcp") {
+					commode = ComMode.STREAM;
+				}
+				if(u.port != -1) {
+					port = (uint16)u.port;
+				}
 
-                var s =  parts[2];
-                if(s[0] == '[' && s[s.length-1] == ']')
-                    host = s[1:-1];
-                else
-                    host = s;
-                port = (uint16)int.parse(parts[3]);
-                if(parts[4] != "")
-                {
-                    remhost = parts[4];
-                    remport = (uint16)int.parse(parts[5]);
-                }
-            }
-            else if(device[0] == ':')
-            {
-                host = "";
-                port = (uint16)int.parse(device[1:device.length]);
-            }
+				if (u.host == null) {
+					host = "";
+				} else {
+					host = u.host;
+				}
 
-            if(host != null)
-            {
-                if (host == "__MWP_SERIAL_HOST")
-                    host = resolve_mwp_serial_host();
+				/* sort out new and legacy rem stuff */
+				if (u.path != null) {
+					var parts = u.path.split(":");
+					if (parts.length == 2) {
+						remhost = parts[0][1:parts[0].length];
+						remport = (uint16)int.parse(parts[1]);
+					}
+				}
 
-                setup_ip(host, port, remhost, remport);
-            }
-            else
-            {
+				if (u.query != null) {
+					var parts = u.query.split("=");
+					if(parts.length == 2 && parts[0]=="bind") {
+						remhost = u.host;
+						remport = (uint16)u.port;
+						port = (uint16)int.parse(parts[1]);
+						host = "";
+					}
+				}
+				if(host != null) {
+					if (u.host == "__MWP_SERIAL_HOST") {
+						host = resolve_mwp_serial_host();
+					}
+					setup_ip(host, port, remhost, remport);
+				}
+			} else {
                 commode = ComMode.STREAM|ComMode.TTY;
-                parts = device.split ("@");
-                if(parts.length == 2)
-                {
+                var parts = device.split ("@");
+                if(parts.length == 2) {
                     device  = parts[0];
                     rate = int.parse(parts[1]);
                 }
                 fd = MwpSerial.open(device, (int)rate);
             }
-            lasterr=Posix.errno;
-        }
+		}
+		lasterr=Posix.errno;
 
-        if(fd < 0)
-        {
+        if(fd < 0) {
             uint8 [] sbuf = new uint8[1024];
             var s = MwpSerial.error_text(lasterr, sbuf, 1024);
             estr = "%s %s (%d)".printf(device, s,lasterr);
@@ -916,8 +906,7 @@ public class MWSerial : Object {
             fd = -1;
             available = false;
         }
-        else
-        {
+        else {
             available = true;
         }
         return available;

@@ -522,83 +522,20 @@ public class MwpMQTT : Object {
 
     public bool setup(string s)
     {
-        string broker = null;
-        string topic = null;
-        int port = 0;
-        string user = null;
-        string passwd = null;
-        string query = null;
-        string cafile = null;
-        string scheme = null;
-
-#if USE_URIPARSE
-        try
-        {
-            var u = Uri.parse(s, UriFlags.HAS_PASSWORD);
-            broker = u.get_host();
-            port = u.get_port();
-            topic = u.get_path();
-            user = u.get_user();
-            passwd = u.get_password();
-            query = u.get_query();
-            scheme = u.get_scheme();
-        } catch {
-            return false;
-        }
-
-        if (query != null) {
-            var parts = query.split("=");
+		string cafile = null;
+		string topic = null;
+		string scheme = null;
+		int port;
+		var u = UriParser.parse(s);
+        if (u.query != null) {
+            var parts = u.query.split("=");
             if (parts.length == 2 && parts[0] == "cafile") {
                 cafile = parts[1];
             }
         }
-#else
-        try
-        {
-        MatchInfo mi;
-        var regex = new Regex ("""^([a-z][a-z0-9+.-]+):(\/\/([^@]+@)?([a-z0-9.\-_~]+)(:\d+)?)?((?:[a-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])+(?:\/(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])*)*|(?:\/(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@])+)*)?(\?(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@]|[/?])+)?(\#(?:[A-Za-z0-9-._~]|%[a-f0-9]|[!$&'()*+,;=:@]|[/?])+)?$""");
-        if(regex.match(s, 0, out mi))
-        {
-/**
-            for(var j = 0; j < mi.get_match_count(); j++) {
-                stdout.printf("%d: %s\n", j,mi.fetch(j));
-            }
-**/
-            if (mi.get_match_count() >= 7) {
-                scheme = mi.fetch(1);
-                broker = mi.fetch(4);
-                var aport = mi.fetch(5);
-                topic = mi.fetch(6);
-                var up = mi.fetch(3);
-                if (up.length > 2) {
-                    var fup = up[0:-1];
-                    var cred = fup.split(":");
-                    user = cred[0];
-                    if (cred.length  > 1 )
-                        passwd = cred[1];
-                }
-                if (aport.length > 1) {
-                    port = int.parse(aport[1:aport.length]);
-                }
-                if (mi.get_match_count() == 8) {
-                    query = mi.fetch(7);
-                    var parts = query[1:query.length].split("&");
-                    foreach (var p in parts) {
-                        var q = p.split("=");
-                        if (q[0] == "cafile") {
-                            cafile = q[1];
-                            break;
-                        }
-                    }
-                }
-            }
-        } else {
-            return false;
-        }
-        } catch(GLib.Error e) {
-        stderr.printf("regex err: %s", e.message);
-    }
-#endif
+
+		port = u.port;
+		topic = u.path;
 
         if (port <= 0)
             port = 1883;
@@ -609,14 +546,14 @@ public class MwpMQTT : Object {
 #if MQTT_MOSQUITTO
         Mosquitto.init ();
         client = new Mosquitto.Client (null, true, null);
-        if (user != null)
-            client.username_pw_set(user, passwd);
+        if (u.user != null)
+            client.username_pw_set(u.user, u.passwd);
 
         if(cafile != null) {
             client.tls_set(cafile, null, null, null, ()=>{return 0;});
         }
 
-        if (client.connect (broker, port, KEEPALIVE) != 0) {
+        if (client.connect (u.host, port, KEEPALIVE) != 0) {
             stderr.printf ("Unable to connect.\n");
             return false;
         }
@@ -639,30 +576,32 @@ public class MwpMQTT : Object {
         available = true;
         return true;
 #else
-        if(scheme == "mqtt")
+        if(u.scheme == "mqtt")
             scheme = "tcp";
-        if(scheme == "mqtts")
+		else if(u.scheme == "mqtts")
             scheme = "ssl";
+		else
+			scheme = u.scheme;
 
         var sb = new StringBuilder(scheme);
         var up = false;
         sb.append("://");
-        if (user != null) {
-            sb.append(user);
+        if (u.user != null) {
+            sb.append(u.user);
             up = true;
         }
-        if (passwd != null) {
+        if (u.passwd != null) {
             up = true;
             sb.append_c(':');
-             sb.append(passwd);
+             sb.append(u.passwd);
         }
         if (up) {
             sb.append_c('@');
         }
-        sb.append(broker);
-        if (port > 0) {
+        sb.append(u.host);
+        if (u.port > 0) {
             sb.append_c(':');
-            sb.append(port.to_string());
+            sb.append(u.port.to_string());
         }
         if(scheme.has_prefix("ws")) {
             sb.append("/mqtt");
