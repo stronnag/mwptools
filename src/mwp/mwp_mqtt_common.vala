@@ -524,7 +524,7 @@ public class MwpMQTT : Object {
     {
 		string cafile = null;
 		string topic = null;
-		string scheme = null;
+
 		int port;
 		var u = UriParser.parse(s);
         if (u.query != null) {
@@ -576,6 +576,7 @@ public class MwpMQTT : Object {
         available = true;
         return true;
 #else
+		string scheme = null;
         if(u.scheme == "mqtt")
             scheme = "tcp";
 		else if(u.scheme == "mqtts")

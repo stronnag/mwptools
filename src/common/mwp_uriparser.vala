@@ -1,3 +1,7 @@
+/*
+  Transcribed from: https://rosettacode.org/wiki/URL_parser#Wren
+*/
+
 namespace UriParser {
 	public struct UriParts {
 		string host;

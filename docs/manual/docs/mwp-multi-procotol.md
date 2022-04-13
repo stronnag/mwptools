@@ -66,6 +66,16 @@ Note that for TCP, mwp only supports the latter form (it expects to be the TCP c
 
 ## Special Cases
 
+### UDP devices required defined local and remote port numbers
+
+Some UDP devices (typically ESP8266 transparent serial require that the port number is specified for both local and remote addresses; often the same port number at both ends. `udp://local_host:local_port/remote_host:remote_port` or `udp://remotehost:remote_port/?bind=port`. The following have the same effect.
+
+```
+udp://:14014/esp-air:14014
+# both sides use port 14014, remote (FC) is esp-air, blank local name is understood as INADDR_AN
+udp://esp-air:14014/?bind=14014
+```
+
 ### MQTT / BulletGCSS
 
 See the [mwp's MQTT support](mqtt---bulletgcss-telemetry.md) article for a detailed description of the URI format:
