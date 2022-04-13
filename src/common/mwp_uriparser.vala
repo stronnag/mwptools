@@ -35,7 +35,7 @@ namespace UriParser {
 		var index = url.index_of("//");
 		if (index >= 0 && url[index-1] == ':') {
 			var parts = url.split("//");
-			u.scheme = parts[0][0:parts[0].length];
+			u.scheme = parts[0][0:parts[0].length-1];
 
 			var domain = parts[1].split("/");
 			if (domain[0].contains("@")) {
