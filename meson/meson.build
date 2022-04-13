@@ -28,7 +28,7 @@ if vapivers.version_compare('<0.46')
   dopts += '--define=USE_TV'
 endif
 
-glib = dependency('glib-2.0', version: '>=2.66')
+glib = dependency('glib-2.0', version: '>=2.66', required: false)
 if glib.found()
   dopts += '--define=USE_URIPARSE'
 else
