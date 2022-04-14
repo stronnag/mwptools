@@ -29,7 +29,7 @@ if vapivers.version_compare('<0.46')
 endif
 
 glib = dependency('glib-2.0', version: '>=2.66', required: false)
-if glib.found()
+if glib.found() and vapivers.version_compare('>0.48')
   dopts += '--define=USE_URIPARSE'
 else
   message('using fallback URI parser')

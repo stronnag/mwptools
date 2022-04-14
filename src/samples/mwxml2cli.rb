@@ -25,6 +25,11 @@ m['missionitem'].each_with_index do |i,n|
   p1 = i['parameter1'].to_i
   p2 = i['parameter2'].to_i
   p3 = i['parameter3'].to_i
+  if i['flag']
+    flag = i['flag'].to_i
+  else
+    flag = (n == last) ? 165 : 0
+  end
 
   act = case i['action'].upcase
 	when 'WAYPOINT'
@@ -44,7 +49,6 @@ m['missionitem'].each_with_index do |i,n|
 	else
 	  0
 	end
-  flag = (n == last) ? 165 : 0
   if cli
     if act == 6
        p1 -= 1
