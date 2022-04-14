@@ -423,6 +423,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#udp-devices-required-defined-local-and-remote-port-numbers" class="md-nav__link">
+    UDP devices required defined local and remote port numbers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#mqtt-bulletgcss" class="md-nav__link">
     MQTT / BulletGCSS
   </a>
@@ -879,6 +886,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#udp-devices-required-defined-local-and-remote-port-numbers" class="md-nav__link">
+    UDP devices required defined local and remote port numbers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#mqtt-bulletgcss" class="md-nav__link">
     MQTT / BulletGCSS
   </a>
@@ -1003,6 +1017,12 @@ i.e. the host part is empty.</p>
 </code></pre></div></p>
 <p>Note that for TCP, mwp only supports the latter form (it expects to be the TCP client).</p>
 <h2 id="special-cases">Special Cases<a class="headerlink" href="#special-cases" title="Permanent link">#</a></h2>
+<h3 id="udp-devices-required-defined-local-and-remote-port-numbers">UDP devices required defined local and remote port numbers<a class="headerlink" href="#udp-devices-required-defined-local-and-remote-port-numbers" title="Permanent link">#</a></h3>
+<p>Some UDP devices (typically ESP8266 transparent serial require that the port number is specified for both local and remote addresses; often the same port number at both ends. <code>udp://local_host:local_port/remote_host:remote_port</code> or <code>udp://remotehost:remote_port/?bind=port</code>. The following have the same effect.</p>
+<div class="highlight"><pre><span></span><code>udp://:14014/esp-air:14014
+# both sides use port 14014, remote (FC) is esp-air, blank local name is understood as INADDR_AN
+udp://esp-air:14014/?bind=14014
+</code></pre></div>
 <h3 id="mqtt-bulletgcss">MQTT / BulletGCSS<a class="headerlink" href="#mqtt-bulletgcss" title="Permanent link">#</a></h3>
 <p>See the <a href="../mqtt---bulletgcss-telemetry/">mwp's MQTT support</a> article for a detailed description of the URI format:
 <div class="highlight"><pre><span></span><code>mqtt://[user[:pass]@]broker[:port]/topic[?cafile=file]
