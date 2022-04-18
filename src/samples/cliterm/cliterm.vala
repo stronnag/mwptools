@@ -1,4 +1,3 @@
-
 private static int baud = 115200;
 private static string eolmstr;
 private static string dev;
@@ -7,6 +6,7 @@ private static bool msc=false;
 private static bool gpspass=false;
 private static string rcfile=null;
 private static int eolm;
+private static string cli_delay=null;
 
 const OptionEntry[] options = {
     { "baud", 'b', 0, OptionArg.INT, out baud, "baud rate", "115200"},
@@ -20,16 +20,19 @@ const OptionEntry[] options = {
     {null}
 };
 
-class CliTerm : Object
-{
+class CliTerm : Object {
     private MWSerial msp;
     private MWSerial.ProtoMode oldmode;
     public DevManager dmgr;
     private MainLoop ml;
     private string eol;
     private bool sendpass = false;
+	private uint8 inavvers;
 
-    public void init()
+	public CliTerm() {
+	}
+
+	public void init()
     {
         eol="\r";
         if(eolm == 1)
@@ -51,7 +54,6 @@ class CliTerm : Object
         if(dev != null)
             open_device(dev);
 
-
         dmgr.device_added.connect((sdev) => {
                 if(!msp.available)
                     open_device(sdev);
@@ -68,81 +70,91 @@ class CliTerm : Object
                     Posix.write(1,buf,len);
             });
 
-        msp.serial_lost.connect(() => {
-                    ml.quit();
-                });
+		msp.serial_event.connect((cmd, buf, len, flags, err) => {
+				if (!err && cmd == MSP.Cmds.FC_VERSION) {
+					inavvers = buf[0];
+					if(inavvers > 4 && cli_delay != null) {
+						Timeout.add(500, () => {
+								msp.write(cli_delay, cli_delay.length);
+								msp.write(eol.data, eol.length);
+								return false;
+							});
+					}
+					msp_init();
+				}
+			});
+
+		msp.serial_lost.connect(() => {
+				ml.quit();
+			});
     }
 
-    private void replay_file()
-    {
+    private void replay_file() {
         FileStream fs = FileStream.open (rcfile, "r");
-        if(fs != null)
-        {
+        if(fs != null) {
             Timeout.add(200, () => {
                     var s = fs.read_line();
-                    if(s != null)
-                    {
-                        if(s.has_prefix("#") == false && s._strip().length != 0)
-                        {
+                    if(s != null) {
+                        if(s.has_prefix("#") == false && s._strip().length != 0) {
                             msp.write(s.data, s.length);
                             msp.write(eol.data, eol.length);
                         }
                         return true;
-                    }
-                    else
+                    } else
                         return false;
                 });
         }
     }
+
+	private void msp_init() {
+		oldmode  =  msp.pmode;
+		msp.pmode = MWSerial.ProtoMode.CLI;
+		if(noinit == false) {
+			Timeout.add(50, () => {
+					msp.write("#".data, 1);
+					return false;
+				});
+		}
+
+		if(msc) {
+			Timeout.add(500, () => {
+					msp.write("msc".data, 3);
+					msp.write(eol.data, eol.length);
+					return false;
+				});
+		} else if(gpspass) {
+			Timeout.add(500, () => {
+					var g = "gpspassthrough";
+					msp.write(g.data, g.length);
+					msp.write(eol.data, eol.length);
+					sendpass = true;
+					return false;
+				});
+		} else if(rcfile != null) {
+			Timeout.add(1000, () => {
+					replay_file();
+					return false;
+				});
+		}
+	}
 
     private void open_device(string device)
     {
         string estr;
         print ("open %s\r\n",device);
-        if(msp.open(device, baud, out estr) == true)
-        {
-            oldmode  =  msp.pmode;
-            msp.pmode = MWSerial.ProtoMode.CLI;
-            if(noinit == false)
-                Timeout.add(250, () => {
-                        msp.write("#".data, 1);
-                        return false;
-                    });
-
-            if(msc)
-            {
-                Timeout.add(500, () => {
-                        msp.write("msc".data, 3);
-                        msp.write(eol.data, eol.length);
-                        return false;
-                    });
-
-            } else if(gpspass)
-            {
-                Timeout.add(500, () => {
-                        var g = "gpspassthrough";
-                        msp.write(g.data, g.length);
-                        msp.write(eol.data, eol.length);
-                        sendpass = true;
-                        return false;
-                    });
-            } else if(rcfile != null)
-            {
-                Timeout.add(1000, () => {
-                        replay_file();
-                        return false;
-                    });
-            }
-        }
-        else
-        {
+        if(msp.open(device, baud, out estr) == true) {
+			msp.pmode = MWSerial.ProtoMode.NORMAL;
+			msp.send_command(MSP.Cmds.FC_VERSION, null,0);
+			Timeout.add(1000,() => {
+					msp.pmode = MWSerial.ProtoMode.CLI;
+					return false;
+				});
+        } else {
             print("open failed %s\r\n", estr);
         }
     }
 
-    public void run()
-    {
-
+    public void run() {
         Posix.termios newtio = {0}, oldtio = {0};
         Posix.tcgetattr (0, out newtio);
         oldtio = newtio;
@@ -153,62 +165,57 @@ class CliTerm : Object
             var io_read = new IOChannel.unix_new(0);
             if(io_read.set_encoding(null) != IOStatus.NORMAL)
                 error("Failed to set encoding");
-            io_read.add_watch(IOCondition.IN|IOCondition.HUP|
-                              IOCondition.NVAL|IOCondition.ERR,
-                              (g,c) => {
-                                  uint8 buf[2];
-                                  ssize_t rc = -1;
-                                  var err = ((c & (IOCondition.HUP|
-                                                   IOCondition.ERR|
-                                                   IOCondition.NVAL)) != 0);
-                                  if(!err)
-                                      rc = Posix.read(0,buf,1);
 
-                                  if(err || buf[0] == 3 || rc <0)
-                                  {
-                                      ml.quit();
-                                      return false;
-                                  }
-                                  if(msp.available)
-                                  {
-                                      if(buf[0] == 13 && eolm != 0)
-                                      {
-                                          msp.write(eol.data,eol.length);
-                                      }
-                                      else
-                                          msp.write(buf,1);
-                                  }
-                                  return true;
-                              });
-        } catch(IOChannelError e) {
-            error("IOChannel: %s", e.message);
-        }
-        ml.run ();
-        msp.close();
-        Posix.tcsetattr(0, Posix.TCSANOW, oldtio);
-    }
+			io_read.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR, (g,c) => {
+				uint8 buf[2];
+				ssize_t rc = -1;
+				var err = ((c & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0);
+				if(!err)
+					rc = Posix.read(0,buf,1);
+
+				if(err || buf[0] == 3 || rc <0) {
+					ml.quit();
+					return false;
+				}
+				if(msp.available) {
+					if(buf[0] == 13 && eolm != 0) {
+						msp.write(eol.data,eol.length);
+					} else {
+						msp.write(buf,1);
+					}
+				}
+				return true;
+			});
+		} catch(IOChannelError e) {
+			error("IOChannel: %s", e.message);
+		}
+		ml.run ();
+		msp.close();
+		Posix.tcsetattr(0, Posix.TCSANOW, oldtio);
+	}
 
 	public static string[]? set_def_args() {
 		var fn = MWPUtils.find_conf_file("cliopts");
-        if(fn != null) {
+		if(fn != null) {
 			var file = File.new_for_path(fn);
 			try {
 				var dis = new DataInputStream(file.read());
 				string line;
 				string []m;
 				var sb = new StringBuilder ("cli");
-				while ((line = dis.read_line (null)) != null)
-				{
+				while ((line = dis.read_line (null)) != null) {
 					if(line.strip().length > 0) {
 						if (line.has_prefix("-")) {
 							sb.append_c(' ');
 							sb.append(line);
+						} else if (line.has_prefix("cli_delay")) {
+							cli_delay = line;
 						}
 					}
-					Shell.parse_argv(sb.str, out m);
-					if (m.length > 1) {
-						return m;
-					}
+				}
+				Shell.parse_argv(sb.str, out m);
+				if (m.length > 1) {
+					return m;
 				}
 			} catch (Error e) {
 				error ("%s", e.message);
@@ -217,8 +224,7 @@ class CliTerm : Object
 		return null;
 	}
 
-	static int main (string[] args)
-	{
+	public static int main (string[] args) {
 		try {
 			var opt = new OptionContext(" - cli tool");
 			opt.set_help_enabled(true);
@@ -228,8 +234,7 @@ class CliTerm : Object
 				opt.parse_strv(ref m);
 			}
 			opt.parse(ref args);
-		}
-		catch (OptionError e) {
+		} catch (OptionError e) {
 			stderr.printf("Error: %s\n", e.message);
 			stderr.printf("Run '%s --help' to see a full list of available "+
 						  "options\n", args[0]);
@@ -242,17 +247,16 @@ class CliTerm : Object
 		if (args.length > 1)
 			dev = args[1];
 
-		switch (eolmstr)
-		{
-        case "cr":
-            eolm = 0;
-            break;
-        case "lf":
-            eolm = 1;
-            break;
-        case "crlf":
-            eolm = 2;
-            break;
+		switch (eolmstr) {
+		case "cr":
+			eolm = 0;
+			break;
+		case "lf":
+			eolm = 1;
+			break;
+		case "crlf":
+			eolm = 2;
+			break;
         case "crcrlf":
             eolm = 3;
             break;
@@ -260,7 +264,6 @@ class CliTerm : Object
 		var cli = new CliTerm();
 		cli.init();
 		cli.run();
-
 		return 0;
 	}
 }
