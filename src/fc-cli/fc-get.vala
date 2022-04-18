@@ -26,7 +26,8 @@ class FCMgr :Object
         SETLINES,
         CALACC,
         BACKUP,
-        EXIT = 0x7fff;
+        EXIT = 0x7fff,
+		VERS
     }
 
     private enum Mode
@@ -284,27 +285,35 @@ class FCMgr :Object
         FileUtils.rename(filename, sb.str);
     }
 
-    private void next_state()
+	private void set_cli_delay() {
+		if (fc == Fc.INAV && fc_vers > 0x4ffff) {
+			state = State.VERS;
+			string cmd="cli_delay=1\n";
+			msp.write(cmd.data, cmd.length);
+		}
+	}
+
+	private void next_state()
     {
         switch(state)
         {
             case State.IDLE:
-                if(mode == Mode.GET)
-                    start_cli();
-                else
-                    start_vers();
+				start_vers();
                 break;
 
             case State.CLI:
-                if(mode == Mode.GET)
-                    Timeout.add(1250, () => {
-                            start_diff();
-                            return false;
-                        });
-                else
-                {
+				set_cli_delay();
+                if(mode == Mode.GET) {
+					Timeout.add(500, () => {
+							start_diff();
+							return false;
+						});
+				} else {
                     stderr.puts(MwpTermCap.civis);
-                    start_setlines();
+					Timeout.add(500, () => {
+							start_setlines();
+							return false;
+						});
                 }
                 break;
 
@@ -499,7 +508,10 @@ class FCMgr :Object
                                 break;
                         }
 
-                        Idle.add(() => { start_restore(); return false;});
+						if(mode == Mode.GET)
+							Idle.add(() => { start_cli(); return false; });
+						else
+							Idle.add(() => { start_restore(); return false;});
                         break;
 
                         default:
