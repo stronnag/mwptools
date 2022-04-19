@@ -143,12 +143,16 @@ class CliTerm : Object {
         string estr;
         print ("open %s\r\n",device);
         if(msp.open(device, baud, out estr) == true) {
-			msp.pmode = MWSerial.ProtoMode.NORMAL;
-			msp.send_command(MSP.Cmds.FC_VERSION, null,0);
-			Timeout.add(1000,() => {
-					msp.pmode = MWSerial.ProtoMode.CLI;
-					return false;
-				});
+			if(noinit == false) {
+				msp.pmode = MWSerial.ProtoMode.NORMAL;
+				msp.send_command(MSP.Cmds.FC_VERSION, null,0);
+				Timeout.add(1000,() => {
+						msp.pmode = MWSerial.ProtoMode.CLI;
+						return false;
+					});
+			} else {
+				msp.pmode = MWSerial.ProtoMode.CLI;
+			}
         } else {
             print("open failed %s\r\n", estr);
         }
