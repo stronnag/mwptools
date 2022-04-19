@@ -67,21 +67,22 @@ static int _mwp_str2ba(const char *str, bdaddr_t * ba) {
      return 0;
 }
 
-static int connect_socket (int s, struct sockaddr *addr, size_t slen) {
-    int res;
-    int status = 0;
-    sigset_t intmask;
+static int connect_socket (int s, struct sockaddr *addr, size_t slen, int *status) {
+     int res;
+     sigset_t intmask;
 
     // on Linux 5.17 at least, we can deadlock if we ^C in the connect
     // so block signals
 
-    sigemptyset(&intmask);
-    sigaddset(&intmask, SIGINT);
-    sigprocmask(SIG_BLOCK, &intmask, NULL);
-    res = connect(s, (struct sockaddr *)addr, slen);
-    status = errno;
-    sigprocmask(SIG_UNBLOCK, &intmask, NULL);
-    return status;
+     sigemptyset(&intmask);
+     sigaddset(&intmask, SIGINT);
+     sigprocmask(SIG_BLOCK, &intmask, NULL);
+     res = connect(s, (struct sockaddr *)addr, slen);
+     if(status != NULL) {
+	  *status = errno;
+     }
+     sigprocmask(SIG_UNBLOCK, &intmask, NULL);
+     return res;
 }
 
 int connect_bt_device(char *btaddr, int *lasterr) {
@@ -124,7 +125,7 @@ int connect_bt_device(char *btaddr, int *lasterr) {
           return -1;
      }
 
-     int res = connect_socket (fd, (struct sockaddr *)&rem_addr, sizeof(rem_addr));
+     int res = connect_socket (fd, (struct sockaddr *)&rem_addr, sizeof(rem_addr), lasterr);
      if (res != 0) {
 	  close(fd);
 	  fd = -1;
