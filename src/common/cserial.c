@@ -74,10 +74,20 @@ int set_fd_speed(int fd, int rate)
         struct termios2 t;
         if((res = ioctl(fd, TCGETS2, &t)) != -1)
         {
+	     struct serial_struct ser_info;
+	     if (ioctl(fd, TIOCGSERIAL, &ser_info) == 0 ) {
+		  ser_info.flags = ASYNC_SPD_CUST | ASYNC_LOW_LATENCY;
+		  ser_info.custom_divisor = ser_info.baud_base / rate;
+		  ioctl(fd, TIOCSSERIAL, &ser_info);
+	     }
+
             t.c_ospeed = t.c_ispeed = rate;
             t.c_cflag &= ~CBAUD;
-            t.c_cflag |= BOTHER;
+            t.c_cflag |= (BOTHER|CBAUDEX);
             res = ioctl(fd, TCSETS2, &t);
+	    fprintf(stderr, "TCSETS2 %d %d\n", rate, res);
+	    int res2 = ioctl(fd, TCGETS2, &t);
+	    fprintf(stderr, "TCGETS2 %d %d %d\n", t.c_ospeed, t.c_ispeed, res2);
         }
     }
 #endif
