@@ -73,7 +73,6 @@ static int connect_socket (int s, struct sockaddr *addr, size_t slen, int *statu
 
     // on Linux 5.17 at least, we can deadlock if we ^C in the connect
     // so block signals
-
      sigemptyset(&intmask);
      sigaddset(&intmask, SIGINT);
      sigprocmask(SIG_BLOCK, &intmask, NULL);
