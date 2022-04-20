@@ -1,9 +1,9 @@
 #!/bin/sh
 
 dnf groupinstall development-libs development-tools gnome-software-development
-dnf install gtk3-devel gstreamer1-devel clutter-devel webkitgtk3-devel \
-  libgda-devel gobject-introspection-devel vala vala-devel vala-tools vala-doc \
-  libchamplain-gtk-devel libgdl-devel libgudev1-devel espeak-devel vte291-devel \
+dnf install gtk3-devel gstreamer1-devel clutter-devel \
+  libgda-devel gobject-introspection-devel vala vala-devel vala-doc \
+  libchamplain-devel libgdl-devel libgudev-devel espeak-devel vte291-devel \
   ncurses-devel gstreamer1-plugins-base gstreamer1-plugins-good \
   gstreamer1-plugins-base-devel ninja-build meson vala
 
