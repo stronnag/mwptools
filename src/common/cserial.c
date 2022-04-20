@@ -24,6 +24,9 @@
 #include <fcntl.h>
 #include <stdbool.h>
 #if !defined( WIN32 )
+#ifdef  __FreeBSD__
+# define __BSD_VISIBLE 1
+#endif
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -43,7 +46,6 @@ void flush_serial(int fd)
     tcflush(fd, TCIOFLUSH);
 }
 
-
 static int rate_to_constant(int baudrate) {
 #define B(x) case x: return B##x
     switch(baudrate) {
@@ -54,6 +56,13 @@ static int rate_to_constant(int baudrate) {
 #ifdef __linux__
         B(460800); B(921600);
         B(500000); B(576000); B(1000000); B(1152000); B(1500000);
+#endif
+#ifdef __FreeBSD__
+        B(460800); B(500000);  B(921600);
+        B(1000000); B(1500000);
+	B(2000000); B(2500000);
+	B(3000000); B(3500000);
+	B(4000000);
 #endif
 	default: return 0;
     }
@@ -74,29 +83,27 @@ int set_fd_speed(int fd, int rate)
         struct termios2 t;
         if((res = ioctl(fd, TCGETS2, &t)) != -1)
         {
-	     struct serial_struct ser_info;
-	     if (ioctl(fd, TIOCGSERIAL, &ser_info) == 0 ) {
-		  ser_info.flags = ASYNC_SPD_CUST | ASYNC_LOW_LATENCY;
-		  ser_info.custom_divisor = ser_info.baud_base / rate;
-		  ioctl(fd, TIOCSSERIAL, &ser_info);
-	     }
-
-            t.c_ospeed = t.c_ispeed = rate;
-            t.c_cflag &= ~CBAUD;
-            t.c_cflag |= (BOTHER|CBAUDEX);
-            res = ioctl(fd, TCSETS2, &t);
-	    fprintf(stderr, "TCSETS2 %d %d\n", rate, res);
-	    int res2 = ioctl(fd, TCGETS2, &t);
-	    fprintf(stderr, "TCGETS2 %d %d %d\n", t.c_ospeed, t.c_ispeed, res2);
+	     t.c_ospeed = t.c_ispeed = rate;
+	     t.c_cflag &= ~CBAUD;
+	     t.c_cflag |= (BOTHER|CBAUDEX);
+	     res = ioctl(fd, TCSETS2, &t);
+#ifdef TEST
+	     fprintf(stderr, "TCSETS2 %d %d\n", rate, res);
+	     int res2 = ioctl(fd, TCGETS2, &t);
+	     fprintf(stderr, "TCGETS2 %d %d %d\n", t.c_ospeed, t.c_ispeed, res2);
+#endif
         }
     }
 #endif
     if (speed != 0)
     {
-        tcgetattr(fd, &tio);
-        if((res = cfsetispeed(&tio,speed)) != -1)
-            res = cfsetospeed(&tio,speed);
-        tcsetattr(fd,TCSANOW,&tio);
+	 tcgetattr(fd, &tio);
+	 if((res = cfsetispeed(&tio,speed)) != -1)
+	      res = cfsetospeed(&tio,speed);
+	 tcsetattr(fd,TCSANOW,&tio);
+#ifdef TEST
+	 fprintf(stderr, "Speed %d %d\n", speed, res);
+#endif
     }
     return res;
 }
@@ -352,5 +359,33 @@ char * get_native_path(char *upath)
 char * get_native_path(char *upath)
 {
      return upath;
+}
+#endif
+
+#ifdef TEST
+
+// $CC -O2 -o cserial -DTEST cserial.c
+
+void showspeed(int fd) {
+     struct termios tio;
+     tcgetattr(fd, &tio);
+     int ispeed = cfgetispeed(&tio);
+     int ospeed = cfgetospeed(&tio);
+     fprintf(stderr, "%d %d\n", ispeed, ospeed);
+}
+
+
+int main(int argc, char **argv) {
+     if(argc > 2 ) {
+	  int baud = atoi(argv[2]);
+          int fd = open_serial(argv[1], baud);
+          fprintf(stderr, "returns %d\n", fd);
+          if (fd != -1) {
+	       showspeed(fd);
+               fprintf(stderr, "sleep 30\n");
+               sleep(30);
+          }
+     }
+     return 0;
 }
 #endif
