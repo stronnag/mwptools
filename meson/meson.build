@@ -51,7 +51,7 @@ deps += libm
 
 gotrim = ''
 gobuild = ''
-golang = find_program('go')
+golang = find_program('go', required: false)
 if golang.found()
   gobuild = meson.current_source_dir() / 'gobuild.sh'
   r = run_command('go', 'version', check: true)
