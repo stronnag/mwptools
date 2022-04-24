@@ -1177,21 +1177,28 @@ public class MWP : Gtk.Application {
 			} else {
 				var parts = text.split("\n");
 				bool ok = false;
-				double d = 0;
 				text = "fl2ltm";
 				foreach (var p in parts) {
 					if (p.has_prefix("fl2ltm")) {
-						d = double.parse(p[6:p.length-1]);
-						if ((int)100*d > 11) {
-							ok = true;
-						} else {
-							text = p;
+						int vsum = 0;
+						var lparts = p.split(" ");
+						if (lparts.length == 3) {
+							var vparts = lparts[1].split(".");
+							for(var i = 0; i < 3 && i < parts.length; i++) {
+								vsum = int.parse(vparts[i])+ 10*vsum;
+							}
 						}
+						if (vsum > 99) {
+							ok = true;
+						}
+						text = p;
 						break;
 					}
 				}
 				if (!ok)
 					MWPLog.message("\"%s\" may be too old, upgrade recommended\n", text);
+				else
+					MWPLog.message("Using %s\n", text);
 			}
 			appsts[6] = res;
 		}
