@@ -88,8 +88,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="mwptools" class="md-header__button md-logo" aria-label="mwptools" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+  <img src="../material/book-open-variant" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -175,8 +174,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="mwptools" class="md-nav__button md-logo" aria-label="mwptools" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+  <img src="../material/book-open-variant" alt="logo">
 
     </a>
     mwptools
@@ -949,7 +947,7 @@
                 
                 <h1 id="inav-40-multi-mission-support">INAV 4.0 Multi-Mission Support<a class="headerlink" href="#inav-40-multi-mission-support" title="Permanent link">#</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
-<p>In <a href="https://github.com/iNavFlight/inav">inav</a> 4.0, the FC supports "multi-missions", that is allowing the user to upload and store multiple missions.</p>
+<p>In <a href="https://github.com/iNavFlight/inav">INAV</a> 4.0, the FC supports "multi-missions", that is allowing the user to upload and store multiple missions.</p>
 <p>The mission to be executed may be set when the mission set is uploaded, or selected by OSD command (or stick command).</p>
 <h2 id="mwp-support">mwp support<a class="headerlink" href="#mwp-support" title="Permanent link">#</a></h2>
 <p>The means by which this function is provided by the FC is a little inconvenient (for the planner) but expedient; it's hard to see how else it could have been implemented.</p>
@@ -989,25 +987,26 @@ Note that "Save" will always save all mission segments.</p>
 <li>Multi-mission files may be written in the (IMO) ugly / confusing "sequential" style required by the configurator if the environment variable CFG_UGLY_XML is set (to any value). See the <a href="https://github.com/iNavFlight/inav/tree/master/docs/development/wp_mission_schema">schema definition</a> for details. mwp can read either style.</li>
 </ul>
 <h2 id="example-xml-multi-mission-file">Example XML multi-mission file<a class="headerlink" href="#example-xml-multi-mission-file" title="Permanent link">#</a></h2>
-<div class="highlight"><pre><span></span><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
-&lt;mission&gt;
-  &lt;!--mw planner 0.01--&gt;
-  &lt;version value=&quot;42&quot;&gt;&lt;/version&gt;
-  &lt;mwp save-date=&quot;2021-11-11T07:22:43+0000&quot; zoom=&quot;14&quot; cx=&quot;-3.2627249&quot; cy=&quot;54.5710168&quot; home-x=&quot;-3.2989342&quot; home-y=&quot;54.5707123&quot; generator=&quot;mwp (mwptools)&quot;&gt;&lt;details&gt;&lt;distance units=&quot;m&quot; value=&quot;3130&quot;&gt;&lt;/distance&gt;&lt;nav-speed units=&quot;m/s&quot; value=&quot;10&quot;&gt;&lt;/nav-speed&gt;&lt;fly-time units=&quot;s&quot; value=&quot;319&quot;&gt;&lt;/fly-time&gt;&lt;loiter-time units=&quot;s&quot; value=&quot;0&quot;&gt;&lt;/loiter-time&gt;&lt;/details&gt;&lt;/mwp&gt;
-  &lt;missionitem no=&quot;1&quot; action=&quot;WAYPOINT&quot; lat=&quot;54.5722109&quot; lon=&quot;-3.2869291&quot; alt=&quot;660&quot; parameter1=&quot;0&quot; parameter2=&quot;0&quot; parameter3=&quot;0&quot; flag=&quot;0&quot;&gt;&lt;/missionitem&gt;
-  &lt;missionitem no=&quot;2&quot; action=&quot;WAYPOINT&quot; lat=&quot;54.5708178&quot; lon=&quot;-3.2642698&quot; alt=&quot;755&quot; parameter1=&quot;0&quot; parameter2=&quot;0&quot; parameter3=&quot;0&quot; flag=&quot;0&quot;&gt;&lt;/missionitem&gt;
-  &lt;missionitem no=&quot;3&quot; action=&quot;WAYPOINT&quot; lat=&quot;54.5698227&quot; lon=&quot;-3.2385206&quot; alt=&quot;513&quot; parameter1=&quot;0&quot; parameter2=&quot;0&quot; parameter3=&quot;0&quot; flag=&quot;165&quot;&gt;&lt;/missionitem&gt;
-  &lt;mwp save-date=&quot;2021-11-11T07:22:43+0000&quot; zoom=&quot;15&quot; cx=&quot;-3.2778311&quot; cy=&quot;54.5568837&quot; home-x=&quot;-3.2983737&quot; home-y=&quot;54.5622331&quot; generator=&quot;mwp (mwptools)&quot;&gt;&lt;details&gt;&lt;distance units=&quot;m&quot; value=&quot;9029&quot;&gt;&lt;/distance&gt;&lt;nav-speed units=&quot;m/s&quot; value=&quot;10&quot;&gt;&lt;/nav-speed&gt;&lt;fly-time units=&quot;s&quot; value=&quot;929&quot;&gt;&lt;/fly-time&gt;&lt;loiter-time units=&quot;s&quot; value=&quot;0&quot;&gt;&lt;/loiter-time&gt;&lt;/details&gt;&lt;/mwp&gt;
-  &lt;missionitem no=&quot;1&quot; action=&quot;WAYPOINT&quot; lat=&quot;54.5599696&quot; lon=&quot;-3.2958555&quot; alt=&quot;236&quot; parameter1=&quot;0&quot; parameter2=&quot;0&quot; parameter3=&quot;0&quot; flag=&quot;0&quot;&gt;&lt;/missionitem&gt;
-  &lt;missionitem no=&quot;2&quot; action=&quot;WAYPOINT&quot; lat=&quot;54.5537978&quot; lon=&quot;-3.2958555&quot; alt=&quot;136&quot; parameter1=&quot;0&quot; parameter2=&quot;0&quot; parameter3=&quot;0&quot; flag=&quot;0&quot;&gt;&lt;/missionitem&gt;
-  &lt;missionitem no=&quot;3&quot; action=&quot;WAYPOINT&quot; lat=&quot;54.5547933&quot; lon=&quot;-3.2864141&quot; alt=&quot;238&quot; parameter1=&quot;0&quot; parameter2=&quot;0&quot; parameter3=&quot;0&quot; flag=&quot;0&quot;&gt;&lt;/missionitem&gt;
-  &lt;missionitem no=&quot;4&quot; action=&quot;WAYPOINT&quot; lat=&quot;54.5597705&quot; lon=&quot;-3.2695913&quot; alt=&quot;570&quot; parameter1=&quot;0&quot; parameter2=&quot;0&quot; parameter3=&quot;0&quot; flag=&quot;0&quot;&gt;&lt;/missionitem&gt;
-  &lt;missionitem no=&quot;5&quot; action=&quot;WAYPOINT&quot; lat=&quot;54.5552910&quot; lon=&quot;-3.2598066&quot; alt=&quot;502&quot; parameter1=&quot;0&quot; parameter2=&quot;0&quot; parameter3=&quot;0&quot; flag=&quot;0&quot;&gt;&lt;/missionitem&gt;
-  &lt;missionitem no=&quot;6&quot; action=&quot;JUMP&quot; lat=&quot;0.0000000&quot; lon=&quot;0.0000000&quot; alt=&quot;0&quot; parameter1=&quot;1&quot; parameter2=&quot;1&quot; parameter3=&quot;0&quot; flag=&quot;165&quot;&gt;&lt;/missionitem&gt;
-  &lt;mwp save-date=&quot;2021-11-11T07:22:43+0000&quot; zoom=&quot;20&quot; cx=&quot;-3.2501935&quot; cy=&quot;54.5714148&quot; generator=&quot;mwp (mwptools)&quot;&gt;&lt;details&gt;&lt;distance units=&quot;m&quot; value=&quot;0&quot;&gt;&lt;/distance&gt;&lt;/details&gt;&lt;/mwp&gt;
-  &lt;missionitem no=&quot;1&quot; action=&quot;WAYPOINT&quot; lat=&quot;54.5714148&quot; lon=&quot;-3.2501935&quot; alt=&quot;50&quot; parameter1=&quot;0&quot; parameter2=&quot;0&quot; parameter3=&quot;0&quot; flag=&quot;165&quot;&gt;&lt;/missionitem&gt;
-&lt;/mission&gt;
-</code></pre></div>
+<p>```</p>
+<?xml version="1.0" encoding="utf-8"?>
+<p><mission>
+  <!--mw planner 0.01--></p>
+<p><version value="42"></version>
+  <mwp save-date="2021-11-11T07:22:43+0000" zoom="14" cx="-3.2627249" cy="54.5710168" home-x="-3.2989342" home-y="54.5707123" generator="mwp (mwptools)"><details><distance units="m" value="3130"></distance><nav-speed units="m/s" value="10"></nav-speed><fly-time units="s" value="319"></fly-time><loiter-time units="s" value="0"></loiter-time></details></mwp>
+  <missionitem no="1" action="WAYPOINT" lat="54.5722109" lon="-3.2869291" alt="660" parameter1="0" parameter2="0" parameter3="0" flag="0"></missionitem>
+  <missionitem no="2" action="WAYPOINT" lat="54.5708178" lon="-3.2642698" alt="755" parameter1="0" parameter2="0" parameter3="0" flag="0"></missionitem>
+  <missionitem no="3" action="WAYPOINT" lat="54.5698227" lon="-3.2385206" alt="513" parameter1="0" parameter2="0" parameter3="0" flag="165"></missionitem>
+  <mwp save-date="2021-11-11T07:22:43+0000" zoom="15" cx="-3.2778311" cy="54.5568837" home-x="-3.2983737" home-y="54.5622331" generator="mwp (mwptools)"><details><distance units="m" value="9029"></distance><nav-speed units="m/s" value="10"></nav-speed><fly-time units="s" value="929"></fly-time><loiter-time units="s" value="0"></loiter-time></details></mwp>
+  <missionitem no="1" action="WAYPOINT" lat="54.5599696" lon="-3.2958555" alt="236" parameter1="0" parameter2="0" parameter3="0" flag="0"></missionitem>
+  <missionitem no="2" action="WAYPOINT" lat="54.5537978" lon="-3.2958555" alt="136" parameter1="0" parameter2="0" parameter3="0" flag="0"></missionitem>
+  <missionitem no="3" action="WAYPOINT" lat="54.5547933" lon="-3.2864141" alt="238" parameter1="0" parameter2="0" parameter3="0" flag="0"></missionitem>
+  <missionitem no="4" action="WAYPOINT" lat="54.5597705" lon="-3.2695913" alt="570" parameter1="0" parameter2="0" parameter3="0" flag="0"></missionitem>
+  <missionitem no="5" action="WAYPOINT" lat="54.5552910" lon="-3.2598066" alt="502" parameter1="0" parameter2="0" parameter3="0" flag="0"></missionitem>
+  <missionitem no="6" action="JUMP" lat="0.0000000" lon="0.0000000" alt="0" parameter1="1" parameter2="1" parameter3="0" flag="165"></missionitem>
+  <mwp save-date="2021-11-11T07:22:43+0000" zoom="20" cx="-3.2501935" cy="54.5714148" generator="mwp (mwptools)"><details><distance units="m" value="0"></distance></details></mwp>
+  <missionitem no="1" action="WAYPOINT" lat="54.5714148" lon="-3.2501935" alt="50" parameter1="0" parameter2="0" parameter3="0" flag="165"></missionitem>
+</mission>
+```</p>
 <p><a href="https://github.com/stronnag/mwptools/wiki/assets/sample-multi.mission">Download sample mission</a></p>
                 
               

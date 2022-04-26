@@ -88,8 +88,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="mwptools" class="md-header__button md-logo" aria-label="mwptools" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+  <img src="../material/book-open-variant" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -175,8 +174,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="mwptools" class="md-nav__button md-logo" aria-label="mwptools" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+  <img src="../material/book-open-variant" alt="logo">
 
     </a>
     mwptools
@@ -1347,156 +1345,123 @@
 <h3 id="flight-status-and-geo-location-methods">Flight status and geo-location methods<a class="headerlink" href="#flight-status-and-geo-location-methods" title="Permanent link">#</a></h3>
 <h4 id="getstatenames">GetStateNames<a class="headerlink" href="#getstatenames" title="Permanent link">#</a></h4>
 <p>Returns human-readable names for the FC 'state' returned by <code>GetState</code>, as an array of strings. The size of the array is the return value.</p>
-<p><div class="highlight"><pre><span></span><code>int GetStateNames(out string[] states_names)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;method name=&quot;GetStateNames&quot;&gt;
-  &lt;arg type=&quot;as&quot; name=&quot;names&quot; direction=&quot;out&quot;/&gt;
-  &lt;arg type=&quot;i&quot; name=&quot;result&quot; direction=&quot;out&quot;/&gt;
-&lt;/method&gt;
-</code></pre></div></p>
+<p><code>int GetStateNames(out string[] states_names)</code>
+<code>&lt;method name="GetStateNames"&gt;
+  &lt;arg type="as" name="names" direction="out"/&gt;
+  &lt;arg type="i" name="result" direction="out"/&gt;
+&lt;/method&gt;</code></p>
 <h4 id="getstate">GetState<a class="headerlink" href="#getstate" title="Permanent link">#</a></h4>
 <p>Returns the FC 'state'. 0 if unarmed. Human-readable state names are provided by <code>GetStateNames()</code>.</p>
-<p><div class="highlight"><pre><span></span><code>int GetState()
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;method name=&quot;GetState&quot;&gt;
-  &lt;arg type=&quot;i&quot; name=&quot;result&quot; direction=&quot;out&quot;/&gt;
-&lt;/method&gt;
-</code></pre></div></p>
+<p><code>int GetState()</code>
+<code>&lt;method name="GetState"&gt;
+  &lt;arg type="i" name="result" direction="out"/&gt;
+&lt;/method&gt;</code></p>
 <h4 id="gethome">GetHome<a class="headerlink" href="#gethome" title="Permanent link">#</a></h4>
 <p>Returns the home location as latitude (WGS84 decimal degrees),  longitude (WGS84 decimal degrees) and relative altitude (metres, which should always be 0).</p>
-<p><div class="highlight"><pre><span></span><code>void GetHome(out double latitude, out double longitude, out int32 altitude)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;method name=&quot;GetHome&quot;&gt;
-  &lt;arg type=&quot;d&quot; name=&quot;latitude&quot; direction=&quot;out&quot;/&gt;
-  &lt;arg type=&quot;d&quot; name=&quot;longitude&quot; direction=&quot;out&quot;/&gt;
-  &lt;arg type=&quot;i&quot; name=&quot;altitude&quot; direction=&quot;out&quot;/&gt;
-&lt;/method&gt;
-</code></pre></div></p>
+<p><code>void GetHome(out double latitude, out double longitude, out int32 altitude)</code>
+<code>&lt;method name="GetHome"&gt;
+  &lt;arg type="d" name="latitude" direction="out"/&gt;
+  &lt;arg type="d" name="longitude" direction="out"/&gt;
+  &lt;arg type="i" name="altitude" direction="out"/&gt;
+&lt;/method&gt;</code></p>
 <h4 id="getlocation">GetLocation<a class="headerlink" href="#getlocation" title="Permanent link">#</a></h4>
 <p>Returns the vehicle location as latitude (WGS84 decimal degrees),  longitude (WGS84 decimal degrees) and relative altitude (metres).</p>
-<p><div class="highlight"><pre><span></span><code>void GetLocation(out double latitude, out double longitude, out int32 altitude)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;method name=&quot;GetLocation&quot;&gt;
-  &lt;arg type=&quot;d&quot; name=&quot;latitude&quot; direction=&quot;out&quot;/&gt;
-  &lt;arg type=&quot;d&quot; name=&quot;longitude&quot; direction=&quot;out&quot;/&gt;
-  &lt;arg type=&quot;i&quot; name=&quot;altitude&quot; direction=&quot;out&quot;/&gt;
-&lt;/method&gt;
-</code></pre></div></p>
+<p><code>void GetLocation(out double latitude, out double longitude, out int32 altitude)</code>
+<code>&lt;method name="GetLocation"&gt;
+  &lt;arg type="d" name="latitude" direction="out"/&gt;
+  &lt;arg type="d" name="longitude" direction="out"/&gt;
+  &lt;arg type="i" name="altitude" direction="out"/&gt;
+&lt;/method&gt;</code></p>
 <h4 id="getsats">GetSats<a class="headerlink" href="#getsats" title="Permanent link">#</a></h4>
 <p>Returns the number of satellites and the fix type (0=nofix, 1=undefined, 2=2D fix, 3=3D fix).</p>
-<p><div class="highlight"><pre><span></span><code>void GetSats(out uint8 number_satellites, uint8 fix_type)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;method name=&quot;GetSats&quot;&gt;
-  &lt;arg type=&quot;y&quot; name=&quot;nsats&quot; direction=&quot;out&quot;/&gt;
-  &lt;arg type=&quot;y&quot; name=&quot;fix&quot; direction=&quot;out&quot;/&gt;
-&lt;/method&gt;
-</code></pre></div></p>
+<p><code>void GetSats(out uint8 number_satellites, uint8 fix_type)</code>
+<code>&lt;method name="GetSats"&gt;
+  &lt;arg type="y" name="nsats" direction="out"/&gt;
+  &lt;arg type="y" name="fix" direction="out"/&gt;
+&lt;/method&gt;</code></p>
 <h4 id="getvelocity">GetVelocity<a class="headerlink" href="#getvelocity" title="Permanent link">#</a></h4>
 <p>Returns the vehicle speed (m/s) and course (degrees), GPS provided.</p>
-<p><div class="highlight"><pre><span></span><code>void GetVelocity(out uint32 speed, out uint32 course)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;method name=&quot;GetVelocity&quot;&gt;
-  &lt;arg type=&quot;u&quot; name=&quot;speed&quot; direction=&quot;out&quot;/&gt;
-  &lt;arg type=&quot;u&quot; name=&quot;course&quot; direction=&quot;out&quot;/&gt;
-&lt;/method&gt;
-</code></pre></div></p>
+<p><code>void GetVelocity(out uint32 speed, out uint32 course)</code>
+<code>&lt;method name="GetVelocity"&gt;
+  &lt;arg type="u" name="speed" direction="out"/&gt;
+  &lt;arg type="u" name="course" direction="out"/&gt;
+&lt;/method&gt;</code></p>
 <h4 id="getpolarcoordinates">GetPolarCoordinates<a class="headerlink" href="#getpolarcoordinates" title="Permanent link">#</a></h4>
 <p>Returns the vehicle location as polar coordinates relative the home position: Range (m), Bearing (degrees) <strong>from home to vehicle</strong>, azimuth (elevation angle, degrees).</p>
-<p><div class="highlight"><pre><span></span><code>void GetPolarCoordinates(out uint32 range, out uint32 direction, out uint32 azimuth)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;method name=&quot;GetPolarCoordinates&quot;&gt;
-  &lt;arg type=&quot;u&quot; name=&quot;range&quot; direction=&quot;out&quot;/&gt;
-  &lt;arg type=&quot;u&quot; name=&quot;direction&quot; direction=&quot;out&quot;/&gt;
-  &lt;arg type=&quot;u&quot; name=&quot;azimuth&quot; direction=&quot;out&quot;/&gt;
-&lt;/method&gt;
-</code></pre></div></p>
+<p><code>void GetPolarCoordinates(out uint32 range, out uint32 direction, out uint32 azimuth)</code>
+<code>&lt;method name="GetPolarCoordinates"&gt;
+  &lt;arg type="u" name="range" direction="out"/&gt;
+  &lt;arg type="u" name="direction" direction="out"/&gt;
+  &lt;arg type="u" name="azimuth" direction="out"/&gt;
+&lt;/method&gt;</code></p>
 <h4 id="getwaypointnumber">GetWaypointNumber<a class="headerlink" href="#getwaypointnumber" title="Permanent link">#</a></h4>
 <p>Returns the next WP number (en-route to) or -1 if not flying WPs.</p>
-<p><div class="highlight"><pre><span></span><code>int GetWaypointNumber()
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;method name=&quot;GetWaypointNumber&quot;&gt;
-  &lt;arg type=&quot;i&quot; name=&quot;result&quot; direction=&quot;out&quot;/&gt;
-&lt;/method&gt;
-</code></pre></div></p>
+<p><code>int GetWaypointNumber()</code>
+<code>&lt;method name="GetWaypointNumber"&gt;
+  &lt;arg type="i" name="result" direction="out"/&gt;
+&lt;/method&gt;</code></p>
 <h3 id="flight-status-and-geo-location-signals">Flight status and geo-location signals<a class="headerlink" href="#flight-status-and-geo-location-signals" title="Permanent link">#</a></h3>
 <p>A number of signals (asynchronous event by event notifications) are issues for changes in state and location. This avoids applications having to poll for changes. In general, the data returned is that for the eponymous Get* methods.</p>
 <p>All location signals may be rate limited by the <code>DbusPosInterval</code> property in order to avoid excessive DBus traffic.</p>
 <h4 id="homechanged">HomeChanged<a class="headerlink" href="#homechanged" title="Permanent link">#</a></h4>
 <p>Notifies that the home position has changed.</p>
-<p><div class="highlight"><pre><span></span><code>signal void HomeChanged (double latitude, double longitude, int altitude)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;signal name=&quot;HomeChanged&quot;&gt;
-  &lt;arg type=&quot;d&quot; name=&quot;latitude&quot;/&gt;
-  &lt;arg type=&quot;d&quot; name=&quot;longitude&quot;/&gt;
-  &lt;arg type=&quot;i&quot; name=&quot;altitude&quot;/&gt;
-&lt;/signal&gt;
-</code></pre></div></p>
+<p><code>signal void HomeChanged (double latitude, double longitude, int altitude)</code>
+<code>&lt;signal name="HomeChanged"&gt;
+  &lt;arg type="d" name="latitude"/&gt;
+  &lt;arg type="d" name="longitude"/&gt;
+  &lt;arg type="i" name="altitude"/&gt;
+&lt;/signal&gt;</code></p>
 <h4 id="locationchanged">LocationChanged<a class="headerlink" href="#locationchanged" title="Permanent link">#</a></h4>
 <p>Notifies that the vehicle position has changed (geographic coordinates).</p>
-<p><div class="highlight"><pre><span></span><code>signal void location_changed (double latitude, double longitude, int altitude)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;signal name=&quot;LocationChanged&quot;&gt;
-  &lt;arg type=&quot;d&quot; name=&quot;latitude&quot;/&gt;
-  &lt;arg type=&quot;d&quot; name=&quot;longitude&quot;/&gt;
-  &lt;arg type=&quot;i&quot; name=&quot;altitude&quot;/&gt;
-&lt;/signal&gt;
-</code></pre></div></p>
+<p><code>signal void location_changed (double latitude, double longitude, int altitude)</code>
+<code>&lt;signal name="LocationChanged"&gt;
+  &lt;arg type="d" name="latitude"/&gt;
+  &lt;arg type="d" name="longitude"/&gt;
+  &lt;arg type="i" name="altitude"/&gt;
+&lt;/signal&gt;</code></p>
 <h4 id="polarchanged">PolarChanged<a class="headerlink" href="#polarchanged" title="Permanent link">#</a></h4>
 <p>Notifies that the vehicle position has changed relative to home (polar coordinates).</p>
-<p><div class="highlight"><pre><span></span><code>signal void polar_changed(uint32 range, uint32 direction, uint32 azimuth)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;signal name=&quot;PolarChanged&quot;&gt;
-  &lt;arg type=&quot;u&quot; name=&quot;range&quot;/&gt;
-  &lt;arg type=&quot;u&quot; name=&quot;direction&quot;/&gt;
-  &lt;arg type=&quot;u&quot; name=&quot;azimuth&quot;/&gt;
-&lt;/signal&gt;
-</code></pre></div></p>
+<p><code>signal void polar_changed(uint32 range, uint32 direction, uint32 azimuth)</code>
+<code>&lt;signal name="PolarChanged"&gt;
+  &lt;arg type="u" name="range"/&gt;
+  &lt;arg type="u" name="direction"/&gt;
+  &lt;arg type="u" name="azimuth"/&gt;
+&lt;/signal&gt;</code></p>
 <h4 id="velocitychanged">VelocityChanged<a class="headerlink" href="#velocitychanged" title="Permanent link">#</a></h4>
 <p>Notifies that the vehicle velocity (course or speed) has changed.</p>
-<p><div class="highlight"><pre><span></span><code>signal void velocity_changed(uint32 speed, uint32 course)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;signal name=&quot;VelocityChanged&quot;&gt;
-  &lt;arg type=&quot;u&quot; name=&quot;speed&quot;/&gt;
-  &lt;arg type=&quot;u&quot; name=&quot;course&quot;/&gt;
-&lt;/signal&gt;
-</code></pre></div></p>
+<p><code>signal void velocity_changed(uint32 speed, uint32 course)</code>
+<code>&lt;signal name="VelocityChanged"&gt;
+  &lt;arg type="u" name="speed"/&gt;
+  &lt;arg type="u" name="course"/&gt;
+&lt;/signal&gt;</code></p>
 <h4 id="statechanged">StateChanged<a class="headerlink" href="#statechanged" title="Permanent link">#</a></h4>
 <p>Notifies that the vehicle 'state' has changed.</p>
-<p><div class="highlight"><pre><span></span><code>signal void StateChanged(int32 state)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;signal name=&quot;StateChanged&quot;&gt;
-  &lt;arg type=&quot;i&quot; name=&quot;state&quot;/&gt;
-&lt;/signal&gt;
-</code></pre></div></p>
+<p><code>signal void StateChanged(int32 state)</code>
+<code>&lt;signal name="StateChanged"&gt;
+  &lt;arg type="i" name="state"/&gt;
+&lt;/signal&gt;</code></p>
 <h4 id="satschanged">SatsChanged<a class="headerlink" href="#satschanged" title="Permanent link">#</a></h4>
 <p>Notifies that the satellite status has changed.</p>
-<p><div class="highlight"><pre><span></span><code>signal void SatsChanged(uint8 nsats, uint8 fix)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;signal name=&quot;SatsChanged&quot;&gt;
-  &lt;arg type=&quot;y&quot; name=&quot;nsats&quot;/&gt;
-  &lt;arg type=&quot;y&quot; name=&quot;fix&quot;/&gt;
-&lt;/signal&gt;
-</code></pre></div></p>
+<p><code>signal void SatsChanged(uint8 nsats, uint8 fix)</code>
+<code>&lt;signal name="SatsChanged"&gt;
+  &lt;arg type="y" name="nsats"/&gt;
+  &lt;arg type="y" name="fix"/&gt;
+&lt;/signal&gt;</code></p>
 <h4 id="waypointchanged">WaypointChanged<a class="headerlink" href="#waypointchanged" title="Permanent link">#</a></h4>
 <p>Notifies that the current WP number has changed.</p>
-<p><div class="highlight"><pre><span></span><code>signal void WaypointChanged(int32 wp)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;signal name=&quot;WaypointChanged&quot;&gt;
-  &lt;arg type=&quot;i&quot; name=&quot;wp&quot;/&gt;
-&lt;/signal&gt;
-</code></pre></div></p>
+<p><code>signal void WaypointChanged(int32 wp)</code>
+<code>&lt;signal name="WaypointChanged"&gt;
+  &lt;arg type="i" name="wp"/&gt;
+&lt;/signal&gt;</code></p>
 <h3 id="application-status">Application Status<a class="headerlink" href="#application-status" title="Permanent link">#</a></h3>
 <h4 id="quit">Quit<a class="headerlink" href="#quit" title="Permanent link">#</a></h4>
 <p>The <code>Quit</code> signal is issued when mwp exits, allowing a dependent application to close down gracefully or take action to wait for the bus to reappear.</p>
-<p><div class="highlight"><pre><span></span><code>Quit()
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;signal name=&quot;Quit&quot;&gt;
-&lt;/signal&gt;
-</code></pre></div></p>
+<p><code>Quit()</code>
+<code>&lt;signal name="Quit"&gt;
+&lt;/signal&gt;</code></p>
 <h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">#</a></h2>
 <h3 id="dbusposinterval">DbusPosInterval<a class="headerlink" href="#dbusposinterval" title="Permanent link">#</a></h3>
-<div class="highlight"><pre><span></span><code>uint dbus_pos_interval
-</code></pre></div>
+<p><code>uint dbus_pos_interval</code></p>
 <p>Defines rate limiting for all position related signals. The value represents the minimum update interval in 0.1s intervals.</p>
 <ul>
 <li>0 disables rate limiting</li>
@@ -1508,66 +1473,52 @@
 <h2 id="serial-ports">Serial Ports<a class="headerlink" href="#serial-ports" title="Permanent link">#</a></h2>
 <h3 id="getdevices">GetDevices<a class="headerlink" href="#getdevices" title="Permanent link">#</a></h3>
 <p>The <code>GetDevices</code> API returns a list of the serial devices known to the mwp instance, as an array of strings.</p>
-<p><div class="highlight"><pre><span></span><code>void GetDevices(out string[]device_names)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;method name=&quot;GetDevices&quot;&gt;
-  &lt;arg type=&quot;as&quot; name=&quot;devices&quot; direction=&quot;out&quot;/&gt;
-&lt;/method&gt;
-</code></pre></div></p>
+<p><code>void GetDevices(out string[]device_names)</code>
+<code>&lt;method name="GetDevices"&gt;
+  &lt;arg type="as" name="devices" direction="out"/&gt;
+&lt;/method&gt;</code></p>
 <h3 id="connectionstatus">ConnectionStatus<a class="headerlink" href="#connectionstatus" title="Permanent link">#</a></h3>
 <p>The <code>ConnectionStatus</code> API returns a boolean status as to whether <code>mwp</code> is connected to a serial device, and if connected, the name of the device.</p>
-<p><div class="highlight"><pre><span></span><code>bool ConnectionsStatus(out string device_name)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;method name=&quot;ConnectionStatus&quot;&gt;
-  &lt;arg type=&quot;s&quot; name=&quot;device&quot; direction=&quot;out&quot;/&gt;
-  &lt;arg type=&quot;b&quot; name=&quot;result&quot; direction=&quot;out&quot;/&gt;
-&lt;/method&gt;
-</code></pre></div></p>
+<p><code>bool ConnectionsStatus(out string device_name)</code>
+<code>&lt;method name="ConnectionStatus"&gt;
+  &lt;arg type="s" name="device" direction="out"/&gt;
+  &lt;arg type="b" name="result" direction="out"/&gt;
+&lt;/method&gt;</code></p>
 <h3 id="connectdevice">ConnectDevice<a class="headerlink" href="#connectdevice" title="Permanent link">#</a></h3>
 <p>The <code>ConnectDevice</code> API attempts connection to the given device, and returns the status of the operation (<code>true</code> =&gt; connected).</p>
-<p><div class="highlight"><pre><span></span><code>bool ConnectDevice(string device_name)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;method name=&quot;ConnectDevice&quot;&gt;
-  &lt;arg type=&quot;s&quot; name=&quot;device&quot; direction=&quot;in&quot;/&gt;
-  &lt;arg type=&quot;b&quot; name=&quot;result&quot; direction=&quot;out&quot;/&gt;
-&lt;/method&gt;
-</code></pre></div></p>
+<p><code>bool ConnectDevice(string device_name)</code>
+<code>&lt;method name="ConnectDevice"&gt;
+  &lt;arg type="s" name="device" direction="in"/&gt;
+  &lt;arg type="b" name="result" direction="out"/&gt;
+&lt;/method&gt;</code></p>
 <h2 id="mission-management">Mission Management<a class="headerlink" href="#mission-management" title="Permanent link">#</a></h2>
 <p>Somewhat inconsistent set of mission management APIs. Note these are not yet multi-mission aware.</p>
 <h3 id="clearmission">ClearMission<a class="headerlink" href="#clearmission" title="Permanent link">#</a></h3>
 <p>Clears the current mission from mwp.</p>
-<p><div class="highlight"><pre><span></span><code>void ClearMission()
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;method name=&quot;ClearMission&quot;&gt;
-&lt;/method&gt;
-</code></pre></div></p>
+<p><code>void ClearMission()</code>
+<code>&lt;method name="ClearMission"&gt;
+&lt;/method&gt;</code></p>
 <h3 id="setmission">SetMission<a class="headerlink" href="#setmission" title="Permanent link">#</a></h3>
 <p>Opens a mission in mwp from an XML or JSON document, returns the number of mission points.</p>
-<p><div class="highlight"><pre><span></span><code>int SetMission(string mission)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;method name=&quot;SetMission&quot;&gt;
-  &lt;arg type=&quot;s&quot; name=&quot;mission&quot; direction=&quot;in&quot;/&gt;
-  &lt;arg type=&quot;u&quot; name=&quot;result&quot; direction=&quot;out&quot;/&gt;
- &lt;/method&gt;
-</code></pre></div></p>
+<p><code>int SetMission(string mission)</code>
+<code>&lt;method name="SetMission"&gt;
+  &lt;arg type="s" name="mission" direction="in"/&gt;
+  &lt;arg type="u" name="result" direction="out"/&gt;
+ &lt;/method&gt;</code></p>
 <h3 id="loadmission">LoadMission<a class="headerlink" href="#loadmission" title="Permanent link">#</a></h3>
 <p>Opens a mission in mwp from an mission file, returns the number of mission points.</p>
-<p><div class="highlight"><pre><span></span><code>int LoadMission(string filename)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;method name=&quot;LoadMission&quot;&gt;
-  &lt;arg type=&quot;s&quot; name=&quot;filename&quot; direction=&quot;in&quot;/&gt;
-  &lt;arg type=&quot;u&quot; name=&quot;result&quot; direction=&quot;out&quot;/&gt;
-&lt;/method&gt;
-</code></pre></div></p>
+<p><code>int LoadMission(string filename)</code>
+<code>&lt;method name="LoadMission"&gt;
+  &lt;arg type="s" name="filename" direction="in"/&gt;
+  &lt;arg type="u" name="result" direction="out"/&gt;
+&lt;/method&gt;</code></p>
 <h3 id="uploadmission">UploadMission<a class="headerlink" href="#uploadmission" title="Permanent link">#</a></h3>
 <p>Loads the current mwp mission into the flight controller, optionally saving to it EEPROM. Returns the number of mission points.</p>
-<p><div class="highlight"><pre><span></span><code>int UploadMission(bool to_eeprom)
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>&lt;method name=&quot;UploadMission&quot;&gt;
-  &lt;arg type=&quot;b&quot; name=&quot;to_eeprom&quot; direction=&quot;in&quot;/&gt;
-  &lt;arg type=&quot;i&quot; name=&quot;result&quot; direction=&quot;out&quot;/&gt;
-&lt;/method&gt;
-</code></pre></div></p>
+<p><code>int UploadMission(bool to_eeprom)</code>
+<code>&lt;method name="UploadMission"&gt;
+  &lt;arg type="b" name="to_eeprom" direction="in"/&gt;
+  &lt;arg type="i" name="result" direction="out"/&gt;
+&lt;/method&gt;</code></p>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">#</a></h2>
 <ul>
 <li><code>samples/mwp-dbus-test.sh</code></li>
@@ -1580,132 +1531,133 @@
 <h2 id="introspection">Introspection<a class="headerlink" href="#introspection" title="Permanent link">#</a></h2>
 <p>Not withstanding the state of the documentation, it is possible introspect the API. Note that mwp must be running for the API to exist.
 The document returned by DBus introspection <strong>is</strong> the definitive definition of the API.</p>
-<div class="highlight"><pre><span></span><code># Note samples/mwp-dbus-loc.rb also provides introspection.
-$ samples/mwp-dbus-test.sh introspect
-&lt;!DOCTYPE node PUBLIC &quot;-//freedesktop//DTD D-BUS Object Introspection 1.0//EN&quot;
-                      &quot;http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd&quot;&gt;
-&lt;!-- GDBus 2.60.3 --&gt;
-&lt;node&gt;
-  &lt;interface name=&quot;org.freedesktop.DBus.Properties&quot;&gt;
-    &lt;method name=&quot;Get&quot;&gt;
-      &lt;arg type=&quot;s&quot; name=&quot;interface_name&quot; direction=&quot;in&quot;/&gt;
-      &lt;arg type=&quot;s&quot; name=&quot;property_name&quot; direction=&quot;in&quot;/&gt;
-      &lt;arg type=&quot;v&quot; name=&quot;value&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-    &lt;method name=&quot;GetAll&quot;&gt;
-      &lt;arg type=&quot;s&quot; name=&quot;interface_name&quot; direction=&quot;in&quot;/&gt;
-      &lt;arg type=&quot;a{sv}&quot; name=&quot;properties&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-    &lt;method name=&quot;Set&quot;&gt;
-      &lt;arg type=&quot;s&quot; name=&quot;interface_name&quot; direction=&quot;in&quot;/&gt;
-      &lt;arg type=&quot;s&quot; name=&quot;property_name&quot; direction=&quot;in&quot;/&gt;
-      &lt;arg type=&quot;v&quot; name=&quot;value&quot; direction=&quot;in&quot;/&gt;
-    &lt;/method&gt;
-    &lt;signal name=&quot;PropertiesChanged&quot;&gt;
-      &lt;arg type=&quot;s&quot; name=&quot;interface_name&quot;/&gt;
-      &lt;arg type=&quot;a{sv}&quot; name=&quot;changed_properties&quot;/&gt;
-      &lt;arg type=&quot;as&quot; name=&quot;invalidated_properties&quot;/&gt;
-    &lt;/signal&gt;
-  &lt;/interface&gt;
-  &lt;interface name=&quot;org.freedesktop.DBus.Introspectable&quot;&gt;
-    &lt;method name=&quot;Introspect&quot;&gt;
-      &lt;arg type=&quot;s&quot; name=&quot;xml_data&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-  &lt;/interface&gt;
-  &lt;interface name=&quot;org.freedesktop.DBus.Peer&quot;&gt;
-    &lt;method name=&quot;Ping&quot;/&gt;
-    &lt;method name=&quot;GetMachineId&quot;&gt;
-      &lt;arg type=&quot;s&quot; name=&quot;machine_uuid&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-  &lt;/interface&gt;
-  &lt;interface name=&quot;org.mwptools.mwp&quot;&gt;
-    &lt;method name=&quot;GetStateNames&quot;&gt;
-      &lt;arg type=&quot;as&quot; name=&quot;names&quot; direction=&quot;out&quot;/&gt;
-      &lt;arg type=&quot;i&quot; name=&quot;result&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-    &lt;method name=&quot;GetVelocity&quot;&gt;
-      &lt;arg type=&quot;u&quot; name=&quot;speed&quot; direction=&quot;out&quot;/&gt;
-      &lt;arg type=&quot;u&quot; name=&quot;course&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-    &lt;method name=&quot;GetPolarCoordinates&quot;&gt;
-      &lt;arg type=&quot;u&quot; name=&quot;range&quot; direction=&quot;out&quot;/&gt;
-      &lt;arg type=&quot;u&quot; name=&quot;direction&quot; direction=&quot;out&quot;/&gt;
-      &lt;arg type=&quot;u&quot; name=&quot;azimuth&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-    &lt;method name=&quot;GetHome&quot;&gt;
-      &lt;arg type=&quot;d&quot; name=&quot;latitude&quot; direction=&quot;out&quot;/&gt;
-      &lt;arg type=&quot;d&quot; name=&quot;longitude&quot; direction=&quot;out&quot;/&gt;
-      &lt;arg type=&quot;d&quot; name=&quot;altitude&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-    &lt;method name=&quot;GetLocation&quot;&gt;
-      &lt;arg type=&quot;d&quot; name=&quot;latitude&quot; direction=&quot;out&quot;/&gt;
-      &lt;arg type=&quot;d&quot; name=&quot;longitude&quot; direction=&quot;out&quot;/&gt;
-      &lt;arg type=&quot;d&quot; name=&quot;altitude&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-    &lt;method name=&quot;GetState&quot;&gt;
-      &lt;arg type=&quot;i&quot; name=&quot;result&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-    &lt;method name=&quot;GetSats&quot;&gt;
-      &lt;arg type=&quot;y&quot; name=&quot;nsats&quot; direction=&quot;out&quot;/&gt;
-      &lt;arg type=&quot;y&quot; name=&quot;fix&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-    &lt;method name=&quot;SetMission&quot;&gt;
-      &lt;arg type=&quot;s&quot; name=&quot;mission&quot; direction=&quot;in&quot;/&gt;
-      &lt;arg type=&quot;u&quot; name=&quot;result&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-    &lt;method name=&quot;LoadMission&quot;&gt;
-      &lt;arg type=&quot;s&quot; name=&quot;filename&quot; direction=&quot;in&quot;/&gt;
-      &lt;arg type=&quot;u&quot; name=&quot;result&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-    &lt;method name=&quot;ClearMission&quot;&gt;
-    &lt;/method&gt;
-    &lt;method name=&quot;GetDevices&quot;&gt;
-      &lt;arg type=&quot;as&quot; name=&quot;devices&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-    &lt;method name=&quot;UploadMission&quot;&gt;
-      &lt;arg type=&quot;b&quot; name=&quot;to_eeprom&quot; direction=&quot;in&quot;/&gt;
-      &lt;arg type=&quot;i&quot; name=&quot;result&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-    &lt;method name=&quot;ConnectionStatus&quot;&gt;
-      &lt;arg type=&quot;s&quot; name=&quot;device&quot; direction=&quot;out&quot;/&gt;
-      &lt;arg type=&quot;b&quot; name=&quot;result&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-    &lt;method name=&quot;ConnectDevice&quot;&gt;
-      &lt;arg type=&quot;s&quot; name=&quot;device&quot; direction=&quot;in&quot;/&gt;
-      &lt;arg type=&quot;b&quot; name=&quot;result&quot; direction=&quot;out&quot;/&gt;
-    &lt;/method&gt;
-    &lt;signal name=&quot;HomeChanged&quot;&gt;
-      &lt;arg type=&quot;d&quot; name=&quot;latitude&quot;/&gt;
-      &lt;arg type=&quot;d&quot; name=&quot;longitude&quot;/&gt;
-      &lt;arg type=&quot;i&quot; name=&quot;altitude&quot;/&gt;
-    &lt;/signal&gt;
-    &lt;signal name=&quot;LocationChanged&quot;&gt;
-      &lt;arg type=&quot;d&quot; name=&quot;latitude&quot;/&gt;
-      &lt;arg type=&quot;d&quot; name=&quot;longitude&quot;/&gt;
-      &lt;arg type=&quot;i&quot; name=&quot;altitude&quot;/&gt;
-    &lt;/signal&gt;
-    &lt;signal name=&quot;PolarChanged&quot;&gt;
-      &lt;arg type=&quot;u&quot; name=&quot;range&quot;/&gt;
-      &lt;arg type=&quot;u&quot; name=&quot;direction&quot;/&gt;
-      &lt;arg type=&quot;u&quot; name=&quot;azimuth&quot;/&gt;
-    &lt;/signal&gt;
-    &lt;signal name=&quot;VelocityChanged&quot;&gt;
-      &lt;arg type=&quot;u&quot; name=&quot;speed&quot;/&gt;
-      &lt;arg type=&quot;u&quot; name=&quot;course&quot;/&gt;
-    &lt;/signal&gt;
-    &lt;signal name=&quot;StateChanged&quot;&gt;
-      &lt;arg type=&quot;i&quot; name=&quot;state&quot;/&gt;
-    &lt;/signal&gt;
-    &lt;signal name=&quot;SatsChanged&quot;&gt;
-      &lt;arg type=&quot;y&quot; name=&quot;nsats&quot;/&gt;
-      &lt;arg type=&quot;y&quot; name=&quot;fix&quot;/&gt;
-    &lt;/signal&gt;
-    &lt;signal name=&quot;Quit&quot;&gt;
-    &lt;/signal&gt;
-    &lt;property type=&quot;u&quot; name=&quot;DbusPosInterval&quot; access=&quot;readwrite&quot;/&gt;
-  &lt;/interface&gt;
-&lt;/node&gt;
-</code></pre></div>
+<p>```</p>
+<h1 id="note-samplesmwp-dbus-locrb-also-provides-introspection">Note samples/mwp-dbus-loc.rb also provides introspection.<a class="headerlink" href="#note-samplesmwp-dbus-locrb-also-provides-introspection" title="Permanent link">#</a></h1>
+<p>$ samples/mwp-dbus-test.sh introspect</p>
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+                      "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<!-- GDBus 2.60.3 -->
+<p><node>
+  <interface name="org.freedesktop.DBus.Properties">
+    <method name="Get">
+      <arg type="s" name="interface_name" direction="in"/>
+      <arg type="s" name="property_name" direction="in"/>
+      <arg type="v" name="value" direction="out"/>
+    </method>
+    <method name="GetAll">
+      <arg type="s" name="interface_name" direction="in"/>
+      <arg type="a{sv}" name="properties" direction="out"/>
+    </method>
+    <method name="Set">
+      <arg type="s" name="interface_name" direction="in"/>
+      <arg type="s" name="property_name" direction="in"/>
+      <arg type="v" name="value" direction="in"/>
+    </method>
+    <signal name="PropertiesChanged">
+      <arg type="s" name="interface_name"/>
+      <arg type="a{sv}" name="changed_properties"/>
+      <arg type="as" name="invalidated_properties"/>
+    </signal>
+  </interface>
+  <interface name="org.freedesktop.DBus.Introspectable">
+    <method name="Introspect">
+      <arg type="s" name="xml_data" direction="out"/>
+    </method>
+  </interface>
+  <interface name="org.freedesktop.DBus.Peer">
+    <method name="Ping"/>
+    <method name="GetMachineId">
+      <arg type="s" name="machine_uuid" direction="out"/>
+    </method>
+  </interface>
+  <interface name="org.mwptools.mwp">
+    <method name="GetStateNames">
+      <arg type="as" name="names" direction="out"/>
+      <arg type="i" name="result" direction="out"/>
+    </method>
+    <method name="GetVelocity">
+      <arg type="u" name="speed" direction="out"/>
+      <arg type="u" name="course" direction="out"/>
+    </method>
+    <method name="GetPolarCoordinates">
+      <arg type="u" name="range" direction="out"/>
+      <arg type="u" name="direction" direction="out"/>
+      <arg type="u" name="azimuth" direction="out"/>
+    </method>
+    <method name="GetHome">
+      <arg type="d" name="latitude" direction="out"/>
+      <arg type="d" name="longitude" direction="out"/>
+      <arg type="d" name="altitude" direction="out"/>
+    </method>
+    <method name="GetLocation">
+      <arg type="d" name="latitude" direction="out"/>
+      <arg type="d" name="longitude" direction="out"/>
+      <arg type="d" name="altitude" direction="out"/>
+    </method>
+    <method name="GetState">
+      <arg type="i" name="result" direction="out"/>
+    </method>
+    <method name="GetSats">
+      <arg type="y" name="nsats" direction="out"/>
+      <arg type="y" name="fix" direction="out"/>
+    </method>
+    <method name="SetMission">
+      <arg type="s" name="mission" direction="in"/>
+      <arg type="u" name="result" direction="out"/>
+    </method>
+    <method name="LoadMission">
+      <arg type="s" name="filename" direction="in"/>
+      <arg type="u" name="result" direction="out"/>
+    </method>
+    <method name="ClearMission">
+    </method>
+    <method name="GetDevices">
+      <arg type="as" name="devices" direction="out"/>
+    </method>
+    <method name="UploadMission">
+      <arg type="b" name="to_eeprom" direction="in"/>
+      <arg type="i" name="result" direction="out"/>
+    </method>
+    <method name="ConnectionStatus">
+      <arg type="s" name="device" direction="out"/>
+      <arg type="b" name="result" direction="out"/>
+    </method>
+    <method name="ConnectDevice">
+      <arg type="s" name="device" direction="in"/>
+      <arg type="b" name="result" direction="out"/>
+    </method>
+    <signal name="HomeChanged">
+      <arg type="d" name="latitude"/>
+      <arg type="d" name="longitude"/>
+      <arg type="i" name="altitude"/>
+    </signal>
+    <signal name="LocationChanged">
+      <arg type="d" name="latitude"/>
+      <arg type="d" name="longitude"/>
+      <arg type="i" name="altitude"/>
+    </signal>
+    <signal name="PolarChanged">
+      <arg type="u" name="range"/>
+      <arg type="u" name="direction"/>
+      <arg type="u" name="azimuth"/>
+    </signal>
+    <signal name="VelocityChanged">
+      <arg type="u" name="speed"/>
+      <arg type="u" name="course"/>
+    </signal>
+    <signal name="StateChanged">
+      <arg type="i" name="state"/>
+    </signal>
+    <signal name="SatsChanged">
+      <arg type="y" name="nsats"/>
+      <arg type="y" name="fix"/>
+    </signal>
+    <signal name="Quit">
+    </signal>
+    <property type="u" name="DbusPosInterval" access="readwrite"/>
+  </interface>
+</node>
+```</p>
                 
               
               

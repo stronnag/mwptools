@@ -88,8 +88,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="mwptools" class="md-header__button md-logo" aria-label="mwptools" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+  <img src="../material/book-open-variant" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -175,8 +174,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="mwptools" class="md-nav__button md-logo" aria-label="mwptools" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+  <img src="../material/book-open-variant" alt="logo">
 
     </a>
     mwptools
@@ -471,20 +469,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
-    Configuration
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#custom-tile" class="md-nav__link">
-    Custom Tile
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -756,20 +740,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
-    Configuration
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#custom-tile" class="md-nav__link">
-    Custom Tile
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -792,55 +762,54 @@
 </ul>
 <h2 id="building">Building<a class="headerlink" href="#building" title="Permanent link">#</a></h2>
 <p>This proxy is not build by default, it is necessary to build, install and configure the proxy manually.</p>
-<div class="highlight"><pre><span></span><code>cd mwptools/qproxy
-make bproxy
-# copy bproxy somewhere on the PATH
-cp bproxy ~/.local/bin/
-# or
-sudo cp broxy /usr/local/bin
-# or
-sudo cp broxy /usr/bin
-</code></pre></div>
+<p>```
+cd mwptools/qproxy
+make bproxy</p>
+<h1 id="copy-bproxy-somewhere-on-the-path">copy bproxy somewhere on the PATH<a class="headerlink" href="#copy-bproxy-somewhere-on-the-path" title="Permanent link">#</a></h1>
+<p>cp bproxy ~/.local/bin/</p>
+<h1 id="or">or<a class="headerlink" href="#or" title="Permanent link">#</a></h1>
+<p>sudo cp broxy /usr/local/bin</p>
+<h1 id="or_1">or<a class="headerlink" href="#or_1" title="Permanent link">#</a></h1>
+<p>sudo cp broxy /usr/bin
+```</p>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">#</a></h2>
 <p>That was the easy bit! Now it is necessary to tell <a href="https://github.com/stronnag/mwptools">mwp</a> where to find the proxy. This involves a setting and a configuration file.</p>
 <p>First of all, ensure that the <code>map-sources</code> setting is enabled:</p>
-<div class="highlight"><pre><span></span><code>$ gsettings get org.mwptools.planner map-sources
-&#39;sources.json&#39;
-# here this set to a file sources.json (in ~/.config/mwp/)
-</code></pre></div>
+<p>```
+$ gsettings get org.mwptools.planner map-sources
+'sources.json'</p>
+<h1 id="here-this-set-to-a-file-sourcesjson-in-configmwp">here this set to a file sources.json (in ~/.config/mwp/)<a class="headerlink" href="#here-this-set-to-a-file-sourcesjson-in-configmwp" title="Permanent link">#</a></h1>
+<p>```</p>
 <p>if this is not set, then set it:</p>
-<div class="highlight"><pre><span></span><code>$ gsettings set org.mwptools.planner map-sources &#39;sources.json&#39;
-</code></pre></div>
+<p><code>$ gsettings set org.mwptools.planner map-sources 'sources.json'</code></p>
 <p>Now we need to edit the file <code>~/.config/mwp/sources.json</code>, there is a sample file in <code>mwptools/samples/sources.json</code>. you file needs a stanza like:
-<div class="highlight"><pre><span></span><code>{
- &quot;id&quot;: &quot;Black&quot;,
- &quot;name&quot;: &quot;Black Tiles&quot;,
- &quot;license&quot;: &quot;(c) jh &quot;,
- &quot;license_uri&quot;: &quot;http://daria.co.uk/&quot;,
- &quot;min_zoom&quot;: 0,
- &quot;max_zoom&quot;: 20,
- &quot;tile_size&quot;: 256,
- &quot;projection&quot;: &quot;MERCATOR&quot;,
- &quot;spawn&quot; : &quot;bproxy&quot;,
-}
-</code></pre></div>
+<code>{
+ "id": "Black",
+ "name": "Black Tiles",
+ "license": "(c) jh ",
+ "license_uri": "http://daria.co.uk/",
+ "min_zoom": 0,
+ "max_zoom": 20,
+ "tile_size": 256,
+ "projection": "MERCATOR",
+ "spawn" : "bproxy",
+}</code>
 So a minimal <code>~/.config/mwp/sources.json</code> looks like:
-<div class="highlight"><pre><span></span><code>{
-   &quot;sources&quot; : [
+<code>{
+   "sources" : [
       {
-         &quot;id&quot;: &quot;Black&quot;,
-         &quot;name&quot;: &quot;Black Tiles&quot;,
-         &quot;license&quot;: &quot;(c) jh &quot;,
-         &quot;license_uri&quot;: &quot;http://daria.co.uk/&quot;,
-         &quot;min_zoom&quot;: 0,
-         &quot;max_zoom&quot;: 20,
-         &quot;tile_size&quot;: 256,
-         &quot;projection&quot;: &quot;MERCATOR&quot;,
-         &quot;spawn&quot; : &quot;bproxy&quot;,
+         "id": "Black",
+         "name": "Black Tiles",
+         "license": "(c) jh ",
+         "license_uri": "http://daria.co.uk/",
+         "min_zoom": 0,
+         "max_zoom": 20,
+         "tile_size": 256,
+         "projection": "MERCATOR",
+         "spawn" : "bproxy",
        }
    ]
-}
-</code></pre></div>
+}</code>
 On starting <strong>mwp</strong> you should see a new map option "Black Tiles".</p>
 <p><img alt="Black Map" src="../images/black.png" width="50%" /></p>
 <h2 id="custom-tile">Custom Tile<a class="headerlink" href="#custom-tile" title="Permanent link">#</a></h2>
@@ -850,10 +819,11 @@ On starting <strong>mwp</strong> you should see a new map option "Black Tiles".<
 <li>PNG</li>
 </ul>
 <p>The full path is provided in the environment variable <code>MWP_BLACK_TILE</code>, e.g.
-<div class="highlight"><pre><span></span><code># put this in e.g. ~/.bashrc to make it permanent
-export MWP_BLACK_TILE=~/.config/mwp/mytile.png
-</code></pre></div>
-The environment variable may instead be added to <a href="../mwp-Configuration/#cmdopts"><code>~/.config/mwp/cmdopts</code></a>.</p>
+```</p>
+<h1 id="put-this-in-eg-bashrc-to-make-it-permanent">put this in e.g. ~/.bashrc to make it permanent<a class="headerlink" href="#put-this-in-eg-bashrc-to-make-it-permanent" title="Permanent link">#</a></h1>
+<p>export MWP_BLACK_TILE=~/.config/mwp/mytile.png
+<code>``
+The environment variable may instead be added to [</code>~/.config/mwp/cmdopts`](mwp-Configuration.md#cmdopts).</p>
 <p>For example:</p>
 <p><img alt="Fly me to the Mars" src="../images/user-tile.png" width="50%" /></p>
                 

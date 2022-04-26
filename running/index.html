@@ -88,8 +88,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href=".." title="mwptools" class="md-header__button md-logo" aria-label="mwptools" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+  <img src="../material/book-open-variant" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -175,8 +174,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href=".." title="mwptools" class="md-nav__button md-logo" aria-label="mwptools" data-md-component="logo">
       
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.5 14.33c.79 0 1.63.08 2.5.24v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.33-4.5.99v-1.69c1.17-.53 2.67-.8 4.5-.8M13 12.46c1.29-.53 2.79-.79 4.5-.79.79 0 1.63.07 2.5.23v1.5c-.62-.16-1.46-.24-2.5-.24-1.9 0-3.39.34-4.5.99m4.5-3.65c-1.9 0-3.39.32-4.5 1V9.84c1.23-.56 2.73-.84 4.5-.84.79 0 1.63.08 2.5.23v1.55c-.74-.19-1.59-.28-2.5-.28m3.5 8V7c-1.04-.33-2.21-.5-3.5-.5-2.05 0-3.88.5-5.5 1.5v11.5c1.62-1 3.45-1.5 5.5-1.5 1.19 0 2.36.16 3.5.5m-3.5-14c2.35 0 4.19.5 5.5 1.5v14.56c0 .12-.05.24-.16.35-.11.09-.23.17-.34.17-.11 0-.19-.02-.25-.05-1.28-.69-2.87-1.03-4.75-1.03-2.05 0-3.88.5-5.5 1.5-1.34-1-3.17-1.5-5.5-1.5-1.66 0-3.25.36-4.75 1.07-.03.01-.07.01-.12.03-.04.01-.08.02-.13.02-.11 0-.23-.04-.34-.12a.475.475 0 0 1-.16-.35V6c1.34-1 3.18-1.5 5.5-1.5 2.33 0 4.16.5 5.5 1.5 1.34-1 3.17-1.5 5.5-1.5z"/></svg>
+  <img src="../material/book-open-variant" alt="logo">
 
     </a>
     mwptools
@@ -903,30 +901,29 @@
 * Such <a href="../mwp-Configuration/">options can be added to a configuration file</a> for persistence or use from the graphical icon.</p>
 <h2 id="command-line-options">Command line options<a class="headerlink" href="#command-line-options" title="Permanent link">#</a></h2>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a>'s command line options may be displayed with the <code>--help</code> option:</p>
-<div class="highlight"><pre><span></span><code>mwp --help
+<p>```
+mwp --help
 Usage:
-  mwp [OPTION…]
-
-Help Options:
+  mwp [OPTION…]</p>
+<p>Help Options:
   -h, --help                          Show help options
   --help-all                          Show all help options
   --help-gapplication                 Show GApplication options
-  --help-gtk                          Show GTK Options
-
-Application Options:
+  --help-gtk                          Show GTK Options</p>
+<p>Application Options:
   -m, --mission=file-name             Mission file
   -s, --serial-device=device_name     Serial device
   -d, --device=device-name            Serial device
   -f, --flight-controller=fc-name     mw|mwnav|bf|cf
   -c, --connect                       connect to first device (does not set auto flag)
   -a, --auto-connect                  auto-connect to first device (sets auto flag)
-  -N, --no-poll                       don&#39;t poll for nav info
-  -T, --no-trail                      don&#39;t display GPS trail
+  -N, --no-poll                       don't poll for nav info
+  -T, --no-trail                      don't display GPS trail
   -r, --raw-log                       log raw serial data to file
   --ignore-sizing                     ignore minimum size constraint
   --full-screen                       open full screen
   --ignore-rotation                   legacy unused
-  --dont-maximise                     don&#39;t maximise the window
+  --dont-maximise                     don't maximise the window
   --force-mag                         force mag for vehicle direction
   --force-nav                         force nav capaable
   -l, --layout                        Layout name
@@ -951,22 +948,20 @@ Application Options:
   --perma-warn                        info dialogues never time out
   --fsmenu                            use a menu bar in full screen (vice a menu button)
   -k, --kmlfile=file-name             KML file
-  --relaxed-msp                       don&#39;t check MSP direction flag
+  --relaxed-msp                       don't check MSP direction flag
   --display=DISPLAY                   X display to use
-</code></pre></div>
+```</p>
 <h3 id="bash-completion">Bash completion<a class="headerlink" href="#bash-completion" title="Permanent link">#</a></h3>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> installation also installs a 'bash completion' script (and also a <code>blackbox_decode</code> completion script).
 Note this is only available after you log in, so on first install, it's only available after the <em>next</em> login.</p>
 <p>This facilitates automatic command completion, so you don't have to remember all the options or be always typing <code>mwp --help</code>.</p>
 <p>Typing <code>mwp</code> and then <code>&lt;TAB&gt;</code> will first display the option lead <code>--</code>; then a subsequent <code>&lt;TAB&gt;&lt;TAB&gt;</code> will display all the options. If one then typed <code>ra&lt;TAB&gt;&lt;TAB&gt;</code>, it would complete to:
-<div class="highlight"><pre><span></span><code>$ mwp --ra
---radar-device  --raw-log
-</code></pre></div>
+<code>$ mwp --ra
+--radar-device  --raw-log</code>
 Further entry (e.g. <code>d</code>) would complete the command (<code>--radar-device</code>).</p>
 <h3 id="adding-options-to-a-running-mwp">Adding options to a running mwp<a class="headerlink" href="#adding-options-to-a-running-mwp" title="Permanent link">#</a></h3>
 <p>Certain options, like <code>--replay-bbox</code>, <code>--mission</code> allow you to add a file to a running <a href="https://github.com/stronnag/mwptools">mwp</a>. So if <a href="https://github.com/stronnag/mwptools">mwp</a> was running, either from the command line or Desktop Environment icon, then (for example):</p>
-<p><div class="highlight"><pre><span></span><code>mwp --mission file-i-forgot.mission
-</code></pre></div>
+<p><code>mwp --mission file-i-forgot.mission</code>
 would load the mission <code>file-i-forgot.mission</code> into the running <a href="https://github.com/stronnag/mwptools">mwp</a> rather than starting a new instance.</p>
 <h3 id="drag-and-drop">Drag and Drop<a class="headerlink" href="#drag-and-drop" title="Permanent link">#</a></h3>
 <p>You can <em>drag and drop</em> relevant files onto the <a href="https://github.com/stronnag/mwptools">mwp</a> map:</p>
