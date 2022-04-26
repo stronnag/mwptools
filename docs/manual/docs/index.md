@@ -16,9 +16,9 @@ From its MultiWii origins mwp has evolved to support navigation capabilities in 
 
 ## Features
 
-* [**Mission Planner**](mission-editor.md) : Support all {{ inav }} and MultiWii mission planning functions, including all inav extensions.
+* [**Mission Planner**](mission-editor.md) : Support all {{ inav }} and MultiWii mission planning functions, including all INAV extensions.
 * [**Ground Control Station**](gcs-features.md) : (Near) real time ground control monitoring, using a wide range of [telemetry](#supported-protocols) options. Audio status reports.
-* [**Monitoring and warning**](mwp-Radar-View.md) of other airspace users (inav radar, manned aviation ADS-B)
+* [**Monitoring and warning**](mwp-Radar-View.md) of other airspace users (INAV radar, manned aviation ADS-B)
 * [**Flight log replay**](replay-tools.md)  (Blackbox, OTX/ETX logs, BulletGCSS)
 * [**Embedded video**](mwp_video_player.md) (live and replay)
 * **Support** functions
@@ -34,7 +34,7 @@ From its MultiWii origins mwp has evolved to support navigation capabilities in 
 
 * MSP (MultiWii Serial Protocol)
 * LTM (Lightweight Telemetry)
-* MAVLink (iNav subset)
+* MAVLink (INAV subset)
 * Smartport (direct /  via inverter / or from Multi-protocol Module)
 * Crossfire (CRSF)
 * Flysky AA (via Multi-protocol Module)
@@ -44,7 +44,7 @@ From its MultiWii origins mwp has evolved to support navigation capabilities in 
 
 {{ mwp }} also supports the [real-time display of adjacent aircraft](mwp-Radar-View.md) using:
 
-* [inav-radar](https://github.com/OlivierC-FR/ESP32-INAV-Radar/) (INAV UAS)
+* [INAV-radar](https://github.com/OlivierC-FR/ESP32-INAV-Radar/) (INAV UAS)
 * MAVlink Traffic Report (e.g. full-size aviation, typically ADS-B via a device such as uAvionix PingRX)
 
 ### Log replay formats

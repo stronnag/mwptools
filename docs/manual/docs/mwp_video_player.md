@@ -64,9 +64,8 @@ If your camera does not work the `gstreamer` utilities, it is unlikely to work w
 
 You can easily test this using `gst-launch-1.0` which will closely emulate the way {{ mwp }} works:
 
-```
-gst-launch-1.0 playbin uri=v4l2:///dev/video0
-```
+    gst-launch-1.0 playbin uri=v4l2:///dev/video0
+
 Where `/dev/video0` is the camera device node.
 
 ### Fail example and resolution
@@ -78,30 +77,28 @@ Fixed by setting uvcvideo quirk 640:
 `UVC_QUIRK_RESTRICT_FRAME_RATE` (0x200, 512)
 
 #### Test fix
-```
-sudo rmmod uvcvideo
-sudo modprobe uvcvideo quirks=640
-```
+
+    sudo rmmod uvcvideo
+    sudo modprobe uvcvideo quirks=640
+
 Now there is a proper picture, rather than a black screen.
 
 #### Permanent solution
 
 Add a file e.g. `/etc/modprobe.d/v4l2.conf` containing the line:
-```
-options uvcvideo quirks=640
-```
+
+    options uvcvideo quirks=640
+
 or to any other `.conf` file under `/etc/modprobe.d/`
 
 ### Helper tools
 
 There are a couple of tools under `mwptools/src/samples/gst-video/`. These are not built / installed by default but may be built if required to enable diagnostics.
 
-```
-cd mwptools/src/samples/gst-video
-make
-# optionally, install to ~/.local/bin
-make install
-```
+    cd mwptools/src/samples/gst-video
+    make
+    # optionally, install to ~/.local/bin
+    make install
 
 * `gst-devmon` provides the same video device monitoring as employed by mwp. It should report the insertion and removal of camera devices, together with their attributes.
 * `gst-video-player` provides the same video replay capability as {{ mwp }}

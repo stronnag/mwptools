@@ -2,7 +2,7 @@
 
 {{ mwp }} supports the display of "radar" contacts. This provides a view of adjacent aircraft obtained from a number of sources:
 
-* [inav-radar](https://www.rcgroups.com/forums/showthread.php?3304673-iNav-Radar-ESP32-LoRa-modems). inav radar works in conjunction with [inav](https://github.com/iNavFlight/inav) flight controllers to broadcast the location of UAS fitted with an ESP32 LoRa module. {{ mwp }} can listen to one of these modems in ground station mode to display the positions of the rest of the 'swarm' (up to 4 UAS); [technical / MSP details](#inav-radar).
+* [INAV-radar](https://www.rcgroups.com/forums/showthread.php?3304673-iNav-Radar-ESP32-LoRa-modems). INAV radar works in conjunction with [INAV](https://github.com/iNavFlight/inav) flight controllers to broadcast the location of UAS fitted with an ESP32 LoRa module. {{ mwp }} can listen to one of these modems in ground station mode to display the positions of the rest of the 'swarm' (up to 4 UAS); [technical / MSP details](#inav-radar).
 
 * **Full size aircraft** reported by the MAVLink 'Traffic Report' message. An example is the [uAvionix PingRX](https://uavionix.com/products/pingrx/), a compact device that receives ADS-B location data from full sized aircraft and publishes the locations as MAVLink. For a ground based installation, this device has around a 40Km detection radius. [MAVLink ICD](https://uavionix.com/downloads/integration/uAvionix%20Ping%20Integration%20Guide.pdf).
 
@@ -12,10 +12,10 @@
 
 ## mwp Configuration
 
-{{ mwp }} can receive the 'radar' data over one or two connections, either or both may be active, and {{ mwp }} can receive and display 'own vehicle' telemetry (MSP, LTM or Smartpost), 'inav-radar' and 'MAVlink Traffic' data simultaneously. Radar data may be received over:
+{{ mwp }} can receive the 'radar' data over one or two connections, either or both may be active, and {{ mwp }} can receive and display 'own vehicle' telemetry (MSP, LTM or Smartpost), 'INAV-radar' and 'MAVlink Traffic' data simultaneously. Radar data may be received over:
 
-* The main serial port device (see [caveat](#using-the-main-serial-port) for inav-radar) or
-* device(s) defined by the `radar-device` CLI or configuration parameter (MAVLink Traffic, inav-radar)
+* The main serial port device (see [caveat](#using-the-main-serial-port) for INAV-radar) or
+* device(s) defined by the `radar-device` CLI or configuration parameter (MAVLink Traffic, INAV-radar)
 
 The `radar-device` option is defined by the standard {{ mwp }} naming scheme:
 
@@ -24,7 +24,7 @@ The `radar-device` option is defined by the standard {{ mwp }} naming scheme:
     * Serial defaults to 115200 baud, but may be set in the device name (@baudrate)
 * A Bluetooth address (for BT bridges)
     * `00:0B:0D:87:13:A2`
-* A UDP address, e.g. for simulation, recording replays or serial multiplexer (inav,mavlink).
+* A UDP address, e.g. for simulation, recording replays or serial multiplexer (INAV, mavlink).
     * `udp://:30001` local UDP listener.
 * A SBS-1 source, defined by a special URI:
     * `sbs://[[host][:port]]`
@@ -35,11 +35,11 @@ The specific (not shared with the main serial port) radar device(s) may be defin
  * `mwp --radar-device udp://:30001`
  * `$ cat ~/.config/mwp/cmdopts`
 
-```
-  # Default options for mwp
-  # using udev rule to associate a specifc USB-TTL adaptor to a name
-  --radar-device=/dev/pingRX@57600
-```
+
+    	# Default options for mwp
+    	# using udev rule to associate a specifc USB-TTL adaptor to a name
+		--radar-device=/dev/pingRX@57600
+
 Multiple devices may be defined, e.g.
 
 * As separate options, `--radar-device=/dev/pingRX@57600 --radar-device= /dev/inavradar@115200`
@@ -49,12 +49,12 @@ Any bespoke `radar-device` is started automatically on startup (or when it shows
 
 ## Using the main serial port
 
-The main serial port may be used for MavLink Traffic without any further configuration. For inav-radar, to use the main MSP port for inav-radar (vice using `--radar-device`), it is still necessary to add a command option to {{ mwp }}; it needs to told to relax the default inbound MSP direction check.
+The main serial port may be used for MavLink Traffic without any further configuration. For INAV-radar, to use the main MSP port for INAV-radar (vice using `--radar-device`), it is still necessary to add a command option to {{ mwp }}; it needs to told to relax the default inbound MSP direction check.
 
 This is enabled as
-```
-mwp --relaxed-msp
-```
+
+    mwp --relaxed-msp
+
 which should be 'mainly harmless' for normal operations. It's entirely acceptable to put this in `~/config/mwp/cmdopts` to make it the default, as the protocol check dilution is slight.
 
 ## Settings
@@ -82,7 +82,7 @@ Once the radar interface is open, radar tracks are displayed on the map and in a
 
 | Type | Usage |
 | ---- | ----- |
-| inav-radar | Node Id (typically 'A' - 'D') |
+| INAV-radar | Node Id (typically 'A' - 'D') |
 | Traffic Report | Callsign if reported, otherwise [ICAO number] |
 | SBS-1 | Callsign if reported, otherwise [Mode S hexadecimal code] |
 
@@ -93,17 +93,17 @@ Radar contacts have one of the following status values:
 | Status | Explanation |
 | ------ | ----------- |
 | Undefined | Not shown in list or on the map |
-| Stale | The last contact was more that 120s previous. Displayed in the list and shown on the map with reduced intensity or an inav-radar node has 'lost' status |
-| Armed | An active inav-radar contact |
+| Stale | The last contact was more that 120s previous. Displayed in the list and shown on the map with reduced intensity or an INAV-radar node has 'lost' status |
+| Armed | An active INAV-radar contact |
 | ADS-B | A live MAVLink Traffic report |
 | SBS | SBS-1 report |
-| Hidden | A MAVLink Traffic /SBS-1 contact is between 5 and 10 minutes old. It remains in the list but is not displayed in the map. MAVLink Traffic Report / SBS-1 tracks are removed from the list (and internal storage) after 10 minutes inactivity. inav-radar ground station. Stale / 'Lost' inav-radar contacts do not expire, as they may relate to a lost model. |
+| Hidden | A MAVLink Traffic /SBS-1 contact is between 5 and 10 minutes old. It remains in the list but is not displayed in the map. MAVLink Traffic Report / SBS-1 tracks are removed from the list (and internal storage) after 10 minutes inactivity. INAV-radar ground station. Stale / 'Lost' INAV-radar contacts do not expire, as they may relate to a lost model. |
 
 The number displayed after the status text is:
 
 | Type | Usage |
 | ---- | ----- |
-| inav-radar | The link quality |
+| INAV-radar | The link quality |
 | Traffic Report | Time since last communication in seconds |
 | SBS-1 | Always `0` |
 
@@ -115,7 +115,7 @@ The number displayed after the status text is:
 * Mission Plan
 * List view
 
-### Live ADS-B and simulated inav targets, with proximity alerts (range < 3000m).
+### Live ADS-B and simulated INAV targets, with proximity alerts (range < 3000m).
 
 ![radar-alerts](images/mwp-radar-alert.png){: width="80%" }
 
@@ -123,19 +123,19 @@ The number displayed after the status text is:
 
 ![Florida-may-2020](images/florida-2020-05.png){: width="80%" }
 
-### Simulated inav radar view
+### Simulated INAV radar view
 
 ![inav-radar-sim](images/mwp-inav-radar.png){: width="60%" }
 
 ## Simulators
 
-There are simulators for both inav-radar and MAVLink 'Traffic Report' (e.g. uAvionix PingRX) in the `mwptools/src/samples/radar` directory.
+There are simulators for both INAV-radar and MAVLink 'Traffic Report' (e.g. uAvionix PingRX) in the `mwptools/src/samples/radar` directory.
 
 There is a replay tool for SBS-1 logs `mwptools/src/samples/sbs-test/sbs-player.rb`.
 
 ## Changing the Radar Symbols
 
-Any map symbol used by {{ mwp }} can be changed by the user; in the image above, the inav radar node symbol has been changed from the default stylised inav multirotor to a smaller version of the mission replay "paper plane" symbol as described in [creating your own icon](mwp-Configuration.md#settings-precedence-and-user-updates).
+Any map symbol used by {{ mwp }} can be changed by the user; in the image above, the INAV radar node symbol has been changed from the default stylised INAV multirotor to a smaller version of the mission replay "paper plane" symbol as described in [creating your own icon](mwp-Configuration.md#settings-precedence-and-user-updates).
 
 ## Protocol documentation
 
@@ -143,9 +143,9 @@ Any map symbol used by {{ mwp }} can be changed by the user; in the image above,
 
 The MAVLink implementation is [comprehensively documented](https://uavionix.com/downloads/integration/uAvionix%20Ping%20Integration%20Guide.pdf) by the vendor.
 
-### inav radar
+### INAV radar
 
-The following is required by a device wishing to act as a ground node (it either masquerades as an inav FC, or declares itself a GCS)
+The following is required by a device wishing to act as a ground node (it either masquerades as an INAV FC, or declares itself a GCS)
 
 * Receive and respond to the following MSP data requests:
     * MSP_FC_VARIANT (responding as `INAV` or (from 2021/05/06) `GCS` for generic ground control stations).

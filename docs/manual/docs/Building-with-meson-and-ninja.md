@@ -21,18 +21,14 @@ The migration to `meson` and `ninja` solves this problem and allows the project 
 
 Please ensure your extant mwptools instance does not have untracked files:
 
-```
-git clean -fd -fx
-git pull
-```
+    git clean -fd -fx
+    git pull
 
 ### First time
 
 Set up the `meson` build system from the top level:
 
-```
-meson build --buildtype=release --strip [--prefix $HOME/.local`]
-```
+    meson build --buildtype=release --strip [--prefix $HOME/.local`]
 
 * For a user / non-system install, set `--prefix $HOME/.local`
     - This will install the binaries in `$HOME/.local/bin`, which should be added to `$PATH` as required.
@@ -54,13 +50,11 @@ Unless you need a multi-user setup, a local install is preferable, as you don't 
 
 ### Build and update
 
-```
-cd build
-# for a local install (and cygwin)
-ninja install
-# for system install
-ninja && sudo ninja install
-```
+    cd build
+    # for a local install (and cygwin)
+    ninja install
+    # for system install
+    ninja && sudo ninja install
 
 ### Accessing the serial port
 
@@ -75,10 +69,9 @@ The user needs to have read / write permissions on the serial port in order to c
 
 For now, some of the legacy `Makefiles` remain, and can be used similar to before, e.g. :
 
-```
-cd mwptools/src/mwp
-make && sudo make install
-```
+    cd mwptools/src/mwp
+    make && sudo make install
+
 At some stage, more of the Makefiles will be removed (or just rot into uselessness).
 
 ## Files built / installed
@@ -105,11 +98,9 @@ At some stage, more of the Makefiles will be removed (or just rot into uselessne
 
 These are only built by explicit target name; they will be installed if built.
 
-```
-# one of more of the following targets
-ninja bproxy ublox-geo ublox-cli flashdl
-sudo ninja install
-```
+    # one of more of the following targets
+    ninja bproxy ublox-geo ublox-cli flashdl
+    sudo ninja install
 
 | Application | Usage |
 | ----------- | ----- |
@@ -123,12 +114,10 @@ sudo ninja install
 
 #### Migrate from a system install to a user install
 
-```
-cd build
-sudo ninja uninstall
-meson --reconfigure --prefix=$HOME/.local
-ninja install
-```
+    cd build
+    sudo ninja uninstall
+    meson --reconfigure --prefix=$HOME/.local
+    ninja install
 
 #### Fixing build permissions
 
@@ -148,10 +137,9 @@ If you used the `deb-install.sh` script, then it installed everything into `$HOM
 
 Linux (like most other OS) has the concept of a `PATH`, a list of places where it looks for executable files). You can see this from a terminal:
 
-```
-## a colon separated list
-echo $PATH
-```
+
+    ## a colon separated list
+    echo $PATH
 
 So check that `$HOME/.local/bin` is on `$PATH`; preferably near the front.
 
@@ -161,42 +149,39 @@ So, maybe you have an old install. You didn't remove it (alas); so the system th
 
 If `$HOME/.local/bin` is on the PATH before `/usr/bin`, the you have two choices:
 
-```
-# reset the path search
-hash -r
-# mwp, where art thou? Hopefully now is ~/.local/bin
-which mwp
-# From **this terminal** executing mwp will run the location reported by `which mwp`
-```
+
+    # reset the path search
+    hash -r
+    # mwp, where art thou? Hopefully now is ~/.local/bin
+    which mwp
+    # From **this terminal** executing mwp will run the location reported by `which mwp`
+
 or
 
 Log out, log in. The PATH will be re-evaluated.
 
 If `$HOME/.local/bin` is not on PATH. then it needs to be added to a login file (`.profile`, `.bashrc`, `.bash_profile` etc.). Modern distros do this for you, however if you've updated an older install you may have to add it yourself.
 
-```
-# set PATH so it includes user's private bin if it exists
-if [ -d "$HOME/bin" ] ; then
-    PATH="$HOME/bin:$PATH"
-fi
+    # set PATH so it includes user's private bin if it exists
+    if [ -d "$HOME/bin" ] ; then
+        PATH="$HOME/bin:$PATH"
+    fi
 
-# set PATH so it includes user's private bin if it exists
-if [ -d "$HOME/.local/bin" ] ; then
-    PATH="$HOME/.local/bin:$PATH"
-fi
-```
+    # set PATH so it includes user's private bin if it exists
+    if [ -d "$HOME/.local/bin" ] ; then
+        PATH="$HOME/.local/bin:$PATH"
+    fi
 
 If an older (perhaps Makefile generated) mwp exists; then you should remove all evidence of an earlier system install.
 
-```
-find /usr -iname \*mwp\*
-```
+
+    find /usr -iname \*mwp\*
+
 review the list and as root, delete the old files. Do similar for blackbox-decode.
 
 If you're content with the list, then (*caveat emptor*):
-```
-sudo find /usr -iname \*mwp\* -delete
-```
+
+    sudo find /usr -iname \*mwp\* -delete
 
 You'll still have to remove non-empty directories manually.
 
@@ -204,13 +189,10 @@ You'll still have to remove non-empty directories manually.
 
 Something, or persons unknown has removed this file.
 
-
-```
-cd mwptools
-meson setup --reconfigure  build --prefix ~/.local
-cd build
-ninja install
-```
+    cd mwptools
+    meson setup --reconfigure  build --prefix ~/.local
+    cd build
+    ninja install
 
 #### ERROR: Dependency "?????" not found, tried pkgconfig
 

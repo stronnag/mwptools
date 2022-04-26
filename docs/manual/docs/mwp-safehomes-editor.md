@@ -1,22 +1,20 @@
-# mwp and inav safehome
+# mwp and INAV safehome
 
 One of the great features of {{ inav }} 2.6 was the `safehome` capability. The user can define of set of up to eight locations, and if any of these is within 200m (configurable up to 650m in {{ inav }} 2.7), then that is used as the home location for RTH (and RTH failsafe).
 
-## inav setting
+## INAV setting
 
 `safehome` is set in {{ inav }} using the CLI, here's an example:
 
-```
-# safehome
-safehome 0 1 508047750 -14948970
-safehome 1 1 509102384 -15344850
-safehome 2 1 509390336 -14613540
-safehome 3 1 509149619 -15337365
-safehome 4 0 508054891 -14961431
-safehome 5 0 543545392 -45219430
-safehome 6 0 540954148 -47328458
-safehome 7 0 0 0
-```
+    # safehome
+    safehome 0 1 508047750 -14948970
+    safehome 1 1 509102384 -15344850
+    safehome 2 1 509390336 -14613540
+    safehome 3 1 509149619 -15337365
+    safehome 4 0 508054891 -14961431
+    safehome 5 0 543545392 -45219430
+    safehome 6 0 540954148 -47328458
+    safehome 7 0 0 0
 
 As you see, it's not too user friendly; the parameters are
 
@@ -53,9 +51,8 @@ Note that editing functions are only available when the `Safe Homes` window is a
 
 It also is possible to set a `gsettings` key to define a file of safehomes to load at startup, and optionally display (readonly) icons.
 
-```
-gsettings set org.mwptools.planner load-safehome ~/.config/mwp/safehome.txt,Y
-```
+    gsettings set org.mwptools.planner load-safehome ~/.config/mwp/safehome.txt,Y
+
 This sets the default safehomes file to `~/.config/mwp/safehome.txt` and the appended `,Y` means display the icons on the map.
 
 ### Example

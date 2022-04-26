@@ -13,8 +13,8 @@ Another [slightly outdated video](https://vimeo.com/268036585), generic mission 
 
 Please also refer to the following articles that provide specific information for advanced {{ inav }} topics:
 
-* [inav multi-missions](inav-4.0-multi-missions.md)
-* [inav fly-by-home](Fly-By-Home-waypoints-(inav-4-new-feature).md)
+* [INAV multi-missions](inav-4.0-multi-missions.md)
+* [INAV fly-by-home](Fly-By-Home-waypoints-(inav-4-new-feature).md)
 
 ## Map Features
 
@@ -83,7 +83,7 @@ Way points can be edited Mission Editor. When a row is selected, the column head
   Once the type has been changed, default parameters for that way point type or action will be set. The type may also be set by a right mouse button click on the map symbol.
 
 * Altitude. New points are created with the default altitude (from the "Preferences". Some basic validation is performed
-* Parameters P1, P2 and P3. The parameters P1,P2 and P3 are integer values that have a meaning specific to the way-point type or action. For example, for action type of JUMP, P1 is the point to which to jump, and P2 is the number of repeats. This usage is documented in the [inav wiki](https://github.com/iNavFlight/inav/wiki/MSP-Navigation-Messages).
+* Parameters P1, P2 and P3. The parameters P1,P2 and P3 are integer values that have a meaning specific to the way-point type or action. For example, for action type of JUMP, P1 is the point to which to jump, and P2 is the number of repeats. This usage is documented in the [INAV wiki](https://github.com/iNavFlight/inav/wiki/MSP-Navigation-Messages).
 * Delete. The delete action will delete the selected (highlighted) way point(s). If no way point is selected, this option has no affect.
 
 #### Add Shape

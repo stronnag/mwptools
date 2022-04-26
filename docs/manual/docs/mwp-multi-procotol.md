@@ -13,31 +13,27 @@ Each of these requires a specific device name and _may_ require a protocol selec
 
 Serial devices are defined by the operating system device node name and optionally include an embedded baud rate, for example:
 
-```
-# Linux, USB seral
-/dev/ttyACM0
-# Linux, USB serial with baud rate
-/dev/ttyUSB0@57600
-# Linux, RFCOM Bluetooth
-/dev/rfcomm1
-```
-```
-# FreeBSD
-/dev/cuaU0
-```
+    # Linux, USB seral
+    /dev/ttyACM0
+    # Linux, USB serial with baud rate
+    /dev/ttyUSB0@57600
+    # Linux, RFCOM Bluetooth
+    /dev/rfcomm1
+
+    # FreeBSD
+    /dev/cuaU0
+
 ## Bluetooth
 
 Bluetooth may be specified by either an `rfcomm` device node (`/dev/rfcommX` on Linux, `/dev/ttypX` pseudo-terminal abstraction on FreeBSD) or by the device address (`BD_ADDR`, Linux and FreeBSD only):
 
-```
-# BT RFCOMM device node (Linux)
-/dev/rfcomm1
-/dev/rfcomm1@57600
-# RFCOMM / SPP (FreeBSD)
-/dev/ttyp6
-# BT device address (note here baud rate is immaterial)
-35:53:17:04:07:27
-```
+    # BT RFCOMM device node (Linux)
+    /dev/rfcomm1
+    /dev/rfcomm1@57600
+    # RFCOMM / SPP (FreeBSD)
+    /dev/ttyp6
+    # BT device address (note here baud rate is immaterial)
+    35:53:17:04:07:27
 
 ### Serial permissions
 
@@ -52,15 +48,14 @@ Typically on one side of the connection you'll provide a hostname /IP and on the
 Assuming the required UDP port is 43210
 
 if mwp is the "listener" (doesn't need, *a priori*, to know the address of peer), set the "Device" to:
-```
-udp://:43210
-```
+
+    udp://:43210
+
 i.e. the host part is empty.
 
 If the remote device / application is the listener, and we know its IP address; in the following example "192.168.42.17", set the "Device" to:
-```
-udp://192.168.42.17:43210
-```
+
+    udp://192.168.42.17:43210
 
 Note that for TCP, mwp only supports the latter form (it expects to be the TCP client).
 
@@ -70,18 +65,15 @@ Note that for TCP, mwp only supports the latter form (it expects to be the TCP c
 
 Some UDP devices (typically ESP8266 transparent serial require that the port number is specified for both local and remote addresses; often the same port number at both ends. `udp://local_host:local_port/remote_host:remote_port` or `udp://remotehost:remote_port/?bind=port`. The following have the same effect.
 
-```
-udp://:14014/esp-air:14014
-# both sides use port 14014, remote (FC) is esp-air, blank local name is understood as INADDR_AN
-udp://esp-air:14014/?bind=14014
-```
+    udp://:14014/esp-air:14014
+    # both sides use port 14014, remote (FC) is esp-air, blank local name is understood as INADDR_AN
+    udp://esp-air:14014/?bind=14014
 
 ### MQTT / BulletGCSS
 
 See the [mwp's MQTT support](mqtt---bulletgcss-telemetry.md) article for a detailed description of the URI format:
-```
-mqtt://[user[:pass]@]broker[:port]/topic[?cafile=file]
-```
+
+    mqtt://[user[:pass]@]broker[:port]/topic[?cafile=file]
 
 ### WSL UDP bridge
 
@@ -111,9 +103,9 @@ Offering:
 
 #### Notes
 
-* For [radar functions](mwp-Radar-View.md) (inav-radar, ADSB), it is necessary to set the `--radar-device=` [option](running.md#command-line-options). Leave the protocol selector at 'Auto'.
+* For [radar functions](mwp-Radar-View.md) (INAV-radar, ADSB), it is necessary to set the `--radar-device=` [option](running.md#command-line-options). Leave the protocol selector at 'Auto'.
 * For telemetry forwarding, it is necessary to set the `--forward-to=` [option](running.md#command-line-options). Leave the protocol selector at 'Auto'.
-* For FlySky MPM telemetry, the inav CLI setting `set ibus_telemetry_type = 0` is required; any other `ibus_telemetry_type` value will not work.
+* For FlySky MPM telemetry, the INAV CLI setting `set ibus_telemetry_type = 0` is required; any other `ibus_telemetry_type` value will not work.
 
 #### Auto-detection
 

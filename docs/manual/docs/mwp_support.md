@@ -18,7 +18,7 @@ There is a "rolling release" [release note on the wiki](https://github.com/stron
 ### How, where
 
 * GitHub issues preferred
-* RCG, inav discord and telegram
+* RCG, INAV discord and telegram
     * Most likely you will be requested to raise a GitHub issue for non-trivial cases.
 
 ### Supported OS
@@ -55,7 +55,7 @@ If you experience an issue using Wayland, you can force {{ mwp }} to use XWaylan
 To force XWayland:
 
 * From the command line
-  ```
-  GDK_BACKEND=x11 mwp
-  ```
+
+        GDK_BACKEND=x11 mwp
+
 * If that improves matters, add the setting to [the configuration file](mwp-Configuration.md#cmdopts).

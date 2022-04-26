@@ -34,10 +34,8 @@ Use one of the following:
 
 Example: using `curl` to download ...
 
-```
-$ curl -LO https://github.com/stronnag/mwptools/releases/download/x.y.z/mwptools_x.y.z_amd64.deb
-$ sudo apt install ./mwptools_x.y.z_amd64.deb
-```
+    $ curl -LO https://github.com/stronnag/mwptools/releases/download/x.y.z/mwptools_x.y.z_amd64.deb
+    $ sudo apt install ./mwptools_x.y.z_amd64.deb
 
 Where `x.y.z` represents the build tag.
 
@@ -53,21 +51,17 @@ If you want more control over build options.
 
 If `git` is not pre-installed in WSL, then it will be necessary to install it.
 
-```
-sudo apt update && sudo apt upgrade
-sudo apt install git
-```
+    sudo apt update && sudo apt upgrade
+    sudo apt install git
 
 Note: `/etc/sudoers` (via `visudo`) was edited to allows the WSL user to run commands as root without asking for a password.
 
 Then it was just a case of cloning the mwp repository and following mwp's instructions (`mwptools/docs/debian-ubuntu-dependencies.txt`), to install the dependencies, thusly:
 
-```
-cp mwptools/docs/debian-ubuntu-dependencies.txt /tmp/u.sh
-chmod +x /tmp/u.sh
-# edit /tmp/u.sh for any optional items ...
-sudo /tmp/u.sh Y # "Y" bypasses interactive query / responses
-```
+    cp mwptools/docs/debian-ubuntu-dependencies.txt /tmp/u.sh
+    chmod +x /tmp/u.sh
+    # edit /tmp/u.sh for any optional items ...
+    sudo /tmp/u.sh Y # "Y" bypasses interactive query / responses
 
 Then build and install mwp and optionally the blackbox tools (as `mwptools/docs/debian-ubuntu-dependencies.txt`). [Build documentation](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja).
 
@@ -80,37 +74,30 @@ Compared to Win10/WSL or Cygwin, there is no longer any need to mess around the 
 ### One off changes
 
 * WSL installs a very cut down icon theme that does not provide the all the system / standard icons used by mwp. Fix this by:
-  ```
-  sudo apt install adwaita-icon-theme-full
-  ```
+
+    	sudo apt install adwaita-icon-theme-full
 
 * If you wish to replay blackbox / OTX / BulletGCSS logs, it is necessary to have an IPv6 definition of `localhost`; WSL's `/etc/hosts` does not provide this:
 
-  ```
-  # updated in /etc/hosts for ipv6
-  ::1   localhost ip6-localhost ip6-loopback
-  ```
+    	# updated in /etc/hosts for ipv6
+    	::1   localhost ip6-localhost ip6-loopback
 
   Note: This was caused by an unnecessary assumption in [flightlog2x](https://github.com/stronnag/bbl2kml)'s `fl2ltm` which is corrected in [flightlog2x](https://github.com/stronnag/bbl2kml) release (> 0.11.0)
 
 * Then tell WSL to please not break your `hosts` file again
-  ```
-  ### Add the following entry to /etc/wsl.conf:
-  [network]
-  generateHosts = false
-  ```
+
+    	### Add the following entry to /etc/wsl.conf:
+    	[network]
+    	generateHosts = false
+
 * Due font differences, it may be necessary to reduce the font scaling in the mwp 'Flight View' docklet.
 
-  ```
-  gsettings set org.mwptools.planner font-fv 10
-  # if you still have resizing problems, try 9 ....
-  ```
+    	gsettings set org.mwptools.planner font-fv 10
+    	# if you still have resizing problems, try 9 ....
 
 Then you are ready to run mwp.
 
-```
-mwp
-```
+    mwp
 
 ### Serial devices
 
@@ -130,18 +117,18 @@ On the Windows side:
 
 * Use the Windows firewall settings to allow `ser2udp.exe` to accept UDP traffic.
 * Run `ser2udp.exe` ; it will autodetect your serial port. By default this listens on UDP port 17071, you can change this by supplying a second parameter, e.g., to use port 34567. In this case, either define the serial port or use `auto` (auto-detect).
-  ```
-  > ser2udp.exe auto :34567
-  ## or just let ser2udp autodetect
-  > ser2udp.exe
-  External address: fe80::1439:d6de:efcb:97e1%7
-  External address: 172.29.32.1
-  ```
+
+    	> ser2udp.exe auto :34567
+    	## or just let ser2udp autodetect
+    	> ser2udp.exe
+    	External address: fe80::1439:d6de:efcb:97e1%7
+    	External address: 172.29.32.1
+
   The colon is required to define an alternative port.
 
 * `ser2udp` will survive removal of USB devices and attempt to re-connect (e.g. if the FC is rebooted).
 * `ser2udp` will _only_ attempt to automatically acquire STM32 USB devices (`0483:5740` vid:pid)
-* You need to terminate `ser2udp` when you're done with it (e.g. to use the inav configurator in Windows).
+* You need to terminate `ser2udp` when you're done with it (e.g. to use the INAV configurator in Windows).
 
 #### Using `ser2udp` in mwp
 
@@ -149,11 +136,9 @@ On the Windows side:
 
 It is easily automated by using the magic `__MWP_SERIAL_HOST` name in the serial device.
 
-```
-mwp -d udp://__MWP_SERIAL_HOST:17071
-# recognised by other tools as well ...
-cliterm udp://__MWP_SERIAL_HOST:17071
-```
+    mwp -d udp://__MWP_SERIAL_HOST:17071
+    # recognised by other tools as well ...
+    cliterm udp://__MWP_SERIAL_HOST:17071
 
 `__MWP_SERIAL_HOST` is resolved as:
 
@@ -170,16 +155,14 @@ Thus:
 
 * Create a new `txt` file in the same folder where `ser2udp.exe` is located and copy the following lines into that file:
 
-```
-@echo off
-echo Launching MWP Mission Planner
-start wslg.exe -d Ubuntu mwp
-echo Waiting for WSL System to boot up
-timeout 5
-echo Launching Serial to UDP Tool
-start "Serial2UDP" cmd /c ser2udp.exe -verbose 1
-exit
-```
+    	@echo off
+    	echo Launching MWP Mission Planner
+    	start wslg.exe -d Ubuntu mwp
+    	echo Waiting for WSL System to boot up
+    	timeout 5
+    	echo Launching Serial to UDP Tool
+    	start "Serial2UDP" cmd /c ser2udp.exe -verbose 1
+    	exit
 
 * rename the file with any name and change the extension to `.cmd`
 * Create a shortcut anywhere on your PC or in `C:\Users\<username>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs` to pin it to your Start Menu
@@ -193,7 +176,7 @@ exit
 ## Other packages for additional functionality.
 
 * To replay blackbox logs, you need
-    * [inav blackbox tools](https://github.com/iNavFlight/blackbox-tools), mandatory
+    * [INAV blackbox tools](https://github.com/iNavFlight/blackbox-tools), mandatory
     * [flightlog2x / bbl2kml](https://github.com/stronnag/bbl2kml). Provides a much better blackbox replayer than the default shipped with mwp (and you can generate really pretty Google Earth files from blackbox / opentx / bulletgcss logs).
 * Terrain Analysis
     * Gnuplot. Check the installer script that it's enabled.

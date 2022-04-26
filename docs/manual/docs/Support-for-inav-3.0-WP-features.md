@@ -1,15 +1,15 @@
-# mwp and inav 3.0 Mission Updates
+# mwp and INAV 3.0 Mission Updates
 
 ## Overview
 
-inav 3.0 adds a couple of changes to inav mission planning:
+INAV 3.0 adds a couple of changes to INAV mission planning:
 
 * Absolute WP altitudes
 * Land WP ground elevation setting
 
 ### Absolute WP altitudes
 
-For Multiwii and inav prior to 3.0, waypoint altitudes were always relative to the arming location. If you always fly in a flat area, or always arm at the same point, this wasn't really an issue; you could always use [mwp's terrain analysis](Mission-Elevation-Plot-and-Terrain-Analysis.md) to check that you'd clear any obstructions.
+For Multiwii and INAV prior to 3.0, waypoint altitudes were always relative to the arming location. If you always fly in a flat area, or always arm at the same point, this wasn't really an issue; you could always use [mwp's terrain analysis](Mission-Elevation-Plot-and-Terrain-Analysis.md) to check that you'd clear any obstructions.
 
 However, if you armed some (vertical) distance from the arming point assumed when the plan was created, the absolute, (AMSL) elevation of the WP would differ by the ground difference between the assumed arming point at planning time and the actual arming point at take off. In the worst case (arming at an 'zero' absolute elevation well below the 'assumed at planning time' location), this could result in automated flight into terrain, which is generally undesirable.
 
@@ -17,7 +17,7 @@ Absolute mission altitudes addresses this issue, as the AMSL elevation of the WP
 
 ### Land WP ground elevation setting
 
-A similar issue existed prior to inav 3.0 for the LAND WP; the initial implementation assumed that the LAND WP site ground elevation was at approximately the same ground elevation as the arming location. inav computes landing behaviour based on relative altitude from home; if the actual LAND site was lower than home, then the descent would be slow; if it was higher, then slowdown might not occur and there would be a hard landing (for MR). For FW the final approach and motor-off would be sub-optimal.
+A similar issue existed prior to INAV 3.0 for the LAND WP; the initial implementation assumed that the LAND WP site ground elevation was at approximately the same ground elevation as the arming location. INAV computes landing behaviour based on relative altitude from home; if the actual LAND site was lower than home, then the descent would be slow; if it was higher, then slowdown might not occur and there would be a hard landing (for MR). For FW the final approach and motor-off would be sub-optimal.
 
 The required land elevation uses the `P2` WP parameter, **in metres.**
 
@@ -73,7 +73,7 @@ When this is applied, the WP14 value (parameter 2, "Elv" in the cell headers), s
 
 ### Terrain Analysis
 
-[mwp's terrain analysis](Mission-Elevation-Plot-and-Terrain-Analysis.md) function has been upgraded to handle inav 3.0 features (Relative / Absolute Elevations, Land Ground Elevation). If you're using the older (ruby) terrain analysis tool, you won't see the new features. The [mwp terrain analysis article](Mission-Elevation-Plot-and-Terrain-Analysis.md) also describes the new analysis tool.
+[mwp's terrain analysis](Mission-Elevation-Plot-and-Terrain-Analysis.md) function has been upgraded to handle INAV 3.0 features (Relative / Absolute Elevations, Land Ground Elevation). If you're using the older (ruby) terrain analysis tool, you won't see the new features. The [mwp terrain analysis article](Mission-Elevation-Plot-and-Terrain-Analysis.md) also describes the new analysis tool.
 
 In the image below, the dialogue has been enhanced to allow selection of the altitude mode and adjustment of LAND elevation. The orange graph line shows the generated mission with a 40m clearance of all obstacles.
 
@@ -89,7 +89,7 @@ The user can select the following altitude modes:
 
 ## Attribute editing
 
-Of course, it's not necessary to use the new dialogues to set or change the new inav 3.0 features.
+Of course, it's not necessary to use the new dialogues to set or change the new INAV 3.0 features.
 
 * The `parameter3` value sets the altitude mode 0 = relative to home (legacy default), 1 = Absolute.
 * The `altitude` value is interpreted according to `parameter3`
@@ -97,6 +97,6 @@ Of course, it's not necessary to use the new dialogues to set or change the new 
 
 ## Further reading
 
-The [inav wiki](https://github.com/iNavFlight/inav/wiki/MSP-Navigation-Messages) describes WP mission parameters in some detail.
+The [INAV wiki](https://github.com/iNavFlight/inav/wiki/MSP-Navigation-Messages) describes WP mission parameters in some detail.
 
 Discussion of the meaning of ["sea level"](Mission-Elevation-Plot-and-Terrain-Analysis.md#datums). It's confusing.

@@ -50,12 +50,10 @@ If the item bar icon (left-most in the green area) is dragged from the dock, the
 !!! info "Wayland Display API"
     When docklets are dragged around to reposition then, an "target" landing area is shown on the dock area. Unfortunately, the some older versions of the "modern" **Wayland** display manager breaks this in a way that only the upstream maintainers can fix. The workaround is to temporarily force X11 mode:
 
-	```
-	# In a terminal
-	$ GDK_BACKEND=x11 mwp
-	# Drag dock items around
-	$ mwp # items moved, Wayland again
-	```
+    	# In a terminal
+     	$ GDK_BACKEND=x11 mwp
+     	# Drag dock items around
+     	$ mwp # items moved, Wayland again
 
 ## Dock Items (Dockets)
 

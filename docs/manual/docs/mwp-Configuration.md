@@ -14,9 +14,7 @@ Each type is further discussed below.
 
 Command line options provide a 'per instantiation' means to control {{ mwp }} behaviour; the current set of command line options may be viewed by running {{ mwp }} from the command line with the single option `--help`:
 
-```
-$ mwp --help
-```
+    $ mwp --help
 
 Where it is required to give permanence to command line options, they can be added to the configuration file `$HOME/.config/cmdopts`, which is described in more detail in the following section.
 
@@ -50,25 +48,20 @@ The file contains CLI options exactly as would be issued from the terminal. Opti
 
 In addition to options (`--`), the file may also contain environment variables e.g. `FOO=BAR`.
 
-```
-# Default options for mwp
---rings 50,20
-#--voice-command "spd-say -t female2 -e"
-#--debug-flags=2
---dont-maximise
-#-S 8192
-
-# set the anonymous tile file.
-MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
-```
+    # Default options for mwp
+    --rings 50,20
+    #--voice-command "spd-say -t female2 -e"
+    #--debug-flags=2
+    --dont-maximise
+    #-S 8192
+    # set the anonymous tile file.
+    MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 
 So here the only current, valid options are  `--rings 50,20 -dont-maximise`, and the [environment variable](#environment-variables) MWP_BLACK_TILE is set (for [anonymous maps](Black-Ops.md#custom-tile)).
 
 The environment is set before any GTK / UI calls are made, thus if you have issues using Wayland (which still has some issues with some (older, mainly) GPU hardware and OpenGL), then you can force Xwayland by setting the `GTK_BACKEND` variable in `cmdopts`.
 
-```
-GDK_BACKEND=x11
-```
+    GDK_BACKEND=x11
 
 ## `.layout`
 
@@ -88,11 +81,9 @@ The `places` (`~/.config/mwp/places`) file is a delimited (CSV) file that define
 
 Example `places`
 
-```
-# mwp places name,lat,lon [,zoom]
-Beaulieu|50.8047104|-1.4942621|17
-Jurby:54.353974:-4.523600:-1
-```
+    # mwp places name,lat,lon [,zoom]
+    Beaulieu|50.8047104|-1.4942621|17
+    Jurby:54.353974:-4.523600:-1
 
 The user may maintain these files manually if used, or use the [graphic places editor](misc-ui-elements.md#favourite-places).
 
@@ -106,17 +97,13 @@ Linux has a facility for storing configuration items in a registry like facility
 
 For `gsettings` and `dconf-editor`, the name-space is `org.mwptools.planner`, so to list of items:
 
-```
-$ gsettings list-recursively  org.mwptools.planner
-```
+    $ gsettings list-recursively  org.mwptools.planner
 
 and to list then set a single item:
 
-```
-$ gsettings get org.mwptools.planner log-save-path
-..
-$ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
-```
+    $ gsettings get org.mwptools.planner log-save-path
+    ..
+    $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 
 #### dconf-editor
 
@@ -239,18 +226,16 @@ While the file name must be consistent, the format does not have to be; the repl
 
 e.g. replace the inav-radar icon.
 
-```
-mkdir -p `~/config/mwp/pixmaps
-# copy the preview image
-cp ~/.local/share/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/
-# (optionally) resize it to 32x32 pixels
-mogrify -resize 80% ~/config/mwp/pixmaps/preview.png
-# and rename it, mwp doesn't care about the 'extension', this is not MSDOS:)
-mv  ~/config/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/inav-radar.svg
-# and verify ... perfect
-file ~/.config/mwp/pixmaps/inav-radar.svg
-/home/jrh/.config/mwp/pixmaps/inav-radar.svg: PNG image data, 32 x 32, 8-bit/color RGBA, non-interlaced
-```
+    mkdir -p `~/config/mwp/pixmaps
+    # copy the preview image
+    cp ~/.local/share/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/
+    # (optionally) resize it to 32x32 pixels
+    mogrify -resize 80% ~/config/mwp/pixmaps/preview.png
+    # and rename it, mwp doesn't care about the 'extension', this is not MSDOS:)
+    mv  ~/config/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/inav-radar.svg
+    # and verify ... perfect
+    file ~/.config/mwp/pixmaps/inav-radar.svg
+    /home/jrh/.config/mwp/pixmaps/inav-radar.svg: PNG image data, 32 x 32, 8-bit/color RGBA, non-interlaced
 
 Note also that the resize step is no longer required, as {{ mwp }} scales the icon according to the `misc-icon-size` setting.
 

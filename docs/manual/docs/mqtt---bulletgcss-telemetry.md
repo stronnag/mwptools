@@ -6,51 +6,51 @@
 {{ mwp }} works with the web-based Ground Control Station [BulletGCSS](https://bulletgcss.fpvsampa.com/) MQTT protocol, tested with both a `fl2mqtt` simulation and a recorded live session.
 
 The MQTT component is build if either `paho-mqtt` or `mosquitto` libraries are detected; `paho-mtqq` is preferred.
-```
-## Debian / Ubuntu ##
-### Debian testing / Ubuntu 20.10 + for paho ###
-sudo apt install libpaho-mqtt-dev
-# or #
-sudo apt install libmosquitto-dev
 
-## Arch ##
+    ## Debian / Ubuntu ##
+    ### Debian testing / Ubuntu 20.10 + for paho ###
+    sudo apt install libpaho-mqtt-dev
+    # or #
+    sudo apt install libmosquitto-dev
 
-yay -S paho-mqtt-c-git  ## or you favourite AUR helper
-# or #
-sudo pacman -S mosquitto
+    ## Arch ##
 
-## Fedora ##
+    yay -S paho-mqtt-c-git  ## or you favourite AUR helper
+    # or #
+    sudo pacman -S mosquitto
 
-dnf install paho-c-devel
-# or #
-dnf install mosquitto-devel
+    ## Fedora ##
 
-## FreeBSD ##
+    dnf install paho-c-devel
+    # or #
+    dnf install mosquitto-devel
 
-## paho-mqtt
-# Clone github repo and build from source. Configure with cmake -DPAHO_WITH_SSL=true ..
-git clone https://github.com/eclipse/paho.mqtt.c.git
-cd paho.mqtt.c
-mkdir build
-cd build
-cmake -DPAHO_WITH_SSL=true ..
-make && sudo make install
+    ## FreeBSD ##
 
-# or #
-sudo pkg install mosquitto
-```
+    ## paho-mqtt
+    # Clone github repo and build from source. Configure with cmake -DPAHO_WITH_SSL=true ..
+    git clone https://github.com/eclipse/paho.mqtt.c.git
+    cd paho.mqtt.c
+    mkdir build
+    cd build
+    cmake -DPAHO_WITH_SSL=true ..
+    make && sudo make install
+
+    # or #
+    sudo pkg install mosquitto
+
 If you have both `paho-mqtt` and `mosquitto` installed, then `paho-mqtt` is preferred.
 
 ## Usage
 
 Once {{ mwp }} is built with a MQTT library, you can use an MQTT URL as a device name, for example for the demo that runs every other hour (00:00, 02:00 .. 22:00) UTC on `broker.emqx.io` with topic `org/mwptools/mqtt/otxplayer`, the mqtt URI for mwp would be:
-```
-mqtt://broker.emqx.io/org/mwptools/mqtt/otxplayer
-```
+
+    mqtt://broker.emqx.io/org/mwptools/mqtt/otxplayer
+
 Or in general:
-```
-mqtt://[user[:pass]@]broker[:port]/topic[?cafile=file]
-```
+
+    mqtt://[user[:pass]@]broker[:port]/topic[?cafile=file]
+
 Note:
 * port is the mqtt port (typically and by default 1883), not the websocket port.
 * if you want to use TLS, then the port will be different, often 8883, and you might need to provide the broker's CA file.

@@ -2,7 +2,7 @@
 
 ## Introduction
 
-For inav 4.0, there is a "FlyBy Home" (FBH) waypoint modifier.
+For INAV 4.0, there is a "FlyBy Home" (FBH) waypoint modifier.
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/wjUzXyf2XEM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
@@ -34,7 +34,7 @@ This will ensure, as far as possible, that when such a mission is exported, it i
 
 The practical results being:
 
-* A common mission file format continues to be used by mwp and the inav configurator planner; maintaining mission file interoperability between the two applications.
+* A common mission file format continues to be used by mwp and the INAV configurator planner; maintaining mission file interoperability between the two applications.
 * The planned home is recorded and may be used for subsequent re-planning of a mission.
 * FBH waypoints have a position (the planned home) and the `flag` set. This means they will behave predictably when uploaded to older firmware.
 
