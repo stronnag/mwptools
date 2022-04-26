@@ -6,7 +6,7 @@ copyright: Copyright &copy; 2014 - 2022 <a href="https://github.com/stronnag/mwp
 theme:
   name: material
   icon:
-    logo: material/book-open-variant
+  logo: material/book-open-variant
   palette:
     scheme: slate
     primary: grey
@@ -97,7 +97,7 @@ nav:
       - licence-misc-info.md
 
 extra:
-    inav: "[inav](https://github.com/iNavFlight/inav)"
+    inav: "[INAV](https://github.com/iNavFlight/inav)"
     mwp: "[mwp](https://github.com/stronnag/mwptools)"
     bbl2kml: "[bbl2kml](https://github.com/stronnag/bbl2kml)"
     impload: "[impload](https://github.com/stronnag/impload)"
