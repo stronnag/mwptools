@@ -373,7 +373,7 @@
   
     <li class="md-nav__item">
       <a href="../mwp-safehomes-editor/" class="md-nav__link">
-        mwp and inav safehome
+        mwp and INAV safehome
       </a>
     </li>
   
@@ -478,7 +478,7 @@
         
           <li class="md-nav__item">
   <a href="#live-ads-b-and-simulated-inav-targets-with-proximity-alerts-range-3000m" class="md-nav__link">
-    Live ADS-B and simulated inav targets, with proximity alerts (range &lt; 3000m).
+    Live ADS-B and simulated INAV targets, with proximity alerts (range &lt; 3000m).
   </a>
   
 </li>
@@ -492,7 +492,7 @@
         
           <li class="md-nav__item">
   <a href="#simulated-inav-radar-view" class="md-nav__link">
-    Simulated inav radar view
+    Simulated INAV radar view
   </a>
   
 </li>
@@ -533,7 +533,7 @@
         
           <li class="md-nav__item">
   <a href="#inav-radar" class="md-nav__link">
-    inav radar
+    INAV radar
   </a>
   
 </li>
@@ -746,7 +746,7 @@
   
     <li class="md-nav__item">
       <a href="../Support-for-inav-3.0-WP-features/" class="md-nav__link">
-        mwp and inav 3.0 Mission Updates
+        mwp and INAV 3.0 Mission Updates
       </a>
     </li>
   
@@ -914,7 +914,7 @@
         
           <li class="md-nav__item">
   <a href="#live-ads-b-and-simulated-inav-targets-with-proximity-alerts-range-3000m" class="md-nav__link">
-    Live ADS-B and simulated inav targets, with proximity alerts (range &lt; 3000m).
+    Live ADS-B and simulated INAV targets, with proximity alerts (range &lt; 3000m).
   </a>
   
 </li>
@@ -928,7 +928,7 @@
         
           <li class="md-nav__item">
   <a href="#simulated-inav-radar-view" class="md-nav__link">
-    Simulated inav radar view
+    Simulated INAV radar view
   </a>
   
 </li>
@@ -969,7 +969,7 @@
         
           <li class="md-nav__item">
   <a href="#inav-radar" class="md-nav__link">
-    inav radar
+    INAV radar
   </a>
   
 </li>
@@ -1003,7 +1003,7 @@
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> supports the display of "radar" contacts. This provides a view of adjacent aircraft obtained from a number of sources:</p>
 <ul>
 <li>
-<p><a href="https://www.rcgroups.com/forums/showthread.php?3304673-iNav-Radar-ESP32-LoRa-modems">inav-radar</a>. inav radar works in conjunction with <a href="https://github.com/iNavFlight/inav">inav</a> flight controllers to broadcast the location of UAS fitted with an ESP32 LoRa module. <a href="https://github.com/stronnag/mwptools">mwp</a> can listen to one of these modems in ground station mode to display the positions of the rest of the 'swarm' (up to 4 UAS); <a href="#inav-radar">technical / MSP details</a>.</p>
+<p><a href="https://www.rcgroups.com/forums/showthread.php?3304673-iNav-Radar-ESP32-LoRa-modems">INAV-radar</a>. INAV radar works in conjunction with <a href="https://github.com/iNavFlight/inav">INAV</a> flight controllers to broadcast the location of UAS fitted with an ESP32 LoRa module. <a href="https://github.com/stronnag/mwptools">mwp</a> can listen to one of these modems in ground station mode to display the positions of the rest of the 'swarm' (up to 4 UAS); <a href="#inav-radar">technical / MSP details</a>.</p>
 </li>
 <li>
 <p><strong>Full size aircraft</strong> reported by the MAVLink 'Traffic Report' message. An example is the <a href="https://uavionix.com/products/pingrx/">uAvionix PingRX</a>, a compact device that receives ADS-B location data from full sized aircraft and publishes the locations as MAVLink. For a ground based installation, this device has around a 40Km detection radius. <a href="https://uavionix.com/downloads/integration/uAvionix%20Ping%20Integration%20Guide.pdf">MAVLink ICD</a>.</p>
@@ -1016,10 +1016,10 @@
 </li>
 </ul>
 <h2 id="mwp-configuration">mwp Configuration<a class="headerlink" href="#mwp-configuration" title="Permanent link">#</a></h2>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> can receive the 'radar' data over one or two connections, either or both may be active, and <a href="https://github.com/stronnag/mwptools">mwp</a> can receive and display 'own vehicle' telemetry (MSP, LTM or Smartpost), 'inav-radar' and 'MAVlink Traffic' data simultaneously. Radar data may be received over:</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> can receive the 'radar' data over one or two connections, either or both may be active, and <a href="https://github.com/stronnag/mwptools">mwp</a> can receive and display 'own vehicle' telemetry (MSP, LTM or Smartpost), 'INAV-radar' and 'MAVlink Traffic' data simultaneously. Radar data may be received over:</p>
 <ul>
-<li>The main serial port device (see <a href="#using-the-main-serial-port">caveat</a> for inav-radar) or</li>
-<li>device(s) defined by the <code>radar-device</code> CLI or configuration parameter (MAVLink Traffic, inav-radar)</li>
+<li>The main serial port device (see <a href="#using-the-main-serial-port">caveat</a> for INAV-radar) or</li>
+<li>device(s) defined by the <code>radar-device</code> CLI or configuration parameter (MAVLink Traffic, INAV-radar)</li>
 </ul>
 <p>The <code>radar-device</code> option is defined by the standard <a href="https://github.com/stronnag/mwptools">mwp</a> naming scheme:</p>
 <ul>
@@ -1032,7 +1032,7 @@
 <li><code>00:0B:0D:87:13:A2</code></li>
 </ul>
 </li>
-<li>A UDP address, e.g. for simulation, recording replays or serial multiplexer (inav,mavlink).<ul>
+<li>A UDP address, e.g. for simulation, recording replays or serial multiplexer (INAV, mavlink).<ul>
 <li><code>udp://:30001</code> local UDP listener.</li>
 </ul>
 </li>
@@ -1045,22 +1045,24 @@
 <p>The specific (not shared with the main serial port) radar device(s) may be defined on the command line, or in the static command options file (<code>~/.config/mwp/cmdopts</code>):</p>
 <ul>
 <li><code>mwp --radar-device udp://:30001</code></li>
-<li><code>$ cat ~/.config/mwp/cmdopts</code></li>
+<li><code>$ cat ~/.config/mwp/cmdopts</code><pre><code># Default options for mwp
+# using udev rule to associate a specifc USB-TTL adaptor to a name
+--radar-device=/dev/pingRX@57600
+</code></pre>
+</li>
 </ul>
-<p><code># Default options for mwp
-  # using udev rule to associate a specifc USB-TTL adaptor to a name
-  --radar-device=/dev/pingRX@57600</code>
-Multiple devices may be defined, e.g.</p>
+<p>Multiple devices may be defined, e.g.</p>
 <ul>
 <li>As separate options, <code>--radar-device=/dev/pingRX@57600 --radar-device= /dev/inavradar@115200</code></li>
 <li>As a comma separated list: <code>--radar-device=/dev/pingRX@57600,/dev/inavradar@115200</code></li>
 </ul>
 <p>Any bespoke <code>radar-device</code> is started automatically on startup (or when it shows up). It is not managed via the serial <code>Connect</code> button.</p>
 <h2 id="using-the-main-serial-port">Using the main serial port<a class="headerlink" href="#using-the-main-serial-port" title="Permanent link">#</a></h2>
-<p>The main serial port may be used for MavLink Traffic without any further configuration. For inav-radar, to use the main MSP port for inav-radar (vice using <code>--radar-device</code>), it is still necessary to add a command option to <a href="https://github.com/stronnag/mwptools">mwp</a>; it needs to told to relax the default inbound MSP direction check.</p>
-<p>This is enabled as
-<code>mwp --relaxed-msp</code>
-which should be 'mainly harmless' for normal operations. It's entirely acceptable to put this in <code>~/config/mwp/cmdopts</code> to make it the default, as the protocol check dilution is slight.</p>
+<p>The main serial port may be used for MavLink Traffic without any further configuration. For INAV-radar, to use the main MSP port for INAV-radar (vice using <code>--radar-device</code>), it is still necessary to add a command option to <a href="https://github.com/stronnag/mwptools">mwp</a>; it needs to told to relax the default inbound MSP direction check.</p>
+<p>This is enabled as</p>
+<pre><code>mwp --relaxed-msp
+</code></pre>
+<p>which should be 'mainly harmless' for normal operations. It's entirely acceptable to put this in <code>~/config/mwp/cmdopts</code> to make it the default, as the protocol check dilution is slight.</p>
 <h2 id="settings">Settings<a class="headerlink" href="#settings" title="Permanent link">#</a></h2>
 <p>The following <code>dconf</code> setting affect the radar function:</p>
 <table>
@@ -1104,7 +1106,7 @@ which should be 'mainly harmless' for normal operations. It's entirely acceptabl
 </thead>
 <tbody>
 <tr>
-<td>inav-radar</td>
+<td>INAV-radar</td>
 <td>Node Id (typically 'A' - 'D')</td>
 </tr>
 <tr>
@@ -1133,11 +1135,11 @@ which should be 'mainly harmless' for normal operations. It's entirely acceptabl
 </tr>
 <tr>
 <td>Stale</td>
-<td>The last contact was more that 120s previous. Displayed in the list and shown on the map with reduced intensity or an inav-radar node has 'lost' status</td>
+<td>The last contact was more that 120s previous. Displayed in the list and shown on the map with reduced intensity or an INAV-radar node has 'lost' status</td>
 </tr>
 <tr>
 <td>Armed</td>
-<td>An active inav-radar contact</td>
+<td>An active INAV-radar contact</td>
 </tr>
 <tr>
 <td>ADS-B</td>
@@ -1149,7 +1151,7 @@ which should be 'mainly harmless' for normal operations. It's entirely acceptabl
 </tr>
 <tr>
 <td>Hidden</td>
-<td>A MAVLink Traffic /SBS-1 contact is between 5 and 10 minutes old. It remains in the list but is not displayed in the map. MAVLink Traffic Report / SBS-1 tracks are removed from the list (and internal storage) after 10 minutes inactivity. inav-radar ground station. Stale / 'Lost' inav-radar contacts do not expire, as they may relate to a lost model.</td>
+<td>A MAVLink Traffic /SBS-1 contact is between 5 and 10 minutes old. It remains in the list but is not displayed in the map. MAVLink Traffic Report / SBS-1 tracks are removed from the list (and internal storage) after 10 minutes inactivity. INAV-radar ground station. Stale / 'Lost' INAV-radar contacts do not expire, as they may relate to a lost model.</td>
 </tr>
 </tbody>
 </table>
@@ -1163,7 +1165,7 @@ which should be 'mainly harmless' for normal operations. It's entirely acceptabl
 </thead>
 <tbody>
 <tr>
-<td>inav-radar</td>
+<td>INAV-radar</td>
 <td>The link quality</td>
 </tr>
 <tr>
@@ -1184,22 +1186,22 @@ which should be 'mainly harmless' for normal operations. It's entirely acceptabl
 <li>Mission Plan</li>
 <li>List view</li>
 </ul>
-<h3 id="live-ads-b-and-simulated-inav-targets-with-proximity-alerts-range-3000m">Live ADS-B and simulated inav targets, with proximity alerts (range &lt; 3000m).<a class="headerlink" href="#live-ads-b-and-simulated-inav-targets-with-proximity-alerts-range-3000m" title="Permanent link">#</a></h3>
+<h3 id="live-ads-b-and-simulated-inav-targets-with-proximity-alerts-range-3000m">Live ADS-B and simulated INAV targets, with proximity alerts (range &lt; 3000m).<a class="headerlink" href="#live-ads-b-and-simulated-inav-targets-with-proximity-alerts-range-3000m" title="Permanent link">#</a></h3>
 <p><img alt="radar-alerts" src="../images/mwp-radar-alert.png" width="80%" /></p>
 <h3 id="local-manned-aircraft-view-over-florida-may-2020">Local manned aircraft view over Florida (May 2020).<a class="headerlink" href="#local-manned-aircraft-view-over-florida-may-2020" title="Permanent link">#</a></h3>
 <p><img alt="Florida-may-2020" src="../images/florida-2020-05.png" width="80%" /></p>
-<h3 id="simulated-inav-radar-view">Simulated inav radar view<a class="headerlink" href="#simulated-inav-radar-view" title="Permanent link">#</a></h3>
+<h3 id="simulated-inav-radar-view">Simulated INAV radar view<a class="headerlink" href="#simulated-inav-radar-view" title="Permanent link">#</a></h3>
 <p><img alt="inav-radar-sim" src="../images/mwp-inav-radar.png" width="60%" /></p>
 <h2 id="simulators">Simulators<a class="headerlink" href="#simulators" title="Permanent link">#</a></h2>
-<p>There are simulators for both inav-radar and MAVLink 'Traffic Report' (e.g. uAvionix PingRX) in the <code>mwptools/src/samples/radar</code> directory.</p>
+<p>There are simulators for both INAV-radar and MAVLink 'Traffic Report' (e.g. uAvionix PingRX) in the <code>mwptools/src/samples/radar</code> directory.</p>
 <p>There is a replay tool for SBS-1 logs <code>mwptools/src/samples/sbs-test/sbs-player.rb</code>.</p>
 <h2 id="changing-the-radar-symbols">Changing the Radar Symbols<a class="headerlink" href="#changing-the-radar-symbols" title="Permanent link">#</a></h2>
-<p>Any map symbol used by <a href="https://github.com/stronnag/mwptools">mwp</a> can be changed by the user; in the image above, the inav radar node symbol has been changed from the default stylised inav multirotor to a smaller version of the mission replay "paper plane" symbol as described in <a href="../mwp-Configuration/#settings-precedence-and-user-updates">creating your own icon</a>.</p>
+<p>Any map symbol used by <a href="https://github.com/stronnag/mwptools">mwp</a> can be changed by the user; in the image above, the INAV radar node symbol has been changed from the default stylised INAV multirotor to a smaller version of the mission replay "paper plane" symbol as described in <a href="../mwp-Configuration/#settings-precedence-and-user-updates">creating your own icon</a>.</p>
 <h2 id="protocol-documentation">Protocol documentation<a class="headerlink" href="#protocol-documentation" title="Permanent link">#</a></h2>
 <h3 id="mavlink-traffic-report-eg-uavionix-pingrx">MAVLink 'Traffic Report' (e.g. uAvionix PingRX)<a class="headerlink" href="#mavlink-traffic-report-eg-uavionix-pingrx" title="Permanent link">#</a></h3>
 <p>The MAVLink implementation is <a href="https://uavionix.com/downloads/integration/uAvionix%20Ping%20Integration%20Guide.pdf">comprehensively documented</a> by the vendor.</p>
-<h3 id="inav-radar">inav radar<a class="headerlink" href="#inav-radar" title="Permanent link">#</a></h3>
-<p>The following is required by a device wishing to act as a ground node (it either masquerades as an inav FC, or declares itself a GCS)</p>
+<h3 id="inav-radar">INAV radar<a class="headerlink" href="#inav-radar" title="Permanent link">#</a></h3>
+<p>The following is required by a device wishing to act as a ground node (it either masquerades as an INAV FC, or declares itself a GCS)</p>
 <ul>
 <li>Receive and respond to the following MSP data requests:<ul>
 <li>MSP_FC_VARIANT (responding as <code>INAV</code> or (from 2021/05/06) <code>GCS</code> for generic ground control stations).</li>
@@ -1244,7 +1246,7 @@ which should be 'mainly harmless' for normal operations. It's entirely acceptabl
     <nav class="md-footer__inner md-grid" aria-label="Footer">
       
         
-        <a href="../mwp-safehomes-editor/" class="md-footer__link md-footer__link--prev" aria-label="Previous: mwp and inav safehome" rel="prev">
+        <a href="../mwp-safehomes-editor/" class="md-footer__link md-footer__link--prev" aria-label="Previous: mwp and INAV safehome" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1253,7 +1255,7 @@ which should be 'mainly harmless' for normal operations. It's entirely acceptabl
               <span class="md-footer__direction">
                 Previous
               </span>
-              mwp and inav safehome
+              mwp and INAV safehome
             </div>
           </div>
         </a>

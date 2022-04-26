@@ -18,7 +18,7 @@
     
     
       
-        <title>mwp and inav safehome - mwptools</title>
+        <title>mwp and INAV safehome - mwptools</title>
       
     
     
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              mwp and inav safehome
+              mwp and INAV safehome
             
           </span>
         </div>
@@ -382,12 +382,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          mwp and inav safehome
+          mwp and INAV safehome
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        mwp and inav safehome
+        mwp and INAV safehome
       </a>
       
         
@@ -408,8 +408,42 @@
       
         <li class="md-nav__item">
   <a href="#inav-setting" class="md-nav__link">
-    inav setting
+    INAV setting
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mwp-solution" class="md-nav__link">
+    mwp solution
+  </a>
+  
+    <nav class="md-nav" aria-label="mwp solution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#graphical-user-interface" class="md-nav__link">
+    Graphical User Interface
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#display-safehomes-at-startup" class="md-nav__link">
+    Display safehomes at startup
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -623,7 +657,7 @@
   
     <li class="md-nav__item">
       <a href="../Support-for-inav-3.0-WP-features/" class="md-nav__link">
-        mwp and inav 3.0 Mission Updates
+        mwp and INAV 3.0 Mission Updates
       </a>
     </li>
   
@@ -735,8 +769,42 @@
       
         <li class="md-nav__item">
   <a href="#inav-setting" class="md-nav__link">
-    inav setting
+    INAV setting
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mwp-solution" class="md-nav__link">
+    mwp solution
+  </a>
+  
+    <nav class="md-nav" aria-label="mwp solution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#graphical-user-interface" class="md-nav__link">
+    Graphical User Interface
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#display-safehomes-at-startup" class="md-nav__link">
+    Display safehomes at startup
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    Example
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -753,13 +821,12 @@
               
                 
                 
-                <h1 id="mwp-and-inav-safehome">mwp and inav safehome<a class="headerlink" href="#mwp-and-inav-safehome" title="Permanent link">#</a></h1>
+                <h1 id="mwp-and-inav-safehome">mwp and INAV safehome<a class="headerlink" href="#mwp-and-inav-safehome" title="Permanent link">#</a></h1>
 <p>One of the great features of <a href="https://github.com/iNavFlight/inav">INAV</a> 2.6 was the <code>safehome</code> capability. The user can define of set of up to eight locations, and if any of these is within 200m (configurable up to 650m in <a href="https://github.com/iNavFlight/inav">INAV</a> 2.7), then that is used as the home location for RTH (and RTH failsafe).</p>
-<h2 id="inav-setting">inav setting<a class="headerlink" href="#inav-setting" title="Permanent link">#</a></h2>
+<h2 id="inav-setting">INAV setting<a class="headerlink" href="#inav-setting" title="Permanent link">#</a></h2>
 <p><code>safehome</code> is set in <a href="https://github.com/iNavFlight/inav">INAV</a> using the CLI, here's an example:</p>
-<p>```</p>
-<h1 id="safehome">safehome<a class="headerlink" href="#safehome" title="Permanent link">#</a></h1>
-<p>safehome 0 1 508047750 -14948970
+<pre><code># safehome
+safehome 0 1 508047750 -14948970
 safehome 1 1 509102384 -15344850
 safehome 2 1 509390336 -14613540
 safehome 3 1 509149619 -15337365
@@ -767,7 +834,7 @@ safehome 4 0 508054891 -14961431
 safehome 5 0 543545392 -45219430
 safehome 6 0 540954148 -47328458
 safehome 7 0 0 0
-```</p>
+</code></pre>
 <p>As you see, it's not too user friendly; the parameters are</p>
 <ul>
 <li>Index (0 - 7)</li>
@@ -793,8 +860,9 @@ safehome 7 0 0 0
 <p>Note that editing functions are only available when the <code>Safe Homes</code> window is active; if the windows is dismissed with icons displayed, then the icons remain on the map, but are not editable.</p>
 <h3 id="display-safehomes-at-startup">Display safehomes at startup<a class="headerlink" href="#display-safehomes-at-startup" title="Permanent link">#</a></h3>
 <p>It also is possible to set a <code>gsettings</code> key to define a file of safehomes to load at startup, and optionally display (readonly) icons.</p>
-<p><code>gsettings set org.mwptools.planner load-safehome ~/.config/mwp/safehome.txt,Y</code>
-This sets the default safehomes file to <code>~/.config/mwp/safehome.txt</code> and the appended <code>,Y</code> means display the icons on the map.</p>
+<pre><code>gsettings set org.mwptools.planner load-safehome ~/.config/mwp/safehome.txt,Y
+</code></pre>
+<p>This sets the default safehomes file to <code>~/.config/mwp/safehome.txt</code> and the appended <code>,Y</code> means display the icons on the map.</p>
 <h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">#</a></h3>
 <p>The image below shows a blackbox replay. Note that the flight home location (brown icon) is coincident with the pale orange safehome icon.</p>
 <p><img alt="mwp safehomes replay" src="../images/mwp-safehomes-replay.png" width="50%" /></p>

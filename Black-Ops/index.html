@@ -373,7 +373,7 @@
   
     <li class="md-nav__item">
       <a href="../mwp-safehomes-editor/" class="md-nav__link">
-        mwp and inav safehome
+        mwp and INAV safehome
       </a>
     </li>
   
@@ -465,6 +465,20 @@
         <li class="md-nav__item">
   <a href="#building" class="md-nav__link">
     Building
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    Configuration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-tile" class="md-nav__link">
+    Custom Tile
   </a>
   
 </li>
@@ -623,7 +637,7 @@
   
     <li class="md-nav__item">
       <a href="../Support-for-inav-3.0-WP-features/" class="md-nav__link">
-        mwp and inav 3.0 Mission Updates
+        mwp and INAV 3.0 Mission Updates
       </a>
     </li>
   
@@ -740,6 +754,20 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    Configuration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-tile" class="md-nav__link">
+    Custom Tile
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -762,28 +790,27 @@
 </ul>
 <h2 id="building">Building<a class="headerlink" href="#building" title="Permanent link">#</a></h2>
 <p>This proxy is not build by default, it is necessary to build, install and configure the proxy manually.</p>
-<p>```
-cd mwptools/qproxy
-make bproxy</p>
-<h1 id="copy-bproxy-somewhere-on-the-path">copy bproxy somewhere on the PATH<a class="headerlink" href="#copy-bproxy-somewhere-on-the-path" title="Permanent link">#</a></h1>
-<p>cp bproxy ~/.local/bin/</p>
-<h1 id="or">or<a class="headerlink" href="#or" title="Permanent link">#</a></h1>
-<p>sudo cp broxy /usr/local/bin</p>
-<h1 id="or_1">or<a class="headerlink" href="#or_1" title="Permanent link">#</a></h1>
-<p>sudo cp broxy /usr/bin
-```</p>
+<pre><code>cd mwptools/qproxy
+make bproxy
+# copy bproxy somewhere on the PATH
+cp bproxy ~/.local/bin/
+# or
+sudo cp broxy /usr/local/bin
+# or
+sudo cp broxy /usr/bin
+</code></pre>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">#</a></h2>
 <p>That was the easy bit! Now it is necessary to tell <a href="https://github.com/stronnag/mwptools">mwp</a> where to find the proxy. This involves a setting and a configuration file.</p>
 <p>First of all, ensure that the <code>map-sources</code> setting is enabled:</p>
-<p>```
-$ gsettings get org.mwptools.planner map-sources
-'sources.json'</p>
-<h1 id="here-this-set-to-a-file-sourcesjson-in-configmwp">here this set to a file sources.json (in ~/.config/mwp/)<a class="headerlink" href="#here-this-set-to-a-file-sourcesjson-in-configmwp" title="Permanent link">#</a></h1>
-<p>```</p>
+<pre><code>$ gsettings get org.mwptools.planner map-sources
+'sources.json'
+# here this set to a file sources.json (in ~/.config/mwp/)
+</code></pre>
 <p>if this is not set, then set it:</p>
-<p><code>$ gsettings set org.mwptools.planner map-sources 'sources.json'</code></p>
-<p>Now we need to edit the file <code>~/.config/mwp/sources.json</code>, there is a sample file in <code>mwptools/samples/sources.json</code>. you file needs a stanza like:
-<code>{
+<pre><code>$ gsettings set org.mwptools.planner map-sources 'sources.json'
+</code></pre>
+<p>Now we need to edit the file <code>~/.config/mwp/sources.json</code>, there is a sample file in <code>mwptools/samples/sources.json</code>. you file needs a stanza like:</p>
+<pre><code>{
  "id": "Black",
  "name": "Black Tiles",
  "license": "(c) jh ",
@@ -793,9 +820,10 @@ $ gsettings get org.mwptools.planner map-sources
  "tile_size": 256,
  "projection": "MERCATOR",
  "spawn" : "bproxy",
-}</code>
-So a minimal <code>~/.config/mwp/sources.json</code> looks like:
-<code>{
+}
+</code></pre>
+<p>So a minimal <code>~/.config/mwp/sources.json</code> looks like:</p>
+<pre><code>{
    "sources" : [
       {
          "id": "Black",
@@ -809,8 +837,9 @@ So a minimal <code>~/.config/mwp/sources.json</code> looks like:
          "spawn" : "bproxy",
        }
    ]
-}</code>
-On starting <strong>mwp</strong> you should see a new map option "Black Tiles".</p>
+}
+</code></pre>
+<p>On starting <strong>mwp</strong> you should see a new map option "Black Tiles".</p>
 <p><img alt="Black Map" src="../images/black.png" width="50%" /></p>
 <h2 id="custom-tile">Custom Tile<a class="headerlink" href="#custom-tile" title="Permanent link">#</a></h2>
 <p>It's also possible to have a custom tile (which does not have to be black). The tile <strong>must</strong> be:</p>
@@ -818,12 +847,11 @@ On starting <strong>mwp</strong> you should see a new map option "Black Tiles".<
 <li>256x256 pixels</li>
 <li>PNG</li>
 </ul>
-<p>The full path is provided in the environment variable <code>MWP_BLACK_TILE</code>, e.g.
-```</p>
-<h1 id="put-this-in-eg-bashrc-to-make-it-permanent">put this in e.g. ~/.bashrc to make it permanent<a class="headerlink" href="#put-this-in-eg-bashrc-to-make-it-permanent" title="Permanent link">#</a></h1>
-<p>export MWP_BLACK_TILE=~/.config/mwp/mytile.png
-<code>``
-The environment variable may instead be added to [</code>~/.config/mwp/cmdopts`](mwp-Configuration.md#cmdopts).</p>
+<p>The full path is provided in the environment variable <code>MWP_BLACK_TILE</code>, e.g.</p>
+<pre><code># put this in e.g. ~/.bashrc to make it permanent
+export MWP_BLACK_TILE=~/.config/mwp/mytile.png
+</code></pre>
+<p>The environment variable may instead be added to <a href="../mwp-Configuration/#cmdopts"><code>~/.config/mwp/cmdopts</code></a>.</p>
 <p>For example:</p>
 <p><img alt="Fly me to the Mars" src="../images/user-tile.png" width="50%" /></p>
                 

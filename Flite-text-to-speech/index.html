@@ -371,7 +371,7 @@
   
     <li class="md-nav__item">
       <a href="../mwp-safehomes-editor/" class="md-nav__link">
-        mwp and inav safehome
+        mwp and INAV safehome
       </a>
     </li>
   
@@ -581,7 +581,7 @@
   
     <li class="md-nav__item">
       <a href="../Support-for-inav-3.0-WP-features/" class="md-nav__link">
-        mwp and inav 3.0 Mission Updates
+        mwp and INAV 3.0 Mission Updates
       </a>
     </li>
   
@@ -671,8 +671,22 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#replay-speed" class="md-nav__link">
+    Replay Speed
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test" class="md-nav__link">
+    Test
+  </a>
   
 </li>
       
@@ -789,8 +803,22 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#replay-speed" class="md-nav__link">
+    Replay Speed
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test" class="md-nav__link">
+    Test
+  </a>
   
 </li>
       
@@ -839,15 +867,17 @@
 </tr>
 </tbody>
 </table>
-<p><code>$ gsettings set org.mwptools.planner speech-api flite
-$ gsettings set org.mwptools.planner flite-voice-file /home/jrh/.config/mwp/cmu_us_clb.flitevox,0.9</code></p>
+<pre><code>$ gsettings set org.mwptools.planner speech-api flite
+$ gsettings set org.mwptools.planner flite-voice-file /home/jrh/.config/mwp/cmu_us_clb.flitevox,0.9
+</code></pre>
 <h2 id="discussion">Discussion<a class="headerlink" href="#discussion" title="Permanent link">#</a></h2>
 <h3 id="voice-files">Voice Files<a class="headerlink" href="#voice-files" title="Permanent link">#</a></h3>
 <p>flite can use external voice files that provide better quality than the built-in voices. Your distro may provide these voice files in an optional package, or you can download from http://www.festvox.org, e.g. for flite 2.1 http://www.festvox.org/flite/packed/flite-2.1/voices/ (replace 2.1 with 2.0 etc., not all the 2.1 voices may exist for 2.0). The following script will bulk download the non-Indic voices; you can test them out with the <code>flite</code> application, or mwp's <code>ftest</code> <a href="#test">application</a>).</p>
-<p>```</p>
-<h1 id="binbash">!/bin/bash<a class="headerlink" href="#binbash" title="Permanent link">#</a></h1>
-<p>BASE=http://www.festvox.org/flite/packed/flite-2.1/voices</p>
-<p>for V in cmu_us_aew.flitevox cmu_us_ahw.flitevox cmu_us_aup.flitevox \
+<pre><code>#!/bin/bash
+
+BASE=http://www.festvox.org/flite/packed/flite-2.1/voices
+
+for V in cmu_us_aew.flitevox cmu_us_ahw.flitevox cmu_us_aup.flitevox \
   cmu_us_awb.flitevox cmu_us_axb.flitevox cmu_us_bdl.flitevox \
   cmu_us_clb.flitevox cmu_us_eey.flitevox cmu_us_fem.flitevox \
   cmu_us_gka.flitevox cmu_us_jmk.flitevox cmu_us_ksp.flitevox \
@@ -856,15 +886,16 @@ $ gsettings set org.mwptools.planner flite-voice-file /home/jrh/.config/mwp/cmu_
 do
   wget -P . $BASE/$V
 done
-```</p>
+</code></pre>
 <h3 id="replay-speed">Replay Speed<a class="headerlink" href="#replay-speed" title="Permanent link">#</a></h3>
 <p>The default replay speed for some flite voices is rather slow. The optional rate setting in the gsettings <code>flite-voice-file</code> key may be used to increase the rate.</p>
 <h2 id="test">Test<a class="headerlink" href="#test" title="Permanent link">#</a></h2>
 <p><code>mwptools/samples/flite</code> provides a test programme for assessing flite voices.</p>
-<p><code>$ cd  mwptools/samples/flite
+<pre><code>$ cd  mwptools/samples/flite
 $ make
 $ ./ftest &lt; mwp.txt # speak mwp like phrases using default voice
-$ ./ftest cmu_us_clb.flitevox,0.9 &lt; mwp.txt # speak mwp like phrases using external voice file, with relative rate (0.9)</code></p>
+$ ./ftest cmu_us_clb.flitevox,0.9 &lt; mwp.txt # speak mwp like phrases using external voice file, with relative rate (0.9)
+</code></pre>
 <p>Note: this test programme will work with flite 1.x; though you can only use the default 'kal' voice (you cannot load 'better' voices).</p>
                 
               

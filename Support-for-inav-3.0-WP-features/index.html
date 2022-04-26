@@ -18,7 +18,7 @@
     
     
       
-        <title>mwp and inav 3.0 Mission Updates - mwptools</title>
+        <title>mwp and INAV 3.0 Mission Updates - mwptools</title>
       
     
     
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              mwp and inav 3.0 Mission Updates
+              mwp and INAV 3.0 Mission Updates
             
           </span>
         </div>
@@ -371,7 +371,7 @@
   
     <li class="md-nav__item">
       <a href="../mwp-safehomes-editor/" class="md-nav__link">
-        mwp and inav safehome
+        mwp and INAV safehome
       </a>
     </li>
   
@@ -590,12 +590,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          mwp and inav 3.0 Mission Updates
+          mwp and INAV 3.0 Mission Updates
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        mwp and inav 3.0 Mission Updates
+        mwp and INAV 3.0 Mission Updates
       </a>
       
         
@@ -875,19 +875,19 @@
               
                 
                 
-                <h1 id="mwp-and-inav-30-mission-updates">mwp and inav 3.0 Mission Updates<a class="headerlink" href="#mwp-and-inav-30-mission-updates" title="Permanent link">#</a></h1>
+                <h1 id="mwp-and-inav-30-mission-updates">mwp and INAV 3.0 Mission Updates<a class="headerlink" href="#mwp-and-inav-30-mission-updates" title="Permanent link">#</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
-<p>inav 3.0 adds a couple of changes to inav mission planning:</p>
+<p>INAV 3.0 adds a couple of changes to INAV mission planning:</p>
 <ul>
 <li>Absolute WP altitudes</li>
 <li>Land WP ground elevation setting</li>
 </ul>
 <h3 id="absolute-wp-altitudes">Absolute WP altitudes<a class="headerlink" href="#absolute-wp-altitudes" title="Permanent link">#</a></h3>
-<p>For Multiwii and inav prior to 3.0, waypoint altitudes were always relative to the arming location. If you always fly in a flat area, or always arm at the same point, this wasn't really an issue; you could always use <a href="../Mission-Elevation-Plot-and-Terrain-Analysis/">mwp's terrain analysis</a> to check that you'd clear any obstructions.</p>
+<p>For Multiwii and INAV prior to 3.0, waypoint altitudes were always relative to the arming location. If you always fly in a flat area, or always arm at the same point, this wasn't really an issue; you could always use <a href="../Mission-Elevation-Plot-and-Terrain-Analysis/">mwp's terrain analysis</a> to check that you'd clear any obstructions.</p>
 <p>However, if you armed some (vertical) distance from the arming point assumed when the plan was created, the absolute, (AMSL) elevation of the WP would differ by the ground difference between the assumed arming point at planning time and the actual arming point at take off. In the worst case (arming at an 'zero' absolute elevation well below the 'assumed at planning time' location), this could result in automated flight into terrain, which is generally undesirable.</p>
 <p>Absolute mission altitudes addresses this issue, as the AMSL elevation of the WP is fixed and does not depend on arming location.</p>
 <h3 id="land-wp-ground-elevation-setting">Land WP ground elevation setting<a class="headerlink" href="#land-wp-ground-elevation-setting" title="Permanent link">#</a></h3>
-<p>A similar issue existed prior to inav 3.0 for the LAND WP; the initial implementation assumed that the LAND WP site ground elevation was at approximately the same ground elevation as the arming location. inav computes landing behaviour based on relative altitude from home; if the actual LAND site was lower than home, then the descent would be slow; if it was higher, then slowdown might not occur and there would be a hard landing (for MR). For FW the final approach and motor-off would be sub-optimal.</p>
+<p>A similar issue existed prior to INAV 3.0 for the LAND WP; the initial implementation assumed that the LAND WP site ground elevation was at approximately the same ground elevation as the arming location. INAV computes landing behaviour based on relative altitude from home; if the actual LAND site was lower than home, then the descent would be slow; if it was higher, then slowdown might not occur and there would be a hard landing (for MR). For FW the final approach and motor-off would be sub-optimal.</p>
 <p>The required land elevation uses the <code>P2</code> WP parameter, <strong>in metres.</strong></p>
 <ul>
 <li>If LAND is a relative altitude WP, then this is the altitude difference between the assumed home and the LAND location.</li>
@@ -932,7 +932,7 @@
 <p>When this is applied, the WP14 value (parameter 2, "Elv" in the cell headers), should decrease, which it does, from 183m to 175m (AMSL).</p>
 <p><img alt="Post update LAND elevation" src="../images/mwp-inav-3_4.png" width="30%" /></p>
 <h3 id="terrain-analysis">Terrain Analysis<a class="headerlink" href="#terrain-analysis" title="Permanent link">#</a></h3>
-<p><a href="../Mission-Elevation-Plot-and-Terrain-Analysis/">mwp's terrain analysis</a> function has been upgraded to handle inav 3.0 features (Relative / Absolute Elevations, Land Ground Elevation). If you're using the older (ruby) terrain analysis tool, you won't see the new features. The <a href="../Mission-Elevation-Plot-and-Terrain-Analysis/">mwp terrain analysis article</a> also describes the new analysis tool.</p>
+<p><a href="../Mission-Elevation-Plot-and-Terrain-Analysis/">mwp's terrain analysis</a> function has been upgraded to handle INAV 3.0 features (Relative / Absolute Elevations, Land Ground Elevation). If you're using the older (ruby) terrain analysis tool, you won't see the new features. The <a href="../Mission-Elevation-Plot-and-Terrain-Analysis/">mwp terrain analysis article</a> also describes the new analysis tool.</p>
 <p>In the image below, the dialogue has been enhanced to allow selection of the altitude mode and adjustment of LAND elevation. The orange graph line shows the generated mission with a 40m clearance of all obstacles.</p>
 <p><img alt="Terrain Analysis" src="../images/mwp-inav-3_5.png" width="80%" /></p>
 <p>The user can select the following altitude modes:</p>
@@ -943,14 +943,14 @@
 <li>Absolute (AMSL).</li>
 </ul>
 <h2 id="attribute-editing">Attribute editing<a class="headerlink" href="#attribute-editing" title="Permanent link">#</a></h2>
-<p>Of course, it's not necessary to use the new dialogues to set or change the new inav 3.0 features.</p>
+<p>Of course, it's not necessary to use the new dialogues to set or change the new INAV 3.0 features.</p>
 <ul>
 <li>The <code>parameter3</code> value sets the altitude mode 0 = relative to home (legacy default), 1 = Absolute.</li>
 <li>The <code>altitude</code> value is interpreted according to <code>parameter3</code></li>
 <li>For a LAND WP <code>parameter2</code> defines the LAND WP ground elevation; if <code>parameter3</code> is 0, then it's relative to home, if <code>parameter3</code> is 1, then it's absolute (AMSL).</li>
 </ul>
 <h2 id="further-reading">Further reading<a class="headerlink" href="#further-reading" title="Permanent link">#</a></h2>
-<p>The <a href="https://github.com/iNavFlight/inav/wiki/MSP-Navigation-Messages">inav wiki</a> describes WP mission parameters in some detail.</p>
+<p>The <a href="https://github.com/iNavFlight/inav/wiki/MSP-Navigation-Messages">INAV wiki</a> describes WP mission parameters in some detail.</p>
 <p>Discussion of the meaning of <a href="../Mission-Elevation-Plot-and-Terrain-Analysis/#datums">"sea level"</a>. It's confusing.</p>
                 
               

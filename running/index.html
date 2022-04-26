@@ -476,7 +476,7 @@
   
     <li class="md-nav__item">
       <a href="../mwp-safehomes-editor/" class="md-nav__link">
-        mwp and inav safehome
+        mwp and INAV safehome
       </a>
     </li>
   
@@ -684,7 +684,7 @@
   
     <li class="md-nav__item">
       <a href="../Support-for-inav-3.0-WP-features/" class="md-nav__link">
-        mwp and inav 3.0 Mission Updates
+        mwp and INAV 3.0 Mission Updates
       </a>
     </li>
   
@@ -901,16 +901,17 @@
 * Such <a href="../mwp-Configuration/">options can be added to a configuration file</a> for persistence or use from the graphical icon.</p>
 <h2 id="command-line-options">Command line options<a class="headerlink" href="#command-line-options" title="Permanent link">#</a></h2>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a>'s command line options may be displayed with the <code>--help</code> option:</p>
-<p>```
-mwp --help
+<pre><code>mwp --help
 Usage:
-  mwp [OPTION…]</p>
-<p>Help Options:
+  mwp [OPTION…]
+
+Help Options:
   -h, --help                          Show help options
   --help-all                          Show all help options
   --help-gapplication                 Show GApplication options
-  --help-gtk                          Show GTK Options</p>
-<p>Application Options:
+  --help-gtk                          Show GTK Options
+
+Application Options:
   -m, --mission=file-name             Mission file
   -s, --serial-device=device_name     Serial device
   -d, --device=device-name            Serial device
@@ -950,19 +951,21 @@ Usage:
   -k, --kmlfile=file-name             KML file
   --relaxed-msp                       don't check MSP direction flag
   --display=DISPLAY                   X display to use
-```</p>
+</code></pre>
 <h3 id="bash-completion">Bash completion<a class="headerlink" href="#bash-completion" title="Permanent link">#</a></h3>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> installation also installs a 'bash completion' script (and also a <code>blackbox_decode</code> completion script).
 Note this is only available after you log in, so on first install, it's only available after the <em>next</em> login.</p>
 <p>This facilitates automatic command completion, so you don't have to remember all the options or be always typing <code>mwp --help</code>.</p>
-<p>Typing <code>mwp</code> and then <code>&lt;TAB&gt;</code> will first display the option lead <code>--</code>; then a subsequent <code>&lt;TAB&gt;&lt;TAB&gt;</code> will display all the options. If one then typed <code>ra&lt;TAB&gt;&lt;TAB&gt;</code>, it would complete to:
-<code>$ mwp --ra
---radar-device  --raw-log</code>
-Further entry (e.g. <code>d</code>) would complete the command (<code>--radar-device</code>).</p>
+<p>Typing <code>mwp</code> and then <code>&lt;TAB&gt;</code> will first display the option lead <code>--</code>; then a subsequent <code>&lt;TAB&gt;&lt;TAB&gt;</code> will display all the options. If one then typed <code>ra&lt;TAB&gt;&lt;TAB&gt;</code>, it would complete to:</p>
+<pre><code>$ mwp --ra
+--radar-device  --raw-log
+</code></pre>
+<p>Further entry (e.g. <code>d</code>) would complete the command (<code>--radar-device</code>).</p>
 <h3 id="adding-options-to-a-running-mwp">Adding options to a running mwp<a class="headerlink" href="#adding-options-to-a-running-mwp" title="Permanent link">#</a></h3>
 <p>Certain options, like <code>--replay-bbox</code>, <code>--mission</code> allow you to add a file to a running <a href="https://github.com/stronnag/mwptools">mwp</a>. So if <a href="https://github.com/stronnag/mwptools">mwp</a> was running, either from the command line or Desktop Environment icon, then (for example):</p>
-<p><code>mwp --mission file-i-forgot.mission</code>
-would load the mission <code>file-i-forgot.mission</code> into the running <a href="https://github.com/stronnag/mwptools">mwp</a> rather than starting a new instance.</p>
+<pre><code>mwp --mission file-i-forgot.mission
+</code></pre>
+<p>would load the mission <code>file-i-forgot.mission</code> into the running <a href="https://github.com/stronnag/mwptools">mwp</a> rather than starting a new instance.</p>
 <h3 id="drag-and-drop">Drag and Drop<a class="headerlink" href="#drag-and-drop" title="Permanent link">#</a></h3>
 <p>You can <em>drag and drop</em> relevant files onto the <a href="https://github.com/stronnag/mwptools">mwp</a> map:</p>
 <ul>

@@ -308,6 +308,89 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#dock-items-dockets" class="md-nav__link">
+    Dock Items (Dockets)
+  </a>
+  
+    <nav class="md-nav" aria-label="Dock Items (Dockets)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#artificial-horizon" class="md-nav__link">
+    Artificial Horizon
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#direction-view" class="md-nav__link">
+    Direction View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flight-view" class="md-nav__link">
+    Flight View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mission-editor" class="md-nav__link">
+    Mission Editor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#radio-status" class="md-nav__link">
+    Radio Status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#battery-monitor" class="md-nav__link">
+    Battery Monitor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vario-view" class="md-nav__link">
+    Vario View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#telemetry-view" class="md-nav__link">
+    Telemetry View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mw-nav-status" class="md-nav__link">
+    MW Nav Status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mw-gps-status" class="md-nav__link">
+    MW GPS Status
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -422,7 +505,7 @@
   
     <li class="md-nav__item">
       <a href="../mwp-safehomes-editor/" class="md-nav__link">
-        mwp and inav safehome
+        mwp and INAV safehome
       </a>
     </li>
   
@@ -630,7 +713,7 @@
   
     <li class="md-nav__item">
       <a href="../Support-for-inav-3.0-WP-features/" class="md-nav__link">
-        mwp and inav 3.0 Mission Updates
+        mwp and INAV 3.0 Mission Updates
       </a>
     </li>
   
@@ -754,6 +837,89 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#dock-items-dockets" class="md-nav__link">
+    Dock Items (Dockets)
+  </a>
+  
+    <nav class="md-nav" aria-label="Dock Items (Dockets)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#artificial-horizon" class="md-nav__link">
+    Artificial Horizon
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#direction-view" class="md-nav__link">
+    Direction View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flight-view" class="md-nav__link">
+    Flight View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mission-editor" class="md-nav__link">
+    Mission Editor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#radio-status" class="md-nav__link">
+    Radio Status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#battery-monitor" class="md-nav__link">
+    Battery Monitor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vario-view" class="md-nav__link">
+    Vario View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#telemetry-view" class="md-nav__link">
+    Telemetry View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mw-nav-status" class="md-nav__link">
+    MW Nav Status
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mw-gps-status" class="md-nav__link">
+    MW GPS Status
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -816,12 +982,11 @@ to be completely hidden (but recoverable from the View menu), and</li>
 <div class="admonition info">
 <p class="admonition-title">Wayland Display API</p>
 <p>When docklets are dragged around to reposition then, an "target" landing area is shown on the dock area. Unfortunately, the some older versions of the "modern" <strong>Wayland</strong> display manager breaks this in a way that only the upstream maintainers can fix. The workaround is to temporarily force X11 mode:</p>
-<p>```</p>
-<h1 id="in-a-terminal">In a terminal<a class="headerlink" href="#in-a-terminal" title="Permanent link">#</a></h1>
-<p>$ GDK_BACKEND=x11 mwp</p>
-<h1 id="drag-dock-items-around">Drag dock items around<a class="headerlink" href="#drag-dock-items-around" title="Permanent link">#</a></h1>
-<p>$ mwp # items moved, Wayland again
-```</p>
+<pre><code># In a terminal
+$ GDK_BACKEND=x11 mwp
+# Drag dock items around
+$ mwp # items moved, Wayland again
+</code></pre>
 </div>
 <h2 id="dock-items-dockets">Dock Items (Dockets)<a class="headerlink" href="#dock-items-dockets" title="Permanent link">#</a></h2>
 <p>The following items are provided.</p>

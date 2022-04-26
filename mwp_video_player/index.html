@@ -373,7 +373,7 @@
   
     <li class="md-nav__item">
       <a href="../mwp-safehomes-editor/" class="md-nav__link">
-        mwp and inav safehome
+        mwp and INAV safehome
       </a>
     </li>
   
@@ -499,6 +499,13 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#other-os" class="md-nav__link">
+    Other OS
+  </a>
   
 </li>
       
@@ -684,7 +691,7 @@
   
     <li class="md-nav__item">
       <a href="../Support-for-inav-3.0-WP-features/" class="md-nav__link">
-        mwp and inav 3.0 Mission Updates
+        mwp and INAV 3.0 Mission Updates
       </a>
     </li>
   
@@ -862,6 +869,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#other-os" class="md-nav__link">
+    Other OS
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -929,29 +943,31 @@
 <h2 id="issues-workarounds">Issues / Workarounds<a class="headerlink" href="#issues-workarounds" title="Permanent link">#</a></h2>
 <p>If your camera does not work the <code>gstreamer</code> utilities, it is unlikely to work with <a href="https://github.com/stronnag/mwptools">mwp</a>, as it uses <code>gstreamer</code> APIs for camera access.</p>
 <p>You can easily test this using <code>gst-launch-1.0</code> which will closely emulate the way <a href="https://github.com/stronnag/mwptools">mwp</a> works:</p>
-<p><code>gst-launch-1.0 playbin uri=v4l2:///dev/video0</code>
-Where <code>/dev/video0</code> is the camera device node.</p>
+<pre><code>gst-launch-1.0 playbin uri=v4l2:///dev/video0
+</code></pre>
+<p>Where <code>/dev/video0</code> is the camera device node.</p>
 <h3 id="fail-example-and-resolution">Fail example and resolution<a class="headerlink" href="#fail-example-and-resolution" title="Permanent link">#</a></h3>
 <p>A camera (an old Mobius) works on some computers and not others, including, annoyingly, the main <a href="https://github.com/stronnag/mwptools">mwp</a> development box. The issue was an old  USB2.0 (extension) hub that didn't provide enough bandwidth; so there was just a black screen shown.</p>
 <p>Fixed by setting uvcvideo quirk 640:
 <code>UVC_QUIRK_FIX_BANDWIDTH</code> (0x80, 128)
 <code>UVC_QUIRK_RESTRICT_FRAME_RATE</code> (0x200, 512)</p>
 <h4 id="test-fix">Test fix<a class="headerlink" href="#test-fix" title="Permanent link">#</a></h4>
-<p><code>sudo rmmod uvcvideo
-sudo modprobe uvcvideo quirks=640</code>
-Now there is a proper picture, rather than a black screen.</p>
+<pre><code>sudo rmmod uvcvideo
+sudo modprobe uvcvideo quirks=640
+</code></pre>
+<p>Now there is a proper picture, rather than a black screen.</p>
 <h4 id="permanent-solution">Permanent solution<a class="headerlink" href="#permanent-solution" title="Permanent link">#</a></h4>
-<p>Add a file e.g. <code>/etc/modprobe.d/v4l2.conf</code> containing the line:
-<code>options uvcvideo quirks=640</code>
-or to any other <code>.conf</code> file under <code>/etc/modprobe.d/</code></p>
+<p>Add a file e.g. <code>/etc/modprobe.d/v4l2.conf</code> containing the line:</p>
+<pre><code>options uvcvideo quirks=640
+</code></pre>
+<p>or to any other <code>.conf</code> file under <code>/etc/modprobe.d/</code></p>
 <h3 id="helper-tools">Helper tools<a class="headerlink" href="#helper-tools" title="Permanent link">#</a></h3>
 <p>There are a couple of tools under <code>mwptools/src/samples/gst-video/</code>. These are not built / installed by default but may be built if required to enable diagnostics.</p>
-<p>```
-cd mwptools/src/samples/gst-video
-make</p>
-<h1 id="optionally-install-to-localbin">optionally, install to ~/.local/bin<a class="headerlink" href="#optionally-install-to-localbin" title="Permanent link">#</a></h1>
-<p>make install
-```</p>
+<pre><code>cd mwptools/src/samples/gst-video
+make
+# optionally, install to ~/.local/bin
+make install
+</code></pre>
 <ul>
 <li><code>gst-devmon</code> provides the same video device monitoring as employed by mwp. It should report the insertion and removal of camera devices, together with their attributes.</li>
 <li><code>gst-video-player</code> provides the same video replay capability as <a href="https://github.com/stronnag/mwptools">mwp</a><ul>

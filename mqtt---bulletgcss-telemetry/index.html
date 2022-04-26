@@ -371,7 +371,7 @@
   
     <li class="md-nav__item">
       <a href="../mwp-safehomes-editor/" class="md-nav__link">
-        mwp and inav safehome
+        mwp and INAV safehome
       </a>
     </li>
   
@@ -608,22 +608,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#debian-ubuntu" class="md-nav__link">
-    Debian / Ubuntu
+  <a href="#usage" class="md-nav__link">
+    Usage
   </a>
-  
-    <nav class="md-nav" aria-label="Debian / Ubuntu">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#debian-testing-ubuntu-2010-for-paho" class="md-nav__link">
-    Debian testing / Ubuntu 20.10 + for paho
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -643,7 +630,7 @@
   
     <li class="md-nav__item">
       <a href="../Support-for-inav-3.0-WP-features/" class="md-nav__link">
-        mwp and inav 3.0 Mission Updates
+        mwp and INAV 3.0 Mission Updates
       </a>
     </li>
   
@@ -761,22 +748,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#debian-ubuntu" class="md-nav__link">
-    Debian / Ubuntu
+  <a href="#usage" class="md-nav__link">
+    Usage
   </a>
-  
-    <nav class="md-nav" aria-label="Debian / Ubuntu">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#debian-testing-ubuntu-2010-for-paho" class="md-nav__link">
-    Debian testing / Ubuntu 20.10 + for paho
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -796,40 +770,48 @@
                 <h1 id="bulletgcss-telemetry">BulletGCSS Telemetry<a class="headerlink" href="#bulletgcss-telemetry" title="Permanent link">#</a></h1>
 <h2 id="mwp-requirements">mwp requirements<a class="headerlink" href="#mwp-requirements" title="Permanent link">#</a></h2>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> works with the web-based Ground Control Station <a href="https://bulletgcss.fpvsampa.com/">BulletGCSS</a> MQTT protocol, tested with both a <code>fl2mqtt</code> simulation and a recorded live session.</p>
-<p>The MQTT component is build if either <code>paho-mqtt</code> or <code>mosquitto</code> libraries are detected; <code>paho-mtqq</code> is preferred.
-```</p>
-<h2 id="debian-ubuntu">Debian / Ubuntu<a class="headerlink" href="#debian-ubuntu" title="Permanent link">#</a></h2>
-<h3 id="debian-testing-ubuntu-2010-for-paho">Debian testing / Ubuntu 20.10 + for paho<a class="headerlink" href="#debian-testing-ubuntu-2010-for-paho" title="Permanent link">#</a></h3>
-<p>sudo apt install libpaho-mqtt-dev</p>
-<h1 id="or">or<a class="headerlink" href="#or" title="Permanent link">#</a></h1>
-<p>sudo apt install libmosquitto-dev</p>
-<h2 id="arch">Arch<a class="headerlink" href="#arch" title="Permanent link">#</a></h2>
-<p>yay -S paho-mqtt-c-git  ## or you favourite AUR helper</p>
-<h1 id="or_1">or<a class="headerlink" href="#or_1" title="Permanent link">#</a></h1>
-<p>sudo pacman -S mosquitto</p>
-<h2 id="fedora">Fedora<a class="headerlink" href="#fedora" title="Permanent link">#</a></h2>
-<p>dnf install paho-c-devel</p>
-<h1 id="or_2">or<a class="headerlink" href="#or_2" title="Permanent link">#</a></h1>
-<p>dnf install mosquitto-devel</p>
-<h2 id="freebsd">FreeBSD<a class="headerlink" href="#freebsd" title="Permanent link">#</a></h2>
-<h2 id="paho-mqtt">paho-mqtt<a class="headerlink" href="#paho-mqtt" title="Permanent link">#</a></h2>
-<h1 id="clone-github-repo-and-build-from-source-configure-with-cmake-dpaho_with_ssltrue">Clone github repo and build from source. Configure with cmake -DPAHO_WITH_SSL=true ..<a class="headerlink" href="#clone-github-repo-and-build-from-source-configure-with-cmake-dpaho_with_ssltrue" title="Permanent link">#</a></h1>
-<p>git clone https://github.com/eclipse/paho.mqtt.c.git
+<p>The MQTT component is build if either <code>paho-mqtt</code> or <code>mosquitto</code> libraries are detected; <code>paho-mtqq</code> is preferred.</p>
+<pre><code>## Debian / Ubuntu ##
+### Debian testing / Ubuntu 20.10 + for paho ###
+sudo apt install libpaho-mqtt-dev
+# or #
+sudo apt install libmosquitto-dev
+
+## Arch ##
+
+yay -S paho-mqtt-c-git  ## or you favourite AUR helper
+# or #
+sudo pacman -S mosquitto
+
+## Fedora ##
+
+dnf install paho-c-devel
+# or #
+dnf install mosquitto-devel
+
+## FreeBSD ##
+
+## paho-mqtt
+# Clone github repo and build from source. Configure with cmake -DPAHO_WITH_SSL=true ..
+git clone https://github.com/eclipse/paho.mqtt.c.git
 cd paho.mqtt.c
 mkdir build
 cd build
 cmake -DPAHO_WITH_SSL=true ..
-make &amp;&amp; sudo make install</p>
-<h1 id="or_3">or<a class="headerlink" href="#or_3" title="Permanent link">#</a></h1>
-<p>sudo pkg install mosquitto
-<code>``
-If you have both</code>paho-mqtt<code>and</code>mosquitto<code>installed, then</code>paho-mqtt` is preferred.</p>
+make &amp;&amp; sudo make install
+
+# or #
+sudo pkg install mosquitto
+</code></pre>
+<p>If you have both <code>paho-mqtt</code> and <code>mosquitto</code> installed, then <code>paho-mqtt</code> is preferred.</p>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">#</a></h2>
-<p>Once <a href="https://github.com/stronnag/mwptools">mwp</a> is built with a MQTT library, you can use an MQTT URL as a device name, for example for the demo that runs every other hour (00:00, 02:00 .. 22:00) UTC on <code>broker.emqx.io</code> with topic <code>org/mwptools/mqtt/otxplayer</code>, the mqtt URI for mwp would be:
-<code>mqtt://broker.emqx.io/org/mwptools/mqtt/otxplayer</code>
-Or in general:
-<code>mqtt://[user[:pass]@]broker[:port]/topic[?cafile=file]</code>
-Note:
+<p>Once <a href="https://github.com/stronnag/mwptools">mwp</a> is built with a MQTT library, you can use an MQTT URL as a device name, for example for the demo that runs every other hour (00:00, 02:00 .. 22:00) UTC on <code>broker.emqx.io</code> with topic <code>org/mwptools/mqtt/otxplayer</code>, the mqtt URI for mwp would be:</p>
+<pre><code>mqtt://broker.emqx.io/org/mwptools/mqtt/otxplayer
+</code></pre>
+<p>Or in general:</p>
+<pre><code>mqtt://[user[:pass]@]broker[:port]/topic[?cafile=file]
+</code></pre>
+<p>Note:
 * port is the mqtt port (typically and by default 1883), not the websocket port.
 * if you want to use TLS, then the port will be different, often 8883, and you might need to provide the broker's CA file.
 * As <a href="https://github.com/stronnag/mwptools">mwp</a> uses a pseudo-URL for the broker,topic etc, the topic should comply with rules for a URL rather than the more relaxed MQTT topic specification. This is a feature.</p>
@@ -879,13 +861,13 @@ Note:
       
       
         
-        <a href="../Support-for-inav-3.0-WP-features/" class="md-footer__link md-footer__link--next" aria-label="Next: mwp and inav 3.0 Mission Updates" rel="next">
+        <a href="../Support-for-inav-3.0-WP-features/" class="md-footer__link md-footer__link--next" aria-label="Next: mwp and INAV 3.0 Mission Updates" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              mwp and inav 3.0 Mission Updates
+              mwp and INAV 3.0 Mission Updates
             </div>
           </div>
           <div class="md-footer__button md-icon">
