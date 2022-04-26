@@ -2,6 +2,14 @@
 
 ## GCS Usage
 
+### Basic functionality
+
+* Real time tracking of vehicle via [telemetry](mwp-multi-procotol.md)
+* Audio status reports
+* OSD style WP information
+* [Radar view](mwp-Radar-View.md) of other aircraft
+* In picture [video feed display](mwp_video_player.md).
+
 ### OSD information
 
 When flying waypoints, if the mission is also loaded into {{ mwp }}, {{ mwp }} can display some limited OSD information.
