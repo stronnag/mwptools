@@ -5,8 +5,6 @@ copyright: Copyright &copy; 2014 - 2022 <a href="https://github.com/stronnag/mwp
 
 theme:
   name: material
-  icon:
-  logo: material/book-open-variant
   palette:
     scheme: slate
     primary: grey
