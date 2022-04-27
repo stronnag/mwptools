@@ -11,7 +11,7 @@ Another [slightly outdated video](https://vimeo.com/268036585), generic mission 
     * {{ inav }} now supports `SET_POI` and other multiwii waypoint types.
     * Delete from the map popup context menu behaves as it does in the tabular editor; it removes the RTH state.
 
-Please also refer to the following articles that provide specific information for advanced {{ inav }} topics:
+Please also refer to the following chapters that provide specific information for advanced {{ inav }} capability topics:
 
 * [INAV multi-missions](inav-4.0-multi-missions.md)
 * [INAV fly-by-home](Fly-By-Home-waypoints-(inav-4-new-feature).md)
@@ -82,7 +82,7 @@ Way points can be edited Mission Editor. When a row is selected, the column head
 
   Once the type has been changed, default parameters for that way point type or action will be set. The type may also be set by a right mouse button click on the map symbol.
 
-* Altitude. New points are created with the default altitude (from the "Preferences". Some basic validation is performed
+* Altitude. New points are created with the default altitude (from the "Preferences"). Some basic validation is performed
 * Parameters P1, P2 and P3. The parameters P1,P2 and P3 are integer values that have a meaning specific to the way-point type or action. For example, for action type of JUMP, P1 is the point to which to jump, and P2 is the number of repeats. This usage is documented in the [INAV wiki](https://github.com/iNavFlight/inav/wiki/MSP-Navigation-Messages).
 * Delete. The delete action will delete the selected (highlighted) way point(s). If no way point is selected, this option has no affect.
 
@@ -108,15 +108,15 @@ Bulk speed and altitude updates may be applied to selected waypoints.
 
 #### Convert Altitudes
 
-From {{ inav }} 3.0, {{ inav }} supports both relative and AMSL altitudes. This, and the {{ mwp }} features for managing this, are described [in a separate article](Support-for-inav-3.0-WP-features.md)
+From {{ inav }} 3.0, {{ inav }} supports both relative and AMSL altitudes. This, and the {{ mwp }} features for managing this, are described [in a separate chapter](Support-for-inav-3.0-WP-features.md)
 
 #### Replicate Waypoints
 
-This item facilitates the cloning of waypoints. Since {{ inav }} now supports the JUMP waypoint type, this option is less useful.
+This item facilitates the cloning of waypoints. Since {{ inav }} now supports the JUMP waypoint type, this option is less useful that is was previously.
 
 #### Preview Mission
 
-["Flys"](#mission-preview) an aircraft icon around the mission; this may be useful for predicting the behaviour of embedded JUMPs.
+["Flys"](#mission-preview) an aircraft icon around the mission; this may be useful for predicting the behaviour of multiple embedded JUMPs.
 
 #### Clear Mission
 

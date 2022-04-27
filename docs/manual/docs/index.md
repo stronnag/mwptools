@@ -8,7 +8,7 @@ subtitle: A mission planner for the rest of us
 
 [^1]: *James Taylor, Fire and Rain. Full line is 'sweet dreams and flying machines in pieces on the ground', you may skip the final part*.
 
-{{ mwp }} (originally "multi-wii planner") is a mission planner, ground control station and flight logger for MSP (Multiwiii Serial Protocol) compatible flight controller firmware (Multiwii and {{ inav }} at least).
+{{ mwp }} (originally "multi-wii planner") is a mission planner, ground control station and flight logger for MSP (Multiwiii Serial Protocol) compatible flight controller firmware ({{ inav }} and Multiwii at least).
 
 From its MultiWii origins mwp has evolved to support navigation capabilities in {{ inav }}.
 
@@ -16,7 +16,7 @@ From its MultiWii origins mwp has evolved to support navigation capabilities in 
 
 ## Features
 
-* [**Mission Planner**](mission-editor.md) : Support all {{ inav }} and MultiWii mission planning functions, including all INAV extensions.
+* [**Mission Planner**](mission-editor.md) : Supports all {{ inav }} and MultiWii mission planning functions, including all INAV extensions.
 * [**Ground Control Station**](gcs-features.md) : (Near) real time ground control monitoring, using a wide range of [telemetry](#supported-protocols) options. Audio status reports.
 * [**Monitoring and warning**](mwp-Radar-View.md) of other airspace users (INAV radar, manned aviation ADS-B)
 * [**Flight log replay**](replay-tools.md)  (Blackbox, OTX/ETX logs, BulletGCSS)
@@ -24,7 +24,7 @@ From its MultiWii origins mwp has evolved to support navigation capabilities in 
 * **Support** functions
     * {{ inav }} [Safehome editor](mwp-safehomes-editor.md)
     * [Automatic mission shape](mission-editor.md#add-shape) generation, block moves, animated mission preview.
-    * [Terrain Analysis](Mission-Elevation-Plot-and-Terrain-Analysis.md) with WP mission rewrite to safe margins
+    * [Terrain Analysis](Mission-Elevation-Plot-and-Terrain-Analysis.md) with WP mission rewrite to safe elevation margins
     * Favourite sites editor
     * KML/KMZ static overlays
 
@@ -38,7 +38,7 @@ From its MultiWii origins mwp has evolved to support navigation capabilities in 
 * Smartport (direct /  via inverter / or from Multi-protocol Module)
 * Crossfire (CRSF)
 * Flysky AA (via Multi-protocol Module)
-* [BulletGCCS MQTT](https://github.com/stronnag/mwptools/wiki/mqtt---bulletgcss-telemetry)
+* [BulletGCSS MQTT](https://github.com/stronnag/mwptools/wiki/mqtt---bulletgcss-telemetry)
 
 ### Monitoring
 
@@ -51,9 +51,9 @@ From its MultiWii origins mwp has evolved to support navigation capabilities in 
 
 {{ mwp }} supports [replay](replay-tools.md) of:
 
-* mwp log files (logged by GCS)
+* mwp log files (logged by mwp/GCS)
 * Blackbox logs
-* OpenTX CSV (sdcard) logs
+* OpenTX and EdgeTX CSV (sdcard) logs
 * BulletGCSS logs
 * Ardupilot (`.bin`) log
 
@@ -61,7 +61,7 @@ Log replay requires tools from the [flightlog2x](https://github.com/stronnag/bbl
 
 ## Platforms and OS
 
-The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Bullseye, Sid), Ubuntu (latest and most recent LTS), Fedora (current)  and FreeBSD (current release). {{ mwp }} also runs on MS Windows, with Windows 11 / WSL-g is almost on feature parity with Linux / FreeBSD. Other (older) OS are unsupported, but may work (i.e. Debian 10 is used for the "release" builds).
+The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Bullseye, Sid), Ubuntu (latest and most recent LTS), Fedora (current)  and FreeBSD (current release). {{ mwp }} also runs on MS Windows; Windows 11 / WSL-g is almost on feature parity with Linux / FreeBSD. Other (older) OS are unsupported, but may work (i.e. Debian 10 is used for the "release" builds).
 
 ## Build and installation
 

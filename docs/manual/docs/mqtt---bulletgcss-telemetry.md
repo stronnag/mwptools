@@ -52,6 +52,7 @@ Or in general:
     mqtt://[user[:pass]@]broker[:port]/topic[?cafile=file]
 
 Note:
+
 * port is the mqtt port (typically and by default 1883), not the websocket port.
 * if you want to use TLS, then the port will be different, often 8883, and you might need to provide the broker's CA file.
 * As {{ mwp }} uses a pseudo-URL for the broker,topic etc, the topic should comply with rules for a URL rather than the more relaxed MQTT topic specification. This is a feature.

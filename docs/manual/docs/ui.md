@@ -75,7 +75,7 @@ The following tables summarise the available menu options. Where usage is not ob
 | Radio Status | Adds the radio status docklet to the dock (default) |
 | Battery Monitor | Adds the Battery  Status docklet to the dock (default) |
 | Telemetry Status | Adds the Telemetry Status docklet to the dock |
-| Artificial Horizon | Adds the Artificial Horizon docklet to the dock |
+| Artificial Horizon | Adds the Artificial Horizon docklet to the dock (default) |
 | Direction View | Adds the Direction View (mag v. GPS) docklet to the dock |
 | Flight View | Adds the Flight View docklet to the dock (default) |
 | Vario View | Adds the Vario docklet to the dock ||
@@ -83,7 +83,7 @@ The following tables summarise the available menu options. Where usage is not ob
 | Flight Statistics | Display the flight statistic dialogue (also automatic on disarm) |
 | Layout Manager > Save | Saves the current dock layout |
 | Layout Manager > Restore | Restores a saved dock layout |
-| Video Stream | Opens the (live_ video stream window |
+| Video Stream | Opens the (live) video stream window |
 | GCS Location | Displays the indicative [GCS location icon](gcs-features.md#gcs-location-icon) |
 
 ### Help Menu
@@ -98,6 +98,7 @@ The following tables summarise the available menu options. Where usage is not ob
 A number of different map provides are available. {{ mwp }} offers the mapping library (`libchamplain`) defaults, Bing Maps (Bing Proxy) using a bespoke {{ mwp }} API key, and [user defined options](mwp-Configuration.md#sources-json), for example [anonymous maps](Black-Ops.md).
 
 The zoom level may be selected from the control here, or by zooming the map with the mouse wheel.
+
 The **+Edit WPs** button enables mission edit mode (click on the map to create a WP, drag to move, right mouse button for properties). Graphical WP editing may be augmented by the table orientated [mission table view](mission-editor.md), which allows additional control (altitude, speed, special functions, for example [fly-by-home](Fly-By-Home-waypoints-(inav-4-new-feature).md) waypoints).
 
 The "Active Mission" drop down supports {{ inav }} 4.0+ [multi-mission](inav-4.0-multi-missions.md). There is also a **multi-mission manager** under the **Edit** menu.
@@ -108,9 +109,9 @@ There is a (blue "!" in the example) 'navigation safe' status icon. If this icon
 
 ![navunsafe](images/nav-unsafe.png){: width="20%" }
 
-The **Device** drop-down offers detected and pre-set (**Preferences**) devices for the FC / telemetry port. The device syntax is described the [Device and Protocol definition](mwp-multi-procotol.md) article.
+The **Device** drop-down offers detected and pre-set (**Preferences**) devices for the FC / telemetry port. The device syntax is described the [Device and Protocol definition](mwp-multi-procotol.md) chapter.
 
-The **Protocol Selection** drop-down (here showing **Auto**) allows the user to provide a hint as to communication protocols available on **Device**. These are further described in the [Device and Protocol definition](mwp-multi-procotol.md) article.
+The **Protocol Selection** drop-down (showing **Auto** in the reference image) allows the user to provide a hint as to communication protocols available on **Device**. These are further described in the [Device and Protocol definition](mwp-multi-procotol.md) article.
 
 The **Connect / Disconnect** button connects / disconnects the displayed device.
 
@@ -142,7 +143,7 @@ The **Dock Bar** contains essentially minimised [**Docklets**](#docklets), selec
 
 ## Location (7)
 
-The location (of the mouse pointer), [user setting](mwp-Configuration.md#dconf-gsettings) "pos-is-centre" for either mouse pointer or map centre, and format (**Preferences**).
+The location (of the mouse pointer), [user setting](mwp-Configuration.md#dconf-gsettings) `pos-is-centre` for either mouse pointer or map centre, and display format (**Preferences**).
 
 ## FC Information (8)
 
@@ -150,10 +151,10 @@ Displays the firmware, version and build with API information, profile and fligh
 
 ## Sensors and flight status (9)
 
-* Follow : [user setting](mwp-Configuration.md#dconf-gsettings) "auto-follow". whether the map always displays the aircraft icon (required GPS).
+* Follow : [user setting](mwp-Configuration.md#dconf-gsettings) `auto-follow`. whether the map always displays the aircraft icon (requires GPS).
 * In View : Scrolls the map to keep the aircraft in view; otherwise the map is centred on the aircraft (requires GPS).
 * Logger : Generate mwp logs (JSON format).
-* Audio : [user setting](mwp-Configuration.md#dconf-gsettings) "audio-on-arm". Whether to "speak" status information.
+* Audio : [user setting](mwp-Configuration.md#dconf-gsettings) `audio-on-arm`. Whether to "speak" status information.
 
 The green / red bars show gyro / acc / baro / mag / gps / sonar sensor status. If a required sensor fails, a map annotation will be displayed, together with an audible alarm.
 

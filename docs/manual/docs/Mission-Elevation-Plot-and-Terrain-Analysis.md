@@ -48,8 +48,8 @@ and knowing that the land rises to the north and west, we can check that we do i
 
 where:
 
-* `west_field.mission` is the MW-XML mission file (via [mwp](https://github.com/stronnag/mwptools), ezgui, mission planner for INAV or [impload](https://github.com/stronnag/impload))
-* the `--home lat,lon` option defines the home position (which may also be set by the environment variable `MWP_HOME`), the command line having preference.
+* `west_field.mission` is the MW-XML mission file (via [mwp](https://github.com/stronnag/mwptools), INAV configurator, [ezgui, mission planner for INAV] or [impload](https://github.com/stronnag/impload))
+* the `--home lat,lon` option defines the home position (which may also be set by the environment variable `MWP_HOME`), the command line having preference. Note that for modern {{ mwp }} generated mission files, this information is provided in the mission file.
 * The graphical output is `profile.svg`, via the `--plotfile` option.
 
 The result from this command is an SVG file, which can be displayed with common image tools (`eog`, ImageMagick `display` et al). It can also be converted to a raster image using e.g. `rsvg-convert`); a sample is shown below:
@@ -76,7 +76,7 @@ Note that the original mission elevations are still taken into account. We can a
 
 ## Dependencies
 
-The **`mwp-plot-elevations`** has **NO** dependency on {{ mwp }} or Linux / FreeBSD, it can just as easily be run on MacOS or even MS Windows. It does however has some dependencies:
+The **`mwp-plot-elevations`** has **NO** dependency on {{ mwp }} or Linux / FreeBSD, it can just as easily be run on MacOS or MS Windows. It does however has some dependencies:
 
 ### Go version
 
@@ -135,7 +135,6 @@ It reads 485m, this pretty much agrees with the OS (Survey) height (AMSL). So th
 
 ## Command line help and options
 
-
     $ mwp-plot-elevations --help
     Usage of mwp-plot-elevations [options] missionfile
       -dump
@@ -165,7 +164,6 @@ As well as specifying options such as home location, clearance margin and RTH al
 
 `mwp-plot-elevations` looks for options in one of the following (in order) `./.elev-plot.rc` (i.e. current directory), `$HOME/.config/mwp/elev-plot`,  and `$HOME/.elev-plot.rc`. The configuration file is a simple text file containing `key=value` pairs. Blank lines and lines beginning with `#` are ignored; the following example illustrates the recognised keys. Note that  `$HOME/.config/mwp/elev-plot` is the preferred location, as this is also used by `mwp` to populate its graphical dialogue to launch the analysis tool.
 
-
     # settings for mwp-plot-elevations
     margin = 16
     home = 50.910476,-1.535038
@@ -192,7 +190,6 @@ As well as specifying options such as home location, clearance margin and RTH al
     # Interactive plot. save SVG file, rewrite mission file,
     # override clearance margin (20m), reduce RTH altitude (22m)
     $ mwp-plot-elevations --plotfile /tmp/mission.svg --output new_west_field.mission --margin 20 --rth-alt 22 nm_west_field.mission
-
 
 Another contrived example ... create a mission in Google Earth (tied to ground), save as KMZ, convert to MWXML mission file with [impload](https://github.com/stronnag/impload) (0 altitude). Use `mwp-plot-elevations.rb` to calculate a safe mission.
 

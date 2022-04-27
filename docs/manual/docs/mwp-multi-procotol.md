@@ -77,7 +77,7 @@ See the [mwp's MQTT support](mqtt---bulletgcss-telemetry.md) article for a detai
 
 ### WSL UDP bridge
 
-As WSL does not support serial connections, mwp provides a bespoke serial / UDP bridge using the pseudo-device name `udp://__MWP_SERIAL_HOST:17071`. See the [WSL article](mwp-in-Windows-11---WSL-G.md) for more detail.
+As WSL does not support USB serial connections, mwp provides a bespoke serial / UDP bridge using the pseudo-device name `udp://__MWP_SERIAL_HOST:17071`. See the [WSL article](mwp-in-Windows-11---WSL-G.md) for more detail.
 
 ## Multi Protocol selection
 
@@ -89,6 +89,7 @@ Instead, there is now a protocol drop-down that allows the user to select the in
 ![dropdown0](images/proto_dropdown-1.png){: width="60%" }
 
 Offering:
+
 ![dropdown1](images/proto_dropdown-0.png){: width="40%" }
 
 ### Usage

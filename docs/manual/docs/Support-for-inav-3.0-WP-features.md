@@ -35,7 +35,7 @@ The mission editor gains two new context message options:
 * Convert Altitudes (selection, inet)
 * Update LAND offset (selected, inet)
 
-The text in parentheses indicating that a selection of point and an internet connection is potentially needed.
+The text in parentheses indicating that a selection of point and an internet (`inet`) connection is potentially needed.
 
 * Internet connectivity is needed in order to perform conversion between absolute and relative modes, unless manual entry of the home elevation is chosen.
 * Internet connectivity is needed for automatic LAND elevation adjustment, as mwp needs to known the LAND site ground elevation.

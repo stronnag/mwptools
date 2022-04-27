@@ -6,7 +6,7 @@ The **dock**, items 5 and 6 in the main window guide provides an area for option
 
 ![main](images/main-window.png){: width="100%" }
 
-This [slightly outdated video](https://vimeo.com/267437907) that describes dock usage probably better than words might do.
+This [slightly outdated video](https://vimeo.com/267437907) that describes dock usage probably better than written words can do.
 
 <iframe src="https://player.vimeo.com/video/267437907?h=015ed1fdc6" width="640" height="431" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
 
@@ -18,7 +18,7 @@ This [slightly outdated video](https://vimeo.com/267437907) that describes dock 
 
 ## Dock Usage
 
-{{ mwp }} uses the GNOME Docking Library (`gdl`) to provide a dock capability. Items in the dock may be hidden, iconified or torn off into a separate window (that may then be returned to the dock). This section explains how use gdl in mwp. There is also an [ancient short (silent) video](https://vimeo.com/147958984) illustrating dock actions.
+{{ mwp }} uses the GNOME Docking Library (`gdl`) to provide a dock capability. Items in the dock may be hidden, iconified or torn off into a separate window (that may then be returned to the dock). This section explains how use gdl in mwp. There is also an [ancient short (silent) video](https://vimeo.com/147958984) illustrating the following dock actions.
 
 * Load a mission into the mission tote
 * Load the Nav Status into the dock bar
@@ -32,7 +32,7 @@ This [slightly outdated video](https://vimeo.com/267437907) that describes dock 
 * Reopen Nav Status in the dock.
 
 !!! warning "Caveat updates"
-    If a {{ mwp }} update expands the  dock adding new dock items, any previously saved dock layouts are invalidated, and you will have to manually recreate them. Fortunately, this is a rare occurrence.
+    If a {{ mwp }} software update expands the  dock by adding new dock items, any previously saved dock layouts are invalidated, and you will have to manually recreate them. Fortunately, this is a rare occurrence.
 
 The main dock controls are shown below:
 
@@ -43,7 +43,7 @@ The main dock controls are shown below:
 * Highlight in **red** : the dock icons. Clicking on these will restore the window (either to the dock, or as a separate window)
 * Highlight in **green** : the dock item bar. Where multiple items are in the dock, the tab icon may be dragged to reposition the docked window. In also has a pop-up menu, that allows the item
 to be completely hidden (but recoverable from the View menu), and
-* Highlight in  **blue** :  a iconify widget that will add the item to dock icon bar (the red highlight).
+* Highlight in  **blue** :  a iconify widget that will add the item to dock icon bar (the red highlighted area).
 
 If the item bar icon (left-most in the green area) is dragged from the dock, the item will appear as a separate window. The detached window may be added back to the dock by dragging the window's “item bar” back into the dock, or added back to the dock icon bar using the iconify button (the left facing arrow to the right of the window's “item bar”. If the detached window is closed, then it becomes hidden, and may be reattached to the dock (as an iconified dock item) from the View menu.
 
