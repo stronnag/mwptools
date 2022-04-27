@@ -865,12 +865,12 @@
 <blockquote>
 <p>Sweet dreams and flying machines<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup></p>
 </blockquote>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> (originally "multi-wii planner") is a mission planner, ground control station and flight logger for MSP (Multiwiii Serial Protocol) compatible flight controller firmware (Multiwii and <a href="https://github.com/iNavFlight/inav">INAV</a> at least).</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> (originally "multi-wii planner") is a mission planner, ground control station and flight logger for MSP (Multiwiii Serial Protocol) compatible flight controller firmware (<a href="https://github.com/iNavFlight/inav">INAV</a> and Multiwii at least).</p>
 <p>From its MultiWii origins mwp has evolved to support navigation capabilities in <a href="https://github.com/iNavFlight/inav">INAV</a>.</p>
 <p><a href="https://github.com/iNavFlight/inav">INAV</a> is now the main development target, however MultiWii mission planning and ground control remains a supported function.</p>
 <h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">#</a></h2>
 <ul>
-<li><a href="mission-editor/"><strong>Mission Planner</strong></a> : Support all <a href="https://github.com/iNavFlight/inav">INAV</a> and MultiWii mission planning functions, including all INAV extensions.</li>
+<li><a href="mission-editor/"><strong>Mission Planner</strong></a> : Supports all <a href="https://github.com/iNavFlight/inav">INAV</a> and MultiWii mission planning functions, including all INAV extensions.</li>
 <li><a href="gcs-features/"><strong>Ground Control Station</strong></a> : (Near) real time ground control monitoring, using a wide range of <a href="#supported-protocols">telemetry</a> options. Audio status reports.</li>
 <li><a href="mwp-Radar-View/"><strong>Monitoring and warning</strong></a> of other airspace users (INAV radar, manned aviation ADS-B)</li>
 <li><a href="replay-tools/"><strong>Flight log replay</strong></a>  (Blackbox, OTX/ETX logs, BulletGCSS)</li>
@@ -878,7 +878,7 @@
 <li><strong>Support</strong> functions<ul>
 <li><a href="https://github.com/iNavFlight/inav">INAV</a> <a href="mwp-safehomes-editor/">Safehome editor</a></li>
 <li><a href="mission-editor/#add-shape">Automatic mission shape</a> generation, block moves, animated mission preview.</li>
-<li><a href="Mission-Elevation-Plot-and-Terrain-Analysis/">Terrain Analysis</a> with WP mission rewrite to safe margins</li>
+<li><a href="Mission-Elevation-Plot-and-Terrain-Analysis/">Terrain Analysis</a> with WP mission rewrite to safe elevation margins</li>
 <li>Favourite sites editor</li>
 <li>KML/KMZ static overlays</li>
 </ul>
@@ -893,7 +893,7 @@
 <li>Smartport (direct /  via inverter / or from Multi-protocol Module)</li>
 <li>Crossfire (CRSF)</li>
 <li>Flysky AA (via Multi-protocol Module)</li>
-<li><a href="https://github.com/stronnag/mwptools/wiki/mqtt---bulletgcss-telemetry">BulletGCCS MQTT</a></li>
+<li><a href="https://github.com/stronnag/mwptools/wiki/mqtt---bulletgcss-telemetry">BulletGCSS MQTT</a></li>
 </ul>
 <h3 id="monitoring">Monitoring<a class="headerlink" href="#monitoring" title="Permanent link">#</a></h3>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> also supports the <a href="mwp-Radar-View/">real-time display of adjacent aircraft</a> using:</p>
@@ -904,15 +904,15 @@
 <h3 id="log-replay-formats">Log replay formats<a class="headerlink" href="#log-replay-formats" title="Permanent link">#</a></h3>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> supports <a href="replay-tools/">replay</a> of:</p>
 <ul>
-<li>mwp log files (logged by GCS)</li>
+<li>mwp log files (logged by mwp/GCS)</li>
 <li>Blackbox logs</li>
-<li>OpenTX CSV (sdcard) logs</li>
+<li>OpenTX and EdgeTX CSV (sdcard) logs</li>
 <li>BulletGCSS logs</li>
 <li>Ardupilot (<code>.bin</code>) log</li>
 </ul>
 <p>Log replay requires tools from the <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a> project.</p>
 <h2 id="platforms-and-os">Platforms and OS<a class="headerlink" href="#platforms-and-os" title="Permanent link">#</a></h2>
-<p>The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Bullseye, Sid), Ubuntu (latest and most recent LTS), Fedora (current)  and FreeBSD (current release). <a href="https://github.com/stronnag/mwptools">mwp</a> also runs on MS Windows, with Windows 11 / WSL-g is almost on feature parity with Linux / FreeBSD. Other (older) OS are unsupported, but may work (i.e. Debian 10 is used for the "release" builds).</p>
+<p>The tools are designed to be portable and as far as possible platform and architecture agnostic. The suite is developed on Arch Linux and is tested on Debian (Bullseye, Sid), Ubuntu (latest and most recent LTS), Fedora (current)  and FreeBSD (current release). <a href="https://github.com/stronnag/mwptools">mwp</a> also runs on MS Windows; Windows 11 / WSL-g is almost on feature parity with Linux / FreeBSD. Other (older) OS are unsupported, but may work (i.e. Debian 10 is used for the "release" builds).</p>
 <h2 id="build-and-installation">Build and installation<a class="headerlink" href="#build-and-installation" title="Permanent link">#</a></h2>
 <p>Build and installation is described in the following sections:</p>
 <ul>

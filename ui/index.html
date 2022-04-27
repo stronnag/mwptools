@@ -1154,7 +1154,7 @@
 </tr>
 <tr>
 <td>Artificial Horizon</td>
-<td>Adds the Artificial Horizon docklet to the dock</td>
+<td>Adds the Artificial Horizon docklet to the dock (default)</td>
 </tr>
 <tr>
 <td>Direction View</td>
@@ -1186,7 +1186,7 @@
 </tr>
 <tr>
 <td>Video Stream</td>
-<td>Opens the (live_ video stream window</td>
+<td>Opens the (live) video stream window</td>
 </tr>
 <tr>
 <td>GCS Location</td>
@@ -1215,14 +1215,14 @@
 </table>
 <h2 id="map-and-mission-settings-2">Map and Mission Settings (2)<a class="headerlink" href="#map-and-mission-settings-2" title="Permanent link">#</a></h2>
 <p>A number of different map provides are available. <a href="https://github.com/stronnag/mwptools">mwp</a> offers the mapping library (<code>libchamplain</code>) defaults, Bing Maps (Bing Proxy) using a bespoke <a href="https://github.com/stronnag/mwptools">mwp</a> API key, and <a href="../mwp-Configuration/#sources-json">user defined options</a>, for example <a href="../Black-Ops/">anonymous maps</a>.</p>
-<p>The zoom level may be selected from the control here, or by zooming the map with the mouse wheel.
-The <strong>+Edit WPs</strong> button enables mission edit mode (click on the map to create a WP, drag to move, right mouse button for properties). Graphical WP editing may be augmented by the table orientated <a href="../mission-editor/">mission table view</a>, which allows additional control (altitude, speed, special functions, for example <a href="../Fly-By-Home-waypoints-%28inav-4-new-feature%29/">fly-by-home</a> waypoints).</p>
+<p>The zoom level may be selected from the control here, or by zooming the map with the mouse wheel.</p>
+<p>The <strong>+Edit WPs</strong> button enables mission edit mode (click on the map to create a WP, drag to move, right mouse button for properties). Graphical WP editing may be augmented by the table orientated <a href="../mission-editor/">mission table view</a>, which allows additional control (altitude, speed, special functions, for example <a href="../Fly-By-Home-waypoints-%28inav-4-new-feature%29/">fly-by-home</a> waypoints).</p>
 <p>The "Active Mission" drop down supports <a href="https://github.com/iNavFlight/inav">INAV</a> 4.0+ <a href="../inav-4.0-multi-missions/">multi-mission</a>. There is also a <strong>multi-mission manager</strong> under the <strong>Edit</strong> menu.</p>
 <h2 id="communications-and-telemetry-settings-3">Communications and telemetry settings (3)<a class="headerlink" href="#communications-and-telemetry-settings-3" title="Permanent link">#</a></h2>
 <p>There is a (blue "!" in the example) 'navigation safe' status icon. If this icon is shown (i.e. navigation is <em>unsafe</em>, then clicking on the item will provide more information:</p>
 <p><img alt="navunsafe" src="../images/nav-unsafe.png" width="20%" /></p>
-<p>The <strong>Device</strong> drop-down offers detected and pre-set (<strong>Preferences</strong>) devices for the FC / telemetry port. The device syntax is described the <a href="../mwp-multi-procotol/">Device and Protocol definition</a> article.</p>
-<p>The <strong>Protocol Selection</strong> drop-down (here showing <strong>Auto</strong>) allows the user to provide a hint as to communication protocols available on <strong>Device</strong>. These are further described in the <a href="../mwp-multi-procotol/">Device and Protocol definition</a> article.</p>
+<p>The <strong>Device</strong> drop-down offers detected and pre-set (<strong>Preferences</strong>) devices for the FC / telemetry port. The device syntax is described the <a href="../mwp-multi-procotol/">Device and Protocol definition</a> chapter.</p>
+<p>The <strong>Protocol Selection</strong> drop-down (showing <strong>Auto</strong> in the reference image) allows the user to provide a hint as to communication protocols available on <strong>Device</strong>. These are further described in the <a href="../mwp-multi-procotol/">Device and Protocol definition</a> article.</p>
 <p>The <strong>Connect / Disconnect</strong> button connects / disconnects the displayed device.</p>
 <p>The <strong>auto</strong> button causes <a href="https://github.com/stronnag/mwptools">mwp</a> to automatically attempt to connect to the nominated device.</p>
 <h2 id="map-area-4">Map Area (4)<a class="headerlink" href="#map-area-4" title="Permanent link">#</a></h2>
@@ -1244,15 +1244,15 @@ The <strong>+Edit WPs</strong> button enables mission edit mode (click on the ma
 <li>Battery status. Current usage is also shown when available.</li>
 </ul>
 <h2 id="location-7">Location (7)<a class="headerlink" href="#location-7" title="Permanent link">#</a></h2>
-<p>The location (of the mouse pointer), <a href="../mwp-Configuration/#dconf-gsettings">user setting</a> "pos-is-centre" for either mouse pointer or map centre, and format (<strong>Preferences</strong>).</p>
+<p>The location (of the mouse pointer), <a href="../mwp-Configuration/#dconf-gsettings">user setting</a> <code>pos-is-centre</code> for either mouse pointer or map centre, and display format (<strong>Preferences</strong>).</p>
 <h2 id="fc-information-8">FC Information (8)<a class="headerlink" href="#fc-information-8" title="Permanent link">#</a></h2>
 <p>Displays the firmware, version and build with API information, profile and flight mode.</p>
 <h2 id="sensors-and-flight-status-9">Sensors and flight status (9)<a class="headerlink" href="#sensors-and-flight-status-9" title="Permanent link">#</a></h2>
 <ul>
-<li>Follow : <a href="../mwp-Configuration/#dconf-gsettings">user setting</a> "auto-follow". whether the map always displays the aircraft icon (required GPS).</li>
+<li>Follow : <a href="../mwp-Configuration/#dconf-gsettings">user setting</a> <code>auto-follow</code>. whether the map always displays the aircraft icon (requires GPS).</li>
 <li>In View : Scrolls the map to keep the aircraft in view; otherwise the map is centred on the aircraft (requires GPS).</li>
 <li>Logger : Generate mwp logs (JSON format).</li>
-<li>Audio : <a href="../mwp-Configuration/#dconf-gsettings">user setting</a> "audio-on-arm". Whether to "speak" status information.</li>
+<li>Audio : <a href="../mwp-Configuration/#dconf-gsettings">user setting</a> <code>audio-on-arm</code>. Whether to "speak" status information.</li>
 </ul>
 <p>The green / red bars show gyro / acc / baro / mag / gps / sonar sensor status. If a required sensor fails, a map annotation will be displayed, together with an audible alarm.</p>
 <p><img alt="sensorfail" src="../images/sensorfail.png" width="40% " /></p>

@@ -1040,8 +1040,8 @@ Prior to 2021-05-03, this was provided by a ruby script in <code>mwptools/sample
 </code></pre>
 <p>where:</p>
 <ul>
-<li><code>west_field.mission</code> is the MW-XML mission file (via <a href="https://github.com/stronnag/mwptools">mwp</a>, ezgui, mission planner for INAV or <a href="https://github.com/stronnag/impload">impload</a>)</li>
-<li>the <code>--home lat,lon</code> option defines the home position (which may also be set by the environment variable <code>MWP_HOME</code>), the command line having preference.</li>
+<li><code>west_field.mission</code> is the MW-XML mission file (via <a href="https://github.com/stronnag/mwptools">mwp</a>, INAV configurator, [ezgui, mission planner for INAV] or <a href="https://github.com/stronnag/impload">impload</a>)</li>
+<li>the <code>--home lat,lon</code> option defines the home position (which may also be set by the environment variable <code>MWP_HOME</code>), the command line having preference. Note that for modern <a href="https://github.com/stronnag/mwptools">mwp</a> generated mission files, this information is provided in the mission file.</li>
 <li>The graphical output is <code>profile.svg</code>, via the <code>--plotfile</code> option.</li>
 </ul>
 <p>The result from this command is an SVG file, which can be displayed with common image tools (<code>eog</code>, ImageMagick <code>display</code> et al). It can also be converted to a raster image using e.g. <code>rsvg-convert</code>); a sample is shown below:</p>
@@ -1057,7 +1057,7 @@ Prior to 2021-05-03, this was provided by a ruby script in <code>mwptools/sample
 </code></pre>
 <p><img alt="Absolute Clearance" src="../images/abs.svg" width="50%" /></p>
 <h2 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">#</a></h2>
-<p>The <strong><code>mwp-plot-elevations</code></strong> has <strong>NO</strong> dependency on <a href="https://github.com/stronnag/mwptools">mwp</a> or Linux / FreeBSD, it can just as easily be run on MacOS or even MS Windows. It does however has some dependencies:</p>
+<p>The <strong><code>mwp-plot-elevations</code></strong> has <strong>NO</strong> dependency on <a href="https://github.com/stronnag/mwptools">mwp</a> or Linux / FreeBSD, it can just as easily be run on MacOS or MS Windows. It does however has some dependencies:</p>
 <h3 id="go-version">Go version<a class="headerlink" href="#go-version" title="Permanent link">#</a></h3>
 <ul>
 <li>Go compiler (1.13 or later)</li>
