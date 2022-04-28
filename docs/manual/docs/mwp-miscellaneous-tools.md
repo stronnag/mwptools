@@ -60,25 +60,63 @@ And now we have a settings backup ...
 
 ## flash.sh, fcflash
 
-A shell script to flash new firmware to an FC. See the comments in the script as to third party dependencies (`stm32flash`, `dfu-util`). The script is installed as `fcflash`
+`fcflash` is a script to flash inav images to a flight controller using the command line.
+It requires that `stm32flash` and `dfu-util` are installed on your computer. Optionally, it requires GCC `objcopy` to convert hex files to binary for DFU operation.
 
-This script auto-detects VCP targets in order to chose the right flash format and tooling.
+* DFU mode requires `dfu-util`
+* USB serial mode requires `stm32flash`
 
-    $ fcflash inav_1.9.1_SPRACINGF3.hex # uses stm32flash / USB on /dev/ttyUSB0
-    $ # ...
-    $ fcflash inav_1.9.1_MATEKF405.hex # uses dfu-util / VCP on /dev/ttyACM0
+`fcflash` decides which tool to use depending on the detected device node (which can be overridden)
 
-`fcflash` accepts one or more of the following parameters:
+* `/dev/ttyACMx` => DFU
+* `/dev/ttyUSBx` => USB serial
 
-* `*.hex`, `*.bin` : firmware in ASCII (hex) or binary formats
-* `/dev/NAME` : A device name (e.g. `/dev/ttyACM0`). This is usually unnecessary unless in rescure mode.
-* `rescue` : Flash in rescue mode, assumes the device is already in bootloader mode.
-* `erase` : Full flash erase
-* a number : baud rate
+Note: `fcflash` is the installed file, in the repository it's `src/samples/flash.sh`.
 
-### Example
+### Operation
 
-The command
+`fcflash` performs the following tasks
+
+* Auto-detects the serial port (unless `rescue` is specified, and the FC is set to DFU via hardare (switch, pads))
+* Sets the serial port to a sane mode
+* Sets the FC to bootloader mode (unless 'rescue' is specified).
+* If necessary, converts the `hex` image to a `bin` image (for DFU)
+* Flashes the firmware.
+
+### Options
+
+`fcflash` parses a set of options given on the command line. Normally, only the path to the hex file is required and everything else will be detected (device, flashing mode).
+
+* `rescue` : Assumed the FC is already in bootloader mode, requires a device name
+* `/dev/*` : The name of the serial device, required for `rescue`, typically `/dev/ttyACM0`
+* `erase`  : Performs full chip erase
+* `[123456789]*` : Digits, representing a baud rate. `115200` is assumed by default.
+
+A file name (an inav hex file) is also required.
+
+## Examples
+
+### Flash image, DFU, auto-detect
+
+    fcflash inav_5.0.0_MATEKF405.hex
+
+### Flash image, USB serial (/dev/ttyUSB0), auto-detect
+
+For my broken FC (USB connector unreliable).
+
+    # as above, /dev/ttyUSB0 is autodetected
+    fcflash inav_5.0.0_MATEKF405.hex
+
+    # force device (and USB serial mode)
+    fcflash /dev/ttyUSB0 inav_5.0.0_MATEKF405.hex
+
+### Flash image, rescue mode (hardware boot button), full flash erase
+
+    fcflash rescue erase /dev/ttyACM0 inav_5.0.0_MATEKF405.hex
+
+The no specific ordering of the command line options is required.
+
+In summary, the command:
 
     fcflash inav_5.0.0_WINGFC.hex
 
@@ -91,8 +129,9 @@ results in
     	 dfu-util -d 0483:df11 --alt 0 -s 0x08000000:force:leave -D inav_5.0.0_WINGFC.bin
 
 * The firmware is flashed and the FC reboots
+* The temporary bin file is removed
 
-see also https://github.com/fiam/msp-tool for another tool to simplify flashing.
+see also [msp-tool](https://github.com/fiam/msp-tool) for another tool to simplify command line FC flashing.
 
 ## flashdl
 

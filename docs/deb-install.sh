@@ -1,8 +1,29 @@
 #!/bin/sh
 ## Starting point for Debian & Ubuntu packages ...
+function usage
+{
+  echo "deb-install.sh [-y] [-d]"
+  echo " Install debian / Ubuntu dependendcies [and build mwp]"
+  echo " -y    No confirmation"
+  echo " -d    Dependencies only"
+  exit
+}
 
-CONF=$1
 CONFIRM=
+DEPSONLY=
+
+while getopts "ydh" FOO
+do
+ case $FOO in
+   y) CONFIRM=-y ;;
+   d) DEPSONLY=1 ;;
+   *) usage ;;
+ esac
+done
+
+[ "$#" -eq 0 ] && usage
+shift $((OPTIND -1))
+CONF=$1
 [ -n "$CONF" ] && CONFIRM=-y
 
 sudo apt update && sudo apt full-upgrade && \
@@ -30,13 +51,16 @@ sudo apt update && sudo apt full-upgrade && \
     libspeechd-dev flite flite1-dev libmosquitto-dev \
     gnuplot ruby-nokogiri unzip
 
+
+[ -n "$DEPSONLY" ] && exit
+
 git clone --depth 1 https://github.com/stronnag/mwptools
 (
   mkdir -p ~/.local/bin
- cd mwptools
- meson build --buildtype=release --strip --prefix ~/.local
- cd build
- ninja install
+  cd mwptools
+  meson build --buildtype=release --strip --prefix ~/.local
+  cd build
+  ninja install
 )
 
 git clone --depth 1  https://github.com/iNavFlight/blackbox-tools
