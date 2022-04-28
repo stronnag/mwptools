@@ -709,8 +709,49 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
-    Example
+  <a href="#operation" class="md-nav__link">
+    Operation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    Options
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flash-image-dfu-auto-detect" class="md-nav__link">
+    Flash image, DFU, auto-detect
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flash-image-usb-serial-devttyusb0-auto-detect" class="md-nav__link">
+    Flash image, USB serial (/dev/ttyUSB0), auto-detect
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flash-image-rescue-mode-hardware-boot-button-full-flash-erase" class="md-nav__link">
+    Flash image, rescue mode (hardware boot button), full flash erase
   </a>
   
 </li>
@@ -820,8 +861,49 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example" class="md-nav__link">
-    Example
+  <a href="#operation" class="md-nav__link">
+    Operation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#options" class="md-nav__link">
+    Options
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flash-image-dfu-auto-detect" class="md-nav__link">
+    Flash image, DFU, auto-detect
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flash-image-usb-serial-devttyusb0-auto-detect" class="md-nav__link">
+    Flash image, USB serial (/dev/ttyUSB0), auto-detect
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flash-image-rescue-mode-hardware-boot-button-full-flash-erase" class="md-nav__link">
+    Flash image, rescue mode (hardware boot button), full flash erase
   </a>
   
 </li>
@@ -916,22 +998,53 @@ Application Options:
 -rw-r----- 1 jrh jrh 2115 Mar 28 12:16 /tmp/dodo-test.txt.2018-03-28T12.17.01
 </code></pre>
 <h2 id="flashsh-fcflash">flash.sh, fcflash<a class="headerlink" href="#flashsh-fcflash" title="Permanent link">#</a></h2>
-<p>A shell script to flash new firmware to an FC. See the comments in the script as to third party dependencies (<code>stm32flash</code>, <code>dfu-util</code>). The script is installed as <code>fcflash</code></p>
-<p>This script auto-detects VCP targets in order to chose the right flash format and tooling.</p>
-<pre><code>$ fcflash inav_1.9.1_SPRACINGF3.hex # uses stm32flash / USB on /dev/ttyUSB0
-$ # ...
-$ fcflash inav_1.9.1_MATEKF405.hex # uses dfu-util / VCP on /dev/ttyACM0
-</code></pre>
-<p><code>fcflash</code> accepts one or more of the following parameters:</p>
+<p><code>fcflash</code> is a script to flash inav images to a flight controller using the command line.
+It requires that <code>stm32flash</code> and <code>dfu-util</code> are installed on your computer. Optionally, it requires GCC <code>objcopy</code> to convert hex files to binary for DFU operation.</p>
 <ul>
-<li><code>*.hex</code>, <code>*.bin</code> : firmware in ASCII (hex) or binary formats</li>
-<li><code>/dev/NAME</code> : A device name (e.g. <code>/dev/ttyACM0</code>). This is usually unnecessary unless in rescure mode.</li>
-<li><code>rescue</code> : Flash in rescue mode, assumes the device is already in bootloader mode.</li>
-<li><code>erase</code> : Full flash erase</li>
-<li>a number : baud rate</li>
+<li>DFU mode requires <code>dfu-util</code></li>
+<li>USB serial mode requires <code>stm32flash</code></li>
 </ul>
-<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">#</a></h3>
-<p>The command</p>
+<p><code>fcflash</code> decides which tool to use depending on the detected device node (which can be overridden)</p>
+<ul>
+<li><code>/dev/ttyACMx</code> =&gt; DFU</li>
+<li><code>/dev/ttyUSBx</code> =&gt; USB serial</li>
+</ul>
+<p>Note: <code>fcflash</code> is the installed file, in the repository it's <code>src/samples/flash.sh</code>.</p>
+<h3 id="operation">Operation<a class="headerlink" href="#operation" title="Permanent link">#</a></h3>
+<p><code>fcflash</code> performs the following tasks</p>
+<ul>
+<li>Auto-detects the serial port (unless <code>rescue</code> is specified, and the FC is set to DFU via hardare (switch, pads))</li>
+<li>Sets the serial port to a sane mode</li>
+<li>Sets the FC to bootloader mode (unless 'rescue' is specified).</li>
+<li>If necessary, converts the <code>hex</code> image to a <code>bin</code> image (for DFU)</li>
+<li>Flashes the firmware.</li>
+</ul>
+<h3 id="options">Options<a class="headerlink" href="#options" title="Permanent link">#</a></h3>
+<p><code>fcflash</code> parses a set of options given on the command line. Normally, only the path to the hex file is required and everything else will be detected (device, flashing mode).</p>
+<ul>
+<li><code>rescue</code> : Assumed the FC is already in bootloader mode, requires a device name</li>
+<li><code>/dev/*</code> : The name of the serial device, required for <code>rescue</code>, typically <code>/dev/ttyACM0</code></li>
+<li><code>erase</code>  : Performs full chip erase</li>
+<li><code>[123456789]*</code> : Digits, representing a baud rate. <code>115200</code> is assumed by default.</li>
+</ul>
+<p>A file name (an inav hex file) is also required.</p>
+<h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">#</a></h2>
+<h3 id="flash-image-dfu-auto-detect">Flash image, DFU, auto-detect<a class="headerlink" href="#flash-image-dfu-auto-detect" title="Permanent link">#</a></h3>
+<pre><code>fcflash inav_5.0.0_MATEKF405.hex
+</code></pre>
+<h3 id="flash-image-usb-serial-devttyusb0-auto-detect">Flash image, USB serial (/dev/ttyUSB0), auto-detect<a class="headerlink" href="#flash-image-usb-serial-devttyusb0-auto-detect" title="Permanent link">#</a></h3>
+<p>For my broken FC (USB connector unreliable).</p>
+<pre><code># as above, /dev/ttyUSB0 is autodetected
+fcflash inav_5.0.0_MATEKF405.hex
+
+# force device (and USB serial mode)
+fcflash /dev/ttyUSB0 inav_5.0.0_MATEKF405.hex
+</code></pre>
+<h3 id="flash-image-rescue-mode-hardware-boot-button-full-flash-erase">Flash image, rescue mode (hardware boot button), full flash erase<a class="headerlink" href="#flash-image-rescue-mode-hardware-boot-button-full-flash-erase" title="Permanent link">#</a></h3>
+<pre><code>fcflash rescue erase /dev/ttyACM0 inav_5.0.0_MATEKF405.hex
+</code></pre>
+<p>The no specific ordering of the command line options is required.</p>
+<p>In summary, the command:</p>
 <pre><code>fcflash inav_5.0.0_WINGFC.hex
 </code></pre>
 <p>results in</p>
@@ -946,8 +1059,9 @@ $ fcflash inav_1.9.1_MATEKF405.hex # uses dfu-util / VCP on /dev/ttyACM0
 <li>
 <p>The firmware is flashed and the FC reboots</p>
 </li>
+<li>The temporary bin file is removed</li>
 </ul>
-<p>see also https://github.com/fiam/msp-tool for another tool to simplify flashing.</p>
+<p>see also <a href="https://github.com/fiam/msp-tool">msp-tool</a> for another tool to simplify command line FC flashing.</p>
 <h2 id="flashdl">flashdl<a class="headerlink" href="#flashdl" title="Permanent link">#</a></h2>
 <p><code>flashdl</code> is a tool to download blackbox logs from on-board flash. If you're doing this on a VCP board, it will download much faster then the apparent baud rate indicates. If you're using a non-VCP board (i.e. F3 or earlier), then consider using <code>flash_dump.rb</code> which can  temporarily alter the baudrate to achieve faster rates using CLI (vice MSP) commands.</p>
 <pre><code>$ flashdl --help
