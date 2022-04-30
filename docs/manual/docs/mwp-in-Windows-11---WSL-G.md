@@ -15,12 +15,12 @@ Tested with Windows 11 VM hosted on Arch Linux by the developer.
 ## WSL Installation
 
 * Installed default Ubuntu
-* Note that serial ports **still** don't appear to work in WSL (workaround described below)
+* Note that serial ports remain *difficult* (workarounds described below)
 
 ### Windows / WSL Pre-requisites
 
 None other than the serial port issue, Wayland (GUI) and sound just work.
-The serial port problem can be mitigated by a "serial to IP" solution; mwptools provides [`ser2udp`](#serial-devices) for this purpose.
+The serial port problem can be mitigated by a "serial to IP" solution; mwptools provides [`ser2udp`](#serial-devices) for this purpose or using `usbipd / usbip`
 
 ## mwp Installation
 
@@ -101,17 +101,28 @@ Then you are ready to run mwp.
 
 ### Serial devices
 
-In order to use a serial device, it is necessary to run a "serial to IP" bridge on the Windows side. This application will need to be white-listed in the Windows firewall.
+In order to use a serial device, it is necessary to run a "serial to IP" bridge on the Windows side. There are two solutions to this, both involve some effort on both the Windows and Linux sides.
+
+* `usbip`, a long-standing Linux feature that has recently been introduced to Windows
+* Standalone "serial-to-IP" bridge, such as mwp's `ser2udp` tool. This application will need to be white-listed in the Windows firewall.
+
+### udpip
+
+See this [Microsoft developer blog article](https://devblogs.microsoft.com/commandline/connecting-usb-devices-to-wsl/) for installation / usage information.
+
+### Standalone Bridge
 
 There are a number of existing solutions that may work; **mwp** provides a simple, dedicated `ser2udp` tool that works well.
 
-### Building mwp's `ser2udp`
+### Installing mwp's `ser2udp`
 
-On the **Linux/WSL side**:
+Either:
 
-* `cd mwptools/src/samples/s2n`
-* `make ser2udp.exe`
-* copy `ser2udp.exe` to the d̶a̶r̶k̶  Windows side
+* Download the compiled Zip file from the current [mwp release area](https://github.com/stronnag/mwptools/releases) (on Windows); or
+* Build on the  **Linux/WSL side**:
+    * `cd mwptools/src/samples/s2n`
+    * `make ser2udp.exe`
+    * copy `ser2udp.exe` to the d̶a̶r̶k̶  Windows side
 
 On the Windows side:
 
