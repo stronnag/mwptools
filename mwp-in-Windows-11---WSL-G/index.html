@@ -623,11 +623,25 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#building-mwps-ser2udp" class="md-nav__link">
-    Building mwp's ser2udp
+  <a href="#udpip" class="md-nav__link">
+    udpip
   </a>
   
-    <nav class="md-nav" aria-label="Building mwp's ser2udp">
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#standalone-bridge" class="md-nav__link">
+    Standalone Bridge
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-mwps-ser2udp" class="md-nav__link">
+    Installing mwp's ser2udp
+  </a>
+  
+    <nav class="md-nav" aria-label="Installing mwp's ser2udp">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1015,11 +1029,25 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#building-mwps-ser2udp" class="md-nav__link">
-    Building mwp's ser2udp
+  <a href="#udpip" class="md-nav__link">
+    udpip
   </a>
   
-    <nav class="md-nav" aria-label="Building mwp's ser2udp">
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#standalone-bridge" class="md-nav__link">
+    Standalone Bridge
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installing-mwps-ser2udp" class="md-nav__link">
+    Installing mwp's ser2udp
+  </a>
+  
+    <nav class="md-nav" aria-label="Installing mwp's ser2udp">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1118,11 +1146,11 @@
 <h2 id="wsl-installation">WSL Installation<a class="headerlink" href="#wsl-installation" title="Permanent link">#</a></h2>
 <ul>
 <li>Installed default Ubuntu</li>
-<li>Note that serial ports <strong>still</strong> don't appear to work in WSL (workaround described below)</li>
+<li>Note that serial ports remain <em>difficult</em> (workarounds described below)</li>
 </ul>
 <h3 id="windows-wsl-pre-requisites">Windows / WSL Pre-requisites<a class="headerlink" href="#windows-wsl-pre-requisites" title="Permanent link">#</a></h3>
 <p>None other than the serial port issue, Wayland (GUI) and sound just work.
-The serial port problem can be mitigated by a "serial to IP" solution; mwptools provides <a href="#serial-devices"><code>ser2udp</code></a> for this purpose.</p>
+The serial port problem can be mitigated by a "serial to IP" solution; mwptools provides <a href="#serial-devices"><code>ser2udp</code></a> for this purpose or using <code>usbipd / usbip</code></p>
 <h2 id="mwp-installation">mwp Installation<a class="headerlink" href="#mwp-installation" title="Permanent link">#</a></h2>
 <p>Use one of the following:</p>
 <h3 id="a-install-the-current-release-from-github">(a) Install the <a href="https://github.com/stronnag/mwptools/releases/latest">current release from GitHub</a>.<a class="headerlink" href="#a-install-the-current-release-from-github" title="Permanent link">#</a></h3>
@@ -1191,14 +1219,25 @@ generateHosts = false
 <pre><code>mwp
 </code></pre>
 <h3 id="serial-devices">Serial devices<a class="headerlink" href="#serial-devices" title="Permanent link">#</a></h3>
-<p>In order to use a serial device, it is necessary to run a "serial to IP" bridge on the Windows side. This application will need to be white-listed in the Windows firewall.</p>
-<p>There are a number of existing solutions that may work; <strong>mwp</strong> provides a simple, dedicated <code>ser2udp</code> tool that works well.</p>
-<h3 id="building-mwps-ser2udp">Building mwp's <code>ser2udp</code><a class="headerlink" href="#building-mwps-ser2udp" title="Permanent link">#</a></h3>
-<p>On the <strong>Linux/WSL side</strong>:</p>
+<p>In order to use a serial device, it is necessary to run a "serial to IP" bridge on the Windows side. There are two solutions to this, both involve some effort on both the Windows and Linux sides.</p>
 <ul>
+<li><code>usbip</code>, a long-standing Linux feature that has recently been introduced to Windows</li>
+<li>Standalone "serial-to-IP" bridge, such as mwp's <code>ser2udp</code> tool. This application will need to be white-listed in the Windows firewall.</li>
+</ul>
+<h3 id="udpip">udpip<a class="headerlink" href="#udpip" title="Permanent link">#</a></h3>
+<p>See this <a href="https://devblogs.microsoft.com/commandline/connecting-usb-devices-to-wsl/">Microsoft developer blog article</a> for installation / usage information.</p>
+<h3 id="standalone-bridge">Standalone Bridge<a class="headerlink" href="#standalone-bridge" title="Permanent link">#</a></h3>
+<p>There are a number of existing solutions that may work; <strong>mwp</strong> provides a simple, dedicated <code>ser2udp</code> tool that works well.</p>
+<h3 id="installing-mwps-ser2udp">Installing mwp's <code>ser2udp</code><a class="headerlink" href="#installing-mwps-ser2udp" title="Permanent link">#</a></h3>
+<p>Either:</p>
+<ul>
+<li>Download the compiled Zip file from the current <a href="https://github.com/stronnag/mwptools/releases">mwp release area</a> (on Windows); or</li>
+<li>Build on the  <strong>Linux/WSL side</strong>:<ul>
 <li><code>cd mwptools/src/samples/s2n</code></li>
 <li><code>make ser2udp.exe</code></li>
 <li>copy <code>ser2udp.exe</code> to the d̶a̶r̶k̶  Windows side</li>
+</ul>
+</li>
 </ul>
 <p>On the Windows side:</p>
 <ul>
