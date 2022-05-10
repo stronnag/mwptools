@@ -673,16 +673,16 @@ public class MWP : Gtk.Application {
 
 	// Old style definitions for older compilers (buster, cygwin)
 	private DOCKDEF[] ddefs = {
-		DOCKDEF(){tag=DOCKLETS.MISSION, id="Mission", name="Mission Editor", icon="open-menu", stock="gtk-properties"},
-		DOCKDEF(){tag=DOCKLETS.GPS, id="GPS", name="GPS Info", icon="view-refresh", stock="gtk-refresh"},
-		DOCKDEF(){tag=DOCKLETS.NAVSTATUS, id="Status", name="NAV Status", icon="dialog-information", stock="gtk-info"},
-		DOCKDEF(){tag=DOCKLETS.VOLTAGE, id="Volts", name="Battery Monitor", icon="battery", stock="gtk-dialog-warning"},
-		DOCKDEF(){tag=DOCKLETS.RADIO, id="Radio", name="Radio Status", 	icon="network-wireless", stock="gtk-network"},
+		DOCKDEF(){tag=DOCKLETS.MISSION, id="Mission", name="Mission Editor", icon="open-menu-symbolic", stock="gtk-properties"},
+		DOCKDEF(){tag=DOCKLETS.GPS, id="GPS", name="GPS Info", icon="view-refresh-symbolic", stock="gtk-refresh"},
+		DOCKDEF(){tag=DOCKLETS.NAVSTATUS, id="Status", name="NAV Status", icon="dialog-information-symbolic", stock="gtk-info"},
+		DOCKDEF(){tag=DOCKLETS.VOLTAGE, id="Volts", name="Battery Monitor", icon="battery-symbolic", stock="gtk-dialog-warning"},
+		DOCKDEF(){tag=DOCKLETS.RADIO, id="Radio", name="Radio Status", 	icon="network-wireless-symbolic", stock="gtk-network"},
 		DOCKDEF(){tag=DOCKLETS.TELEMETRY, id="Telemetry", name="Telemetry", icon="network-cellular-symbolic", stock="gtk-disconnect"},
-		DOCKDEF(){tag=DOCKLETS.ARTHOR, id="Horizons", name="Artificial Horizon", icon="object-flip-horizontal", stock="gtk-justify-fill"},
-		DOCKDEF(){tag=DOCKLETS.FBOX, id="FlightView",name="FlightView", icon="edit-find", stock="gtk-find"},
-		DOCKDEF(){tag=DOCKLETS.DBOX, id="DirectionView", name="DirectionView", icon="view-fullscreen", stock="gtk-fullscreen"},
-		DOCKDEF(){tag=DOCKLETS.VBOX, id="VarioView", name="VarioView", icon="object-flip-vertical", stock="gtk-go-up"}
+		DOCKDEF(){tag=DOCKLETS.ARTHOR, id="Horizons", name="Artificial Horizon", icon="object-flip-horizontal-symbolic", stock="gtk-justify-fill"},
+		DOCKDEF(){tag=DOCKLETS.FBOX, id="FlightView",name="FlightView", icon="edit-find-symbolic", stock="gtk-find"},
+		DOCKDEF(){tag=DOCKLETS.DBOX, id="DirectionView", name="DirectionView", icon="view-fullscreen-symbolic", stock="gtk-fullscreen"},
+		DOCKDEF(){tag=DOCKLETS.VBOX, id="VarioView", name="VarioView", icon="object-flip-vertical-symbolic", stock="gtk-go-up"}
 	};
 
     const OptionEntry[] options = {
@@ -2731,12 +2731,12 @@ public class MWP : Gtk.Application {
 		var icon_theme = IconTheme.get_default();
 		foreach(var di in ddefs) {
 			try {
-				var px = icon_theme.load_icon (di.icon, 24, IconLookupFlags.FORCE_SVG|IconLookupFlags.USE_BUILTIN);
+				var px = icon_theme.load_icon (di.icon, 16, IconLookupFlags.FORCE_SVG|IconLookupFlags.USE_BUILTIN);
 				dockitem[di.tag]= new DockItem.with_pixbuf_icon (di.id, di.name, px, DockItemBehavior.NORMAL);
-//				stderr.printf("DICON-DBG %d %s %s %s\n", di.tag, di.id, di.name, di.icon);
+				stderr.printf("DICON-DBG %d %s %s %s\n", di.tag, di.id, di.name, di.icon);
 			} catch {
 				dockitem[di.tag]= new DockItem.with_stock (di.id, di.name, di.stock, DockItemBehavior.NORMAL);
-//				stderr.printf("DSTOCK-DBG %d %s %s %s (%s)\n", di.tag, di.id, di.name, di.stock, di.icon);
+				stderr.printf("DSTOCK-DBG %d %s %s %s (%s)\n", di.tag, di.id, di.name, di.stock, di.icon);
 
 			}
 		}
