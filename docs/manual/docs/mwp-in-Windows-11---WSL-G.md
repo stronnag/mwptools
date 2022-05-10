@@ -112,7 +112,7 @@ See this [Microsoft developer blog article](https://devblogs.microsoft.com/comma
 
 ### Standalone Bridge
 
-There are a number of existing solutions that may work; **mwp** provides a simple, dedicated `ser2udp` tool that works well.
+There are a number of existing solutions that may work; **mwp** provides a simple, dedicated `ser2udp` tool that works well, and once set up is transparent in usage.
 
 ### Installing mwp's `ser2udp`
 

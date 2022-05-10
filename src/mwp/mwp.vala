@@ -663,6 +663,28 @@ public class MWP : Gtk.Application {
 		PLAN
 	}
 
+	private struct DOCKDEF {
+		DOCKLETS tag;
+		string id;
+		string name;
+		string icon;
+		string stock;
+	}
+
+	// Old style definitions for older compilers (buster, cygwin)
+	private DOCKDEF[] ddefs = {
+		DOCKDEF(){tag=DOCKLETS.MISSION, id="Mission", name="Mission Editor", icon="open-menu", stock="gtk-properties"},
+		DOCKDEF(){tag=DOCKLETS.GPS, id="GPS", name="GPS Info", icon="view-refresh", stock="gtk-refresh"},
+		DOCKDEF(){tag=DOCKLETS.NAVSTATUS, id="Status", name="NAV Status", icon="dialog-information", stock="gtk-info"},
+		DOCKDEF(){tag=DOCKLETS.VOLTAGE, id="Volts", name="Battery Monitor", icon="battery", stock="gtk-dialog-warning"},
+		DOCKDEF(){tag=DOCKLETS.RADIO, id="Radio", name="Radio Status", 	icon="network-wireless", stock="gtk-network"},
+		DOCKDEF(){tag=DOCKLETS.TELEMETRY, id="Telemetry", name="Telemetry", icon="network-cellular-symbolic", stock="gtk-disconnect"},
+		DOCKDEF(){tag=DOCKLETS.ARTHOR, id="Horizons", name="Artificial Horizon", icon="object-flip-horizontal", stock="gtk-justify-fill"},
+		DOCKDEF(){tag=DOCKLETS.FBOX, id="FlightView",name="FlightView", icon="edit-find", stock="gtk-find"},
+		DOCKDEF(){tag=DOCKLETS.DBOX, id="DirectionView", name="DirectionView", icon="view-fullscreen", stock="gtk-fullscreen"},
+		DOCKDEF(){tag=DOCKLETS.VBOX, id="VarioView", name="VarioView", icon="object-flip-vertical", stock="gtk-go-up"}
+	};
+
     const OptionEntry[] options = {
         { "mission", 'm', 0, OptionArg.STRING, null, "Mission file", "file-name"},
         { "serial-device", 's', 0, OptionArg.STRING, null, "Serial device", "device_name"},
@@ -2706,6 +2728,20 @@ public class MWP : Gtk.Application {
         box.pack_end (dock, true, true, 0);
 
         dockitem = new DockItem[DOCKLETS.NUMBER];
+		var icon_theme = IconTheme.get_default();
+		foreach(var di in ddefs) {
+			try {
+				var px = icon_theme.load_icon (di.icon, 24, IconLookupFlags.FORCE_SVG|IconLookupFlags.USE_BUILTIN);
+				dockitem[di.tag]= new DockItem.with_pixbuf_icon (di.id, di.name, px, DockItemBehavior.NORMAL);
+//				stderr.printf("DICON-DBG %d %s %s %s\n", di.tag, di.id, di.name, di.icon);
+			} catch {
+				dockitem[di.tag]= new DockItem.with_stock (di.id, di.name, di.stock, DockItemBehavior.NORMAL);
+//				stderr.printf("DSTOCK-DBG %d %s %s %s (%s)\n", di.tag, di.id, di.name, di.stock, di.icon);
+
+			}
+		}
+
+/**
         dockitem[DOCKLETS.GPS]= new DockItem.with_stock ("GPS",
                                                          "GPS Info", "gtk-refresh",
                                                          DockItemBehavior.NORMAL);
@@ -2745,6 +2781,9 @@ public class MWP : Gtk.Application {
         dockitem[DOCKLETS.MISSION]= new DockItem.with_stock ("Mission",
                          "Mission Editor", "gtk-properties",
                          DockItemBehavior.NORMAL);
+**/
+
+
 
         dockitem[DOCKLETS.VOLTAGE].add (navstatus.voltbox);
         dockitem[DOCKLETS.MISSION].add (scroll);
