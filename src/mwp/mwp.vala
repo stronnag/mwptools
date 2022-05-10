@@ -2733,57 +2733,16 @@ public class MWP : Gtk.Application {
 			try {
 				var px = icon_theme.load_icon (di.icon, 16, IconLookupFlags.FORCE_SVG|IconLookupFlags.USE_BUILTIN);
 				dockitem[di.tag]= new DockItem.with_pixbuf_icon (di.id, di.name, px, DockItemBehavior.NORMAL);
-				stderr.printf("DICON-DBG %d %s %s %s\n", di.tag, di.id, di.name, di.icon);
+				if((debug_flags&DEBUG_FLAGS.ADHOC) == DEBUG_FLAGS.ADHOC) {
+					MWPLog.message("DICON-DBG %d %s %s %s\n", di.tag, di.id, di.name, di.icon);
+				}
 			} catch {
 				dockitem[di.tag]= new DockItem.with_stock (di.id, di.name, di.stock, DockItemBehavior.NORMAL);
-				stderr.printf("DSTOCK-DBG %d %s %s %s (%s)\n", di.tag, di.id, di.name, di.stock, di.icon);
-
+				if((debug_flags&DEBUG_FLAGS.ADHOC) == DEBUG_FLAGS.ADHOC) {
+					MWPLog.message("DSTOCK-DBG %d %s %s %s (%s)\n", di.tag, di.id, di.name, di.stock, di.icon);
+				}
 			}
 		}
-
-/**
-        dockitem[DOCKLETS.GPS]= new DockItem.with_stock ("GPS",
-                                                         "GPS Info", "gtk-refresh",
-                                                         DockItemBehavior.NORMAL);
-
-        dockitem[DOCKLETS.NAVSTATUS]= new DockItem.with_stock ("Status",
-                         "NAV Status", "gtk-info",
-                         DockItemBehavior.NORMAL);
-
-        dockitem[DOCKLETS.ARTHOR]= new DockItem.with_stock ("Horizons",
-                         "Artificial Horizon", "gtk-justify-fill",
-                         DockItemBehavior.NORMAL);
-
-        dockitem[DOCKLETS.VOLTAGE]= new DockItem.with_stock ("Volts",
-                         "Battery Monitor", "gtk-dialog-warning",
-                         DockItemBehavior.NORMAL);
-
-        dockitem[DOCKLETS.RADIO]= new DockItem.with_stock ("Radio",
-                         "Radio Status", "gtk-network",
-                         DockItemBehavior.NORMAL );
-
-        dockitem[DOCKLETS.TELEMETRY]= new DockItem.with_stock ("Telemetry",
-                         "Telemetry", "gtk-disconnect",
-                         DockItemBehavior.NORMAL);
-
-        dockitem[DOCKLETS.FBOX]= new DockItem.with_stock ("FlightView",
-                         "FlightView", "gtk-find",
-                         DockItemBehavior.NORMAL);
-
-        dockitem[DOCKLETS.DBOX]= new DockItem.with_stock ("DirectionView",
-                         "DirectionView", "gtk-fullscreen",
-                         DockItemBehavior.NORMAL);
-
-        dockitem[DOCKLETS.VBOX]= new DockItem.with_stock ("VarioView",
-                         "VarioView", "gtk-go-up",
-                         DockItemBehavior.NORMAL);
-
-        dockitem[DOCKLETS.MISSION]= new DockItem.with_stock ("Mission",
-                         "Mission Editor", "gtk-properties",
-                         DockItemBehavior.NORMAL);
-**/
-
-
 
         dockitem[DOCKLETS.VOLTAGE].add (navstatus.voltbox);
         dockitem[DOCKLETS.MISSION].add (scroll);
