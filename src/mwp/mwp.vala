@@ -2731,7 +2731,7 @@ public class MWP : Gtk.Application {
 		var icon_theme = IconTheme.get_default();
 		foreach(var di in ddefs) {
 			try {
-				var px = icon_theme.load_icon (di.icon, 16, IconLookupFlags.FORCE_SVG|IconLookupFlags.USE_BUILTIN);
+				var px = icon_theme.load_icon (di.icon, IconSize.BUTTON, IconLookupFlags.FORCE_SVG|IconLookupFlags.USE_BUILTIN);
 				dockitem[di.tag]= new DockItem.with_pixbuf_icon (di.id, di.name, px, DockItemBehavior.NORMAL);
 				if((debug_flags&DEBUG_FLAGS.ADHOC) == DEBUG_FLAGS.ADHOC) {
 					MWPLog.message("DICON-DBG %d %s %s %s\n", di.tag, di.id, di.name, di.icon);
