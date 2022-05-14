@@ -63,7 +63,7 @@ Note that for TCP, mwp only supports the latter form (it expects to be the TCP c
 
 ### UDP devices required defined local and remote port numbers
 
-Some UDP devices (typically ESP8266 transparent serial require that the port number is specified for both local and remote addresses; often the same port number at both ends. `udp://local_host:local_port/remote_host:remote_port` or `udp://remotehost:remote_port/?bind=port`. The following have the same effect.
+Some UDP devices (typically ESP8266 transparent serial) require that the port number is specified for both local and remote addresses; often the same port number at both ends. `udp://local_host:local_port/remote_host:remote_port` or `udp://remotehost:remote_port/?bind=port`. The following have the same effect.
 
     udp://:14014/esp-air:14014
     # both sides use port 14014, remote (FC) is esp-air, blank local name is understood as INADDR_AN
@@ -77,7 +77,7 @@ See the [mwp's MQTT support](mqtt---bulletgcss-telemetry.md) article for a detai
 
 ### WSL UDP bridge
 
-As WSL does not support USB serial connections, mwp provides a bespoke serial / UDP bridge using the pseudo-device name `udp://__MWP_SERIAL_HOST:17071`. See the [WSL article](mwp-in-Windows-11---WSL-G.md) for more detail.
+As WSL does not directly support USB serial connections, mwp provides a bespoke serial / UDP bridge using the pseudo-device name `udp://__MWP_SERIAL_HOST:17071`. See the [WSL article](mwp-in-Windows-11---WSL-G.md) for more detail.
 
 ## Multi Protocol selection
 
@@ -100,7 +100,7 @@ Offering:
 | INAV | INAV protocols, MSP, LTM and MAVLink. Legacy behaviours |
 | S-Port | Smartport telemetry, previously required `--smartport` options. Expects a non-inverted stream |
 | CRSF | Crossfire Telemetry. |
-| MPM | Multi-Protocol-Module telemetry. The output from an EdgeTX / OpenTX radio with a multi-protocol module, FrSky Smartport or Flysky 'AA' via the EdgeTX / OpenTX "Telem Mirror" function. Is not auto-detected, must be explicitly selected; with EdgeTX 2.7 and later, auto-detection will be possible.. |
+| MPM | Multi-Protocol-Module telemetry. The output from an EdgeTX / OpenTX radio with a multi-protocol module, FrSky Smartport or Flysky 'AA' via the EdgeTX / OpenTX "Telem Mirror" function. Prior to EdgeTX 2.7, this cannot be reliably auto-detected, and should be explicitly selected; with EdgeTX 2.7 and later, auto-detection is possible and reliable. |
 
 #### Notes
 
@@ -112,5 +112,5 @@ Offering:
 
 * INAV (MSP, LTM, MAVLink) auto-detection should be reliable (legacy function).
 * S-Port and CRSF may be less reliably detected.
-* MPM is not auto-detected. This will change with EdgeTX 2.7, when MPM auto-detection will work reliably.
+* MPM is hard to auto-detected. From EdgeTX 2.7, MPM auto-detection works reliably.
 * It is recommended that for S-Port, CRSF and MPM, the desired protocol is set explicitly (not left at "Auto").

@@ -194,7 +194,7 @@ Thus:
 
 ## Summary
 
-* Much, much better than the prior WSL instances, pity about the lack of support for serial ports (still). Overall, the seamless WSL-g experience is impressive.
+* Much, much better than the prior WSL instances, pity about the difficulty in using serial ports (still). Overall, the seamless WSL-g experience is impressive.
 
 ### Connection via `ser2udp` bridge
 
