@@ -39,7 +39,7 @@ uint16    Altitude (metre -1000m offset)
 uint8     Satellites in use
 ```
 
-#### GPS id=0x07
+#### VARIO id=0x07
 
 ```
 int16      Vertical speed (cm/s)
@@ -99,7 +99,7 @@ uint8     0x01 (aPrameter version 1)
 
 ## Credits
 
-Thanks to the ExpressLRS and inav projects for the necessary clues.
+Thanks to the ExpressLRS and INAV projects for the necessary clues. See also the [ELRS Wiki](https://github.com/ExpressLRS/ExpressLRS/wiki/CRSF-Protocol).
 
 ## Tools
 
