@@ -1032,7 +1032,7 @@
 <p>Note that for TCP, mwp only supports the latter form (it expects to be the TCP client).</p>
 <h2 id="special-cases">Special Cases<a class="headerlink" href="#special-cases" title="Permanent link">#</a></h2>
 <h3 id="udp-devices-required-defined-local-and-remote-port-numbers">UDP devices required defined local and remote port numbers<a class="headerlink" href="#udp-devices-required-defined-local-and-remote-port-numbers" title="Permanent link">#</a></h3>
-<p>Some UDP devices (typically ESP8266 transparent serial require that the port number is specified for both local and remote addresses; often the same port number at both ends. <code>udp://local_host:local_port/remote_host:remote_port</code> or <code>udp://remotehost:remote_port/?bind=port</code>. The following have the same effect.</p>
+<p>Some UDP devices (typically ESP8266 transparent serial) require that the port number is specified for both local and remote addresses; often the same port number at both ends. <code>udp://local_host:local_port/remote_host:remote_port</code> or <code>udp://remotehost:remote_port/?bind=port</code>. The following have the same effect.</p>
 <pre><code>udp://:14014/esp-air:14014
 # both sides use port 14014, remote (FC) is esp-air, blank local name is understood as INADDR_AN
 udp://esp-air:14014/?bind=14014
@@ -1042,7 +1042,7 @@ udp://esp-air:14014/?bind=14014
 <pre><code>mqtt://[user[:pass]@]broker[:port]/topic[?cafile=file]
 </code></pre>
 <h3 id="wsl-udp-bridge">WSL UDP bridge<a class="headerlink" href="#wsl-udp-bridge" title="Permanent link">#</a></h3>
-<p>As WSL does not support USB serial connections, mwp provides a bespoke serial / UDP bridge using the pseudo-device name <code>udp://__MWP_SERIAL_HOST:17071</code>. See the <a href="../mwp-in-Windows-11---WSL-G/">WSL article</a> for more detail.</p>
+<p>As WSL does not directly support USB serial connections, mwp provides a bespoke serial / UDP bridge using the pseudo-device name <code>udp://__MWP_SERIAL_HOST:17071</code>. See the <a href="../mwp-in-Windows-11---WSL-G/">WSL article</a> for more detail.</p>
 <h2 id="multi-protocol-selection">Multi Protocol selection<a class="headerlink" href="#multi-protocol-selection" title="Permanent link">#</a></h2>
 <h3 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h3>
 <p>From 4.317.587 (2021-11-21), mwp does away with some of the weirdness around serial protocols (e.g. having to separately specify <code>--smartport</code> in order to use S-Port telemetry).</p>
@@ -1077,7 +1077,7 @@ udp://esp-air:14014/?bind=14014
 </tr>
 <tr>
 <td>MPM</td>
-<td>Multi-Protocol-Module telemetry. The output from an EdgeTX / OpenTX radio with a multi-protocol module, FrSky Smartport or Flysky 'AA' via the EdgeTX / OpenTX "Telem Mirror" function. Is not auto-detected, must be explicitly selected; with EdgeTX 2.7 and later, auto-detection will be possible..</td>
+<td>Multi-Protocol-Module telemetry. The output from an EdgeTX / OpenTX radio with a multi-protocol module, FrSky Smartport or Flysky 'AA' via the EdgeTX / OpenTX "Telem Mirror" function. Prior to EdgeTX 2.7, this cannot be reliably auto-detected, and should be explicitly selected; with EdgeTX 2.7 and later, auto-detection is possible and reliable.</td>
 </tr>
 </tbody>
 </table>
@@ -1091,7 +1091,7 @@ udp://esp-air:14014/?bind=14014
 <ul>
 <li>INAV (MSP, LTM, MAVLink) auto-detection should be reliable (legacy function).</li>
 <li>S-Port and CRSF may be less reliably detected.</li>
-<li>MPM is not auto-detected. This will change with EdgeTX 2.7, when MPM auto-detection will work reliably.</li>
+<li>MPM is hard to auto-detected. From EdgeTX 2.7, MPM auto-detection works reliably.</li>
 <li>It is recommended that for S-Port, CRSF and MPM, the desired protocol is set explicitly (not left at "Auto").</li>
 </ul>
                 
