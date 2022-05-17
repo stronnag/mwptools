@@ -1277,6 +1277,10 @@ public class MWSerial : Object {
 								needed = 2;
 								cmd = MSP.Cmds.Ta_FRAME;
 								break;
+							case 'r':
+								needed = 8;
+								cmd = MSP.Cmds.Tr_FRAME;
+								break;
 							case 'x':
 								needed = 1;
 								cmd = MSP.Cmds.Tx_FRAME;

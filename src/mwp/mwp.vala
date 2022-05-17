@@ -265,6 +265,8 @@ public class MWP : Gtk.Application {
 	}
 	private RadarDev[] radardevs;
 	private uint radartid = -1;
+	private Sticks.StickWindow sticks;
+	private bool sticks_ok = false;
 
 	public struct MQI //: Object
     {
@@ -1210,8 +1212,9 @@ public class MWP : Gtk.Application {
 								vsum = int.parse(vparts[i])+ 10*vsum;
 							}
 						}
-						if (vsum > 99) {
+						if (vsum > 100) {
 							ok = true;
+							sticks_ok = true;
 						}
 						text = p;
 						break;
@@ -2094,9 +2097,10 @@ public class MWP : Gtk.Application {
                 view.center_on(y,x);
             });
 
-        view = embed.get_view();
-        view.set_reactive(true);
+		sticks = new Sticks.StickWindow(window);
 
+		view = embed.get_view();
+        view.set_reactive(true);
 
         var place_editor = new PlaceEdit(window, view);
         setpos.place_edit.connect(() => {
@@ -7979,6 +7983,18 @@ case 0:
 					odo.amps = curr.bbla;
                 break;
 
+            case MSP.Cmds.Tr_FRAME:
+                uint8* rp;
+				int16 ail,ele,rud,thr;
+                rp = SEDE.deserialise_i16(raw, out ail);
+                rp = SEDE.deserialise_i16(rp, out ele);
+                rp = SEDE.deserialise_i16(rp, out rud);
+                SEDE.deserialise_i16(rp, out thr);
+//                stderr.printf("DBG: Tr frame %d %d %d %d\n", ail, ele, rud, thr);
+				sticks.lstick.update(thr, rud);
+				sticks.lstick.update(ele, ail);
+				break;
+
             case MSP.Cmds.Tx_FRAME:
                 MWPLog.message("Replay disarm %s (%u)\n", MSP.bb_disarm(raw[0]), raw[0]);
                 cleanup_replay();
@@ -9924,7 +9940,13 @@ case 0:
     private void cleanup_replay()
     {
         if (replayer != Player.NONE) {
-            magcheck = (magtime > 0 && magdiff > 0);
+			if (sticks.active) {
+				Timeout.add_seconds(10, () => {
+						sticks.hide();
+						return false;
+					});
+			}
+			magcheck = (magtime > 0 && magdiff > 0);
             MWPLog.message("============== Replay complete ====================\n");
             if ((replayer & Player.MWP) == Player.MWP)
             {
@@ -10032,6 +10054,11 @@ case 0:
                     spawn_otx_task(fn, delay, idx, btype, duration);
                     break;
             }
+
+			if ((rtype & Player.MWP) == 0) {
+				if (sticks_ok && !sticks.active)
+					sticks.show_all();
+			}
         }
     }
 

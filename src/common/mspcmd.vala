@@ -145,6 +145,7 @@ public class MSP : Object {
         TX_FRAME = (LTM_BASE + 'X'),
         Ta_FRAME = (LTM_BASE + 'a'), // private, amps message
         Tq_FRAME = (LTM_BASE + 'q'), // private, quit message
+        Tr_FRAME = (LTM_BASE + 'r'), // private, rcdata message
         Tx_FRAME = (LTM_BASE + 'x'), // private, quit message
 
         MAV_BASE  = 0x20000,
