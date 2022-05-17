@@ -7990,9 +7990,8 @@ case 0:
                 rp = SEDE.deserialise_i16(rp, out ele);
                 rp = SEDE.deserialise_i16(rp, out rud);
                 SEDE.deserialise_i16(rp, out thr);
-//                stderr.printf("DBG: Tr frame %d %d %d %d\n", ail, ele, rud, thr);
-				sticks.lstick.update(thr, rud);
-				sticks.lstick.update(ele, ail);
+//                stderr.printf("DBG: Tr frame a:%d e:%d r:%d t:%d\n", ail, ele, rud, thr);
+				sticks.update(ail, ele, rud, thr);
 				break;
 
             case MSP.Cmds.Tx_FRAME:
@@ -9941,7 +9940,7 @@ case 0:
     {
         if (replayer != Player.NONE) {
 			if (sticks.active) {
-				Timeout.add_seconds(10, () => {
+				Timeout.add_seconds(2, () => {
 						sticks.hide();
 						return false;
 					});
@@ -10055,7 +10054,7 @@ case 0:
                     break;
             }
 
-			if ((rtype & Player.MWP) == 0) {
+			if ((rtype & (Player.BBOX|Player.OTX)) != 0) {
 				if (sticks_ok && !sticks.active)
 					sticks.show_all();
 			}

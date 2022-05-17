@@ -1,7 +1,6 @@
 using Gtk;
 
 namespace Sticks {
-
 	public class StickWindow : Gtk.Window {
 		public bool active;
 		public Sticks.Pad lstick;
@@ -27,12 +26,22 @@ namespace Sticks {
 			}
 		}
 
+		public void update(int a, int e, int r, int t) {
+			lstick.update(t, r);
+			rstick.update(e, a);
+		}
+
 		public new void show_all() {
 			base.show_all();
 			active = true;
 		}
 
-		private void set_transparent() {
+		public new void hide() {
+			active = false;
+			base.hide();
+		}
+
+	    private void set_transparent() {
 			draw.connect((w, c) => {
 					c.set_source_rgba(0, 0, 0, 0);
 					c.set_operator(Cairo.Operator.SOURCE);
@@ -143,27 +152,19 @@ int main (string[] args) {
 
 	new Thread<bool>("stdinread", () => {
 			while (!stdin.eof ()) {
-				stdout.printf("widget %s\n", sw.active.to_string());
 				var s = stdin.read_line();
 				if (s != null) {
 					var parts = s.split(" ");
-					if (parts.length > 1) {
-						var ivs = int.parse(parts[0]);
-						var ihs = int.parse(parts[1]);
-						stdout.printf("LS: vs: %d, hs: %d\n", ivs, ihs);
+					if (parts.length ==4 ) {
+						var a = int.parse(parts[0]);
+						var e = int.parse(parts[1]);
+						var r = int.parse(parts[2]);
+						var t = int.parse(parts[3]);
 						Idle.add(() => {
-								sw.lstick.update(ivs, ihs);
+								sw.update(a,e,r,t);
 								return false;
 							});
-					}
-					if (parts.length == 4) {
-						var ivs = int.parse(parts[2]);
-						var ihs = int.parse(parts[3]);
-						stdout.printf("RS: vs: %d, hs: %d\n", ivs, ihs);
-						Idle.add(() => {
-								sw.rstick.update(ivs, ihs);
-								return false;
-							});
+						stdout.printf("a: %d, e: %d r: %d, t: %d\n", a, e, r, t);
 					}
 				}
 			}
