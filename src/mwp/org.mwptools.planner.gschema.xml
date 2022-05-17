@@ -643,5 +643,11 @@
       in pixels. -1 means the image's natural size (no scaling).</description>
     </key>
 
+    <key type="b" name="show-sticks">
+      <default>true</default>
+      <summary>show sticks in log replay</summary>
+      <description>If true, stick position is shown during log replay. Disable if your window manager can't cope with un-decorated windows</description>
+    </key>
+
   </schema>
 </schemalist>

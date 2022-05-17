@@ -1227,6 +1227,8 @@ public class MWP : Gtk.Application {
 			}
 			appsts[6] = res;
 		}
+		if (conf.show_sticks == false)
+			sticks_ok = false;
 
 		x_replay_bbox_ltm_rb = (appsts[0]&&appsts[6]);
 		x_plot_elevations_rb = (appsts[2]&&appsts[3]);
