@@ -625,7 +625,7 @@
       <summary>Altitude below which ADS-B alerts may be generated</summary>
       <description>Target altitude (metres) below which ADS-B
       proximity alerts may be generated. Requires that 'radar-alert-range'
-      is also set (none zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid). </description>
+      is also set (non-zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid). </description>
     </key>
 
     <key name="radar-alert-range" type="u">
@@ -633,7 +633,7 @@
       <summary>Range below which ADS-B alerts may be generated</summary>
       <description>Target range (metres) below which ADS-B
       proximity alerts may be generated. Requires that 'radar-alert-altitude'
-      is also set (none zero). Setting to 0 disables.</description>
+      is also set (non-zero). Setting to 0 disables.</description>
     </key>
 
     <key type="s" name="gpsd-host">

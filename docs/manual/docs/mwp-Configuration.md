@@ -16,7 +16,7 @@ Command line options provide a 'per instantiation' means to control {{ mwp }} be
 
     $ mwp --help
 
-Where it is required to give permanence to command line options, they can be added to the configuration file `$HOME/.config/cmdopts`, which is described in more detail in the following section.
+Where it is required to give permanence to command line options, they can be added to the configuration file `$HOME/.config/mwp/cmdopts`, which is described in more detail in the following section.
 
 ### Debug flags
 
@@ -57,7 +57,7 @@ In addition to options (`--`), the file may also contain environment variables e
     # set the anonymous tile file.
     MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 
-So here the only current, valid options are  `--rings 50,20 -dont-maximise`, and the [environment variable](#environment-variables) MWP_BLACK_TILE is set (for [anonymous maps](Black-Ops.md#custom-tile)).
+So here the only current, valid options are  `--rings 50,20 --dont-maximise`, and the [environment variable](#environment-variables) MWP_BLACK_TILE is set (for [anonymous maps](Black-Ops.md#custom-tile)).
 
 The environment is set before any GTK / UI calls are made, thus if you have issues using Wayland (which still has some issues with some (older, mainly) GPU hardware and OpenGL), then you can force Xwayland by setting the `GTK_BACKEND` variable in `cmdopts`.
 
@@ -89,17 +89,17 @@ The user may maintain these files manually if used, or use the [graphic places e
 
 ## Dconf / gsettings
 
-Linux has a facility for storing configuration items in a registry like facility. This is used extensively by {{ mwp }}. The items can viewed and modified using a number of tools:
+The underlying infrastructure used by {{ mwp }} has a facility for storing configuration items in a registry like store. This is used extensively by {{ mwp }}. The items can viewed and modified using a number of tools:
 
 * {{ mwp }} preference dialogue (for a small subset of the items)
-* The `dconf-editor` graphical editor
+* The `dconf-editor` graphical settings editor
 * The command line `gsettings` tool
 
-For `gsettings` and `dconf-editor`, the name-space is `org.mwptools.planner`, so to list of items:
+For `gsettings` and `dconf-editor`, the name-space is `org.mwptools.planner`, so to view the list of items:
 
     $ gsettings list-recursively  org.mwptools.planner
 
-and to list then set a single item:
+and to list then get / set a single item:
 
     $ gsettings get org.mwptools.planner log-save-path
     ..
@@ -123,11 +123,11 @@ This *may* not be installed by default, but should be available via the OS packa
 
 | Name | Summary | Description | Default |
 | ---- | ------- | ----------- | ------ |
-| adjust-tz | mwp should adjust TZ (and DST) based in the local clock | mwp should adjust TZ (and DST) based in the local clock | true |
+| adjust-tz | mwp should adjust TZ (and DST) based on the local clock | mwp should adjust TZ (and DST) based on the local clock | true |
 | ah-invert-roll | Invert AH roll | Set to true to invert roll in the AH (so it becomes an attitude indicator) | false |
 | ah-size | minimum size of artificial horizon | (private setting) | 32 |
 | arming-speak | speak arming states | whether to reporting arming state by audio | false |
-| atexit | Something that is executed at exit | e.g. `gsettings set org.gnome.settings-daemon.plugins.power idle-dim true`. See also `manage-power` (and consider setting to true). | "" |
+| atexit | Something that is executed at exit | e.g. `gsettings set org.gnome.settings-daemon.plugins.power idle-dim true`. See also `manage-power` (and consider setting `manage-power` to `true` instead). | "" |
 | atstart | Something that is executed at startup | e.g. `gsettings set org.gnome.settings-daemon.plugins.power idle-dim false`. See also `manage-power` (and consider setting to true). | "" |
 | audio-bearing-is-reciprocal | Announce bearing as reciprocal | Whether the audio bearing is the reciprocal (i.e. bearing from home to machine, rather than from machine to home) | false |
 | audio-on-arm | start audio on arm | start audio on arm (and stop on disarm) | true |
@@ -153,7 +153,7 @@ This *may* not be installed by default, but should be available via the OS packa
 | display-distance | Distance units | 0=metres, 1=feet, 2=yards | 0 |
 | display-dms | Position display | Show positions as dd:mm:ss rather than decimal degrees | false |
 | display-speed | Speed units | 0=metres/sec, 1=kilometres/hour, 2=miles/hour, 3=knots | 0 |
-| dump-unknown | dump unknown | dump unknown message payload | false |
+| dump-unknown | dump unknown | dump unknown message payload (debug aid) | false |
 | espeak-voice | Default espeak voice | Default espeak voice (see espeak documentation) | "en" |
 | fctype | Force fc type | Forces fc type (mw,mwnav,bf,cf) | "auto" |
 | fixedfont | Use a fixed font for Flight View | Use a fixed font for Flight View | true |
@@ -164,7 +164,7 @@ This *may* not be installed by default, but should be available via the OS packa
 | geouser | User account on geonames.org | A user account to query geonames.org for blackbox log timezone info. A default account of 'mwptools' is provided; however users are requested to create their own account. | "mwptools" |
 | gpsd-host | gpsd provider | Provider for GCS location via gpsd. Default is "localhost", can be set to other host name or IP address. Setting blank ("") disables. | "localhost" |
 | gpsintvl | gps sanity time (m/s) | gps sanity time (m/s), check for current fix | 2000 |
-| heartbeat | Something that runs every minute (i.e. screensaver disable) | e.g. `xscreensaver-command -deactivate`. See also `manage-power` (and consider setting to true). | "" |
+| heartbeat | Something that runs every minute (i.e. screensaver disable) | e.g. `xscreensaver-command -deactivate`. See also `manage-power` (and consider setting to `manage-power` to `true`). | "" |
 | ignore-nm | Don't ever query Network Manager for network status | Set to true to always ignore NM status (may slow down startup) | false |
 | kml-path | Directory for KML overlays | Directory for KML overlays | "" |
 | led | GPS LED colour | GPS LED colour as well know string or #RRGGBB | "#60ff00" |
@@ -191,14 +191,16 @@ This *may* not be installed by default, but should be available via the OS packa
 | poll-timeout | Poll messages timeout (ms) | Timeout in milliseconds for telemetry poll messages. Note that timer loop has a resolution of 100ms. | 900 |
 | pos-is-centre | Determines position label content | Whether the position label is the centre or pointer location | true |
 | pwdw-p | internal parameter | (private setting) | 72 |
-| radar-alert-altitude | Altitude below which ADS-B alerts may be generated | Target altitude (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-range' is also set (none zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid). | 0 |
-| radar-alert-range | Range below which ADS-B alerts may be generated | Target range (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-altitude' is also set (none zero). Setting to 0 disables. | 0 |
+| radar-alert-altitude | Altitude below which ADS-B alerts may be generated | Target altitude (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-range' is also set (non-zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid). | 0 |
+| radar-alert-range | Range below which ADS-B alerts may be generated | Target range (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-altitude' is also set (non-zero). Setting to 0 disables. | 0 |
 | radar-list-max-altitude | Maximum altitude for targets to show in the radar list view | Maximum altitude (metres) to include targets in the radar list view. Targets higher than this value will show only in the map view. This is mainly for ADS-B receivers where there is no need for high altitude targets to be shown. Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid). | 0 |
 | require-telemetry | Whether to warn the operator if telemetry is disabled in iNav | if set, and telemetry is disabled, a non-timeout dialogue is displayed | false |
 | rings-colour | range rings colour | range rings colour as well know string or #RRGGBBAA | "#ffffff20" |
 | rth-autoland | Automatically assert land on RTH waypoints | Automatically assert land on RTH waypoints | false |
 | say-bearing | Whether audio report includes bearing | Whether audio report includes bearing | true |
 | set-head-is-b0rken | set head bearing as reciprocal | Whether the set head bearing is the reciprocal (i.e. ancient bug in mw nav) | false |
+| show-sticks | Whether to show sticks in log replay | If "yes", stick position is shown during log replay, if "no" , never shown. If "decorated", then shown in a decorated window (for window managers can't cope with un-decorated windows) | "yes" |
+| smartport-fuel-unit | User selected fuel type | Units label for smartport fuel (none, %, mAh, mWh) | "none" |
 | speak-amps | When to speak amps/hr used | none, live-n, all-n n=1,2,4 : n = how often spoken (modulus basically) | "none" |
 | speak-interval | Interval between voice prompts | Interval between voice prompts, 0 disables | 15 |
 | speech-api | API for speech synthesis | espeak, speechd, flite. Only change this if you know you have the required development files at build time | "espeak" |
@@ -216,17 +218,17 @@ This *may* not be installed by default, but should be available via the OS packa
 
 ## Settings precedence and user updates
 
-{{ mwp }} installs a number of files in `$prefix/share/mwp/`. The user can override these by creating an eponymous file in the user configuration directory, `~/.config/mwp/pixmaps/`. Such user configurations are never over-written on upgrade.
+{{ mwp }} installs a number of icon files in `$prefix/share/mwp/pixmaps`. The user can override these by creating an eponymous file in the user configuration directory, `~/.config/mwp/pixmaps/`. Such user configurations are never over-written on upgrade.
 
 For example, to replace a {{ mwp }} specific icon; i.e. replace the GCS Location icon (`$prefix/share/mwp/pixmaps/gcs.svg`) with a user defined file `~/.config/mwp/pixmaps/gcs.svg`.
 
-While the file name must be consistent, the format does not have to be; the replacement could be be a PNG, rather than SVG; we're a real OS and file "extensions" are an advisory illusion.
+While the file name must be consistent, the format does not have to be; the replacement could be be a PNG, rather than SVG; we're not MSDOS and file "extensions" are an advisory illusion.
 
 ### Example
 
 e.g. replace the inav-radar icon.
 
-    mkdir -p `~/config/mwp/pixmaps
+    mkdir -p ~/config/mwp/pixmaps
     # copy the preview image
     cp ~/.local/share/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/
     # (optionally) resize it to 32x32 pixels
