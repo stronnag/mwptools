@@ -110,7 +110,7 @@
     <key type="b" name="dump-unknown">
       <default>false</default>
       <summary>dump unknown</summary>
-      <description>dump unknown message payload</description>
+      <description>dump unknown message payload (debug aid)</description>
     </key>
 
     <key type="b" name="display-dms">
@@ -194,7 +194,8 @@
     <key name="heartbeat" type="s">
       <summary>Something that runs every minute (i.e. screensaver disable)</summary>
       <default>""</default>
-      <description>e.g. `xscreensaver-command -deactivate`. See also `manage-power` (and consider setting to true). </description>
+      <description>e.g. `xscreensaver-command -deactivate`. See also
+      `manage-power` (and consider setting to `manage-power` to `true`). </description>
     </key>
 
     <key name="atstart" type="s">
@@ -208,7 +209,8 @@
       <summary>Something that is executed at exit</summary>
       <default>""</default>
       <description>e.g. `gsettings set
-      org.gnome.settings-daemon.plugins.power idle-dim true`. See also `manage-power` (and consider setting to true). </description>
+      org.gnome.settings-daemon.plugins.power idle-dim true`. See also
+      `manage-power` (and consider setting `manage-power` to `true` instead). </description>
     </key>
 
     <key name="fctype" type="s">
@@ -486,8 +488,8 @@
 
     <key name="adjust-tz" type="b">
       <default>true</default>
-      <summary>mwp should  adjust TZ (and DST) based in the local clock</summary>
-      <description>mwp should  adjust TZ (and DST) based in the local clock</description>
+      <summary>mwp should  adjust TZ (and DST) based on the local clock</summary>
+      <description>mwp should  adjust TZ (and DST) based on the local clock</description>
     </key>
 
     <key name="blackbox-decode" type="s">
@@ -654,7 +656,7 @@
       <summary>Whether to show sticks in log replay</summary>
       <description>If "yes", stick position is shown during log replay,
       if "no" , never shown. If "decorated", then shown in a decorated window (for
-      window managers can't cope with un-decorated windows</description>
+      window managers can't cope with un-decorated windows)</description>
     </key>
 
   </schema>
