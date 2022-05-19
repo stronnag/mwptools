@@ -1014,7 +1014,7 @@
 <p>Command line options provide a 'per instantiation' means to control <a href="https://github.com/stronnag/mwptools">mwp</a> behaviour; the current set of command line options may be viewed by running <a href="https://github.com/stronnag/mwptools">mwp</a> from the command line with the single option <code>--help</code>:</p>
 <pre><code>$ mwp --help
 </code></pre>
-<p>Where it is required to give permanence to command line options, they can be added to the configuration file <code>$HOME/.config/cmdopts</code>, which is described in more detail in the following section.</p>
+<p>Where it is required to give permanence to command line options, they can be added to the configuration file <code>$HOME/.config/mwp/cmdopts</code>, which is described in more detail in the following section.</p>
 <h3 id="debug-flags">Debug flags<a class="headerlink" href="#debug-flags" title="Permanent link">#</a></h3>
 <p>The <code>--debug-flags</code> option takes a numeric value defines areas where additional debug information may be output.</p>
 <table>
@@ -1079,7 +1079,7 @@
 # set the anonymous tile file.
 MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 </code></pre>
-<p>So here the only current, valid options are  <code>--rings 50,20 -dont-maximise</code>, and the <a href="#environment-variables">environment variable</a> MWP_BLACK_TILE is set (for <a href="../Black-Ops/#custom-tile">anonymous maps</a>).</p>
+<p>So here the only current, valid options are  <code>--rings 50,20 --dont-maximise</code>, and the <a href="#environment-variables">environment variable</a> MWP_BLACK_TILE is set (for <a href="../Black-Ops/#custom-tile">anonymous maps</a>).</p>
 <p>The environment is set before any GTK / UI calls are made, thus if you have issues using Wayland (which still has some issues with some (older, mainly) GPU hardware and OpenGL), then you can force Xwayland by setting the <code>GTK_BACKEND</code> variable in <code>cmdopts</code>.</p>
 <pre><code>GDK_BACKEND=x11
 </code></pre>
@@ -1098,16 +1098,16 @@ Jurby:54.353974:-4.523600:-1
 </code></pre>
 <p>The user may maintain these files manually if used, or use the <a href="../misc-ui-elements/#favourite-places">graphic places editor</a>.</p>
 <h2 id="dconf-gsettings">Dconf / gsettings<a class="headerlink" href="#dconf-gsettings" title="Permanent link">#</a></h2>
-<p>Linux has a facility for storing configuration items in a registry like facility. This is used extensively by <a href="https://github.com/stronnag/mwptools">mwp</a>. The items can viewed and modified using a number of tools:</p>
+<p>The underlying infrastructure used by <a href="https://github.com/stronnag/mwptools">mwp</a> has a facility for storing configuration items in a registry like store. This is used extensively by <a href="https://github.com/stronnag/mwptools">mwp</a>. The items can viewed and modified using a number of tools:</p>
 <ul>
 <li><a href="https://github.com/stronnag/mwptools">mwp</a> preference dialogue (for a small subset of the items)</li>
-<li>The <code>dconf-editor</code> graphical editor</li>
+<li>The <code>dconf-editor</code> graphical settings editor</li>
 <li>The command line <code>gsettings</code> tool</li>
 </ul>
-<p>For <code>gsettings</code> and <code>dconf-editor</code>, the name-space is <code>org.mwptools.planner</code>, so to list of items:</p>
+<p>For <code>gsettings</code> and <code>dconf-editor</code>, the name-space is <code>org.mwptools.planner</code>, so to view the list of items:</p>
 <pre><code>$ gsettings list-recursively  org.mwptools.planner
 </code></pre>
-<p>and to list then set a single item:</p>
+<p>and to list then get / set a single item:</p>
 <pre><code>$ gsettings get org.mwptools.planner log-save-path
 ..
 $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
@@ -1135,8 +1135,8 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 <tbody>
 <tr>
 <td>adjust-tz</td>
-<td>mwp should adjust TZ (and DST) based in the local clock</td>
-<td>mwp should adjust TZ (and DST) based in the local clock</td>
+<td>mwp should adjust TZ (and DST) based on the local clock</td>
+<td>mwp should adjust TZ (and DST) based on the local clock</td>
 <td>true</td>
 </tr>
 <tr>
@@ -1160,7 +1160,7 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 <tr>
 <td>atexit</td>
 <td>Something that is executed at exit</td>
-<td>e.g. <code>gsettings set org.gnome.settings-daemon.plugins.power idle-dim true</code>. See also <code>manage-power</code> (and consider setting to true).</td>
+<td>e.g. <code>gsettings set org.gnome.settings-daemon.plugins.power idle-dim true</code>. See also <code>manage-power</code> (and consider setting <code>manage-power</code> to <code>true</code> instead).</td>
 <td>""</td>
 </tr>
 <tr>
@@ -1316,7 +1316,7 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 <tr>
 <td>dump-unknown</td>
 <td>dump unknown</td>
-<td>dump unknown message payload</td>
+<td>dump unknown message payload (debug aid)</td>
 <td>false</td>
 </tr>
 <tr>
@@ -1382,7 +1382,7 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 <tr>
 <td>heartbeat</td>
 <td>Something that runs every minute (i.e. screensaver disable)</td>
-<td>e.g. <code>xscreensaver-command -deactivate</code>. See also <code>manage-power</code> (and consider setting to true).</td>
+<td>e.g. <code>xscreensaver-command -deactivate</code>. See also <code>manage-power</code> (and consider setting to <code>manage-power</code> to <code>true</code>).</td>
 <td>""</td>
 </tr>
 <tr>
@@ -1544,13 +1544,13 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 <tr>
 <td>radar-alert-altitude</td>
 <td>Altitude below which ADS-B alerts may be generated</td>
-<td>Target altitude (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-range' is also set (none zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid).</td>
+<td>Target altitude (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-range' is also set (non-zero). Setting to 0 disables. Note that ADS-B altitudes are AMSL (or geoid).</td>
 <td>0</td>
 </tr>
 <tr>
 <td>radar-alert-range</td>
 <td>Range below which ADS-B alerts may be generated</td>
-<td>Target range (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-altitude' is also set (none zero). Setting to 0 disables.</td>
+<td>Target range (metres) below which ADS-B proximity alerts may be generated. Requires that 'radar-alert-altitude' is also set (non-zero). Setting to 0 disables.</td>
 <td>0</td>
 </tr>
 <tr>
@@ -1588,6 +1588,18 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 <td>set head bearing as reciprocal</td>
 <td>Whether the set head bearing is the reciprocal (i.e. ancient bug in mw nav)</td>
 <td>false</td>
+</tr>
+<tr>
+<td>show-sticks</td>
+<td>Whether to show sticks in log replay</td>
+<td>If "yes", stick position is shown during log replay, if "no" , never shown. If "decorated", then shown in a decorated window (for window managers can't cope with un-decorated windows)</td>
+<td>"yes"</td>
+</tr>
+<tr>
+<td>smartport-fuel-unit</td>
+<td>User selected fuel type</td>
+<td>Units label for smartport fuel (none, %, mAh, mWh)</td>
+<td>"none"</td>
 </tr>
 <tr>
 <td>speak-amps</td>
@@ -1676,12 +1688,12 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 </tbody>
 </table>
 <h2 id="settings-precedence-and-user-updates">Settings precedence and user updates<a class="headerlink" href="#settings-precedence-and-user-updates" title="Permanent link">#</a></h2>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> installs a number of files in <code>$prefix/share/mwp/</code>. The user can override these by creating an eponymous file in the user configuration directory, <code>~/.config/mwp/pixmaps/</code>. Such user configurations are never over-written on upgrade.</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> installs a number of icon files in <code>$prefix/share/mwp/pixmaps</code>. The user can override these by creating an eponymous file in the user configuration directory, <code>~/.config/mwp/pixmaps/</code>. Such user configurations are never over-written on upgrade.</p>
 <p>For example, to replace a <a href="https://github.com/stronnag/mwptools">mwp</a> specific icon; i.e. replace the GCS Location icon (<code>$prefix/share/mwp/pixmaps/gcs.svg</code>) with a user defined file <code>~/.config/mwp/pixmaps/gcs.svg</code>.</p>
-<p>While the file name must be consistent, the format does not have to be; the replacement could be be a PNG, rather than SVG; we're a real OS and file "extensions" are an advisory illusion.</p>
+<p>While the file name must be consistent, the format does not have to be; the replacement could be be a PNG, rather than SVG; we're not MSDOS and file "extensions" are an advisory illusion.</p>
 <h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">#</a></h3>
 <p>e.g. replace the inav-radar icon.</p>
-<pre><code>mkdir -p `~/config/mwp/pixmaps
+<pre><code>mkdir -p ~/config/mwp/pixmaps
 # copy the preview image
 cp ~/.local/share/mwp/pixmaps/preview.png  ~/config/mwp/pixmaps/
 # (optionally) resize it to 32x32 pixels
