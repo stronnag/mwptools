@@ -1227,7 +1227,7 @@ public class MWP : Gtk.Application {
 			}
 			appsts[6] = res;
 		}
-		if (conf.show_sticks == false)
+		if (conf.show_sticks == 1)
 			sticks_ok = false;
 
 		x_replay_bbox_ltm_rb = (appsts[0]&&appsts[6]);
@@ -2099,7 +2099,7 @@ public class MWP : Gtk.Application {
                 view.center_on(y,x);
             });
 
-		sticks = new Sticks.StickWindow(window);
+		sticks = new Sticks.StickWindow(window, conf.show_sticks);
 
 		view = embed.get_view();
         view.set_reactive(true);

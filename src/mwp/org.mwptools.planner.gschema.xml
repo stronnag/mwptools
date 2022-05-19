@@ -27,6 +27,12 @@
     <value nick="all-4" value="20"/>
   </enum>
 
+  <enum id="org.mwptools.planner.sticks">
+    <value nick="yes" value="0"/>
+    <value nick="no" value="1"/>
+    <value nick="decorated" value="2"/>
+  </enum>
+
   <schema id="org.mwptools.planner" path="/org/mwptools/planner/" >
 
     <key name="device-names" type="as">
@@ -643,10 +649,12 @@
       in pixels. -1 means the image's natural size (no scaling).</description>
     </key>
 
-    <key type="b" name="show-sticks">
-      <default>true</default>
-      <summary>show sticks in log replay</summary>
-      <description>If true, stick position is shown during log replay. Disable if your window manager can't cope with un-decorated windows</description>
+    <key name="show-sticks" enum="org.mwptools.planner.sticks">
+      <default>"yes"</default>
+      <summary>Whether to show sticks in log replay</summary>
+      <description>If "yes", stick position is shown during log replay,
+      if "no" , never shown. If "decorated", then shown in a decorated window (for
+      window managers can't cope with un-decorated windows</description>
     </key>
 
   </schema>

@@ -6,10 +6,11 @@ namespace Sticks {
 		public Sticks.Pad lstick;
 		public Sticks.Pad rstick;
 
-		public StickWindow(Gtk.Window? pw = null) {
+		public StickWindow(Gtk.Window? pw = null, int decor=0) {
 			set_transparent();
 			set_default_size (400, 200);
-			set_decorated(false);
+			stderr.printf("DBG: win %p, decor=%d\n", pw, decor);
+			set_decorated((decor==2));
 			set_keep_above(true);
 			var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
 			add (box);

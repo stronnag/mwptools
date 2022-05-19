@@ -117,7 +117,7 @@ public class MWPSettings : GLib.Object
     public uint radar_alert_range {get; set; default=0;}
     public string gpsdhost {get; set; default="localhost";}
     public int misciconsize {get; set; default=32;}
-    public bool show_sticks {get; set; default=true;}
+    public int show_sticks {get; set; default=0;}
 
     public signal void settings_update (string s);
 
@@ -433,7 +433,7 @@ public class MWPSettings : GLib.Object
             misciconsize = settings.get_int("misc-icon-size");
 
 		if(s == null || s == "show-sticks")
-            show_sticks = settings.get_boolean("show-sticks");
+            show_sticks = settings.get_enum("show-sticks");
 	}
 
     public void save_pane()
