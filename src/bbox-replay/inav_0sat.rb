@@ -30,7 +30,7 @@ iter.each do |bbox|
     cmd << " --stdout"
     cmd << " --merge-gps"
     cmd << " --unit-frame-time s"
-    cmd << " 2>/dev/null " << bbox
+    cmd << " 2>#{IO::NULL} " << bbox
 
     IO.popen(cmd,'r') do |p|
       csv = CSV.new(p, :col_sep => ",",

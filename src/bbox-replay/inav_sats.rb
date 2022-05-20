@@ -25,7 +25,7 @@ def fmtstr ts, sats, hdop, epv, eph, eeok
 end
 
 bbox = (ARGV[0]|| abort('no BBOX log'))
-cmd = "blackbox_decode 2</dev/null"
+cmd = "blackbox_decode 2>#{IO::NULL}"
 cmd << " --index #{idx}"
 cmd << " --merge-gps"
 cmd << " --unit-frame-time s"
@@ -39,7 +39,7 @@ IO.popen(cmd,'r') do |p|
 		:header_converters =>
 		->(f) {f.strip.downcase.gsub(' ','_').gsub(/\W+/,'').to_sym},
 		:return_headers => true)
-  hdrs = csv.shift
+  csv.shift
   nsats = -1
 
   puts %w/Time Sats Hdop EPV EPH Status/.join("\t")

@@ -8,7 +8,6 @@ require 'optparse'
 
 idx = 1
 verbose = nil
-pstate = -1
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
@@ -50,12 +49,10 @@ STDERR.puts "iNav version = #{iv}" if verbose
 
 puts "#{File.basename(bbox)}: #{gitinfos[idx-1] if gitinfos.size >= idx}"
 
-nul = !Gem.win_platform? ? '/dev/null' : 'NUL'
-
 cmd = "blackbox_decode"
 cmd << " --index #{idx}"
 cmd << " --stdout"
-cmd << " 2>#{nul}"
+cmd << " 2>#{IO::NULL}"
 cmd << " " << bbox
 
 IO.popen(cmd,'r') do |p|
@@ -74,7 +71,6 @@ IO.popen(cmd,'r') do |p|
 
   csv.each do |c|
     if  nhdr == false
-      hdrs = c
       nhdr = true
     else
       ts = c[:time_us].to_f / 1000000

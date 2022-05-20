@@ -71,7 +71,7 @@ cmd = "blackbox_decode"
 cmd << " --index #{idx}"
 cmd << " --stdout"
 cmd << " --unit-frame-time s"
-cmd << " 2>/dev/null " << bbox
+cmd << " 2>#{IO::NULL} " << bbox
 
 puts "File: #{File.basename(ARGV[0])}, index: #{idx}"
 
@@ -82,9 +82,8 @@ IO.popen(cmd,'r') do |p|
 		:header_converters =>
 		->(f) {f.strip.downcase.gsub(' ','_').gsub(/\W+/,'').to_sym},
 		:return_headers => true)
-  hdrs = csv.shift
+  csv.shift
   st = nil
-  nstate = -1
   astat = nil
   csv.each do |c|
     ts = c[:time_s].to_f

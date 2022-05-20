@@ -984,7 +984,6 @@ class BBReplay
       end
     end
 
-    nul="/dev/null"
     csv_opts = {
       :col_sep => ",",
       :headers => :true,
@@ -992,7 +991,6 @@ class BBReplay
       :return_headers => true}
 
     if Gem.win_platform?
-      nul = "NUL"
       csv_opts[:row_sep] = "\r\n" if RUBY_PLATFORM.include?('cygwin')
     end
     cmd = decoder
@@ -1029,7 +1027,7 @@ class BBReplay
     end
 
     cmd << " --stdout"
-    cmd << " 2>#{nul}"
+    cmd << " 2>#{IO::NULL}"
     cmd << " \"#{bbox}\""
 
     lastr =nil

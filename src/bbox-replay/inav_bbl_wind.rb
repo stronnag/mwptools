@@ -23,14 +23,13 @@ ARGV.options do |opt|
 end
 
 bbox = (ARGV[0]|| abort('no BBOX log'))
-cmd = "blackbox_decode 2</dev/null"
+cmd = "blackbox_decode 2>#{IO::NULL}"
 cmd << " --index #{idx}"
 cmd << " --merge-gps"
 cmd << " --unit-frame-time s"
 cmd << " --stdout"
 cmd << " " << bbox
 
-st = nil
 IO.popen(cmd,'r') do |p|
   csv = CSV.new(p, :col_sep => ",",
 		:headers => :true,

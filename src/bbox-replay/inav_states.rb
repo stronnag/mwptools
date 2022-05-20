@@ -70,13 +70,11 @@ STDERR.puts "iNav version = #{iv} (states eq #{inavers})" if verbose
 
 puts "#{File.basename(bbox)}: #{gitinfos[idx-1] if gitinfos.size >= idx}"
 
-nul = !Gem.win_platform? ? '/dev/null' : 'NUL'
-
 cmd = ''
 cmd << (ENV["BLACKBOX_DECODE"] || "blackbox_decode")
 cmd << " --index #{idx}"
 cmd << " --stdout"
-cmd << " 2>#{nul}"
+cmd << " 2>#{IO::NULL}"
 cmd << " " << bbox
 
 IO.popen(cmd,'r') do |p|
@@ -93,7 +91,6 @@ IO.popen(cmd,'r') do |p|
   st = nil
   xts=0
   ts=0
-  nflags = 0
 
   csv.each do |c|
     if  nhdr == false
