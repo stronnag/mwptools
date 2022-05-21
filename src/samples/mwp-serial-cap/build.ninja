@@ -1,7 +1,7 @@
 rule go
     command = go build -ldflags "-w -s"
 
-build mwp-serial-cap: go mwp-serial-cap.go btaddr_linux.go btaddr_other.go ti_posix.go ti_other.go go.sum
+build mwp-serial-cap: go mwp-serial-cap.go btaddr_linux.go btaddr_other.go ti_simple.go go.sum
 default mwp-serial-cap
 
 rule copy

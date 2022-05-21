@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -42,20 +41,16 @@ func get_rate(st time.Time, et time.Time, bread uint32) float64 {
 	return float64(bread) / dt
 }
 
-const CURSORON = "\033[?25h"
-const CURSOROFF = "\033[?25l"
-const CLEAREOL = "\033[K"
-
 func cleanup() {
-	fmt.Printf(CURSORON)
+	ti_cleanup()
 	fmt.Printf("\n")
 }
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage of %s [options] device ...\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage of %s [options] [device]\n", os.Args[0])
 		flag.PrintDefaults()
-		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "\n  device is the FC serial device, which may be auto-dectected\n")
 	}
 
 	fname := ""
@@ -75,12 +70,12 @@ func main() {
 	var st time.Time
 	var et time.Time
 
-	flag.StringVar(&fname, "file", "", "output file, auto-generated if not defined")
-	flag.StringVar(&dname, "dir", "", "output directory (`cwd` if not defined)")
+	flag.StringVar(&fname, "file", "", "output file, auto-generated (bbl_YYYY-MM-DD_hhmmss.TXT) if not specified")
+	flag.StringVar(&dname, "dir", "", "output directory ($(cwd) if not specified)")
 	flag.BoolVar(&erase, "erase", false, "erase after download")
 	flag.BoolVar(&xerase, "only-erase", false, "erase only and exit")
-	flag.BoolVar(&info, "info", false, "show info and exit")
-	flag.BoolVar(&test, "test", false, "download whole flash regardess of usage")
+	flag.BoolVar(&info, "info", false, "show flash info and exit")
+	flag.BoolVar(&test, "test", false, "download whole flash regardess of used state")
 
 	flag.Parse()
 	args := flag.Args()
@@ -95,17 +90,19 @@ func main() {
 		port = Enumerate_ports()
 	}
 	if port != "" {
-		st = time.Now()
 		fmt.Printf("Using %s\n", port)
 		sp = NewMSPSerial(port)
+		st = time.Now()
 		sp.Init(c0)
 	} else {
-		log.Fatalln("No serial device given or detected")
+		flag.Usage()
+		return
 	}
 
 	cc := make(chan os.Signal, 1)
 	signal.Notify(cc, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
+	ti_init()
 	for done := false; !done; {
 		select {
 		case <-cc:
@@ -115,32 +112,40 @@ func main() {
 			switch v.cmd {
 			case msp_QUIT:
 				done = true
+
+			case msp_API_VERSION:
+				fc_api := uint16(uint16(v.data[1])<<8 | uint16(v.data[2]))
+				if fc_api < 0x0200 {
+					fmt.Printf("Requires MSPv2 (%04x reported)\n", fc_api)
+					done = true
+				} else {
+					sp.MSPVariant()
+				}
+
 			case msp_FC_VARIANT:
 				fmt.Printf("Firmware: %s\n", string(v.data[0:4]))
 				switch string(v.data[0:4]) {
 				case "INAV":
 					sp.MSPVersion()
 				default:
-					fmt.Printf("Unsupported firmware\n")
+					fmt.Printf("Unsupported firmware, requires INAV\n")
 					done = true
 				}
 
 			case msp_FC_VERSION:
 				fmt.Printf("Version: %d.%d.%d\n", v.data[0], v.data[1], v.data[2])
-				sp.MSPBBLConfig()
+				sp.MSPBlackboxConfigV2()
 
-			case msp_BLACKBOX_CONFIG, msp_BLACKBOX_CONFIGv2:
+			case msp_BLACKBOX_CONFIGv2:
 				if v.data[0] == 1 && v.data[1] == 1 { // enabled, sd flash
 					if xerase {
 						sp.MSPDataFlashErase()
 					} else {
 						sp.MSPDataFlashSummary()
 					}
-				} else if v.cmd == msp_BLACKBOX_CONFIGv2 {
+				} else {
 					fmt.Printf("No dataflash found\n")
 					done = true
-				} else {
-					sp.MSPBlackboxConfigV2()
 				}
 
 			case msp_DATAFLASH_SUMMARY:
@@ -188,18 +193,14 @@ func main() {
 							if used < 4096 {
 								req = uint16(used)
 							}
-							fmt.Printf(CURSOROFF)
 							sp.Data_read(0, req)
 						}
 					}
 				}
 
 			case msp_DATAFLASH_READ:
-				//newaddr := binary.LittleEndian.Uint32(v.data[0:4])
 				dlen := int(v.len - 4)
 				wrfh.Write(v.data[4:v.len])
-				//				n, err := wrfh.Write([]byte("Test data\n"))
-				//fmt.Fprintf(os.Stderr, "Write %v %v %v %v\n", n, dlen, v.len, err)
 				bread += uint32(dlen)
 				et = time.Now()
 				rate := get_rate(st, et, bread)
@@ -213,7 +214,8 @@ func main() {
 						sb.WriteByte(' ')
 					}
 				}
-				fmt.Printf("\r[%s] %s/%s %3d%% %ds%s", sb.String(), esize(bread), efsize, pct, remtime, CLEAREOL)
+				fmt.Printf("\r[%s] %s/%s %3d%% %ds", sb.String(), esize(bread), efsize, pct, remtime)
+				ti_clreol()
 				rem := used - bread
 				if rem > 0 {
 					if rem > 4096 {
@@ -241,4 +243,5 @@ func main() {
 			}
 		}
 	}
+	ti_cleanup()
 }

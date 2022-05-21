@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	msp_API_VERSION       = 1
 	msp_FC_VARIANT        = 2
 	msp_FC_VERSION        = 3
 	msp_DATAFLASH_SUMMARY = 70
@@ -254,6 +255,11 @@ func (p *MSPSerial) MSPVariant() {
 	p.Write(rb)
 }
 
+func (p *MSPSerial) MSPAPIVersion() {
+	rb := encode_mspv1(msp_API_VERSION, nil)
+	p.Write(rb)
+}
+
 func (p *MSPSerial) MSPBBLConfig() {
 	rb := encode_msp(msp_BLACKBOX_CONFIG, nil)
 	p.Write(rb)
@@ -301,7 +307,7 @@ func NewMSPSerial(name string) *MSPSerial {
 
 func (m *MSPSerial) Init(c0 chan SChan) {
 	go m.msp_reader(c0)
-	m.MSPVariant()
+	m.MSPAPIVersion()
 }
 
 func (m *MSPSerial) MSPClose() {

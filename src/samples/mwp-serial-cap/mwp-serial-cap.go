@@ -1,18 +1,18 @@
 package main
 
 import (
+	"encoding/binary"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"go.bug.st/serial"
 	"log"
 	"os"
 	"os/signal"
-	"syscall"
-	"strings"
 	"strconv"
+	"strings"
+	"syscall"
 	"time"
-	"go.bug.st/serial"
-	"encoding/binary"
-	"encoding/json"
 )
 
 type JSONu8Slice []uint8

@@ -2,7 +2,8 @@
 
 ## Description
 
-`flashgo` is a simple tool to download / erase data flash
+`flashgo` is a simple tool to download / erase data flash from INAV flight controllers.
+Requires INAV 1.80 or later (MSPv2 support).
 
 ## Features
 
