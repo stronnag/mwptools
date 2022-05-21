@@ -2,6 +2,7 @@ subdir('cliterm')
 subdir('ublox-test')
 subdir('area-tool')
 subdir('flashdl')
+subdir('flashgo')
 
 install_data(
   'flash.sh',

@@ -19,6 +19,10 @@ if [ -e ${MESON_SOURCE_ROOT}/src/mwp-plot-elevations/mwp-plot-elevations ] ; the
     install ${MESON_SOURCE_ROOT}/src/mwp-plot-elevations/mwp-plot-elevations  $INSTDIR/bin
 fi
 
+if [ -e ${MESON_SOURCE_ROOT}/src/samples/flashgo/flashgo ] ; then
+    install ${MESON_SOURCE_ROOT}/src/samples/flashgo/flashgo  $INSTDIR/bin
+fi
+
 if [ -z $DESTDIR ]; then
   echo Compiling gsettings schemas...
   glib-compile-schemas $MESON_INSTALL_PREFIX/share/glib-2.0/schemas

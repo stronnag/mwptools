@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '5.140.514')
+project('mwptools', 'c', 'vala', version : '5.141.676')
 
 meson.add_install_script('meson/post_install.sh')
 conf_data = configuration_data()
@@ -49,5 +49,8 @@ subdir('src/bbox-replay')
 if gobuild != ''
    if gotrim != ''
      mpe = custom_target('mwp-plot-elevations', output: 'mwp-plot-elevations', command : [gobuild, '@OUTPUT@', mpe_dir, gotrim], build_by_default: true, input: mpe_deps)
+
+     fgo = custom_target('flashgo', output: 'flashgo', command : [gobuild, '@OUTPUT@', fgo_dir, gotrim], build_by_default: true, input: fgo_deps)
+
    endif
 endif
