@@ -1,6 +1,6 @@
 prefix ?= $(HOME)/.local
 APP = mwp-serial-cap
-GOFILES = btaddr_linux.go  btaddr_other.go ti_other.go ti_posix.go
+GOFILES = btaddr_linux.go  btaddr_other.go ti_simple.go
 
 $(APP):  $(APP).go $(GOFILES) go.sum
 	go build -o $@ -ldflags "-w -s"
