@@ -178,7 +178,7 @@ func main() {
 						if fname == "" {
 							fname = fmt.Sprintf("bbl_%s.TXT", st.Format("2006-01-02_150405"))
 						}
-						if dname == "" {
+						if dname != "" {
 							os.MkdirAll(dname, os.ModePerm)
 							fname = filepath.Join(dname, fname)
 						}
