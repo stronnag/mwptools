@@ -762,9 +762,91 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#flashdl" class="md-nav__link">
-    flashdl
+  <a href="#flashgo" class="md-nav__link">
+    flashgo
   </a>
+  
+    <nav class="md-nav" aria-label="flashgo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    Usage Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#check-flash-usage" class="md-nav__link">
+    Check flash usage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-mode-download-whole-flash" class="md-nav__link">
+    Test mode (download whole flash)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-flash-info" class="md-nav__link">
+    Check flash info
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#download-to-auto-generated-file-name" class="md-nav__link">
+    Download to auto-generated file name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#erase-the-flash-only-no-download" class="md-nav__link">
+    Erase the flash (only, no download)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-flash-info_1" class="md-nav__link">
+    Check flash info
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#download-to-nominated-file-name" class="md-nav__link">
+    Download to nominated file name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#download-to-nominated-file-and-directory" class="md-nav__link">
+    Download to nominated file and directory
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#download-to-auto-generated-file-name-and-nominated-directory-then-erase-flash" class="md-nav__link">
+    Download to auto-generated file name and nominated directory, then erase flash
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -914,9 +996,91 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#flashdl" class="md-nav__link">
-    flashdl
+  <a href="#flashgo" class="md-nav__link">
+    flashgo
   </a>
+  
+    <nav class="md-nav" aria-label="flashgo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    Usage Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#check-flash-usage" class="md-nav__link">
+    Check flash usage
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-mode-download-whole-flash" class="md-nav__link">
+    Test mode (download whole flash)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-flash-info" class="md-nav__link">
+    Check flash info
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#download-to-auto-generated-file-name" class="md-nav__link">
+    Download to auto-generated file name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#erase-the-flash-only-no-download" class="md-nav__link">
+    Erase the flash (only, no download)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-flash-info_1" class="md-nav__link">
+    Check flash info
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#download-to-nominated-file-name" class="md-nav__link">
+    Download to nominated file name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#download-to-nominated-file-and-directory" class="md-nav__link">
+    Download to nominated file and directory
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#download-to-auto-generated-file-name-and-nominated-directory-then-erase-flash" class="md-nav__link">
+    Download to auto-generated file name and nominated directory, then erase flash
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1062,40 +1226,111 @@ fcflash /dev/ttyUSB0 inav_5.0.0_MATEKF405.hex
 <li>The temporary bin file is removed</li>
 </ul>
 <p>see also <a href="https://github.com/fiam/msp-tool">msp-tool</a> for another tool to simplify command line FC flashing.</p>
-<h2 id="flashdl">flashdl<a class="headerlink" href="#flashdl" title="Permanent link">#</a></h2>
-<p><code>flashdl</code> is a tool to download blackbox logs from on-board flash. If you're doing this on a VCP board, it will download much faster then the apparent baud rate indicates. If you're using a non-VCP board (i.e. F3 or earlier), then consider using <code>flash_dump.rb</code> which can  temporarily alter the baudrate to achieve faster rates using CLI (vice MSP) commands.</p>
-<pre><code>$ flashdl --help
-Usage:
-  flashdl [OPTION?]  - iNav Flash download / erase
+<h2 id="flashgo">flashgo<a class="headerlink" href="#flashgo" title="Permanent link">#</a></h2>
+<p><code>flashgo</code> is a tool to download blackbox logs from on-board flash. If you're doing this on a VCP board, it will download much faster then the apparent baud rate indicates. If you're using a non-VCP board (i.e. F3 or earlier), then consider using <code>flash_dump.rb</code> which can  temporarily alter the baudrate to achieve faster rates using CLI (vice MSP) commands.</p>
+<p><code>flashgo</code> is a replacement for the earlier <code>flashdl</code> tool.</p>
+<pre><code>$ flashgo --help
+Usage of flashgo [options] [device]
+-dir string
+    output directory ($(cwd) if not specified)
+-erase
+    erase after download
+ -file string
+    output file, auto-generated (bbl_YYYY-MM-DD_hhmmss.TXT) if not specified
+ -info
+    show flash info and exit
+ -only-erase
+    erase only and exit
+ -test
+    download whole flash regardess of used state
 
-Help Options:
-  -h, --help           Show help options
-
-Application Options:
-  -b, --baud           baud rate
-  -d, --device         device
-  -o, --output         file name
-  -O, --outout-dir     dir name
-  -e, --erase          erase on completion
-  --only-erase         erase only
-  -i, --info           just show info
-  -t, --test           download whole flash
+device is the FC serial device, which may be auto-dectected
 </code></pre>
-<p>In the following example, I use test mode because the flash is empty. Normally you would not set <code>TEST_USED</code> or use the <code>-t</code> (test) flag.</p>
-<pre><code>$ TEST_USED=$((1024*1600)) flashdl -t
-13:11:46 Opened /dev/ttyACM0
-13:11:46 Entering test mode for 1.6MB
-13:11:46 Data Flash 1638400 /  2097152 (78%)
-13:11:46 Downloading to BBL_2018-03-28_131146.TXT
-[████████████████████████████████] 1.6MB/1.6MB 100% 0s
-13:12:17 1638400 bytes in 31s, 52851 bytes/s
-$
-$ # normally
-$ # flashdl
-$ # or
-$ # flashdl -e # erase after downloading
+<h3 id="usage-examples">Usage Examples<a class="headerlink" href="#usage-examples" title="Permanent link">#</a></h3>
+<h4 id="check-flash-usage">Check flash usage<a class="headerlink" href="#check-flash-usage" title="Permanent link">#</a></h4>
+<pre><code>$ flashgo -info
+Using /dev/ttyACM0
+Firmware: INAV
+Version: 5.0.0
+Data flash 0 / 2097152 (0%)
 </code></pre>
-<p>Note that the FC device is auto-detected.</p>
+<h4 id="test-mode-download-whole-flash">Test mode (download whole flash)<a class="headerlink" href="#test-mode-download-whole-flash" title="Permanent link">#</a></h4>
+<pre><code>$ flashgo -test
+Using /dev/ttyACM0
+Firmware: INAV
+Version: 5.0.0
+Entering test mode for 2097152b
+Data flash 2097152 / 2097152 (100%)
+Downloading to bbl_2022-05-22_113211.TXT
+[▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇] 2.0MB/2.0MB 100% 0s
+2097152 bytes in 40.2s, 52218.4 bytes/s
+</code></pre>
+<h4 id="check-flash-info">Check flash info<a class="headerlink" href="#check-flash-info" title="Permanent link">#</a></h4>
+<pre><code>$ flashgo -info
+Using /dev/ttyACM0
+Unexpected MSP 108 (0x6c)
+Firmware: INAV
+Version: 5.0.0
+Data flash 27674 / 2097152 (1%)
+</code></pre>
+<h4 id="download-to-auto-generated-file-name">Download to auto-generated file name<a class="headerlink" href="#download-to-auto-generated-file-name" title="Permanent link">#</a></h4>
+<pre><code>$ flashgo
+Using /dev/ttyACM0
+Firmware: INAV
+Version: 5.0.0
+Data flash 27674 / 2097152 (1%)
+Downloading to bbl_2022-05-22_114044.TXT
+[▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇] 27.0KB/27.0KB 100% 0s
+27674 bytes in 0.5s, 50838.4 bytes/s
+</code></pre>
+<h4 id="erase-the-flash-only-no-download">Erase the flash (only, no download)<a class="headerlink" href="#erase-the-flash-only-no-download" title="Permanent link">#</a></h4>
+<pre><code>$ flashgo -only-erase
+Using /dev/ttyACM0
+Firmware: INAV
+Version: 5.0.0
+Erase in progress ...
+Completed
+</code></pre>
+<h4 id="check-flash-info_1">Check flash info<a class="headerlink" href="#check-flash-info_1" title="Permanent link">#</a></h4>
+<pre><code>$ flashgo -info
+Using /dev/ttyACM0
+Firmware: INAV
+Version: 5.0.0
+Data flash 46893 / 2097152 (2%)
+</code></pre>
+<h4 id="download-to-nominated-file-name">Download to nominated file name<a class="headerlink" href="#download-to-nominated-file-name" title="Permanent link">#</a></h4>
+<pre><code>$ flashgo -file bbl_TEST.txt
+Using /dev/ttyACM0
+Firmware: INAV
+Version: 5.0.0
+Data flash 46893 / 2097152 (2%)
+Downloading to bbl_TEST.txt
+[▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇] 45.8KB/45.8KB 100% 0s
+46893 bytes in 0.9s, 52290.6 bytes/s
+</code></pre>
+<h4 id="download-to-nominated-file-and-directory">Download to nominated file and directory<a class="headerlink" href="#download-to-nominated-file-and-directory" title="Permanent link">#</a></h4>
+<pre><code>$ flashgo -file bbl_TEST.txt -dir /tmp/
+Using /dev/ttyACM0
+Firmware: INAV
+Version: 5.0.0
+Data flash 46893 / 2097152 (2%)
+Downloading to /tmp/bbl_TEST.txt
+[▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇] 45.8KB/45.8KB 100% 0s
+46893 bytes in 0.9s, 52298.0 bytes/s
+</code></pre>
+<h4 id="download-to-auto-generated-file-name-and-nominated-directory-then-erase-flash">Download to auto-generated file name and nominated directory, then erase flash<a class="headerlink" href="#download-to-auto-generated-file-name-and-nominated-directory-then-erase-flash" title="Permanent link">#</a></h4>
+<pre><code>$ flashgo  -dir /tmp/ -erase
+Using /dev/ttyACM0
+Firmware: INAV
+Version: 5.0.0
+Data flash 46893 / 2097152 (2%)
+Downloading to /tmp/bbl_2022-05-22_114515.TXT
+[▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇] 45.8KB/45.8KB 100% 0s
+46893 bytes in 0.9s, 52291.9 bytes/s
+Erase in progress ...
+Completed
+</code></pre>
+<p>Note that in every case, the FC device node is auto-detected.</p>
 <p>Note also that the download speed is approximately <strong>5</strong> times greater than one would expect from the nominal baud rate (115200 ~= 10800 bytes/sec).</p>
 <h2 id="flash_dumprb">flash_dump.rb<a class="headerlink" href="#flash_dumprb" title="Permanent link">#</a></h2>
 <p><code>flash_dump.rb</code> is another tool for downloading blackbox logs from on-board flash. Whereas flashdl uses MSP, flash_dump.rb uses CLI commands and is thus rather more fragile.</p>
