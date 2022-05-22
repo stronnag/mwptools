@@ -1333,10 +1333,10 @@ Completed
 <p>Note that in every case, the FC device node is auto-detected.</p>
 <p>Note also that the download speed is approximately <strong>5</strong> times greater than one would expect from the nominal baud rate (115200 ~= 10800 bytes/sec).</p>
 <h2 id="flash_dumprb">flash_dump.rb<a class="headerlink" href="#flash_dumprb" title="Permanent link">#</a></h2>
-<p><code>flash_dump.rb</code> is another tool for downloading blackbox logs from on-board flash. Whereas flashdl uses MSP, flash_dump.rb uses CLI commands and is thus rather more fragile.</p>
+<p><code>flash_dump.rb</code> is another tool for downloading blackbox logs from on-board flash. Whereas <code>flashgo</code> uses MSP, flash_dump.rb uses CLI commands and is thus rather more fragile.</p>
 <ul>
 <li>It allows the temporary use of higher baud rates on USB (e.g. 921600).</li>
-<li>If it fails, you will have to reset the baud rate via the CLI, as the configurator will not connect &gt; 115200 baud.<pre><code>$ flash_dump.rb --help
+<li>If it fails, you may  have to reset the baud rate via the CLI, if the configurator is unable to connect &gt; 115200 baud.<pre><code>$ flash_dump.rb --help
 
 flash_dump.rb [options] file
 Download bb from flash
@@ -1362,8 +1362,8 @@ read 1638400 / 1638400 100%    0s
 Got 1638400 bytes in 18.8s 87268.8 b/s
 Exiting
 </code></pre>
-<p>After the download has completed, the serial port is reset to the prior configured bayd rate (typically 115200). Note the very high speed of the  download, 87268 bytes /sec; this is almost 9 times faster than the standard baud (and 9x the speed of using the configurator with a USB board).</p>
-<p>Should the download fail and the board serial is not reset automatically, it will be necessary to manually reset UART1, possibly using <code>cliterm</code>.</p>
+<p>After the download has completed, the serial port is reset to the previously configured baud rate (typically 115200). Note the very high speed of the  download, 87268 bytes /sec; this is almost 9 times faster than the standard baud (and 9x the speed of using the configurator with a USB board).</p>
+<p>Should the download fail and the board serial speed is not reset automatically, it will be necessary to manually reset UART1, possibly using <code>cliterm</code>.</p>
 <p>So, had the above failed, it could be rescued by pasting in the "Found" line above:</p>
 <pre><code>$ cliterm -b 921600
 open /dev/ttyUSB0
