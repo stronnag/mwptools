@@ -256,10 +256,10 @@ Note also that the download speed is approximately **5** times greater than one 
 
 ## flash_dump.rb
 
-`flash_dump.rb` is another tool for downloading blackbox logs from on-board flash. Whereas flashdl uses MSP, flash_dump.rb uses CLI commands and is thus rather more fragile.
+`flash_dump.rb` is another tool for downloading blackbox logs from on-board flash. Whereas `flashgo` uses MSP, flash_dump.rb uses CLI commands and is thus rather more fragile.
 
 * It allows the temporary use of higher baud rates on USB (e.g. 921600).
-* If it fails, you will have to reset the baud rate via the CLI, as the configurator will not connect > 115200 baud.
+* If it fails, you may  have to reset the baud rate via the CLI, if the configurator is unable to connect > 115200 baud.
 
 		$ flash_dump.rb --help
 
@@ -286,9 +286,9 @@ Unlike `flashdl` which auto-detects serial ports, `flash_dump.rb` tries `/dev/tt
     Got 1638400 bytes in 18.8s 87268.8 b/s
     Exiting
 
-After the download has completed, the serial port is reset to the prior configured bayd rate (typically 115200). Note the very high speed of the  download, 87268 bytes /sec; this is almost 9 times faster than the standard baud (and 9x the speed of using the configurator with a USB board).
+After the download has completed, the serial port is reset to the previously configured baud rate (typically 115200). Note the very high speed of the  download, 87268 bytes /sec; this is almost 9 times faster than the standard baud (and 9x the speed of using the configurator with a USB board).
 
-Should the download fail and the board serial is not reset automatically, it will be necessary to manually reset UART1, possibly using `cliterm`.
+Should the download fail and the board serial speed is not reset automatically, it will be necessary to manually reset UART1, possibly using `cliterm`.
 
 So, had the above failed, it could be rescued by pasting in the "Found" line above:
 
