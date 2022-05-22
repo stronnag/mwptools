@@ -11,6 +11,7 @@ Requires INAV 1.80 or later (MSPv2 support).
 * Provides information on flash usage
 * Downloads BBL from flash
 * Erase flash
+* Golang, so can be built for most modern OS and architectures (Linux, Windows, FreeBSD, MacOS, ia32, x86_64, arm7, aarch64, riscv64 at least).
 
 ## Usage
 
@@ -49,5 +50,6 @@ If the file name is not provided, `-file BBL.TXT`, then a name is constructed of
 ## Installation
 
 * `make`
-* `make install  (install in `~/.local/bin`)
-* or `sudo make install prefix=/usr/local` (install in `/usr/local/bin`)
+* `make install`  (installs in `~/.local/bin`)
+* or `sudo make install prefix=/usr/local` (installs in `/usr/local/bin`)
+* cross compile for Windows (can also build natively) `GOOS=windows make`
