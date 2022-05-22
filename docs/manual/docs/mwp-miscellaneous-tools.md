@@ -133,43 +133,124 @@ results in
 
 see also [msp-tool](https://github.com/fiam/msp-tool) for another tool to simplify command line FC flashing.
 
-## flashdl
+## flashgo
 
-`flashdl` is a tool to download blackbox logs from on-board flash. If you're doing this on a VCP board, it will download much faster then the apparent baud rate indicates. If you're using a non-VCP board (i.e. F3 or earlier), then consider using `flash_dump.rb` which can  temporarily alter the baudrate to achieve faster rates using CLI (vice MSP) commands.
+`flashgo` is a tool to download blackbox logs from on-board flash. If you're doing this on a VCP board, it will download much faster then the apparent baud rate indicates. If you're using a non-VCP board (i.e. F3 or earlier), then consider using `flash_dump.rb` which can  temporarily alter the baudrate to achieve faster rates using CLI (vice MSP) commands.
 
-    $ flashdl --help
-    Usage:
-      flashdl [OPTION?]  - iNav Flash download / erase
+`flashgo` is a replacement for the earlier `flashdl` tool.
 
-    Help Options:
-      -h, --help           Show help options
+    $ flashgo --help
+    Usage of flashgo [options] [device]
+    -dir string
+    	output directory ($(cwd) if not specified)
+    -erase
+    	erase after download
+     -file string
+    	output file, auto-generated (bbl_YYYY-MM-DD_hhmmss.TXT) if not specified
+     -info
+    	show flash info and exit
+     -only-erase
+    	erase only and exit
+     -test
+    	download whole flash regardess of used state
 
-    Application Options:
-      -b, --baud           baud rate
-      -d, --device         device
-      -o, --output         file name
-      -O, --outout-dir     dir name
-      -e, --erase          erase on completion
-      --only-erase         erase only
-      -i, --info           just show info
-      -t, --test           download whole flash
+    device is the FC serial device, which may be auto-dectected
 
-In the following example, I use test mode because the flash is empty. Normally you would not set `TEST_USED` or use the `-t` (test) flag.
+### Usage Examples
 
-    $ TEST_USED=$((1024*1600)) flashdl -t
-    13:11:46 Opened /dev/ttyACM0
-    13:11:46 Entering test mode for 1.6MB
-    13:11:46 Data Flash 1638400 /  2097152 (78%)
-    13:11:46 Downloading to BBL_2018-03-28_131146.TXT
-    [████████████████████████████████] 1.6MB/1.6MB 100% 0s
-    13:12:17 1638400 bytes in 31s, 52851 bytes/s
-    $
-    $ # normally
-    $ # flashdl
-    $ # or
-    $ # flashdl -e # erase after downloading
+#### Check flash usage
 
-Note that the FC device is auto-detected.
+    $ flashgo -info
+    Using /dev/ttyACM0
+    Firmware: INAV
+    Version: 5.0.0
+    Data flash 0 / 2097152 (0%)
+
+#### Test mode (download whole flash)
+
+    $ flashgo -test
+    Using /dev/ttyACM0
+    Firmware: INAV
+    Version: 5.0.0
+    Entering test mode for 2097152b
+    Data flash 2097152 / 2097152 (100%)
+    Downloading to bbl_2022-05-22_113211.TXT
+    [▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇] 2.0MB/2.0MB 100% 0s
+    2097152 bytes in 40.2s, 52218.4 bytes/s
+
+#### Check flash info
+
+    $ flashgo -info
+    Using /dev/ttyACM0
+    Unexpected MSP 108 (0x6c)
+    Firmware: INAV
+    Version: 5.0.0
+    Data flash 27674 / 2097152 (1%)
+
+#### Download to auto-generated file name
+
+    $ flashgo
+    Using /dev/ttyACM0
+    Firmware: INAV
+    Version: 5.0.0
+    Data flash 27674 / 2097152 (1%)
+    Downloading to bbl_2022-05-22_114044.TXT
+    [▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇] 27.0KB/27.0KB 100% 0s
+    27674 bytes in 0.5s, 50838.4 bytes/s
+
+#### Erase the flash (only, no download)
+
+    $ flashgo -only-erase
+    Using /dev/ttyACM0
+    Firmware: INAV
+    Version: 5.0.0
+    Erase in progress ...
+    Completed
+
+#### Check flash info
+
+    $ flashgo -info
+    Using /dev/ttyACM0
+    Firmware: INAV
+    Version: 5.0.0
+    Data flash 46893 / 2097152 (2%)
+
+#### Download to nominated file name
+
+    $ flashgo -file bbl_TEST.txt
+    Using /dev/ttyACM0
+    Firmware: INAV
+    Version: 5.0.0
+    Data flash 46893 / 2097152 (2%)
+    Downloading to bbl_TEST.txt
+    [▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇] 45.8KB/45.8KB 100% 0s
+    46893 bytes in 0.9s, 52290.6 bytes/s
+
+#### Download to nominated file and directory
+
+    $ flashgo -file bbl_TEST.txt -dir /tmp/
+    Using /dev/ttyACM0
+    Firmware: INAV
+    Version: 5.0.0
+    Data flash 46893 / 2097152 (2%)
+    Downloading to /tmp/bbl_TEST.txt
+    [▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇] 45.8KB/45.8KB 100% 0s
+    46893 bytes in 0.9s, 52298.0 bytes/s
+
+#### Download to auto-generated file name and nominated directory, then erase flash
+
+    $ flashgo  -dir /tmp/ -erase
+    Using /dev/ttyACM0
+    Firmware: INAV
+    Version: 5.0.0
+    Data flash 46893 / 2097152 (2%)
+    Downloading to /tmp/bbl_2022-05-22_114515.TXT
+    [▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇] 45.8KB/45.8KB 100% 0s
+    46893 bytes in 0.9s, 52291.9 bytes/s
+    Erase in progress ...
+    Completed
+
+Note that in every case, the FC device node is auto-detected.
 
 Note also that the download speed is approximately **5** times greater than one would expect from the nominal baud rate (115200 ~= 10800 bytes/sec).
 
