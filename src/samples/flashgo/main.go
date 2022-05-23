@@ -22,7 +22,7 @@ type SChan struct {
 func esize(v uint32) string {
 	s := ""
 	if v < 1024 {
-		s = fmt.Sprintf("%uB", v)
+		s = fmt.Sprintf("%dB", v)
 	} else {
 		d := float64(v)
 		d /= 1024.0

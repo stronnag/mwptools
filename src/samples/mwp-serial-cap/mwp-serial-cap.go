@@ -84,7 +84,7 @@ func main() {
 
 	adata := flag.Args()
 	if len(adata) == 0 {
-		log.Fatalln("No output file given\n")
+		log.Fatalln("No output file given")
 	}
 
 	file, err := os.Create(adata[0])

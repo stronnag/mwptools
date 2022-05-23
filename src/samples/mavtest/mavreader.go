@@ -327,13 +327,13 @@ func (m *MavReader) process(dat []byte) {
 			break
 
 		case S_M2_MSGID1:
-			m.cmd |= uint32(b << 8)
+			m.cmd |= (uint32(b) << 8)
 			m.mavsum = mavlink_crc(m.mavsum, b)
 			m.state = S_M2_MSGID2
 			break
 
 		case S_M2_MSGID2:
-			m.cmd |= uint32(b << 16)
+			m.cmd |= (uint32(b) << 16)
 			m.mavsum = mavlink_crc(m.mavsum, b)
 			if m.csize == 0 {
 				m.state = S_M2_CRC1
