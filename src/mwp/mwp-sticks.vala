@@ -10,8 +10,7 @@ namespace Sticks {
 			set_transparent();
 			set_default_size (400, 200);
 			set_decorated((decor==2));
-			set_keep_above(true);
-			var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
+/			var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
 			add (box);
 			lstick = new Sticks.Pad (1000, 1500, false);
 			box.pack_start(lstick, true, true, 2);
