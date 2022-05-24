@@ -1333,7 +1333,7 @@ Completed
 <p>Note that in every case, the FC device node is auto-detected.</p>
 <p>Note also that the download speed is approximately <strong>5</strong> times greater than one would expect from the nominal baud rate (115200 ~= 10800 bytes/sec).</p>
 <h2 id="flash_dumprb">flash_dump.rb<a class="headerlink" href="#flash_dumprb" title="Permanent link">#</a></h2>
-<p><code>flash_dump.rb</code> is another tool for downloading blackbox logs from on-board flash. Whereas <code>flashgo</code> uses MSP, flash_dump.rb uses CLI commands and is thus rather more fragile.</p>
+<p><code>flash_dump.rb</code> is another tool for downloading blackbox logs from on-board flash. Whereas <code>flashgo</code> uses MSP, flash_dump.rb uses CLI commands and is thus rather more fragile and requires that the FC firmware is compiled with <code>#define USE_FLASH_TOOLS</code> (<strong>which is not the default</strong>).</p>
 <ul>
 <li>It allows the temporary use of higher baud rates on USB (e.g. 921600).</li>
 <li>If it fails, you may  have to reset the baud rate via the CLI, if the configurator is unable to connect &gt; 115200 baud.<pre><code>$ flash_dump.rb --help
