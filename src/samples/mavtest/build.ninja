@@ -5,6 +5,6 @@ build mavreader: go mavreader.go
 default mavreader
 
 rule copy
-  command = cp $in $$HOME/bin
+  command = cp $in $$HOME/.local/bin
 
 build install: copy mavreader

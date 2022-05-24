@@ -256,7 +256,7 @@ Note also that the download speed is approximately **5** times greater than one 
 
 ## flash_dump.rb
 
-`flash_dump.rb` is another tool for downloading blackbox logs from on-board flash. Whereas `flashgo` uses MSP, flash_dump.rb uses CLI commands and is thus rather more fragile.
+`flash_dump.rb` is another tool for downloading blackbox logs from on-board flash. Whereas `flashgo` uses MSP, flash_dump.rb uses CLI commands and is thus rather more fragile and requires that the FC firmware is compiled with `#define USE_FLASH_TOOLS` (**which is not the default**).
 
 * It allows the temporary use of higher baud rates on USB (e.g. 921600).
 * If it fails, you may  have to reset the baud rate via the CLI, if the configurator is unable to connect > 115200 baud.
