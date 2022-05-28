@@ -39,6 +39,17 @@ function find_serial
   echo $SDEV
 }
 
+DEPFAIL=
+for DEP in lsusb dfu-util stm32flash objcopy
+do
+  if ! type $DEP 2>&1 >/dev/null ; then
+    echo "Missing $DEP"
+    DEPFAIL=1
+  fi
+done
+
+[ -n "$DEPFAIL" ] && exit 127
+
 DEV=
 SPEED=115200
 HEX=
@@ -62,6 +73,7 @@ do
   esac
 done
 
+[ -n "$HEX" ] || { echo "No hexfile provided" ; exit ; }
 [ -f $HEX ] || { echo "$HEX not found" ; exit ; }
 
 if [ -n "$RESCUE" ] ; then
