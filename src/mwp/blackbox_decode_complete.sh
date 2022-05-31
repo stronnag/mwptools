@@ -11,6 +11,10 @@ _blackbox_decode_complete()
       COMPREPLY=( $(compgen -W '{1..31}'  -- $cur) )
       return 0
       ;;
+    '--apply-gframe')
+      COMPREPLY=( $(compgen -W '{0..2}'  -- $cur) )
+      return 0
+      ;;
     '--unit-amperage')
       COMPREPLY=( $(compgen -W "raw mA A" -- $cur) )
       return 0
@@ -47,6 +51,7 @@ _blackbox_decode_complete()
   case $cur in
     -*)
       OPTS="--help
+        --version
 	--index
 	--limits
 	--stdout
@@ -68,7 +73,8 @@ _blackbox_decode_complete()
 	--declination
 	--declination-dec
 	--debug
-	--raw"
+	--raw
+	--apply-gframe"
 
       COMPREPLY=( $(compgen -W "${OPTS[*]}" -- $cur) )
       return 0
