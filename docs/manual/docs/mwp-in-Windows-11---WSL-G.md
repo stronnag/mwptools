@@ -56,12 +56,9 @@ If `git` is not pre-installed in WSL, then it will be necessary to install it.
 
 Note: `/etc/sudoers` (via `visudo`) was edited to allows the WSL user to run commands as root without asking for a password.
 
-Then it was just a case of cloning the mwp repository and following mwp's instructions (`mwptools/docs/debian-ubuntu-dependencies.txt`), to install the dependencies, thusly:
+Then it was just a case of cloning the mwp repository and following mwp's instructions (`mwptools/docs/debian-ubuntu-dependencies.txt`), to install the dependencies, this is available as an executable script thusly:
 
-    cp mwptools/docs/debian-ubuntu-dependencies.txt /tmp/u.sh
-    chmod +x /tmp/u.sh
-    # edit /tmp/u.sh for any optional items ...
-    sudo /tmp/u.sh Y # "Y" bypasses interactive query / responses
+    sudo mwptools/docs/debinstall.sh -y # "-y" bypasses interactive query / responses
 
 Then build and install mwp and optionally the blackbox tools (as `mwptools/docs/debian-ubuntu-dependencies.txt`). [Build documentation](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja).
 
@@ -69,7 +66,7 @@ For the optimal blackbox replay, install the [flightlog2x](https://github.com/st
 
 ## Running mwp
 
-Compared to Win10/WSL or Cygwin, there is no longer any need to mess around the `DISPLAY` or `udev` settings. No 3rd party X-server, Windows 11 handles all the GUI.
+Compared to Win10/WSL or Cygwin, there is no longer any need to mess around the `DISPLAY` or `udev` settings. No 3rd party X-server, Windows 11 / WSL-G  handles all the GUI.
 
 ### One off changes
 
@@ -77,12 +74,12 @@ Compared to Win10/WSL or Cygwin, there is no longer any need to mess around the 
 
     	sudo apt install adwaita-icon-theme-full
 
-* If you wish to replay blackbox / OTX / BulletGCSS logs, it is necessary to have an IPv6 definition of `localhost`; WSL's `/etc/hosts` does not provide this:
+* If you wish to replay blackbox / OTX / BulletGCSS logs, it may be necessary to have an IPv6 definition of `localhost`; WSL's `/etc/hosts` does not provide this:
 
     	# updated in /etc/hosts for ipv6
     	::1   localhost ip6-localhost ip6-loopback
 
-  Note: This was caused by an unnecessary assumption in [flightlog2x](https://github.com/stronnag/bbl2kml)'s `fl2ltm` which is corrected in [flightlog2x](https://github.com/stronnag/bbl2kml) release (> 0.11.0)
+  Note: This was caused by an unnecessary assumption in [flightlog2x](https://github.com/stronnag/bbl2kml)'s `fl2ltm` which is corrected in [flightlog2x](https://github.com/stronnag/bbl2kml) release (> 0.11.0), so you might not need it anymore.
 
 * Then tell WSL to please not break your `hosts` file again
 

@@ -43,7 +43,7 @@ Unless you need a multi-user setup, a local install is preferable, as you don't 
 
 * Download the [first time build script](https://raw.githubusercontent.com/stronnag/mwptools/master/docs/deb-install.sh)
 * Make it executable `chmod +x deb-install.sh`
-* Run it `./deb-install.sh Y`
+* Run it `./deb-install.sh -y`
 * Note that the script may ask for a password to install system packages
 * The resulting executables are in `~/.local/bin`. Ensure this exists on `$PATH`
 * If you get messages like `Removing /home/$USER/.config/mwp/.layout.xml 0` and `Failed to save layout, remains in /tmp/.mwp.xxxxxx.xml` you also need `export XDG_DATA_DIRS=$XDG_DATA_DIRS:$HOME/.local/share`. This is rare and should not occur on [supported platforms](mwp_support.md#supported-os).
