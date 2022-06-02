@@ -71,6 +71,61 @@ The environment is set before any GTK / UI calls are made, thus if you have issu
 
 `sources.json` facilitates adding non-standard map sources to {{ mwp }}. See the  [anonymous maps](Black-Ops.md#custom-tile) section and comments in the source files in the `qproxy` directory.
 
+Here is an example `mwptools/src/samples/sources.json`;(you need your own free API key for the Thunderforest examples):
+
+    {
+     "sources" : [
+      {
+       "id": "OCM",
+	   "name": "CycleMaps API key",
+	   "license": "(c) Thunderforest",
+	   "license_uri": "http://thunderforest.com/",
+	   "min_zoom": 0,
+	   "max_zoom": 19,
+	   "tile_size": 256,
+       "projection": "MERCATOR",
+	   "comment": "You need your own (free) hobbist key from https://www.thunderforest.com/",
+	   "uri_format": "https://a.tile.thunderforest.com/cycle/#Z#/#X#/#Y#.png?apikey=00000000000000000000000000000000"
+      },
+      {
+       "id": "Landscape",
+	   "name": "Landscape API key",
+	   "license": "(c) Thunderforest",
+	   "license_uri": "http://thunderforest.com/",
+	   "min_zoom": 0,
+	   "max_zoom": 19,
+	   "tile_size": 256,
+       "projection": "MERCATOR",
+	   "comment": "You need your own (free) hobbist key from https://www.thunderforest.com/",
+	   "uri_format": "https://a.tile.thunderforest.com/landscape/#Z#/#X#/#Y#.png?apikey=00000000000000000000000000000000"
+      },
+      {
+       "id": "OpenTopo",
+	   "name": "OpenTopo TMS",
+	   "license": "(c) OSM",
+	   "license_uri": "http://www.openstreetmap.org/copyright",
+	   "min_zoom": 0,
+	   "max_zoom": 19,
+	   "tile_size": 256,
+       "projection": "MERCATOR",
+	   "uri_format": "https://a.tile.opentopomap.org/#Z#/#X#/#Y#.png"
+      },
+      {
+	   "id": "Black",
+	   "name": "Black Tiles",
+       "license": "(c) jh ",
+       "license_uri": "http://daria.co.uk/",
+       "min_zoom": 0,
+       "max_zoom": 20,
+	   "tile_size": 256,
+       "projection": "MERCATOR",
+       "spawn" : "bproxy"
+      }
+     ]
+    }
+
+See also [anonymous maps](Black-Ops.md#custom-tile) to customise the "black tile".
+
 ## `vcol.css`
 
 `vol.css` contains alternate CSS themeing for the battery voltage dock item that may work better on dark desktop themes. An example file is provided as `mwp/vcol.css` which can be copied into `.config/mwp/`.
@@ -243,7 +298,7 @@ Note also that the resize step is no longer required, as {{ mwp }} scales the ic
 
 ## Environment variables
 
-{{ mwp }} recognises the following environment variables
+{{ mwp }} recognises the following application specific environment variables
 
 | Name | Usage |
 | ------------- | ----- |

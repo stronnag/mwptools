@@ -21,23 +21,18 @@
  *
  * If a definiton appears in sources.json, a proxy will be started
  * where the definiton includes a 'spawn' line.
- * e.g. for a mythical provider "Vio", with the following entry in sources.json:
- *
  *   {
- *       "id": "Vio",
- *       "name": "Vio Proxy",
- *       "license": "(c) VIO ",
- *       "license_uri": "http://maps.vio.com/",
- *       "min_zoom": 0,
- *       "max_zoom": 19,
- *       "tile_size": 256,
- *       "projection": "MERCATOR",
- *       "uri_format": "http://localhost:21305/vio/#Z#/#X#/#Y#.png",
- *       "spawn" : "qproxy http://#C#.maptile.maps.svc.vio.com/maptiler/v2/maptile/newest/satellite.day/#Z#/#X#/#Y#/256/png8 21305",
- *       "warning" : "The only user changeable part of the uri is the port number (21305) which must be consistent"
- *  }
- *
- * Note: This will not build on Ubuntu 14.04 LTS, as the Soup version is too old
+ *	   "id": "VEarth",
+ *	   "name": "Virtual Earth",
+ *	   "license": "(c) MS",
+ *	   "license_uri": "http://localhost",
+ *	   "min_zoom": 0,
+ *	   "max_zoom": 19,
+ *	   "tile_size": 256,
+ *	   "projection": "MERCATOR",
+ *	   "uri_format": "http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=1",
+ *	   "spawn": "genproxy http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=1"
+ *   }
  *
  ************************************************************************/
 
@@ -49,7 +44,6 @@ public class GenProxy : Soup.Server
     public GenProxy(string uri)
     {
         p_uri = uri.split("#");
-        stdout.printf("uri %s\n", uri);
         this.add_handler (null, default_handler);
     }
 
@@ -154,22 +148,20 @@ public class GenProxy : Soup.Server
 
     public static int main (string []args)
     {
-        int oport = 8088;
         var loop = new MainLoop();
-        if (args.length > 2)
+        if (args.length > 1)
         {
-            oport = int.parse(args[2]);
             var o = new GenProxy(args[1]);
             try {
-                o.listen_all(oport, 0);
+                o.listen_all(0, 0);
+				var port = o.get_uris().nth_data(0).get_port ();
+				print ("Port: %u\n", port);
                 loop.run();
             } catch (Error e) {
-                stdout.printf ("Error: %s\n", e.message);
+                stderr.printf ("Error: %s\n", e.message);
             }
-        }
-        else
-        {
-            stderr.puts("genproxy uri port\n");
+        } else {
+            stderr.puts("genproxy uri\n");
         }
         return 0;
     }

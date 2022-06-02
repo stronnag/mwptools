@@ -1,26 +1,50 @@
 {
-  "sources": [
-    {
-      "id": "historic-gb",
-      "name": "GB Historic",
-      "license": "(c) National Library of Scotland",
-      "license_uri": "http://maps.nls.uk/projects/api/index.html",
-      "min_zoom": 5,
-      "max_zoom": 16,
-      "tile_size": 256,
-      "projection": "MERCATOR",
-      "uri_format": "http://geo.nls.uk/mapdata2/os/seventh/#Z#/#X#/#TMSY#.png"
-    },
-    {
-      "id": "osv",
-      "name": "OS Street View",
-      "license": "© Crown copyright and database rights 2010",
-      "license_uri": "http://www.nationalarchives.gov.uk/doc/open-government-licence/open-government-licence.htm",
-      "min_zoom": 0,
-      "max_zoom": 19,
-      "tile_size": 256,
-      "projection": "MERCATOR",
-      "uri_format": "http://os.openstreetmap.org/sv/#Z#/#X#/#Y#.png"
-    }
-  ]
+   "sources" : [
+      {
+          "id": "OCM",
+	  "name": "CycleMaps API key",
+	  "license": "(c) Thunderforest",
+	  "license_uri": "http://thunderforest.com/",
+	  "min_zoom": 0,
+	  "max_zoom": 19,
+	  "tile_size": 256,
+          "projection": "MERCATOR",
+	  "comment": "You need your own (free) hobbist key from https://www.thunderforest.com/",
+	  "uri_format": "https://a.tile.thunderforest.com/cycle/#Z#/#X#/#Y#.png?apikey=00000000000000000000000000000000"
+      },
+      {
+          "id": "Landscape",
+	  "name": "Landscape API key",
+	  "license": "(c) Thunderforest",
+	  "license_uri": "http://thunderforest.com/",
+	  "min_zoom": 0,
+	  "max_zoom": 19,
+	  "tile_size": 256,
+          "projection": "MERCATOR",
+	  "comment": "You need your own (free) hobbist key from https://www.thunderforest.com/",
+	  "uri_format": "https://a.tile.thunderforest.com/landscape/#Z#/#X#/#Y#.png?apikey=00000000000000000000000000000000"
+      },
+      {
+          "id": "OpenTopo",
+	  "name": "OpenTopo TMS",
+	  "license": "(c) OSM",
+	  "license_uri": "http://www.openstreetmap.org/copyright",
+	  "min_zoom": 0,
+	  "max_zoom": 19,
+	  "tile_size": 256,
+          "projection": "MERCATOR",
+	  "uri_format": "https://a.tile.opentopomap.org/#Z#/#X#/#Y#.png"
+      },
+      {
+	   "id": "Black",
+	   "name": "Black Tiles",
+          "license": "(c) jh ",
+          "license_uri": "http://daria.co.uk/",
+          "min_zoom": 0,
+          "max_zoom": 20,
+	  "tile_size": 256,
+          "projection": "MERCATOR",
+          "spawn" : "bproxy"
+      }
+   ]
 }
