@@ -1175,16 +1175,13 @@ $ sudo apt install ./mwptools_x.y.z_amd64.deb
 sudo apt install git
 </code></pre>
 <p>Note: <code>/etc/sudoers</code> (via <code>visudo</code>) was edited to allows the WSL user to run commands as root without asking for a password.</p>
-<p>Then it was just a case of cloning the mwp repository and following mwp's instructions (<code>mwptools/docs/debian-ubuntu-dependencies.txt</code>), to install the dependencies, thusly:</p>
-<pre><code>cp mwptools/docs/debian-ubuntu-dependencies.txt /tmp/u.sh
-chmod +x /tmp/u.sh
-# edit /tmp/u.sh for any optional items ...
-sudo /tmp/u.sh Y # "Y" bypasses interactive query / responses
+<p>Then it was just a case of cloning the mwp repository and following mwp's instructions (<code>mwptools/docs/debian-ubuntu-dependencies.txt</code>), to install the dependencies, this is available as an executable script thusly:</p>
+<pre><code>sudo mwptools/docs/debinstall.sh -y # "-y" bypasses interactive query / responses
 </code></pre>
 <p>Then build and install mwp and optionally the blackbox tools (as <code>mwptools/docs/debian-ubuntu-dependencies.txt</code>). <a href="https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja">Build documentation</a>.</p>
 <p>For the optimal blackbox replay, install the <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a> tools, either from the GitHub release or build from source in Linux/WSL.</p>
 <h2 id="running-mwp">Running mwp<a class="headerlink" href="#running-mwp" title="Permanent link">#</a></h2>
-<p>Compared to Win10/WSL or Cygwin, there is no longer any need to mess around the <code>DISPLAY</code> or <code>udev</code> settings. No 3rd party X-server, Windows 11 handles all the GUI.</p>
+<p>Compared to Win10/WSL or Cygwin, there is no longer any need to mess around the <code>DISPLAY</code> or <code>udev</code> settings. No 3rd party X-server, Windows 11 / WSL-G  handles all the GUI.</p>
 <h3 id="one-off-changes">One off changes<a class="headerlink" href="#one-off-changes" title="Permanent link">#</a></h3>
 <ul>
 <li>
@@ -1193,13 +1190,13 @@ sudo /tmp/u.sh Y # "Y" bypasses interactive query / responses
 </code></pre>
 </li>
 <li>
-<p>If you wish to replay blackbox / OTX / BulletGCSS logs, it is necessary to have an IPv6 definition of <code>localhost</code>; WSL's <code>/etc/hosts</code> does not provide this:</p>
+<p>If you wish to replay blackbox / OTX / BulletGCSS logs, it may be necessary to have an IPv6 definition of <code>localhost</code>; WSL's <code>/etc/hosts</code> does not provide this:</p>
 <pre><code># updated in /etc/hosts for ipv6
 ::1   localhost ip6-localhost ip6-loopback
 </code></pre>
 </li>
 </ul>
-<p>Note: This was caused by an unnecessary assumption in <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a>'s <code>fl2ltm</code> which is corrected in <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a> release (&gt; 0.11.0)</p>
+<p>Note: This was caused by an unnecessary assumption in <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a>'s <code>fl2ltm</code> which is corrected in <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a> release (&gt; 0.11.0), so you might not need it anymore.</p>
 <ul>
 <li>
 <p>Then tell WSL to please not break your <code>hosts</code> file again</p>

@@ -1087,6 +1087,60 @@ MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 <p><code>.layout</code> contains the current arrangement of Dock items. You are advised not to manually edit this file (or other named, alternate layout files).</p>
 <h2 id="sourcesjson"><code>sources.json</code><a class="headerlink" href="#sourcesjson" title="Permanent link">#</a></h2>
 <p><code>sources.json</code> facilitates adding non-standard map sources to <a href="https://github.com/stronnag/mwptools">mwp</a>. See the  <a href="../Black-Ops/#custom-tile">anonymous maps</a> section and comments in the source files in the <code>qproxy</code> directory.</p>
+<p>Here is an example <code>mwptools/src/samples/sources.json</code>;(you need your own free API key for the Thunderforest examples):</p>
+<p>Note that the mapping library used by <a href="https://github.com/stronnag/mwptools">mwp</a> (libchamplain) replaces the standard TMS notation for coordinates <code>{z}/{x}/{y}</code> with <code>#</code> in place of the brackets <code>#Z#/#X#/#Y#</code>, and the variables are capitalised.</p>
+<pre><code>{
+ "sources" : [
+  {
+   "id": "OCM",
+   "name": "CycleMaps API key",
+   "license": "(c) Thunderforest",
+   "license_uri": "http://thunderforest.com/",
+   "min_zoom": 0,
+   "max_zoom": 19,
+   "tile_size": 256,
+   "projection": "MERCATOR",
+   "comment": "You need your own (free) hobbist key from https://www.thunderforest.com/",
+   "uri_format": "https://a.tile.thunderforest.com/cycle/#Z#/#X#/#Y#.png?apikey=00000000000000000000000000000000"
+  },
+  {
+   "id": "Landscape",
+   "name": "Landscape API key",
+   "license": "(c) Thunderforest",
+   "license_uri": "http://thunderforest.com/",
+   "min_zoom": 0,
+   "max_zoom": 19,
+   "tile_size": 256,
+   "projection": "MERCATOR",
+   "comment": "You need your own (free) hobbist key from https://www.thunderforest.com/",
+   "uri_format": "https://a.tile.thunderforest.com/landscape/#Z#/#X#/#Y#.png?apikey=00000000000000000000000000000000"
+  },
+  {
+   "id": "OpenTopo",
+   "name": "OpenTopo TMS",
+   "license": "(c) OSM",
+   "license_uri": "http://www.openstreetmap.org/copyright",
+   "min_zoom": 0,
+   "max_zoom": 19,
+   "tile_size": 256,
+   "projection": "MERCATOR",
+   "uri_format": "https://a.tile.opentopomap.org/#Z#/#X#/#Y#.png"
+  },
+  {
+   "id": "Black",
+   "name": "Black Tiles",
+   "license": "(c) jh ",
+   "license_uri": "http://daria.co.uk/",
+   "min_zoom": 0,
+   "max_zoom": 20,
+   "tile_size": 256,
+   "projection": "MERCATOR",
+   "spawn" : "bproxy"
+  }
+ ]
+}
+</code></pre>
+<p>See also <a href="../Black-Ops/#custom-tile">anonymous maps</a> to customise the "black tile". The <code>spawn</code> stanza uses a proxy for non-TMS formats (see <code>mwptools/src/qproxy</code> for some examples).</p>
 <h2 id="vcolcss"><code>vcol.css</code><a class="headerlink" href="#vcolcss" title="Permanent link">#</a></h2>
 <p><code>vol.css</code> contains alternate CSS themeing for the battery voltage dock item that may work better on dark desktop themes. An example file is provided as <code>mwp/vcol.css</code> which can be copied into <code>.config/mwp/</code>.</p>
 <h2 id="places"><code>places</code><a class="headerlink" href="#places" title="Permanent link">#</a></h2>
@@ -1706,7 +1760,7 @@ file ~/.config/mwp/pixmaps/inav-radar.svg
 </code></pre>
 <p>Note also that the resize step is no longer required, as <a href="https://github.com/stronnag/mwptools">mwp</a> scales the icon according to the <code>misc-icon-size</code> setting.</p>
 <h2 id="environment-variables">Environment variables<a class="headerlink" href="#environment-variables" title="Permanent link">#</a></h2>
-<p><a href="https://github.com/stronnag/mwptools">mwp</a> recognises the following environment variables</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> recognises the following application specific environment variables</p>
 <table>
 <thead>
 <tr>

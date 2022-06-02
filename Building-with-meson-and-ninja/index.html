@@ -1118,7 +1118,7 @@ git pull
 <ul>
 <li>Download the <a href="https://raw.githubusercontent.com/stronnag/mwptools/master/docs/deb-install.sh">first time build script</a></li>
 <li>Make it executable <code>chmod +x deb-install.sh</code></li>
-<li>Run it <code>./deb-install.sh Y</code></li>
+<li>Run it <code>./deb-install.sh -y</code></li>
 <li>Note that the script may ask for a password to install system packages</li>
 <li>The resulting executables are in <code>~/.local/bin</code>. Ensure this exists on <code>$PATH</code></li>
 <li>If you get messages like <code>Removing /home/$USER/.config/mwp/.layout.xml 0</code> and <code>Failed to save layout, remains in /tmp/.mwp.xxxxxx.xml</code> you also need <code>export XDG_DATA_DIRS=$XDG_DATA_DIRS:$HOME/.local/share</code>. This is rare and should not occur on <a href="../mwp_support/#supported-os">supported platforms</a>.</li>
