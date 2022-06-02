@@ -73,6 +73,8 @@ The environment is set before any GTK / UI calls are made, thus if you have issu
 
 Here is an example `mwptools/src/samples/sources.json`;(you need your own free API key for the Thunderforest examples):
 
+Note that the mapping library used by {{ mwp }} (libchamplain) replaces the standard TMS notation for coordinates `{z}/{x}/{y}` with `#` in place of the brackets `#Z#/#X#/#Y#`, and the variables are capitalised.
+
     {
      "sources" : [
       {
@@ -124,7 +126,7 @@ Here is an example `mwptools/src/samples/sources.json`;(you need your own free A
      ]
     }
 
-See also [anonymous maps](Black-Ops.md#custom-tile) to customise the "black tile".
+See also [anonymous maps](Black-Ops.md#custom-tile) to customise the "black tile". The `spawn` stanza uses a proxy for non-TMS formats (see `mwptools/src/qproxy` for some examples).
 
 ## `vcol.css`
 
