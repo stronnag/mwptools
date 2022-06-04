@@ -5,28 +5,24 @@
 include Math
 require 'csv'
 require 'optparse'
-require_relative 'inav_states'
+require_relative 'inav_states_data'
 
 module Poscalc
   RAD = 0.017453292
 
   def Poscalc.d2r d
-    private
     d*RAD
   end
 
 def Poscalc.r2d r
-    private
     r/RAD
   end
 
   def Poscalc.nm2r nm
-    private
     (PI/(180*60))*nm
   end
 
   def Poscalc.r2nm r
-    private
     ((180*60)/PI)*r
   end
 
@@ -84,7 +80,7 @@ end
 if sane
   states=[1,16,24]
 elsif allstates
-  states=*(1..29)
+  states=*(0..38)
 else
   states.map! {|s| s.to_i}
 end
@@ -105,32 +101,36 @@ IO.popen(cmd,'r') do |p|
   hdrs = csv.shift
   cse = nil
   st = nil
-  puts %w/time(s) throttle navstate gps_speed_ms gps_course heading attitude2 calc/.join(",")
+  lt = 0
+  puts %w/time(s) throttle navstate gps_speed_ms gps_course attitude2 calc/.join(",")
   csv.each do |c|
     ts = c[:time_us].to_f / 1000000
     st = ts if st.nil?
     ts -= st
-    lat = c[:gps_coord0].to_f
-    lon = c[:gps_coord1].to_f
-    if states.include? c[:navstate].to_i and
+    if ts - lt > 0.1
+      lat = c[:gps_coord0].to_f
+      lon = c[:gps_coord1].to_f
+      if states.include? c[:navstate].to_i and
 	c[:rccommand3].to_i > minthrottle and
 	c[:gps_speed_ms].to_f > 2.0
-      mag0 = c[:heading]
-      mag1 = c[:attitude2].to_f/10.0
-      if  llon != 0 and llat != 0
-	if llat != lat && llon != lon
-	  cse,distnm = Poscalc.csedist(llat,llon, lat, lon)
-	  cse = (cse * 10.0).to_i / 10.0
+#        mag0 = c[:heading]
+        mag1 = c[:attitude2].to_f/10.0
+        if  llon != 0 and llat != 0
+	  if llat != lat && llon != lon
+	    cse,distnm = Poscalc.csedist(llat,llon, lat, lon)
+	    cse = (cse * 10.0).to_i / 10.0
 	end
-      else
-	cse = nil
+        else
+	  cse = nil
+        end
+        puts [ts, c[:rccommand3].to_i, c[:navstate].to_i, c[:gps_speed_ms].to_f,
+	      c[:gps_ground_course].to_i, mag1,cse].join(",")
+      elsif missing
+        puts [ts,-1,-1,-1,-1,-1,-1].join(',')
       end
-      puts [ts, c[:rccommand3].to_i, c[:navstate].to_i, c[:gps_speed_ms].to_f,
-	c[:gps_ground_course].to_i, mag0,mag1,cse].join(",")
-    elsif missing
-      puts [ts,-1,-1,-1,-1,-1,-1,-1].join(',')
+      llat = lat
+      llon = lon
+      lt = ts
     end
-    llat = lat
-    llon = lon
   end
 end
