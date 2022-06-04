@@ -61,6 +61,7 @@ missing = false
 plotfile=nil
 outf = nil
 rm = false
+thr = false
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
@@ -69,6 +70,7 @@ ARGV.options do |opt|
   opt.on('--list-states') { list_states }
   opt.on('--missing') { missing=true }
   opt.on('--plot') { |o| plotfile=o}
+  opt.on('--thr') { thr=true}
   opt.on('-o','--output=FILE'){|o|outf=o}
   opt.on('-i','--index=IDX'){|o|idx=o}
   opt.on('-d','--declination=DEC',Float,'Mag Declination (default -1.3)'){|o|decl=o}
@@ -116,7 +118,11 @@ IO.popen(cmd,'r') do |p|
     cse = nil
     st = nil
     lt = 0
-    fh.puts %w/time(s) throttle navstate gps_speed_ms gps_course attitude2 calc/.join(",")
+    ostr = %w/time(s) navstate gps_speed_ms gps_course attitude2 calc/.join(",")
+    if thr
+      ostr << ",throttle"
+    end
+    fh.puts ostr
     csv.each do |c|
       ts = c[:time_us].to_f / 1000000
       st = ts if st.nil?
@@ -136,8 +142,11 @@ IO.popen(cmd,'r') do |p|
           else
 	    cse = nil
           end
-          fh.puts [ts, c[:rccommand3].to_i, c[:navstate].to_i, c[:gps_speed_ms].to_f,
-	        c[:gps_ground_course].to_i, mag1,cse].join(",")
+          ostr = [ts, c[:navstate].to_i, c[:gps_speed_ms].to_f, c[:gps_ground_course].to_i, mag1,cse].join(",")
+          if thr
+            ostr << ",#{c[:rccommand3].to_i}"
+          end
+          fh.puts ostr
         elsif missing
           fh.puts [ts,-1,-1,-1,-1,-1,-1].join(',')
         end
@@ -150,6 +159,10 @@ IO.popen(cmd,'r') do |p|
 end
 if plotfile
   pltfile = DATA.read
+  if thr
+    pltfile.chomp!
+    pltfile << ', filename using 1:7 t "Throttle" w lines lt -1 lw 3  lc rgb "#807fd0e0"'
+  end
   File.open(".inav_gps_dirn.plt","w") {|plt| plt.puts pltfile}
   system "gnuplot -e 'filename=\"#{outf}\"' .inav_gps_dirn.plt"
   STDERR.puts "Graph in #{outf}.svg"
@@ -165,7 +178,7 @@ set grid
 set termopt enhanced
 set termopt font "sans,8"
 set xlabel "Time(s)"
-set title "Direction"
+set title "Direction Analysis"
 set ylabel ""
 show label
 set xrange [ 0 : ]
@@ -173,4 +186,4 @@ set xrange [ 0 : ]
 set datafile separator ","
 set terminal svg background rgb 'white' font "Droid Sans,9" rounded
 set output filename.'.svg'
-plot filename using 1:2 t "Throttle" w lines lt -1 lw 3  lc rgb "#807fd0e0", filename using 1:4 t "GPS Speed" w lines lt -1 lw 2  lc rgb "red", filename using 1:5 t "GPS Course" w lines lt -1 lw 2  lc rgb "gold" , filename using 1:6 t "Attitude[2]" w lines lt -1 lw 2  lc rgb "green", filename using 1:7 t "Calc" w lines lt -1 lw 2  lc rgb "brown"
+plot filename using 1:3 t "GPS Speed" w lines lt -1 lw 2  lc rgb "red", filename using 1:4 t "GPS Course" w lines lt -1 lw 2  lc rgb "gold" , filename using 1:5 t "Attitude[2]" w lines lt -1 lw 2  lc rgb "green", filename using 1:6 t "Calc" w lines lt -1 lw 2  lc rgb "brown"
