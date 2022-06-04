@@ -58,6 +58,8 @@ states = [1]
 allstates = false
 sane = false
 missing = false
+plotfile=nil
+outf = nil
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
@@ -65,6 +67,7 @@ ARGV.options do |opt|
   opt.on('--sane') {|o| sane = true}
   opt.on('--list-states') { list_states }
   opt.on('--missing') { missing=true }
+  opt.on('--plot') { |o| plotfile=o}
   opt.on('-i','--index=IDX'){|o|idx=o}
   opt.on('-d','--declination=DEC',Float,'Mag Declination (default -1.3)'){|o|decl=o}
   opt.on('-t','--min-throttle=THROTTLE',Integer,'Min Throttle for comparison (1500)'){|o|minthrottle=o}
@@ -92,45 +95,78 @@ cmd << " --merge-gps"
 cmd << " --declination #{decl}"
 cmd << " --stdout"
 cmd << " " << bbox
+
+if outf.nil? && plotfile.nil?
+  outf =  STDOUT.fileno
+elsif outf.nil?
+  outf = "#{ARGV[0]}.csv"
+end
+
 IO.popen(cmd,'r') do |p|
-  csv = CSV.new(p, :col_sep => ",",
-		:headers => :true,
-		:header_converters =>
-		->(f) {f.strip.downcase.gsub(' ','_').gsub(/\W+/,'').to_sym},
-		:return_headers => true)
-  hdrs = csv.shift
-  cse = nil
-  st = nil
-  lt = 0
-  puts %w/time(s) throttle navstate gps_speed_ms gps_course attitude2 calc/.join(",")
-  csv.each do |c|
-    ts = c[:time_us].to_f / 1000000
-    st = ts if st.nil?
-    ts -= st
-    if ts - lt > 0.1
-      lat = c[:gps_coord0].to_f
-      lon = c[:gps_coord1].to_f
-      if states.include? c[:navstate].to_i and
-	c[:rccommand3].to_i > minthrottle and
-	c[:gps_speed_ms].to_f > 2.0
-#        mag0 = c[:heading]
-        mag1 = c[:attitude2].to_f/10.0
-        if  llon != 0 and llat != 0
-	  if llat != lat && llon != lon
-	    cse,distnm = Poscalc.csedist(llat,llon, lat, lon)
-	    cse = (cse * 10.0).to_i / 10.0
-	end
-        else
-	  cse = nil
+  File.open(outf,"w") do |fh|
+    csv = CSV.new(p, :col_sep => ",",
+		  :headers => :true,
+		  :header_converters =>
+		  ->(f) {f.strip.downcase.gsub(' ','_').gsub(/\W+/,'').to_sym},
+		  :return_headers => true)
+    hdrs = csv.shift
+    cse = nil
+    st = nil
+    lt = 0
+    fh.puts %w/time(s) throttle navstate gps_speed_ms gps_course attitude2 calc/.join(",")
+    csv.each do |c|
+      ts = c[:time_us].to_f / 1000000
+      st = ts if st.nil?
+      ts -= st
+      if ts - lt > 0.1
+        lat = c[:gps_coord0].to_f
+        lon = c[:gps_coord1].to_f
+        if states.include? c[:navstate].to_i and
+	  c[:rccommand3].to_i > minthrottle and
+	  c[:gps_speed_ms].to_f > 2.0
+          mag1 = c[:attitude2].to_f/10.0
+          if  llon != 0 and llat != 0
+	    if llat != lat && llon != lon
+	      cse,distnm = Poscalc.csedist(llat,llon, lat, lon)
+	      cse = (cse * 10.0).to_i / 10.0
+	    end
+          else
+	    cse = nil
+          end
+          fh.puts [ts, c[:rccommand3].to_i, c[:navstate].to_i, c[:gps_speed_ms].to_f,
+	        c[:gps_ground_course].to_i, mag1,cse].join(",")
+        elsif missing
+          fh.puts [ts,-1,-1,-1,-1,-1,-1].join(',')
         end
-        puts [ts, c[:rccommand3].to_i, c[:navstate].to_i, c[:gps_speed_ms].to_f,
-	      c[:gps_ground_course].to_i, mag1,cse].join(",")
-      elsif missing
-        puts [ts,-1,-1,-1,-1,-1,-1].join(',')
+        llat = lat
+        llon = lon
+        lt = ts
       end
-      llat = lat
-      llon = lon
-      lt = ts
     end
   end
 end
+if plotfile
+  pltfile = DATA.read
+  File.open(".inav_gps_dirn.plt","w") {|plt| plt.puts pltfile}
+  system "gnuplot -e 'filename=\"#{outf}\"' .inav_gps_dirn.plt"
+  STDERR.puts "Graph in #{outf}.svg"
+#  File.unlink ".inav_gps_dirn.plt"
+end
+
+__END__
+set bmargin 8
+set key top right
+set key box
+set grid
+set termopt enhanced
+set termopt font "sans,8"
+set xlabel "Time(s)"
+set title "Direction"
+set ylabel ""
+show label
+set xrange [ 0 : ]
+#set yrange [ 0 : ]
+set datafile separator ","
+set terminal svg background rgb 'white' font "Droid Sans,9" rounded
+set output filename.'.svg'
+plot filename using 1:2 t "Throttle" w lines lt -1 lw 3  lc rgb "#807fd0e0", filename using 1:4 t "GPS Speed" w lines lt -1 lw 2  lc rgb "red", filename using 1:5 t "GPS Course" w lines lt -1 lw 2  lc rgb "gold" , filename using 1:6 t "Attitude[2]" w lines lt -1 lw 2  lc rgb "green", filename using 1:7 t "Calc" w lines lt -1 lw 2  lc rgb "brown"
