@@ -60,6 +60,7 @@ sane = false
 missing = false
 plotfile=nil
 outf = nil
+rm = false
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
@@ -68,6 +69,7 @@ ARGV.options do |opt|
   opt.on('--list-states') { list_states }
   opt.on('--missing') { missing=true }
   opt.on('--plot') { |o| plotfile=o}
+  opt.on('-o','--output=FILE'){|o|outf=o}
   opt.on('-i','--index=IDX'){|o|idx=o}
   opt.on('-d','--declination=DEC',Float,'Mag Declination (default -1.3)'){|o|decl=o}
   opt.on('-t','--min-throttle=THROTTLE',Integer,'Min Throttle for comparison (1500)'){|o|minthrottle=o}
@@ -100,6 +102,7 @@ if outf.nil? && plotfile.nil?
   outf =  STDOUT.fileno
 elsif outf.nil?
   outf = "#{ARGV[0]}.csv"
+  rm = true
 end
 
 IO.popen(cmd,'r') do |p|
@@ -150,8 +153,9 @@ if plotfile
   File.open(".inav_gps_dirn.plt","w") {|plt| plt.puts pltfile}
   system "gnuplot -e 'filename=\"#{outf}\"' .inav_gps_dirn.plt"
   STDERR.puts "Graph in #{outf}.svg"
-#  File.unlink ".inav_gps_dirn.plt"
+  File.unlink ".inav_gps_dirn.plt"
 end
+File.unlink outf if rm
 
 __END__
 set bmargin 8
