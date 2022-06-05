@@ -535,8 +535,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#migration" class="md-nav__link">
-    Migration
+  <a href="#migration-for-old-make-based-installs" class="md-nav__link">
+    Migration (for old Make based installs)
   </a>
   
 </li>
@@ -929,8 +929,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#migration" class="md-nav__link">
-    Migration
+  <a href="#migration-for-old-make-based-installs" class="md-nav__link">
+    Migration (for old Make based installs)
   </a>
   
 </li>
@@ -1085,16 +1085,18 @@
                 
                 <h1 id="build-install-mwp-generic">Build / install mwp (Generic)<a class="headerlink" href="#build-install-mwp-generic" title="Permanent link">#</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
+<p>If you just want to install <a href="https://github.com/stronnag/mwptools">mwp</a> on a Debian / Ubuntu / derivative (WSL etc.), x64_64, then you can install the binary <code>.deb</code> package from the <a href="https://github.com/stronnag/mwptools/releases">Release Area</a>.</p>
+<p>Otherwise, if you're just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscV, ppc etc.), then you can build from source.</p>
 <p>The <strong>mwptools</strong> suite is built using the <a href="https://mesonbuild.com/SimpleStart.html">meson</a> and <a href="https://ninja-build.org/">ninja</a> toolchain. For most users these will be automatically provided by a <code>build-essentials</code> type of package transparently to the user.</p>
 <p>Prior to late May 2021, the build system used a convoluted <code>Makefile</code>.</p>
-<p>For Debian and derivatives (Ubuntu, WSL etc.) there is a simple <a href="#easy-first-time-install-on-debian-and-ubuntu">"one stop" installation script</a>, as well as a x86_64 "Release" .deb archive.</p>
+<p>For Debian and derivatives (Ubuntu, WSL etc.) there is a simple <a href="#easy-first-time-install-on-debian-and-ubuntu">"one stop" installation script</a>, as well as a x86_64 "Release" <code>.deb</code> archive.</p>
 <p>For Arch Linux, you can install using the AUR package <code>mwptools-git</code></p>
 <h2 id="rationale">Rationale<a class="headerlink" href="#rationale" title="Permanent link">#</a></h2>
 <p>In its early days, <code>make</code> was a suitable build tool. As <strong>mwptools</strong> has gained in features and functionality, this has become un-maintainable.
 The migration to <code>meson</code> and <code>ninja</code> solves this problem and allows the project structure to be rationalised.</p>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">#</a></h2>
-<h3 id="migration">Migration<a class="headerlink" href="#migration" title="Permanent link">#</a></h3>
-<p>Please ensure your extant mwptools instance does not have untracked files:</p>
+<h3 id="migration-for-old-make-based-installs">Migration (for old Make based installs)<a class="headerlink" href="#migration-for-old-make-based-installs" title="Permanent link">#</a></h3>
+<p>If you're updating an old Makefile based install, please ensure your extant mwptools instance does not have untracked files:</p>
 <pre><code>git clean -fd -fx
 git pull
 </code></pre>
@@ -1155,28 +1157,28 @@ make &amp;&amp; sudo make install
 </thead>
 <tbody>
 <tr>
-<td><code>cliterm</code></td>
-<td>Interact with the CLI</td>
-</tr>
-<tr>
-<td><code>fc-get</code>, <code>fc-set</code> <a href="#note1">1</a></td>
-<td>Backup / restore CLI diff</td>
-</tr>
-<tr>
 <td><code>mwp</code></td>
-<td>Mission planner, GCS, log relay etc.</td>
+<td>Mission planner, GCS, log replay etc.</td>
 </tr>
 <tr>
 <td><code>mwp-area-planner</code></td>
 <td>Survey planner</td>
 </tr>
 <tr>
-<td><code>mwp-plot-elevations</code> <a href="#note2">2</a></td>
+<td><code>mwp-plot-elevations</code> <a href="#note1">1</a></td>
 <td>Mission elevation / terrain analysis</td>
 </tr>
 <tr>
 <td><code>qproxy</code></td>
 <td>Proxy for certain commercial TMS</td>
+</tr>
+<tr>
+<td><code>cliterm</code></td>
+<td>Interact with the CLI</td>
+</tr>
+<tr>
+<td><code>fc-get</code>, <code>fc-set</code> <a href="#note2">2</a></td>
+<td>Backup / restore CLI diff</td>
 </tr>
 <tr>
 <td><code>inav_states.rb</code></td>
@@ -1186,17 +1188,21 @@ make &amp;&amp; sudo make install
 <td><code>fcflash</code></td>
 <td>FC flashing tool, requires <code>dfu-util</code> and / or <code>stmflash32</code></td>
 </tr>
+<tr>
+<td><code>flashgo</code></td>
+<td>Tools to examine, download logs and erase from dataflash</td>
+</tr>
 </tbody>
 </table>
 <div class="admonition note">
 <p class="admonition-title">Notes:</p>
-<p><a name="note1">1. <code>fc-set</code> is a hard link to <code>fc-get</code></a></p>
-<p><a name="note2">2. This may either be the new Go executable or the legacy, less functional Ruby script. </a></p>
+<p><a name="note1">1. This may either be the new Go executable or the legacy, less functional Ruby script. </a></p>
+<p><a name="note2">2. <code>fc-set</code> is a hard link to <code>fc-get</code></a></p>
 </div>
 <h3 id="optional">Optional<a class="headerlink" href="#optional" title="Permanent link">#</a></h3>
 <p>These are only built by explicit target name; they will be installed if built.</p>
 <pre><code># one of more of the following targets
-ninja bproxy ublox-geo ublox-cli flashdl
+ninja bproxy ublox-geo ublox-cli
 sudo ninja install
 </code></pre>
 <table>
@@ -1207,10 +1213,6 @@ sudo ninja install
 </tr>
 </thead>
 <tbody>
-<tr>
-<td><code>flashdl</code></td>
-<td>Download, optionally delete BBL from flash</td>
-</tr>
 <tr>
 <td><code>bproxy</code></td>
 <td>Black tile map proxy, for those anonymous needs</td>
