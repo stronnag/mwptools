@@ -2,11 +2,15 @@
 
 ## Overview
 
+If you just want to install {{ mwp }} on a Debian / Ubuntu / derivative (WSL etc.), x64_64, then you can install the binary `.deb` package from the [Release Area](https://github.com/stronnag/mwptools/releases).
+
+Otherwise, if you're just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscV, ppc etc.), then you can build from source.
+
 The **mwptools** suite is built using the [meson](https://mesonbuild.com/SimpleStart.html) and [ninja](https://ninja-build.org/) toolchain. For most users these will be automatically provided by a `build-essentials` type of package transparently to the user.
 
 Prior to late May 2021, the build system used a convoluted `Makefile`.
 
-For Debian and derivatives (Ubuntu, WSL etc.) there is a simple ["one stop" installation script](#easy-first-time-install-on-debian-and-ubuntu), as well as a x86_64 "Release" .deb archive.
+For Debian and derivatives (Ubuntu, WSL etc.) there is a simple ["one stop" installation script](#easy-first-time-install-on-debian-and-ubuntu), as well as a x86_64 "Release" `.deb` archive.
 
 For Arch Linux, you can install using the AUR package `mwptools-git`
 
@@ -17,9 +21,9 @@ The migration to `meson` and `ninja` solves this problem and allows the project 
 
 ## Usage
 
-### Migration
+### Migration (for old Make based installs)
 
-Please ensure your extant mwptools instance does not have untracked files:
+If you're updating an old Makefile based install, please ensure your extant mwptools instance does not have untracked files:
 
     git clean -fd -fx
     git pull
@@ -80,31 +84,32 @@ At some stage, more of the Makefiles will be removed (or just rot into uselessne
 
 | Application | Usage |
 | ----------- | ----- |
-| `cliterm` | Interact with the CLI |
-| `fc-get`, `fc-set` [1](#note1) | Backup / restore CLI diff |
-| `mwp` | Mission planner, GCS, log relay etc. |
+| `mwp` | Mission planner, GCS, log replay etc. |
 | `mwp-area-planner` | Survey planner |
-| `mwp-plot-elevations` [2](#note2) | Mission elevation / terrain analysis |
+| `mwp-plot-elevations` [1](#note1) | Mission elevation / terrain analysis |
 | `qproxy` | Proxy for certain commercial TMS |
+| `cliterm` | Interact with the CLI |
+| `fc-get`, `fc-set` [2](#note2) | Backup / restore CLI diff |
 | `inav_states.rb` | Summarise BBL state changes, also installed `inav_states_data.rb` |
 | `fcflash` | FC flashing tool, requires `dfu-util` and / or `stmflash32` |
+| `flashgo` | Tools to examine, download logs and erase from dataflash |
 
 !!! note "Notes:"
-    <a name="note1">1. `fc-set` is a hard link to `fc-get`</a>
+	<a name="note1">1. This may either be the new Go executable or the legacy, less functional Ruby script.	</a>
 
-	<a name="note2">2. This may either be the new Go executable or the legacy, less functional Ruby script.	</a>
+    <a name="note2">2. `fc-set` is a hard link to `fc-get`</a>
+
 
 ### Optional
 
 These are only built by explicit target name; they will be installed if built.
 
     # one of more of the following targets
-    ninja bproxy ublox-geo ublox-cli flashdl
+    ninja bproxy ublox-geo ublox-cli
     sudo ninja install
 
 | Application | Usage |
 | ----------- | ----- |
-| `flashdl` | Download, optionally delete BBL from flash |
 | `bproxy` | Black tile map proxy, for those anonymous needs |
 | `ublox-cli` | Ublox GPS tool |
 | `ublox-geo` | Graphical Ublox GPS tool |
