@@ -330,3 +330,98 @@ So, had the above failed, it could be rescued by pasting in the "Found" line abo
 The options `-n` (don't enter CLI automatically) and `-m` may be useful when accessing other devices (for example a 3DR radio, HC-12 radio or ESP8266) in command mode.
 
 `cliterm` understands Ctrl-D as "quit CLI without saving". You should quit `cliterm` with Ctrl-C, having first exited the CLI in the FC (`save`, `exit`, Ctrl-D). Or after `save`, `exit`, `cliterm` will exit when the FC is rebooted, by seeing the tear-down of the USB device node.
+
+## Blackbox analysis and diagnostics
+
+mwptools has always included tools to simplify blackbox analysis. it seems to the author that it's often much easier to pre-process the output of {{ inav }} `blackbox_decode` into a smaller dataset that addresses the specific problem rather than try and make sense of the mass of data in a blackbox log.
+
+There are a few basic prerequisites for doing this analysis using the {{ mwp }} scripts:
+
+* You have a recent version of INAV's `blackbox_decode`
+* You have a `ruby` interpreter installed
+* You don't mind "getting your hands dirty" on the command line
+* If you want pretty graphs, have `gnuplot` installed; it's also possible to generate graphs ("charts") from spreadsheet applications (LibreOffice Calc, MS Excel).
+
+### Worked example
+
+A user reported serious toilet-bowling / fly away on a large cine-octa with expensive VTX RF gear and camera gimbal. Two blackbox logs were provided, one with the RF and gimbal disabled, the other with them enabled (when the problem appears).
+
+The logs were processed with the `mwptools/src/bbox-replay/parse_bb_compass.rb`. This script:
+
+* Decodes the log, down-sampling to 0.1s intervals (or user provided interval)
+* Extracts the GPS heading and the compass heading (via INAV's position estimator), the relevant blackbox fields being `GPS_ground_course` and `attitude[2]/10`.
+* Generates a calculated heading from adjacent GPS locations.
+* Generates a simplified CSV containing the down-sampled lines and required data only (including throttle and navigation state)
+* Generates a SVG graph.
+
+#### Script usage
+
+You need to run this from a shell (Linux / MacOS /FreeBSD terminal, Windows powershell or cmd).
+`blackbox_decode` and (optionally) `gnuplot` need to be on the `PATH`.
+
+    $ ./parse_bb_compass.rb --help
+    parse_bb_compass.rb [options] [file]
+          --list-states
+          --plot                       Generate SVG graph (requires 'gnuplot')
+          --thr                        Include throttle value in output
+      -o, --output=FILE                CSV Output (default stdout
+      -i, --index=IDX                  BBL index (default 1)
+      -t, --min-throttle=THROTTLE      Min Throttle for comparison (1000)
+      -s, --states=a,b,c               Nav states to consider [all]
+      -d, --delta=SECS                 Down sample interval (default 0.1s)
+      -?, --help                       Show this message
+
+### Results from the analysis
+
+First, the good log (no VTX-RF or gimbal enabled):
+
+    ./parse_bb_compass.rb --plot /tmp/LOG00001.TXT
+	INAV 4.1.0, states from 2.7.0
+    Log 1 of 1, start 00:49.654, end 06:33.615, duration 05:43.961
+
+    Statistics
+    Looptime            506 avg           14.9 std dev (2.9%)
+    I frames   21061  128.0 bytes avg  2696240 bytes total
+    P frames  315692   81.6 bytes avg 25753176 bytes total
+    H frames     164   10.0 bytes avg     1640 bytes total
+    G frames    1865   21.6 bytes avg    40300 bytes total
+    E frames       1    6.0 bytes avg        6 bytes total
+    S frames    4066   40.0 bytes avg   162637 bytes total
+    Frames    336753   84.5 bytes avg 28449416 bytes total
+    Data rate  979Hz  83359 bytes/s     833600 baud
+
+    29 frames failed to decode, rendering 181 loop iterations unreadable. 2897 iterations are missing in total (1466ms, 0.43%)
+    339649 loop iterations weren't logged because of your blackbox_rate settings (171980ms, 50.00%)
+
+    Graph in /tmp/LOG00001.TXT.csv.svg
+
+We see some information, mainly the summary from `blackbox_decode` and notification of the resulting graph file.
+
+![Direction plot](images/LOG00001.TXT.csv.svg)
+
+Looks OK, there's a few deviations between the GPS and position estimator, possibly a result of hard Acro mode manoeuvres.
+
+Let's now look at the log with the VTX-RF and gimbal enabled:
+
+    ./parse_bb_compass.rb --plot /tmp/LOG00008.TXT
+	...
+	 Graph in /tmp/LOG00001.TXT.csv.svg
+
+Note the difference
+
+![Direction plot](images/LOG00008.TXT.csv.svg)
+
+Something in generating enough interference to cause the heading / position estimator `attitude[2]` to essentially flat-line.
+
+So now we have concrete evidence of the problem, the next steps would be for the pilot to repeat the exercise enabling just one of the suspect devices to identify the actual cause of the problem and then rectify it:
+
+* Somehow isolate the device
+* Replace the device with a better shielded substitute
+* Move the GPS / compass further away (might not be so easy)
+
+### Similar tools
+
+PH unstable altitude is often caused by excessive vibrations or inadequately protected (open cell foam) barometer. `mwptools/src/bbox-replay/inav_gps_alt.rb` will generate a simlar graph of baro v. GPS v. position estimator elevations.
+
+* GPS and baro correlate, position estimator is off, most likely vibrations
+* GPS and baro don't correlate. Probably lack of baro protection (or GPS interference from VTX).
