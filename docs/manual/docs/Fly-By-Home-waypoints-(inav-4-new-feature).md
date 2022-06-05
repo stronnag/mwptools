@@ -30,7 +30,7 @@ This will ensure, as far as possible, that when such a mission is exported, it i
 
 * The concept of a planned home location is embedded in the planning function. The planned home location is indicated by a brown icon.
 * The planned home location is stored as metadata in the XML mission files.
-* The `flag` attribute as been added the XML mission file schema.
+* The `flag` attribute has been added the XML mission file schema.
 
 The practical results being:
 
