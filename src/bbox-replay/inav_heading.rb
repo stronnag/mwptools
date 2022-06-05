@@ -86,7 +86,8 @@ if iv.nil?
   iv = "2.0.99" # best guess
 end
 
-inavers =  get_state_version iv
+inavers =  NavStates.get_state_version iv
+states = NavStates.get_states inavers
 
 cmd = "blackbox_decode"
 cmd << " --index #{idx}"
@@ -123,7 +124,7 @@ IO.popen(cmd,'r') do |p|
       cse = nil
     end
     mag0 = (c[:attitude2].to_f/10.0).to_i
-    asx = INAV_STATES[inavers][c[:navstate].to_i].to_s
+    asx = states[c[:navstate].to_i].to_s
     if asx.start_with?("nav_state_")
       asx = asx[10..-1]
     end

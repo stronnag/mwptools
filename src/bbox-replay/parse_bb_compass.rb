@@ -42,40 +42,63 @@ def Poscalc.r2d r
 end
 
 
-def list_states
-  STATES.each_with_index do |s,n|
-    puts "%2d : %s\n" % [n,s]
+def list_states iv
+  NavStates.get_states(iv).each do |k,v|
+    puts "%2d : %s\n" % [k,v]
   end
   exit
 end
 
+def get_states_for_fw bbox
+  gitinfo=nil
+  File.open(bbox,'rb') do |f|
+    f.each do |l|
+      if m = l.match(/^H Firmware revision:(.*)$/)
+        gitinfo = m[1]
+      end
+    end
+  end
+
+  if gitinfo.nil?
+    abort "Doesn't look like Blackbox (#{bbox})"
+  end
+
+  iv=nil
+  if gitinfo and  m=gitinfo.match(/^INAV (\d{1})\.(\d{1})\.(\d{1}) \((\S*)\) (\S+)/)
+    iv = [m[1],m[2],m[3]].join('.')
+  end
+
+  inavers = nil
+  if iv.nil?
+    iv ="0"
+  end
+  inavers =  NavStates.get_state_version iv
+  return inavers
+end
+
 idx = 1
-decl = -1.3
 llat = 0
 llon = 0
-minthrottle = 1500
-states = [1]
-allstates = false
-sane = false
-missing = false
+minthrottle = 1000
+states = []
+allstates = true
 plotfile=nil
 outf = nil
 rm = false
 thr = false
+ls = false
+delta = 0.1
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
-  opt.on('--all-states') {|o| allstates = true}
-  opt.on('--sane') {|o| sane = true}
-  opt.on('--list-states') { list_states }
-  opt.on('--missing') { missing=true }
-  opt.on('--plot') { |o| plotfile=o}
-  opt.on('--thr') { thr=true}
-  opt.on('-o','--output=FILE'){|o|outf=o}
-  opt.on('-i','--index=IDX'){|o|idx=o}
-  opt.on('-d','--declination=DEC',Float,'Mag Declination (default -1.3)'){|o|decl=o}
-  opt.on('-t','--min-throttle=THROTTLE',Integer,'Min Throttle for comparison (1500)'){|o|minthrottle=o}
-  opt.on('-s','--states=a,b,c', Array, 'Nav states to assess [1]'){|o|states=o}
+  opt.on('--list-states') { ls=true }
+  opt.on('--plot', "Generate SVG graph (requires 'gnuplot')") { |o| plotfile=o}
+  opt.on('--thr', "Include throttle value in output") { thr=true}
+  opt.on('-o','--output=FILE', "CSV Output (default stdout"){|o|outf=o}
+  opt.on('-i','--index=IDX', "BBL index (default 1)"){|o|idx=o}
+  opt.on('-t','--min-throttle=THROTTLE',Integer,'Min Throttle for comparison (1000)'){|o|minthrottle=o}
+  opt.on('-s','--states=a,b,c', Array, 'Nav states to consider [all]'){|o|states=o ; allstates=false}
+  opt.on('-d', '--delta=SECS', Float, "Down sample interval (default 0.1s)") {|o| delta = o}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
     opt.parse!
@@ -84,19 +107,22 @@ ARGV.options do |opt|
   end
 end
 
-if sane
-  states=[1,16,24]
-elsif allstates
-  states=*(0..38)
+bbox = (ARGV[0]|| abort('no BBOX log'))
+inavvers =  get_states_for_fw bbox
+stcount = NavStates.get_states(inavvers).key(:nav_state_count) -1
+if ls
+  list_states inavvers
+end
+
+if allstates
+  states=*(0..stcount)
 else
   states.map! {|s| s.to_i}
 end
 
-bbox = (ARGV[0]|| abort('no BBOX log'))
 cmd = "blackbox_decode"
 cmd << " --index #{idx}"
 cmd << " --merge-gps"
-cmd << " --declination #{decl}"
 cmd << " --stdout"
 cmd << " " << bbox
 
@@ -127,7 +153,7 @@ IO.popen(cmd,'r') do |p|
       ts = c[:time_us].to_f / 1000000
       st = ts if st.nil?
       ts -= st
-      if ts - lt > 0.1
+      if ts - lt > delta
         lat = c[:gps_coord0].to_f
         lon = c[:gps_coord1].to_f
         if states.include? c[:navstate].to_i and
@@ -147,8 +173,6 @@ IO.popen(cmd,'r') do |p|
             ostr << ",#{c[:rccommand3].to_i}"
           end
           fh.puts ostr
-        elsif missing
-          fh.puts [ts,-1,-1,-1,-1,-1,-1].join(',')
         end
         llat = lat
         llon = lon
@@ -179,7 +203,7 @@ set termopt enhanced
 set termopt font "sans,8"
 set xlabel "Time(s)"
 set title "Direction Analysis"
-set ylabel ""
+set ylabel "Heading"
 show label
 set xrange [ 0 : ]
 #set yrange [ 0 : ]

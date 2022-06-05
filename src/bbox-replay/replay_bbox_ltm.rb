@@ -373,7 +373,7 @@ class BBReplay
     end
 
 
-    inavers =  get_state_version iv
+    inavers =  NavStates.get_state_version iv
     if @verbose
       STDERR.puts "iv = #{iv} state vers = #{inavers}"
     end
@@ -462,7 +462,7 @@ class BBReplay
 
   # fix up the f*cked up  nav perm ids broken in inav/#3332
   def resolve_version_state r, inavers
-    sval = INAV_STATES[inavers][r[:navstate].to_i]
+    states = NavStates.get_states(inavers)[r[:navstate].to_i]
     if inavers < "2.7.0"
       # This is for the inav 2.x duplication stupidity #3332
       if sval == :nav_state_cruise_2d_initialize
@@ -538,7 +538,7 @@ class BBReplay
 	  end
 
     if @verbose && sts == 19
-      STDERR.puts "** STS 19 for <#{INAV_STATES[inavers][r[:navstate].to_i]}> <#{r[:navstate]}>\n"
+      STDERR.puts "** STS 19 for <#{NavStates::STATES[inavers][r[:navstate].to_i]}> <#{r[:navstate]}>\n"
     end
 
     begin
@@ -716,8 +716,8 @@ class BBReplay
 	      end
 
     if @verbose
-      STDERR.puts "state #{r[:navstate].to_i} #{INAV_STATES[inavers][r[:navstate].to_i]}" if INAV_STATES[inavers][r[:navstate].to_i] != @xs
-      @xs = INAV_STATES[inavers][r[:navstate].to_i]
+      STDERR.puts "state #{r[:navstate].to_i} #{NavStates::STATES[inavers][r[:navstate].to_i]}" if NavStates::STATES[inavers][r[:navstate].to_i] != @xs
+      @xs = NavStates::STATES[inavers][r[:navstate].to_i]
     end
 
     navact = case gpsmode

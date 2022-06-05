@@ -5,7 +5,7 @@
 
 require 'csv'
 require 'optparse'
-require_relative 'inav_states'
+require_relative 'inav_states_data'
 
 def get_heading_diff a, b
   diff = b - a;
@@ -52,7 +52,7 @@ ARGV.each do |bbox|
 		     )
     iv = [m[1],m[2],m[3]].join('.')
   end
-  inavers =  get_state_version iv
+  inavers =  NavStates.get_state_version iv
 
   arry = []
   [:nav_state_idle,
@@ -62,7 +62,7 @@ ARGV.each do |bbox|
     :nav_state_waypoint_in_progress,
     :nav_state_cruise_2d_in_progress,
     :nav_state_cruise_3d_in_progress].each do |s|
-    arry << INAV_STATES[inavers].key(s)
+    arry << NavStates::STATES[inavers].key(s)
   end
 
   vbox = true

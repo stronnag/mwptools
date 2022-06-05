@@ -64,11 +64,13 @@ if iv.nil?
     iv ="0"
   end
 end
-inavers =  get_state_version iv
+inavers =  NavStates.get_state_version iv
 
 STDERR.puts "iNav version = #{iv} (states eq #{inavers})" if verbose
 
 puts "#{File.basename(bbox)}: #{gitinfos[idx-1] if gitinfos.size >= idx}"
+
+states = NavStates.get_states inavers
 
 cmd = ''
 cmd << (ENV["BLACKBOX_DECODE"] || "blackbox_decode")
@@ -124,7 +126,7 @@ IO.popen(cmd,'r') do |p|
 	  puts hdrs.join("\t")
 	end
 	nstate = c[:navstate].to_i
-	asx = INAV_STATES[inavers][c[:navstate].to_i]
+	asx = states[c[:navstate].to_i]
         # Sadly broekn perm ids introduced for 2.x by inav/#3332
         if inavers < "2.7.0"
           if asx == :nav_state_cruise_2d_initialize
