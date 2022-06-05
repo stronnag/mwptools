@@ -1086,11 +1086,11 @@
                 <h1 id="build-install-mwp-generic">Build / install mwp (Generic)<a class="headerlink" href="#build-install-mwp-generic" title="Permanent link">#</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
 <p>If you just want to install <a href="https://github.com/stronnag/mwptools">mwp</a> on a Debian / Ubuntu / derivative (WSL etc.), x64_64, then you can install the binary <code>.deb</code> package from the <a href="https://github.com/stronnag/mwptools/releases">Release Area</a>.</p>
-<p>Otherwise, if you're just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscV, ppc etc.), then you can build from source.</p>
+<p>Otherwise, if you're using a different (not Debian based) distribution, just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscV, ppc etc.), then you can build from source.</p>
+<p>For Arch Linux, you can install using the AUR package <code>mwptools-git</code></p>
 <p>The <strong>mwptools</strong> suite is built using the <a href="https://mesonbuild.com/SimpleStart.html">meson</a> and <a href="https://ninja-build.org/">ninja</a> toolchain. For most users these will be automatically provided by a <code>build-essentials</code> type of package transparently to the user.</p>
 <p>Prior to late May 2021, the build system used a convoluted <code>Makefile</code>.</p>
 <p>For Debian and derivatives (Ubuntu, WSL etc.) there is a simple <a href="#easy-first-time-install-on-debian-and-ubuntu">"one stop" installation script</a>, as well as a x86_64 "Release" <code>.deb</code> archive.</p>
-<p>For Arch Linux, you can install using the AUR package <code>mwptools-git</code></p>
 <h2 id="rationale">Rationale<a class="headerlink" href="#rationale" title="Permanent link">#</a></h2>
 <p>In its early days, <code>make</code> was a suitable build tool. As <strong>mwptools</strong> has gained in features and functionality, this has become un-maintainable.
 The migration to <code>meson</code> and <code>ninja</code> solves this problem and allows the project structure to be rationalised.</p>
