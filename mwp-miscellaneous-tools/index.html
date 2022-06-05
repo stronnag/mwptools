@@ -864,6 +864,53 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#blackbox-analysis-and-diagnostics" class="md-nav__link">
+    Blackbox analysis and diagnostics
+  </a>
+  
+    <nav class="md-nav" aria-label="Blackbox analysis and diagnostics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#worked-example" class="md-nav__link">
+    Worked example
+  </a>
+  
+    <nav class="md-nav" aria-label="Worked example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#script-usage" class="md-nav__link">
+    Script usage
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#results-from-the-analysis" class="md-nav__link">
+    Results from the analysis
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#similar-tools" class="md-nav__link">
+    Similar tools
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1095,6 +1142,53 @@
   <a href="#cliterm" class="md-nav__link">
     cliterm
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#blackbox-analysis-and-diagnostics" class="md-nav__link">
+    Blackbox analysis and diagnostics
+  </a>
+  
+    <nav class="md-nav" aria-label="Blackbox analysis and diagnostics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#worked-example" class="md-nav__link">
+    Worked example
+  </a>
+  
+    <nav class="md-nav" aria-label="Worked example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#script-usage" class="md-nav__link">
+    Script usage
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#results-from-the-analysis" class="md-nav__link">
+    Results from the analysis
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#similar-tools" class="md-nav__link">
+    Similar tools
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1401,6 +1495,85 @@ Rebooting
 </ul>
 <p>The options <code>-n</code> (don't enter CLI automatically) and <code>-m</code> may be useful when accessing other devices (for example a 3DR radio, HC-12 radio or ESP8266) in command mode.</p>
 <p><code>cliterm</code> understands Ctrl-D as "quit CLI without saving". You should quit <code>cliterm</code> with Ctrl-C, having first exited the CLI in the FC (<code>save</code>, <code>exit</code>, Ctrl-D). Or after <code>save</code>, <code>exit</code>, <code>cliterm</code> will exit when the FC is rebooted, by seeing the tear-down of the USB device node.</p>
+<h2 id="blackbox-analysis-and-diagnostics">Blackbox analysis and diagnostics<a class="headerlink" href="#blackbox-analysis-and-diagnostics" title="Permanent link">#</a></h2>
+<p>mwptools has always included tools to simplify blackbox analysis. it seems to the author that it's often much easier to pre-process the output of <a href="https://github.com/iNavFlight/inav">INAV</a> <code>blackbox_decode</code> into a smaller dataset that addresses the specific problem rather than try and make sense of the mass of data in a blackbox log.</p>
+<p>There are a few basic prerequisites for doing this analysis using the <a href="https://github.com/stronnag/mwptools">mwp</a> scripts:</p>
+<ul>
+<li>You have a recent version of INAV's <code>blackbox_decode</code></li>
+<li>You have a <code>ruby</code> interpreter installed</li>
+<li>You don't mind "getting your hands dirty" on the command line</li>
+<li>If you want pretty graphs, have <code>gnuplot</code> installed; it's also possible to generate graphs ("charts") from spreadsheet applications (LibreOffice Calc, MS Excel).</li>
+</ul>
+<h3 id="worked-example">Worked example<a class="headerlink" href="#worked-example" title="Permanent link">#</a></h3>
+<p>A user reported serious toilet-bowling / fly away on a large cine-octa with expensive VTX RF gear and camera gimbal. Two blackbox logs were provided, one with the RF and gimbal disabled, the other with them enabled (when the problem appears).</p>
+<p>The logs were processed with the <code>mwptools/src/bbox-replay/parse_bb_compass.rb</code>. This script:</p>
+<ul>
+<li>Decodes the log, down-sampling to 0.1s intervals (or user provided interval)</li>
+<li>Extracts the GPS heading and the compass heading (via INAV's position estimator), the relevant blackbox fields being <code>GPS_ground_course</code> and <code>attitude[2]/10</code>.</li>
+<li>Generates a calculated heading from adjacent GPS locations.</li>
+<li>Generates a simplified CSV containing the down-sampled lines and required data only (including throttle and navigation state)</li>
+<li>Generates a SVG graph.</li>
+</ul>
+<h4 id="script-usage">Script usage<a class="headerlink" href="#script-usage" title="Permanent link">#</a></h4>
+<p>You need to run this from a shell (Linux / MacOS /FreeBSD terminal, Windows powershell or cmd).
+<code>blackbox_decode</code> and (optionally) <code>gnuplot</code> need to be on the <code>PATH</code>.</p>
+<pre><code>$ ./parse_bb_compass.rb --help
+parse_bb_compass.rb [options] [file]
+      --list-states
+      --plot                       Generate SVG graph (requires 'gnuplot')
+      --thr                        Include throttle value in output
+  -o, --output=FILE                CSV Output (default stdout
+  -i, --index=IDX                  BBL index (default 1)
+  -t, --min-throttle=THROTTLE      Min Throttle for comparison (1000)
+  -s, --states=a,b,c               Nav states to consider [all]
+  -d, --delta=SECS                 Down sample interval (default 0.1s)
+  -?, --help                       Show this message
+</code></pre>
+<h3 id="results-from-the-analysis">Results from the analysis<a class="headerlink" href="#results-from-the-analysis" title="Permanent link">#</a></h3>
+<p>First, the good log (no VTX-RF or gimbal enabled):</p>
+<pre><code>./parse_bb_compass.rb --plot /tmp/LOG00001.TXT
+INAV 4.1.0, states from 2.7.0
+Log 1 of 1, start 00:49.654, end 06:33.615, duration 05:43.961
+
+Statistics
+Looptime            506 avg           14.9 std dev (2.9%)
+I frames   21061  128.0 bytes avg  2696240 bytes total
+P frames  315692   81.6 bytes avg 25753176 bytes total
+H frames     164   10.0 bytes avg     1640 bytes total
+G frames    1865   21.6 bytes avg    40300 bytes total
+E frames       1    6.0 bytes avg        6 bytes total
+S frames    4066   40.0 bytes avg   162637 bytes total
+Frames    336753   84.5 bytes avg 28449416 bytes total
+Data rate  979Hz  83359 bytes/s     833600 baud
+
+29 frames failed to decode, rendering 181 loop iterations unreadable. 2897 iterations are missing in total (1466ms, 0.43%)
+339649 loop iterations weren't logged because of your blackbox_rate settings (171980ms, 50.00%)
+
+Graph in /tmp/LOG00001.TXT.csv.svg
+</code></pre>
+<p>We see some information, mainly the summary from <code>blackbox_decode</code> and notification of the resulting graph file.</p>
+<p><img alt="Direction plot" src="../images/LOG00001.TXT.csv.svg" /></p>
+<p>Looks OK, there's a few deviations between the GPS and position estimator, possibly a result of hard Acro mode manoeuvres.</p>
+<p>Let's now look at the log with the VTX-RF and gimbal enabled:</p>
+<pre><code>./parse_bb_compass.rb --plot /tmp/LOG00008.TXT
+...
+ Graph in /tmp/LOG00001.TXT.csv.svg
+</code></pre>
+<p>Note the difference</p>
+<p><img alt="Direction plot" src="../images/LOG00008.TXT.csv.svg" /></p>
+<p>Something in generating enough interference to cause the heading / position estimator <code>attitude[2]</code> to essentially flat-line.</p>
+<p>So now we have concrete evidence of the problem, the next steps would be for the pilot to repeat the exercise enabling just one of the suspect devices to identify the actual cause of the problem and then rectify it:</p>
+<ul>
+<li>Somehow isolate the device</li>
+<li>Replace the device with a better shielded substitute</li>
+<li>Move the GPS / compass further away (might not be so easy)</li>
+</ul>
+<h3 id="similar-tools">Similar tools<a class="headerlink" href="#similar-tools" title="Permanent link">#</a></h3>
+<p>PH unstable altitude is often caused by excessive vibrations or inadequately protected (open cell foam) barometer. <code>mwptools/src/bbox-replay/inav_gps_alt.rb</code> will generate a simlar graph of baro v. GPS v. position estimator elevations.</p>
+<ul>
+<li>GPS and baro correlate, position estimator is off, most likely vibrations</li>
+<li>GPS and baro don't correlate. Probably lack of baro protection (or GPS interference from VTX).</li>
+</ul>
                 
               
               
