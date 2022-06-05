@@ -4,15 +4,15 @@
 
 If you just want to install {{ mwp }} on a Debian / Ubuntu / derivative (WSL etc.), x64_64, then you can install the binary `.deb` package from the [Release Area](https://github.com/stronnag/mwptools/releases).
 
-Otherwise, if you're just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscV, ppc etc.), then you can build from source.
+Otherwise, if you're using a different (not Debian based) distribution, just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscV, ppc etc.), then you can build from source.
+
+For Arch Linux, you can install using the AUR package `mwptools-git`
 
 The **mwptools** suite is built using the [meson](https://mesonbuild.com/SimpleStart.html) and [ninja](https://ninja-build.org/) toolchain. For most users these will be automatically provided by a `build-essentials` type of package transparently to the user.
 
 Prior to late May 2021, the build system used a convoluted `Makefile`.
 
 For Debian and derivatives (Ubuntu, WSL etc.) there is a simple ["one stop" installation script](#easy-first-time-install-on-debian-and-ubuntu), as well as a x86_64 "Release" `.deb` archive.
-
-For Arch Linux, you can install using the AUR package `mwptools-git`
 
 ## Rationale
 
