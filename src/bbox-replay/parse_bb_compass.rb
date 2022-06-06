@@ -182,7 +182,8 @@ IO.popen(cmd,'r') do |p|
   end
 end
 if plotfile
-  pltfile = DATA.read
+  fn = File.basename bbox
+  pltfile = DATA.read % {:bbox => fn}
   if thr
     pltfile.chomp!
     pltfile << ', filename using 1:7 t "Throttle" w lines lt -1 lw 3  lc rgb "#807fd0e0"'
@@ -202,7 +203,7 @@ set grid
 set termopt enhanced
 set termopt font "sans,8"
 set xlabel "Time(s)"
-set title "Direction Analysis"
+set title "Direction Analysis %{bbox}"
 set ylabel "Heading"
 show label
 set xrange [ 0 : ]

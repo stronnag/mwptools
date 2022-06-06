@@ -102,7 +102,8 @@ IO.popen(cmd,'r') do |p|
 end
 
 if graph && n > 0
-  pltfile = DATA.read
+  fn = File.basename bbox
+  pltfile = DATA.read % {:bbox => fn}
   if amsl
     pltfile.chomp!
     pltfile << ', filename using 1:5 t "GPS AMSL" w lines lt -1 lw 2  lc rgb "green"'
@@ -123,7 +124,7 @@ set grid
 set termopt enhanced
 set termopt font "sans,8"
 set xlabel "Time(s)"
-set title "Altitude Comparison"
+set title "Altitude Comparison %{bbox}"
 set ylabel "Elev (m)"
 show label
 set xrange [ 0 : ]
