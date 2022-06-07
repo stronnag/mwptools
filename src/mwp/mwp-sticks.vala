@@ -10,6 +10,11 @@ namespace Sticks {
 			set_transparent();
 			set_default_size (400, 200);
 			set_decorated((decor==2));
+			if (pw != null) {
+				set_transient_for (pw);
+			}
+			set_type_hint(Gdk.WindowTypeHint.UTILITY);
+			set_position(WindowPosition.CENTER_ON_PARENT);
 			var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
 			add (box);
 			lstick = new Sticks.Pad (1000, 1500, false);
@@ -20,14 +25,15 @@ namespace Sticks {
 					active = false;
 					base.hide();
 				});
-			if (pw != null) {
-				set_transient_for (pw);
-			}
 		}
 
 		public void update(int a, int e, int r, int t) {
 			lstick.update(t, r);
 			rstick.update(e, a);
+		}
+
+		public void set_rc_style(bool rcstyle) {
+			Pad.oldstyle = (rcstyle) ? 0.5 : 0.0;
 		}
 
 		public new void show_all() {
@@ -62,6 +68,7 @@ namespace Sticks {
 		private double _hs;
 		private double _vs;
 		private bool _rside;
+		public static double oldstyle = 0.5;
 
         public Pad (int ivs, int ihs, bool rside = false) {
 			_vs = ivs;
@@ -114,7 +121,7 @@ namespace Sticks {
 			sy = OFFSET*_y + SCALE*_y*(sy / 1000.0);
 
 			// draw blob and text
-			cr.set_source_rgb (1, 0, 0);
+			cr.set_source_rgb (1, oldstyle, 0);
 			cr.arc (sx, sy, CRAD, 0, 2 * Math.PI);
 			cr.fill();
 			cr.stroke();

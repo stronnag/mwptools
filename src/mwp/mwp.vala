@@ -289,6 +289,7 @@ public class MWP : Gtk.Application {
         hasMoreWP = 0x010400,
         hasEEPROM = 0x010600,
         hasTZ = 0x010704,
+        hasRCDATA = 0x010800,
         hasV2STATUS = 0x010801,
         hasJUMP = 0x020500,
         hasPOI = 0x020600,
@@ -2099,8 +2100,6 @@ public class MWP : Gtk.Application {
                 view.center_on(y,x);
             });
 
-		sticks = new Sticks.StickWindow(window, conf.show_sticks);
-
 		view = embed.get_view();
         view.set_reactive(true);
 
@@ -2648,6 +2647,8 @@ public class MWP : Gtk.Application {
 
         pane.pack1(embed,true, true);
         pane.pack2(box, true, true);
+
+		sticks = new Sticks.StickWindow(window, conf.show_sticks);
 
 //        Timeout.add_seconds(5, () => { return try_connect(); });
         if(set_fs)
@@ -6711,7 +6712,9 @@ case 0:
                         }
                         else
                             queue_cmd(MSP.Cmds.BUILD_INFO, null, 0); //?BOXNAMES?
-                    }
+
+						sticks.set_rc_style((vi.fc_vers < FCVERS.hasRCDATA));
+					}
                     else
                         queue_cmd(MSP.Cmds.BOXNAMES,null,0);
                 }
