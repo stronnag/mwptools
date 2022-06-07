@@ -92,7 +92,7 @@ delta = 0.1
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
   opt.on('--list-states') { ls=true }
-  opt.on('--plot', "Generate SVG graph (requires 'gnuplot')") { |o| plotfile=o}
+  opt.on('-p', '--plot', "Generate SVG graph (requires 'gnuplot')") { |o| plotfile=o}
   opt.on('--thr', "Include throttle value in output") { thr=true}
   opt.on('-o','--output=FILE', "CSV Output (default stdout"){|o|outf=o}
   opt.on('-i','--index=IDX', "BBL index (default 1)"){|o|idx=o}
@@ -123,13 +123,16 @@ end
 cmd = "blackbox_decode"
 cmd << " --index #{idx}"
 cmd << " --merge-gps"
+cmd << " --unit-frame-time s"
 cmd << " --stdout"
 cmd << " " << bbox
 
 if outf.nil? && plotfile.nil?
   outf =  STDOUT.fileno
 elsif outf.nil?
-  outf = "#{ARGV[0]}.csv"
+  ext = File.extname(bbox)
+  outf = bbox.gsub("#{ext}", '-mag.csv')
+  svgf = bbox.gsub("#{ext}",'-mag.svg')
   rm = true
 end
 
@@ -150,7 +153,7 @@ IO.popen(cmd,'r') do |p|
     end
     fh.puts ostr
     csv.each do |c|
-      ts = c[:time_us].to_f / 1000000
+      ts = c[:time_s].to_f
       st = ts if st.nil?
       ts -= st
       if ts - lt > delta
@@ -183,14 +186,14 @@ IO.popen(cmd,'r') do |p|
 end
 if plotfile
   fn = File.basename bbox
-  pltfile = DATA.read % {:bbox => fn}
+  pltfile = DATA.read % {:bbox => fn, :svgfile => svgf}
   if thr
     pltfile.chomp!
     pltfile << ', filename using 1:7 t "Throttle" w lines lt -1 lw 3  lc rgb "#807fd0e0"'
   end
   File.open(".inav_gps_dirn.plt","w") {|plt| plt.puts pltfile}
   system "gnuplot -e 'filename=\"#{outf}\"' .inav_gps_dirn.plt"
-  STDERR.puts "Graph in #{outf}.svg"
+  STDERR.puts "Graph in #{svgf}"
   File.unlink ".inav_gps_dirn.plt"
 end
 File.unlink outf if rm
@@ -210,5 +213,6 @@ set xrange [ 0 : ]
 #set yrange [ 0 : ]
 set datafile separator ","
 set terminal svg background rgb 'white' font "Droid Sans,9" rounded
-set output filename.'.svg'
+set output "%{svgfile}"
+
 plot filename using 1:3 t "GPS Speed" w lines lt -1 lw 2  lc rgb "red", filename using 1:4 t "GPS Course" w lines lt -1 lw 2  lc rgb "gold" , filename using 1:5 t "Attitude[2]" w lines lt -1 lw 2  lc rgb "green", filename using 1:6 t "Calc" w lines lt -1 lw 2  lc rgb "brown"
