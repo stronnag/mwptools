@@ -6946,7 +6946,7 @@ case 0:
                     queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
                     s="gps_min_sats";
                     queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
-                    if(vi.fc_vers >= FCVERS.hasPOI) // also 2.6 feature
+                    if(vi.fc_vers > FCVERS.hasJUMP && vi.fc_vers <= FCVERS.hasPOI) // also 2.6 feature
                     {
                         s="nav_rth_home_offset_distance";
                         queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
