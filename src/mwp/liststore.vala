@@ -16,6 +16,54 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+public class ScrollView : Gtk.Window {
+	private Gtk.Label label;
+    public ScrollView (string _title = "Text View") {
+        title = _title;
+        set_default_size (320, 800);
+        label = new Gtk.Label (null);
+        label.set_use_markup(true);
+        var scrolled_window = new Gtk.ScrolledWindow (null, null);
+        scrolled_window.set_policy (Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
+        scrolled_window.add (label);
+        scrolled_window.hexpand = true;
+        scrolled_window.vexpand = true;
+                var vbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
+                vbox.pack_start (scrolled_window);
+                var button = new Gtk.Button.with_label ("OK");
+                vbox.pack_start (button, false, false, 1);
+                button.clicked.connect (() => { this.destroy();});
+                add(vbox);
+    }
+
+	public void generate_climb_dive(string[]lines) {
+		double maxclimb = MWP.conf.maxclimb;
+        double maxdive = MWP.conf.maxdive;
+		var sb = new StringBuilder();
+		sb.append("<tt>");
+		foreach (var l in lines) {
+			var hilite = false;
+			var lparts = l.split("\t");
+            if (lparts.length == 3) {
+                double angle=double.parse(lparts[1]);
+                if((angle > 0.0 && maxclimb > 0.0 && angle > maxclimb) ||
+                   (angle < 0.0 && maxdive < 0.0 && angle < maxdive))
+                    hilite = true;
+            }
+            if(hilite)
+                sb.append("<span foreground='red'>");
+            sb.append(l);
+            if(hilite)
+                sb.append("</span>");
+		}
+		sb.append("</tt>");
+		label.set_markup(sb.str);
+		show_all();
+		label.selectable = true;
+	}
+}
+
+
 public class ListBox : GLib.Object
 {
     private const int SPEED_CONV = 100;
@@ -2333,52 +2381,13 @@ public class ListBox : GLib.Object
                     if(replname != null)
                         FileUtils.unlink(replname);
                     if (cdlines.length > 0) {
-                        generate_climb_dive(cdlines);
+						var sv = new ScrollView("MWP Altitude Analysis");
+						sv.generate_climb_dive(cdlines);
                     }
                 });
         } catch (SpawnError e) {
             MWPLog.message ("Spawn Error: %s\n", e.message);
         }
-    }
-
-    private void generate_climb_dive(string[] cdlines)
-    {
-        bool hilite;
-        double maxclimb = MWP.conf.maxclimb;
-        double maxdive = MWP.conf.maxdive;
-
-        var sb = new StringBuilder();
-        sb.append("<tt>");
-        foreach (var l in cdlines)
-        {
-            hilite = false;
-            var parts = l.split("\t");
-            if (parts.length == 3) {
-                double angle=double.parse(parts[1]);
-                if((angle > 0.0 && maxclimb > 0.0 && angle > maxclimb) ||
-                   (angle < 0.0 && maxdive < 0.0 && angle < maxdive))
-                    hilite = true;
-            }
-            if(hilite)
-                sb.append("<span foreground='red'>");
-            sb.append(l);
-            if(hilite)
-                sb.append("</span>");
-        }
-        sb.append("</tt>");
-
-        var msg = new Gtk.MessageDialog.with_markup (mp.window, 0, Gtk.MessageType.INFO,
-                                                     Gtk.ButtonsType.OK, sb.str,null);
-
-        var bin = msg.get_message_area() as Gtk.Container;
-        var glist = bin.get_children();
-        glist.foreach((i) => {
-                if (i.get_class().get_name() == "GtkLabel")
-                    ((Gtk.Label)i).set_selectable(true);
-            });
-        msg.response.connect ((response_id) => { msg.destroy(); });
-        msg.set_title("MWP Altitude Analysis");
-        msg.show();
     }
 
     public bool fake_home_visible()
