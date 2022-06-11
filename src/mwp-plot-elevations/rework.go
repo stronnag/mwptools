@@ -1,7 +1,9 @@
 package main
 
 import (
+	//	"fmt"
 	"math"
+	//"os"
 )
 
 type mindex struct {
@@ -70,6 +72,11 @@ func Rework(mpts []Point, gnd []int) {
 				xadj := int(math.Ceil(adj)*(1.0-float64((jj-j0))/float64((j1-j0)))) - Conf.Margin
 				mpts[n].Xz += xadj
 			}
+		} else {
+			mpts[n].Set = WP_UPDATED
 		}
+		//		fmt.Fprintf(os.Stderr, "WP %d adj %.2f mz = %d, az = %d, xz = %d, Set %d\n",
+		//	n, adj, mpts[n].Mz, mpts[n].Az, mpts[n].Xz, mpts[n].Set)
+
 	}
 }

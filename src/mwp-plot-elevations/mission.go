@@ -1,15 +1,15 @@
 package main
 
 import (
-	"os"
-	"fmt"
-	"strings"
 	"bytes"
 	"encoding/xml"
-	"io/ioutil"
 	"errors"
-	"time"
+	"fmt"
 	geo "github.com/stronnag/bbl2kml/pkg/geo"
+	"io/ioutil"
+	"os"
+	"strings"
+	"time"
 )
 
 type MissionMWP struct {
@@ -289,7 +289,7 @@ func (m *Mission) Update_details(mpts []Point, elev []int) {
 		mpts[0].Xz = elev[0]
 		n = 1
 	}
-
+	//	fmt.Fprintf(os.Stderr, "Start %d\n", elev[0])
 	for ; n < len(mpts); n += 1 {
 		if mpts[n].Wpno == -1 {
 			mpts[n].Gz = elev[0]
@@ -310,6 +310,8 @@ func (m *Mission) Update_details(mpts []Point, elev []int) {
 			} else {
 				mpts[n].Xz = mpts[n].Az
 			}
+			//			fmt.Fprintf(os.Stderr, "WP %d alt = %d, mz = %d, az = %d, xz = %d, flag %d\n",
+			//x				n, alt, mpts[n].Mz, mpts[n].Az, mpts[n].Xz, mpts[n].Flag)
 		}
 	}
 }
