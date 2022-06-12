@@ -20,20 +20,24 @@ public class ScrollView : Gtk.Window {
 	private Gtk.Label label;
     public ScrollView (string _title = "Text View") {
         title = _title;
-        set_default_size (320, 800);
+//        set_default_size (320, 800);
         label = new Gtk.Label (null);
         label.set_use_markup(true);
-        var scrolled_window = new Gtk.ScrolledWindow (null, null);
+
+		var scrolled_window = new Gtk.ScrolledWindow (null, null);
         scrolled_window.set_policy (Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
         scrolled_window.add (label);
-        scrolled_window.hexpand = true;
-        scrolled_window.vexpand = true;
-                var vbox = new Gtk.Box(Gtk.Orientation.VERTICAL, 0);
-                vbox.pack_start (scrolled_window);
-                var button = new Gtk.Button.with_label ("OK");
-                vbox.pack_start (button, false, false, 1);
-                button.clicked.connect (() => { this.destroy();});
-                add(vbox);
+		scrolled_window.min_content_height = 400;
+		scrolled_window.min_content_width = 320;
+		scrolled_window.propagate_natural_height = true;
+		scrolled_window.propagate_natural_width = true;
+		var button = new Gtk.Button.with_label ("OK");
+		button.clicked.connect (() => { this.destroy();});
+
+		var grid = new Gtk.Grid ();
+		grid.attach (scrolled_window, 0, 0, 1, 1);
+		grid.attach (button, 0, 1, 1, 1);
+		add(grid);
     }
 
 	public void generate_climb_dive(string[]lines) {
