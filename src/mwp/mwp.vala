@@ -434,6 +434,8 @@ public class MWP : Gtk.Application {
         CALLBACK = (1<<6),
         CANCEL = (1<<7),
 		SET_ACTIVE = (1<<8),
+		SAVE_ACTIVE = (1<<9),
+		RESET_POLLER = (1<<10),
     }
 
     private struct WPMGR
@@ -6943,23 +6945,18 @@ case 0:
                 if(vi.fc_vers >= FCVERS.hasTZ)
                 {
                     MWPLog.message("Requesting common settings\n");
-                    var s="nav_wp_safe_distance";
-                    queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
-                    s="inav_max_eph_epv";
-                    queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
-                    s="gps_min_sats";
-                    queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
-                    if(vi.fc_vers > FCVERS.hasJUMP && vi.fc_vers <= FCVERS.hasPOI) // also 2.6 feature
-                    {
-                        s="nav_rth_home_offset_distance";
-                        queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
+					request_common_setting("nav_wp_safe_distance");
+					request_common_setting("inav_max_eph_epv");
+					request_common_setting("gps_min_sats");
+                    if(vi.fc_vers > FCVERS.hasJUMP && vi.fc_vers <= FCVERS.hasPOI) { // also 2.6 feature
+						request_common_setting("nav_rth_home_offset_distance");
                     }
                 }
                 queue_cmd(msp_get_status,null,0);
                 break;
 
 		    case MSP.Cmds.COMMON_SET_SETTING:
-				MWPLog.message("Received set_setting\n");
+				MWPLog.message("Received set_setting (%d)\n", len);
 				break;
 
             case MSP.Cmds.COMMON_SETTING:
@@ -6993,10 +6990,8 @@ case 0:
                         break;
                     case "nav_rth_home_offset_distance":
                         SEDE.deserialise_u16(raw, out nav_rth_home_offset_distance);
-                        if(nav_rth_home_offset_distance != 0)
-                        {
-                            var s="nav_rth_home_offset_direction";
-                            queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
+                        if(nav_rth_home_offset_distance != 0) {
+                            request_common_setting("nav_rth_home_offset_direction");
                         }
                         break;
                     case "nav_rth_home_offset_direction":
@@ -7051,6 +7046,26 @@ case 0:
 				if ((wpmgr.wp_flag & WPDL.DOWNLOAD) != 0) {
 					wpmgr.wp_flag &= ~WPDL.DOWNLOAD;
 					download_mission();
+				} else if ((wpmgr.wp_flag & WPDL.SAVE_ACTIVE) != 0) {
+					if(vi.fc_vers >= FCVERS.hasWP_V4) {
+						uint8 msg[128];
+						var s = "nav_wp_multi_mission_index";
+						var k = 0;
+						for(k =0; k < s.length; k++) {
+							msg[k] = s.data[k];
+						}
+						msg[k] = 0;
+						msg[k+1] = (uint8)mdx+1;
+						queue_cmd(MSP.Cmds.COMMON_SET_SETTING, msg, k+2);
+					}
+					wpmgr.wp_flag &= ~WPDL.SAVE_ACTIVE;
+					queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
+
+				} else if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
+					wpmgr.npts = 0;
+					wpmgr.wp_flag = 0;
+					wpmgr.wps = {};
+					reset_poller();
 				}
 				if(wpi.wp_count > 0 && wpi.wps_valid == 1 && ls.lastid == 0) {
 					need_mission = true;
@@ -7353,29 +7368,24 @@ case 0:
 					} else {
 						MWPCursor.set_normal_cursor(window);
 						remove_tid(ref upltid);
-						if(vi.fc_vers >= FCVERS.hasWP_V4 &&
-						   (wpmgr.wp_flag & WPDL.SET_ACTIVE) != 0) {
-							uint8 msg[128];
-							var s = "nav_wp_multi_mission_index";
-							Memory.copy (msg, s.data, s.length);
-							msg[s.length] = 0;
-							msg[s.length+1] = (uint8)mdx+1;
-							queue_cmd(MSP.Cmds.COMMON_SET_SETTING, msg, s.length+2);
-						}
-						if ((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0) {
-							uint8 zb=42;
-							queue_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
-						}
+
 						if((wpmgr.wp_flag & WPDL.CALLBACK) != 0)
 							upload_callback(wpmgr.npts);
 
-						wpmgr.wp_flag = WPDL.GETINFO;
-						queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-						validatelab.set_text("✔"); // u+2714
-						mwp_warning_box("Mission uploaded", Gtk.MessageType.INFO,5);
-						wpmgr.npts = 0;
-						wpmgr.wps = {};
-						reset_poller();
+						if ((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0) {
+							uint8 zb=42;
+							wpmgr.wp_flag = (WPDL.GETINFO|WPDL.RESET_POLLER|WPDL.SAVE_ACTIVE);
+							queue_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
+						} else if ((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
+							queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+							validatelab.set_text("✔"); // u+2714
+							mwp_warning_box("Mission uploaded", Gtk.MessageType.INFO,5);
+							wpmgr.wp_flag = WPDL.RESET_POLLER;
+						} else {
+							wpmgr.npts = 0;
+							wpmgr.wps = {};
+							reset_poller();
+						}
 					}
                 }
                 break;
@@ -7408,10 +7418,21 @@ case 0:
 
             case MSP.Cmds.WP_MISSION_SAVE:
                 MWPLog.message("Confirmed mission save\n");
+				if ((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
+					queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+					validatelab.set_text("✔"); // u+2714
+					mwp_warning_box("Mission uploaded", Gtk.MessageType.INFO,5);
+				}
                 break;
 
             case MSP.Cmds.EEPROM_WRITE:
                 MWPLog.message("Wrote EEPROM\n");
+				if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
+					wpmgr.npts = 0;
+					wpmgr.wp_flag = 0;
+					wpmgr.wps = {};
+					reset_poller();
+				}
                 break;
 
             case MSP.Cmds.RADIO:
@@ -10252,6 +10273,24 @@ case 0:
         replay_paused = false;
     }
 
+	private void request_common_setting(string s) {
+		uint8 msg[128];
+		var k = 0;
+		for(; k < s.length; k++) {
+			msg[k] = s.data[k];
+		}
+		msg[k++] = 0;
+		MWPLog.message("Request setting %s\n", s);
+		queue_cmd(MSP.Cmds.COMMON_SETTING, msg, k);
+	}
+
+	private void start_download() {
+		serstate = SERSTATE.NORMAL;
+		mq.clear();
+		start_wp_timer(30*1000);
+		request_wp(1);
+	}
+
     private void download_mission()
     {
         check_mission_clean(false);
@@ -10259,15 +10298,13 @@ case 0:
 		wpmgr.wps = {};
 		wpmgr.npts = last_wp_pts;
 		if (last_wp_pts > 0) {
-			serstate = SERSTATE.NORMAL;
-			mq.clear();
-			start_wp_timer(30*1000);
 			imdx = 0;
-			if(vi.fc_vers >= FCVERS.hasWP_V4) {
-				var s="nav_wp_multi_mission_index";
-				queue_cmd(MSP.Cmds.COMMON_SETTING, s, s.length+1);
-			}
-			request_wp(1);
+			int to= (vi.fc_vers >= FCVERS.hasWP_V4) ? 250 : 1;
+			request_common_setting("nav_wp_multi_mission_index");
+			Timeout.add(to, () => {
+					start_download();
+					return false;
+				});
 		} else {
 			mwp_warning_box("No WPs in FC to download\nMaybe 'Restore' is needed?",
 							Gtk.MessageType.WARNING, 10);

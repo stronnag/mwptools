@@ -5,6 +5,7 @@ namespace MultiM {
 		var k = 1;
 		foreach(var ms in mx) {
 			if (id == -1 || id == j) {
+				var ml = 0;
 				foreach(var m in ms.get_ways()) {
 					var w = MSP_WP();
 					w.wp_no = k;
@@ -15,7 +16,12 @@ namespace MultiM {
 					w.p1 = (int16)m.param1;
 					w.p2 = (int16)m.param2;
 					w.p3 = (int16)m.param3;
-					w.flag = m.flag;
+					ml++;
+					if (ml == ms.npoints) {
+						w.flag = 0xa5;
+					} else {
+						w.flag = m.flag;
+					}
 					wps += w;
 					k++;
 				}
