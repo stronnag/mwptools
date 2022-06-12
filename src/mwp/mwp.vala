@@ -436,6 +436,7 @@ public class MWP : Gtk.Application {
 		SET_ACTIVE = (1<<8),
 		SAVE_ACTIVE = (1<<9),
 		RESET_POLLER = (1<<10),
+		KICK_DL = (1<<11),
     }
 
     private struct WPMGR
@@ -6964,10 +6965,15 @@ case 0:
                 {
 				    case "nav_wp_multi_mission_index":
                         MWPLog.message("Received mm index %u\n", raw[0]);
-						if (raw[0] > 0)
+						if (raw[0] > 0) {
 							imdx = raw[0]-1;
-						else
+						} else {
 							imdx = 0;
+						}
+						if ((wpmgr.wp_flag & WPDL.KICK_DL) != 0) {
+							wpmgr.wp_flag &= ~WPDL.KICK_DL;
+							start_download();
+						}
 						break;
                     case "gps_min_sats":
                         msats = raw[0];
@@ -10299,12 +10305,12 @@ case 0:
 		wpmgr.npts = last_wp_pts;
 		if (last_wp_pts > 0) {
 			imdx = 0;
-			int to= (vi.fc_vers >= FCVERS.hasWP_V4) ? 250 : 1;
-			request_common_setting("nav_wp_multi_mission_index");
-			Timeout.add(to, () => {
-					start_download();
-					return false;
-				});
+			if  (vi.fc_vers >= FCVERS.hasWP_V4) {
+				wpmgr.wp_flag = WPDL.KICK_DL;
+				request_common_setting("nav_wp_multi_mission_index");
+			} else {
+				start_download();
+			}
 		} else {
 			mwp_warning_box("No WPs in FC to download\nMaybe 'Restore' is needed?",
 							Gtk.MessageType.WARNING, 10);
