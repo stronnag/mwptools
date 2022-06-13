@@ -11,7 +11,7 @@ idx = 1
 every = 0
 outf = nil
 graph = false
-amsl = true
+amsl = false
 delta = 0.1
 
 ARGV.options do |opt|
@@ -20,7 +20,7 @@ ARGV.options do |opt|
   opt.on('-d', '--delta=SECS', Float, "Down sample interval (default 0.1s)") {|o| delta = o}
   opt.on('-o','--output=FILE'){|o|outf=o}
   opt.on('-p','--plot'){graph=true}
-  opt.on('-a','--noamsl'){amsl=false}
+  opt.on('-a','--amsl'){amsl=true}
   opt.on('-?', "--help", "Show this message") {puts opt.to_s; exit}
   begin
     opt.parse!
@@ -46,7 +46,7 @@ if outf.nil? && graph.nil?
 elsif outf.nil?
   ext = File.extname(bbox)
   outf = bbox.gsub("#{ext}", '-alt.csv')
-  svgf = bbox.gsub("#{ext}",'-alt.svg')
+  svgf = bbox.gsub("#{ext}", "##{idx}.svg")
   rm = true
 end
 
@@ -104,15 +104,15 @@ end
 
 if graph && n > 0
   fn = File.basename bbox
-  pltfile = DATA.read % {:bbox => fn, :svgfile => svgf}
+  pltfile = DATA.read % {:bbox => "#{fn} / ##{idx}", :svgfile => svgf}
   if amsl
     pltfile.chomp!
     pltfile << ', filename using 1:5 t "GPS AMSL" w lines lt -1 lw 2  lc rgb "green"'
   end
   File.open(".inav_gps_alt.plt","w") {|plt| plt.puts pltfile}
   system "gnuplot -e 'filename=\"#{outf}\"' .inav_gps_alt.plt"
-  STDERR.puts "Graph in #{svgf}"
-  File.unlink ".inav_gps_alt.plt"
+  STDERR.puts "Graph in #{svgf} from #{fn}"
+  #File.unlink ".inav_gps_alt.plt"
 end
 
 File.unlink outf if rm
@@ -125,7 +125,7 @@ set grid
 set termopt enhanced
 set termopt font "sans,8"
 set xlabel "Time(s)"
-set title "Altitude Comparison %{bbox}"
+set title "Altitude Comparison %{bbox}" noenhanced
 set ylabel "Elev (m)"
 show label
 set xrange [ 0 : ]
