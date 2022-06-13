@@ -88,6 +88,7 @@ rm = false
 thr = false
 ls = false
 delta = 0.1
+svgf = nil
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
@@ -131,8 +132,13 @@ if outf.nil? && plotfile.nil?
   outf =  STDOUT.fileno
 elsif outf.nil?
   ext = File.extname(bbox)
-  outf = bbox.gsub("#{ext}", '-mag.csv')
-  svgf = bbox.gsub("#{ext}",'-mag.svg')
+  if ext.empty?
+    outf = "#{bbox}-mag.csv"
+    svgf = "#{bbox}-mag##{idx}.svg"
+  else
+    outf = bbox.gsub("#{ext}", '-mag.csv')
+    svgf = bbox.gsub("#{ext}","-mag##{idx}.svg")
+  end
   rm = true
 end
 
@@ -186,7 +192,7 @@ IO.popen(cmd,'r') do |p|
 end
 if plotfile
   fn = File.basename bbox
-  pltfile = DATA.read % {:bbox => fn, :svgfile => svgf}
+  pltfile = DATA.read % {:bbox => "#{fn} / ##{idx}", :svgfile => svgf}
   if thr
     pltfile.chomp!
     pltfile << ', filename using 1:7 t "Throttle" w lines lt -1 lw 3  lc rgb "#807fd0e0"'
@@ -206,7 +212,7 @@ set grid
 set termopt enhanced
 set termopt font "sans,8"
 set xlabel "Time(s)"
-set title "Direction Analysis %{bbox}"
+set title "Direction Analysis %{bbox}" noenhanced
 set ylabel "Heading"
 show label
 set xrange [ 0 : ]

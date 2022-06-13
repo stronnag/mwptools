@@ -41,12 +41,19 @@ st = nil
 fh = nil
 rm = false
 
+svgf = nil
+
 if outf.nil? && graph.nil?
   outf =  STDOUT.fileno
 elsif outf.nil?
   ext = File.extname(bbox)
-  outf = bbox.gsub("#{ext}", '-alt.csv')
-  svgf = bbox.gsub("#{ext}", "##{idx}.svg")
+  if ext.empty?
+    outf = "#{bbox}-alt.csv"
+    svgf = "#{bbox}-alt##{idx}.svg"
+  else
+    outf = bbox.gsub("#{ext}", '-alt.csv')
+    svgf = bbox.gsub("#{ext}", "-alt##{idx}.svg")
+  end
   rm = true
 end
 
@@ -111,8 +118,8 @@ if graph && n > 0
   end
   File.open(".inav_gps_alt.plt","w") {|plt| plt.puts pltfile}
   system "gnuplot -e 'filename=\"#{outf}\"' .inav_gps_alt.plt"
-  STDERR.puts "Graph in #{svgf} from #{fn}"
-  #File.unlink ".inav_gps_alt.plt"
+  STDERR.puts "Graph in #{svgf}"
+  File.unlink ".inav_gps_alt.plt"
 end
 
 File.unlink outf if rm
