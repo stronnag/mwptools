@@ -63,7 +63,7 @@ func Gnuplot_mission(mpts []Point, gnd []int) {
 	w.WriteString(`#!/usr/bin/gnuplot -p
 set bmargin 8
 set key top right
-set key box
+set key box width +2
 set grid
 set termopt enhanced
 set termopt font "sans,8"
@@ -96,7 +96,7 @@ set ylabel "Elevation"
 show label
 set xrange [ 0 : ]
 set datafile separator "	"
-set style fill pattern 6 border lc rgb "#8FBC8F"
+#set style fill pattern 6 border lc rgb "#8FBC8F"
 
 set yrange [ `)
 	fmt.Fprintf(w, " %d : ]\n", minz)
@@ -106,7 +106,7 @@ set yrange [ `)
 	if req&2 == 2 {
 		fmt.Fprintf(w, "set terminal svg size 960 320 dynamic background rgb 'white' font 'sans,8' rounded\nset output \"%s\"\n", Conf.Svgfile)
 	}
-	fmt.Fprintf(w, "plot '%s' using 1:2 t \"Terrain\" w filledcurve y1=%d lt -1 lw 2  lc rgb \"#8FBC8F\" , '%s' using 1:2 t \"Mission\" w lines lt -1 lw 2  lc rgb \"red\"", tfname, minz, mfname)
+	fmt.Fprintf(w, "plot '%s' using 1:2 t \"Terrain\" w filledcurve y1=%d lt -1 lw 2  lc rgb \"#40a4cbb8\", '%s' using 1:2 t \"Mission\" w lines lt -1 lw 2  lc rgb \"red\"", tfname, minz, mfname)
 	if Conf.Margin != 0 {
 		fmt.Fprintf(w, ", '%s' using 1:3 t \"Margin %dm\" w lines lt -1 lw 2  lc rgb \"web-blue\"", tfname, Conf.Margin)
 	}
