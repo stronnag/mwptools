@@ -1,9 +1,9 @@
 package main
 
 import (
-	//	"fmt"
+	"fmt"
 	"math"
-	//"os"
+	"os"
 )
 
 type mindex struct {
@@ -71,12 +71,16 @@ func Rework(mpts []Point, gnd []int) {
 				// Adjust pre RTH for proportional diff less Margin (we already have margin at RTH)
 				xadj := int(math.Ceil(adj)*(1.0-float64((jj-j0))/float64((j1-j0)))) - Conf.Margin
 				mpts[n].Xz += xadj
+				if mpts[n].Xz < mpts[n].Gz+Conf.Margin {
+					mpts[n].Xz = mpts[n].Gz + Conf.Margin
+				}
+				mpts[n].Set = WP_UPDATED
+				fmt.Fprintf(os.Stderr, "WP %d adj %d mz = %d, az = %d, xz = %d, gz=%d Set %d\n",
+					n, xadj, mpts[n].Mz, mpts[n].Az, mpts[n].Xz, mpts[n].Gz, mpts[n].Set)
 			}
 		} else {
 			mpts[n].Set = WP_UPDATED
 		}
-		//		fmt.Fprintf(os.Stderr, "WP %d adj %.2f mz = %d, az = %d, xz = %d, Set %d\n",
-		//	n, adj, mpts[n].Mz, mpts[n].Az, mpts[n].Xz, mpts[n].Set)
 
 	}
 }
