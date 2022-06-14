@@ -794,7 +794,7 @@ public class ListBox : GLib.Object
     {
         try
         {
-            string [] killargs = {"pkill", "-f", "gnuplot" };
+            string [] killargs = {"pkill", "gnuplot" };
             Process.spawn_async ("/", killargs, null,
                                  SpawnFlags.SEARCH_PATH, null, null);
         } catch {}
