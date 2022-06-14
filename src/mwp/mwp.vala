@@ -1856,13 +1856,13 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("upload-mission",null);
         saq.activate.connect(() => {
-                upload_mm(mdx, 0);
+                upload_mm(mdx, WPDL.GETINFO);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("upload-missions",null);
         saq.activate.connect(() => {
-                upload_mm(-1, WPDL.SET_ACTIVE);
+                upload_mm(-1, WPDL.GETINFO|WPDL.SET_ACTIVE);
             });
         window.add_action(saq);
 
@@ -6061,10 +6061,9 @@ case 0:
         MSP_WP w = MSP_WP();
         uint8* rp = raw;
         if((wpmgr.wp_flag & WPDL.CANCEL) != 0) {
-			wpmgr.wp_flag  = 0;
 			remove_tid(ref upltid);
 			MWPCursor.set_normal_cursor(window);
-			reset_poller();
+			wp_reset_poller();
 			validatelab.set_text("⚠"); // u+26a0
 			mwp_warning_box("Upload cancelled", Gtk.MessageType.ERROR,10);
             return;
@@ -6102,7 +6101,7 @@ case 0:
             remove_tid(ref upltid);
             MWPLog.message("Download completed #%d\n", w.wp_no);
 			validatelab.set_text("✔"); // u+2714
-            reset_poller();
+            wp_reset_poller();
 		} else {
             validatelab.set_text("WP:%3d".printf(w.wp_no));
 			request_wp(w.wp_no+1);
@@ -6274,6 +6273,13 @@ case 0:
         }
         return diff;
     }
+
+	private void wp_reset_poller() {
+		wpmgr.npts = 0;
+		wpmgr.wp_flag = 0;
+		wpmgr.wps = {};
+		reset_poller();
+	}
 
     public void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len,
                               uint8 xflags, bool errs)
@@ -6957,7 +6963,13 @@ case 0:
                 break;
 
 		    case MSP.Cmds.COMMON_SET_SETTING:
-				MWPLog.message("Received set_setting (%d)\n", len);
+				MWPLog.message("Received set_setting\n");
+				if ((wpmgr.wp_flag & WPDL.SAVE_ACTIVE) != 0) {
+					wpmgr.wp_flag &= ~WPDL.SAVE_ACTIVE;
+					queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
+				} else if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
+					wp_reset_poller();
+				}
 				break;
 
             case MSP.Cmds.COMMON_SETTING:
@@ -7052,7 +7064,8 @@ case 0:
 				if ((wpmgr.wp_flag & WPDL.DOWNLOAD) != 0) {
 					wpmgr.wp_flag &= ~WPDL.DOWNLOAD;
 					download_mission();
-				} else if ((wpmgr.wp_flag & WPDL.SAVE_ACTIVE) != 0) {
+				} else if ((wpmgr.wp_flag & WPDL.SET_ACTIVE) != 0) {
+					wpmgr.wp_flag &= ~WPDL.SET_ACTIVE;
 					if(vi.fc_vers >= FCVERS.hasWP_V4) {
 						uint8 msg[128];
 						var s = "nav_wp_multi_mission_index";
@@ -7062,16 +7075,11 @@ case 0:
 						}
 						msg[k] = 0;
 						msg[k+1] = (uint8)mdx+1;
+						MWPLog.message("Set active %d\n", msg[k+1]);
 						queue_cmd(MSP.Cmds.COMMON_SET_SETTING, msg, k+2);
 					}
-					wpmgr.wp_flag &= ~WPDL.SAVE_ACTIVE;
-					queue_cmd(MSP.Cmds.EEPROM_WRITE,null, 0);
-
 				} else if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
-					wpmgr.npts = 0;
-					wpmgr.wp_flag = 0;
-					wpmgr.wps = {};
-					reset_poller();
+					wp_reset_poller();
 				}
 				if(wpi.wp_count > 0 && wpi.wps_valid == 1 && ls.lastid == 0) {
 					need_mission = true;
@@ -7380,17 +7388,15 @@ case 0:
 
 						if ((wpmgr.wp_flag & WPDL.SAVE_EEPROM) != 0) {
 							uint8 zb=42;
-							wpmgr.wp_flag = (WPDL.GETINFO|WPDL.RESET_POLLER|WPDL.SAVE_ACTIVE);
+							wpmgr.wp_flag = (WPDL.GETINFO|WPDL.RESET_POLLER|WPDL.SET_ACTIVE|WPDL.SAVE_ACTIVE);
 							queue_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
 						} else if ((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
+							wpmgr.wp_flag |= WPDL.SET_ACTIVE|WPDL.RESET_POLLER;
 							queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
 							validatelab.set_text("✔"); // u+2714
 							mwp_warning_box("Mission uploaded", Gtk.MessageType.INFO,5);
-							wpmgr.wp_flag = WPDL.RESET_POLLER;
 						} else {
-							wpmgr.npts = 0;
-							wpmgr.wps = {};
-							reset_poller();
+							wp_reset_poller();
 						}
 					}
                 }
@@ -7434,10 +7440,7 @@ case 0:
             case MSP.Cmds.EEPROM_WRITE:
                 MWPLog.message("Wrote EEPROM\n");
 				if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
-					wpmgr.npts = 0;
-					wpmgr.wp_flag = 0;
-					wpmgr.wps = {};
-					reset_poller();
+					wp_reset_poller();
 				}
                 break;
 
@@ -7686,15 +7689,13 @@ case 0:
                 else
                 {
                     dac++;
-                    if(dac == 1 && armed != 0)
-                    {
+                    if(dac == 1 && armed != 0) {
                         MWPLog.message("Assumed disarm from LTM %ds\n", duration);
                         mwflags = 0;
                         armed = 0;
                         init_have_home();
                         /* schedule the bubble machine again .. */
-                        if(replayer == Player.NONE)
-                        {
+                        if(replayer == Player.NONE) {
                             reset_poller();
                         }
                     }
