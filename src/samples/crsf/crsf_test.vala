@@ -191,7 +191,7 @@ void process_crsf()
 	  ptr= deserialise_be_u16(ptr, out val16);  // Roll radians *10000
 	  double roll = 0;
 	  roll = ((int16)(val16)) * ATTITODEG;
-	  ptr= deserialise_be_u16(ptr, out val16);  // Roll radians *10000
+	  ptr= deserialise_be_u16(ptr, out val16);  // Yaw radians *10000
 	  double yaw = 0;
 	  yaw = ((int16)(val16)) * ATTITODEG;
 	  if(yaw < 0)
