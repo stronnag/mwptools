@@ -3370,8 +3370,7 @@ public class MWP : Gtk.Application {
 			ptr= SEDE.deserialise_u16(ptr, out val16);  // Roll radians *10000
 			double yaw = 0;
 			yaw = ((int16)Posix.ntohs(val16)) * CRSF.ATTITODEG;
-			if(yaw < 0)
-				yaw += 360;
+			yaw = ((yaw + 180) % 360);
 //			stdout.printf("Pitch %.1f, Roll %.1f, Yaw %.1f\n", pitch, roll, yaw);
 			CRSF.teledata.pitch = (int16)pitch;
 			CRSF.teledata.roll = (int16)roll;

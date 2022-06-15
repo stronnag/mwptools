@@ -188,14 +188,15 @@ void process_crsf()
 	  ptr= deserialise_be_u16(ptr, out val16);  // Pitch radians *10000
 	  double pitch = 0;
 	  pitch = ((int16)(val16)) * ATTITODEG;
+	  pitch %= 180;
 	  ptr= deserialise_be_u16(ptr, out val16);  // Roll radians *10000
 	  double roll = 0;
 	  roll = ((int16)(val16)) * ATTITODEG;
+	  roll %= 180;
 	  ptr= deserialise_be_u16(ptr, out val16);  // Yaw radians *10000
 	  double yaw = 0;
 	  yaw = ((int16)(val16)) * ATTITODEG;
-	  if(yaw < 0)
-		  yaw += 360;
+	  yaw = ((yaw + 180) % 360);
 	  stdout.printf("ATTI: Pitch %.1f, Roll %.1f, Yaw %.1f\n", pitch, roll, yaw);
 	  break;
   case FM_ID:

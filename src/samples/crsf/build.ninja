@@ -1,8 +1,8 @@
 rule vala
-    command = valac --pkg json-glib-1.0 -X -O2 --vapidir=. --pkg hdr -X -I. -o $out $in
+    command = valac --pkg json-glib-1.0 -X -O2 --vapidir=. --pkg hdr -X -I. -X -lm -o $out $in
 
 rule valad
-    command = valac --pkg json-glib-1.0 --vapidir=. --pkg hdr -X -I. --define TEST -X -O2 -o $out $in
+    command = valac --pkg json-glib-1.0 --vapidir=. --pkg hdr -X -I. -X -lm --define TEST -X -O2 -o $out $in
 
 rule copy
     command = install $in $$HOME/.local/bin/
