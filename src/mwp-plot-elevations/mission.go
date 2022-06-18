@@ -99,8 +99,8 @@ func (m *Mission) Save(mpts []Point) {
 				p.Set = WP_UPDATED
 			}
 
-			if p.Set == WP_UPDATED {
-				midx := p.Wpno - 1
+			midx := p.Wpno - 1
+			if p.Set == WP_UPDATED && p.Wpno > 0 {
 				if m.MissionItems[midx].No != int(p.Wpno) {
 					panic("WPNo mismatched, doomed")
 				}
