@@ -67,7 +67,7 @@ set key box width +2
 set grid
 set termopt enhanced
 set termopt font "sans,8"
-set terminal qt size 960,400
+set terminal wxt size 960,400
 set xtics font ", 7"
 set xtics (`)
 	for i, p := range mpts {
