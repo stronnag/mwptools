@@ -12,54 +12,150 @@ import (
 	"time"
 )
 
-type MissionMWP struct {
-	Zoom      int     `xml:"zoom,attr"`
-	Cx        float64 `xml:"cx,attr"`
-	Cy        float64 `xml:"cy,attr"`
-	Generator string  `xml:"generator,attr"`
-	Stamp     string  `xml:"save-date,attr"`
-}
-
 type MissionItem struct {
-	No     int     `xml:"no,attr"`
-	Action string  `xml:"action,attr"`
-	Lat    float64 `xml:"lat,attr"`
-	Lon    float64 `xml:"lon,attr"`
-	Alt    int32   `xml:"alt,attr"`
-	P1     int16   `xml:"parameter1,attr"`
-	P2     int16   `xml:"parameter2,attr"`
-	P3     int16   `xml:"parameter3,attr"`
+	No     int     `xml:"no,attr" json:"no"`
+	Action string  `xml:"action,attr" json:"action"`
+	Lat    float64 `xml:"lat,attr" json:"lat"`
+	Lon    float64 `xml:"lon,attr" json:"lon"`
+	Alt    int32   `xml:"alt,attr" json:"alt"`
+	P1     int16   `xml:"parameter1,attr" json:"p1"`
+	P2     int16   `xml:"parameter2,attr" json:"p2"`
+	P3     int16   `xml:"parameter3,attr" json:"p3"`
+	Flag   uint8   `xml:"flag,attr,omitempty" json:"flag,omitempty"`
 }
 
-type Mvers struct {
+type MissionMWP struct {
+	Zoom      int     `xml:"zoom,attr" json:"zoom"`
+	Cx        float64 `xml:"cx,attr" json:"cx"`
+	Cy        float64 `xml:"cy,attr" json:"cy"`
+	Homex     float64 `xml:"home-x,attr" json:"home-x"`
+	Homey     float64 `xml:"home-y,attr" json:"home-y"`
+	Stamp     string  `xml:"save-date,attr" json:"save-date"`
+	Generator string  `xml:"generator,attr" json:"generator"`
+}
+
+type Version struct {
 	Value string `xml:"value,attr"`
 }
 
-type Mission struct {
-	XMLName      xml.Name      `xml:"mission"`
-	Version      Mvers         `xml:"version"`
-	MwpMeta      MissionMWP    `xml:"mwp"̀`
-	MissionItems []MissionItem `xml:"missionitem"̀`
+type MissionDetail struct {
+	Distance struct {
+		Units string `xml:"units,attr,omitempty" json:"units,omitempty"`
+		Value int    `xml:"value,attr,omitempty" json:"value,omitempty"`
+	} `xml:"distance,omitempty" json:"distance,omitempty"`
 }
 
-func NewMission(fname string) (*Mission, error) {
-	var mission Mission
+type MissionSegment struct {
+	Metadata     MissionMWP    `xml:"mwp" json:"meta"`
+	MissionItems []MissionItem `xml:"missionitem" json:"mission"`
+}
+
+type MultiMission struct {
+	XMLName xml.Name         `xml:"mission"  json:"-"`
+	Version Version          `xml:"version" json:"-"`
+	Comment string           `xml:",comment" json:"-"`
+	Segment []MissionSegment `json:"missions"`
+}
+
+type Mission struct {
+	XMLName      xml.Name      `xml:"mission"  json:"-"`
+	Version      Version       `xml:"version" json:"-"`
+	Comment      string        `xml:",comment" json:"-"`
+	Metadata     MissionMWP    `xml:"mwp" json:"meta"`
+	MissionItems []MissionItem `xml:"missionitem" json:"mission"`
+	mission_file string        `xml:"-" json:"-"`
+}
+
+func NewMultiMission(mis []MissionItem) *MultiMission {
+	mm := &MultiMission{Segment: []MissionSegment{{}}}
+	if mis != nil {
+		segno := 0
+		no := 1
+		for j := range mis {
+			mis[j].No = no
+			no++
+			mm.Segment[segno].MissionItems = append(mm.Segment[segno].MissionItems, mis[j])
+			if mis[j].Flag == 0xa5 {
+				if j != len(mis)-1 {
+					mm.Segment = append(mm.Segment, MissionSegment{})
+					segno++
+					no = 1
+				}
+			}
+		}
+		if no > 1 {
+			mm.Segment[segno].MissionItems[no-2].Flag = 0xa5
+		}
+	}
+	return mm
+}
+
+func read_xml_mission(dat []byte) *MultiMission {
+	v := Version{}
+	mwps := []MissionMWP{}
+	mis := []MissionItem{}
+	buf := bytes.NewBuffer(dat)
+	dec := xml.NewDecoder(buf)
+	for {
+		t, _ := dec.Token()
+		if t == nil {
+			break
+		}
+		switch se := t.(type) {
+		case xml.StartElement:
+			switch strings.ToLower(se.Name.Local) {
+			case "mission":
+			case "version":
+				dec.DecodeElement(&v, &se)
+			case "mwp", "meta":
+				var mwp MissionMWP
+				dec.DecodeElement(&mwp, &se)
+				mwps = append(mwps, mwp)
+			case "missionitem":
+				var mi MissionItem
+				dec.DecodeElement(&mi, &se)
+				mis = append(mis, mi)
+			default:
+				fmt.Printf("Unknown MWXML tag %s\n", se.Name.Local)
+			}
+		}
+	}
+	mm := NewMultiMission(mis)
+	mm.Version = v
+	for j := range mm.Segment {
+		if j < len(mwps) {
+			mm.Segment[j].Metadata = mwps[j]
+		}
+	}
+	return mm
+}
+
+func (mm *MultiMission) to_mission(mi int) *Mission {
+	m := &Mission{}
+	if mi > len(mm.Segment) {
+		mi = len(mm.Segment)
+	}
+	mi--
+	m.Version = mm.Version
+	m.Comment = mm.Comment
+	m.Metadata = mm.Segment[mi].Metadata
+	m.MissionItems = mm.Segment[mi].MissionItems
+	//      fmt.Fprintf(os.Stderr, "%#v\n", m)
+	return m
+}
+
+func NewMission(fname string, idx int) (*Mission, error) {
+	var mission *Mission
 	r, err := os.Open(fname)
 	if err == nil {
 		defer r.Close()
 		var dat []byte
 		dat, err = ioutil.ReadAll(r)
-		if bytes.Contains(dat, []byte("<MISSION")) {
-			dat = fixup_case(dat)
-		}
-		if err == nil {
-			err = xml.Unmarshal(dat, &mission)
-			if err == nil {
-				err = mission.check_for_home()
-			}
-		}
+		mm := read_xml_mission(dat)
+		mission = mm.to_mission(idx)
+		err = mission.check_for_home()
 	}
-	return &mission, err
+	return mission, err
 }
 
 func find_best_alt(mpts []Point, wpno int) {
@@ -84,8 +180,8 @@ func (m *Mission) Save(mpts []Point) {
 		defer w.Close()
 		landno := int8(-1)
 		m.Version.Value = "0.0-rc0"
-		m.MwpMeta.Stamp = time.Now().UTC().Format(time.RFC3339)
-		m.MwpMeta.Generator = "mwp-plot-elevations"
+		m.Metadata.Stamp = time.Now().UTC().Format(time.RFC3339)
+		m.Metadata.Generator = "mwp-plot-elevations"
 
 		for _, mi := range m.MissionItems {
 			if mi.Action == "LAND" && landno == -1 {

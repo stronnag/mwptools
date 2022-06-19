@@ -67,7 +67,7 @@ func main() {
 
 	var mpts []Point
 
-	m, err := NewMission(files[0])
+	m, err := NewMission(files[0], 1)
 	if err == nil {
 		mpts = m.Get_points()
 	} else {
@@ -75,6 +75,10 @@ func main() {
 	}
 	elev, err := Get_elevations(mpts, 0)
 	if err == nil {
+		if len(mpts) != len(elev) {
+			panic("Bing return size error")
+		}
+
 		m.Update_details(mpts, elev)
 		if Conf.Dump {
 			Dump_data(mpts, "")
