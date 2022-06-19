@@ -119,6 +119,7 @@ public class ListBox : GLib.Object
     private AltDialog altdialog;
     private WPRepDialog wprepdialog;
     private AltModeDialog  altmodedialog;
+	private ScrollView? altview;
 
     private double ms_speed;
     private Gtk.Menu marker_menu;
@@ -792,6 +793,10 @@ public class ListBox : GLib.Object
 
     private void remove_plots()
     {
+		if(altview != null) {
+			altview.destroy();
+			altview = null;
+		}
         try
         {
             string [] killargs = {"pkill", "gnuplot" };
@@ -2261,7 +2266,7 @@ public class ListBox : GLib.Object
         fhome.get_fake_home(out lat, out lon);
         var margin = fhome.fhd.get_margin();
         var rthalt = fhome.fhd.get_rthalt();
-        spawn_args += "--home=%.8f %.8f".printf(lat, lon);
+        spawn_args += "--home=%.8f,%.8f".printf(lat, lon);
         if (margin != 0)
             spawn_args += "--margin=%d".printf(margin);
 
@@ -2385,8 +2390,11 @@ public class ListBox : GLib.Object
                     if(replname != null)
                         FileUtils.unlink(replname);
                     if (cdlines.length > 0) {
-						var sv = new ScrollView("MWP Altitude Analysis");
-						sv.generate_climb_dive(cdlines);
+						if (altview != null) {
+							altview.destroy();
+						}
+						altview = new ScrollView("MWP Altitude Analysis");
+						altview.generate_climb_dive(cdlines);
                     }
                 });
         } catch (SpawnError e) {

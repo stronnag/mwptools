@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
-	"strings"
 	"flag"
-	"strconv"
-	"os"
+	"fmt"
 	"log"
+	"os"
+	"strconv"
+	"strings"
 )
 
 var (
@@ -14,14 +14,24 @@ var (
 	Homep Point
 )
 
-func parse_home() {
-	parts := strings.Split(Conf.Homepos, " ")
+func parse_home(hpos string) {
+	p0 := ""
+	p1 := ""
+	parts := strings.Split(hpos, " ")
 	if len(parts) != 2 {
-		parts = strings.Split(Conf.Homepos, ",")
+		parts = strings.Split(hpos, ";")
+	}
+	if len(parts) != 2 {
+		parts = strings.Split(hpos, ",")
 	}
 	if len(parts) == 2 {
-		p0 := strings.Replace(parts[0], ",", ",", -1)
-		p1 := strings.Replace(parts[1], ",", ",", -1)
+		p0 = strings.Replace(parts[0], ",", ".", -1)
+		p1 = strings.Replace(parts[1], ",", ".", -1)
+	} else if len(parts) == 4 {
+		p0 = strings.Join(parts[0:2], ".")
+		p1 = strings.Join(parts[2:4], ".")
+	}
+	if p0 != "" && p1 != "" {
 		Homep.Y, _ = strconv.ParseFloat(p0, 64)
 		Homep.X, _ = strconv.ParseFloat(p1, 64)
 		Homep.Set = WP_HOME
@@ -29,7 +39,6 @@ func parse_home() {
 }
 
 func main() {
-
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s [options] missionfile\n", os.Args[0])
 		flag.PrintDefaults()
@@ -50,7 +59,7 @@ func main() {
 	flag.BoolVar(&Conf.Dump, "dump", false, "Dump  internal data,exit")
 
 	flag.Parse()
-	parse_home()
+	parse_home(Conf.Homepos)
 	files := flag.Args()
 	if len(files) < 1 {
 		log.Fatal("need mission")
