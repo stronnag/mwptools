@@ -1,13 +1,39 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
+
+func getGnuplotCaps() int {
+	ttypes := 0
+	cmd := exec.Command("gnuplot", "-e", "set terminal")
+	defer cmd.Wait()
+	out, err := cmd.StdoutPipe()
+	if err == nil {
+		defer out.Close()
+		err = cmd.Start()
+		if err == nil {
+			scanner := bufio.NewScanner(out)
+			for scanner.Scan() {
+				line := scanner.Text()
+				if strings.Contains(line, "wxt ") {
+					ttypes |= 1
+				}
+				if strings.Contains(line, "qt ") {
+					ttypes |= 2
+				}
+			}
+		}
+	}
+	return ttypes
+}
 
 func Gnuplot_mission(mpts []Point, gnd []int) {
 	req := 0
@@ -32,6 +58,16 @@ func Gnuplot_mission(mpts []Point, gnd []int) {
 	}
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	ttypes := getGnuplotCaps()
+	termstr := ""
+	if (ttypes & 2) == 2 {
+		termstr = "qt"
+	} else if (ttypes & 1) == 1 {
+		termstr = "wxt"
+	} else {
+		panic("No gnuplot / terminal")
 	}
 
 	d := 0.0
@@ -66,9 +102,9 @@ set key top right
 set key box width +2
 set grid
 set termopt enhanced
-set termopt font "sans,8"
-set terminal wxt size 960,400
-set xtics font ", 7"
+set termopt font "sans,8"`)
+	fmt.Fprintf(w, "\nset terminal %s size 960,400\n", termstr)
+	w.WriteString(`set xtics font ", 7"
 set xtics (`)
 	for i, p := range mpts {
 		if i != 0 {
