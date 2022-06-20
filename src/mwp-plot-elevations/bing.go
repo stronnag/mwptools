@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"math"
-	"strings"
-	"net/http"
-	"io/ioutil"
-	"encoding/json"
-	"encoding/base64"
 	"bytes"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"math"
+	"net/http"
+	"strings"
 	//	"os"
 )
 
@@ -27,13 +27,13 @@ const ENCSTR string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234
 const KENC string = "QXFzVEFpcGFCQnBLTFhoY2FHZ1A4a2NlWXVrYXRtdERMUzF4MENYRWhSWm5wbDFSRUxGOWhsSThqNG1OSWtyRQ=="
 
 func pca(pts []Point) string {
-	lat := 0
-	lon := 0
+	lat := int64(0)
+	lon := int64(0)
 	var sb strings.Builder
 
 	for _, s := range pts {
-		nlat := int(math.Round(s.Y * 100000.0))
-		nlon := int(math.Round(s.X * 100000.0))
+		nlat := int64(math.Round(s.Y * 100000.0))
+		nlon := int64(math.Round(s.X * 100000.0))
 		dy := nlat - lat
 		dx := nlon - lon
 		lat = nlat
@@ -42,7 +42,7 @@ func pca(pts []Point) string {
 		dy = (dy << 1) ^ (dy >> 31)
 		dx = (dx << 1) ^ (dx >> 31)
 		index := ((dy + dx) * (dy + dx + 1) / 2) + dy
-		rem := 0
+		rem := int64(0)
 		for index > 0 {
 			rem = index & 31
 			index = (index - rem) / 32
