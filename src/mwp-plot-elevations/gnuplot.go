@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -14,23 +13,16 @@ import (
 func getGnuplotCaps() int {
 	ttypes := 0
 	cmd := exec.Command("gnuplot", "-e", "set terminal")
-	defer cmd.Wait()
-	out, err := cmd.StdoutPipe()
+	out, err := cmd.CombinedOutput()
 	if err == nil {
-		defer out.Close()
-		err = cmd.Start()
-		if err == nil {
-			scanner := bufio.NewScanner(out)
-			for scanner.Scan() {
-				line := scanner.Text()
-				if strings.Contains(line, "wxt ") {
-					ttypes |= 1
-				}
-				if strings.Contains(line, "qt ") {
-					ttypes |= 2
-				}
-			}
+		if strings.Contains(string(out), " wxt ") {
+			ttypes |= 1
 		}
+		if strings.Contains(string(out), " qt ") {
+			ttypes |= 2
+		}
+	} else {
+		panic(err)
 	}
 	return ttypes
 }
