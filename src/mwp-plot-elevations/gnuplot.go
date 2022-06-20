@@ -15,11 +15,14 @@ func getGnuplotCaps() int {
 	cmd := exec.Command("gnuplot", "-e", "set terminal")
 	out, err := cmd.CombinedOutput()
 	if err == nil {
-		if strings.Contains(string(out), " wxt ") {
+		if strings.Contains(string(out), " qt ") {
 			ttypes |= 1
 		}
-		if strings.Contains(string(out), " qt ") {
+		if strings.Contains(string(out), " wxt ") {
 			ttypes |= 2
+		}
+		if strings.Contains(string(out), " x11 ") {
+			ttypes |= 4
 		}
 	} else {
 		panic(err)
@@ -54,10 +57,12 @@ func Gnuplot_mission(mpts []Point, gnd []int) {
 
 	ttypes := getGnuplotCaps()
 	termstr := ""
-	if (ttypes & 2) == 2 {
+	if (ttypes & 1) == 1 {
 		termstr = "qt"
-	} else if (ttypes & 1) == 1 {
+	} else if (ttypes & 2) == 2 {
 		termstr = "wxt"
+	} else if (ttypes & 4) == 4 {
+		termstr = "x11"
 	} else {
 		panic("No gnuplot / terminal")
 	}
