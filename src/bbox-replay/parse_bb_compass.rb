@@ -89,6 +89,7 @@ thr = false
 ls = false
 delta = 0.1
 svgf = nil
+pngf = nil
 
 ARGV.options do |opt|
   opt.banner = "#{File.basename($0)} [options] [file]"
@@ -140,15 +141,16 @@ elsif outf.nil?
     svgf = bbox.gsub("#{ext}","-mag##{idx}.svg")
   end
   rm = true
+  pngf = svgf.gsub('svg','png')
 end
 
 IO.popen(cmd,'r') do |p|
   File.open(outf,"w") do |fh|
-    csv = CSV.new(p, :col_sep => ",",
-		  :headers => :true,
-		  :header_converters =>
+    csv = CSV.new(p, col_sep: ",",
+		  headers: true,
+		  header_converters:
 		  ->(f) {f.strip.downcase.gsub(' ','_').gsub(/\W+/,'').to_sym},
-		  :return_headers => true)
+		  return_headers: true)
     hdrs = csv.shift
     cse = nil
     st = nil
@@ -161,7 +163,7 @@ IO.popen(cmd,'r') do |p|
     csv.each do |c|
       ts = c[:time_s].to_f
       st = ts if st.nil?
-      ts -= st
+      ts = ts - st
       if ts - lt > delta
         lat = c[:gps_coord0].to_f
         lon = c[:gps_coord1].to_f
@@ -192,7 +194,7 @@ IO.popen(cmd,'r') do |p|
 end
 if plotfile
   fn = File.basename bbox
-  pltfile = DATA.read % {:bbox => "#{fn} / ##{idx}", :svgfile => svgf}
+  pltfile = DATA.read % {bbox: "#{fn} / ##{idx}", svgfile: svgf, pngfile: pngf}
   if thr
     pltfile.chomp!
     pltfile << ', filename using 1:7 t "Throttle" w lines lt -1 lw 3  lc rgb "#807fd0e0"'
@@ -215,10 +217,14 @@ set xlabel "Time(s)"
 set title "Direction Analysis %{bbox}" noenhanced
 set ylabel "Heading"
 show label
-set xrange [ 0 : ]
+#set xrange [ 0 : ]
 #set yrange [ 0 : ]
 set datafile separator ","
 set terminal svg background rgb 'white' font "Droid Sans,9" rounded
 set output "%{svgfile}"
 
-plot filename using 1:3 t "GPS Speed" w lines lt -1 lw 2  lc rgb "red", filename using 1:4 t "GPS Course" w lines lt -1 lw 2  lc rgb "gold" , filename using 1:5 t "Attitude[2]" w lines lt -1 lw 2  lc rgb "green", filename using 1:6 t "Calc" w lines lt -1 lw 2  lc rgb "brown"
+plot filename using 1:3 t "GPS Speed" w lines lt -1 lw 2  lc rgb "red", filename using 1:4 t "GPS Course" w lines lt -1 lw 2  lc rgb "purple" , filename using 1:5 t "Heading" w lines lt -1 lw 2  lc rgb "green", filename using 1:6 t "Calc" w lines lt -1 lw 2 dt 2 lc rgb "orange"
+
+set terminal pngcairo background rgb 'white' font "Droid Sans,9" rounded
+set output "%{pngfile}"
+replot

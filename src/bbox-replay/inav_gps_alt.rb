@@ -42,6 +42,7 @@ fh = nil
 rm = false
 
 svgf = nil
+pngf = nil
 
 if outf.nil? && graph.nil?
   outf =  STDOUT.fileno
@@ -55,6 +56,7 @@ elsif outf.nil?
     svgf = bbox.gsub("#{ext}", "-alt##{idx}.svg")
   end
   rm = true
+  pngf = svgf.gsub('svg','png')
 end
 
 n = 0
@@ -111,7 +113,7 @@ end
 
 if graph && n > 0
   fn = File.basename bbox
-  pltfile = DATA.read % {:bbox => "#{fn} / ##{idx}", :svgfile => svgf}
+  pltfile = DATA.read % {bbox: "#{fn} / ##{idx}", svgfile: svgf, pngfile: pngf}
   if amsl
     pltfile.chomp!
     pltfile << ', filename using 1:5 t "GPS AMSL" w lines lt -1 lw 2  lc rgb "green"'
@@ -141,3 +143,6 @@ set datafile separator ","
 set terminal svg background rgb 'white' font "Droid Sans,9" rounded
 set output "%{svgfile}"
 plot filename using 1:2 t "Baro" w lines lt -1 lw 3  lc rgb "blue", filename using 1:3 t "GPS AGL" w lines lt -1 lw 2  lc rgb "red", filename using 1:4 t "Est Alt" w lines lt -1 lw 2  lc rgb "gold"
+set terminal pngcairo background rgb 'white' font "Droid Sans,9" rounded
+set output "%{pngfile}"
+replot
