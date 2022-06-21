@@ -1138,25 +1138,28 @@ Prior to 2021-05-03, this was provided by a ruby script in <code>mwptools/sample
 <p>It reads 485m, this pretty much agrees with the OS (Survey) height (AMSL). So the real issue is with the DEM available online (either Bing or Google). The 'sea-level" height DEM reports <strong>for this location</strong> is c. 13m below Ordnance Survey AMSL value whilst the WGS84 ellipsoid value is 43m above the OS AMSL value.</p>
 <h2 id="command-line-help-and-options">Command line help and options<a class="headerlink" href="#command-line-help-and-options" title="Permanent link">#</a></h2>
 <pre><code>$ mwp-plot-elevations --help
-Usage of mwp-plot-elevations [options] missionfile
   -dump
-        Dump  internal data,exit
+    Dump  internal data, exit
+  -force-alt int
+    Force Altitude Mode (-1=from mission, 0=Relative, 1=Absolute (default -1)
   -home string
-        home as DD.dddd,DDD.dddd (default "50.910476,-1.535038")
+    home as DD.dddd,DDD.dddd
+  -keep
+    Keep intermediate plt files
   -margin int
-        Clearance margin (m) (default 16)
+    Clearance margin (m)
+  -no-graph
+    No interactive plot
   -no-mission-alts
-        Ignore extant mission altitudes
-  -no-plot
-        No interactive plot
+    Ignore extant mission altitudes
   -output string
-        Revised mission file
-  -plotfile string
-        SVG graph file
+    Revised mission file
   -rth-alt int
-        RTH altitude (m) (default 25)
+    RTH altitude (m)
+  -svg string
+    SVG graph file
   -upland
-        Update landing elevation offset
+    Update landing elevation offset
 </code></pre>
 <p>Note that Go considers <code>-foo</code> and <code>--foo</code> to the equivalent. The ruby script requires the <code>--</code> notation.</p>
 <h2 id="configuration-file">Configuration File<a class="headerlink" href="#configuration-file" title="Permanent link">#</a></h2>
