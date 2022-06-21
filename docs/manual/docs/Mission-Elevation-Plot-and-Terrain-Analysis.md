@@ -136,25 +136,28 @@ It reads 485m, this pretty much agrees with the OS (Survey) height (AMSL). So th
 ## Command line help and options
 
     $ mwp-plot-elevations --help
-    Usage of mwp-plot-elevations [options] missionfile
       -dump
-        	Dump  internal data,exit
+    	Dump  internal data, exit
+      -force-alt int
+    	Force Altitude Mode (-1=from mission, 0=Relative, 1=Absolute (default -1)
       -home string
-        	home as DD.dddd,DDD.dddd (default "50.910476,-1.535038")
+    	home as DD.dddd,DDD.dddd
+      -keep
+    	Keep intermediate plt files
       -margin int
-        	Clearance margin (m) (default 16)
+    	Clearance margin (m)
+      -no-graph
+    	No interactive plot
       -no-mission-alts
-        	Ignore extant mission altitudes
-      -no-plot
-        	No interactive plot
+    	Ignore extant mission altitudes
       -output string
-        	Revised mission file
-      -plotfile string
-        	SVG graph file
+    	Revised mission file
       -rth-alt int
-        	RTH altitude (m) (default 25)
+    	RTH altitude (m)
+      -svg string
+    	SVG graph file
       -upland
-        	Update landing elevation offset
+    	Update landing elevation offset
 
 Note that Go considers `-foo` and `--foo` to the equivalent. The ruby script requires the `--` notation.
 

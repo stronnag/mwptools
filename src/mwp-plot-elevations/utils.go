@@ -1,14 +1,14 @@
 package main
 
 import (
-	"os"
-	"strings"
-	"strconv"
 	"bufio"
-	"path/filepath"
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"math"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -44,6 +44,7 @@ type Options struct {
 	Noalts  bool
 	Upland  bool
 	Dump    bool
+	Keep    bool
 }
 
 func Dump_data(mpts []Point, fn string) {

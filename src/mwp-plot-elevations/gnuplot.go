@@ -48,7 +48,7 @@ func Gnuplot_mission(mpts []Point, gnd []int) {
 	minz := 99999
 
 	tmpdir, err := ioutil.TempDir("", ".mplot")
-	if os.Getenv("KEEP_TEMPS") == "" {
+	if Conf.Keep == false {
 		defer os.RemoveAll(tmpdir)
 	}
 	if err != nil {

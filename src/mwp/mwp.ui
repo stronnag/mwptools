@@ -4884,7 +4884,7 @@ Otherwise, select a valid FC vehicle type</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="halign">end</property>
-                <property name="label" translatable="yes">Margin Elevation</property>
+                <property name="label" translatable="yes">Margin Elevation (m)</property>
                 <property name="justify">right</property>
               </object>
               <packing>
@@ -4975,7 +4975,7 @@ Otherwise, select a valid FC vehicle type</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="halign">end</property>
-                <property name="label" translatable="yes">RTH Altitude</property>
+                <property name="label" translatable="yes">RTH Altitude (m)</property>
                 <property name="justify">right</property>
               </object>
               <packing>
@@ -5029,7 +5029,7 @@ Otherwise, select a valid FC vehicle type</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="halign">end</property>
-                <property name="label" translatable="yes">Max. Climb Angle</property>
+                <property name="label" translatable="yes">Max. Climb Angle (°)</property>
               </object>
               <packing>
                 <property name="left-attach">0</property>
@@ -5041,7 +5041,7 @@ Otherwise, select a valid FC vehicle type</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="halign">end</property>
-                <property name="label" translatable="yes">Max. Dive Angle</property>
+                <property name="label" translatable="yes">Max. Dive Angle (°)</property>
               </object>
               <packing>
                 <property name="left-attach">0</property>
