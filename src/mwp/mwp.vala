@@ -7563,34 +7563,29 @@ case 0:
                             }
                         }
                         if((sensor & MSP.Sensors.MAG) == MSP.Sensors.MAG
-                           && last_nmode != 3 && magcheck && magtime > 0 && magdiff > 0)
-                        {
+                           && last_nmode != 3 && magcheck && magtime > 0 && magdiff > 0) {
                             int gcse = (int)GPSInfo.cse;
-                            if(last_ltmf != MSP.LTM.poshold && last_ltmf != MSP.LTM.land)
-                            {
-                                if(gf.speed > 3)
-                                {
-                                    if(get_heading_diff(gcse, mhead) > magdiff)
-                                    {
-                                        if(magdt == -1)
-                                        {
+                            if(last_ltmf != MSP.LTM.poshold && last_ltmf != MSP.LTM.land) {
+                                if(gf.speed > 3) {
+                                    if(get_heading_diff(gcse, mhead) > magdiff) {
+                                        if(magdt == -1) {
                                             magdt = (int)duration;
 //                                            MWPLog.message("set mag %d %d %d\n", mhead, (int)gcse, magdt);
                                         }
-                                    }
-                                    else if (magdt != -1)
-                                    {
+                                    } else if (magdt != -1) {
 //                                        MWPLog.message("clear magdt %d %d %d\n", mhead, (int)gcse, magdt);
                                         magdt = -1;
+										map_hide_warning();
+
                                     }
-                                }
-                                else
+								} else if (magdt != -1) {
                                     magdt = -1;
+//									MWPLog.message("unset magdt %d %d %d\n", mhead, (int)gcse, magdt);
+									map_hide_warning();
 
+								}
                             }
-
-                            if(magdt != -1 && ((int)duration - magdt) > magtime)
-                            {
+                            if(magdt != -1 && ((int)duration - magdt) > magtime) {
                                 MWPLog.message(" ****** Heading anomaly detected %d %d %d\n",
                                                mhead, (int)gcse, magdt);
                                 map_show_warning("HEADING ANOMALY");

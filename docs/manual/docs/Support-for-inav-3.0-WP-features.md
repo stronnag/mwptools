@@ -43,7 +43,7 @@ The text in parentheses indicating that a selection of point and an internet (`i
 
 In the image below:
 
-* The R/A column indicates the altitude mode (**R**elative to home, **A**bsolute).
+* The R/A column indicates the altitude mode (**R**elative to home, **A**bsolute). These are shownas the raw `P3`value, where 0 = Relative (default) and `A` means absolute. A mission can contain a mixture of relative and absolute values.
 * "Convert Altitudes ..." is enabled, because geospatial WPs are selected.
 * "Update LAND offset ..."  is not enabled; it requires a single LAND WP to be selected.
 
