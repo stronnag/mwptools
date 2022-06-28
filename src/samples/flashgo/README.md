@@ -53,3 +53,79 @@ If the file name is not provided, `-file BBL.TXT`, then a name is constructed of
 * `make install`  (installs in `~/.local/bin`)
 * or `sudo make install prefix=/usr/local` (installs in `/usr/local/bin`)
 * cross compile for Windows (can also build natively) `GOOS=windows make`
+
+## Examples
+
+``` go
+# Test download of whole flash
+$ flashgo  -test
+Using /dev/ttyACM0
+Firmware: INAV
+Version: 5.0.0
+Entering test mode for 2097152b
+Data flash 2097152 / 2097152 (100%)
+Downloading to bbl_2022-06-28_144312.TXT
+[▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇] 2.0MB/2.0MB 100% 0s
+2097152 bytes in 38.8s, 54006.2 bytes/s
+
+```
+
+``` go
+# Check usage
+flashgo -info
+Using /dev/ttyACM0
+Firmware: INAV
+Version: 5.0.0
+Data flash 88547 / 2097152 (4%)
+```
+
+``` go
+# download to named directory and file
+$ flashgo -dir /tmp/ -file bbltest.TXT /dev/ttyACM0
+Using /dev/ttyACM0
+Firmware: INAV
+Version: 5.0.0
+Data flash 106199 / 2097152 (5%)
+Downloading to /tmp/bbltest.TXT
+[▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇] 103.7KB/103.7KB 100% 0s
+106199 bytes in 2.1s, 51420.0 bytes/s
+```
+
+``` go
+# download (defaults / auto)
+$ flashgo
+Using /dev/ttyACM0
+Firmware: INAV
+Version: 5.0.0
+Data flash 106199 / 2097152 (5%)
+Downloading to bbl_2022-06-28_145233.TXT
+[▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇] 103.7KB/103.7KB 100% 0s
+106199 bytes in 2.1s, 51409.9 bytes/s
+```
+
+
+``` go
+# Erase flash
+$ flashgo -only-erase
+Using /dev/ttyACM0
+Firmware: INAV
+Version: 5.0.0
+Erase in progress ...
+Completed
+```
+
+
+``` go
+# Download and erase
+$ flashgo -erase
+Using /dev/ttyACM0
+Firmware: INAV
+Version: 5.0.0
+Data flash 88547 / 2097152 (4%)
+Downloading to bbl_2022-06-28_145855.TXT
+[▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇] 86.5KB/86.5KB 100% 0s
+88547 bytes in 1.6s, 56430.9 bytes/s
+Start erase
+Erase in progress ...
+Completed
+```
