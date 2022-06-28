@@ -205,7 +205,10 @@ func main() {
 				et = time.Now()
 				rate := get_rate(st, et, bread)
 				remtime := int(float64(used-bread) / rate)
-				pct := 100 * bread / used
+				pct := uint32(0)
+				if used > 0 {
+					pct = 100 * bread / used
+				}
 				var sb strings.Builder
 				for i := 0; i < 50; i++ {
 					if uint32(i) < pct*50/100 {
