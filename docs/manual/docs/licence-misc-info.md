@@ -8,7 +8,7 @@
 In addition to {{ mwp }}, the following {{ inav }} mission planners (and GCS in some cases) exist, in various states of usefulness, at least:
 
 * [INAV Configurator (for inav 2.x)](https://github.com/iNavFlight/inav-configurator/tree/2.6.1), limited planning support
-* [INAV Configurator (for inav 3.x and later)]( https://github.com/iNavFlight/inav-configurator), supports almost all current WP types. [Preview builds](http://seyrsnys.myzen.co.uk/inav-configurator-next/), may be augmented with [impload](https://github.com/stronnag/impload/) to upload missions to 2.x firmware.
+* [INAV Configurator (for inav 3.x and later)]( https://github.com/iNavFlight/inav-configurator), supports almost all current WP types. [Preview builds](http://seyrsnys.myzen.co.uk/inav-configurator-next/) available; current and previews may be augmented with [impload](https://github.com/stronnag/impload/) to upload missions to 2.x firmware.
 * [Drone Helper](https://www.microsoft.com/en-us/p/drone-helper/9ncs8zwxn58x?activetab=pivot:overviewtab) (Windows 10)
 * [Ezgui](https://play.google.com/store/apps/details?id=com.ezio.multiwii&hl=en_GB), [MissionPlanner for INAV](https://play.google.com/store/apps/details?id=com.eziosoft.ezgui.inav&hl=en) (Android) Unsupported, obsolete. May not work with either contemporary Android or INAV firmware.
 * [Mobile Flight](https://github.com/flyinghead/mobile-flight) (IOS) Unsupported, obsolete. May not work with either contemporary IOS or INAV firmware.
