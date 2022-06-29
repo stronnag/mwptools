@@ -1094,7 +1094,7 @@
 MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 </code></pre>
 <p>So here the only current, valid options are  <code>--rings 50,20 --dont-maximise</code>, and the <a href="#environment-variables">environment variable</a> MWP_BLACK_TILE is set (for <a href="../Black-Ops/#custom-tile">anonymous maps</a>).</p>
-<p>The environment is set before any GTK / UI calls are made, thus if you have issues using Wayland (which still has some issues with some (older, mainly) GPU hardware and OpenGL), then you can force Xwayland by setting the <code>GTK_BACKEND</code> variable in <code>cmdopts</code>.</p>
+<p>The environment is set before any GTK / UI calls are made, thus if you have issues using Wayland (which still has some issues with some (older, mainly) GPU hardware and OpenGL), then you can force Xwayland by setting the <code>GDK_BACKEND</code> variable in <code>cmdopts</code>.</p>
 <pre><code>GDK_BACKEND=x11
 </code></pre>
 <h2 id="layout"><code>.layout</code><a class="headerlink" href="#layout" title="Permanent link">#</a></h2>
