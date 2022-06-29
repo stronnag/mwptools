@@ -9616,6 +9616,12 @@ case 0:
 					}
 				}
 			}
+			var bb = new Champlain.BoundingBox();
+			bb.left = m.minx;
+			bb.right = m.maxx;
+			bb.top = m.maxy;
+			bb.bottom = m.miny;
+			view.ensure_visible(bb, true);
 		} else {
 			NavStatus.nm_pts = 255;
 			NavStatus.have_rth = false;
@@ -9894,18 +9900,12 @@ case 0:
         string fn = null;
         if (id == Gtk.ResponseType.ACCEPT)
             fn = chooser.get_filename ();
-        chooser.destroy ();
-        if(fn != null)
-		{
+        if(fn != null) {
 			mdx = 0; // Selected item
-			MWPCursor.set_busy_cursor(window);
-            Idle.add(() => {
-					load_file(fn,true,append);
-					MWPCursor.set_normal_cursor(window);
-					return false;
-				});
+			load_file(fn,true,append);
 		}
-    }
+		chooser.destroy ();
+	}
 
     private void replay_otx(bool delay=true)
     {
@@ -10534,6 +10534,8 @@ case 0:
         var s = MWP.read_env_args();
 		if (GtkClutter.init (ref args) != InitError.SUCCESS)
             return 1;
+		Gtk.init(ref args);
+		Clutter.init(ref args);
         Gst.init (ref args);
 		StringBuilder sb = new StringBuilder();
 		foreach(var a in args) {

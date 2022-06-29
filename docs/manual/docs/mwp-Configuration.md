@@ -59,7 +59,7 @@ In addition to options (`--`), the file may also contain environment variables e
 
 So here the only current, valid options are  `--rings 50,20 --dont-maximise`, and the [environment variable](#environment-variables) MWP_BLACK_TILE is set (for [anonymous maps](Black-Ops.md#custom-tile)).
 
-The environment is set before any GTK / UI calls are made, thus if you have issues using Wayland (which still has some issues with some (older, mainly) GPU hardware and OpenGL), then you can force Xwayland by setting the `GTK_BACKEND` variable in `cmdopts`.
+The environment is set before any GTK / UI calls are made, thus if you have issues using Wayland (which still has some issues with some (older, mainly) GPU hardware and OpenGL), then you can force Xwayland by setting the `GDK_BACKEND` variable in `cmdopts`.
 
     GDK_BACKEND=x11
 
