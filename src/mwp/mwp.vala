@@ -29,6 +29,7 @@ public class MWP : Gtk.Application {
 
     public Builder builder;
     public Gtk.ApplicationWindow window;
+	private Gtk.Window? splash;
     private int window_h = -1;
     private int window_w = -1;
     public  Champlain.View view;
@@ -754,6 +755,24 @@ public class MWP : Gtk.Application {
 
     void show_startup()
     {
+        builder = new Builder ();
+        string[]ts={"mwp.ui","menubar.ui"};
+        foreach(var fnm in ts) {
+            var fn = MWPUtils.find_conf_file(fnm);
+            if (fn == null) {
+                MWPLog.message ("No UI definition file\n");
+                quit();
+            } else {
+                try {
+                    builder.add_from_file (fn);
+                } catch (Error e) {
+                    MWPLog.message ("Builder: %s\n", e.message);
+                    quit();
+                }
+            }
+        }
+        builder.connect_signals (null);
+
 		MWPLog.message("%s\n", MWP.user_args);
 		MWP.user_args = null;
         var sb = new StringBuilder("mwp ");
@@ -788,6 +807,14 @@ public class MWP : Gtk.Application {
 				xlib = "XWayland";
 				is_wayland = false;
 			}
+		}
+
+		if(!is_wayland) {
+			splash = builder.get_object ("splash") as Gtk.Window;
+			splash.set_keep_above(true);
+			splash.show_all();
+			while(Gtk.events_pending())
+				Gtk.main_iteration();
 		}
 
 		var dmstr = Environment.get_variable("XDG_CURRENT_DESKTOP");
@@ -1307,7 +1334,6 @@ public class MWP : Gtk.Application {
         if(conf.uilang == "en")
             Intl.setlocale(LocaleCategory.NUMERIC, "C");
 
-        builder = new Builder ();
 
         if(layfile == null && conf.deflayout != null)
             layfile = conf.deflayout;
@@ -1334,27 +1360,6 @@ public class MWP : Gtk.Application {
             {
                 nrings = int.parse(parts[0]);
                 ringint = double.parse(parts[1]);
-            }
-        }
-
-        string[]ts={"mwp.ui","menubar.ui"};
-        foreach(var fnm in ts)
-        {
-            var fn = MWPUtils.find_conf_file(fnm);
-            if (fn == null)
-            {
-                MWPLog.message ("No UI definition file\n");
-                quit();
-            }
-            else
-            {
-                try
-                {
-                    builder.add_from_file (fn);
-                } catch (Error e) {
-                    MWPLog.message ("Builder: %s\n", e.message);
-                    quit();
-                }
             }
         }
 
@@ -1397,20 +1402,19 @@ public class MWP : Gtk.Application {
             }
         }
 
-        if(conf.atstart != null)
-        {
+        if(conf.atstart != null && conf.atstart.length > 0) {
             try {
                 Process.spawn_command_line_async(conf.atstart);
             } catch {};
         }
 
+		MWPLog.message("Get map preference\n");
         MapSource [] msources = {};
         string msfn = null;
         if(conf.map_sources != null)
             msfn = MWPUtils.find_conf_file(conf.map_sources);
         msources =   JsonMapDef.read_json_sources(msfn,offline);
 
-        builder.connect_signals (null);
         window = builder.get_object ("window1") as Gtk.ApplicationWindow;
         this.add_window (window);
         window.set_application (this);
@@ -2704,6 +2708,7 @@ public class MWP : Gtk.Application {
                 return false;
             });
 
+		MWPLog.message("Show main window\n");
         window.show_all();
 
         if((wp_edit = conf.auto_wp_edit) == true)
@@ -2815,7 +2820,7 @@ public class MWP : Gtk.Application {
         Gtk.drag_dest_set (window, Gtk.DestDefaults.ALL,
                            targets, Gdk.DragAction.COPY);
 
-       window.drag_data_received.connect(
+		window.drag_data_received.connect(
             (ctx, x, y, data, info, time) => {
                 string mf = null; // mission
                 string sf = null; // replay (bbox / mwp)
@@ -2969,8 +2974,13 @@ public class MWP : Gtk.Application {
 				}
 			});
 		gstdm.setup_device_monitor();
-
 		map_moved();
+		if(!is_wayland) {
+			Timeout.add(500, () => {
+					splash.destroy();
+					return false;
+				});
+		}
     }
 
 	private void set_pmask_poller(MWSerial.PMask pmask) {
@@ -9901,8 +9911,11 @@ case 0:
         if (id == Gtk.ResponseType.ACCEPT)
             fn = chooser.get_filename ();
         if(fn != null) {
+			Timeout.add(10, () => {
 			mdx = 0; // Selected item
 			load_file(fn,true,append);
+			return false;
+				});
 		}
 		chooser.destroy ();
 	}
