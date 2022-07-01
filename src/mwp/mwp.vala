@@ -6104,12 +6104,18 @@ case 0:
 		if(done) {
 			clear_mission();
 			var mmsx = MultiM.wps_to_missonx(wpmgr.wps);
-			msx = mmsx;
-			setup_mission_from_mm();
+			var nwp = check_mission_length(mmsx);
+			if(nwp > 0) {
+				msx = mmsx;
+				setup_mission_from_mm();
+				MWPLog.message("Download completed #%d\n", nwp);
+				validatelab.set_text("✔"); // u+2714
+			} else {
+				mwp_warning_box("Fallback safe mission, 0 points", Gtk.MessageType.INFO,10);
+				MWPLog.message("Fallback safe mission\n");
+			}
 			MWPCursor.set_normal_cursor(window);
             remove_tid(ref upltid);
-            MWPLog.message("Download completed #%d\n", w.wp_no);
-			validatelab.set_text("✔"); // u+2714
             wp_reset_poller();
 		} else {
             validatelab.set_text("WP:%3d".printf(w.wp_no));
@@ -9545,6 +9551,19 @@ case 0:
 		}
     }
 
+	private uint check_mission_length(Mission [] xmsx) {
+		uint nwp = 0;
+		foreach(var m in xmsx) {
+			nwp += m.npoints;
+		}
+
+		if (nwp == 1 && xmsx[0].get_ways()[0].action == MSP.Action.RTH
+			&& xmsx[0].get_ways()[0].flag == 165) {
+			nwp = 0;
+		}
+		return nwp;
+	}
+
     public Mission? open_mission_file(string fn, bool append=false)
     {
 		ms_from_loader = true;
@@ -9553,6 +9572,11 @@ case 0:
 		var _msx =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
 		if (_msx == null)
 			return null;
+
+		var nwp = check_mission_length(_msx);
+		if (nwp == 0)
+			return null;
+
 		if (append) {
 			var mlim = msx.length;
 			imdx += mlim;
@@ -9566,10 +9590,6 @@ case 0:
 		} else {
 			msx = _msx;
 			lastmission = msx_clone();
-		}
-		uint nwp = 0;
-		foreach(var m in msx) {
-			nwp += m.npoints;
 		}
 
 		if (nwp > wp_max) {
@@ -9911,7 +9931,7 @@ case 0:
         if (id == Gtk.ResponseType.ACCEPT)
             fn = chooser.get_filename ();
         if(fn != null) {
-			Timeout.add(10, () => {
+			Timeout.add(50, () => {
 			mdx = 0; // Selected item
 			load_file(fn,true,append);
 			return false;
