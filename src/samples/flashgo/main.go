@@ -46,6 +46,21 @@ func cleanup() {
 	fmt.Printf("\n")
 }
 
+func getsize(str string) int {
+	chr := uint8(0)
+	sz := 0
+	n, err := fmt.Sscanf(str, "%d%c", &sz, &chr)
+	if err == nil && n == 2 {
+		switch chr {
+		case 'K':
+			sz *= 1024
+		case 'M':
+			sz *= 1024 * 1024
+		}
+	}
+	return sz
+}
+
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s [options] [device]\n", os.Args[0])
@@ -59,6 +74,7 @@ func main() {
 	xerase := false
 	info := false
 	test := false
+	defios := ""
 
 	echeck := false
 	fsize := uint32(0)
@@ -72,12 +88,20 @@ func main() {
 
 	flag.StringVar(&fname, "file", "", "output file, auto-generated (bbl_YYYY-MM-DD_hhmmss.TXT) if not specified")
 	flag.StringVar(&dname, "dir", "", "output directory ($(cwd) if not specified)")
+	flag.StringVar(&defios, "readsize", "4096", "default read size (bytes, K,M may use used as modifier, e.g. 8192, 8K)")
 	flag.BoolVar(&erase, "erase", false, "erase after download")
 	flag.BoolVar(&xerase, "only-erase", false, "erase only and exit")
 	flag.BoolVar(&info, "info", false, "show flash info and exit")
 	flag.BoolVar(&test, "test", false, "download whole flash regardess of used state")
 
 	flag.Parse()
+
+	defio := uint32(getsize(defios))
+	defio = (defio / 1024) * 1024
+	if defio == 0 {
+		defio = 4096
+	}
+
 	args := flag.Args()
 
 	var sp *MSPSerial
@@ -103,6 +127,8 @@ func main() {
 	signal.Notify(cc, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	ti_init()
+	fmt.Printf("Read buffer size %d bytes\n", defio)
+
 	for done := false; !done; {
 		select {
 		case <-cc:
@@ -189,8 +215,8 @@ func main() {
 							done = true
 						} else {
 							fmt.Printf("Downloading to %s\n", fname)
-							req := uint16(4096)
-							if used < 4096 {
+							req := uint16(defio)
+							if used < defio {
 								req = uint16(used)
 							}
 							sp.Data_read(0, req)
@@ -221,8 +247,8 @@ func main() {
 				ti_clreol()
 				rem := used - bread
 				if rem > 0 {
-					if rem > 4096 {
-						rem = 4096
+					if rem > defio {
+						rem = defio
 					}
 					sp.Data_read(bread, uint16(rem))
 				} else {
