@@ -2160,6 +2160,7 @@ public class MWP : Gtk.Application {
 				} else {
 					mdx = actmission.active;
 				}
+
 				if(msx[mdx].npoints > 0) {
 					instantiate_mission(msx[mdx]);
 				} else {
@@ -9646,12 +9647,7 @@ case 0:
 					}
 				}
 			}
-			var bb = new Champlain.BoundingBox();
-			bb.left = m.minx;
-			bb.right = m.maxx;
-			bb.top = m.maxy;
-			bb.bottom = m.miny;
-			view.ensure_visible(bb, true);
+//			zoom_new_mission(m);
 		} else {
 			NavStatus.nm_pts = 255;
 			NavStatus.have_rth = false;
@@ -9758,6 +9754,7 @@ case 0:
 
     private void instantiate_mission(Mission ms)
     {
+//		print("DBG instantiate mission\n");
         if(armed == 0 && craft != null)
         {
             markers.remove_rings(view);
@@ -9765,19 +9762,14 @@ case 0:
         }
         validatelab.set_text("");
         map_centre_on(ms.cy, ms.cx);
-//        ms.dump(wp_max);
         ls.import_mission(ms, (conf.rth_autoland &&
                                Craft.is_mr(vi.mrtype)));
         NavStatus.have_rth = ls.have_rth;
-        if(ms.zoom == 0)
-            ms.zoom = guess_appropriate_zoom(bb_from_mission(ms));
-
-        set_view_zoom(ms.zoom);
-
         if(have_home)
             markers.add_home_point(home_pos.lat,home_pos.lon,ls);
         need_preview = true;
 		msx[mdx] = ms;
+		centre_mission(ms, true);
     }
 
 	private Mission?[] msx_clone() {
@@ -9930,14 +9922,17 @@ case 0:
         string fn = null;
         if (id == Gtk.ResponseType.ACCEPT)
             fn = chooser.get_filename ();
+
         if(fn != null) {
-			Timeout.add(50, () => {
 			mdx = 0; // Selected item
 			load_file(fn,true,append);
-			return false;
-				});
 		}
 		chooser.destroy ();
+		// Ensure removed befoer updating map
+		chooser = null;
+		while(Gtk.events_pending())
+			Gtk.main_iteration();
+
 	}
 
     private void replay_otx(bool delay=true)
