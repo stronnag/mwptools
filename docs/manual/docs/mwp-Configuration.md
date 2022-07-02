@@ -59,9 +59,16 @@ In addition to options (`--`), the file may also contain environment variables e
 
 So here the only current, valid options are  `--rings 50,20 --dont-maximise`, and the [environment variable](#environment-variables) MWP_BLACK_TILE is set (for [anonymous maps](Black-Ops.md#custom-tile)).
 
-The environment is set before any GTK / UI calls are made, thus if you have issues using Wayland (which still has some issues with some (older, mainly) GPU hardware and OpenGL), then you can force Xwayland by setting the `GDK_BACKEND` variable in `cmdopts`.
+The environment is set before any GTK / UI calls are made.
 
+mwp (and other applications) can have a problem with OpenGL and the Wayland compositor. Typcially this is manifest by being unable to pick mission WP icons for large (>40 point) missions.
+
+On non-WSL platforms, mwp forces XWayland over Wayland to mitigate this. You can force Wayland / XWayland by setting the `GDK_BACKEND` variable in `cmdopts`. This will override mwp's default.
+
+    # set XWayland
     GDK_BACKEND=x11
+    # set Wayland
+    GDK_BACKEND=wayland
 
 ## `.layout`
 
