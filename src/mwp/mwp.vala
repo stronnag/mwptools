@@ -10513,7 +10513,11 @@ case 0:
 
     private static string? read_env_args()
     {
-        var s1 = read_cmd_opts();
+		var u = Posix.utsname();
+		if (!u.release.contains("microsoft-standard-WSL")) {
+			Environment.set_variable("GDK_BACKEND", "x11", true);
+		}
+		var s1 = read_cmd_opts();
         var s2 = Environment.get_variable("MWP_ARGS");
         var sb = new StringBuilder();
         if(s1.length > 0)
