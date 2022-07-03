@@ -30,6 +30,17 @@ The install process installs an desktop icon and `mwp.desktop` application file 
 * It is also possible to run {{ mwp }} from a terminal, passing additional [options](mwp-Configuration.md) if required.
 * Such [options can be added to a configuration file](mwp-Configuration.md) for persistence or use from the graphical icon.
 
+### Display Managers
+
+{ mwp } uses a library, `libchamplain` to draw maps and mission symbols; unfortunately, this does not integrate consistently with the various generations of open source display managers (ironically, it works without problems in WSL-G). Please check the following before raising Github issues:
+
+* On **Wayland** : Wayland is the latest open source display manager. On some older graphics cards (i.e. more than c. 5 years old), it may fail to 'pick' waypoint symbols when there are more than c. 40 symbols in a mission.
+  In order to mitigate this, the default setting in mwp is to use a fallback implementation known as **XWayland**. Use of **Wayland** (vice XWayland) for newer graphics cards may be forced by setting `GDK_BACKEND=wayland` in [`~/.config/mwp/cmdopts`](mwp-Configuration.md#cmdopts).
+
+* On **Xlib** : Sometimes (rarely), you may load a mission and the WPs cannot be 'picked' and the map is unresponsive to mouse control. The work-around is to move the mouse off the map and back on again (or scroll the map with the keyboard, CTRL-arrow-keys).
+
+Any technical solutions to either of these irritations would be most welcome.
+
 ## Command line options
 
 {{ mwp }}'s command line options may be displayed with the `--help` option:
