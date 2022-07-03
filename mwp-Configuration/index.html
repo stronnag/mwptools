@@ -1094,8 +1094,13 @@
 MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 </code></pre>
 <p>So here the only current, valid options are  <code>--rings 50,20 --dont-maximise</code>, and the <a href="#environment-variables">environment variable</a> MWP_BLACK_TILE is set (for <a href="../Black-Ops/#custom-tile">anonymous maps</a>).</p>
-<p>The environment is set before any GTK / UI calls are made, thus if you have issues using Wayland (which still has some issues with some (older, mainly) GPU hardware and OpenGL), then you can force Xwayland by setting the <code>GDK_BACKEND</code> variable in <code>cmdopts</code>.</p>
-<pre><code>GDK_BACKEND=x11
+<p>The environment is set before any GTK / UI calls are made.</p>
+<p>mwp (and other applications) can have a problem with OpenGL and the Wayland compositor. Typcially this is manifest by being unable to pick mission WP icons for large (&gt;40 point) missions.</p>
+<p>On non-WSL platforms, mwp forces XWayland over Wayland to mitigate this. You can force Wayland / XWayland by setting the <code>GDK_BACKEND</code> variable in <code>cmdopts</code>. This will override mwp's default.</p>
+<pre><code># set XWayland
+GDK_BACKEND=x11
+# set Wayland
+GDK_BACKEND=wayland
 </code></pre>
 <h2 id="layout"><code>.layout</code><a class="headerlink" href="#layout" title="Permanent link">#</a></h2>
 <p><code>.layout</code> contains the current arrangement of Dock items. You are advised not to manually edit this file (or other named, alternate layout files).</p>
