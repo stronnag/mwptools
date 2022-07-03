@@ -812,7 +812,7 @@ public class MWP : Gtk.Application {
 		if(!is_wayland) {
 			splash = builder.get_object ("splash") as Gtk.Window;
 			splash.set_keep_above(true);
-				splash.show_all();
+			splash.show_all();
 			while(Gtk.events_pending())
 				Gtk.main_iteration();
 		}
@@ -9744,18 +9744,12 @@ case 0:
 
     private void instantiate_mission(Mission ms)
     {
-/*
-		int x = 0, y = 0, ox = 0, oy = 0;
-		window.get_window().get_origin(out ox, out oy);
-		Gdk.Device? pointer = window.get_display().get_default_seat().get_pointer();
-		window.get_window().get_device_position(pointer, out x, out y, null);
-		pointer.warp(window.screen, ox+40, oy+40);
-*/
         if(armed == 0 && craft != null) {
             markers.remove_rings(view);
             craft.init_trail();
         }
         validatelab.set_text("");
+
         ls.import_mission(ms, (conf.rth_autoland && Craft.is_mr(vi.mrtype)));
         NavStatus.have_rth = ls.have_rth;
 		centre_mission(ms, true);
@@ -9763,7 +9757,23 @@ case 0:
             markers.add_home_point(home_pos.lat,home_pos.lon,ls);
         need_preview = true;
 		msx[mdx] = ms;
-    }
+		warp_pointer();
+	}
+
+
+	// So ugly, attempt have pickable WPs after load on X11
+	private void warp_pointer() {
+		int x = 0, y = 0, ox = 0, oy = 0;
+		window.get_window().get_origin(out ox, out oy);
+		Gdk.Device? pointer = window.get_display().get_default_seat().get_pointer();
+		window.get_window().get_device_position(pointer, out x, out y, null);
+		pointer.warp(window.screen, ox+40, oy+40);
+		Timeout.add(1200, () => {
+				pointer.warp(window.screen, ox+x, oy+y);
+				return false;
+			});
+	}
+
 
 	private Mission?[] msx_clone() {
 		Mission? []_lm = {};
@@ -9916,16 +9926,15 @@ case 0:
         if (id == Gtk.ResponseType.ACCEPT)
             fn = chooser.get_filename ();
 
-        if(fn != null) {
-			mdx = 0; // Selected item
-			load_file(fn,true,append);
-		}
 		chooser.destroy ();
 		// Ensure removed befoer updating map
 		chooser = null;
 		while(Gtk.events_pending())
 			Gtk.main_iteration();
-
+        if(fn != null) {
+			mdx = 0; // Selected item
+			load_file(fn,true,append);
+		}
 	}
 
     private void replay_otx(bool delay=true)
