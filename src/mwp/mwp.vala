@@ -812,7 +812,7 @@ public class MWP : Gtk.Application {
 		if(!is_wayland) {
 			splash = builder.get_object ("splash") as Gtk.Window;
 			splash.set_keep_above(true);
-			splash.show_all();
+				splash.show_all();
 			while(Gtk.events_pending())
 				Gtk.main_iteration();
 		}
@@ -4560,27 +4560,18 @@ case 0:
         }
     }
 
-    private bool view_delta_diff(double f0, double f1)
-    {
+    private bool view_delta_diff(double f0, double f1) {
         double delta;
         delta = 0.0000025 * Math.pow(2, (20-view.zoom_level));
         return (Math.fabs(f0-f1) > delta);
     }
 
-    private bool map_moved()
-    {
-        bool ret = false;
-
+    private bool map_moved()     {
         var iy =  view.get_center_latitude();
         var ix =  view.get_center_longitude();
-
-        if (view_delta_diff(lx,ix) || view_delta_diff(ly,iy))
-        {
-            ret = true;
-        }
         ly=iy;
         lx=ix;
-        return ret;
+        return  (view_delta_diff(lx,ix) || view_delta_diff(ly,iy));
     }
 
     private void setup_buttons()
@@ -5920,8 +5911,7 @@ case 0:
 
             ms.cy = (ms.maxy + ms.miny) / 2.0;
             ms.cx = (ms.maxx + ms.minx) / 2.0;
-            if (ctr_on)
-            {
+            if (ctr_on) {
                 map_centre_on(ms.cy, ms.cx);
                 ms.zoom = guess_appropriate_zoom(bb_from_mission(ms));
                 set_view_zoom(ms.zoom);
@@ -9754,22 +9744,25 @@ case 0:
 
     private void instantiate_mission(Mission ms)
     {
-//		print("DBG instantiate mission\n");
-        if(armed == 0 && craft != null)
-        {
+/*
+		int x = 0, y = 0, ox = 0, oy = 0;
+		window.get_window().get_origin(out ox, out oy);
+		Gdk.Device? pointer = window.get_display().get_default_seat().get_pointer();
+		window.get_window().get_device_position(pointer, out x, out y, null);
+		pointer.warp(window.screen, ox+40, oy+40);
+*/
+        if(armed == 0 && craft != null) {
             markers.remove_rings(view);
             craft.init_trail();
         }
         validatelab.set_text("");
-        map_centre_on(ms.cy, ms.cx);
-        ls.import_mission(ms, (conf.rth_autoland &&
-                               Craft.is_mr(vi.mrtype)));
+        ls.import_mission(ms, (conf.rth_autoland && Craft.is_mr(vi.mrtype)));
         NavStatus.have_rth = ls.have_rth;
+		centre_mission(ms, true);
         if(have_home)
             markers.add_home_point(home_pos.lat,home_pos.lon,ls);
         need_preview = true;
 		msx[mdx] = ms;
-		centre_mission(ms, true);
     }
 
 	private Mission?[] msx_clone() {
