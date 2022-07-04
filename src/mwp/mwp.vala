@@ -1205,7 +1205,7 @@ public class MWP : Gtk.Application {
         foreach (var s in ext_apps)
         {
             if (s != null) {
-                appsts[si] = MWPUtils.exists_on_path(s);
+                appsts[si] = (Environment.find_program_in_path(s) != null);
                 if (appsts[si] == false)
                     MWPLog.message("Failed to find \"%s\" on PATH\n", s);
             }
