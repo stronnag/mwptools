@@ -63,7 +63,7 @@ The environment is set before any GTK / UI calls are made.
 
 mwp (and other applications) can have a problem with OpenGL and the Wayland compositor. Typcially this is manifest by being unable to pick mission WP icons for large (>40 point) missions.
 
-On non-WSL platforms, mwp forces XWayland over Wayland to mitigate this. You can force Wayland / XWayland by setting the `GDK_BACKEND` variable in `cmdopts`. This will override mwp's default.
+On non-WSL platforms, mwp forces XWayland over Wayland to mitigate this. You can force Wayland / XWayland by setting the `GDK_BACKEND` variable in `cmdopts` (or the environment). This will override mwp's default behaviour.
 
     # set XWayland
     GDK_BACKEND=x11

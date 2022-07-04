@@ -10512,7 +10512,8 @@ case 0:
     {
 		var u = Posix.utsname();
 		if (!u.release.contains("microsoft-standard-WSL")) {
-			Environment.set_variable("GDK_BACKEND", "x11", true);
+			if(Environment.get_variable("GDK_BACKEND") == null)
+				Environment.set_variable("GDK_BACKEND", "x11", true);
 		}
 		var s1 = read_cmd_opts();
         var s2 = Environment.get_variable("MWP_ARGS");
