@@ -32,7 +32,7 @@ The install process installs an desktop icon and `mwp.desktop` application file 
 
 ### Display Managers
 
-{ mwp } uses a library, `libchamplain` to draw maps and mission symbols; unfortunately, this does not integrate consistently with the various generations of open source display managers (ironically, it works without problems in WSL-G). Please check the following before raising Github issues:
+{{ mwp }} uses a library, `libchamplain` to draw maps and mission symbols; unfortunately, this does not integrate consistently with the various generations of open source display managers (ironically, it works without problems in WSL-G). Please check the following before raising Github issues:
 
 * On **Wayland** : Wayland is the latest open source display manager. On some older graphics cards (i.e. more than c. 5 years old), it may fail to 'pick' waypoint symbols when there are more than c. 40 symbols in a mission.
   In order to mitigate this, the default setting in mwp is to use a fallback implementation known as **XWayland**. Use of **Wayland** (vice XWayland) for newer graphics cards may be forced by setting `GDK_BACKEND=wayland` in [`~/.config/mwp/cmdopts`](mwp-Configuration.md#cmdopts) or the environment.
