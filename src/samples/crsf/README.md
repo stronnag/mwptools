@@ -2,14 +2,14 @@
 
 ## Introduction
 
-This small project illustrates my effort to understand the CRSF telemetry protocol.
+This small project illustrates an effort to understand the CRSF telemetry protocol.
 The protocol is actually quite simple.
 
 ## CRSF
 
 ### Detection
 
-CSRF data consists of frames decribing a data item (GPS, BATTERY etc.). Auto-detection is problematic. Looking for `0xea` and applying heuristics over the frame seems like the best bet.
+CSRF data consists of frames describing a data item (GPS, BATTERY etc.). Auto-detection is problematic. Looking for `0xea` and applying heuristics over the frame seems like the best bet.
 
 ### Frame Format
 
