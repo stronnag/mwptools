@@ -1082,7 +1082,6 @@ public class MWP : Gtk.Application {
     {
         if (window == null) {
             show_startup();
-            parse_cli_options();
             ready = true;
             create_main_window();
         }
@@ -1091,8 +1090,7 @@ public class MWP : Gtk.Application {
 
     private void parse_cli_options()
     {
-        if (mission != null)
-        {
+        if (mission != null) {
             var fn = mission;
             mission = null;
             Idle.add(() => {
