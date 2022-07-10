@@ -1096,7 +1096,7 @@ MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 <p>So here the only current, valid options are  <code>--rings 50,20 --dont-maximise</code>, and the <a href="#environment-variables">environment variable</a> MWP_BLACK_TILE is set (for <a href="../Black-Ops/#custom-tile">anonymous maps</a>).</p>
 <p>The environment is set before any GTK / UI calls are made.</p>
 <p>mwp (and other applications) can have a problem with OpenGL and the Wayland compositor. Typcially this is manifest by being unable to pick mission WP icons for large (&gt;40 point) missions.</p>
-<p>On non-WSL platforms, mwp forces XWayland over Wayland to mitigate this. You can force Wayland / XWayland by setting the <code>GDK_BACKEND</code> variable in <code>cmdopts</code>. This will override mwp's default.</p>
+<p>On non-WSL platforms, mwp forces XWayland over Wayland to mitigate this. You can force Wayland / XWayland by setting the <code>GDK_BACKEND</code> variable in <code>cmdopts</code> (or the environment). This will override mwp's default behaviour.</p>
 <pre><code># set XWayland
 GDK_BACKEND=x11
 # set Wayland

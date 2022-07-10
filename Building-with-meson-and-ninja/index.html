@@ -563,8 +563,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#easy-first-time-install-on-debian-and-ubuntu" class="md-nav__link">
-    Easy first-time install on Debian and Ubuntu
+  <a href="#easy-first-time-install-on-debian-and-derivatives" class="md-nav__link">
+    Easy first-time install on Debian and derivatives
   </a>
   
 </li>
@@ -957,8 +957,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#easy-first-time-install-on-debian-and-ubuntu" class="md-nav__link">
-    Easy first-time install on Debian and Ubuntu
+  <a href="#easy-first-time-install-on-debian-and-derivatives" class="md-nav__link">
+    Easy first-time install on Debian and derivatives
   </a>
   
 </li>
@@ -1099,12 +1099,12 @@
                 
                 <h1 id="build-install-mwp-generic">Build / install mwp (Generic)<a class="headerlink" href="#build-install-mwp-generic" title="Permanent link">#</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
-<p>If you just want to install <a href="https://github.com/stronnag/mwptools">mwp</a> on a Debian / Ubuntu / derivative (WSL etc.), x64_64, then you can install the binary <code>.deb</code> package from the <a href="https://github.com/stronnag/mwptools/releases">Release Area</a>.</p>
+<p>If you just want to install <a href="https://github.com/stronnag/mwptools">mwp</a> on a Debian /derivative (includin WSL), x64_64, then you can install the binary <code>.deb</code> package from the <a href="https://github.com/stronnag/mwptools/releases">Release Area</a>.</p>
 <p>Otherwise, if you're using a different (not Debian based) distribution, just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscV, ppc etc.), then you can build from source.</p>
 <p>For Arch Linux, you can install using the AUR package <code>mwptools-git</code></p>
 <p>The <strong>mwptools</strong> suite is built using the <a href="https://mesonbuild.com/SimpleStart.html">meson</a> and <a href="https://ninja-build.org/">ninja</a> toolchain. For most users these will be automatically provided by a <code>build-essentials</code> type of package transparently to the user.</p>
 <p>Prior to late May 2021, the build system used a convoluted <code>Makefile</code>.</p>
-<p>For Debian and derivatives (Ubuntu, WSL etc.) there is a simple <a href="#easy-first-time-install-on-debian-and-ubuntu">"one stop" installation script</a>, as well as a x86_64 "Release" <code>.deb</code> archive.</p>
+<p>For Debian and derivatives there is a simple <a href="#easy-first-time-install-on-debian-and-ubuntu">"one stop" installation script</a>, as well as a x86_64 "Release" <code>.deb</code> archive.</p>
 <h2 id="rationale">Rationale<a class="headerlink" href="#rationale" title="Permanent link">#</a></h2>
 <p>In its early days, <code>make</code> was a suitable build tool. As <strong>mwptools</strong> has gained in features and functionality, this has become un-maintainable.
 The migration to <code>meson</code> and <code>ninja</code> solves this problem and allows the project structure to be rationalised.</p>
@@ -1130,7 +1130,7 @@ git pull
 <ul>
 <li>If you're using a really old OS (e.g. Debian 10), you may also need <code>export XDG_DATA_DIRS=/usr/share:$HOME/.local/share</code> for a local install.</li>
 </ul>
-<h3 id="easy-first-time-install-on-debian-and-ubuntu">Easy first-time install on Debian and Ubuntu<a class="headerlink" href="#easy-first-time-install-on-debian-and-ubuntu" title="Permanent link">#</a></h3>
+<h3 id="easy-first-time-install-on-debian-and-derivatives">Easy first-time install on Debian and derivatives<a class="headerlink" href="#easy-first-time-install-on-debian-and-derivatives" title="Permanent link">#</a></h3>
 <ul>
 <li>Download the <a href="https://raw.githubusercontent.com/stronnag/mwptools/master/docs/deb-install.sh">first time build script</a></li>
 <li>Make it executable <code>chmod +x deb-install.sh</code></li>
@@ -1150,7 +1150,7 @@ ninja &amp;&amp; sudo ninja install
 <p>The user needs to have read / write permissions on the serial port in order to communicate with a flight controller. This is done by adding the user to a group:</p>
 <ul>
 <li>Arch Linux: <code>sudo usermod -aG uucp $USER</code></li>
-<li>Debian / Ubuntu / Fedora (and derivatives): <code>sudo usermod -aG dialout $USER</code></li>
+<li>Debian / Fedora (and derivatives): <code>sudo usermod -aG dialout $USER</code></li>
 <li>FreeBSD: <code>sudo pw group mod dialer -m $USER</code></li>
 <li>Windows/WSL: Not needed, no serial pass-through. Use the <a href="../mwp-in-Windows-11---WSL-G/#serial-device">ser2udp</a> bridge instead.</li>
 </ul>

@@ -958,11 +958,11 @@
 <li>Such <a href="../mwp-Configuration/">options can be added to a configuration file</a> for persistence or use from the graphical icon.</li>
 </ul>
 <h3 id="display-managers">Display Managers<a class="headerlink" href="#display-managers" title="Permanent link">#</a></h3>
-<p>{ mwp } uses a library, <code>libchamplain</code> to draw maps and mission symbols; unfortunately, this does not integrate consistently with the various generations of open source display managers (ironically, it works without problems in WSL-G). Please check the following before raising Github issues:</p>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> uses a library, <code>libchamplain</code> to draw maps and mission symbols; unfortunately, this does not integrate consistently with the various generations of open source display managers (ironically, it works without problems in WSL-G). Please check the following before raising Github issues:</p>
 <ul>
 <li>
 <p>On <strong>Wayland</strong> : Wayland is the latest open source display manager. On some older graphics cards (i.e. more than c. 5 years old), it may fail to 'pick' waypoint symbols when there are more than c. 40 symbols in a mission.
-  In order to mitigate this, the default setting in mwp is to use a fallback implementation known as <strong>XWayland</strong>. Use of <strong>Wayland</strong> (vice XWayland) for newer graphics cards may be forced by setting <code>GDK_BACKEND=wayland</code> in <a href="../mwp-Configuration/#cmdopts"><code>~/.config/mwp/cmdopts</code></a>.</p>
+  In order to mitigate this, the default setting in mwp is to use a fallback implementation known as <strong>XWayland</strong>. Use of <strong>Wayland</strong> (vice XWayland) for newer graphics cards may be forced by setting <code>GDK_BACKEND=wayland</code> in <a href="../mwp-Configuration/#cmdopts"><code>~/.config/mwp/cmdopts</code></a> or the environment.</p>
 </li>
 <li>
 <p>On <strong>Xlib</strong> : Sometimes (rarely), you may load a mission and the WPs cannot be 'picked' and the map is unresponsive to mouse control. The work-around is to move the mouse off the map and back on again (or scroll the map with the keyboard, CTRL-arrow-keys).</p>

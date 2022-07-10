@@ -801,26 +801,23 @@
 <h2 id="mwp-requirements">mwp requirements<a class="headerlink" href="#mwp-requirements" title="Permanent link">#</a></h2>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> works with the web-based Ground Control Station <a href="https://bulletgcss.fpvsampa.com/">BulletGCSS</a> MQTT protocol, tested with both a <code>fl2mqtt</code> simulation and a recorded live session.</p>
 <p>The MQTT component is build if either <code>paho-mqtt</code> or <code>mosquitto</code> libraries are detected; <code>paho-mtqq</code> is preferred.</p>
-<pre><code>## Debian / Ubuntu ##
+<pre><code>## Arch ##
+yay -S paho-mqtt-c-git  ## or you favourite AUR helper
+# or #
+sudo pacman -S mosquitto
+
+## Debian and derivatives ##
 ### Debian testing / Ubuntu 20.10 + for paho ###
 sudo apt install libpaho-mqtt-dev
 # or #
 sudo apt install libmosquitto-dev
 
-## Arch ##
-
-yay -S paho-mqtt-c-git  ## or you favourite AUR helper
-# or #
-sudo pacman -S mosquitto
-
 ## Fedora ##
-
 dnf install paho-c-devel
 # or #
 dnf install mosquitto-devel
 
 ## FreeBSD ##
-
 ## paho-mqtt
 # Clone github repo and build from source. Configure with cmake -DPAHO_WITH_SSL=true ..
 git clone https://github.com/eclipse/paho.mqtt.c.git
