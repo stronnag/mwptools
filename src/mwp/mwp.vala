@@ -29,7 +29,7 @@ public class MWP : Gtk.Application {
 
     public Builder builder;
     public Gtk.ApplicationWindow window;
-	private MwpSplash? splash;
+//	private MwpSplash? splash;
     private int window_h = -1;
     private int window_w = -1;
     public  Champlain.View view;
@@ -809,11 +809,11 @@ public class MWP : Gtk.Application {
 			}
 		}
 
-		splash = new MwpSplash();
+/*		splash = new MwpSplash();
 		if(!is_wayland) {
 			splash.run();
 		}
-
+*/
 		var dmstr = Environment.get_variable("XDG_CURRENT_DESKTOP");
 		if (dmstr == null) {
 			dmstr = "Unknown DE";
@@ -1301,7 +1301,7 @@ public class MWP : Gtk.Application {
                     }
                 }
                 MWPLog.message("Using speech api %d [%s]\n", spapi, SPEAKERS[spapi]);
-				splash.update("Enabling speech api");
+//				splash.update("Enabling speech api");
             } else {
                 switch(conf.speech_api)
                 {
@@ -1412,7 +1412,7 @@ public class MWP : Gtk.Application {
         }
 
 		MWPLog.message("Get map preference\n");
-		splash.update("Setting up map sources");
+//		splash.update("Setting up map sources");
         MapSource [] msources = {};
         string msfn = null;
         if(conf.map_sources != null)
@@ -2722,7 +2722,7 @@ public class MWP : Gtk.Application {
                 return false;
             });
 		MWPLog.message("Show main window\n");
-		splash.update("Preparing main window");
+//		splash.update("Preparing main window");
 
         if((wp_edit = conf.auto_wp_edit) == true)
             wp_edit_button.hide();
@@ -2911,7 +2911,7 @@ public class MWP : Gtk.Application {
 
        acquire_bus();
 
-	   splash.destroy();
+//	   splash.destroy();
 
        if(mkcon)
         {
