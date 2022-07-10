@@ -869,15 +869,21 @@ public class MWP : Gtk.Application {
             stdout.printf("%s\n", MwpVers.get_build());
             return 0;
         }
+		/*
         string oval = null;
         string []vars={"replay-bbox", "kmlfile", "mission", "replay-mwp"};
         foreach (var k in vars) {
             if (o.contains(k)) {
                 o.lookup(k, "s", ref oval);
-                if (oval != null)
-                    o.insert_value(k, new Variant.string(Posix.realpath(oval)));
-            }
+                if (oval != null) {
+					var fn = Posix.realpath(oval);
+					if (Posix.access(fn, Posix.R_OK) == 0) {
+						o.insert_value(k, new Variant.string(fn));
+					}
+				}
+			}
         }
+		*/
         return -1;
     }
 
@@ -1088,55 +1094,69 @@ public class MWP : Gtk.Application {
         parse_cli_options();
     }
 
+	private string? validate_cli_file(string fn) {
+		var vfn = Posix.realpath(fn);
+		if (vfn == null) {
+			MWPLog.message("CLI provided file \"%s\" not found\n", fn);
+		}
+		return vfn;
+	}
+
     private void parse_cli_options()
     {
         if (mission != null) {
             var fn = mission;
             mission = null;
-            Idle.add(() => {
-                    var ms = open_mission_file(fn);
-                    if(ms != null)
-                    {
-                        clat = ms.cy;
-                        clon = ms.cx;
-                        last_file = fn;
-                        update_title_from_file(fn);
-                    }
-                    return Source.REMOVE;
-                });
+			var vfn = validate_cli_file(fn);
+			if (vfn != null) {
+				Idle.add(() => {
+						var ms = open_mission_file(vfn);
+						if(ms != null) {
+							clat = ms.cy;
+							clon = ms.cx;
+							last_file = vfn;
+							update_title_from_file(vfn);
+						}
+						return Source.REMOVE;
+					});
+			}
         }
 
-        if(kmlfile != null)
-        {
+        if(kmlfile != null) {
             var ks = kmlfile.split(",");
             kmlfile = null;
             Idle.add(() => {
-                    foreach(var kf in ks)
-                        try_load_overlay(kf);
-                    return Source.REMOVE;
-                });
+                    foreach(var kf in ks) {
+						var vfn = validate_cli_file(kf);
+						if (vfn != null) {
+							try_load_overlay(kf);
+						}
+					}
+					return Source.REMOVE;
+				});
         }
 
-       if(rfile != null)
-       {
-           var fn = Posix.realpath(rfile);
+       if(rfile != null) {
+           var vfn = validate_cli_file(rfile);
            rfile = null;
-           Idle.add(() => { // was Timeout.add(600, ...
-                   usemag = force_mag;
-                   run_replay(fn, true, Player.MWP);
-                   return Source.REMOVE;
-               });
-       }
-       else if(bfile != null)
-       {
-           var fn = Posix.realpath(bfile);
+		   if(vfn != null) {
+			   Idle.add(() => { // was Timeout.add(600, ...
+					   usemag = force_mag;
+					   run_replay(vfn, true, Player.MWP);
+					   return Source.REMOVE;
+				   });
+		   }
+       } else if(bfile != null) {
+           var vfn = validate_cli_file(bfile);
            bfile = null;
-           Idle.add(() => {
-                   usemag = force_mag;
-                   replay_bbox(true, fn);
-                   return Source.REMOVE;
-               });
-       }
+		   if(vfn != null) {
+			   Idle.add(() => {
+					   usemag = force_mag;
+					   replay_bbox(true, vfn);
+					   return Source.REMOVE;
+				   });
+		   }
+	   }
     }
 
 	private void set_act_mission_combo(bool isnew=false) {
@@ -7123,7 +7143,7 @@ case 0:
                 }
                 navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS),flg);
 
-//                stderr.printf("Nframe gps %d wp %d np %d\n", ns.gps_mode,   ns.wp_number,NavStatus.nm_pts);
+//                stderr.printf("DBG: Nframe mode %d\n", ns.nav_mode);
 
                 if((replayer & Player.BBOX) == 0 && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255))
                 {

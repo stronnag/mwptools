@@ -66,7 +66,7 @@ mwp should  build and running on any platform that supports (recent versions of)
 
 mwptools is tested on x86_64, ia32, and aarch64 architectures (Linux / FreeBSD).
 
-* There is a "Release" debian package (x86_64, Debian, Ubuntu etc).
+* There is a "Release" Debian package (x86_64, Debian and derivatives).
 * Simple, ["one stop shop" build and install script](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/)
 * AUR package 'mwptools-git' for Arch Linux.
 
@@ -89,7 +89,7 @@ For OS not supported by mwp (e.g. MacOS, IOS, Andriod), see also [impload](https
 
 ## Installation
 
-* Review / install the dependencies for your platform. The [documentation](docs/) directory lists dependencies for Fedora and Debian/Ubuntu like systems.
+* Review / install the dependencies for your platform. The [documentation](docs/) directory lists dependencies for Fedora and Debian like systems.
 
 * [Installation Guide (wiki)](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/).
 

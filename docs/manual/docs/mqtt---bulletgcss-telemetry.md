@@ -7,26 +7,23 @@
 
 The MQTT component is build if either `paho-mqtt` or `mosquitto` libraries are detected; `paho-mtqq` is preferred.
 
-    ## Debian / Ubuntu ##
+    ## Arch ##
+    yay -S paho-mqtt-c-git  ## or you favourite AUR helper
+    # or #
+    sudo pacman -S mosquitto
+
+    ## Debian and derivatives ##
     ### Debian testing / Ubuntu 20.10 + for paho ###
     sudo apt install libpaho-mqtt-dev
     # or #
     sudo apt install libmosquitto-dev
 
-    ## Arch ##
-
-    yay -S paho-mqtt-c-git  ## or you favourite AUR helper
-    # or #
-    sudo pacman -S mosquitto
-
     ## Fedora ##
-
     dnf install paho-c-devel
     # or #
     dnf install mosquitto-devel
 
     ## FreeBSD ##
-
     ## paho-mqtt
     # Clone github repo and build from source. Configure with cmake -DPAHO_WITH_SSL=true ..
     git clone https://github.com/eclipse/paho.mqtt.c.git

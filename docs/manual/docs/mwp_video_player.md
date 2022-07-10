@@ -10,14 +10,14 @@
 The video replay capability requires:
 
 * Arch Linux `sudo pacman -S gst-plugins-base-libs`
-* Debian / Ubuntu `sudo apt install libgstreamer-plugins-base1.0-dev`
+* Debian and derivatives `sudo apt install libgstreamer-plugins-base1.0-dev`
 * Fedora `sudo dnf install gstreamer1-plugins-base gstreamer1-plugins-base-devel`
 * Other distro -- consult the package manager
 
 And, if not installed:
 
 * Arch Linux `gst-plugins-good`
-* Debian / Ubuntu `gstreamer1.0-plugins-good`
+* Debian and derivatives `gstreamer1.0-plugins-good`
 * Fedora `gstreamer1-plugins-good`
 * Other distro -- consult the package manager
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-If you just want to install {{ mwp }} on a Debian / Ubuntu / derivative (WSL etc.), x64_64, then you can install the binary `.deb` package from the [Release Area](https://github.com/stronnag/mwptools/releases).
+If you just want to install {{ mwp }} on a Debian /derivative (includin WSL), x64_64, then you can install the binary `.deb` package from the [Release Area](https://github.com/stronnag/mwptools/releases).
 
 Otherwise, if you're using a different (not Debian based) distribution, just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscV, ppc etc.), then you can build from source.
 
@@ -12,7 +12,7 @@ The **mwptools** suite is built using the [meson](https://mesonbuild.com/SimpleS
 
 Prior to late May 2021, the build system used a convoluted `Makefile`.
 
-For Debian and derivatives (Ubuntu, WSL etc.) there is a simple ["one stop" installation script](#easy-first-time-install-on-debian-and-ubuntu), as well as a x86_64 "Release" `.deb` archive.
+For Debian and derivatives there is a simple ["one stop" installation script](#easy-first-time-install-on-debian-and-ubuntu), as well as a x86_64 "Release" `.deb` archive.
 
 ## Rationale
 
@@ -43,7 +43,7 @@ Unless you need a multi-user setup, a local install is preferable, as you don't 
 
 * If you're using a really old OS (e.g. Debian 10), you may also need `export XDG_DATA_DIRS=/usr/share:$HOME/.local/share` for a local install.
 
-### Easy first-time install on Debian and Ubuntu
+### Easy first-time install on Debian and derivatives
 
 * Download the [first time build script](https://raw.githubusercontent.com/stronnag/mwptools/master/docs/deb-install.sh)
 * Make it executable `chmod +x deb-install.sh`
@@ -65,7 +65,7 @@ Unless you need a multi-user setup, a local install is preferable, as you don't 
 The user needs to have read / write permissions on the serial port in order to communicate with a flight controller. This is done by adding the user to a group:
 
 * Arch Linux: `sudo usermod -aG uucp $USER`
-* Debian / Ubuntu / Fedora (and derivatives): `sudo usermod -aG dialout $USER`
+* Debian / Fedora (and derivatives): `sudo usermod -aG dialout $USER`
 * FreeBSD: `sudo pw group mod dialer -m $USER`
 * Windows/WSL: Not needed, no serial pass-through. Use the [ser2udp](mwp-in-Windows-11---WSL-G.md#serial-device) bridge instead.
 
