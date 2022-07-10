@@ -279,6 +279,10 @@
     <submenu>
       <attribute name="label">Help</attribute>
       <section>
+	<item>
+          <attribute name="label">Online Manual</attribute>
+          <attribute name="action">win.manual</attribute>
+        </item>
         <item>
           <attribute name="label">Shortcut keys list</attribute>
           <attribute name="action">win.keys</attribute>

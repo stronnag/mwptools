@@ -1860,6 +1860,15 @@ public class MWP : Gtk.Application {
             });
         window.add_action(saq);
 
+        saq = new GLib.SimpleAction("manual",null);
+        saq.activate.connect(() => {
+				try {
+					Gtk.show_uri_on_window (null, "https://stronnag.github.io/mwptools/",
+											Gdk.CURRENT_TIME);
+				} catch {}
+			});
+		window.add_action(saq);
+
         saq = new GLib.SimpleAction("upload-mission",null);
         saq.activate.connect(() => {
                 upload_mm(mdx, WPDL.GETINFO);
