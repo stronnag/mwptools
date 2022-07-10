@@ -851,10 +851,8 @@ public class MWP : Gtk.Application {
     }
 
     public override int command_line (ApplicationCommandLine command_line) {
-        this.hold ();
-		int res = _command_line (command_line);
-        this.release ();
-        return res;
+ 		int res = _command_line (command_line);
+		return res;
     }
 
     private int do_handle_local_options(VariantDict o)
@@ -1072,12 +1070,17 @@ public class MWP : Gtk.Application {
     public void handle_activate ()
     {
         if (window == null) {
-            show_startup();
+			this.hold ();
+			show_startup();
             ready = true;
             create_main_window();
+			this.release ();
         }
-        parse_cli_options();
-    }
+		Idle.add(() => {
+				parse_cli_options();
+				return false;
+			});
+	}
 
 	private string? validate_cli_file(string fn) {
 		var vfn = Posix.realpath(fn);
@@ -1174,8 +1177,7 @@ public class MWP : Gtk.Application {
         return ok;
 	}
 
-    private void create_main_window()
-    {
+    private void create_main_window() {
         gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
         lastmission = {};
         wpmgr = WPMGR();
@@ -2719,10 +2721,8 @@ public class MWP : Gtk.Application {
                     });
                 return false;
             });
-
 		MWPLog.message("Show main window\n");
 		splash.update("Preparing main window");
-        window.show_all();
 
         if((wp_edit = conf.auto_wp_edit) == true)
             wp_edit_button.hide();
@@ -2745,6 +2745,8 @@ public class MWP : Gtk.Application {
         lm.child_set(view,scale,"x-align", Clutter.ActorAlign.START);
         lm.child_set(view,scale,"y-align", Clutter.ActorAlign.END);
         map_init_warning(lm);
+
+		window.show_all();
 
         var dock = new Dock ();
         dock.margin_start = 4;
@@ -2828,7 +2830,7 @@ public class MWP : Gtk.Application {
         if(conf.mavrth != null)
             parse_rc_mav(conf.mavrth, Craft.Special.RTH);
 
-		setup_mission_from_mm();
+//		setup_mission_from_mm();
 
         Gtk.drag_dest_set (window, Gtk.DestDefaults.ALL,
                            targets, Gdk.DragAction.COPY);
@@ -2909,6 +2911,8 @@ public class MWP : Gtk.Application {
 
        acquire_bus();
 
+	   splash.destroy();
+
        if(mkcon)
         {
             connect_serial();
@@ -2988,10 +2992,7 @@ public class MWP : Gtk.Application {
 			});
 		gstdm.setup_device_monitor();
 		map_moved();
-		Timeout.add(500, () => {
-				splash.destroy();
-				return false;
-			});
+		parse_cli_options();
     }
 
 	private void set_pmask_poller(MWSerial.PMask pmask) {
