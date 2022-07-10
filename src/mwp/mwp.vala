@@ -869,21 +869,6 @@ public class MWP : Gtk.Application {
             stdout.printf("%s\n", MwpVers.get_build());
             return 0;
         }
-		/*
-        string oval = null;
-        string []vars={"replay-bbox", "kmlfile", "mission", "replay-mwp"};
-        foreach (var k in vars) {
-            if (o.contains(k)) {
-                o.lookup(k, "s", ref oval);
-                if (oval != null) {
-					var fn = Posix.realpath(oval);
-					if (Posix.access(fn, Posix.R_OK) == 0) {
-						o.insert_value(k, new Variant.string(fn));
-					}
-				}
-			}
-        }
-		*/
         return -1;
     }
 
