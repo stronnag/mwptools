@@ -851,7 +851,9 @@ public class MWP : Gtk.Application {
     }
 
     public override int command_line (ApplicationCommandLine command_line) {
+		this.hold ();
  		int res = _command_line (command_line);
+		this.release ();
 		return res;
     }
 
@@ -963,32 +965,29 @@ public class MWP : Gtk.Application {
     {
         is_shutdown = true;
         check_mission_clean(false);
-
         if(msp.available)
             msp.close();
 #if MQTT
         if (mqtt.available)
             mqtt_available = mqtt.mdisconnect();
 #endif
-
 		foreach (var r in radardevs) {
 			if(r.dev != null && r.dev.available)
 				r.dev.close();
 		}
-
         // stop any previews / replays
         ls.quit();
         stop_replayer();
-
         mss.quit();
 
         if(conf.atexit != null)
             try {
                 Process.spawn_command_line_sync (conf.atexit);
             } catch {}
-    }
-    private void handle_replay_pause(bool from_vid=false)
-    {
+	}
+
+
+    private void handle_replay_pause(bool from_vid=false) {
         int signum;
         magcheck = false;
 
@@ -1070,11 +1069,9 @@ public class MWP : Gtk.Application {
     public void handle_activate ()
     {
         if (window == null) {
-			this.hold ();
 			show_startup();
             ready = true;
             create_main_window();
-			this.release ();
         }
 		Idle.add(() => {
 				parse_cli_options();
@@ -2830,7 +2827,7 @@ public class MWP : Gtk.Application {
         if(conf.mavrth != null)
             parse_rc_mav(conf.mavrth, Craft.Special.RTH);
 
-//		setup_mission_from_mm();
+		setup_mission_from_mm();
 
         Gtk.drag_dest_set (window, Gtk.DestDefaults.ALL,
                            targets, Gdk.DragAction.COPY);
