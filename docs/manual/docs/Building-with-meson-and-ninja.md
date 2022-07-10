@@ -32,7 +32,7 @@ If you're updating an old Makefile based install, please ensure your extant mwpt
 
 Set up the `meson` build system from the top level:
 
-    meson build --buildtype=release --strip [--prefix $HOME/.local`]
+    meson build --buildtype=release --strip [--prefix $HOME/.local]
 
 * For a user / non-system install, set `--prefix $HOME/.local`
     - This will install the binaries in `$HOME/.local/bin`, which should be added to `$PATH` as required.
