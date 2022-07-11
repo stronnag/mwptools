@@ -240,15 +240,16 @@ public abstract class BluezInterface : GLib.Object {
                           HashTable<string, Variant>? props = null) {
         iface_name = name;
         object_path = path;
-        try
-        {
+        try {
             bus = Bus.get_proxy_sync (BusType.SYSTEM, "org.bluez", path);
             if (props == null) {
                 property_cache = bus.get_all(iface_name);
             } else
                 property_cache = props;
             bus.properties_changed.connect(on_properties_changed);
-        } catch  {}
+        } catch  {
+			MWPLog.message("Failed to start bluetooth\n");
+		}
     }
 
     public Variant get_cache(string key) {

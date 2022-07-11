@@ -14,7 +14,7 @@ namespace Sticks {
 				set_transient_for (pw);
 			}
 			set_type_hint(Gdk.WindowTypeHint.UTILITY);
-			set_position(WindowPosition.CENTER_ON_PARENT);
+//			set_position(WindowPosition.CENTER_ON_PARENT);
 			var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
 			add (box);
 			lstick = new Sticks.Pad (1000, 1500, false);

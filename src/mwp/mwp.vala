@@ -29,7 +29,7 @@ public class MWP : Gtk.Application {
 
     public Builder builder;
     public Gtk.ApplicationWindow window;
-//	private MwpSplash? splash;
+	private MwpSplash? splash;
     private int window_h = -1;
     private int window_w = -1;
     public  Champlain.View view;
@@ -358,7 +358,7 @@ public class MWP : Gtk.Application {
         FL2_FAST = FL2LTM|FAST_MASK
     }
 
-    public struct Position
+	public struct Position
     {
         double lat;
         double lon;
@@ -809,11 +809,6 @@ public class MWP : Gtk.Application {
 			}
 		}
 
-/*		splash = new MwpSplash();
-		if(!is_wayland) {
-			splash.run();
-		}
-*/
 		var dmstr = Environment.get_variable("XDG_CURRENT_DESKTOP");
 		if (dmstr == null) {
 			dmstr = "Unknown DE";
@@ -844,7 +839,11 @@ public class MWP : Gtk.Application {
     }
 
     private int _command_line (ApplicationCommandLine command_line) {
-        var o = command_line.get_options_dict();
+		string[] args = command_line.get_arguments ();
+		foreach (var a in args[1:args.length]) {
+			guess_content_type(a);
+		}
+		var o = command_line.get_options_dict();
         set_opts_from_dict(o);
         activate();
         return 0;
@@ -1072,11 +1071,9 @@ public class MWP : Gtk.Application {
 			show_startup();
             ready = true;
             create_main_window();
-        }
-		Idle.add(() => {
-				parse_cli_options();
-				return false;
-			});
+        } else {
+			parse_cli_options();
+		}
 	}
 
 	private string? validate_cli_file(string fn) {
@@ -1087,14 +1084,23 @@ public class MWP : Gtk.Application {
 		return vfn;
 	}
 
+	private void valid_flash() {
+		var str = validatelab.get_text();
+		validatelab.set_text("+");
+		Timeout.add(250, () => {
+				validatelab.set_text(str);
+				return false;
+			});
+	}
+
     private void parse_cli_options()
     {
-        if (mission != null) {
-            var fn = mission;
-            mission = null;
-			var vfn = validate_cli_file(fn);
-			if (vfn != null) {
-				Idle.add(() => {
+		Idle.add(() => {
+				if (mission != null) {
+					var fn = mission;
+					mission = null;
+					var vfn = validate_cli_file(fn);
+					if (vfn != null) {
 						var ms = open_mission_file(vfn);
 						if(ms != null) {
 							clat = ms.cy;
@@ -1102,47 +1108,37 @@ public class MWP : Gtk.Application {
 							last_file = vfn;
 							update_title_from_file(vfn);
 						}
-						return Source.REMOVE;
-					});
-			}
-        }
+					}
+				}
 
-        if(kmlfile != null) {
-            var ks = kmlfile.split(",");
-            kmlfile = null;
-            Idle.add(() => {
+				if(kmlfile != null) {
+					var ks = kmlfile.split(",");
+					kmlfile = null;
                     foreach(var kf in ks) {
 						var vfn = validate_cli_file(kf);
 						if (vfn != null) {
 							try_load_overlay(kf);
 						}
 					}
-					return Source.REMOVE;
-				});
-        }
+					valid_flash();
+				}
 
-       if(rfile != null) {
-           var vfn = validate_cli_file(rfile);
-           rfile = null;
-		   if(vfn != null) {
-			   Idle.add(() => { // was Timeout.add(600, ...
-					   usemag = force_mag;
-					   run_replay(vfn, true, Player.MWP);
-					   return Source.REMOVE;
-				   });
-		   }
-       } else if(bfile != null) {
-           var vfn = validate_cli_file(bfile);
-           bfile = null;
-		   if(vfn != null) {
-			   Idle.add(() => {
-					   usemag = force_mag;
-					   replay_bbox(true, vfn);
-					   return Source.REMOVE;
-				   });
-		   }
-	   }
-    }
+				if(rfile != null) {
+					var vfn = validate_cli_file(rfile);
+					rfile = null;
+					if(vfn != null) {
+						run_replay(vfn, true, Player.MWP);
+					}
+				} else if(bfile != null) {
+					var vfn = validate_cli_file(bfile);
+					bfile = null;
+					if(vfn != null) {
+						replay_bbox(true, vfn);
+					}
+				}
+				return false;
+			});
+	}
 
 	private void set_act_mission_combo(bool isnew=false) {
 		actmission.remove_all();
@@ -1151,12 +1147,11 @@ public class MWP : Gtk.Application {
 			var k = j + 1;
 			actmission.append_text(k.to_string());
 		}
-		if (j < MAXMULTI)
+		if (j < MAXMULTI) {
 			actmission.append_text("New");
-		else
+		} else
 			MWPLog.message("MM size exceeded\n");
 		actmission.active = isnew ? j-1 : imdx;
-
 	}
 
 	private bool get_app_status(string app, out string bblhelp) {
@@ -1178,6 +1173,7 @@ public class MWP : Gtk.Application {
         gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
         lastmission = {};
         wpmgr = WPMGR();
+		msx = {};
 
         vbsamples = new float[MAXVSAMPLE];
 
@@ -1278,6 +1274,16 @@ public class MWP : Gtk.Application {
         mmap = new ModelMap();
         mmap.init();
 
+
+        window = builder.get_object ("window1") as Gtk.ApplicationWindow;
+        this.add_window (window);
+        window.set_application (this);
+
+		splash = new MwpSplash();
+		if(!is_wayland) {
+			splash.run();
+		}
+
         spapi = 0;
 
         if(exvox == null)
@@ -1298,7 +1304,7 @@ public class MWP : Gtk.Application {
                     }
                 }
                 MWPLog.message("Using speech api %d [%s]\n", spapi, SPEAKERS[spapi]);
-//				splash.update("Enabling speech api");
+				splash.update("Enabling speech api");
             } else {
                 switch(conf.speech_api)
                 {
@@ -1409,17 +1415,14 @@ public class MWP : Gtk.Application {
         }
 
 		MWPLog.message("Get map preference\n");
-//		splash.update("Setting up map sources");
+		splash.update("Setting up map sources");
         MapSource [] msources = {};
         string msfn = null;
         if(conf.map_sources != null)
             msfn = MWPUtils.find_conf_file(conf.map_sources);
         msources =   JsonMapDef.read_json_sources(msfn,offline);
 
-        window = builder.get_object ("window1") as Gtk.ApplicationWindow;
-        this.add_window (window);
-        window.set_application (this);
-        window.window_state_event.connect( (e) => {
+		window.window_state_event.connect( (e) => {
                 wdw_state = ((e.new_window_state & Gdk.WindowState.FULLSCREEN) != 0);
                 if(wdw_state)     // true == full screen
                 {
@@ -1673,10 +1676,14 @@ public class MWP : Gtk.Application {
         Places.get_places();
         setpos.load_places();
         setpos.new_pos.connect((la, lo, zoom) => {
-                map_centre_on(la, lo);
-                if(zoom > 0)
-                    view.zoom_level = zoom;
-                map_moved();
+				Idle.add(() => {
+						map_centre_on(la, lo);
+						if(zoom > 0)
+							view.zoom_level = zoom;
+						map_moved();
+						valid_flash();
+						return false;
+					});
             });
 
         var saq = new GLib.SimpleAction("file-open",null);
@@ -2119,6 +2126,7 @@ public class MWP : Gtk.Application {
 
 		view = embed.get_view();
         view.set_reactive(true);
+		view.animate_zoom = true;
 
         var place_editor = new PlaceEdit(window, view);
         setpos.place_edit.connect(() => {
@@ -2719,7 +2727,7 @@ public class MWP : Gtk.Application {
                 return false;
             });
 		MWPLog.message("Show main window\n");
-//		splash.update("Preparing main window");
+		splash.update("Preparing main window");
 
         if((wp_edit = conf.auto_wp_edit) == true)
             wp_edit_button.hide();
@@ -2742,6 +2750,16 @@ public class MWP : Gtk.Application {
         lm.child_set(view,scale,"x-align", Clutter.ActorAlign.START);
         lm.child_set(view,scale,"y-align", Clutter.ActorAlign.END);
         map_init_warning(lm);
+		bool minit = false;
+		view.layer_relocated.connect(() => {
+				if (!minit) {
+					minit = true;
+					Timeout.add(100, () => {
+							parse_cli_options();
+							return false;
+						});
+				}
+			});
 
 		window.show_all();
 
@@ -2832,98 +2850,37 @@ public class MWP : Gtk.Application {
         Gtk.drag_dest_set (window, Gtk.DestDefaults.ALL,
                            targets, Gdk.DragAction.COPY);
 
-		window.drag_data_received.connect(
-            (ctx, x, y, data, info, time) => {
-                string mf = null; // mission
-                string sf = null; // replay (bbox / mwp)
-                string kf = null; // overlay
-                bool bbox = false;
-                uint8 buf[1024];
-                foreach(var uri in data.get_uris ())
-                {
-                    try {
-                        var f = Filename.from_uri(uri);
-                        var fs = FileStream.open (f, "r");
-                        var nr =  fs.read (buf);
-                        if (nr > 0) {
-                            if(buf[0] == '<')
-                            {
-                                buf[nr-1] = 0;
-                                string s = (string)buf;
-                                if(s.contains("<MISSION>") || s.contains("<mission>"))
-                                    mf = f;
-                                else if(s.contains("<kml "))
-                                    kf = f;
-                            }
-                            else if (f.has_suffix(".kmz") && x_kmz &&
-                                     buf[0] == 'P' &&
-                                     buf[1] == 'K' &&
-                                     buf[2] == 3 && buf[3] == 4)
-                            {
-                                kf = f;
-                            }
-                            else if(buf[0] == 'H' && buf[1] == ' ')
-                            {
-                                sf = f;
-                                bbox = true;
-                            }
-                            else if(buf[0] == '{')
-                            {
-                                if(buf[1] == '"')
-                                    sf = f;
-                                else if (buf[1] == '\n')
-                                    mf = f;
-                            }
-                        }
-                    } catch (Error e) {
-                        MWPLog.message("dnd: %s\n", e.message);
-                    }
+		window.drag_data_received.connect((ctx, x, y, data, info, time) => {
+                foreach(var uri in data.get_uris ()) {
+					guess_content_type(uri);
                 }
                 Gtk.drag_finish (ctx, true, false, time);
-                if(mf != null)
-                {
-                    check_mission_clean();
-                    load_file(mf);
-                }
-
-                if(kf != null)
-                    try_load_overlay(kf);
-
-                if(sf != null)
-                {
-                    if(bbox)
-                        replay_bbox(true, sf);
-                    else
-                        run_replay(sf, true, Player.MWP);
-                }
+				parse_cli_options();
             });
 
-       setup_buttons();
-       set_dock_menu_status();
-       dock.layout_changed.connect(() => {
-               set_dock_menu_status();
-           });
+		setup_buttons();
+		set_dock_menu_status();
+		dock.layout_changed.connect(() => {
+				set_dock_menu_status();
+			});
 
-       get_map_size();
+		get_map_size();
 
-       acquire_bus();
+		acquire_bus();
 
-//	   splash.destroy();
+		splash.destroy();
 
-       if(mkcon)
-        {
+		if(mkcon) {
             connect_serial();
         }
 
-        if(autocon)
-        {
+        if(autocon) {
             autocon_cb.active=true;
             mkcon = true;
             try_connect();
         }
 
-        if(conf.mag_sanity != null)
-        {
+        if(conf.mag_sanity != null) {
             var parts=conf.mag_sanity.split(",");
             if (parts.length == 2)
             {
@@ -2935,8 +2892,7 @@ public class MWP : Gtk.Application {
         }
 
         pstate = new PowerState();
-        if(pstate.init())
-        {
+        if(pstate.init()) {
             MWPLog.message("%s\n", pstate.show_status());
             pstate.host_power_alert.connect((s) => {
                     audio_cb.active = true; // the user will hear this ...
@@ -2946,8 +2902,7 @@ public class MWP : Gtk.Application {
                 });
         }
 
-        if(conf.manage_power)
-        {
+        if(conf.manage_power) {
             MWPLog.message("mwp will manage power and screen saver / idle\n");
             dtnotify = new MwpNotify();
         }
@@ -2989,7 +2944,6 @@ public class MWP : Gtk.Application {
 			});
 		gstdm.setup_device_monitor();
 		map_moved();
-		parse_cli_options();
     }
 
 	private void set_pmask_poller(MWSerial.PMask pmask) {
@@ -3001,6 +2955,48 @@ public class MWP : Gtk.Application {
 		}
 		msp.set_pmask(pmask);
 		msp.set_auto_mpm(pmask == MWSerial.PMask.AUTO);
+	}
+
+	private void guess_content_type(string uri) {
+		string? fn = null;
+		try {
+			if (uri.has_prefix("file://")) {
+				fn = Filename.from_uri(uri);
+			} else {
+				fn = uri;
+			}
+
+			var mt = GLib.ContentType.guess(fn, null, null);
+			switch (mt) {
+			case "application/vnd.mw.mission":
+			case "application/vnd.mwp.json.mission":
+				mission = fn;
+				break;
+			case "application/vnd.blackbox-log":
+				bfile = fn;
+				break;
+			case "application/vnd.mwp.log":
+				rfile = fn;
+				break;
+			case "application/vnd.google-earth.kmz":
+				if(x_kmz)
+					add_kml(fn);
+				break;
+			case "application/vnd.google-earth.kml+xml":
+				add_kml(fn);
+				break;
+			default:
+				break;
+			}
+		} catch {}
+	}
+
+	private void add_kml(string fn) {
+		if(kmlfile == null) {
+			kmlfile = fn;
+		} else {
+			kmlfile = string.join(",", kmlfile, fn);
+		}
 	}
 
 #if MQTT
@@ -5925,7 +5921,8 @@ case 0:
                 set_view_zoom(ms.zoom);
             }
             map_moved();
-        }
+			valid_flash();
+		}
     }
 
     private void map_centre_on(double y, double x)
@@ -9607,13 +9604,11 @@ case 0:
 		ms_from_loader = true;
 		set_act_mission_combo();
 		imdx = 0;
-		if(msx[mdx] != null && msx[mdx].npoints > 0)
-		{
+		if(msx[mdx] != null && msx[mdx].npoints > 0) {
 			m = msx[mdx];
 			ls.reset_fake_home();
 			NavStatus.nm_pts = (uint8)m.npoints;
-			if(fakeoff.faking)
-			{
+			if(fakeoff.faking) {
 				for(var i = 0; i < m.npoints; i++)
 				{
 					var mi = m.get_waypoint(i);
@@ -9631,12 +9626,10 @@ case 0:
 				m.cy += fakeoff.dlat;
 			}
 			wp_resp = m.get_ways();
-			if (m.homex != 0.0 && m.homey != 0.0)
-			{
+			if (m.homex != 0.0 && m.homey != 0.0) {
 				FakeHome.usedby |= FakeHome.USERS.Mission;
 				ls.set_fake_home_pos(m.homey, m.homex);
-				for(var i = 0; i < m.npoints; i++)
-				{
+				for(var i = 0; i < m.npoints; i++) {
 					var mi = m.get_waypoint(i);
 					if (mi.flag == 0x48) {
 						mi.lat = m.homey;
@@ -9757,7 +9750,6 @@ case 0:
             craft.init_trail();
         }
         validatelab.set_text("");
-
         ls.import_mission(ms, (conf.rth_autoland && Craft.is_mr(vi.mrtype)));
         NavStatus.have_rth = ls.have_rth;
 		centre_mission(ms, true);
@@ -9765,24 +9757,25 @@ case 0:
             markers.add_home_point(home_pos.lat,home_pos.lon,ls);
         need_preview = true;
 		msx[mdx] = ms;
-		warp_pointer();
+		validatelab.set_text("✔"); // u+2714
 	}
 
-
+	/**
 	// So ugly, attempt have pickable WPs after load on X11
 	private void warp_pointer() {
-		int x = 0, y = 0, ox = 0, oy = 0;
-		window.get_window().get_origin(out ox, out oy);
-		Gdk.Device? pointer = window.get_display().get_default_seat().get_pointer();
-		window.get_window().get_device_position(pointer, out x, out y, null);
-		pointer.warp(window.screen, ox+40, oy+40);
-		Timeout.add(1200, () => {
-				pointer.warp(window.screen, ox+x, oy+y);
-				return false;
-			});
+		if (!is_wayland) {
+			int x = 0, y = 0, ox = 0, oy = 0;
+			window.get_window().get_origin(out ox, out oy);
+			Gdk.Device? pointer = window.get_display().get_default_seat().get_pointer();
+			window.get_window().get_device_position(pointer, out x, out y, null);
+			pointer.warp(window.screen, ox+40, oy+40);
+			Timeout.add(1200, () => {
+					pointer.warp(window.screen, ox+x, oy+y);
+					return false;
+				});
+		}
 	}
-
-
+	**/
 	private Mission?[] msx_clone() {
 		Mission? []_lm = {};
 		foreach (var m in msx) {
@@ -10577,8 +10570,6 @@ case 0:
         var s = MWP.read_env_args();
 		if (GtkClutter.init (ref args) != InitError.SUCCESS)
             return 1;
-		Gtk.init(ref args);
-		Clutter.init(ref args);
         Gst.init (ref args);
 		StringBuilder sb = new StringBuilder();
 		foreach(var a in args) {

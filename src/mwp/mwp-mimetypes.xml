@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+
+  <mime-type type="application/vnd.mw.mission">
+    <comment>Multiwii mission file</comment>
+    <glob pattern="*.mission"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.blackbox-log">
+    <magic priority="50">
+      <match type="string" offset="0" value="H Product:Blackbox"/>
+    </magic>
+    <glob weight="50" pattern="*.TXT"/>
+    <glob pattern="*.bbl"/>
+    <glob pattern="*.BBL"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.mwp.log">
+    <magic priority="50">
+      <match type="string" offset="0" value='{"type":'/>
+    </magic>
+    <glob weight="50" pattern="*.log"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.mwp.json.mission">
+    <magic>
+      <match type="string" offset="0" value='{"missions":'/>
+    </magic>
+    <glob pattern="*.json"/>
+  </mime-type>
+
+</mime-info>

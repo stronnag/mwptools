@@ -13,7 +13,7 @@ mwpsrcs = files('mwp.vala', 'liststore.vala', 'mwp_markers.vala',
 		'gst-video-player.vala', 'gst-audio-player.vala',
 		'mwp_gcs_icon.vala', 'mwp_preview_image.vala',
 		'mwp-sbs-decoder.vala', 'mwp-helpers.vala',
-		'mwp-sticks.vala')
+		'mwp-sticks.vala', 'mwp_splash.vala')
 
 ublxguisrc = files('settings.vala',  'mapsources.vala')
 
@@ -146,6 +146,7 @@ install_data (
 
 install_subdir('pixmaps', install_dir : join_paths(get_option('datadir'), 'mwp'))
 install_data('mwp.desktop', install_dir : join_paths(get_option('datadir') , 'applications'))
+install_data('mwp-mimetypes.xml', install_dir : join_paths(get_option('datadir') , 'mime', 'packages'))
 
 bcd =  dependency('bash-completion', required: false)
 if bcd.found()
