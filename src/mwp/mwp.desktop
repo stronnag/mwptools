@@ -4,4 +4,4 @@ Type=Application
 Name=MultiWii Planner
 Exec=mwp
 Icon=mwp_icon
-MimeType=application/vnd.mw.mission;application/vnd.blackbox-log;application/vnd.mwp.log;application/vnd.mwp.json.mission
+MimeType=application/vnd.mw.mission;application/vnd.blackbox.log;application/vnd.mwp.log;application/vnd.mwp.json.mission
