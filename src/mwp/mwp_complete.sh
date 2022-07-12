@@ -4,6 +4,8 @@ _mwp_complete()
 {
   local cur prev OPTS
   local devs
+  local mwpexts='@(TXT|BBL|mission|json|csv)'
+
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD-1]}"
@@ -65,8 +67,11 @@ _mwp_complete()
       return 0
       ;;
   esac
-  OPTS="--help
-	--mission
+
+  case $cur in
+    -*)
+      OPTS="--help
+       	--mission
 	--serial-device
 	--device
 	--flight-controller
@@ -105,8 +110,12 @@ _mwp_complete()
 	--kmlfile
 	--relaxed-msp"
 
-  COMPREPLY=( $(compgen -W "${OPTS[*]}" -- $cur) )
-  return 0
+      COMPREPLY=( $(compgen -W "${OPTS[*]}" -- $cur) )
+      return 0
+      ;;
+  esac
+  _filedir "$mwpexts"
+
 }
 complete -F _mwp_complete mwp
 
@@ -148,5 +157,4 @@ _mwp_files()
       _filedir '@(kml|KML)'
       ;;
   esac
-
 }
