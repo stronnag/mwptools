@@ -129,8 +129,13 @@ public class  OTXDialog : Object
         btype = otx_combo.active -1;
     }
 
-    public int run()
-    {
+    public int run(string? fn) {
+		if (fn != null) {
+			filename = fn;
+			otx_filechooser.set_filename(fn);
+			otx_liststore.clear();
+			get_otx_metas();
+		}
         return dialog.run();
     }
 

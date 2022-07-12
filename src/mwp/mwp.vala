@@ -644,6 +644,7 @@ public class MWP : Gtk.Application {
     private bool offline = false;
     private string rfile = null;
     private string bfile = null;
+	private string otxfile = null;
     private string forward_device = null;
     private string[]? radar_device = null;
     private int dmrtype=0;
@@ -1135,7 +1136,14 @@ public class MWP : Gtk.Application {
 					if(vfn != null) {
 						replay_bbox(true, vfn);
 					}
+				} else if(otxfile != null) {
+					var vfn = validate_cli_file(otxfile);
+					otxfile = null;
+					if(vfn != null) {
+						replay_otx(true, vfn);
+					}
 				}
+
 				return false;
 			});
 	}
@@ -2972,8 +2980,11 @@ public class MWP : Gtk.Application {
 			case "application/vnd.mwp.json.mission":
 				mission = fn;
 				break;
-			case "application/vnd.blackbox-log":
+			case "application/vnd.blackbox.log":
 				bfile = fn;
+				break;
+			case "application/vnd.otx.telemetry.log":
+				otxfile = fn;
 				break;
 			case "application/vnd.mwp.log":
 				rfile = fn;
@@ -9938,9 +9949,9 @@ case 0:
 		}
 	}
 
-    private void replay_otx(bool delay=true)
+    private void replay_otx(bool delay=true, string? fn = null)
     {
-        var id = otx_runner.run();
+        var id = otx_runner.run(fn);
         otx_runner.hide();
         if (id == 1001) {
             string fname;

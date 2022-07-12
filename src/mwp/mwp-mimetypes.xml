@@ -6,7 +6,8 @@
     <glob pattern="*.mission"/>
   </mime-type>
 
-  <mime-type type="application/vnd.blackbox-log">
+  <mime-type type="application/vnd.blackbox.log">
+    <comment>Blackbox log</comment>
     <magic priority="50">
       <match type="string" offset="0" value="H Product:Blackbox"/>
     </magic>
@@ -16,6 +17,7 @@
   </mime-type>
 
   <mime-type type="application/vnd.mwp.log">
+    <comment>Mwp telemetry log</comment>
     <magic priority="50">
       <match type="string" offset="0" value='{"type":'/>
     </magic>
@@ -23,10 +25,19 @@
   </mime-type>
 
   <mime-type type="application/vnd.mwp.json.mission">
+    <comment>Multiwii mission file</comment>
     <magic>
       <match type="string" offset="0" value='{"missions":'/>
     </magic>
     <glob pattern="*.json"/>
+  </mime-type>
+
+  <mime-type type="application/vnd.otx.telemetry.log">
+    <comment>OTX telemetry log</comment>
+    <magic>
+      <match type="string" offset="0" value='Date,Time,'/>
+    </magic>
+    <glob pattern="*.csv"/>
   </mime-type>
 
 </mime-info>
