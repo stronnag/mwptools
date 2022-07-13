@@ -46,12 +46,12 @@ class FCMgr :Object
     public MWSerial msp;
     public MWSerial.ProtoMode oldmode;
     private uint8 [] inbuf;
-    private uint inp;
+    private uint inp = 0;
     private uint linp = 0;
     private string estr="";
     private bool logging = false;
     private State state;
-    private uint tid;
+    private uint tid = 0;
     private MainLoop ml;
     public DevManager dmgr;
     private Mode mode = Mode.GET;
@@ -70,7 +70,7 @@ class FCMgr :Object
     {
         inp = linp = 0;
         state = State.IDLE;
-        inbuf = new uint8[64*1024];
+        inbuf = new uint8[1024*1024];
         MwpTermCap.init();
     }
 
@@ -224,10 +224,10 @@ class FCMgr :Object
         bool done = false;
         state = State.SETLINES;
 	// Note: explicit save will save regardless of any errors
-        if(lp < lines.length)
-        {
-            if(lines[lp].has_prefix("save"))
-            {
+        if(lp < lines.length) {
+			MWPLog.fputs("%4u : %s\n".printf(lp, lines[lp]));
+            if(lines[lp].has_prefix("save")) {
+				MWPLog.fputs("found save\n");
                 set_save_state();
                 done = true;
             }
@@ -237,27 +237,24 @@ class FCMgr :Object
             msp.write(lines[lp], lines[lp].length);
             msp.write("\n".data, 1);
             lp++;
-        }
-        else
-        {
+        } else {
             done = true;
-            if(errors.length == 0)
-            {
-                set_save_state();
+            if(errors.length == 0) {
+				MWPLog.fputs("start save\n");
+				set_save_state();
                 string cmd="save\n";
                 msp.write(cmd.data,cmd.length);
             }
         }
         show_progress();
-        if(done)
-        {
+        if(done) {
+			MWPLog.fputs("Done [%u]\n".printf(inp));
             lp = lines.length;
             stderr.printf("%s\n", MwpTermCap.cnorm);
             if(errors.length > 0)
             {
                 MWPLog.sputs("\007Error(s) in restore\n\007");
-                foreach (var e in errors)
-                {
+                foreach (var e in errors) {
                     var s = "\t%s\n".printf(e);
                     MWPLog.sputs(s);
                 }
@@ -400,52 +397,43 @@ class FCMgr :Object
             });
 
         msp.cli_event.connect((buf,len) => {
-                if(tid != 0)
-                {
+                if(tid != 0) {
                     Source.remove(tid);
                     tid = 0;
                 }
                 if(dump)
                     Posix.write(1, buf, len);
 
-                for(var j = 0; j <len; j++)
-                {
+                for(var j = 0; j <len; j++) {
                     if(buf[j] != 13)
                         inbuf[inp++] = buf[j];
                 }
 
                 if(state == State.SETLINES &&
-                   ((string)inbuf).slice(linp,inp).contains("### ERROR:"))
-                {
-                    {
-                        FileStream fs = FileStream.open ("/tmp/fcset-err.txt", "a");
-                        fs.printf("Err: %s\n", ((string)inbuf).slice(linp,inp));
-                        fs.flush();
-                    }
+                   ((string)inbuf).slice(linp,inp).contains("### ERROR:")) {
+					FileStream fs = FileStream.open ("/tmp/fcset-err.txt", "a");
+					fs.printf("Err: %s\n", ((string)inbuf).slice(linp,inp));
+					fs.flush();
                     errors += lines[lp-1];
                 }
 
                 linp = inp;
-                if(inp >= 9 && Memory.cmp(&inbuf[inp-9], "Rebooting".data, 9) == 0)
-                {
+                if(inp >= 9 && Memory.cmp(&inbuf[inp-9], "Rebooting".data, 9) == 0) {
                     MWPLog.message("Rebooting (%s)\n", state.to_string());
                     inp = linp = 0;
                     msp.pmode = oldmode;
                     if(state == State.EXIT)
                         Timeout.add(2000, () => { ml.quit(); return false; });
-                    else
-                    {
+                    else {
                         msp.pmode = MWSerial.ProtoMode.NORMAL;
                         etid = Timeout.add_seconds(2, () => {
                                 try_connect(); return false;
                             });
                     }
-                }
-                else if( inp > 3 && Memory.cmp(&inbuf[inp-3],"\n# ".data, 3) ==0)
+                } else if( inp > 3 && Memory.cmp(&inbuf[inp-3],"\n# ".data, 3) ==0)
                     if(state == State.SETLINES)
                         next_state();
-                    else
-                    {
+                    else {
                         tid = Timeout.add(500, () => {
                                 tid = 0;
                                 if(inp == linp)

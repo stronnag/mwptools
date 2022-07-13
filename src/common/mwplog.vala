@@ -16,35 +16,35 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-public class MWPLog : GLib.Object
-{
+public class MWPLog : GLib.Object {
+
     private static FileStream fs;
     private static bool init = false;
     private static string tfstr;
     private static bool echo = false;
 
-    public static void set_time_format(string _t)
-    {
+    public static void set_time_format(string _t) {
         tfstr = _t;
     }
 
-    public static void puts(string s)
-    {
+    public static void fputs(string s) {
+        fs.puts(s);
+		fs.flush();
+    }
+
+    public static void puts(string s) {
         fs.puts(s);
         if(echo)
             stderr.puts(s);
     }
 
-    public static void sputs(string s)
-    {
+    public static void sputs(string s) {
         if(echo)
             stderr.puts(s);
     }
 
-    public static void message(string format, ...)
-    {
-        if(init == false)
-        {
+    public static void message(string format, ...) {
+        if(init == false) {
             time_t currtime;
             time_t(out currtime);
             echo = Posix.isatty(stderr.fileno());
@@ -58,8 +58,7 @@ public class MWPLog : GLib.Object
             var fn = Path.build_filename(logdir, "mwp_stderr_%s.txt".printf(Time.local(currtime).format("%F")));
 
             fs = FileStream.open(fn,"a");
-            if(fs == null)
-            {
+            if(fs == null) {
                 echo = false;
                 fs  = FileStream.fdopen(stderr.fileno(), "a");
             }

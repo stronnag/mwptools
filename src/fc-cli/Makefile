@@ -5,12 +5,12 @@ include ../common.mk
 CLI=fc-get
 CLIS=fc-set
 
-
 COMMOND=../common
 
 COMMONC=$(COMMOND)/serial-device.vala $(COMMOND)/btdev.c \
 	$(COMMOND)/cserial.c $(COMMOND)/mspcmd.vala $(COMMOND)/mwplog.vala \
-	$(COMMOND)/mspmsg.vala $(COMMOND)/devman.vala $(COMMOND)/mwptermcap.vala
+	$(COMMOND)/mspmsg.vala $(COMMOND)/devman.vala $(COMMOND)/mwptermcap.vala \
+	$(COMMOND)/sede.vala $(COMMOND)/mwp_uriparser.vala
 
 PKGS = --pkg posix --pkg gio-2.0 --pkg gtk+-3.0 --pkg linux --pkg mwpfuncs
 PKGSV = --pkg vte-$(VTEVERS)
