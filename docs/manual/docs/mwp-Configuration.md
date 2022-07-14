@@ -322,3 +322,21 @@ Note also that the resize step is no longer required, as {{ mwp }} scales the ic
 | `MWP_PRINT_RAW` | If defined, output hex bytes from serial I/O |
 | `MWP_SERIAL_HOST` | The host for the magic `udp://__MWP_SERIAL_HOST` name (default undefined)  |
 | `MWP_TIME_FMT` | The time format for log output; by default "%FT%T%z", any GLib2 DateTime (strftime-like) format may be used; "%T.%f" works well on modern GLib. |
+
+## Mime types for common file formats
+
+{{ mwp }} adds XDG mime types for certain file types handled by mwp.
+
+| Data Source | Mime Type | File Manager | DnD |
+| ----------- | --------- | ------------ | ---- |
+| Multiwii Mission (XML) | application/vnd.mw.mission | Yes [1](#mnote1) | Yes [2](#mnote2) |
+| Blackbox log | application/vnd.blackbox.log | Yes | Yes |
+| Mwp telemetry log | application/vnd.mwp.log | Yes | Yes |
+| Multiwii mission (mwp JSON) | application/vnd.mwp.json.mission | Yes | Yes |
+| OTX telemetry log | application/vnd.otx.telemetry.log | No | Yes |
+
+!!! note "Notes:"
+
+    <a name="mnote1">1.</a> The file manager (at least Nautilus / Gnome) will offer mwp as the default application to open the file.
+
+    <a name="mnote2">2.</a>  DnD. The file can be dropped onto the mwp map and will be opened. The file may also be provided on the mwp command line without `--option`; e.g. `mwp --mission demo.mission` and `mwp demo.mission` will behave in the same way.

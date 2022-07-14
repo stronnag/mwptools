@@ -95,10 +95,9 @@ At some stage, more of the Makefiles will be removed (or just rot into uselessne
 | `flashgo` | Tools to examine, download logs and erase from dataflash |
 
 !!! note "Notes:"
-	<a name="note1">1. This may either be the new Go executable or the legacy, less functional Ruby script.	</a>
+    <a name="note1">1.</a> This may either be the new Go executable or the legacy, less functional Ruby script.
 
-    <a name="note2">2. `fc-set` is a hard link to `fc-get`</a>
-
+	<a name="note2">2.</a> `fc-set` is a hard link to `fc-get`
 
 ### Optional
 
