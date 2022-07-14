@@ -531,6 +531,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#mime-types-for-common-file-formats" class="md-nav__link">
+    Mime types for common file formats
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -998,6 +1005,13 @@
         <li class="md-nav__item">
   <a href="#environment-variables" class="md-nav__link">
     Environment variables
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mime-types-for-common-file-formats" class="md-nav__link">
+    Mime types for common file formats
   </a>
   
 </li>
@@ -1834,6 +1848,55 @@ file ~/.config/mwp/pixmaps/inav-radar.svg
 </tr>
 </tbody>
 </table>
+<h2 id="mime-types-for-common-file-formats">Mime types for common file formats<a class="headerlink" href="#mime-types-for-common-file-formats" title="Permanent link">#</a></h2>
+<p><a href="https://github.com/stronnag/mwptools">mwp</a> adds XDG mime types for certain file types handled by mwp.</p>
+<table>
+<thead>
+<tr>
+<th>Data Source</th>
+<th>Mime Type</th>
+<th>File Manager</th>
+<th>DnD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Multiwii Mission (XML)</td>
+<td>application/vnd.mw.mission</td>
+<td>Yes <a href="#mnote1">1</a></td>
+<td>Yes <a href="#mnote2">2</a></td>
+</tr>
+<tr>
+<td>Blackbox log</td>
+<td>application/vnd.blackbox.log</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Mwp telemetry log</td>
+<td>application/vnd.mwp.log</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Multiwii mission (mwp JSON)</td>
+<td>application/vnd.mwp.json.mission</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>OTX telemetry log</td>
+<td>application/vnd.otx.telemetry.log</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Notes:</p>
+<p><a name="mnote1">1.</a> The file manager (at least Nautilus / Gnome) will offer mwp as the default application to open the file.</p>
+<p><a name="mnote2">2.</a>  DnD. The file can be dropped onto the mwp map and will be opened. The file may also be provided on the mwp command line without <code>--option</code>; e.g. <code>mwp --mission demo.mission</code> and <code>mwp demo.mission</code> will behave in the same way.</p>
+</div>
                 
               
               
