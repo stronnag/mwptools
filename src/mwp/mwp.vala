@@ -2974,7 +2974,16 @@ public class MWP : Gtk.Application {
 				fn = uri;
 			}
 
-			var mt = GLib.ContentType.guess(fn, null, null);
+			uint8 buf[1024]={0};
+			uint8 []? pbuf = null;
+			var fs = FileStream.open (fn, "r");
+			if (fs != null) {
+				if(fs.read (buf) > 0) {
+					pbuf=buf;
+				}
+			}
+			var mt = GLib.ContentType.guess(fn, pbuf, null);
+
 			switch (mt) {
 			case "application/vnd.mw.mission":
 			case "application/vnd.mwp.json.mission":
