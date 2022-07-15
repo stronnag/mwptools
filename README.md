@@ -66,18 +66,18 @@ mwp should  build and running on any platform that supports (recent versions of)
 
 mwptools is tested on x86_64, ia32, and aarch64 architectures (Linux / FreeBSD).
 
-* There is a "Release" Debian package (x86_64, Debian and derivatives).
+* There is a **"Release" Debian package** (x86_64, Debian and derivatives, including WSL-G) [Github Releases](https://github.com/stronnag/mwptools/releases).
 * Simple, ["one stop shop" build and install script](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/)
 * AUR package 'mwptools-git' for Arch Linux.
 
 It is also possible to build and run mwp on MS Windows using:
 
-* Windows 11 / WSL-g [Installation instructions](https://github.com/stronnag/mwptools/wiki/mwp-in-Windows-11---WSL-G)
+* Windows 11 / WSL-g [Installation instructions](https://github.com/stronnag/mwptools/wiki/mwp-in-Windows-11---WSL-G).
 * [Cygwin](https://www.cygwin.com/) Recommended Windows solution prior to Windows 11
 * Windows 10 / WSL (slow, less stable, less recommended)
 * A virtual machine with a Linux guest.
 
-The [wiki](https://github.com/stronnag/mwptools/wiki) provides further guidance.
+The [user guide](https://stronnag.github.io/mwptools/) and [wiki](https://github.com/stronnag/mwptools/wiki) provides further guidance.
 
 ### Other OS / See also
 
@@ -93,7 +93,7 @@ For OS not supported by mwp (e.g. MacOS, IOS, Andriod), see also [impload](https
 
 * [Installation Guide (wiki)](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/).
 
-Support questions are best asked in the [RC Groups board](https://www.rcgroups.com/forums/showthread.php?2633708-mwp), the inav Discord (off-topic) or Telegram channels or Github discussions / issues.
+Support questions are best asked in the [RC Groups board](https://www.rcgroups.com/forums/showthread.php?2633708-mwp), the INAV Discord (off-topic) or Telegram channels or Github discussions / issues.
 
 ### Changelog / Announcements
 
@@ -108,9 +108,11 @@ cd mwptools # the initial installation directory
 git pull && cd build && ninja install
 ````
 
+Note also that there is a **Current Build** Debian package `mwptools_X.Y.Z_amd64.deb` in the [Github Releases](https://github.com/stronnag/mwptools/releases) area that is updated frequently.
+
 ## Arch Linux
 
-Arch users can install mwptools from the AUR package `mwptools-git`
+Arch users can install mwptools from the [AUR](https://aur.archlinux.org/packages/mwptools-git) package `mwptools-git`
 
 ## Compatibility
 
