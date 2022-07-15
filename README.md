@@ -5,9 +5,9 @@ mwptools
 
 ## Overview
 
-mwptools provides a mission planner, [terrain analysis](https://github.com/stronnag/mwptools/wiki/Mission-Elevation-Plot-and-Terrain-Analysis), ground control station, real time flight logger and log replay / blackbox replay functions for the [inav](https://github.com/iNavFlight/inav) FC firmware.
+mwptools provides a mission planner, [terrain analysis](https://github.com/stronnag/mwptools/wiki/Mission-Elevation-Plot-and-Terrain-Analysis), ground control station, real time flight logger and log replay / blackbox replay functions for the [INAV](https://github.com/iNavFlight/inav) FC firmware.
 
-mwptools supports the full set of inav and multiwii WP types.
+mwptools supports the full set of INAV and Multiwii WP types.
 
 ![mwp](https://raw.githubusercontent.com/wiki/stronnag/mwptools/images/ltm-normal.png)
 
@@ -15,7 +15,7 @@ mwp supports the following telemetry protocols:
 
 * MSP (MultiWii Serial Protocol)
 * LTM (Lightweight Telemetry)
-* MAVLink (iNav subset)
+* MAVLink (INAV subset)
 * Smartport (direct /  via inverter / or from Multi-protocol Module)
 * Crossfire (CRSF)
 * Flysky AA (via Multi-protocol Module)
@@ -23,7 +23,7 @@ mwp supports the following telemetry protocols:
 
 mwp also supports the real-time display of adjacent aircraft using:
 
-* [inav-radar](https://github.com/OlivierC-FR/ESP32-INAV-Radar/) (INAV UAS)
+* [INAV-radar](https://github.com/OlivierC-FR/ESP32-INAV-Radar/) (INAV UAS)
 * MAVlink Traffic Report (e.g. full-size aviation, typically ADS-B via a device such as uAvionix PingRX)
 
 mwp also provides logging and the replay of:
@@ -36,17 +36,17 @@ mwp also provides logging and the replay of:
 
 Log replay requires tools from the [flightlog2x](https://github.com/stronnag/bbl2kml) project.
 
-There is also an [inav](https://github.com/iNavFlight/inav) [Safehome editor](https://github.com/stronnag/mwptools/wiki/mwp-safehomes-editor).
+There is also an [INAV](https://github.com/iNavFlight/inav) [Safehome editor](https://github.com/stronnag/mwptools/wiki/mwp-safehomes-editor).
 
 In addition, mwp proivdes legacy suport for multiwii navigation functions.
 
 ## User Guide
 
-PDF in `docs`, [online](https://stronnag.github.io/mwptools/).
+PDF in `docs`, searchable [online user guide](https://stronnag.github.io/mwptools/).
 
 ## Tools
 
- * mwp : "A mission planner for the rest of us". Simple mission planning and monitoring. Mission Planning is provided for inav and MW-NAV (MW 2.4+). Monitoring, logging and recording for inav and MultiWii
+ * mwp : "A mission planner for the rest of us". Simple mission planning and monitoring. Mission Planning is provided for INAV and MW-NAV (MW 2.4+). Monitoring, logging and recording for INAV and MultiWii
  * Many standalone tools to manage flight logs, maintain CLI `diff`s, analyse logs etc.
 
 ## Platforms and OS
@@ -57,7 +57,7 @@ mwp should  build and running on any platform that supports (recent versions of)
 
  * gtk+3.0 (3.18 or later);
  * meson / ninja
- * vala and gcc;
+ * vala and gcc or clang;
  * Clutter (software GL is fine);
  * libchamplain;
  * libespeak;
@@ -116,7 +116,7 @@ Arch users can install mwptools from the [AUR](https://aur.archlinux.org/package
 
 ## Compatibility
 
-As well as supporting inav, mwp aims to be compatible with EOSBandi's WinGUI for MW. It used the same XML mission file format (with inav and mwp extensions) and aims to provide similar functionally where possible.
+As well as supporting INAV, mwp aims to be compatible with EOSBandi's WinGUI for MW. It used the same XML mission file format (with INAV and mwp extensions) and aims to provide similar functionally where possible.
 
 ## Licence
 
@@ -124,15 +124,15 @@ GPL v3 or later
 
 ## Alternatives
 
-In addition to [mwp](https://github.com/stronnag/mwptools), the following inav mission planners (and GCS in some cases) exist, in various states of usefulness, at least:
+In addition to [mwp](https://github.com/stronnag/mwptools), the following INAV mission planners (and GCS in some cases) exist, in various states of usefulness, at least:
 
-* [Inav Configurator (for inav 2.x)](https://github.com/iNavFlight/inav-configurator/tree/2.6.1), limited planning support
-* [Inav Configurator (for current inav)]( https://github.com/iNavFlight/inav-configurator), supports all current WP types. [Preview builds](http://seyrsnys.myzen.co.uk/inav-configurator-next/), may be augmented with [impload](https://github.com/stronnag/impload/) to upload missions to 2.x firmware.
+* [INAV Configurator (for INAV 2.x)](https://github.com/iNavFlight/inav-configurator/tree/2.6.1), limited planning support
+* [INAV Configurator (for current INAV)]( https://github.com/iNavFlight/inav-configurator), supports most current WP types (other than Fly-by-home waypoints). [Development branch preview builds](http://seyrsnys.myzen.co.uk/inav-configurator-next/), may be augmented with [impload](https://github.com/stronnag/impload/) to upload missions to 2.x firmware.
 * [Drone Helper](https://www.microsoft.com/en-us/p/drone-helper/9ncs8zwxn58x?activetab=pivot:overviewtab) (Windows 10+)
-* [Ezgui](https://play.google.com/store/apps/details?id=com.ezio.multiwii&hl=en_GB), [MissionPlanner for Inav](https://play.google.com/store/apps/details?id=com.eziosoft.ezgui.inav&hl=en) (Android) Unsupported, obsolete. May not work with either contemporary Android or inav firmware.
-* [Mobile Flight](https://github.com/flyinghead/mobile-flight) (IOS) Unsupported, obsolete. May not work with either contemporary IOS or inav firmware.
-* [Apmplanner2](https://ardupilot.org/planner2/) with [impload](https://github.com/stronnag/impload/). Ardupilot planner, missions can be uploaded to inav using [impload](https://github.com/stronnag/impload/).
-* [qgroundcontrol](https://docs.qgroundcontrol.com/master/en/) with [impload](https://github.com/stronnag/impload/). Ardupilot planner, missions can be uploaded to inav using [impload](https://github.com/stronnag/impload/).
+* [Ezgui](https://play.google.com/store/apps/details?id=com.ezio.multiwii&hl=en_GB), [MissionPlanner for Inav](https://play.google.com/store/apps/details?id=com.eziosoft.ezgui.inav&hl=en) (Android) Unsupported, obsolete. May not work with either contemporary Android or INAV firmware.
+* [Mobile Flight](https://github.com/flyinghead/mobile-flight) (IOS) Unsupported, obsolete. May not work with either contemporary IOS or INAV firmware.
+* [Apmplanner2](https://ardupilot.org/planner2/) with [impload](https://github.com/stronnag/impload/). Ardupilot planner, missions can be uploaded to INAV using [impload](https://github.com/stronnag/impload/).
+* [qgroundcontrol](https://docs.qgroundcontrol.com/master/en/) with [impload](https://github.com/stronnag/impload/). Ardupilot planner, missions can be uploaded to INAV using [impload](https://github.com/stronnag/impload/).
 * [Side-Pilot](https://sidepilot.net/) with [impload](https://github.com/stronnag/impload)  (untested). Ardupilot mission planner and telemetry viewer for IOS.
 
 The following alternatives exist for **mwp-area-planner** :
