@@ -1637,6 +1637,7 @@ public class MWP : Gtk.Application {
 
         bb_runner.new_pos.connect((la, lo) => {
                try_centre_on(la, lo);
+			   poslabel.label = PosFormat.pos(la,lo,conf.dms);
             });
 
         bb_runner.rescale.connect((llx, lly, urx,ury) => {
@@ -4625,8 +4626,7 @@ case 0:
             });
 
         view.motion_event.connect ((evt) => {
-                if (!pos_is_centre)
-                {
+                if (!pos_is_centre) {
                     var lon = view.x_to_longitude (evt.x);
                     var lat = view.y_to_latitude (evt.y);
                     poslabel.label = PosFormat.pos(lat,lon,conf.dms);
@@ -5945,8 +5945,7 @@ case 0:
 		}
     }
 
-    private void map_centre_on(double y, double x)
-    {
+    private void map_centre_on(double y, double x) {
         view.center_on(ly=y, lx=x);
         anim_cb();
     }
@@ -9342,15 +9341,11 @@ case 0:
         }
     }
 
-    private void anim_cb(bool forced=false)
-    {
-        if(pos_is_centre)
-        {
-            if (map_moved() || forced)
-            {
+    private void anim_cb(bool forced=false) {
+        if(pos_is_centre) {
+            if (map_moved() || forced) {
                 poslabel.set_text(PosFormat.pos(ly,lx,conf.dms));
-                if (follow == false && craft != null)
-                {
+                if (follow == false && craft != null) {
                     double plat,plon;
                     craft.get_pos(out plat, out plon);
                     var bbox = view.get_bounding_box();
