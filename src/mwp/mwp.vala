@@ -9279,8 +9279,7 @@ case 0:
             } else
                 ostat = msp.open_w(serdev, conf.baudrate, out estr);
 
-            if (ostat == true)
-            {
+            if (ostat == true) {
                 MWPLog.message("Try connect %s\n", serdev);
                 xarm_flags=0xffff;
                 lastrx = lastok = nticks;
@@ -9288,23 +9287,19 @@ case 0:
                 init_sstats();
                 MWPLog.message("Connected %s %s\n", serdev, nopoll.to_string());
                 set_replay_menus(false);
-                if(rawlog == true)
-                {
+                if(rawlog == true) {
                     msp.raw_logging(true);
                 }
                 conbutton.set_label("Disconnect");
-                if(forward_device != null)
-                {
+                if(forward_device != null) {
                     string fstr;
-                    if(try_forwarder(out fstr) == false)
-                    {
+                    if(try_forwarder(out fstr) == false) {
                         uint8 retry = 0;
                         Timeout.add(500, () => {
                                 if (!msp.available)
                                     return false;
                                 bool ret = !try_forwarder(out fstr);
-                                if(ret && retry++ == 5)
-                                {
+                                if(ret && retry++ == 5) {
                                     mwp_warning_box(
                                         "Failed to open forwarding device: %s\n".printf(fstr),
                                         Gtk.MessageType.ERROR,10);
@@ -9319,20 +9314,15 @@ case 0:
 					set_pmask_poller(pmask);
                     msp.setup_reader();
 					MWPLog.message("Serial ready\n");
-                    if(nopoll == false && !mqtt_available )
-                    {
+                    if(nopoll == false && !mqtt_available ) {
                         serstate = SERSTATE.NORMAL;
                         queue_cmd(MSP.Cmds.IDENT,null,0);
                         run_queue();
-                    }
-                    else
+                    } else
                         serstate = SERSTATE.TELEM;
                 }
-            }
-            else
-            {
-                if (autocon == false || autocount == 0)
-                {
+            } else {
+                if (autocon == false || autocount == 0) {
                     mwp_warning_box("Unable to open serial device\n%s\nPlease verify you are a member of the owning group\nTypically \"dialout\" or \"uucp\"\n".printf(estr), Gtk.MessageType.WARNING, 60);
                 }
                 autocount = ((autocount + 1) % 12);
@@ -9343,14 +9333,13 @@ case 0:
 
     private void anim_cb(bool forced=false) {
         if(pos_is_centre) {
+            poslabel.set_text(PosFormat.pos(ly,lx,conf.dms));	
             if (map_moved() || forced) {
-                poslabel.set_text(PosFormat.pos(ly,lx,conf.dms));
                 if (follow == false && craft != null) {
                     double plat,plon;
                     craft.get_pos(out plat, out plon);
                     var bbox = view.get_bounding_box();
-                    if (bbox.covers(plat, plon) == false)
-                    {
+                    if (bbox.covers(plat, plon) == false) {
                         craft.park();
                     }
                 }
