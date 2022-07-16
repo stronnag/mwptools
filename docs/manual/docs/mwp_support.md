@@ -50,12 +50,13 @@ Problem reports on non-supported platforms will not be dismissed without _some_ 
 
 Different outcomes (including crash / not crash) may be experienced using different display environments.
 
-If you experience an issue using Wayland, you can force {{ mwp }} to use XWayland, which may behave better. Such issues are sometimes deep in system libraries (GTK, OpenGL, Wayland).
+mwp (and other applications) can have a problem with OpenGL and the Wayland compositor. Typcially this is manifest by being unable to pick mission WP icons for large (>40 point) missions.
 
-To force XWayland:
+On non-WSL platforms, mwp forces XWayland over Wayland to mitigate this. You can force Wayland / XWayland by setting the `GDK_BACKEND` variable in `cmdopts` (or the environment). This will override mwp's default behaviour.
 
-* From the command line
+    # set XWayland
+    GDK_BACKEND=x11
+    # set Wayland
+    GDK_BACKEND=wayland
 
-        GDK_BACKEND=x11 mwp
-
-* If that improves matters, add the setting to [the configuration file](mwp-Configuration.md#cmdopts).
+If that improves matters, add the setting to [the configuration file](mwp-Configuration.md#cmdopts).
