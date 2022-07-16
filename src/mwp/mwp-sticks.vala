@@ -7,14 +7,7 @@ namespace Sticks {
 		public Sticks.Pad rstick;
 
 		public StickWindow(Gtk.Window? pw = null, int decor=0) {
-			set_transparent();
 			set_default_size (400, 200);
-			set_decorated((decor==2));
-			if (pw != null) {
-				set_transient_for (pw);
-			}
-			set_type_hint(Gdk.WindowTypeHint.UTILITY);
-//			set_position(WindowPosition.CENTER_ON_PARENT);
 			var box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
 			add (box);
 			lstick = new Sticks.Pad (1000, 1500, false);
@@ -25,6 +18,13 @@ namespace Sticks {
 					active = false;
 					base.hide();
 				});
+			set_type_hint(Gdk.WindowTypeHint.DIALOG);
+			set_position(WindowPosition.MOUSE);
+			set_decorated((decor==2));
+			if (pw != null) {
+				set_transient_for (pw);
+			}
+			set_transparent();
 		}
 
 		public void update(int a, int e, int r, int t) {

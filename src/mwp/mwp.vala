@@ -9333,7 +9333,7 @@ case 0:
 
     private void anim_cb(bool forced=false) {
         if(pos_is_centre) {
-            poslabel.set_text(PosFormat.pos(ly,lx,conf.dms));	
+            poslabel.set_text(PosFormat.pos(ly,lx,conf.dms));
             if (map_moved() || forced) {
                 if (follow == false && craft != null) {
                     double plat,plon;

@@ -70,7 +70,7 @@
       <default>20</default>
       <summary>Default altitude</summary>
       <description>
-        Default Altitude (m)
+        Default Altitude for mission (m)
       </description>
     </key>
 
@@ -163,7 +163,7 @@
 
     <key type="b" name="centre-on">
       <default>true</default>
-      <summary>centre map on GPS as needed</summary>
+      <summary>centre map on GPS</summary>
       <description>centre map on GPS as needed</description>
     </key>
 
@@ -175,7 +175,7 @@
 
     <key type="b" name="auto-follow">
       <default>true</default>
-      <summary>set auto-follow on start</summary>
+      <summary>set auto-follow</summary>
       <description>set auto-follow on start</description>
     </key>
 
@@ -192,7 +192,7 @@
     </key>
 
     <key name="heartbeat" type="s">
-      <summary>Something that runs every minute (i.e. screensaver disable)</summary>
+      <summary>Something that runs every minute</summary>
       <default>""</default>
       <description>e.g. `xscreensaver-command -deactivate`. See also
       `manage-power` (and consider setting to `manage-power` to `true`). </description>
@@ -228,7 +228,7 @@
     <key type="b" name="checkswitches">
       <default>false</default>
       <summary>check switches</summary>
-      <description>check switches (a JH sanity check)</description>
+      <description>check switches (an ancient JH sanity check)</description>
     </key>
 
     <key name="poll-timeout" type="u">
@@ -316,13 +316,13 @@
 
     <key name="rth-autoland" type="b">
       <default>false</default>
-      <summary>Automatically assert land on RTH waypoints</summary>
+      <summary>Set land on RTH waypoints</summary>
       <description>Automatically assert land on RTH waypoints</description>
     </key>
 
     <key name="ignore-nm" type="b">
       <default>false</default>
-      <summary>Don't ever query Network Manager for network status</summary>
+      <summary>Ignore Network Manager</summary>
       <description>Set to true to always ignore NM status (may slow down startup)</description>
     </key>
 
@@ -335,19 +335,19 @@
     <key name="mission-path" type="s">
       <default>""</default>
       <summary>Directory for mission files</summary>
-      <description>Directory for mission files</description>
+      <description>Directory for mission files, default = current directory</description>
     </key>
 
     <key name="kml-path" type="s">
       <default>""</default>
       <summary>Directory for KML overlays</summary>
-      <description>Directory for KML overlays</description>
+      <description>Directory for KML overlays, default = current directory</description>
     </key>
 
     <key name="log-path" type="s">
       <default>""</default>
       <summary>Directory for replay log files</summary>
-      <description>Directory for log files (for replay)</description>
+      <description>Directory for log files (for replay), default = current directory</description>
     </key>
     <key name="log-save-path" type="s">
       <default>""</default>
@@ -439,7 +439,7 @@
 
     <key name="auto-wp-edit" type="b">
       <default>false</default>
-      <summary>Whether you direct WP editing is available
+      <summary>Whether direct WP editing is available
       </summary>
       <description>
 	If true, the user can edit / create waypoints directly by clicking on the map, if false, it is necessary to toggle the WP Edit button to enable editing.
@@ -488,8 +488,8 @@
 
     <key name="adjust-tz" type="b">
       <default>true</default>
-      <summary>mwp should  adjust TZ (and DST) based on the local clock</summary>
-      <description>mwp should  adjust TZ (and DST) based on the local clock</description>
+      <summary>Adjust FC's TZ (and DST)</summary>
+      <description>mwp should  adjust FC's TZ (and DST) based on the local clock</description>
     </key>
 
     <key name="blackbox-decode" type="s">
@@ -549,7 +549,7 @@
 
     <key name="max-radar-slots" type="u">
       <default>4</default>
-      <summary>Maximum number of aircraft reported by iNav-radar</summary>
+      <summary>Maximum number of aircraft</summary>
       <description>Maximum number of aircraft reported by iNav-radar</description>
     </key>
 
@@ -579,7 +579,7 @@
     <key type="b" name="mission-meta-tag">
       <default>false</default>
       <summary>use meta vice mwp in mission file</summary>
-      <description>If true, the legacy mwp tag is named meta</description>
+      <description>If true, the legacy 'mwp' tag is named 'meta'</description>
     </key>
 
     <key type="s" name="load-safehome">
@@ -656,7 +656,8 @@
       <summary>Whether to show sticks in log replay</summary>
       <description>If "yes", stick position is shown during log replay,
       if "no" , never shown. If "decorated", then shown in a decorated window (for
-      window managers can't cope with un-decorated windows)</description>
+      window managers can't cope with un-decorated windows), e.g. WSL,
+      Cygwin</description>
     </key>
 
   </schema>
