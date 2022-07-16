@@ -954,18 +954,14 @@
 <p>Problem reports on non-supported platforms will not be dismissed without <em>some</em> consideration, however it's unlikely that too much time be expended on such environments unless the problem can also be demonstrated on a supported platform.</p>
 <h3 id="wayland-xlib">Wayland / XLib<a class="headerlink" href="#wayland-xlib" title="Permanent link">#</a></h3>
 <p>Different outcomes (including crash / not crash) may be experienced using different display environments.</p>
-<p>If you experience an issue using Wayland, you can force <a href="https://github.com/stronnag/mwptools">mwp</a> to use XWayland, which may behave better. Such issues are sometimes deep in system libraries (GTK, OpenGL, Wayland).</p>
-<p>To force XWayland:</p>
-<ul>
-<li>
-<p>From the command line</p>
-<pre><code>GDK_BACKEND=x11 mwp
+<p>mwp (and other applications) can have a problem with OpenGL and the Wayland compositor. Typcially this is manifest by being unable to pick mission WP icons for large (&gt;40 point) missions.</p>
+<p>On non-WSL platforms, mwp forces XWayland over Wayland to mitigate this. You can force Wayland / XWayland by setting the <code>GDK_BACKEND</code> variable in <code>cmdopts</code> (or the environment). This will override mwp's default behaviour.</p>
+<pre><code># set XWayland
+GDK_BACKEND=x11
+# set Wayland
+GDK_BACKEND=wayland
 </code></pre>
-</li>
-<li>
 <p>If that improves matters, add the setting to <a href="../mwp-Configuration/#cmdopts">the configuration file</a>.</p>
-</li>
-</ul>
                 
               
               
