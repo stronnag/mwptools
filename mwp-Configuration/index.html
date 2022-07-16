@@ -499,6 +499,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#list-of-mwp-settings_1" class="md-nav__link">
+    List of mwp settings
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -977,6 +984,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#list-of-mwp-settings_1" class="md-nav__link">
+    List of mwp settings
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1210,6 +1224,7 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 <figcaption>dconf-editor, editing a setting</figcaption>
 </figure>
 <h3 id="list-of-mwp-settings">List of mwp settings<a class="headerlink" href="#list-of-mwp-settings" title="Permanent link">#</a></h3>
+<h3 id="list-of-mwp-settings_1">List of mwp settings<a class="headerlink" href="#list-of-mwp-settings_1" title="Permanent link">#</a></h3>
 <table>
 <thead>
 <tr>
@@ -1222,8 +1237,8 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 <tbody>
 <tr>
 <td>adjust-tz</td>
-<td>mwp should adjust TZ (and DST) based on the local clock</td>
-<td>mwp should adjust TZ (and DST) based on the local clock</td>
+<td>Adjust FC's TZ (and DST)</td>
+<td>mwp should adjust FC's TZ (and DST) based on the local clock</td>
 <td>true</td>
 </tr>
 <tr>
@@ -1270,7 +1285,7 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 </tr>
 <tr>
 <td>auto-follow</td>
-<td>set auto-follow on start</td>
+<td>set auto-follow</td>
 <td>set auto-follow on start</td>
 <td>true</td>
 </tr>
@@ -1282,7 +1297,7 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 </tr>
 <tr>
 <td>auto-wp-edit</td>
-<td>Whether you direct WP editing is available</td>
+<td>Whether direct WP editing is available</td>
 <td>If true, the user can edit / create waypoints directly by clicking on the map, if false, it is necessary to toggle the WP Edit button to enable editing.</td>
 <td>false</td>
 </tr>
@@ -1300,14 +1315,14 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 </tr>
 <tr>
 <td>centre-on</td>
-<td>centre map on GPS as needed</td>
+<td>centre map on GPS</td>
 <td>centre map on GPS as needed</td>
 <td>true</td>
 </tr>
 <tr>
 <td>checkswitches</td>
 <td>check switches</td>
-<td>check switches (a JH sanity check)</td>
+<td>check switches (an ancient JH sanity check)</td>
 <td>false</td>
 </tr>
 <tr>
@@ -1325,7 +1340,7 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 <tr>
 <td>default-altitude</td>
 <td>Default altitude</td>
-<td>Default Altitude (m)</td>
+<td>Default Altitude for mission (m)</td>
 <td>20</td>
 </tr>
 <tr>
@@ -1468,20 +1483,20 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 </tr>
 <tr>
 <td>heartbeat</td>
-<td>Something that runs every minute (i.e. screensaver disable)</td>
+<td>Something that runs every minute</td>
 <td>e.g. <code>xscreensaver-command -deactivate</code>. See also <code>manage-power</code> (and consider setting to <code>manage-power</code> to <code>true</code>).</td>
 <td>""</td>
 </tr>
 <tr>
 <td>ignore-nm</td>
-<td>Don't ever query Network Manager for network status</td>
+<td>Ignore Network Manager</td>
 <td>Set to true to always ignore NM status (may slow down startup)</td>
 <td>false</td>
 </tr>
 <tr>
 <td>kml-path</td>
 <td>Directory for KML overlays</td>
-<td>Directory for KML overlays</td>
+<td>Directory for KML overlays, default = current directory</td>
 <td>""</td>
 </tr>
 <tr>
@@ -1505,7 +1520,7 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 <tr>
 <td>log-path</td>
 <td>Directory for replay log files</td>
-<td>Directory for log files (for replay)</td>
+<td>Directory for log files (for replay), default = current directory</td>
 <td>""</td>
 </tr>
 <tr>
@@ -1564,7 +1579,7 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 </tr>
 <tr>
 <td>max-radar-slots</td>
-<td>Maximum number of aircraft reported by iNav-radar</td>
+<td>Maximum number of aircraft</td>
 <td>Maximum number of aircraft reported by iNav-radar</td>
 <td>4</td>
 </tr>
@@ -1595,13 +1610,13 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 <tr>
 <td>mission-meta-tag</td>
 <td>use meta vice mwp in mission file</td>
-<td>If true, the legacy mwp tag is named meta</td>
+<td>If true, the legacy 'mwp' tag is named 'meta'</td>
 <td>false</td>
 </tr>
 <tr>
 <td>mission-path</td>
 <td>Directory for mission files</td>
-<td>Directory for mission files</td>
+<td>Directory for mission files, default = current directory</td>
 <td>""</td>
 </tr>
 <tr>
@@ -1660,7 +1675,7 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 </tr>
 <tr>
 <td>rth-autoland</td>
-<td>Automatically assert land on RTH waypoints</td>
+<td>Set land on RTH waypoints</td>
 <td>Automatically assert land on RTH waypoints</td>
 <td>false</td>
 </tr>
@@ -1679,7 +1694,7 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 <tr>
 <td>show-sticks</td>
 <td>Whether to show sticks in log replay</td>
-<td>If "yes", stick position is shown during log replay, if "no" , never shown. If "decorated", then shown in a decorated window (for window managers can't cope with un-decorated windows)</td>
+<td>If "yes", stick position is shown during log replay, if "no" , never shown. If "decorated", then shown in a decorated window (for window managers can't cope with un-decorated windows), e.g. WSL, Cygwin</td>
 <td>"yes"</td>
 </tr>
 <tr>
