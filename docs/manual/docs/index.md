@@ -45,7 +45,8 @@ From its MultiWii origins mwp has evolved to support navigation capabilities in 
 {{ mwp }} also supports the [real-time display of adjacent aircraft](mwp-Radar-View.md) using:
 
 * [INAV-radar](https://github.com/OlivierC-FR/ESP32-INAV-Radar/) (INAV UAS)
-* MAVlink Traffic Report (e.g. full-size aviation, typically ADS-B via a device such as uAvionix PingRX)
+* dump1090 / SBS-1 Basestation (SDR ADS-B), streaming TCP, for general aviation
+* MAVlink Traffic Report (e.g. general aviation, typically ADS-B via a device such as uAvionix PingRX)
 
 ### Log replay formats
 
