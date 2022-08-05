@@ -757,7 +757,7 @@ public class MWP : Gtk.Application {
     void show_startup()
     {
         builder = new Builder ();
-        string[]ts={"mwp.ui","menubar.ui"};
+        string[]ts={"mwp.ui", "menubar.ui", "mwpsc.ui"};
         foreach(var fnm in ts) {
             var fn = MWPUtils.find_conf_file(fnm);
             if (fn == null) {
@@ -1554,17 +1554,26 @@ public class MWP : Gtk.Application {
             });
 
         mseed = new MapSeeder(builder,window);
-        var shortcuts = builder.get_object ("shortcut-dialog") as Gtk.Dialog;
-        shortcuts.set_transient_for(window);
-        var shortclose = builder.get_object ("shorts-close") as Gtk.Button;
-        shortcuts.delete_event.connect (() => {
-                shortcuts.hide();
-                return true;
-            });
 
-        shortclose.clicked.connect (() => {
-                shortcuts.hide();
-            });
+		var scview = builder.get_object("scwindow") as ShortcutsWindow;
+		var scsect = builder.get_object("shortcuts") as ShortcutsSection;
+
+		scsect.visible = true;
+		scview.section_name = "shortcuts";
+		scview.transient_for = window;
+		scview.destroy.connect(() => {
+				scview.hide();
+			});
+		scview.destroy.connect(() => {
+				scview.hide();
+			});
+		scview.close.connect(() => {
+				scview.hide();
+			});
+		scview.delete_event.connect(() => {
+				scview.hide();
+				return true;
+			});
 
         msview = new MapSourceDialog(builder, window);
         setpos = new SetPosDialog(builder, window);
@@ -2083,7 +2092,7 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("keys",null);
         saq.activate.connect(() => {
-                shortcuts.show_all();
+                scview.show_all();
             });
         window.add_action(saq);
 
