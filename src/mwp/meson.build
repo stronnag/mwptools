@@ -140,7 +140,7 @@ install_data (
 
 install_data (
   ['vcols.css', 'default.layout', 'beep-sound.ogg', 'bleet.ogg',
-   'menubar.ui', 'mwp.ui', 'orange.ogg', 'sat_alert.ogg'],
+   'menubar.ui', 'mwp.ui', 'mwpsc.ui', 'orange.ogg', 'sat_alert.ogg'],
   install_dir: join_paths(get_option('datadir'), 'mwp')
 )
 
