@@ -2,7 +2,7 @@
 
 ## Overview
 
-Prior to {{ inav }} 3.0, mission altitudes are relative to the HOME (arming) location, which is not part of a mission definition. As a result, the pilot has to be ensure by some other means that the mission will clear any raised elevations on the mission path. For INAV 3.0, missions may be either [relative to home or absolute](Support-for-inav-3.0-WP-features.md) (above a [datum, see below](#datums)).
+Prior to {{ inav }} 3.0, mission altitudes are relative to the HOME (arming) location, which is not part of a mission definition. As a result, the pilot has to be ensure by some other means that the mission will clear any raised elevations on the mission path. For INAV 3.0, missions may be either [relative to home or absolute](Support-for-inav-3.0-WP-features.md) (above a [datum, see below](#datum)).
 
 **mwp** includes a `mwp-plot-elevations` tool that performs mission and terrain analysis.
 Prior to 2021-05-03, this was provided by a ruby script in `mwptools/samples`; since 2021-05-03 there is a Go program (in `mwptools/mwp-plot-elevations`) which is an enhanced version, and supports [INAV 3.0 absolute altitude](Support-for-inav-3.0-WP-features.md) missions. If you're running an older version of **mwp**, or you haven't installed the Go compiler, you can use the older, less functional ruby version, but the Go version is recommended as:
