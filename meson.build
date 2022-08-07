@@ -1,6 +1,5 @@
-project('mwptools', 'c', 'vala', version : '5.219.474')
+project('mwptools', 'c', 'vala', version : '5.219.627')
 
-meson.add_install_script('meson/post_install.sh')
 conf_data = configuration_data()
 conf_data.set('version', meson.project_version())
 configure_file(
@@ -53,4 +52,15 @@ if gobuild != ''
      fgo = custom_target('flashgo', output: 'flashgo', command : [gobuild, '@OUTPUT@', fgo_dir, gotrim], build_by_default: true, input: fgo_deps)
 
    endif
+endif
+
+if meson.version().version_compare('> 0.58')
+  meson.add_install_script('meson/trivial_post_install.sh')
+  gnome.post_install(
+    glib_compile_schemas: true,
+    gtk_update_icon_cache: true,
+    update_desktop_database: true
+  )
+else
+ meson.add_install_script('meson/post_install.sh')
 endif
