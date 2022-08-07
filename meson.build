@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '5.219.604')
+project('mwptools', 'c', 'vala', version : '5.219.474')
 
 meson.add_install_script('meson/post_install.sh')
 conf_data = configuration_data()
@@ -53,20 +53,4 @@ if gobuild != ''
      fgo = custom_target('flashgo', output: 'flashgo', command : [gobuild, '@OUTPUT@', fgo_dir, gotrim], build_by_default: true, input: fgo_deps)
 
    endif
-endif
-
-if host_machine.system() == 'darwin'
-gnome.post_install(
-  gtk_update_icon_cache: true,
-)
-else
- if host_machine.system() == 'windows'
-  #
- else
-  gnome.post_install(
-    gtk_update_icon_cache: true,
-    update_desktop_database: true,
-    glib_compile_schemas : true,
-  )
- endif
 endif
