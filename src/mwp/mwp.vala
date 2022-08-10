@@ -22,13 +22,13 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
-public class MWP : Gtk.Application {
 
+public class MWP : Gtk.Application {
     private const uint MAXVSAMPLE=12;
     private const uint8 MAV_BEAT_MASK=7; // mask, some power of 2 - 1
-
+	public const string MWPID="org.stronnag.mwp";
     public Builder builder;
-    public Gtk.ApplicationWindow window;
+    public Gtk.ApplicationWindow window=null;
 	private MwpSplash? splash;
     private int window_h = -1;
     private int window_w = -1;
@@ -756,7 +756,7 @@ public class MWP : Gtk.Application {
 
     void show_startup()
     {
-        builder = new Builder ();
+		builder = new Builder ();
         string[]ts={"mwp.ui", "menubar.ui", "mwpsc.ui"};
         foreach(var fnm in ts) {
             var fn = MWPUtils.find_conf_file(fnm);
@@ -830,8 +830,7 @@ public class MWP : Gtk.Application {
 
     public MWP (string? s)
     {
-        Object(application_id: "org.mwp.app",
-               flags: ApplicationFlags.HANDLES_COMMAND_LINE);
+        Object(application_id: MWPID, flags: ApplicationFlags.HANDLES_COMMAND_LINE);
         var v = check_env_args(s);
         set_opts_from_dict(v);
         add_main_option_entries(options);
@@ -1066,9 +1065,8 @@ public class MWP : Gtk.Application {
             });
     }
 
-    public void handle_activate ()
-    {
-        if (window == null) {
+    public void handle_activate () {
+        if (active_window == null) {
 			show_startup();
             ready = true;
             create_main_window();
@@ -10577,8 +10575,9 @@ case 0:
         return sb.str;
     }
 
-	public static int main (string[] args)
-    {
+	public static int main (string[] args) {
+		MWPUtils.set_app_name("mwp");
+		Environment.set_prgname(MWP.MWPID);
 		MwpLibC.atexit(MWP.xchild);
         var s = MWP.read_env_args();
 		if (GtkClutter.init (ref args) != InitError.SUCCESS)

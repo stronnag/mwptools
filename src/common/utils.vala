@@ -17,31 +17,35 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-public class MWPUtils
-{
-    private static string? have_conf_file(string fn)
-    {
+public class MWPUtils : Object {
+	private static string? appname=null;
+
+	public static void set_app_name(string an) {
+		appname = an;
+	}
+
+	private static string? have_conf_file(string fn) {
         var file = File.new_for_path (fn);
-        if (file.query_exists ())
-        {
+        if (file.query_exists ()) {
             return fn;
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
 
-    public static string? find_conf_file(string fn, string? dir=null)
-    {
+    public static string? find_conf_file(string fn, string? dir=null) {
         string cfile=null;
         string wanted = (dir != null) ? dir+"/"+fn  : fn;
 
         var uc = Environment.get_user_config_dir();
-        var app = Environment.get_application_name();
-        if(app == null)
-            app = MwpVers.progname;
-
+		string app;
+		if (appname == null) {
+			app = Environment.get_application_name();
+			if(app == null)
+				app = MwpVers.progname;
+		} else {
+			app = appname;
+		}
         cfile = have_conf_file(GLib.Path.build_filename(uc,app,wanted));
         if (cfile == null)
         {

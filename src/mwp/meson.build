@@ -133,21 +133,6 @@ endif
 
 common_inc_dir += include_directories('.')
 
-install_data (
-  'org.mwptools.planner.gschema.xml',
-  install_dir: join_paths(get_option('datadir'), 'glib-2.0', 'schemas'),
-)
-
-install_data (
-  ['vcols.css', 'default.layout', 'beep-sound.ogg', 'bleet.ogg',
-   'menubar.ui', 'mwp.ui', 'mwpsc.ui', 'orange.ogg', 'sat_alert.ogg'],
-  install_dir: join_paths(get_option('datadir'), 'mwp')
-)
-
-install_subdir('pixmaps', install_dir : join_paths(get_option('datadir'), 'mwp'))
-install_data('mwp.desktop', install_dir : join_paths(get_option('datadir') , 'applications'))
-install_data('mwp-mimetypes.xml', install_dir : join_paths(get_option('datadir') , 'mime', 'packages'))
-
 bcd =  dependency('bash-completion', required: false)
 if bcd.found()
   if meson.version().version_compare('>=0.51.0')
@@ -162,3 +147,6 @@ if bcd.found()
 	       rename: ['mwp','blackbox_decode'],
 	       install_dir: bcd_dir )
 endif
+
+subdir('ui')
+subdir('schema')

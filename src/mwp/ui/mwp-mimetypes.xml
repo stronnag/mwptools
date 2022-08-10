@@ -8,20 +8,21 @@
 
   <mime-type type="application/vnd.blackbox.log">
     <comment>Blackbox log</comment>
-    <magic priority="50">
+    <magic>
       <match type="string" offset="0" value="H Product:Blackbox"/>
     </magic>
-    <glob weight="50" pattern="*.TXT"/>
+    <glob pattern="*.TXT"/>
+    <glob pattern="*.txt"/>
     <glob pattern="*.bbl"/>
     <glob pattern="*.BBL"/>
   </mime-type>
 
   <mime-type type="application/vnd.mwp.log">
     <comment>Mwp telemetry log</comment>
-    <magic priority="50">
+    <magic>
       <match type="string" offset="0" value='{"type":'/>
     </magic>
-    <glob weight="50" pattern="*.log"/>
+    <glob pattern="*.log"/>
   </mime-type>
 
   <mime-type type="application/vnd.mwp.json.mission">
