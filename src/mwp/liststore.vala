@@ -67,15 +67,12 @@ public class ScrollView : Gtk.Window {
 	}
 }
 
-
-public class ListBox : GLib.Object
-{
+public class ListBox : GLib.Object {
     private const int SPEED_CONV = 100;
     private const int ALT_CONV = 100;
     private const int POS_CONV = 10000000;
 
-    public enum WY_Columns
-    {
+    public enum WY_Columns {
         IDX,
         TYPE,
         LAT,
@@ -85,7 +82,6 @@ public class ListBox : GLib.Object
         INT2,
         INT3,
         FLAG,
-        MARKER,
         ACTION,
         TIP,
         N_COLS
@@ -131,8 +127,7 @@ public class ListBox : GLib.Object
     public bool have_rth {get; private set; default= false;}
     private int mpop_no;
 
-    private enum DELTAS
-    {
+    private enum DELTAS {
         NONE=0,
         LAT=1,
         LON=2,
@@ -141,15 +136,13 @@ public class ListBox : GLib.Object
         ANY=7
     }
 
-    public enum ALTMODES
-    {
+    public enum ALTMODES {
         RELATIVE=0,
         ABSOLUTE=1,
         NONE=-1
     }
 
-    public enum POSREF
-    {
+    public enum POSREF {
         NONE=0,
         MANUAL=1,
         HOME=2,
@@ -158,16 +151,13 @@ public class ListBox : GLib.Object
         LANDA=16
     }
 
-    private void raise_fby_wp(int wpno)
-    {
+    private void raise_fby_wp(int wpno) {
         Gtk.TreeIter iter;
-        if(list_model.iter_nth_child(out iter, null, wpno-1))
-        {
+        if(list_model.iter_nth_child(out iter, null, wpno-1)) {
             Value val;
-            list_model.get_value (iter, WY_Columns.MARKER, out val);
-            var mk =  (Champlain.Label)val;
-            if(mk != null)
-            {
+            list_model.get_value (iter, WY_Columns.IDX, out val);
+			var mk =  mp.markers.get_marker_for_idx((int)val);
+            if(mk != null) {
                 Gtk.TreeIter niter;
                 Value cell;
                 for(bool next=list_model.get_iter_first(out niter); next;
@@ -175,8 +165,8 @@ public class ListBox : GLib.Object
                     list_model.get_value (niter, WY_Columns.FLAG, out cell);
                     uint8 flag = (uint8)((int)cell);
                     if(flag == 0x48) {
-                        list_model.get_value (niter, WY_Columns.MARKER, out val);
-                        var fbymk =  (Champlain.Label)val;
+                        list_model.get_value (niter, WY_Columns.IDX, out val);
+                        var fbymk =  mp.markers.get_marker_for_idx((int)val);
                         if (mk != fbymk)
                             mk.get_parent().set_child_above_sibling(mk, fbymk);
                     }
@@ -185,8 +175,7 @@ public class ListBox : GLib.Object
         }
     }
 
-    private void toggle_flyby_status(int wpno, int flag)
-    {
+    private void toggle_flyby_status(int wpno, int flag) {
         Gtk.TreeIter iter;
         if(list_model.iter_nth_child(out iter, null, wpno-1))
         {
@@ -213,8 +202,7 @@ public class ListBox : GLib.Object
         marker_menu.add (item);
     }
 
-    private void init_marker_menu()
-    {
+    private void init_marker_menu()  {
         marker_menu =   new Gtk.Menu ();
         var item = new Gtk.MenuItem.with_label ("WP: 0");
         marker_menu.add (item);
@@ -329,12 +317,9 @@ public class ListBox : GLib.Object
         double range;
         double brg;
 
-        if(ntyp == MSP.Action.SET_POI)
-        {
+        if(ntyp == MSP.Action.SET_POI) {
             sb.append(": Point of interest");
-        }
-        else
-        {
+        } else {
             if(fhome != null && FakeHome.is_visible)
             {
                 double hlat,hlon;
@@ -485,13 +470,11 @@ public class ListBox : GLib.Object
     public void import_mission(Mission ms, bool  autoland = false)
     {
         Gtk.TreeIter iter;
-
         clear_mission();
         lastid = 0;
         have_rth = false;
 
-        foreach (MissionItem m in ms.get_ways())
-        {
+        foreach (MissionItem m in ms.get_ways()) {
             list_model.append (out iter);
             string no;
             double m1 = 0;
@@ -507,9 +490,9 @@ public class ListBox : GLib.Object
                         m1 = 1;
                         MWPLog.message("Setting autoland for RTH\n");
                     }
-                    if(m1 == 1)
+                    if(m1 == 1) {
                         mp.markers.set_rth_icon(true);
-
+					}
                     break;
                 default:
                     lastid++;
@@ -524,7 +507,8 @@ public class ListBox : GLib.Object
                         m2 = ((double)m.param2);
                     break;
             }
-            uint8 flag = (m.flag == 0x48) ? 0x48 : 0;
+
+			uint8 flag = (m.flag == 0x48) ? 0x48 : 0;
             list_model.set (iter,
                             WY_Columns.IDX, no,
                             WY_Columns.TYPE, MSP.get_wpname(m.action),
@@ -537,7 +521,6 @@ public class ListBox : GLib.Object
                             WY_Columns.FLAG, flag,
                             WY_Columns.ACTION, m.action);
         }
-
         if(ms.homex != 0 && ms.homey != 0) {
             FakeHome.usedby |= FakeHome.USERS.Mission;
             fhome.set_fake_home(ms.homey, ms.homex);
@@ -927,7 +910,6 @@ public class ListBox : GLib.Object
                                         typeof (double),
                                         typeof (int),
                                         typeof (int),
-                                        typeof (Champlain.Label),
                                         typeof (MSP.Action),
                                         typeof (string)
                                         );
@@ -1406,8 +1388,7 @@ public class ListBox : GLib.Object
         import_mission(to_mission());
     }
 
-    private void update_fby_wp(double lat, double lon)
-    {
+    private void update_fby_wp(double lat, double lon) {
         Gtk.TreeIter iter;
         for(bool next=list_model.get_iter_first(out iter); next;
             next=list_model.iter_next(ref iter))
@@ -1415,8 +1396,8 @@ public class ListBox : GLib.Object
             GLib.Value cell;
             list_model.get_value (iter, WY_Columns.FLAG, out cell);
             if ( (int)cell == 0x48) {
-                list_model.get_value (iter, WY_Columns.MARKER, out cell);
-                var mk =  (Champlain.Label)cell;
+                list_model.get_value (iter, WY_Columns.IDX, out cell);
+                var mk =  mp.markers.get_marker_for_idx((int)cell);
                 if(mk != null)
                     mk.set_location(lat,lon);
                 list_model.set (iter, WY_Columns.LAT, lat, WY_Columns.LON, lon);
@@ -1439,11 +1420,10 @@ public class ListBox : GLib.Object
         return lastid;
     }
 
-    private void raise_iter_wp(Gtk.TreeIter iter, bool ring=false)
-    {
+    private void raise_iter_wp(Gtk.TreeIter iter, bool ring=false) {
             Value val;
-            list_model.get_value (iter, WY_Columns.MARKER, out val);
-            var mk =  (Champlain.Label)val;
+            list_model.get_value (iter, WY_Columns.IDX, out val);
+            var mk =  mp.markers.get_marker_for_idx((int)val);
             if(mk != null)
                 mk.get_parent().set_child_above_sibling(mk,null);
             list_model.get_value (iter, WY_Columns.ACTION, out val);

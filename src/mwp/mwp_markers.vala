@@ -18,6 +18,55 @@
 using GLib;
 using Clutter;
 
+public enum Extra {
+	Q_0 = 0,
+	Q_1 = 1,
+}
+
+private static Clutter.Actor create_clutter_actor_from_file (string filename) {
+	Clutter.Actor actor = new Clutter.Actor ();
+	try {
+		Gdk.Pixbuf pixbuf = new Gdk.Pixbuf.from_file (filename);
+		Clutter.Image image = new Clutter.Image ();
+		image.set_data (pixbuf.get_pixels (),
+						pixbuf.has_alpha ? Cogl.PixelFormat.RGBA_8888 : Cogl.PixelFormat.RGB_888,
+						pixbuf.width,
+						pixbuf.height,
+						pixbuf.rowstride);
+		actor.content = image;
+		actor.set_size (pixbuf.width, pixbuf.height);
+	} catch {}
+	return actor;
+}
+
+/*
+ * Extra date stored:
+ * rplot: reference to RadarPlot item
+ * idx	: WP index
+ * extras:
+ *		RadarPlot:
+ *			Q_0 : INV Radar label
+ *			Q_1 : ADS-B label
+ *		Waypoint:
+ *			Q_0 : Child marker for popover text
+ */
+
+public class MWPLabel : Champlain.Label {
+	public Object? extras[2];
+	public RadarPlot? rplot;
+	public int idx;
+	public MWPLabel.from_file(string filename) {
+		var actor = create_clutter_actor_from_file (filename);
+		Object(image: actor);
+	}
+	public MWPLabel.with_image(Actor actor) {
+		Object(image: actor);
+	}
+	public MWPLabel.with_text(string text, string? font, Color? text_color, Color? label_color) {
+		Object(text: text, font_name: font, text_color: text_color, color: label_color);
+	}
+}
+
 public class MWPMarkers : GLib.Object
 {
     public Champlain.PathLayer path;                     // Mission outline
@@ -37,9 +86,6 @@ public class MWPMarkers : GLib.Object
     private Champlain.View _v;
     private List<uint> llist;
     private List<uint> llistb;
-    private Quark q0;
-    private Quark q1;
-    private Quark qtxt;
 
     private Clutter.Color black;
     private Clutter.Color near_black;
@@ -118,9 +164,6 @@ public class MWPMarkers : GLib.Object
         posring = new Champlain.Point.full(80.0, colour);
         rlayer.add_marker(posring);
         posring.hide();
-        q0 = Quark.from_string("mwp0");
-        q1 = Quark.from_string("mwp1");
-        qtxt = Quark.from_string("irtext");
 
 		try {
 			inavradar = load_image_from_file("inav-radar.svg", MWP.conf.misciconsize,MWP.conf.misciconsize);
@@ -132,17 +175,15 @@ public class MWPMarkers : GLib.Object
 		}
 	}
 
-    private unowned Champlain.Label find_radar_item(RadarPlot r)
-    {
-        unowned Champlain.Label rd = null;
+    private unowned MWPLabel find_radar_item(RadarPlot r) {
+        unowned MWPLabel rd = null;
         rdrmarkers.get_markers().foreach ((m) => {
-                if(rd == null)
-                {
-                    if (((Champlain.Label)m).name != "irdr")  {
-                        var a = m.get_qdata<RadarPlot?>(q0);
+                if(rd == null) {
+                    if (((MWPLabel)m).name != "irdr")  {
+                        var a = ((MWPLabel)m).rplot;
                         if(a != null) {
                             if (r.id== a.id)
-                                rd = (Champlain.Label)m;
+                                rd = m as MWPLabel;
                         }
                     }
                 }
@@ -150,49 +191,42 @@ public class MWPMarkers : GLib.Object
         return rd;
     }
 
-	public void set_radar_stale(RadarPlot r)
-    {
+	public void set_radar_stale(RadarPlot r) {
         var rp = find_radar_item(r);
         if(rp != null) {
-            rp.set_qdata<RadarPlot?>(q0,r);
+            rp.rplot = r;
             rp.opacity = 100;
         }
     }
 
-    public void remove_radar(RadarPlot r)
-    {
+    public void remove_radar(RadarPlot r) {
         var rp = find_radar_item(r);
-        if(rp != null)
-        {
-            unowned Champlain.Label _t = rp.get_qdata<Champlain.Label>(qtxt);
+        if(rp != null) {
+            unowned MWPLabel  _t = rp.extras[Extra.Q_1] as MWPLabel;
             if (_t != null)
                 rdrmarkers.remove_marker(_t);
             rdrmarkers.remove_marker(rp);
         }
     }
 
-    public void set_radar_hidden(RadarPlot r)
-    {
-        var rp = find_radar_item(r);
+    public void set_radar_hidden(RadarPlot r) {
+        var rp = find_radar_item(r) as MWPLabel;
         if(rp != null) {
-            rp.set_qdata<RadarPlot?>(q0,r);
+            rp.rplot = r;
             rp.visible = false;
         }
     }
 
-    public void rader_layer_visible(bool vis)
-    {
+    public void rader_layer_visible(bool vis) {
         if(vis)
             rdrmarkers.show();
         else
             rdrmarkers.hide();
     }
 
-    public void update_radar(ref unowned RadarPlot r)
-    {
+    public void update_radar(ref unowned RadarPlot r) {
         var rp = find_radar_item(r);
-        if(rp == null)
-        {
+        if(rp == null) {
 			Clutter.Actor actor = new Clutter.Actor ();
 			Clutter.Image img;
 
@@ -208,7 +242,7 @@ public class MWPMarkers : GLib.Object
 			actor.set_size((int)w, (int)h);
 			actor.content = img;
 
-			rp  = new Champlain.Label.with_image(actor);
+			rp  = new MWPLabel.with_image(actor);
 			rp.set_pivot_point(0.5f, 0.5f);
 			rp.set_draw_background (false);
 			rp.set_flags(ActorFlags.REACTIVE);
@@ -219,11 +253,11 @@ public class MWPMarkers : GLib.Object
             text.set_background_color(black);
             rp.set_text_color(white);
             textb.add_child (text);
-            rp.set_qdata<Clutter.Actor>(q1,textb);
+            rp.extras[Extra.Q_0] = textb;
 
             rp.enter_event.connect((ce) => {
-                    var _r = rp.get_qdata<RadarPlot?>(q0);
-                    var _ta = rp.get_qdata<Clutter.Actor>(q1);
+                    var _r = rp.rplot;
+                    var _ta = rp.extras[Extra.Q_0] as Actor;
                     var _tx = _ta.last_child as Clutter.Text;
                     _tx.text = "  %s / %s \n  %s %s \n  %.0f %s %0.f %s %.0f°".printf(
                         _r.name, RadarView.status[_r.state],
@@ -238,32 +272,29 @@ public class MWPMarkers : GLib.Object
                 });
 
             rp.leave_event.connect((ce) => {
-                    var _ta = rp.get_qdata<Clutter.Actor>(q1);
+                    var _ta = rp.extras[Extra.Q_0] as Clutter.Actor;
                     _v.remove_child(_ta);
                     return false;
                 });
 
             if(r.source == 1) {
-                var irlabel = new Champlain.Label.with_text (r.name, "Sans 9", null, null);
+                var irlabel = new MWPLabel.with_text (r.name, "Sans 9", null, null);
                 irlabel.set_use_markup (true);
                 irlabel.set_color (grayish);
                 irlabel.set_location (r.latitude,r.longitude);
                 irlabel.set_name("irdr");
-                rp.set_qdata<Champlain.Marker>(qtxt, irlabel);
+                rp.extras[Extra.Q_1] = irlabel;
                 rdrmarkers.add_marker(irlabel);
             }
             rdrmarkers.add_marker (rp);
         }
         rp.opacity = 200;
-        rp.set_qdata<RadarPlot?>(q0,r);
-        if(rp.name != r.name)
-        {
+        rp.rplot = r;
+        if(rp.name != r.name) {
             rp.name = r.name;
-            if(r.source == 1)
-            {
-                unowned Champlain.Label _t = rp.get_qdata<Champlain.Label>(qtxt);
-                if (_t != null)
-                {
+            if(r.source == 1) {
+                unowned MWPLabel _t = rp.extras[Extra.Q_1] as MWPLabel;
+                if (_t != null) {
                     _t.text = r.name;
                 }
             }
@@ -284,100 +315,88 @@ public class MWPMarkers : GLib.Object
 		}
 
         if(r.source == 1) {
-            unowned Champlain.Label _t = rp.get_qdata<Champlain.Label>(qtxt);
-            if (_t != null)
-            {
+            var _t = rp.extras[Extra.Q_1] as MWPLabel;
+            if (_t != null) {
                 _t.set_location (r.latitude,r.longitude);
             }
         }
         rp.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, r.heading);
     }
 
-    public void set_rth_icon(bool iland)
-    {
+    public void set_rth_icon(bool iland) {
         rth_land = iland;
     }
 
     private void get_text_for(MSP.Action typ, string no, out string text,
                               out  Clutter.Color colour, bool nrth=false,
-                              bool jumpfwd=false, bool fby = false)
-    {
+                              bool jumpfwd=false, bool fby = false) {
         string symb;
         uint8 alpha = 0xc8;
 
         if (fby)
             alpha = 0x40;
 
-
-        switch (typ)
-        {
-
-            case MSP.Action.WAYPOINT:
-                if(nrth)
-                {
+        switch (typ) {
+		case MSP.Action.WAYPOINT:
+                if(nrth) {
                     colour = { 0, 0xaa, 0xff, alpha};
                         // nice to set different icon for land ⛳ or ⏬
 //                    symb = (rth_land) ? "⏬WP" : "⏏WP";
                     symb = (rth_land) ? "▼WP" : "⏏WP";
-                }
-                else
-                {
+                } else {
                     symb = "WP";
                     colour = { 0, 0xff, 0xff, alpha};
                 }
                 break;
 
-            case MSP.Action.POSHOLD_TIME:
-                symb = "◷";
-                colour = { 152, 70, 234, alpha};
-                break;
+		case MSP.Action.POSHOLD_TIME:
+			symb = "◷";
+			colour = { 152, 70, 234, alpha};
+			break;
 
-            case MSP.Action.POSHOLD_UNLIM:
-                symb = "∞";
-                colour = { 0x4c, 0xfe, 0, alpha};
-                break;
+		case MSP.Action.POSHOLD_UNLIM:
+			symb = "∞";
+			colour = { 0x4c, 0xfe, 0, alpha};
+			break;
 
-            case MSP.Action.RTH:
-                symb = (rth_land) ? "▼" : "⏏";
-                colour = { 0xff, 0x0, 0x0, alpha};
-                break;
+		case MSP.Action.RTH:
+			symb = (rth_land) ? "▼" : "⏏";
+			colour = { 0xff, 0x0, 0x0, alpha};
+			break;
 
-            case MSP.Action.LAND:
-                symb = "♜";
-                colour = { 0xff, 0x9a, 0xf0, alpha};
-                break;
+		case MSP.Action.LAND:
+			symb = "♜";
+			colour = { 0xff, 0x9a, 0xf0, alpha};
+			break;
 
-            case MSP.Action.JUMP:
-                    // ⟲⟳⥀⥁
+		case MSP.Action.JUMP:
+			// ⟲⟳⥀⥁
+			if(jumpfwd)
+				symb = "⟳" ; // "⇐";
+			else
+				symb = "⟲" ; //"⇒";
 
-                if(jumpfwd)
-                    symb = "⟳" ; // "⇐";
-                else
-                    symb = "⟲" ; //"⇒";
+			colour = { 0xed, 0x51, 0xd7, alpha};
+			break;
 
-                colour = { 0xed, 0x51, 0xd7, alpha};
-                break;
+		case MSP.Action.SET_POI:
+		case MSP.Action.SET_HEAD:
+			symb = "⌘";
+			colour = { 0xff, 0xfb, 0x2b, alpha};
+			break;
 
-            case MSP.Action.SET_POI:
-            case MSP.Action.SET_HEAD:
-                symb = "⌘";
-                colour = { 0xff, 0xfb, 0x2b, alpha};
-                break;
-
-            default:
-                symb = "??";
-                colour = { 0xe0, 0xe0, 0xe0, alpha};
-                break;
+		default:
+			symb = "??";
+			colour = { 0xe0, 0xe0, 0xe0, alpha};
+			break;
         }
         text = "%s %s".printf(symb, no);
     }
 
-    private double calc_extra_leg(Champlain.PathLayer p)
-    {
+    private double calc_extra_leg(Champlain.PathLayer p) {
         List<weak Champlain.Location> m= p.get_nodes();
         double extra = 0.0;
-        if(homep != null)
-        {
+        if(homep != null) {
             double cse;
             Champlain.Location lp0 = m.first().data;
             Champlain.Location lp1 = m.last().data;
@@ -389,59 +408,46 @@ public class MWPMarkers : GLib.Object
         return extra;
     }
 
-    public void add_home_point(double lat, double lon, ListBox l)
-    {
-        if(homep == null)
-        {
+    public void add_home_point(double lat, double lon, ListBox l) {
+        if(homep == null) {
             homep = new  Champlain.Marker();
             homep.set_location (lat,lon);
             hpath.add_node(homep);
-        }
-        else
-        {
+        } else {
             homep.set_location (lat,lon);
         }
         calc_extra_distances(l);
     }
 
-    void calc_extra_distances(ListBox l)
-    {
+    void calc_extra_distances(ListBox l) {
         double extra = 0.0;
-        if(homep != null)
-        {
+        if(homep != null) {
             if(ipos != null)
                 extra = calc_extra_leg(ipath);
 
-            if(rthp != null)
-            {
+            if(rthp != null) {
                 extra += calc_extra_leg(hpath);
             }
         }
         l.calc_mission(extra);
     }
 
-    private uint find_rth_pos(out double lat, out double lon)
-    {
+    private uint find_rth_pos(out double lat, out double lon) {
         List<weak Champlain.Location> m= path.get_nodes();
-        if(m.length() > 0)
-        {
+        if(m.length() > 0) {
             Champlain.Location lp = m.last().data;
             lat = lp.get_latitude();
             lon = lp.get_longitude();
-        }
-        else
+        } else {
             lat = lon = 0;
-
+		}
         return m.length();
     }
 
-    public void update_ipos(ListBox l, double lat, double lon)
-    {
-        if(ipos == null)
-        {
+    public void update_ipos(ListBox l, double lat, double lon) {
+        if(ipos == null) {
             List<weak Champlain.Location> m= path.get_nodes();
-            if(m.length() > 0)
-            {
+            if(m.length() > 0) {
                 Champlain.Location lp = m.first().data;
                 var ip0 =  new  Champlain.Point();
                 ip0.latitude = lp.latitude;
@@ -455,58 +461,44 @@ public class MWPMarkers : GLib.Object
         }
     }
 
-    public void negate_ipos()
-    {
+    public void negate_ipos() {
         ipath.remove_all();
         ipos = null;
     }
 
 
-    public void negate_jpos()
-    {
-        foreach(var p in jpath)
-        {
+    public void negate_jpos() {
+        foreach(var p in jpath) {
             p.remove_all();
         }
         jpath={};
     }
 
-    private void update_rth (ListBox l)
-    {
+    private void update_rth (ListBox l) {
         double lat,lon;
         uint irth = find_rth_pos(out lat, out lon);
-
-        if(irth != 0)
-        {
-            if(rthp == null)
-            {
+        if(irth != 0) {
+            if(rthp == null) {
                 rthp = new  Champlain.Marker();
                 rthp.set_location (lat,lon);
                 hpath.add_node(rthp);
-            }
-            else
-            {
+            } else {
                 rthp.set_location (lat,lon);
             }
             calc_extra_distances(l);
         }
     }
 
-    public void negate_home()
-    {
-        if(homep != null)
-        {
+    public void negate_home() {
+        if(homep != null) {
             hpath.remove_node(homep);
         }
         homep = null;
     }
 
-    public void remove_rings(Champlain.View view)
-    {
-        if (rings.length != 0)
-        {
-            foreach (var r in rings)
-            {
+    public void remove_rings(Champlain.View view) {
+        if (rings.length != 0) {
+            foreach (var r in rings) {
                 r.remove_all();
                 view.remove_layer(r);
             }
@@ -514,8 +506,7 @@ public class MWPMarkers : GLib.Object
         }
     }
 
-    public void initiate_rings(Champlain.View view, double lat, double lon, int nrings, double ringint, string colstr)
-    {
+    public void initiate_rings(Champlain.View view, double lat, double lon, int nrings, double ringint, string colstr) {
         remove_rings(view);
         var pp = path.get_parent();
         Clutter.Color rcol = Color.from_string(colstr);
@@ -540,10 +531,9 @@ public class MWPMarkers : GLib.Object
         }
     }
 
-    public Champlain.Marker add_single_element( ListBox l,  Gtk.TreeIter iter, bool rth)
-    {
+    public MWPLabel add_single_element( ListBox l,  Gtk.TreeIter iter, bool rth) {
         Gtk.ListStore ls = l.list_model;
-        Champlain.Label marker;
+        MWPLabel marker;
         GLib.Value cell;
         bool fby;
 
@@ -559,7 +549,7 @@ public class MWPMarkers : GLib.Object
         Clutter.Color colour;
         Gtk.TreeIter ni;
 
-        ls.get_value (iter, ListBox.WY_Columns.FLAG, out cell);
+		ls.get_value (iter, ListBox.WY_Columns.FLAG, out cell);
         fby = ((int)cell == 0x48);
 
         var ino = int.parse(no);
@@ -570,7 +560,7 @@ public class MWPMarkers : GLib.Object
 
         if(typ == MSP.Action.WAYPOINT || typ == MSP.Action.POSHOLD_TIME)
         {
-            var xiter = iter;
+            Gtk.TreeIter xiter = iter;
             var next=ls.iter_next(ref xiter);
             if(next)
             {
@@ -588,7 +578,9 @@ public class MWPMarkers : GLib.Object
             }
         }
         get_text_for(xtyp, no, out text, out colour, nrth, jumpfwd, fby);
-        marker = new Champlain.Label.with_text (text,"Sans 10",null,null);
+
+		marker = new MWPLabel.with_text (text,"Sans 10",null,null);
+		marker.idx = ino;
         marker.set_alignment (Pango.Alignment.RIGHT);
         marker.set_color (colour);
         marker.set_text_color(black);
@@ -602,22 +594,19 @@ public class MWPMarkers : GLib.Object
         marker.set_selectable(true);
         marker.set_flags(ActorFlags.REACTIVE);
 
-        markers.add_marker (marker);
-
-        if (rth == false)
-        {
+        if (rth == false) {
             if(typ != MSP.Action.SET_POI)
                 path.add_node(marker);
         }
 
-        ls.set_value(iter,ListBox.WY_Columns.MARKER,marker);
-        var mc = new Champlain.Label.with_text ("", "Sans 9", null, null);
+		var str = "__WP%d__".printf(ino);
+        var mc = new MWPLabel.with_text (str, "Sans 9", null, null);
         mc.set_color (near_black);
         mc.set_text_color(white);
         mc.opacity = 255;
         mc.x = 40;
         mc.y = 5;
-        marker.set_qdata<Champlain.Label>(q1,mc);
+        marker.extras[Extra.Q_0] = mc;
 
        marker.captured_event.connect((e) => {
                if(e.get_type() == Clutter.EventType.BUTTON_PRESS)
@@ -628,9 +617,8 @@ public class MWPMarkers : GLib.Object
            });
 
         marker.button_press_event.connect((e) => {
-                if(e.button == 3)
-                {
-                    var _t1 = marker.get_qdata<Champlain.Label>(q1);
+                if(e.button == 3) {
+                    var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
                     if (_t1 != null)
                         marker.remove_child(_t1);
                     l.set_popup_needed(ino);
@@ -639,10 +627,9 @@ public class MWPMarkers : GLib.Object
             });
 
         marker.enter_event.connect((ce) => {
-                var _t1 = marker.get_qdata<Champlain.Label>(q1);
-                if(_t1.get_parent() == null)
-                {
-                    var s = l.get_marker_tip(ino);
+                var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
+                if(_t1.get_parent() == null) {
+                    var s = l.get_marker_tip(marker.idx);
                     if(s == null)
                         s = "RTH";
                     _t1.text = s;
@@ -655,27 +642,24 @@ public class MWPMarkers : GLib.Object
             });
 
         marker.leave_event.connect((ce) => {
-                var _t1 = marker.get_qdata<Champlain.Label>(q1);
+                var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
                 if(_t1.get_parent() != null)
                     marker.remove_child(_t1);
                 return false;
             });
 
         marker.drag_motion.connect((dx,dy,evt) => {
-                var _t1 = marker.get_qdata<Champlain.Label>(q1);
-                {
-                    wp_moved(ino, marker.get_latitude(), marker.get_longitude());
-                    calc_extra_distances(l);
-                    var s = l.get_marker_tip(ino);
-                    _t1.set_text(s);
-                }
+                var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
+				wp_moved(ino, marker.get_latitude(), marker.get_longitude());
+				calc_extra_distances(l);
+				var s = l.get_marker_tip(ino);
+				_t1.set_text(s);
             });
 
-        ((Champlain.Marker)marker).drag_finish.connect(() => {
+        ((MWPLabel)marker).drag_finish.connect(() => {
                 GLib.Value val;
                 ls.get_value (iter, ListBox.WY_Columns.ACTION, out val);
-                if(val == MSP.Action.UNASSIGNED)
-                {
+                if(val == MSP.Action.UNASSIGNED) {
                     string mtxt;
                     Clutter.Color col;
                     var act = MSP.Action.WAYPOINT;
@@ -687,41 +671,37 @@ public class MWPMarkers : GLib.Object
                 }
                 wp_moved(ino, marker.get_latitude(), marker.get_longitude());
                 calc_extra_distances(l);
-                var _t1 = marker.get_qdata<Champlain.Label>(q1);
+                var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
                 _t1.set_text(l.get_marker_tip(ino));
             } );
 
-        return (Champlain.Marker)marker;
+        markers.add_marker (marker);
+        return (MWPLabel)marker;
     }
 
-    public void add_list_store(ListBox l)
-    {
+    public void add_list_store(ListBox l) {
         Gtk.TreeIter iter;
         Gtk.ListStore ls = l.list_model;
         bool rth = false;
-        Champlain.Marker mk = null;
+        MWPLabel mk = null;
 
         remove_all();
-        for(bool next=ls.get_iter_first(out iter);next;next=ls.iter_next(ref iter))
-        {
+        for(bool next=ls.get_iter_first(out iter);next;next=ls.iter_next(ref iter)) {
             GLib.Value cell;
             ls.get_value (iter, ListBox.WY_Columns.ACTION, out cell);
             var typ = (MSP.Action)cell;
-            switch (typ)
-            {
+            switch (typ) {
                 case MSP.Action.RTH:
                     rth = true;
                     update_rth(l);
-                    if(mk != null)
-                    {
+                    if(mk != null) {
                         add_rth_motion(mk);
                     }
-                    ls.set_value(iter,ListBox.WY_Columns.MARKER, (Champlain.Label)null);
                     break;
 
                 case MSP.Action.SET_HEAD:
                 case MSP.Action.JUMP:
-                    ls.set_value(iter,ListBox.WY_Columns.MARKER, (Champlain.Label)null);
+//                    ls.set_value(iter,ListBox.WY_Columns.MARKER, (Champlain.Label)null);
                 break;
                 case MSP.Action.POSHOLD_UNLIM:
                 case MSP.Action.LAND:
@@ -739,8 +719,7 @@ public class MWPMarkers : GLib.Object
 //        dump_path();
     }
 
-    private void add_rth_motion(Champlain.Marker lp)
-    {
+    private void add_rth_motion(Champlain.Marker lp) {
         lp.drag_motion.connect(() => {
                 double nlat, nlon;
                 nlat = lp.get_latitude();
@@ -749,29 +728,25 @@ public class MWPMarkers : GLib.Object
             });
     }
 
-    public void set_ring(Champlain.Marker lp)
-    {
+    public void set_ring(Champlain.Marker lp) {
         var nlat = lp.get_latitude();
         var nlon = lp.get_longitude();
         posring.set_location (nlat,nlon);
         posring.show();
     }
 
-    public void set_home_ring()
-    {
+    public void set_home_ring() {
         if (homep != null)
             set_ring(homep);
         else
             clear_ring();
     }
 
-    public void clear_ring()
-    {
+    public void clear_ring() {
         posring.hide();
     }
 
-    public void remove_all()
-    {
+    public void remove_all() {
         path.remove_all();
         hpath.remove_all();
         ipath.remove_all();
@@ -780,28 +755,18 @@ public class MWPMarkers : GLib.Object
         homep = rthp = ipos = null;
     }
 
-    private Champlain.Label get_marker_for_idx(Gtk.ListStore ls, int idx)
-    {
-        Champlain.Label marker=null;
-        Gtk.TreeIter iter;
-        GLib.Value cell;
-        for(bool next=ls.get_iter_first(out iter); next;
-                        next=ls.iter_next(ref iter))
-        {
-            ls.get_value (iter, ListBox.WY_Columns.IDX, out cell);
-            var jtgt = int.parse((string)cell);
-            if (jtgt == idx)
-            {
-                ls.get_value (iter, ListBox.WY_Columns.MARKER, out cell);
-                marker = (Champlain.Label)cell;
-                break;
-            }
-        }
-        return marker;
+    public MWPLabel? get_marker_for_idx(int idx) {
+		var mlist = markers.get_markers();
+		for (var i = 0; i < mlist.length(); i++) {
+			var m = (MWPLabel)(mlist.nth_data(i));
+			if( m.idx == idx) {
+				return m;
+			}
+		}
+		return null;
     }
 
-    public void refesh_jumpers(Gtk.ListStore ls)
-    {
+    public void refesh_jumpers(Gtk.ListStore ls) {
         Gtk.TreeIter iter;
         GLib.Value cell;
         negate_jpos();
@@ -818,11 +783,10 @@ public class MWPMarkers : GLib.Object
                 var jwp = (int)((double)cell);
                 var jp = ino - 1;
 //                ls.get_value (iter, ListBox.WY_Columns.MARKER, out cell);
-                var imarker = get_marker_for_idx(ls,jp);
-                var jmarker = get_marker_for_idx(ls,jwp);
+                var imarker = get_marker_for_idx(jp);
+                var jmarker = get_marker_for_idx(jwp);
 
-                if(imarker != null && jmarker != null)
-                {
+                if(imarker != null && jmarker != null) {
                     Clutter.Color rcol = {0xed, 0x51, 0xd7, 0xc8};
                     var pp = markers.get_parent();
                     var jpl = new Champlain.PathLayer();
