@@ -65,6 +65,7 @@ public class  MissionPreviewer : GLib.Object {
     public MissionPreviewer() {
         warmup = true;
         running = true;
+        head_mode = {0};
     }
 
     public void stop() {
@@ -182,6 +183,7 @@ public class  MissionPreviewer : GLib.Object {
         var cy = 0.0;
         double d;
         LegPreview[] plist={};
+        head_mode = {0};
 #if TREED
 		Tree<int, LegPreview?> tree = new Tree<int, LegPreview?>((a,b) => {return (a-b);});
 #endif

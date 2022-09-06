@@ -13,7 +13,7 @@ mwpsrcs = files('mwp.vala', 'liststore.vala', 'mwp_markers.vala',
 		'gst-video-player.vala', 'gst-audio-player.vala',
 		'mwp_gcs_icon.vala', 'mwp_preview_image.vala',
 		'mwp-sbs-decoder.vala', 'mwp-helpers.vala',
-		'mwp-sticks.vala', 'mwp_splash.vala')
+		'mwp-sticks.vala', 'mwp_splash.vala', 'wpeditpopover.vala')
 
 ublxguisrc = files('settings.vala',  'mapsources.vala')
 

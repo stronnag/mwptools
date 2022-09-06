@@ -209,6 +209,7 @@ public class MSP : Object {
 			}
 
     public enum Action {
+        UNKNOWN=-1,
         UNASSIGNED=0,
         WAYPOINT,
         POSHOLD_UNLIM,
