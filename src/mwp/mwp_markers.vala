@@ -558,23 +558,29 @@ public class MWPMarkers : GLib.Object
         var xtyp = typ;
         bool jumpfwd = false;
 
-        if(typ == MSP.Action.WAYPOINT || typ == MSP.Action.POSHOLD_TIME)
-        {
+        if(typ == MSP.Action.WAYPOINT || typ == MSP.Action.POSHOLD_TIME) {
             Gtk.TreeIter xiter = iter;
-            var next=ls.iter_next(ref xiter);
-            if(next)
-            {
+            bool done = false;
+            for(var next=ls.iter_next(ref xiter);next; next=ls.iter_next(ref xiter)) {
                 ls.get_value (xiter, ListBox.WY_Columns.ACTION, out cell);
                 var ntyp = (MSP.Action)cell;
-                if(ntyp == MSP.Action.JUMP)
-                {
+                switch (ntyp) {
+                case MSP.Action.JUMP:
                     if(typ == MSP.Action.WAYPOINT)
                         xtyp = MSP.Action.JUMP; // arbitrary choice really
-
                     ls.get_value (xiter, ListBox.WY_Columns.INT1, out cell);
                     var jwp = (int)((double)cell);
                     jumpfwd = (jwp > ino);
+                    done = true;
+                    break;
+                case MSP.Action.SET_HEAD:
+                    break;
+                default:
+                    done = true;
+                    break;
                 }
+                if(done)
+                    break;
             }
         }
         get_text_for(xtyp, no, out text, out colour, nrth, jumpfwd, fby);
@@ -766,23 +772,40 @@ public class MWPMarkers : GLib.Object
 		return null;
     }
 
+    private int get_prev_geo_wp(Gtk.ListStore ls, int ino) {
+        Gtk.TreeIter iter;
+        GLib.Value val;
+        ino--;
+        while(true) {
+            if(ls.iter_nth_child(out iter, null, ino)) {
+                ls.get_value (iter, ListBox.WY_Columns.ACTION, out val);
+                var xact = (MSP.Action)val;
+                if(!((xact == MSP.Action.SET_HEAD) ||
+                     (xact == MSP.Action.JUMP) ||
+                     (xact == MSP.Action.RTH))) {
+                    return ino+1;
+                }
+            } else {
+                return -1;
+            }
+            ino--;
+        }
+    }
+
     public void refesh_jumpers(Gtk.ListStore ls) {
         Gtk.TreeIter iter;
         GLib.Value cell;
         negate_jpos();
-        for(bool next=ls.get_iter_first(out iter); next;
-            next=ls.iter_next(ref iter))
-        {
+
+        for(bool next=ls.get_iter_first(out iter); next; next=ls.iter_next(ref iter)) {
             ls.get_value (iter, ListBox.WY_Columns.ACTION, out cell);
             var typ = (MSP.Action)cell;
-            if (typ == MSP.Action.JUMP)
-            {
+            if (typ == MSP.Action.JUMP) {
                 ls.get_value (iter, ListBox.WY_Columns.IDX, out cell);
                 var ino = int.parse((string)cell);
                 ls.get_value (iter, ListBox.WY_Columns.INT1, out cell);
                 var jwp = (int)((double)cell);
-                var jp = ino - 1;
-//                ls.get_value (iter, ListBox.WY_Columns.MARKER, out cell);
+                var jp = get_prev_geo_wp(ls, ino);
                 var imarker = get_marker_for_idx(jp);
                 var jmarker = get_marker_for_idx(jwp);
 
