@@ -156,7 +156,7 @@ public class ListBox : GLib.Object {
     }
 
 
-    private enum EvConst {
+    public  enum EvConst {
         HOME = -1,
         INVALID=-2,
         UNAVAILABLE = -99999

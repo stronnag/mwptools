@@ -277,7 +277,37 @@ public class WPPopEdit : Gtk.Dialog {
                             rthcb.active = false;
                     });
 */
+                amslcb.clicked.connect(() => {
+                        if(wpt.homeelev != ListBox.EvConst.UNAVAILABLE) {
+                            var na = int.parse(altent.text);
+                            if (amslcb.active) {
+                                na = na + wpt.homeelev;
+                            } else {
+                                na = na - wpt.homeelev;
+                            }
+                            altent.text = na.to_string();
+                            set_alt_border(false);
+                        } else {
+                            set_alt_border(true);
+                        }
+                    });
             }
         }
+    }
+    void set_alt_border(bool flag) {
+        string css;
+        if (flag) {
+            css =  "entry { border-style: solid; border-color: red; border-width: 1px;}";
+        } else {
+            css =  "entry { border-style: solid; border-color: orange; border-width: 1px;}";
+        }
+        try {
+            var provider = new CssProvider();
+            provider.load_from_data(css);
+            var stylec = altent.get_style_context();
+            stylec.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+        } catch (Error e) {
+            MWPLog.message ("CSS: %s\n", e.message);
+        };
     }
 }
