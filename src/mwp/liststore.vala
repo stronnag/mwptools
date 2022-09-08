@@ -1909,6 +1909,20 @@ public class ListBox : GLib.Object {
 
         mprv.mission_replay_done.connect(() => {
                 preview_running = false;
+                Idle.add(() => {
+                        thr.join();
+                        preview_item.sensitive=false;
+                        pop_preview_item.sensitive= false;
+                        Timeout.add_seconds(5,() => {
+                                craft=null;
+                                preview_item.label = "Preview Mission";
+                                pop_preview_item.label = "Preview Mission";
+                                preview_item.sensitive=true;
+                                pop_preview_item.sensitive=true;
+                                return false;
+                            });
+                        return false;
+                    });
             });
 
         HomePos hp={0,0,false};
@@ -1920,21 +1934,7 @@ public class ListBox : GLib.Object {
 
         var ms = to_mission();
         thr = mprv.run_mission(ms, hp);
-        for(preview_running = true; preview_running; Gtk.main_iteration())
-            ;
-
-        thr.join();
-        preview_item.sensitive=false;
-        pop_preview_item.sensitive= false;
-
-        Timeout.add_seconds(5,() => {
-                craft=null;
-                preview_item.label = "Preview Mission";
-                pop_preview_item.label = "Preview Mission";
-                preview_item.sensitive=true;
-                pop_preview_item.sensitive=true;
-                return false;
-            });
+        preview_running = true;
     }
 
     public void quit() {

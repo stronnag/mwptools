@@ -9961,20 +9961,6 @@ case 0:
                     prebox.hide ();
             });
         chooser.show_all();
-/** FIXRUN ---------------
-        if (id == Gtk.ResponseType.ACCEPT)
-            fn = chooser.get_filename ();
-
-		chooser.destroy ();
-		// Ensure removed befoer updating map
-		chooser = null;
-		while(Gtk.events_pending())
-			Gtk.main_iteration();
-        if(fn != null) {
-			mdx = 0; // Selected item
-			load_file(fn,true,append);
-		}
-        --------**/
         chooser.modal = false;
         chooser.response.connect((id) => {
                 if (id == Gtk.ResponseType.ACCEPT) {
