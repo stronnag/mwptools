@@ -28,11 +28,44 @@ This will:
 * Allow new WPs to be created by clicking on the map
 * Provide a context popup menu by right click on a WP icon
 
-The context menu depends on the type of the current WP, for example:
+The context menu is displayed by right click on a WP icon, for example:
 
-![ui_edit](images/mission-context.png){: width="30%" }
+![ui_edit](images/wpmenu-01.png){: width="30%" }
 
-The use of more advanced functions, for example setting parameter values, moving multiple WP, mission preview etc. requires the tabular mission editor
+Almost all functions are available here, however some advanced functions, moving (multiple) WP,  etc. requires the tabular mission editor.
+
+### Edit Waypoint
+
+The **Edit Waypoint** option opens an edit form for the current waypoint. The items displayed depend on the type of waypoint.
+
+![ui_edit](images/wpmenu-02.png){: width="30%" }
+
+In this image, note:
+
+* The Way Point type `WAYPOINT`.
+* The position (and absolute elevation AMSL)
+* The WP Altitude, either absolute (here the ASML box is checked), and whether this is a Fly By Home (FBH) waypoint.
+* The speed (m/s)
+* Additional attributes which may be enabled or disabled:
+    * Set Heading (-1 to clear a previous set head)
+	* JUMP parameters (-1 Iterations == infinite)
+	* Return to Home (and land).
+
+Multiple attributes may be set.
+
+If the AMSL button is toggled, **and a valid planned home location** is set, then the altitude will be adjusted. For the above example, if the AMSL box is cleared, the dialogue shows:
+
+![ui_edit](images/wpmenu-03.png){: width="30%" }
+
+Note that the Altitude box has an orange border to show that the altitude has been automatically updated.
+
+If there is no planned home location, and the AMSL box is toggled, then the Altitude box assumes a red border to indicate to the user that manual intervention is required.
+
+![ui_edit](images/wpmenu-04.png){: width="30%" }
+
+In the above image, a relative altitude of 16m has been toggled to absolute; there is no home position, so the altitude entry has a red border, as this is now below the absolute altitude of the terrain.
+
+Note also that this example has multiple option set (SET HEAD and JUMP).
 
 ## Mission Editor
 

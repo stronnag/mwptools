@@ -123,7 +123,7 @@ The map area displays the currently selected map at the desired zoom level. The 
 
 !!! info "Graphics Requirement"
 
-    The map API used my {{ mwp }} requires OpenGL / 3D accelerated graphics. Performance with software rendering is likely to be disappointing and CPU intensive.
+    The map API used my {{ mwp }} requires OpenGL / 3D accelerated graphics. Performance with software rendering may disappointing and / or CPU intensive.
 
 ## Dock Bar (5)
 
