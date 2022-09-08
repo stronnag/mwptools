@@ -620,7 +620,7 @@ public class ListBox : GLib.Object {
         ms.zoom = mp.view.get_zoom_level();
         ms.cy = mp.view.get_center_latitude();
         ms.cx = mp.view.get_center_longitude();
-        if(fhome != null) {
+        if(fhome != null && FakeHome.usedby != 0) {
             fhome.get_fake_home(out ms.homey, out ms.homex);
         }
         ms.set_ways(arry);
@@ -1864,6 +1864,15 @@ public class ListBox : GLib.Object {
         item = new Gtk.MenuItem.with_label ("Clear Mission");
         item.activate.connect (() => {
                 clear_mission();
+            });
+        menu.add (item);
+
+        item = new Gtk.MenuItem.with_label ("Clear Mission Home");
+        item.activate.connect (() => {
+                FakeHome.usedby &= ~FakeHome.USERS.Mission;
+                unset_fake_home();
+                set_elev(EvConst.HOME, EvConst.UNAVAILABLE);
+                FakeHome.usedby &= ~FakeHome.USERS.Mission;
             });
         menu.add (item);
 
