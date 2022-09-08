@@ -5,22 +5,19 @@ using GtkChamplain;
 
 public class KmlOverlay : Object
 {
-    private struct StyleItem
-    {
+    private struct StyleItem {
         bool styled;
         string line_colour;
         string fill_colour;
         string point_colour;
     }
 
-    private struct Point
-    {
+    private struct Point {
         double latitude;
         double longitude;
     }
 
-    private struct OverlayItem
-    {
+    private struct OverlayItem {
         string type;
         string name;
         StyleItem styleinfo;
@@ -34,8 +31,7 @@ public class KmlOverlay : Object
     private string filename;
     private string name;
 
-    public KmlOverlay(Champlain.View _view)
-    {
+    public KmlOverlay(Champlain.View _view) {
         ovly = {};
         view = _view;
         mlayer = new Champlain.MarkerLayer();
@@ -44,23 +40,19 @@ public class KmlOverlay : Object
         players = {};
     }
 
-    public string get_filename()
-    {
+    public string get_filename() {
         return filename;
     }
 
-    public string get_name()
-    {
+    public string get_name() {
         return name;
     }
 
-    private bool read_kmz(string kname)
-    {
+    private bool read_kmz(string kname) {
         bool ok = false;
         string td;
         string path = null;
-        try
-        {
+        try {
             td = DirUtils.make_tmp(path);
             string []argv = {"unzip", kname, "-d", td};
             int status;
@@ -74,35 +66,26 @@ public class KmlOverlay : Object
                                 null,
                                 null,
                                 out status);
-            if(status == 0)
-            {
+            if(status == 0) {
                 Dir dir = Dir.open (td, 0);
                 string? name = null;
-                while ((name = dir.read_name ()) != null)
-                {
-                    if(name.has_suffix(".kml"))
-                    {
+                while ((name = dir.read_name ()) != null) {
+                    if(name.has_suffix(".kml")) {
                         path = GLib.Path.build_filename (td, name);
                         break;
                     }
                 }
-                if(path != null)
-                {
+                if(path != null) {
                     ok = parse(path);
-                }
-                else
-                {
+                } else {
                     MWPLog.message("Failed to find kml in %s\n", kname);
                 }
                 dir.rewind();
-                while ((name = dir.read_name ()) != null)
-                {
+                while ((name = dir.read_name ()) != null) {
                     string p = GLib.Path.build_filename (td, name);
                     FileUtils.unlink(p);
                 }
-            }
-            else
-            {
+            } else {
                 MWPLog.message("unzip failed to decompress %s\n", kname);
             }
             DirUtils.remove(td);
@@ -115,14 +98,12 @@ public class KmlOverlay : Object
     }
 
 
-    private void at_bottom(Champlain.Layer layer)
-    {
+    private void at_bottom(Champlain.Layer layer) {
         var pp = layer.get_parent();
         pp.set_child_at_index(layer,0);
     }
 
-    private bool parse(string fname)
-    {
+    private bool parse(string fname) {
         Xml.Doc* doc = Xml.Parser.parse_file (fname);
         if (doc == null) {
             return false;
@@ -135,19 +116,18 @@ public class KmlOverlay : Object
             return false;
 	}
 
-        filename = fname;
-        ovly = {};
+    filename = fname;
+    ovly = {};
 
-        var xpath = "//*[local-name()='Placemark']/*[local-name()='Polygon' or local-name()='LineString'or local-name()='Point']";
+    var xpath = "//*[local-name()='Placemark']/*[local-name()='Polygon' or local-name()='LineString'or local-name()='Point']";
 
-        Xml.XPath.Context cntx = new Xml.XPath.Context (doc);
-        Xml.XPath.Object* res = cntx.eval_expression (xpath);
+    Xml.XPath.Context cntx = new Xml.XPath.Context (doc);
+    Xml.XPath.Object* res = cntx.eval_expression (xpath);
 
-        name = look_for(root, "name");
+    name = look_for(root, "name");
 
-        if (res != null && res->type == Xml.XPath.ObjectType.NODESET &&
-            res->nodesetval != null)
-        {
+    if (res != null && res->type == Xml.XPath.ObjectType.NODESET &&
+        res->nodesetval != null) {
             for (int i = 0; i < res->nodesetval->length (); i++) {
                 Xml.Node* node = res->nodesetval->item (i);
                 var pname = look_for(node->parent, "name");
@@ -156,8 +136,7 @@ public class KmlOverlay : Object
                 var o = OverlayItem();
                 if(style != null)
                     o.styleinfo = populate_style(o, cntx, style);
-                else
-                {
+                else {
                     Xml.Node *n = look_for_node(node->parent, "Style");
                     o.styleinfo = {false, null};
                     if(n != null)
@@ -168,8 +147,7 @@ public class KmlOverlay : Object
                 var iname = node->name;
                 for (Xml.Node* iter = node->children; iter != null; iter = iter->next) {
                     coords = look_for(iter, "coordinates");
-                    if(coords != null)
-                    {
+                    if(coords != null) {
                         coords = coords.strip();
                         break;
                     }
@@ -179,8 +157,7 @@ public class KmlOverlay : Object
 
                 var cs = Regex.split_simple("\\s+", coords);
                 Point[] pts = {};
-                foreach(var s in cs)
-                {
+                foreach(var s in cs) {
                     Point p = Point();
                     var ss = s.split(",");
                     p.latitude = double.parse(ss[1].strip());
@@ -197,8 +174,7 @@ public class KmlOverlay : Object
         return true;
     }
 
-    private StyleItem populate_style(OverlayItem o,  Xml.XPath.Context cntx, string style)
-    {
+    private StyleItem populate_style(OverlayItem o,  Xml.XPath.Context cntx, string style) {
         StyleItem si = {false,null};
 
         string st0;
@@ -209,12 +185,10 @@ public class KmlOverlay : Object
         var res = cntx.eval_expression (sm);
         if (res != null && res->nodesetval != null)
             si = parse_style_nodes(res->nodesetval);
-        if (res->nodesetval->length() == 0)
-        {
+        if (res->nodesetval->length() == 0) {
             sm = "//*[local-name()='StyleMap'][@id='%s']/*[local-name()='Pair']/*[local-name()='key'][text()='normal']".printf(st0);
             res = cntx.eval_expression (sm);
-            if (res != null && res->nodesetval != null)
-            {
+            if (res != null && res->nodesetval != null) {
                 Xml.Node* n = res->nodesetval->item(0)->parent;
                 var su =  look_for(n, "styleUrl");
                 st0 = su.substring(1);
@@ -227,12 +201,9 @@ public class KmlOverlay : Object
         return si;
     }
 
-    private void extract_style(Xml.Node *n, ref StyleItem si)
-    {
-        for (Xml.Node* iter = n->children; iter != null; iter = iter->next)
-        {
-            switch(iter->name)
-            {
+    private void extract_style(Xml.Node *n, ref StyleItem si) {
+        for (Xml.Node* iter = n->children; iter != null; iter = iter->next) {
+            switch(iter->name) {
                 case "IconStyle":
                     if ((si.point_colour = look_for(iter, "color")) != null)
                         si.styled = true;
@@ -251,22 +222,17 @@ public class KmlOverlay : Object
         }
     }
 
-    private StyleItem parse_style_nodes(Xml.XPath.NodeSet* nl)
-    {
+    private StyleItem parse_style_nodes(Xml.XPath.NodeSet* nl) {
         StyleItem si = {false, null};
-        for (int i = 0; i < nl->length(); i++)
-        {
+        for (int i = 0; i < nl->length(); i++) {
             extract_style(nl->item (i), ref si);
         }
         return si;
     }
 
-    private string? look_for(Xml.Node* n, string name)
-    {
-        if (n->type == Xml.ElementType.ELEMENT_NODE)
-        {
-            if(n->name == name)
-            {
+    private string? look_for(Xml.Node* n, string name) {
+        if (n->type == Xml.ElementType.ELEMENT_NODE) {
+            if(n->name == name) {
                 return n->get_content();
             }
             for (Xml.Node* iter = n->children; iter != null; iter = iter->next) {
@@ -278,12 +244,9 @@ public class KmlOverlay : Object
         return null;
     }
 
-    private Xml.Node* look_for_node (Xml.Node* n, string name)
-    {
-        if (n->type == Xml.ElementType.ELEMENT_NODE)
-        {
-            if(n->name == name)
-            {
+    private Xml.Node* look_for_node (Xml.Node* n, string name) {
+        if (n->type == Xml.ElementType.ELEMENT_NODE) {
+            if(n->name == name) {
                 return n;
             }
             for (Xml.Node* iter = n->children; iter != null; iter = iter->next) {
@@ -295,18 +258,15 @@ public class KmlOverlay : Object
         return null;
     }
 
-    private OverlayItem[] get_overlay()
-    {
+    private OverlayItem[] get_overlay() {
         return ovly;
     }
 
-    private Clutter.Color getrgba(string? aabbggrr)
-    {
+    private Clutter.Color getrgba(string? aabbggrr) {
         string str;
         if(aabbggrr == null || aabbggrr == "")
             str = "#faf976ff";
-        else
-        {
+        else {
             StringBuilder sb = new StringBuilder("#");
             sb.append(aabbggrr[6:8]);
             sb.append(aabbggrr[4:6]);
@@ -317,19 +277,16 @@ public class KmlOverlay : Object
         return Clutter.Color.from_string(str);
     }
 
-    public void remove_overlay()
-    {
+    public void remove_overlay() {
         mlayer.remove_all();
-        foreach (var p in players)
-        {
+        foreach (var p in players) {
             p.remove_all();
             view.remove_layer(p);
         }
         players = {};
     }
 
-    public bool load_overlay(string _fname)
-    {
+    public bool load_overlay(string _fname) {
         bool ok;
         remove_overlay();
 
@@ -338,13 +295,10 @@ public class KmlOverlay : Object
         else
             ok = parse(_fname);
 
-        if (ok)
-        {
+        if (ok) {
             var ovly = get_overlay();
-            foreach(var o in ovly)
-            {
-                switch(o.type)
-                {
+            foreach(var o in ovly) {
+                switch(o.type) {
                     case "Point":
                         Clutter.Color black = { 0,0,0, 0xff };
                         var marker = new Champlain.Label.with_text (o.name,"Sans 10",null,null);
@@ -360,8 +314,7 @@ public class KmlOverlay : Object
                         var path = new Champlain.PathLayer();
                         path.closed=false;
                         path.set_stroke_color(getrgba(o.styleinfo.line_colour));
-                        foreach (var p in o.pts)
-                        {
+                        foreach (var p in o.pts) {
                             var l =  new  Champlain.Point();
                             l.set_location(p.latitude, p.longitude);
                             path.add_node(l);
@@ -376,8 +329,7 @@ public class KmlOverlay : Object
                         path.set_stroke_color(getrgba(o.styleinfo.line_colour));
                         path.fill = (o.styleinfo.fill_colour != null);
                         path.set_fill_color(getrgba(o.styleinfo.fill_colour));
-                        foreach (var p in o.pts)
-                        {
+                        foreach (var p in o.pts) {
                             var l =  new  Champlain.Point();
                             l.set_location(p.latitude, p.longitude);
                             path.add_node(l);

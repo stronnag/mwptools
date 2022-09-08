@@ -253,29 +253,19 @@ public class V4L2_dialog : Dialog {
 		grid.attach(rb1, 0, 1);
 		grid.attach(e, 1, 1);
 		content.pack_start (grid, false, true, 2);
-		add_button ("Close", 1001);
 		add_button ("OK", 1000);
-		set_modal(true);
-	}
+        delete_event.connect(hide_on_delete);
+    }
 
-	public int runner(out string uri) {
+	public int result(out string uri) {
+        int res = -1;
 		uri = null;
-		int res = -1;
-		show_all();
-		var id = run();
-		switch (id) {
-		case 1000:
-				if (rb0.active) {
-					res = 0;
-				} else {
-					res = 1;
-					uri = e.text;
-				}
-				break;
-				case 1001:
-					break;
-				}
-		hide();
+        if (rb0.active) {
+            res = 0;
+        } else {
+            res = 1;
+            uri = e.text;
+        }
 		return res;
 	}
 }

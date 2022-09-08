@@ -41,7 +41,6 @@ public class MDialog : Dialog {
 				}
 				destroy();
 			});
-		set_modal(true);
 		show_all ();
     }
 	private void get_rem_items() {

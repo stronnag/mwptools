@@ -1138,7 +1138,8 @@ public class MWP : Gtk.Application {
 					var vfn = validate_cli_file(otxfile);
 					otxfile = null;
 					if(vfn != null) {
-						replay_otx(true, vfn);
+                        bbl_delay = true;
+						replay_otx(vfn);
 					}
 				}
 
@@ -1555,6 +1556,7 @@ public class MWP : Gtk.Application {
 
 		var scview = builder.get_object("scwindow") as ShortcutsWindow;
 		var scsect = builder.get_object("shortcuts") as ShortcutsSection;
+        scview.modal = false;
 
 		scsect.visible = true;
 		scview.section_name = "shortcuts";
@@ -1626,9 +1628,9 @@ public class MWP : Gtk.Application {
 								bbvlist = null;
 							});
 						vp.set_slider_max(rt);
-						vp.show_all ();
 						vp.set_transient_for(window);
 						vp.set_keep_above(true);
+						vp.show_all ();
 						vp.add_stream(uri, false);
 						bbvlist = {};
 						bbvlist.vp = vp;
@@ -1639,6 +1641,17 @@ public class MWP : Gtk.Application {
 			});
 
         otx_runner = new OTXDialog(builder, window, null, x_fl2ltm);
+        otx_runner.ready.connect((id) => {
+                otx_runner.hide();
+                if(id == 1001) {
+                    string fname;
+                    int idx;
+                    int dura;
+                    int btype;
+                    otx_runner.get_index(out fname, out idx, out dura, out btype);
+                    run_replay(fname, bbl_delay, Player.OTX,idx,btype,0,dura);
+                }
+            });
 
         bb_runner.set_tz_tools(conf.geouser, conf.zone_detect);
 
@@ -1730,13 +1743,7 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("prefs",null);
         saq.activate.connect(() => {
-                if(prefs.run_prefs(ref conf) == 1001)
-                {
-                    build_serial_combo();
-                    if(conf.speakint == 0)
-                        conf.speakint = 15;
-                    audio_cb.sensitive = true;
-                }
+                prefs.run_prefs(conf);
             });
         window.add_action(saq);
 
@@ -1948,13 +1955,15 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("replay-otx",null);
         saq.activate.connect(() => {
-                replay_otx(true);
+                bbl_delay = true;
+                replay_otx();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("load-otx",null);
         saq.activate.connect(() => {
-                replay_otx(false);
+                bbl_delay = true;
+                replay_otx();
             });
         window.add_action(saq);
 
@@ -2230,6 +2239,15 @@ public class MWP : Gtk.Application {
         view.set_keep_center_on_resize(true);
 
         prefs = new PrefsDialog(builder, window);
+        prefs.done.connect((id) => {
+                if(id  == 1001) {
+                    prefs.update_conf(ref conf);
+                    build_serial_combo();
+                    if(conf.speakint == 0)
+                        conf.speakint = 15;
+                    audio_cb.sensitive = true;
+                }
+            });
 
         add_source_combo(conf.defmap,msources);
 
@@ -3101,43 +3119,55 @@ public class MWP : Gtk.Application {
     }
 
 	private void load_v4l2_video() {
+		string uri = null;
+		Gst.ClockTime rt = 0;
+        int res = -1;
 		if (vid_dialog == null) {
 			vid_dialog = new V4L2_dialog(viddev_c);
-		}
-		string uri;
-		Gst.ClockTime rt = 0;
-		var id = vid_dialog.runner(out uri);
-		switch(id) {
-		case 0:
-			uri = "v4l2://%s".printf(viddev_c.active_id);
-			break;
-		case 1:
-			uri = uri.strip();
-			if (uri.length > 0) {
-				if (uri.has_prefix("~")) {
-					var h = Environment.get_home_dir();
-					uri = h + uri[1:uri.length];
-				}
-				if (!uri.contains("""://""")) {
-					try {
-						uri = Gst.filename_to_uri(uri);
-						rt = VideoPlayer.discover(uri);
-					} catch {}
-				}
-			} else {
-				MWPLog.message("Not playing empty video uri\n");
-				id = -1;
-			}
-			break;
-		}
-		if (id != -1) {
-			var vp = new VideoPlayer();
-			vp.set_slider_max(rt);
-			vp.show_all ();
-			vp.set_transient_for(window);
-			vp.set_keep_above(true);
-			vp.add_stream(uri);
-		}
+            vid_dialog.response.connect((id) => {
+                print("DBG: vid %d\n", id);
+                if(id == 1000) {
+                    res = vid_dialog.result(out uri);
+                    switch(res) {
+                    case 0:
+                        if (viddev_c.active_id != null) {
+                            uri = "v4l2://%s".printf(viddev_c.active_id);
+                        } else {
+                            res = -1;
+                        }
+                        break;
+                    case 1:
+                        uri = uri.strip();
+                        if (uri.length > 0) {
+                            if (uri.has_prefix("~")) {
+                                var h = Environment.get_home_dir();
+                                uri = h + uri[1:uri.length];
+                            }
+                            if (!uri.contains("""://""")) {
+                                try {
+                                    uri = Gst.filename_to_uri(uri);
+                                    rt = VideoPlayer.discover(uri);
+                                } catch {}
+                            }
+                        } else {
+                            MWPLog.message("Not playing empty video uri\n");
+                            res = -1;
+                        }
+                        break;
+                    }
+                }
+                vid_dialog.hide();
+                if (res != -1) {
+                    var vp = new VideoPlayer();
+                    vp.set_slider_max(rt);
+                    vp.set_transient_for(window);
+                    vp.set_keep_above(true);
+                    vp.show_all ();
+                    vp.add_stream(uri);
+                }
+            });
+        }
+        vid_dialog.show_all();
 	}
 
     private void kml_load_dialog()
@@ -3186,10 +3216,8 @@ public class MWP : Gtk.Application {
         chooser.show_all();
     }
 
-    private void kml_remove_dialog()
-    {
+    private void kml_remove_dialog() {
         var dialog = new Dialog.with_buttons ("Remove KML", null,
-                                              DialogFlags.MODAL |
                                               DialogFlags.DESTROY_WITH_PARENT,
                                               "Cancel", ResponseType.CANCEL,
                                               "OK", ResponseType.OK);
@@ -3200,8 +3228,7 @@ public class MWP : Gtk.Application {
 
         CheckButton[] btns = {};
 
-        for (int i = 0; i < kmls.length ; i++)
-        {
+        for (int i = 0; i < kmls.length ; i++) {
             var s = kmls.index(i).get_filename();
             var button = new Gtk.CheckButton.with_label(s);
             btns += button;
@@ -3209,36 +3236,31 @@ public class MWP : Gtk.Application {
         }
 
         box.show_all ();
-        var response = dialog.run ();
-        if (response == ResponseType.OK)
-        {
-            var i = btns.length;
-            foreach (var b in btns)
-            {
-                i--;
-                if(b.get_active())
-                {
-                    kmls.index(i).remove_overlay();
-                    kmls.remove_index(i);
+        dialog.response.connect((resp) => {
+                if (resp == ResponseType.OK) {
+                    var i = btns.length;
+                    foreach (var b in btns) {
+                        i--;
+                        if(b.get_active()) {
+                            kmls.index(i).remove_overlay();
+                            kmls.remove_index(i);
+                        }
+                    }
                 }
-            }
-        }
-        set_menu_state("kml-remove", (kmls.length != 0));
-        dialog.destroy ();
+                set_menu_state("kml-remove", (kmls.length != 0));
+                dialog.destroy ();
+            });
     }
 
-    private void remove_all_kml()
-    {
-        for (int i = 0; i < kmls.length ; i++)
-        {
+    private void remove_all_kml() {
+        for (int i = 0; i < kmls.length ; i++) {
             kmls.index(i).remove_overlay();
         }
         kmls.remove_range(0,kmls.length);
         set_menu_state("kml-remove", false);
     }
 
-    private uint8 sport_parse_lat_lon(uint val, out int32 value)
-    {
+    private uint8 sport_parse_lat_lon(uint val, out int32 value) {
         uint8 imode = (uint8)(val >> 31);
         value = (int)(val & 0x3fffffff);
         if ((val & (1 << 30))!= 0)
@@ -4643,6 +4665,12 @@ case 0:
 
     }
 
+    public void update_pointer_pos(double lat, double lon) {
+        if (!pos_is_centre) {
+            poslabel.label = PosFormat.pos(lat,lon,conf.dms);
+        }
+    }
+
     private void insert_new_wp(float x, float y)
     {
         var lon = view.x_to_longitude (x);
@@ -5124,8 +5152,7 @@ case 0:
         }
     }
 
-    private void map_init_warning(Clutter.LayoutManager lm)
-    {
+    private void map_init_warning(Clutter.LayoutManager lm) {
         Clutter.Color red = { 0xff,0,0, 0xff};
 
         var textb = new Clutter.Actor ();
@@ -5797,11 +5824,9 @@ case 0:
                 want_special = 0;
                 MWPLog.message("%s %s\n", verlab.label, typlab.label);
 
-                if(replayer == Player.NONE)
-                {
+                if(replayer == Player.NONE) {
                     MWPLog.message("switch val == %08x (%08x)\n", bxflag, lmask);
-                    if(Craft.is_mr(vi.mrtype) && ((bxflag & lmask) == 0) && robj == null)
-                    {
+                    if(Craft.is_mr(vi.mrtype) && ((bxflag & lmask) == 0) && robj == null) {
                         if(conf.checkswitches)
                             swd.run();
                     }
@@ -9698,18 +9723,21 @@ case 0:
 			chooser.set_extra_widget(btn);
 			btn.show();
 		}
+
+        chooser.response.connect((id) => {
+                if (id == Gtk.ResponseType.ACCEPT) {
+                    last_file = chooser.get_filename ();
+                    chooser.destroy ();
+                    save_mission_file(last_file, smask);
+                    update_title_from_file(last_file);
+                } else {
+                    chooser.destroy ();
+                }
+            });
 		chooser.show();
-        var id = chooser.run();
-        if (id == Gtk.ResponseType.ACCEPT) {
-            last_file = chooser.get_filename ();
-			save_mission_file(last_file, smask);
-            update_title_from_file(last_file);
-        }
-        chooser.destroy ();
     }
 
-    private void update_title_from_file(string fname)
-    {
+    private void update_title_from_file(string fname) {
         var basename = GLib.Path.get_basename(fname);
         StringBuilder sb = new StringBuilder("mwp = ");
         sb.append(basename);
@@ -9932,9 +9960,8 @@ case 0:
                 else
                     prebox.hide ();
             });
-        var id = chooser.run();
         chooser.show_all();
-        string fn = null;
+/** FIXRUN ---------------
         if (id == Gtk.ResponseType.ACCEPT)
             fn = chooser.get_filename ();
 
@@ -9947,30 +9974,30 @@ case 0:
 			mdx = 0; // Selected item
 			load_file(fn,true,append);
 		}
-	}
-
-    private void replay_otx(bool delay=true, string? fn = null)
-    {
-        var id = otx_runner.run(fn);
-        otx_runner.hide();
-        if (id == 1001) {
-            string fname;
-            int idx;
-            int dura;
-            int btype;
-            otx_runner.get_index(out fname, out idx, out dura, out btype);
-            run_replay(fname, delay, Player.OTX,idx,btype,0,dura);
-        }
+        --------**/
+        chooser.modal = false;
+        chooser.response.connect((id) => {
+                if (id == Gtk.ResponseType.ACCEPT) {
+                    var fn = chooser.get_filename ();
+                    chooser.destroy ();
+                    if(fn != null) {
+                        mdx = 0; // Selected item
+                        load_file(fn,true,append);
+                    }
+                } else {
+                    chooser.destroy ();
+                }
+        });
     }
 
-    private void replay_log(bool delay=true)
-    {
-        if(thr != null)
-        {
+    private void replay_otx(string? fn = null) {
+        otx_runner.prepare(fn);
+    }
+
+    private void replay_log(bool delay=true) {
+        if(thr != null) {
             robj.stop();
-        }
-        else
-        {
+        } else {
             Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
             "Select a log file", null, Gtk.FileChooserAction.OPEN,
             "_Cancel",
@@ -10005,8 +10032,7 @@ case 0:
         }
     }
 
-    private void cleanup_replay()
-    {
+    private void cleanup_replay() {
         if (replayer != Player.NONE) {
 			if (sticks.active) {
 				Timeout.add_seconds(2, () => {
@@ -10016,10 +10042,8 @@ case 0:
 			}
 			magcheck = (magtime > 0 && magdiff > 0);
             MWPLog.message("============== Replay complete ====================\n");
-            if ((replayer & Player.MWP) == Player.MWP)
-            {
-                if(thr != null)
-                {
+            if ((replayer & Player.MWP) == Player.MWP) {
+                if(thr != null) {
                     thr.join();
                     thr = null;
                 }
@@ -10104,8 +10128,7 @@ case 0:
             set_replay_menus(false);
             set_menu_state("stop-replay", true);
             magcheck = delay; // only check for normal replays (delay == true)
-            switch(replayer)
-            {
+            switch(replayer) {
                 case Player.MWP:
                 case Player.MWP_FAST:
                     check_mission(fn);
@@ -10130,24 +10153,20 @@ case 0:
         }
     }
 
-    private void check_mission(string missionlog)
-    {
+    private void check_mission(string missionlog) {
         bool done = false;
         string mfn = null;
 
         var dis = FileStream.open(missionlog,"r");
-        if (dis != null)
-        {
+        if (dis != null) {
             var parser = new Json.Parser ();
             string line = null;
             while (!done && (line = dis.read_line ()) != null) {
-                try
-                {
+                try {
                     parser.load_from_data (line);
                     var obj = parser.get_root ().get_object ();
                     var typ = obj.get_string_member("type");
-                    switch(typ)
-                    {
+                    switch(typ) {
                         case "init":
                             if(obj.has_member("mission"))
                                 mfn =  obj.get_string_member("mission");
@@ -10162,17 +10181,16 @@ case 0:
                 }
             }
         }
-        if(mfn != null)
-        {
+        if(mfn != null) {
             hard_display_reset(true);
             load_file(mfn, false);
         }
-        else
+        else {
             hard_display_reset(false);
+        }
     }
 
-    private void spawn_otx_task(string fn, bool delay, int idx, int typ=0, uint dura=0)
-    {
+    private void spawn_otx_task(string fn, bool delay, int idx, int typ=0, uint dura=0) {
         var dstr = "udp://localhost:%d".printf(playfd[1]);
         string [] args={};
 
@@ -10192,13 +10210,10 @@ case 0:
         args += idx.to_string();
         if(delay == false)
             args += "--fast";
-//        if(typ >= 0)
-        {
-            args += "--type";
-            args += typ.to_string();
-        }
-        if (dura > 600)
-        {
+
+        args += "--type";
+        args += typ.to_string();
+        if (dura > 600) {
             uint intvl  =  100 * dura / 600;
             args += "-interval";
             args += intvl.to_string();
@@ -10235,10 +10250,8 @@ case 0:
     }
 
     private void spawn_bbox_task(string fn, int index, int btype,
-                                 bool delay, uint8 force_gps, uint duration)
-    {
+                                 bool delay, uint8 force_gps, uint duration) {
         if(x_fl2ltm) {
-//            replayer &= ~Player.BBOX;
             replayer |= Player.OTX;
             spawn_otx_task(fn, delay, index, btype, duration);
         } else {
@@ -10254,8 +10267,7 @@ case 0:
             if((force_gps & 2) == 2)
                 args += "-G";
 
-            if(duration > 600)
-            {
+            if(duration > 600) {
                 uint intvl  =  100000 * duration / 600;
                 args += "-I";
                 args += intvl.to_string();
@@ -10290,8 +10302,7 @@ case 0:
         }
     }
 
-    private void replay_bbox (bool delay, string? fn = null)
-    {
+    private void replay_bbox (bool delay, string? fn = null) {
 		bbl_delay = delay;
 		if((replayer & Player.BBOX) == Player.BBOX)
         {
@@ -10303,8 +10314,7 @@ case 0:
 		}
 	}
 
-    private void stop_replayer()
-    {
+    private void stop_replayer() {
         if(replay_paused)
             handle_replay_pause();
 
@@ -10334,8 +10344,7 @@ case 0:
 		request_wp(1);
 	}
 
-    private void download_mission()
-    {
+    private void download_mission() {
         check_mission_clean(false);
         wpmgr.wp_flag = 0;
 		wpmgr.wps = {};
@@ -10354,18 +10363,15 @@ case 0:
 		}
     }
 
-    public static void xchild()
-    {
+    public static void xchild() {
         JsonMapDef.killall();
         if(Logger.is_logging)
             Logger.stop();
     }
 
 
-    OptionEntry ? find_option(string s)
-    {
-        foreach(var o in options)
-        {
+    OptionEntry ? find_option(string s) {
+        foreach(var o in options) {
             if (s[1] == '-') {
                 if(s[2:s.length] == o.long_name) {
                     return o;
@@ -10377,21 +10383,17 @@ case 0:
         return null;
     }
 
-    private  VariantDict  check_env_args(string?s)
-    {
+    private  VariantDict  check_env_args(string?s) {
         VariantDict v = new VariantDict();
-        if(s != null)
-        {
+        if(s != null) {
 			var sb = new StringBuilder(MWP.user_args);
 			sb.append(s);
 			MWP.user_args = sb.str;
 
             string []m;
-            try
-            {
+            try {
                 Shell.parse_argv(s, out m);
-                for(var i = 0; i < m.length; i++)
-                {
+                for(var i = 0; i < m.length; i++) {
                     string extra=null;
                     int iarg;
 
@@ -10430,12 +10432,10 @@ case 0:
         return v;
     }
 
-    private static string? check_virtual(string? os)
-    {
+    private static string? check_virtual(string? os) {
         string hyper = null;
         string cmd = null;
-        switch (os)
-        {
+        switch (os) {
             case "Linux":
                 cmd = "systemd-detect-virt";
                 break;
@@ -10444,23 +10444,18 @@ case 0:
                 break;
         }
 
-        if(cmd != null)
-        {
-            try
-            {
+        if(cmd != null) {
+            try {
                 string strout;
                 int status;
                 Process.spawn_command_line_sync (cmd, out strout,
                                                  null, out status);
-                if(Process.if_exited(status))
-                {
+                if(Process.if_exited(status)) {
                     strout = strout.chomp();
-                    if(strout.length > 0)
-                    {
+                    if(strout.length > 0) {
                         if(os == "Linux")
                             hyper = strout;
-                        else
-                        {
+                        else {
                             var index = strout.index_of("kern.vm_guest: ");
                             if(index != -1)
                                 hyper = strout.substring(index+"kern.vm_guest: ".length);
@@ -10494,10 +10489,8 @@ case 0:
             string line;
             size_t length = -1;
 
-            try
-            {
-                for(;;)
-                {
+            try {
+                for(;;) {
                     eos = chan.read_line (out line, out length, null);
                     if(eos == IOStatus.EOF)
                         break;
@@ -10506,8 +10499,7 @@ case 0:
                         continue;
                     line = line.chomp();
                     var index = line.index_of("Hypervisor");
-                    if(index != -1)
-                    {
+                    if(index != -1) {
                         hyper = line.substring(index);
                         break;
                     }
@@ -10520,8 +10512,7 @@ case 0:
         return hyper;
     }
 
-    private static string? read_env_args()
-    {
+    private static string? read_env_args() {
 		var u = Posix.utsname();
 		if (!u.release.contains("microsoft-standard-WSL")) {
 			if(Environment.get_variable("GDK_BACKEND") == null)
@@ -10540,18 +10531,15 @@ case 0:
 		return null;
     }
 
-    private static string read_cmd_opts()
-    {
+    private static string read_cmd_opts() {
         var sb = new StringBuilder ();
         var fn = MWPUtils.find_conf_file("cmdopts");
-        if(fn != null)
-        {
+        if(fn != null) {
             var file = File.new_for_path(fn);
             try {
                 var dis = new DataInputStream(file.read());
                 string line;
-                while ((line = dis.read_line (null)) != null)
-                {
+                while ((line = dis.read_line (null)) != null) {
                     if(line.strip().length > 0) {
 						if(line.has_prefix("#") || line.has_prefix(";")) {
 							continue;

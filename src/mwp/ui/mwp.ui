@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 
+<!-- Generated with glade 3.40.0 
 
 Copyright (C)
 
@@ -296,7 +296,6 @@ Use the min and max zoom to select the zoom levels and then click "Apply". Stati
   </object>
   <object class="GtkDialog" id="altdialog">
     <property name="can-focus">False</property>
-    <property name="modal">True</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="__fix1404__00000__">
@@ -1448,7 +1447,6 @@ then select &lt;b&gt;Apply&lt;/b&gt;. Uses an Internet service&lt;/i&gt;</proper
   </object>
   <object class="GtkDialog" id="dirty_mission_dialog">
     <property name="can-focus">False</property>
-    <property name="modal">True</property>
     <property name="window-position">mouse</property>
     <property name="type-hint">normal</property>
     <child internal-child="vbox">
@@ -1656,7 +1654,7 @@ Uncommiitted changes will be lost unless the current mssion is saved.</property>
   </object>
   <object class="GtkDialog" id="gotodialog">
     <property name="can-focus">False</property>
-    <property name="modal">True</property>
+    <property name="title" translatable="yes">Centre On</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox5">
@@ -5140,7 +5138,6 @@ Otherwise, select a valid FC vehicle type</property>
   </object>
   <object class="GtkDialog" id="prefs-dialog">
     <property name="can-focus">False</property>
-    <property name="modal">True</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox3">
@@ -5435,7 +5432,6 @@ Otherwise, select a valid FC vehicle type</property>
   </object>
   <object class="GtkDialog" id="speeddialog">
     <property name="can-focus">False</property>
-    <property name="modal">True</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox13">

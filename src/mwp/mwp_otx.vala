@@ -39,9 +39,10 @@ public class  OTXDialog : Object
     private Gtk.Window _w;
     private bool x_fl2ltm = false;
 
+    public signal void ready(int id);
+
     public OTXDialog(Gtk.Builder builder, Gtk.Window? w,
-                     string? logpath, bool _fl2ltm) //, FakeOffsets? _fo = null)
-    {
+                     string? logpath, bool _fl2ltm) {  //, FakeOffsets? _fo = null)
         _w = w;
         x_fl2ltm = _fl2ltm;
         dialog = builder.get_object ("otx_dialog") as Gtk.Dialog;
@@ -107,10 +108,12 @@ public class  OTXDialog : Object
 
         dialog.title = "mwp Misc Log replay";
         dialog.set_transient_for(w);
+        dialog.response.connect((resp) => {
+                ready(resp);
+            });
     }
 
-    public void get_index(out string fname, out int idx, out int dura, out int btype)
-    {
+    public void get_index(out string fname, out int idx, out int dura, out int btype) {
         Gtk.TreeModel model;
         Gtk.TreeIter iter;
         otx_sel.get_selected (out model, out iter);
@@ -129,24 +132,22 @@ public class  OTXDialog : Object
         btype = otx_combo.active -1;
     }
 
-    public int run(string? fn) {
+    public void prepare (string? fn) {
 		if (fn != null) {
 			filename = fn;
 			otx_filechooser.set_filename(fn);
 			otx_liststore.clear();
 			get_otx_metas();
 		}
-        return dialog.run();
+        dialog.show_all();
     }
 
-    public void hide()
-    {
+    public void hide() {
         MWPCursor.set_normal_cursor(dialog);
         dialog.hide();
     }
 
-    private void get_otx_metas()
-    {
+    private void get_otx_metas() {
         try {
             string[] spawn_args = {"otxlog", "--metas"};
             if (x_fl2ltm)
@@ -174,25 +175,21 @@ public class  OTXDialog : Object
             size_t len = -1;
 
             chan.add_watch (IOCondition.IN|IOCondition.HUP, (source, condition) => {
-                    if (condition == IOCondition.HUP)
-                    {
+                    if (condition == IOCondition.HUP) {
                         MWPCursor.set_normal_cursor(dialog);
                         return false;
                     }
 
-                    try
-                    {
+                    try {
                         eos = source.read_line (out line, out len, null);
-                        if(eos == IOStatus.EOF)
-                        {
+                        if(eos == IOStatus.EOF) {
                             return false;
                         }
 
                         if (line  == null || len == 0)
                             return true;
                         var parts = line.split(",");
-                        if (parts.length == 7)
-                        {
+                        if (parts.length == 7) {
                             int flags = int.parse(parts[5]);
                             if (flags != 0) {
                                 Gtk.TreeIter iter;

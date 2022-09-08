@@ -7,25 +7,27 @@ public enum WPEditMask {
 }
 
 public struct EditItem {
-    MSP.Action action;
-    int no;
-    int alt;
     double p1;
     double p2;
+    int no;
+    int alt;
     int p3;
-    uint8 flag;
-    uint8 optional;
     int jump1;
     int jump2;
     int heading;
     int rthland;
+    int amsl;
+    int homeelev;
+    MSP.Action action;
+    uint8 flag;
+    uint8 optional;
 }
 
 private class QLabel : Gtk.Label {
     public QLabel(string? s) {
         label = s;
         hexpand = false;
-        set_halign(Gtk.Align.START);
+        halign = Gtk.Align.START;
         expand = false;
     }
 }
@@ -67,7 +69,7 @@ public class WPPopEdit : Gtk.Dialog {
         add_button("Apply", Gtk.ResponseType.OK);
         set_position(Gtk.WindowPosition.MOUSE);
         set_transient_for(window);
-        modal = true;
+//        modal = true;
         set_keep_above(true);
         build_box();
         var content = get_content_area ();
@@ -79,7 +81,7 @@ public class WPPopEdit : Gtk.Dialog {
         show_all();
     }
 
-    private Gtk.Label qlabel(string? s) {
+    private QLabel qlabel(string? s) {
         return new QLabel(s);
     }
 
@@ -97,8 +99,6 @@ public class WPPopEdit : Gtk.Dialog {
         grid0 = new Gtk.Grid();
         grid0.column_homogeneous = false;
         grid0.set_column_spacing (2);
-        grid0.attach (qlabel("Number"), 0, 0);
-        grid0.attach (qlabel("1"), 1, 0); // FIXME
         grid0.attach (wp_combo, 0, 1, 1, 1);
         grid = new Gtk.Grid();
         grid.column_homogeneous = true;
@@ -180,9 +180,7 @@ public class WPPopEdit : Gtk.Dialog {
     private void refresh_grid(EditItem wpt) {
         grid.foreach ((element) => grid.remove (element));
         wp_combo.active_id = ((int)wpt.action).to_string();
-        var lab = grid0.get_child_at(1, 0) as Gtk.Label;
-        lab.label = "%d".printf(wpt.no);
-
+        title = "WP Edit #%d".printf(wpt.no);
         switch(wpt.action) {
         case MSP.Action.WAYPOINT, MSP.Action.POSHOLD_UNLIM,
             MSP.Action.POSHOLD_TIME, MSP.Action.SET_POI,MSP.Action.LAND:

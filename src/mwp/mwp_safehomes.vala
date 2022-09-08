@@ -25,8 +25,7 @@ public enum SAFEHOMES {
     maxhomes = 8
 }
 
-public class SafeHomeMarkers : GLib.Object
-{
+public class SafeHomeMarkers : GLib.Object {
     private Champlain.MarkerLayer safelayer;
     private Champlain.Label []safept;
     private bool []onscreen;
@@ -37,8 +36,7 @@ public class SafeHomeMarkers : GLib.Object
     public signal void safept_move(int idx, double lat, double lon);
     public signal void safept_need_menu(int idx);
 
-    public SafeHomeMarkers(Champlain.View view)
-    {
+    public SafeHomeMarkers(Champlain.View view) {
         c_enabled.init(0xfb, 0xea, 0x04, 0xc8);
         c_disabled.init(0xfb, 0xea, 0x04, 0x68);
         white.init(0xff,0xff,0xff, 0xff);
@@ -46,8 +44,7 @@ public class SafeHomeMarkers : GLib.Object
         safept = new  Champlain.Label[SAFEHOMES.maxhomes];
         safelayer = new Champlain.MarkerLayer();
         view.add_layer (safelayer);
-        for(var idx = 0; idx < SAFEHOMES.maxhomes; idx++)
-        {
+        for(var idx = 0; idx < SAFEHOMES.maxhomes; idx++) {
             safept[idx] = new Champlain.Label.with_text ("⏏#%d".printf(idx), "Sans 10",null,null);
             safept[idx].set_alignment (Pango.Alignment.RIGHT);
             safept[idx].set_color (c_disabled);
@@ -55,18 +52,15 @@ public class SafeHomeMarkers : GLib.Object
         }
     }
 
-    public void show_safe_home(int idx, SafeHome h)
-    {
-        if(onscreen[idx] == false)
-        {
+    public void show_safe_home(int idx, SafeHome h) {
+        if(onscreen[idx] == false) {
             safept[idx].set_flags(ActorFlags.REACTIVE);
             safelayer.add_marker(safept[idx]);
             safept[idx].drag_motion.connect((dx,dy,evt) => {
                     safept_move(idx, safept[idx].get_latitude(), safept[idx].get_longitude());
                 });
             safept[idx].button_press_event.connect((e) => {
-                    if(e.button == 3)
-                    {
+                    if(e.button == 3) {
                         if (safept[idx].draggable)
                             safept_need_menu(idx);
                     }
@@ -79,8 +73,7 @@ public class SafeHomeMarkers : GLib.Object
         safept[idx].set_location (h.lat, h.lon);
     }
 
-    public void set_interactive(bool state)
-    {
+    public void set_interactive(bool state) {
         for(var i = 0; i < SAFEHOMES.maxhomes; i++)
         {
             safept[i].set_draggable(state);
@@ -88,31 +81,27 @@ public class SafeHomeMarkers : GLib.Object
         }
     }
 
-    public void set_safe_colour(int idx, bool state)
-    {
+    public void set_safe_colour(int idx, bool state) {
         if (state)
             safept[idx].set_color (c_enabled);
         else
             safept[idx].set_color (c_disabled);
     }
 
-    public void hide_safe_home(int idx)
-    {
+    public void hide_safe_home(int idx) {
         if (onscreen[idx])
             safelayer.remove_marker(safept[idx]);
         onscreen[idx] = false;
     }
 }
 
-public struct SafeHome
-{
+public struct SafeHome {
     bool enabled;
     double lat;
     double lon;
 }
 
-public class  SafeHomeDialog : Object
-{
+public class  SafeHomeDialog : Object {
     private string filename;
     private Gtk.ListStore sh_liststore;
     private bool visible = false;
@@ -137,8 +126,7 @@ public class  SafeHomeDialog : Object
     private SafeHome []homes;
     private SafeHomeMarkers shmarkers;
 
-    public SafeHomeDialog(Gtk.Window _w)
-    {
+    public SafeHomeDialog(Gtk.Window _w) {
         var xml = """
         <?xml version="1.0" encoding="UTF-8"?>
         <interface>
@@ -166,7 +154,6 @@ public class  SafeHomeDialog : Object
         </menu>
         </interface>
         """;
-
 
         homes = new SafeHome[SAFEHOMES.maxhomes];
         filename = "None";

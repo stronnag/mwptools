@@ -86,6 +86,11 @@ public class ListBox : GLib.Object {
         N_COLS
     }
 
+    private struct ElevData {
+        int idx;
+        int elev;
+    }
+
     private Gtk.Menu menu;
     public Gtk.TreeView view;
     public Gtk.ListStore list_model;
@@ -125,7 +130,7 @@ public class ListBox : GLib.Object {
     public int lastid {get; private set; default= 0;}
     public bool have_rth {get; private set; default= false;}
     private int mpop_no;
-
+    private ElevData[] elevs={};
     private enum DELTAS {
         NONE=0,
         LAT=1,
@@ -148,6 +153,61 @@ public class ListBox : GLib.Object {
         WPONE=4,
         LANDR=8,
         LANDA=16
+    }
+
+
+    private enum EvConst {
+        HOME = -1,
+        INVALID=-2,
+        UNAVAILABLE = -99999
+    }
+
+    private bool get_elev(int no, out int elev) {
+        elev = EvConst.UNAVAILABLE;
+        foreach(var e in elevs) {
+            if (e.idx == no) {
+                elev = e.elev;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void set_elev(int no, int elev) {
+        for(var j = 0; j < elevs.length; j++) {
+            if (elevs[j].idx == no) {
+                elevs[j].elev = elev;
+                return;
+            }
+        }
+        elevs += ElevData(){idx=no, elev=elev};
+        return;
+    }
+
+    private void update_all_wp_elevations (BingElevations.Point[] pts) {
+        new Thread<int> ("fetch-alts", () => {
+                var bingelev = BingElevations.get_elevations(pts);
+                if(bingelev.length == pts.length) {
+                    int j = 0;
+                    foreach(var e in bingelev) {
+                        elevs[j].elev = e;
+                        j++;
+                    }
+                }
+                return 0;
+            });
+    }
+    private void update_single_elevation (int idx, double lat, double lon) {
+        BingElevations.Point pts[1];
+        pts[0].y = lat;
+        pts[0].x = lon;
+        new Thread<int> ("fetch-alt", () => {
+                var bingelev = BingElevations.get_elevations(pts);
+                if(bingelev.length == 1) {
+                    set_elev(idx, bingelev[0]);
+                }
+                return 0;
+            });
     }
 
     private void raise_fby_wp(int wpno) {
@@ -199,17 +259,20 @@ public class ListBox : GLib.Object {
 
         marker_menu.add (new Gtk.SeparatorMenuItem ());
 
-        item = new Gtk.MenuItem.with_label ("Delete");
-        item.activate.connect (() => {
-                pop_menu_delete();
-            });
-        marker_menu.add (item);
-        marker_menu.add (new Gtk.SeparatorMenuItem ());
         item = new Gtk.MenuItem.with_label ("Edit WP");
         item.activate.connect (() => {
                 pop_menu_edit(mpop_no);
             });
         marker_menu.add (item);
+
+        marker_menu.add (new Gtk.SeparatorMenuItem ());
+
+        item = new Gtk.MenuItem.with_label ("Delete");
+        item.activate.connect (() => {
+                pop_menu_delete();
+            });
+        marker_menu.add (item);
+
 
         marker_menu.add (new Gtk.SeparatorMenuItem ());
         pop_preview_item = new Gtk.MenuItem.with_label ("Preview Mission");
@@ -274,6 +337,12 @@ public class ListBox : GLib.Object {
             sb.append(": Alt ");
             sb.append(alt.to_string());
             sb.append("m ");
+            int amsl;
+            if(get_elev(ino, out amsl)) {
+                sb.append(" (amsl ");
+                sb.append(amsl.to_string());
+                sb.append("m) ");
+            }
             list_model.get_value (iter, WY_Columns.LAT, out cell);
             lat = (double)cell;
             list_model.get_value (iter, WY_Columns.LON, out cell);
@@ -403,6 +472,9 @@ public class ListBox : GLib.Object {
         clear_mission();
         lastid = 0;
         have_rth = false;
+        BingElevations.Point[] pts={};
+
+        elevs ={};
 
         foreach (MissionItem m in ms.get_ways()) {
             list_model.append (out iter);
@@ -447,11 +519,26 @@ public class ListBox : GLib.Object {
                             WY_Columns.INT3, m.param3,
                             WY_Columns.FLAG, flag,
                             WY_Columns.ACTION, m.action);
+
+            if((m.action == MSP.Action.WAYPOINT ||
+                m.action == MSP.Action.POSHOLD_UNLIM ||
+                m.action == MSP.Action.POSHOLD_TIME ||
+                m.action == MSP.Action.SET_POI ||
+                m.action == MSP.Action.LAND)) {
+                elevs += ElevData(){idx = lastid, elev = 0};
+                pts += BingElevations.Point(){y=m.lat,x=m.lon};
+            }
         }
         if(ms.homex != 0 && ms.homey != 0) {
             FakeHome.usedby |= FakeHome.USERS.Mission;
             fhome.set_fake_home(ms.homey, ms.homex);
             fhome.show_fake_home(true);
+            pts += BingElevations.Point(){y=ms.homey,x=ms.homex};
+            elevs += ElevData(){idx = EvConst.HOME, elev = 0};
+        }
+
+        if(pts.length > 0) {
+            update_all_wp_elevations(pts);
         }
         mp.markers.add_list_store(this);
         Idle.add(() => {
@@ -753,10 +840,14 @@ public class ListBox : GLib.Object {
     }
 
     public void connect_markers() {
-        mp.markers.wp_moved.connect((ino, lat, lon) => {
+        mp.markers.wp_moved.connect((ino, lat, lon, flag) => {
                 Gtk.TreeIter iter;
                 if(list_model.iter_nth_child(out iter, null, ino-1))
                     list_model.set (iter, WY_Columns.LAT, lat, WY_Columns.LON, lon);
+                mp.update_pointer_pos(lat, lon);
+                if(flag) {
+                    update_single_elevation(ino, lat, lon);
+                }
             });
     }
 
@@ -775,6 +866,7 @@ public class ListBox : GLib.Object {
         altmodedialog.complete.connect(bing_complete);
         fhome.fake_move.connect((lat,lon) => {
                 altmodedialog.set_location(PosFormat.pos(lat,lon,MWP.conf.dms));
+                update_single_elevation(EvConst.HOME, lat, lon);
             });
 
         Gtk.ListStore combo_model = new Gtk.ListStore (1, typeof (string));
@@ -2273,7 +2365,13 @@ public class ListBox : GLib.Object {
         list_model.get_value (iter, WY_Columns.LON, out cell);
         lon = (double)cell;
 
-        posit = PosFormat.pos(lat, lon,MWP.conf.dms);
+        var str = PosFormat.pos(lat, lon,MWP.conf.dms);
+        var sb = new StringBuilder(str);
+        if (get_elev(n, out ei.amsl)) {
+            sb.append_printf(" (%dm)", ei.amsl);
+        }
+
+        posit =  sb.str;
 
         list_model.get_value (iter, WY_Columns.ALT, out cell);
         ei.alt = (int)cell;
@@ -2286,12 +2384,14 @@ public class ListBox : GLib.Object {
         list_model.get_value (iter, WY_Columns.FLAG, out cell);
         ei.flag  = (uint8)((int)cell);
         ei.optional = 0;
+        get_elev(EvConst.HOME, out ei.homeelev);
         ei_iter_next(ref iter, ref ei);
 
         return ei;
     }
 
-    private void iter_from_ei(ref Gtk.TreeIter iter, ref EditItem ei) {
+    private bool iter_from_ei(ref Gtk.TreeIter iter, EditItem ei, EditItem orig) {
+        bool res = false;
         uint8 flag = (ei.flag == 0x48) ? 0x48 : 0;
         int n = ei.no;
         int []  dlist={};
@@ -2325,11 +2425,17 @@ public class ListBox : GLib.Object {
                             WY_Columns.INT2, 0.0,
                             WY_Columns.INT3, 0,
                             WY_Columns.TYPE, MSP.get_wpname(MSP.Action.SET_HEAD));
-        } else {
-            if (try_delete_for(MSP.Action.SET_HEAD, iter, ref diter))
+        } else if ((orig.optional & WPEditMask.SETHEAD) == WPEditMask.SETHEAD) {
+            if (try_delete_for(MSP.Action.SET_HEAD, iter, ref diter)) {
                 dlist += diter;
+            }
         }
+
         if((ei.optional & WPEditMask.JUMP) == WPEditMask.JUMP) {
+            if (ei.jump1 != orig.jump1)
+                res = true;
+            if (ei.jump2 != orig.jump2)
+                res = true;
             double j1 = ei.jump1;
             double j2 = ei.jump2;
             ni = get_next_iter_for(MSP.Action.JUMP, ref iter);
@@ -2342,10 +2448,11 @@ public class ListBox : GLib.Object {
                             WY_Columns.INT2, j2,
                             WY_Columns.INT3, 0,
                             WY_Columns.TYPE, MSP.get_wpname(MSP.Action.JUMP));
-        } else {
+        } else if ((orig.optional & WPEditMask.JUMP) == WPEditMask.JUMP) {
             if(try_delete_for(MSP.Action.JUMP, iter, ref diter))
                 dlist += diter;
         }
+
         if((ei.optional & WPEditMask.RTH) == WPEditMask.RTH) {
             ni = get_next_iter_for(MSP.Action.RTH, ref iter);
             double eil = (double)ei.rthland;
@@ -2358,13 +2465,20 @@ public class ListBox : GLib.Object {
                             WY_Columns.INT2, 0,0,
                             WY_Columns.INT3, 0,
                             WY_Columns.TYPE, MSP.get_wpname(MSP.Action.RTH));
-        } else {
+        } else if((orig.optional & WPEditMask.RTH) == WPEditMask.RTH) {
             if(try_delete_for(MSP.Action.RTH, iter, ref diter))
                 dlist += diter;
         }
-        if(dlist.length > 0)
+        if(dlist.length > 0) {
+            res = true;
             delete_id_list(dlist);
-     }
+        }
+
+        if (ei.optional != orig.optional || ei.action != orig.action) {
+            res = true;
+        }
+        return res;
+    }
 
     private  Gtk.TreeIter get_next_iter_for(MSP.Action act, ref Gtk.TreeIter iter) {
         Value cell;
@@ -2373,13 +2487,11 @@ public class ListBox : GLib.Object {
         Gtk.TreeIter xiter = iter;
 
         list_model.get_value (xiter, WY_Columns.ACTION, out cell);
-//        print("DBG: Look for %s at %s\n", act.to_string(), ((MSP.Action)cell).to_string());
 
         for (var next =  list_model.iter_next(ref xiter); next; next = list_model.iter_next(ref xiter)) {
             list_model.get_value (xiter, WY_Columns.ACTION, out cell);
             var xact = (MSP.Action)cell;
             if(xact == act) {
-//                print("  DBG: Found %s\n", act.to_string());
                 ni = xiter;
                 status = 0;
                 break;
@@ -2387,7 +2499,6 @@ public class ListBox : GLib.Object {
             if(!((xact == MSP.Action.SET_HEAD) ||
                  (xact == MSP.Action.JUMP) ||
                  (xact == MSP.Action.RTH))) {
-//                print("  DBG: Need to insert **before** %s\n", xact.to_string());
                 status = 2;
                 break;
             }
@@ -2434,14 +2545,18 @@ public class ListBox : GLib.Object {
         if(list_model.iter_nth_child(out miter, null, mpop_no-1)) {
             string posit;
             var ei = iter_to_ei(miter, mpop_no, out posit);
+            var orig = ei;
             var dlg = new WPPopEdit(mp.window,posit);
+            mp.markers.set_markers_active(false);
             dlg.response.connect((resp) => {
                     if (resp != Gtk.ResponseType.DELETE_EVENT) {
                         dlg.extract_data(MSP.Action.UNKNOWN, ref ei);
-                        iter_from_ei(ref miter, ref ei);
-                        renumber_steps(list_model);
+                        if(iter_from_ei(ref miter, ei, orig)) {
+                            renumber_steps(list_model);
+                        }
                     }
                     dlg.close();
+                    mp.markers.set_markers_active(true);
                 });
             dlg.wpedit(ei);
         }

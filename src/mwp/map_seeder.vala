@@ -17,8 +17,7 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
-public class TileUtil : Object
-{
+public class TileUtil : Object {
 
     private enum TILE_ITER_RES {
         DONE=-1,
@@ -26,8 +25,7 @@ public class TileUtil : Object
         SKIP=1
     }
 
-    public struct TileList
-    {
+    public struct TileList {
         int z;
         int sx;
         int ex;
@@ -35,8 +33,7 @@ public class TileUtil : Object
         int ey;
     }
 
-    public struct TileStats
-    {
+    public struct TileStats {
         uint nt;
         uint skip;
         uint dlok;
@@ -61,36 +58,31 @@ public class TileUtil : Object
     private Soup.Session session;
     private TileStats stats;
 
-    public TileUtil()
-    {
+    public TileUtil() {
     }
 
     public signal void show_stats (TileStats ts);
     public signal void tile_done ();
 
-    public void set_range(double _minlat, double _minlon, double _maxlat, double _maxlon)
-    {
+    public void set_range(double _minlat, double _minlon, double _maxlat, double _maxlon) {
         minlat = _minlat;
         minlon = _minlon;
         maxlat = _maxlat;
         maxlon = _maxlon;
     }
 
-    public void set_zooms(int _minzoom, int _maxzoom)
-    {
+    public void set_zooms(int _minzoom, int _maxzoom) {
         minzoom = _minzoom;
         maxzoom = _maxzoom;
     }
 
-    public void set_misc(string name, string _uri)
-    {
+    public void set_misc(string name, string _uri) {
         uri = _uri;
         var s = Environment.get_user_cache_dir();
         cachedir = Path.build_filename(s,"champlain",name);
     }
 
-    public TileStats build_table()
-    {
+    public TileStats build_table() {
         var inc = 0;
         stats.nt = 0;
         stats.dlok = 0;
@@ -98,14 +90,12 @@ public class TileUtil : Object
 
         tl={};
 
-        for(var z = maxzoom; z >= minzoom; z--)
-        {
+        for(var z = maxzoom; z >= minzoom; z--) {
             var m = TileList();
             m.z = z;
             ll2tile(maxlat, minlon, z, out m.sx, out m.sy);
             ll2tile(minlat, maxlon, z, out m.ex, out m.ey);
-            if(inc != 0)
-            {
+            if(inc != 0) {
                 m.sx -= inc;
                 m.sy -= inc;
                 m.ex += inc;
@@ -131,47 +121,40 @@ public class TileUtil : Object
         }
     }
 */
-    public void ll2tile(double lat, double lon, int zoom, out int x, out int y)
-    {
+    public void ll2tile(double lat, double lon, int zoom, out int x, out int y) {
         x = (int)Math.floor((lon + 180.0) / 360.0 * (1 << zoom));
         y = (int)Math.floor(((1.0 - Math.log(Math.tan(lat*Math.PI/180.0)+1.0/Math.cos(lat*Math.PI/180.0))/Math.PI) / 2.0 * (1 << zoom)));
         return;
     }
 
-    public void tile2ll(int x, int y, int zoom, out double lat, out double lon)
-    {
+    public void tile2ll(int x, int y, int zoom, out double lat, out double lon) {
         double n = Math.PI - ((2.0 * Math.PI * y) / Math.pow(2.0, zoom));
         lon = (x / Math.pow(2.0, zoom) * 360.0) - 180.0;
         lat = 180.0 / Math.PI * Math.atan(Math.sinh(n));
     }
 
-    private TILE_ITER_RES get_next_tile(out string? s )
-    {
+    private TILE_ITER_RES get_next_tile(out string? s) {
         TILE_ITER_RES r = TILE_ITER_RES.FETCH;
         s = null;
 
         if(done)
             r = TILE_ITER_RES.DONE;
-        else
-        {
+        else {
             var fn = Path.build_filename(cachedir,
                                         tl[in].z.to_string(),ix.to_string(),
                                          "%d.png".printf(iy));
             file = File.new_for_path(fn);
 
-            if(iy == tl[in].sy)
-            {
+            if(iy == tl[in].sy) {
                 File f = file.get_parent();
-                if(f.query_exists() == false)
-                {
+                if(f.query_exists() == false) {
                     try {
                         f.make_directory_with_parents();
                     } catch {};
                 }
             }
 
-            if (file.query_exists() == true)
-            {
+            if (file.query_exists() == true) {
                 try {
                     var fi = file.query_info("*", FileQueryInfoFlags.NONE);
 #if USE_TV
@@ -180,8 +163,7 @@ public class TileUtil : Object
 #else
                     var dt = fi.get_modification_date_time ();
 #endif
-                    if(dt.difference(dtime) > 0)
-                    {
+                    if(dt.difference(dtime) > 0) {
                         r = TILE_ITER_RES.SKIP;
                         stats.skip++;
                     }
@@ -191,65 +173,47 @@ public class TileUtil : Object
             if(r ==  TILE_ITER_RES.FETCH)
                 s = uri_builder();
 
-            if(iy ==  tl[in].ey) // end of row
-            {
-                if (ix == tl[in].ex)
-                {
+            if(iy ==  tl[in].ey) { // end of row
+                if (ix == tl[in].ex) {
                     in += 1;
-                    if(in == tl.length)
-                    {
+                    if(in == tl.length) {
                         in = 0;
                         ix = tl[0].sx;
                         iy = tl[0].sy;
                         done=true;
-                    }
-                    else
-                    {
+                    } else {
                         ix = tl[in].sx;
                         iy = tl[in].sy;
                     }
-                }
-                else
-                {
+                } else {
                     ix++;
                     iy = tl[in].sy;
                 }
-            }
-            else
-            {
+            } else {
                 iy++;
             }
         }
         return r;
     }
 
-    private string quadkey()
-    {
+    private string quadkey() {
         StringBuilder sb = new StringBuilder ();
-        for (var i = tl[in].z - 1; i >= 0; i--)
-        {
+        for (var i = tl[in].z - 1; i >= 0; i--) {
             char digit = '0';
-
             if ((ix & (1 << i)) != 0)
                 digit += 1;
-
             if ((iy & (1 << i)) != 0)
                 digit += 2;
-
             sb.append_unichar(digit);
         }
         return sb.str;
     }
 
-
-    private string uri_builder()
-    {
+    private string uri_builder() {
         StringBuilder sb = new StringBuilder ();
         var tokens = uri.split("#");
-        foreach(var t in tokens)
-        {
-            switch(t)
-            {
+        foreach(var t in tokens) {
+            switch(t) {
                 case "Q":
                     sb.append(quadkey());
                     break;
@@ -274,8 +238,7 @@ public class TileUtil : Object
         return sb.str;
     }
 
-    public void start_seeding()
-    {
+    public void start_seeding() {
         session = new Soup.Session();
         session.max_conns_per_host = 8;
         session.ssl_strict = false; // for OSM alas
@@ -284,40 +247,31 @@ public class TileUtil : Object
         fetch_tile();
     }
 
-    public void fetch_tile()
-    {
+    public void fetch_tile() {
         TILE_ITER_RES r = TILE_ITER_RES.SKIP;
         string tile_uri = null;
 
-        do
-        {
+        do {
             r = get_next_tile(out tile_uri);
         } while (r == TILE_ITER_RES.SKIP);
 
-        if(r == TILE_ITER_RES.FETCH)
-        {
+        if(r == TILE_ITER_RES.FETCH) {
             var message = new Soup.Message ("GET", tile_uri);
             session.queue_message (message, end_session);
         }
-        if(r == TILE_ITER_RES.DONE)
-        {
+        if(r == TILE_ITER_RES.DONE) {
             tile_done();
         }
     }
 
-    void end_session(Soup.Session sess, Soup.Message msg)
-    {
-        if(msg.status_code == 200)
-        {
+    void end_session(Soup.Session sess, Soup.Message msg) {
+        if(msg.status_code == 200) {
             stats.dlok++;
             try {
                 file.replace_contents(msg.response_body.data,null,
                                       false,FileCreateFlags.REPLACE_DESTINATION,null);
-            } catch {
-            };
-        }
-        else
-        {
+            } catch {};
+        } else {
             MWPLog.message("Tile failure status %u\n", msg.status_code);
             stats.dlerr++;
         }
@@ -325,14 +279,12 @@ public class TileUtil : Object
         fetch_tile();
     }
 
-    public void set_delta(uint days)
-    {
+    public void set_delta(uint days) {
         var t =  new  DateTime.now_local ();
         dtime = t.add_days(-(int)days);
     }
 
-    public void stop()
-    {
+    public void stop() {
         done = true;
         show_stats(stats);
     }

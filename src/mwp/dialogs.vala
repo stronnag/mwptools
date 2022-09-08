@@ -17,16 +17,13 @@
  */
 
 
-public class Units :  GLib.Object
-{
+public class Units :  GLib.Object {
     private const string [] dnames = {"m", "ft", "yd","mfg"};
     private const string [] dspeeds = {"m/s", "kph", "mph", "kts", "mfg/µftn"};
     private const string [] dfix = {"no fix","","2d","3d"};
 
-    public static double distance (double d)
-    {
-        switch(MWP.conf.p_distance)
-        {
+    public static double distance (double d) {
+        switch(MWP.conf.p_distance) {
             case 1:
                 d *= 3.2808399;
                 break;
@@ -39,10 +36,9 @@ public class Units :  GLib.Object
         }
         return d;
     }
-    public static double speed (double d)
-    {
-        switch(MWP.conf.p_speed)
-        {
+
+    public static double speed (double d) {
+        switch(MWP.conf.p_speed) {
             case 1:
                 d *= 3.6;
                 break;
@@ -59,30 +55,25 @@ public class Units :  GLib.Object
         return d;
     }
 
-    public static double va_speed (double d)
-    {
+    public static double va_speed (double d) {
         if (MWP.conf.p_speed > 1)
                 d *= 3.2808399; // ft/sec
         return d;
     }
 
-    public static string distance_units()
-    {
+    public static string distance_units() {
         return dnames[MWP.conf.p_distance];
     }
 
-    public static string speed_units()
-    {
+    public static string speed_units() {
         return dspeeds[MWP.conf.p_speed];
     }
 
-    public static string va_speed_units()
-    {
+    public static string va_speed_units() {
         return (MWP.conf.p_speed > 1) ? "ft/s" : "m/s";
     }
 
-    public static string fix(uint8 fix)
-    {
+    public static string fix(uint8 fix) {
             // Just for an external replayer and the fact that inav does
             // this differently from mw
         if (fix >= dfix.length)
@@ -92,8 +83,7 @@ public class Units :  GLib.Object
 }
 
 
-public class OdoView : GLib.Object
-{
+public class OdoView : GLib.Object {
     private Gtk.Dialog dialog;
     private Gtk.Label odotime;
     private Gtk.Label odospeed;
@@ -117,8 +107,7 @@ public class OdoView : GLib.Object
     private uint tid = 0;
     private bool visible = false;
 
-    public OdoView(Gtk.Builder builder, Gtk.Window? w, uint _to)
-    {
+    public OdoView(Gtk.Builder builder, Gtk.Window? w, uint _to) {
         dialog = builder.get_object ("odoview") as Gtk.Dialog;
         odotime = builder.get_object ("odotime") as Gtk.Label;
         ododist = builder.get_object ("ododist") as Gtk.Label;
@@ -151,13 +140,11 @@ public class OdoView : GLib.Object
             });
     }
 
-    private void odosens(bool state)
-    {
+    private void odosens(bool state) {
         odo_ca0.sensitive = odo_ca2.sensitive = odoamps.sensitive = state;
     }
 
-    private string format_when(uint at)
-    {
+    private string format_when(uint at) {
         string lbl;
         uint m,s;
         if (at == 0)
@@ -171,9 +158,7 @@ public class OdoView : GLib.Object
         return lbl;
     }
 
-    public void display(Odostats o, bool autohide=false)
-    {
-
+    public void display(Odostats o, bool autohide=false) {
         odotime.label = " %u:%02u ".printf(o.time / 60, o.time % 60);
         odospeed.label = "  %.1f ".printf(Units.speed(o.speed));
         odospeed_u.label = Units.speed_units();
@@ -190,24 +175,19 @@ public class OdoView : GLib.Object
         odoalt_u.label = Units.distance_units();
         odoalt_tm.label = format_when(o.alt_secs);
 
-        if(o.amps > 0)
-        {
+        if(o.amps > 0) {
             double odoA = o.amps/100.0;
             odoamps.label = "  %.2f ".printf(odoA);
             odosens(true);
-        }
-        else
-        {
+        } else {
             odoamps.label = "N/A";
             odosens(false);
         }
 
 
         unhide();
-        if(autohide)
-        {
-            if(to > 0)
-            {
+        if(autohide) {
+            if(to > 0) {
                 tid = Timeout.add_seconds(to, () => {
                         tid=0;
                         dismiss();
@@ -217,14 +197,12 @@ public class OdoView : GLib.Object
         }
     }
 
-    public void unhide()
-    {
+    public void unhide() {
         visible = true;
         dialog.show_all();
     }
 
-    public void dismiss()
-    {
+    public void dismiss() {
         if(tid != 0)
             Source.remove(tid);
         tid = 0;
@@ -233,14 +211,12 @@ public class OdoView : GLib.Object
     }
 }
 
-public class ArtWin : GLib.Object
-{
+public class ArtWin : GLib.Object {
     public Gtk.Box  box {get; private set;}
     private Ath.Horizon ath;
     private bool inv = false;
 
-    public ArtWin(bool _inv = false)
-    {
+    public ArtWin(bool _inv = false) {
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
         ath = new Ath.Horizon();
         box.pack_start(ath, true,true,0);
@@ -250,10 +226,8 @@ public class ArtWin : GLib.Object
         box.show_all();
     }
 
-    public void update(short sx, short sy, bool visible)
-    {
-        if(visible)
-        {
+    public void update(short sx, short sy, bool visible) {
+        if(visible) {
             double dx,dy;
             dx = sx/10.0;
             if(inv == false)
@@ -269,8 +243,7 @@ public class ArtWin : GLib.Object
     }
 }
 
-public class TelemetryStats : GLib.Object
-{
+public class TelemetryStats : GLib.Object {
     private Gtk.Label elapsed;
     private Gtk.Label rxbytes;
     private Gtk.Label txbytes;
@@ -281,8 +254,7 @@ public class TelemetryStats : GLib.Object
     private Gtk.Label messages;
     public Gtk.Grid grid {get; private set;}
 
-    public TelemetryStats(Gtk.Builder builder)
-    {
+    public TelemetryStats(Gtk.Builder builder) {
         grid = builder.get_object ("ss_grid") as Gtk.Grid;
         elapsed = builder.get_object ("ss-elapsed") as Gtk.Label;
         rxbytes = builder.get_object ("ss-rxbytes") as Gtk.Label;
@@ -296,8 +268,7 @@ public class TelemetryStats : GLib.Object
     }
 
 
-   public void annul()
-   {
+   public void annul() {
        elapsed.set_label("---");
        rxbytes.set_label("---");
        txbytes.set_label("---");
@@ -308,10 +279,8 @@ public class TelemetryStats : GLib.Object
        messages.set_label("---");
    }
 
-   public void update(TelemStats t, bool visible)
-    {
-        if(visible)
-        {
+   public void update(TelemStats t, bool visible) {
+        if(visible) {
             elapsed.set_label("%.0f s".printf(t.s.elapsed));
             rxbytes.set_label("%lu b".printf(t.s.rxbytes));
             txbytes.set_label("%lu b".printf(t.s.txbytes));
@@ -325,8 +294,7 @@ public class TelemetryStats : GLib.Object
 }
 
 
-public class VarioBox : GLib.Object
-{
+public class VarioBox : GLib.Object {
     public Gtk.Box vbox;
     private Gtk.Image vimage;
     private Gtk.Label vlabel;
@@ -339,13 +307,10 @@ public class VarioBox : GLib.Object
     private string downarrow;
     private string doublearrow;
 
-    public VarioBox()
-    {
-        if(MonoFont.fixed)
-        {
+    public VarioBox() {
+        if(MonoFont.fixed) {
             mono = "face=\"monospace\"";
-        }
-        else
+        } else
             mono = "";
 
         vbox = new Gtk.Box (Gtk.Orientation.VERTICAL, 2);
@@ -361,15 +326,11 @@ public class VarioBox : GLib.Object
         vbox.show_all();
     }
 
-    public void update(bool visible, int16 vs)
-    {
-        if(visible)
-        {
+    public void update(bool visible, int16 vs) {
+        if(visible) {
             uint fs = FlightBox.fh1*75/100;
-            if(fs != lastfs)
-            {
-                try
-                {
+            if(fs != lastfs) {
+                try {
                     var isz = (int)(fs *4);
                     up =  new Gdk.Pixbuf.from_file_at_scale(uparrow, isz, isz, true);
                     down = new Gdk.Pixbuf.from_file_at_scale(downarrow, isz, isz, true);
@@ -394,20 +355,17 @@ public class VarioBox : GLib.Object
         }
     }
 
-    public void annul()
-    {
+    public void annul() {
         update(true, 0);
     }
 }
 
-public class DirnBox : GLib.Object
-{
+public class DirnBox : GLib.Object {
     public Gtk.Box dbox;
     private Gtk.Label dlabel1;
     private Gtk.Label dlabel2;
 
-    public DirnBox(Gtk.Builder builder, bool horz=false)
-    {
+    public DirnBox(Gtk.Builder builder, bool horz=false) {
         var grid1 = builder.get_object ("dgrid1") as Gtk.Grid;
         var grid2 = builder.get_object ("dgrid2") as Gtk.Grid;
         dlabel1  = builder.get_object ("dlabel1") as Gtk.Label;
@@ -418,10 +376,8 @@ public class DirnBox : GLib.Object
         dbox.show_all();
     }
 
-    public void update(bool visible)
-    {
-        if(visible)
-        {
+    public void update(bool visible) {
+        if(visible) {
             uint fs = FlightBox.fh1/2;
             dlabel1.set_label("<span font='%u'>%03d°</span>".
                               printf(fs,NavStatus.hdr));
@@ -430,14 +386,12 @@ public class DirnBox : GLib.Object
         }
     }
 
-    public void annul()
-    {
+    public void annul() {
         update(true);
     }
 }
 
-public class FlightBox : GLib.Object
-{
+public class FlightBox : GLib.Object {
     private Gtk.Label big_lat;
     private Gtk.Label big_lon;
     private Gtk.Label big_rng;
@@ -455,13 +409,11 @@ public class FlightBox : GLib.Object
     public static string mono;
     private int fontfact;
 
-    public void allow_resize(bool exp)
-    {
+    public void allow_resize(bool exp) {
         grid.expand = _allow_resize = exp;
     }
 
-    public FlightBox(Gtk.Builder builder, Gtk.Window pw)
-    {
+    public FlightBox(Gtk.Builder builder, Gtk.Window pw) {
         _w = pw;
         vbox  = builder.get_object ("flight_box") as Gtk.Box;
         grid = builder.get_object ("fv_grid") as Gtk.Grid;
@@ -476,24 +428,20 @@ public class FlightBox : GLib.Object
         big_sats = builder.get_object ("big_sats") as Gtk.Label;
         fontfact = MWP.conf.fontfact;
 
-        if(MonoFont.fixed)
-        {
+        if(MonoFont.fixed) {
             mono = "face=\"monospace\"";
             fontfact -= 1;
-        }
-        else
+        } else
             mono = "";
 
 		vbox.size_allocate.connect((a) => {
-                if(_allow_resize && a.width != last_w)
-                {
+                if(_allow_resize && a.width != last_w) {
                     fh1 = a.width*MWP.conf.fontfact/100;
                     Idle.add(() => {
 							update(true);
 							return false;
 						});
-                    if(MonoFont.fixed)
-                    {
+                    if(MonoFont.fixed) {
                         fh1 = fh1 * 90/100;
                     }
                 }
@@ -502,19 +450,16 @@ public class FlightBox : GLib.Object
         vbox.show_all();
     }
 
-    public void check_size()
-    {
+    public void check_size() {
         fh1 = last_w*MWP.conf.fontfact/100;
         update(true);
     }
 
-    public void annul()
-    {
+    public void annul() {
         update(true);
     }
 
-    private string trimfp(double val)
-    {
+    private string trimfp(double val) {
         string stext;
         if (val > 9.95)
             stext = "%3.0f".printf(val);
@@ -523,10 +468,8 @@ public class FlightBox : GLib.Object
         return stext;
     }
 
-    public void update(bool visible)
-    {
-       if(visible)
-       {
+    public void update(bool visible) {
+       if(visible) {
            string stext;
            var fh2 = (MWP.conf.dms) ? fh1*45/100 : fh1/2;
            if(fh1 > 96)
@@ -591,8 +534,7 @@ public class FlightBox : GLib.Object
                    stext,
                    Units.speed_units() ) );
            string hdoptxt="";
-           if(GPSInfo.hdop != -1.0 && GPSInfo.hdop < 100.0)
-           {
+           if(GPSInfo.hdop != -1.0 && GPSInfo.hdop < 100.0) {
                string htxt;
                if(GPSInfo.hdop > 9.95)
                    htxt = "%.0f".printf(GPSInfo.hdop);
@@ -610,8 +552,7 @@ public class FlightBox : GLib.Object
    }
 }
 
-public class MapSeeder : GLib.Object
-{
+public class MapSeeder : GLib.Object {
     private Gtk.Dialog dialog;
     private Gtk.SpinButton tile_minzoom;
     private Gtk.SpinButton tile_maxzoom;
@@ -622,8 +563,7 @@ public class MapSeeder : GLib.Object
     private int age  {get; set; default = 30;}
     private TileUtil ts;
 
-    public MapSeeder(Gtk.Builder builder, Gtk.Window? w)
-    {
+    public MapSeeder(Gtk.Builder builder, Gtk.Window? w) {
         dialog = builder.get_object ("seeder_dialog") as Gtk.Dialog;
         dialog.set_transient_for(w);
         tile_minzoom = builder.get_object ("tile_minzoom") as Gtk.SpinButton;
@@ -642,12 +582,9 @@ public class MapSeeder : GLib.Object
         tile_minzoom.adjustment.value_changed.connect (() =>  {
                 int minv = (int)tile_minzoom.adjustment.value;
                 int maxv = (int)tile_maxzoom.adjustment.value;
-                if (minv > maxv)
-                {
+                if (minv > maxv) {
                     tile_minzoom.adjustment.value = maxv;
-                }
-                else
-                {
+                } else {
                     ts.set_zooms(minv,maxv);
                     var nt = ts.build_table();
                     set_label(nt);
@@ -656,12 +593,9 @@ public class MapSeeder : GLib.Object
         tile_maxzoom.adjustment.value_changed.connect (() => {
                 int minv = (int)tile_minzoom.adjustment.value;
                 int maxv = (int)tile_maxzoom.adjustment.value;
-                if (maxv < minv )
-                {
+                if (maxv < minv ) {
                     tile_maxzoom.adjustment.value = minv;
-                }
-                else
-                {
+                } else {
                     ts.set_zooms(minv,maxv);
                     var nt = ts.build_table( );
                     set_label(nt);
@@ -681,28 +615,23 @@ public class MapSeeder : GLib.Object
             });
     }
 
-    private void reset()
-    {
+    private void reset() {
         dialog.hide();
         ts.stop();
         ts = null;
     }
 
 
-    private void set_label(TileUtil.TileStats s)
-    {
+    private void set_label(TileUtil.TileStats s) {
         var lbl = "Tiles: %u / Skip: %u / DL: %u / Err: %u".printf(s.nt, s.skip, s.dlok, s.dlerr);
-        tile_stats.set_label(lbl);
-
-            // need to force dialog update
-        while(Gtk.events_pending())
-            Gtk.main_iteration();
-
+        Idle.add(() => {
+                tile_stats.set_label(lbl);
+                return false;
+            });
         MWPLog.message("%s\n", lbl);
     }
 
-    public void run_seeder(string mapid, int zval, Champlain.BoundingBox bbox)
-    {
+    public void run_seeder(string mapid, int zval, Champlain.BoundingBox bbox) {
         var map_source_factory = Champlain.MapSourceFactory.dup_default();
         var sources =  map_source_factory.get_registered();
         string uri = null;
@@ -712,18 +641,15 @@ public class MapSeeder : GLib.Object
         if(ts == null)
             ts = new TileUtil();
 
-        foreach (Champlain.MapSourceDesc sr in sources)
-        {
-            if(mapid == sr.get_id())
-            {
+        foreach (Champlain.MapSourceDesc sr in sources) {
+            if(mapid == sr.get_id()) {
                 uri = sr.get_uri_format ();
                 minz = (int)sr.get_min_zoom_level();
                 maxz = (int)sr.get_max_zoom_level();
                 break;
             }
         }
-        if(uri != null)
-        {
+        if(uri != null) {
             stop.set_label("Close");
             apply.sensitive = true;
             tile_maxzoom.adjustment.lower = minz;
@@ -752,8 +678,7 @@ public class MapSeeder : GLib.Object
     }
 }
 
-public class MapSourceDialog : GLib.Object
-{
+public class MapSourceDialog : GLib.Object {
     private Gtk.Dialog dialog;
     private Gtk.Label map_name;
     private Gtk.Label map_id;
@@ -761,8 +686,7 @@ public class MapSourceDialog : GLib.Object
     private Gtk.Label map_maxzoom;
     private Gtk.Label map_uri;
 
-    public MapSourceDialog(Gtk.Builder builder, Gtk.Window? w=null)
-    {
+    public MapSourceDialog(Gtk.Builder builder, Gtk.Window? w=null) {
         dialog = builder.get_object ("map_source_dialog") as Gtk.Dialog;
         dialog.set_transient_for(w);
         map_name = builder.get_object ("map_name") as Gtk.Label;
@@ -772,8 +696,7 @@ public class MapSourceDialog : GLib.Object
         map_maxzoom = builder.get_object ("map_maxzoom") as Gtk.Label;
     }
 
-    public void show_source(string name, string id, string uri, uint minzoom, uint maxzoom)
-    {
+    public void show_source(string name, string id, string uri, uint minzoom, uint maxzoom) {
         map_name.set_label(name);
         map_id.set_label(id);
         map_uri.set_label(uri);
@@ -786,25 +709,22 @@ public class MapSourceDialog : GLib.Object
     }
 }
 
-public class SpeedDialog : GLib.Object
-{
+public class SpeedDialog : GLib.Object {
     private Gtk.Dialog dialog;
     private Gtk.Entry spd_entry;
 
-    public SpeedDialog(Gtk.Builder builder)
-    {
+    public SpeedDialog(Gtk.Builder builder) {
         dialog = builder.get_object ("speeddialog") as Gtk.Dialog;
         spd_entry = builder.get_object ("defspeedset") as Gtk.Entry;
+        dialog.modal = false;
     }
 
-    public bool get_speed(out double spd)
-    {
+    public bool get_speed(out double spd) {
         var res = false;
         spd = 0.0;
         dialog.show_all();
         var id = dialog.run();
-        switch(id)
-        {
+        switch(id) {
             case 1001:
                 spd  = InputParser.get_scaled_real(spd_entry.get_text(),"s");
                 res = true;
@@ -818,25 +738,21 @@ public class SpeedDialog : GLib.Object
     }
 }
 
-public class AltDialog : GLib.Object
-{
+public class AltDialog : GLib.Object {
     private Gtk.Dialog adialog;
     private Gtk.Entry alt_entry;
 
-    public AltDialog(Gtk.Builder builder)
-    {
+    public AltDialog(Gtk.Builder builder) {
         adialog = builder.get_object ("altdialog") as Gtk.Dialog;
         alt_entry = builder.get_object ("defaltset") as Gtk.Entry;
     }
 
-    public bool get_alt(out double alt)
-    {
+    public bool get_alt(out double alt) {
         var res = false;
         adialog.show_all();
         alt = 0.0;
         var id = adialog.run();
-        switch(id)
-        {
+        switch(id) {
             case 1001:
                 alt = InputParser.get_scaled_real(alt_entry.get_text(),"d");
                 res = true;
@@ -850,23 +766,20 @@ public class AltDialog : GLib.Object
     }
 }
 
-public class WPRepDialog : GLib.Object
-{
+public class WPRepDialog : GLib.Object {
     private Gtk.Dialog dialog;
     private Gtk.Entry rep_start;
     private Gtk.Entry rep_end;
     private Gtk.Entry rep_num;
 
-    public WPRepDialog(Gtk.Builder builder)
-    {
+    public WPRepDialog(Gtk.Builder builder) {
         dialog = builder.get_object ("wprep-dialog") as Gtk.Dialog;
         rep_start = builder.get_object ("rep_start") as Gtk.Entry;
         rep_end = builder.get_object ("rep_end") as Gtk.Entry;
         rep_num = builder.get_object ("rep_num") as Gtk.Entry;
     }
 
-    public bool get_rep(ref uint start, ref uint end, ref uint number)
-    {
+    public bool get_rep(ref uint start, ref uint end, ref uint number) {
         var res = false;
         dialog.show_all();
 
@@ -875,8 +788,7 @@ public class WPRepDialog : GLib.Object
         rep_num.text = number.to_string();
 
         var id = dialog.run();
-        switch(id)
-        {
+        switch(id) {
             case 1001:
                 start = (uint)int.parse(rep_start.text);
                 end = (uint)int.parse(rep_end.text);
@@ -892,15 +804,13 @@ public class WPRepDialog : GLib.Object
     }
 }
 
-public class DeltaDialog : GLib.Object
-{
+public class DeltaDialog : GLib.Object {
     private Gtk.Dialog dialog;
     private Gtk.Entry dlt_entry1;
     private Gtk.Entry dlt_entry2;
     private Gtk.Entry dlt_entry3;
 
-    public DeltaDialog(Gtk.Builder builder)
-    {
+    public DeltaDialog(Gtk.Builder builder) {
         dialog = builder.get_object ("delta-dialog") as Gtk.Dialog;
         dlt_entry1 = builder.get_object ("dlt_entry1") as Gtk.Entry;
         dlt_entry2 = builder.get_object ("dlt_entry2") as Gtk.Entry;
@@ -914,15 +824,13 @@ public class DeltaDialog : GLib.Object
         lab.label = "Altitude (Z) delta (%s)".printf(Units.distance_units());
     }
 
-    public bool get_deltas(out double dlat, out double dlon, out int dalt)
-    {
+    public bool get_deltas(out double dlat, out double dlon, out int dalt) {
         var res = false;
         dialog.show_all();
         dlat = dlon = 0.0;
         dalt = 0;
         var id = dialog.run();
-        switch(id)
-        {
+        switch(id) {
             case 1001:
                 dlat = InputParser.get_scaled_real(dlt_entry1.get_text());
                 dlon = InputParser.get_scaled_real(dlt_entry2.get_text());
@@ -939,8 +847,7 @@ public class DeltaDialog : GLib.Object
 
 }
 
-public class AltModeDialog : GLib.Object
-{
+public class AltModeDialog : GLib.Object {
     private Gtk.Dialog cdialog;
     private Gtk.RadioButton button_rel;
     private Gtk.RadioButton button_abs;
@@ -955,8 +862,7 @@ public class AltModeDialog : GLib.Object
 
     public signal void complete (ListBox.ALTMODES amode, ListBox.POSREF posref, int act);
 
-    public AltModeDialog(Gtk.Builder builder, Gtk.Window w)
-    {
+    public AltModeDialog(Gtk.Builder builder, Gtk.Window w) {
         cdialog = builder.get_object ("cvtmode_dialog") as Gtk.Dialog;
         button_rel = builder.get_object ("alt_mode_rel") as Gtk.RadioButton;
         button_abs = builder.get_object ("alt_mode_amsl") as Gtk.RadioButton;
@@ -1003,10 +909,8 @@ public class AltModeDialog : GLib.Object
         cdialog.set_keep_above(true);
     }
 
-    public void edit_alt_modes(ListBox.ALTMODES amode, string s)
-    {
+    public void edit_alt_modes(ListBox.ALTMODES amode, string s) {
         ground_ref0.set_active(true);
-//        altmodemanual.text = "0";
         altmode_location.label = s;
         if (amode == ListBox.ALTMODES.NONE) {
             is_land = true;
@@ -1023,19 +927,16 @@ public class AltModeDialog : GLib.Object
         cdialog.set_keep_above(true);
     }
 
-    public int get_manual()
-    {
+    public int get_manual() {
         return (int)InputParser.get_scaled_real(altmodemanual.text);
     }
 
-    public void set_location(string s)
-    {
+    public void set_location(string s) {
         altmode_location.label = s;
     }
 }
 
-public class SetPosDialog : GLib.Object
-{
+public class SetPosDialog : GLib.Object {
     private Gtk.Dialog dialog;
     private Gtk.Entry lat_entry;
     private Gtk.Entry lon_entry;
@@ -1045,8 +946,7 @@ public class SetPosDialog : GLib.Object
     public signal void new_pos(double la, double lo, int zoom);
     public signal void place_edit();
 
-    public SetPosDialog(Gtk.Builder builder,Gtk.Window? w=null)
-    {
+    public SetPosDialog(Gtk.Builder builder,Gtk.Window? w=null) {
         dialog = builder.get_object ("gotodialog") as Gtk.Dialog;
         dialog.set_transient_for(w);
         lat_entry = builder.get_object ("golat") as Gtk.Entry;
@@ -1054,12 +954,10 @@ public class SetPosDialog : GLib.Object
         pcombo = builder.get_object("place_combo") as Gtk.ComboBoxText;
     }
 
-    public void load_places()
-    {
+    public void load_places() {
         pls = {};
         pls +=  Places.PosItem(){name="Default", lat=MWP.conf.latitude, lon=MWP.conf.longitude};
-        foreach(var pl in Places.points())
-        {
+        foreach(var pl in Places.points()) {
             pls += pl;
         }
 
@@ -1067,8 +965,7 @@ public class SetPosDialog : GLib.Object
         foreach(var l in pls)
             pcombo.append_text(l.name);
 
-        if(pls.length != 0)
-        {
+        if(pls.length != 0) {
             pcombo.active = 0;
             lat_entry.set_text(PosFormat.lat(pls[0].lat, MWP.conf.dms));
             lon_entry.set_text(PosFormat.lon(pls[0].lon, MWP.conf.dms));
@@ -1076,10 +973,8 @@ public class SetPosDialog : GLib.Object
 
         pcombo.changed.connect (() => {
                 var s = pcombo.get_active_text ();
-                foreach(var l in pls)
-                {
-                    if(l.name == s)
-                    {
+                foreach(var l in pls) {
+                    if(l.name == s) {
                         lat_entry.set_text(PosFormat.lat(l.lat, MWP.conf.dms));
                         lon_entry.set_text(PosFormat.lon(l.lon, MWP.conf.dms));
                         break;
@@ -1088,38 +983,34 @@ public class SetPosDialog : GLib.Object
             });
     }
 
-    public void get_position()
-    {
+    public void get_position() {
         double glat = 0,  glon = 0;
         dialog.response.connect((id) => {
-                switch (id)
-                {
-                    case 1001:
-                    var t1 = lat_entry.get_text();
-                    var t2 = lon_entry.get_text();
-                    if (t2 == "")
-                    {
-                        string []parts;
-                        parts = t1.split (" ");
-                        if(parts.length == 2)
-                        {
-                            t1 = parts[0];
-                            t2 = parts[1];
-                        }
+                switch (id) {
+                case 1001:
+                var t1 = lat_entry.get_text();
+                var t2 = lon_entry.get_text();
+                if (t2 == "") {
+                    string []parts;
+                    parts = t1.split (" ");
+                    if(parts.length == 2) {
+                        t1 = parts[0];
+                        t2 = parts[1];
                     }
-                    glat = InputParser.get_latitude(t1);
-                    glon = InputParser.get_longitude(t2);
-                    var n = pcombo.get_active ();
-                    int zoom = -1;
-                    if(n > 0)
-                        zoom = pls[n].zoom;
-                    new_pos(glat, glon, zoom);
-                    break;
-                    case 1003:
-                    place_edit();
-                    break;
-                    default:
-                    break;
+                }
+                glat = InputParser.get_latitude(t1);
+                glon = InputParser.get_longitude(t2);
+                var n = pcombo.get_active ();
+                int zoom = -1;
+                if(n > 0)
+                    zoom = pls[n].zoom;
+                new_pos(glat, glon, zoom);
+                break;
+                case 1003:
+                place_edit();
+                break;
+                default:
+                break;
                 }
                 dialog.hide();
             });
@@ -1127,8 +1018,7 @@ public class SetPosDialog : GLib.Object
     }
 }
 
-public class SwitchDialog : GLib.Object
-{
+public class SwitchDialog : GLib.Object {
     private Gtk.Dialog dialog;
     public SwitchDialog(Gtk.Builder builder, Gtk.Window? w=null)
     {
@@ -1141,23 +1031,19 @@ public class SwitchDialog : GLib.Object
             });
     }
 
-    public void run()
-    {
+    public void run() {
         dialog.show_all();
     }
 }
 
-public class DirtyDialog : GLib.Object
-{
+public class DirtyDialog : GLib.Object {
     private Gtk.Dialog dialog;
-    public DirtyDialog(Gtk.Builder builder, Gtk.Window? w=null)
-    {
+    public DirtyDialog(Gtk.Builder builder, Gtk.Window? w=null) {
         dialog = builder.get_object ("dirty_mission_dialog") as Gtk.Dialog;
         dialog.set_transient_for(w);
     }
 
-    public int get_choice()
-    {
+    public int get_choice() {
         dialog.show_all();
         var id = dialog.run();
         dialog.hide();
@@ -1165,8 +1051,7 @@ public class DirtyDialog : GLib.Object
     }
 }
 
-public class PrefsDialog : GLib.Object
-{
+public class PrefsDialog : GLib.Object {
     private Gtk.Dialog dialog;
     private Gtk.Entry[]ents = {};
     private Gtk.RadioButton[] buttons={};
@@ -1176,11 +1061,11 @@ public class PrefsDialog : GLib.Object
     private uint pdist;
     private bool pdms;
     private Gtk.Switch rthland;
+    private StringBuilder sb;
 
     public signal void done (int id);
 
-    private enum Buttons
-    {
+    private enum Buttons {
         DDD=0,
         DMS,
 
@@ -1195,10 +1080,8 @@ public class PrefsDialog : GLib.Object
     }
 
     private void toggled (Gtk.ToggleButton button) {
-        if(button.get_active())
-        {
-            switch(button.label)
-            {
+        if(button.get_active()) {
+            switch(button.label) {
                 case "DDD.dddddd":
                     pdms = false;
                     break;
@@ -1233,11 +1116,9 @@ public class PrefsDialog : GLib.Object
         }
     }
 
-    public PrefsDialog(Gtk.Builder builder, Gtk.Window? w)
-    {
+    public PrefsDialog(Gtk.Builder builder, Gtk.Window? w) {
         dialog = builder.get_object ("prefs-dialog") as Gtk.Dialog;
-        for (int i = 1; i < 9; i++)
-        {
+        for (int i = 1; i < 9; i++) {
             var id = "prefentry%d".printf(i);
             var e = builder.get_object (id) as Gtk.Entry;
             ents += e;
@@ -1251,8 +1132,7 @@ public class PrefsDialog : GLib.Object
             "uprefs-msec", "uprefs-kph", "uprefs-mph", "uprefs-knots"
         };
 
-        foreach(var s in pnames)
-        {
+        foreach(var s in pnames) {
             button = builder.get_object (s) as Gtk.RadioButton;
             button.toggled.connect (toggled);
             buttons += button;
@@ -1272,12 +1152,10 @@ public class PrefsDialog : GLib.Object
         notebook.append_page(uprefs,new Gtk.Label("Units"));
     }
 
-    public void set_maps(string []map_names, string defmap)
-    {
+    public void set_maps(string []map_names, string defmap) {
         int active = 0;
         int i = 0;
-        foreach(var m in map_names)
-        {
+        foreach(var m in map_names) {
             if(m == defmap)
                 active = i;
             i++;
@@ -1286,15 +1164,11 @@ public class PrefsDialog : GLib.Object
         pcombo.active = active;
     }
 
-    public int run_prefs(ref MWPSettings conf)
-    {
-        int id = 0;
-        StringBuilder sb = new StringBuilder ();
-        if(conf.devices != null)
-        {
+    public void run_prefs(MWPSettings conf) {
+        sb = new StringBuilder ();
+        if(conf.devices != null) {
             var delimiter = ", ";
-            foreach (string s in conf.devices)
-            {
+            foreach (string s in conf.devices) {
                 sb.append(s);
                 sb.append(delimiter);
             }
@@ -1327,102 +1201,87 @@ public class PrefsDialog : GLib.Object
         buttons[conf.p_speed + Buttons.MSEC].set_active(true);
 
         dialog.show_all ();
-        id = dialog.run();
-        if (id == 1001)
-        {
-            var str = ents[0].get_text();
-            double d;
-            uint u;
-            if(sb.str != str)
-            {
-                var strs = str.split(",");
-                for(int i=0; i<strs.length;i++)
-                {
-                    strs[i] = strs[i].strip();
-                }
-                conf.settings.set_strv( "device-names", strs);
-            }
-            str = ents[1].get_text();
-            d=InputParser.get_latitude(str);
-            if(Math.fabs(conf.latitude - d) > 1e-5)
-            {
-                conf.settings.set_double("default-latitude", d);
-            }
-            str = ents[2].get_text();
-            d=InputParser.get_longitude(str);
-            if(Math.fabs(conf.longitude - d) > 1e-5)
-                if(conf.longitude != d)
-                {
-                    conf.settings.set_double("default-longitude", d);
-                }
-            str = ents[3].get_text();
-            u=int.parse(str);
-            if(conf.loiter != u)
-            {
-                conf.settings.set_uint("default-loiter", u);
-            }
-            str = ents[4].get_text();
-            u = (uint)InputParser.get_scaled_int(str);
+        dialog.response.connect((id) => {
+                dialog.hide();
+                done(id);
+            });
+    }
 
-            if(conf.altitude != u)
-            {
-                conf.settings.set_uint("default-altitude", u);
+    public void update_conf (ref MWPSettings conf) {
+        var str = ents[0].get_text();
+        double d;
+        uint u;
+        if(sb.str != str) {
+            var strs = str.split(",");
+            for(int i=0; i<strs.length;i++) {
+                strs[i] = strs[i].strip();
             }
-            str = ents[5].get_text();
-            d = InputParser.get_scaled_real(str, "s");
-            if(Math.fabs(conf.nav_speed -d) > 0.1)
-            {
-                conf.settings.set_double("default-nav-speed", d);
-            }
-            str = pcombo.get_active_text();
-            if(conf.defmap !=str)
-            {
-                conf.settings.set_string ("default-map", str);
-            }
-            str = ents[6].get_text();
-            u=int.parse(str);
-            if(conf.zoom != u)
-            {
-                conf.settings.set_uint("default-zoom", u);
-            }
-
-            if(conf.dms != pdms)
-            {
-                conf.settings.set_boolean("display-dms", pdms);
-            }
-
-            if(conf.p_distance != pdist)
-            {
-                conf.settings.set_uint("display-distance", pdist);
-            }
-
-            if(conf.p_speed != pspeed)
-            {
-                conf.settings.set_uint("display-speed", pspeed);
-            }
-
-            str = ents[7].get_text();
-            u=int.parse(str);
-            if(u > 0 && conf.speakint < 15)
-            {
-                u = 15;
-                ents[7].set_text("%u".printf(u));
-            }
-            if(conf.speakint != u)
-            {
-                conf.settings.set_uint("speak-interval",u);
-            }
-            conf.rth_autoland = rthland.active;
+            conf.settings.set_strv( "device-names", strs);
         }
-        dialog.hide();
-        return id;
+        str = ents[1].get_text();
+        d=InputParser.get_latitude(str);
+        if(Math.fabs(conf.latitude - d) > 1e-5) {
+            conf.settings.set_double("default-latitude", d);
+        }
+        str = ents[2].get_text();
+        d=InputParser.get_longitude(str);
+        if(Math.fabs(conf.longitude - d) > 1e-5)
+            if(conf.longitude != d) {
+                conf.settings.set_double("default-longitude", d);
+            }
+        str = ents[3].get_text();
+        u=int.parse(str);
+        if(conf.loiter != u) {
+            conf.settings.set_uint("default-loiter", u);
+        }
+        str = ents[4].get_text();
+        u = (uint)InputParser.get_scaled_int(str);
+
+        if(conf.altitude != u) {
+            conf.settings.set_uint("default-altitude", u);
+        }
+        str = ents[5].get_text();
+        d = InputParser.get_scaled_real(str, "s");
+        if(Math.fabs(conf.nav_speed -d) > 0.1) {
+            conf.settings.set_double("default-nav-speed", d);
+        }
+        str = pcombo.get_active_text();
+        if(conf.defmap !=str) {
+            conf.settings.set_string ("default-map", str);
+        }
+        str = ents[6].get_text();
+        u=int.parse(str);
+        if(conf.zoom != u) {
+            conf.settings.set_uint("default-zoom", u);
+        }
+
+        if(conf.dms != pdms) {
+            conf.settings.set_boolean("display-dms", pdms);
+        }
+
+        if(conf.p_distance != pdist) {
+            conf.settings.set_uint("display-distance", pdist);
+        }
+
+        if(conf.p_speed != pspeed) {
+            conf.settings.set_uint("display-speed", pspeed);
+        }
+
+        str = ents[7].get_text();
+        u=int.parse(str);
+        if(u > 0 && conf.speakint < 15) {
+            u = 15;
+            ents[7].set_text("%u".printf(u));
+        }
+        if(conf.speakint != u) {
+            conf.settings.set_uint("speak-interval",u);
+        }
+        conf.rth_autoland = rthland.active;
     }
 }
 
-public class ShapeDialog : GLib.Object
-{
-    public struct ShapePoint
-    {
+public class ShapeDialog : GLib.Object {
+    public struct ShapePoint {
         public double lat;
         public double lon;
         public double bearing;
@@ -1435,8 +1294,7 @@ public class ShapeDialog : GLib.Object
     private Gtk.SpinButton spin3;
     private Gtk.ComboBoxText combo;
 
-    public ShapeDialog (Gtk.Builder builder, Gtk.Window? w=null)
-    {
+    public ShapeDialog (Gtk.Builder builder, Gtk.Window? w=null) {
         dialog = builder.get_object ("shape-dialog") as Gtk.Dialog;
         dialog.set_transient_for(w);
         spin1  = builder.get_object ("shp_spinbutton1") as Gtk.SpinButton;

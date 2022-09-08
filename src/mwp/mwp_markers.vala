@@ -96,8 +96,10 @@ public class MWPMarkers : GLib.Object
 	private Clutter.Image rplane;
 	private Clutter.Image inavradar;
 
-    public signal void wp_moved(int ino, double lat, double lon);
+    public signal void wp_moved(int ino, double lat, double lon, bool flag);
     public signal void wp_selected(int ino);
+
+    bool can_interact;
 
 	public static Clutter.Image load_image_from_file(string file, int w=-1, int h=-1) throws GLib.Error {
 		var iconfile = MWPUtils.find_conf_file(file, "pixmaps");
@@ -115,6 +117,7 @@ public class MWPMarkers : GLib.Object
     {
         _v = view;
 
+        can_interact = true;
         Clutter.Color orange = {0xff, 0xa0, 0x0, 0x80};
         Clutter.Color rcol = {0xff, 0x0, 0x0, 0x80};
 
@@ -521,8 +524,7 @@ public class MWPMarkers : GLib.Object
             pp.set_child_below_sibling(rring, path);
             double rng = i*ringint;
             pts = ShapeDialog.mkshape(lat, lon, rng, 36);
-            foreach(var p in pts)
-            {
+            foreach(var p in pts) {
                 var pt = new  Champlain.Marker();
                 pt.set_location (p.lat,p.lon);
                 rring.add_node(pt);
@@ -623,11 +625,13 @@ public class MWPMarkers : GLib.Object
            });
 
         marker.button_press_event.connect((e) => {
-                if(e.button == 3) {
-                    var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
-                    if (_t1 != null)
-                        marker.remove_child(_t1);
+                if(can_interact) {
+                    if(e.button == 3) {
+                        var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
+                        if (_t1 != null)
+                            marker.remove_child(_t1);
                     l.set_popup_needed(ino);
+                    }
                 }
                 return false;
             });
@@ -656,7 +660,7 @@ public class MWPMarkers : GLib.Object
 
         marker.drag_motion.connect((dx,dy,evt) => {
                 var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
-				wp_moved(ino, marker.get_latitude(), marker.get_longitude());
+				wp_moved(ino, marker.get_latitude(), marker.get_longitude(), false);
 				calc_extra_distances(l);
 				var s = l.get_marker_tip(ino);
 				_t1.set_text(s);
@@ -675,7 +679,7 @@ public class MWPMarkers : GLib.Object
                     marker.set_color (col);
                     marker.set_text(mtxt);
                 }
-                wp_moved(ino, marker.get_latitude(), marker.get_longitude());
+                wp_moved(ino, marker.get_latitude(), marker.get_longitude(), true);
                 calc_extra_distances(l);
                 var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
                 _t1.set_text(l.get_marker_tip(ino));
@@ -865,6 +869,15 @@ public class MWPMarkers : GLib.Object
 	public void remove_tmp_mission() {
 		tmpmarkers.remove_all();
 	}
+
+    public void set_markers_active(bool act) {
+        can_interact = act;
+        if(act) {
+            markers.set_all_markers_draggable();
+        } else {
+            markers.set_all_markers_undraggable();
+        }
+    }
 
 	public  void temp_mission_markers(Mission ms) {
 		Champlain.Point p = null;
