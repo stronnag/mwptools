@@ -2456,7 +2456,6 @@ public class ListBox : GLib.Object {
         if((ei.optional & WPEditMask.RTH) == WPEditMask.RTH) {
             ni = get_next_iter_for(MSP.Action.RTH, ref iter);
             double eil = (double)ei.rthland;
-            print("rth land %d %.0f\n", ei.rthland, eil);
             list_model.set (ni, WY_Columns.ACTION, MSP.Action.RTH,
                             WY_Columns.LAT, 0.0,
                             WY_Columns.LON, 0.0,
