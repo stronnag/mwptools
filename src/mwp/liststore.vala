@@ -1228,9 +1228,7 @@ public class ListBox : GLib.Object {
 
         if( list_model.iter_n_children(null) > 0 ) {
             clrm_item.sensitive = true;
-            if((FakeHome.usedby & FakeHome.USERS.Mission) == FakeHome.USERS.Mission) {
-                clrh_item.sensitive = true;
-            }
+            clrh_item.sensitive = ((FakeHome.usedby & FakeHome.USERS.Mission) == FakeHome.USERS.Mission);
         } else {
             clrm_item.sensitive = clrh_item.sensitive = false;
         }
