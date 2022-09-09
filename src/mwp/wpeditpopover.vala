@@ -166,7 +166,10 @@ public class WPPopEdit : Gtk.Dialog {
         }
 
         switch(nv) {
-        case MSP.Action.WAYPOINT, MSP.Action.POSHOLD_TIME, MSP.Action.LAND:
+        case MSP.Action.WAYPOINT:
+        case MSP.Action.POSHOLD_UNLIM:
+        case MSP.Action.POSHOLD_TIME:
+        case MSP.Action.LAND:
             extract_basic(nv, ref wpt);
             break;
         default:
@@ -182,8 +185,11 @@ public class WPPopEdit : Gtk.Dialog {
         wp_combo.active_id = ((int)wpt.action).to_string();
         title = "WP Edit #%d".printf(wpt.no);
         switch(wpt.action) {
-        case MSP.Action.WAYPOINT, MSP.Action.POSHOLD_UNLIM,
-            MSP.Action.POSHOLD_TIME, MSP.Action.SET_POI,MSP.Action.LAND:
+        case MSP.Action.WAYPOINT:
+        case MSP.Action.POSHOLD_UNLIM:
+        case MSP.Action.POSHOLD_TIME:
+        case MSP.Action.SET_POI:
+        case MSP.Action.LAND:
             set_base_elements(wpt);
             break;
         default:
