@@ -29,7 +29,7 @@
         
           
           
-          <meta name="theme-color" content="#757575">
+          <meta name="theme-color" content="#4051b5">
         
       
     
@@ -62,7 +62,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="grey" data-md-color-accent="dark-orange">
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
   
     
     <script>function __prefix(e){return new URL("..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
@@ -149,6 +149,19 @@
 </div>
     
     
+      <div class="md-header__source">
+        
+<a href="https://github.com/stronnag/mwptools/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Github
+  </div>
+</a>
+      </div>
+    
   </nav>
   
 </header>
@@ -181,6 +194,19 @@
     </a>
     mwptools
   </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/stronnag/mwptools/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Github
+  </div>
+</a>
+    </div>
   
   <ul class="md-nav__list" data-md-scrollfix>
     
@@ -321,6 +347,19 @@
   <a href="#map-features" class="md-nav__link">
     Map Features
   </a>
+  
+    <nav class="md-nav" aria-label="Map Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#edit-waypoint" class="md-nav__link">
+    Edit Waypoint
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -898,6 +937,19 @@
     Map Features
   </a>
   
+    <nav class="md-nav" aria-label="Map Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#edit-waypoint" class="md-nav__link">
+    Edit Waypoint
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1028,6 +1080,10 @@
             <article class="md-content__inner md-typeset">
               
                 
+                  <a href="https://github.com/stronnag/mwptools/edit/master/docs/manual/docs/mission-editor.md" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
                 
                 <h1 id="mission-editor">Mission Editor<a class="headerlink" href="#mission-editor" title="Permanent link">#</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
@@ -1056,9 +1112,33 @@
 <li>Allow new WPs to be created by clicking on the map</li>
 <li>Provide a context popup menu by right click on a WP icon</li>
 </ul>
-<p>The context menu depends on the type of the current WP, for example:</p>
-<p><img alt="ui_edit" src="../images/mission-context.png" width="30%" /></p>
-<p>The use of more advanced functions, for example setting parameter values, moving multiple WP, mission preview etc. requires the tabular mission editor</p>
+<p>The context menu is displayed by right click on a WP icon, for example:</p>
+<p><img alt="ui_edit" src="../images/wpmenu-01.png" width="30%" /></p>
+<p>Almost all functions are available here, however some advanced functions, moving (multiple) WP,  etc. requires the tabular mission editor.</p>
+<h3 id="edit-waypoint">Edit Waypoint<a class="headerlink" href="#edit-waypoint" title="Permanent link">#</a></h3>
+<p>The <strong>Edit Waypoint</strong> option opens an edit form for the current waypoint. The items displayed depend on the type of waypoint.</p>
+<p><img alt="ui_edit" src="../images/wpmenu-02.png" width="30%" /></p>
+<p>In this image, note:</p>
+<ul>
+<li>The Way Point type <code>WAYPOINT</code>.</li>
+<li>The WP location (and absolute elevation AMSL)</li>
+<li>The WP Altitude, either absolute (here the ASML box is checked) or relative. Whether this is a <a href="../Fly-By-Home-waypoints-%28inav-4-new-feature%29/">Fly By Home (FBH) waypoint</a></li>
+<li>The speed (m/s)</li>
+<li>Additional attributes which may be enabled or disabled:<ul>
+<li>Set Heading (-1 to clear a previous set head)</li>
+<li>JUMP parameters (-1 Iterations == infinite)</li>
+<li>Return to Home (and land).</li>
+</ul>
+</li>
+</ul>
+<p>Multiple attributes may be set.</p>
+<p>If the AMSL button is toggled, <strong>and a valid planned home location</strong> is set, then the altitude will be adjusted. For the above example, if the AMSL box is cleared, the dialogue shows:</p>
+<p><img alt="ui_edit" src="../images/wpmenu-03.png" width="30%" /></p>
+<p>Note that the Altitude box has an orange border to show that the altitude has been automatically updated.</p>
+<p>If there is no planned home location, and the AMSL box is toggled, then the Altitude box assumes a red border to indicate to the user that manual intervention is required.</p>
+<p><img alt="ui_edit" src="../images/wpmenu-04.png" width="30%" /></p>
+<p>In the above image, a relative altitude of 16m has been toggled to absolute; there is no home position, so the altitude entry has a red border, as this is now below the absolute altitude of the terrain.</p>
+<p>Note also that this example has multiple option set (SET HEAD and JUMP).</p>
 <h2 id="mission-editor_1">Mission Editor<a class="headerlink" href="#mission-editor_1" title="Permanent link">#</a></h2>
 <p>The mission editor may be invoked from the <a href="../dock/">dock</a> or from a WP context menu.</p>
 <p>It provides the following functions:</p>
@@ -1140,6 +1220,19 @@
 <h3 id="mission-preview">Mission Preview<a class="headerlink" href="#mission-preview" title="Permanent link">#</a></h3>
 <p><a href="https://www.youtube.com/watch?v=MTA42WUOjUY">Video example</a> of preview for a complex (multiple jumps, timed POSHOLD) mission (preview from the first video).</p>
 <iframe width="560" height="315" src="https://www.youtube.com/embed/MTA42WUOjUY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                
+                  
+                    
+
+<hr>
+<div class="md-source-date">
+  <small>
+    
+      Last update: 2022-09-09
+    
+  </small>
+</div>
+                  
                 
               
               
