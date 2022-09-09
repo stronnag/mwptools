@@ -48,14 +48,15 @@ Problem reports on non-supported platforms will not be dismissed without _some_ 
 
 ### Wayland / XLib
 
-Different outcomes (including crash / not crash) may be experienced using different display environments.
+Different behaviours may be experienced using different display environments.
 
-mwp (and other applications) can have a problem with OpenGL and the Wayland compositor. Typcially this is manifest by being unable to pick mission WP icons for large (>40 point) missions.
+mwp (and other applications) can have a problem with OpenGL and the Wayland compositor. Typically this is manifest by being unable to pick mission WP icons for large (>40 point) missions.
 
 On non-WSL platforms, mwp forces XWayland over Wayland to mitigate this. You can force Wayland / XWayland by setting the `GDK_BACKEND` variable in `cmdopts` (or the environment). This will override mwp's default behaviour.
 
     # set XWayland
     GDK_BACKEND=x11
+	# ** or **
     # set Wayland
     GDK_BACKEND=wayland
 

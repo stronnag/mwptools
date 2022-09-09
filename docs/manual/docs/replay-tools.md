@@ -1,6 +1,6 @@
 # Replay Tools
 
-in order to replay log files, {{ mwp }} has a number of external dependencies, in particular the **flightlog2x** `fl2ltm` tool provided by the [bbl2kml](https://github.com/stronnag/bbl2kml) repository. As well as providing replay tools for {{ mwp }}, you also get the facility to generate  attractive animated KML / KMZ files for visualisation in **google-earth**.
+In order to replay log files, {{ mwp }} has a number of external dependencies, in particular the **flightlog2x** `fl2ltm` tool provided by the [bbl2kml](https://github.com/stronnag/bbl2kml) repository. As well as providing replay tools for {{ mwp }}, you also get the facility to generate  attractive animated KML / KMZ files for visualisation in **google-earth**.
 
 <figure markdown>
 ![mode view](images/bbl2kml/v1.jpeg){: width="80%" }
@@ -45,7 +45,7 @@ No addition software requirements.
 
 ## Ardupilot logs
 
-Requires Ardupilot's [mavlogdump.py](https://github.com/ArduPilot/pymavlink) and [dependencies](Replaying-Ardupilot-logs).
+Requires Ardupilot's [mavlogdump.py](https://github.com/ArduPilot/pymavlink).
 
 ## mwp JSON logs
 

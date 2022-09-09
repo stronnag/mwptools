@@ -43,8 +43,8 @@ The **Edit Waypoint** option opens an edit form for the current waypoint. The it
 In this image, note:
 
 * The Way Point type `WAYPOINT`.
-* The position (and absolute elevation AMSL)
-* The WP Altitude, either absolute (here the ASML box is checked), and whether this is a Fly By Home (FBH) waypoint.
+* The WP location (and absolute elevation AMSL)
+* The WP Altitude, either absolute (here the ASML box is checked) or relative. Whether this is a [Fly By Home (FBH) waypoint](Fly-By-Home-waypoints-(inav-4-new-feature).md)
 * The speed (m/s)
 * Additional attributes which may be enabled or disabled:
     * Set Heading (-1 to clear a previous set head)

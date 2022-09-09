@@ -66,7 +66,7 @@ The following tables summarise the available menu options. Where usage is not ob
 | ---- | ----- |
 | Zoom to Mission | Zooms the map to the currently loaded mission |
 | Set location as default | Sets the current location as the default (startup) location |
-| Centre on position ... | Shows the ["Centre on Position" selector and "favourite places" editor"](misc-ui-elements#favourite-places.md) |
+| Centre on position ... | Shows the ["Centre on Position" selector and "favourite places" editor"](misc-ui-elements.md#favourite-places) |
 | Map Source | Displays a dialogue with information on the selected map source |
 | GPS Statistics | Displays FC GPS status (rate, packets, errors, timeouts, HDOP/EPV/EPH) |
 | Mission Editor| Adds the Mission Editor (tabular view) to the dock (default) |

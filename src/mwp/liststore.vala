@@ -113,6 +113,9 @@ public class ListBox : GLib.Object {
     private Gtk.MenuItem preview_item;
     private Gtk.MenuItem pop_preview_item;
     private Gtk.MenuItem pop_editor_item;
+    private Gtk.MenuItem clrm_item;
+    private Gtk.MenuItem clrh_item;
+
     private ShapeDialog shapedialog;
     private DeltaDialog deltadialog;
     private SpeedDialog speeddialog;
@@ -1223,6 +1226,15 @@ public class ListBox : GLib.Object {
         speedv_item.sensitive = speedz_item.sensitive =
         lnd_item.sensitive = cvt_item.sensitive = false;
 
+        if( list_model.iter_n_children(null) > 0 ) {
+            clrm_item.sensitive = true;
+            if((FakeHome.usedby & FakeHome.USERS.Mission) == FakeHome.USERS.Mission) {
+                clrh_item.sensitive = true;
+            }
+        } else {
+            clrm_item.sensitive = clrh_item.sensitive = false;
+        }
+
         if(sel.count_selected_rows () > 0) {
             del_item.sensitive = true;
             foreach (var t in list_selected_refs()) {
@@ -1861,20 +1873,19 @@ public class ListBox : GLib.Object {
             });
         menu.add (lnd_item);
 
-        item = new Gtk.MenuItem.with_label ("Clear Mission");
-        item.activate.connect (() => {
+        clrm_item = new Gtk.MenuItem.with_label ("Clear Mission");
+        clrm_item.activate.connect (() => {
                 clear_mission();
             });
-        menu.add (item);
+        menu.add (clrm_item);
 
-        item = new Gtk.MenuItem.with_label ("Clear Mission Home");
-        item.activate.connect (() => {
+        clrh_item = new Gtk.MenuItem.with_label ("Clear Mission Home");
+        clrh_item.activate.connect (() => {
                 FakeHome.usedby &= ~FakeHome.USERS.Mission;
                 unset_fake_home();
                 set_elev(EvConst.HOME, EvConst.UNAVAILABLE);
-                FakeHome.usedby &= ~FakeHome.USERS.Mission;
             });
-        menu.add (item);
+        menu.add (clrh_item);
 
         terrain_item = new Gtk.MenuItem.with_label ("Terrain Analysis");
         terrain_item.activate.connect (() => {

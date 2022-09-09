@@ -2,19 +2,22 @@ site_name: mwptools
 site_description: Mission Planner, Ground Control Station, Log Replay
 site_author: Jonathan Hudson
 copyright: Copyright &copy; 2014 - 2022 <a href="https://github.com/stronnag/mwptools">Jonathan Hudson</a>
+repo_name: Github
+repo_url: https://github.com/stronnag/mwptools/
+edit_uri: edit/master/docs/manual/docs/
 
 theme:
   name: material
   palette:
     scheme: slate
-    primary: grey
-    accent: dark orange
-
+    primary: indigo
+    accent: indigo
   font:
     text: Roboto
     code: Roboto Mono
-
   favicon: images/mwp_icon.ico
+
+#custom_dir: docs/overrides
 
 markdown_extensions:
   - admonition
@@ -28,6 +31,7 @@ markdown_extensions:
 
 plugins:
   - search
+  - git-revision-date
   - macros
   - with-pdf:
       cover_subtitle: Mission Planner, GCS, Log replay for inav

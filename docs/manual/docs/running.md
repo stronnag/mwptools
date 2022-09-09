@@ -32,14 +32,14 @@ The install process installs an desktop icon and `mwp.desktop` application file 
 
 ### Display Managers
 
-{{ mwp }} uses a library, `libchamplain` to draw maps and mission symbols; unfortunately, this does not integrate consistently with the various generations of open source display managers (ironically, it works without problems in WSL-G). Please check the following before raising Github issues:
+{{ mwp }} uses a library, `libchamplain` to draw maps and mission symbols; unfortunately, this does not integrate consistently with the various generations of open source display managers (ironically, it works without problems in WSL2-G). Please check the following before raising Github issues:
 
-* On **Wayland** : Wayland is the latest open source display manager. On some older graphics cards (i.e. more than c. 5 years old), it may fail to 'pick' waypoint symbols when there are more than c. 40 symbols in a mission.
+* On **Wayland** : Wayland is the latest open source display manager. On some graphics cards, it may fail to 'pick' waypoint symbols when there are more than c. 40 symbols in a mission.
   In order to mitigate this, the default setting in mwp is to use a fallback implementation known as **XWayland**. Use of **Wayland** (vice XWayland) for newer graphics cards may be forced by setting `GDK_BACKEND=wayland` in [`~/.config/mwp/cmdopts`](mwp-Configuration.md#cmdopts) or the environment.
 
-* On **Xlib** : Sometimes (rarely), you may load a mission and the WPs cannot be 'picked' and the map is unresponsive to mouse control. The work-around is to move the mouse off the map and back on again (or scroll the map with the keyboard, CTRL-arrow-keys).
+* On **Xlib** : For older versions of mwp sometimes you may load a mission and the WPs cannot be 'picked' and the map is unresponsive to mouse control. The work-around is to move the mouse off the map and back on again (or scroll the map with the keyboard, CTRL-arrow-keys).
 
-Any technical solutions to either of these irritations would be most welcome.
+    This is fixed in mwp later than 5.251.652 (2022-09-08); the solution being to ensure all dialogs are non-modal. **Please upgrade.**
 
 ## Command line options
 

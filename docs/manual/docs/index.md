@@ -14,6 +14,8 @@ From its MultiWii origins mwp has evolved to support navigation capabilities in 
 
 {{ inav }} is now the main development target, however MultiWii mission planning and ground control remains a supported function.
 
+You can also [download this manual as PDF](pdf/mwptools.pdf) for offline reference.
+
 ## Features
 
 * [**Mission Planner**](mission-editor.md) : Supports all {{ inav }} and MultiWii mission planning functions, including all INAV extensions.
