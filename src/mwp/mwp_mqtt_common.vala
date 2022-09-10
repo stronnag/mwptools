@@ -34,8 +34,7 @@ public class MwpMQTT : Object {
 
         //private bool wppub ;
 
-    public static string provider()
-    {
+    public static string provider() {
 #if MQTT_MOSQUITTO
         return "mosquitto";
 #else
@@ -59,8 +58,7 @@ public class MwpMQTT : Object {
     public signal void mqtt_frame(MSP.Cmds cmd, uint8[] bx, ulong len);
     public signal void mqtt_craft_name(string name);
 
-    public void handle_mqtt(string payload)
-    {
+    public void handle_mqtt(string payload) {
         if (bltvers == 2 && payload.contains("."))
             bltvers = 0;
 
@@ -159,8 +157,7 @@ public class MwpMQTT : Object {
                         var armed = (uint8)(int.parse(attrs[1]));
                         tmp = sframe.flags & 0xfe;
                         sframe.flags = tmp | armed;
-                        if (armed == 0)
-                        {
+                        if (armed == 0) {
                             send_once = 0;
                             durat = 0;
                         }
@@ -200,8 +197,7 @@ public class MwpMQTT : Object {
                     case "cwn":
                         nframe.wp_number =  (uint8)(int.parse(attrs[1]));
                         uint8 gpsmode = 0;
-                        switch (sframe.flags >> 2)
-                        {
+                        switch (sframe.flags >> 2) {
                             case 10:
                                 gpsmode = 3;
                                 break;
@@ -255,8 +251,7 @@ public class MwpMQTT : Object {
                         break;
                 }
             }
-            if (gattr == 3)
-            {
+            if (gattr == 3) {
                 if (have_orig == false && range != 0.0 && bearing != 0.0) {
                     double la = gframe.lat / 1.0e7;
                     double lo = gframe.lon / 1.0e7;
@@ -293,11 +288,9 @@ public class MwpMQTT : Object {
         int wpidx = 0;
         MSP_WP wp = MSP_WP();
         var parts = payload.split(",");
-        foreach (var p in parts)
-        {
+        foreach (var p in parts) {
             var attrs = p.split(":");
-            switch (attrs[0])
-            {
+            switch (attrs[0]) {
                 case "wpno":
                     wpno = int.parse(attrs[1]);
                     if (wpno < 1 || wpno > MAX_WPS)
@@ -340,11 +333,9 @@ public class MwpMQTT : Object {
         wps[wpidx] = wp;
     }
 
-    private uint8 parse_flight_mode(string flm)
-    {
+    private uint8 parse_flight_mode(string flm) {
         var ltmmode = 0;
-        if (bltvers == 2)
-        {
+        if (bltvers == 2) {
             switch (flm)
             {
                 case "1":
@@ -389,8 +380,7 @@ public class MwpMQTT : Object {
                     break;
             }
         } else {
-            switch (flm)
-            {
+            switch (flm) {
                 case "MANU":
                     ltmmode = 0;
                     break;
@@ -441,16 +431,14 @@ public class MwpMQTT : Object {
     }
 
 
-    private void serialise_qframe(uint16 v)
-    {
+    private void serialise_qframe(uint16 v) {
         uint8 raw[2];
         raw[0] = (uint8)(v & 0xff);
         raw[1] = ((v >> 8) & 0xff);
         Idle.add(() => { mqtt_frame(MSP.Cmds.Tq_FRAME, raw, 2); return false; });
     }
 
-    private void serialise_oframe()
-    {
+    private void serialise_oframe() {
         uint8 raw[32];
         uint8 *p;
         p = SEDE.serialise_i32(raw, oframe.lat);
@@ -461,8 +449,7 @@ public class MwpMQTT : Object {
         Idle.add(() => { mqtt_frame(MSP.Cmds.TO_FRAME, raw, (p - &raw[0])); return false; });
     }
 
-    private void serialise_gframe()
-    {
+    private void serialise_gframe() {
         uint8 raw[32];
         uint8 *p;
         p = SEDE.serialise_i32(raw, gframe.lat);
@@ -473,8 +460,7 @@ public class MwpMQTT : Object {
         Idle.add(() => { mqtt_frame(MSP.Cmds.TG_FRAME, raw, (p - &raw[0])); return false; });
     }
 
-    private void serialise_aframe()
-    {
+    private void serialise_aframe() {
         uint8 raw[32];
         uint8 *p;
         p = SEDE.serialise_u16(raw, aframe.pitch);
@@ -483,8 +469,7 @@ public class MwpMQTT : Object {
         Idle.add(() => { mqtt_frame(MSP.Cmds.TA_FRAME, raw, (p - &raw[0])); return false; });
     }
 
-    private void serialise_sframe()
-    {
+    private void serialise_sframe() {
         uint8 raw[32];
         uint8 *p;
         p = SEDE.serialise_u16(raw, sframe.vbat);
@@ -495,8 +480,7 @@ public class MwpMQTT : Object {
         Idle.add(() => { mqtt_frame(MSP.Cmds.TS_FRAME, raw, (p - &raw[0])); return false; });
     }
 
-    private void serialise_xframe()
-    {
+    private void serialise_xframe() {
         uint8 raw[32];
         uint8 *p;
         p = SEDE.serialise_u16(raw, xframe.hdop);
@@ -507,8 +491,7 @@ public class MwpMQTT : Object {
         Idle.add(() => { mqtt_frame(MSP.Cmds.TX_FRAME, raw, (p - &raw[0])); return false; });
     }
 
-    private void serialise_nframe()
-    {
+    private void serialise_nframe() {
         uint8 raw[32];
         uint8 *p = raw;
         *p++ = nframe.gps_mode;
@@ -520,8 +503,7 @@ public class MwpMQTT : Object {
         Idle.add(() => { mqtt_frame(TN_FRAME, raw, (p - &raw[0])); return false; });
     }
 
-    public bool setup(string s)
-    {
+    public bool setup(string s) {
 		string cafile = null;
 		string topic = null;
 
@@ -533,7 +515,6 @@ public class MwpMQTT : Object {
                 cafile = parts[1];
             }
         }
-
 		port = u.port;
 		topic = u.path;
 
@@ -609,13 +590,11 @@ public class MwpMQTT : Object {
         }
         var server = sb.str;
         client = new MQTT.Client(server, cafile);
-        if (client != null)
-        {
+        if (client != null) {
             if (client.subscribe(topic) == 0) {
                 thr = new Thread<int>("mqtt", () => {
                         string str;
-                        while(client.poll_message(out str) == 0)
-                        {
+                        while(client.poll_message(out str) == 0) {
                             if(str != null) {
                                 mqtt.handle_mqtt(str);
                             }
@@ -628,16 +607,14 @@ public class MwpMQTT : Object {
             available = true;
             init();
             return true;
-        }
-        else {
+        } else {
             stdout.printf("Connect Error: %d\n", MQTT.connect_status());
             return false;
         }
 #endif
     }
 
-    public bool mdisconnect()
-    {
+    public bool mdisconnect() {
         available = false;
         client.disconnect ();
         thr.join();
@@ -648,9 +625,7 @@ public class MwpMQTT : Object {
     }
 }
 
-
-MwpMQTT newMwpMQTT()
-{
+MwpMQTT newMwpMQTT() {
     mqtt = new MwpMQTT();
     mqtt.init();
     return mqtt;

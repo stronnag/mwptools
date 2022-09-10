@@ -15,8 +15,7 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
-public class ReplayThread : GLib.Object
-{
+public class ReplayThread : GLib.Object {
     private const int MAXSLEEP = 500*1000;
     private bool playon  {get; set;}
     private Cancellable cancellable;
@@ -177,33 +176,27 @@ public class ReplayThread : GLib.Object
         }
     }
 
-    public ReplayThread()
-    {
+    public ReplayThread() {
         cancellable = new Cancellable ();
     }
 
-    public void stop()
-    {
+    public void stop() {
         playon = false;
         cancellable.cancel();
     }
 
-    public void pause(bool _paused)
-    {
+    public void pause(bool _paused) {
         paused = _paused;
     }
 
-    public Thread<int> run(int fd, string relog, bool delay=true)
-    {
+    public Thread<int> run(int fd, string relog, bool delay=true) {
         MWSerial msp =  new MWSerial.forwarder();
         msp.open_fd(fd,115200);
         return run_msp(msp, relog, delay);
     }
 
-    public Thread<int> run_msp (MWSerial msp, string relog, bool delay=true)
-    {
+    public Thread<int> run_msp (MWSerial msp, string relog, bool delay=true) {
         playon = true;
-
         var thr = new Thread<int> ("relog", () => {
                 bool armed = false;
                 double start_tm = 0;
@@ -218,12 +211,9 @@ public class ReplayThread : GLib.Object
                 var file = File.new_for_path (relog);
                 if (!file.query_exists ()) {
                     MWPLog.message ("File '%s' doesn't exist.\n", file.get_path ());
-                }
-                else
-                {
+                } else {
                     string line=null;
-                    try
-                    {
+                    try {
                         Thread.usleep(100000);
                         double lt = 0;
                         var dis = FileStream.open(relog,"r");
@@ -240,30 +230,24 @@ public class ReplayThread : GLib.Object
                             parser.load_from_data (line);
                             var obj = parser.get_root ().get_object ();
                             utime = obj.get_double_member ("utime");
-                            if(start_tm == 0)
-                            {
+                            if(start_tm == 0) {
                                 start_tm = utime;
                                 if (utime < 1610807618) { // vario log bug fixed 2021-01-16
                                     variodiv = 10;
                                 }
                             }
-                            if(lt != 0)
-                            {
+                            if(lt != 0) {
                                 ulong ms = 0;
-                                if (delay  && have_data)
-                                {
+                                if (delay  && have_data) {
                                     var dly = (utime - lt);
                                     ms = (ulong)(dly * 1000 *1000);
-                                    if(dly > 10)
-                                    {
+                                    if(dly > 10) {
                                         MWPLog.message("No data: replay sleeping for %.1f s\n", dly);
                                         ms = 2*1000;
                                     }
-                                }
-                                else
+                                } else
                                     ms = 2*1000;
-                                while(ms != 0)
-                                {
+                                while(ms != 0) {
                                     cancellable.set_error_if_cancelled ();
                                     ulong st = (ms > MAXSLEEP) ? MAXSLEEP : ms;
                                     Thread.usleep(st);
@@ -273,11 +257,9 @@ public class ReplayThread : GLib.Object
 
                             var typ = obj.get_string_member("type");
                             have_data = (typ != "init");
-                            switch(typ)
-                            {
+                            switch(typ) {
                                 case "init":
-                                    if( !have_init)
-                                    {
+                                    if( !have_init) {
                                         have_init = true;
                                         var mrtype = obj.get_int_member ("mrtype");
                                         var mwvers = obj.get_int_member ("mwvers");
@@ -299,34 +281,27 @@ public class ReplayThread : GLib.Object
                                             fctype = (uint)obj.get_int_member ("fctype");
                                         if(obj.has_member("profile"))
                                             profile = (uint)obj.get_int_member ("profile");
-                                        if(obj.has_member("fc_var"))
-                                        {
+                                        if(obj.has_member("fc_var")) {
                                             fcvar =  obj.get_string_member("fc_var");
                                             fcvers = (uint)obj.get_int_member ("fc_vers");
-                                        }
-                                        else if (fctype == 3)
-                                        {
+                                        } else if (fctype == 3) {
                                             fcvar = " CF ";
                                             fcvers = 0x010501;
                                         }
 
-                                        if(obj.has_member("fcboard"))
-                                        {
+                                        if(obj.has_member("fcboard")) {
                                             fcboard = obj.get_string_member ("fcboard");
                                         }
-                                        if (fcboard != null)
-                                        {
+                                        if (fcboard != null) {
                                             uint8 mlen = 6;
                                             buf[0] = fcboard[0];
                                             buf[1] = fcboard[1];
                                             buf[2] = fcboard[2];
                                             buf[3] = fcboard[3];
                                             buf[4] = buf[5] = 0;
-                                            if(obj.has_member("fcname"))
-                                            {
+                                            if(obj.has_member("fcname")) {
                                                 fcname=obj.get_string_member ("fcname");
-                                                if (fcname != null)
-                                                {
+                                                if (fcname != null) {
                                                     buf[6] = buf[7] = 0;
                                                     buf[8] = (uint8)fcname.length;
                                                     for(var k = 0; k < buf[8]; k++)
@@ -336,8 +311,7 @@ public class ReplayThread : GLib.Object
                                             }
                                             send_rec(msp,MSP.Cmds.BOARD_INFO, mlen, buf);
                                         }
-                                        if(obj.has_member("vname"))
-                                        {
+                                        if(obj.has_member("vname")) {
                                             vname = obj.get_string_member ("vname");
                                             if(vname != null && vname.length > 0)
                                             {
@@ -346,8 +320,7 @@ public class ReplayThread : GLib.Object
                                             }
                                         }
 
-                                        if(fcvar != null)
-                                        {
+                                        if(fcvar != null) {
                                             buf[0] = fcvar[0];
                                             buf[1] = fcvar[1];
                                             buf[2] = fcvar[2];
@@ -361,8 +334,7 @@ public class ReplayThread : GLib.Object
                                             send_rec(msp,MSP.Cmds.FC_VERSION, 3, buf);
                                         }
 
-                                        if(obj.has_member("git_info"))
-                                        {
+                                        if(obj.has_member("git_info")) {
                                             var git = obj.get_string_member("git_info");
                                             for(var i = 0; i < 7; i++)
                                                 buf[19+i] = git[i];
@@ -371,29 +343,20 @@ public class ReplayThread : GLib.Object
                                         }
 
                                         string bx;
-                                        if(obj.has_member("boxnames"))
-                                        {
+                                        if(obj.has_member("boxnames")) {
                                             bx = obj.get_string_member("boxnames");
-                                        }
-                                        else
-                                        {
-                                            if (fctype == 3)
-                                            {
-                                                if(fcvar == "INAV")
-                                                {
+                                        } else {
+                                            if (fctype == 3) {
+                                                if(fcvar == "INAV") {
                                                         // hackety hack time
                                                     if (utime < 1449360000)
                                                         bx = "ARM;ANGLE;HORIZON;MAG;HEADFREE;HEADADJ;NAV ALTHOLD;NAV POSHOLD;NAV RTH;NAV WP;BEEPER;OSD SW;BLACKBOX;FAILSAFE;";
                                                     else
                                                         bx = "ARM;ANGLE;HORIZON;AIR MODE;MAG;HEADFREE;HEADADJ;NAV ALTHOLD;NAV POSHOLD;NAV RTH;NAV WP;BEEPER;OSD SW;BLACKBOX;FAILSAFE;";
-                                                }
-                                                else
-                                                {
+                                                } else {
                                                     bx= "ARM;ANGLE;HORIZON;BARO;MAG;HEADFREE;HEADADJ;GPS HOME;GPS HOLD;BEEPER;OSD SW;AUTOTUNE;";
                                                 }
-                                            }
-                                            else
-                                            {
+                                            } else {
                                                 bx = "ARM;ANGLE;HORIZON;BARO;MAG;GPS HOME;GPS HOLD;BEEPER;MISSION;LAND;";
                                             }
                                         }
@@ -404,14 +367,11 @@ public class ReplayThread : GLib.Object
                                         a.maxthrottle=1864;
                                         a.mincommand=900;
                                         a.conf_mag_declination = 0;
-                                        if (fctype == 3)
-                                        {
+                                        if (fctype == 3) {
                                             a.conf_vbatscale = 110;
                                             a.conf_vbatlevel_warn1 = 33;
                                             a.conf_vbatlevel_warn2 = 43;
-                                        }
-                                        else
-                                        {
+                                        } else {
                                             a.conf_vbatscale = 131;
                                             a.conf_vbatlevel_warn1 = 107;
                                             a.conf_vbatlevel_warn2 = 99;
@@ -423,25 +383,20 @@ public class ReplayThread : GLib.Object
                                     }
                                     break;
                                 case "armed":
-                                    if(!telem)
-                                    {
+                                    if(!telem) {
                                         var a = MSP_STATUS();
                                         armed = obj.get_boolean_member("armed");
                                         a.flag = (armed)  ? 1 : 0;
-                                        if(obj.has_member("flags"))
-                                        {
+                                        if(obj.has_member("flags")) {
                                             var flag =  obj.get_int_member("flags");
                                             a.flag |= (uint32)flag;
-                                        }
-                                        else
+                                        } else
                                             a.flag |= 4;
 
-                                        if(obj.has_member("sensors"))
-                                        {
+                                        if(obj.has_member("sensors")) {
                                             var s =  obj.get_int_member("sensors");
                                             a.sensor = (uint16)s;
-                                        }
-                                        else
+                                        } else
                                             a.sensor=(MSP.Sensors.ACC|
                                                       MSP.Sensors.MAG|
                                                       MSP.Sensors.BARO|
@@ -453,11 +408,9 @@ public class ReplayThread : GLib.Object
                                         var nb = serialise_status(a, buf);
                                         send_rec(msp,MSP.Cmds.STATUS, (uint)nb, buf);
                                     }
-                                     if(obj.has_member("telem"))
-                                     {
-                                         telem = obj.get_boolean_member("telem");
-                                     }
-
+                                    if(obj.has_member("telem")) {
+                                        telem = obj.get_boolean_member("telem");
+                                    }
                                     break;
                                 case "analog":
                                     var volts = obj.get_double_member("voltage");
@@ -725,8 +678,7 @@ public class ReplayThread : GLib.Object
             });
         return thr;
     }
-    void send_tq_frame(MWSerial msp, uint16 q)
-    {
+    void send_tq_frame(MWSerial msp, uint16 q) {
         send_rec(msp, MSP.Cmds.Tq_FRAME, 2, &q);
     }
 }

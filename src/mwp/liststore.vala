@@ -188,7 +188,8 @@ public class ListBox : GLib.Object {
     }
 
     private void update_all_wp_elevations (BingElevations.Point[] pts) {
-        new Thread<int> ("fetch-alts", () => {
+        Thread<int> thr = null;
+        thr = new Thread<int> ("fetch-alts", () => {
                 var bingelev = BingElevations.get_elevations(pts);
                 if(bingelev.length == pts.length) {
                     int j = 0;
@@ -197,6 +198,7 @@ public class ListBox : GLib.Object {
                         j++;
                     }
                 }
+                Idle.add(()=> {thr.join(); return false;});
                 return 0;
             });
     }
@@ -204,11 +206,13 @@ public class ListBox : GLib.Object {
         BingElevations.Point pts[1];
         pts[0].y = lat;
         pts[0].x = lon;
-        new Thread<int> ("fetch-alt", () => {
+        Thread<int> thr = null;
+        thr = new Thread<int> ("fetch-alt", () => {
                 var bingelev = BingElevations.get_elevations(pts);
                 if(bingelev.length == 1) {
                     set_elev(idx, bingelev[0]);
                 }
+                Idle.add(()=> {thr.join(); return false;});
                 return 0;
             });
     }

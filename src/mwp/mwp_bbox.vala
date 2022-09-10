@@ -721,7 +721,8 @@ public class  BBoxDialog : Object {
     }
 
     public void find_bbox_box(string filename, int index) {
-		new Thread<int> (null, () => {
+        Thread<int> thr = null;
+		thr = new Thread<int> (null, () => {
 				double lamin = 999;
 				double lamax = -999;
 				double lomin = 999;
@@ -824,6 +825,7 @@ public class  BBoxDialog : Object {
 				} catch (SpawnError e) {
 					print("%s\n", e.message);
 				}
+                Idle.add(()=> {thr.join(); return false;});
 				return 0;
 			});
     }

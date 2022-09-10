@@ -147,10 +147,9 @@ public class OdoView : GLib.Object {
     private string format_when(uint at) {
         string lbl;
         uint m,s;
-        if (at == 0)
+        if (at == 0) {
             lbl = "";
-        else
-        {
+        } else {
             m = at / 60;
             s = at % 60;
             lbl = "%u:%02u".printf(m,s);
@@ -1351,10 +1350,8 @@ public class ShapeDialog : GLib.Object {
     }
 }
 
-public class RadioStatus : GLib.Object
-{
-    private enum Radio_modes
-    {
+public class RadioStatus : GLib.Object {
+    private enum Radio_modes {
         UNDEF = -1,
         RSSI = 1,
         THREEDR = 0
@@ -1377,8 +1374,7 @@ public class RadioStatus : GLib.Object
 	private Gtk.Label rssi_title;
     private Gtk.LevelBar bar;
 
-    public RadioStatus(Gtk.Builder builder)
-    {
+    public RadioStatus(Gtk.Builder builder) {
         mode = Radio_modes.UNDEF;
 
         grid0 = builder.get_object ("grid4a") as Gtk.Grid;
@@ -1682,14 +1678,12 @@ public class NavStatus : GLib.Object
                _n.nav_error != 6 &&
                _n.nav_error != 7 &&
                _n.nav_error != 8 &&
-               _n.nav_error != xnerr)
-            {
+               _n.nav_error != xnerr) {
                 mt.message(AudioThread.Vox.NAV_ERR,true);
             }
 
             if((_n.nav_mode != xnmode) || (_n.nav_mode !=0 && _n.nav_mode !=6
-                                           && _n.wp_number != xnwp))
-            {
+                                           && _n.wp_number != xnwp)) {
                 if((NavStatus.say_state & SAY_WHAT.Nav) == SAY_WHAT.Nav)
                     mt.message(AudioThread.Vox.NAV_STATUS,true);
             }
