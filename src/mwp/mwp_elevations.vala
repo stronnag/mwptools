@@ -2,18 +2,17 @@
 
 public class BingElevations : Object {
     private const string MAP="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-";
-    public struct Point
-    {
+    public struct Point {
         double y;
         double x;
     }
 
-    private static int [] parse_bing_elev(string s)
-    {
+    public signal void elevations(int[]e);
+
+    private static int [] parse_bing_elev(string s) {
         int []elevs= {};
         if(s.length > 0)
-            try
-        {
+            try {
             var parser = new Json.Parser ();
             parser.load_from_data (s);
             var root = parser.get_root ().get_object ();
@@ -36,13 +35,11 @@ public class BingElevations : Object {
         return elevs;
     }
 
-    private static string pca (Point []points)
-    {
+    private static string pca (Point []points) {
         StringBuilder sb = new StringBuilder();
         int64 longitude = 0;
         int64 latitude = 0;
-        foreach(var p in points)
-        {
+        foreach(var p in points) {
             int64 newLatitude =(int64)Math.round(p.y * 100000);
             int64 newLongitude = (int64)Math.round(p.x * 100000);
 
@@ -53,8 +50,7 @@ public class BingElevations : Object {
             dy = (dy << 1) ^ (dy >> 31);
             dx = (dx << 1) ^ (dx >> 31);
             var index = ((dy + dx) * (dy + dx + 1) / 2) + dy;
-            while (index > 0)
-            {
+            while (index > 0) {
                 var rem = index & 31;
                 index = (index - rem) / 32;
                 if (index > 0) rem += 32;
@@ -65,40 +61,65 @@ public class BingElevations : Object {
         return sb.str;
     }
 
-    private static string get_json(Point []pts)
-    {
-        string s = null;
-        StringBuilder sb = new StringBuilder("https://dev.virtualearth.net/REST/V1/Elevation/List/?key=");
-        sb.append((string)Base64.decode(BingMap.KENC));
-        var pstr = "points=%s".printf(pca(pts));
-        var session = new Soup.Session ();
-        var msg = new Soup.Message ("POST", sb.str);
-        msg.request_headers.append("Accept", "*/*");
-        msg.request_headers.append ("Content-Type", "text/plain; charset=utf-8");
-        msg.request_headers.append ("Content-Length", pstr.length.to_string());
-        msg.set_request("text/plain", Soup.MemoryUse.TEMPORARY, pstr.data);
-        session.send_message (msg);
-        if ( msg.status_code == 200)
-        {
-            s = (string) msg.response_body.flatten ().data;
-        }
-        return s;
-    }
-
-    public static int []get_elevations(Point []pts)
-    {
+    public static async int[] get_elevations(Point []pts) {
         int []elevs={};
-        var s  = get_json(pts);
-        if (s != null) {
-            elevs = parse_bing_elev(s);
-        }
+        try {
+            StringBuilder sb = new StringBuilder("https://dev.virtualearth.net/REST/V1/Elevation/List/?key=");
+            sb.append((string)Base64.decode(BingMap.KENC));
+            var pstr = "points=%s".printf(pca(pts));
+            var session = new Soup.Session ();
+            var msg = new Soup.Message ("POST", sb.str);
+            msg.request_headers.append("Accept", "*/*");
+            msg.request_headers.append ("Content-Type", "text/plain; charset=utf-8");
+            msg.request_headers.append ("Content-Length", pstr.length.to_string());
+            msg.set_request("text/plain", Soup.MemoryUse.TEMPORARY, pstr.data);
+            var resp = yield session.send_async(msg);
+            if (msg.status_code == Soup.Status.OK) {
+                var data = new uint8[4096+8*pts.length];
+                yield resp.read_all_async(data, GLib.Priority.DEFAULT, null, null);
+                elevs = parse_bing_elev((string)data);
+            }
+        } catch (Error e) {stderr.printf("Get elevs : %s\n", e.message);}
         return elevs;
     }
 }
 
-/****************
-int main (string[]? args)
-{
+#if TEST
+// valac -D TEST --pkg libsoup-2.4 --pkg json-glib-1.0 -X -lm -o /tmp/melevtest   mwp_elevations.vala
+namespace BingMap {
+    public string KENC;
+}
+
+namespace MWPLog {
+    void message(string format, ...) {
+        var args = va_list();
+        var now = new DateTime.now_local ();
+        StringBuilder sb = new StringBuilder();
+        sb.append(now.format("%T.%f"));
+        sb.append_c(' ');
+        sb.append_vprintf(format, args);
+        stderr.puts(sb.str);
+    }
+}
+
+
+void fetch_points(BingElevations.Point []pts) {
+    MWPLog.message("Click!\n");
+    BingElevations.get_elevations.begin(pts, (obj, res) => {
+            var elevs = BingElevations.get_elevations.end(res);
+            if(elevs.length > 0) {
+                MWPLog.message("[ ");
+                foreach (var e in elevs) {
+                    stdout.printf("%d ", e);
+                }
+                stdout.printf("]\n");
+            }
+        });
+}
+
+public static int main(string?[] args) {
+    BingMap.KENC=args[1];
+
     BingElevations.Point []pts = {
         {54.1246100260987, -4.73209477294404},
         {54.1256398671789, -4.7353658418433},
@@ -116,14 +137,25 @@ int main (string[]? args)
         {54.1259340632735,  -4.71353626140626}
     };
 
-    var elevs = BingElevations.get_elevations(pts, 0);
-    {
-        foreach (var e in elevs)
-        {
-            stdout.printf("%d ", e);
-        }
-        stdout.printf("\n");
-    }
+    Gtk.init (ref args);
+    var win = new Gtk.Window ();
+    win.set_title ("Async Functions Test");
+    win.set_default_size (800,100);
+    win.set_border_width (2);
+    win.destroy.connect (Gtk.main_quit);
+    var spin = new Gtk.Spinner();
+    var button = new Gtk.Button.with_label("Elevs");
+    button.clicked.connect(() => {
+            fetch_points(pts);
+        });
+
+    var vbox = new Gtk.Box (Gtk.Orientation.VERTICAL,2);
+
+    vbox.pack_start (spin, true, true, 0);
+    vbox.pack_start (button, false, false, 0);
+    win.add(vbox);
+    spin.start();
+    win.show_all();
+    Gtk.main ();
     return 0;
 }
-*********************/

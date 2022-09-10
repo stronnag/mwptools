@@ -187,33 +187,29 @@ public class ListBox : GLib.Object {
         return;
     }
 
+
     private void update_all_wp_elevations (BingElevations.Point[] pts) {
-        Thread<int> thr = null;
-        thr = new Thread<int> ("fetch-alts", () => {
-                var bingelev = BingElevations.get_elevations(pts);
-                if(bingelev.length == pts.length) {
+        BingElevations.get_elevations.begin(pts, (obj, res) => {
+                var bingelevs = BingElevations.get_elevations.end(res);
+                if(bingelevs.length == pts.length) {
                     int j = 0;
-                    foreach(var e in bingelev) {
+                    foreach(var e in bingelevs) {
                         elevs[j].elev = e;
                         j++;
                     }
                 }
-                Idle.add(()=> {thr.join(); return false;});
-                return 0;
             });
     }
+
     private void update_single_elevation (int idx, double lat, double lon) {
         BingElevations.Point pts[1];
         pts[0].y = lat;
         pts[0].x = lon;
-        Thread<int> thr = null;
-        thr = new Thread<int> ("fetch-alt", () => {
-                var bingelev = BingElevations.get_elevations(pts);
-                if(bingelev.length == 1) {
-                    set_elev(idx, bingelev[0]);
+        BingElevations.get_elevations.begin(pts, (obj, res) => {
+                var bingelevs = BingElevations.get_elevations.end(res);
+                if(bingelevs.length == 1) {
+                    set_elev(idx, bingelevs[0]);
                 }
-                Idle.add(()=> {thr.join(); return false;});
-                return 0;
             });
     }
 
@@ -817,28 +813,23 @@ public class ListBox : GLib.Object {
         } else {
             var pts = get_geo_points_for_mission(posref);
             if(pts.length > 0) {
-                Thread<int> thr = null;
-                thr = new Thread<int> ("fetch-alt", () => {
-                        var elevs = BingElevations.get_elevations(pts);
-                        Idle.add(() => {
-                                if (elevs.length > 0) {
-                                    if ((posref & (POSREF.LANDA|POSREF.LANDR)) != 0) {
-                                        if((posref & POSREF.MANUAL) != 0) {
-                                            var tmp = elevs[0];
-                                            elevs[0] = altmodedialog.get_manual();
-                                            elevs += tmp;
-                                        }
-                                        update_land_offset(elevs);
-                                    } else {
-                                        update_altmode(amode, elevs[0]);
-                                    }
+                BingElevations.get_elevations.begin(pts, (obj, res) => {
+                        var bingelevs = BingElevations.get_elevations.end(res);
+                        if (bingelevs.length > 0) {
+                            if ((posref & (POSREF.LANDA|POSREF.LANDR)) != 0) {
+                                if((posref & POSREF.MANUAL) != 0) {
+                                    var tmp = bingelevs[0];
+                                    bingelevs[0] = altmodedialog.get_manual();
+                                    bingelevs += tmp;
                                 }
-                                if((act & 2) == 2)
-                                    unset_selection();
-                                thr.join();
-                                return false;
-                            });
-                        return 0;
+                                update_land_offset(bingelevs);
+                            } else {
+                                update_altmode(amode, bingelevs[0]);
+                            }
+                        }
+                        if((act & 2) == 2) {
+                            unset_selection();
+                        }
                     });
             } else {
                 if((act & 2) == 2)
