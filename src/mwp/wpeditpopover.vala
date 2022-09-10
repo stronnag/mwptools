@@ -69,7 +69,6 @@ public class WPPopEdit : Gtk.Dialog {
         add_button("Apply", Gtk.ResponseType.OK);
         set_position(Gtk.WindowPosition.MOUSE);
         set_transient_for(window);
-//        modal = true;
         set_keep_above(true);
         build_box();
         var content = get_content_area ();
@@ -273,16 +272,6 @@ public class WPPopEdit : Gtk.Dialog {
                 landcb = new Gtk.CheckButton.with_label("& Land");
                 landcb.active = (wpt.rthland == 1);
                 grid.attach (landcb, 1, j);
-/*
-                rthcb.clicked.connect(() => {
-                        if(rthcb.active)
-                            jumpcb.active = false;
-                    });
-                jumpcb.clicked.connect(() => {
-                        if(jumpcb.active)
-                            rthcb.active = false;
-                    });
-*/
                 amslcb.clicked.connect(() => {
                         if(wpt.homeelev != ListBox.EvConst.UNAVAILABLE) {
                             var na = int.parse(altent.text);

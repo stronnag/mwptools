@@ -170,7 +170,7 @@ public class ListBox : GLib.Object {
         foreach(var e in elevs) {
             if (e.idx == no) {
                 elev = e.elev;
-                return true;
+                return (elev != EvConst.UNAVAILABLE);
             }
         }
         return false;
@@ -532,8 +532,9 @@ public class ListBox : GLib.Object {
                 m.action == MSP.Action.POSHOLD_TIME ||
                 m.action == MSP.Action.SET_POI ||
                 m.action == MSP.Action.LAND)) {
-                elevs += ElevData(){idx = lastid, elev = 0};
                 pts += BingElevations.Point(){y=m.lat,x=m.lon};
+                elevs += ElevData(){idx = lastid,  elev = EvConst.UNAVAILABLE};
+
             }
         }
         if(ms.homex != 0 && ms.homey != 0) {
@@ -541,7 +542,7 @@ public class ListBox : GLib.Object {
             fhome.set_fake_home(ms.homey, ms.homex);
             fhome.show_fake_home(true);
             pts += BingElevations.Point(){y=ms.homey,x=ms.homex};
-            elevs += ElevData(){idx = EvConst.HOME, elev = 0};
+            elevs += ElevData(){idx = EvConst.HOME, elev = EvConst.UNAVAILABLE};
         }
 
         if(pts.length > 0) {
