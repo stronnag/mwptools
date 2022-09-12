@@ -122,7 +122,11 @@ public class WPPopEdit : Gtk.Dialog {
 
     private void extract_basic(MSP.Action act, ref EditItem wpt) {
         wpt.alt = int.parse(altent.text);
-        wpt.p3 = (amslcb.active) ? 1 : 0;
+        if (amslcb.active) {
+            wpt.p3 |= 1;
+        } else {
+            wpt.p3 &= ~1;
+        }
         wpt.flag = (fbhcb.active) ? 72 : 0;
 
         if(act == MSP.Action.POSHOLD_TIME) {
@@ -214,7 +218,7 @@ public class WPPopEdit : Gtk.Dialog {
             altent = new QEntry(txt, 6, Gtk.InputPurpose.DIGITS);
             grid.attach (altent, 1, j);
             amslcb = new Gtk.CheckButton.with_label("AMSL");
-            amslcb.active = (wpt.p3 == 1);
+            amslcb.active = ((wpt.p3 & 1) == 1);
             grid.attach (amslcb, 2, j);
             fbhcb = new Gtk.CheckButton.with_label("FBH");
             fbhcb.active = (wpt.flag == 72);
