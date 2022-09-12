@@ -791,7 +791,7 @@ public class ListBox : GLib.Object {
             if (res) {
                 list_model.get_value (iv, WY_Columns.INT3, out val);
                 int p3 = (int)val;
-                if (p3 == 0)
+                if ((p3 & 1) == 0)
                     list_model.set_value (iv, WY_Columns.INT2, (elevs[1] - elevs[0]));
                 else
                     list_model.set_value (iv, WY_Columns.INT2, elevs[1]);
@@ -1590,7 +1590,7 @@ public class ListBox : GLib.Object {
             (MSP.Action)val != MSP.Action.JUMP) {
             list_model.get_value (iter, WY_Columns.INT3, out val);
             var i3 = (int)val;
-            if (i3 == 0)
+            if ((i3 & 1) == 0)
                 ra++;
             else
                 aa++;
@@ -1674,7 +1674,7 @@ public class ListBox : GLib.Object {
                 continue;
             list_model.get_value (iter, WY_Columns.INT3, out val);
             var i3 = (int)val;
-            if (i3 == xamode) {
+            if ((i3 & 1) == xamode) {
                 list_model.get_value (iter, WY_Columns.ALT, out val);
                 var ival = (int)val;
                 if (amode == ALTMODES.RELATIVE)
@@ -1682,7 +1682,7 @@ public class ListBox : GLib.Object {
                 else
                     ival += refalt;
                 list_model.set_value (iter, WY_Columns.ALT, ival);
-                list_model.set_value (iter, WY_Columns.INT3, amode);
+                list_model.set_value (iter, WY_Columns.INT3, (amode & 1));
 
                 if (act == MSP.Action.LAND) {
                     list_model.get_value (iter, WY_Columns.INT2, out val);
