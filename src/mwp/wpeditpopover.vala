@@ -62,6 +62,7 @@ public class WPPopEdit : Gtk.Dialog {
     private QEntry jump2ent;
     private Gtk.CheckButton rthcb;
     private Gtk.CheckButton landcb;
+    private Gtk.CheckButton wpaction[4];
 
     public WPPopEdit(Gtk.Window? window, string posit) {
         pos = posit;
@@ -122,10 +123,10 @@ public class WPPopEdit : Gtk.Dialog {
 
     private void extract_basic(MSP.Action act, ref EditItem wpt) {
         wpt.alt = int.parse(altent.text);
+        wpt.p3 = 0;
+
         if (amslcb.active) {
             wpt.p3 |= 1;
-        } else {
-            wpt.p3 &= ~1;
         }
         wpt.flag = (fbhcb.active) ? 72 : 0;
 
@@ -155,6 +156,12 @@ public class WPPopEdit : Gtk.Dialog {
                 wpt.optional |= WPEditMask.RTH;
             }
             wpt.rthland = (landcb.active) ? 1 : 0;
+        }
+
+        for(int k = 0; k < 4; k++) {
+            if (wpaction[k].active) {
+                wpt.p3 |= (1<<k+1);
+            }
         }
     }
 
@@ -291,6 +298,12 @@ public class WPPopEdit : Gtk.Dialog {
                         }
                     });
             }
+        }
+        j++;
+        for(int k = 0; k < 4; k++) {
+            wpaction[k] = new Gtk.CheckButton.with_label("Action #%d".printf(k+1));
+            grid.attach (wpaction[k], k, j);
+            wpaction[k].active = ((wpt.p3 & (1<<k+1)) != 0);
         }
     }
     void set_alt_border(bool flag) {
