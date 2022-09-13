@@ -298,12 +298,12 @@ public class WPPopEdit : Gtk.Dialog {
                         }
                     });
             }
-        }
-        j++;
-        for(int k = 0; k < 4; k++) {
-            wpaction[k] = new Gtk.CheckButton.with_label("Action #%d".printf(k+1));
-            grid.attach (wpaction[k], k, j);
-            wpaction[k].active = ((wpt.p3 & (1<<k+1)) != 0);
+            j++;
+            for(int k = 0; k < 4; k++) {
+                wpaction[k] = new Gtk.CheckButton.with_label("Action #%d".printf(k+1));
+                grid.attach (wpaction[k], k, j);
+                wpaction[k].active = ((wpt.p3 & (1<<k+1)) != 0);
+            }
         }
     }
     void set_alt_border(bool flag) {
