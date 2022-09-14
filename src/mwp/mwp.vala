@@ -2498,11 +2498,6 @@ public class MWP : Gtk.Application {
 
         swd = new SwitchDialog(builder, window);
         dirtyd = new DirtyDialog(builder, window);
-        dirtyd.get_value.connect((id) => {
-                if (id == 0) {
-                    on_file_save_as();
-                }
-            });
 
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
         about.set_transient_for(window);
@@ -5833,7 +5828,7 @@ case 0:
                     MWPLog.message("switch val == %08x (%08x)\n", bxflag, lmask);
                     if(Craft.is_mr(vi.mrtype) && ((bxflag & lmask) == 0) && robj == null) {
                         if(conf.checkswitches)
-                            swd.run(/*OK*/);
+                            swd.runner();
                     }
                     if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
                         queue_cmd(MSP.Cmds.NAV_CONFIG,null,0);
@@ -5854,10 +5849,8 @@ case 0:
                 MWPLog.message("Timer cycle for %d items, %lu => %lu bytes\n",
                                nreqs,qsize,reqsize);
 
-                if(nopoll == false && nreqs > 0)
-                {
-                    if  (replayer == Player.NONE)
-                    {
+                if(nopoll == false && nreqs > 0) {
+                    if  (replayer == Player.NONE) {
                         MWPLog.message("Start poller\n");
                         tcycle = 0;
                         lastm = nticks;
@@ -5875,15 +5868,11 @@ case 0:
                     ri |= Craft.RMIcon.WP;
                 if(ri != 0 && craft != null)
                     craft.remove_special(ri);
-            }
-            else
-            {
-                if(gpscnt != 0 && ((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS))
-                {
+            } else {
+                if(gpscnt != 0 && ((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)) {
                     build_pollreqs();
                 }
-                if(sensor != xsensor)
-                {
+                if(sensor != xsensor) {
                     update_sensor_array();
                     xsensor = sensor;
                 }
@@ -5893,8 +5882,7 @@ case 0:
             uint8 ltmflags = 0;
             var mchg = bxflag != xbits;
 
-            if((bxflag & lmask) != (xbits & lmask))
-            {
+            if((bxflag & lmask) != (xbits & lmask)) {
                 report_bits(bxflag);
             }
 
@@ -5905,12 +5893,10 @@ case 0:
             else
                 ltmflags = MSP.LTM.acro;
 
-            if(armed != 0)
-            {
+            if(armed != 0) {
                 if ((rth_mask != 0) &&
                     ((bxflag & rth_mask) != 0) &&
-                    ((xbits & rth_mask) == 0))
-                {
+                    ((xbits & rth_mask) == 0)) {
                     MWPLog.message("set RTH on %08x %u %ds\n", bxflag,bxflag,
                                    (int)duration);
                     want_special |= POSMODE.RTH;
@@ -5918,8 +5904,7 @@ case 0:
                 }
                 else if ((ph_mask != 0) &&
                          ((bxflag & ph_mask) != 0) &&
-                         ((xbits & ph_mask) == 0))
-                {
+                         ((xbits & ph_mask) == 0)) {
                     MWPLog.message("set PH on %08x %u %ds\n", bxflag, bxflag,
                                    (int)duration);
                     want_special |= POSMODE.PH;
@@ -5957,8 +5942,7 @@ case 0:
             {
                 if(mi.action != MSP.Action.RTH &&
                    mi.action != MSP.Action.JUMP &&
-                   mi.action != MSP.Action.SET_HEAD)
-                {
+                   mi.action != MSP.Action.SET_HEAD) {
                     if (mi.lat > ms.maxy)
                         ms.maxy = mi.lat;
                     if (mi.lon > ms.maxx)
@@ -9582,7 +9566,10 @@ case 0:
 			is_dirty = true;
 		}
 		if(is_dirty) {
-			dirtyd.get_choice();
+			var id = dirtyd.get_choice();
+            if (id == 0) {
+                on_file_save_as();
+            }
 		}
     }
 

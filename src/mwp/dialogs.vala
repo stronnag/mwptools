@@ -1005,27 +1005,23 @@ public class SwitchDialog : GLib.Object {
             });
     }
 
-    public void run() {
+    public void runner() {
         dialog.show_all();
     }
 }
 
 public class DirtyDialog : GLib.Object {
     private Gtk.Dialog dialog;
-
-    public signal void get_value(int id);
     public DirtyDialog(Gtk.Builder builder, Gtk.Window? w=null) {
         dialog = builder.get_object ("dirty_mission_dialog") as Gtk.Dialog;
         dialog.set_transient_for(w);
         dialog.modal = true;
     }
-
-    public void get_choice() {
+    public int get_choice() {
         dialog.show_all();
-        dialog.response.connect((id) => {
-                get_value(id);
-                dialog.hide();
-            });
+        var id = dialog.run(/*force run here*/);
+        dialog.hide();
+        return id;
     }
 }
 
@@ -1303,8 +1299,8 @@ public class ShapeDialog : GLib.Object {
                         get_values(p);
                     }
                 }
+                dialog.hide();
             });
-        dialog.hide();
     }
 
     public static ShapePoint[] mkshape(double clat, double clon,double radius,
