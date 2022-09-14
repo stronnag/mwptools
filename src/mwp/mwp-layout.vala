@@ -19,23 +19,18 @@ using Gtk;
 using Gdl;
 using Xml;
 
-class LayReader : Object
-{
-    public static int read_xml_file(string path)
-    {
+class LayReader : Object {
+    public static int read_xml_file(string path) {
         int ncount  = 0;
         Parser.init ();
         Xml.Doc* doc = Parser.parse_file (path);
-        if (doc == null)
-        {
+        if (doc == null) {
             stderr.printf ("File %s not found or permissions missing\n", path);
             return -1;
         }
         Xml.Node* root = doc->get_root_element ();
-        if (root != null)
-        {
-            if (root->name.down() == "dock-layout")
-            {
+        if (root != null) {
+            if (root->name.down() == "dock-layout") {
                 parse_node (root, ref ncount);
             }
         }
@@ -155,10 +150,8 @@ class LayMan : Object
         return ok;
     }
 
-    public void save_config()
-    {
-        if(layout.is_dirty())
-        {
+    public void save_config() {
+        if(layout.is_dirty()) {
             layout.save_layout("mwp");
         }
         try {
@@ -173,23 +166,20 @@ class LayMan : Object
                 FileUtils.get_contents(of, out lxml);
                 FileUtils.set_contents(fn, lxml);
                 FileUtils.remove(of);
-            }
-            else
-            {
+            } else {
                 MWPLog.message("Failed to save layout, remains in %s\n",
                                of);
             }
         } catch {}
     }
 
-    public void save ()
-    {
+    public void save () {
         var dialog = new Dialog.with_buttons ("New Layout", null,
                                               DialogFlags.MODAL |
                                               DialogFlags.DESTROY_WITH_PARENT,
                                               "Cancel", ResponseType.CANCEL,
                                               "OK", ResponseType.OK);
-
+        dialog.modal = true;
         var hbox = new Box (Orientation.HORIZONTAL, 8);
         hbox.border_width = 8;
         var content = dialog.get_content_area ();
@@ -202,13 +192,13 @@ class LayMan : Object
         hbox.pack_start (entry, true, true, 0);
 
         hbox.show_all ();
-        var response = dialog.run ();
-        if (response == ResponseType.OK)
-        {
-            layname = entry.text;
-            save_config();
-        }
-        dialog.destroy ();
+        dialog.response.connect((response) => {
+                if (response == ResponseType.OK) {
+                    layname = entry.text;
+                    save_config();
+                }
+                dialog.destroy();
+            });
     }
 
     private string[] get_layout_names(string dir, string typ=".xml")
@@ -237,14 +227,16 @@ class LayMan : Object
         return files;
     }
 
-    public string restore ()
-    {
+    public signal void get_value(string s);
+
+    public void restore () {
         var dialog = new Dialog.with_buttons ("Restore", null,
                                       DialogFlags.MODAL |
                                               DialogFlags.DESTROY_WITH_PARENT,
                                               "Cancel", ResponseType.CANCEL,
                                               "OK", ResponseType.OK);
 
+        dialog.modal = true;
         Box box = new Box (Gtk.Orientation.VERTICAL, 0);
         var content = dialog.get_content_area ();
         content.pack_start (box, false, false, 0);
@@ -253,14 +245,12 @@ class LayMan : Object
         RadioButton b = null;
         bool found = false;
 
-        foreach (var s in get_layout_names(confdir))
-        {
+        foreach (var s in get_layout_names(confdir)) {
             var button = new Gtk.RadioButton.with_label_from_widget (b, s);
             if(b == null)
                 b = button;
             box.pack_start (button, false, false, 0);
-            if(s == layname)
-            {
+            if(s == layname) {
                 button.set_active(true);
                 found = true;
             }
@@ -274,12 +264,13 @@ class LayMan : Object
             id = layname;
 
         box.show_all ();
-        var response = dialog.run ();
-        if (response == ResponseType.OK) {
-            layname = id;
-            load_init();
-        }
-        dialog.destroy ();
-        return id;
+        dialog.show_all();
+        dialog.response.connect((response) => {
+                if (response == ResponseType.OK) {
+                    layname = id;
+                    load_init();
+                }
+                dialog.destroy ();
+            });
     }
 }

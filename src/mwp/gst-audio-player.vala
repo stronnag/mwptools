@@ -59,7 +59,7 @@ public static int main (string[] args) {
 				});
 			return false;
 		});
-	loop.run();
+	loop.run(/* */);
 	return 0;
 }
 #endif

@@ -97,7 +97,7 @@ public class GstMonitor : Gst.Object {
                     print("GST: \"%s\" %s <%s>\n", a, d.displayname, d.devicename);
                 });
             dm.setup_device_monitor();
-            new GLib.MainLoop().run();
+            new GLib.MainLoop().run(/* */);
             return 0;
         }
 #endif

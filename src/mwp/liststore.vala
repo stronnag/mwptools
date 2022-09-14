@@ -869,8 +869,133 @@ public class ListBox : GLib.Object {
             });
 
         Gtk.ListStore combo_model = new Gtk.ListStore (1, typeof (string));
-        Gtk.TreeIter iter;
 
+        shapedialog.get_values.connect((pts) => {
+                foreach (ShapeDialog.ShapePoint p in pts) {
+                    insert_item(MSP.Action.WAYPOINT, p.lat, p.lon);
+                }
+                calc_mission();
+            });
+
+        deltadialog.get_values.connect ((dlat, dlon, dalt) => {
+                var dset = DELTAS.NONE;
+                if(dlat != 0.0)
+                    dset |= DELTAS.LAT;
+                if(dlon != 0.0)
+                    dset |= DELTAS.LON;
+                if(dalt != 0)
+                    dset |= DELTAS.ALT;
+
+                if(dset != DELTAS.NONE) {
+                    foreach (var t in list_selected_refs()) {
+                        Gtk.TreeIter iter;
+                        GLib.Value cell;
+                        var path = t.get_path ();
+                        list_model.get_iter (out iter, path);
+                        list_model.get_value (iter, WY_Columns.TYPE, out cell);
+                        var act = MSP.lookup_name((string)cell);
+                        if (act == MSP.Action.RTH ||
+                            act == MSP.Action.JUMP ||
+                            act == MSP.Action.SET_HEAD)
+                            continue;
+
+                        list_model.get_value (iter, WY_Columns.LAT, out cell);
+                        var alat = (double)cell;
+                        list_model.get_value (iter, WY_Columns.LON, out cell);
+                        var alon = (double)cell;
+                        double dnm;
+
+                        if((dset & DELTAS.LAT) == DELTAS.LAT) {
+                            dnm = dlat / 1852.0;
+                            Geo.posit(alat,alon,0.0,dnm,out alat, out alon,true);
+                        }
+
+                        if((dset & DELTAS.LON) == DELTAS.LON) {
+                            dnm = dlon / 1852.0;
+                            Geo.posit(alat,alon,90.0,dnm,out alat, out alon,true);
+                        }
+
+                        if((dset & DELTAS.POS) != DELTAS.NONE) {
+                            list_model.set_value (iter, WY_Columns.LAT, alat);
+                            list_model.set_value (iter, WY_Columns.LON, alon);
+                        }
+
+                        if((dset & DELTAS.ALT) == DELTAS.ALT) {
+                            list_model.get_value (iter, WY_Columns.ALT, out cell);
+                            var ival = (int)cell;
+                            ival += dalt;
+                            list_model.set_value (iter, WY_Columns.ALT, ival);
+                        }
+                    }
+                    renumber_steps(list_model);
+                }
+            });
+
+        speeddialog.get_value.connect((dspd,flag) => {
+                int cnt = 0;
+                foreach (var t in list_selected_refs()) {
+                    Gtk.TreeIter iter;
+                    GLib.Value cell;
+                    var path = t.get_path ();
+                    list_model.get_iter (out iter, path);
+                    list_model.get_value (iter, WY_Columns.ACTION, out cell);
+                    var act = (MSP.Action)cell;
+                    if (act == MSP.Action.RTH ||
+                        act == MSP.Action.JUMP ||
+                        act == MSP.Action.SET_POI ||
+                        act == MSP.Action.SET_HEAD)
+                        continue;
+
+                    var colid = (act == MSP.Action.POSHOLD_TIME) ? WY_Columns.INT2 :
+                    WY_Columns.INT1;
+
+                    if(flag == false) {
+                        list_model.get_value (iter, colid, out cell);
+                        if ((double)cell != 0)
+                            continue;
+                    }
+                    list_model.set_value (iter, colid, dspd);
+                    cnt++;
+                }
+                if(cnt != 0) {
+                    calc_mission();
+                }
+            });
+
+        altdialog.get_value.connect((dalt,flag) => {
+                foreach (var t in list_selected_refs()) {
+                    Gtk.TreeIter iter;
+                    GLib.Value cell;
+                    var path = t.get_path ();
+                    list_model.get_iter (out iter, path);
+                    list_model.get_value (iter, WY_Columns.ACTION, out cell);
+                    var act = (MSP.Action)cell;
+                    if (act == MSP.Action.RTH ||
+                        act == MSP.Action.JUMP ||
+                        act == MSP.Action.SET_HEAD)
+                        continue;
+                    if(flag == false) {
+                        list_model.get_value (iter, WY_Columns.ALT, out cell);
+                        if ((int)cell != 0)
+                            continue;
+                    }
+                    list_model.set_value (iter, WY_Columns.ALT, dalt);
+                }
+            });
+
+        wprepdialog.get_values.connect((start, end, number) => {
+                var np = start-1 +(end-start+1)*number+ list_model.iter_n_children(null)-end;
+                if(start < end && number > 0 && np < 121) {
+                    var m = to_mission();
+                    WPReplicator.replicate(m, start, end, number);
+                    import_mission(m);
+                    mp.markers.add_list_store(this);
+                } else {
+                    MWPLog.message("Invalid replication %u %u %u (%u)\n", start, end, number, np);
+                }
+            });
+
+        Gtk.TreeIter iter;
         for(var n = MSP.Action.WAYPOINT; n <= MSP.Action.LAND; n += (MSP.Action)1) {
             combo_model.append (out iter);
             combo_model.set (iter, 0, MSP.get_wpname(n));
@@ -1558,7 +1683,6 @@ public class ListBox : GLib.Object {
     }
 
     private void add_shapes() {
-        ShapeDialog.ShapePoint[] pts;
         Gtk.TreeIter iter;
         Value val;
         double lat,lon;
@@ -1575,11 +1699,7 @@ public class ListBox : GLib.Object {
         lat = (double)val;
         list_model.get_value (iter, WY_Columns.LON, out val);
         lon = (double)val;
-        pts = shapedialog.get_points(lat,lon);
-        foreach (ShapeDialog.ShapePoint p in pts) {
-            insert_item(MSP.Action.WAYPOINT, p.lat, p.lon);
-        }
-        calc_mission();
+        shapedialog.get_points(lat,lon);
     }
 
     private void alt_mode_for_iter(Gtk.TreeIter iter, ref int ra, ref int aa) {
@@ -1730,64 +1850,7 @@ public class ListBox : GLib.Object {
     }
 
     private void do_deltas() {
-        double dlat, dlon;
-        int dalt;
-        var dset = DELTAS.NONE;
-
-        if(deltadialog.get_deltas(out dlat, out dlon, out dalt) == true) {
-            if(dlat != 0.0)
-                dset |= DELTAS.LAT;
-            if(dlon != 0.0)
-                dset |= DELTAS.LON;
-            if(dalt != 0)
-                dset |= DELTAS.ALT;
-
-            if(dset != DELTAS.NONE) {
-                foreach (var t in list_selected_refs()) {
-                    Gtk.TreeIter iter;
-                    GLib.Value cell;
-                    var path = t.get_path ();
-                    list_model.get_iter (out iter, path);
-
-                    list_model.get_value (iter, WY_Columns.TYPE, out cell);
-                    var act = MSP.lookup_name((string)cell);
-
-                    if (act == MSP.Action.RTH ||
-                        act == MSP.Action.JUMP ||
-                        act == MSP.Action.SET_HEAD)
-                        continue;
-
-                    list_model.get_value (iter, WY_Columns.LAT, out cell);
-                    var alat = (double)cell;
-                    list_model.get_value (iter, WY_Columns.LON, out cell);
-                    var alon = (double)cell;
-                    double dnm;
-
-                    if((dset & DELTAS.LAT) == DELTAS.LAT) {
-                        dnm = dlat / 1852.0;
-                        Geo.posit(alat,alon,0.0,dnm,out alat, out alon,true);
-                    }
-
-                    if((dset & DELTAS.LON) == DELTAS.LON) {
-                        dnm = dlon / 1852.0;
-                        Geo.posit(alat,alon,90.0,dnm,out alat, out alon,true);
-                    }
-
-                    if((dset & DELTAS.POS) != DELTAS.NONE) {
-                        list_model.set_value (iter, WY_Columns.LAT, alat);
-                        list_model.set_value (iter, WY_Columns.LON, alon);
-                    }
-
-                    if((dset & DELTAS.ALT) == DELTAS.ALT) {
-                        list_model.get_value (iter, WY_Columns.ALT, out cell);
-                        var ival = (int)cell;
-                        ival += dalt;
-                        list_model.set_value (iter, WY_Columns.ALT, ival);
-                    }
-                }
-                renumber_steps(list_model);
-            }
-        }
+        deltadialog.get_deltas();
     }
 
     private void make_menu() {
@@ -1996,19 +2059,7 @@ public class ListBox : GLib.Object {
                 }
             }
         }
-
-        if(wprepdialog.get_rep(ref start, ref end, ref number) == true) {
-            var np = start-1 +(end-start+1)*number+ list_model.iter_n_children(null)-end;
-
-            if(start < end && number > 0 && np < 121) {
-                var m = to_mission();
-                WPReplicator.replicate(m, start, end, number);
-                import_mission(m);
-                mp.markers.add_list_store(this);
-            } else {
-                MWPLog.message("Invalid replication %u %u %u (%u)\n", start, end, number, np);
-            }
-        }
+        wprepdialog.get_rep(start, end, number);
     }
 
     private void set_terrain_item(bool state) {
@@ -2594,62 +2645,11 @@ public class ListBox : GLib.Object {
     }
 
     public void set_alts(bool flag) {
-        double dalt;
-
-        if(altdialog.get_alt(out dalt) == true) {
-            foreach (var t in list_selected_refs()) {
-                Gtk.TreeIter iter;
-                GLib.Value cell;
-                var path = t.get_path ();
-                list_model.get_iter (out iter, path);
-                list_model.get_value (iter, WY_Columns.ACTION, out cell);
-                var act = (MSP.Action)cell;
-                if (act == MSP.Action.RTH ||
-                    act == MSP.Action.JUMP ||
-                    act == MSP.Action.SET_HEAD)
-                    continue;
-                if(flag == false) {
-                    list_model.get_value (iter, WY_Columns.ALT, out cell);
-                    if ((int)cell != 0)
-                        continue;
-                }
-                list_model.set_value (iter, WY_Columns.ALT, dalt);
-            }
-        }
+        altdialog.get_alt(flag);
     }
 
     public void set_speeds(bool flag) {
-        double dspd = MWP.conf.nav_speed;
-        int cnt = 0;
-        if(speeddialog.get_speed(out dspd) == true) {
-            foreach (var t in list_selected_refs()) {
-                Gtk.TreeIter iter;
-                GLib.Value cell;
-                var path = t.get_path ();
-                list_model.get_iter (out iter, path);
-                list_model.get_value (iter, WY_Columns.ACTION, out cell);
-                var act = (MSP.Action)cell;
-                if (act == MSP.Action.RTH ||
-                    act == MSP.Action.JUMP ||
-                    act == MSP.Action.SET_POI ||
-                    act == MSP.Action.SET_HEAD)
-                    continue;
-
-                var colid = (act == MSP.Action.POSHOLD_TIME) ? WY_Columns.INT2 :
-                    WY_Columns.INT1;
-
-                if(flag == false) {
-                    list_model.get_value (iter, colid, out cell);
-                    if ((double)cell != 0)
-                        continue;
-                }
-                list_model.set_value (iter, colid, dspd);
-                cnt++;
-            }
-        }
-        if(cnt != 0) {
-            calc_mission();
-        }
+        speeddialog.get_speed(flag);
     }
 
     public void set_selection(Gtk.TreeIter iter) {

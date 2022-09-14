@@ -712,28 +712,22 @@ public class SpeedDialog : GLib.Object {
     private Gtk.Dialog dialog;
     private Gtk.Entry spd_entry;
 
+    public signal void get_value(double value, bool flag);
     public SpeedDialog(Gtk.Builder builder) {
         dialog = builder.get_object ("speeddialog") as Gtk.Dialog;
         spd_entry = builder.get_object ("defspeedset") as Gtk.Entry;
-        dialog.modal = false;
+        dialog.modal = true;
     }
 
-    public bool get_speed(out double spd) {
-        var res = false;
-        spd = 0.0;
+    public void get_speed(bool flag) {
         dialog.show_all();
-        var id = dialog.run();
-        switch(id) {
-            case 1001:
-                spd  = InputParser.get_scaled_real(spd_entry.get_text(),"s");
-                res = true;
-                break;
-
-            case 1002:
-                break;
-        }
-        dialog.hide();
-        return res;
+        dialog.response.connect((id) => {
+                if (id == 1001) {
+                    var spd  = InputParser.get_scaled_real(spd_entry.get_text(),"s");
+                    get_value(spd, flag);
+                }
+                dialog.hide();
+            });
     }
 }
 
@@ -746,22 +740,16 @@ public class AltDialog : GLib.Object {
         alt_entry = builder.get_object ("defaltset") as Gtk.Entry;
     }
 
-    public bool get_alt(out double alt) {
-        var res = false;
+    public signal void get_value(double value, bool flag);
+    public void get_alt(bool flag) {
         adialog.show_all();
-        alt = 0.0;
-        var id = adialog.run();
-        switch(id) {
-            case 1001:
-                alt = InputParser.get_scaled_real(alt_entry.get_text(),"d");
-                res = true;
-                break;
-
-            case 1002:
-                break;
-        }
-        adialog.hide();
-        return res;
+        adialog.response.connect((id) => {
+                if (id == 1001) {
+                    var alt = InputParser.get_scaled_real(alt_entry.get_text(),"d");
+                    get_value(alt, flag);
+                }
+                adialog.hide();
+            });
     }
 }
 
@@ -771,35 +759,29 @@ public class WPRepDialog : GLib.Object {
     private Gtk.Entry rep_end;
     private Gtk.Entry rep_num;
 
+    public signal void get_values(uint start, uint end, uint repl);
     public WPRepDialog(Gtk.Builder builder) {
         dialog = builder.get_object ("wprep-dialog") as Gtk.Dialog;
         rep_start = builder.get_object ("rep_start") as Gtk.Entry;
         rep_end = builder.get_object ("rep_end") as Gtk.Entry;
         rep_num = builder.get_object ("rep_num") as Gtk.Entry;
+        dialog.modal = true;
     }
 
-    public bool get_rep(ref uint start, ref uint end, ref uint number) {
-        var res = false;
-        dialog.show_all();
-
+    public void get_rep(uint start, uint end, uint number) {
         rep_start.text = start.to_string();
         rep_end.text = end.to_string();
         rep_num.text = number.to_string();
-
-        var id = dialog.run();
-        switch(id) {
-            case 1001:
-                start = (uint)int.parse(rep_start.text);
-                end = (uint)int.parse(rep_end.text);
-                number = (uint)int.parse(rep_num.text);
-                res = true;
-                break;
-
-            case 1002:
-                break;
-        }
-        dialog.hide();
-        return res;
+        dialog.show_all();
+        dialog.response.connect((id) => {
+                if(id == 1001) {
+                    start = (uint)int.parse(rep_start.text);
+                    end = (uint)int.parse(rep_end.text);
+                    number = (uint)int.parse(rep_num.text);
+                    get_values(start, end, number);
+                }
+                dialog.hide();
+            });
     }
 }
 
@@ -808,6 +790,8 @@ public class DeltaDialog : GLib.Object {
     private Gtk.Entry dlt_entry1;
     private Gtk.Entry dlt_entry2;
     private Gtk.Entry dlt_entry3;
+
+    public signal void get_values(double dlat, double dlon, int ialt);
 
     public DeltaDialog(Gtk.Builder builder) {
         dialog = builder.get_object ("delta-dialog") as Gtk.Dialog;
@@ -823,27 +807,18 @@ public class DeltaDialog : GLib.Object {
         lab.label = "Altitude (Z) delta (%s)".printf(Units.distance_units());
     }
 
-    public bool get_deltas(out double dlat, out double dlon, out int dalt) {
-        var res = false;
+    public void get_deltas() {
         dialog.show_all();
-        dlat = dlon = 0.0;
-        dalt = 0;
-        var id = dialog.run();
-        switch(id) {
-            case 1001:
-                dlat = InputParser.get_scaled_real(dlt_entry1.get_text());
-                dlon = InputParser.get_scaled_real(dlt_entry2.get_text());
-                dalt = (int)InputParser.get_scaled_int(dlt_entry3.get_text());
-                res = true;
-                break;
-
-            case 1002:
-                break;
-        }
-        dialog.hide();
-        return res;
+        dialog.response.connect((id) => {
+                if (id == 1001) {
+                    var dlat = InputParser.get_scaled_real(dlt_entry1.get_text());
+                    var dlon = InputParser.get_scaled_real(dlt_entry2.get_text());
+                    var ialt = (int)InputParser.get_scaled_int(dlt_entry3.get_text());
+                    get_values(dlat, dlon, ialt);
+                }
+                dialog.hide();
+            });
     }
-
 }
 
 public class AltModeDialog : GLib.Object {
@@ -1037,16 +1012,20 @@ public class SwitchDialog : GLib.Object {
 
 public class DirtyDialog : GLib.Object {
     private Gtk.Dialog dialog;
+
+    public signal void get_value(int id);
     public DirtyDialog(Gtk.Builder builder, Gtk.Window? w=null) {
         dialog = builder.get_object ("dirty_mission_dialog") as Gtk.Dialog;
         dialog.set_transient_for(w);
+        dialog.modal = true;
     }
 
-    public int get_choice() {
+    public void get_choice() {
         dialog.show_all();
-        var id = dialog.run();
-        dialog.hide();
-        return id;
+        dialog.response.connect((id) => {
+                get_value(id);
+                dialog.hide();
+            });
     }
 }
 
@@ -1293,6 +1272,8 @@ public class ShapeDialog : GLib.Object {
     private Gtk.SpinButton spin3;
     private Gtk.ComboBoxText combo;
 
+    public signal void get_values(ShapePoint[] pts);
+
     public ShapeDialog (Gtk.Builder builder, Gtk.Window? w=null) {
         dialog = builder.get_object ("shape-dialog") as Gtk.Dialog;
         dialog.set_transient_for(w);
@@ -1301,32 +1282,29 @@ public class ShapeDialog : GLib.Object {
         spin3  = builder.get_object ("shp_spinbutton3") as Gtk.SpinButton;
         combo  = builder.get_object ("shp-combo") as Gtk.ComboBoxText;
         spin2.adjustment.value = 0;
+        dialog.modal = true;
     }
 
-    public ShapePoint[] get_points(double clat, double clon)
-    {
-        ShapePoint[] p = {};
+    public void get_points(double clat, double clon) {
         dialog.show_all();
-        var id = dialog.run();
-        if (id == 1001)
-        {
-                var npts = (int)spin1.adjustment.value;
-                var radius = spin2.adjustment.value;
-                var start = spin3.adjustment.value;
-                var dtext = combo.get_active_id();
-                int dirn = 1;
+        dialog.response.connect((id) => {
+                if (id == 1001) {
+                    var npts = (int)spin1.adjustment.value;
+                    var radius = spin2.adjustment.value;
+                    var start = spin3.adjustment.value;
+                    var dtext = combo.get_active_id();
+                    int dirn = 1;
 
-                if(dtext != null)
-                    dirn = int.parse(dtext);
-
-                radius = InputParser.get_scaled_real(radius.to_string());
-                if(radius > 0)
-                {
-                    p = mkshape(clat, clon, radius, npts, start, dirn);
+                    if(dtext != null)
+                        dirn = int.parse(dtext);
+                    radius = InputParser.get_scaled_real(radius.to_string());
+                    if(radius > 0) {
+                        var p = mkshape(clat, clon, radius, npts, start, dirn);
+                        get_values(p);
+                    }
                 }
-        }
+            });
         dialog.hide();
-        return p;
     }
 
     public static ShapePoint[] mkshape(double clat, double clon,double radius,
@@ -1336,8 +1314,7 @@ public class ShapeDialog : GLib.Object {
         double dint  = dirn*(360.0/npts);
         ShapePoint[] points= new ShapePoint[npts+1];
         radius /= 1852.0;
-        for(int i =0; i <= npts; i++)
-        {
+        for(int i =0; i <= npts; i++) {
             double lat,lon;
             Geo.posit(clat,clon,ang,radius,out lat, out lon);
             var p = ShapePoint() {no = i, lat=lat, lon=lon, bearing = ang};
