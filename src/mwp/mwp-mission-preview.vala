@@ -497,7 +497,7 @@ public class  MissionPreviewer : GLib.Object {
                         return false;
                     });
                 thr.join();
-                ml.run();
+                ml.run(/* */);
             }
         }
         return 0;

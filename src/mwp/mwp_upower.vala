@@ -200,7 +200,8 @@ public class PowerState : Object
         return warn;
     }
 }
-/****
+
+#if TESTPOWER
 public int main(string[]args)
 {
     var p = new PowerState();
@@ -208,8 +209,8 @@ public int main(string[]args)
     {
         print("%s\n", p.show_status());
         var loop = new MainLoop();
-        loop.run();
+        loop.run(/* */);
     }
     return 0;
 }
-*****/
+#endif

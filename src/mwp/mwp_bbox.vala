@@ -465,8 +465,10 @@ public class  BBoxDialog : Object {
                                          Gtk.MessageType.WARNING,
                                          Gtk.ButtonsType.OK,
                                          s);
-            msg.run();
+        msg.show_all();
+        msg.response.connect((id) => {
             msg.destroy();
+            });
     }
 
     public void run(string? fn = null) {

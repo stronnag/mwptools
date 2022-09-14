@@ -289,7 +289,7 @@ public class TileUtil : Object {
         show_stats(stats);
     }
 }
-/*
+#if TESTSEEDER
 int main (string[] args)
 {
     var t  = new TileUtil();
@@ -325,7 +325,7 @@ int main (string[] args)
         });
 
 
-    app.run();
+        app.run(/* */);
     return 0;
 }
-*/
+#endif

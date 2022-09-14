@@ -1288,7 +1288,7 @@ public class MWP : Gtk.Application {
 
 		splash = new MwpSplash();
 		if(!is_wayland) {
-			splash.run();
+			splash.run(/*OK*/);
 		}
 
         spapi = 0;
@@ -2498,6 +2498,11 @@ public class MWP : Gtk.Application {
 
         swd = new SwitchDialog(builder, window);
         dirtyd = new DirtyDialog(builder, window);
+        dirtyd.get_value.connect((id) => {
+                if (id == 0) {
+                    on_file_save_as();
+                }
+            });
 
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
         about.set_transient_for(window);
@@ -5828,7 +5833,7 @@ case 0:
                     MWPLog.message("switch val == %08x (%08x)\n", bxflag, lmask);
                     if(Craft.is_mr(vi.mrtype) && ((bxflag & lmask) == 0) && robj == null) {
                         if(conf.checkswitches)
-                            swd.run();
+                            swd.run(/*OK*/);
                     }
                     if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
                         queue_cmd(MSP.Cmds.NAV_CONFIG,null,0);
@@ -9577,9 +9582,7 @@ case 0:
 			is_dirty = true;
 		}
 		if(is_dirty) {
-			if(dirtyd.get_choice() == 0) {
-                on_file_save_as();
-			}
+			dirtyd.get_choice();
 		}
     }
 
@@ -9718,7 +9721,8 @@ case 0:
 							smask = mitem;
 					});
 					dialog.set_transient_for(chooser);
-					dialog.run ();
+                    dialog.modal = true;
+                    dialog.show_all();
 				});
 			chooser.set_extra_widget(btn);
 			btn.show();

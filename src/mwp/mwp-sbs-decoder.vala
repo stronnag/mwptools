@@ -206,6 +206,6 @@ void main (string[] args)
 			}
 		});
 	ml = new MainLoop();
-	ml.run();
+	ml.run(/* */);
 }
 #endif
