@@ -122,8 +122,17 @@ Due to the granularity of the AMSL grid used by GPS and the gravity based Bing S
 
 * Google Earth : 470m
 * Ordnance Survey (OS) Map (official survey): 483m
-* Bing Ellipsoid (Configurator): 526m
+* Bing Ellipsoid (prior Configurator): 526m
+* Open Topo (current Configurator): 485m
 * Bing "Sea Level" (mwp): 470m
+
+Note that while OpenTopo appears to be the most accurate, it has significant issues that mean it is unacceptable as a reliable data source:
+
+* Rate limited to one query per second.
+* Limited to 100 points per query (INAV supports 120 point missions...).
+* Limited to 1000 queries per 24 hour period.
+
+For these reasons, {{ mwp }} used Bing sea level elevations as the best compromise between accuracy and reliability.
 
 ## So who's right?
 

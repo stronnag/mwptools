@@ -50,6 +50,7 @@ In this image, note:
     * Set Heading (-1 to clear a previous set head)
 	* JUMP parameters (-1 Iterations == infinite)
 	* Return to Home (and land).
+* For proposed {{ inav }} 6.0, user defined actions 1-4.
 
 Multiple attributes may be set.
 
