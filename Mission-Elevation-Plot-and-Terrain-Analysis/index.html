@@ -1159,9 +1159,17 @@ Prior to 2021-05-03, this was provided by a ruby script in <code>mwptools/sample
 <ul>
 <li>Google Earth : 470m</li>
 <li>Ordnance Survey (OS) Map (official survey): 483m</li>
-<li>Bing Ellipsoid (Configurator): 526m</li>
+<li>Bing Ellipsoid (prior Configurator): 526m</li>
+<li>Open Topo (current Configurator): 485m</li>
 <li>Bing "Sea Level" (mwp): 470m</li>
 </ul>
+<p>Note that while OpenTopo appears to be the most accurate, it has significant issues that mean it is unacceptable as a reliable data source:</p>
+<ul>
+<li>Rate limited to one query per second.</li>
+<li>Limited to 100 points per query (INAV supports 120 point missions...).</li>
+<li>Limited to 1000 queries per 24 hour period.</li>
+</ul>
+<p>For these reasons, <a href="https://github.com/stronnag/mwptools">mwp</a> used Bing sea level elevations as the best compromise between accuracy and reliability.</p>
 <h2 id="so-whos-right">So who's right?<a class="headerlink" href="#so-whos-right" title="Permanent link">#</a></h2>
 <p>Many years ago, I took a GPS up South Barrule.</p>
 <p><img alt="barrule" src="https://user-images.githubusercontent.com/158229/129704384-a91904b9-becc-435d-9c38-9bc0fa31563d.png" width="40%" /></p>
@@ -1287,7 +1295,7 @@ WP15 -  RTH  -3.6°  (dive)
 <div class="md-source-date">
   <small>
     
-      Last update: 2022-08-07
+      Last update: 2022-09-16
     
   </small>
 </div>
