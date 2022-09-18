@@ -21,11 +21,6 @@ apuisrcs = files('settings.vala',  'mapsources.vala', 'mission.vala')
 
 mwp_v_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
 
-glib2 =dependency('glib-2.0', version: '>2.73.0', required: false)
-if glib2.found()
-  mwp_v_args += '--define=TEXTDOCKITEM'
-endif
-
 mwpdeps = [deps,
 	   dependency('gtk+-3.0'),
 	   dependency('glib-2.0'),
