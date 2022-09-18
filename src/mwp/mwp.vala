@@ -2800,7 +2800,11 @@ public class MWP : Gtk.Application {
         var dock = new Dock ();
         dock.margin_start = 4;
         var dockbar = new DockBar (dock);
+#if TEXTDOCKITEM
+        dockbar.set_style (DockBarStyle.TEXT);
+#else
         dockbar.set_style (DockBarStyle.ICONS);
+#endif
         lman = new LayMan(dock, confdir,layfile,DOCKLETS.NUMBER);
 
         box.pack_start (dockbar, false, false, 0);

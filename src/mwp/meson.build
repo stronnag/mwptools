@@ -19,15 +19,22 @@ ublxguisrc = files('settings.vala',  'mapsources.vala')
 
 apuisrcs = files('settings.vala',  'mapsources.vala', 'mission.vala')
 
+mwp_v_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
+
+glib2 =dependency('glib-2.0', version: '>2.73.0', required: false)
+if glib2.found()
+  mwp_v_args += '--define=TEXTDOCKITEM'
+endif
+
 mwpdeps = [deps,
 	   dependency('gtk+-3.0'),
+	   dependency('glib-2.0'),
            dependency('atk'),
            dependency('clutter-1.0'),
            dependency('champlain-gtk-0.12'),
            dependency('champlain-0.12'),
            dependency('libxml-2.0'),
            dependency('gio-2.0'),
-           dependency('glib-2.0'),
            dependency('clutter-gtk-1.0'),
            dependency('gdl-3.0'),
            dependency('pango'),
@@ -42,8 +49,6 @@ mwpdeps = [deps,
 
 # for BSD etc.
 ldirs = ['/usr/lib', '/usr/local/lib']
-
-mwp_v_args = ['--vapidir', vapi_dir, '--pkg', 'mwpfuncs']
 mwp_c_args = []
 
 paho = meson.get_compiler('c').find_library('paho-mqtt3cs', dirs: ldirs, required: false)
