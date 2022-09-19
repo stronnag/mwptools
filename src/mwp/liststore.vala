@@ -66,6 +66,84 @@ public class ScrollView : Gtk.Window {
 	}
 }
 
+public class EvCache : Object {
+    private struct ElevData {
+        int idx;
+        int elev;
+    }
+
+    public  enum EvConst {
+        HOME = -1,
+        INVALID=-2,
+        UNAVAILABLE = -99999
+    }
+
+    private static ElevData[] elevs={};
+
+    public static bool get_elev(int no, out int elev) {
+        elev = EvConst.UNAVAILABLE;
+        foreach(var e in elevs) {
+            if (e.idx == no) {
+                elev = e.elev;
+                return (elev != EvConst.UNAVAILABLE);
+            }
+        }
+        return false;
+    }
+
+    public static void set_elev(int no, int elev) {
+        for(var j = 0; j < elevs.length; j++) {
+            if (elevs[j].idx == no) {
+                elevs[j].elev = elev;
+                return;
+            }
+        }
+        elevs += ElevData(){idx=no, elev=elev};
+        return;
+    }
+
+    public static void set_elev_index(int j, int idx) {
+        elevs[j].idx = idx;
+    }
+
+    public static void set_elev_index_value(int j, int elev) {
+        elevs[j].elev = elev;
+    }
+
+    public static void clear() {
+        elevs={};
+    }
+
+    public static void append(int idx, int elev) {
+        elevs += ElevData(){idx = idx, elev = elev};
+    }
+
+    public static void update_all_wp_elevations (BingElevations.Point[] pts) {
+        BingElevations.get_elevations.begin(pts, (obj, res) => {
+                var bingelevs = BingElevations.get_elevations.end(res);
+                if(bingelevs.length == pts.length) {
+                    int j = 0;
+                    foreach(var e in bingelevs) {
+                        EvCache.set_elev_index_value(j, e);
+                        j++;
+                    }
+                }
+            });
+    }
+
+    public static void update_single_elevation (int idx, double lat, double lon) {
+        BingElevations.Point pts[1];
+        pts[0].y = lat;
+        pts[0].x = lon;
+        BingElevations.get_elevations.begin(pts, (obj, res) => {
+                var bingelevs = BingElevations.get_elevations.end(res);
+                if(bingelevs.length == 1) {
+                    EvCache.set_elev(idx, bingelevs[0]);
+                }
+            });
+    }
+}
+
 public class ListBox : GLib.Object {
     private const int SPEED_CONV = 100;
     private const int ALT_CONV = 100;
@@ -84,11 +162,6 @@ public class ListBox : GLib.Object {
         ACTION, // act
         TIP, //str
         N_COLS
-    }
-
-    private struct ElevData {
-        int idx;
-        int elev;
     }
 
     private Gtk.Menu menu;
@@ -133,7 +206,6 @@ public class ListBox : GLib.Object {
     public int lastid {get; private set; default= 0;}
     public bool have_rth {get; private set; default= false;}
     private int mpop_no;
-    private ElevData[] elevs={};
     private enum DELTAS {
         NONE=0,
         LAT=1,
@@ -141,12 +213,6 @@ public class ListBox : GLib.Object {
         POS=3,
         ALT=4,
         ANY=7
-    }
-
-    public enum ALTMODES {
-        RELATIVE=0,
-        ABSOLUTE=1,
-        NONE=-1
     }
 
     public enum POSREF {
@@ -158,59 +224,10 @@ public class ListBox : GLib.Object {
         LANDA=16
     }
 
-
-    public  enum EvConst {
-        HOME = -1,
-        INVALID=-2,
-        UNAVAILABLE = -99999
-    }
-
-    private bool get_elev(int no, out int elev) {
-        elev = EvConst.UNAVAILABLE;
-        foreach(var e in elevs) {
-            if (e.idx == no) {
-                elev = e.elev;
-                return (elev != EvConst.UNAVAILABLE);
-            }
-        }
-        return false;
-    }
-
-    private void set_elev(int no, int elev) {
-        for(var j = 0; j < elevs.length; j++) {
-            if (elevs[j].idx == no) {
-                elevs[j].elev = elev;
-                return;
-            }
-        }
-        elevs += ElevData(){idx=no, elev=elev};
-        return;
-    }
-
-
-    private void update_all_wp_elevations (BingElevations.Point[] pts) {
-        BingElevations.get_elevations.begin(pts, (obj, res) => {
-                var bingelevs = BingElevations.get_elevations.end(res);
-                if(bingelevs.length == pts.length) {
-                    int j = 0;
-                    foreach(var e in bingelevs) {
-                        elevs[j].elev = e;
-                        j++;
-                    }
-                }
-            });
-    }
-
-    private void update_single_elevation (int idx, double lat, double lon) {
-        BingElevations.Point pts[1];
-        pts[0].y = lat;
-        pts[0].x = lon;
-        BingElevations.get_elevations.begin(pts, (obj, res) => {
-                var bingelevs = BingElevations.get_elevations.end(res);
-                if(bingelevs.length == 1) {
-                    set_elev(idx, bingelevs[0]);
-                }
-            });
+    public enum ALTMODES {
+        RELATIVE=0,
+        ABSOLUTE=1,
+        NONE=-1
     }
 
     private void raise_fby_wp(int wpno) {
@@ -341,7 +358,7 @@ public class ListBox : GLib.Object {
             sb.append(alt.to_string());
             sb.append("m ");
             int amsl;
-            if(get_elev(ino, out amsl)) {
+            if(EvCache.get_elev(ino, out amsl)) {
                 sb.append(" (amsl ");
                 sb.append(amsl.to_string());
                 sb.append("m) ");
@@ -477,7 +494,7 @@ public class ListBox : GLib.Object {
         have_rth = false;
         BingElevations.Point[] pts={};
 
-        elevs ={};
+        EvCache.clear();
 
         foreach (MissionItem m in ms.get_ways()) {
             list_model.append (out iter);
@@ -529,8 +546,7 @@ public class ListBox : GLib.Object {
                 m.action == MSP.Action.SET_POI ||
                 m.action == MSP.Action.LAND)) {
                 pts += BingElevations.Point(){y=m.lat,x=m.lon};
-                elevs += ElevData(){idx = lastid,  elev = EvConst.UNAVAILABLE};
-
+                EvCache.append(lastid, EvCache.EvConst.UNAVAILABLE);
             }
         }
         if(ms.homex != 0 && ms.homey != 0) {
@@ -538,11 +554,11 @@ public class ListBox : GLib.Object {
             fhome.set_fake_home(ms.homey, ms.homex);
             fhome.show_fake_home(true);
             pts += BingElevations.Point(){y=ms.homey,x=ms.homex};
-            elevs += ElevData(){idx = EvConst.HOME, elev = EvConst.UNAVAILABLE};
+            EvCache.append(EvCache.EvConst.HOME, EvCache.EvConst.UNAVAILABLE);
         }
 
         if(pts.length > 0) {
-            update_all_wp_elevations(pts);
+            EvCache.update_all_wp_elevations(pts);
         }
         mp.markers.add_list_store(this);
         Idle.add(() => {
@@ -845,7 +861,7 @@ public class ListBox : GLib.Object {
                     list_model.set (iter, WY_Columns.LAT, lat, WY_Columns.LON, lon);
                 mp.update_pointer_pos(lat, lon);
                 if(flag) {
-                    update_single_elevation(ino, lat, lon);
+                    EvCache.update_single_elevation(ino, lat, lon);
                 }
             });
     }
@@ -865,7 +881,7 @@ public class ListBox : GLib.Object {
         altmodedialog.complete.connect(bing_complete);
         fhome.fake_move.connect((lat,lon) => {
                 altmodedialog.set_location(PosFormat.pos(lat,lon,MWP.conf.dms));
-                update_single_elevation(EvConst.HOME, lat, lon);
+                EvCache.update_single_elevation(EvCache.EvConst.HOME, lat, lon);
             });
 
         Gtk.ListStore combo_model = new Gtk.ListStore (1, typeof (string));
@@ -1940,7 +1956,7 @@ public class ListBox : GLib.Object {
         clrh_item.activate.connect (() => {
                 FakeHome.usedby &= ~FakeHome.USERS.Mission;
                 unset_fake_home();
-                set_elev(EvConst.HOME, EvConst.UNAVAILABLE);
+                EvCache.set_elev(EvCache.EvConst.HOME, EvCache.EvConst.UNAVAILABLE);
             });
         menu.add (clrh_item);
 
@@ -2432,7 +2448,7 @@ public class ListBox : GLib.Object {
 
         var str = PosFormat.pos(lat, lon,MWP.conf.dms);
         var sb = new StringBuilder(str);
-        if (get_elev(n, out ei.amsl)) {
+        if (EvCache.get_elev(n, out ei.amsl)) {
             sb.append_printf(" (%dm)", ei.amsl);
         }
 
@@ -2449,7 +2465,7 @@ public class ListBox : GLib.Object {
         list_model.get_value (iter, WY_Columns.FLAG, out cell);
         ei.flag  = (uint8)((int)cell);
         ei.optional = 0;
-        get_elev(EvConst.HOME, out ei.homeelev);
+        EvCache.get_elev(EvCache.EvConst.HOME, out ei.homeelev);
         ei_iter_next(ref iter, ref ei);
 
         return ei;

@@ -284,7 +284,7 @@ public class WPPopEdit : Gtk.Dialog {
                 landcb.active = (wpt.rthland == 1);
                 grid.attach (landcb, 1, j);
                 amslcb.clicked.connect(() => {
-                        if(wpt.homeelev != ListBox.EvConst.UNAVAILABLE) {
+                        if(wpt.homeelev != EvCache.EvConst.UNAVAILABLE) {
                             var na = int.parse(altent.text);
                             if (amslcb.active) {
                                 na = na + wpt.homeelev;

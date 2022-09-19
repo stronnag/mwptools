@@ -86,6 +86,10 @@ func main() {
 			os.Exit(0)
 		}
 		npts := int(mpts[len(mpts)-1].D) / 30
+		if npts > len(mpts)*2 {
+			npts = len(mpts) * 2
+		}
+
 		if npts > 1024 {
 			npts = 1024
 		}

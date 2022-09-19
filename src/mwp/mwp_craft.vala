@@ -353,18 +353,15 @@ public class Craft : GLib.Object
             path_colour = trk_cyan;
     }
 
-    public void special_wp(Special wpno, double lat, double lon)
-    {
+    public void special_wp(Special wpno, double lat, double lon) {
         Champlain.Label m = null;
         Clutter.Color colour;
         Clutter.Color black = { 0,0,0, 0xff };
         RMIcon rmflags = 0;
 
-        switch(wpno)
-        {
+        switch(wpno) {
             case Special.HOME:
-                if(homep == null)
-                {
+                if(homep == null) {
                     homep = new Champlain.Label.with_text ("⏏", "Sans 10",null,null);
                     homep.set_alignment (Pango.Alignment.RIGHT);
                     colour = {0xff, 0xa0, 0x0, 0xc8};

@@ -41,10 +41,9 @@ public class FakeHome : GLib.Object {
     public static Champlain.Label homep;
     public static bool is_visible = false;
     public signal void fake_move(double lat, double lon);
+    public static  Champlain.Label? homept;
 
-
-    public struct PlotElevDefs
-    {
+    public struct PlotElevDefs {
         string hstr;
         string margin;
         string rthalt;
@@ -54,15 +53,48 @@ public class FakeHome : GLib.Object {
 		return hmlayer;
 	}
 
-    public FakeHome(Champlain.View view)
-    {
-        Clutter.Color colour = {0x8c, 0x43, 0x43, 0xa0};
+    public FakeHome(Champlain.View view) {
+        Clutter.Color brown = {0x8c, 0x43, 0x43, 0xa0};
         Clutter.Color white = { 0xff,0xff,0xff, 0xff};
         hmlayer = new Champlain.MarkerLayer();
         homep = new Champlain.Label.with_text ("⏏", "Sans 10",null,null);
         homep.set_alignment (Pango.Alignment.RIGHT);
-        homep.set_color (colour);
+        homep.set_color (brown);
         homep.set_text_color(white);
+        homept = null;
+        homep.enter_event.connect((ce) => {
+                int elev;
+                if(EvCache.get_elev(EvCache.EvConst.HOME, out elev)) {
+                    if(homept == null) {
+                        homept = new Champlain.Label.with_text("%dm".printf(elev), "Sans 10", null, null);
+                        homept.set_color (brown);
+                        homept.opacity = 200;
+                        homept.x = 30;
+                        homept.y = 10;
+                        homep.add_child(homept);
+                    }
+                }
+                return false;
+            });
+
+        homep.leave_event.connect((ce) => {
+                if(homept != null) {
+                    homep.remove_child(homept);
+                    homept = null;
+                }
+                return false;
+            });
+
+        homep.drag_motion.connect((dx,dy,evt) => {
+                if(homept != null) {
+                    homep.remove_child(homept);
+                    homept = null;
+                }
+                xlat = homep.get_latitude();
+                xlon = homep.get_longitude();
+                fake_move(xlat, xlon);
+            });
+
         view.add_layer (hmlayer);
     }
 
@@ -120,25 +152,16 @@ public class FakeHome : GLib.Object {
         return p;
     }
 
-    public void show_fake_home(bool state)
-    {
+    public void show_fake_home(bool state) {
         if(state != is_visible)
         {
-            if(state)
-            {
+            if(state) {
                 homep.set_draggable(true);
                 homep.set_selectable(true);
                 homep.set_flags(ActorFlags.REACTIVE);
                 hmlayer.add_marker(homep);
-                homep.drag_motion.connect((dx,dy,evt) => {
-                        xlat = homep.get_latitude();
-                        xlon = homep.get_longitude();
-                        fake_move(xlat, xlon);
-                    });
-
                 var pp = hmlayer.get_parent();
                 pp.set_child_above_sibling(hmlayer, null);
-
             }
             else
                 hmlayer.remove_marker(homep);
@@ -146,10 +169,10 @@ public class FakeHome : GLib.Object {
         }
     }
 
-    public void set_fake_home(double lat, double lon)
-    {
+    public void set_fake_home(double lat, double lon) {
         has_loc = true;
         homep.set_location (lat, lon);
+        EvCache.update_single_elevation(EvCache.EvConst.HOME, lat, lon);
         xlat = lat;
         xlon = lon;
     }
@@ -160,8 +183,7 @@ public class FakeHome : GLib.Object {
         lon = xlon; //homep.get_longitude();
     }
 
-    public void reset_fake_home()
-    {
+    public void reset_fake_home() {
         if(!is_visible) {
             has_loc = false;
             xlat = 0.0;
