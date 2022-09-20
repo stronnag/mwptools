@@ -603,7 +603,6 @@ public class  SafeHomeDialog : Object {
             (action == Gtk.FileChooserAction.SAVE) ? "_Save" : "_Open",
             Gtk.ResponseType.ACCEPT);
 
-        fc.set_modal(true);
         fc.select_multiple = false;
 
         if(action == Gtk.FileChooserAction.SAVE && filename != null)

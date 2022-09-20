@@ -175,11 +175,9 @@ class LayMan : Object
 
     public void save () {
         var dialog = new Dialog.with_buttons ("New Layout", null,
-                                              DialogFlags.MODAL |
                                               DialogFlags.DESTROY_WITH_PARENT,
                                               "Cancel", ResponseType.CANCEL,
                                               "OK", ResponseType.OK);
-        dialog.modal = true;
         var hbox = new Box (Orientation.HORIZONTAL, 8);
         hbox.border_width = 8;
         var content = dialog.get_content_area ();
@@ -231,12 +229,10 @@ class LayMan : Object
 
     public void restore () {
         var dialog = new Dialog.with_buttons ("Restore", null,
-                                      DialogFlags.MODAL |
                                               DialogFlags.DESTROY_WITH_PARENT,
                                               "Cancel", ResponseType.CANCEL,
                                               "OK", ResponseType.OK);
 
-        dialog.modal = true;
         Box box = new Box (Gtk.Orientation.VERTICAL, 0);
         var content = dialog.get_content_area ();
         content.pack_start (box, false, false, 0);

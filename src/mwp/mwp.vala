@@ -83,7 +83,6 @@ public class MWP : Gtk.Application {
     private GtkChamplain.Embed embed;
     private PrefsDialog prefs;
     private SwitchDialog swd;
-    private DirtyDialog dirtyd;
     private SetPosDialog setpos;
     private Gtk.AboutDialog about;
     private BBoxDialog bb_runner;
@@ -269,8 +268,7 @@ public class MWP : Gtk.Application {
 	private Sticks.StickWindow sticks;
 	private bool sticks_ok = false;
 
-	public struct MQI //: Object
-    {
+	public struct MQI {
         MSP.Cmds cmd;
         size_t len;
         uint8 *data;
@@ -279,14 +277,12 @@ public class MWP : Gtk.Application {
     private MQI lastmsg;
     private Queue<MQI?> mq;
 
-    private enum APIVERS
-    {
+    private enum APIVERS {
         mspV2 = 0x0200,
         mixer = 0x0202,
     }
 
-    public enum FCVERS
-    {
+    public enum FCVERS {
         hasMoreWP = 0x010400,
         hasEEPROM = 0x010600,
         hasTZ = 0x010704,
@@ -302,8 +298,7 @@ public class MWP : Gtk.Application {
         hasWP_V4 = 0x040000,
     }
 
-    public enum WPS
-    {
+    public enum WPS {
         isINAV = (1<<0),
         isFW = (1<<1),
         hasJUMP = (1<<2),
@@ -312,8 +307,7 @@ public class MWP : Gtk.Application {
         hasPOI = (1<<5),
     }
 
-    public enum SERSTATE
-    {
+    public enum SERSTATE {
         NONE=0,
         NORMAL,
         POLLER,
@@ -322,8 +316,7 @@ public class MWP : Gtk.Application {
         TELEM_SP,
     }
 
-    public enum DEBUG_FLAGS
-    {
+    public enum DEBUG_FLAGS {
         NONE=0,
         WP = (1 << 0),
         INIT = (1 << 1),
@@ -336,16 +329,14 @@ public class MWP : Gtk.Application {
 		GCSLOC = (1 << 8),
     }
 
-    private enum SAT_FLAGS
-    {
+    private enum SAT_FLAGS {
         NONE=0,
         NEEDED = 1,
         URGENT = 2,
         BEEP = 4
     }
 
-    private enum Player
-    {
+    private enum Player {
         NONE = 0,
         MWP = 1,
         BBOX = 2,
@@ -358,17 +349,25 @@ public class MWP : Gtk.Application {
         FL2_FAST = FL2LTM|FAST_MASK
     }
 
-	public struct Position
-    {
+	public struct Position {
         double lat;
         double lon;
         double alt;
     }
 
-    private enum OSD
-    {
+    private enum OSD {
         show_mission = 1,
         show_dist = 2
+    }
+
+
+    private enum Cascade {
+        NONE = 0,
+        OPEN = 1,
+        OPENT = 2,
+        DOWN = 4,
+        CLOSE = 64,
+        DESTROY = 128
     }
 
     private static bool have_home;
@@ -960,10 +959,14 @@ public class MWP : Gtk.Application {
         set_menu_state(dockmenus[id], !res);
     }
 
-    public void cleanup()
-    {
+
+    public void cleanup(bool is_clean) {
         is_shutdown = true;
-        check_mission_clean(false);
+        if(is_clean) {
+            conf.save_floating (mwpdh.floating);
+            lman.save_config();
+        }
+
         if(msp.available)
             msp.close();
 #if MQTT
@@ -983,8 +986,8 @@ public class MWP : Gtk.Application {
             try {
                 Process.spawn_command_line_sync (conf.atexit);
             } catch {}
+        remove_window(window);
 	}
-
 
     private void handle_replay_pause(bool from_vid=false) {
         int signum;
@@ -1540,16 +1543,13 @@ public class MWP : Gtk.Application {
 
         var aq = new GLib.SimpleAction("quit",null);
         aq.activate.connect(() => {
-                conf.save_floating (mwpdh.floating);
-                lman.save_config();
-                cleanup();
-                remove_window(window);
+                check_mission_clean(Cascade.CLOSE);
             });
         this.add_action(aq);
 
         window.delete_event.connect(() => {
-                cleanup();
-                return false;
+                check_mission_clean(Cascade.DESTROY);
+                return true;
             });
 
         mseed = new MapSeeder(builder,window);
@@ -1717,15 +1717,15 @@ public class MWP : Gtk.Application {
 
         var saq = new GLib.SimpleAction("file-open",null);
         saq.activate.connect(() => {
-                check_mission_clean();
-                on_file_open();
+                check_mission_clean(Cascade.OPEN);
+// CASCASE                on_file_open();
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("file-append",null);
         saq.activate.connect(() => {
-                check_mission_clean();
-                on_file_open(true);
+                check_mission_clean(Cascade.OPENT);
+// CASCASE                on_file_open(true);
             });
         window.add_action(saq);
 
@@ -1737,7 +1737,7 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("menu-save-as",null);
         saq.activate.connect(() => {
-                on_file_save_as();
+                on_file_save_as(0);
             });
         window.add_action(saq);
 
@@ -2497,8 +2497,6 @@ public class MWP : Gtk.Application {
             });
 
         swd = new SwitchDialog(builder, window);
-        dirtyd = new DirtyDialog(builder, window);
-
         about = builder.get_object ("aboutdialog1") as Gtk.AboutDialog;
         about.set_transient_for(window);
         StringBuilder sb = new StringBuilder(MwpVers.get_build());
@@ -5404,10 +5402,8 @@ case 0:
         return changed;
     }
 
-    private void check_mission_home()
-    {
-        if (have_home)
-        {
+    private void check_mission_home() {
+        if (have_home) {
             var homed = false;
             var ms = ls.to_mission();
             if(ms.npoints > 0) {
@@ -9497,43 +9493,32 @@ case 0:
         return m;
     }
 
-    public void on_file_save()
-    {
-        if (last_file == null)
-        {
-            on_file_save_as ();
-        }
-        else
-        {
+    public void on_file_save() {
+        if (last_file == null) {
+            on_file_save_as (0);
+        } else {
             save_mission_file(last_file);
         }
-		MissionPix.get_mission_pix(embed, markers, ls.to_mission(), last_file);
     }
 
-
-    private void save_mission_file(string fn, uint mask=0)
-    {
+    private void save_mission_file(string fn, uint mask=0) {
         StringBuilder sb;
         uint8 ftype=0;
 
         if(fn.has_suffix(".mission") || fn.has_suffix(".xml"))
             ftype = 'm';
 
-        if(fn.has_suffix(".json"))
-        {
+        if(fn.has_suffix(".json")) {
             ftype = 'j';
         }
 
-        if(ftype == 0)
-        {
+        if(ftype == 0) {
             sb = new StringBuilder(fn);
             if(conf.mission_file_type == "j")
             {
                 ftype = 'j';
                 sb.append(".json");
-            }
-            else
-            {
+            } else {
                 ftype = 'm';
                 sb.append(".mission");
             }
@@ -9549,16 +9534,15 @@ case 0:
 				mmsx += msx[j];
 			}
 		}
-
 		if (ftype == 'm') {
 			XmlIO.to_xml_file(fn, mmsx);
 		} else {
             JsonIO.to_json_file(fn, mmsx);
 		}
+		MissionPix.get_mission_pix(embed, markers, ls.to_mission(), last_file);
     }
 
-    private void check_mission_clean(bool check_zero=true)
-    {
+    private void check_mission_clean(int acton) {
 		msx[mdx] = ls.to_mission();
 		var is_dirty = false;
 		if (msx.length == lastmission.length) {
@@ -9572,11 +9556,24 @@ case 0:
 			is_dirty = true;
 		}
 		if(is_dirty) {
-			var id = dirtyd.get_choice();
-            if (id == 0) {
-                on_file_save_as();
-            }
-		}
+            var dirtyd = new DirtyDialog(acton);
+            dirtyd.response.connect((id) => {
+                    switch(id) {
+                    case ResponseType.YES:
+                    on_file_save_as(acton);
+                    break;
+                    case ResponseType.NO:
+                    do_additional_action(acton);
+                    break;
+                    default:
+                    break;
+                    }
+                    dirtyd.close();
+                });
+            dirtyd.show_all();
+		} else {
+            do_additional_action(acton);
+        }
     }
 
 	private uint check_mission_length(Mission [] xmsx) {
@@ -9680,8 +9677,7 @@ case 0:
 		return m;
 	}
 
-    private void on_file_save_as ()
-    {
+    private void on_file_save_as (int acton) {
         Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
             "Save to mission file", null, Gtk.FileChooserAction.SAVE,
             "_Cancel",
@@ -9714,7 +9710,6 @@ case 0:
 							smask = mitem;
 					});
 					dialog.set_transient_for(chooser);
-                    dialog.modal = true;
                     dialog.show_all();
 				});
 			chooser.set_extra_widget(btn);
@@ -9730,8 +9725,31 @@ case 0:
                 } else {
                     chooser.destroy ();
                 }
+                do_additional_action(acton);
             });
 		chooser.show();
+    }
+
+    private void do_additional_action(int acton) {
+        switch(acton) {
+        case Cascade.OPEN:
+            on_file_open();
+            break;
+        case Cascade.OPENT:
+            on_file_open(true);
+            break;
+        case Cascade.DOWN:
+            do_download_mission();
+            break;
+        case Cascade.DESTROY:
+            cleanup(false);
+            break;
+        case Cascade.CLOSE:
+            cleanup(true);
+            break;
+        default:
+            break;
+        }
     }
 
     private void update_title_from_file(string fname) {
@@ -10328,7 +10346,10 @@ case 0:
 	}
 
     private void download_mission() {
-        check_mission_clean(false);
+        check_mission_clean(Cascade.DOWN);
+    }
+
+    private void do_download_mission() {
         wpmgr.wp_flag = 0;
 		wpmgr.wps = {};
 		wpmgr.npts = last_wp_pts;

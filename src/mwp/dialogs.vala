@@ -1,3 +1,4 @@
+using Gtk;
 /*
  * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
@@ -359,6 +360,21 @@ public class VarioBox : GLib.Object {
     }
 }
 
+public class DirtyDialog : Gtk.Dialog {
+    public DirtyDialog(int action) {
+        title = "Uncommitted mission file";
+        border_width = 5;
+        var content = get_content_area () as Gtk.Box;
+        content.pack_start(new Gtk.Label("Uncommiitted mission changes will be lost unless the current mssion is saved."));
+        add_button ("Don't Save", ResponseType.NO);
+        add_button ("Save", ResponseType.YES);
+        if(action == MWP.Cascade.DESTROY || action == MWP.Cascade.CLOSE ) {
+            add_button ("Cancel", ResponseType.CANCEL);
+        }
+    }
+}
+
+
 public class DirnBox : GLib.Object {
     public Gtk.Box dbox;
     private Gtk.Label dlabel1;
@@ -716,7 +732,6 @@ public class SpeedDialog : GLib.Object {
     public SpeedDialog(Gtk.Builder builder) {
         dialog = builder.get_object ("speeddialog") as Gtk.Dialog;
         spd_entry = builder.get_object ("defspeedset") as Gtk.Entry;
-        dialog.modal = true;
     }
 
     public void get_speed(bool flag) {
@@ -765,7 +780,6 @@ public class WPRepDialog : GLib.Object {
         rep_start = builder.get_object ("rep_start") as Gtk.Entry;
         rep_end = builder.get_object ("rep_end") as Gtk.Entry;
         rep_num = builder.get_object ("rep_num") as Gtk.Entry;
-        dialog.modal = true;
     }
 
     public void get_rep(uint start, uint end, uint number) {
@@ -1007,21 +1021,6 @@ public class SwitchDialog : GLib.Object {
 
     public void runner() {
         dialog.show_all();
-    }
-}
-
-public class DirtyDialog : GLib.Object {
-    private Gtk.Dialog dialog;
-    public DirtyDialog(Gtk.Builder builder, Gtk.Window? w=null) {
-        dialog = builder.get_object ("dirty_mission_dialog") as Gtk.Dialog;
-        dialog.set_transient_for(w);
-        dialog.modal = true;
-    }
-    public int get_choice() {
-        dialog.show_all();
-        var id = dialog.run(/*force run here*/);
-        dialog.hide();
-        return id;
     }
 }
 
@@ -1278,7 +1277,6 @@ public class ShapeDialog : GLib.Object {
         spin3  = builder.get_object ("shp_spinbutton3") as Gtk.SpinButton;
         combo  = builder.get_object ("shp-combo") as Gtk.ComboBoxText;
         spin2.adjustment.value = 0;
-        dialog.modal = true;
     }
 
     public void get_points(double clat, double clon) {
