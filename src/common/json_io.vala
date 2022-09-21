@@ -15,13 +15,10 @@ namespace JsonIO
 	private Mission? parse_segment(Json.Object obj) {
 		var ms = new Mission();
 		foreach (var name in obj.get_members ()) {
-			switch (name)
-			{
+			switch (name) {
 			case "mission":
 				MissionItem [] mi={};
-				foreach (var rsnode in
-						 obj.get_array_member ("mission").get_elements())
-				{
+				foreach (var rsnode in obj.get_array_member ("mission").get_elements()) {
 					var rsitem = rsnode.get_object ();
 					var m = MissionItem();
 					m.no = (int) rsitem.get_int_member("no");
@@ -45,8 +42,7 @@ namespace JsonIO
 					}
 
 					if(m.action != MSP.Action.RTH && m.action != MSP.Action.JUMP &&
-					   m.action != MSP.Action.SET_HEAD)
-					{
+					   m.action != MSP.Action.SET_HEAD) {
 						if (m.lat > ms.maxy)
 							ms.maxy = m.lat;
 						if (m.lon > ms.maxx)
@@ -86,9 +82,7 @@ namespace JsonIO
 				Json.Node? node;
 				node = obj.get_member("missions");
 				if (node != null) {
-					foreach (var mmnode in
-							 obj.get_array_member ("missions").get_elements())
-					{
+					foreach (var mmnode in  obj.get_array_member ("missions").get_elements()) {
 						var mmitem = mmnode.get_object ();
 						var ms =  parse_segment(mmitem);
 						msx += ms;
@@ -103,12 +97,9 @@ namespace JsonIO
 		return msx;
     }
 
-    private static void parse_meta(Json.Object o, ref Mission ms)
-    {
-        foreach (var name in o.get_members())
-        {
-            switch (name)
-            {
+    private static void parse_meta(Json.Object o, ref Mission ms) {
+        foreach (var name in o.get_members()) {
+            switch (name) {
                 case "zoom":
                     ms.zoom = (int)o.get_int_member("zoom");
                     break;
@@ -126,39 +117,29 @@ namespace JsonIO
                     break;
                 case "details":
                     var dobj = o.get_object_member("details");
-                    parse_details(dobj, ref ms);
+                    if (dobj != null) {
+                        parse_details(dobj, ref ms);
+                    }
                     break;
             }
         }
     }
 
-    private static void parse_details(Json.Object o, ref Mission ms)
-    {
-        Json.Object dobj;
-        foreach (var name in o.get_members())
-        {
-            switch (name)
-            {
+    private static void parse_details(Json.Object o, ref Mission ms) {
+        foreach (var name in o.get_members()) {
+            switch (name) {
                 case "distance":
-                    dobj = o.get_object_member("distance");
-                    if(dobj.has_member("value"))
-                        ms.dist = dobj.get_double_member("value");
+                    ms.dist = o.get_double_member("distance");
                     break;
                 case "nav-speed":
-                    dobj = o.get_object_member("nav-speed");
-                    if(dobj.has_member("value"))
-                        ms.nspeed = dobj.get_double_member("value");
+                    ms.nspeed = o.get_double_member("nav-speed");
                     break;
                 case "fly-time":
-                    dobj = o.get_object_member("fly-time");
-                    if(dobj.has_member("value"))
-                        ms.et = (int)dobj.get_int_member("value");
+                    ms.et = (int)o.get_int_member("fly-time");
                     break;
                 case "loiter-time":
-                dobj = o.get_object_member("loiter-time");
-                if(dobj.has_member("value"))
-                    ms.lt = (int)dobj.get_int_member("value");
-                break;
+                    ms.lt = (int)o.get_int_member("loiter-time");
+                    break;
             }
         }
     }
@@ -210,8 +191,7 @@ namespace JsonIO
 			builder.end_array ();
 	}
 
-    public string? to_json(Mission []msx, bool indent=true)
-    {
+    public string? to_json(Mission []msx, bool indent=true) {
 		var builder = new Json.Builder ();
 		builder.begin_object ();
 		if (msx.length == 1) {
@@ -228,8 +208,7 @@ namespace JsonIO
 		}
 		builder.end_object (); // root
         var generator = new Json.Generator ();
-        if(indent)
-        {
+        if(indent) {
             generator.indent = 1;
             generator.indent_char = ' ';
         }
@@ -239,8 +218,7 @@ namespace JsonIO
         return generator.to_data (null);
     }
 
-    public static void to_json_file(string fn, Mission [] msx)
-    {
+    public static void to_json_file(string fn, Mission [] msx) {
         var s = to_json(msx, false);
         try {
             FileUtils.set_contents(fn,s);

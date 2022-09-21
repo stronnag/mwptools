@@ -361,14 +361,14 @@ public class VarioBox : GLib.Object {
 }
 
 public class DirtyDialog : Gtk.Dialog {
-    public DirtyDialog(int action) {
+    public DirtyDialog(bool addcancel) {
         title = "Uncommitted mission file";
         border_width = 5;
         var content = get_content_area () as Gtk.Box;
         content.pack_start(new Gtk.Label("Uncommiitted mission changes will be lost unless the current mssion is saved."));
         add_button ("Don't Save", ResponseType.NO);
         add_button ("Save", ResponseType.YES);
-        if(action == MWP.Cascade.DESTROY || action == MWP.Cascade.CLOSE ) {
+        if(addcancel ) {
             add_button ("Cancel", ResponseType.CANCEL);
         }
     }

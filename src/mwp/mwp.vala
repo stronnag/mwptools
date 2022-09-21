@@ -22,6 +22,7 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
+public delegate void ActionFunc ();
 
 public class MWP : Gtk.Application {
     private const uint MAXVSAMPLE=12;
@@ -360,15 +361,6 @@ public class MWP : Gtk.Application {
         show_dist = 2
     }
 
-
-    private enum Cascade {
-        NONE = 0,
-        OPEN = 1,
-        OPENT = 2,
-        DOWN = 4,
-        CLOSE = 64,
-        DESTROY = 128
-    }
 
     private static bool have_home;
     private static Position home_pos;
@@ -960,7 +952,22 @@ public class MWP : Gtk.Application {
     }
 
 
-    public void cleanup(bool is_clean) {
+    public void cleanup_t() {
+        cleanup(true);
+    }
+    public void cleanup_f() {
+        cleanup(false);
+    }
+
+    private void on_file_opent() {
+        on_file_open(true);
+    }
+
+    private void on_file_openf() {
+        on_file_open(false);
+    }
+
+    private void cleanup(bool is_clean) {
         is_shutdown = true;
         if(is_clean) {
             conf.save_floating (mwpdh.floating);
@@ -1543,12 +1550,12 @@ public class MWP : Gtk.Application {
 
         var aq = new GLib.SimpleAction("quit",null);
         aq.activate.connect(() => {
-                check_mission_clean(Cascade.CLOSE);
+                check_mission_clean(cleanup_t);
             });
         this.add_action(aq);
 
         window.delete_event.connect(() => {
-                check_mission_clean(Cascade.DESTROY);
+                check_mission_clean(cleanup_f);
                 return true;
             });
 
@@ -1717,15 +1724,13 @@ public class MWP : Gtk.Application {
 
         var saq = new GLib.SimpleAction("file-open",null);
         saq.activate.connect(() => {
-                check_mission_clean(Cascade.OPEN);
-// CASCASE                on_file_open();
+                check_mission_clean(on_file_openf);
             });
         window.add_action(saq);
 
         saq = new GLib.SimpleAction("file-append",null);
         saq.activate.connect(() => {
-                check_mission_clean(Cascade.OPENT);
-// CASCASE                on_file_open(true);
+                check_mission_clean(on_file_opent);
             });
         window.add_action(saq);
 
@@ -1737,7 +1742,7 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("menu-save-as",null);
         saq.activate.connect(() => {
-                on_file_save_as(0);
+                on_file_save_as(null);
             });
         window.add_action(saq);
 
@@ -9495,7 +9500,7 @@ case 0:
 
     public void on_file_save() {
         if (last_file == null) {
-            on_file_save_as (0);
+            on_file_save_as (null);
         } else {
             save_mission_file(last_file);
         }
@@ -9542,7 +9547,7 @@ case 0:
 		MissionPix.get_mission_pix(embed, markers, ls.to_mission(), last_file);
     }
 
-    private void check_mission_clean(int acton) {
+    private void check_mission_clean(ActionFunc func) {
 		msx[mdx] = ls.to_mission();
 		var is_dirty = false;
 		if (msx.length == lastmission.length) {
@@ -9556,23 +9561,23 @@ case 0:
 			is_dirty = true;
 		}
 		if(is_dirty) {
-            var dirtyd = new DirtyDialog(acton);
+            var dirtyd = new DirtyDialog((func == cleanup_t || func == cleanup_f));
             dirtyd.response.connect((id) => {
                     switch(id) {
                     case ResponseType.YES:
-                    on_file_save_as(acton);
-                    break;
+                        on_file_save_as(func);
+                        break;
                     case ResponseType.NO:
-                    do_additional_action(acton);
-                    break;
+                        func();
+                        break;
                     default:
-                    break;
+                        break;
                     }
                     dirtyd.close();
                 });
             dirtyd.show_all();
 		} else {
-            do_additional_action(acton);
+            func();
         }
     }
 
@@ -9677,7 +9682,7 @@ case 0:
 		return m;
 	}
 
-    private void on_file_save_as (int acton) {
+    private void on_file_save_as (ActionFunc? func) {
         Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
             "Save to mission file", null, Gtk.FileChooserAction.SAVE,
             "_Cancel",
@@ -9725,32 +9730,13 @@ case 0:
                 } else {
                     chooser.destroy ();
                 }
-                do_additional_action(acton);
+                if(func != null) {
+                    func();
+                }
             });
 		chooser.show();
     }
 
-    private void do_additional_action(int acton) {
-        switch(acton) {
-        case Cascade.OPEN:
-            on_file_open();
-            break;
-        case Cascade.OPENT:
-            on_file_open(true);
-            break;
-        case Cascade.DOWN:
-            do_download_mission();
-            break;
-        case Cascade.DESTROY:
-            cleanup(false);
-            break;
-        case Cascade.CLOSE:
-            cleanup(true);
-            break;
-        default:
-            break;
-        }
-    }
 
     private void update_title_from_file(string fname) {
         var basename = GLib.Path.get_basename(fname);
@@ -10346,7 +10332,7 @@ case 0:
 	}
 
     private void download_mission() {
-        check_mission_clean(Cascade.DOWN);
+        check_mission_clean(do_download_mission);
     }
 
     private void do_download_mission() {
