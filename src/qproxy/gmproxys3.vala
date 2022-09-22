@@ -178,12 +178,12 @@ public class GMProxy : Soup.Server
             try {
                 var res  = session.send_and_read (message);
                 msg.set_response ("image/jpeg", Soup.MemoryUse.COPY, res.get_data());
-                msg.set_status(message.status_code,"");
+                msg.set_status(message.status_code,null);
             } catch {
-                msg.set_status(404,"");
+                msg.set_status(404, null);
             }
         }  else {
-            msg.set_status(404,"");
+            msg.set_status(404,null);
         }
     }
 
