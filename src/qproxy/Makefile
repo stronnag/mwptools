@@ -8,6 +8,10 @@ OPTS ?= -X -O3 -X -s
 gmproxy: gmproxy.vala
 	valac $(OPTS) --pkg libsoup-2.4 --pkg posix --pkg gio-2.0 -o gmproxy gmproxy.vala
 
+gmproxys: gmproxys.vala
+	valac $(OPTS) --pkg libsoup-3.0 --pkg posix --pkg gio-2.0 -o gmproxys gmproxys.vala
+
+
 
 bproxy: bproxy.vala
 	valac $(OPTS) --pkg libsoup-2.4 --pkg posix --pkg gio-2.0 -o $@  $^
