@@ -1550,12 +1550,12 @@ public class MWP : Gtk.Application {
 
         var aq = new GLib.SimpleAction("quit",null);
         aq.activate.connect(() => {
-                check_mission_clean(cleanup_t);
+                check_mission_clean(cleanup_t, true);
             });
         this.add_action(aq);
 
         window.delete_event.connect(() => {
-                check_mission_clean(cleanup_f);
+                check_mission_clean(cleanup_f, true);
                 return true;
             });
 
@@ -9547,7 +9547,7 @@ case 0:
 		MissionPix.get_mission_pix(embed, markers, ls.to_mission(), last_file);
     }
 
-    private void check_mission_clean(ActionFunc func) {
+    private void check_mission_clean(ActionFunc func, bool cancel = false) {
 		msx[mdx] = ls.to_mission();
 		var is_dirty = false;
 		if (msx.length == lastmission.length) {
@@ -9561,7 +9561,7 @@ case 0:
 			is_dirty = true;
 		}
 		if(is_dirty) {
-            var dirtyd = new DirtyDialog((func == cleanup_t || func == cleanup_f));
+            var dirtyd = new DirtyDialog(cancel);
             dirtyd.response.connect((id) => {
                     switch(id) {
                     case ResponseType.YES:
