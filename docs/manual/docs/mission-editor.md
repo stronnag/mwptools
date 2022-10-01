@@ -124,9 +124,11 @@ Way points can be edited Mission Editor. When a row is selected, the column head
 
 If a SET POI point is added to the mission, (there may also be other extant way-points), this option will display a dialogue to enter the number of points in a shape, the radial distance (from the SET POI to each point), an offset angle and the direction of rotation. i.e this defines a polygon around the POI.
 
+![type](images/add-shape.png){: width="35%" }
+
 * The offset is relative to North. If you wanted the lines to be horizontal / vertical, specify an offset of 45° for a square.
 * Shape points are appended to any extant mission points, and the shape tool may be invoked multiple times, for example to create 'concentric' circles.
-* The `SET_POI` point may be deleted, unless you really want `SET_POI` functionality.
+* Once the shape is generated, the `SET_POI` point may be deleted, unless you really want `SET_POI` functionality.
 
 #### Location Updates
 
