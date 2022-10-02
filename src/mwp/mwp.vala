@@ -4648,16 +4648,12 @@ case 0:
 
         view.button_release_event.connect((evt) => {
                 bool ret = false;
-                if (evt.button == 1 && wp_edit)
-                {
-                    if(!map_moved())
-                    {
+                if (evt.button == 1 && wp_edit) {
+                    if(!map_moved()) {
                         insert_new_wp(evt.x, evt.y);
                         ret = true;
                     }
-                }
-                else
-                {
+                } else {
                     anim_cb(false);
                 }
                 return ret;
@@ -4680,16 +4676,14 @@ case 0:
         }
     }
 
-    private void insert_new_wp(float x, float y)
-    {
+    private void insert_new_wp(float x, float y) {
         var lon = view.x_to_longitude (x);
         var lat = view.y_to_latitude (y);
-        ls.insert_item(MSP.Action.WAYPOINT, lat,lon);
+        ls.insert_item(MSP.Action.WAYPOINT, lat, lon);
         ls.calc_mission();
     }
 
-    private void parse_rc_mav(string s, Craft.Special ptype)
-    {
+    private void parse_rc_mav(string s, Craft.Special ptype) {
         var parts = s.split(":");
         if(parts.length == 3)
         {

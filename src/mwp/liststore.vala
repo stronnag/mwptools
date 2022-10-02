@@ -497,6 +497,7 @@ public class ListBox : GLib.Object {
         EvCache.clear();
 
         foreach (MissionItem m in ms.get_ways()) {
+            lastid++;
             list_model.append (out iter);
             string no;
             double m1 = 0;
@@ -515,7 +516,6 @@ public class ListBox : GLib.Object {
                 }
                 break;
             default:
-                lastid++;
                 no = lastid.to_string();
                 if (m.action == MSP.Action.WAYPOINT || m.action == MSP.Action.LAND)
                     m1 = ((double)m.param1 / SPEED_CONV);
@@ -1496,8 +1496,7 @@ public class ListBox : GLib.Object {
             next=list_model.iter_next(ref iter)) {
             GLib.Value cell;
             list_model.get_value (iter, WY_Columns.ACTION, out cell);
-            if ( (MSP.Action)cell != MSP.Action.RTH)
-                lastid++;
+            lastid++;
         }
         return lastid;
     }
@@ -1680,8 +1679,8 @@ public class ListBox : GLib.Object {
         var dalt = get_user_alt();
         list_model.append(out iter);
         string no = "";
+        lastid++;
         if(typ != MSP.Action.RTH) {
-            lastid++;
             no = lastid.to_string();
         }
         list_model.set (iter,
