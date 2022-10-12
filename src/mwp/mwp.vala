@@ -7519,28 +7519,21 @@ case 0:
                 wp0.lon = of.lon/10000000.0;
                 double ofalt = of.alt/100.0;
 
-                if(fakeoff.faking)
-                {
+                if(fakeoff.faking) {
                     wp0.lat += fakeoff.dlat;
                     wp0.lon += fakeoff.dlon;
                 }
-
-                if(home_changed(wp0.lat, wp0.lon))
-                {
-                    if(of.fix == 0)
-                    {
+                if(home_changed(wp0.lat, wp0.lon)) {
+                    if(of.fix == 0) {
                         no_ofix++;
-                    }
-                    else
-                    {
+                    } else {
                         navstatus.cg_on();
                         sflags |=  NavStatus.SPK.GPS;
                         want_special |= POSMODE.HOME;
                         process_pos_states(wp0.lat, wp0.lon, ofalt, "LTM OFrame");
                     }
                 }
-                if(Logger.is_logging)
-                {
+                if(Logger.is_logging) {
                     Logger.ltm_oframe(of);
                 }
                 break;
@@ -8470,29 +8463,24 @@ case 0:
         typlab.label = s;
     }
 
-    private int get_heading_diff (int a, int b)
-    {
+    private int get_heading_diff (int a, int b) {
         var d = int.max(a,b) - int.min(a,b);
         if(d > 180)
             d = 360 - d;
         return d;
     }
 
-    private bool home_changed(double lat, double lon)
-    {
+    private bool home_changed(double lat, double lon) {
         bool ret=false;
         var d1 = home_pos.lat - lat;
         var d2 = home_pos.lon - lon;
 
-        if(((Math.fabs(d1) > 1e-6) || Math.fabs(d2) > 1e-6))
-        {
-            if(have_home && (home_pos.lat != 0.0) && (home_pos.lon != 0.0))
-            {
+        if(((Math.fabs(d1) > 1e-6) || Math.fabs(d2) > 1e-6)) {
+            if(have_home && (home_pos.lat != 0.0) && (home_pos.lon != 0.0)) {
                 double d,cse;
                 Geo.csedist(lat, lon, home_pos.lat, home_pos.lon, out d, out cse);
                 d*=1852.0;
-                if(d > conf.max_home_delta)
-                {
+                if(d > conf.max_home_delta) {
                     play_alarm_sound(MWPAlert.GENERAL);
                     navstatus.alert_home_moved();
                     MWPLog.message(
@@ -8509,17 +8497,14 @@ case 0:
     }
 
     private void process_pos_states(double lat, double lon, double alt,
-                                    string? reason=null)
-    {
-        if (lat == 0.0 && lon == 0.0)
-        {
+                                    string? reason=null) {
+        if (lat == 0.0 && lon == 0.0) {
             want_special = 0;
             last_ltmf = 0xff;
             return;
         }
 
-        if((armed != 0) && ((want_special & POSMODE.HOME) != 0))
-        {
+        if((armed != 0) && ((want_special & POSMODE.HOME) != 0)) {
             have_home = true;
             want_special &= ~POSMODE.HOME;
             home_pos.lat = xlat = wp0.lat;
@@ -8527,15 +8512,12 @@ case 0:
             home_pos.alt = alt;
             markers.add_home_point(wp0.lat,wp0.lon,ls);
             init_craft_icon();
-            if(craft != null)
-            {
+            if(craft != null) {
                 if(nrings != 0)
                     markers.initiate_rings(view, lat,lon, nrings, ringint,
                                            conf.rcolstr);
                 craft.special_wp(Craft.Special.HOME, wp0.lat, wp0.lon);
-            }
-            else
-            {
+            } else {
                 init_have_home();
             }
 
