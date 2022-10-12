@@ -654,7 +654,7 @@ public class MWP : Gtk.Application {
 	private int imdx = 0;
 	private bool ms_from_loader; // loading from file
 
-    private MeasureLayer mlayer;
+    private MeasureLayer? mlayer = null;
 
 	public static string? user_args;
 
@@ -2259,13 +2259,17 @@ public class MWP : Gtk.Application {
         add_source_combo(conf.defmap,msources);
 
         mlayer = new MeasureLayer(window, view);
-        mlayer.add_to_view(view);
 
         var ag = new Gtk.AccelGroup();
-
         ag.connect('d', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
-              mlayer.toggle_state(window);
-              return true;
+                int mx = 0;
+                int my = 0;
+                Gdk.Display display = Gdk.Display.get_default ();
+                var seat = display.get_default_seat();
+                var ptr = seat.get_pointer();
+                embed.get_window().get_device_position(ptr, out mx, out my, null);
+                mlayer.toggle_state(window, view, mx ,my);
+                return true;
           });
 
         ag.connect('?', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
@@ -4306,8 +4310,7 @@ case 0:
         }
     }
 
-    private bool clip_location(bool fmt)
-    {
+    private bool clip_location(bool fmt) {
         int mx,my;
         Gdk.Display display = Gdk.Display.get_default ();
         Gtk.Clipboard clipboard = Gtk.Clipboard.get_for_display (display, Gdk.SELECTION_CLIPBOARD);

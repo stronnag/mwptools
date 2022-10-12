@@ -15,25 +15,33 @@ class MeasureLayer : Object {
         view.button_release_event.connect ((event) => {
                 double lat, lon;
                 if (event.button == 1) {
-                    lat = view.y_to_latitude (event.y);
-                    lon = view.x_to_longitude (event.x);
                     if(measure) {
+                        lat = view.y_to_latitude (event.y);
+                        lon = view.x_to_longitude (event.x);
                         add(lat, lon);
                     }
                 }
 
                 if(event.button == 2) {
                     if(measure) {
-                        popup(w);
+                        popup(w, view);
                       }
                   }
                 return false;
             });
     }
 
-    public void add_to_view(Champlain.View view) {
-        view.add_layer(pl);
-        view.add_layer(ml);
+    public void toggle_state(Gtk.Window w, Champlain.View view, int ex, int ey) {
+        if (measure) {
+            popup(w, view);
+        } else {
+            measure = true;
+            view.add_layer(pl);
+            view.add_layer(ml);
+            var lat = view.y_to_latitude (ey);
+            var lon = view.x_to_longitude (ex);
+            add(lat, lon);
+          }
     }
 
     public void add(double lat, double lon) {
@@ -44,20 +52,6 @@ class MeasureLayer : Object {
         l.set_draggable(true);
         pl.add_node(l);
         ml.add_marker(l);
-    }
-
-    public void toggle_state(Gtk.Window? w=null) {
-        if (measure) {
-            popup(w);
-        } else {
-//            print ("Start Measure Mode\n");
-            measure = true;
-        }
-    }
-
-    public void clear() {
-        pl.remove_all();
-        ml.remove_all();
     }
 
     public void  calc_distance() {
@@ -84,16 +78,28 @@ class MeasureLayer : Object {
         }
     }
 
-    public void popup(Gtk.Window w) {
+    public void popup(Gtk.Window w, Champlain.View view) {
         var dlg = new Gtk.Dialog.with_buttons ("Measurement", w, 0,
                                                "Continue", Gtk.ResponseType.OK,
                                                "Close", Gtk.ResponseType.CLOSE);
         dlg.set_position(Gtk.WindowPosition.MOUSE);
         dlg.set_keep_above(true);
         dlg.response.connect((resp) => {
-                if (resp != Gtk.ResponseType.OK) {
+//                print("DBG: RESP  %s\n", ((Gtk.ResponseType)resp).to_string());
+                switch (resp) {
+                case Gtk.ResponseType.OK:
+                    break;
+                case Gtk.ResponseType.CLOSE:
                     measure = false;
-                    clear();
+                    break;
+                default:
+                    if(!measure) {
+                        pl.remove_all();
+                        ml.remove_all();
+                        view.remove_layer(pl);
+                        view.remove_layer(ml);
+                    }
+                    break;
                 }
                 dlg.close();
             });
