@@ -365,7 +365,7 @@ public class DirtyDialog : Gtk.Dialog {
         title = "Uncommitted mission file";
         border_width = 5;
         var content = get_content_area () as Gtk.Box;
-        content.pack_start(new Gtk.Label("Uncommiitted mission changes will be lost unless the current mssion is saved."));
+        content.pack_start(new Gtk.Label("Uncommitted mission changes will be lost unless the current mission is saved."));
         add_button ("Don't Save", ResponseType.NO);
         add_button ("Save", ResponseType.YES);
         if(addcancel ) {
