@@ -654,6 +654,8 @@ public class MWP : Gtk.Application {
 	private int imdx = 0;
 	private bool ms_from_loader; // loading from file
 
+    private MeasureLayer mlayer;
+
 	public static string? user_args;
 
 	public enum HomeType {
@@ -2256,7 +2258,15 @@ public class MWP : Gtk.Application {
 
         add_source_combo(conf.defmap,msources);
 
+        mlayer = new MeasureLayer(window, view);
+        mlayer.add_to_view(view);
+
         var ag = new Gtk.AccelGroup();
+
+        ag.connect('d', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
+              mlayer.toggle_state(window);
+              return true;
+          });
 
         ag.connect('?', Gdk.ModifierType.CONTROL_MASK, 0, (a,o,k,m) => {
                 pos_is_centre = !pos_is_centre;
@@ -2752,8 +2762,7 @@ public class MWP : Gtk.Application {
             });
 
         pane.button_release_event.connect((evt) => {
-                if (evt.button == 1)
-                {
+                if (evt.button == 1) {
                     conf.window_p = 100.0* (double)pane.position /(double) (pane.max_position - pane.min_position);
                     conf.save_pane();
                 }
@@ -4648,7 +4657,7 @@ case 0:
 
         view.button_release_event.connect((evt) => {
                 bool ret = false;
-                if (evt.button == 1 && wp_edit) {
+                if (evt.button == 1 && wp_edit && !mlayer.is_active()) {
                     if(!map_moved()) {
                         insert_new_wp(evt.x, evt.y);
                         ret = true;
