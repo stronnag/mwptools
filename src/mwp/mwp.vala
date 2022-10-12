@@ -1299,7 +1299,7 @@ public class MWP : Gtk.Application {
         window.set_application (this);
 
 		splash = new MwpSplash();
-		if(!is_wayland) {
+        if(Environment.get_variable("MWP_SPLASH") != null || is_wayland == false) {
 			splash.run(/*OK*/);
 		}
 
