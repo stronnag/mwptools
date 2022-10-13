@@ -34,3 +34,24 @@ For convenience, clicking the 'Editor ...' button will load the "Places Editor".
 	* Delete location : Deletes the location without question.
 * **OK** Saves the locations to `~/.config/mwp/places`
 * Closing using the window manager **X** icon closes without saving.
+
+
+## Useful Shortcuts
+
+* Control-D : Enters distance measure mode. Click on the map to add more points to measure distance along a path. Press Control-D again to get the distance, with an option to continue to add points. The points may also be dragged.
+
+![measure](images/measure.png){: width="30%" }
+
+In the image, we are measuring the distance between the take off home (brown icon) and the landing home (orange icon); the distance markers are the black/white circles. Ctrl-D has been pressed a second time to display the result.
+
+* Control L : Control-Shift L : Copy the pointer location to the clip board (Ctrl-L, decimal degrees, Ctrl-Shift-L formatted).
+
+## Keyboard Shortcuts
+
+### Menu and Replay
+
+![shortcuts00](images/sc00.png){: width="60%" }
+
+### Map and Tools
+
+![shortcuts01](images/sc01.png){: width="60%" }
