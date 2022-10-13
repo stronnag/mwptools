@@ -45,8 +45,21 @@ class MeasureLayer : Object {
     }
 
     public void add(double lat, double lon) {
-        var l = new Champlain.Point();
-        l.color = ycol;
+        Champlain.Marker l;
+        try {
+            float w,h;
+            Clutter.Actor actor = new Clutter.Actor ();
+			var img = MWPMarkers.load_image_from_file("dist.svg", 20, 20);
+            img.get_preferred_size(out w, out h);
+			actor.set_size((int)w, (int)h);
+			actor.content = img;
+			l = new MWPLabel.with_image(actor);
+            ((Champlain.Label)l).set_draw_background (false);
+            l.set_pivot_point(0.5f, 0.5f);
+        } catch {
+            l = new Champlain.Point();
+            ((Champlain.Point)l).color = ycol;
+        }
         l.latitude = lat;
         l.longitude = lon;
         l.set_draggable(true);
