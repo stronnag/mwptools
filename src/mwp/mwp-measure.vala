@@ -45,7 +45,7 @@ class MeasureLayer : Object {
     }
 
     public void add(double lat, double lon) {
-        Champlain.Marker l;
+        MWPLabel l;
         try {
             float w,h;
             Clutter.Actor actor = new Clutter.Actor ();
@@ -57,7 +57,7 @@ class MeasureLayer : Object {
             ((Champlain.Label)l).set_draw_background (false);
             l.set_pivot_point(0.5f, 0.5f);
         } catch {
-            l = new Champlain.Point();
+            l = new Champlain.Point() as MWPLabel;
             ((Champlain.Point)l).color = ycol;
         }
         l.latitude = lat;
@@ -77,8 +77,8 @@ class MeasureLayer : Object {
         td = 0.0;
 
         foreach(var n in pl.get_nodes()) {
-            lon = ((Champlain.Point)n).longitude;
-            lat = ((Champlain.Point)n).latitude;
+            lon = ((Champlain.Location)n).longitude;
+            lat = ((Champlain.Location)n).latitude;
             if(calc) {
                 double c;
                 double d;
