@@ -19,7 +19,7 @@ The following illustrations are from ELRS:
 CRSF frame has the structure:
 <Device address> <Frame length> <Type> <Payload> <CRC>
 Device address: (uint8)
-Frame length:   length in  bytes including Type (uint8)
+Frame length:   length in  bytes including Type (uint8), payload and CRC
 Type:           (uint8)
 CRC:            (uint8), crc of <Type> and <Payload>
 ```
@@ -119,24 +119,23 @@ To replay a capture file into mwp:
 
 ### Dump Data
 
-First, build the `crsf_test` tool
+First, build the `crsfparsert` tool (having installed a rust compiler).
+
 ```
-ninja
+cargo build --release
 ```
 then
 
 ```
-$ ./crsf_test FILE_NAME
+$ target/release/crsfparser FILE_NAME
 ```
-The decoded file is dumped to the terminal, formatted (for example, location obfuscated). The log file may be a raw capture (no metadata), an mwp serial raw log with metadata / record chunking ("v2") or mwp serial JSON log.
+The decoded file is dumped to the terminal, formatted (for example, location obfuscated). The log file may be a raw capture (no metadata), or a mwp serial raw log with metadata / record chunking ("v2").
 
 ```
-FM: MANU
-GPS: dd.119125 -dd.062258 43 m 7.8 deg 13.1 m/s 11 sats
-VARIO: 284 cm/s
-ATTI: Pitch -7.6, Roll -14.6, Yaw 11.9
-GPS: dd.119148 -dd.062254 43 m 8.2 deg 13.1 m/s 10 sats
-VARIO: 261 cm/s
-LINK: RSSI1 53 RSSI2 53 UpLQ 100 UpSNR 43 ActAnt 248 Mode 150hz TXPwr ?? DnRSSI 61 DnLQ 100 DnSNR 38
-ATTI: Pitch -9.0, Roll -16.6, Yaw 10.6
+  93.62s: FM: MANU
+  93.76s: VARIO 167 cm/s
+  93.81s: ATTI: p -6.20 r 2.80 y 158.10
+  93.81s: LINKSTATS: rssi1 49 rssi2 49 UpLQ 100 UpSNR 47 ActAnt 248 Mode 150hz TXPwr 2000mW DnRSSI 59 DnLQ 97 DnSNR 40
+  93.84s: RADIO: rate 6666us offset 81us
+  93.87s: GPS: dd.dddddd ddd.dddddd 49m 11.5m/s 353.9° 10 sats
 ```
