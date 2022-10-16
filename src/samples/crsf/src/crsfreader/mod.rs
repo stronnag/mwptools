@@ -161,10 +161,11 @@ impl CRSFReader {
                     | u32::from(self.payload[5]) << 8
                     | u32::from(self.payload[6]);
 
-                format!(
-                    "BAT: {:.2}V {:.2}A {}mah {}%",
-                    volts, amps, capa, self.payload[7]
-                )
+                let mut pct = "".to_string();
+                if self.len > 7 {
+                    pct = format!(" {}%", self.payload[7])
+                }
+                format!("BAT: {:.2}V {:.2}A {}mah{}", volts, amps, capa, pct)
             }
             LINKSTATS_ID => {
                 let mut smode = "??".to_string();

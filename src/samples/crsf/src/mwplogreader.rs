@@ -1,5 +1,5 @@
+use byteorder::ByteOrder;
 use byteorder::LittleEndian;
-use byteorder::ReadBytesExt;
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
@@ -46,9 +46,11 @@ impl MWPReader {
 
     pub fn read(&mut self, buf: &mut Vec<u8>, delta: &mut Option<f64>) -> io::Result<()> {
         if self.ftype == Ftype::V2 {
-            let offset = self.reader.read_f64::<LittleEndian>()?;
-            let size = self.reader.read_u16::<LittleEndian>()?;
-            let dirn = self.reader.read_u8()?;
+            let mut hdr = vec![0u8; 11];
+            self.reader.read_exact(&mut hdr)?;
+            let offset = LittleEndian::read_f64(&hdr[0..8]);
+            let size = LittleEndian::read_u16(&hdr[8..10]);
+            let dirn = hdr[10];
             if dirn == b'o' {
                 self.reader.seek(SeekFrom::Current(size as i64))?;
                 *delta = None;
