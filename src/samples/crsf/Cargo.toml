@@ -7,6 +7,8 @@ edition = "2021"
 
 [dependencies]
 byteorder = "1.4.3"
+json = "0.12.4"
+base64 = "0.13.0"
 
 [profile.release]
 strip = true  # Automatically strip symbols from the binary.

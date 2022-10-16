@@ -6,9 +6,20 @@ use std::io::prelude::*;
 
 use std::io::BufReader;
 use std::io::SeekFrom;
+use std::io::{Error, ErrorKind};
+
+extern crate base64;
+extern crate json;
+
+#[derive(PartialEq)]
+enum Ftype {
+    Raw,
+    V2,
+    Json,
+}
 
 pub struct MWPReader {
-    ftype: u8,
+    ftype: Ftype,
     reader: BufReader<File>,
 }
 impl MWPReader {
@@ -17,12 +28,15 @@ impl MWPReader {
         let mut v2 = [0; 3];
         let mut reader = BufReader::new(f);
         reader.read(&mut v2)?;
-        let typ: u8;
+        let typ: Ftype;
         if v2 == [118, 50, 10] {
-            typ = 0;
+            typ = Ftype::V2;
+        } else if v2 == [b'{', b'"', b's'] {
+            typ = Ftype::Json;
+            reader.rewind()?;
         } else {
             reader.rewind()?;
-            typ = 1;
+            typ = Ftype::Raw;
         }
         Ok(MWPReader {
             reader: reader,
@@ -31,7 +45,7 @@ impl MWPReader {
     }
 
     pub fn read(&mut self, buf: &mut Vec<u8>, delta: &mut Option<f64>) -> io::Result<()> {
-        if self.ftype == 0 {
+        if self.ftype == Ftype::V2 {
             let offset = self.reader.read_f64::<LittleEndian>()?;
             let size = self.reader.read_u16::<LittleEndian>()?;
             let dirn = self.reader.read_u8()?;
@@ -43,10 +57,34 @@ impl MWPReader {
             *delta = Some(offset);
             *buf = vec![0u8; size.into()];
             self.reader.read_exact(buf)?
-        } else {
+        } else if self.ftype == Ftype::Raw {
             *buf = vec![0u8; 128];
             *delta = None;
             self.reader.read_exact(buf)?
+        } else {
+            let mut s = String::new();
+            self.reader.read_line(&mut s)?;
+            match json::parse(&s) {
+                Ok(parsed) => match parsed["direction"].as_u8() {
+                    None => return Err(Error::new(ErrorKind::Other, "JSON EOF")),
+                    Some(dirn) => {
+                        if dirn == b'i' {
+                            match parsed["stamp"].as_f64() {
+                                Some(offset) => *delta = Some(offset),
+                                None => return Err(Error::new(ErrorKind::Other, "JSON EOF")),
+                            }
+                            match &parsed["rawdata"].as_str() {
+                                Some(v) => *buf = base64::decode(v).unwrap(),
+                                None => return Err(Error::new(ErrorKind::Other, "JSON EOF")),
+                            }
+                        } else {
+                            *delta = None;
+                            return Ok(());
+                        }
+                    }
+                },
+                Err(_) => return Err(Error::new(ErrorKind::Other, "JSON EOF")),
+            }
         }
         Ok(())
     }

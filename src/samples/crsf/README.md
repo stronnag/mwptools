@@ -129,7 +129,20 @@ then
 ```
 $ target/release/crsfparser FILE_NAME
 ```
-The decoded file is dumped to the terminal, formatted (for example, location obfuscated). The log file may be a raw capture (no metadata), or a mwp serial raw log with metadata / record chunking ("v2").
+
+or install it:
+
+```
+# default ~/.cargo/bin
+cargo install --path .
+```
+
+```
+# user preference r.g. ~/.local/bin
+cargo install --path . --root ~/.local [--force]
+```
+
+The decoded file is dumped to the terminal, formatted (for example, location obfuscated).
 
 ```
   93.62s: FM: MANU
@@ -139,3 +152,5 @@ The decoded file is dumped to the terminal, formatted (for example, location obf
   93.84s: RADIO: rate 6666us offset 81us
   93.87s: GPS: dd.dddddd ddd.dddddd 49m 11.5m/s 353.9° 10 sats
 ```
+
+The log file may be a raw capture (no metadata), or a mwp serial raw log with metadata / record chunking ("v2") or a JSON encoded mwp serial log. See the [mwp-serial-log](../mwp-serial-log/) documentation for more detail.
