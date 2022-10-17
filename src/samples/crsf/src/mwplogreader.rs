@@ -25,13 +25,14 @@ pub struct MWPReader {
 impl MWPReader {
     pub fn open(fname: &str) -> Result<MWPReader, io::Error> {
         let f = File::open(fname)?;
-        let mut v2 = [0; 3];
+        let mut v2 = [0u8; 9];
         let mut reader = BufReader::new(f);
         reader.read(&mut v2)?;
         let typ: Ftype;
-        if v2 == [118, 50, 10] {
+        if &v2[0..3] == b"v2\n" {
             typ = Ftype::V2;
-        } else if v2 == [b'{', b'"', b's'] {
+            reader.seek(SeekFrom::Start(3))?;
+        } else if &v2 == br#"{"stamp":"# {
             typ = Ftype::Json;
             reader.rewind()?;
         } else {
