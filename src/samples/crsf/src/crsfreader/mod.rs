@@ -223,7 +223,7 @@ impl CRSFReader {
                     format!("RADIO: failed to decode")
                 }
             }
-            _ => format!("UNKNOWN: Type {}, paylaod len {}", self.func, self.len),
+            _ => format!("UNKNOWN: Type {}, payload len {}", self.func, self.len),
         }
     }
 }
