@@ -802,11 +802,18 @@ public class MWP : Gtk.Application {
 				is_wayland = false;
 			}
 		}
-
-		var dmstr = Environment.get_variable("XDG_CURRENT_DESKTOP");
-		if (dmstr == null) {
-			dmstr = "Unknown DE";
-		}
+        string[] dms = {
+            "XDG_SESSION_DESKTOP", "DESKTOP_SESSION", "XDG_CURRENT_DESKTOP"
+        };
+        string dmstr = null;
+        foreach (var dx in dms)  {
+                dmstr = Environment.get_variable(dx);
+                if (dmstr != null)
+                    break;
+            }
+        if (dmstr == null) {
+            dmstr = "Unknown DE";
+        }
         MWPLog.message("version: %s\n", verstr);
         string os=null;
         MWPLog.message("%s\n", Logger.get_host_info(out os));
