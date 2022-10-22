@@ -20,21 +20,23 @@ const char * get_id(void) {
 }
 
 const char * get_build_host(void) {
-  static char buildname[256];
-  char *hv =
+  return
 #ifdef BUILDINFO
       xstr(BUILDINFO);
 #else
   "";
 #endif
-  char *hc =
-#ifdef __clang__
+}
+
+const char * get_build_compiler(void) {
+  return
+#ifdef COMPINFO
+      xstr(COMPINFO);
+#elif defined(__clang__)
       __VERSION__;
 #else
   "gcc " __VERSION__;
 #endif
-  sprintf(buildname,"%s %s", hv, hc);
-  return buildname;
 }
 
 #else

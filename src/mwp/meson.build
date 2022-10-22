@@ -56,6 +56,13 @@ if res.returncode() == 0
   mwp_c_args += '-DBUILDINFO='+res.stdout().strip()
 endif
 
+comp = meson.get_compiler('c', native: true)
+cname = comp.get_id() + ' ' + comp.version()
+vcomp = meson.get_compiler('vala', native: true)
+vname = vcomp.get_id() + ' ' + vcomp.version()
+compinfo = ' / '.join([cname, comp.get_linker_id(), vname])
+mwp_c_args += '-DCOMPINFO='+compinfo
+
 paho = meson.get_compiler('c').find_library('paho-mqtt3cs', dirs: ldirs, required: false)
 
 if paho.found()

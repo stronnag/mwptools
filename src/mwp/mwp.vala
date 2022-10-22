@@ -747,8 +747,7 @@ public class MWP : Gtk.Application {
 		return res;
 	}
 
-    void show_startup()
-    {
+    void show_startup() {
 		builder = new Builder ();
         string[]ts={"mwp.ui", "menubar.ui", "mwpsc.ui"};
         foreach(var fnm in ts) {
@@ -816,6 +815,7 @@ public class MWP : Gtk.Application {
         }
 
         MWPLog.message("buildinfo: %s\n", MwpVers.get_build_host());
+        MWPLog.message("toolinfo: %s\n", MwpVers.get_build_compiler());
         MWPLog.message("version: %s\n", verstr);
         string os=null;
         MWPLog.message("%s\n", Logger.get_host_info(out os));
@@ -1084,6 +1084,10 @@ public class MWP : Gtk.Application {
     }
 
     public void handle_activate () {
+        if((Posix.geteuid() == 0 || Posix.getuid() == 0) && asroot == false) {
+            MWPLog.message("Cowardly refusing to run as root ... for your own safety\n");
+            Posix.exit(127);
+        }
         if (active_window == null) {
 			show_startup();
             ready = true;
@@ -10558,7 +10562,8 @@ case 0:
 		Environment.set_prgname(MWP.MWPID);
 		MwpLibC.atexit(MWP.xchild);
         var s = MWP.read_env_args();
-		if (GtkClutter.init (ref args) != InitError.SUCCESS)
+
+        if (GtkClutter.init (ref args) != InitError.SUCCESS)
             return 1;
         Gst.init (ref args);
 		StringBuilder sb = new StringBuilder();

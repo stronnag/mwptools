@@ -95,6 +95,8 @@ namespace MwpVers
     unowned string get_id();
     [CCode (cname="get_build_host")]
     unowned string get_build_host();
+    [CCode (cname="get_build_compiler")]
+    unowned string get_build_compiler();
     [CCode (cname="__progname")]
     string progname;
 }
