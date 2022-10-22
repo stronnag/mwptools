@@ -47,6 +47,15 @@ mwpdeps = [deps,
 ldirs = ['/usr/lib', '/usr/local/lib']
 mwp_c_args = []
 
+pymodule = import('python3')
+python3 = pymodule.find_python()
+res = run_command(python3, '-c',
+		  'import platform; import datetime; print(datetime.datetime.utcnow().strftime("%FT%TZ") + " " +  platform.platform() + " " + platform.node())',
+		  check: false)
+if res.returncode() == 0
+  mwp_c_args += '-DBUILDINFO='+res.stdout().strip()
+endif
+
 paho = meson.get_compiler('c').find_library('paho-mqtt3cs', dirs: ldirs, required: false)
 
 if paho.found()

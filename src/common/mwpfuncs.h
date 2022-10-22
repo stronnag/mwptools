@@ -25,6 +25,7 @@ extern char* get_native_path(char *);
 extern char *__progname;
 extern const char * get_build();
 extern const char * get_id();
+extern const char * get_build_host();
 
 extern void get_glinfo(char **vendp, char **rendp);
 

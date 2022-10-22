@@ -7,8 +7,7 @@
 #define xstr(s) str(s)
 #define str(x) #x
 
-const char * get_build(void)
-{
+const char * get_build(void) {
      static char stamp[80];
      char * gv = xstr(MWPGITVERSION);
      char * gs = xstr(MWPGITSTAMP);
@@ -16,21 +15,39 @@ const char * get_build(void)
      return stamp;
 }
 
-const char * get_id(void)
-{
+const char * get_id(void) {
      return MWP_VERSION_STRING;
+}
+
+const char * get_build_host(void) {
+  static char buildname[256];
+  char *hv =
+#ifdef BUILDINFO
+      xstr(BUILDINFO);
+#else
+  "";
+#endif
+  char *hc =
+#ifdef __clang__
+      __VERSION__;
+#else
+  "gcc " __VERSION__;
+#endif
+  sprintf(buildname,"%s %s", hv, hc);
+  return buildname;
 }
 
 #else
 #include "mwpvers.h"
-char * get_build(void)
-{
-     // git dddd-mm-yy
-     return mwpvers;
+const char * get_build(void) {
+  // git dddd-mm-yy
+  return mwpvers;
 }
-char * get_id(void)
-{
-     //yy.jd.ds/100
-     return mwpid;
+const char * get_id(void) {
+  //yy.jd.ds/100
+  return mwpid;
+}
+const char * get_build_host(void) {
+  return "":
 }
 #endif

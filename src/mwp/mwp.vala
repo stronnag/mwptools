@@ -814,6 +814,8 @@ public class MWP : Gtk.Application {
         if (dmstr == null) {
             dmstr = "Unknown DE";
         }
+
+        MWPLog.message("buildinfo: %s\n", MwpVers.get_build_host());
         MWPLog.message("version: %s\n", verstr);
         string os=null;
         MWPLog.message("%s\n", Logger.get_host_info(out os));
@@ -1201,7 +1203,7 @@ public class MWP : Gtk.Application {
         // GLib version 2.73+ breaks GDL, alas
         var dbstyle = DockBarStyle.ICONS;
         if(GLib.Version.major > 1 && GLib.Version.minor > 72) {
-            MWPLog.message("Dock fallback for broken GLib2 %u.%u\n", GLib.Version.major, GLib.Version.minor);
+            MWPLog.message("GLib2 %u.%u (dock fallback)\n", GLib.Version.major, GLib.Version.minor);
             dbstyle = DockBarStyle.TEXT;
         } else {
             MWPLog.message("GLib2 %u.%u\n", GLib.Version.major, GLib.Version.minor);
