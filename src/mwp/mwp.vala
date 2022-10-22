@@ -823,9 +823,6 @@ public class MWP : Gtk.Application {
         if(vstr == null || vstr.length == 0)
             vstr = "none";
         MWPLog.message("hypervisor: %s\n", vstr);
-#if MQTT
-        MWPLog.message("MQTT enabled via the \"%s\" library\n", MwpMQTT.provider());
-#endif
     }
 
     public MWP (string? s)
@@ -1201,6 +1198,17 @@ public class MWP : Gtk.Application {
         wpmgr = WPMGR();
 		msx = {};
 
+        // GLib version 2.73+ breaks GDL, alas
+        var dbstyle = DockBarStyle.ICONS;
+        if(GLib.Version.major > 1 && GLib.Version.minor > 72) {
+            MWPLog.message("Dock fallback for broken GLib2 %u.%u\n", GLib.Version.major, GLib.Version.minor);
+            dbstyle = DockBarStyle.TEXT;
+        } else {
+            MWPLog.message("GLib2 %u.%u\n", GLib.Version.major, GLib.Version.minor);
+        }
+#if MQTT
+        MWPLog.message("MQTT enabled via the \"%s\" library\n", MwpMQTT.provider());
+#endif
         vbsamples = new float[MAXVSAMPLE];
 
         devman = new DevManager();
@@ -2824,11 +2832,6 @@ public class MWP : Gtk.Application {
         dock.margin_start = 4;
         var dockbar = new DockBar (dock);
 
-        // GLib version 2.73+ breaks GDL, alas
-        var dbstyle = DockBarStyle.ICONS;
-        if(GLib.Version.MAJOR > 1 && GLib.Version.MINOR > 72) {
-            dbstyle = DockBarStyle.TEXT;
-        }
         dockbar.set_style (dbstyle);
         lman = new LayMan(dock, confdir,layfile,DOCKLETS.NUMBER);
 
