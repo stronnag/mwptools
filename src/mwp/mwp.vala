@@ -1207,7 +1207,7 @@ public class MWP : Gtk.Application {
         // GLib version 2.73+ breaks GDL, alas
         var dbstyle = DockBarStyle.ICONS;
         if(GLib.Version.major > 1 && GLib.Version.minor > 72) {
-            MWPLog.message("GLib2 %u.%u (dock fallback)\n", GLib.Version.major, GLib.Version.minor);
+            MWPLog.message("GLib2 %u.%u.%u (dock fallback)\n", GLib.Version.major, GLib.Version.minor, GLib.Version.micro);
             dbstyle = DockBarStyle.TEXT;
         } else {
             MWPLog.message("GLib2 %u.%u\n", GLib.Version.major, GLib.Version.minor);
