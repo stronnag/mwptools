@@ -14,7 +14,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.4.0, mkdocs-material-7.3.6">
+      <meta name="generator" content="mkdocs-1.4.1, mkdocs-material-7.3.6">
     
     
       
@@ -1185,6 +1185,7 @@
 <p>There is also an excellent <a href="https://www.youtube.com/watch?v=VvnBzQR7aE8">you-tube video tutorial</a> from Marc Hoffmann (in English and German).</p>
 <iframe width="560" height="315" src="https://www.youtube.com/embed/VvnBzQR7aE8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
+<p>It is also possible to run  <a href="https://github.com/stronnag/mwptools">mwp</a> on Windows 10 (and 7) using WSL-1 (win10) and / or Cygwin.  This is documented in the <a href="https://github.com/stronnag/mwptools/wiki">mwp wiki</a>.</p>
 <h2 id="environment">Environment<a class="headerlink" href="#environment" title="Permanent link">#</a></h2>
 <p>Tested with Windows 11 VM hosted on Arch Linux by the developer.</p>
 <h2 id="wsl-installation">WSL Installation<a class="headerlink" href="#wsl-installation" title="Permanent link">#</a></h2>
@@ -1223,7 +1224,7 @@ sudo apt install git
 <pre><code>sudo mwptools/docs/debinstall.sh -y # "-y" bypasses interactive query / responses
 </code></pre>
 <p>Then build and install mwp and optionally the blackbox tools (as <code>mwptools/docs/debian-ubuntu-dependencies.txt</code>). <a href="https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja">Build documentation</a>.</p>
-<p>For the optimal blackbox replay, install the <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a> tools, either from the GitHub release or build from source in Linux/WSL.</p>
+<p>For the optimal blackbox replay, install the <a href="https://github.com/stronnag/bbl2kml">flightlog2x</a> tools; build from source in Linux/WSL.</p>
 <h2 id="running-mwp">Running mwp<a class="headerlink" href="#running-mwp" title="Permanent link">#</a></h2>
 <p>Compared to Win10/WSL or Cygwin, there is no longer any need to mess around the <code>DISPLAY</code> or <code>udev</code> settings. No 3rd party X-server, Windows 11 / WSL-G  handles all the GUI.</p>
 <h3 id="one-off-changes">One off changes<a class="headerlink" href="#one-off-changes" title="Permanent link">#</a></h3>
@@ -1270,15 +1271,11 @@ generateHosts = false
 <h3 id="standalone-bridge">Standalone Bridge<a class="headerlink" href="#standalone-bridge" title="Permanent link">#</a></h3>
 <p>There are a number of existing solutions that may work; <strong>mwp</strong> provides a simple, dedicated <code>ser2udp</code> tool that works well, and once set up is transparent in usage.</p>
 <h3 id="installing-mwps-ser2udp">Installing mwp's <code>ser2udp</code><a class="headerlink" href="#installing-mwps-ser2udp" title="Permanent link">#</a></h3>
-<p>Either:</p>
+<p>Build on the  <strong>Linux/WSL side</strong>:</p>
 <ul>
-<li>Download the compiled Zip file from the current <a href="https://github.com/stronnag/mwptools/releases">mwp release area</a> (on Windows); or</li>
-<li>Build on the  <strong>Linux/WSL side</strong>:<ul>
 <li><code>cd mwptools/src/samples/s2n</code></li>
 <li><code>make ser2udp.exe</code></li>
 <li>copy <code>ser2udp.exe</code> to the d̶a̶r̶k̶  Windows side</li>
-</ul>
-</li>
 </ul>
 <p>On the Windows side:</p>
 <ul>
@@ -1377,7 +1374,7 @@ Dark theme, <a href="#one-off-changes">correct system icons installed</a>, conne
 <div class="md-source-date">
   <small>
     
-      Last update: 2022-06-01
+      Last update: 2022-10-29
     
   </small>
 </div>
