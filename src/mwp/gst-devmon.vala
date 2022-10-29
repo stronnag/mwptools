@@ -82,7 +82,8 @@ public class GstMonitor : Gst.Object {
 		var devs = monitor.get_devices();
 		devs.@foreach((dv) => {
 				var ds = get_node_info(dv);
-				source_changed("init", ds);
+                if(ds != null)
+                    source_changed("init", ds);
 			});
 		monitor.start();
 		return monitor;
