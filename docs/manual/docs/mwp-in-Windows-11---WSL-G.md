@@ -8,6 +8,8 @@ There is also an excellent [you-tube video tutorial](https://www.youtube.com/wat
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/VvnBzQR7aE8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
+It is also possible to run  {{ mwp }} on Windows 10 (and 7) using WSL-1 (win10) and / or Cygwin.  This is documented in the [mwp wiki](https://github.com/stronnag/mwptools/wiki).
+
 ## Environment
 
 Tested with Windows 11 VM hosted on Arch Linux by the developer.
@@ -62,7 +64,7 @@ Then it was just a case of cloning the mwp repository and following mwp's instru
 
 Then build and install mwp and optionally the blackbox tools (as `mwptools/docs/debian-ubuntu-dependencies.txt`). [Build documentation](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja).
 
-For the optimal blackbox replay, install the [flightlog2x](https://github.com/stronnag/bbl2kml) tools, either from the GitHub release or build from source in Linux/WSL.
+For the optimal blackbox replay, install the [flightlog2x](https://github.com/stronnag/bbl2kml) tools; build from source in Linux/WSL.
 
 ## Running mwp
 
@@ -113,13 +115,12 @@ There are a number of existing solutions that may work; **mwp** provides a simpl
 
 ### Installing mwp's `ser2udp`
 
-Either:
 
-* Download the compiled Zip file from the current [mwp release area](https://github.com/stronnag/mwptools/releases) (on Windows); or
-* Build on the  **Linux/WSL side**:
-    * `cd mwptools/src/samples/s2n`
-    * `make ser2udp.exe`
-    * copy `ser2udp.exe` to the d̶a̶r̶k̶  Windows side
+Build on the  **Linux/WSL side**:
+
+* `cd mwptools/src/samples/s2n`
+* `make ser2udp.exe`
+* copy `ser2udp.exe` to the d̶a̶r̶k̶  Windows side
 
 On the Windows side:
 
