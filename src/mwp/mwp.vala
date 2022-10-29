@@ -3163,7 +3163,6 @@ public class MWP : Gtk.Application {
 		if (vid_dialog == null) {
 			vid_dialog = new V4L2_dialog(viddev_c);
             vid_dialog.response.connect((id) => {
-                print("DBG: vid %d\n", id);
                 if(id == 1000) {
                     res = vid_dialog.result(out uri);
                     switch(res) {
