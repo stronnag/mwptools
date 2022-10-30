@@ -76,7 +76,7 @@ impl CRSFReader {
                     }
                 }
                 State::Len => {
-                    if *e > 2 || *e > TELEMETRY_RX_PACKET_SIZE - 2 {
+                    if *e > 2 && *e < TELEMETRY_RX_PACKET_SIZE - 2 {
                         self.state = State::Func;
                         self.len = *e - 2; // exclude type and crc (i.e. payload only)
                     } else {
