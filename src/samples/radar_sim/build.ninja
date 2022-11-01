@@ -1,0 +1,16 @@
+C = ../../common
+opts = -X -Oz -X -s --vapidir $C -X -I$C -X -lm
+pkgs = --pkg gio-2.0 --pkg posix --pkg mwpfuncs
+cf = $C/serial-device.vala $C/geocalc.vala $C/utils.vala $C/mspcmd.vala $C/mspmsg.vala $C/mwplog.vala $C/btdev.c $C/cserial.c $C/sede.vala $C/mwp_uriparser.vala
+
+rule valac
+    command = valac $opts -o $out $pkgs $in $cf
+
+rule install
+     command = install $in $${PREFIX:-$$HOME/.local}/bin/
+
+build mwp-inav-radar-sim: valac mwp-inav-radar-sim.vala
+
+build mwp-mavlink-traffic-sim: valac mwp-mavlink-traffic-sim.vala
+
+build install: install mwp-inav-radar-sim mwp-mavlink-traffic-sim
