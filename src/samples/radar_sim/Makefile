@@ -10,7 +10,7 @@ SRC1=$(APP1).vala
 
 COMMOND=../../common
 
-COMMON=$(COMMOND)/serial-device.vala $(COMMOND)/geocalc.vala  $(COMMOND)/utils.vala $(COMMOND)/mspcmd.vala  $(COMMOND)/mspmsg.vala $(COMMOND)/mwplog.vala  $(COMMOND)/btdev.c $(COMMOND)/cserial.c $(COMMOND)/sede.vala
+COMMON=$(COMMOND)/serial-device.vala $(COMMOND)/geocalc.vala  $(COMMOND)/utils.vala $(COMMOND)/mspcmd.vala  $(COMMOND)/mspmsg.vala $(COMMOND)/mwplog.vala  $(COMMOND)/btdev.c $(COMMOND)/cserial.c $(COMMOND)/sede.vala $(COMMOND)/mwp_uriparser.vala
 
 PKGS=--pkg posix --pkg linux --pkg gio-2.0
 

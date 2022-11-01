@@ -12,14 +12,17 @@
 Niether simulator is built by default, it is necessary to:
 
 ```
-cd mwptools/samples/mwp-radar-sim
-ninja && sudo ninja install
+cd mwptools/src/samples/mwp-radar-sim
+# install  in ~/.local/bin
+make install prefix=~/.local
+# or, if you insist
+make && sudo make install
 ```
 
 ## Usage
 
 ```
-$ mwp-radar-sim --help
+$ mwp-inav-radar-sim --help
 Usage:
   mwp-radar-sim [OPTION?]  - iNav radar simulation tool
 
@@ -74,7 +77,7 @@ For convenience, the `--centre` parameter matches the `mwp-radar-sim` default.
 Then start the simulator:
 
 ```
-$ mwp-radar-sim -d udp://localhost:3000
+$ mwp-inav-radar-sim -d udp://localhost:3000
 ```
 
 Similarly:
