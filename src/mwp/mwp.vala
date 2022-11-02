@@ -6645,11 +6645,9 @@ case 0:
 
                 MWPLog.message(loc);
 
-                if(need_mission)
-                {
+                if(need_mission) {
                     need_mission = false;
-                    if(conf.auto_restore_mission)
-                    {
+                    if(conf.auto_restore_mission) {
                         MWPLog.message("Auto-download FC mission\n");
                         download_mission();
                     }
@@ -6756,56 +6754,50 @@ case 0:
                     handle_radar(msp, cmd, raw, len, xflags, errs);
                     return;
                 } else {
-                if(have_fcvv == false)
-                {
-                    have_fcvv = true;
-                    set_menu_state("reboot", true);
-                    set_menu_state("terminal", true);
-                    vi.fc_vers = raw[0] << 16 | raw[1] << 8 | raw[2];
-                    safehomed.online_change(vi.fc_vers);
+                    if(have_fcvv == false) {
+                        have_fcvv = true;
+                        set_menu_state("reboot", true);
+                        set_menu_state("terminal", true);
+                        vi.fc_vers = raw[0] << 16 | raw[1] << 8 | raw[2];
+                        safehomed.online_change(vi.fc_vers);
 
-                    var fcv = "%s v%d.%d.%d".printf(vi.fc_var,raw[0],raw[1],raw[2]);
-                    verlab.label = verlab.tooltip_text = fcv;
-                    if(inav)
-                    {
-                        if(vi.fc_vers < FCVERS.hasMoreWP)
-                            wp_max = 15;
-                        else if (vi.board != "AFNA" && vi.board != "CC3D")
-                            wp_max =  (vi.fc_vers >= FCVERS.hasWP_V4) ? (uint8)conf.max_wps :  60;
-                        else
-                            wp_max = 30;
-
-                        mission_eeprom = (vi.board != "AFNA" &&
-                                          vi.board != "CC3D" &&
-                                          vi.fc_vers >= FCVERS.hasEEPROM);
-
-                        msp_get_status = (vi.fc_api < 0x200) ? MSP.Cmds.STATUS :
-                            (vi.fc_vers >= FCVERS.hasV2STATUS) ? MSP.Cmds.INAV_STATUS : MSP.Cmds.STATUS_EX;
-                        // ugly hack for jh flip32 franken builds post 1.73
-                        if((vi.board == "AFNA" || vi.board == "CC3D") &&
-                           msp_get_status == MSP.Cmds.INAV_STATUS)
-                            msp_get_status = MSP.Cmds.STATUS_EX;
-
-                        if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ && conf.adjust_tz)
-                        {
-                            var dt = new DateTime.now_local();
-                            int16 tzoffm = (short)((int64)dt.get_utc_offset()/(1000*1000*60));
-                            if(tzoffm != 0)
-                            {
-                                MWPLog.message("set TZ offset %d\n", tzoffm);
-                                queue_cmd(MSP.Cmds.COMMON_SET_TZ, &tzoffm, sizeof(int16));
-                            }
+                        var fcv = "%s v%d.%d.%d".printf(vi.fc_var,raw[0],raw[1],raw[2]);
+                        verlab.label = verlab.tooltip_text = fcv;
+                        if(inav) {
+                            if(vi.fc_vers < FCVERS.hasMoreWP)
+                                wp_max = 15;
+                            else if (vi.board != "AFNA" && vi.board != "CC3D")
+                                wp_max =  (vi.fc_vers >= FCVERS.hasWP_V4) ? (uint8)conf.max_wps :  60;
                             else
-                                queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
-                        }
-                        else
-                            queue_cmd(MSP.Cmds.BUILD_INFO, null, 0); //?BOXNAMES?
+                                wp_max = 30;
 
-						sticks.set_rc_style((vi.fc_vers < FCVERS.hasRCDATA));
-					}
-                    else
-                        queue_cmd(MSP.Cmds.BOXNAMES,null,0);
-                }
+                            mission_eeprom = (vi.board != "AFNA" &&
+                                              vi.board != "CC3D" &&
+                                              vi.fc_vers >= FCVERS.hasEEPROM);
+
+                            msp_get_status = (vi.fc_api < 0x200) ? MSP.Cmds.STATUS :
+                                (vi.fc_vers >= FCVERS.hasV2STATUS) ? MSP.Cmds.INAV_STATUS : MSP.Cmds.STATUS_EX;
+                            // ugly hack for jh flip32 franken builds post 1.73
+                            if((vi.board == "AFNA" || vi.board == "CC3D") &&
+                               msp_get_status == MSP.Cmds.INAV_STATUS)
+                                msp_get_status = MSP.Cmds.STATUS_EX;
+
+                            if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ && conf.adjust_tz) {
+                                var dt = new DateTime.now_local();
+                                int16 tzoffm = (short)((int64)dt.get_utc_offset()/(1000*1000*60));
+                                if(tzoffm != 0) {
+                                    MWPLog.message("set TZ offset %d\n", tzoffm);
+                                    queue_cmd(MSP.Cmds.COMMON_SET_TZ, &tzoffm, sizeof(int16));
+                                }  else
+                                    queue_cmd(MSP.Cmds.BUILD_INFO, null, 0);
+                            } else
+                                queue_cmd(MSP.Cmds.BUILD_INFO, null, 0); //?BOXNAMES?
+
+                            sticks.set_rc_style((vi.fc_vers < FCVERS.hasRCDATA));
+                        } else {
+                            queue_cmd(MSP.Cmds.BOXNAMES,null,0);
+                        }
+                    }
                 }
                 break;
 
@@ -6836,8 +6828,7 @@ case 0:
 
                 for(var j = 1; j < 9; j++)
                     hwstatus[j] = 0;
-                if (icount == 0)
-                {
+                if (icount == 0) {
                     vi = {0};
                     vi.mvers = raw[0];
                     vi.mrtype = raw[1];
@@ -6852,36 +6843,28 @@ case 0:
                     MWPLog.message("set mrtype=%u cap =%x\n", vi.mrtype, raw[3]);
                     MWChooser.MWVAR _mwvar = mwvar;
 
-                    if(mwvar == MWChooser.MWVAR.AUTO)
-                    {
+                    if(mwvar == MWChooser.MWVAR.AUTO) {
                         naze32 = ((capability & MSPCaps.CAP_PLATFORM_32BIT) != 0);
-                    }
-                    else
-                    {
+                    } else {
                         naze32 = mwvar == MWChooser.MWVAR.CF;
                     }
 
-                    if(naze32 == true)
-                    {
+                    if(naze32 == true) {
                         if(force_nc == false)
                             navcap = NAVCAPS.NONE;
-}
-                    else
-                    {
-                        navcap = ((raw[3] & 0x10) == 0x10) ?
-                            NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS|NAVCAPS.NAVCONFIG
-                            : NAVCAPS.NONE;
+                    } else {
+                        if ((raw[3] & 0x10) == 0x10) {
+                            navcap = NAVCAPS.WAYPOINTS|NAVCAPS.NAVSTATUS|NAVCAPS.NAVCONFIG;
+                        } else {
+                            navcap = NAVCAPS.NONE;
+                        }
                         set_menu_state("reboot", false);
                         set_menu_state("terminal", false);
                     }
-                    if(mwvar == MWChooser.MWVAR.AUTO)
-                    {
-                        if(naze32)
-                        {
+                    if(mwvar == MWChooser.MWVAR.AUTO) {
+                        if(naze32) {
                             _mwvar = MWChooser.MWVAR.CF;
-                        }
-                        else
-                        {
+                        } else {
                             _mwvar = (navcap != NAVCAPS.NONE) ? MWChooser.MWVAR.MWNEW : MWChooser.MWVAR.MWOLD;
                             wp_max = 30; // safety net
                         }
@@ -6895,28 +6878,25 @@ case 0:
                 break;
 
             case MSP.Cmds.BOXNAMES:
-                if(replayer == Player.NONE)
-                {
+                if(replayer == Player.NONE) {
                     var ncbits = (navcap & (NAVCAPS.NAVCONFIG|NAVCAPS.INAV_MR|NAVCAPS.INAV_FW));
-                    if(navcap != NAVCAPS.NONE)
-                    {
+                    if(navcap != NAVCAPS.NONE) {
 						set_menu_state("upload-mission", true);
 						if(vi.fc_vers >= FCVERS.hasWP_V4)
 							set_menu_state("upload-missions", true);
 						set_menu_state("download-mission", true);
                     }
 
-                    if (ncbits != 0)
-                    {
+                    if (ncbits != 0) {
                         set_menu_state("navconfig", true);
-                        if(mission_eeprom)
-                        {
+                        if(mission_eeprom) {
                             set_menu_state("restore-mission", true);
                             set_menu_state("store-mission", true);
-                            set_menu_state("mission-info", true);
+                            if(inav)
+                                set_menu_state("mission-info", true);
                         }
 
-                        MWPLog.message("Generate navconf %x\n", navcap);
+                        MWPLog.message("Generate navconf %x %s\n", navcap, mission_eeprom.to_string());
                         navconf.setup(ncbits);
                         if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
                             navconf.mw_navconf_event.connect((mw,nc) => {
@@ -7008,10 +6988,11 @@ case 0:
                 need_mission = false;
                 if((navcap & NAVCAPS.NAVCONFIG) == NAVCAPS.NAVCONFIG)
                     queue_cmd(MSP.Cmds.STATUS,null,0);
-                else
-                {
-					wpmgr.wp_flag = WPDL.GETINFO;
-                    queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+                else {
+                    if(inav) {
+                        wpmgr.wp_flag = WPDL.GETINFO;
+                        queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+                    }
                     queue_cmd(MSP.Cmds.ACTIVEBOXES,null,0);
                 }
                 break;
@@ -7449,8 +7430,7 @@ case 0:
                 break;
 
             case MSP.Cmds.SET_WP:
-                if(wpmgr.wps.length > 0)
-                {
+                if(wpmgr.wps.length > 0) {
 					lastok = lastrx = nticks;
 					wpmgr.wpidx++;
 					if(wpmgr.wpidx < wpmgr.npts) {
@@ -7471,8 +7451,12 @@ case 0:
 							queue_cmd(MSP.Cmds.WP_MISSION_SAVE, &zb, 1);
 						} else if ((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
 							wpmgr.wp_flag |= WPDL.SET_ACTIVE|WPDL.RESET_POLLER;
-							queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
-							validatelab.set_text("✔"); // u+2714
+                            if(inav)
+                                queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+                            else
+                                wpmgr.wp_flag = WPDL.RESET_POLLER;
+                                wp_reset_poller();
+                            validatelab.set_text("✔"); // u+2714
 							mwp_warning_box("Mission uploaded", Gtk.MessageType.INFO,5);
 						} else {
 							wp_reset_poller();
@@ -7510,7 +7494,8 @@ case 0:
             case MSP.Cmds.WP_MISSION_SAVE:
                 MWPLog.message("Confirmed mission save\n");
 				if ((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
-					queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
+                    if(inav)
+                        queue_cmd(MSP.Cmds.WP_GETINFO, null, 0);
 					validatelab.set_text("✔"); // u+2714
 					mwp_warning_box("Mission uploaded", Gtk.MessageType.INFO,5);
 				}
@@ -10342,7 +10327,7 @@ case 0:
         wpmgr.wp_flag = 0;
 		wpmgr.wps = {};
 		wpmgr.npts = last_wp_pts;
-		if (last_wp_pts > 0) {
+		if (last_wp_pts > 0 || !inav) {
 			imdx = 0;
 			if  (vi.fc_vers >= FCVERS.hasWP_V4) {
 				wpmgr.wp_flag = WPDL.KICK_DL;
