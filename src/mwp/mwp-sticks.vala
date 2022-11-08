@@ -18,6 +18,7 @@ namespace Sticks {
 					active = false;
 					base.hide();
 				});
+            title = "mwp sticks replay";
 			set_type_hint(Gdk.WindowTypeHint.DIALOG);
 			set_position(WindowPosition.MOUSE);
 			set_decorated((decor==2));
