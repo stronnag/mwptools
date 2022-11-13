@@ -17,9 +17,6 @@ import (
 type SChan struct {
 	data []byte
 }
-type UChan struct {
-	data []byte
-}
 
 type UConn struct {
 	conn *net.UDPConn
@@ -46,6 +43,7 @@ func enumerate_ports() string {
 	}
 	return ""
 }
+
 func read_Serial(s serial.Port, c0 chan SChan) {
 	inp := make([]byte, 4096)
 

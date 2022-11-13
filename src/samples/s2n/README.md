@@ -13,7 +13,7 @@ Usage of ser2udp [options] device [:port]
 
 If port is not provided, it defaults to `:17071` (the colon in required).
 
-If device is not provided (which implied port is not either), or is 'auto' then the device will be auto-detected (and has to be (a) USB and (b) have a USB vid:pid of 0483:5740, i.e. a STM32 device).
+If device is not provided (which implies that port is not either), or is 'auto' then the device will be auto-detected (and has to be (a) USB and (b) have a USB vid:pid of 0483:5740, i.e. a STM32 device).
 
 If `ser2udp` is run in Windows as a bridge for mwp in WSLg, then it will also tell you the addresses of the Linux side interface.
 

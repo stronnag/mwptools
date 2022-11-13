@@ -160,14 +160,12 @@ public class MWSerial : Object
 
     public int gps_state = State.START;
 
-    public MWSerial()
-    {
+    public MWSerial() {
         available = false;
         fd = -1;
     }
 
-    private void setup_reader(int fd)
-    {
+    private void setup_reader(int fd) {
         try {
             io_read = new IOChannel.unix_new(fd);
             if(io_read.set_encoding(null) != IOStatus.NORMAL)
@@ -179,8 +177,7 @@ public class MWSerial : Object
         }
     }
 
-    private bool open(string device, int rate)
-    {
+    private bool open(string device, int rate) {
         fd = MwpSerial.open(device, rate);
         if(fd < 0)
         {
@@ -199,14 +196,12 @@ public class MWSerial : Object
         return available;
     }
 
-    ~MWSerial()
-    {
+    ~MWSerial() {
         if(fd != -1)
             close();
     }
 
-    public void close()
-    {
+    public void close() {
         available=false;
         if(fd != -1)
         {
@@ -245,8 +240,7 @@ public class MWSerial : Object
         return true;
     }
 
-    private void display_fix()
-    {
+    private void display_fix() {
         stdout.printf("POSLLH: lat: %f lon: %f elev (msl/elpsd): %.2f %2.f acc(h/v): %.1f/%.1f\n",
                       _buffer.posllh.latitude/10000000.0,
                       _buffer.posllh.longitude/10000000.0,
@@ -256,8 +250,7 @@ public class MWSerial : Object
                       _buffer.posllh.vertical_accuracy/1000.0
                       );
         stdout.printf("sats: %d, fix %d\n", _numsat, _fixt);
-        if(_fix_ok)
-        {
+        if(_fix_ok) {
             u.gpslat = _buffer.posllh.latitude/10000000.0;
             u.gpslon = _buffer.posllh.longitude/10000000.0;
             u.gpsalt = _buffer.posllh.altitude_msl / 1000.0;
@@ -269,8 +262,7 @@ public class MWSerial : Object
         u.fix_ok = _fix_ok;
     }
 
-    private void display_fix7()
-    {
+    private void display_fix7() {
         var pdate = new DateTime.now_utc ();
 
         stdout.printf("PVT: lat: %f lon: %f elev (msl/elpsd): %.2f %.2f acc(h/v): %.1f/%.1f\n",
@@ -299,8 +291,7 @@ public class MWSerial : Object
             pdate.get_seconds());
 
         stdout.printf("GPS: %s - Host: %s\n", u.date, pdate_s);
-        if(_fix_ok)
-        {
+        if(_fix_ok) {
             u.fix_ok = true;
             u.gpslat = _buffer.pvt.latitude/10000000.0;
             u.gpslon = _buffer.pvt.longitude/10000000.0;
@@ -312,48 +303,37 @@ public class MWSerial : Object
         }
     }
 
-    private bool ublox_parse(uint8 data)
-    {
+    private bool ublox_parse(uint8 data) {
         bool parsed = false;
-        switch(_step)
-        {
+        switch(_step) {
             case 0:
                 if(UPXProto.PREAMBLE1 == data)
                     _step++;
-                else
-                {
-                    switch(nmea_state)
-                    {
+                else {
+                    switch(nmea_state) {
                         case 0:
-                            if(data == '$')
-                            {
+                            if(data == '$') {
                                 nmea_idx = 0;
                                 nmea_buf[nmea_idx++] = data;
                                 nmea_state++;
                             }
                             break;
                         case 1:
-                            if(data == 'G')
-                            {
+                            if(data == 'G') {
                                 nmea_buf[nmea_idx++] = data;
                                 nmea_state++;
-                            }
-                            else
+                            } else
                                 nmea_state = nmea_idx = 0;
                             break;
                         case 2:
-                            if(data == '\r')
-                            {
+                            if(data == '\r') {
                                 nmea_state++;
-                            }
-                            else
-                            {
+                            } else {
                                 nmea_buf[nmea_idx++] = data;
                             }
                             break;
                         case 3:
-                            if(data == '\n')
-                            {
+                            if(data == '\n') {
                                 nmea_state = 0;
                                 nmea_buf[nmea_idx++] = data;
                                 nmea_buf[nmea_idx] = 0;
@@ -428,21 +408,17 @@ public class MWSerial : Object
         return parsed;
     }
 
-    private bool ublox_parse_gps()
-    {
+    private bool ublox_parse_gps() {
         bool ret = false;
         if(_class != 5)
             stdout.printf("Data size %db (%x %x)\n",
                           _payload_length, _class, _msg_id);
-        if(_class == 1)
-        {
-            switch (_msg_id)
-            {
+        if(_class == 1) {
+            switch (_msg_id) {
                 case UPXProto.MSG_SVINFO:
                     stdout.printf("SVINFO: Channels %d\n", _buffer.svinfo.numch);
                     stdout.printf("Chn\tID\tused\thealthy\tquality\n");
-                    for(var i = 0; i < _buffer.svinfo.numch; i++)
-                    {
+                    for(var i = 0; i < _buffer.svinfo.numch; i++) {
                         string gnssid;
                         var sv = _buffer.svinfo.svitems[i];
                         var svid = sv.svid;
@@ -481,7 +457,6 @@ public class MWSerial : Object
                                &&
                                (_buffer.pvt.fix_type == UBXFix.FIX_3D
                                 || _buffer.pvt.fix_type ==UBXFix.FIX_2D));
-
                     display_fix7();
                     ret = true;
                     break;
@@ -541,8 +516,7 @@ public class MWSerial : Object
     private string get_gps_speed_string()
     {
         var str = "";
-        switch (brate)
-        {
+        switch (brate) {
             case 115200:
                 str = "$PUBX,41,1,0003,0001,115200,0*1E\r\n";
                 break;
@@ -562,13 +536,11 @@ public class MWSerial : Object
         return str;
     }
 
-    public bool ublox_open(string devname, int brate)
-    {
+    public bool ublox_open(string devname, int brate) {
         string [] parts;
 
         parts = devname.split ("@");
-        if(parts.length == 2)
-        {
+        if(parts.length == 2) {
             devname = parts[0];
             brate = int.parse(parts[1]);
         }
@@ -576,12 +548,10 @@ public class MWSerial : Object
         stdout.printf("%s@%d\n", devname, brate);
 
         open(devname, brate);
-        if(available)
-        {
+        if(available) {
             gps_state = 0;
             init_timer();
-            if(pass)
-            {
+            if(pass) {
                 stdout.printf("Passthrough\n");
                 ublox_write(fd,"#\n".data);
                 Thread.usleep(1000*1000);
@@ -590,8 +560,7 @@ public class MWSerial : Object
                 MwpSerial.flush(fd);
             }
             var delay = 100;
-            if(noinit == false)
-            {
+            if(noinit == false) {
                 if(noautob == true)
                     gps_state = State.START;
                 if(slow)
@@ -611,8 +580,7 @@ public class MWSerial : Object
         return available;
     }
 
-    private bool setup_gps()
-    {
+    private bool setup_gps() {
         uint8 [] pedestrain = {
             0xB5, 0x62, 0x06, 0x24, 0x24, 0x00, 0xFF, 0xFF, 0x03, 0x03, 0x00,           // CFG-NAV5 - Set engine settings (original MWII code)
             0x00, 0x00, 0x00, 0x10, 0x27, 0x00, 0x00, 0x05, 0x00, 0xFA, 0x00,           // Collected by resetting a GPS unit to defaults. Changing mode to Pedistrian and
@@ -650,8 +618,7 @@ public class MWSerial : Object
             0xB5, 0x62, 0x06, 0x01, 0x03, 0x00, 0x01, 0x12, 0x01, 0x1E, 0x67            // set VELNED MSG rate
         };
 
-        uint8 [] gnss_galileo =
-            {
+        uint8 [] gnss_galileo = {
                 0xb5, 0x62, 0x06, 0x3e, 0x3c,
                 0x00, 0x00, 0x00, 0x20, 0x07,
                 0x00, 0x08, 0x10, 0x00, 0x01, 0x00, 0x01, 0x01,
@@ -693,29 +660,25 @@ public class MWSerial : Object
         int [] init_speed = {115200, 57600, 38400, 19200, 9600};
         uint8 [] v7init = {0xB5, 0x62, 0x0A, 0x04, 0x00, 0x00, 0x0E, 0x34 };
 
-        uint8 [] svinfo =
-            {
+        uint8 [] svinfo = {
                 0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0x01, 0x30, 0x00, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x4A, 0x2D };// enable SVINFO 10 cycle
 
 
         bool ret = true;
 
-        switch (gps_state)
-        {
+        switch (gps_state) {
             case State.SPEED0:
             case State.SPEED1:
             case State.SPEED2:
             case State.SPEED3:
             case State.SPEED4:
-                if(noautob == false)
-                {
+                if(noautob == false) {
                     stdout.printf("Auobaud %d\n", gps_state);
                     var str = get_gps_speed_string();
                     MwpSerial.set_speed(fd, init_speed[gps_state]);
                     ublox_write(fd, str.data);
                     gps_state++;
-                }
-                else
+                } else
                     gps_state = State.BAUDRATE;
                 break;
 
@@ -726,14 +689,11 @@ public class MWSerial : Object
                 break;
 
             case State.V7INIT:
-                if(noinit == false)
-                {
+                if(noinit == false) {
                     timer = new Timer ();
                     stdout.puts("Request version\n");
                     ublox_write(fd, v7init);
-                }
-                else
-                {
+                } else {
                     ublox_write(fd, svinfo);
                     return false;
                 }
@@ -741,27 +701,21 @@ public class MWSerial : Object
                 break;
 
             case State.START:
-                    if(ureset)
-                    {
+                    if(ureset) {
                         stdout.puts("send hard reset\n");
                         ublox_write(fd, reset);
                         ret = true;
-                    }
-                    else if(noinit == false)
-                    {
+                    } else if(noinit == false) {
                         stdout.printf("Disable NMEA\n");
                         ublox_write(fd, nonmea); // 2
                         gps_state++;
-                    }
-                    else
-                    {
+                    } else {
                         stdout.printf("No init requested\n");
                         ret = false;
                     }
                     break;
             case State.MOTION:
-                switch(air_model)
-                {
+                switch(air_model) {
                     case 0:
                         stdout.printf("Set pedestrian\n");
                         ublox_write(fd, pedestrain);
@@ -778,13 +732,10 @@ public class MWSerial : Object
                 gps_state++;
                 break;
             case State.POS:
-                if(force6 || gpsvers < 70000) //3
-                {
+                if(force6 || gpsvers < 70000) {
                     stdout.printf("send INAV ublox v6 init [%d] POSLLH\n", gpsvers);
                     ublox_write(fd, posllh);
-                }
-                else
-                {
+                } else {
                     ublox_write(fd, pvt);
                     stdout.printf("send INAV ublox v7 init [%d] PVT\n", gpsvers);
                     gps_state++;
@@ -798,8 +749,7 @@ public class MWSerial : Object
                 break;
 
             case State.GALILEO:
-                if (galileo && (gpsvers >= 70000))
-                {
+                if (galileo && (gpsvers >= 70000)) {
                     stdout.printf("Set galileo\n");
                     ublox_write(fd, gnss_galileo);
                 }
@@ -808,10 +758,8 @@ public class MWSerial : Object
             case State.RATE:
                 if(urate == 10 && (gpsvers >= 70000 ))
                     ublox_write(fd, rate_10hz);
-                else
-                {
-                    switch(urate)
-                    {
+                else {
+                    switch(urate) {
                         case 1:
                             ublox_write(fd, rate_1hz);
                             break;
@@ -836,8 +784,7 @@ public class MWSerial : Object
         return ret;
     }
 
-    public int parse_option(string [] args)
-    {
+    public int parse_option(string [] args) {
         var dmgr = new DevManager(DevMask.USB);
         var devs = dmgr.get_serial_devices();
 
@@ -862,19 +809,16 @@ public class MWSerial : Object
         return 0;
     }
 
-    public void init_timer()
-    {
+    public void init_timer() {
         stime = GLib.get_monotonic_time();
     }
 
-    public SerialStats getstats()
-    {
+    public SerialStats getstats() {
         if(stime == 0)
             stime =  GLib.get_monotonic_time();
         ltime =  GLib.get_monotonic_time();
         stats.elapsed = (ltime - stime)/1000000.0;
-        if (stats.elapsed > 0)
-        {
+        if (stats.elapsed > 0) {
             stats.txrate = stats.txbytes / stats.elapsed;
             stats.rxrate = stats.rxbytes / stats.elapsed;
         }
