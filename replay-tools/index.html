@@ -14,7 +14,7 @@
       
       
       <link rel="icon" href="../images/mwp_icon.ico">
-      <meta name="generator" content="mkdocs-1.4.1, mkdocs-material-7.3.6">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-7.3.6">
     
     
       
@@ -395,6 +395,13 @@
         <li class="md-nav__item">
   <a href="#mwp-json-logs" class="md-nav__link">
     mwp JSON logs
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#display-of-rc-stick-positions" class="md-nav__link">
+    Display of RC Stick positions
   </a>
   
 </li>
@@ -852,6 +859,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#display-of-rc-stick-positions" class="md-nav__link">
+    Display of RC Stick positions
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -908,6 +922,25 @@
 <p>Requires Ardupilot's <a href="https://github.com/ArduPilot/pymavlink">mavlogdump.py</a>.</p>
 <h2 id="mwp-json-logs">mwp JSON logs<a class="headerlink" href="#mwp-json-logs" title="Permanent link">#</a></h2>
 <p>No addition requirements.</p>
+<h2 id="display-of-rc-stick-positions">Display of RC Stick positions<a class="headerlink" href="#display-of-rc-stick-positions" title="Permanent link">#</a></h2>
+<p>Where such data is available, <a href="https://github.com/stronnag/mwptools">mwp</a> can display the position of the 'sticks'. This is displayed in a separate window which by default has no Window Manager (WM) decoration.</p>
+<p><img alt="undecorated" src="../images/sticks-no-decor.png" /></p>
+<p>The sticks window may be moved according the WM's rules (mwp has no part in this), for example:</p>
+<ul>
+<li><mark class="critic">With the mouse over the sticks window</mark>, press and hold the <span class="keys"><kbd class="key-alt">Alt</kbd></span> key and drag the window with the mouse, holding down the left mouse button.</li>
+<li><mark class="critic">With the mouse over the sticks window</mark>, press <span class="keys"><kbd class="key-alt">Alt</kbd><span>+</span><kbd class="key-f7">F7</kbd></span>. The cursor changes to a 'drag mode' cursor, and the window can be moved with the mouse (no pressing any mouse button).</li>
+</ul>
+<p>Both of these techniques work in native and KVM virtualised GNOME Shell. Using other WMs or virtualisation may require other keys or may not work at all, in which case there is a <a href="../mwp-Configuration/#dconf-gsettings">settings</a> key <code>show-sticks</code> to modify the behaviour:</p>
+<div class="highlight"><pre><span></span><code>$ gsettings describe  org.mwptools.planner show-sticks
+If &quot;yes&quot;, stick position is shown during log replay,
+if &quot;no&quot; , never shown.
+If &quot;decorated&quot;, then shown in a decorated window (for window managers
+that can&#39;t cope with un-decorated windows), e.g. WSL, Cygwin
+</code></pre></div>
+<p>Windows 10, Cygwin with <code>gsettings set org.mwptools.planner show-sticks decorated</code>. Note that Cygwin and the Windows WM does not support transparency.</p>
+<p><img alt="decorated" src="../images/sticks-decorated.png" /></p>
+<p>Linux, decorated:</p>
+<p><img alt="linux decorated" src="../images/sticks-decor-trans.png" /></p>
                 
                   
                     
@@ -916,7 +949,7 @@
 <div class="md-source-date">
   <small>
     
-      Last update: 2022-09-09
+      Last update: 2022-11-17
     
   </small>
 </div>
