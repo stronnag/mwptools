@@ -71,6 +71,8 @@ The following items are provided.
 
 ![dockdir](images/dock_fv.png){: width="33%" }
 
+Note that the font size in the flight view changes dynamically as the dock size is changed. Due to the variations in physical screen size and HDPI options, this may not be perfect. There is a [settings](mwp-Configuration.md#dconf-gsettings) key `font-fv` that controls the scaling. The default value of `11` may need lowering on smaller displays / VMs. Values in the range `9` to `12` are usually appropriate.
+
 ### Mission Editor
 
 ![dockmw](images/dock_mission.png){: width="35%" }

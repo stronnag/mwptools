@@ -50,3 +50,32 @@ Requires Ardupilot's [mavlogdump.py](https://github.com/ArduPilot/pymavlink).
 ## mwp JSON logs
 
 No addition requirements.
+
+## Display of RC Stick positions
+
+Where such data is available, {{ mwp }} can display the position of the 'sticks'. This is displayed in a separate window which by default has no Window Manager (WM) decoration.
+
+![undecorated](images/sticks-no-decor.png)
+
+The sticks window may be moved according the WM's rules (mwp has no part in this), for example:
+
+* {==With the mouse over the sticks window==}, press and hold the ++alt++ key and drag the window with the mouse, holding down the left mouse button.
+* {==With the mouse over the sticks window==}, press ++alt+f7++. The cursor changes to a 'drag mode' cursor, and the window can be moved with the mouse (no pressing any mouse button).
+
+Both of these techniques work in native and KVM virtualised GNOME Shell. Using other WMs or virtualisation may require other keys or may not work at all, in which case there is a [settings](mwp-Configuration.md#dconf-gsettings) key `show-sticks` to modify the behaviour:
+
+```
+$ gsettings describe  org.mwptools.planner show-sticks
+If "yes", stick position is shown during log replay,
+if "no" , never shown.
+If "decorated", then shown in a decorated window (for window managers
+that can't cope with un-decorated windows), e.g. WSL, Cygwin
+```
+
+Windows 10, Cygwin with `gsettings set org.mwptools.planner show-sticks decorated`. Note that Cygwin and the Windows WM does not support transparency.
+
+![decorated](images/sticks-decorated.png)
+
+Linux, decorated:
+
+![linux decorated](images/sticks-decor-trans.png)

@@ -40,6 +40,7 @@ namespace Sticks {
 		public new void show_all() {
 			base.show_all();
 			active = true;
+            set_keep_above(true);
 		}
 
 		public new void hide() {

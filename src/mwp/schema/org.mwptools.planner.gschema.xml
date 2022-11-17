@@ -275,10 +275,9 @@
       <description>(private setting)</description>
     </key>
     <key name="font-fv" type="i">
-      <default>12</default>
+      <default>11</default>
       <summary>flight view font scaling</summary>
-      <description>Scales the flight view widget. Smaller screens may
-      need a lower value</description>
+      <description>Scales the flight view widget. Smaller screens may need a lower value</description>
     </key>
     <key name="ah-size" type="i">
       <default>32</default>
@@ -654,10 +653,7 @@
     <key name="show-sticks" enum="org.mwptools.planner.sticks">
       <default>"yes"</default>
       <summary>Whether to show sticks in log replay</summary>
-      <description>If "yes", stick position is shown during log replay,
-      if "no" , never shown. If "decorated", then shown in a decorated window (for
-      window managers can't cope with un-decorated windows), e.g. WSL,
-      Cygwin</description>
+      <description>If "yes", stick position is shown during log replay, if "no" , never shown. If "decorated", then shown in a decorated window (for window managers that can't cope with un-decorated windows), e.g. WSL, Cygwin</description>
     </key>
 
   </schema>

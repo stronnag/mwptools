@@ -185,8 +185,6 @@ This *may* not be installed by default, but should be available via the OS packa
 
 ### List of mwp settings
 
-### List of mwp settings
-
 | Name | Summary | Description | Default |
 | ---- | ------- | ----------- | ------ |
 | adjust-tz | Adjust FC's TZ (and DST) | mwp should adjust FC's TZ (and DST) based on the local clock | true |

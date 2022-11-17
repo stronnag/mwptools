@@ -61,7 +61,7 @@ public class MWPSettings : GLib.Object
     public string mavph {get; set; default=null;}
     public string mavrth {get; set; default=null;}
     public double window_p {get; set; default=72;}
-    public int fontfact {get; set; default = 12;}
+    public int fontfact {get; set; default = 11;}
     public int ahsize {get; set; default = 32;}
     public uint gpsintvl {get; set; default = 2000;}
     public string uilang {get; private set; default=null;}
