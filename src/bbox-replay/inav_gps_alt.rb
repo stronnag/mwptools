@@ -119,8 +119,8 @@ if graph && n > 0
     pltfile << ', filename using 1:5 t "GPS AMSL" w lines lt -1 lw 2  lc rgb "green"'
   end
   File.open(".inav_gps_alt.plt","w") {|plt| plt.puts pltfile}
-  system "gnuplot -e 'filename=\"#{outf}\"' .inav_gps_alt.plt"
-  STDERR.puts "Graph in #{svgf}"
+  system ("gnuplot -e 'filename=\"#{outf}\"' .inav_gps_alt.plt") and STDERR.puts "Graph in #{svgf}"
+
   File.unlink ".inav_gps_alt.plt"
 end
 
