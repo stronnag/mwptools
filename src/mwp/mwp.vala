@@ -297,6 +297,7 @@ public class MWP : Gtk.Application {
         hasMONORTH = 0x020600,
         hasABSALT = 0x030000,
         hasWP_V4 = 0x040000,
+        hasWP1m = 0x060000,
     }
 
     public enum WPS {
@@ -3530,8 +3531,7 @@ public class MWP : Gtk.Application {
 				c_armed = false;
 				break;
 			}
-			if(xfailsafe != failsafe)
-			{
+			if(xfailsafe != failsafe) {
 				if(failsafe) {
 					arm_flags |=  ARMFLAGS.ARMING_DISABLED_FAILSAFE_SYSTEM;
 					MWPLog.message("Failsafe asserted %ds\n", duration);
@@ -3544,15 +3544,11 @@ public class MWP : Gtk.Application {
 			}
 
 			armed = (c_armed) ? 1 : 0;
-			if(arm_flags != xarm_flags)
-			{
+			if(arm_flags != xarm_flags) {
 				xarm_flags = arm_flags;
-				if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0)
-				{
+				if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0) {
 					arm_warn.show();
-				}
-				else
-				{
+				} else {
 					arm_warn.hide();
 				}
 			}
@@ -3573,25 +3569,21 @@ public class MWP : Gtk.Application {
 			var achg = armed_processing(mwflags,"CRSF");
 			var xws = want_special;
 			var mchg = (ltmflags != last_ltmf);
-			if (mchg)
-			{
+			if (mchg) {
 				last_ltmf = ltmflags;
 				if(ltmflags == MSP.LTM.poshold)
 					want_special |= POSMODE.PH;
-				else if(ltmflags == MSP.LTM.waypoints)
-				{
+				else if(ltmflags == MSP.LTM.waypoints) {
 					want_special |= POSMODE.WP;
 					if (NavStatus.nm_pts == 0 || NavStatus.nm_pts == 255)
 						NavStatus.nm_pts = last_wp_pts;
-				}
-				else if(ltmflags == MSP.LTM.rth)
+				} else if(ltmflags == MSP.LTM.rth)
 					want_special |= POSMODE.RTH;
 				else if(ltmflags == MSP.LTM.althold)
 					want_special |= POSMODE.ALTH;
 				else if(ltmflags == MSP.LTM.cruise)
 					want_special |= POSMODE.CRUISE;
-				else if(ltmflags != MSP.LTM.land)
-				{
+				else if(ltmflags != MSP.LTM.land) {
 					if(craft != null)
 						craft.set_normal();
 				}
@@ -3924,8 +3916,7 @@ public class MWP : Gtk.Application {
                                         Geo.csedist(GPSInfo.lat, GPSInfo.lon,
                                                     home_pos.lat, home_pos.lon,
                                                     out dist, out cse);
-                                        if(dist < 256)
-                                        {
+                                        if(dist < 256) {
                                             var cg = MSP_COMP_GPS();
                                             cg.range = (uint16)Math.lround(dist*1852);
                                             cg.direction = (int16)Math.lround(cse);
@@ -3938,8 +3929,7 @@ public class MWP : Gtk.Application {
                             }
                             else
                             {
-                                if(no_ofix == 10)
-                                {
+                                if(no_ofix == 10) {
                                     MWPLog.message("No home position yet\n");
                                 }
                             }
@@ -4039,29 +4029,22 @@ public class MWP : Gtk.Application {
                 failsafe = (modeJ == 4);
                 if(xfailsafe != failsafe)
                 {
-                    if(failsafe)
-                    {
+                    if(failsafe) {
                         arm_flags |=  ARMFLAGS.ARMING_DISABLED_FAILSAFE_SYSTEM;
                         MWPLog.message("Failsafe asserted %ds\n", duration);
                         map_show_warning("FAILSAFE");
-                    }
-                    else
-                    {
+                    } else {
                         MWPLog.message("Failsafe cleared %ds\n", duration);
                         map_hide_warning();
                     }
                     xfailsafe = failsafe;
                 }
 
-                if(arm_flags != xarm_flags)
-                {
+                if(arm_flags != xarm_flags) {
                     xarm_flags = arm_flags;
-                   if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0)
-                    {
+                   if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0) {
                         arm_warn.show();
-                    }
-                    else
-                    {
+                    } else {
                         arm_warn.hide();
                     }
                 }
@@ -4484,16 +4467,14 @@ case 0:
 
     }
 
-    private void upload_callback(int pts)
-    {
+    private void upload_callback(int pts) {
         wpmgr.wp_flag &= ~WPDL.CALLBACK;
         mss.nwpts = pts;
             // must use Idle.add as we may not otherwise hit the mainloop
         Idle.add(() => { mss.callback(); return false; });
     }
 
-    private void get_map_size()
-    {
+    private void get_map_size() {
         var bb = view.get_bounding_box();
         double dist,cse;
         double apos;
@@ -5711,25 +5692,20 @@ case 0:
                                     sb.append_c(sep);
                                     navmodes = false;
                                 }
-                                if(wpdist > 0)
-                                {
+                                if(wpdist > 0) {
                                     sb.append_printf(" • 1st wp distance %dm", wpdist);
                                     sb.append_c(sep);
                                     navmodes = false;
                                 }
 
-                                if(navmodes)
-                                {
+                                if(navmodes) {
                                     sb.append(" • Reason unknown; is a nav mode engaged?");
                                     sb.append_c(sep);
                                 }
-                            }
-                            else
+                            } else
                                 sb.append_c(sep);
                         }
-                    }
-                    else
-                    {
+                    } else {
                         sb.append_printf("Unknown(%d)", i);
                         sb.append_c(sep);
                     }
@@ -6010,13 +5986,10 @@ case 0:
             double dist,_cse;
             Geo.csedist(xlat, xlon, mlat, mlon, out dist, out _cse);
 
-            if(dist * 1852.0 > msize)
-            {
+            if(dist * 1852.0 > msize) {
                 alat = xlat;
                 alon = xlon;
-            }
-            else
-            {
+            } else {
                 alat = (mlat + xlat)/2.0;
                 alon = (mlon + xlon)/2.0;
             }
@@ -6081,18 +6054,15 @@ case 0:
 
     private void show_wp_distance(uint8 np)
     {
-        if (wp_resp.length == NavStatus.nm_pts)
-        {
+        if (wp_resp.length == NavStatus.nm_pts) {
             uint fs=(uint)conf.wp_dist_fontsize*1024;
             np = np - 1;
             if( wp_resp[np].action != MSP.Action.JUMP &&
                 wp_resp[np].action != MSP.Action.SET_HEAD &&
-                wp_resp[np].action != MSP.Action.SET_POI)
-            {
+                wp_resp[np].action != MSP.Action.SET_POI) {
                 double lat,lon;
 
-                if(wp_resp[np].action == MSP.Action.RTH)
-                {
+                if(wp_resp[np].action == MSP.Action.RTH) {
                     lat = home_pos.lat;
                     lon = home_pos.lon;
                 } else {
@@ -6104,16 +6074,13 @@ case 0:
                             lat, lon, out dist, out cse);
                 StringBuilder sb = new StringBuilder();
                 if( wp_resp[np].action ==  MSP.Action.POSHOLD_TIME &&
-                    NavStatus.n.nav_mode == 4)
-                {
+                    NavStatus.n.nav_mode == 4) {
                     if(phtim == 0)
                         phtim = duration;
                     var cdown = wp_resp[np].param1 - (duration - phtim);
                     sb.append_printf("<span size=\"%u\">PH for %lus", fs, cdown);
                     sb.append("</span>");
-                }
-                else
-                {
+                } else {
                     phtim = 0;
                     dist *= 1852.0;
                     var icse = Math.lrint(cse) % 360;
@@ -7009,11 +6976,11 @@ case 0:
                 }
                 sb.append_c('\n');
                 MWPLog.message(sb.str);
-                if(vi.fc_vers >= FCVERS.hasTZ)
-                {
+                if(vi.fc_vers >= FCVERS.hasTZ) {
+                    string maxdstr = (vi.fc_vers >= FCVERS.hasWP1m) ? "nav_wp_max_safe_distance" : "nav_wp_safe_distance";
                     MWPLog.message("Requesting common settings\n");
-					request_common_setting("nav_wp_safe_distance");
-					request_common_setting("inav_max_eph_epv");
+                    request_common_setting(maxdstr);
+                    request_common_setting("inav_max_eph_epv");
 					request_common_setting("gps_min_sats");
                     if(vi.fc_vers > FCVERS.hasJUMP && vi.fc_vers <= FCVERS.hasPOI) { // also 2.6 feature
 						request_common_setting("nav_rth_home_offset_distance");
@@ -7053,10 +7020,15 @@ case 0:
                         break;
                     case "nav_wp_safe_distance":
                         SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
-                        MWPLog.message("Received (raw) nav_wp_safe_distance %u\n",
-                                       nav_wp_safe_distance);
+                        wpdist = nav_wp_safe_distance / 100;
+                        MWPLog.message("Received nav_wp_safe_distance %um\n", wpdist);
                         break;
-                    case "inav_max_eph_epv":
+                    case "nav_wp_max_safe_distance":
+                        SEDE.deserialise_u16(raw, out nav_wp_safe_distance);
+                        wpdist = nav_wp_safe_distance;
+                        MWPLog.message("Received nav_wp_max_safe_distance %um\n", wpdist);
+                        break;
+                case "inav_max_eph_epv":
                         uint32 ift;
                         SEDE.deserialise_u32(raw, out ift);
                             // This stupidity is for Mint ...
@@ -7211,13 +7183,10 @@ case 0:
                                 mss.waypoint_changed(mss.m_wp);
                             }
                         }
-                        if ((conf.osd_mode & OSD.show_dist) != 0)
-                        {
+                        if ((conf.osd_mode & OSD.show_dist) != 0) {
                             show_wp_distance(ns.wp_number);
                         }
-                    }
-                    else if (last_nmode == 3)
-                    {
+                    } else if (last_nmode == 3) {
                         map_hide_wp();
                         mss.m_wp = -1;
                         mss.waypoint_changed(mss.m_wp);
