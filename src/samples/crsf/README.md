@@ -130,6 +130,15 @@ then
 $ target/release/crsfparser FILE_NAME
 ```
 
+cross-compilation ...
+
+```
+# e.g. build for Windows on Linux
+cargo build --release --target x86_64-pc-windows-gnu
+```
+
+
+
 or install it:
 
 ```

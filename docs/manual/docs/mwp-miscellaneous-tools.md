@@ -425,3 +425,11 @@ PH unstable altitude is often caused by excessive vibrations or inadequately pro
 
 * GPS and baro correlate, position estimator is off, most likely vibrations
 * GPS and baro don't correlate. Probably lack of baro protection (or GPS interference from VTX).
+
+## mwp-area-planner
+
+{{ mwp}} area planner is a tool to plan "survey" missions. It generates MWXML mission files compatible with mwp and the INAV Configurator. A simple "parallel lines across a polygon" survey pattern is supported.
+
+There is an old [youtube video](https://youtu.be/AUYETXqdJ1g?list=PLE_mnLfCdjvAH4pLe9HCqaWm682_r8NT3) covering both the `mwp-area-planner` and iforce2d's on line tool.
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/AUYETXqdJ1g?list=PLE_mnLfCdjvAH4pLe9HCqaWm682_r8NT3" title="mwp area planner intro" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
