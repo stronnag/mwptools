@@ -2225,7 +2225,6 @@ public class MWP : Gtk.Application {
 					msx[mdx] = ls.to_mission();
 				}
 				if (s == "New") {
-                    var ndx = mdx;
 					mdx = msx.length;
 					msx += new Mission();
                     instantiate_mission(msx[mdx]);
@@ -4624,8 +4623,7 @@ case 0:
 		}
 
 		var n = find_combo(cbtx, s);
-        if (n != -1)
-        {
+        if (n != -1) {
             cbtx.remove(n);
             cbtx.active = 0;
         }
@@ -4634,15 +4632,17 @@ case 0:
     private bool view_delta_diff(double f0, double f1) {
         double delta;
         delta = 0.0000025 * Math.pow(2, (20-view.zoom_level));
-        return (Math.fabs(f0-f1) > delta);
+        var res = (Math.fabs(f0-f1) > delta);
+        return res;
     }
 
     private bool map_moved()     {
         var iy =  view.get_center_latitude();
         var ix =  view.get_center_longitude();
+        var res = (view_delta_diff(lx,ix) || view_delta_diff(ly,iy));
         ly=iy;
         lx=ix;
-        return  (view_delta_diff(lx,ix) || view_delta_diff(ly,iy));
+        return  res;
     }
 
     private void setup_buttons()
@@ -4693,12 +4693,11 @@ case 0:
 
     private void parse_rc_mav(string s, Craft.Special ptype) {
         var parts = s.split(":");
-        if(parts.length == 3)
-        {
+        if(parts.length == 3) {
             mavposdef += MavPOSDef() { minval=(uint16)int.parse(parts[1]),
-                    maxval=(uint16)int.parse(parts[2]),
-                    ptype = ptype,
-                    chan = (uint8)int.parse(parts[0]), set =0};
+                maxval=(uint16)int.parse(parts[2]),
+                ptype = ptype,
+                chan = (uint8)int.parse(parts[0]), set =0};
         }
     }
 
