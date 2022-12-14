@@ -2221,12 +2221,10 @@ public class MWP : Gtk.Application {
 				if (s == null)
 					return;
 
-                print("DBG: Active %s\n", s);
 				if(!ms_from_loader && msx.length > 0) {
 					msx[mdx] = ls.to_mission();
 				}
 				if (s == "New") {
-                    print("DBG: New (old) mission was %d\n", mdx);
                     var ndx = mdx;
 					mdx = msx.length;
 					msx += new Mission();
