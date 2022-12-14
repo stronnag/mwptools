@@ -1628,21 +1628,22 @@ public class ListBox : GLib.Object {
     }
 
     private void delete_id_list(int[]todel) {
-        Gtk.TreeIter iter;
-        Value val;
-        foreach (var id in todel) {
-            for(bool next=list_model.get_iter_first(out iter); next; next=list_model.iter_next(ref iter)) {
-                list_model.get_value (iter, WY_Columns.IDX, out val);
-                var i = int.parse((string)val);
-                if (i == id) {
-                    list_model.get_value (iter, WY_Columns.ACTION, out val);
-                    if ((MSP.Action)val == MSP.Action.SET_POI)
-                        shp_item.sensitive=false;
-                    list_model.remove(ref iter);
+        var ms = to_mission();
+        MissionItem [] mi = {};
+        foreach(MissionItem  m in ms.get_ways()) {
+            var skip = false;
+            foreach (var id in todel) {
+                if (id == m.no) {
+                    skip = true;
                     break;
                 }
             }
+            if (!skip) {
+                mi += m;
+            }
         }
+        ms.set_ways(mi);
+        import_mission(ms);
     }
 
     private void menu_delete() {
