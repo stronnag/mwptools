@@ -1181,8 +1181,8 @@ public class MWP : Gtk.Application {
 			actmission.append_text("New");
 		} else
 			MWPLog.message("MM size exceeded\n");
-		actmission.active = isnew ? j-1 : imdx;
-	}
+        actmission.active = isnew ? j-1 : imdx;
+    }
 
 	private bool get_app_status(string app, out string bblhelp) {
         bool ok = true;
@@ -2221,23 +2221,25 @@ public class MWP : Gtk.Application {
 				if (s == null)
 					return;
 
-				if(!ms_from_loader && msx.length > 0)
-				{
+                print("DBG: Active %s\n", s);
+				if(!ms_from_loader && msx.length > 0) {
 					msx[mdx] = ls.to_mission();
 				}
 				if (s == "New") {
+                    print("DBG: New (old) mission was %d\n", mdx);
+                    var ndx = mdx;
 					mdx = msx.length;
 					msx += new Mission();
-					set_act_mission_combo(true);
+                    instantiate_mission(msx[mdx]);
+                    set_act_mission_combo(true);
 				} else {
 					mdx = actmission.active;
-				}
-
-				if(msx[mdx].npoints > 0) {
-					instantiate_mission(msx[mdx]);
-				} else {
-					clear_mission();
-				}
+                    if(msx[mdx].npoints > 0) {
+                        instantiate_mission(msx[mdx]);
+                    } else {
+                        clear_mission();
+                    }
+                }
 			});
 
 		zoomer.adjustment.value_changed.connect (() =>
