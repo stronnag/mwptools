@@ -432,8 +432,7 @@ public class MWP : Gtk.Application {
 		KICK_DL = (1<<11),
     }
 
-    private struct WPMGR
-    {
+    private struct WPMGR {
         MSP_WP[] wps;
         WPDL wp_flag;
         uint8 npts;
@@ -453,8 +452,7 @@ public class MWP : Gtk.Application {
         FLAG = (1<<8)
     }
 
-    private enum POSMODE
-    {
+    private enum POSMODE {
         HOME = 1,
         PH = 2,
         RTH = 4,
@@ -465,8 +463,7 @@ public class MWP : Gtk.Application {
     }
 
         // ./src/main/fc/runtime_config.h
-    private enum ARMFLAGS
-    {
+    private enum ARMFLAGS {
         ARMED                                           = (1 << 2), // 4
         WAS_EVER_ARMED                                  = (1 << 3), // 8
         ARMING_DISABLED_FAILSAFE_SYSTEM                 = (1 << 7), // 80
@@ -493,40 +490,36 @@ public class MWP : Gtk.Application {
         ARMING_DISABLED_PWM_OUTPUT                      = (1 << 27), // 8000000
         ARMING_DISABLED_PREARM                          = (1 << 28), // 10000000
         ARMING_DISABLED_DSHOTBEEPER                     = (1 << 29), // 20000000
-        ARMING_DISABLED_OTHER                           = (1 << 30), // 40000000
+        ARMING_DISABLED_LANDING_DETECTED                = (1 << 30), // 40000000
+        ARMING_DISABLED_OTHER                           = (1 << 31), // 80000000
     }
 
-    private string? [] arm_fails =
-    {
+    private string? [] arm_fails = {
         null, null, "Armed",null, /*"Ever Armed"*/ null,null,null,
         "Failsafe", "Not level","Calibrating","Overload",
         "Navigation unsafe", "Compass cal", "Acc cal", "Arm switch", "Hardware failure",
         "Box failsafe", "Box killswitch", "RC Link", "Throttle", "CLI",
         "CMS Menu", "OSD Menu", "Roll/Pitch", "Servo Autotrim", "Out of memory",
-        "Settings", "PWM Output", "PreArm", "DSHOTBeeper", "Other"
+        "Settings", "PWM Output", "PreArm", "DSHOTBeeper", "Landed", "Other"
     };
 
-    private enum SENSOR_STATES
-    {
+    private enum SENSOR_STATES {
         None = 0,
         OK = 1,
         UNAVAILABLE = 2,
         UNHEALTHY = 3
     }
 
-    private string [] health_states =
-    {
+    private string [] health_states = {
         "None", "OK", "Unavailable", "Unhealthy"
     };
 
-    private string[] sensor_names =
-    {
+    private string[] sensor_names = {
         "Gyro", "Accelerometer", "Compass", "Barometer",
         "GPS", "RangeFinder", "Pitot", "OpticalFlow"
     };
 
-    private string [] disarm_reason =
-    {
+    private string [] disarm_reason = {
         "None", "Timeout", "Sticks", "Switch_3d", "Switch",
             "Killswitch", "Failsafe", "Navigation" };
 
@@ -5657,36 +5650,27 @@ case 0:
         return board;
     }
 
-    private string get_arm_fail(uint32 af, char sep=',')
-    {
+    private string get_arm_fail(uint32 af, char sep=',') {
         StringBuilder sb = new StringBuilder ();
         if(af == 0)
             sb.append("Ready to Arm");
-        else
-        {
-            for(var i = 0; i < 32; i++)
-            {
-                if((af & (1<<i)) != 0)
-                {
-                    if(i < arm_fails.length)
-                    {
-                        if (arm_fails[i] != null)
-                        {
+        else {
+            for(var i = 0; i < 32; i++) {
+                if((af & (1<<i)) != 0) {
+                    if(i < arm_fails.length) {
+                        if (arm_fails[i] != null) {
                             sb.append(arm_fails[i]);
-                            if ((1 << i) == ARMFLAGS.ARMING_DISABLED_NAVIGATION_UNSAFE)
-                            {
+                            if ((1 << i) == ARMFLAGS.ARMING_DISABLED_NAVIGATION_UNSAFE) {
                                 bool navmodes = true;
 
                                 sb.append_c(sep);
                                 if(gpsstats.eph > inav_max_eph_epv ||
-                                    gpsstats.epv > inav_max_eph_epv)
-                                {
+                                    gpsstats.epv > inav_max_eph_epv) {
                                     sb.append(" • Fix quality");
                                     sb.append_c(sep);
                                     navmodes = false;
                                 }
-                                if(_nsats < msats )
-                                {
+                                if(_nsats < msats ) {
                                     sb.append_printf(" • %d satellites", _nsats);
                                     sb.append_c(sep);
                                     navmodes = false;
@@ -5722,21 +5706,18 @@ case 0:
         uint64 lmask;
 
         SEDE.deserialise_u16(raw+4, out sensor);
-        if(msp_get_status != MSP.Cmds.INAV_STATUS)
-        {
+        if(msp_get_status != MSP.Cmds.INAV_STATUS) {
             uint32 bx32;
             SEDE.deserialise_u32(raw+6, out bx32);
             bxflag = bx32;
-        }
-        else
+        } else
             SEDE.deserialise_u64(raw+13, out bxflag);
 
         lmask = (angle_mask|horz_mask);
 
         armed = ((bxflag & arm_mask) == arm_mask) ? 1 : 0;
 
-        if (nopoll == true)
-        {
+        if (nopoll == true) {
             have_status = true;
             if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
             {
@@ -5744,30 +5725,23 @@ case 0:
                 init_craft_icon();
             }
             update_sensor_array();
-        }
-        else
-        {
+        } else {
             uint32 arm_flags;
             uint16 loadpct;
-            if(msp_get_status != MSP.Cmds.STATUS)
-            {
-                if(msp_get_status == MSP.Cmds.STATUS_EX)
-                {
+            if(msp_get_status != MSP.Cmds.STATUS) {
+                if(msp_get_status == MSP.Cmds.STATUS_EX) {
                     uint16 xaf;
                     SEDE.deserialise_u16(raw+13, out xaf);
                     arm_flags = xaf;
                     SEDE.deserialise_u16(raw+11, out loadpct);
                     profile = raw[10];
-                }
-                else // msp2_inav_status
-                {
+                } else {// msp2_inav_status
                     SEDE.deserialise_u32(raw+9, out arm_flags);
                     SEDE.deserialise_u16(raw+6, out loadpct);
                     profile = (raw[8] & 0xf);
                 }
 
-                if(arm_flags != xarm_flags)
-                {
+                if(arm_flags != xarm_flags) {
                     xarm_flags = arm_flags;
 
                     string arming_msg = get_arm_fail(xarm_flags);
@@ -5782,27 +5756,20 @@ case 0:
                     if(audio_cb.active == true)
                         navstatus.arm_status(arming_msg);
 
-                    if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0)
-                    {
+                    if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0) {
                         arm_warn.show();
-                    }
-                    else
-                    {
+                    } else {
                         arm_warn.hide();
                     }
                 }
-            }
-            else
+            } else
                 profile = raw[10];
 
-            if(have_status == false)
-            {
+            if(have_status == false) {
                 have_status = true;
                 StringBuilder sb0 = new StringBuilder ();
-                foreach (MSP.Sensors sn in MSP.Sensors.all())
-                {
-                    if((sensor & sn) == sn)
-                    {
+                foreach (MSP.Sensors sn in MSP.Sensors.all()) {
+                    if((sensor & sn) == sn) {
                         sb0.append(sn.to_string());
                         sb0.append_c(' ');
                     }
@@ -5810,8 +5777,7 @@ case 0:
                 update_sensor_array();
                 MWPLog.message("Sensors: %s (%04x)\n", sb0.str, sensor);
 
-                if(!prlabel)
-                {
+                if(!prlabel) {
                     prlabel = true;
                     var lab = verlab.get_label();
                     StringBuilder sb = new StringBuilder();
@@ -5904,8 +5870,7 @@ case 0:
                                    (int)duration);
                     want_special |= POSMODE.RTH;
                     ltmflags = MSP.LTM.rth;
-                }
-                else if ((ph_mask != 0) &&
+                } else if ((ph_mask != 0) &&
                          ((bxflag & ph_mask) != 0) &&
                          ((xbits & ph_mask) == 0)) {
                     MWPLog.message("set PH on %08x %u %ds\n", bxflag, bxflag,
@@ -5915,15 +5880,12 @@ case 0:
                 }
                 else if ((wp_mask != 0) &&
                          ((bxflag & wp_mask) != 0) &&
-                         ((xbits & wp_mask) == 0))
-                {
+                         ((xbits & wp_mask) == 0)) {
                     MWPLog.message("set WP on %08x %u %ds\n", bxflag, bxflag,
                                    (int)duration);
                     want_special |= POSMODE.WP;
                     ltmflags = MSP.LTM.waypoints;
-                }
-                else if ((xbits != bxflag) && craft != null)
-                {
+                } else if ((xbits != bxflag) && craft != null) {
                     craft.set_normal();
                 }
             }
@@ -5934,15 +5896,12 @@ case 0:
         }
     }
 
-    private void centre_mission(Mission ms, bool ctr_on)
-    {
+    private void centre_mission(Mission ms, bool ctr_on) {
         MissionItem [] mis = ms.get_ways();
-        if(mis.length > 0)
-        {
+        if(mis.length > 0) {
             ms.maxx = ms.maxy = -999.0;
             ms.minx = ms.miny = 999.0;
-            foreach(MissionItem mi in mis)
-            {
+            foreach(MissionItem mi in mis) {
                 if(mi.action != MSP.Action.RTH &&
                    mi.action != MSP.Action.JUMP &&
                    mi.action != MSP.Action.SET_HEAD) {
@@ -5974,10 +5933,8 @@ case 0:
         anim_cb();
     }
 
-    private void try_centre_on(double xlat, double xlon)
-    {
-        if(!view.get_bounding_box().covers(xlat, xlon))
-        {
+    private void try_centre_on(double xlat, double xlon) {
+        if(!view.get_bounding_box().covers(xlat, xlon)) {
             var mlat = view.get_center_latitude();
             var mlon = view.get_center_longitude();
             double alat, alon;
@@ -5996,17 +5953,13 @@ case 0:
         }
     }
 
-    private bool update_pos_info()
-    {
+    private bool update_pos_info() {
         bool pv;
         pv = pos_valid(GPSInfo.lat, GPSInfo.lon);
 
-        if(pv == true)
-        {
-            if(follow == true)
-            {
-                if (centreon == true)
-                {
+        if(pv == true) {
+            if(follow == true) {
+                if (centreon == true) {
                     if(conf.use_legacy_centre_on)
                         map_centre_on(GPSInfo.lat,GPSInfo.lon);
                     else
@@ -6023,8 +5976,7 @@ case 0:
             if(brg < 0)
                brg += 360;
             brg = ((brg + 180) % 360);
-            if(mss.dbus_pos_interval == 0 || nticks - lastdbus >= mss.dbus_pos_interval)
-            {
+            if(mss.dbus_pos_interval == 0 || nticks - lastdbus >= mss.dbus_pos_interval) {
                 if(mss.v_lat != GPSInfo.lat ||
                    mss.v_long != GPSInfo.lon ||
                    mss.v_alt != talt)
@@ -6036,7 +5988,6 @@ case 0:
                     mss.polar_changed(NavStatus.cg.range, brg, tazimuth);
                 if(mss.v_spd != (uint32) GPSInfo.spd || mss.v_cse != (uint32)GPSInfo.cse)
                     mss.velocity_changed((uint32)GPSInfo.spd, (uint32)GPSInfo.cse);
-
                 lastdbus = nticks;
             }
             mss.v_lat = GPSInfo.lat;
@@ -6051,8 +6002,7 @@ case 0:
         return pv;
     }
 
-    private void show_wp_distance(uint8 np)
-    {
+    private void show_wp_distance(uint8 np) {
         if (wp_resp.length == NavStatus.nm_pts) {
             uint fs=(uint)conf.wp_dist_fontsize*1024;
             np = np - 1;
