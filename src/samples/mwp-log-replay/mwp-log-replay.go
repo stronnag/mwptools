@@ -1,20 +1,20 @@
 package main
 
 import (
-	"flag"
-	"fmt"
-	"log"
-	"os"
-	"strings"
-	"strconv"
-	"time"
-	"go.bug.st/serial"
+	"bufio"
 	"encoding/binary"
 	"encoding/json"
+	"flag"
+	"fmt"
+	"go.bug.st/serial"
 	"io"
-	"bufio"
+	"log"
 	"net"
+	"os"
 	"regexp"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type JSONu8Slice []uint8
@@ -241,9 +241,15 @@ func main() {
 				mode := &serial.Mode{BaudRate: baud}
 				s, err := serial.Open(name, mode)
 				if err != nil {
-					log.Fatal(err)
+					fd, err := os.Open(name)
+					if err != nil {
+						log.Fatal(err)
+					} else {
+						sd = fd
+					}
+				} else {
+					sd = s
 				}
-				sd = s
 				if strings.Contains(name, "rfcomm") {
 					time.Sleep(2 * time.Second)
 				}
@@ -265,9 +271,13 @@ func main() {
 		}
 	}
 
+	nmsg := 0
+	st := time.Now()
+
 	for {
 		buf, err := logf.readlog()
 		if err == nil {
+			nmsg += 1
 			if len(buf) > 0 {
 				if name != "" {
 					sd.Write(buf)
@@ -284,6 +294,9 @@ func main() {
 				}
 			}
 		} else if err == io.EOF {
+			et := time.Since(st).Seconds()
+			rate := float64(nmsg) / et
+			fmt.Fprintf(os.Stderr, "Messages %d, time %.1fs %.1f /sec\n", nmsg, et, rate)
 			break
 		} else {
 			log.Fatal(err)
