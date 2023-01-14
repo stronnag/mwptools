@@ -65,7 +65,7 @@ func main() {
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s [options] [device]\n", os.Args[0])
 		flag.PrintDefaults()
-		fmt.Fprintf(os.Stderr, "\n  device is the FC serial device, which may be auto-dectected\n")
+		fmt.Fprintf(os.Stderr, "\n  device is the FC serial device, which may be auto-detected\n")
 	}
 
 	fname := ""

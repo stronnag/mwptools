@@ -311,7 +311,7 @@ func (m *MSPSerial) Init(c0 chan SChan) {
 }
 
 func (m *MSPSerial) MSPClose() {
-	m.Close()
+	m.SerDev.Close()
 }
 
 func Enumerate_ports() string {
