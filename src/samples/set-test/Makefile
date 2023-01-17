@@ -14,6 +14,7 @@ go.sum: go.mod
 
 clean:
 	go clean
+	rm -f $(APPS)
 
 install: $(APPS)
 	-install -d $(prefix)/bin
