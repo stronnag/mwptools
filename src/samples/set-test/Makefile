@@ -1,4 +1,4 @@
-prefix ?= /usr/local
+prefix ?= $$HOME/.local
 APPS = clitest msptest
 
 all: $(APPS)

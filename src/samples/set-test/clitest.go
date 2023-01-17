@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/eiannone/keyboard"
-	"github.com/jochenvg/go-udev"
-	"go.bug.st/serial"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/eiannone/keyboard"
+	"github.com/jochenvg/go-udev"
+	"go.bug.st/serial"
 )
 
 type SChan struct {
@@ -30,6 +31,7 @@ func main() {
 	}
 
 	var sp serial.Port
+	var wstart time.Time
 	c0 := make(chan SChan)
 	u := udev.Udev{}
 	m := u.NewMonitorFromNetlink("udev")
@@ -59,7 +61,6 @@ func main() {
 		panic(err)
 	}
 	defer keyboard.Close()
-	var wstart time.Time
 
 	for done := false; !done; {
 		select {
@@ -124,8 +125,11 @@ func main() {
 				Serial_write(sp, str)
 
 			case 2:
+				fmt.Fprintln(os.Stderr, "Start Save")
 				wstart = time.Now()
 				Serial_write(sp, "save\n")
+				step = 3
+			default:
 			}
 
 		case d := <-ch:
@@ -138,7 +142,8 @@ func main() {
 					sp = MSPRunner(d.Sysname(), c0)
 				}
 			case "remove":
-				fmt.Fprintf(os.Stderr, "Remove device: /dev/%s\n", d.Sysname())
+				et := time.Since(wstart)
+				fmt.Fprintf(os.Stderr, "Remove device: /dev/%s (%s)\n", d.Sysname(), et)
 				if d.Sysname() == connected {
 					sp = nil
 					step = 0
