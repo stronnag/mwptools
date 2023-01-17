@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"context"
-	"github.com/jochenvg/go-udev"
+	"fmt"
 	"github.com/eiannone/keyboard"
+	"github.com/jochenvg/go-udev"
 	"go.bug.st/serial"
 	"os"
 	"strconv"
@@ -129,7 +129,8 @@ func main() {
 					MSPSetting(sp)
 				}
 			case "remove":
-				fmt.Fprintf(os.Stderr, "Remove device: /dev/%s\n", d.Sysname())
+				et := time.Since(wstart)
+				fmt.Fprintf(os.Stderr, "Remove device: /dev/%s (%s)\n", d.Sysname(), et)
 				if d.Sysname() == connected {
 					sp = nil
 					connected = ""
