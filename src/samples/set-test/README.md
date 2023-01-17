@@ -74,3 +74,5 @@ Remove device: /dev/ttyACM0
 ## Other
 
 The author has been unable to experience any lost settings issue with multiple 100 iterations of these (well-behaved) tools
+
+The problem was later tracked down to a bug in the confgurator, not helped by less than strict protocol checking in the firmware.
