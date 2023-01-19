@@ -77,6 +77,7 @@ func main() {
 	elev, err := Get_elevations(mpts, 0)
 	if err == nil {
 		if len(mpts) != len(elev) {
+			fmt.Fprintf(os.Stderr, "mission=%d, bing=%d\n", len(mpts), len(elev))
 			panic("Bing return size error")
 		}
 

@@ -79,34 +79,25 @@ public class SoupProxy : Soup.Server
     public bool offline = false;
     private Soup.Session session;
 
-    public SoupProxy(string uri)
-    {
+    public SoupProxy(string uri) {
         var parts = uri.split("#");
-        if(parts.length == 3 && parts[1] == "Q")
-        {
+        if(parts.length == 3 && parts[1] == "Q") {
             basename = parts[0];
             extname = parts[2];
             this.add_handler (null, default_handler);
             session = new Soup.Session ();
             session.timeout = 5;
-            session.max_conns_per_host = 8;
-        }
-        else
-        {
+        } else {
             MWPLog.message("Invalid quadkeys URI (%s)\n", uri);
             Posix.exit(255);
         }
     }
 
-     ~SoupProxy()
-     {
-     }
+     ~SoupProxy() {}
 
-    private string quadkey(int iz, int ix, int iy)
-    {
+    private string quadkey(int iz, int ix, int iy) {
         StringBuilder sb = new StringBuilder ();
-        for (var i = iz - 1; i >= 0; i--)
-        {
+        for (var i = iz - 1; i >= 0; i--) {
             char digit = '0';
             if ((ix & (1 << i)) != 0)
                 digit += 1;
@@ -117,8 +108,7 @@ public class SoupProxy : Soup.Server
         return sb.str;
     }
 
-    private string rewrite_path(string p)
-    {
+    private string rewrite_path(string p) {
         var parts = p.split("/");
         var np = parts.length-3;
         var fn = parts[np+2].split(".");
@@ -132,19 +122,30 @@ public class SoupProxy : Soup.Server
         return sb.str;
     }
 
-    private void default_handler (Soup.Server server,
-                                  Soup.Message msg, string path,
-                                  GLib.HashTable? query,
-                                  Soup.ClientContext client)
+#if COLDSOUP
+    private void default_handler (Soup.Server server, Soup.Message msg, string path,
+                          GLib.HashTable? query, Soup.ClientContext client)
+#else
+    private void default_handler (Soup.Server server, Soup.ServerMessage msg, string path,
+                          GLib.HashTable? query)
+#endif
     {
-        if(offline)
-        {
+        if(offline) {
+#if COLDSOUP
             msg.set_status(404);
+#else
+            msg.set_status(404, null);
+#endif
             return;
         }
 
-        if (msg.method == "HEAD")
-        {
+#if COLDSOUP
+        var method = msg.method;
+#else
+        var method = msg.get_method();
+#endif
+
+        if (method == "HEAD") {
             bool ok = false;
             Posix.Stat st;
             var parts = path.split("/");
@@ -157,41 +158,64 @@ public class SoupProxy : Soup.Server
                 parts[np-2],
                 parts[np-1]);
 
-            if(Posix.stat(fnstr, out st) == 0)
-            {
+            if(Posix.stat(fnstr, out st) == 0) {
                 ok = true;
                 var dt = new DateTime.from_unix_utc(st.st_mtime);
                 var dstr = dt.format("%a, %d %b %Y %H:%M:%S %Z");
+#if COLDSOUP
                 msg.response_headers.append("Content-Type","image/png");
                 msg.response_headers.append("Accept-Ranges", "bytes");
                 msg.response_headers.append("Last-Modified", dstr);
                 msg.response_headers.append("Content-Length",
                                             st.st_size.to_string());
                 msg.set_status(200);
+#else
+                msg.get_response_headers().append("Content-Type","image/png");
+                msg.get_response_headers().append("Accept-Ranges", "bytes");
+                msg.get_response_headers().append("Last-Modified", dstr);
+                msg.get_response_headers().append("Content-Length", st.st_size.to_string());
+                msg.set_status(200, null);
+#endif
             }
-            if(!ok)
-            {
+            if(!ok) {
+#if COLDSOUP
                 msg.set_status(404);
+#else
+                msg.set_status(404,null);
+#endif
             }
-        }
-        else if (msg.method == "GET")
-        {
+        } else
+            if (method == "GET") {
             var xpath = rewrite_path(path);
             var message = new Soup.Message ("GET", xpath);
-
+#if COLDSOUP
             session.send_message (message);
-            if(message.status_code == 200)
-            {
+            if(message.status_code == 200) {
                 msg.set_response ("image/png", Soup.MemoryUse.COPY,
-                              message.response_body.data);
+                                  message.response_body.data);
             }
             msg.set_status(message.status_code);
-        }
-        else
-        {
+#else
+            try {
+                var b = session.send_and_read (message);
+                msg.set_response ("image/png", Soup.MemoryUse.COPY, b.get_data());
+            } catch {}
+
+            msg.set_status(message.status_code, null);
+#endif
+        } else {
+#if COLDSOUP
             msg.set_status(404);
+#else
+            msg.set_status(404, null);
+#endif
         }
+
+#if COLDSOUP
         msg.response_headers.append("Server", "qk-proxy/1.0");
+#else
+        msg.get_response_headers().append("Server", "qk-proxy/1.0");
+#endif
     }
 }
 
@@ -200,17 +224,27 @@ public class BingMap : Object
     private const string BURI="https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial/0,0?zl=1&include=ImageryProviders&key=";
     public const string KENC="QWwxYnFHYU5vZGVOQTcxYmxlSldmakZ2VzdmQXBqSk9vaE1TWjJfSjBIcGd0NE1HZExJWURiZ3BnQ1piWjF4QQ==";
 
-    public static bool get_source(out MapSource ms, out string buri)
-    {
+    public static bool get_source(out MapSource ms, out string buri) {
+        buri="";
+        ms={};
         StringBuilder sb = new StringBuilder(BURI);
         sb.append((string)Base64.decode(KENC));
         var session = new Soup.Session ();
         var message = new Soup.Message ("GET", sb.str);
+#if COLDSOUP
         session.send_message (message);
         string s="";
         if ( message.status_code == 200)
             s = (string) message.response_body.flatten ().data;
         return parse_bing_json(s, out buri, out ms);
+#else
+        try {
+            var b = session.send_and_read (message);
+            return parse_bing_json((string)b, out buri, out ms);
+        } catch {
+            return false;
+        }
+#endif
     }
 
     private static bool parse_bing_json(string s, out string buri, out MapSource ms)

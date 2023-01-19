@@ -694,6 +694,7 @@ public class  BBoxDialog : Object {
             string uri = GURI.printf((string)cbuflat, (string)cbuflon, geouser);
             var session = new Soup.Session ();
             var message = new Soup.Message ("GET", uri);
+#if COLDSOUP
             string s="";
             session.queue_message (message, (sess, mess) => {
                     if (mess.status_code == 200) {
@@ -719,6 +720,32 @@ public class  BBoxDialog : Object {
                         MWPLog.message("%s\n", sb.str);
                     }
                 });
+#else
+            session.send_and_read_async.begin(message, 0, null, (obj,res) => {
+                    string s;
+                    try {
+                        var byt = session.send_and_read_async.end(res);
+                        s = (string) byt.get_data();
+                        var parser = new Json.Parser ();
+                        parser.load_from_data (s);
+                        var item = parser.get_root ().get_object ();
+                        if (item.has_member("timezoneId"))
+                            str = item.get_string_member ("timezoneId");
+                        if(str != null) {
+                            MWPLog.message("Geonames %f %f %s\n", lat, lon, str);
+                            var n = add_if_missing(str);
+                            bb_tz_combo.active = n;
+                        } else {
+                            MWPLog.message("Geonames: <%s>\n", uri);
+                            var sb = new StringBuilder("Geonames TZ: ");
+                            sb.append(s);
+                            MWPLog.message("%s\n", sb.str);
+                        }
+                    } catch {
+                        MWPLog.message("Geonames resp error: %d\n", message.status_code);
+                    }
+                });
+#endif
         }
     }
 

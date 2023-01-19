@@ -69,10 +69,17 @@ public class GMProxy : Soup.Server
         var session = new Soup.Session ();
         var message = new Soup.Message ("GET", GURL);
         message.request_headers.append("User-Agent",make_ua());
-        session.send_message (message);
         string s=null;
+#if COLDSOUP
+        session.send_message (message);
         if ( message.status_code == 200)
             s = (string) message.response_body.flatten().data;
+#else
+        try {
+            var b = session.send_and_read (message);
+            s = (string)b.get_data();
+        } catch {}
+#endif
         return get_google_version(s);
     }
 
@@ -140,17 +147,28 @@ public class GMProxy : Soup.Server
         return ua;
     }
 
+#if COLDSOUP
     private void default_handler (Soup.Server server, Soup.Message msg, string path,
                           GLib.HashTable? query, Soup.ClientContext client)
+#else
+    private void default_handler (Soup.Server server, Soup.ServerMessage msg, string path,
+                          GLib.HashTable? query)
+#endif
     {
-        if(gvers == null)
-        {
+        if(gvers == null) {
+#if COLDSOUP
             msg.set_status(404);
+#else
+            msg.set_status(404,null);
+#endif
             return;
         }
-
-        if (msg.method == "HEAD")
-        {
+#if COLDSOUP
+        var method = msg.method;
+#else
+        var method = msg.get_method();
+#endif
+        if (method == "HEAD") {
             bool ok = false;
             Posix.Stat st;
             var parts = path.split("/");
@@ -163,43 +181,64 @@ public class GMProxy : Soup.Server
                 parts[np-2],
                 parts[np-1]);
 
-            if(Posix.stat(fnstr, out st) == 0)
-            {
+            if(Posix.stat(fnstr, out st) == 0) {
                 ok = true;
                 var dt = new DateTime.from_unix_utc(st.st_mtime);
                 var dstr = dt.format("%a, %d %b %Y %H:%M:%S %Z");
+#if COLDSOUP
                 msg.response_headers.append("Content-Type","image/png");
                 msg.response_headers.append("Accept-Ranges", "bytes");
                 msg.response_headers.append("Last-Modified", dstr);
                 msg.response_headers.append("Content-Length",
                                             st.st_size.to_string());
                 msg.set_status(200);
+#else
+                msg.get_response_headers().append("Content-Type","image/png");
+                msg.get_response_headers().append("Accept-Ranges", "bytes");
+                msg.get_response_headers().append("Last-Modified", dstr);
+                msg.get_response_headers().append("Content-Length",
+                                            st.st_size.to_string());
+                msg.set_status(200, null);
+#endif
             }
-            if(!ok)
-            {
+            if(!ok) {
+#if COLDSOUP
                 msg.set_status(404);
+#else
+                msg.set_status(404, null);
+#endif
             }
-        }
-        else if (msg.method == "GET")
-        {
+        } else if (method == "GET") {
             var xpath = rewrite_path(path);
             var session = new Soup.Session ();
             var message = new Soup.Message ("GET", xpath);
+#if COLDSOUP
             message.request_headers.append("Referrer", "https://maps.google.com/");
             message.request_headers.append("User-Agent",make_ua());
             message.request_headers.append("Accept","*/*");
 
             session.send_message (message);
-            if(message.status_code == 200)
-            {
+            if(message.status_code == 200) {
                 msg.set_response ("image/jpeg", Soup.MemoryUse.COPY,
                                   message.response_body.data);
             }
             msg.set_status(message.status_code);
-        }
-        else
-        {
+#else
+            message.get_request_headers().append("Referrer", "https://maps.google.com/");
+            message.get_request_headers().append("User-Agent",make_ua());
+            message.get_request_headers().append("Accept","*/*");
+            try {
+                var b = session.send_and_read (message);
+                msg.set_response ("image/jpeg", Soup.MemoryUse.COPY, b.get_data());
+            } catch {}
+            msg.set_status(message.status_code, null);
+#endif
+        } else {
+#if COLDSOUP
             msg.set_status(404);
+#else
+            msg.set_status(404, null);
+#endif
         }
     }
 

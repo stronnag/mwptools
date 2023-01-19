@@ -19,7 +19,7 @@ ublxgdeps =  [deps,
 	      dependency('champlain-gtk-0.12'),
 	      dependency('champlain-0.12'),
 	      dependency('clutter-gtk-1.0'),
-              dependency('libsoup-2.4'),
+	      soupdep,
 	      meson.get_compiler('vala').find_library('posix'),
 	     ]
 

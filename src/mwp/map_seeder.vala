@@ -240,8 +240,10 @@ public class TileUtil : Object {
 
     public void start_seeding() {
         session = new Soup.Session();
+#if COLDSOUP
         session.max_conns_per_host = 8;
         session.ssl_strict = false; // for OSM alas
+#endif
         done = false;
         show_stats(stats);
         fetch_tile();
@@ -256,14 +258,31 @@ public class TileUtil : Object {
         } while (r == TILE_ITER_RES.SKIP);
 
         if(r == TILE_ITER_RES.FETCH) {
-            var message = new Soup.Message ("GET", tile_uri);
-            session.queue_message (message, end_session);
+            var msg = new Soup.Message ("GET", tile_uri);
+#if COLDSOUP
+            session.queue_message (msg, end_session);
+#else
+            session.send_and_read_async.begin(msg, 0, null, (obj,res) => {
+                    try {
+                        var byt = session.send_and_read_async.end(res);
+                        stats.dlok++;
+                        file.replace_contents(byt.get_data(), null,
+                                              false,
+                                              FileCreateFlags.REPLACE_DESTINATION,null);
+                    } catch {
+                        MWPLog.message("Tile failure status %u\n", msg.status_code);
+                        stats.dlerr++;
+                    }
+                    show_stats(stats);
+                    fetch_tile();
+                });
+#endif
         }
         if(r == TILE_ITER_RES.DONE) {
             tile_done();
         }
     }
-
+#if COLDSOUP
     void end_session(Soup.Session sess, Soup.Message msg) {
         if(msg.status_code == 200) {
             stats.dlok++;
@@ -278,7 +297,7 @@ public class TileUtil : Object {
         show_stats(stats);
         fetch_tile();
     }
-
+#endif
     public void set_delta(uint days) {
         var t =  new  DateTime.now_local ();
         dtime = t.add_days(-(int)days);

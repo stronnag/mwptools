@@ -128,15 +128,23 @@ public class BProxy : Soup.Server
         this.add_handler (null, default_handler);
     }
 
+#if COLDSOUP
     private void default_handler (Soup.Server server, Soup.Message msg, string path,
                           GLib.HashTable? query, Soup.ClientContext client)
+#else
+    private void default_handler (Soup.Server server, Soup.ServerMessage msg, string path,
+                          GLib.HashTable? query)
+#endif
     {
         msg.set_response ("image/png", Soup.MemoryUse.COPY, base_png);
+#if COLDSOUP
         msg.set_status(200);
+#else
+        msg.set_status(200,null);
+#endif
     }
 
-    public static int main (string []args)
-    {
+    public static int main (string []args) {
         var loop = new MainLoop();
         var b = new BProxy();
         try {

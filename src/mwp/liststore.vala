@@ -119,6 +119,7 @@ public class EvCache : Object {
     }
 
     public static void update_all_wp_elevations (BingElevations.Point[] pts) {
+#if COLDSOUP
         BingElevations.get_elevations.begin(pts, (obj, res) => {
                 var bingelevs = BingElevations.get_elevations.end(res);
                 if(bingelevs.length == pts.length) {
@@ -129,18 +130,41 @@ public class EvCache : Object {
                     }
                 }
             });
+#else
+        var be = new BingElevations();
+        be.elevations.connect((elevs) => {
+                if(elevs.length == pts.length) {
+                    int j = 0;
+                    foreach(var e in elevs) {
+                        EvCache.set_elev_index_value(j, e);
+                        j++;
+                    }
+                }
+            });
+        be.get_elevations(pts);
+#endif
     }
 
     public static void update_single_elevation (int idx, double lat, double lon) {
         BingElevations.Point pts[1];
         pts[0].y = lat;
         pts[0].x = lon;
+#if COLDSOUP
         BingElevations.get_elevations.begin(pts, (obj, res) => {
                 var bingelevs = BingElevations.get_elevations.end(res);
                 if(bingelevs.length == 1) {
                     EvCache.set_elev(idx, bingelevs[0]);
                 }
             });
+#else
+        var be = new BingElevations();
+        be.elevations.connect((elevs) => {
+                if(elevs.length == 1) {
+                    EvCache.set_elev(idx, elevs[0]);
+                }
+            });
+        be.get_elevations(pts);
+#endif
     }
 }
 
@@ -829,6 +853,7 @@ public class ListBox : GLib.Object {
         } else {
             var pts = get_geo_points_for_mission(posref);
             if(pts.length > 0) {
+#if COLDSOUP
                 BingElevations.get_elevations.begin(pts, (obj, res) => {
                         var bingelevs = BingElevations.get_elevations.end(res);
                         if (bingelevs.length > 0) {
@@ -847,6 +872,31 @@ public class ListBox : GLib.Object {
                             unset_selection();
                         }
                     });
+#else
+        var be = new BingElevations();
+        be.elevations.connect((elevs) => {
+                if (elevs.length > 0) {
+                    if ((posref & (POSREF.LANDA|POSREF.LANDR)) != 0) {
+                        int[] ee = {};
+                        foreach (var el in elevs) {
+                            ee += el;
+                        }
+                        if((posref & POSREF.MANUAL) != 0) {
+                            var tmp = ee[0];
+                            ee[0] = altmodedialog.get_manual();
+                            ee += tmp;
+                        }
+                        update_land_offset(ee);
+                    } else {
+                        update_altmode(amode, elevs[0]);
+                    }
+                }
+                if((act & 2) == 2) {
+                    unset_selection();
+                }
+            });
+        be.get_elevations(pts);
+#endif
             } else {
                 if((act & 2) == 2)
                     unset_selection();

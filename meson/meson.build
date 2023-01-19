@@ -44,6 +44,22 @@ else
   endif
 endif
 
+r = run_command('pkg-config', '--modversion', 'champlain-0.12',  check: true)
+if r.returncode() != 0
+  error('failed to get champlain version')
+endif
+champvers = r.stdout().strip()
+#message('Champ Vers' + champvers)
+
+if champvers.version_compare('<0.12.21')
+  soupdep =  dependency('libsoup-2.4')
+  dopts += '--define=COLDSOUP'
+else
+  soupdep =  dependency('libsoup-3.0')
+endif
+
+#message('SOUP '+champvers+' => ', dopts)
+
 termcap = dependency('ncurses', required: false)
 
 libm = meson.get_compiler('c').find_library('m', required : false)
