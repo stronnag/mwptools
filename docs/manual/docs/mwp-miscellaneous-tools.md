@@ -60,7 +60,7 @@ And now we have a settings backup ...
 
 ## flash.sh, fcflash
 
-`fcflash` is a script to flash inav images to a flight controller using the command line.
+`fcflash` is a script to flash INAV images to a flight controller using the command line.
 It requires that `stm32flash` and `dfu-util` are installed on your computer. Optionally, it requires GCC `objcopy` to convert hex files to binary for DFU operation.
 
 * DFU mode requires `dfu-util`
@@ -92,7 +92,7 @@ Note: `fcflash` is the installed file, in the repository it's `src/samples/flash
 * `erase`  : Performs full chip erase
 * `[123456789]*` : Digits, representing a baud rate. `115200` is assumed by default.
 
-A file name (an inav hex file) is also required.
+A file name (an INAV hex file) is also required.
 
 ## Examples
 
@@ -305,7 +305,7 @@ So, had the above failed, it could be rescued by pasting in the "Found" line abo
 
 ## cliterm
 
-`cliterm` is a simple terminal program for interacting with the INAV CLI. Unlike alternative tools (`picocom`, `minicom` etc.), it will auto-detect the FC serial device, uses 115200 as the baud rate and, by default, automatically enters the CLI. In INAV 5.0 and later, it will set `cli_delay` in case you've compiled the firmware with GCC 11.
+`cliterm` is a simple terminal program for interacting with the INAV CLI. Unlike alternative tools (`picocom`, `minicom` etc.), it will auto-detect the FC serial device, uses 115200 as the baud rate and, by default, automatically enters the CLI.
 
 		$ cliterm --help
 		Usage:
@@ -324,7 +324,7 @@ So, had the above failed, it could be rescued by pasting in the "Found" line abo
 		  -f, --file                        file
 		  --eolmode=[cr,lf,crlf,crcrlf]     eol mode
 
-* With `-g`, `-p`, the FC is put into GPS passthrouigh mode, in order to use tools like `ublox-cli` or `u-center` (sic).
+* With `-g`, `-p`, the FC is put into GPS passthrough mode, in order to use tools like `ublox-cli` or `u-center` (sic).
 * `-m`, `--msc` causes the FC to reboot in MSC (USB Mass Storage) mode.
 
 The options `-n` (don't enter CLI automatically) and `-m` may be useful when accessing other devices (for example a 3DR radio, HC-12 radio or ESP8266) in command mode.
@@ -346,7 +346,7 @@ There are a few basic prerequisites for doing this analysis using the {{ mwp }} 
 
 A user reported serious toilet-bowling / fly away on a large cine-octa with expensive VTX RF gear and camera gimbal. Two blackbox logs were provided, one with the RF and gimbal disabled, the other with them enabled (when the problem appears).
 
-The logs were processed with the `mwptools/src/bbox-replay/parse_bb_compass.rb`. This script:
+The logs were processed with the `mwptools/src/bbox-replay/inav-parse_bb_compass.rb`. This script:
 
 * Decodes the log, down-sampling to 0.1s intervals (or user provided interval)
 * Extracts the GPS heading and the compass heading (via INAV's position estimator), the relevant blackbox fields being `GPS_ground_course` and `attitude[2]/10`.
@@ -359,8 +359,8 @@ The logs were processed with the `mwptools/src/bbox-replay/parse_bb_compass.rb`.
 You need to run this from a shell (Linux / MacOS /FreeBSD terminal, Windows powershell or cmd).
 `blackbox_decode` and (optionally) `gnuplot` need to be on the `PATH`.
 
-    $ ./parse_bb_compass.rb --help
-    parse_bb_compass.rb [options] [file]
+    $ ./inav-parse_bb_compass.rb --help
+    inav-parse_bb_compass.rb [options] [file]
           --list-states
           --plot                       Generate SVG graph (requires 'gnuplot')
           --thr                        Include throttle value in output
@@ -375,7 +375,7 @@ You need to run this from a shell (Linux / MacOS /FreeBSD terminal, Windows powe
 
 First, the good log (no VTX-RF or gimbal enabled):
 
-    ./parse_bb_compass.rb --plot /tmp/LOG00001.TXT
+    ./inav-parse_bb_compass.rb --plot /tmp/LOG00001.TXT
 	INAV 4.1.0, states from 2.7.0
     Log 1 of 1, start 00:49.654, end 06:33.615, duration 05:43.961
 
@@ -403,7 +403,7 @@ Looks OK, there's a few deviations between the GPS and position estimator, possi
 
 Let's now look at the log with the VTX-RF and gimbal enabled:
 
-    ./parse_bb_compass.rb --plot /tmp/LOG00008.TXT
+    ./inav-parse_bb_compass.rb --plot /tmp/LOG00008.TXT
 	...
 	 Graph in /tmp/LOG00001.TXT.csv.svg
 
@@ -421,7 +421,7 @@ So now we have concrete evidence of the problem, the next steps would be for the
 
 ### Similar tools
 
-PH unstable altitude is often caused by excessive vibrations or inadequately protected (open cell foam) barometer. `mwptools/src/bbox-replay/inav_gps_alt.rb` will generate a simlar graph of baro v. GPS v. position estimator elevations.
+PH unstable altitude is often caused by excessive vibrations or inadequately protected (open cell foam) barometer. `mwptools/src/bbox-replay/inav_gps_alt.rb` will generate a similar graph of baro v. GPS v. position estimator elevations.
 
 * GPS and baro correlate, position estimator is off, most likely vibrations
 * GPS and baro don't correlate. Probably lack of baro protection (or GPS interference from VTX).

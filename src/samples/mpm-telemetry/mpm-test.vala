@@ -8,14 +8,12 @@
 // See  https://github.com/pascallanger/DIY-Multiprotocol-TX-Module/blob/master/Multiprotocol/Multiprotocol.h
 
 namespace SEDE {
-	uint8 * deserialise_u32(uint8* rp, out uint32 v)
-    {
+	uint8 * deserialise_u32(uint8* rp, out uint32 v) {
         v = *rp | (*(rp+1) << 8) |  (*(rp+2) << 16) | (*(rp+3) << 24);
         return rp + sizeof(uint32);
     }
 
-    uint8 * deserialise_u16(uint8* rp, out uint16 v)
-    {
+    uint8 * deserialise_u16(uint8* rp, out uint16 v) {
         v = *rp | (*(rp+1) << 8);
         return rp + sizeof(uint16);
     }
@@ -65,11 +63,9 @@ namespace FRSKY {
 		AZIMUTH = 0x0460,
     }
 
-    bool fr_checksum(uint8[] buf)
-    {
+    bool fr_checksum(uint8[] buf) {
         uint16 crc = 0;
-        foreach (var b in buf[2:10])
-        {
+        foreach (var b in buf[2:10]) {
             crc += b;
             crc += crc >> 8;
             crc &= 0xff;
@@ -79,8 +75,7 @@ namespace FRSKY {
 
 	bool frsky_decode(uint8 []buf) {
 		bool res = fr_checksum(buf);
-        if(res)
-        {
+        if(res){
             ushort id;
             uint val;
             SEDE.deserialise_u16(buf+3, out id);
