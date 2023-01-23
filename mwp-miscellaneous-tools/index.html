@@ -1314,7 +1314,7 @@ Application Options:
 -rw-r----- 1 jrh jrh 2115 Mar 28 12:16 /tmp/dodo-test.txt.2018-03-28T12.17.01
 </code></pre>
 <h2 id="flashsh-fcflash">flash.sh, fcflash<a class="headerlink" href="#flashsh-fcflash" title="Permanent link">#</a></h2>
-<p><code>fcflash</code> is a script to flash inav images to a flight controller using the command line.
+<p><code>fcflash</code> is a script to flash INAV images to a flight controller using the command line.
 It requires that <code>stm32flash</code> and <code>dfu-util</code> are installed on your computer. Optionally, it requires GCC <code>objcopy</code> to convert hex files to binary for DFU operation.</p>
 <ul>
 <li>DFU mode requires <code>dfu-util</code></li>
@@ -1343,7 +1343,7 @@ It requires that <code>stm32flash</code> and <code>dfu-util</code> are installed
 <li><code>erase</code>  : Performs full chip erase</li>
 <li><code>[123456789]*</code> : Digits, representing a baud rate. <code>115200</code> is assumed by default.</li>
 </ul>
-<p>A file name (an inav hex file) is also required.</p>
+<p>A file name (an INAV hex file) is also required.</p>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">#</a></h2>
 <h3 id="flash-image-dfu-auto-detect">Flash image, DFU, auto-detect<a class="headerlink" href="#flash-image-dfu-auto-detect" title="Permanent link">#</a></h3>
 <pre><code>fcflash inav_5.0.0_MATEKF405.hex
@@ -1529,7 +1529,7 @@ Saving
 Rebooting
 </code></pre>
 <h2 id="cliterm">cliterm<a class="headerlink" href="#cliterm" title="Permanent link">#</a></h2>
-<p><code>cliterm</code> is a simple terminal program for interacting with the INAV CLI. Unlike alternative tools (<code>picocom</code>, <code>minicom</code> etc.), it will auto-detect the FC serial device, uses 115200 as the baud rate and, by default, automatically enters the CLI. In INAV 5.0 and later, it will set <code>cli_delay</code> in case you've compiled the firmware with GCC 11.</p>
+<p><code>cliterm</code> is a simple terminal program for interacting with the INAV CLI. Unlike alternative tools (<code>picocom</code>, <code>minicom</code> etc.), it will auto-detect the FC serial device, uses 115200 as the baud rate and, by default, automatically enters the CLI.</p>
 <pre><code>    $ cliterm --help
     Usage:
       cliterm [OPTION?]  - cli tool
@@ -1548,7 +1548,7 @@ Rebooting
       --eolmode=[cr,lf,crlf,crcrlf]     eol mode
 </code></pre>
 <ul>
-<li>With <code>-g</code>, <code>-p</code>, the FC is put into GPS passthrouigh mode, in order to use tools like <code>ublox-cli</code> or <code>u-center</code> (sic).</li>
+<li>With <code>-g</code>, <code>-p</code>, the FC is put into GPS passthrough mode, in order to use tools like <code>ublox-cli</code> or <code>u-center</code> (sic).</li>
 <li><code>-m</code>, <code>--msc</code> causes the FC to reboot in MSC (USB Mass Storage) mode.</li>
 </ul>
 <p>The options <code>-n</code> (don't enter CLI automatically) and <code>-m</code> may be useful when accessing other devices (for example a 3DR radio, HC-12 radio or ESP8266) in command mode.</p>
@@ -1564,7 +1564,7 @@ Rebooting
 </ul>
 <h3 id="worked-example">Worked example<a class="headerlink" href="#worked-example" title="Permanent link">#</a></h3>
 <p>A user reported serious toilet-bowling / fly away on a large cine-octa with expensive VTX RF gear and camera gimbal. Two blackbox logs were provided, one with the RF and gimbal disabled, the other with them enabled (when the problem appears).</p>
-<p>The logs were processed with the <code>mwptools/src/bbox-replay/parse_bb_compass.rb</code>. This script:</p>
+<p>The logs were processed with the <code>mwptools/src/bbox-replay/inav-parse_bb_compass.rb</code>. This script:</p>
 <ul>
 <li>Decodes the log, down-sampling to 0.1s intervals (or user provided interval)</li>
 <li>Extracts the GPS heading and the compass heading (via INAV's position estimator), the relevant blackbox fields being <code>GPS_ground_course</code> and <code>attitude[2]/10</code>.</li>
@@ -1575,8 +1575,8 @@ Rebooting
 <h4 id="script-usage">Script usage<a class="headerlink" href="#script-usage" title="Permanent link">#</a></h4>
 <p>You need to run this from a shell (Linux / MacOS /FreeBSD terminal, Windows powershell or cmd).
 <code>blackbox_decode</code> and (optionally) <code>gnuplot</code> need to be on the <code>PATH</code>.</p>
-<pre><code>$ ./parse_bb_compass.rb --help
-parse_bb_compass.rb [options] [file]
+<pre><code>$ ./inav-parse_bb_compass.rb --help
+inav-parse_bb_compass.rb [options] [file]
       --list-states
       --plot                       Generate SVG graph (requires 'gnuplot')
       --thr                        Include throttle value in output
@@ -1589,7 +1589,7 @@ parse_bb_compass.rb [options] [file]
 </code></pre>
 <h3 id="results-from-the-analysis">Results from the analysis<a class="headerlink" href="#results-from-the-analysis" title="Permanent link">#</a></h3>
 <p>First, the good log (no VTX-RF or gimbal enabled):</p>
-<pre><code>./parse_bb_compass.rb --plot /tmp/LOG00001.TXT
+<pre><code>./inav-parse_bb_compass.rb --plot /tmp/LOG00001.TXT
 INAV 4.1.0, states from 2.7.0
 Log 1 of 1, start 00:49.654, end 06:33.615, duration 05:43.961
 
@@ -1613,7 +1613,7 @@ Graph in /tmp/LOG00001.TXT.csv.svg
 <p><img alt="Direction plot" src="../images/LOG00001.TXT.csv.svg" /></p>
 <p>Looks OK, there's a few deviations between the GPS and position estimator, possibly a result of hard Acro mode manoeuvres.</p>
 <p>Let's now look at the log with the VTX-RF and gimbal enabled:</p>
-<pre><code>./parse_bb_compass.rb --plot /tmp/LOG00008.TXT
+<pre><code>./inav-parse_bb_compass.rb --plot /tmp/LOG00008.TXT
 ...
  Graph in /tmp/LOG00001.TXT.csv.svg
 </code></pre>
@@ -1627,7 +1627,7 @@ Graph in /tmp/LOG00001.TXT.csv.svg
 <li>Move the GPS / compass further away (might not be so easy)</li>
 </ul>
 <h3 id="similar-tools">Similar tools<a class="headerlink" href="#similar-tools" title="Permanent link">#</a></h3>
-<p>PH unstable altitude is often caused by excessive vibrations or inadequately protected (open cell foam) barometer. <code>mwptools/src/bbox-replay/inav_gps_alt.rb</code> will generate a simlar graph of baro v. GPS v. position estimator elevations.</p>
+<p>PH unstable altitude is often caused by excessive vibrations or inadequately protected (open cell foam) barometer. <code>mwptools/src/bbox-replay/inav_gps_alt.rb</code> will generate a similar graph of baro v. GPS v. position estimator elevations.</p>
 <ul>
 <li>GPS and baro correlate, position estimator is off, most likely vibrations</li>
 <li>GPS and baro don't correlate. Probably lack of baro protection (or GPS interference from VTX).</li>
@@ -1644,7 +1644,7 @@ Graph in /tmp/LOG00001.TXT.csv.svg
 <div class="md-source-date">
   <small>
     
-      Last update: 2022-12-11
+      Last update: 2023-01-23
     
   </small>
 </div>
