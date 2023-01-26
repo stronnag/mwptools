@@ -73,13 +73,16 @@ impl CRSFReader {
                     if *e == RADIO_ADDRESS {
                         self.init();
                         self.state = State::Len;
-                    }
+                    } else {
+//			eprintln!("Invalid start {}", *e);
+		    }
                 }
                 State::Len => {
                     if *e > 2 && *e < TELEMETRY_RX_PACKET_SIZE - 2 {
                         self.state = State::Func;
                         self.len = *e - 2; // exclude type and crc (i.e. payload only)
                     } else {
+//			eprintln!("Invalid packet size {}", *e);
                         self.init();
                     }
                 }
@@ -101,20 +104,24 @@ impl CRSFReader {
                     let str: String;
                     if *e == self.crc {
                         str = self.describe();
+			if let Some(x) = offset {
+			    print!("{:7.2}s: ", x);
+			}
+			println!("{}", str);
                     } else {
                         str = format!(
-                            "Failed {} {} {} {} frame {}",
+                            "CRC fail type={} len={} calc-crc={} msg-crc={} framelength={}",
                             self.func,
                             self.len,
                             self.crc,
                             *e,
                             data.len()
                         );
+			if let Some(x) = offset {
+                            eprint!("{:7.2}s: ", x);
+			}
+			eprintln!("{}", str);
                     }
-                    if let Some(x) = offset {
-                        print!("{:7.2}s: ", x);
-                    }
-                    println!("{}", str);
                     self.init();
                 }
             }
