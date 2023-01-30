@@ -521,7 +521,7 @@ public class MWP : Gtk.Application {
 
     private string [] disarm_reason = {
         "None", "Timeout", "Sticks", "Switch_3d", "Switch",
-            "Killswitch", "Failsafe", "Navigation" };
+        "Killswitch", "Failsafe", "Navigation", "Landing" };
 
     private const string[] failnames = {"WPNO","ACT","LAT","LON","ALT","P1","P2","P3","FLAG"};
 
@@ -4132,24 +4132,19 @@ public class MWP : Gtk.Application {
                         }
                     }
                 }
-                if ((gfix & 4) == 4)
-                {
-                    if (SportDev.range < 500)
-                    {
+                if ((gfix & 4) == 4) {
+                    if (SportDev.range < 500) {
                         MWPLog.message("SPORT: %s set home: changed home position %f %f\n",
                                        id.to_string(), GPSInfo.lat, GPSInfo.lon);
                         home_changed(GPSInfo.lat, GPSInfo.lon);
                         want_special |= POSMODE.HOME;
                         process_pos_states(GPSInfo.lat, GPSInfo.lon, 0.0, "SPort");
-                    }
-                    else
-                    {
+                    } else {
                         MWPLog.message("SPORT: %s Ignoring (bogus?) set home, range > 500m: requested home position %f %f\n", id.to_string(), GPSInfo.lat, GPSInfo.lon);
                     }
                 }
 
-                if((_nsats == 0 && nsats != 0) || (nsats == 0 && _nsats != 0))
-                {
+                if((_nsats == 0 && nsats != 0) || (nsats == 0 && _nsats != 0)) {
                     nsats = _nsats;
                     navstatus.sats(_nsats, true);
                 }
@@ -7530,11 +7525,8 @@ case 0:
                                     }
                                 }
                             }
-                        }
-                        else
-                        {
-                            if(no_ofix == 10)
-                            {
+                        } else {
+                            if(no_ofix == 10) {
                                 MWPLog.message("No home position yet\n");
                             }
                         }
@@ -8402,6 +8394,7 @@ case 0:
 
     private bool home_changed(double lat, double lon) {
         bool ret=false;
+
         var d1 = home_pos.lat - lat;
         var d2 = home_pos.lon - lon;
 
