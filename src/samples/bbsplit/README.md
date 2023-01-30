@@ -16,7 +16,7 @@ $ bbsplit  ~/dl/blackbox_log_2023-01-28_193351.txt
 -> 005-blackbox_log_2023-01-28_193351.txt
 ```
 
-If the file is not a blackbox log, or only contains a single file, no new file is written.
+If the file is not a blackbox log, or only contains a single log, no new file is written.
 
 ### Building
 
