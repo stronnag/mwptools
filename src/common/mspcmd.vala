@@ -303,8 +303,7 @@ public class MSP : Object {
     };
 
 
-    private const string [] bb_disarm_reasons =
-    {
+    private const string [] bb_disarm_reasons = {
         "None",
         "Timeout",
         "Sticks",
@@ -312,7 +311,8 @@ public class MSP : Object {
         "Switch",
         "Killswitch",
         "Failsafe",
-        "Navigation"
+        "Navigation",
+        "Landing",
     };
 
     private static HashTable<string, MSP.Action> wp_hash;
