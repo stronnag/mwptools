@@ -3,7 +3,7 @@
 ### Usage
 
 When logging to flash (vice SDcard), INAV by default downloads multiple logs into a single file.
-This may be mitigated by using MSC mode instead of downloading via `flashgo` or the INAV Configurator, or one can extract the individual logs from the consolidated file using `bbsplit`.
+This may be mitigated by using MSC mode instead of downloading via [flashgo](https://stronnag.github.io/mwptools/mwp-miscellaneous-tools/#flashgo) or the INAV Configurator, or one can extract the individual logs from the consolidated file using `bbsplit`.
 
 For example:
 
