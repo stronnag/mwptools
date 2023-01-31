@@ -69,12 +69,12 @@ fn getmeta(source : &str, save: bool) -> io::Result<()> {
 
     if bbls.len() > 1 {
         for (idx, b) in bbls.iter().enumerate() {
-	    let mut buf = vec![0; b.length];
-	    f.seek(SeekFrom::Start(b.offset as u64))?;
-	    f.read_exact(&mut buf)?;
 	    let fname = format!("{:03}-{}",idx+1, Path::new(&source).file_name().unwrap().to_str().unwrap());
 	    println!("-> {} {}", &fname, b);
 	    if save {
+		let mut buf = vec![0; b.length];
+		f.seek(SeekFrom::Start(b.offset as u64))?;
+		f.read_exact(&mut buf)?;
 		let mut wh = File::create(fname)?;
 		wh.write_all(&buf)?;
 	    }
