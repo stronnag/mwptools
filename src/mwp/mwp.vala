@@ -3489,36 +3489,57 @@ public class MWP : Gtk.Application {
 			switch(fm) {
 			case "AIR":
 			case "ACRO":
+            case "QACRO":
 				ltmflags = MSP.LTM.acro;
 				break;
 			case "!FS!":
 				failsafe = true;
 				break;
 			case "MANU":
+            case "MAN":
 				ltmflags = MSP.LTM.manual; // RTH
 				break;
 			case "RTH":
+            case "RTL":
+            case "QRTL":
+            case "LAND":
+            case "QLAND":
 				ltmflags = MSP.LTM.rth; // RTH
 				break;
 			case "HOLD":
+            case "LOIT":
+            case "CIRC":
+            case "GUID":
+            case "QLOIT":
 				ltmflags = MSP.LTM.poshold; // PH
 				break;
 			case "CRUZ":
 			case "CRSH":
+            case "CRUISE":
 				ltmflags = MSP.LTM.cruise; // Cruise
 				break;
 			case "AH":
 				ltmflags = MSP.LTM.althold; // AltHold
 				break;
 			case "WP":
+            case "AUTO":
 				ltmflags = MSP.LTM.waypoints;  // WP
 				break;
 			case "ANGL":
             case "FBWA":
+            case "STAB":
+            case "TRAIN":
+            case "TKOF":
+            case "ATUNE":
+            case "ADSB":
+            case "THRML":
+            case "L2QLND":
                 ltmflags = MSP.LTM.angle; // Angle
 				break;
 			case "HOR":
             case "FBWB":
+            case "QSTAB":
+            case "QHOV":
 				ltmflags = MSP.LTM.horizon; // Horizon
 				break;
 			default:
