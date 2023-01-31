@@ -3514,9 +3514,11 @@ public class MWP : Gtk.Application {
 				ltmflags = MSP.LTM.waypoints;  // WP
 				break;
 			case "ANGL":
-				ltmflags = MSP.LTM.angle; // Angle
+            case "FBWA":
+                ltmflags = MSP.LTM.angle; // Angle
 				break;
 			case "HOR":
+            case "FBWB":
 				ltmflags = MSP.LTM.horizon; // Horizon
 				break;
 			default:
