@@ -8,6 +8,17 @@ This may be mitigated by using MSC mode instead of downloading via [flashgo](htt
 For example:
 
 ```
+$ bbsplit --help
+Usage: bbsplit [options] filename
+
+Options:
+    -n, --dry-run       List segments without extraction
+
+```
+
+and
+
+```
 $ bbsplit  ~/dl/blackbox_log_2023-01-28_193351.txt
 -> 001-blackbox_log_2023-01-28_193351.txt
 -> 002-blackbox_log_2023-01-28_193351.txt

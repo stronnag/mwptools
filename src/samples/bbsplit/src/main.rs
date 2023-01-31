@@ -1,9 +1,11 @@
+use std::fmt;
 use std::fs::File;
 use std::io;
 use std::io::{BufRead, BufReader,Write,Seek,Read};
 use std::env;
 use std::io::SeekFrom;
 use std::path::Path;
+use getopts::Options;
 
 #[derive(PartialEq)]
 enum FState {
@@ -12,14 +14,19 @@ enum FState {
     Writing,
 }
 
-#[derive(Debug,Clone)]
+#[derive(Clone,Debug)]
 struct BBLSegment {
     offset: usize,
     length: usize,
 }
 
-fn getmeta(source : &str) -> io::Result<()> {
+impl fmt::Display for BBLSegment {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+	write!(f,"offset: {:8}, length: {:8}", self.offset, self.length)
+    }
+}
 
+fn getmeta(source : &str, save: bool) -> io::Result<()> {
     let hbbox: &[u8] = b"H Product:Blackbox flight data recorder by Nicholas Sherlock\n";
     let hbblen = hbbox.len();
     let f = File::open(source)?;
@@ -66,9 +73,11 @@ fn getmeta(source : &str) -> io::Result<()> {
 	    f.seek(SeekFrom::Start(b.offset as u64))?;
 	    f.read_exact(&mut buf)?;
 	    let fname = format!("{:03}-{}",idx+1, Path::new(&source).file_name().unwrap().to_str().unwrap());
-	    println!("-> {}", &fname);
-	    let mut wh = File::create(fname)?;
-	    wh.write_all(&buf)?;
+	    println!("-> {} {}", &fname, b);
+	    if save {
+		let mut wh = File::create(fname)?;
+		wh.write_all(&buf)?;
+	    }
 	}
     } else {
 	eprintln!("Log {} has no segments", &source);
@@ -76,11 +85,33 @@ fn getmeta(source : &str) -> io::Result<()> {
     Ok(())
 }
 
+fn print_usage(program: &str, opts: &Options) {
+    let brief = format!("Usage: {} [options] filename(s)", program);
+    print!("{}", opts.usage(&brief));
+}
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
-    for a in &args[1..] {
-	getmeta(&a)?;
+    let program = args[0].clone();
+    let mut opts = Options::new();
+
+    opts.optflag("n", "dry-run", "List segments without extraction");
+
+    let matches = match opts.parse(&args[1..]) {
+        Ok(m) => m,
+        Err(_) => {
+            print_usage(&program, &opts);
+            std::process::exit(1);
+        }
+    };
+
+    if matches.free.is_empty() {
+	print_usage(&program, &opts);
+        std::process::exit(1);
     }
+
+    for a in matches.free.clone() {
+	getmeta(&a, !matches.opt_present("n"))?;
+   }
     Ok(())
 }
