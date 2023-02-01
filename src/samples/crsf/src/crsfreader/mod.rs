@@ -19,6 +19,7 @@ const ATTI_ID: u8 = 0x1E;
 const FM_ID: u8 = 0x21;
 const DEV_ID: u8 = 0x29;
 const RADIO_ID: u8 = 0x3a;
+const ARDUPILOT_RESP: u8 = 0x80;
 
 const SRFMODE: &'static [&'static str] = &["4fps", "50fps", "150hz"];
 const SUPTXPWR: &'static [u16] = &[10, 25, 50, 100, 250, 500, 1000, 2000];
@@ -230,7 +231,10 @@ impl CRSFReader {
                     format!("RADIO: failed to decode")
                 }
             }
-            _ => format!("UNKNOWN: Type {}, payload len {}", self.func, self.len),
+	    ARDUPILOT_RESP => {
+		format!("ARDUPILOT_RESP: {} bytes", self.len)
+	    }
+            _ => format!("UNKNOWN: Type {} 0x{:x}, payload len {}", self.func, self.func, self.len),
         }
     }
 }

@@ -8,8 +8,8 @@ mod mwplogreader;
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
-    if args.len() < 2 {
-        println!("No args");
+    if args.len() < 2 || args[1] == "--help" {
+        println!("\nUsage: crsfparser CRSF_file");
         std::process::exit(127);
     } else {
         let mut crsf = CRSFReader::new();

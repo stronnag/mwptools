@@ -123,6 +123,8 @@ First, build the `crsfparsert` tool (having installed a rust compiler).
 
 ```
 cargo build --release
+# or (install to ~/.local/bin):
+cargo install --path . --root ~/.local/ --force
 ```
 then
 
