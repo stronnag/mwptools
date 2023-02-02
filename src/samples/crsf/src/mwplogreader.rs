@@ -8,6 +8,9 @@ use std::io::BufReader;
 use std::io::SeekFrom;
 use std::io::{Error, ErrorKind};
 
+#[cfg(unix)]
+use std::os::unix::io::FromRawFd;
+
 extern crate base64;
 extern crate json;
 
@@ -24,25 +27,37 @@ pub struct MWPReader {
 }
 impl MWPReader {
     pub fn open(fname: &str) -> Result<MWPReader, io::Error> {
-        let f = File::open(fname)?;
-        let mut v2 = [0u8; 9];
-        let mut reader = BufReader::new(f);
-        reader.read(&mut v2)?;
-        let typ: Ftype;
-        if &v2[0..3] == b"v2\n" {
-            typ = Ftype::V2;
-            reader.seek(SeekFrom::Start(3))?;
-        } else if &v2 == br#"{"stamp":"# {
-            typ = Ftype::Json;
-            reader.rewind()?;
-        } else {
-            reader.rewind()?;
-            typ = Ftype::Raw;
-        }
-        Ok(MWPReader {
-            reader: reader,
-            ftype: typ,
-        })
+	let mut reader: BufReader<File>;
+	let typ: Ftype;
+	if fname == "--stdin" {
+
+#[cfg(unix)]
+	    {
+		typ = Ftype::Raw;
+		let f = unsafe { File::from_raw_fd(0)};
+		reader = BufReader::new(f);
+	    }
+
+#[cfg(not(unix))]
+	    return Err(Error::new(ErrorKind::Other, "platform does not support --stdin"));
+
+	} else {
+	    let f = File::open(fname)?;
+            let mut v2 = [0u8; 9];
+            reader = BufReader::new(f);
+            reader.read(&mut v2)?;
+            if &v2[0..3] == b"v2\n" {
+		typ = Ftype::V2;
+		reader.seek(SeekFrom::Start(3))?;
+            } else if &v2 == br#"{"stamp":"# {
+		typ = Ftype::Json;
+		reader.rewind()?;
+            } else {
+		reader.rewind()?;
+		typ = Ftype::Raw;
+            }
+	}
+        Ok(MWPReader {reader: reader, ftype: typ,})
     }
 
     pub fn read(&mut self, buf: &mut Vec<u8>, delta: &mut Option<f64>) -> io::Result<()> {
@@ -63,7 +78,10 @@ impl MWPReader {
         } else if self.ftype == Ftype::Raw {
             *buf = vec![0u8; 128];
             *delta = None;
-            self.reader.read_exact(buf)?
+            let n = self.reader.read(buf)?;
+	    if n == 0 {
+		return Err(Error::new(ErrorKind::Other, "stdin EOF"));
+	    }
         } else {
             let mut s = String::new();
             self.reader.read_line(&mut s)?;
