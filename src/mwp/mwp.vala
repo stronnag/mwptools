@@ -3489,37 +3489,102 @@ public class MWP : Gtk.Application {
 			switch(fm) {
 			case "AIR":
 			case "ACRO":
+// Ardupilot WTF ...
+            case "QACRO":
 				ltmflags = MSP.LTM.acro;
 				break;
+
 			case "!FS!":
 				failsafe = true;
 				break;
+
 			case "MANU":
+// Ardupilot WTF ...
+            case "MAN":
 				ltmflags = MSP.LTM.manual; // RTH
 				break;
+
 			case "RTH":
+// Ardupilot WTF ...
+            case "RTL":
+            case "QRTL":
+            case "LAND":
+            case "QLAND":
+            case "AUTORTL":
+            case "SMRTRTL":
 				ltmflags = MSP.LTM.rth; // RTH
 				break;
+
 			case "HOLD":
+// Ardupilot WTF ...
+            case "LOIT":
+            case "CIRC":
+            case "GUID":
+            case "GUIDED":
+            case "QLOIT":
+            case "POSHLD":
 				ltmflags = MSP.LTM.poshold; // PH
 				break;
+
 			case "CRUZ":
 			case "CRSH":
+// Ardupilot WTF ...
+            case "CRUISE":
 				ltmflags = MSP.LTM.cruise; // Cruise
 				break;
+
 			case "AH":
+// Ardupilot WTF ...
+            case "ALTHOLD":
 				ltmflags = MSP.LTM.althold; // AltHold
 				break;
+
 			case "WP":
+// Ardupilot WTF ...
+            case "AUTO":
 				ltmflags = MSP.LTM.waypoints;  // WP
 				break;
+
 			case "ANGL":
-				ltmflags = MSP.LTM.angle; // Angle
+// Ardupilot WTF ...
+            case "FBWA":
+            case "STAB":
+            case "TRAIN":
+            case "TKOF":
+            case "ATUNE":
+            case "ADSB":
+            case "THRML":
+            case "L2QLND":
+                ltmflags = MSP.LTM.angle; // Angle
 				break;
+
 			case "HOR":
+// Ardupilot WTF ...
+            case "FBWB":
+            case "QSTAB":
+            case "QHOV":
 				ltmflags = MSP.LTM.horizon; // Horizon
 				break;
-			default:
+
+// Ardupilot WTF ...
+            case "ATUN":
+            case "AVD_ADSB":
+            case "BRAKE":
+            case "DRFT":
+            case "FLIP":
+            case "FLOHOLD":
+            case "FOLLOW":
+            case "GUID_NOGPS":
+            case "HELI_ARO":
+            case "SPORT":
+            case "SYSID":
+            case "THROW":
+            case "TRTLE":
+            case "ZIGZAG":
+				ltmflags = MSP.LTM.acro;
+				break;
+
+            default:
 				c_armed = false;
 				break;
 			}
