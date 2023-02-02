@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Ugly, but necesary to force getting correct build info
+touch ${MESON_SOURCE_ROOT}/src/mwp/meson.build
+
 INSTDIR=${MESON_INSTALL_PREFIX}
 if [ -n "$DESTDIR" ] ; then
     INSTDIR=${DESTDIR}/${MESON_INSTALL_PREFIX}
