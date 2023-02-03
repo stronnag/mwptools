@@ -26,38 +26,37 @@ pub struct MWPReader {
     reader: BufReader<File>,
 }
 impl MWPReader {
-    pub fn open(fname: &str) -> Result<MWPReader, io::Error> {
-	let mut reader: BufReader<File>;
-	let typ: Ftype;
-	if fname == "--stdin" {
 
 #[cfg(unix)]
-	    {
-		typ = Ftype::Raw;
-		let f = unsafe { File::from_raw_fd(0)};
-		reader = BufReader::new(f);
-	    }
+    pub fn stdin() -> Result<MWPReader, io::Error> {
+	let f = unsafe { File::from_raw_fd(0)};
+	let rdr = BufReader::new(f);
+	Ok(MWPReader {reader: rdr, ftype: Ftype::Raw,})
+    }
 
 #[cfg(not(unix))]
-	    return Err(Error::new(ErrorKind::Other, "platform does not support --stdin"));
+    pub fn stdin() -> Result<MWPReader, io::Error> {
+	Err(Error::new(ErrorKind::Other, "platform does not support stdin"))
+    }
 
-	} else {
-	    let f = File::open(fname)?;
-            let mut v2 = [0u8; 9];
-            reader = BufReader::new(f);
-            reader.read(&mut v2)?;
-            if &v2[0..3] == b"v2\n" {
-		typ = Ftype::V2;
-		reader.seek(SeekFrom::Start(3))?;
-            } else if &v2 == br#"{"stamp":"# {
-		typ = Ftype::Json;
-		reader.rewind()?;
-            } else {
-		reader.rewind()?;
-		typ = Ftype::Raw;
-            }
-	}
-        Ok(MWPReader {reader: reader, ftype: typ,})
+    pub fn open(fname: &str) -> Result<MWPReader, io::Error> {
+	let mut rdr: BufReader<File>;
+	let typ: Ftype;
+	let f = File::open(fname)?;
+        let mut v2 = [0u8; 9];
+        rdr = BufReader::new(f);
+        rdr.read(&mut v2)?;
+        if &v2[0..3] == b"v2\n" {
+	    typ = Ftype::V2;
+	    rdr.seek(SeekFrom::Start(3))?;
+        } else if &v2 == br#"{"stamp":"# {
+	    typ = Ftype::Json;
+	    rdr.rewind()?;
+        } else {
+	    rdr.rewind()?;
+	    typ = Ftype::Raw;
+        }
+	Ok(MWPReader {reader: rdr, ftype: typ,})
     }
 
     pub fn read(&mut self, buf: &mut Vec<u8>, delta: &mut Option<f64>) -> io::Result<()> {
@@ -76,7 +75,7 @@ impl MWPReader {
             *buf = vec![0u8; size.into()];
             self.reader.read_exact(buf)?
         } else if self.ftype == Ftype::Raw {
-            *buf = vec![0u8; 128];
+            *buf = vec![0u8; 512];
             *delta = None;
             let n = self.reader.read(buf)?;
 	    if n == 0 {

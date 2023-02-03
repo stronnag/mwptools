@@ -1,5 +1,4 @@
-#!/usr/bin/env bas
-
+#!/usr/bin/env bash
 
 # Ugly, but necesary to force getting correct build info
 touch ${MESON_SOURCE_ROOT}/src/mwp/meson.build

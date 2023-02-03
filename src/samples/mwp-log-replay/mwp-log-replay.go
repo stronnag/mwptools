@@ -26,12 +26,13 @@ type JSItem struct {
 }
 
 var (
-	_baud   = flag.Int("b", 115200, "Baud rate")
-	_device = flag.String("d", "", "(serial) Device [device node, BT Addr (linux), udp/tcp URI]")
-	_delay  = flag.Float64("delay", 0.01, "Delay (s) for non-v2 logs")
-	_noskip = flag.Bool("wait-first", false, "honour first delay")
-	_jump   = flag.Float64("j", 0, "jump some seconds")
-	_raw    = flag.Bool("raw", false, "write raw log")
+	_baud    = flag.Int("b", 115200, "Baud rate")
+	_device  = flag.String("d", "", "(serial) Device [device node, BT Addr (linux), udp/tcp URI]")
+	_delay   = flag.Float64("delay", 0.01, "Delay (s) for non-v2 logs")
+	_noskip  = flag.Bool("wait-first", false, "honour first delay")
+	_jump    = flag.Float64("j", 0, "jump some seconds")
+	_raw     = flag.Bool("raw", false, "write raw log")
+	_verbose = flag.Bool("verbose", false, "show each read")
 )
 
 type SerDev interface {
@@ -91,6 +92,7 @@ func (l *MWPLog) readlog() ([]byte, error) {
 	var err error
 	delay := 0.0
 	var buf []byte
+	n := 0
 
 	switch l.vers {
 	case LOG_V2:
@@ -100,7 +102,7 @@ func (l *MWPLog) readlog() ([]byte, error) {
 			delay = hdr.Offset - l.last
 			l.last = hdr.Offset
 			buf = make([]byte, hdr.Size)
-			l.fh.Read(buf)
+			n, err = l.fh.Read(buf)
 			if (*_jump > 0 && hdr.Offset < *_jump) || hdr.Dirn == 'o' {
 				return nil, nil
 			}
@@ -111,6 +113,7 @@ func (l *MWPLog) readlog() ([]byte, error) {
 			var js JSItem
 			err = json.Unmarshal(dat, &js)
 			buf = js.RawBytes
+			n = len(buf)
 			delay = js.Stamp - l.last
 			if (*_jump > 0 && js.Stamp < *_jump) || js.Dirn == 'o' {
 				return nil, nil
@@ -121,7 +124,7 @@ func (l *MWPLog) readlog() ([]byte, error) {
 
 	default:
 		buf = make([]byte, 16)
-		_, err = l.fh.Read(buf)
+		n, err = l.fh.Read(buf)
 		if *_delay != 0.0 {
 			delay = *_delay
 		} else {
@@ -136,7 +139,7 @@ func (l *MWPLog) readlog() ([]byte, error) {
 		}
 	}
 	l.skip = false
-	return buf, err
+	return buf[:n], err
 }
 
 func (l *MWPLog) checkvers() string {
@@ -273,16 +276,17 @@ func main() {
 
 	nmsg := 0
 	st := time.Now()
+	nbuf := 0
 
 	for {
 		buf, err := logf.readlog()
 		if err == nil {
 			nmsg += 1
+			nbuf += len(buf)
 			if len(buf) > 0 {
 				if name != "" {
 					sd.Write(buf)
 				} else {
-					fmt.Fprintf(os.Stderr, "Read %d bytes\n", len(buf))
 					if !*_raw {
 						for _, bx := range buf {
 							fmt.Printf("%02x ", bx)
@@ -292,11 +296,18 @@ func main() {
 						rl.Write(buf)
 					}
 				}
+				if *_verbose {
+					fmt.Fprintf(os.Stderr, "%3d %4d %d\r", len(buf), nmsg, nbuf)
+				}
 			}
 		} else if err == io.EOF {
 			et := time.Since(st).Seconds()
 			rate := float64(nmsg) / et
-			fmt.Fprintf(os.Stderr, "Messages %d, time %.1fs %.1f /sec\n", nmsg, et, rate)
+			fmt.Fprintln(os.Stderr)
+			if nbuf > 0 {
+				fmt.Fprintf(os.Stderr, "%d bytes, ", nbuf)
+			}
+			fmt.Fprintf(os.Stderr, "%d messages, time %.1fs %.1f msg /sec\n", nmsg, et, rate)
 			break
 		} else {
 			log.Fatal(err)

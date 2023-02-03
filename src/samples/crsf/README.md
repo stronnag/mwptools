@@ -165,3 +165,5 @@ The decoded file is dumped to the terminal, formatted (for example, location obf
 ```
 
 The log file may be a raw capture (no metadata), or a mwp serial raw log with metadata / record chunking ("v2") or a JSON encoded mwp serial log. See the [mwp-serial-log](../mwp-serial-log/) documentation for more detail.
+
+On POSIX OS, if no filename is given, data is read from STDIN.
