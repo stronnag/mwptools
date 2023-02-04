@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '6.034.579')
+project('mwptools', 'c', 'vala', version : '6.035.466')
 
 conf_data = configuration_data()
 conf_data.set('version', meson.project_version())

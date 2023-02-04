@@ -81,6 +81,7 @@ impl MWPReader {
 	    if n == 0 {
 		return Err(Error::new(ErrorKind::Other, "stdin EOF"));
 	    }
+	    buf.truncate(n);
         } else {
             let mut s = String::new();
             self.reader.read_line(&mut s)?;
