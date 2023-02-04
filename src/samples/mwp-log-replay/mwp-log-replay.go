@@ -197,6 +197,7 @@ func main() {
 	logf.noout = (name == "")
 
 	if name != "" {
+		var err error
 		r := regexp.MustCompile(`^(tcp|udp)://(__MWP_SERIAL_HOST|[\[\]:A-Za-z\-\.0-9]*):(\d+)`)
 		m := r.FindAllStringSubmatch(name, -1)
 		if len(m) > 0 {
@@ -223,7 +224,6 @@ func main() {
 			case DevClass_UDP:
 				var laddr, raddr *net.UDPAddr
 				var conn net.Conn
-				var err error
 				if dd.name == "" {
 					laddr, err = net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", dd.name, dd.port))
 				} else {
@@ -242,16 +242,12 @@ func main() {
 				sd = NewBT(name)
 			} else {
 				mode := &serial.Mode{BaudRate: baud}
-				s, err := serial.Open(name, mode)
+				sd, err = serial.Open(name, mode)
 				if err != nil {
-					fd, err := os.Open(name)
+					sd, err = os.OpenFile(name, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0777)
 					if err != nil {
 						log.Fatal(err)
-					} else {
-						sd = fd
 					}
-				} else {
-					sd = s
 				}
 				if strings.Contains(name, "rfcomm") {
 					time.Sleep(2 * time.Second)
