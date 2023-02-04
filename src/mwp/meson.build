@@ -1,9 +1,20 @@
 
+
+mwpvers_h = custom_target(
+    '_mwpvers.h',
+    output : '_mwpvers.h',
+    command : ['getinfo.sh', '@OUTPUT@'],
+)
+
+libmwpvers = static_library('mwpvers', ['_mwpvers.c', mwpvers_h],
+			     include_directories :  include_directories('../../build')
+			  )
+
 mwpsrcs = files('mwp.vala', 'liststore.vala', 'mwp_markers.vala',
 		'mwp_craft.vala', 'settings.vala', 'dialogs.vala', 'mapsources.vala',
 		'local_geo.vala', 'logger.vala', 'speech_wrapper.c', 'mwp-replay.vala',
 		'map_seeder.vala', 'mwp-layout.vala', 'iparser.vala', 'mwp_bbox.vala',
-		'ah_widget.vala', '_mwpvers.c', 'get_places.vala', 'mission.vala',
+		'ah_widget.vala', 'get_places.vala', 'mission.vala',
 		'mwp_dbus.vala', 'name_type_map.vala', 'mwp_pe_support.vala',
 		'kmlovly.vala', 'mwp_upower.vala', 'replicate_wp.vala',
 		'mwp-mission-preview.vala', 'mwp-radar_list.vala',
@@ -46,26 +57,6 @@ mwpdeps = [deps,
 # for BSD etc.
 ldirs = ['/usr/lib', '/usr/local/lib']
 mwp_c_args = []
-
-pymodule = import('python3')
-python3 = pymodule.find_python()
-res = run_command(python3, '-c',
-		  'import platform; import datetime; print(datetime.datetime.utcnow().strftime("%FT%TZ") + " " +  platform.platform() + " " + platform.node())',
-		  check: false)
-if res.returncode() == 0
-  mwp_c_args += '-DBUILDINFO='+res.stdout().strip()
-endif
-
-comp = meson.get_compiler('c', native: true)
-cname = comp.get_id() + ' ' + comp.version()
-vcomp = meson.get_compiler('vala', native: true)
-vname = vcomp.get_id() + ' ' + vcomp.version()
-
-if meson.version().version_compare('>= 0.53')
-  cname += ' / ' + comp.get_linker_id()
-endif
-compinfo = ' / '.join([cname, vname])
-mwp_c_args += '-DCOMPINFO='+compinfo
 
 paho = meson.get_compiler('c').find_library('paho-mqtt3cs', dirs: ldirs, required: false)
 
@@ -112,29 +103,6 @@ if speak
   xopts += 'USE_FLITE'
   spk = true
 endif
-
-gitvers='local'
-r = run_command('git', 'rev-parse','--short','HEAD', check: false)
-if r.returncode() == 0
-  gitvers = r.stdout().strip()
-endif
-mwp_c_args += '-DMWPGITVERSION=' + gitvers
-
-bstamp=''
-r = run_command('date', '+%FT%T', check: true)
-if r.returncode() == 0
-  bstamp = r.stdout().strip()
-else
-  bstamp='0000-00-00T00:00:00'
-endif
-mwp_c_args += '-DMWPSTAMP=' + bstamp
-
-gitstamp=bstamp
-r = run_command('git', 'log','-1','--format=%cI', check: false)
-if r.returncode() == 0
-  gitstamp = r.stdout().strip()
-endif
-mwp_c_args += '-DMWPGITSTAMP=' + gitstamp
 
 if spk
   mwpdeps += dependency('gmodule-2.0')

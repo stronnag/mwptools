@@ -1,16 +1,17 @@
 
 /* ugly hack because vala doesn't support -Dx=y */
+#include "_mwpvers.h"
 #if defined(MWPGITVERSION) && defined(MWPGITSTAMP)
 #include <stdio.h>
 #include <mwp-config.h>
 
-#define xstr(s) str(s)
-#define str(x) #x
+//#define xstr(s) str(s)
+//#define str(x) #x
 
 const char * get_build(void) {
      static char stamp[80];
-     char * gv = xstr(MWPGITVERSION);
-     char * gs = xstr(MWPGITSTAMP);
+     char * gv = MWPGITVERSION;
+     char * gs = MWPGITSTAMP;
      sprintf(stamp, "%s / %s", gv, gs);
      return stamp;
 }
@@ -22,7 +23,7 @@ const char * get_id(void) {
 const char * get_build_host(void) {
   return
 #ifdef BUILDINFO
-      xstr(BUILDINFO);
+      BUILDINFO;
 #else
   "";
 #endif
@@ -31,7 +32,7 @@ const char * get_build_host(void) {
 const char * get_build_compiler(void) {
   return
 #ifdef COMPINFO
-      xstr(COMPINFO);
+      COMPINFO;
 #elif defined(__clang__)
       __VERSION__;
 #else
@@ -50,6 +51,6 @@ const char * get_id(void) {
   return mwpid;
 }
 const char * get_build_host(void) {
-  return "":
+  return "";
 }
 #endif

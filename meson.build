@@ -19,9 +19,14 @@ subdir('docs')
 
 configuration_inc = include_directories('build')
 
-executable('mwp', mwpsrcs, mwpcommon, dependencies: [ mwpdeps ],
-	   include_directories : common_inc_dir, vala_args : [dopts, mwp_v_args],
-	   c_args: mwp_c_args,  install : true)
+executable('mwp', mwpsrcs, mwpcommon,
+	   dependencies: mwpdeps,
+	   sources: mwpvers_h,
+	   link_with: libmwpvers,
+	   include_directories : [common_inc_dir, configuration_inc],
+	   vala_args : [dopts, mwp_v_args],
+	   c_args: mwp_c_args,
+	   install : true)
 
 executable('cliterm', clisrcs, clicommon, dependencies: [ clideps ],
   include_directories : common_inc_dir, vala_args : [dopts, cli_v_args], install : true)
