@@ -45,8 +45,7 @@ public class MwpMapSource : Champlain.MapSourceDesc
             int maxzoom,
             int tile_size,
             Champlain.MapProjection projection,
-            string uri_format)
-    {
+            string uri_format) {
         Object(id: id, name: name, license: license, license_uri: license_uri,
                min_zoom_level: minzoom, max_zoom_level: maxzoom,
                tile_size: tile_size,
@@ -55,8 +54,7 @@ public class MwpMapSource : Champlain.MapSourceDesc
                constructor: (void *)my_construct);
     }
 
-    static Champlain.MapSource my_construct (Champlain.MapSourceDesc d)
-    {
+    static Champlain.MapSource my_construct (Champlain.MapSourceDesc d) {
         var source =  new Champlain.NetworkTileSource.full(
             d.get_id(),
             d.get_name(),
@@ -72,8 +70,7 @@ public class MwpMapSource : Champlain.MapSourceDesc
     }
 }
 
-public class SoupProxy : Soup.Server
-{
+public class SoupProxy : Soup.Server {
     private string basename;
     private string extname;
     public bool offline = false;
@@ -219,8 +216,7 @@ public class SoupProxy : Soup.Server
     }
 }
 
-public class BingMap : Object
-{
+public class BingMap : Object {
     private const string BURI="https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial/0,0?zl=1&include=ImageryProviders&key=";
     public const string KENC="QWwxYnFHYU5vZGVOQTcxYmxlSldmakZ2VzdmQXBqSk9vaE1TWjJfSjBIcGd0NE1HZExJWURiZ3BnQ1piWjF4QQ==";
 
@@ -240,15 +236,14 @@ public class BingMap : Object
 #else
         try {
             var b = session.send_and_read (message);
-            return parse_bing_json((string)b, out buri, out ms);
+            return parse_bing_json((string)b.get_data(), out buri, out ms);
         } catch {
             return false;
         }
 #endif
     }
 
-    private static bool parse_bing_json(string s, out string buri, out MapSource ms)
-    {
+    private static bool parse_bing_json(string s, out string buri, out MapSource ms) {
          bool res = false;
          buri="";
          var savefile = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp",".blast");
@@ -265,10 +260,8 @@ public class BingMap : Object
          };
 
          StringBuilder sb = new StringBuilder();
-         if(s.length > 0)
-         {
-             try
-             {
+         if(s.length > 0) {
+             try {
                  var parser = new Json.Parser ();
                  parser.load_from_data (s);
 
@@ -282,26 +275,22 @@ public class BingMap : Object
 
                  var root_object = parser.get_root ().get_object ();
                  foreach (var rsnode in
-                          root_object.get_array_member ("resourceSets").get_elements ())
-                 {
+                          root_object.get_array_member ("resourceSets").get_elements ()) {
                      var rsitem = rsnode.get_object ();
                      foreach (var rxnode in
-                              rsitem.get_array_member ("resources").get_elements ())
-                     {
+                              rsitem.get_array_member ("resources").get_elements ()) {
                          var rxitem = rxnode.get_object ();
                          buri = rxitem.get_string_member ("imageUrl");
                          imgh = (int)rxitem.get_int_member("imageHeight");
                          imgw = (int)rxitem.get_int_member("imageWidth");
 
                          foreach (var pvnode in
-                                  rxitem.get_array_member ("imageryProviders").get_elements ())
-                         {
+                                  rxitem.get_array_member ("imageryProviders").get_elements ()) {
                              xmin = ymin = 999.0;
                              xmax = ymax = -999;
                              var pvitem = pvnode.get_object();
                              foreach (var cvnode in
-                                      pvitem.get_array_member ("coverageAreas").get_elements ())
-                             {
+                                      pvitem.get_array_member ("coverageAreas").get_elements ()) {
                                  var cvitem = cvnode.get_object();
                                  var _zmin = (int)cvitem.get_int_member("zoomMin");
                                  var _zmax = (int)cvitem.get_int_member("zoomMax");
@@ -328,8 +317,7 @@ public class BingMap : Object
                              if (zmax >  gmax)
                                  gmax = zmax;
 
-                             if(xmax-xmin > 359 && ymax-ymin > 179)
-                             {
+                             if(xmax-xmin > 359 && ymax-ymin > 179) {
                                  var pattr = pvitem.get_string_member("attribution");
                                  sb.append(pattr);
                                  sb.append(", ");
@@ -351,8 +339,7 @@ public class BingMap : Object
              }
          }
 
-         if(buri.length > 0)
-         {
+         if(buri.length > 0) {
              var parts = buri.split("/");
              sb.assign(parts[4].substring(0,1));
              sb.append("#Q#");
@@ -362,16 +349,13 @@ public class BingMap : Object
              var fp = FileStream.open (savefile, "w");
              if(fp != null)
                  fp.write(buri.data);
-         }
-         else
-         {
+         } else {
              var fp = FileStream.open (savefile, "r");
-             if(fp != null)
-             {
+             if(fp != null) {
                  buri = fp.read_line();
-             }
-             else
+             } else {
                  buri="http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=6187";
+             }
          }
          return res;
     }
@@ -388,8 +372,7 @@ public class JsonMapDef : Object
             Posix.kill(p, MwpSignals.Signal.TERM);
     }
 
-    public static MapSource[] read_json_sources(string? fn, bool offline=false)
-    {
+    public static MapSource[] read_json_sources(string? fn, bool offline=false) {
         MapSource[] sources = {};
         MapSource s;
         string buri;
@@ -397,42 +380,38 @@ public class JsonMapDef : Object
 
         BingMap.get_source(out s, out buri);
         port  = run_proxy(buri, offline);
-        if (port != 0)
-        {
+        if (port != 0) {
             s.uri_format="http://localhost:%u/quadkey-proxy/#Z#/#X#/#Y#.png".printf(port);
             sources += s;
             id = s.id;
         }
 
-        if(fn != null)
-        try {
-            var parser = new Json.Parser ();
-            parser.load_from_file (fn);
-            var root_object = parser.get_root ().get_object ();
-            foreach (var node in
-                     root_object.get_array_member ("sources").get_elements ())
-            {
-                s = MapSource();
-                var item = node.get_object ();
-                s.id = item.get_string_member ("id");
-                s.licence_uri = item.get_string_member("license_uri");
-                if(item.has_member("uri_format"))
-                    s.uri_format = item.get_string_member("uri_format");
+        if(fn != null) {
+            try {
+                var parser = new Json.Parser ();
+                parser.load_from_file (fn);
+                var root_object = parser.get_root ().get_object ();
+                foreach (var node in
+                     root_object.get_array_member ("sources").get_elements ()) {
+                    s = MapSource();
+                    var item = node.get_object ();
+                    s.id = item.get_string_member ("id");
+                    s.licence_uri = item.get_string_member("license_uri");
+                    if(item.has_member("uri_format"))
+                        s.uri_format = item.get_string_member("uri_format");
 
                 bool skip = (s.id == "BingProxy" ||
                              s.uri_format ==
                              "http://localhost:21303/quadkey-proxy/#Z#/#X#/#Y#.png" ||
                              s.licence_uri == "http://www.bing.com/maps/");
-                if(!skip)
-                {
+                if(!skip) {
                     s.name = item.get_string_member ("name");
                     s.licence = item.get_string_member("license");
                     s.min_zoom = (int)item.get_int_member ("min_zoom");
                     s.max_zoom = (int) item.get_int_member ("max_zoom");
                     s.tile_size = (int)item.get_int_member("tile_size");
                     s.projection = Champlain.MapProjection.MERCATOR;
-                    if(item.has_member("spawn"))
-                    {
+                    if(item.has_member("spawn")) {
                         var spawncmd = item.get_string_member("spawn");
                         var iport = spawn_proxy(spawncmd);
                         if(iport > 0)
@@ -440,19 +419,20 @@ public class JsonMapDef : Object
                         if(iport != -1)
                             sources += s;
                     }
-                    else
+                    else {
                         sources += s;
+                    }
+                }
                 }
             }
-        }
-        catch (Error e) {
-            MWPLog.message ("mapsources : %s\n", e.message);
+            catch (Error e) {
+                MWPLog.message ("mapsources : %s\n", e.message);
+            }
         }
         return sources;
     }
 
-    private static int spawn_proxy(string cmd)
-    {
+    private static int spawn_proxy(string cmd) {
         string[]? argvp = null;
         int iport = 0;
 
@@ -484,8 +464,7 @@ public class JsonMapDef : Object
         return iport;
     }
 
-    private static uint run_proxy(string uri, bool offline)
-    {
+    private static uint run_proxy(string uri, bool offline) {
         uint port = 0;
         MWPLog.message("Starting Bing proxy %s\n", (offline) ? "(offline)" : "");
         var sp = new SoupProxy(uri);
