@@ -9,7 +9,7 @@ PLAT=$(uname -smr)
 CC=${CC:-cc}
 LD=${LD-ld}
 
-CVERS=$($CC -v 2>&1 | grep version)
+CVERS=$($CC -v 2>&1 | grep " version ")
 VVERS=$(valac --version 2>&1)
 LDVERS=$($LD -v 2>&1)
 GITVERS=$(git rev-parse  --short HEAD)
