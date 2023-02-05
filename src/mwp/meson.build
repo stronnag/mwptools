@@ -1,9 +1,11 @@
 
+getinfo = files('getinfo.sh')
+
 
 mwpvers_h = custom_target(
     '_mwpvers.h',
     output : '_mwpvers.h',
-    command : ['getinfo.sh', '@OUTPUT@'],
+    command : [getinfo, '@OUTPUT@'],
 )
 
 libmwpvers = static_library('mwpvers', ['_mwpvers.c', mwpvers_h],
