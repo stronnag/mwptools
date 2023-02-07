@@ -149,7 +149,7 @@ cargo install --path .
 ```
 
 ```
-# user preference r.g. ~/.local/bin
+# user preference bin directory r.g. ~/.local/bin
 cargo install --path . --root ~/.local [--force]
 ```
 
@@ -167,3 +167,21 @@ The decoded file is dumped to the terminal, formatted (for example, location obf
 The log file may be a raw capture (no metadata), or a mwp serial raw log with metadata / record chunking ("v2") or a JSON encoded mwp serial log. See the [mwp-serial-log](../mwp-serial-log/) documentation for more detail.
 
 On POSIX OS, if no filename is given, data is read from STDIN.
+
+For example:
+
+```
+# USB serial port
+crsfparser < /dev/ttyUSB0
+# or maybe
+(stty raw 115200 ; crsfparser)  < /dev/ttyACM0
+
+# BT Serial
+crsfparser < /dev/rfcomm0
+
+# UDP localhost:42042
+nc -l -k -u -p 42042 | crsfparser
+
+# TCP localhost:33033
+nc -l -k -p 33033 | crsfparser
+```
