@@ -21,7 +21,10 @@ const DEV_ID: u8 = 0x29;
 const RADIO_ID: u8 = 0x3a;
 const ARDUPILOT_RESP: u8 = 0x80;
 
-const SRFMODE: &'static [&'static str] = &["4fps", "50fps", "150hz"];
+const SRFMODE0: &'static [u16] = &[4,50, 150];
+const SRFMODE2: &'static [u16] = &[4,25,50, 100,  150,200, 250, 500,1000];
+const SRFMODE3: &'static [u16] = &[4,25,50, 100, 150, 200, 250, 333, 500, 250, 500, 500, 1000];
+
 const SUPTXPWR: &'static [u16] = &[10, 25, 50, 100, 250, 500, 1000, 2000];
 
 pub struct CRSFReader {
@@ -31,6 +34,7 @@ pub struct CRSFReader {
     state: State,
     func: u8,
     payload: Vec<u8>,
+    rftype: u8,
 }
 
 fn crc8_dvb_s2(c: u8, a: u8) -> u8 {
@@ -56,7 +60,7 @@ impl CRSFReader {
         self.payload.clear();
     }
 
-    pub fn new() -> CRSFReader {
+    pub fn new(rftype: u8) -> CRSFReader {
         CRSFReader {
             len: 0,
             count: 0,
@@ -64,6 +68,7 @@ impl CRSFReader {
             state: State::Addr,
             func: 0,
             payload: Vec::new(),
+	    rftype: rftype,
         }
     }
 
@@ -128,7 +133,7 @@ impl CRSFReader {
             }
         }
     }
-    fn describe(&self) -> String {
+    fn describe(&mut self) -> String {
         match self.func {
             GPS_ID => {
                 let lat = i32::from_be_bytes(self.payload[0..4].try_into().unwrap()) as f32 / 1e7;
@@ -177,15 +182,38 @@ impl CRSFReader {
             }
             LINKSTATS_ID => {
                 let mut smode = "??".to_string();
-                if u32::from(self.payload[5]) < SRFMODE.len().try_into().unwrap() {
-                    smode = SRFMODE[self.payload[5] as usize].to_string();
-                }
+		let rfidx: usize = usize::from(self.payload[5]);
+		if self.rftype < 2 && rfidx >= SRFMODE0.len() && rfidx < SRFMODE2.len() {
+		    self.rftype = 2;
+		}
+
+		if self.rftype < 3 && rfidx >= SRFMODE2.len() && rfidx < SRFMODE3.len() {
+		    self.rftype = 3;
+		}
+
+		match self.rftype {
+		    2 => {
+			if rfidx < SRFMODE2.len() {
+			    smode = format!("{}", SRFMODE2[rfidx]);
+			}
+		    },
+		    3 => {
+			if rfidx < SRFMODE3.len() {
+			    smode = format!("{}", SRFMODE3[rfidx]);
+			}
+		    },
+		    _ => {
+			if rfidx < SRFMODE0.len() {
+			    smode = format!("{}", SRFMODE0[rfidx]);
+			}
+		    },
+		}
                 let mut txpwr = "??".to_string();
                 if u32::from(self.payload[6]) < SUPTXPWR.len().try_into().unwrap() {
                     txpwr = format!("{}mW", SUPTXPWR[self.payload[6] as usize]);
                 }
                 format!(
-                    "LINKSTATS: rssi1 {} rssi2 {} UpLQ {} UpSNR {} ActAnt {} Mode {} TXPwr {} DnRSSI {} DnLQ {} DnSNR {}",
+                    "LINKSTATS: rssi1 {} rssi2 {} UpLQ {} UpSNR {} ActAnt {} RFMode {}Hz TXPwr {} DnRSSI {} DnLQ {} DnSNR {}",
                     self.payload[0],
                     self.payload[1],
                     self.payload[2],

@@ -61,7 +61,7 @@ uint8     Uplink RSSI Ant. 2 (dBm * -1)
 uint8     Uplink Package success rate / Link quality (%)
 int8      Uplink SNR (db)
 uint8     Diversity active antenna (enum ant. 1 = 0, ant. 2)
-uint8     RF Mode (enum 4fps = 0 , 50fps, 150hz)
+uint8     RF Mode (enum, version dependent)
 uint8     Uplink TX Power (enum 0mW = 0, 10mW, 25 mW, 100 mW, 500 mW, 1000 mW, 2000mW)
 uint8     Downlink RSSI (dBm * -1)
 uint8     Downlink package success rate / Link quality (%)
@@ -139,8 +139,6 @@ cross-compilation ...
 cargo build --release --target x86_64-pc-windows-gnu
 ```
 
-
-
 or install it:
 
 ```
@@ -152,6 +150,22 @@ cargo install --path .
 # user preference bin directory r.g. ~/.local/bin
 cargo install --path . --root ~/.local [--force]
 ```
+
+#### Usage
+
+```
+$ crsfparser --help
+Usage: crsfparser [options] [file]
+Version: 0.3.0
+
+Options:
+    -r, --rfmode-type [0,2,3]
+                        RFMode interpretation
+    -h, --help          print this help menu
+$
+```
+
+RFMode (2 = ELRS V2, 3 = ELRS V3, any other value undefined) controls the interpretation of RFMode which is version dependent.
 
 The decoded file is dumped to the terminal, formatted (for example, location obfuscated).
 
