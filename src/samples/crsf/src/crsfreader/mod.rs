@@ -21,11 +21,11 @@ const DEV_ID: u8 = 0x29;
 const RADIO_ID: u8 = 0x3a;
 const ARDUPILOT_RESP: u8 = 0x80;
 
-const SRFMODE0: &'static [u16] = &[4,50, 150];
-const SRFMODE2: &'static [u16] = &[4,25,50, 100,  150,200, 250, 500,1000];
-const SRFMODE3: &'static [u16] = &[4,25,50, 100, 150, 200, 250, 333, 500, 250, 500, 500, 1000];
+const SRFMODE0: &[u16] = &[4, 50, 150];
+const SRFMODE2: &[u16] = &[4, 25, 50, 100, 150, 200, 250, 500, 1000];
+const SRFMODE3: &[u16] = &[4, 25, 50, 100, 150, 200, 250, 333, 500, 250, 500, 500, 1000];
 
-const SUPTXPWR: &'static [u16] = &[10, 25, 50, 100, 250, 500, 1000, 2000];
+const SUPTXPWR: &[u16] = &[10, 25, 50, 100, 250, 500, 1000, 2000];
 
 pub struct CRSFReader {
     len: u8,
@@ -44,7 +44,7 @@ fn crc8_dvb_s2(c: u8, a: u8) -> u8 {
         if (crc & 0x80) != 0 {
             crc = (crc << 1) ^ 0xd5;
         } else {
-            crc = crc << 1;
+            crc <<= 1;
         }
     }
     crc
@@ -68,7 +68,7 @@ impl CRSFReader {
             state: State::Addr,
             func: 0,
             payload: Vec::new(),
-	    rftype: rftype,
+            rftype,
         }
     }
 
@@ -80,15 +80,15 @@ impl CRSFReader {
                         self.init();
                         self.state = State::Len;
                     } else {
-//			eprintln!("Invalid start {}", *e);
-		    }
+                        //			eprintln!("Invalid start {}", *e);
+                    }
                 }
                 State::Len => {
                     if *e > 2 && *e < TELEMETRY_RX_PACKET_SIZE - 2 {
                         self.state = State::Func;
                         self.len = *e - 2; // exclude type and crc (i.e. payload only)
                     } else {
-//			eprintln!("Invalid packet size {}", *e);
+                        //			eprintln!("Invalid packet size {}", *e);
                         self.init();
                     }
                 }
@@ -110,10 +110,10 @@ impl CRSFReader {
                     let str: String;
                     if *e == self.crc {
                         str = self.describe();
-			if let Some(x) = offset {
-			    print!("{:7.2}s: ", x);
-			}
-			println!("{}", str);
+                        if let Some(x) = offset {
+                            print!("{:7.2}s: ", x);
+                        }
+                        println!("{}", str);
                     } else {
                         str = format!(
                             "CRC fail type={} len={} calc-crc={} msg-crc={} framelength={}",
@@ -123,10 +123,10 @@ impl CRSFReader {
                             *e,
                             data.len()
                         );
-			if let Some(x) = offset {
+                        if let Some(x) = offset {
                             eprint!("{:7.2}s: ", x);
-			}
-			eprintln!("{}", str);
+                        }
+                        eprintln!("{}", str);
                     }
                     self.init();
                 }
@@ -182,32 +182,32 @@ impl CRSFReader {
             }
             LINKSTATS_ID => {
                 let mut smode = "??".to_string();
-		let rfidx: usize = usize::from(self.payload[5]);
-		if self.rftype < 2 && rfidx >= SRFMODE0.len() && rfidx < SRFMODE2.len() {
-		    self.rftype = 2;
-		}
+                let rfidx: usize = usize::from(self.payload[5]);
+                if self.rftype < 2 && rfidx >= SRFMODE0.len() && rfidx < SRFMODE2.len() {
+                    self.rftype = 2;
+                }
 
-		if self.rftype < 3 && rfidx >= SRFMODE2.len() && rfidx < SRFMODE3.len() {
-		    self.rftype = 3;
-		}
+                if self.rftype < 3 && rfidx >= SRFMODE2.len() && rfidx < SRFMODE3.len() {
+                    self.rftype = 3;
+                }
 
-		match self.rftype {
-		    2 => {
-			if rfidx < SRFMODE2.len() {
-			    smode = format!("{}", SRFMODE2[rfidx]);
-			}
-		    },
-		    3 => {
-			if rfidx < SRFMODE3.len() {
-			    smode = format!("{}", SRFMODE3[rfidx]);
-			}
-		    },
-		    _ => {
-			if rfidx < SRFMODE0.len() {
-			    smode = format!("{}", SRFMODE0[rfidx]);
-			}
-		    },
-		}
+                match self.rftype {
+                    2 => {
+                        if rfidx < SRFMODE2.len() {
+                            smode = format!("{}", SRFMODE2[rfidx]);
+                        }
+                    }
+                    3 => {
+                        if rfidx < SRFMODE3.len() {
+                            smode = format!("{}", SRFMODE3[rfidx]);
+                        }
+                    }
+                    _ => {
+                        if rfidx < SRFMODE0.len() {
+                            smode = format!("{}", SRFMODE0[rfidx]);
+                        }
+                    }
+                }
                 let mut txpwr = "??".to_string();
                 if u32::from(self.payload[6]) < SUPTXPWR.len().try_into().unwrap() {
                     txpwr = format!("{}mW", SUPTXPWR[self.payload[6] as usize]);
@@ -256,13 +256,16 @@ impl CRSFReader {
                         i32::from_be_bytes(self.payload[7..11].try_into().unwrap()) / 10;
                     format!("RADIO: rate {}us offset {}us", update, offset)
                 } else {
-                    format!("RADIO: failed to decode")
+                    "RADIO: failed to decode".to_string()
                 }
             }
-	    ARDUPILOT_RESP => {
-		format!("ARDUPILOT_RESP: {} bytes", self.len)
-	    }
-            _ => format!("UNKNOWN: Type {} 0x{:x}, payload len {}", self.func, self.func, self.len),
+            ARDUPILOT_RESP => {
+                format!("ARDUPILOT_RESP: {} bytes", self.len)
+            }
+            _ => format!(
+                "UNKNOWN: Type {} 0x{:x}, payload len {}",
+                self.func, self.func, self.len
+            ),
         }
     }
 }

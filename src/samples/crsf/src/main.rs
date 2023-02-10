@@ -1,4 +1,3 @@
-
 extern crate getopts;
 
 use getopts::Options;
@@ -11,7 +10,6 @@ use crate::crsfreader::CRSFReader;
 mod mwplogreader;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
-
 
 fn print_usage(program: &str, opts: &Options) {
     let brief = format!("Usage: {} [options] [file]\nVersion: {}", program, VERSION);
@@ -39,18 +37,14 @@ fn main() -> io::Result<()> {
         return Ok(());
     }
 
-    match matches.opt_get::<u8>("r") {
-	 Ok(p) => match p {
-             Some(px) => rftype = px,
-             None => (),
-        },
-        Err(_) => (),
+    if let Ok(Some(px)) = matches.opt_get::<u8>("r") {
+        rftype = px
     }
 
     let mut f = if !matches.free.is_empty() {
-	mwplogreader::MWPReader::open(&matches.free[0])?
+        mwplogreader::MWPReader::open(&matches.free[0])?
     } else {
-	mwplogreader::MWPReader::stdin()?
+        mwplogreader::MWPReader::stdin()?
     };
     let mut crsf = CRSFReader::new(rftype);
     let mut offset = std::option::Option::None;

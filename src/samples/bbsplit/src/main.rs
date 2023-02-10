@@ -1,11 +1,11 @@
+use getopts::Options;
+use std::env;
 use std::fmt;
 use std::fs::File;
 use std::io;
-use std::io::{BufRead, BufReader,Write,Seek,Read};
-use std::env;
 use std::io::SeekFrom;
+use std::io::{BufRead, BufReader, Read, Seek, Write};
 use std::path::Path;
-use getopts::Options;
 
 #[derive(PartialEq)]
 enum FState {
@@ -14,7 +14,7 @@ enum FState {
     Writing,
 }
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 struct BBLSegment {
     offset: usize,
     length: usize,
@@ -22,11 +22,11 @@ struct BBLSegment {
 
 impl fmt::Display for BBLSegment {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-	write!(f,"offset: {:8}, length: {:8}", self.offset, self.length)
+        write!(f, "offset: {:8}, length: {:8}", self.offset, self.length)
     }
 }
 
-fn getmeta(source : &str, save: bool) -> io::Result<()> {
+fn getmeta(source: &str, save: bool) -> io::Result<()> {
     let hbbox: &[u8] = b"H Product:Blackbox flight data recorder by Nicholas Sherlock\n";
     let hbblen = hbbox.len();
     let f = File::open(source)?;
@@ -35,52 +35,57 @@ fn getmeta(source : &str, save: bool) -> io::Result<()> {
     let mut fstate = FState::Unknown;
     let mut asize = 0;
     let mut bbls: Vec<BBLSegment> = Vec::new();
-    let mut seg = BBLSegment{length:0, offset:0};
+    let mut seg = BBLSegment {
+        length: 0,
+        offset: 0,
+    };
 
-    while let Ok(size) = f.read_until(0x0a as u8, &mut buf) {
+    while let Ok(size) = f.read_until(0x0a_u8, &mut buf) {
         if size == 0 {
-	    break;
-	}
-	asize += size;
-	let hdiff = size as i64 - hbblen as i64;
-	if hdiff >= 0 {
-	    if &buf[hdiff as usize..] == hbbox {
-		if fstate != FState::Unknown {
-		    seg.length += hdiff as usize;
-		    bbls.push(seg.clone());
-		}
-		fstate = FState::Opened;
-		seg.offset = asize - hbblen;
-	    }
-	}
-	match fstate {
-	    FState::Opened => {
-		fstate = FState::Writing;
-		seg.length = hbblen;
-	    },
-	    FState::Writing => {
-		seg.length += size;
-	    },
-	    _ => (),
-	}
-	buf.clear();
+            break;
+        }
+        asize += size;
+        let hdiff = size as i64 - hbblen as i64;
+        if hdiff >= 0 && &buf[hdiff as usize..] == hbbox {
+            if fstate != FState::Unknown {
+                seg.length += hdiff as usize;
+                bbls.push(seg.clone());
+            }
+            fstate = FState::Opened;
+            seg.offset = asize - hbblen;
+        }
+        match fstate {
+            FState::Opened => {
+                fstate = FState::Writing;
+                seg.length = hbblen;
+            }
+            FState::Writing => {
+                seg.length += size;
+            }
+            _ => (),
+        }
+        buf.clear();
     }
-    bbls.push(seg.clone());
+    bbls.push(seg);
 
     if bbls.len() > 1 {
         for (idx, b) in bbls.iter().enumerate() {
-	    let fname = format!("{:03}-{}",idx+1, Path::new(&source).file_name().unwrap().to_str().unwrap());
-	    println!("-> {} {}", &fname, b);
-	    if save {
-		let mut buf = vec![0; b.length];
-		f.seek(SeekFrom::Start(b.offset as u64))?;
-		f.read_exact(&mut buf)?;
-		let mut wh = File::create(fname)?;
-		wh.write_all(&buf)?;
-	    }
-	}
+            let fname = format!(
+                "{:03}-{}",
+                idx + 1,
+                Path::new(&source).file_name().unwrap().to_str().unwrap()
+            );
+            println!("-> {} {}", &fname, b);
+            if save {
+                let mut buf = vec![0; b.length];
+                f.seek(SeekFrom::Start(b.offset as u64))?;
+                f.read_exact(&mut buf)?;
+                let mut wh = File::create(fname)?;
+                wh.write_all(&buf)?;
+            }
+        }
     } else {
-	eprintln!("Log {} has no segments", &source);
+        eprintln!("Log {} has no segments", &source);
     }
     Ok(())
 }
@@ -106,12 +111,12 @@ fn main() -> io::Result<()> {
     };
 
     if matches.free.is_empty() {
-	print_usage(&program, &opts);
+        print_usage(&program, &opts);
         std::process::exit(1);
     }
 
     for a in matches.free.clone() {
-	getmeta(&a, !matches.opt_present("n"))?;
-   }
+        getmeta(&a, !matches.opt_present("n"))?;
+    }
     Ok(())
 }

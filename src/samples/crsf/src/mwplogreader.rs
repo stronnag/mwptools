@@ -26,37 +26,45 @@ pub struct MWPReader {
     reader: BufReader<File>,
 }
 impl MWPReader {
-
-#[cfg(unix)]
+    #[cfg(unix)]
     pub fn stdin() -> Result<MWPReader, io::Error> {
-	let f = unsafe { File::from_raw_fd(0)};
-	let rdr = BufReader::new(f);
-	Ok(MWPReader {reader: rdr, ftype: Ftype::Raw,})
+        let f = unsafe { File::from_raw_fd(0) };
+        let rdr = BufReader::new(f);
+        Ok(MWPReader {
+            reader: rdr,
+            ftype: Ftype::Raw,
+        })
     }
 
-#[cfg(not(unix))]
+    #[cfg(not(unix))]
     pub fn stdin() -> Result<MWPReader, io::Error> {
-	Err(Error::new(ErrorKind::Other, "platform does not support stdin"))
+        Err(Error::new(
+            ErrorKind::Other,
+            "platform does not support stdin",
+        ))
     }
 
     pub fn open(fname: &str) -> Result<MWPReader, io::Error> {
-	let mut rdr: BufReader<File>;
-	let typ: Ftype;
-	let f = File::open(fname)?;
+        let mut rdr: BufReader<File>;
+        let typ: Ftype;
+        let f = File::open(fname)?;
         let mut v2 = [0u8; 9];
         rdr = BufReader::new(f);
-        rdr.read(&mut v2)?;
+        rdr.read_exact(&mut v2)?;
         if &v2[0..3] == b"v2\n" {
-	    typ = Ftype::V2;
-	    rdr.seek(SeekFrom::Start(3))?;
+            typ = Ftype::V2;
+            rdr.seek(SeekFrom::Start(3))?;
         } else if &v2 == br#"{"stamp":"# {
-	    typ = Ftype::Json;
-	    rdr.rewind()?;
+            typ = Ftype::Json;
+            rdr.rewind()?;
         } else {
-	    rdr.rewind()?;
-	    typ = Ftype::Raw;
+            rdr.rewind()?;
+            typ = Ftype::Raw;
         }
-	Ok(MWPReader {reader: rdr, ftype: typ,})
+        Ok(MWPReader {
+            reader: rdr,
+            ftype: typ,
+        })
     }
 
     pub fn read(&mut self, buf: &mut Vec<u8>, delta: &mut Option<f64>) -> io::Result<()> {
@@ -78,10 +86,10 @@ impl MWPReader {
             *buf = vec![0u8; 512];
             *delta = None;
             let n = self.reader.read(buf)?;
-	    if n == 0 {
-		return Err(Error::new(ErrorKind::Other, "stdin EOF"));
-	    }
-	    buf.truncate(n);
+            if n == 0 {
+                return Err(Error::new(ErrorKind::Other, "stdin EOF"));
+            }
+            buf.truncate(n);
         } else {
             let mut s = String::new();
             self.reader.read_line(&mut s)?;
