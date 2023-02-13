@@ -204,7 +204,7 @@ func (m *Mission) Save(mpts []Point) {
 					m.MissionItems[midx].P3 = int16(Conf.P3)
 				}
 
-				if m.MissionItems[midx].P3 == 0 {
+				if m.MissionItems[midx].P3&1 == 0 {
 					m.MissionItems[midx].Alt = int32(p.Xz - mpts[0].Gz)
 				} else {
 					m.MissionItems[midx].Alt = int32(p.Xz)
@@ -215,7 +215,7 @@ func (m *Mission) Save(mpts []Point) {
 				if m.MissionItems[lidx].Action != "LAND" {
 					panic("LAND WP mismatch")
 				}
-				if m.MissionItems[lidx].P3 == 0 {
+				if m.MissionItems[lidx].P3&1 == 0 {
 					m.MissionItems[lidx].P2 = int16(p.Gz - mpts[0].Gz)
 				} else {
 					m.MissionItems[lidx].P2 = int16(p.Gz)
@@ -244,7 +244,7 @@ func (m *Mission) check_for_home() error {
 				mlon = mi.Lon
 			}
 			ngeo += 1
-			if mi.P3 == 0 {
+			if mi.P3&1 == 0 {
 				ra += 1
 			}
 		}
@@ -331,7 +331,7 @@ func (m *Mission) Get_points() []Point {
 			_, dm := geo.Csedist(ly, lx, cy, cx)
 			dist += dm * 1852.0
 			mpts = append(mpts, Point{Y: cy, X: cx, Wpno: int8(mi.No), D: dist,
-				Wpname: fmt.Sprintf("WP%d", mi.No), Flag: int8(mi.P3), Set: WP_INIT,
+				Wpname: fmt.Sprintf("WP%d", mi.No), Flag: int8(mi.P3 & 1), Set: WP_INIT,
 				Mz: int(mi.Alt)})
 			n += 1
 		} else {
