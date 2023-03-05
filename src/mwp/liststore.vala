@@ -523,12 +523,11 @@ public class ListBox : GLib.Object {
         foreach (MissionItem m in ms.get_ways()) {
             lastid++;
             list_model.append (out iter);
-            string no;
+            var no = lastid.to_string();
             double m1 = 0;
             double m2 = 0;
             switch (m.action) {
             case MSP.Action.RTH:
-                no="";
                 m1 = ((double)m.param1);
                 have_rth = true;
                 if (autoland) {
@@ -540,7 +539,6 @@ public class ListBox : GLib.Object {
                 }
                 break;
             default:
-                no = lastid.to_string();
                 if (m.action == MSP.Action.WAYPOINT || m.action == MSP.Action.LAND)
                     m1 = ((double)m.param1 / SPEED_CONV);
                 else
@@ -1101,6 +1099,19 @@ public class ListBox : GLib.Object {
 
         Gtk.CellRenderer cell = new Gtk.CellRendererText ();
         view.insert_column_with_attributes (-1, "ID", cell, "text", WY_Columns.IDX);
+        var col = view.get_column(WY_Columns.IDX);
+
+        col.set_cell_data_func(cell, (col,_cell,model,iter) => {
+                Value v;
+                model.get_value(iter, WY_Columns.IDX, out v);
+                string s ="";
+                var idx = int.parse((string)v);
+                model.get_value (iter, WY_Columns.ACTION, out v);
+                if((MSP.Action)v != MSP.Action.RTH) {
+                    s = "%d".printf(idx);
+                }
+                _cell.set_property("text",s);
+            });
 
         Gtk.TreeViewColumn column = new Gtk.TreeViewColumn ();
         column.set_title ("Type");
@@ -1138,7 +1149,7 @@ public class ListBox : GLib.Object {
                                             cell,
                                             "text", WY_Columns.LAT);
 
-        var col = view.get_column(WY_Columns.LAT);
+        col = view.get_column(WY_Columns.LAT);
         col.set_cell_data_func(cell, (col,_cell,model,iter) => {
                 Value v;
                 model.get_value(iter, WY_Columns.LAT, out v);
@@ -1711,7 +1722,7 @@ public class ListBox : GLib.Object {
             var i = int.parse((string)val);
             if(i == 0) {
                 i = int.parse((string)path.to_string()) + 1;
-                print("RTH Del %s %d\n", path.to_string(), i);
+                print("*** RTH Del %s %d ***\n", path.to_string(), i);
             }
 
             if(is_wp_valid_for_delete(i)) {
@@ -1737,11 +1748,8 @@ public class ListBox : GLib.Object {
         Gtk.TreeIter iter;
         var dalt = get_user_alt();
         list_model.append(out iter);
-        string no = "";
         lastid++;
-        if(typ != MSP.Action.RTH) {
-            no = lastid.to_string();
-        }
+        var no = lastid.to_string();
         list_model.set (iter,
                         WY_Columns.IDX, no,
                         WY_Columns.TYPE, MSP.get_wpname(typ),
