@@ -513,13 +513,13 @@ public class ListBox : GLib.Object {
 
     public void import_mission(Mission ms, bool  autoland = false) {
         Gtk.TreeIter iter;
+
         clear_mission();
         lastid = 0;
         have_rth = false;
         BingElevations.Point[] pts={};
 
         EvCache.clear();
-
         foreach (MissionItem m in ms.get_ways()) {
             lastid++;
             list_model.append (out iter);
@@ -1519,7 +1519,8 @@ public class ListBox : GLib.Object {
     }
 
     private void renumber_steps(Gtk.ListStore ls) {
-        import_mission(to_mission());
+        var ms = to_mission();
+        import_mission(ms);
     }
 
     private void update_fby_wp(double lat, double lon) {
@@ -1552,7 +1553,8 @@ public class ListBox : GLib.Object {
     }
 
     private void raise_iter_wp(Gtk.TreeIter iter, bool ring=false) {
-            Value val;
+        if (!purge) {
+        Value val;
             int idx;
             list_model.get_value (iter, WY_Columns.IDX, out val);
             idx = int.parse((string)val);
@@ -1567,6 +1569,7 @@ public class ListBox : GLib.Object {
                 else
                     mp.markers.set_home_ring();
             }
+        }
     }
 
     private void update_selected_cols() {
@@ -1706,6 +1709,11 @@ public class ListBox : GLib.Object {
             list_model.get_iter (out iter, path);
             list_model.get_value (iter, WY_Columns.IDX, out val);
             var i = int.parse((string)val);
+            if(i == 0) {
+                i = int.parse((string)path.to_string()) + 1;
+                print("RTH Del %s %d\n", path.to_string(), i);
+            }
+
             if(is_wp_valid_for_delete(i)) {
                 todel += i;
             } else {
@@ -2649,6 +2657,10 @@ public class ListBox : GLib.Object {
 
     private bool try_delete_for(MSP.Action act, Gtk.TreeIter iter, ref int d) {
         Value cell;
+
+        list_model.get_value (iter, WY_Columns.IDX, out cell);
+        var wpno = int.parse((string)cell);
+
         Gtk.TreeIter xiter = iter;
         bool next;
         next = list_model.iter_next(ref xiter);
@@ -2661,6 +2673,9 @@ public class ListBox : GLib.Object {
                 if ((MSP.Action)cell == act) {
                     list_model.get_value (xiter, WY_Columns.IDX, out cell);
                     d = int.parse((string)cell);
+                    if (d  == 0 ) {
+                        d = wpno + 1;
+                    }
                     return true;
                 }
             } else {
@@ -2730,13 +2745,13 @@ public class ListBox : GLib.Object {
     }
 
     public void clear_mission() {
+        mp.markers.remove_all();
         purge = true;
         list_model.clear();
         purge = false;
-        mp.markers.remove_all();
         have_rth = false;
         lastid = 0;
-        calc_mission();
+//        calc_mission();
         FakeHome.usedby &= ~FakeHome.USERS.Mission;
         unset_fake_home();
     }
