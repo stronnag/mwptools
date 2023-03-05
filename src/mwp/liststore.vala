@@ -2745,7 +2745,6 @@ public class ListBox : GLib.Object {
     }
 
     public void clear_mission() {
-        mp.markers.remove_all();
         purge = true;
         list_model.clear();
         purge = false;
@@ -2754,6 +2753,7 @@ public class ListBox : GLib.Object {
 //        calc_mission();
         FakeHome.usedby &= ~FakeHome.USERS.Mission;
         unset_fake_home();
+        mp.markers.remove_all();
     }
 
     private string show_time(int s) {
