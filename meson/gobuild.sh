@@ -4,6 +4,8 @@ OUTPUT=$1
 cd $2
 TRIMP=$3
 BROOT=$4
+
+go get -u ./...
 go mod tidy
 go build $TRIMP -ldflags '-w -s'
 #if [ -e $OUTPUT ] ; then
