@@ -33,10 +33,14 @@ If the file is not a blackbox log, or only contains a single log, no new file is
 
 Requires `rust`. For convenience there is a Makefile (so you can crib the `Cargo` commands).
 
-* `make build` : Builds release (`target/release/bbsplit`)
+* `make release` : Builds release (`target/release/bbsplit`)
 * `make debug` : Build debug  (`target/debug/bbsplit`)
 * `make install` : Compiles release and installs in `~/.local/bin`
-* `make windows` : Cross compiles a Windows release (`target/x86_64-pc-windows-gnu/release/bbsplit.exe`). Requires you've set up a cross-compilation environment.
+* `make static` : Builds a static (musl) binary. Requires `x86_64-unknown-linux-musl`
+* `make static32` : Builds a static 32 bit (musl) binary. Requires `i686-unknown-linux-musl`
+* `make windows` : Cross compiles a Windows 64bit binary. Requires `x86_64-pc-windows-gnu`.
+
+If you're building natively on a non-Linux x86_64 platform, then the `release` / `debug` / `install` targets will build native binaries.
 
 ### Licence etc.
 
