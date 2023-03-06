@@ -668,18 +668,31 @@ public class MWPMarkers : GLib.Object
 
         ((MWPLabel)marker).drag_finish.connect(() => {
                 GLib.Value val;
+                bool need_alt = true;
                 ls.get_value (iter, ListBox.WY_Columns.ACTION, out val);
-                if(val == MSP.Action.UNASSIGNED) {
+                var act =  (MSP.Action)val;
+                if(act == MSP.Action.UNASSIGNED) {
                     string mtxt;
                     Clutter.Color col;
-                    var act = MSP.Action.WAYPOINT;
                     ls.set_value (iter, ListBox.WY_Columns.TYPE, MSP.get_wpname(act));
-                    ls.set_value (iter, ListBox.WY_Columns.ACTION, act);
+                    ls.set_value (iter, ListBox.WY_Columns.ACTION, MSP.Action.WAYPOINT);
                     get_text_for(act, no, out mtxt, out col);
                     marker.set_color (col);
                     marker.set_text(mtxt);
+                } else {
+                    if (act == MSP.Action.RTH ||
+                        act == MSP.Action.SET_HEAD ||
+                        act == MSP.Action.JUMP) {
+                        need_alt = false;
+                    } else {
+                        ls.get_value (iter, ListBox.WY_Columns.FLAG, out val);
+                        uint8 flag = (uint8)((int)val);
+                        if(flag == 'H') {
+                            need_alt = false;
+                        }
+                    }
                 }
-                wp_moved(ino, marker.get_latitude(), marker.get_longitude(), true);
+                wp_moved(ino, marker.get_latitude(), marker.get_longitude(), need_alt);
                 calc_extra_distances(l);
                 var _t1 = marker.extras[Extra.Q_0] as MWPLabel;
                 _t1.set_text(l.get_marker_tip(ino));

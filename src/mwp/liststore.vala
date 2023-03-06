@@ -172,6 +172,7 @@ public class ListBox : GLib.Object {
     private const int SPEED_CONV = 100;
     private const int ALT_CONV = 100;
     private const int POS_CONV = 10000000;
+    private const uint8 FBH_FLAG = 0x48;
 
     public enum WY_Columns {
         IDX, // s
@@ -284,7 +285,7 @@ public class ListBox : GLib.Object {
         Gtk.TreeIter iter;
         if(list_model.iter_nth_child(out iter, null, wpno-1)) {
             list_model.set_value (iter, WY_Columns.FLAG, flag);
-            if(flag == 0x48) {
+            if(flag == FBH_FLAG) {
                 double hlat,hlon;
                 fhome.get_fake_home(out hlat, out hlon);
                 list_model.set (iter, WY_Columns.LAT, hlat, WY_Columns.LON, hlon);
@@ -382,6 +383,13 @@ public class ListBox : GLib.Object {
             sb.append(alt.to_string());
             sb.append("m ");
             int amsl;
+            list_model.get_value (iter, WY_Columns.FLAG, out cell);
+            var flag = (uint8)((int)cell);
+            if(flag == FBH_FLAG) {
+                if (EvCache.get_elev(EvCache.EvConst.HOME, out amsl)) {
+                    EvCache.set_elev(ino, amsl);
+                }
+            }
             if(EvCache.get_elev(ino, out amsl)) {
                 sb.append(" (amsl ");
                 sb.append(amsl.to_string());
@@ -549,7 +557,7 @@ public class ListBox : GLib.Object {
                     m2 = ((double)m.param2);
                 break;
             }
-            uint8 flag = (m.flag == 0x48) ? 0x48 : 0;
+            uint8 flag = (m.flag == FBH_FLAG) ? FBH_FLAG : 0;
             list_model.set (iter,
                             WY_Columns.IDX, no,
                             WY_Columns.TYPE, MSP.get_wpname(m.action),
@@ -1373,7 +1381,7 @@ public class ListBox : GLib.Object {
                 Gtk.TreeIter citer;
                 Value val;
                 list_model.get_iter(out citer, new Gtk.TreePath.from_string(p));
-                int flag = (tcell.active) ? 0: 0x48;
+                int flag = (tcell.active) ? 0: FBH_FLAG;
                 list_model.get_value (citer, WY_Columns.IDX, out val);
                 int wpno = int.parse((string)val);
                 toggle_flyby_status(wpno, flag);
@@ -1540,7 +1548,7 @@ public class ListBox : GLib.Object {
             next=list_model.iter_next(ref iter)) {
             GLib.Value cell;
             list_model.get_value (iter, WY_Columns.FLAG, out cell);
-            if ( (int)cell == 0x48) {
+            if ( (int)cell == FBH_FLAG) {
                 list_model.get_value (iter, WY_Columns.IDX, out cell);
                 var idx = int.parse((string)cell);
                 var mk =  mp.markers.get_marker_for_idx(idx);
@@ -2539,11 +2547,11 @@ public class ListBox : GLib.Object {
 
     private bool iter_from_ei(ref Gtk.TreeIter iter, EditItem ei, EditItem orig) {
         bool res = false;
-        uint8 flag = (ei.flag == 0x48) ? 0x48 : 0;
+        uint8 flag = (ei.flag == FBH_FLAG) ? FBH_FLAG : 0;
         int n = ei.no;
         int []  dlist={};
         int diter = -1;
-        if(flag == 0x48) {
+        if(flag == FBH_FLAG) {
             double hlat,hlon;
             fhome.get_fake_home(out hlat, out hlon);
             list_model.set (iter, WY_Columns.LAT, hlat, WY_Columns.LON, hlon);
