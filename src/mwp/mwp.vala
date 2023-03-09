@@ -375,6 +375,7 @@ public class MWP : Gtk.Application {
     private uint64 angle_mask=0;
     private uint64 horz_mask=0;
     private uint64 wp_mask=0;
+    private uint64 cr_mask=0;
 
     private uint no_ofix = 0;
 
@@ -3645,10 +3646,10 @@ public class MWP : Gtk.Application {
 						craft.set_normal();
 				}
 				var lmstr = MSP.ltm_mode(ltmflags);
+				fmodelab.set_label(lmstr);
 				MWPLog.message("New CRSF Mode %s (%d) %d %ds %f %f %x %x\n",
 							   lmstr, ltmflags, armed, duration, xlat, xlon,
 							   xws, want_special);
-				fmodelab.set_label(lmstr);
 			}
 
 			if(achg || mchg)
@@ -5127,19 +5128,16 @@ case 0:
                 missing = MSP.Sensors.MAG;
         }
 
-        if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS)
-        {
+        if((sensor & MSP.Sensors.GPS) == MSP.Sensors.GPS) {
             sflags |= NavStatus.SPK.GPS;
-            if((navcap & NAVCAPS.NAVSTATUS) == NAVCAPS.NAVSTATUS)
-            {
+            if((navcap & NAVCAPS.NAVSTATUS) == NAVCAPS.NAVSTATUS) {
                 requests += MSP.Cmds.NAV_STATUS;
                 reqsize += MSize.MSP_NAV_STATUS;
             }
             requests += MSP.Cmds.RAW_GPS;
             requests += MSP.Cmds.COMP_GPS;
 
-            if((navcap & NAVCAPS.NAVCONFIG) == 0)
-            {
+            if((navcap & NAVCAPS.NAVCONFIG) == 0) {
                 requests += MSP.Cmds.GPSSTATISTICS;
                 reqsize += MSize.MSP_GPSSTATISTICS;
             }
@@ -5147,29 +5145,23 @@ case 0:
 
             reqsize += (MSize.MSP_RAW_GPS + MSize.MSP_COMP_GPS+1);
             init_craft_icon();
-        }
-        else
+        } else
             missing |= MSP.Sensors.GPS;
 
-        if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC)
-        {
+        if((sensor & MSP.Sensors.ACC) == MSP.Sensors.ACC) {
             requests += MSP.Cmds.ATTITUDE;
             reqsize += MSize.MSP_ATTITUDE;
         }
 
-        if(((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO) || Craft.is_fw(vi.mrtype))
-        {
+        if(((sensor & MSP.Sensors.BARO) == MSP.Sensors.BARO) || Craft.is_fw(vi.mrtype)) {
             sflags |= NavStatus.SPK.BARO;
             requests += MSP.Cmds.ALTITUDE;
             reqsize += MSize.MSP_ALTITUDE;
-        }
-        else
+        } else
             missing |= MSP.Sensors.BARO;
 
-        if(missing != 0)
-        {
-            if(gpscnt < 5)
-            {
+        if(missing != 0) {
+            if(gpscnt < 5) {
                 string []nsensor={};
                 if((missing & MSP.Sensors.GPS) != 0)
                     nsensor += "GPS";
@@ -5182,28 +5174,22 @@ case 0:
                 MWPLog.message("no %s, sensor = 0x%x\n", nss, sensor);
                 gpscnt++;
             }
-        }
-        else
-        {
+        } else {
             set_error_status(null);
             gpscnt = 0;
         }
         return reqsize;
     }
 
-    private void map_warn_set_text(bool init = false)
-    {
-        if(clutextg != null)
-        {
+    private void map_warn_set_text(bool init = false) {
+        if(clutextg != null) {
             var parts= conf.wp_text.split("/");
-            if(init)
-            {
+            if(init) {
                 var grey = Clutter.Color.from_string(parts[1]);
                 clutextg.color = grey;
                 clutextd.color = grey;
             }
-            if(window_h != -1)
-            {
+            if(window_h != -1) {
                 var tsplit = parts[0].split(" ");
                 var th = int.parse(tsplit[1]);
                 var ih = (((window_h * 15 / 100) + 4) / 8) * 8;
@@ -5922,7 +5908,7 @@ case 0:
             else
                 ltmflags = MSP.LTM.acro;
 
-            if(armed != 0) {
+            if (armed != 0) {
                 if ((rth_mask != 0) &&
                     ((bxflag & rth_mask) != 0) &&
                     ((xbits & rth_mask) == 0)) {
@@ -5937,16 +5923,26 @@ case 0:
                                    (int)duration);
                     want_special |= POSMODE.PH;
                     ltmflags = MSP.LTM.poshold;
-                }
-                else if ((wp_mask != 0) &&
+                } else if ((wp_mask != 0) &&
                          ((bxflag & wp_mask) != 0) &&
                          ((xbits & wp_mask) == 0)) {
                     MWPLog.message("set WP on %08x %u %ds\n", bxflag, bxflag,
                                    (int)duration);
                     want_special |= POSMODE.WP;
                     ltmflags = MSP.LTM.waypoints;
+                } else if ((cr_mask != 0)  &&
+                           ((bxflag & cr_mask) != 0) &&
+                           ((xbits & cr_mask) == 0)) {
+                    MWPLog.message("set CRUISE on %08x %u %ds\n", bxflag, bxflag,
+                                   (int)duration);
+                    want_special |= POSMODE.CRUISE;
+                    ltmflags = MSP.LTM.cruise;
                 } else if ((xbits != bxflag) && craft != null) {
                     craft.set_normal();
+                }
+                if (want_special != 0) {
+                    var lmstr = MSP.ltm_mode(ltmflags);
+                    fmodelab.set_label(lmstr);
                 }
             }
             xbits = bxflag;
@@ -6890,33 +6886,35 @@ case 0:
                 }
                 raw[len] = 0;
                 boxnames = (string)raw;
-                string []bsx = ((string)raw).split(";");
+                stderr.printf("DBG: Boxen %s\n", boxnames);
+                string []bsx = boxnames.split(";");
                 int i = 0;
-                foreach(var bs in bsx)
-                {
-                    switch(bs)
-                    {
-                        case "ARM":
-                            arm_mask = (1 << i);
-                            break;
-                        case "ANGLE":
-                            angle_mask = (1 << i);
-                            break;
-                        case "HORIZON":
-                            horz_mask = (1 << i);
-                            break;
-                        case "GPS HOME":
-                        case "NAV RTH":
-                            rth_mask = (1 << i);
-                            break;
-                        case "GPS HOLD":
-                        case "NAV POSHOLD":
-                            ph_mask = (1 << i);
-                            break;
-                        case "NAV WP":
-                        case "MISSION":
-                            wp_mask = (1 << i);
-                            break;
+                foreach(var bs in bsx) {
+                    switch(bs) {
+                    case "ARM":
+                        arm_mask = (1 << i);
+                        break;
+                    case "ANGLE":
+                        angle_mask = (1 << i);
+                        break;
+                    case "HORIZON":
+                        horz_mask = (1 << i);
+                        break;
+                    case "GPS HOME":
+                    case "NAV RTH":
+                        rth_mask = (1 << i);
+                        break;
+                    case "GPS HOLD":
+                    case "NAV POSHOLD":
+                        ph_mask = (1 << i);
+                        break;
+                    case "NAV WP":
+                    case "MISSION":
+                        wp_mask = (1 << i);
+                        break;
+                    case "NAV CRUISE":
+                        cr_mask = (1 << i);
+                        break;
                     }
                     i++;
                 }
@@ -7135,17 +7133,14 @@ case 0:
                 uint8* rp = raw;
                 ns.gps_mode = *rp++;
 
-                if(ns.gps_mode == 15)
-                {
-                    if (nticks - last_crit > CRITINTVL)
-                    {
+                if(ns.gps_mode == 15) {
+                    if (nticks - last_crit > CRITINTVL) {
                         play_alarm_sound(MWPAlert.GENERAL);
                         MWPLog.message("GPS Critial Failure!!!\n");
                         navstatus.gps_crit();
                         last_crit = nticks;
                     }
-                }
-                else
+                } else
                     last_crit = 0;
 
                 ns.nav_mode = *rp++;
@@ -7155,34 +7150,24 @@ case 0:
 
                 if(cmd == MSP.Cmds.NAV_STATUS)
                     SEDE.deserialise_u16(rp, out ns.target_bearing);
-                else
-                {
+                else {
                     flg = 1;
                     ns.target_bearing = *rp++;
                 }
                 navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS),flg);
-
-//                stderr.printf("DBG: Nframe mode %d\n", ns.nav_mode);
-
                 if((replayer & Player.BBOX) == 0 && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255))
                 {
-                    if(ns.gps_mode == 3)
-                    {
-                        if ((conf.osd_mode & OSD.show_mission) != 0)
-                        {
-                            if (last_nmode != 3 || ns.wp_number != last_nwp)
-                            {
+                    if(ns.gps_mode == 3) {
+                        if ((conf.osd_mode & OSD.show_mission) != 0) {
+                            if (last_nmode != 3 || ns.wp_number != last_nwp) {
                                 ls.raise_wp(ns.wp_number);
                                 string spt;
                                 if(NavStatus.have_rth && ns.wp_number == NavStatus.nm_pts)
                                 {
                                     spt = "<span size=\"x-small\">RTH</span>";
-                                }
-                                else
-                                {
+                                } else {
                                     StringBuilder sb = new StringBuilder(ns.wp_number.to_string());
-                                    if(NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255)
-                                    {
+                                    if(NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255) {
                                         sb.append_printf("<span size=\"xx-small\">/%u</span>", NavStatus.nm_pts);
                                     }
                                     spt = sb.str;
@@ -8548,7 +8533,6 @@ case 0:
         if((want_special & POSMODE.PH) != 0)
         {
             want_special &= ~POSMODE.PH;
-            MWPLog.message("Set poshold %f %f\n", lat, lon);
             ph_pos.lat = lat;
             ph_pos.lon = lon;
             ph_pos.alt = alt;
