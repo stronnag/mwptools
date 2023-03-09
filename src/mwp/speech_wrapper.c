@@ -21,7 +21,6 @@
 #include <glib.h>
 #include <gmodule.h>
 
-
 #define API_NONE    0
 #define API_ESPEAK  1
 #define API_SPEECHD 2
@@ -31,7 +30,6 @@ extern void mwp_log_message (const gchar* format, ...);
 #if defined(USE_ESPEAK) || defined (USE_SPEECHD) || defined(USE_FLITE)
 
 static GModule *handle;
-
 
 #ifdef USE_ESPEAK
 
@@ -49,15 +47,23 @@ typedef void (*espeak_setvoicebyname_t)(char *);
 static espeak_synth_t ess;
 static espeak_synchronize_t esh;
 
+static inline gchar* m_module_build_path(const gchar* dir, const gchar* name) {
+// Once GLIB actually documents the replacement, the pragmas can be removed
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+  return g_module_build_path(dir, name);
+#pragma GCC diagnostic push
+}
+
 static int ep_init(char *voice)
 {
     int res = API_NONE;
     gchar * modname = NULL;
 
 #ifdef USE_ESPEAK_NG
-    modname = g_module_build_path(NULL, "espeak-ng");
+    modname = m_module_build_path(NULL, "espeak-ng");
 #else
-    modname = g_module_build_path(NULL, "espeak");
+    modname = m_module_build_path(NULL, "espeak");
 #endif
     if(modname) {
 	 handle = g_module_open(modname, G_MODULE_BIND_LAZY);
@@ -113,7 +119,7 @@ static int sd_init(char *voice)
 {
     int ret=API_NONE;
     gchar * modname;
-    modname = g_module_build_path(NULL, "speechd");
+    modname = m_module_build_path(NULL, "speechd");
     if(modname)
     {
         handle = g_module_open(modname, G_MODULE_BIND_LAZY);
@@ -209,7 +215,7 @@ static int fl_init(char *vname)
     }
 
     gchar * modname;
-    modname = g_module_build_path(NULL, "flite");
+    modname = m_module_build_path(NULL, "flite");
     if(modname)
     {
         handle = g_module_open(modname, 0);
@@ -230,14 +236,14 @@ static int fl_init(char *vname)
                 g_module_symbol(handle, "feat_string", (gpointer *)&fl_fstr);
                 g_module_symbol(handle, "flite_text_to_speech", (gpointer *)&fl_tts);
                 GModule *handle2;
-                modname = g_module_build_path(NULL, "flite_usenglish");
+                modname = m_module_build_path(NULL, "flite_usenglish");
                 handle2 = g_module_open(modname, 0);
                 if(handle2 == NULL)
                     goto out;
                 g_module_symbol(handle2, "usenglish_init", (gpointer *)&fl_eng);
 
                 GModule *handle3;
-                modname = g_module_build_path(NULL, "flite_cmulex");
+                modname = m_module_build_path(NULL, "flite_cmulex");
                 handle3 = g_module_open(modname, 0);
                 if(handle3 == NULL)
                     goto out;
@@ -254,7 +260,7 @@ static int fl_init(char *vname)
                     goto out;
 
                 GModule *handle1;
-                modname = g_module_build_path(NULL, "flite_cmu_us_slt");
+                modname = m_module_build_path(NULL, "flite_cmu_us_slt");
                 handle1 = g_module_open(modname, 0);
                 if(handle1 == NULL)
                     goto out;

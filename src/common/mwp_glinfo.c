@@ -14,7 +14,12 @@ void get_glinfo(char **vendp, char **rendp)
      GModule *handle = NULL;
      gchar * modname = NULL;
      glfunc_t glfunc;
+
+     // Once GLIB actually documents the replacement, the pragmas can be removed
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
      modname = g_module_build_path(NULL, "libGL");
+#pragma GCC diagnostic pop
      if(modname) {
 	  handle = g_module_open(modname, G_MODULE_BIND_LAZY);
 	  if (handle) {
