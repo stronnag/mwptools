@@ -1,10 +1,10 @@
 mwptools installation instructions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-$ meson build --buildtype=release --strip [--prefix=DIR]
+$ meson _build --buildtype=release --strip [--prefix=DIR]
 
 * recommended everywhere:
-  meson build --buildtype=release --strip --prefix=~/.local
+  meson _build --buildtype=release --strip --prefix=~/.local
 
 * Otherwise
   * FreeBSD --- don't provide --prefix
@@ -17,7 +17,7 @@ $ meson build --buildtype=release --strip [--prefix=DIR]
 
 then:
 
-$ cd build
+$ cd _build
 # Local install. Preferred mode, requires ~/.local/bin on PATH
 $ ninja install
 # or, System wide install
@@ -28,10 +28,15 @@ $ sudo ninja uninstall
 $ ninja clean
 $ ninja reconfigure
 
-Local one hit build and install, in top level directory:
+Local one hit _build and install, in top level directory:
 
-$ meson install -C build
+$ meson install -C _build
 
 
 More Information:
  https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja
+
+MinSize build:
+
+meson setup _build --buildtype=minsize -D debug=false -D b_lto=true -D b_pie=true --prefix=~/.local  --strip
+
