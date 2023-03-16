@@ -30,7 +30,10 @@
 #include <signal.h>
 
 #ifdef __FreeBSD__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-W#warnings"
 #include <bluetooth.h>
+#pragma clang diagnostic pop
 #endif
 
 #define RFCOMM_CHANNEL 1
