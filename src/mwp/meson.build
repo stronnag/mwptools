@@ -9,7 +9,7 @@ mwpvers_h = custom_target(
 )
 
 libmwpvers = static_library('mwpvers', ['_mwpvers.c', mwpvers_h],
-			     include_directories :  include_directories('../../build')
+			     include_directories :  include_directories('.','../','../../')
 			  )
 
 mwpsrcs = files('mwp.vala', 'liststore.vala', 'mwp_markers.vala',

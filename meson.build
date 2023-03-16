@@ -17,7 +17,7 @@ subdir('src/qproxy')
 subdir('src/samples/')
 subdir('docs')
 
-configuration_inc = include_directories('build')
+configuration_inc = include_directories('.')
 
 executable('mwp', mwpsrcs, mwpcommon,
 	   dependencies: mwpdeps,
