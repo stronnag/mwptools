@@ -376,6 +376,7 @@ public class MWP : Gtk.Application {
     private uint64 horz_mask=0;
     private uint64 wp_mask=0;
     private uint64 cr_mask=0;
+    private uint64 fs_mask=0;
 
     private uint no_ofix = 0;
 
@@ -5909,6 +5910,23 @@ case 0:
                 ltmflags = MSP.LTM.acro;
 
             if (armed != 0) {
+                if (fs_mask != 0) {
+                    bool failsafe = ((bxflag & fs_mask) != 0);
+                    if (failsafe) {
+                        stderr.printf("DBG: ****** FAILSAFE *****\n");
+                    }
+                    if(xfailsafe != failsafe) {
+                        if(failsafe) {
+                            arm_flags |=  ARMFLAGS.ARMING_DISABLED_FAILSAFE_SYSTEM;
+                            MWPLog.message("Failsafe asserted %ds\n", duration);
+                            map_show_warning("FAILSAFE");
+                        } else {
+                            MWPLog.message("Failsafe cleared %ds\n", duration);
+                            map_hide_warning();
+                        }
+                        xfailsafe = failsafe;
+                    }
+                }
                 if ((rth_mask != 0) &&
                     ((bxflag & rth_mask) != 0) &&
                     ((xbits & rth_mask) == 0)) {
@@ -5940,6 +5958,8 @@ case 0:
                 } else if ((xbits != bxflag) && craft != null) {
                     craft.set_normal();
                 }
+
+
                 if (want_special != 0) {
                     var lmstr = MSP.ltm_mode(ltmflags);
                     fmodelab.set_label(lmstr);
@@ -6886,7 +6906,6 @@ case 0:
                 }
                 raw[len] = 0;
                 boxnames = (string)raw;
-                stderr.printf("DBG: Boxen %s\n", boxnames);
                 string []bsx = boxnames.split(";");
                 int i = 0;
                 foreach(var bs in bsx) {
@@ -6914,6 +6933,9 @@ case 0:
                         break;
                     case "NAV CRUISE":
                         cr_mask = (1 << i);
+                        break;
+                    case "FAILSAFE":
+                        fs_mask = (1 << i);
                         break;
                     }
                     i++;
@@ -7097,7 +7119,7 @@ case 0:
                                wpi.max_wp, wpi.wp_count, wpi.wps_valid);
 				if((wpmgr.wp_flag & WPDL.GETINFO) != 0) {
 					string s = "Waypoints in FC\nMax: %u / Mission points: %u Valid: %s".printf(wpi.max_wp, wpi.wp_count, (wpi.wps_valid==1) ? "Yes" : "No");
-                    mwp_warning_box(s, Gtk.MessageType.INFO, 20);
+                    mwp_warning_box(s, Gtk.MessageType.INFO, 5);
 					wpmgr.wp_flag &= ~WPDL.GETINFO;
 				}
 				if ((wpmgr.wp_flag & WPDL.DOWNLOAD) != 0) {
