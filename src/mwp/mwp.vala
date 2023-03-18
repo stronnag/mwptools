@@ -5912,9 +5912,6 @@ case 0:
             if (armed != 0) {
                 if (fs_mask != 0) {
                     bool failsafe = ((bxflag & fs_mask) != 0);
-                    if (failsafe) {
-                        stderr.printf("DBG: ****** FAILSAFE *****\n");
-                    }
                     if(xfailsafe != failsafe) {
                         if(failsafe) {
                             arm_flags |=  ARMFLAGS.ARMING_DISABLED_FAILSAFE_SYSTEM;
