@@ -5910,6 +5910,7 @@ case 0:
                 ltmflags = MSP.LTM.acro;
 
             if (armed != 0) {
+
                 if (fs_mask != 0) {
                     bool failsafe = ((bxflag & fs_mask) != 0);
                     if(xfailsafe != failsafe) {
@@ -6937,9 +6938,9 @@ case 0:
                     }
                     i++;
                 }
-                MWPLog.message("Masks arm %jx angle %jx horz %jx ph %jx rth %jx wp %jx\n",
+                MWPLog.message("Masks arm=%jx angle=%jx horz=%jx ph=%jx rth=%jx wp=%jx cr=%jx fs=%jx\n",
                                arm_mask, angle_mask, horz_mask, ph_mask,
-                               rth_mask, wp_mask);
+                               rth_mask, wp_mask, cr_mask, fs_mask);
 
                 if(craft != null)
                     craft.set_icon(vi.mrtype);
