@@ -31,8 +31,15 @@ extern void mwp_log_message (const gchar* format, ...);
 
 static GModule *handle;
 
-#ifdef USE_ESPEAK
+static inline gchar* m_module_build_path(const gchar* dir, const gchar* name) {
+// Once GLIB actually documents the replacement, the pragmas can be removed
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+  return g_module_build_path(dir, name);
+#pragma GCC diagnostic push
+}
 
+#ifdef USE_ESPEAK
 #ifdef USE_ESPEAK_NG
 #include <espeak-ng/speak_lib.h>
 #else
@@ -46,14 +53,6 @@ typedef void (*espeak_setvoicebyname_t)(char *);
 
 static espeak_synth_t ess;
 static espeak_synchronize_t esh;
-
-static inline gchar* m_module_build_path(const gchar* dir, const gchar* name) {
-// Once GLIB actually documents the replacement, the pragmas can be removed
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  return g_module_build_path(dir, name);
-#pragma GCC diagnostic push
-}
 
 static int ep_init(char *voice)
 {
