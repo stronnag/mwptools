@@ -5773,7 +5773,7 @@ case 0:
             }
             update_sensor_array();
         } else {
-            uint32 arm_flags;
+            uint32 arm_flags = 0;
             uint16 loadpct;
             if(msp_get_status != MSP.Cmds.STATUS) {
                 if(msp_get_status == MSP.Cmds.STATUS_EX) {
