@@ -78,9 +78,11 @@ if golang.found()
     go1 = govers.split()
     go2 = go1[2].split('.')
     if go2.length() > 1
+      gotrim = '-trimpath'
       gminor = go2[1].to_int()
-      if gminor > 12
-	gotrim = '-trimpath'
+      if gminor < 17
+	gobuild=''
+	message('Go compiler is too old, consider installed vendor compiler')
       endif
     endif
   endif
