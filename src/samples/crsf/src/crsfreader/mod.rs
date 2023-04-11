@@ -136,7 +136,7 @@ impl CRSFReader {
     fn describe(&mut self) -> String {
         match self.func {
             GPS_ID => {
-		if self.payload.len() > 14 {
+		if self.payload.len() == 15 {
                     let lat = i32::from_be_bytes(self.payload[0..4].try_into().unwrap()) as f32 / 1e7;
                     let lon = i32::from_be_bytes(self.payload[4..8].try_into().unwrap()) as f32 / 1e7;
                     let mut v16 = u16::from_be_bytes(self.payload[8..10].try_into().unwrap());
@@ -168,71 +168,80 @@ impl CRSFReader {
 		}
             }
             BAT_ID => {
-                let mut v16 = u16::from_be_bytes(self.payload[0..2].try_into().unwrap());
-                let mut volts: f32 = 0.0;
-                if v16 != 0xffff {
-                    volts = v16 as f32 / 10.0;
-                }
-                v16 = u16::from_be_bytes(self.payload[2..4].try_into().unwrap());
-                let mut amps: f32 = 0.0;
-                if v16 != 0xffff {
-                    amps = v16 as f32 / 10.0;
-                }
-                let capa: u32 = u32::from(self.payload[4]) << 16
-                    | u32::from(self.payload[5]) << 8
-                    | u32::from(self.payload[6]);
+		if  self.payload.len() > 6 {
+                    let mut v16 = u16::from_be_bytes(self.payload[0..2].try_into().unwrap());
+                    let mut volts: f32 = 0.0;
+                    if v16 != 0xffff {
+			volts = v16 as f32 / 10.0;
+                    }
+                    v16 = u16::from_be_bytes(self.payload[2..4].try_into().unwrap());
+                    let mut amps: f32 = 0.0;
+                    if v16 != 0xffff {
+			amps = v16 as f32 / 10.0;
+                    }
+                    let capa: u32 = u32::from(self.payload[4]) << 16
+			| u32::from(self.payload[5]) << 8
+			| u32::from(self.payload[6]);
 
-                let mut pct = "".to_string();
-                if self.len > 7 {
-                    pct = format!(" {}%", self.payload[7])
-                }
-                format!("BAT: {:.2}V {:.2}A {}mah{}", volts, amps, capa, pct)
-            }
+                    let mut pct = "".to_string();
+                    if self.payload.len() > 7 {
+			pct = format!(" {}%", self.payload[7])
+                    }
+                    format!("BAT: {:.2}V {:.2}A {}mah{}", volts, amps, capa, pct)
+		} else {
+		    "BAT_ID decode error".to_string()
+		}
+	    }
+
             LINKSTATS_ID => {
-                let mut smode = "??".to_string();
-                let rfidx: usize = usize::from(self.payload[5]);
-                if self.rftype < 2 && rfidx >= SRFMODE0.len() && rfidx < SRFMODE2.len() {
-                    self.rftype = 2;
-                }
+		if self.payload.len() == 10 {
+                    let mut smode = "??".to_string();
+                    let rfidx: usize = usize::from(self.payload[5]);
+                    if self.rftype < 2 && rfidx >= SRFMODE0.len() && rfidx < SRFMODE2.len() {
+			self.rftype = 2;
+                    }
 
-                if self.rftype < 3 && rfidx >= SRFMODE2.len() && rfidx < SRFMODE3.len() {
-                    self.rftype = 3;
-                }
+                    if self.rftype < 3 && rfidx >= SRFMODE2.len() && rfidx < SRFMODE3.len() {
+			self.rftype = 3;
+                    }
 
-                match self.rftype {
-                    2 => {
-                        if rfidx < SRFMODE2.len() {
-                            smode = format!("{}", SRFMODE2[rfidx]);
-                        }
+                    match self.rftype {
+			2 => {
+                            if rfidx < SRFMODE2.len() {
+				smode = format!("{}", SRFMODE2[rfidx]);
+                            }
+			}
+			3 => {
+                            if rfidx < SRFMODE3.len() {
+				smode = format!("{}", SRFMODE3[rfidx]);
+                            }
+			}
+			_ => {
+                            if rfidx < SRFMODE0.len() {
+				smode = format!("{}", SRFMODE0[rfidx]);
+                            }
+			}
                     }
-                    3 => {
-                        if rfidx < SRFMODE3.len() {
-                            smode = format!("{}", SRFMODE3[rfidx]);
-                        }
+                    let mut txpwr = "??".to_string();
+                    if u32::from(self.payload[6]) < SUPTXPWR.len().try_into().unwrap() {
+			txpwr = format!("{}mW", SUPTXPWR[self.payload[6] as usize]);
                     }
-                    _ => {
-                        if rfidx < SRFMODE0.len() {
-                            smode = format!("{}", SRFMODE0[rfidx]);
-                        }
-                    }
-                }
-                let mut txpwr = "??".to_string();
-                if u32::from(self.payload[6]) < SUPTXPWR.len().try_into().unwrap() {
-                    txpwr = format!("{}mW", SUPTXPWR[self.payload[6] as usize]);
-                }
-                format!(
-                    "LINKSTATS: rssi1 {} rssi2 {} UpLQ {} UpSNR {} ActAnt {} RFMode {}Hz TXPwr {} DnRSSI {} DnLQ {} DnSNR {}",
-                    self.payload[0],
-                    self.payload[1],
-                    self.payload[2],
-                    self.payload[3] as i8,
-                    self.payload[4],
-                    smode,
-                    txpwr,
-                    self.payload[7],
-                    self.payload[8],
-                    self.payload[9] as i8
-                )
+                    format!(
+			"LINKSTATS: rssi1 {} rssi2 {} UpLQ {} UpSNR {} ActAnt {} RFMode {}Hz TXPwr {} DnRSSI {} DnLQ {} DnSNR {}",
+			self.payload[0],
+			self.payload[1],
+			self.payload[2],
+			self.payload[3] as i8,
+			self.payload[4],
+			smode,
+			txpwr,
+			self.payload[7],
+			self.payload[8],
+			self.payload[9] as i8
+                    )
+		} else {
+		    "LINKSTAT_ID decode error".to_string()
+		}
             }
             ATTI_ID => {
 		if self.payload.len() > 5 {
@@ -261,6 +270,7 @@ impl CRSFReader {
                 format!("DEV: {}", String::from_utf8_lossy(&self.payload[5..]))
             }
             RADIO_ID => {
+		if self.payload.len() > 10 {
                 if self.payload[0] == RADIO_ADDRESS && self.payload[2] == 0x10 {
                     let update: u32 =
                         u32::from_be_bytes(self.payload[3..7].try_into().unwrap()) / 10;
@@ -270,6 +280,9 @@ impl CRSFReader {
                 } else {
                     "RADIO: failed to decode".to_string()
                 }
+		} else {
+                    "RADIO: failed to decode".to_string()
+		}
             }
             ARDUPILOT_RESP => {
                 format!("ARDUPILOT_RESP: {} bytes", self.len)
