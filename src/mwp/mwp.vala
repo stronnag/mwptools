@@ -88,6 +88,7 @@ public class MWP : Gtk.Application {
     private Gtk.AboutDialog about;
     private BBoxDialog bb_runner;
     private OTXDialog otx_runner;
+    private RAWDialog raw_runner;
     private NavStatus navstatus;
     private RadioStatus radstatus;
     private NavConfig navconf;
@@ -345,13 +346,13 @@ public class MWP : Gtk.Application {
         BBOX = 2,
         OTX = 4,
         FL2LTM = 8,
-        RAWREPLAY = 16,
+        RAW = 16,
         FAST_MASK = 128,
         MWP_FAST = MWP |FAST_MASK,
         BBOX_FAST = BBOX|FAST_MASK,
         OTX_FAST = OTX|FAST_MASK,
         FL2_FAST = FL2LTM|FAST_MASK,
-        RAW_FAST = RAWREPLAY|FAST_MASK,
+        RAW_FAST = RAW|FAST_MASK,
     }
 
 	public struct Position {
@@ -1025,8 +1026,7 @@ public class MWP : Gtk.Application {
 			}
 		}
         replay_paused = !replay_paused;
-        if((replayer & (Player.BBOX|Player.OTX)) != 0)
-        {
+        if((replayer & (Player.BBOX|Player.OTX|Player.RAW)) != 0) {
             Posix.kill(child_pid, signum);
         }
         else
@@ -1113,8 +1113,7 @@ public class MWP : Gtk.Application {
 			});
 	}
 
-    private void parse_cli_options()
-    {
+    private void parse_cli_options() {
 		Idle.add(() => {
 				if (mission != null) {
 					var fn = mission;
@@ -1683,6 +1682,17 @@ public class MWP : Gtk.Application {
                 }
             });
 
+        raw_runner = new RAWDialog(builder, window, null);
+        raw_runner.ready.connect((id) => {
+                raw_runner.hide();
+                if(id == 1001) {
+                    string fname;
+                    int btype;
+                    raw_runner.get_name(out fname, out btype);
+                    run_replay(fname, bbl_delay, Player.RAW,0,btype,0,0);
+                }
+            });
+
         bb_runner.set_tz_tools(conf.geouser, conf.zone_detect);
 
         bb_runner.new_pos.connect((la, lo) => {
@@ -1992,6 +2002,11 @@ public class MWP : Gtk.Application {
         saq.activate.connect(() => {
                 bbl_delay = true;
                 replay_otx();
+            });
+        window.add_action(saq);
+        saq = new GLib.SimpleAction("replayraw",null);
+        saq.activate.connect(() => {
+                replay_raw();
             });
         window.add_action(saq);
 
@@ -7802,8 +7817,7 @@ case 0:
                     navstatus.current(curr, 2);
                         // already checked for odo with bbl amps
                 }
-                else if (replayer == Player.MWP_FAST || replayer == Player.OTX_FAST)
-                {
+                else if (replayer == Player.MWP_FAST || replayer == Player.OTX_FAST) {
                     curr.ampsok = true;
                     curr.mah = mah;
                     navstatus.current(curr, 2);
@@ -9097,13 +9111,14 @@ case 0:
     private void set_replay_menus(bool state)
     {
         const string [] ms = {"replay-log","load-log","replay-bb","load-bb",
-                              "replay-otx","load-otx"};
+            "replay-otx","load-otx", "replayraw"};
         var n = 0;
         foreach(var s in ms)
         {
             var istate = state;
             if( ((n == 2 || n == 3) && x_replay_bbox_ltm_rb == false) ||
-                ((n == 4 || n == 5) && x_otxlog == false) )
+                ((n == 4 || n == 5) && x_otxlog == false) ||
+                ((n == 6) && x_rawreplay == false))
                 istate = false;
             set_menu_state(s, istate);
             n++;
@@ -9953,6 +9968,10 @@ case 0:
         otx_runner.prepare(fn);
     }
 
+    private void replay_raw(string? fn = null) {
+        raw_runner.prepare(fn);
+    }
+
     private void replay_log(bool delay=true) {
         if(thr != null) {
             robj.stop();
@@ -10011,7 +10030,7 @@ case 0:
                 return;
             set_replay_menus(true);
             set_menu_state("stop-replay", false);
-            if (replayer != Player.OTX)
+            if (replayer != Player.OTX && replayer != Player.RAW)
                 Posix.close(playfd[1]);
             serial_doom(conbutton);
             if (conf.audioarmed == true)
@@ -10061,7 +10080,9 @@ case 0:
         {
             replay_paused = false;
             MWPLog.message("Replay \"%s\" log %s model %d\n",
-                           (rtype == Player.OTX) ? "otx" : (rtype == Player.BBOX) ? "bbox" : "mwp",
+                           (rtype == Player.OTX) ? "otx" :
+                           (rtype == Player.BBOX) ? "bbox" :
+                           (rtype == Player.RAW) ? "raw" : "mwp",
                            fn, btype);
 
             if(craft != null)
@@ -10088,21 +10109,26 @@ case 0:
             set_menu_state("stop-replay", true);
             magcheck = delay; // only check for normal replays (delay == true)
             switch(replayer) {
-                case Player.MWP:
-                case Player.MWP_FAST:
-                    check_mission(fn);
-                    robj = new ReplayThread();
-                    thr = robj.run(playfd[1], fn, delay);
-                    break;
-                case Player.BBOX:
-                case Player.BBOX_FAST:
-					bb_runner.find_bbox_box(fn, idx);
-					spawn_bbox_task(fn, idx, btype, delay, force_gps, duration);
-                    break;
-                case Player.OTX:
-                case Player.OTX_FAST:
-                    spawn_otx_task(fn, delay, idx, btype, duration);
-                    break;
+            case Player.MWP:
+            case Player.MWP_FAST:
+                check_mission(fn);
+                robj = new ReplayThread();
+                thr = robj.run(playfd[1], fn, delay);
+                break;
+            case Player.BBOX:
+            case Player.BBOX_FAST:
+                bb_runner.find_bbox_box(fn, idx);
+                spawn_bbox_task(fn, idx, btype, delay, force_gps, duration);
+                break;
+            case Player.RAW:
+            case Player.RAW_FAST:
+                replayer|= Player.OTX;
+                spawn_otx_task(fn, delay, idx, btype, duration);
+                break;
+            case Player.OTX:
+            case Player.OTX_FAST:
+                spawn_otx_task(fn, delay, idx, btype, duration);
+                break;
             }
 
 			if ((rtype & (Player.BBOX|Player.OTX)) != 0) {
@@ -10152,35 +10178,39 @@ case 0:
     private void spawn_otx_task(string fn, bool delay, int idx, int typ=0, uint dura=0) {
         var dstr = "udp://localhost:%d".printf(playfd[1]);
         string [] args={};
-
-        if (x_fl2ltm) {
-            args += "fl2ltm";
-            if (last_file != null) {
-                args += "-mission";
-                args += (MwpMisc.is_cygwin()==false) ? last_file : MwpMisc.get_native_path(last_file);
-            }
-            args += "-device";
-        } else {
-            args += "otxlog";
+        if ((replayer & Player.RAW) == Player.RAW) {
+            args += "mwp-log-replay";
             args += "-d";
-        }
-        args += dstr;
-        args += "--index";
-        args += idx.to_string();
-        if(delay == false)
-            args += "--fast";
+            args += dstr;
+        } else {
+            if (x_fl2ltm) {
+                args += "fl2ltm";
+                if (last_file != null) {
+                    args += "-mission";
+                    args += (MwpMisc.is_cygwin()==false) ? last_file : MwpMisc.get_native_path(last_file);
+                }
+                args += "-device";
+            } else {
+                args += "otxlog";
+                args += "-d";
+            }
+            args += dstr;
+            args += "--index";
+            args += idx.to_string();
+            if(delay == false)
+                args += "--fast";
 
-        args += "--type";
-        args += typ.to_string();
-        if (dura > 600) {
-            uint intvl  =  100 * dura / 600;
-            args += "-interval";
-            args += intvl.to_string();
-        } else if (x_fl2ltm) {
-            args += "-interval";
-            args += "100";
+            args += "--type";
+            args += typ.to_string();
+            if (dura > 600) {
+                uint intvl  =  100 * dura / 600;
+                args += "-interval";
+                args += intvl.to_string();
+            } else if (x_fl2ltm) {
+                args += "-interval";
+                args += "100";
+            }
         }
-
         args += (MwpMisc.is_cygwin()==false) ? fn : MwpMisc.get_native_path(fn);
         args += null;
 
