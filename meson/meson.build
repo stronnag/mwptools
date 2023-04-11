@@ -82,7 +82,7 @@ if golang.found()
       gminor = go2[1].to_int()
       if gminor < 17
 	gobuild=''
-	message('Go compiler is too old, consider installed vendor compiler')
+	message('Go compiler is too old, consider installing the latest vendor compiler')
       endif
     endif
   endif
