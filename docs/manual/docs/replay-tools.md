@@ -51,6 +51,23 @@ Requires Ardupilot's [mavlogdump.py](https://github.com/ArduPilot/pymavlink).
 
 No addition requirements.
 
+## mwp "raw" logs
+
+mwp "raw" logs are either recorded directly in mwp (`--raw-log`) for indirectly using the external [`mwp-serial-cap` tool](https://github.com/stronnag/mwptools/blob/master/src/samples/mwp-serial-cap/README.md). Currently it is necessary to build and install [`mwp-log-replay`](https://github.com/stronnag/mwptools/blob/master/src/samples/mwp-log-replay/README.md) and run it outside of mwp,
+
+    # Start mwp as a UDP listener, port is arbitrary, here 40001 is chosen
+    ## -a connect immediately without user intervention
+    ## -d serial-device. No host part means it listens for remote connections
+    ## listen on UDP port 40001
+
+    mwp  -a -d udp://:40001
+
+    # In another  terminal  (even other machine if you replace localhost with the machine running mwp)
+
+    mwp-log-replay -d udp://localhost:40001 /path/to/my/logfile.raw
+
+
+
 ## Display of RC Stick positions
 
 Where such data is available, {{ mwp }} can display the position of the 'sticks'. This is displayed in a separate window which by default has no Window Manager (WM) decoration.
