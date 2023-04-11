@@ -68,16 +68,23 @@ if gobuild != ''
      fgo = custom_target('flashgo', output: 'flashgo',
 			 command : [gobuild, '@OUTPUT@', fgo_dir, gotrim],
 			 build_by_default: true, input: fgo_deps)
+
+     log_replay = custom_target('mwp-log-replay', output: 'mwp-log-replay',
+			 command : [gobuild, '@OUTPUT@', log_replay_dir, gotrim],
+			 build_by_default: true, input: log_replay_deps)
+     serial_cap = custom_target('mwp-serial-cap', output: 'mwp-serial-cap',
+			 command : [gobuild, '@OUTPUT@', serial_cap_dir, gotrim],
+			 build_by_default: true, input: serial_cap_deps)
    endif
 endif
 
+meson.add_install_script('meson/post_install.sh')
 if meson.version().version_compare('> 0.58')
-  meson.add_install_script('meson/trivial_post_install.sh')
   gnome.post_install(
     glib_compile_schemas: true,
     gtk_update_icon_cache: true,
     update_desktop_database: true
   )
 else
- meson.add_install_script('meson/post_install.sh')
+ meson.add_install_script('meson/legacy_post_install.sh')
 endif
