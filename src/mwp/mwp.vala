@@ -234,6 +234,7 @@ public class MWP : Gtk.Application {
     private bool x_otxlog;
     private bool x_aplog;
     private bool x_fl2ltm;
+    private bool x_rawreplay;
     public bool x_plot_elevations_rb {get; private set; default= false;}
 
     private Array<KmlOverlay> kmls;
@@ -344,11 +345,13 @@ public class MWP : Gtk.Application {
         BBOX = 2,
         OTX = 4,
         FL2LTM = 8,
+        RAWREPLAY = 16,
         FAST_MASK = 128,
         MWP_FAST = MWP |FAST_MASK,
         BBOX_FAST = BBOX|FAST_MASK,
         OTX_FAST = OTX|FAST_MASK,
-        FL2_FAST = FL2LTM|FAST_MASK
+        FL2_FAST = FL2LTM|FAST_MASK,
+        RAW_FAST = RAWREPLAY|FAST_MASK,
     }
 
 	public struct Position {
@@ -1230,8 +1233,9 @@ public class MWP : Gtk.Application {
 
         string []  ext_apps = {
             conf.blackbox_decode, null, /* ex "replay_bbox_ltm.rb",*/
-            "gnuplot", "mwp-plot-elevations", "unzip", null, "fl2ltm", "mavlogdump.py" };
-        bool appsts[8];
+            "gnuplot", "mwp-plot-elevations", "unzip", null, "fl2ltm", "mavlogdump.py",
+            "mwp-log-replay"};
+        bool appsts[9];
         var si = 0;
         foreach (var s in ext_apps)
         {
@@ -1297,6 +1301,7 @@ public class MWP : Gtk.Application {
         x_kmz = appsts[4];
 		x_fl2ltm = x_otxlog = appsts[6];
 		x_aplog = appsts[7];
+        x_rawreplay = appsts[8];
 
         XmlIO.uc = conf.ucmissiontags;
         XmlIO.meta = conf.missionmetatag;
@@ -1542,8 +1547,7 @@ public class MWP : Gtk.Application {
         var mm = builder.get_object ("menubar") as MenuModel;
         Gtk.MenuBar  menubar = new MenuBar.from_model(mm);
 
-        if(x_fl2ltm)
-        {
+        if(x_fl2ltm) {
             update_menu_labels(menubar);
         }
 

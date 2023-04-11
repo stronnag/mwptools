@@ -62,11 +62,11 @@
       </section>
       <section>
         <item>
-          <attribute name="label">Replay mwp log</attribute>
+          <attribute name="label">Replay mwp (JSON) log</attribute>
           <attribute name="action">win.replay-log</attribute>
         </item>
         <item>
-          <attribute name="label">Load mwp log</attribute>
+          <attribute name="label">Load mwp (JSON) log</attribute>
           <attribute name="action">win.load-log</attribute>
 	</item>
       </section>
@@ -90,6 +90,12 @@
           <attribute name="label">Load OTX log</attribute>
           <attribute name="action">win.load-otx</attribute>
 	</item>
+      </section>
+      <section>
+        <item>
+          <attribute name="label">Replay mwp RAW log</attribute>
+          <attribute name="action">win.replayraw</attribute>
+        </item>
       </section>
       <section>
         <item>

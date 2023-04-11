@@ -136,28 +136,36 @@ impl CRSFReader {
     fn describe(&mut self) -> String {
         match self.func {
             GPS_ID => {
-                let lat = i32::from_be_bytes(self.payload[0..4].try_into().unwrap()) as f32 / 1e7;
-                let lon = i32::from_be_bytes(self.payload[4..8].try_into().unwrap()) as f32 / 1e7;
-                let mut v16 = u16::from_be_bytes(self.payload[8..10].try_into().unwrap());
-                let mut gspeed: f32 = 0.0;
-                if v16 != 0xffff {
-                    gspeed = v16 as f32 / 36.0;
-                }
-                v16 = u16::from_be_bytes(self.payload[10..12].try_into().unwrap());
-                let mut hdr: f32 = 0.0;
-                if v16 != 0xffff {
-                    hdr = v16 as f32 / 100.0;
-                }
-                let alt: i32 =
-                    i16::from_be_bytes(self.payload[12..14].try_into().unwrap()) as i32 - 1000;
-                format!(
-                    "GPS: {:.6} {:.6} {}m {:.1}m/s {:.1}° {} sats",
-                    lat, lon, alt, gspeed, hdr, self.payload[14]
-                )
+		if self.payload.len() > 14 {
+                    let lat = i32::from_be_bytes(self.payload[0..4].try_into().unwrap()) as f32 / 1e7;
+                    let lon = i32::from_be_bytes(self.payload[4..8].try_into().unwrap()) as f32 / 1e7;
+                    let mut v16 = u16::from_be_bytes(self.payload[8..10].try_into().unwrap());
+                    let mut gspeed: f32 = 0.0;
+                    if v16 != 0xffff {
+			gspeed = v16 as f32 / 36.0;
+                    }
+                    v16 = u16::from_be_bytes(self.payload[10..12].try_into().unwrap());
+                    let mut hdr: f32 = 0.0;
+                    if v16 != 0xffff {
+			hdr = v16 as f32 / 100.0;
+                    }
+                    let alt: i32 =
+			i16::from_be_bytes(self.payload[12..14].try_into().unwrap()) as i32 - 1000;
+                    format!(
+			"GPS: {:.6} {:.6} {}m {:.1}m/s {:.1}° {} sats",
+			lat, lon, alt, gspeed, hdr, self.payload[14]
+                    )
+		} else {
+		    "GPS decode error".to_string()
+		}
             }
             VARIO_ID => {
-                let vario = i16::from_be_bytes(self.payload[0..2].try_into().unwrap());
-                format!("VARIO {} cm/s", vario)
+		if self.payload.len() == 2 {
+                    let vario = i16::from_be_bytes(self.payload[0..2].try_into().unwrap());
+                    format!("VARIO {} cm/s", vario)
+		} else {
+		    "VARIO decode error".to_string()
+		}
             }
             BAT_ID => {
                 let mut v16 = u16::from_be_bytes(self.payload[0..2].try_into().unwrap());
@@ -227,17 +235,21 @@ impl CRSFReader {
                 )
             }
             ATTI_ID => {
-                let pitch: f32 =
-                    (i16::from_be_bytes(self.payload[0..2].try_into().unwrap()) as f32 * ATTITODEG)
+		if self.payload.len() > 5 {
+                    let pitch: f32 =
+			(i16::from_be_bytes(self.payload[0..2].try_into().unwrap()) as f32 * ATTITODEG)
                         % 180.0;
-                let roll: f32 = (i16::from_be_bytes(self.payload[2..4].try_into().unwrap()) as f32
-                    * ATTITODEG)
-                    % 180.0;
-                let yaw: f32 = (i16::from_be_bytes(self.payload[4..6].try_into().unwrap()) as f32
+                    let roll: f32 = (i16::from_be_bytes(self.payload[2..4].try_into().unwrap()) as f32
+				     * ATTITODEG)
+			% 180.0;
+                    let yaw: f32 = (i16::from_be_bytes(self.payload[4..6].try_into().unwrap()) as f32
                     * ATTITODEG
                     + 180.0)
                     % 360.0;
-                format!("ATTI: p {:.2} r {:.2} y {:.2}", pitch, roll, yaw)
+                    format!("ATTI: p {:.2} r {:.2} y {:.2}", pitch, roll, yaw)
+		} else {
+		    "ATTI failed to decide".to_string()
+		}
             }
             FM_ID => {
                 format!(
