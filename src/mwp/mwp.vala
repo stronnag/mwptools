@@ -1688,8 +1688,9 @@ public class MWP : Gtk.Application {
                 if(id == 1001) {
                     string fname;
                     int btype;
-                    raw_runner.get_name(out fname, out btype);
-                    run_replay(fname, bbl_delay, Player.RAW,0,btype,0,0);
+                    int rdelay;
+                    raw_runner.get_name(out fname, out btype, out rdelay);
+                    run_replay(fname, bbl_delay, Player.RAW, rdelay, btype,0,0);
                 }
             });
 
@@ -10182,6 +10183,11 @@ case 0:
             args += "mwp-log-replay";
             args += "-d";
             args += dstr;
+            if (idx > 10) {
+                double dly = (double)idx/1000.0;
+                args += "-delay";
+                args += "%.3f".printf(dly);
+            }
         } else {
             if (x_fl2ltm) {
                 args += "fl2ltm";

@@ -5189,27 +5189,6 @@ Otherwise, select a valid FC vehicle type</property>
               </packing>
             </child>
             <child>
-              <object class="GtkTreeView" id="otx_treeview1">
-                <property name="width-request">400</property>
-                <property name="height-request">200</property>
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="vexpand">True</property>
-                <property name="hscroll-policy">natural</property>
-                <property name="vscroll-policy">natural</property>
-                <property name="search-column">0</property>
-                <property name="enable-grid-lines">both</property>
-                <child internal-child="selection">
-                  <object class="GtkTreeSelection"/>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkSeparator" id="bb_separator3">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -5217,24 +5196,18 @@ Otherwise, select a valid FC vehicle type</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="bb_items2">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">start</property>
-                <property name="wrap">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">3</property>
-              </packing>
+              <placeholder/>
             </child>
             <child>
-              <object class="GtkBox">
+              <placeholder/>
+            </child>
+            <child>
+              <!-- n-columns=3 n-rows=2 -->
+              <object class="GtkGrid">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <child>
@@ -5248,9 +5221,8 @@ Otherwise, select a valid FC vehicle type</property>
                     <property name="label" translatable="yes">Model type:</property>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">0</property>
                   </packing>
                 </child>
                 <child>
@@ -5289,13 +5261,44 @@ Otherwise, select a valid FC vehicle type</property>
                     </items>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">0</property>
                   </packing>
                 </child>
                 <child>
-                  <placeholder/>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Inter packet delay</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="raw_delay">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Where the log contains no meta-data, use this delay (ms)</property>
+                    <property name="placeholder-text" translatable="yes">10</property>
+                    <property name="input-purpose">digits</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">ms</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">2</property>
+                    <property name="top-attach">1</property>
+                  </packing>
                 </child>
                 <child>
                   <placeholder/>
@@ -5304,7 +5307,7 @@ Otherwise, select a valid FC vehicle type</property>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">4</property>
+                <property name="position">5</property>
               </packing>
             </child>
           </object>

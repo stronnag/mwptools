@@ -23,18 +23,23 @@ public class  RAWDialog : Object {
     private Gtk.Button raw_cancel;
     private Gtk.Button raw_ok;
     private Gtk.ComboBoxText raw_combo;
+    private Gtk.Entry raw_entry;
     private Gtk.FileChooserButton raw_filechooser;
     private Gtk.Window _w;
+    private int raw_delay = 10;
 
     public signal void ready(int id);
 
     public RAWDialog(Gtk.Builder builder, Gtk.Window? w, string? logpath) {
         _w = w;
         dialog = builder.get_object ("raw_dialog") as Gtk.Dialog;
+        raw_entry = builder.get_object ("raw_delay") as Entry;
         raw_cancel = builder.get_object ("raw_cancel") as Button;
         raw_ok = builder.get_object ("raw_ok") as Button;
         raw_filechooser = builder.get_object("raw_filechooser") as FileChooserButton;
         raw_combo = builder.get_object("raw_combo") as ComboBoxText;
+
+        raw_entry.text = "%d".printf(raw_delay);
 
         var filter = new Gtk.FileFilter ();
         filter.set_filter_name ("Raw Log Files");
@@ -76,8 +81,9 @@ public class  RAWDialog : Object {
         dialog.hide();
     }
 
-    public void get_name(out string fname, out int mtype) {
+    public void get_name(out string fname, out int mtype, out int rdelay) {
         fname = filename;
+        rdelay = int.parse(raw_entry.text);
         mtype = raw_combo.active -1;
     }
 }
