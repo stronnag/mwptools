@@ -400,6 +400,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#mwp-raw-logs" class="md-nav__link">
+    mwp "raw" logs
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#display-of-rc-stick-positions" class="md-nav__link">
     Display of RC Stick positions
   </a>
@@ -860,6 +867,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#mwp-raw-logs" class="md-nav__link">
+    mwp "raw" logs
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#display-of-rc-stick-positions" class="md-nav__link">
     Display of RC Stick positions
   </a>
@@ -922,6 +936,19 @@
 <p>Requires Ardupilot's <a href="https://github.com/ArduPilot/pymavlink">mavlogdump.py</a>.</p>
 <h2 id="mwp-json-logs">mwp JSON logs<a class="headerlink" href="#mwp-json-logs" title="Permanent link">#</a></h2>
 <p>No addition requirements.</p>
+<h2 id="mwp-raw-logs">mwp "raw" logs<a class="headerlink" href="#mwp-raw-logs" title="Permanent link">#</a></h2>
+<p>mwp "raw" logs are either recorded directly in mwp (<code>--raw-log</code>) for indirectly using the external <a href="https://github.com/stronnag/mwptools/blob/master/src/samples/mwp-serial-cap/README.md"><code>mwp-serial-cap</code> tool</a>. Currently it is necessary to build and install <a href="https://github.com/stronnag/mwptools/blob/master/src/samples/mwp-log-replay/README.md"><code>mwp-log-replay</code></a> and run it outside of mwp,</p>
+<pre><code># Start mwp as a UDP listener, port is arbitrary, here 40001 is chosen
+## -a connect immediately without user intervention
+## -d serial-device. No host part means it listens for remote connections
+## listen on UDP port 40001
+
+mwp  -a -d udp://:40001
+
+# In another  terminal  (even other machine if you replace localhost with the machine running mwp)
+
+mwp-log-replay -d udp://localhost:40001 /path/to/my/logfile.raw
+</code></pre>
 <h2 id="display-of-rc-stick-positions">Display of RC Stick positions<a class="headerlink" href="#display-of-rc-stick-positions" title="Permanent link">#</a></h2>
 <p>Where such data is available, <a href="https://github.com/stronnag/mwptools">mwp</a> can display the position of the 'sticks'. This is displayed in a separate window which by default has no Window Manager (WM) decoration.</p>
 <p><img alt="undecorated" src="../images/sticks-no-decor.png" /></p>
@@ -949,7 +976,7 @@ that can&#39;t cope with un-decorated windows), e.g. WSL, Cygwin
 <div class="md-source-date">
   <small>
     
-      Last update: 2022-11-17
+      Last update: 2023-04-11
     
   </small>
 </div>
