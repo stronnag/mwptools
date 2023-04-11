@@ -64,6 +64,7 @@ mwp should  build and running on any platform that supports (recent versions of)
  * libespeak;
  * libgdl;
  * POSIX API
+ * Go (golang) > 1.17. Please install the latest vendor release on older Linux distros (Debian Stable and older and derivatives).
 
 mwptools is tested on x86_64, ia32, and aarch64 architectures (Linux / FreeBSD).
 
