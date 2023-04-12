@@ -102,7 +102,7 @@ if [ -z "$RESCUE" ]
 then
   stty -F $DEV0 raw speed $SPEED -crtscts cs8 -parenb -cstopb -ixon || { echo "stty failed to set speed, doomed" ; exit 1 ; }
   echo -n 'R' >$DEV0
-  sleep 1
+  sleep 2
   if [ $SPEED -ne 115200 ]
   then
     SPEED=115200
