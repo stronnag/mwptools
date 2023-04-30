@@ -137,6 +137,12 @@
       <attribute name="label">_Edit</attribute>
       <section>
         <item>
+          <attribute name="label">Set FollowMe Point</attribute>
+          <attribute name="action">win.followme</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
           <attribute name="label">Preferences</attribute>
           <attribute name="action">win.prefs</attribute>
 	  <attribute name="accel">&lt;Primary&gt;p</attribute>

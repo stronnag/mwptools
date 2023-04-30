@@ -107,6 +107,9 @@ public class MWP : Gtk.Application {
     private int autocount = 0;
     private uint8 last_wp_pts =0;
 
+    private FollowMeDialog fmdlg;
+    private FollowMePoint fmpt;
+
     private Mission? []lastmission;
     private MWChooser.MWVAR mwvar=MWChooser.MWVAR.AUTO;
     private uint8 vwarn1;
@@ -436,6 +439,7 @@ public class MWP : Gtk.Application {
 		SAVE_ACTIVE = (1<<9),
 		RESET_POLLER = (1<<10),
 		KICK_DL = (1<<11),
+        FOLLOW_ME = (1 << 12),
     }
 
     private struct WPMGR {
@@ -1714,6 +1718,21 @@ public class MWP : Gtk.Application {
                 }
             });
 
+
+        fmdlg = new FollowMeDialog(builder, window);
+        fmdlg.ready.connect((s,a) => {
+                switch(s) {
+                case 1:
+                fmpt.show_followme(false);
+                break;
+                case 2:
+                followme_set_wp(a); // send to vehicle
+                break;
+                default:
+                break;
+                }
+            });
+
 		dockmenus = new string[DOCKLETS.NUMBER];
 
         dockmenus[DOCKLETS.MISSION] = "mission-list";
@@ -1786,6 +1805,16 @@ public class MWP : Gtk.Application {
             });
         window.add_action(saq);
 
+        saq = new GLib.SimpleAction("followme",null);
+        saq.activate.connect(() => {
+                fmdlg.unhide();
+                if (!fmpt.has_location()) {
+                    fmpt.set_followme(view.get_center_latitude(), view.get_center_longitude());
+                }
+                fmpt.show_followme(true);
+            });
+        window.add_action(saq);
+
         saq = new GLib.SimpleAction("mman",null);
         saq.activate.connect(() => {
 				var dialog = new MDialog (msx);
@@ -1831,8 +1860,7 @@ public class MWP : Gtk.Application {
 
         saq = new GLib.SimpleAction("terminal",null);
         saq.activate.connect(() => {
-                if(msp.available && armed == 0)
-                {
+                if(msp.available && armed == 0) {
                     mq.clear();
                     serstate = SERSTATE.NONE;
                     CLITerm t = new CLITerm(window);
@@ -1880,10 +1908,8 @@ public class MWP : Gtk.Application {
         saq.activate.connect(() => {
                 var map_source_factory = Champlain.MapSourceFactory.dup_default();
                 var sources =  map_source_factory.get_registered();
-                foreach (Champlain.MapSourceDesc sr in sources)
-                {
-                    if(view.map_source.get_id() == sr.get_id())
-                    {
+                foreach (Champlain.MapSourceDesc sr in sources) {
+                    if(view.map_source.get_id() == sr.get_id()) {
                         msview.show_source(
                             sr.get_name(),
                             sr.get_id(),
@@ -2158,6 +2184,7 @@ public class MWP : Gtk.Application {
         set_menu_state("navconfig", false);
         set_menu_state("stop-replay", false);
         set_menu_state("mission-info", false);
+        set_menu_state("followme", false);
 
         art_win = new ArtWin(conf.ah_inv_roll);
 
@@ -2202,10 +2229,17 @@ public class MWP : Gtk.Application {
                 place_editor.show();
             });
 
-
         place_editor.places_changed.connect(() => {
                 setpos.load_places();
                 place_editor.hide();
+            });
+
+        fmpt = new FollowMePoint (view);
+        fmpt.fmpt_move.connect((la, lo) => {
+                double dist=0,cse=0;
+                Geo.csedist(GPSInfo.lat, GPSInfo.lon, la, lo, out dist, out cse);
+                string lbl = "%s (%.0fm, %0.f°)".printf(PosFormat.pos(la, lo, conf.dms), dist*1852, cse);
+                fmdlg.set_label(lbl);
             });
 
         safehomed.set_view(view);
@@ -3090,6 +3124,33 @@ public class MWP : Gtk.Application {
 		} catch {}
 	}
 
+    private void followme_set_wp(int alt) {
+        uint8 buf[32];
+        double lat =0, lon = 0;
+        double dist =0,cse = 0;
+        fmpt.get_followme(out lat, out lon);
+        Geo.csedist(GPSInfo.lat, GPSInfo.lon, lat, lon, out dist, out cse);
+        MWPLog.message("DBG: SET lat=%.6f lon=%.6f %.0fm %.0f°\n", lat, lon, dist*1852.0, cse);
+        MSP_WP [] wps={};
+        MSP_WP wp = MSP_WP();
+        wp.wp_no = 255;
+        wp.action =  MSP.Action.WAYPOINT;
+        wp.lat = (int32)(lat*1e7);
+        wp.lon = (int32)(lon*1e7);
+        wp.altitude = (int32)alt*100;
+        wp.p1 = (int16)cse; // heading
+        wp.p2 = wp.p3 = 0;
+        wp.flag = 0xa5;
+        wps += wp;
+		wpmgr.npts = (uint8)wps.length;
+        wpmgr.wpidx = 0;
+        wpmgr.wps = wps;
+        wpmgr.wp_flag = WPDL.FOLLOW_ME;
+        var nb = serialise_wp(wp, buf);
+        MWPLog.message("DBG act=%d la=%d lo=%d alt=%d cse=%d\n", wp.action, wp.lat,  wp.lon, wp.altitude, wp.p1);
+        queue_cmd(MSP.Cmds.SET_WP, buf, nb);
+    }
+
 	private void add_kml(string fn) {
 		if(kmlfile == null) {
 			kmlfile = fn;
@@ -3888,13 +3949,11 @@ public class MWP : Gtk.Application {
 			var achg = armed_processing(mwflags,"Flysky");
 			var xws = want_special;
 			var mchg = (ltmflags != last_ltmf);
-			if (mchg)
-			{
+			if (mchg) {
 				last_ltmf = ltmflags;
 				if(ltmflags == MSP.LTM.poshold)
 					want_special |= POSMODE.PH;
-				else if(ltmflags == MSP.LTM.waypoints)
-				{
+				else if(ltmflags == MSP.LTM.waypoints) {
 					want_special |= POSMODE.WP;
 					if (NavStatus.nm_pts == 0 || NavStatus.nm_pts == 255)
 						NavStatus.nm_pts = last_wp_pts;
@@ -5342,8 +5401,7 @@ case 0:
     private bool armed_processing(uint64 flag, string reason="")
     {
         bool changed = false;
-        if(armed == 0)
-        {
+        if(armed == 0) {
             armtime = 0;
             duration = -1;
             mss.m_wp = -1;
@@ -5351,21 +5409,17 @@ case 0:
                 init_have_home();
             no_ofix = 0;
             gpsstats = {0, 0, 0, 0, 9999, 9999, 9999};
-        }
-        else
-        {
+        } else {
             if(armtime == 0)
                 time_t(out armtime);
 
-            if(replayer == Player.NONE)
-            {
+            if(replayer == Player.NONE) {
                 time_t(out duration);
                 duration -= armtime;
             }
         }
 
-        if(Logger.is_logging)
-        {
+        if(Logger.is_logging) {
             Logger.armed((armed == 1), duration, flag,sensor, telem);
         }
 
@@ -5374,8 +5428,7 @@ case 0:
             changed = true;
             navstatus.set_replay_mode((replayer != Player.NONE));
             radstatus.annul();
-            if (armed == 1)
-            {
+            if (armed == 1) {
                 magdt = -1;
                 odo = {0};
 
@@ -5428,11 +5481,8 @@ case 0:
                     }
                 }
                 odoview.dismiss();
-            }
-            else
-            {
-                if(odo.time > 5)
-                {
+            } else {
+                if(odo.time > 5) {
                     MWPLog.message("Distance = %.1f, max speed = %.1f time = %u\n",
                                    odo.distance, odo.speed, odo.time);
                     odoview.display(odo, true);
@@ -5442,20 +5492,19 @@ case 0:
                 armed_spinner.stop();
                 armed_spinner.hide();
                 markers.negate_ipos();
+                set_menu_state("followme", false);
                 duration = -1;
                 armtime = 0;
                 want_special = 0;
                 init_have_home();
-                if (conf.audioarmed == true)
-                {
+                if (conf.audioarmed == true) {
                     audio_cb.active = false;
                     say_state &= ~NavStatus.SAY_WHAT.Nav;
                     if((debug_flags & DEBUG_FLAGS.ADHOC) != 0)
                         MWPLog.message("Disable nav speak\n");
                     navstatus.set_audio_status(say_state);
                 }
-                if(conf.logarmed == true)
-                {
+                if(conf.logarmed == true) {
                     if(Logger.is_logging)
                         Logger.armed(false,duration,flag, sensor,telem);
                     logb.active=false;
@@ -7442,7 +7491,8 @@ case 0:
 						validatelab.set_text("WP:%3d".printf(wpmgr.wpidx+1));
 						queue_cmd(MSP.Cmds.SET_WP, wtmp, nb);
 					} else {
-						MWPCursor.set_normal_cursor(window);
+                        MWPLog.message("DBG: WP Flag %d (x%x)\n", wpmgr.wp_flag, wpmgr.wp_flag);
+                        MWPCursor.set_normal_cursor(window);
 						remove_tid(ref upltid);
 
 						if((wpmgr.wp_flag & WPDL.CALLBACK) != 0)
@@ -8569,8 +8619,10 @@ case 0:
             check_mission_home();
         }
 
-        if((want_special & POSMODE.PH) != 0)
-        {
+        if((want_special & POSMODE.PH) != 0) {
+            if(armed != 0 && msp.available) {
+                set_menu_state("followme", true);
+            }
             want_special &= ~POSMODE.PH;
             ph_pos.lat = lat;
             ph_pos.lon = lon;
@@ -8578,9 +8630,10 @@ case 0:
             init_craft_icon();
             if(craft != null)
                 craft.special_wp(Craft.Special.PH, lat, lon);
+        } else {
+            set_menu_state("followme", false);
         }
-        if((want_special & POSMODE.RTH) != 0)
-        {
+        if((want_special & POSMODE.RTH) != 0) {
             want_special &= ~POSMODE.RTH;
             rth_pos.lat = lat;
             rth_pos.lon = lon;
@@ -8589,30 +8642,26 @@ case 0:
             if(craft != null)
                 craft.special_wp(Craft.Special.RTH, lat, lon);
         }
-        if((want_special & POSMODE.ALTH) != 0)
-        {
+        if((want_special & POSMODE.ALTH) != 0) {
             want_special &= ~POSMODE.ALTH;
             init_craft_icon();
             if(craft != null)
                 craft.special_wp(Craft.Special.ALTH, lat, lon);
         }
-        if((want_special & POSMODE.CRUISE) != 0)
-        {
+        if((want_special & POSMODE.CRUISE) != 0) {
             want_special &= ~POSMODE.CRUISE;
             init_craft_icon();
             if(craft != null)
                 craft.special_wp(Craft.Special.CRUISE, lat, lon);
         }
-        if((want_special & POSMODE.WP) != 0)
-        {
+        if((want_special & POSMODE.WP) != 0) {
             want_special &= ~POSMODE.WP;
             init_craft_icon();
             if(craft != null)
                 craft.special_wp(Craft.Special.WP, lat, lon);
             markers.update_ipos(ls, lat, lon);
         }
-        if((want_special & POSMODE.UNDEF) != 0)
-        {
+        if((want_special & POSMODE.UNDEF) != 0) {
             want_special &= ~POSMODE.UNDEF;
             init_craft_icon();
             if(craft != null)
@@ -8670,10 +8719,10 @@ case 0:
         *rp++ = w.action;
         rp = SEDE.serialise_i32(rp, w.lat);
         rp = SEDE.serialise_i32(rp, w.lon);
-        rp = SEDE.serialise_u32(rp, w.altitude);
-        rp = SEDE.serialise_u16(rp, w.p1);
-        rp = SEDE.serialise_u16(rp, w.p2);
-        rp = SEDE.serialise_u16(rp, w.p3);
+        rp = SEDE.serialise_i32(rp, w.altitude);
+        rp = SEDE.serialise_i16(rp, w.p1);
+        rp = SEDE.serialise_i16(rp, w.p2);
+        rp = SEDE.serialise_i16(rp, w.p3);
         *rp++ = w.flag;
         return (rp-&tmp[0]);
     }
@@ -9247,8 +9296,7 @@ case 0:
 		}
     }
 
-    private void connect_serial()
-    {
+    private void connect_serial() {
 		radstatus.set_title(0);
 		CRSF.teledata.setlab = false;
 		SportDev.active = false;
@@ -9259,6 +9307,7 @@ case 0:
             verlab.label = verlab.tooltip_text = "";
             typlab.set_label("");
             statusbar.push(context_id, "");
+            set_menu_state("followme", false);
 #if MQTT
         } else if (mqtt.available) {
             serial_doom(conbutton);
@@ -9272,11 +9321,9 @@ case 0:
             string estr="";
             bool ostat;
             if (MwpMisc.is_cygwin()) {
-                stderr.printf("DBG: Cygwin %s\n", serdev);
                 if (serdev.has_prefix("COM")) {
                     var dnumber = int.parse(serdev[3:serdev.length]);
                     serdev = "/dev/ttyS%d".printf(dnumber-1);
-                    stderr.printf("DBG: Cygwin COM %d %s\n", dnumber, serdev);
                 }
             }
 
