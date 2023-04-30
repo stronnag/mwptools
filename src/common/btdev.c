@@ -119,10 +119,7 @@ int connect_bt_device(char *btaddr, int *lasterr) {
      rem_addr.rc_family  = AF_BLUETOOTH;
      rem_addr.rc_channel = RFCOMM_CHANNEL;
 #endif
-     if ((fd = socket (PF_BLUETOOTH,
-                       SOCK_STREAM,
-		       RFPROTO_NAME
-               )) < 0 ) {
+     if ((fd = socket (PF_BLUETOOTH, SOCK_STREAM, RFPROTO_NAME)) < 0 ) {
 	  *lasterr = errno;
           return -1;
      }

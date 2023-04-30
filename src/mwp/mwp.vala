@@ -9253,8 +9253,7 @@ case 0:
 		CRSF.teledata.setlab = false;
 		SportDev.active = false;
         map_hide_wp();
-        if(msp.available)
-        {
+        if(msp.available) {
             serial_doom(conbutton);
             markers.remove_rings(view);
             verlab.label = verlab.tooltip_text = "";
@@ -9272,6 +9271,14 @@ case 0:
             var serdev = dev_entry.get_active_text();
             string estr="";
             bool ostat;
+            if (MwpMisc.is_cygwin()) {
+                stderr.printf("DBG: Cygwin %s\n", serdev);
+                if (serdev.has_prefix("COM")) {
+                    var dnumber = int.parse(serdev[3:serdev.length]);
+                    serdev = "/dev/ttyS%d".printf(dnumber-1);
+                    stderr.printf("DBG: Cygwin COM %d %s\n", dnumber, serdev);
+                }
+            }
 
             serstate = SERSTATE.NONE;
             if(lookup_radar(serdev) || serdev == forward_device) {
