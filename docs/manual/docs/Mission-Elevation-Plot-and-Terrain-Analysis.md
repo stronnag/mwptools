@@ -174,7 +174,7 @@ Note that Go considers `-foo` and `--foo` to the equivalent. The ruby script req
 
 As well as specifying options such as home location, clearance margin and RTH altitude on the command line (or as an environment variable), some or all of these options may be set in a configuration file.
 
-`mwp-plot-elevations` looks for options in one of the following (in order) `./.elev-plot.rc` (i.e. current directory), `$HOME/.config/mwp/elev-plot`,  and `$HOME/.elev-plot.rc`. The configuration file is a simple text file containing `key=value` pairs. Blank lines and lines beginning with `#` are ignored; the following example illustrates the recognised keys. Note that  `$HOME/.config/mwp/elev-plot` is the preferred location, as this is also used by `mwp` to populate its graphical dialogue to launch the analysis tool.
+`mwp-plot-elevations` looks for options in one of the following (in order) `./.elev-plot.rc` (i.e. current directory), `$HOME/.config/mwp/elev-plot`,  and `$HOME/.elev-plot.rc`. The configuration file is a plain text file containing `key=value` pairs. Blank lines and lines beginning with `#` are ignored; the following example illustrates the recognised keys. Note that  `$HOME/.config/mwp/elev-plot` is the preferred location, as this is also used by `mwp` to populate its graphical dialogue to launch the analysis tool.
 
     # settings for mwp-plot-elevations
     margin = 16

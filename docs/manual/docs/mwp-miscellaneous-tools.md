@@ -3,7 +3,7 @@
 
 ## Overview
 
-The {{ mwp }} suite contains numerous simple command line tools developed since 2015 in order to aid development of INAV, development of {{ mwp }} and diagnosing numerous (often 3rd party) problems, more so in the early days.
+The {{ mwp }} suite contains numerous command line tools developed since 2015 in order to aid development of INAV, development of {{ mwp }} and diagnosing numerous (often 3rd party) problems, more so in the early days.
 
 This chapter describes a few of the command line tools that are provided by mwptools. Note that not all these tools are built or installed by default; it may be necessary to enter a source directory and invoke `make` in situ, or copy a script to a directory on the `$PATH`.
 
@@ -305,7 +305,7 @@ So, had the above failed, it could be rescued by pasting in the "Found" line abo
 
 ## cliterm
 
-`cliterm` is a simple terminal program for interacting with the INAV CLI. Unlike alternative tools (`picocom`, `minicom` etc.), it will auto-detect the FC serial device, uses 115200 as the baud rate and, by default, automatically enters the CLI.
+`cliterm` is a terminal program for interacting with the INAV CLI. Unlike alternative tools (`picocom`, `minicom` etc.), it will auto-detect the FC serial device, uses 115200 as the baud rate and, by default, automatically enters the CLI.
 
 		$ cliterm --help
 		Usage:

@@ -1,6 +1,6 @@
 # Terrain Avoidance Quick Guide
 
-There's already quite a long article on  [mwp's terrain analysis tool](Mission-Elevation-Plot-and-Terrain-Analysis.md); this is a quick summary of how to use it in three easy steps.
+There's already quite a long article on  [mwp's terrain analysis tool](Mission-Elevation-Plot-and-Terrain-Analysis.md); this is a quick summary of how to use it in three steps.
 
 ## 1. Load your mission
 
@@ -42,4 +42,4 @@ The terrain analysis is only as good as the terrain data. If we zoom in closely,
 ![Wire alert](images/ta_wires-2d.png){: width="30%" }
 ![Tower alert](images/ta_wires-3d.png){: width="30%" }
 
-A replan seems like a good idea, at least adding significant altitude on these legs of the mission.
+A re-plan seems like a good idea, at least adding significant altitude on these legs of the mission.

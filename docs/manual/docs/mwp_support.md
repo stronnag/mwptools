@@ -17,7 +17,7 @@ There is a "rolling release" [release note on the wiki](https://github.com/stron
 
 ### How, where
 
-* GitHub issues preferred
+* **GitHub Issues preferred**
 * RCG, INAV discord and telegram
     * Most likely you will be requested to raise a GitHub issue for non-trivial cases.
 
@@ -31,7 +31,7 @@ There is a "rolling release" [release note on the wiki](https://github.com/stron
 
 ### Supported infrastructure
 
-* Native hardware (x64_x86, ia32, aarch64).
+* Native hardware (x64_x86, ia32, aarch64, riscv64).
 * Non-proprietary video driver.
 * qemu/kvm virtualised instances.
 * Little endian (big endian never tested).
@@ -44,7 +44,7 @@ Where relevant, please include {{ mwp }}'s console log, from your home directory
 
 * Anything else!
 
-Problem reports on non-supported platforms will not be dismissed without _some_ consideration, however it's unlikely that too much time be expended on such environments unless the problem can also be demonstrated on a supported platform.
+Problem reports on non-supported platforms will not be dismissed without _some_ consideration, however it's unlikely that too much time be expended on such environments unless the problem can also be demonstrated on a supported platform (or it's an interesting issue).
 
 ### Wayland / XLib
 

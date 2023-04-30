@@ -12,7 +12,7 @@ The **mwptools** suite is built using the [meson](https://mesonbuild.com/SimpleS
 
 Prior to late May 2021, the build system used a convoluted `Makefile`.
 
-For Debian and derivatives there is a simple ["one stop" installation script](#easy-first-time-install-on-debian-and-ubuntu), as well as a x86_64 "Release" `.deb` archive.
+For Debian and derivatives there is a ["one stop" installation script](#easy-first-time-install-on-debian-and-ubuntu), as well as a x86_64 "Release" `.deb` archive.
 
 ## Rationale
 
@@ -43,13 +43,13 @@ Unless you need a multi-user setup, a local install is preferable, as you don't 
 
 * If you're using a really old OS (e.g. Debian 10), you may also need `export XDG_DATA_DIRS=/usr/share:$HOME/.local/share` for a local install.
 
-### Easy first-time install on Debian and derivatives
+### "Easy" first-time install on Debian and derivatives
 
 * Download the [first time build script](https://raw.githubusercontent.com/stronnag/mwptools/master/docs/deb-install.sh)
 * Make it executable `chmod +x deb-install.sh`
 * Run it `./deb-install.sh -y`
 * Note that the script may ask for a password to install system packages
-* The resulting executables are in `~/.local/bin`. Ensure this exists on `$PATH`
+* The resulting executables are in `~/.local/bin`. Ensure this exists on `$PATH`; modern distros should do this for you.
 * If you get messages like `Removing /home/$USER/.config/mwp/.layout.xml 0` and `Failed to save layout, remains in /tmp/.mwp.xxxxxx.xml` you also need `export XDG_DATA_DIRS=$XDG_DATA_DIRS:$HOME/.local/share`. This is rare and should not occur on [supported platforms](mwp_support.md#supported-os).
 
 ### Build and update
