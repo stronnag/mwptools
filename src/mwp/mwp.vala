@@ -5111,8 +5111,7 @@ case 0:
             });
     }
 
-    private void init_have_home()
-    {
+    private void init_have_home() {
         have_home = false;
         markers.negate_home();
         ls.calc_mission(0);
@@ -5123,28 +5122,21 @@ case 0:
         want_special = 0;
     }
 
-    private void send_poll()
-    {
-        if(serstate == SERSTATE.POLLER)
-        {
+    private void send_poll() {
+        if(serstate == SERSTATE.POLLER) {
             var req=requests[tcycle];
             lastm = nticks;
-            if (req == MSP.Cmds.ANALOG || req == MSP.Cmds.ANALOG2)
-            {
-                if (lastm - last_an > MAVINTVL)
-                {
+            if (req == MSP.Cmds.ANALOG || req == MSP.Cmds.ANALOG2) {
+                if (lastm - last_an > MAVINTVL) {
                     last_an = lastm;
                     mavc = 0;
-                }
-                else
-                {
+                } else {
                     tcycle = (tcycle + 1) % requests.length;
                     req = requests[tcycle];
                 }
             }
                 // only is not armed
-            if (req == MSP.Cmds.GPSSTATISTICS && armed == 1)
-            {
+            if (req == MSP.Cmds.GPSSTATISTICS && armed == 1) {
                 tcycle = (tcycle + 1) % requests.length;
                 req = requests[tcycle];
             }
@@ -5158,8 +5150,7 @@ case 0:
 
     private void init_craft_icon()
     {
-        if(craft == null)
-        {
+        if(craft == null) {
             uint8 ctype = vi.mrtype;
             if((SportDev.active || nopoll) && dmrtype != 0 && vi.mrtype == 0)
                 ctype = (uint8)dmrtype;
@@ -6188,7 +6179,19 @@ case 0:
         }
     }
 
-	private void handle_mm_download(uint8[] raw, uint len) {
+    private void report_special_wp(MSP_WP w) {
+        double lat, lon;
+        lat = w.lat/10000000.0;
+        lon = w.lon/10000000.0;
+        if (w.wp_no == 0) {
+            wp0.lat = lat;
+            wp0.lon = lon;
+        }
+        MWPLog.message("Special WP#%d %s %.6f %.6f %dm %d\n", w.wp_no, MSP.get_wpname(w.action),
+                       lat, lon, w.altitude/100, w.p1);
+    }
+
+    private void handle_mm_download(uint8[] raw, uint len) {
         have_wp = true;
         MSP_WP w = MSP_WP();
         uint8* rp = raw;
@@ -6204,15 +6207,13 @@ case 0:
         w.action = *rp++;
         rp = SEDE.deserialise_i32(rp, out w.lat);
         rp = SEDE.deserialise_i32(rp, out w.lon);
-
-        if(w.wp_no == 0)
-        {
-            wp0.lat = w.lat/10000000.0;
-            wp0.lon = w.lon/10000000.0;
-            return;
-        }
 		rp = SEDE.deserialise_i32(rp, out w.altitude);
 		rp = SEDE.deserialise_i16(rp, out w.p1);
+
+        if(w.wp_no == 0 || w.wp_no > 253) {
+            report_special_wp(w);
+            return;
+        }
 		rp = SEDE.deserialise_i16(rp, out w.p2);
 		rp = SEDE.deserialise_i16(rp, out w.p3);
 		w.flag = *rp;
@@ -7491,7 +7492,7 @@ case 0:
 						validatelab.set_text("WP:%3d".printf(wpmgr.wpidx+1));
 						queue_cmd(MSP.Cmds.SET_WP, wtmp, nb);
 					} else {
-                        MWPLog.message("DBG: WP Flag %d (x%x)\n", wpmgr.wp_flag, wpmgr.wp_flag);
+                        MWPLog.message("DBG: WP Flag %s\n", wpmgr.wp_flag.to_string());
                         MWPCursor.set_normal_cursor(window);
 						remove_tid(ref upltid);
 
@@ -7511,7 +7512,11 @@ case 0:
                                 wp_reset_poller();
                             validatelab.set_text("✔"); // u+2714
 							mwp_warning_box("Mission uploaded", Gtk.MessageType.INFO,5);
-						} else {
+						} else if ((wpmgr.wp_flag & WPDL.FOLLOW_ME) !=0 ) {
+                            request_wp(254);
+                            wpmgr.wp_flag &= ~WPDL.FOLLOW_ME;
+                            wp_reset_poller();
+                        } else {
 							wp_reset_poller();
 						}
 					}
