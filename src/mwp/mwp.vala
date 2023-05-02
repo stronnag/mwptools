@@ -4362,29 +4362,26 @@ public class MWP : Gtk.Application {
                 break;
 
             case SportDev.FrID.FUEL_ID:
-                switch (conf.smartport_fuel)
-                {
-case 0:
-                        curr.mah = 0;
-                        break;
-                    case 1:
-                    case 2:
-                        curr.mah = (val > 0xffff) ? 0xffff : (uint16)val;
-                        break;
-                    case 3:
-                    default:
-                        curr.mah = val;
-                        break;
+                switch (conf.smartport_fuel) {
+                case 0:
+                    curr.mah = 0;
+                    break;
+                case 1:
+                case 2:
+                    curr.mah = (val > 0xffff) ? 0xffff : (uint16)val;
+                    break;
+                case 3:
+                default:
+                    curr.mah = val;
+                    break;
                 }
                 break;
-
-            default:
+        default:
                 break;
         }
     }
 
-    private void update_mss_state(uint8 fmode)
-    {
+    private void update_mss_state(uint8 fmode) {
         MwpServer.State s = MwpServer.State.UNDEFINED;
         if(armed == 0)
             s = MwpServer.State.DISARMED;
@@ -4886,17 +4883,13 @@ case 0:
     private bool pos_valid(double lat, double lon)
     {
         bool vpos;
-        if(have_home)
-        {
+        if(have_home) {
             if( ((Math.fabs(lat - xlat) < 0.25) &&
-                 (Math.fabs(lon - xlon) < 0.25)) || (xlon == 0 && xlat == 0))
-            {
+                 (Math.fabs(lon - xlon) < 0.25)) || (xlon == 0 && xlat == 0)) {
                 vpos = true;
                 xlat = lat;
                 xlon = lon;
-            }
-            else
-            {
+            } else {
                 vpos = false;
                 if(xlat != 0.0 && xlon != 0.0)
                     MWPLog.message("Ignore bogus %f %f (%f %f)\n",
@@ -6186,9 +6179,9 @@ case 0:
         if (w.wp_no == 0) {
             wp0.lat = lat;
             wp0.lon = lon;
+        } else {
+            MWPLog.message("Special WP#%d (%d) %.6f %.6f %dm %d°\n", w.wp_no, w.action, lat, lon, w.altitude/100, w.p1);
         }
-        MWPLog.message("Special WP#%d %s %.6f %.6f %dm %d\n", w.wp_no, MSP.get_wpname(w.action),
-                       lat, lon, w.altitude/100, w.p1);
     }
 
     private void handle_mm_download(uint8[] raw, uint len) {
@@ -8536,13 +8529,15 @@ case 0:
         return d;
     }
 
+    private bool lat_lon_diff(double lat0, double lon0, double lat1, double lon1) {
+        var d1 = lat0 - lat1;
+        var d2 = lon0 - lon1;
+        return (((Math.fabs(d1) > 1e-6) || Math.fabs(d2) > 1e-6));
+    }
+
     private bool home_changed(double lat, double lon) {
         bool ret=false;
-
-        var d1 = home_pos.lat - lat;
-        var d2 = home_pos.lon - lon;
-
-        if(((Math.fabs(d1) > 1e-6) || Math.fabs(d2) > 1e-6)) {
+        if (lat_lon_diff(lat, lon, home_pos.lat , home_pos.lon)) {
             if(have_home && (home_pos.lat != 0.0) && (home_pos.lon != 0.0)) {
                 double d,cse;
                 Geo.csedist(lat, lon, home_pos.lat, home_pos.lon, out d, out cse);
