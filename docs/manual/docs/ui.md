@@ -51,6 +51,7 @@ The following tables summarise the available menu options. Where usage is not ob
 
 | Item | Usage |
 | ---- | ----- |
+| Set FollowMe Point | Displays the [Follow Me](mwp-follow-me.md) dialogue |
 | Preferences | Displays the [preferences](misc-ui-elements.md#preferences) dialogue |
 | Multi Mission Manager | Display the multi-mission dialogue to remove segments from a multi-mission |
 | CLI serial terminal | Displays the {{ inav }} CLI using the current connection |

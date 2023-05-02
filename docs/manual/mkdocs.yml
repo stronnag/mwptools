@@ -87,6 +87,7 @@ nav:
       - mwp_video_player.md
       - Fly-By-Home-waypoints-(inav-4-new-feature).md
       - Black-Ops.md
+      - mwp-follow-me.md
   - 'Build and Install':
       - Building-with-meson-and-ninja.md
       - mwp-in-Windows-11---WSL-G.md
