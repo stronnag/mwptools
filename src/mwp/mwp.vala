@@ -4362,29 +4362,26 @@ public class MWP : Gtk.Application {
                 break;
 
             case SportDev.FrID.FUEL_ID:
-                switch (conf.smartport_fuel)
-                {
-case 0:
-                        curr.mah = 0;
-                        break;
-                    case 1:
-                    case 2:
-                        curr.mah = (val > 0xffff) ? 0xffff : (uint16)val;
-                        break;
-                    case 3:
-                    default:
-                        curr.mah = val;
-                        break;
+                switch (conf.smartport_fuel) {
+                case 0:
+                    curr.mah = 0;
+                    break;
+                case 1:
+                case 2:
+                    curr.mah = (val > 0xffff) ? 0xffff : (uint16)val;
+                    break;
+                case 3:
+                default:
+                    curr.mah = val;
+                    break;
                 }
                 break;
-
-            default:
+        default:
                 break;
         }
     }
 
-    private void update_mss_state(uint8 fmode)
-    {
+    private void update_mss_state(uint8 fmode) {
         MwpServer.State s = MwpServer.State.UNDEFINED;
         if(armed == 0)
             s = MwpServer.State.DISARMED;
@@ -4886,17 +4883,13 @@ case 0:
     private bool pos_valid(double lat, double lon)
     {
         bool vpos;
-        if(have_home)
-        {
+        if(have_home) {
             if( ((Math.fabs(lat - xlat) < 0.25) &&
-                 (Math.fabs(lon - xlon) < 0.25)) || (xlon == 0 && xlat == 0))
-            {
+                 (Math.fabs(lon - xlon) < 0.25)) || (xlon == 0 && xlat == 0)) {
                 vpos = true;
                 xlat = lat;
                 xlon = lon;
-            }
-            else
-            {
+            } else {
                 vpos = false;
                 if(xlat != 0.0 && xlon != 0.0)
                     MWPLog.message("Ignore bogus %f %f (%f %f)\n",
@@ -5111,8 +5104,7 @@ case 0:
             });
     }
 
-    private void init_have_home()
-    {
+    private void init_have_home() {
         have_home = false;
         markers.negate_home();
         ls.calc_mission(0);
@@ -5123,28 +5115,21 @@ case 0:
         want_special = 0;
     }
 
-    private void send_poll()
-    {
-        if(serstate == SERSTATE.POLLER)
-        {
+    private void send_poll() {
+        if(serstate == SERSTATE.POLLER) {
             var req=requests[tcycle];
             lastm = nticks;
-            if (req == MSP.Cmds.ANALOG || req == MSP.Cmds.ANALOG2)
-            {
-                if (lastm - last_an > MAVINTVL)
-                {
+            if (req == MSP.Cmds.ANALOG || req == MSP.Cmds.ANALOG2) {
+                if (lastm - last_an > MAVINTVL) {
                     last_an = lastm;
                     mavc = 0;
-                }
-                else
-                {
+                } else {
                     tcycle = (tcycle + 1) % requests.length;
                     req = requests[tcycle];
                 }
             }
                 // only is not armed
-            if (req == MSP.Cmds.GPSSTATISTICS && armed == 1)
-            {
+            if (req == MSP.Cmds.GPSSTATISTICS && armed == 1) {
                 tcycle = (tcycle + 1) % requests.length;
                 req = requests[tcycle];
             }
@@ -5158,8 +5143,7 @@ case 0:
 
     private void init_craft_icon()
     {
-        if(craft == null)
-        {
+        if(craft == null) {
             uint8 ctype = vi.mrtype;
             if((SportDev.active || nopoll) && dmrtype != 0 && vi.mrtype == 0)
                 ctype = (uint8)dmrtype;
@@ -6188,7 +6172,19 @@ case 0:
         }
     }
 
-	private void handle_mm_download(uint8[] raw, uint len) {
+    private void report_special_wp(MSP_WP w) {
+        double lat, lon;
+        lat = w.lat/10000000.0;
+        lon = w.lon/10000000.0;
+        if (w.wp_no == 0) {
+            wp0.lat = lat;
+            wp0.lon = lon;
+        } else {
+            MWPLog.message("Special WP#%d (%d) %.6f %.6f %dm %d°\n", w.wp_no, w.action, lat, lon, w.altitude/100, w.p1);
+        }
+    }
+
+    private void handle_mm_download(uint8[] raw, uint len) {
         have_wp = true;
         MSP_WP w = MSP_WP();
         uint8* rp = raw;
@@ -6204,15 +6200,13 @@ case 0:
         w.action = *rp++;
         rp = SEDE.deserialise_i32(rp, out w.lat);
         rp = SEDE.deserialise_i32(rp, out w.lon);
-
-        if(w.wp_no == 0)
-        {
-            wp0.lat = w.lat/10000000.0;
-            wp0.lon = w.lon/10000000.0;
-            return;
-        }
 		rp = SEDE.deserialise_i32(rp, out w.altitude);
 		rp = SEDE.deserialise_i16(rp, out w.p1);
+
+        if(w.wp_no == 0 || w.wp_no > 253) {
+            report_special_wp(w);
+            return;
+        }
 		rp = SEDE.deserialise_i16(rp, out w.p2);
 		rp = SEDE.deserialise_i16(rp, out w.p3);
 		w.flag = *rp;
@@ -7491,7 +7485,7 @@ case 0:
 						validatelab.set_text("WP:%3d".printf(wpmgr.wpidx+1));
 						queue_cmd(MSP.Cmds.SET_WP, wtmp, nb);
 					} else {
-                        MWPLog.message("DBG: WP Flag %d (x%x)\n", wpmgr.wp_flag, wpmgr.wp_flag);
+                        MWPLog.message("DBG: WP Flag %s\n", wpmgr.wp_flag.to_string());
                         MWPCursor.set_normal_cursor(window);
 						remove_tid(ref upltid);
 
@@ -7511,7 +7505,11 @@ case 0:
                                 wp_reset_poller();
                             validatelab.set_text("✔"); // u+2714
 							mwp_warning_box("Mission uploaded", Gtk.MessageType.INFO,5);
-						} else {
+						} else if ((wpmgr.wp_flag & WPDL.FOLLOW_ME) !=0 ) {
+                            request_wp(254);
+                            wpmgr.wp_flag &= ~WPDL.FOLLOW_ME;
+                            wp_reset_poller();
+                        } else {
 							wp_reset_poller();
 						}
 					}
@@ -8531,13 +8529,15 @@ case 0:
         return d;
     }
 
+    private bool lat_lon_diff(double lat0, double lon0, double lat1, double lon1) {
+        var d1 = lat0 - lat1;
+        var d2 = lon0 - lon1;
+        return (((Math.fabs(d1) > 1e-6) || Math.fabs(d2) > 1e-6));
+    }
+
     private bool home_changed(double lat, double lon) {
         bool ret=false;
-
-        var d1 = home_pos.lat - lat;
-        var d2 = home_pos.lon - lon;
-
-        if(((Math.fabs(d1) > 1e-6) || Math.fabs(d2) > 1e-6)) {
+        if (lat_lon_diff(lat, lon, home_pos.lat , home_pos.lon)) {
             if(have_home && (home_pos.lat != 0.0) && (home_pos.lon != 0.0)) {
                 double d,cse;
                 Geo.csedist(lat, lon, home_pos.lat, home_pos.lon, out d, out cse);
