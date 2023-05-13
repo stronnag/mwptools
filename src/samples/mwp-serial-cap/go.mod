@@ -4,5 +4,5 @@ go 1.14
 
 require (
 	go.bug.st/serial v1.5.0
-	golang.org/x/sys v0.7.0
+	golang.org/x/sys v0.8.0
 )
