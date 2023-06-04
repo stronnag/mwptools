@@ -9346,11 +9346,12 @@ public class MWP : Gtk.Application {
                 mwp_warning_box("MQTT is not enabled in this build\nPlease see the wiki for more information\nhttps://github.com/stronnag/mwptools/wiki/mqtt---bulletgcss-telemetry\n", Gtk.MessageType.WARNING, 60);
                 return;
 #endif
-            } else
+            } else {
+                MWPLog.message("Trying OS open for %s\n", serdev);
                 ostat = msp.open_w(serdev, conf.baudrate, out estr);
+            }
 
             if (ostat == true) {
-                MWPLog.message("Try connect %s\n", serdev);
                 xarm_flags=0xffff;
                 lastrx = lastok = nticks;
                 init_state();

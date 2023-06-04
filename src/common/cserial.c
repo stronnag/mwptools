@@ -41,8 +41,7 @@
 #include <linux/serial.h>
 #endif
 
-void flush_serial(int fd)
-{
+void flush_serial(int fd) {
     tcflush(fd, TCIOFLUSH);
 }
 
@@ -69,15 +68,13 @@ static int rate_to_constant(int baudrate) {
 #undef B
 }
 
-int set_fd_speed(int fd, int rate)
-{
+int set_fd_speed(int fd, int rate) {
     struct termios tio;
     int res=0;
     int speed = rate_to_constant(rate);
 
 #ifdef __linux__
-    if(speed == 0)
-    {
+    if(speed == 0) {
 #include <asm/termios.h>
 #include <asm/ioctls.h>
         struct termios2 t;
@@ -95,8 +92,7 @@ int set_fd_speed(int fd, int rate)
         }
     }
 #endif
-    if (speed != 0)
-    {
+    if (speed != 0) {
 	 tcgetattr(fd, &tio);
 	 if((res = cfsetispeed(&tio,speed)) != -1)
 	      res = cfsetospeed(&tio,speed);
@@ -108,12 +104,10 @@ int set_fd_speed(int fd, int rate)
     return res;
 }
 
-int open_serial(char *device, uint baudrate)
-{
+int open_serial(char *device, uint baudrate) {
     int fd;
-    fd = open(device, O_RDWR|O_NOCTTY);
-    if(fd != -1)
-    {
+    fd = open(device, O_RDWR|O_NOCTTY|O_NDELAY);
+    if(fd != -1) {
         struct termios tio;
         memset (&tio, 0, sizeof(tio));
         tcgetattr(fd, &tio);
@@ -130,8 +124,7 @@ int open_serial(char *device, uint baudrate)
     return fd;
 }
 
-void set_timeout(int fd, int tenths, int number)
-{
+void set_timeout(int fd, int tenths, int number) {
     struct termios tio;
     memset (&tio, 0, sizeof(tio));
     tcgetattr(fd, &tio);
@@ -140,8 +133,7 @@ void set_timeout(int fd, int tenths, int number)
     tcsetattr(fd,TCSANOW,&tio);
 }
 
-void close_serial(int fd)
-{
+void close_serial(int fd) {
     tcflush(fd, TCIOFLUSH);
     struct termios tio ={0};
     tio.c_iflag &= ~IGNBRK;
@@ -173,8 +165,7 @@ void close_serial(int fd)
     close(fd);
 }
 
-char *get_error_text (int errnum, char *buf, size_t buflen)
-{
+char *get_error_text (int errnum, char *buf, size_t buflen) {
     *buf = 0;
     strerror_r(errnum, buf, buflen);
     return buf;
@@ -382,8 +373,13 @@ int main(int argc, char **argv) {
           fprintf(stderr, "returns %d\n", fd);
           if (fd != -1) {
 	       showspeed(fd);
+               char buf[2];
+               int n = read(fd, buf, 1);
+               fprintf(stderr, "read %d\n", n);
                fprintf(stderr, "sleep 30\n");
                sleep(30);
+          } else {
+            perror("open: ");
           }
      }
      return 0;

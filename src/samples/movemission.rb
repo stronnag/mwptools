@@ -2,10 +2,30 @@
 require 'xmlsimple'
 require 'optparse'
 require 'tempfile'
+include Math
 
-def read_cs_line str
-  bp = str.split
-  [bp[0].to_f, bp[1].to_f]
+def ll2metres lat, lon
+  x = lon * 20037508.34 / 180;
+  y = log(tan((90 + lat) * PI / 360)) / (PI / 180);
+  y = y * 20037508.34 / 180;
+  [x, y]
+end
+
+def metres2ll x,y
+  lon = x*180.0/20037508.34
+  lat = y*180.0/20037508.34
+  lat = (atan(E ** (lat * (PI / 180))) * 360) / PI - 90
+  [lat,lon]
+end
+
+def move11 lat, lon, dx, dy
+  if lat != 0 && lon !=0
+    lx,ly = ll2metres lat,lon
+    lx += dx
+    ly += dy
+    lat,lon = metres2ll lx, ly
+  end
+  [lat,lon]
 end
 
 outfile=nil
@@ -20,15 +40,12 @@ ARGV.options do |opt|
   end
 end
 
-cs2cs = system "cs2cs 2> /dev/null"
-if !cs2cs or rebase.nil?
-  abort "no rebase location or 'cs2cs' not found"
+if rebase.nil?
+  abort "no rebase location"
 end
 
 dx = nil
 dy = nil
-nx = nil
-ny = nil
 
 doc=IO.read(ARGV[0] || STDIN)
 doc.downcase!
@@ -40,97 +57,35 @@ elsif  m['mission']['meta']
   mx = m['mission']['meta']
 end
 
-have_cxy = false
-have_hxy = false
-
-llfile = nil
-if !rebase.nil?
-  fh = Tempfile.new("mm-ll")
-  begin
-    llfile = fh.path
-    a=rebase.split(/,/)
-    lat = a[0].to_f
-    lon = a[1].to_f
-    fh.puts "#{lat} #{lon} 0 #newbase"
-    m['mission']['missionitem'].each_with_index do |mi,j|
-      lat = mi['lat'].to_f
-      lon = mi['lon'].to_f
-      if lat != 0 && lon != 0
-        fh.puts "#{lat} #{lon} 0 #wp{j+1}"
-      end
-    end
-    unless mx.nil?
-      lat = mx['cy'].to_f
-      lon = mx['cx'].to_f
-      if lat != 0 && lon != 0
-        have_cxy = true
-        fh.puts "#{lat} #{lon} 0 #cx"
-      end
-      lat = mx['home-y'].to_f
-      lon = mx['home-x'].to_f
-      if lat != 0 && lon != 0
-        have_hxy = true
-        fh.puts "#{lat} #{lon} 0 #hx"
-      end
-    end
-  ensure
-    fh.close
-  end
-end
-
-fh = Tempfile.new('mm-proj')
-projfile = fh.path
-fh.close
-
-%x|cs2cs -f "%f" EPSG:4326 EPSG:3857 < #{llfile} > #{projfile}|
-
-arry = IO.readlines(projfile)
-
-File.open(projfile, "w") do |fh|
-  fh.puts "#{nx} #{ny}"
-  nx = nil
-  ny = nil
-  dx =nil
-  dy = nil
-  arry.each_with_index do |a,j|
-    case j
-    when 0
-      nx,ny = read_cs_line a
-    when 1
-      lx,ly = read_cs_line a # pt 0
-      dx = nx - lx
-      dy = ny - ly
-    else
-      lx,ly = read_cs_line a
-      px = lx + dx
-      py = ly + dy
-      fh.puts "#{px} #{py}"
-    end
-  end
-end
-
-%x|cs2cs -f "%f" EPSG:3857 EPSG:4326 > #{llfile} < #{projfile}|
-
-arry = IO.readlines(llfile)
-n = 0
+a=rebase.split(/,/)
+blat = a[0].to_f
+blon = a[1].to_f
+bx,by = ll2metres blat,blon
 m['mission']['missionitem'].each_with_index do |mi,j|
-  mi['action'].upcase!
   lat = mi['lat'].to_f
   lon = mi['lon'].to_f
-  if lat != 0 && lon != 0
-    lat,lon = read_cs_line arry[n]
-    mi['lat'] = lat
-    mi['lon'] = lon
-    n += 1
+  mi['action'].upcase!
+  case j
+  when 0
+    lx,ly = ll2metres lat,lon
+    dx = bx - lx
+    dy = by - ly
+    lat = blat
+    lon = blon
+  else
+    lat,lon = move11(lat, lon, dx, dy)
   end
+  mi['lat'] = lat
+  mi['lon'] = lon
 end
-if have_cxy
-  mx['cy'], mx['cx'] = read_cs_line arry[n]
-  n += 1
-end
-if have_hxy
-  mx['home-y'], mx['home-x'] = read_cs_line arry[n]
-end
+
+lat = mx['cy'].to_f
+lon = mx['cx'].to_f
+mx['cy'], mx['cx'] = move11(lat, lon, dx, dy)
+
+lat = mx['home-y'].to_f
+lon = mx['home-x'].to_f
+mx['home-y'], mx['home-x'] = move11(lat, lon, dx, dy)
 
 xml = XmlSimple.xml_out(m, { 'KeepRoot' => true })
 if outfile.nil?
