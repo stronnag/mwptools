@@ -10622,14 +10622,18 @@ public class MWP : Gtk.Application {
 		MwpLibC.atexit(MWP.xchild);
         var s = MWP.read_env_args();
 
-        if (GtkClutter.init (ref args) != InitError.SUCCESS)
-            return 1;
-        Gst.init (ref args);
 		StringBuilder sb = new StringBuilder();
 		foreach(var a in args) {
+            if (a == "--version" || a == "-v") {
+                stdout.printf("%s\n", MwpVers.get_id());
+                return 0;
+            }
 			sb.append(a);
 			sb.append_c(' ');
 		}
+        if (GtkClutter.init (ref args) != InitError.SUCCESS)
+            return 1;
+        Gst.init (ref args);
 		MWP.user_args = sb.str;
         var app = new MWP(s);
 		return app.run (args);
