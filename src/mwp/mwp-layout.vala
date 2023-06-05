@@ -39,22 +39,16 @@ class LayReader : Object {
         return ncount;
     }
 
-    private static void parse_node (Xml.Node* node, ref int ncount)
-    {
-        for (Xml.Node* iter = node->children; iter != null; iter = iter->next)
-        {
-            if (iter->type != ElementType.ELEMENT_NODE)
-            {
+    private static void parse_node (Xml.Node* node, ref int ncount) {
+        for (Xml.Node* iter = node->children; iter != null; iter = iter->next) {
+            if (iter->type != ElementType.ELEMENT_NODE) {
                 continue;
             }
-            switch(iter->name.down())
-            {
+            switch(iter->name.down()) {
                 case  "layout":
-                    for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next)
-                    {
+                    for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next) {
                         string attr_content = prop->children->content;
-                        switch( prop->name)
-                        {
+                        switch( prop->name) {
                             case "name":
                                 if(attr_content == "mwp")
                                 {
@@ -78,26 +72,21 @@ class LayReader : Object {
     }
 }
 
-
-class LayMan : Object
-{
+class LayMan : Object {
     private DockLayout layout;
     private string confdir;
     private string layname {get; set; default = ".layout";}
     private int icount;
 
-    public LayMan (Dock dock, string _confdir, string? name, int count)
-    {
+    public LayMan (Dock dock, string _confdir, string? name, int count) {
         icount = count;
         layout = new DockLayout (dock.master);
         confdir = _confdir;
 
-        foreach (var s in get_layout_names(confdir))
-        {
+        foreach (var s in get_layout_names(confdir)) {
             var fn = getfile(s);
             int nc;
-            if((nc = LayReader.read_xml_file(fn)) != count)
-            {
+            if((nc = LayReader.read_xml_file(fn)) != count) {
                 Posix.unlink(fn);
                 MWPLog.message("Removing %s %d\n",fn,nc);
             }
@@ -107,8 +96,7 @@ class LayMan : Object
             layname = name;
     }
 
-    private string getfile(string? name=null)
-    {
+    private string getfile(string? name=null) {
         if(name == null)
             name = layname;
         StringBuilder sb = new StringBuilder(name);
@@ -116,16 +104,14 @@ class LayMan : Object
         return GLib.Path.build_filename(confdir,sb.str);
     }
 
-    private string? find_default_file()
-    {
+    private string? find_default_file() {
         var uc = Environment.get_user_data_dir();
         string f =  GLib.Path.build_filename(uc, "mwp", "default.layout");
         if(Posix.access(f,Posix.R_OK) == 0)
             return f;
 
         var confdirs = Environment.get_system_data_dirs();
-        foreach (string c in confdirs)
-        {
+        foreach (string c in confdirs) {
             f =  GLib.Path.build_filename(c,"mwp", "default.layout");
             if(Posix.access(f,Posix.R_OK) == 0)
                 return f;
@@ -133,13 +119,11 @@ class LayMan : Object
         return null;
     }
 
-    public bool load_init()
-    {
+    public bool load_init() {
         bool ok;
         string lname = getfile();
         ok = layout.load_from_file(lname);
-        if(!ok)
-        {
+        if(!ok) {
             var fn = find_default_file();
             if(fn != null)
                 ok = layout.load_from_file(fn);
@@ -159,8 +143,7 @@ class LayMan : Object
             var fd = FileUtils.open_tmp(".mwp.XXXXXX.xml", out of);
             FileUtils.close(fd);
             layout.save_to_file(of);
-            if(LayReader.read_xml_file(of) == icount)
-            {
+            if(LayReader.read_xml_file(of) == icount) {
                 string fn = getfile();
                 string lxml;
                 FileUtils.get_contents(of, out lxml);
@@ -197,6 +180,7 @@ class LayMan : Object
                 }
                 dialog.destroy();
             });
+        dialog.show();
     }
 
     private string[] get_layout_names(string dir, string typ=".xml")
@@ -204,21 +188,19 @@ class LayMan : Object
         string []files = { };
         File file = File.new_for_path (dir);
 
-        try
-        {
+        try {
             FileEnumerator enumerator = file.enumerate_children (
                 "standard::*",
                 FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
                 null);
 
             FileInfo info = null;
-            while ((info = enumerator.next_file (null)) != null)
-            {
-                if (info.get_file_type () != FileType.DIRECTORY)
-                {
+            while ((info = enumerator.next_file (null)) != null) {
+                if (info.get_file_type () != FileType.DIRECTORY) {
                     var s = info.get_name();
-                    if(s.has_suffix(typ))
+                    if(s.has_suffix(typ)) {
                         files += info.get_name()[0:-4];
+                    }
                 }
             }
         } catch  { }
