@@ -709,6 +709,9 @@ public class MapSourceDialog : GLib.Object {
         map_uri = builder.get_object ("map_uri") as Gtk.Label;
         map_minzoom = builder.get_object ("map_minzoom") as Gtk.Label;
         map_maxzoom = builder.get_object ("map_maxzoom") as Gtk.Label;
+        dialog.response.connect((id) => {
+                dialog.hide();
+            });
     }
 
     public void show_source(string name, string id, string uri, uint minzoom, uint maxzoom) {
@@ -717,9 +720,6 @@ public class MapSourceDialog : GLib.Object {
         map_uri.set_label(uri);
         map_minzoom.set_label(minzoom.to_string());
         map_maxzoom.set_label(maxzoom.to_string());
-        dialog.response.connect((id) => {
-                dialog.hide();
-            });
         dialog.show_all();
     }
 }
@@ -727,15 +727,12 @@ public class MapSourceDialog : GLib.Object {
 public class SpeedDialog : GLib.Object {
     private Gtk.Dialog dialog;
     private Gtk.Entry spd_entry;
-
+    private bool flag;
     public signal void get_value(double value, bool flag);
     public SpeedDialog(Gtk.Builder builder) {
+
         dialog = builder.get_object ("speeddialog") as Gtk.Dialog;
         spd_entry = builder.get_object ("defspeedset") as Gtk.Entry;
-    }
-
-    public void get_speed(bool flag) {
-        dialog.show_all();
         dialog.response.connect((id) => {
                 if (id == 1001) {
                     var spd  = InputParser.get_scaled_real(spd_entry.get_text(),"s");
@@ -743,21 +740,23 @@ public class SpeedDialog : GLib.Object {
                 }
                 dialog.hide();
             });
+
+    }
+
+    public void get_speed(bool _flag) {
+        flag = _flag;
+        dialog.show_all();
     }
 }
 
 public class AltDialog : GLib.Object {
     private Gtk.Dialog adialog;
     private Gtk.Entry alt_entry;
+    private bool flag;
 
     public AltDialog(Gtk.Builder builder) {
         adialog = builder.get_object ("altdialog") as Gtk.Dialog;
         alt_entry = builder.get_object ("defaltset") as Gtk.Entry;
-    }
-
-    public signal void get_value(double value, bool flag);
-    public void get_alt(bool flag) {
-        adialog.show_all();
         adialog.response.connect((id) => {
                 if (id == 1001) {
                     var alt = InputParser.get_scaled_real(alt_entry.get_text(),"d");
@@ -765,6 +764,12 @@ public class AltDialog : GLib.Object {
                 }
                 adialog.hide();
             });
+    }
+
+    public signal void get_value(double value, bool flag);
+    public void get_alt(bool _flag) {
+        flag =  _flag;
+        adialog.show_all();
     }
 }
 
@@ -780,6 +785,16 @@ public class WPRepDialog : GLib.Object {
         rep_start = builder.get_object ("rep_start") as Gtk.Entry;
         rep_end = builder.get_object ("rep_end") as Gtk.Entry;
         rep_num = builder.get_object ("rep_num") as Gtk.Entry;
+        dialog.response.connect((id) => {
+                if(id == 1001) {
+                    uint start = (uint)int.parse(rep_start.text);
+                    uint end = (uint)int.parse(rep_end.text);
+                    uint number = (uint)int.parse(rep_num.text);
+                    get_values(start, end, number);
+                }
+                dialog.hide();
+            });
+
     }
 
     public void get_rep(uint start, uint end, uint number) {
@@ -787,15 +802,6 @@ public class WPRepDialog : GLib.Object {
         rep_end.text = end.to_string();
         rep_num.text = number.to_string();
         dialog.show_all();
-        dialog.response.connect((id) => {
-                if(id == 1001) {
-                    start = (uint)int.parse(rep_start.text);
-                    end = (uint)int.parse(rep_end.text);
-                    number = (uint)int.parse(rep_num.text);
-                    get_values(start, end, number);
-                }
-                dialog.hide();
-            });
     }
 }
 
@@ -819,10 +825,6 @@ public class DeltaDialog : GLib.Object {
         lab.label = "Longitude (X) delta (%s)".printf(Units.distance_units());
         lab = builder.get_object ("dlt_label3") as Gtk.Label;
         lab.label = "Altitude (Z) delta (%s)".printf(Units.distance_units());
-    }
-
-    public void get_deltas() {
-        dialog.show_all();
         dialog.response.connect((id) => {
                 if (id == 1001) {
                     var dlat = InputParser.get_scaled_real(dlt_entry1.get_text());
@@ -832,6 +834,10 @@ public class DeltaDialog : GLib.Object {
                 }
                 dialog.hide();
             });
+    }
+
+    public void get_deltas() {
+        dialog.show_all();
     }
 }
 
@@ -940,25 +946,6 @@ public class SetPosDialog : GLib.Object {
         lat_entry = builder.get_object ("golat") as Gtk.Entry;
         lon_entry = builder.get_object ("golon") as Gtk.Entry;
         pcombo = builder.get_object("place_combo") as Gtk.ComboBoxText;
-    }
-
-    public void load_places() {
-        pls = {};
-        pls +=  Places.PosItem(){name="Default", lat=MWP.conf.latitude, lon=MWP.conf.longitude};
-        foreach(var pl in Places.points()) {
-            pls += pl;
-        }
-
-        pcombo.remove_all();
-        foreach(var l in pls)
-            pcombo.append_text(l.name);
-
-        if(pls.length != 0) {
-            pcombo.active = 0;
-            lat_entry.set_text(PosFormat.lat(pls[0].lat, MWP.conf.dms));
-            lon_entry.set_text(PosFormat.lon(pls[0].lon, MWP.conf.dms));
-        }
-
         pcombo.changed.connect (() => {
                 var s = pcombo.get_active_text ();
                 foreach(var l in pls) {
@@ -969,11 +956,8 @@ public class SetPosDialog : GLib.Object {
                     }
                 }
             });
-    }
-
-    public void get_position() {
-        double glat = 0,  glon = 0;
         dialog.response.connect((id) => {
+                double glat = 0,  glon = 0;
                 switch (id) {
                 case 1001:
                 var t1 = lat_entry.get_text();
@@ -1002,6 +986,28 @@ public class SetPosDialog : GLib.Object {
                 }
                 dialog.hide();
             });
+    }
+
+    public void load_places() {
+        pls = {};
+        pls +=  Places.PosItem(){name="Default", lat=MWP.conf.latitude, lon=MWP.conf.longitude};
+        foreach(var pl in Places.points()) {
+            pls += pl;
+        }
+
+        pcombo.remove_all();
+        foreach(var l in pls)
+            pcombo.append_text(l.name);
+
+        if(pls.length != 0) {
+            pcombo.active = 0;
+            lat_entry.set_text(PosFormat.lat(pls[0].lat, MWP.conf.dms));
+            lon_entry.set_text(PosFormat.lon(pls[0].lon, MWP.conf.dms));
+        }
+
+    }
+
+    public void get_position() {
         dialog.show_all();
     }
 }
@@ -1123,6 +1129,10 @@ public class PrefsDialog : GLib.Object {
 
         notebook.append_page(gprefs,new Gtk.Label("General"));
         notebook.append_page(uprefs,new Gtk.Label("Units"));
+        dialog.response.connect((id) => {
+                dialog.hide();
+                done(id);
+            });
     }
 
     public void set_maps(string []map_names, string defmap) {
@@ -1174,10 +1184,6 @@ public class PrefsDialog : GLib.Object {
         buttons[conf.p_speed + Buttons.MSEC].set_active(true);
 
         dialog.show_all ();
-        dialog.response.connect((id) => {
-                dialog.hide();
-                done(id);
-            });
     }
 
     public void update_conf (ref MWPSettings conf) {
@@ -1266,6 +1272,8 @@ public class ShapeDialog : GLib.Object {
     private Gtk.SpinButton spin2;
     private Gtk.SpinButton spin3;
     private Gtk.ComboBoxText combo;
+    private double clat;
+    private double clon;
 
     public signal void get_values(ShapePoint[] pts);
 
@@ -1277,10 +1285,6 @@ public class ShapeDialog : GLib.Object {
         spin3  = builder.get_object ("shp_spinbutton3") as Gtk.SpinButton;
         combo  = builder.get_object ("shp-combo") as Gtk.ComboBoxText;
         spin2.adjustment.value = 0;
-    }
-
-    public void get_points(double clat, double clon) {
-        dialog.show_all();
         dialog.response.connect((id) => {
                 if (id == 1001) {
                     var npts = (int)spin1.adjustment.value;
@@ -1299,6 +1303,12 @@ public class ShapeDialog : GLib.Object {
                 }
                 dialog.hide();
             });
+    }
+
+    public void get_points(double _clat, double _clon) {
+        clat = _clat;
+        clon = _clon;
+        dialog.show_all();
     }
 
     public static ShapePoint[] mkshape(double clat, double clon,double radius,

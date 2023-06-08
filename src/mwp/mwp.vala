@@ -7203,7 +7203,7 @@ public class MWP : Gtk.Application {
 				} else if ((wpmgr.wp_flag & WPDL.RESET_POLLER) != 0) {
 					wp_reset_poller();
 				}
-				if(wpi.wp_count > 0 && wpi.wps_valid == 1 && ls.lastid == 0) {
+				if(wpi.wp_count > 0 && wpi.wps_valid == 1 && ls.get_list_size() == 0) {
 					need_mission = true;
 				}
 				break;
@@ -7288,7 +7288,7 @@ public class MWP : Gtk.Application {
                 rp = SEDE.deserialise_u16(rp, out poscfg.nav_mc_hover_thr);
                 ls.set_mission_speed(poscfg.nav_max_speed / 100.0);
                 navconf.mr_update(poscfg);
-                if (ls.lastid > 0)
+                if (ls.get_list_size() > 0)
                     ls.calc_mission();
                 break;
 
@@ -7326,7 +7326,7 @@ public class MWP : Gtk.Application {
                 wp_max = nc.max_wp_number = *rp;
                 navconf.mw_update(nc);
                 ls.set_mission_speed(nc.nav_speed_max / 100.0);
-                if (ls.lastid > 0)
+                if (ls.get_list_size() > 0)
                     ls.calc_mission();
                 break;
 

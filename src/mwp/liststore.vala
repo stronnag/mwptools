@@ -228,7 +228,6 @@ public class ListBox : GLib.Object {
     private FakeHome fhome;
     private MissionPreviewer mprv;
     private bool preview_running = false;
-    public int lastid {get; private set; default= 0;}
     public bool have_rth {get; private set; default= false;}
     private int mpop_no;
     private enum DELTAS {
@@ -253,6 +252,10 @@ public class ListBox : GLib.Object {
         RELATIVE=0,
         ABSOLUTE=1,
         NONE=-1
+    }
+
+    public int get_list_size() {
+        return list_model.iter_n_children(null);
     }
 
     private void raise_fby_wp(int wpno) {
@@ -523,10 +526,9 @@ public class ListBox : GLib.Object {
         Gtk.TreeIter iter;
 
         clear_mission();
-        lastid = 0;
         have_rth = false;
         BingElevations.Point[] pts={};
-
+        int lastid = 0;
         EvCache.clear();
         foreach (MissionItem m in ms.get_ways()) {
             lastid++;
@@ -1286,7 +1288,7 @@ public class ListBox : GLib.Object {
                      var iwp = int.parse((string)icell);
                      var nwp = int.parse(new_text);
                          // Jump sanity
-                     if(nwp < 1 || ((nwp > iwp-2) && (nwp < iwp+2)) || (nwp > lastid))
+                     if(nwp < 1 || ((nwp > iwp-2) && (nwp < iwp+2)) || (nwp > get_list_size()))
                          return;
 
                          // More sanity, only jump to geo-ref WPs
@@ -1559,18 +1561,6 @@ public class ListBox : GLib.Object {
         }
     }
 
-    private int check_last() {
-        Gtk.TreeIter iter;
-        lastid = 0;
-        for(bool next=list_model.get_iter_first(out iter); next;
-            next=list_model.iter_next(ref iter)) {
-            GLib.Value cell;
-            list_model.get_value (iter, WY_Columns.ACTION, out cell);
-            lastid++;
-        }
-        return lastid;
-    }
-
     private void raise_iter_wp(Gtk.TreeIter iter, bool ring=false) {
         if (!purge) {
         Value val;
@@ -1756,8 +1746,8 @@ public class ListBox : GLib.Object {
         Gtk.TreeIter iter;
         var dalt = get_user_alt();
         list_model.append(out iter);
-        lastid++;
-        var no = lastid.to_string();
+
+        var no = get_list_size().to_string();
         list_model.set (iter,
                         WY_Columns.IDX, no,
                         WY_Columns.TYPE, MSP.get_wpname(typ),
@@ -2664,8 +2654,7 @@ public class ListBox : GLib.Object {
             list_model.insert_before (out ni, xiter);
         }
         if(status != 0) {
-            lastid++;
-            var strno = lastid.to_string();
+            var strno = get_list_size().to_string();
             list_model.set_value(ni, WY_Columns.IDX, strno);
         }
         return ni;
@@ -2763,9 +2752,9 @@ public class ListBox : GLib.Object {
     public void clear_mission() {
         purge = true;
         list_model.clear();
+
         purge = false;
         have_rth = false;
-        lastid = 0;
 //        calc_mission();
         FakeHome.usedby &= ~FakeHome.USERS.Mission;
         unset_fake_home();
@@ -2884,7 +2873,6 @@ public class ListBox : GLib.Object {
             lt = llt;
             update_cell(lastn, -1, 0, 0, dist, 0);
             et = (int)esttim + 3 * np; // 3 * vertices to allow for slow down
-            lastid = check_last();
             if(mprv.indet) {
                 dist = 0.0;
                 et = lt = 0;

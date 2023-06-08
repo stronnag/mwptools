@@ -99,6 +99,7 @@ along with mwp.  If not, see <http://www.gnu.org/licenses/>.
   </object>
   <object class="GtkDialog" id="seeder_dialog">
     <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Map Seeder</property>
     <property name="window-position">center-on-parent</property>
     <property name="default-width">2</property>
     <property name="type-hint">dialog</property>
@@ -444,6 +445,7 @@ Clikcing Clear will remove the FollowMe Icon from the display.
   </object>
   <object class="GtkDialog" id="altdialog">
     <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Altitude Settiing</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="__fix1404__00000__">
@@ -570,6 +572,7 @@ Clikcing Clear will remove the FollowMe Icon from the display.
   </object>
   <object class="GtkDialog" id="bb_dialog">
     <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Blackbox Selection</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="bb_dialog-vbox1">
@@ -1348,6 +1351,7 @@ then select &lt;b&gt;Apply&lt;/b&gt;. Uses an Internet service&lt;/i&gt;</proper
   </object>
   <object class="GtkDialog" id="delta-dialog">
     <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Delta Offsets</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox2">
@@ -3607,6 +3611,7 @@ See the "samples" directory for an example of each.</property>
   <object class="GtkListStore" id="liststore1"/>
   <object class="GtkDialog" id="map_source_dialog">
     <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Map Sources</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox8">
@@ -5218,6 +5223,7 @@ Otherwise, select a valid FC vehicle type</property>
   </object>
   <object class="GtkDialog" id="prefs-dialog">
     <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Preferences</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox3">
@@ -5274,6 +5280,7 @@ Otherwise, select a valid FC vehicle type</property>
   </object>
   <object class="GtkDialog" id="raw_dialog">
     <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Raw Selection</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox">
@@ -5526,6 +5533,7 @@ Otherwise, select a valid FC vehicle type</property>
   </object>
   <object class="GtkDialog" id="shape-dialog">
     <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Shape Definition</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox1">
@@ -5712,6 +5720,7 @@ Otherwise, select a valid FC vehicle type</property>
   </object>
   <object class="GtkDialog" id="speeddialog">
     <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Speed Setting</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-vbox13">
@@ -6044,6 +6053,7 @@ Otherwise, select a valid FC vehicle type</property>
   </object>
   <object class="GtkDialog" id="switch-dialogue">
     <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Switch Warning</property>
     <property name="modal">True</property>
     <property name="window-position">mouse</property>
     <property name="type-hint">normal</property>
@@ -6451,6 +6461,7 @@ Clicking Quit will terminate the application.
   </object>
   <object class="GtkDialog" id="wprep-dialog">
     <property name="can-focus">False</property>
+    <property name="title" translatable="yes">WP Iterations</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox">
