@@ -49,8 +49,7 @@ def parse_mission_file mf
     doc = Nokogiri::XML(open(mf))
     doc.xpath('//MISSIONITEM|//missionitem').each do |t|
       action=t['action']
-      break if action == 'RTH'
-      next if action == 'SET_POI'
+      next if %w/RTH SET_POI JUMP SET_HEAD/.include? action
       lat = t['lat'].to_f
       lon = t['lon'].to_f
       miny = lat if lat < miny
@@ -92,7 +91,7 @@ ARGV.options do |opt|
   end
 end
 
-abort 'Not enough parameters' unless ((mf or (uls and lrs)) and uri and baseid and zooms)
+abort 'Not enough parameters, require zoom, id, uri and (mission file or extents)' unless ((mf or (uls and lrs)) and uri and baseid and zooms)
 
 ul=lr=nil
 zoom = zooms.split('-')
@@ -164,7 +163,7 @@ gets.each do |m|
       end
       if needed
 	puts "get #{u} => #{ofn}"
-	open(u) do |f|
+	URI.open(u) do |f|
 	  a=f.read
 	  File.open(ofn,'w') {|of| of.write(a)}
 	end
