@@ -64,17 +64,17 @@ mwp should  build and running on any platform that supports (recent versions of)
  * libespeak;
  * libgdl;
  * POSIX API
- * Go (golang) > 1.17. Please install the latest vendor release on older Linux distros (Debian Stable and older and derivatives).
+ * Go (golang) > 1.17. Please install the latest vendor release on older Linux distros.
 
-mwptools is tested on x86_64, ia32, and aarch64 architectures (Linux / FreeBSD).
+mwptools is tested on x86_64, ia32, aarch64 and riscv64 architectures (Linux / FreeBSD).
 
-* There is a **"Release" Debian package** (x86_64, Debian and derivatives, including WSL-G) [Github Releases](https://github.com/stronnag/mwptools/releases).
+* There is a **"Release" Debian package** (x86_64, Debian and derivatives, including WSL-G) [Github Releases](https://github.com/stronnag/mwptools/releases). This is build on the previous Debiab stable ("bullseye") in order to maximise compatibility across Debian derived distros.
 * Simple, ["one stop shop" build and install script](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja/)
 * AUR package 'mwptools-git' for Arch Linux.
 
 It is also possible to build and run mwp on MS Windows using:
 
-* Windows 11 / WSL-g [Installation instructions](https://github.com/stronnag/mwptools/wiki/mwp-in-Windows-11---WSL-G).
+* Windows 11 / WSL-g [Release media](https://github.com/stronnag/mwptools/releases), [Installation instructions](https://github.com/stronnag/mwptools/wiki/mwp-in-Windows-11---WSL-G).
 * [Cygwin](https://www.cygwin.com/) Recommended Windows solution prior to Windows 11
 * Windows 10 / WSL (slow, less stable, less recommended)
 * A virtual machine with a Linux guest.
@@ -99,7 +99,7 @@ Support questions are best asked in the [RC Groups board](https://www.rcgroups.c
 
 ### Changelog / Announcements
 
-Important changes are [announced on the wiki](https://github.com/stronnag/mwptools/wiki/Recent-Changes).
+Important changes are (sometimes) [announced on the wiki](https://github.com/stronnag/mwptools/wiki/Recent-Changes).
 
 ### Updating
 
@@ -131,6 +131,7 @@ In addition to [mwp](https://github.com/stronnag/mwptools), the following INAV m
 * [INAV Configurator (for INAV 2.x)](https://github.com/iNavFlight/inav-configurator/tree/2.6.1), limited planning support
 * [INAV Configurator (for current INAV)]( https://github.com/iNavFlight/inav-configurator), supports most current WP types (other than Fly-by-home waypoints). [Development branch preview builds](http://seyrsnys.myzen.co.uk/inav-configurator-next/), may be augmented with [impload](https://github.com/stronnag/impload/) to upload missions to 2.x firmware.
 * [Drone Helper](https://www.microsoft.com/en-us/p/drone-helper/9ncs8zwxn58x?activetab=pivot:overviewtab) (Windows 10+)
+* [Android Telemetry Viewer](https://github.com/RomanLut/android-taranis-smartport-telemetry) Android GCS for INAV (CRSF, LTM, Smartport telemetry).
 * [Ezgui](https://play.google.com/store/apps/details?id=com.ezio.multiwii&hl=en_GB), [MissionPlanner for Inav](https://play.google.com/store/apps/details?id=com.eziosoft.ezgui.inav&hl=en) (Android) Unsupported, obsolete. May not work with either contemporary Android or INAV firmware.
 * [Mobile Flight](https://github.com/flyinghead/mobile-flight) (IOS) Unsupported, obsolete. May not work with either contemporary IOS or INAV firmware.
 * [Apmplanner2](https://ardupilot.org/planner2/) with [impload](https://github.com/stronnag/impload/). Ardupilot planner, missions can be uploaded to INAV using [impload](https://github.com/stronnag/impload/).
