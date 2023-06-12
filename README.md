@@ -130,6 +130,7 @@ In addition to [mwp](https://github.com/stronnag/mwptools), the following INAV m
 
 * [INAV Configurator (for INAV 2.x)](https://github.com/iNavFlight/inav-configurator/tree/2.6.1), limited planning support
 * [INAV Configurator (for current INAV)]( https://github.com/iNavFlight/inav-configurator), supports most current WP types (other than Fly-by-home waypoints). [Development branch preview builds](http://seyrsnys.myzen.co.uk/inav-configurator-next/), may be augmented with [impload](https://github.com/stronnag/impload/) to upload missions to 2.x firmware.
+* [Bullet GCSS](https://github.com/danarrib/BulletGCSS/wiki) GPRS based telemetry using MQTT and a web client (most browsers, Desktop / Tablet / Mobile). Very cool project (and you can use the its MQTT protocol with mwp).
 * [Drone Helper](https://www.microsoft.com/en-us/p/drone-helper/9ncs8zwxn58x?activetab=pivot:overviewtab) (Windows 10+)
 * [Android Telemetry Viewer](https://github.com/RomanLut/android-taranis-smartport-telemetry) Android GCS for INAV (CRSF, LTM, Smartport telemetry).
 * [Ezgui](https://play.google.com/store/apps/details?id=com.ezio.multiwii&hl=en_GB), [MissionPlanner for Inav](https://play.google.com/store/apps/details?id=com.eziosoft.ezgui.inav&hl=en) (Android) Unsupported, obsolete. May not work with either contemporary Android or INAV firmware.
