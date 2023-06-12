@@ -129,6 +129,8 @@ maxz.downto(minz).each do |z|
 end
 
 now = Time.now
+ua = "Mission-Planner/1.0"
+
 gets.each do |m|
   sz = m[:z].to_s
   fn0 = File.join(dir,sz)
@@ -163,7 +165,7 @@ gets.each do |m|
       end
       if needed
 	puts "get #{u} => #{ofn}"
-	URI.open(u) do |f|
+	URI.open(u, "User-Agent" => ua) do |f|
 	  a=f.read
 	  File.open(ofn,'w') {|of| of.write(a)}
 	end

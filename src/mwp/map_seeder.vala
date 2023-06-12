@@ -240,6 +240,7 @@ public class TileUtil : Object {
 
     public void start_seeding() {
         session = new Soup.Session();
+        session.user_agent = "Mission-Planner/1.0";
         done = false;
         show_stats(stats);
         fetch_tile();
@@ -256,8 +257,10 @@ public class TileUtil : Object {
         if(r == TILE_ITER_RES.FETCH) {
             var msg = new Soup.Message ("GET", tile_uri);
 #if COLDSOUP
+            //            message.request_headers.append("X-Requested-With", "Anticipation");
             session.queue_message (msg, end_session);
 #else
+            //            msg.get_request_headers().append("X-Requested-With", "Anticipation");
             session.send_and_read_async.begin(msg, 0, null, (obj,res) => {
                     try {
                         var byt = session.send_and_read_async.end(res);
