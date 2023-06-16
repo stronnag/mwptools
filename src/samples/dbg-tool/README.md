@@ -19,6 +19,12 @@ Just run the `dbg-tool`; it will discover USB serial devices as they are plugged
 dbg-tool
 ```
 
+For non-discoverable devices (e.g. Bluetooth), the device name can be provided:
+
+```
+dbg-tool /dev/rfcomm3
+```
+
 ## Restrictions
 
 Only one USB serial device can be active.

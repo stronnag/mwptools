@@ -3,9 +3,7 @@ package main
 import (
 	"fmt"
 	"go.bug.st/serial"
-	"log"
 	"os"
-	"strings"
 )
 
 const (
@@ -33,7 +31,6 @@ const (
 	state_X_DATA
 	state_X_CHECKSUM
 )
-
 
 func crc8_dvb_s2(crc byte, a byte) byte {
 	crc ^= a
@@ -176,6 +173,7 @@ func msp_reader(p serial.Port, c0 chan SChan) {
 				fmt.Fprintf(os.Stderr, "Read error: %s\n", err)
 			}
 			p.Close()
+			c0 <- SChan{ok: false, cmd: 0xffff}
 			return
 		}
 	}
@@ -218,22 +216,19 @@ func MSPVariant(p serial.Port) {
 	p.Write(rb)
 }
 
-func MSPRunner(name string, c0 chan SChan) serial.Port {
+func MSPRunner(name string, c0 chan SChan) (serial.Port, error) {
 	mode := &serial.Mode{
 		BaudRate: 115200,
 	}
-	var sb strings.Builder
-	sb.WriteString("/dev/")
-	sb.WriteString(name)
+	p, err := serial.Open(name, mode)
 
-	p, err := serial.Open(sb.String(), mode)
-
-	if err != nil {
-		log.Fatal(err)
+	if err == nil {
+		fmt.Printf("Opened %s\n", name)
+		go msp_reader(p, c0)
+		MSPVariant(p)
+		return p, nil
 	}
-	go msp_reader(p, c0)
-	MSPVariant(p)
-	return p
+	return nil, err
 }
 
 func MSPClose(p serial.Port) {
