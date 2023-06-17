@@ -1,12 +1,13 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"github.com/eiannone/keyboard"
-	"github.com/jochenvg/go-udev"
+	"github.com/mattn/go-tty"
 	"go.bug.st/serial"
+	"log"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -15,6 +16,11 @@ type SChan struct {
 	cmd  uint16
 	ok   bool
 	data []byte
+}
+
+type UEvent struct {
+	action string
+	name   string
 }
 
 var st time.Time
@@ -29,27 +35,23 @@ func main() {
 	connected := ""
 	var sp serial.Port
 	c0 := make(chan SChan)
-	u := udev.Udev{}
-	m := u.NewMonitorFromNetlink("udev")
-	// Add filters to monitor
-	m.FilterAddMatchSubsystem("tty")
-
-	e := u.NewEnumerate()
-	e.AddMatchSubsystem("tty")
-	e.AddMatchProperty("ID_BUS", "usb")
-
+	uevt := make(chan UEvent)
+	have_udev, devlist := init_udev(uevt)
 	if userdev == "" {
-		var err error
-		devices, _ := e.Devices()
-		for i := range devices {
-			d := devices[i]
-			fmt.Printf("Found: /dev/%s\n", d.Sysname())
-			if len(connected) == 0 {
-				sp, err = MSPRunner("/dev/"+d.Sysname(), c0)
-				if err == nil {
-					st = time.Now()
-					connected = d.Sysname()
+		if len(devlist) > 0 {
+			var err error
+			sp, err = MSPRunner(devlist[0], c0)
+			if err == nil {
+				st = time.Now()
+				connected = devlist[0]
+				if !have_udev {
+					userdev = devlist[0]
 				}
+			}
+		} else {
+			if !have_udev {
+				fmt.Fprintf(os.Stderr, "No device given or found\n")
+				return
 			}
 		}
 	} else {
@@ -61,15 +63,27 @@ func main() {
 		}
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	ch, _ := m.DeviceChan(ctx)
+	cc := make(chan os.Signal, 1)
+	signal.Notify(cc, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	keysEvents, err := keyboard.GetKeys(10)
+	tty, err := tty.Open()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
+
 	}
-	defer keyboard.Close()
+	defer tty.Close()
+
+	kbchan := make(chan rune)
+	go func() {
+		for {
+			r, err := tty.ReadRune()
+			if err != nil {
+				log.Fatal(err)
+			}
+			kbchan <- r
+		}
+	}()
+
 	ticker := time.NewTicker(5 * time.Second)
 	for done := false; !done; {
 		select {
@@ -82,21 +96,18 @@ func main() {
 				}
 			}
 
-		case ev := <-keysEvents:
-			if ev.Err != nil {
-				panic(ev.Err)
-			}
-			if ev.Key == 0 {
-				if ev.Rune == 'R' {
-					if sp != nil {
-						fmt.Println("Rebooting ...")
-						MSPReboot(sp)
-					}
+		case ev := <-kbchan:
+			switch ev {
+			case 'R', 'r':
+				if sp != nil {
+					fmt.Println("Rebooting ...")
+					MSPReboot(sp)
 				}
-			} else if ev.Key == keyboard.KeyCtrlC {
+			case 'Q', 'q':
 				done = true
 			}
-
+		case <-cc:
+			done = true
 		case v := <-c0:
 			if v.ok {
 				switch v.cmd {
@@ -122,20 +133,22 @@ func main() {
 				sp = nil
 				connected = ""
 			}
-		case d := <-ch:
-			switch d.Action() {
+		case d := <-uevt:
+			switch d.action {
 			case "add":
-				fmt.Printf("Add event: /dev/%s\n", d.Sysname())
+				fmt.Printf("Add event: %s\n", d.name)
 				if len(connected) == 0 {
-					sp, err = MSPRunner("/dev/"+d.Sysname(), c0)
+					sp, err = MSPRunner(d.name, c0)
 					if err == nil {
 						st = time.Now()
-						connected = d.Sysname()
+						connected = d.name
+					} else {
+						fmt.Printf("Connect error %v", err)
 					}
 				}
 			case "remove":
-				fmt.Printf("Remove event: /dev/%s\n", d.Sysname())
-				if d.Sysname() == connected {
+				fmt.Printf("Remove event: %s\n", d.name)
+				if d.name == connected {
 					sp = nil
 					connected = ""
 				}
