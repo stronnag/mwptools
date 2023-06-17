@@ -1,4 +1,4 @@
-prefix ?= /usr/local
+prefix ?= $$HOME/.local
 APP = dbg-tool
 
 $(APP):	$(wildcard *.go) go.sum

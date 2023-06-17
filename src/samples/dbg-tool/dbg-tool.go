@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/mattn/go-tty"
 	"go.bug.st/serial"
 	"log"
@@ -27,6 +26,9 @@ var st time.Time
 
 func main() {
 
+	log.SetPrefix("[dbg-tool] ")
+	log.SetFlags(log.Ltime | log.Lmicroseconds)
+
 	userdev := ""
 	if len(os.Args) > 1 {
 		userdev = os.Args[1]
@@ -50,7 +52,7 @@ func main() {
 			}
 		} else {
 			if !have_udev {
-				fmt.Fprintf(os.Stderr, "No device given or found\n")
+				log.Fatal("No device given or found\n")
 				return
 			}
 		}
@@ -84,7 +86,7 @@ func main() {
 		}
 	}()
 
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(1 * time.Second)
 	for done := false; !done; {
 		select {
 		case <-ticker.C:
@@ -100,7 +102,7 @@ func main() {
 			switch ev {
 			case 'R', 'r':
 				if sp != nil {
-					fmt.Println("Rebooting ...")
+					log.Println("Rebooting ...")
 					MSPReboot(sp)
 				}
 			case 'Q', 'q':
@@ -112,14 +114,14 @@ func main() {
 			if v.ok {
 				switch v.cmd {
 				case msp_DEBUG:
-					fmt.Printf("DBG: %s", string(v.data))
+					log.Printf("DBG: %s", string(v.data))
 				case msp_FC_VARIANT:
 					var et = time.Since(st)
-					fmt.Printf("Variant: %s (%s)\n", string(v.data[0:4]), et)
+					log.Printf("Variant: %s (%s)\n", string(v.data[0:4]), et)
 					MSPVersion(sp)
 				case msp_FC_VERSION:
 					var et = time.Since(st)
-					fmt.Printf("Version: %d.%d.%d (%s)\n", v.data[0], v.data[1], v.data[2], et)
+					log.Printf("Version: %d.%d.%d (%s)\n", v.data[0], v.data[1], v.data[2], et)
 				case msp_REBOOT:
 					if userdev != "" && sp != nil {
 						MSPClose(sp)
@@ -127,7 +129,7 @@ func main() {
 						connected = ""
 					}
 				default:
-					fmt.Printf("Unexpected MSP %d %x\n", v.cmd, v.cmd)
+					log.Printf("Unexpected MSP %d %x\n", v.cmd, v.cmd)
 				}
 			} else if v.cmd == 0xffff {
 				sp = nil
@@ -136,18 +138,18 @@ func main() {
 		case d := <-uevt:
 			switch d.action {
 			case "add":
-				fmt.Printf("Add event: %s\n", d.name)
+				log.Printf("Add event: %s\n", d.name)
 				if len(connected) == 0 {
 					sp, err = MSPRunner(d.name, c0)
 					if err == nil {
 						st = time.Now()
 						connected = d.name
 					} else {
-						fmt.Printf("Connect error %v", err)
+						log.Printf("Connect error %v", err)
 					}
 				}
 			case "remove":
-				fmt.Printf("Remove event: %s\n", d.name)
+				log.Printf("Remove event: %s\n", d.name)
 				if d.name == connected {
 					sp = nil
 					connected = ""

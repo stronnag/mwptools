@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"time"
+
 	"go.bug.st/serial"
-	"os"
 )
 
 const (
@@ -131,7 +132,7 @@ func msp_reader(p serial.Port, c0 chan SChan) {
 				case state_X_CHECKSUM:
 					ccrc := inp[i]
 					if crc != ccrc {
-						fmt.Fprintf(os.Stderr, "CRC error on %d\n", sc.cmd)
+						log.Printf("CRC error on %d\n", sc.cmd)
 					} else {
 						c0 <- sc
 					}
@@ -161,7 +162,7 @@ func msp_reader(p serial.Port, c0 chan SChan) {
 				case state_CRC:
 					ccrc := inp[i]
 					if crc != ccrc {
-						fmt.Fprintf(os.Stderr, "CRC error on %d\n", sc.cmd)
+						log.Printf("CRC error on %d\n", sc.cmd)
 					} else {
 						c0 <- sc
 					}
@@ -170,7 +171,7 @@ func msp_reader(p serial.Port, c0 chan SChan) {
 			}
 		} else {
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "Read error: %s\n", err)
+				log.Printf("Read error: %s\n", err)
 			}
 			p.Close()
 			c0 <- SChan{ok: false, cmd: 0xffff}
@@ -223,8 +224,9 @@ func MSPRunner(name string, c0 chan SChan) (serial.Port, error) {
 	p, err := serial.Open(name, mode)
 
 	if err == nil {
-		fmt.Printf("Opened %s\n", name)
 		go msp_reader(p, c0)
+		time.Sleep(1500 * time.Millisecond)
+		log.Printf("Opened %s\n", name)
 		MSPVariant(p)
 		return p, nil
 	}
