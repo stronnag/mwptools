@@ -128,7 +128,8 @@ func main() {
 			if v.ok {
 				switch v.cmd {
 				case msp_DEBUG:
-					log.Printf("DBG: %s", string(v.data))
+					s := v.data[:v.len-1] // remove trailing NUL
+					log.Printf("DBG: %s", s)
 				case msp_FC_VARIANT:
 					var et = time.Since(st)
 					log.Printf("Variant: %s (%s)\n", string(v.data[0:4]), et)

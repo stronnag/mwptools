@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strings"
 	"time"
 
 	"go.bug.st/serial"
@@ -225,7 +226,9 @@ func MSPRunner(name string, baud int, c0 chan SChan) (serial.Port, error) {
 
 	if err == nil {
 		go msp_reader(p, c0)
-		time.Sleep(1500 * time.Millisecond)
+		if strings.HasPrefix(name, "/dev/rfcomm") {
+			time.Sleep(1500 * time.Millisecond)
+		}
 		log.Printf("Opened %s\n", name)
 		MSPVariant(p)
 		return p, nil
