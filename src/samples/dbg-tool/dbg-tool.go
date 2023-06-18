@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"github.com/mattn/go-tty"
 	"go.bug.st/serial"
 	"log"
@@ -25,11 +27,23 @@ type UEvent struct {
 var st time.Time
 
 func main() {
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage of %s [options] [device-node]\n", os.Args[0])
+		flag.PrintDefaults()
+		fmt.Fprintf(os.Stderr, "\n")
+	}
 
 	log.SetPrefix("[dbg-tool] ")
 	log.SetFlags(log.Ltime | log.Lmicroseconds)
 
 	userdev := ""
+	baud := 115200
+	flag.IntVar(&baud, "baudrate", 115200, "Baud rate")
+	flag.Parse()
+	if len(flag.Args()) > 0 {
+		userdev = flag.Args()[0]
+	}
+
 	if len(os.Args) > 1 {
 		userdev = os.Args[1]
 	}
@@ -42,7 +56,7 @@ func main() {
 	if userdev == "" {
 		if len(devlist) > 0 {
 			var err error
-			sp, err = MSPRunner(devlist[0], c0)
+			sp, err = MSPRunner(devlist[0], baud, c0)
 			if err == nil {
 				st = time.Now()
 				connected = devlist[0]
@@ -58,7 +72,7 @@ func main() {
 		}
 	} else {
 		var err error
-		sp, err = MSPRunner(userdev, c0)
+		sp, err = MSPRunner(userdev, baud, c0)
 		if err == nil {
 			st = time.Now()
 			connected = userdev
@@ -91,7 +105,7 @@ func main() {
 		select {
 		case <-ticker.C:
 			if sp == nil && userdev != "" {
-				sp, err = MSPRunner(userdev, c0)
+				sp, err = MSPRunner(userdev, baud, c0)
 				if err == nil {
 					st = time.Now()
 					connected = userdev
@@ -140,7 +154,7 @@ func main() {
 			case "add":
 				log.Printf("Add event: %s\n", d.name)
 				if len(connected) == 0 {
-					sp, err = MSPRunner(d.name, c0)
+					sp, err = MSPRunner(d.name, baud, c0)
 					if err == nil {
 						st = time.Now()
 						connected = d.name

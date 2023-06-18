@@ -12,7 +12,7 @@
 
 ## Usage
 
-Just run the `dbg-tool`; it will discover any extant plugged USB serial device, or provide the device node:
+Just run the `dbg-tool`; it will discover any extant plugged USB serial device, or provide the device node. The baudrate defaults to 115200, otherwise it may be specified:
 
 ```
 dbg-tool
@@ -20,9 +20,11 @@ dbg-tool
 dbg-tool /dev/cuaU0
 # or
 dbg-tool COM17
+# or (good luck ...)
+dbg-tool -baudrate 9600
 ```
 
-For non-discoverable devices (e.g. Bluetooth), the device name must be provided:
+For non-discover-able devices (e.g. Bluetooth), the device name must be provided:
 
 ```
 dbg-tool /dev/rfcomm3
@@ -30,7 +32,7 @@ dbg-tool /dev/rfcomm3
 
 On Linux, `udev` is used to recognise device nodes as they are plugged / unplugged.
 
-For non-Linux, the device given on the command line, or the initially dicovered device will be re-polled if it is unplugged / plugged.
+For non-Linux, the device given on the command line, or the initially discovered device will be re-polled if it is unplugged / plugged.
 
 
 ## Restrictions

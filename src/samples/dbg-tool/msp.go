@@ -217,9 +217,9 @@ func MSPVariant(p serial.Port) {
 	p.Write(rb)
 }
 
-func MSPRunner(name string, c0 chan SChan) (serial.Port, error) {
+func MSPRunner(name string, baud int, c0 chan SChan) (serial.Port, error) {
 	mode := &serial.Mode{
-		BaudRate: 115200,
+		BaudRate: baud,
 	}
 	p, err := serial.Open(name, mode)
 
