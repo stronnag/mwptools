@@ -14,6 +14,8 @@
 
 Just run the `dbg-tool`; it will discover any extant plugged USB serial device, or provide the device node. The baudrate defaults to 115200, otherwise it may be specified:
 
+`dbg-tool` may also be used with the INAV SITL by supplying a hostname:port as the parameter.
+
 ```
 dbg-tool
 # or
@@ -22,6 +24,8 @@ dbg-tool /dev/cuaU0
 dbg-tool COM17
 # or (good luck ...)
 dbg-tool -baudrate 9600
+# (SITL)
+dbg-tool localhost:5760
 ```
 
 For non-discover-able devices (e.g. Bluetooth), the device name must be provided:
@@ -35,6 +39,8 @@ On Linux, `udev` is used to recognise device nodes as they are plugged / unplugg
 For non-Linux, the device given on the command line, or the initially discovered device will be re-polled if it is unplugged / plugged.
 
 ## Example output
+
+### FC / VCP Serial
 
 ```
 [dbg-tool] 15:13:44.806365 Opened /dev/ttyACM0
@@ -50,8 +56,6 @@ For non-Linux, the device given on the command line, or the initially discovered
 * MSP Processing is available after c. 3 seconds
 * The calibration process takes nearly 8 seconds
 
-## Example Settings
-
 For the above,the following was specifically set in the CLI:
 
 ```
@@ -59,6 +63,16 @@ serial 20 32769 115200 115200 0 115200
 
 set log_level = DEBUG
 set log_topics = 4294967295
+```
+
+### SITL Example
+
+```
+[dbg-tool] 16:49:04.597413 Opened localhost:5767
+[dbg-tool] 16:49:05.520986 Variant: INAV (923.50912ms)
+[dbg-tool] 16:49:05.521202 Version: 7.0.0 (923.729755ms)
+[dbg-tool] 16:49:07.521404 DBG: [     3.755] Gyro calibration complete (0, 0, 0)
+[dbg-tool] 16:49:09.523056 DBG: [     5.756] Barometer calibration complete (-25)
 ```
 
 ## Restrictions

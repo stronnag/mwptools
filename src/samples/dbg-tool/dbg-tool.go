@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/mattn/go-tty"
-	"go.bug.st/serial"
 	"log"
 	"os"
 	"os/signal"
@@ -49,7 +48,7 @@ func main() {
 	}
 
 	connected := ""
-	var sp serial.Port
+	var sp *MSPSerial
 	c0 := make(chan SChan)
 	uevt := make(chan UEvent)
 	have_udev, devlist := init_udev(uevt)
@@ -117,7 +116,7 @@ func main() {
 			case 'R', 'r':
 				if sp != nil {
 					log.Println("Rebooting ...")
-					MSPReboot(sp)
+					sp.MSPReboot()
 				}
 			case 'Q', 'q':
 				done = true
@@ -133,13 +132,13 @@ func main() {
 				case msp_FC_VARIANT:
 					var et = time.Since(st)
 					log.Printf("Variant: %s (%s)\n", string(v.data[0:4]), et)
-					MSPVersion(sp)
+					sp.MSPVersion()
 				case msp_FC_VERSION:
 					var et = time.Since(st)
 					log.Printf("Version: %d.%d.%d (%s)\n", v.data[0], v.data[1], v.data[2], et)
 				case msp_REBOOT:
 					if userdev != "" && sp != nil {
-						MSPClose(sp)
+						sp.MSPClose()
 						sp = nil
 						connected = ""
 					}

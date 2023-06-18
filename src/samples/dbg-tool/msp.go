@@ -1,11 +1,11 @@
 package main
 
 import (
+	"go.bug.st/serial"
 	"log"
+	"net"
 	"strings"
 	"time"
-
-	"go.bug.st/serial"
 )
 
 const (
@@ -34,6 +34,16 @@ const (
 	state_X_CHECKSUM
 )
 
+type SerDev interface {
+	Read(buf []byte) (int, error)
+	Write(buf []byte) (int, error)
+	Close() error
+}
+
+type MSPSerial struct {
+	SerDev
+}
+
 func crc8_dvb_s2(crc byte, a byte) byte {
 	crc ^= a
 	for i := 0; i < 8; i++ {
@@ -46,7 +56,7 @@ func crc8_dvb_s2(crc byte, a byte) byte {
 	return crc
 }
 
-func msp_reader(p serial.Port, c0 chan SChan) {
+func (m *MSPSerial) msp_reader(c0 chan SChan) {
 	inp := make([]byte, 128)
 	var count = uint16(0)
 	var crc = byte(0)
@@ -54,7 +64,7 @@ func msp_reader(p serial.Port, c0 chan SChan) {
 
 	n := state_INIT
 	for {
-		nb, err := p.Read(inp)
+		nb, err := m.Read(inp)
 		if err == nil && nb > 0 {
 			for i := 0; i < nb; i++ {
 				switch n {
@@ -174,7 +184,7 @@ func msp_reader(p serial.Port, c0 chan SChan) {
 			if err != nil {
 				log.Printf("Read error: %s\n", err)
 			}
-			p.Close()
+			m.SerDev.Close()
 			c0 <- SChan{ok: false, cmd: 0xffff}
 			return
 		}
@@ -203,39 +213,57 @@ func encode_msp(cmd byte, payload []byte) []byte {
 	return buf
 }
 
-func MSPReboot(p serial.Port) {
+func (m *MSPSerial) MSPReboot() {
 	rb := encode_msp(msp_REBOOT, nil)
-	p.Write(rb)
+	m.Write(rb)
 }
 
-func MSPVersion(p serial.Port) {
+func (m *MSPSerial) MSPVersion() {
 	rb := encode_msp(msp_FC_VERSION, nil)
-	p.Write(rb)
+	m.Write(rb)
 }
 
-func MSPVariant(p serial.Port) {
+func (m *MSPSerial) MSPVariant() {
 	rb := encode_msp(msp_FC_VARIANT, nil)
-	p.Write(rb)
+	m.Write(rb)
 }
 
-func MSPRunner(name string, baud int, c0 chan SChan) (serial.Port, error) {
-	mode := &serial.Mode{
-		BaudRate: baud,
+func MSPRunner(name string, baud int, c0 chan SChan) (*MSPSerial, error) {
+	var m *MSPSerial
+	h, p, err := net.SplitHostPort(name)
+	if err == nil && h != "" && p != "" {
+		var conn net.Conn
+		addr, nerr := net.ResolveTCPAddr("tcp", name)
+		if nerr == nil {
+			conn, err = net.DialTCP("tcp", nil, addr)
+			m = &MSPSerial{conn}
+		} else {
+			err = nerr
+		}
+	} else {
+		mode := &serial.Mode{
+			BaudRate: baud,
+		}
+		pt, perr := serial.Open(name, mode)
+		if perr == nil {
+			m = &MSPSerial{pt}
+		} else {
+			err = perr
+		}
 	}
-	p, err := serial.Open(name, mode)
 
 	if err == nil {
-		go msp_reader(p, c0)
+		go m.msp_reader(c0)
 		if strings.HasPrefix(name, "/dev/rfcomm") {
 			time.Sleep(1500 * time.Millisecond)
 		}
 		log.Printf("Opened %s\n", name)
-		MSPVariant(p)
-		return p, nil
+		m.MSPVariant()
+		return m, nil
 	}
 	return nil, err
 }
 
-func MSPClose(p serial.Port) {
-	p.Close()
+func (p *MSPSerial) MSPClose() {
+	p.SerDev.Close()
 }
