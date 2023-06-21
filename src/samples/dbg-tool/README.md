@@ -2,7 +2,7 @@
 
 ## Description
 
-`dbg-tool` is a simple tool to support inav serial debugging, as described in [the inav documentation](https://github.com/iNavFlight/inav/blob/master/docs/development/serial_printf_debugging.md). It may be considered to be a much simplified replacement for [@fiam's msp-tool](https://github.com/fiam/msp-tool).
+`dbg-tool` is a simple tool to support [INAV](https://github.com/iNavFlight/inav) serial debugging, as described in [the INAV documentation](https://github.com/iNavFlight/inav/blob/master/docs/development/serial_printf_debugging.md). It may be considered to be a much simplified replacement for [@fiam's msp-tool](https://github.com/fiam/msp-tool).
 
 ## Features
 
