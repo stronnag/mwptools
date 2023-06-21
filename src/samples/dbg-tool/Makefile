@@ -1,6 +1,8 @@
 prefix ?= $$HOME/.local
 APP = dbg-tool
 
+all: $(APP)
+
 $(APP):	$(wildcard *.go) go.sum
 	-go build -ldflags "-w -s"
 

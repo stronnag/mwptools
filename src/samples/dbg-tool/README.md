@@ -89,3 +89,43 @@ set log_topics = 4294967295
 ## Restrictions
 
 Only one USB serial device can be active.
+
+## Installing
+
+* Requires a `go` compiler (`golang`)
+
+With GNU make:
+
+```
+make
+# or
+# FreeBSD
+gmake
+```
+
+Otherwise:
+
+```
+# Once ...
+go mod tidy
+# and then
+go build -ldflags "-w -s"
+```
+
+Note you can cross compiler for any `golang` supported OS / hardware, via the `GOOS` / `GOARCH` environment variables:
+
+```
+# Hosted on Linux
+$ GOARCH=riscv64 GOOS=freebsd make clean all
+go build -ldflags "-w -s"
+$ file dbg-tool
+dbg-tool: ELF 64-bit LSB executable, UCB RISC-V, double-float ABI, version 1 (FreeBSD), statically linked, for FreeBSD 12.3, FreeBSD-style, Go BuildID=8p975X5SeLojpAYLxqIr/-S-Ne3CFQuAG0ijuwtue/4aR43vOc4CItWH9zaYb-/P90oWbPuxVpli7o-ba44, stripped
+```
+
+```
+# Hosted on Linux (even WSL) or Msys2
+$ GOARCH=386 GOOS=windows make clean all
+go build -ldflags "-w -s"
+$ file dbg-tool.exe
+dbg-tool.exe: PE32 executable (console) Intel 80386 (stripped to external PDB), for MS Windows, 6 sections
+```
