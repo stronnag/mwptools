@@ -47,7 +47,7 @@ For non-Linux, the device given on the command line, or the initially discovered
 
 ### Development Cycle
 
-During a typical build / flash / debug cycle, it will be necessary to quit `dbg-tool` in order to flash new firmware to the FC, and then re-invoke `dbg-tool` to see `MSP_DEBUG` messages. If it required to see messages from early in the boot cycle, using `dbg-tool`'s `reboot` key command (`r` / `R`) will maximise the chances of catching message from early in the FC boot process.
+During a typical build / flash / debug cycle, it will be necessary to quit `dbg-tool` in order to flash new firmware to the FC, and then re-invoke `dbg-tool` to see `MSP_DEBUGMSG` messages. If it required to see messages from early in the boot cycle, using `dbg-tool`'s `reboot` key command (`r` / `R`) will maximise the chances of catching message from early in the FC boot process.
 
 ## Example output
 
