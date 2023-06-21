@@ -27,7 +27,7 @@ var st time.Time
 
 func main() {
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage of %s [options] [device-node]\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage of %s [options] [device-node|host:port]\n", os.Args[0])
 		flag.PrintDefaults()
 		fmt.Fprintf(os.Stderr, "\n")
 	}

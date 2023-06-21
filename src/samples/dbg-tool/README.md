@@ -38,6 +38,17 @@ On Linux, `udev` is used to recognise device nodes as they are plugged / unplugg
 
 For non-Linux, the device given on the command line, or the initially discovered device will be re-polled if it is unplugged / plugged.
 
+### Serial port management
+
+* If a device node is provided on the command line, that is used exclusively. On FC reboot, the device node will be polled for reconnection. It is not necessary for the specified device to be present when `dbg-tool` is invoked.
+* If no device node is provided, then the outcome is OS dependent.
+  - Linux: `udev` events are used to identify connection / disconnection. It is not necessary for the device to be present when `dbg-tool` is invoked.
+  - Non-Linux: Serial devices are enumerated at startup. The first device will be used, including across FC reboot. If no suitable device is present at startup, `dbg-tool` will exit.
+
+### Development Cycle
+
+During a typical build / flash / debug cycle, it will be necessary to quit `dbg-tool` in order to flash new firmware to the FC, and then re-invoke `dbg-tool` to see `MSP_DEBUG` messages. If it required to see messages from early in the boot cycle, using `dbg-tool`'s `reboot` key command (`r` / `R`) will maximise the chances of catching message from early in the FC boot process.
+
 ## Example output
 
 ### FC / VCP Serial
