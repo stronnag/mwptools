@@ -37,14 +37,13 @@ func main() {
 
 	userdev := ""
 	baud := 115200
+	nopoll := false
+
 	flag.IntVar(&baud, "baudrate", 115200, "Baud rate")
+	flag.BoolVar(&nopoll, "no-poll", false, "Don't poll for version / variant")
 	flag.Parse()
 	if len(flag.Args()) > 0 {
-		userdev = flag.Args()[0]
-	}
-
-	if len(os.Args) > 1 {
-		userdev = os.Args[1]
+		userdev = flag.Arg(0)
 	}
 
 	connected := ""
@@ -55,7 +54,7 @@ func main() {
 	if userdev == "" {
 		if len(devlist) > 0 {
 			var err error
-			sp, err = MSPRunner(devlist[0], baud, c0)
+			sp, err = MSPRunner(devlist[0], baud, nopoll, c0)
 			if err == nil {
 				st = time.Now()
 				connected = devlist[0]
@@ -71,7 +70,7 @@ func main() {
 		}
 	} else {
 		var err error
-		sp, err = MSPRunner(userdev, baud, c0)
+		sp, err = MSPRunner(userdev, baud, nopoll, c0)
 		if err == nil {
 			st = time.Now()
 			connected = userdev
@@ -104,7 +103,7 @@ func main() {
 		select {
 		case <-ticker.C:
 			if sp == nil && userdev != "" {
-				sp, err = MSPRunner(userdev, baud, c0)
+				sp, err = MSPRunner(userdev, baud, nopoll, c0)
 				if err == nil {
 					st = time.Now()
 					connected = userdev
@@ -154,7 +153,7 @@ func main() {
 			case "add":
 				log.Printf("Add event: %s\n", d.name)
 				if len(connected) == 0 {
-					sp, err = MSPRunner(d.name, baud, c0)
+					sp, err = MSPRunner(d.name, baud, nopoll, c0)
 					if err == nil {
 						st = time.Now()
 						connected = d.name

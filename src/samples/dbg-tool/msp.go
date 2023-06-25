@@ -228,7 +228,7 @@ func (m *MSPSerial) MSPVariant() {
 	m.Write(rb)
 }
 
-func MSPRunner(name string, baud int, c0 chan SChan) (*MSPSerial, error) {
+func MSPRunner(name string, baud int, nopoll bool, c0 chan SChan) (*MSPSerial, error) {
 	var m *MSPSerial
 	h, p, err := net.SplitHostPort(name)
 	if err == nil && h != "" && p != "" {
@@ -247,9 +247,8 @@ func MSPRunner(name string, baud int, c0 chan SChan) (*MSPSerial, error) {
 		pt, perr := serial.Open(name, mode)
 		if perr == nil {
 			m = &MSPSerial{pt}
-		} else {
-			err = perr
 		}
+		err = perr
 	}
 
 	if err == nil {
@@ -258,7 +257,9 @@ func MSPRunner(name string, baud int, c0 chan SChan) (*MSPSerial, error) {
 			time.Sleep(1500 * time.Millisecond)
 		}
 		log.Printf("Opened %s\n", name)
-		m.MSPVariant()
+		if !nopoll {
+			m.MSPVariant()
+		}
 		return m, nil
 	}
 	return nil, err

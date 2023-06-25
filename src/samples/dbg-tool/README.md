@@ -12,9 +12,18 @@
 
 ## Usage
 
-Just run the `dbg-tool`; it will discover any extant plugged USB serial device, or provide the device node. The baudrate defaults to 115200, otherwise it may be specified:
+Just run the `dbg-tool`; it will discover any extant plugged USB serial device, or provide the device node:
 
-`dbg-tool` may also be used with the INAV SITL by supplying a hostname:port as the parameter.
+```
+$ dbg-tool --help
+Usage of dbg-tool [options] [device-node|host:port]
+  -baudrate int
+    	Baud rate (default 115200)
+  -no-poll
+    	Don't poll for version / variant
+```
+
+`dbg-tool` may be used with the INAV SITL by supplying a hostname:port as the parameter.
 
 ```
 dbg-tool
