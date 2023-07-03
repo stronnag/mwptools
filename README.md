@@ -139,7 +139,7 @@ In addition to [mwp](https://github.com/stronnag/mwptools), the following INAV m
 * [qgroundcontrol](https://docs.qgroundcontrol.com/master/en/) with [impload](https://github.com/stronnag/impload/). Ardupilot planner, missions can be uploaded to INAV using [impload](https://github.com/stronnag/impload/).
 * [Side-Pilot](https://sidepilot.net/) with [impload](https://github.com/stronnag/impload)  (untested). Ardupilot mission planner and telemetry viewer for IOS.
 
-The following alternatives exist for **mwp-area-planner** :
+The following alternatives exist for [**mwp-area-planner**](https://stronnag.github.io/mwptools/mwp-miscellaneous-tools/#mwp-area-planner) :
 
 * iforce2d's [online planner](http://www.iforce2d.net/surveyplanner)
 *  [qgroundcontrol](https://docs.qgroundcontrol.com/master/en/) with [impload](https://github.com/stronnag/impload/). Generic surveys and corridor plans are supported. [Example images](https://github.com/stronnag/impload/releases/tag/3.146.697).
