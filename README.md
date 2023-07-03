@@ -142,4 +142,4 @@ In addition to [mwp](https://github.com/stronnag/mwptools), the following INAV m
 The following alternatives exist for [**mwp-area-planner**](https://stronnag.github.io/mwptools/mwp-miscellaneous-tools/#mwp-area-planner) :
 
 * iforce2d's [online planner](http://www.iforce2d.net/surveyplanner)
-*  [qgroundcontrol](https://docs.qgroundcontrol.com/master/en/) with [impload](https://github.com/stronnag/impload/). Generic surveys and corridor plans are supported. [Example images](https://github.com/stronnag/impload/releases/tag/3.146.697).
+*  [qgroundcontrol](https://docs.qgroundcontrol.com/master/en/) with [impload](https://github.com/stronnag/impload/). Generic surveys and corridor plans are supported. [Example images](https://stronnag.github.io/impload/#sample-images)
