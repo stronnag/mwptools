@@ -103,6 +103,11 @@ Only one USB serial device can be active.
 
 * Requires a `go` compiler (`golang`)
 
+```
+git clone https://codeberg.org/stronnag/dbg-tool.git
+cd dbg-tool
+```
+
 With GNU make:
 
 ```
