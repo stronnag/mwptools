@@ -131,7 +131,7 @@ results in
 * The firmware is flashed and the FC reboots
 * The temporary bin file is removed
 
-see also [msp-tool](https://github.com/fiam/msp-tool) for another tool to simplify command line FC flashing.
+Note that gcc `objcopy` is required to convert from `.hex` to `.bin` (as required by `dfu-util`).
 
 ## flashgo
 
