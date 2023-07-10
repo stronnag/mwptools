@@ -7,6 +7,7 @@ import (
 	"go.bug.st/serial/enumerator"
 	"log"
 	"os"
+	"runtime"
 )
 
 const (
@@ -291,15 +292,24 @@ func DeserialiseCal(b []byte) []int16 {
 
 func Enumerate_ports() string {
 	ports, err := enumerator.GetDetailedPortsList()
-	if err != nil {
-		log.Fatal(err)
-	}
-	for _, port := range ports {
-		if port.Name != "" {
-			if port.IsUSB {
-				if port.VID == "0483" && port.PID == "5740" {
-					return port.Name
+	if err == nil {
+		for _, port := range ports {
+			if port.Name != "" {
+				if port.IsUSB {
+					if port.VID == "0483" && port.PID == "5740" {
+						return port.Name
+					}
 				}
+			}
+		}
+	}
+
+	if runtime.GOOS == "freebsd" {
+		err = nil
+		for j := 0; j < 10; j++ {
+			name := fmt.Sprintf("/dev/cuaU%d", j)
+			if _, serr := os.Stat(name); serr == nil {
+				return name
 			}
 		}
 	}

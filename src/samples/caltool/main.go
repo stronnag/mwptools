@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/eiannone/keyboard"
+	"github.com/mattn/go-tty"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -37,38 +39,46 @@ func main() {
 		log.Fatalln("No serial device given or detected")
 	}
 
-	keysEvents, err := keyboard.GetKeys(10)
+	cc := make(chan os.Signal, 1)
+	signal.Notify(cc, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	tty, err := tty.Open()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
+
 	}
-	defer keyboard.Close()
+	defer tty.Close()
+
+	kbchan := make(chan rune)
+	go func() {
+		for {
+			r, err := tty.ReadRune()
+			if err != nil {
+				log.Fatal(err)
+			}
+			kbchan <- r
+		}
+	}()
 
 	for done := false; !done; {
 		select {
-		case ev := <-keysEvents:
-			if ev.Err != nil {
-				panic(ev.Err)
-			}
-			if ev.Key == 0 {
-				switch ev.Rune {
-				case 'R', 'r':
-					fmt.Println("Rebooting ...")
-					sp.MSPReboot()
-
-				case 'V', 'v':
-					sp.MSPCalData()
-				case 'A', 'a':
-					sp.MSPCalAxis()
-				case 'M', 'm':
-					sp.MSPCalMag()
-				case 'Q', 'q':
-					done = true
-
-				default:
-				}
-			} else if ev.Key == keyboard.KeyCtrlC {
+		case ev := <-kbchan:
+			switch ev {
+			case 'R', 'r':
+				fmt.Println("Rebooting ...")
+				sp.MSPReboot()
+			case 'V', 'v':
+				sp.MSPCalData()
+			case 'A', 'a':
+				sp.MSPCalAxis()
+			case 'M', 'm':
+				sp.MSPCalMag()
+			case 'Q', 'q':
 				done = true
 			}
+
+		case <-cc:
+			done = true
 
 		case v := <-c0:
 			switch v.cmd {
