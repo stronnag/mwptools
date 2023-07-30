@@ -36,7 +36,7 @@ static inline gchar* m_module_build_path(const gchar* dir, const gchar* name) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   return g_module_build_path(dir, name);
-#pragma GCC diagnostic push
+#pragma GCC diagnostic pop
 }
 
 #ifdef USE_ESPEAK
