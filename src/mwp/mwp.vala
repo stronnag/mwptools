@@ -8357,8 +8357,7 @@ public class MWP : Gtk.Application {
 #endif
 	}
 
-    void process_mavlink_radar(uint8 *rp)
-    {
+    void process_mavlink_radar(uint8 *rp)     {
         var sb = new StringBuilder("MAV radar:");
         uint32 v;
         int32 i;
@@ -8372,8 +8371,7 @@ public class MWP : Gtk.Application {
         double lat = 0;
         double lon = 0;
 
-        if ((valid & 0x10) == 0x10)
-        {
+        if ((valid & 0x10) == 0x10) {
             uint8 cs[10];
             uint8 *csp = cs;
             for(var j=0; j < 9; j++) {
@@ -8386,18 +8384,14 @@ public class MWP : Gtk.Application {
 			if(callsign.length == 0) {
 				callsign = "[%u]".printf(v);
 			}
-        }
-        else
-        {
+        } else {
             callsign = "[%u]".printf(v);
         }
         sb.append_printf("callsign <%s> ", callsign);
 
-        if ((valid & 1)  == 1)
-        {
+        if ((valid & 1)  == 1) {
             unowned RadarPlot? ri = find_radar_data(v);
-            if (ri == null)
-            {
+            if (ri == null) {
                 var r0 = RadarPlot();
                 r0.id =  v;
                 radar_plot.append(r0);
@@ -8406,9 +8400,9 @@ public class MWP : Gtk.Application {
                 ri.source = 2;
                 ri.posvalid = false;
                 sb.append(" * ");
-            }
-            else
+            } else {
                 ri.name = callsign;
+            }
 
             SEDE.deserialise_i32(rp+4, out i);
             lat = i / 1e7;
@@ -8423,23 +8417,20 @@ public class MWP : Gtk.Application {
             ri.state = 4;
             ri.lasttick = nticks;
 
-            if((valid & 2) == 2)
-            {
+            if((valid & 2) == 2) {
                 SEDE.deserialise_i32(rp+12, out i);
                 var l = i / 1000.0;
                 sb.append_printf("alt %.1f ", l);
                 ri.altitude = l;
             }
 
-            if((valid & 4) == 4)
-            {
+            if((valid & 4) == 4) {
                 uint16 h;
                 SEDE.deserialise_u16(rp+16, out h);
                 sb.append_printf("heading %u ", h);
                 ri.heading = h/100;
             }
-            if((valid & 8) == 8)
-            {
+            if((valid & 8) == 8) {
                 uint16 hv;
                 SEDE.deserialise_u16(rp+18, out hv);
                 ri.speed = hv/100.0;
@@ -8450,14 +8441,11 @@ public class MWP : Gtk.Application {
 
             sb.append_printf("ticks %u ", ri.lasttick);
 			radarv.update(ref ri, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
-            if(lat != 0 && lon != 0)
-            {
+            if(lat != 0 && lon != 0) {
                 ri.posvalid = true;
                 markers.update_radar(ref ri);
             }
-        }
-        else
-        {
+        } else {
             sb.append("invald pos ");
         }
 
