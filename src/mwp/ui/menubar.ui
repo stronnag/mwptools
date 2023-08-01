@@ -254,6 +254,12 @@
           <attribute name="label">Radar View</attribute>
           <attribute name="action">win.radar-view</attribute>
         </item>
+        <item>
+          <attribute name="label">Telemetry Tracker</attribute>
+          <attribute name="action">win.ttrack-view</attribute>
+	  <attribute name="accel">&lt;Control&gt;&lt;Shift&gt;t</attribute>
+
+        </item>
       </section>
       <section>
         <item>

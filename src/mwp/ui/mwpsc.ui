@@ -215,6 +215,12 @@
             </child>
             <child>
               <object class="GtkShortcutsShortcut">
+                <property name="accelerator">&lt;ctrl&gt;&lt;shift&gt;t</property>
+                <property name="title" translatable="yes">Display Telemetry Tracker</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkShortcutsShortcut">
                 <property name="accelerator">&lt;ctrl&gt;question</property>
                 <property name="title" translatable="yes">Toggle map location display (centre or pointer)</property>
               </object>

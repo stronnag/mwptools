@@ -569,6 +569,10 @@ public class MWSerial : Object {
         return result;
     }
 
+    public string get_devname() {
+        return devname;
+    }
+
     public MWSerial.forwarder()
     {
         fwd = true;

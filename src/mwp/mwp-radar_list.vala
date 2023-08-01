@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-class RadarView : Object
-{
+public class RadarView : Object {
     Gtk.Label label;
     Gtk.Window w;
     Gtk.ListStore listmodel;
@@ -26,6 +25,7 @@ class RadarView : Object
 	private int64 last_sec = 0;
 
     enum Column {
+        SID,
         NAME,
         LAT,
         LON,
@@ -47,6 +47,14 @@ class RadarView : Object
         CLOSE
     }
 
+    public enum Status {
+        UNDEF = 0,
+        ARMED = 1,
+        HIDDEN =2,
+        STALE = 3,
+        ADSB = 4,
+        SBS = 5
+    }
 
 	const uint TOTHEMOON = 0xfffffff;
 
@@ -57,11 +65,12 @@ class RadarView : Object
     internal RadarView (Gtk.Window? _w) {
         w = new Gtk.Window();
         var scrolled = new Gtk.ScrolledWindow (null, null);
-        w.set_default_size (750, 300);
+        w.set_default_size (900, 400);
         w.title = "Radar Data";
         var view = new Gtk.TreeView ();
+        view.hexpand = true;
+        view.vexpand = true;
         setup_treeview (view);
-        view.expand = true;
         label = new Gtk.Label ("");
         var grid = new Gtk.Grid ();
         scrolled.add(view);
@@ -106,7 +115,8 @@ class RadarView : Object
         Gtk.Box box = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 5);
         box.pack_start (label, true, false, 0);
         box.pack_end (bbox, false, false, 0);
-
+        grid.hexpand = true;
+        grid.vexpand = true;
         grid.attach (scrolled, 0, 0, 1, 1);
         grid.attach (box, 0, 1, 1, 1);
         w.add (grid);
@@ -117,16 +127,28 @@ class RadarView : Object
             });
     }
 
-    private void pan_to_swarm()
-    {
+    private string source_id(uint8 sid) {
+        switch(sid) {
+        case RadarSource.INAV:
+            return "I";
+        case RadarSource.TELEM:
+            return "T";
+        case RadarSource.MAVLINK:
+            return "A";
+        case RadarSource.SBS:
+            return "S";
+        }
+        return "?";
+    }
+
+    private void pan_to_swarm() {
         int n = 0;
         double alat = 0;
         double alon = 0;
         Gtk.TreeIter iter;
 
         for(bool next=listmodel.get_iter_first(out iter); next;
-            next=listmodel.iter_next(ref iter))
-        {
+            next=listmodel.iter_next(ref iter)) {
             GLib.Value cell;
             listmodel.get_value (iter, Column.LAT, out cell);
             var dpos = (double)cell;
@@ -143,8 +165,7 @@ class RadarView : Object
         }
     }
 
-    private void show_number()
-    {
+    private void show_number() {
         int n_rows = listmodel.iter_n_children(null);
         int stale = 0;
         int hidden = 0;
@@ -152,9 +173,7 @@ class RadarView : Object
 
         buttons[Buttons.CENTRE].sensitive = (n_rows != 0);
 
-        for(bool next=listmodel.get_iter_first(out iter); next;
-            next=listmodel.iter_next(ref iter))
-        {
+        for(bool next=listmodel.get_iter_first(out iter); next; next=listmodel.iter_next(ref iter)) {
             GLib.Value cell;
             listmodel.get_value (iter, Column.STATUS, out cell);
             var status = (string)cell;
@@ -176,17 +195,13 @@ class RadarView : Object
         label.set_text (sb.str);
     }
 
-    private bool find_entry(RadarPlot r, out Gtk.TreeIter iter)
-    {
+    private bool find_entry(RadarPlot r, out Gtk.TreeIter iter) {
         bool found = false;
-        for(bool next=listmodel.get_iter_first(out iter); next;
-            next=listmodel.iter_next(ref iter))
-        {
+        for(bool next=listmodel.get_iter_first(out iter); next; next=listmodel.iter_next(ref iter)) {
             GLib.Value cell;
             listmodel.get_value (iter, Column.ID, out cell);
             var id = (uint)cell;
-            if(id == r.id)
-            {
+            if(id == r.id) {
                 found = true;
                 break;
             }
@@ -194,11 +209,9 @@ class RadarView : Object
         return found;
     }
 
-    public void remove (RadarPlot r)
-    {
+    public void remove (RadarPlot r) {
         Gtk.TreeIter iter;
-        if (find_entry(r, out iter))
-        {
+        if (find_entry(r, out iter)) {
             listmodel.remove(ref iter);
             show_number();
         }
@@ -217,8 +230,7 @@ class RadarView : Object
 		cell.set_property("text", s);
 	}
 
-	public void update (ref unowned RadarPlot r, bool verbose = false)
-    {
+	public void update (ref unowned RadarPlot r, bool verbose = false) {
 		var dt = new DateTime.now_local ();
 		uint idm = TOTHEMOON;
 		uint cse =0;
@@ -231,16 +243,16 @@ class RadarView : Object
 			Geo.csedist(hlat, hlon, r.latitude, r.longitude, out d, out c);
 			idm = (uint)(d*1852); // nm to m
 			cse = (uint)c;
-			if(r.source == 2 || r.source == 3) {
+			if((r.source & RadarSource.M_ADSB) != 0) {
 				if(MWP.conf.radar_alert_altitude > 0 && MWP.conf.radar_alert_range > 0 &&
 				   r.altitude < MWP.conf.radar_alert_altitude && idm < MWP.conf.radar_alert_range) {
 					r.alert = RadarAlert.ALERT;
 					var this_sec = dt.to_unix();
-					if(r.state > 3 && this_sec >= last_sec + 2) {
+					if(r.state > Status.STALE && this_sec >= last_sec + 2) {
 						MWP.play_alarm_sound(MWPAlert.GENERAL);
 						last_sec =  this_sec;
 					}
-				} else {
+                } else {
 					r.alert = RadarAlert.NONE;
 				}
 			}
@@ -258,17 +270,17 @@ class RadarView : Object
 
         Gtk.TreeIter iter;
         var found = find_entry(r, out iter);
-        if(!found)
-        {
+        if(!found) {
             listmodel.append (out iter);
             listmodel.set (iter, Column.ID,r.id);
         }
 
         if(r.state >= RadarView.status.length)
-            r.state = 0;
+            r.state = Status.UNDEF;
         var stsstr = "%s / %u".printf(RadarView.status[r.state], r.lq);
 
         listmodel.set (iter,
+                       Column.SID, source_id(r.source),
                        Column.NAME,r.name,
                        Column.LAT, r.latitude,
                        Column.LON, r.longitude,
@@ -277,7 +289,7 @@ class RadarView : Object
                        Column.SPEED, "%.0f %s".printf(Units.speed(r.speed), Units.speed_units()),
                        Column.STATUS, stsstr);
 
-		if(r.state == 1 || r.state == 4 || r.state == 5) {
+		if(r.state == Status.ARMED || r.state == Status.ADSB || r.state == Status.SBS) {
 			listmodel.set (iter, Column.LAST, dt.format("%T"));
         }
 
@@ -288,6 +300,7 @@ class RadarView : Object
     private void setup_treeview (Gtk.TreeView view) {
 
         listmodel = new Gtk.ListStore (Column.NO_COLS,
+                                       typeof (string),
                                        typeof (string),
                                        typeof (double),
                                        typeof (double),
@@ -312,6 +325,10 @@ class RadarView : Object
 //        cell.set ("weight", 700);
 
             /*columns*/
+        view.insert_column_with_attributes (-1, "*",
+                                            cell, "text",
+                                            Column.SID);
+
         view.insert_column_with_attributes (-1, "Id",
                                             cell, "text",
                                             Column.NAME);
@@ -423,27 +440,23 @@ class RadarView : Object
 				set_cell_text_bg(model, iter, _cell, s);
             });
 
-        int [] widths = {12, 16, 16, 10, 10, 10, 12, 12, 12, 6};
-        for (int j = Column.NAME; j <= Column.RANGE; j++)
-        {
+        int [] widths = {2,12, 16, 16, 10, 10, 10, 12, 12, 12, 6, 6};
+        for (int j = Column.SID; j <= Column.BEARING; j++) {
             var scol =  view.get_column(j);
-            if(scol!=null)
-            {
+            if(scol!=null) {
                 scol.set_min_width(7*widths[j]);
                 scol.resizable = true;
-                if (j == Column.NAME || j == Column.STATUS || j == Column.LAST || j == Column.RANGE)
+                if (j == Column.SID || j == Column.NAME || j == Column.STATUS || j == Column.LAST || j == Column.RANGE)
                     scol.set_sort_column_id(j);
             }
         }
     }
 
-    public void show_or_hide()
-    {
+    public void show_or_hide() {
         if(vis)
             w.hide();
         else
             w.show_all();
-
         vis = !vis;
     }
 }

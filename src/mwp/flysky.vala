@@ -32,12 +32,10 @@ namespace FLYSKY {
 		LON0 = 14,
 		SPEED = 15,
 	}
-	private Telem telem;
-	private int __cnt = 0;
-
 	private const string[] modemap = {"Manual","Acro","Horizon","Angle","WP", "AH", "PH",
                 "RTH", "Launch", "Failsafe"};
-	public void show_telem() {
+
+	public void show_telem(Telem telem) {
 		int mode = telem.status % 10;
 		int hdop = (telem.status % 100) / 10;
 		int nsat = (telem.status / 1000);
@@ -65,21 +63,10 @@ namespace FLYSKY {
 		stdout.printf("speed: %.1f m/s\n", telem.speed);
 	}
 
-	public void reset() {
-		if((__cnt % 100) == 0) {
-			FLYSKY.show_telem();
-		}
-		__cnt += 1;
-		telem = {};
-	}
-
-	public Telem get_telem() {
-		return telem;
-	}
-
-	public bool decode(uint8[]buf) {
+	public bool decode(uint8[]buf, out Telem telem) {
 		uint8 *bp = buf;
 		uint16 val;
+        telem = {};
 		telem.rssi = *bp;
 		bp++;
 		for(var s = 0; s < 7; s++) {
