@@ -395,12 +395,10 @@ namespace CRC8 {
 		0x84, 0x51, 0xfb, 0x2e, 0x7a, 0xaf, 0x05, 0xd0,
 		0xad, 0x78, 0xd2, 0x07, 0x53, 0x86, 0x2c, 0xf9};
 
-    uint8 dvb_s2(uint8 crc, uint8 a)
-    {
+    uint8 dvb_s2(uint8 crc, uint8 a) {
 		crc ^= a;
 		return crc8_dvb_s2_tab[crc];
     }
-
 }
 
 public class MWSerial : Object {
@@ -548,6 +546,37 @@ public class MWSerial : Object {
     public signal void flysky_event(uint8[]buf);
     public signal void crsf_event(uint8[]raw);
 
+    public static PMask name_to_pmask(string name) {
+        switch(name.down()) {
+        case "inav","1":
+            return PMask.INAV;
+        case "crsf","4":
+            return PMask.CRSF;
+        case "sport","2":
+            return PMask.SPORT;
+        case "mpm","8":
+            return PMask.MPM;
+        default:
+            return PMask.AUTO;
+        }
+    }
+
+    public static string pmask_to_name(PMask pmask) {
+        switch(pmask) {
+        case PMask.INAV:
+            return "INAV";
+        case PMask.CRSF:
+            return "CRSF";
+        case PMask.SPORT:
+            return "Sport";
+        case PMask.MPM:
+            return "MPM";
+        case PMask.AUTO:
+            return "Auto";
+        default:
+            return "????";
+        }
+    }
     public int randomUDP(int[] res)
     {
         int result = -1;
@@ -567,6 +596,10 @@ public class MWSerial : Object {
             } catch {}
         }
         return result;
+    }
+
+    public string get_devname() {
+        return devname;
     }
 
     public MWSerial.forwarder()

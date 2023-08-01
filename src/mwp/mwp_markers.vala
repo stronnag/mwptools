@@ -95,6 +95,7 @@ public class MWPMarkers : GLib.Object
 	private Clutter.Image yplane;
 	private Clutter.Image rplane;
 	private Clutter.Image inavradar;
+	private Clutter.Image inavtelem;
 
     public signal void wp_moved(int ino, double lat, double lon, bool flag);
     public signal void wp_selected(int ino);
@@ -170,6 +171,7 @@ public class MWPMarkers : GLib.Object
 
 		try {
 			inavradar = load_image_from_file("inav-radar.svg", MWP.conf.misciconsize,MWP.conf.misciconsize);
+			inavtelem = load_image_from_file("inav-telem.svg", MWP.conf.misciconsize,MWP.conf.misciconsize);
 			yplane = load_image_from_file("plane100.svg",MWP.conf.misciconsize, MWP.conf.misciconsize);
 			rplane = load_image_from_file("plane100red.svg", MWP.conf.misciconsize, MWP.conf.misciconsize);
 		} catch {
@@ -233,8 +235,10 @@ public class MWPMarkers : GLib.Object
 			Clutter.Actor actor = new Clutter.Actor ();
 			Clutter.Image img;
 
-			if (r.source == 1) {
+			if (r.source == RadarSource.INAV) {
 				img = inavradar;
+            } else if (r.source == RadarSource.TELEM) {
+				img = inavtelem;
 			} else if ((r.alert & RadarAlert.ALERT) == RadarAlert.ALERT) {
 				img = rplane;
 			} else {
@@ -280,7 +284,7 @@ public class MWPMarkers : GLib.Object
                     return false;
                 });
 
-            if(r.source == 1) {
+            if((r.source & RadarSource.M_INAV) != 0) {
                 var irlabel = new MWPLabel.with_text (r.name, "Sans 9", null, null);
                 irlabel.set_use_markup (true);
                 irlabel.set_color (grayish);
@@ -295,7 +299,7 @@ public class MWPMarkers : GLib.Object
         rp.rplot = r;
         if(rp.name != r.name) {
             rp.name = r.name;
-            if(r.source == 1) {
+            if((r.source & RadarSource.M_INAV) != 0) {
                 unowned MWPLabel _t = rp.extras[Extra.Q_1] as MWPLabel;
                 if (_t != null) {
                     _t.text = r.name;
@@ -305,7 +309,7 @@ public class MWPMarkers : GLib.Object
 
         rp.set_color (white);
         rp.set_location (r.latitude,r.longitude);
-		if (r.source == 2 || r.source == 3) {
+		if ((r.source & RadarSource.M_ADSB) != 0) {
 			var act = rp.get_image();
 			if((r.alert & RadarAlert.SET) == RadarAlert.SET) {
 				if((r.alert & RadarAlert.ALERT) == RadarAlert.ALERT) {
@@ -317,7 +321,7 @@ public class MWPMarkers : GLib.Object
 			}
 		}
 
-        if(r.source == 1) {
+        if((r.source & RadarSource.M_INAV) != 0) {
             var _t = rp.extras[Extra.Q_1] as MWPLabel;
             if (_t != null) {
                 _t.set_location (r.latitude,r.longitude);

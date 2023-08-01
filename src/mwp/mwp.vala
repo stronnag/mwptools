@@ -100,7 +100,7 @@ public class MWP : Gtk.Application {
     private FlightBox fbox;
     private DirnBox dbox;
     private VarioBox vabox;
-    private RadarView radarv;
+    public RadarView radarv;
     private WPMGR wpmgr;
     private MissionItem[] wp_resp;
     private string boxnames = null;
@@ -270,7 +270,10 @@ public class MWP : Gtk.Application {
 		string name;
 	}
 	private RadarDev[] radardevs;
-	private uint radartid = -1;
+
+    private TelemTracker ttrk;
+
+    private uint radartid = -1;
 	private Sticks.StickWindow sticks;
 	private bool sticks_ok = false;
 
@@ -575,7 +578,7 @@ public class MWP : Gtk.Application {
 
     private varios Varios;
     private Timer lastp;
-    private uint nticks = 0;
+    public uint nticks = 0;
     private uint lastdbus = 0;
     private uint lastm = 0;
     private uint lastrx = 0;
@@ -623,7 +626,7 @@ public class MWP : Gtk.Application {
     private bool mkcon = false;
     private bool ignore_sz = false;
     private bool nopoll = false;
-    private bool rawlog = false;
+    public bool rawlog = false;
     private bool no_trail = false;
     private bool no_max = false;
     private bool force_mag = false;
@@ -2167,10 +2170,17 @@ public class MWP : Gtk.Application {
             });
         window.add_action(saq);
 
+        saq = new GLib.SimpleAction("ttrack-view",null);
+        saq.activate.connect(() => {
+                ttrk.show_dialog();
+            });
+        window.add_action(saq);
+
         saq = new GLib.SimpleAction("keys",null);
         saq.activate.connect(() => {
                 scview.show_all();
             });
+
         window.add_action(saq);
 
         reboot_status();
@@ -2405,6 +2415,12 @@ public class MWP : Gtk.Application {
                 duration = 0;
                 return true;
             });
+
+        ag.connect('t', Gdk.ModifierType.CONTROL_MASK|Gdk.ModifierType.SHIFT_MASK, 0, (a,o,k,m) => {
+                ttrk.show_dialog();
+                return true;
+            });
+
 
         ag.connect('c', Gdk.ModifierType.CONTROL_MASK|Gdk.ModifierType.SHIFT_MASK,
                    0, (a,o,k,m) => {
@@ -2650,6 +2666,8 @@ public class MWP : Gtk.Application {
 					});
 			}
 		}
+
+        ttrk = new TelemTracker(this);
         mq = new Queue<MQI?>();
 
         build_serial_combo();
@@ -3770,9 +3788,9 @@ public class MWP : Gtk.Application {
 	}
 
 	private void ProcessFlysky(uint8[] raw) {
-		if(FLYSKY.decode(raw)) {
-			processFlysky_telem(FLYSKY.get_telem());
-			FLYSKY.reset();
+        FLYSKY.Telem t;
+		if(FLYSKY.decode(raw, out t)) {
+			processFlysky_telem(t);
 		}
 	}
 
@@ -4708,8 +4726,7 @@ public class MWP : Gtk.Application {
 		return false;
 	}
 
-    private int append_combo(Gtk.ComboBoxText cbtx, string s)
-    {
+    private int append_combo(Gtk.ComboBoxText cbtx, string s) {
 		if(lookup_radar(s))
             return -1;
 
@@ -4727,13 +4744,15 @@ public class MWP : Gtk.Application {
 
         if(cbtx.active == -1)
             cbtx.active = 0;
+
+        ttrk.add(s);
         return n;
     }
 
-    private void prepend_combo(Gtk.ComboBoxText cbtx, string s)
-    {
+    private void prepend_combo(Gtk.ComboBoxText cbtx, string s) {
 		if(lookup_radar(s))
             return;
+
         if(s == forward_device)
             return;
 
@@ -4744,10 +4763,11 @@ public class MWP : Gtk.Application {
         } else {
             cbtx.active = n;
 		}
+        ttrk.add(s);
     }
 
-    private void remove_combo(Gtk.ComboBoxText cbtx,string s)
-    {
+    private void remove_combo(Gtk.ComboBoxText cbtx,string s) {
+        ttrk.remove(s);
         foreach(string a in conf.devices) {
 			if (a == s)
                 return;
@@ -5070,8 +5090,7 @@ public class MWP : Gtk.Application {
                             {
                                 if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
                                     MWPLog.message("TRAF-DEL %s %u\n", r.name, r.state);
-                                if(r.source == 2 || r.source == 3)
-                                {
+                                if((r.source & RadarSource.M_ADSB) != 0) {
                                     radarv.remove(r);
                                     markers.remove_radar(r);
                                     radar_plot.remove_all(r);
@@ -5081,8 +5100,7 @@ public class MWP : Gtk.Application {
                             {
                                 if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
                                     MWPLog.message("TRAF-HID %s %u\n", r.name, r.state);
-                                if(r.source == 2 || r.source == 3)
-                                {
+                                if((r.source & RadarSource.M_ADSB) != 0) {
                                     r.state = 2; // hidden
 									r.alert = RadarAlert.SET;
 									radarv.update(ref r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
@@ -8257,7 +8275,7 @@ public class MWP : Gtk.Application {
 		run_queue();
     }
 
-    unowned RadarPlot? find_radar_data(uint id)
+    public unowned RadarPlot? find_radar_data(uint id)
     {
         SearchFunc<RadarPlot?,uint>  plot_search = (a,b) =>  {
             return (int) (a.id > b) - (int) (a.id < b);
@@ -8278,7 +8296,7 @@ public class MWP : Gtk.Application {
 			r0.id =  v;
 			radar_plot.append(r0);
 			ri = find_radar_data(v);
-			ri.source = 3;
+			ri.source = RadarSource.SBS;
 			ri.posvalid = false;
 			ri.state = 5;
 			ri.name = name;
@@ -8397,7 +8415,7 @@ public class MWP : Gtk.Application {
                 radar_plot.append(r0);
                 ri = find_radar_data(v);
                 ri.name = callsign;
-                ri.source = 2;
+                ri.source = RadarSource.MAVLINK;
                 ri.posvalid = false;
                 sb.append(" * ");
             } else {
@@ -8469,7 +8487,7 @@ public class MWP : Gtk.Application {
             radar_plot.append(r0);
             ri = find_radar_data((uint)id);
             ri.name = "⚙ inav %c".printf(65+id);
-            ri.source = 1;
+            ri.source = RadarSource.INAV;
         }
         ri.state = *rp++;
         rp = SEDE.deserialise_i32(rp, out ipos);
@@ -9054,8 +9072,7 @@ public class MWP : Gtk.Application {
                        telstats.s.msgs.to_string());
     }
 
-    private void serial_doom(Gtk.Button c)
-    {
+    private void serial_doom(Gtk.Button c) {
         if(is_shutdown == true)
             return;
 
@@ -9069,19 +9086,16 @@ public class MWP : Gtk.Application {
             MWPLog.message("Not managing screen / power settings\n");
         }
         map_hide_wp();
-        if(replayer == Player.NONE)
-        {
+        if(replayer == Player.NONE) {
             safehomed.online_change(0);
             arm_warn.hide();
             serstate = SERSTATE.NONE;
             sflags = 0;
-            if (conf.audioarmed == true)
-            {
+            if (conf.audioarmed == true) {
                 audio_cb.active = false;
             }
             show_serial_stats();
-            if(rawlog == true)
-            {
+            if(rawlog == true) {
                 msp.raw_logging(false);
             }
 
@@ -9097,11 +9111,12 @@ public class MWP : Gtk.Application {
             last_tm = 0;
             last_ga = 0;
             boxnames = null;
-            if (msp.available)
+            if (msp.available) {
                 msp.close();
+                ttrk.enable(msp.get_devname());
+            }
 #if MQTT
-            else if (mqtt_available)
-            {
+            else if (mqtt_available) {
                 mqtt_available = mqtt.mdisconnect();
             }
 #endif
@@ -9109,17 +9124,14 @@ public class MWP : Gtk.Application {
             set_mission_menus(false);
             set_menu_state("navconfig", false);
             duration = -1;
-            if(craft != null)
-            {
+            if(craft != null) {
                 craft.remove_marker();
             }
             init_have_home();
             set_error_status(null);
             xsensor = 0;
             clear_sensor_array();
-        }
-        else
-        {
+        } else {
 			if(bbvlist != null) {
 				bbvlist = null;
 			}
@@ -9256,15 +9268,11 @@ public class MWP : Gtk.Application {
         }
     }
 
-
-    private void try_radar_dev()
-    {
+    private void try_radar_dev() {
 		foreach (var r in radardevs) {
 			string fstr = null;
-			if(!r.dev.available)
-			{
-				if(r.dev.open (r.name, 115200, out fstr) == true)
-				{
+			if(!r.dev.available) {
+				if(r.dev.open (r.name, 115200, out fstr) == true) {
 					MWPLog.message("start radar reader %s\n", r.name);
 					if(rawlog)
 						r.dev.raw_logging(true);
@@ -9275,9 +9283,7 @@ public class MWP : Gtk.Application {
 								return Source.CONTINUE;
 							});
 					}
-				}
-				else
-				{
+				} else {
 					MWPLog.message("Radar reader %s\n", fstr);
 				}
 			}
@@ -9307,7 +9313,7 @@ public class MWP : Gtk.Application {
         } else {
             var serdev = dev_entry.get_active_text();
             string estr="";
-            bool ostat;
+            bool ostat = false;
             if (MwpMisc.is_cygwin()) {
                 if (serdev.has_prefix("COM")) {
                     var dnumber = int.parse(serdev[3:serdev.length]);
@@ -9316,6 +9322,7 @@ public class MWP : Gtk.Application {
             }
 
             serstate = SERSTATE.NONE;
+
             if(lookup_radar(serdev) || serdev == forward_device) {
                 mwp_warning_box("The selected device is assigned to a special function (radar / forwarding).\nPlease choose another device", Gtk.MessageType.WARNING, 60);
                 return;
@@ -9335,6 +9342,11 @@ public class MWP : Gtk.Application {
                 return;
 #endif
             } else {
+                if (ttrk.is_used(serdev)) {
+                    mwp_warning_box("The selected device is use for Telemetry Tracking\n", Gtk.MessageType.WARNING, 60);
+                return;
+                }
+                ttrk.disable(serdev);
                 MWPLog.message("Trying OS open for %s\n", serdev);
                 ostat = msp.open_w(serdev, conf.baudrate, out estr);
             }

@@ -2,6 +2,8 @@
 
 {{ mwp }} supports the display of "radar" contacts. This provides a view of adjacent aircraft obtained from a number of sources:
 
+
+* [Tracked Telemetry](mwp-telemetry-tracker.md). Models tracked by telemetry (CRSF, LTM, MAVLink, Smartport, MPM(Flysky, Smaprtport)). Provided by RX Telemetry Mirroring or dedicated telemetry radios.
 * [INAV-radar](https://www.rcgroups.com/forums/showthread.php?3304673-iNav-Radar-ESP32-LoRa-modems). INAV radar works in conjunction with [INAV](https://github.com/iNavFlight/inav) flight controllers to broadcast the location of UAS fitted with an ESP32 LoRa module. {{ mwp }} can listen to one of these modems in ground station mode to display the positions of the rest of the 'swarm' (up to 4 UAS); [technical / MSP details](#inav-radar).
 
 * **Full size aircraft** reported by the MAVLink 'Traffic Report' / 'ADSB Vehicle' message. Examples of available hardware include:
@@ -31,6 +33,8 @@ The `radar-device` option is defined by the standard {{ mwp }} naming scheme:
 * A SBS-1 source, defined by a special URI:
     * `sbs://[[host][:port]]`
   Host and port are optional, defaulting to `localhost` and `30003`. So the minimal "URI" is `sbs://`.
+
+For "Telemetry Tracking", please see its [separate article](mwp-telemetry-tracker.md).
 
 The specific (not shared with the main serial port) radar device(s) may be defined on the command line, or in the static command options file (`~/.config/mwp/cmdopts`):
 
@@ -87,6 +91,7 @@ Once the radar interface is open, radar tracks are displayed on the map and in a
 | INAV-radar | Node Id (typically 'A' - 'D') |
 | Traffic Report | Callsign if reported, otherwise [ICAO number] |
 | SBS-1 | Callsign if reported, otherwise [Mode S hexadecimal code] |
+| Telemetry | User defined for automatically allocated, prefixed by `TTRK-` |
 
 ### Status
 
@@ -108,6 +113,19 @@ The number displayed after the status text is:
 | INAV-radar | The link quality |
 | Traffic Report | Time since last communication in seconds |
 | SBS-1 | Always `0` |
+
+### Columns
+
+The columns are sortable. Note that since the introduction of [Telemetry Tracking](mwp-telemetry-tracker.md), a new column "*" has been added, this contains a single character indicating the source:
+
+| Indicator | Source |
+| --------- | ------ |
+| A         | ADS-B via MAVLink |
+| I         | INAV Radar |
+| S         | ADS-B via SBS |
+| T         | Telemetry Tracker |
+
+![Telemetry Tracker](images/ttrk-play.png)
 
 ## Examples
 
