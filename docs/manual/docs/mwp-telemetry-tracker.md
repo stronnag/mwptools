@@ -71,4 +71,4 @@ The default may be overridden by the user if so desired.
 
 ## Constraints
 
-Linux preferred, due to the `udev` dependency for device enumeration. On other platforms it will be necessary to define devices _a priori_ using the `MWP_SECDEV` environment variable (which may be set in `~/.config/mwp/cmdopts`.
+Linux preferred, due to the `udev` dependency for device enumeration. On other platforms it will be necessary to define devices _a priori_ using the `MWP_SECDEV` environment variable (which may be set in `~/.config/mwp/cmdopts`).
