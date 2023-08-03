@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
 ## Starting point for Debian & Ubuntu packages ...
 function usage
 {
@@ -48,6 +49,7 @@ sudo apt update && sudo apt full-upgrade && \
     libncurses5-dev \
     golang-go \
     ruby ruby-json \
+    desktop-file-utils \
     libspeechd-dev flite flite1-dev libmosquitto-dev \
     gnuplot ruby-nokogiri unzip
 
