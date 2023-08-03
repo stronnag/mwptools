@@ -16,6 +16,7 @@ public class TelemTracker {
 		string name;
         string alias;
         Status status;
+        MWSerial.PMask pmask;
 	}
 
     internal SecDev[] secdevs;
@@ -73,10 +74,21 @@ public class TelemTracker {
 
     public void add(string sname) {
         bool found = false;
+        string devname;
+        MWSerial.PMask pmask;
+
         var parts = sname.split(" ", 2);
+        var subparts = parts[0].split("#");
+        if (subparts.length == 2) {
+            devname = subparts[0];
+            pmask = MWSerial.name_to_pmask(subparts[1]);
+        } else {
+            devname = parts[0];
+            pmask = MWSerial.PMask.AUTO;
+        }
 
         for(int n = 0; n < secdevs.length; n++) {
-            if (secdevs[n].name == parts[0]) {
+            if (secdevs[n].name == devname) {
                 secdevs[n].status = Status.PRESENT;
                 found = true;
                 break;
@@ -86,7 +98,7 @@ public class TelemTracker {
         if(!found) {
             var s = SecDev();
             s.status = Status.PRESENT;
-            s.name = parts[0];
+            s.name = devname;
             if (parts.length == 2) {
                 s.alias = parts[1];
             } else {
@@ -99,15 +111,14 @@ public class TelemTracker {
                 s.alias = "TTRK-%s".printf(suffix);
             }
             s.dev = null;
+            s.pmask = pmask;
             secdevs += s;
         }
-        //        display("Add", parts[0]);
         changed();
     }
 
     public void remove(string sname) {
         disable(sname);
-        //        display("Rem", sname);
     }
 
     public void enable(string sname) {
@@ -170,6 +181,8 @@ public class TelemTracker {
                 MWPLog.message("start secondary reader %s\n", secdevs[n].name);
                 if(mp.rawlog)
                     secdevs[n].dev.raw_logging(true);
+                secdevs[n].dev.set_pmask(secdevs[n].pmask);
+                secdevs[n].dev.set_auto_mpm(secdevs[n].pmask == MWSerial.PMask.AUTO);
             } else {
                 MWPLog.message("Radar reader %s\n", fstr);
             }
@@ -425,11 +438,14 @@ public class TelemTracker {
 public class  SecDevDialog : Gtk.Window {
     private Gtk.TreeView tview;
     private Gtk.ListStore sd_liststore;
+    private Gtk.ListStore combo_model;
+
     private TelemTracker tt;
     enum Column {
         NAME,
         ALIAS,
         STATUS,
+        PMASK,
         ID,
         NO_COLS
     }
@@ -452,6 +468,7 @@ public class  SecDevDialog : Gtk.Window {
                                               typeof (string),
                                               typeof (string),
                                               typeof (bool),
+                                              typeof (string),
                                               typeof(int)
                                               );
 
@@ -488,7 +505,43 @@ public class  SecDevDialog : Gtk.Window {
                     sd_liststore.set (iter, Column.STATUS, (tt.secdevs[idx].status == TelemTracker.Status.USED));
                 });
 
-            int [] widths = {30, 40, 10, 0};
+            Gtk.TreeIter iter;
+            combo_model = new Gtk.ListStore (2, typeof (string), typeof(MWSerial.PMask));
+            combo_model.append (out iter);
+            combo_model.set (iter, 0, "Auto", 1, MWSerial.PMask.AUTO);
+            combo_model.append (out iter);
+            combo_model.set (iter, 0, "INAV", 1, MWSerial.PMask.INAV);
+            combo_model.append (out iter);
+            combo_model.set (iter, 0, "SPort", 1, MWSerial.PMask.SPORT);
+            combo_model.append (out iter);
+            combo_model.set (iter, 0, "CRSF", 1, MWSerial.PMask.CRSF);
+            combo_model.append (out iter);
+            combo_model.set (iter, 0, "MPM", 1, MWSerial.PMask.MPM);
+
+            Gtk.CellRendererCombo combo = new Gtk.CellRendererCombo ();
+            combo.set_property ("editable", true);
+            combo.set_property ("model", combo_model);
+            combo.set_property ("text-column", 0);
+            combo.set_property ("has-entry", false);
+            tview.insert_column_with_attributes (-1, "Hint",
+                                                 combo, "text", Column.PMASK);
+
+            combo.changed.connect((path, iter_new) => {
+                    Gtk.TreeIter iter_val;
+                    Value val;
+                    int idx=0;
+                    MWSerial.PMask pmask;
+                    combo_model.get_value (iter_new, 0, out val);
+                    string hint = (string)val;
+                    combo_model.get_value (iter_new, 1, out val);
+                    pmask = (MWSerial.PMask)val;
+                    sd_liststore.get_iter (out iter_val, new Gtk.TreePath.from_string (path));
+                    sd_liststore.get (iter_val, Column.ID, &idx);
+                    sd_liststore.set (iter_val, Column.PMASK, hint);
+                    tt.secdevs[idx].pmask = pmask;
+                });
+
+            int [] widths = {30, 40, 8, 10};
             for (int j = Column.NAME; j < Column.ID; j++) {
                 var scol =  tview.get_column(j);
                 if(scol!=null) {
@@ -534,6 +587,7 @@ public class  SecDevDialog : Gtk.Window {
                                   Column.STATUS, (s.status == TelemTracker.Status.USED),
                                   Column.NAME, s.name,
                                   Column.ALIAS, s.alias,
+                                  Column.PMASK, MWSerial.pmask_to_name(s.pmask),
                                   Column.ID,n);
             }
             n++;

@@ -50,6 +50,7 @@ The "Telemery Tracking" device(s) may be assigned from the "View" / "Telemetry T
 * The USB device node is auto-detected and automatically aliased `TTRK-ttyACM0`. The user can edit / override this alias if she so wishes.
 * The two bluetooth devices (`35:53:*`) have aliases defined at the operating system level.
 * If `/dev/ttyACM0` is subsequently connected as the primary device, it will not appear in the list.
+* The `Hints` column lets the user define the specific protocol to used (vice let it be auto-detected).
 
 Tracking devices are enabled / disabled using the "Enable" check-button. Once a device is enabled, {{mwp}} will attempt to read data from it. The device is closed by toggling the "Enable" button. Once disabled, its resources are freed. If a USB device is physically removed when enabled, its resources will also be freed.
 
