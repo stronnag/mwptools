@@ -548,13 +548,17 @@ public class MWSerial : Object {
 
     public static PMask name_to_pmask(string name) {
         switch(name.down()) {
-        case "inav","1":
+        case "inav":
+        case "1":
             return PMask.INAV;
-        case "crsf","4":
-            return PMask.CRSF;
-        case "sport","2":
+        case "sport":
+        case "2":
             return PMask.SPORT;
-        case "mpm","8":
+        case "crsf":
+        case "4":
+            return PMask.CRSF;
+        case "mpm":
+        case "8":
             return PMask.MPM;
         default:
             return PMask.AUTO;
