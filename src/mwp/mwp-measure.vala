@@ -98,7 +98,6 @@ class MeasureLayer : Object {
         dlg.set_position(Gtk.WindowPosition.MOUSE);
         dlg.set_keep_above(true);
         dlg.response.connect((resp) => {
-//                print("DBG: RESP  %s\n", ((Gtk.ResponseType)resp).to_string());
                 switch (resp) {
                 case Gtk.ResponseType.OK:
                     break;

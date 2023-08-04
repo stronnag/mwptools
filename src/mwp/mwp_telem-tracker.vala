@@ -54,7 +54,6 @@ public class TelemTracker {
                         }
                         break;
                         }
-//                        stderr.printf("DBG: %d: %d -> %d\n", n, xstat[n], secdevs[n].status);
                     }
                 }
             });
@@ -142,14 +141,7 @@ public class TelemTracker {
         }
         changed();
     }
-    /**
-    private void display(string act, string dev) {
-        stderr.printf("DBG *** %s %s ***\n", act, dev);
-        foreach (var s in secdevs) {
-            stderr.printf("\tDBG n=<%s> a=<%s> s=%d\n", s.name, s.alias, s.status);
-        }
-    }
-    **/
+
     private void start_reader(int n) {
         if (secdevs[n].dev == null) {
             secdevs[n].dev = new MWSerial();
@@ -172,7 +164,6 @@ public class TelemTracker {
 
         secdevs[n].dev.serial_lost.connect(() => {
                 stop_reader(n);
-                stderr.printf("DBG: Reader stopped, check dialog!!!!!\n");
             });
 
         string fstr = null;
@@ -229,6 +220,7 @@ public class TelemTracker {
             } else {
                 ri.state = RadarView.Status.UNDEF;
             }
+            ri.lq =  (uint8)((int)raw[4]*100/255);
             break;
 
         case MSP.Cmds.MAVLINK_MSG_ID_HEARTBEAT:
@@ -262,7 +254,10 @@ public class TelemTracker {
 					mhead += 360;
                 ri.heading = (uint16)mhead;
                 break;
-
+        case MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW:
+            Mav.MAVLINK_RC_CHANNELS m = *(Mav.MAVLINK_RC_CHANNELS*)raw;
+            ri.lq = (uint8)(m.rssi*100/255);
+            break;
         default:
             break;
         }
@@ -314,6 +309,9 @@ public class TelemTracker {
                  break;
          case CRSF.FM_ID: // armed check
              break;
+         case CRSF.LINKSTATS_ID:
+             ri.lq = ptr[2];
+             break;
 
          default:
              break;
@@ -360,6 +358,7 @@ public class TelemTracker {
             } else if((t.mask & (1 << FLYSKY.Func.COG)) !=0 ) {
                 ri.heading = (uint16)t.cog;
             }
+            ri.lq = (uint8)(t.rssi&0xff);
             if (ri.posvalid) {
                 ri.lasttick = mp.nticks;
                 mp.markers.update_radar(ref ri);
@@ -427,6 +426,9 @@ public class TelemTracker {
                     mp.radarv.update(ref ri, false);
                 }
             }
+            break;
+        case SportDev.FrID.RSSI_ID:
+            ri.lq = (uint8)(val&0xff);
             break;
 
         default:

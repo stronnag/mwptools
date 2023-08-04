@@ -8070,12 +8070,11 @@ public class MWP : Gtk.Application {
                 break;
 
             case MSP.Cmds.MAVLINK_MSG_RC_CHANNELS_RAW:
-                if(Logger.is_logging)
-                {
-                    Mav.MAVLINK_RC_CHANNELS m = *(Mav.MAVLINK_RC_CHANNELS*)raw;
+                Mav.MAVLINK_RC_CHANNELS m = *(Mav.MAVLINK_RC_CHANNELS*)raw;
+                var mrssi = m.rssi*1023/255;
+                radstatus.update_rssi(mrssi,item_visible(DOCKLETS.RADIO));
+                if (Logger.is_logging) {
                     Logger.mav_rc_channels(m);
-                    var mrssi = m.rssi*1023/255;
-                    radstatus.update_rssi(mrssi,item_visible(DOCKLETS.RADIO));
                 }
                 break;
 

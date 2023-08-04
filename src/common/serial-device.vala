@@ -1120,29 +1120,23 @@ public class MWSerial : Object {
                 }
             }
 
-            if(pmode == ProtoMode.CLI)
-            {
+            if(pmode == ProtoMode.CLI) {
                 csize = (uint16)res;
                 cli_event(devbuf, csize);
-            }
-            else
-            {
+            } else {
                 if(stime == 0)
                     stime =  GLib.get_monotonic_time();
 
                 ltime =  GLib.get_monotonic_time();
                 stats.rxbytes += res;
-                if(print_raw == true)
-                {
+                if(print_raw == true) {
                     dump_raw_data(devbuf, (int)res);
                 }
-                if(rawlog == true)
-                {
+                if(rawlog == true) {
                     log_raw('i', devbuf, (int)res);
                 }
 
-                for(var nc = 0; nc < res; nc++)
-                {
+                for(var nc = 0; nc < res; nc++) {
 					if (pmask ==  PMask.MPM) {
 						var mpmres = MPM.decode(devbuf[nc]);
 						if(mpmres == MPM.Mtype.MPM_FRSKY) {
@@ -1209,10 +1203,7 @@ public class MWSerial : Object {
 								break;
 							default:
 								if (state == States.S_HEADER) {
-									error_counter("Detect");
-									if(debug) {
-										MWPLog.message("expected header0 (0x%x)\n", devbuf[nc]);
-									}
+                                    MWPLog.message("Detect: expected header0 (0x%x %x)\n", devbuf[nc], pmask);
 									state=States.S_ERROR;
 								}
 								break;
@@ -1255,20 +1246,13 @@ public class MWSerial : Object {
 						case States.S_HEADER1:
 							encap = false;
 							irxbufp=0;
-							if(devbuf[nc] == 'M')
-							{
+							if(devbuf[nc] == 'M') {
 								state=States.S_HEADER2;
-							}
-							else if(devbuf[nc] == 'T')
-							{
+							} else if(devbuf[nc] == 'T') {
 								state=States.S_T_HEADER2;
-							}
-							else if(devbuf[nc] == 'X')
-							{
+							} else if(devbuf[nc] == 'X') {
 								state=States.S_X_HEADER2;
-							}
-							else
-							{
+							} else {
 								error_counter("MSP/Proto");
 								if(debug) {
 									MWPLog.message("fail on header1 %x\n", devbuf[nc]);
@@ -1279,8 +1263,7 @@ public class MWSerial : Object {
 
 						case States.S_T_HEADER2:
 							needed = 0;
-							switch(devbuf[nc])
-							{
+							switch(devbuf[nc]) {
 							case 'G':
 								needed = (uint16) MSize.LTM_GFRAME;
 								cmd = MSP.Cmds.TG_FRAME;
