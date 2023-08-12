@@ -7630,8 +7630,7 @@ public class MWP : Gtk.Application {
 
                 rp = SEDE.deserialise_i32(raw, out gf.lat);
                 rp = SEDE.deserialise_i32(rp, out gf.lon);
-                if(fakeoff.faking)
-                {
+                if(fakeoff.faking) {
                     gf.lat += (int32)(fakeoff.dlat*10000000);
                     gf.lon += (int32)(fakeoff.dlon*10000000);
                 }
@@ -7650,29 +7649,22 @@ public class MWP : Gtk.Application {
                 int fix = gpsinfo.update_ltm(gf, conf.dms, item_visible(DOCKLETS.GPS), rhdop, out ddm);
                 _nsats = (gf.sats >> 2);
 
-                if((_nsats == 0 && nsats != 0) || (nsats == 0 && _nsats != 0))
-                {
+                if((_nsats == 0 && nsats != 0) || (nsats == 0 && _nsats != 0)) {
                     nsats = _nsats;
                     navstatus.sats(_nsats, true);
                 }
 
-                if(fix > 0)
-                {
+                if(fix > 0) {
                     sat_coverage();
-                    if(armed != 0)
-                    {
-                        if(have_home)
-                        {
-                            if(_nsats >= msats || ltm_force_sats)
-                            {
-                                if(pos_valid(GPSInfo.lat, GPSInfo.lon))
-                                {
+                    if(armed != 0) {
+                        if(have_home) {
+                            if(_nsats >= msats || ltm_force_sats) {
+                                if(pos_valid(GPSInfo.lat, GPSInfo.lon)) {
                                     double dist,cse;
                                     Geo.csedist(GPSInfo.lat, GPSInfo.lon,
                                                 home_pos.lat, home_pos.lon,
                                                 out dist, out cse);
-                                    if(dist < 256)
-                                    {
+                                    if(dist < 256) {
                                         var cg = MSP_COMP_GPS();
                                         cg.range = (uint16)Math.lround(dist*1852);
                                         cg.direction = (int16)Math.lround(cse);
@@ -7834,8 +7826,7 @@ public class MWP : Gtk.Application {
                 var achg = armed_processing(mwflags,"ltm");
                 var xws = want_special;
                 var mchg = (ltmflags != last_ltmf);
-                if(mchg)
-                {
+                if(mchg) {
                     last_ltmf = ltmflags;
                     if(ltmflags == MSP.LTM.poshold)
                         want_special |= POSMODE.PH;

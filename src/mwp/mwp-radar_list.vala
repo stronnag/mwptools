@@ -66,7 +66,7 @@ public class RadarView : Object {
         w = new Gtk.Window();
         var scrolled = new Gtk.ScrolledWindow (null, null);
         w.set_default_size (900, 400);
-        w.title = "Radar Data";
+        w.title = "Radar & Telemetry Tracking";
         var view = new Gtk.TreeView ();
         view.hexpand = true;
         view.vexpand = true;
