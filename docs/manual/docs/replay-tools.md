@@ -76,7 +76,7 @@ Raw logs containing MSP, LTM, MAVLink, CRSF and MPM Smartport and IBUS messages 
 
 Where such data is available, {{ mwp }} can display the position of the 'sticks'. This is displayed in a separate window which by default has no Window Manager (WM) decoration.
 
-![undecorated](images/sticks-no-decor.png)
+![undecorated](images/sticks-no-decor.png){: width="30%" }
 
 The sticks window may be moved according the WM's rules (mwp has no part in this), for example:
 
@@ -95,8 +95,8 @@ that can't cope with un-decorated windows), e.g. WSL, Cygwin
 
 Windows 10, Cygwin with `gsettings set org.mwptools.planner show-sticks decorated`. Note that Cygwin and the Windows WM does not support transparency.
 
-![decorated](images/sticks-decorated.png)
+![decorated](images/sticks-decorated.png){: width="30%" }
 
 Linux, decorated:
 
-![linux decorated](images/sticks-decor-trans.png)
+![linux decorated](images/sticks-decor-trans.png){: width="30%" }

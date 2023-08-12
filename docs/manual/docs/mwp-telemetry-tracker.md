@@ -40,7 +40,7 @@ In order to use Telemetry Tracking, it will be necessary for the user to assign 
 
 The "Telemery Tracking" device(s) may be assigned from the "View" / "Telemetry Tracker" menu option (Control-Shift T).
 
-![Telemetry Tracker](images/ttrk-select.png)
+![Telemetry Tracker](images/ttrk-select.png){: width="70%" }
 
 * The IP entries devices are for testing; they cannot be auto-detected so must be defined by the environment variable `MWP_SECDEVS`. This environment variable describes one or more devices, each with optional "Alias" text. The "device" part comprises a mandatory device name, and a optional alias, separated by a space; multiple devices are separated by a pipe symbol (`|`). For example:
         ```
@@ -60,7 +60,7 @@ Tracking devices are enabled / disabled using the "Enable" check-button. Once a 
 
 And example of visualisation is:
 
-![Telemetry Tracker](images/ttrk-play.png)
+![Telemetry Tracker](images/ttrk-play.png){: width="70%" }
 
 The "Primary" vehicle (a flying wing) has the standard mwp visualisation attributes. The other icons, `Replay 0` and `Replay 1` are "secondary" tracks from other pilot's CRSF telemetry (but it could be any of LTM, Mavlink, CRSF, SPort or Flysky 'AA' (INAV type 1)).  Note also that `Replay 0` has not reported for  over 5 minutes ("stale"); maybe it's crashed? At least the pilot knows where to start looking.
 

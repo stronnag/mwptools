@@ -81,6 +81,7 @@ The following tables summarise the available menu options. Where usage is not ob
 | Flight View | Adds the Flight View docklet to the dock (default) |
 | Vario View | Adds the Vario docklet to the dock ||
 | Radar View | Displays the [Radar (inav radar / ADS-B) view](mwp-Radar-View.md) |
+| Telemetry Tracker | Displays the [Telemetry Tracker UI](mwp-telemetry-tracker.md) |
 | Flight Statistics | Display the flight statistic dialogue (also automatic on disarm) |
 | Layout Manager > Save | Saves the current dock layout |
 | Layout Manager > Restore | Restores a saved dock layout |

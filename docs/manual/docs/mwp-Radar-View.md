@@ -125,7 +125,7 @@ The columns are sortable. Note that since the introduction of [Telemetry Trackin
 | S         | ADS-B via SBS |
 | T         | Telemetry Tracker |
 
-![Telemetry Tracker](images/ttrk-play.png)
+![Telemetry Tracker](images/ttrk-play.png){: width="70%" }
 
 ## Examples
 
