@@ -24,7 +24,6 @@ using Gtk;
  */
 
 namespace Ath {
-
     public class Horizon : DrawingArea {
         private double _x;
         private double _y;
@@ -32,13 +31,10 @@ namespace Ath {
         private double _trans_y = 0;
         private double _angle = 0;
 
-        public Horizon ()
-        {
-
+        public Horizon () {
         }
 
-        private void draw_base(Cairo.Context cr)
-        {
+        private void draw_base(Cairo.Context cr) {
             double rec_x0, rec_y0, rec_width, rec_height, rec_degrees;
             double rec_aspect, rec_corner_radius, rec_radius;
             double x = _x;
@@ -83,18 +79,16 @@ namespace Ath {
             _y = get_allocated_height () / 2;
             _radius = double.min (get_allocated_width () / 2,
                                      get_allocated_height () / 2) - 5;
-            draw_base(cr);
+			draw_base(cr);
             draw_dynamic(cr);
             return false;
         }
 
-        private double deg2rad(double d)
-        {
+        private double deg2rad(double d) {
             return d*Math.PI/180.0;
         }
 
-        private void draw_internal_sphere(Cairo.Context cr)
-        {
+        private void draw_internal_sphere(Cairo.Context cr) {
             double x, y, radius;
             radius = _radius;
             x = _x;
@@ -209,8 +203,7 @@ namespace Ath {
             cr.restore ();
         }
 
-        private void draw_external_arc (Cairo.Context cr)
-        {
+        private void draw_external_arc (Cairo.Context cr) {
             double x, y, radius;
             radius = _radius;
             x = _x;
@@ -329,8 +322,7 @@ namespace Ath {
             cr.restore ();
         }
 
-        private void draw_upper_base(Cairo.Context cr)
-        {
+        private void draw_upper_base(Cairo.Context cr) {
               double x, y, radius;
               Cairo.Pattern pat;
 
@@ -423,8 +415,7 @@ namespace Ath {
               cr.stroke ();
         }
 
-        private void draw_dynamic (Cairo.Context cr)
-        {
+        private void draw_dynamic (Cairo.Context cr) {
             double x, y, radius;
             radius = _radius;
             x = _x;
@@ -448,8 +439,7 @@ namespace Ath {
             draw_upper_base(cr);
         }
 
-        public void update(double roll, double pitch)
-        {
+        public void update(double roll, double pitch) {
             if(roll > 360)
                 roll = 360;
             if(roll < 0)

@@ -215,7 +215,8 @@ public class ArtWin : GLib.Object {
     public Gtk.Box  box {get; private set;}
     private Ath.Horizon ath;
     private bool inv = false;
-
+	private short _sx = 0;
+	private short _sy = 0;
     public ArtWin(bool _inv = false) {
         box = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
         ath = new Ath.Horizon();
@@ -227,19 +228,22 @@ public class ArtWin : GLib.Object {
     }
 
     public void update(short sx, short sy, bool visible) {
-        if(visible) {
-            double dx,dy;
-            dx = sx/10.0;
-            if(inv == false)
-                dx = -dx;
-
-            if (dx < 0)
-                dx += 360;
-
-            dy = -sy/10.0;
+		if(visible) {
+			var vdiff = ((sx - _sx).abs() > 10 || (sy - _sy).abs() > 10);
+			if(vdiff) {
+				double dx,dy;
+				dx = sx/10.0;
+				if(inv == false)
+					dx = -dx;
+				if (dx < 0)
+					dx += 360;
+				dy = -sy/10.0;
                 // roll, pitch
-            ath.update(dx,dy);
-        }
+				ath.update(dx,dy);
+			}
+			_sx = sx;
+			_sy = sy;
+		}
     }
 }
 

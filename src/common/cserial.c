@@ -206,7 +206,7 @@ static int set_attributes(int fd, serial_opts_t *sopts, int *aspeed) {
     tio.c_cflag |= CS8;
 
     tio.c_cc[VTIME] = 0;
-    tio.c_cc[VMIN] = 0;
+    tio.c_cc[VMIN] = 1;
 
     tio.c_cflag &= ~CSIZE;
     switch (sopts->databits) {

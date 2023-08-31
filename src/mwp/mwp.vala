@@ -3454,8 +3454,7 @@ public class MWP : Gtk.Application {
 
 			MSP_RAW_GPS rg = MSP_RAW_GPS();
 			rg.gps_fix = CRSF.teledata.fix;
-			if(rg.gps_fix != 0)
-			{
+			if(rg.gps_fix != 0) {
 				last_gps = nticks;
 			}
 			flash_gps();
@@ -3501,8 +3500,7 @@ public class MWP : Gtk.Application {
 						navstatus.cg_on();
 					}
 
-					if(pos_valid(GPSInfo.lat, GPSInfo.lon))
-					{
+					if(pos_valid(GPSInfo.lat, GPSInfo.lon)) {
 						last_gps = nticks;
 						double dist,cse;
 						Geo.csedist(GPSInfo.lat, GPSInfo.lon,
@@ -3818,8 +3816,7 @@ public class MWP : Gtk.Application {
 
 			MSP_RAW_GPS rg = MSP_RAW_GPS();
 			rg.gps_fix =(uint8) fix;
-			if(rg.gps_fix != 0)
-			{
+			if(rg.gps_fix != 0) {
 				last_gps = nticks;
 			}
 			flash_gps();
@@ -4024,17 +4021,14 @@ public class MWP : Gtk.Application {
             Logger.log_time();
 
         lastrx = lastok = nticks;
-        if(rxerr)
-        {
+        if(rxerr) {
             set_error_status(null);
             rxerr=false;
         }
 
-        switch(id)
-        {
+        switch(id) {
             case SportDev.FrID.VFAS_ID:
-                if (val /100  < 80)
-                {
+                if (val /100  < 80) {
                     SportDev.volts = val / 100.0;
                     sflags |=  NavStatus.SPK.Volts;
                 }
@@ -4042,10 +4036,9 @@ public class MWP : Gtk.Application {
             case SportDev.FrID.GPS_LONG_LATI_ID:
                 int32 ipos;
                 uint8 lorl = sport_parse_lat_lon (val, out ipos);
-                if (lorl == 0)
+                if (lorl == 0) {
                     SportDev.lat = ipos;
-                else
-                {
+				} else {
                     SportDev.lon = ipos;
                     init_craft_icon();
                     MSP_ALTITUDE al = MSP_ALTITUDE();
@@ -4065,8 +4058,7 @@ public class MWP : Gtk.Application {
                             {
                                 if(_nsats >= msats)
                                 {
-                                    if(pos_valid(GPSInfo.lat, GPSInfo.lon))
-                                    {
+                                    if(pos_valid(GPSInfo.lat, GPSInfo.lon)) {
 										last_gps = nticks;
                                         double dist,cse;
                                         Geo.csedist(GPSInfo.lat, GPSInfo.lon,
@@ -4474,10 +4466,8 @@ public class MWP : Gtk.Application {
         return true;
     }
 
-    private void hard_display_reset(bool cm = false)
-    {
-        if(cm)
-        {
+    private void hard_display_reset(bool cm = false) {
+        if(cm) {
             clear_mission();
             wpmgr.wps = {};
         }
@@ -4956,11 +4946,8 @@ public class MWP : Gtk.Application {
 
         Timeout.add(TIMINTVL, () => {
                 nticks++;
-
-                if(msp.available)
-                {
-                    if(serstate != SERSTATE.NONE)
-                    {
+                if(msp.available) {
+                    if(serstate != SERSTATE.NONE) {
                         var tlimit = conf.polltimeout / TIMINTVL;
 						if ((lastmsg.cmd == MSP.Cmds.WP_MISSION_SAVE) ||
 							lastmsg.cmd == MSP.Cmds.EEPROM_WRITE) {
@@ -4968,20 +4955,16 @@ public class MWP : Gtk.Application {
 						}
 						if((serstate == SERSTATE.POLLER ||
                             serstate == SERSTATE.TELEM) &&
-                           (nticks - lastrx) > NODATAINTVL)
-                        {
-                            if(rxerr == false)
-                            {
+                           (nticks - lastrx) > NODATAINTVL) {
+                            if(rxerr == false) {
                                 set_error_status("No data for 5s");
                                 rxerr=true;
                             }
                         }
 
-                        if(serstate != SERSTATE.TELEM)
-                        {
+                        if(serstate != SERSTATE.TELEM) {
 // Probably takes a minute to change the LIPO
-                            if(serstate == SERSTATE.POLLER && nticks - lastrx > RESTARTINTVL)
-                            {
+                            if(serstate == SERSTATE.POLLER && nticks - lastrx > RESTARTINTVL) {
                                 serstate = SERSTATE.NONE;
                                 MWPLog.message("Restart poll loop\n");
                                 init_state();
@@ -4996,17 +4979,14 @@ public class MWP : Gtk.Application {
                                     MWPLog.message("Not managing screen / power settings\n");
                                 }
                                 run_queue();
-                            }
-                            else if ((nticks - lastok) > tlimit )
-                            {
+                            } else if ((nticks - lastok) > tlimit ) {
                                 telstats.toc++;
                                 string res;
-                                if(lastmsg.cmd != MSP.Cmds.INVALID)
-                                {
+                                if(lastmsg.cmd != MSP.Cmds.INVALID) {
                                     res = lastmsg.cmd.to_string();
-                                }
-                                else
+                                } else {
                                     res = "%d".printf(tcycle);
+								}
                                 if(nopoll == false)
                                     MWPLog.message("MSP Timeout %u %u %u (%s %s)\n",
 												   nticks, lastok, lastrx, res, serstate.to_string());
@@ -5018,10 +4998,8 @@ public class MWP : Gtk.Application {
                         else
                         {
                             if(armed != 0 && msp.available &&
-                               gpsintvl != 0 && last_gps != 0)
-                            {
-                                if (nticks - last_gps > gpsintvl)
-                                {
+                               gpsintvl != 0 && last_gps != 0) {
+                                if (nticks - last_gps > gpsintvl) {
                                     if(replayer == Player.NONE)
                                         play_alarm_sound(MWPAlert.SAT);
                                     if(replay_paused == false)
@@ -5034,8 +5012,7 @@ public class MWP : Gtk.Application {
                             if(serstate == SERSTATE.TELEM && nopoll == false &&
                                last_tm > 0 &&
                                ((nticks - last_tm) > MAVINTVL)
-                               && msp.available && replayer == Player.NONE)
-                            {
+                               && msp.available && replayer == Player.NONE) {
                                 MWPLog.message("Restart poller on telemetry timeout\n");
                                 have_status = false;
                                 xbits = icount = api_cnt = 0;
@@ -5051,38 +5028,31 @@ public class MWP : Gtk.Application {
                         lastok = lastrx = nticks;
 					}
 
-                    if((nticks % STATINTVL) == 0)
-                    {
+                    if((nticks % STATINTVL) == 0) {
                         gen_serial_stats();
                         telemstatus.update(telstats, item_visible(DOCKLETS.TELEMETRY));
                     }
                 }
 
-                if(duration != 0 && duration != last_dura)
-                {
+                if(duration != 0 && duration != last_dura) {
                     int mins;
                     int secs;
-                    if(duration < 0)
-                    {
+                    if(duration < 0) {
                         mins = secs = 0;
                         duration = 0;
-                    }
-                    else
-                    {
+                    } else {
                         mins = (int)duration / 60;
                         secs = (int)duration % 60;
-                        if(mins != lmin)
-                        {
-                                navstatus.update_duration(mins);
-                                lmin = mins;
+                        if(mins != lmin) {
+							navstatus.update_duration(mins);
+							lmin = mins;
                         }
                     }
                     elapsedlab.set_text("%02d:%02d".printf(mins,secs));
                     last_dura = duration;
                 }
 
-                if((nticks % RADARINTVL) == 0)
-                {
+                if((nticks % RADARINTVL) == 0) {
                     radar_plot.@foreach ((r) => {
                             var staled = 120*10 ; //(r.source == 2) ? 120*10 : 50;
                             uint delta = nticks - r.lasttick;
@@ -5096,8 +5066,7 @@ public class MWP : Gtk.Application {
                                     radar_plot.remove_all(r);
                                 }
                             }
-                            else if(delta > 300*10)
-                            {
+                            else if(delta > 300*10) {
                                 if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
                                     MWPLog.message("TRAF-HID %s %u\n", r.name, r.state);
                                 if((r.source & RadarSource.M_ADSB) != 0) {
@@ -5106,9 +5075,7 @@ public class MWP : Gtk.Application {
 									radarv.update(ref r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
 									markers.set_radar_hidden(r);
                                 }
-                            }
-                            else if(delta > staled && r.state != 0 && r.state != 3)
-                            {
+                            } else if(delta > staled && r.state != 0 && r.state != 3) {
                                 if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
                                     MWPLog.message("TRAF-STALE %s %u\n", r.name, r.state);
                                 r.state = 3; // stale
@@ -5186,13 +5153,10 @@ public class MWP : Gtk.Application {
             MSize.MSP_STATUS;
 
 
-        if (msp_get_status ==  MSP.Cmds.INAV_STATUS)
-        {
+        if (msp_get_status ==  MSP.Cmds.INAV_STATUS) {
             requests += MSP.Cmds.ANALOG2;
             reqsize += MSize.MSP_ANALOG2;
-        }
-        else
-        {
+        } else {
             requests += MSP.Cmds.ANALOG;
             reqsize += MSize.MSP_ANALOG;
         }
@@ -5201,10 +5165,9 @@ public class MWP : Gtk.Application {
 
         var missing = 0;
 
-        if(force_mag)
+        if(force_mag) {
             usemag = true;
-        else
-        {
+		} else {
             usemag = ((sensor & MSP.Sensors.MAG) == MSP.Sensors.MAG);
             if(!usemag && Craft.is_mr(vi.mrtype))
                 missing = MSP.Sensors.MAG;
@@ -5818,8 +5781,7 @@ public class MWP : Gtk.Application {
         return sb.str;
     }
 
-    private void handle_msp_status(uint8[]raw, uint len)
-    {
+    private void handle_msp_status(uint8[]raw, uint len) {
         uint64 bxflag;
         uint64 lmask;
 
@@ -6299,7 +6261,6 @@ public class MWP : Gtk.Application {
                 s.send_command(cmd, node, node.length, true);
                 break;
             case MSP.Cmds.RAW_GPS:
-               {
                    uint8 oraw[18]={0};
                    uint8 *p = &oraw[0];
 
@@ -6330,7 +6291,6 @@ public class MWP : Gtk.Application {
                         MWPLog.message(sb.str);
                     }
                     s.send_command(cmd, oraw, 18, true);
-                }
                 break;
             case MSP.Cmds.FC_VARIANT:
                 {
@@ -6592,40 +6552,32 @@ public class MWP : Gtk.Application {
         if(Logger.is_logging)
             Logger.log_time();
 
-        if(cmd != MSP.Cmds.RADIO)
-        {
+        if(cmd != MSP.Cmds.RADIO) {
             lastrx = lastok = nticks;
-            if(rxerr)
-            {
+            if(rxerr) {
                 set_error_status(null);
                 rxerr=false;
             }
         }
-
-        switch(cmd)
-        {
+        switch(cmd) {
             case MSP.Cmds.API_VERSION:
                 have_api = true;
-                if(len > 32)
-                {
+                if(len > 32) {
                     naze32 = true;
                     mwvar = vi.fctype = MWChooser.MWVAR.CF;
                     var vers="CF mwc %03d".printf(vi.mvers);
                     verlab.label = verlab.tooltip_text = vers;
                     queue_cmd(MSP.Cmds.BOXNAMES,null,0);
-                }
-                else
-                {
+                } else {
                     vi.fc_api = raw[1] << 8 | raw[2];
                     xarm_flags = 0xffff;
                     if (vi.fc_api >= APIVERS.mspV2)
                     {
                         msp.use_v2 = true;
                         queue_cmd(MSP.Cmds.NAME,null,0);
-                    }
-                    else
+                    } else {
                         queue_cmd(MSP.Cmds.BOARD_INFO,null,0);
-
+					}
                     MWPLog.message("Using MSP v%c %04x\n", (msp.use_v2) ? '2' : '1', vi.fc_api);
                 }
                 break;
@@ -7055,7 +7007,7 @@ public class MWP : Gtk.Application {
 
                 if(gps_status.visible)
                     gps_status.update(gpsstats);
-                break;
+					break;
 
             case MSP.Cmds.MISC:
                 have_misc = true;
@@ -7228,7 +7180,6 @@ public class MWP : Gtk.Application {
 
             case MSP.Cmds.NAV_STATUS:
             case MSP.Cmds.TN_FRAME:
-            {
                 MSP_NAV_STATUS ns = MSP_NAV_STATUS();
                 uint8 flg = 0;
                 uint8* rp = raw;
@@ -7256,8 +7207,7 @@ public class MWP : Gtk.Application {
                     ns.target_bearing = *rp++;
                 }
                 navstatus.update(ns,item_visible(DOCKLETS.NAVSTATUS),flg);
-                if((replayer & Player.BBOX) == 0 && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255))
-                {
+                if((replayer & Player.BBOX) == 0 && (NavStatus.nm_pts > 0 && NavStatus.nm_pts != 255)) {
                     if(ns.gps_mode == 3) {
                         if ((conf.osd_mode & OSD.show_mission) != 0) {
                             if (last_nmode != 3 || ns.wp_number != last_nwp) {
@@ -7289,7 +7239,6 @@ public class MWP : Gtk.Application {
                 }
                 last_nmode = ns.gps_mode;
                 last_nwp= ns.wp_number;
-            }
             break;
 
             case MSP.Cmds.NAV_POSHOLD:
@@ -7368,15 +7317,13 @@ public class MWP : Gtk.Application {
                 rp = SEDE.deserialise_i16(raw, out at.angx);
                 rp = SEDE.deserialise_i16(rp, out at.angy);
                 SEDE.deserialise_i16(rp, out at.heading);
-                if (usemag || ((replayer & Player.MWP) == Player.MWP))
-                {
+                if (usemag || ((replayer & Player.MWP) == Player.MWP)) {
                     mhead = at.heading;
                     if(mhead < 0)
                         mhead += 360;
                 }
                 navstatus.set_attitude(at,item_visible(DOCKLETS.NAVSTATUS));
-                art_win.update(at.angx, at.angy, item_visible(DOCKLETS.ARTHOR));
-
+				art_win.update(at.angx, at.angy, item_visible(DOCKLETS.ARTHOR));
                 if((sensor & MSP.Sensors.GPS) == 0)
                     fbox.update(item_visible(DOCKLETS.FBOX));
                 break;
@@ -7416,81 +7363,71 @@ public class MWP : Gtk.Application {
                 if (xflags == '<') {
                     handle_radar(msp, cmd, raw, len, xflags, errs);
                 } else {
-                MSP_RAW_GPS rg = MSP_RAW_GPS();
-                uint8* rp = raw;
-                rg.gps_fix = *rp++;
-                if(rg.gps_fix != 0)
-                {
-                    if(replayer == Player.NONE)
-                    {
-                        if(inav)
-                            rg.gps_fix++;
-                    }
-                    else
-                        last_gps = nticks;
-                }
-                flash_gps();
+					MSP_RAW_GPS rg = MSP_RAW_GPS();
+					uint8* rp = raw;
+					rg.gps_fix = *rp++;
+					if(rg.gps_fix != 0) {
+						if(replayer == Player.NONE) {
+							if(inav)
+								rg.gps_fix++;
+						} else {
+							last_gps = nticks;
+						}
+					}
+					flash_gps();
 
-                rg.gps_numsat = *rp++;
-                rp = SEDE.deserialise_i32(rp, out rg.gps_lat);
-                rp = SEDE.deserialise_i32(rp, out rg.gps_lon);
-                rp = SEDE.deserialise_i16(rp, out rg.gps_altitude);
-                rp = SEDE.deserialise_u16(rp, out rg.gps_speed);
-                rp = SEDE.deserialise_u16(rp, out rg.gps_ground_course);
-                if(len == 18)
-                {
-                    SEDE.deserialise_u16(rp, out rg.gps_hdop);
-                    rhdop = rg.gps_hdop;
-                    gpsinfo.set_hdop(rg.gps_hdop/100.0);
-                }
-                double ddm;
+					rg.gps_numsat = *rp++;
+					rp = SEDE.deserialise_i32(rp, out rg.gps_lat);
+					rp = SEDE.deserialise_i32(rp, out rg.gps_lon);
+					rp = SEDE.deserialise_i16(rp, out rg.gps_altitude);
+					rp = SEDE.deserialise_u16(rp, out rg.gps_speed);
+					rp = SEDE.deserialise_u16(rp, out rg.gps_ground_course);
+					if(len == 18) {
+						SEDE.deserialise_u16(rp, out rg.gps_hdop);
+						rhdop = rg.gps_hdop;
+						gpsinfo.set_hdop(rg.gps_hdop/100.0);
+					}
+					double ddm;
 
-                if(fakeoff.faking)
-                {
-                    rg.gps_lat += (int32)(fakeoff.dlat*10000000);
-                    rg.gps_lon += (int32)(fakeoff.dlon*10000000);
-                }
+					if(fakeoff.faking) {
+						rg.gps_lat += (int32)(fakeoff.dlat*10000000);
+						rg.gps_lon += (int32)(fakeoff.dlon*10000000);
+					}
 
-                gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS),
-                                         out ddm) != 0);
-                fbox.update(item_visible(DOCKLETS.FBOX));
-                dbox.update(item_visible(DOCKLETS.DBOX));
-                _nsats = rg.gps_numsat;
+					gpsfix = (gpsinfo.update(rg, conf.dms, item_visible(DOCKLETS.GPS),out ddm) != 0);
+					fbox.update(item_visible(DOCKLETS.FBOX));
+					dbox.update(item_visible(DOCKLETS.DBOX));
+					_nsats = rg.gps_numsat;
 
-                if (gpsfix)
-                {
-                    if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ)
-                    {
-                        if(rtcsecs == 0 && _nsats >= msats && replayer == Player.NONE)
-                        {
-                            MWPLog.message("Request RTC pos: %f %f sats %d hdop %.1f\n",
-                                           GPSInfo.lat, GPSInfo.lon,
-                                           _nsats, rhdop/100.0);
-                            queue_cmd(MSP.Cmds.RTC,null, 0);
-                        }
-                    }
+					if (gpsfix) {
+						if (vi.fc_api >= APIVERS.mspV2 && vi.fc_vers >= FCVERS.hasTZ) {
+							if(rtcsecs == 0 && _nsats >= msats && replayer == Player.NONE) {
+								MWPLog.message("Request RTC pos: %f %f sats %d hdop %.1f\n",
+											   GPSInfo.lat, GPSInfo.lon,
+											   _nsats, rhdop/100.0);
+								queue_cmd(MSP.Cmds.RTC,null, 0);
+							}
+						}
 
-                    sat_coverage();
-                    if(armed == 1)
-                    {
-                        var spd = (double)(rg.gps_speed/100.0);
-                        update_odo(spd, ddm);
-                        if(have_home == false && home_changed(wp0.lat, wp0.lon))
-                        {
-                            sflags |=  NavStatus.SPK.GPS;
-                            want_special |= POSMODE.HOME;
-                            navstatus.cg_on();
-                        }
-                    }
+						sat_coverage();
+						if(armed == 1) {
+							var spd = (double)(rg.gps_speed/100.0);
+							update_odo(spd, ddm);
+							if(have_home == false && home_changed(wp0.lat, wp0.lon)) {
+								sflags |=  NavStatus.SPK.GPS;
+								want_special |= POSMODE.HOME;
+								navstatus.cg_on();
+							}
+						}
 
-                    if(craft != null)
-                    {
-                        update_pos_info();
-                    }
-                    if(want_special != 0)
-                            process_pos_states(GPSInfo.lat,GPSInfo.lon, rg.gps_altitude, "RAW GPS");
-                    }
-                }
+						if(craft != null) {
+							update_pos_info();
+						}
+						if(want_special != 0) {
+							process_pos_states(GPSInfo.lat,GPSInfo.lon, rg.gps_altitude, "RAW GPS");
+						}
+					}
+				}
                 break;
 
             case MSP.Cmds.SET_WP:
@@ -7578,8 +7515,7 @@ public class MWP : Gtk.Application {
                 break;
 
             case MSP.Cmds.RADIO:
-                if(!ignore_3dr)
-                {
+                if(!ignore_3dr) {
                     have_mspradio = true;
                     handle_radio(raw);
                 }
@@ -7620,7 +7556,6 @@ public class MWP : Gtk.Application {
                 break;
 
             case MSP.Cmds.TG_FRAME:
-            {
                 sflags |=  NavStatus.SPK.ELEV;
                 LTM_GFRAME gf = LTM_GFRAME();
                 uint8* rp;
@@ -7721,8 +7656,7 @@ public class MWP : Gtk.Application {
                 }
                 fbox.update(item_visible(DOCKLETS.FBOX));
                 dbox.update(item_visible(DOCKLETS.DBOX));
-            }
-            break;
+				break;
 
             case MSP.Cmds.TX_FRAME:
                 uint8* rp;
@@ -7745,7 +7679,6 @@ public class MWP : Gtk.Application {
                 break;
 
             case MSP.Cmds.TA_FRAME:
-            {
                 LTM_AFRAME af = LTM_AFRAME();
                 uint8* rp;
                 rp = SEDE.deserialise_i16(raw, out af.pitch);
@@ -7757,8 +7690,7 @@ public class MWP : Gtk.Application {
                 mhead = h;
                 navstatus.update_ltm_a(af, item_visible(DOCKLETS.NAVSTATUS));
                 art_win.update(af.roll*10, af.pitch*10, item_visible(DOCKLETS.ARTHOR));
-            }
-            break;
+				break;
 
             case MSP.Cmds.TS_FRAME:
                 LTM_SFRAME sf = LTM_SFRAME ();
@@ -8243,7 +8175,6 @@ public class MWP : Gtk.Application {
                 MWPLog.message (sb.str);
                 break;
         }
-
 
         if(mq.is_empty() && serstate == SERSTATE.POLLER)
         {
@@ -9194,8 +9125,7 @@ public class MWP : Gtk.Application {
         radstatus.annul();
     }
 
-    private void init_state()
-    {
+    private void init_state() {
         map_hide_warning();
         xfailsafe = false;
         serstate = SERSTATE.NONE;
@@ -9225,8 +9155,7 @@ public class MWP : Gtk.Application {
         Varios.idx = 0;
     }
 
-    private bool try_forwarder(out string fstr)
-    {
+    private bool try_forwarder(out string fstr) {
         fstr = null;
         if(!fwddev.available)
         {
