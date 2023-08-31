@@ -21,8 +21,8 @@ namespace MwpSerial
 {
     [CCode (cname = "flush_serial")]
     void flush(int fd);
-    [CCode (cname = "set_fd_speed")]
-    int set_speed(int fd, int rate);
+	 [CCode (cname = "set_fd_speed")]
+    int set_speed(int fd, int rate, int* aspeed);
     [CCode (cname= "open_serial")]
     int open(string device, uint baudrate);
     [CCode (cname = "set_timeout")]

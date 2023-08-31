@@ -674,7 +674,7 @@ public class MWSerial : Object {
         if((commode & ComMode.TTY) == ComMode.TTY)
         {
             baudrate = rate;
-            MwpSerial.set_speed(fd, (int)rate);
+            MwpSerial.set_speed(fd, (int)rate, null);
         }
         available = true;
         setup_reader();

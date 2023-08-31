@@ -8159,7 +8159,8 @@ public class MWP : Gtk.Application {
                 break;
 
             case MSP.Cmds.DEBUGMSG:
-                MWPLog.message("DEBUG:%s\n", (string)raw);
+				var dstr = ((string)raw).chomp();
+				MWPLog.message("DEBUG:%s\n", dstr);
                 break;
 
             case MSP.Cmds.RADAR_POS:
