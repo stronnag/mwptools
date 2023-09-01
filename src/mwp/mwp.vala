@@ -8394,16 +8394,14 @@ public class MWP : Gtk.Application {
             MWPLog.message(sb.str);
     }
 
-    void process_inav_radar_pos(uint8 []raw, uint len)
-    {
+    void process_inav_radar_pos(uint8 []raw, uint len) {
         uint8 *rp = &raw[0];
         int32 ipos;
         uint16 ispd;
         uint8 id = *rp++; // id
 
         unowned RadarPlot? ri = find_radar_data((uint)id);
-        if (ri == null)
-        {
+        if (ri == null) {
             var r0 = RadarPlot();
             r0.id =  (uint)id;
             radar_plot.append(r0);
@@ -8437,14 +8435,12 @@ public class MWP : Gtk.Application {
         }
     }
 
-    private void set_typlab()
-    {
+    private void set_typlab() {
         string s;
 
         if(vname == null || vname.length == 0)
             s = MSP.get_mrtype(vi.mrtype);
-        else
-        {
+        else {
             s = "«%s»".printf(vname);
         }
         typlab.label = s;
@@ -8515,8 +8511,7 @@ public class MWP : Gtk.Application {
                 map_centre_on(wp0.lat,wp0.lon);
 
             StringBuilder sb = new StringBuilder ();
-            if(reason != null)
-            {
+            if(reason != null) {
                 sb.append(reason);
                 sb.append_c(' ');
             }
@@ -8533,8 +8528,7 @@ public class MWP : Gtk.Application {
                         out dist, out cse);
 
             dist *= 1852;
-            if(nav_rth_home_offset_distance > 0 || (dist > 10.0 && dist <= 200.0))
-            {
+            if(nav_rth_home_offset_distance > 0 || (dist > 10.0 && dist <= 200.0)) {
                 var s = "Home offset %.0fm @ %.0f°".printf(dist, cse);
                 map_show_warning(s);
                 navstatus.alert_home_offset();
@@ -8598,8 +8592,7 @@ public class MWP : Gtk.Application {
         }
     }
 
-    private void handle_radio(uint8[] raw)
-    {
+    private void handle_radio(uint8[] raw) {
         MSP_RADIO r = MSP_RADIO();
         uint8 *rp;
         rp = SEDE.deserialise_u16(raw, out r.rxerrors);
@@ -8612,36 +8605,28 @@ public class MWP : Gtk.Application {
         radstatus.update(r,item_visible(DOCKLETS.RADIO));
     }
 
-    private void send_mav_heartbeat()
-    {
+    private void send_mav_heartbeat() {
         uint8 dummy[9]={0};
         msp.send_mav(0, dummy, 9);
     }
 
-    private void report_bits(uint64 bits)
-    {
+    private void report_bits(uint64 bits) {
         string mode = null;
-        if((bits & angle_mask) == angle_mask)
-        {
+        if((bits & angle_mask) == angle_mask) {
             mode = "Angle";
         }
-        else if((bits & horz_mask) == horz_mask)
-        {
+        else if((bits & horz_mask) == horz_mask) {
             mode = "Horizon";
-        }
-        else if((bits & (ph_mask | rth_mask)) == 0)
-        {
+        } else if((bits & (ph_mask | rth_mask)) == 0) {
             mode = "Acro";
         }
-        if(mode != null)
-        {
+        if(mode != null) {
             fmodelab.set_label(mode);
             navstatus.update_fmode(mode);
         }
     }
 
-    private size_t serialise_wp(MSP_WP w, uint8[] tmp)
-    {
+    private size_t serialise_wp(MSP_WP w, uint8[] tmp) {
         uint8* rp = tmp;
         *rp++ = w.wp_no;
         *rp++ = w.action;
@@ -8655,10 +8640,8 @@ public class MWP : Gtk.Application {
         return (rp-&tmp[0]);
     }
 
-    public static void play_alarm_sound(string sfn=MWPAlert.RED)
-    {
-		if(beep_disabled == false)
-        {
+    public static void play_alarm_sound(string sfn=MWPAlert.RED) {
+		if(beep_disabled == false) {
             var fn = MWPUtils.find_conf_file(sfn);
             if(fn != null) {
 				AudioPlayer.play(fn);
@@ -8668,8 +8651,7 @@ public class MWP : Gtk.Application {
 		StringBuilder sb = new StringBuilder();
         sb.assign("Alert: ");
         sb.append(sfn);
-        if(sfn == MWPAlert.SAT)
-        {
+        if(sfn == MWPAlert.SAT) {
             sb.append(" (");
             sb.append(nsats.to_string());
             sb.append_c(')');
@@ -8679,12 +8661,10 @@ public class MWP : Gtk.Application {
 #endif
     }
 
-    private void init_battery(uint16 ivbat)
-    {
+    private void init_battery(uint16 ivbat) {
         bat_annul();
         var ncells = ivbat / 37;
-        for(var i = 0; i < vcol.levels.length; i++)
-        {
+        for(var i = 0; i < vcol.levels.length; i++) {
             vcol.levels[i].limit = vcol.levels[i].cell*ncells;
             vcol.levels[i].reached = false;
         }
@@ -8692,29 +8672,22 @@ public class MWP : Gtk.Application {
         vwarn1 = 0;
     }
 
-    private void bat_annul()
-    {
+    private void bat_annul() {
         curr = {false,0,0,0,0 ,0};
         for(var i = 0; i < MAXVSAMPLE; i++)
                 vbsamples[i] = 0;
         nsampl = 0;
     }
 
-    private void set_bat_stat(uint16 ivbat)
-    {
-        if(ivbat < 20)
-        {
+    private void set_bat_stat(uint16 ivbat) {
+        if(ivbat < 20) {
             update_bat_indicators(vcol.levels.length-1, 0.0f);
-        }
-        else
-        {
+        } else {
             float  vf = ((float)ivbat)/10.0f;
-            if (nsampl == MAXVSAMPLE)
-            {
+            if (nsampl == MAXVSAMPLE) {
                 for(var i = 1; i < MAXVSAMPLE; i++)
                     vbsamples[i-1] = vbsamples[i];
-            }
-            else
+            } else
                 nsampl += 1;
 
             vbsamples[nsampl-1] = vf;
@@ -8739,11 +8712,9 @@ public class MWP : Gtk.Application {
 
             update_bat_indicators(icol, vf);
 
-            if(vcol.levels[icol].reached == false)
-            {
+            if(vcol.levels[icol].reached == false) {
                 vcol.levels[icol].reached = true;
-                if(vcol.levels[icol].audio != null)
-                {
+                if(vcol.levels[icol].audio != null) {
                     if(replayer == Player.NONE)
                         play_alarm_sound(vcol.levels[icol].audio);
                     else
@@ -8753,15 +8724,12 @@ public class MWP : Gtk.Application {
         }
     }
 
-    private void update_bat_indicators(int icol, float vf)
-    {
+    private void update_bat_indicators(int icol, float vf) {
         string str;
 
-        if(vcol.levels[icol].label == null)
-        {
+        if(vcol.levels[icol].label == null) {
             str = "%.1fv".printf(vf);
-        }
-        else
+        } else
             str = vcol.levels[icol].label;
 
         if(icol != licol)
@@ -8807,8 +8775,7 @@ public class MWP : Gtk.Application {
         start_wp_timer(timeo);
 	}
 
-    public void start_wp_timer(uint timeo, string reason="WP")
-    {
+    public void start_wp_timer(uint timeo, string reason="WP") {
         upltid = Timeout.add(timeo, () => {
                 MWPCursor.set_normal_cursor(window);
                 MWPLog.message("%s operation probably failed\n", reason);
@@ -8822,16 +8789,14 @@ public class MWP : Gtk.Application {
             });
     }
 
-    public void request_wp(uint8 wp)
-    {
+    public void request_wp(uint8 wp) {
         uint8 buf[2];
         have_wp = false;
         buf[0] = wp;
         queue_cmd(MSP.Cmds.WP,buf,1);
     }
 
-    private size_t serialise_nc (MSP_NAV_CONFIG nc, uint8[] tmp)
-    {
+    private size_t serialise_nc (MSP_NAV_CONFIG nc, uint8[] tmp) {
         uint8* rp = tmp;
 
         *rp++ = nc.flag1;
@@ -8851,8 +8816,7 @@ public class MWP : Gtk.Application {
         return (rp-&tmp[0]);
     }
 
-    private size_t serialise_pcfg (MSP_NAV_POSHOLD pcfg, uint8[] tmp)
-    {
+    private size_t serialise_pcfg (MSP_NAV_POSHOLD pcfg, uint8[] tmp) {
         uint8* rp = tmp;
 
         *rp++ = pcfg.nav_user_control_mode;
@@ -8866,8 +8830,7 @@ public class MWP : Gtk.Application {
         return (rp-&tmp[0]);
     }
 
-    private size_t serialise_fw (MSP_FW_CONFIG fw, uint8[] tmp)
-    {
+    private size_t serialise_fw (MSP_FW_CONFIG fw, uint8[] tmp) {
         uint8* rp = tmp;
         rp = SEDE.serialise_u16(rp, fw.cruise_throttle);
         rp = SEDE.serialise_u16(rp, fw.min_throttle);
@@ -8880,8 +8843,7 @@ public class MWP : Gtk.Application {
         return (rp-&tmp[0]);
     }
 
-    private void mw_update_config(MSP_NAV_CONFIG nc)
-    {
+    private void mw_update_config(MSP_NAV_CONFIG nc) {
         have_nc = false;
         uint8 tmp[64];
         var nb = serialise_nc(nc, tmp);
@@ -8889,48 +8851,39 @@ public class MWP : Gtk.Application {
         queue_cmd(MSP.Cmds.NAV_CONFIG,null,0);
     }
 
-    private void mr_update_config(MSP_NAV_POSHOLD pcfg)
-    {
+    private void mr_update_config(MSP_NAV_POSHOLD pcfg) {
         have_nc = false;
         uint8 tmp[64];
         var nb = serialise_pcfg(pcfg, tmp);
         queue_cmd(MSP.Cmds.SET_NAV_POSHOLD, tmp, nb);
     }
 
-    private void fw_update_config(MSP_FW_CONFIG fw)
-    {
+    private void fw_update_config(MSP_FW_CONFIG fw) {
         have_nc = false;
         uint8 tmp[64];
         var nb = serialise_fw(fw, tmp);
         queue_cmd(MSP.Cmds.SET_FW_CONFIG, tmp, nb);
     }
 
-    private void queue_cmd(MSP.Cmds cmd, void* buf, size_t len)
-    {
+    private void queue_cmd(MSP.Cmds cmd, void* buf, size_t len) {
         if(((debug_flags & DEBUG_FLAGS.INIT) != DEBUG_FLAGS.NONE)
            && (serstate == SERSTATE.NORMAL))
             MWPLog.message("Init MSP %s (%u)\n", cmd.to_string(), cmd);
 
-        if(replayer == Player.NONE)
-        {
+        if(replayer == Player.NONE) {
             uint8 *dt = (buf == null) ? null : Memory.dup(buf, (uint)len);
-            if(msp.available == true)
-            {
+            if(msp.available == true) {
                 var mi = MQI() {cmd = cmd, len = len, data = dt};
                 mq.push_tail(mi);
             }
         }
     }
 
-    private void start_audio(bool live = true)
-    {
-        if (spktid == 0)
-        {
-            if(audio_on)
-            {
+    private void start_audio(bool live = true) {
+        if (spktid == 0) {
+            if(audio_on) {
                 string voice = null;
-                switch(spapi)
-                {
+                switch(spapi) {
                     case 1:
                         voice = conf.evoice;
                         if (voice == "default")
@@ -8952,8 +8905,7 @@ public class MWP : Gtk.Application {
                             navstatus.announce(sflags);
                         return Source.CONTINUE;
                     });
-                if(live)
-                {
+                if(live) {
                     gps_alert(0);
                     navstatus.announce(sflags);
                 }
@@ -8961,37 +8913,32 @@ public class MWP : Gtk.Application {
         }
     }
 
-    private void stop_audio()
-    {
-        if(spktid > 0)
-        {
+    private void stop_audio() {
+        if(spktid > 0) {
             remove_tid(ref spktid);
             navstatus.logspeak_close();
         }
     }
 
-    private void remove_tid(ref uint tid)
-    {
+    private void remove_tid(ref uint tid) {
         if(tid > 0)
             Source.remove(tid);
         tid = 0;
     }
 
-    private void  gen_serial_stats()
-    {
+    private void  gen_serial_stats() {
         if(msp.available)
             telstats.s = msp.dump_stats();
         telstats.avg = (anvals > 0) ? (ulong)(acycle/anvals) : 0;
     }
 
-    private void show_serial_stats()
-    {
+    private void show_serial_stats() {
         gen_serial_stats();
-        MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %d, avg poll loop %lu ms messages %s\n",
+        MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s) to %d wait %d, avg poll loop %lu ms messages %d msg/s %.1f\n",
                        telstats.s.elapsed, telstats.s.rxbytes, telstats.s.txbytes,
                        telstats.s.rxrate, telstats.s.txrate,
                        telstats.toc, telstats.tot, telstats.avg ,
-                       telstats.s.msgs.to_string());
+                       telstats.s.msgs, telstats.s.msgs / telstats.s.elapsed);
     }
 
     private void serial_doom(Gtk.Button c) {

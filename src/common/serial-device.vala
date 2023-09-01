@@ -17,8 +17,7 @@
  */
 
 
-public struct SerialStats
-{
+public struct SerialStats {
     double elapsed;
     ulong rxbytes;
     ulong txbytes;
@@ -92,11 +91,9 @@ namespace SportDev {
 		return buf;
 	}
 
-    private bool fr_checksum(uint8[] buf)
-    {
+    private bool fr_checksum(uint8[] buf) {
         uint16 crc = 0;
-        foreach (var b in buf[1:9])
-        {
+        foreach (var b in buf[1:9]) {
             crc += b;
             crc += crc >> 8;
             crc &= 0xff;
@@ -106,10 +103,8 @@ namespace SportDev {
 
  	public FrStatus extract_messages(uint8 b) {
 		FrStatus status = FrStatus.OK;
-		if (b == FrProto.P_START && nb > 0)
-		{
-			if (nb == FrProto.P_SIZE)
-			{
+		if (b == FrProto.P_START && nb > 0) {
+			if (nb == FrProto.P_SIZE) {
 				nb = 1; // leave the 0x7e in the buffer ...
 				return FrStatus.PUBLISH;
 			} else {
@@ -123,16 +118,14 @@ namespace SportDev {
 			b = b ^ FrProto.P_MASK;
 			stuffed = false;
 		}
-		else if (b == FrProto.P_STUFF)
-		{
+		else if (b == FrProto.P_STUFF) {
 			stuffed = true;
 		}
 
 		if(status == FrStatus.OK) {
 			buf[nb] = b;
 			nb++;
-			if (nb > FrProto.P_SIZE)
-			{
+			if (nb > FrProto.P_SIZE) {
 				nb = 0;
 				status = FrStatus.SIZE;
 			}
@@ -195,13 +188,10 @@ private class MavCRC : Object {
         { 12902, 49 }, { 12903, 249 }, { 12904, 85 }, { 12905, 49 }, { 12915, 62 },
     };
 
-	public static uint8 lookup(uint32 id)
-    {
+	public static uint8 lookup(uint32 id) {
         uint8 res = 0;
-        foreach (var v in mavcrcs)
-        {
-            if (v.msgid == id)
-            {
+        foreach (var v in mavcrcs) {
+            if (v.msgid == id) {
                 res = v.seed;
                 break;
             }
@@ -219,8 +209,7 @@ namespace CRSF {
 	static uint8 crsf_index;
 	static uint8 detect_idx=0;
 
-	bool check_crc(uint8 []buffer)
-	{
+	bool check_crc(uint8 []buffer) {
         uint8 len = buffer[1];
         uint8 crc = 0;
         for(var k = 2; k <= len; k++) {
@@ -242,8 +231,7 @@ namespace CRSF {
 		if (crsf_index < TELEMETRY_RX_PACKET_SIZE) {
 			crsf_buffer[crsf_index] = data;
 			crsf_index++;
-		}
-		else {
+		} else {
 			crsf_index = 0;
 		}
 
@@ -461,36 +449,31 @@ public class MWSerial : Object {
 
 	public static bool debug;
 
-	public enum MemAlloc
-    {
+	public enum MemAlloc {
         RX=1024,
         TX=256,
         DEV=2048
     }
 
-    public enum ComMode
-    {
+    public enum ComMode {
         TTY=1,
         STREAM=2,
         FD=4,
         BT=8
     }
 
-    public enum Mode
-    {
+    public enum Mode {
         NORMAL=0,
         SIM = 1
     }
 
-    public enum ProtoMode
-    {
+    public enum ProtoMode {
         NORMAL,
         CLI,
         FRSKY
     }
 
-    public enum States
-    {
+    public enum States {
         S_END=0,
         S_HEADER,
         S_HEADER1,
@@ -581,13 +564,12 @@ public class MWSerial : Object {
             return "????";
         }
     }
-    public int randomUDP(int[] res)
-    {
+
+    public int randomUDP(int[] res) {
         int result = -1;
         setup_ip(null,0);
         if (fd > -1) {
-            try
-            {
+            try {
                 commode = 0;
                 var xsa = skt.get_local_address();
                 var outp = ((InetSocketAddress)xsa).get_port();
@@ -606,16 +588,14 @@ public class MWSerial : Object {
         return devname;
     }
 
-    public MWSerial.forwarder()
-    {
+    public MWSerial.forwarder() {
         fwd = true;
         available = false;
         set_txbuf(MemAlloc.TX);
 		pmask = PMask.AUTO;
     }
 
-    public MWSerial.reader()
-    {
+    public MWSerial.reader() {
         available = fwd = false;
         ro = true;
         rxbuf_alloc = MemAlloc.RX;
@@ -624,8 +604,7 @@ public class MWSerial : Object {
 		pmask = PMask.AUTO;
     }
 
-    public MWSerial()
-    {
+    public MWSerial() {
         fwd =  available = false;
         rxbuf_alloc = MemAlloc.RX;
         rxbuf = new uint8[rxbuf_alloc];
@@ -642,37 +621,30 @@ public class MWSerial : Object {
 		mpm_auto = _a;
 	}
 
-    public int get_fd()
-    {
+    public int get_fd() {
         return fd;
     }
 
-    public void set_txbuf(uint16 sz)
-    {
+    public void set_txbuf(uint16 sz) {
         txbuf = new uint8[sz];
         txbuf_alloc = sz;
     }
 
-    public uint16 get_txbuf()
-    {
+    public uint16 get_txbuf() {
         return txbuf_alloc;
     }
 
-    public uint16 get_rxbuf()
-    {
+    public uint16 get_rxbuf() {
         return rxbuf_alloc;
     }
 
-    public void clear_counters()
-    {
+    public void clear_counters() {
         ltime = stime = 0;
         stats =  {0.0, 0, 0, 0.0, 0.0};
     }
 
-    private void setup_fd (uint rate)
-    {
-        if((commode & ComMode.TTY) == ComMode.TTY)
-        {
+    private void setup_fd (uint rate) {
+        if((commode & ComMode.TTY) == ComMode.TTY) {
             baudrate = rate;
             MwpSerial.set_speed(fd, (int)rate, null);
         }
@@ -680,8 +652,7 @@ public class MWSerial : Object {
         setup_reader();
     }
 
-    public void setup_reader()
-    {
+    public void setup_reader() {
         clear_counters();
         state = States.S_HEADER;
         try {
@@ -697,23 +668,20 @@ public class MWSerial : Object {
         }
     }
 
-    private void setup_ip(string? host, uint16 port, string? rhost=null, uint16 rport = 0)
-    {
+    private void setup_ip(string? host, uint16 port, string? rhost=null, uint16 rport = 0) {
         if(MwpMisc.is_cygwin())
             force4 = true;
 
         fd = -1;
         baudrate = 0;
         if((host == null || host.length == 0) &&
-           ((commode & ComMode.STREAM) != ComMode.STREAM))
-        {
+           ((commode & ComMode.STREAM) != ComMode.STREAM)) {
             try {
                 SocketFamily[] fams = {};
                 if(!force4)
                     fams += SocketFamily.IPV6;
                 fams += SocketFamily.IPV4;
-                foreach(var fam in fams)
-                {
+                foreach(var fam in fams) {
                     var sa = new InetSocketAddress (new InetAddress.any(fam),
                                                     (uint16)port);
                     skt = new Socket (fam, SocketType.DATAGRAM, SocketProtocol.UDP);
@@ -726,8 +694,7 @@ public class MWSerial : Object {
                         break;
                     }
                 }
-                if(rhost != null && rport != 0)
-                {
+                if(rhost != null && rport != 0) {
                     var resolver = Resolver.get_default ();
                     var addresses = resolver.lookup_by_name (rhost, null);
                     var addr0 = addresses.nth_data (0);
@@ -749,11 +716,9 @@ public class MWSerial : Object {
                 MWPLog.message ("resolver: %s\n", e.message);
             }
 
-            try
-            {
+            try {
                 if (addresses != null) {
-                    foreach (var address in addresses)
-                    {
+                    foreach (var address in addresses) {
                         sockaddr = new InetSocketAddress (address, port);
                         var fam = sockaddr.get_family();
 						if(debug) {
@@ -762,24 +727,18 @@ public class MWSerial : Object {
                         if(force4 && fam != SocketFamily.IPV4)
                             continue;
 
-                        if((commode & ComMode.STREAM) == ComMode.STREAM)
-                        {
+                        if((commode & ComMode.STREAM) == ComMode.STREAM) {
                             stype = SocketType.STREAM;
                             sproto = SocketProtocol.TCP;
-                        }
-                        else
-                        {
+                        } else {
                             stype = SocketType.DATAGRAM;
                             sproto = SocketProtocol.UDP;
                         }
                         skt = new Socket (fam, stype, sproto);
-                        if(skt != null)
-                        {
+                        if(skt != null) {
                             fd = skt.fd;
-                            if(fd != -1)
-                            {
-                                try
-                                {
+                            if(fd != -1) {
+                                try {
                                     if (sproto != SocketProtocol.UDP)
                                         skt.connect(sockaddr);
                                     set_noblock();
@@ -802,11 +761,8 @@ public class MWSerial : Object {
         }
     }
 
-    private void set_noblock()
-    {
-        Posix.fcntl(fd, Posix.F_SETFL,
-                    Posix.fcntl(fd, Posix.F_GETFL, 0) |
-                    Posix.O_NONBLOCK);
+    private void set_noblock() {
+        Posix.fcntl(fd, Posix.F_SETFL, Posix.fcntl(fd, Posix.F_GETFL, 0) | Posix.O_NONBLOCK);
     }
 
 /*
@@ -818,10 +774,8 @@ public class MWSerial : Object {
   }
 */
 
-    public bool open(string device, uint rate, out string estr)
-    {
-        if(open_w(device, rate, out estr))
-        {
+    public bool open(string device, uint rate, out string estr) {
+        if(open_w(device, rate, out estr)) {
             if(fwd == false)
                 setup_reader();
             else
@@ -830,12 +784,10 @@ public class MWSerial : Object {
         return available;
     }
 
-    private string resolve_mwp_serial_host()
-    {
+    private string resolve_mwp_serial_host() {
         var host = Environment.get_variable("MWP_SERIAL_HOST");
         if(host == null) {
-            string []  routes =
-            {
+            string []  routes = {
                 "sh -c \"ip route show 0.0.0.0/0 | cut -d ' ' -f3\"",
                 "sh -c \"route -n | grep UG | awk '{print $2}'\"",
                 "sh -c \"route -n show  0.0.0.0 | grep gateway | awk '{print $2}'\""
@@ -856,8 +808,7 @@ public class MWSerial : Object {
         return host;
     }
 
-    public bool open_w(string _device, uint rate, out string estr)
-    {
+    public bool open_w(string _device, uint rate, out string estr) {
         int lasterr = 0;
         string device;
         int n;
@@ -942,16 +893,13 @@ public class MWSerial : Object {
             MWPLog.message("%s\n", estr);
             fd = -1;
             available = false;
-        }
-        else {
+        } else {
             available = true;
         }
         return available;
     }
 
-
-    public bool open_fd(int _fd, int rate, bool rawfd = false)
-    {
+    public bool open_fd(int _fd, int rate, bool rawfd = false) {
         devname = "fd #%d".printf(_fd);
         fd = _fd;
         fwd =  false;
@@ -963,38 +911,29 @@ public class MWSerial : Object {
         return available;
     }
 
-    ~MWSerial()
-    {
+    ~MWSerial() {
         if(fd != -1)
             close();
     }
 
-    public void close()
-    {
+    public void close() {
         available=false;
-        if(fd != -1)
-        {
-            if(tag > 0)
-            {
+        if(fd != -1) {
+            if(tag > 0) {
                 Source.remove(tag);
                 tag = 0;
             }
-            if((commode & ComMode.TTY) == ComMode.TTY)
-            {
+            if((commode & ComMode.TTY) == ComMode.TTY) {
                 MwpSerial.close(fd);
                 fd = -1;
             }
             else if ((commode & ComMode.FD) == ComMode.FD)
                 Posix.close(fd);
-            else
-            {
-                if (!skt.is_closed())
-                {
-                    try
-                    {
+            else {
+                if (!skt.is_closed()) {
+                    try {
                         skt.close();
-                    } catch (Error e)
-                    {
+                    } catch (Error e) {
                         warning ("sock close %s", e.message);
                     }
                 }
@@ -1004,8 +943,7 @@ public class MWSerial : Object {
         }
     }
 
-    public SerialStats dump_stats()
-    {
+    public SerialStats dump_stats() {
         if(stime == 0)
             stime =  GLib.get_monotonic_time();
         if(ltime == 0 || ltime == stime)
@@ -1019,43 +957,35 @@ public class MWSerial : Object {
         return stats;
     }
 
-    private void error_counter(string? why=null)
-    {
+    private void error_counter(string? why=null) {
         commerr++;
         MWPLog.message("Comms error %s %d\n", (why!=null) ? why : "", commerr);
         MwpSerial.flush(fd);
     }
 
-    private void check_rxbuf_size()
-    {
-        if (csize > rxbuf_alloc)
-        {
+    private void check_rxbuf_size() {
+        if (csize > rxbuf_alloc) {
             while (csize > rxbuf_alloc)
                 rxbuf_alloc += MemAlloc.RX;
             rxbuf = new uint8[rxbuf_alloc];
         }
     }
 
-    private void check_txbuf_size(size_t sz)
-    {
-        if (sz > txbuf_alloc)
-        {
+    private void check_txbuf_size(size_t sz) {
+        if (sz > txbuf_alloc) {
             while (sz > txbuf_alloc)
                 txbuf_alloc += MemAlloc.TX;
             txbuf = new uint8[txbuf_alloc];
         }
     }
 
-    private void show_cond(IOCondition cond)
-    {
+    private void show_cond(IOCondition cond) {
         StringBuilder sb = new StringBuilder("");
         sb.append_printf("Close %s : ", devname);
         sb.append_c(' ');
-        for(var j = 0; j < 8; j++)
-        {
+        for(var j = 0; j < 8; j++) {
             IOCondition n = (IOCondition)(1 << j);
-            if((cond & n) == n)
-            {
+            if((cond & n) == n) {
                 sb.append(n.to_string());
                 sb.append_c('|');
             }
@@ -1067,8 +997,7 @@ public class MWSerial : Object {
 
 	private bool fr_publish(uint8 []buf) {
 		bool res = SportDev.fr_checksum(buf);
-		if(res)
-		{
+		if(res) {
 			ushort id;
 			uint val;
 			SEDE.deserialise_u16(&buf[2], out id);
@@ -1078,42 +1007,30 @@ public class MWSerial : Object {
 		return res;
 	}
 
-
-    private bool device_read(IOChannel gio, IOCondition cond)
-    {
+    private bool device_read(IOChannel gio, IOCondition cond) {
         ssize_t res = 0;
 
-        if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
-        {
+        if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0) {
             show_cond(cond);
             available = false;
             if(fd != -1)
                 serial_lost();
             tag = 0; // REMOVE will remove the iochannel watch
             return Source.REMOVE;
-        }
-        else if (fd != -1 && (cond & IOCondition.IN) != 0)
-        {
-            if((commode & ComMode.BT) == ComMode.BT)
-            {
+        } else if (fd != -1 && (cond & IOCondition.IN) != 0) {
+            if((commode & ComMode.BT) == ComMode.BT) {
                 res = Posix.recv(fd,devbuf,MemAlloc.DEV,0);
                 if(res == 0)
                     return Source.CONTINUE;
-            }
-            else if((commode & ComMode.STREAM) == ComMode.STREAM)
-            {
+            } else if((commode & ComMode.STREAM) == ComMode.STREAM) {
                 res = Posix.read(fd,devbuf,MemAlloc.DEV);
-                if(res == 0)
-                {
+                if(res == 0) {
                     if((commode & ComMode.TTY) != ComMode.TTY)
                         serial_lost();
                     return Source.CONTINUE;
                 }
-            }
-            else
-            {
-                try
-                {
+            } else {
+                try {
                     res = skt.receive_from(out sockaddr, devbuf);
                 } catch(Error e) {
                     res = 0;
@@ -1126,7 +1043,6 @@ public class MWSerial : Object {
             } else {
                 if(stime == 0)
                     stime =  GLib.get_monotonic_time();
-
                 ltime =  GLib.get_monotonic_time();
                 stats.rxbytes += res;
                 if(print_raw == true) {
@@ -1313,8 +1229,7 @@ public class MWSerial : Object {
 								state=States.S_ERROR;
 								break;
 							}
-							if (needed > 0)
-							{
+							if (needed > 0) {
 								csize = needed;
 								irxbufp = 0;
 								checksum = 0;
@@ -1326,17 +1241,14 @@ public class MWSerial : Object {
 							xflags = devbuf[nc];
 							if((devbuf[nc] == readdirn ||
 								devbuf[nc] == writedirn ||
-								devbuf[nc] == '!'))
-							{
+								devbuf[nc] == '!')) {
 								if (relaxed)
 									errstate = !(devbuf[nc] == readdirn ||
 												 devbuf[nc] == writedirn);
 								else
 									errstate = (devbuf[nc] != readdirn); // == '!'
 								state = States.S_SIZE;
-							}
-							else
-							{
+							} else {
 								error_counter("MSP/Proto");
 								if(debug) {
 									MWPLog.message("fail on header2 %x\n", devbuf[nc]);
@@ -1353,23 +1265,15 @@ public class MWSerial : Object {
 						case States.S_CMD:
 							cmd = (MSP.Cmds)devbuf[nc];
 							checksum ^= cmd;
-							if(cmd == MSP.Cmds.MSPV2)
-							{
+							if(cmd == MSP.Cmds.MSPV2) {
 								encap = true;
 								state = States.S_X_FLAGS;
-							}
-							else if (csize == 255)
-							{
+							} else if (csize == 255) {
 								state = States.S_JUMBO1;
-							}
-							else
-							{
-								if (csize == 0)
-								{
+							} else {
+								if (csize == 0) {
 									state = States.S_CHECKSUM;
-								}
-								else
-								{
+								} else {
 									state = States.S_DATA;
 									irxbufp = 0;
 									needed = csize;
@@ -1391,8 +1295,7 @@ public class MWSerial : Object {
 							irxbufp = 0;
 							if (csize == 0)
 								state = States.S_CHECKSUM;
-							else
-							{
+							else {
 								state = States.S_DATA;
 								check_rxbuf_size();
 							}
@@ -1406,16 +1309,13 @@ public class MWSerial : Object {
 								state = States.S_CHECKSUM;
 							break;
 						case States.S_CHECKSUM:
-							if(checksum  == devbuf[nc])
-							{
+							if(checksum  == devbuf[nc]) {
 								state = States.S_HEADER;
 								stats.msgs++;
 								if(cmd < MSP.Cmds.MSPV2 || cmd > MSP.Cmds.LTM_BASE)
 									serial_event(cmd, rxbuf, csize, xflags, errstate);
 								irxbufp = 0;
-							}
-							else
-							{
+							} else {
 								error_counter("MSP/CRC");
 								if(debug) {
 									MWPLog.message("CRC Fail, got %d != %d (cmd=%d)\n",
@@ -1430,19 +1330,13 @@ public class MWSerial : Object {
 
 						case States.S_X_HEADER2:
 							xflags = devbuf[nc];
-							if((devbuf[nc] == readdirn ||
-								devbuf[nc] == writedirn ||
-								devbuf[nc] == '!'))
-							{
+							if((devbuf[nc] == readdirn || devbuf[nc] == writedirn || devbuf[nc] == '!')) {
 								if (relaxed)
-									errstate = !(devbuf[nc] == readdirn ||
-												 devbuf[nc] == writedirn);
+									errstate = !(devbuf[nc] == readdirn || devbuf[nc] == writedirn);
 								else
 									errstate = (devbuf[nc] != readdirn); // == '!'
 								state = States.S_X_FLAGS;
-							}
-							else
-							{
+							} else {
 								error_counter("MSP2/Proto");
 								if(debug) {
 									MWPLog.message("fail on header2 %x\n", devbuf[nc]);
@@ -1479,8 +1373,7 @@ public class MWSerial : Object {
 							checksum2 = CRC8.dvb_s2(checksum2, devbuf[nc]);
 							csize |= (uint16)devbuf[nc] << 8;
 							needed = csize;
-							if(needed > 0)
-							{
+							if(needed > 0) {
 								check_rxbuf_size();
 								state = States.S_X_DATA;
 							}
@@ -1497,15 +1390,12 @@ public class MWSerial : Object {
 							break;
 						case States.S_X_CHECKSUM:
 							checksum ^= devbuf[nc];
-							if(checksum2  == devbuf[nc])
-							{
+							if(checksum2  == devbuf[nc]) {
 								state = (encap) ? States.S_CHECKSUM : States.S_HEADER;
 								stats.msgs++;
 								serial_event((MSP.Cmds)xcmd, rxbuf, csize, xflags, errstate);
 								irxbufp = 0;
-							}
-							else
-							{
+							} else {
 								error_counter("MSP2/CRC");
 								if(debug) {
 									MWPLog.message("X-CRC Fail, got %d != %d (cmd=%d)\n",
@@ -1518,8 +1408,7 @@ public class MWSerial : Object {
 						case States.S_M_SIZE:
 							csize = needed = devbuf[nc];
 							mavsum = mavlink_crc(0xffff, (uint8)csize);
-							if(needed > 0)
-							{
+							if(needed > 0) {
 								irxbufp= 0;
 								check_rxbuf_size();
 							}
@@ -1565,14 +1454,11 @@ public class MWSerial : Object {
 								state = States.S_ERROR;
 							} else {
 								rxmavsum |= (devbuf[nc] << 8);
-								if(rxmavsum == mavsum)
-								{
+								if(rxmavsum == mavsum) {
 									stats.msgs++;
 									serial_event (cmd+MSP.Cmds.MAV_BASE, rxbuf, csize, 0, errstate);
 									state = States.S_HEADER;
-								}
-								else
-								{
+								} else {
 									error_counter("Mav/CRC");
 									if(debug) {
 										MWPLog.message("MAVCRC Fail, got %x != %x (cmd=%u, len=%u)\n",
@@ -1585,8 +1471,7 @@ public class MWSerial : Object {
 						case States.S_M2_SIZE:
 							csize = needed = devbuf[nc];
 							mavsum = mavlink_crc(0xffff, (uint8)csize);
-							if(needed > 0)
-							{
+							if(needed > 0) {
 								irxbufp= 0;
 								check_rxbuf_size();
 							}
@@ -1652,8 +1537,7 @@ public class MWSerial : Object {
 							break;
 						case States.S_M2_CRC2:
 							rxmavsum |= (devbuf[nc] << 8);
-							if(rxmavsum == mavsum)
-							{
+							if(rxmavsum == mavsum) {
 								stats.msgs++;
 								serial_event (cmd+MSP.Cmds.MAV_BASE,
 											  rxbuf, csize, 0, errstate);
@@ -1661,9 +1545,7 @@ public class MWSerial : Object {
 									state = States.S_HEADER;
 								else
 									state = States.S_M2_SIG;
-							}
-							else
-							{
+							} else {
 								error_counter("Mav2/CRC");
 								if(debug) {
 									MWPLog.message("MAVCRC2 Fail, got %x != %x (cmd=%u, len=%u)\n",
@@ -1686,8 +1568,8 @@ public class MWSerial : Object {
 		}
 		return Source.CONTINUE;
 	}
-	public uint16 mavlink_crc(uint16 acc, uint8 val)
-	{
+
+	public uint16 mavlink_crc(uint16 acc, uint8 val) {
 		uint8 tmp;
 		tmp = val ^ (uint8)(acc&0xff);
 		tmp ^= (tmp<<4);
@@ -1695,8 +1577,7 @@ public class MWSerial : Object {
 		return acc;
 	}
 
-	public ssize_t write(void *buf, size_t count)
-	{
+	public ssize_t write(void *buf, size_t count) {
 		ssize_t size;
 		if(ro)
 			return 0;
@@ -1710,31 +1591,25 @@ public class MWSerial : Object {
 			size = Posix.send(fd, buf, count, 0);
 		else if((commode & ComMode.STREAM) == ComMode.STREAM)
 			size = Posix.write(fd, buf, count);
-		else
-		{
+		else {
 			unowned uint8[] sbuf = (uint8[]) buf;
 			sbuf.length = (int)count;
-			try
-			{
+			try {
 				size = skt.send_to (sockaddr, sbuf);
 			} catch(Error e) {
 //                stderr.printf("err::send: %s", e.message);
 				size = 0;
 			}
 		}
-		if(rawlog == true)
-		{
+		if(rawlog == true) {
 			log_raw('o',buf,(int)count);
 		}
 		return size;
 	}
 
-	public void send_ltm(uint8 cmd, void *data, size_t len)
-	{
-		if(available == true && !ro)
-		{
-			if(len != 0 && data != null)
-			{
+	public void send_ltm(uint8 cmd, void *data, size_t len) {
+		if(available == true && !ro) {
+			if(len != 0 && data != null) {
 				uint8 *ptx = txbuf;
 				uint8* pdata = (uint8*)data;
 				check_txbuf_size(len+4);
@@ -1753,14 +1628,11 @@ public class MWSerial : Object {
 		}
 	}
 
-
-	public void send_mav(uint8 cmd, void *data, size_t len)
-	{
+	public void send_mav(uint8 cmd, void *data, size_t len) {
 		const uint8 MAVID1='j';
 		const uint8 MAVID2='h';
 
-		if(available == true && !ro)
-		{
+		if(available == true && !ro) {
 			uint16 mcrc;
 			uint8* ptx = txbuf;
 			uint8* pdata = data;
@@ -1794,8 +1666,7 @@ public class MWSerial : Object {
 		}
 	}
 
-	private size_t generate_v1(uint8 cmd, void *data, size_t len)
-	{
+	private size_t generate_v1(uint8 cmd, void *data, size_t len) {
 		uint8 ck = 0;
 
 		check_txbuf_size(len+6);
@@ -1809,8 +1680,7 @@ public class MWSerial : Object {
 		*ptx++ = (uint8)len;
 		ck ^=  cmd;
 		*ptx++ = cmd;
-		for(var i = 0; i < len; i++)
-		{
+		for(var i = 0; i < len; i++) {
 			*ptx = *pdata++;
 			ck ^= *ptx++;
 		}
@@ -1818,8 +1688,7 @@ public class MWSerial : Object {
 		return len+6;
 	}
 
-	public size_t generate_v2(uint16 cmd, void *data, size_t len)
-	{
+	public size_t generate_v2(uint16 cmd, void *data, size_t len) {
 		uint8 ck2=0;
 
 		check_txbuf_size(len+9);
@@ -1839,8 +1708,7 @@ public class MWSerial : Object {
 		ck2 = CRC8.dvb_s2(ck2, txbuf[6]);
 		ck2 = CRC8.dvb_s2(ck2, txbuf[7]);
 
-		for (var i = 0; i < len; i++)
-		{
+		for (var i = 0; i < len; i++) {
 			*ptx = *pdata++;
 			ck2 = CRC8.dvb_s2(ck2, *ptx);
 			ptx++;
@@ -1849,10 +1717,8 @@ public class MWSerial : Object {
 		return len+9;
 	}
 
-	public void send_command(uint16 cmd, void *data, size_t len, bool sim=false)
-	{
-		if(available == true && !ro)
-		{
+	public void send_command(uint16 cmd, void *data, size_t len, bool sim=false) {
+		if(available == true && !ro) {
 			char tmp = writedirn;
 			if (sim) // forces SIM mode (inav-radar)
 				writedirn = '>';
@@ -1866,17 +1732,14 @@ public class MWSerial : Object {
 		}
 	}
 
-	public void send_error(uint8 cmd)
-	{
-		if(available == true && !ro)
-		{
+	public void send_error(uint8 cmd) {
+		if(available == true && !ro) {
 			uint8 dstr[8] = {'$', 'M', '!', 0, cmd, cmd};
 			write(dstr, 6);
 		}
 	}
 
-	private void log_raw(uint8 dirn, void *buf, int len)
-	{
+	private void log_raw(uint8 dirn, void *buf, int len) {
 		double dt = timer.elapsed ();
 		uint16 blen = (uint16)len;
 		Posix.write(raws, &dt, sizeof(double));
@@ -1885,10 +1748,8 @@ public class MWSerial : Object {
 		Posix.write(raws, buf,len);
 	}
 
-	public void raw_logging(bool state)
-	{
-		if(state == true)
-		{
+	public void raw_logging(bool state) {
+		if(state == true) {
 			time_t currtime;
 			time_t(out currtime);
 			string dstr = devname.delimit("""\:@/[]""", '_');
@@ -1898,19 +1759,15 @@ public class MWSerial : Object {
 			timer = new Timer ();
 			rawlog = true;
 			Posix.write(raws, "v2\n" , 3);
-		}
-		else
-		{
+		} else {
 			Posix.close(raws);
 			timer.stop();
 			rawlog = false;
 		}
 	}
 
-	public void dump_raw_data (uint8[]buf, int len)
-	{
-		for(var nc = 0; nc < len; nc++)
-		{
+	public void dump_raw_data (uint8[]buf, int len) {
+		for(var nc = 0; nc < len; nc++) {
 			if(buf[nc] == '$')
 				MWPLog.message("\n");
 			stderr.printf("%02x ", buf[nc]);
@@ -1918,23 +1775,17 @@ public class MWSerial : Object {
 		stderr.printf("(%d) ",len);
 	}
 
-	public void set_mode(Mode mode)
-	{
-		if (mode == Mode.NORMAL)
-		{
+	public void set_mode(Mode mode) {
+		if (mode == Mode.NORMAL) {
 			readdirn='>';
 			writedirn= '<';
-		}
-		else
-		{
+		} else {
 			readdirn='<';
 			writedirn= '>';
 		}
 	}
 
-	public void set_relaxed(bool _rlx)
-	{
+	public void set_relaxed(bool _rlx) {
 		relaxed = _rlx;
 	}
-
 }
