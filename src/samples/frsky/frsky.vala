@@ -1,8 +1,7 @@
 
 // valac --pkg gio-2.0 frsky.vala
 
-public class Frsky : Object
-{
+public class Frsky : Object {
     enum FrID {
         ALT_ID = 0x0100,
         VARIO_ID = 0x0110,
@@ -57,11 +56,9 @@ public class Frsky : Object
 
     public uint64 offset = 0;
 
-    private bool fr_checksum(uint8[] buf)
-    {
+    private bool fr_checksum(uint8[] buf) {
         uint16 crc = 0;
-        for(var i = 2; i < FrProto.P_SIZE; i++)
-        {
+        for(var i = 2; i < FrProto.P_SIZE; i++) {
             crc += buf[i];
             crc += crc >> 8;
             crc &= 0xff;
@@ -69,8 +66,7 @@ public class Frsky : Object
         return (crc == 0xff);
     }
 
-    private double parse_lat_lon(uint val)
-    {
+    private double parse_lat_lon(uint val) {
         int value = (int)(val & 0x3fffffff);
         if ((val & (1 << 30))!= 0)
             value = -value;
@@ -80,17 +76,14 @@ public class Frsky : Object
         return dpos;
     }
 
-    private void sport_roll_pitch(out double pitch, out double roll)
-    {
+    private void sport_roll_pitch(out double pitch, out double roll) {
         pitch = 180.0 * Math.atan2 (ax, Math.sqrt(ay*ay + az*az))/Math.PI;
         roll  = 180.0 * Math.atan2 (ay, Math.sqrt(ax*ax + az*az))/Math.PI;
     }
 
-    private void display_data(FrID id, uint val)
-    {
+    private void display_data(FrID id, uint val) {
         double r;
-        switch(id)
-        {
+        switch(id) {
             case FrID.ACCX_ID:
                 ax = ((int)val) / 100.0;
                 break;
@@ -138,11 +131,9 @@ public class Frsky : Object
                 string fmode = "";
                 string nmode = "";
                 string emode = "";
-                for(var j = 0; j < 5; j++)
-                {
+                for(var j = 0; j < 5; j++) {
                     uint mode = ival % 10;
-                    switch(j)
-                    {
+                    switch(j) {
                         case 0: // 1s
                             if((mode & 1) == 1)
                                 armOK = true;
@@ -275,26 +266,21 @@ public class Frsky : Object
         }
     }
 
-    private uint8 * deserialise_u32(uint8* rp, out uint32 v)
-    {
+    private uint8 * deserialise_u32(uint8* rp, out uint32 v) {
         v = *rp | (*(rp+1) << 8) |  (*(rp+2) << 16) | (*(rp+3) << 24);
         return rp + sizeof(uint32);
     }
 
-    private uint8 * deserialise_u16(uint8* rp, out uint16 v)
-    {
+    private uint8 * deserialise_u16(uint8* rp, out uint16 v) {
         v = *rp | (*(rp+1) << 8);
         return rp + sizeof(uint16);
     }
 
-    public bool check_buffer(uint8[] buf)
-    {
+    public bool check_buffer(uint8[] buf) {
         bool res = fr_checksum(buf);
-        if(res)
-        {
+        if(res) {
             ushort id;
             uint val;
-                /* fixme serialisation */
             deserialise_u16(buf+3, out id);
             deserialise_u32(buf+5, out val);
             display_data((FrID)id,val);
@@ -302,8 +288,7 @@ public class Frsky : Object
         return res;
     }
 
-    public static int main (string? []args)
-    {
+    public static int main (string? []args) {
         uint good = 0;
         uint bad = 0;
         uint nshort = 0;
@@ -311,8 +296,7 @@ public class Frsky : Object
 
         var fr = new Frsky();
 
-        try
-        {
+        try {
             var file = File.new_for_commandline_arg (args[1]);
             var file_stream = file.read ();
             var dis= new DataInputStream (file_stream);
@@ -322,30 +306,23 @@ public class Frsky : Object
             uint8 nb = 0;
             int bp=-1;
 
-            while (true)
-            {
+            while (true) {
                 uint8 b = dis.read_byte ();
                 bp++;
-                if (b == FrProto.P_START)
-                {
-                    if (nb >= FrProto.P_SIZE)
-                    {
+                if (b == FrProto.P_START) {
+                    if (nb >= FrProto.P_SIZE) {
                         var res = fr.check_buffer(buf);
-                        if (res)
-                        {
+                        if (res) {
                             good++;
-                            for(var j = 0; j < nb; j++)
-                            {
+                            for(var j = 0; j < nb; j++) {
                                 stderr.printf("%02x ", buf[j]);
                             }
                             stderr.putc('\n');
-                        }
-                        else
+                        } else {
                             bad++;
+						}
                         fr.offset = bp;
-                    }
-                    else if (bp >  0)
-                    {
+                    } else if (bp >  0) {
                         nshort++;
                     }
                     if (nb < 256)
@@ -353,13 +330,10 @@ public class Frsky : Object
 
                     nb = 0;
                 }
-                if (stuffed)
-                {
+                if (stuffed) {
                     b = b ^ FrProto.P_MASK;
                     stuffed = false;
-                }
-                else if (b == FrProto.P_STUFF)
-                {
+                } else if (b == FrProto.P_STUFF) {
                     stdout.printf("Stuffed at offset %s\n", fr.offset.to_string());
                     stuffed = true;
                     continue;
@@ -368,9 +342,7 @@ public class Frsky : Object
                 nb++;
             }
         }
-        catch
-        {
-        }
+        catch {}
         stdout.printf("total %u, good %u, bad %u, short %u\n", (good+bad+nshort),
                       good,bad,nshort);
         print("Size\tInstances\n~~~~\t~~~~~~~~~\n");
