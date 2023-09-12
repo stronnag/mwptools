@@ -960,12 +960,10 @@ public class MWP : Gtk.Application {
         }
     }
 
-    private void update_dockmenu(DOCKLETS id)
-    {
+    private void update_dockmenu(DOCKLETS id) {
         var res = (dockitem[id].is_closed () == dockitem[id].is_iconified());
         set_menu_state(dockmenus[id], !res);
     }
-
 
     public void cleanup_t() {
         cleanup(true);
@@ -983,7 +981,7 @@ public class MWP : Gtk.Application {
     }
 
     private void cleanup(bool is_clean) {
-        is_shutdown = true;
+		is_shutdown = true;
         if(is_clean) {
             conf.save_floating (mwpdh.floating);
             lman.save_config();
@@ -1003,20 +1001,21 @@ public class MWP : Gtk.Application {
         ls.quit();
         stop_replayer();
         mss.quit();
+		MwpSpeech.close();
 
-        if(conf.atexit != null)
+        if(conf.atexit != null && conf.atexit.length > 0)
+			MWPLog.message("DBG: atexit %s\n", conf.atexit);
             try {
                 Process.spawn_command_line_sync (conf.atexit);
             } catch {}
-        remove_window(window);
+		remove_window(window);
 	}
 
     private void handle_replay_pause(bool from_vid=false) {
         int signum;
         magcheck = false;
 
-        if(replay_paused)
-        {
+        if(replay_paused) {
             signum = MwpSignals.Signal.CONT;
             time_t now;
             time_t (out now);
@@ -10482,7 +10481,6 @@ public class MWP : Gtk.Application {
         }
         return sb.str;
     }
-
 	public static int main (string[] args) {
 		MWPUtils.set_app_name("mwp");
 		Environment.set_prgname(MWP.MWPID);
