@@ -1248,7 +1248,7 @@ public class MWP : Gtk.Application {
             if (s != null) {
                 appsts[si] = (Environment.find_program_in_path(s) != null);
                 if (appsts[si] == false)
-                    MWPLog.message("Failed to find \"%s\" on PATH\n", s);
+                    MWPLog.message("Failed to find \"%s\" on PATH (see http://stronnag.github.io/mwptools/replay-tools/)\n", s);
             }
             si++;
         }
