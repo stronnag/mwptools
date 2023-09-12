@@ -17,6 +17,7 @@ extern void speech_set_api(char a);
 extern unsigned char get_speech_api_mask();
 extern int speech_init(const char *voice);
 extern void speech_say(const char *text);
+extern void speech_close(void);
 
 extern bool is_cygwin();
 extern char* get_native_path(char *);

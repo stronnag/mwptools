@@ -1,8 +1,7 @@
 // MWP external C functions
 
 [CCode (cheader_filename = "mwpfuncs.h")]
-namespace MwpPipe
-{
+namespace MwpPipe {
     [CCode (cname = "cf_pipe")]
     int pipe(int *fds);
     [CCode (cname = "cf_pipe_close")]
@@ -10,15 +9,13 @@ namespace MwpPipe
 }
 
 [CCode (cheader_filename = "mwpfuncs.h")]
-namespace MwpGL
-{
+namespace MwpGL {
     [CCode (cname = "get_glinfo")]
 	void glinfo(out string? vendor, out string? renderer);
 }
 
 [CCode (cheader_filename = "mwpfuncs.h")]
-namespace MwpSerial
-{
+namespace MwpSerial {
     [CCode (cname = "flush_serial")]
     void flush(int fd);
 	 [CCode (cname = "set_fd_speed")]
@@ -36,19 +33,19 @@ namespace MwpSerial
 }
 
 [CCode (cheader_filename = "mwpfuncs.h")]
-namespace BTSocket
-{
+namespace BTSocket {
     [CCode (cname="connect_bt_device")]
     int connect(string dev, int* lasterr);
 }
 
 [CCode (cheader_filename = "mwpfuncs.h")]
-namespace MwpSpeech
-{
+namespace MwpSpeech {
     [CCode (cname="speech_init")]
     int init(string voice);
     [CCode (cname="speech_say")]
     void say(string text);
+    [CCode (cname="speech_close")]
+    void close();
     [CCode (cname="get_speech_api_mask")]
     uint8 get_api_mask();
     [CCode (cname="speech_set_api")]
@@ -56,11 +53,9 @@ namespace MwpSpeech
 }
 
 [CCode (cheader_filename = "mwpfuncs.h")]
-namespace MwpSignals
-{
+namespace MwpSignals {
     [CCode (cheader_filename = "signal.h", cprefix = "SIG", has_type_id = false)]
-    public enum Signal
-    {
+    public enum Signal {
         CONT,
         TERM,
         INT,
@@ -71,8 +66,7 @@ namespace MwpSignals
 }
 
 [CCode (cheader_filename = "stdlib.h")]
-namespace MwpLibC
-{
+namespace MwpLibC {
     [CCode (cname="atexit")]
     int atexit(GLib.VoidFunc f);
     [CCode (cname="ptsname")]
@@ -80,15 +74,13 @@ namespace MwpLibC
 }
 
 [CCode (cheader_filename = "glib.h")]
-namespace DStr
-{
+namespace DStr {
     [CCode (cname = "g_strtod")]
     public double strtod(string s, out string t);
 }
 
 [CCode (cheader_filename = "mwpfuncs.h")]
-namespace MwpVers
-{
+namespace MwpVers {
     [CCode (cname="get_build")]
     unowned string get_build();
     [CCode (cname="get_id")]
@@ -102,8 +94,7 @@ namespace MwpVers
 }
 
 [CCode (cheader_filename = "termcap.h")]
-namespace Tc
-{
+namespace Tc {
     [CCode (cname="tgetent")]
     int tgetent(char *id, char *buf);
     [CCode (cname="tgetstr")]
@@ -111,8 +102,7 @@ namespace Tc
 }
 
 [CCode (cheader_filename = "mwpfuncs.h")]
-namespace MwpMisc
-{
+namespace MwpMisc {
     [CCode (cname="is_cygwin")]
     bool is_cygwin();
 
