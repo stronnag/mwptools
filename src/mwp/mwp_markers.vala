@@ -184,9 +184,9 @@ public class MWPMarkers : GLib.Object
         unowned MWPLabel rd = null;
 		//        rdrmarkers.get_markers().foreach ((m) => {
 		var rdrl =  rdrmarkers.get_markers();
-		for (uint j = 0; j < rdrl.length(); j++) {
+		for (unowned var lp = rdrl.first(); lp != null; lp = lp.next) {
 			if(rd == null) {
-				var m = rdrl.nth_data(j);
+				var m = rdrl.data;
 				if (((MWPLabel)m).name != "irdr")  {
 					var a = ((MWPLabel)m).rplot;
 					if(a != null) {
@@ -789,8 +789,8 @@ public class MWPMarkers : GLib.Object
 
     public MWPLabel? get_marker_for_idx(int idx) {
 		var mlist = markers.get_markers();
-		for (var i = 0; i < mlist.length(); i++) {
-			var m = (MWPLabel)(mlist.nth_data(i));
+		for (unowned var lp = mlist.first(); lp != null; lp = lp.next) {
+			var m = (MWPLabel)lp.data;
 			if( m.idx == idx) {
 				return m;
 			}
