@@ -3075,9 +3075,11 @@ public class MWP : Gtk.Application {
 				if(act)
 					MWPLog.message("GST: \"%s\" <%s> <%s>\n", a, d.displayname, d.devicename);
 				if((debug_flags & DEBUG_FLAGS.VIDEO) == DEBUG_FLAGS.VIDEO) {
-					viddevs.@foreach((d) => {
-							MWPLog.message("VideoDevs <%s> <%s>\n", d.devicename, d.displayname);
-						});
+					//					viddevs.@foreach((d) =>
+					for (uint j = 0; j < viddevs.length(); j++)  {
+						var dv = viddevs.nth_data(j);
+						MWPLog.message("VideoDevs <%s> <%s>\n", dv.devicename, dv.displayname);
+					}
 				}
 			});
 		gstdm.setup_device_monitor();
@@ -5052,11 +5054,12 @@ public class MWP : Gtk.Application {
                 }
 
                 if((nticks % RADARINTVL) == 0) {
-                    radar_plot.@foreach ((r) => {
-                            var staled = 120*10 ; //(r.source == 2) ? 120*10 : 50;
+					//                    radar_plot.@foreach ((r) => {
+					for(uint j = 0; j <  radar_plot.length(); j++) {
+						unowned RadarPlot r = radar_plot.nth_data(j);
+						var staled = 120*10 ; //(r.source == 2) ? 120*10 : 50;
                             uint delta = nticks - r.lasttick;
-                            if (delta > 600*10)
-                            {
+                            if (delta > 600*10) {
                                 if((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE)
                                     MWPLog.message("TRAF-DEL %s %u\n", r.name, r.state);
                                 if((r.source & RadarSource.M_ADSB) != 0) {
@@ -5082,7 +5085,7 @@ public class MWP : Gtk.Application {
 								radarv.update(ref r, ((debug_flags & DEBUG_FLAGS.RADAR) != DEBUG_FLAGS.NONE));
                                 markers.set_radar_stale(r);
                             }
-                    });
+                    }
                 }
                 return Source.CONTINUE;
             });
@@ -9103,34 +9106,30 @@ public class MWP : Gtk.Application {
 
     private bool try_forwarder(out string fstr) {
         fstr = null;
-        if(!fwddev.available)
-        {
-            if(fwddev.open_w(forward_device, 0, out fstr) == true)
-            {
+        if(!fwddev.available) {
+            if(fwddev.open_w(forward_device, 0, out fstr) == true) {
                 fwddev.set_mode(MWSerial.Mode.SIM);
                 MWPLog.message("set forwarder %s\n", forward_device);
-            }
-            else
-            {
+            } else {
                 MWPLog.message("Forwarder %s\n", fstr);
             }
         }
         return fwddev.available;
     }
 
-    private void dump_radar_db()
-    {
+    private void dump_radar_db() {
         var dt = new DateTime.now_local ();
         var fn  = "/tmp/radar_%s.log".printf(dt.format("%F_%H%M%S"));
         var fp = FileStream.open(fn,"w");
-        if(fp != null)
-        {
-            radar_plot.@foreach ((r) => {
+        if(fp != null) {
+			for(uint j = 0; j < radar_plot.length(); j++) {
+				//            radar_plot.@foreach ((r) => {
+				var r = radar_plot.nth_data(j);
                     fp.printf("%u\t%s\t%.6f\t%.6f\t%u/%u\t%u\t%u\t%u\t%s\n",
                               r.id, r.name, r.latitude, r.longitude,
                               r.lasttick, nticks, r.state, r.lq,
                               r.source, r.posvalid.to_string());
-                });
+                }
         }
     }
 
@@ -9754,10 +9753,12 @@ public class MWP : Gtk.Application {
 
         var bin = msg.get_message_area() as Gtk.Container;
         var glist = bin.get_children();
-        glist.foreach((i) => {
-                if (i.get_class().get_name() == "GtkLabel")
-                    ((Gtk.Label)i).set_selectable(true);
-            });
+		//        glist.foreach((i) => {
+		for(uint j = 0; j < glist.length(); j++) {
+			var i = glist.nth_data(j);
+			if (i.get_class().get_name() == "GtkLabel")
+				((Gtk.Label)i).set_selectable(true);
+		}
 
         if(timeout > 0 && permawarn == false)
         {

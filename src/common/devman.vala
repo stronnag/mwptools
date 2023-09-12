@@ -27,8 +27,7 @@ public enum DevMask {
 
 #if LINUX
 
-public class DevManager
-{
+public class DevManager {
     private GUdev.Client uc;
     private DBusObjectManager manager;
     private BluezAdapterProperties adapter;
@@ -38,19 +37,15 @@ public class DevManager
     private string[] bt_serials;
     private DevMask mask;
 
-    public DevManager(DevMask _dm=(DevMask.BT|DevMask.USB))
-    {
+    public DevManager(DevMask _dm=(DevMask.BT|DevMask.USB)) {
         mask = _dm;
         bt_serials={};
         uc = new GUdev.Client({"tty"});
         uc.uevent.connect((action,dev) => {
-                if(dev.get_property("ID_BUS") == "usb")
-                {
-                    if((mask & DevMask.USB) != 0)
-                    {
+                if(dev.get_property("ID_BUS") == "usb") {
+                    if((mask & DevMask.USB) != 0) {
                         var ds = dev.get_device_file().dup();
-                        switch (action)
-                        {
+                        switch (action) {
                             case "add":
                                 print_device(dev);
                                 device_added(ds);
@@ -65,8 +60,7 @@ public class DevManager
         evince_bt_devices.begin();
     }
 
-    private void print_device(GUdev.Device d)
-    {
+    private void print_device(GUdev.Device d) {
         StringBuilder sb = new StringBuilder();
         if(d.get_property("ID_BUS") == "usb") {
             sb.append_printf("Registered serial device: %s ", d.get_device_file());
@@ -82,8 +76,7 @@ public class DevManager
         }
     }
 
-    private async void evince_bt_devices()
-    {
+    private async void evince_bt_devices() {
         try {
             manager = yield Bus.get_proxy (BusType.SYSTEM, "org.bluez", "/");
             objects = manager.get_managed_objects();
@@ -94,29 +87,29 @@ public class DevManager
         }
     }
 
-    public string[] get_bt_serial_devices()
-    {
+    public string[] get_bt_serial_devices() {
         return bt_serials;
     }
 
     private void find_adapter() {
-        objects.foreach((path, ifaces) => {
+		//        objects.foreach((path, ifaces) => {
+		List <unowned ObjectPath> lk = objects.get_keys();
+		for(uint j = 0; j < lk.length(); j++) {
+			var path = lk.nth_data(j);
+			var ifaces = objects.get(path);
             HashTable<string, Variant>? props;
             props = ifaces.get("org.bluez.Adapter1");
             if (props == null)
-                return; /* continue */
+                break;
             adapter = new BluezAdapterProperties(path, props);
-        });
+        }
     }
 
-    private void add_device(ObjectPath path, HashTable<string, Variant> props)
-    {
+    private void add_device(ObjectPath path, HashTable<string, Variant> props) {
         var uuids = props.get("UUIDs");
         var u0 = uuids.get_strv();
-        if (u0 != null && u0[0] != null)
-        {
-            if(u0[0].contains("00001101"))
-            {
+        if (u0 != null && u0[0] != null) {
+            if(u0[0].contains("00001101")) {
                 StringBuilder sb = new StringBuilder(props.get("Address").get_string());
                 sb.append_c(' ');
                 sb.append(props.get("Alias").get_string());
@@ -128,13 +121,17 @@ public class DevManager
     }
 
     private void find_devices() {
-        objects.foreach((path, ifaces) => {
-                HashTable<string, Variant>? props;
-                props = ifaces.get("org.bluez.Device1");
-                if (props != null) {
-                    add_device(path, props);
-                }
-            });
+		//        objects.foreach((path, ifaces) => {
+		List <unowned ObjectPath> lk = objects.get_keys();
+		for(uint j = 0; j < lk.length(); j++) {
+			var path = lk.nth_data(j);
+			var ifaces = objects.get(path);
+			HashTable<string, Variant>? props;
+			props = ifaces.get("org.bluez.Device1");
+			if (props != null) {
+				add_device(path, props);
+			}
+		}
     }
 
     [CCode (instance_pos = -1)]
@@ -148,12 +145,10 @@ public class DevManager
             add_device(path, props);
     }
 
-    public string[] get_serial_devices()
-    {
+    public string[] get_serial_devices() {
         string [] dlist={};
         var devs = uc.query_by_subsystem("tty");
-        foreach (var d in devs)
-        {
+        foreach (var d in devs) {
             if(d.get_property("ID_BUS") == "usb") {
                 print_device(d);
                 dlist += d.get_device_file().dup();
@@ -276,12 +271,17 @@ public abstract class BluezInterface : GLib.Object {
     public void on_properties_changed(string iface,
                                       HashTable <string, Variant> changed,
                                       string[] invalidated) {
-        changed.foreach((key, val) => {
+		//        changed.foreach((key, val) => {
+		List <unowned string> lk = changed.get_keys();
+		for(uint j = 0; j < lk.length(); j++) {
+			var key = lk.nth_data(j);
+			var val = changed.get(key);
             if (val.equal(property_cache.get(key)))
-                return; /* continue foreach */
+				break;
+				//                return; /* continue foreach */
             set_cache(key, val);
             property_changed(key, val);
-        });
+        }
     }
 }
 
@@ -347,8 +347,7 @@ public class BluezAdapterProperties : BluezInterface {
     public BluezAdapterProperties(ObjectPath path,
                         HashTable<string, Variant>? props = null) {
         base("org.bluez.Adapter1", path, props);
-        try
-        {
+        try {
             adapter_bus = Bus.get_proxy_sync (BusType.SYSTEM, "org.bluez", path);
         } catch {}
 
@@ -505,32 +504,26 @@ public class BluezDevice : BluezInterface {
     }
 
 }
-
 #else
-public class DevManager
-{
+public class DevManager {
     private string []empty_devs;
     public signal void device_added (string s);
     public signal void device_removed (string s);
     private DevMask mask;
 
-    public DevManager(DevMask _dm=(DevMask.BT|DevMask.USB))
-    {
+    public DevManager(DevMask _dm=(DevMask.BT|DevMask.USB)) {
         mask = _dm;
         empty_devs={};
     }
 
-    public string[] get_bt_serial_devices()
-    {
+    public string[] get_bt_serial_devices() {
         return empty_devs;
     }
 
-    public string[] get_serial_devices()
-    {
+    public string[] get_serial_devices() {
         return empty_devs;
     }
 }
-
 #endif
 
 #if TEST

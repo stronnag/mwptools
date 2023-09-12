@@ -564,26 +564,23 @@ public class AreaPlanner : GLib.Object {
         filter.add_pattern ("*");
         chooser.add_filter (filter);
         chooser.response.connect((id) => {
-                if (id == Gtk.ResponseType.ACCEPT)
-                {
+                if (id == Gtk.ResponseType.ACCEPT) {
                     var fn = chooser.get_filename ();
                     chooser.close ();
                     init_area(fn);
-                }
-                else
+                } else
                     chooser.close ();
             });
         chooser.show_all();
     }
 
-    private void build_mission()
-    {
+    private void build_mission() {
         Vec[] rpts = {};
-        list.foreach((m) => {
-                var v = Vec(){x = m.longitude, y=m.latitude};
-                rpts += v;
-            });
-
+		for(var j = 0; j < list.length(); j++) {
+			var m = list.nth_data(j);
+			var v = Vec(){x = m.longitude, y=m.latitude};
+			rpts += v;
+		}
         double angle = DStr.strtod(s_angle.text,null);
         double sep = DStr.strtod(s_rowsep.text,null);
         int turn = s_turn.active;
@@ -679,25 +676,22 @@ public class AreaPlanner : GLib.Object {
         }
     }
 
-    private void pop_menu_delete()
-    {
-        if(menu_marker!=null)
-        {
+    private void pop_menu_delete() {
+        if(menu_marker!=null) {
             menu_marker.selected = false;
             var mks = path.get_nodes();
             uint ml = mks.length();
-            if(ml > 3)
-            {
-                list.foreach((m) => {
-                        if(near(m,menu_marker))
-                            list.remove(m);
-                    });
+            if(ml > 3) {
+				for(var j = 0; j < list.length(); j++) {
+					var m = list.nth_data(j);
+					if(near(m,menu_marker))
+						list.remove(m);
+				}
                 path.remove_node(menu_marker);
                 pmlayer.remove_marker(menu_marker);
                 if(nmpts > 0)
                     build_mission();
-            }
-            else
+            } else
                 mwp_warning_box("Need 3 or more vertices\n");
             menu_marker = null;
         }
@@ -741,28 +735,25 @@ public class AreaPlanner : GLib.Object {
 
     }
 
-    private void clear_markers()
-    {
+    private void clear_markers() {
         pmlayer.remove_all();
         path.remove_all();
-        list.foreach((m) => {
-                list.remove(m);
-            });
+		for(var j = 0; j < list.length(); j++) {
+			var m = list.nth_data(j);
+			list.remove(m);
+		}
     }
 
-    private void init_area(string? fn)
-    {
+    private void init_area(string? fn) {
         Vec[]pls={};
 
         clear_markers();
         clear_mission();
 
-        if(fn != null)
-        {
+        if(fn != null) {
             double cxa = 180, cya = 90, cxz=-180, cyz=-90;
             pls = parse_file(fn);
-            foreach(var p in pls)
-            {
+            foreach(var p in pls) {
                 cxa = Math.fmin(cxa,p.x);
                 cxz = Math.fmax(cxz,p.x);
                 cya = Math.fmin(cya,p.y);
@@ -805,18 +796,16 @@ public class AreaPlanner : GLib.Object {
                 return false;
             });
 
-        if(pos == -1)
-        {
+        if(pos == -1) {
             path.add_node(marker);
             list.append(marker);
-        }
-        else
-        {
+        } else {
             list.insert(marker, pos);
             path.remove_all();
-            list.foreach((s)  => {
-                    path.add_node(s);
-                });
+			for(var j = 0; j < list.length(); j++) {
+				var s = list.nth_data(j);
+				path.add_node(s);
+			}
         }
 
         marker.drag_finish.connect(() => {
@@ -825,10 +814,8 @@ public class AreaPlanner : GLib.Object {
             });
 
         marker.drag_motion.connect((dx,dy,evt) => {
-                if(nmpts > 0)
-                {
-                    if(evt.get_time() - move_time > 20)
-                    {
+                if(nmpts > 0) {
+                    if(evt.get_time() - move_time > 20) {
                         build_mission();
                         move_time = evt.get_time();
                     }
@@ -1077,25 +1064,24 @@ public class AreaPlanner : GLib.Object {
         chooser.show_all();
     }
 
-     private void save_area_file(string fn)
-    {
-        var os = FileStream.open(fn, "w");
-        os.puts("# mwp area file\n");
-        os.puts("# Valid delimiters are |;:, and <TAB>. Note \",\" is not recommended
-# for reasons of localisation.\n");
-        os.puts("#\n");
-        list.foreach((m) => {
-                os.printf("%f;%f;\n", m.latitude, m.longitude);
-            });
+     private void save_area_file(string fn) {
+		 var os = FileStream.open(fn, "w");
+		 os.puts("# mwp area file\n");
+		 os.puts("# Valid delimiters are |;:, and <TAB>.\n");
+		 os.puts("# Note \",\" is not recommended for reasons of localisation.\n");
+		 os.puts("#\n");
+				//        list.foreach((m) => {
+		 for (var j = 0; j < list.length(); j++) {
+			 var m = list.nth_data(j);
+			 os.printf("%f;%f;\n", m.latitude, m.longitude);
+		 }
     }
 
-    public void run()
-    {
+    public void run() {
         Gtk.main();
     }
 
-    public static int main (string?[] args)
-    {
+    public static int main (string?[] args) {
         if (GtkClutter.init (ref args) != InitError.SUCCESS)
             return 1;
         AreaPlanner app = new AreaPlanner(args.length == 1 ? null : args[1]);

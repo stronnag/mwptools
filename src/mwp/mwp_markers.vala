@@ -182,17 +182,22 @@ public class MWPMarkers : GLib.Object
 
     private unowned MWPLabel find_radar_item(RadarPlot r) {
         unowned MWPLabel rd = null;
-        rdrmarkers.get_markers().foreach ((m) => {
-                if(rd == null) {
-                    if (((MWPLabel)m).name != "irdr")  {
-                        var a = ((MWPLabel)m).rplot;
-                        if(a != null) {
-                            if (r.id== a.id)
-                                rd = m as MWPLabel;
-                        }
-                    }
-                }
-            });
+		//        rdrmarkers.get_markers().foreach ((m) => {
+		var rdrl =  rdrmarkers.get_markers();
+		for (uint j = 0; j < rdrl.length(); j++) {
+			if(rd == null) {
+				var m = rdrl.nth_data(j);
+				if (((MWPLabel)m).name != "irdr")  {
+					var a = ((MWPLabel)m).rplot;
+					if(a != null) {
+						if (r.id== a.id) {
+							rd = m as MWPLabel;
+							break;
+						}
+					}
+				}
+			}
+		}
         return rd;
     }
 

@@ -80,11 +80,13 @@ public class GstMonitor : Gst.Object {
 		caps.append(new Caps.empty_simple ("image/jpeg"));
 		monitor.add_filter ("Video/Source", caps);
 		var devs = monitor.get_devices();
-		devs.@foreach((dv) => {
-				var ds = get_node_info(dv);
-                if(ds != null)
-                    source_changed("init", ds);
-			});
+		//		devs.@foreach((dv) => {
+		for (uint j = 0; j < devs.length(); j++) {
+			var dv = devs.nth_data(j);
+			var ds = get_node_info(dv);
+			if(ds != null)
+				source_changed("init", ds);
+		}
 		monitor.start();
 		return monitor;
 	}
