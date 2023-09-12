@@ -81,8 +81,8 @@ public class GstMonitor : Gst.Object {
 		monitor.add_filter ("Video/Source", caps);
 		var devs = monitor.get_devices();
 		//		devs.@foreach((dv) => {
-		for (uint j = 0; j < devs.length(); j++) {
-			var dv = devs.nth_data(j);
+		for (unowned var lp = devs.first(); lp != null; lp = lp.next) {
+			var dv = lp.data;
 			var ds = get_node_info(dv);
 			if(ds != null)
 				source_changed("init", ds);

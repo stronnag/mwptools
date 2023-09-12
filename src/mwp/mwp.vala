@@ -1242,12 +1242,18 @@ public class MWP : Gtk.Application {
             "mwp-log-replay"};
         bool appsts[9];
         var si = 0;
-        foreach (var s in ext_apps)
-        {
+        foreach (var s in ext_apps) {
             if (s != null) {
                 appsts[si] = (Environment.find_program_in_path(s) != null);
-                if (appsts[si] == false)
-                    MWPLog.message("Failed to find \"%s\" on PATH (see http://stronnag.github.io/mwptools/replay-tools/)\n", s);
+                if (appsts[si] == false) {
+					StringBuilder vsb = new StringBuilder();
+					vsb.append_printf("Failed to find \"%s\" on $PATH", s);
+					if(si == 0 || si > 4) {
+						vsb.append("; see https://stronnag.github.io/mwptools/replay-tools/");
+					}
+					vsb.append_c('\n');
+					MWPLog.message(vsb.str);
+				}
             }
             si++;
         }
@@ -1332,18 +1338,13 @@ public class MWP : Gtk.Application {
 
         spapi = 0;
 
-        if(exvox == null)
-        {
+        if(exvox == null) {
             StringBuilder vsb = new StringBuilder();
-            if (!MwpMisc.is_cygwin())
-            {
+            if (!MwpMisc.is_cygwin()) {
                 uint8 spapi_mask  = MwpSpeech.get_api_mask();
-                if (spapi_mask != 0)
-                {
-                    for(uint8 j = SPEAKER_API.ESPEAK; j < SPEAKER_API.COUNT; j++)
-                    {
-                        if(conf.speech_api == SPEAKERS[j] && ((spapi_mask & (1<<(j-1))) != 0))
-                        {
+                if (spapi_mask != 0) {
+                    for(uint8 j = SPEAKER_API.ESPEAK; j < SPEAKER_API.COUNT; j++) {
+                        if(conf.speech_api == SPEAKERS[j] && ((spapi_mask & (1<<(j-1))) != 0)) {
                             spapi = j;
                             break;
                         }
@@ -3076,8 +3077,8 @@ public class MWP : Gtk.Application {
 					MWPLog.message("GST: \"%s\" <%s> <%s>\n", a, d.displayname, d.devicename);
 				if((debug_flags & DEBUG_FLAGS.VIDEO) == DEBUG_FLAGS.VIDEO) {
 					//					viddevs.@foreach((d) =>
-					for (uint j = 0; j < viddevs.length(); j++)  {
-						var dv = viddevs.nth_data(j);
+					for (unowned var lp = viddevs.first(); lp != null; lp = lp.next)  {
+						var dv = lp.data;
 						MWPLog.message("VideoDevs <%s> <%s>\n", dv.devicename, dv.displayname);
 					}
 				}
@@ -5055,8 +5056,8 @@ public class MWP : Gtk.Application {
 
                 if((nticks % RADARINTVL) == 0) {
 					//                    radar_plot.@foreach ((r) => {
-					for(uint j = 0; j <  radar_plot.length(); j++) {
-						unowned RadarPlot r = radar_plot.nth_data(j);
+					for(unowned var lp = radar_plot; lp != null; lp = lp.next) {
+						unowned RadarPlot r = lp.data;
 						var staled = 120*10 ; //(r.source == 2) ? 120*10 : 50;
                             uint delta = nticks - r.lasttick;
                             if (delta > 600*10) {
@@ -9122,9 +9123,9 @@ public class MWP : Gtk.Application {
         var fn  = "/tmp/radar_%s.log".printf(dt.format("%F_%H%M%S"));
         var fp = FileStream.open(fn,"w");
         if(fp != null) {
-			for(uint j = 0; j < radar_plot.length(); j++) {
+			for(unowned var lp = radar_plot; lp != null; lp = lp.next) {
 				//            radar_plot.@foreach ((r) => {
-				var r = radar_plot.nth_data(j);
+				var r = lp.data;
                     fp.printf("%u\t%s\t%.6f\t%.6f\t%u/%u\t%u\t%u\t%u\t%s\n",
                               r.id, r.name, r.latitude, r.longitude,
                               r.lasttick, nticks, r.state, r.lq,
@@ -9732,8 +9733,7 @@ public class MWP : Gtk.Application {
 		return _lm;
 	}
 
-    private Champlain.BoundingBox bb_from_mission(Mission ms)
-    {
+    private Champlain.BoundingBox bb_from_mission(Mission ms) {
         Champlain.BoundingBox bb = new Champlain.BoundingBox();
         bb.top = ms.maxy;
         bb.bottom = ms.miny;
@@ -9744,8 +9744,7 @@ public class MWP : Gtk.Application {
 
     public void mwp_warning_box(string warnmsg,
                                  Gtk.MessageType klass=Gtk.MessageType.WARNING,
-                                 int timeout = 0)
-    {
+                                 int timeout = 0) {
         var msg = new Gtk.MessageDialog.with_markup (window,
                                                      0,
                                                      klass,
@@ -9754,14 +9753,13 @@ public class MWP : Gtk.Application {
         var bin = msg.get_message_area() as Gtk.Container;
         var glist = bin.get_children();
 		//        glist.foreach((i) => {
-		for(uint j = 0; j < glist.length(); j++) {
-			var i = glist.nth_data(j);
+		for(unowned var lp = glist.first(); lp != null; lp = lp.next) {
+			var i = lp.data;
 			if (i.get_class().get_name() == "GtkLabel")
 				((Gtk.Label)i).set_selectable(true);
 		}
 
-        if(timeout > 0 && permawarn == false)
-        {
+        if(timeout > 0 && permawarn == false) {
             Timeout.add_seconds(timeout, () => {
                     msg.destroy();
                     return Source.CONTINUE;
@@ -9775,8 +9773,7 @@ public class MWP : Gtk.Application {
         msg.show();
     }
 
-    private void on_file_open(bool append=false)
-    {
+    private void on_file_open(bool append=false) {
         Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
             "Open a mission file", null, Gtk.FileChooserAction.OPEN,
             "_Cancel",
@@ -9815,11 +9812,9 @@ public class MWP : Gtk.Application {
         chooser.update_preview.connect (() => {
                 string uri = chooser.get_preview_uri ();
                 Gdk.Pixbuf pixbuf = null;
-                if (uri != null && uri.has_prefix ("file://") == true)
-                {
+                if (uri != null && uri.has_prefix ("file://") == true) {
                     var fn = uri.substring (7);
-                    if(!FileUtils.test (fn, FileTest.IS_DIR))
-                    {
+                    if(!FileUtils.test (fn, FileTest.IS_DIR)) {
 						bool is_j = fn.has_suffix(".json");
 						var tmpmsx =  (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
 						if (tmpmsx.length > 0) {

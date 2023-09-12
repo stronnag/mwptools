@@ -22,37 +22,30 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
-
-public struct SPos
-{
+public struct SPos {
     double lat;
     double lon;
 }
 
-public class PosFormat : GLib.Object
-{
-    public static string lat(double _lat, bool dms)
-    {
+public class PosFormat : GLib.Object {
+    public static string lat(double _lat, bool dms) {
         if(dms == false)
             return "%.6f".printf(_lat);
         else
             return position(_lat, "%02d:%02d:%04.1f%c", "NS");
     }
 
-    public static string lon(double _lon, bool dms)
-    {
+    public static string lon(double _lon, bool dms) {
         if(dms == false)
             return "%.6f".printf(_lon);
         else
             return position(_lon, "%03d:%02d:%04.1f%c", "EW");
     }
 
-    public static string pos(double _lat, double _lon, bool dms)
-    {
+    public static string pos(double _lat, double _lon, bool dms) {
         if(dms == false)
             return "%.6f %.6f".printf(_lat,_lon);
-        else
-        {
+        else {
             var slat = lat(_lat,dms);
             var slon = lon(_lon,dms);
             StringBuilder sb = new StringBuilder ();
@@ -63,21 +56,18 @@ public class PosFormat : GLib.Object
         }
     }
 
-    private static string position(double coord, string fmt, string ind)
-    {
+    private static string position(double coord, string fmt, string ind) {
         var neg = (coord < 0.0);
         var ds = Math.fabs(coord);
         int d = (int)ds;
         var rem = (ds-d)*3600.0;
         int m = (int)rem/60;
         double s = rem - m*60;
-        if ((int)s*10 == 600)
-        {
+        if ((int)s*10 == 600) {
             m+=1;
             s = 0;
         }
-        if (m == 60)
-        {
+        if (m == 60) {
             m = 0;
             d+=1;
         }
@@ -136,21 +126,18 @@ public class AreaPlanner : GLib.Object {
     private const int MAP_WD = 800;
     private const int MAP_HT = 600;
 
-    private void set_menu_state(string action, bool state)
-    {
+    private void set_menu_state(string action, bool state) {
         var ac = window.lookup_action(action) as SimpleAction;
         ac.set_enabled(state);
     }
 
-    private void acquire()
-    {
+    private void acquire() {
         Bus.watch_name(BusType.SESSION, "org.mwptools.mwp",
                        BusNameWatcherFlags.NONE,
                        has_bus, lost_bus);
     }
 
-    private void has_bus()
-    {
+    private void has_bus() {
         if (proxy == null)
             Bus.get_proxy.begin<MwpIF>(BusType.SESSION,
                                        "org.mwptools.mwp",
@@ -158,8 +145,7 @@ public class AreaPlanner : GLib.Object {
                                        0, null, on_bus_get);
     }
 
-    private void on_bus_get(Object? o, AsyncResult? res)
-    {
+    private void on_bus_get(Object? o, AsyncResult? res) {
         try {
             proxy = Bus.get_proxy.end(res);
         } catch (Error e) {
@@ -169,27 +155,21 @@ public class AreaPlanner : GLib.Object {
         update_publish_state();
     }
 
-    private void lost_bus()
-    {
+    private void lost_bus() {
         proxy = null;
         update_publish_state();
     }
 
-    private void update_publish_state()
-    {
+    private void update_publish_state() {
         s_publish.sensitive = (nmpts > 0 && proxy != null);
     }
 
-
-    public AreaPlanner (string? afn)
-    {
-        try
-        {
+    public AreaPlanner (string? afn) {
+        try {
             builder = new Builder();
             builder.add_from_resource("/org/mwptools/survey/survey.ui");
             builder.add_from_resource ("/org/mwptools/survey/menubar.ui");
-        } catch (Error e)
-        {
+        } catch (Error e) {
             stderr.printf ("UI builder failed %s\n", e.message);
             Posix.exit(255);
         }
@@ -259,12 +239,10 @@ public class AreaPlanner : GLib.Object {
         view = embed.get_view();
         view.reactive = true;
         view.kinetic_mode = true;
-        zoomer.adjustment.value_changed.connect (() =>
-            {
+        zoomer.adjustment.value_changed.connect (() => {
                 int  zval = (int)zoomer.adjustment.value;
                 var val = view.get_zoom_level();
-                if (val != zval)
-                {
+                if (val != zval) {
                     view.zoom_level = zval;
                 }
             });
@@ -280,38 +258,34 @@ public class AreaPlanner : GLib.Object {
         var pane = builder.get_object ("paned1") as Gtk.Paned;
 
         add_source_combo(conf.defmap);
-        window.key_press_event.connect( (s,e) =>
-            {
+        window.key_press_event.connect( (s,e) => {
                 bool ret = true;
 
-                switch(e.keyval)
-                {
-                    case Gdk.Key.plus:
-                        if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
-                            ret = false;
-                        else
-                        {
-                            var val = view.get_zoom_level();
-                            var mmax = view.get_max_zoom_level();
-                            if (val != mmax)
-                                view.zoom_level = val+1;
-                        }
-                        break;
-                        case Gdk.Key.minus:
-                            if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
-                                ret = false;
-                            else
-                            {
-                                var val = view.get_zoom_level();
-                                var mmin = view.get_min_zoom_level();
-                                if (val != mmin)
-                                    view.zoom_level = val-1;
-                            }
-                            break;
+                switch(e.keyval) {
+				case Gdk.Key.plus:
+					if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
+						ret = false;
+					else {
+						var val = view.get_zoom_level();
+						var mmax = view.get_max_zoom_level();
+						if (val != mmax)
+							view.zoom_level = val+1;
+					}
+					break;
+				case Gdk.Key.minus:
+					if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
+						ret = false;
+					else {
+						var val = view.get_zoom_level();
+						var mmin = view.get_min_zoom_level();
+						if (val != mmin)
+							view.zoom_level = val-1;
+					}
+					break;
 
-                    default:
-                            ret = false;
-                            break;
+				default:
+					ret = false;
+					break;
                 }
                 return ret;
             });
@@ -335,11 +309,9 @@ public class AreaPlanner : GLib.Object {
                 try {
                     proxy.set_mission(s);
                 } catch (Error e) {
-                        stderr.printf("set_mission : %s\n", e.message);
-                    }
+					stderr.printf("set_mission : %s\n", e.message);
+				}
             });
-
-
 
         s_apply.clicked.connect(() => {
                 build_mission();
@@ -381,8 +353,7 @@ public class AreaPlanner : GLib.Object {
         s_rth.state_set.connect((s) => {
                 var msn_mks = msn_points.get_markers();
                 uint msnl;
-                if((msnl = msn_mks.length()) > 0)
-                {
+                if((msnl = msn_mks.length()) > 0) {
                     // the first shall be last ...
                     var last = msn_mks.nth_data(0);
                     var tlat = last.latitude;
@@ -413,8 +384,7 @@ public class AreaPlanner : GLib.Object {
         Timeout.add(500, () => {
                 var x = view.get_center_longitude();
                 var y = view.get_center_latitude();
-                if (lx !=  x && ly != y)
-                {
+                if (lx !=  x && ly != y) {
                     poslabel.set_text(PosFormat.pos(y,x,conf.dms));
                     lx = x;
                     ly = y;
@@ -433,13 +403,11 @@ public class AreaPlanner : GLib.Object {
         window.show.connect(() => {
                 if(afn != null)
                     init_area(afn);
-                else
-                {
+                else {
                     int ntry=0;
                     Timeout.add(500, () => {
                             ntry++;
-                            if(view.state == Champlain.State.DONE)
-                            {
+                            if(view.state == Champlain.State.DONE) {
                                 MWPLog.message("Initial map  %.1fs\n", ntry*0.5);
                                 init_area(null);
                                 return false;
@@ -448,15 +416,12 @@ public class AreaPlanner : GLib.Object {
                         });
                 }
             });
-
         window.show_all();
     }
 
-    private void save_mission_file(string fn)
-    {
+    private void save_mission_file(string fn) {
         StringBuilder sb;
-        if(!(fn.has_suffix(".mission") || fn.has_suffix(".xml")))
-        {
+        if(!(fn.has_suffix(".mission") || fn.has_suffix(".xml"))) {
             sb = new StringBuilder(fn);
             sb.append(".mission");
             fn = sb.str;
@@ -464,8 +429,7 @@ public class AreaPlanner : GLib.Object {
         XmlIO.to_xml_file(fn, {ms});
     }
 
-    private Mission? create_mission()
-    {
+    private Mission? create_mission() {
         int i =0;
         int k = 0;
 
@@ -479,8 +443,7 @@ public class AreaPlanner : GLib.Object {
 
         var pts = msn_points.get_markers();
         int pl = (int)pts.length();
-        for(k = 0; k < pl; k++)
-        {
+        for(k = 0; k < pl; k++) {
             var j =  pl-1-k;
             var p = pts.nth_data(j);
             var m = MissionItem() {
@@ -500,8 +463,7 @@ public class AreaPlanner : GLib.Object {
             mi += m;
         }
 
-        if(rth)
-        {
+        if(rth) {
             var land = (int)conf.rth_autoland;
             var m = MissionItem() {
                 no = ++i, action = MSP.Action.RTH,
@@ -518,8 +480,7 @@ public class AreaPlanner : GLib.Object {
         ms.cx = (ms.maxx + ms.minx) /2.0;
         ms.maxalt = alt;
 
-        if(ms.calculate_distance(out ms.dist, out ms.lt))
-        {
+        if(ms.calculate_distance(out ms.dist, out ms.lt)) {
             if(conf.nav_speed != 0)
                 ms.et = (int)(ms.dist / speed + k * delay);
             display_meta();
@@ -528,8 +489,7 @@ public class AreaPlanner : GLib.Object {
         return ms;
     }
 
-    private void display_meta()
-    {
+    private void display_meta() {
         StringBuilder sb = new StringBuilder("Mission Data\n");
         sb.append_printf("Points: %u\n", ms.npoints);
         sb.append_printf("Distance: %.1fm\n", ms.dist);
@@ -542,8 +502,7 @@ public class AreaPlanner : GLib.Object {
         mission_data.buffer.text = sb.str;
     }
 
-    private void on_file_open()
-    {
+    private void on_file_open() {
         Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
             "Select an area file", null, Gtk.FileChooserAction.OPEN,
             "_Cancel",
@@ -576,8 +535,8 @@ public class AreaPlanner : GLib.Object {
 
     private void build_mission() {
         Vec[] rpts = {};
-		for(var j = 0; j < list.length(); j++) {
-			var m = list.nth_data(j);
+		for(unowned var lp = list.first(); lp != null; lp = lp.next) {
+			var m = lp.data;
 			var v = Vec(){x = m.longitude, y=m.latitude};
 			rpts += v;
 		}
@@ -594,8 +553,7 @@ public class AreaPlanner : GLib.Object {
 
         nmpts = mpts.length;
 
-        foreach (var m in mpts)
-        {
+        foreach (var m in mpts) {
             i++;
             add_wp_item(m.start.y, m.start.x, i, use_rth);
             i++;
@@ -609,8 +567,7 @@ public class AreaPlanner : GLib.Object {
         update_publish_state();
     }
 
-    private void add_wp_item(double lat, double lon, uint i, bool use_rth)
-    {
+    private void add_wp_item(double lat, double lon, uint i, bool use_rth) {
         string text;
         Clutter.Color black = { 0,0,0, 0xff };
         Clutter.Color colour;
@@ -627,8 +584,7 @@ public class AreaPlanner : GLib.Object {
         msn_path.add_node(marker);
     }
 
-    private void init_marker_menu()
-    {
+    private void init_marker_menu() {
         marker_menu =   new Gtk.Menu ();
 
         var item = new Gtk.MenuItem.with_label ("Insert");
@@ -645,24 +601,19 @@ public class AreaPlanner : GLib.Object {
         marker_menu.show_all();
     }
 
-    private bool near(Champlain.Location a, Champlain.Location b)
-    {
+    private bool near(Champlain.Location a, Champlain.Location b) {
         return ((Math.fabs(a.latitude - b.latitude) < 1e-6) &&
                 (Math.fabs(a.longitude - b.longitude) < 1e-6));
     }
 
-    private void pop_menu_after()
-    {
-        if(menu_marker!=null)
-        {
+    private void pop_menu_after() {
+        if(menu_marker!=null) {
             var mks = path.get_nodes();
             uint ml = mks.length();
             Champlain.Location l;
-            for(var n = 0; n < ml; n++)
-            {
+            for(var n = 0; n < ml; n++) {
                 l = mks.nth_data(n);
-                if(near(l,menu_marker))
-                {
+                if(near(l,menu_marker)) {
                     Champlain.Location npos;
                     var np = (n+1) % ml;
                     npos = mks.nth_data(np);
@@ -682,10 +633,12 @@ public class AreaPlanner : GLib.Object {
             var mks = path.get_nodes();
             uint ml = mks.length();
             if(ml > 3) {
-				for(var j = 0; j < list.length(); j++) {
-					var m = list.nth_data(j);
+				for( unowned var lp = list.first(); lp != null; ) {
+					unowned var xlp = lp;
+					lp = lp.next;
+					var m = lp.data;
 					if(near(m,menu_marker))
-						list.remove(m);
+						list.remove_link(xlp);
 				}
                 path.remove_node(menu_marker);
                 pmlayer.remove_marker(menu_marker);
@@ -697,8 +650,7 @@ public class AreaPlanner : GLib.Object {
         }
     }
 
-    private void init_markers()
-    {
+    private void init_markers() {
         Clutter.Color pcol = { 0xc5,0xc5, 0xc5, 0xa0};
         Clutter.Color rcol = {0xff, 0x0, 0x0, 0x60};
         Clutter.Color bcol = {0x0, 0x0, 0x0, 0x24};
@@ -721,26 +673,23 @@ public class AreaPlanner : GLib.Object {
         view.add_layer (msn_path);
         view.add_layer (path);
         view.add_layer (pmlayer);
-
-
     }
 
-    private void clear_mission()
-    {
+    private void clear_mission() {
         msn_path.remove_all();
         msn_points.remove_all();
         s_export.sensitive = false;
         set_menu_state("menu-save-msn",false);
         nmpts = 0;
-
     }
 
     private void clear_markers() {
         pmlayer.remove_all();
         path.remove_all();
-		for(var j = 0; j < list.length(); j++) {
-			var m = list.nth_data(j);
-			list.remove(m);
+		for( unowned var lp = list.first(); lp != null; ) {
+			unowned var xlp = lp;
+			lp = lp.next;
+			list.remove_link(xlp);
 		}
     }
 
@@ -764,8 +713,7 @@ public class AreaPlanner : GLib.Object {
                 view.center_on((cya+cyz)/2, (cxa+cxz)/2);
         }
 
-        if(pls.length == 0)
-        {
+        if(pls.length == 0) {
             var bb = view.get_bounding_box();
             double np,sp,ep,wp;
             np = (bb.top*0.9 + bb.bottom*0.1);
@@ -802,8 +750,8 @@ public class AreaPlanner : GLib.Object {
         } else {
             list.insert(marker, pos);
             path.remove_all();
-			for(var j = 0; j < list.length(); j++) {
-				var s = list.nth_data(j);
+			for(unowned var lp = list.first(); lp != null; lp = lp.next) {
+				var s = lp.data;
 				path.add_node(s);
 			}
         }
@@ -823,45 +771,36 @@ public class AreaPlanner : GLib.Object {
             });
     }
 
-    private Champlain.Marker get_mid_pos(Champlain.Location a, Champlain.Location b)
-    {
+    private Champlain.Marker get_mid_pos(Champlain.Location a, Champlain.Location b) {
         var m = new Champlain.Marker();
         m.latitude  = (a.latitude+b.latitude)/2;
         m.longitude = (a.longitude+b.longitude)/2;
         return m;
     }
 
-   private void setup_buttons()
-    {
+	private void setup_buttons() {
         embed.button_release_event.connect((evt) => {
-                if(evt.button == 3)
-                {
+                if(evt.button == 3) {
                     var mls = pmlayer.get_selected();
-                    if(mls != null)
-                    {
+                    if(mls != null) {
                         menu_marker = mls.first().data;
                         marker_menu.popup_at_pointer(evt);
                     }
                 }
                 return false;
             });
-    }
+	}
 
-    private void add_source_combo(string? defmap)
-    {
-        var combo  = builder.get_object ("combobox1") as Gtk.ComboBox;
+	private void add_source_combo(string? defmap) {
+		var combo  = builder.get_object ("combobox1") as Gtk.ComboBox;
         var map_source_factory = Champlain.MapSourceFactory.dup_default();
-
         var liststore = new Gtk.ListStore (MS_Column.N_COLUMNS, typeof (string), typeof (string));
-
-
         var fn = conf.map_sources;
         if(fn != null)
             fn = MWPUtils.find_conf_file(fn);
 
         var msources =   JsonMapDef.read_json_sources(fn, false);
-        foreach (unowned MapSource s0 in msources)
-        {
+        foreach (unowned MapSource s0 in msources) {
             s0.desc = new  MwpMapSource(
                 s0.id,
                 s0.name,
@@ -879,16 +818,14 @@ public class AreaPlanner : GLib.Object {
         int defval = 0;
         string? defsource = null;
 
-        foreach (Champlain.MapSourceDesc s in sources)
-        {
+        foreach (Champlain.MapSourceDesc s in sources) {
             TreeIter iter;
             liststore.append(out iter);
             var id = s.get_id();
             liststore.set (iter, MS_Column.ID, id);
             var name = s.get_name();
             liststore.set (iter, MS_Column.NAME, name);
-            if (defmap != null && name == defmap)
-            {
+            if (defmap != null && name == defmap) {
                 defval = i;
                 defsource = id;
             }
@@ -896,8 +833,7 @@ public class AreaPlanner : GLib.Object {
         }
         combo.set_model(liststore);
 
-        if(defsource == null)
-        {
+        if(defsource == null) {
             defsource = sources.nth_data(0).get_id();
             print("Settings blank id %s\n", defsource);
             defval = 0;
@@ -927,18 +863,15 @@ public class AreaPlanner : GLib.Object {
             });
     }
 
-    private bool check_zoom_sanity(double zval)
-    {
+    private bool check_zoom_sanity(double zval) {
         var mmax = view.get_max_zoom_level();
         var mmin = view.get_min_zoom_level();
         var sane = true;
-        if (zval > mmax)
-        {
+        if (zval > mmax) {
             sane= false;
             view.zoom_level = mmax;
         }
-        if (zval < mmin)
-        {
+        if (zval < mmin) {
             sane = false;
             view.zoom_level = mmin;
         }
@@ -948,19 +881,17 @@ public class AreaPlanner : GLib.Object {
 
     private void mwp_warning_box(string warnmsg,
                                  Gtk.MessageType klass=Gtk.MessageType.WARNING,
-                                 int timeout = 0)
-    {
+                                 int timeout = 0) {
         Gtk.MessageDialog msg = new Gtk.MessageDialog (window,
                                                        Gtk.DialogFlags.MODAL,
                                                        klass,
                                                        Gtk.ButtonsType.OK,
                                                        warnmsg);
 
-        if(timeout > 0)
-        {
+        if(timeout > 0) {
             Timeout.add_seconds(timeout, () => { msg.destroy(); return false; });
         }
-          msg.response.connect ((response_id) => {
+		msg.response.connect ((response_id) => {
                 msg.destroy();
             });
 
@@ -968,38 +899,30 @@ public class AreaPlanner : GLib.Object {
         msg.show();
     }
 
-    private void get_wp_text(string no, out string text, out Clutter.Color col, bool nrth = false)
-    {
+    private void get_wp_text(string no, out string text, out Clutter.Color col, bool nrth = false) {
         string symb;
-        if(nrth)
-        {
+        if(nrth) {
             col = { 0, 0xaa, 0xff, 0xa0};
             symb = "▼WP";
-        }
-        else
-        {
+        } else {
             symb = "WP";
             col = { 0, 0xff, 0xff, 0xa0};
         }
         text = "%s %s".printf(symb, no);
     }
 
-    private Vec[] parse_file(string fn)
-    {
+    private Vec[] parse_file(string fn) {
         Vec[] pls = {};
         var file = File.new_for_path(fn);
         try {
             var dis = new DataInputStream(file.read());
             string line;
-            while ((line = dis.read_line (null)) != null)
-            {
+            while ((line = dis.read_line (null)) != null) {
                 if(line.strip().length > 0 &&
                    !line.has_prefix("#") &&
-                   !line.has_prefix(";"))
-                {
+                   !line.has_prefix(";")) {
                     var parts = line.split_set(DELIMS);
-                    if(parts.length > 1)
-                    {
+                    if(parts.length > 1) {
                         Vec p = Vec();
                         p.y = double.parse(parts[0]);
                         p.x = double.parse(parts[1]);
@@ -1013,8 +936,7 @@ public class AreaPlanner : GLib.Object {
         return pls;
     }
 
-     public void do_file_save (string name)
-     {
+     public void do_file_save (string name) {
          Gtk.FileChooserDialog chooser = new Gtk.FileChooserDialog (
              "Save file", null, Gtk.FileChooserAction.SAVE,
             "_Cancel",
@@ -1030,15 +952,12 @@ public class AreaPlanner : GLib.Object {
         Gtk.FileFilter filter = new Gtk.FileFilter ();
 
         filter.set_filter_name (name);
-        if(name == "Mission")
-        {
+        if(name == "Mission") {
             filter.add_pattern ("*.mission");
             filter.add_pattern ("*.xml");
             filter.add_pattern ("*.json");
             chooser.add_filter (filter);
-        }
-        else
-        {
+        } else {
             filter.add_pattern ("*.txt");
             chooser.add_filter (filter);
         }
@@ -1050,12 +969,9 @@ public class AreaPlanner : GLib.Object {
         chooser.response.connect((id) => {
                 if (id == Gtk.ResponseType.ACCEPT) {
                     var fn = chooser.get_filename ();
-                    if(name == "Mission")
-                    {
+                    if(name == "Mission") {
                         save_mission_file(fn);
-                    }
-                    else
-                    {
+                    } else {
                         save_area_file(fn);
                     }
                 }
@@ -1070,9 +986,8 @@ public class AreaPlanner : GLib.Object {
 		 os.puts("# Valid delimiters are |;:, and <TAB>.\n");
 		 os.puts("# Note \",\" is not recommended for reasons of localisation.\n");
 		 os.puts("#\n");
-				//        list.foreach((m) => {
-		 for (var j = 0; j < list.length(); j++) {
-			 var m = list.nth_data(j);
+		 for (unowned var lp = list.first(); lp != null; lp = lp.next) {
+			 var m = lp.data;
 			 os.printf("%f;%f;\n", m.latitude, m.longitude);
 		 }
     }

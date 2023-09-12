@@ -94,8 +94,8 @@ public class DevManager {
     private void find_adapter() {
 		//        objects.foreach((path, ifaces) => {
 		List <unowned ObjectPath> lk = objects.get_keys();
-		for(uint j = 0; j < lk.length(); j++) {
-			var path = lk.nth_data(j);
+		for (unowned var lp = lk.first(); lp != null; lp = lp.next) {
+			var path = lp.data;
 			var ifaces = objects.get(path);
             HashTable<string, Variant>? props;
             props = ifaces.get("org.bluez.Adapter1");
@@ -123,8 +123,8 @@ public class DevManager {
     private void find_devices() {
 		//        objects.foreach((path, ifaces) => {
 		List <unowned ObjectPath> lk = objects.get_keys();
-		for(uint j = 0; j < lk.length(); j++) {
-			var path = lk.nth_data(j);
+		for(unowned var lp = lk.first(); lp != null; lp = lp.next) {
+			var path = lp.data;
 			var ifaces = objects.get(path);
 			HashTable<string, Variant>? props;
 			props = ifaces.get("org.bluez.Device1");
@@ -138,7 +138,6 @@ public class DevManager {
     public void on_interfaces_added(ObjectPath path,
                                     HashTable<string, HashTable<string, Variant>> interfaces) {
         objects.insert(path, interfaces);
-
         HashTable<string, Variant>? props;
         props = interfaces.get("org.bluez.Device1");
         if (props != null)
@@ -273,12 +272,11 @@ public abstract class BluezInterface : GLib.Object {
                                       string[] invalidated) {
 		//        changed.foreach((key, val) => {
 		List <unowned string> lk = changed.get_keys();
-		for(uint j = 0; j < lk.length(); j++) {
-			var key = lk.nth_data(j);
+		for(unowned var lp = lk.first(); lp != null; lp = lp.next) {
+			var key = lp.data;
 			var val = changed.get(key);
             if (val.equal(property_cache.get(key)))
 				break;
-				//                return; /* continue foreach */
             set_cache(key, val);
             property_changed(key, val);
         }
