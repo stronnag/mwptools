@@ -186,7 +186,7 @@ public class MWPMarkers : GLib.Object
 		var rdrl =  rdrmarkers.get_markers();
 		for (unowned var lp = rdrl.first(); lp != null; lp = lp.next) {
 			if(rd == null) {
-				var m = rdrl.data;
+				unowned var m = lp.data;
 				if (((MWPLabel)m).name != "irdr")  {
 					var a = ((MWPLabel)m).rplot;
 					if(a != null) {

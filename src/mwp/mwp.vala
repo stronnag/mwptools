@@ -8202,12 +8202,13 @@ public class MWP : Gtk.Application {
 
     public unowned RadarPlot? find_radar_data(uint id)
     {
-        SearchFunc<RadarPlot?,uint>  plot_search = (a,b) =>  {
-            return (int) (a.id > b) - (int) (a.id < b);
-        };
-        unowned SList<RadarPlot?> res = radar_plot.search(id, plot_search);
-        unowned RadarPlot? ri = res.nth_data(0);
-        return ri;
+		for(unowned var lp = radar_plot; lp != null; lp = lp.next) {
+			unowned var r = lp.data;
+			if (r.id == id) {
+				return r;
+			}
+		}
+        return null;
     }
 
 	void decode_sbs(string[] p) {
