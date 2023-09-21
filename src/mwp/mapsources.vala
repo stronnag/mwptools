@@ -86,7 +86,7 @@ public class SoupProxy : Soup.Server {
             session.timeout = 5;
         } else {
             MWPLog.message("Invalid quadkeys URI (%s)\n", uri);
-            Posix.exit(255);
+			//            Posix.exit(255);
         }
     }
 
@@ -238,7 +238,7 @@ public class BingMap : Object {
             var b = session.send_and_read (message);
             return parse_bing_json((string)b.get_data(), out buri, out ms);
         } catch {
-            return false;
+            return parse_bing_json("", out buri, out ms);
         }
 #endif
     }
@@ -378,7 +378,8 @@ public class JsonMapDef : Object
         string buri;
         uint port = 0;
 
-        BingMap.get_source(out s, out buri);
+        offline = !BingMap.get_source(out s, out buri);
+
         port  = run_proxy(buri, offline);
         if (port != 0) {
             s.uri_format="http://localhost:%u/quadkey-proxy/#Z#/#X#/#Y#.png".printf(port);
