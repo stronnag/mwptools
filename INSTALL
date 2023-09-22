@@ -36,7 +36,17 @@ $ meson install -C _build
 More Information:
  https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja
 
+No GO
+~~~~~
+
+If you don't have internet access, the build will (probably) fail because go needs to update some modules. You can avoid performing the building of the golang programs wwith the `nogo` property.
+
+e.g.
+
+meson setup --buildtype=minsize -D debug=false --prefix=~/.local  --strip -D nogo=true _nogo
+ninja -C _nogo install
+
 MinSize build:
+~~~~~~~~~~~~~
 
 meson setup _build --buildtype=minsize -D debug=false -D b_lto=true -D b_pie=true --prefix=~/.local  --strip
-

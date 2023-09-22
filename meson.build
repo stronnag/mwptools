@@ -1,5 +1,7 @@
 project('mwptools', 'c', 'vala', version : '6.259.730')
 
+nogo = get_option('nogo')
+
 conf_data = configuration_data()
 conf_data.set('version', meson.project_version())
 configure_file(
@@ -58,24 +60,21 @@ executable('flashdl', sources: [fdlsrcs, fccommon], dependencies: [ fdldeps ],
 	   install : false, build_by_default: false )
 
 subdir('src/bbox-replay')
+if nogo == false and gobuild != '' and gotrim != ''
+  mpe = custom_target('mwp-plot-elevations', output: 'mwp-plot-elevations',
+	 	      command : [gobuild, '@OUTPUT@', mpe_dir, gotrim],
+		      build_by_default: true, input: mpe_deps)
 
-if gobuild != ''
-   if gotrim != ''
-     mpe = custom_target('mwp-plot-elevations', output: 'mwp-plot-elevations',
-			 command : [gobuild, '@OUTPUT@', mpe_dir, gotrim],
-			 build_by_default: true, input: mpe_deps)
+  fgo = custom_target('flashgo', output: 'flashgo',
+		      command : [gobuild, '@OUTPUT@', fgo_dir, gotrim],
+		      build_by_default: true, input: fgo_deps)
 
-     fgo = custom_target('flashgo', output: 'flashgo',
-			 command : [gobuild, '@OUTPUT@', fgo_dir, gotrim],
-			 build_by_default: true, input: fgo_deps)
-
-     log_replay = custom_target('mwp-log-replay', output: 'mwp-log-replay',
-			 command : [gobuild, '@OUTPUT@', log_replay_dir, gotrim],
-			 build_by_default: true, input: log_replay_deps)
-     serial_cap = custom_target('mwp-serial-cap', output: 'mwp-serial-cap',
-			 command : [gobuild, '@OUTPUT@', serial_cap_dir, gotrim],
-			 build_by_default: true, input: serial_cap_deps)
-   endif
+  log_replay = custom_target('mwp-log-replay', output: 'mwp-log-replay',
+			     command : [gobuild, '@OUTPUT@', log_replay_dir, gotrim],
+			     build_by_default: true, input: log_replay_deps)
+  serial_cap = custom_target('mwp-serial-cap', output: 'mwp-serial-cap',
+			     command : [gobuild, '@OUTPUT@', serial_cap_dir, gotrim],
+			     build_by_default: true, input: serial_cap_deps)
 endif
 
 meson.add_install_script('meson/post_install.sh')
