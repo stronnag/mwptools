@@ -49,8 +49,7 @@
    make && sudo make install
  ************************************************************************/
 
-public class GMProxy : Soup.Server
-{
+public class GMProxy : Soup.Server {
     private string gvers = null;
     private const string SECGOOGLEWORD="Galileo";
     private const string GVERSTR="\"*https://khms\\D?\\d.google.com/kh\\?v=(\\d*)";
@@ -58,38 +57,45 @@ public class GMProxy : Soup.Server
     private const string GMURI = "http://%s%d.google.com/%s/v=%s&hl=%s&x=%d%s&y=%d&z=%d&s=%s";
     private const string UASTR = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:%d1.0) Gecko/%d%d%d Firefox/%d.0.%d";
 
-    public GMProxy()
-    {
+    public GMProxy() {
         this.add_handler (null, default_handler);
-        gvers = get_google_api();
+        get_google_api.begin();
     }
 
-    private string? get_google_api()
-    {
+    private async void get_google_api() {
         var session = new Soup.Session ();
         var message = new Soup.Message ("GET", GURL);
         message.request_headers.append("User-Agent",make_ua());
-        string s=null;
 #if COLDSOUP
-        session.send_message (message);
-        if ( message.status_code == 200)
-            s = (string) message.response_body.flatten().data;
+		try {
+			var resp = yield session.send_async (message);
+			var data = new uint8[1024];
+			yield resp.read_all_async(data, GLib.Priority.DEFAULT, null, null);
+            var s = (string)data;
+			gvers = get_google_version(s);
+			stderr.printf("GVERS set %s\n", gvers);
+		} catch (Error e) {
+			stderr.printf("GVERS err %s\n", e.message);
+		}
 #else
-        try {
-            var b = session.send_and_read (message);
-            s = (string)b.get_data();
-        } catch {}
+		session.send_and_read_async.begin(message, 0, null, (obj,res) => {
+				try {
+                    var b = session.send_and_read_async.end(res);
+                    var s = (string)b.get_data();
+					gvers = get_google_version(s);
+					stderr.printf("GVERS set %s\n", gvers);
+                } catch (Error e) {
+					stderr.printf("GVERS err %s\n", e.message);
+				}
+			});
 #endif
-        return get_google_version(s);
     }
 
-    private int get_server_num(int ix, int iy, int pmax)
-    {
+    private int get_server_num(int ix, int iy, int pmax) {
         return (ix + (2 * iy)) % pmax;
     }
 
-    void get_sec_google_words(int x, int y, out string sec1, out string sec2)
-    {
+    void get_sec_google_words(int x, int y, out string sec1, out string sec2) {
         sec1 = ""; // after &x=...
         sec2 = ""; // after &zoom=...
         int seclen = ((x * 3) + y) % 8;
@@ -97,8 +103,8 @@ public class GMProxy : Soup.Server
         if(y >= 10000 && y < 100000)
             sec1 = "&s=";
     }
-    string? get_google_version(string? ss)
-    {
+
+    string? get_google_version(string? ss) {
         string str = null;
         MatchInfo mi;
         try {
@@ -109,8 +115,7 @@ public class GMProxy : Soup.Server
         return str;
     }
 
-    private string ? make_guri(string vers, int x, int y, int z)
-    {
+    private string ? make_guri(string vers, int x, int y, int z) {
         const string server = "khm";
         const string request = "kh";
         string sec1, sec2;
@@ -121,8 +126,7 @@ public class GMProxy : Soup.Server
         return u;
     }
 
-    private string rewrite_path(string p)
-    {
+    private string rewrite_path(string p) {
         var parts = p.split("/");
         var np = parts.length-3;
         var fn = parts[np+2].split(".");
@@ -133,8 +137,7 @@ public class GMProxy : Soup.Server
         return uri;
     }
 
-    private string make_ua()
-    {
+    private string make_ua() {
         int yr = new DateTime.now_local ().get_year();
         var r = new Rand();
         string ua = UASTR.printf(
@@ -242,8 +245,7 @@ public class GMProxy : Soup.Server
         }
     }
 
-    public static int main (string []args)
-    {
+    public static int main (string []args) {
         var loop = new MainLoop();
         var o = new GMProxy();
         try {

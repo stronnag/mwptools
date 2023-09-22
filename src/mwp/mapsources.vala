@@ -21,8 +21,7 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
-public struct MapSource
-{
+public struct MapSource {
     string id;
     string name;
     int min_zoom;
@@ -35,17 +34,16 @@ public struct MapSource
     Champlain.MapSourceDesc desc;
 }
 
-public class MwpMapSource : Champlain.MapSourceDesc
-{
+public class MwpMapSource : Champlain.MapSourceDesc {
     public MwpMapSource (string id,
-            string name,
-            string license,
-            string license_uri,
-            int minzoom,
-            int maxzoom,
-            int tile_size,
-            Champlain.MapProjection projection,
-            string uri_format) {
+						 string name,
+						 string license,
+						 string license_uri,
+						 int minzoom,
+						 int maxzoom,
+						 int tile_size,
+						 Champlain.MapProjection projection,
+						 string uri_format) {
         Object(id: id, name: name, license: license, license_uri: license_uri,
                min_zoom_level: minzoom, max_zoom_level: maxzoom,
                tile_size: tile_size,
@@ -71,26 +69,29 @@ public class MwpMapSource : Champlain.MapSourceDesc
 }
 
 public class SoupProxy : Soup.Server {
-    private string basename;
-    private string extname;
     public bool offline = false;
     private Soup.Session session;
+    private string? basename = null;
+    private string? extname = null;
 
-    public SoupProxy(string uri) {
-        var parts = uri.split("#");
+    public SoupProxy(bool _offline) {
+		offline = _offline;
+		this.add_handler (null, default_handler);
+		session = new Soup.Session ();
+		session.timeout = 5;
+	}
+
+	public void set_uri(string uri) {
+		var parts = uri.split("#");
         if(parts.length == 3 && parts[1] == "Q") {
             basename = parts[0];
             extname = parts[2];
-            this.add_handler (null, default_handler);
-            session = new Soup.Session ();
-            session.timeout = 5;
         } else {
             MWPLog.message("Invalid quadkeys URI (%s)\n", uri);
-			//            Posix.exit(255);
         }
     }
 
-     ~SoupProxy() {}
+	~SoupProxy() {}
 
     private string quadkey(int iz, int ix, int iy) {
         StringBuilder sb = new StringBuilder ();
@@ -127,7 +128,7 @@ public class SoupProxy : Soup.Server {
                           GLib.HashTable? query)
 #endif
     {
-        if(offline) {
+		if(offline || basename == null) {
 #if COLDSOUP
             msg.set_status(404);
 #else
@@ -217,175 +218,206 @@ public class SoupProxy : Soup.Server {
 }
 
 public class BingMap : Object {
-    private const string BURI="https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial/0,0?zl=1&include=ImageryProviders&key=";
+	public const string BURI="https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial/0,0?zl=1&include=ImageryProviders&key=";
     public const string KENC="QWwxYnFHYU5vZGVOQTcxYmxlSldmakZ2VzdmQXBqSk9vaE1TWjJfSjBIcGd0NE1HZExJWURiZ3BnQ1piWjF4QQ==";
+	private string buri;
+	private MapSource ms;
+	public signal void complete(bool b);
 
-    public static bool get_source(out MapSource ms, out string buri) {
-        buri="";
-        ms={};
-        StringBuilder sb = new StringBuilder(BURI);
-        sb.append((string)Base64.decode(KENC));
+	public string get_buri() {
+		return buri;
+	}
+
+	public MapSource get_ms() {
+		return ms;
+	}
+
+    public async void get_source() {
+        StringBuilder sb = new StringBuilder(BingMap.BURI);
+        sb.append((string)Base64.decode(BingMap.KENC));
         var session = new Soup.Session ();
         var message = new Soup.Message ("GET", sb.str);
 #if COLDSOUP
-        session.send_message (message);
-        string s="";
-        if ( message.status_code == 200)
-            s = (string) message.response_body.flatten ().data;
-        return parse_bing_json(s, out buri, out ms);
+		try {
+			var resp = yield session.send_async (message);
+			var data = new uint8[8192];
+			yield resp.read_all_async(data, GLib.Priority.DEFAULT, null, null);
+			var s = (string)data;
+			parse_bing_json(s);
+			complete(true);
+		} catch (Error e) {
+			complete(false);
+		}
 #else
-        try {
-            var b = session.send_and_read (message);
-            return parse_bing_json((string)b.get_data(), out buri, out ms);
-        } catch {
-            return parse_bing_json("", out buri, out ms);
-        }
+		session.send_and_read_async.begin(message, 0, null, (obj,res) => {
+				try {
+                    var b = session.send_and_read_async.end(res);
+					parse_bing_json((string)b.get_data());
+					complete(true);
+                } catch (Error e) {
+					complete(false);
+				}
+			});
 #endif
     }
 
-    private static bool parse_bing_json(string s, out string buri, out MapSource ms) {
-         bool res = false;
-         buri="";
-         var savefile = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp",".blast");
-         ms = MapSource() {
-             id= "BingProxy",
-             name = "Bing Proxy",
-             min_zoom =  0,
-             max_zoom = 19,
-             tile_size = 256,
-             projection = MapProjection.MERCATOR,
-             uri_format = "",
-             licence = "(c) Microsoft Corporation and friends",
-             licence_uri = "http://www.bing.com/maps/"
-         };
+	private void parse_bing_json(string s) {
+		buri="";
+		var savefile = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp",".blast");
+		StringBuilder sb = new StringBuilder();
+		if(s.length > 0) {
+			try {
+				var parser = new Json.Parser ();
+				parser.load_from_data (s);
+				int gmin = 999;
+				int gmax = -1;
+				double xmin,ymin;
+				double xmax,ymax;
+				int zmin = 999;
+				int zmax = -1;
+				int imgh =0, imgw = 0;
 
-         StringBuilder sb = new StringBuilder();
-         if(s.length > 0) {
-             try {
-                 var parser = new Json.Parser ();
-                 parser.load_from_data (s);
+				var root_object = parser.get_root ().get_object ();
+				foreach (var rsnode in
+						 root_object.get_array_member ("resourceSets").get_elements ()) {
+					var rsitem = rsnode.get_object ();
+					foreach (var rxnode in
+							 rsitem.get_array_member ("resources").get_elements ()) {
+						var rxitem = rxnode.get_object ();
+						buri = rxitem.get_string_member ("imageUrl");
+						imgh = (int)rxitem.get_int_member("imageHeight");
+						imgw = (int)rxitem.get_int_member("imageWidth");
 
-                 int gmin = 999;
-                 int gmax = -1;
-                 double xmin,ymin;
-                 double xmax,ymax;
-                 int zmin = 999;
-                 int zmax = -1;
-                 int imgh =0, imgw = 0;
+						foreach (var pvnode in
+								 rxitem.get_array_member ("imageryProviders").get_elements ()) {
+							xmin = ymin = 999.0;
+							xmax = ymax = -999;
+							var pvitem = pvnode.get_object();
+							foreach (var cvnode in
+									 pvitem.get_array_member ("coverageAreas").get_elements ()) {
+								var cvitem = cvnode.get_object();
+								var _zmin = (int)cvitem.get_int_member("zoomMin");
+								var _zmax = (int)cvitem.get_int_member("zoomMax");
+								if(_zmin < zmin)
+									zmin = _zmin;
+								if(_zmax > zmax)
+									zmax = _zmax;
+								var bbarry = cvitem.get_array_member("bbox");
+								var d = bbarry.get_double_element(0);
+								if(d < ymin)
+									ymin = d;
+								d = bbarry.get_double_element(1);
+								if(d < xmin)
+									xmin = d;
+								d = bbarry.get_double_element(2);
+								if(d > ymax)
+									ymax = d;
+								d = bbarry.get_double_element(3);
+								if(d > xmax)
+									xmax = d;
+							}
+							if (zmin < gmin)
+								gmin = zmin;
+							if (zmax >  gmax)
+								gmax = zmax;
 
-                 var root_object = parser.get_root ().get_object ();
-                 foreach (var rsnode in
-                          root_object.get_array_member ("resourceSets").get_elements ()) {
-                     var rsitem = rsnode.get_object ();
-                     foreach (var rxnode in
-                              rsitem.get_array_member ("resources").get_elements ()) {
-                         var rxitem = rxnode.get_object ();
-                         buri = rxitem.get_string_member ("imageUrl");
-                         imgh = (int)rxitem.get_int_member("imageHeight");
-                         imgw = (int)rxitem.get_int_member("imageWidth");
-
-                         foreach (var pvnode in
-                                  rxitem.get_array_member ("imageryProviders").get_elements ()) {
-                             xmin = ymin = 999.0;
-                             xmax = ymax = -999;
-                             var pvitem = pvnode.get_object();
-                             foreach (var cvnode in
-                                      pvitem.get_array_member ("coverageAreas").get_elements ()) {
-                                 var cvitem = cvnode.get_object();
-                                 var _zmin = (int)cvitem.get_int_member("zoomMin");
-                                 var _zmax = (int)cvitem.get_int_member("zoomMax");
-                                 if(_zmin < zmin)
-                                     zmin = _zmin;
-                                 if(_zmax > zmax)
-                                     zmax = _zmax;
-                                 var bbarry = cvitem.get_array_member("bbox");
-                                 var d = bbarry.get_double_element(0);
-                                 if(d < ymin)
-                                     ymin = d;
-                                 d = bbarry.get_double_element(1);
-                                 if(d < xmin)
-                                     xmin = d;
-                                 d = bbarry.get_double_element(2);
-                                 if(d > ymax)
-                                     ymax = d;
-                                 d = bbarry.get_double_element(3);
-                                 if(d > xmax)
-                                     xmax = d;
-                             }
-                             if (zmin < gmin)
-                                 gmin = zmin;
-                             if (zmax >  gmax)
-                                 gmax = zmax;
-
-                             if(xmax-xmin > 359 && ymax-ymin > 179) {
-                                 var pattr = pvitem.get_string_member("attribution");
-                                 sb.append(pattr);
-                                 sb.append(", ");
-                             }
-                         }
-                     }
-                 }
-                 sb.truncate(sb.len-2);
-                 ms.licence =  sb.str;
-                 ms.min_zoom = gmin-1;
-                 ms.max_zoom = gmax-1;
+							if(xmax-xmin > 359 && ymax-ymin > 179) {
+								var pattr = pvitem.get_string_member("attribution");
+								sb.append(pattr);
+								sb.append(", ");
+							}
+						}
+					}
+				}
+				sb.truncate(sb.len-2);
+				ms.licence =  sb.str;
+				ms.min_zoom = gmin-1;
+				ms.max_zoom = gmax-1;
                      // notwithstanding what is advertised, this is the working max here, alas
-                 if(ms.max_zoom > 19)
-                     ms.max_zoom = 19;
-                 ms.tile_size = imgw;
-                 res = true;
-             } catch (Error e) {
-                 MWPLog.message("bing parser %s\n", e.message);
-             }
-         }
-
-         if(buri.length > 0) {
-             var parts = buri.split("/");
-             sb.assign(parts[4].substring(0,1));
-             sb.append("#Q#");
-             sb.append(parts[4].substring(2,-1));
-             parts[4] = sb.str;
-             buri = string.joinv("/",parts);
-             var fp = FileStream.open (savefile, "w");
-             if(fp != null)
-                 fp.write(buri.data);
-         } else {
-             var fp = FileStream.open (savefile, "r");
-             if(fp != null) {
-                 buri = fp.read_line();
-             } else {
-                 buri="http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=6187";
-             }
-         }
-         return res;
-    }
+				if(ms.max_zoom > 19)
+					ms.max_zoom = 19;
+				ms.tile_size = imgw;
+			} catch (Error e) {
+				MWPLog.message("bing parser %s\n", e.message);
+			}
+		}
+		if(buri.length > 0) {
+			var parts = buri.split("/");
+			sb.assign(parts[4].substring(0,1));
+			sb.append("#Q#");
+			sb.append(parts[4].substring(2,-1));
+			parts[4] = sb.str;
+			buri = string.joinv("/",parts);
+			var fp = FileStream.open (savefile, "w");
+			if(fp != null)
+				fp.write(buri.data);
+		} else {
+			var fp = FileStream.open (savefile, "r");
+			if(fp != null) {
+				buri = fp.read_line();
+			} else {
+				buri="http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=13902";
+			}
+		}
+	}
 }
 
-public class JsonMapDef : Object
-{
+public class JsonMapDef : Object {
     public static string id = null;
     private static int[] proxypids = {};
-
-    public static void killall()
-    {
+	private static SoupProxy sp;
+    public static void killall() {
         foreach(var p in proxypids)
             Posix.kill(p, MwpSignals.Signal.TERM);
     }
 
     public static MapSource[] read_json_sources(string? fn, bool offline=false) {
         MapSource[] sources = {};
-        MapSource s;
-        string buri;
-        uint port = 0;
 
-        offline = !BingMap.get_source(out s, out buri);
+        var ms = MapSource() {
+			id= "BingProxy",
+			name = "Bing Proxy",
+			min_zoom =  0,
+			max_zoom = 19,
+			tile_size = 256,
+			projection = MapProjection.MERCATOR,
+			uri_format = "",
+			licence = "(c) Microsoft Corporation and friends",
+			licence_uri = "http://www.bing.com/maps/"
+		};
 
-        port  = run_proxy(buri, offline);
-        if (port != 0) {
-            s.uri_format="http://localhost:%u/quadkey-proxy/#Z#/#X#/#Y#.png".printf(port);
-            sources += s;
-            id = s.id;
-        }
+		MWPLog.message("Starting Bing proxy %s\n", (offline) ? "(offline)" : "");
+		uint port = 0;
+        sp = new SoupProxy(offline);
+        try {
+            sp.listen_local(0, 0);
+            var u  = sp.get_uris();
+            port = u.nth_data(0).get_port ();
+        } catch { port = 0; }
+		if (port != 0) {
+			ms.uri_format="http://localhost:%u/quadkey-proxy/#Z#/#X#/#Y#.png".printf(port);
+		}
+		MWPLog.message("DBG: bing uri: %s\n", 	ms.uri_format);
+
+		sources += ms;
+
+		var bg = new BingMap();
+		bg.complete.connect((ok) => {
+				MWPLog.message("DBG Bing Complete\n");
+				if(ok) {
+					sp.set_uri(bg.get_buri());
+					var bms = bg.get_ms();
+					var sb = new StringBuilder("Bing: ");
+					sb.append_printf("ts: %d ", bms.tile_size);
+					sb.append_printf("z-: %d ", bms.min_zoom);
+					sb.append_printf("z+: %d ", bms.max_zoom);
+					sb.append_printf("li: %s ", bms.licence);
+					sb.append_printf("lu: %s ", bms.licence_uri);
+					MWPLog.message("DBG: %s\n", sb.str);
+				}
+			});
+		bg.get_source.begin();
+		MWPLog.message("DBG Bing Init\n");
 
         if(fn != null) {
             try {
@@ -394,7 +426,7 @@ public class JsonMapDef : Object
                 var root_object = parser.get_root ().get_object ();
                 foreach (var node in
                      root_object.get_array_member ("sources").get_elements ()) {
-                    s = MapSource();
+                    var s = MapSource();
                     var item = node.get_object ();
                     s.id = item.get_string_member ("id");
                     s.licence_uri = item.get_string_member("license_uri");
@@ -412,6 +444,7 @@ public class JsonMapDef : Object
                     s.max_zoom = (int) item.get_int_member ("max_zoom");
                     s.tile_size = (int)item.get_int_member("tile_size");
                     s.projection = Champlain.MapProjection.MERCATOR;
+					MWPLog.message("DBG Setup %s\n", s.name);
                     if(item.has_member("spawn")) {
                         var spawncmd = item.get_string_member("spawn");
                         var iport = spawn_proxy(spawncmd);
@@ -465,16 +498,41 @@ public class JsonMapDef : Object
         return iport;
     }
 
-    private static uint run_proxy(string uri, bool offline) {
-        uint port = 0;
-        MWPLog.message("Starting Bing proxy %s\n", (offline) ? "(offline)" : "");
-        var sp = new SoupProxy(uri);
-        sp.offline = offline;
-        try {
-            sp.listen_local(0, 0);
-            var u  = sp.get_uris();
-            port = u.nth_data(0).get_port ();
-        } catch { port = 0; }
-        return port;
+	public void setBingState(bool offline) {
+		sp.offline = offline;
+	}
+}
+
+#if MTEST
+namespace MwpSignals {
+    public enum Signal {
+        TERM =15
     }
 }
+
+namespace MWPLog {
+    void message(string format, ...) {
+        var args = va_list();
+        var now = new DateTime.now_local ();
+        StringBuilder sb = new StringBuilder();
+        sb.append(now.format("%T.%f"));
+        sb.append_c(' ');
+        sb.append_vprintf(format, args);
+        stderr.puts(sb.str);
+    }
+}
+
+public static int main(string?[] args) {
+    var ml = new MainLoop();
+    MapSource [] msources = {};
+	string msfn = "/home/jrh/.config/mwp/sources.json";
+	Idle.add(() => {
+			MWPLog.message("Starting map sources\n");
+			msources = JsonMapDef.read_json_sources(msfn, true);
+			MWPLog.message("Done map sources\n");
+            return false;
+        });
+	ml.run();
+	return 0;
+}
+#endif

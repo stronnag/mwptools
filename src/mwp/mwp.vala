@@ -1435,18 +1435,14 @@ public class MWP : Gtk.Application {
             }
         }
 
-        if(conf.ignore_nm == false)
-        {
-            if(offline == false)
-            {
+        if(conf.ignore_nm == false) {
+            if(offline == false) {
                 try {
                     NetworkManager nm = Bus.get_proxy_sync (BusType.SYSTEM,
                                                             "org.freedesktop.NetworkManager",
                                                             "/org/freedesktop/NetworkManager");
                     NMSTATE istate = (NMSTATE)nm.State;
-                    if(!(istate != NMSTATE.NM_STATE_CONNECTED_GLOBAL ||
-                         istate != NMSTATE.UNKNOWN))
-                    {
+                    if(istate != NMSTATE.NM_STATE_CONNECTED_GLOBAL && istate != NMSTATE.UNKNOWN) {
                         offline = true;
                         MWPLog.message("Forcing proxy offline [%s]\n",
                                        istate.to_string());
