@@ -996,11 +996,11 @@ public class MWP : Gtk.Application {
         mss.quit();
 		MwpSpeech.close();
 
-        if(conf.atexit != null && conf.atexit.length > 0)
-			MWPLog.message("DBG: atexit %s\n", conf.atexit);
+        if(conf.atexit != null && conf.atexit.length > 0) {
             try {
                 Process.spawn_command_line_sync (conf.atexit);
             } catch {}
+		}
 		remove_window(window);
 	}
 
