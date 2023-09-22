@@ -834,8 +834,7 @@ public class MWP : Gtk.Application {
         MWPLog.message("hypervisor: %s\n", vstr);
     }
 
-    public MWP (string? s)
-    {
+    public MWP (string? s)  {
         Object(application_id: MWPID, flags: ApplicationFlags.HANDLES_COMMAND_LINE);
         var v = check_env_args(s);
         set_opts_from_dict(v);
@@ -862,8 +861,7 @@ public class MWP : Gtk.Application {
 		return res;
     }
 
-    private int do_handle_local_options(VariantDict o)
-    {
+    private int do_handle_local_options(VariantDict o) {
             // return 0 to stop here ..
         if (o.contains("version")) {
             stdout.printf("%s\n", MwpVers.get_id());
@@ -922,8 +920,7 @@ public class MWP : Gtk.Application {
         }
     }
 
-    void show_dock_id (DOCKLETS id, bool iconify=false)
-    {
+    void show_dock_id (DOCKLETS id, bool iconify=false) {
         print("show dock %u, icon %s closed %s, iconified %s\n",
               id, iconify.to_string(),
               dockitem[id].is_closed().to_string(),
@@ -938,19 +935,15 @@ public class MWP : Gtk.Application {
         update_dockmenu(id);
     }
 
-    bool item_visible(DOCKLETS id)
-    {
+    bool item_visible(DOCKLETS id) {
         return !dockitem[id].is_closed();
     }
 
-    private void set_dock_menu_status()
-    {
-        for(var id = DOCKLETS.MISSION; id < DOCKLETS.NUMBER; id += (DOCKLETS)1)
-        {
+    private void set_dock_menu_status() {
+        for(var id = DOCKLETS.MISSION; id < DOCKLETS.NUMBER; id += (DOCKLETS)1) {
             update_dockmenu(id);
             if(id == DOCKLETS.FBOX &&
-               !dockitem[id].is_closed () && !dockitem[id].is_iconified())
-            {
+               !dockitem[id].is_closed () && !dockitem[id].is_iconified()) {
                     Idle.add(() => {
                             fbox.check_size();
                             fbox.update(true);
@@ -1042,30 +1035,25 @@ public class MWP : Gtk.Application {
         }
     }
 
-    private void set_menu_state(string action, bool state)
-    {
+    private void set_menu_state(string action, bool state) {
         var ac = window.lookup_action(action) as SimpleAction;
         ac.set_enabled(state);
     }
 
-    public SERSTATE get_serstate()
-    {
+    public SERSTATE get_serstate() {
         return serstate;
     }
 
-    public void set_serstate(SERSTATE s = SERSTATE.NONE)
-    {
+    public void set_serstate(SERSTATE s = SERSTATE.NONE) {
         lastrx = lastok = nticks;
         serstate = s;
         resend_last();
     }
 
-    private void update_menu_labels(Gtk.MenuBar  menu)
-    {
+    private void update_menu_labels(Gtk.MenuBar  menu) {
         int done = 0;
         menu.@foreach((mi) => {
-                if (mi.name == "GtkModelMenuItem")
-                {
+                if (mi.name == "GtkModelMenuItem") {
                     Gtk.Menu sm = (Gtk.Menu) ((Gtk.MenuItem)mi).get_submenu();
                     if (sm != null) {
                         sm.@foreach((smi) => {
@@ -1326,11 +1314,10 @@ public class MWP : Gtk.Application {
         mmap = new ModelMap();
         mmap.init();
 
-
         window = builder.get_object ("window1") as Gtk.ApplicationWindow;
         this.add_window (window);
         window.set_application (this);
-
+		window.title = "mwp";
 		splash = new MwpSplash();
         if(Environment.get_variable("MWP_SPLASH") != null || is_wayland == false) {
 			splash.run(/*OK*/);
@@ -1373,12 +1360,11 @@ public class MWP : Gtk.Application {
                         break;
                 }
                 if(vsb.len > 0)
-                        exvox = vsb.str;
+					exvox = vsb.str;
             }
         }
 
-        if(exvox != null)
-        {
+        if(exvox != null) {
             MWPLog.message("Using external speech api [%s]\n", exvox);
         }
 
@@ -1387,27 +1373,23 @@ public class MWP : Gtk.Application {
         if(conf.uilang == "en")
             Intl.setlocale(LocaleCategory.NUMERIC, "C");
 
-
         if(layfile == null && conf.deflayout != null)
             layfile = conf.deflayout;
 
         var confdir = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp");
-        try
-        {
+        try {
             var dir = File.new_for_path(confdir);
             dir.make_directory_with_parents ();
         } catch {};
 
         gpsintvl = conf.gpsintvl / TIMINTVL;
 
-        if(conf.mediap == "false" || conf.mediap == "none")
-        {
+        if(conf.mediap == "false" || conf.mediap == "none") {
             MWPLog.message("Beeps disabled\n");
             beep_disabled = true;
         }
 
-        if(rrstr != null)
-        {
+        if(rrstr != null) {
             var parts = rrstr .split(",");
             if(parts.length == 2)
             {
@@ -1418,14 +1400,11 @@ public class MWP : Gtk.Application {
 
         ltm_force_sats = (Environment.get_variable("MWP_IGNORE_SATS") != null);
         var fstr = Environment.get_variable("MWP_POS_OFFSET");
-        if(fstr != null)
-        {
+        if(fstr != null) {
             string[] delims =  {","," "};
-            foreach (var delim in delims)
-            {
+            foreach (var delim in delims) {
                 var parts = fstr.split(delim);
-                if(parts.length == 2)
-                {
+                if(parts.length == 2) {
                     fakeoff.dlat += InputParser.get_latitude(parts[0]);
                     fakeoff.dlon += InputParser.get_longitude(parts[1]);
                     fakeoff.faking = true;
@@ -1467,8 +1446,7 @@ public class MWP : Gtk.Application {
 
 		window.window_state_event.connect( (e) => {
                 wdw_state = ((e.new_window_state & Gdk.WindowState.FULLSCREEN) != 0);
-                if(wdw_state)     // true == full screen
-                {
+                if(wdw_state)  {   // true == full screen
                     if(nofsmenu)
                         window.set_show_menubar(true);
                     else
@@ -1494,39 +1472,31 @@ public class MWP : Gtk.Application {
         sensor_sts[4] = builder.get_object ("gps_sts") as Gtk.Label;
         sensor_sts[5] = builder.get_object ("sonar_sts") as Gtk.Label;
 
-        wp_edit_button.clicked.connect(() =>
-        {
+        wp_edit_button.clicked.connect(() => {
             wp_edit = !wp_edit;
             wp_edit_button.label= (wp_edit) ? "✔" : "Edit WPs";
             wp_edit_button.tooltip_text = ("Enable / disable the addition of WPs by clicking on the map (%sabled)".printf((wp_edit) ? "en" : "dis"));
-            if(wp_edit)
-            {
+            if(wp_edit) {
                 FakeHome.usedby |= FakeHome.USERS.Editor;
                 ls.set_fake_home();
                 map_moved();
-            }
-            else
-            {
+            } else {
                 FakeHome.usedby &= ~FakeHome.USERS.Editor;
                 ls.unset_fake_home();
             }
         });
 
-        arm_warn.clicked.connect(() =>
-            {
+        arm_warn.clicked.connect(() => {
                 StringBuilder sb = new StringBuilder();
-                if((xarm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0)
-                {
+                if((xarm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0) {
                     sb.append("<b>Arm Status</b>\n");
                     string arm_msg = get_arm_fail(xarm_flags,'\n');
                     sb.append(arm_msg);
                 }
 
-                if(hwstatus[0] == 0)
-                {
+                if(hwstatus[0] == 0) {
                     sb.append("<b>Hardware Status</b>\n");
-                    for(var i = 0; i < 8; i++)
-                    {
+                    for(var i = 0; i < 8; i++) {
                         uint ihs = hwstatus[i+1];
                         string shs = (ihs < health_states.length) ?
                             health_states[ihs] : "*broken*";
@@ -1567,8 +1537,7 @@ public class MWP : Gtk.Application {
 
         fsmenu_button = builder.get_object("fsmenu_button") as Gtk.MenuButton;
 
-        Gtk.Image img = new Gtk.Image.from_icon_name("open-menu-symbolic",
-                                                     Gtk.IconSize.BUTTON);
+        Gtk.Image img = new Gtk.Image.from_icon_name("open-menu-symbolic", Gtk.IconSize.BUTTON);
         fsmenu_button.add(img);
         fsmenu_button.set_menu_model(mm);
         fsmenu_button.set_use_popover(false);
@@ -1615,8 +1584,7 @@ public class MWP : Gtk.Application {
                                    conf.logpath, fakeoff);
 
 		bb_runner.complete.connect( (id) => {
-				if(id == 1001)
-				{
+				if(id == 1001) {
 					string bblog;
 					int index;
 					int btype;
@@ -3176,8 +3144,7 @@ public class MWP : Gtk.Application {
 	}
 
 #if MQTT
-	private MissionItem wp_to_mitem(MSP_WP w)
-	{
+	private MissionItem wp_to_mitem(MSP_WP w) {
 		MissionItem m = MissionItem();
 		m.no= w.wp_no;
 		m.action = (MSP.Action)w.action;
@@ -3186,8 +3153,7 @@ public class MWP : Gtk.Application {
 		m.alt = w.altitude/100;
 		m.param1 = w.p1;
 		if(m.action == MSP.Action.SET_HEAD &&
-		   conf.recip_head  == true && m.param1 != -1)
-		{
+		   conf.recip_head  == true && m.param1 != -1) {
 			m.param1 = (m.param1 + 180) % 360;
 		}
 		m.param2 = w.p2;
@@ -3464,8 +3430,7 @@ public class MWP : Gtk.Application {
 			rg.gps_speed = (uint16)gspeed*100;
 			rg.gps_ground_course = (uint16)hdg*10;
 			double ddm;
-			if(fakeoff.faking)
-			{
+			if(fakeoff.faking) {
 				rg.gps_lat += (int32)(fakeoff.dlat*10000000);
 				rg.gps_lon += (int32)(fakeoff.dlon*10000000);
 			}
@@ -3483,8 +3448,7 @@ public class MWP : Gtk.Application {
 			dbox.update(item_visible(DOCKLETS.DBOX));
 			_nsats = rg.gps_numsat;
 
-			if (gpsfix)
-			{
+			if (gpsfix) {
 				sat_coverage();
 				if(armed == 1) {
 					var spd = (double)(rg.gps_speed/100.0);
@@ -3504,8 +3468,7 @@ public class MWP : Gtk.Application {
 						Geo.csedist(GPSInfo.lat, GPSInfo.lon,
 									home_pos.lat, home_pos.lon,
 									out dist, out cse);
-						if(dist < 256)
-						{
+						if(dist < 256) {
 							var cg = MSP_COMP_GPS();
 							cg.range = (uint16)Math.lround(dist*1852);
 							cg.direction = (int16)Math.lround(cse);
@@ -3845,7 +3808,7 @@ public class MWP : Gtk.Application {
 			dbox.update(item_visible(DOCKLETS.DBOX));
 			_nsats = rg.gps_numsat;
 
-			if (gpsfix)	{
+			if (gpsfix) {
 				sat_coverage();
 				if(armed == 1) {
 					var spd = (double)(rg.gps_speed/100.0);
@@ -3919,8 +3882,7 @@ public class MWP : Gtk.Application {
 				failsafe = true;
 				break;
 			}
-			if(xfailsafe != failsafe)
-			{
+			if(xfailsafe != failsafe) {
 				if(failsafe) {
 					arm_flags |=  ARMFLAGS.ARMING_DISABLED_FAILSAFE_SYSTEM;
 					MWPLog.message("Failsafe asserted %ds\n", duration);
@@ -3933,15 +3895,11 @@ public class MWP : Gtk.Application {
 			}
 
 			armed = (fl_armed) ? 1 : 0;
-			if(arm_flags != xarm_flags)
-			{
+			if(arm_flags != xarm_flags) {
 				xarm_flags = arm_flags;
-				if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0)
-				{
+				if((arm_flags & ~(ARMFLAGS.ARMED|ARMFLAGS.WAS_EVER_ARMED)) != 0) {
 					arm_warn.show();
-				}
-				else
-				{
+				} else {
 					arm_warn.hide();
 				}
 			}
@@ -9549,14 +9507,10 @@ public class MWP : Gtk.Application {
 			ls.reset_fake_home();
 			NavStatus.nm_pts = (uint8)m.npoints;
 			if(fakeoff.faking) {
-				for(var i = 0; i < m.npoints; i++)
-				{
+				for(var i = 0; i < m.npoints; i++) {
 					var mi = m.get_waypoint(i);
 
-					if(mi.action != MSP.Action.RTH &&
-					   mi.action != MSP.Action.JUMP &&
-					   mi.action != MSP.Action.SET_HEAD)
-					{
+					if(mi.action != MSP.Action.RTH && mi.action != MSP.Action.JUMP &&  mi.action != MSP.Action.SET_HEAD) {
 						mi.lat += fakeoff.dlat;
 						mi.lon += fakeoff.dlon;
 					}
