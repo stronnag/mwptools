@@ -222,7 +222,13 @@ public class BingMap : Object {
     public const string KENC="QWwxYnFHYU5vZGVOQTcxYmxlSldmakZ2VzdmQXBqSk9vaE1TWjJfSjBIcGd0NE1HZExJWURiZ3BnQ1piWjF4QQ==";
 	private string buri;
 	private MapSource ms;
+	private string savefile;
+
 	public signal void complete(bool b);
+
+	public BingMap() {
+		savefile = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp",".blast");
+	}
 
 	public string get_buri() {
 		return buri;
@@ -263,9 +269,9 @@ public class BingMap : Object {
 
 	private void parse_bing_json(string s) {
 		buri="";
-		var savefile = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp",".blast");
-		StringBuilder sb = new StringBuilder();
+
 		if(s.length > 0) {
+			StringBuilder sb = new StringBuilder();
 			try {
 				var parser = new Json.Parser ();
 				parser.load_from_data (s);
@@ -340,24 +346,28 @@ public class BingMap : Object {
 			} catch (Error e) {
 				MWPLog.message("bing parser %s\n", e.message);
 			}
-		}
-		if(buri.length > 0) {
-			var parts = buri.split("/");
-			sb.assign(parts[4].substring(0,1));
-			sb.append("#Q#");
-			sb.append(parts[4].substring(2,-1));
-			parts[4] = sb.str;
-			buri = string.joinv("/",parts);
-			var fp = FileStream.open (savefile, "w");
-			if(fp != null)
-				fp.write(buri.data);
-		} else {
-			var fp = FileStream.open (savefile, "r");
-			if(fp != null) {
-				buri = fp.read_line();
-			} else {
-				buri="http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=13902";
+			if(buri.length > 0) {
+				var parts = buri.split("/");
+				sb.assign(parts[4].substring(0,1));
+				sb.append("#Q#");
+				sb.append(parts[4].substring(2,-1));
+				parts[4] = sb.str;
+				buri = string.joinv("/",parts);
+				var fp = FileStream.open (savefile, "w");
+				if(fp != null)
+					fp.write(buri.data);
 			}
+		} else {
+			get_saved_uri();
+		}
+	}
+
+	public void get_saved_uri() {
+		var fp = FileStream.open (savefile, "r");
+		if(fp != null) {
+			buri = fp.read_line();
+		} else {
+			buri="http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=13902";
 		}
 	}
 }
@@ -416,7 +426,13 @@ public class JsonMapDef : Object {
 					MWPLog.message("DBG: %s\n", sb.str);
 				}
 			});
-		bg.get_source.begin();
+
+		if(offline) {
+			bg.get_saved_uri();
+			sp.set_uri(bg.get_buri());
+		} else {
+			bg.get_source.begin();
+		}
 		MWPLog.message("DBG Bing Init\n");
 
         if(fn != null) {
