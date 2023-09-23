@@ -1,7 +1,3 @@
-//#if MQTT_MOSQUITTO
-//using Mosquitto;
-//#endif
-
 private static MwpMQTT mqtt;
 #if MQTT_MOSQUITTO
 private static Mosquitto.Client client;
@@ -78,12 +74,10 @@ public class MwpMQTT : Object {
             double range = 0.0;
             double bearing = 0.0;
 
-            foreach (var p in parts)
-            {
+            foreach (var p in parts) {
                 var attrs = p.split(":");
                 uint8 tmp;
-                switch (attrs[0])
-                {
+                switch (attrs[0]) {
                     case "hds": // home distance
                         range = double.parse(attrs[1]);
                         break;
@@ -131,7 +125,6 @@ public class MwpMQTT : Object {
                         aframe.heading = (int16)(int.parse(attrs[1]));
                         aattr = 1;
                         break;
-
 // SFRAME data --------------------------------------------------------------
                     case "bpv": // mv
                         if (bltvers == 2)
@@ -272,8 +265,7 @@ public class MwpMQTT : Object {
                 serialise_sframe();
             if (xattr == 1)
                 serialise_xframe();
-            if (oattr == 3)
-            {
+            if (oattr == 3) {
                 have_orig = true;
                 serialise_oframe();
             }
@@ -282,8 +274,7 @@ public class MwpMQTT : Object {
         }
     }
 
-    private void parse_wp(string payload)
-    {
+    private void parse_wp(string payload) {
         int wpno = 0;
         int wpidx = 0;
         MSP_WP wp = MSP_WP();
@@ -336,45 +327,35 @@ public class MwpMQTT : Object {
     private uint8 parse_flight_mode(string flm) {
         var ltmmode = 0;
         if (bltvers == 2) {
-            switch (flm)
-            {
+            switch (flm) {
                 case "1":
                     ltmmode = 0;
                     break;
-
                 case "9":
                     ltmmode = 2;
                     break;
-
                 case "10":
                     ltmmode = 3;
                     break;
-
                 case "11":
                     ltmmode = 1;
                     break;
-
                 case "8":
                     ltmmode = 8;
                     break;
-
                 case "4":
                     ltmmode = 9;
                     break;
-
                 case "7":
                     ltmmode = 10;
                     break;
-
                 case "2":
                     ltmmode = 13;
                     break;
-
                 case "5":
                 case "6":
                     ltmmode = 18;
                     break;
-
                 default:
                     ltmmode = 1;
                     break;
@@ -384,44 +365,34 @@ public class MwpMQTT : Object {
                 case "MANU":
                     ltmmode = 0;
                     break;
-
                 case "ANGL":
                     ltmmode = 2;
                     break;
-
                 case "HOR":
                     ltmmode = 3;
                     break;
-
                 case "ACRO":
                     ltmmode = 1;
                     break;
-
                 case "A H":
                     ltmmode = 8;
                     break;
-
                 case "P H":
                     ltmmode = 9;
                     break;
-
                 case "WP":
                     ltmmode = 10;
                     break;
-
                 case "RTH":
                     ltmmode = 13;
                     break;
-
                 case "3CRS":
                 case "CRS":
                     ltmmode = 18;
                     break;
-
                 case "LNCH":
                     ltmmode = 20;
                     break;
-
                 default:
                     ltmmode = 1;
                     break;
@@ -429,7 +400,6 @@ public class MwpMQTT : Object {
         }
         return ltmmode;
     }
-
 
     private void serialise_qframe(uint16 v) {
         uint8 raw[2];

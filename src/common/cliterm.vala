@@ -1,15 +1,12 @@
-public class CLITerm : Gtk.Window
-{
+public class CLITerm : Gtk.Window {
     private MWSerial s;
     private MWSerial.ProtoMode oldmode;
     private Vte.Terminal term;
     public signal void on_exit();
 
-    public CLITerm (Gtk.Window? w = null)
-    {
+    public CLITerm (Gtk.Window? w = null) {
         this.modal = true;
-        if(w != null)
-        {
+        if(w != null) {
             this.set_transient_for (w);
         }
         this.title = "mwp CLI";
@@ -21,7 +18,6 @@ public class CLITerm : Gtk.Window
                 on_exit();
             });
         this.set_default_size (640, 400);
-
         term = new Vte.Terminal();
 
         // bcol="#002B36", fcol="#839496"
@@ -48,10 +44,8 @@ public class CLITerm : Gtk.Window
         term.set_color_background(cols[0]);
         term.set_color_foreground(cols[1]);
 
-        term.commit.connect((text,size) =>
-            {
-                switch(text[0])
-                {
+        term.commit.connect((text,size) => {
+                switch(text[0]) {
                     case 3:
                         this.destroy();
                         break;
@@ -69,8 +63,7 @@ public class CLITerm : Gtk.Window
         this.add (term);
     }
 
-    public void configure_serial (MWSerial _s)
-    {
+    public void configure_serial (MWSerial _s) {
         s = _s;
         oldmode  =  s.pmode;
         s.pmode = MWSerial.ProtoMode.CLI;
@@ -83,5 +76,4 @@ public class CLITerm : Gtk.Window
         uint8 c[1] = {'#'};
         s.write(c, 1);
     }
-
 }

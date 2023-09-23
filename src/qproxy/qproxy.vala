@@ -45,26 +45,21 @@
  *
  ************************************************************************/
 
-public class QProxy : GLib.Object
-{
+public class QProxy : GLib.Object {
     private string [] p_uri;
     private const string UrlServerLetters = "bcde";
 
-    public QProxy(string _uri)
-    {
+    public QProxy(string _uri) {
         p_uri = _uri.split("#");
     }
 
-    private int getservernum(int ix, int iy, int pmax)
-    {
+    private int getservernum(int ix, int iy, int pmax) {
         return (ix + (2 * iy)) % pmax;
     }
 
-    private string quadkey(int iz, int ix, int iy)
-    {
+    private string quadkey(int iz, int ix, int iy) {
         StringBuilder sb = new StringBuilder ();
-        for (var i = iz - 1; i >= 0; i--)
-        {
+        for (var i = iz - 1; i >= 0; i--) {
             char digit = '0';
             if ((ix & (1 << i)) != 0)
                 digit += 1;
@@ -75,8 +70,7 @@ public class QProxy : GLib.Object
         return sb.str;
     }
 
-    private string rewrite_path(string p)
-    {
+    private string rewrite_path(string p) {
         var parts = p.split("/");
         var np = parts.length-3;
         var fn = parts[np+2].split(".");
@@ -86,38 +80,24 @@ public class QProxy : GLib.Object
 
         StringBuilder sb = new StringBuilder();
 
-        foreach(var up in p_uri)
-        {
-            if(up == "N")
-            {
+        foreach(var up in p_uri) {
+            if(up == "N") {
                 var num = getservernum(ix,iy,4);
                 sb.append("%d".printf(num+1));
-            }
-            else if (up == "C")
-            {
+            } else if (up == "C") {
                 var num = getservernum(ix,iy,4);
                 var sno = UrlServerLetters.data[num];
                 sb.append("%c".printf(sno));
-            }
-            else if (up == "X")
-            {
+            } else if (up == "X") {
                 sb.append("%d".printf(ix));
-            }
-            else if (up == "Y")
-            {
+            } else if (up == "Y") {
                 sb.append("%d".printf(iy));
-            }
-            else if (up == "Z")
-            {
+            } else if (up == "Z") {
                 sb.append("%d".printf(iz));
-            }
-            else if (up == "Q")
-            {
+            } else if (up == "Q") {
                 var q = quadkey(iz, ix, iy);
                 sb.append(q);
-            }
-            else
-            {
+            } else {
                 sb.append(up);
             }
         }
@@ -125,8 +105,7 @@ public class QProxy : GLib.Object
     }
 
     private void default_handler (Soup.Server server, Soup.Message msg, string path,
-                          GLib.HashTable? query, Soup.ClientContext client)
-    {
+                          GLib.HashTable? query, Soup.ClientContext client) {
         stderr.printf("request %s\n", path);
         var xpath = rewrite_path(path);
         stderr.printf("fetch %s\n", xpath);
@@ -139,31 +118,25 @@ public class QProxy : GLib.Object
                        message.response_body.length,
                        message.status_code);
 
-        if(message.status_code == 200)
-        {
+        if(message.status_code == 200) {
             msg.set_response ("image/png", Soup.MemoryUse.COPY,
                               message.response_body.data);
         }
         msg.set_status(message.status_code);
     }
 
-    private void proxy(int port)
-    {
+    private void proxy(int port) {
         var server = new Soup.Server (Soup.SERVER_PORT, port);
         server.add_handler (null, default_handler);
         server.run ();
     }
 
-    public static int main (string []args)
-    {
-        if (args.length > 2)
-        {
+    public static int main (string []args) {
+        if (args.length > 2) {
             var port = int.parse(args[2]);
             var q = new QProxy(args[1]);
             q.proxy(port);
-        }
-        else
-        {
+        } else {
             stderr.puts("qproxy uri port\n");
         }
         return 0;

@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
@@ -18,24 +17,19 @@
  */
 using Xml;
 
-class LayoutTester : Object
-{
+class LayoutTester : Object {
     public int ncount;
 
-    public int read_xml_file(string path)
-    {
+    public int read_xml_file(string path) {
         Parser.init ();
         Xml.Doc* doc = Parser.parse_file (path);
-        if (doc == null)
-        {
+        if (doc == null) {
             stderr.printf ("File %s not found or permissions missing\n", path);
             return -1;
         }
         Xml.Node* root = doc->get_root_element ();
-        if (root != null)
-        {
-            if (root->name.down() == "dock-layout")
-            {
+        if (root != null) {
+            if (root->name.down() == "dock-layout") {
                 parse_node (root);
             }
         }
@@ -44,25 +38,18 @@ class LayoutTester : Object
         return ncount;
     }
 
-    private void parse_node (Xml.Node* node)
-    {
-        for (Xml.Node* iter = node->children; iter != null; iter = iter->next)
-        {
-            if (iter->type != ElementType.ELEMENT_NODE)
-            {
+    private void parse_node (Xml.Node* node) {
+        for (Xml.Node* iter = node->children; iter != null; iter = iter->next) {
+            if (iter->type != ElementType.ELEMENT_NODE) {
                 continue;
             }
-            switch(iter->name.down())
-            {
+            switch(iter->name.down()) {
                 case  "layout":
-                    for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next)
-                    {
+                    for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next) {
                         string attr_content = prop->children->content;
-                        switch( prop->name)
-                        {
+                        switch( prop->name) {
                             case "name":
-                                if(attr_content == "mwp")
-                                {
+                                if(attr_content == "mwp") {
                                     ncount = 0;
                                     parse_node(iter);
                                 }
@@ -82,19 +69,3 @@ class LayoutTester : Object
         }
     }
 }
-
-/**
-int main (string[] args) {
-
-    if (args.length < 2) {
-        stderr.printf ("Argument required!\n");
-        return 1;
-    }
-    var ms = new LayoutTest();
-    if (ms.read_xml_file (args[1]) == true)
-    {
-        stdout.printf("count = %d\n", ms.ncount);
-    }
-    return 0;
-}
-**/

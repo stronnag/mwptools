@@ -50,8 +50,7 @@ public struct MSP_ALTITUDE {
     int16 vario;
 }
 
-public struct MSP_RAW_GPS
-{
+public struct MSP_RAW_GPS {
     uint8   gps_fix;
     uint8   gps_numsat;
     int32   gps_lat;
@@ -62,15 +61,13 @@ public struct MSP_RAW_GPS
     uint16  gps_hdop;
 }
 
-public struct MSP_ATTITUDE
-{
+public struct MSP_ATTITUDE {
     int16 angx;
     int16 angy;
     int16 heading;
 }
 
-public struct MSP_WP
-{
+public struct MSP_WP {
     public uint8 wp_no;
     public uint8 action;
     public int32 lat;
@@ -82,8 +79,7 @@ public struct MSP_WP
     public uint8 flag;
 }
 
-public struct MSP_N32_WP
-{
+public struct MSP_N32_WP {
     public uint8 wp_no;
     public int32 lat;
     public int32 lon;
@@ -93,8 +89,7 @@ public struct MSP_N32_WP
     public uint8 p3;
 }
 
-public struct MSP_NAV_STATUS
-{
+public struct MSP_NAV_STATUS {
     public uint8 gps_mode;
     public uint8 nav_mode;
     public uint8 action;
@@ -103,8 +98,7 @@ public struct MSP_NAV_STATUS
     public uint16 target_bearing;
 }
 
-public struct MSP_NAV_CONFIG
-{
+public struct MSP_NAV_CONFIG {
     public uint8 flag1;
     public uint8 flag2;
     public uint16 wp_radius;
@@ -120,8 +114,7 @@ public struct MSP_NAV_CONFIG
     public uint8 max_wp_number;
 }
 
-public struct MSP_RC_TUNING
-{
+public struct MSP_RC_TUNING {
     public uint8 rc_rate;
     public uint8 rc_expo;
     public uint8 rollpitchrate;
@@ -132,8 +125,7 @@ public struct MSP_RC_TUNING
 }
 
 
-public struct MSP_RC_TUNING_CF
-{
+public struct MSP_RC_TUNING_CF {
     public uint8 rc_rate;
     public uint8 rc_expo;
     public uint8 rollrate;
@@ -146,8 +138,7 @@ public struct MSP_RC_TUNING_CF
     public uint8 yaw_expo;
 }
 
-public struct MSP_RADIO
-{
+public struct MSP_RADIO {
     public uint16 rxerrors;
     public uint16 fixed_errors;
     public uint8 localrssi;
@@ -157,23 +148,20 @@ public struct MSP_RADIO
     public uint8 remnoise;
 }
 
-public struct MSP_COMP_GPS
-{
+public struct MSP_COMP_GPS {
      uint16 range;
      int16 direction;
      uint8 update;
 }
 
-public struct MSP_ANALOG
-{
+public struct MSP_ANALOG {
      uint8  vbat;
      uint16 powermetersum;
      uint16 rssi;
      uint16 amps;
 }
 
-public struct MSP_NAV_POSHOLD
-{
+public struct MSP_NAV_POSHOLD {
     uint8 nav_user_control_mode;
     uint16 nav_max_speed;
     uint16 nav_max_climb_rate;
@@ -185,8 +173,7 @@ public struct MSP_NAV_POSHOLD
     uint8 reserved[8];
 }
 
-public struct MSP_FW_CONFIG
-{
+public struct MSP_FW_CONFIG {
     uint16 cruise_throttle;
     uint16 min_throttle;
     uint16 max_throttle;
@@ -197,8 +184,7 @@ public struct MSP_FW_CONFIG
     uint16 loiter_radius;
 }
 
-public struct LTM_GFRAME
-{
+public struct LTM_GFRAME {
     int32 lat;
     int32 lon;
     uint8 speed;
@@ -206,16 +192,13 @@ public struct LTM_GFRAME
     uint8 sats;
 }
 
-public struct LTM_AFRAME
-{
+public struct LTM_AFRAME {
     int16 pitch;
     int16 roll;
     int16 heading;
 }
 
-
-public struct LTM_SFRAME
-{
+public struct LTM_SFRAME {
     uint16 vbat;
     uint16 vcurr;
     uint8 rssi;
@@ -223,8 +206,7 @@ public struct LTM_SFRAME
     uint8 flags;
 }
 
-public struct LTM_OFRAME
-{
+public struct LTM_OFRAME {
     int32 lat;
     int32 lon;
     int32 alt;
@@ -232,8 +214,7 @@ public struct LTM_OFRAME
     uint8 fix;
 }
 
-public struct LTM_XFRAME
-{
+public struct LTM_XFRAME {
     uint16 hdop;
     uint8 sensorok;
     uint8 ltm_x_count;
@@ -241,25 +222,22 @@ public struct LTM_XFRAME
     uint8 spare;
 }
 
-public struct CF_MODE_RANGES
-{
+public struct CF_MODE_RANGES {
     uint8 perm_id;
     uint8 auxchanid;
     uint8 startstep;
     uint8 endstep;
 }
 
-public struct MSP_WP_GETINFO
-{
+public struct MSP_WP_GETINFO {
     uint8 wp_cap;
     uint8 max_wp;
     uint8 wps_valid;
     uint8 wp_count;
 }
 
-public struct MSP_GPSSTATISTICS
-{
-    public uint16 last_message_dt;
+public struct MSP_GPSSTATISTICS {
+	public uint16 last_message_dt;
     public uint32 errors;
     public uint32 timeouts;
     public uint32 packet_count;
@@ -268,8 +246,7 @@ public struct MSP_GPSSTATISTICS
     public uint16 epv;
 }
 
-public enum MSize
-{
+public enum MSize {
     MSP_IDENT=7,
     MSP_STATUS=11,
     MSP_STATUS_EX=16,
@@ -295,17 +272,14 @@ public enum MSize
     MSP_ANALOG2 = 40
 }
 
-public enum MSPCaps
-{
+public enum MSPCaps {
     CAP_PLATFORM_32BIT = (1 << 31),
     CAP_BASEFLIGHT_CONFIG = (1 << 30),
     CAP_CLEANFLIGHT_CONFIG = (1 << 29)
 }
 
-
 #if UTEST
-public static int main (string[] args)
-{
+public static int main (string[] args) {
     uint8[] raw = {1,2,3,4};
     uint8 *rp;
 

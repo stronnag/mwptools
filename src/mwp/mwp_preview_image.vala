@@ -17,22 +17,17 @@
 
 
 class MissionPix {
-	public static string get_cached_mission_image(string mfn)
-    {
-        var cached = GLib.Path.build_filename(Environment.get_user_cache_dir(),
-                                              "mwp");
-        try
-        {
+	public static string get_cached_mission_image(string mfn) {
+        var cached = GLib.Path.build_filename(Environment.get_user_cache_dir(), "mwp");
+        try {
             var dir = File.new_for_path(cached);
             dir.make_directory_with_parents ();
         } catch {}
 
         string md5name = mfn;
-        if(!mfn.has_suffix(".mission"))
-        {
+        if(!mfn.has_suffix(".mission")) {
             var ld = mfn.last_index_of_char ('.');
-            if(ld != -1)
-            {
+            if(ld != -1) {
                 StringBuilder s = new StringBuilder(mfn[0:ld]);
                 s.append(".mission");
                 md5name = s.str;
@@ -45,10 +40,8 @@ class MissionPix {
         return GLib.Path.build_filename(cached,sb.str);
     }
 
-	public static void get_mission_pix(GtkChamplain.Embed e, MWPMarkers mk, Mission? ms, string? last_file)
-    {
-        if(last_file != null && ms != null)
-        {
+	public static void get_mission_pix(GtkChamplain.Embed e, MWPMarkers mk, Mission? ms, string? last_file) {
+        if(last_file != null && ms != null) {
             var path = get_cached_mission_image(last_file);
 			var wdw = e.get_window();
             var w = wdw.get_width();

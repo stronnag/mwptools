@@ -67,8 +67,7 @@ public class MWPLabel : Champlain.Label {
 	}
 }
 
-public class MWPMarkers : GLib.Object
-{
+public class MWPMarkers : GLib.Object {
     public Champlain.PathLayer path;                     // Mission outline
     public Champlain.MarkerLayer markers;                // Mission Markers
     public Champlain.MarkerLayer tmpmarkers;                // Mission Markers
@@ -114,8 +113,7 @@ public class MWPMarkers : GLib.Object
         return image;
 	}
 
-    public MWPMarkers(ListBox lb, Champlain.View view, string mkcol ="#ffffff60")
-    {
+    public MWPMarkers(ListBox lb, Champlain.View view, string mkcol ="#ffffff60") {
         _v = view;
 
         can_interact = true;
@@ -184,9 +182,9 @@ public class MWPMarkers : GLib.Object
         unowned MWPLabel rd = null;
 		//        rdrmarkers.get_markers().foreach ((m) => {
 		var rdrl =  rdrmarkers.get_markers();
-		for (unowned var lp = rdrl.first(); lp != null; lp = lp.next) {
+		for (unowned GLib.List<weak Champlain.Marker> lp = rdrl.first(); lp != null; lp = lp.next) {
 			if(rd == null) {
-				unowned var m = lp.data;
+				unowned Champlain.Marker m = lp.data;
 				if (((MWPLabel)m).name != "irdr")  {
 					var a = ((MWPLabel)m).rplot;
 					if(a != null) {
@@ -524,8 +522,7 @@ public class MWPMarkers : GLib.Object
         Clutter.Color rcol = Color.from_string(colstr);
 
         ShapeDialog.ShapePoint []pts;
-        for (var i = 1; i <= nrings; i++)
-        {
+        for (var i = 1; i <= nrings; i++) {
             var rring = new Champlain.PathLayer();
             rring.set_stroke_color(rcol);
             rring.set_stroke_width (2);
@@ -789,7 +786,7 @@ public class MWPMarkers : GLib.Object
 
     public MWPLabel? get_marker_for_idx(int idx) {
 		var mlist = markers.get_markers();
-		for (unowned var lp = mlist.first(); lp != null; lp = lp.next) {
+		for (unowned GLib.List<weak Champlain.Marker> lp = mlist.first(); lp != null; lp = lp.next) {
 			var m = (MWPLabel)lp.data;
 			if( m.idx == idx) {
 				return m;

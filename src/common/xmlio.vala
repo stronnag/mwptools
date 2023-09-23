@@ -1,17 +1,13 @@
 using Xml;
 
-namespace XmlIO
-{
+namespace XmlIO {
     public static bool uc = false;
     public static bool ugly = false;
     public static bool meta = false;
     public static string generator;
 
-    public Mission[]? read_xml_file(string path)
-    {
-
+    public Mission[]? read_xml_file(string path) {
         string s;
-
         try  {
             FileUtils.get_contents(path, out s);
         } catch (FileError e) {
@@ -22,21 +18,17 @@ namespace XmlIO
         return read_xml_string(s);
     }
 
-    public Mission[]? read_xml_string(string s)
-    {
+    public Mission[]? read_xml_string(string s) {
 		Mission [] msx = null;
 		Parser.init ();
 		Xml.Doc* doc = Parser.parse_memory(s, s.length);
-        if (doc == null)
-        {
+        if (doc == null) {
             return null;
         }
 
 		Xml.Node* root = doc->get_root_element ();
-        if (root != null)
-        {
-            if (root->name.down() == "mission")
-            {
+        if (root != null) {
+            if (root->name.down() == "mission") {
                 msx = parse_node (root);
             }
         }
@@ -45,20 +37,15 @@ namespace XmlIO
         return msx;
     }
 
-    private void parse_sub_node(Xml.Node* node, ref Mission ms)
-    {
-        for (Xml.Node* iter = node->children; iter != null; iter = iter->next)
-        {
+    private void parse_sub_node(Xml.Node* node, ref Mission ms) {
+        for (Xml.Node* iter = node->children; iter != null; iter = iter->next) {
             if (iter->type != ElementType.ELEMENT_NODE)
                 continue;
 
-            switch(iter->name.down())
-            {
+            switch(iter->name.down()) {
 			case "distance":
-				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next)
-				{
-					switch(prop->name)
-					{
+				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next) {
+					switch(prop->name) {
 					case "value":
 						ms.dist = DStr.strtod(prop->children->content,null);
 						break;
@@ -66,10 +53,8 @@ namespace XmlIO
 				}
 				break;
 			case "nav-speed":
-				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next)
-				{
-					switch(prop->name)
-					{
+				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next) {
+					switch(prop->name) {
 					case "value":
 						ms.nspeed = DStr.strtod(prop->children->content,null);
 						break;
@@ -77,10 +62,8 @@ namespace XmlIO
 				}
 				break;
 			case "fly-time":
-				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next)
-				{
-					switch(prop->name)
-					{
+				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next) {
+					switch(prop->name) {
 					case "value":
 						ms.et = int.parse(prop->children->content);
 						break;
@@ -88,10 +71,8 @@ namespace XmlIO
 				}
 				break;
 			case "loiter-time":
-				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next)
-				{
-					switch(prop->name)
-					{
+				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next) {
+					switch(prop->name) {
 					case "value":
 						ms.lt = int.parse(prop->children->content);
 						break;
@@ -105,16 +86,14 @@ namespace XmlIO
         }
     }
 
-    private Mission[] parse_node (Xml.Node* node)
-    {
+    private Mission[] parse_node (Xml.Node* node) {
 		Mission[] msx = {};
         MissionItem[] mi={};
 		Mission? ms = null;
 		uint8 lflag = 0;
 		int wpno = 1;
 
-		for (Xml.Node* iter = node->children; iter != null; iter = iter->next)
-        {
+		for (Xml.Node* iter = node->children; iter != null; iter = iter->next) {
             if (iter->type != ElementType.ELEMENT_NODE)
                 continue;
 
@@ -122,15 +101,12 @@ namespace XmlIO
 				ms = new Mission();
 			}
 
-            switch(iter->name.down())
-            {
+            switch(iter->name.down()) {
 			case  "missionitem":
 				var m = MissionItem();
-				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next)
-				{
+				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next) {
 					string attr_content = prop->children->content;
-					switch( prop->name)
-					{
+					switch( prop->name) {
 					case "no":
 						m.no = wpno++; //int.parse(attr_content);
 						break;
@@ -167,18 +143,15 @@ namespace XmlIO
 				mi += m;
 				break;
 			case "version":
-				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next)
-				{
+				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next) {
 					if (prop->name == "value")
 						ms.version = prop->children->content;
 				}
 				break;
 			case "mwp":
 			case "meta":
-				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next)
-				{
-					switch(prop->name)
-					{
+				for (Xml.Attr* prop = iter->properties; prop != null; prop = prop->next) {
+					switch(prop->name) {
 					case "zoom":
 						ms.zoom = (uint)int.parse(prop->children->content);
 						break;
@@ -214,8 +187,7 @@ namespace XmlIO
 		if (ms != null) { // single mission file, no flags
 			ms.npoints = mi.length;
 			ms.set_ways(mi);
-			if(ms.npoints != 0)
-			{
+			if(ms.npoints != 0) {
 				ms.update_meta(mi);
 			}
 			msx += ms;
@@ -223,16 +195,14 @@ namespace XmlIO
 		return msx;
 	}
 
-    public void to_xml_file(string path, Mission[] msx)
-    {
+    public void to_xml_file(string path, Mission[] msx) {
 		string s = to_xml_string(msx);
 		try {
 			FileUtils.set_contents(path, s);
 		} catch {}
 	}
 
-    public string to_xml_string(Mission [] msx, bool pretty=true)
-    {
+    public string to_xml_string(Mission [] msx, bool pretty=true) {
         Parser.init ();
         Xml.Doc* doc = new Xml.Doc ("1.0");
 
@@ -253,8 +223,7 @@ namespace XmlIO
 
         Xml.Node* subnode;
 
-        if (msx[0].version != null)
-        {
+        if (msx[0].version != null) {
             mstr = "version";
             if (uc)
                 mstr = mstr.ascii_up();
@@ -285,8 +254,7 @@ namespace XmlIO
 			}
 			subnode->new_prop ("generator", "%s (mwptools)".printf(generator));
 
-			if(ms.dist > 0)
-			{
+			if(ms.dist > 0)	{
 				Xml.Node* xsubnode;
 				Xml.Node* ysubnode;
 				xsubnode = subnode->new_text_child (ns, "details", "");
@@ -313,8 +281,7 @@ namespace XmlIO
 			if (uc)
 				mstr = mstr.ascii_up();
 
-			foreach (MissionItem m in ms.get_ways())
-			{
+			foreach (MissionItem m in ms.get_ways()) {
 				wpno++;
 				subnode = root->new_text_child (ns, mstr, "");
 //				subnode->new_prop ("no", m.no.to_string());
@@ -349,7 +316,6 @@ namespace XmlIO
 #if XMLTEST_MAIN
 
 int main (string[] args) {
-
     if (args.length < 2) {
         stderr.printf ("Argument required!\n");
         return 1;
@@ -364,14 +330,12 @@ int main (string[] args) {
 	}
     var  msx = XmlIO.read_xml_file (args[1]);
 	foreach (var ms in msx) {
-
 		ms.dump(120);
 /**
 		double d = 0.0;
 		int lt = 0;
 		var res = ms.calculate_distance(out d, out lt);
-		if (res == true)
-		{
+		if (res == true) {
 			var et = (int)(d / 6.0);
 			print("dist %.0f %ds (at 6m/s) (%ds)\n",d,et,lt);
 		}

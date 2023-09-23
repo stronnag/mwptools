@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 using Gtk;
 using Clutter;
 using Champlain;
@@ -260,7 +259,6 @@ public class AreaPlanner : GLib.Object {
         add_source_combo(conf.defmap);
         window.key_press_event.connect( (s,e) => {
                 bool ret = true;
-
                 switch(e.keyval) {
 				case Gdk.Key.plus:
 					if((e.state & Gdk.ModifierType.CONTROL_MASK) != Gdk.ModifierType.CONTROL_MASK)
@@ -325,7 +323,6 @@ public class AreaPlanner : GLib.Object {
         s_speed =  builder.get_object ("s_speed") as Gtk.Entry;
         s_delay =  builder.get_object ("s_delay") as Gtk.Entry;
 
-
         s_angle.activate.connect(() => {
                 if(nmpts > 0)
                     build_mission();
@@ -342,7 +339,7 @@ public class AreaPlanner : GLib.Object {
                 if(nmpts > 0)
                     build_mission();
             });
-        s_delay.activate.connect(() => {
+		s_delay.activate.connect(() => {
                 if(nmpts > 0)
                     build_mission();
             });
@@ -535,7 +532,7 @@ public class AreaPlanner : GLib.Object {
 
     private void build_mission() {
         Vec[] rpts = {};
-		for(unowned var lp = list.first(); lp != null; lp = lp.next) {
+		for(unowned List<Champlain.Marker> lp = list.first(); lp != null; lp = lp.next) {
 			var m = lp.data;
 			var v = Vec(){x = m.longitude, y=m.latitude};
 			rpts += v;
@@ -633,8 +630,8 @@ public class AreaPlanner : GLib.Object {
             var mks = path.get_nodes();
             uint ml = mks.length();
             if(ml > 3) {
-				for( unowned var lp = list.first(); lp != null; ) {
-					unowned var xlp = lp;
+				for( unowned List<Champlain.Marker> lp = list.first(); lp != null; ) {
+					unowned List<Champlain.Marker> xlp = lp;
 					lp = lp.next;
 					var m = lp.data;
 					if(near(m,menu_marker))
@@ -686,8 +683,8 @@ public class AreaPlanner : GLib.Object {
     private void clear_markers() {
         pmlayer.remove_all();
         path.remove_all();
-		for( unowned var lp = list.first(); lp != null; ) {
-			unowned var xlp = lp;
+		for( unowned List<Champlain.Marker> lp = list.first(); lp != null; ) {
+			unowned List<Champlain.Marker> xlp = lp;
 			lp = lp.next;
 			list.remove_link(xlp);
 		}
@@ -727,8 +724,7 @@ public class AreaPlanner : GLib.Object {
         }
     }
 
-    private void add_node(double lat, double lon, int pos = -1)
-    {
+    private void add_node(double lat, double lon, int pos = -1) {
         Champlain.Point marker;
         Clutter.Color pcol = { 0xff,0xcd, 0x70, 0xa0};
         marker = new Champlain.Point.full(42.0, pcol);
@@ -750,7 +746,7 @@ public class AreaPlanner : GLib.Object {
         } else {
             list.insert(marker, pos);
             path.remove_all();
-			for(unowned var lp = list.first(); lp != null; lp = lp.next) {
+			for(unowned List<Champlain.Marker> lp = list.first(); lp != null; lp = lp.next) {
 				var s = lp.data;
 				path.add_node(s);
 			}
@@ -857,7 +853,7 @@ public class AreaPlanner : GLib.Object {
                 var cy = ly;
                 view.map_source = source;
 
-                    /* Stop oob zooms messing up the map */
+				/* Stop oob zooms messing up the map */
                 if(!check_zoom_sanity(zval))
                     view.center_on(cy, cx);
             });
@@ -894,7 +890,6 @@ public class AreaPlanner : GLib.Object {
 		msg.response.connect ((response_id) => {
                 msg.destroy();
             });
-
         msg.set_title("MWP Notice");
         msg.show();
     }
@@ -986,7 +981,7 @@ public class AreaPlanner : GLib.Object {
 		 os.puts("# Valid delimiters are |;:, and <TAB>.\n");
 		 os.puts("# Note \",\" is not recommended for reasons of localisation.\n");
 		 os.puts("#\n");
-		 for (unowned var lp = list.first(); lp != null; lp = lp.next) {
+		 for (unowned List<Champlain.Marker> lp = list.first(); lp != null; lp = lp.next) {
 			 var m = lp.data;
 			 os.printf("%f;%f;\n", m.latitude, m.longitude);
 		 }

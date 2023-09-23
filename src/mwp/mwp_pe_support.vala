@@ -22,8 +22,7 @@ using Champlain;
 using GtkChamplain;
 
 public class FakeHome : GLib.Object {
-    public enum USERS
-    {
+    public enum USERS {
         None = 0,
         Mission = 1,
         Editor = 2,
@@ -98,30 +97,24 @@ public class FakeHome : GLib.Object {
         view.add_layer (hmlayer);
     }
 
-    public void create_dialog(Gtk.Builder b, Gtk.Window? w)
-    {
+    public void create_dialog(Gtk.Builder b, Gtk.Window? w) {
         fhd = new FakeHomeDialog(b, w);
         read_defaults();
     }
 
-    private void parse_delim(string fn, ref PlotElevDefs p)
-    {
+    private void parse_delim(string fn, ref PlotElevDefs p) {
         var file = File.new_for_path(fn);
         try {
             var dis = new DataInputStream(file.read());
             string line;
-            while ((line = dis.read_line (null)) != null)
-            {
+            while ((line = dis.read_line (null)) != null) {
                 if(line.strip().length > 0 &&
                    !line.has_prefix("#") &&
-                   !line.has_prefix(";"))
-                {
+                   !line.has_prefix(";")) {
                     var parts = line.split_set("=");
-                    if(parts.length == 2)
-                    {
+                    if(parts.length == 2) {
                         var str = parts[1].strip();
-                        switch(parts[0].strip())
-                        {
+                        switch(parts[0].strip()) {
                             case "home":
 //                                p.hstr = str;
                                 break;
@@ -140,21 +133,18 @@ public class FakeHome : GLib.Object {
         }
     }
 
-    public PlotElevDefs read_defaults()
-    {
+    public PlotElevDefs read_defaults() {
         PlotElevDefs p = PlotElevDefs();
         string fn;
 
-        if((fn = MWPUtils.find_conf_file("elev-plot")) != null)
-        {
+        if((fn = MWPUtils.find_conf_file("elev-plot")) != null) {
             parse_delim(fn, ref p);
         }
         return p;
     }
 
     public void show_fake_home(bool state) {
-        if(state != is_visible)
-        {
+        if(state != is_visible) {
             if(state) {
                 homep.set_draggable(true);
                 homep.set_selectable(true);
@@ -177,8 +167,7 @@ public class FakeHome : GLib.Object {
         xlon = lon;
     }
 
-    public void get_fake_home(out double lat, out double lon)
-    {
+    public void get_fake_home(out double lat, out double lon) {
         lat = xlat; //homep.get_latitude();
         lon = xlon; //homep.get_longitude();
     }
@@ -192,8 +181,7 @@ public class FakeHome : GLib.Object {
     }
 }
 
-public class FakeHomeDialog : GLib.Object
-{
+public class FakeHomeDialog : GLib.Object {
     private Gtk.Dialog pe_dialog;
     private Gtk.Entry pe_home_text;
     private Gtk.Entry pe_margin;
@@ -209,8 +197,7 @@ public class FakeHomeDialog : GLib.Object
 
     public signal void ready(bool state);
 
-    public FakeHomeDialog (Gtk.Builder builder, Gtk.Window? w)
-    {
+    public FakeHomeDialog (Gtk.Builder builder, Gtk.Window? w) {
         pe_dialog = builder.get_object ("pe-dialog") as Gtk.Dialog;
         pe_home_text = builder.get_object ("pe-home-text") as Gtk.Entry;
         pe_margin = builder.get_object ("pe-clearance") as Gtk.Entry;
@@ -249,8 +236,7 @@ public class FakeHomeDialog : GLib.Object
         set_climb_opts();
     }
 
-    private void get_climb_opts()
-    {
+    private void get_climb_opts() {
         MWP.conf.maxclimb = double.parse(pe_climb.text);
         if (MWP.conf.maxclimb < 0.0)
             MWP.conf.maxclimb = -MWP.conf.maxclimb;
@@ -262,8 +248,7 @@ public class FakeHomeDialog : GLib.Object
         MWP.conf.settings.set_double("max-dive-angle", MWP.conf.maxdive);
     }
 
-    private void set_climb_opts()
-    {
+    private void set_climb_opts() {
         if (MWP.conf.maxclimb < 0.0)
             MWP.conf.maxclimb = -MWP.conf.maxclimb;
         if (MWP.conf.maxdive  > 0.0)
@@ -272,70 +257,57 @@ public class FakeHomeDialog : GLib.Object
         pe_dive.text = "%.1f".printf(MWP.conf.maxdive);
     }
 
-    public void set_pos(string s)
-    {
+    public void set_pos(string s) {
         pe_home_text.text = s;
         pe_ok.sensitive = true;
     }
 
-    public string get_pos()
-    {
+    public string get_pos() {
         return pe_home_text.text;
     }
 
-    public void set_margin(int d)
-    {
+    public void set_margin(int d) {
         pe_margin.text = "%d".printf(d);
     }
 
-    public int get_margin()
-    {
+    public int get_margin() {
         return int.parse(pe_margin.text);
     }
 
-    public void set_rthalt(int d)
-    {
+    public void set_rthalt(int d) {
         pe_rthalt.text = "%d".printf(d);
     }
 
-    public int get_rthalt()
-    {
+    public int get_rthalt() {
         return int.parse(pe_rthalt.text);
     }
 
-    public bool get_replace()
-    {
+    public bool get_replace() {
         return pe_replace.active;
     }
 
-    public bool get_land()
-    {
+    public bool get_land() {
         return pe_land.active;
     }
 
-    public void set_land_sensitive(bool sens)
-    {
+    public void set_land_sensitive(bool sens) {
         pe_land.sensitive = sens;
     }
 
-    public int get_altmode()
-    {
+    public int get_altmode() {
         return int.parse(pe_altmode.active_id);
     }
 
-    public void set_altmode_sensitive(bool sens)
-    {
+    public void set_altmode_sensitive(bool sens) {
         pe_altmode.sensitive = pe_climb.sensitive = pe_dive.sensitive = sens;
     }
 
-    public void unhide()
-    {
+    public void unhide() {
         visible = true;
         pe_dialog.show_all();
     }
 
-    public void dismiss()
-    {
+    public void dismiss() {
         visible=false;
         pe_dialog.hide();
     }

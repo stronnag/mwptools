@@ -15,10 +15,8 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
-public class Mav : Object
-{
-    public enum Cmds
-    {
+public class Mav : Object {
+    public enum Cmds {
         MAVLINK_MSG_ID_HEARTBEAT = 0,
         MAVLINK_MSG_ID_SYS_STATUS = 1,
         MAVLINK_MSG_GPS_RAW_INT = 24,
@@ -33,8 +31,7 @@ public class Mav : Object
         MAVLINK_MSG_STATUSTEXT = 253
     }
 
-    public enum SYS_STATUS_SENSOR
-    {
+    public enum SYS_STATUS_SENSOR {
         MAV_SYS_STATUS_SENSOR_3D_GYRO=1, /* 0x01 3D gyro | */
         MAV_SYS_STATUS_SENSOR_3D_ACCEL=2, /* 0x02 3D accelerometer | */
         MAV_SYS_STATUS_SENSOR_3D_MAG=4, /* 0x04 3D magnetometer | */
@@ -61,8 +58,7 @@ public class Mav : Object
         MAV_SYS_STATUS_SENSOR_ENUM_END=4194305, /*  | */
     }
 
-    public enum TYPE
-    {
+    public enum TYPE {
         MAV_TYPE_GENERIC=0, /* Generic micro air vehicle. | */
         MAV_TYPE_FIXED_WING=1, /* Fixed wing aircraft. | */
         MAV_TYPE_QUADROTOR=2, /* Quadrotor | */
@@ -93,8 +89,7 @@ public class Mav : Object
         MAV_TYPE_ENUM_END=27, /*  | */
     }
 
-    public enum AUTOPILOT
-    {
+    public enum AUTOPILOT {
         MAV_AUTOPILOT_GENERIC=0, /* Generic autopilot, full support for everything | */
         MAV_AUTOPILOT_PIXHAWK=1, /* PIXHAWK autopilot, http://pixhawk.ethz.ch | */
         MAV_AUTOPILOT_SLUGS=2, /* SLUGS autopilot, http://slugsuav.soe.ucsc.edu | */
@@ -116,8 +111,7 @@ public class Mav : Object
         MAV_AUTOPILOT_ENUM_END=18, /*  | */
     }
 
-    public enum MODE_FLAG
-    {
+    public enum MODE_FLAG {
         MAV_MODE_FLAG_CUSTOM_MODE_ENABLED=1, /* 0b00000001 Reserved for future use. | */
         MAV_MODE_FLAG_TEST_ENABLED=2, /* 0b00000010 system has a test mode enabled. This flag is intended for temporary system tests and should not be used for stable implementations. | */
         MAV_MODE_FLAG_AUTO_ENABLED=4, /* 0b00000100 autonomous mode enabled, system finds its own goal positions. Guided flag can be set or not, depends on the actual implementation. | */
@@ -129,8 +123,7 @@ public class Mav : Object
         MAV_MODE_FLAG_ENUM_END=129, /*  | */
     }
 
-    private enum APM_PLANE_MODE
-    {
+    private enum APM_PLANE_MODE {
         PLANE_MODE_MANUAL=0,
         PLANE_MODE_CIRCLE=1,
         PLANE_MODE_STABILIZE=2,
@@ -156,8 +149,7 @@ public class Mav : Object
         PLANE_MODE_ENUM_END=23,
     }
 
-    private enum APM_COPTER_MODE
-    {
+    private enum APM_COPTER_MODE {
         COPTER_MODE_STABILIZE=0,
         COPTER_MODE_ACRO=1,
         COPTER_MODE_ALT_HOLD=2,
@@ -180,8 +172,7 @@ public class Mav : Object
         COPTER_MODE_ENUM_END=22,
     }
 
-    public struct MAVLINK_HEARTBEAT
-    {
+    public struct MAVLINK_HEARTBEAT {
         uint32 custom_mode; ///< A bitfield for use for autopilot-specific flags.
         uint8 type; ///< Type of the MAV (quadrotor, helicopter, etc., up to 15 types, defined in MAV_TYPE ENUM)
         uint8 autopilot; ///< Autopilot type / class. defined in MAV_AUTOPILOT ENUM
@@ -206,8 +197,7 @@ public class Mav : Object
         int8 battery_remaining; ///< Remaining battery energy: (0%: 0, 100%: 100), -1: autopilot estimate the remaining battery
     }
 
-    public struct MAVLINK_GPS_RAW_INT
-    {
+    public struct MAVLINK_GPS_RAW_INT {
         uint64 time_usec; ///< Timestamp (microseconds since UNIX epoch or microseconds since system boot)
         int32 lat; ///< Latitude (WGS84), in degrees * 1E7
         int32 lon; ///< Longitude (WGS84), in degrees * 1E7
@@ -220,8 +210,7 @@ public class Mav : Object
         uint8 satellites_visible; ///< Number of satellites visible. If unknown, set to 255
     }
 
-    public struct MAVLINK_GPS_GLOBAL_INT
-    {
+    public struct MAVLINK_GPS_GLOBAL_INT {
         uint32 time_usec; ///< Timestamp
         int32 lat; ///< Latitude (WGS84), in degrees * 1E7
         int32 lon; ///< Longitude (WGS84), in degrees * 1E7
@@ -233,8 +222,7 @@ public class Mav : Object
         uint16 hdg; ///< Vehicle heading (yaw angle) in degrees * 100, 0.0..359.99 degrees. If unknown, set to: UINT16_MAX
     }
 
-    public struct MAVLINK_ATTITUDE
-    {
+    public struct MAVLINK_ATTITUDE {
         uint32 time_boot_ms; ///< Timestamp (milliseconds since system boot)
         float roll; ///< Roll angle (rad, -pi..+pi)
         float pitch; ///< Pitch angle (rad, -pi..+pi)
@@ -244,8 +232,7 @@ public class Mav : Object
         float yawspeed; ///< Yaw angular speed (rad/s)
     }
 
-    public struct MAVLINK_RC_CHANNELS
-    {
+    public struct MAVLINK_RC_CHANNELS {
         uint32 time_boot_ms; ///< Timestamp (milliseconds since system boot)
         uint16 chan1_raw; ///< RC channel 1 value, in microseconds. A value of UINT16_MAX implies the channel is unused.
         uint16 chan2_raw; ///< RC channel 2 value, in microseconds. A value of UINT16_MAX implies the channel is unused.
@@ -259,15 +246,13 @@ public class Mav : Object
         uint8 rssi; ///< Receive signal strength indicator, 0: 0%, 100: 100%, 255: invalid/unknown.
     }
 
-    public struct MAVLINK_GPS_GLOBAL_ORIGIN
-    {
+    public struct MAVLINK_GPS_GLOBAL_ORIGIN {
         int32 latitude; ///< Latitude (WGS84), in degrees * 1E7
         int32 longitude; ///< Longitude (WGS84), in degrees * 1E7
         int32 altitude; ///< Altitude (AMSL), in meters * 1000 (positive for up)
     }
 
-    public struct MAVLINK_VFR_HUD
-    {
+    public struct MAVLINK_VFR_HUD {
         float airspeed; ///< Current airspeed in m/s
         float groundspeed; ///< Current ground speed in m/s
         float alt; ///< Current altitude (MSL), in meters
@@ -276,11 +261,9 @@ public class Mav : Object
         uint16 throttle; ///< Current throttle setting in integer percent, 0 to 100
     }
 
-    public static uint8 mav2mw(uint8 mav)
-    {
+    public static uint8 mav2mw(uint8 mav) {
         uint8 mw;
-        switch(mav)
-        {
+        switch(mav) {
             case Mav.TYPE.MAV_TYPE_FIXED_WING:
                 mw = 8;
                 break;
@@ -304,14 +287,11 @@ public class Mav : Object
         return mw;
     }
 
-    public static uint8 xmav2inav(uint32 mavmode, bool is_fw)
-    {
+    public static uint8 xmav2inav(uint32 mavmode, bool is_fw) {
         uint8 ltmmode = 0;
-        if(is_fw)
-        {
+        if(is_fw) {
                 // I don't believe the iNav mapping for FW ...
-            switch(mavmode)
-            {
+            switch(mavmode) {
                 case 0:
                     ltmmode = MSP.LTM.manual; // manual
                     break;
@@ -340,11 +320,8 @@ public class Mav : Object
                     ltmmode = MSP.LTM.acro;
                     break;
             }
-        }
-        else
-        {
-            switch(mavmode)
-            {
+        } else {
+            switch(mavmode) {
                 case 1:
                     ltmmode = MSP.LTM.acro; // acro / manual
                     break;
@@ -374,13 +351,10 @@ public class Mav : Object
         return ltmmode;
     }
 
-    public static uint8 mav2inav(uint32 mavmode, bool is_fw)
-    {
+    public static uint8 mav2inav(uint32 mavmode, bool is_fw) {
         uint8 ltmmode = 0;
-        if(is_fw)
-        {
-            switch (mavmode)
-            {
+        if(is_fw) {
+            switch (mavmode) {
                 case APM_PLANE_MODE.PLANE_MODE_MANUAL:
                     ltmmode = MSP.LTM.manual;
                     break;
@@ -415,11 +389,8 @@ public class Mav : Object
                     ltmmode = MSP.LTM.acro;
                     break;
             }
-        }
-        else
-        {
-            switch (mavmode)
-            {
+        } else {
+            switch (mavmode) {
                 case APM_COPTER_MODE.COPTER_MODE_ACRO:
                     ltmmode = MSP.LTM.acro;
                     break;

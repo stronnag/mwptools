@@ -17,8 +17,7 @@ const OptionEntry[] options = {
 
 static MainLoop ml;
 
-public struct TrafficReport
-{
+public struct TrafficReport {
     uint32 icao;
     double lat;
     double lon;
@@ -34,8 +33,7 @@ public struct TrafficReport
     uint8 tslc;
 }
 
-public class RadarSim : Object
-{
+public class RadarSim : Object {
     private TrafficReport []tr;
     private bool quit;
     private uint tid;
@@ -45,18 +43,13 @@ public class RadarSim : Object
     private double hlon = HLON;
     private const uint16 mask = 1+2+4+8+0x10+0x20+0x100;
 
-
-    public RadarSim()
-    {
+    public RadarSim() {
         tr = new TrafficReport[maxradar];
-        if(llstr != null)
-        {
+        if(llstr != null) {
             string[] delims =  {" ",","};
-            foreach (var delim in delims)
-            {
+            foreach (var delim in delims) {
                 var parts = llstr.split(delim);
-                if(parts.length == 2)
-                {
+                if(parts.length == 2) {
                     hlat = DStr.strtod(parts[0],null);
                     hlon = DStr.strtod(parts[1],null);
                     break;
@@ -68,8 +61,7 @@ public class RadarSim : Object
         quit = false;
         var lonf = 0.5/Math.cos(hlat*(Math.PI/180.0));
 
-        for (var i = 0; i < maxradar; i++)
-        {
+        for (var i = 0; i < maxradar; i++) {
             tr[i].icao = 10000000+ (uint32)((long)(&tr[i]) % 1000000);
             tr[i].lat = hlat + rand.double_range(-0.5, 0.5);
             tr[i].lon = hlon + rand.double_range(-lonf, lonf);
@@ -88,8 +80,7 @@ public class RadarSim : Object
         open_serial();
     }
 
-    public void run()
-    {
+    public void run() {
         int to = 25;
         int id  = 0;
 
@@ -117,30 +108,25 @@ public class RadarSim : Object
             });
     }
 
-    private void open_serial()
-    {
+    private void open_serial() {
         bool res;
         string estr;
         msp = new MWSerial();
         msp.set_mode(MWSerial.Mode.SIM);
 
-        if((res = msp.open(dev, baud, out estr)) == true)
-        {
+        if((res = msp.open(dev, baud, out estr)) == true) {
             msp.serial_lost.connect(() => {
                     if(tid > 0)
                         Source.remove(tid);
                     ml.quit();
                 });
-        }
-        else
-        {
+        } else {
             MWPLog.message("open failed serial %s %s\n", dev, estr);
             ml.quit();
         }
     }
 
-    private void transmit_radar(TrafficReport r)
-    {
+    private void transmit_radar(TrafficReport r) {
         uint8 buf[128];
 
         uint8 *p = buf;
@@ -158,24 +144,20 @@ public class RadarSim : Object
             *p++ = r.callsign[j];
         *p++ = r.emtype;
         *p++ = r.tslc;
-
         msp.send_mav(246, buf, (size_t)(p - &buf[0]));
     }
 }
 
 
-public static int main (string[] args)
-{
+public static int main (string[] args) {
     ml = new MainLoop();
 
     maxradar = MAXRADAR;
 
     string []devs = {"/dev/ttyUSB0","/dev/ttyACM0"};
 
-    foreach(var d in devs)
-    {
-        if(Posix.access(d,(Posix.R_OK|Posix.W_OK)) == 0)
-        {
+    foreach(var d in devs) {
+        if(Posix.access(d,(Posix.R_OK|Posix.W_OK)) == 0) {
             dev = d;
             break;
         }
@@ -186,8 +168,7 @@ public static int main (string[] args)
         opt.set_help_enabled(true);
         opt.add_main_entries(options, null);
         opt.parse(ref args);
-    }
-    catch (OptionError e) {
+    } catch (OptionError e) {
         stderr.printf("Error: %s\n", e.message);
         stderr.printf("Run '%s --help' to see a full list of available "+
                       "options\n", args[0]);
@@ -200,8 +181,7 @@ public static int main (string[] args)
     if (args.length > 1)
         dev = args[1];
 
-    if(dev == null)
-    {
+    if(dev == null) {
         stdout.puts("No device found\n");
         return 0;
     }

@@ -321,7 +321,6 @@ public class ListBox : GLib.Object {
             });
         marker_menu.add (item);
 
-
         marker_menu.add (new Gtk.SeparatorMenuItem ());
         pop_preview_item = new Gtk.MenuItem.with_label ("Preview Mission");
         pop_preview_item.activate.connect (() => {
@@ -349,7 +348,6 @@ public class ListBox : GLib.Object {
                 clear_mission();
             });
         marker_menu.add (item);
-
         marker_menu.show_all();
     }
 
@@ -682,8 +680,7 @@ public class ListBox : GLib.Object {
 
     public void raise_wp(int n) {
         Gtk.TreeIter iter;
-        if(n > 0)
-        {
+        if(n > 0) {
             if(list_model.iter_nth_child(out iter, null, n-1))
                 raise_iter_wp(iter, true);
         }

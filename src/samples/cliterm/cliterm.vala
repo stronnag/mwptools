@@ -32,8 +32,7 @@ class CliTerm : Object {
 	public CliTerm() {
 	}
 
-	public void init()
-    {
+	public void init() {
         eol="\r";
         if(eolm == 1)
             eol="\n";
@@ -138,8 +137,7 @@ class CliTerm : Object {
 		}
 	}
 
-    private void open_device(string device)
-    {
+    private void open_device(string device) {
         string estr;
         print ("open %s\r\n",device);
         if(msp.open(device, baud, out estr) == true) {
@@ -169,19 +167,18 @@ class CliTerm : Object {
             var io_read = new IOChannel.unix_new(0);
             if(io_read.set_encoding(null) != IOStatus.NORMAL)
                 error("Failed to set encoding");
-
 			io_read.add_watch(IOCondition.IN|IOCondition.HUP|IOCondition.NVAL|IOCondition.ERR, (g,c) => {
 				uint8 buf[2];
 				ssize_t rc = -1;
 				var err = ((c & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0);
-				if(!err)
+				if (!err)
 					rc = Posix.read(0,buf,1);
 
-				if(err || buf[0] == 3 || rc <0) {
+				if (err || buf[0] == 3 || rc <0) {
 					ml.quit();
 					return false;
 				}
-				if(msp.available) {
+				if (msp.available) {
 					if(buf[0] == 13 && eolm != 0) {
 						msp.write(eol.data,eol.length);
 					} else {

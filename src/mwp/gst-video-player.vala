@@ -273,8 +273,7 @@ public class V4L2_dialog : Dialog {
 #if TEST
 
 namespace MWPLog {
-	public static void message(string format, ...)
-    {
+	public static void message(string format, ...) {
 		var args = va_list();
         stderr.vprintf(format, args);
         stderr.flush();

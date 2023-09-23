@@ -15,20 +15,17 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
-private struct LLPos
-{
+private struct LLPos {
     double lat;
     double lon;
 }
 
-private struct GridPos
-{
+private struct GridPos {
     double x;
     double y;
 }
 
-private struct GridSet
-{
+private struct GridSet {
     double xmin;
     double xmax;
     double ymin;
@@ -38,14 +35,12 @@ private struct GridSet
     GridPos [] points;
 }
 
-public class FlatEarth : GLib.Object
-{
+public class FlatEarth : GLib.Object {
     private static double sfact;
     private static LLPos origin;
     private const double DELTA_LON_EQUATOR = 1.113195;  // MagicEarthNumber from APM
 
-    private static void set_origin(LLPos o)
-    {
+    private static void set_origin(LLPos o) {
         origin.lat = o.lat;
         origin.lon = o.lon;
         sfact = Math.cos(((Math.fabs(origin.lat) )* 0.0174532925));
@@ -55,8 +50,7 @@ public class FlatEarth : GLib.Object
             sfact = 0.01;
     }
 
-    private static GridPos geo_to_flatearth (LLPos ici)
-    {
+    private static GridPos geo_to_flatearth (LLPos ici) {
         GridPos p = {0};
         p.y = (ici.lat - origin.lat) * DELTA_LON_EQUATOR;
         p.x = (ici.lon - origin.lon) * (DELTA_LON_EQUATOR * sfact);
@@ -64,8 +58,7 @@ public class FlatEarth : GLib.Object
     }
 
         /* Because it plots .... */
-    private static Gdk.Pixbuf? conspire (GridSet g, int width, int height)
-    {
+    private static Gdk.Pixbuf? conspire (GridSet g, int width, int height) {
         double scale;
         int xaxis,yaxis;
         if (g.xrange > g.yrange) {
@@ -98,14 +91,12 @@ public class FlatEarth : GLib.Object
         return pixb;
     }
 
-    public static Gdk.Pixbuf getpixbuf(string fn, int width, int height)
-    {
+    public static Gdk.Pixbuf getpixbuf(string fn, int width, int height) {
         Gdk.Pixbuf spixb = null;
         bool is_j = fn.has_suffix(".json");
 		Mission ms;
         var msx = (is_j) ? JsonIO.read_json_file(fn) : XmlIO.read_xml_file (fn);
-        if(msx.length > 0)
-        {
+        if(msx.length > 0) {
 			var xlen = 0;
 			for(var j = 0 ; j < msx.length; j++) {
 				if(msx[j].npoints > msx[xlen].npoints)
@@ -119,15 +110,13 @@ public class FlatEarth : GLib.Object
             GridSet gps = {};
             MissionItem []wps = ms.get_ways();
 
-            if(wps.length > 0)
-            {
+            if(wps.length > 0) {
                 gps.xmin = gps.ymin = 999;
                 gps.xmax = gps.ymax = -999;
                 LLPos origin= {wps[0].lat, wps[0].lon};
                 set_origin (origin);
 
-                foreach (var wp in wps)
-                {
+                foreach (var wp in wps) {
                     if(wp.action != MSP.Action.WAYPOINT &&
                        wp.action != MSP.Action.POSHOLD_UNLIM &&
                        wp.action != MSP.Action.POSHOLD_TIME)

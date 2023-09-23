@@ -10,8 +10,7 @@ MSPV2 Dumping 27 bytes
 Checksum validates
 */
 
-class MSPValidator :Object
-{
+class MSPValidator :Object {
     private uint8[] txbuf;
     private uint8 writedirn;
 
@@ -57,8 +56,7 @@ class MSPValidator :Object
         *ptx++ = (uint8)len;
         ck ^=  cmd;
         *ptx++ = cmd;
-        for(var i = 0; i < len; i++)
-        {
+        for(var i = 0; i < len; i++) {
             *ptx = *pdata++;
             ck ^= *ptx++;
         }
@@ -113,15 +111,13 @@ class MSPValidator :Object
                     if (n != len + 6) {
                         print("Invalid data size %lu %lu\n", len, n);
                         return false;
-                    }
-                    else {
+                    } else {
                         var ll = generate_v1((uint8)cmd, &mbuf[5], len);
                         dump_raw_data(txbuf, (uint)ll);
                         if(txbuf[ll-1] == mbuf[n-1]) {
                             print("Checksum validates\n");
                             return true;
-                        }
-                        else {
+                        } else {
                             print("Checksum validation fails %x %x\n",
                                   txbuf[ll-1], mbuf[n-1]);
                             return false;
@@ -136,8 +132,7 @@ class MSPValidator :Object
                     } else {
                         var ll = generate_v2(cmd, &mbuf[8], len, mbuf[3]);
                         dump_raw_data(txbuf, (uint)ll);
-                        if(txbuf[ll-1] == mbuf[n-1])
-                        {
+                        if(txbuf[ll-1] == mbuf[n-1]) {
                             print("Checksum validates\n");
                             return true;
                         } else {

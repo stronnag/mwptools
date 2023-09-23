@@ -1,7 +1,5 @@
-namespace Places
-{
-    public struct PosItem
-    {
+namespace Places {
+    public struct PosItem {
         string name;
         double lat;
         double lon;
@@ -16,27 +14,23 @@ namespace Places
         return pls;
     }
 
-    private  void parse_delim(string fn)
-    {
+    private  void parse_delim(string fn) {
         var comma = false;
         var file = File.new_for_path(fn);
         try {
             var dis = new DataInputStream(file.read());
             string line;
-            while ((line = dis.read_line (null)) != null)
-            {
+            while ((line = dis.read_line (null)) != null) {
                 if(line.strip().length > 0 &&
                    !line.has_prefix("#") &&
-                   !line.has_prefix(";"))
-                {
+                   !line.has_prefix(";")) {
                     var parts = line.split_set(DELIMS);
                     if(parts.length <  3) {
                         parts = line.split(",");
                         comma = true;
                     }
 
-                    if(parts.length > 2)
-                    {
+                    if(parts.length > 2) {
                         var p = PosItem();
                         p.lat = DStr.strtod(parts[1],null);
                         p.lon = DStr.strtod(parts[2],null);
@@ -56,20 +50,17 @@ namespace Places
             save_file();
     }
 
-    public  PosItem[] get_places()
-    {
+    public  PosItem[] get_places() {
         string? fn;
         pls = {};
-        if((fn = find_conf_file("places")) != null)
-        {
+        if((fn = find_conf_file("places")) != null) {
             parse_delim(fn);
             cfile = fn;
         }
         return pls;
     }
 
-    private  string? find_conf_file(string fn)
-    {
+    private  string? find_conf_file(string fn) {
         var uc =  Environment.get_user_config_dir();
         var cfile = GLib.Path.build_filename(uc,"mwp",fn);
         var n = Posix.access(cfile, Posix.R_OK);
@@ -261,10 +252,8 @@ class PlaceEdit : Object {
                 listmodel.set_value (iter, Column.NAME, new_text);
             });
 
-
         view.button_press_event.connect( (event) => {
-                if(event.button == 3)
-                {
+                if(event.button == 3) {
                     if (get_selected_iter(out miter)) {
                         GLib.Value _cell;
                         listmodel.get_value (miter, Column.NAME, out _cell);
@@ -321,12 +310,10 @@ class PlaceEdit : Object {
         menu.show_all();
     }
 
-    private bool  get_selected_iter(out Gtk.TreeIter iter)
-    {
+    private bool  get_selected_iter(out Gtk.TreeIter iter) {
         iter={};
         var sel = view.get_selection ();
-        if(sel.count_selected_rows () == 1)
-        {
+        if(sel.count_selected_rows () == 1) {
             var rows = sel.get_selected_rows(null);
             listmodel.get_iter (out iter, rows.nth_data(0));
             return true;
@@ -355,8 +342,7 @@ class PlaceEdit : Object {
 
     public void load_places() {
         listmodel.clear();
-        foreach(var pl in Places.points())
-        {
+        foreach(var pl in Places.points()) {
             insert(pl);
         }
     }

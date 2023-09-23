@@ -26,7 +26,6 @@ public enum DevMask {
 }
 
 #if LINUX
-
 public class DevManager {
     private GUdev.Client uc;
     private DBusObjectManager manager;
@@ -525,8 +524,7 @@ public class DevManager {
 #endif
 
 #if TEST
-public int main(string?[] args)
-{
+public int main(string?[] args) {
     var d =  new DevManager();
     d.device_added.connect((s) => {
             print("Add %s\n", s);

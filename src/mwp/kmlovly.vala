@@ -3,8 +3,7 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
-public class KmlOverlay : Object
-{
+public class KmlOverlay : Object {
     private struct StyleItem {
         bool styled;
         string line_colour;

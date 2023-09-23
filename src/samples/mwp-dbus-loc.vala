@@ -31,36 +31,30 @@ interface MwpIF : DBusProxy {
     public abstract int get_waypoint_number() throws DBusError,IOError;
 }
 
-public class App : Object
-{
+public class App : Object {
     private MainLoop ml;
     private MwpIF? mwpif = null;
     private int intvl = -1;
     private Timer timer;
 
-    public App(int _i = -1)
-    {
+    public App(int _i = -1) {
         intvl = _i;
     }
 
-    public void acquire()
-    {
+    public void acquire() {
         Bus.watch_name(BusType.SESSION, "org.mwptools.mwp",
                        BusNameWatcherFlags.NONE,
                        has_bus, lost_bus);
     }
 
-    private void has_bus()
-    {
+    private void has_bus() {
         if (mwpif == null)
             Bus.get_proxy.begin<MwpIF>(BusType.SESSION, "org.mwptools.mwp",
                                        "/org/mwptools/mwp", 0, null, on_bus_get);
     }
 
-    private void message(string format, ...)
-    {
-        if(timer == null)
-        {
+    private void message(string format, ...) {
+        if(timer == null) {
             timer = new Timer();
             timer.start();
         }
@@ -73,9 +67,7 @@ public class App : Object
         stdout.puts (sb.str);
     }
 
-
-    private void on_bus_get(Object? o, AsyncResult? res)
-    {
+    private void on_bus_get(Object? o, AsyncResult? res) {
         try {
             mwpif = Bus.get_proxy.end(res);
             string []states;
@@ -89,17 +81,14 @@ public class App : Object
                     ml.quit();
                 });
 
-            if(intvl > -1)
-            {
+            if(intvl > -1) {
                 message("Setting new interval %d\n", intvl);
                 mwpif.dbus_pos_interval = intvl;
-            }
-            else
+            } else
                 message("Intvl %u\n", mwpif.dbus_pos_interval);
             StringBuilder sb = new StringBuilder("State Names:");
             mwpif.get_state_names (out states);
-            foreach(var s in states)
-            {
+            foreach(var s in states) {
                 sb.append_c(' ');
                 sb.append(s);
             }
@@ -163,17 +152,14 @@ public class App : Object
         }
     }
 
-    private void lost_bus()
-    {
+    private void lost_bus() {
         mwpif = null;
     }
 
-    public void run()
-    {
+    public void run() {
         ml = new MainLoop();
         ml.run();
     }
-
 }
 
 int main (string?[]args) {

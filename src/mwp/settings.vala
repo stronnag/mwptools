@@ -18,8 +18,7 @@
  */
 
 
-public class MWPSettings : GLib.Object
-{
+public class MWPSettings : GLib.Object {
     public Settings settings {get; private set;}
     private const string sname = "org.mwptools.planner";
     private SettingsSchema schema;
@@ -121,14 +120,12 @@ public class MWPSettings : GLib.Object
 
     public signal void settings_update (string s);
 
-    public MWPSettings()
-    {
+    public MWPSettings() {
         string?[] devs;
         devs=null;
         var uc = Environment.get_user_data_dir();
         uc += "/glib-2.0/schemas/";
-        try
-        {
+        try {
             SettingsSchemaSource sss = new SettingsSchemaSource.from_directory (uc, null, false);
             schema = sss.lookup (sname, false);
         } catch {}
@@ -144,10 +141,8 @@ public class MWPSettings : GLib.Object
             });
     }
 
-    public void read_settings(string? s=null)
-    {
-        if(s == null || s == "device-names")
-        {
+    public void read_settings(string? s=null) {
+        if(s == null || s == "device-names") {
             devices = settings.get_strv ("device-names");
             if (devices == null)
                 devices = {};
@@ -168,8 +163,7 @@ public class MWPSettings : GLib.Object
             zoom = settings.get_uint("default-zoom");
         if(s == null || s == "compat-version")
             compat_vers = settings.get_string ("compat-version");
-        if(s == null || s == "map-sources")
-        {
+        if(s == null || s == "map-sources") {
             map_sources = settings.get_string ("map-sources");
             if(map_sources == "")
                 map_sources = null;
@@ -190,8 +184,7 @@ public class MWPSettings : GLib.Object
             logarmed = settings.get_boolean("log-on-arm");
         if(s == null || s == "auto-follow")
             autofollow = settings.get_boolean("auto-follow");
-        if(s == null || s == "speak-interval")
-        {
+        if(s == null || s == "speak-interval") {
             speakint = settings.get_uint("speak-interval");
             if(speakint > 0 && speakint < 15)
                 speakint = 15;
@@ -221,22 +214,19 @@ public class MWPSettings : GLib.Object
         if(s == null || s == "poll-timeout")
             polltimeout = settings.get_uint("poll-timeout");
 
-        if(s == null || s == "default-layout")
-        {
+        if(s == null || s == "default-layout") {
             deflayout = settings.get_string("default-layout");
             if(deflayout == "")
                 deflayout = null;
         }
 
-        if(s == null || s == "display-distance")
-        {
+        if(s == null || s == "display-distance") {
             p_distance = settings.get_uint("display-distance");
             if(p_distance > 2)
                 p_distance = 0;
         }
 
-        if(s == null || s == "display-speed")
-        {
+        if(s == null || s == "display-speed") {
             p_speed = settings.get_uint("display-speed");
             if(p_speed > 3)
                 p_distance = 0;
@@ -271,28 +261,24 @@ public class MWPSettings : GLib.Object
         if(s == null || s == "ah-invert-roll")
             ah_inv_roll = settings.get_boolean ("ah-invert-roll");
 
-        if(s == null || s == "mission-path")
-        {
+        if(s == null || s == "mission-path") {
             missionpath = settings.get_string ("mission-path");
             if(missionpath == "")
                 missionpath = null;
         }
-        if(s == null || s == "kml-path")
-        {
+        if(s == null || s == "kml-path") {
             kmlpath = settings.get_string ("kml-path");
             if(kmlpath == "")
                 kmlpath = null;
         }
 
-        if(s == null || s == "log-path")
-        {
+        if(s == null || s == "log-path") {
             logpath = settings.get_string ("log-path");
             if(logpath == "")
                 logpath = null;
         }
 
-        if(s == null || s == "log-save_path")
-        {
+        if(s == null || s == "log-save_path") {
             logsavepath = settings.get_string ("log-save-path");
             if(logsavepath == "")
                 logsavepath = null;
@@ -301,8 +287,7 @@ public class MWPSettings : GLib.Object
         if(s == null || s == "max-home-delta")
             max_home_delta = settings.get_double ("max-home-delta");
 
-        if(s == null || s == "speech-api")
-        {
+        if(s == null || s == "speech-api") {
             speech_api = settings.get_string ("speech-api");
             if(speech_api == "")
                 speech_api = null;
@@ -353,21 +338,19 @@ public class MWPSettings : GLib.Object
         if(s == null || s == "blackbox-decode")
             blackbox_decode = settings.get_string ("blackbox-decode");
 
-        if(s == null || s == "geouser")
-        {
+        if(s == null || s == "geouser") {
             geouser = settings.get_string ("geouser");
             if(geouser == "")
                 geouser = null;
         }
-        if(s == null || s == "zone-detect")
-        {
+
+        if(s == null || s == "zone-detect") {
             zone_detect = settings.get_string ("zone-detect");
             if(zone_detect == "")
                 zone_detect = null;
         }
 
-        if(s == null || s == "mag-sanity")
-        {
+        if(s == null || s == "mag-sanity") {
             mag_sanity = settings.get_string("mag-sanity");
             if (mag_sanity == "")
                 mag_sanity = null;
@@ -436,22 +419,18 @@ public class MWPSettings : GLib.Object
             show_sticks = settings.get_enum("show-sticks");
 	}
 
-    public void save_pane()
-    {
+    public void save_pane() {
         if (settings != null)
             settings.set_double("pwdw-p", window_p);
     }
 
-    public void save_floating(bool val)
-    {
+    public void save_floating(bool val) {
         if (settings != null)
             settings.set_boolean("tote-float-p", val);
     }
 
-    public void save_settings()
-    {
-        if (settings != null)
-        {
+    public void save_settings() {
+        if (settings != null) {
             settings.set_strv ("device-names", devices);
             settings.set_string ("default-map", defmap);
             settings.set_double("default-latitude", latitude);
@@ -464,9 +443,7 @@ public class MWPSettings : GLib.Object
             settings.set_uint("speak-interval",speakint);
             settings.set_uint("display-distance", p_distance);
             settings.set_uint("display-speed", p_speed);
-        }
-        else
-        {
+        } else {
             print("no local settings\n");
         }
     }

@@ -50,8 +50,7 @@ class LayReader : Object {
                         string attr_content = prop->children->content;
                         switch( prop->name) {
                             case "name":
-                                if(attr_content == "mwp")
-                                {
+                                if(attr_content == "mwp") {
                                     ncount = 0;
                                     parse_node(iter, ref ncount);
                                 }
@@ -183,8 +182,7 @@ class LayMan : Object {
         dialog.show();
     }
 
-    private string[] get_layout_names(string dir, string typ=".xml")
-    {
+    private string[] get_layout_names(string dir, string typ=".xml") {
         string []files = { };
         File file = File.new_for_path (dir);
 
@@ -203,7 +201,7 @@ class LayMan : Object {
                     }
                 }
             }
-        } catch  { }
+        } catch  {}
         return files;
     }
 

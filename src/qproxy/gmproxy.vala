@@ -24,25 +24,23 @@
  * e.g. for a mythical provider "Zoogle", with the exmaple as the file
  * ~/.config/mwp/sources.json:
  * ======================================================================
-{
-   "sources" : [
-      {
-         "name" : "GM Proxy",
-         "tile_size" : 256,
-         "min_zoom" : 0,
-         "license" : "(c) Zoogle ",
-         "max_zoom" : 20,
-         "id" : "gm",
-         "projection" : "MERCATOR",
-         "license_uri" : "http://maps.zoogle.com/",
-         "spawn" : "gmproxy"
-      }
-   ]
-}
+ * {
+ *  "sources" : [
+ *     {
+ *        "name" : "GM Proxy",
+ *        "tile_size" : 256,
+ *        "min_zoom" : 0,
+ *        "license" : "(c) Zoogle ",
+ *        "max_zoom" : 20,
+ *        "id" : "gm",
+ *        "projection" : "MERCATOR",
+ *        "license_uri" : "http://maps.zoogle.com/",
+ *        "spawn" : "gmproxy"
+ *     }
+ *  ]
+ * }
  * ======================================================================
-
  * Note there is no need to define a URI (or port)
-
  * Then add to settings (terminal commmand line):
    gsettings set org.mwptools.planner map-sources sources.json
  * It is also necessary to build annd install gmproxy
@@ -152,12 +150,11 @@ public class GMProxy : Soup.Server {
 
 #if COLDSOUP
     private void default_handler (Soup.Server server, Soup.Message msg, string path,
-                          GLib.HashTable? query, Soup.ClientContext client)
+								  GLib.HashTable? query, Soup.ClientContext client) {
 #else
     private void default_handler (Soup.Server server, Soup.ServerMessage msg, string path,
-                          GLib.HashTable? query)
+								  GLib.HashTable? query) {
 #endif
-    {
         if(gvers == null) {
 #if COLDSOUP
             msg.set_status(404);

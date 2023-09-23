@@ -1,21 +1,18 @@
 
 /* MSP 'sink' */
 
-public class MWSim : GLib.Object
-{
+public class MWSim : GLib.Object {
     private int fd;
     private MWSerial msp;
     private MainLoop ml;
 
-    public MWSim()
-    {
+    public MWSim() {
         msp = new MWSerial();
         msp.set_mode(MWSerial.Mode.SIM);
         ml = new MainLoop();
     }
 
-    public void open()
-    {
+    public void open() {
         char buf[128];
         string estr;
 
@@ -29,22 +26,19 @@ public class MWSim : GLib.Object
         msp.open_fd(fd,115200);
     }
 
-    public void run()
-    {
+    public void run() {
         open();
         msp.serial_lost.connect (()=> {
                 print("endpoint died\n");
 
             });
-        msp.serial_event.connect ((s, cmd, raw, len, xflags, errs) =>
-        {
+        msp.serial_event.connect ((s, cmd, raw, len, xflags, errs) => {
             s.send_command(cmd, null, 0);
         });
         ml.run();
     }
 
-    static int main(string?[] args)
-    {
+    static int main(string?[] args) {
         var d = new MWSim();
         d.run ();
         return 0;

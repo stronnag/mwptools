@@ -24,7 +24,6 @@ public enum NMSTATE {
         NM_STATE_CONNECTED_GLOBAL = 70
 }
 
-
 namespace MWPAlert {
     public const string RED = "bleet.ogg";
     public const string ORANGE = "orange.ogg";
@@ -65,8 +64,7 @@ public enum RadarAlert {
 	SET= 2
 }
 
-public struct CurrData
-{
+public struct CurrData {
     bool ampsok;
     uint16 centiA;
     uint32 mah;
@@ -75,8 +73,7 @@ public struct CurrData
     uint16 lmah;
 }
 
-public struct Odostats
-{
+public struct Odostats {
     double speed;
     double distance;
     double alt;
@@ -88,8 +85,7 @@ public struct Odostats
     uint rng_secs;
 }
 
-public struct VersInfo
-{
+public struct VersInfo {
     uint8 mrtype;
     uint8 mvers;
     MWChooser.MWVAR fctype;
@@ -101,24 +97,21 @@ public struct VersInfo
     uint32 fc_vers;
 }
 
-public struct TelemStats
-{
+public struct TelemStats {
     SerialStats s;
     ulong toc;
     int tot;
     ulong avg;
 }
 
-public struct BatteryLevels
-{
+public struct BatteryLevels {
     float cell;
     float limit;
     string colour;
     string audio;
     string label;
     bool reached;
-    public BatteryLevels(float _cell, string? _colour, string? _audio, string? _label)
-    {
+    public BatteryLevels(float _cell, string? _colour, string? _audio, string? _label) {
         cell = _cell;
         limit = 0f;
         colour = _colour;
@@ -128,22 +121,18 @@ public struct BatteryLevels
     }
 }
 
-public struct MapSize
-{
+public struct MapSize {
     double width;
     double height;
 }
 
-
-public struct FakeOffsets
-{
+public struct FakeOffsets {
     double dlat;
     double dlon;
     bool faking;
 }
 
-public class VCol
-{
+public class VCol {
     public BatteryLevels [] levels = {
         BatteryLevels(3.7f, "volthigh", null, null),
         BatteryLevels(3.57f, "voltmedium", null, null),
@@ -153,8 +142,7 @@ public class VCol
     };
 }
 
-public struct MavPOSDef
-{
+public struct MavPOSDef {
     uint16 minval;
     uint16 maxval;
     Craft.Special ptype;
@@ -162,31 +150,25 @@ public struct MavPOSDef
     uint8 set;
 }
 
-
-public class PosFormat : GLib.Object
-{
-    public static string lat(double _lat, bool dms)
-    {
+public class PosFormat : GLib.Object {
+    public static string lat(double _lat, bool dms) {
         if(dms == false)
             return "%.6f".printf(_lat);
         else
             return position(_lat, "%02d:%02d:%04.1f%c", "NS");
     }
 
-    public static string lon(double _lon, bool dms)
-    {
+    public static string lon(double _lon, bool dms) {
         if(dms == false)
             return "%.6f".printf(_lon);
         else
             return position(_lon, "%03d:%02d:%04.1f%c", "EW");
     }
 
-    public static string pos(double _lat, double _lon, bool dms)
-    {
+    public static string pos(double _lat, double _lon, bool dms) {
         if(dms == false)
             return "%.6f %.6f".printf(_lat,_lon);
-        else
-        {
+        else {
             var slat = lat(_lat,dms);
             var slon = lon(_lon,dms);
             StringBuilder sb = new StringBuilder(slat);
@@ -196,21 +178,18 @@ public class PosFormat : GLib.Object
         }
     }
 
-    private static string position(double coord, string fmt, string ind)
-    {
+    private static string position(double coord, string fmt, string ind) {
         var neg = (coord < 0.0);
         var ds = Math.fabs(coord);
         int d = (int)ds;
         var rem = (ds-d)*3600.0;
         int m = (int)rem/60;
         double s = rem - m*60;
-        if ((int)s*10 == 600)
-        {
+        if ((int)s*10 == 600) {
             m+=1;
             s = 0;
         }
-        if (m == 60)
-        {
+        if (m == 60) {
             m = 0;
             d+=1;
         }
@@ -219,33 +198,25 @@ public class PosFormat : GLib.Object
     }
 }
 
-public class MonoFont : Object
-{
+public class MonoFont : Object {
     public static bool fixed = false;
-    public static void apply(Gtk.Widget w)
-    {
-        if(fixed)
-        {
+    public static void apply(Gtk.Widget w) {
+        if(fixed) {
             var lsc = w.get_style_context();
-            try
-            {
+            try {
                 var css1 = new Gtk.CssProvider ();
                 css1.load_from_data(".monolabel {font-family: monospace;}");
                 lsc.add_provider(css1, 801);
                 lsc.add_class("monolabel");
-            }
-            catch (Error e)
-            {
+            } catch (Error e) {
                 stderr.printf("label context %s\n", e.message);
             }
         }
     }
 }
 
-public class MWPCursor : GLib.Object
-{
-    private static void set_cursor(Gtk.Widget widget, Gdk.CursorType? cursor_type)
-    {
+public class MWPCursor : GLib.Object {
+    private static void set_cursor(Gtk.Widget widget, Gdk.CursorType? cursor_type) {
         Gdk.Window gdk_window = widget.get_window();
         if (cursor_type != null)
             gdk_window.set_cursor(new Gdk.Cursor.for_display(widget.get_display(),
@@ -254,40 +225,34 @@ public class MWPCursor : GLib.Object
             gdk_window.set_cursor(null);
     }
 
-    public static void set_busy_cursor(Gtk.Widget widget)
-    {
+    public static void set_busy_cursor(Gtk.Widget widget) {
         set_cursor(widget, Gdk.CursorType.WATCH);
     }
 
-    public static void set_normal_cursor(Gtk.Widget widget)
-    {
+    public static void set_normal_cursor(Gtk.Widget widget) {
         set_cursor(widget, null);
     }
 }
 
-public class MwpDockHelper : Object
-{
+public class MwpDockHelper : Object {
     private Gtk.Window wdw = null;
     public bool floating {get; private set; default=false;}
     public bool visible = false;
     public signal void menu_key();
     private Gdl.DockItem di;
 
-    public void transient(Gtk.Window w, bool above=false)
-    {
+    public void transient(Gtk.Window w, bool above=false) {
         wdw.set_keep_above(above);
         wdw.set_transient_for (w);
     }
 
-    private void myreparent(Gdl.DockItem di, Gtk.Window w)
-    {
+    private void myreparent(Gdl.DockItem di, Gtk.Window w) {
         var p = di.get_parent();
         p.get_parent().remove(p);
         w.add(p);
     }
 
-    public MwpDockHelper (Gdl.DockItem _di, Gdl.Dock dock, string title, bool _floater = false)
-    {
+    public MwpDockHelper (Gdl.DockItem _di, Gdl.Dock dock, string title, bool _floater = false) {
         di = _di;
         floating = _floater;
         wdw = new Gtk.Window();
@@ -304,13 +269,10 @@ public class MwpDockHelper : Object
             });
 
         di.dock_drag_end.connect(() => {
-                if(di.get_toplevel() == dock)
-                {
+                if(di.get_toplevel() == dock) {
                     floating = false;
                     hide();
-                }
-                else
-                {
+                } else {
                     floating = true;
                     pop_out();
                 }
@@ -329,23 +291,19 @@ public class MwpDockHelper : Object
             });
         wdw.add_accel_group(ag);
     }
-    public void pop_out()
-    {
-        if(!di.iconified && floating)
-        {
+    public void pop_out() {
+        if(!di.iconified && floating) {
             di.dock_to (null, Gdl.DockPlacement.FLOATING, 0);
             myreparent(di,wdw);
             show();
         }
     }
-    public void show()
-    {
+    public void show() {
         di.show_item();
         wdw.show_all();
         visible = true;
     }
-    public void hide()
-    {
+    public void hide() {
         di.iconify_item();
         wdw.hide();
         visible = false;
@@ -353,7 +311,6 @@ public class MwpDockHelper : Object
 }
 
 namespace CRSF {
-
 	const uint8 GPS_ID = 0x02;
 	const uint8 VARIO_ID = 0x07;
 	const uint8 BAT_ID = 0x08;
@@ -379,15 +336,12 @@ namespace CRSF {
 		uint16 rssi;
 		bool setlab;
 	}
-
 	Teledata teledata;
 
-	uint8 * deserialise_be_u24(uint8* rp, out uint32 v)
-	{
+	uint8 * deserialise_be_u24(uint8* rp, out uint32 v) {
         v = (*(rp) << 16 |  (*(rp+1) << 8) | *(rp+2));
         return rp + 3*sizeof(uint8);
 	}
-
 }
 
 namespace SportDev {

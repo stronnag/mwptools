@@ -16,16 +16,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-public class MWChooser : GLib.Object
-{
-    public enum MWVAR
-    {
+public class MWChooser : GLib.Object {
+    public enum MWVAR {
         UNDEF=0,
         MWOLD=1,
         MWNEW=2,
         CF=3,
         INAV=4,
-	AUTO=42
+		AUTO=42
     }
 
     private Gtk.Dialog dialog;
@@ -33,14 +31,12 @@ public class MWChooser : GLib.Object
 
     public const string[]mwnames = { "","MW","MWNAV","CF","BF","INAV"};
 
-    public static MWVAR fc_from_arg0()
-    {
+    public static MWVAR fc_from_arg0() {
         var arg0 = Environment.get_application_name();
         string []parts;
         MWVAR mwvar = MWVAR.UNDEF;
         parts = arg0.split ("-");
-        if(parts.length == 2)
-        {
+        if(parts.length == 2) {
             mwvar = fc_from_name(parts[1]);
             if(mwvar != MWChooser.MWVAR.UNDEF)
                 Environment.set_application_name(parts[0]);
@@ -48,11 +44,9 @@ public class MWChooser : GLib.Object
         return mwvar;
     }
 
-    public static MWVAR fc_from_name(string name)
-    {
+    public static MWVAR fc_from_name(string name) {
         MWVAR mwvar;
-        switch(name)
-        {
+        switch(name) {
             case "mw":
                 mwvar = MWVAR.MWOLD;
                 break;
@@ -76,11 +70,9 @@ public class MWChooser : GLib.Object
         return mwvar;
     }
 
-    public MWChooser(Gtk.Builder builder)
-    {
+    public MWChooser(Gtk.Builder builder) {
         dialog = builder.get_object ("mwchooser") as Gtk.Dialog;
-        for(var j = 0; ; j++)
-        {
+        for(var j = 0; ; j++) {
             var s = "radiobutton%d".printf(j+1);
             var b = builder.get_object (s) as Gtk.RadioButton;
             if (b == null)
@@ -90,8 +82,7 @@ public class MWChooser : GLib.Object
         }
     }
 
-    public MWVAR get_version(MWVAR last)
-    {
+    public MWVAR get_version(MWVAR last) {
         int j;
         uint8 idx;
         MWVAR mw;
@@ -102,19 +93,14 @@ public class MWChooser : GLib.Object
         btn[idx].set_active(true);
         dialog.show_all();
         var id = dialog.run();
-        if(id == 1002)
-        {
+        if(id == 1002) {
             mw = MWVAR.UNDEF;
-        }
-        else
-        {
-            for(j = 0; j < btn.length; j++)
-            {
+        } else {
+            for(j = 0; j < btn.length; j++) {
                 if(btn[j].get_active())
                     break;
             }
-            switch(j)
-            {
+            switch(j) {
                 case 0:
                     mw = MWVAR.MWOLD;
                     break;

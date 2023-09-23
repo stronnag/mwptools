@@ -191,24 +191,18 @@ public class  MissionPreviewer : GLib.Object {
 
         jumpC = new int[nsize];
 
-        if(warmup)
-        {
+        if(warmup) {
             dist = 0.0;
-        }
-        else
-        {
-            if (dist < 3000)
-            {
+        } else {
+            if (dist < 3000) {
                 speed = MSPEED/4 + (MSPEED*3/4) * (dist/3000);
-            }
-            else
+            } else
                 speed = (dist/3000) * MSPEED;
         }
 
         setupJumpCounters();
 
-        if(h.valid)
-        {
+        if(h.valid) {
             fly_leg(h.hlat, h.hlon, mi[0].lat, mi[0].lon, out cse, out d);
             if(warmup) {
                 LegPreview p = {-1, n, cse, dist, dist};
@@ -216,8 +210,7 @@ public class  MissionPreviewer : GLib.Object {
             }
         }
 
-        for (;;)
-        {
+        for (;;) {
             if(!running)
                 break;
 
@@ -227,7 +220,6 @@ public class  MissionPreviewer : GLib.Object {
             var typ = mi[n].action;
 
             if (valid) {
-
                 if (typ == MSP.Action.SET_POI) {
                     head_mode.mode = NAVMODE.POI;
                     head_mode.poi_lat = mi[n].lat;
@@ -302,9 +294,7 @@ public class  MissionPreviewer : GLib.Object {
                     cse = nc;
 
                     // handle PH
-                if  (typ == MSP.Action.POSHOLD_TIME ||
-                     typ == MSP.Action.POSHOLD_UNLIM)
-                {
+                if  (typ == MSP.Action.POSHOLD_TIME || typ == MSP.Action.POSHOLD_UNLIM) {
                     var phtim = (int)mi[n].param1;
                         // really we need cse from start ... in case wp1 is PH
                     if  (typ == MSP.Action.POSHOLD_UNLIM)
@@ -315,9 +305,7 @@ public class  MissionPreviewer : GLib.Object {
                 }
                 lastn = n;
                 n += 1;
-            }
-            else
-            {
+            } else {
                 cy = mi[n].lat;
                 cx = mi[n].lon;
                 valid = true;
@@ -327,13 +315,11 @@ public class  MissionPreviewer : GLib.Object {
             ly = cy;
 		}
 
-		if (running && ret && h.valid)
-        {
+		if (running && ret && h.valid) {
             fly_leg(ly, lx, h.hlat, h.hlon, out cse, out d);
             cy = h.hlat;
             cx = h.hlon;
-            if(warmup)
-            {
+            if(warmup) {
                 LegPreview p = {lastn, -1, cse, d, dist};
                 plist += p;
             }
@@ -435,7 +421,6 @@ public class  MissionPreviewer : GLib.Object {
 #if TREED
 		stderr.printf("Using Binary Tree cache\n");
 #endif
-
 		if (minchecker)
 			checker = true;
 

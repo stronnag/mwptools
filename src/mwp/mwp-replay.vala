@@ -21,8 +21,7 @@ public class ReplayThread : GLib.Object {
     private Cancellable cancellable;
     private bool paused = false;
 
-    private size_t serialise_sf(LTM_SFRAME b, uint8 []tx)
-    {
+    private size_t serialise_sf(LTM_SFRAME b, uint8 []tx) {
         uint8 *p;
         p = SEDE.serialise_u16(tx, b.vbat);
         p = SEDE.serialise_u16(p, b.vcurr);
@@ -32,8 +31,7 @@ public class ReplayThread : GLib.Object {
         return (p - &tx[0]);
     }
 
-    private size_t serialise_of(LTM_OFRAME o, uint8 []tx)
-    {
+    private size_t serialise_of(LTM_OFRAME o, uint8 []tx) {
         uint8 *p;
         p = SEDE.serialise_i32(tx, o.lat);
         p = SEDE.serialise_i32(p, o.lon);
@@ -46,8 +44,7 @@ public class ReplayThread : GLib.Object {
         return (p - &tx[0]);
     }
 
-    private size_t serialise_xf(LTM_XFRAME x, uint8 []tx)
-    {
+    private size_t serialise_xf(LTM_XFRAME x, uint8 []tx) {
         uint8 *p;
         p = SEDE.serialise_u16(tx, x.hdop);
         *p++ = x.sensorok;
@@ -56,8 +53,7 @@ public class ReplayThread : GLib.Object {
         return (p - &tx[0]);
     }
 
-    private size_t serialise_misc(MSP_MISC misc, uint8 [] tbuf)
-    {
+    private size_t serialise_misc(MSP_MISC misc, uint8 [] tbuf) {
         uint8 *rp;
         rp = SEDE.serialise_u16(tbuf, misc.intPowerTrigger1);
         rp = SEDE.serialise_u16(rp, misc.conf_minthrottle);
@@ -74,8 +70,7 @@ public class ReplayThread : GLib.Object {
         return (rp - &tbuf[0]);
     }
 
-    private size_t serialise_nav_status(MSP_NAV_STATUS b, uint8 []tx)
-    {
+    private size_t serialise_nav_status(MSP_NAV_STATUS b, uint8 []tx) {
         uint8 *p = tx;
         *p++ = b.gps_mode;
         *p++ = b.nav_mode;
@@ -86,16 +81,14 @@ public class ReplayThread : GLib.Object {
         return (p - &tx[0]);
     }
 
-    private size_t serialise_alt(MSP_ALTITUDE b, uint8 []tx)
-    {
+    private size_t serialise_alt(MSP_ALTITUDE b, uint8 []tx) {
         uint8 *p;
         p = SEDE.serialise_i32(tx, b.estalt);
         p = SEDE.serialise_i16(p, b.vario);
         return (p - &tx[0]);
     }
 
-    private size_t serialise_raw_gps(MSP_RAW_GPS b, uint8 []tx)
-    {
+    private size_t serialise_raw_gps(MSP_RAW_GPS b, uint8 []tx) {
         uint8 *p = tx;
         *p++ = b.gps_fix;
         *p++ = b.gps_numsat;
@@ -108,8 +101,7 @@ public class ReplayThread : GLib.Object {
         return (p - &tx[0]);
     }
 
-    private size_t serialise_status(MSP_STATUS b, uint8 []tx)
-    {
+    private size_t serialise_status(MSP_STATUS b, uint8 []tx) {
         uint8 *p;
         p = SEDE.serialise_u16(tx, b.cycle_time);
         p = SEDE.serialise_u16(p, b.i2c_errors_count);
@@ -119,8 +111,7 @@ public class ReplayThread : GLib.Object {
         return (p - &tx[0]);
     }
 
-    private size_t serialise_radio(MSP_RADIO b, uint8 []tx)
-    {
+    private size_t serialise_radio(MSP_RADIO b, uint8 []tx) {
         uint8 *p;
         p = SEDE.serialise_u16(tx, b.rxerrors);
         p = SEDE.serialise_u16(p, b.fixed_errors);
@@ -132,8 +123,7 @@ public class ReplayThread : GLib.Object {
         return (p - &tx[0]);
     }
 
-    private size_t serialise_analogue(MSP_ANALOG b, uint8 []tx)
-    {
+    private size_t serialise_analogue(MSP_ANALOG b, uint8 []tx) {
         uint8 *p = tx;
         *p++ = b.vbat;
         p = SEDE.serialise_u16(p, b.powermetersum);
@@ -142,8 +132,7 @@ public class ReplayThread : GLib.Object {
         return (p - &tx[0]);
     }
 
-    private size_t serialise_comp_gps(MSP_COMP_GPS b, uint8 []tx)
-    {
+    private size_t serialise_comp_gps(MSP_COMP_GPS b, uint8 []tx) {
         uint8 *p;
         p = SEDE.serialise_u16(tx, b.range);
         p = SEDE.serialise_i16(p, b.direction);
@@ -151,8 +140,7 @@ public class ReplayThread : GLib.Object {
         return (p - &tx[0]);
     }
 
-    private size_t serialise_atti(MSP_ATTITUDE b, uint8 []tx)
-    {
+    private size_t serialise_atti(MSP_ATTITUDE b, uint8 []tx) {
         uint8 *p;
         p = SEDE.serialise_i16(tx, b.angx);
         p = SEDE.serialise_i16(p, b.angy);
@@ -160,18 +148,12 @@ public class ReplayThread : GLib.Object {
         return (p - &tx[0]);
     }
 
-    private void send_rec(MWSerial msp, MSP.Cmds cmd, size_t len, void *buf)
-    {
-        if(cmd < MSP.Cmds.LTM_BASE)
-        {
+    private void send_rec(MWSerial msp, MSP.Cmds cmd, size_t len, void *buf) {
+        if(cmd < MSP.Cmds.LTM_BASE) {
             msp.send_command(cmd, buf, len);
-        }
-        else if (cmd < MSP.Cmds.MAV_BASE)
-        {
+        } else if (cmd < MSP.Cmds.MAV_BASE) {
             msp.send_ltm((uint8)(cmd - MSP.Cmds.LTM_BASE), buf, len);
-        }
-        else
-        {
+        } else {
             msp.send_mav((uint8)(cmd - MSP.Cmds.MAV_BASE), buf, len);
         }
     }
@@ -313,8 +295,7 @@ public class ReplayThread : GLib.Object {
                                         }
                                         if(obj.has_member("vname")) {
                                             vname = obj.get_string_member ("vname");
-                                            if(vname != null && vname.length > 0)
-                                            {
+                                            if(vname != null && vname.length > 0) {
                                                 send_rec(msp,MSP.Cmds.NAME, vname.length,
                                                          vname.data);
                                             }
@@ -649,8 +630,7 @@ public class ReplayThread : GLib.Object {
                             }
                             lt = utime;
                             uint16 q =  (uint16)(utime-start_tm);
-                            if (lq != q)
-                            {
+                            if (lq != q) {
                                 send_tq_frame(msp, q);
                                 lq = q;
                             }

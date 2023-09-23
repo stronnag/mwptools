@@ -15,78 +15,63 @@
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
-class InputParser : GLib.Object
-{
+class InputParser : GLib.Object {
     private static Regex latrx = null;
     private static Regex lonrx = null;
     private const string LATSTR = "^(\\d{1,2})[ :\\-]?(\\d{2})[ :\\-]?([0-9\\.]{2,5})([NS])";
     private const string LONSTR = "^(\\d{1,3})[ :\\-]?(\\d{2})[ :\\-]?([0-9\\.]{2,5})([EW])";
 
-    public static double get_latitude(string latstr)
-    {
+    public static double get_latitude(string latstr) {
         MatchInfo mi;
         double lat = 0.0;
-        if(latrx == null)
-        {
+        if(latrx == null) {
             try {
                 latrx = new Regex(LATSTR, RegexCompileFlags.CASELESS);
             } catch {};
         }
 
-        if (latrx.match(latstr, 0, out mi))
-        {
+        if (latrx.match(latstr, 0, out mi)) {
             lat = DStr.strtod(mi.fetch(1),null) +
             (DStr.strtod(mi.fetch(2),null) +
              DStr.strtod(mi.fetch(3),null)/60.0)/60.0;
             if(mi.fetch(4) == "S")
                 lat = -lat;
-        }
-        else
-        {
+        } else {
             lat = DStr.strtod(latstr,null);
         }
         return lat;
     }
 
-    public static double get_longitude(string lonstr)
-    {
+    public static double get_longitude(string lonstr) {
         MatchInfo mi;
         double lon = 0.0;
-        if(lonrx == null)
-        {
+        if(lonrx == null) {
             try {
                 lonrx = new Regex(LONSTR, RegexCompileFlags.CASELESS);
             } catch {};
         }
 
-        if (lonrx.match(lonstr, 0, out mi))
-        {
+        if (lonrx.match(lonstr, 0, out mi)) {
             lon = DStr.strtod(mi.fetch(1),null) + (
                 DStr.strtod(mi.fetch(2),null) +
                 DStr.strtod(mi.fetch(3),null)/60.0)/60.0;
             if(mi.fetch(4) == "W")
                 lon = -lon;
-        }
-        else
-        {
+        } else {
             lon = DStr.strtod(lonstr,null);
         }
         return lon;
     }
 
-    public static double get_scaled_real(string v, string s = "d")
-    {
+    public static double get_scaled_real(string v, string s = "d") {
         double d=0;
         d = DStr.strtod(v,null);
         uint cvt;
 
-        if(s == "d")
-        {
+        if(s == "d") {
             cvt = MWP.conf.p_distance;
-            if(cvt != 0 && d != 0.0)
-            {
-                switch(cvt)
-                {
+            if(cvt != 0 && d != 0.0) {
+                switch(cvt) {
                     case 1:
                         d /= 3.2808399;
                         break;
@@ -98,14 +83,10 @@ class InputParser : GLib.Object
                         break;
                 }
             }
-        }
-        else
-        {
+        } else {
             cvt = MWP.conf.p_speed;
-            if(cvt != 0 && d != 0.0)
-            {
-                switch(cvt)
-                {
+            if(cvt != 0 && d != 0.0) {
+                switch(cvt) {
                     case 1:
                         d /= 3.6;
                         break;
@@ -124,10 +105,8 @@ class InputParser : GLib.Object
         return d;
     }
 
-    public static long get_scaled_int(string v,  string s = "d")
-    {
+    public static long get_scaled_int(string v,  string s = "d") {
         var d = get_scaled_real(v, s);
         return Math.lround(d);
     }
-
 }

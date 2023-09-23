@@ -24,8 +24,7 @@
 static MainLoop ml;
 static MWSerial msp;
 
-void show_stats(MWSerial s)
-{
+void show_stats(MWSerial s) {
     var st = s.getstats();
     stderr.puts("\n");
     MWPLog.message("%.0fs, rx %lub, tx %lub, (%.0fb/s, %0.fb/s)\n",
@@ -34,28 +33,23 @@ void show_stats(MWSerial s)
     stderr.puts("\n");
 }
 
-private bool sigfunc()
-{
+private bool sigfunc() {
     show_stats(msp);
     return Source.CONTINUE;
 }
 
-private bool sigfunc_quit ()
-{
+private bool sigfunc_quit () {
     show_stats(msp);
     ml.quit();
     return Source.REMOVE;
 }
 
-public static int main (string[] args)
-{
+public static int main (string[] args) {
     ml = new MainLoop();
     msp = new MWSerial();
 
-    if (msp.parse_option(args) == 0)
-    {
-        if(msp.ublox_open(MWSerial.devname, MWSerial.brate))
-        {
+    if (msp.parse_option(args) == 0) {
+        if(msp.ublox_open(MWSerial.devname, MWSerial.brate)) {
             Unix.signal_add(MwpSignals.Signal.INT, sigfunc_quit);
             Unix.signal_add(MwpSignals.Signal.USR1, sigfunc);
             Unix.signal_add(MwpSignals.Signal.USR2, sigfunc);

@@ -1313,8 +1313,7 @@ public class ShapeDialog : GLib.Object {
     }
 
     public static ShapePoint[] mkshape(double clat, double clon,double radius,
-                         int npts=6, double start = 0, int dirn=1)
-    {
+                         int npts=6, double start = 0, int dirn=1) {
         double ang = start;
         double dint  = dirn*(360.0/npts);
         ShapePoint[] points= new ShapePoint[npts+1];
@@ -2771,18 +2770,12 @@ public class GPSInfo : GLib.Object {
         ddm = 0;
 
         if (spd >= dlimit) {
-            if (lat != _dlat || lon != _dlon)
-            {
+            if (lat != _dlat || lon != _dlon) {
                 if(_dlat != 0 && _dlon != 0) {
                     double d;
                     Geo.csedist(_dlat, _dlon, lat, lon, out d, out c);
                     ddm = d * 1852.0;
                 }
-/***
-                else
-                    MWPLog.message("Failed delta %f %f %f %f\n",
-                                   _dlat, _dlon, lat, lon);
-**/
                 if (ddm < 128*1000) {
                     _dlat = lat;
                     _dlon = lon;

@@ -36,27 +36,22 @@
  *
  ************************************************************************/
 
-public class GenProxy : Soup.Server
-{
+public class GenProxy : Soup.Server {
     private string [] p_uri;
     private const string UrlServerLetters = "bcde";
 
-    public GenProxy(string uri)
-    {
+    public GenProxy(string uri) {
         p_uri = uri.split("#");
         this.add_handler (null, default_handler);
     }
 
-    private int getservernum(int ix, int iy, int pmax)
-    {
+    private int getservernum(int ix, int iy, int pmax) {
         return (ix + (2 * iy)) % pmax;
     }
 
-    private string quadkey(int iz, int ix, int iy)
-    {
+    private string quadkey(int iz, int ix, int iy) {
         StringBuilder sb = new StringBuilder ();
-        for (var i = iz - 1; i >= 0; i--)
-        {
+        for (var i = iz - 1; i >= 0; i--) {
             char digit = '0';
             if ((ix & (1 << i)) != 0)
                 digit += 1;
@@ -67,8 +62,7 @@ public class GenProxy : Soup.Server
         return sb.str;
     }
 
-    private string rewrite_path(string p)
-    {
+    private string rewrite_path(string p) {
         var parts = p.split("/");
         var np = parts.length-3;
         var fn = parts[np+2].split(".");
@@ -78,38 +72,24 @@ public class GenProxy : Soup.Server
 
         StringBuilder sb = new StringBuilder();
 
-        foreach(var up in p_uri)
-        {
-            if(up == "N")
-            {
+        foreach(var up in p_uri) {
+            if(up == "N") {
                 var num = getservernum(ix,iy,4);
                 sb.append("%d".printf(num+1));
-            }
-            else if (up == "C")
-            {
+            } else if (up == "C") {
                 var num = getservernum(ix,iy,4);
                 var sno = UrlServerLetters.data[num];
                 sb.append("%c".printf(sno));
-            }
-            else if (up == "X")
-            {
+            } else if (up == "X") {
                 sb.append("%d".printf(ix));
-            }
-            else if (up == "Y")
-            {
+            } else if (up == "Y") {
                 sb.append("%d".printf(iy));
-            }
-            else if (up == "Z")
-            {
+            } else if (up == "Z") {
                 sb.append("%d".printf(iz));
-            }
-            else if (up == "Q")
-            {
+            } else if (up == "Q") {
                 var q = quadkey(iz, ix, iy);
                 sb.append(q);
-            }
-            else
-            {
+            } else {
                 sb.append(up);
             }
         }
@@ -117,10 +97,8 @@ public class GenProxy : Soup.Server
     }
 
     private void default_handler (Soup.Server server, Soup.Message msg, string path,
-                          GLib.HashTable? query, Soup.ClientContext client)
-    {
-        if (msg.method == "GET")
-        {
+                          GLib.HashTable? query, Soup.ClientContext client) {
+        if (msg.method == "GET") {
             stderr.printf("request %s\n", path);
             var xpath = rewrite_path(path);
             stderr.printf("fetch %s\n", xpath);
@@ -133,24 +111,19 @@ public class GenProxy : Soup.Server
                            message.response_body.length,
                            message.status_code);
 
-            if(message.status_code == 200)
-            {
+            if(message.status_code == 200) {
                 msg.set_response ("image/png", Soup.MemoryUse.COPY,
                                   message.response_body.data);
             }
             msg.set_status(message.status_code);
-        }
-        else
-        {
+        } else {
             msg.set_status(404);
         }
     }
 
-    public static int main (string []args)
-    {
+    public static int main (string []args) {
         var loop = new MainLoop();
-        if (args.length > 1)
-        {
+        if (args.length > 1) {
             var o = new GenProxy(args[1]);
             try {
                 o.listen_all(0, 0);

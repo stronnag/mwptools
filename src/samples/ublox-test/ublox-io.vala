@@ -18,10 +18,8 @@
 
 /* Based on the Multiwii UBLOX parser, GPL by a cast of thousands */
 
-public class MWSerial : Object
-{
-    public struct SerialStats
-    {
+public class MWSerial : Object {
+    public struct SerialStats {
         double elapsed;
         ulong rxbytes;
         ulong txbytes;
@@ -87,8 +85,7 @@ public class MWSerial : Object
         {null}
     };
 
-    public struct UBLOX_UPD
-    {
+    public struct UBLOX_UPD {
         bool fix_ok;
         int numsat;
         uint8 fixt;
@@ -102,8 +99,7 @@ public class MWSerial : Object
 
     private UBLOX_UPD u;
 
-    public enum UPXProto
-    {
+    public enum UPXProto {
         PREAMBLE1 = 0xb5,
         PREAMBLE2 = 0x62,
         CLASS_NAV = 0x01,
@@ -123,25 +119,22 @@ public class MWSerial : Object
         UBX_NAV_PVT = 0x07
     }
 
-    public enum UBXFix
-    {
+	public enum UBXFix {
         FIX_NONE = 0,
-            FIX_DEAD_RECKONING = 1,
-            FIX_2D = 2,
-            FIX_3D = 3,
-            FIX_GPS_DEAD_RECKONING = 4,
-            FIX_TIME = 5
+		FIX_DEAD_RECKONING = 1,
+		FIX_2D = 2,
+		FIX_3D = 3,
+		FIX_GPS_DEAD_RECKONING = 4,
+		FIX_TIME = 5
     }
 
-    public enum UBX_status_bits
-    {
+	public enum UBX_status_bits {
         NAV_STATUS_FIX_VALID = 1
     }
 
     public signal void gps_update (UBLOX_UPD u);
 
-    public enum State
-    {
+    public enum State {
         SPEED0 = 0,
         SPEED1,
         SPEED2,
@@ -179,17 +172,14 @@ public class MWSerial : Object
 
     private bool open(string device, int rate) {
         fd = MwpSerial.open(device, rate);
-        if(fd < 0)
-        {
+        if(fd < 0) {
             uint8 [] sbuf = new uint8[1024];
             var lasterr=Posix.errno;
             var s = MwpSerial.error_text(lasterr, sbuf, 1024);
             stderr.printf("%s (%d)\n", s, lasterr);
             fd = -1;
             available = false;
-        }
-        else
-        {
+        } else {
             available = true;
             setup_reader(fd);
         }
@@ -203,10 +193,8 @@ public class MWSerial : Object
 
     public void close() {
         available=false;
-        if(fd != -1)
-        {
-            if(tag > 0)
-            {
+        if(fd != -1) {
+            if(tag > 0) {
                 Source.remove(tag);
             }
             try  { io_read.shutdown(false); } catch {}
@@ -218,22 +206,17 @@ public class MWSerial : Object
     private bool device_read(IOChannel gio, IOCondition cond) {
         uint8 buf[2048];
         size_t res;
-        if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
-        {
+        if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0) {
             available = false;
             return false;
-        }
-        else
-        {
+        } else {
             res = Posix.read(fd,buf,2048);
             if(res == 0)
                 return true;
         }
-        for(var nc = 0; nc < res; nc++)
-        {
+        for(var nc = 0; nc < res; nc++) {
             stats.rxbytes++;
-            if(ublox_parse(buf[nc]) == true)
-            {
+            if(ublox_parse(buf[nc]) == true) {
                 gps_update (u);
             }
         }
@@ -248,7 +231,7 @@ public class MWSerial : Object
                       _buffer.posllh.altitude_ellipsoid /1000.0,
                       _buffer.posllh.horizontal_accuracy/1000.0,
                       _buffer.posllh.vertical_accuracy/1000.0
-                      );
+			);
         stdout.printf("sats: %d, fix %d\n", _numsat, _fixt);
         if(_fix_ok) {
             u.gpslat = _buffer.posllh.latitude/10000000.0;
@@ -272,7 +255,7 @@ public class MWSerial : Object
                       _buffer.pvt.altitude_ellipsoid /1000.0,
                       _buffer.pvt.horizontal_accuracy/1000.0,
                       _buffer.pvt.vertical_accuracy/1000.0
-                      );
+			);
         stdout.printf("sats: %d, fix %d\n", _buffer.pvt.satellites, _buffer.pvt.fix_type);
         int32 nano =  ( _buffer.pvt.nano +999999) /1000000;
         u.date = "%04d-%02d-%02d %02d:%02d:%02d.%03d".printf( _buffer.pvt.year,
@@ -388,8 +371,7 @@ public class MWSerial : Object
                 break;
             case 7:
                 _step++;
-                if (_ck_a != data)
-                {
+                if (_ck_a != data) {
                     stderr.printf("Error: Checksum A error\n");
                     _step = 0;  // bad checksum
                 }
@@ -397,8 +379,7 @@ public class MWSerial : Object
                 break;
             case 8:
                 _step = 0;
-                if (_ck_b != data)
-                {
+                if (_ck_b != data) {
                     stderr.printf("Error: Checksum B error\n");
                     break;  // bad checksum
                 }
@@ -485,9 +466,7 @@ public class MWSerial : Object
                 default:
                     break;
             }
-        }
-        else if(_class == 0x0a && _msg_id == 4)
-        {
+        } else if(_class == 0x0a && _msg_id == 4) {
             var dt = timer.elapsed ();
             stdout.printf("Version info after %fs (len %db)\n", dt, _payload_length);
             unowned uint8*v2 = &_buffer.xbytes[30];
@@ -495,10 +474,8 @@ public class MWSerial : Object
             stdout.printf("SW: [%s] HW: %s %d\n", (string)_buffer.xbytes,
                           (string)v2,gpsvers);
              // V8 Extended versioning
-            if(_payload_length > 40)
-            {
-                for(int n = 40; n < _payload_length; n+= 30)
-                {
+            if(_payload_length > 40) {
+                for(int n = 40; n < _payload_length; n+= 30) {
                     v2 = &_buffer.xbytes[n];
                     stdout.printf("ExtVer:  %s\n", (string)v2);
                 }
@@ -507,14 +484,12 @@ public class MWSerial : Object
         return ret;
     }
 
-    public void ublox_write(int fd, uint8[]data)
-    {
+    public void ublox_write(int fd, uint8[]data) {
 		Posix.write(fd, data, data.length);
 		stats.txbytes += data.length;
     }
 
-    private string get_gps_speed_string()
-    {
+    private string get_gps_speed_string() {
         var str = "";
         switch (brate) {
             case 115200:
@@ -544,7 +519,6 @@ public class MWSerial : Object
             devname = parts[0];
             brate = int.parse(parts[1]);
         }
-
         stdout.printf("%s@%d\n", devname, brate);
 
         open(devname, brate);

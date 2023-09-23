@@ -168,9 +168,7 @@ public class  BBoxDialog : Object {
         int i,n = -1;
         bool next;
 
-        for(i = 0, next = m.get_iter_first(out iter);
-            next; next = m.iter_next(ref iter), i++)
-        {
+        for(i = 0, next = m.get_iter_first(out iter); next; next = m.iter_next(ref iter), i++) {
             GLib.Value cell;
             m.get_value (iter, 0, out cell);
             if((string)cell == str)

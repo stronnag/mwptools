@@ -21,8 +21,7 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
-public struct MapSource
-{
+public struct MapSource {
     string id;
     string name;
     int min_zoom;
@@ -35,8 +34,7 @@ public struct MapSource
     Champlain.MapSourceDesc desc;
 }
 
-public class MwpMapSource : Champlain.MapSourceDesc
-{
+public class MwpMapSource : Champlain.MapSourceDesc {
     public MwpMapSource (string id,
             string name,
             string license,
@@ -45,8 +43,7 @@ public class MwpMapSource : Champlain.MapSourceDesc
             int maxzoom,
             int tile_size,
             Champlain.MapProjection projection,
-            string uri_format)
-    {
+            string uri_format) {
         Object(id: id, name: name, license: license, license_uri: license_uri,
                min_zoom_level: minzoom, max_zoom_level: maxzoom,
                tile_size: tile_size,
@@ -55,8 +52,7 @@ public class MwpMapSource : Champlain.MapSourceDesc
                constructor: (void *)my_construct);
     }
 
-    static Champlain.MapSource my_construct (Champlain.MapSourceDesc d)
-    {
+    static Champlain.MapSource my_construct (Champlain.MapSourceDesc d) {
         var source =  new Champlain.NetworkTileSource.full(
             d.get_id(),
             d.get_name(),
@@ -72,41 +68,33 @@ public class MwpMapSource : Champlain.MapSourceDesc
     }
 }
 
-public class SoupProxy : Soup.Server
-{
+public class SoupProxy : Soup.Server {
     private string basename;
     private string extname;
     public bool offline = false;
     private Soup.Session session;
 
-    public SoupProxy(string uri)
-    {
+    public SoupProxy(string uri) {
         var parts = uri.split("#");
-        if(parts.length == 3 && parts[1] == "Q")
-        {
+        if(parts.length == 3 && parts[1] == "Q") {
             basename = parts[0];
             extname = parts[2];
             this.add_handler (null, default_handler);
             session = new Soup.Session ();
             session.timeout = 5;
             session.max_conns_per_host = 8;
-        }
-        else
-        {
+        } else {
             MWPLog.message("Invalid quadkeys URI (%s)\n", uri);
             Posix.exit(255);
         }
     }
 
-     ~SoupProxy()
-     {
+     ~SoupProxy() {
      }
 
-    private string quadkey(int iz, int ix, int iy)
-    {
+    private string quadkey(int iz, int ix, int iy) {
         StringBuilder sb = new StringBuilder ();
-        for (var i = iz - 1; i >= 0; i--)
-        {
+        for (var i = iz - 1; i >= 0; i--) {
             char digit = '0';
             if ((ix & (1 << i)) != 0)
                 digit += 1;
@@ -117,8 +105,7 @@ public class SoupProxy : Soup.Server
         return sb.str;
     }
 
-    private string rewrite_path(string p)
-    {
+    private string rewrite_path(string p) {
         var parts = p.split("/");
         var np = parts.length-3;
         var fn = parts[np+2].split(".");
@@ -132,19 +119,14 @@ public class SoupProxy : Soup.Server
         return sb.str;
     }
 
-    private void default_handler (Soup.Server server,
-                                  Soup.Message msg, string path,
-                                  GLib.HashTable? query,
-                                  Soup.ClientContext client)
-    {
-        if(offline)
-        {
+    private void default_handler (Soup.Server server, Soup.Message msg, string path,
+                                  GLib.HashTable? query, Soup.ClientContext client) {
+        if(offline) {
             msg.set_status(404);
             return;
         }
 
-        if (msg.method == "HEAD")
-        {
+        if (msg.method == "HEAD") {
             bool ok = false;
             Posix.Stat st;
             var parts = path.split("/");
@@ -157,8 +139,7 @@ public class SoupProxy : Soup.Server
                 parts[np-2],
                 parts[np-1]);
 
-            if(Posix.stat(fnstr, out st) == 0)
-            {
+            if(Posix.stat(fnstr, out st) == 0) {
                 ok = true;
                 var dt = new DateTime.from_unix_utc(st.st_mtime);
                 var dstr = dt.format("%a, %d %b %Y %H:%M:%S %Z");
@@ -169,39 +150,31 @@ public class SoupProxy : Soup.Server
                                             st.st_size.to_string());
                 msg.set_status(200);
             }
-            if(!ok)
-            {
+            if(!ok) {
                 msg.set_status(404);
             }
-        }
-        else if (msg.method == "GET")
-        {
+        } else if (msg.method == "GET") {
             var xpath = rewrite_path(path);
             var message = new Soup.Message ("GET", xpath);
 
             session.send_message (message);
-            if(message.status_code == 200)
-            {
+            if(message.status_code == 200) {
                 msg.set_response ("image/png", Soup.MemoryUse.COPY,
                               message.response_body.data);
             }
             msg.set_status(message.status_code);
-        }
-        else
-        {
+        } else {
             msg.set_status(404);
         }
         msg.response_headers.append("Server", "qk-proxy/1.0");
     }
 }
 
-public class BingMap : Object
-{
+public class BingMap : Object {
     private const string BURI="https://dev.virtualearth.net/REST/V1/Imagery/Metadata/Aerial/0,0?zl=1&include=ImageryProviders&key=";
     public const string KENC="QWwxYnFHYU5vZGVOQTcxYmxlSldmakZ2VzdmQXBqSk9vaE1TWjJfSjBIcGd0NE1HZExJWURiZ3BnQ1piWjF4QQ==";
 
-    public static bool get_source(out MapSource ms, out string buri)
-    {
+    public static bool get_source(out MapSource ms, out string buri) {
         StringBuilder sb = new StringBuilder(BURI);
         sb.append((string)Base64.decode(KENC));
         var session = new Soup.Session ();
@@ -213,8 +186,7 @@ public class BingMap : Object
         return parse_bing_json(s, out buri, out ms);
     }
 
-    private static bool parse_bing_json(string s, out string buri, out MapSource ms)
-    {
+    private static bool parse_bing_json(string s, out string buri, out MapSource ms) {
          bool res = false;
          buri="";
          var savefile = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp",".blast");
@@ -231,10 +203,8 @@ public class BingMap : Object
          };
 
          StringBuilder sb = new StringBuilder();
-         if(s.length > 0)
-         {
-             try
-             {
+         if(s.length > 0) {
+             try {
                  var parser = new Json.Parser ();
                  parser.load_from_data (s);
 
@@ -247,27 +217,19 @@ public class BingMap : Object
                  int imgh =0, imgw = 0;
 
                  var root_object = parser.get_root ().get_object ();
-                 foreach (var rsnode in
-                          root_object.get_array_member ("resourceSets").get_elements ())
-                 {
+                 foreach (var rsnode in root_object.get_array_member ("resourceSets").get_elements ()) {
                      var rsitem = rsnode.get_object ();
-                     foreach (var rxnode in
-                              rsitem.get_array_member ("resources").get_elements ())
-                     {
+                     foreach (var rxnode in rsitem.get_array_member ("resources").get_elements ()) {
                          var rxitem = rxnode.get_object ();
                          buri = rxitem.get_string_member ("imageUrl");
                          imgh = (int)rxitem.get_int_member("imageHeight");
                          imgw = (int)rxitem.get_int_member("imageWidth");
 
-                         foreach (var pvnode in
-                                  rxitem.get_array_member ("imageryProviders").get_elements ())
-                         {
+                         foreach (var pvnode in rxitem.get_array_member ("imageryProviders").get_elements ()) {
                              xmin = ymin = 999.0;
                              xmax = ymax = -999;
                              var pvitem = pvnode.get_object();
-                             foreach (var cvnode in
-                                      pvitem.get_array_member ("coverageAreas").get_elements ())
-                             {
+                             foreach (var cvnode in pvitem.get_array_member ("coverageAreas").get_elements ()) {
                                  var cvitem = cvnode.get_object();
                                  var _zmin = (int)cvitem.get_int_member("zoomMin");
                                  var _zmax = (int)cvitem.get_int_member("zoomMax");
@@ -294,8 +256,7 @@ public class BingMap : Object
                              if (zmax >  gmax)
                                  gmax = zmax;
 
-                             if(xmax-xmin > 359 && ymax-ymin > 179)
-                             {
+                             if(xmax-xmin > 359 && ymax-ymin > 179) {
                                  var pattr = pvitem.get_string_member("attribution");
                                  sb.append(pattr);
                                  sb.append(", ");
@@ -317,8 +278,7 @@ public class BingMap : Object
              }
          }
 
-         if(buri.length > 0)
-         {
+         if(buri.length > 0) {
              var parts = buri.split("/");
              sb.assign(parts[4].substring(0,1));
              sb.append("#Q#");
@@ -328,12 +288,9 @@ public class BingMap : Object
              var fp = FileStream.open (savefile, "w");
              if(fp != null)
                  fp.write(buri.data);
-         }
-         else
-         {
+         } else {
              var fp = FileStream.open (savefile, "r");
-             if(fp != null)
-             {
+             if(fp != null) {
                  buri = fp.read_line();
              }
              else
@@ -343,19 +300,16 @@ public class BingMap : Object
     }
 }
 
-public class JsonMapDef : Object
-{
+public class JsonMapDef : Object {
     public static string id = null;
     private static int[] proxypids = {};
 
-    public static void killall()
-    {
+    public static void killall() {
         foreach(var p in proxypids)
             Posix.kill(p, MwpSignals.Signal.TERM);
     }
 
-    public static MapSource[] read_json_sources(string? fn, bool offline=false)
-    {
+    public static MapSource[] read_json_sources(string? fn, bool offline=false) {
         MapSource[] sources = {};
         MapSource s;
         string buri;
@@ -363,50 +317,41 @@ public class JsonMapDef : Object
 
         BingMap.get_source(out s, out buri);
         port  = run_proxy(buri, offline);
-        if (port != 0)
-        {
+        if (port != 0) {
             s.uri_format="http://localhost:%u/quadkey-proxy/#Z#/#X#/#Y#.png".printf(port);
             sources += s;
             id = s.id;
         }
 
         if(fn != null)
-        try {
-            var parser = new Json.Parser ();
-            parser.load_from_file (fn);
-            var root_object = parser.get_root ().get_object ();
-            foreach (var node in
-                     root_object.get_array_member ("sources").get_elements ())
-            {
-                s = MapSource();
-                var item = node.get_object ();
-                s.id = item.get_string_member ("id");
+			try {
+				var parser = new Json.Parser ();
+				parser.load_from_file (fn);
+				var root_object = parser.get_root ().get_object ();
+				foreach (var node in root_object.get_array_member ("sources").get_elements ()) {
+					s = MapSource();
+					var item = node.get_object ();
+					s.id = item.get_string_member ("id");
                 s.licence_uri = item.get_string_member("license_uri");
                 if(item.has_member("uri_format"))
                     s.uri_format = item.get_string_member("uri_format");
 
-                bool skip = (s.id == "BingProxy" ||
-                             s.uri_format ==
-                             "http://localhost:21303/quadkey-proxy/#Z#/#X#/#Y#.png" ||
-                             s.licence_uri == "http://www.bing.com/maps/");
-                if(!skip)
-                {
+                bool skip = (s.id == "BingProxy" || s.uri_format == "http://localhost:21303/quadkey-proxy/#Z#/#X#/#Y#.png" || s.licence_uri == "http://www.bing.com/maps/");
+                if(!skip) {
                     s.name = item.get_string_member ("name");
                     s.licence = item.get_string_member("license");
                     s.min_zoom = (int)item.get_int_member ("min_zoom");
                     s.max_zoom = (int) item.get_int_member ("max_zoom");
                     s.tile_size = (int)item.get_int_member("tile_size");
                     s.projection = Champlain.MapProjection.MERCATOR;
-                    if(item.has_member("spawn"))
-                    {
+                    if(item.has_member("spawn")) {
                         var spawncmd = item.get_string_member("spawn");
                         var iport = spawn_proxy(spawncmd);
                         if(iport > 0)
                             s.uri_format="http://localhost:%u/p/#Z#/#X#/#Y#.png".printf(iport);
                         if(iport != -1)
                             sources += s;
-                    }
-                    else
+                    } else
                         sources += s;
                 }
             }
@@ -417,8 +362,7 @@ public class JsonMapDef : Object
         return sources;
     }
 
-    private static int spawn_proxy(string cmd)
-    {
+    private static int spawn_proxy(string cmd) {
         string[]? argvp = null;
         int iport = 0;
 
@@ -450,8 +394,7 @@ public class JsonMapDef : Object
         return iport;
     }
 
-    private static uint run_proxy(string uri, bool offline)
-    {
+    private static uint run_proxy(string uri, bool offline) {
         uint port = 0;
         MWPLog.message("Starting Bing proxy %s\n", (offline) ? "(offline)" : "");
         var sp = new SoupProxy(uri);

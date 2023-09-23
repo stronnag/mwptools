@@ -1,72 +1,58 @@
 
-public struct Vec
-{
+public struct Vec {
     double x;
     double y;
 }
 
-public struct XVec
-{
+public struct XVec {
     double frac;
     Vec point;
 }
 
-
-public struct RowPoints
-{
+public struct RowPoints {
     Vec start;
     Vec end;
 }
 
-class AreaCalc : Object
-{
+class AreaCalc : Object {
     private const double MLAT=111120; // 1 deg lat = 60NM, 1NM=1852m
     private const double DEG2RAD = (Math.PI / 180);
 
-    public static Vec perp(Vec vec)
-    {
+    public static Vec perp(Vec vec) {
         return Vec(){x=-vec.y, y=vec.x};
     }
 
-    public static Vec negate(Vec vec)
-    {
+    public static Vec negate(Vec vec) {
         return Vec(){x=-vec.x, y=-vec.y};
     }
 
-    public static double dot(Vec v0, Vec v1)
-    {
+    public static double dot(Vec v0, Vec v1) {
         return v0.x * v1.x + v0.y * v1.y;
     }
 
-    public static bool areVecsEqual(Vec v0, Vec v1)
-    {
+    public static bool areVecsEqual(Vec v0, Vec v1) {
         return v0.x == v1.x && v0.y == v1.y;
     }
 
-    public static Vec add(Vec a, Vec b)
-    {
+    public static Vec add(Vec a, Vec b) {
         return Vec(){x = a.x + b.x, y= a.y + b.y};
     }
 
-    public static Vec sub(Vec a, Vec b)
-    {
+    public static Vec sub(Vec a, Vec b) {
         return Vec(){x = a.x - b.x, y= a.y - b.y};
     }
 
-    public static Vec scale (Vec vec, double s)
-    {
+    public static Vec scale (Vec vec, double s) {
         return Vec(){ x = vec.x * s, y = vec.y * s };
     }
 
-    public static double dist(Vec a, Vec b)
-    {
+    public static double dist(Vec a, Vec b) {
         var dx = a.x - b.x;
         var dy = a.y - b.y;
         return Math.sqrt( dx*dx + dy*dy );
     }
 
-    public static XVec? linesCross(Vec v0, Vec v1, Vec t0, Vec t1)
-    {
+    public static XVec? linesCross(Vec v0, Vec v1, Vec t0, Vec t1) {
         if ( areVecsEqual(v1,t0) ||
              areVecsEqual(v0,t0) ||
              areVecsEqual(v1,t1) ||
@@ -100,12 +86,7 @@ class AreaCalc : Object
         return XVec() {frac=frac, point=add(v0, scale(fullvec,frac)) };
     }
 
-    public static RowPoints[] generateFlightPath(Vec[] points,
-                                          double angle,
-                                          uint8 turn,
-                                          double separation)
-    {
-
+    public static RowPoints[] generateFlightPath(Vec[] points, double angle, uint8 turn, double separation) {
 // get vector parallel to rows
         var rad = angle * DEG2RAD;
         Vec parallelVec = Vec() { x = Math.sin(rad), y = Math.cos(rad) };
@@ -122,32 +103,25 @@ class AreaCalc : Object
             var pt = points[i];
             var parallelDot = dot(pt,parallelVec);
             var perpDot = dot(pt,perpVec);
-            if ( i == 0 )
-            {
+            if ( i == 0 ) {
                 minParallel = maxParallel = parallelDot;
                 minPerp = maxPerp = perpDot;
                 minParallelInd = maxParallelInd = 0;
                 minPerpInd = maxPerpInd = 0;
-            }
-            else
-            {
-                if (parallelDot < minParallel)
-                {
+            } else {
+                if (parallelDot < minParallel) {
                     minParallel = parallelDot;
                     minParallelInd = i;
                 }
-                if (parallelDot > maxParallel)
-                {
+                if (parallelDot > maxParallel) {
                     maxParallel = parallelDot;
                     maxParallelInd = i;
                 }
-                if (perpDot < minPerp)
-                {
+                if (perpDot < minPerp) {
                     minPerp = perpDot;
                     minPerpInd = i;
                 }
-                if (perpDot > maxPerp)
-                {
+                if (perpDot > maxPerp) {
                     maxPerp = perpDot;
                     maxPerpInd = i;
                 }
@@ -160,12 +134,10 @@ class AreaCalc : Object
 
             // get row separation in lat/lng dimension (along perpVec)
         var quadrantAngle = angle;
-        if (quadrantAngle > 180)
-        {
+        if (quadrantAngle > 180) {
             quadrantAngle = 360 - quadrantAngle;
         }
-        if (quadrantAngle > 90)
-        {
+        if (quadrantAngle > 90) {
             quadrantAngle = 180 - quadrantAngle;
         }
         var lngToLatRatio = quadrantAngle / 90;
@@ -209,15 +181,13 @@ class AreaCalc : Object
 
         RowPoints[] rowends = {};
 
-        for (var i = 0; i < rowsNeeded; i++)
-        {
+        for (var i = 0; i < rowsNeeded; i++) {
             var start = add(lxly, scale(perpVec,i*latLngSeparation));
             var end = add(lxuy, scale(perpVec,i*latLngSeparation));
             rowends += RowPoints() {start = start, end = end};
         }
 
-        for (var i = 0; i < rowends.length; i++)
-        {
+        for (var i = 0; i < rowends.length; i++) {
             var row = rowends[i];
             double closestDist = 99999999, furthestDist = -99999999;
             Vec closestHit={0}, furthestHit={0};
@@ -239,9 +209,8 @@ class AreaCalc : Object
             }
             row.start = closestHit;
             row.end = furthestHit;
-            if ( i%2 == 1 )
-            {
-                    // swap start and end for every second row
+            if ( i%2 == 1 ) {
+				// swap start and end for every second row
                 var tmp = row.start.x;
                 row.start.x = row.end.x;
                 row.end.x = tmp;
@@ -256,10 +225,8 @@ class AreaCalc : Object
 }
 
 #if TEST
-int main(string?[] args)
-{
-    const Vec[] pts =
-    {
+int main(string?[] args) {
+    const Vec[] pts = {
         { -1.5348707085286151, 50.910896623759626  },
         { -1.5341680195342633, 50.910785335938584  },
         { -1.5335010516901093, 50.91056130177018 },
@@ -267,14 +234,14 @@ int main(string?[] args)
         { -1.5341474079104955, 50.910230815349649 },
         { -1.5345665908989758, 50.909881861158311 },
         { -1.5354053210057828, 50.910074227940598 },
-        { -1.5348707085286151, 50.910896623759626  } };
+        { -1.5348707085286151, 50.910896623759626  }
+	};
 
     RowPoints[] r;
     r = AreaCalc.generateFlightPath((Vec[])pts, 0, 0, 20);
     uint i =0;
     print("<?xml version=\"1.0\" encoding=\"UTf-8\"?>\n<MISSION>\n <VERSION value=\"2.3 pre8\"></VERSION>\n");
-    foreach(var p in r)
-    {
+    foreach(var p in r) {
         print("<MISSIONITEM no=\"%u\" action=\"WAYPOINT\" lat=\"%f\" lon=\"%f\" alt=\"18\" parameter1=\"0\" parameter2=\"0\" parameter3=\"0\"></MISSIONITEM>\n",
               ++i, p.start.y, p.start.x);
         print("<MISSIONITEM no=\"%u\" action=\"WAYPOINT\" lat=\"%f\" lon=\"%f\" alt=\"18\" parameter1=\"0\" parameter2=\"0\" parameter3=\"0\"></MISSIONITEM>\n",

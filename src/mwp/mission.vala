@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2014 Jonathan Hudson <jh+mwptools@daria.co.uk>
  *
@@ -17,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-public struct MissionItem
-{
+public struct MissionItem {
     int no;
     MSP.Action action;
     double lat;
@@ -30,8 +28,7 @@ public struct MissionItem
     uint8 flag;
 }
 
-public class Mission : GLib.Object
-{
+public class Mission : GLib.Object {
     private MissionItem[] waypoints;
     public string? version;
     public double maxy;
@@ -50,8 +47,7 @@ public class Mission : GLib.Object
     public int lt;
     public int maxalt;
 
-    public Mission()
-    {
+    public Mission() {
         waypoints ={};
         version = null;
         npoints=0;
@@ -69,8 +65,7 @@ public class Mission : GLib.Object
     }
 
 	public Mission.clone(Mission m) {
-        foreach(var w in m.waypoints)
-        {
+        foreach(var w in m.waypoints) {
 			var mi = MissionItem();
 			mi.no = w.no;
 			mi.action = w.action;
@@ -86,13 +81,11 @@ public class Mission : GLib.Object
 		npoints = m.npoints;
 	}
 
-    public MissionItem[] get_ways()
-    {
+    public MissionItem[] get_ways() {
         return waypoints;
     }
 
-    public MissionItem? get_waypoint(uint n)
-    {
+    public MissionItem? get_waypoint(uint n) {
         if(n < waypoints.length)
             return waypoints[n];
         else
@@ -123,28 +116,23 @@ public class Mission : GLib.Object
 		}
 	}
 
-	public void set_waypoint(MissionItem m, uint n)
-    {
+	public void set_waypoint(MissionItem m, uint n) {
         if(n < waypoints.length)
             waypoints[n] = m;
     }
 
-    public void set_ways(MissionItem[] m)
-    {
+    public void set_ways(MissionItem[] m) {
         waypoints = m;
     }
 
-    public bool is_valid(int maxwp)
-    {
+    public bool is_valid(int maxwp) {
         if(waypoints.length > maxwp)
             return false;
 
             // Urg, Urg array index v. WP Nos ......
-        for(var i = 0; i < waypoints.length; i++)
-        {
+        for(var i = 0; i < waypoints.length; i++) {
             var target = waypoints[i].param1 - 1;
-            if(waypoints[i].action == MSP.Action.JUMP)
-            {
+            if(waypoints[i].action == MSP.Action.JUMP) {
                 if((i == 0) || ((target > (i-2)) && (target < (i+2)) ) || (target >= waypoints.length) || (waypoints[i].param2 < -1))
                     return false;
                 if(!(waypoints[target].action == MSP.Action.WAYPOINT || waypoints[target].action == MSP.Action.POSHOLD_TIME || waypoints[target].action == MSP.Action.LAND))
@@ -155,12 +143,10 @@ public class Mission : GLib.Object
     }
 
 
-    public void dump(int maxwp)
-    {
+    public void dump(int maxwp) {
         if(version != null)
             stdout.printf("Version: %s\n",version);
-        foreach (var m in waypoints)
-        {
+        foreach (var m in waypoints) {
             stdout.printf ("%d %s %f %f %u p1=%d p2=%d p3=%d flg=%0x\n",
                            m.no,
                            MSP.get_wpname(m.action),
@@ -170,8 +156,7 @@ public class Mission : GLib.Object
         stdout.printf("lon (x)  min,max %f %f\n", minx, maxx);
         stdout.printf("lat (y) min,max %f %f\n", miny, maxy);
         stdout.printf("cy cx %f %f %d\n", cy, cx, (int)zoom);
-        if(dist != -1)
-        {
+        if(dist != -1) {
             stdout.printf("distance %.1f m\n", dist);
             stdout.printf("flight time %d s\n", et);
             if(lt != -1)
@@ -179,7 +164,6 @@ public class Mission : GLib.Object
             if(nspeed == 0 && dist > 0 && et > 0)
                 nspeed = dist / (et - 3*waypoints.length);
             stdout.printf("speed %.1f m/s\n", nspeed);
-
         }
         if(maxalt != 0x80000000)
             stdout.printf("max altitude %d\n", maxalt);
@@ -205,16 +189,14 @@ public class Mission : GLib.Object
 	}
 
 
-    public bool is_equal(Mission m)
-    {
+    public bool is_equal(Mission m) {
         var nwp = waypoints.length;
         var ways = m.get_ways();
 
         if(nwp != ways.length)
             return false;
 
-        for(var i = 0; i < nwp; i++)
-        {
+        for(var i = 0; i < nwp; i++) {
             if(waypoints[i].no != ways[i].no ||
                waypoints[i].action != ways[i].action ||
                waypoints[i].lat != ways[i].lat ||
@@ -228,8 +210,7 @@ public class Mission : GLib.Object
         return true;
     }
 
-	public bool calculate_distance(out double d, out int lt)
-    {
+	public bool calculate_distance(out double d, out int lt) {
         var n = 0;
         var rpt = 0;
         double lx = 0.0,ly=0.0;
@@ -243,34 +224,28 @@ public class Mission : GLib.Object
 		if(nsize == 0)
             return false;
 
-        do
-        {
+        do {
             var typ = waypoints[n].action;
 
-            if(typ == MSP.Action.JUMP && waypoints[n].param2 == -1)
-            {
+            if(typ == MSP.Action.JUMP && waypoints[n].param2 == -1) {
                 d = 0.0;
                 lt = 0;
                 return false;
             }
 
-            if (typ == MSP.Action.SET_POI)
-            {
+            if (typ == MSP.Action.SET_POI) {
                 n += 1;
                 continue;
             }
 
-            if (typ == MSP.Action.RTH)
-            {
+            if (typ == MSP.Action.RTH) {
                 break;
             }
 
             var cy = waypoints[n].lat;
             var cx = waypoints[n].lon;
-            if (ready == true)
-            {
-                if(typ == MSP.Action.JUMP)
-                {
+            if (ready == true) {
+                if(typ == MSP.Action.JUMP) {
                     var r = waypoints[n].param2;
                     rpt += 1;
                     if (rpt > r)
@@ -282,23 +257,16 @@ public class Mission : GLib.Object
                 Geo.csedist(ly,lx,cy,cx, out dx, out cse);
                 d += dx;
 //                print("At WP #%d, delta = %6.1f dist = %6.1f\n", n+1, dx*1852.0, d*1852.0);
-
-                if (typ == MSP.Action.POSHOLD_TIME)
-                {
+                if (typ == MSP.Action.POSHOLD_TIME) {
                     lt += waypoints[n].param1;
                 }
-                if (typ == MSP.Action.POSHOLD_UNLIM || typ == MSP.Action.LAND)
-                {
+                if (typ == MSP.Action.POSHOLD_UNLIM || typ == MSP.Action.LAND) {
                     break;
-                }
-                else
-                {
+                }  else {
                     n += 1;
                 }
-            }
-            else
-			{
-                ready = true;
+            } else {
+				ready = true;
 //				print("At WP #1, delta =    0.0 dist =    0.0 (%d)\n", n);
 				n += 1;
             }

@@ -37,8 +37,7 @@ public class AudioPlayer {
 
 #if TEST
 namespace MWPLog {
-	public static void message(string format, ...)
-    {
+	public static void message(string format, ...) {
 		var args = va_list();
         stderr.vprintf(format, args);
         stderr.flush();

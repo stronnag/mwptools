@@ -17,8 +17,7 @@
  */
 
 public class MSP : Object {
-    public enum Feature
-    {
+    public enum Feature {
         GPS = (1 << 7),
         TELEMETRY = (1 << 10),
         CURRENT = (1 << 11)
@@ -170,8 +169,7 @@ public class MSP : Object {
         INVALID = 0xfffff
     }
 
-    public enum Sensors
-    {
+    public enum Sensors {
         ACC =    (1 << 0),
         BARO =   (1 << 1),
         MAG =    (1 << 2),
@@ -182,31 +180,27 @@ public class MSP : Object {
         OK =     (1 << 15);
 
         public string to_string() {
-        switch (this) {
+			switch (this) {
             case ACC:
                 return "Acc";
-
             case BARO:
                 return "Baro";
-
             case MAG:
                 return "Mag";
-
             case GPS:
                 return "GPS";
-
             case SONAR:
                 return "Sonar";
-
             default:
                 assert_not_reached();
-        }
 			}
+		}
 
-        public static Sensors[] all() {return { ACC, BARO, MAG, GPS, SONAR
+        public static Sensors[] all() {
+			return { ACC, BARO, MAG, GPS, SONAR
             };
-				}
-			}
+		}
+	}
 
     public enum Action {
         UNKNOWN=-1,
@@ -276,8 +270,7 @@ public class MSP : Object {
         "Landing is in progress. Check attitude if possible" //11
     };
 
-    private const string [] ltm_modes =
-    {
+    private const string [] ltm_modes = {
         "Manual", 		// 0
         "Acro",			// 1
         "Angle",	// 2
@@ -302,8 +295,7 @@ public class MSP : Object {
 		"Autotune" // 21
     };
 
-
-    private const string [] bb_disarm_reasons = {
+   private const string [] bb_disarm_reasons = {
         "None",
         "Timeout",
         "Sticks",
@@ -317,53 +309,45 @@ public class MSP : Object {
 
     private static HashTable<string, MSP.Action> wp_hash;
 
-    public static string gps_mode(uint8 nmode)
-    {
+    public static string gps_mode(uint8 nmode) {
         if (nmode < gps_modes.length)
             return gps_modes[nmode];
         else
             return "Unknown";
     }
 
-    public static string bb_disarm(uint8 reason)
-    {
+    public static string bb_disarm(uint8 reason) {
         if (reason < bb_disarm_reasons.length)
             return bb_disarm_reasons[reason];
         else
             return "Unknown";
     }
 
-    public static string nav_state(uint8 nstat)
-    {
+    public static string nav_state(uint8 nstat) {
         if (nstat < nav_states.length)
             return nav_states[nstat];
         else
             return "Unknown";
     }
 
-    public static string nav_error(uint8 nerr)
-    {
+    public static string nav_error(uint8 nerr) {
         if (nerr < nav_errors.length)
             return nav_states[nerr];
         else
             return "Unknown";
     }
 
-    public static string ltm_mode (uint8 nst)
-    {
+    public static string ltm_mode (uint8 nst) {
         if (nst < ltm_modes.length)
             return ltm_modes[nst];
         else
             return "Unknown";
     }
 
-    public static int find_model(string mrname)
-    {
+    public static int find_model(string mrname) {
         int n = 0;
-        foreach(var mr in mrtypes)
-        {
-            if(mr == mrname)
-            {
+        foreach(var mr in mrtypes) {
+            if(mr == mrname) {
                 return n;
             }
             n++;
@@ -371,37 +355,30 @@ public class MSP : Object {
         return 0;
     }
 
-
-    public static string get_mrtype(uint typ)
-    {
+    public static string get_mrtype(uint typ) {
         if (typ < mrtypes.length)
             return mrtypes[typ];
         else
             return "Unknown";
     }
 
-    public static string get_pidname(uint typ)
-    {
+    public static string get_pidname(uint typ) {
         if (typ < pidnames.length)
             return pidnames[typ];
         else
             return "Unknown";
     }
 
-    public static string get_wpname(MSP.Action idx)
-    {
+    public static string get_wpname(MSP.Action idx) {
         if (idx >= wp_name.length)
             idx= 0;
         return wp_name[idx];
     }
 
-    public static MSP.Action lookup_name(string xs)
-    {
-        if(wp_hash == null)
-        {
+    public static MSP.Action lookup_name(string xs) {
+        if(wp_hash == null) {
             wp_hash = new HashTable<string, MSP.Action> (str_hash, str_equal);
-            for (var n = MSP.Action.UNASSIGNED; n <= MSP.Action.LAND; n += (MSP.Action)1)
-            {
+            for (var n = MSP.Action.UNASSIGNED; n <= MSP.Action.LAND; n += (MSP.Action)1) {
 	         wp_hash.insert(get_wpname(n), n);
             }
         }

@@ -17,8 +17,7 @@ using Gtk;
  * (c) Jonathan Hudson <jh+mwptools@daria.co.uk>
  */
 
-public class  OTXDialog : Object
-{
+public class  OTXDialog : Object {
     enum Column {
         IDX,
         STAMP,

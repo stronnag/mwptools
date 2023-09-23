@@ -16,8 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-public class MWSerial : Object
-{
+public class MWSerial : Object {
 
     public int fd {private set; get;}
     private IOChannel io_read;
@@ -41,14 +40,12 @@ public class MWSerial : Object
         {null}
     };
 
-    public MWSerial()
-    {
+    public MWSerial() {
         available = false;
         fd = -1;
     }
 
-    private void setup_reader(int fd)
-    {
+    private void setup_reader(int fd) {
         try {
             io_read = new IOChannel.unix_new(fd);
             if(io_read.set_encoding(null) != IOStatus.NORMAL)
@@ -60,57 +57,44 @@ public class MWSerial : Object
         }
     }
 
-    private bool open(string device, int rate)
-    {
+    private bool open(string device, int rate) {
         fd = MwpSerial.open(device, rate);
-        if(fd < 0)
-        {
+        if(fd < 0) {
             uint8 [] sbuf = new uint8[1024];
             var lasterr=Posix.errno;
             var s = MwpSerial.error_text(lasterr, sbuf, 1024);
             stderr.printf("%s (%d)\n", s, lasterr);
             fd = -1;
             available = false;
-        }
-        else
-        {
+        } else {
             available = true;
             setup_reader(fd);
             nchars = lchars = 0;
-            if(tosecs != 0)
-            {
+            if(tosecs != 0) {
                 Timeout.add_seconds(tosecs, () => {
-                        if(nchars > 0 && (nchars == lchars))
-                        {
+                        if(nchars > 0 && (nchars == lchars)) {
                             stderr.printf("Exit after %u bytes\n", nchars);
                             loop.quit();
                             return false;
-                        }
-                        else
-                        {
+                        } else {
                             lchars = nchars;
                             return true;
                         }
                     });
-
             }
         }
         return available;
     }
 
-    ~MWSerial()
-    {
+    ~MWSerial() {
         if(fd != -1)
             close();
     }
 
-    public void close()
-    {
+    public void close() {
         available=false;
-        if(fd != -1)
-        {
-            if(tag > 0)
-            {
+        if(fd != -1) {
+            if(tag > 0) {
                 Source.remove(tag);
             }
             try  { io_read.shutdown(false); } catch {}
@@ -122,18 +106,14 @@ public class MWSerial : Object
     private bool device_read(IOChannel gio, IOCondition cond) {
         uint8 buf[2048];
         size_t res;
-        if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0)
-        {
+        if((cond & (IOCondition.HUP|IOCondition.ERR|IOCondition.NVAL)) != 0) {
             available = false;
             return false;
-        }
-        else
-        {
+        } else {
             res = Posix.read(fd,buf,2048);
             if(res < 0)
                 return false;
-            else
-            {
+            else {
                 nchars += (uint)res;
                 Posix.write(1, buf, res);
             }
@@ -141,13 +121,11 @@ public class MWSerial : Object
         return true;
     }
 
-    public bool tty_open(string device, int brate)
-    {
+    public bool tty_open(string device, int brate) {
         string [] parts;
 
         parts = device.split ("@");
-        if(parts.length == 2)
-        {
+        if(parts.length == 2) {
             device = parts[0];
             brate = int.parse(parts[1]);
         }
@@ -156,36 +134,29 @@ public class MWSerial : Object
         return available;
     }
 
-    public static int main(string[] args)
-    {
+    public static int main(string[] args) {
         try {
             var opt = new OptionContext("");
             opt.set_help_enabled(true);
             opt.add_main_entries(options, null);
             opt.parse(ref args);
-        }
-        catch (OptionError e) {
+        } catch (OptionError e) {
             stderr.printf("Error: %s\n", e.message);
             stderr.printf("Run '%s --help' to see a full list of available "+
                           "options\n", args[0]);
             return 1;
         }
-        if(devname == null)
-        {
-            if(args.length == 2)
-            {
-                devname = args[1];
-            }
-            else
+        if(devname == null) {
+            if(args.length == 2) {
+                devname = args[1] ;
+            } else
                 devname = MwpSerial.default_name();
         }
 
         var msp = new MWSerial();
-        if(msp.tty_open(devname, brate))
-        {
+        if(msp.tty_open(devname, brate)) {
             msp.loop = new MainLoop();
-            if(secs > 0)
-            {
+            if(secs > 0) {
                 Timeout.add_seconds(secs, () => {
                         msp.loop.quit();
                         return false;

@@ -74,8 +74,7 @@ public class SafeHomeMarkers : GLib.Object {
     }
 
     public void set_interactive(bool state) {
-        for(var i = 0; i < SAFEHOMES.maxhomes; i++)
-        {
+        for(var i = 0; i < SAFEHOMES.maxhomes; i++) {
             safept[i].set_draggable(state);
 //            safept[i].set_selectable(state);
         }
@@ -176,11 +175,11 @@ public class  SafeHomeDialog : Object {
         switcher =  new Gtk.Switch();
 
 /*
- * This does not affec the edit display, just the permanence
-		switcher.notify["active"].connect (() => {
-                var state = switcher.get_active();
-                display_homes(state);
-            });
+  This does not affec the edit display, just the permanence
+  switcher.notify["active"].connect (() => {
+  var state = switcher.get_active();
+  display_homes(state);
+  });
 */
         dialog.response.connect((v) => {
 				hide_action();
@@ -232,11 +231,9 @@ public class  SafeHomeDialog : Object {
 
         var tview = new Gtk.TreeView ();
         tview.button_press_event.connect( (event) => {
-                if(event.button == 3)
-                {
+                if(event.button == 3) {
                     var sel = tview.get_selection ();
-                    if(sel.count_selected_rows () == 1)
-                    {
+                    if(sel.count_selected_rows () == 1) {
                         var rows = sel.get_selected_rows(null);
                         Gtk.TreeIter iter;
                         sh_liststore.get_iter (out iter, rows.nth_data(0));
@@ -268,28 +265,22 @@ public class  SafeHomeDialog : Object {
                 sh_liststore.get (iter, Column.ID, &idx);
                 homes[idx].enabled = !homes[idx].enabled;
                 sh_liststore.set (iter, Column.STATUS, homes[idx].enabled);
-                if(homes[idx].enabled)
-                {
-                    if (homes[idx].lat == 0 && homes[idx].lon == 0)
-                    {
+                if(homes[idx].enabled) {
+                    if (homes[idx].lat == 0 && homes[idx].lon == 0) {
                         set_default_loc(idx);
                         sh_liststore.set (iter,
                                           Column.LAT, homes[idx].lat,
                                           Column.LON, homes[idx].lon);
                     }
                     shmarkers.show_safe_home(idx, homes[idx]);
-                }
-                else
-                {
+                } else {
                     shmarkers.set_safe_colour(idx, false);
                 }
             });
 
         var lacell = new Gtk.CellRendererText ();
 
-        tview.insert_column_with_attributes (-1, "Latitude",
-                                             lacell,
-                                             "text", Column.LAT);
+        tview.insert_column_with_attributes (-1, "Latitude", lacell, "text", Column.LAT);
 
         var col =  tview.get_column(Column.LAT);
         col.set_cell_data_func(lacell, (col,_cell,model,iter) => {
@@ -302,9 +293,7 @@ public class  SafeHomeDialog : Object {
 
         var locell = new Gtk.CellRendererText ();
 
-        tview.insert_column_with_attributes (-1, "Longitude",
-                                             locell,
-                                            "text", Column.LON);
+        tview.insert_column_with_attributes (-1, "Longitude", locell, "text", Column.LON);
         col =  tview.get_column(Column.LON);
         col.set_cell_data_func(locell, (col,_cell,model,iter) => {
                 GLib.Value v;
@@ -321,8 +310,7 @@ public class  SafeHomeDialog : Object {
         tbox.set_show_close_button(true);
 
         Gtk.TreeIter iter;
-        for(var i = 0; i < SAFEHOMES.maxhomes; i++)
-        {
+        for(var i = 0; i < SAFEHOMES.maxhomes; i++) {
             sh_liststore.append (out iter);
             sh_liststore.set (iter,
                               Column.ID, i,
@@ -341,20 +329,17 @@ public class  SafeHomeDialog : Object {
 		dialog.hide();
 	}
 
-	public void online_change(uint32 v)
-    {
+	public void online_change(uint32 v) {
         var sens = (v >= MWP.FCVERS.hasSAFEAPI); //.0x020700
         aq_fcs.set_enabled(sens);
         aq_fcl.set_enabled(sens);
     }
 
-    public SafeHome get_home(uint8 idx)
-    {
+    public SafeHome get_home(uint8 idx) {
         return homes[idx];
     }
 
-    private void row_menu(Gdk.EventButton e, Gtk.TreeIter iter)
-    {
+    private void row_menu(Gdk.EventButton e, Gtk.TreeIter iter) {
         var idx = 0;
         sh_liststore.get (iter, Column.ID, &idx);
         var marker_menu = new Gtk.Menu ();
@@ -383,19 +368,16 @@ public class  SafeHomeDialog : Object {
         marker_menu.popup_at_pointer(e);
     }
         /*
-    private void set_menu_state(string action, bool state)
-    {
+    private void set_menu_state(string action, bool state) {
         var ac = window.lookup_action(action) as SimpleAction;
         ac.set_enabled(state);
     }
         */
-    public void receive_safehome(uint8 idx, SafeHome shm)
-    {
+    public void receive_safehome(uint8 idx, SafeHome shm) {
         refresh_home(idx,  shm.enabled, shm.lat, shm.lon);
     }
 
-    private void clear_item(int idx, Gtk.TreeIter iter)
-    {
+    private void clear_item(int idx, Gtk.TreeIter iter) {
         homes[idx].enabled = false;
         homes[idx].lat = 0;
         homes[idx].lon = 0;
@@ -406,8 +388,7 @@ public class  SafeHomeDialog : Object {
         shmarkers.hide_safe_home(idx);
     }
 
-    public void set_view(Champlain.View v)
-    {
+    public void set_view(Champlain.View v) {
         view = v;
         shmarkers = new SafeHomeMarkers(v);
         shmarkers.safept_move.connect((idx,la,lo) => {
@@ -424,10 +405,8 @@ public class  SafeHomeDialog : Object {
             });
     }
 
-    public void pop_menu(Gdk.EventButton e)
-    {
-        if(pop_idx != -1)
-        {
+    public void pop_menu(Gdk.EventButton e) {
+        if(pop_idx != -1) {
             var idx = pop_idx;
             var marker_menu = new Gtk.Menu ();
             var item = new Gtk.MenuItem.with_label ("Toggle State");
@@ -460,32 +439,23 @@ public class  SafeHomeDialog : Object {
         pop_idx = -1;
     }
 
-
-    private void set_default_loc(int idx)
-    {
+    private void set_default_loc(int idx) {
         homes[idx].lat = view.get_center_latitude();
         homes[idx].lon = view.get_center_longitude();
     }
 
-    private void read_file()
-    {
+    private void read_file() {
         FileStream fs = FileStream.open (filename, "r");
-        if(fs == null)
-        {
+        if(fs == null) {
             return;
         }
         string s;
-
-        while((s = fs.read_line()) != null)
-        {
-            if(s.has_prefix("safehome "))
-            {
+        while((s = fs.read_line()) != null) {
+            if(s.has_prefix("safehome ")) {
                 var parts = s.split_set(" ");
-                    if(parts.length == 5)
-                    {
+                    if(parts.length == 5) {
                         var idx = int.parse(parts[1]);
-                        if (idx >= 0 && idx < SAFEHOMES.maxhomes)
-                        {
+                        if (idx >= 0 && idx < SAFEHOMES.maxhomes) {
                             var ena = (parts[2] == "1") ? true : false;
                             var lat = double.parse(parts[3]) /10000000.0;
                             var lon = double.parse(parts[4]) /10000000.0;
@@ -496,8 +466,7 @@ public class  SafeHomeDialog : Object {
         }
     }
 
-    private void refresh_home(int idx, bool ena, double lat, double lon)
-    {
+    private void refresh_home(int idx, bool ena, double lat, double lon) {
         homes[idx].enabled = ena;
         homes[idx].lat = lat;
         homes[idx].lon = lon;
@@ -507,8 +476,7 @@ public class  SafeHomeDialog : Object {
                               Column.STATUS, homes[idx].enabled,
                               Column.LAT, homes[idx].lat,
                               Column.LON, homes[idx].lon);
-        if(switcher.active)
-        {
+        if(switcher.active) {
             if(homes[idx].lat != 0 && homes[idx].lon != 0)
                 shmarkers.show_safe_home(idx, homes[idx]);
             else
@@ -516,38 +484,29 @@ public class  SafeHomeDialog : Object {
         }
     }
 
-    private void display_homes(bool state)
-    {
-        for (var idx = 0; idx < SAFEHOMES.maxhomes; idx++)
-        {
-            if(state)
-            {
-                if(homes[idx].lat != 0 && homes[idx].lon != 0)
-                {
+    private void display_homes(bool state) {
+        for (var idx = 0; idx < SAFEHOMES.maxhomes; idx++) {
+            if(state) {
+                if(homes[idx].lat != 0 && homes[idx].lon != 0) {
                     shmarkers.show_safe_home(idx, homes[idx]);
                 }
-            }
-            else
+            } else
                 shmarkers.hide_safe_home(idx);
         }
     }
 
-    public void load_homes(string fn, bool disp)
-    {
+    public void load_homes(string fn, bool disp) {
         filename = fn;
         read_file();
-        if (disp)
-        {
+        if (disp) {
             display_homes(true);
             switcher.set_active(true);
         }
     }
 
-    private void write_out(FileStream fs)
-    {
+    private void write_out(FileStream fs) {
         var idx = 0;
-        foreach (var h in homes)
-        {
+        foreach (var h in homes) {
             var ena = (h.enabled) ? 1 : 0;
             fs.printf("safehome %d %d %d %d\n", idx, ena,
                       (int)(h.lat*10000000), (int)(h.lon*10000000));
@@ -555,10 +514,8 @@ public class  SafeHomeDialog : Object {
         }
     }
 
-    private void save_file()
-    {
-        if(FileUtils.test(filename, FileTest.EXISTS))
-        {
+    private void save_file() {
+        if(FileUtils.test(filename, FileTest.EXISTS)) {
             string []lines = {};
             string s;
             bool written = false;
@@ -568,18 +525,13 @@ public class  SafeHomeDialog : Object {
                 lines += s;
 
             fs = FileStream.open (filename, "w");
-            foreach (var l in lines)
-            {
-                if(l.has_prefix("safehome "))
-                {
-                    if (written == false)
-                    {
+            foreach (var l in lines) {
+                if(l.has_prefix("safehome ")) {
+                    if (written == false) {
                         write_out(fs);
                         written = true;
                     }
-                }
-                else
-                {
+                } else {
                     fs.puts(l);
                     fs.puts("\n");
                 }
@@ -593,8 +545,7 @@ public class  SafeHomeDialog : Object {
         }
     }
 //current_folder_changed ()
-    private void run_chooser(Gtk.FileChooserAction action, Gtk.Window window)
-    {
+    private void run_chooser(Gtk.FileChooserAction action, Gtk.Window window) {
         Gtk.FileChooserDialog fc = new Gtk.FileChooserDialog (
             "Safehome definition",
             window, action,
@@ -624,8 +575,7 @@ public class  SafeHomeDialog : Object {
                     if (action == Gtk.FileChooserAction.OPEN) {
                         load_homes(filename, switcher.active);
                     }
-                    else if (result == Gtk.ResponseType.ACCEPT)
-                    {
+                    else if (result == Gtk.ResponseType.ACCEPT) {
                         save_file();
                     }
                 }
@@ -635,10 +585,8 @@ public class  SafeHomeDialog : Object {
         fc.show();
     }
 
-    public void show(Gtk.Window w)
-    {
-        if(!visible)
-        {
+    public void show(Gtk.Window w) {
+        if(!visible) {
             visible = true;
             dialog.show_all ();
             shmarkers.set_interactive(true);

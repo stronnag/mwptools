@@ -30,8 +30,7 @@ const OptionEntry[] options = {
 
 static MainLoop ml;
 
-public struct RadarPlot
-{
+public struct RadarPlot {
     uint8 state;
     double latitude;
     double longitude;
@@ -42,8 +41,7 @@ public struct RadarPlot
     uint lasttick;
 }
 
-public class RadarSim : Object
-{
+public class RadarSim : Object {
     private RadarPlot []radar_plot;
     private uint8 id;
     private bool quit;
@@ -59,25 +57,19 @@ public class RadarSim : Object
     private bool init = false;
     private uint8 variant;
 
-    public RadarSim()
-    {
-        if(stale != null)
-        {
+    public RadarSim() {
+        if(stale != null) {
             var parts = stale.split(":");
-            if(parts.length == 3)
-            {
+            if(parts.length == 3) {
                 var si = int.parse(parts[0]);
-                if (si >= 0 && si < maxradar)
-                {
+                if (si >= 0 && si < maxradar) {
                     int ss;
                     int se;
 
                     ss = int.parse(parts[1]);
                     se = int.parse(parts[2]);
-                    if(ss > 0)
-                    {
-                        if(se > si)
-                        {
+                    if(ss > 0) {
+                        if(se > si) {
                             staleid = si;
                             start_stale = ss*1000;
                             end_stale = se*1000;
@@ -92,14 +84,11 @@ public class RadarSim : Object
 
         radar_plot = new RadarPlot[maxradar];
 
-        if(llstr != null)
-        {
+        if(llstr != null) {
             string[] delims =  {" ",","};
-            foreach (var delim in delims)
-            {
+            foreach (var delim in delims) {
                 var parts = llstr.split(delim);
-                if(parts.length == 2)
-                {
+                if(parts.length == 2) {
                     hlat = DStr.strtod(parts[0],null);
                     hlon = DStr.strtod(parts[1],null);
                     break;
@@ -108,19 +97,16 @@ public class RadarSim : Object
         }
     }
 
-    public void start_sim()
-    {
+    public void start_sim() {
         open_serial();
     }
 
-    private void setup_radar()
-    {
+    private void setup_radar() {
         rand  = new Rand();
         id = 0;
         quit = false;
         double  angle = 360.0 / maxradar;
-        for (var i = 0; i < maxradar; i++)
-        {
+        for (var i = 0; i < maxradar; i++) {
             radar_plot[i].state = 0;
             radar_plot[i].latitude = hlat;
             radar_plot[i].longitude = hlon;
@@ -132,8 +118,7 @@ public class RadarSim : Object
         }
     }
 
-    public void run_radar_msgs()
-    {
+    public void run_radar_msgs() {
         var to = 500 / maxradar;
         if (to < 100)
             to = 100; // LoRa xmit c. 70ms + buffer
@@ -170,9 +155,7 @@ public class RadarSim : Object
                     tmp = 0;
                 radar_plot[id].lq = tmp;
 
-                if(!(staleid != -1 && id == (uint8)staleid &&
-                    rtime > start_stale && rtime < end_stale))
-                {
+                if(!(staleid != -1 && id == (uint8)staleid && rtime > start_stale && rtime < end_stale)) {
                     transmit_radar(radar_plot[id]);
                 }
 
@@ -188,8 +171,7 @@ public class RadarSim : Object
                     msp.send_command(MSP.Cmds.ANALOG, null, 0);
 
                 id += 1;
-                if (id == maxradar)
-                {
+                if (id == maxradar) {
                     id = 0;
                     if (variant == 'I')
                         msp.send_command(MSP.Cmds.RAW_GPS, null, 0);
@@ -198,14 +180,11 @@ public class RadarSim : Object
             });
     }
 
-    public void handle_radar(MSP.Cmds cmd, uint8[] raw, uint len,
-                              uint8 xflags, bool errs)
-    {
+    public void handle_radar(MSP.Cmds cmd, uint8[] raw, uint len, uint8 xflags, bool errs) {
         if (errs)
             stderr.printf("Error!!!!!!!!! serial\n");
 
-        switch(cmd)
-        {
+        switch(cmd) {
             case MSP.Cmds.NAME:
                 init = false;
                 raw[len] = 0;
@@ -240,8 +219,7 @@ public class RadarSim : Object
                 SEDE.deserialise_i32(&raw[6], out ilon);
                 hlat = ((double)ilat) / 1e7;
                 hlon = ((double)ilon) / 1e7;
-                stderr.printf("GPS %.6f %.6f, %u sats, %ud fix (%u)\n",
-                              hlat, hlon, raw[1], raw[0]+1, len);
+                stderr.printf("GPS %.6f %.6f, %u sats, %ud fix (%u)\n", hlat, hlon, raw[1], raw[0]+1, len);
                 if (init == false) {
                     stderr.printf("Start sim tracks\n");
                     start_sim_msgs();
@@ -256,22 +234,19 @@ public class RadarSim : Object
         }
     }
 
-    private void start_sim_msgs()
-    {
+    private void start_sim_msgs() {
         setup_radar();
         run_radar_msgs();
         init = true;
     }
 
-    private void open_serial()
-    {
+    private void open_serial() {
         msp = new MWSerial();
         msp.set_mode(MWSerial.Mode.NORMAL);
         stderr.printf("Set up serial %s\n", dev);
         bool res;
         string estr;
-        if((res = msp.open(dev, baud, out estr)) == true)
-        {
+        if((res = msp.open(dev, baud, out estr)) == true) {
             msp.serial_lost.connect(() => {
                     stderr.printf("Lost connection\n");
                     if(tid > 0) {
@@ -293,8 +268,7 @@ public class RadarSim : Object
         }
     }
 
-    private void transmit_radar(RadarPlot r)
-    {
+    private void transmit_radar(RadarPlot r) {
         uint8 buf[128];
         uint8 *p = buf;
         *p++ = id;
@@ -309,8 +283,7 @@ public class RadarSim : Object
     }
 }
 
-int main (string[] args)
-{
+int main (string[] args) {
     dalt = ALT;
     dspeed = SPD;
     maxrange = MAXRANGE;
@@ -320,10 +293,8 @@ int main (string[] args)
 
     string []devs = {"/dev/ttyUSB0","/dev/ttyACM0"};
 
-    foreach(var d in devs)
-    {
-        if(Posix.access(d,(Posix.R_OK|Posix.W_OK)) == 0)
-        {
+    foreach(var d in devs) {
+        if(Posix.access(d,(Posix.R_OK|Posix.W_OK)) == 0) {
             dev = d;
             break;
         }
@@ -334,8 +305,7 @@ int main (string[] args)
         opt.set_help_enabled(true);
         opt.add_main_entries(options, null);
         opt.parse(ref args);
-    }
-    catch (OptionError e) {
+    } catch (OptionError e) {
         stderr.printf("Error: %s\n", e.message);
         stderr.printf("Run '%s --help' to see a full list of available "+
                       "options\n", args[0]);
@@ -348,8 +318,7 @@ int main (string[] args)
     if (args.length > 1)
         dev = args[1];
 
-    if(dev == null)
-    {
+    if(dev == null) {
         stdout.puts("No device found\n");
         return 0;
     }

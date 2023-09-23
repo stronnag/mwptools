@@ -17,12 +17,9 @@ public class BingElevations : Object {
             var parser = new Json.Parser ();
             parser.load_from_data (s);
             var root = parser.get_root ().get_object ();
-            foreach (var rsnode in root.get_array_member ("resourceSets").get_elements ())
-            {
+            foreach (var rsnode in root.get_array_member ("resourceSets").get_elements ()) {
                 var rsitem = rsnode.get_object ();
-                foreach (var rxnode in
-                         rsitem.get_array_member ("resources").get_elements ())
-                {
+                foreach (var rxnode in rsitem.get_array_member ("resources").get_elements ()) {
                     var rxitem = rxnode.get_object ();
                     var elist = rxitem.get_array_member ("elevations");
                     elist.foreach_element ((a,i,n) => {

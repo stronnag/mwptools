@@ -16,8 +16,7 @@ namespace UriParser {
 	public UriParts? parse(string url) {
 		UriParts u = {};
 #if USE_URIPARSE
-        try
-        {
+        try {
             var up = Uri.parse(url, UriFlags.HAS_PASSWORD);
             u.host = up.get_host();
             u.port = up.get_port();

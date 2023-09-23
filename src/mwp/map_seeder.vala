@@ -113,10 +113,8 @@ public class TileUtil : Object {
     }
 
 /*
-    public void dump_tl()
-    {
-        foreach(var m in tl)
-        {
+    public void dump_tl() {
+        foreach(var m in tl) {
             MWPLog.message("%d %d %d %d %d\n", m.z, m.sx, m.sy, m.ex, m.ey);
         }
     }
@@ -308,19 +306,15 @@ public class TileUtil : Object {
     }
 }
 #if TESTSEEDER
-int main (string[] args)
-{
+int main (string[] args) {
     var t  = new TileUtil();
     t.set_range(50.909728963857546, -1.5354330310947262,
                50.91093629762021, -1.533469266105385);
 
-    if(args[1] == "ms")
-    {
+    if(args[1] == "ms") {
         t.set_zooms(15,19);
         t.set_misc("Bing", "http://h0.ortho.tiles.virtualearth.net/tiles/h#Q#.jpeg?g=131");
-    }
-    else
-    {
+    } else {
         t.set_zooms(15,17);
         t.set_misc("localcache",
                    "http://ugeo/mapcache/tms/1.0.0/nsites@GoogleMapsCompatible/#Z#/#X#/#TMSY#.png");
@@ -341,8 +335,6 @@ int main (string[] args)
             t.start_seeding();
             return false;
         });
-
-
         app.run(/* */);
     return 0;
 }

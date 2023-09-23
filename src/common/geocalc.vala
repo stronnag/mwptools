@@ -16,30 +16,24 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-public class Geo
-{
-    private static double d2r(double d)
-    {
+public class Geo {
+    private static double d2r(double d) {
         return d*(Math.PI/180.0);
     }
 
-    private static double r2d(double r)
-    {
+    private static double r2d(double r) {
         return r/(Math.PI/180.0);
     }
 
-    private static double nm2r(double nm)
-    {
+    private static double nm2r(double nm) {
         return (Math.PI/(180.0*60.0))*nm;
     }
 
-    private static double r2nm(double r)
-    {
+    private static double r2nm(double r) {
         return ((180*60)/Math.PI)*r;
     }
 
-    public static void csedist(double lat1, double lon1, double lat2, double lon2, out double d, out double cse)
-    {
+    public static void csedist(double lat1, double lon1, double lat2, double lon2, out double d, out double cse) {
         lat1 = d2r(lat1);
         lon1 = d2r(lon1);
         lat2 = d2r(lat2);
@@ -57,17 +51,14 @@ public class Geo
     }
 
     public static void posit (double lat1, double lon1, double cse, double dist,
-                                out double lat, out double lon,
-                                bool rhumb = false)
-    {
+							  out double lat, out double lon, bool rhumb = false) {
 
         double tc = d2r(cse);
         double rlat1= d2r(lat1);
         double rdist = nm2r(dist);
         double dphi,q,dlon;
 
-        if (rhumb == true)
-        {
+        if (rhumb == true) {
                 // Use Rhumb lines
             dphi = 0.0;
             lat= rlat1+rdist*Math.cos(tc);
@@ -82,9 +73,7 @@ public class Geo
                 q= (lat-rlat1)/dphi;
             dlon = rdist*Math.sin(tc)/q;
             lon = ((d2r(lon1)+dlon+Math.PI) % (2*Math.PI)) - Math.PI;
-        }
-        else
-        {
+        } else {
             lat = Math.asin(Math.sin(rlat1)*Math.cos(rdist)+Math.cos(rlat1)* Math.sin(rdist)*Math.cos(tc));
             dlon = Math.atan2(Math.sin(tc)*Math.sin(rdist)*Math.cos(rlat1),
                               Math.cos(rdist)-Math.sin(rlat1)*Math.sin(lat));

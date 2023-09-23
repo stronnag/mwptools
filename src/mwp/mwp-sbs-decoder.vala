@@ -81,16 +81,14 @@ public class SbsReader :Object {
 #if TEST
 
 namespace MWPLog {
-	public static void message(string format, ...)
-    {
+	public static void message(string format, ...) {
                 var args = va_list();
         stderr.vprintf(format, args);
         stderr.flush();
     }
 }
 
-public struct RadarPlot
-{
+public struct RadarPlot {
     public uint id;
     public string name;
     public double latitude;
@@ -110,8 +108,7 @@ public SList<RadarPlot?> radar_plot;
 
 public int nticks;
 
-unowned RadarPlot? find_radar_data(uint id)
-{
+unowned RadarPlot? find_radar_data(uint id) {
 	SearchFunc<RadarPlot?,uint>  plot_search = (a,b) =>  {
 		return (int) (a.id > b) - (int) (a.id < b);
 	};
@@ -168,8 +165,7 @@ unowned RadarPlot? decode_sbs(string[] p) {
 	return ri;
 }
 
-void main (string[] args)
-{
+void main (string[] args) {
 	MainLoop ml = null;
 	var uri = (args.length > 1) ? args[1] : "sbs://";
 

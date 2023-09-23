@@ -29,8 +29,7 @@ using Clutter;
 using Champlain;
 using GtkChamplain;
 
-public class Craft : GLib.Object
-{
+public class Craft : GLib.Object {
     private Champlain.Point ici;
     private Champlain.View view;
     private Champlain.Label icon;
@@ -58,8 +57,7 @@ public class Craft : GLib.Object
     private int stack_size = 0;
     private int mod_points = 0;
 
-    public enum Vehicles
-    {
+    public enum Vehicles {
         ARROW = 0,
         TRI = 1,
         QUADP = 2,
@@ -91,8 +89,7 @@ public class Craft : GLib.Object
         LAST
     }
 
-    private static string[] icons =
-    {
+    private static string[] icons = {
         "arrow.png", //0
         "Tri.png",   //1
         "QuadP.png", // 2
@@ -123,8 +120,7 @@ public class Craft : GLib.Object
         "arrow.png", // 27
     };
 
-    public enum Special
-    {
+    public enum Special {
         HOME = -1,
         PH = -2,
         RTH = -3,
@@ -134,8 +130,7 @@ public class Craft : GLib.Object
         UNDEF = -7,
     }
 
-    public enum RMIcon
-    {
+    public enum RMIcon {
         PH = 1,
         RTH = 2,
         WP = 4,
@@ -144,24 +139,20 @@ public class Craft : GLib.Object
 
 /*
   // sadly, clutter appears not to support this
-    private string get_icon_resource(uint id)
-    {
+    private string get_icon_resource(uint id) {
         StringBuilder sb = new StringBuilder ();
         sb.append("resource://org/mwptools/mwp/pixmaps/");
         sb.append(icons[id]);
         return sb.str;
     }
 */
-
-    public void adjust_z_order(Champlain.Layer l)
-    {
+    public void adjust_z_order(Champlain.Layer l) {
          var pp = l.get_parent();
          pp.set_child_above_sibling(l, path);
          pp.set_child_above_sibling(l, pmlayer);
     }
 
-    public Craft(Champlain.View _view, uint id, bool _trail = true, int _ss = 0, int _mp = 0)
-    {
+    public Craft(Champlain.View _view, uint id, bool _trail = true, int _ss = 0, int _mp = 0) {
         stack_size = _ss;
         mod_points = _mp;
         view = _view;
@@ -195,8 +186,7 @@ public class Craft : GLib.Object
         hmlayer = new Champlain.MarkerLayer();
         pmlayer = new Champlain.MarkerLayer();
 
-        if(trail)
-        {
+        if(trail) {
             view.add_layer (path);
             view.add_layer (hmlayer);
             view.add_layer (pmlayer);
@@ -213,26 +203,19 @@ public class Craft : GLib.Object
         layer.add_marker (icon);
     }
 
-
-    ~Craft()
-    {
+    ~Craft() {
         layer.remove_marker(icon);
     }
 
-    public static bool is_fw(uint id)
-    {
+    public static bool is_fw(uint id) {
         return !Craft.is_mr(id);
     }
 
-    public static  bool is_mr(uint id)
-    {
-        return !(id == Vehicles.FLYING_WING ||
-                 id ==Vehicles. AIRPLANE ||
-                 id == Vehicles.CUSTOM_AIRPLANE);
+    public static  bool is_mr(uint id) {
+        return !(id == Vehicles.FLYING_WING || id ==Vehicles. AIRPLANE || id == Vehicles.CUSTOM_AIRPLANE);
     }
 
-    public void set_icon(uint id)
-    {
+    public void set_icon(uint id) {
         layer.remove_marker (icon);
         if(id >= Craft.Vehicles.LAST)
             id = Craft.Vehicles.QUADX;
@@ -253,10 +236,8 @@ public class Craft : GLib.Object
         layer.add_marker (icon);
     }
 
-    public void init_trail()
-    {
-        if(trail)
-        {
+    public void init_trail() {
+        if(trail) {
             hmlayer.remove_all();
             pmlayer.remove_all();
             path.remove_all();
@@ -267,43 +248,34 @@ public class Craft : GLib.Object
         }
     }
 
-    public void remove_marker()
-    {
+    public void remove_marker() {
         park();
     }
 
-    public void park()
-    {
+    public void park() {
         set_pix_pos(icon, 40,40);
         icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, 0);
         init_trail();
     }
 
-    public void get_pos(out double lat, out double lon)
-    {
+    public void get_pos(out double lat, out double lon) {
         lat = icon.get_latitude();
         lon = icon.get_longitude();
     }
 
-    public void set_lat_lon (double lat, double lon, double cse)
-    {
-        if(npath == 0)
-        {
+    public void set_lat_lon (double lat, double lon, double cse) {
+        if(npath == 0) {
             ici.show();
         }
-        if(trail)
-        {
+        if(trail) {
             Champlain.Point marker;
             marker = new Champlain.Point.full(5.0, path_colour);
             marker.set_location (lat,lon);
-            if(mod_points == 0 || (npath % mod_points) == 0)
-            {
+            if(mod_points == 0 || (npath % mod_points) == 0) {
                 pmlayer.add_marker(marker);
-                if(stack_size > 0)
-                {
+                if(stack_size > 0) {
                     mpath++;
-                    if(mpath > stack_size)
-                    {
+                    if(mpath > stack_size) {
                         var nds = pmlayer.get_markers();
                         pmlayer.remove_marker(nds.last().data);
                         mpath--;
@@ -318,34 +290,26 @@ public class Craft : GLib.Object
         npath++;
     }
 
-    private void set_pix_pos (Champlain.Label l, int x, int y)
-    {
+    private void set_pix_pos (Champlain.Label l, int x, int y) {
         var lat = view.y_to_latitude(y);
         var lon = view.x_to_longitude(x);
         l.set_location (lat, lon);
     }
 
-    public void set_normal()
-    {
-//        MWPLog.message("craft: set normal\n");
+    public void set_normal() {
         remove_special(RMIcon.ALL);
     }
 
-    public void remove_special(RMIcon rmflags)
-    {
-//        MWPLog.message("craft: remove special %x\n", rmflags);
-        if(((rmflags & RMIcon.PH) != 0) && posp != null)
-        {
+    public void remove_special(RMIcon rmflags) {
+        if(((rmflags & RMIcon.PH) != 0) && posp != null) {
             pmlayer.remove_marker(posp);
             posp = null;
         }
-        if(((rmflags & RMIcon.RTH) != 0) && rthp != null)
-        {
+        if(((rmflags & RMIcon.RTH) != 0) && rthp != null) {
             pmlayer.remove_marker(rthp);
             rthp = null;
         }
-        if(((rmflags & RMIcon.WP) != 0) && wpp != null)
-        {
+        if(((rmflags & RMIcon.WP) != 0) && wpp != null) {
             pmlayer.remove_marker(wpp);
             wpp = null;
         }
@@ -372,8 +336,7 @@ public class Craft : GLib.Object
                 m = homep;
                 break;
             case Special.PH:
-                if(posp == null)
-                {
+                if(posp == null) {
                     posp = new Champlain.Label.with_text ("∞", "Sans 10",null,null);
                     posp.set_alignment (Pango.Alignment.RIGHT);
                     colour = { 0x4c, 0xfe, 0, 0xc8};
@@ -386,8 +349,7 @@ public class Craft : GLib.Object
                 path_colour = trk_green;
                 break;
             case Special.RTH:
-                if(rthp == null)
-                {
+                if(rthp == null) {
                     rthp = new Champlain.Label.with_text ("⚑", "Sans 10",null,null);
                     rthp.set_alignment (Pango.Alignment.RIGHT);
                     colour = { 0xfa, 0xfa, 0, 0xc8};
@@ -400,8 +362,7 @@ public class Craft : GLib.Object
                 path_colour = trk_yellow;
                 break;
             case Special.WP:
-                if(wpp == null)
-                {
+                if(wpp == null) {
                     wpp = new Champlain.Label.with_text ("☛", "Sans 10",null,null);
                     wpp.set_alignment (Pango.Alignment.RIGHT);
                     colour = { 0xff, 0xff, 0xff, 0xff};

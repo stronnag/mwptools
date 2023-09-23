@@ -1,5 +1,4 @@
-public class Flashdl : Object
-{
+public class Flashdl : Object {
     private static int baud = 115200;
     private static string dev;
     private static string fname;
@@ -35,15 +34,12 @@ public class Flashdl : Object
     time_t et;
 
 
-    Flashdl()
-    {
+    Flashdl() {
         MwpTermCap.init();
     }
 
-    private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, uint8 xflags, bool errs)
-    {
-         if(errs == true)
-         {
+    private void handle_serial(MSP.Cmds cmd, uint8[] raw, uint len, uint8 xflags, bool errs) {
+         if(errs == true) {
              if (cmd == MSP.Cmds.BLACKBOX_CONFIG)
                  MWPLog.message("No dataflash\n");
              else
@@ -51,12 +47,10 @@ public class Flashdl : Object
              ml.quit();
          }
 
-         switch(cmd)
-         {
+         switch(cmd) {
              case MSP.Cmds.FC_VARIANT:
                  var fc_var = (string)raw[0:4];
-                 switch(fc_var)
-                 {
+                 switch(fc_var) {
                      case "CLFL":
                      case "BTFL":
                      case "INAV":
@@ -84,10 +78,8 @@ public class Flashdl : Object
                         msp.send_command(MSP.Cmds.DATAFLASH_ERASE,null,0);
                     else
                         msp.send_command(MSP.Cmds.DATAFLASH_SUMMARY,null,0);
-                else
-                {
-                    if (cmd == MSP.Cmds.BLACKBOX_CONFIGv2)
-                    {
+                else {
+                    if (cmd == MSP.Cmds.BLACKBOX_CONFIGv2) {
                         MWPLog.message("No dataflash %u\n", cmd);
                         ml.quit();
                     }
@@ -97,25 +89,18 @@ public class Flashdl : Object
 
             case MSP.Cmds.DATAFLASH_SUMMARY:
                 var isready = raw[0];
-                if(echeck)
-                {
-                    if(isready == 1)
-                    {
+                if(echeck) {
+                    if(isready == 1) {
                         MWPLog.message("Completed\n");
                         ml.quit();
-                    }
-                    else
+                    } else
                         schedule_echeck();
-                }
-                else
-                {
+                } else {
                     SEDE.deserialise_u32(raw+5, out fsize);
                     SEDE.deserialise_u32(raw+9, out used);
 
-                    if(test)
-                    {
+                    if(test) {
                         string s2=null;
-
                         if((s2 = Environment.get_variable("TEST_USED")) != null)
                            used = int.parse(s2);
                         else
@@ -126,26 +111,22 @@ public class Flashdl : Object
                     MWPLog.message ("Data Flash %u /  %u (%u%%)\n", used, fsize, pct);
                     if(used == 0 || info)
                         ml.quit();
-                    else
-                    {
+                    else {
                         efsize = esize(used);
                         time_t(out st);
                         if(fname == null)
                             fname  = "BBL_%s.TXT".printf(Time.local(st).format("%F_%H%M%S"));
-                        if (dname != null)
-                        {
+                        if (dname != null) {
                             if(!FileUtils.test (dname, FileTest.EXISTS))
                                 DirUtils.create_with_parents (dname, 0755);
                             fname = Path.build_filename (dname, fname);
                         }
 
                         fp = FileStream.open (fname, "w");
-                        if(fp == null)
-                        {
+                        if(fp == null) {
                             MWPLog.message("Failed to open file [%s]\n".printf(fname));
                             ml.quit();
-                        }
-                        else
+                        } else
                             MWPLog.message("Downloading to %s\n".printf(fname));
 
                         send_data_read(0, ((used > 4096) ? 4096 : (uint16)used));
@@ -178,20 +159,15 @@ public class Flashdl : Object
                                remtime, MwpTermCap.ceol);
 
                  var rem  = used - bread;
-                 if (rem > 0)
-                 {
+                 if (rem > 0) {
                      send_data_read(bread, (rem > 4096) ? 4096 : (uint16)rem);
-                 }
-                 else
-                 {
+                 } else {
                      stderr.printf("%s\n", MwpTermCap.cnorm);
                      MWPLog.message("%u bytes in %us, %u bytes/s\n", bread, (et-st), rate);
-                     if (erase)
-                     {
+                     if (erase) {
                          MWPLog.message("Start erase\n");
                          msp.send_command(MSP.Cmds.DATAFLASH_ERASE,null,0);
-                     }
-                     else
+                     } else
                          ml.quit();
                  }
                  break;
@@ -204,8 +180,7 @@ public class Flashdl : Object
          }
     }
 
-    private void schedule_echeck()
-    {
+    private void schedule_echeck() {
         echeck = true;
         Timeout.add(1000, () => {
                 msp.send_command(MSP.Cmds.DATAFLASH_SUMMARY,null,0);
@@ -213,20 +188,17 @@ public class Flashdl : Object
             });
     }
 
-    private string esize(uint32 v)
-    {
+    private string esize(uint32 v) {
         string s;
 
         if(v < 1024)
             s = "%uB".printf(v);
-        else
-        {
+        else {
             double d = v;
             d /= 1024.0;
             if (d < 1024)
                 s = "%.1fKB".printf(d);
-            else
-            {
+            else {
                 d /= 1024.0;
                 s = "%.1fMB".printf(d);
             }
@@ -234,8 +206,7 @@ public class Flashdl : Object
         return s;
     }
 
-    private uint32 get_rate()
-    {
+    private uint32 get_rate() {
         time_t(out et);
         uint32 rate;
         var dt = (et - st);
@@ -246,16 +217,14 @@ public class Flashdl : Object
         return rate;
     }
 
-    private void send_data_read(uint32 addr, uint16 needed)
-    {
+    private void send_data_read(uint32 addr, uint16 needed) {
         uint8 buf[6];
         SEDE.serialise_u32(buf, addr);
         SEDE.serialise_u16(&buf[4], needed);
         msp.send_command(MSP.Cmds.DATAFLASH_READ,buf, 6);
     }
 
-    private void init()
-    {
+    private void init() {
         MWPLog.set_time_format("%T");
         ml = new MainLoop();
         msp = new MWSerial();
@@ -277,7 +246,6 @@ public class Flashdl : Object
                 msp.close();
             });
 
-
         msp.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
                 handle_serial(cmd, raw, len, xflags, errs);
             });
@@ -297,40 +265,32 @@ public class Flashdl : Object
             });
     }
 
-    private void open_device(string d)
-    {
-        if(!msp.available)
-        {
+    private void open_device(string d) {
+        if(!msp.available) {
             string estr;
-            if(msp.open(d, baud, out estr) == true)
-            {
+            if(msp.open(d, baud, out estr) == true) {
                 MWPLog.message("Opened %s\n", d);
                 Timeout.add(250, () => {
                         msp.send_command(MSP.Cmds.FC_VARIANT, null, 0);
                         return Source.REMOVE;
                     });
-            }
-            else
-            {
+            } else {
                 MWPLog.message("open failed %s\n", estr);
             }
         }
     }
 
-    private void run()
-    {
+    private void run() {
         ml.run ();
     }
 
-    public static int main (string[] args)
-    {
+    public static int main (string[] args) {
         try {
             var opt = new OptionContext(" - iNav Flash download / erase");
             opt.set_help_enabled(true);
             opt.add_main_entries(options, null);
             opt.parse(ref args);
-        }
-        catch (OptionError e) {
+        } catch (OptionError e) {
             stderr.printf("Error: %s\n", e.message);
             stderr.printf("Run '%s --help' to see a full list of available "+
                           "options\n", args[0]);

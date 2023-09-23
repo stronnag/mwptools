@@ -1,10 +1,8 @@
 using GLib;
 
-namespace UPower
-{
+namespace UPower {
     [DBus (name = "org.freedesktop.UPower")]
-    public interface Base : Object
-    {
+    public interface Base : Object {
         public abstract string daemon_version {owned get;}
         public abstract bool on_battery {get;}
         public abstract void get_display_device(out ObjectPath display_device) throws Error;
@@ -12,8 +10,7 @@ namespace UPower
 
     //     <property type="u" name="WarningLevel" access="read"/>
     [CCode (type_signature = "u")]
-    public enum DeviceWarningLevel
-    {
+    public enum DeviceWarningLevel {
         UNKNOWN = 0,
         NONE = 1,
         DISCHARGING = 2, // UPS ....
@@ -24,8 +21,7 @@ namespace UPower
 
     //  Battery Level (battery_level) 'u'
     [CCode (type_signature = "u")]
-    public enum BatteryLevel
-    {
+    public enum BatteryLevel {
         UNKNOWN = 0,
         NONE, // (the battery does not use a coarse level of battery reporting)
         LOW = 3,
@@ -41,8 +37,7 @@ namespace UPower
   This property is only valid if the property type has the value "battery".
 */
     [CCode (type_signature = "u")]
-    public enum BatteryState
-    {
+    public enum BatteryState {
         UNKNOWN = 0,
         CHARGING,
         DISCHARGING,
@@ -67,15 +62,12 @@ namespace UPower
 */
 
     [DBus (name = "org.freedesktop.DBus.Properties")]
-    public interface Prop : Object
-    {
+    public interface Prop : Object {
         public signal void properties_changed(string iface, HashTable<string,Variant> changed, string[] invalid);
     }
-
-        // Subset of properties needed.
+	// Subset of properties needed.
     [DBus (name = "org.freedesktop.UPower.Device")]
-    public interface Device : Object
-    {
+    public interface Device : Object {
         public abstract double percentage {get;}
         public abstract uint32 state {get;}
         public abstract DeviceWarningLevel warning_level {get;}
@@ -83,46 +75,36 @@ namespace UPower
     }
 }
 
-public class PowerState : Object
-{
+public class PowerState : Object {
     private const string UPOWER_PATH = "/org/freedesktop/UPower";
     private const string UPOWER_NAME = "org.freedesktop.UPower";
     private UPower.Device dev;
     private UPower.Prop prop;
     public signal void host_power_alert(string alert);
 
-    public PowerState()
-    {
+    public PowerState() {
     }
 
-    public bool init()
-    {
+    public bool init() {
         bool ok = false;
         try {
             UPower.Base bas = Bus.get_proxy_sync(BusType.SYSTEM,UPOWER_NAME,UPOWER_PATH);
             ObjectPath objp;
             bas.get_display_device(out objp);
             dev = Bus.get_proxy_sync(BusType.SYSTEM, UPOWER_NAME, objp);
-            if(dev != null)
-            {
+            if(dev != null) {
                 ok = true;
                 prop = Bus.get_proxy_sync(BusType.SYSTEM, UPOWER_NAME, objp);
                 prop.properties_changed.connect( (s,c,i) => {
-                        if (c.contains("Percentage") ||
-                            c.contains("State") ||
-                            c.contains("WarningLevel"))
-                        {
-//                            MWPLog.message("Power: %s / %s / %.0f%%\n", dev.state.to_string(), dev.warning_level.to_string(), dev.percentage);
+                        if (c.contains("Percentage") || c.contains("State") || c.contains("WarningLevel")) {
                             if (dev.state == UPower.BatteryState.DISCHARGING &&
                                 (dev.warning_level == UPower.DeviceWarningLevel.LOW ||
                                  dev.warning_level == UPower.DeviceWarningLevel.CRITICAL ||
-                                 dev.warning_level == UPower.DeviceWarningLevel.ACTION))
-                            {
+                                 dev.warning_level == UPower.DeviceWarningLevel.ACTION)) {
                                 StringBuilder sb = new StringBuilder("Host Power ");
                                 sb.append(battery_warning());
                                 sb.append_printf(", %.0f%%", dev.percentage);
-                                if(dev.time_to_empty > 0)
-                                {
+                                if(dev.time_to_empty > 0) {
                                     var mins = dev.time_to_empty / 60;
                                     var secs = dev.time_to_empty % 60;
                                     sb.append_printf(", %lld:%02lld remaining", mins,secs);
@@ -134,22 +116,18 @@ public class PowerState : Object
             }
         } catch (Error e) {
                 MWPLog.message("UPower: %s\n",e.message);
-        };
+        }
         return ok;
     }
 
-    public string show_status()
-    {
+    public string show_status() {
         return "Host power: %0.f%%, state: %s (%u), warn: %s (%u)".printf(
             dev.percentage, bstate(), dev.state, battery_warning(), dev.warning_level);
     }
 
-
-    public string bstate()
-    {
+    public string bstate() {
         string bstate="";
-        switch(dev.state)
-        {
+        switch(dev.state) {
             case UPower.BatteryState.UNKNOWN:
                 bstate = "Unknown";
                 break;
@@ -175,11 +153,9 @@ public class PowerState : Object
         return bstate;
     }
 
-    public string battery_warning()
-    {
+    public string battery_warning() {
         string warn = "";
-        switch (dev.warning_level)
-        {
+        switch (dev.warning_level) {
             case UPower.DeviceWarningLevel.UNKNOWN:
             case UPower.DeviceWarningLevel.NONE:
                 warn = "None";
@@ -202,11 +178,9 @@ public class PowerState : Object
 }
 
 #if TESTPOWER
-public int main(string[]args)
-{
+public int main(string[]args) {
     var p = new PowerState();
-    if(p.init())
-    {
+    if(p.init()) {
         print("%s\n", p.show_status());
         var loop = new MainLoop();
         loop.run(/* */);

@@ -9,8 +9,7 @@ const OptionEntry[] options = {
     {null}
 };
 
-int main (string[] args)
-{
+int main (string[] args) {
     var ml = new MainLoop();
     MWSerial s;
 
@@ -19,8 +18,7 @@ int main (string[] args)
         opt.set_help_enabled(true);
         opt.add_main_entries(options, null);
         opt.parse(ref args);
-    }
-    catch (OptionError e) {
+    } catch (OptionError e) {
         stderr.printf("Error: %s\n", e.message);
         stderr.printf("Run '%s --help' to see a full list of available "+
                       "options\n", args[0]);
@@ -33,28 +31,23 @@ int main (string[] args)
     s = new MWSerial.forwarder();
     s.serial_lost.connect(() => {
             ml.quit();
-            });
+		});
 
     string estr = null;
-    if(dev != null && (s.open(dev, baud, out estr) == false))
-    {
+    if(dev != null && (s.open(dev, baud, out estr) == false)) {
         MWPLog.message("open failed %s\n", estr);
         return 255;
     }
-
     int fd = s.get_fd();
     var fs  = FileStream.open (infile, "r");
     Timeout.add(10, () => {
             uint8 buf[8];
             var n = fs.read(buf,1);
             stdout.printf("read %d\n", (int)n);
-
-            if (n <= 0)
-            {
+            if (n <= 0) {
                 ml.quit();
                 return false;
-            }
-            else
+            } else
                 Posix.write(fd,buf,n);
             return true;
         });

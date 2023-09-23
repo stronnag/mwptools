@@ -16,8 +16,7 @@ public static int main (string[] args) {
 
     var ser = new MWSerial();
     string estr;
-    if((res = ser.open(dev, brate, out estr)) == true)
-    {
+    if((res = ser.open(dev, brate, out estr)) == true) {
         t.on_exit.connect(() => {
                 Gtk.main_quit();
             });

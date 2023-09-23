@@ -1,14 +1,10 @@
-namespace JsonIO
-{
-    public Mission? [] read_json_file(string fn)
-    {
-        try
-        {
+namespace JsonIO {
+    public Mission? [] read_json_file(string fn) {
+        try {
             string s;
             if(FileUtils.get_contents(fn, out s))
                 return from_json(s);
         } catch {}
-
         return {};
     }
 
@@ -67,8 +63,7 @@ namespace JsonIO
 	}
 
 
-    public Mission? [] from_json(string s)
-    {
+    public Mission? [] from_json(string s) {
 		Mission[] msx = {};
 		try {
 			var parser = new Json.Parser ();
@@ -244,12 +239,10 @@ int main (string[] args) {
         double d;
         int lt;
         var res = ms.calculate_distance(out d, out lt);
-        if (res == true)
-        {
+        if (res == true) {
             var et = (int)(d / 3.0);
             print("calc dist %.1f %ds (%ds)\n",d,et,lt);
-        }
-        else
+        } else
             print("Indeterminate\n");
     }
 	if (args.length == 3)

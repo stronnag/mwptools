@@ -10,22 +10,20 @@ public static int main (string[] args) {
         brate = int.parse(args[2]);
 
     if (args.length > 1)
-    dev = args[1];
+		dev = args[1];
 
     bool res;
 
     var ser = new MWSerial();
     string estr;
-    if((res = ser.open(dev, brate, out estr)) == true)
-    {
+    if((res = ser.open(dev, brate, out estr)) == true) {
         t.on_exit.connect(() => {
                 Gtk.main_quit();
             });
         t.configure_serial(ser);
         t.show_all ();
         Gtk.main ();
-    }
-    else
+    } else
         MWPLog.message("open failed %s\n", estr);
     return 0;
 }

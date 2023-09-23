@@ -7,8 +7,7 @@ const OptionEntry[] options = {
     {null}
 };
 
-int main (string[] args)
-{
+int main (string[] args) {
     var ml = new MainLoop();
     MWSerial s;
 
@@ -37,12 +36,9 @@ int main (string[] args)
         dev = args[1];
 
     s.serial_event.connect((cmd, raw, len, flags, err) => {
-            if(err)
-            {
+            if(err) {
                 errs++;
-            }
-            else
-            {
+            } else {
                 MWPLog.message("%s %u bytes\n", cmd.to_string(), len);
                 msgs++;
             }
@@ -54,14 +50,12 @@ int main (string[] args)
 
 
     string estr = null;
-    if(dev != null && (s.open(dev, baud, out estr) == false))
-    {
+    if(dev != null && (s.open(dev, baud, out estr) == false)) {
         MWPLog.message("open failed %s\n", estr);
         return 255;
     }
 
     Timeout.add_seconds(10, () => {
-
             MWPLog.message("messages %u, errors %u \n", msgs, errs);
             return true;
         });

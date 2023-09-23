@@ -15,10 +15,8 @@ const OptionEntry[] options = {
     {null}
 };
 
-class FCMgr :Object
-{
-    private enum State
-    {
+class FCMgr :Object {
+    private enum State {
         IDLE = 0,
         CLI,
         DIFF,
@@ -30,14 +28,12 @@ class FCMgr :Object
 		VERS
     }
 
-    private enum Mode
-    {
+    private enum Mode {
         GET,
         SET
     }
 
-    private enum Fc
-    {
+    private enum Fc {
         UNKNOWN,
         INAV,
         BF
@@ -66,47 +62,40 @@ class FCMgr :Object
     private bool have_acal = false;
     private bool skip_bbl = false;
 
-    public FCMgr()
-    {
+    public FCMgr() {
         inp = linp = 0;
         state = State.IDLE;
         inbuf = new uint8[1024*1024];
         MwpTermCap.init();
     }
 
-    private void start_calacc()
-    {
+    private void start_calacc() {
         MWPLog.message("Accelerometer calibration started\n");
         msp.send_command(MSP.Cmds.CALIBRATE_ACC, null, 0);
     }
 
-    private void force_exit()
-    {
+    private void force_exit() {
         state = State.EXIT;
         string cmd="exit\n";
         msp.write(cmd.data, cmd.length);
         Timeout.add(250,  () => { ml.quit(); return false;});
     }
 
-    private void start_restore()
-    {
+    private void start_restore() {
         string s;
         Fc _fc = Fc.UNKNOWN;
         lines = {};
         lp = 0;
         FileStream fs = FileStream.open (filename, "r");
-        if(fs == null)
-        {
+        if(fs == null) {
             MWPLog.message("Failed to open %s\n", filename);
             force_exit();
             return;
         }
 
-        while((s = fs.read_line()) != null)
-        {
+        while((s = fs.read_line()) != null) {
                 /* old F1 issue */
-            if(s.contains("set blackbox_rate_num = 231"))
-            {
+            if(s.contains("set blackbox_rate_num = 231")) {
                 MWPLog.message("Skipping bogus BBL settings\n");
                 skip_bbl = true;
             }
@@ -125,8 +114,7 @@ class FCMgr :Object
             if(s.has_prefix("# INAV"))
                 _fc = Fc.INAV;
 
-            if(s.has_prefix("feature TRACE") && noback == false)
-            {
+            if(s.has_prefix("feature TRACE") && noback == false) {
                 MWPLog.message("removing \"feature TRACE\"\n");
                 continue;
             }
@@ -136,15 +124,11 @@ class FCMgr :Object
         }
 
         MWPLog.message("Starting restore: %s\n", filename);
-        if(_fc != Fc.UNKNOWN && fc != _fc)
-        {
+        if(_fc != Fc.UNKNOWN && fc != _fc) {
             MWPLog.message("Refusing to restore incompatible settings\n");
             ml.quit();
-        }
-        else
-        {
-            switch(fc)
-            {
+        } else {
+            switch(fc) {
                 case Fc.INAV:
                     docal = false;
                     break;
@@ -162,8 +146,7 @@ class FCMgr :Object
         }
     }
 
-    private void start_cli()
-    {
+    private void start_cli() {
         string cmd = "#";
         MWPLog.message("Establishing CLI\n");
         inp = linp = 0;
@@ -172,8 +155,7 @@ class FCMgr :Object
         msp.write(cmd.data, cmd.length);
     }
 
-    private void start_diff()
-    {
+    private void start_diff() {
         MWPLog.message("Starting \"diff all\"\n");
         string cmd="diff all\n";
         state = State.DIFF;
@@ -183,21 +165,18 @@ class FCMgr :Object
         msp.write(cmd.data, cmd.length);
     }
 
-    private void start_quit()
-    {
+    private void start_quit() {
         MWPLog.message("Exiting\n");
         logging = false;
         inp = linp = 0;
         force_exit();
     }
 
-    private void start_vers()
-    {
+    private void start_vers() {
         msp.send_command(MSP.Cmds.FC_VERSION, null, 0);
     }
 
-    private void set_save_state()
-    {
+    private void set_save_state() {
         if(docal)
             state = State.CALACC;
         else
@@ -205,8 +184,7 @@ class FCMgr :Object
         trace = 0;
     }
 
-    private void show_progress()
-    {
+    private void show_progress() {
          var pct = 100 * lp / lines.length;
          var sb = new StringBuilder();
          int i;
@@ -219,8 +197,7 @@ class FCMgr :Object
          MWPLog.sputs(s);
     }
 
-    private void start_setlines()
-    {
+    private void start_setlines() {
         bool done = false;
         state = State.SETLINES;
 	// Note: explicit save will save regardless of any errors
@@ -251,8 +228,7 @@ class FCMgr :Object
 			MWPLog.fputs("Done [%u]\n".printf(inp));
             lp = lines.length;
             stderr.printf("%s\n", MwpTermCap.cnorm);
-            if(errors.length > 0)
-            {
+            if(errors.length > 0) {
                 MWPLog.sputs("\007Error(s) in restore\n\007");
                 foreach (var e in errors) {
                     var s = "\t%s\n".printf(e);
@@ -264,18 +240,15 @@ class FCMgr :Object
         }
     }
 
-    private void try_connect()
-    {
+    private void try_connect() {
         cancel_timers();
-        if(msp.available)
-        {
+        if(msp.available) {
             msp.send_command(MSP.Cmds.API_VERSION,null,0);
         }
         etid = Timeout.add_seconds(2,() => {try_connect(); return false;});
     }
 
-    private void reset_filenames()
-    {
+    private void reset_filenames() {
         StringBuilder sb = new StringBuilder(filename);
         var dt = new DateTime.now_local();
         sb.append_printf(".%s", dt.format("%FT%H.%M.%S"));
@@ -290,10 +263,8 @@ class FCMgr :Object
 		}
 	}
 
-	private void next_state()
-    {
-        switch(state)
-        {
+	private void next_state() {
+        switch(state) {
             case State.IDLE:
 				start_vers();
                 break;
@@ -338,21 +309,18 @@ class FCMgr :Object
         }
     }
 
-    private void dump_diff()
-    {
+    private void dump_diff() {
         const string intro="# mwptools / fc-cli dump at %s\n# fc-cli is a toolset # (fc-set, fc-get) to manage\n# iNav / βF CLI diff backup and restore\n# <https://github.com/stronnag/mwptools>\n\n";
         var dt = new DateTime.now_local();
         string fn = (filename == null) ? "/tmp/dump.txt" : filename;
-        int fd = Posix.open (fn, Posix.O_TRUNC|Posix.O_CREAT|Posix.O_WRONLY,
-                             0640);
+        int fd = Posix.open (fn, Posix.O_TRUNC|Posix.O_CREAT|Posix.O_WRONLY, 0640);
         string s = intro.printf(dt.format("%FT%T%z"));
         Posix.write(fd, s, s.length);
         Posix.write(fd, inbuf, inp);
         Posix.close(fd);
     }
 
-    private void cancel_timers()
-    {
+    private void cancel_timers() {
         if(tid != 0)
             Source.remove(tid);
         if(etid != 0)
@@ -360,8 +328,7 @@ class FCMgr :Object
         tid = etid = 0;
     }
 
-    public void init(bool issetting)
-    {
+    public void init(bool issetting) {
         msp = new MWSerial();
         oldmode  =  msp.pmode;
         mode = (issetting) ? Mode.SET : Mode.GET;
@@ -376,10 +343,8 @@ class FCMgr :Object
                     if(sdev == dev || dev == null)
                         if(msp.open(sdev, baud, out estr) == false)
                             MWPLog.message("Failed to open %s\n", estr);
-                        else
-                        {
-                            if(tid != 0)
-                            {
+                        else {
+                            if(tid != 0) {
                                 Source.remove(tid);
                                 tid = 0;
                             }
@@ -444,10 +409,8 @@ class FCMgr :Object
             });
 
         msp.serial_event.connect((cmd, raw, len, flags, err) => {
-                if(err == false)
-                {
-                    switch(cmd)
-                    {
+                if(err == false) {
+                    switch(cmd) {
                         case MSP.Cmds.API_VERSION:
                         cancel_timers();
                         if(trace == 0)
@@ -467,8 +430,7 @@ class FCMgr :Object
                                 msp.send_command(MSP.Cmds.EEPROM_WRITE,null, 0);
                                 if(noback)
                                     ml.quit();
-                                else
-                                {
+                                else {
                                     state = State.BACKUP;
                                     next_state();
                                 }
@@ -483,8 +445,7 @@ class FCMgr :Object
 
                         case MSP.Cmds.FC_VARIANT:
                         string fwid = (string)raw[0:4];
-                        switch(fwid)
-                        {
+                        switch(fwid) {
                             case "INAV":
                                 fc = Fc.INAV;
                                 break;
@@ -515,34 +476,28 @@ class FCMgr :Object
             });
 
         if(dev != null)
-            if(msp.open(dev, baud, out estr) == false)
-            {
+            if(msp.open(dev, baud, out estr) == false) {
                 MWPLog.message("open failed %s\n", estr);
-            }
-            else
-            {
+            } else {
                 MWPLog.message("Opening %s\n", dev);
                 etid = Idle.add(() => { try_connect(); return false; });
             }
     }
 
-    public void run()
-    {
+    public void run() {
         ml = new MainLoop();
         ml.run ();
         msp.close();
     }
 }
 
-static int main (string[] args)
-{
+static int main (string[] args) {
     try {
         var opt = new OptionContext(" - fc diff manager");
         opt.set_help_enabled(true);
         opt.add_main_entries(options, null);
         opt.parse(ref args);
-    }
-    catch (OptionError e) {
+    } catch (OptionError e) {
         stderr.printf("Error: %s\n", e.message);
         stderr.printf("Run '%s --help' to see a full list of available "+
                       "options\n", args[0]);
@@ -551,8 +506,7 @@ static int main (string[] args)
 
     MWPLog.set_time_format("%T");
     bool issetting =  args[0].has_suffix("set");
-    for(var j = 1; j < args.length; j++)
-    {
+    for(var j = 1; j < args.length; j++) {
         int b;
         var a = args[j];
         if(a.has_prefix("/dev/") || (a.length == 17 && a[2] == ':' && a[5] == ':'))
@@ -565,8 +519,7 @@ static int main (string[] args)
 
     if(issetting && filename == null)
         MWPLog.message("Need a filename to restore FC\n");
-    else
-    {
+    else {
         if(dev == null)
             MWPLog.message("No device given ... watching\n");
         var fcm  = new FCMgr();

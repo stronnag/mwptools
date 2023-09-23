@@ -65,66 +65,56 @@ public class MwpServer : Object {
     public uint dbus_pos_interval { get; set; default = 2;}
     public signal void quit();
 
-    public int get_state_names(out string[]names) throws GLib.Error
-    {
+    public int get_state_names(out string[]names) throws GLib.Error {
         string[] _names = {};
-        for (var e = State.DISARMED; e <= State.UNDEFINED; e = e+1)
-        {
+        for (var e = State.DISARMED; e <= State.UNDEFINED; e = e+1) {
             var s = e.to_string();
-                /* MWP_SERVER_STATE_xxxx (17 byte prefix) */
+			/* MWP_SERVER_STATE_xxxx (17 byte prefix) */
             _names += s.substring(17);
         }
         names = _names;
         return _names.length;
     }
 
-    public void get_velocity(out uint32 speed, out uint32 course) throws GLib.Error
-    {
+    public void get_velocity(out uint32 speed, out uint32 course) throws GLib.Error {
         speed = v_spd;
         course = v_cse;
     }
 
-    public void get_polar_coordinates(out uint32 range, out uint32 direction, out uint32 azimuth) throws GLib.Error
-    {
+    public void get_polar_coordinates(out uint32 range, out uint32 direction, out uint32 azimuth) throws GLib.Error {
         range = v_range;
         direction = v_direction;
         azimuth = v_azimuth;
     }
 
     public void get_home(out double latitude, out double longitude,
-                         out int32 altitude) throws GLib.Error
-    {
+                         out int32 altitude) throws GLib.Error {
         latitude = h_lat;
         longitude = h_long;
         altitude = h_alt;
     }
 
     public void get_location(out double latitude, out double longitude,
-                         out int32 altitude) throws GLib.Error
-    {
+                         out int32 altitude) throws GLib.Error {
         latitude = v_lat;
         longitude = v_long;
         altitude = v_alt;
     }
 
-    public State get_state() throws GLib.Error
-    {
+    public State get_state() throws GLib.Error {
         return m_state;
     }
 
-    public int get_waypoint_number() throws GLib.Error
-    {
+    public int get_waypoint_number() throws GLib.Error {
         return m_wp;
     }
 
-    public void get_sats(out uint8 nsats, out uint8 fix) throws GLib.Error
-    {
+    public void get_sats(out uint8 nsats, out uint8 fix) throws GLib.Error {
         nsats = m_nsats;
         fix = m_fix;
     }
 
-    public uint set_mission (string mission) throws GLib.Error
-    {
+    public uint set_mission (string mission) throws GLib.Error {
         uint nmpts = i__set_mission(mission);
         return nmpts;
     }
@@ -151,8 +141,7 @@ public class MwpServer : Object {
         devices = device_names;
     }
 
-    public async int upload_mission(bool to_eeprom) throws GLib.Error
-    {
+    public async int upload_mission(bool to_eeprom) throws GLib.Error {
         callback = upload_mission.callback;
         i__upload_mission(to_eeprom);
         yield;
@@ -168,5 +157,4 @@ public class MwpServer : Object {
     public bool connect_device (string device) throws GLib.Error {
         return i__connect_device(device);
     }
-
 }

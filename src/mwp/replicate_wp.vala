@@ -16,14 +16,11 @@
  */
 
 public class  WPReplicator : Object {
-
-    public static void replicate(Mission ms, uint start, uint end, uint number)
-    {
+    public static void replicate(Mission ms, uint start, uint end, uint number) {
         MissionItem [] om = ms.get_ways();
 
         var np = start-1 +(end-start+1)*number+ om.length-end;
-        if(start > 0 && end <= om.length && np < 61)
-        {
+        if(start > 0 && end <= om.length && np < 121) {
             MissionItem [] nm = {};
             uint j, k;
             start--; // 0 index
@@ -51,13 +48,11 @@ public class  WPReplicator : Object {
 
 int main (string[] args) {
     Mission ms;
-    if ((ms = XmlIO.read_xml_file (args[1])) != null)
-    {
+    if ((ms = XmlIO.read_xml_file (args[1])) != null) {
         uint s,e,n;
         s = (uint)int.parse(args[2]);
         e = (uint)int.parse(args[3]);
         n = (uint)int.parse(args[4]);
-
         WPReplicator.replicate(ms, s, e, n);
         ms.dump();
         XmlIO.to_xml_file("/tmp/rep.mission", ms);

@@ -1,5 +1,4 @@
-public class Fuzzer : Object
-{
+public class Fuzzer : Object {
     private static int baud = 115200;
     private static string dev;
     private static int cmdmax=4095;
@@ -17,8 +16,7 @@ public class Fuzzer : Object
         {null}
     };
 
-    public enum Danger
-    {
+    public enum Danger {
         MSP_SET_INAV_PID = 7,
         MSP_SET_NAME = 11,
         MSP_SET_NAV_POSHOLD = 13,
@@ -157,8 +155,7 @@ public class Fuzzer : Object
     Rand rand;
     private uint tid = 0;
 
-    Fuzzer()
-    {
+    Fuzzer() {
         rand = new Rand();
         ml = new MainLoop();
         s = new MWSerial();
@@ -166,12 +163,10 @@ public class Fuzzer : Object
             s.set_txbuf((uint16)paymax);
     }
 
-    private void fuzz()
-    {
+    private void fuzz() {
         bool ok = false;
         uint16 cmd = 0;
-        while (!ok)
-        {
+        while (!ok) {
             cmd = (uint16)rand.int_range(0, cmdmax);
             if(noevil == 1)
                 ok = (cmd != Danger.MSP_REBOOT);
@@ -195,8 +190,7 @@ public class Fuzzer : Object
         ns++;
     }
 
-    private int run()
-    {
+    private int run() {
         string estr;
         bool res;
 
@@ -208,15 +202,12 @@ public class Fuzzer : Object
                     });
             });
 
-        if((res = s.open(dev, baud, out estr)) == true)
-        {
+        if((res = s.open(dev, baud, out estr)) == true) {
             s.serial_event.connect((s,cmd,raw,len,xflags,errs) => {
-                    if(tid != 0)
-                    {
+                    if(tid != 0) {
                         Source.remove(tid);
                         tid = 0;
                     }
-
                     nr++;
                     print("recv CMD %u (%x), len %u, err %s\n",
                           cmd, cmd, len, errs.to_string());
@@ -232,8 +223,8 @@ public class Fuzzer : Object
                     s.close();
                     ml.quit();
                 });
-            Timeout.add(500, () =>
-                {
+
+            Timeout.add(500, () => {
                     fuzz();
                     return false;
                 });
@@ -246,21 +237,16 @@ public class Fuzzer : Object
                   ss.rxrate, ss.txrate,
                   ss.msgs.to_string());
             return 0;
-        }
-        else
-        {
+        } else {
             MWPLog.message("open failed serial %s %s\n", dev, estr);
             return 255;
         }
     }
 
-    public static int main (string[] args)
-    {
+    public static int main (string[] args) {
         string []devs = {"/dev/ttyUSB0","/dev/ttyACM0"};
-        foreach(var d in devs)
-        {
-            if(Posix.access(d,(Posix.R_OK|Posix.W_OK)) == 0)
-            {
+        foreach(var d in devs) {
+            if(Posix.access(d,(Posix.R_OK|Posix.W_OK)) == 0) {
                 dev = d;
                 break;
             }
@@ -271,8 +257,7 @@ public class Fuzzer : Object
             opt.set_help_enabled(true);
             opt.add_main_entries(options, null);
             opt.parse(ref args);
-        }
-        catch (OptionError e) {
+        } catch (OptionError e) {
             stderr.printf("Error: %s\n", e.message);
             stderr.printf("Run '%s --help' to see a full list of available "+
                           "options\n", args[0]);
@@ -285,8 +270,7 @@ public class Fuzzer : Object
         if (args.length > 1)
             dev = args[1];
 
-        if(dev == null)
-        {
+        if(dev == null) {
             stdout.puts("No device found\n");
             return 0;
         }

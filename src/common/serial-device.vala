@@ -397,7 +397,6 @@ public class MWSerial : Object {
 		CRSF = 4,
 		MPM = 8,
 	}
-
 	private string devname;
     private int fd=-1;
     private IOChannel io_read;
@@ -709,8 +708,7 @@ public class MWSerial : Object {
             List<InetAddress> addresses = null;
 
             var resolver = Resolver.get_default ();
-            try
-            {
+            try {
                 addresses = resolver.lookup_by_name (host, null);
             } catch (Error e) {
                 MWPLog.message ("resolver: %s\n", e.message);
@@ -766,8 +764,7 @@ public class MWSerial : Object {
     }
 
 /*
-  public bool open_sport(string device, out string estr)
-  {
+  public bool open_sport(string device, out string estr) {
   fwd = false;
   MWPLog.message("SPORT: open %s\n", device);
   return open(device, 0, out estr);
@@ -949,8 +946,7 @@ public class MWSerial : Object {
         if(ltime == 0 || ltime == stime)
             ltime =  GLib.get_monotonic_time();
         stats.elapsed = (ltime - stime)/1000000.0;
-        if (stats.elapsed > 0)
-        {
+        if (stats.elapsed > 0) {
             stats.txrate = stats.txbytes / stats.elapsed;
             stats.rxrate = stats.rxbytes / stats.elapsed;
         }
@@ -1617,8 +1613,7 @@ public class MWSerial : Object {
 				*ptx++ ='$';
 				*ptx++ = 'T';
 				*ptx++ = cmd;
-				for(var i = 0; i < len; i++)
-				{
+				for(var i = 0; i < len; i++) {
 					*ptx = *pdata++;
 					ck ^= *ptx++;
 				}
@@ -1652,8 +1647,7 @@ public class MWSerial : Object {
 			mcrc = mavlink_crc(mcrc, MAVID2);
 			*ptx++ = cmd;
 			mcrc = mavlink_crc(mcrc, cmd);
-			for(var j = 0; j < len; j++)
-			{
+			for(var j = 0; j < len; j++) {
 				*ptx = *pdata++;
 				mcrc = mavlink_crc(mcrc, *ptx);
 				ptx++;

@@ -36,7 +36,6 @@ public class MWPUtils : Object {
     public static string? find_conf_file(string fn, string? dir=null) {
         string cfile=null;
         string wanted = (dir != null) ? dir+"/"+fn  : fn;
-
         var uc = Environment.get_user_config_dir();
 		string app;
 		if (appname == null) {
@@ -47,26 +46,21 @@ public class MWPUtils : Object {
 			app = appname;
 		}
         cfile = have_conf_file(GLib.Path.build_filename(uc,app,wanted));
-        if (cfile == null)
-        {
+        if (cfile == null) {
             uc =  Environment.get_user_data_dir();
             cfile = have_conf_file(GLib.Path.build_filename(uc,app,wanted));
-            if(cfile == null)
-            {
+            if(cfile == null) {
                 var confdirs = Environment.get_system_data_dirs();
-                foreach (string c in confdirs)
-                {
+                foreach (string c in confdirs) {
                     if ((cfile = have_conf_file(GLib.Path.build_filename (c,app,wanted))) != null)
                         break;
                 }
             }
 
-            if (cfile == null)
-            {
+            if (cfile == null) {
                 cfile = have_conf_file(GLib.Path.build_filename ("./",wanted));
             }
-            if (cfile == null)
-            {
+            if (cfile == null) {
                 cfile = have_conf_file(GLib.Path.build_filename ("./",fn));
             }
         }

@@ -122,12 +122,11 @@ public class SoupProxy : Soup.Server {
 
 #if COLDSOUP
     private void default_handler (Soup.Server server, Soup.Message msg, string path,
-                          GLib.HashTable? query, Soup.ClientContext client)
+								  GLib.HashTable? query, Soup.ClientContext client) {
 #else
     private void default_handler (Soup.Server server, Soup.ServerMessage msg, string path,
-                          GLib.HashTable? query)
+								  GLib.HashTable? query) {
 #endif
-    {
 		if(offline || basename == null) {
 #if COLDSOUP
             msg.set_status(404);

@@ -16,32 +16,31 @@
  */
 
 /*
-  Serves black tiles for the map background. Useful for demo / videos, as a
-  artefacts like WPs, range circles etc are very obvious.
+ *  Serves black tiles for the map background. Useful for demo / videos, as a
+ *  artefacts like WPs, range circles etc are very obvious.
+ *
+ *  Requires an entry in ~/.config/mwp/sources.json like:
+ *
+ *  {
+ *    "id": "Black",
+ *    "name": "Black Tiles",
+ *    "license": "(c) jh ",
+ *    "license_uri": "http://daria.co.uk/",
+ *    "min_zoom": 0,
+ *    "max_zoom": 20,
+ *    "tile_size": 256,
+ *    "projection": "MERCATOR",
+ *    "spawn" : "bproxy",
+ *  }
+ *
+ * Then put bproxy on the PATH (e.g. /use/local/bin). It is not built or
+ * installed automatically
+ *
+ * Note there is no need to define a URI (or port)
+ */
 
-  Requires an entry in ~/.config/mwp/sources.json like:
 
-  {
-    "id": "Black",
-    "name": "Black Tiles",
-    "license": "(c) jh ",
-    "license_uri": "http://daria.co.uk/",
-    "min_zoom": 0,
-    "max_zoom": 20,
-    "tile_size": 256,
-    "projection": "MERCATOR",
-    "spawn" : "bproxy",
-  }
-
- Then put bproxy on the PATH (e.g. /use/local/bin). It is not built or
- installed automatically
-
- Note there is no need to define a URI (or port)
-  */
-
-
-public class BProxy : Soup.Server
-{
+public class BProxy : Soup.Server {
     private uint8 []black_png =  {
         0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
         0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00,
@@ -109,8 +108,7 @@ public class BProxy : Soup.Server
     };
 	private uint8 []base_png;
 
-    public BProxy()
-    {
+    public BProxy() {
 		var fn = Environment.get_variable("MWP_BLACK_TILE");
 		ssize_t nb = 0;
 		if(fn != null) {
@@ -124,18 +122,16 @@ public class BProxy : Soup.Server
 		}
 		if (nb == 0 || base_png == null)
 			base_png = black_png;
-
         this.add_handler (null, default_handler);
     }
 
 #if COLDSOUP
     private void default_handler (Soup.Server server, Soup.Message msg, string path,
-                          GLib.HashTable? query, Soup.ClientContext client)
+								  GLib.HashTable? query, Soup.ClientContext client) {
 #else
     private void default_handler (Soup.Server server, Soup.ServerMessage msg, string path,
-                          GLib.HashTable? query)
+								  GLib.HashTable? query) {
 #endif
-    {
         msg.set_response ("image/png", Soup.MemoryUse.COPY, base_png);
 #if COLDSOUP
         msg.set_status(200);
