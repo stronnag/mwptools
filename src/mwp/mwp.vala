@@ -3266,6 +3266,7 @@ public class MWP : Gtk.Application {
         }
 
         box.show_all ();
+		dialog.show();
         dialog.response.connect((resp) => {
                 if (resp == ResponseType.OK) {
                     var i = btns.length;
