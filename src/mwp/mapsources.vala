@@ -227,6 +227,7 @@ public class BingMap : Object {
 
 	public BingMap() {
 		savefile = GLib.Path.build_filename(Environment.get_user_config_dir(),"mwp",".blast");
+		get_cached_data();
 	}
 
 	public string get_buri() {
@@ -266,9 +267,57 @@ public class BingMap : Object {
 #endif
     }
 
-	private void parse_bing_json(string s) {
-		buri="";
+	public void save_cached_data() {
+		var fp = FileStream.open (savefile, "w");
+		if(fp != null) {
+			fp.printf("%s\n", buri);
+			fp.printf("%d\n", ms.min_zoom);
+			fp.printf("%d\n", ms.max_zoom);
+			fp.printf("%d\n", ms.tile_size);
+			fp.printf("%s\n", ms.licence);
+		}
+	}
 
+	public void get_cached_data() {
+		ms.id= "BingProxy";
+		ms.name = "Bing Proxy";
+		ms.min_zoom =  0;
+		ms.max_zoom = 19;
+		ms.tile_size = 256;
+		ms.projection = MapProjection.MERCATOR;
+		ms.uri_format = "";
+		ms.licence = "(c) Microsoft Corporation and friends";
+		ms.licence_uri = "http://www.bing.com/maps/";
+		buri="http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=13902";
+		var fp = FileStream.open (savefile, "r");
+		if(fp != null) {
+			var n = 0;
+			string? line;
+			while ((line = fp.read_line()) != null) {
+				switch(n) {
+				case 0:
+					buri = line;
+					break;
+				case 1:
+					ms.min_zoom = int.parse(line);
+					break;
+				case 2:
+					ms.max_zoom = int.parse(line);
+					break;
+				case 3:
+					ms.tile_size = int.parse(line);
+					break;
+				case 4:
+					ms.licence = line;
+					break;
+				default:
+					break;
+				}
+				n += 1;
+			}
+		}
+	}
+	private void parse_bing_json(string s) {
 		if(s.length > 0) {
 			StringBuilder sb = new StringBuilder();
 			try {
@@ -352,21 +401,8 @@ public class BingMap : Object {
 				sb.append(parts[4].substring(2,-1));
 				parts[4] = sb.str;
 				buri = string.joinv("/",parts);
-				var fp = FileStream.open (savefile, "w");
-				if(fp != null)
-					fp.write(buri.data);
+				save_cached_data();
 			}
-		} else {
-			get_saved_uri();
-		}
-	}
-
-	public void get_saved_uri() {
-		var fp = FileStream.open (savefile, "r");
-		if(fp != null) {
-			buri = fp.read_line();
-		} else {
-			buri="http://ecn.t3.tiles.virtualearth.net/tiles/a#Q#.jpeg?g=13902";
 		}
 	}
 }
@@ -375,26 +411,18 @@ public class JsonMapDef : Object {
     public static string id = null;
     private static int[] proxypids = {};
 	private static SoupProxy sp;
-    public static void killall() {
+
+	public static void killall() {
         foreach(var p in proxypids)
             Posix.kill(p, MwpSignals.Signal.TERM);
     }
 
-    public static MapSource[] read_json_sources(string? fn, bool offline=false) {
+	public static MapSource[] read_json_sources(string? fn, bool offline=false) {
         MapSource[] sources = {};
 
-        var ms = MapSource() {
-			id= "BingProxy",
-			name = "Bing Proxy",
-			min_zoom =  0,
-			max_zoom = 19,
-			tile_size = 256,
-			projection = MapProjection.MERCATOR,
-			uri_format = "",
-			licence = "(c) Microsoft Corporation and friends",
-			licence_uri = "http://www.bing.com/maps/"
-		};
+		var bg = new BingMap();
 
+        var ms = bg.get_ms();
 		MWPLog.message("Starting Bing proxy %s\n", (offline) ? "(offline)" : "");
 		uint port = 0;
         sp = new SoupProxy(offline);
@@ -406,28 +434,15 @@ public class JsonMapDef : Object {
 		if (port != 0) {
 			ms.uri_format="http://localhost:%u/quadkey-proxy/#Z#/#X#/#Y#.png".printf(port);
 		}
-		MWPLog.message("DBG: bing uri: %s\n", 	ms.uri_format);
-
 		sources += ms;
 
-		var bg = new BingMap();
 		bg.complete.connect((ok) => {
-				MWPLog.message("DBG Bing Complete\n");
 				if(ok) {
 					sp.set_uri(bg.get_buri());
-					var bms = bg.get_ms();
-					var sb = new StringBuilder("Bing: ");
-					sb.append_printf("ts: %d ", bms.tile_size);
-					sb.append_printf("z-: %d ", bms.min_zoom);
-					sb.append_printf("z+: %d ", bms.max_zoom);
-					sb.append_printf("li: %s ", bms.licence);
-					sb.append_printf("lu: %s ", bms.licence_uri);
-					MWPLog.message("DBG: %s\n", sb.str);
 				}
 			});
 
 		if(offline) {
-			bg.get_saved_uri();
 			sp.set_uri(bg.get_buri());
 		} else {
 			bg.get_source.begin();
