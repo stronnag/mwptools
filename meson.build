@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '6.267.491')
+project('mwptools', 'c', 'vala', version : '6.275.745')
 
 nogo = get_option('nogo')
 

@@ -447,7 +447,6 @@ public class JsonMapDef : Object {
 		} else {
 			bg.get_source.begin();
 		}
-		MWPLog.message("DBG Bing Init\n");
 
         if(fn != null) {
             try {
@@ -474,7 +473,6 @@ public class JsonMapDef : Object {
                     s.max_zoom = (int) item.get_int_member ("max_zoom");
                     s.tile_size = (int)item.get_int_member("tile_size");
                     s.projection = Champlain.MapProjection.MERCATOR;
-					MWPLog.message("DBG Setup %s\n", s.name);
                     if(item.has_member("spawn")) {
                         var spawncmd = item.get_string_member("spawn");
                         var iport = spawn_proxy(spawncmd);
