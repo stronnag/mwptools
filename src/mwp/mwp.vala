@@ -1219,6 +1219,7 @@ public class MWP : Gtk.Application {
             "mwp-log-replay"};
         bool appsts[9];
         var si = 0;
+		var pnf = 0;
         foreach (var s in ext_apps) {
             if (s != null) {
                 appsts[si] = (Environment.find_program_in_path(s) != null);
@@ -1230,10 +1231,15 @@ public class MWP : Gtk.Application {
 					}
 					vsb.append_c('\n');
 					MWPLog.message(vsb.str);
+					pnf += 1;
 				}
             }
             si++;
         }
+
+		if(pnf > 0) {
+			MWPLog.message("FYI, PATH is %s\n", Environment.get_variable("PATH"));
+		}
 
 		if (appsts[0]) {
 			string text;
