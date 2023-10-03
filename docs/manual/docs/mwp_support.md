@@ -17,9 +17,10 @@ There is a "rolling release" [release note on the wiki](https://github.com/stron
 
 ### How, where
 
-* **GitHub Issues preferred**
-* RCG, INAV discord and telegram
-    * Most likely you will be requested to raise a GitHub issue for non-trivial cases.
+* [**GitHub Issues preferred**](https://github.com/stronnag/mwptools/issues)
+* INAV discord (#off-topic)
+    * Most likely you will be requested to raise a [GitHub Issue](https://github.com/stronnag/mwptools/issues) for non-trivial cases or if there is an [Information requirement](#information-requirements). Hint, you can cut out the middle-man here.
+* See also [Information requirements](#information-requirements)
 
 ### Supported OS
 
