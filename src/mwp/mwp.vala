@@ -1304,7 +1304,6 @@ public class MWP : Gtk.Application {
 			XmlIO.ugly = true;
 		}
 
-		stderr.printf("Check 2\n");
         pos_is_centre = conf.pos_is_centre;
 
         mmap = new ModelMap();
