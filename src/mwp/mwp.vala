@@ -1268,7 +1268,7 @@ public class MWP : Gtk.Application {
 						var lparts = p.split(" ");
 						if (lparts.length == 3) {
 							var vparts = lparts[1].split(".");
-							for(var i = 0; i < 3 && i < parts.length; i++) {
+							for(var i = 0; i < 3 && i < vparts.length; i++) {
 								vsum = int.parse(vparts[i])+ 10*vsum;
 							}
 						}
@@ -1304,6 +1304,7 @@ public class MWP : Gtk.Application {
 			XmlIO.ugly = true;
 		}
 
+		stderr.printf("Check 2\n");
         pos_is_centre = conf.pos_is_centre;
 
         mmap = new ModelMap();
