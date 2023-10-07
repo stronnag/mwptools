@@ -10100,8 +10100,10 @@ public class MWP : Gtk.Application {
 			sb.append(a);
 			sb.append_c(' ');
 		}
-        if (GtkClutter.init (ref args) != InitError.SUCCESS)
-            return 1;
+		if (GtkClutter.init (ref args) != InitError.SUCCESS) {
+			stderr.printf("Fatal: can't GtkClutter.init\n");
+            return 17;
+		}
         Gst.init (ref args);
 		MWP.user_args = sb.str;
         var app = new MWP(s);
