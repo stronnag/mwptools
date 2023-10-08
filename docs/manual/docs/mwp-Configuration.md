@@ -61,9 +61,9 @@ So here the only current, valid options are  `--rings 50,20 --dont-maximise`, an
 
 The environment is set before any GTK / UI calls are made.
 
-mwp (and other applications) can have a problem with OpenGL and the Wayland compositor. Typcially this is manifest by being unable to pick mission WP icons for large (>40 point) missions.
+mwp (and other applications) can have a problem with OpenGL and the Wayland compositor on GNOME (at least). Typcially this is manifest by being unable to pick mission WP icons for large (>40 point) missions. This problem does not occur with other compositors (`wlroots` based or WSL).
 
-On non-WSL platforms, mwp forces XWayland over Wayland to mitigate this. You can force Wayland / XWayland by setting the `GDK_BACKEND` variable in `cmdopts` (or the environment). This will override mwp's default behaviour.
+Using XWayland over Wayland may mitigate this. You can force Wayland / XWayland by setting the `GDK_BACKEND` variable in `cmdopts` (or the environment). This will override mwp's behaviour based on the Window Manager defaults.
 
     # set XWayland
     GDK_BACKEND=x11

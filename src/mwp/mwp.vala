@@ -10036,11 +10036,13 @@ public class MWP : Gtk.Application {
     }
 
     private static string? read_env_args() {
+		/***
 		var u = Posix.utsname();
 		if (!u.release.contains("microsoft-standard-WSL")) {
 			if(Environment.get_variable("GDK_BACKEND") == null)
 				Environment.set_variable("GDK_BACKEND", "x11", true);
 		}
+		****/
 		var s1 = read_cmd_opts();
         var s2 = Environment.get_variable("MWP_ARGS");
         var sb = new StringBuilder();
