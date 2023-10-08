@@ -1237,7 +1237,7 @@ public class MWP : Gtk.Application {
             si++;
         }
 
-		if(pnf > 0) {
+		if(pnf > 0 && !(pnf == 1 && appsts[7] == false)) {
 			MWPLog.message("FYI, PATH is %s\n", Environment.get_variable("PATH"));
 		}
 
