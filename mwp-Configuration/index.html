@@ -1399,8 +1399,8 @@ MWP_BLACK_TILE=/home/jrh/.config/mwp/mars.png
 </code></pre>
 <p>So here the only current, valid options are  <code>--rings 50,20 --dont-maximise</code>, and the <a href="#environment-variables">environment variable</a> MWP_BLACK_TILE is set (for <a href="../Black-Ops/#custom-tile">anonymous maps</a>).</p>
 <p>The environment is set before any GTK / UI calls are made.</p>
-<p>mwp (and other applications) can have a problem with OpenGL and the Wayland compositor. Typcially this is manifest by being unable to pick mission WP icons for large (&gt;40 point) missions.</p>
-<p>On non-WSL platforms, mwp forces XWayland over Wayland to mitigate this. You can force Wayland / XWayland by setting the <code>GDK_BACKEND</code> variable in <code>cmdopts</code> (or the environment). This will override mwp's default behaviour.</p>
+<p>mwp (and other applications) can have a problem with OpenGL and the Wayland compositor on GNOME (at least). Typcially this is manifest by being unable to pick mission WP icons for large (&gt;40 point) missions. This problem does not occur with other compositors (<code>wlroots</code> based or WSL).</p>
+<p>Using XWayland over Wayland may mitigate this. You can force Wayland / XWayland by setting the <code>GDK_BACKEND</code> variable in <code>cmdopts</code> (or the environment). This will override mwp's behaviour based on the Window Manager defaults.</p>
 <pre><code># set XWayland
 GDK_BACKEND=x11
 # set Wayland
@@ -2197,7 +2197,7 @@ file ~/.config/mwp/pixmaps/inav-radar.svg
   <small>
     
       Last update:
-      2023-08-12
+      2023-10-08
     
   </small>
 </div>
