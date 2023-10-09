@@ -1745,6 +1745,7 @@ public class ListBox : GLib.Object {
         list_model.append(out iter);
 
         var no = get_list_size().to_string();
+		EvCache.update_single_elevation(int.parse(no), lat, lon);
         list_model.set (iter,
                         WY_Columns.IDX, no,
                         WY_Columns.TYPE, MSP.get_wpname(typ),

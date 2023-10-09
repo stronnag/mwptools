@@ -1435,22 +1435,6 @@ public class MWP : Gtk.Application {
             msfn = MWPUtils.find_conf_file(conf.map_sources);
 		}
         msources =   JsonMapDef.read_json_sources(msfn, offline);
-		/*
-		var jmd = new JsonMapDef();
-		jmd.update_bing.connect((m) => {
-				if (msources.length > 0) {
-					msources[0].tile_size = bms.tile_size;
-					msources[0].min_zoom = bms.min_zoom;
-					msources[0].max_zoom = bms.max_zoom;
-					if (bms.licence != null) {
-						msources[0].licence = bms.licence;
-					}
-					if (bms.licence_uri != null) {
-						msources[0].licence_uri = bms.licence_uri;
-					}
-				}
-			});
-		*/
 		window.window_state_event.connect( (e) => {
                 wdw_state = ((e.new_window_state & Gdk.WindowState.FULLSCREEN) != 0);
                 if(wdw_state)  {   // true == full screen
