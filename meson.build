@@ -1,5 +1,10 @@
 project('mwptools', 'c', 'vala', version : '6.275.745')
 
+# vala / clang16 workaround
+if meson.get_compiler('c').get_id() == 'clang'
+  add_global_arguments('-Wno-error=incompatible-function-pointer-types', language : 'c')
+endif
+
 nogo = get_option('nogo')
 
 conf_data = configuration_data()
