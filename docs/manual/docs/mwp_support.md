@@ -53,7 +53,7 @@ Problem reports on non-supported platforms will not be dismissed without _some_ 
 
 Different behaviours may be experienced using different display environments.
 
-mwp (and other applications) can have a problem with OpenGL and the (older versions of the GNOME) Wayland compositor. Typically this is manifest by being unable to pick mission WP icons for large (>40 point) missions. This problem does not appear on other compositors (`wlroots`, WSL) and appears fixed 2023-10.
+mwp (and other applications) can have a problem with OpenGL and the (GNOME) Wayland compositor. Typically this is manifest by being unable to pick mission WP icons for large (>40 point) missions. This problem does not appear on other compositors (`wlroots` and derivatives,  WSL).
 
 You can force Wayland / XWayland by setting the `GDK_BACKEND` variable in `cmdopts` (or the environment). This will override mwp's Windows Manager defined default behaviour.
 
