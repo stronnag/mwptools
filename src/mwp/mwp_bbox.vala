@@ -40,6 +40,7 @@ public class  BBoxDialog : Object {
     private string bbox_decode;
     private int[] valid = {};
     private bool is_valid;
+	private bool  is_broken;
     private Gtk.Entry tzentry;
     private Gtk.ComboBoxText bb_tz_combo;
     private string []orig_times={};
@@ -77,6 +78,7 @@ public class  BBoxDialog : Object {
 		bb_vmins = builder.get_object("bb_vmins") as Entry;
 		bb_vsecs = builder.get_object("bb_vsecs") as Entry;
 
+		bb_items.set_use_markup (true);
 		var filter = new Gtk.FileFilter ();
         filter.set_filter_name ("BB Logs");
         filter.add_pattern ("*.bbl");
@@ -208,6 +210,7 @@ public class  BBoxDialog : Object {
 
     private void find_valid() {
         is_valid = false;
+		is_broken = false;
         valid = {};
         maxidx = -1;
         try {
@@ -250,13 +253,18 @@ public class  BBoxDialog : Object {
                                 valid += idx;
                             }  // else { valid += 0}; // really!!!
                             maxidx = idx;
-                        } else if(line.has_prefix("Log 1 of")) {
-                            valid += 1;
+                        } else if (line.has_prefix("WARNING: Missing expected metadata")) {
+                            is_valid = false;
+							is_broken = true;
+                            valid = {};
+                            maxidx = 0;
+						} else if(line.has_prefix("Log 1 of")) {
+							valid += 1;
                             maxidx = 1;
                             is_valid = true;
-                            Posix.kill(child_pid, MwpSignals.Signal.TERM);
-                            return false;
-                        }
+							//                            Posix.kill(child_pid, MwpSignals.Signal.TERM);
+							//                            return false;
+						}
                         return true;
                     } catch (IOChannelError e) {
                         MWPLog.message("IOChannelError: %s\n", e.message);
@@ -272,9 +280,26 @@ public class  BBoxDialog : Object {
                     if(!is_valid) {
                         StringBuilder sb = new StringBuilder("No valid log detected.\n");
                         if(lines.length > 0) {
+							bool skip = is_broken;
                             sb.append("blackbox_decode says: ");
-                            foreach(var l in lines)
-                                sb.append(l.strip());
+                            foreach(var l in lines) {
+								if (is_broken) {
+									if (l.has_prefix("WARNING: ")) {
+										skip = false;
+										sb.append("\n<tt>");
+									}
+								}
+								if (!skip) {
+									l = l.strip();
+									if (l.length > 0) {
+										sb.append(l);
+										sb.append_c('\n');
+									}
+								}
+							}
+							if(is_broken) {
+								sb.append("</tt>");
+							}
                         }
                         set_normal(sb.str);
                     } else {
