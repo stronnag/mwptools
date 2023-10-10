@@ -119,7 +119,7 @@ static int sd_init(char *voice) {
     if (handle) {
       spd_open2_t spdo2;
       if (g_module_symbol(handle, "spd_open2", (gpointer *)&spdo2))
-        spd = (*spdo2)("mwp", NULL, NULL, SPD_MODE_THREADED, NULL, 1, NULL);
+        spd = (*spdo2)("mwp", NULL, NULL, SPD_MODE_SINGLE, NULL, 1, NULL);
       if (spd) {
         spd_set_voice_type_t sssv;
         spd_set_language_t ssl;
@@ -176,6 +176,9 @@ static void sd_say(char *text) {
 static void sd_close(void) {
   if (spd) {
     spd_close_t spdc;
+    if (g_module_symbol(handle, "spd_cancel_all", (gpointer *)&spdc)) {
+      (*spdc)(spd);
+    }
     if (g_module_symbol(handle, "spd_close", (gpointer *)&spdc)) {
       (*spdc)(spd);
       spd = NULL;
