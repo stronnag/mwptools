@@ -687,8 +687,7 @@ public class  BBoxDialog : Object {
                 var n = add_if_missing(str);
                 bb_tz_combo.active = n;
             }
-        }
-        else if(geouser != null) {
+        } else if(geouser != null) {
             string uri = GURI.printf((string)cbuflat, (string)cbuflon, geouser);
             var session = new Soup.Session ();
             var message = new Soup.Message ("GET", uri);
@@ -703,6 +702,12 @@ public class  BBoxDialog : Object {
                             var item = parser.get_root ().get_object ();
                             if (item.has_member("timezoneId"))
                                 str = item.get_string_member ("timezoneId");
+							else if (item.has_member("gmtOffset")) {
+								var gmtd = item.get_double_member ("gmtOffset");
+								int gmth = (int)gmtd;
+								int gmtm = (int)((gmtd - gmth)*60.0);
+								str = "%+03d:%02d".printf(gmth, gmtm);
+							}
                         } catch {
 							MWPLog.message("Geonames resp error: %d\n", mess.status_code);
 						}
@@ -729,6 +734,13 @@ public class  BBoxDialog : Object {
                         var item = parser.get_root ().get_object ();
                         if (item.has_member("timezoneId"))
                             str = item.get_string_member ("timezoneId");
+						else if (item.has_member("gmtOffset")) {
+							var gmtd = item.get_double_member ("gmtOffset");
+							int gmth = (int)gmtd;
+							int gmtm = (int)((gmtd - gmth)*60.0);
+							str = "%+03d:%02d".printf(gmth, gmtm);
+						}
+
                         if(str != null) {
                             MWPLog.message("Geonames %f %f %s\n", lat, lon, str);
                             var n = add_if_missing(str);
