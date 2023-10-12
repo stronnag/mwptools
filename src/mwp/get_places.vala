@@ -230,6 +230,7 @@ class PlaceEdit : Object {
                 string s = PosFormat.lat(val,MWP.conf.dms);
                 _cell.set_property("text",s);
             });
+        cell.set_property ("editable", true);
 
         cell = new Gtk.CellRendererText ();
         view.insert_column_with_attributes (-1, "Longitude",
@@ -242,15 +243,16 @@ class PlaceEdit : Object {
                 string s = PosFormat.lon(val,MWP.conf.dms);
                 _cell.set_property("text",s);
             });
+        cell.set_property ("editable", true);
 
         cell = new Gtk.CellRendererText ();
-        cell.set_property ("editable", true);
         view.insert_column_with_attributes (-1, "Zoom", cell, "text", Column.ZOOM);
         ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
                 Gtk.TreeIter iter;
                 listmodel.get_iter (out iter, new Gtk.TreePath.from_string (path));
-                listmodel.set_value (iter, Column.NAME, new_text);
+                listmodel.set_value (iter, Column.ZOOM, new_text);
             });
+        cell.set_property ("editable", true);
 
         view.button_press_event.connect( (event) => {
                 if(event.button == 3) {
