@@ -149,7 +149,7 @@ Example `places`
     Beaulieu|50.8047104|-1.4942621|17
     Jurby:54.353974:-4.523600:-1
 
-The user may maintain these files manually if used, or use the [graphic places editor](misc-ui-elements.md#favourite-places).
+The user may maintain these files manually if used, or use the [graphic places editor](misc-ui-elements.md#favourite-places). The command line option `--centre` accepts a place name as well as a geographic coordinates.
 
 ## Dconf / gsettings
 

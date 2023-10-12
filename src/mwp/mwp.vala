@@ -711,7 +711,7 @@ public class MWP : Gtk.Application {
         { "debug-flags", 0, 0, OptionArg.INT, null, "Debug flags (mask)", null},
         { "replay-mwp", 'p', 0, OptionArg.STRING, null, "replay mwp log file", "file-name"},
         { "replay-bbox", 'b', 0, OptionArg.STRING, null, "replay bbox log file", "file-name"},
-        { "centre", 0, 0, OptionArg.STRING, null, "Centre position", "position"},
+        { "centre", 0, 0, OptionArg.STRING, null, "Centre position (lat lon or named place)", "position"},
         { "offline", 0, 0, OptionArg.NONE, null, "force offline proxy mode", null},
         { "n-points", 'S', 0, OptionArg.INT, null, "Number of points shown in GPS trail", "N"},
         { "mod-points", 'M', 0, OptionArg.INT, null, "Modulo points to show in GPS trail", "N"},

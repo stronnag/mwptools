@@ -79,7 +79,7 @@ The install process installs an desktop icon and `mwp.desktop` application file 
       --debug-flags                       Debug flags (mask)
       -p, --replay-mwp=file-name          replay mwp log file
       -b, --replay-bbox=file-name         replay bbox log file
-      --centre=position                   Centre position
+      --centre=position                   Centre position (lat lon or named place)
       --offline                           force offline proxy mode
       -S, --n-points=N                    Number of points shown in GPS trail
       -M, --mod-points=N                  Modulo points to show in GPS trail
