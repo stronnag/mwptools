@@ -1260,7 +1260,7 @@
 <p>Problem reports on non-supported platforms will not be dismissed without <em>some</em> consideration, however it's unlikely that too much time be expended on such environments unless the problem can also be demonstrated on a supported platform (or it's an interesting issue).</p>
 <h3 id="wayland-xlib">Wayland / XLib<a class="headerlink" href="#wayland-xlib" title="Permanent link">#</a></h3>
 <p>Different behaviours may be experienced using different display environments.</p>
-<p>mwp (and other applications) can have a problem with OpenGL and the (GNOME) Wayland compositor. Typically this is manifest by being unable to pick mission WP icons for large (&gt;40 point) missions. This problem does not appear on other compositors (<code>wlroots</code>, WSL).</p>
+<p>mwp (and other applications) can have a problem with OpenGL and the (GNOME) Wayland compositor. Typically this is manifest by being unable to pick mission WP icons for large (&gt;40 point) missions. This problem does not appear on other compositors (<code>wlroots</code> and derivatives,  WSL).</p>
 <p>You can force Wayland / XWayland by setting the <code>GDK_BACKEND</code> variable in <code>cmdopts</code> (or the environment). This will override mwp's Windows Manager defined default behaviour.</p>
 <pre><code># set XWayland
 GDK_BACKEND=x11
@@ -1283,7 +1283,7 @@ GDK_BACKEND=wayland
   <small>
     
       Last update:
-      2023-10-08
+      2023-10-10
     
   </small>
 </div>
