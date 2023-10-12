@@ -52,6 +52,15 @@ Unless you need a multi-user setup, a local install is preferable, as you don't 
 * The resulting executables are in `~/.local/bin`. Ensure this exists on `$PATH`; modern distros should do this for you.
 * If you get messages like `Removing /home/$USER/.config/mwp/.layout.xml 0` and `Failed to save layout, remains in /tmp/.mwp.xxxxxx.xml` you also need `export XDG_DATA_DIRS=$XDG_DATA_DIRS:$HOME/.local/share`. This is rare and should not occur on [supported platforms](mwp_support.md#supported-os).
 
+On some (mainly ARM / Rpi), you may need some alternate packages:
+
+```
+# For some ARM boards, without full OpenGL, you may need
+apt install libegl1-mesa-dev
+# For some ARM boards, (RPi3 for example), you may need
+apt install gstreamer1.0-gtk3
+```
+
 ### Build and update
 
     cd build

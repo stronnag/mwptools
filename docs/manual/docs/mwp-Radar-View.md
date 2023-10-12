@@ -2,7 +2,6 @@
 
 {{ mwp }} supports the display of "radar" contacts. This provides a view of adjacent aircraft obtained from a number of sources:
 
-
 * [Tracked Telemetry](mwp-telemetry-tracker.md). Models tracked by telemetry (CRSF, LTM, MAVLink, Smartport, MPM(Flysky, Smaprtport)). Provided by RX Telemetry Mirroring or dedicated telemetry radios.
 * [INAV-radar](https://www.rcgroups.com/forums/showthread.php?3304673-iNav-Radar-ESP32-LoRa-modems). INAV radar works in conjunction with [INAV](https://github.com/iNavFlight/inav) flight controllers to broadcast the location of UAS fitted with an ESP32 LoRa module. {{ mwp }} can listen to one of these modems in ground station mode to display the positions of the rest of the 'swarm' (up to 4 UAS); [technical / MSP details](#inav-radar).
 
@@ -16,7 +15,7 @@
 
 ## mwp Configuration
 
-{{ mwp }} can receive the 'radar' data over one or two connections, either or both may be active, and {{ mwp }} can receive and display 'own vehicle' telemetry (MSP, LTM or Smartpost), 'INAV-radar' and 'MAVlink Traffic' data simultaneously. Radar data may be received over:
+{{ mwp }} can receive the 'radar' data over one or two connections, either or both may be active, and {{ mwp }} can receive and display 'own vehicle' telemetry (MSP, LTM or Smartpost), [Tracked Telemetry](mwp-telemetry-tracker.md), 'INAV-radar' and 'MAVlink Traffic' data simultaneously. Radar data may be received over:
 
 * The main serial port device (see [caveat](#using-the-main-serial-port) for INAV-radar) or
 * device(s) defined by the `radar-device` CLI or configuration parameter (MAVLink Traffic, INAV-radar)

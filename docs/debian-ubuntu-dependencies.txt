@@ -41,8 +41,11 @@ apt $CONFIRM install golang-go
 apt $CONFIRM install ruby ruby-json
 
 ## For some ARM boards, without full OpenGL, you may need
-
 # apt $CONFIRM install libegl1-mesa-dev
+
+## For some ARM boards, (RPi3 for example), you may need
+# apt $CONFIRM install gstreamer1.0-gtk3
+
 ## (or something like that)
 
 ## if you want to use speech-dispatcher instead of espeak for voice
