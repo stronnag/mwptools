@@ -2671,17 +2671,51 @@ public class MWP : Gtk.Application {
         kmls = new Array<KmlOverlay>();
 
         if(llstr != null) {
+			var llok = false;
             string[] delims =  {","," "};
             foreach (var delim in delims) {
                 var parts = llstr.split(delim);
-                if(parts.length >= 2) {
-                    clat = InputParser.get_latitude(parts[0]);
-                    clon = InputParser.get_longitude(parts[1]);
-                    if(parts.length == 3)
-                        zm = int.parse(parts[2]);
-                    break;
-                }
-            }
+				if(parts.length >= 2) {
+					var n = 0;
+					foreach(var pp in parts) {
+						var ps = pp.strip();
+						if(InputParser.posok(ps)) {
+							switch (n) {
+							case 0:
+								clat = InputParser.get_latitude(ps);
+								n=1;
+								break;
+							case 1:
+								clon = InputParser.get_longitude(ps);
+								n = 2;
+								break;
+							case 2:
+								zm = int.parse(parts[2]);
+								break;
+							default:
+								break;
+							}
+						}
+					}
+					if (n == 2) {
+						llok = true;
+						break;
+					}
+				}
+			}
+			if (!llok) {
+				var pls = Places.points();
+				foreach(var pl in pls) {
+					if (pl.name == llstr) {
+						clat = pl.lat;
+						clon = pl.lon;
+						if (pl.zoom > -1) {
+							zm = (uint)pl.zoom;
+						}
+						break;
+					}
+				}
+			}
         }
         map_centre_on(clat, clon);
         if (check_zoom_sanity(zm))

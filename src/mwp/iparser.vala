@@ -21,7 +21,11 @@ class InputParser : GLib.Object {
     private const string LATSTR = "^(\\d{1,2})[ :\\-]?(\\d{2})[ :\\-]?([0-9\\.]{2,5})([NS])";
     private const string LONSTR = "^(\\d{1,3})[ :\\-]?(\\d{2})[ :\\-]?([0-9\\.]{2,5})([EW])";
 
-    public static double get_latitude(string latstr) {
+	public static bool posok(string ps) {
+		return (ps[0] == '+' || ps[1] == '-' || (ps[0] >= '0' && ps[0] <= '9'));
+	}
+
+	public static double get_latitude(string latstr) {
         MatchInfo mi;
         double lat = 0.0;
         if(latrx == null) {
