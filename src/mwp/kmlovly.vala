@@ -9,6 +9,7 @@ public class KmlOverlay : Object {
         string line_colour;
         string fill_colour;
         string point_colour;
+		int line_width;
     }
 
     private struct Point {
@@ -208,7 +209,13 @@ public class KmlOverlay : Object {
                         si.styled = true;
                     break;
                 case "LineStyle":
-                    if((si.line_colour = look_for(iter, "color")) != null)
+					string? sw;
+					if ((sw = look_for(iter, "width")) != null) {
+						si.line_width = int.parse(sw);
+					} else {
+						si.line_width = 2;
+					}
+					if((si.line_colour = look_for(iter, "color")) != null)
                         si.styled = true;
                     break;
                 case "PolyStyle":
@@ -313,6 +320,7 @@ public class KmlOverlay : Object {
                         var path = new Champlain.PathLayer();
                         path.closed=false;
                         path.set_stroke_color(getrgba(o.styleinfo.line_colour));
+						path.set_stroke_width (o.styleinfo.line_width);
                         foreach (var p in o.pts) {
                             var l =  new  Champlain.Point();
                             l.set_location(p.latitude, p.longitude);
