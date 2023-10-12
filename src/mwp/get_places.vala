@@ -220,6 +220,7 @@ class PlaceEdit : Object {
         col.set_sort_column_id(Column.NAME);
 
         cell = new Gtk.CellRendererText ();
+		cell.set_property ("editable", true);
         view.insert_column_with_attributes (-1, "Latitude",
                                             cell, "text", Column.LAT);
         col = view.get_column(Column.LAT);
@@ -230,9 +231,10 @@ class PlaceEdit : Object {
                 string s = PosFormat.lat(val,MWP.conf.dms);
                 _cell.set_property("text",s);
             });
-        cell.set_property ("editable", true);
+
 
         cell = new Gtk.CellRendererText ();
+		cell.set_property ("editable", true);
         view.insert_column_with_attributes (-1, "Longitude",
                                             cell, "text", Column.LON);
         col = view.get_column(Column.LON);
@@ -243,16 +245,17 @@ class PlaceEdit : Object {
                 string s = PosFormat.lon(val,MWP.conf.dms);
                 _cell.set_property("text",s);
             });
-        cell.set_property ("editable", true);
 
-        cell = new Gtk.CellRendererText ();
-        view.insert_column_with_attributes (-1, "Zoom", cell, "text", Column.ZOOM);
-        ((Gtk.CellRendererText)cell).edited.connect((path,new_text) => {
+
+        var zcell = new Gtk.CellRendererText ();
+		zcell.set_property ("editable", true);
+        view.insert_column_with_attributes (-1, "Zoom", zcell, "text", Column.ZOOM);
+        ((Gtk.CellRendererText)zcell).edited.connect((path,new_text) => {
                 Gtk.TreeIter iter;
                 listmodel.get_iter (out iter, new Gtk.TreePath.from_string (path));
-                listmodel.set_value (iter, Column.ZOOM, new_text);
+                listmodel.set_value (iter, Column.ZOOM, int.parse(new_text));
             });
-        cell.set_property ("editable", true);
+
 
         view.button_press_event.connect( (event) => {
                 if(event.button == 3) {
