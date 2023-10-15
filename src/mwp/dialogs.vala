@@ -813,14 +813,16 @@ public class DeltaDialog : GLib.Object {
     private Gtk.Entry dlt_entry1;
     private Gtk.Entry dlt_entry2;
     private Gtk.Entry dlt_entry3;
+    private Gtk.Switch dlt_switch;
 
-    public signal void get_values(double dlat, double dlon, int ialt);
+    public signal void get_values(double dlat, double dlon, int ialt, bool move_home);
 
     public DeltaDialog(Gtk.Builder builder) {
         dialog = builder.get_object ("delta-dialog") as Gtk.Dialog;
         dlt_entry1 = builder.get_object ("dlt_entry1") as Gtk.Entry;
         dlt_entry2 = builder.get_object ("dlt_entry2") as Gtk.Entry;
         dlt_entry3 = builder.get_object ("dlt_entry3") as Gtk.Entry;
+		dlt_switch = builder.get_object ("move_switch") as Gtk.Switch;
         Gtk.Label lab;
         lab = builder.get_object ("dlt_label1") as Gtk.Label;
         lab.label = "Latitude (Y) delta (%s)".printf(Units.distance_units());
@@ -833,13 +835,15 @@ public class DeltaDialog : GLib.Object {
                     var dlat = InputParser.get_scaled_real(dlt_entry1.get_text());
                     var dlon = InputParser.get_scaled_real(dlt_entry2.get_text());
                     var ialt = (int)InputParser.get_scaled_int(dlt_entry3.get_text());
-                    get_values(dlat, dlon, ialt);
+					var move_home = dlt_switch.active;
+                    get_values(dlat, dlon, ialt, move_home);
                 }
                 dialog.hide();
             });
     }
 
-    public void get_deltas() {
+    public void get_deltas(bool m) {
+		dlt_switch.active = m;
         dialog.show_all();
     }
 }

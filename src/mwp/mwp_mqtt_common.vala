@@ -249,7 +249,7 @@ public class MwpMQTT : Object {
                     double la = gframe.lat / 1.0e7;
                     double lo = gframe.lon / 1.0e7;
                     double hla, hlo;
-                    Geo.posit (la, lo, bearing, range / 1852.0, out hla, out hlo, true);
+                    Geo.posit (la, lo, bearing, range / 1852.0, out hla, out hlo);
                     oframe.lat = (int32)(hla*1e7);
                     oframe.lon = (int32)(hlo*1e7);
                     oframe.fix = 1;

@@ -51,35 +51,35 @@ public class Geo {
     }
 
     public static void posit (double lat1, double lon1, double cse, double dist,
-							  out double lat, out double lon, bool rhumb = false) {
-
+							  out double lat, out double lon) {
         double tc = d2r(cse);
         double rlat1= d2r(lat1);
         double rdist = nm2r(dist);
-        double dphi,q,dlon;
+        double dlon;
 
-        if (rhumb == true) {
-                // Use Rhumb lines
-            dphi = 0.0;
-            lat= rlat1+rdist*Math.cos(tc);
-            double tmp = Math.tan(lat/2.0+Math.PI/4.0)/Math.tan(rlat1/2.0+Math.PI/4.0);
-            if(tmp <= 0)
-                tmp = 0.000000001;
+		lat = Math.asin(Math.sin(rlat1)*Math.cos(rdist)+Math.cos(rlat1)* Math.sin(rdist)*Math.cos(tc));
+		dlon = Math.atan2(Math.sin(tc)*Math.sin(rdist)*Math.cos(rlat1),
+						  Math.cos(rdist)-Math.sin(rlat1)*Math.sin(lat));
+		lon = ((Math.PI + d2r(lon1) + dlon) % (2 * Math.PI)) - Math.PI;
+		lat=r2d(lat);
+		lon = r2d(lon);
+	}
+	public static void move_delta (double lat1, double lon1, double distn, double diste,
+								   out double lat, out double lon) {
+        double rlat1= d2r(lat1);
+        double rdiste = nm2r(diste);
+        double rdistn = nm2r(distn);
+        double dlon;
 
-            dphi=Math.log(tmp);
-            if (dphi == 0.0 || Math.fabs(lat-rlat1) < 1.0e-6)
-                q=Math.cos(rlat1);
-            else
-                q= (lat-rlat1)/dphi;
-            dlon = rdist*Math.sin(tc)/q;
-            lon = ((d2r(lon1)+dlon+Math.PI) % (2*Math.PI)) - Math.PI;
-        } else {
-            lat = Math.asin(Math.sin(rlat1)*Math.cos(rdist)+Math.cos(rlat1)* Math.sin(rdist)*Math.cos(tc));
-            dlon = Math.atan2(Math.sin(tc)*Math.sin(rdist)*Math.cos(rlat1),
-                              Math.cos(rdist)-Math.sin(rlat1)*Math.sin(lat));
-            lon = ((Math.PI + d2r(lon1) + dlon) % (2 * Math.PI)) - Math.PI;
-        }
-        lat=r2d(lat);
-        lon = r2d(lon);
-    }
+		lat = Math.asin(Math.sin(rlat1)*Math.cos(rdistn)+Math.cos(rlat1)* Math.sin(rdistn));
+		if (Math.cos(lat) == 0) {
+			lon = d2r(lon1);
+		} else {
+			dlon = Math.atan2(Math.sin(rdiste)*Math.cos(rlat1),
+							  Math.cos(rdiste)-Math.sin(rlat1)*Math.sin(lat));
+			lon = ((Math.PI + d2r(lon1) + dlon) % (2 * Math.PI)) - Math.PI;
+		}
+		lat=r2d(lat);
+		lon = r2d(lon);
+	 }
 }

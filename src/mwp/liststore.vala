@@ -948,14 +948,32 @@ public class ListBox : GLib.Object {
                 calc_mission();
             });
 
-        deltadialog.get_values.connect ((dlat, dlon, dalt) => {
-                var dset = DELTAS.NONE;
-                if(dlat != 0.0)
+        deltadialog.get_values.connect ((dlat, dlon, dalt, move_home) => {
+				double hlat = 0.0;
+				double hlon = 0.0;
+				double dnmlat = 0.0;
+				double dnmlon = 0.0;
+
+				var dset = DELTAS.NONE;
+                if(dlat != 0.0 ) {
                     dset |= DELTAS.LAT;
-                if(dlon != 0.0)
+					dnmlat = dlat / 1852.0;
+				}
+                if(dlon != 0.0) {
                     dset |= DELTAS.LON;
-                if(dalt != 0)
+					dnmlon = dlat / 1852.0;
+				}
+                if(dalt != 0) {
                     dset |= DELTAS.ALT;
+				}
+
+				fhome.get_fake_home(out hlat, out hlon);
+				if(FakeHome.has_loc && move_home) {
+					if((dset & DELTAS.POS) != DELTAS.NONE) {
+						Geo.move_delta(hlat,hlon,dnmlat, dnmlon, out hlat, out hlon);
+						fhome.set_fake_home(hlat, hlon);
+					}
+				}
 
                 if(dset != DELTAS.NONE) {
                     foreach (var t in list_selected_refs()) {
@@ -974,23 +992,18 @@ public class ListBox : GLib.Object {
                         var alat = (double)cell;
                         list_model.get_value (iter, WY_Columns.LON, out cell);
                         var alon = (double)cell;
-                        double dnm;
+						list_model.get_value (iter, WY_Columns.FLAG, out cell);
+						var flag = (uint8)((int)cell);
 
-                        if((dset & DELTAS.LAT) == DELTAS.LAT) {
-                            dnm = dlat / 1852.0;
-                            Geo.posit(alat,alon,0.0,dnm,out alat, out alon,true);
-                        }
-
-                        if((dset & DELTAS.LON) == DELTAS.LON) {
-                            dnm = dlon / 1852.0;
-                            Geo.posit(alat,alon,90.0,dnm,out alat, out alon,true);
-                        }
-
-                        if((dset & DELTAS.POS) != DELTAS.NONE) {
-                            list_model.set_value (iter, WY_Columns.LAT, alat);
-                            list_model.set_value (iter, WY_Columns.LON, alon);
-                        }
-
+						if(flag == FBH_FLAG) {
+							list_model.set (iter, WY_Columns.LAT, hlat, WY_Columns.LON, hlon);
+						} else {
+							if((dset & DELTAS.POS) != DELTAS.NONE) {
+								Geo.move_delta(alat,alon,dnmlat, dnmlon, out alat, out alon);
+								list_model.set_value (iter, WY_Columns.LAT, alat);
+								list_model.set_value (iter, WY_Columns.LON, alon);
+							}
+						}
                         if((dset & DELTAS.ALT) == DELTAS.ALT) {
                             list_model.get_value (iter, WY_Columns.ALT, out cell);
                             var ival = (int)cell;
@@ -1928,7 +1941,28 @@ public class ListBox : GLib.Object {
     }
 
     private void do_deltas() {
-        deltadialog.get_deltas();
+		bool mhome = false;
+		if(FakeHome.has_loc) {
+			foreach (var t in list_selected_refs()) {
+				Gtk.TreeIter iter;
+				GLib.Value cell;
+				var path = t.get_path ();
+				list_model.get_iter (out iter, path);
+				list_model.get_value (iter, WY_Columns.TYPE, out cell);
+				var act = MSP.lookup_name((string)cell);
+				if (act == MSP.Action.RTH ||
+					act == MSP.Action.JUMP ||
+					act == MSP.Action.SET_HEAD)
+					continue;
+
+				list_model.get_value (iter, WY_Columns.FLAG, out cell);
+				var flag = (uint8)((int)cell);
+				if(flag == FBH_FLAG) {
+					mhome = true;
+				}
+			}
+		}
+		deltadialog.get_deltas(mhome);
     }
 
     private void make_menu() {

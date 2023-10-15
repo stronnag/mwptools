@@ -1397,7 +1397,7 @@ then select &lt;b&gt;Apply&lt;/b&gt;. Uses an Internet service&lt;/i&gt;</proper
           </packing>
         </child>
         <child>
-          <!-- n-columns=3 n-rows=3 -->
+          <!-- n-columns=3 n-rows=4 -->
           <object class="GtkGrid" id="dlt_grid1">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -1467,6 +1467,31 @@ then select &lt;b&gt;Apply&lt;/b&gt;. Uses an Internet service&lt;/i&gt;</proper
                 <property name="left-attach">1</property>
                 <property name="top-attach">2</property>
               </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="move_home">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Move Home</property>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkSwitch" id="move_switch">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="halign">start</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
             </child>
             <child>
               <placeholder/>
