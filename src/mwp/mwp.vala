@@ -7673,11 +7673,13 @@ public class MWP : Gtk.Application {
                             Geo.csedist(GPSInfo.lat, GPSInfo.lon,
                                         home_pos.lat, home_pos.lon,
                                         out dist, out cse);
-                            var cg = MSP_COMP_GPS();
-                            cg.range = (uint16)Math.lround(dist*1852);
-                            cg.direction = (int16)Math.lround(cse);
-                            navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
-                        }
+							if(dist >= 0.0 && dist < 150) {
+								var cg = MSP_COMP_GPS();
+								cg.range = (uint16)Math.lround(dist*1852);
+								cg.direction = (int16)Math.lround(cse);
+								navstatus.comp_gps(cg, item_visible(DOCKLETS.NAVSTATUS));
+							}
+						}
                     }
                     if(craft != null) {
                         update_pos_info();
