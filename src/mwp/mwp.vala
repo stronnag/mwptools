@@ -5565,11 +5565,22 @@ public class MWP : Gtk.Application {
                                     sb.append_c(sep);
                                     navmodes = false;
                                 }
-                                if(wpdist > 0) {
-                                    sb.append_printf(" • 1st wp distance %dm", wpdist);
-                                    sb.append_c(sep);
-                                    navmodes = false;
-                                }
+
+								if(wpdist > 0) {
+									var ms = ls.to_mission();
+									if(ms.npoints > 0) {
+										double cw, dw;
+										var mi = ms.get_waypoint(0);
+										Geo.csedist(xlat, xlon, mi.lat, mi.lon,
+													out dw, out cw);
+										dw /= 1852;
+										if(dw > wpdist) {
+											sb.append_printf(" • 1st wp distance %dm/%.1fm", wpdist, dw);
+											sb.append_c(sep);
+											navmodes = false;
+										};
+									}
+								}
 
                                 if(navmodes) {
                                     sb.append(" • Reason unknown; is a nav mode engaged?");
