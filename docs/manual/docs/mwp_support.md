@@ -67,7 +67,7 @@ If that improves matters, add the setting to [the configuration file](mwp-Config
 
 ### Gtk Widget whinging
 
-{{ mwp }} used Gtk+-3.0 and a number of no longer maintained components (`gdl`, `champlain`). There are no suitanle Gtk4 replacements for these, so {{ mwp }} remains stuck on Gtk+-3.0.
+{{ mwp }} used Gtk+-3.0 and a number of no longer maintained components (`gdl`, `champlain`). There are no suitable Gtk4 replacements for these, so {{ mwp }} remains stuck on Gtk+-3.0.
 
 This means you may see a raft of scary messages on `stderr`, such as:
 

@@ -1,7 +1,9 @@
 mwptools installation instructions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-$ meson _build --buildtype=release --strip [--prefix=DIR]
+$ meson [setup] _build --buildtype=release --strip [--prefix=DIR]
+
+some older `meson` may not like `setup`; newer will chastide you if omitted.
 
 * recommended everywhere:
   meson _build --buildtype=release --strip --prefix=~/.local
