@@ -4,9 +4,9 @@
 
 If you just want to install {{ mwp }} on a Debian /derivative (includin WSL), x64_64, then you can install the binary `.deb` package from the [Release Area](https://github.com/stronnag/mwptools/releases).
 
-Otherwise, if you're using a different (not Debian based) distribution, just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscV, ppc etc.), then you can build from source.
+For Arch Linux, you can install the AUR package `mwptools-git`
 
-For Arch Linux, you can install using the AUR package `mwptools-git`
+Otherwise, if you're using a different (not Debian based) distribution, just curious about building mwptools, you want to explore other tools and scripts in the repository or you're using a different architecture (ia32, Arm7, aarch64, riscV, ppc etc.), then you can build from source.
 
 The **mwptools** suite is built using the [meson](https://mesonbuild.com/SimpleStart.html) and [ninja](https://ninja-build.org/) toolchain. For most users these will be automatically provided by a `build-essentials` type of package transparently to the user.
 
@@ -28,11 +28,15 @@ If you're updating an old Makefile based install, please ensure your extant mwpt
     git clean -fd -fx
     git pull
 
+### Normative guide
+
+Note that the normative build reference is the `INSTALL` file in the source tree. This is most current documentation.
+
 ### First time
 
-Set up the `meson` build system from the top level:
+Set up the `meson` build system from the top level. Note that `_build` is a directory that is created by `meson setup`; you can use what ever name you wish, and can have multiple build directories for different options (e.g `_build` for local and `_sysbuild` for system wide installations.
 
-    meson build --buildtype=release --strip [--prefix $HOME/.local]
+    meson setup _build --buildtype=release --strip [--prefix $HOME/.local]
 
 * For a user / non-system install, set `--prefix $HOME/.local`
     - This will install the binaries in `$HOME/.local/bin`, which should be added to `$PATH` as required.
@@ -63,7 +67,7 @@ apt install gstreamer1.0-gtk3
 
 ### Build and update
 
-    cd build
+    cd _build
     # for a local install (and cygwin)
     ninja install
     # for system install
@@ -78,15 +82,6 @@ The user needs to have read / write permissions on the serial port in order to c
 * FreeBSD: `sudo pw group mod dialer -m $USER`
 * Windows/WSL: Not needed, no serial pass-through. Use the [ser2udp](mwp-in-Windows-11---WSL-G.md#serial-device) bridge instead.
 
-### Legacy
-
-For now, some of the legacy `Makefiles` remain, and can be used similar to before, e.g. :
-
-    cd mwptools/src/mwp
-    make && sudo make install
-
-At some stage, more of the Makefiles will be removed (or just rot into uselessness).
-
 ## Files built / installed
 
 ### Default
@@ -96,12 +91,13 @@ At some stage, more of the Makefiles will be removed (or just rot into uselessne
 | `mwp` | Mission planner, GCS, log replay etc. |
 | `mwp-area-planner` | Survey planner |
 | `mwp-plot-elevations` [1](#note1) | Mission elevation / terrain analysis |
-| `qproxy` | Proxy for certain commercial TMS |
+| `gmproxy` | Proxy for certain commercial TMS |
 | `cliterm` | Interact with the CLI |
 | `fc-get`, `fc-set` [2](#note2) | Backup / restore CLI diff |
 | `inav_states.rb` | Summarise BBL state changes, also installed `inav_states_data.rb` |
 | `fcflash` | FC flashing tool, requires `dfu-util` and / or `stmflash32` |
 | `flashgo` | Tools to examine, download logs and erase from dataflash |
+| `bproxy` | Black maps tiles, for those covert operations |
 
 !!! note "Notes:"
     <a name="note1">1.</a> This may either be the new Go executable or the legacy, less functional Ruby script.
@@ -113,12 +109,11 @@ At some stage, more of the Makefiles will be removed (or just rot into uselessne
 These are only built by explicit target name; they will be installed if built.
 
     # one of more of the following targets
-    ninja bproxy ublox-geo ublox-cli
+    ninja ublox-geo ublox-cli
     sudo ninja install
 
 | Application | Usage |
 | ----------- | ----- |
-| `bproxy` | Black tile map proxy, for those anonymous needs |
 | `ublox-cli` | Ublox GPS tool |
 | `ublox-geo` | Graphical Ublox GPS tool |
 
@@ -127,7 +122,9 @@ These are only built by explicit target name; they will be installed if built.
 
 #### Migrate from a system install to a user install
 
-    cd build
+Either use separate build directories, or reconfigure.
+
+    cd _build
     sudo ninja uninstall
     meson --reconfigure --prefix=$HOME/.local
     ninja install
@@ -137,7 +134,7 @@ These are only built by explicit target name; they will be installed if built.
 If you install to system locations, it is possible that `sudo ninja install` will write as `root` to some of the install files, and they become non-writable to the normal user.
 
 * In the `build` directory, run `sudo chown -R $USER .`
-* Consider migrating to a local install
+* Consider migrating to a local install.
 
 ### Help!!!!
 
@@ -187,7 +184,6 @@ If `$HOME/.local/bin` is not on PATH. then it needs to be added to a login file 
 
 If an older (perhaps Makefile generated) mwp exists; then you should remove all evidence of an earlier system install.
 
-
     find /usr -iname \*mwp\*
 
 review the list and as root, delete the old files. Do similar for blackbox-decode.
@@ -203,13 +199,13 @@ You'll still have to remove non-empty directories manually.
 Something, or persons unknown has removed this file.
 
     cd mwptools
-    meson setup --reconfigure  build --prefix ~/.local
-    cd build
+    meson setup --reconfigure _build --prefix ~/.local
+    cd _build
     ninja install
 
 #### ERROR: Dependency "?????" not found, tried pkgconfig
 
-{{ mwp }} requires a new dependency. This will be documented in the wiki [Recent Changes](https://github.com/stronnag/mwptools/wiki/Recent-Changes) document.
+{{ mwp }} requires a new dependency. This ~~will~~ should be documented in the wiki [Recent Changes](https://github.com/stronnag/mwptools/wiki/Recent-Changes) document.
 
 * Install the newly required dependencies
 * Rerun your build

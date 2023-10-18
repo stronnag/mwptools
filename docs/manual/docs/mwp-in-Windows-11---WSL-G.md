@@ -64,7 +64,10 @@ Then it was just a case of cloning the mwp repository and following mwp's instru
 
 Then build and install mwp and optionally the blackbox tools (as `mwptools/docs/debian-ubuntu-dependencies.txt`). [Build documentation](https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja).
 
-For the optimal blackbox replay, install the [flightlog2x](https://github.com/stronnag/bbl2kml) tools; build from source in Linux/WSL.
+For blackbox replay, install the [flightlog2x](https://github.com/stronnag/bbl2kml) tools; build from source in Linux/WSL or install the release binaries.
+
+Note that the normative build reference is the `INSTALL` file in the source tree.
+
 
 ## Running mwp
 

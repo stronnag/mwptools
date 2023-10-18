@@ -649,7 +649,7 @@ public class MWSerial : Object {
                 if(noautob == false) {
                     stdout.printf("Auobaud %d\n", gps_state);
                     var str = get_gps_speed_string();
-                    MwpSerial.set_speed(fd, init_speed[gps_state]);
+                    MwpSerial.set_speed(fd, init_speed[gps_state], null);
                     ublox_write(fd, str.data);
                     gps_state++;
                 } else
@@ -658,7 +658,7 @@ public class MWSerial : Object {
 
             case State.BAUDRATE:
                 stdout.printf("Rate initialised %d\n", brate);
-                MwpSerial.set_speed(fd, brate);
+                MwpSerial.set_speed(fd, brate, null);
                 gps_state++;
                 break;
 

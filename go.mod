@@ -3,8 +3,8 @@ module mwptools
 go 1.19
 
 require (
-	go.bug.st/serial v1.5.0
-	golang.org/x/sys v0.6.0
+	go.bug.st/serial v1.6.1
+	golang.org/x/sys v0.13.0
 )
 
 require geo v1.0.0

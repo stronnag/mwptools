@@ -3,10 +3,10 @@ mwptools installation instructions
 
 $ meson [setup] _build --buildtype=release --strip [--prefix=DIR]
 
-some older `meson` may not like `setup`; newer will chastide you if omitted.
+some older `meson` may not like `setup`; newer will chastise you if omitted.
 
 * recommended everywhere:
-  meson _build --buildtype=release --strip --prefix=~/.local
+  $ meson _build --buildtype=release --strip --prefix=~/.local
 
 * Otherwise
   * FreeBSD --- don't provide --prefix
@@ -25,30 +25,70 @@ $ ninja install
 # or, System wide install
 $ ninja && sudo ninja install
 
-Other useful bits
-$ sudo ninja uninstall
+Other useful hints:
+$ [sudo] ninja uninstall
 $ ninja clean
 $ ninja reconfigure
 
-Local one hit _build and install, in top level directory:
+For modern `ninja`, local one hit _build and install, in top level directory:
 
-$ meson install -C _build
-
+$ ninja -C _build install
 
 More Information:
  https://github.com/stronnag/mwptools/wiki/Building-with-meson-and-ninja
 
-No GO
-~~~~~
+No GO(lang)
+~~~~~~~~~~~
 
-If you don't have internet access, the build will (probably) fail because go needs to update some modules. You can avoid performing the building of the golang programs wwith the `nogo` property.
+If you don't have internet access, the build will (probably) fail because go needs to update some modules. You can avoid building the golang programs wwith the `nogo` property.
 
 e.g.
 
-meson setup --buildtype=minsize -D debug=false --prefix=~/.local  --strip -D nogo=true _nogo
-ninja -C _nogo install
+$ meson setup --buildtype=minsize -D debug=false --prefix=~/.local  --strip -D nogo=true _nogo
+$ ninja -C _nogo install
 
 MinSize build:
 ~~~~~~~~~~~~~
 
-meson setup _build --buildtype=minsize -D debug=false -D b_lto=true -D b_pie=true --prefix=~/.local  --strip
+$ meson setup _build --buildtype=minsize -D debug=false -D b_lto=true -D b_pie=true --prefix=~/.local --strip
+
+Mold linker
+~~~~~~~~~~~
+
+If you have the modern `mold` linker installed, you can speed up the build (in particular, linking `mwp`) by:
+
+$ mold --run ninja -C _build install
+
+Non-default targets
+~~~~~~~~~~~~~~~~~~~
+
+As part of the post installed, `fc-set` is a hard link to `fc-get`.
+
+The applications `flashdl` (replaced by `flashgo`), `ublox-geo` and `ublox-cli` are not built by default, they may be built via specifying a specific target (e.g. ninja -C _build `ublox-cli`).
+
+Uninstall
+~~~~~~~~~
+
+There is a standard uninstall target (needs `sudo` for system uninstall).
+
+$ ninja -C _build uninstall
+
+Note that this will not undo actions from the non-default targets. You may wish reverse the actions of the meson/post_install.sh and meson/legacy_post_install.sh  scripts:
+
+* rm -f $MESON_INSTALL_PREFIX/bin/{fc-set,flashdl,ublox-geo,ublox-cli}
+* glib-compile-schemas $MESON_INSTALL_PREFIX/share/glib-2.0/schemas
+* gtk-update-icon-cache -qtf $MESON_INSTALL_PREFIX/share/icons/hicolor
+* update-mime-database $MESON_INSTALL_PREFIX/share/mime
+* update-desktop-database  $MESON_INSTALL_PREFIX/share/applications
+
+Where MESON_INSTALL_PREFIX represents your build --prefix value ($HOME/.local or /usr or /usr/local).
+
+For convenience, there is a `meson/uninstall.sh` script to do this. It requires:
+
+* The installation prefix
+* For a system uninstall, run as root
+
+e.g.
+
+$ meson/uninstall ~/.local
+$ sudo meson/uninstall /usr/local
