@@ -8443,6 +8443,8 @@ public class MWP : Gtk.Application {
     }
 
 	private void upload_mm(int id, WPDL flag) {
+		var m = get_mission_data();
+		msx[mdx] = m; /* **** FIXME **** */
 		var wps = MultiM.missonx_to_wps(msx, id);
 		var  mlim = (id == -1) ? msx.length : 1;
 		if(wps.length > wp_max || mlim > MAXMULTI) {
