@@ -1,0 +1,15 @@
+rule go
+    command = go build -ldflags "-s -w"
+
+build mwp-log-replay: go btaddr_linux.go  btaddr_other.go  mwp-log-replay.go go.sum
+default mwp-log-replay
+
+rule copy
+     command = cp $in $$HOME/.local/bin
+
+build install: copy mwp-log-replay
+
+rule gosum
+     command = go mod tidy
+
+build go.sum: gosum

@@ -49,7 +49,6 @@ if r.returncode() != 0
   error('failed to get champlain version')
 endif
 champvers = r.stdout().strip()
-#message('Champ Vers' + champvers)
 
 if champvers.version_compare('<0.12.21')
   soupdep =  dependency('libsoup-2.4')
@@ -58,22 +57,18 @@ else
   soupdep =  dependency('libsoup-3.0')
 endif
 
-#message('SOUP '+champvers+' => ', dopts)
-
 termcap = dependency('ncurses', required: false)
 
 libm = meson.get_compiler('c').find_library('m', required : false)
 deps += libm
 
 gotrim = ''
-gobuild = ''
+gook = false
 golang = find_program('go', required: false)
 if golang.found()
-  gobuild = meson.current_source_dir() / 'gobuild.sh'
-  gobuild1 = meson.current_source_dir() / 'gomake.sh'
   r = run_command('go', 'version', check: true)
   if r.returncode() != 0
-  error('failed to get go version')
+    error('failed to get go version')
   else
     govers = r.stdout().strip()
     go1 = govers.split()
@@ -82,8 +77,9 @@ if golang.found()
       gotrim = '-trimpath'
       gminor = go2[1].to_int()
       if gminor < 17
-	gobuild=''
-	message('Go compiler is too old, consider installing the latest vendor compiler')
+        message('Go compiler is too old, consider installing the latest vendor compiler')
+      else
+        gook = true
       endif
     endif
   endif

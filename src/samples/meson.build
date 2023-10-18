@@ -2,9 +2,8 @@ subdir('cliterm')
 subdir('ublox-test')
 subdir('area-tool')
 subdir('flashdl')
-subdir('flashgo')
-subdir('mwp-log-replay')
-subdir('mwp-serial-cap')
+#subdir('mwp-log-replay')
+#subdir('mwp-serial-cap')
 
 install_data(
   'flash.sh',

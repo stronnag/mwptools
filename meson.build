@@ -18,15 +18,10 @@ configure_file(
 subdir('meson')
 subdir('src/common')
 subdir('src/mwp')
-subdir('src/mwp-plot-elevations')
 subdir('src/fc-cli')
 subdir('src/qproxy')
 subdir('src/samples/')
 subdir('docs')
-
-message (' mpe_dir ' + mpe_dir )
-build_dir = meson.current_build_dir()
-message (' BUILD_dir ' + build_dir )
 
 configuration_inc = include_directories('.')
 
@@ -70,39 +65,59 @@ executable('flashdl', sources: [fdlsrcs, fccommon], dependencies: [ fdldeps ],
 	   install : false, build_by_default: false )
 
 subdir('src/bbox-replay')
-if nogo == false and gobuild != '' and gotrim != ''
+
+if nogo == false and gook == true and gotrim != ''
+  mpe_dir = join_paths(meson.current_source_dir(), 'cmd', 'mwp-plot-elevations')
+
+  r = run_command('meson/find_files.sh', mpe_dir, check: true)
+  elev_files = r.stdout().strip().split()
+  r = run_command('meson/find_files.sh', join_paths(meson.current_source_dir(), 'pkg','geo'), check: true)
+  geo_files = r.stdout().strip().split()
+
   mpe = custom_target(
     'mwp-plot-elevations',
     output: 'mwp-plot-elevations',
-    input: mpe_deps,
-    command: [ gobuild, '@OUTPUT@',  mpe_dir, gotrim, build_dir],
+    input: [elev_files, geo_files],
+    command: [ golang, 'build', gotrim, '-o', '@OUTPUT@', '-ldflags', '-w -s', mpe_dir ],
     build_by_default: true,
     install: true,
     install_dir: 'bin')
 
+  fgo_dir = join_paths(meson.current_source_dir(), 'cmd', 'flashgo')
+  r = run_command('meson/find_files.sh', fgo_dir, check: true)
+  fgo_files = r.stdout().strip().split()
+
   fgo = custom_target(
-    'flashgo',
     output: 'flashgo',
-    command: [ gobuild, '@OUTPUT@',  fgo_dir, gotrim, build_dir],
+    input: [fgo_files],
+    command: [ golang, 'build', gotrim, '-o', '@OUTPUT@', '-ldflags', '-w -s',  fgo_dir ],
     build_by_default: true,
     install: true,
     install_dir: 'bin')
+
+  mlr_dir = join_paths(meson.current_source_dir(), 'cmd', 'mwp-log-replay')
+  r = run_command('meson/find_files.sh', mlr_dir, check: true)
+  mlr_files = r.stdout().strip().split()
 
   log_replay = custom_target(
     'mwp-log-replay',
     output: 'mwp-log-replay',
-    command : [gobuild, '@OUTPUT@', log_replay_dir, gotrim, build_dir],
+    command: [ golang, 'build', gotrim, '-o', '@OUTPUT@', '-ldflags', '-w -s',  mlr_dir ],
     build_by_default: true,
-    input: log_replay_deps,
+    input: mlr_files,
     install: true,
     install_dir: 'bin')
+
+  msc_dir = join_paths(meson.current_source_dir(), 'cmd', 'mwp-serial-cap')
+  r = run_command('meson/find_files.sh', msc_dir, check: true)
+  msc_files = r.stdout().strip().split()
 
   serial_cap = custom_target(
     'mwp-serial-cap',
     output: 'mwp-serial-cap',
-    command : [gobuild, '@OUTPUT@', serial_cap_dir, gotrim, build_dir],
+    command: [ golang, 'build', gotrim, '-o', '@OUTPUT@', '-ldflags', '-w -s',  msc_dir ],
     build_by_default: true,
-    input: serial_cap_deps,
+    input: msc_files,
     install: true,
     install_dir: 'bin')
 
