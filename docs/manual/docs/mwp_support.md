@@ -39,7 +39,11 @@ There is a "rolling release" [release note on the wiki](https://github.com/stron
 
 ### Information requirements
 
-Where relevant, please include {{ mwp }}'s console log, from your home directory, `mwp_stderr_YYYY-MM-DD.txt`, e.g. `$HOME/mwp_stderr_2021-12-28.txt`. Please do not delete any information from this file; the contents are there for a purpose, or paste the terminal output into a file (or copy paste into the issue). The terminal output may include information from system components that are not the mwp log (e.g. GDK / GTK / Wayland messages).
+#### Clear description of the issue
+
+* A step of steps to reproduce the issue
+* The actual and expected outcomes
+* Please include {{ mwp }}'s console log, from your home directory, `mwp_stderr_YYYY-MM-DD.txt`, e.g. `$HOME/mwp_stderr_2021-12-28.txt`. Please do not delete any information from this file; the contents are there for a purpose, or paste the terminal output into a file (or copy paste into the issue). The terminal output may include information from system components that are not the mwp log (e.g. GDK / GTK / Wayland messages).
 
 If you're having a problem playing a blackbox log, any reports that do not include the log will most likely be ignored.
 
