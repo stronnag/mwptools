@@ -70,6 +70,7 @@ gobuild = ''
 golang = find_program('go', required: false)
 if golang.found()
   gobuild = meson.current_source_dir() / 'gobuild.sh'
+  gobuild1 = meson.current_source_dir() / 'gomake.sh'
   r = run_command('go', 'version', check: true)
   if r.returncode() != 0
   error('failed to get go version')

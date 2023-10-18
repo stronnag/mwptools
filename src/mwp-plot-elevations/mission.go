@@ -5,11 +5,14 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	geo "github.com/stronnag/bbl2kml/pkg/geo"
 	"io/ioutil"
 	"os"
 	"strings"
 	"time"
+)
+
+import (
+	"geo"
 )
 
 type MissionItem struct {

@@ -18,18 +18,18 @@ for FN in bproxy ublox-geo ublox-cli flashdl ; do
     fi
 done
 
-if [ -e ${MESON_SOURCE_ROOT}/src/mwp-plot-elevations/mwp-plot-elevations ] ; then
-    install ${MESON_SOURCE_ROOT}/src/mwp-plot-elevations/mwp-plot-elevations  $INSTDIR/bin
-fi
+#if [ -e ${MESON_SOURCE_ROOT}/src/mwp-plot-elevations/mwp-plot-elevations ] ; then
+#    install ${MESON_SOURCE_ROOT}/src/mwp-plot-elevations/mwp-plot-elevations  $INSTDIR/bin
+#fi
 
-if [ -e ${MESON_SOURCE_ROOT}/src/samples/flashgo/flashgo ] ; then
-    install ${MESON_SOURCE_ROOT}/src/samples/flashgo/flashgo  $INSTDIR/bin
-fi
+#if [ -e ${MESON_SOURCE_ROOT}/src/samples/flashgo/flashgo ] ; then
+#    install ${MESON_SOURCE_ROOT}/src/samples/flashgo/flashgo  $INSTDIR/bin
+#fi
 
-if [ -e ${MESON_SOURCE_ROOT}/src/samples/mwp-log-replay/mwp-log-replay ] ; then
-    install ${MESON_SOURCE_ROOT}/src/samples/mwp-log-replay/mwp-log-replay  $INSTDIR/bin
-fi
+#if [ -e ${MESON_SOURCE_ROOT}/src/samples/mwp-log-replay/mwp-log-replay ] ; then
+#    install ${MESON_SOURCE_ROOT}/src/samples/mwp-log-replay/mwp-log-replay  $INSTDIR/bin
+#fi
 
-if [ -e ${MESON_SOURCE_ROOT}/src/samples/mwp-serial-cap/mwp-serial-cap ] ; then
-    install ${MESON_SOURCE_ROOT}/src/samples/mwp-serial-cap/mwp-serial-cap $INSTDIR/bin
-fi
+#if [ -e ${MESON_SOURCE_ROOT}/src/samples/mwp-serial-cap/mwp-serial-cap ] ; then
+#    install ${MESON_SOURCE_ROOT}/src/samples/mwp-serial-cap/mwp-serial-cap $INSTDIR/bin
+#fi

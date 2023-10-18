@@ -24,6 +24,10 @@ subdir('src/qproxy')
 subdir('src/samples/')
 subdir('docs')
 
+message (' mpe_dir ' + mpe_dir )
+build_dir = meson.current_build_dir()
+message (' BUILD_dir ' + build_dir )
+
 configuration_inc = include_directories('.')
 
 executable('mwp',
@@ -40,8 +44,9 @@ executable('cliterm', sources: [clisrcs, clicommon], dependencies: [ clideps ],
 
 executable('gmproxy', sources: proxsrc, dependencies: [ proxdeps ],
 	   vala_args : dopts,  install : true)
+
 executable('bproxy', sources: bproxsrc, dependencies: [ proxdeps ],
-	   vala_args : dopts, install : false, build_by_default: false)
+	   vala_args : dopts, install : true)
 
 executable('fc-get', sources: [fcsrcs, fccommon], dependencies: [ fcdeps ],
   include_directories : common_inc_dir, vala_args : [dopts, fc_v_args], install : true)
@@ -66,20 +71,41 @@ executable('flashdl', sources: [fdlsrcs, fccommon], dependencies: [ fdldeps ],
 
 subdir('src/bbox-replay')
 if nogo == false and gobuild != '' and gotrim != ''
-  mpe = custom_target('mwp-plot-elevations', output: 'mwp-plot-elevations',
-	 	      command : [gobuild, '@OUTPUT@', mpe_dir, gotrim],
-		      build_by_default: true, input: mpe_deps)
+  mpe = custom_target(
+    'mwp-plot-elevations',
+    output: 'mwp-plot-elevations',
+    input: mpe_deps,
+    command: [ gobuild, '@OUTPUT@',  mpe_dir, gotrim, build_dir],
+    build_by_default: true,
+    install: true,
+    install_dir: 'bin')
 
-  fgo = custom_target('flashgo', output: 'flashgo',
-		      command : [gobuild, '@OUTPUT@', fgo_dir, gotrim],
-		      build_by_default: true, input: fgo_deps)
+  fgo = custom_target(
+    'flashgo',
+    output: 'flashgo',
+    command: [ gobuild, '@OUTPUT@',  fgo_dir, gotrim, build_dir],
+    build_by_default: true,
+    install: true,
+    install_dir: 'bin')
 
-  log_replay = custom_target('mwp-log-replay', output: 'mwp-log-replay',
-			     command : [gobuild, '@OUTPUT@', log_replay_dir, gotrim],
-			     build_by_default: true, input: log_replay_deps)
-  serial_cap = custom_target('mwp-serial-cap', output: 'mwp-serial-cap',
-			     command : [gobuild, '@OUTPUT@', serial_cap_dir, gotrim],
-			     build_by_default: true, input: serial_cap_deps)
+  log_replay = custom_target(
+    'mwp-log-replay',
+    output: 'mwp-log-replay',
+    command : [gobuild, '@OUTPUT@', log_replay_dir, gotrim, build_dir],
+    build_by_default: true,
+    input: log_replay_deps,
+    install: true,
+    install_dir: 'bin')
+
+  serial_cap = custom_target(
+    'mwp-serial-cap',
+    output: 'mwp-serial-cap',
+    command : [gobuild, '@OUTPUT@', serial_cap_dir, gotrim, build_dir],
+    build_by_default: true,
+    input: serial_cap_deps,
+    install: true,
+    install_dir: 'bin')
+
 endif
 
 meson.add_install_script('meson/post_install.sh')
