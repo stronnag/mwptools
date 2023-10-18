@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '6.285.743')
+project('mwptools', 'c', 'vala', version : '6.291.785')
 
 # vala / clang16 workaround
 if meson.get_compiler('c').get_id() == 'clang'
@@ -88,6 +88,7 @@ if nogo == false and gook == true and gotrim != ''
   fgo_files = r.stdout().strip().split()
 
   fgo = custom_target(
+    'flashgo',
     output: 'flashgo',
     input: [fgo_files],
     command: [ golang, 'build', gotrim, '-o', '@OUTPUT@', '-ldflags', '-w -s',  fgo_dir ],

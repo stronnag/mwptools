@@ -10,5 +10,5 @@ require (
 
 require (
 	github.com/creack/goselect v0.1.2 // indirect
-	github.com/mattn/go-isatty v0.0.19 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 )
