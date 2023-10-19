@@ -94,7 +94,7 @@ public class RadarSim : Object {
                 var lon = tr[id].lon;
                 double delta = spd * ((to*maxradar)/1000)/3600 ;
                 Geo.posit (lat, lon,
-                           cse, delta, out tr[id].lat, out tr[id].lon, true);
+                           cse, delta, out tr[id].lat, out tr[id].lon);
 
                 tr[id].hdr = (uint16)cse;
                 tr[id].hv = spd;

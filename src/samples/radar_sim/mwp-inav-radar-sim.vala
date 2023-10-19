@@ -142,7 +142,7 @@ public class RadarSim : Object {
 
                 Geo.posit (radar_plot[id].latitude,
                            radar_plot[id].longitude,
-                           cse, delta, out lat, out lon, true);
+                           cse, delta, out lat, out lon);
 
                 radar_plot[id].state = 1;
                 radar_plot[id].latitude = lat;

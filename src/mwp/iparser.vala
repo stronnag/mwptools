@@ -22,7 +22,7 @@ class InputParser : GLib.Object {
     private const string LONSTR = "^(\\d{1,3})[ :\\-]?(\\d{2})[ :\\-]?([0-9\\.]{2,5})([EW])";
 
 	public static bool posok(string ps) {
-		return (ps[0] == '+' || ps[1] == '-' || (ps[0] >= '0' && ps[0] <= '9'));
+		return (ps[0] == '+' || ps[0] == '-' || (ps[0] >= '0' && ps[0] <= '9'));
 	}
 
 	public static double get_latitude(string latstr) {

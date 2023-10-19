@@ -2673,21 +2673,21 @@ public class MWP : Gtk.Application {
         if(llstr != null) {
 			var llok = false;
             string[] delims =  {","," "};
+			var nps = 0;
             foreach (var delim in delims) {
                 var parts = llstr.split(delim);
 				if(parts.length >= 2) {
-					var n = 0;
 					foreach(var pp in parts) {
 						var ps = pp.strip();
 						if(InputParser.posok(ps)) {
-							switch (n) {
+							switch (nps) {
 							case 0:
 								clat = InputParser.get_latitude(ps);
-								n=1;
+								nps = 1;
 								break;
 							case 1:
 								clon = InputParser.get_longitude(ps);
-								n = 2;
+								nps = 2;
 								break;
 							case 2:
 								zm = int.parse(parts[2]);
@@ -2697,12 +2697,13 @@ public class MWP : Gtk.Application {
 							}
 						}
 					}
-					if (n == 2) {
+					if (nps >= 2) {
 						llok = true;
 						break;
 					}
 				}
 			}
+
 			if (!llok) {
 				var pls = Places.points();
 				foreach(var pl in pls) {
