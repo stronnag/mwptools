@@ -67,26 +67,18 @@ executable('flashdl', sources: [fdlsrcs, fccommon], dependencies: [ fdldeps ],
 subdir('src/bbox-replay')
 
 if nogo == false and gook == true and gotrim != ''
-  mpe_dir = join_paths(meson.current_source_dir(), 'cmd', 'mwp-plot-elevations')
-
-  r = run_command('meson/find_files.sh', mpe_dir, check: true)
-  elev_files = r.stdout().strip().split()
-  r = run_command('meson/find_files.sh', join_paths(meson.current_source_dir(), 'pkg','geo'), check: true)
-  geo_files = r.stdout().strip().split()
-
+  subdir('pkg/geo')
+  subdir('cmd/mwp-plot-elevations')
   mpe = custom_target(
     'mwp-plot-elevations',
     output: 'mwp-plot-elevations',
-    input: [elev_files, geo_files],
+    input: [mpe_files, geo_files],
     command: [ golang, 'build', gotrim, '-o', '@OUTPUT@', '-ldflags', '-w -s', mpe_dir ],
     build_by_default: true,
     install: true,
     install_dir: 'bin')
 
-  fgo_dir = join_paths(meson.current_source_dir(), 'cmd', 'flashgo')
-  r = run_command('meson/find_files.sh', fgo_dir, check: true)
-  fgo_files = r.stdout().strip().split()
-
+  subdir('cmd/flashgo')
   fgo = custom_target(
     'flashgo',
     output: 'flashgo',
@@ -96,10 +88,7 @@ if nogo == false and gook == true and gotrim != ''
     install: true,
     install_dir: 'bin')
 
-  mlr_dir = join_paths(meson.current_source_dir(), 'cmd', 'mwp-log-replay')
-  r = run_command('meson/find_files.sh', mlr_dir, check: true)
-  mlr_files = r.stdout().strip().split()
-
+  subdir('cmd/mwp-log-replay')
   log_replay = custom_target(
     'mwp-log-replay',
     output: 'mwp-log-replay',
@@ -109,10 +98,7 @@ if nogo == false and gook == true and gotrim != ''
     install: true,
     install_dir: 'bin')
 
-  msc_dir = join_paths(meson.current_source_dir(), 'cmd', 'mwp-serial-cap')
-  r = run_command('meson/find_files.sh', msc_dir, check: true)
-  msc_files = r.stdout().strip().split()
-
+  subdir('cmd/mwp-serial-cap')
   serial_cap = custom_target(
     'mwp-serial-cap',
     output: 'mwp-serial-cap',
@@ -121,7 +107,6 @@ if nogo == false and gook == true and gotrim != ''
     input: msc_files,
     install: true,
     install_dir: 'bin')
-
 endif
 
 meson.add_install_script('meson/post_install.sh')
