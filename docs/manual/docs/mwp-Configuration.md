@@ -18,7 +18,7 @@ Command line options provide a 'per instantiation' means to control {{ mwp }} be
 
 Where it is required to give permanence to command line options, they can be added to the configuration file `$HOME/.config/mwp/cmdopts`, which is described in more detail in the following section.
 
-You can also use a system-wide "cmdopts" file, `/etc/default/mwp'. If this flie exists, it will read before the user's file.
+You can also use a system-wide "cmdopts" file, `/etc/default/mwp`. If this flie exists, it will read before the user's file.
 
 * For singular options, any option in the user file will override the system file
 * For multiply occurring options, e.g. `--radar-device`, definitions will be additive.
