@@ -16,23 +16,58 @@ public class TelemTracker {
 		string name;
         string alias;
         Status status;
+		bool userdef;
         MWSerial.PMask pmask;
 	}
 
     internal SecDev[] secdevs;
     private MWP mp;
 
+    private  string? find_conf_file(string fn) {
+        var uc =  Environment.get_user_config_dir();
+        var cfile = GLib.Path.build_filename(uc,"mwp",fn);
+        var n = Posix.access(cfile, Posix.R_OK);
+        if (n == 0)
+            return cfile;
+        else
+            return null;
+    }
+
     public TelemTracker(MWP _mp) {
         mp = _mp;
         secdevs = {};
-        string s2;
-        if((s2 = Environment.get_variable("MWP_SECDEVS")) != null) {
-            var parts = s2.split("|");
-            foreach(var p in parts) {
-                add(p);
-            }
-        }
+        string fn;
+		 if((fn = find_conf_file("secdevs")) != null) {
+			 var file = File.new_for_path(fn);
+			 try {
+				 var dis = new DataInputStream(file.read());
+				 string line;
+				 while ((line = dis.read_line (null)) != null) {
+					 if(line.strip().length > 0 &&
+						!line.has_prefix("#") &&
+						!line.has_prefix(";")) {
+						 add(line);
+					 }
+				 }
+			 } catch (Error e) {
+				 error ("%s", e.message);
+			 }
+		 }
     }
+
+	public void save_data() {
+		var uc =  Environment.get_user_config_dir();
+        var cfile = GLib.Path.build_filename(uc,"mwp","secdevs");
+        var fp = FileStream.open (cfile, "w");
+        if (fp != null) {
+			fp.write("# name, hint, alias\n".data);
+			foreach (var sd in secdevs) {
+				if (sd.userdef) {
+					fp.write("%s,%s,%s\n".printf(sd.name, MWSerial.pmask_to_name(sd.pmask), sd.alias).data);
+				}
+			}
+		}
+	}
 
     public void show_dialog() {
         Status []xstat={};
@@ -72,48 +107,51 @@ public class TelemTracker {
 
 
     public void add(string sname) {
-        bool found = false;
-        string devname;
-        MWSerial.PMask pmask;
+		stderr.printf("DBG TT Add %s\n", sname);
 
-        var parts = sname.split(" ", 2);
-        var subparts = parts[0].split("#");
-        if (subparts.length == 2) {
-            devname = subparts[0];
-            pmask = MWSerial.name_to_pmask(subparts[1]);
-        } else {
-            devname = parts[0];
-            pmask = MWSerial.PMask.AUTO;
-        }
+		bool found = false;
+        string devname = null;
+        MWSerial.PMask pmask = MWSerial.PMask.AUTO;
+        var parts = sname.split(",", 3);
+		devname = parts[0];
+		if(parts.length > 1 && parts[1].strip().length > 0) {
+			pmask = MWSerial.name_to_pmask(parts[1]);
+		}
 
-        for(int n = 0; n < secdevs.length; n++) {
-            if (secdevs[n].name == devname) {
-                secdevs[n].status = Status.PRESENT;
-                found = true;
-                break;
-            }
-        }
+		for(int n = 0; n < secdevs.length; n++) {
+			if (secdevs[n].name == devname) {
+				secdevs[n].status = Status.PRESENT;
+				found = true;
+				break;
+			}
+		}
 
-        if(!found) {
-            var s = SecDev();
-            s.status = Status.PRESENT;
-            s.name = devname;
-            if (parts.length == 2) {
-                s.alias = parts[1];
-            } else {
-                string suffix;
-                if (sname.has_prefix("/dev/")) {
-                    suffix = sname[5:sname.length];
-                } else {
-                    suffix = sname;
-                }
-                s.alias = "TTRK-%s".printf(suffix);
-            }
-            s.dev = null;
-            s.pmask = pmask;
-            secdevs += s;
-        }
-        changed();
+		if(!found) {
+			var s = SecDev();
+			s.userdef = (parts.length > 1);
+			s.status = Status.PRESENT;
+			var sparts = devname.split(" ");
+			if (sparts.length == 2) {
+				s.name = sparts[1];
+			} else {
+				s.name = devname;
+			}
+			if (parts.length == 3) {
+				s.alias = parts[2];
+			} else {
+				string suffix;
+				if (sname.has_prefix("/dev/")) {
+					suffix = s.name[5:s.name.length];
+				} else {
+					suffix = s.name;
+				}
+				s.alias = "TTRK-%s".printf(suffix);
+			}
+			s.dev = null;
+			s.pmask = pmask;
+			secdevs += s;
+			changed();
+		}
     }
 
     public void remove(string sname) {
@@ -461,7 +499,12 @@ public class  SecDevDialog : Gtk.Window {
                 this.destroy();
             });
 
-        //        var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 3);
+        var bsave = new Gtk.Button.with_label("Save");
+        bsave.clicked.connect(() => {
+                tt.save_data();
+            });
+
+		//        var box = new Gtk.Box (Gtk.Orientation.VERTICAL, 3);
         var grid = new Gtk.Grid ();
         grid.set_vexpand (true);
 
@@ -573,9 +616,16 @@ public class  SecDevDialog : Gtk.Window {
             nodevs.set_margin_end(8);
             grid.attach (nodevs, 0, 0, 1, 1);
         }
+		Gtk.ButtonBox bbox = new Gtk.ButtonBox (Gtk.Orientation.HORIZONTAL);
+        bbox.set_layout (Gtk.ButtonBoxStyle.EXPAND);
+        bbox.set_spacing (5);
         sd_ok.set_hexpand(false);
         sd_ok.set_halign(Gtk.Align.END);
-        grid.attach (sd_ok, 0, 1, 1, 1);
+        bsave.set_hexpand(false);
+        bsave.set_halign(Gtk.Align.START);
+		bbox.add(bsave);
+		bbox.add(sd_ok);
+        grid.attach (bbox, 0, 1, 1, 1);
         this.add(grid);
     }
 

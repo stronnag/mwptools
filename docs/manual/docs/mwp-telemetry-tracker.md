@@ -42,11 +42,8 @@ The "Telemery Tracking" device(s) may be assigned from the "View" / "Telemetry T
 
 ![Telemetry Tracker](images/ttrk-select.png){: width="70%" }
 
-* The IP entries devices are for testing; they cannot be auto-detected so must be defined by the environment variable `MWP_SECDEVS`. This environment variable describes one or more devices, each with optional "Alias" text. The "device" part comprises a mandatory device name, and a optional alias, separated by a space; multiple devices are separated by a pipe symbol (`|`). For example:
-        ```
-		MWP_SECDEVS=udp://:23456 Replay 0|udp://:23457 Replay 1|udp://:23458 Replay 2|udp://:23459 Replay 3|tcp://localhost:43210 Sport player
-		```
-* The IP devices are defined from `MWP_SECDEVS`; each of these has a user-defined alias. The latter two of the UDP aliases have had the alias edited by the user.
+* The IP entries devices are for testing; they cannot be auto-detected so must be defined by the file `~/.config/mwp/secdevs`. This file lists zero or more devices, each with protocol and optional "Alias" text.
+* The IP devices are defined from the file; each of these has a user-defined alias. The latter two of the UDP aliases have had the alias edited by the user.
 * The USB device node is auto-detected and automatically aliased `TTRK-ttyACM0`. The user can edit / override this alias if she so wishes.
 * The two bluetooth devices (`35:53:*`) have aliases defined at the operating system level.  The user can edit / override this alias if she so wishes.
 * If `/dev/ttyACM0` is subsequently connected as the primary device, it will not appear in this list.
@@ -71,4 +68,13 @@ The default icon may be [overridden by the user](mwp-Configuration.md/#settings-
 
 ## Constraints
 
-Linux preferred, due to the `udev` dependency for device enumeration. On other platforms it will be necessary to define devices _a priori_ using the `MWP_SECDEV` environment variable (which may be set the `~/.config/mwp/cmdopts` [configuration file](mwp-Configuration.md/#cmdopts)).
+Linux preferred, due to the `udev` dependency for device enumeration. On other platforms it will be necessary to define devices _a priori_ using the `~/.config/mwp/secdevs` file. Currently, entries may be edited in the UI and saved, but cannot be inserted or deleted (other than by editing the file). At some stage a full GUI editor will be provided.
+
+An example `secdevs` file might be:
+
+    # name, hint, alias
+	udp://:23456,Auto,Replay 0
+	udp://:23457,CRSF,Replay 1
+	udp://:23458,MPM
+	udp://:23459,INAV
+	tcp://localhost:43210,Sport,Sport player
