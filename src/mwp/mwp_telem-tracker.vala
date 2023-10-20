@@ -620,9 +620,16 @@ public class  SecDevDialog : Gtk.Window {
         bbox.set_layout (Gtk.ButtonBoxStyle.EXPAND);
         bbox.set_spacing (5);
         sd_ok.set_hexpand(false);
-        sd_ok.set_halign(Gtk.Align.END);
-        bsave.set_hexpand(false);
         bsave.set_halign(Gtk.Align.START);
+		sd_ok.set_halign(Gtk.Align.END);
+        bsave.set_hexpand(false);
+		bsave.sensitive = false;
+		foreach (var sd in tt.secdevs) {
+			if (sd.userdef) {
+				bsave.sensitive = true;
+				break;
+			}
+		}
 		bbox.add(bsave);
 		bbox.add(sd_ok);
         grid.attach (bbox, 0, 1, 1, 1);
