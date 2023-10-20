@@ -98,7 +98,7 @@ Radar contacts have one of the following status values:
 
 | Status | Explanation |
 | ------ | ----------- |
-| Undefined | Not shown in list or on the map |
+| Undefined | ADS-B: Not shown in list or on the map, INAV-Radar not armed / updated |
 | Stale | The last contact was more that 120s previous. Displayed in the list and shown on the map with reduced intensity or an INAV-radar node has 'lost' status |
 | Armed | An active INAV-radar contact |
 | ADS-B | A live MAVLink Traffic report |
