@@ -9958,13 +9958,19 @@ public class MWP : Gtk.Application {
                 Shell.parse_argv(s, out m);
                 for(var i = 0; i < m.length; i++) {
                     string extra=null;
+					string optname = null;
                     int iarg;
+					var mparts = m[i].split("=");
+					optname = mparts[0];
+					if (mparts.length > 1) {
+						extra = mparts[1];
+					}
 
-                    var o = find_option(m[i]);
+                    var o = find_option(optname);
                     if (o != null) {
-                        if (o.arg !=  OptionArg.NONE)
+                        if (o.arg !=  OptionArg.NONE && extra == null) {
                             extra = m[++i];
-
+						}
                         switch(o.arg) {
 						case OptionArg.NONE:
 							if (o.long_name != null)
@@ -9996,7 +10002,6 @@ public class MWP : Gtk.Application {
 							}
 							builder.add ("s", extra);
 							v.insert(o.long_name, "as", builder);
-
 							break;
 
 						default:
