@@ -906,7 +906,10 @@ public class MWP : Gtk.Application {
             o.lookup("forward-to", "s", ref forward_device);
 			if (o.contains("radar-device")) {
 				var ox = o.lookup_value("radar-device", VariantType.STRING_ARRAY);
-				radar_device = ox.dup_strv();
+				var rds = ox.dup_strv();
+				foreach(var rd in rds) {
+					radar_device += rd;
+				}
 			}
             o.lookup("perma-warn", "b", ref permawarn);
             o.lookup("fsmenu", "b", ref nofsmenu);
@@ -2555,6 +2558,7 @@ public class MWP : Gtk.Application {
             fwddev = new MWSerial.forwarder();
 
         radar_plot = new SList<RadarPlot?>();
+
 
 		foreach (var rd in radar_device) {
 			var parts = rd.split(",");
@@ -4602,6 +4606,7 @@ public class MWP : Gtk.Application {
 	private bool lookup_radar(string s) {
 		foreach (var r in radardevs) {
 			if (r.name == s) {
+				MWPLog.message("Found radar %s\n", s);
 				return true;
 			}
 		}
@@ -9961,31 +9966,48 @@ public class MWP : Gtk.Application {
                             extra = m[++i];
 
                         switch(o.arg) {
-                            case OptionArg.NONE:
-                                if (o.long_name != null)
-                                    v.insert(o.long_name, "b", true);
+						case OptionArg.NONE:
+							if (o.long_name != null)
+								v.insert(o.long_name, "b", true);
                                 if (o.short_name != 0)
                                     v.insert(o.short_name.to_string(), "b", true);
                                 break;
-                            case OptionArg.STRING:
-                                if (o.long_name != null)
-                                    v.insert(o.long_name, "s", extra);
-                                if (o.short_name != 0)
-                                    v.insert(o.short_name.to_string(), "s", extra);
-                                break;
-                            case OptionArg.INT:
-                                iarg = int.parse(extra);
-                                if (o.long_name != null)
-                                    v.insert(o.long_name, "i", iarg);
-                                if (o.short_name != 0)
-                                    v.insert(o.short_name.to_string(), "i", iarg);
-                                break;
-                            default:
+						case OptionArg.STRING:
+							if (o.long_name != null)
+								v.insert(o.long_name, "s", extra);
+							if (o.short_name != 0)
+								v.insert(o.short_name.to_string(), "s", extra);
+							break;
+						case OptionArg.INT:
+							iarg = int.parse(extra);
+							if (o.long_name != null)
+								v.insert(o.long_name, "i", iarg);
+							if (o.short_name != 0)
+								v.insert(o.short_name.to_string(), "i", iarg);
+							break;
+						case OptionArg.STRING_ARRAY:
+							VariantBuilder builder = new VariantBuilder (new VariantType ("as") );
+							if(v.contains(o.long_name)) {
+								var ox = v.lookup_value(o.long_name, VariantType.STRING_ARRAY);
+								var extras = ox.dup_strv();
+								foreach (var se in extras) {
+									builder.add ("s",se);
+								}
+							}
+							builder.add ("s", extra);
+							v.insert(o.long_name, "as", builder);
+
+							break;
+
+						default:
+								MWPLog.message("Error ARG PARSE %s %s\n", o.long_name, o.arg.to_string());
                                 break;
                         }
                     }
                 }
-            } catch {}
+            } catch (Error e) {
+				MWPLog.message("*** Internal Dict Error %s\n", e.message);
+			}
         }
         return v;
     }
@@ -10121,6 +10143,7 @@ public class MWP : Gtk.Application {
         }
         return sb.str;
     }
+
 	public static int main (string[] args) {
 		MWPUtils.set_app_name("mwp");
 		Environment.set_prgname(MWP.MWPID);
