@@ -1,4 +1,4 @@
-project('mwptools', 'c', 'vala', version : '6.293.554')
+project('mwptools', 'c', 'vala', version : '6.293.616')
 
 # vala / clang16 workaround
 if meson.get_compiler('c').get_id() == 'clang'

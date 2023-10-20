@@ -10117,16 +10117,14 @@ public class MWP : Gtk.Application {
 		return null;
     }
 
-    private static string read_cmd_opts() {
-        var sb = new StringBuilder ();
-        var fn = MWPUtils.find_conf_file("cmdopts");
-        if(fn != null) {
-            var file = File.new_for_path(fn);
-            try {
-                var dis = new DataInputStream(file.read());
-                string line;
-                while ((line = dis.read_line (null)) != null) {
-                    if(line.strip().length > 0) {
+	private static void read_cmd_file(string fn, ref StringBuilder sb) {
+		var file = File.new_for_path(fn);
+		try {
+			if (file.query_exists ()) {
+				var dis = new DataInputStream(file.read());
+				string line;
+				while ((line = dis.read_line (null)) != null) {
+					if(line.strip().length > 0) {
 						if(line.has_prefix("#") || line.has_prefix(";")) {
 							continue;
 						} else if (line.has_prefix("-")) {
@@ -10142,10 +10140,19 @@ public class MWP : Gtk.Application {
 						}
 					}
 				}
-			} catch (Error e) {
-                error ("%s", e.message);
-            }
-        }
+			}
+		} catch (Error e) {
+			MWPLog.message ("%s\n", e.message);
+		}
+	}
+
+	private static string read_cmd_opts() {
+        var sb = new StringBuilder ();
+		read_cmd_file("/etc/default/mwp", ref sb);
+		var fn = MWPUtils.find_conf_file("cmdopts");
+		if(fn != null) {
+			read_cmd_file(fn, ref sb);
+		}
         return sb.str;
     }
 

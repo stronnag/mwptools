@@ -18,6 +18,12 @@ Command line options provide a 'per instantiation' means to control {{ mwp }} be
 
 Where it is required to give permanence to command line options, they can be added to the configuration file `$HOME/.config/mwp/cmdopts`, which is described in more detail in the following section.
 
+You can also use a system-wide "cmdopts" file, `/etc/default/mwp'. If this flie exists, it will read before the user's file.
+
+* For singular options, any option in the user file will override the system file
+* For multiply occurring options, e.g. `--radar-device`, definitions will be additive.
+* Environment variables can be set from either or both files.
+
 ### Debug flags
 
 The `--debug-flags` option takes a numeric value defines areas where additional debug information may be output.
@@ -279,6 +285,18 @@ This *may* not be installed by default, but should be available via the OS packa
 | wp-spotlight | Style for the 'next waypoint' highlight | Defines RGBA colour for 'next way point' highlight | "#ffffff60" |
 | wp-text-style | Style of text used for next WP display | Defines the way the WP numbers are displayed. Font, size and RGBA description (or well known name, with alpha) | "Sans 144/#ff000080" |
 | zone-detect | Application to return timezone from location | If supplied, the application will be used to return the timezone (in preference to geonames.org). The application should take latitude and longitude as parameters. See samples/tzget.sh | "" |
+
+### Replicating gsettings between machines or users
+
+The standard system `dconf` application can be used to back up and restore the above `gsettings`.
+
+To backup the settings:
+
+    dconf dump /org/mwptools/planner/  >/tmp/mwp-dconf.txt
+
+To restore the settings (overwrite). This could be for a different user or on a new machine.
+
+    dconf load /org/mwptools/planner/  </tmp/mwp-dconf.txt
 
 ## Settings precedence and user updates
 
