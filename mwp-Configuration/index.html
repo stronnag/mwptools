@@ -624,6 +624,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#replicating-gsettings-between-machines-or-users" class="md-nav__link">
+    Replicating gsettings between machines or users
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1262,6 +1269,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#replicating-gsettings-between-machines-or-users" class="md-nav__link">
+    Replicating gsettings between machines or users
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1333,6 +1347,12 @@
 <pre><code>$ mwp --help
 </code></pre>
 <p>Where it is required to give permanence to command line options, they can be added to the configuration file <code>$HOME/.config/mwp/cmdopts</code>, which is described in more detail in the following section.</p>
+<p>You can also use a system-wide "cmdopts" file, `/etc/default/mwp'. If this flie exists, it will read before the user's file.</p>
+<ul>
+<li>For singular options, any option in the user file will override the system file</li>
+<li>For multiply occurring options, e.g. <code>--radar-device</code>, definitions will be additive.</li>
+<li>Environment variables can be set from either or both files.</li>
+</ul>
 <h3 id="debug-flags">Debug flags<a class="headerlink" href="#debug-flags" title="Permanent link">#</a></h3>
 <p>The <code>--debug-flags</code> option takes a numeric value defines areas where additional debug information may be output.</p>
 <table>
@@ -2064,6 +2084,14 @@ $ gsettings set org.mwptools.planner log-save-path ~/flight-logs/
 </tr>
 </tbody>
 </table>
+<h3 id="replicating-gsettings-between-machines-or-users">Replicating gsettings between machines or users<a class="headerlink" href="#replicating-gsettings-between-machines-or-users" title="Permanent link">#</a></h3>
+<p>The standard system <code>dconf</code> application can be used to back up and restore the above <code>gsettings</code>.</p>
+<p>To backup the settings:</p>
+<pre><code>dconf dump /org/mwptools/planner/  &gt;/tmp/mwp-dconf.txt
+</code></pre>
+<p>To restore the settings (overwrite). This could be for a different user or on a new machine.</p>
+<pre><code>dconf load /org/mwptools/planner/  &lt;/tmp/mwp-dconf.txt
+</code></pre>
 <h2 id="settings-precedence-and-user-updates">Settings precedence and user updates<a class="headerlink" href="#settings-precedence-and-user-updates" title="Permanent link">#</a></h2>
 <p><a href="https://github.com/stronnag/mwptools">mwp</a> installs a number of icon files in <code>$prefix/share/mwp/pixmaps</code>. The user can override these by creating an eponymous file in the user configuration directory, <code>~/.config/mwp/pixmaps/</code>. Such user configurations are never over-written on upgrade.</p>
 <p>For example, to replace a <a href="https://github.com/stronnag/mwptools">mwp</a> specific icon; i.e. replace the GCS Location icon (<code>$prefix/share/mwp/pixmaps/gcs.svg</code>) with a user defined file <code>~/.config/mwp/pixmaps/gcs.svg</code>.</p>
@@ -2197,7 +2225,7 @@ file ~/.config/mwp/pixmaps/inav-radar.svg
   <small>
     
       Last update:
-      2023-10-12
+      2023-10-20
     
   </small>
 </div>
